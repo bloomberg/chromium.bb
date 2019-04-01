@@ -8,6 +8,7 @@
 <translation id="1032854598605920125">ઘડિયાળની દિશામાં ફેરવો</translation>
 <translation id="1035334672863811645">Chrome માં સાઇન ઇન કરો</translation>
 <translation id="1038842779957582377">અજ્ઞાત નામ</translation>
+<translation id="1039626062703039346">Chrome તમારા Google એકાઉન્ટને સુરક્ષિત કરવામાં અને તમારો પાસવર્ડ બદલવામાં તમારી સહાય કરી શકે છે. આ સાઇટ વિશે Googleને આ સૂચિત કરશે.</translation>
 <translation id="1050038467049342496">અન્ય ઍપ્લિકેશનો બંધ કરો</translation>
 <translation id="1055184225775184556">&amp;ઉમેરવું પૂર્વવત્ કરો</translation>
 <translation id="1056898198331236512">ચેતવણી</translation>
@@ -296,13 +297,16 @@
 <translation id="2495083838625180221">JSON વિશ્લેષક</translation>
 <translation id="2495093607237746763">જો ચેક કરેલું હોય, તો ઝડપથી ફોર્મ ભરવા માટે Chromium આ ઉપકરણ પર તમારા કાર્ડની એક કૉપિ સંગ્રહિત કરશે.</translation>
 <translation id="2498091847651709837">નવું કાર્ડ સ્કૅન કરો</translation>
+<translation id="249825481377667906">Chromium તમારા Google એકાઉન્ટને સુરક્ષિત કરવામાં અને તમારો પાસવર્ડ બદલવામાં તમારી સહાય કરી શકે છે. આ સાઇટ વિશે Googleને આ સૂચિત કરશે.</translation>
 <translation id="2501278716633472235">પાછા જાઓ</translation>
 <translation id="2503184589641749290">સ્વીકૃત ડેબિટ અને પ્રીપેઇડ કાર્ડ</translation>
+<translation id="2505268675989099013">એકાઉન્ટ સુરક્ષિત કરો</translation>
 <translation id="2515629240566999685">તમારા વિસ્તારમાં સિગ્નલ તપાસીને</translation>
 <translation id="2523886232349826891">કાર્ડની માહિતીને માત્ર આ ડિવાઇસ પર સાચવવામાં આવી છે</translation>
 <translation id="2524461107774643265">વધુ માહિતી ઉમેરો</translation>
 <translation id="2536110899380797252">સરનામું ઉમેરો</translation>
 <translation id="2539524384386349900">શોધો</translation>
+<translation id="254947805923345898">પૉલિસી મૂલ્ય માન્ય નથી.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> એ અમાન્ય પ્રતિસાદ મોકલ્યો.</translation>
 <translation id="2556876185419854533">&amp;ફેરફાર કરવાનું રદ કરો</translation>
 <translation id="2586657967955657006">ક્લિપબોર્ડ</translation>
@@ -434,6 +438,7 @@
           <ph name="LIST_ITEM" />કુકી અને સાઇટ ડેટા
           <ph name="LIST_ITEM" />ફોર્મમાં દાખલ કરેલી માહિતી
         <ph name="END_LIST" /></translation>
+<translation id="3362968246557010467">આ પૉલિસી, ટાળેલી <ph name="OLD_POLICY" /> પૉલિસીમાંથી ઑટોમૅટિક રીતે કૉપિ કરી હતી. તેના બદલે તમારે આ પૉલિસીનો ઉપયોગ કરવો જોઈએ.</translation>
 <translation id="3366477098757335611">કાર્ડ જુઓ</translation>
 <translation id="3369192424181595722">ઘડિયાળ ભૂલ</translation>
 <translation id="337363190475750230">જોગવાઈ દૂર કરી</translation>
@@ -557,6 +562,7 @@
 <translation id="4072486802667267160">તમારા ઑર્ડરની પ્રક્રિયા કરતી વખતે એક ભૂલ આવી હતી. કૃપા કરીને ફરીથી પ્રયાસ કરો.</translation>
 <translation id="4075732493274867456">ક્લાઇન્ટ અને સર્વર સામાન્ય SSL પ્રોટોકોલ વર્ઝન અથવા સાઇફર સ્યૂટની સહાય કરતા નથી.</translation>
 <translation id="4079302484614802869">પ્રૉક્સી ગોઠવણી .pac સ્ક્રિપ્ટ URLનો ઉપયોગ કરવા માટે સેટ છે, ફિક્સ્ડ પ્રૉક્સી સર્વર માટે નહીંં.</translation>
+<translation id="4092411512356034591"><ph name="DOMAIN" /> પર ચાલુ રાખીએ?</translation>
 <translation id="4098354747657067197">આગળ છેતરામણી સાઇટ છે</translation>
 <translation id="4103249731201008433">ઉપકરણ અનુક્ર્માંક નંબર અમાન્ય છે</translation>
 <translation id="410351446219883937">ઑટોપ્લે</translation>
@@ -828,6 +834,7 @@
 <translation id="5556459405103347317">ફરિથી લોડ કરો</translation>
 <translation id="5560088892362098740">સમાપ્તિ તારીખ</translation>
 <translation id="5565735124758917034">સક્રિય</translation>
+<translation id="5570825185877910964">એકાઉન્ટ સુરક્ષિત કરો</translation>
 <translation id="5571083550517324815">આ સરનામેથી પિકઅપ કરી શકતા નથી. કોઈ ભિન્ન સરનામું પસંદ કરો.</translation>
 <translation id="5571347317547569613">({NUM_COOKIES,plural, =1{1 ઉપયોગમાં છે}one{# ઉપયોગમાં છે}other{# ઉપયોગમાં છે}})</translation>
 <translation id="5572851009514199876">કૃપા કરીને Chrome ને પ્રારંભ કરો અને સાઇન ઇન કરો જેથી કરીને Chrome તપાસી શકે કે તમને આ સાઇટની ઍક્સેસની મંજૂરી છે કે કેમ.</translation>
@@ -964,10 +971,12 @@
 <translation id="6386120369904791316">{COUNT,plural, =1{1 અન્ય સૂચન}one{# અન્ય સૂચન}other{# અન્ય સૂચન}}</translation>
 <translation id="6387754724289022810">આગલી વખતે વધુ ઝડપથી ચુકવણી કરવા માટે, તમારા કાર્ડ અને બિલિંગ સરનામાંને તમારા Google એકાઉન્ટ અને આ ડિવાઇસ પર સાચવો.</translation>
 <translation id="6390662030813198813">એન્જિનિયરિંગ-E</translation>
+<translation id="6401136357288658127">આ પૉલિસી ટાળવામાં આવી છે. તેના બદલે તમારે <ph name="NEW_POLICY" /> પૉલિસીનો ઉપયોગ કરવો જોઈએ.</translation>
 <translation id="6404511346730675251">બુકમાર્કમાં ફેરફાર કરો</translation>
 <translation id="6406765186087300643">C0 (એન્વલપ)</translation>
 <translation id="6410264514553301377"><ph name="CREDIT_CARD" /> માટે સમાપ્તિ તારીખ અને CVC દાખલ કરો</translation>
 <translation id="6414888972213066896">આ પૃષ્ઠની મુલાકાત લો છો તે ઠીક છે કે કેમ તેવું તમે તમારા માતાપિતાને પૂછ્યું</translation>
+<translation id="6415778972515849510">Chromium તમારા Google એકાઉન્ટને સુરક્ષિત કરવામાં અને તમારો પાસવર્ડ બદલવામાં તમારી સહાય કરી શકે છે.</translation>
 <translation id="6417515091412812850">પ્રમાણપત્ર રદ કરવામાં આવ્યું છે કે નહીં તે તપાસવામાં અક્ષમ છે.</translation>
 <translation id="6433490469411711332">સંપર્ક માહિતીમાં ફેરફાર કરો</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> એ કનેક્ટ કરવાનો ઇનકાર કર્યો.</translation>
@@ -1033,6 +1042,7 @@
 <translation id="6868206169573555318">અપડેટ કરવા માટે લૉન્ચ કરો</translation>
 <translation id="6874604403660855544">&amp;ઉમેરવું ફરી કરો</translation>
 <translation id="6884662655240309489">કદ 1</translation>
+<translation id="6884796835813057577">&lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt; પર ચાલુ રાખીએ?</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">નીતિ સ્તર સમર્થિત નથી.</translation>
 <translation id="6895330447102777224">તમારા કાર્ડની પુષ્ટિ કરવામાં આવી છે</translation>
@@ -1084,7 +1094,6 @@
 <translation id="7152423860607593928">નંબર-14 (એન્વલપ)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> વધુ}one{<ph name="PAYMENT_METHOD_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> વધુ}other{<ph name="PAYMENT_METHOD_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> વધુ}}</translation>
 <translation id="7153618581592392745">આછો જાંબલી</translation>
-<translation id="7158980942472052083">અમાન્ય URL. તે માનક સ્કીમ સાથેનું URL હોવું જરૂરી છે.</translation>
 <translation id="717330890047184534">Gaia ID:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> વધુ}one{<ph name="SHIPPING_OPTION_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> વધુ}other{<ph name="SHIPPING_OPTION_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> વધુ}}</translation>
 <translation id="7177397715882417099">તમે જેના પર જવાનો પ્રયાસ કરી રહ્યાં છો, તે<ph name="ORIGIN" /> સર્વર દ્વારા વિનંતી
@@ -1352,6 +1361,7 @@
 <translation id="8503559462189395349">Chrome પાસવર્ડ</translation>
 <translation id="8503813439785031346">વપરાશકર્તાનામ</translation>
 <translation id="8508648098325802031">શોધ આઇકન</translation>
+<translation id="8522552481199248698">Chrome તમારા Google એકાઉન્ટને સુરક્ષિત કરવામાં અને તમારો પાસવર્ડ બદલવામાં તમારી સહાય કરી શકે છે.</translation>
 <translation id="8543181531796978784">તમે <ph name="BEGIN_ERROR_LINK" />શોધ સમસ્યાની જાણ<ph name="END_ERROR_LINK" /> કરી શકો છો અથવા જો તમે તમારી સુરક્ષા અંગેનાં જોખમોને સમજતાં હોવ, તો <ph name="BEGIN_LINK" />આ અસુરક્ષિત સાઇટની મુલાકાત<ph name="END_LINK" /> લઈ શકો છો.</translation>
 <translation id="8543556556237226809">પ્રશ્નો છે? તમારી પ્રોફાઇલનું નિરીક્ષણ કરનાર વ્યક્તિનો સંપર્ક કરો.</translation>
 <translation id="8553075262323480129">ભાષાંતર નિષ્ફળ રહ્યું કારણ કે પૃષ્ઠની ભાષા નિર્ધારિત થઈ શકી નથી.</translation>
@@ -1438,6 +1448,7 @@
 <translation id="9076630408993835509">આ બ્રાઉઝર કંપની દ્વારા અથવા અન્ય સંસ્થા દ્વારા મેનેજ કરવામાં આવતું નથી. આ ડિવાઇસ પરની પ્રવૃત્તિ Chromeની બહાર મેનેજ કરી શકાય છે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">વધુ માહિતી આવશ્યક</translation>
 <translation id="9080712759204168376">ઑર્ડરનો સારાંશ</translation>
+<translation id="9095388113577226029">વધુ ભાષાઓ...</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> સામાન્ય રીતે તમારી માહિતીને સુરક્ષિત રાખવા માટે એન્ક્રિપ્શનનો ઉપયોગ કરે છે. જ્યારે આ સમયે Chromium દ્વારા <ph name="SITE" />થી કનેક્ટ કરવાનો પ્રયાસ થયો, ત્યારે વેબસાઇટે અસામાન્ય અને ખોટા લૉગ ઇન વિગતને પાછા મોકલ્યાં. આવું ત્યારે થઈ શકે જ્યારે કોઈ હુમલાખોર <ph name="SITE" /> હોવાનો ડોળ કરવાનો પ્રયાસ કરી રહ્યો હોવ અથવા કોઈ Wi-Fi સાઇન-ઇન સ્ક્રીને કનેક્શનમાં વિક્ષેપ પાડ્યો હોય. તમારી માહિતી હજી પણ સુરક્ષિત છે કારણ કે Chromium એ કોઈ પણ ડેટા વિનિમય થાય એ પહેલાં જ કનેક્શન રોકી દીધું.</translation>
 <translation id="9106062320799175032">બિલિંગ સરનામું ઉમેરો</translation>
 <translation id="9114524666733003316">કાર્ડ કન્ફર્મ કરી રહ્યાં છીએ...</translation>

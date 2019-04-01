@@ -262,6 +262,7 @@
 <translation id="290376772003165898">Puslapis parašytas ne <ph name="LANGUAGE" />?</translation>
 <translation id="2910701580606108292">Paklausti prieš leidžiant svetainėms leisti saugomą turinį</translation>
 <translation id="2913331724188855103">Leisti svetainėms išsaugoti ir nuskaityti slapukų duomenis (rekomenduojama)</translation>
+<translation id="2923908459366352541">Netinkamas pavadinimas</translation>
 <translation id="2932150158123903946">„Google <ph name="APP_NAME" />“ saugykla</translation>
 <translation id="2956410042958133412">Šią paskyrą tvarko <ph name="PARENT_NAME_1" /> ir <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Autorių teisės priklauso „Google Inc.“, <ph name="YEAR" /> m. Visos teisės saugomos.</translation>
@@ -363,6 +364,7 @@
 <translation id="3745176700485982507">Šiame puslapyje galite rasti nuorodas į mėgstamiausias svetaines</translation>
 <translation id="3771001275138982843">Nepavyko atsisiųsti naujinio</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Įjunkite „Bluetooth“<ph name="END_LINK" />, kad būtų leidžiama susieti</translation>
+<translation id="3775705724665058594">Išsiųsta į jūsų įrenginius</translation>
 <translation id="3778956594442850293">Pridėta prie pagrindinio ekrano</translation>
 <translation id="3781011235031427080">Lapas „Daugiau panašių“ atidarytas (pusė aukščio)</translation>
 <translation id="3789841737615482174">Įdiegti</translation>
@@ -528,6 +530,7 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> bendrina jūsų ekrano vaizdą</translation>
 <translation id="4961107849584082341">Išverskite šį puslapį į bet kokią kalbą</translation>
 <translation id="4961700429721424617">Atsijungiate nuo paskyros, kurią tvarko „<ph name="MANAGED_DOMAIN" />“. „Chrome“ duomenys bus ištrinti iš šio įrenginio, bet liks „Google“ paskyroje.</translation>
+<translation id="4970824347203572753">Nepasiekiama jūsų vietovėje</translation>
 <translation id="497421865427891073">Eiti pirmyn</translation>
 <translation id="4988210275050210843">Atsisiunčiamas failas (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Psl.</translation>
@@ -597,6 +600,7 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="5487521232677179737">Išvalyti duomenis</translation>
 <translation id="5494752089476963479">Blokuoti skelbimus svetainėse, kuriose rodomi nepageidaujami arba klaidinantys skelbimai</translation>
 <translation id="5497272504048921382">Atidaryti skirtukai</translation>
+<translation id="5500777121964041360">Gali būti nepasiekiama jūsų vietovėje</translation>
 <translation id="550684401320795253">Atnaujinama „Chrome“...</translation>
 <translation id="5512137114520586844">Šią paskyrą tvarko <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Išjungė šio įrenginio administratorius</translation>
@@ -848,6 +852,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="7250468141469952378">Pasirinkta: <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">Pridėkite „Google“ paskyrą iš įrenginio Nustatymų programos puslapio „Paskyros“.</translation>
 <translation id="7274013316676448362">Užblokuota svetainė</translation>
+<translation id="7290209999329137901">Pavadinimo pakeisti nepavyko</translation>
 <translation id="7291387454912369099">„Assistant“ suaktyvin. mokėjimas</translation>
 <translation id="729975465115245577">Įrenginyje nėra slaptažodžių failo saugojimo programos.</translation>
 <translation id="7302081693174882195">Išsami informacija: surūšiuota pagal išsaugotų duomenų kiekį</translation>
@@ -981,6 +986,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="8200772114523450471">Atnaujinti</translation>
 <translation id="8209050860603202033">Atidaryti vaizdą</translation>
 <translation id="8220488350232498290">Atsisiųsta <ph name="GIGABYTES" /> GB</translation>
+<translation id="8224471946457685718">Atsisiųsti jums skirtus straipsnius naudojant „Wi-Fi“</translation>
 <translation id="8232956427053453090">Palikti duomenis</translation>
 <translation id="8249310407154411074">Perkelti į viršų</translation>
 <translation id="8250920743982581267">Dokumentai</translation>

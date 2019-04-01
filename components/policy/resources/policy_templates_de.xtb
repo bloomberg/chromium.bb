@@ -1,6 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
+<translation id="1002439864875515590">Wenn diese Richtlinie auf einen leeren String festgelegt oder nicht konfiguriert ist, zeigt <ph name="PRODUCT_OS_NAME" /> beim Nutzeranmeldeprozess keine Option zur automatischen Vervollständigung an.
+      Ist diese Richtlinie auf einen String festgelegt, der einen Domainnamen darstellt, dann zeigt <ph name="PRODUCT_OS_NAME" /> beim Nutzeranmeldeprozess eine Optimierung zum automatischen Vervollständigen an. In diesem Fall muss der Nutzer nur einen Nutzernamen eingeben und kann die Domainnamenserweiterung weglassen.  Der Nutzer kann diese Domainnamenserweiterung dann überschreiben.
+      Ist der Wert der Richtlinie keine gültige Domain, dann wird die Richtlinie nicht angewendet.</translation>
 <translation id="101438888985615157">Bildschirm um 180 Grad drehen</translation>
 <translation id="1016912092715201525">Konfiguriert den Standardbrowser, führt in <ph name="PRODUCT_NAME" /> eine Überprüfung durch und verhindert, dass Nutzer die Einstellung ändern.
 
@@ -717,13 +720,6 @@ Diese Richtlinie gilt auch für Komponentenerweiterungen, zum Beispiel die Hango
       Falls Sie diese Richtlinie konfigurieren, können Nutzer diese weder ändern noch überschreiben, haben jedoch weiterhin die Möglichkeit, eine Bildschirmtastatur als Eingabehilfe zu aktivieren bzw. zu deaktivieren. Diese hat dann Vorrang vor der Bildschirmtastatur dieser Richtlinie. Die Steuerung der Bildschirmtastatur als Eingabehilfe ist über die Richtlinie |VirtualKeyboardEnabled| möglich.
 
       Falls diese Richtlinie nicht konfiguriert ist, ist die Bildschirmtastatur zunächst deaktiviert, kann jedoch vom Nutzer jederzeit aktiviert werden. Anhand von heuristischen Regeln kann darüber hinaus festgelegt werden, wann die Tastatur eingeblendet wird.</translation>
-<translation id="228659285074633994">Diese Richtlinie gibt an, nach welcher Inaktivitätsspanne des Nutzers im Netzbetrieb eine Warnmeldung angezeigt wird.
-
-          Wird diese Richtlinie festgelegt, gibt sie an, wie lange der Nutzer inaktiv sein kann, bevor <ph name="PRODUCT_OS_NAME" /> in einer Warnung auf die bevorstehende Maßnahme hinweist.
-
-          Wird diese Richtlinie nicht festgelegt, erscheint keine Warnung.
-
-          Geben Sie den Richtlinienwert in Millisekunden an. Solange die Inaktivitätsspanne kleiner oder gleich diesem festgelegten Wert ist, erscheint keine Warnung.</translation>
 <translation id="2292084646366244343">In <ph name="PRODUCT_NAME" /> können mithilfe eines Google-Webdienstes Rechtschreibfehler korrigiert werden. Wenn diese Einstellung aktiviert ist, wird dieser Dienst immer verwendet. Ist die Einstellung deaktiviert, wird dieser Dienst nie verwendet.
 
       Die Rechtschreibprüfung kann weiterhin mit einem heruntergeladenen Wörterbuch durchgeführt werden. Diese Richtlinie bezieht sich nur auf die Verwendung des Online-Dienstes.
@@ -748,7 +744,6 @@ Diese Richtlinie gilt auch für Komponentenerweiterungen, zum Beispiel die Hango
 <translation id="2299220924812062390">Liste der aktivierten Plug-ins angeben</translation>
 <translation id="2303795211377219696">AutoFill für Kreditkarten aktivieren</translation>
 <translation id="2309390639296060546">Standardeinstellung für "Standortbestimmung"</translation>
-<translation id="2312134445771258233">Mit dieser Richtlinie können Sie konfigurieren, welche Seiten beim Start geladen werden. Der Inhalt der Liste "Beim Start zu öffnende URLs" wird ignoriert, sofern die Option "URL-Liste öffnen" unter "Aktion beim Start" nicht ausgewählt ist.</translation>
 <translation id="2327252517317514801">Domains definieren, die auf die G Suite zugreifen dürfen</translation>
 <translation id="237494535617297575">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen das Anzeigen von Benachrichtigungen gestattet ist. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultNotificationsSetting", sofern konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
 <translation id="2386362615870139244">Bildschirm-Wakelocks zulassen</translation>
@@ -927,6 +922,16 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
       Wird diese Einstellung deaktiviert, können Webseiten kein JavaScript verwenden und der Nutzer kann diese Einstellung nicht ändern.
 
       Ist diese Einstellung aktiviert oder nicht definiert, können Webseiten JavaScript verwenden, wobei der Nutzer diese Einstellung jedoch ändern kann.</translation>
+<translation id="2747157663401642394">Konfiguriert Einstellungen zur Erweiterungsverwaltung für <ph name="PRODUCT_NAME" />.
+
+          Mit dieser Richtlinie werden verschiedene Einstellungen gesteuert, darunter Einstellungen, die von bestehenden auf Erweiterungen bezogenen Richtlinien geregelt werden. Durch diese Richtlinie werden ältere Richtlinien überschrieben, wenn beide konfiguriert sind.
+
+          Mit dieser Richtlinie wird eine Erweiterungs-ID oder eine Update-URL ihrer Konfiguration zugeordnet. Bei einer Erweiterungs-ID wird die Konfiguration nur auf die angegebene Erweiterung angewendet. Eine Standardkonfiguration kann für die Spezial-ID "<ph name="DEFAULT_SCOPE" />" festgelegt werden, die auf alle Erweiterungen angewendet wird, für die keine Standardkonfiguration in dieser Richtlinie konfiguriert ist. Bei einer Update-URL wird die Konfiguration auf alle Erweiterungen mit genau der im Manifest dieser Erweiterung angegebenen Update-URL angewendet, wie unter <ph name="LINK_TO_EXTENSION_DOC1" /> erläutert.
+
+          Bei Windows-Instanzen, die nicht Teil einer <ph name="MS_AD_NAME" />-Domain sind, bleibt die erzwungene Installation auf die im Chrome Web Store aufgeführten Apps und Erweiterungen beschränkt.
+
+          Eine vollständige Beschreibung möglicher Einstellungen und des Aufbaus dieser Richtlinie finden Sie unter https://www.chromium.org/administrators/policy-list-3/extension-settings-full
+          </translation>
 <translation id="2753637905605932878">Den von WebRTC verwendeten Bereich lokaler UDP-Ports einschränken</translation>
 <translation id="2755385841634849932">Mit dieser Richtlinie wird festgelegt, ob die Android-Funktion "Sicherung und Wiederherstellung" zur Verfügung steht.
 
@@ -2035,6 +2040,7 @@ Sollte die Richtlinie nicht konfiguriert sein, so wird der Standardsuchanbieter 
       Wenn die Richtlinie konfiguriert ist, wird jedes Element als Regel angesehen, ähnlich wie bei der Richtlinie "<ph name="URL_LIST_POLICY_NAME" />". Die Logik ist jedoch umgedreht: Wenn es eine Übereinstimmung für die Regel gibt, wird kein alternativer Browser geöffnet.
 
       Im Gegensatz zu "<ph name="URL_LIST_POLICY_NAME" />" gelten die Regeln in beide Richtungen. Wenn das Internet Explorer-Add-in also vorhanden und aktiviert ist, wird damit auch gesteuert, ob <ph name="IE_PRODUCT_NAME" /> diese URLs in <ph name="PRODUCT_NAME" /> öffnen soll.</translation>
+<translation id="5124368997194894978">Starten bei anliegender Netzspannung aktivieren</translation>
 <translation id="5130288486815037971">Legt fest, ob RC4-Verschlüsselungssammlungen in TLS aktiviert sind</translation>
 <translation id="5141670636904227950">Standardtyp für die Lupe festlegen, die auf der Anmeldeseite aktiviert ist</translation>
 <translation id="5142301680741828703">Folgende URL-Muster immer in <ph name="PRODUCT_FRAME_NAME" /> darstellen</translation>
@@ -2146,13 +2152,6 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 
       Wenn die Richtlinie nicht konfiguriert ist oder sie auf den leeren String oder einen ungültigen Portbereich eingestellt ist, kann von WebRTC jeder beliebige verfügbare lokale UDP-Port verwendet werden.</translation>
 <translation id="5290940294294002042">Liste von Plug-ins angeben, die der Nutzer aktivieren oder deaktivieren kann</translation>
-<translation id="5304269353650269372">Diese Richtlinie gibt an, nach welcher Inaktivitätsspanne des Nutzers im Akkubetrieb eine Warnmeldung angezeigt wird.
-
-          Wird diese Richtlinie festgelegt, gibt sie an, wie lange der Nutzer inaktiv sein kann, bevor <ph name="PRODUCT_OS_NAME" /> in einer Warnung auf die bevorstehende Maßnahme hinweist.
-
-          Wird diese Richtlinie nicht festgelegt, erscheint keine Warnung.
-
-          Geben Sie den Richtlinienwert in Millisekunden an. Solange die Inaktivitätsspanne kleiner oder gleich diesem festgelegten Wert ist, erscheint keine Warnung.</translation>
 <translation id="5307432759655324440">Inkognitomodus - Verfügbarkeit</translation>
 <translation id="5318185076587284965">Verwendung von Relayservern durch den Host für den Remotezugriff gestatten</translation>
 <translation id="5323128137188992869">Hiermit wird das Streamen von Inhalten an das Gerät über <ph name="PRODUCT_NAME" /> erlaubt.
@@ -2799,6 +2798,17 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
           Wenn diese Richtlinie nicht konfiguriert ist, wird die Einstellung "3" verwendet, die vom Nutzer später geändert werden kann.</translation>
 <translation id="663685822663765995">Farbdruck einschränken</translation>
 <translation id="6641981670621198190">Unterstützung für 3D-Grafik-APIs deaktivieren</translation>
+<translation id="6646056064606561298">Hiermit können Sie die Energieverwaltungsrichtlinie zum Starten bei anliegender Netzspannung aktivieren.
+
+          Diese Energieverwaltungsrichtlinie erlaubt das automatische Starten des Systems aus dem abgeschalteten oder dem Ruhezustand bei Verbindung mit einer Netzspannungsquelle.
+
+          Wenn die Richtlinie auf "true" festgelegt ist, ist das Starten bei anliegender Netzspannung immer aktiviert.
+
+          Ist die Richtlinie auf "false" festgelegt, dann ist das Starten bei anliegender Netzspannung immer deaktiviert.
+
+          Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
+
+          Wird die Richtlinie nicht festgelegt, ist das Starten bei anliegender Netzspannung deaktiviert und kann vom Nutzer nicht aktiviert werden.</translation>
 <translation id="6647965994887675196">Wurde "true" festgelegt, können betreute Nutzer erstellt und verwendet werden.
 
           Wurde "false" oder "not configured" festgelegt, wird die Erstellung und Anmeldung betreuter Nutzer deaktiviert. Alle vorhandenen betreuten Nutzer werden ausgeblendet.
@@ -3100,17 +3110,6 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Bildschirm-Wakelock-Anfrag
           Die automatische Wiedergabe ist nur für Domains erlaubt, die ausdrücklich in der Richtlinie <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> aufgeführt werden. Wenn Sie die automatische Wiedergabe für alle Websites aktivieren möchten, können Sie http://* und https://* dieser Liste hinzufügen.
 
           Wenn diese Richtlinie nicht aktiviert wird, kann der Nutzer diese Einstellung manuell ändern.</translation>
-<translation id="7229876938563670511">Hiermit wird die Standard-URL für die Startseite in <ph name="PRODUCT_NAME" /> konfiguriert und verhindert, dass diese von Nutzern geändert werden kann.
-
-          Die Startseite wird über die Schaltfläche "Startseite" geöffnet. Die Seiten, die beim Hochfahren geöffnet werden, werden über die Richtlinien "RestoreOnStartup" kontrolliert.
-
-          Der Startseitentyp kann entweder auf eine URL, die Sie hier angeben, oder auf die "Neuer Tab"-Seite eingestellt werden. Wenn Sie sich für die "Neuer Tab"-Seite entscheiden, wird diese Richtlinie nicht angewendet.
-
-          Wenn Sie diese Einstellung aktivieren, können Nutzer ihre Startseiten-URL in <ph name="PRODUCT_NAME" /> nicht ändern, jedoch weiterhin ihre Startseite auf die "Neuer Tab"-Seite umstellen.
-
-          Ist diese Richtlinie nicht konfiguriert, können die Nutzer selbst eine Startseite wählen, sofern "HomepageIsNewTabPage" ebenfalls nicht konfiguriert ist.
-
-          Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, bei denen zur Geräteverwaltung eine Anmeldung vorgenommen wurde.</translation>
 <translation id="7229975860249300121">Enthält einen regulären Ausdruck, der festlegt, welche Google-Konten in <ph name="PRODUCT_NAME" /> als primäre Browserkonten eingerichtet werden können, also als das Konto, das bei der Zustimmung zur Synchronisierung ausgewählt wurde.
 
 Wenn ein Nutzer ein primäres Browserkonto mit einem Nutzernamen einrichten will, der diesem Muster nicht entspricht, wird ein entsprechender Fehler ausgegeben.
@@ -4015,30 +4014,6 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 Auf <ph name="PRODUCT_OS_NAME" />-Version 70 und höher unterstützt. Bei älteren Clients bedeutet dieser Wert, dass das Rollback deaktiviert ist.</translation>
 <translation id="9096086085182305205">Weiße Liste für Authentifizierungsserver</translation>
 <translation id="9098553063150791878">Richtlinien für die HTTP-Authentifizierung</translation>
-<translation id="9103061223348895346">Mit dieser Richtlinie können Sie mehrere Einstellungen zur Energieverwaltung bei Inaktivität des Nutzers festlegen.
-
-          Es stehen vier Aktionen zur Verfügung:
-          * Der Bildschirm wird gedimmt, wenn der Nutzer für die unter "|ScreenDim|" angegebene Zeitdauer inaktiv ist.
-          * Der Bildschirm wird ausgeschaltet, wenn der Nutzer für die unter "|ScreenOff|" angegebene Zeitdauer inaktiv ist.
-          * Wenn der Nutzer für die unter "|IdleWarning|" angegebene Zeitdauer inaktiv ist, wird er in einer Warnung darauf hingewiesen, dass als Nächstes die für die Inaktivität festgelegte Aktion ausgeführt wird.
-          * Die unter "|IdleAction|" angegebene Aktion wird ausgeführt, wenn der Nutzer für die unter "|Idle|" angegebene Zeitdauer inaktiv ist.
-
-          Die Verzögerungen müssen in Millisekunden angegeben werden und größer als null sein, um die jeweilige Aktion auszulösen. Falls die Verzögerung auf null gesetzt ist, wird die entsprechende Aktion von <ph name="PRODUCT_OS_NAME" /> nicht ausgeführt.
-
-          Wenn kein Wert für die Verzögerungen angegeben ist, wird ein Standardwert verwendet.
-
-          Hinweis: Der Wert für "|ScreenDim|" muss kleiner oder gleich dem Wert für "|ScreenOff|" sein, während die Werte für "|ScreenOff|" und "|IdleWarning|" nicht größer als der Wert für "|Idle|" sein dürfen.
-
-          Für "|IdleAction|" sind die folgenden vier Aktionen möglich:
-          * |Suspend|
-          * |Logout|
-          * |Shutdown|
-          * |DoNothing|
-
-          Wenn "|IdleAction|" nicht konfiguriert ist, wird die Standardaktion "|Suspend|" ausgeführt.
-
-          Es können außerdem spezifische Einstellungen für den Netz- und Akkubetrieb vorgenommen werden.
-          </translation>
 <translation id="9105265795073104888">Android-Apps wird nur ein Teil der Proxykonfigurationsoptionen zur Verfügung gestellt. Der Proxy kann in Android-Apps auf freiwilliger Basis verwendet werden. Es ist nicht möglich, die Verwendung eines Proxys zu erzwingen.</translation>
 <translation id="9106865192244721694">WebUSB auf diesen Websites zulassen</translation>
 <translation id="9112727953998243860">Unternehmensdrucker-Konfigurationsdatei</translation>
@@ -4091,13 +4066,6 @@ Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer entscheiden, ob die 
 Wenn die Richtlinie auf "false" gesetzt ist, ist "Kopf- und Fußzeilen" im Dialogfeld "Druckvorschau" nicht ausgewählt und der Nutzer kann dies nicht ändern.
 
 Wenn die Richtlinie auf "true" gesetzt ist, ist "Kopf- und Fußzeilen" im Dialogfeld "Druckvorschau" ausgewählt und der Nutzer kann dies nicht ändern.</translation>
-<translation id="9210953373038593554">Hiermit wird der Typ der Authentifizierung für SAML-Anmeldungen konfiguriert.
-
-      Wenn diese Richtlinie nicht konfiguriert oder auf dem Standardwert (Wert 0) belassen wird, wird das Verhalten bei SAML-Anmeldungen abhängig von anderen Faktoren vom Browser festgelegt. Im einfachsten Fall basieren die Nutzerauthentifizierung und der Schutz der im Cache gespeicherten Nutzerdaten auf Passwörtern, die von den Nutzern manuell eingegeben werden.
-
-      Wenn diese Richtlinie auf "ClientCertificate" (Wert 1) festgelegt ist, kommt für neu hinzugefügte Nutzer, die sich über SAML anmelden, die Authentifizierung mit Clientzertifikat zum Einsatz. Für solche Nutzer werden keine Passwörter verwendet und ihre im Cache gespeicherten lokalen Daten werden durch entsprechende kryptografische Schlüssel geschützt. Diese Einstellung ermöglicht z. B. die Konfiguration einer Nutzerauthentifizierung auf Grundlage von Smartcards. Hinweis: In diesem Fall ist die Installation von Smartcard-Middleware-Apps über die Richtlinie "DeviceLoginScreenAppInstallList" erforderlich.
-
-      Diese Richtlinie wirkt sich nur auf Nutzer aus, die sich über SAML authentifizieren.</translation>
 <translation id="9213347477683611358">Hiermit kann das Hintergrundbild auf Geräteebene konfiguriert werden, das auf dem Anmeldebildschirm angezeigt wird, wenn sich noch kein Nutzer auf dem Gerät angemeldet hat. Die Richtlinie wird konfiguriert, indem die URL, über die das Chrome OS-Gerät das Hintergrundbild herunterladen kann, und ein kryptografischer Hash, mit dem die Integrität des Downloads überprüft wird, festgelegt werden. Das Bild muss das JPEG-Format aufweisen und darf eine Dateigröße von 16 MB nicht überschreiten. Die URL muss ohne Authentifizierung zugänglich sein. Das Hintergrundbild wird heruntergeladen und im Cache gespeichert. Es wird jedes Mal neu heruntergeladen, wenn sich die URL oder der Hash ändert.
 
       Die Richtlinie sollte als String angegeben werden, der die URL und den Hash im JSON-Format ausgibt, z. B.:

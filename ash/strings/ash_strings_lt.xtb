@@ -199,6 +199,7 @@
 <translation id="397105322502079400">Skaičiuojama...</translation>
 <translation id="3995138139523574647">USB-C įrenginys (prievadas dešinėje, užpakalinėje dalyje)</translation>
 <translation id="4017989525502048489">Lazerinis žymeklis</translation>
+<translation id="4042660782729322247">Bendrinate ekraną</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Programos pranešimai išjungti}one{# programos pranešimai išjungti}few{# programų pranešimai išjungti}many{# programos pranešimai išjungti}other{# programų pranešimai išjungti}}</translation>
 <translation id="4072264167173457037">Vidutinio stiprumo signalas</translation>
 <translation id="4129129681837227511">Jei norite matyti pranešimus užrakinimo ekrane, atrakinkite ir pakeiskite nustatymą</translation>
@@ -376,6 +377,7 @@
 <translation id="7067196344162293536">Automatinis kaitaliojimas</translation>
 <translation id="7068360136237591149">„Open files“ (Atidaryk failus)</translation>
 <translation id="7076293881109082629">Prisijungimas</translation>
+<translation id="7088960765736518739">Prieiga jungikliu</translation>
 <translation id="7092922358121866860">Rodyti „Nakties šviesos“ nustatymus</translation>
 <translation id="7098389117866926363">USB-C įrenginys (prievadas kairėje, užpakalinėje dalyje)</translation>
 <translation id="7131634465328662194">Būsite automatiškai atjungti.</translation>
@@ -502,6 +504,7 @@
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">„Wi-Fi“: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofonas naudojamas.</translation>
+<translation id="9084606467167974638">Perjunkite meniu padėtį</translation>
 <translation id="9089416786594320554">Įvesties metodai</translation>
 <translation id="9091626656156419976">Pašalintas vaizdas „<ph name="DISPLAY_NAME" />“</translation>
 <translation id="9151726767154816831">Kad atnaujintumėte, paleiskite iš naujo ir naudokite „Powerwash“</translation>

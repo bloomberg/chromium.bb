@@ -262,6 +262,7 @@
 <translation id="290376772003165898">Är sidan inte på <ph name="LANGUAGE" />?</translation>
 <translation id="2910701580606108292">Fråga innan webbplatser tillåts att spela upp skyddat innehåll</translation>
 <translation id="2913331724188855103">Tillåt att webbplatser sparar och läser cookiedata (rekommenderas)</translation>
+<translation id="2923908459366352541">Namnet är ogiltigt</translation>
 <translation id="2932150158123903946">Lagring för Google <ph name="APP_NAME" /></translation>
 <translation id="2956410042958133412">Det här kontot hanteras av <ph name="PARENT_NAME_1" /> och <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Upphovsrätt <ph name="YEAR" /> Google Inc. Med ensamrätt.</translation>
@@ -363,6 +364,7 @@
 <translation id="3745176700485982507">På den här sidan finns länkar till dina favoritwebbplatser</translation>
 <translation id="3771001275138982843">Det gick inte att ladda ned uppdateringen</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Aktivera Bluetooth<ph name="END_LINK" /> om du vill tillåta koppling</translation>
+<translation id="3775705724665058594">Skicka till dina enheter</translation>
 <translation id="3778956594442850293">Tillagd på startskärmen</translation>
 <translation id="3781011235031427080">Fler liknande har öppnats och tar upp halva skärmen</translation>
 <translation id="3789841737615482174">Installera</translation>
@@ -528,6 +530,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> delar skärmen</translation>
 <translation id="4961107849584082341">Översätt den här sidan till vilket språk som helst</translation>
 <translation id="4961700429721424617">Du håller på att logga ut från ett konto som hanteras av <ph name="MANAGED_DOMAIN" />. Åtgärden raderar din data i Chrome från den här enheten, men den finns kvar i Google-kontot.</translation>
+<translation id="4970824347203572753">Inte tillgängligt i ditt land</translation>
 <translation id="497421865427891073">Fortsätt</translation>
 <translation id="4988210275050210843">En fil laddas ned (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Sidor</translation>
@@ -597,6 +600,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5487521232677179737">Rensa data</translation>
 <translation id="5494752089476963479">Blockera annonser på webbplatser där påträngande eller vilseledande annonser visas</translation>
 <translation id="5497272504048921382">Öppnade flikar</translation>
+<translation id="5500777121964041360">Kanske inte tillgängligt i ditt land</translation>
 <translation id="550684401320795253">Chrome uppdateras …</translation>
 <translation id="5512137114520586844">Det här kontot hanteras av <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Har inaktiverats av enhetens administratör</translation>
@@ -848,6 +852,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> har valts</translation>
 <translation id="7253272406652746122">Lägg till ett Google-konto från kontosidan i appen Inställningar på enheten.</translation>
 <translation id="7274013316676448362">Blockerad webbplats</translation>
+<translation id="7290209999329137901">Det går inte att byta namn</translation>
 <translation id="7291387454912369099">Betalning med assistenten</translation>
 <translation id="729975465115245577">Det finns ingen app som kan spara lösenordsfilen på enheten.</translation>
 <translation id="7302081693174882195">Mer information: Sorterad efter databesparing</translation>
@@ -981,6 +986,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8200772114523450471">Återuppta</translation>
 <translation id="8209050860603202033">Öppna bild</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB används av nedladdningar</translation>
+<translation id="8224471946457685718">Ladda ned artiklar för dig via Wi-Fi</translation>
 <translation id="8232956427053453090">Behåll data</translation>
 <translation id="8249310407154411074">Flytta högst upp</translation>
 <translation id="8250920743982581267">Dokument</translation>

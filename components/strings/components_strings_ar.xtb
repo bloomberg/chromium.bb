@@ -8,6 +8,7 @@
 <translation id="1032854598605920125">تدوير في اتجاه عقارب الساعة</translation>
 <translation id="1035334672863811645">‏تسجيل الدخول إلى Chrome</translation>
 <translation id="1038842779957582377">اسم غير معروف</translation>
+<translation id="1039626062703039346">‏يمكن أن يساعدك Chrome على حماية حسابك على Google وتغيير كلمة المرور. سيؤدي هذا إلى إشعار Google بموقع الويب هذا.</translation>
 <translation id="1050038467049342496">إغلاق التطبيقات الأخرى</translation>
 <translation id="1055184225775184556">تراجع عن الإ&amp;ضافة</translation>
 <translation id="1056898198331236512">تحذير</translation>
@@ -296,13 +297,16 @@
 <translation id="2495083838625180221">‏محلل JSON اللغوي</translation>
 <translation id="2495093607237746763">‏عند وضع علامة على هذا الخيار، سيخزّن Chromium نسخة من بطاقتك على هذا الجهاز لتعبئة النماذج بشكل أسرع.</translation>
 <translation id="2498091847651709837">فحص بطاقة جديدة</translation>
+<translation id="249825481377667906">‏يمكن أن يساعدك Chromium على حماية حسابك على Google وتغيير كلمة المرور. سيؤدي هذا إلى إشعار Google بموقع الويب هذا.</translation>
 <translation id="2501278716633472235">الرجوع</translation>
 <translation id="2503184589641749290">بطاقات السحب الآلي وبطاقات الدفع المسبق المقبولة</translation>
+<translation id="2505268675989099013">حماية الحساب</translation>
 <translation id="2515629240566999685">التحقّق من اتصال الإنترنت في منطقتك</translation>
 <translation id="2523886232349826891">سيتم حفظ البطاقة على هذا الجهاز فقط</translation>
 <translation id="2524461107774643265">إضافة مزيد من المعلومات</translation>
 <translation id="2536110899380797252">إضافة عنوان</translation>
 <translation id="2539524384386349900">اكتشاف</translation>
+<translation id="254947805923345898">قيمة السياسة غير صحيحة.</translation>
 <translation id="255002559098805027">أرسل <ph name="HOST_NAME" /> استجابة غير صالحة.</translation>
 <translation id="2556876185419854533">تراجع عن ا&amp;لتحرير</translation>
 <translation id="2586657967955657006">الحافظة</translation>
@@ -435,6 +439,7 @@
           <ph name="LIST_ITEM" />ملفات تعريف الارتباط وبيانات الموقع
           <ph name="LIST_ITEM" />المعلومات التي تم إدخالها في النماذج
         <ph name="END_LIST" /></translation>
+<translation id="3362968246557010467">تم نسخ هذه السياسة تلقائيًا من السياسة المتوقفة <ph name="OLD_POLICY" />. يمكنك استخدام هذه السياسة بدلاً من ذلك.</translation>
 <translation id="3366477098757335611">عرض البطاقات</translation>
 <translation id="3369192424181595722">خطأ في الساعة</translation>
 <translation id="337363190475750230">تم إلغاء التوفير</translation>
@@ -558,6 +563,7 @@
 <translation id="4072486802667267160">حدث خطأ أثناء معالجة طلبك. يُرجى إعادة المحاولة.</translation>
 <translation id="4075732493274867456">لا يدعم كل من العميل والخادم مجموعة تشفير أو إصدار بروتوكول طبقة المقابس الآمنة الشائع.</translation>
 <translation id="4079302484614802869">‏تم تعيين تهيئة الخادم الوكيل لاستخدام عنوان URL نص برمجي ‎.pac وليس الخوادم الوكيلة الثابتة.</translation>
+<translation id="4092411512356034591">هل ترغب في المتابعة إلى النطاق <ph name="DOMAIN" />؟</translation>
 <translation id="4098354747657067197">موقع مخادع في انتظارك</translation>
 <translation id="4103249731201008433">الرقم التسلسلي للجهاز غير صالح</translation>
 <translation id="410351446219883937">التشغيل التلقائي</translation>
@@ -829,6 +835,7 @@
 <translation id="5556459405103347317">إعادة التحميل</translation>
 <translation id="5560088892362098740">تاريخ انتهاء الصلاحية</translation>
 <translation id="5565735124758917034">نشط</translation>
+<translation id="5570825185877910964">حماية الحساب</translation>
 <translation id="5571083550517324815">لا يمكن الاستلام من هذا العنوان. حدِّد عنوانًا آخر.</translation>
 <translation id="5571347317547569613">({NUM_COOKIES,plural, =1{1 قيد الاستخدام}zero{# قيد الاستخدام}two{# قيد الاستخدام}few{# قيد الاستخدام}many{# قيد الاستخدام}other{# قيد الاستخدام}})</translation>
 <translation id="5572851009514199876">‏يُرجى البدء وتسجيل الدخول إلى Chrome لكي يتأكد Chrome مما إذا كان مسموحًا لك الوصول إلى موقع الويب هذا أم لا.</translation>
@@ -965,10 +972,12 @@
 <translation id="6386120369904791316">{COUNT,plural, =1{اقتراح واحد آخر}zero{# اقتراح آخر}two{اقتراحان آخران (#)}few{# اقتراحات أخرى}many{# اقتراحًا آخر}other{# اقتراح آخر}}</translation>
 <translation id="6387754724289022810">‏للدفع بشكلٍ أسرع في المرة القادمة، يجب حفظ تفاصيل البطاقة المصرفية وعنوان إرسال الفواتير في حسابك على Google وعلى هذا الجهاز.</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
+<translation id="6401136357288658127">تم إيقاف هذه السياسة. يمكنك استخدام السياسة <ph name="NEW_POLICY" /> بدلاً من ذلك.</translation>
 <translation id="6404511346730675251">تعديل الإشارة المرجعية</translation>
 <translation id="6406765186087300643">‏C0 (مغلف)</translation>
 <translation id="6410264514553301377">‏أدخِل تاريخ انتهاء الصلاحية ورمز التحقق من البطاقة (CVC) لـ <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">لقد سألت والديك ما إذا كانت زيارة هذا الموقع مناسبةً لك</translation>
+<translation id="6415778972515849510">‏يمكن أن يساعدك Chromium على حماية حسابك على Google وتغيير كلمة المرور.</translation>
 <translation id="6417515091412812850">تعذر التحقق مما إذا كانت الشهادة قد تم إبطالها.</translation>
 <translation id="6433490469411711332">تعديل معلومات الاتصال</translation>
 <translation id="6433595998831338502">رفض <ph name="HOST_NAME" /> الاتصال.</translation>
@@ -1034,6 +1043,7 @@
 <translation id="6868206169573555318">إعادة التشغيل للتحديث</translation>
 <translation id="6874604403660855544">إعا&amp;دة الإضافة</translation>
 <translation id="6884662655240309489">الحجم 1</translation>
+<translation id="6884796835813057577">‏هل ترغب في المتابعة إلى النطاق &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;؟</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">مستوى السياسة غير مدعوم.</translation>
 <translation id="6895330447102777224">تم التأكد من بطاقتك</translation>
@@ -1085,7 +1095,6 @@
 <translation id="7152423860607593928">‏Number-14 (مغلف)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> وطريقة دفع <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> أخرى}two{<ph name="PAYMENT_METHOD_PREVIEW" /> وطريقتا دفع <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> أخريان}few{<ph name="PAYMENT_METHOD_PREVIEW" /> و<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> طرق دفع أخرى}many{<ph name="PAYMENT_METHOD_PREVIEW" /> و<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> طريقة دفع أخرى}other{<ph name="PAYMENT_METHOD_PREVIEW" /> و<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> طريقة دفع أخرى}}</translation>
 <translation id="7153618581592392745">بنفسجي فاتح</translation>
-<translation id="7158980942472052083">‏عنوان URL غير صالح. يجب أن يكون عنوان URL يحتوي على نظام قياسي.</translation>
 <translation id="717330890047184534">‏معرّف GAIA:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> وخيار <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> آخر}two{<ph name="SHIPPING_OPTION_PREVIEW" /> وخياران (<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />) آخران}few{<ph name="SHIPPING_OPTION_PREVIEW" /> و<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> خيارات أخرى}many{<ph name="SHIPPING_OPTION_PREVIEW" /> و<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> خيارًا آخر}other{<ph name="SHIPPING_OPTION_PREVIEW" /> و<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> خيار آخر}}</translation>
 <translation id="7177397715882417099">لقد طلب الخادم الذي تنتقل إليه، <ph name="ORIGIN" />، أن
@@ -1353,6 +1362,7 @@
 <translation id="8503559462189395349">‏كلمات المرور في Chrome</translation>
 <translation id="8503813439785031346">اسم المستخدم</translation>
 <translation id="8508648098325802031">رمز البحث</translation>
+<translation id="8522552481199248698">‏يمكن أن يساعدك Chrome على حماية حسابك على Google وتغيير كلمة المرور.</translation>
 <translation id="8543181531796978784">يمكنك <ph name="BEGIN_ERROR_LINK" />الإبلاغ عن اكتشاف مشكلة<ph name="END_ERROR_LINK" /> أو، إذا كنت تدرك المخاطر المتعلقة بالأمان، يمكنك <ph name="BEGIN_LINK" />زيارة هذا الموقع غير الآمن<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">هل هناك أي أسئلة؟ اتصل بالشخص الذي يشرف على ملفك الشخصي.</translation>
 <translation id="8553075262323480129">تعذّرت الترجمة لتعذر تحديد لغة الصفحة.</translation>
@@ -1440,6 +1450,7 @@
 <translation id="9076630408993835509">‏لا تتم إدارة هذا المتصفِّح من خلال شركة أو مؤسسة أخرى. قد تتم إدارة النشاط على هذا الجهاز خارج Chrome. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">مطلوب مزيد من المعلومات</translation>
 <translation id="9080712759204168376">ملخص الطلبات</translation>
+<translation id="9095388113577226029">مزيد من اللغات...</translation>
 <translation id="9103872766612412690">‏يستخدم <ph name="SITE" /> التشفير عادة لحماية معلوماتك. عندما حاول Chromium الاتصال بموقع <ph name="SITE" /> هذه المرة، أرجَع موقع الويب بيانات اعتماد غير عادية وغير صحيحة. وقد يحدث هذا عندما يحاول أحد المهاجمين التظاهر بأنه موقع <ph name="SITE" />، أو إذا قاطعت شاشة تسجيل دخول Wi-Fi الاتصال. ولكن لا تزال معلوماتك آمنة نظرًا لأن Chromium أوقَفَ الاتصال قبل تبادل أي بيانات.</translation>
 <translation id="9106062320799175032">إضافة عنوان إرسال الفواتير</translation>
 <translation id="9114524666733003316">جارٍ التحقق من البطاقة...</translation>

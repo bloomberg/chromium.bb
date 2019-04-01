@@ -199,6 +199,7 @@
 <translation id="397105322502079400">Изчислява се...</translation>
 <translation id="3995138139523574647">устройство с USB-C (задният десен порт)</translation>
 <translation id="4017989525502048489">Лазерна показалка</translation>
+<translation id="4042660782729322247">Споделяте екрана си</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Изключено за едно приложение}other{Изключено за # приложения}}</translation>
 <translation id="4072264167173457037">умерен сигнал</translation>
 <translation id="4129129681837227511">За да виждате известия на заключения екран, отключете устройството и променете настройката</translation>
@@ -375,6 +376,7 @@
 <translation id="7067196344162293536">Автоматично завъртане</translation>
 <translation id="7068360136237591149">„Open files“ („Отвори файлове“)</translation>
 <translation id="7076293881109082629">Влизате</translation>
+<translation id="7088960765736518739">Достъп с превключване</translation>
 <translation id="7092922358121866860">Показване на настройките за Нощно осветление</translation>
 <translation id="7098389117866926363">Устройство с USB-C (левият порт на гърба)</translation>
 <translation id="7131634465328662194">Ще излезете автоматично.</translation>
@@ -501,6 +503,7 @@
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Микрофонът се използва.</translation>
+<translation id="9084606467167974638">Промяна на позицията на менюто</translation>
 <translation id="9089416786594320554">Методи за въвеждане</translation>
 <translation id="9091626656156419976">Екранът „<ph name="DISPLAY_NAME" />“ бе премахнат</translation>
 <translation id="9151726767154816831">Рестартирайте и извършете Powerwash, за да актуализирате</translation>

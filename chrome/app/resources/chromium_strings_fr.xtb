@@ -210,6 +210,7 @@ Pour empêcher <ph name="NEW_PROFILE_NAME" /> d'accéder à votre compte, assure
 <ph name="BEGIN_LINK_2" />En savoir plus<ph name="END_LINK_2" />
 
 Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie (<ph name="ACCOUNT_EMAIL" />).</translation>
+<translation id="7349591376906416160">Votre administrateur système a configuré Chromium de sorte que <ph name="ALTERNATIVE_BROWSER_NAME" /> s'ouvre pour accéder à <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7448255348454382571">Redémarrer Chromium OS</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – Chromium pour les développeurs</translation>
 <translation id="7451052299415159299">Chromium a besoin de votre autorisation pour accéder à votre appareil photo pour ce site</translation>

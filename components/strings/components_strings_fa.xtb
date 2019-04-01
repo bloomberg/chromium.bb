@@ -8,6 +8,7 @@
 <translation id="1032854598605920125">چرخش در جهت عقربه‌های ساعت</translation>
 <translation id="1035334672863811645">‏ورود به سیستم Chrome</translation>
 <translation id="1038842779957582377">نام ناشناس</translation>
+<translation id="1039626062703039346">‏Chrome می‌تواند کمک کند از حساب Google خود محافظت کنید و گذرواژه‌تان را تغییر دهید. Google برای این سایت در این خصوص مطلع می‌شود.</translation>
 <translation id="1050038467049342496">برنامه‌های دیگر را ببندید</translation>
 <translation id="1055184225775184556">&amp;واگرد افزودن</translation>
 <translation id="1056898198331236512">اخطار</translation>
@@ -296,13 +297,16 @@
 <translation id="2495083838625180221">‏تجزیه‌کننده JSON</translation>
 <translation id="2495093607237746763">‏اگر علامت زده شود، Chromium برای پر کردن سریع‌تر فرم، یک کپی از کارت شما در این دستگاه ذخیره می‌کند.</translation>
 <translation id="2498091847651709837">اسکن کارت جدید</translation>
+<translation id="249825481377667906">‏Chromium می‌تواند کمک کند از حساب Google خود محافظت کنید و گذرواژه‌تان را تغییر دهید. Google برای این سایت در این خصوص مطلع می‌شود.</translation>
 <translation id="2501278716633472235">بازگشت</translation>
 <translation id="2503184589641749290">کارت‌های نقدی و پیش‌پرداخت قابل‌قبول</translation>
+<translation id="2505268675989099013">محافظت از حساب</translation>
 <translation id="2515629240566999685">بررسی سیگنال در منطقه‌تان</translation>
 <translation id="2523886232349826891">فقط در این دستگاه ذخیره شد</translation>
 <translation id="2524461107774643265">افزودن اطلاعات بیشتر</translation>
 <translation id="2536110899380797252">افزودن نشانی</translation>
 <translation id="2539524384386349900">تشخیص</translation>
+<translation id="254947805923345898">مقدار خط‌مشی معتبر نیست.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> پاسخی نامعتبر ارسال کرد.</translation>
 <translation id="2556876185419854533">&amp;واگرد ویرایش</translation>
 <translation id="2586657967955657006">بریده‌دان</translation>
@@ -435,6 +439,7 @@
           <ph name="LIST_ITEM" />کوکی‌ها و داده‌های سایت
           <ph name="LIST_ITEM" />اطلاعات واردشده در فرم‌ها
         <ph name="END_LIST" /></translation>
+<translation id="3362968246557010467">این خط‌مشی به‌طور خودکار از خط‌مشی منسوخ‌شده <ph name="OLD_POLICY" /> کپی شد. درعوض، باید از این خط‌مشی استفاده کنید.</translation>
 <translation id="3366477098757335611">مشاهده کارت‌ها</translation>
 <translation id="3369192424181595722">خطای ساعت</translation>
 <translation id="337363190475750230">لغو مجوز شد</translation>
@@ -558,6 +563,7 @@
 <translation id="4072486802667267160">هنگام پردازش سفارش شما خطایی روی داد. لطفاً دوباره امتحان کنید.</translation>
 <translation id="4075732493274867456">‏کلاینت و سرور از مجموعه رمزگذاری یا نسخه پروتکل SSL مشترکی استفاده نمی‌کنند.</translation>
 <translation id="4079302484614802869">‏تنظیمات پروکسی، برای استفاده از آدرس اسکریپت pac. تنظیم شده است و از سرورهای ثابت نمی‌تواند استفاده کند.</translation>
+<translation id="4092411512356034591">به <ph name="DOMAIN" /> می‌روید؟</translation>
 <translation id="4098354747657067197">احتیاط، سایت گول‌زننده</translation>
 <translation id="4103249731201008433">شماره سریال دستگاه نامعتبر است</translation>
 <translation id="410351446219883937">پخش خودکار</translation>
@@ -829,6 +835,7 @@
 <translation id="5556459405103347317">تازه‌سازی</translation>
 <translation id="5560088892362098740">تاریخ انقضا</translation>
 <translation id="5565735124758917034">فعال</translation>
+<translation id="5570825185877910964">محافظت از حساب</translation>
 <translation id="5571083550517324815">تحویل گرفتن از این نشانی ممکن نیست. نشانی دیگری را انتخاب کنید.</translation>
 <translation id="5571347317547569613">({NUM_COOKIES,plural, =1{۱ کوکی درحال استفاده}one{# کوکی درحال استفاده}other{# کوکی درحال استفاده}})</translation>
 <translation id="5572851009514199876">‏لطفاً Chrome را باز کنید و به سیستم آن وارد شوید تا Chrome بتواند بررسی کند آیا مجاز به دسترسی به این سایت هستید یا خیر.</translation>
@@ -965,10 +972,12 @@
 <translation id="6386120369904791316">{COUNT,plural, =1{۱ پیشنهاد دیگر}one{# پیشنهاد دیگر}other{# پیشنهاد دیگر}}</translation>
 <translation id="6387754724289022810">‏برای اینکه دفعات بعد پرداخت سریع‌تری داشته باشید، اطلاعات کارت و نشانی صورت‌حسابتان را در حساب Google خود و این دستگاه ذخیره کنید.</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
+<translation id="6401136357288658127">این خط‌مشی منسوخ شده است. درعوض، باید از خط‌مشی <ph name="NEW_POLICY" /> استفاده کنید.</translation>
 <translation id="6404511346730675251">ویرایش نشانک</translation>
 <translation id="6406765186087300643">C0 (Envelope)</translation>
 <translation id="6410264514553301377">‏CVC‏ و تاریخ انقضای <ph name="CREDIT_CARD" /> را وارد کنید</translation>
 <translation id="6414888972213066896">از والدینتان پرسیدید آیا اجازه بازدید از این سایت را دارید</translation>
+<translation id="6415778972515849510">‏Chromium می‌تواند کمک کند از حساب Google خود محافظت کنید و گذرواژه‌تان را تغییر دهید.</translation>
 <translation id="6417515091412812850">امکان بررسی اینکه آیا مجوز باطل شده است یا نه وجود ندارد.</translation>
 <translation id="6433490469411711332">ویرایش اطلاعات تماس</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> از اتصال خودداری کرد.</translation>
@@ -1034,6 +1043,7 @@
 <translation id="6868206169573555318">برای به‌روزرسانی، دوباره راه‌اندازی کنید</translation>
 <translation id="6874604403660855544">&amp;انجام مجدد افزودن</translation>
 <translation id="6884662655240309489">اندازه ۱</translation>
+<translation id="6884796835813057577">‏به &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt; می‌روید؟</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">سطح خط‌مشی پشتیبانی نمی‌شود.</translation>
 <translation id="6895330447102777224">کارتتان تأیید شد</translation>
@@ -1085,7 +1095,6 @@
 <translation id="7152423860607593928">Number-14 (Envelope)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش دیگر}one{<ph name="PAYMENT_METHOD_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش دیگر}other{<ph name="PAYMENT_METHOD_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش دیگر}}</translation>
 <translation id="7153618581592392745">نیلی کم‌رنگ</translation>
-<translation id="7158980942472052083">نشانی وب نامعتبر است. باید یک نشانی وب با طرح استاندارد باشد.</translation>
 <translation id="717330890047184534">‏شناسه Gaia:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> گزینه دیگر}one{<ph name="SHIPPING_OPTION_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> گزینه دیگر}other{<ph name="SHIPPING_OPTION_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> گزینه دیگر}}</translation>
 <translation id="7177397715882417099">سروری که به آن می‌روید، <ph name="ORIGIN" />، درخواست کرده است
@@ -1353,6 +1362,7 @@
 <translation id="8503559462189395349">‏گذرواژه‌های Chrome</translation>
 <translation id="8503813439785031346">نام کاربری</translation>
 <translation id="8508648098325802031">نماد جستجو</translation>
+<translation id="8522552481199248698">‏Chrome می‌تواند کمک کند از حساب Google خود محافظت کنید و گذرواژه‌تان را تغییر دهید.</translation>
 <translation id="8543181531796978784">می‌توانید <ph name="BEGIN_ERROR_LINK" />یک مشکل شناسایی‌شده را گزارش کنید<ph name="END_ERROR_LINK" /> یا اگر از خطراتی که امنیت شما را تهدید می‌کنند مطلع شدید، <ph name="BEGIN_LINK" />از این سایت ناامن دیدن کنید<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">سؤال دارید؟ با فردی که بر نمایه‌تان نظارت دارد تماس بگیرید.</translation>
 <translation id="8553075262323480129">ترجمه انجام نشد زیرا زبان صفحه تعیین نشد.</translation>
@@ -1439,6 +1449,7 @@
 <translation id="9076630408993835509">‏این مرورگر توسط شرکت یا سازمان دیگری مدیریت نمی‌شود. فعالیت در این دستگاه ممکن است خارج از Chrome مدیریت شود. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">اطلاعات بیشتری نیاز است</translation>
 <translation id="9080712759204168376">خلاصه سفارش</translation>
+<translation id="9095388113577226029">زبان‌های بیشتر...</translation>
 <translation id="9103872766612412690">‏<ph name="SITE" /> معمولاً برای محافظت از اطلاعات شما از رمزگذاری استفاده می‌کند. اما این بار که Chromium تلاش کرد به <ph name="SITE" /> متصل شود، وب‌سایت اعتبارنامه‌ای نامعمول و نادرست را برگرداند. ممکن است مهاجمی در تلاش باشد خود را به‌جای <ph name="SITE" /> معرفی کند یا یک صفحه ورود به سیستم Wi-Fi در ارتباط اختلال ایجاد کرده باشد. اطلاعات شما همچنان ایمن است، زیرا Chromium قبل از هرگونه تبادل داده، اتصال را متوقف کرد.</translation>
 <translation id="9106062320799175032">افزودن نشانی صورت‌حساب</translation>
 <translation id="9114524666733003316">درحال تأیید کردن کارت…</translation>

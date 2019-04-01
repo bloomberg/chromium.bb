@@ -203,6 +203,7 @@
 <ph name="BEGIN_LINK_2" />Научете повече<ph name="END_LINK_2" />
 
 За допълнителни инструкции, моля, проверете електронната си поща на адрес <ph name="ACCOUNT_EMAIL" />.</translation>
+<translation id="7349591376906416160">Системният ви администратор е конфигурирал Chromium да отваря <ph name="ALTERNATIVE_BROWSER_NAME" /> за достъп до <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7448255348454382571">Рестартиране на Chromium OS</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – Chromium Dev</translation>
 <translation id="7451052299415159299">Chromium се нуждае от разрешение за достъп до камерата ви за този сайт</translation>

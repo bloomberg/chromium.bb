@@ -200,6 +200,7 @@
 <translation id="397105322502079400">Calcolo in corso...</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (porta posteriore destra)</translation>
 <translation id="4017989525502048489">Puntatore laser</translation>
+<translation id="4042660782729322247">Stai condividendo lo schermo</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Disattivata per un'app}other{Disattivate per # app}}</translation>
 <translation id="4072264167173457037">Segnale medio</translation>
 <translation id="4129129681837227511">Se vuoi vedere le notifiche nella schermata di blocco, sblocca il dispositivo per cambiare l'impostazione</translation>
@@ -376,6 +377,7 @@
 <translation id="7067196344162293536">Ruota in modo automatico</translation>
 <translation id="7068360136237591149">Apri file</translation>
 <translation id="7076293881109082629">Accesso</translation>
+<translation id="7088960765736518739">Switch Access</translation>
 <translation id="7092922358121866860">Mostra le impostazioni Luminosità notturna</translation>
 <translation id="7098389117866926363">Dispositivo USB-C (porta posteriore sinistra)</translation>
 <translation id="7131634465328662194">Verrai disconnesso automaticamente.</translation>
@@ -502,6 +504,7 @@
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Il microfono è in uso.</translation>
+<translation id="9084606467167974638">Attiva/disattiva posizione menu</translation>
 <translation id="9089416786594320554">Metodi di immissione</translation>
 <translation id="9091626656156419976">Schermo <ph name="DISPLAY_NAME" /> rimosso</translation>
 <translation id="9151726767154816831">Riavvia ed esegui Powerwash per aggiornare</translation>

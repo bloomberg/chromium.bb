@@ -8,6 +8,7 @@
 <translation id="1032854598605920125">Faire pivoter vers la droite</translation>
 <translation id="1035334672863811645">connectez-vous à Chrome</translation>
 <translation id="1038842779957582377">Nom inconnu</translation>
+<translation id="1039626062703039346">Chrome peut vous aider à protéger votre compte Google et à modifier votre mot de passe. Cette opération signalera ce site à Google.</translation>
 <translation id="1050038467049342496">Fermez les autres applications</translation>
 <translation id="1055184225775184556">&amp;Annuler l'ajout</translation>
 <translation id="1056898198331236512">Avertissement</translation>
@@ -288,13 +289,16 @@
 <translation id="2495083838625180221">Analyse de fichiers JSON</translation>
 <translation id="2495093607237746763">Si cette case est cochée, Chromium enregistre une copie de votre carte sur cet appareil pour vous permettre de remplir plus rapidement les formulaires.</translation>
 <translation id="2498091847651709837">Lire une nouvelle carte</translation>
+<translation id="249825481377667906">Chromium peut vous aider à protéger votre compte Google et à modifier votre mot de passe. Cette opération signalera ce site à Google.</translation>
 <translation id="2501278716633472235">Retour</translation>
 <translation id="2503184589641749290">Cartes de débit et cartes prépayées acceptées</translation>
+<translation id="2505268675989099013">Protéger le compte</translation>
 <translation id="2515629240566999685">Vérifier le signal dans votre zone</translation>
 <translation id="2523886232349826891">Enregistrée sur cet appareil uniquement</translation>
 <translation id="2524461107774643265">Ajouter des informations</translation>
 <translation id="2536110899380797252">Ajouter une adresse</translation>
 <translation id="2539524384386349900">Détecter</translation>
+<translation id="254947805923345898">La valeur de la règle n'est pas valide.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> a envoyé une réponse incorrecte.</translation>
 <translation id="2556876185419854533">&amp;Annuler la modification</translation>
 <translation id="2586657967955657006">Presse-papiers</translation>
@@ -427,6 +431,7 @@
           <ph name="LIST_ITEM" />Les cookies et les données de sites
           <ph name="LIST_ITEM" />Les informations saisies dans les formulaires
         <ph name="END_LIST" /></translation>
+<translation id="3362968246557010467">Cette règle a été copiée automatiquement depuis la règle obsolète "<ph name="OLD_POLICY" />". Vous devez utiliser cette nouvelle règle à la place.</translation>
 <translation id="3366477098757335611">Afficher les cartes</translation>
 <translation id="3369192424181595722">Erreur de l'horloge</translation>
 <translation id="337363190475750230">Révoqué</translation>
@@ -550,6 +555,7 @@
 <translation id="4072486802667267160">Une erreur s'est produite lors du traitement de votre commande. Veuillez réessayer.</translation>
 <translation id="4075732493274867456">Le client et le serveur ne sont pas compatibles avec une version de protocole ou une méthode de chiffrement SSL commune.</translation>
 <translation id="4079302484614802869">La configuration du proxy est définie pour utiliser une URL de script .pac, et non pas des serveurs proxy déterminés.</translation>
+<translation id="4092411512356034591">Accéder à <ph name="DOMAIN" /> ?</translation>
 <translation id="4098354747657067197">Le site Web que vous allez ouvrir est trompeur</translation>
 <translation id="4103249731201008433">Le numéro de série de l'appareil n'est pas valide.</translation>
 <translation id="410351446219883937">Lecture automatique</translation>
@@ -821,6 +827,7 @@
 <translation id="5556459405103347317">Actualiser</translation>
 <translation id="5560088892362098740">Date d'expiration</translation>
 <translation id="5565735124758917034">Actif</translation>
+<translation id="5570825185877910964">Protéger le compte</translation>
 <translation id="5571083550517324815">Enlèvement impossible à cette adresse. Sélectionnez-en une autre.</translation>
 <translation id="5571347317547569613">({NUM_COOKIES,plural, =1{1 en cours d'utilisation}one{# en cours d'utilisation}other{# en cours d'utilisation}})</translation>
 <translation id="5572851009514199876">Veuillez démarrer Chrome et vous connecter à votre compte pour que le navigateur puisse vérifier que vous êtes autorisé à accéder à ce site.</translation>
@@ -957,10 +964,12 @@
 <translation id="6386120369904791316">{COUNT,plural, =1{1 autre suggestion}one{# autre suggestion}other{# autres suggestions}}</translation>
 <translation id="6387754724289022810">Pour régler plus rapidement vos achats la prochaine fois, enregistrez votre carte et votre adresse de facturation dans votre compte Google et sur cet appareil.</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
+<translation id="6401136357288658127">Cette règle est obsolète. Vous devez utiliser la règle "<ph name="NEW_POLICY" />" à la place.</translation>
 <translation id="6404511346730675251">Modifier le favori</translation>
 <translation id="6406765186087300643">C0 (enveloppe)</translation>
 <translation id="6410264514553301377">Saisissez la date d'expiration et le code CVC pour <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">Une demande d'autorisation a été envoyée à tes parents pour la consultation de ce site</translation>
+<translation id="6415778972515849510">Chromium peut vous aider à protéger votre compte Google et à modifier votre mot de passe.</translation>
 <translation id="6417515091412812850">Impossible de vérifier si le certificat a été révoqué.</translation>
 <translation id="6433490469411711332">Modifier les coordonnées</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> n'autorise pas la connexion.</translation>
@@ -1026,6 +1035,7 @@
 <translation id="6868206169573555318">Redémarrer pour mettre à jour</translation>
 <translation id="6874604403660855544">&amp;Rétablir l'ajout</translation>
 <translation id="6884662655240309489">Taille 1</translation>
+<translation id="6884796835813057577">Accéder à &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt; ?</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Le niveau de la règle n'est pas accepté.</translation>
 <translation id="6895330447102777224">Carte validée</translation>
@@ -1077,7 +1087,6 @@
 <translation id="7152423860607593928">Number-14 (enveloppe)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> autre}one{<ph name="PAYMENT_METHOD_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> autre}other{<ph name="PAYMENT_METHOD_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> autres}}</translation>
 <translation id="7153618581592392745">Lavande</translation>
-<translation id="7158980942472052083">URL non valide : vous devez saisir une URL avec un schéma standard.</translation>
 <translation id="717330890047184534">Identifiant GAIA :</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> autre}one{<ph name="SHIPPING_OPTION_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> autre}other{<ph name="SHIPPING_OPTION_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> autres}}</translation>
 <translation id="7177397715882417099">Le serveur auquel vous accédez, <ph name="ORIGIN" />, a exigé qu'une règle de sécurité soit appliquée à toutes les demandes qu'il reçoit. Cependant, au lieu d'émettre une règle, il a redirigé le navigateur vers une autre destination, ce qui empêche ce dernier de répondre à votre demande pour <ph name="SITE" />.</translation>
@@ -1342,6 +1351,7 @@ Informations supplémentaires :
 <translation id="8503559462189395349">Mots de passe Google Chrome</translation>
 <translation id="8503813439785031346">Nom d'utilisateur</translation>
 <translation id="8508648098325802031">Icône Recherche</translation>
+<translation id="8522552481199248698">Chrome peut vous aider à protéger votre compte Google et à modifier votre mot de passe.</translation>
 <translation id="8543181531796978784">Vous pouvez <ph name="BEGIN_ERROR_LINK" />signaler un problème de détection<ph name="END_ERROR_LINK" />. Si vous avez compris les risques auxquels vous vous exposez, vous pouvez <ph name="BEGIN_LINK" />consulter ce site dangereux<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">Des questions ? Contactez la personne qui supervise votre profil.</translation>
 <translation id="8553075262323480129">La traduction a échoué, car nous n'avons pas pu déterminer la langue de la page.</translation>
@@ -1428,6 +1438,7 @@ Informations supplémentaires :
 <translation id="9076630408993835509">Ce navigateur n'est géré par aucune entreprise ni aucune autre organisation. Il se peut que l'activité sur cet appareil soit gérée en dehors de Chrome. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Veuillez fournir d'autres informations</translation>
 <translation id="9080712759204168376">Récapitulatif de la commande</translation>
+<translation id="9095388113577226029">Plus de langues…</translation>
 <translation id="9103872766612412690">Un chiffrement est normalement utilisé sur le site <ph name="SITE" /> pour protéger vos informations. Lors de la dernière tentative de connexion de Chromium au site <ph name="SITE" />, des identifiants inhabituels et incorrects ont été retournés. Il est possible qu'un individu malveillant tente de se faire passer pour <ph name="SITE" /> ou qu'un écran de connexion Wi-Fi ait interrompu la connexion. Vos informations restent sécurisées, car nous avons arrêté la connexion avant l'échange des données.</translation>
 <translation id="9106062320799175032">Ajouter une adresse de facturation</translation>
 <translation id="9114524666733003316">Validation de la carte…</translation>

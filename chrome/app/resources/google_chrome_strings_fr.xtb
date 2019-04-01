@@ -236,6 +236,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="7589360514048265910">Cet ordinateur ne recevra plus les mises à jour de Google Chrome, car la compatibilité avec Mac OS X 10.9 n'est plus assurée.</translation>
 <translation id="7592736734348559088">Impossible de synchroniser vos données dans Google Chrome, car les informations de connexion de votre compte ne sont plus à jour.</translation>
 <translation id="7626032353295482388">Bienvenue dans Chrome</translation>
+<translation id="7641148173327520642">Votre administrateur système a configuré Google Chrome de sorte que <ph name="ALTERNATIVE_BROWSER_NAME" /> s'ouvre pour accéder à <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Logo Chrome Enterprise</translation>
 <translation id="7747138024166251722">Le programme d'installation n'a pas pu créer de répertoire temporaire. Vérifiez que le disque a suffisamment d'espace libre et que vous disposez des autorisations nécessaires pour installer le logiciel.</translation>
 <translation id="7761834446675418963">Cliquez sur votre nom pour ouvrir Chrome et commencer à naviguer.</translation>

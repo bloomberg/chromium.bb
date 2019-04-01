@@ -207,6 +207,7 @@ Ha szeretné megakadályozni, hogy <ph name="NEW_PROFILE_NAME" /> hozzáférjen 
 <ph name="BEGIN_LINK_2" />További információ<ph name="END_LINK_2" />.
 
 További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-mailekben talál.</translation>
+<translation id="7349591376906416160">Rendszergazdája úgy állította be a Chromiumot, hogy a(z) <ph name="ALTERNATIVE_BROWSER_NAME" /> böngészőt nyissa meg a(z) <ph name="TARGET_URL_HOSTNAME" /> eléréséhez.</translation>
 <translation id="7448255348454382571">Indítsa újra a Chromium OS-t</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – Chromium Dev</translation>
 <translation id="7451052299415159299">A Chromiumnak engedélyre van szüksége ahhoz, hogy hozzáférjen a kamerához ennél a webhelynél</translation>

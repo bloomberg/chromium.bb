@@ -199,6 +199,7 @@
 <translation id="397105322502079400">ಎಣಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="3995138139523574647">USB-C ಸಾಧನ (ಬಲ ಭಾಗದ ಹಿಂದಿನ ಪೋರ್ಟ್‌)</translation>
 <translation id="4017989525502048489">ಲೇಸರ್ ಪಾಯಿಂಟರ್</translation>
+<translation id="4042660782729322247">ನಿಮ್ಮ ಪರದೆಯನ್ನು ಹಂಚಿಕೊಳ್ಳುತ್ತಿದ್ದೀರಿ</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{ಒಂದು ಅಪ್ಲಿಕೇಶನ್‌ಗೆ ಆಫ್ ಆಗಿದೆ}one{# ಅಪ್ಲಿಕೇಶನ್‌ಗಳಿಗೆ ಆಫ್ ಆಗಿದೆ}other{# ಅಪ್ಲಿಕೇಶನ್‌ಗಳಿಗೆ ಆಫ್ ಆಗಿದೆ}}</translation>
 <translation id="4072264167173457037">ಮಧ್ಯಮ ಸಿಗ್ನಲ್</translation>
 <translation id="4129129681837227511">ನಿಮ್ಮ ಲಾಕ್ ಸ್ಕ್ರೀನ್‌ನಲ್ಲಿ ಅಧಿಸೂಚನೆಗಳನ್ನು ನೋಡಲು, ಸೆಟ್ಟಿಂಗ್ ಬದಲಾಯಿಸಲು ಅನ್‌ಲಾಕ್ ಮಾಡಿ</translation>
@@ -376,6 +377,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="7067196344162293536">ಸ್ವಯಂ ತಿರುಗಿಸು</translation>
 <translation id="7068360136237591149">ಫೈಲ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="7076293881109082629">ಸೈನ್ ಇನ್ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
+<translation id="7088960765736518739">ಪ್ರವೇಶ ಬದಲಾವಣೆ</translation>
 <translation id="7092922358121866860">ನೈಟ್ ಲೈಟ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೋರಿಸಿ</translation>
 <translation id="7098389117866926363">USB-C ಸಾಧನ (ಹಿಂಭಾಗದಲ್ಲಿ ಎಡ ಪೋರ್ಟ್‌)</translation>
 <translation id="7131634465328662194">ನೀವು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಸೈನ್‌ಔಟ್‌ ಆಗುತ್ತೀರಿ.</translation>
@@ -502,6 +504,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="9074739597929991885">ಬ್ಲೂಟೂತ್‌</translation>
 <translation id="9079731690316798640">ವೈ-ಫೈ: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">ಮೈಕ್ರೊಫೋನ್ ಬಳಕೆಯಲ್ಲಿದೆ.</translation>
+<translation id="9084606467167974638">ಮೆನುವಿನ ಸ್ಥಾನವನ್ನು ಟಾಗಲ್ ಮಾಡಿ</translation>
 <translation id="9089416786594320554">ಇನ್‌ಪುಟ್ ವಿಧಾನಗಳು</translation>
 <translation id="9091626656156419976">ಪ್ರದರ್ಶನ <ph name="DISPLAY_NAME" /> ಅನ್ನು ತೆಗೆದುಹಾಕಲಾಗಿದೆ</translation>
 <translation id="9151726767154816831">ಅಪ್‌ಡೇಟ್‌ ಮಾಡಲು ಮರುಪ್ರಾರಂಭಿಸಿ ಮತ್ತು ಪವರ್‌ವಾಶ್ ಮಾಡಿ</translation>

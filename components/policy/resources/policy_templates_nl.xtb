@@ -1,6 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
+<translation id="1002439864875515590">Als dit beleid is ingesteld op een lege tekenreeks of niet is geconfigureerd, geeft <ph name="PRODUCT_OS_NAME" /> geen optie voor automatisch aanvullen weer tijdens het inlogproces van de gebruiker.
+      Als dit beleid is ingesteld op een tekenreeks die een domeinnaam vertegenwoordigt, geeft <ph name="PRODUCT_OS_NAME" /> een optie voor automatisch aanvullen weer tijdens het inlogproces van de gebruiker, waarbij de gebruiker alleen zijn gebruikersnaam hoeft te typen zonder de domeinnaamextensie.  De gebruiker kan deze domeinnaamextensie overschrijven.
+      Als de waarde van het beleid geen geldig domein is, wordt het beleid niet toegepast.</translation>
 <translation id="101438888985615157">Scherm 180 graden draaien</translation>
 <translation id="1016912092715201525">Hiermee worden de standaard browsercontroles ingesteld in <ph name="PRODUCT_NAME" /> en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 
@@ -723,13 +726,6 @@
       Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of overschrijven. Gebruikers kunnen echter nog wel een schermtoetsenbord voor toegankelijkheid in-/uitschakelen dat voorrang heeft op het virtuele toetsenbord dat met dit beleid wordt beheerd. Bekijk het beleid |VirtualKeyboardEnabled| voor het beheren van het schermtoetsenbord voor toegankelijkheid.
 
       Als dit beleid niet wordt ingesteld, wordt het schermtoetsenbord aanvankelijk uitgeschakeld, maar kan dit op elk gewenst moment door de gebruiker worden ingeschakeld. Er kunnen ook heuristische regels worden gebruikt om te bepalen wanneer het toetsenbord wordt weergegeven.</translation>
-<translation id="228659285074633994">Hiermee wordt de tijdsduur zonder gebruikersinvoer gespecificeerd waarna een waarschuwingsdialoogvenster wordt weergegeven wanneer op netstroom wordt gewerkt.
-
-          Als dit beleid is ingesteld, specificeert het de tijdsduur dat de gebruiker inactief moet zijn voordat <ph name="PRODUCT_OS_NAME" /> een waarschuwingsdialoogvenster aan de gebruiker laat zien om aan te geven dat de actie voor inactiviteit bijna wordt ondernomen.
-
-          Als dit beleid niet is ingesteld, wordt er geen waarschuwingsdialoogvenster weergegeven.
-
-          De beleidswaarde moet worden opgegeven in milliseconden. De waarde die wordt opgegeven, moet kleiner zijn dan of gelijk aan de inactieve vertraging.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> kan een webservice van Google gebruiken om spelfouten te corrigeren. Als deze instelling is ingeschakeld, wordt deze service altijd gebruikt. Als deze instelling is uitgeschakeld, wordt deze service nooit gebruikt.
 
       Spellingcontrole kan nog steeds worden uitgevoerd met een gedownload woordenboek. Dit beleid beheert alleen het gebruik van de online service.
@@ -754,9 +750,6 @@
 <translation id="2299220924812062390">Een lijst met ingeschakelde plug-ins specificeren</translation>
 <translation id="2303795211377219696">Automatisch aanvullen inschakelen voor creditcards</translation>
 <translation id="2309390639296060546">Standaardinstelling voor geolocatie</translation>
-<translation id="2312134445771258233">Hiermee kun he de pagina's configureren die bij het starten worden geladen.
-
-      De content van de lijst 'URL's die worden geopend bij starten' wordt genegeerd, tenzij je 'Een lijst met URL's openen' selecteert bij 'Actie bij starten'.</translation>
 <translation id="2327252517317514801">Domeinen definiëren voor toegang tot G Suite</translation>
 <translation id="237494535617297575">Hiermee kun je een lijst met URL-patronen opgeven van sites waarop meldingen mogen worden weergegeven.
 
@@ -947,6 +940,16 @@
       Als deze instelling is uitgeschakeld, kunnen webpagina's JavaScript niet gebruiken en kan de gebruiker die instelling niet wijzigen.
 
       Als deze instelling is ingeschakeld of niet wordt ingesteld, kunnen webpagina's JavaScript gebruiken, maar kan de gebruiker die instelling wijzigen.</translation>
+<translation id="2747157663401642394">Hiermee worden extensiebeheerinstellingen voor <ph name="PRODUCT_NAME" /> geconfigureerd.
+
+          Met dit beleid worden meerdere instellingen beheerd, waaronder instellingen die worden beheerd door bestaande, aan extensies gerelateerde beleidsregels. Dit beleid overschrijft alle oudere beleidsregels als beide zijn ingesteld.
+
+          Met dit beleid wordt een extensie-ID of een update-URL toegewezen aan de bijbehorende configuratie. Bij een extensie-ID wordt de configuratie uitsluitend op de opgegeven configuratie toegepast. Er kan een standaardconfiguratie worden ingesteld voor de speciale ID <ph name="DEFAULT_SCOPE" />, die wordt toegepast op alle extensies waarvoor geen aangepaste configuratie is ingesteld in dit beleid. Bij een update-URL wordt de configuratie toegepast op alle extensies met de exacte update-URL in het manifest van deze extensie, zoals beschreven in <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Voor Windows-instanties die niet zijn gekoppeld aan een <ph name="MS_AD_NAME" />-domein, is gedwongen installatie beperkt tot apps en extensies die worden vermeld in de Chrome Web Store.
+
+          Ga naar https://www.chromium.org/administrators/policy-list-3/extension-settings-full voor een volledige beschrijving van de mogelijke instellingen en de structuur van dit beleid.
+          </translation>
 <translation id="2753637905605932878">Het bereik beperken van lokale UDP-poorten die door WebRTC worden gebruikt</translation>
 <translation id="2755385841634849932">Met dit beleid wordt bepaald of de functie 'Back-up maken en terugzetten' van Android beschikbaar is.
 
@@ -2081,6 +2084,7 @@ Wanneer dit beleid niet is ingesteld, kunnen er geen websites worden toegevoegd 
 Wanneer dit beleid is ingesteld, wordt elk item behandeld als een regel, vergelijkbaar met het beleid <ph name="URL_LIST_POLICY_NAME" />. De logica is echter andersom: regels die overeenkomen, openen geen alternatieve browser.
 
 Anders dan bij <ph name="URL_LIST_POLICY_NAME" /> kunnen regels in twee richtingen worden toegepast. Dat betekent dat wanneer de add-in van Internet Explorer aanwezig en ingeschakeld is, deze optie ook beheert of <ph name="IE_PRODUCT_NAME" /> URL's moet openen in <ph name="PRODUCT_NAME" />.</translation>
+<translation id="5124368997194894978">Opstarten bij netstroom (wisselstroom) inschakelen</translation>
 <translation id="5130288486815037971">Of RC4-coderingssuites in TLS zijn ingeschakeld</translation>
 <translation id="5141670636904227950">Het standaardtype van vergrootglas instellen dat op het inlogscherm is ingeschakeld</translation>
 <translation id="5142301680741828703">De volgende URL-patronen altijd verwerken in <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -2203,13 +2207,6 @@ Anders dan bij <ph name="URL_LIST_POLICY_NAME" /> kunnen regels in twee richting
 
       Als het beleid niet wordt ingesteld, of als dit wordt ingesteld voor een lege tekenreeks of een ongeldig poortbereik, kan WebRTC gebruikmaken van elke lokale UDP-poort.</translation>
 <translation id="5290940294294002042">Een lijst met plug-ins opgeven die de gebruiker kan in- of uitschakelen</translation>
-<translation id="5304269353650269372">Hiermee wordt de tijdsduur zonder gebruikersinvoer gespecificeerd waarna een waarschuwingsdialoogvenster wordt weergegeven wanneer op de batterij wordt gewerkt.
-
-          Als dit beleid is ingesteld, specificeert het de tijdsduur dat de gebruiker inactief moet zijn voordat <ph name="PRODUCT_OS_NAME" /> een waarschuwingsdialoogvenster aan de gebruiker laat zien om aan te geven dat de actie voor inactiviteit bijna wordt ondernomen.
-
-          Als dit beleid niet is ingesteld, wordt er geen waarschuwingsdialoogvenster weergegeven.
-
-          De beleidswaarde moet worden opgegeven in milliseconden. De waarde die wordt opgegeven, moet kleiner zijn dan of gelijk aan de inactieve vertraging.</translation>
 <translation id="5307432759655324440">Beschikbaarheid van incognitomodus</translation>
 <translation id="5318185076587284965">Het gebruik van relayservers door de host voor externe toegang inschakelen</translation>
 <translation id="5323128137188992869">Toestaan dat content wordt gecast naar het apparaat via <ph name="PRODUCT_NAME" />.
@@ -2877,6 +2874,17 @@ Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de pagina 'N
           Als dit beleid niet is ingesteld, wordt '3' gebruikt en kan de gebruiker dit wijzigen.</translation>
 <translation id="663685822663765995">Afdrukken in kleurenmodus beperken</translation>
 <translation id="6641981670621198190">Ondersteuning voor API's voor 3D-beelden uitschakelen</translation>
+<translation id="6646056064606561298">Het beleid voor het beheer van opstarten bij netstroom inschakelen.
+
+          Opstarten bij netstroom biedt het systeem de mogelijkheid om automatisch op te starten wanneer het is uitgeschakeld of in de slaapstand staat en het systeem wordt aangesloten op netstroom.
+
+          Als dit beleid is ingesteld op True, wordt opstarten bij netstroom altijd ingeschakeld als dat wordt ondersteund op het apparaat.
+
+          Als het beleid is ingesteld op False, wordt opstarten bij netstroom altijd uitgeschakeld.
+
+          Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of overschrijven.
+
+          Als dit beleid niet wordt ingesteld, wordt opstarten bij netstroom uitgeschakeld en kan het niet worden ingeschakeld door de gebruiker.</translation>
 <translation id="6647965994887675196">Als dit wordt ingesteld op 'True', kunnen bewaakte gebruikers worden gemaakt en gebruikt.
 
           Als dit wordt ingesteld op 'False' of niet wordt geconfigureerd, wordt het maken van en inloggen voor bewaakte gebruikers uitgeschakeld. Alle bestaande bewaakte gebruikers worden verborgen.
@@ -3190,17 +3198,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           Automatisch afspelen is alleen toegestaan voor domeinen die expliciet worden genoemd in het beleid <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Als je automatisch afspelen wilt inschakelen voor alle sites, kun je http://* en https://* toevoegen aan deze lijst.
 
           Als dit beleid niet wordt ingesteld, kan de gebruiker deze instelling handmatig aanpassen.</translation>
-<translation id="7229876938563670511">Hiermee stel je de standaard-URL voor de homepage in <ph name="PRODUCT_NAME" /> in en voorkom je dat gebruikers deze kunnen wijzigen.
-
-          De homepage is de pagina die wordt geopend met de startknop. Het beleid RestoreOnStartup bepaalt welke pagina's worden geopend wanneer de browser wordt opgestart.
-
-          Het type homepage kan worden ingesteld op een URL die je hier opgeeft of op de pagina 'Nieuw tabblad'. Als je de pagina 'Nieuw tabblad' selecteert, wordt dit beleid niet toegepast.
-
-          Als je deze instelling inschakelt, kunnen gebruikers hun homepage-URL in <ph name="PRODUCT_NAME" /> niet wijzigen, maar kunnen ze wel gewoon de pagina 'Nieuw tabblad' als homepage kiezen.
-
-          Als dit beleid niet wordt ingesteld, kunnen gebruikers zelf hun homepage kiezen als HomepageIsNewTabPage ook niet ingesteld is.
-
-          Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die ingeschreven zijn voor apparaatbeheer.</translation>
 <translation id="7229975860249300121">Bevat een reguliere expressie die wordt gebruikt om te bepalen welke Google-accounts kunnen worden ingesteld als primair browseraccount in <ph name="PRODUCT_NAME" /> (oftewel het account dat wordt gekozen wanneer de gebruiker zich aanmeldt voor synchronisatie).
 
       Er wordt een fout weergegeven als een gebruiker probeert een primair browseraccount in te stellen met een gebruikersnaam die niet met dit patroon overeenkomt.
@@ -4128,30 +4125,6 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
           Wordt ondersteund door <ph name="PRODUCT_OS_NAME" /> versie 70 en hoger. Voor oudere clients betekent deze waarde dat rollback is uitgeschakeld.</translation>
 <translation id="9096086085182305205">Witte lijst voor verificatieserver</translation>
 <translation id="9098553063150791878">Beleid voor HTTP-verificatie</translation>
-<translation id="9103061223348895346">Dit beleid beheert meerdere instellingen voor de energiebeheerstrategie wanneer de gebruiker inactief is.
-
-          Er zijn vier actietypen:
-          * Het scherm wordt gedimd als de gebruiker inactief is gedurende de periode die wordt gespecificeerd via |ScreenDim|.
-          * Het scherm wordt uitgeschakeld als de gebruiker inactief is gedurende de periode die wordt gespecificeerd via |ScreenOff|.
-          * Er wordt een waarschuwingsdialoogvenster weergegeven als de gebruiker inactief is gedurende de periode die wordt gespecificeerd via |IdleWarning|, waarin wordt gemeld dat de actie bij inactiviteit zal worden uitgevoerd.
-          * De actie die is gespecificeerd via |IdleAction|, wordt uitgevoerd als de gebruiker inactief is gedurende de periode die wordt gespecificeerd via |Idle|.
-
-          Voor elk van de bovenstaande acties moet de inactiviteitsdrempel worden gespecificeerd in milliseconden. Dit moet een waarde groter dan nul zijn om de bijbehorende actie te activeren. Als de inactiviteitsdrempel is ingesteld op nul, voert <ph name="PRODUCT_OS_NAME" /> de bijbehorende actie niet uit.
-
-          Voor elk van de bovenstaande drempels wordt een standaardwaarde gebruikt als de periode niet is ingesteld.
-
-          Houd er rekening mee dat waarden van |ScreenDim| worden vastgezet op waarden kleiner dan of gelijk aan |ScreenOff|, en dat |ScreenOff| en |IdleWarning| worden vastgezet op waarden kleiner dan of gelijk aan |Idle|.
-
-          |IdleAction| kan één van vier mogelijke acties zijn:
-          * |Suspend|
-          * |Logout|
-          * |Shutdown|
-          * |DoNothing|
-
-          Wanneer |IdleAction| niet is ingesteld, wordt de standaardactie uitgevoerd (opschorten).
-
-          Er zijn ook afzonderlijke instellingen voor wanneer het apparaat op netstroom of op de batterij werkt.
-          </translation>
 <translation id="9105265795073104888">Er is slechts een subset van de configuratieopties voor de proxy beschikbaar voor Android-apps. Android-apps kunnen op vrijwillige basis gebruikmaken van de proxy. Je kunt Android-apps niet dwingen een proxy te gebruiken.</translation>
 <translation id="9106865192244721694">WebUSB toestaan op deze sites</translation>
 <translation id="9112727953998243860">Configuratiebestand voor bedrijfsprinters</translation>
@@ -4210,13 +4183,6 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
       Als het beleid is ingesteld op 'False', is het selectievakje 'Kop- en voetteksten' niet aangevinkt in het dialoogvenster met het afdrukvoorbeeld en kan de gebruiker dit niet wijzigen.
 
       Als het beleid is ingesteld op 'True', is het selectievakje 'Kop- en voetteksten' aangevinkt in het dialoogvenster met het afdrukvoorbeeld en kan de gebruiker dit niet wijzigen.</translation>
-<translation id="9210953373038593554">Hiermee configureer je de verificatietypen voor SAML-logins.
-
-      Wanneer dit beleid is ingesteld op Standaard (waarde 0), wordt het gedrag van SAML-logins bepaald door de browser, afhankelijk van andere factoren. In het meest basale scenario worden de gebruikersverificatie en de beveiliging van gebruikersgegevens in de cache gebaseerd op wachtwoorden die handmatig door gebruikers worden ingevoerd.
-
-      Wanneer dit beleid is ingesteld op ClientCertificate (waarde 1), wordt verificatie van clientcertificaten gebruikt voor nieuw toegevoegde gebruikers die via SAML inloggen. Voor dergelijke gebruikers worden geen wachtwoorden gebruikt. Hun gegevens in de lokale cache worden beveiligd met de bijbehorende cryptografische sleutels. Met deze instellingen is bijvoorbeeld de configuratie van slimme gebruikersverificatie op basis van smartcards mogelijk (houd er rekening mee dat middleware-apps voor smartcards via het beleid DeviceLoginScreenAppInstallList moeten worden geïnstalleerd).
-
-      Dit beleid heeft alleen gevolgen voor gebruikers die SAML-verificatie gebruiken.</translation>
 <translation id="9213347477683611358">Configureer een achtergrondafbeelding op apparaatniveau die wordt weergegeven op het inlogscherm als er nog geen gebruiker is ingelogd bij het apparaat. Je kunt het beleid instellen door de URL op te geven waar het Chrome OS-apparaat de achtergrondafbeelding kan downloaden, evenals een cryptografische hash waarmee de integriteit van de download kan worden gecontroleerd. De afbeelding moet de JPEG-indeling hebben en het bestand mag niet groter dan 16 MB zijn. De URL moet zonder verificatie toegankelijk zijn. De achtergrondafbeelding wordt gedownload en opgeslagen in het cachegeheugen. De afbeelding wordt opnieuw gedownload wanneer de URL of de hash verandert.
 
       Het beleid moet worden opgegeven als tekenreeks die de URL en hash aangeeft in JSON-indeling, bijvoorbeeld:

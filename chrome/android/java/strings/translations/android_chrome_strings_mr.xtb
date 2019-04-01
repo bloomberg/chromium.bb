@@ -262,6 +262,7 @@
 <translation id="290376772003165898">पेज <ph name="LANGUAGE" />मध्ये नाही?</translation>
 <translation id="2910701580606108292">सायटींना संरक्षित आशय प्ले करू देण्याआधी विचारा</translation>
 <translation id="2913331724188855103">कुकी डेटा सेव्ह करणे आणि वाचण्यासाठी साइटना अनुमती द्या (शिफारस केलेले)</translation>
+<translation id="2923908459366352541">नाव अवैध आहे</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> स्टोरेज</translation>
 <translation id="2956410042958133412">हे खाते <ph name="PARENT_NAME_1" /> आणि <ph name="PARENT_NAME_2" /> द्वारे व्यवस्थापित केले आहे.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. सर्व हक्क राखीव.</translation>
@@ -363,6 +364,7 @@
 <translation id="3745176700485982507">तुमच्या आवडत्या वेबसाइटच्या लिंक या पेजवर मिळू शकतात</translation>
 <translation id="3771001275138982843">अपडेट डाउनलोड करता आले नाही</translation>
 <translation id="3773755127849930740">पेअरिंगला अनुमती देण्‍यासाठी <ph name="BEGIN_LINK" />ब्लूटूथ सुरू करा<ph name="END_LINK" /></translation>
+<translation id="3775705724665058594">तुमच्या डिव्हाइसवर पाठवा</translation>
 <translation id="3778956594442850293">होम स्क्रीनवर जोडले</translation>
 <translation id="3781011235031427080">यासारखे आणखी अर्ध्या उंचीवर उघडले</translation>
 <translation id="3789841737615482174">स्थापना करा</translation>
@@ -528,6 +530,7 @@
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> तुमची स्क्रीन शेअर करत आहे</translation>
 <translation id="4961107849584082341">या पेजचे कोणत्याही भाषेत भाषांतर करा</translation>
 <translation id="4961700429721424617"><ph name="MANAGED_DOMAIN" /> ने व्यवस्थापित केलेल्या खात्यामधून तुम्ही साइन आउट करीत आहात. हे तुमचा Chrome डेटा या डिव्हाइस वरून हटवेल परंतु तुमचा डेटा आपल्या Google खात्यामध्ये असेल.</translation>
+<translation id="4970824347203572753">तुमच्या स्थानामध्ये उपलब्ध नाही</translation>
 <translation id="497421865427891073">पुढे जा</translation>
 <translation id="4988210275050210843">(<ph name="MEGABYTES" />) ची फाइल डाउनलोड करत आहे.</translation>
 <translation id="4988526792673242964">पेज</translation>
@@ -597,6 +600,7 @@
 <translation id="5487521232677179737">डेटा साफ करा</translation>
 <translation id="5494752089476963479">अनाहूत किंवा दिशाभूल करणाऱ्या जाहिराती दाखवणाऱ्या साइटवरील जाहिराती ब्लॉक करा</translation>
 <translation id="5497272504048921382">खुले टॅब</translation>
+<translation id="5500777121964041360">तुमच्या स्थानामध्ये उपलब्ध नसू शकते</translation>
 <translation id="550684401320795253">Chrome अपडेट करीत आहे...</translation>
 <translation id="5512137114520586844">हे खाते <ph name="PARENT_NAME" /> द्वारे व्यवस्थापित केले आहे.</translation>
 <translation id="5514904542973294328">या डीव्हाइसच्या प्रशासकाने बंद केले आहे.</translation>
@@ -848,6 +852,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> निवडले</translation>
 <translation id="7253272406652746122">आपल्या डिव्हाइसच्या सेटिंग्ज ॲप मधील खाती पृष्‍ठांंमधून एक Google खाते जोडा.</translation>
 <translation id="7274013316676448362">अवरोधित केलेली साइट</translation>
+<translation id="7290209999329137901">नाव बदलणे उपलब्ध नाही</translation>
 <translation id="7291387454912369099">असिस्टंटने ट्रिगर केलेला चेकआउट</translation>
 <translation id="729975465115245577">पासवर्ड फाइल स्टोअर करण्यासाठी तुमच्या डिव्हाइसमध्ये अ‍ॅप नाही.</translation>
 <translation id="7302081693174882195">तपशील: सेव्ह केलेल्या डेटाच्या प्रमाणानुसार क्रमाने लावलेले</translation>
@@ -981,6 +986,7 @@
 <translation id="8200772114523450471">रेझ्युमे</translation>
 <translation id="8209050860603202033">इमेज उघडा</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB डाउनलोड केले</translation>
+<translation id="8224471946457685718">वाय-फायवर तुमच्यासाठी लेख डाउनलोड करा</translation>
 <translation id="8232956427053453090">स्टोअर करायचा असलेला डेटा</translation>
 <translation id="8249310407154411074">वर न्या</translation>
 <translation id="8250920743982581267">दस्तऐवज</translation>

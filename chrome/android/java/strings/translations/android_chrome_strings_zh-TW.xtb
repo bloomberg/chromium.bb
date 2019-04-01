@@ -170,7 +170,7 @@
 <translation id="2154710561487035718">複製網址</translation>
 <translation id="2156074688469523661">其餘網站 (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />，網路應用程式。<ph name="APP_URL" /></translation>
-<translation id="2227444325776770048">以<ph name="USER_FULL_NAME" />的身分繼續使用</translation>
+<translation id="2227444325776770048">以「<ph name="USER_FULL_NAME" />」的身分繼續</translation>
 <translation id="2232379019872353004">將部分系統資訊和網頁內容傳送給 Google</translation>
 <translation id="2234876718134438132">同步處理和 Google 服務</translation>
 <translation id="2259659629660284697">匯出密碼…</translation>
@@ -262,6 +262,7 @@
 <translation id="290376772003165898">不是<ph name="LANGUAGE" />網頁嗎？</translation>
 <translation id="2910701580606108292">允許網站播放受保護的內容前，必須先詢問你</translation>
 <translation id="2913331724188855103">允許網站儲存及讀取 Cookie 資料 (建議)</translation>
+<translation id="2923908459366352541">名稱無效</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> 儲存資料量</translation>
 <translation id="2956410042958133412">這個帳戶受 <ph name="PARENT_NAME_1" /> 和 <ph name="PARENT_NAME_2" /> 管理。</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. 版權所有。</translation>
@@ -286,7 +287,7 @@
 <translation id="3123473560110926937">在某些網站上設定封鎖</translation>
 <translation id="3137521801621304719">離開無痕模式</translation>
 <translation id="3143515551205905069">取消同步處理</translation>
-<translation id="3148434565183091099">如要在所有裝置上使用您的書籤，請登入 Chrome。</translation>
+<translation id="3148434565183091099">登入 Chrome 之後即可在你的所有裝置上使用自己的書籤。</translation>
 <translation id="3157842584138209013">如要查看節省的數據用量，請點選 [更多選項] 按鈕</translation>
 <translation id="3166827708714933426">分頁與視窗快速鍵</translation>
 <translation id="3190152372525844641">請在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中為 Chrome 啟用這些權限。</translation>
@@ -321,13 +322,13 @@
 <translation id="3367813778245106622">如要開始同步處理，請重新登入</translation>
 <translation id="3377025655491224618">私密分頁</translation>
 <translation id="3384347053049321195">分享圖片</translation>
-<translation id="3386292677130313581">允許網站存取您的位置資訊前，必須先詢問您 (建議)</translation>
+<translation id="3386292677130313581">允許網站存取你的位置資訊前，必須先詢問你 (建議)</translation>
 <translation id="3387650086002190359">檔案系統發生錯誤，因此無法下載 <ph name="FILE_NAME" />。</translation>
 <translation id="3398320232533725830">開啟書籤管理員</translation>
 <translation id="3414952576877147120">空間大小：</translation>
 <translation id="3443221991560634068">重新載入目前網頁</translation>
 <translation id="3445014427084483498">剛剛</translation>
-<translation id="3452612588551937789">只要使用 Google 帳戶登入，您就可以在所有裝置上存取自己的書籤、密碼、歷史記錄、密碼和其他設定。</translation>
+<translation id="3452612588551937789">只要登入 Google 帳戶，即可在你的所有裝置上使用自己的書籤、密碼、歷史記錄和其他設定。</translation>
 <translation id="3492207499832628349">新無痕式分頁</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />進一步瞭解<ph name="END_LINK" />建議的內容</translation>
 <translation id="3513704683820682405">擴增實境</translation>
@@ -363,6 +364,7 @@
 <translation id="3745176700485982507">這個頁面列出了你的常用網站連結</translation>
 <translation id="3771001275138982843">無法下載更新</translation>
 <translation id="3773755127849930740">如要允許配對，請<ph name="BEGIN_LINK" />開啟藍牙功能<ph name="END_LINK" /></translation>
+<translation id="3775705724665058594">傳送至你的裝置</translation>
 <translation id="3778956594442850293">已新增至主畫面</translation>
 <translation id="3781011235031427080">「更多類似內容」已開啟，顯示在畫面下半部</translation>
 <translation id="3789841737615482174">安裝</translation>
@@ -453,7 +455,7 @@
 <translation id="4468959413250150279">將特定網站設為靜音。</translation>
 <translation id="4472118726404937099">如要進行同步處理並在所有裝置上享有個人化的體驗，請登入並開啟同步處理功能</translation>
 <translation id="447252321002412580">協助改善 Chrome 的功能與效能</translation>
-<translation id="4479647676395637221">允許網站使用您的攝影機前，必須先詢問您 (建議)</translation>
+<translation id="4479647676395637221">允許網站使用你的攝影機前，必須先詢問你 (建議)</translation>
 <translation id="4479972344484327217">正在為 Chrome 安裝 <ph name="MODULE" />…</translation>
 <translation id="4487967297491345095">Chrome 的應用程式資料會全部遭到永久刪除，包括所有檔案、設定、帳戶、資料庫等等。</translation>
 <translation id="4493497663118223949">精簡模式已開啟</translation>
@@ -528,6 +530,7 @@
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> 正在共用你的畫面。</translation>
 <translation id="4961107849584082341">將這個網頁翻譯成任何語言</translation>
 <translation id="4961700429721424617">您即將登出由 <ph name="MANAGED_DOMAIN" /> 所管理的帳戶。系統會將您的 Chrome 資料從這個裝置上刪除，但繼續保留在您的 Google 帳戶中。</translation>
+<translation id="4970824347203572753">你所在的地區無法使用這項功能</translation>
 <translation id="497421865427891073">往前</translation>
 <translation id="4988210275050210843">正在下載檔案 (<ph name="MEGABYTES" /> MB)。</translation>
 <translation id="4988526792673242964">網頁</translation>
@@ -566,7 +569,7 @@
 <translation id="526421993248218238">無法載入這個網頁</translation>
 <translation id="5271967389191913893">裝置無法開啟您要下載的這項內容。</translation>
 <translation id="528192093759286357">從頂端拖曳並輕觸返回按鈕即可結束全螢幕模式。</translation>
-<translation id="5284584623296338184">您更改過的書籤、歷史記錄、密碼和其他設定不會繼續與您 Google 帳戶中的資料保持同步，但是您 Google 帳戶現有的資料仍會保留。</translation>
+<translation id="5284584623296338184">你更改過的書籤、歷史記錄、密碼和其他設定不會繼續與 Google 帳戶中的資料保持同步，但是 Google 帳戶現有的資料仍會保留。</translation>
 <translation id="5300589172476337783">顯示</translation>
 <translation id="5301954838959518834">好，我知道了</translation>
 <translation id="5304593522240415983">這個欄位不能留空</translation>
@@ -597,6 +600,7 @@
 <translation id="5487521232677179737">清除資料</translation>
 <translation id="5494752089476963479">封鎖干擾性或誤導性的網站廣告</translation>
 <translation id="5497272504048921382">開啟的分頁</translation>
+<translation id="5500777121964041360">你所在的地區可能不支援這項功能</translation>
 <translation id="550684401320795253">正在更新 Chrome...</translation>
 <translation id="5512137114520586844">這個帳戶受 <ph name="PARENT_NAME" /> 管理。</translation>
 <translation id="5514904542973294328">裝置管理員已停用</translation>
@@ -783,7 +787,7 @@
 <translation id="6766758767654711248">輕觸即可前往網站</translation>
 <translation id="6782111308708962316">禁止第三方網站儲存及讀取 Cookie 資料</translation>
 <translation id="6790428901817661496">播放</translation>
-<translation id="679325081238418596">您在任何裝置上都能取得自己的書籤、歷史記錄、密碼和其他設定</translation>
+<translation id="679325081238418596">你在任何裝置上都能取得自己的書籤、歷史記錄、密碼和其他設定</translation>
 <translation id="6803423358608456383">已在畫面下半部顯示「開啟的分頁」工作表</translation>
 <translation id="6811034713472274749">你可以瀏覽這個網頁了</translation>
 <translation id="6818926723028410516">選取項目</translation>
@@ -814,7 +818,7 @@
 <translation id="6985347914332179298">這裡沒有任何下載內容</translation>
 <translation id="6989267951144302301">無法下載</translation>
 <translation id="6990079615885386641">從 Google Play 商店取得應用程式：<ph name="APP_ACTION" /></translation>
-<translation id="6992289844737586249">允許網站使用您的麥克風前，必須先詢問您 (建議)</translation>
+<translation id="6992289844737586249">允許網站使用你的麥克風前，必須先詢問你 (建議)</translation>
 <translation id="7016516562562142042">允許目前的搜尋引擎存取位置資訊</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> 下載完成</translation>
 <translation id="7022756207310403729">在瀏覽器中開啟</translation>
@@ -831,7 +835,7 @@
 <translation id="7077143737582773186">SD 卡</translation>
 <translation id="7087918508125750058">已選取 <ph name="ITEM_COUNT" /> 個項目。選項位於畫面頂端</translation>
 <translation id="7121362699166175603">將歷史記錄和自動即時查詢從網址列中清除。你的 Google 帳戶可能會儲存其他形式的瀏覽記錄，請參閱 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />。</translation>
-<translation id="7128222689758636196">對目前的搜尋引擎開放</translation>
+<translation id="7128222689758636196">允許目前的搜尋引擎使用此權限</translation>
 <translation id="7138678301420049075">其他</translation>
 <translation id="7139148793369023665">「更多類似內容」已關閉</translation>
 <translation id="7141896414559753902">禁止網站顯示彈出式視窗及重新導向 (建議)</translation>
@@ -848,6 +852,7 @@
 <translation id="7250468141469952378">已選取 <ph name="ITEM_COUNT" /> 個項目</translation>
 <translation id="7253272406652746122">在裝置的「設定」應用程式中，透過「帳戶」頁面新增 Google 帳戶。</translation>
 <translation id="7274013316676448362">已封鎖網站</translation>
+<translation id="7290209999329137901">無法重新命名</translation>
 <translation id="7291387454912369099">Google 助理自動填入功能</translation>
 <translation id="729975465115245577">你的裝置沒有可儲存密碼檔案的應用程式。</translation>
 <translation id="7302081693174882195">詳細資料：依儲存資料量排序</translation>
@@ -869,7 +874,7 @@
 <translation id="7438641746574390233">開啟精簡模式後，Chrome 會使用 Google 伺服器來加快網頁載入速度。精簡模式會改寫載入速度特別慢的網頁，只載入基本內容。精簡模式不適用於無痕模式分頁。</translation>
 <translation id="7444811645081526538">更多類別</translation>
 <translation id="7445411102860286510">允許網站自動播放靜音的影片 (建議)</translation>
-<translation id="7453467225369441013">你會從大多數網站登出，但不會因此登出 Google 帳戶。</translation>
+<translation id="7453467225369441013">大多數網站都會將你登出，但系統並不會將你登出 Google 帳戶。</translation>
 <translation id="7454641608352164238">空間不足</translation>
 <translation id="7455923816558154057">輕觸即可查看</translation>
 <translation id="7465104139234185284">關閉所有私密分頁</translation>
@@ -893,7 +898,7 @@
 <translation id="756809126120519699">已清除 Chrome 資料</translation>
 <translation id="757524316907819857">禁止網站播放受保護的內容</translation>
 <translation id="757855969265046257">{FILES,plural, =1{已下載 <ph name="FILES_DOWNLOADED_ONE" /> 個檔案}other{已下載 <ph name="FILES_DOWNLOADED_MANY" /> 個檔案}}</translation>
-<translation id="7589445247086920869">對目前的搜尋引擎封鎖</translation>
+<translation id="7589445247086920869">禁止目前的搜尋引擎使用此權限</translation>
 <translation id="7593557518625677601">如要啟動 Chrome 同步功能，請開啟 Android 設定並重新啟用 Android 系統同步處理設定</translation>
 <translation id="7596558890252710462">作業系統</translation>
 <translation id="7605594153474022051">同步處理功能無法正常運作</translation>
@@ -946,7 +951,7 @@
 <translation id="7986741934819883144">選取聯絡人</translation>
 <translation id="7987073022710626672">Chrome 服務條款</translation>
 <translation id="7998918019931843664">重新開啟先前關閉的分頁</translation>
-<translation id="7999064672810608036">您確定要刪除這個網站儲存的所有本機資料 (包括 Cookie 在內)，並重設這個網站的所有權限嗎？</translation>
+<translation id="7999064672810608036">確定要刪除這個網站儲存的所有本機資料 (包括 Cookie 在內)，並重設這個網站的所有權限嗎？</translation>
 <translation id="8004582292198964060">瀏覽器</translation>
 <translation id="8007176423574883786">已在這個裝置上關閉</translation>
 <translation id="8015452622527143194">將網頁上的所有內容都回復為預設大小</translation>
@@ -981,6 +986,7 @@
 <translation id="8200772114523450471">繼續</translation>
 <translation id="8209050860603202033">開啟圖片</translation>
 <translation id="8220488350232498290">下載內容佔 <ph name="GIGABYTES" /> GB</translation>
+<translation id="8224471946457685718">透過 Wi-Fi 下載為你推薦的文章</translation>
 <translation id="8232956427053453090">保留資料</translation>
 <translation id="8249310407154411074">移至頂端</translation>
 <translation id="8250920743982581267">文件</translation>
@@ -1038,7 +1044,7 @@
 <translation id="8636825310635137004">如要存取您在其他裝置上開啟的分頁，請開啟同步處理功能。</translation>
 <translation id="8641930654639604085">嘗試封鎖成人網站</translation>
 <translation id="8655129584991699539">你可以在 Chrome 設定中清除資料</translation>
-<translation id="8662811608048051533">你會從大多數網站登出。</translation>
+<translation id="8662811608048051533">大多數網站都會將你登出。</translation>
 <translation id="8664979001105139458">檔案名稱已存在</translation>
 <translation id="8676374126336081632">清除輸入</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{訊號強度等級：# 格}other{訊號強度等級：# 格}}</translation>
@@ -1096,7 +1102,7 @@
 <translation id="9100610230175265781">請提供通關密語</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">顯示原文</translation>
-<translation id="9139068048179869749">允許網站傳送通知前，必須先詢問您 (建議)</translation>
+<translation id="9139068048179869749">允許網站傳送通知前，必須先詢問你 (建議)</translation>
 <translation id="9139318394846604261">購物</translation>
 <translation id="9150694013019234766">在靠近畫面底部的分頁群組中切換分頁</translation>
 <translation id="9155898266292537608">快速輕觸字詞也可以展開搜尋</translation>

@@ -1,6 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
+<translation id="1002439864875515590">Pokud tato zásada není nastavená nebo je nastavená na prázdný textový řetězec, <ph name="PRODUCT_OS_NAME" /> během procesu přihlášení nezobrazí možnost automatického doplňování.
+      Pokud je tato zásada nastavená na textový řetězec, který představuje název domény, <ph name="PRODUCT_OS_NAME" /> během procesu přihlášení zobrazí možnost automatického doplňování a uživatel bude moci zadat pouze uživatelské jméno bez přípony s názvem domény.  Příponu s názvem domény může uživatel přepsat.
+      Pokud hodnota zásady není platná doména, zásada se nepoužije.</translation>
 <translation id="101438888985615157">Otočit obrazovku o 180 stupňů</translation>
 <translation id="1016912092715201525">Slouží ke konfiguraci kontroly výchozího prohlížeče v prohlížeči <ph name="PRODUCT_NAME" /> a brání uživatelům, aby tato nastavení změnili.
 
@@ -687,13 +690,6 @@ Zásada platí také pro rozšíření komponent, jako je rozšíření Hangout 
       Pokud tuto zásadu nastavíte, uživatelé ji nebudou moci změnit ani přepsat. Uživatelé však nadále budou moci povolit a zakázat softwarovou klávesnici usnadnění, která má přednost před virtuální klávesnicí ovládanou touto zásadou. Ovládání softwarové klávesnice usnadnění naleznete pod zásadou |VirtualKeyboardEnabled|.
 
       Pokud tuto zásadu ponecháte nenastavenou, softwarová klávesnice bude ve výchozím nastavení zakázána, ale uživatelé ji budou moci kdykoli povolit. O zobrazování klávesnice může být rozhodováno rovněž na základě heuristických pravidel.</translation>
-<translation id="228659285074633994">Určuje dobu bez zásahu uživatele, po které se při napájení zařízení ze sítě zobrazí okno s upozorněním.
-
-          Pokud je zásada nastavena, určuje dobu nečinnosti uživatele, po jejímž uplynutí systém <ph name="PRODUCT_OS_NAME" /> zobrazí okno s upozorněním, že bude provedena akce z důvodu nečinnosti.
-
-          Pokud zásada není nastavena, okno s upozorněním se nezobrazí.
-
-          Hodnota zásady by měla být stanovena v milisekundách. Hodnoty musí být menší nebo stejné jako prodleva nečinnosti.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> může k opravení pravopisných chyb použít webovou službu společnosti Google. Je-li toto nastavení zapnuto, služba je používána neustále. Je-li nastavení vypnuto, služba není používána nikdy.
 
       Kontrolu pravopisu lze nicméně provést pomocí staženého slovníku. Tato zásada se vztahuje pouze na používání internetových služeb.
@@ -718,9 +714,6 @@ U zařízení spravovaných pomocí služby Active Directory tato zásada podpo
 <translation id="2299220924812062390">Zadat seznam aktivovaných pluginů</translation>
 <translation id="2303795211377219696">Povolit automatické vyplňování pro platební karty</translation>
 <translation id="2309390639296060546">Výchozí nastavení geolokace</translation>
-<translation id="2312134445771258233">Umožňuje konfigurovat stránky, které se načtou při spuštění.
-
-      Pokud jste v části „Akce při spuštění“ nezvolili možnost „Otevřít seznam adres URL“, budou položky v seznamu „Adresy URL otevírané při spuštění“ ignorovány.</translation>
 <translation id="2327252517317514801">Definování domén, kterým je povolen přístup ke službám G Suite</translation>
 <translation id="237494535617297575">Umožňuje nastavit seznam vzorů adres URL webových stránek, které mají povoleno nastavovat upozornění.
 
@@ -910,6 +903,16 @@ Pokud je zásada nastavena na hodnotu False nebo nastavena není, budou ikony vi
       Pokud je toto nastavení deaktivováno, webové stránky nemohou spouštět kód JavaScript a uživatel nemůže toto nastavení změnit.
 
       Pokud je toto nastavení aktivováno nebo není nastaveno na konkrétní hodnotu, webové stránky mohou spouštět kód JavaScript, ale uživatel může toto nastavení změnit.</translation>
+<translation id="2747157663401642394">Konfiguruje nastavení správy rozšíření prohlížeče <ph name="PRODUCT_NAME" />.
+
+          Tato zásada řídí několik nastavení, včetně nastavení nakonfigurovaných pomocí existujících zásad pro rozšíření. Pokud je tato zásada nastavená, přepíše všechny starší nastavené zásady.
+
+          Tato zásada mapuje konfiguraci na ID rozšíření nebo adresu URL. Pokud je definováno ID rozšíření, použije se konfigurace pouze pro konkrétní rozšíření. Pomocí zvláštního ID <ph name="DEFAULT_SCOPE" /> lze nastavit výchozí konfiguraci. Tato konfigurace se použije pro všechna rozšíření, která v této zásadě nemají nastavenou vlastní konfiguraci. Pokud je definována adresa URL pro aktualizaci, použije se konfigurace pro všechna rozšíření, která mají v manifestu uvedenou přesně tuto adresu URL pro aktualizaci (viz <ph name="LINK_TO_EXTENSION_DOC1" />).
+
+          U instancí systému Windows, které nejsou připojené k doméně <ph name="MS_AD_NAME" />, je vynucená instalace omezena pouze na aplikace a rozšíření z Internetového obchodu Chrome.
+
+          Úplný popis možných nastavení a struktury této zásady najdete na stránce https://www.chromium.org/administrators/policy-list-3/extension-settings-full.
+          </translation>
 <translation id="2753637905605932878">Omezit rozsah místních portů UDP používaných rozhraním WebRTC</translation>
 <translation id="2755385841634849932">Tato zásada ovládá dostupnost zálohování a obnovení Android.
 
@@ -2032,6 +2035,7 @@ Pokud tuto zásadu nenastavíte, bude aktivován výchozí poskytovatel vyhledá
       Pokud je tato zásada nastavená, každá položka se považuje za pravidlo, podobně jako v případě zásady <ph name="URL_LIST_POLICY_NAME" />. Logika je však opačná: při shodě s pravidlem se alternativní prohlížeč neotevře.
 
       Na rozdíl od zásady <ph name="URL_LIST_POLICY_NAME" /> fungují pravidla oběma směry, tj. když je přítomen a zapnut doplněk prohlížeče Internet Explorer, tato zásada také určuje, zda má <ph name="IE_PRODUCT_NAME" /> tyto adresy URL otevírat v prohlížeči <ph name="PRODUCT_NAME" />.</translation>
+<translation id="5124368997194894978">Zapnout spuštění při připojení k napájení ze sítě</translation>
 <translation id="5130288486815037971">Zda jsou v protokolu TLS povoleny šifrovací sady RC4</translation>
 <translation id="5141670636904227950">Nastavení výchozího typu lupy, který je aktivován na přihlašovací obrazovce</translation>
 <translation id="5142301680741828703">Následující vzory adres URL vykreslovat vždy v pluginu <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -2154,13 +2158,6 @@ Pokud tuto zásadu nenastavíte, bude aktivován výchozí poskytovatel vyhledá
 
       Pokud tato zásada není nastavena nebo je nastavena na prázdný řetězec nebo neplatný rozsah portů, má rozhraní WebRTC povoleno používat libovolný dostupný místní port UDP.</translation>
 <translation id="5290940294294002042">Určete seznam pluginů, které uživatel může povolit nebo zakázat</translation>
-<translation id="5304269353650269372">Určuje dobu bez zásahu uživatele, po které se při napájení zařízení z baterie zobrazí okno s upozorněním.
-
-          Pokud je tato zásada nastavena, určuje dobu nečinnosti uživatele, po jejímž uplynutí systém <ph name="PRODUCT_OS_NAME" /> zobrazí okno s upozorněním, že bude provedena akce z důvodu nečinnosti.
-         
-          Pokud zásada není nastavena, okno s upozorněním se nezobrazí.
-
-          Hodnota zásady by měla být stanovena v milisekundách. Hodnoty musí být menší nebo stejné jako prodleva nečinnosti.</translation>
 <translation id="5307432759655324440">Dostupnost anonymního režimu</translation>
 <translation id="5318185076587284965">Povolit použití předávacích serverů hostitelem vzdáleného přístupu</translation>
 <translation id="5323128137188992869">Umožňuje odesílání obsahu do zařízení pomocí služby <ph name="PRODUCT_NAME" />.
@@ -2818,6 +2815,17 @@ Pokud tato zásada nebude nastavená, uživatel bude moci sám zvolit, zda se ja
           Pokud je tato zásada ponechána nenastavená, použije se hodnota „3“ a uživatel ji bude moci změnit.</translation>
 <translation id="663685822663765995">Omezit barevný režim tisku</translation>
 <translation id="6641981670621198190">Deaktivovat podporu rozhraní API pro 3D grafiku</translation>
+<translation id="6646056064606561298">Zapne zásadu řízení spotřeby, která zařízení spustí při připojení k napájení ze sítě.
+
+          Pomocí této funkce lze systém automaticky spustit z vypnutého stavu nebo ze stavu hibernace, když uživatel zařízení připojí k napájení ze sítě.
+
+          Pokud je tato zásada nastavená na hodnotu true, bude spuštění při připojení k napájení ze sítě vždy zapnuté.
+
+          Pokud je tato zásada nastavená na hodnotu false, spuštění při připojení k napájení ze sítě bude vždy vypnuté.
+
+          Pokud tuto zásadu nastavíte, uživatelé ji nebudou moci změnit ani přepsat.
+
+          Pokud tuto zásadu ponecháte nenastavenou, je spuštění při napájení ze sítě vypnuté a uživatel jej nemůže zapnout.</translation>
 <translation id="6647965994887675196">Pokud tuto zásadu nastavíte na hodnotu true, lze vytvářet a používat dozorovaného uživatele.
 
           Pokud tuto zásadu nenakonfigurujete nebo ji nastavíte na hodnotu false, bude vytváření a přihlašování dozorovaných uživatelů zakázáno. Všichni existující dozorovaní uživatelé budou skryti.
@@ -3127,17 +3135,6 @@ Pokud tato zásada není nastavená, budou se do zařízení moci přihlašovat 
           Automatické přehrávání je povoleno pouze u domén, které jsou výslovně uvedeny v zásadě <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Chcete-li automatické přehrávání povolit pro všechny weby, přidejte do tohoto seznamu položky http://* a https://*.
 
           Pokud je tato zásada ponechána nenastavená, uživatel toto nastavení bude moci ručně změnit.</translation>
-<translation id="7229876938563670511">Nakonfiguruje v prohlížeči <ph name="PRODUCT_NAME" /> adresu URL výchozí domovské stránky a zabrání uživatelům, aby toto nastavení změnili.
-
-          Domovská stránka je stránka, která se otevírá tlačítkem Domovská stránka. Stránky, které se otevírají po spuštění, jsou určeny zásadami RestoreOnStartup.
-
-          Typ domovské stránky může být nastaven na adresu URL, kterou zde zadáte, nebo na stránku Nová karta. Pokud zvolíte stránku Nová karta, tato zásada se nebude uplatňovat.
-
-          Pokud toto nastavení aktivujete, uživatelé v prohlížeči <ph name="PRODUCT_NAME" /> nebudou moci změnit adresu URL domovské stránky. Jako domovskou stránku však stále budou moci nastavit stránku Nová karta.
-
-          Pokud tuto zásadu nenastavíte a není nastavená ani zásada HomepageIsNewTabPage, uživatelé si budou moci zvolit vlastní domovskou stránku.
-
-          Tato zásada je k dispozici jen v instancích systému Windows, které jsou připojené k doméně <ph name="MS_AD_NAME" />, nebo v instancích systému Windows 10 Pro nebo Enterprise, které jsou zaregistrované ke správě zařízení.</translation>
 <translation id="7229975860249300121">Obsahuje regulární výraz určující účty Google, které lze v prohlížeči <ph name="PRODUCT_NAME" /> nastavit jako primární (tj. jako účet, který se vybere během procesu přihlášení k synchronizaci).
 
       Pokud se uživatel pokusí nastavit v prohlížeči primární účet s uživatelským jménem, které se neshoduje s tímto vzorem, zobrazí se odpovídající chybová zpráva.
@@ -4040,30 +4037,6 @@ POZNÁMKA: Až do verze 45 byla tato zásada podporována pouze v režimu veře
           Podporováno u systému <ph name="PRODUCT_OS_NAME" /> verze 70 a vyšší. U starších klientů tato hodnota znamená, že vrácení zpět je zakázáno.</translation>
 <translation id="9096086085182305205">Seznam povolených serverů pro ověřování</translation>
 <translation id="9098553063150791878">Zásady pro ověření v protokolu HTTP</translation>
-<translation id="9103061223348895346">Tato zásada udává několik nastavení strategie řízení spotřeby pro případ, že uživatel přestane být aktivní.
-
-Lze nastavit čtyři typy akcí:
-* Pokud uživatel nebude aktivní po dobu uvedenou v nastavení |ScreenDim|, obrazovka se ztlumí.
-* Pokud uživatel nebude aktivní po dobu uvedenou v nastavení |ScreenOff|, obrazovka se vypne.
-* Pokud uživatel nebude aktivní po dobu uvedenou v nastavení |IdleWarning|, zobrazí se dialog s upozorněním, že bude provedena akce nastavená pro případ nečinnosti.
-* Pokud uživatel nebude aktivní po dobu uvedenou v nastavení |Idle|, bude provedena akce nastavená v možnosti |IdleAction|.
-
-Hodnoty prodlev se pro všechny výše uvedené akce nastavují v milisekundách. Za účelem spuštění příslušné akce je třeba nastavit hodnotu vyšší než nula. Pokud je prodleva nastavena na nulu, systém <ph name="PRODUCT_OS_NAME" /> příslušnou akci neprovede.
-
-Pokud některou z výše uvedených prodlev nenastavíte, použije se pro ni výchozí nastavení.
-
-Hodnota |ScreenDim| bude snížena tak, aby nepřevyšovala hodnotu |ScreenOff|. Hodnoty |ScreenOff| a |IdleWarning| budou sníženy tak, aby nepřevyšovaly hodnotu |Idle|.
-
-Možnost |IdleAction| lze nastavit na jednu z následujících čtyř možných akcí:
-          * |Suspend|
-          * |Logout|
-          * |Shutdown|
-          * |DoNothing|
-
-Když hodnota |IdleAction| není nastavena, bude provedena výchozí akce (Suspend).
-
-K dispozici jsou také samostatná nastavení pro napájení ze sítě a z baterie.
-          </translation>
 <translation id="9105265795073104888">Aplikace Android obdrží pouze část možností konfigurace proxy serveru. Aplikace Android se mohou samy rozhodnout, zda proxy server použijí. Použití proxy serveru u nich nelze vynutit.</translation>
 <translation id="9106865192244721694">Povolit rozhraní WebUSB na těchto webech</translation>
 <translation id="9112727953998243860">Konfigurační soubor podnikových tiskáren</translation>
@@ -4120,13 +4093,6 @@ Pokud zásada není nastavena, uživatel se může rozhodnout, zda záhlaví a 
 Pokud je nastavena na false, možnost Záhlaví a zápatí není v dialogovém okně náhledu tisku vybrána a uživatel to nemůže změnit.
 
 Pokud je nastavena na true, možnost Záhlaví a zápatí je v dialogovém okně náhledu tisku vybrána a uživatel to nemůže změnit.</translation>
-<translation id="9210953373038593554">Konfiguruje typ ověření pro přihlášení pomocí technologie SAML.
-
-      Když tato zásada není nastavena nebo je nastavena na možnost Default (hodnota 0), určuje chování při přihlašování pomocí technologie SAML prohlížeč na základě jiných faktorů. V nejzákladnějším případě se k ověření uživatele a ochraně dat uživatele uložených v mezipaměti používají hesla, která ručně zadávají uživatelé.
-
-      Když je tato zásada nastavena na možnost ClientCertificate (hodnota 1), pro nově přidané uživatele, kteří se přihlašují pomocí technologie SAML, se používá ověření pomocí certifikátu klienta. Pro takové uživatele se nepoužívají žádná hesla a jejich místní data uložená v mezipaměti jsou chráněna pomocí odpovídajících kryptografických klíčů. Pomocí tohoto nastavení lze nakonfigurovat například ověřování uživatelů pomocí čipových karet. (Aplikace middleware pro čipové karty je potřeba nainstalovat pomocí zásady DeviceLoginScreenAppInstallList.)
-
-      Tato zásada má vliv pouze na uživatele, kteří používají ověření pomocí technologie SAML.</translation>
 <translation id="9213347477683611358">Slouží ke konfiguraci obrázku tapety na úrovni zařízení, který se bude zobrazovat na přihlašovací obrazovce, pokud se do zařízení dosud nepřihlásil žádný uživatel. Zásadu nastavíte zadáním adresy URL, ze které může zařízení se systémem Chrome OS obrázek tapety stáhnout, a kryptografické hodnoty hash k ověření integrity staženého obsahu. Obrázek musí být ve formátu JPEG a jeho velikost nesmí překročit 16 MB. Adresa URL musí být přístupná bez ověření. Obrázek tapety se stáhne a uloží do mezipaměti. Při každé změně adresy URL nebo hodnoty hash se obrázek stáhne znovu.
 
       Tuto zásadu je třeba zadat jako řetězec, který udává adresu URL a hodnotu hash ve formátu JSON. Příklad:

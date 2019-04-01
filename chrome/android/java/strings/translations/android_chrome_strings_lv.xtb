@@ -262,6 +262,7 @@
 <translation id="290376772003165898">Vai lapa nav šajā valodā: <ph name="LANGUAGE" />?</translation>
 <translation id="2910701580606108292">Jautāt, pirms atļaut vietnēm atskaņot aizsargātu saturu</translation>
 <translation id="2913331724188855103">Atļaut vietnēm saglabāt un lasīt sīkfailu datus (ieteicams)</translation>
+<translation id="2923908459366352541">Vārds nav derīgs</translation>
 <translation id="2932150158123903946">Lietotnes Google <ph name="APP_NAME" /> krātuve</translation>
 <translation id="2956410042958133412">Šo kontu pārvalda <ph name="PARENT_NAME_1" /> un <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Autortiesības <ph name="YEAR" /> Google Inc. Visas tiesības paturētas.</translation>
@@ -363,6 +364,7 @@
 <translation id="3745176700485982507">Šajā lapā ir saites uz jūsu iecienītākajām tīmekļa vietnēm</translation>
 <translation id="3771001275138982843">Nevarēja lejupielādēt atjauninājumu</translation>
 <translation id="3773755127849930740">Lai atļautu savienošanu pārī, <ph name="BEGIN_LINK" />ieslēdziet Bluetooth<ph name="END_LINK" />.</translation>
+<translation id="3775705724665058594">Sūtīšana uz jūsu ierīcēm</translation>
 <translation id="3778956594442850293">Pievienots sākuma ekrānam</translation>
 <translation id="3781011235031427080">Līdzīgi vienumi atvērti pusekrāna augstumā</translation>
 <translation id="3789841737615482174">Instalēt</translation>
@@ -528,6 +530,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> kopīgo jūsu ekrānu</translation>
 <translation id="4961107849584082341">Tulkojiet šīs lapas saturu jebkurā valodā.</translation>
 <translation id="4961700429721424617">Jūs izrakstāties no konta, kas tiek pārvaldīts domēnā <ph name="MANAGED_DOMAIN" />. Izrakstoties jūsu Chrome dati tiks dzēsti no šīs ierīces, taču tie paliks jūsu Google kontā.</translation>
+<translation id="4970824347203572753">Nav pieejams jūsu atrašanās vietā</translation>
 <translation id="497421865427891073">Doties uz priekšu</translation>
 <translation id="4988210275050210843">Notiek faila lejupielāde (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Lapas</translation>
@@ -597,6 +600,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5487521232677179737">Notīrīt datus</translation>
 <translation id="5494752089476963479">Bloķēt reklāmas vietnēs, kurās tiek rādītas traucējošas vai maldinošas reklāmas</translation>
 <translation id="5497272504048921382">Atvērtās cilnes</translation>
+<translation id="5500777121964041360">Tas var nebūt pieejams jūsu atrašanās vietā</translation>
 <translation id="550684401320795253">Notiek Chrome atjaunināšana...</translation>
 <translation id="5512137114520586844">Šo kontu pārvalda <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Atspējoja šīs ierīces administrators</translation>
@@ -848,6 +852,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7250468141469952378">Atlasīti vienumi: <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">Pievienojiet Google kontu no lapas Konti savas ierīces lietotnē Iestatījumi.</translation>
 <translation id="7274013316676448362">Bloķēta vietne</translation>
+<translation id="7290209999329137901">Pārdēvēšana nav pieejama</translation>
 <translation id="7291387454912369099">Asistenta aktivizēta norēķināšanās</translation>
 <translation id="729975465115245577">Ierīcē nav lietotnes, kurā uzglabāt paroļu failu.</translation>
 <translation id="7302081693174882195">Detalizēta informācija: kārtota pēc ietaupīto datu apjoma</translation>
@@ -981,6 +986,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="8200772114523450471">Kopsavilkums</translation>
 <translation id="8209050860603202033">Atvērt attēlu</translation>
 <translation id="8220488350232498290">Lejupielādes: <ph name="GIGABYTES" /> GB</translation>
+<translation id="8224471946457685718">Rakstu lejupielāde tikai pa Wi-Fi</translation>
 <translation id="8232956427053453090">Paturēt datus</translation>
 <translation id="8249310407154411074">Pārvietot uz augšdaļu</translation>
 <translation id="8250920743982581267">Dokumenti</translation>

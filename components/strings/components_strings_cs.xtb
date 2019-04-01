@@ -8,6 +8,7 @@
 <translation id="1032854598605920125">Otočit ve směru hodinových ručiček</translation>
 <translation id="1035334672863811645">přihlaste se do Chromu</translation>
 <translation id="1038842779957582377">neznámé jméno</translation>
+<translation id="1039626062703039346">Chrome vám může pomoci ochránit váš účet Google a změnit heslo. Tím o tomto webu informujete Google.</translation>
 <translation id="1050038467049342496">Zavřete ostatní aplikace</translation>
 <translation id="1055184225775184556">&amp;Vrátit přidání zpět</translation>
 <translation id="1056898198331236512">Upozornění</translation>
@@ -288,13 +289,16 @@
 <translation id="2495083838625180221">Analyzátor souborů JSON</translation>
 <translation id="2495093607237746763">Pokud je tato možnost zaškrtnuta, prohlížeč Chromium do zařízení uloží kopii karty za účelem rychlejšího vyplňování formulářů.</translation>
 <translation id="2498091847651709837">Naskenovat novou kartu</translation>
+<translation id="249825481377667906">Chromium vám může pomoci ochránit váš účet Google a změnit heslo. Tím o tomto webu informujete Google.</translation>
 <translation id="2501278716633472235">Zpět</translation>
 <translation id="2503184589641749290">Přijímané debetní a předplacené karty</translation>
+<translation id="2505268675989099013">Ochránit účet</translation>
 <translation id="2515629240566999685">Zkontrolovat, zda máte dostatečně silný signál</translation>
 <translation id="2523886232349826891">Uloženo pouze do tohoto zařízení</translation>
 <translation id="2524461107774643265">Přidání dalších informací</translation>
 <translation id="2536110899380797252">Přidat adresu</translation>
 <translation id="2539524384386349900">Rozpoznat</translation>
+<translation id="254947805923345898">Hodnota zásady není platná.</translation>
 <translation id="255002559098805027">Web <ph name="HOST_NAME" /> vrátil neplatnou odpověď.</translation>
 <translation id="2556876185419854533">&amp;Vrátit úpravy zpět</translation>
 <translation id="2586657967955657006">Schránka</translation>
@@ -424,6 +428,7 @@
           <ph name="LIST_ITEM" />soubory cookie a data webů,
           <ph name="LIST_ITEM" />údaje zadané do formulářů.
         <ph name="END_LIST" /></translation>
+<translation id="3362968246557010467">Tato zásada byla automaticky zkopírována ze zásady <ph name="OLD_POLICY" />, jejíž podpora byla ukončena. Měli byste místo ní používat tuto zásadu.</translation>
 <translation id="3366477098757335611">Zobrazit karty</translation>
 <translation id="3369192424181595722">Chyba hodin</translation>
 <translation id="337363190475750230">Vyřazeno</translation>
@@ -546,6 +551,7 @@
 <translation id="4072486802667267160">Při zpracování objednávky došlo k chybě. Zkuste to prosím znovu.</translation>
 <translation id="4075732493274867456">Klient a server nepodporují společnou verzi protokolu SSL nebo šifrovací sadu.</translation>
 <translation id="4079302484614802869">Proxy je nastaveno na používání adresy URL skriptu PAC, nikoliv pevně daných serverů proxy.</translation>
+<translation id="4092411512356034591">Pokračovat na <ph name="DOMAIN" />?</translation>
 <translation id="4098354747657067197">Chystáte se navštívit podvodné webové stránky</translation>
 <translation id="4103249731201008433">Sériové číslo zařízení je neplatné</translation>
 <translation id="410351446219883937">Automatické přehrávání</translation>
@@ -817,6 +823,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5556459405103347317">Načíst znovu</translation>
 <translation id="5560088892362098740">Datum vypršení platnosti</translation>
 <translation id="5565735124758917034">Aktivní</translation>
+<translation id="5570825185877910964">Ochránit účet</translation>
 <translation id="5571083550517324815">Vyzvednutí na této adrese není možné. Vyberte jinou adresu.</translation>
 <translation id="5571347317547569613">({NUM_COOKIES,plural, =1{používá se 1}few{používají se #}many{používá se #}other{používá se #}})</translation>
 <translation id="5572851009514199876">Přihlaste se do Chromu, aby bylo možné ověřit, zda máte povolení tento web navštívit.</translation>
@@ -952,10 +959,12 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 další návrh}few{# další návrhy}many{# dalšího návrhu}other{# dalších návrhů}}</translation>
 <translation id="6387754724289022810">Abyste příště mohli zaplatit rychleji, uložte si kartu a fakturační adresu do účtu Google a do tohoto zařízení.</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
+<translation id="6401136357288658127">Podpora této zásady byla ukončena. Měli byste místo ní používat zásadu <ph name="NEW_POLICY" />.</translation>
 <translation id="6404511346730675251">Upravit záložku</translation>
 <translation id="6406765186087300643">C0 (obálka)</translation>
 <translation id="6410264514553301377">Zadejte datum vypršení platnosti a kód CVC karty <ph name="CREDIT_CARD" />.</translation>
 <translation id="6414888972213066896">Zeptal(a) ses rodiče, zda můžeš navštívit tento web.</translation>
+<translation id="6415778972515849510">Chromium vám může pomoci ochránit váš účet Google a změnit heslo.</translation>
 <translation id="6417515091412812850">Nelze ověřit, zda byl certifikát zrušen.</translation>
 <translation id="6433490469411711332">Upravit kontaktní údaje</translation>
 <translation id="6433595998831338502">Web <ph name="HOST_NAME" /> odmítl připojení.</translation>
@@ -1021,6 +1030,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6868206169573555318">Spustit znovu a aktualizovat</translation>
 <translation id="6874604403660855544">&amp;Opakovat přidání</translation>
 <translation id="6884662655240309489">Velikost 1</translation>
+<translation id="6884796835813057577">Pokračovat na &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Úroveň zásady není podporována.</translation>
 <translation id="6895330447102777224">Vaše karta je ověřena</translation>
@@ -1072,7 +1082,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7152423860607593928">Number-14 (obálka)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> další}few{<ph name="PAYMENT_METHOD_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> další}many{<ph name="PAYMENT_METHOD_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> další}other{<ph name="PAYMENT_METHOD_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> dalších}}</translation>
 <translation id="7153618581592392745">Levandulová</translation>
-<translation id="7158980942472052083">Neplatná adresa URL. Je třeba použít adresu URL se standardním schématem.</translation>
 <translation id="717330890047184534">ID Gaia:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> další}few{<ph name="SHIPPING_OPTION_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> další}many{<ph name="SHIPPING_OPTION_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> další}other{<ph name="SHIPPING_OPTION_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> dalších}}</translation>
 <translation id="7177397715882417099">Server, na který přecházíte (<ph name="ORIGIN" />), požádal, aby se na všechny na něj odesílané požadavky vztahovaly bezpečnostní zásady. Server však namísto poskytnutí zásad přesměroval prohlížeč jinam. Prohlížeč proto váš požadavek na web <ph name="SITE" /> nemůže splnit.</translation>
@@ -1336,6 +1345,7 @@ Další podrobnosti:
 <translation id="8503559462189395349">Hesla Chrome</translation>
 <translation id="8503813439785031346">Uživatelské jméno</translation>
 <translation id="8508648098325802031">Ikona Vyhledávání</translation>
+<translation id="8522552481199248698">Chrome vám může pomoci ochránit váš účet Google a změnit heslo.</translation>
 <translation id="8543181531796978784">Můžete <ph name="BEGIN_ERROR_LINK" />nahlásit problém se zjištěným webem<ph name="END_ERROR_LINK" />. Pokud bezpečnostní rizika chápete, můžete <ph name="BEGIN_LINK" />tento nespolehlivý web navštívit<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">Máte nějaké dotazy? Kontaktujte osobu, která dohlíží na váš profil.</translation>
 <translation id="8553075262323480129">Překlad se nezdařil. Nepodařilo se rozpoznat jazyk stránky.</translation>
@@ -1423,6 +1433,7 @@ Další podrobnosti:
 <translation id="9076630408993835509">Tento prohlížeč není spravován administrátorem ani jinou organizací. Aktivita na tomto zařízení může být spravována mimo Chrome. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Jsou potřeba další informace</translation>
 <translation id="9080712759204168376">Přehled objednávky</translation>
+<translation id="9095388113577226029">Další jazyky...</translation>
 <translation id="9103872766612412690">Web <ph name="SITE" /> vaše informace běžně chrání šifrováním. Když se prohlížeč Chromium k webu <ph name="SITE" /> pokusil připojit tentokrát, web vrátil neobvyklé a nesprávné identifikační údaje. K tomuto problému může dojít, pokud se za web <ph name="SITE" /> pokouší vydávat nějaký útočník nebo pokud bylo připojení přerušeno přihlašovací obrazovkou sítě Wi-Fi. Vaše informace jsou i nadále v bezpečí, protože prohlížeč Chromium připojení přerušil dříve, než došlo k odeslání jakýchkoliv dat.</translation>
 <translation id="9106062320799175032">Přidání fakturační adresy</translation>
 <translation id="9114524666733003316">Ověřování karty...</translation>

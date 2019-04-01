@@ -56,7 +56,7 @@
 <translation id="138361230106469022">Hujambo, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Tafuta</translation>
 <translation id="1384959399684842514">Upakuaji umesitishwa</translation>
-<translation id="1389974829397082527">Hapana alamisho hapa</translation>
+<translation id="1389974829397082527">Hamna alamisho hapa</translation>
 <translation id="1397811292916898096">Tafuta kwa <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">Imepachikwa katika <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">“Usifuatilie”</translation>
@@ -262,6 +262,7 @@
 <translation id="290376772003165898">Je, ukurasa huu haupo katika <ph name="LANGUAGE" />?</translation>
 <translation id="2910701580606108292">Iulize kabla ya kuruhusu tovuti kucheza maudhui yanayolindwa</translation>
 <translation id="2913331724188855103">Ruhusu tovuti zihifadhi na kusoma data ya vidakuzi (imependekezwa)</translation>
+<translation id="2923908459366352541">Jina si sahihi</translation>
 <translation id="2932150158123903946">Hifadhi ya Google <ph name="APP_NAME" /></translation>
 <translation id="2956410042958133412">Akaunti hii inadhibitiwa na <ph name="PARENT_NAME_1" /> na <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Hakimiliki <ph name="YEAR" /> Google Inc. Haki zote zimehifadhiwa.</translation>
@@ -363,6 +364,7 @@
 <translation id="3745176700485982507">Viungo vya tovuti uzipendazo vinaweza kupatikana kwenye ukurasa huu</translation>
 <translation id="3771001275138982843">Imeshindwa kupakua sasisho</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Washa Bluetooth<ph name="END_LINK" /> ili uruhusu kuoanisha</translation>
+<translation id="3775705724665058594">Tuma kwenye vifaa vyako</translation>
 <translation id="3778956594442850293">Imeongezwa kwenye Skrini ya Kwanza</translation>
 <translation id="3781011235031427080">Mengine kama hili hayakufunguliwa kikamilifu</translation>
 <translation id="3789841737615482174">Sakinisha</translation>
@@ -528,6 +530,7 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> inashiriki skrini yako</translation>
 <translation id="4961107849584082341">Tafsiri ukurasa huu katika lugha yoyote</translation>
 <translation id="4961700429721424617">Unaondoka kwenye akaunti inayodhibitiwa na <ph name="MANAGED_DOMAIN" />. Hatua hii itafuta data yako ya Chrome kwenye kifaa hiki, lakini data yako itasalia katika akaunti yako ya Google.</translation>
+<translation id="4970824347203572753">Hakipatikani mahali ulipo</translation>
 <translation id="497421865427891073">Nenda mbele</translation>
 <translation id="4988210275050210843">Inapakua faili (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Kurasa</translation>
@@ -597,6 +600,7 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="5487521232677179737">Futa data</translation>
 <translation id="5494752089476963479">Zuia matangazo kwenye tovuti zinazoonyesha matangazo yanayopotosha au yanayokatiza huduma</translation>
 <translation id="5497272504048921382">Vichupo ambavyo vimefunguliwa</translation>
+<translation id="5500777121964041360">Huenda haipatikani mahali uliko</translation>
 <translation id="550684401320795253">Inasasisha Chrome...</translation>
 <translation id="5512137114520586844">Akaunti hii inadhibitiwa na <ph name="PARENT_NAME" /></translation>
 <translation id="5514904542973294328">Imezimwa na msimamizi wa kifaa hiki</translation>
@@ -848,6 +852,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="7250468141469952378">Imechagua <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">Ongeza Akaunti ya Google kutoka kwenye ukurasa wa Akaunti katika programu ya Mipangilio ya kifaa chako.</translation>
 <translation id="7274013316676448362">Tovuti imezuiwa</translation>
+<translation id="7290209999329137901">Huwezi kubadilisha jina</translation>
 <translation id="7291387454912369099">Ulipaji Unaoanzishwa na Mratibu</translation>
 <translation id="729975465115245577">Kifaa chako hakina programu ya kuhifadhi faili ya manenosiri.</translation>
 <translation id="7302081693174882195">Maelezo: Imepangwa kulingana na kiasi cha data kilichookolewa</translation>
@@ -981,6 +986,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="8200772114523450471">Endelea</translation>
 <translation id="8209050860603202033">Fungua picha</translation>
 <translation id="8220488350232498290">Imepakua GB <ph name="GIGABYTES" /></translation>
+<translation id="8224471946457685718">Ipakue makala unayopendekezewa kwenye Wi-Fi</translation>
 <translation id="8232956427053453090">Hifadhi data</translation>
 <translation id="8249310407154411074">Sogeza juu</translation>
 <translation id="8250920743982581267">Hati</translation>

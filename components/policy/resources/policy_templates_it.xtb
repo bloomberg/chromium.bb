@@ -1,6 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
+<translation id="1002439864875515590">Se questa norma non viene configurata o se viene impostata una stringa vuota, non verrà mostrata un'opzione di completamento automatico durante il flusso di accesso dell'utente in <ph name="PRODUCT_OS_NAME" />.
+      Se per questa norma viene impostata una stringa che rappresenta un nome di dominio, durante l'accesso dell'utente in <ph name="PRODUCT_OS_NAME" /> verrà mostrata un'opzione di completamento automatico che consentirà all'utente di digitare soltanto il nome utente senza l'estensione del nome di dominio.  L'utente potrà sostituire l'estensione del nome di dominio.
+      Se il valore della norma non è un dominio valido, la norma non sarà applicata.</translation>
 <translation id="101438888985615157">Ruota lo schermo di 180°</translation>
 <translation id="1016912092715201525">Configura i controlli del browser predefinito in <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificarli.
 
@@ -689,13 +692,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se imposti questa norma, gli utenti non possono cambiarla o sostituirla. Potranno, però, attivare/disattivare una tastiera sullo schermo di accessibilità che ha la precedenza sulla tastiera virtuale controllata da questa norma. Leggi la norma |VirtualKeyboardEnabled| per il controllo della tastiera sullo schermo di accessibilità.
 
       Se questa norma non viene impostata, la tastiera sullo schermo viene inizialmente disattivata ma può essere attivata dall'utente in qualsiasi momento. Potrebbero anche essere utilizzate regole euristiche per stabilire quando visualizzare la tastiera.</translation>
-<translation id="228659285074633994">Consente di specificare il periodo di tempo senza immissioni da parte dell'utente dopo il quale viene mostrata una finestra di dialogo di avviso quando il computer è collegato a una presa di corrente.
-
-          Quando è impostata, questa norma specifica per quanto tempo l'utente deve rimanere inattivo prima che <ph name="PRODUCT_OS_NAME" /> mostri una finestra di dialogo di avviso in cui comunica all'utente che sta per essere intrapresa l'azione richiesta in caso di inattività.
-
-          Quando questa norma non è impostata, non viene visualizzata alcuna finestra di dialogo di avviso.
-
-          Il valore della norma deve essere specificato in millisecondi. I valori sono fissati in modo da essere minori o uguali al ritardo di inattività.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> può utilizzare un servizio web Google per correggere gli errori di ortografia. Se questa impostazione è abilitata, il servizio viene sempre utilizzato. Se questa impostazione è disabilitata, il servizio non viene mai utilizzato.
 
       Il controllo ortografico può essere comunque effettuato utilizzando un dizionario scaricato; questa norma controlla soltanto l'utilizzo del servizio online.
@@ -721,7 +717,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2299220924812062390">Consente di specificare un elenco dei plug-in attivati</translation>
 <translation id="2303795211377219696">Attiva la Compilazione automatica per le carte di credito</translation>
 <translation id="2309390639296060546">Impostazione di geolocalizzazione predefinita</translation>
-<translation id="2312134445771258233">Consente di configurare le pagine che vengono caricate all'avvio. I contenuti dell'elenco "Pagine da aprire all'avvio" vengono ignorati a meno che non selezioni "Apri un elenco di URL" in "Azione all'avvio".</translation>
 <translation id="2327252517317514801">Definisci i domini autorizzati ad accedere a G Suite</translation>
 <translation id="237494535617297575">Consente di impostare un elenco di pattern URL che specificano i siti autorizzati a visualizzare notifiche. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultNotificationsSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="2386362615870139244">Consenti Wakelock dello schermo</translation>
@@ -898,6 +893,16 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
       Se questa impostazione viene disattivata, le pagine web non potranno utilizzare JavaScript e l'utente non potrà modificare tale impostazione.
 
       Se questa impostazione viene attivata o non è impostata, le pagine web potranno utilizzare JavaScript ma l'utente potrà modificare tale impostazione.</translation>
+<translation id="2747157663401642394">Configura le impostazioni di gestione delle estensioni per <ph name="PRODUCT_NAME" />.
+
+          Questa norma controlla più impostazioni, tra cui quelle controllate da norme correlate alle estensioni già presenti. Questa norma sostituisce tutte le norme precedenti se vengono impostate entrambe.
+
+          Questa norma consente di mappare un ID estensione o un URL di aggiornamento alla relativa configurazione. Con un ID estensione, la configurazione viene applicata solo all'estensione specificata. È possibile impostare una configurazione predefinita per l'ID speciale <ph name="DEFAULT_SCOPE" />, che verrà applicato a tutte le estensioni per cui non è impostata una configurazione personalizzata in questa norma. Con un URL di aggiornamento, la configurazione verrà applicata a tutte le estensioni con l'esatto URL di aggiornamento indicato nel file manifest dell'estensione, come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Per le istanze di Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />, l'installazione forzata è limitata alle app e alle estensioni elencate nel Chrome Web Store.
+
+          Per una descrizione completa delle possibili impostazioni e della struttura di questa norma, visita la pagina https://www.chromium.org/administrators/policy-list-3/extension-settings-full
+          </translation>
 <translation id="2753637905605932878">Limita l'intervallo di porte UDP locali utilizzato da WebRTC</translation>
 <translation id="2755385841634849932">Questa norma consente di controllare la disponibilità di backup e ripristino di Android.
 
@@ -1998,6 +2003,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se viene impostata, ogni elemento è considerato come una regola, in modo simile alla norma <ph name="URL_LIST_POLICY_NAME" />. Tuttavia, la logica funziona al contrario: le regole con una corrispondenza non aprono un browser alternativo.
 
       A differenza della norma <ph name="URL_LIST_POLICY_NAME" />, le regole vengono applicate in entrambe le direzioni. In altre parole, quando il componente aggiuntivo Internet Explorer è presente e attivato, la norma stabilisce se <ph name="IE_PRODUCT_NAME" /> deve aprire questi URL in <ph name="PRODUCT_NAME" />.</translation>
+<translation id="5124368997194894978">Attiva avvio tramite CA (corrente alternata)</translation>
 <translation id="5130288486815037971">Attiva o meno i pacchetti di crittografia RC4 in TLS</translation>
 <translation id="5141670636904227950">Impostazione tipo di ingrandimento dello schermo predefinito attivato nella schermata di accesso</translation>
 <translation id="5142301680741828703">Visualizza sempre i seguenti schemi di URL in <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -2106,13 +2112,6 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
 
       Se la norma non viene impostata oppure è impostata sulla stringa vuota o su un intervallo di porte non valido, WebRTC è autorizzato a utilizzare qualsiasi porta UDP locale disponibile.</translation>
 <translation id="5290940294294002042">Specifica un elenco di plug-in che l'utente può attivare o disattivare</translation>
-<translation id="5304269353650269372">Consente di specificare il periodo di tempo senza immissioni da parte dell'utente dopo il quale viene mostrata una finestra di dialogo di avviso quando il computer è alimentato a batteria.
-
-          Quando è impostata, questa norma specifica per quanto tempo l'utente deve rimanere inattivo prima che <ph name="PRODUCT_OS_NAME" /> mostri una finestra di dialogo di avviso in cui comunica all'utente che sta per essere intrapresa l'azione richiesta in caso di inattività.
-
-          Quando questa norma non è impostata, non viene visualizzata alcuna finestra di dialogo di avviso.
-
-          Il valore della norma deve essere specificato in millisecondi. I valori sono fissati in modo da essere minori o uguali al ritardo di inattività.</translation>
 <translation id="5307432759655324440">Disponibilità della modalità di navigazione in incognito</translation>
 <translation id="5318185076587284965">Attiva l'utilizzo dei server relay per l'host di accesso remoto</translation>
 <translation id="5323128137188992869">Consente di trasmettere contenuti al dispositivo usando <ph name="PRODUCT_NAME" />.
@@ -2762,6 +2761,17 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
           Se questa norma non viene impostata, verrà utilizzato il valore "3", che potrà essere modificato dall'utente.</translation>
 <translation id="663685822663765995">Limita la modalità di stampa a colori</translation>
 <translation id="6641981670621198190">Disattiva supporto per le API grafiche 3D</translation>
+<translation id="6646056064606561298">Attiva la norma di gestione dell'energia relativa all'avvio tramite CA.
+
+          L'avvio tramite CA permette al sistema di avviarsi automaticamente dallo stato di Spento/Ibernazione quando viene inserita la corrente.
+
+          Se questa norma è impostata su true, l'avvio tramite CA sarà sempre attivo, se supportato sul dispositivo.
+
+          Se questa norma è impostata su false, l'avvio tramite CA sarà sempre disattivato.
+
+          Se imposti questa norma, gli utenti non potranno modificarla o sostituirla.
+
+          Se questa norma non è impostata, l'avvio tramite CA è disattivo e non può essere attivato dall'utente.</translation>
 <translation id="6647965994887675196">Se questa norma è impostata su true, è possibile creare e utilizzare utenti supervisionati.
 
           Se questa norma è impostata su false o non è configurata, la creazione di utenti supervisionati e il relativo accesso saranno disattivati. Tutti gli utenti supervisionati esistenti saranno nascosti.
@@ -3063,17 +3073,6 @@ Se questa norma non viene impostata gli utenti possono modificare l'elenco di ap
           La riproduzione automatica è consentita soltanto per i domini elencati esplicitamente nella norma <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Se vuoi attivare la riproduzione automatica per tutti i siti, potresti aggiungere http://* e https://* a questo elenco.
 
           Se questa norma non viene impostata, l'utente potrà cambiare manualmente questa impostazione.</translation>
-<translation id="7229876938563670511">Consente di configurare l'URL della home page di <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificarlo.
-
-          La home page è la pagina che viene aperta facendo clic sul pulsante Home. Le pagine che si aprono all'avvio vengono stabilite dalle norme RestoreOnStartup.
-
-          La home page può essere un URL specificato qui oppure la pagina Nuova scheda. Se selezioni la pagina Nuova scheda, questa norma non viene applicata.
-
-          Se attivi questa impostazione, gli utenti non possono cambiare l'URL della home page di <ph name="PRODUCT_NAME" />, ma possono scegliere come home page la pagina Nuova scheda.
-
-          Se questa norma non viene impostata e non viene impostata neanche la norma HomepageIsNewTabPage, l'utente potrà scegliere la home page che preferisce.
-
-          Questa norma è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi.</translation>
 <translation id="7229975860249300121">Contiene un'espressione regolare che viene usata per stabilire quali Account Google possono essere impostati come account principali del browser in <ph name="PRODUCT_NAME" /> (ossia l'account che viene scelto durante la procedura di attivazione della sincronizzazione).
 
       Viene visualizzato un errore appropriato se un utente cerca di impostare un account principale del browser con un nome utente non corrispondente allo schema indicato.
@@ -3963,30 +3962,6 @@ https://www.w3.org/TR/secure-contexts/
           Supportato su <ph name="PRODUCT_OS_NAME" /> 70 e versioni successive. Per i client precedenti, questo valore indica che il rollback è disattivato.</translation>
 <translation id="9096086085182305205">Whitelist server di autenticazione</translation>
 <translation id="9098553063150791878">Norme relative all'autenticazione HTTP</translation>
-<translation id="9103061223348895346">Questa norma consente di stabilire diverse impostazioni relative alla strategia di gestione dell'alimentazione quando l'utente diventa inattivo.
-
-          Esistono quattro tipi di azioni:
-          * Lo schermo viene oscurato se l'utente rimane inattivo per il tempo specificato da |ScreenDim|.
-          * Lo schermo viene spento se l'utente rimane inattivo per il tempo specificato da |ScreenOff|.
-          * Se l'utente rimane inattivo per il tempo specificato da |IdleWarning|, viene visualizzata una finestra di dialogo di avviso per indicare all'utente che sta per essere compiuta l'azione per inattività.
-          * Se l'utente rimane inattivo per il tempo specificato da |Idle|, viene compiuta l'azione specificata da |IdleAction|.
-
-          Per ognuna delle azioni precedenti, il ritardo deve essere specificato in millisecondi e per attivare l'azione corrispondente deve essere impostato un valore maggiore di zero. Se il ritardo viene impostato su zero, <ph name="PRODUCT_OS_NAME" /> non compie l'azione corrispondente.
-
-          Per ciascun ritardo sopra indicato, quando il periodo di tempo non viene impostato, viene utilizzato il valore predefinito.
-
-          Tieni presente che i valori |ScreenDim| verranno mantenuti minori o uguali al valore di |ScreenOff|, mentre |ScreenOff| e |IdleWarning| verranno mantenuti minori o uguali al valore di |Idle|.
-
-          |IdleAction| può essere una delle quattro azioni possibili seguenti:
-          * |Suspend|
-          * |Logout|
-          * |Shutdown|
-          * |DoNothing|
-
-          Quando il valore |IdleAction| non è impostato, viene compiuta l'azione predefinita, ossia la sospensione.
-
-          Esistono inoltre impostazioni separate per l'alimentazione CA e la batteria.
-          </translation>
 <translation id="9105265795073104888">Solo un sottoinsieme di opzioni di configurazione del proxy viene reso disponibile alle app Android, che decidono volontariamente se rispettarlo o meno. Non puoi forzarle a utilizzare un proxy.</translation>
 <translation id="9106865192244721694">Consenti WebUSB su questi siti</translation>
 <translation id="9112727953998243860">File di configurazione delle stampanti aziendali</translation>
@@ -4038,13 +4013,6 @@ https://www.w3.org/TR/secure-contexts/
       Se la norma viene impostata su false, l'opzione "Intestazioni e piè di pagina" non viene selezionata nella finestra di dialogo dell'anteprima di stampa e l'utente non può modificarla.
 
       Se la norma viene impostata su true, l'opzione "Intestazioni e piè di pagina" viene selezionata nella finestra di dialogo dell'anteprima di stampa e l'utente non può modificarla.</translation>
-<translation id="9210953373038593554">Consente di configurare il tipo di autenticazione per gli accessi SAML.
-
-      Se questa norma non viene impostata o è impostata sul valore predefinito (0), il comportamento degli accessi SAML è determinato dal browser sulla base di altri fattori. Nella situazione di base, l'autenticazione dell'utente e la protezione dei dati degli utenti memorizzati nella cache sono basati sulle password inserite manualmente dagli utenti.
-
-      Se questa norma è impostata su ClientCertificate (valore 1), l'autenticazione del certificato client viene utilizzata per gli utenti aggiunti di recente che accedono tramite SAML. Per questi utenti non vengono utilizzate password e i loro dati locali memorizzati nella cache vengono protetti mediante le chiavi crittografiche corrispondenti. Ad esempio, questa impostazione consente di configurare un'autenticazione dell'utente basata su smart card (considera che le app middleware per smart card devono essere installate tramite la norma DeviceLoginScreenAppInstallList).
-
-      Questa norma riguarda solo gli utenti che eseguono l'autenticazione utilizzando SAML.</translation>
 <translation id="9213347477683611358">Configura l'immagine di sfondo a livello del dispositivo che viene mostrata nella schermata di accesso nel caso in cui nessun utente abbia ancora effettuato l'accesso al dispositivo. Questa norma viene impostata specificando l'URL dal quale il dispositivo Chrome OS può scaricare l'immagine di sfondo e un hash crittografico la cui funzione è quella di verificare l'integrità del download. L'immagine deve essere in formato JPEG e non deve superare le dimensioni di 16 MB. L'URL specificato deve essere accessibile senza bisogno di autenticazione. L'immagine di sfondo viene scaricata e memorizzata nella cache. Verrà scaricata nuovamente ogni volta che l'URL e l'hash vengono modificati.
 
       La norma deve essere specificata sotto forma di stringa in cui l'URL e l'hash vengono espressi in formato JSON, ad esempio,

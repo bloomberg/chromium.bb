@@ -131,7 +131,7 @@
 <translation id="2961963223658824723">Bir sorun oluştu. Birkaç saniye sonra tekrar deneyin.</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2970920913501714344">Uygulama, uzantı ve tema yükleme</translation>
-<translation id="2977598380246111477">Sonraki numara</translation>
+<translation id="2977598380246111477">Sonraki sayı</translation>
 <translation id="2995447421581609334">Yayın cihazlarını göster.</translation>
 <translation id="2996462380875591307">Yerleştirilmiş Büyüteç etkinleştirildi. Kapatmak için tekrar Ctrl+Arama+H tuşlarına basın.</translation>
 <translation id="3000461861112256445">Mono ses</translation>
@@ -199,6 +199,7 @@
 <translation id="397105322502079400">Hesaplanııyor...</translation>
 <translation id="3995138139523574647">USB-C cihaz (sağ arka bağlantı noktası)</translation>
 <translation id="4017989525502048489">Lazer işaretçi</translation>
+<translation id="4042660782729322247">Ekranınızı paylaşıyorsunuz</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Bir uygulama için kapalı}other{# uygulama için kapalı}}</translation>
 <translation id="4072264167173457037">Orta düzeyde sinyal</translation>
 <translation id="4129129681837227511">Kilit ekranınızda bildirim göstermek için cihazın kilidini açarak ayarı değiştirin</translation>
@@ -376,6 +377,7 @@
 <translation id="7067196344162293536">Otomatik döndür</translation>
 <translation id="7068360136237591149">Dosya aç</translation>
 <translation id="7076293881109082629">Oturum açılıyor</translation>
+<translation id="7088960765736518739">Anahtar Erişimi</translation>
 <translation id="7092922358121866860">Gece Işığı ayarlarını göster</translation>
 <translation id="7098389117866926363">USB-C cihaz (arkadaki sol bağlantı noktası)</translation>
 <translation id="7131634465328662194">Oturumunuz otomatik olarak kapatılacak.</translation>
@@ -502,6 +504,7 @@
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Kablosuz: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofon kullanımda.</translation>
+<translation id="9084606467167974638">Menü konumunu aç/kapat</translation>
 <translation id="9089416786594320554">Giriş yöntemleri</translation>
 <translation id="9091626656156419976"><ph name="DISPLAY_NAME" /> adlı ekran kaldırıldı</translation>
 <translation id="9151726767154816831">Güncellemek için yeniden başlatın ve Powerwash uygulayın</translation>

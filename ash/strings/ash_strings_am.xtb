@@ -199,6 +199,7 @@
 <translation id="397105322502079400">በማስላት ላይ...</translation>
 <translation id="3995138139523574647">የUSB-C መሣሪያ (የቀኝ ጎን የኋላ ወደብ)</translation>
 <translation id="4017989525502048489">የሌዘር ጨረር</translation>
+<translation id="4042660782729322247">ማያ ገጽዎን እያጋሩ ነው</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{ቅናሽ ለአንድ መተግበሪያ}one{ቅናሽ ለ# መተግበሪያዎች}other{ቅናሽ ለ# መተግበሪያዎች}}</translation>
 <translation id="4072264167173457037">መካከለኛ ሲግናል</translation>
 <translation id="4129129681837227511">በማያ ገጽ መቆለፊያዎ ላይ ማሳወቂያዎችን ለማየት ቅንብሩችን ለመቀየር ይክፈቱ</translation>
@@ -375,6 +376,7 @@
 <translation id="7067196344162293536">በራስ-አሽከርክር</translation>
 <translation id="7068360136237591149">ፋይሎችን ይክፈቱ</translation>
 <translation id="7076293881109082629">በመግባት ላይ</translation>
+<translation id="7088960765736518739">የመዳረሻ መቀየሪያ</translation>
 <translation id="7092922358121866860">የማታ ብርሃን ቅንብሮችን አሳይ</translation>
 <translation id="7098389117866926363">USB-C መሣሪያ (የግራ ወደብ ከኋላ በኩል)</translation>
 <translation id="7131634465328662194">በራስሰር ዘግተው እንዲወጡ ይደረጋሉ።</translation>
@@ -501,6 +503,7 @@
 <translation id="9074739597929991885">ብሉቱዝ</translation>
 <translation id="9079731690316798640">Wi-Fi፦ <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">ማይክሮፎን ስራ ላይ ነው።</translation>
+<translation id="9084606467167974638">የምናሌን ቦታ ቀይር</translation>
 <translation id="9089416786594320554">የግቤት ስልቶች</translation>
 <translation id="9091626656156419976">ማሳያ <ph name="DISPLAY_NAME" /> ተወግዷል</translation>
 <translation id="9151726767154816831">እንደገና ያስጀምሩ እና ለማዘመን powerwash ያድርጉ</translation>

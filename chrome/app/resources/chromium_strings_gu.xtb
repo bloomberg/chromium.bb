@@ -211,6 +211,7 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <ph name="BEGIN_LINK_2" />વધુ જાણો<ph name="END_LINK_2" />
 
 વધુ સૂચનો માટે કૃપા કરીને <ph name="ACCOUNT_EMAIL" /> પર તમારા ઇમેઇલને તપાસો.</translation>
+<translation id="7349591376906416160">તમારા સિસ્ટમ વ્યવસ્થાપકે <ph name="TARGET_URL_HOSTNAME" />ને ઍક્સેસ કરવા Chromiumને <ph name="ALTERNATIVE_BROWSER_NAME" /> ખોલવા માટે ગોઠવેલું છે.</translation>
 <translation id="7448255348454382571">Chromium OS ફરી શરૂ કરો</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium Dev</translation>
 <translation id="7451052299415159299">Chromiumને આ સાઇટ માટે તમારા કૅમેરાના ઍક્સેસની પરવાનગીની જરૂર પડે છે</translation>

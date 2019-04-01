@@ -8,6 +8,7 @@
 <translation id="1032854598605920125">Rodar para a direita</translation>
 <translation id="1035334672863811645">inicie sessão no Chrome</translation>
 <translation id="1038842779957582377">nome desconhecido</translation>
+<translation id="1039626062703039346">O Chrome pode ajudá-lo a proteger a sua Conta Google e a alterar a palavra-passe. Isto notifica a Google sobre este site.</translation>
 <translation id="1050038467049342496">Fechar outras aplicações</translation>
 <translation id="1055184225775184556">&amp;Anular adição</translation>
 <translation id="1056898198331236512">Aviso</translation>
@@ -296,13 +297,16 @@
 <translation id="2495083838625180221">Analisador JSON</translation>
 <translation id="2495093607237746763">Se marcada, o Chromium armazena uma cópia do seu cartão neste dispositivo para preencher formulários mais rapidamente.</translation>
 <translation id="2498091847651709837">Digitalizar novo cartão</translation>
+<translation id="249825481377667906">O Chromium pode ajudá-lo a proteger a sua Conta Google e alterar a palavra-passe. Isto notifica a Google sobre este site.</translation>
 <translation id="2501278716633472235">Voltar</translation>
 <translation id="2503184589641749290">Cartões de débito e pré-pagos admitidos</translation>
+<translation id="2505268675989099013">Proteger conta</translation>
 <translation id="2515629240566999685">Verificar o sinal na área</translation>
 <translation id="2523886232349826891">Guardado apenas neste dispositivo.</translation>
 <translation id="2524461107774643265">Adicionar mais informações</translation>
 <translation id="2536110899380797252">Adicionar endereço</translation>
 <translation id="2539524384386349900">Detetar</translation>
+<translation id="254947805923345898">O valor da política não é válido.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> enviou uma resposta inválida.</translation>
 <translation id="2556876185419854533">&amp;Anular edição</translation>
 <translation id="2586657967955657006">Área de transferência</translation>
@@ -435,6 +439,7 @@
           <ph name="LIST_ITEM" />Os cookies e os dados de sites
           <ph name="LIST_ITEM" />As informações introduzidas em formulários
         <ph name="END_LIST" /></translation>
+<translation id="3362968246557010467">Esta política foi copiada automaticamente da política <ph name="OLD_POLICY" /> descontinuada. Deverá optar por utilizar esta política.</translation>
 <translation id="3366477098757335611">Ver cartões</translation>
 <translation id="3369192424181595722">Erro de relógio</translation>
 <translation id="337363190475750230">Desaprovisionado</translation>
@@ -558,6 +563,7 @@
 <translation id="4072486802667267160">Ocorreu um erro ao processar a sua encomenda. Tente novamente.</translation>
 <translation id="4075732493274867456">O cliente e o servidor não suportam uma versão do protocolo SSL ou um conjunto de cifras comum.</translation>
 <translation id="4079302484614802869">A configuração do proxy está definida para utilizar um URL de script .pac e não servidores proxy fixos.</translation>
+<translation id="4092411512356034591">Pretende continuar para <ph name="DOMAIN" />?</translation>
 <translation id="4098354747657067197">O site seguinte é fraudulento</translation>
 <translation id="4103249731201008433">Número de série do dispositivo é inválido</translation>
 <translation id="410351446219883937">Reprodução automática</translation>
@@ -829,6 +835,7 @@
 <translation id="5556459405103347317">Recarregar</translation>
 <translation id="5560088892362098740">Data de validade</translation>
 <translation id="5565735124758917034">Ativo</translation>
+<translation id="5570825185877910964">Proteger conta</translation>
 <translation id="5571083550517324815">Não é possível recolher a partir deste endereço. Selecione um diferente.</translation>
 <translation id="5571347317547569613">({NUM_COOKIES,plural, =1{1 em utilização}other{# em utilização}})</translation>
 <translation id="5572851009514199876">Comece e inicie sessão no Chrome para que este possa verificar se tem autorização para aceder a este site.</translation>
@@ -965,10 +972,12 @@
 <translation id="6386120369904791316">{COUNT,plural, =1{1 outra sugestão}other{# outras sugestões}}</translation>
 <translation id="6387754724289022810">Para pagar mais rapidamente da próxima vez, guarde o cartão e o endereço de faturação na sua Conta Google e neste dispositivo.</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
+<translation id="6401136357288658127">Esta política foi descontinuada. Deverá optar por utilizar a política <ph name="NEW_POLICY" />.</translation>
 <translation id="6404511346730675251">Editar marcador</translation>
 <translation id="6406765186087300643">C0 (Envelope)</translation>
 <translation id="6410264514553301377">Introduza a data de validade e o Código de Segurança/CVC de <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">Perguntaste ao teu pai/à tua mãe se podes aceder a este site.</translation>
+<translation id="6415778972515849510">O Chromium pode ajudá-lo a proteger a sua Conta Google e alterar a palavra-passe.</translation>
 <translation id="6417515091412812850">Não é possível verificar se o certificado foi revogado.</translation>
 <translation id="6433490469411711332">Editar informações de contacto</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> recusou estabelecer ligação.</translation>
@@ -1034,6 +1043,7 @@
 <translation id="6868206169573555318">Reiniciar para atualizar</translation>
 <translation id="6874604403660855544">&amp;Refazer adição</translation>
 <translation id="6884662655240309489">Tamanho 1</translation>
+<translation id="6884796835813057577">Continuar para &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">O nível da política não é suportado.</translation>
 <translation id="6895330447102777224">O seu cartão foi confirmado</translation>
@@ -1085,7 +1095,6 @@
 <translation id="7152423860607593928">Number-14 (Envelope)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> e mais <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> e mais <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7153618581592392745">Lilás</translation>
-<translation id="7158980942472052083">URL inválido. Tem de ser um URL com um esquema padrão.</translation>
 <translation id="717330890047184534">ID Gaia:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> e mais <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> e mais <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="7177397715882417099">O servidor ao qual irá aceder, <ph name="ORIGIN" />, solicitou que seja aplicada uma
@@ -1352,6 +1361,7 @@ Detalhes adicionais:
 <translation id="8503559462189395349">Palavras-passe do Chrome</translation>
 <translation id="8503813439785031346">Nome de utilizador</translation>
 <translation id="8508648098325802031">Ícone de pesquisa</translation>
+<translation id="8522552481199248698">O Chrome pode ajudá-lo a proteger a sua Conta Google e a alterar a palavra-passe.</translation>
 <translation id="8543181531796978784">Pode <ph name="BEGIN_ERROR_LINK" />comunicar um problema de deteção<ph name="END_ERROR_LINK" /> ou, se compreende os riscos para a sua segurança, <ph name="BEGIN_LINK" />aceda a este site não seguro<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">Tem dúvidas? Contacte a pessoa que supervisiona o seu perfil.</translation>
 <translation id="8553075262323480129">A tradução falhou porque não foi possível determinar o idioma da página.</translation>
@@ -1439,6 +1449,7 @@ Detalhes adicionais:
 <translation id="9076630408993835509">Este navegador não é gerido por uma empresa ou outra entidade. A atividade neste dispositivo pode ser gerida fora do Chrome. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">São necessárias mais informações</translation>
 <translation id="9080712759204168376">Resumo da encomenda</translation>
+<translation id="9095388113577226029">Mais idiomas…</translation>
 <translation id="9103872766612412690">Normalmente, o site <ph name="SITE" /> utiliza a encriptação para proteger as suas informações. Quando o Chromium tentou estabelecer ligação a <ph name="SITE" /> desta vez, o Website devolveu credenciais invulgares e incorretas. Isto pode acontecer quando um utilizador mal intencionado tenta simular ser <ph name="SITE" /> ou quando um ecrã de início de sessão Wi-Fi interrompe a ligação. As suas informações continuam seguras porque o Chromium interrompeu a ligação antes de qualquer troca de dados.</translation>
 <translation id="9106062320799175032">Adicionar endereço de faturação</translation>
 <translation id="9114524666733003316">A confirmar o cartão…</translation>

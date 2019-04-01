@@ -261,6 +261,7 @@
 <translation id="290376772003165898">La pàgina no està en <ph name="LANGUAGE" />?</translation>
 <translation id="2910701580606108292">Pregunta'm abans de permetre que els llocs web reprodueixin contingut protegit</translation>
 <translation id="2913331724188855103">Permet que els llocs web desin i llegeixin les dades de les galetes (opció recomanada)</translation>
+<translation id="2923908459366352541">El nom no és vàlid</translation>
 <translation id="2932150158123903946">Emmagatzematge de Google <ph name="APP_NAME" /></translation>
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1" /> i <ph name="PARENT_NAME_2" /> gestionen aquest compte.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Tots els drets reservats.</translation>
@@ -362,6 +363,7 @@
 <translation id="3745176700485982507">En aquesta pàgina trobaràs enllaços als teus llocs web preferits</translation>
 <translation id="3771001275138982843">No s'ha pogut baixar l'actualització</translation>
 <translation id="3773755127849930740">Per permetre la vinculació, <ph name="BEGIN_LINK" />activa el Bluetooth<ph name="END_LINK" /></translation>
+<translation id="3775705724665058594">Envia als teus dispositius</translation>
 <translation id="3778956594442850293">S'ha afegit a la pantalla d'inici</translation>
 <translation id="3781011235031427080">El full Més contingut com aquest ocupa la meitat inferior de la pantalla</translation>
 <translation id="3789841737615482174">Instal·la</translation>
@@ -527,6 +529,7 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> comparteix la teva pantalla</translation>
 <translation id="4961107849584082341">Tradueix aquesta pàgina a qualsevol idioma</translation>
 <translation id="4961700429721424617">Estàs tancant la sessió d'un compte gestionat per <ph name="MANAGED_DOMAIN" />. Se suprimiran les teves dades de Chrome en aquest dispositiu, però continuaran al teu compte de Google.</translation>
+<translation id="4970824347203572753">No està disponible a la teva ubicació</translation>
 <translation id="497421865427891073">Ves endavant</translation>
 <translation id="4988210275050210843">S'està baixant el fitxer (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Pàgines</translation>
@@ -596,6 +599,7 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5487521232677179737">Esborra les dades</translation>
 <translation id="5494752089476963479">Bloqueja els anuncis als llocs web que mostren publicitat intrusiva o enganyosa</translation>
 <translation id="5497272504048921382">Pestanyes obertes</translation>
+<translation id="5500777121964041360">Pot ser que no estigui disponible a la teva ubicació</translation>
 <translation id="550684401320795253">S'està actualitzant Chrome…</translation>
 <translation id="5512137114520586844"><ph name="PARENT_NAME" /> gestiona aquest compte.</translation>
 <translation id="5514904542973294328">Opció desactivada per l'administrador d'aquest dispositiu</translation>
@@ -847,6 +851,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> elements seleccionats</translation>
 <translation id="7253272406652746122">Afegeix un compte de Google des de la pàgina Comptes de l'aplicació Configuració del dispositiu.</translation>
 <translation id="7274013316676448362">Lloc bloquejat</translation>
+<translation id="7290209999329137901">No es pot canviar el nom</translation>
 <translation id="7291387454912369099">Pagament activat per l'Assistent</translation>
 <translation id="729975465115245577">El dispositiu no té cap aplicació per emmagatzemar el fitxer de contrasenyes.</translation>
 <translation id="7302081693174882195">Detalls: files ordenades per quantitat de dades estalviades</translation>
@@ -978,6 +983,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8200772114523450471">Reprèn</translation>
 <translation id="8209050860603202033">Obre la imatge</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB en baixades</translation>
+<translation id="8224471946457685718">Baixa articles que et poden interessar quan tinguis connexió a la Wi-Fi</translation>
 <translation id="8232956427053453090">Conserva les dades</translation>
 <translation id="8249310407154411074">Mou a la part superior</translation>
 <translation id="8250920743982581267">Documents</translation>

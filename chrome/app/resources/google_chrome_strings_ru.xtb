@@ -228,6 +228,7 @@
 <translation id="7589360514048265910">Google Chrome больше не будет обновляться на этом компьютере, так как поддержка Mac OS X 10.9 прекращена.</translation>
 <translation id="7592736734348559088">Google Chrome не удалось синхронизировать данные, поскольку ваши учетные данные устарели.</translation>
 <translation id="7626032353295482388">Добро пожаловать в Chrome!</translation>
+<translation id="7641148173327520642">Ваш системный администратор задал настройки, согласно которым Google Chrome должен запускать <ph name="ALTERNATIVE_BROWSER_NAME" /> для доступа к сайту <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Логотип Chrome Enterprise</translation>
 <translation id="7747138024166251722">Программе установки не удалось создать временный каталог. Возможно, у вас нет прав на установку приложений или недостаточно места на диске.</translation>
 <translation id="7761834446675418963">Нажмите на свое имя, чтобы войти в Chrome.</translation>

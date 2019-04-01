@@ -1,6 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
+<translation id="1002439864875515590">Hvis denne regelen er satt til en tom streng eller ikke er konfigurert, viser ikke <ph name="PRODUCT_OS_NAME" /> noe alternativ for autofullføring i løpet av brukerpåloggingen.
+      Hvis denne regelen er satt til en streng som representerer et domenenavn, viser <ph name="PRODUCT_OS_NAME" /> et alternativ for autofullføring i løpet av brukerpåloggingen, slik at brukeren kun trenger å skrive inn brukernavnet sitt uten domenenavnet for utvidelsen.  Brukeren kan overskrive domenenavnet for denne utvidelsen.
+      Hvis regelverdien ikke er et gyldig domene, brukes ikke regelen.</translation>
 <translation id="101438888985615157">Rotér skjermen 180 grader</translation>
 <translation id="1016912092715201525">Konfigurerer standard nettleserkontroller i <ph name="PRODUCT_NAME" /> og hindrer brukere i å endre dem.
 
@@ -703,13 +706,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis du angir denne innstillingen, kan ikke brukerne endre eller overstyre den. Brukerne kan imidlertid aktivere og deaktivere et eventuelt skjermtastatur som er levert via tilgjengelighetsfunksjonene og har forrang over det virtuelle tastaturet som kontrolleres av denne innstillingen. Se innstillingen |VirtualKeyboardEnabled| for å kontrollere skjermtastaturet som leveres av tilgjengelighetsfunksjonene.
 
       Hvis denne innstillingen ikke angis, blir skjermtastaturet i utgangspunktet deaktivert, men det kan aktiveres av brukeren når som helst. Heuristiske regler kan også brukes til å bestemme når tastaturet skal vises.</translation>
-<translation id="228659285074633994">Angir tidsperioden uten brukeraktivitet før det vises en advarsel om at enheten går på AC-strøm.
-
-          Når denne innstillingen angis, bestemmet lengden på tiden en bruker må være inaktiv før <ph name="PRODUCT_OS_NAME" /> viser en advarsel om at inaktivitetshandlingen snart brukes.
-
-          Når dette ikke er angitt, vises ingen advarsel.
-
-          Innstillingsverdien skal angis i millisekunder. Verdiene må være mindre enn eller lik med inaktivitetsperioden.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> kan bruke en Google-nett-tjeneste for å få bukt med stavefeil. Hvis denne innstillingen er aktivert, så blir denne tjenesten alltid brukt. Hvis innstillinger er deaktivert, forblir tjenesten ubrukt.
 
       Du kan fortsatt utføre stavekontroll av innhold, men da med en ordliste du har lastet ned selv – denne innstillingen styrer bare bruk av tjenesten på nettet.
@@ -735,7 +731,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="2299220924812062390">Angi en liste over aktiverte programtillegg</translation>
 <translation id="2303795211377219696">Slå på autofyll for kredittkort</translation>
 <translation id="2309390639296060546">Standardinnstilling for geoposisjonering</translation>
-<translation id="2312134445771258233">Lar deg konfigurere sidene som lastes inn ved oppstart. Innholdet i listen «Nettadresser som skal åpnes ved oppstart» ignoreres, med mindre du velger «Åpne en liste over nettadresser» i «Handling ved oppstart».</translation>
 <translation id="2327252517317514801">Spesifiser hvilke domener som har tilgang til G Suite</translation>
 <translation id="237494535617297575">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som får vise varsler. Hvis denne retningslinjen ikke angis, brukes den globale verdien for alle nettsteder, enten fra retningslinjen DefaultNotificationsSetting hvis den er angitt, eller av brukerens egen konfigurasjon hvis den nevnte retningslinjen ikke er angitt.</translation>
 <translation id="2386362615870139244">Tillat låser for skjermaktivering</translation>
@@ -922,6 +917,16 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
      Hvis denne innstillingen er deaktivert, kan ikke nettsidene bruke JavaScript og brukeren kan ikke endre innstillingen.
 
       Hvis denne innstillingen er aktivert eller ikke angitt, kan nettsider bruke JavaScript, men brukeren kan endre innstillingen.</translation>
+<translation id="2747157663401642394">Konfigurerer innstillinger for administrering av utvidelser for <ph name="PRODUCT_NAME" />.
+
+          Denne regelen styrer flere innstillinger, inkludert innstillinger som styres av eksisterende regler knyttet til utvidelser. Denne regelen overstyrer eventuelle eldre regler hvis begge er angitt.
+
+          Denne regelen tilordner konfigurasjonen en utvidelses-ID eller en oppdateringsnettadresse. Med en utvidelses-ID blir konfigurasjonen kun brukt for den bestemte utvidelsen. En standardkonfigurering kan angis for den spesielle ID-en <ph name="DEFAULT_SCOPE" />, som gjelder for alle utvidelser uten tilpasset konfigurering i denne regelen. Med en oppdateringsnettadresse brukes konfigureringen for alle utvidelser med den nøyaktige oppdateringsnettadressen som står oppført i manifestet til denne utvidelsen, som beskrevet på <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          For Windows-forekomster som ikke er tilknyttet noe <ph name="MS_AD_NAME" />-domene, begrenses administratorinstallering til apper og utvidelser oppført i Chrome Nettmarked.
+
+          For å se en fullstendig beskrivelse av mulige innstillinger og strukturen for denne regelen, gå til https://www.chromium.org/administrators/policy-list-3/extension-settings-full
+          </translation>
 <translation id="2753637905605932878">Begrens området for lokale UDP-porter som brukes av WebRTC</translation>
 <translation id="2755385841634849932">Denne regelen styrer tilgjengeligheten av sikkerhetskopiering og gjenoppretting for Android.
 
@@ -2044,6 +2049,7 @@ Hvis denne regelen ikke er angitt, blir ingen nettsteder lagt til på listen.
 Hvis denne regelen er angitt, blir hvert element behandlet som en regel – på samme måte som regelen <ph name="URL_LIST_POLICY_NAME" />. Men logikken er reversert: Samsvarende regler åpnes ikke i en alternativ nettleser.
 
 I motsetning til <ph name="URL_LIST_POLICY_NAME" /> gjelder denne regelen begge veier. Det betyr at når Internet Explorer-tilleggsprogrammet er installert og aktivert, kontrollerer det også om <ph name="IE_PRODUCT_NAME" /> skal åpne disse nettadressene i <ph name="PRODUCT_NAME" />.</translation>
+<translation id="5124368997194894978">Slå på oppstart ved strømtilkobling (vekselstrøm)</translation>
 <translation id="5130288486815037971">Definerer om RC4-chifferserier i TLS er slått på</translation>
 <translation id="5141670636904227950">Angi standard skjermforstørrelsestype som er aktivert på påloggingssiden</translation>
 <translation id="5142301680741828703">Alltid gjengi følgende nettadressemønstre i <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -2163,13 +2169,6 @@ I motsetning til <ph name="URL_LIST_POLICY_NAME" /> gjelder denne regelen begge 
 
       Hvis regelen ikke er konfigurert, eller hvis den er angitt som en tom streng eller et ugyldig portområde, kan WebRTC bruke alle tilgjengelige lokale UDP-porter.</translation>
 <translation id="5290940294294002042">Angi en liste over programtillegg som brukeren kan aktivere eller deaktivere</translation>
-<translation id="5304269353650269372">Angir tidsperioden uten brukeraktivitet før det vises en advarsel om at enheten går på batteristrøm.
-
-          Når denne innstillingen angis, bestemmes lengden på tiden en bruker må være inaktiv før <ph name="PRODUCT_OS_NAME" /> viser en advarsel om at inaktivitetshandlingen snart brukes.
-
-          Når dette ikke er angitt, vises ingen advarsel.
-
-          Innstillingsverdien skal angis i millisekunder. Verdiene må være mindre enn eller lik med inaktivitetsperioden.</translation>
 <translation id="5307432759655324440">Tilgjengelighet for inkognitomodus</translation>
 <translation id="5318185076587284965">Aktiver bruken av relétjenere ved fjerntilgangsverten</translation>
 <translation id="5323128137188992869">Tillat at innhold castes til enheten med <ph name="PRODUCT_NAME" />.
@@ -2848,6 +2847,17 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
           Hvis denne regelen ikke angis, brukes «3», og brukeren kan endre denne innstillingen.</translation>
 <translation id="663685822663765995">Begrens utskrift i fargemodus</translation>
 <translation id="6641981670621198190">Deaktiver støtte for programmeringsgrensesnitt for 3D-grafikk</translation>
+<translation id="6646056064606561298">Slå på regelen for administrering av oppstart ved strømtilkobling.
+
+          Med oppstart ved strømtilkobling får systemet muligheten til å starte opp automatisk fra AV/hvilemodus når enheten kobles til et strømuttak.
+
+          Hvis denne regelen er satt til «true» (sann), er oppstart ved strømtilkobling alltid slått på hvis enheten støtter det.
+
+          Hvis denne regelen er satt til «false» (usann), er oppstart ved strømtilkobling alltid slått av.
+
+          Hvis du angir denne regelen, kan ikke brukerne endre eller overstyre den.
+
+          Hvis denne regelen ikke angis, er oppstart ved strømtilkobling av og kan ikke slås på av brukerne.</translation>
 <translation id="6647965994887675196">Hvis angitt til «true», kan administrerte brukere opprettes og brukes.
 
           Hvis angitt til «false» eller ikke konfigurert, er oppretting og bruk av administrerte brukere deaktivert. Alle eksisterende administrerte brukere skjules.
@@ -3156,17 +3166,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
           Automatisk avspilling tillates bare for domener som er oppført eksplisitt i <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />-regelen. Hvis du vil slå på automatisk avspilling for alle nettsteder, kan du vurdere å legge til http://* og https://* i denne listen.
 
           Hvis denne regelen ikke er angitt, kan brukeren endre denne innstillingen manuelt.</translation>
-<translation id="7229876938563670511">Konfigurerer nettadressen for startsiden som brukes som standard i <ph name="PRODUCT_NAME" />, og forhindrer at brukerne kan endre den.
-
-          Startsiden er siden som åpnes med hjemknappen. Hvilke sider som åpnes ved oppstart, kontrolleres av RestoreOnStartup-reglene.
-
-          Typen startside kan angis som enten en nettadresse du spesifiserer her, eller siden for nye faner. Hvis du velger å bruke siden for nye faner, har ikke denne regelen noen virkning.
-
-          Hvis du slår på denne innstillingen, kan ikke brukerne endre nettadressen for startsiden i <ph name="PRODUCT_NAME" />, men de kan fortsatt velge å bruke siden for nye faner som startside.
-
-          Hvis du ikke angir denne regelen, kan brukerne velge startside selv – såfremt ikke HomepageIsNewTabPage også er angitt.
-
-          Denne regelen er bare tilgjengelig på Windows-forekomster som er tilknyttet <ph name="MS_AD_NAME" />-domener, eller Windows 10 Pro- eller Enterprise-forekomster som er registrert for enhetsadministrering.</translation>
 <translation id="7229975860249300121">Inneholder et regulært uttrykk som brukes til å fastslå hvilke Google-kontoer som kan angis som hovedkontoer for nettlesere i <ph name="PRODUCT_NAME" /> (dvs. kontoen som velges i løpet av flyten for registreringen for synkronisering).
 
       En passende feil vises hvis brukere prøver å angi en hovedkonto for en nettleser med et brukernavn som ikke samsvarer med dette mønsteret.
@@ -4091,30 +4090,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
           Støttes på <ph name="PRODUCT_OS_NAME" /> versjon 70 og nyere. For eldre klienter betyr denne verdien at rollback er deaktivert.</translation>
 <translation id="9096086085182305205">Godkjenningsliste for autentiseringstjener</translation>
 <translation id="9098553063150791878">Regler for HTTP-autentisering</translation>
-<translation id="9103061223348895346">Denne regelen kontrollerer flere innstillinger for strømstyring når brukeren er inaktiv.
-
-          Det finnes fire typer handlinger:
-          * Skjermen dempes hvis brukeren er inaktiv lenger enn det som er angitt for |ScreenDim|.
-          * Skjermen slås av hvis brukeren er inaktiv lenger enn det som er angitt for |ScreenOff|.
-          * En advarsel i en dialogboks vises hvis brukeren er inaktiv lenger enn det som er angitt for |IdleWarning|. Advarselen informerer brukeren om at inaktivitetshandlingen snart utføres.
-          * Handlingen som er angitt for |IdleAction|, utføres hvis brukeren er inaktiv lenger enn tiden som er angitt for |Idle|.
-
-          Forsinkelsen for hver av handlingene ovenfor må angis i millisekunder. Verdien må være høyere enn null for å utløse den korresponderende handlingen. Hvis forsinkelsen er satt til null, utfører ikke <ph name="PRODUCT_OS_NAME" /> den korresponderende handlingen.
-
-          Hvis det ikke er angitt noen tid for de ulike forsinkelsene ovenfor, brukes det standardverdier.
-
-          Vær oppmerksom på at verdien for |ScreenDim| ikke kan være høyere enn verdien for |ScreenOff|, og at verdiene for |ScreenOff| og |IdleWarning| ikke kan være høyere enn verdien for |Idle|.
-
-          |IdleAction| kan være én av disse fire mulige handlingene:
-          * |Suspend|
-          * |Logout|
-          * |Shutdown|
-          * |DoNothing|
-
-          Når |IdleAction| ikke er angitt, utføres standardhandlingen, som er Suspend (hvilemodus).
-
-          Det finnes også separate innstillinger for nettstrøm og batteri.
-          </translation>
 <translation id="9105265795073104888">Bare en undergruppe av konfigurasjonsalternativer for proxy-tjenere er gjort tilgjengelig for Android-apper. Android-apper kan velge å bruke proxy-tjeneren frivillig. Du kan ikke tvinge dem til å bruke proxy-tjenere.</translation>
 <translation id="9106865192244721694">Tillat WebUSB på disse nettstedene</translation>
 <translation id="9112727953998243860">Konfigurasjonsfil for bedriftsskriver</translation>
@@ -4173,13 +4148,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis denne regelen er angitt som «false» (usant), velges ikke topp- og bunntekst i dialogboksen for forhåndsvisning av utskrifter, og brukeren kan ikke endre dette.
 
       Hvis denne regelen er angitt som «true» (sant), velges topp- og bunntekst i dialogboksen for forhåndsvisning av utskrifter, og brukeren kan ikke endre dette.</translation>
-<translation id="9210953373038593554">Konfigurerer autentiseringstypen for SAML-pålogging.
-
-      Når denne regelen ikke er spesifisert eller er satt til standard (verdi 0), bestemmes atferden for SAML pålogging av nettleseren avhengig av andre faktorer. I det mest grunnleggende scenarioet baseres brukerautentisering og beskyttelse av bufrede brukerdata på passord som skrives inn manuelt av brukerne.
-
-      Når denne regelen er satt til klientsertifikat (verdi 1), brukes autentisering av klientsertifikat for brukere som nylig er lagt til, og som logger inn via SAML. Ingen passord brukes for slike brukere, og bufrede lokale data beskyttes med tilhørende kryptografiske nøkler. Denne innstillingen tillater for eksempel konfigurering av smartkortbasert brukerautentisering (merk at mellomvareapper for smartkort må installeres via DeviceLoginScreenAppInstallList-regelen).
-
-      Denne regelen påvirker bare brukere som autentiserer via SAML.</translation>
 <translation id="9213347477683611358">Konfigurer bakgrunnsbildet som vises på påloggingsskjermen, på enhentsnivå hvis ingen brukere har logget på enheten ennå. Regelen angis ved å spesifisere nettadressen hvor Chrome OS-enheten kan laste ned bakgrunnsbildet, og dessuten en kryptografisk hash-verdi som brukes til bekrefte nedlastingens integritet. Bildet må være i JPEG-format, og filstørrelsen kan ikke overskride 16 MB. Nettadressen må være tilgjengelig uten autentisering. Bakgrunnsbildet lastes ned og bufres. Det lastes ned på nytt hvis nettadressen eller hash-verdien endres.
 
       Regelen skal spesifiseres som en streng der nettadressen og hash-verdien skrives i JSON-format, for eksempel

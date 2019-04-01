@@ -1,6 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
+<translation id="1002439864875515590">Kui selle reegli väärtuseks määratakse tühi string või see jäetakse määramata, ei kuva operatsioonisüsteem <ph name="PRODUCT_OS_NAME" /> kasutaja sisselogimisvoos automaatse täitmise valikut.
+      Kui selleks reegli väärtuseks määratakse string, mis esindab domeeni nime, kuvab operatsioonisüsteem <ph name="PRODUCT_OS_NAME" /> kasutaja sisselogimisvoos automaatse täitmise valiku, mis võimaldab kasutajal sisestada ainult kasutajanime ilma domeeninime laiendita.  Kasutaja saab selle domeeninime laiendi alistada.
+      Kui reegli väärtus ei ole kehtiv domeen, siis reeglit ei rakendata.</translation>
 <translation id="101438888985615157">Ekraani pööramine 180 kraadi</translation>
 <translation id="1016912092715201525">Seadistab vaikebrauseri kontrolli rakenduses <ph name="PRODUCT_NAME" /> ja takistab kasutajaid neid muutmast.
 
@@ -731,13 +734,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
       Kui määrate selle reegli, ei saa kasutajad seda muuta ega alistada. Kuid kasutajad saavad ikka lubada/keelata juurdepääsetavuse ekraanil kuvatava klaviatuuri, millel on eesõigus võrreldes virtuaalse klaviatuuriga, mida juhib see reegel.
 
       Kui reeglit ei määrata, siis on ekraanil kuvatav klaviatuur esialgu keelatud, kuid kasutaja saab selle igal ajal lubada. Klaviatuuri kuvamiseks võidakse kasutada ka heuristilisi reegleid.</translation>
-<translation id="228659285074633994">Määrab aja, pärast mida kuvatakse vahelduvvoolutoite kasutamisel hoiatusdialoog, kui kasutaja pole midagi sisestanud.
-
-          Kui see reegel on määratud, määrab see aja, mille jooksul peab kasutaja olema tegevusetu, enne kui teenus <ph name="PRODUCT_OS_NAME" /> kuvab hoiatusdialoogi, teavitades kasutajat tegevusetu oleku peatsest toimingust.
-
-          Kui seda reeglit pole määratud, siis hoiatusdialoogi ei kuvata.
-
-          Reegli väärtus tuleb määrata millisekundites. Väärtus peab olema tegevusetuse viivitusest väiksem või sellega võrdne.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> saab kasutada Google'i veebiteenust, et aidata parandada õigekirjavigu. Kui seade on lubatud, siis kasutatakse teenust alati. Kui seade on keelatud, siis ei kasutata teenust kunagi.
 
       Õigekirjakontrolli saab siiski teha, kasutades selleks allalaaditud sõnastikku. Reegel haldab ainult veebiteenuse kasutamist.
@@ -763,7 +759,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 <translation id="2299220924812062390">Lubatud pistikprogrammide loendi määramine</translation>
 <translation id="2303795211377219696">Automaattäite lubamine krediitkaartide puhul</translation>
 <translation id="2309390639296060546">Geograafilise asukoha vaikeseade</translation>
-<translation id="2312134445771258233">Võimaldab seadistada käivitamisel avatavad lehed. Loendi „Käivitamisel avatavad URL-id” sisu eiratakse, kui te ei vali jaotises „Toiming käivitamisel” käsku „Ava URL-ide loend”.</translation>
 <translation id="2327252517317514801">G Suite'i kasutamise loaga domeenide määramine</translation>
 <translation id="237494535617297575">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel on lubatud kuvada märguandeid.
 
@@ -956,6 +951,16 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
       Kui see seade keelatakse, ei saa veebilehed JavaScripti kasutada ja kasutaja ei saa seda seadet muuta.
 
       Kui see seade on lubatud või määramata, saavad veebilehed JavaScripti kasutada, kuid kasutajad saavad seda seadet muuta.</translation>
+<translation id="2747157663401642394">Seadistab rakenduse <ph name="PRODUCT_NAME" /> laiendite haldamise seaded.
+
+          Reegel juhib mitut seadet, sealhulgas seadeid, mida juhivad olemasolevad laiendustega seotud reeglid. Reegel alistab kõik pärandreeglid, kui mõlemad on määratud.
+
+          Reegel vastendab laienduse ID või värskenduse URL-i seadistusega. Laienduse ID-ga rakendatakse seadistus ainult määratud laiendusele. Spetsiaalse ID <ph name="DEFAULT_SCOPE" /> jaoks saab määrata vaikeseadistuse, mis kehtib kõikide laienduste puhul, millele ei ole reeglis määratud kohandatud seadistust. Värskenduse URL-iga rakendatakse seadistus kõikidele laiendustele, mille täpne värskenduse URL on märgitud laienduse manifesti, nagu on kirjeldatud jaotises <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Windowsi eksemplaride puhul, mis ei ole ühendatud domeeniga <ph name="MS_AD_NAME" />, saab sundinstallida vaid Chrome’i veebipoes olevaid rakendusi ja laiendusi.
+
+          Vaadake reegli võimalike seadete ja struktuuri täielikku kirjeldust: https://www.chromium.org/administrators/policy-list-3/extension-settings-full
+          </translation>
 <translation id="2753637905605932878">WebRTC kasutatavate kohalike UDP-portide vahemiku piiramine</translation>
 <translation id="2755385841634849932">See reegel juhib Androidi varundamise ja taastamise saadavalolekut.
 
@@ -2089,6 +2094,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
       Kui reegel on määratud, käsitletakse iga üksust reeglina, sarnaselt reegliga <ph name="URL_LIST_POLICY_NAME" />. Loogika on aga vastupidine: kattuvaid reegleid ei avata alternatiivses brauseris.
 
       Erinevalt reeglist <ph name="URL_LIST_POLICY_NAME" /> kehtivad reeglid mõlemas suunas. See tähendab, et kui Internet Exploreri pistikprogramm on olemas ja lubatud, juhib see ka seda, kas<ph name="IE_PRODUCT_NAME" /> peaks avama URL-id rakenduses <ph name="PRODUCT_NAME" />.</translation>
+<translation id="5124368997194894978">Vahelduvvooluga käivitamise lubamine</translation>
 <translation id="5130288486815037971">Kas RC4 šifreerimiskomplektid TLS-is on lubatud?</translation>
 <translation id="5141670636904227950">Lubage ekraaniluubi vaiketüüp sisselogimisekraanil</translation>
 <translation id="5142301680741828703">Renderda alati rakenduses <ph name="PRODUCT_FRAME_NAME" /> järgmiste URL-ide mustrid</translation>
@@ -2209,13 +2215,6 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 
       Kui reeglit ei ole määratud või kui see on määratud tühjale stringile või kehtetule pordivahemikule, on WebRTC-l lubatud kasutada mis tahes saadaolevat kohalikku UDP-porti.</translation>
 <translation id="5290940294294002042">Määrake pistikprogrammide loend, mida kasutaja saab lubada või keelata</translation>
-<translation id="5304269353650269372">Määrab aja, pärast mida kuvatakse akutoite kasutamisel hoiatusdialoog, kui kasutaja pole midagi sisestanud.
-
-          Kui see reegel on määratud, määrab see aja, mille jooksul peab kasutaja olema tegevusetu, enne kui teenus <ph name="PRODUCT_OS_NAME" /> kuvab hoiatusdialoogi, teavitades kasutajat tegevusetu oleku peatsest toimingust.
-
-          Kui seda reeglit pole määratud, siis hoiatusdialoogi ei kuvata.
-
-          Reegli väärtus tuleb määrata millisekundites. Väärtus peab olema tegevusetuse viivitusest väiksem või sellega võrdne.</translation>
 <translation id="5307432759655324440">Inkognito režiimi saadavus</translation>
 <translation id="5318185076587284965">Luba kaugjuurdepääsuhostil kasutada releeservereid</translation>
 <translation id="5323128137188992869">Sisu lubatakse teenuse <ph name="PRODUCT_NAME" /> kaudu seadmesse üle kanda.
@@ -2895,6 +2894,17 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
           Kui seda reeglit ei määrata, kasutatakse väärtust „3” ja kasutaja saab seda muuta.</translation>
 <translation id="663685822663765995">Printimise värvirežiimi piiramine</translation>
 <translation id="6641981670621198190">Keela 3D-graafika API-liideste tugi</translation>
+<translation id="6646056064606561298">Toitehalduse reeglis vahelduvvooluga käivitamise lubamine.
+
+          Vahelduvvooluga käivitamine annab süsteemile võimaluse seade olekust VÄLJAS/Puhkerežiim automaatselt käivitada, kui seade on ühendatud toiteallikaga.
+
+          Kui reegli väärtuseks määratakse Tõene, siis lubatakse vahelduvvooluga käivitamine alati, kui seade seda toetab.
+
+          Kui reegli väärtuseks määratakse Väär, siis on vahelduvvooluga käivitamine alati keelatud.
+
+          Kui selle reegli määrate, ei saa kasutajad seda muuta ega alistada.
+
+          Kui see reegel jäetakse määramata, siis on vahelduvvooluga käivitamine keelatud ja kasutaja ei saa seda lubada.</translation>
 <translation id="6647965994887675196">Kui väärtuseks on seatud valik Tõene, saab luua ja kasutada järelevalvega kasutajaid.
 
           Kui väärtuseks on seatud valik Väär või Seadistamata, siis on järelevalvega kasutajate loomine ja sisselogimine keelatud. Kõik olemasolevad järelevalvega kasutajad peidetakse.
@@ -3215,17 +3225,6 @@ Kui jätate selle reegli määramata, ei ole kasutajate sisselogimine piiratud. 
           Automaatne taasesitus on lubatud ainult domeenidel, mis on reeglis <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> selgesõnaliselt loetletud. Kui soovite lubada automaatse taasesituse kõigil saitidel, kaaluge sellesse loendisse protokollide http://* ja https://* lisamist.
 
           Kui see reegel on määramata, saab kasutaja seda seadet käsitsi muuta.</translation>
-<translation id="7229876938563670511">Seadistab rakenduse <ph name="PRODUCT_NAME" /> avalehe vaike-URL-i ja keelab kasutajatel selle muutmise.
-
-          Avaleht on leht, mis avaneb nupu Avaleht vajutamisel. Käivitamisel avatavaid lehti juhivad reeglid RestoreOnStartup.
-
-          Avalehe tüübiks saab seadistada siin määratud URL-i või uue vahelehe. Kui valite uue vahelehe, siis seda reeglit ei jõustata.
-
-          Kui lubate selle seade, ei saa kasutajad avalehe URL-i teenuses <ph name="PRODUCT_NAME" /> muuta, kuid nad saavad avaleheks valida siiski uue vahelehe.
-
-          Kui seda reeglit ei määrata, saab kasutaja ise valida oma avalehe, kui ka reegel HomepageIsNewTabPage on määramata.
-
-          Reegel on saadaval ainult Windowsi eksemplarides, mis on liidetud domeeniga <ph name="MS_AD_NAME" />, ja Windows 10 Pro või Enterprise'i eksemplaridega, mis on registreeritud seadmehalduse teenuses.</translation>
 <translation id="7229975860249300121">Sisaldab regulaaravaldist, mis määrab, millised Google'i kontod saab teenuses <ph name="PRODUCT_NAME" /> brauseri peamisteks kontodeks seadistada.
 
       Kui kasutaja üritab määrata brauseri peamist kontot, mille kasutajanimi ei kattu mustriga, kuvatakse vastav veasõnum.
@@ -4175,30 +4174,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
           Seda toetatakse alates operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> 70. versioonist. Vanemate klientide puhul tähendab väärtus, et tagasiminek on keelatud.</translation>
 <translation id="9096086085182305205">Autentimisserveri lubatud nimekiri</translation>
 <translation id="9098553063150791878">HTTP autentimise reeglid</translation>
-<translation id="9103061223348895346">See reegel juhib mitut seadet, mis reguleerivad toitehalduse strateegiat kasutaja tegevusetuse ajal.
-
-          Võimalik on rakendada nelja tüüpi toiminguid.
-          * Ekraan muutub tumedaks, kui kasutaja on tegevusetu aja jooksul, mis on määratud üksusega |ScreenDim|.
-          * Ekraan lülitatakse välja, kui kasutaja on tegevusetu aja jooksul, mis on määratud üksusega |ScreenOff|.
-          * Kui kasutaja on tegevusetu aja jooksul, mis on määratud üksusega |IdleWarning|, siis kuvatakse hoiatusdialoog, mis ütleb kasutajale, et peagi rakendub tegevusetu oleku toiming.
-          * Kui kasutaja on tegevusetu üksusega |Idle| määratud aja jooksul, rakendub toiming |IdleAction|.
-
-          Iga ülalnimetatud toimingu puhul tuleb viivitus määrata millisekunditega ja vastava toimingu rakendamiseks peab aja väärtus olema suurem kui null. Kui viivituse väärtus on null, ei rakenda <ph name="PRODUCT_OS_NAME" /> vastavat toimingut.
-
-          Kui mõne ülaltoodud viivituse puhul pole aega määratud, kasutatakse vaikeväärtust.
-
-          Pange tähele, et üksuse |ScreenDim| väärtusi piiratakse nii, et need oleksid võrdsed üksusega |ScreenOff| või sellest väiksemad, üksuseid |ScreenOff| ja |IdleWarning| piiratakse nii, et need oleksid võrdsed üksusega |Idle| või sellest väiksemad.
-
-          |IdleAction| võib olla üks neljast võimalikust toimingust.
-          * |Suspend|
-          * |Logout|
-          * |Shutdown|
-          * |DoNothing|
-
-          Kui üksust |IdleAction| pole määratud, rakendub vaiketoiming, milleks on peatamine.
-
-          Vahelduvvoolu- ja akutoite jaoks on saadaval ka eraldi seaded.
-          </translation>
 <translation id="9105265795073104888">Androidi rakendustele muudetakse kättesaadavaks ainult puhverserveri seadistuse valikute alamkomplekt. Androidi rakenduste jaoks on puhverserveri kasutamine vabatahtlik. Te ei saa puhverserveri kasutamist sundida.</translation>
 <translation id="9106865192244721694">Reegli WebUSB lubamine nendel saitidel</translation>
 <translation id="9112727953998243860">Ettevõtte printerite konfiguratsioonifail</translation>
@@ -4257,13 +4232,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
       Kui reegel on seatud väärtusele Väär, ei ole seade „Päised ja jalused” printimise eelvaate dialoogis valitud ja kasutaja ei saa seda muuta.
 
       Kui reegel on seatud väärtusele Tõene, on seade „Päised ja jalused” printimise eelvaate dialoogis valitud ja kasutaja ei saa seda muuta.</translation>
-<translation id="9210953373038593554">Seadistab SAML-i sisselogimiste autentimise tüübi.
-
-      Kui reegel on määramata või seatud vaikeväärtusele (0), määrab brauser olenevalt muudest teguritest SAML-i sisselogimiste käitumise. Kõige tavapärasema stsenaariumi korral põhineb kasutajate autentimine ja vahemällu talletatud kasutajaandmete kaitse paroolidel, mille kasutajad käsitsi sisestavad.
-
-      Kui reegel on seatud väärtusele ClientCertificate (1), kasutatakse äsja lisatud ja SAML-i kaudu sisse logivate kasutajate puhul kliendi sertifikaadi autentimist. Selliste kasutajate puhul ei kasutata paroole ja nende vahemällu talletatud kohalikke andmeid kaitstakse vastavate krüptovõtmetega. See seade võimaldab näiteks seadistada kiipkaardipõhise autentimise (pange tähele, et kiipkaardi vaherakendused tuleb installida reegli DeviceLoginScreenAppInstallList kaudu).
-
-      Reegel mõjutab ainult kasutajaid, kes kasutavad autentimiseks SAML-i.</translation>
 <translation id="9213347477683611358">Seadistage seadmetasemel taustapildi kujutis, mis kuvatakse sisselogimisekraanil, kui ükski kasutaja pole veel seadmesse sisse loginud. Selle reegli määramiseks tuleb määrata URL, kust Chrome OS-i seade saab alla laadida taustapildi kujutise ja krüptograafilise räsiväärtuse, mida kasutatakse allalaadimise terviklikkuse kontrollimiseks. Kujutis peab olema JPEG-vormingus ja faili suurus ei tohi ületada 16 MB. URL peab olema autentimiseta juurdepääsetav. Taustapildi kujutis laaditakse alla ja salvestatakse vahemällu. See laaditakse uuesti alla iga kord, kui URL või räsiväärtus muutub.
 
       Reegel tuleks määrata stringina, mis näitab URL-i ja räsiväärtust JSON-vormingus, nt

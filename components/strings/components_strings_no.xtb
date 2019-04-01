@@ -8,6 +8,7 @@
 <translation id="1032854598605920125">Rotér med klokken</translation>
 <translation id="1035334672863811645">logg på Chrome</translation>
 <translation id="1038842779957582377">ukjent navn</translation>
+<translation id="1039626062703039346">Chrome kan hjelpe deg med å beskytte Google-kontoen din og endre passordet ditt. Dette varsler Google om dette nettstedet.</translation>
 <translation id="1050038467049342496">Lukk andre apper</translation>
 <translation id="1055184225775184556">&amp;Angre tilleggingen</translation>
 <translation id="1056898198331236512">Advarsel</translation>
@@ -296,13 +297,16 @@
 <translation id="2495083838625180221">JSON Parser</translation>
 <translation id="2495093607237746763">Hvis det er merket av for dette alternativet, lagrer Chromium en kopi av kortet ditt på denne enheten, slik at det går raskere å fylle ut skjemaer.</translation>
 <translation id="2498091847651709837">Skann nytt kort</translation>
+<translation id="249825481377667906">Chromium kan hjelpe deg med å beskytte Google-kontoen din og endre passordet ditt. Dette varsler Google om dette nettstedet.</translation>
 <translation id="2501278716633472235">Gå tilbake</translation>
 <translation id="2503184589641749290">Godkjente debetkort og forhåndsbetalte kort</translation>
+<translation id="2505268675989099013">Beskytt kontoen</translation>
 <translation id="2515629240566999685">Sjekk signalet i området ditt</translation>
 <translation id="2523886232349826891">Kun lagret på denne enheten</translation>
 <translation id="2524461107774643265">Legg til mer informasjon</translation>
 <translation id="2536110899380797252">Legg til adresse</translation>
 <translation id="2539524384386349900">Oppdag</translation>
+<translation id="254947805923345898">Regelverdien er ikke gyldig.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> sendte et ugyldig svar.</translation>
 <translation id="2556876185419854533">&amp;Angre endringen</translation>
 <translation id="2586657967955657006">Utklippstavle</translation>
@@ -435,6 +439,7 @@
           <ph name="LIST_ITEM" />informasjonskapsler og nettstedsdata
           <ph name="LIST_ITEM" />informasjon du skriver inn i skjemaer
         <ph name="END_LIST" /></translation>
+<translation id="3362968246557010467">Denne regelen ble automatisk kopiert fra den avviklede regelen <ph name="OLD_POLICY" />. Du bør bruke denne regelen i stedet.</translation>
 <translation id="3366477098757335611">Vis kort</translation>
 <translation id="3369192424181595722">Klokkefeil</translation>
 <translation id="337363190475750230">Godkjenningen er opphevet</translation>
@@ -558,6 +563,7 @@
 <translation id="4072486802667267160">Det oppsto en feil under behandlingen av bestillingen din. Prøv på nytt.</translation>
 <translation id="4075732493274867456">Klienten og tjeneren støtter ingen felles SSL-protokollversjon eller -chifferserie.</translation>
 <translation id="4079302484614802869">Konfigurasjonen av proxytjeneren er angitt til å bruke en nettadresse med .pac-skript, ikke statiske proxytjenere.</translation>
+<translation id="4092411512356034591">Vil du fortsette til <ph name="DOMAIN" />?</translation>
 <translation id="4098354747657067197">Villedende nettsted i sikte</translation>
 <translation id="4103249731201008433">Enhetens serienummer er ugyldig</translation>
 <translation id="410351446219883937">Autoavspilling</translation>
@@ -829,6 +835,7 @@
 <translation id="5556459405103347317">Last inn på nytt</translation>
 <translation id="5560088892362098740">Utløpsdato</translation>
 <translation id="5565735124758917034">Aktiv</translation>
+<translation id="5570825185877910964">Beskytt kontoen</translation>
 <translation id="5571083550517324815">Kan ikke hente på denne adressen. Velg en annen adresse.</translation>
 <translation id="5571347317547569613">({NUM_COOKIES,plural, =1{1 er i bruk}other{# er i bruk}})</translation>
 <translation id="5572851009514199876">Start og logg på Chrome, så Chrome kan sjekke om du har tillatelse til å gå til dette nettstedet.</translation>
@@ -965,10 +972,12 @@
 <translation id="6386120369904791316">{COUNT,plural, =1{1 annet forslag}other{# andre forslag}}</translation>
 <translation id="6387754724289022810">For å betale raskere neste gang, lagre kortet ditt og faktureringsadressen i Google-kontoen din og på denne enheten.</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
+<translation id="6401136357288658127">Denne regelen er avviklet. Du bør bruke den nye <ph name="NEW_POLICY" />-regelen i stedet.</translation>
 <translation id="6404511346730675251">Rediger bokmerket</translation>
 <translation id="6406765186087300643">C0 (konvolutt)</translation>
 <translation id="6410264514553301377">Skriv inn utløpsdatoen og verifiseringskoden for <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">Du har spurt forelderen din om det er greit å besøke dette nettstedet</translation>
+<translation id="6415778972515849510">Chromium kan hjelpe deg med å beskytte Google-kontoen din og endre passordet ditt.</translation>
 <translation id="6417515091412812850">Kan ikke kontrollere hvorvidt sertifikatet har blitt tilbakekalt.</translation>
 <translation id="6433490469411711332">Endre kontaktinformasjonen</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> avviste tilkoblingsforsøket.</translation>
@@ -1034,6 +1043,7 @@
 <translation id="6868206169573555318">Start på nytt for å oppdatere</translation>
 <translation id="6874604403660855544">&amp;Legg til likevel</translation>
 <translation id="6884662655240309489">Størrelse 1</translation>
+<translation id="6884796835813057577">Vil du fortsette til &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Innstillingsnivået støttes ikke.</translation>
 <translation id="6895330447102777224">Kortet ditt er bekreftet</translation>
@@ -1085,7 +1095,6 @@
 <translation id="7152423860607593928">Number-14 (konvolutt)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> til}other{<ph name="PAYMENT_METHOD_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> til}}</translation>
 <translation id="7153618581592392745">Lavendel</translation>
-<translation id="7158980942472052083">Ugyldig nettadresse. Dette må være en nettadresse på standardformat.</translation>
 <translation id="717330890047184534">Gaia-ID:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> til}other{<ph name="SHIPPING_OPTION_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> til}}</translation>
 <translation id="7177397715882417099">Tjeneren du er på vei til (<ph name="ORIGIN" />), har bedt om at
@@ -1352,6 +1361,7 @@ Mer informasjon:
 <translation id="8503559462189395349">Chrome-passord</translation>
 <translation id="8503813439785031346">Brukernavn</translation>
 <translation id="8508648098325802031">Søkeikon</translation>
+<translation id="8522552481199248698">Chrome kan hjelpe deg med å beskytte Google-kontoen din og endre passordet ditt.</translation>
 <translation id="8543181531796978784">Du kan <ph name="BEGIN_ERROR_LINK" />rapportere et påvisningsproblem<ph name="END_ERROR_LINK" /> eller, hvis du forstår sikkerhetsrisikoen, <ph name="BEGIN_LINK" />gå til dette usikre nettstedet<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">Har du spørsmål? Kontakt personen som administrer profilen din.</translation>
 <translation id="8553075262323480129">Oversettelsen mislyktes fordi sidens språk ikke kunne fastslås.</translation>
@@ -1438,6 +1448,7 @@ Mer informasjon:
 <translation id="9076630408993835509">Denne nettleseren administreres ikke av et selskap eller en annen organisasjon. Aktiviteten på denne enheten kan administreres utenfor Chrome. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Mer informasjon er nødvendig</translation>
 <translation id="9080712759204168376">Bestillingssammendrag</translation>
+<translation id="9095388113577226029">Flere språk</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> bruker vanligvis kryptering for å beskytte informasjonen din. Da Chromium prøvde å koble til <ph name="SITE" /> denne gangen, sendte nettstedet tilbake uvanlig og feil legitimasjon. Dette kan skje hvis en angriper prøver å utgi seg for å være <ph name="SITE" />, eller hvis en Wi-Fi-påloggingsskjerm har avbrutt tilkoblingen. Informasjonen din er likevel sikker fordi Chromium stoppet tilkoblingen før det ble utvekslet noen data.</translation>
 <translation id="9106062320799175032">Legg til faktureringsadresse</translation>
 <translation id="9114524666733003316">Bekrefter kortet …</translation>

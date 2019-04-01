@@ -1,6 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
+<translation id="1002439864875515590">Si aquesta política s'estableix en una cadena en blanc o no es configura, <ph name="PRODUCT_OS_NAME" /> no mostrarà cap opció de compleció automàtica durant el flux d'inici de sessió de l'usuari.
+      Si aquesta política s'estableix en una cadena que representa un nom de domini, <ph name="PRODUCT_OS_NAME" /> mostrarà una opció de compleció automàtica durant l'inici de sessió de l'usuari que li permetrà escriure només el seu nom d'usuari, sense l'extensió del nom del domini.  L'usuari podrà substituir l'extensió del nom del domini.
+      Si el valor de la política no és un domini vàlid, la política no s'aplicarà.</translation>
 <translation id="101438888985615157">Gira la pantalla 180 graus</translation>
 <translation id="1016912092715201525">Configura les comprovacions del navegador predeterminat a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris les canviïn.
 
@@ -603,13 +606,6 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
       Si definiu aquesta política, els usuaris no la podran modificar ni substituir. De totes maneres, els usuaris encara podran activar o desactivar un teclat d'accessibilitat en pantalla, que té prioritat sobre el teclat virtual que es controla amb aquesta política. Consulteu la política |VirtualKeyboardEnabled| per controlar el teclat d'accessibilitat en pantalla.
 
       Si aquesta política no es defineix, el teclat en pantalla està desactivat inicialment però l'usuari el pot activar en qualsevol moment. També es poden fer servir regles heurístiques per decidir quan s'ha de mostrar el teclat.</translation>
-<translation id="228659285074633994">Especifica el període de temps sense intervenció de l'usuari que ha de passar abans de mostrar un quadre de diàleg d'advertiment quan l'ordinador funciona amb alimentació.
-
-          Si aquesta política es defineix, especifica el període de temps durant el qual l'usuari ha d'estar inactiu abans que <ph name="PRODUCT_OS_NAME" /> mostri un quadre de diàleg d'advertiment que indiqui a l'usuari que s'està a punt de dur a terme l'acció d'inactivitat.
-
-          Si aquesta política no es defineix, no es mostra cap quadre de diàleg d'advertiment.
-
-          El valor de la política s'ha d'especificar en mil·lisegons. Els valors es restringeixen perquè siguin menors que o iguals al retard d'inactivitat.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> pot utilitzar un servei web de Google per corregir errors ortogràfics. Si activeu aquest paràmetre, sempre s'utilitzarà aquest servei. Si el desactiveu, el servei no s'utilitzarà mai.
 
       Podeu continuar comprovant la correcció ortogràfica amb un diccionari que hàgiu baixat. Aquesta política només controla l'ús del servei en línia.
@@ -634,7 +630,6 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
 <translation id="2299220924812062390">Especifica una llista de connectors activats</translation>
 <translation id="2303795211377219696">Activa la funció Emplenament automàtic per a les targetes de crèdit</translation>
 <translation id="2309390639296060546">Configuració d'ubicació predeterminada</translation>
-<translation id="2312134445771258233">Us permet configurar les pàgines que es carreguen en iniciar. El contingut de la llista "URL que s'han d'obrir en iniciar" s'ignora tret que seleccioneu "Obre una llista d'URL" a "Acció a l'inici".</translation>
 <translation id="2327252517317514801">Defineix els dominis que tenen permís per accedir a G Suite</translation>
 <translation id="237494535617297575">Us permet definir una llista de patrons d'URL que especifiquen els llocs en què està permès mostrar notificacions. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultNotificationsSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="2386362615870139244">Permet els wake locks de la pantalla</translation>
@@ -807,6 +802,16 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
       Si aquesta opció es desactiva, les pàgines web no podran utilitzar JavaScript i l'usuari no podrà canviar aquesta configuració.
 
       Si s'activa aquesta opció o no es defineix, les pàgines web podran fer servir JavaScript però l'usuari podrà canviar aquesta opció.</translation>
+<translation id="2747157663401642394">Configura les opcions de gestió d'extensions per a <ph name="PRODUCT_NAME" />.
+
+          Aquesta política controla diverses opcions de configuració, com ara les opcions controlades per qualsevol política actual que estigui relacionada amb extensions. Aquesta política substituirà qualsevol política anterior, si totes dues s'han configurat.
+
+          Aquesta política assigna un identificador d'extensió o un URL d'actualització a la configuració corresponent. Amb un identificador d'extensió, la configuració s'aplicarà només a l'extensió especificada. Es pot establir una configuració predeterminada per a l'identificador especial <ph name="DEFAULT_SCOPE" />, que s'aplicarà a totes les extensions que no tinguin establerta una configuració personalitzada en aquesta política. Amb un URL d'actualització, la configuració s'aplicarà a totes les extensions que tinguin el mateix URL d'actualització indicat al fitxer de manifest de l'extensió, tal com es descriu a <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          En les instàncies de Windows que no formin part d'un domini que pertanyi a <ph name="MS_AD_NAME" />, la instal·lació forçada es limita a les aplicacions i les extensions incloses a Chrome Web Store.
+
+          Per obtenir una descripció detallada de les opcions de configuració possibles i de l'estructura d'aquesta política, visita https://www.chromium.org/administrators/policy-list-3/extension-settings-full
+          </translation>
 <translation id="2753637905605932878">Restringeix l'interval de ports UDP locals utilitzats per WebRTC</translation>
 <translation id="2755385841634849932">Aquesta política controla la disponibilitat del servei de còpia de seguretat i restauració d'Android.
 
@@ -1750,6 +1755,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Si aquesta política es defineix, cadascun dels elements es tractarà com una regla, de manera similar que amb la política <ph name="URL_LIST_POLICY_NAME" />. Ara bé, la lògica és la contrària: les regles que coincideixin no obriran un navegador alternatiu.
 
       A diferència de la política <ph name="URL_LIST_POLICY_NAME" />, les regles són bidireccionals. És a dir, si hi ha el complement d'Internet Explorer i està activat, també controlarà si <ph name="IE_PRODUCT_NAME" /> ha d'obrir aquests URL a <ph name="PRODUCT_NAME" />.</translation>
+<translation id="5124368997194894978">Activa l'inici amb alimentació (corrent altern)</translation>
 <translation id="5130288486815037971">Si els sistemes de xifratge RC4 de TLS estan activats</translation>
 <translation id="5141670636904227950">Estableix el tipus de lupa predeterminat activat a la pantalla d'inici de sessió</translation>
 <translation id="5142301680741828703">Renderitza sempre els patrons URL següents a <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1826,13 +1832,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
       Si la política no es defineix o es defineix a la cadena buida o en un interval de ports no vàlid, WebRTC pot fer servir qualsevol port UDP local disponible.</translation>
 <translation id="5290940294294002042">Especifica una llista dels connectors que l'usuari pot activar o desactivar</translation>
-<translation id="5304269353650269372">Especifica el període de temps sense intervenció de l'usuari que ha de passar abans de mostrar un quadre de diàleg d'advertiment quan l'ordinador funciona amb bateria.
-
-          Si aquesta política es defineix, especifica el període de temps durant el qual l'usuari ha d'estar inactiu abans que <ph name="PRODUCT_OS_NAME" /> mostri un quadre de diàleg d'advertiment que indiqui a l'usuari que s'està a punt de dur a terme l'acció d'inactivitat.
-
-          Si aquesta política no es defineix, no es mostra cap quadre de diàleg d'advertiment.
-
-          El valor de la política s'ha d'especificar en mil·lisegons. Els valors es restringeixen perquè siguin menors que o iguals al retard d'inactivitat.</translation>
 <translation id="5307432759655324440">Disponibilitat del mode d'incògnit</translation>
 <translation id="5318185076587284965">Permet que l'amfitrió d'accés remot pugui utilitzar els servidors de tramesa</translation>
 <translation id="5323128137188992869">Permet que s'emeti el contingut al dispositiu mitjançant <ph name="PRODUCT_NAME" />.
@@ -2387,6 +2386,17 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           Si aquesta política es deixa sense establir, es farà servir el valor "3" i l'usuari podrà canviar-lo.</translation>
 <translation id="663685822663765995">Restringeix el mode d'impressió en color</translation>
 <translation id="6641981670621198190">Desactiva la compatibilitat amb API de gràfics en 3D</translation>
+<translation id="6646056064606561298">Activa la política de gestió de l'inici amb alimentació.
+
+          L'inici amb alimentació permet que el sistema s'iniciï quan està apagat o en estat d'hibernació i s'endolla el cable a una presa de corrent.
+
+          Si aquesta política s'estableix en "true" i el dispositiu ho admet, l'inici amb alimentació estarà sempre activat.
+
+          Si aquesta política s'estableix en "false", l'inici amb alimentació estarà sempre desactivat.
+
+          Si estableixes aquesta política, els usuaris no podran canviar-la ni substituir-la.
+
+          Si aquesta política es deixa sense establir, l'inici amb alimentació es desactivarà i l'usuari no la podrà activar.</translation>
 <translation id="6647965994887675196">Si es defineix com a vertader, es poden crear usuaris supervisats i es poden fer servir.
 
           Si es defineix com a fals o bé no es configura, l'inici de sessió i la creació d'usuaris supervisats es desactivaran. S'amagaran tots els usuaris supervisats existents.
@@ -2679,17 +2689,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           L'execució automàtica només es permet per als dominis enumerats de manera expressa a la política <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Per permetre-la per a tots els llocs web, us recomanem afegir http://* i https://* a aquesta enumeració.
 
           Si aquesta política no es defineix, l'usuari podrà canviar l'opció de configuració manualment.</translation>
-<translation id="7229876938563670511">Configura l'URL de la pàgina d'inici predeterminada a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris el canviïn.
-
-          La pàgina d'inici és la que s'obre amb el botó Inici. Les pàgines que s'obren en iniciar el navegador les controlen les polítiques RestoreOnStartup.
-
-          El tipus de pàgina d'inici es pot definir per un URL que especifiquis o per la pàgina Pestanya nova. Si selecciones la pàgina Pestanya nova, aquesta política no s'aplicarà.
-
-          Si actives aquesta opció de configuració, els usuaris no podran canviar el seu URL de pàgina d'inici a <ph name="PRODUCT_NAME" />, però sí que podran triar la pàgina Pestanya nova com a pàgina d'inici.
-
-          Si deixes aquesta política sense establir i HomepageIsNewTabPage també es deixa sense establir, l'usuari podrà triar la seva pàgina d'inici.
-
-          Aquesta política només està disponible en instàncies de Windows que s'hagin unit a un domini de <ph name="MS_AD_NAME" /> o instàncies de Windows 10 Pro o Enterprise que s'hagin inscrit per a la gestió de dispositius.</translation>
 <translation id="7229975860249300121">Conté una expressió regular que es fa servir per determinar quins comptes de Google es poden definir com a comptes principals del navegador a <ph name="PRODUCT_NAME" /> (és a dir, el compte que es tria durant el flux d'activació de Sincronització).
 
       Si un usuari prova de definir un compte principal del navegador amb un nom d'usuari que no coincideix amb aquest patró, es mostra un error adient.
@@ -3500,13 +3499,6 @@ per donar prioritat a OverrideSecurityRestrictionsOnInsecureOrigin. Si totes due
       Si la política s'estableix en "false", l'opció Capçaleres i peus de pàgina no se selecciona al quadre de diàleg de previsualització de la impressió i l'usuari no ho pot canviar.
 
       Si la política s'estableix en "true", l'opció Capçaleres i peus de pàgina se selecciona al quadre de diàleg de previsualització de la impressió i l'usuari no ho pot canviar.</translation>
-<translation id="9210953373038593554">Configura el tipus d'autenticació per a inicis de sessió amb SAML.
-
-      Si aquesta política no es defineix o es defineix en el valor predeterminat (0), el comportament dels inicis de sessió amb SAML el determina el navegador en funció d'altres factors. En el cas més senzill, l'autenticació de l'usuari i la protecció de les dades de l'usuari emmagatzemades a la memòria cau es basen en contrasenyes introduïdes manualment pels usuaris.
-
-      Si aquesta política s'estableix en “ClientCertificate” (valor 1), l'autenticació del certificat de client s'utilitza per a usuaris afegits recentment que inicien la sessió amb SAML. Per a aquests usuaris no s'utilitza cap contrasenya i les dades locals emmagatzemades a la memòria cau es protegeixen utilitzant les claus criptogràfiques corresponents. Per exemple, aquesta opció de configuració permet configurar l'autenticació de l'usuari basada en una targeta intel·ligent. Tingues en compte que les aplicacions de programari intermediari de la targeta intel·ligent s'han d'instal·lar mitjançant la política DeviceLoginScreenAppInstallList.
-
-      Aquesta política només afecta els usuaris que s'autentiquen amb SAML.</translation>
 <translation id="9213347477683611358">Configura la imatge de fons de la pantalla d'inici de sessió d'un dispositiu si ningú no hi ha iniciat la sessió. Per establir la política, cal especificar l'URL que pot fer servir el dispositiu de Chrome OS per baixar la imatge i un resum criptogràfic per verificar la integritat de la baixada. La imatge ha de ser en format JPEG i no ha de superar els 16 MB. S'ha de poder accedir a l'URL sense cap tipus d'autenticació. La imatge de fons de pantalla es baixa i es desa a la memòria cau, i es tornarà a baixar si es modifica l'URL o el resum.
 
       La política s'ha d'especificar en forma de cadena amb l'URL i el resum en format JSON. Per exemple:

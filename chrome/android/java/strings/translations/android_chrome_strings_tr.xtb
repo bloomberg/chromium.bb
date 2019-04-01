@@ -262,6 +262,7 @@
 <translation id="290376772003165898">Sayfa <ph name="LANGUAGE" /> dilinde değil mi?</translation>
 <translation id="2910701580606108292">Sitelerin korumalı içeriği oynatmasına izin verilmeden önce size sorulur</translation>
 <translation id="2913331724188855103">Sitelerin, çerez verilerini kaydetmelerine ve okumalarına izin ver (önerilir)</translation>
+<translation id="2923908459366352541">Ad geçersiz</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> depolama alanı</translation>
 <translation id="2956410042958133412">Bu hesap <ph name="PARENT_NAME_1" /> ve <ph name="PARENT_NAME_2" /> tarafından yönetiliyor.</translation>
 <translation id="2960796085439532066">Telif Hakkı <ph name="YEAR" /> Google Inc. Tüm hakları saklıdır.</translation>
@@ -363,6 +364,7 @@
 <translation id="3745176700485982507">Bu sayfada favori web sitelerinize bağlantılar bulabilirsiniz</translation>
 <translation id="3771001275138982843">Güncelleme indirilemedi</translation>
 <translation id="3773755127849930740">Eşleşmeye izin vermek için <ph name="BEGIN_LINK" />Bluetooth'u açın<ph name="END_LINK" /></translation>
+<translation id="3775705724665058594">Cihazlarınıza gönderin</translation>
 <translation id="3778956594442850293">Ana ekrana eklendi</translation>
 <translation id="3781011235031427080">Yarım yükseklikte açılan, bunun gibi daha fazlası sayfası</translation>
 <translation id="3789841737615482174">Yükle</translation>
@@ -528,6 +530,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> ekranınızı paylaşıyor</translation>
 <translation id="4961107849584082341">Bu sayfayı istediğiniz dile çevirin</translation>
 <translation id="4961700429721424617"><ph name="MANAGED_DOMAIN" /> tarafından yönetilen bir hesabın oturumunu kapatıyorsunuz. Bu işlemle Chrome verileriniz bu cihazdan silinir, ancak Google Hesabınızda kalmaya devam eder.</translation>
+<translation id="4970824347203572753">Bulunduğunuz konumda kullanılamıyor</translation>
 <translation id="497421865427891073">İlerle</translation>
 <translation id="4988210275050210843">Dosya indiriliyor (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Sayfalar</translation>
@@ -597,6 +600,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5487521232677179737">Verileri temizle</translation>
 <translation id="5494752089476963479">Araya giren veya yanıltıcı reklamlar gösteren sitelerde reklamları engelle</translation>
 <translation id="5497272504048921382">Sekmeler açıldı</translation>
+<translation id="5500777121964041360">Konumunuzda kullanılamayabilir</translation>
 <translation id="550684401320795253">Chrome güncelleniyor...</translation>
 <translation id="5512137114520586844">Bu hesap <ph name="PARENT_NAME" /> tarafından yönetiliyor.</translation>
 <translation id="5514904542973294328">Bu cihazın yöneticisi tarafından devre dışı bırakıldı</translation>
@@ -848,6 +852,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> öğe seçildi</translation>
 <translation id="7253272406652746122">Cihazınızın Ayarlar uygulamasındaki Hesaplar sayfasından bir Google Hesabı ekleyin.</translation>
 <translation id="7274013316676448362">Engellenmiş site</translation>
+<translation id="7290209999329137901">Yeniden adlandırma yapılamıyor</translation>
 <translation id="7291387454912369099">Asistan'ın Başlattığı Ödeme</translation>
 <translation id="729975465115245577">Cihazınızda şifreler dosyasını depolayacak bir uygulama yok.</translation>
 <translation id="7302081693174882195">Ayrıntılar: Tasarruf edilen veri miktarına göre sıralı</translation>
@@ -981,6 +986,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="8200772114523450471">Sürdür</translation>
 <translation id="8209050860603202033">Resmi aç</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB indirildi</translation>
+<translation id="8224471946457685718">Size özel makaleleri kablosuz bağlantıda indirin</translation>
 <translation id="8232956427053453090">Verileri koru</translation>
 <translation id="8249310407154411074">En üste taşı</translation>
 <translation id="8250920743982581267">Dokümanlar</translation>

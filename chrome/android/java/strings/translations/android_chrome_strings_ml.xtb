@@ -262,6 +262,7 @@
 <translation id="290376772003165898">പേജ് <ph name="LANGUAGE" /> ഭാഷയിലല്ലേ?</translation>
 <translation id="2910701580606108292">പരിരക്ഷിത ഉള്ളടക്കം പ്ലേ ചെയ്യാൻ സൈറ്റുകളെ അനുവദിക്കുന്നതിന് മുമ്പ് ചോദിക്കുക</translation>
 <translation id="2913331724188855103">കുക്കി ഡാറ്റ സംരക്ഷിക്കുന്നതിനും വായിക്കുന്നതിനും സൈറ്റുകളെ അനുവദിക്കുക (ശുപാർശചെയ്‌തത്)</translation>
+<translation id="2923908459366352541">പേര് അസാധുവാണ്</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> സ്‌റ്റോറേജ്</translation>
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1" />, <ph name="PARENT_NAME_2" /> എന്നിവരാണ് ഈ അക്കൗണ്ട് നിയന്ത്രിക്കുന്നത്.</translation>
 <translation id="2960796085439532066">പകർപ്പവകാശം <ph name="YEAR" /> Google Inc. എല്ലാ അവകാശങ്ങളും നിക്ഷിപ്‌തം.</translation>
@@ -363,6 +364,7 @@
 <translation id="3745176700485982507">നിങ്ങളുടെ പ്രിയപ്പെട്ട വെബ്‌സൈറ്റുകളിലേക്കുള്ള ലിങ്കുകൾ ഈ പേജിൽ കണ്ടെത്താനാവും</translation>
 <translation id="3771001275138982843">അപ്‌ഡേറ്റ് ഡൗൺലോഡ് ചെയ്യാനായില്ല</translation>
 <translation id="3773755127849930740">ജോടിയാക്കാൻ, <ph name="BEGIN_LINK" />Bluetooth ഓണാക്കുക<ph name="END_LINK" /></translation>
+<translation id="3775705724665058594">നിങ്ങളുടെ ഉപകരണങ്ങളിലേക്ക് അയയ്‌ക്കുക</translation>
 <translation id="3778956594442850293">ഹോം സ്‌ക്രീനിലേക്ക് ചേർത്തു</translation>
 <translation id="3781011235031427080">'ഇതുപോലുള്ള കൂടുതല്‍' ഷീറ്റ്, പകുതി ഉയരത്തില്‍ തുറന്നിരിക്കുന്നു</translation>
 <translation id="3789841737615482174">ഇന്‍സ്റ്റാളുചെയ്യുക</translation>
@@ -528,6 +530,7 @@
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> നിങ്ങളുടെ സ്‌ക്രീൻ പങ്കിടുന്നു</translation>
 <translation id="4961107849584082341">ഈ പേജ് ഏത് ഭാഷയിലേക്കും വിവര്‍ത്തനം ചെയ്യുക</translation>
 <translation id="4961700429721424617"><ph name="MANAGED_DOMAIN" /> മാനേജുചെയ്യുന്ന ഒരു അക്കൗണ്ടിൽ നിന്നും നിങ്ങൾ സൈൻ ഔട്ട് ചെയ്യുകയാണ്. ഇത് ഈ ഉപകരണത്തിൽ നിന്ന് നിങ്ങളുടെ Chrome വിവരങ്ങൾ ഇല്ലാതാക്കുമെങ്കിലും, Google അക്കൗണ്ടിൽ തുടർന്നും അവ ഉണ്ടായിരിക്കുന്നതാണ്.</translation>
+<translation id="4970824347203572753">നിങ്ങളുടെ ലൊക്കേഷനിൽ ലഭ്യമല്ല</translation>
 <translation id="497421865427891073">മുന്നോട്ട് പോകുക</translation>
 <translation id="4988210275050210843">ഫയൽ ഡൗൺലോഡ് ചെയ്യുന്നു (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">പേജുകള്‍</translation>
@@ -597,6 +600,7 @@
 <translation id="5487521232677179737">ഡാറ്റ മായ്‌ക്കുക</translation>
 <translation id="5494752089476963479">അനാവശ്യമോ തെറ്റിദ്ധരിപ്പിക്കുന്നതോ ആയ പരസ്യങ്ങള്‍ കാണിക്കുന്ന സൈറ്റുകളിലെ പരസ്യങ്ങൾ ബ്ലോക്ക് ചെയ്യുക</translation>
 <translation id="5497272504048921382">തുറന്ന ടാബുകൾ</translation>
+<translation id="5500777121964041360">നിങ്ങളുടെ ലൊക്കേഷനിൽ ലഭ്യമായിരിക്കില്ല</translation>
 <translation id="550684401320795253">Chrome അപ്‌ഡേറ്റുചെയ്യുന്നു...</translation>
 <translation id="5512137114520586844"><ph name="PARENT_NAME" /> ആണ് ഈ അക്കൗണ്ട് നിയന്ത്രിക്കുന്നത്.</translation>
 <translation id="5514904542973294328">ഈ ഉപകരണത്തിന്റെ അഡ്‌മിനി‌സ്‌ട്രേറ്റർ പ്രവർത്തനരഹിതമാക്കി</translation>
@@ -848,6 +852,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> എണ്ണം തിരഞ്ഞെടുത്തു</translation>
 <translation id="7253272406652746122">നിങ്ങളുടെ ഉപകരണത്തിലെ ക്രമീകരണം ആപ്പിലെ, 'അക്കൗണ്ടുകൾ' പേജിൽ നിന്ന് ഒരു Google അക്കൗണ്ട് ചേർക്കുക.</translation>
 <translation id="7274013316676448362">സൈറ്റ് ബ്ലോക്കുചെയ്‌തു</translation>
+<translation id="7290209999329137901">പേര് മാറ്റൽ ലഭ്യമല്ല</translation>
 <translation id="7291387454912369099">അസിസ്‌റ്റന്റ് ചെക്ക് ഔട്ട് ചെയ്യാൻ പ്രേരിപ്പിച്ചു</translation>
 <translation id="729975465115245577">നിങ്ങളുടെ ഉപകരണത്തിൽ പാസ്‍വേഡ് ഫയൽ സംഭരിക്കാനുള്ള ആപ്പ് ഇല്ല.</translation>
 <translation id="7302081693174882195">വിശദാംശങ്ങൾ: സംരക്ഷിച്ച ഡാറ്റയുടെ അളവനുസരിച്ച് അടുക്കിയത്</translation>
@@ -981,6 +986,7 @@
 <translation id="8200772114523450471">തുടരൂ</translation>
 <translation id="8209050860603202033">ചിത്രം തുറക്കുക</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB ഡൗൺലോഡുചെയ്‌തു</translation>
+<translation id="8224471946457685718">വൈഫൈ ഉപയോഗിച്ച് നിങ്ങൾക്കായി ലേഖനങ്ങൾ ഡൗൺലോഡ് ചെയ്യുക</translation>
 <translation id="8232956427053453090">ഡാറ്റ സൂക്ഷിക്കുക</translation>
 <translation id="8249310407154411074">മുകളിലേക്ക് നീക്കുക</translation>
 <translation id="8250920743982581267">ഡോക്യുമെന്റുകൾ</translation>

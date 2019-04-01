@@ -211,6 +211,7 @@ Chromium не може да врати подешавања.</translation>
 <ph name="BEGIN_LINK_2" />Сазнајте више<ph name="END_LINK_2" />
 
 Потражите даља упутства у имејлу на <ph name="ACCOUNT_EMAIL" />.</translation>
+<translation id="7349591376906416160">Администратор система је конфигурисао Chromium да отвара прегледач <ph name="ALTERNATIVE_BROWSER_NAME" /> да би приступао <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7448255348454382571">Рестартујте Chromium ОС</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – Програмерска верзија Chromium-а</translation>
 <translation id="7451052299415159299">Chromium тражи дозволу да приступи камери за овај сајт</translation>

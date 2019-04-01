@@ -8,6 +8,7 @@
 <translation id="1032854598605920125">Zungusha kwenye mwendo wa saa</translation>
 <translation id="1035334672863811645">ingia katika Chrome</translation>
 <translation id="1038842779957582377">jina lisilojulikana</translation>
+<translation id="1039626062703039346">Chrome inaweza kukusaidia kulinda Akaunti yako ya Google na kubadilisha nenosiri lako. Hatua hii itaarifu Google kuhusu tovuti hii.</translation>
 <translation id="1050038467049342496">Funga programu nyingine</translation>
 <translation id="1055184225775184556">Tendua Kuongeza</translation>
 <translation id="1056898198331236512">Ilani</translation>
@@ -296,13 +297,16 @@
 <translation id="2495083838625180221">Kichanganuzi cha JSON</translation>
 <translation id="2495093607237746763">Ikitiwa tiki, Chromium itahifadhi nakala ya kadi yako kwenye kifaa hiki kwa ajili ya kujaza fomu haraka zaidi.</translation>
 <translation id="2498091847651709837">Changanua kadi mpya</translation>
+<translation id="249825481377667906">Chromium inaweza kukusaidia kulinda Akaunti yako ya Google na kubadilisha nenosiri lako. Hatua hii itaarifu Google kuhusu tovuti hii.</translation>
 <translation id="2501278716633472235">Rudi nyuma</translation>
 <translation id="2503184589641749290">Kadi za malipo na za kulipia awali zinazokubaliwa</translation>
+<translation id="2505268675989099013">Linda Akaunti</translation>
 <translation id="2515629240566999685">Kuangalia uthabiti wa mawimbi katika eneo lako</translation>
 <translation id="2523886232349826891">Imehifadhiwa kwenye kifaa hiki pekee</translation>
 <translation id="2524461107774643265">Ongeza Maelezo Zaidi</translation>
 <translation id="2536110899380797252">Ongeza Anwani</translation>
 <translation id="2539524384386349900">Gundua</translation>
+<translation id="254947805923345898">Thamani ya sera si sahihi.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> imetuma jibu ambalo si sahihi.</translation>
 <translation id="2556876185419854533">Tendua Kuhariri</translation>
 <translation id="2586657967955657006">Ubao wa kunakili</translation>
@@ -435,6 +439,7 @@
           <ph name="LIST_ITEM" />Data ya vidakuzi na tovuti
           <ph name="LIST_ITEM" />Maelezo unayojaza katika fomu
         <ph name="END_LIST" /></translation>
+<translation id="3362968246557010467">Sera hii ilinakiliwa kiotomatiki kutoka sera iliyoacha kuendesha huduma ya <ph name="OLD_POLICY" />. Unapaswa kutumia sera hii badala yake.</translation>
 <translation id="3366477098757335611">Angalia kadi</translation>
 <translation id="3369192424181595722">Hitilafu ya saa</translation>
 <translation id="337363190475750230">Imewekwa katika hali ya kutotumika</translation>
@@ -558,6 +563,7 @@
 <translation id="4072486802667267160">Hitilafu imetokea wakati wa kushughulikia agizo lako. Tafadhali jaribu tena.</translation>
 <translation id="4075732493274867456">Mteja na seva hazitumii toleo la kawaida la itifaki ya SSL au mipangilio ya kriptografia.</translation>
 <translation id="4079302484614802869">Usanidi wa proksi umewekwa kutumia URL hati ya .pac, siyo seva proksi za kudumu.</translation>
+<translation id="4092411512356034591">Ungependa kuendelea kwenye <ph name="DOMAIN" />?</translation>
 <translation id="4098354747657067197">Kuna tovuti danganyifu mbele</translation>
 <translation id="4103249731201008433">Namabari tambulishi ya kifaa ni batili</translation>
 <translation id="410351446219883937">Kucheza kiotomatiki</translation>
@@ -829,6 +835,7 @@
 <translation id="5556459405103347317">Pakia upya</translation>
 <translation id="5560088892362098740">Tarehe ya Mwisho wa Matumizi</translation>
 <translation id="5565735124758917034">Inatumika</translation>
+<translation id="5570825185877910964">Linda akaunti</translation>
 <translation id="5571083550517324815">Haiwezi kuchukua kutoka kwenye anwani hii. Chagua anwani tofauti.</translation>
 <translation id="5571347317547569613">({NUM_COOKIES,plural, =1{1 kinatumika}other{ # vinatumika}})</translation>
 <translation id="5572851009514199876">Tafadhali anza na uingie katika Chrome ili Chrome iangalie ikiwa unaruhusiwa kufikia tovuti hii.</translation>
@@ -965,10 +972,12 @@
 <translation id="6386120369904791316">{COUNT,plural, =1{Pendekezo jingine 1}other{Mapendekezo mengine #}}</translation>
 <translation id="6387754724289022810">Ili ulipe kwa haraka wakati ujao, hifadhi anwani ya kutuma bili na maelezo ya kadi yako kwenye Akaunti yako ya Google na kwenye kifaa hiki.</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
+<translation id="6401136357288658127">Sera hii imeacha kuendesha huduma. Ni sharti utumie sera ya <ph name="NEW_POLICY" /> badala yake.</translation>
 <translation id="6404511346730675251">Badilisha alamisho</translation>
 <translation id="6406765186087300643">C0 (Bahasha)</translation>
 <translation id="6410264514553301377">Weka tarehe ya mwisho wa matumizi na CVC ya <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">Umewaomba wazazi wako ruhusa ya kuitembelea tovuti hii</translation>
+<translation id="6415778972515849510">Chromium inaweza kukusaidia kulinda Akaunti yako ya Google na kubadilisha nenosiri lako.</translation>
 <translation id="6417515091412812850">Haiwezi kukagua ikiwa cheti kimebatilishwa.</translation>
 <translation id="6433490469411711332">Badilisha maelezo ya mawasiliano</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> imekataa kuunganisha.</translation>
@@ -1034,6 +1043,7 @@
 <translation id="6868206169573555318">Fungua Upya ili Usasishe</translation>
 <translation id="6874604403660855544">Rudia kuongeza</translation>
 <translation id="6884662655240309489">Ukubwa wa 1</translation>
+<translation id="6884796835813057577">Endelea kwenye &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Kiwango cha sera hakitumiki.</translation>
 <translation id="6895330447102777224">Kadi yako imethibitishwa</translation>
@@ -1085,7 +1095,6 @@
 <translation id="7152423860607593928">Number-14 (Bahasha)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> na nyingine <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> na nyingine <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7153618581592392745">Urujuani</translation>
-<translation id="7158980942472052083">URL si sahihi. Lazima iwe URL yenye mfumo wa kawaida.</translation>
 <translation id="717330890047184534">Kitambulisho cha Gaia</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> na nyingine <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> na nyingine <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="7177397715882417099">Seva ambako unaenda, <ph name="ORIGIN" />, imeomba kwamba
@@ -1349,6 +1358,7 @@
 <translation id="8503559462189395349">Manenosiri ya Chrome</translation>
 <translation id="8503813439785031346">Jina la mtumiaji</translation>
 <translation id="8508648098325802031">Aikoni ya Utafutaji</translation>
+<translation id="8522552481199248698">Chrome inaweza kukusaidia kulinda Akaunti yako ya Google na kubadilisha nenosiri lako.</translation>
 <translation id="8543181531796978784">Unaweza <ph name="BEGIN_ERROR_LINK" />kuripoti tatizo la ugunduzi<ph name="END_ERROR_LINK" /> au, ikiwa unaelewa kiwango cha hatari kinachoweza kutokea, <ph name="BEGIN_LINK" />tembelea tovuti hii isiyo salama<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">Je, una maswali? Wasiliana na msimamizi wa wasifu wako.</translation>
 <translation id="8553075262323480129">Tafsiri imeshindwa kwa sababu lugha ya ukurasa isingeweza kuthibitishwa.</translation>
@@ -1436,6 +1446,7 @@
 <translation id="9076630408993835509">Kivinjari hiki hakidhibitiwi na kampuni au shirika lingine. Huenda shughuli kwenye kifaa hiki zinadhibitiwa nje ya Chrome. <ph name="BEGIN_LINK" />Pata Maelezo Zaidi<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Maelezo zaidi yanahitajika</translation>
 <translation id="9080712759204168376">Muhtasari wa Agizo</translation>
+<translation id="9095388113577226029">Lugha zaidi...</translation>
 <translation id="9103872766612412690">Kwa kawaida <ph name="SITE" /> hutumia usimbaji fiche ili kulinda maelezo yako. Chromium ilipojaribu kuunganisha kwenye <ph name="SITE" /> wakati huu, tovuti ilituma kitambulisho kisicho cha kawaida na kisicho sahihi. Hili linaweza kutokea mvamizi anapojaribu kujifanya kuwa <ph name="SITE" />, au uchanganuzi wa kuingia katika Wi-Fi umeingilia muunganisho. Maelezo yako yangali salama kwa sababu Chromium ilisimamisha muunganisho kabla data yoyote itumwe.</translation>
 <translation id="9106062320799175032">Ongeza Anwani ya Kutuma Bili</translation>
 <translation id="9114524666733003316">Inathibitisha kadi…</translation>

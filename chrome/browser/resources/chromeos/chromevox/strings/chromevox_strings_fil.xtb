@@ -648,6 +648,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="5574412348552378458">Learn Mode ng ChromeVox</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5585044216466955529">I-edit ang text, entry ng email</translation>
+<translation id="5586942249556966598">Walang gawin</translation>
 <translation id="5597170376237141345">Susunod na checkbox</translation>
 <translation id="5597933780944041114">Walang susunod na heading.</translation>
 <translation id="5598905979683743333">Inalis sa pagkakapili ang <ph name="NAME" />, radio button</translation>
@@ -1102,7 +1103,7 @@ Para buksan ang menu ng Chrome browser, pindutin ang Alt+F.</translation>
 <translation id="842922884199979200">Walang susunod na heading sa antas 3.</translation>
 <translation id="8430049249787218991">mnubr</translation>
 <translation id="844681116543532394">Walang nakaraang checkbox.</translation>
-<translation id="8446884382197647889">Matuto nang Higit Pa</translation>
+<translation id="8446884382197647889">Matuto Pa</translation>
 <translation id="8455868257606149352">Max <ph name="X" /></translation>
 <translation id="84575901236241018">may access key, <ph name="KEY" /></translation>
 <translation id="847154984256717791">busy</translation>

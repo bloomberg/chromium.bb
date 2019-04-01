@@ -211,6 +211,7 @@ Para evitar que <ph name="NEW_PROFILE_NAME" /> acceda a tu cuenta, bloquea tu pe
 <ph name="BEGIN_LINK_2" />Más información<ph name="END_LINK_2" />
 
 Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más información.</translation>
+<translation id="7349591376906416160">El administrador del sistema ha configurado Chromium para que abra <ph name="ALTERNATIVE_BROWSER_NAME" /> al acceder a <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7448255348454382571">Reiniciar Chromium OS</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> ‑ Chromium Dev</translation>
 <translation id="7451052299415159299">Chromium necesita permiso para acceder a la cámara en este sitio web</translation>

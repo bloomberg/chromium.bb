@@ -698,13 +698,6 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
       Jika Anda menyetel kebijakan ini, pengguna tidak dapat mengubah atau menggantinya. Namun, pengguna akan tetap dapat mengaktifkan/menonaktifkan aksesibilitas keyboard di layar yang diutamakan atas keyboard virtual yang dikontrol oleh kebijakan ini. Lihat kebijakan |VirtualKeyboardEnabled| untuk mengontrol aksesibilitas keyboard di layar.
 
       Jika kebijakan ini tidak disetel, keyboard di layar akan dinonaktifkan pada awalnya namun dapat diaktifkan oleh pengguna kapan saja. Aturan heuristis juga dapat digunakan untuk menentukan waktu untuk menampilkan keyboard.</translation>
-<translation id="228659285074633994">Menentukan panjang waktu tanpa masukan pengguna yang setelahnya dialog peringatan akan ditampilkan saat menggunakan daya AC.
-
-          Saat kebijakan ini disetel, ini menentukan panjang waktu yang harus dilalui pengguna dalam kondisi menganggur sebelum <ph name="PRODUCT_OS_NAME" /> menampilkan dialog peringatan yang memberi tahu pengguna bahwa tindakan menganggur akan dijalankan.
-
-          Saat kebijakan ini tidak disetel, dialog peringatan tidak akan ditampilkan.
-
-          Nilai kebijakan harus ditentukan dalam milidetik. Nilai dibatasi agar kurang dari atau sama dengan penundaan menganggur.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> dapat menggunakan layanan web Google untuk membantu mengatasi masalah ejaan yang salah. Jika setelan ini diaktifkan, layanan ini akan selalu digunakan. Jika setelan ini dinonaktifkan, layanan ini tidak akan pernah digunakan.
 
       Memeriksa ejaan tetap dapat dilakukan menggunakan kamus yang didownload; kebijakan ini hanya mengontrol penggunaan layanan online.
@@ -730,7 +723,6 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 <translation id="2299220924812062390">Tentukan daftar plugin yang diaktifkan</translation>
 <translation id="2303795211377219696">Mengaktifkan IsiOtomatis untuk kartu kredit</translation>
 <translation id="2309390639296060546">Setelan geolokasi default</translation>
-<translation id="2312134445771258233">Memungkinkan Anda mengonfigurasi halaman yang dimuat saat permulaan. Isi daftar 'URL yang dibuka saat permulaan' diabaikan kecuali jika Anda memilih 'Buka daftar URL' dalam 'Tindakan saat permulaan'.</translation>
 <translation id="2327252517317514801">Menentukan domain yang diizinkan untuk mengakses G Suite</translation>
 <translation id="237494535617297575">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang tidak diizinkan untuk menampilkan pemberitahuan. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultNotificationsSetting', jika disetel, atau konfigurasi pribadi pengguna.</translation>
 <translation id="2386362615870139244">Izinkan penguncian layar saat bangun</translation>
@@ -2138,13 +2130,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Jika kebijakan tidak disetel, atau jika disetel menjadi string kosong maupun rentang port yang tidak valid, WebRTC diizinkan untuk menggunakan port UDP lokal mana pun yang tersedia.</translation>
 <translation id="5290940294294002042">Tentukan daftar plugin yang dapat diaktifkan atau dinonaktifkan pengguna</translation>
-<translation id="5304269353650269372">Menentukan panjang waktu tanpa masukan pengguna yang setelahnya dialog peringatan akan ditampilkan saat menggunakan daya baterai.
-
-          Saat kebijakan ini disetel, ini menentukan panjang waktu yang harus dilalui pengguna dalam kondisi menganggur sebelum <ph name="PRODUCT_OS_NAME" /> menampilkan dialog peringatan yang memberi tahu pengguna bahwa tindakan menganggur akan dijalankan.
-
-          Saat kebijakan ini tidak disetel, dialog peringatan tidak akan ditampilkan.
-
-          Nilai kebijakan harus ditentukan dalam milidetik. Nilai dibatasi agar kurang dari atau sama dengan penundaan menganggur.</translation>
 <translation id="5307432759655324440">Ketersediaan mode penyamaran</translation>
 <translation id="5318185076587284965">Aktifkan penggunaan server relay oleh hosting akses jarak jauh</translation>
 <translation id="5323128137188992869">Izinkan konten untuk ditransmisikan ke perangkat menggunakan <ph name="PRODUCT_NAME" />.
@@ -3095,17 +3080,6 @@ Jika kebijakan ini disetel ke false, permintaan penguncian layar saat aktif akan
           Pemutaran otomatis hanya diizinkan untuk domain yang secara eksplisit dicantumkan di kebijakan <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Jika Anda ingin mengaktifkan pemutaran otomatis untuk semua situs, pertimbangkanlah menambahkan http://* dan https://* ke daftar ini.
 
           Jika kebijakan ini tidak disetel, pengguna dapat mengubah setelan ini secara manual.</translation>
-<translation id="7229876938563670511">Mengonfigurasi URL halaman beranda default di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubahnya.
-
-          Halaman beranda adalah halaman yang dibuka oleh tombol Layar utama. Halaman yang terbuka saat browser diluncurkan dikontrol oleh kebijakan RestoreOnStartup.
-
-          Jenis halaman beranda dapat disetel ke URL yang Anda tentukan di sini atau disetel ke Halaman Tab Baru. Jika Anda memilih Halaman Tab Baru, maka kebijakan ini tidak akan berpengaruh.
-
-          Jika Anda mengaktifkan setelan ini, pengguna tidak dapat mengubah URL halaman beranda di <ph name="PRODUCT_NAME" />, tetapi mereka tetap dapat memilih Halaman Tab Baru sebagai halaman beranda.
-
-          Membiarkan kebijakan ini tidak disetel akan memungkinkan pengguna memilih halaman berandanya sendiri jika HomepageIsNewTabPage juga tidak disetel.
-
-          Kebijakan ini hanya tersedia pada instance Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" />, atau instance Windows 10 Pro atau Enterprise yang terdaftar untuk pengelolaan perangkat.</translation>
 <translation id="7229975860249300121">Berisi ekspresi reguler yang digunakan untuk menentukan akun Google mana yang dapat disetel sebagai akun utama browser di <ph name="PRODUCT_NAME" /> (akun yang dipilih selama alur keikutsertaan Sinkronisasi).
 
 Error yang sesuai ditampilkan jika pengguna mencoba untuk menyetel akun utama browser dengan nama pengguna yang tidak cocok dengan pola ini.
@@ -3998,30 +3972,6 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
           Didukung pada <ph name="PRODUCT_OS_NAME" /> versi 70 dan lebih baru. Untuk klien yang lebih lama, nilai ini berarti bahwa rollback dinonaktifkan.</translation>
 <translation id="9096086085182305205">Daftar putih server autentikasi</translation>
 <translation id="9098553063150791878">Kebijakan untuk autentikasi HTTP</translation>
-<translation id="9103061223348895346">Kebijakan ini mengontrol beberapa setelan untuk strategi pengelolaan daya saat pengguna menganggur.
-
-          Ada empat jenis tindakan:
-          * Layar akan diredupkan jika pengguna tetap menganggur selama waktu yang ditentukan oleh |ScreenDim|.
-          * Layar akan dinonaktifkan jika pengguna tetap menganggur selama waktu yang ditentukan oleh |ScreenOff|.
-          * Dialog peringatan akan ditampilkan jika pengguna tetap menganggur selama waktu yang ditentukan oleh |IdleWarning|, yang memberitahukan kepada pengguna bahwa tindakan menganggur akan segera diambil.
-          * Tindakan yang ditentukan oleh |IdleAction| akan diambil jika pengguna tetap menganggur selama waktu yang ditentukan oleh |Idle|.
-
-          Untuk setiap tindakan di atas, penundaan harus ditetapkan dalam milidetik, dan harus disetel ke nilai yang lebih besar daripada nol untuk memicu tindakan yang terkait. Apabila penundaan disetel ke nol, <ph name="PRODUCT_OS_NAME" /> tidak akan mengambil tindakan yang terkait.
-
-          Untuk setiap penundaan di atas, jika durasi waktunya tidak ditetapkan, nilai default akan digunakan.
-
-          Perhatikan bahwa nilai |ScreenDim| akan dikunci ke kurang dari atau sama dengan |ScreenOff|, sedangkan nilai |ScreenOff| dan |IdleWarning| akan dikunci ke kurang dari atau sama dengan |Idle|.
-
-          |IdleAction| dapat berupa salah satu dari empat tindakan berikut:
-          * |Suspend|
-          * |Logout|
-          * |Shutdown|
-          * |DoNothing|
-
-          Jika |IdleAction| tidak ditetapkan, tindakan default akan diambil, yaitu suspend (tangguhkan).
-
-          Juga ada setelan terpisah untuk daya AC dan baterai.
-          </translation>
 <translation id="9105265795073104888">Hanya bagian dari opsi konfigurasi proxy yang disediakan untuk aplikasi Android. Aplikasi Android dapat memilih untuk menggunakan proxy secara sukarela. Anda tidak dapat memaksakan aplikasi Android agar menggunakan proxy.</translation>
 <translation id="9106865192244721694">Izinkan WebUSB di situs ini</translation>
 <translation id="9112727953998243860">File konfigurasi untuk printer perusahaan</translation>
@@ -4073,13 +4023,6 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
       Jika kebijakan disetel ke false, 'Header dan footer' tidak dipilih dalam dialog pratinjau cetak, dan pengguna tidak dapat mengubahnya.
 
       Jika kebijakan disetel ke true, 'Header dan footer' dipilih dalam dialog pratinjau cetak, dan pengguna tidak dapat mengubahnya.</translation>
-<translation id="9210953373038593554">Mengonfigurasi jenis autentikasi untuk login SAML.
-
-Jika kebijakan ini tidak disetel atau disetel ke Default (nilai 0), perilaku login SAML ditentukan oleh browser yang bergantung pada faktor lain. Pada skenario yang paling dasar, autentikasi pengguna dan perlindungan data pengguna yang disimpan dalam cache didasarkan pada sandi yang secara manual dimasukkan oleh pengguna.
-
-Jika kebijakan ini disetel ke ClientCertificate (nilai 1), autentikasi sertifikat klien digunakan untuk pengguna yang baru ditambahkan yang login melalui SAML. Tidak ada sandi yang digunakan untuk pengguna tersebut, dan data lokalnya yang disimpan dalam cache dilindungi menggunakan kunci kriptografi yang sesuai. Misalnya, setelan ini memungkinkan konfigurasi kartu smart berdasarkan autentikasi pengguna (perlu diketahui bahwa aplikasi middleware kartu smart harus diinstal melalui kebijakan DeviceLoginScreenAppInstallList).
-
-Kebijakan ini hanya memengaruhi pengguna yang melakukan autentikasi menggunakan SAML.</translation>
 <translation id="9213347477683611358">Mengonfigurasi gambar wallpaper tingkat perangkat yang ditampilkan di layar login jika belum ada pengguna yang login ke perangkat. Kebijakan ini disetel dengan menetapkan URL tempat perangkat Chrome OS dapat mendownload gambar wallpaper dan potongan kriptografi yang digunakan untuk memverifikasi integritas download. Gambar harus dalam format JPEG dan ukuran filenya tidak boleh melebihi 16MB. URL harus dapat diakses tanpa autentikasi apa pun. Gambar wallpaper akan didownload dan disimpan dalam cache. Gambar ini akan didownload jika URL atau potongan berubah.
 
       Kebijakan ini harus ditetapkan sebagai string yang mengekspresikan URL dan potongan dalam format JSON, misalnya:

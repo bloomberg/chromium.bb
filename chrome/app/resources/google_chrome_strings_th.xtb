@@ -229,6 +229,7 @@
 <translation id="7589360514048265910">คอมพิวเตอร์เครื่องนี้จะไม่ได้รับการอัปเดตจาก Google Chrome อีก เนื่องจากระบบไม่รองรับ Mac OS X 10.9 แล้ว</translation>
 <translation id="7592736734348559088">Google Chrome ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากรายละเอียดการลงชื่อเข้าใช้บัญชีของคุณล้าสมัย</translation>
 <translation id="7626032353295482388">ยินดีต้อนรับสู่ Chrome</translation>
+<translation id="7641148173327520642">ผู้ดูแลระบบได้กำหนดค่าให้ Google Chrome เปิด <ph name="ALTERNATIVE_BROWSER_NAME" /> เพื่อเข้าถึง <ph name="TARGET_URL_HOSTNAME" /></translation>
 <translation id="7651907282515937834">โลโก้ Chrome Enterprise</translation>
 <translation id="7747138024166251722">โปรแกรมติดตั้งสร้างไดเรกทอรีชั่วคราวไม่ได้ โปรดตรวจสอบพื้นที่ดิสก์ว่างและการอนุญาตให้ติดตั้งซอฟต์แวร์</translation>
 <translation id="7761834446675418963">คลิกชื่อของคุณเพื่อเปิด Chrome และเริ่มท่องเว็บ</translation>

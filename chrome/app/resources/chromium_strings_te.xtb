@@ -205,6 +205,7 @@
 <ph name="BEGIN_LINK_2" />మరింత తెలుసుకోండి<ph name="END_LINK_2" />
 
 దయచేసి తదుపరి సూచనల కోసం <ph name="ACCOUNT_EMAIL" /> లో మీ ఇమెయిల్‌ను చూడండి.</translation>
+<translation id="7349591376906416160"><ph name="TARGET_URL_HOSTNAME" />ను యాక్సెస్ చేయడం కోసం <ph name="ALTERNATIVE_BROWSER_NAME" />ను తెరిచే విధంగా Chromiumను మీ సిస్టమ్ నిర్వాహకుడు కాన్ఫిగర్ చేసారు.</translation>
 <translation id="7448255348454382571">Chromium OSని మళ్లీ ప్రారంభించండి</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium Dev</translation>
 <translation id="7451052299415159299">ఈ సైట్ కోసం మీ కెమెరాను యాక్సెస్ చేయడానికి Chromiumకు అనుమతి అవసరం</translation>

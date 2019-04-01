@@ -1,6 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
+<translation id="1002439864875515590">Ako se to pravilo postavi na prazan niz ili se ne konfigurira, <ph name="PRODUCT_OS_NAME" /> neće prikazivati opciju za samodovršavanje tijekom postupka prijave korisnika.
+      Ako se to pravilo postavi na niz koji predstavlja naziv domene, <ph name="PRODUCT_OS_NAME" /> prikazivat će opciju za samodovršavanje tijekom prijave korisnika omogućujući korisniku da unese samo svoje korisničko ime bez proširenja naziva domene.  Korisnik će moći prebrisati proširenje naziva domene.
+      Ako vrijednost tog pravila nije važeća domena, pravilo se neće primjenjivati.</translation>
 <translation id="101438888985615157">Zakreni zaslon 180 stupnjeva</translation>
 <translation id="1016912092715201525">Konfigurira zadane provjere preglednika u proizvodu <ph name="PRODUCT_NAME" /> i sprječava korisnike da ih promijene.
 
@@ -705,13 +708,6 @@
       Ako postavite to pravilo, korisnici ga ne mogu izmijeniti ili nadjačati, no i dalje će moći omogućiti/onemogućiti zaslonsku tipkovnicu za pristupačnost koja ima prednost pred virtualnom tipkovnicom kojom upravlja ovo pravilo. Pogledajte pravilo |VirtualKeyboardEnabled| za upravljanje zaslonskom tipkovnicom za pristupačnost.
 
       Ako se to pravilo ne postavi, zaslonska tipkovnica u početku je onemogućena, ali je korisnik u bilo kojem trenutku može omogućiti. Za odluku o tome kada će se prikazivati tipkovnica mogu se upotrebljavati i heuristička pravila.</translation>
-<translation id="228659285074633994">Određuje koliko vremena treba proći od zadnjeg korisničkog unosa nakon kojeg se prikazuje dijaloški okvir s upozorenjem dok je uređaj priključen na struju.
-
-          Kada je postavljeno, ovo pravilo određuje koliko dugo korisnik treba biti neaktivan prije nego što proizvod <ph name="PRODUCT_OS_NAME" /> prikaže dijaloški okvir upozorenja koji obavještava korisnika da će biti poduzeta radnja u vezi s neaktivnošću.
-
-          Kada ovo pravilo nije postavljeno, ne prikazuje se dijaloški okvir upozorenja.
-
-          Vrijednost pravila treba biti navedena u milisekundama. Vrijednosti se prilagođavaju kako bi bile manje ili jednake odgodi neaktivnosti.</translation>
 <translation id="2292084646366244343">Proizvod <ph name="PRODUCT_NAME" /> može upotrebljavati Googleovu web-uslugu za ispravljanje pravopisnih pogrešaka. Ako je ta postavka omogućena, ta se usluga uvijek upotrebljava. Ako je ta postavka onemogućena, ta se usluga nikad ne upotrebljava.
 
       Provjera pravopisa još se uvijek može vršiti pomoću preuzetog rječnika; to pravilo upravlja samo upotrebom mrežne usluge.
@@ -737,7 +733,6 @@
 <translation id="2299220924812062390">Odredi popis omogućenih dodataka</translation>
 <translation id="2303795211377219696">Omogući Automatsko popunjavanje za kreditne kartice</translation>
 <translation id="2309390639296060546">Zadana postavka zemljopisnog položaja</translation>
-<translation id="2312134445771258233">Omogućuje konfiguriranje stranica koje se učitavaju prilikom pokretanja. Sadržaj popisa "URL-ovi za otvaranje prilikom pokretanja" zanemaruje se, osim ako odaberete "Otvori popis URL-ova" pod "Radnje prilikom pokretanja".</translation>
 <translation id="2327252517317514801">Definira domene kojima je dopušten pristup G Suiteu</translation>
 <translation id="237494535617297575">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje ne smiju prikazivati obavijesti. Ako ovo pravilo nije postavljeno, upotrebljavat će se globalna zadana vrijednost za sve web-lokacije iz pravila "DefaultNotificationsSetting" ako je postavljeno, odnosno iz osobne konfiguracije korisnika ako nije.</translation>
 <translation id="2386362615870139244">Dopusti blokiranja aktivacije zaslona</translation>
@@ -916,6 +911,16 @@
       Ako je ova postavka onemogućena, web-stranice ne mogu upotrebljavati JavaScript i korisnik ne može promijeniti tu postavku.
 
       Ako je ova postavka omogućena ili nije postavljena, web-stranice mogu upotrebljavati JavaScript, no korisnik može promijeniti tu postavku.</translation>
+<translation id="2747157663401642394">Konfigurira postavke upravljanja proširenjima za <ph name="PRODUCT_NAME" />.
+
+          To pravilo upravlja većim brojem postavki, uključujući postavke kojima upravljaju postojeća pravila koja se odnose na proširenja. To će pravilo nadjačati sva naslijeđena pravila ako su postavljena i ona.
+
+          To pravila mapira ID proširenja ili URL za ažuriranje u svoju konfiguraciju. Uz ID proširenja konfiguracija će se primijeniti samo na navedeno proširenje. Zadana konfiguracija može se postaviti za posebni ID <ph name="DEFAULT_SCOPE" />, koji će se primjenjivati na sva proširenja za koja nije postavljena prilagođena konfiguracija u tom pravilu. Uz URL za ažuriranje konfiguracija će se primijeniti na sva proširenja s URL-om za ažuriranje navedenim u manifestu ovog proširenja, kao što je opisano na <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Za instance Windowsa koje nisu pridružene domeni <ph name="MS_AD_NAME" />, prisilno je instaliranje ograničeno na aplikacije i proširenja navedene u Chrome web-trgovini.
+
+          Potpuni opis mogućih postavki i strukture tog pravila potražite na stranici https://www.chromium.org/administrators/policy-list-3/extension-settings-full
+          </translation>
 <translation id="2753637905605932878">Ograniči raspon lokalnih UDP priključaka kojima se koristi WebRTC</translation>
 <translation id="2755385841634849932">Ovo pravilo kontrolira dostupnost sigurnosnog kopiranja i vraćanja Androida.
 
@@ -2030,6 +2035,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
       Ako se pravilo postavi, svaka se stavka tretira kao pravilo. To je slično pravilu <ph name="URL_LIST_POLICY_NAME" />, samo što je logika je obrnuta: podudarna pravila neće otvoriti zamjenski preglednik.
 
       Za razliku od pravila <ph name="URL_LIST_POLICY_NAME" />, pravila se primjenjuju u oba smjera. To znači da kada je prisutan i omogućen dodatak Internet Explorera, ono također određuje treba li <ph name="IE_PRODUCT_NAME" /> otvoriti te URL-ove u pregledniku <ph name="PRODUCT_NAME" />.</translation>
+<translation id="5124368997194894978">Omogući pokretanje na izmjeničnom napajanju</translation>
 <translation id="5130288486815037971">Omogućivanje RC4 paketa šifri u TLS-u</translation>
 <translation id="5141670636904227950">Postavljanje zadane vrste povećala na "omogućeno" na zaslonu za prijavu</translation>
 <translation id="5142301680741828703">Uvijek prikaži sljedeće URL obrasce u okviru <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -2144,13 +2150,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 
       Ako se pravilo ne postavi ili se postavi na prazni niz ili nevažeći raspon priključaka, WebRTC može upotrebljavati bilo koji dostupni lokalni UDP priključak.</translation>
 <translation id="5290940294294002042">Odredite popis dodataka koje korisnik može omogućiti ili onemogućiti</translation>
-<translation id="5304269353650269372">Određuje koliko vremena treba proći od zadnjeg korisničkog unosa nakon kojeg se prikazuje dijaloški okvir upozorenja kada uređaj nije priključen na struju.
-
-          Kada je postavljeno, ovo pravilo određuje koliko dugo korisnik treba biti neaktivan prije nego što <ph name="PRODUCT_OS_NAME" /> prikaže dijaloški okvir upozorenja koji obavještava korisnika da će biti poduzeta radnja u vezi s neaktivnošću.
-
-          Kada pravilo nije postavljeno, dijaloški se okvir ne prikazuje.
-
-          Vrijednost pravila treba se postaviti u milisekundama. Vrijednosti se prilagođavaju kako bi bile manje ili jednake odgodi neaktivnosti.</translation>
 <translation id="5307432759655324440">Pristupačnost anonimnog načina rada</translation>
 <translation id="5318185076587284965">Omogući hostu za daljinski pristup upotrebu relejnih poslužitelja</translation>
 <translation id="5323128137188992869">Dopusti emitiranje sadržaja na uređaj pomoću usluge <ph name="PRODUCT_NAME" />.
@@ -2808,6 +2807,17 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
           Ako se pravilo ne postavi, upotrebljavat će se vrijednost "3" i korisnik će to moći promijeniti.</translation>
 <translation id="663685822663765995">Ograniči način boje ispisa</translation>
 <translation id="6641981670621198190">Onemogući podršku za API-je 3D grafike</translation>
+<translation id="6646056064606561298">Omogućite pravilo o upravljanju pokretanjem na izmjeničnom napajanju.
+
+          Pokretanje na izmjeničnom napajanju pruža priliku da se sustav automatski pokrene iz isključenog stanja ili mirovanja kad je uređaj priključen na napajanje strujom.
+
+          Ako se to pravilo postavi na True, pokretanje na izmjeničnom napajanju uvijek će biti omogućeno ako uređaj to podržava.
+
+          Ako se pravilo postavi na False, pokretanje na izmjeničnom napajanju uvijek će biti onemogućeno.
+
+          Ako postavite to pravilo, korisnici ga neće moći promijeniti ili nadjačati.
+
+          Ako se to pravilo ne postavi, pokretanje na izmjeničnom napajanju bit će onemogućeno i korisnik ga neće moći omogućiti.</translation>
 <translation id="6647965994887675196">Ako je postavljeno na točno, mogu se izrađivati i upotrebljavati nadzirani korisnici.
 
           Ako je postavljeno na netočno ili nije konfigurirano, izrada i prijava nadziranih korisnika bit će onemogućena. Svi postojeći nadzirani korisnici bit će skriveni.
@@ -3109,17 +3119,6 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
           Automatska reprodukcija dopuštena je samo za domene koje su izričito navedene u pravilu <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Ako želite omogućiti automatsku reprodukciju za sve web-lokacije, razmislite o dodavanju http://* i https://* na taj popis.
 
           Ako se to pravilo ne postavi, korisnik će tu postavku moći promijeniti ručno.</translation>
-<translation id="7229876938563670511">Konfigurira URL zadane početne stranice u pregledniku <ph name="PRODUCT_NAME" /> i korisnicima onemogućuje da ga promijene.
-
-          Početna je stranica ona koja se otvara gumbom početnog zaslona. Stranicama koje se otvaraju prilikom pokretanja upravljaju pravila RestoreOnStartup.
-
-          Za vrstu početne stranice možete postaviti URL koji navedete ovdje ili web-stranicu stranicu nove kartice. Ako odaberete web-stranicu nove kartice, ovo se pravilo ne primjenjuje.
-
-          Ako omogućite tu postavku, korisnici neće moći promijeniti URL početne stranice u pregledniku <ph name="PRODUCT_NAME" />, ali će kao početnu stranicu moći odabrati web-stranicu nove kartice.
-
-          Ako se to pravilo ne postavi, korisnik će moći samostalno odabrati početnu stranicu u slučaju da se ne postavi ni pravilo HomepageIsNewTabPage.
-
-          Pravilo je dostupno samo na instancama Windowsa koje su pridružene domeni <ph name="MS_AD_NAME" /> ili instancama Windowsa 10 Pro ili Enterprise prijavljenim za upravljanje uređajima.</translation>
 <translation id="7229975860249300121">Sadrži regularni izraz koji se upotrebljava za određivanje Google računa koji se mogu postaviti kao primarni računi preglednika <ph name="PRODUCT_NAME" /> (to je račun koji se odabire prilikom tijeka uključivanja sinkronizacije).
 
       Prikazuje se odgovarajuća pogreška ako se korisnik pokuša prijaviti korisničkim imenom koje se ne podudara s uzorkom.
@@ -4037,30 +4036,6 @@ za preglednike imaju isti raspored.
           Podržano u sustavu <ph name="PRODUCT_OS_NAME" /> verzije 70 i novijima. Za starije klijente ta vrijednost znači da vraćanje nije omogućeno.</translation>
 <translation id="9096086085182305205">Bijela lista poslužitelja za autentifikaciju</translation>
 <translation id="9098553063150791878">Pravila za HTTP autentifikaciju</translation>
-<translation id="9103061223348895346">To pravilo kontrolira više postavki za strategiju upravljanja napajanjem kada korisnik postane neaktivan.
-
-          Postoje četiri vrste radnji:
-          * Zaslon će se zatamniti ako korisnik ostane neaktivan u razdoblju koje navodi |ScreenDim|.
-          * Zaslon će se isključiti ako korisnik ostane neaktivan u razdoblju koje navodi |ScreenOff|.
-          * Ako korisnik ostane neaktivan u razdoblju koje navodi |IdleWarning|, prikazat će se dijaloški okvir koji će upozoriti korisnika da će se poduzeti radnja mirovanja.
-          * Radnja koju navodi |IdleAction| poduzet će se ako korisnik ostane neaktivan u razdoblju koje navodi |Idle|.
-
-          Za svaku od prethodno navedenih radnji vrijeme do ulaska u stanje mirovanja treba navesti u milisekundama i postaviti na vrijednost veću od nule da bi se pokrenula odgovarajuća radnja. Ako se vrijeme do ulaska u stanje mirovanja postavi na nulu, <ph name="PRODUCT_OS_NAME" /> neće poduzeti odgovarajuću radnju.
-
-          Kada se vrijeme ne postavi, za svako od prethodno navedenih vremena do ulaska u stanje mirovanja upotrebljava se zadana vrijednost.
-
-          Napominjemo da će se vrijednosti za |ScreenDim| ograničiti kako bi bile manje od vrijednosti za |ScreenOff| ili jednake toj vrijednosti, te da će se vrijednosti za |ScreenOff| i |IdleWarning| ograničiti kako bi bile manje od vrijednosti za |Idle| ili jednake toj vrijednosti.
-
-          |IdleAction| može biti jedna od četiri moguće radnje:
-          * |Suspend|
-          * |Logout|
-          * |Shutdown|
-          * |DoNothing|
-
-          Kada se |IdleAction| ne postavi, poduzima se zadana radnja, odnosno, obustavljanje.
-
-          Postoje i zasebne postavke za izmjenično napajanje i bateriju.
-          </translation>
 <translation id="9105265795073104888">Android aplikacijama dostupan je samo podskup opcija za konfiguraciju proxyja. Android aplikacije taj proxy mogu upotrebljavati dobrovoljno. Upotrebu proxyja ne možete im nametnuti.</translation>
 <translation id="9106865192244721694">Dopusti WebUSB na ovim web-lokacijama</translation>
 <translation id="9112727953998243860">Datoteka za konfiguraciju pisača tvrtke</translation>
@@ -4112,13 +4087,6 @@ za preglednike imaju isti raspored.
       Ako se pravilo postavi na False, opcija "Zaglavlja i podnožja" u dijaloškom okviru pregleda ispisa nije odabrana i korisnik to ne može promijeniti.
 
       Ako se pravilo postavi na True, opcija "Zaglavlja i podnožja" u dijaloškom okviru pregleda ispisa odabrana je i korisnik to ne može promijeniti.</translation>
-<translation id="9210953373038593554">Konfigurira vrstu autentifikacije za SAML prijave.
-
-      Kada se to pravilo ne postavi ili se postavi na zadano (vrijednost 0), ponašanje SAML prijava određeno je preglednikom ovisno o drugim čimbenicima. U najjednostavnijem slučaju autentifikacija korisnika i zaštita predmemoriranih podataka korisnika temelje se na zaporkama koje su korisnici unijeli ručno.
-
-      Kada se to pravilo postavi na ClientCertificate (vrijednost 1), autentifikacija korisničkim certifikatom upotrebljava se za novo dodane korisnike koji se prijavljuju putem SAML-a. Za te se korisnike ne upotrebljavaju nikakve zaporke i njihovi se predmemorirani lokalni podaci štite pomoću odgovarajućih kriptografskih ključeva. Na primjer, ta postavka omogućuje konfiguriranje autentifikacije korisnika na temelju pametne kartice (napominjemo da se posredničke aplikacije za pametne kartice trebaju instalirati pomoću pravila DeviceLoginScreenAppInstallList).
-
-      To se pravilo primjenjuje samo na korisnike koji se autentificiraju putem SAML-a.</translation>
 <translation id="9213347477683611358">Konfigurira pozadinsku sliku koja se prikazuje na zaslonu za prijavu na razini uređaja ako na uređaju još nema prijavljenih korisnika. Pravilo se postavlja određivanjem URL-a s kojega uređaj s OS-om Chrome može preuzeti pozadinsku sliku i kriptografskog raspršivanja za provjeru integriteta preuzimanja. Slika mora biti u JPEG formatu i ne smije biti veća od 16 MB. URL-u se mora moći pristupiti bez autentifikacije. Pozadinska slika preuzima se i sprema u predmemoriju. Ponovo će se preuzeti svaki put kada se URL ili raspršivanje promijene.
 
       Pravilo se navodi kao niz koji izražava URL i sažetak u JSON obliku, na primjer:

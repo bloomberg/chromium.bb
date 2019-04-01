@@ -262,6 +262,7 @@
 <translation id="290376772003165898">પેજ <ph name="LANGUAGE" />માં નથી?</translation>
 <translation id="2910701580606108292">સાઇટને સંરક્ષિત કન્ટેન્ટ ચલાવવાની મંજૂરી આપતા પહેલાંં પૂછો</translation>
 <translation id="2913331724188855103">સાઇટને કૂકી ડેટા સાચવવા અને વાંચવાની મંજૂરી આપો (ભલામણ કરેલ)</translation>
+<translation id="2923908459366352541">નામ અમાન્ય છે</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> સ્ટોરેજ</translation>
 <translation id="2956410042958133412">આ એકાઉન્ટ <ph name="PARENT_NAME_1" /> અને <ph name="PARENT_NAME_2" /> દ્વારા મેનેજ થાય છે.</translation>
 <translation id="2960796085439532066">કોપિરાઇટ <ph name="YEAR" /> Google Inc. સર્વાધિકાર સુરક્ષિત.</translation>
@@ -363,6 +364,7 @@
 <translation id="3745176700485982507">તમારી મનપસંદ વેબસાઇટની લિંક આ પેજ પર મળી શકે છે</translation>
 <translation id="3771001275138982843">અપડેટ ડાઉનલોડ કરી શકાઈ નથી</translation>
 <translation id="3773755127849930740">જોડી કરવાની મંજૂરી આપવા માટે <ph name="BEGIN_LINK" />Bluetooth ચાલુ કરો<ph name="END_LINK" /></translation>
+<translation id="3775705724665058594">તમારા ડિવાઇસ પર મોકલો</translation>
 <translation id="3778956594442850293">હોમ સ્ક્રીન પર ઉમેર્યું</translation>
 <translation id="3781011235031427080">"આના જેવી વધુ" શીટ અડધી ઊંચાઈએ ખુલી</translation>
 <translation id="3789841737615482174">ઇન્સ્ટોલ કરો</translation>
@@ -528,6 +530,7 @@
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" />, તમારી સ્ક્રીન શેર કરી રહ્યું છે</translation>
 <translation id="4961107849584082341">આ પેજનો અનુવાદ કોઈપણ ભાષામાં કરો</translation>
 <translation id="4961700429721424617">તમે <ph name="MANAGED_DOMAIN" /> દ્વારા મેનેજ એકાઉન્ટમાંથી સાઇન આઉટ કરી રહ્યાં છો. આ તમારા Chrome ડેટાને આ ડિવાઇસમાંથી ડિલીટ કરશે, પરંતુ તમારો ડેટા તમારા Google એકાઉન્ટમાં રહેશે.</translation>
+<translation id="4970824347203572753">તમારા સ્થાનમાં ઉપલબ્ધ નથી</translation>
 <translation id="497421865427891073">આગળ જાઓ</translation>
 <translation id="4988210275050210843">(<ph name="MEGABYTES" />)ની ફાઇલ ડાઉનલોડ કરી રહ્યાં છીએ.</translation>
 <translation id="4988526792673242964">પૃષ્ઠો</translation>
@@ -597,6 +600,7 @@
 <translation id="5487521232677179737">ડેટા સાફ કરો</translation>
 <translation id="5494752089476963479">ઘૃણાસ્પદ અથવા ભ્રામક જાહેરાતો બતાવતી સાઇટ પરથી જાહેરાતો બ્લૉક કરો</translation>
 <translation id="5497272504048921382">ખુલેલા ટૅબ</translation>
+<translation id="5500777121964041360">તમારા સ્થાનમાં ઉપલબ્ધ ન હોઈ શકે</translation>
 <translation id="550684401320795253">Chrome અપડેટ થઈ રહ્યું છે...</translation>
 <translation id="5512137114520586844">આ એકાઉન્ટ <ph name="PARENT_NAME" /> દ્વારા મેનેજ થાય છે.</translation>
 <translation id="5514904542973294328">આ ઉપકરણના વ્યવસ્થાપકે અક્ષમ કરેલ છે</translation>
@@ -848,6 +852,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" />ની પસંદગી કરી</translation>
 <translation id="7253272406652746122">તમારા ડિવાઇસની સેટિંગ ઍપ્લિકેશનમાં એકાઉન્ટ પેજમાંથી Google એકાઉન્ટ ઉમેરો.</translation>
 <translation id="7274013316676448362">અવરોધિત સાઇટ</translation>
+<translation id="7290209999329137901">નામ બદલવું ઉપલબ્ધ નથી</translation>
 <translation id="7291387454912369099">આસિસ્ટંટે ચેકઆઉટ ટ્રિગર કર્યું</translation>
 <translation id="729975465115245577">તમારા ઉપકરણ પાસે પાસવર્ડ ફાઇલને સ્ટોર કરવા માટેની ઍપ નથી.</translation>
 <translation id="7302081693174882195">વિગતો: સાચવેલ ડેટાની માત્રા દ્વારા સૉર્ટ કરેલ</translation>
@@ -981,6 +986,7 @@
 <translation id="8200772114523450471">રિઝ્યુમે</translation>
 <translation id="8209050860603202033">છબી ખોલો</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB ડાઉનલોડ કરેલ</translation>
+<translation id="8224471946457685718">વાઇ-ફાઇ પર તમારા માટે લેખ ડાઉનલોડ કરો</translation>
 <translation id="8232956427053453090">ડેટા રાખો</translation>
 <translation id="8249310407154411074">ટોચે ખસેડો</translation>
 <translation id="8250920743982581267">દસ્તાવેજો</translation>

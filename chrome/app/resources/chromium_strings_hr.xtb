@@ -209,6 +209,7 @@ Ako ne želite da <ph name="NEW_PROFILE_NAME" /> pristupa vašem računu, zaklju
 <ph name="BEGIN_LINK_2" />Saznajte više<ph name="END_LINK_2" />
 
 Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translation>
+<translation id="7349591376906416160">Vaš administrator sustava konfigurirao je Chromium da otvara <ph name="ALTERNATIVE_BROWSER_NAME" /> za pristup URL-u <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7448255348454382571">Ponovo pokrenite OS Chromium</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – Chromium Dev</translation>
 <translation id="7451052299415159299">Chromium treba dopuštenje za pristup kameri za ovu web-lokaciju</translation>

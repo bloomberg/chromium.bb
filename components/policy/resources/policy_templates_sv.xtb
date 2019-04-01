@@ -1,6 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
+<translation id="1002439864875515590">Om principen är inställd på en tom sträng eller inte har konfigurerats visas inga förslag med autoslutför i <ph name="PRODUCT_OS_NAME" /> när användaren loggar in.
+      Om principen är inställd på en sträng i form av ett domännamn visas detta som förslag med autoslutför i <ph name="PRODUCT_OS_NAME" /> när användaren loggar in, så att användaren bara behöver skriva sitt användarnamn utan domännamnstillägget.  Användaren kan ersätta detta domännamnstillägg.
+      Om principens värde inte är en giltig domän tillämpas den inte.</translation>
 <translation id="101438888985615157">Rotera skärmen 180 grader</translation>
 <translation id="1016912092715201525">Konfigurerar kontroller för standardwebbläsaren i <ph name="PRODUCT_NAME" /> och förhindrar att användare ändrar dem.
 
@@ -728,13 +731,6 @@
       Om du anger den här policyn kan användare inte ändra eller åsidosätta den. Användare kan däremot aktivera/inaktivera ett tillgänglighetstangentbord på skärmen som har företräde framför det virtuella tangentbord som kontrolleras av denna policy. I policyn |VirtualKeyboardEnabled| ser du hur du kontrollerar tillgänglighetstangentbordet på skärmen.
 
       Om denna policy inte anges inaktiveras tangentbordet på skärmen till att börja med, men användaren kan när som helst aktivera det. Heuristiska regler kan även användas för att ange när tangentbordet ska visas.</translation>
-<translation id="228659285074633994">Anger hur lång tid det tar innan ett varningsmeddelande visas när en användare inte gjort någon åtgärd när enheten är ansluten till elnätet.
-
-          När policyn har angetts anges hur lång tid användaren måste vara inaktiv innan ett varningsmeddelande visas i <ph name="PRODUCT_OS_NAME" /> där användaren får reda på att enheten snart inaktiveras.
-
-          När policyn inte har angetts visas inget varningsmeddelande.
-
-          Värdet för policyn ska anges i millisekunder. Värdena måste vara lägre än eller desamma som inaktivitetstiden.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> kan använda en webbtjänst från Google för att åtgärda stavfel. Om inställningen aktiveras används alltid den här tjänsten. Om den inaktiveras används tjänsten aldrig.
 
       Du kan fortfarande göra en stavningskontroll med hjälp av en ordlista som du laddar ned. Policyn styr endast användningen av onlinetjänsten.
@@ -760,9 +756,6 @@
 <translation id="2299220924812062390">Ange en lista med aktiverade plugin-program</translation>
 <translation id="2303795211377219696">Aktivera autofyll för kreditkort</translation>
 <translation id="2309390639296060546">Standardinställning för geografisk plats</translation>
-<translation id="2312134445771258233">Innebär att du kan konfigurera sidorna som läses in vid start.
-
-      Innehållet på listan "Webbadresser att öppna vid start" ignoreras om du inte väljer "Öppna följande sidor" i "Vid start".</translation>
 <translation id="2327252517317514801">Ange vilka domäner som ska ha tillgång till G Suite</translation>
 <translation id="237494535617297575">Policyn gör att du kan ange en lista med webbadressmönster som inte får visa meddelanden.
 
@@ -953,6 +946,16 @@
       Om den här inställningen är inaktiverad kan inte JavaScript användas på webbsidor och inställningen kan inte ändras av användaren.
 
       Om inställningen är aktiverad eller inte inställd kan JavaScript användas på webbsidor, men inställningen kan inte ändras av användaren.</translation>
+<translation id="2747157663401642394">Konfigurerar inställningar för hantering av tillägg i <ph name="PRODUCT_NAME" />.
+
+          Principen styr flera inställningar – även inställningar som styrs av redan befintliga principer som gäller tillägg. Den här principen åsidosätter äldre principer om båda har angetts.
+
+          Principen kopplar samman ett tilläggs-id eller en uppdateringsadress med motsvarande konfiguration. Med ett tilläggs-id tillämpas konfigurationen endast på det angivna tillägget. Det särskilda id:t <ph name="DEFAULT_SCOPE" /> kan tilldelas en standardkonfiguration, som tillämpas på alla tillägg som det inte finns någon anpassad konfiguration för i principen. Med en uppdateringsadress tillämpas konfigurationen på alla tillägg som har exakt denna uppdateringsadress angiven i sitt manifest, så som beskrivs på <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          På Windows-domäner som inte har anslutits till en <ph name="MS_AD_NAME" />-domän kan bara appar och tillägg som finns på Chrome Web Store tvångsinstalleras.
+
+          Du hittar en fullständig beskrivning av möjliga inställningar och principens struktur på https://www.chromium.org/administrators/policy-list-3/extension-settings-full
+          </translation>
 <translation id="2753637905605932878">Låt WebRTC endast använda UDP-portar inom ett begränsat intervall</translation>
 <translation id="2755385841634849932">Den här principen styr om säkerhetskopiering och återställning i Android är tillgängligt.
 
@@ -2091,6 +2094,7 @@
       När den här principen är inställd behandlas varje objekt som en regel som liknar principen <ph name="URL_LIST_POLICY_NAME" />. Logiken är dock omvänd: om reglerna matchar öppnas inte en alternativ webbläsare.
 
       Till skillnad från <ph name="URL_LIST_POLICY_NAME" /> gäller reglerna åt båda hållen. Det innebär att när tillägget för Internet Explorer är installerat och aktiverat styr det även huruvida <ph name="IE_PRODUCT_NAME" /> ska öppna dessa webbadresser i <ph name="PRODUCT_NAME" />.</translation>
+<translation id="5124368997194894978">Aktivera växelströmsstart</translation>
 <translation id="5130288486815037971">Om RC4-krypteringssviter i TLS är aktiverade eller inte</translation>
 <translation id="5141670636904227950">Ange standardtypen för skärmförstoraren på inloggningsskärmen</translation>
 <translation id="5142301680741828703">Rendera alltid följande webbadressmönster i <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -2215,13 +2219,6 @@
 
       Om principen inte anges eller om den har ställts in på den tomma strängen eller ett ogiltigt portintervall får vilken tillgänglig lokal UDP-port som helst användas för WebRTC.</translation>
 <translation id="5290940294294002042">Ange en lista med plugin-program som användaren kan aktivera och inaktivera</translation>
-<translation id="5304269353650269372">Anger hur lång tid det tar innan ett varningsmeddelande visas när användaren inte gjort någon åtgärd vid batteridrift.
-
-          När policyn har angetts anges hur lång tid användaren måste vara inaktiv innan ett varningsmeddelande visas i <ph name="PRODUCT_OS_NAME" /> där användaren får reda på att enheten snart inaktiveras.
-
-          När policyn inte har angetts visas inget varningsmeddelande.
-
-          Värdet för policyn ska anges i millisekunder. Värdena måste vara lägre än eller desamma som inaktivitetstiden.</translation>
 <translation id="5307432759655324440">Tillgänglighet för inkognitoläge</translation>
 <translation id="5318185076587284965">Aktivera reläserveranvändning via värden för fjärråtkomst</translation>
 <translation id="5323128137188992869">Tillåt att innehåll castas till enheten med <ph name="PRODUCT_NAME" />.
@@ -2902,6 +2899,17 @@
           Om policyn inte anges används 3 och användaren kan ändra inställningen.</translation>
 <translation id="663685822663765995">Begränsa färgutskrift</translation>
 <translation id="6641981670621198190">Inaktivera stöd för programmeringsgränssnitt för 3D-grafik</translation>
+<translation id="6646056064606561298">Aktivera energisparprincipen för växelströmsstart.
+
+          Med växelströmsstart kan systemet starta automatiskt när det ansluts till elnätet efter att ha varit avstängt eller i viloläge.
+
+          Om principen är inställd på sant är växelströmsstart alltid aktiverat om enheten har stöd för det.
+
+          Om principen är inställd på falskt är växelströmsstart alltid inaktiverat.
+
+          Om du ställer in den här principen kan användarna inte ändra eller åsidosätta den.
+
+          Om principen saknar inställning är växelströmsstart inaktiverat och användarna kan inte aktivera det.</translation>
 <translation id="6647965994887675196">Om "true" anges kan kontrollerade användare skapas och användas.
 
           Om "false" anges eller om ingen konfiguration utförs inaktiveras alternativet att skapa kontrollerade användare och att logga in. Alla befintliga kontrollerade användare döljs.
@@ -3222,17 +3230,6 @@
           Automatisk uppspelning tillåts endast för domäner som har angetts i principen <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Om du vill aktivera automatisk uppspelning för alla webbplatser kan du lägga till http://* och https://* på denna lista.
 
           Om denna princip inte anges kan användaren ändra denna inställning manuellt.</translation>
-<translation id="7229876938563670511">Konfigurerar webbadressen för standardstartsidan i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar den.
-
-          Startsidan är den sida som öppnas med hemknappen. Vilka sidor som öppnas vid start avgörs av principerna i RestoreOnStartup.
-
-          Startsidans typ kan vara en webbadress du anger här eller sidan Ny flik. Om du väljer Sidan Ny flik används inte den här principen.
-
-          Om du aktiverar den här inställningen kan användarna inte ändra webbadress för startsidan i <ph name="PRODUCT_NAME" />, men de kan ändå välja att använda sidan Ny flik som startsida.
-
-          Om den här principen inte ställs in kan användaren välja startsida själv om HomepageIsNewTabPage inte heller är inställd.
-
-          Den här principen är bara tillgänglig i Windows-instanser som är kopplade till en <ph name="MS_AD_NAME" />-domän, eller i Windows 10 Pro- eller Enterprise-instanser som är registrerade i enhetshantering.</translation>
 <translation id="7229975860249300121">Innehåller ett reguljärt uttryck som används för att styra vilka Google-konton som får vara primärt webbläsarkonto i <ph name="PRODUCT_NAME" /> (dvs. det konto som anges i samband med valet att använda synkronisering).
 
       Ett felmeddelande visas om en användare försöker ange ett primärt webbläsarkonto med ett användarnamn som inte matchar detta mönster. 
@@ -4184,30 +4181,6 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
           Stöds i version 70 eller senare av <ph name="PRODUCT_OS_NAME" />. I äldre klienter än så innebär det här värdet att återställning inaktiveras.</translation>
 <translation id="9096086085182305205">Vitlista för autentiseringsserver</translation>
 <translation id="9098553063150791878">Princip för HTTP-autentisering</translation>
-<translation id="9103061223348895346">Den här principen styr flera energisparinställningar när användaren är inaktiv.
-
-          Det finns fyra typer av åtgärder:
-          * Skärmen tonas ned om användaren är inaktiv under så lång tid som anges av |ScreenDim|.
-          * Skärmen stängs av om användaren är inaktiv under så lång tid som anges av |ScreenOff|.
-          * En varning om att angiven åtgärd vid inaktivitet kommer att vidtas visas i en dialogruta om användaren är inaktiv under så lång tid som anges av |IdleWarning|.
-          * Åtgärden som anges av |IdleAction| genomförs om användaren är inaktiv under så lång tid som anges av |Idle|.
-
-          För var och en av ovanstående åtgärder ska fördröjningen anges i millisekunder och den måste ha ett värde högre än noll för att motsvarande åtgärd ska utlösas. Om fördröjningen har ställts in på noll vidtas inte motsvarande åtgärd av <ph name="PRODUCT_OS_NAME" />.
-
-          För var och en av ovanstående fördröjningar används ett standardvärde när tidslängden inte har angetts.
-
-          Observera att |ScreenDim|-värdena kommer att skäras ned för att vara mindre än eller lika med |ScreenOff|, |ScreenOff| och |IdleWarning| skäras ned för att vara mindre än eller lika med |Idle|.
-
-          |IdleAction| kan vara en av fyra möjliga åtgärder:
-          * |Suspend|
-          * |Logout|
-          * |Shutdown|
-          * |DoNothing|
-
-          När |IdleAction| inte har angetts vidtas standardåtgärden, dvs. viloläget startas.
-
-          Det finns även separata ström- och batteriinställningar.
-          </translation>
 <translation id="9105265795073104888">Bara ett urval av konfigurationsalternativen för proxyserver är tillgängliga för Android-appar. De kan men måste inte använda proxyn. Det går inte att göra inställningen obligatorisk för dem.</translation>
 <translation id="9106865192244721694">Tillåt WebUSB på dessa webbplatser</translation>
 <translation id="9112727953998243860">Konfigurationsfil för företagsskrivare</translation>
@@ -4266,13 +4239,6 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
       Om principen är inställd på falskt är alternativet Sidhuvud och sidfot avmarkerat i dialogrutan för förhandsgranskning av utskrift och användaren kan inte ändra detta.
 
       Om principen är inställd på sant är alternativet Sidhuvud och sidfot markerat i dialogrutan för förhandsgranskning av utskrift och användaren kan inte ändra detta.</translation>
-<translation id="9210953373038593554">Konfigurerar hur autentisering ska göras vid inloggning med SAML.
-
-      När den här principen har lämnats utan inställning eller är inställd på Default (värde 0) hanterar webbläsaren SAML-inloggningarna utifrån andra faktorer. I det enklaste fallet bygger användarautentiseringen och skyddet av cachelagrad användardata på lösenord som användarna anger manuellt.
-
-      När principen är inställd på ClientCertificate (värde 1) används autentisering med klientcertifikat för nya användare som loggar in via SAML. För sådana användare används inga lösenord, och cachelagrad lokal data skyddas med motsvarande kryptografiska nycklar. Till exempel gör den här inställningen det möjligt att konfigurera användarautentisering med smartkort (observera att mellanhandsappar för smartkort måste installeras via principen DeviceLoginScreenAppInstallList).
-
-      Principen påverkar bara användare som autentiseras med SAML.</translation>
 <translation id="9213347477683611358">Konfigurera den bakgrundsbild på enhetsnivå som visas på inloggningsskärmen om ingen användare har loggat in på enheten. Ange policyn genom att ange webbadressen som Chrome OS-enheten kan ladda ned bakgrundsbilden från och en kryptografisk hash som används för att verifiera nedladdningens integritet. Bilden måste vara i JPEG-format och dess filstorlek får inte överskrida 16 MB. Webbadressen måste vara tillgänglig utan autentisering. Bakgrundsbilden laddas ned och lagras i cacheminnet. Den laddas ned igen varje gång webbadressen eller hashen ändras.
 
       Policyn ska anges som en sträng som uttrycker webbadressen och hashen i JSON-format, till exempel

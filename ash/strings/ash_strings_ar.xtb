@@ -199,6 +199,7 @@
 <translation id="397105322502079400">جارٍ الحساب...</translation>
 <translation id="3995138139523574647">‏جهاز USB-C (المنفذ الخلفي الأيمن)</translation>
 <translation id="4017989525502048489">مؤشر الليزر</translation>
+<translation id="4042660782729322247">أنت تشارك الشاشة</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{الإشعارات متوقفة لتطبيق واحد}zero{الإشعارات متوقفة لـ # تطبيق}two{الإشعارات متوقفة لتطبيقَين (#)}few{الإشعارات متوقفة لـ # تطبيقات}many{الإشعارات متوقفة لـ # تطبيقًا}other{الإشعارات متوقفة لـ # تطبيق}}</translation>
 <translation id="4072264167173457037">إشارة متوسطة</translation>
 <translation id="4129129681837227511">للاطِّلاع على الإشعارات على شاشة التأمين، يمكنك فتح القفل لتغيير الإعداد</translation>
@@ -376,6 +377,7 @@
 <translation id="7067196344162293536">تدوير تلقائي</translation>
 <translation id="7068360136237591149">فتح الملفات</translation>
 <translation id="7076293881109082629">تسجيل الدخول</translation>
+<translation id="7088960765736518739">الوصول عبر مفتاح التحويل</translation>
 <translation id="7092922358121866860">عرض إعدادات "الإضاءة الليلية"</translation>
 <translation id="7098389117866926363">‏جهاز USB-C (المنفذ الأيسر في الخلف)</translation>
 <translation id="7131634465328662194">سيتم تسجيل خروجك تلقائيًا.</translation>
@@ -502,6 +504,7 @@
 <translation id="9074739597929991885">بلوتوث</translation>
 <translation id="9079731690316798640">‏Wi-Fi:‏ <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">الميكروفون قيد الاستخدام</translation>
+<translation id="9084606467167974638">تبديل موضع القائمة</translation>
 <translation id="9089416786594320554">أساليب الإدخال</translation>
 <translation id="9091626656156419976">تمت إزالة عرض <ph name="DISPLAY_NAME" /></translation>
 <translation id="9151726767154816831">‏إعادة التشغيل وإجراء Powerwash للتحديث</translation>

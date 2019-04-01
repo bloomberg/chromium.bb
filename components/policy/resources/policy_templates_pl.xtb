@@ -712,13 +712,6 @@ Jeśli pozostanie ona nieskonfigurowana, użytkownik może sam zdecydować, czy 
       Jeśli skonfigurujesz tę zasadę, użytkownicy nie będą mogli jej zmienić ani zastąpić. Będą oni jednak nadal mogli włączyć lub wyłączyć ekranową klawiaturę ułatwień dostępu, która ma pierwszeństwo przed klawiaturą wirtualną kontrolowaną przez tę zasadę. Korzystanie z ekranowej klawiatury ułatwień dostępu możesz kontrolować przy użyciu zasady |VirtualKeyboardEnabled|.
 
       Jeśli nie skonfigurujesz tej zasady, klawiatura ekranowa będzie początkowo wyłączona, ale użytkownik będzie mógł ją włączyć w dowolnym momencie. Sytuacje, w których klawiatura ma być wyświetlana, można też określić przy użyciu reguł heurystycznych.</translation>
-<translation id="228659285074633994">Określa czas bez wprowadzenia danych przez użytkownika, po którym wyświetlane jest okno dialogowe ostrzeżenia przy zasilaniu sieciowym.
-
-          Gdy ta zasada jest ustawiona, określa wymagany czas nieaktywności użytkownika przed wyświetleniem w <ph name="PRODUCT_OS_NAME" /> okna dialogowego z ostrzeżeniem informującym, że zostanie wykonana odpowiednia czynność.
-
-          Gdy ta zasada nie jest ustawiona, ostrzeżenie nie jest wyświetlane.
-
-          Wartość dla zasady należy podać w milisekundach. Wartości są ograniczane, tak aby nie przekraczały wartości opóźnienia nieaktywności.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> może sprawdzać pisownię, używając usługi internetowej Google. Jeśli to ustawienie zostanie włączone, usługa będzie zawsze używana. W przypadku wyłączenia tego ustawienia, usługa nie będzie nigdy wykorzystywana.
 
       Pisownię można nadal sprawdzać, korzystając z pobranego słownika. Ta zasada kontroluje tylko używanie usługi internetowej.
@@ -744,7 +737,6 @@ Jeśli pozostanie ona nieskonfigurowana, użytkownik może sam zdecydować, czy 
 <translation id="2299220924812062390">Określ listę włączonych wtyczek</translation>
 <translation id="2303795211377219696">Włącz autouzupełnianie kart kredytowych</translation>
 <translation id="2309390639296060546">Domyślne ustawienie geolokalizacji</translation>
-<translation id="2312134445771258233">Umożliwia skonfigurowanie stron wczytywanych po uruchomieniu. Zawartość listy „Adresy URL otwierane po uruchomieniu” jest ignorowana, chyba że wybierzesz opcję „Otwórz adresy URL z listy” w ustawieniu „Działanie po uruchomieniu”.</translation>
 <translation id="2327252517317514801">Zdefiniuj domeny, które będą mogły uzyskiwać dostęp do G Suite</translation>
 <translation id="237494535617297575">Umożliwia skonfigurowanie listy wzorców URL-i określających witryny, w których mogą być wyświetlane powiadomienia. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultNotificationsSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="2386362615870139244">Zezwalaj na blokowanie wybudzania ekranu</translation>
@@ -2156,13 +2148,6 @@ Jeśli ta zasada pozostanie nieskonfigurowana, użytkownik może wyłączyć ka�
 
       Jeśli zasada nie jest ustawiona lub jest ustawiona na pusty ciąg lub nieprawidłowy zakres portów, WebRTC może skorzystać z dowolnego lokalnego portu UDP, jaki jest dostępny.</translation>
 <translation id="5290940294294002042">Określ listę wtyczek, które użytkownik może włączyć lub wyłączyć</translation>
-<translation id="5304269353650269372">Określa czas bez wprowadzenia danych przez użytkownika, po którym wyświetlane jest okno dialogowe ostrzeżenia przy zasilaniu z baterii.
-
-          Gdy ta zasada jest ustawiona, określa wymagany czas nieaktywności użytkownika przed wyświetleniem w <ph name="PRODUCT_OS_NAME" /> okna dialogowego z ostrzeżeniem informującym, że zostanie wykonana odpowiednia czynność.
-
-          Gdy ta zasada nie jest ustawiona, ostrzeżenie nie jest wyświetlane.
-
-          Wartość dla zasady należy podać w milisekundach. Wartości są ograniczane, tak aby nie przekraczały wartości opóźnienia nieaktywności.</translation>
 <translation id="5307432759655324440">Dostępność trybu incognito</translation>
 <translation id="5318185076587284965">Zezwalaj hostowi zdalnego dostępu na korzystanie z serwerów przekazujących</translation>
 <translation id="5323128137188992869">Zezwala na przesyłanie treści na urządzenie przy użyciu: <ph name="PRODUCT_NAME" />.
@@ -3126,17 +3111,6 @@ Jeśli ta zasada nie zostanie skonfigurowana, nie będą obowiązywały żadne o
           Automatyczne odtwarzanie jest dozwolone tylko w domenach bezpośrednio wskazanych w zasadzie <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Jeśli chcesz zezwolić na automatyczne odtwarzanie we wszystkich witrynach, dodaj do tej listy http://* i https://*.
 
           Jeśli ta zasada nie jest ustawiona, użytkownik może zmienić to ustawienie ręcznie.</translation>
-<translation id="7229876938563670511">Służy do konfigurowania adresu URL domyślnej strony głównej w <ph name="PRODUCT_NAME" /> i blokuje użytkownikom możliwość jego zmiany.
-
-          Strona główna otwiera się po kliknięciu przycisku strony głównej. Listę stron otwieranych po uruchomieniu określają zasady RestoreOnStartup.
-
-          Typ strony głównej możesz określić, wpisując tu URL lub wybierając stronę Nowa karta. Jeśli wybierzesz stronę Nowa karta, ta zasada nie będzie działać.
-
-          Gdy to ustawienie jest włączone, użytkownicy nie mogą zmienić adresu URL strony głównej w <ph name="PRODUCT_NAME" />. Mogą jednak nadal wybrać stronę Nowa karta na stronę główną.
-
-          Gdy ta zasada jest nieskonfigurowana, użytkownicy mogą samodzielnie wybrać stronę główną, jeśli zasada HomepageIsNewTabPage także jest nieskonfigurowana.
-
-          Ta zasada jest dostępna tylko w wystąpieniach systemu Windows, które należą do domeny <ph name="MS_AD_NAME" />, oraz w wystąpieniach systemu Windows 10 Pro lub Enterprise zarejestrowanych w funkcji zarządzania urządzeniami.</translation>
 <translation id="7229975860249300121">Zawiera wyrażenie regularne określające, które konta Google można ustawić jako konta podstawowe przeglądarki w <ph name="PRODUCT_NAME" /> (czyli konta, które można wybrać podczas włączania synchronizacji).
 
       Gdy użytkownik spróbuje ustawić konto podstawowe przeglądarki o nazwie, która nie pasuje do tego wzorca, wyświetli się odpowiedni komunikat o błędzie.
@@ -4069,30 +4043,6 @@ Po skonfigurowaniu tej zasady <ph name="PRODUCT_OS_NAME" /> pobiera obraz awatar
           Obsługiwane w <ph name="PRODUCT_OS_NAME" /> w wersji 70 lub nowszej. W przypadku starszych klientów ta wartość wyłącza możliwość przywrócenia wersji.</translation>
 <translation id="9096086085182305205">Biała lista serwera uwierzytelniania</translation>
 <translation id="9098553063150791878">Zasady uwierzytelniania HTTP</translation>
-<translation id="9103061223348895346">Ta zasada określa szereg ustawień strategii zarządzania energią stosowanej, gdy użytkownik jest nieaktywny.
-
-          Możliwe są cztery rodzaje działań:
-          * Ekran zostanie przyciemniony, gdy użytkownik pozostaje nieaktywny przez czas określony w polu |ScreenDim|.
-* Ekran zostanie wyłączony, gdy użytkownik pozostaje nieaktywny przez czas określony w polu |ScreenOff|.
-* Jeśli użytkownik pozostaje nieaktywny przez czas określony w polu |IdleWarning|, wyświetla się ostrzeżenie z informacją o działaniu, które zostanie wykonane.
-          * Jeśli użytkownik pozostaje nieaktywny przez czas określony w polu |Idle|, zostanie wykonane działanie określone w polu |IdleAction|.
-
-W przypadku każdego z powyższych działań należy określić opóźnienie w milisekundach. Musi być ono większe od zera, by wywołać odpowiednie działanie. Jeśli opóźnienie jest ustawione na zero, <ph name="PRODUCT_OS_NAME" /> nie podejmie wskazanego działania.
-
-          Jeśli wartość opóźnienia dla tych działań nie będzie określona, zostanie użyta wartość domyślna.
-
-          Pamiętaj, że wartość |ScreenDim| zostanie zmniejszona tak, by była co najwyżej równa wartości |ScreenOff|. Wartości |ScreenOff| i |IdleWarning| zostaną zmniejszone tak, by nie przekraczały wartości |Idle|.
-
-|IdleAction| może przyjąć wartość jednego z czterech możliwych działań:
-          * |Suspend|
-* |Logout|
-* |Shutdown|
-* |DoNothing|
-
-Jeśli wartość |IdleAction| nie będzie określona, zostanie wykonane działanie domyślne, którym jest przejście w tryb zawieszenia.
-
-          Dostępne są też osobne ustawienia zasilania sieciowego i bateryjnego.
-          </translation>
 <translation id="9105265795073104888">Aplikacje na Androida mają dostęp tylko do niektórych opcji konfiguracji serwera proxy. Nie można wymusić, by używały serwera proxy. Mogą go używać dobrowolnie.</translation>
 <translation id="9106865192244721694">Zezwalaj na WebUSB w tych witrynach</translation>
 <translation id="9112727953998243860">Plik konfiguracji drukarki firmowej</translation>
@@ -4142,13 +4092,6 @@ Jeśli wartość |IdleAction| nie będzie określona, zostanie wykonane działan
       Jeśli zasada ma wartość fałsz, opcja „Nagłówki i stopki” jest wyłączona w oknie podglądu wydruku, a użytkownik nie może jej zmienić.
 
       Jeśli zasada ma wartość prawda, opcja „Nagłówki i stopki” jest włączona w oknie podglądu wydruku, a użytkownik nie może jej zmienić.</translation>
-<translation id="9210953373038593554">Konfiguruje typ uwierzytelniania dla logowania SAML.
-
-      Gdy ta zasada nie jest ustawiona lub jest ustawiona na wartość Domyślna (wartość 0), przebieg logowania SAML jest ustalany przez przeglądarkę na podstawie innych czynników. W podstawowym scenariuszu do uwierzytelniania użytkownika i do ochrony jego danych w pamięci podręcznej używane są hasła wpisywane ręcznie przez użytkownika.
-
-      Gdy zasada jest ustawiona na wartość Certyfikat klienta (wartość 1), dla nowo dodanych użytkowników logujących się za pomocą SAML jest używane uwierzytelnianie przy użyciu certyfikatu klienta. Nie są używane żadne hasła, a dane tych użytkowników w pamięci podręcznej są chronione za pomocą odpowiednich kluczy kryptograficznych. To ustawienie umożliwia na przykład skonfigurowanie uwierzytelniania przy użyciu kart inteligentnych (aplikacje pośredniczące dla kart inteligentnych muszą zostać zainstalowane za pomocą zasady DeviceLoginScreenAppInstallList).
-
-      Ta zasada ma wpływ tylko na użytkowników uwierzytelniających się za pomocą SAML.</translation>
 <translation id="9213347477683611358">Skonfiguruj tapetę na poziomie urządzenia wyświetlaną na ekranie logowania, jeśli żaden użytkownik nie jest jeszcze zalogowany na urządzeniu. Aby ustawić tę zasadę, podaj adres URL, z którego urządzenie z Chrome OS może pobrać tapetę, a także skrót kryptograficzny używany do weryfikacji poprawności pobranego pliku. Obraz musi być w formacie JPEG, a jego rozmiar nie może przekraczać 16 MB. URL musi być dostępny bez żadnego uwierzytelniania. Po pobraniu tapeta jest zapisywana w pamięci podręcznej. Gdy URL lub skrót się zmieni, pobieranie jest powtarzane.
 
       Zasadę należy zdefiniować jako ciąg znaków w formacie JSON zawierający URL i skrót, zgodnie z tym schematem:

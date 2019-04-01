@@ -263,6 +263,7 @@
 <translation id="290376772003165898"><ph name="LANGUAGE" /> ನಲ್ಲಿನ ಪುಟ ಇಲ್ಲವೇ?</translation>
 <translation id="2910701580606108292">ಸಂರಕ್ಷಿತ ವಿಷಯವನ್ನು ಪ್ಲೇ ಮಾಡಲು ಸೈಟ್‌ಗಳಿಗೆ ಅನುಮತಿಸುವ ಮೊದಲು ಕೇಳಿ</translation>
 <translation id="2913331724188855103">ಕುಕೀ ಡೇಟಾವನ್ನು ಉಳಿಸಲು ಮತ್ತು ರೀಡ್ ಮಾಡಲು ಸೈಟ್‌ಗಳನ್ನು ಅನುಮತಿಸಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
+<translation id="2923908459366352541">ಹೆಸರು ಅಮಾನ್ಯವಾಗಿದೆ</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> ಸಂಗ್ರಹಣೆ</translation>
 <translation id="2956410042958133412">ಈ ಖಾತೆಯನ್ನು <ph name="PARENT_NAME_1" /> ಮತ್ತು <ph name="PARENT_NAME_2" /> ಅವರು ನಿರ್ವಹಿಸುತ್ತಿದ್ದಾರೆ.</translation>
 <translation id="2960796085439532066">ಹಕ್ಕುಸ್ವಾಮ್ಯ <ph name="YEAR" /> Google Inc. ಎಲ್ಲಾ ಹಕ್ಕುಗಳನ್ನು ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ.</translation>
@@ -364,6 +365,7 @@
 <translation id="3745176700485982507">ಈ ಪುಟದಲ್ಲಿ ನಿಮ್ಮ ಮೆಚ್ಚಿನ ವೆಬ್‌ಸೈಟ್‌ಗಳಿಗೆ ಲಿಂಕ್‌ಗಳನ್ನು ಕಾಣಬಹುದು.</translation>
 <translation id="3771001275138982843">ಅಪ್‌ಡೇಟ್ ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ</translation>
 <translation id="3773755127849930740">ಜೋಡಿಸುವಿಕೆ ಅನುಮತಿಸಲು <ph name="BEGIN_LINK" />ಬ್ಲೂಟೂತ್ ಆನ್ ಮಾಡಿ<ph name="END_LINK" /></translation>
+<translation id="3775705724665058594">ನಿಮ್ಮ ಸಾಧನಗಳಿಗೆ ಕಳುಹಿಸಿ</translation>
 <translation id="3778956594442850293">ಮುಖಪುಟದ ಪರದೆಗೆ ಸೇರಿಸಲಾಗಿದೆ</translation>
 <translation id="3781011235031427080">ಇಂತಹ ಇನ್ನಷ್ಟು ಶೀಟ್ ಅನ್ನು ಅರ್ಧದಷ್ಟು ಎತ್ತರದಲ್ಲಿ ತೆರೆಯಲಾಗಿದೆ</translation>
 <translation id="3789841737615482174">ಸ್ಥಾಪಿಸು</translation>
@@ -528,6 +530,7 @@
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> ನಿಮ್ಮ ಪರದೆಯನ್ನು ಹಂಚಿಕೊಳ್ಳುತ್ತಿದೆ</translation>
 <translation id="4961107849584082341">ಈ ಪುಟವನ್ನು ಯಾವ ಭಾಷೆಗಾದರೂ ಅನುವಾದಿಸಿ</translation>
 <translation id="4961700429721424617"><ph name="MANAGED_DOMAIN" /> ಮೂಲಕ ನಿರ್ವಹಿಸಲಾದ ಖಾತೆಯಿಂದ ನೀವು ಸೈನ್ ಔಟ್ ಮಾಡುತ್ತಿರುವಿರಿ. ಇದು ಈ ಸಾಧನದಿಂದ ನಿಮ್ಮ Chrome ಡೇಟಾವನ್ನು ಅಳಿಸುತ್ತದೆ, ಆದರೆ ನಿಮ್ಮ ಡೇಟಾ ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿಯೇ ಇರುತ್ತದೆ.</translation>
+<translation id="4970824347203572753">ನಿಮ್ಮ ಸ್ಥಳದಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ</translation>
 <translation id="497421865427891073">ಮುಂದಕ್ಕೆ ಹೋಗು</translation>
 <translation id="4988210275050210843">ಫೈಲ್ ಡೌನ್‌ಲೋಡ್‌ ಮಾಡಲಾಗುತ್ತಿದೆ (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">ಪುಟಗಳು</translation>
@@ -597,6 +600,7 @@
 <translation id="5487521232677179737">ಡೇಟಾ ತೆರವುಗೊಳಿಸು</translation>
 <translation id="5494752089476963479">ಅನಪೇಕ್ಷಿತ ಅಥವಾ ತಪ್ಪುದಾರಿಗೆಳೆಯುವ ಜಾಹೀರಾತುಗಳನ್ನು ತೋರಿಸುವ ಸೈಟ್‌ಗಳಲ್ಲಿ ಜಾಹೀರಾತುಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
 <translation id="5497272504048921382">ತೆರೆದಿರುವ ಟ್ಯಾಬ್‌ಗಳು</translation>
+<translation id="5500777121964041360">ನಿಮ್ಮ ಸ್ಥಳದಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲದಿರಬಹುದು</translation>
 <translation id="550684401320795253">Chrome ಅಪ್‌ಡೇಟ್‌ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="5512137114520586844">ಈ ಖಾತೆಯನ್ನು <ph name="PARENT_NAME" /> ಅವರು ನಿರ್ವಹಿಸುತ್ತಿದ್ದಾರೆ.</translation>
 <translation id="5514904542973294328">ಈ ಸಾಧನದ ನಿರ್ವಾಹಕರಿಂದ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
@@ -849,6 +853,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ಅನ್ನು ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ</translation>
 <translation id="7253272406652746122">ನಿಮ್ಮ ಸಾಧನದ ಸೆಟ್ಟಿಂಗ್‌‌ಗಳ ಅಪ್ಲಿಕೇಶನ್‌ನಲ್ಲಿ ಖಾತೆಗಳ ಪುಟದಿಂದ Google ಖಾತೆಯನ್ನು ಸೇರಿಸಿ.</translation>
 <translation id="7274013316676448362">ನಿರ್ಬಂಧಿಸಿರುವ ಸೈಟ್</translation>
+<translation id="7290209999329137901">ಮರುಹೆಸರಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
 <translation id="7291387454912369099">ಅಸಿಸ್ಟೆಂಟ್ ಟ್ರಿಗರ್ ಮಾಡಿದ ಚೆಕ್ಔಟ್</translation>
 <translation id="729975465115245577">ನಿಮ್ಮ ಸಾಧನವು ಪಾಸ್‌ವರ್ಡ್‌ ಫೈಲ್ ಅನ್ನು ಸಂಗ್ರಹಿಸಿಡಲು ಅಪ್ಲಿಕೇಶನ್‌ ಅನ್ನು ಹೊಂದಿಲ್ಲ.</translation>
 <translation id="7302081693174882195">ವಿವರಗಳು: ಉಳಿಸಿದ ಡೇಟಾ ಪ್ರಮಾಣದ ಆಧಾರದಲ್ಲಿ ವಿಂಗಡಿಸಲಾಗಿದೆ</translation>
@@ -982,6 +987,7 @@
 <translation id="8200772114523450471">ಪುನರಾರಂಭಿಸು</translation>
 <translation id="8209050860603202033">ಚಿತ್ರವನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗಿದೆ</translation>
+<translation id="8224471946457685718">ವೈ-ಫೈಯಲ್ಲಿ ನಿಮಗಾಗಿ ಲೇಖನಗಳನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ</translation>
 <translation id="8232956427053453090">ಡೇಟಾವನ್ನುಇರಿಸಿಕೊಳ್ಳಿ</translation>
 <translation id="8249310407154411074">ಮೇಲಕ್ಕೆ ಸರಿಸಿ</translation>
 <translation id="8250920743982581267">ಡಾಕ್ಯುಮೆಂಟ್‌ಗಳು</translation>

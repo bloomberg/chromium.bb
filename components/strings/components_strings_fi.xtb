@@ -8,6 +8,7 @@
 <translation id="1032854598605920125">Käännä myötäpäivään</translation>
 <translation id="1035334672863811645">Kirjaudu Chromeen</translation>
 <translation id="1038842779957582377">tuntematon nimi</translation>
+<translation id="1039626062703039346">Chrome voi auttaa suojaamaan Google-tiliäsi ja vaihtamaan salasanasi. Tämä ilmoittaa Googlelle sivustosta.</translation>
 <translation id="1050038467049342496">Sulje muita sovelluksia.</translation>
 <translation id="1055184225775184556">K&amp;umoa lisäys</translation>
 <translation id="1056898198331236512">Varoitus</translation>
@@ -296,13 +297,16 @@
 <translation id="2495083838625180221">JSON-jäsentäjä</translation>
 <translation id="2495093607237746763">Jos tämä on valittu, Chromium tallentaa kortin kopion tälle laitteelle nopeuttaakseen lomakkeiden täyttöä.</translation>
 <translation id="2498091847651709837">Skannaa uusi kortti</translation>
+<translation id="249825481377667906">Chromium voi auttaa suojaamaan Google-tiliäsi ja vaihtamaan salasanasi. Tämä ilmoittaa Googlelle sivustosta.</translation>
 <translation id="2501278716633472235">Takaisin</translation>
 <translation id="2503184589641749290">Hyväksytyt maksu- ja prepaid-kortit</translation>
+<translation id="2505268675989099013">Suojaa tili</translation>
 <translation id="2515629240566999685">Tarkista alueesi mobiilisignaali.</translation>
 <translation id="2523886232349826891">Tallennetaan vain tälle laitteelle</translation>
 <translation id="2524461107774643265">Lisää tietoja</translation>
 <translation id="2536110899380797252">Lisää osoite</translation>
 <translation id="2539524384386349900">Tunnista</translation>
+<translation id="254947805923345898">Käytännön arvo ei kelpaa.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> lähetti virheellisen vastauksen.</translation>
 <translation id="2556876185419854533">K&amp;umoa muokkaus</translation>
 <translation id="2586657967955657006">Leikepöytä</translation>
@@ -436,6 +440,7 @@
           <ph name="LIST_ITEM" />evästeitä ja sivuston tietoja
           <ph name="LIST_ITEM" />lomakkeisiin syötettyjä tietoja.
         <ph name="END_LIST" /></translation>
+<translation id="3362968246557010467">Tämä käytäntö kopioitiin automaattisesti vanhentuneesta <ph name="OLD_POLICY" /> ‑käytännöstä. Käytä tätä käytäntöä sen sijaan.</translation>
 <translation id="3366477098757335611">Näytä kortit</translation>
 <translation id="3369192424181595722">Väärä kellonaika</translation>
 <translation id="337363190475750230">Poistettu käytöstä</translation>
@@ -559,6 +564,7 @@
 <translation id="4072486802667267160">Virhe tilausta käsiteltäessä. Yritä uudelleen.</translation>
 <translation id="4075732493274867456">Asiakassovellus ja palvelin eivät tue samaa SSL-protokollaversiota tai salaustekniikkaa.</translation>
 <translation id="4079302484614802869">Välityspalvelinmääritykset on asetettu käyttämään .pac-URL-osoitteita, ei kiinteitä välityspalvelimia.</translation>
+<translation id="4092411512356034591">Jatketaanko osoitteeseen <ph name="DOMAIN" />?</translation>
 <translation id="4098354747657067197">Seuraava sivusto on petollinen</translation>
 <translation id="4103249731201008433">Laitteen sarjanumero on virheellinen</translation>
 <translation id="410351446219883937">Automaattinen toisto</translation>
@@ -830,6 +836,7 @@
 <translation id="5556459405103347317">Lataa uudelleen</translation>
 <translation id="5560088892362098740">Viimeinen voimassaolopäivä</translation>
 <translation id="5565735124758917034">Aktiivinen</translation>
+<translation id="5570825185877910964">Suojaa tili</translation>
 <translation id="5571083550517324815">Nouto tästä osoitteesta ei onnistu. Valitse eri osoite.</translation>
 <translation id="5571347317547569613">({NUM_COOKIES,plural, =1{1 käytössä}other{# käytössä}})</translation>
 <translation id="5572851009514199876">Aloita ja kirjaudu sisään, jotta Chrome voi tarkistaa, onko sinulla oikeus käyttää tätä sivustoa.</translation>
@@ -966,10 +973,12 @@
 <translation id="6386120369904791316">{COUNT,plural, =1{1 muu ehdotus}other{# muuta ehdotusta}}</translation>
 <translation id="6387754724289022810">Jos haluat maksaa nopeammin ensi kerralla, tallenna kortti ja laskutusosoite Google-tilillesi ja tälle laitteelle.</translation>
 <translation id="6390662030813198813">Insinööri-E</translation>
+<translation id="6401136357288658127">Tämä käytäntö on vanhentunut. Käytä <ph name="NEW_POLICY" /> ‑käytäntöä sen sijaan.</translation>
 <translation id="6404511346730675251">Muokkaa kirjanmerkkiä</translation>
 <translation id="6406765186087300643">C0 (kirjekuori)</translation>
 <translation id="6410264514553301377">Anna kortin <ph name="CREDIT_CARD" /> vanhentumispäivä ja CVC</translation>
 <translation id="6414888972213066896">Pyysit vanhemmiltasi lupaa käydä tällä sivustolla.</translation>
+<translation id="6415778972515849510">Chromium voi auttaa suojaamaan Google-tiliäsi ja vaihtamaan salasanasi.</translation>
 <translation id="6417515091412812850">Ei voida tarkistaa, onko varmenne kumottu.</translation>
 <translation id="6433490469411711332">Muokkaa yhteystietoja</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> kieltäytyi muodostamasta yhteyttä.</translation>
@@ -1035,6 +1044,7 @@
 <translation id="6868206169573555318">Käynnistä uudelleen ja päivitä</translation>
 <translation id="6874604403660855544">&amp;Toista lisäys</translation>
 <translation id="6884662655240309489">Koko 1</translation>
+<translation id="6884796835813057577">Jatketaanko osoitteeseen &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Käytännön tasoa ei tueta.</translation>
 <translation id="6895330447102777224">Korttisi vahvistettiin.</translation>
@@ -1086,7 +1096,6 @@
 <translation id="7152423860607593928">Nro 14 (kirjekuori)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> ja <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> toinen}other{<ph name="PAYMENT_METHOD_PREVIEW" /> ja <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> muuta}}</translation>
 <translation id="7153618581592392745">Laventeli</translation>
-<translation id="7158980942472052083">Virheellinen URL-osoite Täytyy olla vakiomallin sisältävä URL-osoite</translation>
 <translation id="717330890047184534">Gaia-tunnus:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> ja <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> toinen}other{<ph name="SHIPPING_OPTION_PREVIEW" /> ja <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> muuta}}</translation>
 <translation id="7177397715882417099">Kohdepalvelin <ph name="ORIGIN" /> pyytää
@@ -1354,6 +1363,7 @@ Lisätietoja:
 <translation id="8503559462189395349">Chrome-salasanat</translation>
 <translation id="8503813439785031346">Käyttäjätunnus</translation>
 <translation id="8508648098325802031">Hakukuvake</translation>
+<translation id="8522552481199248698">Chrome voi auttaa suojaamaan Google-tiliäsi ja vaihtamaan salasanasi.</translation>
 <translation id="8543181531796978784">Voit <ph name="BEGIN_ERROR_LINK" />ilmoittaa löytyneestä ongelmasta<ph name="END_ERROR_LINK" /> tai <ph name="BEGIN_LINK" />siirtyä mahdollisesti haitalliselle sivustolle<ph name="END_LINK" />, jos ymmärrät tietoturvariskit.</translation>
 <translation id="8543556556237226809">Onko sinulla kysyttävää? Ota yhteyttä profiiliasi valvovaan henkilöön.</translation>
 <translation id="8553075262323480129">Käännös epäonnistui, sillä sivun kieltä ei voitu määrittää.</translation>
@@ -1441,6 +1451,7 @@ Lisätietoja:
 <translation id="9076630408993835509">Yritys tai muu organisaatio ei ylläpidä selainta. Laitteen toimintaa saatetaan ylläpitää muualta kuin Chromesta käsin. <ph name="BEGIN_LINK" />Lue lisää<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Lisätietoja tarvitaan</translation>
 <translation id="9080712759204168376">Tilauksen yhteenveto</translation>
+<translation id="9095388113577226029">Lisää kieliä…</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> suojaa tietosi normaalisti salauksen avulla. Kun Chromium yritti tällä kertaa yhdistää sivustoon <ph name="SITE" />, sivusto palautti epätavalliset ja virheelliset kirjautumistiedot. Hyökkääjä saattaa yrittää esiintyä sivustona <ph name="SITE" />, tai Wi-Fi-kirjautumisruutu on keskeyttänyt yhteyden. Tietosi ovat edelleen turvassa, sillä Chromium katkaisi yhteyden, ennen kuin mitään tietoja vaihdettiin.</translation>
 <translation id="9106062320799175032">Lisää laskutusosoite</translation>
 <translation id="9114524666733003316">Vahvistetaan korttia…</translation>

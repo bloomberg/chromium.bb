@@ -262,6 +262,7 @@
 <translation id="290376772003165898">صفحه به زبان <ph name="LANGUAGE" /> وجود ندارد؟</translation>
 <translation id="2910701580606108292">قبل از اجازه دادن به سایت‌ها برای پخش محتوای محافظت‌شده سؤال شود</translation>
 <translation id="2913331724188855103">سایت‌ها مجاز به ذخیره و خواندن داده‌های کوکی باشند (توصیه می‌شود)</translation>
+<translation id="2923908459366352541">نام نامعتبر است</translation>
 <translation id="2932150158123903946">‏فضای ذخیره‌سازی Google <ph name="APP_NAME" /></translation>
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1" /> و <ph name="PARENT_NAME_2" /> این حساب را مدیریت می‌کنند.</translation>
 <translation id="2960796085439532066">‏حق نسخه‌برداری ‪<ph name="YEAR" /> Google Inc.‬. کلیه حقوق محفوظ است.</translation>
@@ -363,6 +364,7 @@
 <translation id="3745176700485982507">پیوند به وب‌سایت‌های دلخواهتان در این صفحه پیدا نشد</translation>
 <translation id="3771001275138982843">به‌روزرسانی بارگیری نشد</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />بلوتوث را روشن کنید<ph name="END_LINK" /> تا مرتبط‌سازی امکان‌پذیر شود</translation>
+<translation id="3775705724665058594">ارسال به دستگاه‌هایتان</translation>
 <translation id="3778956594442850293">به صفحه اصلی اضافه شد</translation>
 <translation id="3781011235031427080">«موارد دیگر شبیه به این» تا نیمه باز شد</translation>
 <translation id="3789841737615482174">نصب</translation>
@@ -528,6 +530,7 @@
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> درحال اشتراک‌گذاری صفحه شما است</translation>
 <translation id="4961107849584082341">ترجمه این صفحه به زبان‌های دیگر</translation>
 <translation id="4961700429721424617">‏هم‌اکنون از حسابی که توسط <ph name="MANAGED_DOMAIN" /> مدیریت می‌شود، خارج می‌شوید. با این کار داده‌های Chrome شما از این دستگاه حذف می‌شود اما همچنان در حساب Google شما باقی می‌ماند.</translation>
+<translation id="4970824347203572753">در مکان شما دردسترس نیست</translation>
 <translation id="497421865427891073">جلو رفتن</translation>
 <translation id="4988210275050210843">درحال بارگیری فایل (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">صفحات</translation>
@@ -597,6 +600,7 @@
 <translation id="5487521232677179737">پاک کردن داده‌ها</translation>
 <translation id="5494752089476963479">آگهی سایت‌هایی که آگهی‌های مزاحم یا گمراه‌کننده نشان می‌دهند، مسدود می‌شود</translation>
 <translation id="5497272504048921382">برگه‌های باز</translation>
+<translation id="5500777121964041360">ممکن است در مکان شما دردسترس نباشد</translation>
 <translation id="550684401320795253">‏درحال به‌روزرسانی Chrome...</translation>
 <translation id="5512137114520586844"><ph name="PARENT_NAME" /> این حساب را مدیریت می‌کند.</translation>
 <translation id="5514904542973294328">توسط سرپرست این دستگاه غیرفعال شده است</translation>
@@ -848,6 +852,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> مورد انتخاب شد</translation>
 <translation id="7253272406652746122">‏از صفحه «حساب‌ها» در برنامه «تنظیمات» دستگاه، یک حساب Google اضافه کنید.</translation>
 <translation id="7274013316676448362">سایت مسدودشده</translation>
+<translation id="7290209999329137901">عدم‌دسترسی به تغییر نام</translation>
 <translation id="7291387454912369099">تسویه‌حساب فعال‌شده ازسوی دستیار</translation>
 <translation id="729975465115245577">دستگاه شما برنامه‌ای برای ذخیره فایل گذرواژه‌ها ندارد.</translation>
 <translation id="7302081693174882195">جزئیات: مرتب‌شده براساس مقدار داده صرفه‌جویی‌شده</translation>
@@ -981,6 +986,7 @@
 <translation id="8200772114523450471">ازسرگیری</translation>
 <translation id="8209050860603202033">باز کردن تصویر</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> گیگابایت بارگیری شد</translation>
+<translation id="8224471946457685718">‏بارگیری مقالات برای شما با Wi-Fi</translation>
 <translation id="8232956427053453090">نگه‌داشتن داده</translation>
 <translation id="8249310407154411074">انتقال به بالا</translation>
 <translation id="8250920743982581267">اسناد</translation>

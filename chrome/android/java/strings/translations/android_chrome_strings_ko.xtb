@@ -262,6 +262,7 @@
 <translation id="290376772003165898">페이지가 <ph name="LANGUAGE" />로 되어 있지 않습니까?</translation>
 <translation id="2910701580606108292">사이트에서 보호된 콘텐츠를 재생하도록 허용하기 전에 확인</translation>
 <translation id="2913331724188855103">사이트에서 쿠키 데이터를 저장하고 읽도록 허용(권장)</translation>
+<translation id="2923908459366352541">잘못된 이름</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> 저장공간</translation>
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1" />님과 <ph name="PARENT_NAME_2" />님이 관리하는 계정입니다.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
@@ -363,6 +364,7 @@
 <translation id="3745176700485982507">이 페이지에서 즐겨찾는 웹사이트 링크를 찾을 수 있습니다.</translation>
 <translation id="3771001275138982843">업데이트를 다운로드할 수 없음</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />블루투스를 사용 설정<ph name="END_LINK" />하여 페어링을 허용하세요.</translation>
+<translation id="3775705724665058594">기기로 전송</translation>
 <translation id="3778956594442850293">홈 화면에 추가됨</translation>
 <translation id="3781011235031427080">중간 높이로 '비슷한 항목 더보기'가 열렸습니다.</translation>
 <translation id="3789841737615482174">설치</translation>
@@ -528,6 +530,7 @@
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" />에서 내 화면을 공유하는 중입니다.</translation>
 <translation id="4961107849584082341">이 페이지를 원하는 언어로 번역하세요.</translation>
 <translation id="4961700429721424617"><ph name="MANAGED_DOMAIN" />에서 관리하는 계정에서 로그아웃합니다. 이렇게 하면 내 Chrome 데이터가 이 기기에서 삭제되지만 Google 계정에는 그대로 유지됩니다.</translation>
+<translation id="4970824347203572753">현재 위치에서 사용할 수 없습니다.</translation>
 <translation id="497421865427891073">앞으로 이동</translation>
 <translation id="4988210275050210843">파일 다운로드 중(<ph name="MEGABYTES" />MB)</translation>
 <translation id="4988526792673242964">페이지</translation>
@@ -597,6 +600,7 @@
 <translation id="5487521232677179737">인터넷 사용 기록 삭제</translation>
 <translation id="5494752089476963479">방해가 되거나 사용자를 현혹하는 광고를 표시하는 사이트의 광고 차단</translation>
 <translation id="5497272504048921382">탭이 열림</translation>
+<translation id="5500777121964041360">현재 지역에서는 지원되지 않을 수도 있습니다.</translation>
 <translation id="550684401320795253">Chrome 업데이트 중...</translation>
 <translation id="5512137114520586844"><ph name="PARENT_NAME" />님이 관리하는 계정입니다.</translation>
 <translation id="5514904542973294328">기기 관리자가 사용 중지함</translation>
@@ -848,6 +852,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" />개 선택됨</translation>
 <translation id="7253272406652746122">기기 설정 앱의 계정 페이지에서 Google 계정을 추가하세요.</translation>
 <translation id="7274013316676448362">차단된 사이트</translation>
+<translation id="7290209999329137901">이름 변경 불가</translation>
 <translation id="7291387454912369099">어시스턴트 트리거 확인</translation>
 <translation id="729975465115245577">기기에 비밀번호 파일을 저장할 수 있는 앱이 없습니다.</translation>
 <translation id="7302081693174882195">세부정보: 저장된 데이터 양에 따라 정렬</translation>
@@ -981,6 +986,7 @@
 <translation id="8200772114523450471">다시 시작</translation>
 <translation id="8209050860603202033">이미지 열기</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" />GB가 다운로드됨</translation>
+<translation id="8224471946457685718">Wi-Fi로 추천 기사 다운로드</translation>
 <translation id="8232956427053453090">데이터 보관</translation>
 <translation id="8249310407154411074">맨 위로 이동</translation>
 <translation id="8250920743982581267">문서</translation>

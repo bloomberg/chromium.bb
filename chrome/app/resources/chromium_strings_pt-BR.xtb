@@ -204,6 +204,7 @@ perfil no canto superior direito do navegador e selecione "Sair e bloquear".
 <ph name="BEGIN_LINK_2" />Saiba mais<ph name="END_LINK_2" />
 
 Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.</translation>
+<translation id="7349591376906416160">O administrador do seu sistema configurou o Chromium para abrir o <ph name="ALTERNATIVE_BROWSER_NAME" /> ao acessar <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7448255348454382571">Reiniciar o Chromium OS</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" />: Chromium Dev</translation>
 <translation id="7451052299415159299">O Chromium precisa de permissão para este site acessar sua câmera</translation>

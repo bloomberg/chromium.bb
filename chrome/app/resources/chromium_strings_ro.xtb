@@ -209,6 +209,7 @@ Pentru a împiedica utilizatorul <ph name="NEW_PROFILE_NAME" /> să îți accese
 <ph name="BEGIN_LINK_2" />Află mai multe<ph name="END_LINK_2" />
 
 Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni suplimentare.</translation>
+<translation id="7349591376906416160">Administratorul sistemului a configurat Chromium să deschidă <ph name="ALTERNATIVE_BROWSER_NAME" /> pentru a accesa <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7448255348454382571">Repornește sistemul de operare Chromium</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – Chromium pentru dezvoltatori</translation>
 <translation id="7451052299415159299">Chromium are nevoie de permisiune ca să acceseze camera foto pentru acest site</translation>

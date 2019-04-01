@@ -210,6 +210,7 @@ Chromium haiwezi kufufua mipangilio yako.</translation>
 Ili umzuie <ph name="NEW_PROFILE_NAME" /> asifikie akaunti yako, hakikisha kuwa umefunga wasifu wako wakati hutumii Chromium. Ili kufunga wasifu wako, bofya jina la wasifu wako kwenye upande wa juu kulia mwa kivinjari chako na uchague "Ondoka kwenye wasifu wa sasa."
 <ph name="BEGIN_LINK_2" />Pata maelezo zaidi<ph name="END_LINK_2" />
 Tafadhali angalia barua pepe yako katika <ph name="ACCOUNT_EMAIL" /> upate maagizo zaidi.</translation>
+<translation id="7349591376906416160">Msimamizi wa mfumo unaotumia ameweka mipangilio ya Chromium ifungue <ph name="ALTERNATIVE_BROWSER_NAME" /> ili kufikia <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7448255348454382571">Zima kisha uwashe mfumo wa uendeshaji wa Chromium</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium ya Wasanidi Programu</translation>
 <translation id="7451052299415159299">Chromium inahitaji ruhusa ya kufikia kamera yako katika tovuti hii</translation>

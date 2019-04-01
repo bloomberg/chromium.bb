@@ -199,6 +199,7 @@
 <translation id="397105322502079400">Aprēķina...</translation>
 <translation id="3995138139523574647">USB-C ierīce (pieslēgvieta labajā pusē aizmugurē)</translation>
 <translation id="4017989525502048489">Lāzera rādītājs</translation>
+<translation id="4042660782729322247">Jūs šobrīd kopīgojat savu ekrānu</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Izslēgt lietotnē}zero{Izslēgt # lietotnēs}one{Izslēgt # lietotnē}other{Izslēgt # lietotnēs}}</translation>
 <translation id="4072264167173457037">Vidēji spēcīgs signāls</translation>
 <translation id="4129129681837227511">Lai skatītu paziņojumus bloķēšanas ekrānā, atbloķējiet, lai mainītu iestatījumu</translation>
@@ -375,6 +376,7 @@
 <translation id="7067196344162293536">Pagriezt automātiski</translation>
 <translation id="7068360136237591149">Atvērt failus</translation>
 <translation id="7076293881109082629">Pierakstīšanās</translation>
+<translation id="7088960765736518739">Slēdžu piekļuve</translation>
 <translation id="7092922358121866860">Rādīt nakts režīma iestatījumus</translation>
 <translation id="7098389117866926363">USB-C ierīce (pieslēgvieta aizmugurē pa kreisi)</translation>
 <translation id="7131634465328662194">Jūs tiksiet automātiski izrakstīts.</translation>
@@ -501,6 +503,7 @@
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi adrese: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Tiek izmantots mikrofons.</translation>
+<translation id="9084606467167974638">Pārslēgt izvēlnes pozīciju</translation>
 <translation id="9089416786594320554">Ievades metodes</translation>
 <translation id="9091626656156419976">Displejs <ph name="DISPLAY_NAME" /> tika noņemts.</translation>
 <translation id="9151726767154816831">Lai atjauninātu, restartējiet ierīci un izmantojiet funkciju Powerwash.</translation>

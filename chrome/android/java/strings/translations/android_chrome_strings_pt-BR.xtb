@@ -262,6 +262,7 @@
 <translation id="290376772003165898">A página não está em <ph name="LANGUAGE" />?</translation>
 <translation id="2910701580606108292">Perguntar antes de permitir que sites reproduzam conteúdo protegido</translation>
 <translation id="2913331724188855103">Permitir que os sites salvem e leiam os dados de arquivos "cookies" - que armazenam temporariamente o que você visitou na rede. (Recomendado)</translation>
+<translation id="2923908459366352541">O nome é inválido</translation>
 <translation id="2932150158123903946">Armazenamento do Google <ph name="APP_NAME" /></translation>
 <translation id="2956410042958133412">Esta conta é gerenciada por <ph name="PARENT_NAME_1" /> e <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Todos os direitos reservados.</translation>
@@ -363,6 +364,7 @@
 <translation id="3745176700485982507">Encontre os links para seus sites favoritos nesta página</translation>
 <translation id="3771001275138982843">Não foi possível fazer o download da atualização</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Ativar o Bluetooth<ph name="END_LINK" /> para permitir o pareamento</translation>
+<translation id="3775705724665058594">Enviar para seus dispositivos</translation>
 <translation id="3778956594442850293">Adicionado à tela inicial</translation>
 <translation id="3781011235031427080">Mais opções semelhantes abertas pela metade</translation>
 <translation id="3789841737615482174">Instalar</translation>
@@ -529,6 +531,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> está compartilhando sua tela</translation>
 <translation id="4961107849584082341">Traduza esta página para qualquer idioma</translation>
 <translation id="4961700429721424617">Você está saindo de uma conta gerenciada por <ph name="MANAGED_DOMAIN" />. Os dados do Chrome serão excluídos desse dispositivo, mas permanecerão na sua Conta do Google.</translation>
+<translation id="4970824347203572753">Indisponível no seu local</translation>
 <translation id="497421865427891073">Avançar</translation>
 <translation id="4988210275050210843">Fazendo o download do arquivo (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Páginas</translation>
@@ -598,6 +601,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5487521232677179737">Limpar dados</translation>
 <translation id="5494752089476963479">Bloquear anúncios em sites com publicidade invasiva ou enganosa</translation>
 <translation id="5497272504048921382">Guias abertas</translation>
+<translation id="5500777121964041360">Pode não estar disponível no seu local</translation>
 <translation id="550684401320795253">Atualizando o Chrome…</translation>
 <translation id="5512137114520586844">Esta conta é gerenciada por <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Opção desativada pelo administrador deste dispositivo</translation>
@@ -849,6 +853,7 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> itens selecionados</translation>
 <translation id="7253272406652746122">Adicione uma Conta do Google na página de "Contas" do app "Config." do seu dispositivo.</translation>
 <translation id="7274013316676448362">Site bloqueado</translation>
+<translation id="7290209999329137901">Ação de renomear indisponível</translation>
 <translation id="7291387454912369099">Finalizar compras com o Assistente</translation>
 <translation id="729975465115245577">Seu dispositivo não tem um app para armazenar o arquivo de senhas.</translation>
 <translation id="7302081693174882195">Detalhes: classificados pela quantidade de dados economizados</translation>
@@ -982,6 +987,7 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="8200772114523450471">Retomar</translation>
 <translation id="8209050860603202033">Abrir imagem</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB transferido(s) por download</translation>
+<translation id="8224471946457685718">Fazer o download de "Artigos para você" quando houver conexão Wi-Fi</translation>
 <translation id="8232956427053453090">Manter dados</translation>
 <translation id="8249310407154411074">Mover para o início</translation>
 <translation id="8250920743982581267">Documentos</translation>

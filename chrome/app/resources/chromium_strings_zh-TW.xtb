@@ -209,6 +209,7 @@ Chromium 無法復原你的設定。</translation>
 <ph name="BEGIN_LINK_2" />瞭解詳情<ph name="END_LINK_2" />
 
 如需進一步的操作說明，請登入您的 <ph name="ACCOUNT_EMAIL" /> 帳戶，查看系統寄給您的電子郵件。</translation>
+<translation id="7349591376906416160">你的系統管理員已設定由 Chromium 開啟 <ph name="ALTERNATIVE_BROWSER_NAME" /> 以存取 <ph name="TARGET_URL_HOSTNAME" />。</translation>
 <translation id="7448255348454382571">重新啟動 Chromium 作業系統</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium 開發人員版</translation>
 <translation id="7451052299415159299">Chromium 需要相關權限，才能讓這個網站使用你的攝影機</translation>

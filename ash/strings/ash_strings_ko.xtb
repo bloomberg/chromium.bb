@@ -199,6 +199,7 @@
 <translation id="397105322502079400">계산 중...</translation>
 <translation id="3995138139523574647">USB-C 기기(우측 후면 포트)</translation>
 <translation id="4017989525502048489">레이저 포인터</translation>
+<translation id="4042660782729322247">화면 공유 중</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{앱 1개에서 사용 중지됨}other{앱 #개에서 사용 중지됨}}</translation>
 <translation id="4072264167173457037">신호 보통</translation>
 <translation id="4129129681837227511">잠금 화면에 알림이 표시되도록 하려면 잠금을 해제하여 설정을 변경하세요.</translation>
@@ -375,6 +376,7 @@
 <translation id="7067196344162293536">자동 회전</translation>
 <translation id="7068360136237591149">파일을 열어 줘</translation>
 <translation id="7076293881109082629">로그인</translation>
+<translation id="7088960765736518739">스위치 제어</translation>
 <translation id="7092922358121866860">야간 조명 설정 표시</translation>
 <translation id="7098389117866926363">USB-C 기기(좌측 후면 포트)</translation>
 <translation id="7131634465328662194">자동으로 로그아웃됩니다.</translation>
@@ -501,6 +503,7 @@
 <translation id="9074739597929991885">블루투스</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">마이크가 사용 중입니다.</translation>
+<translation id="9084606467167974638">메뉴 위치 전환</translation>
 <translation id="9089416786594320554">입력 방법</translation>
 <translation id="9091626656156419976">디스플레이 <ph name="DISPLAY_NAME" /> 제거됨</translation>
 <translation id="9151726767154816831">업데이트하려면 다시 시작하고 Powerwash하세요.</translation>

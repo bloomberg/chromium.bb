@@ -3577,6 +3577,7 @@
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Chcete, aby Google preložil túto stránku z jazyka <ph name="SOURCE_LANGUAGE" /> do jazyka <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Bolo pripojené ukazovacie zariadenie</translation>
+<translation id="6676212663108450937">Pri kalibrácii pre váš hlas odporúčame použiť slúchadlá</translation>
 <translation id="6678717876183468697">Webová adresa dopytu</translation>
 <translation id="6680442031740878064">K dispozícii: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Ohodnotiť</translation>
@@ -4271,6 +4272,7 @@
 <translation id="7788383851298063850">Povedzte nám, čo sa deje</translation>
 <translation id="7788444488075094252">Jazyky a vstup</translation>
 <translation id="7788668840732459509">Pozícia:</translation>
+<translation id="7789963078219276159">Pozadie úvodnej stránky bolo zmenené na: <ph name="CATEGORY" />.</translation>
 <translation id="7791543448312431591">Pridať</translation>
 <translation id="7792012425874949788">Počas prihlasovania sa vyskytla chyba</translation>
 <translation id="7792388396321542707">Zastaviť zdieľanie</translation>
@@ -4904,6 +4906,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8767621466733104912">Automaticky aktualizovať Chrome pre všetkých používateľov</translation>
 <translation id="8770406935328356739">Koreňový adresár rozšírenia</translation>
 <translation id="8770507190024617908">Spravovať ľudí</translation>
+<translation id="8771300903067484968">Pozadie úvodnej stránky bolo resetované na predvolené.</translation>
 <translation id="8774934320277480003">Horný okraj</translation>
 <translation id="8775144690796719618">Neplatná webová adresa</translation>
 <translation id="8777628254805677039">heslo používateľa typu root</translation>

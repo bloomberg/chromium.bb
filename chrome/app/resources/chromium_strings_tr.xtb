@@ -207,6 +207,7 @@ Chromium ayarlarınızı kurtaramıyor.</translation>
 <ph name="BEGIN_LINK_2" />Daha fazla bilgi edinin<ph name="END_LINK_2" />
 
 Daha fazla talimat için lütfen e-postanızı (<ph name="ACCOUNT_EMAIL" />) kontrol edin.</translation>
+<translation id="7349591376906416160">Sistem yöneticiniz Chromium'u <ph name="TARGET_URL_HOSTNAME" /> adresine erişmek için <ph name="ALTERNATIVE_BROWSER_NAME" /> tarayıcısını açacak şekilde yapılandırmış.</translation>
 <translation id="7448255348454382571">Chromium OS'i yeniden başlatın</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium Dev</translation>
 <translation id="7451052299415159299">Chromium'un bu sitede kameranıza erişmesi için izin gerekiyor</translation>

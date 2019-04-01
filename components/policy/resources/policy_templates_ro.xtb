@@ -1,6 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
+<translation id="1002439864875515590">Dacă această politică este configurată ca un șir necompletat sau nu este configurată, <ph name="PRODUCT_OS_NAME" /> nu va afișa opțiunea de completare automată în timpul procesului de conectare a utilizatorului.
+      Dacă această politică este configurată ca un șir care reprezintă un nume de domeniu, <ph name="PRODUCT_OS_NAME" /> va afișa opțiunea de completare automată în timp ce utilizatorul se conectează. Astfel, utilizatorul poate introduce doar numele său de utilizator, fără extensia numelui de domeniu.  Utilizatorul va putea să suprascrie extensia numelui de domeniu.
+      Dacă valoarea politicii nu este un domeniu valid, politica nu va fi aplicată.</translation>
 <translation id="101438888985615157">Rotește ecranul la 180 de grade</translation>
 <translation id="1016912092715201525">Configurează verificările pentru browserul prestabilit în <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să le modifice.
 
@@ -705,13 +708,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Utilizatorii nu pot modifica sau înlocui această politică, dacă o configurați. Cu toate acestea, utilizatorii vor putea să activeze/dezactiveze o tastatură de accesibilitate pe ecran care are prioritate față de tastatura virtuală controlată de această politică. Consultați politica |VirtualKeyboardEnabled| privind controlarea tastaturii de accesibilitate de pe ecran.
 
       Dacă politica nu este configurată, tastatura pe ecran este dezactivată inițial, dar poate fi activată oricând de utilizator. De asemenea, pot fi utilizate reguli euristice pentru a se decide când să se afișeze tastatura.</translation>
-<translation id="228659285074633994">Indică perioada de timp fără intrări de la utilizator după care este afișată o casetă de dialog de avertizare la funcționarea pe c.a.
-
-          Când politica este setată, aceasta indică perioada de timp în care utilizatorul trebuie să rămână inactiv înainte ca <ph name="PRODUCT_OS_NAME" /> să afișeze o casetă de dialog prin care utilizatorul este avertizat că sistemul va trece în modul inactiv.
-
-          Dacă setarea acestei politici este anulată, nu apar casete de dialog de avertizare.
-
-          Valoarea acestei politici trebuie indicată în milisecunde. Valorile sunt fixate la un număr mai mic decât sau egal cu intervalul de inactivitate.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> poate utiliza un serviciu web Google pentru a ajuta la soluționarea greșelilor de ortografie. Dacă setarea este activată, atunci se va utiliza întotdeauna acest serviciu. Dacă setarea este dezactivată, atunci acest serviciu nu va fi utilizat niciodată.
 
       Totuși, verificarea ortografiei se poate face cu un dicționar descărcat; această politică afectează numai utilizarea serviciului web.
@@ -737,9 +733,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="2299220924812062390">Specifică o listă de pluginuri activate</translation>
 <translation id="2303795211377219696">Activează completarea automată pentru cardurile de credit</translation>
 <translation id="2309390639296060546">Setare prestabilită pentru localizarea geografică</translation>
-<translation id="2312134445771258233">Poți să configurezi paginile încărcate la pornire.
-
-      Conținutul listei „Adrese URL care se deschid la pornire” este ignorat, cu excepția cazului în care selectezi „Deschide o listă cu adrese URL” în „Acțiune la pornire”.</translation>
 <translation id="2327252517317514801">Definește domeniile care au permisiunea să acceseze G Suite</translation>
 <translation id="237494535617297575">Vă permite să setați o listă de modele pentru adresele URL ce specifică site-urile care au permisiunea să afișeze notificări. Dacă această politică nu este setată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultNotificationsSetting”, dacă este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="2386362615870139244">Permiteți blocarea activării ecranului</translation>
@@ -918,6 +911,16 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă această setare este dezactivată, paginile web nu pot utiliza JavaScript, iar utilizatorii nu pot modifica această setare.
 
       Dacă această setare este activată sau nu este configurată, paginile web pot utiliza JavaScript, dar utilizatorul poate schimba această setare.</translation>
+<translation id="2747157663401642394">Configurează setările de gestionare a extensiilor pentru <ph name="PRODUCT_NAME" />.
+
+          Această politică stabilește mai multe setări, inclusiv pe cele controlate de eventualele politici existente privind extensiile. Politica va anula toate politicile vechi dacă ambele sunt setate.
+
+          Această politică asociază un ID de extensie sau o adresă URL de actualizare la configurația sa. În cazul unui ID de extensie, configurația va fi aplicată numai pentru extensia specificată. O configurație prestabilită poate fi setată pentru ID-ul special <ph name="DEFAULT_SCOPE" />, care se va aplica pentru toate extensiile care nu au o configurație personalizată setată în această politică. În cazul unei adrese URL de actualizare, configurația se va aplica pentru toate extensiile cu adresa URL de actualizare exactă specificată în manifestul acestei extensii, conform descrierii de la <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Pentru copiile Windows neasociate unui domeniu <ph name="MS_AD_NAME" />, instalarea automată este limitată la aplicațiile și extensiile afișate în Magazinul web Chrome.
+
+          Pentru o descriere completă a setărilor posibile și a structurii acestei politici, accesează https://www.chromium.org/administrators/policy-list-3/extension-settings-full
+          </translation>
 <translation id="2753637905605932878">Restricționează intervalul de porturi UDP locale folosite de WebRTC</translation>
 <translation id="2755385841634849932">Această politică gestionează disponibilitatea creării și restabilirii backupurilor Android.
 
@@ -2037,6 +2040,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Când această politică este activată, fiecare element este considerat o regulă, similar cu politica <ph name="URL_LIST_POLICY_NAME" />. Cu toate acestea, logica este inversată: regulile care se potrivesc nu vor deschide un browser secundar.
 
       Spre deosebire de politica <ph name="URL_LIST_POLICY_NAME" />, regulile se aplică în ambele direcții: când suplimentul Internet Explorer este prezent și este activat, stabilește și dacă <ph name="IE_PRODUCT_NAME" /> trebuie să deschidă aceste adrese URL în <ph name="PRODUCT_NAME" />.</translation>
+<translation id="5124368997194894978">Activează pornirea pe c.a. (curent alternativ)</translation>
 <translation id="5130288486815037971">Specifică dacă suitele de codificare RC4 din TLS sunt activate</translation>
 <translation id="5141670636904227950">Setați tipul prestabilit al lupei pentru ecran activate pe ecranul de conectare</translation>
 <translation id="5142301680741828703">Redă întotdeauna următoarele șabloane de adrese URL în <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -2151,13 +2155,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Dacă politica nu este configurată sau dacă este setată la un șir gol ori la un interval de porturi nevalid, WebRTC poate să folosească orice port UDP local disponibil.</translation>
 <translation id="5290940294294002042">Specifică o listă de pluginuri pe care utilizatorul le poate activa sau dezactiva</translation>
-<translation id="5304269353650269372">Indică perioada de timp fără intrări de la utilizator după care este afișată o casetă de dialog de avertizare la funcționarea pe baterie.
-
-          Când politica este setată, aceasta indică perioada de timp în care utilizatorul trebuie să rămână inactiv înainte ca <ph name="PRODUCT_OS_NAME" /> să afișeze o casetă de dialog prin care utilizatorul este avertizat că sistemul va trece în modul inactiv.
-
-          Dacă setarea acestei politici este anulată, nu apar casete de dialog de avertizare.
-
-          Valoarea acestei politici trebuie indicată în milisecunde. Valorile sunt fixate la un număr mai mic decât sau egal cu intervalul de inactivitate.</translation>
 <translation id="5307432759655324440">Disponibilitatea modului incognito</translation>
 <translation id="5318185076587284965">Activați folosirea serverelor de transmisie de către gazdele de acces la distanță</translation>
 <translation id="5323128137188992869">Permite proiectarea conținutului pe dispozitiv folosind <ph name="PRODUCT_NAME" />.
@@ -2819,6 +2816,17 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Dacă această politică nu este configurată, va fi folosită valoarea „3”, iar utilizatorul o va putea modifica.</translation>
 <translation id="663685822663765995">Restricționează modul de printare color</translation>
 <translation id="6641981670621198190">Dezactivează compatibilitatea pentru API-uri grafice 3D</translation>
+<translation id="6646056064606561298">Activează pornirea la politica de gestionare a alimentării pe c.a.
+
+          Pornirea pe c.a. oferă sistemului posibilitatea să pornească automat din starea OPRIT/Hibernare când este conectat cablul de alimentare.
+
+          Dacă această politică este activată, atunci pornirea pe c.a. va fi activată întotdeauna dacă este acceptată de dispozitiv.
+
+          Dacă politica este dezactivată, pornirea pe c.a. va fi dezactivată întotdeauna.
+
+          Dacă setezi această politică, utilizatorii nu pot să o modifice sau să o anuleze.
+
+          Dacă politica nu este setată, pornirea pe c.a. este dezactivată și nu poate fi activată de utilizator.</translation>
 <translation id="6647965994887675196">Dacă această politică este activată, pot fi creați și folosiți utilizatori monitorizați.
 
           Dacă această politică nu este activată sau configurată, crearea și conectarea utilizatorilor monitorizați vor fi dezactivate. Toți utilizatorii monitorizați existenți vor fi ascunși.
@@ -3125,17 +3133,6 @@ nu poate fi stabilit de utilizator din setările browserului.
           Redarea automată este permisă numai pentru domeniile listate în mod explicit în politica <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Dacă dorești să activezi redarea automată pentru toate site-urile, îți recomandăm să adaugi http://* și https://* în această listă.
 
           Dacă politica nu este setată, utilizatorul va putea modifica această setare manual.</translation>
-<translation id="7229876938563670511">Configurează adresa URL a paginii de pornire prestabilite în <ph name="PRODUCT_NAME" /> și nu le permite utilizatorilor să o schimbe.
-
-          Pagina de pornire este cea pe care o deschizi apăsând pe butonul Pagina de pornire. Paginile care se deschid la pornire sunt controlate de politicile RestoreOnStartup.
-
-          Tipul paginii de pornire poate fi setat la o adresă URL pe care o specifici aici sau la pagina Filă nouă. Dacă selectezi pagina Filă nouă, atunci această politică este ignorată.
-
-          Dacă activezi această setare, utilizatorii nu pot modifica adresa URL a paginii de pornire din <ph name="PRODUCT_NAME" />, dar pot, totuși, să aleagă pagina Filă nouă ca pagină de pornire.
-
-          Dacă această politică nu este configurată, utilizatorii vor putea să aleagă singuri pagina de pornire, atunci când nu este setată nici HomepageIsNewTabPage.
-
-          Această politică este disponibilă doar în instanțe Windows asociate unui domeniu <ph name="MS_AD_NAME" />, instanțele Windows 10 Pro sau instanțele Enterprise care au fost înscrise pentru gestionarea dispozitivului.</translation>
 <translation id="7229975860249300121">Conține o expresie regulată folosită pentru a stabili ce Conturi Google pot fi setate drept conturi principale în browser în <ph name="PRODUCT_NAME" /> (de exemplu contul ales în timpul înscrierii la sincronizare).
 
       Este afișată o eroare corespunzătoare dacă un utilizator încearcă să seteze un cont principal de browser cu un nume de utilizator care nu se potrivește cu acest model.
@@ -4042,30 +4039,6 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
           Se acceptă în versiunea 70 și versiunile ulterioare de <ph name="PRODUCT_OS_NAME" />. Pentru clienții mai vechi, această valoare înseamnă că revenirea este dezactivată.</translation>
 <translation id="9096086085182305205">Lista albă de autentificare a serverelor</translation>
 <translation id="9098553063150791878">Politici pentru autentificarea HTTP</translation>
-<translation id="9103061223348895346">Această politică controlează mai multe setări pentru strategia de gestionare a consumului de energie atunci când utilizatorul devine inactiv.
-
-          Există patru tipuri de acțiuni:
-          * Dacă utilizatorul rămâne inactiv pentru un interval de timp egal cu cel specificat de |ScreenDim|, ecranul va fi estompat.
-          * Dacă utilizatorul rămâne inactiv pentru un interval de timp egal cu cel specificat de |ScreenOff|, ecranul va fi dezactivat.
-          * Dacă utilizatorul rămâne inactiv pentru un interval de timp egal cu cel specificat de |IdleWarning|, se va afișa o casetă de dialog prin care utilizatorul este avertizat că sistemul va trece în modul inactiv.
-          * Dacă utilizatorul rămâne inactiv pentru un interval de timp egal cu cel specificat de |Idle|, va fi urmată acțiunea specificată de |IdleAction|.
-
-          Pentru fiecare dintre acțiunile de mai sus, intervalul trebuie să fie specificat în milisecunde și trebuie să fie setat la o valoare mai mare decât zero, pentru a se declanșa acțiunea corespunzătoare. Dacă intervalul este setat la zero, <ph name="PRODUCT_OS_NAME" /> nu va realiza acțiunea corespunzătoare.
-
-          Pentru fiecare dintre intervalele de mai sus, dacă durata nu este setată, se va folosi o valoare prestabilită.
-
-          Reține că valorile specificate de |ScreenDim| trebuie să fie mai mici decât sau egale cu cele specificate de |ScreenOff|, iar valorile specificate de |ScreenOff| și |IdleWarning| trebuie să fie mai mici decât sau egale cu cele specificate de |Idle|.
-
-          Acțiunea specificată de |IdleAction| poate fi una dintre următoarele patru:
-          * |Suspend|
-          * |Logout|
-          * |Shutdown|
-          * |DoNothing|
-
-          Dacă acțiunea specificată de |IdleAction| nu este setată, se va urma acțiunea prestabilită, și anume suspendarea.
-
-          Există și setări separate pentru funcționarea pe c.a. sau pe baterie.
-          </translation>
 <translation id="9105265795073104888">Un singur subset de opțiuni pentru configurarea proxy-ului este pus la dispoziția aplicațiilor Android. Acestea pot alege în mod voluntar să folosească proxy-ul. Nu le poți forța să folosească un proxy.</translation>
 <translation id="9106865192244721694">Permite WebUSB pe aceste site-uri</translation>
 <translation id="9112727953998243860">Fișier de configurare a imprimantelor companiei</translation>
@@ -4117,13 +4090,6 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
       Dacă politica este dezactivată, opțiunea „Anteturi și subsoluri” nu este selectată în dialogul de previzualizare înainte de printare, iar utilizatorul nu o poate schimba.
 
       Dacă politica este activată, opțiunea „Anteturi și subsoluri” este selectată în dialogul de previzualizare înainte de printare, iar utilizatorul nu o poate schimba.</translation>
-<translation id="9210953373038593554">Configurează tipul de autentificare pentru conectările SAML.
-
-      Când această politică nu este setată sau este setată la valoarea prestabilită (0), comportamentul conectărilor SAML este stabilit de browser, în funcție de alți factori. În scenariul cel mai simplu, autentificarea utilizatorului și protecția datelor utilizatorului din memoria cache se bazează pe parole introduse manual de utilizatori.
-
-      Când această politică este setată la ClientCertificate (valoarea 1), autentificarea certificatelor de client este folosită pentru utilizatorii nou adăugați care se conectează prin SAML. Pentru astfel de utilizatori nu se folosesc parole, iar datele locale din memoria cache sunt protejate cu ajutorul cheilor criptografice corespunzătoare. De exemplu, această setare permite configurarea utilizatorilor pe bază de carduri inteligente (reține că aplicațiile intermediare pentru carduri inteligente trebuie să fie instalate prin politica DeviceLoginScreenAppInstallList).
-
-      Această politică afectează doar utilizatorii care se autentifică prin SAML.</translation>
 <translation id="9213347477683611358">Configurează imaginea de fundal la nivel de dispozitiv afișată pe ecranul de conectare, dacă încă nu s-a conectat niciun utilizator pe dispozitiv. Politica se configurează prin specificarea adresei URL de la care dispozitivul cu sistemul de operare Chrome poate descărca imaginea de fundal și a unui cod hash criptografic folosit pentru a verifica integritatea descărcării. Imaginea trebuie să fie în format JPEG, iar dimensiunea fișierului nu trebuie să depășească 16 MB. Adresa URL trebuie să poată fi accesată fără autentificare. Imaginea de fundal este descărcată și stocată în memoria cache. Aceasta va fi descărcată din nou, ori de câte ori adresa URL sau codul hash se modifică.
 
       Politica trebuie să fie specificată ca șir ce exprimă adresa URL și codul hash în format JSON, de ex.,

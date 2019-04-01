@@ -262,6 +262,7 @@
 <translation id="290376772003165898">Ця сторінка відображається не такою мовою: <ph name="LANGUAGE" />?</translation>
 <translation id="2910701580606108292">Запитувати, перш ніж дозволяти сайтам відтворювати захищений вміст</translation>
 <translation id="2913331724188855103">Дозволити сайтам зберігати та розпізнавати дані файлів cookie (рекомендується)</translation>
+<translation id="2923908459366352541">Недійсна назва</translation>
 <translation id="2932150158123903946">Дані додатка Google <ph name="APP_NAME" /></translation>
 <translation id="2956410042958133412">Цим обліковим записом керують <ph name="PARENT_NAME_1" /> і <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Авторське право <ph name="YEAR" /> Google Inc. Усі права захищено.</translation>
@@ -363,6 +364,7 @@
 <translation id="3745176700485982507">На цій сторінці можна знайти посилання на улюблені веб-сайти</translation>
 <translation id="3771001275138982843">Не вдалося завантажити оновлення</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Увімкніть Bluetooth<ph name="END_LINK" />, щоб підключити</translation>
+<translation id="3775705724665058594">Надіслати на пристрої</translation>
 <translation id="3778956594442850293">Додано на головний екран</translation>
 <translation id="3781011235031427080">Сторінку "Більше подібного" відкрито на половину висоти</translation>
 <translation id="3789841737615482174">Встановити</translation>
@@ -528,6 +530,7 @@
 <translation id="4958708863221495346">Сторінка <ph name="URL_OF_THE_CURRENT_TAB" /> показує ваш екран</translation>
 <translation id="4961107849584082341">Перекладіть цю сторінку будь-якою мовою</translation>
 <translation id="4961700429721424617">Ви виходите з облікового запису, зареєстрованого в домені <ph name="MANAGED_DOMAIN" />. Дані Chrome буде видалено з цього пристрою, але вони залишаться у вашому обліковому записі Google.</translation>
+<translation id="4970824347203572753">Функція недоступна у вашій країні</translation>
 <translation id="497421865427891073">Перейти вперед</translation>
 <translation id="4988210275050210843">Завантажується файл (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Сторінки</translation>
@@ -597,6 +600,7 @@
 <translation id="5487521232677179737">Видалити дані</translation>
 <translation id="5494752089476963479">Блокувати рекламу на сайтах, які показують нав’язливі чи оманливі оголошення</translation>
 <translation id="5497272504048921382">Відкриті вкладки</translation>
+<translation id="5500777121964041360">Функція може бути недоступна у вашій країні</translation>
 <translation id="550684401320795253">Оновлення Chrome…</translation>
 <translation id="5512137114520586844">Цим обліковим записом керує <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Вимкнено адміністратором пристрою</translation>
@@ -848,6 +852,7 @@
 <translation id="7250468141469952378">Вибрано <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">Додайте обліковий запис Google зі сторінки "Облікові записи" в додатку Налаштування на пристрої.</translation>
 <translation id="7274013316676448362">Заблокований сайт</translation>
+<translation id="7290209999329137901">Не можна перейменувати</translation>
 <translation id="7291387454912369099">Оплата за допомогою Асистента</translation>
 <translation id="729975465115245577">На пристрої немає додатка для зберігання файлу з паролями.</translation>
 <translation id="7302081693174882195">Деталі: відсортовано за кількістю заощадженого трафіку</translation>
@@ -981,6 +986,7 @@
 <translation id="8200772114523450471">Поновити</translation>
 <translation id="8209050860603202033">Відкрити зображення</translation>
 <translation id="8220488350232498290">Завантажено <ph name="GIGABYTES" /> ГБ</translation>
+<translation id="8224471946457685718">Завантажувати статті через Wi-Fi</translation>
 <translation id="8232956427053453090">Зберігати дані</translation>
 <translation id="8249310407154411074">На початок</translation>
 <translation id="8250920743982581267">Документи</translation>

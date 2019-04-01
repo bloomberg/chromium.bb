@@ -207,6 +207,7 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <ph name="BEGIN_LINK_2" />למידע נוסף<ph name="END_LINK_2" />
 
 בדוק את האימייל בחשבון <ph name="ACCOUNT_EMAIL" /> לקבלת הנחיות נוספות.</translation>
+<translation id="7349591376906416160">‏לפי הגדרת מנהל המערכת, Chromium יפתח את<ph name="ALTERNATIVE_BROWSER_NAME" /> כדי לגשת אל <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7448255348454382571">‏הפעלה מחדש של Chromium OS</translation>
 <translation id="7449453770951226939">‏<ph name="PAGE_TITLE" /> - Chromium בגירסת פיתוח</translation>
 <translation id="7451052299415159299">‏Chromium זקוק להרשאת גישה למצלמה בשביל האתר הזה</translation>

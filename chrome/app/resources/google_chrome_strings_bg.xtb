@@ -230,6 +230,7 @@
 <translation id="7589360514048265910">Занапред този компютър няма да получава актуализации на Google Chrome, защото Mac OS X 10.9 вече не се поддържа.</translation>
 <translation id="7592736734348559088">Google Chrome не можа да синхронизира данните ви, защото потребителското име и паролата за вход в профила ви не са актуални.</translation>
 <translation id="7626032353295482388">Добре дошли в Chrome</translation>
+<translation id="7641148173327520642">Системният ви администратор е конфигурирал Google Chrome да отваря <ph name="ALTERNATIVE_BROWSER_NAME" /> за достъп до <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Лого на Chrome Enterprise</translation>
 <translation id="7747138024166251722">Инсталационната програма не можа да създаде временна директория. Моля, проверете дали има свободно дисково пространство и разрешение за инсталиране на софтуер.</translation>
 <translation id="7761834446675418963">Кликнете върху името си, за да отворите Chrome и да започнете да сърфирате.</translation>

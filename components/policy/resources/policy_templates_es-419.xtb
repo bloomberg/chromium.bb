@@ -1,6 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
+<translation id="1002439864875515590">Si no se configura esta política o se establece como un string en blanco, <ph name="PRODUCT_OS_NAME" /> no mostrará una opción de autocompletar durante el flujo de acceso del usuario.
+      Si se establece como una string que representa un nombre de dominio, <ph name="PRODUCT_OS_NAME" /> mostrará una opción de autocompletar durante el acceso del usuario, lo que le permitirá escribir solamente su nombre sin la extensión del nombre de dominio.  El usuario podrá sobrescribir esta extensión de nombre de dominio.
+      Si el valor de la política no es un dominio válido, no se aplicará la política.</translation>
 <translation id="101438888985615157">Rotar la pantalla 180 grados</translation>
 <translation id="1016912092715201525">Configura los controles del navegador predeterminado en <ph name="PRODUCT_NAME" /> y evita que los usuarios los cambien.
 
@@ -377,16 +380,16 @@
 <translation id="1689963000958717134">Permite aplicar la configuración de red a todos los usuarios de un dispositivo <ph name="PRODUCT_OS_NAME" />. La configuración de red es una cadena escrita en formato JSON, como se define en el formato Open Network Configuration que se describe en <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="1704516734140344991">Configura la disponibilidad y el comportamiento de la función de actualización del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
-      Se pueden especificar opciones de configuración particulares en las propiedades JSON:
+      Se pueden especificar opciones de configuración particulares en las propiedades de JSON:
 
       <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Si se establece como <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, los usuarios podrán activar el flujo de Powerwash para instalar la actualización del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Si se establece como <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, los usuarios podrán invocar el flujo de actualización del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> que preserva el estado en todo el dispositivo (lo que incluye la inscripción de empresas), pero pierde los datos del usuario. Este flujo de actualización está disponible a partir de la versión 68.
 
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: Controla el nivel de automatización en el que se aplican las actualizaciones del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> para el firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> vulnerable. Todos los flujos conservan el estado del dispositivo local.
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: Controla cómo se ejecutan las actualizaciones automáticas del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> para el firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> vulnerable. Todos los flujos conservan el estado del dispositivo local.
         Si se establece como 1 o no se establece, no se aplicarán las actualizaciones del firmware TPM.
-        Si se establece como 2, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> se actualizará el firmware en el próximo reinicio después de que el usuario reconozca la actualización.
-        Si se establece como 3, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> se actualizará el firmware en el próximo reinicio.
+        Si se establece como 2, se actualizará el firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> en el próximo reinicio después de que el usuario reconozca la actualización.
+        Si se establece como 3, se actualizará el firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> en el próximo reinicio.
         Si se establece como 4, se actualizará el firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> después de la inscripción, antes del acceso del usuario.
         Esta opción está disponible a partir de la versión 74.
 
@@ -704,13 +707,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si se establece esta política, los usuarios no pueden cambiarla ni anularla, pero pueden habilitar/inhabilitar un teclado en pantalla de accesibilidad que tiene su precedente en el teclado virtual que controla esta política. Consulta la política |VirtualKeyboardEnabled| para controlar la accesibilidad del teclado en pantalla.
 
       Si esta política no se establece, el teclado virtual en pantalla está inhabilitado inicialmente, pero el usuario puede habilitarlo en cualquier momento. Las reglas heurísticas también se pueden utilizar para decidir si mostrar el teclado o no.</translation>
-<translation id="228659285074633994">Especifica el período sin intervención del usuario que debe transcurrir para que se muestre un cuadro de diálogo de advertencia cuando el equipo esté funcionando con CA.
-
-          Cuando se establece esta política, se especifica la cantidad de tiempo que el usuario debe permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME" /> muestre un cuadro de diálogo de advertencia que indica al usuario que la acción de inactividad está a punto de llevarse a cabo.
-
-          Cuando no se establece esta política, no se muestra ningún cuadro de diálogo de advertencia.
-
-          El valor de la política deberá especificarse en milisegundos. Los valores deben ser menores o iguales que la demora por inactividad.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> puede utilizar un servicio web de Google para ayudar a corregir los errores ortográficos. Si esta configuración está habilitada, este servicio se utiliza siempre. Por el contrario, si está inhabilitada, este servicio no se utiliza nunca.
 
       Aún así, la revisión ortográfica se puede llevar a cabo utilizando un diccionario descargado, puesto que esta política solo controla el uso del servicio en línea.
@@ -735,7 +731,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="2299220924812062390">Especificar una lista de complementos habilitados</translation>
 <translation id="2303795211377219696">Habilitar la función Autocompletar para tarjetas de crédito</translation>
 <translation id="2309390639296060546">Configuración de geolocalización predeterminada</translation>
-<translation id="2312134445771258233">Te permite configurar las páginas que se cargan al iniciar. El contenido de la lista "Direcciones URL que se abrirán al iniciar" se ignora a menos que se haya seleccionado "Abrir una lista de direcciones URL en acción al iniciar".</translation>
 <translation id="2327252517317514801">Definir los dominios con permiso para acceder a G Suite</translation>
 <translation id="237494535617297575">Te permite configurar una lista de patrones de URL que especifican los sitios que están autorizados a mostrar notificaciones. Si esta política no se configura, se usará el valor global predeterminado para todos los sitios ya sea de la política "DefaultNotificationsSetting", si está configurada, o de otro tipo de configuración personal del usuario.</translation>
 <translation id="2386362615870139244">Permitir bloqueos de activación de pantalla</translation>
@@ -914,6 +909,16 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si esta configuración está inhabilitada, las páginas web no podrán usar JavaScript y el usuario no podrá cambiar esa configuración.
 
       Si esta configuración está habilitada o no está establecida, las páginas web podrán usar JavaScript pero el usuario podrá cambiar esa configuración.</translation>
+<translation id="2747157663401642394">Establece la configuración de la administración de extensiones para <ph name="PRODUCT_NAME" />.
+
+          Esta política controla varias opciones de configuración, incluida la configuración regida por políticas existentes relacionadas con extensiones. Esta política anulará cualquier política heredada si ambas están configuradas.
+
+          Esta política asigna un ID de extensión o una URL de actualización a su configuración. Con un ID de extensión, la configuración se aplicará a la extensión especificada únicamente. Es posible establecer una configuración predeterminada para el ID especial <ph name="DEFAULT_SCOPE" />, que se aplicará a todas las extensiones que no tengan una configuración personalizada en esta política. Con una URL de actualización, la configuración se aplicará a todas las extensiones con la URL de actualización exacta establecida en el manifiesto de esta extensión, como se describe en <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Para las instancias de Windows que no están unidas a un dominio de <ph name="MS_AD_NAME" />, solo se pueden instalar de manera automática las apps y extensiones que aparecen en Chrome Web Store.
+
+          Para obtener una descripción completa de las opciones de configuración posibles y la estructura de esta política, visita https://www.chromium.org/administrators/policy-list-3/extension-settings-full
+          </translation>
 <translation id="2753637905605932878">Restringir el intervalo de puertos UDP locales que usa WebRTC</translation>
 <translation id="2755385841634849932">Esta política controla la disponibilidad de la copia de seguridad y el restablecimiento en Android.
 
@@ -1229,7 +1234,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3381968327636295719">Utilizar el navegador del host de manera predeterminada</translation>
 <translation id="3384115339826100753">Habilita la política de administración energética para el cambio de pico de consumo de energía.
 
-          El cambio de pico es una política destinada a ahorrar energía que minimiza el uso de corriente alterna en los picos de consumo de energía durante el día. Se puede establecer una hora de comienzo y finalización para ejecutar el modo de cambio de pico de consumo de energía en cada día de la semana. En estos períodos, el sistema utilizará la energía de la batería incluso si está conectada la corriente alterna, siempre que la batería se encuentre por encima del umbral especificado. Después del tiempo de finalización especificado, el sistema funcionará mediante corriente alterna (en caso de estar conectado), pero no cargará la batería. El sistema volverá a funcionar con normalidad a través de corriente alterna y cargará la batería después del tiempo de inicio de carga especificado.
+          El cambio de pico es una política destinada a ahorrar energía que minimiza el uso de corriente alterna en los picos de consumo de energía durante el día. Se puede establecer una hora de comienzo y finalización para ejecutar el modo de cambio de pico de consumo de energía en cada día de la semana. En estos períodos, el sistema utilizará la energía de la batería, incluso si está conectada la corriente alterna, siempre que la batería se encuentre por encima del umbral especificado. Después del tiempo de finalización especificado, el sistema funcionará mediante corriente alterna (en caso de estar conectado), pero no cargará la batería. El sistema volverá a funcionar con normalidad a través de corriente alterna y cargará la batería después del tiempo de inicio de carga especificado.
 
           Si esta política se establece como verdadera y se establecen DevicePowerPeakShiftBatteryThreshold y DevicePowerPeakShiftDayConfig, el cambio de pico de consumo de energía estará siempre habilitado (cuando el dispositivo admite esta función).
 
@@ -2024,6 +2029,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Cuando se establece, todos los elementos se tratan como regla, de forma similar a la política <ph name="URL_LIST_POLICY_NAME" />. No obstante, la lógica es inversa; es decir, las reglas que coinciden no abren un navegador alternativo.
 
       A diferencia de <ph name="URL_LIST_POLICY_NAME" />, las reglas se aplican en ambos sentidos. Cuando el complemento de Internet Explorer está presente y habilitado, también controla si <ph name="IE_PRODUCT_NAME" /> debe abrir estas URL en <ph name="PRODUCT_NAME" />.</translation>
+<translation id="5124368997194894978">Habilitar el inicio mediante CA (corriente alterna)</translation>
 <translation id="5130288486815037971">Si se habilitan los conjuntos de cifrado de RC4 en TLS</translation>
 <translation id="5141670636904227950">Establece el tipo de lupa predeterminado habilitado en la pantalla de acceso.</translation>
 <translation id="5142301680741828703">Siempre procesar los siguientes patrones de URL en <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -2134,13 +2140,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Si la política no se establece, se establece con un intervalo de puertos no válido o se deja como una cadena vacía, WebRTC puede usar cualquier puerto UDP local disponible.</translation>
 <translation id="5290940294294002042">Especificar una lista de complementos que el usuario puede habilitar o inhabilitar.</translation>
-<translation id="5304269353650269372">Especifica el período sin intervención del usuario que debe transcurrir para que se muestre un cuadro de diálogo de advertencia cuando el equipo esté funcionando con batería.
-
-          Cuando se establece esta política, se especifica la cantidad de tiempo que el usuario debe permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME" /> muestre un cuadro de diálogo de advertencia que indica al usuario que la acción de inactividad está a punto de llevarse a cabo.
-
-          Cuando no se establece esta política, no se muestra ningún cuadro de diálogo de advertencia.
-
-          El valor de la política deberá especificarse en milisegundos. Los valores deben ser menores o iguales que la demora por inactividad.</translation>
 <translation id="5307432759655324440">Disponibilidad del modo incógnito</translation>
 <translation id="5318185076587284965">Habilitar el uso de servidores de retransmisión por parte del host de acceso remoto</translation>
 <translation id="5323128137188992869">Permite que se transmita contenido al dispositivo que esté usando <ph name="PRODUCT_NAME" />.
@@ -2795,6 +2794,17 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Si no se configura esta política, se usará el valor "3", y el usuario podrá cambiarlo.</translation>
 <translation id="663685822663765995">Restringir el modo de impresión a color</translation>
 <translation id="6641981670621198190">Inhabilitar la admisión de API gráficas en 3D</translation>
+<translation id="6646056064606561298">Habilita la política de administración de la energía para el inicio mediante CA.
+
+          El inicio mediante CA permite que el sistema se inicie automáticamente desde el estado Apagado/Hibernación cuando se inserta el cable eléctrico.
+
+          Si se establece esta política como verdadera, el inicio mediante CA estará siempre habilitado (cuando lo admita el dispositivo).
+
+          Si se establece como falsa, estará siempre inhabilitado.
+
+          Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
+
+          Si no se establece, se inhabilitará el inicio mediante CA, y el usuario no podrá habilitarlo.</translation>
 <translation id="6647965994887675196">Si está configurada en verdadero, pueden crearse y utilizarse usuarios supervisados.
 
           Si está configurada en falso o si no está configurada, la creación y el acceso de usuarios supervisados estarán inhabilitados. Todos los usuarios supervisados existentes estarán ocultos.
@@ -3100,17 +3110,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
           La reproducción automática solo se permite para los sitios indicados explícitamente en la política <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Si quieres habilitar la reproducción automática para todos los sitios, agrega http://* y https://* a esta lista.
 
           Si no estableces esta política, el usuario podrá cambiar la configuración de forma manual.</translation>
-<translation id="7229876938563670511">Configura la URL de la página principal predeterminada en <ph name="PRODUCT_NAME" /> y evita que los usuarios la modifiquen.
-
-          La página principal es la página que se abre con el botón Página principal. Las páginas que se abren al inicio se controlan a través de las políticas RestoreOnStartup.
-
-          El tipo de página principal puede configurarse como una URL que se especifica aquí o establecerse en la página Nueva pestaña. Si se selecciona la página Nueva pestaña, esta política no se aplica.
-
-          Si se habilita esta configuración, los usuarios no pueden cambiar la URL de la página principal en <ph name="PRODUCT_NAME" />, pero pueden elegir la página Nueva pestaña como página principal.
-
-          Si esta política no se establece, el usuario puede elegir la página principal cuando tampoco se establece HomepageIsNewTabPage.
-
-          Esta política está disponible en instancias de Windows vinculadas a un dominio de <ph name="MS_AD_NAME" /> o instancias de Windows 10 Pro o Enterprise habilitadas para la administración de dispositivos.</translation>
 <translation id="7229975860249300121">Contiene una expresión regular que se usa para determinar qué Cuentas de Google se pueden establecer como las principales del navegador en <ph name="PRODUCT_NAME" /> (es decir, la cuenta que se elige en el proceso de aceptación de la sincronización).
 
       Si un usuario intenta establecer una cuenta principal en el navegador con un nombre de usuario que no coincida con este patrón, se mostrará un error.
@@ -4054,30 +4053,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
           Esta política es compatible con la versión 70 de <ph name="PRODUCT_OS_NAME" /> y versiones posteriores. Para los clientes anteriores, este valor significa que la reversión está inhabilitada.</translation>
 <translation id="9096086085182305205">Lista blanca del servidor de autenticación</translation>
 <translation id="9098553063150791878">Políticas para la autenticación HTTP</translation>
-<translation id="9103061223348895346">Esta política controla distintas configuraciones de la estrategia de administración de energía cuando el usuario está inactivo.
-
-          Existen cuatro tipos de acción:
-          * Se atenuará el brillo de la pantalla cuando el usuario permanezca inactivo durante el tiempo indicado en |ScreenDim|.
-          * Se apagará la pantalla cuando el usuario permanezca inactivo durante el tiempo indicado en |ScreenOff|.
-          * Aparecerá un cuadro de diálogo de advertencia cuando el usuario permanezca inactivo durante el tiempo indicado en |IdleWarning|, para avisarle que se está a punto de implementar la acción correspondiente al modo de inactividad.
-          * Se implementará la acción especificada en |IdleAction| cuando el usuario permanezca inactivo durante el tiempo indicado en |Idle|.
-
-          Para las acciones anteriores, el tiempo de demora debe establecerse en milisegundos, y el valor debe ser mayor que cero para activar la acción correspondiente. Si la demora se establece en cero, <ph name="PRODUCT_OS_NAME" /> no realizará la acción correspondiente.
-
-          Si no se establece una duración específica para cada uno de los tiempos de demora anteriores, se utilizará un valor predeterminado.
-
-          Los valores de |ScreenDim| se fijarán para ser, como máximo, iguales a |ScreenOff|. |ScreenOff| y |IdleWarning| se fijarán para ser, como máximo, iguales a |Idle|.
-
-          |IdleAction| puede representar una de cuatro acciones posibles:
-          * |Suspend|
-          * |Logout|
-          * |Shutdown|
-          * |DoNothing|
-
-          Si no se configura |IdleAction|, se realizará la acción predeterminada, es decir, entrar en modo de suspensión.
-
-          También existen opciones de configuración diferentes para la alimentación de CA y la batería.
-          </translation>
 <translation id="9105265795073104888">Las apps de Android tienen a su disposición solo un subgrupo de opciones de configuración de proxy. Dichas apps pueden elegir usar el proxy de forma voluntaria, pero no puedes forzarlas a que lo usen.</translation>
 <translation id="9106865192244721694">Permite WebUSB en estos sitios</translation>
 <translation id="9112727953998243860">Archivo de configuración de impresoras empresariales</translation>
@@ -4129,13 +4104,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si se establece como falsa, no aparecerá seleccionada la opción "Encabezados y pies de página" en el cuadro de vista previa de la impresión y el usuario no podrá cambiarla.
 
       Si se establece como verdadera, aparecerá seleccionada la opción "Encabezados y pies de página" en el cuadro de vista previa de la impresión y el usuario no podrá cambiarla.</translation>
-<translation id="9210953373038593554">Configura el tipo de autenticación para los accesos SAML.
-
-      Cuando no se configura esta política o se establece como predeterminada (valor 0), el navegador determina el comportamiento de los accesos SAML según otros factores. En el caso más básico, la autenticación del usuario y la protección de los datos del usuario en caché se basan en las contraseñas que los usuarios hayan ingresado manualmente.
-
-      Si esta política se establece como ClientCertificate (valor 1), la autenticación de certificados de cliente se usa para los usuarios agregados recientemente con acceso mediante SAML. No se usan contraseñas para estos usuarios, y sus datos almacenados localmente en caché se protegen con claves criptográficas correspondientes. Por ejemplo, esta configuración permite establecer la autenticación de usuarios basada en tarjetas inteligentes (ten en cuenta que las apps de middleware de tarjetas inteligentes deben instalarse mediante la política DeviceLoginScreenAppInstallList).
-
-      Esta política solo afecta a los usuarios que realizan la autenticación con SAML.</translation>
 <translation id="9213347477683611358">Si aún ningún usuario accedió a su cuenta en el dispositivo, configura una imagen de fondo de pantalla en el dispositivo que se muestre en la pantalla de acceso. Para establecer la política, especifica la URL correspondiente a la imagen de fondo de pantalla para que el dispositivo con el Sistema operativo Chrome pueda descargarla y un hash criptográfico para verificar la integridad de la descarga. La imagen debe estar en formato JPEG y el tamaño no debe superar los 16 MB. El acceso a la URL no debe requerir autenticación. La imagen de fondo de pantalla se descarga y almacena en caché. Si la URL o el hash cambian, la imagen se volverá a descargar.
 
       La política debe especificarse como una string que contenga la URL y el hash en formato JSON, p. ej.,

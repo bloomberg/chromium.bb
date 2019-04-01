@@ -8,6 +8,7 @@
 <translation id="1032854598605920125">顺时针旋转</translation>
 <translation id="1035334672863811645">登录 Chrome</translation>
 <translation id="1038842779957582377">未知名称</translation>
+<translation id="1039626062703039346">Chrome 可以帮助您保护您的 Google 帐号和更改密码。这会便于将此网站的相关信息告知 Google。</translation>
 <translation id="1050038467049342496">关闭其他应用</translation>
 <translation id="1055184225775184556">撤消添加(&amp;U)</translation>
 <translation id="1056898198331236512">警告</translation>
@@ -288,13 +289,16 @@
 <translation id="2495083838625180221">JSON 解析器</translation>
 <translation id="2495093607237746763">选中后，Chromium 会将您的信用卡副本存储在此设备上，以加快表单填写速度。</translation>
 <translation id="2498091847651709837">扫描新的信用卡</translation>
+<translation id="249825481377667906">Chromium 可以帮助您保护您的 Google 帐号和更改密码。这会便于将此网站的相关信息告知 Google。</translation>
 <translation id="2501278716633472235">返回</translation>
 <translation id="2503184589641749290">接受的借记卡和预付卡</translation>
+<translation id="2505268675989099013">保护帐号</translation>
 <translation id="2515629240566999685">检查您所在区域的网络信号</translation>
 <translation id="2523886232349826891">仅会保存在此设备上</translation>
 <translation id="2524461107774643265">添加更多信息</translation>
 <translation id="2536110899380797252">添加地址</translation>
 <translation id="2539524384386349900">检测</translation>
+<translation id="254947805923345898">政策值无效。</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> 发送的响应无效。</translation>
 <translation id="2556876185419854533">撤消修改(&amp;U)</translation>
 <translation id="2586657967955657006">剪贴板</translation>
@@ -425,6 +429,7 @@
           <ph name="LIST_ITEM" />Cookie 和网站数据
           <ph name="LIST_ITEM" />在表单中填写的信息
         <ph name="END_LIST" /></translation>
+<translation id="3362968246557010467">此政策的值是系统从已弃用的 <ph name="OLD_POLICY" /> 政策中自动复制而来的。您应改用此政策。</translation>
 <translation id="3366477098757335611">查看您的卡</translation>
 <translation id="3369192424181595722">时钟错误</translation>
 <translation id="337363190475750230">已取消配置</translation>
@@ -545,6 +550,7 @@
 <translation id="4072486802667267160">处理您的订单时出错。请重试。</translation>
 <translation id="4075732493274867456">客户端和服务器不支持一般 SSL 协议版本或加密套件。</translation>
 <translation id="4079302484614802869">代理配置已设置为使用 .pac 脚本网址，而不是固定的代理服务器。</translation>
+<translation id="4092411512356034591">继续访问 <ph name="DOMAIN" />？</translation>
 <translation id="4098354747657067197">您要访问的是诈骗网站</translation>
 <translation id="4103249731201008433">设备序列号无效</translation>
 <translation id="410351446219883937">自动播放</translation>
@@ -816,6 +822,7 @@
 <translation id="5556459405103347317">重新加载</translation>
 <translation id="5560088892362098740">到期日期</translation>
 <translation id="5565735124758917034">主动</translation>
+<translation id="5570825185877910964">保护帐号</translation>
 <translation id="5571083550517324815">无法从此地址取货。请另选一个地址。</translation>
 <translation id="5571347317547569613">（{NUM_COOKIES,plural, =1{目前使用了 1 个}other{目前使用了 # 个}}）</translation>
 <translation id="5572851009514199876">请启动并登录 Chrome，以便 Chrome 能够检查您是否可以访问此网站。</translation>
@@ -951,10 +958,12 @@
 <translation id="6386120369904791316">{COUNT,plural, =1{1 条其他建议}other{# 条其他建议}}</translation>
 <translation id="6387754724289022810">只要将您的付款卡信息和帐单邮寄地址保存到您的 Google 帐号和此设备，下次即可更便捷地完成付款。</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
+<translation id="6401136357288658127">此政策已被弃用。您应改用 <ph name="NEW_POLICY" /> 政策。</translation>
 <translation id="6404511346730675251">修改书签</translation>
 <translation id="6406765186087300643">C0 (Envelope)</translation>
 <translation id="6410264514553301377">请输入“<ph name="CREDIT_CARD" />”的到期日期和银行卡验证码 (CVC)</translation>
 <translation id="6414888972213066896">您已向父亲/母亲发送请求，询问其是否允许您访问此网站</translation>
+<translation id="6415778972515849510">Chromium 可以帮助您保护您的 Google 帐号和更改密码。</translation>
 <translation id="6417515091412812850">无法检查证书是否已吊销。</translation>
 <translation id="6433490469411711332">修改联系信息</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> 拒绝了我们的连接请求。</translation>
@@ -1020,6 +1029,7 @@
 <translation id="6868206169573555318">重新启动以进行更新</translation>
 <translation id="6874604403660855544">恢复添加(&amp;R)</translation>
 <translation id="6884662655240309489">大小：1</translation>
+<translation id="6884796835813057577">继续访问 &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;？</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">政策级别不受支持。</translation>
 <translation id="6895330447102777224">已确认您的信用卡</translation>
@@ -1071,7 +1081,6 @@
 <translation id="7152423860607593928">Number-14 (Envelope)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" />以及另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 种付款方式}other{<ph name="PAYMENT_METHOD_PREVIEW" />以及另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 种付款方式}}</translation>
 <translation id="7153618581592392745">薰衣草色</translation>
-<translation id="7158980942472052083">网址无效。必须是采用标准架构的网址。</translation>
 <translation id="717330890047184534">GAIA ID：</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" />以及另外 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 种送货方式}other{<ph name="SHIPPING_OPTION_PREVIEW" />以及另外 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 种送货方式}}</translation>
 <translation id="7177397715882417099">您要访问的服务器 <ph name="ORIGIN" /> 已请求将一项安全政策应用于向其发出的所有请求。但该服务器并未提供任何政策，而是将浏览器重定向到了别处，这会阻止浏览器满足您对 <ph name="SITE" /> 的访问请求。</translation>
@@ -1336,6 +1345,7 @@
 <translation id="8503559462189395349">Chrome 密码</translation>
 <translation id="8503813439785031346">用户名</translation>
 <translation id="8508648098325802031">搜索图标</translation>
+<translation id="8522552481199248698">Chrome 可以帮助您保护您的 Google 帐号和更改密码。</translation>
 <translation id="8543181531796978784">您可以<ph name="BEGIN_ERROR_LINK" />报告检测问题<ph name="END_ERROR_LINK" />；或者，如果您了解自己将面临的安全风险，则可以<ph name="BEGIN_LINK" />访问这个不安全的网站<ph name="END_LINK" />。</translation>
 <translation id="8543556556237226809">有问题？请与负责监管您的个人资料的人员联系。</translation>
 <translation id="8553075262323480129">系统无法确定该网页的语言，因此无法进行翻译。</translation>
@@ -1421,6 +1431,7 @@
 <translation id="9076630408993835509">此浏览器不由某个公司或其他组织管理。此设备上的活动可能会在 Chrome 外部受管理。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">必须提供更多信息</translation>
 <translation id="9080712759204168376">订单摘要</translation>
+<translation id="9095388113577226029">更多语言…</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> 通常会使用加密技术来保护您的信息。Chromium 此次尝试连接到 <ph name="SITE" /> 时，此网站发回了异常的错误凭据。这可能是因为有攻击者在试图冒充 <ph name="SITE" />，或 Wi-Fi 登录屏幕中断了此次连接。请放心，您的信息仍然是安全的，因为 Chromium 尚未进行任何数据交换便停止了连接。</translation>
 <translation id="9106062320799175032">添加帐单邮寄地址</translation>
 <translation id="9114524666733003316">正在确认信用卡…</translation>
