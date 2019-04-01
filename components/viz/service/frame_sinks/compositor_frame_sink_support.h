@@ -40,12 +40,9 @@ class SurfaceManager;
 enum class SubmitResult {
   ACCEPTED = 0,
   COPY_OUTPUT_REQUESTS_NOT_ALLOWED = 1,
-  // SURFACE_INVARIANTS_VIOLATION = 2 is deprecated.
-  SIZE_MISMATCH = 3,
-  SURFACE_ID_DECREASED = 4,
-  SURFACE_OWNED_BY_ANOTHER_CLIENT = 5,
+  SURFACE_INVARIANTS_VIOLATION = 2,
   // Magic constant used by the histogram macros.
-  kMaxValue = SURFACE_OWNED_BY_ANOTHER_CLIENT,
+  kMaxValue = SURFACE_INVARIANTS_VIOLATION,
 };
 
 class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
