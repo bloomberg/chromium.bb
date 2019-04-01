@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
+#include "chrome/browser/performance_manager/observers/coordination_unit_graph_observer.h"
 
 namespace performance_manager {
 
@@ -59,7 +60,7 @@ class FrameNodeImpl
     return lifecycle_state_;
   }
   bool has_nonempty_beforeunload() const { return has_nonempty_beforeunload_; }
-  bool network_almost_idle() const { return network_almost_idle_; }
+  bool network_almost_idle() const { return network_almost_idle_.value(); }
 
   // Returns true if all intervention policies have been set for this frame.
   bool AreAllInterventionPoliciesSet() const;
@@ -102,7 +103,9 @@ class FrameNodeImpl
   bool has_nonempty_beforeunload_ = false;
   // Network is considered almost idle when there are no more than 2 network
   // connections.
-  bool network_almost_idle_ = false;
+  ObservedProperty::
+      NotifiesOnlyOnChanges<bool, &GraphObserver::OnNetworkAlmostIdleChanged>
+          network_almost_idle_{false};
 
   // Intervention policy for this frame. These are communicated from the
   // renderer process and are controlled by origin trials.

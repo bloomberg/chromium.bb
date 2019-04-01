@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_PAGE_NODE_IMPL_H_
 
 #include <memory>
-#include <set>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/performance_manager/graph/node_attached_data.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
+#include "chrome/browser/performance_manager/observers/coordination_unit_graph_observer.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace performance_manager {
@@ -60,20 +60,19 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
   // PageCoordinationUnit.
   base::TimeDelta TimeSinceLastVisibilityChange() const;
 
-  // Get all frames associated with this page.
   std::vector<FrameNodeImpl*> GetFrameNodes() const;
 
   // Returns the main frame CU or nullptr if this page has no main frame.
   FrameNodeImpl* GetMainFrameNode() const;
 
   // Accessors.
+  bool is_visible() const { return is_visible_.value(); }
+  bool is_loading() const { return is_loading_.value(); }
+  ukm::SourceId ukm_source_id() const { return ukm_source_id_.value(); }
+  LifecycleState lifecycle_state() const { return lifecycle_state_.value(); }
   const std::set<FrameNodeImpl*>& main_frame_nodes() const {
     return main_frame_nodes_;
   }
-  bool is_visible() const { return is_visible_; }
-  bool is_loading() const { return is_loading_; }
-  ukm::SourceId ukm_source_id() const { return ukm_source_id_; }
-  LifecycleState lifecycle_state() const { return lifecycle_state_; }
   base::TimeTicks usage_estimate_time() const { return usage_estimate_time_; }
   void set_usage_estimate_time(base::TimeTicks usage_estimate_time) {
     usage_estimate_time_ = usage_estimate_time;
@@ -95,7 +94,7 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
   void set_has_nonempty_beforeunload(bool has_nonempty_beforeunload) {
     has_nonempty_beforeunload_ = has_nonempty_beforeunload;
   }
-  bool page_almost_idle() const { return page_almost_idle_; }
+  bool page_almost_idle() const { return page_almost_idle_.value(); }
 
   const std::string& main_frame_url() const { return main_frame_url_; }
   int64_t navigation_id() const { return navigation_id_; }
@@ -235,18 +234,28 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
 
   // Page almost idle state. This is the output that is driven by the
   // PageAlmostIdleDecorator.
-  bool page_almost_idle_ = false;
-
+  ObservedProperty::
+      NotifiesOnlyOnChanges<bool, &GraphObserver::OnPageAlmostIdleChanged>
+          page_almost_idle_{false};
   // Whether or not the page is visible. Driven by browser instrumentation.
-  bool is_visible_ = false;
+  ObservedProperty::NotifiesOnlyOnChanges<bool,
+                                          &GraphObserver::OnIsVisibleChanged>
+      is_visible_{false};
   // The loading state. This is driven by instrumentation in the browser
   // process.
-  bool is_loading_ = false;
+  ObservedProperty::NotifiesOnlyOnChanges<bool,
+                                          &GraphObserver::OnIsLoadingChanged>
+      is_loading_{false};
   // The UKM source ID associated with the URL of the main frame of this page.
-  ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
+  ObservedProperty::NotifiesOnlyOnChanges<ukm::SourceId,
+                                          &GraphObserver::OnUkmSourceIdChanged>
+      ukm_source_id_{ukm::kInvalidSourceId};
   // The lifecycle state of this page. This is aggregated from the lifecycle
   // state of each frame in the frame tree.
-  LifecycleState lifecycle_state_ = LifecycleState::kRunning;
+  ObservedProperty::NotifiesOnlyOnChanges<
+      LifecycleState,
+      &GraphObserver::OnLifecycleStateChanged>
+      lifecycle_state_{LifecycleState::kRunning};
 
   // Storage for PageAlmostIdle user data.
   std::unique_ptr<NodeAttachedData> page_almost_idle_data_;

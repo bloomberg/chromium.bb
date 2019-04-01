@@ -12,6 +12,8 @@
 #include "base/process/process_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
+#include "chrome/browser/performance_manager/graph/properties.h"
+#include "chrome/browser/performance_manager/observers/coordination_unit_graph_observer.h"
 
 namespace performance_manager {
 
@@ -70,12 +72,12 @@ class ProcessNodeImpl
   base::Time launch_time() const { return launch_time_; }
   base::Optional<int32_t> exit_status() const { return exit_status_; }
 
-  const base::TimeDelta& expected_task_queueing_duration() const {
-    return expected_task_queueing_duration_;
+  base::TimeDelta expected_task_queueing_duration() const {
+    return expected_task_queueing_duration_.value();
   }
 
   bool main_thread_task_load_is_low() const {
-    return main_thread_task_load_is_low_;
+    return main_thread_task_load_is_low_.value();
   }
 
   double cpu_usage() const { return cpu_usage_; }
@@ -107,8 +109,13 @@ class ProcessNodeImpl
   base::Time launch_time_;
   base::Optional<int32_t> exit_status_;
 
-  base::TimeDelta expected_task_queueing_duration_;
-  bool main_thread_task_load_is_low_ = false;
+  ObservedProperty::NotifiesAlways<
+      base::TimeDelta,
+      &GraphObserver::OnExpectedTaskQueueingDurationSample>
+      expected_task_queueing_duration_;
+  ObservedProperty::
+      NotifiesOnlyOnChanges<bool, &GraphObserver::OnMainThreadTaskLoadIsLow>
+          main_thread_task_load_is_low_{false};
   double cpu_usage_ = 0;
 
   std::set<FrameNodeImpl*> frame_nodes_;

@@ -1077,6 +1077,7 @@ jumbo_split_static_library("browser") {
     "performance_manager/graph/page_node_impl.h",
     "performance_manager/graph/process_node_impl.cc",
     "performance_manager/graph/process_node_impl.h",
+    "performance_manager/graph/properties.h",
     "performance_manager/graph/system_node_impl.cc",
     "performance_manager/graph/system_node_impl.h",
     "performance_manager/observers/background_metrics_reporter.h",
