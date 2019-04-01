@@ -114,7 +114,6 @@
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -363,7 +362,6 @@ NodeRareData& Node::CreateRareData() {
 
   DCHECK(data_.rare_data_);
   SetFlag(kHasRareDataFlag);
-  ScriptWrappableMarkingVisitor::WriteBarrier(RareData());
   MarkingVisitor::WriteBarrier(RareData());
   return *RareData();
 }

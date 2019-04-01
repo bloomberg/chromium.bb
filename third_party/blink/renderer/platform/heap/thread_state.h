@@ -185,15 +185,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
     return incremental_marking_flag_.MightBeEntered();
   }
 
-  // Returns true if some thread (possibly the current thread) may be doing
-  // wrapper tracing. If false is returned, the *current* thread is definitely
-  // not doing wrapper tracing. See atomic_entry_flag.h for details.
-  //
-  // For an exact check, use ThreadState::IsWrapperTracing.
-  static bool IsAnyWrapperTracing() {
-    return wrapper_tracing_flag_.MightBeEntered();
-  }
-
   static void AttachMainThread();
 
   // Associate ThreadState object with the current thread. After this
@@ -251,9 +242,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
     return IsMarkingInProgress() &&
            current_gc_data_.reason == BlinkGC::GCReason::kUnifiedHeapGC;
   }
-
-  void EnableWrapperTracingBarrier();
-  void DisableWrapperTracingBarrier();
 
   // Incremental GC.
   void ScheduleIncrementalMarkingStep();
@@ -317,9 +305,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
     return in_atomic_pause() && IsSweepingInProgress();
   }
 
-  bool IsWrapperTracing() const { return wrapper_tracing_; }
-  void SetWrapperTracing(bool value) { wrapper_tracing_ = value; }
-
   bool IsIncrementalMarking() const { return incremental_marking_; }
   void SetIncrementalMarking(bool value) { incremental_marking_ = value; }
 
@@ -371,17 +356,12 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
     Vector<size_t> dead_size;
   };
 
-  void RegisterTraceDOMWrappers(
-      v8::Isolate* isolate,
-      void (*trace_dom_wrappers)(v8::Isolate*, Visitor*),
-      void (*invalidate_dead_objects_in_wrappers_marking_deque)(v8::Isolate*),
-      void (*perform_cleanup)(v8::Isolate*)) {
+  void RegisterTraceDOMWrappers(v8::Isolate* isolate,
+                                void (*trace_dom_wrappers)(v8::Isolate*,
+                                                           Visitor*)) {
     isolate_ = isolate;
     DCHECK(!isolate_ || trace_dom_wrappers);
     trace_dom_wrappers_ = trace_dom_wrappers;
-    invalidate_dead_objects_in_wrappers_marking_deque_ =
-        invalidate_dead_objects_in_wrappers_marking_deque;
-    perform_cleanup_ = perform_cleanup;
   }
 
   void FreePersistentNode(PersistentRegion*, PersistentNode*);
@@ -446,9 +426,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
  private:
   // Stores whether some ThreadState is currently in incremental marking.
   static AtomicEntryFlag incremental_marking_flag_;
-
-  // Same semantic as |incremental_marking_flag_|.
-  static AtomicEntryFlag wrapper_tracing_flag_;
 
   static WTF::ThreadSpecific<ThreadState*>* thread_specific_;
 
@@ -567,7 +544,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   bool object_resurrection_forbidden_ = false;
   bool in_atomic_pause_ = false;
   bool sweep_forbidden_ = false;
-  bool wrapper_tracing_ = false;
   bool incremental_marking_ = false;
   bool should_optimize_for_load_time_ = false;
   size_t no_allocation_count_ = 0;
@@ -588,10 +564,8 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   // for an object, by processing the ordered_pre_finalizers_ back-to-front.
   LinkedHashSet<PreFinalizer> ordered_pre_finalizers_;
 
-  v8::Isolate* isolate_;
-  void (*trace_dom_wrappers_)(v8::Isolate*, Visitor*);
-  void (*invalidate_dead_objects_in_wrappers_marking_deque_)(v8::Isolate*);
-  void (*perform_cleanup_)(v8::Isolate*);
+  v8::Isolate* isolate_ = nullptr;
+  void (*trace_dom_wrappers_)(v8::Isolate*, Visitor*) = nullptr;
 
 #if defined(ADDRESS_SANITIZER)
   void* asan_fake_stack_;

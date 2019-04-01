@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 
 namespace blink {

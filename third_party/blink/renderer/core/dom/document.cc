@@ -4850,20 +4850,8 @@ void Document::SetCSSTarget(Element* new_target) {
     css_target_->PseudoStateChanged(CSSSelector::kPseudoTarget);
 }
 
-static void LiveNodeListBaseWriteBarrier(void* parent,
-                                         const LiveNodeListBase* list) {
-  if (IsHTMLCollectionType(list->GetType())) {
-    ScriptWrappableMarkingVisitor::WriteBarrier(
-        static_cast<const HTMLCollection*>(list));
-  } else {
-    ScriptWrappableMarkingVisitor::WriteBarrier(
-        static_cast<const LiveNodeList*>(list));
-  }
-}
-
 void Document::RegisterNodeList(const LiveNodeListBase* list) {
   node_lists_.Add(list, list->InvalidationType());
-  LiveNodeListBaseWriteBarrier(this, list);
   if (list->IsRootedAtTreeScope())
     lists_invalidated_at_document_.insert(list);
 }
@@ -4878,7 +4866,6 @@ void Document::UnregisterNodeList(const LiveNodeListBase* list) {
 
 void Document::RegisterNodeListWithIdNameCache(const LiveNodeListBase* list) {
   node_lists_.Add(list, kInvalidateOnIdNameAttrChange);
-  LiveNodeListBaseWriteBarrier(this, list);
 }
 
 void Document::UnregisterNodeListWithIdNameCache(const LiveNodeListBase* list) {

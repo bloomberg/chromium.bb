@@ -695,8 +695,8 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
   // over to Blink.
   DCHECK(ThreadState::MainThreadState());
 
-    ThreadState::MainThreadState()->RegisterTraceDOMWrappers(
-        isolate, V8GCController::TraceDOMWrappers, nullptr, nullptr);
+  ThreadState::MainThreadState()->RegisterTraceDOMWrappers(
+      isolate, V8GCController::TraceDOMWrappers);
 
   InitializeV8Common(isolate);
 

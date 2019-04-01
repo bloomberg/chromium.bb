@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_TRACE_WRAPPER_MEMBER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_TRACE_WRAPPER_MEMBER_H_
 
-#include "third_party/blink/renderer/platform/bindings/script_wrappable_marking_visitor.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 
 namespace blink {
@@ -23,11 +22,7 @@ class TraceWrapperMember : public Member<T> {
  public:
   TraceWrapperMember() : Member<T>(nullptr) {}
 
-  TraceWrapperMember(T* raw) : Member<T>(raw) {
-    // We have to use a write barrier here because of in-place construction
-    // in containers, such as HeapVector::push_back.
-    ScriptWrappableMarkingVisitor::WriteBarrier(raw);
-  }
+  TraceWrapperMember(T* raw) : Member<T>(raw) {}
 
   TraceWrapperMember(WTF::HashTableDeletedValueType x) : Member<T>(x) {}
 
@@ -36,21 +31,18 @@ class TraceWrapperMember : public Member<T> {
   TraceWrapperMember& operator=(const TraceWrapperMember& other) {
     Member<T>::operator=(other);
     DCHECK_EQ(other.Get(), this->Get());
-    ScriptWrappableMarkingVisitor::WriteBarrier(this->Get());
     return *this;
   }
 
   TraceWrapperMember& operator=(const Member<T>& other) {
     Member<T>::operator=(other);
     DCHECK_EQ(other.Get(), this->Get());
-    ScriptWrappableMarkingVisitor::WriteBarrier(this->Get());
     return *this;
   }
 
   TraceWrapperMember& operator=(T* other) {
     Member<T>::operator=(other);
     DCHECK_EQ(other, this->Get());
-    ScriptWrappableMarkingVisitor::WriteBarrier(this->Get());
     return *this;
   }
 
@@ -78,14 +70,7 @@ void swap(HeapVector<TraceWrapperMember<T>>& a, HeapVector<Member<T>>& b) {
   // TraceWrapperMember and Member match in vector backings.
   HeapVector<Member<T>>& a_ = reinterpret_cast<HeapVector<Member<T>>&>(a);
   a_.swap(b);
-  if (ThreadState::IsAnyWrapperTracing() &&
-      ThreadState::Current()->IsWrapperTracing()) {
-    // If incremental marking is enabled we need to emit the write barrier since
-    // the swap was performed on HeapVector<Member<T>>.
-    for (auto item : a) {
-      ScriptWrappableMarkingVisitor::WriteBarrier(item.Get());
-    }
-  }
+  // TODO(mlippautz): Remove this method
 }
 
 }  // namespace blink
