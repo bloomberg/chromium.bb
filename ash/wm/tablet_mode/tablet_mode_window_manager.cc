@@ -400,7 +400,7 @@ void TabletModeWindowManager::ArrangeWindowsForTabletMode() {
   // If split view is not appropriate, then maximize all windows and bail out.
   if (snap_positions.empty()) {
     for (auto* window : activatable_windows)
-      TrackWindow(window);
+      TrackWindow(window, /*entering_tablet_mode=*/true);
     return;
   }
 
@@ -414,7 +414,8 @@ void TabletModeWindowManager::ArrangeWindowsForTabletMode() {
         break;
       }
     }
-    TrackWindow(window, snap, /*animate_bounds_on_attach=*/false);
+    TrackWindow(window, /*entering_tablet_mode=*/true, snap,
+                /*animate_bounds_on_attach=*/false);
   }
 
   // Enter split view mode.
@@ -429,6 +430,7 @@ void TabletModeWindowManager::ArrangeWindowsForDesktopMode(
 }
 
 void TabletModeWindowManager::TrackWindow(aura::Window* window,
+                                          bool entering_tablet_mode,
                                           bool snap,
                                           bool animate_bounds_on_attach) {
   if (!ShouldHandleWindow(window))
@@ -439,8 +441,8 @@ void TabletModeWindowManager::TrackWindow(aura::Window* window,
 
   // We create and remember a tablet mode state which will attach itself to
   // the provided state object.
-  window_state_map_[window] =
-      new TabletModeWindowState(window, this, snap, animate_bounds_on_attach);
+  window_state_map_[window] = new TabletModeWindowState(
+      window, this, snap, animate_bounds_on_attach, entering_tablet_mode);
 }
 
 void TabletModeWindowManager::ForgetWindow(aura::Window* window,

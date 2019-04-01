@@ -119,6 +119,7 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   // Note: If the given window cannot be handled by us the function will return
   // immediately.
   void TrackWindow(aura::Window* window,
+                   bool entering_tablet_mode = false,
                    bool snap = false,
                    bool animate_bounds_on_attach = true);
 
