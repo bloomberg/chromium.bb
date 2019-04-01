@@ -8510,10 +8510,7 @@ Called by update_net_error_codes.py.-->
 <enum name="CompositorFrameSinkSubmitResult">
   <int value="0" label="Accepted"/>
   <int value="1" label="CopyOutputResults not allowed"/>
-  <int value="2" label="Surface Invariants Violation (deprecated)"/>
-  <int value="3" label="Size mismatch"/>
-  <int value="4" label="SurfaceId sequence numbers decreased"/>
-  <int value="5" label="Surface owned by another client"/>
+  <int value="2" label="Surface Invariants Violation"/>
 </enum>
 
 <enum name="CompositorScrollResult">

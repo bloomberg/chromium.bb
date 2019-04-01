@@ -630,17 +630,19 @@ TEST_F(CompositorFrameSinkSupportTest, MonotonicallyIncreasingLocalSurfaceIds) {
       mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
   EXPECT_EQ(SubmitResult::ACCEPTED, result);
 
-  // LocalSurfaceId(5, 3): Submit rejected because not monotonically increasing.
+  // LocalSurfaceId(5, 3): Surface Invariants Violation. Not monotonically
+  // increasing.
   result = support->MaybeSubmitCompositorFrame(
       local_surface_id4, MakeDefaultCompositorFrame(), base::nullopt, 0,
       mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
-  EXPECT_EQ(SubmitResult::SURFACE_ID_DECREASED, result);
+  EXPECT_EQ(SubmitResult::SURFACE_INVARIANTS_VIOLATION, result);
 
-  // LocalSurfaceId(8, 1): Submit rejected because not monotonically increasing.
+  // LocalSurfaceId(8, 1): Surface Invariants Violation. Not monotonically
+  // increasing.
   result = support->MaybeSubmitCompositorFrame(
       local_surface_id5, MakeDefaultCompositorFrame(), base::nullopt, 0,
       mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
-  EXPECT_EQ(SubmitResult::SURFACE_ID_DECREASED, result);
+  EXPECT_EQ(SubmitResult::SURFACE_INVARIANTS_VIOLATION, result);
 
   // LocalSurfaceId(9, 3): Parent AND child-initiated synchronization.
   result = support->MaybeSubmitCompositorFrame(
@@ -874,6 +876,21 @@ TEST_F(CompositorFrameSinkSupportTest, SurfaceInfo) {
             surface_observer_.last_surface_info().size_in_pixels());
 }
 
+// Check that if a CompositorFrame is received with device scale factor of 0, we
+// don't create a Surface for it.
+TEST_F(CompositorFrameSinkSupportTest, ZeroDeviceScaleFactor) {
+  SurfaceId id(support_->frame_sink_id(), local_surface_id_);
+  auto frame = CompositorFrameBuilder()
+                   .AddDefaultRenderPass()
+                   .SetDeviceScaleFactor(0.f)
+                   .Build();
+  const auto result = support_->MaybeSubmitCompositorFrame(
+      local_surface_id_, std::move(frame), base::nullopt, 0,
+      mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
+  EXPECT_EQ(SubmitResult::SURFACE_INVARIANTS_VIOLATION, result);
+  EXPECT_FALSE(GetSurfaceForId(id));
+}
+
 // Check that if the size of a CompositorFrame doesn't match the size of the
 // Surface it's being submitted to, we skip the frame.
 TEST_F(CompositorFrameSinkSupportTest, FrameSizeMismatch) {
@@ -902,7 +919,7 @@ TEST_F(CompositorFrameSinkSupportTest, FrameSizeMismatch) {
       local_surface_id_, std::move(frame), base::nullopt, 0,
       mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
 
-  EXPECT_EQ(SubmitResult::SIZE_MISMATCH, result);
+  EXPECT_EQ(SubmitResult::SURFACE_INVARIANTS_VIOLATION, result);
 
   // All the resources in the rejected frame should have been returned.
   CheckReturnedResourcesMatchExpected(frame_resource_ids,
@@ -935,7 +952,7 @@ TEST_F(CompositorFrameSinkSupportTest, DeviceScaleFactorMismatch) {
   result = support_->MaybeSubmitCompositorFrame(
       local_surface_id_, std::move(frame), base::nullopt, 0,
       mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
-  EXPECT_EQ(SubmitResult::SIZE_MISMATCH, result);
+  EXPECT_EQ(SubmitResult::SURFACE_INVARIANTS_VIOLATION, result);
 }
 
 TEST_F(CompositorFrameSinkSupportTest, PassesOnBeginFrameAcks) {
@@ -1209,7 +1226,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   result = support->MaybeSubmitCompositorFrame(
       local_surface_id, MakeDefaultCompositorFrame(), base::nullopt, 0,
       mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
-  EXPECT_EQ(SubmitResult::SURFACE_OWNED_BY_ANOTHER_CLIENT, result);
+  EXPECT_EQ(SubmitResult::SURFACE_INVARIANTS_VIOLATION, result);
 }
 
 }  // namespace viz

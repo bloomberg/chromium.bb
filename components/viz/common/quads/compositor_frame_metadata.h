@@ -60,8 +60,7 @@ class VIZ_COMMON_EXPORT CompositorFrameMetadata {
 
   CompositorFrameMetadata Clone() const;
 
-  // The device scale factor used to generate this compositor frame. Must be
-  // greater than zero.
+  // The device scale factor used to generate this compositor frame.
   float device_scale_factor = 0.f;
 
   // Scroll offset and scale of the root layer. This can be used for tasks

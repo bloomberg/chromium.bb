@@ -21,7 +21,6 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
                     viz::CompositorFrameMetadata> {
   static float device_scale_factor(
       const viz::CompositorFrameMetadata& metadata) {
-    DCHECK_GT(metadata.device_scale_factor, 0);
     return metadata.device_scale_factor;
   }
 
