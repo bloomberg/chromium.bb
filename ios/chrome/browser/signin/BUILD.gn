@@ -9,8 +9,6 @@ source_set("signin") {
     "about_signin_internals_factory.h",
     "account_consistency_service_factory.h",
     "account_consistency_service_factory.mm",
-    "account_fetcher_service_factory.cc",
-    "account_fetcher_service_factory.h",
     "account_reconcilor_factory.cc",
     "account_reconcilor_factory.h",
     "account_tracker_service_factory.cc",

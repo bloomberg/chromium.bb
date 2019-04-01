@@ -5,7 +5,6 @@
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 
 #include "base/bind.h"
-#include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"

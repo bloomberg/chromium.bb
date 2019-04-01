@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "components/image_fetcher/ios/ios_image_decoder_impl.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -15,7 +16,6 @@
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "ios/web_view/internal/app/application_context.h"
 #include "ios/web_view/internal/signin/ios_web_view_signin_client.h"
-#include "ios/web_view/internal/signin/web_view_account_fetcher_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_account_tracker_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_oauth2_token_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_client_factory.h"
@@ -33,6 +33,18 @@
 namespace ios_web_view {
 
 namespace {
+
+std::unique_ptr<AccountFetcherService> BuildAccountFetcherService(
+    SigninClient* signin_client,
+    OAuth2TokenService* token_service,
+    AccountTrackerService* account_tracker_service) {
+  auto account_fetcher_service = std::make_unique<AccountFetcherService>();
+  account_fetcher_service->Initialize(signin_client, token_service,
+                                      account_tracker_service,
+                                      image_fetcher::CreateIOSImageDecoder());
+  return account_fetcher_service;
+}
+
 std::unique_ptr<SigninManager> BuildSigninManager(
     WebViewBrowserState* browser_state,
     GaiaCookieManagerService* gaia_cookie_manager_service) {
@@ -66,6 +78,7 @@ class IdentityManagerWrapper : public KeyedService,
   explicit IdentityManagerWrapper(
       std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service,
       std::unique_ptr<SigninManagerBase> signin_manager,
+      std::unique_ptr<AccountFetcherService> account_fetcher_service,
       std::unique_ptr<identity::PrimaryAccountMutator> primary_account_mutator,
       std::unique_ptr<identity::AccountsCookieMutatorImpl>
           accounts_cookie_mutator,
@@ -74,9 +87,8 @@ class IdentityManagerWrapper : public KeyedService,
       : identity::IdentityManager(
             std::move(gaia_cookie_manager_service),
             std::move(signin_manager),
+            std::move(account_fetcher_service),
             WebViewOAuth2TokenServiceFactory::GetForBrowserState(browser_state),
-            WebViewAccountFetcherServiceFactory::GetForBrowserState(
-                browser_state),
             WebViewAccountTrackerServiceFactory::GetForBrowserState(
                 browser_state),
             std::move(primary_account_mutator),
@@ -97,7 +109,6 @@ WebViewIdentityManagerFactory::WebViewIdentityManagerFactory()
     : BrowserStateKeyedServiceFactory(
           "IdentityManager",
           BrowserStateDependencyManager::GetInstance()) {
-  DependsOn(WebViewAccountFetcherServiceFactory::GetInstance());
   DependsOn(WebViewAccountTrackerServiceFactory::GetInstance());
   DependsOn(WebViewOAuth2TokenServiceFactory::GetInstance());
   DependsOn(WebViewSigninClientFactory::GetInstance());
@@ -150,10 +161,17 @@ WebViewIdentityManagerFactory::BuildServiceInstanceFor(
       std::make_unique<identity::DiagnosticsProviderImpl>(
           WebViewOAuth2TokenServiceFactory::GetForBrowserState(browser_state),
           gaia_cookie_manager_service.get());
+  std::unique_ptr<AccountFetcherService> account_fetcher_service =
+      BuildAccountFetcherService(
+          WebViewSigninClientFactory::GetForBrowserState(browser_state),
+          WebViewOAuth2TokenServiceFactory::GetForBrowserState(browser_state),
+          WebViewAccountTrackerServiceFactory::GetForBrowserState(
+              browser_state));
   auto identity_manager = std::make_unique<IdentityManagerWrapper>(
       std::move(gaia_cookie_manager_service), std::move(signin_manager),
-      std::move(primary_account_mutator), std::move(accounts_cookie_mutator),
-      std::move(diagnostics_provider), browser_state);
+      std::move(account_fetcher_service), std::move(primary_account_mutator),
+      std::move(accounts_cookie_mutator), std::move(diagnostics_provider),
+      browser_state);
   return identity_manager;
 }
 

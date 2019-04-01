@@ -9,8 +9,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
-#include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -93,6 +93,17 @@ std::unique_ptr<ConcreteSigninManager> BuildSigninManager(
   return signin_manager;
 }
 
+std::unique_ptr<AccountFetcherService> BuildAccountFetcherService(
+    SigninClient* signin_client,
+    OAuth2TokenService* token_service,
+    AccountTrackerService* account_tracker_service) {
+  auto account_fetcher_service = std::make_unique<AccountFetcherService>();
+  account_fetcher_service->Initialize(
+      signin_client, token_service, account_tracker_service,
+      std::make_unique<suggestions::ImageDecoderImpl>());
+  return account_fetcher_service;
+}
+
 }  // namespace
 
 // Subclass that wraps IdentityManager in a KeyedService (as IdentityManager is
@@ -108,6 +119,7 @@ class IdentityManagerWrapper : public KeyedService,
       Profile* profile,
       std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service,
       std::unique_ptr<SigninManagerBase> signin_manager,
+      std::unique_ptr<AccountFetcherService> account_fetcher_service,
       std::unique_ptr<identity::PrimaryAccountMutator> primary_account_mutator,
       std::unique_ptr<identity::AccountsMutator> accounts_mutator,
       std::unique_ptr<identity::AccountsCookieMutatorImpl>
@@ -116,8 +128,8 @@ class IdentityManagerWrapper : public KeyedService,
       : identity::IdentityManager(
             std::move(gaia_cookie_manager_service),
             std::move(signin_manager),
+            std::move(account_fetcher_service),
             ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-            AccountFetcherServiceFactory::GetForProfile(profile),
             AccountTrackerServiceFactory::GetForProfile(profile),
             std::move(primary_account_mutator),
             std::move(accounts_mutator),
@@ -137,7 +149,6 @@ IdentityManagerFactory::IdentityManagerFactory()
     : BrowserContextKeyedServiceFactory(
           "IdentityManager",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(AccountFetcherServiceFactory::GetInstance());
   DependsOn(AccountTrackerServiceFactory::GetInstance());
   DependsOn(ChromeSigninClientFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
@@ -202,12 +213,17 @@ KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
       std::make_unique<identity::DiagnosticsProviderImpl>(
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
           gaia_cookie_manager_service.get());
+  std::unique_ptr<AccountFetcherService> account_fetcher_service =
+      BuildAccountFetcherService(
+          ChromeSigninClientFactory::GetForProfile(profile),
+          ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+          AccountTrackerServiceFactory::GetForProfile(profile));
 
   auto identity_manager = std::make_unique<IdentityManagerWrapper>(
       profile, std::move(gaia_cookie_manager_service),
-      std::move(signin_manager), std::move(primary_account_mutator),
-      std::move(accounts_mutator), std::move(accounts_cookie_mutator),
-      std::move(diagnostics_provider));
+      std::move(signin_manager), std::move(account_fetcher_service),
+      std::move(primary_account_mutator), std::move(accounts_mutator),
+      std::move(accounts_cookie_mutator), std::move(diagnostics_provider));
   for (Observer& observer : observer_list_)
     observer.IdentityManagerCreated(identity_manager.get());
   return identity_manager.release();

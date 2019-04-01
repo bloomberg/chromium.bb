@@ -42,8 +42,8 @@ const char kSupervisedUserPseudoGaiaID[] = "managed_user_gaia_id";
 IdentityManager::IdentityManager(
     std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service,
     std::unique_ptr<SigninManagerBase> signin_manager,
+    std::unique_ptr<AccountFetcherService> account_fetcher_service,
     ProfileOAuth2TokenService* token_service,
-    AccountFetcherService* account_fetcher_service,
     AccountTrackerService* account_tracker_service,
     std::unique_ptr<PrimaryAccountMutator> primary_account_mutator,
     std::unique_ptr<AccountsMutator> accounts_mutator,
@@ -51,8 +51,8 @@ IdentityManager::IdentityManager(
     std::unique_ptr<DiagnosticsProvider> diagnostics_provider)
     : gaia_cookie_manager_service_(std::move(gaia_cookie_manager_service)),
       signin_manager_(std::move(signin_manager)),
+      account_fetcher_service_(std::move(account_fetcher_service)),
       token_service_(token_service),
-      account_fetcher_service_(account_fetcher_service),
       account_tracker_service_(account_tracker_service),
       primary_account_mutator_(std::move(primary_account_mutator)),
       accounts_mutator_(std::move(accounts_mutator)),
@@ -278,6 +278,7 @@ void IdentityManager::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 // static
 void IdentityManager::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   SigninManagerBase::RegisterProfilePrefs(registry);
+  AccountFetcherService::RegisterPrefs(registry);
 }
 
 std::string IdentityManager::PickAccountIdForAccount(
@@ -392,6 +393,7 @@ void IdentityManager::RemoveDiagnosticsObserver(DiagnosticsObserver* observer) {
 }
 
 void IdentityManager::Shutdown() {
+  account_fetcher_service_->Shutdown();
   gaia_cookie_manager_service_->Shutdown();
 }
 
@@ -408,7 +410,7 @@ AccountTrackerService* IdentityManager::GetAccountTrackerService() {
 }
 
 AccountFetcherService* IdentityManager::GetAccountFetcherService() {
-  return account_fetcher_service_;
+  return account_fetcher_service_.get();
 }
 
 GaiaCookieManagerService* IdentityManager::GetGaiaCookieManagerService() {

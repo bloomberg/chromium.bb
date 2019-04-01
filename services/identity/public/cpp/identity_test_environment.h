@@ -10,7 +10,6 @@
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 
-class AccountFetcherService;
 class AccountTrackerService;
 class FakeProfileOAuth2TokenService;
 class IdentityTestEnvironmentChromeBrowserStateAdaptor;
@@ -337,10 +336,6 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // This will be null if a AccountTrackerService was provided to
   // IdentityTestEnvironment's constructor.
   std::unique_ptr<AccountTrackerService> owned_account_tracker_service_;
-
-  // This will be null if a AccountFetcherService was provided to
-  // IdentityTestEnvironment's constructor.
-  std::unique_ptr<AccountFetcherService> owned_account_fetcher_service_;
 
   // This will be null if a FakeProfileOAuth2TokenService was provided to
   // IdentityTestEnvironment's constructor.

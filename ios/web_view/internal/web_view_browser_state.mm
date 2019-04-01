@@ -39,7 +39,6 @@
 #include "ios/web_view/internal/language/web_view_url_language_histogram_factory.h"
 #import "ios/web_view/internal/passwords/web_view_password_manager_internals_service_factory.h"
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
-#include "ios/web_view/internal/signin/web_view_account_fetcher_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_client_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_error_controller_factory.h"
@@ -199,7 +198,6 @@ void WebViewBrowserState::RegisterPrefs(
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
   WebViewCookieSettingsFactory::GetInstance();
   WebViewHostContentSettingsMapFactory::GetInstance();
-  WebViewAccountFetcherServiceFactory::GetInstance();
   WebViewSigninClientFactory::GetInstance();
   WebViewSigninErrorControllerFactory::GetInstance();
   WebViewIdentityManagerFactory::EnsureFactoryAndDependeeFactoriesBuilt();
