@@ -306,7 +306,7 @@ TEST_F(FidoBleDeviceTest, DeviceMsgErrorTest) {
   device()->SendPing(payload, callback_receiver.callback());
 
   callback_receiver.WaitForCallback();
-  EXPECT_EQ(FidoDevice::State::kMsgError, device()->state());
+  EXPECT_EQ(FidoDevice::State::kMsgError, device()->state_for_testing());
 }
 
 }  // namespace device

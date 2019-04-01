@@ -424,7 +424,7 @@ TEST_F(FidoHidDeviceTest, TestDeviceTimeoutAfterKeepAliveMessage) {
   cb.WaitForCallback();
   const auto& value = cb.value();
   EXPECT_FALSE(value);
-  EXPECT_EQ(FidoDevice::State::kDeviceError, device->state());
+  EXPECT_EQ(FidoDevice::State::kDeviceError, device->state_for_testing());
 }
 
 TEST_F(FidoHidDeviceTest, TestCancel) {
@@ -512,7 +512,7 @@ TEST_F(FidoHidDeviceTest, TestGetInfoFailsOnDeviceError) {
   device->DiscoverSupportedProtocolAndDeviceInfo(get_info_callback.callback());
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_FALSE(get_info_callback.was_called());
-  EXPECT_EQ(FidoDevice::State::kDeviceError, device->state());
+  EXPECT_EQ(FidoDevice::State::kDeviceError, device->state_for_testing());
 }
 
 // Test that FidoHidDevice::DiscoverSupportedProtocolAndDeviceInfo() invokes
