@@ -310,7 +310,7 @@ void LayoutExampleBase::ButtonPressedImpl(Button* sender) {}
 void LayoutExampleBase::RefreshLayoutPanel(bool update_layout) {
   if (update_layout)
     UpdateLayoutManager();
-  layout_panel_->Layout();
+  layout_panel_->InvalidateLayout();
   layout_panel_->SchedulePaint();
 }
 

@@ -129,7 +129,7 @@ void TouchSelectionMenuViews::CreateButtons() {
   // Finally, add ellipses button.
   AddChildView(
       CreateButton(base::UTF8ToUTF16(kEllipsesButtonText), kEllipsesButtonTag));
-  Layout();
+  InvalidateLayout();
 }
 
 LabelButton* TouchSelectionMenuViews::CreateButton(const base::string16& title,

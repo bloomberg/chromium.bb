@@ -263,6 +263,7 @@ TEST_F(DialogTest, HitTest_WithTitle) {
   const NonClientView* view = dialog()->GetWidget()->non_client_view();
   dialog()->set_title(base::ASCIIToUTF16("Title"));
   dialog()->GetWidget()->UpdateWindowTitle();
+  dialog()->GetWidget()->LayoutRootViewIfNecessary();
   BubbleFrameView* frame = static_cast<BubbleFrameView*>(view->frame_view());
 
   struct {

@@ -486,7 +486,7 @@ void MenuItemView::SetIconView(View* icon_view) {
     AddChildView(icon_view);
     icon_view_ = icon_view;
   }
-  Layout();
+  InvalidateLayout();
   SchedulePaint();
 }
 
@@ -607,9 +607,10 @@ void MenuItemView::ChildrenChanged() {
     controller->MenuChildrenChanged(this);
 
     if (submenu_) {
-      // Force a paint and layout. This handles the case of the top
-      // level window's size remaining the same, resulting in no
-      // change to the submenu's size and no layout.
+      // Force a paint and a synchronous layout. This needs a synchronous layout
+      // as UpdateSubmenuSelection() looks at bounds. This handles the case of
+      // the top level window's size remaining the same, resulting in no change
+      // to the submenu's size and no layout.
       submenu_->Layout();
       submenu_->SchedulePaint();
       // Update the menu selection after layout.
@@ -1211,7 +1212,7 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
     dimensions.standard_width = menu_config.touchable_menu_width;
 
     if (icon_view_) {
-      dimensions.height = icon_view_->height() +
+      dimensions.height = icon_view_->GetPreferredSize().height() +
                           2 * menu_config.vertical_touchable_menu_item_padding;
     }
     return dimensions;

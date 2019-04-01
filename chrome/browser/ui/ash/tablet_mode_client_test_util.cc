@@ -44,9 +44,9 @@ class TestTabletModeClientObserver : public TabletModeClientObserver {
 
 }  // namespace
 
-// Enables or disables the tablet mode and waits to until the change has made
-// its way back into Chrome (from Ash). Should only be called to toggle the
-// current mode.
+// Enables or disables the tablet mode and waits until the change has made its
+// way back into Chrome (from Ash). Should only be called to toggle the current
+// mode.
 void SetAndWaitForTabletMode(bool enabled) {
   ASSERT_NE(enabled, TabletModeClient::Get()->tablet_mode_enabled());
 

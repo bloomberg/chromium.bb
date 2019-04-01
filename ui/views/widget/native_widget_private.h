@@ -213,6 +213,7 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
                             int operation,
                             ui::DragDropTypes::DragEventSource source) = 0;
   virtual void SchedulePaintInRect(const gfx::Rect& rect) = 0;
+  virtual void ScheduleLayout() = 0;
   virtual void SetCursor(gfx::NativeCursor cursor) = 0;
   virtual void ShowEmojiPanel();
   virtual bool IsMouseEventsEnabled() const = 0;

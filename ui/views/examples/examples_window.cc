@@ -208,7 +208,7 @@ class ExamplesWindowContents : public WidgetDelegateView,
         combobox_model_->GetItemViewAt(combobox->selected_index()));
     example_shown_->RequestFocus();
     SetStatus(std::string());
-    Layout();
+    InvalidateLayout();
   }
 
   static ExamplesWindowContents* instance_;
