@@ -3,19 +3,28 @@
 // found in the LICENSE file.
 package org.chromium.chrome.browser.preferences;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.provider.Browser;
 import android.support.annotation.Nullable;
+import android.support.customtabs.CustomTabsIntent;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.LaunchIntentDispatcher;
+import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.StopSource;
@@ -25,6 +34,8 @@ import org.chromium.ui.UiUtils;
  * Helper methods for sync preferences.
  */
 public class SyncPreferenceUtils {
+    private static final String DASHBOARD_URL = "https://www.google.com/settings/chrome/sync";
+
     /**
      * Checks if sync error icon should be shown. Show sync error icon if sync is off because
      * of error, passphrase required or disabled in Android.
@@ -162,5 +173,26 @@ public class SyncPreferenceUtils {
             runnable.run();
             return false;
         };
+    }
+
+    /**
+     * Opens web dashboard to manage sync in a custom tab.
+     * @param activity The activity to use for starting the intent.
+     */
+    public static void openSyncDashboard(Activity activity) {
+        // TODO(https://crbug.com/948103): Create a builder for custom tab intents.
+        CustomTabsIntent customTabIntent =
+                new CustomTabsIntent.Builder().setShowTitle(false).build();
+        customTabIntent.intent.setData(Uri.parse(DASHBOARD_URL));
+
+        Intent intent = LaunchIntentDispatcher.createCustomTabActivityIntent(
+                activity, customTabIntent.intent);
+        intent.setPackage(activity.getPackageName());
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE,
+                CustomTabIntentDataProvider.CustomTabsUiType.DEFAULT);
+        intent.putExtra(Browser.EXTRA_APPLICATION_ID, activity.getPackageName());
+        IntentHandler.addTrustedIntentExtras(intent);
+
+        IntentUtils.safeStartActivity(activity, intent);
     }
 }
