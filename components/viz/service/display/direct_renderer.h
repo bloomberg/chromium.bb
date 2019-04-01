@@ -157,9 +157,9 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
                      bool use_render_pass_scissor);
 
   const cc::FilterOperations* FiltersForPass(RenderPassId render_pass_id) const;
-  const cc::FilterOperations* BackgroundFiltersForPass(
+  const cc::FilterOperations* BackdropFiltersForPass(
       RenderPassId render_pass_id) const;
-  const gfx::RRectF* BackgroundFilterBoundsForPass(
+  const gfx::RRectF* BackdropFilterBoundsForPass(
       RenderPassId render_pass_id) const;
 
   // Private interface implemented by subclasses for use by DirectRenderer.

@@ -78,8 +78,7 @@ class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
   void DrawTextureQuad(const TextureDrawQuad* quad);
   void DrawTileQuad(const TileDrawQuad* quad);
   void DrawUnsupportedQuad(const DrawQuad* quad);
-  bool ShouldApplyBackgroundFilters(
-      const RenderPassDrawQuad* quad,
+  bool ShouldApplyBackdropFilters(
       const cc::FilterOperations* backdrop_filters) const;
   sk_sp<SkImage> ApplyImageFilter(SkImageFilter* filter,
                                   const RenderPassDrawQuad* quad,
@@ -91,7 +90,7 @@ class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
       const cc::FilterOperations* backdrop_filters,
       gfx::Rect* unclipped_rect) const;
   SkBitmap GetBackdropBitmap(const gfx::Rect& bounding_rect) const;
-  sk_sp<SkShader> GetBackgroundFilterShader(
+  sk_sp<SkShader> GetBackdropFilterShader(
       const RenderPassDrawQuad* quad,
       SkShader::TileMode content_tile_mode) const;
 

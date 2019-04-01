@@ -520,12 +520,12 @@ void SoftwareRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
             SkShader::kClamp_TileMode, SkShader::kClamp_TileMode, &mask_mat)));
   }
 
-  // If we have a background filter shader, render its results first.
-  sk_sp<SkShader> background_filter_shader =
-      GetBackgroundFilterShader(quad, SkShader::kClamp_TileMode);
-  if (background_filter_shader) {
+  // If we have a backdrop filter shader, render its results first.
+  sk_sp<SkShader> backdrop_filter_shader =
+      GetBackdropFilterShader(quad, SkShader::kClamp_TileMode);
+  if (backdrop_filter_shader) {
     SkPaint paint;
-    paint.setShader(std::move(background_filter_shader));
+    paint.setShader(std::move(backdrop_filter_shader));
     paint.setMaskFilter(current_paint_.refMaskFilter());
     current_canvas_->drawRect(dest_visible_rect, paint);
   }
@@ -627,8 +627,7 @@ void SoftwareRenderer::GenerateMipmap() {
   NOTIMPLEMENTED();
 }
 
-bool SoftwareRenderer::ShouldApplyBackgroundFilters(
-    const RenderPassDrawQuad* quad,
+bool SoftwareRenderer::ShouldApplyBackdropFilters(
     const cc::FilterOperations* backdrop_filters) const {
   if (!backdrop_filters)
     return false;
@@ -697,7 +696,7 @@ gfx::Rect SoftwareRenderer::GetBackdropBoundingBoxForRenderPassQuad(
     gfx::Rect* unclipped_rect) const {
   // TODO(916318): This function needs to compute the backdrop
   // filter clip rect and return it.
-  DCHECK(ShouldApplyBackgroundFilters(quad, backdrop_filters));
+  DCHECK(ShouldApplyBackdropFilters(backdrop_filters));
   gfx::Rect backdrop_rect = gfx::ToEnclosingRect(cc::MathUtil::MapClippedRect(
       contents_device_transform, QuadVertexRect()));
 
@@ -712,15 +711,15 @@ gfx::Rect SoftwareRenderer::GetBackdropBoundingBoxForRenderPassQuad(
   return backdrop_rect;
 }
 
-sk_sp<SkShader> SoftwareRenderer::GetBackgroundFilterShader(
+sk_sp<SkShader> SoftwareRenderer::GetBackdropFilterShader(
     const RenderPassDrawQuad* quad,
     SkShader::TileMode content_tile_mode) const {
   const cc::FilterOperations* backdrop_filters =
-      BackgroundFiltersForPass(quad->render_pass_id);
+      BackdropFiltersForPass(quad->render_pass_id);
+  if (!ShouldApplyBackdropFilters(backdrop_filters))
+    return nullptr;
   const cc::FilterOperations* regular_filters =
       FiltersForPass(quad->render_pass_id);
-  if (!ShouldApplyBackgroundFilters(quad, backdrop_filters))
-    return nullptr;
 
   gfx::Transform quad_rect_matrix;
   QuadRectTransform(&quad_rect_matrix,

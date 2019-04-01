@@ -504,13 +504,13 @@ const cc::FilterOperations* DirectRenderer::FiltersForPass(
   return it == render_pass_filters_.end() ? nullptr : it->second;
 }
 
-const cc::FilterOperations* DirectRenderer::BackgroundFiltersForPass(
+const cc::FilterOperations* DirectRenderer::BackdropFiltersForPass(
     RenderPassId render_pass_id) const {
   auto it = render_pass_backdrop_filters_.find(render_pass_id);
   return it == render_pass_backdrop_filters_.end() ? nullptr : it->second;
 }
 
-const gfx::RRectF* DirectRenderer::BackgroundFilterBoundsForPass(
+const gfx::RRectF* DirectRenderer::BackdropFilterBoundsForPass(
     RenderPassId render_pass_id) const {
   auto it = render_pass_backdrop_filter_bounds_.find(render_pass_id);
   return it == render_pass_backdrop_filter_bounds_.end() ? nullptr : it->second;

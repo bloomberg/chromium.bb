@@ -1621,9 +1621,9 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
   }
 
   const cc::FilterOperations* backdrop_filters =
-      BackgroundFiltersForPass(quad->render_pass_id);
+      BackdropFiltersForPass(quad->render_pass_id);
   // Without backdrop effect.
-  if (!ShouldApplyBackgroundFilters(quad, backdrop_filters)) {
+  if (!ShouldApplyBackdropFilters(backdrop_filters)) {
     if (mask_filter)
       paint->setMaskFilter(mask_filter);
 
@@ -1749,8 +1749,7 @@ void SkiaRenderer::GenerateMipmap() {
   // RenderPassDrawQuad is what actually generates generate_mipmap.
 }
 
-bool SkiaRenderer::ShouldApplyBackgroundFilters(
-    const RenderPassDrawQuad* quad,
+bool SkiaRenderer::ShouldApplyBackdropFilters(
     const cc::FilterOperations* backdrop_filters) const {
   if (!backdrop_filters)
     return false;

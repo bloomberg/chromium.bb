@@ -164,8 +164,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   bool CalculateRPDQParams(sk_sp<SkImage> src_image,
                            const RenderPassDrawQuad* quad,
                            DrawRenderPassDrawQuadParams* params);
-  bool ShouldApplyBackgroundFilters(
-      const RenderPassDrawQuad* quad,
+  bool ShouldApplyBackdropFilters(
       const cc::FilterOperations* backdrop_filters) const;
   const TileDrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass) override;
 
