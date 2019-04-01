@@ -77,9 +77,6 @@ class PluginPrefs : public RefcountedKeyedService {
   // Allows unit tests to directly set the AlwaysOpenPdfExternally pref.
   void SetAlwaysOpenPdfExternallyForTests(bool always_open_pdf_externally);
 
-  // Called on the UI thread with the plugin data to save the preferences.
-  void OnUpdatePreferences(const std::vector<content::WebPluginInfo>& plugins);
-
   // Sends the notification that plugin data has changed.
   void NotifyPluginStatusChanged();
 

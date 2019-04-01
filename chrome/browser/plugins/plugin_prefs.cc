@@ -247,46 +247,6 @@ void PluginPrefs::SetAlwaysOpenPdfExternallyForTests(
   always_open_pdf_externally_ = always_open_pdf_externally;
 }
 
-
-void PluginPrefs::OnUpdatePreferences(
-    const std::vector<content::WebPluginInfo>& plugins) {
-  if (!prefs_)
-    return;
-
-  PluginFinder* finder = PluginFinder::GetInstance();
-  ListPrefUpdate update(prefs_, prefs::kPluginsPluginsList);
-  base::ListValue* plugins_list = update.Get();
-  plugins_list->Clear();
-
-  base::FilePath internal_dir;
-  if (base::PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &internal_dir))
-    prefs_->SetFilePath(prefs::kPluginsLastInternalDirectory, internal_dir);
-
-  base::AutoLock auto_lock(lock_);
-
-  // Add the plugin files.
-  std::set<base::string16> group_names;
-  for (size_t i = 0; i < plugins.size(); ++i) {
-    std::unique_ptr<base::DictionaryValue> summary(new base::DictionaryValue());
-    summary->SetString("path", plugins[i].path.value());
-    summary->SetString("name", plugins[i].name);
-    summary->SetString("version", plugins[i].version);
-    plugins_list->Append(std::move(summary));
-
-    std::unique_ptr<PluginMetadata> plugin_metadata(
-        finder->GetPluginMetadata(plugins[i]));
-    // Insert into a set of all group names.
-    group_names.insert(plugin_metadata->name());
-  }
-
-  // Add the plugin groups.
-  for (auto it = group_names.begin(); it != group_names.end(); ++it) {
-    std::unique_ptr<base::DictionaryValue> summary(new base::DictionaryValue());
-    summary->SetString("name", *it);
-    plugins_list->Append(std::move(summary));
-  }
-}
-
 void PluginPrefs::NotifyPluginStatusChanged() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::NotificationService::current()->Notify(
