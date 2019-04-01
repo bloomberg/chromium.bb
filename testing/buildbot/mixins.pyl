@@ -331,7 +331,14 @@
   'mac_10.14': {
     'swarming': {
       'dimensions': {
-        'os': 'Mac-10.14',
+        'os': 'Mac-10.14.3',
+      },
+    },
+  },
+  'mac_10.14_beta': {
+    'swarming': {
+      'dimensions': {
+        'os': 'Mac-10.14.5',
       },
     },
   },
