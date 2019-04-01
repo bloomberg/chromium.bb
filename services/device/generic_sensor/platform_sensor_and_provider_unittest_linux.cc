@@ -149,21 +149,17 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
     manager_ = manager.get();
     provider_->SetSensorDeviceManagerForTesting(std::move(manager));
 
-    ASSERT_TRUE(sensors_dir_.CreateUniqueTempDir());
-
-    disallow_blocking_.reset(new base::ScopedDisallowBlocking);
+    {
+      base::ScopedAllowBlockingForTesting allow_blocking;
+      ASSERT_TRUE(sensors_dir_.CreateUniqueTempDir());
+    }
   }
 
   void TearDown() override {
-    // TODO(rakuco): It should be possible to make |disallow_blocking_| a
-    // regular, non-std::unique_ptr member once we port
-    // PlatformSensorProviderLinux and accompanying APIs to base::PostTask().
-    // At the moment we need to turn |disallow_blocking_| off here because
-    // stopping PlatformSensorProviderLinux's polling thread is a blocking
-    // operation.
-    disallow_blocking_.reset(nullptr);
-
-    ASSERT_TRUE(sensors_dir_.Delete());
+    {
+      base::ScopedAllowBlockingForTesting allow_blocking;
+      ASSERT_TRUE(sensors_dir_.Delete());
+    }
     base::RunLoop().RunUntilIdle();
   }
 
@@ -322,7 +318,7 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
 
   // Used to simulate the non-test scenario where we're running in an IO thread
   // that forbids blocking operations.
-  std::unique_ptr<base::ScopedDisallowBlocking> disallow_blocking_;
+  base::ScopedDisallowBlocking disallow_blocking_;
 };
 
 // Tests sensor is not returned if not implemented.
