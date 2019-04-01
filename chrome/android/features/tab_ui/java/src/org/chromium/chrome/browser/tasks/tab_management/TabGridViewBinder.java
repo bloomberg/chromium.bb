@@ -15,7 +15,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 import org.chromium.base.Callback;
-import org.chromium.chrome.R;
+import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -41,7 +41,7 @@ class TabGridViewBinder {
             String title = item.get(TabProperties.TITLE);
             holder.title.setText(title);
             holder.closeButton.setContentDescription(holder.itemView.getResources().getString(
-                    R.string.accessibility_tabstrip_btn_close_tab, title));
+                    org.chromium.chrome.R.string.accessibility_tabstrip_btn_close_tab, title));
         } else if (TabProperties.IS_SELECTED == propertyKey) {
             Resources res = holder.itemView.getResources();
             Drawable drawable = new InsetDrawable(

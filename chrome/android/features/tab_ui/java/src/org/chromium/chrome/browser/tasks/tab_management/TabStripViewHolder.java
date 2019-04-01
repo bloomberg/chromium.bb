@@ -10,7 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 
-import org.chromium.chrome.R;
+import org.chromium.chrome.tab_ui.R;
 
 /**
  * {@link RecyclerView.ViewHolder} for tab strip.

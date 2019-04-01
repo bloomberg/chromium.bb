@@ -594,14 +594,4 @@
     <!-- Explicit Language Ask Prompt dimensions -->
     <dimen name="explicit_ask_checkbox_end_padding">4dp</dimen>
 
-    <!-- Tab List dimensions -->
-    <dimen name="tab_grid_favicon_size">32dp</dimen>
-    <dimen name="tab_list_selected_inset">7dp</dimen>
-    <dimen name="tab_list_card_padding">8dp</dimen>
-    <dimen name="tab_list_mini_card_radius">4dp</dimen>
-    <dimen name="tab_list_mini_card_frame_size">1dp</dimen>
-    <dimen name="tab_list_mini_card_text_size">12sp</dimen>
-    <dimen name="tab_grid_thumbnail_card_default_size">152dp</dimen>
-    <dimen name="swipe_to_dismiss_threshold">72dp</dimen>
-
 </resources>
