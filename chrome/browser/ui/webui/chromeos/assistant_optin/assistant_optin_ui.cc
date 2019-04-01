@@ -104,7 +104,7 @@ void AssistantOptInUI::OnDialogClosed() {
 }
 
 void AssistantOptInUI::Initialize() {
-  js_calls_container_.ExecuteDeferredJSCalls();
+  js_calls_container_.ExecuteDeferredJSCalls(web_ui());
 }
 
 // AssistantOptInDialog

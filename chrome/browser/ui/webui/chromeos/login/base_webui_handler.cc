@@ -15,23 +15,6 @@
 
 namespace chromeos {
 
-JSCallsContainer::JSCallsContainer() = default;
-
-JSCallsContainer::~JSCallsContainer() = default;
-
-void JSCallsContainer::ExecuteDeferredJSCalls() {
-  DCHECK(!is_initialized());
-  is_initialized_ = true;
-  // Copy deferred_js_calls_ into a separate variable to avoid any potential
-  // concurrent modifications.
-  auto calls = std::move(deferred_js_calls_);
-  for (const auto& call : calls)
-    call.Run();
-  // We're initialized so no more calls should have been queued.
-  // TODO(jdufault): Rework this class API so that this is not possible.
-  DCHECK(deferred_js_calls_.empty());
-}
-
 BaseWebUIHandler::BaseWebUIHandler(JSCallsContainer* js_calls_container)
     : js_calls_container_(js_calls_container) {}
 
@@ -89,6 +72,28 @@ void BaseWebUIHandler::SetBaseScreen(BaseScreen* base_screen) {
   if (base_screen_ == base_screen)
     return;
   base_screen_ = base_screen;
+}
+
+void BaseWebUIHandler::InsertIntoList(std::vector<base::Value>*) {}
+
+void BaseWebUIHandler::MaybeRecordIncomingEvent(
+    const std::string& function_name,
+    const base::ListValue* args) {
+  if (js_calls_container_->record_all_events_for_test()) {
+    // Do a clone so |args| is still available for the actual handler.
+    std::vector<base::Value> arguments = std::move(args->Clone().GetList());
+    js_calls_container_->events()->emplace_back(
+        JSCallsContainer::Event(JSCallsContainer::Event::Type::kIncoming,
+                                function_name, std::move(arguments)));
+  }
+}
+
+void BaseWebUIHandler::OnRawCallback(
+    const std::string& function_name,
+    const content::WebUI::MessageCallback callback,
+    const base::ListValue* args) {
+  MaybeRecordIncomingEvent(function_name, args);
+  callback.Run(args);
 }
 
 void BaseWebUIHandler::HandleUserAction(const std::string& action_id) {

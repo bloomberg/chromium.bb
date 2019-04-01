@@ -725,7 +725,7 @@ void OobeUI::AddScreenHandler(std::unique_ptr<BaseScreenHandler> handler) {
 }
 
 void OobeUI::InitializeHandlers() {
-  js_calls_container_->ExecuteDeferredJSCalls();
+  js_calls_container_->ExecuteDeferredJSCalls(web_ui());
 
   ready_ = true;
   for (size_t i = 0; i < ready_callbacks_.size(); ++i)
