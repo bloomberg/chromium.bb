@@ -8258,7 +8258,9 @@
 
           When this policy is unset, no warning dialog is shown.
 
-          The policy value should be specified in milliseconds. Values are clamped to be less than or equal the idle delay.''',
+          The policy value should be specified in milliseconds. Values are clamped to be less than or equal the idle delay.
+
+          The warning message is only shown if the idle action is to logout or shut down.''',
     },
     {
       'name': 'IdleDelayAC',
@@ -8391,7 +8393,9 @@
 
           When this policy is unset, no warning dialog is shown.
 
-          The policy value should be specified in milliseconds. Values are clamped to be less than or equal the idle delay.''',
+          The policy value should be specified in milliseconds. Values are clamped to be less than or equal the idle delay.
+
+          The warning message is only shown if the idle action is to logout or shut down.''',
     },
     {
       'name': 'IdleDelayBattery',
@@ -8827,7 +8831,7 @@
           There are four types of action:
           * The screen will be dimmed if the user remains idle for the time specified by |ScreenDim|.
           * The screen will be turned off if the user remains idle for the time specified by |ScreenOff|.
-          * A warning dialog will be shown if the user remains idle for the time specified by |IdleWarning|, telling the user that the idle action is about to be taken.
+          * A warning dialog will be shown if the user remains idle for the time specified by |IdleWarning|, telling the user that the idle action is about to be taken. The warning message is only shown if the idle action is to logout or shut down.
           * The action specified by |IdleAction| will be taken if the user remains idle for the time specified by |Idle|.
 
           For each of above actions, the delay should be specified in milliseconds, and needs to be set to a value greater than zero to trigger the corresponding action. In case the delay is set to zero, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will not take the corresponding action.
