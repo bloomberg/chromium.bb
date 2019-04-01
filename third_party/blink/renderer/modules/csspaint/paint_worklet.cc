@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet.h"
 
+#include "base/atomic_sequence_num.h"
 #include "base/rand_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -16,6 +17,15 @@
 #include "third_party/blink/renderer/platform/graphics/image.h"
 
 namespace blink {
+
+namespace {
+base::AtomicSequenceNumber g_next_worklet_id;
+int NextId() {
+  // Start id from 1. This way it safe to use it as key in hashmap with default
+  // key traits.
+  return g_next_worklet_id.GetNext() + 1;
+}
+}  // namespace
 
 const wtf_size_t PaintWorklet::kNumGlobalScopes = 2u;
 const size_t kMaxPaintCountToSwitch = 30u;
@@ -41,7 +51,8 @@ PaintWorklet::PaintWorklet(LocalFrame* frame)
     : Worklet(frame->GetDocument()),
       Supplement<LocalDOMWindow>(*frame->DomWindow()),
       pending_generator_registry_(
-          MakeGarbageCollected<PaintWorkletPendingGeneratorRegistry>()) {}
+          MakeGarbageCollected<PaintWorkletPendingGeneratorRegistry>()),
+      worklet_id_(NextId()) {}
 
 PaintWorklet::~PaintWorklet() = default;
 
@@ -135,8 +146,8 @@ WorkletGlobalScopeProxy* PaintWorklet::CreateGlobalScope() {
         pending_generator_registry_, GetNumberOfGlobalScopes() + 1);
   }
 
-  PaintWorkletProxyClient* proxy_client =
-      PaintWorkletProxyClient::Create(To<Document>(GetExecutionContext()));
+  PaintWorkletProxyClient* proxy_client = PaintWorkletProxyClient::Create(
+      To<Document>(GetExecutionContext()), worklet_id_);
   WorkerClients* worker_clients = WorkerClients::Create();
   ProvidePaintWorkletProxyClientTo(worker_clients, proxy_client);
 

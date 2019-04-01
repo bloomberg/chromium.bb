@@ -41,6 +41,7 @@ class MODULES_EXPORT CSSPaintImageGeneratorImpl final
   bool HasAlpha() const final;
   const Vector<CSSSyntaxDescriptor>& InputArgumentTypes() const final;
   bool IsImageGeneratorReady() const final;
+  int WorkletId() const final;
 
   // Should be called from the PaintWorkletGlobalScope when a javascript class
   // is registered with the same name.

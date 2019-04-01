@@ -125,6 +125,10 @@ bool CSSPaintImageGeneratorImpl::IsImageGeneratorReady() const {
   return HasDocumentDefinition();
 }
 
+int CSSPaintImageGeneratorImpl::WorkletId() const {
+  return paint_worklet_->WorkletId();
+}
+
 void CSSPaintImageGeneratorImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(observer_);
   visitor->Trace(paint_worklet_);

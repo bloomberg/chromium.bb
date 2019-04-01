@@ -33,9 +33,10 @@ class MODULES_EXPORT PaintWorkletProxyClient
  public:
   static const char kSupplementName[];
 
-  static PaintWorkletProxyClient* Create(Document*);
+  static PaintWorkletProxyClient* Create(Document*, int worklet_id);
 
   PaintWorkletProxyClient(
+      int worklet_id,
       scoped_refptr<PaintWorkletPaintDispatcher> compositor_paintee);
   virtual ~PaintWorkletProxyClient() = default;
 
@@ -51,6 +52,7 @@ class MODULES_EXPORT PaintWorkletProxyClient
                            PaintWorkletProxyClientConstruction);
 
   scoped_refptr<PaintWorkletPaintDispatcher> compositor_paintee_;
+  const int worklet_id_;
   CrossThreadPersistent<PaintWorkletGlobalScope> global_scope_;
   enum RunState { kUninitialized, kWorking, kDisposed } state_;
 };
