@@ -470,14 +470,12 @@ static void init_gop_frames(AV1_COMP *cpi, GF_PICTURE *gf_picture,
   int alt_index = -1;
   int lst_index = -1;
   int extend_frame_count = 0;
+  int frame_gop_offset = 0;
   int pframe_qindex = cpi->tpl_stats[2].base_qindex;
 
   RefCntBuffer *frame_bufs = cm->buffer_pool->frame_bufs;
   int recon_frame_index[INTER_REFS_PER_FRAME + 1] = { -1, -1, -1, -1,
                                                       -1, -1, -1, -1 };
-
-  // TODO(jingning): To be used later for gf frame type parsing.
-  (void)gf_group;
 
   for (i = 0; i < FRAME_BUFFERS && frame_idx < INTER_REFS_PER_FRAME + 1; ++i) {
     if (frame_bufs[i].ref_count == 0) {
@@ -522,8 +520,9 @@ static void init_gop_frames(AV1_COMP *cpi, GF_PICTURE *gf_picture,
 
   // Initialize P frames
   for (frame_idx = 2; frame_idx < MAX_LAG_BUFFERS; ++frame_idx) {
-    struct lookahead_entry *buf =
-        av1_lookahead_peek(cpi->lookahead, frame_idx - 2);
+    struct lookahead_entry *buf;
+    frame_gop_offset = gf_group->frame_gop_index[frame_idx];
+    buf = av1_lookahead_peek(cpi->lookahead, frame_gop_offset - 1);
 
     if (buf == NULL) break;
 
@@ -543,11 +542,12 @@ static void init_gop_frames(AV1_COMP *cpi, GF_PICTURE *gf_picture,
   lst_index = AOMMAX(0, frame_idx - 1);
   alt_index = -1;
   ++frame_idx;
+  ++frame_gop_offset;
 
   // Extend two frames outside the current gf group.
   for (; frame_idx < MAX_LAG_BUFFERS && extend_frame_count < 2; ++frame_idx) {
     struct lookahead_entry *buf =
-        av1_lookahead_peek(cpi->lookahead, frame_idx - 2);
+        av1_lookahead_peek(cpi->lookahead, frame_gop_offset - 1);
 
     if (buf == NULL) break;
 
@@ -561,6 +561,7 @@ static void init_gop_frames(AV1_COMP *cpi, GF_PICTURE *gf_picture,
     lst_index = frame_idx;
     ++*tpl_group_frames;
     ++extend_frame_count;
+    ++frame_gop_offset;
   }
 }
 
