@@ -8,11 +8,6 @@ import("//third_party/angle/dotfile_settings.gni")
 # The location of the build configuration file.
 buildconfig = "//build/config/BUILDCONFIG.gn"
 
-# The secondary source root is a parallel directory tree where
-# GN build files are placed when they can not be placed directly
-# in the source tree, e.g. for third party source trees.
-secondary_source = "//build/secondary/"
-
 # These arguments override the default values for items in a declare_args
 # block. "gn args" in turn can override these.
 #
