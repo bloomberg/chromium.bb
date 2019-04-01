@@ -115,6 +115,7 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
     // On ChromeOS, the stub user is signed in by default on browsertests.
     CoreAccountInfo account_info =
         identity_test_env()->identity_manager()->GetPrimaryAccountInfo();
+    identity_test_env()->SetRefreshTokenForPrimaryAccount();
 #else
     CoreAccountInfo account_info =
         identity_test_env()->MakePrimaryAccountAvailable(
