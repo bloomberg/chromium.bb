@@ -500,6 +500,10 @@ const char kProfileRequiresPolicy[] = "profile-requires-policy";
 // The rlz ping delay (in seconds) that overwrites the default value.
 const char kRlzPingDelay[] = "rlz-ping-delay";
 
+// Password change url for SAML users. Remove when https://crbug.com/941489 is
+// fixed.
+const char kSamlPasswordChangeUrl[] = "saml-password-change-url";
+
 // App window previews when hovering over the shelf.
 const char kShelfHoverPreviews[] = "shelf-hover-previews";
 

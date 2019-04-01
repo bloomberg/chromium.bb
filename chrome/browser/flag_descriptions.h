@@ -2070,6 +2070,9 @@ extern const char kEnableAppReinstallZeroStateDescription[];
 extern const char kAshNotificationStackingBarRedesignName[];
 extern const char kAshNotificationStackingBarRedesignDescription[];
 
+extern const char kInSessionPasswordChangeName[];
+extern const char kInSessionPasswordChangeDescription[];
+
 #endif  // #if defined(OS_CHROMEOS)
 
 // All views-based platforms --------------------------------------------------

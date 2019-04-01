@@ -4038,6 +4038,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSkiaRendererDescription, kOsLinux | kOsAndroid,
      FEATURE_VALUE_TYPE(features::kUseSkiaRenderer)},
 
+#if defined(OS_CHROMEOS)
+    {"in-session-password-change",
+     flag_descriptions::kInSessionPasswordChangeName,
+     flag_descriptions::kInSessionPasswordChangeDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kInSessionPasswordChange)},
+#endif  // OS_CHROMEOS
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
@@ -4076,6 +4083,14 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
   // enable-ui-devtools is only available on for non Stable channels.
   if (!strcmp(ui_devtools::switches::kEnableUiDevTools, entry.internal_name) &&
       channel == version_info::Channel::STABLE) {
+    return true;
+  }
+
+  // Don't expose in-session password change on stable and beta channel.
+  if (!strcmp("in-session-password-change", entry.internal_name) &&
+      channel != version_info::Channel::DEV &&
+      channel != version_info::Channel::CANARY &&
+      channel != version_info::Channel::UNKNOWN) {
     return true;
   }
 #endif  // defined(OS_CHROMEOS)

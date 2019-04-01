@@ -2181,6 +2181,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "in-session-password-change",
+    // "owners": [ "rsorokin" ],
+    "expiry_milestone": 77
+  },
+  {
     "name": "incognito-strings",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

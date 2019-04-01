@@ -258,6 +258,7 @@
       "chrome://media-router/*",
       "chrome://mobilesetup/*",
       "chrome://oobe/*",
+      "chrome://password-change/*",
       "chrome://assistant-optin/*"
     ]
   }],

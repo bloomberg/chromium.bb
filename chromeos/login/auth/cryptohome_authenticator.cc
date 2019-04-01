@@ -816,6 +816,15 @@ void CryptohomeAuthenticator::OnAuthFailure(const AuthFailure& error) {
     consumer_->OnAuthFailure(error);
 }
 
+void CryptohomeAuthenticator::MigrateKey(const UserContext& user_context,
+                                         const std::string& old_password) {
+  current_state_.reset(new AuthAttemptState(user_context,
+                                            false,  // unlock
+                                            false,  // online_complete
+                                            !IsKnownUser(user_context)));
+  RecoverEncryptedData(old_password);
+}
+
 void CryptohomeAuthenticator::RecoverEncryptedData(
     const std::string& old_password) {
   migrate_attempted_ = true;
