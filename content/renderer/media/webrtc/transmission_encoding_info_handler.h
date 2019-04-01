@@ -36,10 +36,8 @@ class CONTENT_EXPORT TransmissionEncodingInfoHandler final
   ~TransmissionEncodingInfoHandler() override;
 
   // blink::WebTransmissionEncodingInfoHandler implementation.
-  void EncodingInfo(
-      const blink::WebMediaConfiguration& configuration,
-      std::unique_ptr<blink::WebMediaCapabilitiesEncodingInfoCallbacks> cb)
-      const override;
+  void EncodingInfo(const blink::WebMediaConfiguration& configuration,
+                    OnMediaCapabilitiesEncodingInfoCallback cb) const override;
 
  private:
   // Extracts supported video/audio codec name from |mime_type|. Returns "" if
