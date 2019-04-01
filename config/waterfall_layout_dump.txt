@@ -105,6 +105,7 @@
     lasilla-ground-paladin
     leon-paladin
     littlejoe-paladin
+    mistral-paladin
     moblab-generic-vm-paladin
     monroe-paladin
     nami-paladin
@@ -2660,6 +2661,7 @@
     lasilla-ground-paladin-tryjob
     leon-paladin-tryjob
     littlejoe-paladin-tryjob
+    mistral-paladin-tryjob
     moblab-generic-vm-paladin-tryjob
     monroe-paladin-tryjob
     nami-paladin-tryjob

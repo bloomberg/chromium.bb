@@ -2050,6 +2050,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'coral', # contact: xixuan@
       'eve-arcnext', # contact: ihf@ (crbug.com/826755)
       'fizz-moblab', # contact: haddowk@ (crbug.com/937344)
+      'mistral', # contact: roopeshr@
   ])
 
   assert not (_paladin_experimental_boards & _paladin_important_boards), (
