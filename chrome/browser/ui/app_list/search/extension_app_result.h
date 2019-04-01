@@ -8,10 +8,10 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "base/macros.h"
 #include "chrome/browser/extensions/chrome_app_icon_delegate.h"
 #include "chrome/browser/ui/app_list/search/app_result.h"
-#include "chrome/browser/ui/app_list/search/search_util.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "extensions/browser/extension_icon_image.h"
 #include "extensions/browser/extension_registry_observer.h"
