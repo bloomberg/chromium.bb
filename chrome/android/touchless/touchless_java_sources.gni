@@ -26,6 +26,7 @@ touchless_java_sources = [
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPageTopLayout.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessTabObserver.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessUiController.java",
+  "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessZoomHelper.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/dialog/TouchlessDialogPresenter.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/dialog/TouchlessDialogProperties.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/ui/iph/KeyFunctionsIPHCoordinator.java",

@@ -2,14 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.ui.base;
+package org.chromium.ui.touchless;
 
 /**
- * org.chromium.ui.base.TouchlessEventHandler
+ * org.chromium.ui.touchless.TouchlessEventHandler
  */
 public class TouchlessEventHandler {
+    /**
+     * Provides an interface for handling zoom in and zoom out requests for touchless devices.
+     */
+    public interface TouchlessZoomCallback {
+        void onZoomInRequested();
+        void onZoomOutRequested();
+    }
+
     private static final String EVENT_HANDLER_INTERNAL =
-            "org.chromium.ui.base.TouchlessEventHandlerInternal";
+            "org.chromium.ui.touchless.TouchlessEventHandlerInternal";
     private static TouchlessEventHandler sInstance;
 
     static {
@@ -43,6 +51,14 @@ public class TouchlessEventHandler {
         }
     }
 
+    public static void setZoomCallback(TouchlessZoomCallback callback) {
+        if (sInstance != null) sInstance.setZoomCallbackInternal(callback);
+    }
+
+    public static void removeZoomCallback(TouchlessZoomCallback callback) {
+        if (sInstance != null) sInstance.removeZoomCallbackInternal(callback);
+    }
+
     public static void onDidFinishNavigation() {
         if (sInstance != null) {
             sInstance.onDidFinishNavigationInternal();
@@ -73,6 +89,10 @@ public class TouchlessEventHandler {
     protected void addCursorObserverInternal(CursorObserver observer) {}
 
     protected void removeCursorObserverInternal(CursorObserver observer) {}
+
+    protected void setZoomCallbackInternal(TouchlessZoomCallback callback) {}
+
+    protected void removeZoomCallbackInternal(TouchlessZoomCallback callback) {}
 
     protected void onDidFinishNavigationInternal() {}
 

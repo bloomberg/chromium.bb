@@ -9,9 +9,9 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
-import org.chromium.ui.base.CursorObserver;
-import org.chromium.ui.base.TouchlessEventHandler;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.touchless.CursorObserver;
+import org.chromium.ui.touchless.TouchlessEventHandler;
 
 import java.util.concurrent.FutureTask;
 
