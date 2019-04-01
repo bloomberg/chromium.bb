@@ -82,6 +82,7 @@ public class FeatureUtilities {
     private static Boolean sIsNightModeAvailable;
     private static Boolean sIsNightModeForCustomTabsAvailable;
     private static Boolean sShouldPrioritizeBootstrapTasks;
+    private static Boolean sIsGridTabSwitcherEnabled;
     private static Boolean sIsTabGroupsAndroidEnabled;
     private static Boolean sIsNetworkServiceWarmUpEnabled;
 
@@ -205,7 +206,8 @@ public class FeatureUtilities {
         cachePrioritizeBootstrapTasks();
         cacheNetworkServiceWarmUpEnabled();
 
-        if (isDeviceEligibleForTabGroups()) cacheTabGroupsAndroidEnabled();
+        if (isHighEndPhone()) cacheGridTabSwitcherEnabled();
+        if (isHighEndPhone()) cacheTabGroupsAndroidEnabled();
 
         // Propagate DONT_PREFETCH_LIBRARIES and REACHED_CODE_PROFILER feature values to
         // LibraryLoader. This can't be done in LibraryLoader itself because it lives in //base and
@@ -408,7 +410,7 @@ public class FeatureUtilities {
             sIsAdaptiveToolbarEnabled = prefManager.readBoolean(
                     ChromePreferenceManager.ADAPTIVE_TOOLBAR_ENABLED_KEY, true);
         }
-        return sIsAdaptiveToolbarEnabled;
+        return sIsAdaptiveToolbarEnabled && isBottomToolbarEnabled() && !isGridTabSwitcherEnabled();
     }
 
     /**
@@ -526,16 +528,26 @@ public class FeatureUtilities {
                                       ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON));
     }
 
+    private static void cacheGridTabSwitcherEnabled() {
+        ChromePreferenceManager.getInstance().writeBoolean(
+                ChromePreferenceManager.GRID_TAB_SWITCHER_ENABLED_KEY,
+                !DeviceClassManager.enableAccessibilityLayout()
+                        && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID));
+    }
+
     /**
-     * @param activityContext The context for the containing {@link android.app.Activity}.
      * @return Whether the Grid Tab Switcher UI is enabled and available for use.
      */
-    public static boolean isGridTabSwitcherEnabled(Context activityContext) {
+    public static boolean isGridTabSwitcherEnabled() {
+        if (sIsGridTabSwitcherEnabled == null) {
+            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
+
+            sIsGridTabSwitcherEnabled = prefManager.readBoolean(
+                    ChromePreferenceManager.GRID_TAB_SWITCHER_ENABLED_KEY, false);
+        }
         // TODO(yusufo): AccessibilityLayout check should not be here and the flow should support
         // changing that setting while Chrome is alive.
-        return !DeviceFormFactor.isNonMultiDisplayContextOnTablet(activityContext)
-                && !SysUtils.isLowEndDevice() && !DeviceClassManager.enableAccessibilityLayout()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID)
+        return sIsGridTabSwitcherEnabled
                 && TabManagementModuleProvider.getTabManagementModule() != null;
     }
 
@@ -550,7 +562,7 @@ public class FeatureUtilities {
      * @return Whether the tab group feature is enabled and available for use.
      */
     public static boolean isTabGroupsAndroidEnabled() {
-        if (!isDeviceEligibleForTabGroups()) return false;
+        if (!isHighEndPhone()) return false;
 
         if (sIsTabGroupsAndroidEnabled == null) {
             ChromePreferenceManager preferenceManager = ChromePreferenceManager.getInstance();
@@ -563,7 +575,7 @@ public class FeatureUtilities {
                 && TabManagementModuleProvider.getTabManagementModule() != null;
     }
 
-    private static boolean isDeviceEligibleForTabGroups() {
+    private static boolean isHighEndPhone() {
         return !SysUtils.isLowEndDevice()
                 && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
                         ContextUtils.getApplicationContext());

@@ -733,7 +733,7 @@ public class ChromeTabbedActivity
                 UsageStatsService.getInstance().createPageViewObserver(mTabModelSelectorImpl, this);
             }
 
-            if (FeatureUtilities.isGridTabSwitcherEnabled(this)
+            if (FeatureUtilities.isGridTabSwitcherEnabled()
                     || FeatureUtilities.isTabGroupsAndroidEnabled()) {
                 GridTabSwitcher gridTabSwitcher =
                         TabManagementModuleProvider.getTabManagementModule().createGridTabSwitcher(

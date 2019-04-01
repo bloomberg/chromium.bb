@@ -291,6 +291,12 @@ public class ChromePreferenceManager {
             "twa_dialog_number_of_dismissals_on_clear_data";
 
     /**
+     * Whether or not the grid tab switcher is enabled.
+     * Default value is false.
+     */
+    public static final String GRID_TAB_SWITCHER_ENABLED_KEY = "grid_tab_switcher_enabled";
+
+    /**
      * Whether or not the tab group is enabled.
      * Default value is false.
      */
