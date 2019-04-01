@@ -84,7 +84,7 @@ void BatchElementChecker::Try(base::OnceCallback<void()> try_done_callback) {
 
     const auto& call_arguments = entry.first;
     web_controller_->ElementCheck(
-        call_arguments.first, call_arguments.second,
+        call_arguments.first, call_arguments.second, /* strict= */ false,
         base::BindOnce(
             &BatchElementChecker::OnElementChecked,
             weak_ptr_factory_.GetWeakPtr(),

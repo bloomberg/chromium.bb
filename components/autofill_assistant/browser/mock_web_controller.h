@@ -44,6 +44,7 @@ class MockWebController : public WebController {
 
   void ElementCheck(ElementCheckType check_type,
                     const Selector& selector,
+                    bool strict,
                     base::OnceCallback<void(bool)> callback) override {
     OnElementCheck(check_type, selector, callback);
   }
