@@ -50,6 +50,11 @@ void ClearLastSignedInUserForProfile(Profile* profile) {
   profile->GetPrefs()->ClearPref(prefs::kGoogleServicesLastUsername);
 }
 
+// Returns whether the user is a managed user or not.
+bool ShouldLoadPolicyForUser(const std::string& username) {
+  return !policy::BrowserPolicyConnector::IsNonEnterpriseUser(username);
+}
+
 // A BrowsingDataRemover::Observer that clears Profile data and then invokes
 // a callback and deletes itself. It can be configured to delete all data
 // (for enterprise users) or only Google's service workers (for all users).
@@ -115,12 +120,6 @@ class ProfileDataRemover : public content::BrowsingDataRemover::Observer {
 
   DISALLOW_COPY_AND_ASSIGN(ProfileDataRemover);
 };
-
-void UserManagementDomainFetched(
-    base::android::ScopedJavaGlobalRef<jobject> callback,
-    const std::string& dm_token, const std::string& client_id) {
-  base::android::RunBooleanCallbackAndroid(callback, !dm_token.empty());
-}
 
 }  // namespace
 
@@ -188,9 +187,8 @@ void SigninManagerAndroid::FetchPolicyBeforeSignIn(
   Java_SigninManager_onPolicyFetchedBeforeSignIn(env, java_signin_manager_);
 }
 
-void SigninManagerAndroid::AbortSignIn(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
+void SigninManagerAndroid::AbortSignIn(JNIEnv* env,
+                                       const JavaParamRef<jobject>& obj) {
   policy::UserPolicySigninService* service =
       policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
   service->ShutdownUserCloudPolicyManager();
@@ -356,37 +354,47 @@ static jlong JNI_SigninManager_Init(JNIEnv* env,
 
 static jboolean JNI_SigninManager_ShouldLoadPolicyForUser(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& j_username) {
   std::string username =
       base::android::ConvertJavaStringToUTF8(env, j_username);
-  return !policy::BrowserPolicyConnector::IsNonEnterpriseUser(username);
+  return ShouldLoadPolicyForUser(username);
 }
 
 static void JNI_SigninManager_IsUserManaged(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& j_username,
     const JavaParamRef<jobject>& j_callback) {
   base::android::ScopedJavaGlobalRef<jobject> callback(env, j_callback);
-
-  Profile* profile = ProfileManager::GetActiveUserProfile();
   std::string username =
       base::android::ConvertJavaStringToUTF8(env, j_username);
+  if (!ShouldLoadPolicyForUser(username)) {
+    base::android::RunBooleanCallbackAndroid(callback, false);
+    return;
+  }
+
+  Profile* profile = ProfileManager::GetActiveUserProfile();
   policy::UserPolicySigninService* service =
       policy::UserPolicySigninServiceFactory::GetForProfile(profile);
   service->RegisterForPolicyWithAccountId(
       username,
       IdentityManagerFactory::GetForProfile(profile)
           ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(username)
-          .value()
+          .value_or(AccountInfo{})
           .account_id,
-      base::Bind(&UserManagementDomainFetched, callback));
+      // TODO: if UserPolicySigninService::PolicyRegistrationCallback is changed
+      // to base::OnceCallback, change this to base::BindOnce; otherwise remove
+      // this comment. See https://crbug.com/948098 for more details.
+      base::BindRepeating(
+          [](base::android::ScopedJavaGlobalRef<jobject> callback,
+             const std::string& dm_token, const std::string& client_id) {
+            base::android::RunBooleanCallbackAndroid(callback,
+                                                     !dm_token.empty());
+          },
+          callback));
 }
 
 base::android::ScopedJavaLocalRef<jstring> JNI_SigninManager_ExtractDomainName(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& j_email) {
   std::string email = base::android::ConvertJavaStringToUTF8(env, j_email);
   std::string domain = gaia::ExtractDomainName(email);

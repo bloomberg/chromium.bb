@@ -163,7 +163,7 @@ public class ConfirmSyncDataStateMachine
                     // This will call back into onConfirm() on success.
                     ConfirmManagedSyncDataDialog.showSwitchFromManagedAccountDialog(this,
                             mFragmentManager, mContext.getResources(),
-                            SigninManager.get().extractDomainName(mOldAccountName), mOldAccountName,
+                            SigninManager.extractDomainName(mOldAccountName), mOldAccountName,
                             mNewAccountName);
                 } else {
                     // This will call back into onConfirm(boolean wipeData) on success.
@@ -215,7 +215,7 @@ public class ConfirmSyncDataStateMachine
             // This will call back into onConfirm on success.
             ConfirmManagedSyncDataDialog.showSignInToManagedAccountDialog(
                     ConfirmSyncDataStateMachine.this, mFragmentManager, mContext.getResources(),
-                    SigninManager.get().extractDomainName(mNewAccountName));
+                    SigninManager.extractDomainName(mNewAccountName));
         } else {
             progress();
         }
