@@ -12,6 +12,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/autofill/core/browser/payments/payments_util.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
@@ -98,6 +100,45 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
   }
 
   return base::FeatureList::IsEnabled(features::kAutofillUpstream);
+}
+
+bool IsCreditCardMigrationEnabled(PersonalDataManager* personal_data_manager,
+                                  PrefService* pref_service,
+                                  syncer::SyncService* sync_service,
+                                  bool is_test_mode) {
+  // Confirm that experiment flags are enabled.
+  if (features::GetLocalCardMigrationExperimentalFlag() ==
+      features::LocalCardMigrationExperimentalFlag::kMigrationDisabled) {
+    return false;
+  }
+
+  // If |is_test_mode| is set, assume we are in a browsertest and
+  // credit card upload should be enabled by default to fix flaky
+  // local card migration browsertests.
+  if (!is_test_mode &&
+      !IsCreditCardUploadEnabled(
+          pref_service, sync_service,
+          personal_data_manager->GetAccountInfoForPaymentsServer().email)) {
+    return false;
+  }
+
+  if (!autofill::payments::HasGooglePaymentsAccount(personal_data_manager))
+    return false;
+
+  AutofillSyncSigninState sync_state =
+      personal_data_manager->GetSyncSigninState();
+
+  // User signed-in and turned sync on.
+  if (sync_state != AutofillSyncSigninState::kSignedInAndSyncFeature &&
+      // User signed-in but not turned on sync.
+      (sync_state !=
+           AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled ||
+       !base::FeatureList::IsEnabled(
+           features::kAutofillEnableLocalCardMigrationForNonSyncUser))) {
+    return false;
+  }
+
+  return true;
 }
 
 bool IsInAutofillSuggestionsDisabledExperiment() {

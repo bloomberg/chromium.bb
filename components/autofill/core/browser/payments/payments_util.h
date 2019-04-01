@@ -20,6 +20,9 @@ namespace payments {
 int64_t GetBillingCustomerId(PersonalDataManager* personal_data_manager,
                              bool should_log_validity = false);
 
+// Returns if the customer has an existing Google payments account.
+bool HasGooglePaymentsAccount(PersonalDataManager* personal_data_manager);
+
 }  // namespace payments
 }  // namespace autofill
 
