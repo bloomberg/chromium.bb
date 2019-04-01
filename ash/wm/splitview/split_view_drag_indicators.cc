@@ -39,8 +39,9 @@ namespace {
 constexpr double kSplitviewLabelExpandTranslationPrimaryAxisRatio = 0.20;
 constexpr double kSplitviewLabelShrinkTranslationPrimaryAxisRatio = 0.05;
 
-// When a preview is shown, the opposite highlight will shrink to this length.
-constexpr int kOtherHighlightLengthDp = 20;
+// When a preview is shown, the opposite highlight shall contract to this ratio
+// of the screen length.
+constexpr float kOtherHighlightScreenPrimaryAxisRatio = 0.03f;
 
 // Creates the widget responsible for displaying the indicators.
 std::unique_ptr<views::Widget> CreateWidget() {
@@ -373,6 +374,11 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
         display_height - 2 * kHighlightScreenEdgePaddingDp;
     gfx::Size highlight_size(highlight_width, highlight_height);
 
+    // When one highlight expands to become a preview area, the other highlight
+    // contracts to this width.
+    const int other_highlight_width =
+        display_width * kOtherHighlightScreenPrimaryAxisRatio;
+
     // The origin of the right highlight view in landscape, or the bottom
     // highlight view in portrait.
     gfx::Point right_bottom_origin(
@@ -423,9 +429,8 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
       // shrinks and fades away, while the other one, the preview area, expands
       // and takes up half the screen.
       gfx::Rect other_bounds(
-          display_width - kOtherHighlightLengthDp -
-              kHighlightScreenEdgePaddingDp,
-          kHighlightScreenEdgePaddingDp, kOtherHighlightLengthDp,
+          display_width - other_highlight_width - kHighlightScreenEdgePaddingDp,
+          kHighlightScreenEdgePaddingDp, other_highlight_width,
           display_height - 2 * kHighlightScreenEdgePaddingDp);
       if (!landscape)
         other_bounds.Transpose();
