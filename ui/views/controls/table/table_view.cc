@@ -193,7 +193,7 @@ void TableView::SetModel(ui::TableModel* model) {
 
 void TableView::SetGrouper(TableGrouper* grouper) {
   grouper_ = grouper;
-  SortItemsAndUpdateMapping();
+  SortItemsAndUpdateMapping(/*schedule_paint=*/true);
 }
 
 int TableView::RowCount() const {
@@ -267,7 +267,7 @@ void TableView::ToggleSortOrder(int visible_column_index) {
 
 void TableView::SetSortDescriptors(const SortDescriptors& sort_descriptors) {
   sort_descriptors_ = sort_descriptors;
-  SortItemsAndUpdateMapping();
+  SortItemsAndUpdateMapping(/*schedule_paint=*/true);
   if (header_)
     header_->SchedulePaint();
 }
@@ -632,7 +632,7 @@ void TableView::OnModelChanged() {
 }
 
 void TableView::OnItemsChanged(int start, int length) {
-  SortItemsAndUpdateMapping();
+  SortItemsAndUpdateMapping(/*schedule_paint=*/true);
 }
 
 void TableView::OnItemsAdded(int start, int length) {
@@ -643,7 +643,7 @@ void TableView::OnItemsAdded(int start, int length) {
 
 void TableView::OnItemsMoved(int old_start, int length, int new_start) {
   selection_model_.Move(old_start, new_start, length);
-  SortItemsAndUpdateMapping();
+  SortItemsAndUpdateMapping(/*schedule_paint=*/true);
 }
 
 void TableView::OnItemsRemoved(int start, int length) {
@@ -695,6 +695,9 @@ gfx::Point TableView::GetKeyboardContextMenuLocation() {
 
 void TableView::OnPaint(gfx::Canvas* canvas) {
   // Don't invoke View::OnPaint so that we can render our own focus border.
+
+  if (sort_on_paint_)
+    SortItemsAndUpdateMapping(/*schedule_paint=*/false);
 
   canvas->DrawColor(GetNativeTheme()->GetSystemColor(
                         ui::NativeTheme::kColorId_TableBackground));
@@ -825,13 +828,11 @@ int TableView::GetCellElementSpacing() const {
 }
 
 void TableView::NumRowsChanged() {
-  SortItemsAndUpdateMapping();
+  SortItemsAndUpdateMapping(/*schedule_paint=*/true);
   PreferredSizeChanged();
-  SchedulePaint();
-  UpdateVirtualAccessibilityChildren();
 }
 
-void TableView::SortItemsAndUpdateMapping() {
+void TableView::SortItemsAndUpdateMapping(bool schedule_paint) {
   if (!is_sorted()) {
     view_to_model_.clear();
     model_to_view_.clear();
@@ -855,8 +856,9 @@ void TableView::SortItemsAndUpdateMapping() {
       model_to_view_[view_to_model_[i]] = i;
     model_->ClearCollator();
   }
-  SchedulePaint();
   UpdateVirtualAccessibilityChildren();
+  if (schedule_paint)
+    SchedulePaint();
 }
 
 int TableView::CompareRows(int model_row1, int model_row2) {

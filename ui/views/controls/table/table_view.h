@@ -201,6 +201,15 @@ class VIEWS_EXPORT TableView
     select_on_remove_ = select_on_remove;
   }
 
+  // WARNING: this function forces a sort on every paint, and is therefore
+  // expensive! It assumes you are calling SchedulePaint() at intervals for
+  // the whole table. If your model is properly notifying the table, this is
+  // not needed. This is only used in th extremely rare case, where between the
+  // time the SchedulePaint() is called and the paint is processed, the
+  // underlying data may change. Also, this only works if the number of rows
+  // remains the same.
+  void set_sort_on_paint(bool sort_on_paint) { sort_on_paint_ = sort_on_paint; }
+
   // View overrides:
   void Layout() override;
   const char* GetClassName() const override;
@@ -257,8 +266,10 @@ class VIEWS_EXPORT TableView
   void NumRowsChanged();
 
   // Does the actual sort and updates the mappings (|view_to_model_| and
-  // |model_to_view_|) appropriately.
-  void SortItemsAndUpdateMapping();
+  // |model_to_view_|) appropriately. If |schedule_paint| is true,
+  // schedules a paint. This should be true, unless called from
+  // OnPaint.
+  void SortItemsAndUpdateMapping(bool schedule_paint);
 
   // Used to sort the two rows. Returns a value < 0, == 0 or > 0 indicating
   // whether the row2 comes before row1, row2 is the same as row1 or row1 comes
@@ -376,6 +387,8 @@ class VIEWS_EXPORT TableView
   bool select_on_remove_ = true;
 
   TableViewObserver* observer_ = nullptr;
+  // If |sort_on_paint_| is true, table will sort before painting.
+  bool sort_on_paint_ = false;
 
   // The selection, in terms of the model.
   ui::ListSelectionModel selection_model_;
