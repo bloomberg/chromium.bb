@@ -2599,16 +2599,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   NavigateToDestURL();
 }
 
-// Checks that non-http/https main page redirects cancel the prerender.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderCancelMainFrameRedirectUnsupportedScheme) {
-  // Disable load event checks because they race with cancellation.
-  DisableLoadEventCheck();
-  GURL url = embedded_test_server()->GetURL(
-      CreateServerRedirect("invalidscheme://www.google.com/test.html"));
-  PrerenderTestURL(url, FINAL_STATUS_UNSUPPORTED_SCHEME, 0);
-}
-
 // Checks that media source video loads are deferred on prerendering.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5MediaSourceVideo) {
   PrerenderTestURL("/prerender/prerender_html5_video_media_source.html",

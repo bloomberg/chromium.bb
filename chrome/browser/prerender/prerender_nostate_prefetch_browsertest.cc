@@ -61,6 +61,11 @@ namespace {
 
 const char kExpectedPurposeHeaderOnPrefetch[] = "Purpose";
 
+std::string CreateServerRedirect(const std::string& dest_url) {
+  const char* const kServerRedirectBase = "/server-redirect?";
+  return kServerRedirectBase + net::EscapeQueryParamValue(dest_url, false);
+}
+
 }  // namespace
 
 namespace prerender {
@@ -512,10 +517,18 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchNonexisting) {
 
 // Checks that a 301 redirect is followed.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, Prefetch301Redirect) {
-  PrefetchFromFile(
-      "/server-redirect/?" + net::EscapeQueryParamValue(kPrefetchPage, false),
-      FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  PrefetchFromFile(CreateServerRedirect(kPrefetchPage),
+                   FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
   WaitForRequestCount(src_server()->GetURL(kPrefetchScript), 1);
+}
+
+// Checks that non-HTTP(S) main resource redirects are marked as unsupported
+// scheme.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
+                       PrefetchRedirectUnsupportedScheme) {
+  PrefetchFromFile(
+      CreateServerRedirect("invalidscheme://www.google.com/test.html"),
+      FINAL_STATUS_UNSUPPORTED_SCHEME);
 }
 
 // Checks that a 302 redirect is followed.
@@ -527,8 +540,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, Prefetch302Redirect) {
 // Checks that the load flags are set correctly for all resources in a 301
 // redirect chain.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, Prefetch301LoadFlags) {
-  std::string redirect_path =
-      "/server-redirect/?" + net::EscapeQueryParamValue(kPrefetchPage, false);
+  std::string redirect_path = CreateServerRedirect(kPrefetchPage);
   GURL redirect_url = src_server()->GetURL(redirect_path);
   GURL page_url = src_server()->GetURL(kPrefetchPage);
   content::URLLoaderInterceptor interceptor(base::BindRepeating(
