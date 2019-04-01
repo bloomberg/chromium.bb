@@ -321,6 +321,7 @@
         <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_USB" file="common/webauthn/usb.png" />
         <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_WELCOME" file="common/webauthn/welcome.png" />
         <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_PIN" file="common/webauthn/usb.png" />
+        <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_PERMISSION" file="common/webauthn/permission.png" />
       </if>
       <if expr="is_macosx">
         <structure type="chrome_scaled_image" name="IDR_WEBAUTHN_ILLUSTRATION_TOUCHID" file="common/webauthn/touchid.png" />
