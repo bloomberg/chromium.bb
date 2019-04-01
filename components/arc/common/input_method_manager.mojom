@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 7
+// Next MinVersion: 8
 
 module arc.mojom;
 
@@ -57,11 +57,25 @@ struct TextInputState {
   [MinVersion=6] Range? composition_text_range;
 };
 
+// Represents the information of a key event.
+[MinVersion=7]
+struct KeyEventData {
+  // Whether the event is a press event or a release event.
+  bool pressed;
+  // The key touched in the event represented in |ui::KeyboardCode|.
+  int32 key_code;
+  // The flags for modifiers state.
+  bool is_shift_down;
+  bool is_control_down;
+  bool is_alt_down;
+  bool is_capslock_on;
+};
+
 // This interface provides methods to control a text field.
 // It is generated for each focused text field and passed to Android.
 // This interface will be closed when the focus moves to another text field.
 //
-// Next method ID: 6
+// Next method ID: 7
 [MinVersion=2]
 interface InputConnection {
   // Commits text to the focused text field and set the new cursor position.
@@ -87,6 +101,9 @@ interface InputConnection {
 
   // Selects the given UTF-16 based character range.
   [MinVersion=5] SetSelection@5(Range new_selection_range);
+
+  // Sends a key event.
+  [MinVersion=7] SendKeyEvent@6(KeyEventData key_event_data);
 };
 
 // This interface is called by container when Android's InputMethodManager state

@@ -9,7 +9,10 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "ui/base/ime/chromeos/ime_keymap.h"
 #include "ui/base/ime/ime_bridge.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
+#include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace arc {
@@ -232,6 +235,27 @@ void InputConnectionImpl::SetSelection(const gfx::Range& new_selection_range) {
 
   StartStateUpdateTimer();
   client->SetEditableSelectionRange(new_selection_range);
+}
+
+void InputConnectionImpl::SendKeyEvent(mojom::KeyEventDataPtr data_ptr) {
+  chromeos::InputMethodEngine::KeyboardEvent event;
+  if (data_ptr->pressed)
+    event.type = "keydown";
+  else
+    event.type = "keyup";
+
+  ui::KeyboardCode key_code = static_cast<ui::KeyboardCode>(data_ptr->key_code);
+  ui::DomCode dom_code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
+
+  event.key = ui::KeycodeConverter::DomCodeToCodeString(dom_code);
+  event.code = ui::KeyboardCodeToDomKeycode(key_code);
+  event.key_code = data_ptr->key_code;
+  event.alt_key = data_ptr->is_alt_down;
+  event.ctrl_key = data_ptr->is_control_down;
+  event.shift_key = data_ptr->is_shift_down;
+  event.caps_lock = data_ptr->is_capslock_on;
+
+  ime_engine_->SendKeyEvents(input_context_id_, {event});
 }
 
 void InputConnectionImpl::StartStateUpdateTimer() {
