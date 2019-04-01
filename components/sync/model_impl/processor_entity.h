@@ -35,10 +35,9 @@ class ProcessorEntity {
       base::Time creation_time);
 
   // Construct an instance representing an item loaded from storage on init.
-  // This method swaps out the contents of |metadata|.
   static std::unique_ptr<ProcessorEntity> CreateFromMetadata(
       const std::string& storage_key,
-      sync_pb::EntityMetadata* metadata);
+      sync_pb::EntityMetadata metadata);
 
   ~ProcessorEntity();
 
@@ -141,7 +140,7 @@ class ProcessorEntity {
 
   // The constructor swaps the data from the passed metadata.
   ProcessorEntity(const std::string& storage_key,
-                  sync_pb::EntityMetadata* metadata);
+                  sync_pb::EntityMetadata metadata);
 
   // Check whether |specifics| matches the stored specifics_hash.
   bool MatchesSpecificsHash(const sync_pb::EntitySpecifics& specifics) const;

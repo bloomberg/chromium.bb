@@ -4,6 +4,8 @@
 
 #include "components/sync/model_impl/processor_entity.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/hash/sha1.h"
 #include "base/memory/ptr_util.h"
@@ -49,23 +51,25 @@ std::unique_ptr<ProcessorEntity> ProcessorEntity::CreateNew(
   metadata.set_server_version(kUncommittedVersion);
   metadata.set_creation_time(TimeToProtoTime(creation_time));
 
-  return base::WrapUnique(new ProcessorEntity(storage_key, &metadata));
+  return base::WrapUnique(
+      new ProcessorEntity(storage_key, std::move(metadata)));
 }
 
 std::unique_ptr<ProcessorEntity> ProcessorEntity::CreateFromMetadata(
     const std::string& storage_key,
-    sync_pb::EntityMetadata* metadata) {
+    sync_pb::EntityMetadata metadata) {
   DCHECK(!storage_key.empty());
-  return base::WrapUnique(new ProcessorEntity(storage_key, metadata));
+  return base::WrapUnique(
+      new ProcessorEntity(storage_key, std::move(metadata)));
 }
 
 ProcessorEntity::ProcessorEntity(const std::string& storage_key,
-                                 sync_pb::EntityMetadata* metadata)
+                                 sync_pb::EntityMetadata metadata)
     : storage_key_(storage_key),
-      commit_requested_sequence_number_(metadata->acked_sequence_number()) {
-  DCHECK(metadata->has_client_tag_hash());
-  DCHECK(metadata->has_creation_time());
-  metadata_.Swap(metadata);
+      commit_requested_sequence_number_(metadata.acked_sequence_number()) {
+  DCHECK(metadata.has_client_tag_hash());
+  DCHECK(metadata.has_creation_time());
+  metadata_ = std::move(metadata);
 }
 
 ProcessorEntity::~ProcessorEntity() {}
