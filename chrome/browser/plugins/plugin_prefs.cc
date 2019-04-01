@@ -7,24 +7,20 @@
 #include <stddef.h>
 
 #include <memory>
-#include <string>
-#include <utility>
 
 #include "base/bind.h"
-#include "base/location.h"
+#include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
-#include "base/single_thread_task_runner.h"
-#include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/plugins/plugin_installer.h"
+#include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_prefs_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -39,12 +35,12 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/webplugininfo.h"
 
 using content::BrowserThread;
-using content::PluginService;
 
 namespace {
 
