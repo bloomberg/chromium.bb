@@ -5,10 +5,10 @@
 #ifndef FUCHSIA_RUNNERS_CAST_CAST_CHANNEL_BINDINGS_H_
 #define FUCHSIA_RUNNERS_CAST_CAST_CHANNEL_BINDINGS_H_
 
-#include <deque>
 #include <string>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
@@ -55,7 +55,7 @@ class CastChannelBindings {
   NamedMessagePortConnector* const connector_;
 
   // A queue of channels waiting to be sent the Cast Channel FIDL service.
-  std::deque<chromium::web::MessagePortPtr> connected_channel_queue_;
+  base::circular_deque<chromium::web::MessagePortPtr> connected_channel_queue_;
 
   // A long-lived port, used to receive new Cast Channel ports when they are
   // opened. Should be automatically  populated by the
