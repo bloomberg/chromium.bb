@@ -1290,8 +1290,7 @@ void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
     return;
 
   gfx::RectF visible_tex_coord_rect = cc::MathUtil::ScaleRectProportional(
-      quad->ya_tex_coord_rect, gfx::RectF(quad->rect),
-      gfx::RectF(quad->visible_rect));
+      quad->ya_tex_coord_rect, gfx::RectF(quad->rect), params.visible_rect);
 
   SkPaint paint = params.paint();
   if (color_filter)
