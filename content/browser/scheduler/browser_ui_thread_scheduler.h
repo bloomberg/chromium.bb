@@ -46,6 +46,11 @@ class CONTENT_EXPORT BrowserUIThreadScheduler {
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunnerForTesting(
       QueueType queue_type);
 
+  // Adds a fence to all queues, runs all tasks until idle, and finally removes
+  // the fences. Note that the run loop will eventually become idle, as new
+  // tasks will not be scheduled due to the fence.
+  void RunAllPendingTasksForTesting();
+
  private:
   friend class BrowserTaskExecutor;
 

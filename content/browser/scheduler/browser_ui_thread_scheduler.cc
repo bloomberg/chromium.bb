@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process.h"
+#include "base/run_loop.h"
 #include "base/task/sequence_manager/sequence_manager.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/time_domain.h"
@@ -103,6 +104,25 @@ BrowserUIThreadScheduler::GetTaskRunner(QueueType queue_type) {
     return it->second;
   NOTREACHED();
   return scoped_refptr<base::SingleThreadTaskRunner>();
+}
+
+void BrowserUIThreadScheduler::RunAllPendingTasksForTesting() {
+  std::vector<scoped_refptr<BrowserUIThreadTaskQueue>> fenced_queues;
+  for (const auto& queue : task_queues_) {
+    bool had_fence = queue.second->HasActiveFence();
+    queue.second->InsertFence(
+        base::sequence_manager::TaskQueue::InsertFencePosition::kNow);
+    // If there was a fence already this must be a re-entrant call to this
+    // method. The previous statement just moved the fence further back. In this
+    // case we do not remove the fence as the parent run loop needs all queues
+    // to be fenced to be able to exit the run loop (i.e. become idle)
+    if (!had_fence)
+      fenced_queues.push_back(queue.second);
+  }
+  base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
+  for (const auto& queue : fenced_queues) {
+    queue->RemoveFence();
+  }
 }
 
 }  // namespace content

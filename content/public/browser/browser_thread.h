@@ -140,9 +140,9 @@ class CONTENT_EXPORT BrowserThread {
   // creating thread etc). Note: see base::OnTaskRunnerDeleter and
   // base::RefCountedDeleteOnSequence to bind to SequencedTaskRunner instead of
   // specific BrowserThreads.
-  template<ID thread>
+  template <ID thread>
   struct DeleteOnThread {
-    template<typename T>
+    template <typename T>
     static void Destruct(const T* x) {
       if (CurrentlyOn(thread)) {
         delete x;
@@ -180,11 +180,23 @@ class CONTENT_EXPORT BrowserThread {
   //
   // Note: see base::OnTaskRunnerDeleter and base::RefCountedDeleteOnSequence to
   // bind to SequencedTaskRunner instead of specific BrowserThreads.
-  struct DeleteOnUIThread : public DeleteOnThread<UI> { };
-  struct DeleteOnIOThread : public DeleteOnThread<IO> { };
+  struct DeleteOnUIThread : public DeleteOnThread<UI> {};
+  struct DeleteOnIOThread : public DeleteOnThread<IO> {};
 
   // Returns an appropriate error message for when DCHECK_CURRENTLY_ON() fails.
   static std::string GetDCheckCurrentlyOnErrorMessage(ID expected);
+
+  // Runs all pending tasks for the given thread. Tasks posted after this method
+  // is called (in particular any task posted from within any of the pending
+  // tasks) will be queued but not run. Conceptually this call will disable all
+  // queues, run any pending tasks, and re-enable all the queues.
+  //
+  // If any of the pending tasks posted a task, these could be run by calling
+  // this method again or running a regular RunLoop. But if that were the case
+  // you should probably rewrite you tests to wait for a specific event instead.
+  //
+  // NOTE: Can only be called from the UI thread.
+  static void RunAllPendingTasksOnThreadForTesting(ID identifier);
 
  protected:
   // For DeleteSoon(). Requires that the BrowserThread with the provided
