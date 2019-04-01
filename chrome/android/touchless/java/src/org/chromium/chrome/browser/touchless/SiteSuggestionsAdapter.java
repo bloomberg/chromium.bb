@@ -98,8 +98,9 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
     private TextView mTitleView;
 
     /**
-     * @param model the main property model coming from {@link SiteSuggestionsCoordinator}.
-     * @param iconGenerator an icon generator for creating icons.
+     * @param model The main property model coming from {@link SiteSuggestionsCoordinator}. Contains
+     *         properties for a list of suggestions, number of items, and current focused index.
+     * @param iconGenerator An icon generator for creating icons.
      * @param navigationDelegate delegate for navigation controls
      * @param contextMenuManager handles context menu creation
      * @param layoutManager the layout manager controlling this recyclerview and adapter
@@ -129,8 +130,7 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
 
     @Override
     public int getItemViewType(int position) {
-        int itemCount = mModel.get(ITEM_COUNT_KEY);
-        if (itemCount == 1 || position % itemCount == 0) return ViewType.ALL_APPS_TYPE;
+        if (isAllAppsPosition(position)) return ViewType.ALL_APPS_TYPE;
         return ViewType.SUGGESTION_TYPE;
     }
 
@@ -155,9 +155,9 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
                                     WindowOpenDisposition.CURRENT_TAB, UrlConstants.EXPLORE_URL));
         } else if (holder.getItemViewType() == ViewType.SUGGESTION_TYPE) {
             // If site suggestion, attach context menu handler; clicks navigate to site url.
-            int itemCount = mModel.get(ITEM_COUNT_KEY);
             // Subtract 1 from position % MAX_TILES to account for "all apps" taking up one space.
-            PropertyModel item = mModel.get(SUGGESTIONS_KEY).get((position % itemCount) - 1);
+            PropertyModel item =
+                    mModel.get(SUGGESTIONS_KEY).get(getModelPositionFromAdapterPosition(position));
             // Only update the icon for icon updates.
             if (payload == SiteSuggestionModel.ICON_KEY) {
                 tile.updateIcon(item.get(SiteSuggestionModel.ICON_KEY),
@@ -185,13 +185,12 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
         if (propertyKey == CURRENT_INDEX_KEY) {
             // When the current index changes, we want to scroll to position and update the title.
             int position = mModel.get(CURRENT_INDEX_KEY);
-            int itemCount = mModel.get(ITEM_COUNT_KEY);
             mLayoutManager.scrollToPosition(position);
-            if (itemCount == 1 || position % itemCount == 0) {
+            if (isAllAppsPosition(position)) {
                 mTitleView.setText(R.string.ntp_all_apps);
             } else {
                 mTitleView.setText(mModel.get(SUGGESTIONS_KEY)
-                                           .get(position % itemCount - 1)
+                                           .get(getModelPositionFromAdapterPosition(position))
                                            .get(SiteSuggestionModel.TITLE_KEY));
             }
         }
@@ -214,7 +213,7 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
     public void notifyItemRangeRemoved(int index, int count) {
         if (mModel.get(SUGGESTIONS_KEY).size() == 0) {
             // When we removed the last item in the model, we would go from infinite scroll
-            // back to non-scrolling. Notify Recyclerview to remove everything.
+            // back to non-scrolling. Notify RecyclerView to remove everything.
             super.notifyItemRangeRemoved(1, Integer.MAX_VALUE - 1);
         } else {
             // Otherwise we are already infinite-scrolling, so just tell recyclerview that
@@ -225,33 +224,21 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
 
     @Override
     public void notifyItemRangeChanged(int index, int count, @Nullable PropertyKey payload) {
-        if (count > 1) {
-            // If more than 1 item was changed, then assume everything was changed. This should
-            // only happen if we are infinite-scrolling.
-            super.notifyItemRangeChanged(0, Integer.MAX_VALUE, payload);
-        } else if (mModel.get(SUGGESTIONS_KEY).size() == 0) {
-            // If itemCount is 1, then notify super.
-            // This should only happen if "All apps" icon has changed in some way and we aren't
-            // infinite-scrolling.
-            super.notifyItemRangeChanged(index, count, payload);
-        } else {
-            // Otherwise, count = 1 and we have an infinite list. We will only notify that items
-            // near the currently visible area has changed.
-            // beginIndex at the layoutManager's firstVisibleItemPosition, with buffer.
-            int beginIndex =
-                    mLayoutManager.findFirstVisibleItemPosition() - mModel.get(ITEM_COUNT_KEY);
-            // endIndex at the lastVisibleItemPosition, with buffer.
-            int endIndex =
-                    mLayoutManager.findLastVisibleItemPosition() + mModel.get(ITEM_COUNT_KEY);
-            // Find elements between begin and end such that (i % itemCount) - 1 == index.
-            // Subtract 1 because itemRangeChanged is called from the listObserver which does not
-            // have "All apps". However, i is calculated from layoutManager, which includes "All
-            // apps"
-            for (int i = beginIndex; i < endIndex; i++) {
-                if (i % mModel.get(ITEM_COUNT_KEY) - 1 == index) {
-                    super.notifyItemRangeChanged(i, 1, payload);
-                }
-            }
-        }
+        // When something has changed, assume everything has changed.
+        super.notifyItemRangeChanged(0, Integer.MAX_VALUE, payload);
+    }
+
+    public void destroy() {
+        mModel.removeObserver(this);
+        mModel.get(SUGGESTIONS_KEY).removeObserver(this);
+    }
+
+    private int getModelPositionFromAdapterPosition(int adapterPosition) {
+        return adapterPosition % mModel.get(ITEM_COUNT_KEY) - 1;
+    }
+
+    private boolean isAllAppsPosition(int adapterPosition) {
+        return mModel.get(ITEM_COUNT_KEY) == 1
+                || getModelPositionFromAdapterPosition(adapterPosition) < 0;
     }
 }
