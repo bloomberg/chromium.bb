@@ -295,11 +295,6 @@ void BrowserNonClientFrameViewAsh::UpdateMinimumSize() {
   }
 }
 
-void BrowserNonClientFrameViewAsh::OnTabsMaxXChanged() {
-  BrowserNonClientFrameView::OnTabsMaxXChanged();
-  UpdateClientArea();
-}
-
 bool BrowserNonClientFrameViewAsh::CanUserExitFullscreen() const {
   return !platform_util::IsBrowserLockedFullscreen(browser_view()->browser());
 }

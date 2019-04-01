@@ -121,9 +121,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Updates the throbber.
   virtual void UpdateThrobber(bool running) = 0;
 
-  // Provided for mus. Updates the client-area of the WindowTreeHostMus.
-  virtual void UpdateClientArea();
-
   // Provided for mus and macOS to update the minimum window size property.
   virtual void UpdateMinimumSize();
 

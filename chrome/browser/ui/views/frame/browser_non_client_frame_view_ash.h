@@ -66,7 +66,6 @@ class BrowserNonClientFrameViewAsh
   int GetThemeBackgroundXInset() const override;
   void UpdateThrobber(bool running) override;
   void UpdateMinimumSize() override;
-  void OnTabsMaxXChanged() override;
   bool CanUserExitFullscreen() const override;
   SkColor GetCaptionColor(ActiveState active_state) const override;
 

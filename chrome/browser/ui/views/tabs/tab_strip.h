@@ -86,9 +86,6 @@ class TabStrip : public views::AccessiblePaneView,
   // Called when the colors of the frame change.
   void FrameColorsChanged();
 
-  // Returns the trailing edge of the last tab.
-  int GetTabsMaxX() const;
-
   // Set the background offset used by inactive tabs to match the frame image.
   void SetBackgroundOffset(int offset);
 

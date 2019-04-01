@@ -349,11 +349,6 @@ void TabStrip::FrameColorsChanged() {
   SchedulePaint();
 }
 
-int TabStrip::GetTabsMaxX() const {
-  // There might be no tabs yet during startup.
-  return tab_count() ? ideal_bounds(tab_count() - 1).right() : 0;
-}
-
 void TabStrip::SetBackgroundOffset(int offset) {
   for (int i = 0; i < tab_count(); ++i)
     tab_at(i)->set_background_offset(offset);
@@ -2505,8 +2500,6 @@ void TabStrip::GenerateIdealBounds() {
   if (tab_count() == 0)
     return;  // Should only happen during creation/destruction, ignore.
 
-  const int old_max_x = GetTabsMaxX();
-
   if (!touch_layout_) {
     const int available_width = (available_width_for_tabs_ < 0)
                                     ? GetTabAreaWidth()
@@ -2522,11 +2515,6 @@ void TabStrip::GenerateIdealBounds() {
   }
 
   new_tab_button_bounds_.set_origin(gfx::Point(NewTabButtonIdealX(), 0));
-
-  if (GetTabsMaxX() != old_max_x) {
-    for (TabStripObserver& observer : observers_)
-      observer.OnTabsMaxXChanged();
-  }
 }
 
 int TabStrip::GenerateIdealBoundsForPinnedTabs(int* first_non_pinned_index) {

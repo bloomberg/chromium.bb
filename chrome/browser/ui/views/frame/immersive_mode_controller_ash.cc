@@ -271,7 +271,6 @@ void ImmersiveModeControllerAsh::SetVisibleFraction(double visible_fraction) {
   }
   visible_fraction_ = visible_fraction;
   browser_view_->Layout();
-  browser_view_->frame()->GetFrameView()->UpdateClientArea();
 }
 
 std::vector<gfx::Rect> ImmersiveModeControllerAsh::GetVisibleBoundsInScreen()
