@@ -158,7 +158,7 @@ class DeferredImageDecoderTest : public testing::Test,
 };
 
 TEST_F(DeferredImageDecoderTest, drawIntoPaintRecord) {
-  lazy_decoder_->SetData(data_, true);
+  lazy_decoder_->SetData(data_, true /* all_data_received */);
   PaintImage image = CreatePaintImage();
   ASSERT_TRUE(image);
   EXPECT_EQ(1, image.width());
@@ -180,7 +180,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoPaintRecordProgressive) {
       SharedBuffer::Create(data_->Data(), data_->size() - 10);
 
   // Received only half the file.
-  lazy_decoder_->SetData(partial_data, false);
+  lazy_decoder_->SetData(partial_data, false /* all_data_received */);
   PaintRecorder recorder;
   cc::PaintCanvas* temp_canvas = recorder.beginRecording(100, 100);
   PaintImage image =
@@ -190,7 +190,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoPaintRecordProgressive) {
   canvas_->drawPicture(recorder.finishRecordingAsPicture());
 
   // Fully received the file and draw the PaintRecord again.
-  lazy_decoder_->SetData(data_, true);
+  lazy_decoder_->SetData(data_, true /* all_data_received */);
   image = CreatePaintImage();
   ASSERT_TRUE(image);
   temp_canvas = recorder.beginRecording(100, 100);
@@ -202,7 +202,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoPaintRecordProgressive) {
 TEST_F(DeferredImageDecoderTest, isEligibleForHardwareDecodingNonIncremental) {
   // The image is received completely. This is okay for hardware decoding since
   // it's assumed that the software decoder hasn't done any work.
-  lazy_decoder_->SetData(data_, true);
+  lazy_decoder_->SetData(data_, true /* all_data_received */);
   PaintImage image = CreatePaintImage();
   ASSERT_TRUE(image);
   EXPECT_TRUE(image.IsEligibleForAcceleratedDecoding());
@@ -215,8 +215,8 @@ TEST_F(DeferredImageDecoderTest, isEligibleForHardwareDecodingIncremental) {
   // the PaintImageGenerator is created.
   scoped_refptr<SharedBuffer> partial_data =
       SharedBuffer::Create(data_->Data(), data_->size() - 10);
-  lazy_decoder_->SetData(partial_data, false);
-  lazy_decoder_->SetData(data_, true);
+  lazy_decoder_->SetData(partial_data, false /* all_data_received */);
+  lazy_decoder_->SetData(data_, true /* all_data_received */);
   PaintImage image = CreatePaintImage();
   ASSERT_TRUE(image);
   EXPECT_TRUE(image.IsEligibleForAcceleratedDecoding());
@@ -230,13 +230,13 @@ TEST_F(DeferredImageDecoderTest, isNotEligibleForHardwareDecoding) {
   // software and in hardware).
   scoped_refptr<SharedBuffer> partial_data =
       SharedBuffer::Create(data_->Data(), data_->size() - 10);
-  lazy_decoder_->SetData(partial_data, false);
+  lazy_decoder_->SetData(partial_data, false /* all_data_received */);
   PaintImage image =
       CreatePaintImage(PaintImage::CompletionState::PARTIALLY_DONE);
   ASSERT_TRUE(image);
   EXPECT_FALSE(image.IsEligibleForAcceleratedDecoding());
 
-  lazy_decoder_->SetData(data_, true);
+  lazy_decoder_->SetData(data_, true /* all_data_received */);
   image = CreatePaintImage();
   ASSERT_TRUE(image);
   EXPECT_FALSE(image.IsEligibleForAcceleratedDecoding());
@@ -253,7 +253,7 @@ static void RasterizeMain(cc::PaintCanvas* canvas, sk_sp<PaintRecord> record) {
 #define MAYBE_decodeOnOtherThread decodeOnOtherThread
 #endif
 TEST_F(DeferredImageDecoderTest, MAYBE_decodeOnOtherThread) {
-  lazy_decoder_->SetData(data_, true);
+  lazy_decoder_->SetData(data_, true /* all_data_received */);
   PaintImage image = CreatePaintImage();
   ASSERT_TRUE(image);
   EXPECT_EQ(1, image.width());
@@ -280,7 +280,7 @@ TEST_F(DeferredImageDecoderTest, MAYBE_decodeOnOtherThread) {
 
 TEST_F(DeferredImageDecoderTest, singleFrameImageLoading) {
   status_ = ImageFrame::kFramePartial;
-  lazy_decoder_->SetData(data_, false);
+  lazy_decoder_->SetData(data_, false /* all_data_received */);
   EXPECT_FALSE(lazy_decoder_->FrameIsReceivedAtIndex(0));
   PaintImage image = CreatePaintImage();
   ASSERT_TRUE(image);
@@ -289,7 +289,7 @@ TEST_F(DeferredImageDecoderTest, singleFrameImageLoading) {
 
   status_ = ImageFrame::kFrameComplete;
   data_->Append(" ", 1u);
-  lazy_decoder_->SetData(data_, true);
+  lazy_decoder_->SetData(data_, true /* all_data_received */);
   EXPECT_FALSE(actual_decoder_);
   EXPECT_TRUE(lazy_decoder_->FrameIsReceivedAtIndex(0));
 
@@ -303,7 +303,7 @@ TEST_F(DeferredImageDecoderTest, multiFrameImageLoading) {
   frame_count_ = 1;
   frame_duration_ = TimeDelta::FromMilliseconds(10);
   status_ = ImageFrame::kFramePartial;
-  lazy_decoder_->SetData(data_, false);
+  lazy_decoder_->SetData(data_, false /* all_data_received */);
 
   PaintImage image = CreatePaintImage();
   ASSERT_TRUE(image);
@@ -316,7 +316,7 @@ TEST_F(DeferredImageDecoderTest, multiFrameImageLoading) {
   frame_duration_ = TimeDelta::FromMilliseconds(20);
   status_ = ImageFrame::kFrameComplete;
   data_->Append(" ", 1u);
-  lazy_decoder_->SetData(data_, false);
+  lazy_decoder_->SetData(data_, false /* all_data_received */);
 
   image = CreatePaintImage();
   ASSERT_TRUE(image);
@@ -329,7 +329,7 @@ TEST_F(DeferredImageDecoderTest, multiFrameImageLoading) {
   frame_count_ = 3;
   frame_duration_ = TimeDelta::FromMilliseconds(30);
   status_ = ImageFrame::kFrameComplete;
-  lazy_decoder_->SetData(data_, true);
+  lazy_decoder_->SetData(data_, true /* all_data_received */);
   EXPECT_FALSE(actual_decoder_);
   EXPECT_TRUE(lazy_decoder_->FrameIsReceivedAtIndex(0));
   EXPECT_TRUE(lazy_decoder_->FrameIsReceivedAtIndex(1));
@@ -345,7 +345,7 @@ TEST_F(DeferredImageDecoderTest, multiFrameImageLoading) {
 
 TEST_F(DeferredImageDecoderTest, decodedSize) {
   decoded_size_ = IntSize(22, 33);
-  lazy_decoder_->SetData(data_, true);
+  lazy_decoder_->SetData(data_, true /* all_data_received */);
   PaintImage image = CreatePaintImage();
   ASSERT_TRUE(image);
   EXPECT_EQ(decoded_size_.Width(), image.width());
@@ -365,13 +365,13 @@ TEST_F(DeferredImageDecoderTest, decodedSize) {
 
 TEST_F(DeferredImageDecoderTest, smallerFrameCount) {
   frame_count_ = 1;
-  lazy_decoder_->SetData(data_, false);
+  lazy_decoder_->SetData(data_, false /* all_data_received */);
   EXPECT_EQ(frame_count_, lazy_decoder_->FrameCount());
   frame_count_ = 2;
-  lazy_decoder_->SetData(data_, false);
+  lazy_decoder_->SetData(data_, false /* all_data_received */);
   EXPECT_EQ(frame_count_, lazy_decoder_->FrameCount());
   frame_count_ = 0;
-  lazy_decoder_->SetData(data_, true);
+  lazy_decoder_->SetData(data_, true /* all_data_received */);
   EXPECT_EQ(frame_count_, lazy_decoder_->FrameCount());
 }
 
@@ -417,7 +417,7 @@ TEST_F(DeferredImageDecoderTest, data) {
   scoped_refptr<SharedBuffer> original_buffer =
       SharedBuffer::Create(data_->Data(), data_->size());
   EXPECT_EQ(original_buffer->size(), data_->size());
-  lazy_decoder_->SetData(original_buffer, false);
+  lazy_decoder_->SetData(original_buffer, false /* all_data_received */);
   scoped_refptr<SharedBuffer> new_buffer = lazy_decoder_->Data();
   EXPECT_EQ(original_buffer->size(), new_buffer->size());
   const Vector<char> original_data = original_buffer->CopyAs<Vector<char>>();
@@ -440,7 +440,7 @@ TEST_F(MultiFrameDeferredImageDecoderTest, PaintImage) {
   frame_count_ = 2;
   frame_duration_ = TimeDelta::FromMilliseconds(20);
   last_complete_frame_ = 0u;
-  lazy_decoder_->SetData(data_, false);
+  lazy_decoder_->SetData(data_, false /* all_data_received */);
 
   // Only the first frame is complete.
   PaintImage image = CreatePaintImage();
@@ -457,7 +457,7 @@ TEST_F(MultiFrameDeferredImageDecoderTest, PaintImage) {
 
   // Send some more data but the frame status remains the same.
   last_complete_frame_ = 0u;
-  lazy_decoder_->SetData(data_, false);
+  lazy_decoder_->SetData(data_, false /* all_data_received */);
   PaintImage updated_image = CreatePaintImage();
   ASSERT_TRUE(updated_image);
   EXPECT_EQ(updated_image.GetFrameMetadata().size(), 2u);
@@ -474,7 +474,7 @@ TEST_F(MultiFrameDeferredImageDecoderTest, PaintImage) {
 
   // Mark all frames complete.
   last_complete_frame_ = 1u;
-  lazy_decoder_->SetData(data_, true);
+  lazy_decoder_->SetData(data_, true /* all_data_received */);
   PaintImage complete_image = CreatePaintImage();
   ASSERT_TRUE(complete_image);
   EXPECT_EQ(complete_image.GetFrameMetadata().size(), 2u);
@@ -492,7 +492,7 @@ TEST_F(MultiFrameDeferredImageDecoderTest, FrameDurationOverride) {
   frame_count_ = 2;
   frame_duration_ = TimeDelta::FromMilliseconds(5);
   last_complete_frame_ = 1u;
-  lazy_decoder_->SetData(data_, true);
+  lazy_decoder_->SetData(data_, true /* all_data_received */);
 
   // If the frame duration is below a threshold, we override it to a constant
   // value of 100 ms.
