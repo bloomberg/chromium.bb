@@ -513,6 +513,11 @@ const char kEnableDataSaverLiteModeRebrandName[] =
 const char kEnableDataSaverLiteModeRebrandDescription[] =
     "Enable the Data Saver rebranding to Lite Mode.";
 
+const char kEnableSaveDataName[] = "Enables save data feature";
+const char kEnableSaveDataDescription[] =
+    "Enables save data feature. May cause user's traffic to be proxied via "
+    "Google's data reduction proxy.";
+
 const char kEnableClientLoFiName[] = "Client-side Lo-Fi previews";
 
 const char kEnableClientLoFiDescription[] =

@@ -1785,6 +1785,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableDataSaverLiteModeRebrandName,
      flag_descriptions::kEnableDataSaverLiteModeRebrandDescription, kOsAll,
      FEATURE_VALUE_TYPE(previews::features::kDataSaverLiteModeRebranding)},
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+    {"enable-save-data", flag_descriptions::kEnableSaveDataName,
+     flag_descriptions::kEnableSaveDataDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(
+         data_reduction_proxy::switches::kEnableDataReductionProxy)},
+#endif  // OS_CHROMEOS
     {"enable-client-lo-fi", flag_descriptions::kEnableClientLoFiName,
      flag_descriptions::kEnableClientLoFiDescription, kOsAll,
      FEATURE_VALUE_TYPE(previews::features::kClientLoFi)},
