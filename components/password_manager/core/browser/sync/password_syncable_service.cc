@@ -130,6 +130,11 @@ PasswordSyncableService::PasswordSyncableService(
 
 PasswordSyncableService::~PasswordSyncableService() = default;
 
+void PasswordSyncableService::WaitUntilReadyToSync(base::OnceClosure done) {
+  // PasswordStore becomes ready upon construction.
+  std::move(done).Run();
+}
+
 syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
