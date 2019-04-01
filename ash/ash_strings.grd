@@ -1515,7 +1515,7 @@ This file contains the strings for ash.
         The device admin may monitor your browsing activity.
       </message>
       <message name="IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_FULL_WARNING" desc="Text shown in the public account user pod in case of risky configuration, informing the user that this session is managed and admin can monitor all activity.">
-        The device administrator may be able to monitor your activity.
+        The administrator of this device has access to all activity, including passwords and communications.
       </message>
       <message name="IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_SOFT_WARNING" desc="Text shown in the public account user pod in case of non-risky configuration, informing the user that this session is managed and admin can monitor all activity.">
         The device administrator may be able to monitor your activity.
