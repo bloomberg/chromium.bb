@@ -22,6 +22,8 @@
 #include "ios/chrome/browser/browsing_data/browsing_data_counter_wrapper.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_remover.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
@@ -63,11 +65,35 @@ const int kMaxTimesHistoryNoticeShown = 1;
 // The tableView button red background color.
 const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
 
+// List of flags that have corresponding counters.
+const std::vector<BrowsingDataRemoveMask> _browsingDataRemoveFlags = {
+    // BrowsingDataRemoveMask::REMOVE_COOKIES not included; we don't have cookie
+    // counters yet.
+    BrowsingDataRemoveMask::REMOVE_HISTORY,
+    BrowsingDataRemoveMask::REMOVE_CACHE,
+    BrowsingDataRemoveMask::REMOVE_PASSWORDS,
+    BrowsingDataRemoveMask::REMOVE_FORM_DATA,
+};
+
 }  // namespace
 
 @interface ClearBrowsingDataManager () {
   // Access to the kDeleteTimePeriod preference.
   IntegerPrefMember _timeRangePref;
+
+  // Observer for browsing data removal events and associated ScopedObserver
+  // used to track registration with BrowsingDataRemover. They both may be
+  // null if the new Clear Browser Data UI is disabled.
+  std::unique_ptr<BrowsingDataRemoverObserver> observer_;
+  std::unique_ptr<
+      ScopedObserver<BrowsingDataRemover, BrowsingDataRemoverObserver>>
+      scoped_observer_;
+
+  // Corresponds browsing data counters to their masks/flags. Items are inserted
+  // as clear data items are constructed. Remains empty if the new Clear Browser
+  // Data UI is disabled.
+  std::map<BrowsingDataRemoveMask, std::unique_ptr<BrowsingDataCounterWrapper>>
+      _countersByMasks;
 }
 
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
@@ -109,6 +135,15 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
 
     _timeRangePref.Init(browsing_data::prefs::kDeleteTimePeriod,
                         _browserState->GetPrefs());
+
+    if (IsNewClearBrowsingDataUIEnabled()) {
+      observer_ = std::make_unique<BrowsingDataRemoverObserverBridge>(self);
+      scoped_observer_ = std::make_unique<
+          ScopedObserver<BrowsingDataRemover, BrowsingDataRemoverObserver>>(
+          observer_.get());
+      scoped_observer_->Add(
+          BrowsingDataRemoverFactory::GetForBrowserState(self.browserState));
+    }
   }
   return self;
 }
@@ -323,6 +358,17 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
       }));
 }
 
+- (void)restartCounters:(BrowsingDataRemoveMask)mask {
+  for (auto flag : _browsingDataRemoveFlags) {
+    if (IsRemoveDataMaskSet(mask, flag)) {
+      const auto it = _countersByMasks.find(flag);
+      if (it != _countersByMasks.end()) {
+        it->second->RestartCounter();
+      }
+    }
+  }
+}
+
 #pragma mark Items
 
 - (ListItem*)clearButtonItem {
@@ -361,25 +407,12 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
                               mask:(BrowsingDataRemoveMask)mask
                           prefName:(const char*)prefName {
   PrefService* prefs = self.browserState->GetPrefs();
-  std::unique_ptr<BrowsingDataCounterWrapper> counter;
-  if (IsNewClearBrowsingDataUIEnabled()) {
-    __weak ClearBrowsingDataManager* weakSelf = self;
-    counter = BrowsingDataCounterWrapper::CreateCounterWrapper(
-        prefName, self.browserState, prefs,
-        base::BindRepeating(
-            ^(const browsing_data::BrowsingDataCounter::Result& result) {
-              [weakSelf.consumer
-                  updateCounter:itemType
-                     detailText:[weakSelf counterTextFromResult:result]];
-            }));
-  }
   ListItem* clearDataItem;
   // Create a ClearBrowsingDataItem for a CollectionView model and a
   // TableViewClearBrowsingDataItem for a TableView model.
   if (self.listType == ClearBrowsingDataListType::kListTypeCollectionView) {
     ClearBrowsingDataItem* collectionClearDataItem =
-        [[ClearBrowsingDataItem alloc] initWithType:itemType
-                                            counter:std::move(counter)];
+        [[ClearBrowsingDataItem alloc] initWithType:itemType counter:nullptr];
     collectionClearDataItem.text = l10n_util::GetNSString(titleMessageID);
     if (prefs->GetBoolean(prefName)) {
       collectionClearDataItem.accessoryType =
@@ -389,13 +422,28 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
     collectionClearDataItem.prefName = prefName;
     collectionClearDataItem.accessibilityIdentifier =
         [self accessibilityIdentifierFromItemType:itemType];
-
-    // Because there is no counter for cookies, an explanatory text is
-    // displayed.
-    if (itemType == ItemTypeDataTypeCookiesSiteData &&
-        IsNewClearBrowsingDataUIEnabled()) {
-      collectionClearDataItem.detailText =
-          l10n_util::GetNSString(IDS_DEL_COOKIES_COUNTER);
+    if (IsNewClearBrowsingDataUIEnabled()) {
+      if (itemType == ItemTypeDataTypeCookiesSiteData) {
+        // Because there is no counter for cookies, an explanatory text is
+        // displayed.
+        collectionClearDataItem.detailText =
+            l10n_util::GetNSString(IDS_DEL_COOKIES_COUNTER);
+      } else {
+        __weak ClearBrowsingDataManager* weakSelf = self;
+        __weak ClearBrowsingDataItem* weakCollectionClearDataItem =
+            collectionClearDataItem;
+        std::unique_ptr<BrowsingDataCounterWrapper> counter =
+            BrowsingDataCounterWrapper::CreateCounterWrapper(
+                prefName, self.browserState, prefs,
+                base::BindRepeating(^(
+                    const browsing_data::BrowsingDataCounter::Result& result) {
+                  weakCollectionClearDataItem.detailText =
+                      [weakSelf counterTextFromResult:result];
+                  [weakSelf.consumer
+                      updateCellsForItem:weakCollectionClearDataItem];
+                }));
+        _countersByMasks.emplace(mask, std::move(counter));
+      }
     }
     clearDataItem = collectionClearDataItem;
   } else {
@@ -711,6 +759,13 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
     self.tableViewTimeRangeItem.detailText = detailText;
     [self.consumer updateCellsForItem:self.tableViewTimeRangeItem];
   }
+}
+
+#pragma mark BrowsingDataRemoverObserving
+
+- (void)browsingDataRemover:(BrowsingDataRemover*)remover
+    didRemoveBrowsingDataWithMask:(BrowsingDataRemoveMask)mask {
+  [self restartCounters:mask];
 }
 
 @end
