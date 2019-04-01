@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/iterators/character_iterator.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
+#include "third_party/blink/renderer/core/editing/iterators/text_iterator_behavior.h"
 #include "third_party/blink/renderer/core/editing/position.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_layout_object.h"
@@ -207,9 +208,12 @@ const AXPosition AXPosition::FromPosition(
     // character offset.
     // TODO(nektar): Use LayoutNG offset mapping instead of
     // |TextIterator|.
+    TextIteratorBehavior::Builder iterator_builder;
+    const TextIteratorBehavior text_iterator_behavior =
+        iterator_builder.SetDoesNotEmitSpaceBeyondRangeEnd(true).Build();
     const auto first_position = Position::FirstPositionInNode(*container_node);
-    int offset =
-        TextIterator::RangeLength(first_position, parent_anchored_position);
+    int offset = TextIterator::RangeLength(
+        first_position, parent_anchored_position, text_iterator_behavior);
     ax_position.text_offset_or_child_index_ = offset;
     ax_position.affinity_ = affinity;
     DCHECK(ax_position.IsValid());
@@ -365,11 +369,15 @@ int AXPosition::MaxTextOffset() const {
   }
 
   // TODO(nektar): Use LayoutNG offset mapping instead of |TextIterator|.
+  TextIteratorBehavior::Builder iterator_builder;
+  const TextIteratorBehavior text_iterator_behavior =
+      iterator_builder.SetDoesNotEmitSpaceBeyondRangeEnd(true).Build();
   const auto first_position =
       Position::FirstPositionInNode(*container_object_->GetNode());
   const auto last_position =
       Position::LastPositionInNode(*container_object_->GetNode());
-  return TextIterator::RangeLength(first_position, last_position);
+  return TextIterator::RangeLength(first_position, last_position,
+                                   text_iterator_behavior);
 }
 
 TextAffinity AXPosition::Affinity() const {
@@ -731,9 +739,13 @@ const PositionWithAffinity AXPosition::ToPositionWithAffinity(
   }
 
   // TODO(nektar): Use LayoutNG offset mapping instead of |TextIterator|.
+  TextIteratorBehavior::Builder iterator_builder;
+  const TextIteratorBehavior text_iterator_behavior =
+      iterator_builder.SetDoesNotEmitSpaceBeyondRangeEnd(true).Build();
   const auto first_position = Position::FirstPositionInNode(*container_node);
   const auto last_position = Position::LastPositionInNode(*container_node);
-  CharacterIterator character_iterator(first_position, last_position);
+  CharacterIterator character_iterator(first_position, last_position,
+                                       text_iterator_behavior);
   const EphemeralRange range = character_iterator.CalculateCharacterSubrange(
       0, adjusted_position.text_offset_or_child_index_);
   return PositionWithAffinity(range.EndPosition(), affinity_);

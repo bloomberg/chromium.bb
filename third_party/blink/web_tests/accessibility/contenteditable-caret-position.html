@@ -16,6 +16,12 @@
         <p id="paragraph2">Line 3</p>
     </div>
 
+    <div id="contenteditable-div-2" contenteditable role="textbox"
+        style="max-width: 5px; overflow-wrap: normal;">
+        Line 1<br>
+        Line 2
+    </div>
+
 </div>
 
 <script>
@@ -45,7 +51,9 @@
         textbox.focus();
         let textboxAccessible = accessibilityController.accessibleElementById("contenteditable-textbox");
 
+        assert_equals(textboxAccessible.selectionAnchorObject, textboxAccessible);
         assert_equals(textboxAccessible.selectionAnchorOffset, 0);
+        assert_equals(textboxAccessible.selectionFocusObject, textboxAccessible);
         assert_equals(textboxAccessible.selectionFocusOffset, 0);
     }, "Moving the focus to an ARIA textbox should place the caret at its beginning.");
 
@@ -229,58 +237,153 @@
 
     test_after_layout_and_paint(function()
     {
-        let selection = window.getSelection();
-        let selectionRange = document.createRange();
-        let mainAccessible = accessibilityController.accessibleElementById("main");
-        let rootAccessible = accessibilityController.rootElement;
+        const selection = window.getSelection();
+        const selectionRange = document.createRange();
+        const mainAccessible = accessibilityController.accessibleElementById("main");
+        const rootAccessible = accessibilityController.rootElement;
 
-        let contenteditable = document.getElementById("contenteditable-div");
+        const contenteditable = document.getElementById("contenteditable-div");
         contenteditable.focus();
-        // The offset from the beginning of the main div to the first character of
-        // contenteditable-div.
-        var mainOffset = 9;
         // The offset from the newline character between the two lines of the
         // first paragraph to the first character of its second line.
         // (Needed for skipping wide space.)
-        let line2Offset = 13;
+        const line2StartOffset = 13;
 
-        let line1 = document.getElementById("paragraph1").firstChild;
-        let line2 = document.getElementById("paragraph1").lastChild;
-        let line3 = document.getElementById("paragraph2").firstChild;
-        let contenteditableLines = [ line1, line2, line3 ];
-        let contenteditableAccessible = accessibilityController.accessibleElementById("contenteditable-div");
+        const line1 = document.getElementById("paragraph1").firstChild;
+        const line2 = document.getElementById("paragraph1").lastChild;
+        const line3 = document.getElementById("paragraph2").firstChild;
+        const contenteditableLines = [ line1, line2, line3 ];
+        
+        const contenteditableAccessible = accessibilityController.accessibleElementById("contenteditable-div");
+        const paragraph1Accessible = accessibilityController.accessibleElementById("paragraph1");
+        const paragraph2Accessible = accessibilityController.accessibleElementById("paragraph2");
+        const line1Accessible = paragraph1Accessible.childAtIndex(0);
+        const line2Accessible = paragraph1Accessible.childAtIndex(2);
+        const line3Accessible = paragraph2Accessible.childAtIndex(0);
+        const expectations = [
+          line1Accessible, line2Accessible, line3Accessible
+        ];
 
         for (let lineNumber = 0; lineNumber < 3; ++lineNumber) {
-            let lineOffset = lineNumber * 7;
-            // Paragraphs should be separated by an empty line.
-            if (lineNumber == 2)
-                ++lineOffset;
-
             for (let characterOffset = 0; characterOffset < 7; ++characterOffset) {
-                // Any widespace in the DOM should be stripped out.
+                // Any widespace in the DOM should be stripped out in the
+                // accessibility tree.
                 let selectionOffset = characterOffset;
                 if (lineNumber == 1)
-                    selectionOffset += line2Offset;
+                    selectionOffset += line2StartOffset;
 
                 selectionRange.setStart(contenteditableLines[lineNumber], selectionOffset);
                 selectionRange.setEnd(contenteditableLines[lineNumber], selectionOffset);
                 selection.removeAllRanges();
                 selection.addRange(selectionRange);
 
+                assert_equals(contenteditableAccessible.selectionAnchorObject, expectations[lineNumber]);
                 assert_equals(contenteditableAccessible.selectionAnchorOffset, characterOffset);
+                assert_equals(contenteditableAccessible.selectionFocusObject, expectations[lineNumber]);
                 assert_equals(contenteditableAccessible.selectionFocusOffset, characterOffset);
 
+                assert_equals(mainAccessible.selectionAnchorObject, expectations[lineNumber]);
                 assert_equals(mainAccessible.selectionAnchorOffset, characterOffset);
+                assert_equals(mainAccessible.selectionFocusObject, expectations[lineNumber]);
                 assert_equals(mainAccessible.selectionFocusOffset, characterOffset);
 
-                assert_equals(rootAccessible.selectionAnchorObject.name,
-                    contenteditableLines[lineNumber].textContent.trim());
+                assert_equals(rootAccessible.selectionAnchorObject, expectations[lineNumber]);
                 assert_equals(rootAccessible.selectionAnchorOffset, characterOffset);
-                assert_equals(rootAccessible.selectionFocusObject.name,
-                    contenteditableLines[lineNumber].textContent.trim());
+                assert_equals(rootAccessible.selectionFocusObject, expectations[lineNumber]);
                 assert_equals(rootAccessible.selectionFocusOffset, characterOffset);
             }
         }
 
-    }, "Test moving the caret across two paragraphs.");
+    }, "Test moving the caret across two paragraphs by re-creating the selection.");
+
+    test_after_layout_and_paint(function()
+    {
+        const selection = window.getSelection();
+        const selectionRange = document.createRange();
+        const mainAccessible = accessibilityController.accessibleElementById("main");
+        const rootAccessible = accessibilityController.rootElement;
+
+        const contenteditable = document.getElementById("contenteditable-div");
+        contenteditable.focus();
+        
+        const line1 = document.getElementById("paragraph1").firstChild;
+        selectionRange.setStart(line1, 0);
+        selectionRange.setEnd(line1, 0);
+        selection.removeAllRanges();
+        selection.addRange(selectionRange);
+
+        const contenteditableAccessible = accessibilityController.accessibleElementById("contenteditable-div");
+        const paragraph1Accessible = accessibilityController.accessibleElementById("paragraph1");
+        const paragraph2Accessible = accessibilityController.accessibleElementById("paragraph2");
+        const line1Accessible = paragraph1Accessible.childAtIndex(0);
+        const line2Accessible = paragraph1Accessible.childAtIndex(2);
+        const line3Accessible = paragraph2Accessible.childAtIndex(0);
+        const expectations = [
+          line1Accessible, line2Accessible, line3Accessible
+        ];
+
+        for (let lineNumber = 0; lineNumber < 3; ++lineNumber) {
+            for (let characterOffset = 0; characterOffset < 7; ++characterOffset) {
+                assert_equals(contenteditableAccessible.selectionAnchorObject, expectations[lineNumber]);
+                assert_equals(contenteditableAccessible.selectionAnchorOffset, characterOffset);
+                assert_equals(contenteditableAccessible.selectionFocusObject, expectations[lineNumber]);
+                assert_equals(contenteditableAccessible.selectionFocusOffset, characterOffset);
+
+                assert_equals(mainAccessible.selectionAnchorObject, expectations[lineNumber]);
+                assert_equals(mainAccessible.selectionAnchorOffset, characterOffset);
+                assert_equals(mainAccessible.selectionFocusObject, expectations[lineNumber]);
+                assert_equals(mainAccessible.selectionFocusOffset, characterOffset);
+
+                assert_equals(rootAccessible.selectionAnchorObject, expectations[lineNumber]);
+                assert_equals(rootAccessible.selectionAnchorOffset, characterOffset);
+                assert_equals(rootAccessible.selectionFocusObject, expectations[lineNumber]);
+                assert_equals(rootAccessible.selectionFocusOffset, characterOffset);
+
+                selection.modify('move', 'forward', 'character');
+            }
+        }
+        
+    }, "Test moving the caret across two paragraphs by modifying the existing selection.");
+
+    test_after_layout_and_paint(function()
+    {
+        const selection = window.getSelection();
+        const selectionRange = document.createRange();
+        const mainAccessible = accessibilityController.accessibleElementById("main");
+        const rootAccessible = accessibilityController.rootElement;
+
+        const contenteditable = document.getElementById('contenteditable-div-2');
+        contenteditable.focus();
+        selectionRange.setStart(contenteditable, 0);
+        selectionRange.setEnd(contenteditable, 0);
+        selection.removeAllRanges();
+        selection.addRange(selectionRange);
+
+        const contenteditableAccessible = accessibilityController.accessibleElementById('contenteditable-div-2');
+        const line1Accessible = contenteditableAccessible.childAtIndex(0);
+        const line2Accessible = contenteditableAccessible.childAtIndex(2);
+        const expectations = [ line1Accessible, line2Accessible ];
+
+        for (let lineNumber = 0; lineNumber < 2; ++lineNumber) {
+            for (let characterOffset = 0; characterOffset < 7; ++characterOffset) {
+                assert_equals(contenteditableAccessible.selectionAnchorObject, expectations[lineNumber]);
+                assert_equals(contenteditableAccessible.selectionAnchorOffset, characterOffset);
+                assert_equals(contenteditableAccessible.selectionFocusObject, expectations[lineNumber]);
+                assert_equals(contenteditableAccessible.selectionFocusOffset, characterOffset);
+
+                assert_equals(mainAccessible.selectionAnchorObject, expectations[lineNumber]);
+                assert_equals(mainAccessible.selectionAnchorOffset, characterOffset);
+                assert_equals(mainAccessible.selectionFocusObject, expectations[lineNumber]);
+                assert_equals(mainAccessible.selectionFocusOffset, characterOffset);
+
+                assert_equals(rootAccessible.selectionAnchorObject, expectations[lineNumber]);
+                assert_equals(rootAccessible.selectionAnchorOffset, characterOffset);
+                assert_equals(rootAccessible.selectionFocusObject, expectations[lineNumber]);
+                assert_equals(rootAccessible.selectionFocusOffset, characterOffset);
+
+                selection.modify('move', 'forward', 'character');
+            }
+        }
+        
+    }, "Test moving the caret across two lines that wrap by modifying the existing selection.");
 </script>
