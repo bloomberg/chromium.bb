@@ -343,6 +343,24 @@ TEST_F(DevToolsBackgroundServicesContextTest, RecordingExpiration) {
 
   SimulateOneWeekPassing();
   EXPECT_FALSE(GetExpirationTime().is_null());
+
+  // Recording should be true, with an expired value.
+  EXPECT_TRUE(IsRecording());
+
+  // Logging should not happen.
+  EXPECT_CALL(*this, OnEventReceived(_)).Times(0);
+  LogTestBackgroundServiceEvent("f1");
+
+  // Observers should be informed that recording stopped.
+  EXPECT_CALL(
+      *this,
+      OnRecordingStateChanged(
+          false, devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE));
+
+  thread_bundle_.RunUntilIdle();
+
+  // The expiration time entry should be cleared.
+  EXPECT_TRUE(GetExpirationTime().is_null());
   EXPECT_FALSE(IsRecording());
 }
 

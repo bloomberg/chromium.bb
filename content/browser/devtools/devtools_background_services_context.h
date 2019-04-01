@@ -100,6 +100,9 @@ class CONTENT_EXPORT DevToolsBackgroundServicesContext
   friend class base::RefCountedThreadSafe<DevToolsBackgroundServicesContext>;
   ~DevToolsBackgroundServicesContext();
 
+  // Whether |service| has an expiration time and it was exceeded.
+  bool IsRecordingExpired(devtools::proto::BackgroundService service);
+
   void GetLoggedBackgroundServiceEventsOnIO(
       devtools::proto::BackgroundService service,
       GetLoggedBackgroundServiceEventsCallback callback);
@@ -114,6 +117,8 @@ class CONTENT_EXPORT DevToolsBackgroundServicesContext
 
   void NotifyEventObservers(
       const devtools::proto::BackgroundServiceEvent& event);
+
+  void OnRecordingTimeExpired(devtools::proto::BackgroundService service);
 
   BrowserContext* browser_context_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
