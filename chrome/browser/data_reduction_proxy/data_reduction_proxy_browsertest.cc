@@ -776,30 +776,6 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
                                       BYPASS_EVENT_TYPE_MALFORMED_407, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
-                       ProxyBypassedForCurrentRequestOn502Error) {
-  base::HistogramTester histogram_tester;
-  net::EmbeddedTestServer test_server;
-  test_server.RegisterRequestHandler(
-      base::BindRepeating(&BasicResponse, kDummyBody));
-  ASSERT_TRUE(test_server.Start());
-
-  SetStatusCode(net::HTTP_BAD_GATEWAY);
-
-  ui_test_utils::NavigateToURL(browser(),
-                               GetURLWithMockHost(test_server, "/echo"));
-  EXPECT_THAT(GetBody(), kDummyBody);
-  histogram_tester.ExpectUniqueSample(
-      "DataReductionProxy.BlockTypePrimary",
-      BYPASS_EVENT_TYPE_STATUS_502_HTTP_BAD_GATEWAY, 1);
-
-  // Proxy should no longer be blocked, and use first proxy.
-  SetStatusCode(net::HTTP_OK);
-  ui_test_utils::NavigateToURL(browser(),
-                               GetURLWithMockHost(test_server, "/echo"));
-  EXPECT_EQ(GetBody(), kPrimaryResponse);
-}
-
 // Tests that if using data reduction proxy results in redirect loop, then
 // the proxy is bypassed, and the request is fetched directly.
 IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest, RedirectCycle) {
