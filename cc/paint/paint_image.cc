@@ -152,6 +152,13 @@ void PaintImage::CreateSkImage() {
   }
 }
 
+bool PaintImage::IsEligibleForAcceleratedDecoding() const {
+  if (!CanDecodeFromGenerator())
+    return false;
+  DCHECK(paint_image_generator_);
+  return paint_image_generator_->IsEligibleForAcceleratedDecoding();
+}
+
 SkISize PaintImage::GetSupportedDecodeSize(
     const SkISize& requested_size) const {
   // TODO(vmpstr): In some cases we do not support decoding to any other
