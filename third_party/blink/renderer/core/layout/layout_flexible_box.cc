@@ -67,8 +67,12 @@ LayoutFlexibleBox::~LayoutFlexibleBox() = default;
 void LayoutFlexibleBox::ComputeIntrinsicLogicalWidths(
     LayoutUnit& min_logical_width,
     LayoutUnit& max_logical_width) const {
-  if (ShouldApplySizeContainment())
+  LayoutUnit scrollbar_width(ScrollbarLogicalWidth());
+  if (ShouldApplySizeContainment()) {
+    max_logical_width = scrollbar_width;
+    min_logical_width = scrollbar_width;
     return;
+  }
 
   // FIXME: We're ignoring flex-basis here and we shouldn't. We can't start
   // honoring it though until the flex shorthand stops setting it to 0. See
@@ -120,7 +124,6 @@ void LayoutFlexibleBox::ComputeIntrinsicLogicalWidths(
   min_logical_width = std::max(LayoutUnit(), min_logical_width);
   max_logical_width = std::max(LayoutUnit(), max_logical_width);
 
-  LayoutUnit scrollbar_width(ScrollbarLogicalWidth());
   max_logical_width += scrollbar_width;
   min_logical_width += scrollbar_width;
 }

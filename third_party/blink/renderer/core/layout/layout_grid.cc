@@ -497,8 +497,13 @@ LayoutUnit LayoutGrid::GuttersSize(
 void LayoutGrid::ComputeIntrinsicLogicalWidths(
     LayoutUnit& min_logical_width,
     LayoutUnit& max_logical_width) const {
-  if (ShouldApplySizeContainment())
+  LayoutUnit scrollbar_width = LayoutUnit(ScrollbarLogicalWidth());
+
+  if (ShouldApplySizeContainment()) {
+    min_logical_width = scrollbar_width;
+    max_logical_width = scrollbar_width;
     return;
+  }
 
   std::unique_ptr<Grid> grid = Grid::Create(this);
   GridTrackSizingAlgorithm algorithm(this, *grid);
@@ -520,7 +525,6 @@ void LayoutGrid::ComputeIntrinsicLogicalWidths(
   ComputeTrackSizesForIndefiniteSize(algorithm, kForColumns, &min_logical_width,
                                      &max_logical_width);
 
-  LayoutUnit scrollbar_width = LayoutUnit(ScrollbarLogicalWidth());
   min_logical_width += scrollbar_width;
   max_logical_width += scrollbar_width;
 }
