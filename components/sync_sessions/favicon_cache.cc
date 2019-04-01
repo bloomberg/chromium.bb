@@ -226,6 +226,7 @@ FaviconCache::FaviconCache(favicon::FaviconService* favicon_service,
                            history::HistoryService* history_service,
                            int max_sync_favicon_limit)
     : favicon_service_(favicon_service),
+      history_service_(history_service),
       max_sync_favicon_limit_(max_sync_favicon_limit),
       history_service_observer_(this),
       weak_ptr_factory_(this) {
@@ -235,6 +236,16 @@ FaviconCache::FaviconCache(favicon::FaviconService* favicon_service,
 }
 
 FaviconCache::~FaviconCache() {}
+
+void FaviconCache::WaitUntilReadyToSync(base::OnceClosure done) {
+  if (history_service_->backend_loaded()) {
+    std::move(done).Run();
+  } else {
+    // Wait until HistoryService's backend loads, reported via
+    // OnHistoryServiceLoaded().
+    wait_until_ready_to_sync_cb_.push_back(std::move(done));
+  }
+}
 
 syncer::SyncMergeResult FaviconCache::MergeDataAndStartSyncing(
     syncer::ModelType type,
@@ -1014,6 +1025,18 @@ void FaviconCache::OnURLsDeleted(history::HistoryService* history_service,
     favicon_tracking_sync_processor_->ProcessSyncChanges(FROM_HERE,
                                                          tracking_deletions);
   }
+}
+
+void FaviconCache::OnHistoryServiceLoaded(
+    history::HistoryService* history_service) {
+  // Make a copy before iterating over, in case triggering the callback has side
+  // effects.
+  std::vector<base::OnceClosure> callbacks =
+      std::move(wait_until_ready_to_sync_cb_);
+  wait_until_ready_to_sync_cb_.clear();
+
+  for (auto& cb : callbacks)
+    std::move(cb).Run();
 }
 
 }  // namespace sync_sessions

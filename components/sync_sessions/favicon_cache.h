@@ -66,6 +66,7 @@ class FaviconCache : public syncer::SyncableService,
   ~FaviconCache() override;
 
   // SyncableService implementation.
+  void WaitUntilReadyToSync(base::OnceClosure done) override;
   syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
@@ -198,8 +199,11 @@ class FaviconCache : public syncer::SyncableService,
   // history::HistoryServiceObserver:
   void OnURLsDeleted(history::HistoryService* history_service,
                      const history::DeletionInfo& deletion_info) override;
+  void OnHistoryServiceLoaded(
+      history::HistoryService* history_service) override;
 
-  favicon::FaviconService* favicon_service_;
+  favicon::FaviconService* const favicon_service_;
+  history::HistoryService* const history_service_;
 
   // Task tracker for loading favicons.
   base::CancelableTaskTracker cancelable_task_tracker_;
@@ -225,6 +229,10 @@ class FaviconCache : public syncer::SyncableService,
 
   // Maximum number of favicons to sync. 0 means no limit.
   const size_t max_sync_favicon_limit_;
+
+  // A vector is needed to support concurrent calls to WaitUntilReadyToSync()
+  // because this class powers two datatypes.
+  std::vector<base::OnceClosure> wait_until_ready_to_sync_cb_;
 
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;
