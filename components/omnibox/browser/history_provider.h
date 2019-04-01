@@ -29,6 +29,8 @@ class HistoryProvider : public AutocompleteProvider {
 
   // Fill and return an ACMatchClassifications structure given the |matches|
   // to highlight.
+  // TODO (manukh) replace calls to SpansFromTermMatch with calls to
+  // ClassifyTermMatches (autocomplete_match_classification.h)
   static ACMatchClassifications SpansFromTermMatch(const TermMatches& matches,
                                                    size_t text_length,
                                                    bool is_url);

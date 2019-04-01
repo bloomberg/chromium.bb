@@ -83,6 +83,8 @@ jumbo_static_library("browser") {
     "autocomplete_input.h",
     "autocomplete_match.cc",
     "autocomplete_match.h",
+    "autocomplete_match_classification.cc",
+    "autocomplete_match_classification.h",
     "autocomplete_match_type.cc",
     "autocomplete_match_type.h",
     "autocomplete_provider.cc",
