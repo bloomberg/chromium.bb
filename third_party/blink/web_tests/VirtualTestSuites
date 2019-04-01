@@ -296,14 +296,19 @@
     "args": ["--enable-threaded-compositing"]
   },
   {
-    "prefix": "binary-for-devtools",
+    "prefix": "nobinary-for-devtools",
     "base": "http/tests/devtools",
-    "args": ["--enable-internal-devtools-binary-protocol"]
+    "args": ["--disable-internal-devtools-binary-protocol"]
   },
   {
-    "prefix": "binary-for-inspector-protocol",
+    "prefix": "nobinary-for-http-inspector-protocol",
     "base": "http/tests/inspector-protocol",
-    "args": ["--enable-internal-devtools-binary-protocol"]
+    "args": ["--disable-internal-devtools-binary-protocol"]
+  },
+  {
+    "prefix": "nobinary-for-inspector-protocol",
+    "base": "inspector-protocol",
+    "args": ["--disable-internal-devtools-binary-protocol"]
   },
   {
     "prefix": "composite-after-paint",
