@@ -421,16 +421,21 @@ class CORE_EXPORT NGConstraintSpace final {
   // to verify that any constraint space size (available size, percentage size,
   // and so on) and BFC offset changes won't require re-layout, before skipping.
   bool MaySkipLayout(const NGConstraintSpace& other) const {
-    if (HasRareData() && other.HasRareData()) {
-      if (!rare_data_->MaySkipLayout(*other.rare_data_))
-        return false;
-    } else if (HasRareData() != other.HasRareData()) {
-      // We have a bfc_offset_, and a rare_data_ (or vice-versa).
+    if (!bitfields_.MaySkipLayout(other.bitfields_) ||
+        exclusion_space_ != other.exclusion_space_)
       return false;
-    }
 
-    return exclusion_space_ == other.exclusion_space_ &&
-           bitfields_.MaySkipLayout(other.bitfields_);
+    if (!HasRareData() && !other.HasRareData())
+      return true;
+
+    if (HasRareData() && other.HasRareData())
+      return rare_data_->MaySkipLayout(*other.rare_data_);
+
+    if (HasRareData())
+      return rare_data_->IsInitialForMaySkipLayout();
+
+    DCHECK(other.HasRareData());
+    return other.rare_data_->IsInitialForMaySkipLayout();
   }
 
   bool AreSizesEqual(const NGConstraintSpace& other) const {
@@ -532,6 +537,16 @@ class CORE_EXPORT NGConstraintSpace final {
                  other.fragmentainer_space_at_bfc_start &&
              block_direction_fragmentation_type ==
                  other.block_direction_fragmentation_type;
+    }
+
+    // Must be kept in sync with members checked within |MaySkipLayout|.
+    bool IsInitialForMaySkipLayout() const {
+      return margin_strut == NGMarginStrut() &&
+             floats_bfc_block_offset == base::nullopt &&
+             clearance_offset == LayoutUnit::Min() &&
+             fragmentainer_block_size == NGSizeIndefinite &&
+             fragmentainer_space_at_bfc_start == NGSizeIndefinite &&
+             block_direction_fragmentation_type == kFragmentNone;
     }
   };
 
