@@ -621,6 +621,7 @@ TEST_F(MediaNotificationViewTest, ActionButtonsToggleVisbility) {
 }
 
 TEST_F(MediaNotificationViewTest, UpdateArtworkFromItem) {
+  int title_artist_width = title_artist_row()->width();
   gfx::Size size = view()->size();
 
   SkBitmap image;
@@ -632,6 +633,10 @@ TEST_F(MediaNotificationViewTest, UpdateArtworkFromItem) {
   GetItem()->MediaControllerImageChanged(
       media_session::mojom::MediaSessionImageType::kArtwork, image);
 
+  // Ensure the title artist row has a small width than before now that we
+  // have artwork.
+  EXPECT_GT(title_artist_width, title_artist_row()->width());
+
   // Ensure that the image is displayed in the background artwork and that the
   // size of the notification was not affected.
   EXPECT_FALSE(GetArtworkImage().isNull());
@@ -640,6 +645,10 @@ TEST_F(MediaNotificationViewTest, UpdateArtworkFromItem) {
 
   GetItem()->MediaControllerImageChanged(
       media_session::mojom::MediaSessionImageType::kArtwork, SkBitmap());
+
+  // Ensure the title artist row goes back to the original width now that we
+  // do not have any artwork.
+  EXPECT_EQ(title_artist_width, title_artist_row()->width());
 
   // Ensure that the background artwork was reset and the size was still not
   // affected.
