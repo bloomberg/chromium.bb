@@ -1321,7 +1321,10 @@ test("browser_tests") {
     }
 
     if (enable_desktop_in_product_help) {
-      sources += [ "../browser/ui/views/feature_promos/feature_promo_dialog_browsertest.cc" ]
+      sources += [
+        "../browser/ui/views/feature_promos/feature_promo_dialog_browsertest.cc",
+        "../browser/ui/views/feature_promos/reopen_tab_promo_controller_dialog_browsertest.cc",
+      ]
     }
 
     if (enable_extensions) {

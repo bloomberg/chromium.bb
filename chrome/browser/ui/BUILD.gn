@@ -2526,6 +2526,8 @@ jumbo_split_static_library("ui") {
       "views/extensions/pwa_confirmation_view.h",
       "views/extensions/web_app_info_image_source.cc",
       "views/extensions/web_app_info_image_source.h",
+      "views/feature_promos/feature_promo_bubble_timeout.cc",
+      "views/feature_promos/feature_promo_bubble_timeout.h",
       "views/feature_promos/feature_promo_bubble_view.cc",
       "views/feature_promos/feature_promo_bubble_view.h",
       "views/find_bar_host.cc",
