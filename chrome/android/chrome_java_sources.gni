@@ -27,6 +27,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/ChromeBaseAppCompatActivity.java",
   "java/src/org/chromium/chrome/browser/ChromeFeatureList.java",
   "java/src/org/chromium/chrome/browser/ChromeHttpAuthHandler.java",
+  "java/src/org/chromium/chrome/browser/ChromeInactivityTracker.java",
   "java/src/org/chromium/chrome/browser/ChromeKeyboardVisibilityDelegate.java",
   "java/src/org/chromium/chrome/browser/ChromeLocalizationUtils.java",
   "java/src/org/chromium/chrome/browser/ChromeStrictMode.java",

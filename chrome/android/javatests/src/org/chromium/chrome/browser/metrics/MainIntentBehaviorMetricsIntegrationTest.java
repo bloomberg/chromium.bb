@@ -291,11 +291,11 @@ public class MainIntentBehaviorMetricsIntegrationTest {
     private void assertBackgroundDurationLogged(long duration, String expectedMetric) {
         startActivity(false);
         mActionTester = new UserActionTester();
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putLong(ChromeTabbedActivity.LAST_BACKGROUNDED_TIME_MS_PREF,
-                        System.currentTimeMillis() - duration)
-                .commit();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mActivityTestRule.getActivity()
+                    .getInactivityTrackerForTesting()
+                    .setLastBackgroundedTimeInPrefs(System.currentTimeMillis() - duration);
+        });
 
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
