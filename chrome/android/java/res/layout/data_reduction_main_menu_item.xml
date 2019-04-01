@@ -44,13 +44,13 @@
                 android:id="@+id/menu_item_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="@style/TextAppearance.BlackTitle2" />
+                android:textAppearance="?android:attr/textAppearanceLargePopupMenu" />
 
             <TextView
                 android:id="@+id/menu_item_summary"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="@style/TextAppearance.BlackBody" />
+                android:textAppearance="@style/TextAppearance.BlackHint2" />
         </LinearLayout>
 
     </FrameLayout>

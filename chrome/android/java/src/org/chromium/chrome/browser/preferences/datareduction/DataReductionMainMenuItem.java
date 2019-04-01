@@ -14,7 +14,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
@@ -70,10 +69,6 @@ public class DataReductionMainMenuItem extends FrameLayout implements View.OnCli
             itemText.setText(
                     getContext().getString(R.string.data_reduction_saved_label, dataSaved));
             itemSummary.setText(getContext().getString(R.string.data_reduction_date_label, date));
-
-            int textColorLink = ApiCompatibilityUtils.getColor(
-                    getContext().getResources(), R.color.default_text_color_link);
-            itemText.setTextColor(textColorLink);
         } else {
             DataReductionProxyUma.dataReductionProxyUIAction(
                     DataReductionProxyUma.ACTION_MAIN_MENU_DISPLAYED_OFF);
