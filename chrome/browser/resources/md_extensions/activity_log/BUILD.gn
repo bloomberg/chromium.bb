@@ -35,6 +35,7 @@ js_library("activity_log_stream") {
   deps = [
     ":activity_log_stream_item",
     "//third_party/polymer/v1_0/components-chromium/iron-list:iron-list-extracted",
+    "//ui/webui/resources/cr_elements/cr_search_field:cr_search_field",
     "//ui/webui/resources/js:cr",
   ]
   externs_list = [ "$externs_path/activity_log_private.js" ]

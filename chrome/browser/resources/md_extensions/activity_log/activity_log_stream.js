@@ -66,10 +66,23 @@ cr.define('extensions', function() {
         value: false,
       },
 
-      /** @private {!Array<!chrome.activityLogPrivate.ExtensionActivity>} */
+      /** @private {!Array<!extensions.StreamItem>} */
       activityStream_: {
         type: Array,
         value: () => [],
+      },
+
+      /** @private {!Array<!extensions.StreamItem>} */
+      filteredActivityStream_: {
+        type: Array,
+        computed:
+            'computeFilteredActivityStream_(activityStream_.*, lastSearch_)',
+      },
+
+      /** @private */
+      lastSearch_: {
+        type: String,
+        value: '',
       },
     },
 
@@ -146,6 +159,22 @@ cr.define('extensions', function() {
 
     /**
      * @private
+     * @return {boolean}
+     */
+    isFilteredStreamEmpty_: function() {
+      return this.filteredActivityStream_.length == 0;
+    },
+
+    /**
+     * @private
+     * @return {boolean}
+     */
+    shouldShowEmptySearchMessage_: function() {
+      return !this.isStreamEmpty_() && this.isFilteredStreamEmpty_();
+    },
+
+    /**
+     * @private
      * @param {!chrome.activityLogPrivate.ExtensionActivity} activity
      */
     extensionActivityListener_: function(activity) {
@@ -159,6 +188,46 @@ cr.define('extensions', function() {
 
       // Used to update the scrollbar.
       this.$$('iron-list').notifyResize();
+    },
+
+    /**
+     * @private
+     * @param {!CustomEvent<string>} e
+     */
+    onSearchChanged_: function(e) {
+      // Remove all whitespaces from the search term, as API call names and
+      // URLs should not contain any whitespace. As of now, only single term
+      // search queries are allowed.
+      const searchTerm = e.detail.replace(/\s+/g, '').toLowerCase();
+      if (searchTerm === this.lastSearch_) {
+        return;
+      }
+
+      this.lastSearch_ = searchTerm;
+    },
+
+    /**
+     * @private
+     * @return {!Array<!extensions.StreamItem>}
+     */
+    computeFilteredActivityStream_: function() {
+      if (!this.lastSearch_) {
+        return this.activityStream_.slice();
+      }
+
+      // Match on these properties for each activity.
+      const propNames = [
+        'name',
+        'pageUrl',
+        'activityType',
+      ];
+
+      return this.activityStream_.filter(act => {
+        return propNames.some(prop => {
+          return act[prop] &&
+              act[prop].toLowerCase().includes(this.lastSearch_);
+        });
+      });
     },
   });
 

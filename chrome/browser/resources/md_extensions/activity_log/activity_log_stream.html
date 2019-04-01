@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_search_field/cr_search_field.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
@@ -17,6 +18,10 @@
 
         display: flex;
         flex-direction: column;
+      }
+
+      cr-search-field {
+        margin-inline-end: auto;
       }
 
       .activity-table-headings {
@@ -42,6 +47,9 @@
       }
     </style>
     <div class="activity-subpage-header">
+      <cr-search-field label="$i18n{activityLogSearchLabel}"
+        on-search-changed="onSearchChanged_">
+      </cr-search-field >
       <paper-button id="toggle-stream-button" on-click="onToggleButtonClick_">
         <span hidden$="[[isStreamOn_]]">
           $i18n{startActivityStream}
@@ -64,13 +72,18 @@
         $i18n{emptyStreamStarted}
       </span>
     </div>
+    <div id="empty-search-message" class="activity-message"
+        hidden$="[[!shouldShowEmptySearchMessage_(
+            activityStream_.length, filteredActivityStream_.length)]]">
+      $i18n{noSearchResults}
+    </div>
     <div class="activity-table-headings"
-        hidden$="[[isStreamEmpty_(activityStream_.length)]]">
+        hidden$="[[isFilteredStreamEmpty_(filteredActivityStream_.length)]]">
       <span id="activity-type">$i18n{activityLogTypeColumn}</span>
       <span id="activity-key">$i18n{activityLogNameColumn}</span>
       <span id="activity-time">$i18n{activityLogTimeColumn}</span>
     </div>
-    <iron-list items="[[activityStream_]]">
+    <iron-list items="[[filteredActivityStream_]]">
       <template>
         <activity-log-stream-item data="[[item]]"></activity-log-stream-item>
       </template>
