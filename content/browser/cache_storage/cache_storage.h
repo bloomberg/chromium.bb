@@ -50,7 +50,7 @@ FORWARD_DECLARE_TEST(CacheStorageManagerTest, TestErrorInitializingCache);
 // CacheStorage holds the set of caches for a given origin. It is
 // owned by the CacheStorageManager. This class expects to be run
 // on the IO thread. The asynchronous methods are executed serially.
-class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
+class CONTENT_EXPORT CacheStorage {
  public:
   constexpr static int64_t kSizeUnknown = -1;
 
@@ -63,11 +63,89 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
                               blink::mojom::CacheStorageError)>;
   using EnumerateCachesCallback =
       base::OnceCallback<void(std::vector<std::string> cache_names)>;
+
+  // Creates a new handle to this CacheStorage instance. Each handle represents
+  // a signal that the CacheStorage is in active use and should avoid cleaning
+  // up resources, if possible. However, there are some cases, such as a
+  // user-initiated storage wipe, that will forcibly delete the CacheStorage
+  // instance. Therefore the handle should be treated as a weak pointer that
+  // needs to be tested for existence before use.
+  virtual CacheStorageHandle CreateHandle() = 0;
+  virtual void AddHandleRef() = 0;
+  virtual void DropHandleRef() = 0;
+
+  // Get the cache for the given key. If the cache is not found it is
+  // created. The CacheStorgeCacheHandle in the callback prolongs the lifetime
+  // of the cache. Once all handles to a cache are deleted the cache is deleted.
+  // The cache will also be deleted in the CacheStorage's destructor so be sure
+  // to check the handle's value before using it.
+  virtual void OpenCache(const std::string& cache_name,
+                         int64_t trace_id,
+                         CacheAndErrorCallback callback) = 0;
+
+  // Calls the callback with whether or not the cache exists.
+  virtual void HasCache(const std::string& cache_name,
+                        int64_t trace_id,
+                        BoolAndErrorCallback callback) = 0;
+
+  // Deletes the cache if it exists. If it doesn't exist,
+  // blink::mojom::CacheStorageError::kErrorNotFound is returned. Any
+  // existing CacheStorageCacheHandle(s) to the cache will remain valid but
+  // future CacheStorage operations won't be able to access the cache. The cache
+  // isn't actually erased from disk until the last handle is dropped.
+  virtual void DoomCache(const std::string& cache_name,
+                         int64_t trace_id,
+                         ErrorCallback callback) = 0;
+
+  // Calls the callback with the existing cache names.
+  virtual void EnumerateCaches(int64_t trace_id,
+                               EnumerateCachesCallback callback) = 0;
+
+  // Calls match on the cache with the given |cache_name|.
+  virtual void MatchCache(const std::string& cache_name,
+                          blink::mojom::FetchAPIRequestPtr request,
+                          blink::mojom::CacheQueryOptionsPtr match_options,
+                          int64_t trace_id,
+                          CacheStorageCache::ResponseCallback callback) = 0;
+
+  // Calls match on all of the caches in parallel, calling |callback| with the
+  // response from the first cache (in order of cache creation) to have the
+  // entry. If no response is found then |callback| is called with
+  // blink::mojom::CacheStorageError::kErrorNotFound.
+  virtual void MatchAllCaches(blink::mojom::FetchAPIRequestPtr request,
+                              blink::mojom::CacheQueryOptionsPtr match_options,
+                              int64_t trace_id,
+                              CacheStorageCache::ResponseCallback callback) = 0;
+
+  // Puts the request/response pair in the cache.
+  virtual void WriteToCache(const std::string& cache_name,
+                            blink::mojom::FetchAPIRequestPtr request,
+                            blink::mojom::FetchAPIResponsePtr response,
+                            int64_t trace_id,
+                            ErrorCallback callback) = 0;
+
+  // The immutable origin of the CacheStorage.
+  const url::Origin& Origin() const { return origin_; }
+
+ protected:
+  explicit CacheStorage(const url::Origin& origin);
+  virtual ~CacheStorage() = default;
+
+  // The origin that this CacheStorage is associated with.
+  const url::Origin origin_;
+};
+
+// Concrete implementation of the CacheStorage abstract class.  This is
+// the legacy implementation using LegacyCacheStorageCache objects.
+// TODO: This class should be moved to a separate file (crbug.com/940449)
+class CONTENT_EXPORT LegacyCacheStorage : public CacheStorage,
+                                          public CacheStorageCacheObserver {
+ public:
   using SizeCallback = base::OnceCallback<void(int64_t)>;
 
   static const char kIndexFileName[];
 
-  CacheStorage(
+  LegacyCacheStorage(
       const base::FilePath& origin_path,
       bool memory_only,
       base::SequencedTaskRunner* cache_task_runner,
@@ -79,73 +157,50 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
 
   // Any unfinished asynchronous operations may not complete or call their
   // callbacks.
-  virtual ~CacheStorage();
+  ~LegacyCacheStorage() override;
 
-  // Creates a new handle to this CacheStorage instance. Each handle represents
-  // a signal that the CacheStorage is in active use and should avoid cleaning
-  // up resources, if possible. However, there are some cases, such as a
-  // user-initiated storage wipe, that will forcibly delete the CacheStorage
-  // instance. Therefore the handle should be treated as a weak pointer that
-  // needs to be tested for existence before use.
-  CacheStorageHandle CreateHandle();
+  CacheStorageHandle CreateHandle() override;
 
   // These methods are called by the CacheStorageHandle to track the number
   // of outstanding references.
-  void AddHandleRef();
-  void DropHandleRef();
+  void AddHandleRef() override;
+  void DropHandleRef() override;
   void AssertUnreferenced() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(!handle_ref_count_);
   }
 
-  // Get the cache for the given key. If the cache is not found it is
-  // created. The CacheStorgeCacheHandle in the callback prolongs the lifetime
-  // of the cache. Once all handles to a cache are deleted the cache is deleted.
-  // The cache will also be deleted in the CacheStorage's destructor so be sure
-  // to check the handle's value before using it.
   void OpenCache(const std::string& cache_name,
                  int64_t trace_id,
-                 CacheAndErrorCallback callback);
+                 CacheAndErrorCallback callback) override;
 
-  // Calls the callback with whether or not the cache exists.
   void HasCache(const std::string& cache_name,
                 int64_t trace_id,
-                BoolAndErrorCallback callback);
+                BoolAndErrorCallback callback) override;
 
-  // Deletes the cache if it exists. If it doesn't exist,
-  // blink::mojom::CacheStorageError::kErrorNotFound is returned. Any
-  // existing CacheStorageCacheHandle(s) to the cache will remain valid but
-  // future CacheStorage operations won't be able to access the cache. The cache
-  // isn't actually erased from disk until the last handle is dropped.
   void DoomCache(const std::string& cache_name,
                  int64_t trace_id,
-                 ErrorCallback callback);
+                 ErrorCallback callback) override;
 
-  // Calls the callback with the existing cache names.
-  void EnumerateCaches(int64_t trace_id, EnumerateCachesCallback callback);
+  void EnumerateCaches(int64_t trace_id,
+                       EnumerateCachesCallback callback) override;
 
-  // Calls match on the cache with the given |cache_name|.
   void MatchCache(const std::string& cache_name,
                   blink::mojom::FetchAPIRequestPtr request,
                   blink::mojom::CacheQueryOptionsPtr match_options,
                   int64_t trace_id,
-                  CacheStorageCache::ResponseCallback callback);
+                  CacheStorageCache::ResponseCallback callback) override;
 
-  // Calls match on all of the caches in parallel, calling |callback| with the
-  // response from the first cache (in order of cache creation) to have the
-  // entry. If no response is found then |callback| is called with
-  // blink::mojom::CacheStorageError::kErrorNotFound.
   void MatchAllCaches(blink::mojom::FetchAPIRequestPtr request,
                       blink::mojom::CacheQueryOptionsPtr match_options,
                       int64_t trace_id,
-                      CacheStorageCache::ResponseCallback callback);
+                      CacheStorageCache::ResponseCallback callback) override;
 
-  // Puts the request/response pair in the cache.
   void WriteToCache(const std::string& cache_name,
                     blink::mojom::FetchAPIRequestPtr request,
                     blink::mojom::FetchAPIResponsePtr response,
                     int64_t trace_id,
-                    CacheStorage::ErrorCallback callback);
+                    ErrorCallback callback) override;
 
   // Sums the sizes of each cache and closes them. Runs |callback| with the
   // size. The sizes include any doomed caches and will also force close all
@@ -166,17 +221,18 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   void ResetManager();
 
   // CacheStorageCacheObserver:
-  void CacheSizeUpdated(const CacheStorageCache* cache) override;
-
-  // The immutable origin of the CacheStorage.
-  const url::Origin& Origin() const { return origin_; }
+  void CacheSizeUpdated(const LegacyCacheStorageCache* cache) override;
 
   // Destroy any CacheStorageCache instances that are not currently referenced
   // by a CacheStorageCacheHandle.
   void ReleaseUnreferencedCaches();
 
+  static LegacyCacheStorage* From(const CacheStorageHandle& handle) {
+    return static_cast<LegacyCacheStorage*>(handle.value());
+  }
+
  private:
-  friend class CacheStorageCache;
+  friend class LegacyCacheStorageCache;
   friend class cache_storage_manager_unittest::CacheStorageManagerTest;
   FRIEND_TEST_ALL_PREFIXES(
       cache_storage_manager_unittest::CacheStorageManagerTest,
@@ -189,7 +245,8 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   class SimpleCacheLoader;
   struct CacheMatchResponse;
 
-  typedef std::map<std::string, std::unique_ptr<CacheStorageCache>> CacheMap;
+  typedef std::map<std::string, std::unique_ptr<LegacyCacheStorageCache>>
+      CacheMap;
 
   // Generate a new padding key. For testing only and *not thread safe*.
   static void GenerateNewKeyForTesting();
@@ -207,10 +264,11 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   void OpenCacheImpl(const std::string& cache_name,
                      int64_t trace_id,
                      CacheAndErrorCallback callback);
-  void CreateCacheDidCreateCache(const std::string& cache_name,
-                                 int64_t trace_id,
-                                 CacheAndErrorCallback callback,
-                                 std::unique_ptr<CacheStorageCache> cache);
+  void CreateCacheDidCreateCache(
+      const std::string& cache_name,
+      int64_t trace_id,
+      CacheAndErrorCallback callback,
+      std::unique_ptr<LegacyCacheStorageCache> cache);
   void CreateCacheDidWriteIndex(CacheAndErrorCallback callback,
                                 CacheStorageCacheHandle cache_handle,
                                 int64_t trace_id,
@@ -229,8 +287,8 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
                                 ErrorCallback callback,
                                 int64_t trace_id,
                                 bool success);
-  void DeleteCacheFinalize(CacheStorageCache* doomed_cache);
-  void DeleteCacheDidGetSize(CacheStorageCache* doomed_cache,
+  void DeleteCacheFinalize(LegacyCacheStorageCache* doomed_cache);
+  void DeleteCacheDidGetSize(LegacyCacheStorageCache* doomed_cache,
                              int64_t cache_size);
   void DeleteCacheDidCleanUp(bool success);
 
@@ -270,7 +328,7 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
                         blink::mojom::FetchAPIRequestPtr request,
                         blink::mojom::FetchAPIResponsePtr response,
                         int64_t trace_id,
-                        CacheStorage::ErrorCallback callback);
+                        ErrorCallback callback);
 
   void GetSizeThenCloseAllCachesImpl(SizeCallback callback);
 
@@ -291,7 +349,7 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   bool InitiateScheduledIndexWriteForTest(
       base::OnceCallback<void(bool)> callback);
 
-  void CacheUnreferenced(CacheStorageCache* cache);
+  void CacheUnreferenced(LegacyCacheStorageCache* cache);
 
   // Whether or not we've loaded the list of cache names into memory.
   bool initialized_;
@@ -308,7 +366,7 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
 
   // Caches that have been deleted but must still be held onto until all handles
   // have been released.
-  std::map<CacheStorageCache*, std::unique_ptr<CacheStorageCache>>
+  std::map<LegacyCacheStorageCache*, std::unique_ptr<LegacyCacheStorageCache>>
       doomed_caches_;
 
   // The cache index data.
@@ -326,9 +384,6 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   // The quota manager.
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
 
-  // The origin that this CacheStorage is associated with.
-  const url::Origin origin_;
-
   // The owner that this CacheStorage is associated with.
   CacheStorageOwner owner_;
 
@@ -340,9 +395,9 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   size_t handle_ref_count_ = 0;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<CacheStorage> weak_factory_;
+  base::WeakPtrFactory<LegacyCacheStorage> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(CacheStorage);
+  DISALLOW_COPY_AND_ASSIGN(LegacyCacheStorage);
 };
 
 }  // namespace content

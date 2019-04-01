@@ -308,25 +308,25 @@ void OnBadMessage(std::string* result) {
 }
 
 // A CacheStorageCache that can optionally delay during backend creation.
-class TestCacheStorageCache : public CacheStorageCache {
+class TestCacheStorageCache : public LegacyCacheStorageCache {
  public:
   TestCacheStorageCache(
       const url::Origin& origin,
       const std::string& cache_name,
       const base::FilePath& path,
-      CacheStorage* cache_storage,
+      LegacyCacheStorage* cache_storage,
       const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context)
-      : CacheStorageCache(origin,
-                          CacheStorageOwner::kCacheAPI,
-                          cache_name,
-                          path,
-                          cache_storage,
-                          quota_manager_proxy,
-                          blob_context,
-                          0 /* cache_size */,
-                          0 /* cache_padding */,
-                          CreateTestPaddingKey()),
+      : LegacyCacheStorageCache(origin,
+                                CacheStorageOwner::kCacheAPI,
+                                cache_name,
+                                path,
+                                cache_storage,
+                                quota_manager_proxy,
+                                blob_context,
+                                0 /* cache_size */,
+                                0 /* cache_padding */,
+                                CreateTestPaddingKey()),
         delay_backend_creation_(false) {}
 
   ~TestCacheStorageCache() override { base::RunLoop().RunUntilIdle(); }
@@ -339,7 +339,8 @@ class TestCacheStorageCache : public CacheStorageCache {
   }
 
   void ContinueCreateBackend() {
-    CacheStorageCache::CreateBackend(std::move(backend_creation_callback_));
+    LegacyCacheStorageCache::CreateBackend(
+        std::move(backend_creation_callback_));
   }
 
   void set_delay_backend_creation(bool delay) {
@@ -797,7 +798,7 @@ class CacheStorageCacheTest : public testing::Test {
 
   size_t EstimatedResponseSizeWithoutBlob(
       const blink::mojom::FetchAPIResponse& response) {
-    return CacheStorageCache::EstimatedResponseSizeWithoutBlob(response);
+    return LegacyCacheStorageCache::EstimatedResponseSizeWithoutBlob(response);
   }
 
  protected:
@@ -893,8 +894,9 @@ TEST_P(CacheStorageCacheTestP, MatchLimit) {
   EXPECT_TRUE(Put(no_body_request_, CreateNoBodyResponse()));
   EXPECT_TRUE(Match(no_body_request_));
 
-  size_t max_size = CacheStorageCache::EstimatedStructSize(no_body_request_) +
-                    EstimatedResponseSizeWithoutBlob(*callback_response_);
+  size_t max_size =
+      LegacyCacheStorageCache::EstimatedStructSize(no_body_request_) +
+      EstimatedResponseSizeWithoutBlob(*callback_response_);
   SetMaxQuerySizeBytes(max_size);
   EXPECT_TRUE(Match(no_body_request_));
 
@@ -909,10 +911,10 @@ TEST_P(CacheStorageCacheTestP, MatchAllLimit) {
   EXPECT_TRUE(Match(body_request_));
 
   size_t body_request_size =
-      CacheStorageCache::EstimatedStructSize(body_request_) +
+      LegacyCacheStorageCache::EstimatedStructSize(body_request_) +
       EstimatedResponseSizeWithoutBlob(*callback_response_);
   size_t query_request_size =
-      CacheStorageCache::EstimatedStructSize(body_request_with_query_) +
+      LegacyCacheStorageCache::EstimatedStructSize(body_request_with_query_) +
       EstimatedResponseSizeWithoutBlob(*callback_response_);
 
   std::vector<blink::mojom::FetchAPIResponsePtr> responses;
@@ -943,13 +945,14 @@ TEST_P(CacheStorageCacheTestP, KeysLimit) {
   EXPECT_TRUE(Put(no_body_request_, CreateNoBodyResponse()));
   EXPECT_TRUE(Put(body_request_, CreateBlobBodyResponse()));
 
-  size_t max_size = CacheStorageCache::EstimatedStructSize(no_body_request_) +
-                    CacheStorageCache::EstimatedStructSize(body_request_);
+  size_t max_size =
+      LegacyCacheStorageCache::EstimatedStructSize(no_body_request_) +
+      LegacyCacheStorageCache::EstimatedStructSize(body_request_);
   SetMaxQuerySizeBytes(max_size);
   EXPECT_TRUE(Keys());
 
   SetMaxQuerySizeBytes(
-      CacheStorageCache::EstimatedStructSize(no_body_request_));
+      LegacyCacheStorageCache::EstimatedStructSize(no_body_request_));
   EXPECT_FALSE(Keys());
   EXPECT_EQ(CacheStorageError::kErrorQueryTooLarge, callback_error_);
 }
@@ -1203,7 +1206,7 @@ TEST_P(CacheStorageCacheTestP, Match_IgnoreVary) {
 TEST_P(CacheStorageCacheTestP, GetAllMatchedEntries_RequestsIncluded) {
   EXPECT_TRUE(Put(body_request_, CreateBlobBodyResponse()));
 
-  std::vector<CacheStorageCache::CacheEntry> cache_entries;
+  std::vector<LegacyCacheStorageCache::CacheEntry> cache_entries;
   EXPECT_TRUE(GetAllMatchedEntries(&cache_entries));
 
   ASSERT_EQ(1u, cache_entries.size());
@@ -2038,7 +2041,7 @@ TEST_F(CacheStorageCacheTest, VerifyOpaqueSizePadding) {
   blink::mojom::FetchAPIResponsePtr non_opaque_response =
       CreateBlobBodyResponse();
   non_opaque_response->response_time = response_time;
-  EXPECT_EQ(0, CacheStorageCache::CalculateResponsePadding(
+  EXPECT_EQ(0, LegacyCacheStorageCache::CalculateResponsePadding(
                    *non_opaque_response, CreateTestPaddingKey().get(),
                    0 /* side_data_size */));
   EXPECT_TRUE(Put(non_opaque_request, std::move(non_opaque_response)));
@@ -2058,7 +2061,7 @@ TEST_F(CacheStorageCacheTest, VerifyOpaqueSizePadding) {
   blink::mojom::FetchAPIResponsePtr non_opaque_response_clone =
       CreateBlobBodyResponse();
   non_opaque_response_clone->response_time = response_time;
-  EXPECT_EQ(0, CacheStorageCache::CalculateResponsePadding(
+  EXPECT_EQ(0, LegacyCacheStorageCache::CalculateResponsePadding(
                    *non_opaque_response_clone, CreateTestPaddingKey().get(),
                    unpadded_side_data_size));
 

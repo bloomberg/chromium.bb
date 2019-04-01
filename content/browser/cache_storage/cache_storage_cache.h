@@ -36,12 +36,12 @@ class QuotaManagerProxy;
 }
 
 namespace content {
-class CacheStorage;
 class CacheStorageBlobToDiskCache;
 class CacheStorageCacheEntryHandler;
 class CacheStorageCacheObserver;
 class CacheStorageScheduler;
 enum class CacheStorageOwner;
+class LegacyCacheStorage;
 struct PutContext;
 
 namespace proto {
@@ -80,52 +80,30 @@ class CONTENT_EXPORT CacheStorageCache {
   using RequestsCallback =
       base::OnceCallback<void(blink::mojom::CacheStorageError,
                               std::unique_ptr<Requests>)>;
-  using SizeCallback = base::OnceCallback<void(int64_t)>;
-  using SizePaddingCallback = base::OnceCallback<void(int64_t, int64_t)>;
 
   // The stream index for a cache Entry. This cannot be extended without changes
   // in the Entry implementation. INDEX_SIDE_DATA is used for storing any
   // additional data, such as response side blobs or request bodies.
   enum EntryIndex { INDEX_HEADERS = 0, INDEX_RESPONSE_BODY, INDEX_SIDE_DATA };
 
-  static std::unique_ptr<CacheStorageCache> CreateMemoryCache(
-      const url::Origin& origin,
-      CacheStorageOwner owner,
-      const std::string& cache_name,
-      CacheStorage* cache_storage,
-      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
-      base::WeakPtr<storage::BlobStorageContext> blob_context,
-      std::unique_ptr<crypto::SymmetricKey> cache_padding_key);
-  static std::unique_ptr<CacheStorageCache> CreatePersistentCache(
-      const url::Origin& origin,
-      CacheStorageOwner owner,
-      const std::string& cache_name,
-      CacheStorage* cache_storage,
-      const base::FilePath& path,
-      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
-      base::WeakPtr<storage::BlobStorageContext> blob_context,
-      int64_t cache_size,
-      int64_t cache_padding,
-      std::unique_ptr<crypto::SymmetricKey> cache_padding_key);
-  static int64_t CalculateResponsePadding(
-      const blink::mojom::FetchAPIResponse& response,
-      const crypto::SymmetricKey* padding_key,
-      int side_data_size);
-  static int32_t GetResponsePaddingVersion();
+  virtual CacheStorageCacheHandle CreateHandle() = 0;
+  virtual void AddHandleRef() = 0;
+  virtual void DropHandleRef() = 0;
+  virtual bool IsUnreferenced() const = 0;
 
   // Returns ERROR_TYPE_NOT_FOUND if not found.
-  void Match(blink::mojom::FetchAPIRequestPtr request,
-             blink::mojom::CacheQueryOptionsPtr match_options,
-             int64_t trace_id,
-             ResponseCallback callback);
+  virtual void Match(blink::mojom::FetchAPIRequestPtr request,
+                     blink::mojom::CacheQueryOptionsPtr match_options,
+                     int64_t trace_id,
+                     ResponseCallback callback) = 0;
 
   // Returns blink::mojom::CacheStorageError::kSuccess and matched
   // responses in this cache. If there are no responses, returns
   // blink::mojom::CacheStorageError::kSuccess and an empty vector.
-  void MatchAll(blink::mojom::FetchAPIRequestPtr request,
-                blink::mojom::CacheQueryOptionsPtr match_options,
-                int64_t trace_id,
-                ResponsesCallback callback);
+  virtual void MatchAll(blink::mojom::FetchAPIRequestPtr request,
+                        blink::mojom::CacheQueryOptionsPtr match_options,
+                        int64_t trace_id,
+                        ResponsesCallback callback) = 0;
 
   // Writes the side data (ex: V8 code cache) for the specified cache entry.
   // If it doesn't exist, or the |expected_response_time| differs from the
@@ -133,12 +111,12 @@ class CONTENT_EXPORT CacheStorageCache {
   // Note: This "side data" is same meaning as "metadata" in HTTPCache. We use
   // "metadata" in cache_storage.proto for the pair of headers of a request and
   // a response. To avoid the confusion we use "side data" here.
-  void WriteSideData(CacheStorageCache::ErrorCallback callback,
-                     const GURL& url,
-                     base::Time expected_response_time,
-                     int64_t trace_id,
-                     scoped_refptr<net::IOBuffer> buffer,
-                     int buf_len);
+  virtual void WriteSideData(ErrorCallback callback,
+                             const GURL& url,
+                             base::Time expected_response_time,
+                             int64_t trace_id,
+                             scoped_refptr<net::IOBuffer> buffer,
+                             int buf_len) = 0;
 
   // Runs given batch operations. This corresponds to the Batch Cache Operations
   // algorithm in the spec.
@@ -153,10 +131,95 @@ class CONTENT_EXPORT CacheStorageCache {
   //
   // TODO(nhiroki): This function should run all operations atomically.
   // http://crbug.com/486637
+  virtual void BatchOperation(
+      std::vector<blink::mojom::BatchOperationPtr> operations,
+      int64_t trace_id,
+      VerboseErrorCallback callback,
+      BadMessageCallback bad_message_callback) = 0;
+
+  // Returns blink::mojom::CacheStorageError::kSuccess and a vector of
+  // requests if there are no errors.
+  virtual void Keys(blink::mojom::FetchAPIRequestPtr request,
+                    blink::mojom::CacheQueryOptionsPtr options,
+                    int64_t trace_id,
+                    RequestsCallback callback) = 0;
+
+  // Puts the request/response pair in the cache. This is a public member to
+  // directly bypass the batch operations and write into the cache. This is used
+  // by non-CacheAPI owners. The Cache Storage API uses batch operations defined
+  // in the dispatcher.
+  virtual void Put(blink::mojom::FetchAPIRequestPtr request,
+                   blink::mojom::FetchAPIResponsePtr response,
+                   int64_t trace_id,
+                   ErrorCallback callback) = 0;
+
+  // Similar to MatchAll, but returns the associated requests as well.
+  virtual void GetAllMatchedEntries(
+      blink::mojom::FetchAPIRequestPtr request,
+      blink::mojom::CacheQueryOptionsPtr match_options,
+      int64_t trace_id,
+      CacheEntriesCallback callback) = 0;
+
+ protected:
+  virtual ~CacheStorageCache() = default;
+};
+
+// Concrete implementation of the CacheStorageCache abstract class.  This is
+// the legacy implementation using disk_cache for the backend.
+// TODO: This class should be moved to a separate file (crbug.com/940449)
+class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
+ public:
+  using SizeCallback = base::OnceCallback<void(int64_t)>;
+  using SizePaddingCallback = base::OnceCallback<void(int64_t, int64_t)>;
+
+  static std::unique_ptr<LegacyCacheStorageCache> CreateMemoryCache(
+      const url::Origin& origin,
+      CacheStorageOwner owner,
+      const std::string& cache_name,
+      LegacyCacheStorage* cache_storage,
+      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
+      base::WeakPtr<storage::BlobStorageContext> blob_context,
+      std::unique_ptr<crypto::SymmetricKey> cache_padding_key);
+  static std::unique_ptr<LegacyCacheStorageCache> CreatePersistentCache(
+      const url::Origin& origin,
+      CacheStorageOwner owner,
+      const std::string& cache_name,
+      LegacyCacheStorage* cache_storage,
+      const base::FilePath& path,
+      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
+      base::WeakPtr<storage::BlobStorageContext> blob_context,
+      int64_t cache_size,
+      int64_t cache_padding,
+      std::unique_ptr<crypto::SymmetricKey> cache_padding_key);
+  static int64_t CalculateResponsePadding(
+      const blink::mojom::FetchAPIResponse& response,
+      const crypto::SymmetricKey* padding_key,
+      int side_data_size);
+  static int32_t GetResponsePaddingVersion();
+
+  void Match(blink::mojom::FetchAPIRequestPtr request,
+             blink::mojom::CacheQueryOptionsPtr match_options,
+             int64_t trace_id,
+             ResponseCallback callback) override;
+
+  void MatchAll(blink::mojom::FetchAPIRequestPtr request,
+                blink::mojom::CacheQueryOptionsPtr match_options,
+                int64_t trace_id,
+                ResponsesCallback callback) override;
+
+  void WriteSideData(ErrorCallback callback,
+                     const GURL& url,
+                     base::Time expected_response_time,
+                     int64_t trace_id,
+                     scoped_refptr<net::IOBuffer> buffer,
+                     int buf_len) override;
+
+  // TODO(nhiroki): This function should run all operations atomically.
+  // http://crbug.com/486637
   void BatchOperation(std::vector<blink::mojom::BatchOperationPtr> operations,
                       int64_t trace_id,
                       VerboseErrorCallback callback,
-                      BadMessageCallback bad_message_callback);
+                      BadMessageCallback bad_message_callback) override;
   void BatchDidGetUsageAndQuota(
       std::vector<blink::mojom::BatchOperationPtr> operations,
       int64_t trace_id,
@@ -182,12 +245,10 @@ class CONTENT_EXPORT CacheStorageCache {
                              base::Optional<std::string> message,
                              int64_t trace_id);
 
-  // Returns blink::mojom::CacheStorageError::kSuccess and a vector of
-  // requests if there are no errors.
   void Keys(blink::mojom::FetchAPIRequestPtr request,
             blink::mojom::CacheQueryOptionsPtr options,
             int64_t trace_id,
-            RequestsCallback callback);
+            RequestsCallback callback) override;
 
   // Closes the backend. Future operations that require the backend
   // will exit early. Close should only be called once per CacheStorageCache.
@@ -200,23 +261,18 @@ class CONTENT_EXPORT CacheStorageCache {
   // the cache's size.
   void GetSizeThenClose(SizeCallback callback);
 
-  // Puts the request/response pair in the cache. This is a public member to
-  // directly bypass the batch operations and write into the cache. This is used
-  // by non-CacheAPI owners. The Cache Storage API uses batch operations defined
-  // in the dispatcher.
   void Put(blink::mojom::FetchAPIRequestPtr request,
            blink::mojom::FetchAPIResponsePtr response,
            int64_t trace_id,
-           ErrorCallback callback);
+           ErrorCallback callback) override;
 
-  // Similar to MatchAll, but returns the associated requests as well.
   void GetAllMatchedEntries(blink::mojom::FetchAPIRequestPtr request,
                             blink::mojom::CacheQueryOptionsPtr match_options,
                             int64_t trace_id,
-                            CacheEntriesCallback callback);
+                            CacheEntriesCallback callback) override;
 
   // Async operations in progress will cancel and not run their callbacks.
-  virtual ~CacheStorageCache();
+  ~LegacyCacheStorageCache() override;
 
   base::FilePath path() const { return path_; }
 
@@ -242,13 +298,16 @@ class CONTENT_EXPORT CacheStorageCache {
   static size_t EstimatedStructSize(
       const blink::mojom::FetchAPIRequestPtr& request);
 
-  base::WeakPtr<CacheStorageCache> AsWeakPtr();
+  base::WeakPtr<LegacyCacheStorageCache> AsWeakPtr();
 
-  // virtual for testing
-  virtual CacheStorageCacheHandle CreateHandle();
-  void AddHandleRef();
-  void DropHandleRef();
-  bool IsUnreferenced() const;
+  CacheStorageCacheHandle CreateHandle() override;
+  void AddHandleRef() override;
+  void DropHandleRef() override;
+  bool IsUnreferenced() const override;
+
+  static LegacyCacheStorageCache* From(const CacheStorageCacheHandle& handle) {
+    return static_cast<LegacyCacheStorageCache*>(handle.value());
+  }
 
  private:
   // QueryCache types:
@@ -284,12 +343,12 @@ class CONTENT_EXPORT CacheStorageCache {
   using BlobToDiskCacheIDMap =
       base::IDMap<std::unique_ptr<CacheStorageBlobToDiskCache>>;
 
-  CacheStorageCache(
+  LegacyCacheStorageCache(
       const url::Origin& origin,
       CacheStorageOwner owner,
       const std::string& cache_name,
       const base::FilePath& path,
-      CacheStorage* cache_storage,
+      LegacyCacheStorage* cache_storage,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context,
       int64_t cache_size,
@@ -519,7 +578,7 @@ class CONTENT_EXPORT CacheStorageCache {
 
   // Raw pointer is safe because the CacheStorage instance owns this
   // CacheStorageCache object.
-  CacheStorage* cache_storage_;
+  LegacyCacheStorage* cache_storage_;
 
   // A handle that is used to keep the owning CacheStorage instance referenced
   // as long this cache object is also referenced.
@@ -552,9 +611,9 @@ class CONTENT_EXPORT CacheStorageCache {
   base::OnceClosure post_backend_closed_callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<CacheStorageCache> weak_ptr_factory_;
+  base::WeakPtrFactory<LegacyCacheStorageCache> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(CacheStorageCache);
+  DISALLOW_COPY_AND_ASSIGN(LegacyCacheStorageCache);
 };
 
 }  // namespace content
