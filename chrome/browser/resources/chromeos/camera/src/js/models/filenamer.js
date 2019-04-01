@@ -27,6 +27,13 @@ cca.models.Filenamer = function(timestamp) {
    */
   this.timestamp_ = timestamp === undefined ? Date.now() : timestamp;
 
+  /**
+   * Number of already saved burst images.
+   * @type {number}
+   * @private
+   */
+  this.burstCount_ = 0;
+
   // End of properties, seal the object.
   Object.seal(this);
 };
@@ -44,6 +51,36 @@ cca.models.Filenamer.IMAGE_PREFIX = 'IMG_';
  * @const
  */
 cca.models.Filenamer.VIDEO_PREFIX = 'VID_';
+
+/**
+ * The suffix of burst image files.
+ * @type {string}
+ * @const
+ */
+cca.models.Filenamer.BURST_SUFFIX = '_BURST';
+
+/**
+ * The suffix of cover image for a series of burst image files.
+ * @type {string}
+ * @const
+ */
+cca.models.Filenamer.BURST_COVER_SUFFIX = '_COVER';
+
+/**
+ * Creates new filename for burst image.
+ * @param {boolean} isCover If the image is set as cover of the burst.
+ * @return {string} New filename.
+ */
+cca.models.Filenamer.prototype.newBurstName = function(isCover) {
+  const prependZeros = (n, width) => {
+    n = n + '';
+    return new Array(Math.max(0, width - n.length) + 1).join('0') + n;
+  };
+  return cca.models.Filenamer.IMAGE_PREFIX +
+      cca.models.Filenamer.timestampToDatetimeName_(this.timestamp_) +
+      cca.models.Filenamer.BURST_SUFFIX + prependZeros(++this.burstCount_, 5) +
+      (isCover ? cca.models.Filenamer.BURST_COVER_SUFFIX : '') + '.jpg';
+};
 
 /**
  * Creates new filename for video.

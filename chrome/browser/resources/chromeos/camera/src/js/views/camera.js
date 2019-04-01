@@ -195,46 +195,6 @@ cca.views.Camera.prototype.handlingKey = function(key) {
 };
 
 /**
- * Returns constraints-candidates for all available video-devices.
- * @return {!Promise<Array<Object>>} Promise for the result.
- * @private
- */
-cca.views.Camera.prototype.constraintsCandidates_ = function() {
-  var deviceConstraints = (deviceId, videoMode) => {
-    // Constraints are ordered by priority.
-    return [
-      {
-        aspectRatio: {ideal: videoMode ? 1.7777777778 : 1.3333333333},
-        width: {min: 1280},
-        frameRate: {min: 24},
-      },
-      {
-        width: {min: 640},
-        frameRate: {min: 24},
-      },
-    ].map((constraint) => {
-      // Each passed-in video-constraint will be modified here.
-      if (deviceId) {
-        constraint.deviceId = {exact: deviceId};
-      } else {
-        // As a default camera use the one which is facing the user.
-        constraint.facingMode = {exact: 'user'};
-      }
-      return {audio: videoMode, video: constraint};
-    });
-  };
-
-  return this.options_.videoDeviceIds().then((deviceIds) => {
-    var videoMode = cca.state.get('video-mode');
-    var candidates = [];
-    deviceIds.forEach((deviceId) => {
-      candidates = candidates.concat(deviceConstraints(deviceId, videoMode));
-    });
-    return candidates;
-  });
-};
-
-/**
  * Stops camera and tries to start camera stream again if possible.
  * @return {!Promise} Promise for the start-camera operation.
  * @private
@@ -260,45 +220,38 @@ cca.views.Camera.prototype.stop_ = function() {
 cca.views.Camera.prototype.start_ = function() {
   var suspend = this.locked_ || chrome.app.window.current().isMinimized();
   this.started_ =
-      (suspend ? Promise.reject(new Error('suspend')) :
-                 this.constraintsCandidates_())
-          .then((candidates) => {
-            var tryStartWithCandidate = (index) => {
-              if (index >= candidates.length) {
-                return Promise.reject(new Error('out-of-candidates'));
+      (async () => {
+        if (!suspend) {
+          for (const id of await this.options_.videoDeviceIds()) {
+            for (const [mode, constraints] of await this.modes_
+                     .getConstraitsForModes(id)) {
+              try {
+                const stream =
+                    await navigator.mediaDevices.getUserMedia(constraints);
+                await this.preview_.start(stream);
+                this.facingMode_ =
+                    this.options_.updateValues(constraints, stream);
+                await this.modes_.updateMode(mode, stream);
+                cca.nav.close('warning', 'no-camera');
+                return;
+              } catch (e) {
+                this.preview_.stop();
+                console.error(e);
               }
-              var constraints = candidates[index];
-              return navigator.mediaDevices.getUserMedia(constraints)
-                  .then(this.preview_.start.bind(this.preview_))
-                  .then(() => {
-                    this.facingMode_ = this.options_.updateValues(
-                        constraints, this.preview_.stream);
-                    return this.modes_.update(this.preview_.stream);
-                  })
-                  .then(() => {
-                    cca.nav.close('warning', 'no-camera');
-                  })
-                  .catch((error) => {
-                    console.error(error);
-                    return new Promise((resolve) => {
-                      // TODO(mtomasz): Workaround for crbug.com/383241.
-                      setTimeout(
-                          () => resolve(tryStartWithCandidate(index + 1)), 0);
-                    });
-                  });
-            };
-            return tryStartWithCandidate(0);
-          })
-          .catch((error) => {
-            if (error && error.message != 'suspend') {
-              console.error(error);
-              cca.nav.open('warning', 'no-camera');
             }
-            // Schedule to retry.
-            if (this.retryStartTimeout_) {
-              clearTimeout(this.retryStartTimeout_);
-              this.retryStartTimeout_ = null;
-            }
-            this.retryStartTimeout_ = setTimeout(this.start_.bind(this), 100);
-          });
+          }
+        }
+        throw new Error('suspend');
+      })().catch((error) => {
+        if (error && error.message != 'suspend') {
+          console.error(error);
+          cca.nav.open('warning', 'no-camera');
+        }
+        // Schedule to retry.
+        if (this.retryStartTimeout_) {
+          clearTimeout(this.retryStartTimeout_);
+          this.retryStartTimeout_ = null;
+        }
+        this.retryStartTimeout_ = setTimeout(this.start_.bind(this), 100);
+      });
 };
