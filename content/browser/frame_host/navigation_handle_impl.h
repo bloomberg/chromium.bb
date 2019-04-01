@@ -151,7 +151,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
 
   // Used in tests.
   NavigationRequest::NavigationHandleState state_for_testing() const {
-    return state_;
+    return state();
   }
 
   // The NavigatorDelegate to notify/query for various navigation events.
@@ -167,12 +167,12 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   NavigatorDelegate* GetDelegate() const;
 
   blink::mojom::RequestContextType request_context_type() const {
-    DCHECK_GE(state_, NavigationRequest::PROCESSING_WILL_START_REQUEST);
+    DCHECK_GE(state(), NavigationRequest::PROCESSING_WILL_START_REQUEST);
     return navigation_request_->begin_params()->request_context_type;
   }
 
   blink::WebMixedContentContextType mixed_content_context_type() const {
-    DCHECK_GE(state_, NavigationRequest::PROCESSING_WILL_START_REQUEST);
+    DCHECK_GE(state(), NavigationRequest::PROCESSING_WILL_START_REQUEST);
     return navigation_request_->begin_params()->mixed_content_context_type;
   }
 
@@ -276,7 +276,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   const GURL& base_url() { return base_url_; }
 
   NavigationType navigation_type() {
-    DCHECK_GE(state_, NavigationRequest::DID_COMMIT);
+    DCHECK_GE(state(), NavigationRequest::DID_COMMIT);
     return navigation_type_;
   }
 
@@ -363,8 +363,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   // end of a round of NavigationThrottleChecks.
   void RunCompleteCallback(NavigationThrottle::ThrottleCheckResult result);
 
-  // Used in tests.
-  NavigationRequest::NavigationHandleState state() const { return state_; }
+  NavigationRequest::NavigationHandleState state() const {
+    return navigation_request_->handle_state();
+  }
 
   // Checks for attempts to navigate to a page that is already referenced more
   // than once in the frame's ancestors.  This is a helper function used by
@@ -402,9 +403,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   // request.
   std::vector<std::string> removed_request_headers_;
   net::HttpRequestHeaders modified_request_headers_;
-
-  // The state the navigation is in.
-  NavigationRequest::NavigationHandleState state_;
 
   // The time this navigation was ready to commit.
   base::TimeTicks ready_to_commit_time_;
