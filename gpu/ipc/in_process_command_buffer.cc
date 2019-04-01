@@ -448,6 +448,11 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
   use_virtualized_gl_context_ |=
       context_group_->feature_info()->workarounds().use_virtualized_gl_contexts;
 
+  if (context_group_->use_passthrough_cmd_decoder()) {
+    // Virtualized contexts don't work with passthrough command decoder.
+    // See https://crbug.com/914976
+    use_virtualized_gl_context_ = false;
+  }
   // TODO(sunnyps): Should this use ScopedCrashKey instead?
   crash_keys::gpu_gl_context_is_virtual.Set(use_virtualized_gl_context_ ? "1"
                                                                         : "0");

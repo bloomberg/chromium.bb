@@ -145,10 +145,16 @@ bool SharedContextState::InitializeGL(
 
   DCHECK(context_->IsCurrent(nullptr));
 
+  bool use_passthrough_cmd_decoder =
+      gpu_preferences.use_passthrough_cmd_decoder &&
+      gles2::PassthroughCommandDecoderSupported();
+  // Virtualized contexts don't work with passthrough command decoder.
+  // See https://crbug.com/914976
+  DCHECK(!use_passthrough_cmd_decoder || !use_virtualized_gl_contexts_);
+
   feature_info_ = std::move(feature_info);
   feature_info_->Initialize(gpu::CONTEXT_TYPE_OPENGLES2,
-                            gpu_preferences.use_passthrough_cmd_decoder &&
-                                gles2::PassthroughCommandDecoderSupported(),
+                            use_passthrough_cmd_decoder,
                             gles2::DisallowedFeatures());
 
   auto* api = gl::g_current_gl_context;
