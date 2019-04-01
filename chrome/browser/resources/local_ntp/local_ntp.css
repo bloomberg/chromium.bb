@@ -376,15 +376,11 @@ body.remove-fakebox #user-content {
 }
 
 #most-visited {
-  margin-top: 56px;
-  text-align: -webkit-center;
-  user-select: none;
-}
-
-#most-visited.md-icons {
   /* Total of 40px margin between fakebox and MV tiles: 8px fakebox
    * margin-bottom + 22px here margin-top + 10px MV margin-top */
   margin-top: 22px;
+  text-align: -webkit-center;
+  user-select: none;
 }
 
 /* Non-Google pages have no Fakebox, so don't need top margin. */
@@ -393,197 +389,116 @@ body.remove-fakebox #user-content {
 }
 
 #mv-tiles {
-  /* Two rows of tiles of 128px each, 16px of spacing between the rows, and
-   * 4px/8px of margin on top and bottom respectively. If you change this, also
-   * change the corresponding values in most_visited_single.css. */
-  height: calc(2*var(--tile-height) + var(--tile-margin)  + 4px + 8px);
-  margin: 0;
-  position: relative;
-  text-align: -webkit-auto;
-  width: var(--content-width);
-}
-
-.md-icons #mv-tiles {
   /* Two rows of tiles of 112px each, 16px of spacing after each row, and 10px
    * of margin on top. If you change this, also change the corresponding values
    * in most_visited_single.css. */
   height: calc(2*(var(--md-tile-height) + var(--md-tile-margin)) + 10px);
+  margin: 0;
+  position: relative;
+  text-align: -webkit-auto;
   /* Add 2*5px to account for drop shadow on the tiles. If you change this, also
    * change the corresponding values in most_visited_single.css. */
   width: calc(var(--content-width) + 2*5px);
 }
 
-#mv-notice-x {
-  -webkit-mask-image: -webkit-image-set(
-      url(chrome-search://local-ntp/images/close_3_mask.png) 1x,
-      url(chrome-search://local-ntp/images/close_3_mask.png@2x) 2x);
-  -webkit-mask-position: 3px 3px;
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-size: 10px 10px;
-  background-color: rgba(90, 90, 90, 0.7);
-  cursor: pointer;
-  display: inline-block;
-  filter: var(--theme-filter, 'none');
-  height: 16px;
-  margin-inline-start: 20px;
-  outline: none;
-  vertical-align: middle;
-  width: 16px;
-}
-
-html[darkmode=true] body:not(.light-chip) #mv-notice-x {
-  background-color: rgb(var(--GG200-rgb));
-}
-
-#mv-notice-x:hover {
-  background-color: rgba(90, 90, 90, 1.0);
-}
-
-#mv-notice-x:active {
-  background-color: rgb(var(--GB500-rgb));
-}
-
-html[darkmode=true] body:not(.light-chip) #mv-notice-x:hover,
-html[darkmode=true] body:not(.light-chip) #mv-notice-x:active {
-  background-color: rgb(var(--GG400-rgb));
-}
-
-.md-icons #mv-notice-x {
-  display: none;
-}
-
 #mv-notice-container {
-  width: 100%;
-}
-
-.md-icons #mv-notice-container {
   bottom: -50px;
+  left: 0;
   margin-bottom: 16px;
   position: fixed;
   transition: bottom 400ms;
+  width: 100%;
 }
 
 /* Required to allow click events through the wrapping div of the toast
  * notification container. */
-.md-icons #mv-notice-container,
+#mv-notice-container,
 #error-notice-container {
   pointer-events: none;
 }
-.md-icons #mv-notice-container > div,
+#mv-notice-container > div,
 #error-notice-container > div {
   pointer-events: all;
 }
 
-
-.md-icons #mv-notice-container.float-up {
+#mv-notice-container.float-up {
   bottom: 0;
 }
 
-.md-icons #mv-notice-container.notice-hide {
+#mv-notice-container.notice-hide {
   display: none;
 }
 
 /* The notification shown when a tile is blacklisted. */
 #mv-notice {
-  font-size: 12px;
-  font-weight: bold;
-  opacity: 1;
-  padding: 10px 0;
-}
-
-.md-icons #mv-notice {
   background-color: white;
   border: 1px solid rgb(var(--GG300-rgb));
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
   border-radius: 16px;
-  font-weight: normal;
+  font-size: 12px;
   height: fit-content;
   margin: 0 auto;
-  padding: 0;
+  opacity: 1;
   width: fit-content;
 }
 
-html[darkmode=true] body:not(.light-chip) .md-icons #mv-notice {
+html[darkmode=true] body:not(.light-chip)  #mv-notice {
   background-color: rgb(var(--GG900-rgb));
   border-color: rgba(0, 0, 0, 0.1);
 }
 
 #mv-notice span {
+  color: rgb(var(--GG700-rgb));
   cursor: default;
   display: inline-block;
-  height: 16px;
-  line-height: 16px;
-  vertical-align: top;
-}
-
-.md-icons #mv-notice span {
-  color: rgb(var(--GG700-rgb));
   height: auto;
   line-height: 32px;
   vertical-align: unset;
 }
 
-html[darkmode=true] body:not(.light-chip) .md-icons #mv-notice span {
+html[darkmode=true] body:not(.light-chip)  #mv-notice span {
   color: rgb(var(--GG200-rgb));
 }
 
 /* Links in the notification. */
 #mv-notice-links span {
-  color: var(--text-color-link);
-  cursor: pointer;
-  margin-inline-start: 6px;
-  outline: none;
-  padding: 0 4px;
-}
-
-.md-icons #mv-notice-links span {
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
   border-radius: 16px;
   color: rgb(var(--GB600-rgb));
+  cursor: pointer;
   margin-inline-start: 0;
+  outline: none;
   padding: 0 16px;
   position: relative;
 }
 
-html[darkmode=true] body:not(.light-chip) .md-icons #mv-notice-links span {
+html[darkmode=true] body:not(.light-chip)  #mv-notice-links span {
   color: rgb(var(--GB400-dark-rgb));
 }
 
-#mv-notice-links span:hover,
 #mv-notice-links span:focus {
   text-decoration: underline;
 }
 
-.md-icons #mv-notice-links span:hover,
-.md-icons #mv-notice-links span:active {
+#mv-notice-links span:hover,
+#mv-notice-links span:active {
   background-color: rgba(var(--GB600-rgb), 0.1);
   text-decoration: none;
   transition: background-color 200ms;
 }
 
-html[darkmode=true] body:not(.light-chip) .md-icons #mv-notice-links span:hover,
-html[darkmode=true] body:not(.light-chip) .md-icons #mv-notice-links span:active {
+html[darkmode=true] body:not(.light-chip)  #mv-notice-links span:hover,
+html[darkmode=true] body:not(.light-chip)  #mv-notice-links span:active {
   background-color: rgba(var(--GB400-dark-rgb), 0.1);
 }
 
 #mv-msg {
   color: var(--text-color);
-}
-
-.md-icons #mv-msg {
   padding: 0 16px;
 }
 
-.default-theme.dark #mv-msg :not(.md-icons) {
-  color: #fff;
-}
-
-.default-theme.dark #mv-notice-links :not(.md-icons) span {
-  color: #fff;
-}
-
-html[darkmode=true] body:not(.light-chip) .default-theme.dark #mv-msg :not(.md-icons),
-html[darkmode=true] body:not(.light-chip) .default-theme.dark #mv-notice-links :not(.md-icons) span {
+html[darkmode=true] body:not(.light-chip) .default-theme.dark #mv-msg :not(),
+html[darkmode=true] body:not(.light-chip) .default-theme.dark #mv-notice-links :not() span {
   color: rgb(var(--GG200-rgb));
 }
 

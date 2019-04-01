@@ -96,8 +96,6 @@ var CLASSES = {
   HIDE_PROMO: 'hide-promo',
   INITED: 'inited',  // Reveals the <body> once init() is done.
   LEFT_ALIGN_ATTRIBUTION: 'left-align-attribution',
-  MATERIAL_DESIGN_ICONS:
-      'md-icons',  // Applies Material Design styles to Most Visited.
   // Vertically centers the most visited section for a non-Google provided page.
   NON_GOOGLE_PAGE: 'non-google-page',
   NON_WHITE_BG: 'non-white-bg',
@@ -132,7 +130,6 @@ var IDS = {
   MOST_VISITED: 'most-visited',
   NOTIFICATION: 'mv-notice',
   NOTIFICATION_CONTAINER: 'mv-notice-container',
-  NOTIFICATION_CLOSE_BUTTON: 'mv-notice-x',
   NOTIFICATION_MESSAGE: 'mv-msg',
   NTP_CONTENTS: 'ntp-contents',
   PROMO: 'promo',
@@ -608,8 +605,6 @@ function setCustomThemeStyle(themeInfo) {
   document.body.style.setProperty('--text-color-light', textColorLight);
   // Themes reuse the "light" text color for links too.
   document.body.style.setProperty('--text-color-link', textColorLight);
-  $(IDS.NOTIFICATION_CLOSE_BUTTON)
-      .style.setProperty('--theme-filter', mvxFilter);
 }
 
 
@@ -752,17 +747,7 @@ function onDeleteCustomLinkDone(success) {
  */
 function showNotification(msg) {
   $(IDS.NOTIFICATION_MESSAGE).textContent = msg;
-
-  if (configData.isGooglePage) {
-    floatUpNotification($(IDS.NOTIFICATION), $(IDS.NOTIFICATION_CONTAINER));
-  } else {
-    var notification = $(IDS.NOTIFICATION);
-    notification.classList.remove(CLASSES.HIDE_NOTIFICATION);
-    notification.classList.remove(CLASSES.DELAYED_HIDE_NOTIFICATION);
-    notification.scrollTop;
-    notification.classList.add(CLASSES.DELAYED_HIDE_NOTIFICATION);
-  }
-
+  floatUpNotification($(IDS.NOTIFICATION), $(IDS.NOTIFICATION_CONTAINER));
   $(IDS.UNDO_LINK).focus();
 }
 
@@ -771,15 +756,8 @@ function showNotification(msg) {
  * Hides the Most Visited pop-up notification.
  */
 function hideNotification() {
-  if (configData.isGooglePage) {
-    floatDownNotification(
-        $(IDS.NOTIFICATION), $(IDS.NOTIFICATION_CONTAINER),
-        /*showPromo=*/ true);
-  } else {
-    var notification = $(IDS.NOTIFICATION);
-    notification.classList.add(CLASSES.HIDE_NOTIFICATION);
-    notification.classList.remove(CLASSES.DELAYED_HIDE_NOTIFICATION);
-  }
+  floatDownNotification(
+      $(IDS.NOTIFICATION), $(IDS.NOTIFICATION_CONTAINER), /*showPromo=*/ true);
 }
 
 
@@ -1109,16 +1087,6 @@ function showSearchSuggestions() {
 
 
 /**
- * Enables Material Design styles for the Most Visited section. Implicitly
- * enables Material Design for the rest of NTP.
- */
-function enableMDIcons() {
-  $(IDS.MOST_VISITED).classList.add(CLASSES.MATERIAL_DESIGN_ICONS);
-  $(IDS.TILES).classList.add(CLASSES.MATERIAL_DESIGN_ICONS);
-  animations.addRippleAnimations();
-}
-
-/**
  * Prepares the New Tab Page by adding listeners, the most visited pages
  * section, and Google-specific elements for a Google-provided page.
  */
@@ -1157,8 +1125,6 @@ function init() {
   $(IDS.ATTRIBUTION_TEXT).textContent =
       configData.translatedStrings.attributionIntro;
 
-  $(IDS.NOTIFICATION_CLOSE_BUTTON).addEventListener('click', hideNotification);
-
   var embeddedSearchApiHandle = window.chrome.embeddedSearch;
 
   ntpApiHandle = embeddedSearchApiHandle.newTabPage;
@@ -1171,7 +1137,7 @@ function init() {
 
   if (configData.isGooglePage) {
     showSearchSuggestions();
-    enableMDIcons();
+    animations.addRippleAnimations();
 
     ntpApiHandle.onaddcustomlinkdone = onAddCustomLinkDone;
     ntpApiHandle.onupdatecustomlinkdone = onUpdateCustomLinkDone;
