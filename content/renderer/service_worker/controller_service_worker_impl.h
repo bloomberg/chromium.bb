@@ -55,6 +55,8 @@ class ControllerServiceWorkerImpl
   // and by the controllees.
   mojo::BindingSet<blink::mojom::ControllerServiceWorker> bindings_;
 
+  // This should never be null because |context_client_| owns |this|.
+  // TODO(falken): Make this a raw pointer.
   base::WeakPtr<ServiceWorkerContextClient> context_client_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

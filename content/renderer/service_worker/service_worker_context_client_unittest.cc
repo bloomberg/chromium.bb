@@ -323,7 +323,6 @@ class ServiceWorkerContextClientTest : public testing::Test {
         nullptr /* subresource_loaders */,
         blink::scheduler::GetSingleThreadTaskRunnerForTesting());
     auto* context_client_raw = context_client.get();
-    context_client->SetReportDebugLogForTesting(false);
 
     embedded_worker_instance_client->worker_ =
         std::make_unique<FakeWebEmbeddedWorker>(std::move(context_client));
