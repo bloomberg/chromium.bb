@@ -6159,3 +6159,7 @@ crbug.com/947477 external/wpt/editing/run/removeformat.html [ Pass Crash Timeout
 crbug.com/947023 external/wpt/fetch/sec-metadata/font.tentative.https.sub.html [ Pass Failure ]
 crbug.com/947023 external/wpt/fetch/sec-metadata/report.tentative.https.sub.html [ Pass Timeout ]
 crbug.com/947023 external/wpt/fetch/sec-metadata/xslt.tentative.https.sub.html [ Pass Failure ]
+
+## Temp while landing a fix from webrtc importer
+crbug.com/948055 external/wpt/webrtc/RTCDataChannel-id.html [ Failure Pass ]
+
