@@ -1686,11 +1686,10 @@ void SplitViewController::EndWindowDragImpl(
         overview_session->set_enter_exit_overview_type(
             OverviewSession::EnterExitOverviewType::kWindowDragged);
       }
-      // Activate the dragged window will end the overview at the same time.The
-      // dragged window will be restored back to its previous state before
-      // dragging.
+      // Activate the dragged window and end the overview. The dragged window
+      // will be restored back to its previous state before dragging.
       wm::ActivateWindow(window);
-      DCHECK(!Shell::Get()->overview_controller()->IsSelecting());
+      EndOverview();
 
       // Update the dragged window's bounds. It's possible that the dragged
       // window's bounds was changed during dragging. Update its bounds after

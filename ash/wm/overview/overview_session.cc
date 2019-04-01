@@ -620,6 +620,14 @@ void OverviewSession::OnWindowActivating(
 
   // Don't restore focus on exit if a window was just activated.
   ResetFocusRestoreWindow(false);
+
+  // Do not cancel overview mode if the window activation was caused by
+  // dragging a window when overview is active (e.g., it can happen when
+  // dragging a snapped window while overview is opened on the other side
+  // of the screen).
+  if (wm::GetWindowState(gained_active)->is_dragged())
+    return;
+
   const auto& windows = grid->window_list();
   auto iter = std::find_if(
       windows.begin(), windows.end(),
