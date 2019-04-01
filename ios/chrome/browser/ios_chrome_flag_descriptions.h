@@ -287,6 +287,10 @@ extern const char kOnlyNewPasswordFormParsingDescription[];
 extern const char kOutOfWebFullscreenName[];
 extern const char kOutOfWebFullscreenDescription[];
 
+// Title and description for the flag to enable password generation.
+extern const char kPasswordGenerationName[];
+extern const char kPasswordGenerationDescription[];
+
 // Title and description for the flag to enable Physical Web in the omnibox.
 extern const char kPhysicalWeb[];
 extern const char kPhysicalWebDescription[];

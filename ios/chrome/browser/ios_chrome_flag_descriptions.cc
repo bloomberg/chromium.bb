@@ -354,6 +354,10 @@ const char kOutOfWebFullscreenDescription[] =
     "Use the fullscreen implementation living outside of web. Disable the one "
     "in web.";
 
+const char kPasswordGenerationName[] = "Password generation suggestion";
+const char kPasswordGenerationDescription[] =
+    "Add 'Suggest Password' in suggestion list for form completion.";
+
 const char kPhysicalWeb[] = "Physical Web";
 const char kPhysicalWebDescription[] =
     "When enabled, the omnibox will include suggestions for web pages "

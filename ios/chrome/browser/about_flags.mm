@@ -53,6 +53,7 @@
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #include "ios/chrome/browser/find_in_page/features.h"
 #include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
+#include "ios/chrome/browser/passwords/password_manager_features.h"
 #include "ios/chrome/browser/reading_list/features.h"
 #include "ios/chrome/browser/signin/feature_flags.h"
 #include "ios/chrome/browser/system_flags.h"
@@ -569,6 +570,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillNoLocalSaveOnUnmaskSuccess)},
+    {"password-generation-suggestion",
+     flag_descriptions::kPasswordGenerationName,
+     flag_descriptions::kPasswordGenerationDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(features::kPasswordGeneration)},
 };
 
 // Add all switches from experimental flags to |command_line|.
