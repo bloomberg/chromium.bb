@@ -126,7 +126,7 @@ class TrayBackground : public views::Background {
     cc::PaintFlags background_flags;
     background_flags.setAntiAlias(true);
     int border_radius = kTrayRoundedBorderRadius;
-    background_flags.setColor(kShelfControlPermanentHighlightBackground);
+    background_flags.setColor(tray_background_view_->GetBackgroundColor());
     border_radius = ShelfConstants::control_border_radius();
 
     gfx::Rect bounds = tray_background_view_->GetBackgroundBounds();
@@ -466,6 +466,12 @@ gfx::Rect TrayBackgroundView::GetBackgroundBounds() const {
   gfx::Rect bounds = GetLocalBounds();
   bounds.Inset(GetBackgroundInsets());
   return bounds;
+}
+
+SkColor TrayBackgroundView::GetBackgroundColor() const {
+  return shelf_->shelf_layout_manager()->IsShowingStatusAreaWithoutShelf()
+             ? kStandaloneStatusAreaBackground
+             : kShelfControlPermanentHighlightBackground;
 }
 
 void TrayBackgroundView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
