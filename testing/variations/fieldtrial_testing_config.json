@@ -596,28 +596,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_LeadingIcon",
-                    "params": {
-                        "variant": "leading-icon"
-                    },
-                    "enable_features": [
-                        "AutofillDropdownLayout"
-                    ]
-                },
-                {
-                    "name": "Enabled_TrailingIcon",
-                    "params": {
-                        "variant": "trailing-icon"
-                    },
-                    "enable_features": [
-                        "AutofillDropdownLayout"
-                    ]
-                },
-                {
-                    "name": "Enabled_TwoLinesLeadingIcon",
-                    "params": {
-                        "variant": "two-lines-leading-icon"
-                    },
+                    "name": "Enabled",
                     "enable_features": [
                         "AutofillDropdownLayout"
                     ]
