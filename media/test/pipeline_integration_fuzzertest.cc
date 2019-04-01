@@ -19,9 +19,9 @@
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
 #include "media/base/pipeline_status.h"
+#include "media/media_buildflags.h"
 #include "media/test/pipeline_integration_test_base.h"
 #include "media/test/test_media_source.h"
-#include "third_party/libaom/av1_buildflags.h"
 
 namespace {
 

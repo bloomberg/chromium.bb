@@ -24,9 +24,9 @@
 #include "media/renderers/renderer_impl.h"
 #include "media/test/fake_encrypted_media.h"
 #include "media/test/test_media_source.h"
-#include "third_party/libaom/av1_buildflags.h"
+#include "third_party/libaom/libaom_buildflags.h"
 
-#if BUILDFLAG(ENABLE_AV1_DECODER)
+#if BUILDFLAG(ENABLE_LIBAOM_DECODER)
 #include "media/filters/aom_video_decoder.h"
 #endif
 
@@ -76,9 +76,11 @@ static std::vector<std::unique_ptr<VideoDecoder>> CreateVideoDecodersForTest(
 #if BUILDFLAG(ENABLE_DAV1D_DECODER)
   if (base::FeatureList::IsEnabled(kDav1dVideoDecoder))
     video_decoders.push_back(std::make_unique<Dav1dVideoDecoder>(media_log));
+#if BUILDFLAG(ENABLE_LIBAOM_DECODER)
   else
     video_decoders.push_back(std::make_unique<AomVideoDecoder>(media_log));
-#elif BUILDFLAG(ENABLE_AV1_DECODER)
+#endif
+#elif BUILDFLAG(ENABLE_LIBAOM_DECODER)
   video_decoders.push_back(std::make_unique<AomVideoDecoder>(media_log));
 #endif
 

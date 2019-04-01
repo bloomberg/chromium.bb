@@ -50,6 +50,7 @@ include_rules = [
   "+installer_util_strings",  # For generated headers
   "+jni",
   "+mash/public/mojom",
+  "+media/media_buildflags.h",
   "+media/audio", # For media audio hang monitor.
   "+media/base",  # For media switches
   "+media/capabilities", # For InMemoryVideoDecodeStatsDB
@@ -100,7 +101,6 @@ include_rules = [
   "+third_party/boringssl/src/include",
   "+third_party/crashpad",
   "+third_party/cros_system_api",
-  "+third_party/libaom/av1_buildflags.h",
   "+third_party/metrics_proto",
   "+third_party/widevine/cdm/buildflags.h",
   "+third_party/widevine/cdm/widevine_cdm_common.h",

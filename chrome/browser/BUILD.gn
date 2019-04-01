@@ -2070,7 +2070,6 @@ jumbo_split_static_library("browser") {
     "//third_party/icu",
     "//third_party/leveldatabase",
     "//third_party/libaddressinput",
-    "//third_party/libaom:av1_buildflags",
     "//third_party/libxml",
     "//third_party/libyuv",
     "//third_party/metrics_proto",

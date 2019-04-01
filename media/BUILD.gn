@@ -23,6 +23,7 @@ buildflag_header("media_buildflags") {
     "ENABLE_CDM_HOST_VERIFICATION=$enable_cdm_host_verification",
     "ENABLE_CDM_STORAGE_ID=$enable_cdm_storage_id",
     "ENABLE_DAV1D_DECODER=$enable_dav1d_decoder",
+    "ENABLE_AV1_DECODER=$enable_av1_decoder",
     "ENABLE_DOLBY_VISION_DEMUXING=$enable_dolby_vision_demuxing",
     "ENABLE_FFMPEG=$media_use_ffmpeg",
     "ENABLE_FFMPEG_VIDEO_DECODERS=$enable_ffmpeg_video_decoders",
