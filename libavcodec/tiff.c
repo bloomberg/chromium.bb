@@ -55,6 +55,7 @@ typedef struct TiffContext {
     GetByteContext gb;
 
     int get_subimage;
+    uint16_t get_page;
 
     int width, height;
     unsigned int bpp, bppcount;
@@ -75,6 +76,7 @@ typedef struct TiffContext {
     unsigned white_level;
 
     uint32_t sub_ifd;
+    uint16_t cur_page;
 
     int strips, rps, sstype;
     int sot;
@@ -827,6 +829,15 @@ static int init_image(TiffContext *s, ThreadFrame *frame)
     case 324:
         s->avctx->pix_fmt = s->photometric == TIFF_PHOTOMETRIC_SEPARATED ? AV_PIX_FMT_RGB0 : AV_PIX_FMT_RGBA;
         break;
+    case 405:
+        if (s->photometric == TIFF_PHOTOMETRIC_SEPARATED)
+            s->avctx->pix_fmt = AV_PIX_FMT_RGBA;
+        else {
+            av_log(s->avctx, AV_LOG_ERROR,
+                "bpp=40 without PHOTOMETRIC_SEPARATED is unsupported\n");
+            return AVERROR_PATCHWELCOME;
+        }
+        break;
     case 483:
         s->avctx->pix_fmt = s->le ? AV_PIX_FMT_RGB48LE  : AV_PIX_FMT_RGB48BE;
         break;
@@ -944,7 +955,7 @@ static int tiff_decode_tag(TiffContext *s, AVFrame *frame)
         s->height = value;
         break;
     case TIFF_BPP:
-        if (count > 4U) {
+        if (count > 5U) {
             av_log(s->avctx, AV_LOG_ERROR,
                    "This format is not supported (bpp=%d, %d components)\n",
                    value, count);
@@ -975,7 +986,7 @@ static int tiff_decode_tag(TiffContext *s, AVFrame *frame)
                    "Samples per pixel requires a single value, many provided\n");
             return AVERROR_INVALIDDATA;
         }
-        if (value > 4U) {
+        if (value > 5U) {
             av_log(s->avctx, AV_LOG_ERROR,
                    "Samples per pixel %d is too large\n", value);
             return AVERROR_INVALIDDATA;
@@ -1318,6 +1329,12 @@ static int tiff_decode_tag(TiffContext *s, AVFrame *frame)
         break;
     case TIFF_PAGE_NUMBER:
         ADD_METADATA(count, "page_number", " / ");
+        // need to seek back to re-read the page number
+        bytestream2_seek(&s->gb, -count * sizeof(uint16_t), SEEK_CUR);
+        // read the page number
+        s->cur_page = ff_tget(&s->gb, TIFF_SHORT, s->le);
+        // get back to where we were before the previous seek
+        bytestream2_seek(&s->gb, count * sizeof(uint16_t) - sizeof(uint16_t), SEEK_CUR);
         break;
     case TIFF_SOFTWARE_NAME:
         ADD_METADATA(count, "software", NULL);
@@ -1355,6 +1372,7 @@ static int decode_frame(AVCodecContext *avctx,
     uint8_t *dst;
     GetByteContext stripsizes;
     GetByteContext stripdata;
+    int retry_for_subifd, retry_for_page;
 
     bytestream2_init(&s->gb, avpkt->data, avpkt->size);
 
@@ -1375,6 +1393,7 @@ again:
     s->fill_order  = 0;
     s->white_level = 0;
     s->is_bayer    = 0;
+    s->cur_page    = 0;
     free_geotags(s);
 
     // Reset these offsets so we can tell if they were set this frame
@@ -1389,8 +1408,20 @@ again:
             return ret;
     }
 
-    if (s->sub_ifd && s->get_subimage) {
+    /** whether we should look for this IFD's SubIFD */
+    retry_for_subifd = s->sub_ifd && s->get_subimage;
+    /** whether we should look for this multi-page IFD's next page */
+    retry_for_page = s->get_page && s->cur_page + 1 < s->get_page;  // get_page is 1-indexed
+
+    if (retry_for_page) {
+        // set offset to the next IFD
+        off = ff_tget_long(&s->gb, le);
+    } else if (retry_for_subifd) {
+        // set offset to the SubIFD
         off = s->sub_ifd;
+    }
+
+    if (retry_for_subifd || retry_for_page) {
         if (off >= UINT_MAX - 14 || avpkt->size < off + 14) {
             av_log(avctx, AV_LOG_ERROR, "IFD offset is greater than image size\n");
             return AVERROR_INVALIDDATA;
@@ -1449,10 +1480,19 @@ again:
 
     planes = s->planar ? s->bppcount : 1;
     for (plane = 0; plane < planes; plane++) {
+        uint8_t *five_planes = NULL;
         int remaining = avpkt->size;
         int decoded_height;
         stride = p->linesize[plane];
         dst = p->data[plane];
+        if (s->photometric == TIFF_PHOTOMETRIC_SEPARATED &&
+            s->avctx->pix_fmt == AV_PIX_FMT_RGBA) {
+            stride = stride * 5 / 4;
+            five_planes =
+            dst = av_malloc(stride * s->height);
+            if (!dst)
+                return AVERROR(ENOMEM);
+        }
         for (i = 0; i < s->height; i += s->rps) {
             if (i)
                 dst += s->rps * stride;
@@ -1468,13 +1508,16 @@ again:
 
             if (soff > avpkt->size || ssize > avpkt->size - soff || ssize > remaining) {
                 av_log(avctx, AV_LOG_ERROR, "Invalid strip size/offset\n");
+                av_freep(&five_planes);
                 return AVERROR_INVALIDDATA;
             }
             remaining -= ssize;
             if ((ret = tiff_unpack_strip(s, p, dst, stride, avpkt->data + soff, ssize, i,
                                          FFMIN(s->rps, s->height - i))) < 0) {
-                if (avctx->err_recognition & AV_EF_EXPLODE)
+                if (avctx->err_recognition & AV_EF_EXPLODE) {
+                    av_freep(&five_planes);
                     return ret;
+                }
                 break;
             }
         }
@@ -1485,7 +1528,7 @@ again:
                 av_log(s->avctx, AV_LOG_ERROR, "predictor == 2 with YUV is unsupported");
                 return AVERROR_PATCHWELCOME;
             }
-            dst   = p->data[plane];
+            dst   = five_planes ? five_planes : p->data[plane];
             soff  = s->bpp >> 3;
             if (s->planar)
                 soff  = FFMAX(soff / s->bppcount, 1);
@@ -1532,18 +1575,38 @@ again:
         }
 
         if (s->photometric == TIFF_PHOTOMETRIC_SEPARATED &&
-            s->avctx->pix_fmt == AV_PIX_FMT_RGB0) {
+            (s->avctx->pix_fmt == AV_PIX_FMT_RGB0 || s->avctx->pix_fmt == AV_PIX_FMT_RGBA)) {
+            int x = s->avctx->pix_fmt == AV_PIX_FMT_RGB0 ? 4 : 5;
+            uint8_t *src = five_planes ? five_planes : p->data[plane];
             dst = p->data[plane];
             for (i = 0; i < s->height; i++) {
                 for (j = 0; j < s->width; j++) {
-                    int k =  255 - dst[4 * j + 3];
-                    int r = (255 - dst[4 * j    ]) * k;
-                    int g = (255 - dst[4 * j + 1]) * k;
-                    int b = (255 - dst[4 * j + 2]) * k;
+                    int k =  255 - src[x * j + 3];
+                    int r = (255 - src[x * j    ]) * k;
+                    int g = (255 - src[x * j + 1]) * k;
+                    int b = (255 - src[x * j + 2]) * k;
                     dst[4 * j    ] = r * 257 >> 16;
                     dst[4 * j + 1] = g * 257 >> 16;
                     dst[4 * j + 2] = b * 257 >> 16;
-                    dst[4 * j + 3] = 255;
+                    dst[4 * j + 3] = s->avctx->pix_fmt == AV_PIX_FMT_RGBA ? src[x * j + 4] : 255;
+                }
+                src += stride;
+                dst += p->linesize[plane];
+            }
+            av_freep(&five_planes);
+        } else if (s->photometric == TIFF_PHOTOMETRIC_SEPARATED &&
+            s->avctx->pix_fmt == AV_PIX_FMT_RGBA64BE) {
+            dst = p->data[plane];
+            for (i = 0; i < s->height; i++) {
+                for (j = 0; j < s->width; j++) {
+                    uint64_t k =  65535 - AV_RB16(dst + 8 * j + 6);
+                    uint64_t r = (65535 - AV_RB16(dst + 8 * j    )) * k;
+                    uint64_t g = (65535 - AV_RB16(dst + 8 * j + 2)) * k;
+                    uint64_t b = (65535 - AV_RB16(dst + 8 * j + 4)) * k;
+                    AV_WB16(dst + 8 * j    , r * 65537 >> 32);
+                    AV_WB16(dst + 8 * j + 2, g * 65537 >> 32);
+                    AV_WB16(dst + 8 * j + 4, b * 65537 >> 32);
+                    AV_WB16(dst + 8 * j + 6, 65535);
                 }
                 dst += p->linesize[plane];
             }
@@ -1607,6 +1670,7 @@ static av_cold int tiff_end(AVCodecContext *avctx)
 #define OFFSET(x) offsetof(TiffContext, x)
 static const AVOption tiff_options[] = {
     { "subimage", "decode subimage instead if available", OFFSET(get_subimage), AV_OPT_TYPE_BOOL, {.i64=0},  0, 1, AV_OPT_FLAG_DECODING_PARAM | AV_OPT_FLAG_VIDEO_PARAM },
+    { "page", "page number of multi-page image to decode (starting from 1)", OFFSET(get_page), AV_OPT_TYPE_INT, {.i64=0}, 0, UINT16_MAX, AV_OPT_FLAG_DECODING_PARAM | AV_OPT_FLAG_VIDEO_PARAM },
     { NULL },
 };
 

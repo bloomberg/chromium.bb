@@ -552,8 +552,7 @@ static int mov_write_eac3_tag(AVIOContext *pb, MOVTrack *track)
     size = 2 + ((34 * (info->num_ind_sub + 1) + 7) >> 3);
     buf = av_malloc(size);
     if (!buf) {
-        size = AVERROR(ENOMEM);
-        goto end;
+        return AVERROR(ENOMEM);
     }
 
     init_put_bits(&pbc, buf, size);
@@ -583,10 +582,6 @@ static int mov_write_eac3_tag(AVIOContext *pb, MOVTrack *track)
     avio_write(pb, buf, size);
 
     av_free(buf);
-
-end:
-    av_packet_unref(&info->pkt);
-    av_freep(&track->eac3_priv);
 
     return size;
 }
@@ -5973,6 +5968,11 @@ static void mov_free(AVFormatContext *s)
         av_freep(&mov->tracks[i].frag_info);
         av_packet_unref(&mov->tracks[i].cover_image);
 
+        if (mov->tracks[i].eac3_priv) {
+            struct eac3_info *info = mov->tracks[i].eac3_priv;
+            av_packet_unref(&info->pkt);
+            av_freep(&mov->tracks[i].eac3_priv);
+        }
         if (mov->tracks[i].vos_len)
             av_freep(&mov->tracks[i].vos_data);
 
@@ -6858,7 +6858,7 @@ AVOutputFormat ff_mov_muxer = {
     .deinit            = mov_free,
     .flags             = AVFMT_GLOBALHEADER | AVFMT_ALLOW_FLUSH | AVFMT_TS_NEGATIVE,
     .codec_tag         = (const AVCodecTag* const []){
-        ff_codec_movvideo_tags, ff_codec_movaudio_tags, 0
+        ff_codec_movvideo_tags, ff_codec_movaudio_tags, ff_codec_movsubtitle_tags, 0
     },
     .check_bitstream   = mov_check_bitstream,
     .priv_class        = &mov_muxer_class,
