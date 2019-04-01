@@ -399,6 +399,8 @@ void SchedulerWorkerPoolImpl::Start(
     SchedulerWorkerObserver* scheduler_worker_observer,
     WorkerEnvironment worker_environment,
     Optional<TimeDelta> may_block_threshold) {
+  DCHECK(!replacement_pool_);
+
   ScopedWorkersExecutor executor(this);
 
   AutoSchedulerLock auto_lock(lock_);

@@ -76,6 +76,15 @@ class BASE_EXPORT SchedulerWorkerPool : public CanScheduleSequenceObserver {
   virtual void PushSequenceAndWakeUpWorkers(
       SequenceAndTransaction sequence_and_transaction) = 0;
 
+  // Removes all sequences from this pool's PriorityQueue and enqueues them in
+  // another |destination_pool|. After this method is called, any sequences
+  // posted to this pool will be forwarded to |destination_pool|.
+  //
+  // TODO(crbug.com/756547): Remove this method once the UseNativeThreadPool
+  // experiment is complete.
+  void InvalidateAndHandoffAllSequencesToOtherPool(
+      SchedulerWorkerPool* destination_pool);
+
   // Prevents new tasks from starting to run and waits for currently running
   // tasks to complete their execution. It is guaranteed that no thread will do
   // work on behalf of this SchedulerWorkerPool after this returns. It is
@@ -123,8 +132,19 @@ class BASE_EXPORT SchedulerWorkerPool : public CanScheduleSequenceObserver {
     DISALLOW_COPY_AND_ASSIGN(ScopedReenqueueExecutor);
   };
 
+  // |predecessor_pool| is a pool whose lock can be acquired before the
+  // constructed pool's lock. This is necessary to move all sequences from
+  // |predecessor_pool| to the constructed pool and support the
+  // UseNativeThreadPool experiment.
+  //
+  // TODO(crbug.com/756547): Remove |predecessor_pool| once the experiment is
+  // complete.
   SchedulerWorkerPool(TrackedRef<TaskTracker> task_tracker,
-                      TrackedRef<Delegate> delegate);
+                      TrackedRef<Delegate> delegate,
+                      SchedulerWorkerPool* predecessor_pool = nullptr);
+
+  const TrackedRef<TaskTracker> task_tracker_;
+  const TrackedRef<Delegate> delegate_;
 
   // Ensures that there are enough workers to run queued sequences. |executor|
   // is forwarded from the one received in PushSequenceAndWakeUpWorkersImpl()
@@ -155,8 +175,10 @@ class BASE_EXPORT SchedulerWorkerPool : public CanScheduleSequenceObserver {
   // PriorityQueue from which all threads of this worker pool get work.
   PriorityQueue priority_queue_ GUARDED_BY(lock_);
 
-  const TrackedRef<TaskTracker> task_tracker_;
-  const TrackedRef<Delegate> delegate_;
+  // If |replacement_pool_| is non-null, this pool is invalid and all sequences
+  // should be scheduled on |replacement_pool_|. Used to support the
+  // UseNativeThreadPool experiment.
+  SchedulerWorkerPool* replacement_pool_ = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SchedulerWorkerPool);

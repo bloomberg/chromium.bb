@@ -15,6 +15,7 @@
 #include "base/task/task_traits.h"
 #include "base/task_runner.h"
 #include "base/thread_annotations.h"
+#include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace base {
@@ -71,6 +72,15 @@ class MockSchedulerTaskRunnerDelegate : public SchedulerTaskRunnerDelegate {
 // parametrize relevant task_scheduler tests.
 // TODO(etiennep): Migrate to TaskSourceExecutionMode.
 enum class ExecutionMode { PARALLEL, SEQUENCED, SINGLE_THREADED };
+
+// An enumeration of possible pool types. Used to parametrize relevant
+// task_scheduler tests.
+enum class PoolType {
+  GENERIC,
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  NATIVE,
+#endif
+};
 
 // Creates a Sequence with given |traits| and pushes |task| to it. If a
 // TaskRunner is associated with |task|, it should be be passed as |task_runner|

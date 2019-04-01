@@ -56,15 +56,8 @@ constexpr size_t kMaxBestEffortTasks = kMaxTasks / 2;
 constexpr size_t kNumThreadsPostingTasks = 4;
 constexpr size_t kNumTasksPostedPerThread = 150;
 
-enum class PoolType {
-  GENERIC,
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  NATIVE,
-#endif
-};
-
 struct PoolExecutionType {
-  PoolType pool_type;
+  test::PoolType pool_type;
   test::ExecutionMode execution_mode;
 };
 
@@ -128,14 +121,14 @@ class TaskSchedulerWorkerPoolTest
   void CreateWorkerPool() {
     ASSERT_FALSE(worker_pool_);
     switch (GetParam().pool_type) {
-      case PoolType::GENERIC:
+      case test::PoolType::GENERIC:
         worker_pool_ = std::make_unique<SchedulerWorkerPoolImpl>(
             "TestWorkerPool", "A", ThreadPriority::NORMAL,
             task_tracker_.GetTrackedRef(),
             tracked_ref_factory_.GetTrackedRef());
         break;
 #if defined(OS_WIN) || defined(OS_MACOSX)
-      case PoolType::NATIVE:
+      case test::PoolType::NATIVE:
         worker_pool_ = std::make_unique<PlatformNativeWorkerPoolType>(
             task_tracker_.GetTrackedRef(),
             tracked_ref_factory_.GetTrackedRef());
@@ -150,7 +143,7 @@ class TaskSchedulerWorkerPoolTest
   void StartWorkerPool() {
     ASSERT_TRUE(worker_pool_);
     switch (GetParam().pool_type) {
-      case PoolType::GENERIC: {
+      case test::PoolType::GENERIC: {
         SchedulerWorkerPoolImpl* scheduler_worker_pool_impl =
             static_cast<SchedulerWorkerPoolImpl*>(worker_pool_.get());
         scheduler_worker_pool_impl->Start(
@@ -160,7 +153,7 @@ class TaskSchedulerWorkerPoolTest
         break;
       }
 #if defined(OS_WIN) || defined(OS_MACOSX)
-      case PoolType::NATIVE: {
+      case test::PoolType::NATIVE: {
         PlatformNativeWorkerPoolType* scheduler_worker_pool_native_impl =
             static_cast<PlatformNativeWorkerPoolType*>(worker_pool_.get());
         scheduler_worker_pool_native_impl->Start();
@@ -414,23 +407,24 @@ TEST_P(TaskSchedulerWorkerPoolTest, UpdatePriorityBestEffortToUserBlocking) {
 INSTANTIATE_TEST_SUITE_P(GenericParallel,
                          TaskSchedulerWorkerPoolTest,
                          ::testing::Values(PoolExecutionType{
-                             PoolType::GENERIC,
+                             test::PoolType::GENERIC,
                              test::ExecutionMode::PARALLEL}));
 INSTANTIATE_TEST_SUITE_P(GenericSequenced,
                          TaskSchedulerWorkerPoolTest,
                          ::testing::Values(PoolExecutionType{
-                             PoolType::GENERIC,
+                             test::PoolType::GENERIC,
                              test::ExecutionMode::SEQUENCED}));
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
 INSTANTIATE_TEST_SUITE_P(NativeParallel,
                          TaskSchedulerWorkerPoolTest,
                          ::testing::Values(PoolExecutionType{
-                             PoolType::NATIVE, test::ExecutionMode::PARALLEL}));
+                             test::PoolType::NATIVE,
+                             test::ExecutionMode::PARALLEL}));
 INSTANTIATE_TEST_SUITE_P(NativeSequenced,
                          TaskSchedulerWorkerPoolTest,
                          ::testing::Values(PoolExecutionType{
-                             PoolType::NATIVE,
+                             test::PoolType::NATIVE,
                              test::ExecutionMode::SEQUENCED}));
 #endif
 

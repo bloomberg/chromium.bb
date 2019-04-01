@@ -25,6 +25,8 @@ class BASE_EXPORT PriorityQueue {
   PriorityQueue();
   ~PriorityQueue();
 
+  PriorityQueue& operator=(PriorityQueue&& other);
+
   // Inserts |sequence| in the PriorityQueue with |sequence_sort_key|. Note:
   // |sequence_sort_key| is required as a parameter instead of being extracted
   // from |sequence| in Push() to avoid this Transaction having a lock
@@ -80,8 +82,8 @@ class BASE_EXPORT PriorityQueue {
 
   ContainerType container_;
 
-  size_t num_sequences_per_priority_[static_cast<int>(TaskPriority::HIGHEST) +
-                                     1] = {};
+  std::array<size_t, static_cast<int>(TaskPriority::HIGHEST) + 1>
+      num_sequences_per_priority_ = {};
 
   // Should only be enabled by EnableFlushSequencesOnDestroyForTesting().
   bool is_flush_sequences_on_destroy_enabled_ = false;

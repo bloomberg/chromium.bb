@@ -85,6 +85,8 @@ PriorityQueue::~PriorityQueue() {
   }
 }
 
+PriorityQueue& PriorityQueue::operator=(PriorityQueue&& other) = default;
+
 void PriorityQueue::Push(scoped_refptr<Sequence> sequence,
                          const SequenceSortKey& sequence_sort_key) {
   container_.insert(SequenceAndSortKey(std::move(sequence), sequence_sort_key));

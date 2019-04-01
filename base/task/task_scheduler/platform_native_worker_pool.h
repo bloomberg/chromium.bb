@@ -29,7 +29,8 @@ class BASE_EXPORT PlatformNativeWorkerPool : public SchedulerWorkerPool {
 
  protected:
   PlatformNativeWorkerPool(TrackedRef<TaskTracker> task_tracker,
-                           TrackedRef<Delegate> delegate);
+                           TrackedRef<Delegate> delegate,
+                           SchedulerWorkerPool* predecessor_pool);
 
   // Runs a task off the next sequence on the |priority_queue_|. Called by
   // callbacks posted to platform native thread pools.

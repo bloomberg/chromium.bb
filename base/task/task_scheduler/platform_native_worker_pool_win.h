@@ -28,7 +28,8 @@ class BASE_EXPORT PlatformNativeWorkerPoolWin
     : public PlatformNativeWorkerPool {
  public:
   PlatformNativeWorkerPoolWin(TrackedRef<TaskTracker> task_tracker,
-                              TrackedRef<Delegate> delegate);
+                              TrackedRef<Delegate> delegate,
+                              SchedulerWorkerPool* predecessor_pool = nullptr);
 
   ~PlatformNativeWorkerPoolWin() override;
 

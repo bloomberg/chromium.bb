@@ -11,8 +11,11 @@ namespace internal {
 
 PlatformNativeWorkerPoolWin::PlatformNativeWorkerPoolWin(
     TrackedRef<TaskTracker> task_tracker,
-    TrackedRef<Delegate> delegate)
-    : PlatformNativeWorkerPool(std::move(task_tracker), std::move(delegate)) {}
+    TrackedRef<Delegate> delegate,
+    SchedulerWorkerPool* predecessor_pool)
+    : PlatformNativeWorkerPool(std::move(task_tracker),
+                               std::move(delegate),
+                               predecessor_pool) {}
 
 PlatformNativeWorkerPoolWin::~PlatformNativeWorkerPoolWin() {
   ::DestroyThreadpoolEnvironment(&environment_);
