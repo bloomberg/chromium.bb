@@ -384,7 +384,8 @@ void HttpStreamFactory::JobController::OnStreamFailed(
     RunLoop(status);
     return;
   }
-  delegate_->OnStreamFailed(status, *job->net_error_details(), used_ssl_config);
+  delegate_->OnStreamFailed(status, *job->net_error_details(), used_ssl_config,
+                            job->proxy_info());
 }
 
 void HttpStreamFactory::JobController::OnFailedOnDefaultNetwork(Job* job) {
@@ -1082,7 +1083,8 @@ void HttpStreamFactory::JobController::MaybeNotifyFactoryOfCompletion() {
 void HttpStreamFactory::JobController::NotifyRequestFailed(int rv) {
   if (!request_)
     return;
-  delegate_->OnStreamFailed(rv, NetErrorDetails(), server_ssl_config_);
+  delegate_->OnStreamFailed(rv, NetErrorDetails(), server_ssl_config_,
+                            ProxyInfo());
 }
 
 GURL HttpStreamFactory::JobController::ApplyHostMappingRules(

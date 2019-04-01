@@ -2427,8 +2427,9 @@ TEST_F(URLRequestTest, MAYBE_NetworkDelegateProxyError) {
   d.RunUntilComplete();
 
   // Check we see a failed request.
-  // The proxy server is not set before failure.
-  EXPECT_FALSE(req->proxy_server().is_valid());
+  // The proxy server should be set before failure.
+  EXPECT_EQ(ProxyServer::FromPacString("PROXY myproxy:70"),
+            req->proxy_server());
   EXPECT_EQ(ERR_PROXY_CONNECTION_FAILED, d.request_status());
 
   EXPECT_EQ(1, network_delegate.error_count());
@@ -4312,8 +4313,10 @@ TEST_F(URLRequestTestHTTP, ProxyTunnelRedirectTest) {
 
     d.RunUntilComplete();
 
-    // The proxy server is not set before failure.
-    EXPECT_FALSE(r->proxy_server().is_valid());
+    // The proxy server should be set before failure.
+    EXPECT_EQ(ProxyServer(ProxyServer::SCHEME_HTTP,
+                          http_test_server()->host_port_pair()),
+              r->proxy_server());
     EXPECT_EQ(ERR_TUNNEL_CONNECTION_FAILED, d.request_status());
     EXPECT_EQ(1, d.response_started_count());
     // We should not have followed the redirect.
@@ -4340,8 +4343,10 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateTunnelConnectionFailed) {
 
     d.RunUntilComplete();
 
-    // The proxy server is not set before failure.
-    EXPECT_FALSE(r->proxy_server().is_valid());
+    // The proxy server should be set before failure.
+    EXPECT_EQ(ProxyServer(ProxyServer::SCHEME_HTTP,
+                          http_test_server()->host_port_pair()),
+              r->proxy_server());
     EXPECT_EQ(1, d.response_started_count());
     EXPECT_EQ(ERR_TUNNEL_CONNECTION_FAILED, d.request_status());
     // We should not have followed the redirect.
@@ -5230,8 +5235,10 @@ TEST_F(URLRequestTestHTTP, UnexpectedServerAuthTest) {
 
     d.RunUntilComplete();
 
-    // The proxy server is not set before failure.
-    EXPECT_FALSE(r->proxy_server().is_valid());
+    // The proxy server should be set before failure.
+    EXPECT_EQ(ProxyServer(ProxyServer::SCHEME_HTTP,
+                          http_test_server()->host_port_pair()),
+              r->proxy_server());
     EXPECT_EQ(ERR_TUNNEL_CONNECTION_FAILED, d.request_status());
   }
 }
