@@ -94,7 +94,8 @@ class CORE_EXPORT ScriptResource final : public TextResource {
   ~ScriptResource() override;
 
   void ResponseBodyReceived(
-      ResponseBodyLoaderDrainableInterface& body_loader) override;
+      ResponseBodyLoaderDrainableInterface& body_loader,
+      scoped_refptr<base::SingleThreadTaskRunner> loader_task_runner) override;
 
   void Trace(blink::Visitor*) override;
 

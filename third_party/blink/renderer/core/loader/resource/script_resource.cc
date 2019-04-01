@@ -249,7 +249,8 @@ bool ScriptResource::CanUseCacheValidator() const {
 }
 
 void ScriptResource::ResponseBodyReceived(
-    ResponseBodyLoaderDrainableInterface& body_loader) {
+    ResponseBodyLoaderDrainableInterface& body_loader,
+    scoped_refptr<base::SingleThreadTaskRunner> loader_task_runner) {
   ResponseBodyLoaderClient* response_body_loader_client;
   CHECK(!data_pipe_);
   data_pipe_ = body_loader.DrainAsDataPipe(&response_body_loader_client);
@@ -258,8 +259,7 @@ void ScriptResource::ResponseBodyReceived(
 
   response_body_loader_client_ = response_body_loader_client;
   watcher_ = std::make_unique<mojo::SimpleWatcher>(
-      FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL,
-      Loader()->GetLoadingTaskRunner());
+      FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL, loader_task_runner);
 
   watcher_->Watch(data_pipe_.get(), MOJO_HANDLE_SIGNAL_READABLE,
                   MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,

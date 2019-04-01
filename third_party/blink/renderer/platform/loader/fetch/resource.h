@@ -267,7 +267,8 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   virtual void ResponseReceived(const ResourceResponse&);
   virtual void ResponseBodyReceived(
-      ResponseBodyLoaderDrainableInterface& body_loader) {}
+      ResponseBodyLoaderDrainableInterface& body_loader,
+      scoped_refptr<base::SingleThreadTaskRunner> loader_task_runner) {}
   void SetResponse(const ResourceResponse&);
   const ResourceResponse& GetResponse() const { return response_; }
 
