@@ -617,6 +617,30 @@ class EchoCancellationContainer {
 // APM, processed without APM, and unprocessed.
 class ProcessingBasedContainer {
  public:
+  static ProcessingBasedContainer CreateRemoteApmProcessedContainer(
+      const SourceInfo& source_info,
+      bool is_device_capture,
+      const media::AudioParameters& device_parameters) {
+    return ProcessingBasedContainer(
+        ProcessingType::kApmProcessed,
+        {EchoCancellationType::kEchoCancellationAec3,
+         EchoCancellationType::kEchoCancellationDisabled},
+        BoolSet(), /* goog_audio_mirroring_set */
+        BoolSet(), /* goog_auto_gain_control_set */
+        BoolSet(), /* goog_experimental_echo_cancellation_set */
+        BoolSet(), /* goog_typing_noise_detection_set */
+        BoolSet(), /* goog_noise_suppression_set */
+        BoolSet(), /* goog_experimental_noise_suppression_set */
+        BoolSet(), /* goog_highpass_filter_set */
+        BoolSet(), /* goog_experimental_auto_gain_control_set */
+        IntRangeSet::FromValue(GetSampleSize()), /* sample_size_range */
+        IntRangeSet::FromValue(
+            device_parameters.channels()), /* channels_range */
+        IntRangeSet::FromValue(
+            device_parameters.sample_rate()), /* sample_rate_range */
+        source_info, is_device_capture, device_parameters);
+  }
+
   // Creates an instance of ProcessingBasedContainer for the WebRTC processed
   // source type. The source type allows (a) any type of echo cancellation,
   // though the system echo cancellation type depends on the availability of the
@@ -1026,9 +1050,15 @@ class DeviceContainer {
     }
     if (source_info.type() == SourceType::kNone ||
         source_info.type() == SourceType::kApmProcessed) {
-      processing_based_containers_.push_back(
-          ProcessingBasedContainer::CreateApmProcessedContainer(
-              source_info, is_device_capture, device_parameters_));
+      if (IsApmInAudioServiceEnabled()) {
+        processing_based_containers_.push_back(
+            ProcessingBasedContainer::CreateRemoteApmProcessedContainer(
+                source_info, is_device_capture, device_parameters_));
+      } else {
+        processing_based_containers_.push_back(
+            ProcessingBasedContainer::CreateApmProcessedContainer(
+                source_info, is_device_capture, device_parameters_));
+      }
     }
 
 #if DCHECK_IS_ON()
