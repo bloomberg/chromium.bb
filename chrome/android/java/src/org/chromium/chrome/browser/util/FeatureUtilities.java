@@ -116,16 +116,14 @@ public class FeatureUtilities {
 
     /**
      * Determines whether or not the user has a Google account (so we can sync) or can add one.
-     * @param context The {@link Context} that we should check accounts under.
      * @return Whether or not sync is allowed on this device.
      */
-    public static boolean canAllowSync(Context context) {
-        return (hasGoogleAccountAuthenticator(context) && hasSyncPermissions(context))
-                || hasGoogleAccounts(context);
+    public static boolean canAllowSync() {
+        return (hasGoogleAccountAuthenticator() && hasSyncPermissions()) || hasGoogleAccounts();
     }
 
     @VisibleForTesting
-    static boolean hasGoogleAccountAuthenticator(Context context) {
+    static boolean hasGoogleAccountAuthenticator() {
         if (sHasGoogleAccountAuthenticator == null) {
             AccountManagerFacade accountHelper = AccountManagerFacade.get();
             sHasGoogleAccountAuthenticator = accountHelper.hasGoogleAccountAuthenticator();
@@ -134,16 +132,17 @@ public class FeatureUtilities {
     }
 
     @VisibleForTesting
-    static boolean hasGoogleAccounts(Context context) {
+    static boolean hasGoogleAccounts() {
         return AccountManagerFacade.get().hasGoogleAccounts();
     }
 
     @SuppressLint("InlinedApi")
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-    private static boolean hasSyncPermissions(Context context) {
+    private static boolean hasSyncPermissions() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) return true;
 
-        UserManager manager = (UserManager) context.getSystemService(Context.USER_SERVICE);
+        UserManager manager = (UserManager) ContextUtils.getApplicationContext().getSystemService(
+                Context.USER_SERVICE);
         Bundle userRestrictions = manager.getUserRestrictions();
         return !userRestrictions.getBoolean(UserManager.DISALLOW_MODIFY_ACCOUNTS, false);
     }

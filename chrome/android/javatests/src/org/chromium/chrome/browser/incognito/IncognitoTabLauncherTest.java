@@ -37,7 +37,7 @@ public class IncognitoTabLauncherTest {
     @SmallTest
     public void testEnableComponent() {
         Context context = InstrumentationRegistry.getTargetContext();
-        IncognitoTabLauncher.setComponentEnabled(context, true);
+        IncognitoTabLauncher.setComponentEnabled(true);
         Assert.assertNotNull(
                 context.getPackageManager().resolveActivity(createLaunchIntent(context), 0));
     }
@@ -47,7 +47,7 @@ public class IncognitoTabLauncherTest {
     @SmallTest
     public void testDisableComponent() {
         Context context = InstrumentationRegistry.getTargetContext();
-        IncognitoTabLauncher.setComponentEnabled(context, false);
+        IncognitoTabLauncher.setComponentEnabled(false);
         Assert.assertNull(
                 context.getPackageManager().resolveActivity(createLaunchIntent(context), 0));
     }
@@ -72,7 +72,7 @@ public class IncognitoTabLauncherTest {
 
     private ChromeTabbedActivity launchIncognitoTab() {
         Context context = InstrumentationRegistry.getTargetContext();
-        IncognitoTabLauncher.setComponentEnabled(context, true);
+        IncognitoTabLauncher.setComponentEnabled(true);
         Intent intent = createLaunchIntent(context);
 
         // We need FLAG_ACTIVITY_NEW_TASK because we're calling from the application context (not an

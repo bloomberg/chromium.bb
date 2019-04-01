@@ -190,7 +190,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
         mActivity = activity;
         ChromeApplication application = (ChromeApplication) activity.getApplication();
         mBackendProvider = sProviderForTests == null
-                ? new DownloadBackendProvider(application.getReferencePool(), this)
+                ? new DownloadBackendProvider(ChromeApplication.getReferencePool(), this)
                 : sProviderForTests;
         mSnackbarManager = snackbarManager;
 

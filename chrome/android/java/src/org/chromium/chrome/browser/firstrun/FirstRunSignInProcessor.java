@@ -66,7 +66,7 @@ public final class FirstRunSignInProcessor {
             return;
         }
         final String accountName = getFirstRunFlowSignInAccountName();
-        if (!FeatureUtilities.canAllowSync(activity) || !signinManager.isSignInAllowed()
+        if (!FeatureUtilities.canAllowSync() || !signinManager.isSignInAllowed()
                 || TextUtils.isEmpty(accountName)) {
             setFirstRunFlowSignInComplete(true);
             return;

@@ -11,7 +11,6 @@ import android.support.v4.util.Pair;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.JustNowProvider;
@@ -183,8 +182,7 @@ class DateOrderedListMediator {
         new OfflineItemStartupLogger(config, mInvalidStateFilter);
 
         mSearchFilter.addObserver(new EmptyStateObserver(mSearchFilter, dateOrderedListObserver));
-        mThumbnailProvider = new ThumbnailProviderImpl(
-                ((ChromeApplication) ContextUtils.getApplicationContext()).getReferencePool(),
+        mThumbnailProvider = new ThumbnailProviderImpl(ChromeApplication.getReferencePool(),
                 config.inMemoryThumbnailCacheSizeBytes,
                 ThumbnailProviderImpl.ClientType.DOWNLOAD_HOME);
         mSelectionObserver = new MediatorSelectionObserver(selectionDelegate);

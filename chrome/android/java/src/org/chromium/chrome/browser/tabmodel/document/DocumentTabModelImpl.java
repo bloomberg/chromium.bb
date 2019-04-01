@@ -9,6 +9,7 @@ import android.content.Context;
 import android.util.SparseArray;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.document.DocumentUtils;
@@ -118,8 +119,9 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
      * Pre-load shared prefs to avoid being blocked on the
      * disk access async task in the future.
      */
-    public static void warmUpSharedPrefs(Context context) {
-        context.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
+    public static void warmUpSharedPrefs() {
+        ContextUtils.getApplicationContext().getSharedPreferences(
+                PREF_PACKAGE, Context.MODE_PRIVATE);
     }
 
     /**

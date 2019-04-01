@@ -20,6 +20,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -209,13 +210,12 @@ public class FeatureUtilitiesTest {
         setUpAccountManager(AccountManagerFacade.GOOGLE_ACCOUNT_TYPE);
         addTestAccount();
 
-        boolean hasAccounts = FeatureUtilities.hasGoogleAccounts(
-                mAccountTestingContext);
+        ContextUtils.initApplicationContextForTests(mAccountTestingContext);
+        boolean hasAccounts = FeatureUtilities.hasGoogleAccounts();
 
         Assert.assertTrue(hasAccounts);
 
-        boolean hasAuthenticator = FeatureUtilities.hasGoogleAccountAuthenticator(
-                mAccountTestingContext);
+        boolean hasAuthenticator = FeatureUtilities.hasGoogleAccountAuthenticator();
 
         Assert.assertTrue(hasAuthenticator);
     }
@@ -233,13 +233,12 @@ public class FeatureUtilitiesTest {
         // account authenticator.
         setUpAccountManager("Not A Google Account");
 
-        boolean hasAccounts = FeatureUtilities.hasGoogleAccounts(
-                mAccountTestingContext);
+        ContextUtils.initApplicationContextForTests(mAccountTestingContext);
+        boolean hasAccounts = FeatureUtilities.hasGoogleAccounts();
 
         Assert.assertFalse(hasAccounts);
 
-        boolean hasAuthenticator = FeatureUtilities.hasGoogleAccountAuthenticator(
-                mAccountTestingContext);
+        boolean hasAuthenticator = FeatureUtilities.hasGoogleAccountAuthenticator();
 
         Assert.assertFalse(hasAuthenticator);
     }

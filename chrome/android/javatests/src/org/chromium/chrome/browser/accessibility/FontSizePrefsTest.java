@@ -182,8 +182,7 @@ public class FontSizePrefsTest {
     }
 
     private FontSizePrefs getFontSizePrefs(final Context context) {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(
-                () -> FontSizePrefs.getInstance(context));
+        return TestThreadUtils.runOnUiThreadBlockingNoException(() -> FontSizePrefs.getInstance());
     }
 
     private TestingObserver createAndAddFontSizePrefsObserver() {

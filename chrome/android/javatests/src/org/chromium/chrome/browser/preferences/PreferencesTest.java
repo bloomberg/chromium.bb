@@ -386,7 +386,7 @@ public class PreferencesTest {
             final float expectedFontScale) {
         final Context targetContext = InstrumentationRegistry.getTargetContext();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            FontSizePrefs fontSizePrefs = FontSizePrefs.getInstance(targetContext);
+            FontSizePrefs fontSizePrefs = FontSizePrefs.getInstance();
             Assert.assertEquals(expectedForceEnableZoom, fontSizePrefs.getForceEnableZoom());
             Assert.assertEquals(expectedFontScale, fontSizePrefs.getFontScaleFactor(), 0.001f);
         });
