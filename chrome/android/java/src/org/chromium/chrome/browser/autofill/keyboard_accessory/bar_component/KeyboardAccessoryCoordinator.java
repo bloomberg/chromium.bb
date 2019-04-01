@@ -9,7 +9,7 @@ import static org.chromium.chrome.browser.autofill.keyboard_accessory.bar_compon
 import android.support.annotation.Nullable;
 import android.support.annotation.Px;
 import android.support.v4.view.ViewPager;
-import android.view.View;
+import android.view.ViewStub;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.autofill.keyboard_accessory.data.Provider;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.tab_layout_component.KeyboardAccessoryTabLayoutCoordinator;
 import org.chromium.components.autofill.AutofillDelegate;
 import org.chromium.components.autofill.AutofillSuggestion;
+import org.chromium.ui.DeferredViewStubInflationProvider;
 import org.chromium.ui.ViewProvider;
 import org.chromium.ui.modelutil.LazyConstructionPropertyMcp;
 import org.chromium.ui.modelutil.ListModel;
@@ -35,8 +36,7 @@ import org.chromium.ui.modelutil.RecyclerViewAdapter;
  */
 public class KeyboardAccessoryCoordinator {
     private final KeyboardAccessoryMediator mMediator;
-    private final KeyboardAccessoryTabLayoutCoordinator mTabLayout =
-            new KeyboardAccessoryTabLayoutCoordinator();
+    private final KeyboardAccessoryTabLayoutCoordinator mTabLayout;
 
     /**
      * The keyboard accessory provides signals when to show or change the accessory sheet below it.
@@ -114,21 +114,32 @@ public class KeyboardAccessoryCoordinator {
     /**
      * Initializes the component as soon as the native library is loaded by e.g. starting to listen
      * to keyboard visibility events.
+     * @param barStub A {@link ViewStub} for the accessory bar layout.
+     */
+    public KeyboardAccessoryCoordinator(VisibilityDelegate visibilityDelegate, ViewStub barStub) {
+        this(new KeyboardAccessoryTabLayoutCoordinator(), visibilityDelegate,
+                new DeferredViewStubInflationProvider<>(barStub));
+    }
+
+    /**
+     * Constructor that allows to mock the {@link DeferredViewStubInflationProvider}.
      * @param viewProvider A provider for the accessory.
      */
-    public KeyboardAccessoryCoordinator(
-            VisibilityDelegate visibilityDelegate, ViewProvider<View> viewProvider) {
+    @VisibleForTesting
+    public KeyboardAccessoryCoordinator(KeyboardAccessoryTabLayoutCoordinator tabLayout,
+            VisibilityDelegate visibilityDelegate,
+            ViewProvider<KeyboardAccessoryView> viewProvider) {
         PropertyModel model = KeyboardAccessoryProperties.defaultModelBuilder().build();
+        mTabLayout = tabLayout;
         mMediator = new KeyboardAccessoryMediator(model, visibilityDelegate,
                 mTabLayout.getTabSwitchingDelegate(), mTabLayout.getTabLayoutCallbacks());
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)) {
-            viewProvider.whenLoaded(barView -> {
-                mTabLayout.assignNewView(((KeyboardAccessoryView) barView).getTabLayout());
-            });
+            viewProvider.whenLoaded(barView -> mTabLayout.assignNewView(barView.getTabLayout()));
         }
 
         mTabLayout.setTabObserver(mMediator);
-        PropertyModelChangeProcessor.ViewBinder<PropertyModel, View, PropertyKey> viewBinder =
+        PropertyModelChangeProcessor
+                .ViewBinder<PropertyModel, KeyboardAccessoryView, PropertyKey> viewBinder =
                 KeyboardAccessoryViewBinder::bind;
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)) {
             viewBinder = KeyboardAccessoryModernViewBinder::bind;
@@ -159,24 +170,6 @@ public class KeyboardAccessoryCoordinator {
 
     public void closeActiveTab() {
         mTabLayout.getTabSwitchingDelegate().closeActiveTab();
-    }
-
-    /**
-     * A {@link KeyboardAccessoryData.Tab} passed into this function will be represented as item at
-     * the start of the accessory. It is meant to trigger various bottom sheets.
-     * @param tab The tab which contains representation data and links back to a bottom sheet.
-     */
-    void addTab(KeyboardAccessoryData.Tab tab) {
-        mTabLayout.getTabSwitchingDelegate().addTab(tab);
-    }
-
-    /**
-     * The {@link KeyboardAccessoryData.Tab} passed into this function will be completely removed
-     * from the accessory.
-     * @param tab The tab to be removed.
-     */
-    void removeTab(KeyboardAccessoryData.Tab tab) {
-        mTabLayout.getTabSwitchingDelegate().removeTab(tab);
     }
 
     public void setTabs(KeyboardAccessoryData.Tab[] tabs) {

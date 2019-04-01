@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory.sheet_component;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
@@ -131,98 +130,26 @@ public class AccessorySheetControllerTest {
         mModel.get(TABS).addObserver(mTabListObserver);
 
         assertThat(mModel.get(TABS).size(), is(0));
-        mCoordinator.addTab(mTabs[0]);
+        mCoordinator.setTabs(new Tab[] {mTabs[0]});
         verify(mTabListObserver).onItemRangeInserted(mModel.get(TABS), 0, 1);
         assertThat(mModel.get(TABS).size(), is(1));
     }
 
     @Test
-    public void testFirstAddedTabBecomesActiveTab() {
-        mModel.addObserver(mMockPropertyObserver);
-
-        // Initially, there is no active Tab.
-        assertThat(mModel.get(TABS).size(), is(0));
-        assertThat(mCoordinator.getTab(), is(nullValue()));
-
-        // The first tab becomes the active Tab.
-        mCoordinator.addTab(mTabs[0]);
-        verify(mMockPropertyObserver).onPropertyChanged(mModel, ACTIVE_TAB_INDEX);
-        assertThat(mModel.get(TABS).size(), is(1));
-        assertThat(mModel.get(ACTIVE_TAB_INDEX), is(0));
-        assertThat(mCoordinator.getTab(), is(mTabs[0]));
-
-        // A second tab is added but doesn't become automatically active.
-        mCoordinator.addTab(mTabs[1]);
-        verify(mMockPropertyObserver).onPropertyChanged(mModel, ACTIVE_TAB_INDEX);
-        assertThat(mModel.get(TABS).size(), is(2));
-        assertThat(mModel.get(ACTIVE_TAB_INDEX), is(0));
-    }
-
-    @Test
-    public void testDeletingFirstTabActivatesNewFirstTab() {
-        mCoordinator.addTab(mTabs[0]);
-        mCoordinator.addTab(mTabs[1]);
-        mCoordinator.addTab(mTabs[2]);
-        mCoordinator.addTab(mTabs[3]);
-        assertThat(mModel.get(TABS).size(), is(4));
-        assertThat(mModel.get(ACTIVE_TAB_INDEX), is(0));
-
-        mCoordinator.removeTab(mTabs[0]);
-
-        assertThat(mModel.get(TABS).size(), is(3));
-        assertThat(mModel.get(ACTIVE_TAB_INDEX), is(0));
-    }
-
-    @Test
     public void testDeletingFirstAndOnlyTabInvalidatesActiveTab() {
-        mCoordinator.addTab(mTabs[0]);
-        mCoordinator.removeTab(mTabs[0]);
+        mCoordinator.setTabs(new Tab[] {mTabs[0]});
+        mCoordinator.setTabs(new Tab[0]);
 
         assertThat(mModel.get(TABS).size(), is(0));
         assertThat(mModel.get(ACTIVE_TAB_INDEX), is(AccessorySheetProperties.NO_ACTIVE_TAB));
     }
 
     @Test
-    public void testDeletedActiveTabDisappearsAndActivatesLeftNeighbor() {
-        mCoordinator.addTab(mTabs[0]);
-        mCoordinator.addTab(mTabs[1]);
-        mCoordinator.addTab(mTabs[2]);
-        mCoordinator.addTab(mTabs[3]);
-        mModel.set(ACTIVE_TAB_INDEX, 2);
-        mModel.addObserver(mMockPropertyObserver);
-
-        mCoordinator.removeTab(mTabs[2]);
-
-        verify(mMockPropertyObserver).onPropertyChanged(mModel, ACTIVE_TAB_INDEX);
-        assertThat(mModel.get(TABS).size(), is(3));
-        assertThat(mModel.get(ACTIVE_TAB_INDEX), is(1));
-    }
-
-    @Test
-    public void testCorrectsPositionOfActiveTabForDeletedPredecessors() {
-        mCoordinator.addTab(mTabs[0]);
-        mCoordinator.addTab(mTabs[1]);
-        mCoordinator.addTab(mTabs[2]);
-        mCoordinator.addTab(mTabs[3]);
-        mModel.set(ACTIVE_TAB_INDEX, 2);
-        mModel.addObserver(mMockPropertyObserver);
-
-        mCoordinator.removeTab(mTabs[1]);
-
-        verify(mMockPropertyObserver).onPropertyChanged(mModel, ACTIVE_TAB_INDEX);
-        assertThat(mModel.get(TABS).size(), is(3));
-        assertThat(mModel.get(ACTIVE_TAB_INDEX), is(1));
-    }
-
-    @Test
     public void testDoesntChangePositionOfActiveTabForDeletedSuccessors() {
-        mCoordinator.addTab(mTabs[0]);
-        mCoordinator.addTab(mTabs[1]);
-        mCoordinator.addTab(mTabs[2]);
-        mCoordinator.addTab(mTabs[3]);
+        mCoordinator.setTabs(mTabs);
         mModel.set(ACTIVE_TAB_INDEX, 2);
 
-        mCoordinator.removeTab(mTabs[3]);
+        mCoordinator.setTabs(new Tab[] {mTabs[0], mTabs[1], mTabs[2]});
 
         assertThat(mModel.get(TABS).size(), is(3));
         assertThat(mModel.get(ACTIVE_TAB_INDEX), is(2));

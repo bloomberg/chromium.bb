@@ -152,7 +152,7 @@ class PasswordAccessorySheetViewBinder {
         }
     }
 
-    public static void initializeView(RecyclerView view, AccessorySheetTabModel model) {
+    static void initializeView(RecyclerView view, AccessorySheetTabModel model) {
         view.setAdapter(PasswordAccessorySheetCoordinator.createAdapter(model));
     }
 }

@@ -48,7 +48,7 @@ import java.util.List;
  * prominently generating passwords) and lets the model know of these actions and which callback to
  * trigger when selecting them.
  */
-public class KeyboardAccessoryMediator
+class KeyboardAccessoryMediator
         implements ListObservable.ListObserver<Void>,
                    PropertyObservable.PropertyObserver<PropertyKey>, Provider.Observer<Action[]>,
                    KeyboardAccessoryTabLayoutCoordinator.AccessoryTabObserver {
@@ -82,7 +82,7 @@ public class KeyboardAccessoryMediator
      * @param delegate A {@link AutofillDelegate}.
      * @return A {@link Provider.Observer} accepting only {@link AutofillSuggestion}s.
      */
-    public Provider.Observer<AutofillSuggestion[]> createAutofillSuggestionsObserver(
+    Provider.Observer<AutofillSuggestion[]> createAutofillSuggestionsObserver(
             AutofillDelegate delegate) {
         return (@AccessoryAction int typeId, AutofillSuggestion[] suggestions) -> {
             assert typeId
@@ -182,11 +182,6 @@ public class KeyboardAccessoryMediator
         close();
     }
 
-    @VisibleForTesting
-    public PropertyModel getModelForTesting() {
-        return mModel;
-    }
-
     @Override
     public void onItemRangeInserted(ListObservable source, int index, int count) {
         assert source == mModel.get(BAR_ITEMS);
@@ -279,15 +274,20 @@ public class KeyboardAccessoryMediator
         mModel.set(VISIBLE, shouldShowAccessory());
     }
 
-    public void setBottomOffset(@Px int bottomOffset) {
+    void setBottomOffset(@Px int bottomOffset) {
         mModel.set(BOTTOM_OFFSET_PX, bottomOffset);
     }
 
-    public boolean isShown() {
+    boolean isShown() {
         return mModel.get(VISIBLE);
     }
 
-    public boolean hasActiveTab() {
+    boolean hasActiveTab() {
         return mModel.get(VISIBLE) && mTabSwitcher.getActiveTab() != null;
+    }
+
+    @VisibleForTesting
+    PropertyModel getModelForTesting() {
+        return mModel;
     }
 }

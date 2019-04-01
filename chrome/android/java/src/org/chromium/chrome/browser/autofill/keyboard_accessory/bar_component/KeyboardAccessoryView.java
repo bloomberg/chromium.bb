@@ -24,7 +24,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
  * The Accessory sitting above the keyboard and below the content area. It is used for autofill
  * suggestions and manual entry points assisting the user in filling forms.
  */
-public class KeyboardAccessoryView extends LinearLayout {
+class KeyboardAccessoryView extends LinearLayout {
     protected RecyclerView mBarItemsView;
     protected TabLayout mTabLayout;
 
@@ -81,14 +81,14 @@ public class KeyboardAccessoryView extends LinearLayout {
         setSoundEffectsEnabled(false);
     }
 
-    public TabLayout getTabLayout() {
+    TabLayout getTabLayout() {
         if (mTabLayout == null) {
             mTabLayout = findViewById(R.id.tabs);
         }
         return mTabLayout;
     }
 
-    public void setVisible(boolean visible) {
+    void setVisible(boolean visible) {
         if (!visible || getVisibility() != VISIBLE) mBarItemsView.scrollToPosition(0);
         if (visible) {
             show();
@@ -97,7 +97,7 @@ public class KeyboardAccessoryView extends LinearLayout {
         }
     }
 
-    public void setBottomOffset(int bottomOffset) {
+    void setBottomOffset(int bottomOffset) {
         MarginLayoutParams params = (MarginLayoutParams) getLayoutParams();
         params.setMargins(params.leftMargin, params.topMargin, params.rightMargin, bottomOffset);
         setLayoutParams(params);

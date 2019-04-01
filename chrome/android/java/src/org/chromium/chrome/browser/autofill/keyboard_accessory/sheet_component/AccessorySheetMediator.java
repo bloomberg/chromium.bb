@@ -27,7 +27,7 @@ import org.chromium.ui.modelutil.PropertyObservable;
  * It communicates with data providers and native backends to update a model based on {@link
  * AccessorySheetProperties}.
  */
-public class AccessorySheetMediator implements PropertyObservable.PropertyObserver<PropertyKey> {
+class AccessorySheetMediator implements PropertyObservable.PropertyObserver<PropertyKey> {
     private final PropertyModel mModel;
     private final RecyclerView.OnScrollListener mScrollListener =
             new RecyclerView.OnScrollListener() {
@@ -50,7 +50,7 @@ public class AccessorySheetMediator implements PropertyObservable.PropertyObserv
     }
 
     @VisibleForTesting
-    public PropertyModel getModelForTesting() {
+    PropertyModel getModelForTesting() {
         return mModel;
     }
 
@@ -62,7 +62,8 @@ public class AccessorySheetMediator implements PropertyObservable.PropertyObserv
         mModel.set(AccessorySheetProperties.HEIGHT, height);
     }
 
-    public @Px int getHeight() {
+    @Px
+    int getHeight() {
         return mModel.get(AccessorySheetProperties.HEIGHT);
     }
 
@@ -76,20 +77,6 @@ public class AccessorySheetMediator implements PropertyObservable.PropertyObserv
 
     RecyclerView.OnScrollListener getScrollListener() {
         return mScrollListener;
-    }
-
-    void addTab(KeyboardAccessoryData.Tab tab) {
-        mModel.get(TABS).add(tab);
-        if (mModel.get(ACTIVE_TAB_INDEX) == NO_ACTIVE_TAB) {
-            mModel.set(ACTIVE_TAB_INDEX, mModel.get(TABS).size() - 1);
-        }
-    }
-
-    void removeTab(KeyboardAccessoryData.Tab tab) {
-        assert mModel.get(ACTIVE_TAB_INDEX) != NO_ACTIVE_TAB;
-        mModel.set(ACTIVE_TAB_INDEX, getNextActiveTab(tab));
-        mModel.get(TABS).remove(tab);
-        if (mModel.get(ACTIVE_TAB_INDEX) == NO_ACTIVE_TAB) hide();
     }
 
     void setTabs(KeyboardAccessoryData.Tab[] tabs) {

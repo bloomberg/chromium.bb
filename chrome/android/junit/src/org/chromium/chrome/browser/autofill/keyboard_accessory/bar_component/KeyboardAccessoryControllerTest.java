@@ -9,6 +9,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -19,6 +20,8 @@ import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryA
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.KeyboardAccessoryProperties.BAR_ITEMS;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SHEET_TITLE;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.KeyboardAccessoryProperties.VISIBLE;
+
+import android.support.design.widget.TabLayout;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -34,14 +37,13 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryBarContents;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryTabType;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingMetricsRecorder;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.KeyboardAccessoryProperties.AutofillBarItem;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.KeyboardAccessoryProperties.BarItem;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.PropertyProvider;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.tab_layout_component.KeyboardAccessoryTabLayoutView;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.tab_layout_component.KeyboardAccessoryTabLayoutCoordinator;
 import org.chromium.components.autofill.AutofillDelegate;
 import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.ui.modelutil.ListObservable;
@@ -68,7 +70,9 @@ public class KeyboardAccessoryControllerTest {
     @Mock
     private KeyboardAccessoryModernView mMockView;
     @Mock
-    private KeyboardAccessoryTabLayoutView mMockTabSwitcherView;
+    private KeyboardAccessoryTabLayoutCoordinator mMockTabLayout;
+    @Mock
+    private KeyboardAccessoryCoordinator.TabSwitchingDelegate mMockTabSwitchingDelegate;
     @Mock
     private AutofillDelegate mMockAutofillDelegate;
 
@@ -85,9 +89,10 @@ public class KeyboardAccessoryControllerTest {
         MockitoAnnotations.initMocks(this);
         setAutofillFeature(false);
 
-        when(mMockView.getTabLayout()).thenReturn(mMockTabSwitcherView);
+        when(mMockView.getTabLayout()).thenReturn(mock(TabLayout.class));
+        when(mMockTabLayout.getTabSwitchingDelegate()).thenReturn(mMockTabSwitchingDelegate);
         mCoordinator = new KeyboardAccessoryCoordinator(
-                mMockVisibilityDelegate, new FakeViewProvider<>(mMockView));
+                mMockTabLayout, mMockVisibilityDelegate, new FakeViewProvider<>(mMockView));
         mMediator = mCoordinator.getMediatorForTesting();
         mModel = mMediator.getModelForTesting();
     }
@@ -124,8 +129,7 @@ public class KeyboardAccessoryControllerTest {
     @Test
     public void testModelNotifiesAboutActionsChangedByProvider() {
         // Set a default tab to prevent visibility changes to trigger now:
-        mCoordinator.setTabs(new KeyboardAccessoryData.Tab[] {new KeyboardAccessoryData.Tab(
-                "Passwords", null, null, 0, AccessoryTabType.PASSWORDS, null)});
+        setTabs(new KeyboardAccessoryData.Tab[] {mTestTab});
         mModel.get(BAR_ITEMS).addObserver(mMockActionListObserver);
 
         PropertyProvider<Action[]> testProvider =
@@ -161,8 +165,7 @@ public class KeyboardAccessoryControllerTest {
     public void testModelNotifiesAboutActionsChangedByProviderForRedesign() {
         setAutofillFeature(true);
         // Set a default tab to prevent visibility changes to trigger now:
-        mCoordinator.setTabs(new KeyboardAccessoryData.Tab[] {new KeyboardAccessoryData.Tab(
-                "Passwords", null, null, 0, AccessoryTabType.PASSWORDS, null)});
+        setTabs(new KeyboardAccessoryData.Tab[] {mTestTab});
         mModel.get(BAR_ITEMS).addObserver(mMockActionListObserver);
 
         PropertyProvider<Action[]> testProvider =
@@ -382,7 +385,7 @@ public class KeyboardAccessoryControllerTest {
         assertThat(mModel.get(VISIBLE), is(false));
 
         // Adding actions while the keyboard is visible triggers the accessory.
-        mCoordinator.addTab(mTestTab);
+        setTabs(new KeyboardAccessoryData.Tab[] {mTestTab});
         assertThat(mModel.get(VISIBLE), is(true));
     }
 
@@ -390,12 +393,12 @@ public class KeyboardAccessoryControllerTest {
     public void testShowsTitleForActiveTabs() {
         // Add an inactive tab and ensure the sheet title isn't already set.
         mCoordinator.requestShowing();
-        mCoordinator.addTab(mTestTab);
+        setTabs(new KeyboardAccessoryData.Tab[] {mTestTab});
         mModel.set(SHEET_TITLE, "");
         assertThat(mCoordinator.hasActiveTab(), is(false));
 
         // Changing the active tab should also change the title.
-        mCoordinator.getTabLayoutForTesting().setActiveTabForTesting(0);
+        setActiveTab(mTestTab);
         assertThat(mModel.get(SHEET_TITLE), equalTo("Passwords"));
         assertThat(mCoordinator.hasActiveTab(), is(true));
     }
@@ -407,7 +410,7 @@ public class KeyboardAccessoryControllerTest {
                 is(0));
 
         // Adding a tab contributes to the tabs and the total bucket.
-        mCoordinator.addTab(mTestTab);
+        setTabs(new KeyboardAccessoryData.Tab[] {mTestTab});
         mCoordinator.requestShowing();
 
         assertThat(getShownMetricsCount(AccessoryBarContents.WITH_TABS), is(1));
@@ -457,7 +460,7 @@ public class KeyboardAccessoryControllerTest {
                 is(0));
 
         // First showing contains tabs only.
-        mCoordinator.addTab(mTestTab);
+        setTabs(new KeyboardAccessoryData.Tab[] {mTestTab});
         mCoordinator.requestShowing();
 
         assertThat(getShownMetricsCount(AccessoryBarContents.WITH_TABS), is(1));
@@ -490,7 +493,7 @@ public class KeyboardAccessoryControllerTest {
                 is(0));
 
         // Add a tab and show, so the accessory is permanently visible.
-        mCoordinator.addTab(mTestTab);
+        setTabs(new KeyboardAccessoryData.Tab[] {mTestTab});
         mCoordinator.requestShowing();
 
         // Adding an action fills the bar impression bucket and the actions set once.
@@ -521,5 +524,17 @@ public class KeyboardAccessoryControllerTest {
     private int getShownMetricsCount(@AccessoryBarContents int bucket) {
         return RecordHistogram.getHistogramValueCountForTesting(
                 KeyboardAccessoryMetricsRecorder.UMA_KEYBOARD_ACCESSORY_BAR_SHOWN, bucket);
+    }
+
+    private void setTabs(KeyboardAccessoryData.Tab[] tabs) {
+        mCoordinator.setTabs(tabs);
+        when(mMockTabSwitchingDelegate.hasTabs()).thenReturn(true);
+        mCoordinator.getMediatorForTesting().onTabsChanged();
+    }
+
+    private void setActiveTab(KeyboardAccessoryData.Tab tab) {
+        when(mMockTabSwitchingDelegate.getActiveTab()).thenReturn(tab);
+        when(mMockTabSwitchingDelegate.hasTabs()).thenReturn(true);
+        mCoordinator.getMediatorForTesting().onActiveTabChanged(0);
     }
 }

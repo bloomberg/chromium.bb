@@ -17,17 +17,16 @@ import java.lang.annotation.RetentionPolicy;
  * This class describes the {@link ListModel} used for keyboard accessory sheets like the
  * {@link PasswordAccessorySheetCoordinator}.
  */
-public class AccessorySheetTabModel
-        extends ListModel<AccessorySheetTabModel.AccessorySheetDataPiece> {
+class AccessorySheetTabModel extends ListModel<AccessorySheetTabModel.AccessorySheetDataPiece> {
     /**
      * The {@link AccessorySheetData} has to be mapped to single items in a {@link RecyclerView}.
      * This class allows wrapping the {@link AccessorySheetData} into small chunks that are
      * organized in a {@link ListModel}. A specific ViewHolder is defined for each piece.
      */
-    public static class AccessorySheetDataPiece {
+    static class AccessorySheetDataPiece {
         @IntDef({Type.TITLE, Type.PASSWORD_INFO, Type.FOOTER_COMMAND})
         @Retention(RetentionPolicy.SOURCE)
-        public @interface Type {
+        @interface Type {
             /**
              * An item in title style used to display text. Non-interactive.
              */
@@ -50,11 +49,11 @@ public class AccessorySheetTabModel
             mType = type;
         }
 
-        public static int getType(AccessorySheetDataPiece accessorySheetDataPiece) {
+        static int getType(AccessorySheetDataPiece accessorySheetDataPiece) {
             return accessorySheetDataPiece.mType;
         }
 
-        public Object getDataPiece() {
+        Object getDataPiece() {
             return mDataPiece;
         }
     }

@@ -38,7 +38,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.ui.DeferredViewStubInflationProvider;
 import org.chromium.ui.widget.ChipView;
 
 import java.util.concurrent.ExecutionException;
@@ -62,9 +61,8 @@ public class PasswordAccessorySheetModernViewTest {
         mActivityTestRule.startMainActivityOnBlankPage();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             AccessorySheetCoordinator accessorySheet =
-                    new AccessorySheetCoordinator(new DeferredViewStubInflationProvider<>(
-                            mActivityTestRule.getActivity().findViewById(
-                                    R.id.keyboard_accessory_sheet_stub)));
+                    new AccessorySheetCoordinator(mActivityTestRule.getActivity().findViewById(
+                            R.id.keyboard_accessory_sheet_stub));
             accessorySheet.setTabs(new KeyboardAccessoryData.Tab[] {new KeyboardAccessoryData.Tab(
                     "Passwords", null, null, R.layout.password_accessory_sheet,
                     AccessoryTabType.ALL, new KeyboardAccessoryData.Tab.Listener() {

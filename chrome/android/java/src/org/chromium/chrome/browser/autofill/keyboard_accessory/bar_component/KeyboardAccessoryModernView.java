@@ -21,7 +21,7 @@ import org.chromium.chrome.R;
  * The Accessory sitting above the keyboard and below the content area. It is used for autofill
  * suggestions and manual entry points assisting the user in filling forms.
  */
-public class KeyboardAccessoryModernView extends KeyboardAccessoryView {
+class KeyboardAccessoryModernView extends KeyboardAccessoryView {
     private ImageView mKeyboardToggle;
     private TextView mSheetTitle;
 

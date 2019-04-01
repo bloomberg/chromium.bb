@@ -21,29 +21,27 @@ import static org.chromium.chrome.test.util.ViewUtils.VIEW_GONE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_INVISIBLE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_NULL;
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
+import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
 
 import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewStub;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import org.hamcrest.Matcher;
-import org.junit.Before;
-import org.junit.Rule;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryTabType;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.KeyboardAccessoryView;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ui.DummyUiActivity;
+import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
 import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -52,18 +50,13 @@ import org.chromium.ui.modelutil.PropertyModel;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class KeyboardAccessoryTabLayoutViewTest {
+public class KeyboardAccessoryTabLayoutViewTest extends DummyUiActivityTestCase {
     private PropertyModel mModel;
     private KeyboardAccessoryTabLayoutView mView;
 
-    @Rule
-    public ChromeActivityTestRule<ChromeTabbedActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeTabbedActivity.class);
-
     private KeyboardAccessoryData.Tab createTestTab(String contentDescription) {
         return new KeyboardAccessoryData.Tab("Passwords",
-                mActivityTestRule.getActivity().getResources().getDrawable(
-                        android.R.drawable.ic_lock_lock), // Unused.
+                getActivity().getResources().getDrawable(android.R.drawable.ic_lock_lock),
                 contentDescription,
                 R.layout.empty_accessory_sheet, // Unused.
                 AccessoryTabType.ALL,
@@ -81,17 +74,23 @@ public class KeyboardAccessoryTabLayoutViewTest {
                 instanceOf(ImageView.class)); // Match only the image.
     }
 
-    @Before
-    public void setUp() throws InterruptedException {
-        mActivityTestRule.startMainActivityOnBlankPage();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+    @BeforeClass
+    public static void setUpBeforeActivityLaunched() {
+        DummyUiActivity.setTestLayout(R.layout.keyboard_accessory_tabs);
+    }
+
+    @Override
+    public void setUpTest() throws Exception {
+        super.setUpTest();
+
+        runOnUiThreadBlocking(() -> {
             mModel = new PropertyModel.Builder(TABS, ACTIVE_TAB, TAB_SELECTION_CALLBACKS)
                              .with(TABS, new ListModel<>())
                              .with(ACTIVE_TAB, null)
                              .build();
-            ViewStub viewStub =
-                    mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory_stub);
-            mView = viewStub.inflate().findViewById(R.id.tabs);
+            mView = (KeyboardAccessoryTabLayoutView) ((FrameLayout) getActivity().findViewById(
+                                                              android.R.id.content))
+                            .getChildAt(0);
             KeyboardAccessoryTabLayoutCoordinator.createTabViewBinder(mModel, mView);
         });
     }
@@ -99,8 +98,7 @@ public class KeyboardAccessoryTabLayoutViewTest {
     @Test
     @MediumTest
     public void testRemovesTabs() {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            ((KeyboardAccessoryView) mView.getParent().getParent()).setVisible(true);
+        runOnUiThreadBlocking(() -> {
             mModel.get(TABS).set(new KeyboardAccessoryData.Tab[] {createTestTab("FirstTab"),
                     createTestTab("SecondTab"), createTestTab("ThirdTab")});
         });
@@ -111,7 +109,7 @@ public class KeyboardAccessoryTabLayoutViewTest {
         onView(isTabWithDescription("SecondTab")).check(matches(isDisplayed()));
         onView(isTabWithDescription("ThirdTab")).check(matches(isDisplayed()));
 
-        ThreadUtils.runOnUiThreadBlocking(() -> mModel.get(TABS).remove(mModel.get(TABS).get(1)));
+        runOnUiThreadBlocking(() -> mModel.get(TABS).remove(mModel.get(TABS).get(1)));
 
         onView(isRoot()).check(
                 (root, e)
@@ -125,8 +123,7 @@ public class KeyboardAccessoryTabLayoutViewTest {
     @Test
     @MediumTest
     public void testAddsTabs() {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            ((KeyboardAccessoryView) mView.getParent().getParent()).setVisible(true);
+        runOnUiThreadBlocking(() -> {
             mModel.get(TABS).set(new KeyboardAccessoryData.Tab[] {
                     createTestTab("FirstTab"), createTestTab("SecondTab")});
         });
@@ -137,7 +134,7 @@ public class KeyboardAccessoryTabLayoutViewTest {
         onView(isTabWithDescription("SecondTab")).check(matches(isDisplayed()));
         onView(isTabWithDescription("ThirdTab")).check(doesNotExist());
 
-        ThreadUtils.runOnUiThreadBlocking(() -> mModel.get(TABS).add(createTestTab("ThirdTab")));
+        runOnUiThreadBlocking(() -> mModel.get(TABS).add(createTestTab("ThirdTab")));
 
         onView(isRoot()).check(
                 (root, e) -> waitForView((ViewGroup) root, isTabWithDescription("ThirdTab")));

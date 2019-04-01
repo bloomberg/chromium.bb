@@ -128,7 +128,7 @@ public class PasswordAccessorySheetCoordinator extends AccessorySheetTabCoordina
     }
 
     @VisibleForTesting
-    public AccessorySheetTabModel getSheetDataPiecesForTesting() {
+    AccessorySheetTabModel getSheetDataPiecesForTesting() {
         return mModel;
     }
 }

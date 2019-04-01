@@ -69,14 +69,14 @@ class ManualFillingState {
         mWebContents.addObserver(mWebContentsObserver);
     }
 
-    public KeyboardAccessoryData.Tab[] getTabs() {
+    KeyboardAccessoryData.Tab[] getTabs() {
         ArrayList<KeyboardAccessoryData.Tab> tabs = new ArrayList<>();
         if (mPasswordAccessorySheet != null) tabs.add(mPasswordAccessorySheet.getTab());
         if (mCreditCardAccessorySheet != null) tabs.add(mCreditCardAccessorySheet.getTab());
         return tabs.toArray(new KeyboardAccessoryData.Tab[0]);
     }
 
-    public void destroy() {
+    void destroy() {
         if (mWebContents != null) mWebContents.removeObserver(mWebContentsObserver);
         mActionsProvider = null;
         mPasswordSheetDataProvider = null;
@@ -90,7 +90,7 @@ class ManualFillingState {
      * @param provider A {@link PropertyProvider} providing actions.
      * @param defaultActions A default set of actions to prepopulate the adapter's cache.
      */
-    public void wrapActionsProvider(PropertyProvider<KeyboardAccessoryData.Action[]> provider,
+    void wrapActionsProvider(PropertyProvider<KeyboardAccessoryData.Action[]> provider,
             KeyboardAccessoryData.Action[] defaultActions) {
         mActionsProvider = new CachedProviderAdapter<>(
                 provider, defaultActions, this::onAdapterReceivedNewData);
@@ -100,7 +100,7 @@ class ManualFillingState {
      * Returns the wrapped provider set with {@link #wrapActionsProvider}.
      * @return A {@link CachedProviderAdapter} wrapping a {@link PropertyProvider}.
      */
-    public Provider<KeyboardAccessoryData.Action[]> getActionsProvider() {
+    Provider<KeyboardAccessoryData.Action[]> getActionsProvider() {
         return mActionsProvider;
     }
 
@@ -108,7 +108,7 @@ class ManualFillingState {
      * Wraps the given provider for password data in a {@link CachedProviderAdapter} and stores it.
      * @param provider A {@link PropertyProvider} providing password sheet data.
      */
-    public void wrapPasswordSheetDataProvider(PropertyProvider<AccessorySheetData> provider) {
+    void wrapPasswordSheetDataProvider(PropertyProvider<AccessorySheetData> provider) {
         mPasswordSheetDataProvider =
                 new CachedProviderAdapter<>(provider, null, this::onAdapterReceivedNewData);
     }
@@ -117,23 +117,25 @@ class ManualFillingState {
      * Returns the wrapped provider set with {@link #wrapPasswordSheetDataProvider}.
      * @return A {@link CachedProviderAdapter} wrapping a {@link PropertyProvider}.
      */
-    public Provider<AccessorySheetData> getPasswordSheetDataProvider() {
+    Provider<AccessorySheetData> getPasswordSheetDataProvider() {
         return mPasswordSheetDataProvider;
     }
 
-    public void setPasswordAccessorySheet(@Nullable PasswordAccessorySheetCoordinator sheet) {
+    void setPasswordAccessorySheet(@Nullable PasswordAccessorySheetCoordinator sheet) {
         mPasswordAccessorySheet = sheet;
     }
 
-    public @Nullable PasswordAccessorySheetCoordinator getPasswordAccessorySheet() {
+    @Nullable
+    PasswordAccessorySheetCoordinator getPasswordAccessorySheet() {
         return mPasswordAccessorySheet;
     }
 
-    public void setCreditCardAccessorySheet(@Nullable CreditCardAccessorySheetCoordinator sheet) {
+    void setCreditCardAccessorySheet(@Nullable CreditCardAccessorySheetCoordinator sheet) {
         mCreditCardAccessorySheet = sheet;
     }
 
-    public @Nullable CreditCardAccessorySheetCoordinator getCreditCardAccessorySheet() {
+    @Nullable
+    CreditCardAccessorySheetCoordinator getCreditCardAccessorySheet() {
         return mCreditCardAccessorySheet;
     }
 

@@ -26,7 +26,7 @@ import org.chromium.ui.modelutil.PropertyModel;
  * {@link AccessorySheetViewBinder} which will modify the view accordingly.
  */
 class AccessorySheetViewBinder {
-    public static void bind(PropertyModel model, View sheetView, PropertyKey propertyKey) {
+    static void bind(PropertyModel model, View sheetView, PropertyKey propertyKey) {
         AccessorySheetView view = (AccessorySheetView) sheetView;
         if (propertyKey == TABS) {
             view.setAdapter(AccessorySheetCoordinator.createTabViewAdapter(

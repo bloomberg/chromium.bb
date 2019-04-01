@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
-import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewStub;
 
@@ -14,9 +13,9 @@ import org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.Key
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.PropertyProvider;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.sheet_component.AccessorySheetCoordinator;
-import org.chromium.ui.DeferredViewStubInflationProvider;
+import org.chromium.components.autofill.AutofillDelegate;
+import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.ui.DropdownPopupWindow;
-import org.chromium.ui.ViewProvider;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -42,15 +41,14 @@ public class ManualFillingCoordinator {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)) {
             barStub.setLayoutResource(org.chromium.chrome.R.layout.keyboard_accessory_modern);
         }
-        initialize(windowAndroid, new DeferredViewStubInflationProvider<>(barStub),
-                new DeferredViewStubInflationProvider<>(sheetStub));
+        initialize(windowAndroid, new KeyboardAccessoryCoordinator(mMediator, barStub),
+                new AccessorySheetCoordinator(sheetStub));
     }
 
     @VisibleForTesting
-    void initialize(WindowAndroid windowAndroid, ViewProvider<View> barProvider,
-            ViewProvider<View> sheetProvider) {
-        mMediator.initialize(new KeyboardAccessoryCoordinator(mMediator, barProvider),
-                new AccessorySheetCoordinator(sheetProvider), windowAndroid);
+    void initialize(WindowAndroid windowAndroid, KeyboardAccessoryCoordinator accessoryBar,
+            AccessorySheetCoordinator accessorySheet) {
+        mMediator.initialize(accessoryBar, accessorySheet, windowAndroid);
     }
 
     /**
@@ -87,14 +85,14 @@ public class ManualFillingCoordinator {
      * Requests to close the active tab in the keyboard accessory. If there is no active tab, this
      * is a NoOp.
      */
-    public void closeAccessorySheet() {
+    void closeAccessorySheet() {
         mMediator.onCloseAccessorySheet();
     }
 
     /**
      * Opens the keyboard which implicitly dismisses the sheet. Without open sheet, this is a NoOp.
      */
-    public void swapSheetWithKeyboard() {
+    void swapSheetWithKeyboard() {
         mMediator.swapSheetWithKeyboard();
     }
 
@@ -111,7 +109,12 @@ public class ManualFillingCoordinator {
         mMediator.registerCreditCardProvider();
     }
 
-    public void showWhenKeyboardIsVisible() {
+    void registerAutofillProvider(
+            PropertyProvider<AutofillSuggestion[]> autofillProvider, AutofillDelegate delegate) {
+        mMediator.registerAutofillProvider(autofillProvider, delegate);
+    }
+
+    void showWhenKeyboardIsVisible() {
         mMediator.showWhenKeyboardIsVisible();
     }
 
@@ -137,21 +140,6 @@ public class ManualFillingCoordinator {
         return mMediator.getKeyboardExtensionSizeManager();
     }
 
-    // TODO(fhorschig): Should be @VisibleForTesting.
-    /**
-     * Allows access to the keyboard accessory. This can be used to explicitly modify the the bar of
-     * the keyboard accessory (e.g. by providing suggestions or actions).
-     * @return The coordinator of the Keyboard accessory component.
-     */
-    public @Nullable KeyboardAccessoryCoordinator getKeyboardAccessory() {
-        return mMediator.getKeyboardAccessory();
-    }
-
-    @VisibleForTesting
-    public ManualFillingMediator getMediatorForTesting() {
-        return mMediator;
-    }
-
     /**
      * Returns whether the Keyboard is replaced by an accessory sheet or is about to do so.
      * @return True if an accessory sheet is (being) opened and replacing the keyboard.
@@ -159,5 +147,10 @@ public class ManualFillingCoordinator {
      */
     public boolean isFillingViewShown(View view) {
         return mMediator.isFillingViewShown(view);
+    }
+
+    @VisibleForTesting
+    ManualFillingMediator getMediatorForTesting() {
+        return mMediator;
     }
 }

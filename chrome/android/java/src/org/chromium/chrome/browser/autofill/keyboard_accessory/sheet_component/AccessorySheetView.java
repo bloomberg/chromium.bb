@@ -17,7 +17,7 @@ import android.widget.ImageView;
 /**
  * Displays the data provided by the {@link AccessorySheetViewBinder}.
  */
-public class AccessorySheetView extends FrameLayout {
+class AccessorySheetView extends FrameLayout {
     private ViewPager mViewPager;
     private ImageView mTopShadow;
 

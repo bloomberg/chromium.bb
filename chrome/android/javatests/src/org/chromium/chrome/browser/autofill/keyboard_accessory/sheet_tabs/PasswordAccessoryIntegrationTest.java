@@ -65,11 +65,7 @@ public class PasswordAccessoryIntegrationTest {
         mHelper.loadTestPage(false);
 
         CriteriaHelper.pollUiThread(()
-                                            -> mActivityTestRule.getActivity()
-                                                       .getManualFillingController()
-                                                       .getMediatorForTesting()
-                                                       .getOrCreatePasswordSheet()
-                        != null,
+                                            -> mHelper.getOrCreatePasswordAccessorySheet() != null,
                 "Password Sheet should be bound to accessory sheet.");
     }
 
@@ -80,11 +76,7 @@ public class PasswordAccessoryIntegrationTest {
         mHelper.loadTestPage(false);
 
         CriteriaHelper.pollUiThread(()
-                                            -> mActivityTestRule.getActivity()
-                                                       .getManualFillingController()
-                                                       .getMediatorForTesting()
-                                                       .getOrCreatePasswordSheet()
-                        != null,
+                                            -> mHelper.getOrCreatePasswordAccessorySheet() != null,
                 "Password Sheet should be bound to accessory sheet.");
     }
 
@@ -97,10 +89,7 @@ public class PasswordAccessoryIntegrationTest {
         mHelper.loadTestPage(false);
 
         Assert.assertNull("Password Sheet should not have been created.",
-                mActivityTestRule.getActivity()
-                        .getManualFillingController()
-                        .getMediatorForTesting()
-                        .getOrCreatePasswordSheet());
+                mHelper.getOrCreatePasswordAccessorySheet());
     }
 
     @Test
