@@ -52,7 +52,7 @@ class DeviceOperation : public GenericDeviceOperation {
   // TODO(hongjunchoi): Refactor so that |command| is never base::nullopt.
   void DispatchDeviceRequest(base::Optional<std::vector<uint8_t>> command,
                              FidoDevice::DeviceCallback callback) {
-    if (!command || device_->state() == FidoDevice::State::kDeviceError) {
+    if (!command || device_->is_in_error_state()) {
       base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
       return;

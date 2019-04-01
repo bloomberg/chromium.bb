@@ -34,19 +34,19 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   using DeviceCallback =
       base::OnceCallback<void(base::Optional<std::vector<uint8_t>>)>;
 
-  // Internal state machine states. kMsgError represents a state where error
-  // has been received from the connected device because an
-  // unexpected/incorrectly formatted request was sent from the client. Devices
-  // in this state can be recovered by re-sending a well-formed command. On the
-  // other hand, kDeviceError represents a state where error occurred due to
-  // connection failure/unknown reasons and is considered an unrecoverable
-  // error.
+  // Internal state machine states.
   enum class State {
     kInit,
     kConnected,
     kBusy,
     kReady,
+    // kMsgError occurs when the the device responds with an error indicating an
+    // invalid command, parameter, or length. This is used within |FidoDevice|
+    // to handle the case of a device rejecting a CTAP2 GetInfo command. It is
+    // otherwise a fatal, terminal state.
     kMsgError,
+    // kDeviceError indicates some error other than those covered by
+    // |kMsgError|. This is a terminal state.
     kDeviceError,
   };
 
@@ -83,7 +83,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   const base::Optional<AuthenticatorGetInfoResponse>& device_info() const {
     return device_info_;
   }
-  State state() const { return state_; }
+  bool is_in_error_state() const {
+    return state_ == State::kMsgError || state_ == State::kDeviceError;
+  }
+
+  State state_for_testing() const { return state_; }
 
  protected:
   void OnDeviceInfoReceived(base::OnceClosure done,

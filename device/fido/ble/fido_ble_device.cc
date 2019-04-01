@@ -8,8 +8,10 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "components/apdu/apdu_response.h"
+#include "components/device_event_log/device_event_log.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/fido/ble/fido_ble_frames.h"
 #include "device/fido/ble/fido_ble_uuids.h"
@@ -259,17 +261,22 @@ void FidoBleDevice::OnBleResponseReceived(DeviceCallback callback,
 }
 
 void FidoBleDevice::ProcessBleDeviceError(base::span<const uint8_t> data) {
-  DCHECK_EQ(1u, data.size());
-  const auto error_constant = data[0];
-  if (error_constant ==
-          base::strict_cast<uint8_t>(FidoBleFrame::ErrorCode::INVALID_CMD) ||
-      error_constant ==
-          base::strict_cast<uint8_t>(FidoBleFrame::ErrorCode::INVALID_PAR) ||
-      error_constant ==
-          base::strict_cast<uint8_t>(FidoBleFrame::ErrorCode::INVALID_LEN)) {
-    state_ = State::kMsgError;
-  } else {
+  if (data.size() != 1) {
+    FIDO_LOG(ERROR) << "Unknown BLE error received: "
+                    << base::HexEncode(data.data(), data.size());
     state_ = State::kDeviceError;
+    return;
+  }
+
+  switch (static_cast<FidoBleFrame::ErrorCode>(data[0])) {
+    case FidoBleFrame::ErrorCode::INVALID_CMD:
+    case FidoBleFrame::ErrorCode::INVALID_PAR:
+    case FidoBleFrame::ErrorCode::INVALID_LEN:
+      state_ = State::kMsgError;
+      break;
+    default:
+      FIDO_LOG(ERROR) << "BLE error received: " << static_cast<int>(data[0]);
+      state_ = State::kDeviceError;
   }
 }
 

@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/device_event_log/device_event_log.h"
 #include "crypto/random.h"
 #include "device/fido/hid/fido_hid_message.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -102,7 +103,7 @@ void FidoHidDevice::Transition(std::vector<uint8_t> command,
       pending_transactions_.emplace(std::move(command), repeating_callback);
       break;
     case State::kDeviceError:
-    default:
+    case State::kMsgError:
       base::WeakPtr<FidoHidDevice> self = weak_factory_.GetWeakPtr();
       repeating_callback.Run(base::nullopt);
       // Executing callbacks may free |this|. Check |self| first.
@@ -399,21 +400,21 @@ void FidoHidDevice::OnTimeout(DeviceCallback callback) {
 void FidoHidDevice::ProcessHidError(FidoHidDeviceCommand cmd,
                                     base::span<const uint8_t> payload) {
   if (cmd != FidoHidDeviceCommand::kError || payload.size() != 1) {
-    DLOG(ERROR) << "Unexpected HID device command received.";
+    FIDO_LOG(ERROR) << "Unknown HID message received: " << static_cast<int>(cmd)
+                    << " " << base::HexEncode(payload.data(), payload.size());
     state_ = State::kDeviceError;
     return;
   }
 
-  const auto error_constant = payload[0];
-  if (error_constant ==
-          base::strict_cast<uint8_t>(HidErrorConstant::kInvalidCommand) ||
-      error_constant ==
-          base::strict_cast<uint8_t>(HidErrorConstant::kInvalidParameter) ||
-      error_constant ==
-          base::strict_cast<uint8_t>(HidErrorConstant::kInvalidLength)) {
-    state_ = State::kMsgError;
-  } else {
-    state_ = State::kDeviceError;
+  switch (static_cast<HidErrorConstant>(payload[0])) {
+    case HidErrorConstant::kInvalidCommand:
+    case HidErrorConstant::kInvalidParameter:
+    case HidErrorConstant::kInvalidLength:
+      state_ = State::kMsgError;
+      break;
+    default:
+      FIDO_LOG(ERROR) << "HID error received: " << static_cast<int>(payload[0]);
+      state_ = State::kDeviceError;
   }
 }
 
