@@ -405,6 +405,11 @@ cr.define('settings', function() {
         value: 'en-US,sw',
       },
       {
+        key: 'spellcheck.blacklisted_dictionaries',
+        type: chrome.settingsPrivate.PrefType.LIST,
+        value: [],
+      },
+      {
         key: 'spellcheck.dictionaries',
         type: chrome.settingsPrivate.PrefType.LIST,
         value: ['en-US'],
@@ -415,9 +420,9 @@ cr.define('settings', function() {
         value: [],
       },
       {
-        key: 'spellcheck.blacklisted_dictionaries',
-        type: chrome.settingsPrivate.PrefType.LIST,
-        value: [],
+        key: 'spellcheck.use_spelling_service',
+        type: chrome.settingsPrivate.PrefType.BOOLEAN,
+        value: false,
       },
       {
         key: 'translate.enabled',

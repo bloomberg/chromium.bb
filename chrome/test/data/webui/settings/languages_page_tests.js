@@ -8,7 +8,8 @@ cr.define('languages_page_tests', function() {
     AddLanguagesDialog: 'add languages dialog',
     LanguageMenu: 'language menu',
     InputMethods: 'input methods',
-    Spellcheck: 'spellcheck',
+    Spellcheck: 'spellcheck_all',
+    SpellcheckOfficialBuild: 'spellcheck_official',
   };
 
   suite('languages page', function() {
@@ -562,48 +563,42 @@ cr.define('languages_page_tests', function() {
 
         assertTrue(spellCheckSettingsExist);
 
-        // The row button should have a secondary row specifying which
-        // language spell check is enabled for.
-        const triggerRow = languagesPage.$.spellCheckSubpageTrigger;
-
-        // en-US starts with spellcheck enabled, so the secondary row is
-        // populated.
-        assertTrue(triggerRow.classList.contains('two-line'));
-        assertLT(0, triggerRow.querySelector('.secondary').textContent.length);
-
-        triggerRow.click();
-        Polymer.dom.flush();
+        const triggerRow = languagesPage.$.enableSpellcheckingToggle;
 
         // Disable spellcheck for en-US.
+        const spellcheckLanguageRow =
+            spellCheckCollapse.querySelector('.list-item');
         const spellcheckLanguageToggle =
-            spellCheckCollapse.querySelector('cr-toggle[checked]');
+            spellcheckLanguageRow.querySelector('cr-toggle');
         assertTrue(!!spellcheckLanguageToggle);
         spellcheckLanguageToggle.click();
         assertFalse(spellcheckLanguageToggle.checked);
         assertEquals(
             0, languageHelper.prefs.spellcheck.dictionaries.value.length);
 
-        // Now the secondary row is empty, so it shouldn't be shown.
-        assertFalse(triggerRow.classList.contains('two-line'));
-        assertEquals(
-            0, triggerRow.querySelector('.secondary').textContent.length);
-
         // Force-enable a language via policy.
         languageHelper.setPrefValue('spellcheck.forced_dictionaries', ['nb']);
-
-        // The second row should no longer be empty.
-        assertTrue(triggerRow.classList.contains('two-line'));
-        assertLT(0, triggerRow.querySelector('.secondary').textContent.length);
+        Polymer.dom.flush();
+        const forceEnabledNbLanguageRow =
+            spellCheckCollapse.querySelectorAll('.list-item')[2];
+        assertTrue(!!forceEnabledNbLanguageRow);
+        assertTrue(
+            forceEnabledNbLanguageRow.querySelector('cr-toggle').checked);
+        assertTrue(!!forceEnabledNbLanguageRow.querySelector(
+            'cr-policy-pref-indicator'));
 
         // Force-disable the same language via policy.
         languageHelper.setPrefValue('spellcheck.forced_dictionaries', []);
         languageHelper.setPrefValue(
             'spellcheck.blacklisted_dictionaries', ['nb']);
-
-        // The second row should be empty again.
-        assertFalse(triggerRow.classList.contains('two-line'));
-        assertEquals(
-            0, triggerRow.querySelector('.secondary').textContent.length);
+        languageHelper.enableLanguage('nb');
+        Polymer.dom.flush();
+        const forceDisabledNbLanguageRow =
+            spellCheckCollapse.querySelectorAll('.list-item')[2];
+        assertFalse(
+            forceDisabledNbLanguageRow.querySelector('cr-toggle').checked);
+        assertTrue(!!forceDisabledNbLanguageRow.querySelector(
+            'cr-policy-pref-indicator'));
 
         // Sets |browser.enable_spellchecking| to |value| as if it was set by
         // policy.
@@ -628,12 +623,8 @@ cr.define('languages_page_tests', function() {
         setEnableSpellcheckingViaPolicy(false);
         Polymer.dom.flush();
 
-        // The second row should not be empty.
-        assertTrue(triggerRow.classList.contains('two-line'));
-        assertLT(0, triggerRow.querySelector('.secondary').textContent.length);
-
         // The policy indicator should be present.
-        assertTrue(!!triggerRow.querySelector('cr-policy-pref-indicator'));
+        assertTrue(!!triggerRow.$$('cr-policy-pref-indicator'));
 
         // Force-enable spellchecking via policy, and ensure that the policy
         // indicator is not present. |enable_spellchecking| can be forced to
@@ -692,6 +683,18 @@ cr.define('languages_page_tests', function() {
         retryButtons[0].click();
         Polymer.dom.flush();
         assertFalse(moreInfo.hidden);
+      });
+    });
+
+    suite(TestNames.SpellcheckOfficialBuild, function() {
+      test('enabling and disabling the spelling service', () => {
+        const previousValue =
+            languagesPage.prefs.spellcheck.use_spelling_service.value;
+        languagesPage.$.spellingServiceEnable.click();
+        Polymer.dom.flush();
+        assertNotEquals(
+            previousValue,
+            languagesPage.prefs.spellcheck.use_spelling_service.value);
       });
     });
   });

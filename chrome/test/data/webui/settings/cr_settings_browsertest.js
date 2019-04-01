@@ -1818,6 +1818,13 @@ TEST_F('CrSettingsLanguagesPageTest', 'Spellcheck', function() {
   mocha.grep(assert(languages_page_tests.TestNames.Spellcheck)).run();
 });
 
+GEN('#if defined(GOOGLE_CHROME_BUILD)');
+TEST_F('CrSettingsLanguagesPageTest', 'SpellcheckOfficialBuild', function() {
+  mocha.grep(assert(languages_page_tests.TestNames.SpellcheckOfficialBuild))
+      .run();
+});
+GEN('#endif');
+
 /**
  * @constructor
  * @extends {CrSettingsBrowserTest}
