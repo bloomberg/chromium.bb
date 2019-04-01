@@ -92,13 +92,14 @@ sk_sp<SkPromiseImageTexture> ExternalVkImageSkiaRepresentation::BeginAccess(
   DestroySemaphores(std::move(begin_access_semaphores_), begin_access_fence_);
   begin_access_semaphores_.clear();
 
-  std::vector<SemaphoreHandle> handles;
-  if (!backing_impl()->BeginAccess(readonly, &handles))
+  std::vector<base::ScopedFD> fds;
+  if (!backing_impl()->BeginAccess(readonly, &fds))
     return nullptr;
 
-  for (auto& handle : handles) {
-    VkSemaphore semaphore = vk_implementation()->ImportSemaphoreHandle(
-        vk_device(), std::move(handle));
+  for (auto& fd : fds) {
+    VkSemaphore semaphore = VK_NULL_HANDLE;
+    vk_implementation()->ImportSemaphoreFdKHR(vk_device(), std::move(fd),
+                                              &semaphore);
     if (semaphore != VK_NULL_HANDLE)
       begin_access_semaphores_.push_back(semaphore);
   }
@@ -145,14 +146,14 @@ void ExternalVkImageSkiaRepresentation::EndAccess(bool readonly) {
     end_access_semaphore_ = VK_NULL_HANDLE;
   }
 
-  SemaphoreHandle handle;
+  base::ScopedFD fd;
   if (end_access_semaphore_ != VK_NULL_HANDLE) {
-    handle = vk_implementation()->GetSemaphoreHandle(vk_device(),
-                                                     end_access_semaphore_);
-    if (!handle.is_valid())
-      LOG(FATAL) << "Failed to get handle from a semaphore.";
+    if (!vk_implementation()->GetSemaphoreFdKHR(vk_device(),
+                                                end_access_semaphore_, &fd)) {
+      LOG(FATAL) << "Failed to get fd from a semaphore.";
+    }
   }
-  backing_impl()->EndAccess(readonly, std::move(handle));
+  backing_impl()->EndAccess(readonly, std::move(fd));
 }
 
 void ExternalVkImageSkiaRepresentation::DestroySemaphores(

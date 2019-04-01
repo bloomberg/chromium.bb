@@ -33,10 +33,6 @@ class COMPONENT_EXPORT(VULKAN_WIN32) VulkanImplementationWin32
   std::unique_ptr<gfx::GpuFence> ExportVkFenceToGpuFence(
       VkDevice vk_device,
       VkFence vk_fence) override;
-  VkSemaphore ImportSemaphoreHandle(VkDevice vk_device,
-                                    SemaphoreHandle handle) override;
-  SemaphoreHandle GetSemaphoreHandle(VkDevice vk_device,
-                                     VkSemaphore vk_semaphore) override;
 
  private:
   VulkanInstance vulkan_instance_;
