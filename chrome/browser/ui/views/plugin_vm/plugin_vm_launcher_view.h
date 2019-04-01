@@ -77,7 +77,6 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
                                     int64_t bytes_per_sec) const;
   void SetBigMessageLabel();
   void SetMessageLabel();
-  void SetDownloadProgressMessageLabel();
   void SetBigImage();
 
   void StartPluginVmImageDownload();
