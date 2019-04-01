@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/platform/fonts/font_global_context.h"
 #include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_font_data.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_shaper.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 #include "third_party/blink/renderer/platform/fonts/skia/skia_text_metrics.h"
