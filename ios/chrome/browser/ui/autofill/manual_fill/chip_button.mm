@@ -33,6 +33,11 @@ static const CGFloat kChipVerticalMargin = 4;
   self = [super initWithFrame:frame];
   if (self) {
     [self initializeStyling];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(updateTitleLabelFont)
+               name:UIContentSizeCategoryDidChangeNotification
+             object:nil];
   }
   return self;
 }
@@ -100,13 +105,16 @@ static const CGFloat kChipVerticalMargin = 4;
              forState:UIControlStateNormal];
   self.titleLabel.adjustsFontForContentSizeCategory = YES;
 
+  [self updateTitleLabelFont];
+  self.contentEdgeInsets = [self chipEdgeInsets];
+}
+
+- (void)updateTitleLabelFont {
   UIFont* font = [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
   UIFontDescriptor* boldFontDescriptor = [font.fontDescriptor
       fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold];
   DCHECK(boldFontDescriptor);
   self.titleLabel.font = [UIFont fontWithDescriptor:boldFontDescriptor size:0];
-
-  self.contentEdgeInsets = [self chipEdgeInsets];
 }
 
 @end
