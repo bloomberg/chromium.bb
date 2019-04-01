@@ -25,11 +25,12 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/models/combobox_model_observer.h"
+#include "ui/base/models/simple_combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/md_text_button.h"
-#include "ui/views/controls/combobox/combobox.h"
+#include "ui/views/controls/editable_combobox/editable_combobox.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
@@ -37,9 +38,6 @@
 #include "ui/views/window/dialog_client_view.h"
 
 namespace {
-
-// TODO(pbos): Investigate expicitly obfuscating items inside ComboboxModel.
-constexpr base::char16 kBulletChar = gfx::RenderText::kPasswordReplacementChar;
 
 enum PasswordPendingViewColumnSetType {
   // | | (LEADING, FILL) | | (FILL, FILL) | |
@@ -148,45 +146,6 @@ std::vector<base::string16> ToValues(
   return passwords;
 }
 
-// A combobox model for password dropdown that allows to reveal/mask values in
-// the combobox.
-class PasswordDropdownModel : public ui::ComboboxModel {
- public:
-  PasswordDropdownModel(bool revealed,
-                        const autofill::ValueElementVector& items)
-      : revealed_(revealed), passwords_(ToValues(items)) {}
-  ~PasswordDropdownModel() override {}
-
-  void SetRevealed(bool revealed) {
-    if (revealed_ == revealed)
-      return;
-    revealed_ = revealed;
-    for (auto& observer : observers_)
-      observer.OnComboboxModelChanged(this);
-  }
-
-  // ui::ComboboxModel:
-  int GetItemCount() const override { return passwords_.size(); }
-  base::string16 GetItemAt(int index) override {
-    return revealed_ ? passwords_[index]
-                     : base::string16(passwords_[index].length(), kBulletChar);
-  }
-  void AddObserver(ui::ComboboxModelObserver* observer) override {
-    observers_.AddObserver(observer);
-  }
-  void RemoveObserver(ui::ComboboxModelObserver* observer) override {
-    observers_.RemoveObserver(observer);
-  }
-
- private:
-  bool revealed_;
-  const std::vector<base::string16> passwords_;
-  // To be called when |masked_| was changed;
-  base::ObserverList<ui::ComboboxModelObserver>::Unchecked observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordDropdownModel);
-};
-
 std::unique_ptr<views::ToggleImageButton> CreatePasswordViewButton(
     views::ButtonListener* listener,
     bool are_passwords_revealed) {
@@ -212,14 +171,17 @@ std::unique_ptr<views::ToggleImageButton> CreatePasswordViewButton(
 }
 
 // Creates a dropdown from |PasswordForm.all_possible_passwords|.
-std::unique_ptr<views::Combobox> CreatePasswordDropdownView(
+std::unique_ptr<views::EditableCombobox> CreatePasswordDropdownView(
     const autofill::PasswordForm& form,
     bool are_passwords_revealed) {
   DCHECK(!form.all_possible_passwords.empty());
-  std::unique_ptr<views::Combobox> combobox = std::make_unique<views::Combobox>(
-      std::make_unique<PasswordDropdownModel>(are_passwords_revealed,
-                                              form.all_possible_passwords),
-      views::style::CONTEXT_BUTTON, STYLE_PRIMARY_MONOSPACED);
+  auto combobox = std::make_unique<views::EditableCombobox>(
+      std::make_unique<ui::SimpleComboboxModel>(
+          ToValues(form.all_possible_passwords)),
+      /*filter_on_edit=*/false, /*show_on_empty=*/true,
+      views::EditableCombobox::Type::kPassword, views::style::CONTEXT_BUTTON,
+      STYLE_PRIMARY_MONOSPACED);
+  combobox->RevealPasswords(are_passwords_revealed);
   size_t index =
       std::distance(form.all_possible_passwords.begin(),
                     find_if(form.all_possible_passwords.begin(),
@@ -231,9 +193,9 @@ std::unique_ptr<views::Combobox> CreatePasswordDropdownView(
   // we will set the default to first element.
   if (index == form.all_possible_passwords.size()) {
     NOTREACHED();
-    combobox->SetSelectedIndex(0);
+    combobox->SetText(form.all_possible_passwords.at(0).first);
   } else {
-    combobox->SetSelectedIndex(index);
+    combobox->SetText(form.all_possible_passwords.at(index).first);
   }
   combobox->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_PASSWORD_LABEL));
@@ -436,12 +398,10 @@ void PasswordPendingView::TogglePasswordVisibility() {
   are_passwords_revealed_ = !are_passwords_revealed_;
   password_view_button_->SetToggled(are_passwords_revealed_);
   DCHECK(!password_dropdown_ || !password_label_);
-  if (password_dropdown_) {
-    static_cast<PasswordDropdownModel*>(password_dropdown_->model())
-        ->SetRevealed(are_passwords_revealed_);
-  } else {
+  if (password_dropdown_)
+    password_dropdown_->RevealPasswords(are_passwords_revealed_);
+  else
     password_label_->SetObscured(!are_passwords_revealed_);
-  }
 }
 
 void PasswordPendingView::UpdateUsernameAndPasswordInModel() {
@@ -457,13 +417,8 @@ void PasswordPendingView::UpdateUsernameAndPasswordInModel() {
     new_username = static_cast<views::Textfield*>(username_field_)->text();
     base::TrimString(new_username, base::ASCIIToUTF16(" "), &new_username);
   }
-  if (password_editable) {
-    new_password =
-        model()
-            ->pending_password()
-            .all_possible_passwords.at(password_dropdown_->selected_index())
-            .first;
-  }
+  if (password_editable)
+    new_password = password_dropdown_->GetText();
   model()->OnCredentialEdited(std::move(new_username), std::move(new_password));
 }
 
