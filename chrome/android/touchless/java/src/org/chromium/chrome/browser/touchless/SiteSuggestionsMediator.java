@@ -64,6 +64,7 @@ class SiteSuggestionsMediator
                     protected Bitmap doInBackground() {
                         return BitmapFactory.decodeFile(suggestion.whitelistIconPath);
                     }
+
                     @Override
                     protected void onPostExecute(Bitmap icon) {
                         if (icon == null) makeIconRequest(siteSuggestion);
@@ -75,7 +76,7 @@ class SiteSuggestionsMediator
         // Total item count is 1 more than number of site suggestions to account for "all apps".
         mModel.set(SiteSuggestionsCoordinator.ITEM_COUNT_KEY, getItemCount() + 1);
 
-        // If we fetched site suggestions the first time, set initial scrolled position.
+        // If we fetched site suggestions for the first time, set initial scrolled position.
         // We don't want to set scrolled position if we've already set position before.
         if (siteSuggestions.size() > 0
                 && mModel.get(SiteSuggestionsCoordinator.CURRENT_INDEX_KEY) == 0) {
