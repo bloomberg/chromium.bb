@@ -155,7 +155,6 @@ Color PluginData::PluginBackgroundColorForMimeType(
 }
 
 bool PluginData::IsMimeHandlerViewMimeType(const String& mime_type) const {
-  DCHECK(SupportsMimeType(mime_type));
   for (const MimeClassInfo* info : mimes_) {
     if (info->type_ == mime_type)
       return info->Plugin()->MayUseMimeHandlerView();
