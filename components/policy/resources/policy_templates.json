@@ -425,7 +425,7 @@
       'caption': '''Startup pages''',
       'desc': '''Allows you to configure the pages that are loaded on startup.
 
-      The contents of the list 'URLs to open at startup' are ignored unless you select 'Open a list of URLs' in 'Action on startup'.''',
+      The policy 'URLs to open on startup' is ignored unless you select 'Open a list of URLs' in 'Action on startup'.''',
       'policies': [
         'RestoreOnStartup',
         'RestoreOnStartupURLs',
