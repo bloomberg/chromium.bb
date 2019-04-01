@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/writable_shared_memory_region.h"
 #include "base/optional.h"
 #include "components/viz/common/presentation_feedback_map.h"
 #include "content/common/input/synchronous_compositor.mojom.h"
@@ -30,7 +31,6 @@ class SynchronousLayerTreeFrameSink;
 struct SyncCompositorCommonRendererParams;
 struct SyncCompositorDemandDrawHwParams;
 struct SyncCompositorDemandDrawSwParams;
-struct SyncCompositorSetSharedMemoryParams;
 
 class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
                                    public SynchronousLayerTreeFrameSinkClient,
@@ -75,7 +75,7 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
       const SyncCompositorDemandDrawHwParams& draw_params) final;
   void DemandDrawHw(const SyncCompositorDemandDrawHwParams& params,
                     DemandDrawHwCallback callback) final;
-  void SetSharedMemory(const SyncCompositorSetSharedMemoryParams& params,
+  void SetSharedMemory(base::WritableSharedMemoryRegion shm_region,
                        SetSharedMemoryCallback callback) final;
   void DemandDrawSw(const SyncCompositorDemandDrawSwParams& params,
                     DemandDrawSwCallback callback) final;
