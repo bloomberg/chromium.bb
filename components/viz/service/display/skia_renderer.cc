@@ -796,6 +796,19 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
     case DrawQuad::YUV_VIDEO_CONTENT:
       DrawYUVVideoQuad(YUVVideoDrawQuad::MaterialCast(quad), params);
       break;
+    case DrawQuad::INVALID:
+      DrawUnsupportedQuad(quad, params);
+      NOTREACHED();
+      break;
+    case DrawQuad::VIDEO_HOLE:
+      // VideoHoleDrawQuad should only be used by Cast, and should
+      // have been replaced by cast-specific OverlayProcessor before
+      // reach here. In non-cast build, an untrusted render could send such
+      // Quad and the quad would then reach here unexpectedly. Therefore
+      // we should skip NOTREACHED() so an untrusted render is not capable
+      // of causing a crash.
+      DrawUnsupportedQuad(quad, params);
+      break;
     default:
       // If we've reached here, the quad's type hasn't been updated to be
       // batch aware yet.
@@ -1287,6 +1300,15 @@ void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
   DrawSingleImage(params, image, visible_tex_coord_rect, &paint);
 }
 
+void SkiaRenderer::DrawUnsupportedQuad(const DrawQuad* quad,
+                                       const DrawQuadParams& params) {
+#ifdef NDEBUG
+  DrawColoredQuad(params, SK_ColorWHITE);
+#else
+  DrawColoredQuad(params, SK_ColorMAGENTA);
+#endif
+}
+
 void SkiaRenderer::DoSingleDrawQuad(const DrawQuad* quad,
                                     const gfx::QuadF* draw_region) {
   base::Optional<SkAutoCanvasRestore> auto_canvas_restore;
@@ -1347,17 +1369,8 @@ void SkiaRenderer::DoSingleDrawQuad(const DrawQuad* quad,
       NOTREACHED();
       break;
     case DrawQuad::INVALID:
-      DrawUnsupportedQuad(quad, &paint);
-      NOTREACHED();
-      break;
     case DrawQuad::VIDEO_HOLE:
-      // VideoHoleDrawQuad should only be used by Cast, and should
-      // have been replaced by cast-specific OverlayProcessor before
-      // reach here. In non-cast build, an untrusted render could send such
-      // Quad and the quad would then reach here unexpectedly. Therefore
-      // we should skip NOTREACHED() so an untrusted render is not capable
-      // of causing a crash.
-      DrawUnsupportedQuad(quad, &paint);
+      NOTREACHED();
       break;
   }
 
@@ -1670,19 +1683,6 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
   // pull the backdrop-filter bounds rect in and clip the backdrop image.
   current_canvas_->drawImageRect(content_image, content_rect, dest_visible_rect,
                                  paint);
-}
-
-void SkiaRenderer::DrawUnsupportedQuad(const DrawQuad* quad, SkPaint* paint) {
-  DCHECK(paint);
-  // TODO(weiliangc): Make sure unsupported quads work. (crbug.com/644851)
-  NOTIMPLEMENTED();
-#ifdef NDEBUG
-  paint->setColor(SK_ColorWHITE);
-#else
-  paint->setColor(SK_ColorMAGENTA);
-#endif
-  paint->setAlpha(quad->shared_quad_state->opacity * 255);
-  current_canvas_->drawRect(gfx::RectToSkRect(quad->rect), *paint);
 }
 
 void SkiaRenderer::CopyDrawnRenderPass(
