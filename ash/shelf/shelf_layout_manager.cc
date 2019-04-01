@@ -763,6 +763,11 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
       target_bounds, true /* animate */,
       delay_background_change ? update_shelf_observer_ : nullptr);
 
+  // Status area widget background changes when it is shown without the shelf
+  // and needs to be repainted (but we do not want to do it when not necessary).
+  if (ShouldRepaintStatusAreaOnStateChange(old_state, state_))
+    shelf_widget_->status_area_widget()->SchedulePaint();
+
   // OnAutoHideStateChanged Should be emitted when:
   //  - firstly state changed to auto-hide from other state
   //  - or, auto_hide_state has changed
@@ -944,6 +949,11 @@ gfx::Rect ShelfLayoutManager::ComputeStableWorkArea() const {
   State state = state_;
   state.visibility_state = SHELF_VISIBLE;
   return CalculateTargetBounds(state, &target_bounds);
+}
+
+bool ShelfLayoutManager::IsShowingStatusAreaWithoutShelf() const {
+  return state_.is_status_area_visible &&
+         state_.visibility_state == SHELF_HIDDEN;
 }
 
 gfx::Rect ShelfLayoutManager::CalculateTargetBounds(
@@ -1294,6 +1304,22 @@ bool ShelfLayoutManager::CalculateStatusAreaVisibility(
   DCHECK(delegate->ShouldShowStatusAreaOnHomeScreen() ||
          !delegate->ShouldShowShelfOnHomeScreen());
   return delegate->ShouldShowStatusAreaOnHomeScreen();
+}
+
+bool ShelfLayoutManager::ShouldRepaintStatusAreaOnStateChange(
+    ShelfLayoutManager::State old_state,
+    ShelfLayoutManager::State new_state) const {
+  if (!new_state.is_status_area_visible)
+    return false;
+
+  if (old_state.visibility_state == new_state.visibility_state)
+    return false;
+
+  return (old_state.visibility_state != SHELF_HIDDEN &&
+          new_state.visibility_state == SHELF_HIDDEN) ||
+         (old_state.visibility_state == SHELF_HIDDEN &&
+          new_state.visibility_state != SHELF_HIDDEN &&
+          old_state.is_status_area_visible);
 }
 
 bool ShelfLayoutManager::IsShelfWindow(aura::Window* window) {
