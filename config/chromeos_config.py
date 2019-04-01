@@ -1014,6 +1014,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
           'strict_toolchain_checks']),
       afdo_use=True,
       latest_toolchain=True,
+      enable_skylab_hw_tests=True,
   )
 
   site_config.AddTemplate(
@@ -1124,9 +1125,9 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
     ])
 
   # Create all waterfall slave builders.
-  toolchainSlaveHelper('amd64', 'samus')
-  toolchainSlaveHelper('arm', 'veyron_jaq')
-  toolchainSlaveHelper('arm64', 'elm')
+  toolchainSlaveHelper('amd64', 'eve')
+  toolchainSlaveHelper('arm', 'veyron_mighty')
+  toolchainSlaveHelper('arm64', 'kevin')
 
   #
   # Create toolchain tryjob builders.
