@@ -35,10 +35,8 @@ void SendTabToSelfClientService::SendTabToSelfModelLoaded() {
 
 void SendTabToSelfClientService::EntriesAddedRemotely(
     const std::vector<const SendTabToSelfEntry*>& new_entries) {
-  for (const SendTabToSelfEntry* entry : new_entries) {
-    for (const std::unique_ptr<ReceivingUiHandler>& handler : GetHandlers()) {
-      handler->DisplayNewEntry(entry);
-    }
+  for (const std::unique_ptr<ReceivingUiHandler>& handler : GetHandlers()) {
+    handler->DisplayNewEntries(new_entries);
   }
 }
 

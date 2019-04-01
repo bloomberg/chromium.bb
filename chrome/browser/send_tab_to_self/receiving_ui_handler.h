@@ -21,13 +21,13 @@ class ReceivingUiHandler {
   ReceivingUiHandler() {}
   virtual ~ReceivingUiHandler() {}
 
-  // Display the new entry passed in as an argument. The entry is owned by the
-  // model and should not be modified.
-  virtual void DisplayNewEntry(const SendTabToSelfEntry* entry) = 0;
+  // Display the new entries passed in as an argument. The entries are owned by
+  // the model and should not be modified.
+  virtual void DisplayNewEntries(
+      const std::vector<const SendTabToSelfEntry*>& new_entries) = 0;
   // Dismiss any UI associated with this entry.
   // Entry object is owned by the the model and should not be
   // modified by any implementors of this class.
-  // TODO(crbug.com/944591): Pass a string at a time instead.
   virtual void DismissEntries(const std::vector<std::string>& guids) = 0;
 };
 

@@ -23,8 +23,9 @@ class TestReceivingUiHandler : public ReceivingUiHandler {
   TestReceivingUiHandler() = default;
   ~TestReceivingUiHandler() override {}
 
-  void DisplayNewEntry(const SendTabToSelfEntry* entry) override {
-    ++number_displayed_entries_;
+  void DisplayNewEntries(
+      const std::vector<const SendTabToSelfEntry*>& new_entries) override {
+    number_displayed_entries_ = number_displayed_entries_ + new_entries.size();
   }
 
   void DismissEntries(const std::vector<std::string>& guids) override {}

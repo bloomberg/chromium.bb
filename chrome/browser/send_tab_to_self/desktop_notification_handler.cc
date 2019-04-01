@@ -35,24 +35,26 @@ DesktopNotificationHandler::DesktopNotificationHandler(Profile* profile)
 
 DesktopNotificationHandler::~DesktopNotificationHandler() = default;
 
-void DesktopNotificationHandler::DisplayNewEntry(
-    const SendTabToSelfEntry* entry) {
-  const base::string16 device_info = l10n_util::GetStringFUTF16(
-      IDS_MESSAGE_NOTIFICATION_SEND_TAB_TO_SELF_DEVICE_INFO,
-      base::UTF8ToUTF16(entry->GetDeviceName()));
-  const GURL& url = entry->GetURL();
-  message_center::RichNotificationData optional_fields;
-  // Set the notification to be persistent
-  optional_fields.never_timeout = true;
-  // Declare a notification
-  message_center::Notification notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, entry->GetGUID(),
-      base::UTF8ToUTF16(entry->GetTitle()), device_info, gfx::Image(),
-      base::UTF8ToUTF16(url.host()), url, message_center::NotifierId(url),
-      optional_fields, /*delegate=*/nullptr);
-  NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
-      NotificationHandler::Type::SEND_TAB_TO_SELF, notification,
-      /*metadata=*/nullptr);
+void DesktopNotificationHandler::DisplayNewEntries(
+    const std::vector<const SendTabToSelfEntry*>& new_entries) {
+  for (const SendTabToSelfEntry* entry : new_entries) {
+    const base::string16 device_info = l10n_util::GetStringFUTF16(
+        IDS_MESSAGE_NOTIFICATION_SEND_TAB_TO_SELF_DEVICE_INFO,
+        base::UTF8ToUTF16(entry->GetDeviceName()));
+    const GURL& url = entry->GetURL();
+    message_center::RichNotificationData optional_fields;
+    // Set the notification to be persistent
+    optional_fields.never_timeout = true;
+    // Declare a notification
+    message_center::Notification notification(
+        message_center::NOTIFICATION_TYPE_SIMPLE, entry->GetGUID(),
+        base::UTF8ToUTF16(entry->GetTitle()), device_info, gfx::Image(),
+        base::UTF8ToUTF16(url.host()), url, message_center::NotifierId(url),
+        optional_fields, /*delegate=*/nullptr);
+    NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
+        NotificationHandler::Type::SEND_TAB_TO_SELF, notification,
+        /*metadata=*/nullptr);
+  }
 }
 
 void DesktopNotificationHandler::DismissEntries(

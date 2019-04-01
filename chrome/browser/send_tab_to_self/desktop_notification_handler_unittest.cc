@@ -127,7 +127,7 @@ class DesktopNotificationHandlerTest : public BrowserWithTestWindowTest {
   NotificationDisplayServiceMock* display_service_mock_;
 };
 
-TEST_F(DesktopNotificationHandlerTest, DisplayNewEntry) {
+TEST_F(DesktopNotificationHandlerTest, DisplayNewEntries) {
   const GURL& url = GURL(kDesktopNotificationOrigin);
   message_center::RichNotificationData optional_fields;
   optional_fields.never_timeout = true;
@@ -142,6 +142,8 @@ TEST_F(DesktopNotificationHandlerTest, DisplayNewEntry) {
                            kDesktopNotificationTitle, base::Time::Now(),
                            base::Time::Now(), kDesktopNotificationDeviceInfo,
                            kDesktopNotificationTargetDeviceSyncCacheGuid);
+  std::vector<const SendTabToSelfEntry*> entries;
+  entries.push_back(&entry);
 
   DesktopNotificationHandler handler(profile());
   EXPECT_CALL(*display_service_mock_,
@@ -149,7 +151,7 @@ TEST_F(DesktopNotificationHandlerTest, DisplayNewEntry) {
                               EqualNotification(notification), nullptr))
       .WillOnce(::testing::Return());
 
-  handler.DisplayNewEntry(&entry);
+  handler.DisplayNewEntries(entries);
 }
 
 TEST_F(DesktopNotificationHandlerTest, DismissEntries) {

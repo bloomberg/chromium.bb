@@ -18,19 +18,21 @@ using base::android::ConvertUTF8ToJavaString;
 
 namespace send_tab_to_self {
 
-void AndroidNotificationHandler::DisplayNewEntry(
-    const SendTabToSelfEntry* entry) {
-  JNIEnv* env = AttachCurrentThread();
+void AndroidNotificationHandler::DisplayNewEntries(
+    const std::vector<const SendTabToSelfEntry*>& new_entries) {
+  for (const SendTabToSelfEntry* entry : new_entries) {
+    JNIEnv* env = AttachCurrentThread();
 
-  // Set the expiration to 10 days from when the notification is displayed.
-  base::Time expiraton_time =
-      entry->GetSharedTime() + base::TimeDelta::FromDays(10);
+    // Set the expiration to 10 days from when the notification is displayed.
+    base::Time expiraton_time =
+        entry->GetSharedTime() + base::TimeDelta::FromDays(10);
 
-  Java_NotificationManager_showNotification(
-      env, ConvertUTF8ToJavaString(env, entry->GetGUID()),
-      ConvertUTF8ToJavaString(env, entry->GetURL().spec()),
-      ConvertUTF8ToJavaString(env, entry->GetTitle()),
-      expiraton_time.ToJavaTime());
+    Java_NotificationManager_showNotification(
+        env, ConvertUTF8ToJavaString(env, entry->GetGUID()),
+        ConvertUTF8ToJavaString(env, entry->GetURL().spec()),
+        ConvertUTF8ToJavaString(env, entry->GetTitle()),
+        expiraton_time.ToJavaTime());
+  }
 }
 
 void AndroidNotificationHandler::DismissEntries(
