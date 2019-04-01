@@ -89,17 +89,13 @@ public class ManualFillingIntegrationTest {
         mHelper.loadTestPage(false);
 
         assertNotNull("Controller for Manual filling should be available.",
-                mActivityTestRule.getActivity().getManualFillingController());
+                mHelper.getManualFillingCoordinator());
         assertNotNull("Keyboard accessory should have an instance.",
-                mActivityTestRule.getActivity()
-                        .getManualFillingController()
+                mHelper.getManualFillingCoordinator()
                         .getMediatorForTesting()
                         .getKeyboardAccessory());
         assertNotNull("Accessory Sheet should have an instance.",
-                mActivityTestRule.getActivity()
-                        .getManualFillingController()
-                        .getMediatorForTesting()
-                        .getAccessorySheet());
+                mHelper.getManualFillingCoordinator().getMediatorForTesting().getAccessorySheet());
     }
 
     @Test

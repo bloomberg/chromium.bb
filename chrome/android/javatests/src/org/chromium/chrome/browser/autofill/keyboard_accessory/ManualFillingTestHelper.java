@@ -104,19 +104,16 @@ public class ManualFillingTestHelper {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ChromeTabbedActivity activity = mActivityTestRule.getActivity();
             mWebContentsRef.set(activity.getActivityTab().getWebContents());
-            activity.getManualFillingController()
-                    .getMediatorForTesting()
-                    .setInsetObserverViewSupplier(
-                            ()
-                                    -> getKeyboard().createInsetObserver(
-                                            activity.getInsetObserverView().getContext()));
+            getManualFillingCoordinator().getMediatorForTesting().setInsetObserverViewSupplier(
+                    ()
+                            -> getKeyboard().createInsetObserver(
+                                    activity.getInsetObserverView().getContext()));
             // The TestInputMethodManagerWrapper intercepts showSoftInput so that a keyboard is
             // never brought up.
             final ImeAdapter imeAdapter = ImeAdapter.fromWebContents(mWebContentsRef.get());
             mInputMethodManagerWrapper = TestInputMethodManagerWrapper.create(imeAdapter);
             imeAdapter.setInputMethodManagerWrapper(mInputMethodManagerWrapper);
-            activity.getManualFillingController().registerPasswordProvider(
-                    mSheetSuggestionsProvider);
+            getManualFillingCoordinator().registerPasswordProvider(mSheetSuggestionsProvider);
         });
         if (waitForNode) DOMUtils.waitForNonZeroNodeBounds(mWebContentsRef.get(), PASSWORD_NODE_ID);
         cacheCredentials(new String[0], new String[0]); // This caches the empty state.
@@ -133,6 +130,11 @@ public class ManualFillingTestHelper {
 
     public WebContents getWebContents() {
         return mWebContentsRef.get();
+    }
+
+    ManualFillingCoordinator getManualFillingCoordinator() {
+        return (ManualFillingCoordinator) mActivityTestRule.getActivity()
+                .getManualFillingComponent();
     }
 
     public void focusPasswordField() throws TimeoutException, InterruptedException {
@@ -152,10 +154,7 @@ public class ManualFillingTestHelper {
         DOMUtils.clickNode(mWebContentsRef.get(), USERNAME_NODE_ID);
         if (forceAccessory) {
             TestThreadUtils.runOnUiThreadBlocking(() -> {
-                mActivityTestRule.getActivity()
-                        .getManualFillingController()
-                        .getMediatorForTesting()
-                        .showWhenKeyboardIsVisible();
+                getManualFillingCoordinator().getMediatorForTesting().showWhenKeyboardIsVisible();
             });
         }
         getKeyboard().showKeyboard(mActivityTestRule.getActivity().getCurrentFocus());
@@ -190,10 +189,8 @@ public class ManualFillingTestHelper {
 
     public void waitForKeyboardAccessoryToDisappear() {
         CriteriaHelper.pollInstrumentationThread(() -> {
-            KeyboardAccessoryCoordinator accessory = mActivityTestRule.getActivity()
-                                                             .getManualFillingController()
-                                                             .getMediatorForTesting()
-                                                             .getKeyboardAccessory();
+            KeyboardAccessoryCoordinator accessory =
+                    getManualFillingCoordinator().getMediatorForTesting().getKeyboardAccessory();
             return accessory != null && !accessory.isShown();
         });
         CriteriaHelper.pollUiThread(() -> {
@@ -204,10 +201,8 @@ public class ManualFillingTestHelper {
 
     public void waitForKeyboardAccessoryToBeShown() {
         CriteriaHelper.pollInstrumentationThread(() -> {
-            KeyboardAccessoryCoordinator accessory = mActivityTestRule.getActivity()
-                                                             .getManualFillingController()
-                                                             .getMediatorForTesting()
-                                                             .getKeyboardAccessory();
+            KeyboardAccessoryCoordinator accessory =
+                    getManualFillingCoordinator().getMediatorForTesting().getKeyboardAccessory();
             return accessory != null && accessory.isShown();
         });
         CriteriaHelper.pollUiThread(() -> {
@@ -250,10 +245,7 @@ public class ManualFillingTestHelper {
     }
 
     public PasswordAccessorySheetCoordinator getOrCreatePasswordAccessorySheet() {
-        return mActivityTestRule.getActivity()
-                .getManualFillingController()
-                .getMediatorForTesting()
-                .getOrCreatePasswordSheet();
+        return getManualFillingCoordinator().getMediatorForTesting().getOrCreatePasswordSheet();
     }
 
     // ----------------------------------
@@ -413,8 +405,7 @@ public class ManualFillingTestHelper {
     public void addGenerationButton() {
         PropertyProvider<KeyboardAccessoryData.Action[]> generationActionProvider =
                 new PropertyProvider<>(AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
-        mActivityTestRule.getActivity().getManualFillingController().registerActionProvider(
-                generationActionProvider);
+        getManualFillingCoordinator().registerActionProvider(generationActionProvider);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             generationActionProvider.notifyObservers(new KeyboardAccessoryData.Action[] {
                     new KeyboardAccessoryData.Action("Generate Password",

@@ -25,17 +25,17 @@ class ManualFillingBridge {
             new PropertyProvider<>();
     private final PropertyProvider<Action[]> mActionProvider =
             new PropertyProvider<>(AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
-    private final ManualFillingCoordinator mManualFillingCoordinator;
+    private final ManualFillingComponent mManualFillingComponent;
     private final ChromeActivity mActivity;
     private long mNativeView;
 
     private ManualFillingBridge(long nativeView, WindowAndroid windowAndroid) {
         mNativeView = nativeView;
         mActivity = (ChromeActivity) windowAndroid.getActivity().get();
-        mManualFillingCoordinator = mActivity.getManualFillingController();
-        mManualFillingCoordinator.registerPasswordProvider(mSheetDataProvider);
-        mManualFillingCoordinator.registerCreditCardProvider();
-        mManualFillingCoordinator.registerActionProvider(mActionProvider);
+        mManualFillingComponent = mActivity.getManualFillingComponent();
+        mManualFillingComponent.registerPasswordProvider(mSheetDataProvider);
+        mManualFillingComponent.registerCreditCardProvider();
+        mManualFillingComponent.registerActionProvider(mActionProvider);
     }
 
     @CalledByNative
@@ -76,22 +76,22 @@ class ManualFillingBridge {
 
     @CalledByNative
     void showWhenKeyboardIsVisible() {
-        mManualFillingCoordinator.showWhenKeyboardIsVisible();
+        mManualFillingComponent.showWhenKeyboardIsVisible();
     }
 
     @CalledByNative
     void hide() {
-        mManualFillingCoordinator.hide();
+        mManualFillingComponent.hide();
     }
 
     @CalledByNative
     private void closeAccessorySheet() {
-        mManualFillingCoordinator.closeAccessorySheet();
+        mManualFillingComponent.closeAccessorySheet();
     }
 
     @CalledByNative
     private void swapSheetWithKeyboard() {
-        mManualFillingCoordinator.swapSheetWithKeyboard();
+        mManualFillingComponent.swapSheetWithKeyboard();
     }
 
     @CalledByNative

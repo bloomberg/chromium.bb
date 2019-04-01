@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewStub;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.KeyboardAccessoryCoordinator;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData;
@@ -26,21 +27,18 @@ import org.chromium.ui.base.WindowAndroid;
  * {@link AccessorySheetCoordinator} to add and trigger surfaces that may assist users while filling
  * fields.
  */
-public class ManualFillingCoordinator {
+class ManualFillingCoordinator implements ManualFillingComponent {
     private final ManualFillingMediator mMediator = new ManualFillingMediator();
 
-    /**
-     * Initializes the manual filling component. Calls to this class are NoOps until this method is
-     * called.
-     * @param windowAndroid The window needed to listen to the keyboard and to connect to activity.
-     * @param barStub The {@link ViewStub} used to inflate the keyboard accessory bar.
-     * @param sheetStub The {@link ViewStub} used to inflate the keyboard accessory bottom sheet.
-     */
+    @Override
     public void initialize(WindowAndroid windowAndroid, ViewStub barStub, ViewStub sheetStub) {
         if (barStub == null || sheetStub == null) return; // The manual filling isn't needed.
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)) {
-            barStub.setLayoutResource(org.chromium.chrome.R.layout.keyboard_accessory_modern);
+            barStub.setLayoutResource(R.layout.keyboard_accessory_modern);
+        } else {
+            barStub.setLayoutResource(R.layout.keyboard_accessory);
         }
+        sheetStub.setLayoutResource(R.layout.keyboard_accessory_sheet);
         initialize(windowAndroid, new KeyboardAccessoryCoordinator(mMediator, barStub),
                 new AccessorySheetCoordinator(sheetStub));
     }
@@ -51,9 +49,7 @@ public class ManualFillingCoordinator {
         mMediator.initialize(accessoryBar, accessorySheet, windowAndroid);
     }
 
-    /**
-     * Cleans up the manual UI by destroying the accessory bar and its bottom sheet.
-     */
+    @Override
     public void destroy() {
         mMediator.destroy();
     }
@@ -62,6 +58,7 @@ public class ManualFillingCoordinator {
      * Handles tapping on the Android back button.
      * @return Whether tapping the back button dismissed the accessory sheet or not.
      */
+    @Override
     public boolean handleBackPress() {
         return mMediator.handleBackPress();
     }
@@ -69,6 +66,7 @@ public class ManualFillingCoordinator {
     /**
      * Ensures that keyboard accessory and keyboard are hidden and reset.
      */
+    @Override
     public void dismiss() {
         mMediator.dismiss();
     }
@@ -77,74 +75,70 @@ public class ManualFillingCoordinator {
      * Notifies the component that a popup window exists so it can be dismissed if necessary.
      * @param popup A {@link DropdownPopupWindow} that might be dismissed later.
      */
+    @Override
     public void notifyPopupAvailable(DropdownPopupWindow popup) {
         mMediator.notifyPopupOpened(popup);
     }
 
-    /**
-     * Requests to close the active tab in the keyboard accessory. If there is no active tab, this
-     * is a NoOp.
-     */
-    void closeAccessorySheet() {
+    @Override
+    public void closeAccessorySheet() {
         mMediator.onCloseAccessorySheet();
     }
 
-    /**
-     * Opens the keyboard which implicitly dismisses the sheet. Without open sheet, this is a NoOp.
-     */
-    void swapSheetWithKeyboard() {
+    @Override
+    public void swapSheetWithKeyboard() {
         mMediator.swapSheetWithKeyboard();
     }
 
-    void registerActionProvider(PropertyProvider<KeyboardAccessoryData.Action[]> actionProvider) {
+    @Override
+    public void registerActionProvider(
+            PropertyProvider<KeyboardAccessoryData.Action[]> actionProvider) {
         mMediator.registerActionProvider(actionProvider);
     }
 
-    void registerPasswordProvider(
+    @Override
+    public void registerPasswordProvider(
             PropertyProvider<KeyboardAccessoryData.AccessorySheetData> sheetDataProvider) {
         mMediator.registerPasswordProvider(sheetDataProvider);
     }
 
-    void registerCreditCardProvider() {
+    @Override
+    public void registerCreditCardProvider() {
         mMediator.registerCreditCardProvider();
     }
 
-    void registerAutofillProvider(
+    @Override
+    public void registerAutofillProvider(
             PropertyProvider<AutofillSuggestion[]> autofillProvider, AutofillDelegate delegate) {
         mMediator.registerAutofillProvider(autofillProvider, delegate);
     }
 
-    void showWhenKeyboardIsVisible() {
+    @Override
+    public void showWhenKeyboardIsVisible() {
         mMediator.showWhenKeyboardIsVisible();
     }
 
+    @Override
     public void hide() {
         mMediator.hide();
     }
 
+    @Override
     public void onResume() {
         mMediator.resume();
     }
 
+    @Override
     public void onPause() {
         mMediator.pause();
     }
 
-    /**
-     * Returns a size manager that allows to access the combined height of
-     * {@link KeyboardAccessoryCoordinator} and {@link AccessorySheetCoordinator}, and to be
-     * notified when it changes.
-     * @return A {@link KeyboardExtensionSizeManager}.
-     */
+    @Override
     public KeyboardExtensionSizeManager getKeyboardExtensionSizeManager() {
         return mMediator.getKeyboardExtensionSizeManager();
     }
 
-    /**
-     * Returns whether the Keyboard is replaced by an accessory sheet or is about to do so.
-     * @return True if an accessory sheet is (being) opened and replacing the keyboard.
-     * @param view A {@link View} that is used to find the window root.
-     */
+    @Override
     public boolean isFillingViewShown(View view) {
         return mMediator.isFillingViewShown(view);
     }

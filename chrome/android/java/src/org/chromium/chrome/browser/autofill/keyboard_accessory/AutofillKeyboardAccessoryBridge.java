@@ -6,11 +6,9 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.support.v7.app.AlertDialog;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.PropertyProvider;
@@ -28,7 +26,7 @@ import org.chromium.ui.base.WindowAndroid;
 public class AutofillKeyboardAccessoryBridge
         implements AutofillDelegate, DialogInterface.OnClickListener {
     private long mNativeAutofillKeyboardAccessory;
-    private ManualFillingCoordinator mManualFillingCoordinator;
+    private ManualFillingComponent mManualFillingComponent;
     private Context mContext;
     private PropertyProvider<AutofillSuggestion[]> mChipProvider =
             new PropertyProvider<>(AccessoryAction.AUTOFILL_SUGGESTION);
@@ -48,7 +46,7 @@ public class AutofillKeyboardAccessoryBridge
 
     @Override
     public void suggestionSelected(int listIndex) {
-        mManualFillingCoordinator.dismiss();
+        mManualFillingComponent.dismiss();
         if (mNativeAutofillKeyboardAccessory == 0) return;
         nativeSuggestionSelected(mNativeAutofillKeyboardAccessory, listIndex);
     }
@@ -86,8 +84,8 @@ public class AutofillKeyboardAccessoryBridge
         mContext = windowAndroid.getActivity().get();
         assert mContext != null;
         if (mContext instanceof ChromeActivity) {
-            mManualFillingCoordinator = ((ChromeActivity) mContext).getManualFillingController();
-            mManualFillingCoordinator.registerAutofillProvider(mChipProvider, this);
+            mManualFillingComponent = ((ChromeActivity) mContext).getManualFillingComponent();
+            mManualFillingComponent.registerAutofillProvider(mChipProvider, this);
         }
 
         mNativeAutofillKeyboardAccessory = nativeAutofillKeyboardAccessory;
@@ -124,14 +122,9 @@ public class AutofillKeyboardAccessoryBridge
     // eventually disappear).
 
     @CalledByNative
-    private void confirmDeletion(String title, String body) {
-        new AlertDialog.Builder(mContext, R.style.Theme_Chromium_AlertDialog)
-                .setTitle(title)
-                .setMessage(body)
-                .setNegativeButton(R.string.cancel, null)
-                .setPositiveButton(R.string.ok, this)
-                .create()
-                .show();
+    private void confirmDeletion(String title, String body) throws Exception {
+        // TODO(fhorschig): If deletion is implemented, build a ModalDialogView!
+        throw new Exception("Not implemented yet!");
     }
 
     @CalledByNative

@@ -65,8 +65,8 @@ class ManualFillingMediator extends EmptyTabObserver
     private PropertyModel mModel = ManualFillingProperties.createFillingModel();
     private WindowAndroid mWindowAndroid;
     private Supplier<InsetObserverView> mInsetObserverViewSupplier;
-    private final KeyboardExtensionSizeManager mKeyboardExtensionSizeManager =
-            new KeyboardExtensionSizeManager();
+    private final KeyboardExtensionSizeManagerImpl mKeyboardExtensionSizeManager =
+            new KeyboardExtensionSizeManagerImpl();
     private final ManualFillingStateCache mStateCache = new ManualFillingStateCache();
     private final HashSet<Tab> mObservedTabs = new HashSet<>();
     private KeyboardAccessoryCoordinator mKeyboardAccessory;
