@@ -331,7 +331,7 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   Stat<std::string>* username = section_identity->AddStringStat("Username");
   Stat<bool>* user_is_primary = section_identity->AddBoolStat("Is Primary");
   Stat<std::string>* auth_error = section_identity->AddStringStat("Auth Error");
-  // TODO(treib): Add the *time* of the auth error?
+  // TODO(crbug.com/948074): Add the time of the auth error.
 
   Section* section_credentials = section_list.AddSection("Credentials");
   Stat<std::string>* request_token_time =
