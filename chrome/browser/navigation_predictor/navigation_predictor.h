@@ -19,10 +19,6 @@
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
 #include "url/origin.h"
 
-#ifdef OS_ANDROID
-#include "base/android/application_status_listener.h"
-#endif  // OS_ANDROID
-
 namespace content {
 class BrowserContext;
 class RenderFrameHost;
@@ -57,8 +53,8 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
     kPreconnect = 3,
     kPrefetch = 4,
     kPreconnectOnVisibilityChange = 5,
-    kPreconnectOnAppForeground = 6,
-    kMaxValue = kPreconnectOnAppForeground,
+    kDeprecatedPreconnectOnAppForeground = 6,  // Deprecated.
+    kMaxValue = kDeprecatedPreconnectOnAppForeground,
   };
 
   // Enum describing the accuracy of actions taken by the navigation predictor.
@@ -172,17 +168,6 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // content::WebContentsObserver:
   void OnVisibilityChanged(content::Visibility visibility) override;
 
-#ifdef OS_ANDROID
-  // Called when application state changes. e.g., application is brought to the
-  // background or the foreground.
-  void OnApplicationStateChange(
-      base::android::ApplicationState application_state);
-#endif  // OS_ANDROID
-
-  // Called when tab or app visibility change. Takes a pre* action.
-  // |log_action| should be set to the reason why this method was called.
-  void TakeActionNowOnTabOrAppVisibilityChange(Action log_action);
-
   // MaybePreconnectNow preconnects to an origin server if it's allowed.
   void MaybePreconnectNow(Action log_action);
 
@@ -239,15 +224,6 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
 
   // Current visibility state of the web contents.
   content::Visibility current_visibility_;
-
-#ifdef OS_ANDROID
-  // Used to listen to the changes in the application state changes. e.g., when
-  // the application is brought to the background or the foreground.
-  std::unique_ptr<base::android::ApplicationStatusListener>
-      application_status_listener_;
-
-  base::android::ApplicationState application_state_;
-#endif  // OS_ANDROID
 
   SEQUENCE_CHECKER(sequence_checker_);
 

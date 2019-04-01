@@ -326,14 +326,14 @@ IN_PROC_BROWSER_TEST_F(
       "NavigationPredictor.OnNonDSE.ActionTaken",
       NavigationPredictor::Action::kPreconnectOnVisibilityChange, 1);
 
-  // Hiding and showing the tab again should not cause change in histograms
-  // since Pre* on tab foreground is done at most once per page.
+  // Hiding and showing the tab again should cause change in histograms since
+  // Pre* on tab foreground is done more than once per page.
   browser()->tab_strip_model()->GetActiveWebContents()->WasHidden();
   histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
                                     2);
   browser()->tab_strip_model()->GetActiveWebContents()->WasShown();
   histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
-                                    2);
+                                    3);
 }
 
 // Test that the action accuracy is properly recorded and when same origin
@@ -380,17 +380,17 @@ IN_PROC_BROWSER_TEST_F(
       "NavigationPredictor.OnNonDSE.ActionTaken",
       NavigationPredictor::Action::kPreconnectOnVisibilityChange, 1);
 
-  // Hiding and showing the tab again should not cause change in histograms
-  // since Pre* on tab foreground is done at most once per page.
+  // Hiding and showing the tab again should cause change in histograms since
+  // Pre* on tab foreground is done more than once per page.
   browser()->tab_strip_model()->GetActiveWebContents()->WasHidden();
   histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
                                     2);
   browser()->tab_strip_model()->GetActiveWebContents()->WasShown();
   histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
-                                    2);
+                                    3);
   histogram_tester.ExpectBucketCount(
       "NavigationPredictor.OnNonDSE.ActionTaken",
-      NavigationPredictor::Action::kPreconnectOnVisibilityChange, 1);
+      NavigationPredictor::Action::kPreconnectOnVisibilityChange, 2);
 }
 
 // Simulate a click at the anchor element.
