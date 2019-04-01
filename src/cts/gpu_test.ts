@@ -51,7 +51,7 @@ export class GPUTest extends Fixture {
     if (error) {
       console.warn(error);
     }
-    return result.GetBinary().slice(0).buffer;
+    return result.GetBinary();
   }
 
   public makeShaderModule(type: ("f" | "v" | "c"), source: string): GPUShaderModule {
