@@ -518,6 +518,10 @@ void ClientControlledShellSurface::SetExtraTitle(
 
   GetFrameView()->GetHeaderView()->GetFrameHeader()->SetFrameTextOverride(
       extra_title);
+  if (wide_frame_) {
+    wide_frame_->header_view()->GetFrameHeader()->SetFrameTextOverride(
+        extra_title);
+  }
 }
 
 void ClientControlledShellSurface::SetOrientationLock(
@@ -1002,7 +1006,13 @@ void ClientControlledShellSurface::UpdateFrame() {
       wide_frame_ = std::make_unique<ash::WideFrameView>(widget_);
       ash::ImmersiveFullscreenController::EnableForWidget(widget_, false);
       wide_frame_->Init(immersive_fullscreen_controller_.get());
+      wide_frame_->header_view()->GetFrameHeader()->SetFrameTextOverride(
+          GetFrameView()
+              ->GetHeaderView()
+              ->GetFrameHeader()
+              ->frame_text_override());
       wide_frame_->GetWidget()->Show();
+
       // Restoring window targeter replaced by ImmersiveFullscreenController.
       InstallCustomWindowTargeter();
 
