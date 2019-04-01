@@ -91,6 +91,7 @@ const char kPrefetchResponseHeaderCSP[] =
     "/prerender/prefetch_response_csp.html";
 const char kPrefetchScript[] = "/prerender/prefetch.js";
 const char kPrefetchScript2[] = "/prerender/prefetch2.js";
+const char kPrefetchDownloadFile[] = "/download-test1.lib";
 const char kPrefetchSubresourceRedirectPage[] =
     "/prerender/prefetch_subresource_redirect.html";
 const char kServiceWorkerLoader[] = "/prerender/service_worker.html";
@@ -571,11 +572,38 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchClientRedirect) {
       FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
   ui_test_utils::NavigateToURL(current_browser(),
                                src_server()->GetURL(kPrefetchPage2));
-  // A complete load of kPrefetchPage2 is used as a sentinal. Otherwise the test
+  // A complete load of kPrefetchPage2 is used as a sentinel. Otherwise the test
   // ends before script_counter would reliably see the load of kPrefetchScript,
   // were it to happen.
   WaitForRequestCount(src_server()->GetURL(kPrefetchScript2), 1);
   WaitForRequestCount(src_server()->GetURL(kPrefetchScript), 0);
+}
+
+// Prefetches a page that contains an automatic download triggered through an
+// iframe. The request to download should not reach the server.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchDownloadIframe) {
+  PrefetchFromFile("/prerender/prerender_download_iframe.html",
+                   FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  // A complete load of kPrefetchPage2 is used as a sentinel as in test
+  // |PrefetchClientRedirect| above.
+  WaitForRequestCount(src_server()->GetURL(kPrefetchScript2), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchDownloadFile), 0);
+}
+
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
+                       PrefetchDownloadViaClientRedirect) {
+  PrefetchFromFile("/prerender/prerender_download_refresh.html",
+                   FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  // A complete load of kPrefetchPage2 is used as a sentinel as in test
+  // |PrefetchClientRedirect| above.
+  WaitForRequestCount(src_server()->GetURL(kPrefetchScript2), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchDownloadFile), 0);
+}
+
+// Checks that a prefetch of a CRX will result in a cancellation due to
+// download.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchCrx) {
+  PrefetchFromFile("/prerender/extension.crx", FINAL_STATUS_DOWNLOAD);
 }
 
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchHttps) {
