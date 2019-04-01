@@ -9,11 +9,14 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
@@ -209,5 +212,47 @@ TEST_F(ElementFragmentAnchorTest, IframeFragmentDirtyLayoutAfterLoad) {
 }
 
 }  // namespace
+
+// Ensure that an SVG document doesn't automatically create a fragment anchor
+// without the URL actually having a fragment.
+TEST_F(ElementFragmentAnchorTest, SVGDocumentDoesntCreateFragment) {
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+  SimRequest svg_resource("https://example.com/file.svg", "image/svg+xml");
+
+  LoadURL("https://example.com/test.html");
+
+  main_resource.Complete(R"HTML(
+      <!DOCTYPE html>
+      <img id="image" src=file.svg>
+    )HTML");
+
+  // Load an SVG that's transformed outside of the container rect. Ensure that
+  // we don't scroll it into view since we didn't specify a hash fragment.
+  svg_resource.Complete(R"SVG(
+      <svg id="svg" width="50" height="50" xmlns="http://www.w3.org/2000/svg">
+         <style>
+          #svg{
+            transform: translateX(200px) translateY(200px);
+          }
+         </style>
+         <circle class="path" cx="50" cy="50" r="20" fill="red"/>
+      </svg>
+    )SVG");
+
+  auto* img = ToHTMLImageElement(GetDocument().getElementById("image"));
+  SVGImage* svg = ToSVGImage(img->CachedImage()->GetImage());
+  auto* view =
+      DynamicTo<LocalFrameView>(svg->GetPageForTesting()->MainFrame()->View());
+
+  // Scroll should remain unchanged and no anchor should be set.
+  ASSERT_EQ(ScrollOffset(), view->GetScrollableArea()->GetScrollOffset());
+  ASSERT_FALSE(view->GetFragmentAnchor());
+
+  // Check after a BeginFrame as well since SVG documents appear to process the
+  // fragment at this time as well.
+  Compositor().BeginFrame();
+  ASSERT_EQ(ScrollOffset(), view->GetScrollableArea()->GetScrollOffset());
+  ASSERT_FALSE(view->GetFragmentAnchor());
+}
 
 }  // namespace blink
