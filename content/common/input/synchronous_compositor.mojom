@@ -4,6 +4,7 @@
 
 module content.mojom;
 
+import "mojo/public/mojom/base/shared_memory.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "services/viz/public/interfaces/compositing/begin_frame_args.mojom";
 import "services/viz/public/interfaces/compositing/compositor_frame.mojom";
@@ -14,9 +15,6 @@ import "ui/gfx/mojo/presentation_feedback.mojom";
 
 [Native]
 struct SyncCompositorDemandDrawHwParams;
-
-[Native]
-struct SyncCompositorSetSharedMemoryParams;
 
 [Native]
 struct SyncCompositorDemandDrawSwParams;
@@ -49,7 +47,8 @@ interface SynchronousCompositor {
   // drawing. This mode just has the renderer send over a single bitmap of the
   // final frame, rather than sending over individual tiles (ie. resources)
   // that are then composited by the browser.
-  [Sync] SetSharedMemory(SyncCompositorSetSharedMemoryParams params) =>
+  [Sync]
+  SetSharedMemory(mojo_base.mojom.WritableSharedMemoryRegion shm_region) =>
       (bool success, SyncCompositorCommonRendererParams result);
 
   // Synchronously does a software based draw.
