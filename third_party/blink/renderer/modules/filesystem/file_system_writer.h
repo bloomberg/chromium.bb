@@ -12,13 +12,13 @@
 namespace blink {
 
 class Blob;
+class BlobOrReadableStream;
 class ExceptionState;
 class FetchDataLoader;
 class ReadableStream;
 class ScriptPromise;
 class ScriptPromiseResolver;
 class ScriptState;
-class ScriptValue;
 
 class FileSystemWriter final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -28,7 +28,7 @@ class FileSystemWriter final : public ScriptWrappable {
 
   ScriptPromise write(ScriptState*,
                       uint64_t position,
-                      ScriptValue data,
+                      const BlobOrReadableStream& data,
                       ExceptionState&);
   ScriptPromise truncate(ScriptState*, uint64_t size);
   ScriptPromise close(ScriptState*);
