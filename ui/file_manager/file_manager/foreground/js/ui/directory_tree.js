@@ -2115,6 +2115,7 @@ class DirectoryTree extends cr.ui.Tree {
   }
 
   // DirectoryTree is always expanded.
+  /** @return {boolean} */
   get expanded() {
     return true;
   }
