@@ -41,7 +41,10 @@ namespace {
 // tablet mode.
 constexpr float kIndicatorsThresholdRatio = 0.1;
 
-// Duration of a drag that it will be considered as an intended drag.
+// Duration of a drag that it will be considered as an intended drag. Must be at
+// least the duration of the split view divider snap animation, or else there
+// will be an issue similar to https://crbug.com/946601 but involving dragging a
+// snapped window from the top.
 constexpr base::TimeDelta kIsWindowMovedTimeoutMs =
     base::TimeDelta::FromMilliseconds(300);
 

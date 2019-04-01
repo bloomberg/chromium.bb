@@ -773,24 +773,27 @@ void OverviewSession::OnSplitViewStateChanged(
       Shell::Get()->split_view_controller()->end_reason() ==
           SplitViewController::EndReason::kUnsnappableWindowActivated;
 
-  if (state != SplitViewController::NO_SNAP || unsnappable_window_activated) {
-    // Do not restore focus if a window was just snapped and activated or
-    // splitview mode is ended by activating an unsnappable window.
+  // Restore focus unless either a window was just snapped (and activated) or
+  // split view mode was ended by activating an unsnappable window.
+  if (state != SplitViewController::NO_SNAP || unsnappable_window_activated)
     ResetFocusRestoreWindow(false);
-  }
 
+  // If two windows were snapped to both sides of the screen or an unsnappable
+  // window was just activated, end overview mode and bail out.
   if (state == SplitViewController::BOTH_SNAPPED ||
       unsnappable_window_activated) {
-    // If two windows were snapped to both sides of the screen or an unsnappable
-    // window was just activated, end overview mode.
     CancelSelection();
-  } else {
-    // Otherwise adjust the overview window grid bounds if overview mode is
-    // active at the moment.
-    OnDisplayBoundsChanged();
-    for (auto& grid : grid_list_)
-      grid->UpdateCannotSnapWarningVisibility();
+    return;
   }
+
+  // Adjust the overview window grid bounds if overview mode is active.
+  OnDisplayBoundsChanged();
+  for (auto& grid : grid_list_)
+    grid->UpdateCannotSnapWarningVisibility();
+
+  // Notify |split_view_drag_indicators_| if split view mode ended.
+  if (split_view_drag_indicators_ && state == SplitViewController::NO_SNAP)
+    split_view_drag_indicators_->OnSplitViewModeEnded();
 }
 
 void OverviewSession::OnSplitViewDividerPositionChanged() {

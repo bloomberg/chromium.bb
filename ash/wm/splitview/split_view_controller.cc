@@ -71,7 +71,9 @@ constexpr float kTwoThirdPositionRatio = 0.67f;
 constexpr float kBlackScrimFadeInRatio = 0.1f;
 constexpr float kBlackScrimOpacity = 0.4f;
 
-// The duration of the divider snap animation, in milliseconds.
+// The duration of the divider snap animation, in milliseconds. Before you
+// change this value, read the comment on kIsWindowMovedTimeoutMs in
+// tablet_mode_window_drag_delegate.cc.
 constexpr int kDividerSnapDurationMs = 300;
 
 // Toast data.
