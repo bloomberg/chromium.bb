@@ -35,6 +35,10 @@ class SSLHostStateDelegate;
 class WebContents;
 }
 
+namespace download {
+class InProgressDownloadManager;
+}
+
 namespace net {
 class NetLog;
 }
@@ -131,6 +135,8 @@ class AwBrowserContext : public content::BrowserContext,
   net::URLRequestContextGetter* CreateMediaRequestContextForStoragePartition(
       const base::FilePath& partition_path,
       bool in_memory) override;
+  download::InProgressDownloadManager* RetriveInProgressDownloadManager()
+      override;
 
   // visitedlink::VisitedLinkDelegate implementation.
   void RebuildTable(const scoped_refptr<URLEnumerator>& enumerator) override;

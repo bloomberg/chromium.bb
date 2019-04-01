@@ -24,6 +24,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
+#include "components/download/public/common/in_progress_download_manager.h"
 #include "components/policy/core/browser/browser_policy_connector_base.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/triggers/trigger_manager.h"
@@ -32,6 +33,7 @@
 #include "components/visitedlink/browser/visitedlink_master.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -87,6 +89,12 @@ CreateSafeBrowsingWhitelistManager() {
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
   return std::make_unique<AwSafeBrowsingWhitelistManager>(
       background_task_runner, io_task_runner);
+}
+
+// Empty method to skip origin security check as DownloadManager will set its
+// own method.
+bool IgnoreOriginSecurityCheck(const GURL& url) {
+  return true;
 }
 
 }  // namespace
@@ -344,6 +352,14 @@ AwBrowserContext::CreateMediaRequestContextForStoragePartition(
     bool in_memory) {
   NOTREACHED();
   return NULL;
+}
+
+download::InProgressDownloadManager*
+AwBrowserContext::RetriveInProgressDownloadManager() {
+  return new download::InProgressDownloadManager(
+      nullptr, base::FilePath(),
+      base::BindRepeating(&IgnoreOriginSecurityCheck),
+      base::BindRepeating(&content::DownloadRequestUtils::IsURLSafe));
 }
 
 web_restrictions::WebRestrictionsClient*
