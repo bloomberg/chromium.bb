@@ -362,8 +362,20 @@ class CommandBufferSetup {
         config_.workarounds, gpu_feature_info);
     command_buffer_.reset(new CommandBufferDirect());
 
+    if (gpu_preferences_.use_passthrough_cmd_decoder) {
+      // Virtualized contexts don't work with passthrough command decoder.
+      // See https://crbug.com/914976
+      config_.workarounds.use_virtualized_gl_contexts = false;
+    }
+    scoped_refptr<gl::GLContext> shared_context;
+    if (config_.workarounds.use_virtualized_gl_contexts) {
+      shared_context = context_;
+    } else {
+      shared_context = CreateContext();
+    }
+    shared_context->MakeCurrent(surface_.get());
     context_state_ = base::MakeRefCounted<SharedContextState>(
-        share_group_, surface_, context_,
+        share_group_, surface_, std::move(shared_context),
         config_.workarounds.use_virtualized_gl_contexts, base::DoNothing());
     context_state_->InitializeGrContext(config_.workarounds, nullptr);
     context_state_->InitializeGL(gpu_preferences_, feature_info);
@@ -391,6 +403,7 @@ class CommandBufferSetup {
           gfx::ColorSpace::CreateSRGB(), usage);
     }
 
+    context_->MakeCurrent(surface_.get());
 #if defined(GPU_FUZZER_USE_RASTER_DECODER)
     CHECK(feature_info->feature_flags().chromium_raster_transport);
     auto* context = context_state_->context();
@@ -462,7 +475,7 @@ class CommandBufferSetup {
       decoder_.reset();
 
       if (!context_lost)
-        context_state_->MakeCurrent(nullptr);
+        context_lost = !context_state_->MakeCurrent(nullptr);
       shared_image_factory_->DestroyAllSharedImages(!context_lost);
 
       shared_image_factory_.reset();
@@ -533,18 +546,22 @@ class CommandBufferSetup {
     CreateTransferBuffer(kTinyTransferBufferSize, 5);
   }
 
-  void InitContext() {
-#if !defined(GPU_FUZZER_USE_STUB)
-    context_ = new gl::GLContextEGL(share_group_.get());
-    context_->Initialize(surface_.get(), config_.gl_context_attribs);
+  scoped_refptr<gl::GLContext> CreateContext() {
+#if defined(GPU_FUZZER_USE_STUB)
+    auto stub = base::MakeRefCounted<gl::GLContextStub>(share_group_.get());
+    stub->SetGLVersionString(config_.version);
+    stub->SetExtensionsString(config_.extensions.c_str());
+    stub->SetUseStubApi(true);
+    return stub;
 #else
-    scoped_refptr<gl::GLContextStub> context_stub =
-        new gl::GLContextStub(share_group_.get());
-    context_stub->SetGLVersionString(config_.version);
-    context_stub->SetExtensionsString(config_.extensions.c_str());
-    context_stub->SetUseStubApi(true);
-    context_ = context_stub;
+    auto context = base::MakeRefCounted<gl::GLContextEGL>(share_group_.get());
+    context->Initialize(surface_.get(), config_.gl_context_attribs);
+    return context;
 #endif
+  }
+
+  void InitContext() {
+    context_ = CreateContext();
 
 // When not using the passthrough decoder, ANGLE should not be generating
 // errors (the decoder should prevent those from happening). We register a

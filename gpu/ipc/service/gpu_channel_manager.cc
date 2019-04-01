@@ -369,6 +369,9 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
   scoped_refptr<gl::GLShareGroup> share_group;
   if (use_passthrough_decoder) {
     share_group = new gl::GLShareGroup();
+    // Virtualized contexts don't work with passthrough command decoder.
+    // See https://crbug.com/914976
+    use_virtualized_gl_contexts = false;
   } else {
     share_group = share_group_;
   }
