@@ -460,7 +460,7 @@ ScriptPromise ServiceWorkerContainer::ready(ScriptState* caller_state) {
     if (provider_) {
       provider_->GetRegistrationForReady(
           WTF::Bind(&ServiceWorkerContainer::OnGetRegistrationForReady,
-                    WrapWeakPersistent(this)));
+                    WrapPersistent(this)));
     }
   }
 
