@@ -44,13 +44,6 @@ constexpr double kMediaImageMaxWidthExpandedPct = 0.4;
 constexpr gfx::Size kMediaButtonSize = gfx::Size(36, 36);
 constexpr int kMediaButtonRowSeparator = 8;
 constexpr gfx::Insets kMediaTitleArtistInsets = gfx::Insets(8, 8, 0, 8);
-constexpr gfx::Insets kMediaNotificationMainRowInsets =
-    gfx::Insets(0, kDefaultMarginSize, 14, kRightMarginSize);
-constexpr gfx::Insets kMediaNotificationExpandedMainRowInsets =
-    gfx::Insets(kDefaultMarginSize,
-                kDefaultMarginSize,
-                kDefaultMarginSize,
-                kRightMarginExpandedSize);
 constexpr int kMediaNotificationHeaderTopInset = 6;
 constexpr int kMediaNotificationHeaderRightInset = 6;
 constexpr int kMediaNotificationHeaderInset = 0;
@@ -285,6 +278,13 @@ void MediaNotificationView::UpdateWithMediaActions(
 void MediaNotificationView::UpdateWithMediaArtwork(
     const gfx::ImageSkia& image) {
   GetMediaNotificationBackground()->UpdateArtwork(image);
+
+  has_artwork_ = !image.isNull();
+  UpdateViewForExpandedState();
+
+  PreferredSizeChanged();
+  Layout();
+  SchedulePaint();
 }
 
 void MediaNotificationView::UpdateWithMediaIcon(const gfx::ImageSkia& image) {
@@ -337,15 +337,22 @@ void MediaNotificationView::UpdateViewForExpandedState() {
     main_row_
         ->SetLayoutManager(std::make_unique<views::BoxLayout>(
             views::BoxLayout::kVertical,
-            kMediaNotificationExpandedMainRowInsets, kDefaultMarginSize))
+            gfx::Insets(
+                kDefaultMarginSize, kDefaultMarginSize, kDefaultMarginSize,
+                has_artwork_ ? kRightMarginExpandedSize : kDefaultMarginSize),
+            kDefaultMarginSize))
         ->SetDefaultFlex(1);
   } else {
     main_row_
         ->SetLayoutManager(std::make_unique<views::BoxLayout>(
-            views::BoxLayout::kHorizontal, kMediaNotificationMainRowInsets,
+            views::BoxLayout::kHorizontal,
+            gfx::Insets(0, kDefaultMarginSize, 14,
+                        has_artwork_ ? kRightMarginSize : kDefaultMarginSize),
             kDefaultMarginSize, true))
         ->SetDefaultFlex(1);
   }
+
+  main_row_->Layout();
 
   GetMediaNotificationBackground()->UpdateArtworkMaxWidthPct(
       expanded_ ? kMediaImageMaxWidthExpandedPct : kMediaImageMaxWidthPct);

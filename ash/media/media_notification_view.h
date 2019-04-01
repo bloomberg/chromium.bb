@@ -94,6 +94,8 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
   std::unique_ptr<message_center::NotificationControlButtonsView>
       control_buttons_view_;
 
+  bool has_artwork_ = false;
+
   // Whether this notification is expanded or not.
   bool expanded_ = false;
 
