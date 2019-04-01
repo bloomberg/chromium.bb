@@ -18,6 +18,7 @@
 #include "components/autofill_assistant/browser/actions/action.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/client_memory.h"
+#include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
 #include "components/autofill_assistant/browser/self_delete_full_card_requester.h"
 #include "components/autofill_assistant/browser/service.h"
@@ -33,58 +34,6 @@ namespace {
 // to show up.
 constexpr base::TimeDelta kShortWaitForElementDeadline =
     base::TimeDelta::FromSeconds(2);
-
-// Intended for debugging. Writes a string representation of the status to
-// |out|.
-std::ostream& operator<<(std::ostream& out,
-                         const ProcessedActionStatusProto& status) {
-#ifdef NDEBUG
-  out << static_cast<int>(status);
-  return out;
-#else
-  switch (status) {
-    case ProcessedActionStatusProto::UNKNOWN_ACTION_STATUS:
-      out << "UNKNOWN_ACTION_STATUS";
-      break;
-    case ProcessedActionStatusProto::ELEMENT_RESOLUTION_FAILED:
-      out << "ELEMENT_RESOLUTION_FAILED";
-      break;
-    case ProcessedActionStatusProto::ACTION_APPLIED:
-      out << "ACTION_APPLIED";
-      break;
-    case ProcessedActionStatusProto::OTHER_ACTION_STATUS:
-      out << "OTHER_ACTION_STATUS";
-      break;
-    case ProcessedActionStatusProto::PAYMENT_REQUEST_ERROR:
-      out << "PAYMENT_REQUEST_ERROR";
-      break;
-    case ProcessedActionStatusProto::UNSUPPORTED_ACTION:
-      out << "UNSUPPORTED_ACTION";
-      break;
-    case ProcessedActionStatusProto::MANUAL_FALLBACK:
-      out << "MANUAL_FALLBACK";
-      break;
-    case ProcessedActionStatusProto::INTERRUPT_FAILED:
-      out << "INTERRUPT_FAILED";
-      break;
-    case ProcessedActionStatusProto::USER_ABORTED_ACTION:
-      out << "USER_ABORTED_ACTION";
-      break;
-
-    case ProcessedActionStatusProto::GET_FULL_CARD_FAILED:
-      out << "GET_FULL_CARD_FAILED";
-      break;
-
-    case ProcessedActionStatusProto::PRECONDITION_FAILED:
-      out << "PRECONDITION_FAILED";
-      break;
-
-      // Intentionally no default case to make compilation fail if a new value
-      // was added to the enum but not to this list.
-  }
-  return out;
-#endif  // NDEBUG
-}
 
 std::ostream& operator<<(std::ostream& out,
                          const ScriptExecutor::AtEnd& at_end) {
@@ -206,7 +155,7 @@ std::string ScriptExecutor::GetStatusMessage() {
 
 void ScriptExecutor::ClickOrTapElement(
     const Selector& selector,
-    base::OnceCallback<void(bool)> callback) {
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   delegate_->GetWebController()->ClickOrTapElement(selector,
                                                    std::move(callback));
 }
@@ -298,36 +247,41 @@ void ScriptExecutor::OnChosen(base::OnceClosure callback) {
   std::move(callback).Run();
 }
 
-void ScriptExecutor::FillAddressForm(const autofill::AutofillProfile* profile,
-                                     const Selector& selector,
-                                     base::OnceCallback<void(bool)> callback) {
+void ScriptExecutor::FillAddressForm(
+    const autofill::AutofillProfile* profile,
+    const Selector& selector,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   delegate_->GetWebController()->FillAddressForm(profile, selector,
                                                  std::move(callback));
 }
 
-void ScriptExecutor::FillCardForm(std::unique_ptr<autofill::CreditCard> card,
-                                  const base::string16& cvc,
-                                  const Selector& selector,
-                                  base::OnceCallback<void(bool)> callback) {
+void ScriptExecutor::FillCardForm(
+    std::unique_ptr<autofill::CreditCard> card,
+    const base::string16& cvc,
+    const Selector& selector,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   delegate_->GetWebController()->FillCardForm(std::move(card), cvc, selector,
                                               std::move(callback));
 }
 
-void ScriptExecutor::SelectOption(const Selector& selector,
-                                  const std::string& selected_option,
-                                  base::OnceCallback<void(bool)> callback) {
+void ScriptExecutor::SelectOption(
+    const Selector& selector,
+    const std::string& selected_option,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   delegate_->GetWebController()->SelectOption(selector, selected_option,
                                               std::move(callback));
 }
 
-void ScriptExecutor::HighlightElement(const Selector& selector,
-                                      base::OnceCallback<void(bool)> callback) {
+void ScriptExecutor::HighlightElement(
+    const Selector& selector,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   delegate_->GetWebController()->HighlightElement(selector,
                                                   std::move(callback));
 }
 
-void ScriptExecutor::FocusElement(const Selector& selector,
-                                  base::OnceCallback<void(bool)> callback) {
+void ScriptExecutor::FocusElement(
+    const Selector& selector,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   last_focused_element_selector_ = selector;
   delegate_->GetWebController()->FocusElement(selector, std::move(callback));
 }
@@ -346,18 +300,20 @@ void ScriptExecutor::SetProgressVisible(bool visible) {
   delegate_->SetProgressVisible(visible);
 }
 
-void ScriptExecutor::SetFieldValue(const Selector& selector,
-                                   const std::string& value,
-                                   bool simulate_key_presses,
-                                   base::OnceCallback<void(bool)> callback) {
+void ScriptExecutor::SetFieldValue(
+    const Selector& selector,
+    const std::string& value,
+    bool simulate_key_presses,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   delegate_->GetWebController()->SetFieldValue(
       selector, value, simulate_key_presses, std::move(callback));
 }
 
-void ScriptExecutor::SetAttribute(const Selector& selector,
-                                  const std::vector<std::string>& attribute,
-                                  const std::string& value,
-                                  base::OnceCallback<void(bool)> callback) {
+void ScriptExecutor::SetAttribute(
+    const Selector& selector,
+    const std::vector<std::string>& attribute,
+    const std::string& value,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   delegate_->GetWebController()->SetAttribute(selector, attribute, value,
                                               std::move(callback));
 }
@@ -365,14 +321,15 @@ void ScriptExecutor::SetAttribute(const Selector& selector,
 void ScriptExecutor::SendKeyboardInput(
     const Selector& selector,
     const std::vector<std::string>& text_parts,
-    base::OnceCallback<void(bool)> callback) {
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   delegate_->GetWebController()->SendKeyboardInput(selector, text_parts,
                                                    std::move(callback));
 }
 
 void ScriptExecutor::GetOuterHtml(
     const Selector& selector,
-    base::OnceCallback<void(bool, const std::string&)> callback) {
+    base::OnceCallback<void(const ClientStatus&, const std::string&)>
+        callback) {
   delegate_->GetWebController()->GetOuterHtml(selector, std::move(callback));
 }
 

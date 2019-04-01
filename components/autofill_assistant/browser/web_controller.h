@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
+#include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_dom.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_input.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_network.h"
@@ -66,62 +67,72 @@ class WebController {
 
   // Perform a mouse left button click or a touch tap on the element given by
   // |selector| and return the result through callback.
-  virtual void ClickOrTapElement(const Selector& selector,
-                                 base::OnceCallback<void(bool)> callback);
+  virtual void ClickOrTapElement(
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&)> callback);
 
   // Fill the address form given by |selector| with the given address
   // |profile|.
-  virtual void FillAddressForm(const autofill::AutofillProfile* profile,
-                               const Selector& selector,
-                               base::OnceCallback<void(bool)> callback);
+  virtual void FillAddressForm(
+      const autofill::AutofillProfile* profile,
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&)> callback);
 
   // Fill the card form given by |selector| with the given |card| and its
   // |cvc|.
-  virtual void FillCardForm(std::unique_ptr<autofill::CreditCard> card,
-                            const base::string16& cvc,
-                            const Selector& selector,
-                            base::OnceCallback<void(bool)> callback);
+  virtual void FillCardForm(
+      std::unique_ptr<autofill::CreditCard> card,
+      const base::string16& cvc,
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&)> callback);
 
   // Select the option given by |selector| and the value of the option to be
   // picked.
-  virtual void SelectOption(const Selector& selector,
-                            const std::string& selected_option,
-                            base::OnceCallback<void(bool)> callback);
+  virtual void SelectOption(
+      const Selector& selector,
+      const std::string& selected_option,
+      base::OnceCallback<void(const ClientStatus&)> callback);
 
   // Highlight an element given by |selector|.
-  virtual void HighlightElement(const Selector& selector,
-                                base::OnceCallback<void(bool)> callback);
+  virtual void HighlightElement(
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&)> callback);
 
   // Focus on element given by |selector|.
-  virtual void FocusElement(const Selector& selector,
-                            base::OnceCallback<void(bool)> callback);
+  virtual void FocusElement(
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&)> callback);
 
   // Set the |value| of field |selector| and return the result through
   // |callback|. If |simulate_key_presses| is true, the value will be set by
   // clicking the field and then simulating key presses, otherwise the `value`
   // attribute will be set directly.
-  virtual void SetFieldValue(const Selector& selector,
-                             const std::string& value,
-                             bool simulate_key_presses,
-                             base::OnceCallback<void(bool)> callback);
+  virtual void SetFieldValue(
+      const Selector& selector,
+      const std::string& value,
+      bool simulate_key_presses,
+      base::OnceCallback<void(const ClientStatus&)> callback);
 
   // Set the |value| of the |attribute| of the element given by |selector|.
-  virtual void SetAttribute(const Selector& selector,
-                            const std::vector<std::string>& attribute,
-                            const std::string& value,
-                            base::OnceCallback<void(bool)> callback);
+  virtual void SetAttribute(
+      const Selector& selector,
+      const std::vector<std::string>& attribute,
+      const std::string& value,
+      base::OnceCallback<void(const ClientStatus&)> callback);
 
   // Sets the keyboard focus to |selector| and inputs the specified UTF-8
   // characters in the specified order.
   // Returns the result through |callback|.
-  virtual void SendKeyboardInput(const Selector& selector,
-                                 const std::vector<std::string>& utf8_chars,
-                                 base::OnceCallback<void(bool)> callback);
+  virtual void SendKeyboardInput(
+      const Selector& selector,
+      const std::vector<std::string>& utf8_chars,
+      base::OnceCallback<void(const ClientStatus&)> callback);
 
   // Return the outerHTML of |selector|.
   virtual void GetOuterHtml(
       const Selector& selector,
-      base::OnceCallback<void(bool, const std::string&)> callback);
+      base::OnceCallback<void(const ClientStatus&, const std::string&)>
+          callback);
 
   // Create a helper for checking element existence and field value.
   virtual std::unique_ptr<BatchElementChecker> CreateBatchElementChecker();
@@ -210,7 +221,8 @@ class WebController {
     std::string object_id;
   };
   using FindElementCallback =
-      base::OnceCallback<void(std::unique_ptr<FindElementResult>)>;
+      base::OnceCallback<void(const ClientStatus&,
+                              std::unique_ptr<FindElementResult>)>;
 
   struct FillFormInputData {
     FillFormInputData();
@@ -227,52 +239,59 @@ class WebController {
   // Perform a mouse left button click on the element given by |selector| and
   // return the result through callback.
   void ClickElement(const Selector& selector,
-                    base::OnceCallback<void(bool)> callback);
+                    base::OnceCallback<void(const ClientStatus&)> callback);
 
   // Perform a touch tap on the element given by |selector| and return the
   // result through callback.
   void TapElement(const Selector& selector,
-                  base::OnceCallback<void(bool)> callback);
+                  base::OnceCallback<void(const ClientStatus&)> callback);
 
-  void OnFindElementForClickOrTap(base::OnceCallback<void(bool)> callback,
-                                  bool is_a_click,
-                                  std::unique_ptr<FindElementResult> result);
+  void OnFindElementForClickOrTap(
+      base::OnceCallback<void(const ClientStatus&)> callback,
+      bool is_a_click,
+      const ClientStatus& status,
+      std::unique_ptr<FindElementResult> result);
   void OnWaitDocumentToBecomeInteractiveForClickOrTap(
-      base::OnceCallback<void(bool)> callback,
+      base::OnceCallback<void(const ClientStatus&)> callback,
       bool is_a_click,
       std::unique_ptr<FindElementResult> target_element,
       bool result);
-  void OnFindElementForTap(base::OnceCallback<void(bool)> callback,
-                           std::unique_ptr<FindElementResult> result);
-  void ClickOrTapElement(std::unique_ptr<FindElementResult> target_element,
-                         bool is_a_click,
-                         base::OnceCallback<void(bool)> callback);
+  void OnFindElementForTap(
+      base::OnceCallback<void(const ClientStatus&)> callback,
+      const ClientStatus& status,
+      std::unique_ptr<FindElementResult> result);
+  void ClickOrTapElement(
+      std::unique_ptr<FindElementResult> target_element,
+      bool is_a_click,
+      base::OnceCallback<void(const ClientStatus&)> callback);
   void OnScrollIntoView(std::unique_ptr<FindElementResult> target_element,
-                        base::OnceCallback<void(bool)> callback,
+                        base::OnceCallback<void(const ClientStatus&)> callback,
                         bool is_a_click,
                         std::unique_ptr<runtime::CallFunctionOnResult> result);
-  void TapOrClickOnCoordinates(ElementPositionGetter* getter_to_release,
-                               base::OnceCallback<void(bool)> callback,
-                               bool is_a_click,
-                               bool has_coordinates,
-                               int x,
-                               int y);
+  void TapOrClickOnCoordinates(
+      ElementPositionGetter* getter_to_release,
+      base::OnceCallback<void(const ClientStatus&)> callback,
+      bool is_a_click,
+      bool has_coordinates,
+      int x,
+      int y);
   void OnDispatchPressMouseEvent(
-      base::OnceCallback<void(bool)> callback,
+      base::OnceCallback<void(const ClientStatus&)> callback,
       int x,
       int y,
       std::unique_ptr<input::DispatchMouseEventResult> result);
   void OnDispatchReleaseMouseEvent(
-      base::OnceCallback<void(bool)> callback,
+      base::OnceCallback<void(const ClientStatus&)> callback,
       std::unique_ptr<input::DispatchMouseEventResult> result);
   void OnDispatchTouchEventStart(
-      base::OnceCallback<void(bool)> callback,
+      base::OnceCallback<void(const ClientStatus&)> callback,
       std::unique_ptr<input::DispatchTouchEventResult> result);
   void OnDispatchTouchEventEnd(
-      base::OnceCallback<void(bool)> callback,
+      base::OnceCallback<void(const ClientStatus&)> callback,
       std::unique_ptr<input::DispatchTouchEventResult> result);
   void OnFindElementForCheck(ElementCheckType check_type,
                              base::OnceCallback<void(bool)> callback,
+                             const ClientStatus& status,
                              std::unique_ptr<FindElementResult> result);
   void OnGetBoxModelForVisible(base::OnceCallback<void(bool)> callback,
                                std::unique_ptr<dom::GetBoxModelResult> result);
@@ -285,97 +304,108 @@ class WebController {
                    FindElementCallback callback);
   void OnFindElementResult(ElementFinder* finder_to_release,
                            FindElementCallback callback,
+                           const ClientStatus& status,
                            std::unique_ptr<FindElementResult> result);
-  void OnResult(bool result, base::OnceCallback<void(bool)> callback);
-  void OnResult(bool exists,
-                const std::string& result,
-                base::OnceCallback<void(bool, const std::string&)> callback);
   void OnFindElementForFillingForm(
       std::unique_ptr<FillFormInputData> data_to_autofill,
       const Selector& selector,
-      base::OnceCallback<void(bool)> callback,
+      base::OnceCallback<void(const ClientStatus&)> callback,
+      const ClientStatus& status,
       std::unique_ptr<FindElementResult> element_result);
   void OnGetFormAndFieldDataForFillingForm(
       std::unique_ptr<FillFormInputData> data_to_autofill,
-      base::OnceCallback<void(bool)> callback,
+      base::OnceCallback<void(const ClientStatus&)> callback,
       content::RenderFrameHost* container_frame_host,
       const autofill::FormData& form_data,
       const autofill::FormFieldData& form_field);
   void OnFindElementForFocusElement(
-      base::OnceCallback<void(bool)> callback,
+      base::OnceCallback<void(const ClientStatus&)> callback,
+      const ClientStatus& status,
       std::unique_ptr<FindElementResult> element_result);
   void OnWaitDocumentToBecomeInteractiveForFocusElement(
-      base::OnceCallback<void(bool)> callback,
+      base::OnceCallback<void(const ClientStatus&)> callback,
       std::unique_ptr<FindElementResult> target_element,
       bool result);
-  void OnFocusElement(base::OnceCallback<void(bool)> callback,
+  void OnFocusElement(base::OnceCallback<void(const ClientStatus&)> callback,
                       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForSelectOption(
       const std::string& selected_option,
-      base::OnceCallback<void(bool)> callback,
+      base::OnceCallback<void(const ClientStatus&)> callback,
+      const ClientStatus& status,
       std::unique_ptr<FindElementResult> element_result);
-  void OnSelectOption(base::OnceCallback<void(bool)> callback,
+  void OnSelectOption(base::OnceCallback<void(const ClientStatus&)> callback,
                       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForHighlightElement(
-      base::OnceCallback<void(bool)> callback,
+      base::OnceCallback<void(const ClientStatus&)> callback,
+      const ClientStatus& status,
       std::unique_ptr<FindElementResult> element_result);
   void OnHighlightElement(
-      base::OnceCallback<void(bool)> callback,
+      base::OnceCallback<void(const ClientStatus&)> callback,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForGetFieldValue(
       base::OnceCallback<void(bool, const std::string&)> callback,
+      const ClientStatus& status,
       std::unique_ptr<FindElementResult> element_result);
   void OnGetValueAttribute(
       base::OnceCallback<void(bool, const std::string&)> callback,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
-  void InternalSetFieldValue(const Selector& selector,
-                             const std::string& value,
-                             base::OnceCallback<void(bool)> callback);
+  void InternalSetFieldValue(
+      const Selector& selector,
+      const std::string& value,
+      base::OnceCallback<void(const ClientStatus&)> callback);
   void OnClearFieldForSendKeyboardInput(
       const Selector& selector,
       const std::vector<std::string>& utf8_chars,
-      base::OnceCallback<void(bool)> callback,
-      bool clear_status);
+      base::OnceCallback<void(const ClientStatus&)> callback,
+      const ClientStatus& status);
   void OnClickElementForSendKeyboardInput(
       const std::vector<std::string>& utf8_chars,
-      base::OnceCallback<void(bool)> callback,
-      bool click_status);
-  void DispatchKeyboardTextDownEvent(const std::vector<std::string>& utf8_chars,
-                                     size_t index,
-                                     base::OnceCallback<void(bool)> callback);
-  void DispatchKeyboardTextUpEvent(const std::vector<std::string>& utf8_chars,
-                                   size_t index,
-                                   base::OnceCallback<void(bool)> callback);
+      base::OnceCallback<void(const ClientStatus&)> callback,
+      const ClientStatus& click_status);
+  void DispatchKeyboardTextDownEvent(
+      const std::vector<std::string>& utf8_chars,
+      size_t index,
+      base::OnceCallback<void(const ClientStatus&)> callback);
+  void DispatchKeyboardTextUpEvent(
+      const std::vector<std::string>& utf8_chars,
+      size_t index,
+      base::OnceCallback<void(const ClientStatus&)> callback);
   void OnFindElementForSetAttribute(
       const std::vector<std::string>& attribute,
       const std::string& value,
-      base::OnceCallback<void(bool)> callback,
+      base::OnceCallback<void(const ClientStatus&)> callback,
+      const ClientStatus& status,
       std::unique_ptr<FindElementResult> element_result);
-  void OnSetAttribute(base::OnceCallback<void(bool)> callback,
+  void OnSetAttribute(base::OnceCallback<void(const ClientStatus&)> callback,
                       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForSendKeyboardInput(
       const Selector& selector,
       const std::vector<std::string>& utf8_chars,
-      base::OnceCallback<void(bool)> callback,
+      base::OnceCallback<void(const ClientStatus&)> callback,
+      const ClientStatus& status,
       std::unique_ptr<FindElementResult> element_result);
   void OnPressKeyboard(int key_code,
                        base::OnceCallback<void(bool)> callback,
                        std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForSetFieldValue(
       const std::string& value,
-      base::OnceCallback<void(bool)> callback,
+      base::OnceCallback<void(const ClientStatus&)> callback,
+      const ClientStatus& status,
       std::unique_ptr<FindElementResult> element_result);
   void OnSetValueAttribute(
-      base::OnceCallback<void(bool)> callback,
+      base::OnceCallback<void(const ClientStatus&)> callback,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForGetOuterHtml(
-      base::OnceCallback<void(bool, const std::string&)> callback,
+      base::OnceCallback<void(const ClientStatus&, const std::string&)>
+          callback,
+      const ClientStatus& status,
       std::unique_ptr<FindElementResult> element_result);
-  void OnGetOuterHtml(
-      base::OnceCallback<void(bool, const std::string&)> callback,
-      std::unique_ptr<runtime::CallFunctionOnResult> result);
+  void OnGetOuterHtml(base::OnceCallback<void(const ClientStatus&,
+                                              const std::string&)> callback,
+                      std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForPosition(
       base::OnceCallback<void(bool, const RectF&)> callback,
+      const ClientStatus& status,
       std::unique_ptr<FindElementResult> result);
   void OnGetElementPositionResult(
       base::OnceCallback<void(bool, const RectF&)> callback,

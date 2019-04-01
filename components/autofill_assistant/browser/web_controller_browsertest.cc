@@ -103,8 +103,8 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   }
 
   void ClickElementCallback(const base::Closure& done_callback,
-                            bool result) {
-    ASSERT_TRUE(result);
+                            const ClientStatus& status) {
+    EXPECT_EQ(ACTION_APPLIED, status.proto_status());
     done_callback.Run();
   }
 
@@ -150,14 +150,16 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     run_loop.Run();
   }
 
-  void OnFocusElement(base::Closure done_callback, bool result) {
-    ASSERT_TRUE(result);
+  void OnFocusElement(base::OnceClosure done_callback,
+                      const ClientStatus& status) {
+    EXPECT_EQ(ACTION_APPLIED, status.proto_status());
     std::move(done_callback).Run();
   }
 
-  bool SelectOption(const Selector& selector, const std::string& option) {
+  ClientStatus SelectOption(const Selector& selector,
+                            const std::string& option) {
     base::RunLoop run_loop;
-    bool result;
+    ClientStatus result;
     web_controller_->SelectOption(
         selector, option,
         base::BindOnce(&WebControllerBrowserTest::OnSelectOption,
@@ -168,15 +170,15 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   }
 
   void OnSelectOption(base::Closure done_callback,
-                      bool* result_output,
-                      bool result) {
-    *result_output = result;
+                      ClientStatus* result_output,
+                      const ClientStatus& status) {
+    *result_output = status;
     std::move(done_callback).Run();
   }
 
-  bool HighlightElement(const Selector& selector) {
+  ClientStatus HighlightElement(const Selector& selector) {
     base::RunLoop run_loop;
-    bool result;
+    ClientStatus result;
     web_controller_->HighlightElement(
         selector, base::BindOnce(&WebControllerBrowserTest::OnHighlightElement,
                                  base::Unretained(this), run_loop.QuitClosure(),
@@ -186,15 +188,16 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   }
 
   void OnHighlightElement(base::Closure done_callback,
-                          bool* result_output,
-                          bool result) {
-    *result_output = result;
+                          ClientStatus* result_output,
+                          const ClientStatus& status) {
+    *result_output = status;
     std::move(done_callback).Run();
   }
 
-  bool GetOuterHtml(const Selector& selector, std::string* html_output) {
+  ClientStatus GetOuterHtml(const Selector& selector,
+                            std::string* html_output) {
     base::RunLoop run_loop;
-    bool result;
+    ClientStatus result;
     web_controller_->GetOuterHtml(
         selector, base::BindOnce(&WebControllerBrowserTest::OnGetOuterHtml,
                                  base::Unretained(this), run_loop.QuitClosure(),
@@ -204,11 +207,12 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   }
 
   void OnGetOuterHtml(const base::Closure& done_callback,
-                      bool* successful_output,
+                      ClientStatus* successful_output,
                       std::string* html_output,
-                      bool successful,
+                      const ClientStatus& status,
                       const std::string& html) {
-    *successful_output = successful;
+    EXPECT_EQ(ACTION_APPLIED, status.proto_status());
+    *successful_output = status;
     *html_output = html;
     done_callback.Run();
   }
@@ -229,17 +233,19 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   void OnFindElement(const base::Closure& done_callback,
                      size_t expected_index,
                      bool is_main_frame,
+                     const ClientStatus& status,
                      std::unique_ptr<WebController::FindElementResult> result) {
     done_callback.Run();
+    EXPECT_EQ(ACTION_APPLIED, status.proto_status());
     if (is_main_frame) {
-      ASSERT_EQ(shell()->web_contents()->GetMainFrame(),
+      EXPECT_EQ(shell()->web_contents()->GetMainFrame(),
                 result->container_frame_host);
     } else {
-      ASSERT_NE(shell()->web_contents()->GetMainFrame(),
+      EXPECT_NE(shell()->web_contents()->GetMainFrame(),
                 result->container_frame_host);
     }
-    ASSERT_EQ(result->container_frame_selector_index, expected_index);
-    ASSERT_FALSE(result->object_id.empty());
+    EXPECT_EQ(result->container_frame_selector_index, expected_index);
+    EXPECT_FALSE(result->object_id.empty());
   }
 
   void GetFieldsValue(const std::vector<Selector>& selectors,
@@ -271,11 +277,11 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     }
   }
 
-  bool SetFieldValue(const Selector& selector,
-                     const std::string& value,
-                     bool simulate_key_presses) {
+  ClientStatus SetFieldValue(const Selector& selector,
+                             const std::string& value,
+                             bool simulate_key_presses) {
     base::RunLoop run_loop;
-    bool result;
+    ClientStatus result;
     web_controller_->SetFieldValue(
         selector, value, simulate_key_presses,
         base::BindOnce(&WebControllerBrowserTest::OnSetFieldValue,
@@ -286,16 +292,16 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   }
 
   void OnSetFieldValue(const base::Closure& done_callback,
-                       bool* result_output,
-                       bool result) {
-    *result_output = result;
+                       ClientStatus* result_output,
+                       const ClientStatus& status) {
+    *result_output = status;
     std::move(done_callback).Run();
   }
 
-  bool SendKeyboardInput(const Selector& selector,
-                         const std::vector<std::string>& text_parts) {
+  ClientStatus SendKeyboardInput(const Selector& selector,
+                                 const std::vector<std::string>& text_parts) {
     base::RunLoop run_loop;
-    bool result;
+    ClientStatus result;
     web_controller_->SendKeyboardInput(
         selector, text_parts,
         base::BindOnce(&WebControllerBrowserTest::OnSendKeyboardInput,
@@ -306,17 +312,17 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   }
 
   void OnSendKeyboardInput(const base::Closure& done_callback,
-                           bool* result_output,
-                           bool result) {
-    *result_output = result;
+                           ClientStatus* result_output,
+                           const ClientStatus& status) {
+    *result_output = status;
     std::move(done_callback).Run();
   }
 
-  bool SetAttribute(const Selector& selector,
-                    const std::vector<std::string>& attribute,
-                    const std::string& value) {
+  ClientStatus SetAttribute(const Selector& selector,
+                            const std::vector<std::string>& attribute,
+                            const std::string& value) {
     base::RunLoop run_loop;
-    bool result;
+    ClientStatus result;
     web_controller_->SetAttribute(
         selector, attribute, value,
         base::BindOnce(&WebControllerBrowserTest::OnSetAttribute,
@@ -327,9 +333,9 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   }
 
   void OnSetAttribute(const base::Closure& done_callback,
-                      bool* result_output,
-                      bool result) {
-    *result_output = result;
+                      ClientStatus* result_output,
+                      const ClientStatus& status) {
+    *result_output = status;
     std::move(done_callback).Run();
   }
 
@@ -610,8 +616,9 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FocusElement) {
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOption) {
   Selector selector;
   selector.selectors.emplace_back("#select");
-  EXPECT_FALSE(SelectOption(selector, "incorrect_label"));
-  ASSERT_TRUE(SelectOption(selector, "two"));
+  EXPECT_EQ(OTHER_ACTION_STATUS,
+            SelectOption(selector, "incorrect_label").proto_status());
+  EXPECT_EQ(ACTION_APPLIED, SelectOption(selector, "two").proto_status());
 
   const std::string javascript = R"(
     let select = document.querySelector("#select");
@@ -619,19 +626,20 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOption) {
   )";
   EXPECT_EQ("Two", content::EvalJs(shell(), javascript));
 
-  ASSERT_TRUE(SelectOption(selector, "one"));
+  EXPECT_EQ(ACTION_APPLIED, SelectOption(selector, "one").proto_status());
   EXPECT_EQ("One", content::EvalJs(shell(), javascript));
 
   selector.selectors.clear();
   selector.selectors.emplace_back("#incorrect_selector");
-  EXPECT_FALSE(SelectOption(selector, "two"));
+  EXPECT_EQ(ELEMENT_RESOLUTION_FAILED,
+            SelectOption(selector, "two").proto_status());
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOptionInIframe) {
   Selector selector;
   selector.selectors.emplace_back("#iframe");
   selector.selectors.emplace_back("select[name=state]");
-  ASSERT_TRUE(SelectOption(selector, "NY"));
+  EXPECT_EQ(ACTION_APPLIED, SelectOption(selector, "NY").proto_status());
 
   const std::string javascript = R"(
     let iframe = document.querySelector("iframe").contentDocument;
@@ -645,7 +653,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetOuterHtml) {
   Selector selector;
   selector.selectors.emplace_back("#testOuterHtml");
   std::string html;
-  ASSERT_TRUE(GetOuterHtml(selector, &html));
+  ASSERT_EQ(ACTION_APPLIED, GetOuterHtml(selector, &html).proto_status());
   EXPECT_EQ(
       R"(<div id="testOuterHtml"><span>Span</span><p>Paragraph</p></div>)",
       html);
@@ -661,8 +669,9 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {
   expected_values.emplace_back("helloworld1");
   GetFieldsValue(selectors, expected_values);
 
-  EXPECT_TRUE(
-      SetFieldValue(a_selector, "foo", /* simulate_key_presses= */ false));
+  EXPECT_EQ(ACTION_APPLIED,
+            SetFieldValue(a_selector, "foo", /* simulate_key_presses= */ false)
+                .proto_status());
   expected_values.clear();
   expected_values.emplace_back("foo");
   GetFieldsValue(selectors, expected_values);
@@ -671,8 +680,10 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {
   a_selector.selectors.clear();
   a_selector.selectors.emplace_back("#uppercase_input");
   selectors.emplace_back(a_selector);
-  EXPECT_TRUE(SetFieldValue(a_selector, /* Zürich */ "Z\xc3\xbcrich",
-                            /* simulate_key_presses= */ true));
+  EXPECT_EQ(ACTION_APPLIED,
+            SetFieldValue(a_selector, /* Zürich */ "Z\xc3\xbcrich",
+                          /* simulate_key_presses= */ true)
+                .proto_status());
   expected_values.clear();
   expected_values.emplace_back(/* ZÜRICH */ "Z\xc3\x9cRICH");
   GetFieldsValue(selectors, expected_values);
@@ -685,8 +696,10 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {
   expected_values.emplace_back("");
   GetFieldsValue(selectors, expected_values);
 
-  EXPECT_FALSE(
-      SetFieldValue(a_selector, "foobar", /* simulate_key_presses= */ false));
+  EXPECT_EQ(
+      ELEMENT_RESOLUTION_FAILED,
+      SetFieldValue(a_selector, "foobar", /* simulate_key_presses= */ false)
+          .proto_status());
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SendKeyboardInput) {
@@ -698,7 +711,8 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SendKeyboardInput) {
   Selector a_selector;
   a_selector.selectors.emplace_back("#input6");
   selectors.emplace_back(a_selector);
-  EXPECT_TRUE(SendKeyboardInput(a_selector, text_parts));
+  EXPECT_EQ(ACTION_APPLIED,
+            SendKeyboardInput(a_selector, text_parts).proto_status());
   GetFieldsValue(selectors, expected_values);
 }
 
@@ -711,7 +725,8 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SetAttribute) {
   attribute.emplace_back("backgroundColor");
   std::string value = "red";
 
-  EXPECT_TRUE(SetAttribute(selector, attribute, value));
+  EXPECT_EQ(ACTION_APPLIED,
+            SetAttribute(selector, attribute, value).proto_status());
   const std::string javascript = R"(
     document.querySelector("#full_height_section").style.backgroundColor;
   )";
@@ -768,7 +783,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, HighlightElement) {
     select.style.boxShadow;
   )";
   EXPECT_EQ("", content::EvalJs(shell(), javascript));
-  ASSERT_TRUE(HighlightElement(selector));
+  EXPECT_EQ(ACTION_APPLIED, HighlightElement(selector).proto_status());
   // We only make sure that the element has a non-empty boxShadow style without
   // requiring an exact string match.
   EXPECT_NE("", content::EvalJs(shell(), javascript));

@@ -29,7 +29,8 @@ class HighlightElementAction : public Action {
   void OnWaitForElement(ActionDelegate* delegate,
                         ProcessActionCallback callback,
                         bool element_found);
-  void OnHighlightElement(ProcessActionCallback callback, bool status);
+  void OnHighlightElement(ProcessActionCallback callback,
+                          const ClientStatus& status);
 
   base::WeakPtrFactory<HighlightElementAction> weak_ptr_factory_;
 

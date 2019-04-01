@@ -54,10 +54,10 @@ void FocusElementAction::OnWaitForElement(ActionDelegate* delegate,
 
 void FocusElementAction::OnFocusElement(ActionDelegate* delegate,
                                         ProcessActionCallback callback,
-                                        bool status) {
+                                        const ClientStatus& status) {
   delegate->SetTouchableElementArea(
       proto().focus_element().touchable_element_area());
-  UpdateProcessedAction(status ? ACTION_APPLIED : OTHER_ACTION_STATUS);
+  UpdateProcessedAction(status);
   std::move(callback).Run(std::move(processed_action_proto_));
 }
 

@@ -404,6 +404,18 @@ enum ProcessedActionStatusProto {
   // failed.
   //
   PRECONDITION_FAILED = 10;
+
+  // The action definition returned by the server was rejected.
+  INVALID_ACTION = 11;
+
+  // Executing the action as defined is unsupported.
+  UNSUPPORTED = 12;
+
+  // Timed out waiting for the document to load.
+  TIMED_OUT = 13;
+
+  // Failed to get a stable position for the element, usually to click on it.
+  ELEMENT_UNSTABLE = 14;
 }
 
 // The pseudo type values come from
