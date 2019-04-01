@@ -153,24 +153,6 @@ std::unique_ptr<base::Value> AsValue(const SkColorFilter& filter) {
     val->Set("color_matrix", std::move(color_matrix_val));
   }
 
-  SkColor color;
-  SkBlendMode mode;
-  if (filter.asColorMode(&color, &mode)) {
-    std::unique_ptr<base::DictionaryValue> color_mode_val(
-        new base::DictionaryValue());
-    color_mode_val->Set("color", AsValue(color));
-    color_mode_val->Set("mode", AsValue(mode));
-
-    val->Set("color_mode", std::move(color_mode_val));
-  }
-
-  if (filter.asComponentTable(nullptr)) {
-    std::unique_ptr<base::DictionaryValue> component_table_val(
-        new base::DictionaryValue());
-    // use this as a marker for now
-    val->Set("component_table", std::move(component_table_val));
-  }
-
   return std::move(val);
 }
 
