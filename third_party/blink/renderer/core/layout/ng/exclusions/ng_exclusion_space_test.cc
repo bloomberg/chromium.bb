@@ -395,5 +395,93 @@ TEST(NGExclusionSpaceTest, PreInitialization) {
   EXPECT_NE(original_exclusion_space, exclusion_space2);
 }
 
+TEST(NGExclusionSpaceTest, MergeExclusionSpacesNoPreviousExclusions) {
+  NGExclusionSpace old_input;
+  NGExclusionSpace old_output = old_input;
+
+  old_output.Add(NGExclusion::Create(
+      NGBfcRect(NGBfcOffset(LayoutUnit(10), LayoutUnit(25)),
+                NGBfcOffset(LayoutUnit(30), LayoutUnit(40))),
+      EFloat::kLeft));
+
+  NGExclusionSpace new_input;
+
+  NGExclusionSpace new_output = NGExclusionSpace::MergeExclusionSpaces(
+      old_output, old_input, new_input,
+      /* offset_delta */ {LayoutUnit(10), LayoutUnit(20)});
+
+  // To check the equality pre-initialize a new exclusion space with the
+  // |new_output|, and add the expected exclusions.
+  NGExclusionSpace expected;
+  expected.PreInitialize(new_output);
+  expected.Add(NGExclusion::Create(
+      NGBfcRect(NGBfcOffset(LayoutUnit(20), LayoutUnit(45)),
+                NGBfcOffset(LayoutUnit(40), LayoutUnit(60))),
+      EFloat::kLeft));
+
+  EXPECT_EQ(expected, new_output);
+}
+
+TEST(NGExclusionSpaceTest, MergeExclusionSpacesPreviousExclusions) {
+  NGExclusionSpace old_input;
+  old_input.Add(NGExclusion::Create(
+      NGBfcRect(NGBfcOffset(LayoutUnit(20), LayoutUnit(45)),
+                NGBfcOffset(LayoutUnit(40), LayoutUnit(60))),
+      EFloat::kLeft));
+
+  NGExclusionSpace old_output = old_input;
+  old_output.Add(NGExclusion::Create(
+      NGBfcRect(NGBfcOffset(LayoutUnit(100), LayoutUnit(45)),
+                NGBfcOffset(LayoutUnit(140), LayoutUnit(60))),
+      EFloat::kRight));
+
+  NGExclusionSpace new_input;
+  new_input.Add(NGExclusion::Create(
+      NGBfcRect(NGBfcOffset(LayoutUnit(20), LayoutUnit(45)),
+                NGBfcOffset(LayoutUnit(40), LayoutUnit(50))),
+      EFloat::kLeft));
+
+  NGExclusionSpace new_output = NGExclusionSpace::MergeExclusionSpaces(
+      old_output, old_input, new_input,
+      /* offset_delta */ {LayoutUnit(10), LayoutUnit(20)});
+
+  // To check the equality pre-initialize a new exclusion space with the
+  // |new_output|, and add the expected exclusions.
+  NGExclusionSpace expected;
+  expected.PreInitialize(new_output);
+  expected.Add(NGExclusion::Create(
+      NGBfcRect(NGBfcOffset(LayoutUnit(20), LayoutUnit(45)),
+                NGBfcOffset(LayoutUnit(40), LayoutUnit(50))),
+      EFloat::kLeft));
+  expected.Add(NGExclusion::Create(
+      NGBfcRect(NGBfcOffset(LayoutUnit(110), LayoutUnit(65)),
+                NGBfcOffset(LayoutUnit(150), LayoutUnit(80))),
+      EFloat::kRight));
+
+  EXPECT_EQ(expected, new_output);
+}
+
+TEST(NGExclusionSpaceTest, MergeExclusionSpacesNoOutputExclusions) {
+  NGExclusionSpace old_input;
+  old_input.Add(NGExclusion::Create(
+      NGBfcRect(NGBfcOffset(LayoutUnit(20), LayoutUnit(45)),
+                NGBfcOffset(LayoutUnit(40), LayoutUnit(60))),
+      EFloat::kLeft));
+  old_input.Add(NGExclusion::Create(
+      NGBfcRect(NGBfcOffset(LayoutUnit(100), LayoutUnit(45)),
+                NGBfcOffset(LayoutUnit(140), LayoutUnit(60))),
+      EFloat::kRight));
+
+  NGExclusionSpace old_output = old_input;
+
+  NGExclusionSpace new_input;
+  NGExclusionSpace new_output = NGExclusionSpace::MergeExclusionSpaces(
+      old_output, old_input, new_input,
+      /* offset_delta */ {LayoutUnit(10), LayoutUnit(20)});
+
+  NGExclusionSpace expected;
+  EXPECT_EQ(expected, new_output);
+}
+
 }  // namespace
 }  // namespace blink

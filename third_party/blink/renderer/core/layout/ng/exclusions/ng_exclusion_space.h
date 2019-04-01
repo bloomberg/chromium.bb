@@ -101,6 +101,18 @@ class CORE_EXPORT NGExclusionSpaceInternal {
     exclusions_ = other.exclusions_;
   }
 
+  // See |NGExclusionSpace::MergeExclusionSpaces|.
+  void MergeExclusionSpaces(const NGBfcDelta& offset_delta,
+                            const NGExclusionSpaceInternal& previous_output,
+                            const NGExclusionSpaceInternal* previous_input) {
+    // We need to copy all the exclusions over which were added by the cached
+    // layout result.
+    for (wtf_size_t i = previous_input ? previous_input->num_exclusions_ : 0;
+         i < previous_output.num_exclusions_; ++i) {
+      Add(previous_output.exclusions_->at(i)->CopyWithOffset(offset_delta));
+    }
+  }
+
   bool operator==(const NGExclusionSpaceInternal& other) const;
   bool operator!=(const NGExclusionSpaceInternal& other) const {
     return !(*this == other);
@@ -398,6 +410,59 @@ class CORE_EXPORT NGExclusionSpace {
 
     exclusion_space_ = std::make_unique<NGExclusionSpaceInternal>();
     exclusion_space_->PreInitialize(*other.exclusion_space_);
+  }
+
+  // This produces a new exclusion space for a |NGLayoutResult| which is being
+  // re-used for caching purposes.
+  //
+  // It takes:
+  //  - |old_output| The exclusion space associated with the cached layout
+  //    result (the output of layout).
+  //  - |old_input| The exclusion space which produced the cached layout result
+  //    (the input into layout).
+  //  - |new_input| The exclusion space which is being used to produce a new
+  //    layout result (the new input into layout).
+  //  - |offset_delta| the amount that the layout result was moved in BFC
+  //    coordinate space.
+  //
+  // |old_output| should contain the *at least* same exclusions as |old_input|
+  // however may have added some more exclusions during its layout.
+  //
+  // This function takes those exclusions added by the cached layout-result
+  // (the difference between |old_output| and |old_input|), and adds them to
+  // |new_input|. It will additionally shift them by |offset_delta|.
+  //
+  // This produces the correct exclusion space "new_output" for the new reused
+  // layout result.
+  static NGExclusionSpace MergeExclusionSpaces(
+      const NGExclusionSpace& old_output,
+      const NGExclusionSpace& old_input,
+      const NGExclusionSpace& new_input,
+      const NGBfcDelta& offset_delta) {
+    // We start building the new exclusion space from the new input, this
+    // (should) have the derived geometry which will move to |new_output|.
+    NGExclusionSpace new_output = new_input;
+
+    // If we didn't have any floats previously, we don't need to add any new
+    // ones, just return the new output.
+    if (!old_output.exclusion_space_)
+      return new_output;
+
+    // If the layout didn't add any new exclusions, we can just return the new
+    // output.
+    if (old_input == old_output)
+      return new_output;
+
+    if (!new_output.exclusion_space_) {
+      new_output.exclusion_space_ =
+          std::make_unique<NGExclusionSpaceInternal>();
+    }
+
+    new_output.exclusion_space_->MergeExclusionSpaces(
+        offset_delta, *old_output.exclusion_space_,
+        old_input.exclusion_space_.get());
+
+    return new_output;
   }
 
   bool operator==(const NGExclusionSpace& other) const {

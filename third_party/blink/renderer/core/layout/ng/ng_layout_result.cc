@@ -46,14 +46,19 @@ NGLayoutResult::NGLayoutResult(NGLayoutResultStatus status,
       << "Use the other constructor for successful layout";
 }
 
-NGLayoutResult::NGLayoutResult(const NGLayoutResult& other,
-                               LayoutUnit bfc_line_offset,
-                               base::Optional<LayoutUnit> bfc_block_offset)
+NGLayoutResult::NGLayoutResult(
+    const NGLayoutResult& other,
+    const NGExclusionSpace& new_input_exclusion_space,
+    LayoutUnit bfc_line_offset,
+    base::Optional<LayoutUnit> bfc_block_offset)
     : space_(other.space_),
       physical_fragment_(other.physical_fragment_),
       oof_positioned_descendants_(other.oof_positioned_descendants_),
       unpositioned_list_marker_(other.unpositioned_list_marker_),
-      exclusion_space_(other.exclusion_space_),
+      exclusion_space_(MergeExclusionSpaces(other,
+                                            new_input_exclusion_space,
+                                            bfc_line_offset,
+                                            bfc_block_offset)),
       bfc_line_offset_(bfc_line_offset),
       bfc_block_offset_(bfc_block_offset),
       end_margin_strut_(other.end_margin_strut_),
@@ -128,6 +133,29 @@ bool NGLayoutResult::DependsOnPercentageBlockSize(
     return true;
 
   return false;
+}
+
+NGExclusionSpace NGLayoutResult::MergeExclusionSpaces(
+    const NGLayoutResult& other,
+    const NGExclusionSpace& new_input_exclusion_space,
+    LayoutUnit bfc_line_offset,
+    base::Optional<LayoutUnit> bfc_block_offset) {
+  // If we are merging exclusion spaces we should be copying a previous layout
+  // result. It is impossible to reach a state where bfc_block_offset has a
+  // value, and the result which we are copying doesn't (or visa versa).
+  // This would imply the result has switched its "empty" state for margin
+  // collapsing, which would mean it isn't possible to reuse the result.
+  DCHECK_EQ(bfc_block_offset.has_value(), other.bfc_block_offset_.has_value());
+
+  NGBfcDelta offset_delta = {bfc_line_offset - other.bfc_line_offset_,
+                             bfc_block_offset && other.bfc_block_offset_
+                                 ? *bfc_block_offset - *other.bfc_block_offset_
+                                 : LayoutUnit()};
+
+  return NGExclusionSpace::MergeExclusionSpaces(
+      /* old_output */ other.exclusion_space_,
+      /* old_input */ other.space_.ExclusionSpace(),
+      /* new_input */ new_input_exclusion_space, offset_delta);
 }
 
 }  // namespace blink
