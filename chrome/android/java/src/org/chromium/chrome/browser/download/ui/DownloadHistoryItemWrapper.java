@@ -562,5 +562,11 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         public boolean isPending() {
             return mItem.state == OfflineItemState.PENDING;
         }
+
+        @Override
+        boolean isVisibleToUser(@DownloadFilter.Type int filter) {
+            if (mItem.state == OfflineItemState.CANCELLED) return false;
+            return super.isVisibleToUser(filter);
+        }
     }
 }
