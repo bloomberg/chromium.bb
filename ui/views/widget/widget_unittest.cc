@@ -17,6 +17,7 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/events/event_observer.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
@@ -25,10 +26,12 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/event_monitor.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/test/native_widget_factory.h"
 #include "ui/views/test/test_views.h"
 #include "ui/views/test/test_widget_observer.h"
 #include "ui/views/test/widget_test.h"
+#include "ui/views/view_test_api.h"
 #include "ui/views/widget/native_widget_delegate.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/root_view.h"
@@ -557,68 +560,7 @@ TEST_F(WidgetOwnershipTest,
 // Test to verify using various Widget methods doesn't crash when the underlying
 // NativeView is destroyed.
 //
-class WidgetWithDestroyedNativeViewTest
-    : public ViewsTestBase,
-      public testing::WithParamInterface<ViewsTestBase::NativeWidgetType> {
- public:
-  WidgetWithDestroyedNativeViewTest() = default;
-  ~WidgetWithDestroyedNativeViewTest() override = default;
-
-  // ViewsTestBase:
-  void SetUp() override {
-    set_native_widget_type(GetParam());
-    ViewsTestBase::SetUp();
-  }
-
-  void InvokeWidgetMethods(Widget* widget) {
-    widget->GetNativeView();
-    widget->GetNativeWindow();
-    ui::Accelerator accelerator;
-    widget->GetAccelerator(0, &accelerator);
-    widget->GetTopLevelWidget();
-    widget->GetWindowBoundsInScreen();
-    widget->GetClientAreaBoundsInScreen();
-    widget->SetBounds(gfx::Rect(0, 0, 100, 80));
-    widget->SetSize(gfx::Size(10, 11));
-    widget->SetBoundsConstrained(gfx::Rect(0, 0, 120, 140));
-    widget->SetVisibilityChangedAnimationsEnabled(false);
-    widget->StackAtTop();
-    widget->IsClosed();
-    widget->Close();
-    widget->Hide();
-    widget->Activate();
-    widget->Deactivate();
-    widget->IsActive();
-    widget->SetAlwaysOnTop(true);
-    widget->IsAlwaysOnTop();
-    widget->Maximize();
-    widget->Minimize();
-    widget->Restore();
-    widget->IsMaximized();
-    widget->IsFullscreen();
-    widget->SetOpacity(0.f);
-    widget->FlashFrame(true);
-    widget->IsVisible();
-    widget->GetThemeProvider();
-    widget->GetNativeTheme();
-    widget->GetFocusManager();
-    widget->SchedulePaintInRect(gfx::Rect(0, 0, 1, 2));
-    widget->IsMouseEventsEnabled();
-    widget->SetNativeWindowProperty("xx", widget);
-    widget->GetNativeWindowProperty("xx");
-    widget->GetFocusTraversable();
-    widget->GetLayer();
-    widget->ReorderNativeViews();
-    widget->SetCapture(widget->GetRootView());
-    widget->ReleaseCapture();
-    widget->HasCapture();
-    widget->GetWorkAreaBoundsInScreen();
-    widget->IsTranslucentWindowOpacitySupported();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WidgetWithDestroyedNativeViewTest);
-};
+using WidgetWithDestroyedNativeViewTest = ViewsTestBaseWithNativeWidgetType;
 
 TEST_P(WidgetWithDestroyedNativeViewTest, Test) {
   Widget widget;
@@ -628,7 +570,49 @@ TEST_P(WidgetWithDestroyedNativeViewTest, Test) {
   widget.Show();
 
   widget.native_widget_private()->CloseNow();
-  InvokeWidgetMethods(&widget);
+  widget.GetNativeView();
+  widget.GetNativeWindow();
+  ui::Accelerator accelerator;
+  widget.GetAccelerator(0, &accelerator);
+  widget.GetTopLevelWidget();
+  widget.GetWindowBoundsInScreen();
+  widget.GetClientAreaBoundsInScreen();
+  widget.SetBounds(gfx::Rect(0, 0, 100, 80));
+  widget.SetSize(gfx::Size(10, 11));
+  widget.SetBoundsConstrained(gfx::Rect(0, 0, 120, 140));
+  widget.SetVisibilityChangedAnimationsEnabled(false);
+  widget.StackAtTop();
+  widget.IsClosed();
+  widget.Close();
+  widget.Hide();
+  widget.Activate();
+  widget.Deactivate();
+  widget.IsActive();
+  widget.SetAlwaysOnTop(true);
+  widget.IsAlwaysOnTop();
+  widget.Maximize();
+  widget.Minimize();
+  widget.Restore();
+  widget.IsMaximized();
+  widget.IsFullscreen();
+  widget.SetOpacity(0.f);
+  widget.FlashFrame(true);
+  widget.IsVisible();
+  widget.GetThemeProvider();
+  widget.GetNativeTheme();
+  widget.GetFocusManager();
+  widget.SchedulePaintInRect(gfx::Rect(0, 0, 1, 2));
+  widget.IsMouseEventsEnabled();
+  widget.SetNativeWindowProperty("xx", &widget);
+  widget.GetNativeWindowProperty("xx");
+  widget.GetFocusTraversable();
+  widget.GetLayer();
+  widget.ReorderNativeViews();
+  widget.SetCapture(widget.GetRootView());
+  widget.ReleaseCapture();
+  widget.HasCapture();
+  widget.GetWorkAreaBoundsInScreen();
+  widget.IsTranslucentWindowOpacitySupported();
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -3340,6 +3324,8 @@ TEST_F(WidgetTest, FullscreenFrameLayout) {
   EXPECT_FALSE(frame->fullscreen_layout_called());
   widget->SetFullscreen(true);
   widget->Show();
+  EXPECT_TRUE(ViewTestApi(frame).needs_layout());
+  widget->LayoutRootViewIfNecessary();
   RunPendingMessages();
 
   EXPECT_TRUE(frame->fullscreen_layout_called());
@@ -3810,6 +3796,84 @@ TEST_F(WidgetTest, MouseWheelEvent) {
   event_generator.MoveMouseWheel(1, 1);
   EXPECT_EQ(1, event_count_view->GetEventCount(ui::ET_MOUSEWHEEL));
 }
+
+class LayoutCountingView : public View {
+ public:
+  LayoutCountingView() = default;
+  ~LayoutCountingView() override = default;
+
+  void set_layout_closure(base::OnceClosure layout_closure) {
+    layout_closure_ = std::move(layout_closure);
+  }
+
+  size_t GetAndClearLayoutCount() {
+    const size_t count = layout_count_;
+    layout_count_ = 0u;
+    return count;
+  }
+
+  // View:
+  void Layout() override {
+    ++layout_count_;
+    View::Layout();
+    if (layout_closure_)
+      std::move(layout_closure_).Run();
+  }
+
+ private:
+  size_t layout_count_ = 0u;
+
+  // If valid, this is run when Layout() is called.
+  base::OnceClosure layout_closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(LayoutCountingView);
+};
+
+using WidgetInvalidateLayoutTest = ViewsTestBaseWithNativeWidgetType;
+
+TEST_P(WidgetInvalidateLayoutTest, InvalidateLayout) {
+  Widget widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget.Init(params);
+  widget.SetBounds(gfx::Rect(0, 0, 600, 600));
+  LayoutCountingView* view =
+      widget.widget_delegate()->GetContentsView()->AddChildView(
+          std::make_unique<LayoutCountingView>());
+  view->parent()->SetLayoutManager(std::make_unique<FillLayout>());
+  // Force an initial Layout().
+  // TODO(sky): this shouldn't be necessary, adding a child view should trigger
+  // ScheduleLayout().
+  view->Layout();
+  widget.Show();
+
+  ui::Compositor* compositor = widget.GetCompositor();
+  ASSERT_TRUE(compositor);
+  compositor->ScheduleDraw();
+  ui::DrawWaiterForTest::WaitForCompositingEnded(compositor);
+
+  base::RunLoop run_loop;
+  view->GetAndClearLayoutCount();
+  // Don't use WaitForCompositingEnded() here as it's entirely possible nothing
+  // will be drawn (which means WaitForCompositingEnded() isn't run). Instead
+  // wait for Layout() to be called.
+  view->set_layout_closure(run_loop.QuitClosure());
+  EXPECT_FALSE(ViewTestApi(view).needs_layout());
+  EXPECT_FALSE(ViewTestApi(widget.GetRootView()).needs_layout());
+  view->InvalidateLayout();
+  EXPECT_TRUE(ViewTestApi(view).needs_layout());
+  EXPECT_TRUE(ViewTestApi(widget.GetRootView()).needs_layout());
+  run_loop.Run();
+  EXPECT_EQ(1u, view->GetAndClearLayoutCount());
+  EXPECT_FALSE(ViewTestApi(view).needs_layout());
+  EXPECT_FALSE(ViewTestApi(widget.GetRootView()).needs_layout());
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    WidgetInvalidateLayoutTest,
+    WidgetInvalidateLayoutTest,
+    ::testing::Values(ViewsTestBase::NativeWidgetType::kDefault,
+                      ViewsTestBase::NativeWidgetType::kDesktop));
 
 class WidgetShadowTest : public WidgetTest {
  public:

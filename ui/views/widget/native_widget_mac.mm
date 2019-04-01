@@ -576,6 +576,12 @@ void NativeWidgetMac::SchedulePaintInRect(const gfx::Rect& rect) {
     bridge_host_->layer()->SchedulePaint(rect);
 }
 
+void NativeWidgetMac::ScheduleLayout() {
+  ui::Compositor* compositor = GetCompositor();
+  if (compositor)
+    compositor->ScheduleDraw();
+}
+
 void NativeWidgetMac::SetCursor(gfx::NativeCursor cursor) {
   if (bridge_impl())
     bridge_impl()->SetCursor(cursor);

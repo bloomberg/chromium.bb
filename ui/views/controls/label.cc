@@ -831,7 +831,6 @@ void Label::Init(const base::string16& text,
 }
 
 void Label::ResetLayout() {
-  InvalidateLayout();
   PreferredSizeChanged();
   SchedulePaint();
   ClearDisplayText();

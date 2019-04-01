@@ -1432,6 +1432,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   friend class FocusManager;
   friend class ViewLayerTest;
   friend class ViewLayerPixelCanvasTest;
+  friend class ViewTestApi;
   friend class Widget;
   FRIEND_TEST_ALL_PREFIXES(ViewTest, PaintWithMovedViewUsesCache);
   FRIEND_TEST_ALL_PREFIXES(ViewTest, PaintWithMovedViewUsesCacheInRTL);

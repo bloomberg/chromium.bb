@@ -605,8 +605,13 @@ void View::InvalidateLayout() {
   if (layout_manager_)
     layout_manager_->InvalidateLayout();
 
-  if (parent_)
+  if (parent_) {
     parent_->InvalidateLayout();
+  } else {
+    Widget* widget = GetWidget();
+    if (widget)
+      widget->ScheduleLayout();
+  }
 }
 
 LayoutManager* View::GetLayoutManager() const {

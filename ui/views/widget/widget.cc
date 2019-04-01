@@ -700,7 +700,7 @@ void Widget::SetFullscreen(bool fullscreen) {
   native_widget_->SetFullscreen(fullscreen);
 
   if (non_client_view_)
-    non_client_view_->Layout();
+    non_client_view_->InvalidateLayout();
 }
 
 bool Widget::IsFullscreen() const {
@@ -813,6 +813,10 @@ void Widget::RunShellDrag(View* view,
 
 void Widget::SchedulePaintInRect(const gfx::Rect& rect) {
   native_widget_->SchedulePaintInRect(rect);
+}
+
+void Widget::ScheduleLayout() {
+  native_widget_->ScheduleLayout();
 }
 
 void Widget::SetCursor(gfx::NativeCursor cursor) {
@@ -1411,6 +1415,11 @@ bool Widget::ShouldDescendIntoChildForEventHandling(
     }
   }
   return true;
+}
+
+void Widget::LayoutRootViewIfNecessary() {
+  if (root_view_ && root_view_->needs_layout())
+    root_view_->Layout();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

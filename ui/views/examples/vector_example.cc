@@ -124,7 +124,7 @@ class VectorIconGallery : public View,
       image_view_->SetImage(
           gfx::CreateVectorIconFromSource(contents_, size_, color_));
     }
-    Layout();
+    InvalidateLayout();
   }
 
   // 36dp is one of the natural sizes for MD icons, and corresponds roughly to a

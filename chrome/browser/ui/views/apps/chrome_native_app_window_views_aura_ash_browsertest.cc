@@ -20,7 +20,6 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "ui/aura/window.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/view_observer.h"
 #include "ui/wm/core/window_util.h"
@@ -30,7 +29,7 @@ namespace {
 class ViewBoundsChangeWaiter : public views::ViewObserver {
  public:
   static void VerifyY(views::View* view, int y) {
-    if (features::IsMultiProcessMash() && y != view->bounds().y())
+    if (y != view->bounds().y())
       ViewBoundsChangeWaiter(view).run_loop_.Run();
 
     EXPECT_EQ(y, view->bounds().y());

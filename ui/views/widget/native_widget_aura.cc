@@ -700,6 +700,12 @@ void NativeWidgetAura::SchedulePaintInRect(const gfx::Rect& rect) {
     window_->SchedulePaintInRect(rect);
 }
 
+void NativeWidgetAura::ScheduleLayout() {
+  // ScheduleDraw() triggers a callback to WindowDelegate::UpdateVisualState().
+  if (window_)
+    window_->ScheduleDraw();
+}
+
 void NativeWidgetAura::SetCursor(gfx::NativeCursor cursor) {
   cursor_ = cursor;
   aura::client::CursorClient* cursor_client =
@@ -914,6 +920,10 @@ bool NativeWidgetAura::HasHitTestMask() const {
 void NativeWidgetAura::GetHitTestMask(SkPath* mask) const {
   DCHECK(mask);
   delegate_->GetHitTestMask(mask);
+}
+
+void NativeWidgetAura::UpdateVisualState() {
+  delegate_->LayoutRootViewIfNecessary();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

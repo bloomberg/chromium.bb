@@ -102,7 +102,6 @@ class APP_LIST_EXPORT SearchResultView
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
-  void ChildPreferredSizeChanged(views::View* child) override;
   void PaintButtonContents(gfx::Canvas* canvas) override;
   void OnFocus() override;
   void OnBlur() override;

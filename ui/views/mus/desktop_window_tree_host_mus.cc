@@ -134,10 +134,8 @@ class ClientSideNonClientFrameView : public NonClientFrameView,
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,
                                intptr_t old) override {
-    if (key == aura::client::kTopViewInset) {
+    if (key == aura::client::kTopViewInset)
       InvalidateLayout();
-      widget_->GetRootView()->Layout();
-    }
   }
 
   aura::Window* window() const {
@@ -968,7 +966,7 @@ void DesktopWindowTreeHostMus::OnWindowManagerFrameValuesChanged() {
   NonClientView* non_client_view =
       native_widget_delegate_->AsWidget()->non_client_view();
   if (non_client_view) {
-    non_client_view->Layout();
+    non_client_view->InvalidateLayout();
     non_client_view->SchedulePaint();
   }
 

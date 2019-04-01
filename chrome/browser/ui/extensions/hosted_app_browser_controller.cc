@@ -329,7 +329,8 @@ const Extension* HostedAppBrowserController::GetExtensionForTesting() const {
 }
 
 std::string HostedAppBrowserController::GetAppShortName() const {
-  return GetExtension()->short_name();
+  const Extension* extension = GetExtension();
+  return extension ? extension->short_name() : std::string();
 }
 
 base::string16 HostedAppBrowserController::GetFormattedUrlOrigin() const {
