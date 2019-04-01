@@ -481,6 +481,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsDocumentTitleChange) {
+  RunEventTest(FILE_PATH_LITERAL("document-title-change.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
                        AccessibilityEventsRemoveChild) {
   RunEventTest(FILE_PATH_LITERAL("remove-child.html"));
 }

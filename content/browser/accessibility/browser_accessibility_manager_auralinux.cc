@@ -138,11 +138,15 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::COLLAPSED:
       FireExpandedEvent(node, false);
       break;
+    case ui::AXEventGenerator::Event::DOCUMENT_TITLE_CHANGED:
+      FireEvent(node, ax::mojom::Event::kDocumentTitleChanged);
+      break;
     case ui::AXEventGenerator::Event::EXPANDED:
       FireExpandedEvent(node, true);
       break;
     case ui::AXEventGenerator::Event::LOAD_COMPLETE:
       FireLoadingEvent(node, false);
+      FireEvent(node, ax::mojom::Event::kLoadComplete);
       break;
     case ui::AXEventGenerator::Event::LOAD_START:
       FireLoadingEvent(node, true);

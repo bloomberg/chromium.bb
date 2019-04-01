@@ -93,6 +93,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void OnNameChanged();
   void OnDescriptionChanged();
   void OnInvalidStatusChanged();
+  void OnDocumentTitleChanged();
 
   bool SupportsSelectionWithAtkSelection();
   bool SelectionAndFocusAreTheSame();
@@ -120,6 +121,8 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   bool SetTextSelectionForAtkText(int start_offset, int end_offset);
   bool HasSelection();
   gchar* GetSelection(int* start_offset, int* end_offset);
+
+  std::string accessible_name_;
 
  protected:
   // Offsets for the AtkText API are calculated in UTF-16 code point offsets,
