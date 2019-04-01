@@ -257,25 +257,20 @@ class IdentityManagerTest : public testing::Test {
   IdentityManagerTest()
       : signin_client_(&pref_service_), token_service_(&pref_service_) {
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
-    AccountFetcherService::RegisterPrefs(pref_service_.registry());
     ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service_.registry());
     IdentityManager::RegisterProfilePrefs(pref_service_.registry());
     IdentityManager::RegisterLocalStatePrefs(pref_service_.registry());
 
     account_tracker_.Initialize(&pref_service_, base::FilePath());
-    account_fetcher_.Initialize(
-        &signin_client_, &token_service_, &account_tracker_,
-        std::make_unique<image_fetcher::FakeImageDecoder>());
-
     RecreateIdentityManager(signin::AccountConsistencyMethod::kDisabled,
                             SigninManagerSetup::kWithAuthenticatedAccout);
   }
 
   ~IdentityManagerTest() override {
+    identity_manager_->Shutdown();
     signin_client_.Shutdown();
     token_service_.Shutdown();
     account_tracker_.Shutdown();
-    account_fetcher_.Shutdown();
   }
 
   void SetUp() override {
@@ -296,7 +291,6 @@ class IdentityManagerTest : public testing::Test {
 
   AccountTrackerService* account_tracker() { return &account_tracker_; }
 
-  AccountFetcherService* account_fetcher() { return &account_fetcher_; }
   CustomFakeProfileOAuth2TokenService* token_service() {
     return &token_service_;
   }
@@ -326,6 +320,9 @@ class IdentityManagerTest : public testing::Test {
     // trigger a DCHECK because there are still living observers.
     identity_manager_observer_.reset();
     identity_manager_diagnostics_observer_.reset();
+    if (identity_manager_) {
+      identity_manager_->Shutdown();
+    }
     identity_manager_.reset();
 
     auto gaia_cookie_manager_service =
@@ -337,6 +334,11 @@ class IdentityManagerTest : public testing::Test {
                   return test_url_loader_factory->GetSafeWeakWrapper();
                 },
                 test_url_loader_factory()));
+
+    auto account_fetcher_service = std::make_unique<AccountFetcherService>();
+    account_fetcher_service->Initialize(
+        &signin_client_, &token_service_, &account_tracker_,
+        std::make_unique<image_fetcher::FakeImageDecoder>());
 
 #if defined(OS_CHROMEOS)
     DCHECK_EQ(account_consistency, signin::AccountConsistencyMethod::kDisabled)
@@ -369,8 +371,9 @@ class IdentityManagerTest : public testing::Test {
 
     identity_manager_.reset(new IdentityManager(
         std::move(gaia_cookie_manager_service), std::move(signin_manager),
-        &token_service_, &account_fetcher_, &account_tracker_, nullptr, nullptr,
-        std::move(accounts_cookie_mutator), std::move(diagnostics_provider)));
+        std::move(account_fetcher_service), &token_service_, &account_tracker_,
+        nullptr, nullptr, std::move(accounts_cookie_mutator),
+        std::move(diagnostics_provider)));
     identity_manager_observer_.reset(
         new TestIdentityManagerObserver(identity_manager_.get()));
     identity_manager_diagnostics_observer_.reset(
@@ -412,7 +415,6 @@ class IdentityManagerTest : public testing::Test {
   base::MessageLoop message_loop_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   AccountTrackerService account_tracker_;
-  AccountFetcherService account_fetcher_;
   TestSigninClient signin_client_;
   CustomFakeProfileOAuth2TokenService token_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
@@ -2347,10 +2349,9 @@ TEST_F(IdentityManagerTest, ForceRefreshOfExtendedAccountInfo) {
   // avoid a crash.
   ChildAccountInfoFetcherAndroid::InitializeForTests();
 
-  account_fetcher()->OnNetworkInitialized();
+  identity_manager()->GetAccountFetcherService()->OnNetworkInitialized();
   AccountInfo account_info =
       MakeAccountAvailable(identity_manager(), kTestEmail2);
-
   identity_manager()->ForceRefreshOfExtendedAccountInfo(
       account_info.account_id);
 

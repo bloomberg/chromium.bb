@@ -38,8 +38,7 @@ class ImageDecoder;
 class ImageFetcherImpl;
 }  // namespace image_fetcher
 
-class AccountFetcherService : public KeyedService,
-                              public OAuth2TokenService::Observer {
+class AccountFetcherService : public OAuth2TokenService::Observer {
  public:
   // Name of the preference that tracks the int64_t representation of the last
   // time the AccountTrackerService was updated.
@@ -59,8 +58,7 @@ class AccountFetcherService : public KeyedService,
                   AccountTrackerService* account_tracker_service,
                   std::unique_ptr<image_fetcher::ImageDecoder> image_decoder);
 
-  // KeyedService implementation
-  void Shutdown() override;
+  void Shutdown();
 
   // Indicates if all user information has been fetched. If the result is false,
   // there are still unfininshed fetchers.

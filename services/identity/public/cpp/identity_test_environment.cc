@@ -140,11 +140,10 @@ IdentityTestEnvironment::IdentityTestEnvironment(
       dependencies_owner_->pref_service();
 
   AccountTrackerService::RegisterPrefs(test_pref_service->registry());
-  AccountFetcherService::RegisterPrefs(test_pref_service->registry());
   ProfileOAuth2TokenService::RegisterProfilePrefs(
       test_pref_service->registry());
-  SigninManagerBase::RegisterProfilePrefs(test_pref_service->registry());
-  SigninManagerBase::RegisterPrefs(test_pref_service->registry());
+  IdentityManager::RegisterProfilePrefs(test_pref_service->registry());
+  IdentityManager::RegisterLocalStatePrefs(test_pref_service->registry());
 
   owned_token_service_ =
       std::make_unique<FakeProfileOAuth2TokenService>(test_pref_service);
@@ -153,8 +152,8 @@ IdentityTestEnvironment::IdentityTestEnvironment(
   owned_account_tracker_service_->Initialize(test_pref_service,
                                              base::FilePath());
 
-  owned_account_fetcher_service_ = std::make_unique<AccountFetcherService>();
-  owned_account_fetcher_service_->Initialize(
+  auto account_fetcher_service = std::make_unique<AccountFetcherService>();
+  account_fetcher_service->Initialize(
       test_signin_client, owned_token_service_.get(),
       owned_account_tracker_service_.get(),
       std::make_unique<image_fetcher::FakeImageDecoder>());
@@ -212,7 +211,7 @@ IdentityTestEnvironment::IdentityTestEnvironment(
 
   owned_identity_manager_ = std::make_unique<IdentityManager>(
       std::move(gaia_cookie_manager_service), std::move(signin_manager),
-      owned_token_service_.get(), owned_account_fetcher_service_.get(),
+      std::move(account_fetcher_service), owned_token_service_.get(),
       owned_account_tracker_service_.get(), std::move(primary_account_mutator),
       std::move(accounts_mutator), std::move(accounts_cookie_mutator),
       std::move(diagnostics_provider));
@@ -221,10 +220,6 @@ IdentityTestEnvironment::IdentityTestEnvironment(
 }
 
 IdentityTestEnvironment::~IdentityTestEnvironment() {
-  if (owned_account_fetcher_service_) {
-    owned_account_fetcher_service_->Shutdown();
-  }
-
   if (owned_account_tracker_service_) {
     owned_account_tracker_service_->Shutdown();
   }
