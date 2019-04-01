@@ -63,7 +63,7 @@
                         android:gravity="start"
                         android:lineSpacingMultiplier="1.4"
                         android:text="@string/data_reduction_promo_summary_lite_mode"
-                        android:textAppearance="@style/TextAppearance.BlackBodyDefault" />
+                        android:textAppearance="@style/TextAppearance.BlackHint2" />
 
                     <android.support.v7.widget.SwitchCompat
                         android:id="@+id/enable_data_saver_switch"
