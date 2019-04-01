@@ -1001,10 +1001,27 @@ be describing additional metrics about the same event.
   <owner>schenney@chromium.org</owner>
   <summary>
     Metrics that measure various update times in Blink. This includes paint,
-    compositing, and layout update times. The metrics are recorded once per 30
-    seconds and at the destruction of the local frame root.
+    compositing, and layout update times. The metrics are recorded at first
+    lifecycle update and then a random interval with mean duration of 30s.
   </summary>
+  <metric name="Animate">
+    <summary>
+      The time taken for main frame animation in microseconds during the sampled
+      frame.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
   <metric name="Animate.Average">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The average time taken for main frame animation in microseconds in the
       event period.
@@ -1019,6 +1036,9 @@ be describing additional metrics about the same event.
     </aggregation>
   </metric>
   <metric name="Animate.AverageRatio">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The average over frames within the sample window of the ratio of time
       taken for main frame animation to the total time for the main frame. An
@@ -1026,18 +1046,47 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="Animate.WorstCase">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The longest single time taken for main frame animation in microseconds in
       the event period.
     </summary>
   </metric>
   <metric name="Animate.WorstCaseRatio">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The highest proportion of a frame ever used for main frame animation
       within the sample window. An int in the range [0,100].
     </summary>
   </metric>
+  <metric name="AnimatePercentage">
+    <summary>
+      The percentage of the main frame time used by main thread animations. An
+      int in the range [0,100].
+    </summary>
+  </metric>
+  <metric name="Compositing">
+    <summary>
+      The time taken by the compositing phase in microseconds during the sampled
+      frame.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
   <metric name="Compositing.Average">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The average time taken by the compositing phase in microseconds in the
       event period.
@@ -1052,6 +1101,9 @@ be describing additional metrics about the same event.
     </aggregation>
   </metric>
   <metric name="Compositing.AverageRatio">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The average over frames within the sample window of the ratio of time
       taken in the compositing phase to the total time for the main frame. An
@@ -1059,18 +1111,41 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="Compositing.WorstCase">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The longest single time taken by the compositing phase in microseconds in
       the event period.
     </summary>
   </metric>
   <metric name="Compositing.WorstCaseRatio">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The highest proportion of a frame ever used by the compositing phase
       within the sample window. An int in the range [0,100].
     </summary>
   </metric>
+  <metric name="CompositingCommit">
+    <summary>
+      The time taken by the compositing commit in microseconds during the
+      sampled frame.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
   <metric name="CompositingCommit.Average">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The average time taken by the compositing commit at the end of the blink
       lifecycle, in microseconds in the event period.
@@ -1085,6 +1160,9 @@ be describing additional metrics about the same event.
     </aggregation>
   </metric>
   <metric name="CompositingCommit.AverageRatio">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The average over frames within the sample window of the ratio of time
       taken by the compositing commit at the end of the blink lifecycle to the
@@ -1092,19 +1170,55 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="CompositingCommit.WorstCase">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The longest single time taken by the compositing commit at the end of the
       blink lifecycle, in microseconds in the event period.
     </summary>
   </metric>
   <metric name="CompositingCommit.WorstCaseRatio">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The highest proportion of a frame ever taken by the compositing commit at
       the end of the blink lifecycle to the total time for the main frame. An
       int in the range [0,100].
     </summary>
   </metric>
+  <metric name="CompositingCommitPercentage">
+    <summary>
+      The percentage of the main frame time used by the compositing commit. An
+      int in the range [0,100].
+    </summary>
+  </metric>
+  <metric name="CompositingPercentage">
+    <summary>
+      The percentage of the main frame time used by the compositing phase. An
+      int in the range [0,100].
+    </summary>
+  </metric>
+  <metric name="ForcedStyleAndLayout">
+    <summary>
+      The time taken by forced style recalc and layouts in microseconds between
+      the end of the last main frame update and the current sampled frame, in
+      microseconds.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
   <metric name="ForcedStyleAndLayout.Average">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The average time taken by all forced style recalcs and layouts in
       microseconds in the event period.
@@ -1119,6 +1233,9 @@ be describing additional metrics about the same event.
     </aggregation>
   </metric>
   <metric name="ForcedStyleAndLayout.AverageRatio">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The average over frames within the sample window of the ratio of time
       taken by forced style recalc and layouts at the end of the blink lifecycle
@@ -1126,19 +1243,50 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="ForcedStyleAndLayout.WorstCase">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The longest single time taken by a forced style recalc and layout in
       microseconds in the event period.
     </summary>
   </metric>
   <metric name="ForcedStyleAndLayout.WorstCaseRatio">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The highest proportion of a frame ever taken by forced style recalc and
       layouts at the end of the blink lifecycle to the total time for the main
       frame. An int in the range [0,100].
     </summary>
   </metric>
+  <metric name="ForcedStyleAndLayoutPercentage">
+    <summary>
+      The percentage of the main frame time used by forced style updates and
+      layouts during the main frame update (not including time outside of the
+      frame update. This metric may include time that is also included in the
+      AnimatePercentage metric. An int in the range [0,100].
+    </summary>
+  </metric>
+  <metric name="HandleInputEvents">
+    <summary>
+      The time taken to process rAF-aligned input for the main frame in
+      microseconds during the sampled frame.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
   <metric name="HandleInputEvents.Average">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The average time taken to process rAF-aligned input for the main frame in
       microseconds in the event period.
@@ -1153,6 +1301,9 @@ be describing additional metrics about the same event.
     </aggregation>
   </metric>
   <metric name="HandleInputEvents.AverageRatio">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The average over frames within the sample window of the ratio of time
       taken to process rAF-aligned input for the main frame to the total time
@@ -1160,19 +1311,48 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="HandleInputEvents.WorstCase">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The longest single time taken to process rAF-aligned input for the main
       frame in microseconds in the event period.
     </summary>
   </metric>
   <metric name="HandleInputEvents.WorstCaseRatio">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The highest proportion of a frame ever taken to process rAF-aligned input
       for the main frame to the total time for the main frame. An int in the
       range [0,100].
     </summary>
   </metric>
+  <metric name="HandleInputEventsPercentage">
+    <summary>
+      The percentage of the main frame time used in processing rAF-aligned
+      input. An int in the range [0,100].
+    </summary>
+  </metric>
+  <metric name="IntersectionObservation">
+    <summary>
+      The time taken to compute intersection observer state for the main frame
+      in microseconds during the sampled frame.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
   <metric name="IntersectionObservation.Average">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The average time taken to compute IntersectionObserver observations in
       microseconds in the event period.
@@ -1187,6 +1367,9 @@ be describing additional metrics about the same event.
     </aggregation>
   </metric>
   <metric name="IntersectionObservation.AverageRatio">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The average over frames within the sample window of the ratio of time
       taken compute IntersectionObserver observations to the total time for the
@@ -1194,19 +1377,48 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="IntersectionObservation.WorstCase">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The longest single time taken to compute IntersectionObserver observations
       in microseconds in the event period.
     </summary>
   </metric>
   <metric name="IntersectionObservation.WorstCaseRatio">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The highest proportion of a frame ever taken to compute
       IntersectionObserver observations within the sample window. An int in the
       range [0,100].
     </summary>
   </metric>
+  <metric name="IntersectionObservationPercentage">
+    <summary>
+      The percentage of the main frame time used in computing intersection
+      observer state. An int in the range [0,100].
+    </summary>
+  </metric>
+  <metric name="MainFrame">
+    <summary>
+      The time between a BeginMainFrame and the commit of paint results for the
+      sampled frame, in microseconds.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
   <metric name="MainFrame.Average">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The average time between a BeginMainFrame and the commit of paint results,
       in microseconds.
@@ -1221,12 +1433,32 @@ be describing additional metrics about the same event.
     </aggregation>
   </metric>
   <metric name="MainFrame.WorstCase">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The longest single time between a BeginMainFrame and the commit of paint
       results, in microseconds.
     </summary>
   </metric>
+  <metric name="Paint">
+    <summary>
+      The time taken to paint for the main frame in microseconds during the
+      sampled frame.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
   <metric name="Paint.Average">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The average time taken by the paint phase in microseconds in the event
       period.
@@ -1241,6 +1473,9 @@ be describing additional metrics about the same event.
     </aggregation>
   </metric>
   <metric name="Paint.AverageRatio">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The average over frames within the sample window of the ratio of time
       taken in the paint phase to the total time for the main frame. An int in
@@ -1248,18 +1483,47 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="Paint.WorstCase">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The longest single time taken by the paint phase in microseconds in the
       event period.
     </summary>
   </metric>
   <metric name="Paint.WorstCaseRatio">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The highest proportion of a frame ever used by the paint phase within the
       sample window. An int in the range [0,100].
     </summary>
   </metric>
+  <metric name="PaintPercentage">
+    <summary>
+      The percentage of the main frame time used in paint. An int in the range
+      [0,100].
+    </summary>
+  </metric>
+  <metric name="PrePaint">
+    <summary>
+      The time taken for pre-paint for the main frame in microseconds during the
+      sampled frame.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
   <metric name="PrePaint.Average">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The average time taken by the pre-paint phase in microseconds in the event
       period.
@@ -1274,6 +1538,9 @@ be describing additional metrics about the same event.
     </aggregation>
   </metric>
   <metric name="PrePaint.AverageRatio">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The average over frames within the sample window of the ratio of time
       taken in the pre-paint phase to the total time for the main frame. An int
@@ -1281,18 +1548,47 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="PrePaint.WorstCase">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The longest single time taken by the pre-paint phase in microseconds in
       the event period.
     </summary>
   </metric>
   <metric name="PrePaint.WorstCaseRatio">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The highest proportion of a frame ever used by the pre-paint phase within
       the sample window. An int in the range [0,100].
     </summary>
   </metric>
+  <metric name="PrePaintPercentage">
+    <summary>
+      The percentage of the main frame time used in pre-paint. An int in the
+      range [0,100].
+    </summary>
+  </metric>
+  <metric name="ScrollingCoordinator">
+    <summary>
+      The time taken for scrolling coordinator for the main frame in
+      microseconds during the sampled frame.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
   <metric name="ScrollingCoordinator.Average">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The average time taken by the style and layout phases in microseconds in
       the event period.
@@ -1307,6 +1603,9 @@ be describing additional metrics about the same event.
     </aggregation>
   </metric>
   <metric name="ScrollingCoordinator.AverageRatio">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The average over frames within the event period of the ratio of time taken
       to update the scrolling coordinator after painting to the total time for
@@ -1314,19 +1613,48 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="ScrollingCoordinator.WorstCase">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The longest single time within the event period that was used to update
       the ScrollingCoordinator after painting (in microseconds).
     </summary>
   </metric>
   <metric name="ScrollingCoordinator.WorstCaseRatio">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The highest proportion of a frame within the event period that was used to
       update the ScrollingCoordinator after painting, expressed as a percentage.
       An int in the range [0,100].
     </summary>
   </metric>
+  <metric name="ScrollingCoordinatorPercentage">
+    <summary>
+      The percentage of the main frame time used in scrolling coordinator. An
+      int in the range [0,100].
+    </summary>
+  </metric>
+  <metric name="StyleAndLayout">
+    <summary>
+      The time taken for style and layout for the main frame in microseconds
+      during the sampled frame.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
   <metric name="StyleAndLayout.Average">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The average time taken by the style and layout phases in microseconds in
       the event period.
@@ -1341,6 +1669,9 @@ be describing additional metrics about the same event.
     </aggregation>
   </metric>
   <metric name="StyleAndLayout.AverageRatio">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The average over frames within the sample window of the ratio of time
       taken to update style and layout to the total time for the main frame. An
@@ -1348,15 +1679,27 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="StyleAndLayout.WorstCase">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The longest single time taken by the style and layout phases in
       microseconds in the event period.
     </summary>
   </metric>
   <metric name="StyleAndLayout.WorstCaseRatio">
+    <obsolete>
+      Deprecated as of 03/2019.
+    </obsolete>
     <summary>
       The highest proportion of a frame ever used to compute style and layout
       within the sample window. An int in the range [0,100].
+    </summary>
+  </metric>
+  <metric name="StyleAndLayoutPercentage">
+    <summary>
+      The percentage of the main frame time used in style and layout work. An
+      int in the range [0,100].
     </summary>
   </metric>
 </event>
