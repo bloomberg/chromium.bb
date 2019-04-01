@@ -1558,12 +1558,6 @@
           '--debug',
         ],
       },
-      'linux-blink-heap-incremental-marking': {
-        'args': [
-          '--debug',
-          '--additional-driver-flag=--enable-blink-features=HeapIncrementalMarkingStress',
-        ],
-      },
       'linux-blink-heap-unified-gc': {
         'args': [
           '--debug',
