@@ -55,6 +55,25 @@ struct PLATFORM_EXPORT
                    blink::FormDataElement* out);
 };
 
+template <>
+struct PLATFORM_EXPORT StructTraits<network::mojom::URLRequestBodyDataView,
+                                    scoped_refptr<blink::EncodedFormData>> {
+  static const WTF::Vector<blink::FormDataElement>& elements(
+      const scoped_refptr<blink::EncodedFormData>& data) {
+    return data->elements_;
+  }
+  static int64_t identifier(const scoped_refptr<blink::EncodedFormData>& data) {
+    return data->identifier_;
+  }
+  static bool contains_sensitive_info(
+      const scoped_refptr<blink::EncodedFormData>& data) {
+    return data->contains_password_data_;
+  }
+
+  static bool Read(network::mojom::URLRequestBodyDataView in,
+                   scoped_refptr<blink::EncodedFormData>* out);
+};
+
 }  // namespace mojo
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_ENCODED_FORM_DATA_MOJOM_TRAITS_H_
