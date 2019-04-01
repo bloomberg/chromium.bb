@@ -606,7 +606,21 @@ void FakeCryptohomeClient::MountEx(
 void FakeCryptohomeClient::LockToSingleUserMountUntilReboot(
     const cryptohome::LockToSingleUserMountUntilRebootRequest& request,
     DBusMethodCallback<cryptohome::BaseReply> callback) {
-  ReturnProtobufMethodCallback(cryptohome::BaseReply(), std::move(callback));
+  cryptohome::BaseReply reply;
+  cryptohome::LockToSingleUserMountUntilRebootReply* mutable_reply =
+      reply.MutableExtension(
+          cryptohome::LockToSingleUserMountUntilRebootReply::reply);
+  if (cryptohome_error_ == cryptohome::CRYPTOHOME_ERROR_NOT_SET) {
+    mutable_reply->set_result(
+        cryptohome::LockToSingleUserMountUntilRebootResult::SUCCESS);
+    is_device_locked_to_single_user_ = true;
+  } else {
+    mutable_reply->set_result(
+        cryptohome::LockToSingleUserMountUntilRebootResult::
+            FAILED_TO_EXTEND_PCR);
+  }
+
+  ReturnProtobufMethodCallback(reply, std::move(callback));
 }
 
 void FakeCryptohomeClient::AddKeyEx(
