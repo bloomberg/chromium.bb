@@ -132,6 +132,9 @@ base::Optional<syncer::ModelError> SendTabToSelfBridge::ApplySyncChanges(
 
       std::unique_ptr<SendTabToSelfEntry> entry =
           SendTabToSelfEntry::FromProto(specifics, clock_->Now());
+      if (!entry) {
+        continue;  // Skip invalid entries.
+      }
       // This entry is new. Add it to the model if it hasn't expired.
       if (entry->IsExpired(clock_->Now())) {
         // Remove expired data from server.
