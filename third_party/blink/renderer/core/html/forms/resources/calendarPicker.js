@@ -105,10 +105,10 @@ function formatJapaneseImperialEra(year, month) {
   // limitation.
   if (year > ImperialEraLimit)
     return '';
-  if (year >= 2020 || year == 2019 && month >= 4) {
-    // TODO(tkent): Next of Heisei is not published yet.
-    return '';
-  }
+  if (year >= 2020)
+    return '(\u4ee4\u548c' + localizeNumber(year - 2018) + '\u5e74)';
+  if (year == 2019 && month >= 4)
+    return '(\u4ee4\u548c\u5143\u5e74)';
   if (year > 1989)
     return '(\u5e73\u6210' + localizeNumber(year - 1988) + '\u5e74)';
   if (year == 1989)
