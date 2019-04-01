@@ -4,7 +4,6 @@
 
 #include "content/shell/test_runner/web_widget_test_proxy.h"
 
-#include "content/renderer/compositor/compositor_dependencies.h"
 #include "content/renderer/compositor/layer_tree_view.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
 #include "content/shell/test_runner/test_interfaces.h"
@@ -22,17 +21,6 @@ namespace test_runner {
 
 WebWidgetTestProxy::~WebWidgetTestProxy() = default;
 
-void WebWidgetTestProxy::RequestCompositeAndPresentation(
-    PresentationTimeCallback callback) {
-  // Request the |callback| in the next main frame, and schedule the commit.
-  RenderWidget::RequestPresentation(std::move(callback));
-  // RequestPresentation() will ScheduleAnimation(), but in this case we want to
-  // ensure the compositor is actually run, rather than just doing the main
-  // frame animate step. That way we know it will submit a frame and later
-  // trigger the presentation callback in order to make progress in the test.
-  composite_requested_ = true;
-}
-
 void WebWidgetTestProxy::ScheduleAnimation() {
   if (!GetTestRunner()->TestIsRunning())
     return;
@@ -43,14 +31,13 @@ void WebWidgetTestProxy::ScheduleAnimation() {
   // Note that for WebWidgetTestProxy the RenderWidget is subclassed to override
   // the WebWidgetClient, so we must call up to the base class RenderWidget
   // explicitly here to jump out of the test harness as intended.
-  if (RenderWidget::compositor_deps()->GetCompositorImplThreadTaskRunner()) {
+  if (!RenderWidget::layer_tree_view()->CompositeIsSynchronousForTesting()) {
     RenderWidget::ScheduleAnimation();
     return;
   }
 
   if (!animation_scheduled_) {
     animation_scheduled_ = true;
-    composite_requested_ |= GetTestRunner()->animation_requires_raster();
     GetWebViewTestProxy()->delegate()->PostDelayedTask(
         base::BindOnce(&WebWidgetTestProxy::AnimateNow,
                        weak_factory_.GetWeakPtr()),
@@ -123,41 +110,8 @@ void WebWidgetTestProxy::EndSyntheticGestures() {
   widget_input_handler_manager()->InvokeInputProcessedCallback();
 }
 
-TestRunnerForSpecificView* WebWidgetTestProxy::GetViewTestRunner() {
-  return GetWebViewTestProxy()->view_test_runner();
-}
-
-TestRunner* WebWidgetTestProxy::GetTestRunner() {
-  return GetWebViewTestProxy()->test_interfaces()->GetTestRunner();
-}
-
-static void DoComposite(content::RenderWidget* widget, bool do_raster) {
-  if (widget->in_synchronous_composite_for_testing()) {
-    // Web tests can use a nested message loop to pump frames while inside a
-    // frame, but the compositor does not support this. In this case, we only
-    // run blink's lifecycle updates.
-    widget->BeginMainFrame(base::TimeTicks::Now());
-    widget->UpdateVisualState();
-    return;
-  }
-
-  widget->set_in_synchronous_composite_for_testing(true);
-  widget->layer_tree_view()->layer_tree_host()->Composite(
-      base::TimeTicks::Now(), do_raster);
-  widget->set_in_synchronous_composite_for_testing(false);
-}
-
 void WebWidgetTestProxy::SynchronouslyComposite(bool do_raster) {
-  DCHECK(!compositor_deps()->GetCompositorImplThreadTaskRunner());
-  DCHECK(!layer_tree_view()
-              ->layer_tree_host()
-              ->GetSettings()
-              .single_thread_proxy_scheduler);
-
-  if (!layer_tree_view()->layer_tree_host()->IsVisible())
-    return;
-
-  DoComposite(this, do_raster);
+  layer_tree_view()->SynchronouslyComposite(do_raster);
 
   // If the RenderWidget is for the main frame, we also composite the current
   // PagePopup afterward.
@@ -170,12 +124,23 @@ void WebWidgetTestProxy::SynchronouslyComposite(bool do_raster) {
     if (blink::WebPagePopup* popup = view->GetPagePopup()) {
       auto* popup_render_widget =
           static_cast<RenderWidget*>(popup->GetClientForTesting());
-      DoComposite(popup_render_widget, do_raster);
+      popup_render_widget->layer_tree_view()->SynchronouslyComposite(do_raster);
     }
   }
 }
 
+TestRunnerForSpecificView* WebWidgetTestProxy::GetViewTestRunner() {
+  return GetWebViewTestProxy()->view_test_runner();
+}
+
+TestRunner* WebWidgetTestProxy::GetTestRunner() {
+  return GetWebViewTestProxy()->test_interfaces()->GetTestRunner();
+}
+
 void WebWidgetTestProxy::AnimateNow() {
+  if (!animation_scheduled_)
+    return;
+
   // For child local roots, it's possible that the backing WebWidget gets
   // closed between the ScheduleAnimation() call and this execution
   // leading to a nullptr.  This happens because child local roots are
@@ -191,10 +156,10 @@ void WebWidgetTestProxy::AnimateNow() {
   if (!GetWebWidget())
     return;
 
-  bool do_raster = composite_requested_;
   animation_scheduled_ = false;
-  composite_requested_ = false;
-  SynchronouslyComposite(do_raster);
+  CHECK(GetTestRunner());
+  bool animation_requires_raster = GetTestRunner()->animation_requires_raster();
+  SynchronouslyComposite(animation_requires_raster);
 }
 
 }  // namespace test_runner

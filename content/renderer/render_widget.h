@@ -443,8 +443,6 @@ class CONTENT_EXPORT RenderWidget
                                bool use_anchor,
                                float new_page_scale,
                                double duration_sec) override;
-  void RequestDecode(const cc::PaintImage& image,
-                     base::OnceCallback<void(bool)> callback) override;
 
   // Override point to obtain that the current input method state and caret
   // position.
@@ -637,13 +635,6 @@ class CONTENT_EXPORT RenderWidget
 
   // RenderWidget IPC message handler that can be overridden by subclasses.
   virtual void OnSynchronizeVisualProperties(const VisualProperties& params);
-
-  bool in_synchronous_composite_for_testing() const {
-    return in_synchronous_composite_for_testing_;
-  }
-  void set_in_synchronous_composite_for_testing(bool in) {
-    in_synchronous_composite_for_testing_ = in;
-  }
 
   // Called by Create() functions and subclasses to finish initialization.
   // |show_callback| will be invoked once WebWidgetClient::Show() occurs, and
@@ -989,9 +980,6 @@ class CONTENT_EXPORT RenderWidget
   // process, without the use of this mode, however it would be overridden by
   // the browser if they disagree.
   bool synchronous_resize_mode_for_testing_ = false;
-  // In web tests, synchronous composites should not be nested inside another
-  // composite, and this bool is used to guard against that.
-  bool in_synchronous_composite_for_testing_ = false;
 
   // Stores information about the current text input.
   blink::WebTextInputInfo text_input_info_;

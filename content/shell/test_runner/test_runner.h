@@ -41,6 +41,7 @@ class Arguments;
 }
 
 namespace test_runner {
+
 class MockContentSettingsClient;
 class MockScreenOrientationClient;
 class SpellCheckClient;
@@ -87,7 +88,7 @@ class TestRunner : public WebTestRunner {
   std::string DumpLayout(blink::WebLocalFrame* frame) override;
   bool ShouldDumpSelectionRect() const override;
   bool DumpPixelsAsync(
-      content::RenderView* render_view,
+      blink::WebLocalFrame* frame,
       base::OnceCallback<void(const SkBitmap&)> callback) override;
   void ReplicateWebTestRuntimeFlagsChanges(
       const base::DictionaryValue& changed_values) override;

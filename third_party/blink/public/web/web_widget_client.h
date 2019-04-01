@@ -50,7 +50,6 @@
 class SkBitmap;
 
 namespace cc {
-class PaintImage;
 struct ViewportLayers;
 }
 
@@ -250,12 +249,6 @@ class WebWidgetClient {
                                        bool use_anchor,
                                        float new_page_scale,
                                        double duration_sec) {}
-
-  // Requests an image decode and will have the |callback| run asynchronously
-  // when it completes. Forces a new main frame to occur that will trigger
-  // pushing the decode through the compositor.
-  virtual void RequestDecode(const cc::PaintImage& image,
-                             base::OnceCallback<void(bool)> callback) {}
 };
 
 }  // namespace blink

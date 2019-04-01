@@ -89,6 +89,9 @@ class LayerTreeView : public blink::WebLayerTreeView,
   // WebWidgetClient::ScheduleAnimate() instead, or they can bypass test
   // overrides.
   void SetNeedsBeginFrame();
+  // Like SetNeedsRedraw but forces the frame to be drawn, without early-outs.
+  // Redraw will be forced after the next commit
+  void SetNeedsForcedRedraw();
   // Calling CreateLatencyInfoSwapPromiseMonitor() to get a scoped
   // LatencyInfoSwapPromiseMonitor. During the life time of the
   // LatencyInfoSwapPromiseMonitor, if SetNeedsCommit() or
@@ -152,6 +155,9 @@ class LayerTreeView : public blink::WebLayerTreeView,
                                 float bottom_height,
                                 bool shrink) override;
   void SetBrowserControlsShownRatio(float) override;
+  void RequestDecode(const cc::PaintImage& image,
+                     base::OnceCallback<void(bool)> callback) override;
+  void RequestPresentationCallback(base::OnceClosure callback) override;
 
   void SetOverscrollBehavior(const cc::OverscrollBehavior&) override;
 
@@ -194,6 +200,11 @@ class LayerTreeView : public blink::WebLayerTreeView,
 
   const cc::LayerTreeSettings& GetLayerTreeSettings() const;
 
+  // Performs a composite including a main frame and all lifecycle stages,
+  // immediately and synchronously. Should only be called in testing, when
+  // CompositeIsSynchronous() is true.
+  void SynchronouslyComposite(bool raster);
+
   // Sets the RenderFrameMetadataObserver, which is sent to the compositor
   // thread for binding.
   void SetRenderFrameObserver(
@@ -205,12 +216,18 @@ class LayerTreeView : public blink::WebLayerTreeView,
 
   cc::LayerTreeHost* layer_tree_host() { return layer_tree_host_.get(); }
 
+  // Exposed for the WebTest harness to query.
+  bool CompositeIsSynchronousForTesting() const {
+    return CompositeIsSynchronous();
+  }
+
  protected:
   friend class RenderViewImplScaleFactorTest;
 
  private:
   void SetLayerTreeFrameSink(
       std::unique_ptr<cc::LayerTreeFrameSink> layer_tree_frame_sink);
+  bool CompositeIsSynchronous() const;
 
   LayerTreeViewDelegate* const delegate_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
@@ -221,6 +238,8 @@ class LayerTreeView : public blink::WebLayerTreeView,
   std::unique_ptr<cc::LayerTreeHost> layer_tree_host_;
 
   bool layer_tree_frame_sink_request_failed_while_invisible_ = false;
+
+  bool in_synchronous_compositor_update_ = false;
 
   viz::FrameSinkId frame_sink_id_;
   base::circular_deque<

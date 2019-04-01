@@ -227,7 +227,7 @@ void TestRunnerForSpecificView::CapturePixelsAsyncThen(
       << "testRuner.capturePixelsAsyncThen from an OOPIF";
 
   web_view_test_proxy_->test_interfaces()->GetTestRunner()->DumpPixelsAsync(
-      web_view_test_proxy_,
+      web_view()->MainFrame()->ToWebLocalFrame(),
       base::BindOnce(&TestRunnerForSpecificView::CapturePixelsCallback,
                      weak_factory_.GetWeakPtr(),
                      std::move(persistent_callback)));
