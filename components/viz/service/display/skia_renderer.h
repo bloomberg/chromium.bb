@@ -159,7 +159,8 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   void DrawTileDrawQuad(const TileDrawQuad* quad, const DrawQuadParams& params);
   void DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
                         const DrawQuadParams& params);
-  void DrawUnsupportedQuad(const DrawQuad* quad, SkPaint* paint);
+  void DrawUnsupportedQuad(const DrawQuad* quad, const DrawQuadParams& params);
+
   bool CalculateRPDQParams(sk_sp<SkImage> src_image,
                            const RenderPassDrawQuad* quad,
                            DrawRenderPassDrawQuadParams* params);
