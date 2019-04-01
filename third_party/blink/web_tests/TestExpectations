@@ -5991,9 +5991,6 @@ crbug.com/932078 http/tests/security/powerfulFeatureRestrictions/device-orientat
 crbug.com/932078 virtual/insecure-device-sensor-events/http/tests/security/powerfulFeatureRestrictions/device-orientation-handler-not-fired-on-insecure-origin.html [ Skip ]
 crbug.com/932078 virtual/outofblink-cors/http/tests/security/powerfulFeatureRestrictions/device-orientation-on-insecure-origin.html [ Skip ]
 
-# Wasm threads enabled by default
-crbug.com/754910 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/wasm-threads-origin-trial-disabled.html [ Skip ]
-
 # These tests depend on targeting javascript: url navigations at the specified window.
 crbug.com/935064 external/wpt/html/browsers/browsing-the-web/navigating-across-documents/javascript-url-abort/javascript-url-abort-return-value-string.tentative.html [ Failure ]
 crbug.com/935064 external/wpt/content-security-policy/inheritance/iframe-all-local-schemes.sub.html [ Failure ]
