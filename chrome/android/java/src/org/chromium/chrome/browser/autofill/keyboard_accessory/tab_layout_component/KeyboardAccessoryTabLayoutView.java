@@ -17,7 +17,7 @@ import org.chromium.chrome.R;
 /**
  * A {@link TabLayout} containing the tabs in the keyboard accessory.
  */
-public class KeyboardAccessoryTabLayoutView extends TabLayout {
+class KeyboardAccessoryTabLayoutView extends TabLayout {
     /**
      * Constructor for inflating from XML.
      */

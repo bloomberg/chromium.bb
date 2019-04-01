@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.contrib.RecyclerViewActions.actionOnItem;
 import static android.support.test.espresso.contrib.RecyclerViewActions.scrollTo;
-import static android.support.test.espresso.matcher.ViewMatchers.isAssignableFrom;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 
@@ -15,6 +14,7 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.scrollToLastElement;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.selectTabAtPosition;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.whenDisplayed;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.tab_layout_component.KeyboardAccessoryTabTestHelper.isKeyboardAccessoryTabLayout;
 
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView;
@@ -30,7 +30,6 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.tab_layout_component.KeyboardAccessoryTabLayoutView;
 import org.chromium.chrome.browser.test.ScreenShooter;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -139,9 +138,8 @@ public class ManualFillingUiCaptureTest {
         mScreenShooter.shoot("AccessoryBarV2");
 
         whenDisplayed(withId(R.id.bar_items_view))
-                .perform(scrollTo(isAssignableFrom(KeyboardAccessoryTabLayoutView.class)),
-                        actionOnItem(isAssignableFrom(KeyboardAccessoryTabLayoutView.class),
-                                selectTabAtPosition(0)));
+                .perform(scrollTo(isKeyboardAccessoryTabLayout()),
+                        actionOnItem(isKeyboardAccessoryTabLayout(), selectTabAtPosition(0)));
 
         waitForSuggestionsInSheet();
         waitForUnrelatedChromeUi();
@@ -171,9 +169,8 @@ public class ManualFillingUiCaptureTest {
         mScreenShooter.shoot("AccessoryBarV2RTL");
 
         whenDisplayed(withId(R.id.bar_items_view))
-                .perform(scrollTo(isAssignableFrom(KeyboardAccessoryTabLayoutView.class)),
-                        actionOnItem(isAssignableFrom(KeyboardAccessoryTabLayoutView.class),
-                                selectTabAtPosition(0)));
+                .perform(scrollTo(isKeyboardAccessoryTabLayout()),
+                        actionOnItem(isKeyboardAccessoryTabLayout(), selectTabAtPosition(0)));
 
         waitForSuggestionsInSheet();
         waitForUnrelatedChromeUi();

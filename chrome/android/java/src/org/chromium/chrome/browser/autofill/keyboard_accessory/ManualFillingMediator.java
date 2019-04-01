@@ -42,6 +42,8 @@ import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
+import org.chromium.components.autofill.AutofillDelegate;
+import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.DropdownPopupWindow;
 import org.chromium.ui.base.WindowAndroid;
@@ -55,7 +57,7 @@ import java.util.HashSet;
  * This part of the manual filling component manages the state of the manual filling flow depending
  * on the currently shown tab.
  */
-public class ManualFillingMediator extends EmptyTabObserver
+class ManualFillingMediator extends EmptyTabObserver
         implements KeyboardAccessoryCoordinator.VisibilityDelegate, View.OnLayoutChangeListener {
     static private final int MINIMAL_AVAILABLE_VERTICAL_SPACE = 80; // in DP.
     static private final int MINIMAL_AVAILABLE_HORIZONTAL_SPACE = 180; // in DP.
@@ -174,6 +176,12 @@ public class ManualFillingMediator extends EmptyTabObserver
         if (accessorySheet == null) return;
     }
 
+    void registerAutofillProvider(
+            PropertyProvider<AutofillSuggestion[]> autofillProvider, AutofillDelegate delegate) {
+        if (mKeyboardAccessory == null) return;
+        mKeyboardAccessory.registerAutofillProvider(autofillProvider, delegate);
+    }
+
     void registerActionProvider(PropertyProvider<Action[]> actionProvider) {
         if (!isInitialized()) return;
         ManualFillingState state = mStateCache.getStateFor(mActivity.getCurrentWebContents());
@@ -249,7 +257,7 @@ public class ManualFillingMediator extends EmptyTabObserver
         return mKeyboardExtensionSizeManager;
     }
 
-    public void onPropertyChanged(PropertyObservable<PropertyKey> source, PropertyKey property) {
+    private void onPropertyChanged(PropertyObservable<PropertyKey> source, PropertyKey property) {
         assert source == mModel;
         if (property == SHOW_WHEN_VISIBLE) {
             if (!mModel.get(SHOW_WHEN_VISIBLE)) {
@@ -474,7 +482,8 @@ public class ManualFillingMediator extends EmptyTabObserver
      * @return A {@link PasswordAccessorySheetCoordinator} or null if unavailable.
      */
     @VisibleForTesting
-    public @Nullable PasswordAccessorySheetCoordinator getOrCreatePasswordSheet() {
+    @Nullable
+    PasswordAccessorySheetCoordinator getOrCreatePasswordSheet() {
         if (!isInitialized()) return null;
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.EXPERIMENTAL_UI)
                 && !ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY)) {
@@ -525,7 +534,7 @@ public class ManualFillingMediator extends EmptyTabObserver
         mInsetObserverViewSupplier = insetObserverViewSupplier;
     }
 
-    // TODO(fhorschig): Should be @VisibleForTesting.
+    @VisibleForTesting
     @Nullable
     KeyboardAccessoryCoordinator getKeyboardAccessory() {
         return mKeyboardAccessory;

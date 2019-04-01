@@ -28,7 +28,7 @@ import org.chromium.ui.widget.ChipView;
  * the {@link KeyboardAccessoryViewBinder} which will modify the view accordingly.
  */
 class KeyboardAccessoryModernViewBinder {
-    public static BarItemViewHolder create(ViewGroup parent, @BarItem.Type int viewType) {
+    static BarItemViewHolder create(ViewGroup parent, @BarItem.Type int viewType) {
         switch (viewType) {
             case BarItem.Type.SUGGESTION:
                 return new BarItemChipViewHolder(parent);
@@ -81,7 +81,7 @@ class KeyboardAccessoryModernViewBinder {
         }
     }
 
-    public static void bind(PropertyModel model, View view, PropertyKey propertyKey) {
+    static void bind(PropertyModel model, KeyboardAccessoryView view, PropertyKey propertyKey) {
         assert view instanceof KeyboardAccessoryModernView;
         KeyboardAccessoryModernView modernView = (KeyboardAccessoryModernView) view;
         boolean wasBound = KeyboardAccessoryViewBinder.bindInternal(model, modernView, propertyKey);

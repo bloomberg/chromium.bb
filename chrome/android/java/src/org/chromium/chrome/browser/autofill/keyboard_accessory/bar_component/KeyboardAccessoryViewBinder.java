@@ -32,7 +32,7 @@ import org.chromium.ui.modelutil.PropertyModel;
  * the {@link KeyboardAccessoryViewBinder} which will modify the view accordingly.
  */
 class KeyboardAccessoryViewBinder {
-    public static BarItemViewHolder create(ViewGroup parent, @BarItem.Type int viewType) {
+    static BarItemViewHolder create(ViewGroup parent, @BarItem.Type int viewType) {
         switch (viewType) {
             case BarItem.Type.ACTION_BUTTON:
                 return new BarItemTextViewHolder(parent, R.layout.keyboard_accessory_action);
@@ -83,8 +83,8 @@ class KeyboardAccessoryViewBinder {
         }
     }
 
-    public static void bind(PropertyModel model, View view, PropertyKey propertyKey) {
-        boolean wasBound = bindInternal(model, (KeyboardAccessoryView) view, propertyKey);
+    static void bind(PropertyModel model, KeyboardAccessoryView view, PropertyKey propertyKey) {
+        boolean wasBound = bindInternal(model, view, propertyKey);
         assert wasBound : "Every possible property update needs to be handled!";
         requestLayoutPreKitkat(view);
     }

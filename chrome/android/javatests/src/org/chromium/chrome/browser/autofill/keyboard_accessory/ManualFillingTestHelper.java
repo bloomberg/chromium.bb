@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.Key
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.PropertyProvider;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.sheet_tabs.PasswordAccessorySheetCoordinator;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -191,6 +192,7 @@ public class ManualFillingTestHelper {
         CriteriaHelper.pollInstrumentationThread(() -> {
             KeyboardAccessoryCoordinator accessory = mActivityTestRule.getActivity()
                                                              .getManualFillingController()
+                                                             .getMediatorForTesting()
                                                              .getKeyboardAccessory();
             return accessory != null && !accessory.isShown();
         });
@@ -204,6 +206,7 @@ public class ManualFillingTestHelper {
         CriteriaHelper.pollInstrumentationThread(() -> {
             KeyboardAccessoryCoordinator accessory = mActivityTestRule.getActivity()
                                                              .getManualFillingController()
+                                                             .getMediatorForTesting()
                                                              .getKeyboardAccessory();
             return accessory != null && accessory.isShown();
         });
@@ -244,6 +247,13 @@ public class ManualFillingTestHelper {
         });
 
         return popup;
+    }
+
+    public PasswordAccessorySheetCoordinator getOrCreatePasswordAccessorySheet() {
+        return mActivityTestRule.getActivity()
+                .getManualFillingController()
+                .getMediatorForTesting()
+                .getOrCreatePasswordSheet();
     }
 
     // ----------------------------------

@@ -37,7 +37,7 @@ class ManualFillingStateCache {
      * @param tab A {@link Tab} for whose {@link WebContents} a state is needed.
      * @return A {@link ManualFillingState}. Never null.
      */
-    public ManualFillingState getStateFor(Tab tab) {
+    ManualFillingState getStateFor(Tab tab) {
         return getStateFor(tab.getWebContents());
     }
 
@@ -47,7 +47,7 @@ class ManualFillingStateCache {
      * @param webContents {@link WebContents} for which a state is needed.
      * @return A {@link ManualFillingState}. Never null.
      */
-    public ManualFillingState getStateFor(@Nullable WebContents webContents) {
+    ManualFillingState getStateFor(@Nullable WebContents webContents) {
         if (webContents == null) {
             // If state is requested for destroyed or invalid WebContents, it returns a null object.
             return new ManualFillingState(null);
@@ -62,7 +62,7 @@ class ManualFillingStateCache {
     /**
      * Destroys all held states and removes the held references to the WebContents they belong to.
      */
-    public void destroy() {
+    void destroy() {
         for (ManualFillingState userState : mStatesForWebContents.values()) userState.destroy();
         mStatesForWebContents.clear();
     }
@@ -71,7 +71,7 @@ class ManualFillingStateCache {
      * @see #destroyStateFor(WebContents)
      * @param tab The tab whose WebContents are going to be destroyed.
      */
-    public void destroyStateFor(Tab tab) {
+    void destroyStateFor(Tab tab) {
         destroyStateFor(tab.getWebContents());
     }
 
@@ -79,7 +79,7 @@ class ManualFillingStateCache {
      * Ensures a reference to WebContents isn't held longer than necessary so GC can collect it.
      * @param webContents The WebContents about to be destroyed and should not be held any longer.
      */
-    public void destroyStateFor(WebContents webContents) {
+    void destroyStateFor(WebContents webContents) {
         if (webContents != null) {
             getStateFor(webContents).destroy();
             mStatesForWebContents.remove(webContents);

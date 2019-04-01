@@ -29,20 +29,18 @@ import java.lang.annotation.RetentionPolicy;
  * state changes, it notifies its listeners - like the {@link KeyboardAccessoryMediator} or a
  * ModelChangeProcessor.
  */
-public class KeyboardAccessoryProperties {
-    public static final ReadableObjectPropertyKey<ListModel<BarItem>> BAR_ITEMS =
+class KeyboardAccessoryProperties {
+    static final ReadableObjectPropertyKey<ListModel<BarItem>> BAR_ITEMS =
             new ReadableObjectPropertyKey<>("bar_items");
-    public static final WritableBooleanPropertyKey VISIBLE =
-            new WritableBooleanPropertyKey("visible");
-    public static final WritableIntPropertyKey BOTTOM_OFFSET_PX =
-            new WritableIntPropertyKey("offset");
-    public static final WritableObjectPropertyKey<String> SHEET_TITLE =
+    static final WritableBooleanPropertyKey VISIBLE = new WritableBooleanPropertyKey("visible");
+    static final WritableIntPropertyKey BOTTOM_OFFSET_PX = new WritableIntPropertyKey("offset");
+    static final WritableObjectPropertyKey<String> SHEET_TITLE =
             new WritableObjectPropertyKey<>("sheet_title");
-    public static final WritableBooleanPropertyKey KEYBOARD_TOGGLE_VISIBLE =
+    static final WritableBooleanPropertyKey KEYBOARD_TOGGLE_VISIBLE =
             new WritableBooleanPropertyKey("toggle_visible");
-    public static final WritableObjectPropertyKey<TabLayoutBarItem> TAB_LAYOUT_ITEM =
+    static final WritableObjectPropertyKey<TabLayoutBarItem> TAB_LAYOUT_ITEM =
             new WritableObjectPropertyKey<>("tab_layout_item");
-    public static final WritableObjectPropertyKey<Runnable> SHOW_KEYBOARD_CALLBACK =
+    static final WritableObjectPropertyKey<Runnable> SHOW_KEYBOARD_CALLBACK =
             new WritableObjectPropertyKey<>("keyboard_callback");
 
     static PropertyModel.Builder defaultModelBuilder() {
@@ -58,13 +56,13 @@ public class KeyboardAccessoryProperties {
      * This class wraps data used in ViewHolders of the accessory bar's {@link RecyclerView}.
      * It can hold an {@link Action}s that defines a callback and a recording type.
      */
-    public static class BarItem {
+    static class BarItem {
         /**
          * This type is used to infer which type of view will represent this item.
          */
         @IntDef({Type.ACTION_BUTTON, Type.SUGGESTION, Type.TAB_LAYOUT})
         @Retention(RetentionPolicy.SOURCE)
-        public @interface Type {
+        @interface Type {
             int ACTION_BUTTON = 0;
             int SUGGESTION = 1;
             int TAB_LAYOUT = 2;
@@ -77,7 +75,7 @@ public class KeyboardAccessoryProperties {
          * @param type A {@link Type}.
          * @param action An {@link Action}.
          */
-        public BarItem(@Type int type, @Nullable Action action) {
+        BarItem(@Type int type, @Nullable Action action) {
             mType = type;
             mAction = action;
         }
@@ -86,7 +84,8 @@ public class KeyboardAccessoryProperties {
          * Returns the which type of view represents this item.
          * @return A {@link Type}.
          */
-        public @Type int getViewType() {
+        @Type
+        int getViewType() {
             return mType;
         }
 
@@ -94,7 +93,8 @@ public class KeyboardAccessoryProperties {
          * If applicable, returns which action is held by this item.
          * @return An {@link Action}.
          */
-        public @Nullable Action getAction() {
+        @Nullable
+        Action getAction() {
             return mAction;
         }
 
@@ -119,7 +119,7 @@ public class KeyboardAccessoryProperties {
      * This {@link BarItem} is used to render Autofill suggestions into the accessory bar.
      * For that, it needs (in addition to an {@link Action}) the held {@link AutofillSuggestion}.
      */
-    public static class AutofillBarItem extends BarItem {
+    static class AutofillBarItem extends BarItem {
         private final AutofillSuggestion mSuggestion;
 
         /**
@@ -128,12 +128,12 @@ public class KeyboardAccessoryProperties {
          * @param suggestion An {@link AutofillSuggestion}.
          * @param action An {@link Action}.
          */
-        public AutofillBarItem(AutofillSuggestion suggestion, Action action) {
+        AutofillBarItem(AutofillSuggestion suggestion, Action action) {
             super(Type.SUGGESTION, action);
             mSuggestion = suggestion;
         }
 
-        public AutofillSuggestion getSuggestion() {
+        AutofillSuggestion getSuggestion() {
             return mSuggestion;
         }
 
@@ -148,19 +148,19 @@ public class KeyboardAccessoryProperties {
      * scrolled out of/into view. This wrapper allows to trigger a callback whenever the view is
      * recreated so it can be bound to its component.
      */
-    public static final class TabLayoutBarItem extends BarItem {
+    static final class TabLayoutBarItem extends BarItem {
         private final TabLayoutCallbacks mTabLayoutCallbacks;
 
-        public TabLayoutBarItem(TabLayoutCallbacks tabLayoutCallbacks) {
+        TabLayoutBarItem(TabLayoutCallbacks tabLayoutCallbacks) {
             super(Type.TAB_LAYOUT, null);
             mTabLayoutCallbacks = tabLayoutCallbacks;
         }
 
-        public void notifyAboutViewCreation(TabLayout tabs) {
+        void notifyAboutViewCreation(TabLayout tabs) {
             mTabLayoutCallbacks.onTabLayoutBound(tabs);
         }
 
-        public void notifyAboutViewDestruction(TabLayout tabs) {
+        void notifyAboutViewDestruction(TabLayout tabs) {
             mTabLayoutCallbacks.onTabLayoutUnbound(tabs);
         }
     }

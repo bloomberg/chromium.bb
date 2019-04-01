@@ -150,16 +150,15 @@ class KeyboardAccessoryTabLayoutMediator
         }
     }
 
-    public void setTabObserver(AccessoryTabObserver accessoryTabObserver) {
+    void setTabObserver(AccessoryTabObserver accessoryTabObserver) {
         mAccessoryTabObserver = accessoryTabObserver;
     }
 
-    public void addPageChangeListener(TabLayout.TabLayoutOnPageChangeListener pageChangeListener) {
+    void addPageChangeListener(TabLayout.TabLayoutOnPageChangeListener pageChangeListener) {
         mPageChangeListeners.add(pageChangeListener);
     }
 
-    public void removePageChangeListener(
-            TabLayout.TabLayoutOnPageChangeListener pageChangeListener) {
+    void removePageChangeListener(TabLayout.TabLayoutOnPageChangeListener pageChangeListener) {
         mPageChangeListeners.remove(pageChangeListener);
     }
 

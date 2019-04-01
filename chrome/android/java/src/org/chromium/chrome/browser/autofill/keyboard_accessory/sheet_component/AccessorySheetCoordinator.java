@@ -17,10 +17,11 @@ import android.support.annotation.Px;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.RecyclerView;
-import android.view.View;
+import android.view.ViewStub;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData;
+import org.chromium.ui.DeferredViewStubInflationProvider;
 import org.chromium.ui.ViewProvider;
 import org.chromium.ui.modelutil.LazyConstructionPropertyMcp;
 import org.chromium.ui.modelutil.ListModel;
@@ -39,9 +40,18 @@ public class AccessorySheetCoordinator {
     /**
      * Creates the sheet component by instantiating Model, View and Controller before wiring these
      * parts up.
-     * @param viewProvider A provider for the accessory layout.
+     * @param sheetStub A {@link ViewStub} for the accessory sheet layout.
      */
-    public AccessorySheetCoordinator(ViewProvider<View> viewProvider) {
+    public AccessorySheetCoordinator(ViewStub sheetStub) {
+        this(new DeferredViewStubInflationProvider<>(sheetStub));
+    }
+
+    /**
+     * Constructor that allows to mock the {@link DeferredViewStubInflationProvider}.
+     * @param viewProvider A provider for the accessory.
+     */
+    @VisibleForTesting
+    AccessorySheetCoordinator(ViewProvider<AccessorySheetView> viewProvider) {
         PropertyModel model = new PropertyModel
                                       .Builder(TABS, ACTIVE_TAB_INDEX, VISIBLE, HEIGHT,
                                               TOP_SHADOW_VISIBLE, PAGE_CHANGE_LISTENER)
@@ -70,19 +80,6 @@ public class AccessorySheetCoordinator {
         AccessoryPagerAdapter adapter = new AccessoryPagerAdapter(tabList);
         tabList.addObserver(new ListModelChangeProcessor<>(tabList, viewPager, adapter));
         return adapter;
-    }
-
-    /**
-     * Adds the contents of a given {@link KeyboardAccessoryData.Tab} to the accessory sheet. If it
-     * is the first Tab, it automatically becomes the active Tab.
-     * @param tab The tab which should be added to the AccessorySheet.
-     */
-    void addTab(KeyboardAccessoryData.Tab tab) {
-        mMediator.addTab(tab);
-    }
-
-    void removeTab(KeyboardAccessoryData.Tab tab) {
-        mMediator.removeTab(tab);
     }
 
     public void setTabs(KeyboardAccessoryData.Tab[] tabs) {
@@ -140,11 +137,6 @@ public class AccessorySheetCoordinator {
         return mMediator.isShown();
     }
 
-    @VisibleForTesting
-    public AccessorySheetMediator getMediatorForTesting() {
-        return mMediator;
-    }
-
     /**
      * Calling this function changes the active tab to the tab at the given |position|.
      * @param position The index of the tab (starting with 0) that should be set active.
@@ -155,5 +147,10 @@ public class AccessorySheetCoordinator {
 
     public void setOnPageChangeListener(ViewPager.OnPageChangeListener onPageChangeListener) {
         mMediator.setOnPageChangeListener(onPageChangeListener);
+    }
+
+    @VisibleForTesting
+    AccessorySheetMediator getMediatorForTesting() {
+        return mMediator;
     }
 }

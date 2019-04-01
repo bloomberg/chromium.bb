@@ -18,20 +18,18 @@ import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
  * It is updated by the {@link AccessorySheetMediator} and emits notification on which observers
  * like the view binder react.
  */
-public class AccessorySheetProperties {
-    public static final ReadableObjectPropertyKey<ListModel<Tab>> TABS =
-            new ReadableObjectPropertyKey<>();
-    public static final WritableIntPropertyKey ACTIVE_TAB_INDEX =
+class AccessorySheetProperties {
+    static final ReadableObjectPropertyKey<ListModel<Tab>> TABS = new ReadableObjectPropertyKey<>();
+    static final WritableIntPropertyKey ACTIVE_TAB_INDEX =
             new WritableIntPropertyKey("active_tab_index");
-    public static final WritableBooleanPropertyKey VISIBLE =
-            new WritableBooleanPropertyKey("visible");
-    public static final WritableIntPropertyKey HEIGHT = new WritableIntPropertyKey("height");
-    public static final WritableBooleanPropertyKey TOP_SHADOW_VISIBLE =
+    static final WritableBooleanPropertyKey VISIBLE = new WritableBooleanPropertyKey("visible");
+    static final WritableIntPropertyKey HEIGHT = new WritableIntPropertyKey("height");
+    static final WritableBooleanPropertyKey TOP_SHADOW_VISIBLE =
             new WritableBooleanPropertyKey("top_shadow_visible");
-    public static final WritableObjectPropertyKey<ViewPager.OnPageChangeListener>
-            PAGE_CHANGE_LISTENER = new WritableObjectPropertyKey<>("page_change_listener");
+    static final WritableObjectPropertyKey<ViewPager.OnPageChangeListener> PAGE_CHANGE_LISTENER =
+            new WritableObjectPropertyKey<>("page_change_listener");
 
-    public static final int NO_ACTIVE_TAB = -1;
+    static final int NO_ACTIVE_TAB = -1;
 
     private AccessorySheetProperties() {}
 }

@@ -177,17 +177,12 @@ public class KeyboardAccessoryTabLayoutCoordinator {
     }
 
     @VisibleForTesting
-    public PropertyModel getModelForTesting() {
+    PropertyModel getModelForTesting() {
         return mModel;
     }
 
     @VisibleForTesting
-    public void setActiveTabForTesting(Integer newActiveTab) {
-        mModel.set(ACTIVE_TAB, newActiveTab);
-    }
-
-    @VisibleForTesting
-    public KeyboardAccessoryTabLayoutMediator getMediatorForTesting() {
+    KeyboardAccessoryTabLayoutMediator getMediatorForTesting() {
         return mMediator;
     }
 }

@@ -87,10 +87,7 @@ public class AutofillKeyboardAccessoryBridge
         assert mContext != null;
         if (mContext instanceof ChromeActivity) {
             mManualFillingCoordinator = ((ChromeActivity) mContext).getManualFillingController();
-            if (mManualFillingCoordinator.getKeyboardAccessory() != null) {
-                mManualFillingCoordinator.getKeyboardAccessory().registerAutofillProvider(
-                        mChipProvider, this);
-            }
+            mManualFillingCoordinator.registerAutofillProvider(mChipProvider, this);
         }
 
         mNativeAutofillKeyboardAccessory = nativeAutofillKeyboardAccessory;
