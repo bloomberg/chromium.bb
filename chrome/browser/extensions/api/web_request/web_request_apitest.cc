@@ -1563,17 +1563,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   web_socket.reset();
 }
 
-// Tests that a clean close from the server is not reported as an error when
-// there is a race between OnDropChannel and SendFrame.
-// Regression test for https://crbug.com/937790.
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebSocketCleanClose) {
-  ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(StartWebSocketServer(net::GetWebSocketTestDataDirectory()));
-  ASSERT_TRUE(
-      RunExtensionSubtest("webrequest", "test_websocket_clean_close.html"))
-      << message_;
-}
-
 // Test behavior when intercepting requests from a browser-initiated url fetch.
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        WebRequestURLLoaderInterception) {
