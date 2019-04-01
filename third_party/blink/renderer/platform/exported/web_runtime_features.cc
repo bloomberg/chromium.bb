@@ -39,10 +39,6 @@ void WebRuntimeFeatures::EnableBlinkHeapIncrementalMarking(bool enable) {
   RuntimeEnabledFeatures::SetHeapIncrementalMarkingEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableBlinkHeapUnifiedGarbageCollection(bool enable) {
-  RuntimeEnabledFeatures::SetHeapUnifiedGarbageCollectionEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableBloatedRendererDetection(bool enable) {
   RuntimeEnabledFeatures::SetBloatedRendererDetectionEnabled(enable);
 }

@@ -3715,11 +3715,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::assistant::features::kAssistantAppSupport)},
 #endif  // defined(OS_CHROMEOS)
 
-    {"enable-blink-heap-unified-garbage-collection",
-     flag_descriptions::kEnableBlinkHeapUnifiedGarbageCollectionName,
-     flag_descriptions::kEnableBlinkHeapUnifiedGarbageCollectionDescription,
-     kOsAll, FEATURE_VALUE_TYPE(features::kBlinkHeapUnifiedGarbageCollection)},
-
     {"enable-filesystem-in-incognito",
      flag_descriptions::kEnableFilesystemInIncognitoName,
      flag_descriptions::kEnableFilesystemInIncognitoDescription, kOsAll,

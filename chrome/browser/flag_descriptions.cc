@@ -86,11 +86,6 @@ const char kDrawVerticallyEdgeToEdgeName[] =
 const char kDrawVerticallyEdgeToEdgeDescription[] =
     "Draw contents vertically from edge to edge.";
 
-const char kEnableBlinkHeapUnifiedGarbageCollectionName[] =
-    "Blink Heap Unified Garbage Collection";
-const char kEnableBlinkHeapUnifiedGarbageCollectionDescription[] =
-    "Enable unified garbage collection in Blink";
-
 const char kEnableBloatedRendererDetectionName[] = "Bloated renderer detection";
 const char kEnableBloatedRendererDetectionDescription[] =
     "Enable bloated renderer detection";
