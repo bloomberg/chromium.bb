@@ -16,6 +16,7 @@ import ast
 
 from google.protobuf import field_mask_pb2
 
+from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib.luci.prpc.client import Client, ProtocolError
 
@@ -28,6 +29,17 @@ BBV2_URL_ENDPOINT_PROD = (
 BBV2_URL_ENDPOINT_TEST = (
     "cr-buildbucket-test.appspot.com"
 )
+BB_STATUS_DICT = {
+    # A mapping of Buildbucket V2 statuses to chromite's statuses. For
+    # buildbucket reference, see here:
+    # https://chromium.googlesource.com/infra/luci/luci-go/+/master/buildbucket/proto/common.proto
+    0: 'unspecified',
+    1: constants.BUILDER_STATUS_PLANNED,
+    2: constants.BUILDER_STATUS_INFLIGHT,
+    12: constants.BUILDER_STATUS_PASSED,
+    20: constants.BUILDER_STATUS_FAILED,
+    68: constants.BUILDER_STATUS_ABORTED
+}
 
 def UpdateSelfBuildPropertiesNonBlocking(key, value):
   """Updates the build.output.properties with key:value through a service.
