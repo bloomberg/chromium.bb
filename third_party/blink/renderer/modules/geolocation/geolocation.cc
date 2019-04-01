@@ -241,9 +241,7 @@ void Geolocation::StartRequest(GeoNotifier* notifier) {
   if (HaveSuitableCachedPosition(notifier->Options())) {
     notifier->SetUseCachedPosition();
   } else {
-    if (notifier->Options()->timeout() > 0)
-      StartUpdating(notifier);
-    notifier->StartTimer();
+    StartUpdating(notifier);
   }
 }
 
@@ -268,9 +266,7 @@ void Geolocation::RequestUsesCachedPosition(GeoNotifier* notifier) {
   if (one_shots_.Contains(notifier)) {
     one_shots_.erase(notifier);
   } else if (watchers_->Contains(notifier)) {
-    if (notifier->Options()->timeout() > 0)
-      StartUpdating(notifier);
-    notifier->StartTimer();
+    StartUpdating(notifier);
   }
 
   if (!HasListeners())
@@ -439,24 +435,27 @@ void Geolocation::StartUpdating(GeoNotifier* notifier) {
     if (geolocation_)
       geolocation_->SetHighAccuracy(true);
   }
-  UpdateGeolocationConnection();
+  UpdateGeolocationConnection(notifier);
 }
 
 void Geolocation::StopUpdating() {
   updating_ = false;
-  UpdateGeolocationConnection();
+  UpdateGeolocationConnection(nullptr);
   enable_high_accuracy_ = false;
 }
 
-void Geolocation::UpdateGeolocationConnection() {
+void Geolocation::UpdateGeolocationConnection(GeoNotifier* notifier) {
   if (!GetExecutionContext() || !GetPage() || !GetPage()->IsPageVisible() ||
       !updating_) {
     geolocation_.reset();
     disconnected_geolocation_ = true;
     return;
   }
-  if (geolocation_)
+  if (geolocation_) {
+    if (notifier)
+      notifier->StartTimer();
     return;
+  }
 
   // See https://bit.ly/2S0zRAS for task types.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
@@ -467,7 +466,9 @@ void Geolocation::UpdateGeolocationConnection() {
                                                   invalidator, task_runner);
   geolocation_service_->CreateGeolocation(
       MakeRequest(&geolocation_, invalidator, std::move(task_runner)),
-      LocalFrame::HasTransientUserActivation(GetFrame()));
+      LocalFrame::HasTransientUserActivation(GetFrame()),
+      WTF::Bind(&Geolocation::OnGeolocationPermissionStatusUpdated,
+                WrapWeakPersistent(this), WrapWeakPersistent(notifier)));
 
   geolocation_.set_connection_error_handler(WTF::Bind(
       &Geolocation::OnGeolocationConnectionError, WrapWeakPersistent(this)));
@@ -496,7 +497,7 @@ void Geolocation::OnPositionUpdated(
 }
 
 void Geolocation::PageVisibilityChanged() {
-  UpdateGeolocationConnection();
+  UpdateGeolocationConnection(nullptr);
 }
 
 bool Geolocation::HasPendingActivity() const {
@@ -512,6 +513,17 @@ void Geolocation::OnGeolocationConnectionError() {
                                                kPermissionDeniedErrorMessage);
   error->SetIsFatal(true);
   HandleError(error);
+}
+
+void Geolocation::OnGeolocationPermissionStatusUpdated(
+    GeoNotifier* notifier,
+    mojom::PermissionStatus status) {
+  if (notifier && status == mojom::PermissionStatus::GRANTED) {
+    // Avoid starting the notifier timer if the notifier has already been
+    // removed.
+    if (DoesOwnNotifier(notifier))
+      notifier->StartTimer();
+  }
 }
 
 }  // namespace blink

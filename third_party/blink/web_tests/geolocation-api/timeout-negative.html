@@ -14,8 +14,8 @@ description("Tests that when timeout is negative (and maximumAge is too), the er
 
 var error;
 
-let mock = geolocationMock;
-mock.setGeolocationPosition(51.478, -0.166, 100.0);
+geolocationMock.setGeolocationPermission(true);
+geolocationMock.setGeolocationTimeoutError(true);
 
 navigator.geolocation.getCurrentPosition(function(p) {
     testFailed('Success callback invoked unexpectedly');
