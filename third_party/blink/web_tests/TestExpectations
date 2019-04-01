@@ -2996,6 +2996,14 @@ crbug.com/939181 external/wpt/html/browsers/origin/cross-origin-objects/cross-or
 crbug.com/939181 virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Failure Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.12 ] external/wpt/service-workers/service-worker/websocket.https.html [ Timeout ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/websockets/Secure-Close-4999-reason.any.html [ Timeout ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/websockets/Secure-Send-data.any.html [ Timeout ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/websockets/constructor/014.html?wss [ Timeout ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/websockets/Secure-Close-server-initiated-close.any.worker.html [ Timeout ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/websockets/constructor/018.html?wss [ Timeout ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/websockets/Secure-Send-binary-arraybufferview-uint8-offset.any.html [ Timeout ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/websockets/constructor/010.html?wss [ Timeout ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-block-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-lists/list-item-definition.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-contain/contain-content-011.html [ Failure ]
