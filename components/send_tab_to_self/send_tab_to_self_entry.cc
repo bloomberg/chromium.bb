@@ -48,6 +48,10 @@ SendTabToSelfEntry::SendTabToSelfEntry(
       notification_dismissed_(false) {
   DCHECK(!guid_.empty());
   DCHECK(url_.is_valid());
+  DCHECK(base::IsStringUTF8(guid_));
+  DCHECK(base::IsStringUTF8(title_));
+  DCHECK(base::IsStringUTF8(target_device_sync_cache_guid_));
+  DCHECK(base::IsStringUTF8(device_name_));
 }
 
 SendTabToSelfEntry::~SendTabToSelfEntry() {}
@@ -109,10 +113,15 @@ std::unique_ptr<SendTabToSelfEntry> SendTabToSelfEntry::FromProto(
     const sync_pb::SendTabToSelfSpecifics& pb_entry,
     base::Time now) {
   std::string guid(pb_entry.guid());
-  DCHECK(!guid.empty());
+  if (guid.empty()) {
+    return nullptr;
+  }
 
   GURL url(pb_entry.url());
-  DCHECK(url.is_valid());
+
+  if (!url.is_valid()) {
+    return nullptr;
+  }
 
   base::Time shared_time = ProtoTimeToTime(pb_entry.shared_time_usec());
   if (shared_time > now) {
@@ -124,6 +133,7 @@ std::unique_ptr<SendTabToSelfEntry> SendTabToSelfEntry::FromProto(
     navigation_time = ProtoTimeToTime(pb_entry.navigation_time_usec());
   }
 
+  // Protobuf parsing enforces utf8 encoding for all strings.
   return std::make_unique<SendTabToSelfEntry>(
       guid, url, pb_entry.title(), shared_time, navigation_time,
       pb_entry.device_name(), pb_entry.target_device_sync_cache_guid());
@@ -134,7 +144,9 @@ std::unique_ptr<SendTabToSelfEntry> SendTabToSelfEntry::FromLocalProto(
     base::Time now) {
   std::unique_ptr<SendTabToSelfEntry> to_return =
       FromProto(local_entry.specifics(), now);
-  to_return->SetNotificationDismissed(local_entry.notification_dismissed());
+  if (to_return) {
+    to_return->SetNotificationDismissed(local_entry.notification_dismissed());
+  }
   return to_return;
 }
 
