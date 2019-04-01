@@ -1041,7 +1041,7 @@ public class NetworkChangeNotifierTest {
      */
     @Test
     @MediumTest
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // android.net.Network available in L+.
     public void testVpnAccessibleDoesNotLeak() {
         ConnectivityManagerDelegate connectivityManagerDelegate = new ConnectivityManagerDelegate(
                 InstrumentationRegistry.getInstrumentation().getTargetContext());
@@ -1066,6 +1066,34 @@ public class NetworkChangeNotifierTest {
             }
             System.gc();
             System.runFinalization();
+        } finally {
+            StrictMode.setVmPolicy(oldPolicy);
+        }
+    }
+
+    /**
+     * Regression test for crbug.com/946531 where ConnectivityManagerDelegate.vpnAccessible()
+     * triggered StrictMode's untagged socket prohibition.
+     */
+    @Test
+    @MediumTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.O) // detectUntaggedSockets added in Oreo.
+    public void testVpnAccessibleDoesNotCreateUntaggedSockets() {
+        ConnectivityManagerDelegate connectivityManagerDelegate = new ConnectivityManagerDelegate(
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
+        StrictMode.VmPolicy oldPolicy = StrictMode.getVmPolicy();
+        StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+                                       .detectUntaggedSockets()
+                                       .penaltyDeath()
+                                       .penaltyLog()
+                                       .build());
+        try {
+            // Test non-existent Network (NetIds only go to 65535).
+            connectivityManagerDelegate.vpnAccessible(Helper.netIdToNetwork(65537));
+            // Test existing Networks.
+            for (Network network : connectivityManagerDelegate.getAllNetworksUnfiltered()) {
+                connectivityManagerDelegate.vpnAccessible(network);
+            }
         } finally {
             StrictMode.setVmPolicy(oldPolicy);
         }
