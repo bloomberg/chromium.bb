@@ -64,7 +64,8 @@ class MEDIA_MOJO_EXPORT MojoMediaClient {
       MediaLog* media_log,
       mojom::CommandBufferIdPtr command_buffer_id,
       RequestOverlayInfoCB request_overlay_info_cb,
-      const gfx::ColorSpace& target_color_space);
+      const gfx::ColorSpace& target_color_space,
+      mojom::VideoDecoderImplementation implementation);
 
   // Returns the Renderer to be used by MojoRendererService.
   // TODO(hubbe): Find out whether we should pass in |target_color_space| here.

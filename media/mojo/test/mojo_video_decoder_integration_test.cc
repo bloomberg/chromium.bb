@@ -171,7 +171,8 @@ class FakeMojoMediaClient : public MojoMediaClient {
       MediaLog* media_log,
       mojom::CommandBufferIdPtr command_buffer_id,
       RequestOverlayInfoCB request_overlay_info_cb,
-      const gfx::ColorSpace& target_color_space) override {
+      const gfx::ColorSpace& target_color_space,
+      mojom::VideoDecoderImplementation implementation) override {
     return create_video_decoder_cb_.Run(media_log);
   }
 

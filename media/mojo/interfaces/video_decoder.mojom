@@ -53,6 +53,15 @@ interface VideoFrameHandleReleaser {
                     gpu.mojom.SyncToken release_sync_token);
 };
 
+// Identifier to select between multiple underlying VideoDecoder implementations
+// to back a mojo VideoDecoder service.
+enum VideoDecoderImplementation {
+  Default = 0,
+  // For Windows, "Alternate" selects the D3D11VideoDecoder when the experiment
+  // is enabled.  Otherwise, there is no alternate implementation.
+  Alternate = 1,
+};
+
 // A Mojo equivalent of media::VideoDecoder. In practice, this is used for
 // hardware decode offloading; in this case the client is a <video> tag running
 // in a renderer, and the implementation is running in the GPU process.
@@ -85,6 +94,10 @@ interface VideoDecoder {
   // the VideoDecoder can use for GL operations. Implementations that require GL
   // will fail Initialize() if |command_buffer_id| is not provided.
   //
+  // |implementation| selects the underlying VideoDecoder implementation.  Not
+  // all implementations are supported.  Initialize() will fail if
+  // |implementation| is not supported.
+  //
   // TODO(sandersd): Rename to Initialize() if/when
   // media::VideoDecoder::Initialize() is renamed to Configure().
   Construct(associated VideoDecoderClient client,
@@ -92,7 +105,8 @@ interface VideoDecoder {
             VideoFrameHandleReleaser& video_frame_handle_releaser,
             handle<data_pipe_consumer> decoder_buffer_pipe,
             CommandBufferId? command_buffer_id,
-            gfx.mojom.ColorSpace target_color_space);
+            gfx.mojom.ColorSpace target_color_space,
+            VideoDecoderImplementation implementation);
 
   // Configure (or reconfigure) the decoder. This must be called before decoding
   // any frames, and must not be called while there are pending Initialize(),
