@@ -42,7 +42,8 @@ class CORE_EXPORT NGExclusionSpaceInternal {
       const NGLogicalSize& minimum_size) const {
     // If the area clears all floats, we can just return the layout opportunity
     // which matches the available space.
-    if (offset.block_offset >= both_clear_offset_) {
+    if (offset.block_offset >=
+        std::max(left_clear_offset_, right_clear_offset_)) {
       NGBfcOffset end_offset(
           offset.line_offset + available_inline_size.ClampNegativeToZero(),
           LayoutUnit::Max());
@@ -58,7 +59,8 @@ class CORE_EXPORT NGExclusionSpaceInternal {
       const LayoutUnit available_inline_size) const {
     // If the area clears all floats, we can just return a single layout
     // opportunity which matches the available space.
-    if (offset.block_offset >= both_clear_offset_) {
+    if (offset.block_offset >=
+        std::max(left_clear_offset_, right_clear_offset_)) {
       NGBfcOffset end_offset(
           offset.line_offset + available_inline_size.ClampNegativeToZero(),
           LayoutUnit::Max());
@@ -71,15 +73,22 @@ class CORE_EXPORT NGExclusionSpaceInternal {
   }
 
   LayoutUnit ClearanceOffset(EClear clear_type) const {
-    if (clear_type == EClear::kNone)
-      return LayoutUnit::Min();
-
-    return GetDerivedGeometry().ClearanceOffset(clear_type);
+    switch (clear_type) {
+      case EClear::kNone:
+        return LayoutUnit::Min();
+      case EClear::kLeft:
+        return left_clear_offset_;
+      case EClear::kRight:
+        return right_clear_offset_;
+      case EClear::kBoth:
+        return std::max(left_clear_offset_, right_clear_offset_);
+      default:
+        NOTREACHED();
+        return LayoutUnit::Min();
+    }
   }
 
-  LayoutUnit LastFloatBlockStart() const {
-    return GetDerivedGeometry().LastFloatBlockStart();
-  }
+  LayoutUnit LastFloatBlockStart() const { return last_float_block_start_; }
 
   bool IsEmpty() const { return !num_exclusions_; }
 
@@ -190,7 +199,16 @@ class CORE_EXPORT NGExclusionSpaceInternal {
   // space has, which may differ to the number of exclusions in the Vector.
   scoped_refptr<RefVector<scoped_refptr<const NGExclusion>>> exclusions_;
   wtf_size_t num_exclusions_;
-  LayoutUnit both_clear_offset_;
+
+  // These members are used for keeping track of the "lowest" offset for each
+  // type of float. This is used for implementing float clearance.
+  LayoutUnit left_clear_offset_ = LayoutUnit::Min();
+  LayoutUnit right_clear_offset_ = LayoutUnit::Min();
+
+  // This member is used for implementing the "top edge alignment rule" for
+  // floats. Floats can be positioned at negative offsets, hence is initialized
+  // the minimum value.
+  LayoutUnit last_float_block_start_ = LayoutUnit::Min();
 
   // In order to reduce the amount of copies related to bookkeeping shape data,
   // we initially ignore exclusions with shape data. When we first see an
@@ -205,12 +223,12 @@ class CORE_EXPORT NGExclusionSpaceInternal {
   //
   // NGExclusionSpace space1;
   // space1.Add(exclusion1);
-  // space1.LastFloatBlockStart(); // Builds derived_geometry_ to answer query.
+  // space1.FindLayoutOpportunity(); // Builds derived_geometry_.
   //
   // NGExclusionSpace space2(space1); // Moves derived_geometry_ to space2.
   // space2.Add(exclusion2); // Modifies derived_geometry_.
   //
-  // space1.LastFloatBlockStart(); // Re-builds derived_geometry_.
+  // space1.FindLayoutOpportunity(); // Re-builds derived_geometry_.
   //
   // This is efficient (desirable) as the common usage pattern is only the last
   // exclusion space in the copy-chain is used for answering queries. Only when
@@ -238,9 +256,6 @@ class CORE_EXPORT NGExclusionSpaceInternal {
     void IterateAllLayoutOpportunities(const NGBfcOffset& offset,
                                        const LayoutUnit available_inline_size,
                                        const LambdaFunc&) const;
-
-    LayoutUnit ClearanceOffset(EClear clear_type) const;
-    LayoutUnit LastFloatBlockStart() const { return last_float_block_start_; }
 
     // See NGShelf for a broad description of what shelves are. We always begin
     // with one, which has the internal value of:
@@ -278,16 +293,6 @@ class CORE_EXPORT NGExclusionSpaceInternal {
     Vector<NGLayoutOpportunity, 4> opportunities_;
 
     bool track_shape_exclusions_;
-
-    // This member is used for implementing the "top edge alignment rule" for
-    // floats. Floats can be positioned at negative offsets, hence is
-    // initialized the minimum value.
-    LayoutUnit last_float_block_start_;
-
-    // These members are used for keeping track of the "lowest" offset for each
-    // type of float. This is used for implementing float clearance.
-    LayoutUnit left_float_clear_offset_;
-    LayoutUnit right_float_clear_offset_;
   };
 
   // Returns the derived_geometry_ member, potentially re-built from the
