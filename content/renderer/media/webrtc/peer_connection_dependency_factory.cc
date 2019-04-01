@@ -16,7 +16,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -47,7 +46,6 @@
 #include "content/renderer/render_view_impl.h"
 #include "crypto/openssl_util.h"
 #include "jingle/glue/thread_wrapper.h"
-#include "media/base/bind_to_current_loop.h"
 #include "media/base/media_permission.h"
 #include "media/media_buildflags.h"
 #include "media/video/gpu_video_accelerator_factories.h"
@@ -124,8 +122,7 @@ PeerConnectionDependencyFactory::PeerConnectionDependencyFactory(
       signaling_thread_(nullptr),
       worker_thread_(nullptr),
       chrome_signaling_thread_("Chrome_libJingle_Signaling"),
-      chrome_worker_thread_("Chrome_libJingle_WorkerThread"),
-      weak_factory_(this) {
+      chrome_worker_thread_("Chrome_libJingle_WorkerThread") {
   TryScheduleStunProbeTrial();
 }
 
@@ -202,11 +199,20 @@ void PeerConnectionDependencyFactory::CreatePeerConnectionFactory() {
   base::WaitableEvent create_network_manager_event(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
+  std::unique_ptr<MdnsResponderAdapter> mdns_responder;
+#if BUILDFLAG(ENABLE_MDNS)
+  if (base::FeatureList::IsEnabled(features::kWebRtcHideLocalIpsWithMdns)) {
+    // Note that MdnsResponderAdapter is created on the main thread to have
+    // access to the connector to the service manager.
+    mdns_responder = std::make_unique<MdnsResponderAdapter>();
+  }
+#endif  // BUILDFLAG(ENABLE_MDNS)
   chrome_worker_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&PeerConnectionDependencyFactory::
                          CreateIpcNetworkManagerOnWorkerThread,
-                     base::Unretained(this), &create_network_manager_event));
+                     base::Unretained(this), &create_network_manager_event,
+                     std::move(mdns_responder)));
 
   start_worker_event.Wait();
   create_network_manager_event.Wait();
@@ -448,12 +454,8 @@ PeerConnectionDependencyFactory::CreatePortAllocator(
 
   std::unique_ptr<rtc::NetworkManager> network_manager;
   if (port_config.enable_multiple_routes) {
-    auto callback = media::BindToCurrentLoop(base::BindRepeating(
-        &PeerConnectionDependencyFactory::OnEnumeratePermissionChanged,
-        weak_factory_.GetWeakPtr()));
     network_manager = std::make_unique<FilteringNetworkManager>(
-        network_manager_.get(), requesting_origin, media_permission,
-        std::move(callback));
+        network_manager_.get(), requesting_origin, media_permission);
   } else {
     network_manager =
         std::make_unique<EmptyNetworkManager>(network_manager_.get());
@@ -558,10 +560,11 @@ void PeerConnectionDependencyFactory::StartStunProbeTrialOnWorkerThread(
 }
 
 void PeerConnectionDependencyFactory::CreateIpcNetworkManagerOnWorkerThread(
-    base::WaitableEvent* event) {
+    base::WaitableEvent* event,
+    std::unique_ptr<MdnsResponderAdapter> mdns_responder) {
   DCHECK(chrome_worker_thread_.task_runner()->BelongsToCurrentThread());
-  network_manager_ =
-      std::make_unique<IpcNetworkManager>(p2p_socket_dispatcher_.get());
+  network_manager_ = std::make_unique<IpcNetworkManager>(
+      p2p_socket_dispatcher_.get(), std::move(mdns_responder));
   event->Signal();
 }
 
@@ -650,26 +653,6 @@ PeerConnectionDependencyFactory::GetReceiverCapabilities(
         GetPcFactory()->GetRtpReceiverCapabilities(cricket::MEDIA_TYPE_VIDEO));
   }
   return nullptr;
-}
-
-void PeerConnectionDependencyFactory::OnEnumeratePermissionChanged(
-    rtc::NetworkManager::EnumerationPermission new_state) {
-#if BUILDFLAG(ENABLE_MDNS)
-  std::unique_ptr<MdnsResponderAdapter> mdns_responder;
-  if (new_state == rtc::NetworkManager::ENUMERATION_BLOCKED &&
-      base::FeatureList::IsEnabled(features::kWebRtcHideLocalIpsWithMdns)) {
-    // Note that MdnsResponderAdapter is created on the main thread to have
-    // access to the connector to the service manager.
-    mdns_responder = std::make_unique<MdnsResponderAdapter>();
-  }
-  // base::Unretained is safe below because |network_manager_| will be destroyed
-  // only after |chrome_work_thread_| stops, which flushes all tasks. See
-  // PeerConnectionDependencyFactory::CleanupPeerConnectionFactory.
-  chrome_worker_thread_.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&IpcNetworkManager::SetMdnsResponder,
-                                base::Unretained(network_manager_.get()),
-                                base::Passed(&mdns_responder)));
-#endif  // BUILDFLAG(ENABLE_MDNS)
 }
 
 }  // namespace content
