@@ -2493,13 +2493,18 @@ FloatRect PaintLayer::BackdropFilterReferenceBox() const {
 gfx::RRectF PaintLayer::BackdropFilterBounds(
     const FloatRect& reference_box) const {
   auto& style = GetLayoutObject().StyleRef();
-  if (!style.HasBorderRadius())
-    return gfx::RRectF(reference_box, 0);
-  FloatRoundedRect rrect = style.GetRoundedBorderFor(LayoutRect(reference_box));
-  // FloatRoundedRect has a typecast to SkRRect().
-  return gfx::RRectF(rrect);
+  gfx::RRectF backdrop_filter_bounds;
+  if (!style.HasBorderRadius()) {
+    backdrop_filter_bounds = gfx::RRectF(reference_box, 0);
+  } else {
+    FloatRoundedRect rrect =
+        style.GetRoundedBorderFor(LayoutRect(reference_box));
+    backdrop_filter_bounds = gfx::RRectF(rrect);
+  }
+  float zoom = style.EffectiveZoom();
+  backdrop_filter_bounds.Scale(zoom);
+  return backdrop_filter_bounds;
 }
-
 bool PaintLayer::HitTestClippedOutByClipPath(
     PaintLayer* root_layer,
     const HitTestLocation& hit_test_location) const {

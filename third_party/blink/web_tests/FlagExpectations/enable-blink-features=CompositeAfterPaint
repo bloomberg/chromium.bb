@@ -411,6 +411,7 @@ Bug(none) virtual/threaded/synthetic_gestures/animated-wheel-tiny-delta.html [ F
 
 # Backdrop filter
 crbug.com/923429 css3/filters/backdrop-filter-basic-blur.html [ Failure ]
+crbug.com/923429 css3/filters/backdrop-filter-browser-zoom.html [ Failure ]
 crbug.com/923429 css3/filters/backdrop-filter-border-radius.html [ Failure ]
 crbug.com/923429 css3/filters/backdrop-filter-rendering.html [ Failure ]
 crbug.com/923429 css3/filters/backdrop-filter-rendering-no-background.html [ Failure ]
