@@ -252,7 +252,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="4904877109095351937">Označi kao pročitano</translation>
 <translation id="4930268273022498155">Postojeći će se podaci izbrisati. Dohvatiti ih možete tako da se vratite na <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Došlo je do problema prilikom dijeljenja vaše stavke.</translation>
-<translation id="4979397965658815378">Prijavite se Google računom da biste pristupali svojim oznakama, zaporkama, povijesti i ostalim postavkama na svim svojim uređajima</translation>
+<translation id="4979397965658815378">Prijavite se Google računom da biste imali pristup svojim oznakama, zaporkama, povijesti i ostalim postavkama na svim svojim uređajima</translation>
 <translation id="5005498671520578047">Kopiranje zaporke</translation>
 <translation id="5010803260590204777">Otvorite anonimnu karticu da biste pregledavali web u privatnosti.</translation>
 <translation id="5011684439661633295">Pozdrav, <ph name="FULL_ACCOUNT_NAME" /></translation>
@@ -269,7 +269,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5190835502935405962">Traka oznaka</translation>
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Omogući sinkronizaciju</translation>
-<translation id="5244474230056479698">Sinkronizacija s računom <ph name="EMAIL" /></translation>
+<translation id="5244474230056479698">Sinkronizira se s računom <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Prikaži</translation>
 <translation id="5317780077021120954">Spremi</translation>
 <translation id="5327248766486351172">Naziv</translation>

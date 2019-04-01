@@ -80,7 +80,7 @@
         <ph name="END_LIST" /></translation>
 <translation id="1339601241726513588">Domain ng pagpapatala:</translation>
 <translation id="1340482604681802745">Address sa pag-pick up</translation>
-<translation id="1348198688976932919">Naglalaman ng mga mapanganib na app ang pupuntahang site</translation>
+<translation id="1348198688976932919">May mapapanganib na app ang pupuntahang site</translation>
 <translation id="1348779747280417563">Kumpirmahin ang pangalan</translation>
 <translation id="1357195169723583938">Sino ang gumamit sa device kamakailan at kailan</translation>
 <translation id="1364822246244961190">Naka-block ang patakarang ito, babalewalain ang value nito.</translation>
@@ -129,7 +129,7 @@
       &lt;p&gt;Mangyaring isaayos ang petsa at oras mula sa seksyong &lt;strong&gt;Pangkalahatan&lt;/strong&gt; ng app na &lt;strong&gt;Mga Setting&lt;/strong&gt;.&lt;/p&gt;</translation>
 <translation id="1569487616857761740">Ilagay ang petsa ng pag-expire</translation>
 <translation id="1581080074034554886">CVC</translation>
-<translation id="1583429793053364125">Nagkaroon ng problema habang ipinapakita ang webpage na ito.</translation>
+<translation id="1583429793053364125">Nagkaproblema habang ipinapakita ang webpage na ito.</translation>
 <translation id="1592005682883173041">Access sa Lokal na Data</translation>
 <translation id="1594030484168838125">Pumili</translation>
 <translation id="161042844686301425">Cyan</translation>
@@ -275,7 +275,7 @@
 <translation id="2384307209577226199">Default ng enterprise</translation>
 <translation id="2386255080630008482">Nabawi ang certificate ng server.</translation>
 <translation id="2392959068659972793">Ipakita ang mga patakarang walang nakatakdang halaga</translation>
-<translation id="239429038616798445">Hindi available ang pamamaraan ng pagpapadala na ito. Sumubok ng ibang pamamaraan.</translation>
+<translation id="239429038616798445">Hindi available ang paraan ng pagpapadala na ito. Sumubok ng ibang paraan.</translation>
 <translation id="2396249848217231973">&amp;I-undo ang pagtanggal</translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN" />; maaaring binawi ang certificate ng seguridad nito. Maaaring dulot ito ng maling configuration o isang umaatake na hinahadlangan ang iyong koneksyon.</translation>
@@ -340,7 +340,7 @@
 <translation id="2738330467931008676">Pumili ng Address sa Pag-pick up</translation>
 <translation id="2740531572673183784">Ok</translation>
 <translation id="2742870351467570537">Alisin ang mga napiling item</translation>
-<translation id="277133753123645258">Pamamaraan ng pagpapadala</translation>
+<translation id="277133753123645258">Paraan ng pagpapadala</translation>
 <translation id="277499241957683684">Nawawalang tala ng device</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">Na-reset ang koneksyon.</translation>
@@ -560,7 +560,7 @@
 <translation id="4072486802667267160">Nagkaroon ng error sa pagproseso ng iyong order. Pakisubukang muli.</translation>
 <translation id="4075732493274867456">Hindi sinusuportahan ng client at server ang isang karaniwang bersyon o cipher suite ng SSL protocol.</translation>
 <translation id="4079302484614802869">Nakatakda ang configuration ng proxy upang gumamit ng isang .pac script URL, hindi ng mga hindi nababagong proxy server.</translation>
-<translation id="4098354747657067197">May malapit na nakakapanlinlang na site</translation>
+<translation id="4098354747657067197">Mapupunta sa nakakapanlinlang na site</translation>
 <translation id="4103249731201008433">Di-wasto ang serial number ng device</translation>
 <translation id="410351446219883937">I-autoplay</translation>
 <translation id="4103763322291513355">Bisitahin ang &lt;strong&gt;chrome://policy&lt;/strong&gt; upang makita ang listahan ng mga naka-blacklist na URL at iba pang mga patakaran na ipinapatupad ng iyong system administrator.</translation>
@@ -791,7 +791,7 @@
 <translation id="5324080437450482387">Pumili ng Impormasyon sa Pakikipag-ugnayan</translation>
 <translation id="5327248766486351172">Pangalan</translation>
 <translation id="5329858041417644019">Hindi pinapamahalaan ang iyong browser</translation>
-<translation id="5332219387342487447">Pamamaraan ng Pagpapadala</translation>
+<translation id="5332219387342487447">Paraan ng Pagpapadala</translation>
 <translation id="5334013548165032829">Mga detalyadong log ng system</translation>
 <translation id="5344579389779391559">Maaari kang singilin ng pera ng page na ito</translation>
 <translation id="5355557959165512791">Hindi mo maaaring bisitahin ang <ph name="SITE" /> sa ngayon dahil binawi na ang certificate nito. Karaniwang pansamantala lang ang mga error at pag-atake sa network, kaya malamang na gagana ang page na ito sa ibang pagkakataon.</translation>
@@ -802,7 +802,7 @@
 <translation id="5386426401304769735">Naglalaman ang chain ng certificate para sa site na ito ng certificate na naka-sign gamit ang SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="540969355065856584">Hindi mapatunayan ng server na ito ay ang <ph name="DOMAIN" />; walang bisa ang certificate sa seguridad nito sa pagkakataong ito. Maaaring dahil ito sa isang maling pag-configure o may isang attacker na humahadlang sa iyong koneksyon.</translation>
-<translation id="5421136146218899937">I-clear ang data sa pagba-browse...</translation>
+<translation id="5421136146218899937">I-clear ang data sa pag-browse...</translation>
 <translation id="5430298929874300616">Alisin ang bookmark</translation>
 <translation id="5431657950005405462">Hindi nakita ang iyong file</translation>
 <translation id="5439770059721715174">Error sa pagpapatunay ng schema sa "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
@@ -932,7 +932,7 @@
     pang mga network device na maaaring ginagamit mo.</translation>
 <translation id="614940544461990577">Subukang:</translation>
 <translation id="6151417162996330722">Masyadong mahaba ang panahon ng pagkakaroon ng bisa ng certificate ng server.</translation>
-<translation id="6157877588268064908">Upang makita ang mga pamamaraan at kinakailangan sa pagpapadala, pumili ng address</translation>
+<translation id="6157877588268064908">Para makita ang mga paraan at kinakailangan sa pagpapadala, pumili ng address</translation>
 <translation id="6165508094623778733">Matuto pa</translation>
 <translation id="6169916984152623906">Makakapag-browse ka na ngayon nang pribado, at hindi makikita ng ibang taong gumagamit sa device na ito ang iyong aktibidad. Gayunpaman, mase-save ang mga download at bookmark.</translation>
 <translation id="6177128806592000436">Hindi ligtas ang iyong koneksyon sa site na ito</translation>
@@ -1155,7 +1155,7 @@ Mga karagdagang detalye:
 <translation id="7442725080345379071">Light Orange</translation>
 <translation id="7444046173054089907">Naka-block ang site na ito</translation>
 <translation id="7445762425076701745">Hindi ganap na mapatunayan ang pagkakakilanlan ng server na konektado ka. Konektado ka sa server gamit ang pangalan na angkop lamang sa loob ng iyong network, na walang paraan ang panglabas na certificate authority na patunayan ang pagmamay-ari. Dahil magbibigay ang ilang kinauukulan sa certificate para sa mga pangalang ito, walang paraan upang matiyak na konektado ka sa nilayong website at hindi isang umaatake.</translation>
-<translation id="7451311239929941790"><ph name="BEGIN_LINK" />Matuto nang higit pa<ph name="END_LINK" /> tungkol sa problemang ito.</translation>
+<translation id="7451311239929941790"><ph name="BEGIN_LINK" />Matuto pa<ph name="END_LINK" /> tungkol sa problemang ito.</translation>
 <translation id="7455133967321480974">Gamitin ang pangkalahatang default (I-block)</translation>
 <translation id="7460618730930299168">Iba ang screening sa napili mo. Magpatuloy?</translation>
 <translation id="7473891865547856676">Hindi, Salamat</translation>
@@ -1197,7 +1197,7 @@ Mga karagdagang detalye:
 <translation id="7637571805876720304">Gusto mo bang alisin ang credit card sa Chromium?</translation>
 <translation id="7639968568612851608">Dark Grey</translation>
 <translation id="765676359832457558">Itago ang mga advanced na setting...</translation>
-<translation id="7658239707568436148">Ikansela</translation>
+<translation id="7658239707568436148">Kanselahin</translation>
 <translation id="7662298039739062396">Kinokontrol ng isang extension ang setting</translation>
 <translation id="7663736086183791259">Certificate <ph name="CERTIFICATE_VALIDITY" /></translation>
 <translation id="7667346355482952095">Walang laman ang ibinalik na token ng patakaran o hindi tumutugma sa kasalukuyang token</translation>
@@ -1227,7 +1227,7 @@ Mga karagdagang detalye:
 <translation id="7764225426217299476">Magdagdag ng address</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="777702478322588152">Prefecture</translation>
-<translation id="7791543448312431591">Magdagdag</translation>
+<translation id="7791543448312431591">Idagdag</translation>
 <translation id="7793809570500803535">Maaaring pansamantalang sira ang webpage sa <ph name="SITE" /> o maaaring permanente itong inilipat sa isang bagong web address.</translation>
 <translation id="7800304661137206267">Na-encrypt ang koneksyon gamit ang <ph name="CIPHER" />, kasama ang <ph name="MAC" /> para sa pagpapatunay ng mensahe at <ph name="KX" /> bilang mekanismo ng pangunahing pagpapalit.</translation>
 <translation id="7802523362929240268">Lehitimo ang site</translation>

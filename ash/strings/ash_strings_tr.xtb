@@ -132,7 +132,7 @@
 <translation id="2961963223658824723">Bir sorun oluştu. Birkaç saniye sonra tekrar deneyin.</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2970920913501714344">Uygulama, uzantı ve tema yükleme</translation>
-<translation id="2977598380246111477">Sonraki numara</translation>
+<translation id="2977598380246111477">Sonraki sayı</translation>
 <translation id="2995447421581609334">Yayın cihazlarını göster.</translation>
 <translation id="2996462380875591307">Yerleştirilmiş Büyüteç etkinleştirildi. Kapatmak için tekrar Ctrl+Arama+H tuşlarına basın.</translation>
 <translation id="3000461861112256445">Mono ses</translation>
@@ -238,6 +238,7 @@
 <translation id="4696813013609194136">Kilidi ebeveyn koduyla açın</translation>
 <translation id="4731797938093519117">Ebeveyn erişimi</translation>
 <translation id="4734965478015604180">Yatay</translation>
+<translation id="476166673298332917">Cihaz yöneticisi göz atma etkinliğinizi izleyebilir.</translation>
 <translation id="4774338217796918551">Saat <ph name="COME_BACK_TIME" /> olduğunda geri gelin.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> için şifre</translation>
 <translation id="4778095205580009397">Google Asistan, demo oturumunda kullanılamaz.</translation>

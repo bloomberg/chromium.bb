@@ -843,7 +843,7 @@
 <translation id="2230062665678605299">Nije moguće izraditi mapu "<ph name="FOLDER_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
 <translation id="223106756035922488">Kliknite za prikaz današnjeg doodle logotipa</translation>
 <translation id="2231238007119540260">Ako izbrišete certifikat poslužitelja, vratit ćete uobičajene sigurnosne provjere za taj poslužitelj i tražiti da koristi važeće certifikate.</translation>
-<translation id="2232379019872353004">Googleu šalje neke podatke o sustavu i sadržaj stranice</translation>
+<translation id="2232379019872353004">Googleu se šalju neki podaci o sustavu i sadržaj stranice</translation>
 <translation id="2232876851878324699">Datoteka je sadržavala jedan certifikat koji nije bio uvezen:</translation>
 <translation id="2233502537820838181">&amp;Više informacija</translation>
 <translation id="2234876718134438132">Sinkronizacija i Googleove usluge</translation>
@@ -1305,7 +1305,7 @@
     Poruka poslužitelja: <ph name="SERVER_MSG" /></translation>
 <translation id="2908162660801918428">Dodavanje galerije medija po direktoriju</translation>
 <translation id="2910318910161511225">Povežite se s mrežom i pokušajte ponovo</translation>
-<translation id="2913331724188855103">Dopuštanje web-lokacijama da spremaju i čitaju podatke kolačića (preporučeno)</translation>
+<translation id="2913331724188855103">Dopusti web-lokacijama da spremaju i čitaju podatke kolačića (preporučeno)</translation>
 <translation id="2915102088417824677">Pregledajte zapisnik aktivnosti</translation>
 <translation id="2916073183900451334">Pritiskom na Tab na web-stranici ističu se veze, isto kao i iz polja</translation>
 <translation id="2916745397441987255">Pretražite proširenja</translation>
@@ -2813,7 +2813,7 @@
 <translation id="5241128660650683457">čitati sve vaše podatke s web-lokacija koje posjetite</translation>
 <translation id="5242724311594467048">Omogućiti proširenje "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="5243522832766285132">Pokušajte ponovo za nekoliko trenutaka.</translation>
-<translation id="5244474230056479698">Sinkronizacija s računom <ph name="EMAIL" /></translation>
+<translation id="5244474230056479698">Sinkronizira se s računom <ph name="EMAIL" /></translation>
 <translation id="52446585071384036">Da biste otvarali datoteke pomoću aplikacije <ph name="APP_NAME" />, najprije ih kopirajte u mapu Linux datoteka.</translation>
 <translation id="5246282308050205996">Aplikacija <ph name="APP_NAME" /> srušila se. Kliknite ovaj balon za ponovno pokretanje aplikacije.</translation>
 <translation id="5247051749037287028">Ime za prikaz (izborno)</translation>

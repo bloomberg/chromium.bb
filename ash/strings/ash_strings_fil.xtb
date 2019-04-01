@@ -238,6 +238,7 @@
 <translation id="4696813013609194136">I-unlock ang device gamit ang parent code</translation>
 <translation id="4731797938093519117">Pangunahing access</translation>
 <translation id="4734965478015604180">Horizontal</translation>
+<translation id="476166673298332917">Maaaring subaybayan ng admin ng device na ito ang iyong aktibidad sa pag-browse.</translation>
 <translation id="4774338217796918551">Bumalik nang <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Password para sa <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Hindi available ang Google Assistant sa demo session.</translation>
@@ -365,7 +366,7 @@
 <translation id="6910714959251846841">Kinakailangang i-powerwash ang iyong device para sa update na ito. Matuto pa tungkol sa pinakabagong update sa <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6911468394164995108">Sumali sa iba...</translation>
 <translation id="6972754398087986839">Magsimula</translation>
-<translation id="6981982820502123353">Pagiging Maa-access</translation>
+<translation id="6981982820502123353">Pagiging Accessible</translation>
 <translation id="698231206551913481">Permanenteng made-delete ang lahat ng file at lokal na data na nauugnay sa user na ito kapag inalis na ang user na ito.</translation>
 <translation id="7015766095477679451">Bumalik nang <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Ikonekta ang iyong <ph name="DEVICE_NAME" /> sa telepono mo</translation>

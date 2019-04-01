@@ -1298,7 +1298,7 @@
 <translation id="2902312830803030883">更多動作</translation>
 <translation id="2903457445916429186">開啟所選項目</translation>
 <translation id="2903882649406874750">一律禁止 <ph name="HOST" /> 存取感應器</translation>
-<translation id="2904456025988372123">當網站嘗試自動下載更多檔案時 (已下載第一個檔案)，必須先詢問您</translation>
+<translation id="2904456025988372123">當網站嘗試自動下載更多檔案時 (已下載第一個檔案)，必須先詢問你</translation>
 <translation id="2907619724991574506">起始網址</translation>
 <translation id="2907798539022650680">無法連上「<ph name="NAME" />」：<ph name="DETAILS" />
     伺服器訊息：<ph name="SERVER_MSG" /></translation>
@@ -1394,7 +1394,7 @@
 <translation id="3045447014237878114">這個網站已自動下載多個檔案</translation>
 <translation id="3046910703532196514">完整的網頁</translation>
 <translation id="304747341537320566">語音引擎</translation>
-<translation id="3047644958362961983">這項資訊可協助我們進一步瞭解 Google 助理的問題。這項資訊會儲存在系統中最多 90 天，且只有相關的工程小組和意見回饋小組才能存取。</translation>
+<translation id="3047644958362961983">這項資訊可讓我們進一步瞭解 Google 助理的問題。這項資訊會在系統中至少儲存 90 天，且只有相關的工程團隊和意見回饋團隊才能存取。</translation>
 <translation id="3053013834507634016">憑證金鑰用途</translation>
 <translation id="3057861065630527966">備份您的相片和影片</translation>
 <translation id="3058498974290601450">你隨時可以在設定中開啟同步功能</translation>
@@ -1633,7 +1633,7 @@
 <translation id="3439153939049640737">一律允許 <ph name="HOST" /> 存取你的麥克風</translation>
 <translation id="3439970425423980614">正在預覽中開啟 PDF</translation>
 <translation id="3440663250074896476">更多可對「<ph name="BOOKMARK_NAME" />」執行的動作</translation>
-<translation id="3440761377721825626">當網站要使用外掛程式存取您的電腦時，必須先詢問您</translation>
+<translation id="3440761377721825626">當網站要使用外掛程式存取你的電腦時，必須先詢問你</translation>
 <translation id="3441653493275994384">螢幕</translation>
 <translation id="3445925074670675829">USB-C 裝置</translation>
 <translation id="344630545793878684">讀取你在多個網站上產生的資料</translation>
@@ -1646,7 +1646,7 @@
 <translation id="3459697287128633276">如要使用你的帳戶存取 Google Play 商店，請透過識別資訊提供者進行驗證。</translation>
 <translation id="3459774175445953971">最後修改日期：</translation>
 <translation id="3461266716147554923"><ph name="URL" /> 要求讀取已複製到剪貼簿的文字和圖片</translation>
-<translation id="3462311546193741693">你會從大多數網站登出，但不會因此登出 Google 帳戶，所以仍可清除同步資料。</translation>
+<translation id="3462311546193741693">大多數網站都會將你登出，但你仍會維持登入 Google 帳戶的狀態，讓系統可以清除同步資料。</translation>
 <translation id="3462413494201477527">取消設定帳戶？</translation>
 <translation id="3464012987031883895">有某個網站正在存取音訊輸入內容</translation>
 <translation id="346431825526753">這是由 <ph name="CUSTODIAN_EMAIL" /> 所管理的兒童專用帳戶。</translation>
@@ -1690,13 +1690,13 @@
 <translation id="3514373592552233661">如有多個可用網路，慣用網路的優先使用順序高於其他已知網路</translation>
 <translation id="3518985090088779359">接受並繼續</translation>
 <translation id="351952459507671940">新增到新群組</translation>
-<translation id="3523642406908660543">在網站要使用外掛程式存取您的電腦時，必須先詢問您 (建議使用)</translation>
+<translation id="3523642406908660543">在網站要使用外掛程式存取你的電腦時，必須先詢問你 (建議使用)</translation>
 <translation id="3526034519184079374">無法讀取或變更網站的資料</translation>
 <translation id="3527085408025491307">資料夾</translation>
 <translation id="3527276236624876118">已建立名為「<ph name="USER_DISPLAY_NAME" />」的受監管使用者。</translation>
 <translation id="3528033729920178817">這個網頁正在追蹤你的位置。</translation>
 <translation id="3528498924003805721">捷徑目標</translation>
-<translation id="3530305684079447434">如要在所有裝置上使用您的書籤，請<ph name="SIGN_IN_LINK" />。</translation>
+<translation id="3530305684079447434"><ph name="SIGN_IN_LINK" />之後即可在你的所有裝置上使用自己的書籤。</translation>
 <translation id="3532844647053365774"><ph name="HOST" /> 要求使用麥克風</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - 靜音</translation>
 <translation id="3534879087479077042">什麼是受監管的使用者？</translation>
@@ -2695,7 +2695,7 @@
 <translation id="5052499409147950210">編輯網站</translation>
 <translation id="5053604404986157245">無法使用隨機產生的 TPM 密碼。在執行 Powerwash 之後，這是正常情況。</translation>
 <translation id="5057110919553308744">當你點選擴充功能時</translation>
-<translation id="5061347216700970798">{NUM_BOOKMARKS,plural, =1{這個資料夾內含 1 個書籤。您確定要刪除該書籤嗎？}other{這個資料夾內含 # 個書籤。您確定要刪除這些書籤嗎？}}</translation>
+<translation id="5061347216700970798">{NUM_BOOKMARKS,plural, =1{這個資料夾內含 1 個書籤。確定要刪除該書籤嗎？}other{這個資料夾內含 # 個書籤。確定要刪除這些書籤嗎？}}</translation>
 <translation id="5061708541166515394">對比</translation>
 <translation id="5062930723426326933">無法登入，請重新連線至網際網路並再試一次。</translation>
 <translation id="5063480226653192405">用量</translation>
@@ -5115,7 +5115,7 @@
 <translation id="8661290697478713397">在無痕式視窗中開啟連結(&amp;G)</translation>
 <translation id="8662671328352114214">加入 <ph name="TYPE" /> 網路</translation>
 <translation id="8662795692588422978">人員</translation>
-<translation id="8662811608048051533">你會從大多數網站登出。</translation>
+<translation id="8662811608048051533">大多數網站都會將你登出。</translation>
 <translation id="8662911384982557515">將你的首頁變更為：<ph name="HOME_PAGE" /></translation>
 <translation id="8662978096466608964">Chrome 無法設定桌布。</translation>
 <translation id="8663099077749055505">一律禁止在 <ph name="HOST" /> 自動下載多個檔案</translation>
@@ -5135,7 +5135,7 @@
 <translation id="8677212948402625567">全部收合...</translation>
 <translation id="8678648549315280022">管理下載設定...</translation>
 <translation id="8678933587484842200">你希望如何啟動這個應用程式？</translation>
-<translation id="8680251145628383637">只要登入帳戶，您在任何裝置上都能取得自己的書籤、歷史記錄和密碼，並套用相同的設定。此外，系統還會自動讓您登入各項 Google 服務。</translation>
+<translation id="8680251145628383637">只要登入帳戶，你在任何裝置上都能取得自己的書籤、歷史記錄和密碼，並套用相同的設定。此外，系統還會自動讓您登入各項 Google 服務。</translation>
 <translation id="8686213429977032554">這個雲端硬碟檔案尚未與你共用</translation>
 <translation id="8688579245973331962">找不到你的名稱嗎？</translation>
 <translation id="8688591111840995413">密碼錯誤</translation>

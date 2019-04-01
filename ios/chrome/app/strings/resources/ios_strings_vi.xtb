@@ -99,7 +99,7 @@
 <translation id="2359808026110333948">Tiếp tục</translation>
 <translation id="2360196772093551345">Yêu cầu trang web dành cho thiết bị di động</translation>
 <translation id="2381405137052800939">Thông tin cơ bản</translation>
-<translation id="2386793615875593361">Đã chọn 1 ảnh</translation>
+<translation id="2386793615875593361">Đã chọn 1</translation>
 <translation id="2435457462613246316">Hiển thị mật khẩu</translation>
 <translation id="2481538920734869610">THÊM TÀI KHOẢN</translation>
 <translation id="2523184218357549926">Gửi cho Google URL của các trang bạn truy cập</translation>
@@ -144,7 +144,7 @@
 <translation id="3112556859945124369">Đánh dấu...</translation>
 <translation id="3157684681743766797">Đánh dấu tất cả...</translation>
 <translation id="3175081911749765310">Dịch vụ web</translation>
-<translation id="3207960819495026254">Đã được đánh dấu trang</translation>
+<translation id="3207960819495026254">Đã đánh dấu trang</translation>
 <translation id="3224641773458703735">Để xuất mật khẩu, trước tiên bạn phải đặt mật mã trên thiết bị của mình.</translation>
 <translation id="3240426699337459095">Đã sao chép liên kết</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -325,7 +325,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="616831107264507309">Đọc sau</translation>
 <translation id="6177442314419606057">Tìm kiếm trong Chrome</translation>
 <translation id="6184086493125982861">Hiển thị tab</translation>
-<translation id="6187302354554850004">Đồng bộ hóa lần cuối: <ph name="LAST_USED_TIME" /></translation>
+<translation id="6187302354554850004">Đồng bộ hóa lần gần đây nhất: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Chưa đọc</translation>
 <translation id="6196207969502475924">Tìm kiếm bằng giọng nói</translation>
 <translation id="6254066287920239840">Mở liên kết trong ứng dụng thay vì trình duyệt.</translation>
@@ -481,7 +481,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="8680787084697685621">Chi tiết đăng nhập tài khoản đã lỗi thời.</translation>
 <translation id="8721297211384281569">Menu công cụ</translation>
 <translation id="8725066075913043281">Thử lại</translation>
-<translation id="8730621377337864115">Hoàn tất</translation>
+<translation id="8730621377337864115">Xong</translation>
 <translation id="8741995161408053644">Tài khoản Google có thể có các biểu mẫu lịch sử duyệt web khác tại <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8756969031206844760">Bạn có muốn cập nhật mật khẩu không?</translation>
 <translation id="8775144690796719618">URL không hợp lệ</translation>
@@ -510,7 +510,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="9188680907066685419">Đăng xuất khỏi tài khoản được quản lý</translation>
 <translation id="9203116392574189331">Tiếp nối</translation>
 <translation id="9223358826628549784">Đã gửi báo cáo lỗi.</translation>
-<translation id="935490618240037774">Dấu trang, lịch sử, mật khẩu và các cài đặt khác của bạn sẽ được đồng bộ hóa với Tài khoản Google để bạn có thể sử dụng chúng trên tất cả thiết bị của mình.</translation>
+<translation id="935490618240037774">Dấu trang, lịch sử hoạt động, mật khẩu và các tùy chọn cài đặt khác sẽ được đồng bộ hóa với Tài khoản Google của bạn để bạn có thể sử dụng chúng trên tất cả thiết bị của mình.</translation>
 <translation id="976982866697960176">Quản lý dữ liệu đã đồng bộ hóa...</translation>
 <translation id="988141524645182168">Thiết bị khác</translation>
 <translation id="989988560359834682">Chỉnh sửa địa chỉ</translation>

@@ -411,7 +411,7 @@
       <ph name="PLATFORM_TEXT" /></translation>
 <translation id="3195213714973468956"><ph name="PRINTER_NAME" /> trên <ph name="SERVER_NAME" /></translation>
 <translation id="320323717674993345">Hủy thanh toán</translation>
-<translation id="3207960819495026254">Đã được đánh dấu trang</translation>
+<translation id="3207960819495026254">Đã đánh dấu trang</translation>
 <translation id="321912867715453276">Cảnh báo: Chính sách này hiện có nhiều nguồn nhưng các giá trị giống nhau.</translation>
 <translation id="3225919329040284222">Máy chủ đưa ra chứng chỉ không khớp với kỳ vọng được tích hợp sẵn. Các kỳ vọng này có trong một số trang web nhất định, có tính bảo mật cao với mục đích bảo vệ bạn.</translation>
 <translation id="3226128629678568754">Nhấn nút tải lại để gửi lại các dữ liệu cần thiết để tải trang.</translation>
@@ -1210,7 +1210,7 @@ Thông tin chi tiết bổ sung:
 <translation id="7697066736081121494">Prc8 (Phong bì)</translation>
 <translation id="769721561045429135">Bạn hiện có các thẻ chỉ dùng được trên thiết bị này. Nhấp vào Tiếp tục để xem lại các thẻ.</translation>
 <translation id="7699293099605015246">Không có bài viết nào ngay lúc này</translation>
-<translation id="7701040980221191251">Không</translation>
+<translation id="7701040980221191251">Không có</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Tiếp tục truy cập <ph name="SITE" /> (không an toàn)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Chứng chỉ</translation>
 <translation id="7716147886133743102">Bị quản trị viên của bạn chặn</translation>
@@ -1379,7 +1379,7 @@ Thông tin chi tiết bổ sung:
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, đề xuất tìm kiếm</translation>
 <translation id="8725066075913043281">Thử lại</translation>
 <translation id="8728672262656704056">Bạn đã chuyển sang chế độ ẩn danh</translation>
-<translation id="8730621377337864115">Hoàn tất</translation>
+<translation id="8730621377337864115">Xong</translation>
 <translation id="8738058698779197622">Để thiết lập kết nối an toàn, bạn cần đặt thời gian đúng cho đồng hồ. Nguyên nhân là do chứng chỉ mà các trang web dùng để tự nhận dạng chỉ có hiệu lực trong khoảng thời gian cụ thể. Vì đồng hồ trên thiết bị của bạn không đúng nên Chromium không thể xác minh các chứng chỉ này.</translation>
 <translation id="8740359287975076522">Không thể tìm thấy &lt;abbr id="dnsDefinition"&gt;địa chỉ DNS&lt;/abbr&gt; của <ph name="HOST_NAME" />. Đang chẩn đoán sự cố.</translation>
 <translation id="874846938927089722">Thẻ tín dụng và thẻ trả trước được chấp nhận</translation>

@@ -1627,9 +1627,9 @@
 <translation id="423797045246308574">允許您設定網址模式清單，指定禁止使用金鑰產生功能的網站。如果網址模式為「KeygenAllowedForUrls」，這項政策就會覆寫這類例外狀況。
 
           如果未設定這項政策，系統會根據「DefaultKeygenSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用到所有網站。</translation>
-<translation id="4238997902172035160">這項政策可設定 <ph name="PRODUCT_NAME" /> 儲存設定檔漫遊複本的目錄。
+<translation id="4238997902172035160">這項政策可設定 <ph name="PRODUCT_NAME" /> 儲存設定檔漫遊副本的目錄。
 
-      如果設定這項政策且啟用 <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> 政策，<ph name="PRODUCT_NAME" /> 會將設定檔的漫遊複本儲存在你所提供的目錄。如果停用 <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> 政策或不設定，則系統不會使用這項政策所儲存的值。
+      如果設定這項政策且啟用 <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> 政策，<ph name="PRODUCT_NAME" /> 會將設定檔的漫遊副本儲存在你所提供的目錄。如果停用 <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> 政策或不設定，則系統不會使用這項政策所儲存的值。
 
       如需可用的變數清單，請參閱 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
 
@@ -2130,7 +2130,7 @@
       則系統會直接授予權限，而不會提示使用者。
 
       如果停用這項政策，系統將一律不提示使用者，且只有已在 
-      AudioCaptureAllowedUrlsWhen 中設為允許的網址才能執行音訊擷取。
+      AudioCaptureAllowedUrls 中設為允許的網址才能執行音訊擷取。
 
       這項政策會影響所有類型的音訊輸入裝置，而不僅限於內建麥克風。</translation>
 <translation id="5422643441807528365"><ph name="PLUGIN_VM_NAME" /> 授權金鑰</translation>
@@ -2172,7 +2172,7 @@
 
       萬用字元「*」和「?」可用於比對任意字元序列。「*」可代表任意數量的字元，而「?」只能指定單一選用字元，也就是可代表零或一個字元。逸出字元為「\」，因此如果要比對出「*」、「?」或「\」字元本身，請在這些字元前面加上「\」。
 
-      如果啟用這項設定，系統就可以在 <ph name="PRODUCT_NAME" />.中使用指定的外掛程式清單。即使外掛程式符合 DisabledPlugins 中的模式，使用者仍可以在「about:plugins」中啟用或停用這些外掛程式。此外，如果外掛程式與 DisabledPlugins、DisabledPluginsExceptions 和 EnabledPlugins 中的任何模式都不相符，使用者就可以啟用和停用這些外掛程式。
+      如果啟用這項設定，系統就可以在 <ph name="PRODUCT_NAME" /> 中使用指定的外掛程式清單。即使外掛程式符合 DisabledPlugins 中的模式，使用者仍可以在「about:plugins」中啟用或停用這些外掛程式。此外，如果外掛程式與 DisabledPlugins、DisabledPluginsExceptions 和 EnabledPlugins 中的任何模式都不相符，使用者就可以啟用和停用這些外掛程式。
 
       這項政策的目的是針對嚴格的外掛程式黑名單設定例外；如果「DisabledPlugins」清單使用萬用字元設定黑名單 (例如以「*」停用所有外掛程式，或以「*Java*」停用所有 Java 外掛程式)，但管理員希望啟用某些特定版本的外掛程式 (例如「IcedTea Java 2.3」)，即可在這項政策中指定要允許的版本。
 
@@ -3396,13 +3396,13 @@
 <translation id="8050080920415773384">原生列印</translation>
 <translation id="8053580360728293758">覆寫預設列印色彩模式。如果設定的模式不適用，系統會忽略這項政策。</translation>
 <translation id="8059164285174960932">遠端存取用戶端取得驗證憑證的來源網址</translation>
-<translation id="806280865577636339">如果將這項政策設定為 True，系統將一律在系統匣選單中顯示協助工具選項。
+<translation id="806280865577636339">如果將這項政策設定為 True，系統將一律在系統匣選單中顯示無障礙工具選項。
 
-          如果將這項政策設定為 False，系統匣選單中就永遠不會顯示協助工具選項。
+          如果將這項政策設定為 False，系統匣選單中就永遠不會顯示無障礙工具選項。
 
           設定這項政策後，使用者無法變更或覆寫這項政策。
 
-          如果不設定這項政策，系統匣選單中不會顯示協助工具選項，但使用者可以在「設定」頁面中，將協助工具選項設為顯示。</translation>
+          如果不設定這項政策，系統匣選單中不會顯示無障礙工具選項，但使用者可以在「設定」頁面中，將無障礙工具選項設為顯示。</translation>
 <translation id="806523868782250975">設定受管理書籤清單。
 
       這項政策內含一份書籤清單；每個書籤都是一個包含「<ph name="NAME" />」和「<ph name="URL_LABEL" />」索引鍵的條目，前者指定書籤的名稱，後者指定書籤的目標網址。如要設定子資料夾，請定義一個書籤，但不要指定「<ph name="URL_LABEL" />」索引鍵，並額外指定「<ph name="CHILDREN" />」索引鍵，當中應包含一份符合上述定義的書籤清單 (其中某些書籤也可能是資料夾)。<ph name="PRODUCT_NAME" /> 會將有缺漏的網址修補完整，就像你在網址列中輸入網址時一樣。舉例來說，系統會自動將 <ph name="GOOGLE_COM" /> 改成 <ph name="HTTPS_GOOGLE_COM" />。

@@ -224,6 +224,7 @@
 <translation id="2593272815202181319">Neproporcionálne</translation>
 <translation id="2610239185026711824">Navrhnúť heslo</translation>
 <translation id="2612676031748830579">Číslo karty</translation>
+<translation id="2613747923081026172">Vytvoriť skupinu</translation>
 <translation id="2621115761605608342">Povoliť JavaScript pre konkrétny web.</translation>
 <translation id="2625189173221582860">Heslo bolo skopírované.</translation>
 <translation id="2631006050119455616">Uložené</translation>
@@ -883,6 +884,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7473891865547856676">Nie, ďakujem</translation>
 <translation id="7475192538862203634">Ak sa vám táto stránka zobrazuje často, skúste použiť tieto <ph name="BEGIN_LINK" />návrhy<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">SD karta sa nenašla. Môžu chýbať niektoré súbory.</translation>
+<translation id="7479104141328977413">Správa kariet</translation>
 <translation id="7481312909269577407">Dopredu</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Aktualizované <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Zobrazovať heslá</translation>

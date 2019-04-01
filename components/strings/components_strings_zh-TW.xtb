@@ -736,7 +736,7 @@
 <translation id="5040262127954254034">隱私權</translation>
 <translation id="5043480802608081735">你複製的連結</translation>
 <translation id="5045550434625856497">密碼不正確</translation>
-<translation id="5056549851600133418">為您推薦的文章</translation>
+<translation id="5056549851600133418">推薦給你的文章</translation>
 <translation id="5068524481479508725">A10</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />檢查 Proxy 位址<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">伺服器憑證目前無效。</translation>
@@ -882,7 +882,7 @@
 <translation id="5813119285467412249">重做新增(&amp;R)</translation>
 <translation id="5838278095973806738">請勿在這個網站上輸入任何機密資訊 (例如密碼或信用卡號碼)，以免遭到攻擊者竊取。</translation>
 <translation id="5860033963881614850">關閉</translation>
-<translation id="5863847714970149516">進入接下來的頁面後，系統可能會向您收取費用</translation>
+<translation id="5863847714970149516">你要瀏覽的網頁可能會向你收取費用</translation>
 <translation id="5866257070973731571">新增電話號碼</translation>
 <translation id="5869405914158311789">無法連上這個網站</translation>
 <translation id="5869522115854928033">已儲存的密碼</translation>
@@ -951,7 +951,7 @@
 <translation id="627746635834430766">只要將卡片資訊與帳單地址儲存到你的 Google 帳戶中，下次即可更快完成付款程序。</translation>
 <translation id="6280223929691119688">快遞無法送貨到這個地址，請改用其他地址。</translation>
 <translation id="6282194474023008486">郵遞區號</translation>
-<translation id="6290238015253830360">這裡會顯示為你推薦的文章</translation>
+<translation id="6290238015253830360">這裡會顯示推薦給你的文章</translation>
 <translation id="6302269476990306341">正在停止 Chrome 版 Google 助理</translation>
 <translation id="6305205051461490394">無法連上 <ph name="URL" />。</translation>
 <translation id="6321917430147971392">檢查 DNS 設定</translation>
@@ -1064,7 +1064,7 @@
 <translation id="6993898126790112050">6x9 (信封)</translation>
 <translation id="6996312675313362352">一律翻譯<ph name="ORIGINAL_LANGUAGE" /></translation>
 <translation id="7012363358306927923">中國銀聯</translation>
-<translation id="7016992613359344582">這些費用可能只收取一次，也可能週期性收取，而且您可能不會注意到這筆費用。</translation>
+<translation id="7016992613359344582">這些費用可能只收取一次，也可能屬於週期性費用，而且你不一定會注意到自己需要付費。</translation>
 <translation id="7029809446516969842">密碼</translation>
 <translation id="7050187094878475250">您嘗試連線至 <ph name="DOMAIN" />，但伺服器提供的憑證有效期限太長，因此難以信任。</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{目前無法儲存這張卡片}other{目前無法儲存這些卡片}}</translation>

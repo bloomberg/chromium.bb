@@ -181,7 +181,7 @@
 
       Bu politika sadece dahili hoparlörleri değil, her tür ses çıkışını etkiler. Bu politikayla, sesli erişilebilirlik özellikleri de engellenebilir. Kullanıcı için ekran okuyucu gerekliyse bu politikayı etkinleştirmeyin.
 
-      Bu ayar true (doğru) değerine ayarlanırsa veya hiç yapılandırılmazsa kullanıcılar cihazlarında desteklenen tüm ses çıkışlarını kullanabilirler.</translation>
+      Bu ayar true (doğru) değerine ayarlanırsa veya yapılandırılmazsa kullanıcılar cihazlarında desteklenen tüm ses çıkışlarını kullanabilirler.</translation>
 <translation id="1359553908012294236">Bu politika doğru seçeneğine ayarlanırsa veya yapılandırılmazsa <ph name="PRODUCT_NAME" />, misafir modunda giriş yapılmasına izin verir. Misafir modunda girişler, tüm pencerelerin gizli modda açıldığı <ph name="PRODUCT_NAME" /> profilleridir.
 
       Bu politika yanlış seçeneğine ayarlanırsa, <ph name="PRODUCT_NAME" /> misafir profillerinin başlatılmasına izin vermez.</translation>
@@ -482,7 +482,7 @@
       Bu ayar etkinleştirilirse şifre koruma hizmeti, şifre yeniden kullanımı algılaması için bu URL'lerdeki şifrelerin dijital parmak izlerini yakalar.
       Bu ayar devre dışı bırakılırsa veya ayarlanmazsa, şifre koruma hizmeti yalnızca https://accounts.google.com adresindeki şifrelerin dijital parmak izlerini yakalar.
       Bu politika yalnızca bir <ph name="MS_AD_NAME" /> alan adına katılmış Windows örneklerinde veya cihaz yönetimine kaydolmuş Windows 10 Pro ya da Enterprise örneklerinde kullanılabilir.</translation>
-<translation id="1914840757300882918">Bu politika ayarlanırsa ana makine, RemoteAccessHostTokenValidationUrl'ye erişim için kimlik doğrulaması yapmak üzere, belirtilen yayıncı CN'sine (Ortak Ad) sahip bir istemci sertifikasını kullanır. Mevcut istemci sertifikalarından herhangi birisinin kullanılabilmesi için bunu "*" olarak ayarlayın.
+<translation id="1914840757300882918">Bu politika ayarlanırsa ana makine, RemoteAccessHostTokenValidationUrl'ye erişim için kimlik doğrulaması yapmak üzere, belirtilen yayıncı CN'sine (Ortak Ad) sahip bir istemci sertifikası kullanır. Mevcut istemci sertifikalarından herhangi birisinin kullanılabilmesi için bunu "*" olarak ayarlayın.
 
           Bu özellik şu anda sunucu tarafında devre dışıdır.</translation>
 <translation id="1919802376548418720">Kimlik bilgilerine yetki vermek için KDC politikasını kullan.</translation>
@@ -1161,7 +1161,7 @@
 
           Bu ayar devre dışı bırakılırsa <ph name="PRODUCT_NAME" /> sadece sistem düzeyinde yüklenmiş Yerel Mesajlaşma ana makinelerini kullanır.
 
-          Bu ayar yapılandırmadan bırakılırsa <ph name="PRODUCT_NAME" />, kullanıcı düzeyinde Yerel Mesajlaşma ana makinelerinin kullanımına izin verir.</translation>
+          Bu ayar yapılandırılmadan bırakılırsa <ph name="PRODUCT_NAME" />, kullanıcı düzeyinde Yerel Mesajlaşma ana makinelerinin kullanımına izin verir.</translation>
 <translation id="3185009703220253572">Sürüm <ph name="SINCE_VERSION" /> ve sonrasında</translation>
 <translation id="3187220842205194486">Android uygulamaları şirket anahtarlarına erişemez. Bu politikanın şirket anahtarları üzerinde hiçbir etkisi yoktur.</translation>
 <translation id="3201273385265130876"><ph name="PRODUCT_NAME" /> tarafından kullanılan proxy sunucuyu belirtmenize olanak tanır ve kullanıcıların proxy ayarlarını değiştirmelerini önler.
@@ -1742,9 +1742,9 @@ politikayı geçersiz kılamaz.
 <translation id="4408428864159735559">Önceden yapılandırılmış ağ dosyası paylaşımlarının listesi.</translation>
 <translation id="4410236409016356088">Ağ bant genişliğini daraltmayı etkinleştir</translation>
 <translation id="441217499641439905"><ph name="PRODUCT_OS_NAME" />, Dosyalar uygulamasında hücresel bağlantılar üzerinden Google Drive erişimini devre dışı bırak</translation>
-<translation id="4415603335307944578">Bu politika true (doğru) değerine ayarlanırsa veya yapılandırılmazsa, tarayıcı, OS'nin yeni sürüme geçirilmesinden sonraki ilk başlatmada karşılama sayfasını tekrar gösterir.
+<translation id="4415603335307944578">Bu politika true (doğru) değerine ayarlanırsa veya yapılandırılmazsa, tarayıcı, OS'in yeni sürüme geçirilmesinden sonraki ilk başlatmada karşılama sayfasını tekrar gösterir.
 
-      Bu politika false (yanlış) değerine ayarlanırsa, tarayıcı, OS'nin yeni sürüme geçirilmesinden sonraki ilk başlatmada karşılama sayfasını tekrar göstermez.</translation>
+      Bu politika false (yanlış) değerine ayarlanırsa, tarayıcı, OS'in yeni sürüme geçirilmesinden sonraki ilk başlatmada karşılama sayfasını tekrar göstermez.</translation>
 <translation id="4418726081189202489">Bu politika false (yanlış) değerine ayarlandığında <ph name="PRODUCT_NAME" /> uygulaması doğru zaman damgasını almak için ara sıra bir Google sunucusuna sorgu göndermeyi durdurur. Bu politika true (doğru) değerine ayarlanır veya hiç ayarlanmazsa bu sorgular etkinleşir.</translation>
 <translation id="4423597592074154136">Proxy ayarlarını el ile belirle</translation>
 <translation id="4429220551923452215">Yer işareti çubuğunda uygulamalar kısayolunu etkinleştirir veya devre dışı bırakır.
@@ -1832,7 +1832,7 @@ politikayı geçersiz kılamaz.
 <translation id="4578265298946081589">Kullanıcı oturumu kapatıldığında cihazı yeniden başlatma.</translation>
 <translation id="4578912515887794133">Bu ayar etkinleştirilirse, uzaktan erişim ana makinesi, yerel kullanıcının adını (ana makinenin ilişkilendirildiği ad) ana makinenin sahibi olarak kayıtlı Google hesabının adıyla (ör. ana makinenin sahibi "candogru@example.com" Google hesabı ise, bu ad "candogru" olur) karşılaştırır.  Ana makinenin sahibinin adı, ana makinenin ilişkilendirildiği yerel kullanıcının adından farklı olursa uzaktan erişim ana makinesi çalışmaz.  Ana makinenin sahibine ait Google hesabının belirli bir alan adıyla (ör. "example.com") ilişkilendirilmesini de sağlamak için RemoteAccessHostMatchUsername politikası RemoteAccessHostDomain ile birlikte kullanılmalıdır.
 
-          Bu ayar devre dışı bırakılır veya hiç yapılandırılmazsa, uzaktan erişim ana makinesi herhangi bir yerel kullanıcıyla ilişkilendirilebilir.</translation>
+          Bu ayar devre dışı bırakılır veya yapılandırılmazsa, uzaktan erişim ana makinesi herhangi bir yerel kullanıcıyla ilişkilendirilebilir.</translation>
 <translation id="4600786265870346112">Büyük imleci etkinleştir</translation>
 <translation id="4604931264910482931">Yerel mesajlaşma kara listesini yapılandır</translation>
 <translation id="4613508646038788144">Bu politika false (yanlış) değerine ayarlanırsa üçüncü taraf yazılımlarının Chrome işlemlerine çalıştırılabilir kod yerleştirmelerine izin verilir. Politika ayarlanmazsa veya true (doğru) değerine ayarlanırsa üçüncü taraf yazılımlarının Chrome işlemlerine çalıştırılabilir kod yerleştirmeleri engellenir.</translation>
@@ -2311,7 +2311,7 @@ Bu politika ayarlanmadan bırakılırsa "DisabledPlugins" içindeki kalıplarla 
 <translation id="5581292529942108810">Chrome Raporlama Uzantısı ile ilişkili politikaları yapılandırır.
 
       Bu politika yalnızca <ph name="CHROME_REPORTING_EXTENSION_NAME" /> etkinleştirildiğinde ve makine <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> politikasına kayıtlı olduğunda geçerli olur.</translation>
-<translation id="5583806683960333345">Bu ayar etkinleştirilirse, kullanıcılar, Google telefonlarının mobil verilerini cihazlarıyla paylaşmasına olanak tanıyan Hızlı Tethering özelliğini kullanabilirler.
+<translation id="5583806683960333345">Bu ayar etkinleştirilirse, kullanıcılar, Google telefonlarının mobil veri bağlantısnı cihazlarıyla paylaşmasına olanak tanıyan Hızlı Tethering özelliğini kullanabilirler.
 
       Bu ayar devre dışı bırakılırsa, kullanıcıların Hızlı Tethering özelliğini kullanmalarına izin verilmez.
 
