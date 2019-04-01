@@ -38,7 +38,6 @@
                 android:id="@+id/tab_thumbnail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:minHeight="@dimen/tab_grid_thumbnail_card_default_size"
                 android:layout_below="@id/tab_title"
                 android:gravity="center_horizontal"
                 android:adjustViewBounds="true"
