@@ -23,6 +23,9 @@ extern const wchar_t kRegMdmUrl[];
 // Determines if multiple users can be added to a system managed by MDM.
 extern const wchar_t kRegMdmSupportsMultiUser[];
 
+// Allow sign in using normal consumer accounts.
+extern const wchar_t kRegMdmAllowConsumerAccounts[];
+
 // Class used in tests to force either a successful on unsuccessful enrollment
 // to google MDM.
 class GoogleMdmEnrollmentStatusForTesting {

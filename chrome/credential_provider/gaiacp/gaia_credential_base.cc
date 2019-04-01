@@ -76,11 +76,12 @@ base::string16 GetEmailDomains() {
 
 // Tries to find a user associated to the gaia_id stored in |result| under the
 // key |kKeyId|. If one exists, then this function will fill out |gaia_id|,
-// |username|, |domain| and |sid| with the user's information. If not
-// this function will try to generate a new username derived from the email
-// and fill out only |gaia_id| and |username|. |domain| will always be empty
-// since only local users can be created and |sid| will also be empty until
-// the user is created later on.
+// |username|, |domain| and |sid| with the user's information. If not this
+// function will try to generate a new username derived from the email and fill
+// out only |gaia_id| and |username|. |domain| will always be the local domain
+// since only local users can be created. |sid| will be empty until the user is
+// created later on. |is_consumer_account| will be set to true if the email used
+// to sign in is gmail or googlemail.
 void MakeUsernameForAccount(const base::DictionaryValue* result,
                             base::string16* gaia_id,
                             wchar_t* username,
@@ -88,11 +89,22 @@ void MakeUsernameForAccount(const base::DictionaryValue* result,
                             wchar_t* domain,
                             DWORD domain_length,
                             wchar_t* sid,
-                            DWORD sid_length) {
+                            DWORD sid_length,
+                            bool* is_consumer_account) {
   DCHECK(gaia_id);
   DCHECK(username);
   DCHECK(domain);
   DCHECK(sid);
+  DCHECK(is_consumer_account);
+
+  // Determine if the email is a consumer domain (gmail.com or googlemail.com).
+  base::string16 email = GetDictString(result, kKeyEmail);
+  std::transform(email.begin(), email.end(), email.begin(), ::tolower);
+  base::string16::size_type consumer_domain_pos = email.find(L"@gmail.com");
+  if (consumer_domain_pos == base::string16::npos)
+    consumer_domain_pos = email.find(L"@googlemail.com");
+
+  *is_consumer_account = consumer_domain_pos != base::string16::npos;
 
   *gaia_id = GetDictString(result, kKeyId);
   // First try to detect if this gaia account has been used to create an OS
@@ -114,16 +126,11 @@ void MakeUsernameForAccount(const base::DictionaryValue* result,
   // to preserve the email as much as possible in the username while respecting
   // Windows username rules.  See remarks in
   // https://docs.microsoft.com/en-us/windows/desktop/api/lmaccess/ns-lmaccess-_user_info_0
-  base::string16 os_username = GetDictString(result, kKeyEmail);
-  std::transform(os_username.begin(), os_username.end(), os_username.begin(),
-                 ::tolower);
+  base::string16 os_username = email;
 
-  // If the email ends with @gmail.com or @googlemail.com, strip it.
-  base::string16::size_type at = os_username.find(L"@gmail.com");
-  if (at == base::string16::npos)
-    at = os_username.find(L"@googlemail.com");
-  if (at != base::string16::npos) {
-    os_username.resize(at);
+  // If the email is a consumer domain, strip it.
+  if (consumer_domain_pos != base::string16::npos) {
+    os_username.resize(consumer_domain_pos);
   } else {
     // Strip off well known TLDs.
     std::string username_utf8 =
@@ -182,7 +189,7 @@ HRESULT WaitForLoginUIAndGetResult(
                               &output_buffer[0], kBufferSize);
   // output_buffer contains sensitive information like the password. Don't log
   // it.
-  LOGFN(INFO) << "exit_code=" << exit_code;
+  LOGFN(INFO) << "exit_code=" << *exit_code;
 
   if (*exit_code == kUiecAbort) {
     LOGFN(ERROR) << "Aborted hr=" << putHR(hr);
@@ -1529,10 +1536,26 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(
   wchar_t found_username[kWindowsUsernameBufferLength];
   wchar_t found_domain[kWindowsDomainBufferLength];
   wchar_t found_sid[kWindowsSidBufferLength];
+  bool is_consumer_account = false;
   base::string16 gaia_id;
-  MakeUsernameForAccount(
-      result, &gaia_id, found_username, base::size(found_username),
-      found_domain, base::size(found_domain), found_sid, base::size(found_sid));
+  MakeUsernameForAccount(result, &gaia_id, found_username,
+                         base::size(found_username), found_domain,
+                         base::size(found_domain), found_sid,
+                         base::size(found_sid), &is_consumer_account);
+
+  // Disallow consumer accounts when mdm enrollment is enabled and the global
+  // flag to allow consumer accounts is not set.
+  if (MdmEnrollmentEnabled() && is_consumer_account) {
+    DWORD allow_consumer_accounts = 0;
+    if (FAILED(GetGlobalFlag(kRegMdmAllowConsumerAccounts,
+                             &allow_consumer_accounts)) ||
+        allow_consumer_accounts == 0) {
+      LOGFN(ERROR) << "Consumer accounts are not allowed mdm_aca="
+                   << allow_consumer_accounts;
+      *error_text = AllocErrorString(IDS_INVALID_EMAIL_DOMAIN_BASE);
+      return E_FAIL;
+    }
+  }
 
   // If an existing user associated to the gaia id was found, make sure that it
   // is valid for this credential.
