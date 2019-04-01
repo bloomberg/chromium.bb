@@ -22,9 +22,11 @@ class UdevWatcher {
  public:
   class Observer {
    public:
+    virtual void OnDeviceAdded(ScopedUdevDevicePtr device) = 0;
+    virtual void OnDeviceRemoved(ScopedUdevDevicePtr device) = 0;
+
+   protected:
     virtual ~Observer();
-    virtual void OnDeviceAdded(ScopedUdevDevicePtr device);
-    virtual void OnDeviceRemoved(ScopedUdevDevicePtr device);
   };
 
   // subsystem and devtype parameter for
