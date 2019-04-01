@@ -123,6 +123,9 @@ class MojoVideoDecoder final : public VideoDecoder,
   bool can_read_without_stalling_ = true;
   int32_t max_decode_requests_ = 1;
 
+  mojom::VideoDecoderImplementation video_decoder_implementation_ =
+      mojom::VideoDecoderImplementation::Default;
+
   base::WeakPtr<MojoVideoDecoder> weak_this_;
   base::WeakPtrFactory<MojoVideoDecoder> weak_factory_;
 

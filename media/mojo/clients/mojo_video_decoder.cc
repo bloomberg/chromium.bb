@@ -352,11 +352,11 @@ void MojoVideoDecoder::BindRemoteDecoder() {
     }
   }
 
-  remote_decoder_->Construct(std::move(client_ptr_info),
-                             std::move(media_log_ptr_info),
-                             std::move(video_frame_handle_releaser_request),
-                             std::move(remote_consumer_handle),
-                             std::move(command_buffer_id), target_color_space_);
+  remote_decoder_->Construct(
+      std::move(client_ptr_info), std::move(media_log_ptr_info),
+      std::move(video_frame_handle_releaser_request),
+      std::move(remote_consumer_handle), std::move(command_buffer_id),
+      target_color_space_, video_decoder_implementation_);
 }
 
 void MojoVideoDecoder::OnWaiting(WaitingReason reason) {
