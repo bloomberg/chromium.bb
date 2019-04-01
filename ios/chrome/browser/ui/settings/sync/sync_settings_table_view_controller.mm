@@ -15,6 +15,7 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
+#include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -615,7 +616,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
                                                      ACCESS_POINT_UNKNOWN]
         baseViewController:self];
   } else if (ShouldShowSyncSettings(syncState)) {
-    [self.dispatcher showSyncSettingsFromViewController:self];
+    if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+      [self.dispatcher showGoogleServicesSettingsFromViewController:self];
+    } else {
+      [self.dispatcher showSyncSettingsFromViewController:self];
+    }
   } else if (ShouldShowSyncPassphraseSettings(syncState)) {
     [self.dispatcher showSyncPassphraseSettingsFromViewController:self];
   }
