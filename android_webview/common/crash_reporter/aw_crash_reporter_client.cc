@@ -151,15 +151,15 @@ bool SafeToUseSignalHandler() {
 }
 #endif
 
+bool g_enabled;
+
 }  // namespace
 
 void EnableCrashReporter(const std::string& process_type) {
-  static bool enabled;
-  if (enabled) {
+  if (g_enabled) {
     NOTREACHED() << "EnableCrashReporter called more than once";
     return;
   }
-  enabled = true;
 
 #if defined(ARCH_CPU_X86_FAMILY)
   if (!SafeToUseSignalHandler()) {
@@ -171,6 +171,11 @@ void EnableCrashReporter(const std::string& process_type) {
   AwCrashReporterClient* client = g_crash_reporter_client.Pointer();
   crash_reporter::SetCrashReporterClient(client);
   crash_reporter::InitializeCrashpad(process_type.empty(), process_type);
+  g_enabled = true;
+}
+
+bool CrashReporterEnabled() {
+  return g_enabled;
 }
 
 }  // namespace android_webview

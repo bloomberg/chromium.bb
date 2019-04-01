@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string.h>
+
+#include <memory>
+
 #include "android_webview/common/aw_channel.h"
 #include "android_webview/common/crash_reporter/aw_crash_reporter_client.h"
 #include "android_webview/common/crash_reporter/crash_keys.h"
@@ -23,8 +27,6 @@
 #include "third_party/crashpad/crashpad/client/crash_report_database.h"
 #include "third_party/crashpad/crashpad/util/net/http_body.h"
 #include "third_party/crashpad/crashpad/util/net/http_multipart_builder.h"
-
-#include <memory>
 
 using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF8ToJavaString;
@@ -137,6 +139,12 @@ static jboolean JNI_AwDebug_DumpWithoutCrashing(
                         base::File::FLAG_WRITE);
   if (!target.IsValid())
     return false;
+
+  if (!CrashReporterEnabled()) {
+    static constexpr char kMessage[] = "WebView isn't initialized";
+    return static_cast<size_t>(target.WriteAtCurrentPos(
+               kMessage, strlen(kMessage))) == strlen(kMessage);
+  }
 
   AwDebugCrashReporterClient client;
   base::FilePath database_path;
