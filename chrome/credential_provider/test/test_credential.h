@@ -109,9 +109,8 @@ class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
       CGaiaCredentialBase::UIProcessInfo* uiprocinfo) override;
 
   // Overrides to directly save to a fake scoped user profile.
-  HRESULT ForkSaveAccountInfoStub(
-      const std::unique_ptr<base::DictionaryValue>& dict,
-      BSTR* status_text) override;
+  HRESULT ForkSaveAccountInfoStub(const std::unique_ptr<base::Value>& dict,
+                                  BSTR* status_text) override;
 
   void ResetInternalState() override;
 
@@ -177,7 +176,7 @@ BSTR CTestCredentialBase<T>::GetFinalUsername() {
 
 template <class T>
 std::string CTestCredentialBase<T>::GetFinalEmail() {
-  const base::DictionaryValue* results = this->get_authentication_results();
+  const base::Value* results = this->get_authentication_results();
 
   if (!results)
     return std::string();
@@ -254,7 +253,7 @@ HRESULT CTestCredentialBase<T>::ForkGaiaLogonStub(
 
 template <class T>
 HRESULT CTestCredentialBase<T>::ForkSaveAccountInfoStub(
-    const std::unique_ptr<base::DictionaryValue>& dict,
+    const std::unique_ptr<base::Value>& dict,
     BSTR* status_text) {
   return CGaiaCredentialBase::SaveAccountInfo(*dict);
 }

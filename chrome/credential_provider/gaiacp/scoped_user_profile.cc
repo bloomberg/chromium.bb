@@ -73,7 +73,7 @@ class ScopedGdiplus {
 
 std::string GetEncryptedRefreshToken(
     base::win::ScopedHandle::Handle logon_handle,
-    const base::DictionaryValue& properties) {
+    const base::Value& properties) {
   std::string refresh_token = GetDictStringUTF8(&properties, kKeyRefreshToken);
   if (refresh_token.empty()) {
     LOGFN(ERROR) << "Refresh token is empty";
@@ -542,7 +542,7 @@ bool ScopedUserProfile::IsValid() {
 }
 
 HRESULT ScopedUserProfile::ExtractAssociationInformation(
-    const base::DictionaryValue& properties,
+    const base::Value& properties,
     base::string16* sid,
     base::string16* id,
     base::string16* email,
@@ -607,8 +607,7 @@ HRESULT ScopedUserProfile::RegisterAssociation(
   return S_OK;
 }
 
-HRESULT ScopedUserProfile::SaveAccountInfo(
-    const base::DictionaryValue& properties) {
+HRESULT ScopedUserProfile::SaveAccountInfo(const base::Value& properties) {
   LOGFN(INFO);
 
   base::string16 sid;

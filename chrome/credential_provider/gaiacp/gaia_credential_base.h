@@ -51,7 +51,7 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   static HRESULT OnDllUnregisterServer();
 
   // Saves gaia information in the OS account that was just created.
-  static HRESULT SaveAccountInfo(const base::DictionaryValue& properties);
+  static HRESULT SaveAccountInfo(const base::Value& properties);
 
   // Allocates a BSTR from a DLL string resource given by |id|.
   static BSTR AllocErrorString(UINT id);
@@ -82,7 +82,7 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   const CComBSTR& get_current_windows_password() const {
     return current_windows_password_;
   }
-  const base::DictionaryValue* get_authentication_results() const {
+  const base::Value* get_authentication_results() const {
     return authentication_results_.get();
   }
   void set_current_windows_password(BSTR password) {
@@ -150,7 +150,7 @@ class ATL_NO_VTABLE CGaiaCredentialBase
 
   // Forks a stub process to save account information for a user.
   virtual HRESULT ForkSaveAccountInfoStub(
-      const std::unique_ptr<base::DictionaryValue>& dict,
+      const std::unique_ptr<base::Value>& dict,
       BSTR* status_text);
 
   // Forks the logon stub process and waits for it to start.
@@ -259,7 +259,7 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   // The caller must take ownership of this memory.
   // On failure |error_text| will be allocated and filled with an error message.
   // The caller must take ownership of this memory.
-  HRESULT ValidateOrCreateUser(const base::DictionaryValue* result,
+  HRESULT ValidateOrCreateUser(const base::Value* result,
                                BSTR* domain,
                                BSTR* username,
                                BSTR* sid,
@@ -288,7 +288,7 @@ class ATL_NO_VTABLE CGaiaCredentialBase
 
   // Contains the information about the Gaia account that signed in.  See the
   // kKeyXXX constants for the data that is stored here.
-  std::unique_ptr<base::DictionaryValue> authentication_results_;
+  std::unique_ptr<base::Value> authentication_results_;
 
   // Holds information about the success or failure of the sign in.
   NTSTATUS result_status_ = STATUS_SUCCESS;

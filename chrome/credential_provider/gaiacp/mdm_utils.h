@@ -51,7 +51,7 @@ bool NeedsToEnrollWithMdm();
 bool MdmEnrollmentEnabled();
 
 // Enrolls the machine to with the Google MDM server if not already.
-HRESULT EnrollToGoogleMdmIfNeeded(const base::DictionaryValue& properties);
+HRESULT EnrollToGoogleMdmIfNeeded(const base::Value& properties);
 
 }  // namespace credential_provider
 
