@@ -87,6 +87,10 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
       !child.PhysicalFragment()->IsOutOfFlowPositioned())
     has_child_that_depends_on_percentage_block_size_ = true;
 
+  if (child.MayHaveDescendantAboveBlockStart() &&
+      !child.PhysicalFragment()->IsBlockFormattingContextRoot())
+    may_have_descendant_above_block_start_ = true;
+
   return AddChild(child.PhysicalFragment(), child_offset);
 }
 
@@ -126,6 +130,9 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
         has_floating_descendants_ = true;
     }
   }
+
+  if (child_offset.block_offset < LayoutUnit())
+    may_have_descendant_above_block_start_ = true;
 
   if (!IsParallelWritingMode(child->Style().GetWritingMode(),
                              Style().GetWritingMode()))

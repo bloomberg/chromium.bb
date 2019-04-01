@@ -2313,7 +2313,7 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
   if (!RuntimeEnabledFeatures::LayoutNGFragmentCachingEnabled())
     return nullptr;
 
-  // TODO*cbiesinger): Support caching fragmented boxes
+  // TODO(cbiesinger): Support caching fragmented boxes.
   if (break_token)
     return nullptr;
 
@@ -2339,8 +2339,6 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
   const NGConstraintSpace& old_space =
       cached_layout_result->GetConstraintSpaceForCaching();
 
-  // Check the BFC offset. Even if they don't match, there're some cases we can
-  // still reuse the fragment.
   base::Optional<LayoutUnit> bfc_block_offset =
       cached_layout_result->BfcBlockOffset();
   LayoutUnit bfc_line_offset = new_space.BfcOffset().line_offset;
@@ -2348,22 +2346,58 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
   DCHECK_EQ(old_space.BfcOffset().line_offset,
             cached_layout_result->BfcLineOffset());
 
+  // Check the BFC offset. Even if they don't match, there're some cases we can
+  // still reuse the fragment.
   bool is_bfc_offset_equal = new_space.BfcOffset() == old_space.BfcOffset();
-  if (!is_bfc_offset_equal) {
-    // Earlier floats may affect this box if block offset changes.
-    if (new_space.HasFloats() || old_space.HasFloats())
+
+  // Even for the first fragment, when block fragmentation is enabled, block
+  // offset changes should cause re-layout, since we will fragment at other
+  // locations than before.
+  if (UNLIKELY(!is_bfc_offset_equal && new_space.HasBlockFragmentation())) {
+    DCHECK(old_space.HasBlockFragmentation());
+    return nullptr;
+  }
+
+  bool is_exclusion_space_equal =
+      new_space.ExclusionSpace() == old_space.ExclusionSpace();
+
+  // If anything changes within the layout regarding floats, we need to perform
+  // a series of additional checks to see if the result can still be reused.
+  if (!is_bfc_offset_equal || !is_exclusion_space_equal ||
+      new_space.ClearanceOffset() != old_space.ClearanceOffset()) {
+    // We can't reuse a result if it was previously affected by clearance.
+    //
+    // TODO(layout-dev): There may be cases where we can re-use results here.
+    // However as there are complexities regarding margin-collapsing and
+    // clearance we currently don't attempt to cache anything.
+    if (cached_layout_result->IsPushedByFloats()) {
+      DCHECK(old_space.HasFloats());
+      return nullptr;
+    }
+
+    // Check we have a descendant that *may* be positioned above the block-start
+    // edge. We abort if either the old or new space has floats, as we don't
+    // keep track of how far above the child could be. This case is relatively
+    // rare, and only occurs with negative margins.
+    if (cached_layout_result->MayHaveDescendantAboveBlockStart() &&
+        (old_space.HasFloats() || new_space.HasFloats()))
       return nullptr;
 
-    // Even for the first fragment, when block fragmentation is enabled, block
-    // offset changes should cause re-layout, since we will fragment at other
-    // locations than before.
-    if (new_space.HasBlockFragmentation() || old_space.HasBlockFragmentation())
-      return nullptr;
+    // We can now try to adjust the BFC block-offset.
+    if (bfc_block_offset) {
+      // Check if the previous position may intersect with any floats.
+      if (*bfc_block_offset <
+          old_space.ExclusionSpace().ClearanceOffset(EClear::kBoth))
+        return nullptr;
 
-    if (bfc_block_offset.has_value()) {
       bfc_block_offset = *bfc_block_offset -
                          old_space.BfcOffset().block_offset +
                          new_space.BfcOffset().block_offset;
+
+      // Check if the new position may intersect with any floats.
+      if (*bfc_block_offset <
+          new_space.ExclusionSpace().ClearanceOffset(EClear::kBoth))
+        return nullptr;
     }
   }
 
@@ -2375,8 +2409,16 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
   // The checks above should be enough to bail if layout is incomplete, but
   // let's verify:
   DCHECK(IsBlockLayoutComplete(old_space, *cached_layout_result));
-  if (is_bfc_offset_equal)
+
+  // We can safely reuse this result if our BFC and "input" exclusion spaces
+  // were equal.
+  if (is_bfc_offset_equal && is_exclusion_space_equal) {
+    // In order not to rebuild the internal derived-geometry "cache" of float
+    // data, we need to move this to the new "output" exclusion space.
+    cached_layout_result->ExclusionSpace().MoveAndUpdateDerivedGeometry(
+        new_space.ExclusionSpace());
     return cached_layout_result;
+  }
 
   return base::AdoptRef(new NGLayoutResult(*cached_layout_result,
                                            new_space.ExclusionSpace(),
