@@ -414,9 +414,6 @@ const base::Feature kSendBeaconThrowForBlobWithNonSimpleType{
     "SendBeaconThrowForBlobWithNonSimpleType",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kSecMetadata{"SecMetadata",
-                                 base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Keep processes with service workers controlling clients from other
 // processes at foreground priority. (crbug.com/928904)
 const base::Feature kServiceWorkerForegroundPriority{

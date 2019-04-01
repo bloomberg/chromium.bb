@@ -213,7 +213,7 @@ void WorkerScriptFetchInitiator::AddAdditionalRequestHeaders(
   }
 
   // Set Fetch metadata headers if necessary.
-  if ((base::FeatureList::IsEnabled(features::kSecMetadata) ||
+  if ((base::FeatureList::IsEnabled(network::features::kSecMetadata) ||
        base::CommandLine::ForCurrentProcess()->HasSwitch(
            switches::kEnableExperimentalWebPlatformFeatures)) &&
       IsOriginSecure(resource_request->url)) {

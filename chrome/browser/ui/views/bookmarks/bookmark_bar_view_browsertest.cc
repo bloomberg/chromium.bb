@@ -26,11 +26,11 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/cpp/features.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/test/button_test_api.h"
 
@@ -50,7 +50,7 @@ class BookmarkBarNavigationTest : public InProcessBrowserTest {
       : https_test_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kSecMetadata);
+    scoped_feature_list_.InitAndEnableFeature(network::features::kSecMetadata);
     InProcessBrowserTest::SetUp();
   }
 
