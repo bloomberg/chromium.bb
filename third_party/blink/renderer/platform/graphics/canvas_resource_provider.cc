@@ -426,7 +426,7 @@ class CanvasResourceProviderDirectGpuMemoryBuffer final
   }
 
   sk_sp<SkSurface> CreateSkSurface() const override {
-    if (IsGpuContextLost())
+    if (IsGpuContextLost() || !resource_)
       return nullptr;
     auto* gr = GetGrContext();
     DCHECK(gr);
