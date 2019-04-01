@@ -634,7 +634,7 @@ class RepoRepository(object):
     if detach:
       cmd.append('--detach')
 
-    cros_build_lib.RunCommand(cmd, cwd=self.directory)
+    cros_build_lib.RunCommand(cmd, cwd=self.directory, error_code_ok=True)
 
   def GetRelativePath(self, path):
     """Returns full path including source directory of path in repo."""
