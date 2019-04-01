@@ -188,6 +188,11 @@
       depends_on: ["FeaturePolicyForSandbox"],
     },
     {
+      name: "UnoptimizedLosslessImages",
+      feature_policy_name: "unoptimized-lossless-images",
+      depends_on: ["ExperimentalProductivityFeatures"],
+    },
+    {
       name: "UnoptimizedLossyImages",
       feature_policy_name: "unoptimized-lossy-images",
       depends_on: ["UnoptimizedImagePolicies"],

@@ -108,6 +108,11 @@ class PLATFORM_EXPORT MIMETypeRegistry {
   // size will be restricted via the 'unoptimized-lossy-images' feature
   // policy. (JPEG)
   static bool IsLossyImageMIMEType(const String& mime_type);
+
+  // Checks to see if a mime type is an image type with lossless (or no)
+  // compression, whose size may be restricted via the
+  // 'unoptimized-lossless-images' feature policy. (BMP, GIF, PNG, WEBP)
+  static bool IsLosslessImageMIMEType(const String& mime_type);
 };
 
 }  // namespace blink
