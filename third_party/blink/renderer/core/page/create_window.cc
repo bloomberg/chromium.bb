@@ -49,10 +49,8 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
-#include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -185,27 +183,6 @@ WebWindowFeatures GetWindowFeaturesFromString(const String& feature_string) {
   return window_features;
 }
 
-static Frame* ReuseExistingWindow(LocalFrame& active_frame,
-                                  LocalFrame& lookup_frame,
-                                  const AtomicString& frame_name,
-                                  const KURL& destination_url) {
-  if (!frame_name.IsEmpty() && !EqualIgnoringASCIICase(frame_name, "_blank")) {
-    if (Frame* frame = lookup_frame.FindFrameForNavigation(
-            frame_name, active_frame, destination_url)) {
-      if (!EqualIgnoringASCIICase(frame_name, "_self")) {
-        if (Page* page = frame->GetPage()) {
-          if (page == active_frame.GetPage())
-            page->GetFocusController().SetFocusedFrame(frame);
-          else
-            page->GetChromeClient().Focus(&active_frame);
-        }
-      }
-      return frame;
-    }
-  }
-  return nullptr;
-}
-
 static void MaybeLogWindowOpen(LocalFrame& opener_frame) {
   AdTracker* ad_tracker = opener_frame.GetAdTracker();
   if (!ad_tracker)
@@ -233,15 +210,30 @@ static void MaybeLogWindowOpen(LocalFrame& opener_frame) {
 static Frame* CreateNewWindow(LocalFrame& opener_frame,
                               const FrameLoadRequest& request,
                               const WebWindowFeatures& features,
-                              bool force_new_foreground_tab,
                               bool& created) {
-  Page* old_page = opener_frame.GetPage();
-  if (!old_page)
-    return nullptr;
+  DCHECK(request.GetResourceRequest().RequestorOrigin() ||
+         opener_frame.GetDocument()->Url().IsEmpty());
+  DCHECK_EQ(request.GetFrameType(),
+            network::mojom::RequestContextFrameType::kAuxiliary);
 
-  NavigationPolicy policy = force_new_foreground_tab
-                                ? kNavigationPolicyNewForegroundTab
-                                : NavigationPolicyForCreateWindow(features);
+  const KURL& url = request.GetResourceRequest().Url();
+  probe::WindowOpen(opener_frame.GetDocument(), url, request.FrameName(),
+                    features,
+                    LocalFrame::HasTransientUserActivation(&opener_frame));
+  created = false;
+
+  // Sandboxed frames cannot open new auxiliary browsing contexts.
+  if (opener_frame.GetDocument()->IsSandboxed(kSandboxPopups)) {
+    // FIXME: This message should be moved off the console once a solution to
+    // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
+    opener_frame.GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
+        mojom::ConsoleMessageSource::kSecurity,
+        mojom::ConsoleMessageLevel::kError,
+        "Blocked opening '" + url.ElidedString() +
+            "' in a new window because the request was made in a sandboxed "
+            "frame whose 'allow-popups' permission is not set."));
+    return nullptr;
+  }
 
   bool propagate_sandbox = opener_frame.GetDocument()->IsSandboxed(
       kSandboxPropagatesToAuxiliaryBrowsingContexts);
@@ -258,6 +250,7 @@ static Frame* CreateNewWindow(LocalFrame& opener_frame,
   SessionStorageNamespaceId new_namespace_id =
       AllocateSessionStorageNamespaceId();
 
+  Page* old_page = opener_frame.GetPage();
   if (base::FeatureList::IsEnabled(features::kOnionSoupDOMStorage)) {
     // TODO(dmurph): Don't copy session storage when features.noopener is true:
     // https://html.spec.whatwg.org/C/#copy-session-storage
@@ -267,8 +260,8 @@ static Frame* CreateNewWindow(LocalFrame& opener_frame,
   }
 
   Page* page = old_page->GetChromeClient().CreateWindow(
-      &opener_frame, request, features, policy, sandbox_flags,
-      opener_feature_state, new_namespace_id);
+      &opener_frame, request, features, sandbox_flags, opener_feature_state,
+      new_namespace_id);
   if (!page)
     return nullptr;
 
@@ -299,89 +292,20 @@ static Frame* CreateNewWindow(LocalFrame& opener_frame,
     window_rect.SetHeight(features.height);
 
   page->GetChromeClient().SetWindowRectWithAdjustment(window_rect, frame);
-  page->GetChromeClient().Show(policy);
+  page->GetChromeClient().Show(request.GetNavigationPolicy());
 
   MaybeLogWindowOpen(opener_frame);
   created = true;
   return &frame;
 }
 
-static Frame* CreateWindowHelper(LocalFrame& opener_frame,
-                                 LocalFrame& active_frame,
-                                 LocalFrame& lookup_frame,
-                                 const FrameLoadRequest& request,
-                                 const WebWindowFeatures& features,
-                                 bool force_new_foreground_tab,
-                                 bool& created) {
-  DCHECK(request.GetResourceRequest().RequestorOrigin() ||
-         opener_frame.GetDocument()->Url().IsEmpty());
-  DCHECK_EQ(request.GetFrameType(),
-            network::mojom::RequestContextFrameType::kAuxiliary);
-  probe::WindowOpen(opener_frame.GetDocument(),
-                    request.GetResourceRequest().Url(), request.FrameName(),
-                    features,
-                    LocalFrame::HasTransientUserActivation(&opener_frame));
-  created = false;
-
-  Frame* window =
-      features.noopener || force_new_foreground_tab
-          ? nullptr
-          : ReuseExistingWindow(active_frame, lookup_frame, request.FrameName(),
-                                request.GetResourceRequest().Url());
-
-  if (!window) {
-    // Sandboxed frames cannot open new auxiliary browsing contexts.
-    if (opener_frame.GetDocument()->IsSandboxed(kSandboxPopups)) {
-      // FIXME: This message should be moved off the console once a solution to
-      // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
-      opener_frame.GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
-          mojom::ConsoleMessageSource::kSecurity,
-          mojom::ConsoleMessageLevel::kError,
-          "Blocked opening '" +
-              request.GetResourceRequest().Url().ElidedString() +
-              "' in a new window because the request was made in a sandboxed "
-              "frame whose 'allow-popups' permission is not set."));
-      return nullptr;
-    }
-  }
-
-  if (window) {
-    // JS can run inside ReuseExistingWindow (via onblur), which can detach
-    // the target window.
-    if (!window->Client())
-      return nullptr;
-    if (request.GetShouldSetOpener() == kMaybeSetOpener)
-      window->Client()->SetOpener(&opener_frame);
-    return window;
-  }
-
-  return CreateNewWindow(opener_frame, request, features,
-                         force_new_foreground_tab, created);
-}
-
-DOMWindow* CreateWindow(const String& url_string,
+DOMWindow* CreateWindow(const KURL& completed_url,
                         const AtomicString& frame_name,
-                        const String& window_features_string,
+                        const WebWindowFeatures& window_features,
                         LocalDOMWindow& incumbent_window,
-                        LocalFrame& entered_window_frame,
-                        LocalFrame& opener_frame,
-                        ExceptionState& exception_state) {
+                        LocalFrame& opener_frame) {
   LocalFrame* active_frame = incumbent_window.GetFrame();
   DCHECK(active_frame);
-
-  KURL completed_url =
-      url_string.IsEmpty()
-          ? KURL(g_empty_string)
-          : entered_window_frame.GetDocument()->CompleteURL(url_string);
-  if (!completed_url.IsEmpty() && !completed_url.IsValid()) {
-    UseCounter::Count(incumbent_window.document(),
-                      WebFeature::kWindowOpenWithInvalidURL);
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kSyntaxError,
-        "Unable to open a window with invalid URL '" +
-            completed_url.GetString() + "'.\n");
-    return nullptr;
-  }
 
   if (completed_url.ProtocolIsJavaScript() &&
       opener_frame.GetDocument()->GetContentSecurityPolicy() &&
@@ -398,11 +322,10 @@ DOMWindow* CreateWindow(const String& url_string,
     }
   }
 
-  WebWindowFeatures window_features =
-      GetWindowFeaturesFromString(window_features_string);
-
   FrameLoadRequest frame_request(incumbent_window.document(),
                                  ResourceRequest(completed_url), frame_name);
+  frame_request.SetNavigationPolicy(
+      NavigationPolicyForCreateWindow(window_features));
   frame_request.SetShouldSetOpener(window_features.noopener ? kNeverSetOpener
                                                             : kMaybeSetOpener);
   frame_request.SetFrameType(
@@ -431,16 +354,15 @@ DOMWindow* CreateWindow(const String& url_string,
   // different from the opener frame, and the name references a frame relative
   // to the opener frame.
   bool created;
-  Frame* new_frame = CreateWindowHelper(
-      opener_frame, *active_frame, opener_frame, frame_request, window_features,
-      false /* force_new_foreground_tab */, created);
+  Frame* new_frame =
+      CreateNewWindow(opener_frame, frame_request, window_features, created);
   if (!new_frame)
     return nullptr;
   if (new_frame->DomWindow()->IsInsecureScriptAccess(incumbent_window,
                                                      completed_url))
     return window_features.noopener ? nullptr : new_frame->DomWindow();
 
-  if (created || !url_string.IsEmpty()) {
+  if (created || !completed_url.IsEmpty()) {
     FrameLoadRequest request(incumbent_window.document(),
                              ResourceRequest(completed_url));
     request.GetResourceRequest().SetHasUserGesture(has_user_gesture);
@@ -469,9 +391,7 @@ void CreateWindowForRequest(const FrameLoadRequest& request,
   WebWindowFeatures features;
   features.noopener = request.GetShouldSetOpener() == kNeverSetOpener;
   bool created;
-  Frame* new_frame = CreateWindowHelper(
-      opener_frame, opener_frame, opener_frame, request, features,
-      true /* force_new_foreground_tab */, created);
+  Frame* new_frame = CreateNewWindow(opener_frame, request, features, created);
   if (!new_frame)
     return;
   auto* new_local_frame = DynamicTo<LocalFrame>(new_frame);

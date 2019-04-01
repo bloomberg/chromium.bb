@@ -80,7 +80,6 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   Page* CreateWindowDelegate(LocalFrame*,
                              const FrameLoadRequest&,
                              const WebWindowFeatures&,
-                             NavigationPolicy,
                              SandboxFlags,
                              const FeaturePolicy::FeatureState&,
                              const SessionStorageNamespaceId&) override;
