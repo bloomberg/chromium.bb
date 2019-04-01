@@ -8,7 +8,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
 #include <map>
 #include <memory>
 #include <string>
@@ -18,7 +17,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string16.h"
-#include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_listener.h"
@@ -210,11 +208,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       DispatchFetchEventCallback callback);
 
-  // TODO(crbug.com/907311): Remove after we identified the cause of crash.
-  void SetReportDebugLogForTesting(bool report_debug_log) {
-    report_debug_log_ = report_debug_log;
-  }
-
   /////////////////////////////////////////////////////////////////////////////
   // The following are for use by NavigationPreloadRequest.
   //
@@ -369,13 +362,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       std::unique_ptr<ServiceWorkerTimeoutTimer> timeout_timer);
   ServiceWorkerTimeoutTimer* GetTimeoutTimerForTesting();
 
-  // TODO(crbug.com/907311): Remove after we identified the cause of crash.
-  // Guarded by the lock because these are called from both the main thread
-  // and the worker thread.
-  void RecordDebugLog(const char* message) LOCKS_EXCLUDED(debug_log_lock_);
-  void CrashWithDebugLog(const std::string& reason)
-      LOCKS_EXCLUDED(debug_log_lock_);
-
   const int64_t service_worker_version_id_;
   const GURL service_worker_scope_;
   const GURL script_url_;
@@ -438,11 +424,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // Detects disconnection from the network service.
   network::mojom::URLLoaderFactoryPtr
       network_service_connection_error_handler_holder_;
-
-  // TODO(crbug.com/907311): Remove after we identified the cause of crash.
-  bool report_debug_log_ = true;
-  base::Lock debug_log_lock_;
-  std::deque<std::string> debug_log_ GUARDED_BY(debug_log_lock_);
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextClient);
 };

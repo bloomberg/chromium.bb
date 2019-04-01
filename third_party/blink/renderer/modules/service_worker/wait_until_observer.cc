@@ -111,8 +111,7 @@ WaitUntilObserver* WaitUntilObserver::Create(ExecutionContext* context,
 }
 
 void WaitUntilObserver::WillDispatchEvent() {
-  // TODO(crbug.com/934622): Temporary CHECK for the crash bug.
-  CHECK(GetExecutionContext());
+  DCHECK(GetExecutionContext());
 
   // When handling a notificationclick, paymentrequest, or backgroundfetchclick
   // event, we want to allow one window to be focused or opened. These calls are
