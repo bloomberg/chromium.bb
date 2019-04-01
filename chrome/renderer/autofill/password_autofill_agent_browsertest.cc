@@ -717,7 +717,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   }
 
   FakeMojoPasswordManagerDriver fake_driver_;
-  FakePasswordGenerationDriver fake_pw_client_;
+  testing::NiceMock<FakePasswordGenerationDriver> fake_pw_client_;
 
   base::string16 username1_;
   base::string16 username2_;
