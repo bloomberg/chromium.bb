@@ -23,7 +23,7 @@ public class TouchlessZoomHelper
     public TouchlessZoomHelper(ActivityTabProvider tabProvider) {
         mActivityTabProvider = tabProvider;
         mActivityTabProvider.addObserverAndTrigger(this);
-        FontSizePrefs.getInstance(tabProvider.getActivityTab().getContext()).enableTouchlessMode();
+        FontSizePrefs.getInstance().enableTouchlessMode();
         TouchlessEventHandler.setZoomCallback(this);
     }
 
