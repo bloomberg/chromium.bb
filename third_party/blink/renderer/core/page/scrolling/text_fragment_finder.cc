@@ -12,14 +12,15 @@
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/finder/find_buffer.h"
 #include "third_party/blink/renderer/core/editing/position.h"
+#include "third_party/blink/renderer/core/page/scrolling/text_fragment_selector.h"
 
 namespace blink {
 
-TextFragmentFinder::TextFragmentFinder(Client& client) : client_(client) {}
+TextFragmentFinder::TextFragmentFinder(Client& client,
+                                       const TextFragmentSelector& selector)
+    : client_(client), selector_(selector) {}
 
-void TextFragmentFinder::FindMatch(const String& search_text,
-                                   Document& document) {
-  search_text_ = search_text;
+void TextFragmentFinder::FindMatch(Document& document) {
   PositionInFlatTree search_start =
       PositionInFlatTree::FirstPositionInNode(document);
 
@@ -36,8 +37,10 @@ void TextFragmentFinder::FindMatch(const String& search_text,
     // Find in the whole block.
     FindBuffer buffer(EphemeralRangeInFlatTree(search_start, search_end));
     const FindOptions find_options = kCaseInsensitive;
+    // TODO(bokan): We need to add the capability to match a snippet based on
+    // it's start and end. https://crbug.com/924964.
     std::unique_ptr<FindBuffer::Results> match_results =
-        buffer.FindMatches(search_text_, find_options);
+        buffer.FindMatches(selector_.Start(), find_options);
 
     if (!match_results->IsEmpty()) {
       FindBuffer::BufferMatchResult match = match_results->front();
