@@ -299,22 +299,15 @@ static void fill_variance_4x4avg(const uint8_t *s, int sp, const uint8_t *d,
   }
 }
 
+// TODO(kyslov) Bring back threshold adjustment based on content state
 static int64_t scale_part_thresh_sumdiff(int64_t threshold_base, int speed,
                                          int width, int height,
                                          int content_state) {
+  (void)width;
+  (void)height;
+  (void)content_state;
   if (speed >= 8) {
-    if (width <= 640 && height <= 480)
-      return (5 * threshold_base) >> 2;
-    else if ((content_state == kLowSadLowSumdiff) ||
-             (content_state == kHighSadLowSumdiff) ||
-             (content_state == kLowVarHighSumdiff))
-      return (5 * threshold_base) >> 2;
-  } else if (speed == 7) {
-    if ((content_state == kLowSadLowSumdiff) ||
-        (content_state == kHighSadLowSumdiff) ||
-        (content_state == kLowVarHighSumdiff)) {
-      return (5 * threshold_base) >> 2;
-    }
+    return (5 * threshold_base) >> 2;
   }
   return threshold_base;
 }
@@ -342,7 +335,8 @@ static void set_vbp_thresholds(AV1_COMP *cpi, int64_t thresholds[], int q,
     threshold_base = scale_part_thresh_sumdiff(
         threshold_base, cpi->oxcf.speed, cm->width, cm->height, content_state);
 
-    thresholds[1] = threshold_base;
+    thresholds[0] = threshold_base;
+    thresholds[1] = threshold_base << 1;
     thresholds[3] = threshold_base << cpi->oxcf.speed;
     if (cm->width >= 1280 && cm->height >= 720)
       thresholds[3] = thresholds[3] << 1;
@@ -411,22 +405,23 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
   v16x16 *vt2 = NULL;
   unsigned char force_split[85];
   int avg_32x32;
-  int max_var_32x32 = 0;
-  int min_var_32x32 = INT_MAX;
+  int max_var_32x32[4];
+  int min_var_32x32[4];
   int var_32x32;
   int var_64x64;
   int min_var_64x64 = INT_MAX;
   int max_var_64x64 = 0;
-  int avg_16x16[4];
-  int maxvar_16x16[4];
-  int minvar_16x16[4];
+  int avg_16x16[4][4];
+  int maxvar_16x16[4][4];
+  int minvar_16x16[4][4];
   int64_t threshold_4x4avg;
   int content_state = 0;
   uint8_t *s;
   const uint8_t *d;
   int sp;
   int dp;
-  int compute_minmax_variance = 1;
+  // TODO(kyslov) Bring back compute_minmax_variance with content type detection
+  int compute_minmax_variance = 0;
   int is_key_frame = frame_is_intra_only(cm);
   int pixels_wide = 128, pixels_high = 128;
   assert(cm->seq_params.sb_size == BLOCK_64X64 ||
@@ -531,14 +526,16 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
     const int y64_idx = ((m >> 1) << 6);
     const int m2 = m << 2;
     force_split[m + 1] = 0;
+    max_var_32x32[m] = 0;
+    min_var_32x32[m] = INT_MAX;
     for (i = 0; i < 4; i++) {
       const int x32_idx = x64_idx + ((i & 1) << 5);
       const int y32_idx = y64_idx + ((i >> 1) << 5);
       const int i2 = (m2 + i) << 2;
       force_split[5 + m2 + i] = 0;
-      avg_16x16[i] = 0;
-      maxvar_16x16[i] = 0;
-      minvar_16x16[i] = INT_MAX;
+      avg_16x16[m][i] = 0;
+      maxvar_16x16[m][i] = 0;
+      minvar_16x16[m][i] = INT_MAX;
       for (j = 0; j < 4; j++) {
         const int x16_idx = x32_idx + ((j & 1) << 4);
         const int y16_idx = y32_idx + ((j >> 1) << 4);
@@ -551,15 +548,15 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
                                pixels_high, is_key_frame);
           fill_variance_tree(&vt->split[m].split[i].split[j], BLOCK_16X16);
           get_variance(&vt->split[m].split[i].split[j].part_variances.none);
-          avg_16x16[i] +=
+          avg_16x16[m][i] +=
               vt->split[m].split[i].split[j].part_variances.none.variance;
           if (vt->split[m].split[i].split[j].part_variances.none.variance <
-              minvar_16x16[i])
-            minvar_16x16[i] =
+              minvar_16x16[m][i])
+            minvar_16x16[m][i] =
                 vt->split[m].split[i].split[j].part_variances.none.variance;
           if (vt->split[m].split[i].split[j].part_variances.none.variance >
-              maxvar_16x16[i])
-            maxvar_16x16[i] =
+              maxvar_16x16[m][i])
+            maxvar_16x16[m][i] =
                 vt->split[m].split[i].split[j].part_variances.none.variance;
           if (vt->split[m].split[i].split[j].part_variances.none.variance >
               thresholds[3]) {
@@ -639,21 +636,22 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
       if (!force_split[5 + m2 + i]) {
         get_variance(&vt->split[m].split[i].part_variances.none);
         var_32x32 = vt->split[m].split[i].part_variances.none.variance;
-        max_var_32x32 = AOMMAX(var_32x32, max_var_32x32);
-        min_var_32x32 = AOMMIN(var_32x32, min_var_32x32);
+        max_var_32x32[m] = AOMMAX(var_32x32, max_var_32x32[m]);
+        min_var_32x32[m] = AOMMIN(var_32x32, min_var_32x32[m]);
         if (vt->split[m].split[i].part_variances.none.variance >
                 thresholds[2] ||
             (!is_key_frame &&
              vt->split[m].split[i].part_variances.none.variance >
                  (thresholds[2] >> 1) &&
              vt->split[m].split[i].part_variances.none.variance >
-                 (avg_16x16[i] >> 1))) {
+                 (avg_16x16[m][i] >> 1))) {
           force_split[5 + m2 + i] = 1;
           force_split[m + 1] = 1;
           force_split[0] = 1;
         } else if (!is_key_frame && cm->height <= 360 &&
-                   (maxvar_16x16[i] - minvar_16x16[i]) > (thresholds[2] >> 1) &&
-                   maxvar_16x16[i] > thresholds[2]) {
+                   (maxvar_16x16[m][i] - minvar_16x16[m][i]) >
+                       (thresholds[2] >> 1) &&
+                   maxvar_16x16[m][i] > thresholds[2]) {
           force_split[5 + m2 + i] = 1;
           force_split[m + 1] = 1;
           force_split[0] = 1;
@@ -672,8 +670,8 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
       // split. Only checking this for noise level >= medium for now.
 
       if (!is_key_frame &&
-          (max_var_32x32 - min_var_32x32) > 3 * (thresholds[1] >> 3) &&
-          max_var_32x32 > thresholds[1] >> 1)
+          (max_var_32x32[m] - min_var_32x32[m]) > 3 * (thresholds[1] >> 3) &&
+          max_var_32x32[m] > thresholds[1] >> 1)
         force_split[1 + m] = 1;
     }
     if (is_small_sb) force_split[0] = 1;
