@@ -54,8 +54,8 @@ void HTMLImageFallbackHelper::CreateAltTextShadowTree(Element& element) {
   root.AppendChild(container);
   container->setAttribute(kIdAttr, AtomicString("alttext-container"));
 
-  HTMLImageElement* broken_image =
-      HTMLImageElement::Create(element.GetDocument());
+  auto* broken_image =
+      MakeGarbageCollected<HTMLImageElement>(element.GetDocument());
   container->AppendChild(broken_image);
   broken_image->SetIsFallbackImage();
   broken_image->setAttribute(kIdAttr, AtomicString("alttext-image"));

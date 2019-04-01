@@ -74,10 +74,6 @@ using namespace html_names;
 class HTMLImageElement::ViewportChangeListener final
     : public MediaQueryListListener {
  public:
-  static ViewportChangeListener* Create(HTMLImageElement* element) {
-    return MakeGarbageCollected<ViewportChangeListener>(element);
-  }
-
   explicit ViewportChangeListener(HTMLImageElement* element)
       : element_(element) {}
 
@@ -97,7 +93,7 @@ class HTMLImageElement::ViewportChangeListener final
 
 HTMLImageElement::HTMLImageElement(Document& document, bool created_by_parser)
     : HTMLElement(kImgTag, document),
-      image_loader_(HTMLImageLoader::Create(this)),
+      image_loader_(MakeGarbageCollected<HTMLImageLoader>(this)),
       image_device_pixel_ratio_(1.0f),
       source_(nullptr),
       layout_disposition_(LayoutDisposition::kPrimaryContent),
@@ -267,7 +263,7 @@ void HTMLImageElement::SetBestFitURLAndDPRFromImageCandidate(
 
   if (intrinsic_sizing_viewport_dependant) {
     if (!listener_)
-      listener_ = ViewportChangeListener::Create(this);
+      listener_ = MakeGarbageCollected<ViewportChangeListener>(this);
 
     GetDocument().GetMediaQueryMatcher().AddViewportListener(listener_);
   } else if (listener_) {

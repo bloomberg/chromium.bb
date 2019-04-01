@@ -58,14 +58,6 @@ DateTimeChooserImpl::DateTimeChooserImpl(
   popup_ = chrome_client_->OpenPagePopup(this);
 }
 
-DateTimeChooserImpl* DateTimeChooserImpl::Create(
-    ChromeClient* chrome_client,
-    DateTimeChooserClient* client,
-    const DateTimeChooserParameters& parameters) {
-  return MakeGarbageCollected<DateTimeChooserImpl>(chrome_client, client,
-                                                   parameters);
-}
-
 DateTimeChooserImpl::~DateTimeChooserImpl() = default;
 
 void DateTimeChooserImpl::Trace(Visitor* visitor) {

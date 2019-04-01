@@ -165,7 +165,7 @@ void HTMLVideoElement::AttachLayoutTree(AttachContext& context) {
   UpdateDisplayState();
   if (ShouldDisplayPosterImage()) {
     if (!image_loader_)
-      image_loader_ = HTMLImageLoader::Create(this);
+      image_loader_ = MakeGarbageCollected<HTMLImageLoader>(this);
     image_loader_->UpdateFromElement();
     if (GetLayoutObject()) {
       ToLayoutImage(GetLayoutObject())
@@ -207,7 +207,7 @@ void HTMLVideoElement::ParseAttribute(
     }
     if (!PosterImageURL().IsEmpty()) {
       if (!image_loader_)
-        image_loader_ = HTMLImageLoader::Create(this);
+        image_loader_ = MakeGarbageCollected<HTMLImageLoader>(this);
       image_loader_->UpdateFromElement(ImageLoader::kUpdateIgnorePreviousError);
     } else {
       if (GetLayoutObject()) {

@@ -119,7 +119,7 @@ void HTMLObjectElement::ParseAttribute(
     if (GetLayoutObject() && IsImageType()) {
       SetNeedsPluginUpdate(true);
       if (!image_loader_)
-        image_loader_ = HTMLImageLoader::Create(this);
+        image_loader_ = MakeGarbageCollected<HTMLImageLoader>(this);
       image_loader_->UpdateFromElement(ImageLoader::kUpdateIgnorePreviousError);
     } else {
       ReloadPluginOnAttributeChange(name);

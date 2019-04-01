@@ -761,7 +761,7 @@ scoped_refptr<ComputedStyle> HTMLPlugInElement::CustomStyleForLayoutObject() {
   if (IsImageType() && !GetLayoutObject() && style &&
       LayoutObjectIsNeeded(*style)) {
     if (!image_loader_)
-      image_loader_ = HTMLImageLoader::Create(this);
+      image_loader_ = MakeGarbageCollected<HTMLImageLoader>(this);
     image_loader_->UpdateFromElement();
   }
   return style;

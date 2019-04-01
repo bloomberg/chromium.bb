@@ -111,8 +111,8 @@ bool InsertCommands::ExecuteInsertImage(LocalFrame& frame,
                                         EditorCommandSource,
                                         const String& value) {
   DCHECK(frame.GetDocument());
-  HTMLImageElement* const image =
-      HTMLImageElement::Create(*frame.GetDocument());
+  auto* const image =
+      MakeGarbageCollected<HTMLImageElement>(*frame.GetDocument());
   if (!value.IsEmpty())
     image->SetSrc(value);
   return ExecuteInsertElement(frame, image);

@@ -92,8 +92,7 @@ EditingViewPortElement::CustomStyleForLayoutObject() {
 
 // ---------------------------
 
-inline TextControlInnerEditorElement::TextControlInnerEditorElement(
-    Document& document)
+TextControlInnerEditorElement::TextControlInnerEditorElement(Document& document)
     : HTMLDivElement(document) {
   SetHasCustomStyleCallbacks();
 }

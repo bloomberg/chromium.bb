@@ -158,7 +158,7 @@ bool HTMLInputElement::HasPendingActivity() const {
 
 HTMLImageLoader& HTMLInputElement::EnsureImageLoader() {
   if (!image_loader_)
-    image_loader_ = HTMLImageLoader::Create(this);
+    image_loader_ = MakeGarbageCollected<HTMLImageLoader>(this);
   return *image_loader_;
 }
 

@@ -47,7 +47,7 @@ using namespace html_names;
 inline HTMLIFrameElement::HTMLIFrameElement(Document& document)
     : HTMLFrameElementBase(kIFrameTag, document),
       collapsed_by_client_(false),
-      sandbox_(HTMLIFrameElementSandbox::Create(this)),
+      sandbox_(MakeGarbageCollected<HTMLIFrameElementSandbox>(this)),
       referrer_policy_(network::mojom::ReferrerPolicy::kDefault) {}
 
 DEFINE_NODE_FACTORY(HTMLIFrameElement)

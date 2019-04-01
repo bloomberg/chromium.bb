@@ -287,7 +287,7 @@ TEST_F(ImagePaintTimingDetectorTest,
     <div id="parent">
     </div>
   )HTML");
-  HTMLImageElement* image = HTMLImageElement::Create(GetDocument());
+  auto* image = MakeGarbageCollected<HTMLImageElement>(GetDocument());
   image->setAttribute("id", "target");
   GetDocument().getElementById("parent")->AppendChild(image);
   SetImageAndPaint("target", 5, 5);
