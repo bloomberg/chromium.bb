@@ -1592,6 +1592,11 @@ void WebViewImpl::UpdateLifecycle(LifecycleUpdate requested_update,
   }
 }
 
+void WebViewImpl::RequestPresentationCallbackForTesting(
+    base::OnceClosure callback) {
+  layer_tree_view_->RequestPresentationCallback(std::move(callback));
+}
+
 void WebViewImpl::PaintContent(cc::PaintCanvas* canvas, const WebRect& rect) {
   // This should only be used when compositing is not being used for this
   // WebView, and it is painting into the recording of its parent.
