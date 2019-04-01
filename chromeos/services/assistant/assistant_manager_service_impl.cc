@@ -248,7 +248,7 @@ void AssistantManagerServiceImpl::RegisterFallbackMediaHandler() {
           OnMediaControlAction(action_name, media_action_args_proto);
         }
       });
-};
+}
 
 void AssistantManagerServiceImpl::AddMediaControllerObserver() {
   if (features::IsMediaSessionIntegrationEnabled()) {
