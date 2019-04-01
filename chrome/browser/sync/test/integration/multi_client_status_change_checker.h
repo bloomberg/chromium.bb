@@ -10,7 +10,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/scoped_observer.h"
-#include "base/time/time.h"
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
 #include "components/sync/driver/sync_service_observer.h"
 
@@ -39,8 +38,6 @@ class MultiClientStatusChangeChecker : public StatusChangeChecker,
   std::string GetDebugMessage() const override = 0;
 
  protected:
-  base::TimeDelta GetTimeoutDuration() override;
-
   const std::vector<browser_sync::ProfileSyncService*>& services() {
     return services_;
   }
