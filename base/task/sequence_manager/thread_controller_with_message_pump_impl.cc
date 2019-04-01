@@ -73,12 +73,6 @@ void ThreadControllerWithMessagePumpImpl::SetSequencedTaskSource(
 }
 
 void ThreadControllerWithMessagePumpImpl::BindToCurrentThread(
-    MessageLoopBase* message_loop_base) {
-  NOTREACHED()
-      << "ThreadControllerWithMessagePumpImpl doesn't support MessageLoops";
-}
-
-void ThreadControllerWithMessagePumpImpl::BindToCurrentThread(
     std::unique_ptr<MessagePump> message_pump) {
   associated_thread_->BindToCurrentThread();
   pump_ = std::move(message_pump);

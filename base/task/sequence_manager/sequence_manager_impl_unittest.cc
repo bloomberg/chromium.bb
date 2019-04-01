@@ -14,6 +14,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_default.h"
@@ -25,8 +26,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/sequence_manager/real_time_domain.h"
+#include "base/task/sequence_manager/sequence_manager.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/task/sequence_manager/task_queue_selector.h"
+#include "base/task/sequence_manager/tasks.h"
 #include "base/task/sequence_manager/test/mock_time_domain.h"
 #include "base/task/sequence_manager/test/mock_time_message_pump.h"
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"
@@ -301,11 +304,9 @@ class FixtureWithMessageLoop : public Fixture {
     pump_ = pump.get();
     message_loop_ = std::make_unique<MessageLoop>(std::move(pump));
 
-    sequence_manager_ = SequenceManagerForTest::Create(
-        message_loop_->GetMessageLoopBase(), ThreadTaskRunnerHandle::Get(),
-        mock_tick_clock(),
-        SequenceManager::Settings{MessageLoop::Type::TYPE_DEFAULT, false,
-                                  mock_tick_clock()});
+    sequence_manager_ =
+        SequenceManagerForTest::CreateOnCurrentThread(SequenceManager::Settings{
+            MessageLoop::Type::TYPE_DEFAULT, false, mock_tick_clock()});
 
     // The SequenceManager constructor calls Now() once for setting up
     // housekeeping. The MessageLoop also contains a SequenceManager so two
@@ -3751,10 +3752,9 @@ TEST(SequenceManagerBasicTest, DefaultTaskRunnerSupport) {
   scoped_refptr<SingleThreadTaskRunner> custom_task_runner =
       MakeRefCounted<TestSimpleTaskRunner>();
   {
-    std::unique_ptr<SequenceManagerForTest> manager =
-        SequenceManagerForTest::Create(message_loop.GetMessageLoopBase(),
-                                       message_loop.task_runner(), nullptr,
-                                       SequenceManager::Settings());
+    std::unique_ptr<SequenceManager> manager =
+        CreateSequenceManagerOnCurrentThread(SequenceManager::Settings());
+
     manager->SetDefaultTaskRunner(custom_task_runner);
     DCHECK_EQ(custom_task_runner, message_loop.task_runner());
   }

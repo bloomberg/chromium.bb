@@ -14,7 +14,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/pending_task.h"
 #include "base/task/common/intrusive_heap.h"
 #include "base/task/common/operations_controller.h"
@@ -110,8 +109,8 @@ class BASE_EXPORT TaskQueueImpl {
   Optional<DelayedWakeUp> GetNextScheduledWakeUpImpl();
   void SetQueuePriority(TaskQueue::QueuePriority priority);
   TaskQueue::QueuePriority GetQueuePriority() const;
-  void AddTaskObserver(MessageLoop::TaskObserver* task_observer);
-  void RemoveTaskObserver(MessageLoop::TaskObserver* task_observer);
+  void AddTaskObserver(TaskObserver* task_observer);
+  void RemoveTaskObserver(TaskObserver* task_observer);
   void SetTimeDomain(TimeDomain* time_domain);
   TimeDomain* GetTimeDomain() const;
   void SetBlameContext(trace_event::BlameContext* blame_context);
@@ -333,7 +332,7 @@ class BASE_EXPORT TaskQueueImpl {
     std::unique_ptr<WorkQueue> delayed_work_queue;
     std::unique_ptr<WorkQueue> immediate_work_queue;
     DelayedIncomingQueue delayed_incoming_queue;
-    ObserverList<MessageLoop::TaskObserver>::Unchecked task_observers;
+    ObserverList<TaskObserver>::Unchecked task_observers;
     base::internal::HeapHandle heap_handle;
     bool is_enabled;
     trace_event::BlameContext* blame_context;  // Not owned.

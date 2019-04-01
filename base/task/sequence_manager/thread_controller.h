@@ -6,6 +6,7 @@
 #define BASE_TASK_SEQUENCE_MANAGER_THREAD_CONTROLLER_H_
 
 #include "base/message_loop/message_pump.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/sequence_manager/lazy_now.h"
 #include "base/time/time.h"
@@ -14,7 +15,6 @@
 namespace base {
 
 class MessageLoopBase;
-class MessagePump;
 class TickClock;
 struct PendingTask;
 
@@ -69,11 +69,6 @@ class ThreadController {
   // Requests desired timer precision from the OS.
   // Has no effect on some platforms.
   virtual void SetTimerSlack(TimerSlack timer_slack) = 0;
-
-  // Completes delayed initialization of unbound ThreadControllers.
-  // BindToCurrentThread(MessageLoopBase*) or BindToCurrentThread(MessagePump*)
-  // may only be called once.
-  virtual void BindToCurrentThread(MessageLoopBase* message_loop_base) = 0;
 
   // Completes delayed initialization of unbound ThreadControllers.
   // BindToCurrentThread(MessageLoopBase*) or BindToCurrentThread(MessagePump*)

@@ -97,9 +97,10 @@ class BASE_EXPORT SequenceManagerImpl
       scoped_refptr<SingleThreadTaskRunner> task_runner,
       SequenceManager::Settings settings);
 
+  void BindToMessageLoop(MessageLoopBase* message_loop_base);
+
   // SequenceManager implementation:
   void BindToCurrentThread() override;
-  void BindToMessageLoop(MessageLoopBase* message_loop_base) override;
   void BindToMessagePump(std::unique_ptr<MessagePump> message_pump) override;
   void SetObserver(Observer* observer) override;
   void AddTaskTimeObserver(TaskTimeObserver* task_time_observer) override;
@@ -193,6 +194,9 @@ class BASE_EXPORT SequenceManagerImpl
       TimeDelta::FromSeconds(30);
 
  protected:
+  static std::unique_ptr<ThreadControllerImpl>
+  CreateThreadControllerImplForCurrentThread(const TickClock* clock);
+
   // Create a task queue manager where |controller| controls the thread
   // on which the tasks are eventually run.
   SequenceManagerImpl(std::unique_ptr<internal::ThreadController> controller,

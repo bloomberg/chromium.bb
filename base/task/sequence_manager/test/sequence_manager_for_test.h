@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/single_thread_task_runner.h"
+#include "base/task/sequence_manager/sequence_manager.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/time/tick_clock.h"
 
@@ -23,7 +24,7 @@ class SequenceManagerForTest : public internal::SequenceManagerImpl {
   // the given arguments. ThreadControllerImpl is slightly overridden to skip
   // nesting observers registration if message loop is absent.
   static std::unique_ptr<SequenceManagerForTest> Create(
-      MessageLoopBase* message_loop_base,
+      SequenceManagerImpl* funneled_sequence_manager,
       scoped_refptr<SingleThreadTaskRunner> task_runner,
       const TickClock* clock,
       // Since most test calls are in Blink, randomised sampling is enabled
@@ -38,12 +39,17 @@ class SequenceManagerForTest : public internal::SequenceManagerImpl {
           base::MessageLoop::TYPE_DEFAULT,
           /*randomised_sampling_enabled=*/true});
 
+  static std::unique_ptr<SequenceManagerForTest> CreateOnCurrentThread(
+      SequenceManager::Settings);
+
   size_t ActiveQueuesCount() const;
   bool HasImmediateWork() const;
   size_t PendingTasksCount() const;
   size_t QueuesToDeleteCount() const;
   size_t QueuesToShutdownCount();
 
+  using internal::SequenceManagerImpl::
+      CreateThreadControllerImplForCurrentThread;
   using internal::SequenceManagerImpl::GetNextSequenceNumber;
   using internal::SequenceManagerImpl::MoveReadyDelayedTasksToWorkQueues;
   using internal::SequenceManagerImpl::ReloadEmptyWorkQueues;

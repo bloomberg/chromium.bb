@@ -34,8 +34,8 @@ namespace scheduler {
 // To avoid symbol collisions in jumbo builds.
 namespace idle_helper_unittest {
 
-using base::sequence_manager::TaskQueue;
 using base::sequence_manager::SequenceManager;
+using base::sequence_manager::TaskQueue;
 
 void AppendToVectorTestTask(std::vector<std::string>* vector,
                             std::string value) {
@@ -185,9 +185,10 @@ class BaseIdleHelperTest : public testing::Test {
     } else {
       // It's okay to use |test_task_runner_| just as a mock clock because
       // it isn't bound to thread and all tasks will go through a MessageLoop.
-      sequence_manager = base::sequence_manager::SequenceManagerForTest::Create(
-          message_loop_->GetMessageLoopBase(), message_loop_->task_runner(),
-          test_task_runner_->GetMockTickClock());
+      sequence_manager =
+          base::sequence_manager::SequenceManagerForTest::CreateOnCurrentThread(
+              SequenceManager::Settings{
+                  .clock = test_task_runner_->GetMockTickClock()});
     }
     sequence_manager_ = sequence_manager.get();
     scheduler_helper_ = std::make_unique<NonMainThreadSchedulerHelper>(
