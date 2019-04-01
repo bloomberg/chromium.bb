@@ -214,11 +214,17 @@ void MediaControlPopupMenuElement::HideIfNotFocused() {
   if (!IsWanted())
     return;
 
-  if (!GetDocument().FocusedElement() ||
-      (GetDocument().FocusedElement()->parentElement() != this &&
-       GetDocument().FocusedElement() != this)) {
-    SetIsWanted(false);
+  // Cancel hiding if the focused element is a descendent of this element
+  auto* focused_element = GetDocument().FocusedElement();
+  while (focused_element) {
+    if (focused_element == this) {
+      return;
+    }
+
+    focused_element = focused_element->parentElement();
   }
+
+  SetIsWanted(false);
 }
 
 // Focus the given item in the list if it is displayed. Returns whether it was

@@ -100,6 +100,9 @@ void MediaControlTextTrackListElement::DefaultEventHandler(Event& event) {
       MediaElement().DisableAutomaticTextTrackSelection();
     }
 
+    // Close the text track list,
+    // since we don't support selecting multiple tracks
+    SetIsWanted(false);
     event.SetDefaultHandled();
   }
   MediaControlPopupMenuElement::DefaultEventHandler(event);
