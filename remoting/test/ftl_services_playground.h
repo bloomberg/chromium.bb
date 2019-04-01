@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_TEST_FTL_SIGNALING_PLAYGROUND_H_
-#define REMOTING_TEST_FTL_SIGNALING_PLAYGROUND_H_
+#ifndef REMOTING_TEST_FTL_SERVICES_PLAYGROUND_H_
+#define REMOTING_TEST_FTL_SERVICES_PLAYGROUND_H_
 
 #include <memory>
 #include <string>
@@ -24,10 +24,10 @@ class TestTokenStorage;
 
 class TestOAuthTokenGetterFactory;
 
-class FtlSignalingPlayground {
+class FtlServicesPlayground {
  public:
-  FtlSignalingPlayground();
-  ~FtlSignalingPlayground();
+  FtlServicesPlayground();
+  ~FtlServicesPlayground();
 
   bool ShouldPrintHelp();
   void PrintHelp();
@@ -90,10 +90,10 @@ class FtlSignalingPlayground {
 
   std::unique_ptr<PeerToPeer::Stub> peer_to_peer_stub_;
 
-  base::WeakPtrFactory<FtlSignalingPlayground> weak_factory_;
-  DISALLOW_COPY_AND_ASSIGN(FtlSignalingPlayground);
+  base::WeakPtrFactory<FtlServicesPlayground> weak_factory_;
+  DISALLOW_COPY_AND_ASSIGN(FtlServicesPlayground);
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_TEST_FTL_SIGNALING_PLAYGROUND_H_
+#endif  // REMOTING_TEST_FTL_SERVICES_PLAYGROUND_H_

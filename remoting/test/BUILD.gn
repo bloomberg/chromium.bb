@@ -177,12 +177,12 @@ if (enable_remoting_host && !is_android && !is_chromeos) {
 }
 
 # A binary for testing and fiddling the FTL signaling process.
-executable("ftl_signaling_playground") {
+executable("ftl_services_playground") {
   testonly = true
   sources = [
-    "ftl_signaling_playground.cc",
-    "ftl_signaling_playground.h",
-    "ftl_signaling_playground_main.cc",
+    "ftl_services_playground.cc",
+    "ftl_services_playground.h",
+    "ftl_services_playground_main.cc",
     "test_oauth_token_factory.cc",
     "test_oauth_token_factory.h",
     "test_token_storage.cc",
