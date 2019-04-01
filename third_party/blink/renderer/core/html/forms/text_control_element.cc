@@ -1018,7 +1018,8 @@ void TextControlElement::SetSuggestedValue(const String& value) {
 
 HTMLElement* TextControlElement::CreateInnerEditorElement() {
   DCHECK(!inner_editor_);
-  inner_editor_ = TextControlInnerEditorElement::Create(GetDocument());
+  inner_editor_ =
+      MakeGarbageCollected<TextControlInnerEditorElement>(GetDocument());
   return inner_editor_;
 }
 

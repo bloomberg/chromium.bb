@@ -65,13 +65,6 @@ class PopupMenuCSSFontSelector : public CSSFontSelector,
   USING_GARBAGE_COLLECTED_MIXIN(PopupMenuCSSFontSelector);
 
  public:
-  static PopupMenuCSSFontSelector* Create(
-      Document* document,
-      CSSFontSelector* owner_font_selector) {
-    return MakeGarbageCollected<PopupMenuCSSFontSelector>(document,
-                                                          owner_font_selector);
-  }
-
   PopupMenuCSSFontSelector(Document*, CSSFontSelector*);
   ~PopupMenuCSSFontSelector() override;
 
@@ -421,8 +414,9 @@ void InternalPopupMenu::AddSeparator(ItemIterationContext& context,
 
 void InternalPopupMenu::SelectFontsFromOwnerDocument(Document& document) {
   Document& owner_document = OwnerElement().GetDocument();
-  document.GetStyleEngine().SetFontSelector(PopupMenuCSSFontSelector::Create(
-      &document, owner_document.GetStyleEngine().GetFontSelector()));
+  document.GetStyleEngine().SetFontSelector(
+      MakeGarbageCollected<PopupMenuCSSFontSelector>(
+          &document, owner_document.GetStyleEngine().GetFontSelector()));
 }
 
 void InternalPopupMenu::SetValueAndClosePopup(int num_value,

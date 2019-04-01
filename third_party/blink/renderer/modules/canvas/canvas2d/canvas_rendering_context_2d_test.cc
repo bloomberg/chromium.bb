@@ -818,7 +818,7 @@ static void TestDrawSingleHighBitDepthPNGOnCanvas(
   ASSERT_EQ(ImageResourceContent::UpdateImageResult::kNoDecodeError,
             update_result);
 
-  HTMLImageElement* image_element = HTMLImageElement::Create(document);
+  auto* image_element = MakeGarbageCollected<HTMLImageElement>(document);
   image_element->SetImageForTest(resource_content);
 
   context->clearRect(0, 0, 2, 2);

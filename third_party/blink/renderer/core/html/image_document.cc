@@ -271,7 +271,7 @@ void ImageDocument::CreateDocumentStructure() {
 
   WillInsertBody();
 
-  image_element_ = HTMLImageElement::Create(*this);
+  image_element_ = MakeGarbageCollected<HTMLImageElement>(*this);
   UpdateImageStyle();
   image_element_->SetLoadingImageDocument();
   image_element_->SetSrc(Url().GetString());

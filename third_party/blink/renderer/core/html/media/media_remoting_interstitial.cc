@@ -31,7 +31,7 @@ MediaRemotingInterstitial::MediaRemotingInterstitial(
           &MediaRemotingInterstitial::ToggleInterstitialTimerFired),
       video_element_(&videoElement) {
   SetShadowPseudoId(AtomicString("-internal-media-interstitial"));
-  background_image_ = HTMLImageElement::Create(GetDocument());
+  background_image_ = MakeGarbageCollected<HTMLImageElement>(GetDocument());
   background_image_->SetShadowPseudoId(
       AtomicString("-internal-media-interstitial-background-image"));
   background_image_->SetSrc(videoElement.getAttribute(html_names::kPosterAttr));

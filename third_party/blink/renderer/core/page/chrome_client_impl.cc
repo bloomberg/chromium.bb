@@ -587,8 +587,10 @@ DateTimeChooser* ChromeClientImpl::OpenDateTimeChooser(
     return nullptr;
 
   NotifyPopupOpeningObservers();
-  if (RuntimeEnabledFeatures::InputMultipleFieldsUIEnabled())
-    return DateTimeChooserImpl::Create(this, picker_client, parameters);
+  if (RuntimeEnabledFeatures::InputMultipleFieldsUIEnabled()) {
+    return MakeGarbageCollected<DateTimeChooserImpl>(this, picker_client,
+                                                     parameters);
+  }
   return ExternalDateTimeChooser::Create(this, web_view_->Client(),
                                          picker_client, parameters);
 }
