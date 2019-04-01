@@ -293,6 +293,7 @@ function addGetUserMedia(data) {
 
   appendChildWithText(requestDiv, 'div', 'Caller origin: ' + data.origin);
   appendChildWithText(requestDiv, 'div', 'Caller process id: ' + data.pid);
+  appendChildWithText(requestDiv, 'div', 'Time: ' + (new Date(data.timestamp)));
   appendChildWithText(requestDiv, 'span', 'Audio Constraints')
       .style.fontWeight = 'bold';
   appendChildWithText(requestDiv, 'div', data.audio);
