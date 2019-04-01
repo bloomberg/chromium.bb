@@ -375,8 +375,8 @@ bool BlinkAXTreeSource::GetTreeData(AXContentTreeData* tree_data) const {
   WebAXObject anchor_object, focus_object;
   int anchor_offset, focus_offset;
   ax::mojom::TextAffinity anchor_affinity, focus_affinity;
-  root().Selection(anchor_object, anchor_offset, anchor_affinity, focus_object,
-                   focus_offset, focus_affinity);
+  root().SelectionDeprecated(anchor_object, anchor_offset, anchor_affinity,
+                             focus_object, focus_offset, focus_affinity);
   if (!anchor_object.IsNull() && !focus_object.IsNull() && anchor_offset >= 0 &&
       focus_offset >= 0) {
     int32_t anchor_id = anchor_object.AxID();
@@ -996,9 +996,9 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
       if (src.IsControl() && !src.IsRichlyEditable()) {
         // Only for simple input controls -- rich editable areas use AXTreeData
         dst->AddIntAttribute(ax::mojom::IntAttribute::kTextSelStart,
-                             src.SelectionStart());
+                             src.SelectionStartDeprecated());
         dst->AddIntAttribute(ax::mojom::IntAttribute::kTextSelEnd,
-                             src.SelectionEnd());
+                             src.SelectionEndDeprecated());
       }
     }
 

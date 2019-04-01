@@ -57,7 +57,9 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_position.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_range.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_selection.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -773,6 +775,55 @@ void WebAXObject::Selection(WebAXObject& anchor_object,
                             WebAXObject& focus_object,
                             int& focus_offset,
                             ax::mojom::TextAffinity& focus_affinity) const {
+  anchor_object = WebAXObject();
+  anchor_offset = -1;
+  anchor_affinity = ax::mojom::TextAffinity::kDownstream;
+  focus_object = WebAXObject();
+  focus_offset = -1;
+  focus_affinity = ax::mojom::TextAffinity::kDownstream;
+
+  if (IsDetached())
+    return;
+
+  WebAXObject focus = FromWebDocumentFocused(GetDocument());
+  if (focus.IsDetached())
+    return;
+
+  const auto ax_selection =
+      focus.private_->IsNativeTextControl()
+          ? AXSelection::FromCurrentSelection(
+                ToTextControl(*focus.private_->GetNode()))
+          : AXSelection::FromCurrentSelection(*focus.private_->GetDocument());
+  if (!ax_selection)
+    return;
+
+  const AXPosition base = ax_selection.Base();
+  anchor_object = WebAXObject(const_cast<AXObject*>(base.ContainerObject()));
+  const AXPosition extent = ax_selection.Extent();
+  focus_object = WebAXObject(const_cast<AXObject*>(extent.ContainerObject()));
+
+  if (base.IsTextPosition()) {
+    anchor_offset = base.TextOffset();
+    anchor_affinity = ToAXAffinity(base.Affinity());
+  } else {
+    anchor_offset = base.ChildIndex();
+  }
+
+  if (extent.IsTextPosition()) {
+    focus_offset = extent.TextOffset();
+    focus_affinity = ToAXAffinity(extent.Affinity());
+  } else {
+    focus_offset = extent.ChildIndex();
+  }
+}
+
+void WebAXObject::SelectionDeprecated(
+    WebAXObject& anchor_object,
+    int& anchor_offset,
+    ax::mojom::TextAffinity& anchor_affinity,
+    WebAXObject& focus_object,
+    int& focus_offset,
+    ax::mojom::TextAffinity& focus_affinity) const {
   if (IsDetached()) {
     anchor_object = WebAXObject();
     anchor_offset = -1;
@@ -811,6 +862,90 @@ bool WebAXObject::SetSelection(const WebAXObject& anchor_object,
                                int anchor_offset,
                                const WebAXObject& focus_object,
                                int focus_offset) const {
+  if (IsDetached() || anchor_object.IsDetached() || focus_object.IsDetached())
+    return false;
+
+  AXPosition ax_base, ax_extent;
+  if (static_cast<const AXObject*>(anchor_object)->IsTextObject() ||
+      static_cast<const AXObject*>(anchor_object)->IsNativeTextControl()) {
+    ax_base =
+        AXPosition::CreatePositionInTextObject(*anchor_object, anchor_offset);
+  } else if (anchor_offset <= 0) {
+    ax_base = AXPosition::CreateFirstPositionInObject(*anchor_object);
+  } else if (anchor_offset >= static_cast<int>(anchor_object.ChildCount())) {
+    ax_base = AXPosition::CreateLastPositionInObject(*anchor_object);
+  } else {
+    DCHECK_GE(anchor_offset, 0);
+    ax_base = AXPosition::CreatePositionBeforeObject(
+        *anchor_object.ChildAt(static_cast<unsigned int>(anchor_offset)));
+  }
+
+  if (static_cast<const AXObject*>(focus_object)->IsTextObject() ||
+      static_cast<const AXObject*>(focus_object)->IsNativeTextControl()) {
+    ax_extent =
+        AXPosition::CreatePositionInTextObject(*focus_object, focus_offset);
+  } else if (focus_offset <= 0) {
+    ax_extent = AXPosition::CreateFirstPositionInObject(*focus_object);
+  } else if (focus_offset >= static_cast<int>(focus_object.ChildCount())) {
+    ax_extent = AXPosition::CreateLastPositionInObject(*focus_object);
+  } else {
+    DCHECK_GE(focus_offset, 0);
+    ax_extent = AXPosition::CreatePositionBeforeObject(
+        *focus_object.ChildAt(static_cast<unsigned int>(focus_offset)));
+  }
+
+  AXSelection::Builder builder;
+  AXSelection ax_selection =
+      builder.SetBase(ax_base).SetExtent(ax_extent).Build();
+  return ax_selection.Select();
+}
+
+unsigned WebAXObject::SelectionEnd() const {
+  if (IsDetached())
+    return 0;
+
+  WebAXObject focus = FromWebDocumentFocused(GetDocument());
+  if (focus.IsDetached())
+    return 0;
+
+  const auto ax_selection =
+      focus.private_->IsNativeTextControl()
+          ? AXSelection::FromCurrentSelection(
+                ToTextControl(*focus.private_->GetNode()))
+          : AXSelection::FromCurrentSelection(*focus.private_->GetDocument());
+  if (!ax_selection)
+    return 0;
+
+  if (ax_selection.Extent().IsTextPosition())
+    return ax_selection.Extent().TextOffset();
+  return ax_selection.Extent().ChildIndex();
+}
+
+unsigned WebAXObject::SelectionStart() const {
+  if (IsDetached())
+    return 0;
+
+  WebAXObject focus = FromWebDocumentFocused(GetDocument());
+  if (focus.IsDetached())
+    return 0;
+
+  const auto ax_selection =
+      focus.private_->IsNativeTextControl()
+          ? AXSelection::FromCurrentSelection(
+                ToTextControl(*focus.private_->GetNode()))
+          : AXSelection::FromCurrentSelection(*focus.private_->GetDocument());
+  if (!ax_selection)
+    return 0;
+
+  if (ax_selection.Base().IsTextPosition())
+    return ax_selection.Base().TextOffset();
+  return ax_selection.Base().ChildIndex();
+}
+
+bool WebAXObject::SetSelectionDeprecated(const WebAXObject& anchor_object,
+                                         int anchor_offset,
+                                         const WebAXObject& focus_object,
+                                         int focus_offset) const {
   if (IsDetached())
     return false;
 
@@ -820,7 +955,7 @@ bool WebAXObject::SetSelection(const WebAXObject& anchor_object,
   return private_->RequestSetSelectionAction(ax_selection);
 }
 
-unsigned WebAXObject::SelectionEnd() const {
+unsigned WebAXObject::SelectionEndDeprecated() const {
   if (IsDetached())
     return 0;
 
@@ -831,7 +966,7 @@ unsigned WebAXObject::SelectionEnd() const {
   return ax_selection.focus_offset;
 }
 
-unsigned WebAXObject::SelectionStart() const {
+unsigned WebAXObject::SelectionStartDeprecated() const {
   if (IsDetached())
     return 0;
 
