@@ -200,12 +200,16 @@ void PrePaintTreeWalk::UpdateEffectiveWhitelistedTouchAction(
 void PrePaintTreeWalk::InvalidatePaintForHitTesting(
     const LayoutObject& object,
     PrePaintTreeWalk::PrePaintTreeWalkContext& context) {
-  if (context.effective_whitelisted_touch_action_changed) {
-    if (auto* paint_layer = context.paint_invalidator_context.painting_layer)
-      paint_layer->SetNeedsRepaint();
-    ObjectPaintInvalidator(object).InvalidateDisplayItemClient(
-        object, PaintInvalidationReason::kHitTest);
-  }
+  if (context.paint_invalidator_context.subtree_flags &
+      PaintInvalidatorContext::kSubtreeNoInvalidation)
+    return;
+
+  if (!context.effective_whitelisted_touch_action_changed)
+    return;
+
+  context.paint_invalidator_context.painting_layer->SetNeedsRepaint();
+  ObjectPaintInvalidator(object).InvalidateDisplayItemClient(
+      object, PaintInvalidationReason::kHitTest);
 }
 
 void PrePaintTreeWalk::UpdateAuxiliaryObjectProperties(
