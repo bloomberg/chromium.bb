@@ -55,7 +55,7 @@ class ExternalVkImageGlRepresentation
 
   gl::GLApi* api() { return gl::g_current_gl_context; }
 
-  GLuint ImportVkSemaphoreIntoGL(base::ScopedFD fd);
+  GLuint ImportVkSemaphoreIntoGL(SemaphoreHandle handle);
   void DestroyEndAccessSemaphore();
 
   gles2::Texture* texture_ = nullptr;

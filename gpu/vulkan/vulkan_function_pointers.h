@@ -13,13 +13,17 @@
 
 #include <vulkan/vulkan.h>
 
+#include "base/native_library.h"
+#include "build/build_config.h"
+#include "gpu/vulkan/vulkan_export.h"
+
 #if defined(OS_ANDROID)
 #include <vulkan/vulkan_android.h>
 #endif
 
-#include "base/native_library.h"
-#include "build/build_config.h"
-#include "gpu/vulkan/vulkan_export.h"
+#if defined(OS_FUCHSIA)
+#include "gpu/vulkan/fuchsia/vulkan_fuchsia_ext.h"
+#endif
 
 namespace gpu {
 
@@ -125,6 +129,14 @@ struct VulkanFunctionPointers {
   // Linux-only device functions.
 #if defined(OS_LINUX)
   PFN_vkGetMemoryFdKHR vkGetMemoryFdKHRFn = nullptr;
+#endif
+
+  // Fuchsia only device functions.
+#if defined(OS_FUCHSIA)
+  PFN_vkImportSemaphoreZirconHandleFUCHSIA
+      vkImportSemaphoreZirconHandleFUCHSIAFn = nullptr;
+  PFN_vkGetSemaphoreZirconHandleFUCHSIA vkGetSemaphoreZirconHandleFUCHSIAFn =
+      nullptr;
 #endif
 
   // Queue functions
@@ -256,6 +268,13 @@ struct VulkanFunctionPointers {
 
 #if defined(OS_LINUX)
 #define vkGetMemoryFdKHR gpu::GetVulkanFunctionPointers()->vkGetMemoryFdKHRFn
+#endif
+
+#if defined(OS_FUCHSIA)
+#define vkImportSemaphoreZirconHandleFUCHSIA \
+  gpu::GetVulkanFunctionPointers()->vkImportSemaphoreZirconHandleFUCHSIAFn
+#define vkGetSemaphoreZirconHandleFUCHSIA \
+  gpu::GetVulkanFunctionPointers()->vkGetSemaphoreZirconHandleFUCHSIAFn
 #endif
 
 // Queue functions

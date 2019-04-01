@@ -12,12 +12,9 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "gpu/vulkan/semaphore_handle.h"
 #include "gpu/vulkan/vulkan_export.h"
 #include "ui/gfx/native_widget_types.h"
-
-#if defined(OS_POSIX)
-#include "base/files/scoped_file.h"
-#endif
 
 #if defined(OS_ANDROID)
 #include "base/android/scoped_hardware_buffer_handle.h"
@@ -93,21 +90,16 @@ class VULKAN_EXPORT VulkanImplementation {
     return SubmitWaitSemaphores(vk_queue, {vk_semaphore}, vk_fence);
   }
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-  // Import a VkSemaphore from a POSIX sync file descriptor. Importing a
-  // semaphore payload from a file descriptor transfers ownership of the file
-  // descriptor from the application to the Vulkan implementation. The
-  // application must not perform any operations on the file descriptor after a
-  // successful import.
-  virtual bool ImportSemaphoreFdKHR(VkDevice vk_device,
-                                    base::ScopedFD sync_fd,
-                                    VkSemaphore* vk_semaphore);
+  // Import a VkSemaphore from a platform-specific handle.
+  // Handle types that don't allow permanent import are imported with temporary
+  // permanence (VK_SEMAPHORE_IMPORT_TEMPORARY_BIT).
+  virtual VkSemaphore ImportSemaphoreHandle(VkDevice vk_device,
+                                            SemaphoreHandle handle) = 0;
 
-  // Export a sync fd representing the payload of a semaphore.
-  virtual bool GetSemaphoreFdKHR(VkDevice vk_device,
-                                 VkSemaphore vk_semaphore,
-                                 base::ScopedFD* sync_fd);
-#endif
+  // Export a platform-specific handle for a Vulkan semaphore. Returns a null
+  // handle in case of a failure.
+  virtual SemaphoreHandle GetSemaphoreHandle(VkDevice vk_device,
+                                             VkSemaphore vk_semaphore) = 0;
 
 #if defined(OS_ANDROID)
   // Create a VkImage, import Android AHardwareBuffer object created outside of

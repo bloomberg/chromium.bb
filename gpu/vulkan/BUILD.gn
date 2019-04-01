@@ -20,6 +20,8 @@ if (enable_vulkan) {
     output_name = "vulkan_wrapper"
 
     sources = [
+      "semaphore_handle.cc",
+      "semaphore_handle.h",
       "vulkan_command_buffer.cc",
       "vulkan_command_buffer.h",
       "vulkan_command_pool.cc",
@@ -51,10 +53,20 @@ if (enable_vulkan) {
       "//base",
       "//ui/gfx",
     ]
-
+    public_deps = []
     data_deps = []
+
+    if (is_posix) {
+      sources += [
+        "vulkan_posix_util.cc",
+        "vulkan_posix_util.h",
+      ]
+    }
+
     if (is_fuchsia) {
       sources += [ "fuchsia/vulkan_fuchsia_ext.h" ]
+
+      public_deps += [ "//third_party/fuchsia-sdk/sdk:zx" ]
 
       data_deps += [ "//third_party/fuchsia-sdk:vulkan_base" ]
 
