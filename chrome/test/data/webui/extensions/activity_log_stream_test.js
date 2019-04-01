@@ -87,7 +87,6 @@ suite('ExtensionsActivityLogStreamTest', function() {
       'new activity events are only shown while the stream is started',
       function() {
         Polymer.dom.flush();
-        testVisible('#activity-stream-list', false);
         proxyDelegate.getOnExtensionActivity().callListeners(activity1);
 
         Polymer.dom.flush();
@@ -121,6 +120,50 @@ suite('ExtensionsActivityLogStreamTest', function() {
         expectEquals(
             streamItems[1].$$('#activity-name').innerText, 'testAPI.DOMMethod');
       });
+
+  test('activities shown match search query', function() {
+    Polymer.dom.flush();
+    testVisible('#empty-stream-message', true);
+
+    proxyDelegate.getOnExtensionActivity().callListeners(activity1);
+    proxyDelegate.getOnExtensionActivity().callListeners(activity2);
+
+    Polymer.dom.flush();
+    expectEquals(2, getStreamItems().length);
+
+    const search = activityLogStream.$$('cr-search-field');
+    assertTrue(!!search);
+
+    // Search for the apiCall of |activity1|.
+    search.setValue('testMethod');
+    Polymer.dom.flush();
+
+    const filteredStreamItems = getStreamItems();
+    expectEquals(1, getStreamItems().length);
+    expectEquals(
+        filteredStreamItems[0].$$('#activity-name').innerText,
+        'testAPI.testMethod');
+
+    // search again, expect none
+    search.setValue('not expecting any activities to match');
+    Polymer.dom.flush();
+
+    expectEquals(0, getStreamItems().length);
+    testVisible('#empty-stream-message', false);
+    testVisible('#empty-search-message', true);
+
+    // Another activity comes in while the stream is listening but search
+    // returns no results.
+    proxyDelegate.getOnExtensionActivity().callListeners(contentScriptActivity);
+
+    search.$$('#clearSearch').click();
+    Polymer.dom.flush();
+
+    // We expect 4 activities to appear as |contentScriptActivity| (which is
+    // split into 2 items) should be processed and stored in the stream
+    // regardless of the search input.
+    expectEquals(4, getStreamItems().length);
+  });
 
   test('content script events are split by content script names', function() {
     proxyDelegate.getOnExtensionActivity().callListeners(contentScriptActivity);
