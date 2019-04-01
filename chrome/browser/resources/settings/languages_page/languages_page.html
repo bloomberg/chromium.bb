@@ -18,6 +18,8 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="add_languages_dialog.html">
 <link rel="import" href="languages.html">
+<link rel="import" href="../controls/controlled_radio_button.html">
+<link rel="import" href="../controls/settings_radio_group.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../lifetime_browser_proxy.html">
@@ -124,6 +126,23 @@
 
       cr-policy-pref-indicator {
         margin-inline-end: var(--settings-controlled-by-spacing);
+      }
+
+      .spell-check-radio-group {
+        padding-bottom: var(--cr-section-vertical-padding);
+      }
+
+      .spell-check-radio-button {
+        --cr-radio-button-label-spacing: calc(
+            var(--cr-section-indent-width) - var(--cr-radio-button-size));
+      }
+
+      .enhanced-spellcheck-description {
+        padding-inline-end: 150px;
+      }
+
+      .spell-check-languages .list-item:last-of-type {
+        border-bottom: var(--cr-separator-line);
       }
     </style>
     <settings-languages languages="{{languages}}" prefs="{{prefs}}"
@@ -253,31 +272,44 @@
           </settings-toggle-button>
         </iron-collapse>
 </if>
-<if expr="not is_macosx">
-        <div id="spellCheckSubpageTrigger"
-            class$="settings-box [[getSpellCheckListTwoLine_(
-                spellCheckSecondaryText_)]]"
-            actionable$="[[!spellCheckDisabled_]]"
-            on-click="toggleExpandButton_">
-          <div class="start">
-            <div>$i18n{spellCheckListTitle}</div>
-            <div class="secondary">[[spellCheckSecondaryText_]]</div>
-          </div>
-          <!-- |enable_spellchecking| may be set by policy, but if it's enabled,
-               we shouldn't display the policy indicator. -->
-          <template is="dom-if" if="[[spellCheckDisabled_]]" restamp>
-            <cr-policy-pref-indicator
-                pref="[[prefs.browser.enable_spellchecking]]">
-            </cr-policy-pref-indicator>
-          </template>
-          <template is="dom-if" if="[[!spellCheckDisabled_]]" restamp>
-            <cr-expand-button expanded="{{spellCheckOpened_}}"
-                alt="$i18n{spellCheckExpandA11yLabel}">
-            </cr-expand-button>
-          </template>
+
+        <settings-toggle-button
+            id="enableSpellcheckingToggle"
+            label="$i18n{spellCheckTitle}"
+            pref="{{prefs.browser.enable_spellchecking}}">
+        </settings-toggle-button>
+<if expr="_google_chrome or not is_macosx">
+        <iron-collapse id="spellCheckCollapse"
+            opened="[[prefs.browser.enable_spellchecking.value]]">
+<if expr="_google_chrome">
+        <div class="settings-box continuation spell-check-radio-group">
+          <settings-radio-group
+              pref="{{prefs.spellcheck.use_spelling_service}}">
+            <controlled-radio-button
+                class="spell-check-radio-button"
+                id="spellingServiceDisable"
+                label="$i18n{spellCheckBasicLabel}"
+                name="false"
+                pref="[[prefs.spellcheck.use_spelling_service]]">
+            </controlled-radio-button>
+            <controlled-radio-button
+                class="spell-check-radio-button"
+                id="spellingServiceEnable"
+                label="$i18n{spellCheckEnhancedLabel}"
+                name="true"
+                pref="[[prefs.spellcheck.use_spelling_service]]">
+              <div class="secondary enhanced-spellcheck-description">
+                $i18n{spellCheckEnhancedDescription}
+              </div>
+            </controlled-radio-button>
+          </settings-radio-group>
         </div>
-        <iron-collapse id="spellCheckCollapse" opened="[[spellCheckOpened_]]">
-          <div class="list-frame vertical-list">
+</if> <!-- _google_chrome -->
+<if expr="not is_macosx">
+          <div class="settings-box continuation">
+            $i18n{spellCheckLanguagesListTitle}
+          </div>
+          <div class="list-frame vertical-list spell-check-languages">
             <template is="dom-repeat" items="[[spellCheckLanguages_]]">
               <div class="list-item">
                 <div class="start name-with-error-list"
@@ -325,18 +357,20 @@
                 </template>
               </div>
             </template>
-            <div class="list-item" on-click="onEditDictionaryTap_" actionable>
-              <div class="start" id="customSpelling">
-                $i18n{manageSpellCheck}
-              </div>
-              <paper-icon-button-light class="subpage-arrow">
-                <button aria-label="$i18n{manageSpellCheck}"
-                    aria-describedby="customSpelling"></button>
-              </paper-icon-button-light>
-            </div>
           </div>
+          <div class="settings-box continuation" on-click="onEditDictionaryTap_"
+              actionable>
+            <div class="start settings-box-text" id="customSpelling">
+              $i18n{manageSpellCheck}
+            </div>
+            <paper-icon-button-light class="subpage-arrow">
+              <button aria-label="$i18n{manageSpellCheck}"
+                  aria-describedby="customSpelling"></button>
+            </paper-icon-button-light>
+          </div>
+</if> <!-- not is_macosx -->
         </iron-collapse>
-</if>
+</if> <!-- _google_chrome or not is_macosx -->
         <cr-lazy-render id="menu">
           <template>
             <cr-action-menu

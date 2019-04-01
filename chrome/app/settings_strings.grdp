@@ -2461,24 +2461,24 @@
   <message name="IDS_SETTINGS_LANGUAGES_ENABLED_LANGUAGES" desc="Header for the list of enabled languages, which the user can use to disable languages, on the Manage Languages page.">
     Enabled languages
   </message>
+  <message name="IDS_SETTINGS_LANGUAGES_SPELL_CHECK_TITLE" desc="Title for the section containing all the options for spell check settings. The options include picking between using the system's spell check or using Google's web service and a list of the enabled languages which support spell checking.">
+    Spell check
+  </message>
+  <message name="IDS_SETTINGS_LANGUAGES_SPELL_CHECK_BASIC_LABEL" desc="Label for a type of spell check that only relies on the local built-in spell check and does not rely on sending data to Google for suggestions.">
+    Basic spell check
+  </message>
+  <message name="IDS_SETTINGS_LANGUAGES_SPELL_CHECK_ENHANCED_LABEL" desc="Label for a type of spell check that sends the text the user types to Google for spelling suggestions.">
+    Enhanced spell check
+  </message>
+  <message name="IDS_SETTINGS_LANGUAGES_SPELL_CHECK_ENHANCED_DESCRIPTION" desc="Description for the type of spell check that sends the text the user types to Google for spelling suggestions. It is important that it is communicated that the text the user types in the browser will be sent to Google.">
+    Uses the same spell checker that’s used in Google search. Text you type in the browser is sent to Google.
+  </message>
   <if expr="not is_macosx">
-    <message name="IDS_SETTINGS_LANGUAGES_SPELL_CHECK_LIST_TITLE" desc="Title for the section containing the dropdown used to select the language to use for spell checking. The dropdown contains the enabled languages which support spell checking.">
-      Spell check
-    </message>
-    <message name="IDS_SETTINGS_LANGUAGES_SPELL_CHECK_EXPAND_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the spell check options. Only visible by screen reader software.">
-      Show spell check options
-    </message>
-    <message name="IDS_SETTINGS_LANGUAGES_SPELL_CHECK_SUMMARY_TWO_LANGUAGES" desc="Subtitle for the spell check section when spell check is enabled for two languages, listing those languages.">
-      <ph name="LANGUAGE_1">$1<ex>English (United States)</ex></ph>, <ph name="LANGUAGE_2">$2<ex>Italian</ex></ph>
-    </message>
-    <message name="IDS_SETTINGS_LANGUAGES_SPELL_CHECK_SUMMARY_THREE_LANGUAGES" desc="Subtitle for the spell check section when spell check is enabled for three languages, listing only the first two.">
-      <ph name="LANGUAGE_1">$1<ex>English (United States)</ex></ph>, <ph name="LANGUAGE_2">$2<ex>Italian</ex></ph>, and 1 other
-    </message>
-    <message name="IDS_SETTINGS_LANGUAGES_SPELL_CHECK_SUMMARY_MULTIPLE_LANGUAGES" desc="Subtitle for the spell check section when spell check is enabled for more than three languages, listing only the first two.">
-      <ph name="LANGUAGE_1">$1<ex>English (United States)</ex></ph>, <ph name="LANGUAGE_2">$2<ex>Italian</ex></ph>, and <ph name="NUM_ADDITIONAL_LANGUAGES">$3<ex>2</ex></ph> others
+    <message name="IDS_SETTINGS_LANGUAGES_SPELL_CHECK_LANGUAGES_LIST_TITLE" desc="Title for the list of languages that support spell check, from which users can enable or disable spell check for.">
+      Use spell check for
     </message>
     <message name="IDS_SETTINGS_LANGUAGES_SPELL_CHECK_MANAGE" desc="Button under the dropdown of spell check languages which opens a sub-page that lets the user add or remove words to the custom list of words whitelisted for spell checking.">
-      Custom spelling
+      Customize spell check
     </message>
     <message name="IDS_SETTINGS_LANGUAGES_EDIT_DICTIONARY_TITLE" desc="Name of the settings sub-page which allows adding and remove custom words from the custom spell check dictionary.">
       Manage spell check
@@ -2500,9 +2500,6 @@
     </message>
     <message name="IDS_SETTINGS_LANGUAGES_DICTIONARY_WORDS_NONE" desc="Placeholder that is shown when there are no custom words in the list of saved custom words dictionary.">
       Saved custom words will appear here
-    </message>
-    <message name="IDS_SETTINGS_LANGUAGES_SPELL_CHECK_DISABLED" desc="Text that is shown when spell checking is disabled by policy.">
-      Disabled
     </message>
     <message name="IDS_SETTINGS_LANGUAGES_DICTIONARY_DOWNLOAD_FAILED" desc="Error message when spell dictionary download fails.">
       Spell check dictionary download failed.

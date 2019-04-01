@@ -50,26 +50,11 @@ Polymer({
 
     // <if expr="not is_macosx">
     /** @private */
-    spellCheckSecondaryText_: {
-      type: String,
-      value: '',
-      computed: 'getSpellCheckSecondaryText_(languages.enabled.*, ' +
-          'languages.forcedSpellCheckLanguages.*, ' +
-          'prefs.browser.enable_spellchecking.*)',
-    },
-
-    /** @private */
     spellCheckLanguages_: {
       type: Array,
       value: function() {
         return [];
       },
-    },
-
-    /** @private */
-    spellCheckDisabled_: {
-      type: Boolean,
-      value: false,
     },
     // </if>
 
@@ -498,51 +483,6 @@ Polymer({
 
   // <if expr="not is_macosx">
   /**
-   * Returns the secondary text for the spell check subsection based on the
-   * enabled spell check languages, listing at most 2 languages.
-   * @return {string}
-   * @private
-   */
-  getSpellCheckSecondaryText_: function() {
-    if (this.languages == undefined || this.prefs == undefined) {
-      return '';
-    }
-
-    if (this.getSpellCheckDisabledByPolicy_()) {
-      return loadTimeData.getString('spellCheckDisabled');
-    }
-    const enabledSpellCheckLanguages =
-        this.getSpellCheckLanguages_().filter(function(languageState) {
-          return languageState.spellCheckEnabled &&
-              languageState.language.supportsSpellcheck;
-        });
-    switch (enabledSpellCheckLanguages.length) {
-      case 0:
-        return '';
-      case 1:
-        return enabledSpellCheckLanguages[0].language.displayName;
-      case 2:
-        return loadTimeData.getStringF(
-            'spellCheckSummaryTwoLanguages',
-            enabledSpellCheckLanguages[0].language.displayName,
-            enabledSpellCheckLanguages[1].language.displayName);
-      case 3:
-        // "foo, bar, and 1 other"
-        return loadTimeData.getStringF(
-            'spellCheckSummaryThreeLanguages',
-            enabledSpellCheckLanguages[0].language.displayName,
-            enabledSpellCheckLanguages[1].language.displayName);
-      default:
-        // "foo, bar, and [N-2] others"
-        return loadTimeData.getStringF(
-            'spellCheckSummaryMultipleLanguages',
-            enabledSpellCheckLanguages[0].language.displayName,
-            enabledSpellCheckLanguages[1].language.displayName,
-            (enabledSpellCheckLanguages.length - 2).toLocaleString());
-    }
-  },
-
-  /**
    * Returns the value to use as the |pref| attribute for the policy indicator
    * of spellcheck languages, based on whether or not the language is enabled.
    * @param {boolean} isEnabled Whether the language is enabled or not.
@@ -551,18 +491,6 @@ Polymer({
     return isEnabled ?
         this.get('spellcheck.forced_dictionaries', this.prefs) :
         this.get('spellcheck.blacklisted_dictionaries', this.prefs);
-  },
-
-  /**
-   * Returns whether spellcheck is disabled by policy or not.
-   * @return {boolean}
-   * @private
-   */
-  getSpellCheckDisabledByPolicy_: function() {
-    const pref = /** @type {!chrome.settingsPrivate.PrefObject} */ (
-        this.get('browser.enable_spellchecking', this.prefs));
-    return pref.enforcement == chrome.settingsPrivate.Enforcement.ENFORCED &&
-        pref.value === false;
   },
 
   /**
@@ -614,13 +542,6 @@ Polymer({
   updateSpellcheckEnabled_: function() {
     if (this.prefs == undefined) {
       return;
-    }
-
-    this.set('spellCheckDisabled_', this.getSpellCheckDisabledByPolicy_());
-
-    // If the spellcheck section was expanded, close it.
-    if (this.spellCheckDisabled_) {
-      this.set('spellCheckOpened_', false);
     }
   },
 
@@ -677,14 +598,6 @@ Polymer({
   isSpellCheckNameClickDisabled_: function(item) {
     return item.isManaged || !item.language.supportsSpellcheck ||
         item.downloadDictionaryFailureCount > 0;
-  },
-
-  /**
-   * @return {string}
-   * @private
-   */
-  getSpellCheckListTwoLine_: function() {
-    return this.spellCheckSecondaryText_.length ? 'two-line' : '';
   },
   // </if>
 
