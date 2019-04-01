@@ -771,6 +771,9 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
     case DrawQuad::DEBUG_BORDER:
       DrawDebugBorderQuad(DebugBorderDrawQuad::MaterialCast(quad), params);
       break;
+    case DrawQuad::PICTURE_CONTENT:
+      DrawPictureQuad(PictureDrawQuad::MaterialCast(quad), params);
+      break;
     case DrawQuad::SOLID_COLOR:
       DrawSolidColorQuad(SolidColorDrawQuad::MaterialCast(quad), params);
       break;
@@ -1028,6 +1031,68 @@ void SkiaRenderer::DrawDebugBorderQuad(const DebugBorderDrawQuad* quad,
   current_canvas_->drawPath(path, paint);
 }
 
+void SkiaRenderer::DrawPictureQuad(const PictureDrawQuad* quad,
+                                   const DrawQuadParams& params) {
+  DCHECK(batched_quads_.empty());
+  TRACE_EVENT0("viz", "SkiaRenderer::DrawPictureQuad");
+
+  // If the layer is transparent or needs a non-SrcOver blend mode, saveLayer
+  // must be used so that the display list is drawn into a transient image and
+  // then blended as a single layer at the end.
+  const bool needs_transparency =
+      params.opacity < 1.f || params.blend_mode != SkBlendMode::kSrcOver;
+  const bool disable_image_filtering =
+      disable_picture_quad_image_filtering_ ||
+      params.filter_quality == kNone_SkFilterQuality;
+
+  SkAutoCanvasRestore acr(current_canvas_, true /* do_save */);
+  PrepareCanvas(params.has_scissor_rect ? &scissor_rect_ : nullptr,
+                &params.content_device_transform);
+
+  // Unlike other quads which draw visible_rect or draw_region as their geometry
+  // these represent the valid windows of content to show for the display list,
+  // so they need to be used as a clip in Skia.
+  SkRect visible_rect = gfx::RectFToSkRect(params.visible_rect);
+  SkPaint paint = params.paint();
+  if (params.draw_region.has_value()) {
+    SkPath clip;
+    clip.addPoly(params.draw_region->points, 4, true /* close */);
+    current_canvas_->clipPath(clip, paint.isAntiAlias());
+  } else {
+    current_canvas_->clipRect(visible_rect, paint.isAntiAlias());
+  }
+
+  if (needs_transparency) {
+    // Use the DrawQuadParams' paint for the layer, since that will affect the
+    // final draw of the backing image.
+    current_canvas_->saveLayer(&visible_rect, &paint);
+  }
+
+  SkCanvas* raster_canvas = current_canvas_;
+  base::Optional<skia::OpacityFilterCanvas> opacity_canvas;
+  if (disable_image_filtering) {
+    // TODO(vmpstr): Fold this canvas into playback and have raster source
+    // accept a set of settings on playback that will determine which canvas to
+    // apply. (http://crbug.com/594679)
+    // saveLayer applies the opacity, this filter is only used for quality
+    // overriding in the display list, hence the fixed 1.f for alpha.
+    opacity_canvas.emplace(raster_canvas, 1.f, disable_image_filtering);
+    raster_canvas = &*opacity_canvas;
+  }
+
+  // Treat all subnormal values as zero for performance.
+  cc::ScopedSubnormalFloatDisabler disabler;
+
+  raster_canvas->concat(SkMatrix::MakeRectToRect(
+      gfx::RectFToSkRect(quad->tex_coord_rect), gfx::RectToSkRect(quad->rect),
+      SkMatrix::kFill_ScaleToFit));
+
+  raster_canvas->translate(-quad->content_rect.x(), -quad->content_rect.y());
+  raster_canvas->clipRect(gfx::RectToSkRect(quad->content_rect));
+  raster_canvas->scale(quad->contents_scale, quad->contents_scale);
+  quad->display_item_list->Raster(raster_canvas);
+}
+
 void SkiaRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
                                       const DrawQuadParams& params) {
   DrawColoredQuad(params, quad->color);
@@ -1248,7 +1313,7 @@ void SkiaRenderer::DoSingleDrawQuad(const DrawQuad* quad,
       NOTREACHED();
       break;
     case DrawQuad::PICTURE_CONTENT:
-      DrawPictureQuad(PictureDrawQuad::MaterialCast(quad), &paint);
+      NOTREACHED();
       break;
     case DrawQuad::RENDER_PASS:
       DrawRenderPassQuad(RenderPassDrawQuad::MaterialCast(quad), &paint);
@@ -1315,47 +1380,6 @@ void SkiaRenderer::PrepareCanvasForDrawQuads(
     draw_region_clip_path.addPoly(clip_points, 4, true);
     current_canvas_->clipPath(draw_region_clip_path);
   }
-}
-
-void SkiaRenderer::DrawPictureQuad(const PictureDrawQuad* quad,
-                                   SkPaint* paint) {
-  DCHECK(paint);
-  SkMatrix content_matrix;
-  content_matrix.setRectToRect(gfx::RectFToSkRect(quad->tex_coord_rect),
-                               gfx::RectToSkRect(quad->rect),
-                               SkMatrix::kFill_ScaleToFit);
-  current_canvas_->concat(content_matrix);
-
-  const bool needs_transparency =
-      SkScalarRoundToInt(quad->shared_quad_state->opacity * 255) < 255;
-  const bool disable_image_filtering =
-      disable_picture_quad_image_filtering_ || quad->nearest_neighbor;
-
-  TRACE_EVENT0("viz", "SkiaRenderer::DrawPictureQuad");
-
-  SkCanvas* raster_canvas = current_canvas_;
-
-  base::Optional<skia::OpacityFilterCanvas> opacity_canvas;
-  if (needs_transparency || disable_image_filtering) {
-    // TODO(aelias): This isn't correct in all cases. We should detect these
-    // cases and fall back to a persistent bitmap backing
-    // (http://crbug.com/280374).
-    // TODO(vmpstr): Fold this canvas into playback and have raster source
-    // accept a set of settings on playback that will determine which canvas to
-    // apply. (http://crbug.com/594679)
-    opacity_canvas.emplace(raster_canvas, quad->shared_quad_state->opacity,
-                           disable_image_filtering);
-    raster_canvas = &*opacity_canvas;
-  }
-
-  // Treat all subnormal values as zero for performance.
-  cc::ScopedSubnormalFloatDisabler disabler;
-
-  SkAutoCanvasRestore auto_canvas_restore(raster_canvas, true /* do_save */);
-  raster_canvas->translate(-quad->content_rect.x(), -quad->content_rect.y());
-  raster_canvas->clipRect(gfx::RectToSkRect(quad->content_rect));
-  raster_canvas->scale(quad->contents_scale, quad->contents_scale);
-  quad->display_item_list->Raster(raster_canvas);
 }
 
 sk_sp<SkColorFilter> SkiaRenderer::GetColorFilter(const gfx::ColorSpace& src,
