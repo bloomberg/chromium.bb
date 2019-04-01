@@ -191,15 +191,18 @@ class OopPixelTest : public testing::Test,
     raster_implementation->BeginRasterCHROMIUM(
         options.background_color, options.msaa_sample_count,
         options.use_lcd_text, options.color_space, mailbox.name);
+    size_t max_op_size_limit =
+        gpu::raster::RasterInterface::kDefaultMaxOpSizeHint;
     raster_implementation->RasterCHROMIUM(
         display_item_list.get(), &image_provider, options.content_size,
         options.full_raster_rect, options.playback_rect, options.post_translate,
-        options.post_scale, options.requires_clear);
+        options.post_scale, options.requires_clear, &max_op_size_limit);
     for (const auto& list : options.additional_lists) {
       raster_implementation->RasterCHROMIUM(
           list.get(), &image_provider, options.content_size,
           options.full_raster_rect, options.playback_rect,
-          options.post_translate, options.post_scale, options.requires_clear);
+          options.post_translate, options.post_scale, options.requires_clear,
+          &max_op_size_limit);
     }
     raster_implementation->EndRasterCHROMIUM();
     raster_implementation->OrderingBarrierCHROMIUM();

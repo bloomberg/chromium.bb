@@ -74,7 +74,8 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
                       const gfx::Rect& playback_rect,
                       const gfx::Vector2dF& post_translate,
                       GLfloat post_scale,
-                      bool requires_clear) override;
+                      bool requires_clear,
+                      size_t* max_op_size_hint) override;
   void EndRasterCHROMIUM() override;
 
   // Image decode acceleration.

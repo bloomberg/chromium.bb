@@ -133,7 +133,8 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
                       const gfx::Rect& playback_rect,
                       const gfx::Vector2dF& post_translate,
                       GLfloat post_scale,
-                      bool requires_clear) override;
+                      bool requires_clear,
+                      size_t* max_op_size_hint) override;
   bool CanDecodeWithHardwareAcceleration(
       base::span<const uint8_t> encoded_data) override;
   SyncToken ScheduleImageDecode(base::span<const uint8_t> encoded_data,

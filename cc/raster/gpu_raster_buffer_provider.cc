@@ -154,11 +154,12 @@ static void RasterizeSourceOOP(
   // TODO(enne): could skip the clear on new textures, as the service side has
   // to do that anyway.  resource_has_previous_content implies that the texture
   // is not new, but the reverse does not hold, so more plumbing is needed.
-  ri->RasterCHROMIUM(raster_source->GetDisplayItemList().get(),
-                     playback_settings.image_provider, content_size,
-                     raster_full_rect, playback_rect, transform.translation(),
-                     recording_to_raster_scale,
-                     raster_source->requires_clear());
+  ri->RasterCHROMIUM(
+      raster_source->GetDisplayItemList().get(),
+      playback_settings.image_provider, content_size, raster_full_rect,
+      playback_rect, transform.translation(), recording_to_raster_scale,
+      raster_source->requires_clear(),
+      const_cast<RasterSource*>(raster_source)->max_op_size_hint());
   ri->EndRasterCHROMIUM();
 
   // TODO(ericrk): Handle unpremultiply+dither for 4444 cases.

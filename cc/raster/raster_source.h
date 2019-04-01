@@ -15,6 +15,7 @@
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/layers/recording_source.h"
 #include "cc/paint/image_id.h"
+#include "gpu/command_buffer/client/raster_interface.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/color_space.h"
 
@@ -120,6 +121,8 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   base::flat_map<PaintImage::Id, PaintImage::DecodingMode>
   TakeDecodingModeMap();
 
+  size_t* max_op_size_hint() { return &max_op_size_hint_; }
+
  protected:
   // RecordingSource is the only class that can create a raster source.
   friend class RecordingSource;
@@ -132,6 +135,11 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
                             const gfx::Size& content_size,
                             const gfx::Rect& canvas_bitmap_rect,
                             const gfx::Rect& canvas_playback_rect) const;
+
+  // The serialized size for the largest op in this RasterSource. This is
+  // accessed only on the raster threads with the context lock acquired.
+  size_t max_op_size_hint_ =
+      gpu::raster::RasterInterface::kDefaultMaxOpSizeHint;
 
   // These members are const as this raster source may be in use on another
   // thread and so should not be touched after construction.
