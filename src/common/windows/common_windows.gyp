@@ -84,6 +84,8 @@
         'pdb_source_line_writer.h',
         'string_utils.cc',
         'string_utils-inl.h',
+        'symbol_collector_client.cc',
+        'symbol_collector_client.h',
       ],
       'dependencies': [
         'dia_sdk',
