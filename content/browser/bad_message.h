@@ -240,6 +240,7 @@ enum BadMessageReason {
   RFPH_POST_MESSAGE_INVALID_SOURCE_ORIGIN = 212,
   INVALID_INITIATOR_ORIGIN = 213,
   RFHI_BEGIN_NAVIGATION_MISSING_INITIATOR_ORIGIN = 214,
+  RFHI_BEGIN_NAVIGATION_NON_WEBBY_TRANSITION = 215,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

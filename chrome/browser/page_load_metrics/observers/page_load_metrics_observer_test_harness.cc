@@ -140,8 +140,11 @@ PageLoadMetricsObserverTestHarness::GetPageLoadExtraInfoForCommittedLoad() {
 void PageLoadMetricsObserverTestHarness::NavigateWithPageTransitionAndCommit(
     const GURL& url,
     ui::PageTransition transition) {
-  auto simulator =
-      content::NavigationSimulator::CreateRendererInitiated(url, main_rfh());
+  auto simulator = PageTransitionIsWebTriggerable(transition)
+                       ? content::NavigationSimulator::CreateRendererInitiated(
+                             url, main_rfh())
+                       : content::NavigationSimulator::CreateBrowserInitiated(
+                             url, web_contents());
   simulator->SetTransition(transition);
   simulator->Commit();
 }
