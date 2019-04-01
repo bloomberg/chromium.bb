@@ -25,14 +25,13 @@ cca.mojo.PhotoCapabilities;
  * Creates the wrapper of JS image-capture and Mojo image-capture.
  * @param {MediaStreamTrack} videoTrack A video track whose still images will be
  *     taken.
- * @param {string} deviceId The id of target media device.
  * @constructor
  */
-cca.mojo.ImageCapture = function(videoTrack, deviceId) {
+cca.mojo.ImageCapture = function(videoTrack) {
   /**
    * @type {string} The id of target media device.
    */
-  this.deviceId_ = deviceId;
+  this.deviceId_ = cca.mojo.ImageCapture.resolveDeviceId(videoTrack);
 
   /**
    * @type {ImageCapture}
@@ -48,6 +47,17 @@ cca.mojo.ImageCapture = function(videoTrack, deviceId) {
 
   // End of properties, seal the object.
   Object.seal(this);
+};
+
+/**
+ * Resolves video device id from its video track.
+ * @param {MediaStreamTrack} videoTrack Video track of device to be resolved.
+ * @return {?string} Resolved video device id. Returns null for unable to
+ *     resolve.
+ */
+cca.mojo.ImageCapture.resolveDeviceId = function(videoTrack) {
+  const trackSettings = videoTrack.getSettings && videoTrack.getSettings();
+  return trackSettings && trackSettings.deviceId || null;
 };
 
 /**

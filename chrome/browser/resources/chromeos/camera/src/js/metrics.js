@@ -107,7 +107,8 @@ cca.metrics.captureType_ = function(facingMode, length) {
   };
 
   return cca.metrics.base_.category('capture')
-      .action(/^(\w*)/.exec(condState(['video-mode', 'photo-mode']))[0])
+      .action(/^(\w*)/.exec(condState(
+          ['video-mode', 'photo-mode', 'square-mode', 'portrait-mode']))[0])
       .label(facingMode)
       .dimen(3, condState(['sound']))
       .dimen(4, condState(['mirror']))

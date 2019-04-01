@@ -54,15 +54,56 @@ cca.views.camera.Modes = function(doSwitchMode, doSavePicture) {
   this.stream_ = null;
 
   /**
-   * Classname and factory function of available modes.
-   * @type {Object<string, function(): cca.views.camera.Mode>}
+   * Mode classname and related functions and attributes.
+   * @type {Object<string, Object>}
    * @private
    */
-  this.modeFactories_ = {
-    'photo-mode': () =>
-        new cca.views.camera.Photo(this.stream_, this.doSavePicture_),
-    'video-mode': () =>
-        new cca.views.camera.Video(this.stream_, this.doSavePicture_),
+  this.allModes = {
+    'video-mode': {
+      captureFactory: () =>
+          new cca.views.camera.Video(this.stream_, this.doSavePicture_),
+      isSupported: async () => true,
+      deviceConstraints: cca.views.camera.Modes.videoConstraits,
+      nextMode: 'photo-mode',
+    },
+    'photo-mode': {
+      captureFactory: () =>
+          new cca.views.camera.Photo(this.stream_, this.doSavePicture_),
+      isSupported: async () => true,
+      deviceConstraints: cca.views.camera.Modes.photoConstraits,
+      nextMode: 'square-mode',
+    },
+    'square-mode': {
+      captureFactory: () =>
+          new cca.views.camera.Square(this.stream_, this.doSavePicture_),
+      isSupported: async () => true,
+      deviceConstraints: cca.views.camera.Modes.photoConstraits,
+      nextMode: 'portrait-mode',
+    },
+    'portrait-mode': {
+      captureFactory: () =>
+          new cca.views.camera.Portrait(this.stream_, this.doSavePicture_),
+      isSupported: async function(deviceId) {
+        for (const constraints of this.deviceConstraints(deviceId)) {
+          try {
+            var stream = await navigator.mediaDevices.getUserMedia(constraints);
+            const imageCapture =
+                new cca.mojo.ImageCapture(stream.getVideoTracks()[0]);
+            const capabilities = await imageCapture.getPhotoCapabilities();
+            return capabilities.supportedEffects &&
+                capabilities.supportedEffects.includes(
+                    cros.mojom.Effect.PORTRAIT_MODE);
+          } finally {
+            if (stream) {
+              stream.getTracks()[0].stop();
+            }
+          }
+        }
+        return false;
+      },
+      deviceConstraints: cca.views.camera.Modes.photoConstraits,
+      nextMode: 'video-mode',
+    },
   };
 
   // End of properties, seal the object.
@@ -79,6 +120,62 @@ cca.views.camera.Modes = function(doSwitchMode, doSavePicture) {
 };
 
 /**
+ * Returns a set of available video constraints.
+ * @param {?string} deviceId Id of video device.
+ * @return {Array<Object>} Result of constraints-candidates.
+ */
+cca.views.camera.Modes.videoConstraits = function(deviceId) {
+  return [
+    {
+      aspectRatio: {ideal: 1.7777777778},
+      width: {min: 1280},
+      frameRate: {min: 24},
+    },
+    {
+      width: {min: 640},
+      frameRate: {min: 24},
+    },
+  ].map((constraint) => {
+    // Each passed-in video-constraint will be modified here.
+    if (deviceId) {
+      constraint.deviceId = {exact: deviceId};
+    } else {
+      // As a default camera use the one which is facing the user.
+      constraint.facingMode = {exact: 'user'};
+    }
+    return {audio: true, video: constraint};
+  });
+};
+
+/**
+ * Returns a set of available photo constraints.
+ * @param {?string} deviceId Id of video device.
+ * @return {Array<Object>} Result of constraints-candidates.
+ */
+cca.views.camera.Modes.photoConstraits = function(deviceId) {
+  return [
+    {
+      aspectRatio: {ideal: 1.3333333333},
+      width: {min: 1280},
+      frameRate: {min: 24},
+    },
+    {
+      width: {min: 640},
+      frameRate: {min: 24},
+    },
+  ].map((constraint) => {
+    // Each passed-in video-constraint will be modified here.
+    if (deviceId) {
+      constraint.deviceId = {exact: deviceId};
+    } else {
+      // As a default camera use the one which is facing the user.
+      constraint.facingMode = {exact: 'user'};
+    }
+    return {audio: false, video: constraint};
+  });
+};
+
+/**
  * Switches mode to either video-recording or photo-taking.
  * @param {string} mode Class name of the switching mode.
  * @private
@@ -87,23 +184,50 @@ cca.views.camera.Modes.prototype.switchMode_ = function(mode) {
   if (!cca.state.get('streaming') || cca.state.get('taking')) {
     return;
   }
-  Object.keys(this.modeFactories_).forEach((m) => cca.state.set(m, m == mode));
+  Object.keys(this.allModes).forEach((m) => cca.state.set(m, m == mode));
   cca.state.set('mode-switching', true);
   this.doSwitchMode_().then(() => cca.state.set('mode-switching', false));
 };
 
 /**
+ * Gets all the supported modes and all their constraints pairs for given
+ * deviceId.
+ * @async
+ * @param {?string} deviceId Id of updated video device.
+ * @return {Array<[string, Object]>} Array of supported mode name and
+ *     constraints pairs for given deviceId. Mode values in array start with
+ *     current mode and follow predefined retry order.
+ */
+cca.views.camera.Modes.prototype.getConstraitsForModes =
+    async function(deviceId) {
+  const tried = {};
+  const results = [];
+  let mode = Object.keys(this.allModes).find(cca.state.get);
+  while (!tried[mode]) {
+    const m = this.allModes[mode];
+    tried[mode] = true;
+    if (await m.isSupported(deviceId)) {
+      results.push(...m.deviceConstraints(deviceId).map(
+          (constraints) => [mode, constraints]));
+    }
+    mode = m.nextMode;
+  }
+  return results;
+};
+
+/**
  * Creates and updates new current mode object.
  * @async
+ * @param {string} mode Classname of mode to be updated.
  * @param {MediaStream} stream Stream of the new switching mode.
  */
-cca.views.camera.Modes.prototype.update = async function(stream) {
+cca.views.camera.Modes.prototype.updateMode = async function(mode, stream) {
   if (this.current != null) {
     await this.current.stopCapture();
   }
+  Object.keys(this.allModes).forEach((m) => cca.state.set(m, m == mode));
   this.stream_ = stream;
-  var mode = Object.keys(this.modeFactories_).find(cca.state.get);
-  this.current = this.modeFactories_[mode]();
+  this.current = this.allModes[mode].captureFactory();
 };
 
 /**
@@ -323,7 +447,7 @@ cca.views.camera.Photo = function(stream, doSavePicture) {
 
   /**
    * ImageCapture object to capture still photos.
-   * @type {ImageCapture}
+   * @type {?ImageCapture}
    * @private
    */
   this.imageCapture_ = null;
@@ -432,4 +556,80 @@ cca.views.camera.Square.prototype.cropSquare = function(blob) {
     img.onerror = () => reject(new Error('Failed to load unprocessed image'));
     img.src = URL.createObjectURL(blob);
   });
+};
+
+/**
+ * Portrait mode capture controller.
+ * @param {MediaStream} stream
+ * @param {function(?Blob, boolean): Promise} doSavePicture
+ * @constructor
+ */
+cca.views.camera.Portrait = function(stream, doSavePicture) {
+  cca.views.camera.Mode.call(this, stream, doSavePicture);
+
+  /**
+   * ImageCapture object to capture still photos.
+   * @type {?cca.mojo.ImageCapture}
+   * @private
+   */
+  this.crosImageCapture_ = null;
+
+  // End of properties, seal the object.
+  Object.seal(this);
+};
+
+cca.views.camera.Portrait.prototype = {
+  __proto__: cca.views.camera.Mode.prototype,
+};
+
+/**
+ * @override
+ */
+cca.views.camera.Portrait.prototype.start_ = async function() {
+  if (this.crosImageCapture_ == null) {
+    try {
+      this.crosImageCapture_ =
+          new cca.mojo.ImageCapture(this.stream_.getVideoTracks()[0]);
+    } catch (e) {
+      cca.toast.show('error_msg_take_photo_failed');
+      throw e;
+    }
+  }
+  const photoCapabilities = await this.crosImageCapture_.getPhotoCapabilities();
+  const photoSettings = {
+    imageWidth: photoCapabilities.imageWidth.max,
+    imageHeight: photoCapabilities.imageHeight.max,
+  };
+  try {
+    var [reference, portrait] = this.crosImageCapture_.takePhoto(
+        photoSettings, [cros.mojom.Effect.PORTRAIT_MODE]);
+  } catch (e) {
+    cca.toast.show('error_msg_take_photo_failed');
+    throw e;
+  }
+  let filenamer = new cca.models.Filenamer();
+  let playSound = false;
+  const [refSave, portraitSave] = [reference, portrait].map(async (p) => {
+    const isPortrait = Object.is(p, portrait);
+    try {
+      var blob = await p;
+    } catch (e) {
+      cca.toast.show(
+          isPortrait ? 'error_msg_take_portrait_photo_failed' :
+                       'error_msg_take_photo_failed');
+      throw e;
+    }
+    if (!playSound) {
+      playSound = true;
+      cca.sound.play('#sound-shutter');
+    }
+    await this.doSavePicture_(blob, true, filenamer.newBurstName(!isPortrait));
+  });
+  try {
+    await portraitSave;
+  } catch (e) {
+    // Portrait image may failed due to absence of human faces.
+    // TODO(inker): Log non-intended error.
+  }
+  await refSave;
 };
