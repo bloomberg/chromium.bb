@@ -22,23 +22,25 @@ class MockWebController : public WebController {
 
   MOCK_METHOD1(LoadURL, void(const GURL&));
 
-  void ClickOrTapElement(const Selector& selector,
-                         base::OnceCallback<void(bool)> callback) override {
+  void ClickOrTapElement(
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&)> callback) override {
     // Transforming callback into a references allows using RunOnceCallback on
     // the argument.
     OnClickOrTapElement(selector, callback);
   }
   MOCK_METHOD2(OnClickOrTapElement,
                void(const Selector& selector,
-                    base::OnceCallback<void(bool)>& callback));
+                    base::OnceCallback<void(const ClientStatus&)>& callback));
 
-  void FocusElement(const Selector& selector,
-                    base::OnceCallback<void(bool)> callback) override {
+  void FocusElement(
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&)> callback) override {
     OnFocusElement(selector, callback);
   }
   MOCK_METHOD2(OnFocusElement,
                void(const Selector& selector,
-                    base::OnceCallback<void(bool)>& callback));
+                    base::OnceCallback<void(const ClientStatus&)>& callback));
 
   void ElementCheck(ElementCheckType check_type,
                     const Selector& selector,

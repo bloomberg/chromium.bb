@@ -63,12 +63,12 @@ class ScriptExecutorTest : public testing::Test,
     // In this test, "tell" actions always succeed and "click" actions always
     // fail. The following makes a click action fail immediately
     ON_CALL(mock_web_controller_, OnClickOrTapElement(_, _))
-        .WillByDefault(RunOnceCallback<1>(false));
+        .WillByDefault(RunOnceCallback<1>(ClientStatus(OTHER_ACTION_STATUS)));
 
     ON_CALL(mock_web_controller_, OnElementCheck(_, _, _))
         .WillByDefault(RunOnceCallback<2>(true));
     ON_CALL(mock_web_controller_, OnFocusElement(_, _))
-        .WillByDefault(RunOnceCallback<1>(true));
+        .WillByDefault(RunOnceCallback<1>(OkClientStatus()));
   }
 
  protected:

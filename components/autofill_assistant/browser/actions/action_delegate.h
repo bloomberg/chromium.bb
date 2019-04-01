@@ -31,6 +31,7 @@ class WebContents;
 
 namespace autofill_assistant {
 class ClientMemory;
+class ClientStatus;
 
 // Action delegate called when processing actions.
 class ActionDelegate {
@@ -74,8 +75,9 @@ class ActionDelegate {
       base::OnceCallback<void(ProcessedActionStatusProto)> callback) = 0;
 
   // Click or tap the element given by |selector| on the web page.
-  virtual void ClickOrTapElement(const Selector& selector,
-                                 base::OnceCallback<void(bool)> callback) = 0;
+  virtual void ClickOrTapElement(
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
   // Ask user to select one of the given suggestions.
   //
@@ -108,26 +110,30 @@ class ActionDelegate {
 
   // Fill the address form given by |selector| with the given address
   // |profile|. |profile| cannot be nullptr.
-  virtual void FillAddressForm(const autofill::AutofillProfile* profile,
-                               const Selector& selector,
-                               base::OnceCallback<void(bool)> callback) = 0;
+  virtual void FillAddressForm(
+      const autofill::AutofillProfile* profile,
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
   // Fill the card form given by |selector| with the given |card| and its
   // |cvc|. Return result asynchronously through |callback|.
-  virtual void FillCardForm(std::unique_ptr<autofill::CreditCard> card,
-                            const base::string16& cvc,
-                            const Selector& selector,
-                            base::OnceCallback<void(bool)> callback) = 0;
+  virtual void FillCardForm(
+      std::unique_ptr<autofill::CreditCard> card,
+      const base::string16& cvc,
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
   // Select the option given by |selector| and the value of the option to be
   // picked.
-  virtual void SelectOption(const Selector& selector,
-                            const std::string& selected_option,
-                            base::OnceCallback<void(bool)> callback) = 0;
+  virtual void SelectOption(
+      const Selector& selector,
+      const std::string& selected_option,
+      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
   // Focus on the element given by |selector|.
-  virtual void FocusElement(const Selector& selector,
-                            base::OnceCallback<void(bool)> callback) = 0;
+  virtual void FocusElement(
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
   // Sets selector of areas that can be manipulated:
   // - after the end of the script and before the beginning of the next script.
@@ -137,34 +143,39 @@ class ActionDelegate {
       const ElementAreaProto& touchable_element_area) = 0;
 
   // Highlight the element given by |selector|.
-  virtual void HighlightElement(const Selector& selector,
-                                base::OnceCallback<void(bool)> callback) = 0;
+  virtual void HighlightElement(
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
   // Set the |value| of field |selector| and return the result through
   // |callback|. If |simulate_key_presses| is true, the value will be set by
   // clicking the field and then simulating key presses, otherwise the `value`
   // attribute will be set directly.
-  virtual void SetFieldValue(const Selector& selector,
-                             const std::string& value,
-                             bool simulate_key_presses,
-                             base::OnceCallback<void(bool)> callback) = 0;
+  virtual void SetFieldValue(
+      const Selector& selector,
+      const std::string& value,
+      bool simulate_key_presses,
+      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
   // Set the |value| of the |attribute| of the element given by |selector|.
-  virtual void SetAttribute(const Selector& selector,
-                            const std::vector<std::string>& attribute,
-                            const std::string& value,
-                            base::OnceCallback<void(bool)> callback) = 0;
+  virtual void SetAttribute(
+      const Selector& selector,
+      const std::vector<std::string>& attribute,
+      const std::string& value,
+      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
   // Sets the keyboard focus to |selector| and inputs the specified text parts.
   // Returns the result through |callback|.
-  virtual void SendKeyboardInput(const Selector& selector,
-                                 const std::vector<std::string>& text_parts,
-                                 base::OnceCallback<void(bool)> callback) = 0;
+  virtual void SendKeyboardInput(
+      const Selector& selector,
+      const std::vector<std::string>& text_parts,
+      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
   // Return the outerHTML of an element given by |selector|.
   virtual void GetOuterHtml(
       const Selector& selector,
-      base::OnceCallback<void(bool, const std::string&)> callback) = 0;
+      base::OnceCallback<void(const ClientStatus&, const std::string&)>
+          callback) = 0;
 
   // Load |url| in the current tab. Returns immediately, before the new page has
   // been loaded.

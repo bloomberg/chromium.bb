@@ -112,44 +112,54 @@ class ScriptExecutor : public ActionDelegate {
       base::OnceCallback<void(ProcessedActionStatusProto)> callback) override;
   void SetStatusMessage(const std::string& message) override;
   std::string GetStatusMessage() override;
-  void ClickOrTapElement(const Selector& selector,
-                         base::OnceCallback<void(bool)> callback) override;
+  void ClickOrTapElement(
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&)> callback) override;
   void GetPaymentInformation(
       std::unique_ptr<PaymentRequestOptions> options) override;
   void GetFullCard(GetFullCardCallback callback) override;
   void Prompt(std::unique_ptr<std::vector<Chip>> chips,
               base::OnceCallback<void()> on_terminate) override;
   void CancelPrompt() override;
-  void FillAddressForm(const autofill::AutofillProfile* profile,
-                       const Selector& selector,
-                       base::OnceCallback<void(bool)> callback) override;
-  void FillCardForm(std::unique_ptr<autofill::CreditCard> card,
-                    const base::string16& cvc,
-                    const Selector& selector,
-                    base::OnceCallback<void(bool)> callback) override;
-  void SelectOption(const Selector& selector,
-                    const std::string& selected_option,
-                    base::OnceCallback<void(bool)> callback) override;
-  void HighlightElement(const Selector& selector,
-                        base::OnceCallback<void(bool)> callback) override;
-  void FocusElement(const Selector& selector,
-                    base::OnceCallback<void(bool)> callback) override;
+  void FillAddressForm(
+      const autofill::AutofillProfile* profile,
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&)> callback) override;
+  void FillCardForm(
+      std::unique_ptr<autofill::CreditCard> card,
+      const base::string16& cvc,
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&)> callback) override;
+  void SelectOption(
+      const Selector& selector,
+      const std::string& selected_option,
+      base::OnceCallback<void(const ClientStatus&)> callback) override;
+  void HighlightElement(
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&)> callback) override;
+  void FocusElement(
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&)> callback) override;
   void SetTouchableElementArea(
       const ElementAreaProto& touchable_element_area) override;
-  void SetFieldValue(const Selector& selector,
-                     const std::string& value,
-                     bool simulate_key_presses,
-                     base::OnceCallback<void(bool)> callback) override;
-  void SetAttribute(const Selector& selector,
-                    const std::vector<std::string>& attribute,
-                    const std::string& value,
-                    base::OnceCallback<void(bool)> callback) override;
-  void SendKeyboardInput(const Selector& selector,
-                         const std::vector<std::string>& text_parts,
-                         base::OnceCallback<void(bool)> callback) override;
+  void SetFieldValue(
+      const Selector& selector,
+      const std::string& value,
+      bool simulate_key_presses,
+      base::OnceCallback<void(const ClientStatus&)> callback) override;
+  void SetAttribute(
+      const Selector& selector,
+      const std::vector<std::string>& attribute,
+      const std::string& value,
+      base::OnceCallback<void(const ClientStatus&)> callback) override;
+  void SendKeyboardInput(
+      const Selector& selector,
+      const std::vector<std::string>& text_parts,
+      base::OnceCallback<void(const ClientStatus&)> callback) override;
   void GetOuterHtml(
       const Selector& selector,
-      base::OnceCallback<void(bool, const std::string&)> callback) override;
+      base::OnceCallback<void(const ClientStatus&, const std::string&)>
+          callback) override;
   void LoadURL(const GURL& url) override;
   void Shutdown() override;
   void Close() override;

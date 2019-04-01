@@ -27,7 +27,8 @@ class SelectOptionAction : public Action {
   void OnWaitForElement(ActionDelegate* delegate,
                         ProcessActionCallback callback,
                         bool element_found);
-  void OnSelectOption(ProcessActionCallback callback, bool status);
+  void OnSelectOption(ProcessActionCallback callback,
+                      const ClientStatus& status);
 
   base::WeakPtrFactory<SelectOptionAction> weak_ptr_factory_;
 

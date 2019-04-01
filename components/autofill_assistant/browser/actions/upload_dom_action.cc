@@ -45,10 +45,10 @@ void UploadDomAction::OnWaitForElement(ActionDelegate* delegate,
 }
 
 void UploadDomAction::OnGetOuterHtml(ProcessActionCallback callback,
-                                     bool successful,
+                                     const ClientStatus& status,
                                      const std::string& outer_html) {
-  if (!successful) {
-    UpdateProcessedAction(OTHER_ACTION_STATUS);
+  if (!status.ok()) {
+    UpdateProcessedAction(status);
     std::move(callback).Run(std::move(processed_action_proto_));
     return;
   }

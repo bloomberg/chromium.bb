@@ -16,6 +16,7 @@
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/client_memory.h"
+#include "components/autofill_assistant/browser/client_status.h"
 
 namespace autofill_assistant {
 
@@ -64,6 +65,10 @@ void AutofillAction::InternalProcessAction(
 }
 
 void AutofillAction::EndAction(ProcessedActionStatusProto status) {
+  EndAction(ClientStatus(status));
+}
+
+void AutofillAction::EndAction(const ClientStatus& status) {
   UpdateProcessedAction(status);
   std::move(process_action_callback_).Run(std::move(processed_action_proto_));
 }
@@ -114,17 +119,16 @@ void AutofillAction::OnGetFullCard(ActionDelegate* delegate,
                                         weak_ptr_factory_.GetWeakPtr()));
 }
 
-void AutofillAction::OnCardFormFilled(bool successful) {
+void AutofillAction::OnCardFormFilled(const ClientStatus& status) {
   // TODO(crbug.com/806868): Implement required fields checking for cards.
-  EndAction(successful ? ACTION_APPLIED : OTHER_ACTION_STATUS);
-  return;
+  EndAction(status);
 }
 
 void AutofillAction::OnAddressFormFilled(ActionDelegate* delegate,
-                                         bool successful) {
+                                         const ClientStatus& status) {
   // In case Autofill failed, we fail the action.
-  if (!successful) {
-    EndAction(OTHER_ACTION_STATUS);
+  if (!status.ok()) {
+    EndAction(status);
     return;
   }
 
@@ -257,8 +261,8 @@ void AutofillAction::SetFallbackFieldValuesSequentially(
 
 void AutofillAction::OnSetFallbackFieldValue(ActionDelegate* delegate,
                                              int required_fields_index,
-                                             bool successful) {
-  if (!successful) {
+                                             const ClientStatus& status) {
+  if (!status.ok()) {
     // Fallback failed: we stop the script without checking the fields.
     EndAction(MANUAL_FALLBACK);
     return;

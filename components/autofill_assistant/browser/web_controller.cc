@@ -419,7 +419,7 @@ class WebController::ElementFinder : public WebController::Worker {
   void Start(FindElementCallback callback_);
 
  private:
-  void SendResult();
+  void SendResult(const ClientStatus& status);
   void OnGetDocumentElement(std::unique_ptr<runtime::EvaluateResult> result);
   void RecursiveFindElement(const std::string& object_id, size_t index);
   void OnQuerySelectorAll(
@@ -471,10 +471,10 @@ void WebController::ElementFinder::Start(FindElementCallback callback) {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void WebController::ElementFinder::SendResult() {
+void WebController::ElementFinder::SendResult(const ClientStatus& status) {
   DCHECK(callback_);
   DCHECK(element_result_);
-  std::move(callback_).Run(std::move(element_result_));
+  std::move(callback_).Run(status, std::move(element_result_));
 }
 
 void WebController::ElementFinder::OnGetDocumentElement(
@@ -484,7 +484,7 @@ void WebController::ElementFinder::OnGetDocumentElement(
   element_result_->object_id = "";
   if (!result || !result->GetResult() || !result->GetResult()->HasObjectId()) {
     DVLOG(1) << __func__ << " Failed to get document root element.";
-    SendResult();
+    SendResult(ClientStatus(OTHER_ACTION_STATUS));  // unexpected
     return;
   }
 
@@ -517,7 +517,7 @@ void WebController::ElementFinder::OnQuerySelectorAll(
     size_t index,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   if (!result || !result->GetResult() || !result->GetResult()->HasObjectId()) {
-    SendResult();
+    SendResult(ClientStatus(ELEMENT_RESOLUTION_FAILED));
     return;
   }
 
@@ -528,7 +528,7 @@ void WebController::ElementFinder::OnQuerySelectorAll(
     if (selector_.pseudo_type == PseudoType::UNDEFINED) {
       // Return object id of the element.
       element_result_->object_id = result->GetResult()->GetObjectId();
-      SendResult();
+      SendResult(OkClientStatus());
       return;
     }
 
@@ -536,7 +536,7 @@ void WebController::ElementFinder::OnQuerySelectorAll(
     dom::PseudoType pseudo_type;
     if (!ConvertPseudoType(selector_.pseudo_type, &pseudo_type)) {
       // Return empty result.
-      SendResult();
+      SendResult(ClientStatus(INVALID_ACTION));
       return;
     }
 
@@ -564,7 +564,7 @@ void WebController::ElementFinder::OnDescribeNodeForPseudoElement(
     std::unique_ptr<dom::DescribeNodeResult> result) {
   if (!result || !result->GetNode()) {
     DVLOG(1) << __func__ << " Failed to describe the node for pseudo element.";
-    SendResult();
+    SendResult(ClientStatus(OTHER_ACTION_STATUS));  // unexpected
     return;
   }
 
@@ -586,7 +586,7 @@ void WebController::ElementFinder::OnDescribeNodeForPseudoElement(
   }
 
   // Failed to find the pseudo element: run the callback with empty result.
-  SendResult();
+  SendResult(ClientStatus(ELEMENT_RESOLUTION_FAILED));
 }
 
 void WebController::ElementFinder::OnResolveNodeForPseudoElement(
@@ -595,7 +595,7 @@ void WebController::ElementFinder::OnResolveNodeForPseudoElement(
     element_result_->object_id = result->GetObject()->GetObjectId();
   }
 
-  SendResult();
+  SendResult(OkClientStatus());
 }
 
 void WebController::ElementFinder::OnDescribeNode(
@@ -604,7 +604,7 @@ void WebController::ElementFinder::OnDescribeNode(
     std::unique_ptr<dom::DescribeNodeResult> result) {
   if (!result || !result->GetNode()) {
     DVLOG(1) << __func__ << " Failed to describe the node.";
-    SendResult();
+    SendResult(ClientStatus(OTHER_ACTION_STATUS));  // unexpected
     return;
   }
 
@@ -635,13 +635,13 @@ void WebController::ElementFinder::OnDescribeNode(
         frame_name, node->GetContentDocument()->GetDocumentURL());
     if (!element_result_->container_frame_host) {
       DVLOG(1) << __func__ << " Failed to find corresponding owner frame.";
-      SendResult();
+      SendResult(ClientStatus(OTHER_ACTION_STATUS));  // unexpected
       return;
     }
   } else if (node->HasFrameId()) {
     // TODO(crbug.com/806868): Support out-of-process iframe.
     DVLOG(3) << "Warning (unsupported): the element is inside an OOPIF.";
-    SendResult();
+    SendResult(ClientStatus(UNSUPPORTED));
     return;
   }
 
@@ -669,7 +669,7 @@ void WebController::ElementFinder::OnResolveNode(
     std::unique_ptr<dom::ResolveNodeResult> result) {
   if (!result || !result->GetObject() || !result->GetObject()->HasObjectId()) {
     DVLOG(1) << __func__ << " Failed to resolve object id from backend id.";
-    SendResult();
+    SendResult(ClientStatus(OTHER_ACTION_STATUS));
     return;
   }
 
@@ -719,8 +719,9 @@ void WebController::LoadURL(const GURL& url) {
       content::NavigationController::LoadURLParams(url));
 }
 
-void WebController::ClickOrTapElement(const Selector& selector,
-                                      base::OnceCallback<void(bool)> callback) {
+void WebController::ClickOrTapElement(
+    const Selector& selector,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   DVLOG(3) << __func__ << " " << selector;
 #if defined(OS_ANDROID)
   TapElement(selector, std::move(callback));
@@ -731,8 +732,9 @@ void WebController::ClickOrTapElement(const Selector& selector,
 #endif
 }
 
-void WebController::ClickElement(const Selector& selector,
-                                 base::OnceCallback<void(bool)> callback) {
+void WebController::ClickElement(
+    const Selector& selector,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   DCHECK(!selector.empty());
   FindElement(selector, /* strict_mode= */ true,
               base::BindOnce(&WebController::OnFindElementForClickOrTap,
@@ -740,8 +742,9 @@ void WebController::ClickElement(const Selector& selector,
                              std::move(callback), /* is_a_click= */ true));
 }
 
-void WebController::TapElement(const Selector& selector,
-                               base::OnceCallback<void(bool)> callback) {
+void WebController::TapElement(
+    const Selector& selector,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   DCHECK(!selector.empty());
   FindElement(selector, /* strict_mode= */ true,
               base::BindOnce(&WebController::OnFindElementForClickOrTap,
@@ -750,13 +753,14 @@ void WebController::TapElement(const Selector& selector,
 }
 
 void WebController::OnFindElementForClickOrTap(
-    base::OnceCallback<void(bool)> callback,
+    base::OnceCallback<void(const ClientStatus&)> callback,
     bool is_a_click,
+    const ClientStatus& status,
     std::unique_ptr<FindElementResult> result) {
   // Found element must belong to a frame.
-  if (!result->container_frame_host || result->object_id.empty()) {
+  if (!status.ok()) {
     DVLOG(1) << __func__ << " Failed to find the element to click or tap.";
-    OnResult(false, std::move(callback));
+    std::move(callback).Run(status);
     return;
   }
 
@@ -770,12 +774,12 @@ void WebController::OnFindElementForClickOrTap(
 }
 
 void WebController::OnWaitDocumentToBecomeInteractiveForClickOrTap(
-    base::OnceCallback<void(bool)> callback,
+    base::OnceCallback<void(const ClientStatus&)> callback,
     bool is_a_click,
     std::unique_ptr<FindElementResult> target_element,
     bool result) {
   if (!result) {
-    OnResult(false, std::move(callback));
+    std::move(callback).Run(ClientStatus(TIMED_OUT));
     return;
   }
 
@@ -785,7 +789,7 @@ void WebController::OnWaitDocumentToBecomeInteractiveForClickOrTap(
 void WebController::ClickOrTapElement(
     std::unique_ptr<FindElementResult> target_element,
     bool is_a_click,
-    base::OnceCallback<void(bool)> callback) {
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   std::string element_object_id = target_element->object_id;
   std::vector<std::unique_ptr<runtime::CallArgument>> argument;
   argument.emplace_back(
@@ -804,12 +808,12 @@ void WebController::ClickOrTapElement(
 
 void WebController::OnScrollIntoView(
     std::unique_ptr<FindElementResult> target_element,
-    base::OnceCallback<void(bool)> callback,
+    base::OnceCallback<void(const ClientStatus&)> callback,
     bool is_a_click,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   if (!result || result->HasExceptionDetails()) {
     DVLOG(1) << __func__ << " Failed to scroll the element.";
-    OnResult(false, std::move(callback));
+    std::move(callback).Run(ClientStatus(OTHER_ACTION_STATUS));  // unexpected
     return;
   }
 
@@ -827,7 +831,7 @@ void WebController::OnScrollIntoView(
 
 void WebController::TapOrClickOnCoordinates(
     ElementPositionGetter* getter_to_release,
-    base::OnceCallback<void(bool)> callback,
+    base::OnceCallback<void(const ClientStatus&)> callback,
     bool is_a_click,
     bool has_coordinates,
     int x,
@@ -836,7 +840,7 @@ void WebController::TapOrClickOnCoordinates(
 
   if (!has_coordinates) {
     DVLOG(1) << __func__ << " Failed to get element position.";
-    OnResult(false, std::move(callback));
+    std::move(callback).Run(ClientStatus(ELEMENT_UNSTABLE));
     return;
   }
 
@@ -869,14 +873,14 @@ void WebController::TapOrClickOnCoordinates(
 }
 
 void WebController::OnDispatchPressMouseEvent(
-    base::OnceCallback<void(bool)> callback,
+    base::OnceCallback<void(const ClientStatus&)> callback,
     int x,
     int y,
     std::unique_ptr<input::DispatchMouseEventResult> result) {
   if (!result) {
     DVLOG(1) << __func__
              << " Failed to dispatch mouse left button pressed event.";
-    OnResult(false, std::move(callback));
+    std::move(callback).Run(ClientStatus(OTHER_ACTION_STATUS));  // unexpected
     return;
   }
 
@@ -893,17 +897,17 @@ void WebController::OnDispatchPressMouseEvent(
 }
 
 void WebController::OnDispatchReleaseMouseEvent(
-    base::OnceCallback<void(bool)> callback,
+    base::OnceCallback<void(const ClientStatus&)> callback,
     std::unique_ptr<input::DispatchMouseEventResult> result) {
-  OnResult(true, std::move(callback));
+  std::move(callback).Run(OkClientStatus());
 }
 
 void WebController::OnDispatchTouchEventStart(
-    base::OnceCallback<void(bool)> callback,
+    base::OnceCallback<void(const ClientStatus&)> callback,
     std::unique_ptr<input::DispatchTouchEventResult> result) {
   if (!result) {
     DVLOG(1) << __func__ << " Failed to dispatch touch start event.";
-    OnResult(false, std::move(callback));
+    std::move(callback).Run(ClientStatus(OTHER_ACTION_STATUS));  // unexpected
     return;
   }
 
@@ -919,10 +923,10 @@ void WebController::OnDispatchTouchEventStart(
 }
 
 void WebController::OnDispatchTouchEventEnd(
-    base::OnceCallback<void(bool)> callback,
+    base::OnceCallback<void(const ClientStatus&)> callback,
     std::unique_ptr<input::DispatchTouchEventResult> result) {
   DCHECK(result);
-  OnResult(true, std::move(callback));
+  std::move(callback).Run(OkClientStatus());
 }
 
 void WebController::ElementCheck(ElementCheckType check_type,
@@ -940,13 +944,14 @@ void WebController::ElementCheck(ElementCheckType check_type,
 void WebController::OnFindElementForCheck(
     ElementCheckType check_type,
     base::OnceCallback<void(bool)> callback,
+    const ClientStatus& status,
     std::unique_ptr<FindElementResult> result) {
-  if (result->object_id.empty()) {
-    OnResult(false, std::move(callback));
+  if (!status.ok()) {
+    std::move(callback).Run(false);
     return;
   }
   if (check_type == kExistenceCheck) {
-    OnResult(true, std::move(callback));
+    std::move(callback).Run(true);
     return;
   }
   DCHECK_EQ(check_type, kVisibilityCheck);
@@ -960,8 +965,8 @@ void WebController::OnFindElementForCheck(
 void WebController::OnGetBoxModelForVisible(
     base::OnceCallback<void(bool)> callback,
     std::unique_ptr<dom::GetBoxModelResult> result) {
-  OnResult(result && result->GetModel() && result->GetModel()->GetContent(),
-           std::move(callback));
+  std::move(callback).Run(result && result->GetModel() &&
+                          result->GetModel()->GetContent());
 }
 
 void WebController::FindElement(const Selector& selector,
@@ -978,29 +983,19 @@ void WebController::FindElement(const Selector& selector,
 void WebController::OnFindElementResult(
     ElementFinder* finder_to_release,
     FindElementCallback callback,
+    const ClientStatus& status,
     std::unique_ptr<FindElementResult> result) {
   pending_workers_.erase(finder_to_release);
-  std::move(callback).Run(std::move(result));
-}
-
-void WebController::OnResult(bool result,
-                             base::OnceCallback<void(bool)> callback) {
-  std::move(callback).Run(result);
-}
-
-void WebController::OnResult(
-    bool exists,
-    const std::string& value,
-    base::OnceCallback<void(bool, const std::string&)> callback) {
-  std::move(callback).Run(exists, value);
+  std::move(callback).Run(status, std::move(result));
 }
 
 void WebController::OnFindElementForFocusElement(
-    base::OnceCallback<void(bool)> callback,
+    base::OnceCallback<void(const ClientStatus&)> callback,
+    const ClientStatus& status,
     std::unique_ptr<FindElementResult> element_result) {
-  if (element_result->object_id.empty()) {
+  if (!status.ok()) {
     DVLOG(1) << __func__ << " Failed to find the element to focus on.";
-    OnResult(false, std::move(callback));
+    std::move(callback).Run(status);
     return;
   }
 
@@ -1014,11 +1009,11 @@ void WebController::OnFindElementForFocusElement(
 }
 
 void WebController::OnWaitDocumentToBecomeInteractiveForFocusElement(
-    base::OnceCallback<void(bool)> callback,
+    base::OnceCallback<void(const ClientStatus&)> callback,
     std::unique_ptr<FindElementResult> target_element,
     bool result) {
   if (!result) {
-    OnResult(false, std::move(callback));
+    std::move(callback).Run(ClientStatus(ELEMENT_UNSTABLE));
     return;
   }
 
@@ -1038,19 +1033,20 @@ void WebController::OnWaitDocumentToBecomeInteractiveForFocusElement(
 }
 
 void WebController::OnFocusElement(
-    base::OnceCallback<void(bool)> callback,
+    base::OnceCallback<void(const ClientStatus&)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   if (!result || result->HasExceptionDetails()) {
     DVLOG(1) << __func__ << " Failed to focus on element.";
-    OnResult(false, std::move(callback));
+    std::move(callback).Run(ClientStatus(OTHER_ACTION_STATUS));  // unexpected
     return;
   }
-  OnResult(true, std::move(callback));
+  std::move(callback).Run(OkClientStatus());
 }
 
-void WebController::FillAddressForm(const autofill::AutofillProfile* profile,
-                                    const Selector& selector,
-                                    base::OnceCallback<void(bool)> callback) {
+void WebController::FillAddressForm(
+    const autofill::AutofillProfile* profile,
+    const Selector& selector,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   DVLOG(3) << __func__ << selector;
   auto data_to_autofill = std::make_unique<FillFormInputData>();
   data_to_autofill->profile =
@@ -1066,11 +1062,12 @@ void WebController::FillAddressForm(const autofill::AutofillProfile* profile,
 void WebController::OnFindElementForFillingForm(
     std::unique_ptr<FillFormInputData> data_to_autofill,
     const Selector& selector,
-    base::OnceCallback<void(bool)> callback,
+    base::OnceCallback<void(const ClientStatus&)> callback,
+    const ClientStatus& status,
     std::unique_ptr<FindElementResult> element_result) {
-  if (element_result->object_id.empty()) {
+  if (!status.ok()) {
     DVLOG(1) << __func__ << " Failed to find the element for filling the form.";
-    OnResult(false, std::move(callback));
+    std::move(callback).Run(status);
     return;
   }
 
@@ -1090,13 +1087,13 @@ void WebController::OnFindElementForFillingForm(
 
 void WebController::OnGetFormAndFieldDataForFillingForm(
     std::unique_ptr<FillFormInputData> data_to_autofill,
-    base::OnceCallback<void(bool)> callback,
+    base::OnceCallback<void(const ClientStatus&)> callback,
     content::RenderFrameHost* container_frame_host,
     const autofill::FormData& form_data,
     const autofill::FormFieldData& form_field) {
   if (form_data.fields.empty()) {
     DVLOG(1) << __func__ << " Failed to get form data to fill form.";
-    OnResult(false, std::move(callback));
+    std::move(callback).Run(ClientStatus(OTHER_ACTION_STATUS));  // unexpected
     return;
   }
 
@@ -1104,7 +1101,7 @@ void WebController::OnGetFormAndFieldDataForFillingForm(
       ContentAutofillDriver::GetForRenderFrameHost(container_frame_host);
   if (!driver) {
     DVLOG(1) << __func__ << " Failed to get the autofill driver.";
-    OnResult(false, std::move(callback));
+    std::move(callback).Run(ClientStatus(OTHER_ACTION_STATUS));  // unexpected
     return;
   }
 
@@ -1117,13 +1114,14 @@ void WebController::OnGetFormAndFieldDataForFillingForm(
                                                 form_data, form_field);
   }
 
-  OnResult(true, std::move(callback));
+  std::move(callback).Run(OkClientStatus());
 }
 
-void WebController::FillCardForm(std::unique_ptr<autofill::CreditCard> card,
-                                 const base::string16& cvc,
-                                 const Selector& selector,
-                                 base::OnceCallback<void(bool)> callback) {
+void WebController::FillCardForm(
+    std::unique_ptr<autofill::CreditCard> card,
+    const base::string16& cvc,
+    const Selector& selector,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   DVLOG(3) << __func__ << " " << selector;
   auto data_to_autofill = std::make_unique<FillFormInputData>();
   data_to_autofill->card = std::move(card);
@@ -1136,9 +1134,10 @@ void WebController::FillCardForm(std::unique_ptr<autofill::CreditCard> card,
                              std::move(callback)));
 }
 
-void WebController::SelectOption(const Selector& selector,
-                                 const std::string& selected_option,
-                                 base::OnceCallback<void(bool)> callback) {
+void WebController::SelectOption(
+    const Selector& selector,
+    const std::string& selected_option,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   DVLOG(3) << __func__ << " " << selector << ", option=" << selected_option;
   FindElement(selector,
               /* strict_mode= */ true,
@@ -1149,12 +1148,12 @@ void WebController::SelectOption(const Selector& selector,
 
 void WebController::OnFindElementForSelectOption(
     const std::string& selected_option,
-    base::OnceCallback<void(bool)> callback,
+    base::OnceCallback<void(const ClientStatus&)> callback,
+    const ClientStatus& status,
     std::unique_ptr<FindElementResult> element_result) {
-  const std::string object_id = element_result->object_id;
-  if (object_id.empty()) {
+  if (!status.ok()) {
     DVLOG(1) << __func__ << " Failed to find the element to select an option.";
-    OnResult(false, std::move(callback));
+    std::move(callback).Run(status);
     return;
   }
 
@@ -1165,7 +1164,7 @@ void WebController::OnFindElementForSelectOption(
           .Build());
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
-          .SetObjectId(object_id)
+          .SetObjectId(element_result->object_id)
           .SetArguments(std::move(argument))
           .SetFunctionDeclaration(std::string(kSelectOptionScript))
           .SetReturnByValue(true)
@@ -1175,21 +1174,21 @@ void WebController::OnFindElementForSelectOption(
 }
 
 void WebController::OnSelectOption(
-    base::OnceCallback<void(bool)> callback,
+    base::OnceCallback<void(const ClientStatus&)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  if (!result || result->HasExceptionDetails()) {
+  if (!result || result->HasExceptionDetails() ||
+      !result->GetResult()->GetValue()->GetBool()) {
     DVLOG(1) << __func__ << " Failed to select option.";
-    OnResult(false, std::move(callback));
+    std::move(callback).Run(ClientStatus(OTHER_ACTION_STATUS));  // unexpected
     return;
   }
-
-  // Read the result returned from Javascript code.
   DCHECK(result->GetResult()->GetValue()->is_bool());
-  OnResult(result->GetResult()->GetValue()->GetBool(), std::move(callback));
+  std::move(callback).Run(OkClientStatus());
 }
 
-void WebController::HighlightElement(const Selector& selector,
-                                     base::OnceCallback<void(bool)> callback) {
+void WebController::HighlightElement(
+    const Selector& selector,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   DVLOG(3) << __func__ << " " << selector;
   FindElement(
       selector,
@@ -1199,15 +1198,16 @@ void WebController::HighlightElement(const Selector& selector,
 }
 
 void WebController::OnFindElementForHighlightElement(
-    base::OnceCallback<void(bool)> callback,
+    base::OnceCallback<void(const ClientStatus&)> callback,
+    const ClientStatus& status,
     std::unique_ptr<FindElementResult> element_result) {
-  const std::string object_id = element_result->object_id;
-  if (object_id.empty()) {
+  if (!status.ok()) {
     DVLOG(1) << __func__ << " Failed to find the element to highlight.";
-    OnResult(false, std::move(callback));
+    std::move(callback).Run(status);
     return;
   }
 
+  const std::string& object_id = element_result->object_id;
   std::vector<std::unique_ptr<runtime::CallArgument>> argument;
   argument.emplace_back(
       runtime::CallArgument::Builder().SetObjectId(object_id).Build());
@@ -1223,20 +1223,21 @@ void WebController::OnFindElementForHighlightElement(
 }
 
 void WebController::OnHighlightElement(
-    base::OnceCallback<void(bool)> callback,
+    base::OnceCallback<void(const ClientStatus&)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  if (!result || result->HasExceptionDetails()) {
+  if (!result || result->HasExceptionDetails() ||
+      !result->GetResult()->GetValue()->GetBool()) {
     DVLOG(1) << __func__ << " Failed to highlight element.";
-    OnResult(false, std::move(callback));
+    std::move(callback).Run(ClientStatus(OTHER_ACTION_STATUS));  // unexpected
     return;
   }
-  // Read the result returned from Javascript code.
   DCHECK(result->GetResult()->GetValue()->is_bool());
-  OnResult(result->GetResult()->GetValue()->GetBool(), std::move(callback));
+  std::move(callback).Run(OkClientStatus());
 }
 
-void WebController::FocusElement(const Selector& selector,
-                                 base::OnceCallback<void(bool)> callback) {
+void WebController::FocusElement(
+    const Selector& selector,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   DVLOG(3) << __func__ << " " << selector;
   DCHECK(!selector.empty());
   FindElement(
@@ -1258,10 +1259,11 @@ void WebController::GetFieldValue(
 
 void WebController::OnFindElementForGetFieldValue(
     base::OnceCallback<void(bool, const std::string&)> callback,
+    const ClientStatus& status,
     std::unique_ptr<FindElementResult> element_result) {
   const std::string object_id = element_result->object_id;
-  if (object_id.empty()) {
-    OnResult(/* exists= */ false, "", std::move(callback));
+  if (!status.ok()) {
+    std::move(callback).Run(/* exists= */ false, "");
     return;
   }
 
@@ -1279,20 +1281,21 @@ void WebController::OnGetValueAttribute(
     base::OnceCallback<void(bool, const std::string&)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   if (!result || result->HasExceptionDetails()) {
-    OnResult(/* exists= */ true, "", std::move(callback));
+    std::move(callback).Run(/* exists= */ true, "");
     return;
   }
 
   // Read the result returned from Javascript code.
   DCHECK(result->GetResult()->GetValue()->is_string());
-  OnResult(/* exists= */ true, result->GetResult()->GetValue()->GetString(),
-           std::move(callback));
+  std::move(callback).Run(/* exists= */ true,
+                          result->GetResult()->GetValue()->GetString());
 }
 
-void WebController::SetFieldValue(const Selector& selector,
-                                  const std::string& value,
-                                  bool simulate_key_presses,
-                                  base::OnceCallback<void(bool)> callback) {
+void WebController::SetFieldValue(
+    const Selector& selector,
+    const std::string& value,
+    bool simulate_key_presses,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   DVLOG(3) << __func__ << " " << selector << ", value=" << value
            << ", simulate_key_presses=" << simulate_key_presses;
   if (simulate_key_presses) {
@@ -1304,7 +1307,7 @@ void WebController::SetFieldValue(const Selector& selector,
       if (!base::WideToUTF8(&wide_char, 1, &utf8_char)) {
         DVLOG(1) << __func__
                  << " Failed to convert character to UTF-8: " << wide_char;
-        OnResult(false, std::move(callback));
+        std::move(callback).Run(ClientStatus(INVALID_ACTION));
         return;
       }
 
@@ -1328,7 +1331,7 @@ void WebController::SetFieldValue(const Selector& selector,
 void WebController::InternalSetFieldValue(
     const Selector& selector,
     const std::string& value,
-    base::OnceCallback<void(bool)> callback) {
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   FindElement(selector,
               /* strict_mode= */ true,
               base::BindOnce(&WebController::OnFindElementForSetFieldValue,
@@ -1339,10 +1342,10 @@ void WebController::InternalSetFieldValue(
 void WebController::OnClearFieldForSendKeyboardInput(
     const Selector& selector,
     const std::vector<std::string>& utf8_chars,
-    base::OnceCallback<void(bool)> callback,
-    bool clear_status) {
-  if (!clear_status) {
-    OnResult(false, std::move(callback));
+    base::OnceCallback<void(const ClientStatus&)> callback,
+    const ClientStatus& clear_status) {
+  if (!clear_status.ok()) {
+    std::move(callback).Run(clear_status);
     return;
   }
   SendKeyboardInput(selector, utf8_chars, std::move(callback));
@@ -1350,10 +1353,10 @@ void WebController::OnClearFieldForSendKeyboardInput(
 
 void WebController::OnClickElementForSendKeyboardInput(
     const std::vector<std::string>& utf8_chars,
-    base::OnceCallback<void(bool)> callback,
-    bool click_status) {
-  if (!click_status) {
-    OnResult(false, std::move(callback));
+    base::OnceCallback<void(const ClientStatus&)> callback,
+    const ClientStatus& click_status) {
+  if (!click_status.ok()) {
+    std::move(callback).Run(click_status);
     return;
   }
   DispatchKeyboardTextDownEvent(utf8_chars, 0, std::move(callback));
@@ -1362,9 +1365,9 @@ void WebController::OnClickElementForSendKeyboardInput(
 void WebController::DispatchKeyboardTextDownEvent(
     const std::vector<std::string>& utf8_chars,
     size_t index,
-    base::OnceCallback<void(bool)> callback) {
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   if (index >= utf8_chars.size()) {
-    OnResult(true, std::move(callback));
+    std::move(callback).Run(OkClientStatus());
     return;
   }
 
@@ -1380,7 +1383,7 @@ void WebController::DispatchKeyboardTextDownEvent(
 void WebController::DispatchKeyboardTextUpEvent(
     const std::vector<std::string>& utf8_chars,
     size_t index,
-    base::OnceCallback<void(bool)> callback) {
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   DCHECK_LT(index, utf8_chars.size());
   devtools_client_->GetInput()->DispatchKeyEvent(
       CreateKeyEventParamsFromText(
@@ -1403,16 +1406,16 @@ void WebController::OnPressKeyboard(
     int key_code,
     base::OnceCallback<void(bool)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  OnResult(result && !result->HasExceptionDetails(), std::move(callback));
+  std::move(callback).Run(result && !result->HasExceptionDetails());
 }
 
 void WebController::OnFindElementForSetFieldValue(
     const std::string& value,
-    base::OnceCallback<void(bool)> callback,
+    base::OnceCallback<void(const ClientStatus&)> callback,
+    const ClientStatus& status,
     std::unique_ptr<FindElementResult> element_result) {
-  const std::string object_id = element_result->object_id;
-  if (object_id.empty()) {
-    OnResult(false, std::move(callback));
+  if (!status.ok()) {
+    std::move(callback).Run(status);
     return;
   }
 
@@ -1423,7 +1426,7 @@ void WebController::OnFindElementForSetFieldValue(
           .Build());
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
-          .SetObjectId(object_id)
+          .SetObjectId(element_result->object_id)
           .SetArguments(std::move(argument))
           .SetFunctionDeclaration(std::string(kSetValueAttributeScript))
           .Build(),
@@ -1432,15 +1435,18 @@ void WebController::OnFindElementForSetFieldValue(
 }
 
 void WebController::OnSetValueAttribute(
-    base::OnceCallback<void(bool)> callback,
+    base::OnceCallback<void(const ClientStatus&)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  OnResult(result && !result->HasExceptionDetails(), std::move(callback));
+  std::move(callback).Run(result && !result->HasExceptionDetails()
+                              ? OkClientStatus()
+                              : ClientStatus(OTHER_ACTION_STATUS));
 }
 
-void WebController::SetAttribute(const Selector& selector,
-                                 const std::vector<std::string>& attribute,
-                                 const std::string& value,
-                                 base::OnceCallback<void(bool)> callback) {
+void WebController::SetAttribute(
+    const Selector& selector,
+    const std::vector<std::string>& attribute,
+    const std::string& value,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   DVLOG(3) << __func__ << " " << selector << ", attribute=["
            << base::JoinString(attribute, ",") << "], value=" << value;
 
@@ -1456,11 +1462,11 @@ void WebController::SetAttribute(const Selector& selector,
 void WebController::OnFindElementForSetAttribute(
     const std::vector<std::string>& attribute,
     const std::string& value,
-    base::OnceCallback<void(bool)> callback,
+    base::OnceCallback<void(const ClientStatus&)> callback,
+    const ClientStatus& status,
     std::unique_ptr<FindElementResult> element_result) {
-  const std::string object_id = element_result->object_id;
-  if (object_id.empty()) {
-    OnResult(false, std::move(callback));
+  if (!status.ok()) {
+    std::move(callback).Run(status);
     return;
   }
 
@@ -1480,7 +1486,7 @@ void WebController::OnFindElementForSetAttribute(
           .Build());
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
-          .SetObjectId(object_id)
+          .SetObjectId(element_result->object_id)
           .SetArguments(std::move(arguments))
           .SetFunctionDeclaration(std::string(kSetAttributeScript))
           .Build(),
@@ -1489,15 +1495,17 @@ void WebController::OnFindElementForSetAttribute(
 }
 
 void WebController::OnSetAttribute(
-    base::OnceCallback<void(bool)> callback,
+    base::OnceCallback<void(const ClientStatus&)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  OnResult(result && !result->HasExceptionDetails(), std::move(callback));
+  std::move(callback).Run(result && !result->HasExceptionDetails()
+                              ? OkClientStatus()
+                              : ClientStatus(OTHER_ACTION_STATUS));
 }
 
 void WebController::SendKeyboardInput(
     const Selector& selector,
     const std::vector<std::string>& utf8_chars,
-    base::OnceCallback<void(bool)> callback) {
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   DVLOG(3) << __func__ << " " << selector
            << ", input=" << base::JoinString(utf8_chars, "");
   DCHECK(!selector.empty());
@@ -1511,8 +1519,13 @@ void WebController::SendKeyboardInput(
 void WebController::OnFindElementForSendKeyboardInput(
     const Selector& selector,
     const std::vector<std::string>& utf8_chars,
-    base::OnceCallback<void(bool)> callback,
+    base::OnceCallback<void(const ClientStatus&)> callback,
+    const ClientStatus& status,
     std::unique_ptr<FindElementResult> element_result) {
+  if (!status.ok()) {
+    std::move(callback).Run(status);
+    return;
+  }
   ClickElement(selector, base::BindOnce(
                              &WebController::OnClickElementForSendKeyboardInput,
                              weak_ptr_factory_.GetWeakPtr(), utf8_chars,
@@ -1521,7 +1534,8 @@ void WebController::OnFindElementForSendKeyboardInput(
 
 void WebController::GetOuterHtml(
     const Selector& selector,
-    base::OnceCallback<void(bool, const std::string&)> callback) {
+    base::OnceCallback<void(const ClientStatus&, const std::string&)>
+        callback) {
   DVLOG(3) << __func__ << " " << selector;
   FindElement(
       selector,
@@ -1546,8 +1560,9 @@ void WebController::GetElementPosition(
 
 void WebController::OnFindElementForPosition(
     base::OnceCallback<void(bool, const RectF&)> callback,
+    const ClientStatus& status,
     std::unique_ptr<FindElementResult> result) {
-  if (result->object_id.empty()) {
+  if (!status.ok()) {
     RectF empty;
     std::move(callback).Run(false, empty);
     return;
@@ -1602,18 +1617,18 @@ void WebController::OnGetElementPositionResult(
 }
 
 void WebController::OnFindElementForGetOuterHtml(
-    base::OnceCallback<void(bool, const std::string&)> callback,
+    base::OnceCallback<void(const ClientStatus&, const std::string&)> callback,
+    const ClientStatus& status,
     std::unique_ptr<FindElementResult> element_result) {
-  const std::string object_id = element_result->object_id;
-  if (object_id.empty()) {
+  if (!status.ok()) {
     DVLOG(2) << __func__ << " Failed to find element for GetOuterHtml";
-    OnResult(false, "", std::move(callback));
+    std::move(callback).Run(status, "");
     return;
   }
 
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
-          .SetObjectId(object_id)
+          .SetObjectId(element_result->object_id)
           .SetFunctionDeclaration(std::string(kGetOuterHtmlScript))
           .SetReturnByValue(true)
           .Build(),
@@ -1622,18 +1637,17 @@ void WebController::OnFindElementForGetOuterHtml(
 }
 
 void WebController::OnGetOuterHtml(
-    base::OnceCallback<void(bool, const std::string&)> callback,
+    base::OnceCallback<void(const ClientStatus&, const std::string&)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  if (!result || result->HasExceptionDetails()) {
-    DVLOG(2) << __func__ << " Failed to find element for GetOuterHtml";
-    OnResult(false, "", std::move(callback));
+  if (!result || result->HasExceptionDetails() || !result->GetResult() ||
+      !result->GetResult()->GetValue()->is_string()) {
+    DVLOG(2) << __func__ << " Failed to get HTML content for GetOuterHtml";
+    std::move(callback).Run(ClientStatus(OTHER_ACTION_STATUS), "");
     return;
   }
 
-  // Read the result returned from Javascript code.
-  DCHECK(result->GetResult()->GetValue()->is_string());
-  OnResult(true, result->GetResult()->GetValue()->GetString(),
-           std::move(callback));
+  std::move(callback).Run(OkClientStatus(),
+                          result->GetResult()->GetValue()->GetString());
 }
 
 void WebController::SetCookie(const std::string& domain,

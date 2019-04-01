@@ -44,8 +44,9 @@ void ClickAction::OnWaitForElement(ActionDelegate* delegate,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void ClickAction::OnClick(ProcessActionCallback callback, bool status) {
-  UpdateProcessedAction(status ? ACTION_APPLIED : OTHER_ACTION_STATUS);
+void ClickAction::OnClick(ProcessActionCallback callback,
+                          const ClientStatus& status) {
+  UpdateProcessedAction(status);
   std::move(callback).Run(std::move(processed_action_proto_));
 }
 

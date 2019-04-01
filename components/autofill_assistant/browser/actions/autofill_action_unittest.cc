@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill_assistant/browser/actions/mock_action_delegate.h"
 #include "components/autofill_assistant/browser/client_memory.h"
+#include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/mock_run_once_callback.h"
 #include "components/autofill_assistant/browser/mock_web_controller.h"
 #include "components/autofill_assistant/browser/service.pb.h"
@@ -209,7 +210,7 @@ TEST_F(AutofillActionTest, ValidationSucceeds) {
   // Autofill succeeds.
   EXPECT_CALL(mock_action_delegate_,
               OnFillAddressForm(NotNull(), Eq(Selector({kFakeSelector})), _))
-      .WillOnce(RunOnceCallback<2>(true));
+      .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
   // Validation succeeds.
   ON_CALL(mock_web_controller_, OnGetFieldValue(_, _))
@@ -233,7 +234,7 @@ TEST_F(AutofillActionTest, FallbackFails) {
   // Autofill succeeds.
   EXPECT_CALL(mock_action_delegate_,
               OnFillAddressForm(NotNull(), Eq(Selector({kFakeSelector})), _))
-      .WillOnce(RunOnceCallback<2>(true));
+      .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
   // Validation fails when getting FIRST_NAME.
   EXPECT_CALL(mock_web_controller_,
@@ -249,7 +250,7 @@ TEST_F(AutofillActionTest, FallbackFails) {
   // Fallback fails.
   EXPECT_CALL(mock_action_delegate_,
               OnSetFieldValue(Eq(Selector({"#first_name"})), kFirstName, _))
-      .WillOnce(RunOnceCallback<2>(false));
+      .WillOnce(RunOnceCallback<2>(ClientStatus(OTHER_ACTION_STATUS)));
 
   EXPECT_EQ(ProcessedActionStatusProto::MANUAL_FALLBACK,
             ProcessAction(action_proto));
@@ -269,7 +270,7 @@ TEST_F(AutofillActionTest, FallbackSucceeds) {
   // Autofill succeeds.
   EXPECT_CALL(mock_action_delegate_,
               OnFillAddressForm(NotNull(), Eq(Selector({kFakeSelector})), _))
-      .WillOnce(RunOnceCallback<2>(true));
+      .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
   {
     InSequence seq;
@@ -288,7 +289,7 @@ TEST_F(AutofillActionTest, FallbackSucceeds) {
     // Fallback succeeds.
     EXPECT_CALL(mock_action_delegate_,
                 OnSetFieldValue(Eq(Selector({"#first_name"})), kFirstName, _))
-        .WillOnce(RunOnceCallback<2>(true));
+        .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
     // Second validation succeeds.
     EXPECT_CALL(mock_web_controller_, OnGetFieldValue(_, _))

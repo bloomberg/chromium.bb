@@ -46,16 +46,16 @@ void SetFormFieldValueAction::OnWaitForElement(ActionDelegate* delegate,
 
   // Start with first value, then call OnSetFieldValue() recursively until done.
   OnSetFieldValue(delegate, std::move(callback), /* next = */ 0,
-                  /* status= */ true);
+                  OkClientStatus());
 }
 
 void SetFormFieldValueAction::OnSetFieldValue(ActionDelegate* delegate,
                                               ProcessActionCallback callback,
                                               int next,
-                                              bool status) {
+                                              const ClientStatus& status) {
   // If something went wrong or we are out of values: finish
-  if (!status || next >= proto_.set_form_value().value_size()) {
-    UpdateProcessedAction(status ? ACTION_APPLIED : OTHER_ACTION_STATUS);
+  if (!status.ok() || next >= proto_.set_form_value().value_size()) {
+    UpdateProcessedAction(status);
     std::move(callback).Run(std::move(processed_action_proto_));
     return;
   }
@@ -88,7 +88,7 @@ void SetFormFieldValueAction::OnSetFieldValue(ActionDelegate* delegate,
             << "and only supports US-ASCII values (encountered "
             << key_field.keycode() << "). Use field `key' instead.";
         OnSetFieldValue(delegate, std::move(callback), next,
-                        /* status= */ false);
+                        ClientStatus(INVALID_ACTION));
       }
       break;
     case SetFormFieldValueProto_KeyPress::kKeyboardInput:
@@ -100,7 +100,8 @@ void SetFormFieldValueAction::OnSetFieldValue(ActionDelegate* delegate,
       break;
     default:
       DVLOG(1) << "Unrecognized field for SetFormFieldValueProto_KeyPress";
-      OnSetFieldValue(delegate, std::move(callback), next, /* status= */ false);
+      OnSetFieldValue(delegate, std::move(callback), next,
+                      ClientStatus(INVALID_ACTION));
       break;
   }
 }

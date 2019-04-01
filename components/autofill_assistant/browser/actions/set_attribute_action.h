@@ -27,7 +27,8 @@ class SetAttributeAction : public Action {
   void OnWaitForElement(ActionDelegate* delegate,
                         ProcessActionCallback callback,
                         bool element_found);
-  void OnSetAttribute(ProcessActionCallback callback, bool status);
+  void OnSetAttribute(ProcessActionCallback callback,
+                      const ClientStatus& status);
 
   base::WeakPtrFactory<SetAttributeAction> weak_ptr_factory_;
 

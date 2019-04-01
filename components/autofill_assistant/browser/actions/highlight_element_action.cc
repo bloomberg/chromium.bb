@@ -46,8 +46,8 @@ void HighlightElementAction::OnWaitForElement(ActionDelegate* delegate,
 }
 
 void HighlightElementAction::OnHighlightElement(ProcessActionCallback callback,
-                                                bool status) {
-  UpdateProcessedAction(status ? ACTION_APPLIED : OTHER_ACTION_STATUS);
+                                                const ClientStatus& status) {
+  UpdateProcessedAction(status);
   std::move(callback).Run(std::move(processed_action_proto_));
 }
 

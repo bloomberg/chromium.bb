@@ -52,48 +52,50 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD0(GetStatusMessage, std::string());
   MOCK_METHOD2(ClickOrTapElement,
                void(const Selector& selector,
-                    base::OnceCallback<void(bool)> callback));
+                    base::OnceCallback<void(const ClientStatus&)> callback));
 
   MOCK_METHOD2(Prompt,
                void(std::unique_ptr<std::vector<Chip>> chips,
                     base::OnceCallback<void()> on_terminate));
   MOCK_METHOD0(CancelPrompt, void());
 
-  void FillAddressForm(const autofill::AutofillProfile* profile,
-                       const Selector& selector,
-                       base::OnceCallback<void(bool)> callback) override {
+  void FillAddressForm(
+      const autofill::AutofillProfile* profile,
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&)> callback) override {
     OnFillAddressForm(profile, selector, callback);
   }
 
   MOCK_METHOD3(OnFillAddressForm,
                void(const autofill::AutofillProfile* profile,
                     const Selector& selector,
-                    base::OnceCallback<void(bool)>& callback));
+                    base::OnceCallback<void(const ClientStatus&)>& callback));
 
-  void FillCardForm(std::unique_ptr<autofill::CreditCard> card,
-                    const base::string16& cvc,
-                    const Selector& selector,
-                    base::OnceCallback<void(bool)> callback) override {
+  void FillCardForm(
+      std::unique_ptr<autofill::CreditCard> card,
+      const base::string16& cvc,
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&)> callback) override {
     OnFillCardForm(card->guid(), selector, callback);
   }
 
   MOCK_METHOD3(OnFillCardForm,
                void(const std::string& guid,
                     const Selector& selector,
-                    base::OnceCallback<void(bool)>& callback));
+                    base::OnceCallback<void(const ClientStatus&)>& callback));
   MOCK_METHOD3(SelectOption,
                void(const Selector& selector,
                     const std::string& selected_option,
-                    base::OnceCallback<void(bool)> callback));
+                    base::OnceCallback<void(const ClientStatus&)> callback));
   MOCK_METHOD2(FocusElement,
                void(const Selector& selector,
-                    base::OnceCallback<void(bool)> callback));
+                    base::OnceCallback<void(const ClientStatus&)> callback));
   MOCK_METHOD1(SetTouchableElementArea,
                void(const ElementAreaProto& touchable_element_area));
 
   MOCK_METHOD2(HighlightElement,
                void(const Selector& selector,
-                    base::OnceCallback<void(bool)> callback));
+                    base::OnceCallback<void(const ClientStatus&)> callback));
 
   MOCK_METHOD1(GetPaymentInformation,
                void(std::unique_ptr<PaymentRequestOptions> options));
@@ -103,29 +105,29 @@ class MockActionDelegate : public ActionDelegate {
   void SetFieldValue(const Selector& selector,
                      const std::string& value,
                      bool ignored_simulate_key_presses,
-                     base::OnceCallback<void(bool)> callback) {
+                     base::OnceCallback<void(const ClientStatus&)> callback) {
     OnSetFieldValue(selector, value, callback);
   }
 
   MOCK_METHOD3(OnSetFieldValue,
                void(const Selector& selector,
                     const std::string& value,
-                    base::OnceCallback<void(bool)>& callback));
+                    base::OnceCallback<void(const ClientStatus&)>& callback));
 
   MOCK_METHOD4(SetAttribute,
                void(const Selector& selector,
                     const std::vector<std::string>& attribute,
                     const std::string& value,
-                    base::OnceCallback<void(bool)> callback));
+                    base::OnceCallback<void(const ClientStatus&)> callback));
 
   MOCK_METHOD3(SendKeyboardInput,
                void(const Selector& selector,
                     const std::vector<std::string>& text_parts,
-                    base::OnceCallback<void(bool)> callback));
-  MOCK_METHOD2(
-      GetOuterHtml,
-      void(const Selector& selector,
-           base::OnceCallback<void(bool, const std::string&)> callback));
+                    base::OnceCallback<void(const ClientStatus&)> callback));
+  MOCK_METHOD2(GetOuterHtml,
+               void(const Selector& selector,
+                    base::OnceCallback<void(const ClientStatus&,
+                                            const std::string&)> callback));
   MOCK_METHOD1(LoadURL, void(const GURL& url));
   MOCK_METHOD0(Shutdown, void());
   MOCK_METHOD0(Close, void());

@@ -20,10 +20,14 @@ void Action::ProcessAction(ActionDelegate* delegate,
   InternalProcessAction(delegate, std::move(callback));
 }
 
-void Action::UpdateProcessedAction(ProcessedActionStatusProto status) {
+void Action::UpdateProcessedAction(ProcessedActionStatusProto status_proto) {
+  UpdateProcessedAction(ClientStatus(status_proto));
+}
+
+void Action::UpdateProcessedAction(const ClientStatus& status) {
   // Safety check in case process action is run twice.
   *processed_action_proto_->mutable_action() = proto_;
-  processed_action_proto_->set_status(status);
+  status.FillProto(processed_action_proto_.get());
 }
 
 // static

@@ -30,7 +30,7 @@ class SetFormFieldValueAction : public Action {
   void OnSetFieldValue(ActionDelegate* delegate,
                        ProcessActionCallback callback,
                        int next,
-                       bool status);
+                       const ClientStatus& status);
 
   base::WeakPtrFactory<SetFormFieldValueAction> weak_ptr_factory_;
 

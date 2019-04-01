@@ -78,6 +78,8 @@ jumbo_static_library("browser") {
     "client.h",
     "client_memory.cc",
     "client_memory.h",
+    "client_status.cc",
+    "client_status.h",
     "controller.cc",
     "controller.h",
     "details.cc",
