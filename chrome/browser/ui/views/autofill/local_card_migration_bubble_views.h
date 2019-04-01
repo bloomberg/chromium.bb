@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_VIEWS_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/autofill/local_card_migration_bubble.h"
+#include "chrome/browser/ui/autofill/payments/local_card_migration_bubble.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "components/autofill/core/browser/ui/payments/local_card_migration_bubble_controller.h"
 

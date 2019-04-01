@@ -5,8 +5,7 @@
 #include "chrome/browser/ui/views/autofill/migratable_card_view.h"
 
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/ui/autofill/local_card_migration_dialog_state.h"
-#include "chrome/browser/ui/autofill/popup_constants.h"
+#include "chrome/browser/ui/autofill/payments/local_card_migration_dialog_state.h"
 #include "chrome/browser/ui/views/autofill/local_card_migration_dialog_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"

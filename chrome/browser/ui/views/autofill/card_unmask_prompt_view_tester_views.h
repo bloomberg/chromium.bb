@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_CARD_UNMASK_PROMPT_VIEW_TESTER_VIEWS_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/autofill/card_unmask_prompt_view_tester.h"
+#include "chrome/browser/ui/autofill/payments/card_unmask_prompt_view_tester.h"
 
 namespace autofill {
 
