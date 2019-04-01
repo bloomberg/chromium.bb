@@ -27,6 +27,10 @@ class ArcServiceLauncher;
 class VoiceInteractionControllerClient;
 }  // namespace arc
 
+namespace policy {
+class LockToSingleUserManager;
+}  // namespace policy
+
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
 class AssistantClient;
 #endif
@@ -165,6 +169,8 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
 
   std::unique_ptr<chromeos::system::DarkResumeController>
       dark_resume_controller_;
+
+  std::unique_ptr<policy::LockToSingleUserManager> lock_to_single_user_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };

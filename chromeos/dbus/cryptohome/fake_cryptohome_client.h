@@ -335,6 +335,10 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
     return remove_firmware_management_parameters_from_tpm_call_count_;
   }
 
+  bool is_device_locked_to_single_user() const {
+    return is_device_locked_to_single_user_;
+  }
+
  private:
   void ReturnProtobufMethodCallback(
       const cryptohome::BaseReply& reply,
@@ -429,6 +433,9 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
   // MigrateToDircrypto fields.
   cryptohome::AccountIdentifier id_for_disk_migrated_to_dircrypto_;
   cryptohome::MigrateToDircryptoRequest last_migrate_to_dircrypto_request_;
+
+  // Used by LockToSingleUserMountUntilReboot.
+  bool is_device_locked_to_single_user_ = false;
 
   base::WeakPtrFactory<FakeCryptohomeClient> weak_ptr_factory_;
 
