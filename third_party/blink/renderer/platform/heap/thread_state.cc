@@ -176,10 +176,6 @@ ThreadState::ThreadState()
       gc_state_(kNoGCScheduled),
       gc_phase_(GCPhase::kNone),
       reason_for_scheduled_gc_(BlinkGC::GCReason::kMaxValue),
-      isolate_(nullptr),
-      trace_dom_wrappers_(nullptr),
-      invalidate_dead_objects_in_wrappers_marking_deque_(nullptr),
-      perform_cleanup_(nullptr),
 #if defined(ADDRESS_SANITIZER)
       asan_fake_stack_(__asan_get_current_fake_stack()),
 #endif
@@ -190,7 +186,6 @@ ThreadState::ThreadState()
   DCHECK(CheckThread());
   DCHECK(!**thread_specific_);
   **thread_specific_ = this;
-
   heap_ = std::make_unique<ThreadHeap>(this);
 }
 
@@ -1403,9 +1398,6 @@ void ThreadState::InvokePreFinalizers() {
 // static
 AtomicEntryFlag ThreadState::incremental_marking_flag_;
 
-// static
-AtomicEntryFlag ThreadState::wrapper_tracing_flag_;
-
 void ThreadState::EnableIncrementalMarkingBarrier() {
   CHECK(!IsIncrementalMarking());
   incremental_marking_flag_.Enter();
@@ -1416,18 +1408,6 @@ void ThreadState::DisableIncrementalMarkingBarrier() {
   CHECK(IsIncrementalMarking());
   incremental_marking_flag_.Exit();
   SetIncrementalMarking(false);
-}
-
-void ThreadState::EnableWrapperTracingBarrier() {
-  CHECK(!IsWrapperTracing());
-  wrapper_tracing_flag_.Enter();
-  SetWrapperTracing(true);
-}
-
-void ThreadState::DisableWrapperTracingBarrier() {
-  CHECK(IsWrapperTracing());
-  wrapper_tracing_flag_.Exit();
-  SetWrapperTracing(false);
 }
 
 void ThreadState::IncrementalMarkingStart(BlinkGC::GCReason reason) {
@@ -1719,9 +1699,6 @@ void ThreadState::AtomicPausePrologue(BlinkGC::StackState stack_state,
   if (marking_type == BlinkGC::kTakeSnapshot)
     BlinkGCMemoryDumpProvider::Instance()->ClearProcessDumpForCurrentGC();
 
-  if (isolate_ && perform_cleanup_)
-    perform_cleanup_(isolate_);
-
   if (stack_state == BlinkGC::kNoHeapPointersOnStack) {
     Heap().FlushNotFullyConstructedObjects();
   }
@@ -1801,9 +1778,6 @@ void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
       Heap().stats_collector()->previous().marked_bytes);
   Heap().stats_collector()->NotifyMarkingCompleted();
   WTF::Partitions::ReportMemoryUsageHistogram();
-
-  if (invalidate_dead_objects_in_wrappers_marking_deque_)
-    invalidate_dead_objects_in_wrappers_marking_deque_(isolate_);
 
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, total_object_space_histogram,

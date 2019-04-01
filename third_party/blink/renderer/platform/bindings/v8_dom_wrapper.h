@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable_marking_visitor.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/heap/unified_heap_marking_visitor.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -118,8 +117,6 @@ inline void V8DOMWrapper::SetNativeInfoInternal(
   // The following write barrier is necessary as V8 might not see the newly
   // created object during garbage collection, e.g., when the object is black
   // allocated.
-  ScriptWrappableMarkingVisitor::WriteBarrier(isolate, wrapper_type_info,
-                                              wrappable);
   UnifiedHeapMarkingVisitor::WriteBarrier(isolate, wrapper_type_info,
                                           wrappable);
 }

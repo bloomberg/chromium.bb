@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable_marking_visitor.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
@@ -90,8 +89,6 @@ V8PerIsolateData::V8PerIsolateData(
       use_counter_disabled_(false),
       is_handling_recursion_level_error_(false),
       is_reporting_exception_(false),
-      script_wrappable_visitor_(
-          new ScriptWrappableMarkingVisitor(ThreadState::Current())),
       unified_heap_controller_(
           new UnifiedHeapController(ThreadState::Current())),
       runtime_call_stats_(base::DefaultTickClock::GetInstance()) {
@@ -174,9 +171,6 @@ void V8PerIsolateData::WillBeDestroyed(v8::Isolate* isolate) {
       BlinkGC::kHeapPointersOnStack, BlinkGC::kAtomicMarking,
       BlinkGC::kEagerSweeping, BlinkGC::GCReason::kThreadTerminationGC);
   isolate->SetEmbedderHeapTracer(nullptr);
-  if (data->script_wrappable_visitor_->WrapperTracingInProgress())
-    data->script_wrappable_visitor_->AbortTracingForTermination();
-  data->script_wrappable_visitor_.reset();
   data->unified_heap_controller_.reset();
 }
 
