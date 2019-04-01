@@ -246,7 +246,7 @@ blink::Image* ImageResourceContent::GetImage() const {
 }
 
 IntSize ImageResourceContent::IntrinsicSize(
-    RespectImageOrientationEnum should_respect_image_orientation) {
+    RespectImageOrientationEnum should_respect_image_orientation) const {
   if (!image_)
     return IntSize();
   if (should_respect_image_orientation == kRespectImageOrientation &&

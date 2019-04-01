@@ -67,16 +67,19 @@ class CORE_EXPORT ImageElementTiming final
     ElementTimingInfo(const AtomicString& name,
                       const FloatRect& rect,
                       const TimeTicks& response_end,
-                      const AtomicString& identifier)
+                      const AtomicString& identifier,
+                      const IntSize& intrinsic_size)
         : name(name),
           rect(rect),
           response_end(response_end),
-          identifier(identifier) {}
+          identifier(identifier),
+          intrinsic_size(intrinsic_size) {}
 
     AtomicString name;
     FloatRect rect;
     TimeTicks response_end;
     AtomicString identifier;
+    IntSize intrinsic_size;
   };
   // Vector containing the element timing infos that will be reported during the
   // next swap promise callback.
