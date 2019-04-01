@@ -136,7 +136,7 @@ class RemoteTest(object):
     fd, tmp_path = tempfile.mkstemp(suffix='.sh', dir=self._path_to_outdir)
     os.fchmod(fd, 0755)
     with os.fdopen(fd, 'wb') as f:
-      f.write('\n'.join(script_contents))
+      f.write('\n'.join(script_contents) + '\n')
     return tmp_path
 
   def run_test(self):
@@ -359,6 +359,28 @@ class GTestTest(RemoteTest):
           device_result_file)
     if self._additional_args:
       test_invocation += ' %s' % ' '.join(self._additional_args)
+
+    if self._test_exe == 'interactive_ui_tests':
+      # interactive_ui_tests needs some special setup. See crbug.com/946685#c4
+      # TODO(bpastene): Put all this behind a flag if more suites need it.
+      device_test_script_contents += [
+          'export CR_SOURCE_ROOT=/tmp',
+          'stop ui',
+      ]
+      # The UI service on the device owns the chronos user session, so shutting
+      # it down as chronos kills the entire execution of the test. So we'll have
+      # to run as root up until the test invocation.
+      test_invocation = 'su chronos -c -- "%s"' % test_invocation
+      # And we'll need to chown everything since cros_run_test's "--as-chronos"
+      # option normally does that for us.
+      device_test_script_contents.append('chown -R chronos: ../..')
+    else:
+      self._test_cmd += [
+          # Some tests fail as root, so run as the less privileged user
+          # 'chronos'.
+          '--as-chronos',
+      ]
+
     device_test_script_contents.append(test_invocation)
 
     self._on_device_script = self.write_test_script_to_disk(
@@ -382,8 +404,6 @@ class GTestTest(RemoteTest):
       self._test_cmd.extend(['--files', f])
 
     self._test_cmd += [
-        # Some tests fail as root, so run as the less privileged user 'chronos'.
-        '--as-chronos',
         '--',
         './' + os.path.relpath(self._on_device_script, self._path_to_outdir)
     ]
