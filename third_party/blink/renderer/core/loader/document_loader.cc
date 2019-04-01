@@ -1050,7 +1050,7 @@ void DocumentLoader::StartLoadingInternal() {
   body_loader_ = std::move(params_->body_loader);
   if (!body_loader_) {
     // TODO(dgozman): we should try to get rid of this case.
-    LoadFailed(ResourceError::Failure(url_));
+    LoadFailed(ResourceError::CancelledError(url_));
     return;
   }
 
