@@ -769,9 +769,11 @@ bool LayoutBlockFlow::PositionAndLayoutOnceIfNeeded(
   if (LayoutFlowThread* flow_thread = FlowThreadContainingBlock())
     layout_info.RollBackToInitialMultiColumnLayoutState(*flow_thread);
 
+  LayoutUnit& previous_float_logical_bottom =
+      layout_info.PreviousFloatLogicalBottom();
+  LayoutUnit lowest_float =
+      std::max(previous_float_logical_bottom, LowestFloatLogicalBottom());
   if (child.IsLayoutBlockFlow()) {
-    LayoutUnit& previous_float_logical_bottom =
-        layout_info.PreviousFloatLogicalBottom();
     LayoutBlockFlow& child_block_flow = ToLayoutBlockFlow(child);
     if (child_block_flow.ContainsFloats() || ContainsFloats())
       MarkDescendantsWithFloatsForLayoutIfNeeded(
@@ -780,11 +782,16 @@ bool LayoutBlockFlow::PositionAndLayoutOnceIfNeeded(
     // TODO(mstensho): A writing mode root is one thing, but we should be able
     // to skip anything that establishes a new block formatting context here.
     // Their floats don't affect us.
-    if (!child_block_flow.IsWritingModeRoot())
+    if (!child_block_flow.IsWritingModeRoot() &&
+        child_block_flow.ContainsFloats()) {
+      // Only do this if the child actually contains floats, so that we don't
+      // set previous_float_logical_bottom to child.LogicalTop() when there
+      // are none.
       previous_float_logical_bottom =
           std::max(previous_float_logical_bottom,
                    child_block_flow.LogicalTop() +
                        child_block_flow.LowestFloatLogicalBottom());
+    }
   }
 
   LayoutUnit old_logical_top = LogicalTopForChild(child);
@@ -792,7 +799,10 @@ bool LayoutBlockFlow::PositionAndLayoutOnceIfNeeded(
 
   SubtreeLayoutScope layout_scope(child);
   if (!child.NeedsLayout()) {
-    if (new_logical_top != old_logical_top && child.ShrinkToAvoidFloats()) {
+    // Like in MarkDescendantsWithFloatsForLayoutIfNeeded, we only need
+    // to mark this object for layout if it actually is affected by a float
+    if (new_logical_top != old_logical_top && child.ShrinkToAvoidFloats() &&
+        (new_logical_top < lowest_float || old_logical_top < lowest_float)) {
       // The child's width is affected by adjacent floats. When the child shifts
       // to clear an item, its width can change (because it has more available
       // width).
