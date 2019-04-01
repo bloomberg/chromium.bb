@@ -68,10 +68,15 @@ class AssociatedUserValidatorTest : public ::testing::Test {
     return &fake_http_url_fetcher_factory_;
   }
 
+  FakeInternetAvailabilityChecker* fake_internet_checker() {
+    return &fake_internet_checker_;
+  }
+
  private:
   FakeOSUserManager fake_os_user_manager_;
   FakeWinHttpUrlFetcherFactory fake_http_url_fetcher_factory_;
   registry_util::RegistryOverrideManager registry_override_;
+  FakeInternetAvailabilityChecker fake_internet_checker_;
 };
 
 AssociatedUserValidatorTest::AssociatedUserValidatorTest() = default;
@@ -147,6 +152,7 @@ TEST_F(AssociatedUserValidatorTest, CleanupStaleUsers) {
 
 TEST_F(AssociatedUserValidatorTest, NoTokenHandles) {
   FakeAssociatedUserValidator validator;
+
   validator.StartRefreshingTokenHandleValidity();
 
   // If there is no associated user then all token handles are valid.
@@ -157,6 +163,7 @@ TEST_F(AssociatedUserValidatorTest, NoTokenHandles) {
 
 TEST_F(AssociatedUserValidatorTest, ValidTokenHandle) {
   FakeAssociatedUserValidator validator;
+
   CComBSTR sid;
   ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
                       L"username", L"password", L"fullname", L"comment",
@@ -175,6 +182,7 @@ TEST_F(AssociatedUserValidatorTest, ValidTokenHandle) {
 
 TEST_F(AssociatedUserValidatorTest, InvalidTokenHandle) {
   FakeAssociatedUserValidator validator;
+
   CComBSTR sid;
   ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
                       L"username", L"password", L"fullname", L"comment",
@@ -193,7 +201,7 @@ TEST_F(AssociatedUserValidatorTest, InvalidTokenHandle) {
 
 TEST_F(AssociatedUserValidatorTest, InvalidTokenHandleNoInternet) {
   FakeAssociatedUserValidator validator;
-  FakeInternetAvailabilityChecker internet_checker(
+  fake_internet_checker()->SetHasInternetConnection(
       FakeInternetAvailabilityChecker::kHicForceNo);
 
   CComBSTR sid;
@@ -208,7 +216,6 @@ TEST_F(AssociatedUserValidatorTest, InvalidTokenHandleNoInternet) {
 
 TEST_F(AssociatedUserValidatorTest, InvalidTokenHandleTimeout) {
   FakeAssociatedUserValidator validator(base::TimeDelta::FromMilliseconds(50));
-  FakeInternetAvailabilityChecker internet_checker;
   CComBSTR sid;
   ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
                       L"username", L"password", L"fullname", L"comment",
@@ -229,19 +236,18 @@ TEST_F(AssociatedUserValidatorTest, InvalidTokenHandleTimeout) {
 
 TEST_F(AssociatedUserValidatorTest, TokenHandleValidityStillFresh) {
   FakeAssociatedUserValidator validator;
-  FakeInternetAvailabilityChecker internet_checker;
 
   CComBSTR sid;
   ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
                       L"username", L"password", L"fullname", L"comment",
                       L"gaia-id", base::string16(), &sid));
 
-  validator.StartRefreshingTokenHandleValidity();
-
   // Valid token fetch result.
   fake_http_url_fetcher_factory()->SetFakeResponse(
       GURL(AssociatedUserValidator::kTokenInfoUrl),
       FakeWinHttpUrlFetcher::Headers(), "{\"expires_in\":1}");
+
+  validator.StartRefreshingTokenHandleValidity();
 
   EXPECT_TRUE(validator.IsTokenHandleValidForUser(OLE2W(sid)));
   EXPECT_TRUE(validator.IsTokenHandleValidForUser(OLE2W(sid)));
@@ -267,8 +273,7 @@ class AssociatedUserValidatorUserAccessBlockingTest
   FakeScopedLsaPolicyFactory fake_scoped_lsa_policy_factory_;
 };
 
-TEST_P(AssociatedUserValidatorUserAccessBlockingTest,
-       BlockUserAccessAsNeeded) {
+TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
   const CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus = std::get<0>(GetParam());
   const bool token_handle_valid = std::get<1>(GetParam());
   const bool mdm_url_set = std::get<2>(GetParam());
@@ -277,7 +282,7 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest,
   GoogleMdmEnrolledStatusForTesting forced_status(mdm_enrolled);
 
   FakeAssociatedUserValidator validator;
-  FakeInternetAvailabilityChecker internet_checker(
+  fake_internet_checker()->SetHasInternetConnection(
       internet_available ? FakeInternetAvailabilityChecker::kHicForceYes
                          : FakeInternetAvailabilityChecker::kHicForceNo);
 
@@ -314,8 +319,7 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest,
   EXPECT_EQ(!internet_available || (!mdm_url_set && token_handle_valid) ||
                 (mdm_url_set && mdm_enrolled && token_handle_valid),
             validator.IsTokenHandleValidForUser(OLE2W(sid)));
-  EXPECT_EQ(should_user_be_blocked,
-            validator.IsUserAccessBlocked(OLE2W(sid)));
+  EXPECT_EQ(should_user_be_blocked, validator.IsUserAccessBlocked(OLE2W(sid)));
   if (should_user_be_blocked) {
     EXPECT_EQ(S_OK, GetMachineRegDWORD(kWinlogonUserListRegKey, username,
                                        &reg_value));
@@ -365,12 +369,12 @@ TEST_F(AssociatedUserValidatorTest, ValidTokenHandle_Refresh) {
                       L"gaia-id", base::string16(), &sid));
   ASSERT_EQ(S_OK, SetUserProperty(OLE2W(sid), kUserTokenHandle, L"th"));
 
-  validator.StartRefreshingTokenHandleValidity();
-
   // Valid token fetch result.
   fake_http_url_fetcher_factory()->SetFakeResponse(
       GURL(AssociatedUserValidator::kTokenInfoUrl),
       FakeWinHttpUrlFetcher::Headers(), "{\"expires_in\":1}");
+
+  validator.StartRefreshingTokenHandleValidity();
 
   EXPECT_TRUE(validator.IsTokenHandleValidForUser(OLE2W(sid)));
 
