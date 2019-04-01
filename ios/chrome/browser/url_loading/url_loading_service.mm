@@ -87,13 +87,16 @@ void InduceBrowserCrash(const GURL& url) {
 }
 
 - (void)webPageOrderedOpen:(OpenNewTabCommand*)command {
-  UrlLoadParams* params = UrlLoadParams::InNewTab(
-      command.URL, command.virtualURL, command.referrer, command.inIncognito,
-      command.inBackground, command.appendTo);
-  params->origin_point = command.originPoint;
-  params->from_chrome = command.fromChrome;
-  params->user_initiated = command.userInitiated;
-  params->should_focus_omnibox = command.shouldFocusOmnibox;
+  UrlLoadParams* params =
+      UrlLoadParams::InNewTab(command.URL, command.virtualURL)
+          ->Referrer(command.referrer)
+          ->InIncognito(command.inIncognito)
+          ->InBackground(command.inBackground)
+          ->AppendTo(command.appendTo)
+          ->OriginPoint(command.originPoint)
+          ->FromChrome(command.fromChrome)
+          ->UserInitiated(command.userInitiated)
+          ->ShouldFocusOmnibox(command.shouldFocusOmnibox);
   service_->Load(params);
 }
 
@@ -169,11 +172,10 @@ void UrlLoadingService::LoadUrlInCurrentTab(UrlLoadParams* params) {
   if (browser_state->IsOffTheRecord() &&
       !IsURLAllowedInIncognito(web_params.url)) {
     notifier_->TabFailedToLoadUrl(web_params.url, web_params.transition_type);
-    UrlLoadParams* new_tab_params = UrlLoadParams::InNewTab(
-        web_params.url, web_params.virtual_url, web::Referrer(),
-        /* in_incognito */ NO,
-        /* in_background */ NO, kCurrentTab);
-    LoadUrlInNewTab(new_tab_params);
+    LoadUrlInNewTab(
+        UrlLoadParams::InNewTab(web_params.url, web_params.virtual_url)
+            ->Referrer(web::Referrer())
+            ->AppendTo(kCurrentTab));
     return;
   }
 
@@ -224,10 +226,11 @@ void UrlLoadingService::SwitchToTab(UrlLoadParams* params) {
     } else {
       // Load the URL in foreground.
       ios::ChromeBrowserState* browser_state = browser_->GetBrowserState();
-      UrlLoadParams* new_tab_params = UrlLoadParams::InNewTab(
-          web_params.url, web_params.virtual_url, web::Referrer(),
-          /* in_incognito */ browser_state->IsOffTheRecord(),
-          /* in_background */ NO, kCurrentTab);
+      UrlLoadParams* new_tab_params =
+          UrlLoadParams::InNewTab(web_params.url, web_params.virtual_url)
+              ->Referrer(web::Referrer())
+              ->InIncognito(browser_state->IsOffTheRecord())
+              ->AppendTo(kCurrentTab);
       app_service_->LoadUrlInNewTab(new_tab_params);
     }
     return;

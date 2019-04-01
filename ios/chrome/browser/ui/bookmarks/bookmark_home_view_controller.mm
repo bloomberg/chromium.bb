@@ -1055,10 +1055,9 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                                  new_tab_page_uma::ACTION_OPENED_BOOKMARK);
   base::RecordAction(
       base::UserMetricsAction("MobileBookmarkManagerEntryOpened"));
-  web::NavigationManager::WebLoadParams params(url);
-  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
   UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-      ->Load(UrlLoadParams::InCurrentTab(params));
+      ->Load(UrlLoadParams::InCurrentTab(url)->Transition(
+          ui::PAGE_TRANSITION_AUTO_BOOKMARK));
 }
 
 - (void)addNewFolder {

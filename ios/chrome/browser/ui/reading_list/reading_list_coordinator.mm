@@ -367,20 +367,16 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
   if (newTab) {
     web::Referrer referrer = web::Referrer(GURL(kReadingListReferrerURL),
                                            web::ReferrerPolicyDefault);
-    UrlLoadParams* params =
-        UrlLoadParams::InNewTab(loadURL, entryURL, referrer,
-                                /* in_incognito */ incognito,
-                                /* in_background */ NO, kLastTab);
     UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-        ->Load(params);
+        ->Load(UrlLoadParams::InNewTab(loadURL, entryURL)
+                   ->Referrer(referrer)
+                   ->InIncognito(incognito));
   } else {
-    web::NavigationManager::WebLoadParams web_params(loadURL);
-    web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-    web_params.referrer = web::Referrer(GURL(kReadingListReferrerURL),
-                                        web::ReferrerPolicyDefault);
-    UrlLoadParams* params = UrlLoadParams::InCurrentTab(web_params);
     UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-        ->Load(params);
+        ->Load(UrlLoadParams::InCurrentTab(loadURL)
+                   ->Transition(ui::PAGE_TRANSITION_AUTO_BOOKMARK)
+                   ->Referrer(web::Referrer(GURL(kReadingListReferrerURL),
+                                            web::ReferrerPolicyDefault)));
   }
 
   [self stop];

@@ -1181,11 +1181,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 
   UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-      ->Load(UrlLoadParams::InNewTab(
-          web_navigation_util::CreateWebLoadParams(
-              GURL(kChromeUINewTabURL), ui::PAGE_TRANSITION_TYPED, nullptr),
-          /* in_incognito */ self.isOffTheRecord,
-          /* in_background */ NO, kLastTab));
+      ->Load(UrlLoadParams::InNewTab(GURL(kChromeUINewTabURL))
+                 ->Transition(ui::PAGE_TRANSITION_TYPED)
+                 ->InIncognito(self.isOffTheRecord));
 }
 
 - (void)appendTabAddedCompletion:(ProceduralBlock)tabAddedCompletion {
@@ -3198,13 +3196,13 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         if (!strongSelf)
           return;
 
-        UrlLoadParams* params = UrlLoadParams::InNewTab(
-            link, referrer,
-            /* in_incognito */ strongSelf.isOffTheRecord,
-            /* in_background */ YES, kCurrentTab);
-        params->origin_point = originPoint;
         UrlLoadingServiceFactory::GetForBrowserState(strongSelf.browserState)
-            ->Load(params);
+            ->Load(UrlLoadParams::InNewTab(link)
+                       ->Referrer(referrer)
+                       ->InIncognito(strongSelf.isOffTheRecord)
+                       ->InBackground(YES)
+                       ->AppendTo(kCurrentTab)
+                       ->OriginPoint(originPoint));
       };
       [_contextMenuCoordinator addItemWithTitle:title action:action];
       if (!_isOffTheRecord) {
@@ -3218,12 +3216,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
           Record(ACTION_OPEN_IN_INCOGNITO_TAB, isImage, isLink);
 
-          UrlLoadParams* params =
-              UrlLoadParams::InNewTab(link, referrer,
-                                      /* in_incognito */ YES,
-                                      /* in_background */ NO, kCurrentTab);
           UrlLoadingServiceFactory::GetForBrowserState(strongSelf.browserState)
-              ->Load(params);
+              ->Load(UrlLoadParams::InNewTab(link)
+                         ->Referrer(referrer)
+                         ->InIncognito(YES)
+                         ->AppendTo(kCurrentTab));
         };
         [_contextMenuCoordinator addItemWithTitle:title action:action];
       }
@@ -3291,10 +3288,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       if (!strongSelf)
         return;
 
-      UrlLoadParams* params =
-          UrlLoadParams::InNewTab(imageUrl, referrer,
-                                  /* in_incognito */ strongSelf.isOffTheRecord,
-                                  /* in_background */ YES, kCurrentTab);
+      UrlLoadParams* params = UrlLoadParams::InNewTab(imageUrl)
+                                  ->Referrer(referrer)
+                                  ->InIncognito(strongSelf.isOffTheRecord)
+                                  ->InBackground(YES)
+                                  ->AppendTo(kCurrentTab);
       params->origin_point = originPoint;
       UrlLoadingServiceFactory::GetForBrowserState(strongSelf.browserState)
           ->Load(params);
@@ -3424,9 +3422,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
           result, ui::PAGE_TRANSITION_TYPED, &postContent);
   if (inNewTab) {
     UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-        ->Load(UrlLoadParams::InNewTab(loadParams,
-                                       /* in_incognito */ self.isOffTheRecord,
-                                       /* in_background */ NO, kLastTab));
+        ->Load(UrlLoadParams::InNewTab(loadParams)
+                   ->InIncognito(self.isOffTheRecord));
   } else {
     UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
         ->Load(UrlLoadParams::InCurrentTab(loadParams));
@@ -4287,12 +4284,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (void)showHelpPage {
   GURL helpUrl(l10n_util::GetStringUTF16(IDS_IOS_TOOLS_MENU_HELP_URL));
-  UrlLoadParams* params =
-      UrlLoadParams::InNewTab(helpUrl,
-                              /* in_incognito */ NO,
-                              /* in_background */ NO, kCurrentTab);
-  params->user_initiated = NO;
-  UrlLoadingServiceFactory::GetForBrowserState(self.browserState)->Load(params);
+  UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
+      ->Load(UrlLoadParams::InNewTab(helpUrl)
+                 ->AppendTo(kCurrentTab)
+                 ->UserInitiated(NO));
 }
 
 - (void)showBookmarksManager {
