@@ -1361,6 +1361,8 @@ Status ExecutePerformActions(Session* session,
           if (action_type == "pointerDown" || action_type == "pointerUp") {
             pointer_action->GetString("button", &button_type);
             click_count = 1;
+          } else if (buttons == 0) {
+            button_type.clear();
           }
           MouseEvent event(StringToMouseEventType(action_type),
                            StringToMouseButton(button_type), x, y, 0, buttons,
