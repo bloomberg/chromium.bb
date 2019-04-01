@@ -11,8 +11,11 @@ namespace internal {
 
 PlatformNativeWorkerPoolMac::PlatformNativeWorkerPoolMac(
     TrackedRef<TaskTracker> task_tracker,
-    TrackedRef<Delegate> delegate)
-    : PlatformNativeWorkerPool(std::move(task_tracker), std::move(delegate)) {}
+    TrackedRef<Delegate> delegate,
+    SchedulerWorkerPool* predecessor_pool)
+    : PlatformNativeWorkerPool(std::move(task_tracker),
+                               std::move(delegate),
+                               predecessor_pool) {}
 
 PlatformNativeWorkerPoolMac::~PlatformNativeWorkerPoolMac() {}
 

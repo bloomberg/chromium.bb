@@ -83,6 +83,9 @@ TaskSchedulerImpl::~TaskSchedulerImpl() {
   // Reset worker pools to release held TrackedRefs, which block teardown.
   foreground_pool_.reset();
   background_pool_.reset();
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  native_foreground_pool_.reset();
+#endif
 }
 
 void TaskSchedulerImpl::Start(
@@ -94,6 +97,16 @@ void TaskSchedulerImpl::Start(
   // are usually not ready when TaskSchedulerImpl is instantiated in a process.
   if (FeatureList::IsEnabled(kAllTasksUserBlocking))
     all_tasks_user_blocking_.Set();
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  if (FeatureList::IsEnabled(kUseNativeThreadPool)) {
+    native_foreground_pool_.emplace(task_tracker_->GetTrackedRef(),
+                                    tracked_ref_factory_.GetTrackedRef(),
+                                    &foreground_pool_.value());
+    foreground_pool_->InvalidateAndHandoffAllSequencesToOtherPool(
+        &native_foreground_pool_.value());
+  }
+#endif
 
   // Start the service thread. On platforms that support it (POSIX except NaCL
   // SFI), the service thread runs a MessageLoopForIO which is used to support
@@ -131,18 +144,26 @@ void TaskSchedulerImpl::Start(
       SchedulerWorkerPoolImpl::WorkerEnvironment::NONE;
 #endif
 
-  // On platforms that can't use the background thread priority, best-effort
-  // tasks run in foreground pools. A cap is set on the number of background
-  // tasks that can run in foreground pools to ensure that there is always room
-  // for incoming foreground tasks and to minimize the performance impact of
-  // best-effort tasks.
-  const int max_best_effort_tasks_in_foreground_pool = std::max(
-      1, std::min(init_params.background_worker_pool_params.max_tasks(),
-                  init_params.foreground_worker_pool_params.max_tasks() / 2));
-  foreground_pool_->Start(init_params.foreground_worker_pool_params,
-                          max_best_effort_tasks_in_foreground_pool,
-                          service_thread_task_runner, scheduler_worker_observer,
-                          worker_environment);
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  if (native_foreground_pool_) {
+    native_foreground_pool_->Start();
+  } else
+#endif
+  {
+    // On platforms that can't use the background thread priority, best-effort
+    // tasks run in foreground pools. A cap is set on the number of background
+    // tasks that can run in foreground pools to ensure that there is always
+    // room for incoming foreground tasks and to minimize the performance impact
+    // of best-effort tasks.
+
+    const int max_best_effort_tasks_in_foreground_pool = std::max(
+        1, std::min(init_params.background_worker_pool_params.max_tasks(),
+                    init_params.foreground_worker_pool_params.max_tasks() / 2));
+    foreground_pool_->Start(init_params.foreground_worker_pool_params,
+                            max_best_effort_tasks_in_foreground_pool,
+                            service_thread_task_runner,
+                            scheduler_worker_observer, worker_environment);
+  }
 
   if (background_pool_.has_value()) {
     background_pool_->Start(
@@ -235,7 +256,7 @@ void TaskSchedulerImpl::JoinForTesting() {
   // https://crbug.com/771701.
   service_thread_->Stop();
   single_thread_task_runner_manager_.JoinForTesting();
-  foreground_pool_->JoinForTesting();
+  GetForegroundWorkerPool()->JoinForTesting();
   if (background_pool_.has_value())
     background_pool_->JoinForTesting();
 #if DCHECK_IS_ON()
@@ -330,6 +351,20 @@ SchedulerWorkerPool* TaskSchedulerImpl::GetWorkerPoolForTraits(
       background_pool_.has_value()) {
     return &background_pool_.value();
   }
+
+  return GetForegroundWorkerPool();
+}
+
+const SchedulerWorkerPool* TaskSchedulerImpl::GetForegroundWorkerPool() const {
+  return const_cast<TaskSchedulerImpl*>(this)->GetForegroundWorkerPool();
+}
+
+SchedulerWorkerPool* TaskSchedulerImpl::GetForegroundWorkerPool() {
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  if (native_foreground_pool_) {
+    return &native_foreground_pool_.value();
+  }
+#endif
   return &foreground_pool_.value();
 }
 
@@ -341,7 +376,7 @@ TaskTraits TaskSchedulerImpl::SetUserBlockingPriorityIfNeeded(
 }
 
 void TaskSchedulerImpl::ReportHeartbeatMetrics() const {
-  foreground_pool_->ReportHeartbeatMetrics();
+  GetForegroundWorkerPool()->ReportHeartbeatMetrics();
   if (background_pool_.has_value())
     background_pool_->ReportHeartbeatMetrics();
 }

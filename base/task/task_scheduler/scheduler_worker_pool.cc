@@ -49,8 +49,11 @@ void SchedulerWorkerPool::ScopedReenqueueExecutor::
 }
 
 SchedulerWorkerPool::SchedulerWorkerPool(TrackedRef<TaskTracker> task_tracker,
-                                         TrackedRef<Delegate> delegate)
-    : task_tracker_(std::move(task_tracker)), delegate_(std::move(delegate)) {
+                                         TrackedRef<Delegate> delegate,
+                                         SchedulerWorkerPool* predecessor_pool)
+    : task_tracker_(std::move(task_tracker)),
+      delegate_(std::move(delegate)),
+      lock_(predecessor_pool ? &predecessor_pool->lock_ : nullptr) {
   DCHECK(task_tracker_);
 }
 
@@ -72,6 +75,11 @@ bool SchedulerWorkerPool::IsBoundToCurrentThread() const {
 
 void SchedulerWorkerPool::OnCanScheduleSequence(
     scoped_refptr<Sequence> sequence) {
+  if (replacement_pool_) {
+    replacement_pool_->OnCanScheduleSequence(std::move(sequence));
+    return;
+  }
+
   PushSequenceAndWakeUpWorkers(
       SequenceAndTransaction::FromSequence(std::move(sequence)));
 }
@@ -134,9 +142,18 @@ void SchedulerWorkerPool::PushSequenceAndWakeUpWorkersImpl(
     BaseScopedWorkersExecutor* executor,
     SequenceAndTransaction sequence_and_transaction) {
   AutoSchedulerLock auto_lock(lock_);
+  DCHECK(!replacement_pool_);
   priority_queue_.Push(std::move(sequence_and_transaction.sequence),
                        sequence_and_transaction.transaction.GetSortKey());
   EnsureEnoughWorkersLockRequired(executor);
+}
+
+void SchedulerWorkerPool::InvalidateAndHandoffAllSequencesToOtherPool(
+    SchedulerWorkerPool* destination_pool) {
+  AutoSchedulerLock current_pool_lock(lock_);
+  AutoSchedulerLock destination_pool_lock(destination_pool->lock_);
+  destination_pool->priority_queue_ = std::move(priority_queue_);
+  replacement_pool_ = destination_pool;
 }
 
 }  // namespace internal

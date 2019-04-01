@@ -33,7 +33,12 @@
 #endif
 
 #if defined(OS_WIN)
+#include "base/task/task_scheduler/platform_native_worker_pool_win.h"
 #include "base/win/com_init_check_hook.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "base/task/task_scheduler/platform_native_worker_pool_mac.h"
 #endif
 
 namespace base {
@@ -103,6 +108,10 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler,
 
   void ReportHeartbeatMetrics() const;
 
+  // Returns the thread pool responsible for foreground execution.
+  const SchedulerWorkerPool* GetForegroundWorkerPool() const;
+  SchedulerWorkerPool* GetForegroundWorkerPool();
+
   const SchedulerWorkerPool* GetWorkerPoolForTraits(
       const TaskTraits& traits) const;
 
@@ -132,6 +141,12 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler,
 
   Optional<SchedulerWorkerPoolImpl> foreground_pool_;
   Optional<SchedulerWorkerPoolImpl> background_pool_;
+
+#if defined(OS_WIN)
+  Optional<PlatformNativeWorkerPoolWin> native_foreground_pool_;
+#elif defined(OS_MACOSX)
+  Optional<PlatformNativeWorkerPoolMac> native_foreground_pool_;
+#endif
 
 #if DCHECK_IS_ON()
   // Set once JoinForTesting() has returned.

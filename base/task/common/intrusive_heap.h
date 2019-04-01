@@ -54,6 +54,15 @@ class IntrusiveHeap {
     }
   }
 
+  IntrusiveHeap& operator=(IntrusiveHeap&& other) {
+    nodes_ = std::move(other.nodes_);
+    size_ = other.size_;
+
+    other.size_ = 0;
+
+    return *this;
+  }
+
   bool empty() const { return size_ == 0; }
 
   size_t size() const { return size_; }

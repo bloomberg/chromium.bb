@@ -39,8 +39,11 @@ class PlatformNativeWorkerPool::ScopedWorkersExecutor
 
 PlatformNativeWorkerPool::PlatformNativeWorkerPool(
     TrackedRef<TaskTracker> task_tracker,
-    TrackedRef<Delegate> delegate)
-    : SchedulerWorkerPool(std::move(task_tracker), std::move(delegate)) {}
+    TrackedRef<Delegate> delegate,
+    SchedulerWorkerPool* predecessor_pool)
+    : SchedulerWorkerPool(std::move(task_tracker),
+                          std::move(delegate),
+                          predecessor_pool) {}
 
 PlatformNativeWorkerPool::~PlatformNativeWorkerPool() {
 #if DCHECK_IS_ON()
