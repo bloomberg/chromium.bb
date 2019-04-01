@@ -59,6 +59,7 @@
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/display_lock/before_activate_event.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/dataset_dom_string_map.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -3362,6 +3363,7 @@ void Element::focus(const FocusParams& params) {
       frame_owner_element->contentDocument()->UnloadStarted())
     return;
 
+  DisplayLockUtilities::ScopedChainForcedUpdate scoped_update_forced(this);
   GetDocument().UpdateStyleAndLayoutTree();
   if (!IsFocusable())
     return;
