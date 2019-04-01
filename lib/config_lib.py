@@ -1825,7 +1825,9 @@ def GetArchBoardDict(ge_build_config):
 
   for b in ge_build_config[CONFIG_TEMPLATE_BOARDS]:
     board_name = b[CONFIG_TEMPLATE_NAME]
-    for config in b[CONFIG_TEMPLATE_CONFIGS]:
+    # Invalid build configs being written out with no configs array, thus the
+    # default. See https://crbug.com/947712.
+    for config in b.get(CONFIG_TEMPLATE_CONFIGS, []):
       arch = config[CONFIG_TEMPLATE_ARCH]
       arch_board_dict.setdefault(arch, set()).add(board_name)
 
