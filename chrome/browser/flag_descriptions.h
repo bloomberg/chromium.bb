@@ -75,9 +75,6 @@ extern const char kAppBannersDescription[];
 extern const char kAutomaticPasswordGenerationName[];
 extern const char kAutomaticPasswordGenerationDescription[];
 
-extern const char kEnableBlinkHeapUnifiedGarbageCollectionName[];
-extern const char kEnableBlinkHeapUnifiedGarbageCollectionDescription[];
-
 extern const char kEnableBloatedRendererDetectionName[];
 extern const char kEnableBloatedRendererDetectionDescription[];
 
