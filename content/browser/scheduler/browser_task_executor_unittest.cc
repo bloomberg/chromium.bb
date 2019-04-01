@@ -11,14 +11,20 @@
 #include "base/bind_helpers.h"
 #include "base/task/post_task.h"
 #include "base/task/task_scheduler/task_scheduler.h"
+#include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/scheduler/browser_ui_thread_scheduler.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/test_content_browser_client.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
+
+using ::testing::Invoke;
+using ::testing::Mock;
 
 class BrowserTaskExecutorTest : public testing::Test {
  public:
@@ -80,6 +86,67 @@ void SetBoolFlag(bool* flag) {
   *flag = true;
 }
 }  // namespace
+
+using MockTask =
+    testing::StrictMock<base::MockCallback<base::RepeatingCallback<void()>>>;
+
+TEST_F(BrowserTaskExecutorTest, RunAllPendingTasksForTestingOnUI) {
+  MockTask task_1;
+  MockTask task_2;
+  EXPECT_CALL(task_1, Run).WillOnce(testing::Invoke([&]() {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task_2.Get());
+  }));
+
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI}, task_1.Get());
+
+  BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::UI);
+
+  // Cleanup pending tasks, as TestBrowserThreadBundle will run them.
+  Mock::VerifyAndClearExpectations(&task_1);
+  EXPECT_CALL(task_2, Run);
+  BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::IO);
+}
+
+TEST_F(BrowserTaskExecutorTest, RunAllPendingTasksForTestingOnIO) {
+  MockTask task_1;
+  MockTask task_2;
+  EXPECT_CALL(task_1, Run).WillOnce(testing::Invoke([&]() {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task_2.Get());
+  }));
+
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO}, task_1.Get());
+
+  BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::IO);
+
+  // Cleanup pending tasks, as TestBrowserThreadBundle will run them.
+  Mock::VerifyAndClearExpectations(&task_1);
+  EXPECT_CALL(task_2, Run);
+  BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::IO);
+}
+
+TEST_F(BrowserTaskExecutorTest, RunAllPendingTasksForTestingOnIOIsReentrant) {
+  MockTask task_1;
+  MockTask task_2;
+  MockTask task_3;
+
+  EXPECT_CALL(task_1, Run).WillOnce(Invoke([&]() {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task_2.Get());
+    BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(
+        BrowserThread::IO);
+  }));
+  EXPECT_CALL(task_2, Run).WillOnce(Invoke([&]() {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task_3.Get());
+  }));
+
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO}, task_1.Get());
+  BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::IO);
+
+  // Cleanup pending tasks, as TestBrowserThreadBundle will run them.
+  Mock::VerifyAndClearExpectations(&task_1);
+  Mock::VerifyAndClearExpectations(&task_2);
+  EXPECT_CALL(task_3, Run);
+  BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::IO);
+}
 
 TEST_F(BrowserTaskExecutorTest, UserVisibleOrBlockingTasksRunDuringStartup) {
   bool ran_best_effort = false;

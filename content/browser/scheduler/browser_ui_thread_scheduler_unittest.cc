@@ -12,15 +12,16 @@
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/task/task_scheduler/task_scheduler.h"
+#include "base/test/mock_callback.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::ElementsAre;
-
 namespace content {
-
 namespace {
+
+using ::testing::ElementsAre;
+using ::testing::Invoke;
+using ::testing::Mock;
 
 void RecordRunOrder(std::vector<int>* run_order, int order) {
   run_order->push_back(order);
@@ -48,24 +49,68 @@ base::OnceClosure PostOnDestruction(
 
 class BrowserUIThreadSchedulerTest : public testing::Test {
  public:
-  void SetUp() override {
+  BrowserUIThreadSchedulerTest() {
     browser_ui_thread_scheduler_ = std::make_unique<BrowserUIThreadScheduler>();
-  }
-
-  void TearDown() override { ShutdownBrowserUIThreadScheduler(); }
-
-  void ShutdownBrowserUIThreadScheduler() {
-    browser_ui_thread_scheduler_.reset();
+    for (int i = 0;
+         i < static_cast<int>(BrowserUIThreadTaskQueue::QueueType::kCount);
+         i++) {
+      auto queue_type = static_cast<BrowserUIThreadTaskQueue::QueueType>(i);
+      task_runners_.emplace(
+          queue_type,
+          browser_ui_thread_scheduler_->GetTaskRunnerForTesting(queue_type));
+    }
   }
 
  protected:
+  using QueueType = BrowserUIThreadScheduler::QueueType;
+  using MockTask =
+      testing::StrictMock<base::MockCallback<base::RepeatingCallback<void()>>>;
+
   std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler_;
+  base::flat_map<BrowserUIThreadScheduler::QueueType,
+                 scoped_refptr<base::SingleThreadTaskRunner>>
+      task_runners_;
 };
+
+TEST_F(BrowserUIThreadSchedulerTest, RunAllPendingTasksForTesting) {
+  MockTask task;
+  MockTask nested_task;
+  EXPECT_CALL(task, Run).WillOnce(Invoke([&]() {
+    task_runners_[QueueType::kDefault]->PostTask(FROM_HERE, nested_task.Get());
+    task_runners_[QueueType::kBestEffort]->PostTask(FROM_HERE,
+                                                    nested_task.Get());
+  }));
+
+  task_runners_[QueueType::kDefault]->PostTask(FROM_HERE, task.Get());
+
+  browser_ui_thread_scheduler_->RunAllPendingTasksForTesting();
+
+  Mock::VerifyAndClearExpectations(&task);
+  EXPECT_CALL(nested_task, Run).Times(2);
+
+  browser_ui_thread_scheduler_->RunAllPendingTasksForTesting();
+}
+
+TEST_F(BrowserUIThreadSchedulerTest, RunAllPendingTasksForTestingIsReentrant) {
+  MockTask task_1;
+  MockTask task_2;
+  MockTask task_3;
+
+  EXPECT_CALL(task_1, Run).WillOnce(Invoke([&]() {
+    task_runners_[QueueType::kDefault]->PostTask(FROM_HERE, task_2.Get());
+    browser_ui_thread_scheduler_->RunAllPendingTasksForTesting();
+  }));
+  EXPECT_CALL(task_2, Run).WillOnce(Invoke([&]() {
+    task_runners_[QueueType::kDefault]->PostTask(FROM_HERE, task_3.Get());
+  }));
+
+  task_runners_[QueueType::kDefault]->PostTask(FROM_HERE, task_1.Get());
+  browser_ui_thread_scheduler_->RunAllPendingTasksForTesting();
+}
 
 TEST_F(BrowserUIThreadSchedulerTest, SimplePosting) {
   scoped_refptr<base::SingleThreadTaskRunner> tq =
-      browser_ui_thread_scheduler_->GetTaskRunnerForTesting(
-          BrowserUIThreadScheduler::QueueType::kDefault);
+      task_runners_[QueueType::kDefault];
 
   std::vector<int> order;
   tq->PostTask(FROM_HERE, base::BindOnce(RecordRunOrder, &order, 1));
@@ -79,8 +124,7 @@ TEST_F(BrowserUIThreadSchedulerTest, SimplePosting) {
 
 TEST_F(BrowserUIThreadSchedulerTest, DestructorPostChainDuringShutdown) {
   scoped_refptr<base::SingleThreadTaskRunner> task_queue =
-      browser_ui_thread_scheduler_->GetTaskRunnerForTesting(
-          BrowserUIThreadScheduler::QueueType::kDefault);
+      task_runners_[QueueType::kDefault];
 
   bool run = false;
   task_queue->PostTask(
@@ -92,7 +136,7 @@ TEST_F(BrowserUIThreadSchedulerTest, DestructorPostChainDuringShutdown) {
                                 [](bool* run) { *run = true; }, &run)))));
 
   EXPECT_FALSE(run);
-  ShutdownBrowserUIThreadScheduler();
+  browser_ui_thread_scheduler_.reset();
 
   EXPECT_TRUE(run);
 }

@@ -9,10 +9,12 @@
 #include "base/bind.h"
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/no_destructor.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/scheduler/browser_ui_thread_scheduler.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/task_scheduler/post_task_android.h"
@@ -223,6 +225,35 @@ void BrowserTaskExecutor::ResetForTesting() {
         BrowserTaskTraitsExtension::kExtensionId);
     delete g_browser_task_executor;
     g_browser_task_executor = nullptr;
+  }
+}
+
+// static
+void BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(
+    BrowserThread::ID identifier) {
+  DCHECK(g_browser_task_executor);
+  DCHECK(g_browser_task_executor->browser_ui_thread_scheduler_);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  switch (identifier) {
+    case BrowserThread::UI:
+      g_browser_task_executor->browser_ui_thread_scheduler_
+          ->RunAllPendingTasksForTesting();
+      break;
+
+    case BrowserThread::IO: {
+      // TODO(https://crbug/863341): Do something more clever once we have a
+      // scheduler
+      base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+      base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
+                               run_loop.QuitClosure());
+      run_loop.Run();
+      break;
+    }
+
+    case BrowserThread::ID_COUNT:
+      NOTREACHED();
+      break;
   }
 }
 
