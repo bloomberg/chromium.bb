@@ -23,7 +23,8 @@ class AndroidNotificationHandler : public ReceivingUiHandler {
 
  private:
   // ReceivingUiHandler implementation.
-  void DisplayNewEntry(const SendTabToSelfEntry* entry) override;
+  void DisplayNewEntries(
+      const std::vector<const SendTabToSelfEntry*>& new_entries) override;
   void DismissEntries(const std::vector<std::string>& guids) override;
 };
 
