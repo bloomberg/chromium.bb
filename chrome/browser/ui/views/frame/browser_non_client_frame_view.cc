@@ -207,8 +207,6 @@ int BrowserNonClientFrameView::GetTabBackgroundResourceId(
   return id;
 }
 
-void BrowserNonClientFrameView::UpdateClientArea() {}
-
 void BrowserNonClientFrameView::UpdateMinimumSize() {}
 
 void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
