@@ -165,7 +165,7 @@ bool AutoplayPolicy::DocumentIsCapturingUserMedia(const Document& document) {
 AutoplayPolicy::AutoplayPolicy(HTMLMediaElement* element)
     : locked_pending_user_gesture_(false),
       element_(element),
-      autoplay_uma_helper_(AutoplayUmaHelper::Create(element)) {
+      autoplay_uma_helper_(MakeGarbageCollected<AutoplayUmaHelper>(element)) {
   locked_pending_user_gesture_ =
       ComputeLockPendingUserGestureRequired(element->GetDocument());
 }

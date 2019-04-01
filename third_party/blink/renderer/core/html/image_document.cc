@@ -63,10 +63,6 @@ using namespace html_names;
 
 class ImageEventListener : public NativeEventListener {
  public:
-  static ImageEventListener* Create(ImageDocument* document) {
-    return MakeGarbageCollected<ImageEventListener>(document);
-  }
-
   ImageEventListener(ImageDocument* document) : doc_(document) {}
 
   bool Matches(const EventListener& other) const override;
@@ -96,10 +92,6 @@ struct DowncastTraits<ImageEventListener> {
 
 class ImageDocumentParser : public RawDataDocumentParser {
  public:
-  static ImageDocumentParser* Create(ImageDocument* document) {
-    return MakeGarbageCollected<ImageDocumentParser>(document);
-  }
-
   ImageDocumentParser(ImageDocument* document)
       : RawDataDocumentParser(document) {}
 
@@ -213,7 +205,7 @@ ImageDocument::ImageDocument(const DocumentInit& initializer)
 }
 
 DocumentParser* ImageDocument::CreateParser() {
-  return ImageDocumentParser::Create(this);
+  return MakeGarbageCollected<ImageDocumentParser>(this);
 }
 
 IntSize ImageDocument::ImageSize() const {
@@ -283,7 +275,7 @@ void ImageDocument::CreateDocumentStructure() {
 
   if (ShouldShrinkToFit()) {
     // Add event listeners
-    EventListener* listener = ImageEventListener::Create(this);
+    auto* listener = MakeGarbageCollected<ImageEventListener>(this);
     if (LocalDOMWindow* dom_window = domWindow())
       dom_window->addEventListener(event_type_names::kResize, listener, false);
 

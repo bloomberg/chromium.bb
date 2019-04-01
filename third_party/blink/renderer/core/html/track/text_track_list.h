@@ -42,10 +42,6 @@ class CORE_EXPORT TextTrackList final : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static TextTrackList* Create(HTMLMediaElement* owner) {
-    return MakeGarbageCollected<TextTrackList>(owner);
-  }
-
   explicit TextTrackList(HTMLMediaElement*);
   ~TextTrackList() override;
 

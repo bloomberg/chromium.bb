@@ -36,10 +36,6 @@ static bool StyleSheetTypeIsSupported(const String& type) {
          MIMETypeRegistry::IsSupportedStyleSheetMIMEType(trimmed_type);
 }
 
-LinkStyle* LinkStyle::Create(HTMLLinkElement* owner) {
-  return MakeGarbageCollected<LinkStyle>(owner);
-}
-
 LinkStyle::LinkStyle(HTMLLinkElement* owner)
     : LinkResource(owner),
       disabled_state_(kUnset),

@@ -13,7 +13,7 @@ namespace blink {
 
 TEST(TextTrackListTest, InvalidateTrackIndexes) {
   // Create and fill the list
-  TextTrackList* list = TextTrackList::Create(HTMLVideoElement::Create(
+  auto* list = MakeGarbageCollected<TextTrackList>(HTMLVideoElement::Create(
       std::make_unique<DummyPageHolder>()->GetDocument()));
   const size_t kNumTextTracks = 4;
   TextTrack* text_tracks[kNumTextTracks];

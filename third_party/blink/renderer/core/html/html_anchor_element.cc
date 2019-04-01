@@ -63,7 +63,7 @@ HTMLAnchorElement::HTMLAnchorElement(const QualifiedName& tag_name,
     : HTMLElement(tag_name, document),
       link_relations_(0),
       cached_visited_link_hash_(0),
-      rel_list_(RelList::Create(this)) {}
+      rel_list_(MakeGarbageCollected<RelList>(this)) {}
 
 HTMLAnchorElement* HTMLAnchorElement::Create(Document& document) {
   return MakeGarbageCollected<HTMLAnchorElement>(kATag, document);

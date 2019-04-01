@@ -204,7 +204,7 @@ TextTrackCueList* TextTrack::activeCues() {
     return nullptr;
 
   if (!active_cues_) {
-    active_cues_ = TextTrackCueList::Create();
+    active_cues_ = MakeGarbageCollected<TextTrackCueList>();
   }
 
   cues_->CollectActiveCues(*active_cues_);
@@ -331,7 +331,7 @@ bool TextTrack::CanBeRendered() const {
 
 TextTrackCueList* TextTrack::EnsureTextTrackCueList() {
   if (!cues_) {
-    cues_ = TextTrackCueList::Create();
+    cues_ = MakeGarbageCollected<TextTrackCueList>();
   }
 
   return cues_.Get();
