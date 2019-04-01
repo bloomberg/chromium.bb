@@ -14,6 +14,7 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/drag_drop/drag_drop_controller.h"
+#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/fps_counter.h"
 #include "ash/public/cpp/window_properties.h"
@@ -1016,6 +1017,32 @@ TEST_F(OverviewSessionTest, ActivationCancelsOverview) {
   // window1 should be focused after exiting even though window2 was focused on
   // entering overview because we exited due to an activation.
   EXPECT_EQ(window1.get(), wm::GetFocusedWindow());
+}
+
+// Tests that if a window is dragged while overview is open, the activation
+// of the dragged window does not cancel overview.
+TEST_F(OverviewSessionTest, ActivateDraggedWindowNotCancelOverview) {
+  UpdateDisplay("800x600");
+  EnterTabletMode();
+  std::unique_ptr<aura::Window> window1(CreateTestWindow());
+  window1->SetProperty(aura::client::kAppType,
+                       static_cast<int>(AppType::BROWSER));
+  std::unique_ptr<aura::Window> window2(CreateTestWindow());
+  EXPECT_FALSE(IsSelecting());
+
+  // Start drag on |window1|.
+  std::unique_ptr<WindowResizer> resizer(CreateWindowResizer(
+      window1.get(), gfx::Point(), HTCAPTION, ::wm::WINDOW_MOVE_SOURCE_TOUCH));
+  EXPECT_TRUE(IsSelecting());
+
+  resizer->Drag(gfx::Point(400, 0), 0);
+  EXPECT_TRUE(IsSelecting());
+
+  wm::ActivateWindow(window1.get());
+  EXPECT_TRUE(IsSelecting());
+
+  resizer->CompleteDrag();
+  EXPECT_FALSE(IsSelecting());
 }
 
 // Tests that exiting overview mode without selecting a window restores focus
