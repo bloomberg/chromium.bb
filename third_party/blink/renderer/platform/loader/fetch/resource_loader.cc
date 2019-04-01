@@ -466,8 +466,7 @@ void ResourceLoader::DidStartLoadingResponseBodyInternal(
   response_body_loader_ = MakeGarbageCollected<ResponseBodyLoader>(
       bytes_consumer, response_body_loader_client,
       task_runner_for_body_loader_);
-  resource_->ResponseBodyReceived(*response_body_loader_,
-                                  task_runner_for_body_loader_);
+  resource_->ResponseBodyReceived(*response_body_loader_);
   if (response_body_loader_->IsDrained()) {
     // When streaming, unpause virtual time early to prevent deadlocking
     // against stream consumer in case stream has backpressure enabled.

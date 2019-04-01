@@ -260,8 +260,7 @@ void RawResource::ResponseReceived(const ResourceResponse& response) {
 }
 
 void RawResource::ResponseBodyReceived(
-    ResponseBodyLoaderDrainableInterface& body_loader,
-    scoped_refptr<base::SingleThreadTaskRunner> loader_task_runner) {
+    ResponseBodyLoaderDrainableInterface& body_loader) {
   DCHECK_LE(Clients().size(), 1u);
   RawResourceClient* client =
       ResourceClientWalker<RawResourceClient>(Clients()).Next();
