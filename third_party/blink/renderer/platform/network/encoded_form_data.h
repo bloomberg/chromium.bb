@@ -20,6 +20,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_ENCODED_FORM_DATA_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_ENCODED_FORM_DATA_H_
 
+#include <utility>
+
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -29,6 +31,7 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 #include "services/network/public/mojom/data_pipe_getter.mojom-blink.h"
+#include "services/network/public/mojom/url_loader.mojom-blink.h"
 
 namespace blink {
 
@@ -178,6 +181,8 @@ class PLATFORM_EXPORT EncodedFormData : public RefCounted<EncodedFormData> {
   bool IsSafeToSendToAnotherThread() const;
 
  private:
+  friend struct mojo::StructTraits<network::mojom::URLRequestBodyDataView,
+                                   scoped_refptr<blink::EncodedFormData>>;
   EncodedFormData();
   EncodedFormData(const EncodedFormData&);
 
@@ -198,4 +203,4 @@ inline bool operator!=(const EncodedFormData& a, const EncodedFormData& b) {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_ENCODED_FORM_DATA_H_

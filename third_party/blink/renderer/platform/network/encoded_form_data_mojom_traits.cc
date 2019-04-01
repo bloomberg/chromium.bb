@@ -112,7 +112,7 @@ bool StructTraits<network::mojom::DataElementDataView, blink::FormDataElement>::
   switch (data_type) {
     case network::mojom::DataElementType::kBytes: {
       out->type_ = blink::FormDataElement::kData;
-      // TODO:(richard.li) Delete this workaround when type of
+      // TODO(richard.li): Delete this workaround when type of
       // blink::FormDataElement::data_ is changed to WTF::Vector<uint8_t>
       WTF::Vector<uint8_t> buf;
       if (!data.ReadBuf(&buf)) {
@@ -160,6 +160,21 @@ bool StructTraits<network::mojom::DataElementDataView, blink::FormDataElement>::
       NOTREACHED();
       return false;
   }
+  return true;
+}
+
+// static
+bool StructTraits<network::mojom::URLRequestBodyDataView,
+                  scoped_refptr<blink::EncodedFormData>>::
+    Read(network::mojom::URLRequestBodyDataView in,
+         scoped_refptr<blink::EncodedFormData>* out) {
+  *out = blink::EncodedFormData::Create();
+  if (!in.ReadElements(&((*out)->elements_))) {
+    return false;
+  }
+  (*out)->identifier_ = in.identifier();
+  (*out)->contains_password_data_ = in.contains_sensitive_info();
+
   return true;
 }
 

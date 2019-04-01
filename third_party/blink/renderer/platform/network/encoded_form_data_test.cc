@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/network/encoded_form_data_mojom_traits.h"
+#include <utility>
 
 #include "base/sequenced_task_runner.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/base/file_mojom_traits.h"
 #include "mojo/public/cpp/base/file_path_mojom_traits.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
+#include "mojo/public/cpp/bindings/array_traits_wtf_vector.h"
 #include "mojo/public/cpp/bindings/string_traits_wtf.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "services/network/public/mojom/url_loader.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
+#include "third_party/blink/renderer/platform/network/encoded_form_data_mojom_traits.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,6 +43,11 @@ class EncodedFormDataTest : public testing::Test {
     CheckDeepCopied(a.filename_, b.filename_);
     CheckDeepCopied(a.blob_uuid_, b.blob_uuid_);
   }
+};
+
+class EncodedFormDataMojomTraitsTest : public testing::Test {
+ protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(EncodedFormDataTest, DeepCopy) {
@@ -105,9 +112,7 @@ TEST_F(EncodedFormDataTest, DeepCopy) {
   }
 }
 
-TEST(EncodedFormDataMojomTraitsTest, Roundtrips_FormDataElement) {
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-
+TEST_F(EncodedFormDataMojomTraitsTest, Roundtrips_FormDataElement) {
   FormDataElement original1;
   original1.type_ = blink::FormDataElement::kData;
   original1.data_ = {'a', 'b', 'c', 'd'};
@@ -160,6 +165,17 @@ TEST(EncodedFormDataMojomTraitsTest, Roundtrips_FormDataElement) {
       mojo::test::SerializeAndDeserialize<network::mojom::blink::DataElement>(
           &original4, &copied4));
   EXPECT_TRUE(copied4.data_pipe_getter_);
+}
+
+TEST_F(EncodedFormDataMojomTraitsTest, Roundtrips_EncodedFormData) {
+  scoped_refptr<EncodedFormData> original1 = EncodedFormData::Create();
+  original1->SetIdentifier(1);
+  original1->SetContainsPasswordData(true);
+  scoped_refptr<EncodedFormData> copied1 = EncodedFormData::Create();
+  EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
+              network::mojom::blink::URLRequestBody>(&original1, &copied1));
+  EXPECT_EQ(original1->Identifier(), copied1->Identifier());
+  EXPECT_EQ(original1->ContainsPasswordData(), copied1->ContainsPasswordData());
 }
 
 }  // namespace
