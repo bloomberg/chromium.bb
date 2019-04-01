@@ -22,9 +22,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
@@ -54,7 +54,7 @@ public class BackgroundSchedulerTest {
         BackgroundTaskSchedulerFactory.setSchedulerForTesting(mTaskScheduler);
         doReturn(true)
                 .when(mTaskScheduler)
-                .schedule(eq(RuntimeEnvironment.application), mTaskInfo.capture());
+                .schedule(eq(ContextUtils.getApplicationContext()), mTaskInfo.capture());
     }
 
     private void verifyFixedTaskInfoValues(TaskInfo info) {
@@ -74,7 +74,7 @@ public class BackgroundSchedulerTest {
     public void testScheduleUnmeteredAndCharging() {
         BackgroundScheduler.getInstance().schedule(mConditions1);
         verify(mTaskScheduler, times(1))
-                .schedule(eq(RuntimeEnvironment.application), eq(mTaskInfo.getValue()));
+                .schedule(eq(ContextUtils.getApplicationContext()), eq(mTaskInfo.getValue()));
 
         TaskInfo info = mTaskInfo.getValue();
         verifyFixedTaskInfoValues(info);
@@ -94,7 +94,7 @@ public class BackgroundSchedulerTest {
     public void testScheduleMeteredAndNotCharging() {
         BackgroundScheduler.getInstance().schedule(mConditions2);
         verify(mTaskScheduler, times(1))
-                .schedule(eq(RuntimeEnvironment.application), eq(mTaskInfo.getValue()));
+                .schedule(eq(ContextUtils.getApplicationContext()), eq(mTaskInfo.getValue()));
 
         TaskInfo info = mTaskInfo.getValue();
         verifyFixedTaskInfoValues(info);
@@ -115,7 +115,7 @@ public class BackgroundSchedulerTest {
         BackgroundScheduler.getInstance().scheduleBackup(
                 mConditions1, 5 * DateUtils.MINUTE_IN_MILLIS);
         verify(mTaskScheduler, times(1))
-                .schedule(eq(RuntimeEnvironment.application), eq(mTaskInfo.getValue()));
+                .schedule(eq(ContextUtils.getApplicationContext()), eq(mTaskInfo.getValue()));
 
         TaskInfo info = mTaskInfo.getValue();
         verifyFixedTaskInfoValues(info);
@@ -135,15 +135,15 @@ public class BackgroundSchedulerTest {
     public void testCancel() {
         BackgroundScheduler.getInstance().schedule(mConditions1);
         verify(mTaskScheduler, times(1))
-                .schedule(eq(RuntimeEnvironment.application), eq(mTaskInfo.getValue()));
+                .schedule(eq(ContextUtils.getApplicationContext()), eq(mTaskInfo.getValue()));
 
         doNothing()
                 .when(mTaskScheduler)
-                .cancel(eq(RuntimeEnvironment.application),
+                .cancel(eq(ContextUtils.getApplicationContext()),
                         eq(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID));
         BackgroundScheduler.getInstance().cancel();
         verify(mTaskScheduler, times(1))
-                .cancel(eq(RuntimeEnvironment.application),
+                .cancel(eq(ContextUtils.getApplicationContext()),
                         eq(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID));
     }
 }

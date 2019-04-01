@@ -6,7 +6,6 @@ package org.chromium.chrome.browser;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.Application;
 import android.content.SharedPreferences;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
@@ -52,7 +51,6 @@ public class ChromeActivitySessionTracker {
     // Used to trigger variation changes (such as seed fetches) upon application foregrounding.
     private VariationsSession mVariationsSession;
 
-    private Application mApplication;
     private boolean mIsInitialized;
     private boolean mIsStarted;
     private boolean mIsFinishedCachingNativeFlags;
@@ -72,7 +70,6 @@ public class ChromeActivitySessionTracker {
      * @see #getInstance()
      */
     protected ChromeActivitySessionTracker() {
-        mApplication = (Application) ContextUtils.getApplicationContext();
         mVariationsSession = AppHooks.get().createVariationsSession();
     }
 
@@ -82,7 +79,7 @@ public class ChromeActivitySessionTracker {
      * @param callback Callback that will be called with the param value when available.
      */
     public void getVariationsRestrictModeValue(Callback<String> callback) {
-        mVariationsSession.getRestrictModeValue(mApplication, callback);
+        mVariationsSession.getRestrictModeValue(callback);
     }
 
     /**
@@ -134,10 +131,10 @@ public class ChromeActivitySessionTracker {
     private void onForegroundSessionStart() {
         UmaUtils.recordForegroundStartTime();
         updatePasswordEchoState();
-        FontSizePrefs.getInstance(mApplication).onSystemFontScaleChanged();
+        FontSizePrefs.getInstance().onSystemFontScaleChanged();
         recordWhetherSystemAndAppLanguagesDiffer();
         updateAcceptLanguages();
-        mVariationsSession.start(mApplication);
+        mVariationsSession.start();
         mPowerBroadcastReceiver.onForegroundSessionStart();
 
         // Track the ratio of Chrome startups that are caused by notification clicks.
@@ -232,8 +229,10 @@ public class ChromeActivitySessionTracker {
      * period of time.
      */
     private void updatePasswordEchoState() {
-        boolean systemEnabled = Settings.System.getInt(mApplication.getContentResolver(),
-                Settings.System.TEXT_SHOW_PASSWORD, 1) == 1;
+        boolean systemEnabled =
+                Settings.System.getInt(ContextUtils.getApplicationContext().getContentResolver(),
+                        Settings.System.TEXT_SHOW_PASSWORD, 1)
+                == 1;
         if (PrefServiceBridge.getInstance().getPasswordEchoEnabled() == systemEnabled) return;
 
         PrefServiceBridge.getInstance().setPasswordEchoEnabled(systemEnabled);

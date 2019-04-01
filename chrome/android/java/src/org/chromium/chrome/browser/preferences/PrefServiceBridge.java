@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.preferences;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -130,7 +129,7 @@ public class PrefServiceBridge {
     /**
      * Migrates (synchronously) the preferences to the most recent version.
      */
-    public void migratePreferences(Context context) {
+    public void migratePreferences() {
         SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
         int currentVersion = preferences.getInt(MIGRATION_PREF_KEY, 0);
         if (currentVersion == MIGRATION_CURRENT_VERSION) return;

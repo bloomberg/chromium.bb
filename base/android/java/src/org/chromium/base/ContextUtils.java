@@ -4,6 +4,7 @@
 
 package org.chromium.base;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.SharedPreferences;
@@ -60,9 +61,8 @@ public class ContextUtils {
     public static void initApplicationContext(Context appContext) {
         // Conceding that occasionally in tests, native is loaded before the browser process is
         // started, in which case the browser process re-sets the application context.
-        if (sApplicationContext != null && sApplicationContext != appContext) {
-            throw new RuntimeException("Attempting to set multiple global application contexts.");
-        }
+        assert sApplicationContext == null || sApplicationContext == appContext
+                || ((ContextWrapper) sApplicationContext).getBaseContext() == appContext;
         initJavaSideApplicationContext(appContext);
     }
 
@@ -100,8 +100,10 @@ public class ContextUtils {
     }
 
     private static void initJavaSideApplicationContext(Context appContext) {
-        if (appContext == null) {
-            throw new RuntimeException("Global application context cannot be set to null.");
+        assert appContext != null;
+        // Guard against anyone trying to downcast.
+        if (BuildConfig.DCHECK_IS_ON && appContext instanceof Application) {
+            appContext = new ContextWrapper(appContext);
         }
         sApplicationContext = appContext;
     }

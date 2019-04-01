@@ -204,8 +204,11 @@ public class BaseJUnit4ClassRunner extends AndroidJUnit4ClassRunner {
      */
     @Override
     public void run(RunNotifier notifier) {
-        ContextUtils.initApplicationContext(
-                InstrumentationRegistry.getTargetContext().getApplicationContext());
+        // Most tests have an Application subclass that already call this.
+        if (ContextUtils.getApplicationContext() == null) {
+            ContextUtils.initApplicationContext(
+                    InstrumentationRegistry.getTargetContext().getApplicationContext());
+        }
         if (shouldListTests(InstrumentationRegistry.getArguments())) {
             for (Description child : getDescription().getChildren()) {
                 notifier.fireTestStarted(child);

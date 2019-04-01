@@ -21,7 +21,6 @@ import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -56,7 +55,8 @@ public class ChromeApplication extends Application {
     private static final String COMMAND_LINE_FILE = "chrome-command-line";
     private static final String TAG = "ChromiumApplication";
 
-    private DiscardableReferencePool mReferencePool;
+    private final DiscardableReferencePool mReferencePool = new DiscardableReferencePool();
+    private static ChromeApplication sInstance;
 
     @Nullable
     private static ChromeAppComponent sComponent;
@@ -64,13 +64,17 @@ public class ChromeApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        // These can't go in attachBaseContext because Context.getApplicationContext() (which they
+        // use under-the-hood) does not work until after it returns.
         FontPreloadingWorkaround.maybeInstallWorkaround(this);
+        MemoryPressureMonitor.INSTANCE.registerComponentCallbacks();
     }
 
     // Called by the framework for ALL processes. Runs before ContentProviders are created.
     // Quirk: context.getApplicationContext() returns null during this method.
     @Override
     protected void attachBaseContext(Context context) {
+        sInstance = this;
         boolean isBrowserProcess = isBrowserProcess();
         if (isBrowserProcess) UmaUtils.recordMainEntryPointTime();
         super.attachBaseContext(context);
@@ -117,8 +121,6 @@ public class ChromeApplication extends Application {
         // Write installed modules to crash keys. This needs to be done as early as possible so that
         // these values are set before any crashes are reported.
         ModuleInstaller.updateCrashKeys();
-
-        MemoryPressureMonitor.INSTANCE.registerComponentCallbacks();
 
         if (!ContextUtils.isIsolatedProcess()) {
             // Incremental install disables process isolation, so things in this block will actually
@@ -195,12 +197,8 @@ public class ChromeApplication extends Application {
      * @return The DiscardableReferencePool for the application.
      */
     @MainDex
-    public DiscardableReferencePool getReferencePool() {
-        ThreadUtils.assertOnUiThread();
-        if (mReferencePool == null) {
-            mReferencePool = new DiscardableReferencePool();
-        }
-        return mReferencePool;
+    public static DiscardableReferencePool getReferencePool() {
+        return sInstance.mReferencePool;
     }
 
     @Override
