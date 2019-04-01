@@ -79,26 +79,22 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
     @Override
     public Application newApplication(ClassLoader cl, String className, Context context)
             throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-        // The multidex support library doesn't currently support having the test apk be multidex
-        // as well as the under-test apk being multidex. If MultiDex.install() is called for both,
-        // then re-extraction is triggered every time due to the support library caching only a
-        // single timestamp & crc.
-        //
-        // Attempt to install test apk multidex only if the apk-under-test is not multidex.
-        // It will likely continue to be true that the two are mutually exclusive because:
-        // * ProGuard enabled =>
-        //      Under-test apk is single dex.
-        //      Test apk duplicates under-test classes, so may need multidex.
-        // * ProGuard disabled =>
-        //      Under-test apk might be multidex
-        //      Test apk does not duplicate classes, so does not need multidex.
-        // When there is no under-test apk, then Application.onCreate() should trigger multidex
-        // installation.
-        // https://crbug.com/824523
-        if (!BuildConfig.IS_MULTIDEX_ENABLED) {
-            ChromiumMultiDexInstaller.install(new BaseChromiumRunnerCommon.MultiDexContextWrapper(
-                    getContext(), getTargetContext()));
-            BaseChromiumRunnerCommon.reorderDexPathElements(cl, getContext(), getTargetContext());
+        boolean hasUnderTestApk =
+                !getContext().getPackageName().equals(getTargetContext().getPackageName());
+        // When there is an under-test APK, BuildConfig belongs to it and does not indicate whether
+        // the test apk is multidex. In this case, just assume it is.
+        boolean isTestMultidex = hasUnderTestApk || BuildConfig.IS_MULTIDEX_ENABLED;
+        if (isTestMultidex) {
+            if (hasUnderTestApk) {
+                // Need hacks to have multidex work when there is an under-test apk :(.
+                ChromiumMultiDexInstaller.install(
+                        new BaseChromiumRunnerCommon.MultiDexContextWrapper(
+                                getContext(), getTargetContext()));
+                BaseChromiumRunnerCommon.reorderDexPathElements(
+                        cl, getContext(), getTargetContext());
+            } else {
+                ChromiumMultiDexInstaller.install(getContext());
+            }
         }
         return super.newApplication(cl, className, context);
     }
