@@ -619,6 +619,23 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
   EXPECT_THAT(GetBody(), kDummyBody);
 }
 
+IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
+                       ProxyBlockedOnAuthError) {
+  base::HistogramTester histogram_tester;
+  net::EmbeddedTestServer test_server;
+  test_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kDummyBody));
+  ASSERT_TRUE(test_server.Start());
+
+  SetStatusCode(net::HTTP_PROXY_AUTHENTICATION_REQUIRED);
+
+  ui_test_utils::NavigateToURL(browser(),
+                               GetURLWithMockHost(test_server, "/echo"));
+  EXPECT_THAT(GetBody(), kDummyBody);
+  histogram_tester.ExpectUniqueSample("DataReductionProxy.BlockTypePrimary",
+                                      BYPASS_EVENT_TYPE_MALFORMED_407, 1);
+}
+
 class DataReductionProxyResourceTypeBrowsertest
     : public DataReductionProxyBrowsertest {
  public:

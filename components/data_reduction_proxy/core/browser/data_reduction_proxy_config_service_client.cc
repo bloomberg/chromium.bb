@@ -83,8 +83,8 @@ const uint32_t kMaxBackgroundFetchIntervalSeconds = 6 * 60 * 60;  // 6 hours.
 // Reduction Proxy configuration service.
 const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
     0,                // num_errors_to_ignore
-    30 * 1000,        // initial_delay_ms
-    4,                // multiply_factor
+    10 * 1000,        // initial_delay_ms
+    3,                // multiply_factor
     0.25,             // jitter_factor,
     128 * 60 * 1000,  // maximum_backoff_ms
     -1,               // entry_lifetime_ms
