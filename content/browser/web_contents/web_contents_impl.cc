@@ -4929,7 +4929,7 @@ void WebContentsImpl::OnRequestPpapiBrokerPermission(
     int ppb_broker_route_id,
     const GURL& url,
     const base::FilePath& plugin_path) {
-  base::Callback<void(bool)> permission_result_callback = base::Bind(
+  base::OnceCallback<void(bool)> permission_result_callback = base::BindOnce(
       &WebContentsImpl::SendPpapiBrokerPermissionResult, base::Unretained(this),
       source->GetProcess()->GetID(), ppb_broker_route_id);
   if (!delegate_) {
@@ -4937,11 +4937,8 @@ void WebContentsImpl::OnRequestPpapiBrokerPermission(
     return;
   }
 
-  if (!delegate_->RequestPpapiBrokerPermission(this, url, plugin_path,
-                                               permission_result_callback)) {
-    NOTIMPLEMENTED();
-    std::move(permission_result_callback).Run(false);
-  }
+  delegate_->RequestPpapiBrokerPermission(
+      this, url, plugin_path, std::move(permission_result_callback));
 }
 
 void WebContentsImpl::SendPpapiBrokerPermissionResult(int process_id,
