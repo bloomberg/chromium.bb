@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -164,22 +165,18 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
   }
 
  protected:
-  void SensorCreated(scoped_refptr<PlatformSensor> sensor) {
-    platform_sensor_ = sensor;
-    run_loop_->Quit();
-  }
-
   // Sensor creation is asynchronous, therefore inner loop is used to wait for
   // PlatformSensorProvider::CreateSensorCallback completion.
   scoped_refptr<PlatformSensor> CreateSensor(mojom::SensorType type) {
-    run_loop_ = std::make_unique<base::RunLoop>();
-    provider_->CreateSensor(
-        type, base::Bind(&PlatformSensorAndProviderLinuxTest::SensorCreated,
-                         base::Unretained(this)));
-    run_loop_->Run();
     scoped_refptr<PlatformSensor> sensor;
-    sensor.swap(platform_sensor_);
-    run_loop_ = nullptr;
+    base::RunLoop run_loop;
+    provider_->CreateSensor(type,
+                            base::BindLambdaForTesting(
+                                [&](scoped_refptr<PlatformSensor> new_sensor) {
+                                  sensor = std::move(new_sensor);
+                                  run_loop.Quit();
+                                }));
+    run_loop.Run();
     return sensor;
   }
 
@@ -261,22 +258,19 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
   // Waits before OnSensorReadingChanged is called.
   void WaitOnSensorReadingChangedEvent(LinuxMockPlatformSensorClient* client,
                                        mojom::SensorType type) {
-    run_loop_ = std::make_unique<base::RunLoop>();
+    base::RunLoop run_loop;
     EXPECT_CALL(*client, OnSensorReadingChanged(type))
-        .WillOnce(
-            Invoke([this](mojom::SensorType type) { run_loop_->Quit(); }));
-    run_loop_->Run();
-    run_loop_ = nullptr;
+        .WillOnce(Invoke([&](mojom::SensorType type) { run_loop.Quit(); }));
+    run_loop.Run();
   }
 
   // Waits before OnSensorError is called.
   void WaitOnSensorErrorEvent(LinuxMockPlatformSensorClient* client) {
-    run_loop_ = std::make_unique<base::RunLoop>();
-    EXPECT_CALL(*client, OnSensorError()).WillOnce(Invoke([this]() {
-      run_loop_->Quit();
+    base::RunLoop run_loop;
+    EXPECT_CALL(*client, OnSensorError()).WillOnce(Invoke([&]() {
+      run_loop.Quit();
     }));
-    run_loop_->Run();
-    run_loop_ = nullptr;
+    run_loop.Run();
   }
 
   // Uses the right task runner to notify SensorDeviceManager that a device has
@@ -310,8 +304,6 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   MockSensorDeviceManager* manager_;
-  scoped_refptr<PlatformSensor> platform_sensor_;
-  std::unique_ptr<base::RunLoop> run_loop_;
   std::unique_ptr<PlatformSensorProviderLinux> provider_;
   // Holds base dir where a sensor dir is located.
   base::ScopedTempDir sensors_dir_;
