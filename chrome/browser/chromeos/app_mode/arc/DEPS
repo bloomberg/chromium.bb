@@ -1,0 +1,6 @@
+specific_include_rules = {
+  # crbug.com/887156
+  "arc_kiosk_app_launcher\.cc": [
+    "+ash/shell.h",
+  ],
+}
