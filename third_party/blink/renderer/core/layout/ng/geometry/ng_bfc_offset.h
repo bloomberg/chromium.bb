@@ -10,6 +10,16 @@
 
 namespace blink {
 
+struct CORE_EXPORT NGBfcDelta {
+  NGBfcDelta() = default;
+  NGBfcDelta(LayoutUnit line_offset_delta, LayoutUnit block_offset_delta)
+      : line_offset_delta(line_offset_delta),
+        block_offset_delta(block_offset_delta) {}
+
+  LayoutUnit line_offset_delta;
+  LayoutUnit block_offset_delta;
+};
+
 // NGBfcOffset is the position of a rect (typically a fragment) relative to
 // a block formatting context (BFC). BFCs are agnostic to text direction, and
 // uses line_offset instead of inline_offset.
@@ -23,6 +33,16 @@ struct CORE_EXPORT NGBfcOffset {
 
   LayoutUnit line_offset;
   LayoutUnit block_offset;
+
+  NGBfcOffset& operator+=(const NGBfcDelta& delta) {
+    *this = *this + delta;
+    return *this;
+  }
+
+  NGBfcOffset operator+(const NGBfcDelta& delta) {
+    return {line_offset + delta.line_offset_delta,
+            block_offset + delta.block_offset_delta};
+  }
 
   bool operator==(const NGBfcOffset& other) const;
   bool operator!=(const NGBfcOffset& other) const;

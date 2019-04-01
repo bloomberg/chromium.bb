@@ -43,7 +43,8 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   // Create a copy of NGLayoutResult with |BfcBlockOffset| replaced by the given
   // parameter. Note, when |bfc_block_offset| is |nullopt|, |BfcBlockOffset| is
   // still replaced with |nullopt|.
-  NGLayoutResult(const NGLayoutResult&,
+  NGLayoutResult(const NGLayoutResult& other,
+                 const NGExclusionSpace& new_input_exclusion_space,
                  LayoutUnit bfc_line_offset,
                  base::Optional<LayoutUnit> bfc_block_offset);
   ~NGLayoutResult();
@@ -146,6 +147,12 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   NGLayoutResult(NGContainerFragmentBuilder* builder, bool cache_space);
 
   static bool DependsOnPercentageBlockSize(const NGContainerFragmentBuilder&);
+
+  static NGExclusionSpace MergeExclusionSpaces(
+      const NGLayoutResult& other,
+      const NGExclusionSpace& new_input_exclusion_space,
+      LayoutUnit bfc_line_offset,
+      base::Optional<LayoutUnit> bfc_block_offset);
 
   // The constraint space which generated this layout result, may not be valid
   // as indicated by |has_valid_space_|.

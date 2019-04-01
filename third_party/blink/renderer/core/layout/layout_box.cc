@@ -2379,6 +2379,7 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
     return cached_layout_result;
 
   return base::AdoptRef(new NGLayoutResult(*cached_layout_result,
+                                           new_space.ExclusionSpace(),
                                            bfc_line_offset, bfc_block_offset));
 }
 
