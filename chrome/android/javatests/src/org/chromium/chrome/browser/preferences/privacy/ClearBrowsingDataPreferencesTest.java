@@ -70,10 +70,7 @@ import java.util.Set;
  * Integration tests for ClearBrowsingDataPreferences.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-// Disable notifications for the default search engine so that it doesn't interfere with important
-// sites tests.
-@CommandLineFlags.
-Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "disable-features=GrantNotificationsToDSE"})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @RetryOnFailure
 public class ClearBrowsingDataPreferencesTest {
     @Rule
