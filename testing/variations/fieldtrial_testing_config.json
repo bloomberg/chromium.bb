@@ -1413,6 +1413,21 @@
             ]
         }
     ],
+    "ContextualSearchDefinitions": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "ContextualSearchDefinitions",
+                    "enable_features": [
+                        "ContextualSearchDefinitions"
+                    ]
+                }
+            ]
+        }
+    ],
     "CopylessPaste": [
         {
             "platforms": [
