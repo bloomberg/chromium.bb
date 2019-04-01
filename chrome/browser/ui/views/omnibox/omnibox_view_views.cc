@@ -730,22 +730,9 @@ void OmniboxViewViews::OnTemporaryTextMaybeChanged(
     bool notify_text_changed) {
   if (save_original_selection)
     saved_temporary_selection_ = GetSelectedRange();
-
-  // Get friendly accessibility label.
-  bool is_tab_switch_button_focused =
-      model()->popup_model()->selected_line_state() ==
-      OmniboxPopupModel::BUTTON_FOCUSED;
-  friendly_suggestion_text_ = AutocompleteMatchType::ToAccessibilityLabel(
-      match, display_text, model()->popup_model()->selected_line(),
-      model()->result().size(), is_tab_switch_button_focused,
-      &friendly_suggestion_text_prefix_length_);
+  SetAccessibilityLabel(display_text, match);
   int caret_pos = TextAndUIDirectionMatch() ? display_text.length() : 0;
   SetWindowTextAndCaretPos(display_text, caret_pos, false, notify_text_changed);
-#if defined(OS_MACOSX)
-  // On macOS, the text field value changed notification is not
-  // announced, so we need to explicitly announce the suggestion text.
-  GetViewAccessibility().AnnounceText(friendly_suggestion_text_);
-#endif
 }
 
 bool OmniboxViewViews::OnInlineAutocompleteTextMaybeChanged(
@@ -771,7 +758,9 @@ void OmniboxViewViews::OnInlineAutocompleteTextCleared() {
     location_bar_view_->SetImeInlineAutocompletion(base::string16());
 }
 
-void OmniboxViewViews::OnRevertTemporaryText() {
+void OmniboxViewViews::OnRevertTemporaryText(const base::string16& display_text,
+                                             const AutocompleteMatch& match) {
+  SetAccessibilityLabel(display_text, match);
   SelectRange(saved_temporary_selection_);
   // We got here because the user hit the Escape key. We explicitly don't call
   // TextChanged(), since OmniboxPopupModel::ResetToDefaultMatch() has already
@@ -782,6 +771,23 @@ void OmniboxViewViews::OnRevertTemporaryText() {
 void OmniboxViewViews::ClearAccessibilityLabel() {
   friendly_suggestion_text_.clear();
   friendly_suggestion_text_prefix_length_ = 0;
+}
+
+void OmniboxViewViews::SetAccessibilityLabel(const base::string16& display_text,
+                                             const AutocompleteMatch& match) {
+  bool is_tab_switch_button_focused =
+      model()->popup_model()->selected_line_state() ==
+      OmniboxPopupModel::BUTTON_FOCUSED;
+  friendly_suggestion_text_ = AutocompleteMatchType::ToAccessibilityLabel(
+      match, display_text, model()->popup_model()->selected_line(),
+      model()->result().size(), is_tab_switch_button_focused,
+      &friendly_suggestion_text_prefix_length_);
+
+#if defined(OS_MACOSX)
+  // On macOS, the text field value changed notification is not
+  // announced, so we need to explicitly announce the suggestion text.
+  GetViewAccessibility().AnnounceText(friendly_suggestion_text_);
+#endif
 }
 
 void OmniboxViewViews::SelectAllForUserGesture() {

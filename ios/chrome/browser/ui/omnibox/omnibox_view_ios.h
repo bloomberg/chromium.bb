@@ -87,7 +87,8 @@ class OmniboxViewIOS : public OmniboxView,
   void SetFocus() override {}
   void ApplyCaretVisibility() override {}
   void OnInlineAutocompleteTextCleared() override {}
-  void OnRevertTemporaryText() override {}
+  void OnRevertTemporaryText(const base::string16& display_text,
+                             const AutocompleteMatch& match) override {}
   gfx::NativeView GetNativeView() const override;
   gfx::NativeView GetRelativeWindowForPopup() const override;
 

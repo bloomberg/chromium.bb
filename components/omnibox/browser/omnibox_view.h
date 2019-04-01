@@ -176,7 +176,8 @@ class OmniboxView {
 
   // Called when the temporary text has been reverted by the user.  This will
   // reset the user's original selection.
-  virtual void OnRevertTemporaryText() = 0;
+  virtual void OnRevertTemporaryText(const base::string16& display_text,
+                                     const AutocompleteMatch& match) = 0;
 
   // Checkpoints the current edit state before an operation that might trigger
   // a new autocomplete run to open or modify the popup. Call this before

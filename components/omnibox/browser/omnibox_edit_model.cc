@@ -1488,7 +1488,9 @@ void OmniboxEditModel::RevertTemporaryText(bool revert_popup) {
 
   if (revert_popup && popup_model())
     popup_model()->ResetToDefaultMatch();
-  view_->OnRevertTemporaryText();
+
+  const AutocompleteMatch& match = CurrentMatch(nullptr);
+  view_->OnRevertTemporaryText(match.fill_into_edit, match);
 }
 
 bool OmniboxEditModel::MaybeAcceptKeywordBySpace(
