@@ -34,6 +34,7 @@ class CC_EXPORT SchedulerSettings {
   bool enable_latency_recovery = true;
   bool wait_for_all_pipeline_stages_before_draw = false;
   bool enable_surface_synchronization = false;
+  bool compositor_threaded_scrollbar_scrolling = false;
 
   int maximum_number_of_failed_draws_before_draw_is_forced = 3;
   base::TimeDelta background_frame_interval = base::TimeDelta::FromSeconds(1);
