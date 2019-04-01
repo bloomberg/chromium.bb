@@ -63,6 +63,9 @@ void ScrollNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetBoolean("user_scrollable_horizontal", user_scrollable_horizontal);
   value->SetBoolean("user_scrollable_vertical", user_scrollable_vertical);
 
+  value->SetBoolean("scrolls_inner_viewport", scrolls_inner_viewport);
+  value->SetBoolean("scrolls_outer_viewport", scrolls_outer_viewport);
+
   element_id.AddToTracedValue(value);
   value->SetInteger("transform_id", transform_id);
   value->SetInteger("overscroll_behavior_x", overscroll_behavior.x);
