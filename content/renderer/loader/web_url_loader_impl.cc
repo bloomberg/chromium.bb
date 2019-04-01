@@ -18,6 +18,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
@@ -824,11 +825,15 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       blink::Platform::Current()->GetInterfaceProvider()->GetInterface(
           MakeRequest(&download_to_blob_registry));
     }
+    TimeTicks start_time = TimeTicks::Now();
     resource_dispatcher_->StartSync(
         std::move(resource_request), request.RequestorID(),
         GetTrafficAnnotationTag(request), sync_load_response,
         url_loader_factory_, std::move(throttles), request.TimeoutInterval(),
         std::move(download_to_blob_registry), std::move(peer));
+    base::TimeDelta delta = TimeTicks::Now() - start_time;
+    UMA_HISTOGRAM_MEDIUM_TIMES("WebURLLoader.SyncResourceRequestDuration",
+                               delta);
     return;
   }
 
