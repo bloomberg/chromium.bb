@@ -374,7 +374,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[TableViewAccountItem alloc] initWithType:ItemTypeAccount];
   [self updateAccountItem:identityAccountItem withIdentity:identity];
 
-  identityAccountItem.enabled = _syncSetupService->IsSyncEnabled();
+  identityAccountItem.mode = _syncSetupService->IsSyncEnabled()
+                                 ? TableViewAccountModeEnabled
+                                 : TableViewAccountModeDisabled;
   ChromeIdentity* authenticatedIdentity =
       AuthenticationServiceFactory::GetForBrowserState(_browserState)
           ->GetAuthenticatedIdentity();
@@ -782,7 +784,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
       TableViewAccountItem* accountItem =
           base::mac::ObjCCastStrict<TableViewAccountItem>(
               [self.tableViewModel itemAtIndexPath:indexPath]);
-      accountItem.enabled = _syncSetupService->IsSyncEnabled();
+      accountItem.mode = _syncSetupService->IsSyncEnabled()
+                             ? TableViewAccountModeEnabled
+                             : TableViewAccountModeDisabled;
       [accountsToReconfigure addObject:accountItem];
     }
     [self reconfigureCellsForItems:accountsToReconfigure];
