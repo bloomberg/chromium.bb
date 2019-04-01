@@ -397,6 +397,32 @@ class GoogleAmpStory2018(_ArticleBrowsingStory):
     action_runner.ClickElement(element_function=element_function)
     action_runner.Wait(2)
 
+class GoogleAmpSXGStory2019(_ArticleBrowsingStory):
+  """ Story for Google's Signed Exchange (SXG) Accelerated Mobile Pages (AMP).
+  """
+  NAME = 'browse:search:amp:sxg:2019'
+  # Specific URL for site that supports SXG, travel.yahoo.co.jp
+  # pylint: disable=line-too-long
+  URL='https://www.google.com/search?q=%E5%85%AD%E6%9C%AC%E6%9C%A8%E3%80%80%E3%83%A4%E3%83%95%E3%83%BC%E3%80%80%E3%83%9B%E3%83%86%E3%83%AB&esrch=SignedExchange::Demo'
+  # Need to find the SXG AMPlink in the results
+  ITEM_SELECTOR = 'a > div > span[aria-label="AMP logo"]'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.YEAR_2019]
+
+  def _DidLoadDocument(self, action_runner):
+    # Waiting manually for the search results to load here and below.
+    # Telemetry's action_runner.WaitForNavigate has some difficulty with amp
+    # pages as it waits for a frameId without a parent id.
+    action_runner.Wait(2)
+    # Click on the yahoo amp link and then just wait for it to load.
+    element_function = js_template.Render(
+        'document.querySelectorAll({{ selector }})[{{ index }}]',
+        selector=self.ITEM_SELECTOR, index=0)
+    action_runner.WaitForElement(element_function=element_function)
+    action_runner.ClickElement(element_function=element_function)
+    # Waiting for the document to fully render
+    action_runner.Wait(2)
+
 
 class GoogleDesktopStory2018(_ArticleBrowsingStory):
   """
