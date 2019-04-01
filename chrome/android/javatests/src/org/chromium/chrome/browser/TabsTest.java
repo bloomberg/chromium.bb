@@ -12,7 +12,6 @@ import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_E
 
 import android.content.pm.ActivityInfo;
 import android.graphics.Point;
-import android.os.Build;
 import android.os.Debug;
 import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
@@ -34,7 +33,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
@@ -1466,6 +1464,7 @@ public class TabsTest {
     @Feature({"Android-TabSwitcher"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
+    @DisabledTest(message = "https://crbug.com/947694")
     public void testToolbarSwipeOnlyTab() throws InterruptedException, TimeoutException {
         final TabModel tabModel =
                 mActivityTestRule.getActivity().getTabModelSelector().getModel(false);
@@ -1535,11 +1534,8 @@ public class TabsTest {
     @Feature({"Android-TabSwitcher"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
-    @DisableIf.Build(message = "crbug.com/871554", supported_abis_includes = "arm64-v8a",
-            sdk_is_greater_than = Build.VERSION_CODES.LOLLIPOP_MR1,
-            sdk_is_less_than = Build.VERSION_CODES.N)
-    public void
-    testToolbarSwipeNextTabNone() throws InterruptedException, TimeoutException {
+    @DisabledTest(message = "https://crbug.com/947694")
+    public void testToolbarSwipeNextTabNone() throws InterruptedException, TimeoutException {
         ChromeTabUtils.newTabFromMenu(
                 InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
