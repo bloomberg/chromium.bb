@@ -63,7 +63,7 @@ class MediaControlsTouchlessImplTest : public PageTestBase {
     chrome_client_ = MakeGarbageCollected<MockChromeClientForTouchlessImpl>();
     clients.chrome_client = chrome_client_;
     SetupPageWithClients(
-        &clients, test::MediaStubLocalFrameClient::Create(
+        &clients, MakeGarbageCollected<test::MediaStubLocalFrameClient>(
                       std::make_unique<MockWebMediaPlayerForTouchlessImpl>()));
 
     GetDocument().write("<video>");

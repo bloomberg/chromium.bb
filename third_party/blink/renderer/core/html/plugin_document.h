@@ -36,11 +36,6 @@ class WebPluginContainerImpl;
 
 class CORE_EXPORT PluginDocument final : public HTMLDocument {
  public:
-  static PluginDocument* Create(const DocumentInit& initializer,
-                                Color background_color) {
-    return MakeGarbageCollected<PluginDocument>(initializer, background_color);
-  }
-
   PluginDocument(const DocumentInit&, Color background_color);
 
   void SetPluginNode(HTMLPlugInElement* plugin_node) {

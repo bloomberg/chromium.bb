@@ -80,10 +80,6 @@ class FakeWebMediaPlayer final : public EmptyWebMediaPlayer {
 
 class MediaStubLocalFrameClient : public EmptyLocalFrameClient {
  public:
-  static MediaStubLocalFrameClient* Create() {
-    return MakeGarbageCollected<MediaStubLocalFrameClient>();
-  }
-
   std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
@@ -102,7 +98,8 @@ using testing::Return;
 class HTMLMediaElementEventListenersTest : public PageTestBase {
  protected:
   void SetUp() override {
-    SetupPageWithClients(nullptr, MediaStubLocalFrameClient::Create());
+    SetupPageWithClients(nullptr,
+                         MakeGarbageCollected<MediaStubLocalFrameClient>());
   }
 
   void DestroyDocument() { PageTestBase::TearDown(); }
@@ -240,10 +237,6 @@ TEST_F(HTMLMediaElementEventListenersTest,
 
 class MockEventListener final : public NativeEventListener {
  public:
-  static MockEventListener* Create() {
-    return MakeGarbageCollected<MockEventListener>();
-  }
-
   MOCK_METHOD2(Invoke, void(ExecutionContext* executionContext, Event*));
 };
 

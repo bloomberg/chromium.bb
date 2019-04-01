@@ -57,7 +57,7 @@ inline HTMLLinkElement::HTMLLinkElement(Document& document,
       link_loader_(LinkLoader::Create(this)),
       referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
       sizes_(MakeGarbageCollected<DOMTokenList>(*this, html_names::kSizesAttr)),
-      rel_list_(RelList::Create(this)),
+      rel_list_(MakeGarbageCollected<RelList>(this)),
       created_by_parser_(flags.IsCreatedByParser()) {}
 
 HTMLLinkElement* HTMLLinkElement::Create(Document& document,
@@ -192,11 +192,11 @@ LinkResource* HTMLLinkElement::LinkResourceToProcess() {
         (!RuntimeEnabledFeatures::HTMLImportsOnlyChromeEnabled() ||
          (Href().Protocol() == "chrome" ||
           Href().Protocol() == "chrome-extension"))) {
-      link_ = LinkImport::Create(this);
+      link_ = MakeGarbageCollected<LinkImport>(this);
     } else if (rel_attribute_.IsManifest()) {
       link_ = LinkManifest::Create(this);
     } else {
-      LinkStyle* link = LinkStyle::Create(this);
+      auto* link = MakeGarbageCollected<LinkStyle>(this);
       if (FastHasAttribute(kDisabledAttr)) {
         UseCounter::Count(GetDocument(), WebFeature::kHTMLLinkElementDisabled);
         link->SetDisabledState(true);

@@ -32,10 +32,10 @@ class HTMLVideoElementTest : public PageTestBase {
         std::make_unique<HTMLVideoElementMockMediaPlayer>();
     media_player_ = mock_media_player.get();
 
-    SetupPageWithClients(
-        nullptr,
-        test::MediaStubLocalFrameClient::Create(std::move(mock_media_player)),
-        nullptr);
+    SetupPageWithClients(nullptr,
+                         MakeGarbageCollected<test::MediaStubLocalFrameClient>(
+                             std::move(mock_media_player)),
+                         nullptr);
     video_ = HTMLVideoElement::Create(GetDocument());
     GetDocument().body()->appendChild(video_);
   }

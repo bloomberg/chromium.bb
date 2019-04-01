@@ -266,19 +266,19 @@ Document* DOMImplementation::createDocument(const String& type,
   // We do not want QuickTime to take over all image types, obviously.
   if ((type == "application/pdf" || type == "text/pdf") && plugin_data &&
       plugin_data->SupportsMimeType(type)) {
-    return PluginDocument::Create(
+    return MakeGarbageCollected<PluginDocument>(
         init, plugin_data->PluginBackgroundColorForMimeType(type));
   }
   // multipart/x-mixed-replace is only supported for images.
   if (MIMETypeRegistry::IsSupportedImageResourceMIMEType(type) ||
       type == "multipart/x-mixed-replace") {
-    return ImageDocument::Create(init);
+    return MakeGarbageCollected<ImageDocument>(init);
   }
 
   // Check to see if the type can be played by our media player, if so create a
   // MediaDocument
   if (HTMLMediaElement::GetSupportsType(ContentType(type)))
-    return MediaDocument::Create(init);
+    return MakeGarbageCollected<MediaDocument>(init);
 
   // Everything else except text/plain can be overridden by plugins. In
   // particular, Adobe SVG Viewer should be used for SVG, if installed.
@@ -287,11 +287,11 @@ Document* DOMImplementation::createDocument(const String& type,
   // an optimization to prevent loading the plugin database in the common case.
   if (type != "text/plain" && plugin_data &&
       plugin_data->SupportsMimeType(type)) {
-    return PluginDocument::Create(
+    return MakeGarbageCollected<PluginDocument>(
         init, plugin_data->PluginBackgroundColorForMimeType(type));
   }
   if (IsTextMIMEType(type))
-    return TextDocument::Create(init);
+    return MakeGarbageCollected<TextDocument>(init);
   if (type == "image/svg+xml")
     return XMLDocument::CreateSVG(init);
   if (IsXMLMIMEType(type))

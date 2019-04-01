@@ -37,10 +37,6 @@ class TextTrackCueList final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static TextTrackCueList* Create() {
-    return MakeGarbageCollected<TextTrackCueList>();
-  }
-
   TextTrackCueList();
 
   wtf_size_t length() const;

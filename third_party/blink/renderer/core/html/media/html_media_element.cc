@@ -504,13 +504,13 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
       tracks_are_ready_(true),
       processing_preference_change_(false),
       was_always_muted_(true),
-      audio_tracks_(AudioTrackList::Create(*this)),
-      video_tracks_(VideoTrackList::Create(*this)),
+      audio_tracks_(MakeGarbageCollected<AudioTrackList>(*this)),
+      video_tracks_(MakeGarbageCollected<VideoTrackList>(*this)),
       audio_source_node_(nullptr),
       autoplay_policy_(MakeGarbageCollected<AutoplayPolicy>(this)),
       remote_playback_client_(nullptr),
       media_controls_(nullptr),
-      controls_list_(HTMLMediaElementControlsList::Create(this)),
+      controls_list_(MakeGarbageCollected<HTMLMediaElementControlsList>(this)),
       lazy_load_intersection_observer_(nullptr) {
   DVLOG(1) << "HTMLMediaElement(" << (void*)this << ")";
 
@@ -1539,7 +1539,8 @@ void HTMLMediaElement::NoneSupported(const String& input_message) {
 
   // 1 - Set the error attribute to a new MediaError object whose code attribute
   // is set to MEDIA_ERR_SRC_NOT_SUPPORTED.
-  error_ = MediaError::Create(MediaError::kMediaErrSrcNotSupported, message);
+  error_ = MakeGarbageCollected<MediaError>(
+      MediaError::kMediaErrSrcNotSupported, message);
 
   // 2 - Forget the media element's media-resource-specific text tracks.
   ForgetResourceSpecificTracks();
@@ -1659,9 +1660,11 @@ void HTMLMediaElement::MediaLoadingFailed(WebMediaPlayer::NetworkState error,
 
   if (error == WebMediaPlayer::kNetworkStateNetworkError &&
       ready_state_ >= kHaveMetadata) {
-    MediaEngineError(MediaError::Create(MediaError::kMediaErrNetwork, message));
+    MediaEngineError(MakeGarbageCollected<MediaError>(
+        MediaError::kMediaErrNetwork, message));
   } else if (error == WebMediaPlayer::kNetworkStateDecodeError) {
-    MediaEngineError(MediaError::Create(MediaError::kMediaErrDecode, message));
+    MediaEngineError(
+        MakeGarbageCollected<MediaError>(MediaError::kMediaErrDecode, message));
   } else if ((error == WebMediaPlayer::kNetworkStateFormatError ||
               error == WebMediaPlayer::kNetworkStateNetworkError) &&
              load_state_ == kLoadingFromSrcAttr) {
@@ -2788,8 +2791,8 @@ WebMediaPlayer::TrackId HTMLMediaElement::AddVideoTrack(
   if (selected && videoTracks().selectedIndex() != -1)
     selected = false;
 
-  VideoTrack* video_track =
-      VideoTrack::Create(id, kind_string, label, language, selected);
+  auto* video_track = MakeGarbageCollected<VideoTrack>(id, kind_string, label,
+                                                       language, selected);
   videoTracks().Add(video_track);
 
   return video_track->id();
@@ -2805,7 +2808,7 @@ void HTMLMediaElement::AddTextTrack(WebInbandTextTrack* web_track) {
   // 4.8.12.11.2 Sourcing in-band text tracks
   // 1. Associate the relevant data with a new text track and its corresponding
   // new TextTrack object.
-  InbandTextTrack* text_track = InbandTextTrack::Create(web_track);
+  auto* text_track = MakeGarbageCollected<InbandTextTrack>(web_track);
 
   // 2. Set the new text track's kind, label, and language based on the
   // semantics of the relevant data, as defined by the relevant specification.
@@ -2907,7 +2910,7 @@ TextTrack* HTMLMediaElement::addTextTrack(const AtomicString& kind,
 
 TextTrackList* HTMLMediaElement::textTracks() {
   if (!text_tracks_)
-    text_tracks_ = TextTrackList::Create(this);
+    text_tracks_ = MakeGarbageCollected<TextTrackList>(this);
 
   return text_tracks_.Get();
 }
