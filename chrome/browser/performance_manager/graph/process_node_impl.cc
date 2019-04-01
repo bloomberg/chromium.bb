@@ -34,9 +34,7 @@ void ProcessNodeImpl::SetCPUUsage(double cpu_usage) {
 
 void ProcessNodeImpl::SetExpectedTaskQueueingDuration(
     base::TimeDelta duration) {
-  SetPropertyAndNotifyObservers(
-      &GraphObserver::OnExpectedTaskQueueingDurationSample, duration, this,
-      &expected_task_queueing_duration_);
+  expected_task_queueing_duration_.SetAndNotify(this, duration);
 }
 
 void ProcessNodeImpl::SetLaunchTime(base::Time launch_time) {
@@ -47,9 +45,8 @@ void ProcessNodeImpl::SetLaunchTime(base::Time launch_time) {
 
 void ProcessNodeImpl::SetMainThreadTaskLoadIsLow(
     bool main_thread_task_load_is_low) {
-  SetPropertyAndNotifyObserversIfChanged(
-      &GraphObserver::OnMainThreadTaskLoadIsLow, main_thread_task_load_is_low,
-      this, &main_thread_task_load_is_low_);
+  main_thread_task_load_is_low_.SetAndMaybeNotify(this,
+                                                  main_thread_task_load_is_low);
 }
 
 void ProcessNodeImpl::SetPID(base::ProcessId pid) {

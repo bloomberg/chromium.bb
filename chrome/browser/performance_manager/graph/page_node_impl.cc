@@ -92,23 +92,21 @@ void PageNodeImpl::RemoveFrame(FrameNodeImpl* frame_node) {
 }
 
 void PageNodeImpl::SetIsLoading(bool is_loading) {
-  SetPropertyAndNotifyObserversIfChanged(&GraphObserver::OnIsLoadingChanged,
-                                         is_loading, this, &is_loading_);
+  is_loading_.SetAndMaybeNotify(this, is_loading);
 }
 
 void PageNodeImpl::SetIsVisible(bool is_visible) {
-  SetPropertyAndNotifyObserversIfChanged(&GraphObserver::OnIsVisibleChanged,
-                                         is_visible, this, &is_visible_);
-  // The change time needs to be updated after observers are notified, as they
-  // use this to determine time passed since the *previous* visibility state
-  // change. They can infer the current state change time themselves via
-  // NowTicks.
-  visibility_change_time_ = ResourceCoordinatorClock::NowTicks();
+  if (is_visible_.SetAndMaybeNotify(this, is_visible)) {
+    // The change time needs to be updated after observers are notified, as they
+    // use this to determine time passed since the *previous* visibility state
+    // change. They can infer the current state change time themselves via
+    // NowTicks.
+    visibility_change_time_ = ResourceCoordinatorClock::NowTicks();
+  }
 }
 
 void PageNodeImpl::SetUkmSourceId(ukm::SourceId ukm_source_id) {
-  SetPropertyAndNotifyObserversIfChanged(&GraphObserver::OnUkmSourceIdChanged,
-                                         ukm_source_id, this, &ukm_source_id_);
+  ukm_source_id_.SetAndMaybeNotify(this, ukm_source_id);
 }
 
 void PageNodeImpl::OnFaviconUpdated() {
@@ -282,9 +280,7 @@ bool PageNodeImpl::HasFrame(FrameNodeImpl* frame_node) {
 }
 
 void PageNodeImpl::SetPageAlmostIdle(bool page_almost_idle) {
-  SetPropertyAndNotifyObserversIfChanged(
-      &GraphObserver::OnPageAlmostIdleChanged, page_almost_idle, this,
-      &page_almost_idle_);
+  page_almost_idle_.SetAndMaybeNotify(this, page_almost_idle);
 }
 
 void PageNodeImpl::OnEventReceived(resource_coordinator::mojom::Event event) {
@@ -304,7 +300,7 @@ void PageNodeImpl::OnNumFrozenFramesStateChange(int num_frozen_frames_delta) {
   // We are interested in knowing when we have transitioned to or from
   // "fully frozen". A page with no frames is considered to be running by
   // default.
-  bool was_fully_frozen = lifecycle_state_ == kFrozen;
+  bool was_fully_frozen = lifecycle_state_.value() == kFrozen;
   bool is_fully_frozen =
       (frame_node_count_ != 0) && num_frozen_frames_ == frame_node_count_;
   if (was_fully_frozen == is_fully_frozen)
@@ -329,9 +325,7 @@ void PageNodeImpl::OnNumFrozenFramesStateChange(int num_frozen_frames_delta) {
   // PageCoordinationUnit rather than as a non-typed property.
   resource_coordinator::mojom::LifecycleState lifecycle_state =
       is_fully_frozen ? kFrozen : kRunning;
-  SetPropertyAndNotifyObserversIfChanged(
-      &GraphObserver::OnLifecycleStateChanged, lifecycle_state, this,
-      &lifecycle_state_);
+  lifecycle_state_.SetAndMaybeNotify(this, lifecycle_state);
 }
 
 void PageNodeImpl::InvalidateAllInterventionPolicies() {

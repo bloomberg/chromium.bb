@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/performance_manager/graph/graph.h"
+#include "chrome/browser/performance_manager/graph/properties.h"
 #include "chrome/browser/performance_manager/observers/coordination_unit_graph_observer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -61,40 +62,6 @@ class NodeBase {
   // Returns true if |other_node| is in the same graph.
   bool NodeInGraph(const NodeBase* other_node) const;
 
-  // Helper function for setting a property, and notifying observers if the
-  // value has changed. This is intended for properties that reflect a state,
-  // where repeated identical values don't represent a state change.
-  template <typename NodeType,
-            typename PropertyType,
-            typename NotifyFunctionPtr>
-  void SetPropertyAndNotifyObserversIfChanged(
-      NotifyFunctionPtr notify_function_ptr,
-      const PropertyType& value,
-      NodeType* node,
-      PropertyType* property) {
-    if (*property == value)
-      return;
-    *property = value;
-    for (auto& observer : observers_)
-      ((observer).*(notify_function_ptr))(node);
-  }
-
-  // Helper for setting a property and notifying observers, even if the
-  // property hasn't changed. This is intended for properties that reflect a
-  // measure that is sampled at a point in time, but which can have repeated
-  // values.
-  template <typename NodeType,
-            typename PropertyType,
-            typename NotifyFunctionPtr>
-  void SetPropertyAndNotifyObservers(NotifyFunctionPtr notify_function_ptr,
-                                     const PropertyType& value,
-                                     NodeType* node,
-                                     PropertyType* property) {
-    *property = value;
-    for (auto& observer : observers_)
-      ((observer).*(notify_function_ptr))(node);
-  }
-
   virtual void OnEventReceived(resource_coordinator::mojom::Event event);
 
   void SendEvent(resource_coordinator::mojom::Event event);
@@ -113,6 +80,8 @@ class NodeBase {
 template <class NodeClass>
 class TypedNodeBase : public NodeBase {
  public:
+  using ObservedProperty = ObservedPropertyImpl<NodeClass, GraphObserver>;
+
   explicit TypedNodeBase(Graph* graph) : NodeBase(NodeClass::Type(), graph) {}
 
   static const NodeClass* FromNodeBase(const NodeBase* cu) {
