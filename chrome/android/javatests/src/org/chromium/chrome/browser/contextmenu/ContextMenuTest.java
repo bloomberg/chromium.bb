@@ -24,6 +24,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -284,6 +285,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @LargeTest
     @Feature({"Browser"})
     @RetryOnFailure
+    @DisabledTest(message = "https://crbug.com/947695")
     public void testSaveVideo()
             throws InterruptedException, TimeoutException, SecurityException, IOException {
         // Click the video to enable playback
@@ -419,6 +421,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @SmallTest
     @Feature({"Browser", "ContextMenu"})
     @RetryOnFailure
+    @DisabledTest(message = "https://crbug.com/947695")
     public void testContextMenuRetrievesVideoOptions()
             throws TimeoutException, InterruptedException {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
