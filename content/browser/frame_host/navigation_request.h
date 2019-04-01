@@ -77,7 +77,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   //                the duplicates. Remove the PROCESSING_* states once the
   //                NavigationThrottleRunner is owned by the NavigationRequest.
   enum NavigationHandleState {
-    INITIAL = 0,
+    NOT_CREATED = 0,
+    INITIAL,
     PROCESSING_WILL_START_REQUEST,
     WILL_START_REQUEST,
     PROCESSING_WILL_REDIRECT_REQUEST,
@@ -217,7 +218,18 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // The RenderFrameHost that will commit the navigation or an error page.
   // This is computed when the response is received, or when the navigation
   // fails and error page should be displayed.
-  RenderFrameHostImpl* render_frame_host() const { return render_frame_host_; }
+  RenderFrameHostImpl* render_frame_host() const {
+    // Only allow the RenderFrameHost to be retrieved once it has been set for
+    // this navigation. This will happens either at WillProcessResponse time for
+    // regular navigations or at WillFailRequest time for error pages.
+    CHECK_GE(handle_state_, PROCESSING_WILL_FAIL_REQUEST)
+        << "This accessor should only be called after a RenderFrameHost has "
+           "been picked for this navigation.";
+    static_assert(
+        WILL_FAIL_REQUEST < WILL_PROCESS_RESPONSE,
+        "WillFailRequest state should come before WillProcessResponse");
+    return render_frame_host_;
+  }
 
   const network::ResourceResponse* response() { return response_.get(); }
   const GlobalRequestID& request_id() const { return request_id_; }
@@ -293,6 +305,14 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   bool IsSameDocument() const;
 
   int navigation_entry_offset() { return navigation_entry_offset_; }
+
+  // TODO(zetamoo): Remove once |handle_state_| is modified exclusively from
+  //                NavigationRequest.
+  void set_handle_state(const NavigationHandleState state) {
+    handle_state_ = state;
+  }
+
+  NavigationHandleState handle_state() { return handle_state_; }
 
  private:
   NavigationRequest(FrameTreeNode* frame_tree_node,
@@ -573,6 +593,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // The offset of the new document in the history.
   // See NavigationHandle::GetNavigationEntryOffset() for details.
   int navigation_entry_offset_ = 0;
+
+  // TODO(zetamoo): Merge |handle_state_| with |state_|.
+  NavigationHandleState handle_state_ = NOT_CREATED;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_;
 

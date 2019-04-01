@@ -820,6 +820,7 @@ void NavigationRequest::CreateNavigationHandle(bool is_for_commit) {
   net::HttpRequestHeaders headers;
   headers.AddHeadersFromString(begin_params_->headers);
 
+  handle_state_ = NavigationRequest::INITIAL;
   std::unique_ptr<NavigationHandleImpl> navigation_handle =
       base::WrapUnique(new NavigationHandleImpl(
           this, redirect_chain, nav_entry_id_, std::move(navigation_ui_data_),
