@@ -294,12 +294,13 @@ class ASH_EXPORT ShelfView : public views::View,
   // or the overflow shelf.
   ShelfView* main_shelf() { return main_shelf_ ? main_shelf_ : this; }
   // Returns the overflow shelf. This can be called on either the main shelf
-  // or the overflow shelf. Returns nullptr if there is no overflow shelf.
+  // or the overflow shelf. Returns nullptr if the overflow shelf isn't visible.
   ShelfView* overflow_shelf() {
     if (is_overflow_mode())
       return this;
-    return overflow_bubble_ ? overflow_bubble_->bubble_view()->shelf_view()
-                            : nullptr;
+    return IsShowingOverflowBubble()
+               ? overflow_bubble_->bubble_view()->shelf_view()
+               : nullptr;
   }
 
   const ShelfAppButton* drag_view() const { return drag_view_; }
