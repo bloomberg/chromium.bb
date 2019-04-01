@@ -59,6 +59,10 @@ const base::Feature kDelayRequestsOnMultiplexedConnections{
 const base::Feature kEnforceRequestInitiatorLockForCorb{
     "EnforceRequestInitiatorLockForCorb", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Implementation of https://mikewest.github.io/sec-metadata/
+const base::Feature kSecMetadata{"SecMetadata",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool ShouldEnableOutOfBlinkCors() {
   // OOR-CORS requires NetworkService.
   if (!base::FeatureList::IsEnabled(features::kNetworkService))

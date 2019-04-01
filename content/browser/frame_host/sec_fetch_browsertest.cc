@@ -9,13 +9,13 @@
 #include "build/build_config.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -37,7 +37,7 @@ class SecFetchBrowserTest : public ContentBrowserTest {
     https_test_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
     ASSERT_TRUE(https_test_server_.Start());
 
-    feature_list_.InitAndEnableFeature(features::kSecMetadata);
+    feature_list_.InitAndEnableFeature(network::features::kSecMetadata);
   }
 
   WebContents* web_contents() { return shell()->web_contents(); }
