@@ -721,6 +721,14 @@ void StatusBubbleViews::SetBounds(int x, int y, int w, int h) {
     AvoidMouse(last_mouse_moved_location_);
 }
 
+int StatusBubbleViews::GetWidthForURL(const base::string16& url_string) {
+  // Get the width of the elided url
+  int elided_url_width = gfx::GetStringWidth(url_string, GetFont());
+  // Add proper paddings
+  return elided_url_width + (kShadowThickness * 2) + kTextPositionX +
+         kTextHorizPadding + 1;
+}
+
 void StatusBubbleViews::SetStatus(const base::string16& status_text) {
   if (size_.IsEmpty())
     return;  // We have no bounds, don't attempt to show the popup.
@@ -737,8 +745,10 @@ void StatusBubbleViews::SetStatus(const base::string16& status_text) {
 
   InitPopup();
   view_->SetText(!status_text_.empty() ? status_text_ : url_text_, true);
-  if (!status_text_.empty())
+  if (!status_text_.empty()) {
+    SetBubbleWidth(GetStandardStatusBubbleWidth());
     view_->ShowInstantly();
+  }
 }
 
 void StatusBubbleViews::SetURL(const GURL& url) {
@@ -760,12 +770,6 @@ void StatusBubbleViews::SetURL(const GURL& url) {
     return;
   }
 
-  // Reset expansion state only when bubble is completely hidden.
-  if (view_->state() == StatusView::BUBBLE_HIDDEN) {
-    is_expanded_ = false;
-    SetBubbleWidth(GetStandardStatusBubbleWidth());
-  }
-
   // Set Elided Text corresponding to the GURL object.
   int text_width = static_cast<int>(size_.width() - (kShadowThickness * 2) -
                                     kTextPositionX - kTextHorizPadding - 1);
@@ -776,8 +780,28 @@ void StatusBubbleViews::SetURL(const GURL& url) {
   // correctly.
   url_text_ = base::i18n::GetDisplayStringInLTRDirectionality(url_text_);
 
+  // Get the width of the URL if the bubble width is the maximum size.
+  base::string16 full_size_elided_url =
+      url_formatter::ElideUrl(url, GetFont(), GetMaxStatusBubbleWidth());
+  int url_width = GetWidthForURL(full_size_elided_url);
+
+  // Get the width for the url if it is unexpanded.
+  int unexpanded_width = std::min(url_width, GetStandardStatusBubbleWidth());
+
+  // Reset expansion state only when bubble is completely hidden.
+  if (view_->state() == StatusView::BUBBLE_HIDDEN) {
+    is_expanded_ = false;
+    url_text_ = url_formatter::ElideUrl(url, GetFont(), unexpanded_width);
+    SetBubbleWidth(unexpanded_width);
+  }
+
   if (IsFrameVisible()) {
-    view_->SetText(url_text_, true);
+    // If bubble is not expanded & not empty, make it fit properly in the
+    // unexpanded bubble
+    if (!is_expanded_ & !url.is_empty()) {
+      url_text_ = url_formatter::ElideUrl(url, GetFont(), unexpanded_width);
+      SetBubbleWidth(unexpanded_width);
+    }
 
     CancelExpandTimer();
 
@@ -793,6 +817,7 @@ void StatusBubbleViews::SetURL(const GURL& url) {
                          expand_timer_factory_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(kExpandHoverDelayMS));
     }
+    view_->SetText(url_text_, true);
   }
 }
 
@@ -937,15 +962,10 @@ bool StatusBubbleViews::IsFrameMaximized() {
 void StatusBubbleViews::ExpandBubble() {
   // Elide URL to maximum possible size, then check actual length (it may
   // still be too long to fit) before expanding bubble.
-  int max_status_bubble_width = GetMaxStatusBubbleWidth();
-  const gfx::FontList font_list;
-  url_text_ = url_formatter::ElideUrl(url_, font_list, max_status_bubble_width);
+  url_text_ =
+      url_formatter::ElideUrl(url_, GetFont(), GetMaxStatusBubbleWidth());
   int expanded_bubble_width =
-      std::max(GetStandardStatusBubbleWidth(),
-               std::min(gfx::GetStringWidth(url_text_, font_list) +
-                            (kShadowThickness * 2) + kTextPositionX +
-                            kTextHorizPadding + 1,
-                        max_status_bubble_width));
+      std::min(GetWidthForURL(url_text_), GetMaxStatusBubbleWidth());
   is_expanded_ = true;
   expand_view_->StartExpansion(url_text_, size_.width(), expanded_bubble_width);
 }
