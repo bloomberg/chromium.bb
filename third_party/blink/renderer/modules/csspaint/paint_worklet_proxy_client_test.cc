@@ -17,14 +17,16 @@ using PaintWorkletProxyClientTest = RenderingTest;
 
 TEST_F(PaintWorkletProxyClientTest, PaintWorkletProxyClientConstruction) {
   PaintWorkletProxyClient* proxy_client =
-      MakeGarbageCollected<PaintWorkletProxyClient>(nullptr);
+      MakeGarbageCollected<PaintWorkletProxyClient>(1, nullptr);
+  EXPECT_EQ(proxy_client->worklet_id_, 1);
   EXPECT_EQ(proxy_client->compositor_paintee_, nullptr);
 
   scoped_refptr<PaintWorkletPaintDispatcher> dispatcher =
       base::MakeRefCounted<PaintWorkletPaintDispatcher>();
 
   proxy_client =
-      MakeGarbageCollected<PaintWorkletProxyClient>(std::move(dispatcher));
+      MakeGarbageCollected<PaintWorkletProxyClient>(1, std::move(dispatcher));
+  EXPECT_EQ(proxy_client->worklet_id_, 1);
   EXPECT_NE(proxy_client->compositor_paintee_, nullptr);
 }
 

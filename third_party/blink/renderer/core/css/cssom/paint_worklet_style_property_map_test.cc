@@ -188,7 +188,7 @@ TEST_F(PaintWorkletStylePropertyMapTest, PassValuesCrossThread) {
           custom_properties);
   scoped_refptr<PaintWorkletInput> input =
       base::MakeRefCounted<PaintWorkletInput>("test", FloatSize(100, 100), 1.0f,
-                                              std::move(data));
+                                              1, std::move(data));
   DCHECK(input);
 
   thread_ = std::make_unique<WebThreadSupportingGC>(

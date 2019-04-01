@@ -48,6 +48,7 @@ class MODULES_EXPORT PaintWorklet : public Worklet,
   DocumentDefinitionMap& GetDocumentDefinitionMap() {
     return document_definition_map_;
   }
+  int WorkletId() const { return worklet_id_; }
   void Trace(blink::Visitor*) override;
 
  protected:
@@ -80,6 +81,12 @@ class MODULES_EXPORT PaintWorklet : public Worklet,
   // The number of paint calls remaining before Paint will select a new global
   // scope. SelectGlobalScope resets this at the beginning of each frame.
   int paints_before_switching_global_scope_;
+
+  // An atomic sequence number to ensure that it is unique for each paint
+  // worklet. This id is integrated in the PaintWorkletInput which will be used
+  // in PaintWorkletPaintDispatcher::Paint, to identify the right painter, to
+  // paint the image.
+  int worklet_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintWorklet);
 };

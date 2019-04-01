@@ -19,19 +19,22 @@ const char PaintWorkletProxyClient::kSupplementName[] =
     "PaintWorkletProxyClient";
 
 // static
-PaintWorkletProxyClient* PaintWorkletProxyClient::Create(Document* document) {
+PaintWorkletProxyClient* PaintWorkletProxyClient::Create(Document* document,
+                                                         int worklet_id) {
   WebLocalFrameImpl* local_frame =
       WebLocalFrameImpl::FromFrame(document->GetFrame());
 
   scoped_refptr<PaintWorkletPaintDispatcher> compositor_painter_dispatcher =
       local_frame->LocalRootFrameWidget()->EnsureCompositorPaintDispatcher();
   return MakeGarbageCollected<PaintWorkletProxyClient>(
-      std::move(compositor_painter_dispatcher));
+      worklet_id, std::move(compositor_painter_dispatcher));
 }
 
 PaintWorkletProxyClient::PaintWorkletProxyClient(
+    int worklet_id,
     scoped_refptr<PaintWorkletPaintDispatcher> compositor_paintee)
     : compositor_paintee_(std::move(compositor_paintee)),
+      worklet_id_(worklet_id),
       state_(RunState::kUninitialized) {
   DCHECK(IsMainThread());
 }

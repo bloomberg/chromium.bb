@@ -12,10 +12,12 @@ PaintWorkletInput::PaintWorkletInput(
     const String& name,
     const FloatSize& container_size,
     float effective_zoom,
+    int worklet_id,
     PaintWorkletStylePropertyMap::CrossThreadData data)
     : name_(name.IsolatedCopy()),
       container_size_(container_size),
       effective_zoom_(effective_zoom),
+      worklet_id_(worklet_id),
       style_map_data_(std::move(data)) {}
 
 }  // namespace blink

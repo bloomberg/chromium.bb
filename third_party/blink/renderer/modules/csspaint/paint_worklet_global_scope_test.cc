@@ -25,7 +25,7 @@ namespace {
 class MockPaintWorkletProxyClient : public PaintWorkletProxyClient {
  public:
   MockPaintWorkletProxyClient()
-      : PaintWorkletProxyClient(nullptr), did_set_global_scope_(false) {}
+      : PaintWorkletProxyClient(1, nullptr), did_set_global_scope_(false) {}
   void SetGlobalScope(WorkletGlobalScope*) override {
     did_set_global_scope_ = true;
   }

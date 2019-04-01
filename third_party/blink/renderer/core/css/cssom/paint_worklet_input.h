@@ -39,6 +39,7 @@ class CORE_EXPORT PaintWorkletInput : public cc::PaintWorkletInput {
   PaintWorkletInput(const String& name,
                     const FloatSize& container_size,
                     float effective_zoom,
+                    int worklet_id,
                     PaintWorkletStylePropertyMap::CrossThreadData values);
 
   ~PaintWorkletInput() override = default;
@@ -51,6 +52,7 @@ class CORE_EXPORT PaintWorkletInput : public cc::PaintWorkletInput {
   // These accessors are safe on any thread.
   const FloatSize& ContainerSize() const { return container_size_; }
   float EffectiveZoom() const { return effective_zoom_; }
+  int WorkletId() const { return worklet_id_; }
 
   // These should only be accessed on the PaintWorklet thread.
   String NameCopy() const { return name_.IsolatedCopy(); }
@@ -62,6 +64,7 @@ class CORE_EXPORT PaintWorkletInput : public cc::PaintWorkletInput {
   const String name_;
   const FloatSize container_size_;
   const float effective_zoom_;
+  const int worklet_id_;
   PaintWorkletStylePropertyMap::CrossThreadData style_map_data_;
 };
 

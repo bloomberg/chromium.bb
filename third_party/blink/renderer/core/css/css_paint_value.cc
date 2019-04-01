@@ -55,6 +55,11 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
   if (style.InsideLink() != EInsideLink::kNotInsideLink)
     return nullptr;
 
+  if (!generator_) {
+    generator_ = CSSPaintImageGenerator::Create(
+        GetName(), document, paint_image_generator_observer_);
+  }
+
   // For Off-Thread PaintWorklet, we just collect the necessary inputs together
   // and defer the actual JavaScript call until much later (during cc Raster).
   if (RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
@@ -72,13 +77,9 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
             custom_properties);
     scoped_refptr<PaintWorkletInput> input =
         base::MakeRefCounted<PaintWorkletInput>(GetName(), target_size, zoom,
+                                                generator_->WorkletId(),
                                                 std::move(style_data));
     return PaintWorkletDeferredImage::Create(std::move(input), target_size);
-  }
-
-  if (!generator_) {
-    generator_ = CSSPaintImageGenerator::Create(
-        GetName(), document, paint_image_generator_observer_);
   }
 
   if (!ParseInputArguments(document))
