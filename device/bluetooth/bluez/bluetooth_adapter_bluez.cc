@@ -51,6 +51,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/constants/devicetype.h"
+#include "device/bluetooth/chromeos/bluetooth_utils.h"
 #endif
 
 using device::BluetoothAdapter;
@@ -1136,6 +1137,17 @@ void BluetoothAdapterBlueZ::DiscoveringChanged(bool discovering) {
 }
 
 void BluetoothAdapterBlueZ::PresentChanged(bool present) {
+#if defined(OS_CHROMEOS)
+  if (present) {
+    bluez::BluezDBusManager::Get()
+        ->GetBluetoothAdapterClient()
+        ->SetLongTermKeys(
+            object_path_, device::GetBlockedLongTermKeys(),
+            base::Bind(&BluetoothAdapterBlueZ::SetLongTermKeysError,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+#endif
+
   for (auto& observer : observers_)
     observer.AdapterPresentChanged(this, present);
 }
@@ -1872,6 +1884,13 @@ void BluetoothAdapterBlueZ::ServiceRecordErrorConnector(
   }
 
   error_callback.Run(code);
+}
+
+void BluetoothAdapterBlueZ::SetLongTermKeysError(
+    const std::string& error_name,
+    const std::string& error_message) {
+  BLUETOOTH_LOG(ERROR) << "Setting long term keys failed: error: " << error_name
+                       << " - " << error_message;
 }
 
 }  // namespace bluez
