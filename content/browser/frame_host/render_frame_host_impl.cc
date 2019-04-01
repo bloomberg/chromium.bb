@@ -5092,19 +5092,23 @@ bool RenderFrameHostImpl::CanCommitURL(const GURL& url) {
   // out-of-process iframes implementation is ready, we should check for
   // cross-site URLs that are not allowed to commit in this process.
 
-  // MHTML subframes can supply URL at commit time that do not match the process
-  // lock. For example, it can be either "cid:..." or arbitrary URL at which
-  // the frame was at the time of generating the MHTML
-  // (e.g. "http://localhost"). In such cases, don't verify the URL, however
-  // enforce that the commit is allowed only in the process of the main frame.
+  // MHTML subframes can supply URLs at commit time that do not match the
+  // process lock. For example, it can be either "cid:..." or arbitrary URL at
+  // which the frame was at the time of generating the MHTML
+  // (e.g. "http://localhost"). In such cases, don't verify the URL, but allow
+  // the URL to commit in the process of the main frame.
+  // TODO(creis): We should also ensure that such MHTML subframes do not commit
+  // in OOPIFs in a process based on the subframe URL, since MHTML should not
+  // allow such cases to occur. However, we are currently seeing cases where
+  // that is happening. Investigate in https://crbug.com/948246.
   if (!frame_tree_node()->IsMainFrame()) {
     bool is_in_mhtml = frame_tree_node_->frame_tree()
                            ->root()
                            ->current_frame_host()
                            ->is_mhtml_document();
-    if (is_in_mhtml) {
-      return IsSameSiteInstance(
-          frame_tree_node()->parent()->current_frame_host());
+    if (is_in_mhtml &&
+        IsSameSiteInstance(frame_tree_node()->parent()->current_frame_host())) {
+      return true;
     }
   }
 
