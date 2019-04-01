@@ -68,14 +68,23 @@ class Adapter : public AlsReader::Observer,
   };
 
   // The values in Params can be overridden by experiment flags.
+  // TODO(jiameng): move them to cros config json file once experiments are
+  // complete.
   struct Params {
     Params();
 
-    // The log of average ambient value has to go up (resp. down) by
-    // |brightening_log_lux_threshold| (resp. |darkening_log_lux_threshold|)
-    // from the current value before brightness could be changed.
-    double brightening_log_lux_threshold = 1.0;
-    double darkening_log_lux_threshold = 1.0;
+    // Brightness is only changed if
+    // 1. the log of average ambient value has gone up (resp. down) by
+    //    |brightening_log_lux_threshold| (resp. |darkening_log_lux_threshold|)
+    //    from the reference value. The reference value is the average ALS when
+    //    brightness was changed last time (by user or model).
+    //   and
+    // 2. the std-dev of ALS within the averaging period is less than
+    //    |stabilization_threshold| multiplied by the brightening/darkening
+    //    thresholds to show the ALS has stabilized.
+    double brightening_log_lux_threshold = 0.6;
+    double darkening_log_lux_threshold = 0.6;
+    double stabilization_threshold = 0.15;
 
     ModelCurve model_curve = ModelCurve::kLatest;
 
@@ -83,7 +92,7 @@ class Adapter : public AlsReader::Observer,
     // |auto_brightness_als_horizon|. This is only used for brightness update,
     // which can be different from the horizon used in model training.
     base::TimeDelta auto_brightness_als_horizon =
-        base::TimeDelta::FromSeconds(5);
+        base::TimeDelta::FromSeconds(4);
 
     UserAdjustmentEffect user_adjustment_effect =
         UserAdjustmentEffect::kDisableAuto;
@@ -144,8 +153,6 @@ class Adapter : public AlsReader::Observer,
   // chromeos::PowerManagerClient::Observer overrides:
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
-  void SetTickClockForTesting(const base::TickClock* test_tick_clock);
-
   Status GetStatusForTesting() const;
 
   // Only returns true if Adapter status is success and it's not disabled by
@@ -160,10 +167,32 @@ class Adapter : public AlsReader::Observer,
   double GetBrighteningThresholdForTesting() const;
   double GetDarkeningThresholdForTesting() const;
 
+  // Returns |log_average_ambient_lux_|.
+  base::Optional<double> GetCurrentLogAvgAlsForTesting() const;
+
+  static std::unique_ptr<Adapter> CreateForTesting(
+      Profile* profile,
+      AlsReader* als_reader,
+      BrightnessMonitor* brightness_monitor,
+      Modeller* modeller,
+      ModelConfigLoader* model_config_loader,
+      MetricsReporter* metrics_reporter,
+      chromeos::PowerManagerClient* power_manager_client,
+      const base::TickClock* tick_clock);
+
  private:
+  Adapter(Profile* profile,
+          AlsReader* als_reader,
+          BrightnessMonitor* brightness_monitor,
+          Modeller* modeller,
+          ModelConfigLoader* model_config_loader,
+          MetricsReporter* metrics_reporter,
+          chromeos::PowerManagerClient* power_manager_client,
+          const base::TickClock* tick_clock);
+
   // Called by |OnModelConfigLoaded|. It will initialize all params used by
-  // the modeller from |model_config| and also other experiment flags. If any
-  // param is invalid, it will disable the adapter.
+  // the modeller from |model_config| and also other experiment flags. If
+  // any param is invalid, it will disable the adapter.
   void InitParams(const ModelConfig& model_config);
 
   // Called when powerd becomes available.
@@ -177,21 +206,21 @@ class Adapter : public AlsReader::Observer,
   // Returns a BrightnessChangeCause if the adapter can change the brightness.
   // This is generally the case when the brightness hasn't been manually
   // set, we've received enough initial ambient light readings, and
-  // the ambient light has changed beyond thresholds.
+  // the ambient light has changed beyond thresholds and has stabilized.
   // Returns nullopt if it shouldn't change the brightness.
   base::Optional<BrightnessChangeCause> CanAdjustBrightness(
-      double current_average_ambient) const;
+      double current_log_average_ambient,
+      double stddev) const;
 
   // Called when ambient light changes. It only changes screen brightness if
   // |CanAdjustBrightness| returns true and a required curve is set up:
   // if the required curve is personal but no personal curve is available, then
   // brightness won't be changed.
-  // It will call |UpdateBrightnessChangeThresholds| if brightness is actually
-  // changed.
+  // It will call |OnBrightnessChanged| if brightness is actually changed.
+  // |now| should be the timestamp when ALS reading comes in, i.e. when
+  // |OnAmbientLightUpdated| is called. |OnAmbientLightUpdated| is the event
+  // that triggers the call of |MaybeAdjustBrightness|.
   void MaybeAdjustBrightness(base::TimeTicks now);
-
-  // This is only called when brightness is changed.
-  void UpdateBrightnessChangeThresholds();
 
   // Calculates brightness from given |ambient_log_lux| based on either
   // |global_curve_| or |personal_curve_| (as specified by the experiment
@@ -199,6 +228,17 @@ class Adapter : public AlsReader::Observer,
   // available.
   base::Optional<double> GetBrightnessBasedOnAmbientLogLux(
       double ambient_log_lux) const;
+
+  // Called when brightness is changed by the model or user. This function
+  // updates |latest_brightness_change_time_|, |current_brightness_|. If
+  // |new_log_als| is not nullopt, it will also update
+  // |log_average_ambient_lux_| and thresholds. |new_log_als| should be
+  // available when this function is called, but may be nullopt when a user
+  // changes brightness before any ALS reading comes in. We log an error if this
+  // happens.
+  void OnBrightnessChanged(base::TimeTicks now,
+                           double new_brightness_percent,
+                           base::Optional<double> new_log_als);
 
   // Called by |MaybeAdjustBrightness| when brightness should be changed.
   void WriteLogMessages(double new_log_als,
@@ -229,10 +269,15 @@ class Adapter : public AlsReader::Observer,
   // This will be replaced by a mock tick clock during tests.
   const base::TickClock* tick_clock_;
 
+  // TODO(jiameng): refactor internal states and flags.
+
   // This buffer will be used to store the recent ambient light values.
   std::unique_ptr<AmbientLightSampleBuffer> ambient_light_values_;
 
   base::Optional<AlsReader::AlsInitStatus> als_init_status_;
+  // Time when AlsReader is initialized.
+  base::TimeTicks als_init_time_;
+
   base::Optional<bool> brightness_monitor_success_;
 
   // |model_config_exists_| will remain nullopt until |OnModelConfigLoaded| is
@@ -249,32 +294,34 @@ class Adapter : public AlsReader::Observer,
   // This is set to true whenever a user makes a manual adjustment, and if
   // |params_.user_adjustment_effect| is not |kContinueAuto|. It will be
   // reset to false if |params_.user_adjustment_effect| is |kPauseAuto|.
+  // It won't be set/reset if adapter is disabled because it won't be necessary
+  // to check |adapter_disabled_by_user_adjustment_|.
   bool adapter_disabled_by_user_adjustment_ = false;
 
   // The thresholds are calculated from the |log_average_ambient_lux_|.
-  // They are only updated when brightness should occur (because the log of
-  // average ambient value changed sufficiently).
+  // They are only updated when brightness is changed (either by user or model).
   base::Optional<double> brightening_threshold_;
   base::Optional<double> darkening_threshold_;
 
   base::Optional<MonotoneCubicSpline> global_curve_;
   base::Optional<MonotoneCubicSpline> personal_curve_;
 
-  // Average ambient value is only calculated when |CanAdjustBrightness|
-  // returns true. This is the log of average over all values in
-  // |ambient_light_values_|. The adapter will notify powerd to change
-  // brightness. New thresholds will be calculated from it.
+  // |log_average_ambient_lux_| is only recorded when screen brightness is
+  // changed by either model or user. New thresholds will be calculated from it.
   base::Optional<double> log_average_ambient_lux_;
 
-  // Last time brightness change occurred.
+  // Last time brightness change occurred, either by user or model.
   base::TimeTicks latest_brightness_change_time_;
+
+  // Last time brightness was changed by the model.
+  base::TimeTicks latest_model_brightness_change_time_;
 
   // Current recorded brightness. It can be either the user requested brightness
   // or the model requested brightness.
   base::Optional<double> current_brightness_;
 
   // Used to record number of model-triggered brightness changes.
-  int brightness_change_counter_ = 1;
+  int model_brightness_change_counter_ = 1;
 
   base::WeakPtrFactory<Adapter> weak_ptr_factory_;
 
