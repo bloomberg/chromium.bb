@@ -9,8 +9,10 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "media/mojo/buildflags.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "url/gurl.h"
 
@@ -35,6 +37,10 @@ class CONTENT_EXPORT MediaInterfaceFactory
   void CreateVideoDecoder(media::mojom::VideoDecoderRequest request) final;
   void CreateDefaultRenderer(const std::string& audio_device_id,
                              media::mojom::RendererRequest request) final;
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
+  void CreateCastRenderer(const base::UnguessableToken& overlay_plane_id,
+                          media::mojom::RendererRequest request) final;
+#endif
 #if defined(OS_ANDROID)
   void CreateFlingingRenderer(const std::string& presentation_id,
                               media::mojom::RendererRequest request) final;

@@ -15,10 +15,7 @@ if (is_android) {
 
 buildflag_header("browser_buildflags") {
   header = "browser_buildflags.h"
-  flags = [
-    "ENABLE_CAST_AUDIO_MANAGER_MIXER=$enable_cast_audio_manager_mixer",
-    "ENABLE_CAST_RENDERER=$enable_cast_renderer",
-  ]
+  flags = [ "ENABLE_CAST_AUDIO_MANAGER_MIXER=$enable_cast_audio_manager_mixer" ]
 }
 
 cast_source_set("prefs") {
