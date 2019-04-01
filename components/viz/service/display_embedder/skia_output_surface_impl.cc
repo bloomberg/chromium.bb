@@ -290,14 +290,16 @@ SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
 SkiaOutputSurfaceImpl::~SkiaOutputSurfaceImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   recorder_.reset();
-  // Use GPU scheduler to release impl_on_gpu_ on the GPU thread, so all
-  // scheduled tasks for the impl_on_gpu_ will be executed, before releasing
-  // it. The GPU thread is the main thread of the viz process. It outlives the
-  // compositor thread. We don't need worry about it for now.
-  auto callback =
-      base::BindOnce([](std::unique_ptr<SkiaOutputSurfaceImplOnGpu>) {},
-                     std::move(impl_on_gpu_));
+  base::WaitableEvent event;
+  auto callback = base::BindOnce(
+      [](std::unique_ptr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu,
+         base::WaitableEvent* event) {
+        impl_on_gpu = nullptr;
+        event->Signal();
+      },
+      std::move(impl_on_gpu_), &event);
   ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
+  event.Wait();
 }
 
 void SkiaOutputSurfaceImpl::BindToClient(OutputSurfaceClient* client) {
