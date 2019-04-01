@@ -1798,17 +1798,17 @@ std::string Browser::GetDefaultMediaDeviceID(content::WebContents* web_contents,
       ->GetDefaultDeviceIDForProfile(profile, type);
 }
 
-bool Browser::RequestPpapiBrokerPermission(
+void Browser::RequestPpapiBrokerPermission(
     WebContents* web_contents,
     const GURL& url,
     const base::FilePath& plugin_path,
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   // TODO(wad): Add ephemeral device ID support for broker in guest mode.
   if (profile->IsGuestSession()) {
-    callback.Run(false);
-    return true;
+    std::move(callback).Run(false);
+    return;
   }
 
   TabSpecificContentSettings* tab_content_settings =
@@ -1833,8 +1833,8 @@ bool Browser::RequestPpapiBrokerPermission(
     PepperBrokerInfoBarDelegate::Create(
         InfoBarService::FromWebContents(web_contents), url,
         plugin_metadata->name(), content_settings, tab_content_settings,
-        callback);
-    return true;
+        std::move(callback));
+    return;
   }
 
   bool allowed = (setting == CONTENT_SETTING_ALLOW);
@@ -1842,8 +1842,8 @@ bool Browser::RequestPpapiBrokerPermission(
                          ? base::UserMetricsAction("PPAPI.BrokerSettingAllow")
                          : base::UserMetricsAction("PPAPI.BrokerSettingDeny"));
   tab_content_settings->SetPepperBrokerAllowed(allowed);
-  callback.Run(allowed);
-  return true;
+  std::move(callback).Run(allowed);
+  return;
 }
 
 #if BUILDFLAG(ENABLE_PRINTING)

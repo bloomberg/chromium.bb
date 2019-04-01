@@ -760,11 +760,11 @@ class Browser : public TabStripModelObserver,
                                   blink::MediaStreamType type) override;
   std::string GetDefaultMediaDeviceID(content::WebContents* web_contents,
                                       blink::MediaStreamType type) override;
-  bool RequestPpapiBrokerPermission(
+  void RequestPpapiBrokerPermission(
       content::WebContents* web_contents,
       const GURL& url,
       const base::FilePath& plugin_path,
-      const base::Callback<void(bool)>& callback) override;
+      base::OnceCallback<void(bool)> callback) override;
 
 #if BUILDFLAG(ENABLE_PRINTING)
   void PrintCrossProcessSubframe(

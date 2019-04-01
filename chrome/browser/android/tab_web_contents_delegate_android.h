@@ -69,11 +69,11 @@ class TabWebContentsDelegateAndroid
                                   const GURL& security_origin,
                                   blink::MediaStreamType type) override;
   void SetOverlayMode(bool use_overlay_mode) override;
-  bool RequestPpapiBrokerPermission(
+  void RequestPpapiBrokerPermission(
       content::WebContents* web_contents,
       const GURL& url,
       const base::FilePath& plugin_path,
-      const base::Callback<void(bool)>& callback) override;
+      base::OnceCallback<void(bool)> callback) override;
   content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) override;
