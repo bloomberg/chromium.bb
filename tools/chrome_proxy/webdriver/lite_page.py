@@ -30,7 +30,9 @@ class LitePage(IntegrationTest):
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
       test_driver.AddChromeArg('--enable-features=NetworkQualityEstimator'
                                '<NetworkQualityEstimator,'
-                               'Previews,DataReductionProxyDecidesTransform')
+                               'Previews,DataReductionProxyDecidesTransform,'
+                               'NetworkService,'
+                               'DataReductionProxyEnabledWithNetworkService')
       test_driver.AddChromeArg(
           '--force-fieldtrial-params=NetworkQualityEstimator.Enabled:'
           'force_effective_connection_type/2G,'
@@ -43,11 +45,14 @@ class LitePage(IntegrationTest):
       test_driver.LoadURL('http://check.googlezip.net/test.html')
 
       lite_page_responses = 0
+      checked_chrome_proxy_header = False
       for response in test_driver.GetHTTPResponses():
-        # Verify client sends ignore directive on every request for session.
-        self.assertIn('exp=ignore_preview_blacklist',
-          response.request_headers['chrome-proxy'])
-        self.assertEqual('2G', response.request_headers['chrome-proxy-ect'])
+        if response.request_headers:
+          # Verify client sends ignore directive on main frame request.
+          self.assertIn('exp=ignore_preview_blacklist',
+            response.request_headers['chrome-proxy'])
+          self.assertEqual('2G', response.request_headers['chrome-proxy-ect'])
+          checked_chrome_proxy_header = True
         if response.url.endswith('html'):
           self.assertTrue(self.checkLitePageResponse(response))
           lite_page_responses = lite_page_responses + 1
@@ -59,6 +64,7 @@ class LitePage(IntegrationTest):
           # No subresources should accept transforms.
           self.assertNotIn('chrome-proxy-accept-transform',
             response.request_headers)
+      self.assertTrue(checked_chrome_proxy_header)
 
       # Verify that a Lite Page response for the main frame was seen.
       self.assertEqual(1, lite_page_responses)
@@ -286,7 +292,9 @@ class LitePage(IntegrationTest):
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
       test_driver.AddChromeArg('--enable-features=NetworkQualityEstimator'
                                '<NetworkQualityEstimator,'
-                               'Previews,DataReductionProxyDecidesTransform')
+                               'Previews,DataReductionProxyDecidesTransform,'
+                               'NetworkService,'
+                               'DataReductionProxyEnabledWithNetworkService')
       test_driver.AddChromeArg('--force-fieldtrial-params='
                                'NetworkQualityEstimator.Enabled:'
                                'force_effective_connection_type/Slow2G')
@@ -405,7 +413,9 @@ class LitePage(IntegrationTest):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
       test_driver.AddChromeArg('--enable-features=NetworkQualityEstimator'
-                               '<NetworkQualityEstimator')
+                               '<NetworkQualityEstimator,'
+                               'NetworkService,'
+                               'DataReductionProxyEnabledWithNetworkService')
       test_driver.AddChromeArg('--force-fieldtrial-params='
                                'NetworkQualityEstimator.Enabled:'
                                'force_effective_connection_type/2G')
@@ -417,6 +427,8 @@ class LitePage(IntegrationTest):
       test_driver.LoadURL('http://check.googlezip.net/test.html')
 
       for response in test_driver.GetHTTPResponses():
+        if not response.request_headers:
+          continue
         self.assertEqual('2G', response.request_headers['chrome-proxy-ect'])
         if response.url.endswith('html'):
           if ParseFlags().android:
