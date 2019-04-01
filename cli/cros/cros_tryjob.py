@@ -304,7 +304,8 @@ def PushLocalPatches(local_patches, user_email, dryrun=False):
   return extra_args
 
 
-def RunRemote(site_config, options, patch_pool, staging=False):
+def RunRemote(site_config, options, patch_pool, staging=False,
+              production=False):
   """Schedule remote tryjobs."""
   logging.info('Scheduling remote tryjob(s): %s',
                ', '.join(options.build_configs))
@@ -312,6 +313,9 @@ def RunRemote(site_config, options, patch_pool, staging=False):
   luci_builder = None
   if staging:
     luci_builder = config_lib.LUCI_BUILDER_STAGING
+  # Production tryjobs actually execute in the Release group
+  elif production:
+    luci_builder = config_lib.LUCI_BUILDER_RELEASE
 
   user_email = FindUserEmail(options)
 
@@ -673,6 +677,8 @@ List Examples:
       return RunRemote(site_config, self.options, patch_pool)
     elif self.options.where == STAGING:
       return RunRemote(site_config, self.options, patch_pool, staging=True)
+    elif self.options.production:
+      return RunRemote(site_config, self.options, patch_pool, production=True)
     elif self.options.where == LOCAL:
       return RunLocal(self.options)
     elif self.options.where == CBUILDBOT:
