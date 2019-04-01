@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/download/content/factory/download_service_factory.h"
+#include "components/download/content/factory/download_service_factory_helper.h"
 
 #include "base/files/file_path.h"
 #include "build/build_config.h"

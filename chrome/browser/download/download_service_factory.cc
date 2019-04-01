@@ -21,7 +21,7 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
-#include "components/download/content/factory/download_service_factory.h"
+#include "components/download/content/factory/download_service_factory_helper.h"
 #include "components/download/public/background_service/clients.h"
 #include "components/download/public/background_service/download_service.h"
 #include "components/download/public/background_service/features.h"
