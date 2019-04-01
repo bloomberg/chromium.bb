@@ -68,9 +68,7 @@ class BASE_EXPORT ThreadDelegate {
       RegisterContext* thread_context) = 0;
 
   // Walks the native frames on the stack pointed to by the stack pointer in
-  // |thread_context|, appending the frames to |stack|. When invoked
-  // stack->back() contains the frame corresponding to the state in
-  // |thread_context|.
+  // |thread_context|, appending the frames to |stack|.
   // TODO(wittman): Move the unwinding support into a separate UnwindDelegate.
   virtual UnwindResult WalkNativeFrames(
       RegisterContext* thread_context,
