@@ -2713,6 +2713,17 @@ static const float av1_simple_motion_search_split_thresh_16 =
 static const float av1_simple_motion_search_split_thresh_8 =
     2.555636f;  // p = 0.927951
 
+static const float av1_simple_motion_search_no_split_thresh_128 =
+    -3.38168078f;  // p = 0.032872917
+static const float av1_simple_motion_search_no_split_thresh_64 =
+    -4.08610739f;  // p = 0.14393017
+static const float av1_simple_motion_search_no_split_thresh_32 =
+    -1.7830237f;  // p = 0.15270848
+static const float av1_simple_motion_search_no_split_thresh_16 =
+    -10.0f;  // p = 0
+static const float av1_simple_motion_search_no_split_thresh_8 =
+    -10.0f;  // p = 0
+
 static const float av1_simple_motion_search_split_mean_128[17] = {
   14.119120f, 14.087010f, 12.016185f, 11.966075f, 12.042454f, 11.994805f,
   12.152105f, 12.100394f, 12.178377f, 12.128937f, 4.779944f,  0.714786f,

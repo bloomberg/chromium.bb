@@ -148,32 +148,37 @@ void av1_simple_motion_search_based_split(
 
   const NN_CONFIG *nn_config = NULL;
   const float *ml_mean = NULL, *ml_std = NULL;
-  float split_only_thresh = 1.0f;
+  float split_only_thresh = 10.0f, no_split_thresh = -10.0f;
   if (bsize == BLOCK_128X128) {
     ml_mean = av1_simple_motion_search_split_mean_128;
     ml_std = av1_simple_motion_search_split_std_128;
     nn_config = &av1_simple_motion_search_split_nn_config_128;
     split_only_thresh = av1_simple_motion_search_split_thresh_128;
+    no_split_thresh = av1_simple_motion_search_no_split_thresh_128;
   } else if (bsize == BLOCK_64X64) {
     ml_mean = av1_simple_motion_search_split_mean_64;
     ml_std = av1_simple_motion_search_split_std_64;
     nn_config = &av1_simple_motion_search_split_nn_config_64;
     split_only_thresh = av1_simple_motion_search_split_thresh_64;
+    no_split_thresh = av1_simple_motion_search_no_split_thresh_64;
   } else if (bsize == BLOCK_32X32) {
     ml_mean = av1_simple_motion_search_split_mean_32;
     ml_std = av1_simple_motion_search_split_std_32;
     nn_config = &av1_simple_motion_search_split_nn_config_32;
     split_only_thresh = av1_simple_motion_search_split_thresh_32;
+    no_split_thresh = av1_simple_motion_search_no_split_thresh_32;
   } else if (bsize == BLOCK_16X16) {
     ml_mean = av1_simple_motion_search_split_mean_16;
     ml_std = av1_simple_motion_search_split_std_16;
     nn_config = &av1_simple_motion_search_split_nn_config_16;
     split_only_thresh = av1_simple_motion_search_split_thresh_16;
+    no_split_thresh = av1_simple_motion_search_no_split_thresh_16;
   } else if (bsize == BLOCK_8X8) {
     ml_mean = av1_simple_motion_search_split_mean_8;
     ml_std = av1_simple_motion_search_split_std_8;
     nn_config = &av1_simple_motion_search_split_nn_config_8;
     split_only_thresh = av1_simple_motion_search_split_thresh_8;
+    no_split_thresh = av1_simple_motion_search_no_split_thresh_8;
   } else {
     assert(0 && "Unexpected block size in simple_motion_based_split");
     return;
@@ -197,6 +202,10 @@ void av1_simple_motion_search_based_split(
     *partition_horz_allowed = 0;
     *partition_vert_allowed = 0;
     *do_rectangular_split = 0;
+  }
+
+  if (cpi->sf.simple_motion_search_split_only >= 2 && score < no_split_thresh) {
+    *do_square_split = 0;
   }
 }
 

@@ -126,6 +126,8 @@ static void set_good_speed_feature_framesize_dependent(
       sf->use_square_partition_only_threshold = BLOCK_128X128;
     } else if (is_480p_or_larger) {
       sf->use_square_partition_only_threshold = BLOCK_64X64;
+
+      sf->simple_motion_search_split_only = 2;
     } else {
       sf->use_square_partition_only_threshold = BLOCK_32X32;
     }
@@ -179,6 +181,13 @@ static void set_good_speed_feature_framesize_dependent(
     }
     sf->use_first_partition_pass_interintra_stats =
         sf->two_pass_partition_search;
+
+    // TODO(Venkat): Clean-up frame type dependency for
+    // simple_motion_search_split_only in partition search function and set the
+    // speed feature accordingly
+    // TODO(Venkat): Evaluate this speed feature for speed 1 & 2
+    sf->simple_motion_search_split_only =
+        cm->allow_screen_content_tools ? 1 : 2;
   }
 
   if (speed >= 4) {
@@ -336,12 +345,6 @@ static void set_good_speed_features_framesize_independent(
         frame_is_intra_only(&cpi->common) ? 0 : (boosted ? 1 : 2);
     sf->perform_coeff_opt = is_boosted_arf2_bwd_type ? 2 : 3;
     sf->prune_comp_type_by_model_rd = boosted ? 0 : 1;
-    // TODO(Venkat): Clean-up frame type dependency for
-    // simple_motion_search_split_only in partition search function and set the
-    // speed feature accordingly
-    // TODO(Venkat): Evaluate this speed feature for speed 1 & 2
-    sf->simple_motion_search_split_only =
-        cm->allow_screen_content_tools ? 1 : 2;
     sf->disable_smooth_intra =
         !frame_is_intra_only(&cpi->common) || (cpi->rc.frames_to_key != 1);
   }
