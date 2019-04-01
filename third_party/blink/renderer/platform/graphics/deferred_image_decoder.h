@@ -104,6 +104,7 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
   int repetition_count_;
   bool has_embedded_color_profile_ = false;
   bool all_data_received_;
+  bool first_decoding_generator_created_;
   bool can_yuv_decode_;
   bool has_hot_spot_;
   bool image_is_high_bit_depth_;

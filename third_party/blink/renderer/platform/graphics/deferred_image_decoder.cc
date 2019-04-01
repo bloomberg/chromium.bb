@@ -88,6 +88,7 @@ DeferredImageDecoder::DeferredImageDecoder(
     : metadata_decoder_(std::move(metadata_decoder)),
       repetition_count_(kAnimationNone),
       all_data_received_(false),
+      first_decoding_generator_created_(false),
       can_yuv_decode_(false),
       has_hot_spot_(false),
       image_is_high_bit_depth_(false),
@@ -137,10 +138,13 @@ sk_sp<PaintImageGenerator> DeferredImageDecoder::CreateGenerator(size_t index) {
     frames[i].duration = FrameDurationAtIndex(i);
   }
 
+  const bool is_eligible_for_accelerated_decoding =
+      !first_decoding_generator_created_ && all_data_received_;
   auto generator = DecodingImageGenerator::Create(
       frame_generator_, info, std::move(segment_reader), std::move(frames),
-      complete_frame_content_id_, all_data_received_);
-  generator->SetCanYUVDecode(can_yuv_decode_);
+      complete_frame_content_id_, all_data_received_,
+      is_eligible_for_accelerated_decoding, can_yuv_decode_);
+  first_decoding_generator_created_ = true;
 
   return generator;
 }

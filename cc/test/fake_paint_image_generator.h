@@ -33,6 +33,7 @@ class FakePaintImageGenerator : public PaintImageGenerator {
   FakePaintImageGenerator& operator=(const FakePaintImageGenerator&) = delete;
 
   // PaintImageGenerator implementation.
+  bool IsEligibleForAcceleratedDecoding() const override;
   sk_sp<SkData> GetEncodedData() const override;
   bool GetPixels(const SkImageInfo& info,
                  void* pixels,

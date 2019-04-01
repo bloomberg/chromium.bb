@@ -140,6 +140,18 @@ class CC_PAINT_EXPORT PaintImage {
   bool operator==(const PaintImage& other) const;
   bool operator!=(const PaintImage& other) const { return !(*this == other); }
 
+  // Returns true if the image is eligible for decoding using a hardware
+  // accelerator (which would require at least that all the encoded data has
+  // been received). Returns false otherwise or if the image cannot be decoded
+  // from a PaintImageGenerator. Notice that a return value of true does not
+  // guarantee that the hardware accelerator supports the image. It only
+  // indicates that the software decoder hasn't done any work with the image, so
+  // sending it to a hardware decoder is appropriate.
+  //
+  // TODO(andrescj): consider supporting the non-PaintImageGenerator path which
+  // is expected to be rare.
+  bool IsEligibleForAcceleratedDecoding() const;
+
   // Returns the smallest size that is at least as big as the requested_size
   // such that we can decode to exactly that scale. If the requested size is
   // larger than the image, this returns the image size. Any returned value is
