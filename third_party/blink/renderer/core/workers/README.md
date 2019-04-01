@@ -81,4 +81,5 @@ thus WorkerOrWorkletGlobalScope and the worker thread are not involved.
 
 # References
 
+- [WorkerGlobalScope Initialization](https://docs.google.com/document/d/1JCv8TD2nPLNC2iRCp_D1OM4I3uTS0HoEobuTymaMqgw/edit?usp=sharing) (April 1, 2019)
 - [Worker / Worklet Internals](https://docs.google.com/presentation/d/1GZJ3VnLIO_Pw0jr9nRw6_-trg68ol-AkliMxJ6jo6Bo/edit?usp=sharing) (April 19, 2018)
