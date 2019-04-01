@@ -59,8 +59,8 @@ public class ChromeKeyboardVisibilityDelegate extends SingleWindowKeyboardVisibi
         boolean wasManualFillingViewShowing = false;
         if (activity != null) {
             wasManualFillingViewShowing =
-                    activity.getManualFillingController().isFillingViewShown(view);
-            activity.getManualFillingController().hide();
+                    activity.getManualFillingComponent().isFillingViewShown(view);
+            activity.getManualFillingComponent().hide();
         }
         return super.hideKeyboard(view) || wasManualFillingViewShowing;
     }
@@ -70,6 +70,6 @@ public class ChromeKeyboardVisibilityDelegate extends SingleWindowKeyboardVisibi
         ChromeActivity activity = getActivity();
         return super.isKeyboardShowing(context, view)
                 || (activity != null
-                           && activity.getManualFillingController().isFillingViewShown(view));
+                        && activity.getManualFillingComponent().isFillingViewShown(view));
     }
 }

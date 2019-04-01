@@ -479,7 +479,6 @@ public class ChromeTabbedActivity
      *
      * @param intent The intent to set the component for.
      * @param component The client generated component to be validated.
-     * @param currentActivity The activity triggering the intent.
      */
     public static void setNonAliasedComponent(Intent intent, ComponentName component) {
         assert component != null;
@@ -1928,7 +1927,7 @@ public class ChromeTabbedActivity
             return getBottomSheet() != null && getBottomSheet().handleBackPress();
         }
 
-        if (getManualFillingController().handleBackPress()) return true;
+        if (getManualFillingComponent().handleBackPress()) return true;
 
         final Tab currentTab = getActivityTab();
 

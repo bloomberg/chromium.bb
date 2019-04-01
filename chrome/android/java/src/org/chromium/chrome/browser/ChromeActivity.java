@@ -62,7 +62,8 @@ import org.chromium.chrome.browser.appmenu.AppMenu;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuObserver;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingCoordinator;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingComponent;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingComponentFactory;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
@@ -298,8 +299,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private Runnable mRecordMultiWindowModeScreenWidthRunnable;
 
     private final DiscardableReferencePool mReferencePool = new DiscardableReferencePool();
-    private final ManualFillingCoordinator mManualFillingController =
-            new ManualFillingCoordinator();
+    private final ManualFillingComponent mManualFillingComponent =
+            ManualFillingComponentFactory.createComponent();
 
     private AssistStatusHandler mAssistStatusHandler;
 
@@ -497,7 +498,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
             ((BottomContainer) findViewById(R.id.bottom_container))
                     .initialize(mFullscreenManager,
-                            mManualFillingController.getKeyboardExtensionSizeManager());
+                            mManualFillingComponent.getKeyboardExtensionSizeManager());
 
             // If onStart was called before postLayoutInflation (because inflation was done in a
             // background thread) then make sure to call the relevant methods belatedly.
@@ -779,10 +780,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     /**
-     * @return The ManualFillingCoordinator that belongs to this activity.
+     * @return The {@link ManualFillingComponent} that belongs to this activity.
      */
-    public ManualFillingCoordinator getManualFillingController() {
-        return mManualFillingController;
+    public ManualFillingComponent getManualFillingComponent() {
+        return mManualFillingComponent;
     }
 
     /**
@@ -1031,7 +1032,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             arDelegate.registerOnResumeActivity(this);
         }
 
-        getManualFillingController().onResume();
+        getManualFillingComponent().onResume();
     }
 
     @Override
@@ -1049,7 +1050,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         RecordUserAction.record("MobileGoToBackground");
         Tab tab = getActivityTab();
         if (tab != null) getTabContentManager().cacheTabThumbnail(tab);
-        getManualFillingController().onPause();
+        getManualFillingComponent().onPause();
 
         VrModuleProvider.getDelegate().maybeUnregisterVrEntryHook();
         markSessionEnd();
@@ -1362,7 +1363,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             mTabContentManager = null;
         }
 
-        mManualFillingController.destroy();
+        mManualFillingComponent.destroy();
 
         if (mActivityTabStartupMetricsTracker != null) {
             mActivityTabStartupMetricsTracker.destroy();
@@ -1476,11 +1477,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
         super.finishNativeInitialization();
 
-        mManualFillingController.initialize(getWindowAndroid(),
+        mManualFillingComponent.initialize(getWindowAndroid(),
                 findViewById(R.id.keyboard_accessory_stub),
                 findViewById(R.id.keyboard_accessory_sheet_stub));
         getCompositorViewHolder().setKeyboardExtensionView(
-                mManualFillingController.getKeyboardExtensionSizeManager());
+                mManualFillingComponent.getKeyboardExtensionSizeManager());
 
         // Create after native initialization so subclasses that override this method have a chance
         // to setup.
@@ -1553,7 +1554,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item != null) {
-            if (mManualFillingController != null) mManualFillingController.dismiss();
+            if (mManualFillingComponent != null) mManualFillingComponent.dismiss();
             if (onMenuOrKeyboardAction(item.getItemId(), true)) return true;
         }
         return super.onOptionsItemSelected(item);
