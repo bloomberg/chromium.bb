@@ -42,11 +42,15 @@ class ContainerView : public views::View {
   void Layout() override { unified_view_->SetBoundsRect(GetContentsBounds()); }
 
   gfx::Size CalculatePreferredSize() const override {
-    // If transform is used, always return the maximum height. Otherwise, return
-    // the actual height.
-    return gfx::Size(kTrayMenuWidth, unified_view_->IsTransformEnabled()
-                                         ? unified_view_->GetExpandedHeight()
-                                         : unified_view_->GetCurrentHeight());
+    // If transform is used, always return the maximum expanded height.
+    // Otherwise, return the actual height.
+    // Note that transforms are currently only supported when there are not
+    // notifications, so we only consider the system tray height (excluding the
+    // message center) for now.
+    return gfx::Size(kTrayMenuWidth,
+                     unified_view_->IsTransformEnabled()
+                         ? unified_view_->GetExpandedSystemTrayHeight()
+                         : unified_view_->GetCurrentHeight());
   }
 
   void ChildPreferredSizeChanged(views::View* child) override {
@@ -199,8 +203,11 @@ void UnifiedSystemTrayBubble::UpdateTransform() {
 
   SetFrameVisible(false);
 
-  const int y_offset =
-      unified_view_->GetExpandedHeight() - unified_view_->GetCurrentHeight();
+  // Note: currently transforms are only enabled when there are no
+  // notifications, so we can consider only the system tray height (excluding
+  // the message center) for now.
+  const int y_offset = unified_view_->GetExpandedSystemTrayHeight() -
+                       unified_view_->GetCurrentHeight();
 
   gfx::Transform transform;
   transform.Translate(0, y_offset);

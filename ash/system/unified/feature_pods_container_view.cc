@@ -44,6 +44,11 @@ int FeaturePodsContainerView::GetExpandedHeight() const {
              number_of_lines;
 }
 
+int FeaturePodsContainerView::GetCollapsedHeight() const {
+  return 2 * kUnifiedFeaturePodCollapsedVerticalPadding +
+         kUnifiedFeaturePodCollapsedSize.height();
+}
+
 void FeaturePodsContainerView::SaveFocus() {
   focused_button_ = nullptr;
   for (int i = 0; i < child_count(); ++i) {
@@ -61,11 +66,9 @@ void FeaturePodsContainerView::RestoreFocus() {
 }
 
 gfx::Size FeaturePodsContainerView::CalculatePreferredSize() const {
-  const int collapsed_height = 2 * kUnifiedFeaturePodCollapsedVerticalPadding +
-                               kUnifiedFeaturePodCollapsedSize.height();
   return gfx::Size(
       kTrayMenuWidth,
-      static_cast<int>(collapsed_height * (1.0 - expanded_amount_) +
+      static_cast<int>(GetCollapsedHeight() * (1.0 - expanded_amount_) +
                        GetExpandedHeight() * expanded_amount_));
 }
 

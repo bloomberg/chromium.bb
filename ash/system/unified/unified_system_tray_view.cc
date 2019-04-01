@@ -79,6 +79,8 @@ class TopCornerBorder : public views::Border {
   DISALLOW_COPY_AND_ASSIGN(TopCornerBorder);
 };
 
+// The container view for the system tray, i.e. the panel containing settings
+// buttons and sliders (e.g. sign out, lock, volume slider, etc.).
 class SystemTrayContainer : public views::View {
  public:
   SystemTrayContainer() {
@@ -273,7 +275,16 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
 UnifiedSystemTrayView::~UnifiedSystemTrayView() = default;
 
 void UnifiedSystemTrayView::SetMaxHeight(int max_height) {
-  message_center_view_->SetMaxHeight(max_height);
+  max_height_ = max_height;
+  message_center_view_->SetMaxHeight(max_height_);
+
+  // Because the message center view requires a certain height to be usable, it
+  // will be hidden if there isn't sufficient remaining height.
+  int system_tray_height = expanded_amount_ > 0.0
+                               ? GetExpandedSystemTrayHeight()
+                               : GetCollapsedSystemTrayHeight();
+  int available_height = max_height_ - system_tray_height;
+  message_center_view_->SetAvailableHeight(available_height);
 }
 
 void UnifiedSystemTrayView::AddFeaturePodButton(FeaturePodButton* button) {
@@ -319,6 +330,9 @@ void UnifiedSystemTrayView::SetExpandedAmount(double expanded_amount) {
   DCHECK(0.0 <= expanded_amount && expanded_amount <= 1.0);
   expanded_amount_ = expanded_amount;
 
+  message_center_view_->SetAvailableHeight(max_height_ -
+                                           system_tray_container_->height());
+
   top_shortcuts_view_->SetExpandedAmount(expanded_amount);
   feature_pods_container_->SetExpandedAmount(expanded_amount);
   sliders_container_->SetExpandedAmount(expanded_amount);
@@ -331,18 +345,29 @@ void UnifiedSystemTrayView::SetExpandedAmount(double expanded_amount) {
     return;
   }
 
-  if (height() != GetExpandedHeight())
+  // Note: currently transforms are only enabled when there are no
+  // notifications, so we can consider only the system tray height.
+  if (height() != GetExpandedSystemTrayHeight())
     PreferredSizeChanged();
   Layout();
 }
 
-int UnifiedSystemTrayView::GetExpandedHeight() const {
+int UnifiedSystemTrayView::GetExpandedSystemTrayHeight() const {
   return (notification_hidden_view_->visible()
               ? notification_hidden_view_->GetPreferredSize().height()
               : 0) +
          top_shortcuts_view_->GetPreferredSize().height() +
          feature_pods_container_->GetExpandedHeight() +
          sliders_container_->GetExpandedHeight() +
+         system_info_view_->GetPreferredSize().height();
+}
+
+int UnifiedSystemTrayView::GetCollapsedSystemTrayHeight() const {
+  return (notification_hidden_view_->visible()
+              ? notification_hidden_view_->GetPreferredSize().height()
+              : 0) +
+         top_shortcuts_view_->GetPreferredSize().height() +
+         feature_pods_container_->GetCollapsedHeight() +
          system_info_view_->GetPreferredSize().height();
 }
 
