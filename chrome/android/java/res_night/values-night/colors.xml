@@ -9,6 +9,8 @@
 
     <color name="toolbar_text_box_background">@color/modern_grey_800</color>
 
+    <color name="google_logo_tint">@android:color/white</color>
+
     <color name="bottom_system_nav_color">@android:color/black</color>
     <color name="bottom_system_nav_divider_color">@android:color/black</color>
 </resources>

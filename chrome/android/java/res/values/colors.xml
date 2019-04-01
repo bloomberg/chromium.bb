@@ -111,6 +111,7 @@
     <color name="ntp_bg_incognito">@color/incognito_modern_primary_color</color>
     <color name="suggestions_modern_bg">@color/modern_primary_color</color>
     <color name="suggestions_offline_badge_tint">@color/default_icon_color_blue</color>
+    <color name="google_logo_tint">@android:color/transparent</color>
 
     <!-- Incognito NTP Colors. -->
     <color name="incognito_emphasis">@android:color/white</color>
