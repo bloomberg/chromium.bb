@@ -1567,7 +1567,8 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
       base::Bind(&DownloadItemImpl::OnDownloadRenamedToIntermediateName,
                  weak_ptr_factory_.GetWeakPtr());
 #if defined(OS_ANDROID)
-  if (DownloadCollectionBridge::ShouldPublishDownload(GetTargetFilePath())) {
+  if (download_type_ == TYPE_ACTIVE_DOWNLOAD &&
+      DownloadCollectionBridge::ShouldPublishDownload(GetTargetFilePath())) {
     GetDownloadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&DownloadFile::CreateIntermediateUriForPublish,
