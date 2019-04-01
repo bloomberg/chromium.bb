@@ -414,8 +414,16 @@ class CONTENT_EXPORT ServiceWorkerContextClient
 
   blink::mojom::BlobRegistryPtr blob_registry_;
 
-  // Initialized on the worker thread in workerContextStarted and
-  // destructed on the worker thread in willDestroyWorkerContext.
+  // Initialized on the worker thread in WorkerContextStarted and
+  // destructed on the worker thread in WillDestroyWorkerContext.
+  //
+  // WARNING: This can be cleared at nearly any time, since WillDestroyContext
+  // is called by Blink when it decides to terminate the worker thread. This
+  // includes during event dispatch if a JavaScript debugger breakpoint pauses
+  // execution (see issue 934622). It should be safe to assume |context_| is
+  // valid at the start of a task that was posted to |worker_task_runner_|, as
+  // that is from WorkerThread::GetTaskRunner() which safely drops the task on
+  // worker termination.
   std::unique_ptr<WorkerContextData> context_;
 
   // Accessed on the worker thread. Passed to the browser process after worker
@@ -435,7 +443,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   bool report_debug_log_ = true;
   base::Lock debug_log_lock_;
   std::deque<std::string> debug_log_ GUARDED_BY(debug_log_lock_);
-  bool dispatching_fetch_event_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextClient);
 };
