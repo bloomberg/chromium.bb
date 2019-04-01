@@ -1464,9 +1464,14 @@ void LayoutBlock::ComputeIntrinsicLogicalWidths(
 
   // Size-contained elements don't consider their contents for preferred sizing.
   if (ShouldApplySizeContainment()) {
-    max_logical_width = LayoutUnit(scrollbar_width);
-    min_logical_width = LayoutUnit(scrollbar_width);
-    return;
+    // For multicol containers we need the column gaps. So allow descending into
+    // the flow thread, which will take care of that.
+    const auto* block_flow = ToLayoutBlockFlowOrNull(this);
+    if (!block_flow || !block_flow->MultiColumnFlowThread()) {
+      max_logical_width = LayoutUnit(scrollbar_width);
+      min_logical_width = LayoutUnit(scrollbar_width);
+      return;
+    }
   }
 
   if (ChildrenInline()) {

@@ -1332,8 +1332,6 @@ void LayoutMultiColumnFlowThread::ToggleSpannersInSubtree(
 }
 
 void LayoutMultiColumnFlowThread::ComputePreferredLogicalWidths() {
-  LayoutFlowThread::ComputePreferredLogicalWidths();
-
   // The min/max intrinsic widths calculated really tell how much space elements
   // need when laid out inside the columns. In order to eventually end up with
   // the desired column width, we need to convert them to values pertaining to
@@ -1341,9 +1339,20 @@ void LayoutMultiColumnFlowThread::ComputePreferredLogicalWidths() {
   const ComputedStyle* multicol_style = MultiColumnBlockFlow()->Style();
   LayoutUnit column_count(
       multicol_style->HasAutoColumnCount() ? 1 : multicol_style->ColumnCount());
-  LayoutUnit column_width;
   LayoutUnit gap_extra((column_count - 1) *
                        ColumnGap(*multicol_style, LayoutUnit()));
+
+  if (MultiColumnBlockFlow()->ShouldApplySizeContainment()) {
+    LayoutUnit size = gap_extra;
+    if (!multicol_style->HasAutoColumnWidth())
+      size += LayoutUnit(multicol_style->ColumnWidth()) * column_count;
+    max_preferred_logical_width_ = min_preferred_logical_width_ = size;
+    ClearPreferredLogicalWidthsDirty();
+    return;
+  }
+
+  LayoutFlowThread::ComputePreferredLogicalWidths();
+  LayoutUnit column_width;
   if (multicol_style->HasAutoColumnWidth()) {
     min_preferred_logical_width_ =
         min_preferred_logical_width_ * column_count + gap_extra;
