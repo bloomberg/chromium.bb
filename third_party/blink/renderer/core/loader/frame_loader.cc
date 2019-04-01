@@ -840,6 +840,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   if (!target_frame && !request.FrameName().IsEmpty() &&
       should_navigate_target_frame) {
     request.SetFrameType(network::mojom::RequestContextFrameType::kAuxiliary);
+    request.SetNavigationPolicy(kNavigationPolicyNewForegroundTab);
     CreateWindowForRequest(request, *frame_);
     return;  // Navigation will be handled by the new frame/window.
   }

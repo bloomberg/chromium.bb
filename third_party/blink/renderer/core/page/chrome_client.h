@@ -159,7 +159,6 @@ class CORE_EXPORT ChromeClient
   Page* CreateWindow(LocalFrame*,
                      const FrameLoadRequest&,
                      const WebWindowFeatures&,
-                     NavigationPolicy,
                      SandboxFlags,
                      const FeaturePolicy::FeatureState&,
                      const SessionStorageNamespaceId&);
@@ -413,7 +412,6 @@ class CORE_EXPORT ChromeClient
   virtual Page* CreateWindowDelegate(LocalFrame*,
                                      const FrameLoadRequest&,
                                      const WebWindowFeatures&,
-                                     NavigationPolicy,
                                      SandboxFlags,
                                      const FeaturePolicy::FeatureState&,
                                      const SessionStorageNamespaceId&) = 0;

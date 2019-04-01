@@ -103,7 +103,6 @@ Page* ChromeClient::CreateWindow(
     LocalFrame* frame,
     const FrameLoadRequest& r,
     const WebWindowFeatures& features,
-    NavigationPolicy navigation_policy,
     SandboxFlags sandbox_flags,
     const FeaturePolicy::FeatureState& opener_feature_state,
     const SessionStorageNamespaceId& session_storage_namespace_id) {
@@ -112,8 +111,8 @@ Page* ChromeClient::CreateWindow(
     return nullptr;
   }
 
-  return CreateWindowDelegate(frame, r, features, navigation_policy,
-                              sandbox_flags, opener_feature_state,
+  return CreateWindowDelegate(frame, r, features, sandbox_flags,
+                              opener_feature_state,
                               session_storage_namespace_id);
 }
 

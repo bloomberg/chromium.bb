@@ -252,7 +252,6 @@ Page* ChromeClientImpl::CreateWindowDelegate(
     LocalFrame* frame,
     const FrameLoadRequest& r,
     const WebWindowFeatures& features,
-    NavigationPolicy navigation_policy,
     SandboxFlags sandbox_flags,
     const FeaturePolicy::FeatureState& opener_feature_state,
     const SessionStorageNamespaceId& session_storage_namespace_id) {
@@ -270,7 +269,7 @@ Page* ChromeClientImpl::CreateWindowDelegate(
       static_cast<WebViewImpl*>(web_view_->Client()->CreateView(
           WebLocalFrameImpl::FromFrame(frame),
           WrappedResourceRequest(r.GetResourceRequest()), features, frame_name,
-          static_cast<WebNavigationPolicy>(navigation_policy),
+          static_cast<WebNavigationPolicy>(r.GetNavigationPolicy()),
           r.GetShouldSetOpener() == kNeverSetOpener,
           static_cast<WebSandboxFlags>(sandbox_flags), opener_feature_state,
           session_storage_namespace_id));
