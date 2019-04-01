@@ -34,7 +34,6 @@ speaker
 sync-script
 sync-xhr
 top-navigation
-unoptimized-lossless-images
 unoptimized-lossy-images
 unsized-media
 usb
