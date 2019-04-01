@@ -6,7 +6,7 @@
 import argparse
 import json
 import logging
-import multiprocessing as mp
+import multiprocessing
 import os
 from os import listdir
 from os.path import isfile, join, basename
@@ -458,6 +458,20 @@ def _upload_individual_benchmark(params):
     return benchmark_name, upload_succeed
 
 
+def _GetCpuCount(log=True):
+  try:
+    return multiprocessing.cpu_count()
+  except NotImplementedError:
+    if log:
+      logging.warn(
+          'Failed to get a CPU count for this bot. See crbug.com/947035.')
+    # TODO(crbug.com/948281): This is currently set to 4 since the mac masters
+    # only have 4 cores. Once we move to all-linux, this can be increased or
+    # we can even delete this whole function and use multiprocessing.cpu_count()
+    # directly.
+    return 4
+
+
 def _handle_perf_results(
     benchmark_enabled_map, benchmark_directory_map, configuration_name,
     build_properties, service_account_file, extra_links,
@@ -493,13 +507,13 @@ def _handle_perf_results(
         build_properties, output_json_file, service_account_file))
 
   # Kick off the uploads in multiple processes
-  pool = mp.Pool()
+  pool = multiprocessing.Pool(_GetCpuCount())
   try:
     async_result = pool.map_async(
         _upload_individual_benchmark, invocations)
     # TODO(crbug.com/947035): What timeout is reasonable?
     results = async_result.get(timeout=4000)
-  except mp.TimeoutError:
+  except multiprocessing.TimeoutError:
     logging.error('Failed uploading benchmarks to perf dashboard in parallel')
     results = []
     for benchmark_name in benchmark_directory_map:
