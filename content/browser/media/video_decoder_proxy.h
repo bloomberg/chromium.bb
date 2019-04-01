@@ -9,7 +9,9 @@
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
+#include "media/mojo/buildflags.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
@@ -31,6 +33,10 @@ class VideoDecoderProxy : public media::mojom::InterfaceFactory {
   void CreateVideoDecoder(media::mojom::VideoDecoderRequest request) final;
   void CreateDefaultRenderer(const std::string& audio_device_id,
                              media::mojom::RendererRequest request) final;
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
+  void CreateCastRenderer(const base::UnguessableToken& overlay_plane_id,
+                          media::mojom::RendererRequest request) final;
+#endif
 #if defined(OS_ANDROID)
   void CreateMediaPlayerRenderer(
       media::mojom::MediaPlayerRendererClientExtensionPtr client_extension_ptr,

@@ -46,6 +46,12 @@ void VideoDecoderProxy::CreateDefaultRenderer(
     const std::string& audio_device_id,
     media::mojom::RendererRequest request) {}
 
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
+void VideoDecoderProxy::CreateCastRenderer(
+    const base::UnguessableToken& overlay_plane_id,
+    media::mojom::RendererRequest request) {}
+#endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
+
 #if defined(OS_ANDROID)
 void VideoDecoderProxy::CreateFlingingRenderer(
     const std::string& audio_device_id,

@@ -68,6 +68,24 @@ void MediaInterfaceFactory::CreateDefaultRenderer(
                                                     std::move(request));
 }
 
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
+void MediaInterfaceFactory::CreateCastRenderer(
+    const base::UnguessableToken& overlay_plane_id,
+    media::mojom::RendererRequest request) {
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&MediaInterfaceFactory::CreateCastRenderer, weak_this_,
+                       overlay_plane_id, std::move(request)));
+    return;
+  }
+
+  DVLOG(1) << __func__;
+  GetMediaInterfaceFactory()->CreateCastRenderer(overlay_plane_id,
+                                                 std::move(request));
+}
+#endif
+
 #if defined(OS_ANDROID)
 void MediaInterfaceFactory::CreateMediaPlayerRenderer(
     media::mojom::MediaPlayerRendererClientExtensionPtr client_extension_ptr,

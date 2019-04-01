@@ -162,6 +162,18 @@ void MediaInterfaceProxy::CreateDefaultRenderer(
     factory->CreateDefaultRenderer(audio_device_id, std::move(request));
 }
 
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
+void MediaInterfaceProxy::CreateCastRenderer(
+    const base::UnguessableToken& overlay_plane_id,
+    media::mojom::RendererRequest request) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  InterfaceFactory* factory = GetMediaInterfaceFactory();
+  if (factory)
+    factory->CreateCastRenderer(overlay_plane_id, std::move(request));
+}
+#endif
+
 #if defined(OS_ANDROID)
 void MediaInterfaceProxy::CreateFlingingRenderer(
     const std::string& presentation_id,
