@@ -3838,8 +3838,9 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
       if (cpi->common.allow_screen_content_tools) break;
       // Don't use for inter frames.
       if (!frame_is_intra_only(&cpi->common)) break;
-      // Don't use for keyframes that can be used as references.
-      if (cpi->rc.frames_to_key != 1) break;
+      // Don't use for keyframes that can be used as references, except when
+      // using AOM_Q mode.
+      if (cpi->rc.frames_to_key != 1 && cpi->oxcf.rc_mode != AOM_Q) break;
 
       // Now decide the use of superres based on 'q'.
       int bottom_index, top_index;

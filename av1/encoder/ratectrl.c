@@ -1116,7 +1116,9 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
 
       // Tweak active_best_quality for AOM_Q mode when superres is on, as this
       // will be used directly as 'q' later.
-      if (oxcf->rc_mode == AOM_Q && oxcf->superres_mode == SUPERRES_QTHRESH &&
+      if (oxcf->rc_mode == AOM_Q &&
+          (oxcf->superres_mode == SUPERRES_QTHRESH ||
+           oxcf->superres_mode == SUPERRES_AUTO) &&
           cm->superres_scale_denominator != SCALE_NUMERATOR) {
         active_best_quality =
             AOMMAX(active_best_quality -
