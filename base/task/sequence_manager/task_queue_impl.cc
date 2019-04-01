@@ -105,6 +105,7 @@ TaskQueueImpl::TaskQueueImpl(SequenceManagerImpl* sequence_manager,
       should_notify_observers_(spec.should_notify_observers),
       delayed_fence_allowed_(spec.delayed_fence_allowed) {
   DCHECK(time_domain);
+  UpdateCrossThreadQueueStateLocked();
   // SequenceManager can't be set later, so we need to prevent task runners
   // from posting any tasks.
   if (sequence_manager_)
@@ -204,11 +205,44 @@ void TaskQueueImpl::PostTask(PostedTask task) {
           ? TaskQueueImpl::CurrentThread::kMainThread
           : TaskQueueImpl::CurrentThread::kNotMainThread;
 
+#if DCHECK_IS_ON()
+  MaybeLogPostTask(&task);
+  MaybeAdjustTaskDelay(&task, current_thread);
+#endif  // DCHECK_IS_ON()
+
   if (task.delay.is_zero()) {
     PostImmediateTaskImpl(std::move(task), current_thread);
   } else {
     PostDelayedTaskImpl(std::move(task), current_thread);
   }
+}
+
+void TaskQueueImpl::MaybeLogPostTask(PostedTask* task) {
+#if DCHECK_IS_ON()
+  if (!sequence_manager_->settings().log_post_task)
+    return;
+
+  DVLOG(1) << name_ << " PostTask " << task->location.ToString() << " delay "
+           << task->delay;
+#endif  // DCHECK_IS_ON()
+}
+
+void TaskQueueImpl::MaybeAdjustTaskDelay(PostedTask* task,
+                                         CurrentThread current_thread) {
+#if DCHECK_IS_ON()
+  if (current_thread == TaskQueueImpl::CurrentThread::kNotMainThread) {
+    base::internal::AutoSchedulerLock lock(any_thread_lock_);
+    // Add a per-priority delay to cross thread tasks. This can help diagnose
+    // scheduler induced flakiness by making things flake most of the time.
+    task->delay +=
+        sequence_manager_->settings()
+            .per_priority_cross_thread_task_delay[any_thread_.queue_set_index];
+  } else {
+    task->delay +=
+        sequence_manager_->settings().per_priority_same_thread_task_delay
+            [main_thread_only().immediate_work_queue->work_queue_set_index()];
+  }
+#endif  // DCHECK_IS_ON()
 }
 
 void TaskQueueImpl::PostImmediateTaskImpl(PostedTask task,
@@ -239,6 +273,12 @@ void TaskQueueImpl::PostImmediateTaskImpl(PostedTask task,
         any_thread_.immediate_incoming_queue.empty();
     any_thread_.immediate_incoming_queue.push_back(
         Task(std::move(task), now, sequence_number, sequence_number));
+
+#if DCHECK_IS_ON()
+    any_thread_.immediate_incoming_queue.back().cross_thread_ =
+        (current_thread == TaskQueueImpl::CurrentThread::kNotMainThread);
+#endif
+
     sequence_manager_->WillQueueTask(
         &any_thread_.immediate_incoming_queue.back(), name_);
 
@@ -329,6 +369,10 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueueFromMainThread(
     Task pending_task,
     TimeTicks now,
     bool notify_task_annotator) {
+#if DCHECK_IS_ON()
+  pending_task.cross_thread_ = false;
+#endif
+
   if (notify_task_annotator)
     sequence_manager_->WillQueueTask(&pending_task, name_);
   main_thread_only().delayed_incoming_queue.push(std::move(pending_task));
@@ -341,6 +385,10 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueueFromMainThread(
 
 void TaskQueueImpl::PushOntoDelayedIncomingQueue(Task pending_task) {
   sequence_manager_->WillQueueTask(&pending_task, name_);
+
+#if DCHECK_IS_ON()
+  pending_task.cross_thread_ = true;
+#endif
 
   // TODO(altimin): Add a copy method to Task to capture metadata here.
   PostImmediateTaskImpl(
@@ -490,6 +538,11 @@ void TaskQueueImpl::MoveReadyDelayedTasksToWorkQueue(LazyNow* lazy_now) {
     }
     if (task->delayed_run_time > lazy_now->Now())
       break;
+#if DCHECK_IS_ON()
+    if (sequence_manager_->settings().log_task_delay_expiry)
+      VLOG(0) << name_ << " Delay expired for " << task->posted_from.ToString();
+#endif  // DCHECK_IS_ON()
+
     ActivateDelayedFenceIfNeeded(task->delayed_run_time);
     DCHECK(!task->enqueue_order_set());
     task->set_enqueue_order(sequence_manager_->GetNextSequenceNumber());
@@ -862,6 +915,11 @@ void TaskQueueImpl::UpdateCrossThreadQueueStateLocked() {
     any_thread_.post_immediate_task_should_schedule_work =
         IsQueueEnabled() && !main_thread_only().current_fence;
   }
+
+#if DCHECK_IS_ON()
+  any_thread_.queue_set_index =
+      main_thread_only().immediate_work_queue->work_queue_set_index();
+#endif
 }
 
 void TaskQueueImpl::ReclaimMemory(TimeTicks now) {

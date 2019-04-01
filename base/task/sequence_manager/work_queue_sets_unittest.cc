@@ -30,7 +30,8 @@ class MockObserver : public WorkQueueSets::Observer {
 class WorkQueueSetsTest : public testing::Test {
  public:
   void SetUp() override {
-    work_queue_sets_.reset(new WorkQueueSets("test", &mock_observer_));
+    work_queue_sets_.reset(new WorkQueueSets("test", &mock_observer_,
+                                             SequenceManager::Settings()));
   }
 
   void TearDown() override {

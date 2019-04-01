@@ -97,6 +97,10 @@ struct BASE_EXPORT Task : public PendingTask {
 
   TaskType task_type;
 
+#if DCHECK_IS_ON()
+  bool cross_thread_;
+#endif
+
  private:
   // Similar to |sequence_num|, but ultimately the |enqueue_order| is what
   // the scheduler uses for task ordering. For immediate tasks |enqueue_order|

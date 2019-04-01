@@ -69,6 +69,37 @@ class SequenceManager {
     bool randomised_sampling_enabled = false;
     const TickClock* clock = DefaultTickClock::GetInstance();
 
+#if DCHECK_IS_ON()
+    // TODO(alexclarke): Consider adding command line flags to control these.
+    enum class TaskLogging {
+      kNone,
+      kEnabled,
+      kEnabledWithBacktrace,
+    };
+    TaskLogging task_execution_logging = TaskLogging::kNone;
+
+    // If true PostTask will emit a debug log.
+    bool log_post_task = false;
+
+    // If true debug logs will be emitted when a delayed task becomes eligible
+    // to run.
+    bool log_task_delay_expiry = false;
+
+    // Scheduler policy induced raciness is an area of concern. This lets us
+    // apply an extra delay per priority for cross thread posting.
+    TimeDelta
+        per_priority_cross_thread_task_delay[TaskQueue::kQueuePriorityCount];
+
+    // Like the above but for same thread posting.
+    TimeDelta
+        per_priority_same_thread_task_delay[TaskQueue::kQueuePriorityCount];
+
+    // If not zero this seeds a PRNG used by the task selection logic to choose
+    // a random TaskQueue for a given priority rather than the TaskQueue with
+    // the oldest EnqueueOrder.
+    int random_task_selection_seed = 0;
+#endif  // DCHECK_IS_ON()
+
     DISALLOW_COPY_AND_ASSIGN(Settings);
   };
 

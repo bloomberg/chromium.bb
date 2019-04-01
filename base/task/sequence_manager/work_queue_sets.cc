@@ -10,8 +10,15 @@ namespace base {
 namespace sequence_manager {
 namespace internal {
 
-WorkQueueSets::WorkQueueSets(const char* name, Observer* observer)
-    : name_(name), observer_(observer) {}
+WorkQueueSets::WorkQueueSets(const char* name,
+                             Observer* observer,
+                             const SequenceManager::Settings& settings)
+    : name_(name),
+#if DCHECK_IS_ON()
+      last_rand_(settings.random_task_selection_seed),
+#endif
+      observer_(observer) {
+}
 
 WorkQueueSets::~WorkQueueSets() = default;
 
@@ -161,6 +168,38 @@ WorkQueue* WorkQueueSets::GetOldestQueueAndEnqueueOrderInSet(
          oldest.key == enqueue_order);
   return oldest.value;
 }
+
+#if DCHECK_IS_ON()
+WorkQueue* WorkQueueSets::GetRandomQueueInSet(size_t set_index) const {
+  DCHECK_LT(set_index, work_queue_heaps_.size());
+  if (work_queue_heaps_[set_index].empty())
+    return nullptr;
+
+  WorkQueue* queue =
+      work_queue_heaps_[set_index]
+          .begin()[Random() % work_queue_heaps_[set_index].size()]
+          .value;
+  DCHECK_EQ(set_index, queue->work_queue_set_index());
+  DCHECK(queue->heap_handle().IsValid());
+  return queue;
+}
+
+WorkQueue* WorkQueueSets::GetRandomQueueAndEnqueueOrderInSet(
+    size_t set_index,
+    EnqueueOrder* out_enqueue_order) const {
+  DCHECK_LT(set_index, work_queue_heaps_.size());
+  if (work_queue_heaps_[set_index].empty())
+    return nullptr;
+  const OldestTaskEnqueueOrder& chosen =
+      work_queue_heaps_[set_index]
+          .begin()[Random() % work_queue_heaps_[set_index].size()];
+  *out_enqueue_order = chosen.key;
+  EnqueueOrder enqueue_order;
+  DCHECK(chosen.value->GetFrontTaskEnqueueOrder(&enqueue_order) &&
+         chosen.key == enqueue_order);
+  return chosen.value;
+}
+#endif
 
 bool WorkQueueSets::IsSetEmpty(size_t set_index) const {
   DCHECK_LT(set_index, work_queue_heaps_.size())
