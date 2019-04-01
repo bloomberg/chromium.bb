@@ -463,10 +463,12 @@ create_layout(cairo_t *cr, const char *title)
 	PangoFontDescription *desc;
 
 	layout = pango_cairo_create_layout(cr);
-	pango_layout_set_text(layout, title, -1);
-	desc = pango_font_description_from_string("Sans Bold 10");
-	pango_layout_set_font_description(layout, desc);
-	pango_font_description_free(desc);
+	if (title) {
+		pango_layout_set_text(layout, title, -1);
+		desc = pango_font_description_from_string("Sans Bold 10");
+		pango_layout_set_font_description(layout, desc);
+		pango_font_description_free(desc);
+	}
 	pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_END);
 	pango_layout_set_alignment(layout, PANGO_ALIGN_LEFT);
 	pango_layout_set_auto_dir (layout, FALSE);
