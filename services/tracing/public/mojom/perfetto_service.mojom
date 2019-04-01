@@ -104,9 +104,6 @@ interface ProducerHost {
   // datasource.
   RegisterDataSource(DataSourceRegistration registration_info);
 
-  // Called to let the Service know that a flush is complete.
-  NotifyFlushComplete(uint64 flush_request_id);
-
   // Called by the ProducerClient to associate a TraceWriter with a target
   // buffer, which is required to support scraping of the SMB by the service.
   RegisterTraceWriter(uint32 writer_id, uint32 target_buffer);
