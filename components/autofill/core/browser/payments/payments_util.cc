@@ -13,6 +13,10 @@
 namespace autofill {
 namespace payments {
 
+namespace {
+constexpr int kCustomerHasNoBillingCustomerNumber = 0;
+}
+
 int64_t GetBillingCustomerId(PersonalDataManager* personal_data_manager,
                              bool should_log_validity) {
   DCHECK(personal_data_manager);
@@ -41,7 +45,12 @@ int64_t GetBillingCustomerId(PersonalDataManager* personal_data_manager,
           AutofillMetrics::BillingIdStatus::MISSING);
     }
   }
-  return 0;
+  return kCustomerHasNoBillingCustomerNumber;
+}
+
+bool HasGooglePaymentsAccount(PersonalDataManager* personal_data_manager) {
+  return GetBillingCustomerId(personal_data_manager) !=
+         kCustomerHasNoBillingCustomerNumber;
 }
 
 }  // namespace payments

@@ -65,5 +65,17 @@ TEST_F(PaymentsUtilTest, GetBillingCustomerId_PaymentsCustomerData_NoData) {
       AutofillMetrics::BillingIdStatus::MISSING, 1);
 }
 
+TEST_F(PaymentsUtilTest, HasGooglePaymentsAccount_Normal) {
+  personal_data_manager_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
+  EXPECT_TRUE(HasGooglePaymentsAccount(&personal_data_manager_));
+}
+
+TEST_F(PaymentsUtilTest, HasGooglePaymentsAccount_NoData) {
+  // Explicitly do not set Prefs data. Nothing crashes and returns false.
+  EXPECT_FALSE(HasGooglePaymentsAccount(&personal_data_manager_));
+}
+
 }  // namespace payments
 }  // namespace autofill
