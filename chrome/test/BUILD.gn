@@ -2014,6 +2014,8 @@ test("browser_tests") {
         "../browser/ui/webui/chromeos/login/discover/modules/discover_module_sync_files_test.cc",
         "../browser/ui/webui/chromeos/login/discover/wait_for_did_start_navigate.cc",
         "../browser/ui/webui/chromeos/login/discover/wait_for_did_start_navigate.h",
+        "../browser/ui/webui/chromeos/login/js_calls_container_test_api.cc",
+        "../browser/ui/webui/chromeos/login/js_calls_container_test_api.h",
         "../browser/ui/webui/chromeos/login/oobe_display_chooser_browsertest.cc",
         "../browser/ui/webui/chromeos/system_web_dialog_browsertest.cc",
         "../browser/ui/webui/settings/chromeos/device_power_handler_browsertest.cc",

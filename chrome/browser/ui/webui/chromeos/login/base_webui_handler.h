@@ -6,14 +6,15 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_BASE_WEBUI_HANDLER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
+#include "chrome/browser/ui/webui/chromeos/login/js_calls_container.h"
 #include "components/login/base_screen_handler_utils.h"
-#include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -30,36 +31,6 @@ namespace chromeos {
 
 class BaseScreen;
 class OobeUI;
-
-// A helper class to store deferred Javascript calls, shared by subclasses of
-// BaseWebUIHandler.
-// TODO(jdufault): Move into a separate file
-class JSCallsContainer {
- public:
-  JSCallsContainer();
-  ~JSCallsContainer();
-
-  // Used to decide whether the JS call should be deferred.
-  bool is_initialized() const { return is_initialized_; }
-
-  // Used to add deferred calls to.
-  std::vector<base::Closure>& deferred_js_calls() { return deferred_js_calls_; }
-
-  // Executes Javascript calls that were deferred while the instance was not
-  // initialized yet.
-  void ExecuteDeferredJSCalls();
-
- private:
-  // Whether the instance is initialized.
-  //
-  // The instance becomes initialized after the corresponding message is
-  // received from Javascript side.
-  bool is_initialized_ = false;
-
-  // Javascript calls that have been deferred while the instance was not
-  // initialized yet.
-  std::vector<base::Closure> deferred_js_calls_;
-};
 
 // Base class for all oobe/login WebUI handlers. These handlers are the binding
 // layer that allow the C++ and JavaScript code to communicate.
@@ -115,100 +86,51 @@ class BaseWebUIHandler : public content::WebUIMessageHandler {
   // to loadTimeData.
   virtual void GetAdditionalParameters(base::DictionaryValue* parameters);
 
-  void CallJS(const std::string& function_name) {
-    if (js_calls_container_->is_initialized()) {
-      web_ui()->CallJavascriptFunctionUnsafe(function_name);
-    } else {
-      js_calls_container_->deferred_js_calls().push_back(
-          base::Bind(&BaseWebUIHandler::CallJavascriptFunctionImmediate<>,
-                     base::Unretained(this), function_name));
+  // Run a JavaScript function. If the backing webui that this handler is not
+  // fully loaded, then the JS call will be deferred and executed after the
+  // initialize message.
+  //
+  // All CallJS invocations can be recorded for tests if CallJS recording is
+  // enabled.
+  template <typename... Args>
+  void CallJS(const std::string& function_name, const Args&... args) {
+    // Record the call if the WebUI is not loaded or if we are in a test.
+    if (!js_calls_container_->is_initialized() ||
+        js_calls_container_->record_all_events_for_test()) {
+      std::vector<base::Value> arguments;
+      InsertIntoList(&arguments, args...);
+      js_calls_container_->events()->emplace_back(
+          JSCallsContainer::Event(JSCallsContainer::Event::Type::kOutgoing,
+                                  function_name, std::move(arguments)));
     }
-  }
 
-  template <typename A1>
-  void CallJS(const std::string& function_name, const A1& arg1) {
-    if (js_calls_container_->is_initialized()) {
-      web_ui()->CallJavascriptFunctionUnsafe(function_name,
-                                             ::login::MakeValue(arg1));
-    } else {
-      js_calls_container_->deferred_js_calls().push_back(base::Bind(
-          &BaseWebUIHandler::CallJavascriptFunctionImmediate<base::Value>,
-          base::Unretained(this), function_name,
-          ::login::MakeValue(arg1).Clone()));
-    }
-  }
-
-  template <typename A1, typename A2>
-  void CallJS(const std::string& function_name,
-              const A1& arg1,
-              const A2& arg2) {
-    if (js_calls_container_->is_initialized()) {
+    // Make the call now if the WebUI is loaded.
+    if (js_calls_container_->is_initialized())
       web_ui()->CallJavascriptFunctionUnsafe(
-          function_name, ::login::MakeValue(arg1), ::login::MakeValue(arg2));
-    } else {
-      js_calls_container_->deferred_js_calls().push_back(base::Bind(
-          &BaseWebUIHandler::CallJavascriptFunctionImmediate<base::Value,
-                                                             base::Value>,
-          base::Unretained(this), function_name,
-          ::login::MakeValue(arg1).Clone(), ::login::MakeValue(arg2).Clone()));
-    }
+          function_name, ::login::MakeValue(args).Clone()...);
   }
 
-  template <typename A1, typename A2, typename A3>
-  void CallJS(const std::string& function_name,
-              const A1& arg1,
-              const A2& arg2,
-              const A3& arg3) {
-    if (js_calls_container_->is_initialized()) {
-      web_ui()->CallJavascriptFunctionUnsafe(
-          function_name, ::login::MakeValue(arg1), ::login::MakeValue(arg2),
-          ::login::MakeValue(arg3));
-    } else {
-      js_calls_container_->deferred_js_calls().push_back(base::Bind(
-          &BaseWebUIHandler::CallJavascriptFunctionImmediate<
-              base::Value, base::Value, base::Value>,
-          base::Unretained(this), function_name,
-          ::login::MakeValue(arg1).Clone(), ::login::MakeValue(arg2).Clone(),
-          ::login::MakeValue(arg3).Clone()));
-    }
-  }
-
-  template <typename A1, typename A2, typename A3, typename A4>
-  void CallJS(const std::string& function_name,
-              const A1& arg1,
-              const A2& arg2,
-              const A3& arg3,
-              const A4& arg4) {
-    if (js_calls_container_->is_initialized()) {
-      web_ui()->CallJavascriptFunctionUnsafe(
-          function_name, ::login::MakeValue(arg1), ::login::MakeValue(arg2),
-          ::login::MakeValue(arg3), ::login::MakeValue(arg4));
-    } else {
-      js_calls_container_->deferred_js_calls().push_back(base::Bind(
-          &BaseWebUIHandler::CallJavascriptFunctionImmediate<
-              base::Value, base::Value, base::Value, base::Value>,
-          base::Unretained(this), function_name,
-          ::login::MakeValue(arg1).Clone(), ::login::MakeValue(arg2).Clone(),
-          ::login::MakeValue(arg3).Clone(), ::login::MakeValue(arg4).Clone()));
-    }
-  }
-
-  // Shortcut methods for adding WebUI callbacks.
+  // Register WebUI callbacks. The callbacks will be recorded if recording is
+  // enabled.
   template <typename T>
-  void AddRawCallback(const std::string& name,
+  void AddRawCallback(const std::string& function_name,
                       void (T::*method)(const base::ListValue* args)) {
+    content::WebUI::MessageCallback callback =
+        base::BindRepeating(method, base::Unretained(static_cast<T*>(this)));
     web_ui()->RegisterMessageCallback(
-        name,
-        base::BindRepeating(method, base::Unretained(static_cast<T*>(this))));
+        function_name,
+        base::BindRepeating(&BaseWebUIHandler::OnRawCallback,
+                            base::Unretained(this), function_name, callback));
   }
-
   template <typename T, typename... Args>
-  void AddCallback(const std::string& name, void (T::*method)(Args...)) {
+  void AddCallback(const std::string& function_name,
+                   void (T::*method)(Args...)) {
     base::RepeatingCallback<void(Args...)> callback =
-        base::Bind(method, base::Unretained(static_cast<T*>(this)));
+        base::BindRepeating(method, base::Unretained(static_cast<T*>(this)));
     web_ui()->RegisterMessageCallback(
-        name,
-        base::BindRepeating(&::login::CallbackWrapper<Args...>, callback));
+        function_name,
+        base::BindRepeating(&BaseWebUIHandler::OnCallback<Args...>,
+                            base::Unretained(this), function_name, callback));
   }
 
   // Called when the page is ready and handler can do initialization.
@@ -234,12 +156,41 @@ class BaseWebUIHandler : public content::WebUIMessageHandler {
  private:
   friend class OobeUI;
 
-  // This function provides a unique name for every overload of
-  // CallJavascriptFunctionUnsafe, allowing it to be used in base::Bind.
+  // InsertIntoList takes a template parameter pack and expands into the
+  // following form:
+  //
+  //   for (auto arg : args)
+  //     stroage->emplace_back(::login::MakeValue(arg).Clone());
+  //
+  // This cannot be expressed with the current parameter pack expansion rules
+  // and the only way to do it is via compile-time recursion.
+  template <typename Head, typename... Tail>
+  void InsertIntoList(std::vector<base::Value>* storage,
+                      const Head& head,
+                      const Tail&... tail) {
+    storage->emplace_back(::login::MakeValue(head).Clone());
+    InsertIntoList(storage, tail...);
+  }
+  // Base condition for the recursion, when there are no more elements to
+  // insert. Does nothing.
+  void InsertIntoList(std::vector<base::Value>*);
+
+  // Record |function_name| and |args| as an incoming event if recording is
+  // enabled.
+  void MaybeRecordIncomingEvent(const std::string& function_name,
+                                const base::ListValue* args);
+
+  // These two functions wrap Add(Raw)Callback so that the incoming JavaScript
+  // event can be recorded.
+  void OnRawCallback(const std::string& function_name,
+                     const content::WebUI::MessageCallback callback,
+                     const base::ListValue* args);
   template <typename... Args>
-  void CallJavascriptFunctionImmediate(const std::string& function_name,
-                                       const Args&... args) {
-    web_ui()->CallJavascriptFunctionUnsafe(function_name, args...);
+  void OnCallback(const std::string& function_name,
+                  const base::RepeatingCallback<void(Args...)>& callback,
+                  const base::ListValue* args) {
+    MaybeRecordIncomingEvent(function_name, args);
+    ::login::CallbackWrapper<Args...>(callback, args);
   }
 
   // Handles user action.

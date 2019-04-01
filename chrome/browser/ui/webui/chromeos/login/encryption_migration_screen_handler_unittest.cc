@@ -140,7 +140,7 @@ class EncryptionMigrationScreenHandlerTest : public testing::Test {
     user_context_.SetKey(
         Key(Key::KeyType::KEY_TYPE_SALTED_SHA256, "salt", "secret"));
 
-    js_calls_container_.ExecuteDeferredJSCalls();
+    js_calls_container_.ExecuteDeferredJSCalls(&test_web_ui_);
     encryption_migration_screen_handler_ =
         std::make_unique<TestEncryptionMigrationScreenHandler>(
             &js_calls_container_);
