@@ -402,6 +402,9 @@ class BASE_EXPORT TaskQueueImpl {
   void UpdateCrossThreadQueueStateLocked()
       EXCLUSIVE_LOCKS_REQUIRED(any_thread_lock_);
 
+  void MaybeLogPostTask(PostedTask* task);
+  void MaybeAdjustTaskDelay(PostedTask* task, CurrentThread current_thread);
+
   const char* name_;
   SequenceManagerImpl* const sequence_manager_;
 
@@ -428,6 +431,14 @@ class BASE_EXPORT TaskQueueImpl {
     bool post_immediate_task_should_schedule_work = true;
 
     bool unregistered = false;
+
+#if DCHECK_IS_ON()
+    // A cached of |immediate_work_queue->work_queue_set_index()| which is used
+    // to index into
+    // SequenceManager::Settings::per_priority_cross_thread_task_delay to apply
+    // a priority specific delay for debugging purposes.
+    int queue_set_index = 0;
+#endif
   };
 
   AnyThread any_thread_ GUARDED_BY(any_thread_lock_);

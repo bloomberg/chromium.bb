@@ -54,7 +54,8 @@ class WorkQueueTest : public testing::Test {
     work_queue_.reset(new WorkQueue(task_queue_.get(), "test",
                                     WorkQueue::QueueType::kImmediate));
     mock_observer_.reset(new MockObserver);
-    work_queue_sets_.reset(new WorkQueueSets("test", mock_observer_.get()));
+    work_queue_sets_.reset(new WorkQueueSets("test", mock_observer_.get(),
+                                             SequenceManager::Settings()));
     work_queue_sets_->AddQueue(work_queue_.get(), 0);
   }
 

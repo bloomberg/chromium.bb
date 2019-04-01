@@ -187,6 +187,8 @@ class BASE_EXPORT SequenceManagerImpl
     return associated_thread_;
   }
 
+  const Settings& settings() const { return settings_; }
+
   WeakPtr<SequenceManagerImpl> GetWeakPtr();
 
   // How frequently to perform housekeeping tasks (sweeping canceled tasks etc).
@@ -252,7 +254,7 @@ class BASE_EXPORT SequenceManagerImpl
   struct MainThreadOnly {
     explicit MainThreadOnly(
         const scoped_refptr<AssociatedThreadId>& associated_thread,
-        bool randomised_sampling_enabled);
+        const SequenceManager::Settings& settings);
     ~MainThreadOnly();
 
     int nesting_depth = 0;
@@ -365,6 +367,10 @@ class BASE_EXPORT SequenceManagerImpl
   // in TakeTask().
   Optional<PendingTask> TakeTaskImpl();
 
+#if DCHECK_IS_ON()
+  void LogTaskDebugInfo(const ExecutingTask& executing_task);
+#endif
+
   // Determines if wall time or thread time should be recorded for the next
   // task.
   TaskQueue::TaskTiming InitializeTaskTiming(
@@ -375,7 +381,7 @@ class BASE_EXPORT SequenceManagerImpl
   internal::EnqueueOrder::Generator enqueue_order_generator_;
 
   const std::unique_ptr<internal::ThreadController> controller_;
-  const MessageLoop::Type type_;
+  const Settings settings_;
 
   const MetricRecordingSettings metric_recording_settings_;
 

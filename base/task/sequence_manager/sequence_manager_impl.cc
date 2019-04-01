@@ -11,6 +11,7 @@
 #include "base/bit_cast.h"
 #include "base/compiler_specific.h"
 #include "base/debug/crash_logging.h"
+#include "base/debug/stack_trace.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"
@@ -146,20 +147,19 @@ SequenceManagerImpl::SequenceManagerImpl(
     SequenceManager::Settings settings)
     : associated_thread_(controller->GetAssociatedThread()),
       controller_(std::move(controller)),
-      type_(settings.message_loop_type),
+      settings_(std::move(settings)),
       metric_recording_settings_(InitializeMetricRecordingSettings(
-          settings.randomised_sampling_enabled)),
+          settings_.randomised_sampling_enabled)),
       empty_queues_to_reload_(associated_thread_),
       memory_corruption_sentinel_(kMemoryCorruptionSentinelValue),
-      main_thread_only_(associated_thread_,
-                        settings.randomised_sampling_enabled),
+      main_thread_only_(associated_thread_, settings_),
       weak_factory_(this) {
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("sequence_manager"), "SequenceManager", this);
   main_thread_only().selector.SetTaskQueueSelectorObserver(this);
 
   main_thread_only().next_time_to_reclaim_memory =
-      settings.clock->NowTicks() + kReclaimMemoryInterval;
+      settings_.clock->NowTicks() + kReclaimMemoryInterval;
 
   RegisterTimeDomain(main_thread_only().real_time_domain.get());
 
@@ -209,10 +209,10 @@ SequenceManagerImpl::~SequenceManagerImpl() {
 
 SequenceManagerImpl::MainThreadOnly::MainThreadOnly(
     const scoped_refptr<AssociatedThreadId>& associated_thread,
-    bool randomised_sampling_enabled)
-    : selector(associated_thread),
+    const SequenceManager::Settings& settings)
+    : selector(associated_thread, settings),
       real_time_domain(new internal::RealTimeDomain()) {
-  if (randomised_sampling_enabled) {
+  if (settings.randomised_sampling_enabled) {
     random_generator = std::mt19937_64(RandUint64());
     uniform_distribution = std::uniform_real_distribution<double>(0.0, 1.0);
   }
@@ -264,8 +264,10 @@ void SequenceManagerImpl::BindToMessagePump(std::unique_ptr<MessagePump> pump) {
 
   // On Android attach to the native loop when there is one.
 #if defined(OS_ANDROID)
-  if (type_ == MessageLoop::TYPE_UI || type_ == MessageLoop::TYPE_JAVA)
+  if (settings_.message_loop_type == MessageLoop::TYPE_UI ||
+      settings_.message_loop_type == MessageLoop::TYPE_JAVA) {
     controller_->AttachToMessagePump();
+  }
 #endif
 }
 
@@ -461,8 +463,55 @@ Optional<PendingTask> SequenceManagerImpl::TakeTask() {
                      "task_type", executing_task.task_type);
   TRACE_EVENT_BEGIN0("sequence_manager", executing_task.task_queue_name);
 
+#if DCHECK_IS_ON() && !defined(OS_NACL)
+  LogTaskDebugInfo(executing_task);
+#endif
+
   return task;
 }
+
+#if DCHECK_IS_ON() && !defined(OS_NACL)
+void SequenceManagerImpl::LogTaskDebugInfo(
+    const ExecutingTask& executing_task) {
+  switch (settings_.task_execution_logging) {
+    case Settings::TaskLogging::kNone:
+      break;
+
+    case Settings::TaskLogging::kEnabled:
+      DVLOG(1) << "#"
+               << static_cast<uint64_t>(
+                      executing_task.pending_task.enqueue_order())
+               << " " << executing_task.task_queue_name
+               << (executing_task.pending_task.cross_thread_
+                       ? " Run crossthread "
+                       : " Run ")
+               << executing_task.pending_task.posted_from.ToString();
+      break;
+
+    case Settings::TaskLogging::kEnabledWithBacktrace: {
+      std::array<const void*, PendingTask::kTaskBacktraceLength + 1> task_trace;
+      task_trace[0] = executing_task.pending_task.posted_from.program_counter();
+      std::copy(executing_task.pending_task.task_backtrace.begin(),
+                executing_task.pending_task.task_backtrace.end(),
+                task_trace.begin() + 1);
+      size_t length = 0;
+      while (length < task_trace.size() && task_trace[length])
+        ++length;
+      if (length == 0)
+        break;
+      DVLOG(1) << "#"
+               << static_cast<uint64_t>(
+                      executing_task.pending_task.enqueue_order())
+               << " " << executing_task.task_queue_name
+               << (executing_task.pending_task.cross_thread_
+                       ? " Run crossthread "
+                       : " Run ")
+               << debug::StackTrace(task_trace.data(), length);
+      break;
+    }
+  }
+}
+#endif  // DCHECK_IS_ON() && !defined(OS_NACL)
 
 Optional<PendingTask> SequenceManagerImpl::TakeTaskImpl() {
   CHECK(Validate());
@@ -910,7 +959,7 @@ bool SequenceManagerImpl::HasTasks() {
 }
 
 MessageLoop::Type SequenceManagerImpl::GetType() const {
-  return type_;
+  return settings_.message_loop_type;
 }
 
 void SequenceManagerImpl::SetTaskExecutionAllowed(bool allowed) {
@@ -987,15 +1036,14 @@ MessagePump* SequenceManagerImpl::GetMessagePump() const {
 }
 
 bool SequenceManagerImpl::IsType(MessageLoop::Type type) const {
-  return type_ == type;
+  return settings_.message_loop_type == type;
 }
 
 NOINLINE bool SequenceManagerImpl::Validate() {
   return memory_corruption_sentinel_ == kMemoryCorruptionSentinelValue;
 }
 
-void SequenceManagerImpl::EnableCrashKeys(
-    const char* async_stack_crash_key) {
+void SequenceManagerImpl::EnableCrashKeys(const char* async_stack_crash_key) {
   DCHECK(!main_thread_only().async_stack_crash_key);
 #if !defined(OS_NACL)
   main_thread_only().async_stack_crash_key = debug::AllocateCrashKeyString(

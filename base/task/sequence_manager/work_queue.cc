@@ -182,9 +182,15 @@ Task WorkQueue::TakeTaskFromWorkQueue() {
     tasks_.MaybeShrinkQueue();
   }
 
+#if DCHECK_IS_ON()
+  // If diagnostics are on it's possible task queues are being selected at
+  // random so we can't use the (slightly) more efficient OnPopMinQueueInSet.
+  work_queue_sets_->OnQueuesFrontTaskChanged(this);
+#else
   // OnPopMinQueueInSet calls GetFrontTaskEnqueueOrder which checks
   // BlockedByFence() so we don't need to here.
   work_queue_sets_->OnPopMinQueueInSet(this);
+#endif
   task_queue_->TraceQueueSize();
   return pending_task;
 }
