@@ -196,23 +196,6 @@ TEST_F(CSSVariableResolverTest, VarNeedsResolution) {
   EXPECT_FALSE(non_inherited_variables->NeedsResolution());
 }
 
-TEST_F(CSSVariableResolverTest, UrlNeedsResolution) {
-  scoped_refptr<StyleInheritedVariables> inherited_variables =
-      StyleInheritedVariables::Create();
-  auto non_inherited_variables = std::make_unique<StyleNonInheritedVariables>();
-
-  EXPECT_FALSE(inherited_variables->NeedsResolution());
-  EXPECT_FALSE(non_inherited_variables->NeedsResolution());
-
-  const auto* prop = CreateCustomProperty("url(a)");
-
-  inherited_variables->SetVariable("--prop", prop->Value());
-  non_inherited_variables->SetVariable("--prop", prop->Value());
-
-  EXPECT_TRUE(inherited_variables->NeedsResolution());
-  EXPECT_TRUE(non_inherited_variables->NeedsResolution());
-}
-
 TEST_F(CSSVariableResolverTest, CopiedVariablesRetainNeedsResolution) {
   scoped_refptr<StyleInheritedVariables> inherited_variables =
       StyleInheritedVariables::Create();

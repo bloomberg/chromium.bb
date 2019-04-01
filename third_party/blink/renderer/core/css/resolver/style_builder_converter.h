@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/platform/text/tab_size.h"
 #include "third_party/blink/renderer/platform/transforms/rotation.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
 namespace blink {
 
@@ -262,7 +263,9 @@ class StyleBuilderConverter {
                                                                const CSSValue&);
   static const CSSValue& ConvertRegisteredPropertyValue(
       const StyleResolverState&,
-      const CSSValue&);
+      const CSSValue&,
+      const String& base_url,
+      const WTF::TextEncoding&);
 
   static scoped_refptr<CSSVariableData> ConvertRegisteredPropertyVariableData(
       const CSSValue&,

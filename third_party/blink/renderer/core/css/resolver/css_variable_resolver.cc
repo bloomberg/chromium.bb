@@ -28,56 +28,10 @@
 #include "third_party/blink/renderer/core/style/style_inherited_variables.h"
 #include "third_party/blink/renderer/core/style/style_non_inherited_variables.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
-#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
-
-namespace {
-
-CSSParserToken ResolveUrl(const CSSParserToken& token,
-                          Vector<String>& backing_strings,
-                          const String& base_url,
-                          WTF::TextEncoding charset) {
-  DCHECK(token.GetType() == kUrlToken || token.GetType() == kStringToken);
-
-  StringView string_view = token.Value();
-
-  if (string_view.IsNull())
-    return token;
-
-  String relative_url = string_view.ToString();
-  KURL base = !base_url.IsNull() ? KURL(base_url) : KURL();
-  KURL absolute_url = charset.IsValid() ? KURL(base, relative_url, charset)
-                                        : KURL(base, relative_url);
-
-  backing_strings.push_back(absolute_url.GetString());
-
-  return token.CopyWithUpdatedString(StringView(backing_strings.back()));
-}
-
-// Rewrites (in-place) kUrlTokens and kFunctionToken/CSSValueUrls to contain
-// absolute URLs.
-void ResolveRelativeUrls(Vector<CSSParserToken>& tokens,
-                         Vector<String>& backing_strings,
-                         const String& base_url,
-                         const WTF::TextEncoding& charset) {
-  CSSParserToken* token = tokens.begin();
-  CSSParserToken* end = tokens.end();
-
-  while (token < end) {
-    if (token->GetType() == kUrlToken) {
-      *token = ResolveUrl(*token, backing_strings, base_url, charset);
-    } else if (token->FunctionId() == CSSValueID::kUrl) {
-      if (token + 1 < end && token[1].GetType() == kStringToken)
-        token[1] = ResolveUrl(token[1], backing_strings, base_url, charset);
-    }
-    ++token;
-  }
-}
-
-}  // namespace
 
 CSSVariableResolver::Fallback CSSVariableResolver::ResolveFallback(
     CSSParserTokenRange range,
@@ -187,7 +141,8 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
   // sequences are called "absolutized".
   if (resolved_value && !resolved_data->IsAbsolutized()) {
     resolved_value = &StyleBuilderConverter::ConvertRegisteredPropertyValue(
-        state_, *resolved_value);
+        state_, *resolved_value, resolved_data->BaseURL(),
+        resolved_data->Charset());
     resolved_data =
         StyleBuilderConverter::ConvertRegisteredPropertyVariableData(
             *resolved_value, resolved_data->IsAnimationTainted());
@@ -218,9 +173,8 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ResolveCustomProperty(
     AtomicString name,
     const CSSVariableData& variable_data,
     const Options& options,
-    bool resolve_urls,
     bool& cycle_detected) {
-  DCHECK(variable_data.NeedsVariableResolution() || resolve_urls);
+  DCHECK(variable_data.NeedsVariableResolution());
 
   Result result;
   result.is_animation_tainted = variable_data.IsAnimationTainted();
@@ -241,15 +195,11 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ResolveCustomProperty(
   }
   cycle_detected = false;
 
-  if (resolve_urls) {
-    ResolveRelativeUrls(result.tokens, result.backing_strings,
-                        variable_data.BaseURL(), variable_data.Charset());
-  }
-
   return CSSVariableData::CreateResolved(
       result.tokens, std::move(result.backing_strings),
       result.is_animation_tainted, result.has_font_units,
-      result.has_root_font_units, result.absolutized);
+      result.has_root_font_units, result.absolutized, variable_data.BaseURL(),
+      variable_data.Charset());
 }
 
 scoped_refptr<CSSVariableData>
@@ -259,21 +209,9 @@ CSSVariableResolver::ResolveCustomPropertyIfNeeded(
     const Options& options,
     bool& cycle_detected) {
   DCHECK(variable_data);
-  bool resolve_urls = ShouldResolveRelativeUrls(name, *variable_data);
-  if (!variable_data->NeedsVariableResolution() && !resolve_urls)
+  if (!variable_data->NeedsVariableResolution())
     return variable_data;
-  return ResolveCustomProperty(name, *variable_data, options, resolve_urls,
-                               cycle_detected);
-}
-
-bool CSSVariableResolver::ShouldResolveRelativeUrls(
-    const AtomicString& name,
-    const CSSVariableData& variable_data) {
-  if (!variable_data.NeedsUrlResolution())
-    return false;
-  const PropertyRegistration* registration =
-      registry_ ? registry_->Registration(name) : nullptr;
-  return registration ? registration->Syntax().HasUrlSyntax() : false;
+  return ResolveCustomProperty(name, *variable_data, options, cycle_detected);
 }
 
 bool CSSVariableResolver::IsVariableDisallowed(
@@ -544,8 +482,7 @@ CSSVariableResolver::ResolveCustomPropertyAnimationKeyframe(
     return nullptr;
   }
 
-  bool resolve_urls = false;
-  return ResolveCustomProperty(name, *keyframe.Value(), Options(), resolve_urls,
+  return ResolveCustomProperty(name, *keyframe.Value(), Options(),
                                cycle_detected);
 }
 
