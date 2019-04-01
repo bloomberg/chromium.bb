@@ -144,8 +144,7 @@ bool TransmissionEncodingInfoHandler::CanCpuEncodeSmoothly(
 
 void TransmissionEncodingInfoHandler::EncodingInfo(
     const blink::WebMediaConfiguration& configuration,
-    std::unique_ptr<blink::WebMediaCapabilitiesEncodingInfoCallbacks> callbacks)
-    const {
+    OnMediaCapabilitiesEncodingInfoCallback callback) const {
   DCHECK(configuration.video_configuration ||
          configuration.audio_configuration);
 
@@ -153,7 +152,7 @@ void TransmissionEncodingInfoHandler::EncodingInfo(
   if (!configuration.video_configuration &&
       !configuration.audio_configuration) {
     DVLOG(2) << "Neither video nor audio configuration specified.";
-    callbacks->OnSuccess(std::move(info));
+    std::move(callback).Run(std::move(info));
     return;
   }
 
@@ -191,7 +190,7 @@ void TransmissionEncodingInfoHandler::EncodingInfo(
     DVLOG(2) << "Audio MIME type:" << mime_type
              << " capabilities:" << ToString(*info);
   }
-  callbacks->OnSuccess(std::move(info));
+  std::move(callback).Run(std::move(info));
 }
 
 }  // namespace content

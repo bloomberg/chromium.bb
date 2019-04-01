@@ -22,6 +22,7 @@
 #include "media/base/video_codecs.h"
 #include "media/base/video_frame.h"
 #include "media/muxers/webm_muxer.h"
+#include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_info.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_configuration.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_track.h"
@@ -35,8 +36,6 @@ using base::TimeTicks;
 using base::ToLowerASCII;
 
 namespace content {
-
-using blink::WebMediaCapabilitiesEncodingInfoCallbacks;
 
 namespace {
 
@@ -348,8 +347,7 @@ void MediaRecorderHandler::Resume() {
 
 void MediaRecorderHandler::EncodingInfo(
     const blink::WebMediaConfiguration& configuration,
-    std::unique_ptr<blink::WebMediaCapabilitiesEncodingInfoCallbacks>
-        callbacks) {
+    OnMediaCapabilitiesEncodingInfoCallback callback) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(configuration.video_configuration ||
          configuration.audio_configuration);
@@ -398,7 +396,7 @@ void MediaRecorderHandler::EncodingInfo(
            << " is" << (info->supported ? " supported" : " NOT supported")
            << " and" << (info->smooth ? " smooth" : " NOT smooth");
 
-  callbacks->OnSuccess(std::move(info));
+  std::move(callback).Run(std::move(info));
 }
 
 blink::WebString MediaRecorderHandler::ActualMimeType() {

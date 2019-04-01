@@ -24,7 +24,6 @@
 #include "third_party/blink/renderer/modules/encryptedmedia/encrypted_media_utils.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_decoding_info.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_decoding_info_callbacks.h"
-#include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_encoding_info_callbacks.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_info.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_configuration.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_decoding_configuration.h"
@@ -32,6 +31,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/network/parsed_content_type.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -397,6 +397,22 @@ bool IsAudioConfigurationSupported(const WebAudioConfiguration& audio_config,
   return media::IsSupportedAudioType({audio_codec});
 }
 
+void OnMediaCapabilitiesEncodingInfo(
+    ScriptPromiseResolver* resolver,
+    std::unique_ptr<WebMediaCapabilitiesInfo> result) {
+  if (!resolver->GetExecutionContext() ||
+      resolver->GetExecutionContext()->IsContextDestroyed()) {
+    return;
+  }
+
+  Persistent<MediaCapabilitiesInfo> info(MediaCapabilitiesInfo::Create());
+  info->setSupported(result->supported);
+  info->setSmooth(result->smooth);
+  info->setPowerEfficient(result->power_efficient);
+
+  resolver->Resolve(std::move(info));
+}
+
 }  // anonymous namespace
 
 MediaCapabilities::MediaCapabilities() = default;
@@ -526,9 +542,9 @@ ScriptPromise MediaCapabilities::encodingInfo(
   if (configuration->type() == "transmission") {
     if (auto* handler =
             Platform::Current()->TransmissionEncodingInfoHandler()) {
-      handler->EncodingInfo(
-          ToWebMediaConfiguration(configuration),
-          std::make_unique<MediaCapabilitiesEncodingInfoCallbacks>(resolver));
+      handler->EncodingInfo(ToWebMediaConfiguration(configuration),
+                            WTF::Bind(&OnMediaCapabilitiesEncodingInfo,
+                                      WrapPersistent(resolver)));
       return promise;
     }
     resolver->Reject(DOMException::Create(
@@ -541,9 +557,9 @@ ScriptPromise MediaCapabilities::encodingInfo(
     if (auto handler = Platform::Current()->CreateMediaRecorderHandler(
             ExecutionContext::From(script_state)
                 ->GetTaskRunner(TaskType::kInternalMediaRealTime))) {
-      handler->EncodingInfo(
-          ToWebMediaConfiguration(configuration),
-          std::make_unique<MediaCapabilitiesEncodingInfoCallbacks>(resolver));
+      handler->EncodingInfo(ToWebMediaConfiguration(configuration),
+                            WTF::Bind(&OnMediaCapabilitiesEncodingInfo,
+                                      WrapPersistent(resolver)));
       return promise;
     }
     resolver->Reject(DOMException::Create(

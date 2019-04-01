@@ -26,10 +26,10 @@ class BLINK_PLATFORM_EXPORT WebTransmissionEncodingInfoHandler {
   // It implements WICG Media Capabilities encodingInfo() call for transmission
   // encoding.
   // https://wicg.github.io/media-capabilities/#media-capabilities-interface
-  virtual void EncodingInfo(
-      const WebMediaConfiguration&,
-      std::unique_ptr<blink::WebMediaCapabilitiesEncodingInfoCallbacks>)
-      const = 0;
+  using OnMediaCapabilitiesEncodingInfoCallback =
+      base::OnceCallback<void(std::unique_ptr<WebMediaCapabilitiesInfo>)>;
+  virtual void EncodingInfo(const WebMediaConfiguration&,
+                            OnMediaCapabilitiesEncodingInfoCallback) const = 0;
 };
 
 }  // namespace blink

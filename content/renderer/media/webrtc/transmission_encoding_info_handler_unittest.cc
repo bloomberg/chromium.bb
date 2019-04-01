@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "media/base/video_codecs.h"
 #include "media/video/video_encode_accelerator.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -93,22 +94,20 @@ class EncodingInfoObserver {
 // OnSuccess() received argument. So it moves OnSuccess()'s received argument,
 // WebMediaCapabilitiesInfo instance, to EncodingInfoObserver instance for
 // inspection.
-class WebMediaCapabilitiesEncodingInfoCallbacksForTest
-    : public blink::WebMediaCapabilitiesEncodingInfoCallbacks {
+class WebMediaCapabilitiesEncodingInfoCallbacksForTest {
  public:
   WebMediaCapabilitiesEncodingInfoCallbacksForTest(
       EncodingInfoObserver* observer)
       : observer_(observer) {
     DCHECK(observer_);
   }
-  ~WebMediaCapabilitiesEncodingInfoCallbacksForTest() override = default;
+  virtual ~WebMediaCapabilitiesEncodingInfoCallbacksForTest() = default;
 
-  void OnSuccess(
-      std::unique_ptr<blink::WebMediaCapabilitiesInfo> info) override {
+  void OnSuccess(std::unique_ptr<blink::WebMediaCapabilitiesInfo> info) {
     observer_->OnSuccess(std::move(info));
   }
 
-  void OnError() override { observer_->OnError(); }
+  void OnError() { observer_->OnError(); }
 
  private:
   EncodingInfoObserver* observer_;
@@ -165,7 +164,11 @@ class TransmissionEncodingInfoHandlerTest : public testing::Test {
     auto callbacks =
         std::make_unique<WebMediaCapabilitiesEncodingInfoCallbacksForTest>(
             &observer);
-    handler.EncodingInfo(configuration, std::move(callbacks));
+    handler.EncodingInfo(
+        configuration,
+        base::BindOnce(
+            &WebMediaCapabilitiesEncodingInfoCallbacksForTest::OnSuccess,
+            base::Unretained(callbacks.get())));
 
     EXPECT_TRUE(observer.IsCalled());
     EXPECT_TRUE(observer.is_success());
