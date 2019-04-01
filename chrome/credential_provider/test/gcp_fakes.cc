@@ -301,6 +301,13 @@ HRESULT FakeOSUserManager::GetUserFullname(const wchar_t* domain,
   return HRESULT_FROM_WIN32(NERR_UserNotFound);
 }
 
+HRESULT FakeOSUserManager::ModifyUserAccessWithLogonHours(
+    const wchar_t* domain,
+    const wchar_t* username,
+    bool allow) {
+  return S_OK;
+}
+
 FakeOSUserManager::UserInfo::UserInfo(const wchar_t* domain,
                                       const wchar_t* password,
                                       const wchar_t* fullname,
@@ -421,11 +428,6 @@ HRESULT FakeScopedLsaPolicy::RetrievePrivateData(const wchar_t* key,
 }
 
 HRESULT FakeScopedLsaPolicy::AddAccountRights(PSID sid, const wchar_t* right) {
-  return S_OK;
-}
-
-HRESULT FakeScopedLsaPolicy::RemoveAccountRights(PSID sid,
-                                                 const wchar_t* right) {
   return S_OK;
 }
 

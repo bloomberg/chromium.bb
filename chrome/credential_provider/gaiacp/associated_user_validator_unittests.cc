@@ -320,11 +320,6 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
                 (mdm_url_set && mdm_enrolled && token_handle_valid),
             validator.IsTokenHandleValidForUser(OLE2W(sid)));
   EXPECT_EQ(should_user_be_blocked, validator.IsUserAccessBlocked(OLE2W(sid)));
-  if (should_user_be_blocked) {
-    EXPECT_EQ(S_OK, GetMachineRegDWORD(kWinlogonUserListRegKey, username,
-                                       &reg_value));
-    EXPECT_EQ(0u, reg_value);
-  }
 
   // Unlock the user.
   validator.AllowSigninForUsersWithInvalidTokenHandles();

@@ -473,22 +473,18 @@ TEST_P(GcpCredentialProviderAvailableCredentialsTest, AvailableCredentials) {
 
   ASSERT_EQ(S_OK, provider->SetUsageScenario(cpus, 0));
 
-  // If other user tile is available, no users are passed to the provider
-  if (!other_user_tile_available) {
-    // All users are shown if the usage is not for unlocking the workstation or
-    // if fast user switching is enabled.
-    bool all_users_shown = cpus != CPUS_UNLOCK_WORKSTATION;
-    // Normally, the user with invalid token handles would be removed from
-    // the user array except if not all the users are shown. In this case,
-    // the user that locked the system is always sent in the user array.
-    if (!associated_user_validator.IsUserAccessBlocked(OLE2W(first_sid)) ||
-        (!all_users_shown && !second_user_locking_system)) {
-      array.AddUser(OLE2CW(first_sid), first_username);
-    }
-    if (!associated_user_validator.IsUserAccessBlocked(OLE2W(first_sid)) ||
-        (!all_users_shown && second_user_locking_system)) {
-      array.AddUser(OLE2CW(second_sid), second_username);
-    }
+  // All users are shown if the usage is not for unlocking the workstation.
+  bool all_users_shown = cpus != CPUS_UNLOCK_WORKSTATION;
+  // If not all the users are shown, the user that locked the system is
+  // the only one that is in the user array (if the other user tile is
+  // not available).
+  if (all_users_shown ||
+      (!second_user_locking_system && !other_user_tile_available)) {
+    array.AddUser(OLE2CW(first_sid), first_username);
+  }
+  if (all_users_shown ||
+      (second_user_locking_system && !other_user_tile_available)) {
+    array.AddUser(OLE2CW(second_sid), second_username);
   }
 
   ASSERT_EQ(S_OK, user_array->SetUserArray(&array));
@@ -501,12 +497,16 @@ TEST_P(GcpCredentialProviderAvailableCredentialsTest, AvailableCredentials) {
             provider->GetCredentialCount(&count, &default_index, &autologon));
 
   DWORD expected_credentials = 0;
-  if (other_user_tile_available) {
-    expected_credentials = 1;
-  } else if (cpus != CPUS_UNLOCK_WORKSTATION) {
+  if (cpus != CPUS_UNLOCK_WORKSTATION) {
     expected_credentials = valid_token_handles && enrolled_to_mdm ? 0 : 2;
+    if (other_user_tile_available)
+      expected_credentials += 1;
   } else {
-    expected_credentials = valid_token_handles && enrolled_to_mdm ? 0 : 1;
+    if (other_user_tile_available) {
+      expected_credentials = 1;
+    } else {
+      expected_credentials = valid_token_handles && enrolled_to_mdm ? 0 : 1;
+    }
   }
 
   ASSERT_EQ(expected_credentials, count);
@@ -519,28 +519,40 @@ TEST_P(GcpCredentialProviderAvailableCredentialsTest, AvailableCredentials) {
   CComPtr<ICredentialProviderCredential> cred;
   CComPtr<ICredentialProviderCredential2> cred2;
   CComPtr<IReauthCredential> reauth;
-  // Other user tile is shown, we should only create the anonymous tile as a
+
+  DWORD first_non_anonymous_cred_index = 0;
+
+  // Other user tile is shown, we should create the anonymous tile as a
   // ICredentialProviderCredential2 so that it is added to the "Other User"
   // tile.
   if (other_user_tile_available) {
-    EXPECT_EQ(S_OK, provider->GetCredentialAt(0, &cred));
+    EXPECT_EQ(S_OK, provider->GetCredentialAt(first_non_anonymous_cred_index++,
+                                              &cred));
     EXPECT_EQ(S_OK, cred.QueryInterface(&cred2));
-    // Not unlocking workstation: all the credentials should be shown as
-    // anonymous reauth credentials (i.e. must not expose
-    // ICredentialProviderCredential2) since they all the users have expired
-    // token handles and need to reauth.
-  } else if (cpus != CPUS_UNLOCK_WORKSTATION) {
-    EXPECT_EQ(S_OK, provider->GetCredentialAt(0, &cred));
-    EXPECT_EQ(S_OK, cred.QueryInterface(&reauth));
-    EXPECT_NE(S_OK, cred.QueryInterface(&cred2));
+  }
 
-    EXPECT_EQ(S_OK, provider->GetCredentialAt(1, &cred));
-    EXPECT_EQ(S_OK, cred.QueryInterface(&reauth));
-    EXPECT_NE(S_OK, cred.QueryInterface(&cred2));
-  } else {
+  // Not unlocking workstation: if there are more credentials then they should
+  // all the credentials should be shown as reauth credentials since all the
+  // users have expired token handles (or need mdm enrollment) and need to
+  // reauth.
+
+  if (cpus != CPUS_UNLOCK_WORKSTATION) {
+    if (first_non_anonymous_cred_index < expected_credentials) {
+      EXPECT_EQ(S_OK, provider->GetCredentialAt(
+                          first_non_anonymous_cred_index++, &cred));
+      EXPECT_EQ(S_OK, cred.QueryInterface(&reauth));
+      EXPECT_EQ(S_OK, cred.QueryInterface(&cred2));
+
+      EXPECT_EQ(S_OK, provider->GetCredentialAt(
+                          first_non_anonymous_cred_index++, &cred));
+      EXPECT_EQ(S_OK, cred.QueryInterface(&reauth));
+      EXPECT_EQ(S_OK, cred.QueryInterface(&cred2));
+    }
+  } else if (!other_user_tile_available) {
     // Only the user who locked the computer should be returned as a credential
     // and it should be a ICredentialProviderCredential2 with the correct sid.
-    EXPECT_EQ(S_OK, provider->GetCredentialAt(0, &cred));
+    EXPECT_EQ(S_OK, provider->GetCredentialAt(first_non_anonymous_cred_index++,
+                                              &cred));
     EXPECT_EQ(S_OK, cred.QueryInterface(&reauth));
     EXPECT_EQ(S_OK, cred.QueryInterface(&cred2));
 

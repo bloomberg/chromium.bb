@@ -24,7 +24,6 @@
 #include "chrome/credential_provider/gaiacp/mdm_utils.h"
 #include "chrome/credential_provider/gaiacp/os_user_manager.h"
 #include "chrome/credential_provider/gaiacp/reauth_credential.h"
-#include "chrome/credential_provider/gaiacp/reauth_credential_anonymous.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 
 namespace credential_provider {
@@ -110,37 +109,6 @@ void CGaiaCredentialProvider::FinalRelease() {
   // Unlock all the users that had their access locked due to invalid token
   // handles.
   AssociatedUserValidator::Get()->AllowSigninForUsersWithInvalidTokenHandles();
-}
-
-bool CGaiaCredentialProvider::ShouldCreateAnonymousReauthCredential(
-    bool other_user_credential_exists) {
-  // If user lockout is not enforced, no need to create anonymous reauth
-  // credential.
-  if (!AssociatedUserValidator::Get()->IsUserAccessBlockingEnforced(cpus_))
-    return false;
-
-  // TODO(crbug.com/935695): On domain joined machines, the "Other User" tile
-  // can appear along with normal user tiles and in this situation we may need
-  // to create both the other user tile and anonymous reauth credentials.
-  if (other_user_credential_exists)
-    return false;
-
-  // If the usage scneario is unlock workstation, then we will have two possible
-  // situations:
-  // 1. Other user tile only is visible: the condition above handles this case
-  // for all scenarios.
-  // 2. The user tile of the user that locked the workstation will appear. This
-  // user tile is forced by Windows, regardless of what permissions have been
-  // modified on the user to prevent them from signing in. In this case the
-  // user tile will be passed to SetUserArray. Since the user array is processed
-  // before we call this function, the user will already have their reauth
-  // credential created if needed, and it not, then no further processing should
-  // be needed because this should be the only user passsed in through
-  // SetUserArray.
-  if (cpus_ == CPUS_UNLOCK_WORKSTATION)
-    return false;
-
-  return true;
 }
 
 HRESULT CGaiaCredentialProvider::DestroyCredentials() {
@@ -279,66 +247,6 @@ HRESULT CGaiaCredentialProvider::CreateReauthCredentials(
   return S_OK;
 }
 
-HRESULT CGaiaCredentialProvider::CreateAnonymousReauthCredentialsIfNeeded(
-    bool showing_other_user,
-    const std::set<base::string16>& reauth_sids) {
-  if (!ShouldCreateAnonymousReauthCredential(showing_other_user))
-    return S_OK;
-
-  std::set<base::string16> associated_sids =
-      AssociatedUserValidator::Get()->GetUpdatedAssociatedSids();
-
-  OSUserManager* manager = OSUserManager::Get();
-
-  for (auto& associated_sid : associated_sids) {
-    // Edge case: If the user locking the machine started sign in screen with a
-    // valid token handle, then their token handle gets invalidated and then the
-    // sign in screen goes to sleep. On the next call to SetUserArray here the
-    // user array will still contain the user that is now invalidated even
-    // though the user's permissions have been changed and they are no longer
-    // able to sign in with just their normal credentials. It appears that
-    // Windows does not update the user array after the first initial start up
-    // of LoginUI. So to cover that case here, if we see that we already
-    // created a reauth for the user, just skip it.
-    // TODO(crbug.com/935697).
-    if (reauth_sids.find(associated_sid) != reauth_sids.end())
-      continue;
-    if (AssociatedUserValidator::Get()->IsTokenHandleValidForUser(
-            associated_sid))
-      continue;
-
-    wchar_t username[kWindowsUsernameBufferLength];
-    wchar_t domain[kWindowsDomainBufferLength];
-
-    HRESULT hr = manager->FindUserBySID(associated_sid.c_str(), username,
-                                        base::size(username), domain,
-                                        base::size(domain));
-    if (FAILED(hr)) {
-      LOGFN(ERROR) << "FindUserBySID hr=" << putHR(hr);
-      continue;
-    }
-
-    CComPtr<IGaiaCredential> cred;
-    hr = CComCreator<CComObject<CReauthCredentialAnonymous>>::CreateInstance(
-        nullptr, IID_IGaiaCredential, reinterpret_cast<void**>(&cred));
-    if (FAILED(hr)) {
-      LOG(ERROR) << "Could not create credential hr=" << putHR(hr);
-      return hr;
-    }
-
-    hr = InitializeReauthCredential(this, associated_sid, domain, username,
-                                    cred);
-    if (FAILED(hr)) {
-      LOG(ERROR) << "InitializeReauthCredential hr=" << putHR(hr);
-      return hr;
-    }
-
-    users_.emplace(users_.begin(), cred);
-  }
-
-  return S_OK;
-}
-
 // Static.
 bool CGaiaCredentialProvider::IsUsageScenarioSupported(
     CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus) {
@@ -435,19 +343,10 @@ HRESULT CGaiaCredentialProvider::SetUserArray(
 
   std::set<base::string16> reauth_sids;
   hr = CreateReauthCredentials(users, &reauth_sids);
-  if (FAILED(hr)) {
+  if (FAILED(hr))
     LOG(ERROR) << "CreateReauthCredentials hr=" << putHR(hr);
-    return hr;
-  }
 
-  hr =
-      CreateAnonymousReauthCredentialsIfNeeded(showing_other_user, reauth_sids);
-  if (FAILED(hr)) {
-    LOG(ERROR) << "CreateAnonymousReauthCredentialsIfNeeded hr=" << putHR(hr);
-    return hr;
-  }
-
-  return S_OK;
+  return hr;
 }
 
 // ICredentialProvider ////////////////////////////////////////////////////////

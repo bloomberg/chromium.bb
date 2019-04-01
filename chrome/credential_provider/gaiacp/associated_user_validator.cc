@@ -125,46 +125,17 @@ HRESULT ModifyUserAccess(const std::unique_ptr<ScopedLsaPolicy>& policy,
                          bool allow) {
   OSUserManager* manager = OSUserManager::Get();
   wchar_t username[kWindowsUsernameBufferLength];
+  wchar_t domain[kWindowsDomainBufferLength];
 
-  HRESULT hr = manager->FindUserBySID(sid.c_str(), username,
-                                      base::size(username), nullptr, 0);
+  HRESULT hr = manager->FindUserBySID(
+      sid.c_str(), username, base::size(username), domain, base::size(domain));
 
   if (FAILED(hr)) {
     LOGFN(ERROR) << "FindUserBySID sid=" << sid << " hr=" << putHR(hr);
     return hr;
   }
 
-  PSID psid;
-  if (!::ConvertStringSidToSidW(sid.c_str(), &psid)) {
-    HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
-    LOGFN(ERROR) << "ConvertStringSidToSidW sid=" << sid << " hr=" << putHR(hr);
-    return hr;
-  }
-
-  bool should_write_user_list_reg_key = true;
-  if (allow) {
-    hr = policy->RemoveAccountRights(psid, SE_DENY_INTERACTIVE_LOGON_NAME);
-    if (FAILED(hr) && hr != HRESULT_FROM_NT(STATUS_OBJECT_NAME_NOT_FOUND))
-      LOGFN(ERROR) << "RemoveAccountRights sid=" << sid << " hr=" << putHR(hr);
-  } else {
-    hr = policy->AddAccountRights(psid, SE_DENY_INTERACTIVE_LOGON_NAME);
-    if (FAILED(hr)) {
-      should_write_user_list_reg_key = false;
-      LOGFN(ERROR) << "AddAccountRights sid=" << sid << " hr=" << putHR(hr);
-    }
-  }
-
-  ::LocalFree(psid);
-
-  if (should_write_user_list_reg_key) {
-    hr = SetUserWinlogonUserListEntry(username, allow);
-    if (FAILED(hr)) {
-      LOGFN(ERROR) << "SetUserWinlogonUserListEntry username=" << username
-                   << " hr=" << putHR(hr);
-    }
-  }
-
-  return hr;
+  return manager->ModifyUserAccessWithLogonHours(domain, username, allow);
 }
 
 }  // namespace

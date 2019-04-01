@@ -533,9 +533,25 @@ HRESULT OSUserManager::RemoveUser(const wchar_t* username,
     op.fFlags = FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_NO_UI | FOF_SILENT;
 
     int ret = ::SHFileOperation(&op);
-    if (ret != 0) {
+    if (ret != 0)
       LOGFN(ERROR) << "SHFileOperation ret=" << ret;
-    }
+  }
+
+  return S_OK;
+}
+
+HRESULT OSUserManager::ModifyUserAccessWithLogonHours(const wchar_t* domain,
+                                                      const wchar_t* username,
+                                                      bool allow) {
+  BYTE buffer[21] = {0x0};
+  memset(buffer, allow ? 0xff : 0x0, sizeof(buffer));
+  USER_INFO_1020 user_info{UNITS_PER_WEEK, buffer};
+
+  NET_API_STATUS nsts = ::NetUserSetInfo(
+      domain, username, 1020, reinterpret_cast<BYTE*>(&user_info), nullptr);
+  if (nsts != NERR_Success) {
+    LOGFN(ERROR) << "NetUserSetInfo(set logon time) nsts=" << nsts;
+    return HRESULT_FROM_WIN32(nsts);
   }
 
   return S_OK;

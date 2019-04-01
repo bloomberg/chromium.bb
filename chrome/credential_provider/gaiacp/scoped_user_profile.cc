@@ -4,24 +4,12 @@
 
 #include "chrome/credential_provider/gaiacp/scoped_user_profile.h"
 
-// Must appear before gdiplus.h
-// gdiplus.h requires global functions min and max to exist. But the usage of
-// these functions occurs in the Gdiplus namespace only so we just declare
-// std::min and std::max in this namespace so that gdiplus can find them.
-// This is similar to what was done in:
-// https://cs.chromium.org/chromium/src/third_party/pdfium/core/fxge/win32/fx_win32_gdipext.cpp?type=cs&q=gdiplus.h&g=0&l=29
-namespace Gdiplus {
-using std::max;
-using std::min;
-}  // namespace Gdiplus
-
 #include <Windows.h>
 
 #include <aclapi.h>
 #include <atlcomcli.h>
 #include <atlconv.h>
 #include <dpapi.h>
-#include <gdiplus.h>
 #include <objidl.h>
 #include <security.h>
 #include <shlobj.h>
@@ -56,20 +44,7 @@ namespace {
 // retrying would not be needed, but this notification does not exist.
 const int kWaitForProfileCreationRetryCount = 30;
 
-constexpr int kProfilePictureSizes[] = {
-    32, 40, 48, 96, 192, 240, kLargestProfilePictureSize};
-
-class ScopedGdiplus {
- public:
-  ScopedGdiplus() {
-    Gdiplus::GdiplusStartup(&gdiplus_token_, &gdiplus_startup_input_, nullptr);
-  }
-  ~ScopedGdiplus() { Gdiplus::GdiplusShutdown(gdiplus_token_); }
-
- private:
-  Gdiplus::GdiplusStartupInput gdiplus_startup_input_;
-  ULONG_PTR gdiplus_token_;
-};
+constexpr int kProfilePictureSizes[] = {32, 40, 48, 96, 192, 240, 448};
 
 std::string GetEncryptedRefreshToken(
     base::win::ScopedHandle::Handle logon_handle,
@@ -110,100 +85,27 @@ std::string GetEncryptedRefreshToken(
   return encrypted_data;
 }
 
-HRESULT GetEncoderClsidByExtension(const base::string16& desired_extension,
-                                   CLSID* clsid_out) {
-  DCHECK(clsid_out);
-  // Number of image encoders.
-  UINT num = 0;
-  // Size of the image encoder array in bytes.
-  UINT size = 0;
-
-  Gdiplus::ImageCodecInfo* image_codec_info = nullptr;
-
-  Gdiplus::GetImageEncodersSize(&num, &size);
-  if (size == 0)
-    return E_FAIL;
-
-  std::unique_ptr<char[]> encoder_buffer(new char[size]);
-
-  image_codec_info =
-      reinterpret_cast<Gdiplus::ImageCodecInfo*>(encoder_buffer.get());
-
-  if (image_codec_info == nullptr)
-    return E_FAIL;
-
-  Gdiplus::GetImageEncoders(num, size, image_codec_info);
-
-  for (UINT j = 0; j < num; ++j) {
-    // FilenameExtension is a semicolon separated list of extensions recognized
-    // by the codec. Each extension is in the format "*.{ext}" so the * needs to
-    // be removed to get the real extension.
-    std::vector<base::string16> codec_extensions = base::SplitString(
-        base::StringPiece16(image_codec_info[j].FilenameExtension), L";",
-        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-
-    for (auto& extension : codec_extensions) {
-      size_t first_period = extension.find_last_of('.');
-      if (first_period != base::string16::npos &&
-          base::EqualsCaseInsensitiveASCII(extension.substr(first_period),
-                                           desired_extension)) {
-        *clsid_out = image_codec_info[j].Clsid;
-        return S_OK;
-      }
-    }
-  }
-
-  return E_FAIL;
-}
-
-HRESULT ConvertImageToDesiredFormat(const std::vector<char>& image_buffer,
-                                    const base::FilePath& converted_path) {
-  // Only support conversion to |kCredentialLogoPictureFileExtension| for now.
-  DCHECK(base::EqualsCaseInsensitiveASCII(converted_path.Extension(),
-                                          kCredentialLogoPictureFileExtension));
-
-  // Initialize GDI+.
-  ScopedGdiplus scoped_gdi_plus;
-
-  // Load the image stream into memory. Gdiplus::Image can automatically detect
-  // the file type and load the correct contents. Note that gaia returns a
-  // picture url with a .jpg extension but when the url is downloaded the image
-  // is actually a .png format and the Image class can handle this case
-  // correctly here.
-  CComPtr<IStream> buffer_stream;
-  buffer_stream.Attach(::SHCreateMemStream(
-      reinterpret_cast<const BYTE*>(image_buffer.data()), image_buffer.size()));
-  // Although this is a unique_ptr it needs to be freed before
-  // Gdiplus::GdiplusShutdown or else there will be an access violation during
-  // the delete of the unique_ptr. In this case, the image is created after
-  // ScopedGdiplus so it should go out of scope before GdiplusShutdown is
-  // called.
-  std::unique_ptr<Gdiplus::Image> image =
-      std::make_unique<Gdiplus::Image>(buffer_stream);
-
-  if (image->GetType() == Gdiplus::ImageTypeUnknown) {
-    LOGFN(ERROR) << "Unknown image type when loading image stream";
-    return E_FAIL;
-  }
-
-  // Get the CLSID of the encoder to the desired file type.
-  CLSID encoder_clsid;
-  HRESULT hr =
-      GetEncoderClsidByExtension(converted_path.Extension(), &encoder_clsid);
+HRESULT GetUserAccountPicturePath(const base::string16& sid,
+                                  base::FilePath* base_path) {
+  DCHECK(base_path);
+  base_path->clear();
+  LPWSTR path;
+  HRESULT hr = ::SHGetKnownFolderPath(FOLDERID_PublicUserTiles, 0, NULL, &path);
   if (FAILED(hr)) {
-    LOGFN(ERROR) << "GetEncoderClsid hr=" << putHR(hr);
+    LOGFN(ERROR) << "SHGetKnownFolderPath=" << putHR(hr);
     return hr;
   }
-
-  Gdiplus::Status stat =
-      image->Save(converted_path.value().c_str(), &encoder_clsid, nullptr);
-
-  if (stat != Gdiplus::Ok) {
-    LOGFN(ERROR) << "image->Save stat=" << stat;
-    return E_FAIL;
-  }
-
+  *base_path = base::FilePath(path).Append(sid);
+  ::CoTaskMemFree(path);
   return S_OK;
+}
+
+base::FilePath GetUserSizedAccountPictureFilePath(
+    const base::FilePath& account_picture_path,
+    int size,
+    const base::string16& picture_extension) {
+  return account_picture_path.Append(base::StringPrintf(
+      L"GoogleAccountPicture_%i%ls", size, picture_extension.c_str()));
 }
 
 using ImageProcessor =
@@ -404,16 +306,11 @@ HRESULT UpdateProfilePicturesForWindows8AndNewer(
   for (auto image_size : kProfilePictureSizes) {
     base::FilePath target_picture_path = GetUserSizedAccountPictureFilePath(
         account_picture_path, image_size, base_picture_extension);
-    base::FilePath bmp_picture_path = target_picture_path.ReplaceExtension(
-        kCredentialLogoPictureFileExtension);
     bool needs_to_save_original =
         force_update || !base::PathExists(target_picture_path);
-    bool needs_to_save_bitmap =
-        image_size == kLargestProfilePictureSize &&
-        (force_update || !base::PathExists(bmp_picture_path));
 
     // Skip if the file already exists and an update is not forced.
-    if (!needs_to_save_original && !needs_to_save_bitmap) {
+    if (!needs_to_save_original) {
       // Update the reg string for the image if it is not up to date.
       wchar_t old_picture_path[MAX_PATH];
       ULONG path_size = base::size(old_picture_path);
@@ -470,21 +367,6 @@ HRESULT UpdateProfilePicturesForWindows8AndNewer(
                 return hr;
               },
               sid, image_size));
-    }
-
-    if (needs_to_save_bitmap) {
-      SaveProcessedProfilePictureToDisk(
-          bmp_picture_path, response,
-          base::BindOnce([](const base::FilePath& picture_path,
-                            const std::vector<char>& picture_buffer) {
-            HRESULT hr =
-                ConvertImageToDesiredFormat(picture_buffer, picture_path);
-            if (FAILED(hr))
-              LOGFN(ERROR) << "ConvertImageToDesiredFormat(pic) hr="
-                           << putHR(hr);
-
-            return hr;
-          }));
     }
   }
 
