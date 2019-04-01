@@ -94,6 +94,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kAndroidPayIntegrationV1,
     &kAndroidPayIntegrationV2,
     &kAndroidPaymentApps,
+    &kAndroidSearchEngineChoiceNotification,
     &kAndroidSiteSettingsUIRefresh,
     &kBackgroundTaskSchedulerForBackgroundSync,
     &kCastDeviceFilter,
@@ -242,6 +243,10 @@ const base::Feature kAndroidPayIntegrationV2{"AndroidPayIntegrationV2",
 // TODO(rouslan): Remove this.
 const base::Feature kAndroidPaymentApps{"AndroidPaymentApps",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kAndroidSearchEngineChoiceNotification{
+    "AndroidSearchEngineChoiceNotification", base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kAndroidSiteSettingsUIRefresh{
     "AndroidSiteSettingsUIRefresh", base::FEATURE_DISABLED_BY_DEFAULT};
 
