@@ -12,6 +12,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/webrtc/rtc_base/mdns_responder_interface.h"
 
 namespace content {
 
@@ -28,6 +29,14 @@ class MockP2PSocketDispatcher : public NetworkListManager {
   ~MockP2PSocketDispatcher() override {}
 };
 
+class EmptyMdnsResponder : public webrtc::MdnsResponderInterface {
+ public:
+  void CreateNameForAddress(const rtc::IPAddress& addr,
+                            NameCreatedCallback callback) override {}
+  void RemoveNameForAddress(const rtc::IPAddress& addr,
+                            NameRemovedCallback callback) override {}
+};
+
 }  // namespace
 
 // 2 IPv6 addresses with only last digit different.
@@ -41,7 +50,9 @@ class IpcNetworkManagerTest : public testing::Test {
  public:
   IpcNetworkManagerTest()
       : network_list_manager_(new MockP2PSocketDispatcher()),
-        network_manager_(new IpcNetworkManager(network_list_manager_.get())) {}
+        network_manager_(std::make_unique<IpcNetworkManager>(
+            network_list_manager_.get(),
+            std::make_unique<EmptyMdnsResponder>())) {}
 
  protected:
   std::unique_ptr<MockP2PSocketDispatcher> network_list_manager_;
@@ -157,6 +168,34 @@ TEST_F(IpcNetworkManagerTest, DeterminesNetworkTypeFromNameIfUnknown) {
 
   EXPECT_EQ(rtc::ADAPTER_TYPE_VPN, (*tun1)->type());
   EXPECT_EQ(rtc::ADAPTER_TYPE_WIFI, (*tun2)->type());
+}
+
+// Test that IpcNetworkManager will act as the mDNS responder provider for
+// all networks that it returns.
+TEST_F(IpcNetworkManagerTest,
+       ServeAsMdnsResponderProviderForNetworksEnumerated) {
+  net::NetworkInterfaceList list;
+  // Add networks.
+  net::IPAddress ip;
+  EXPECT_TRUE(ip.AssignFromIPLiteral(kIPv6PublicAddrString1));
+  list.push_back(net::NetworkInterface(
+      "em1", "em1", 0, net::NetworkChangeNotifier::CONNECTION_UNKNOWN, ip, 64,
+      net::IP_ADDRESS_ATTRIBUTE_NONE));
+
+  network_manager_->OnNetworkListChanged(list, net::IPAddress(),
+                                         net::IPAddress());
+  std::vector<rtc::Network*> networks;
+  network_manager_->GetNetworks(&networks);
+
+  ASSERT_EQ(1u, networks.size());
+  webrtc::MdnsResponderInterface* const mdns_responder =
+      network_manager_->GetMdnsResponder();
+  EXPECT_EQ(mdns_responder, networks[0]->GetMdnsResponder());
+  networks.clear();
+  network_manager_->GetAnyAddressNetworks(&networks);
+  ASSERT_EQ(2u, networks.size());
+  EXPECT_EQ(mdns_responder, networks[0]->GetMdnsResponder());
+  EXPECT_EQ(mdns_responder, networks[1]->GetMdnsResponder());
 }
 
 }  // namespace content
