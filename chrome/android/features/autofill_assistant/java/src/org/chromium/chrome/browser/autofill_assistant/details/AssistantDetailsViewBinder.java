@@ -160,10 +160,7 @@ class AssistantDetailsViewBinder
                     CachedImageFetcher.ASSISTANT_DETAILS_UMA_CLIENT_NAME, image -> {
                         if (image != null) {
                             viewHolder.mImageView.setImageDrawable(getRoundedImage(image));
-                            // TODO(wuandy): Actually pull 'showAttribution' from server response,
-                            // once it is ready.
-                            boolean showAttribution = false;
-                            if (showAttribution) {
+                            if (details.getShowAttribution()) {
                                 viewHolder.mImageView.setOnClickListener(unusedView
                                         -> onImageClicked(mContext, details.getImageUrl()));
                             } else {

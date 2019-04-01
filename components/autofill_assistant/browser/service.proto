@@ -740,6 +740,10 @@ message DetailsProto {
     bool show_image_placeholder = 10;
   }
 
+  // Whether to show the original URL where image is extracted from. Only useful
+  // when 'image_url' is set.
+  optional bool show_attribution = 12;
+
   // Optional label to provide additional price information.
   optional string total_price_label = 9;
   // The price containing the total amount and the currency to pay, formatted
