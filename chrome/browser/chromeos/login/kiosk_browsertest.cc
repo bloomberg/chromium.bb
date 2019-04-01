@@ -984,8 +984,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkDownConfigureNotAllowed) {
   WaitForAppLaunchSuccess();
 }
 
-// http://crbug.com/543332
-IN_PROC_BROWSER_TEST_F(KioskTest, DISABLED_LaunchAppNetworkPortal) {
+IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkPortal) {
   // Mock network could be configured without the owner password.
   ScopedCanConfigureNetwork can_configure_network(true, false);
 
