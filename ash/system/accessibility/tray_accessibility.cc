@@ -77,11 +77,9 @@ void AccessibilityDetailedView::OnAccessibilityStatusChanged() {
   TrayPopupUtils::UpdateCheckMarkVisibility(select_to_speak_view_,
                                             select_to_speak_enabled_);
 
-  if (dictation_view_) {
-    dictation_enabled_ = controller->dictation_enabled();
-    TrayPopupUtils::UpdateCheckMarkVisibility(dictation_view_,
-                                              dictation_enabled_);
-  }
+  dictation_enabled_ = controller->dictation_enabled();
+  TrayPopupUtils::UpdateCheckMarkVisibility(dictation_view_,
+                                            dictation_enabled_);
 
   high_contrast_enabled_ = controller->high_contrast_enabled();
   TrayPopupUtils::UpdateCheckMarkVisibility(high_contrast_view_,
