@@ -155,4 +155,6 @@ ios_eg2_test("ios_web_shell_eg2tests") {
     # Test support libraries.
     ":eg_tests+eg2",
   ]
+
+  bundle_deps = [ "//ios/testing:http_server_bundle_data" ]
 }
