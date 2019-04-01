@@ -69,9 +69,9 @@ VkSemaphore ExternalVkImageBacking::CreateExternalVkSemaphore() {
 
 bool ExternalVkImageBacking::BeginAccess(
     bool readonly,
-    std::vector<SemaphoreHandle>* semaphore_handles) {
-  DCHECK(semaphore_handles);
-  DCHECK(semaphore_handles->empty());
+    std::vector<base::ScopedFD>* semaphore_fds) {
+  DCHECK(semaphore_fds);
+  DCHECK(semaphore_fds->empty());
   if (is_write_in_progress_) {
     LOG(ERROR) << "Unable to begin read or write access because another write "
                   "access is in progress";
@@ -88,31 +88,31 @@ bool ExternalVkImageBacking::BeginAccess(
     ++reads_in_progress_;
     // A semaphore will become unsignaled, when it has been signaled and waited,
     // so it is not safe to reuse it.
-    semaphore_handles->push_back(std::move(write_semaphore_handle_));
+    semaphore_fds->push_back(std::move(write_semaphore_fd_));
   } else {
     is_write_in_progress_ = true;
-    *semaphore_handles = std::move(read_semaphore_handles_);
-    read_semaphore_handles_.clear();
-    if (write_semaphore_handle_.is_valid())
-      semaphore_handles->push_back(std::move(write_semaphore_handle_));
+    *semaphore_fds = std::move(read_semaphore_fds_);
+    read_semaphore_fds_.clear();
+    if (write_semaphore_fd_.is_valid())
+      semaphore_fds->push_back(std::move(write_semaphore_fd_));
   }
   return true;
 }
 
 void ExternalVkImageBacking::EndAccess(bool readonly,
-                                       SemaphoreHandle semaphore_handle) {
-  DCHECK(semaphore_handle.is_valid());
+                                       base::ScopedFD semaphore_fd) {
+  DCHECK(semaphore_fd.is_valid());
 
   if (readonly) {
     DCHECK_GT(reads_in_progress_, 0u);
     --reads_in_progress_;
-    read_semaphore_handles_.push_back(std::move(semaphore_handle));
+    read_semaphore_fds_.push_back(std::move(semaphore_fd));
   } else {
     DCHECK(is_write_in_progress_);
-    DCHECK(!write_semaphore_handle_.is_valid());
-    DCHECK(read_semaphore_handles_.empty());
+    DCHECK(!write_semaphore_fd_.is_valid());
+    DCHECK(read_semaphore_fds_.empty());
     is_write_in_progress_ = false;
-    write_semaphore_handle_ = std::move(semaphore_handle);
+    write_semaphore_fd_ = std::move(semaphore_fd);
   }
 }
 

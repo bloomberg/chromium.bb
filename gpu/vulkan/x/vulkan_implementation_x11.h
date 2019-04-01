@@ -35,10 +35,6 @@ class COMPONENT_EXPORT(VULKAN_X11) VulkanImplementationX11
   std::unique_ptr<gfx::GpuFence> ExportVkFenceToGpuFence(
       VkDevice vk_device,
       VkFence vk_fence) override;
-  VkSemaphore ImportSemaphoreHandle(VkDevice vk_device,
-                                    SemaphoreHandle handle) override;
-  SemaphoreHandle GetSemaphoreHandle(VkDevice vk_device,
-                                     VkSemaphore vk_semaphore) override;
 
  private:
   XDisplay* const x_display_;

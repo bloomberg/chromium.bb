@@ -8,11 +8,11 @@
 #include <memory>
 #include <vector>
 
+#include "base/files/scoped_file.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
 #include "gpu/command_buffer/service/texture_manager.h"
-#include "gpu/vulkan/semaphore_handle.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 
 namespace gpu {
@@ -47,14 +47,13 @@ class ExternalVkImageBacking : public SharedImageBacking {
 
   // Notifies the backing that an access will start. Return false if there is
   // currently any other conflict access in progress. Otherwise, returns true
-  // and semaphore handles which will be waited on before accessing.
-  bool BeginAccess(bool readonly,
-                   std::vector<SemaphoreHandle>* semaphore_handles);
+  // and semaphore fds which will ne be waited on before accessing.
+  bool BeginAccess(bool readonly, std::vector<base::ScopedFD>* semaphore_fds);
 
   // Notifies the backing that an access has ended. The representation must
-  // provide a semaphore handle that has been signaled at the end of the write
+  // provide a semaphore fd that has been signalled at the end of the write
   // access.
-  void EndAccess(bool readonly, SemaphoreHandle semaphore_handle);
+  void EndAccess(bool readonly, base::ScopedFD semaphore_fd);
 
   // SharedImageBacking implementation.
   bool IsCleared() const override;
@@ -79,8 +78,8 @@ class ExternalVkImageBacking : public SharedImageBacking {
   SharedContextState* const context_state_;
   VkImage image_;
   VkDeviceMemory memory_;
-  SemaphoreHandle write_semaphore_handle_;
-  std::vector<SemaphoreHandle> read_semaphore_handles_;
+  base::ScopedFD write_semaphore_fd_;
+  std::vector<base::ScopedFD> read_semaphore_fds_;
   size_t memory_size_;
   bool is_cleared_ = false;
   VkFormat vk_format_;
