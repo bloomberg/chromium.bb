@@ -63,7 +63,7 @@ class Edit {
   }
 
   // Commits the edit and marks as un-mergeable.
-  void Commit() { merge_type_ = DO_NOT_MERGE; }
+  void Commit() { merge_type_ = MergeType::kDoNotMerge; }
 
  private:
   friend class InsertEdit;
@@ -95,10 +95,10 @@ class Edit {
   Type type() const { return type_; }
 
   // Can this edit be merged?
-  bool mergeable() const { return merge_type_ == MERGEABLE; }
+  bool mergeable() const { return merge_type_ == MergeType::kMergeable; }
 
   // Should this edit be forcibly merged with the previous edit?
-  bool force_merge() const { return merge_type_ == FORCE_MERGE; }
+  bool force_merge() const { return merge_type_ == MergeType::kForceMerge; }
 
   // Returns the end index of the |old_text_|.
   size_t old_text_end() const { return old_text_start_ + old_text_.length(); }
@@ -123,7 +123,7 @@ class Edit {
 
     new_text_ = edit->new_text_;
     new_text_start_ = edit->new_text_start_;
-    merge_type_ = DO_NOT_MERGE;
+    merge_type_ = MergeType::kDoNotMerge;
   }
 
   Type type_;
@@ -152,7 +152,7 @@ class InsertEdit : public Edit {
  public:
   InsertEdit(bool mergeable, const base::string16& new_text, size_t at)
       : Edit(INSERT_EDIT,
-             mergeable ? MERGEABLE : DO_NOT_MERGE,
+             mergeable ? MergeType::kMergeable : MergeType::kDoNotMerge,
              base::string16(),
              at,
              gfx::Range(at, at),
@@ -215,7 +215,7 @@ class DeleteEdit : public Edit {
              bool backward,
              gfx::Range old_selection)
       : Edit(DELETE_EDIT,
-             mergeable ? MERGEABLE : DO_NOT_MERGE,
+             mergeable ? MergeType::kMergeable : MergeType::kDoNotMerge,
              text,
              text_start,
              old_selection,
@@ -303,10 +303,6 @@ using internal::Edit;
 using internal::DeleteEdit;
 using internal::InsertEdit;
 using internal::ReplaceEdit;
-using internal::MergeType;
-using internal::DO_NOT_MERGE;
-using internal::FORCE_MERGE;
-using internal::MERGEABLE;
 
 /////////////////////////////////////////////////////////////////
 // TextfieldModel: public
@@ -324,6 +320,7 @@ TextfieldModel::~TextfieldModel() {
 }
 
 bool TextfieldModel::SetText(const base::string16& new_text) {
+  using MergeType = internal::MergeType;
   bool changed = false;
   if (HasCompositionText()) {
     ConfirmCompositionText();
@@ -336,9 +333,9 @@ bool TextfieldModel::SetText(const base::string16& new_text) {
     size_t new_cursor = new_text.length();
     // If there is a composition text, don't merge with previous edit.
     // Otherwise, force merge the edits.
-    ExecuteAndRecordReplace(changed ? DO_NOT_MERGE : FORCE_MERGE,
-                            gfx::Range(0, text().length()), new_cursor,
-                            new_text, 0U);
+    ExecuteAndRecordReplace(
+        changed ? MergeType::kDoNotMerge : MergeType::kForceMerge,
+        gfx::Range(0, text().length()), new_cursor, new_text, 0U);
     render_text_->SetCursorPosition(new_cursor);
   }
   ClearSelection();
@@ -622,9 +619,10 @@ void TextfieldModel::DeleteSelection() {
 void TextfieldModel::DeleteSelectionAndInsertTextAt(
     const base::string16& new_text,
     size_t position) {
+  using MergeType = internal::MergeType;
   if (HasCompositionText())
     CancelCompositionText();
-  ExecuteAndRecordReplace(DO_NOT_MERGE, render_text_->selection(),
+  ExecuteAndRecordReplace(MergeType::kDoNotMerge, render_text_->selection(),
                           position + new_text.length(), new_text, position);
 }
 
@@ -723,12 +721,13 @@ void TextfieldModel::ClearEditHistory() {
 
 void TextfieldModel::InsertTextInternal(const base::string16& new_text,
                                         bool mergeable) {
+  using MergeType = internal::MergeType;
   if (HasCompositionText()) {
     CancelCompositionText();
     ExecuteAndRecordInsert(new_text, mergeable);
   } else if (HasSelection()) {
-    ExecuteAndRecordReplaceSelection(mergeable ? MERGEABLE : DO_NOT_MERGE,
-                                     new_text);
+    ExecuteAndRecordReplaceSelection(
+        mergeable ? MergeType::kMergeable : MergeType::kDoNotMerge, new_text);
   } else {
     ExecuteAndRecordInsert(new_text, mergeable);
   }
@@ -778,7 +777,7 @@ void TextfieldModel::ExecuteAndRecordDelete(gfx::Range range, bool mergeable) {
 }
 
 void TextfieldModel::ExecuteAndRecordReplaceSelection(
-    MergeType merge_type,
+    internal::MergeType merge_type,
     const base::string16& new_text) {
   size_t new_text_start = render_text_->selection().GetMin();
   size_t new_cursor_pos = new_text_start + new_text.length();
@@ -786,7 +785,7 @@ void TextfieldModel::ExecuteAndRecordReplaceSelection(
                           new_text, new_text_start);
 }
 
-void TextfieldModel::ExecuteAndRecordReplace(MergeType merge_type,
+void TextfieldModel::ExecuteAndRecordReplace(internal::MergeType merge_type,
                                              gfx::Range replacement_range,
                                              size_t new_cursor_pos,
                                              const base::string16& new_text,
