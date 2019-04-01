@@ -252,7 +252,7 @@ const int kLocationAuthorizationStatusCount = 4;
     [combinedExtraHeaders addEntriesFromDictionary:params.extra_headers];
     params.extra_headers = [combinedExtraHeaders copy];
     UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-        ->Load(UrlLoadParams::InCurrentTab(params)->Disposition(disposition));
+        ->Load(UrlLoadParams::InCurrentTab(params, disposition));
 
     if (google_util::IsGoogleSearchUrl(url)) {
       UMA_HISTOGRAM_ENUMERATION(
@@ -426,10 +426,11 @@ const int kLocationAuthorizationStatusCount = 4;
     // It is necessary to include PAGE_TRANSITION_FROM_ADDRESS_BAR in the
     // transition type is so that query-in-the-omnibox is triggered for the
     // URL.
+    web::NavigationManager::WebLoadParams params(searchURL);
+    params.transition_type = ui::PageTransitionFromInt(
+        ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
     UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-        ->Load(UrlLoadParams::InCurrentTab(searchURL)->Transition(
-            ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
-                                      ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)));
+        ->Load(UrlLoadParams::InCurrentTab(params));
   }
 }
 
