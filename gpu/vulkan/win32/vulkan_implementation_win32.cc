@@ -105,4 +105,17 @@ VulkanImplementationWin32::ExportVkFenceToGpuFence(VkDevice vk_device,
   return nullptr;
 }
 
+VkSemaphore VulkanImplementationWin32::ImportSemaphoreHandle(
+    VkDevice vk_device,
+    SemaphoreHandle handle) {
+  NOTIMPLEMENTED();
+  return VK_NULL_HANDLE;
+}
+
+SemaphoreHandle VulkanImplementationWin32::GetSemaphoreHandle(
+    VkDevice vk_device,
+    VkSemaphore vk_semaphore) {
+  return SemaphoreHandle();
+}
+
 }  // namespace gpu

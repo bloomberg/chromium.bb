@@ -13,13 +13,17 @@
 
 #include <vulkan/vulkan.h>
 
+#include "base/native_library.h"
+#include "build/build_config.h"
+#include "gpu/vulkan/vulkan_export.h"
+
 #if defined(OS_ANDROID)
 #include <vulkan/vulkan_android.h>
 #endif
 
-#include "base/native_library.h"
-#include "build/build_config.h"
-#include "gpu/vulkan/vulkan_export.h"
+#if defined(OS_FUCHSIA)
+#include "gpu/vulkan/fuchsia/vulkan_fuchsia_ext.h"
+#endif
 
 namespace gpu {
 
@@ -106,6 +110,7 @@ struct VulkanFunctionPointers {
   PFN_vkGetDeviceQueue vkGetDeviceQueueFn = nullptr;
   PFN_vkGetFenceStatus vkGetFenceStatusFn = nullptr;
   PFN_vkGetImageMemoryRequirements vkGetImageMemoryRequirementsFn = nullptr;
+  PFN_vkGetImageSubresourceLayout vkGetImageSubresourceLayoutFn = nullptr;
   PFN_vkResetFences vkResetFencesFn = nullptr;
   PFN_vkUpdateDescriptorSets vkUpdateDescriptorSetsFn = nullptr;
   PFN_vkWaitForFences vkWaitForFencesFn = nullptr;
@@ -125,6 +130,13 @@ struct VulkanFunctionPointers {
   // Linux-only device functions.
 #if defined(OS_LINUX)
   PFN_vkGetMemoryFdKHR vkGetMemoryFdKHRFn = nullptr;
+#endif
+
+#if defined(OS_FUCHSIA)
+  PFN_vkImportSemaphoreZirconHandleFUCHSIA
+      vkImportSemaphoreZirconHandleFUCHSIAFn = nullptr;
+  PFN_vkGetSemaphoreZirconHandleFUCHSIA vkGetSemaphoreZirconHandleFUCHSIAFn =
+      nullptr;
 #endif
 
   // Queue functions
@@ -236,6 +248,8 @@ struct VulkanFunctionPointers {
 #define vkGetFenceStatus gpu::GetVulkanFunctionPointers()->vkGetFenceStatusFn
 #define vkGetImageMemoryRequirements \
   gpu::GetVulkanFunctionPointers()->vkGetImageMemoryRequirementsFn
+#define vkGetImageSubresourceLayout \
+  gpu::GetVulkanFunctionPointers()->vkGetImageSubresourceLayoutFn
 #define vkResetFences gpu::GetVulkanFunctionPointers()->vkResetFencesFn
 #define vkUpdateDescriptorSets \
   gpu::GetVulkanFunctionPointers()->vkUpdateDescriptorSetsFn
@@ -256,6 +270,13 @@ struct VulkanFunctionPointers {
 
 #if defined(OS_LINUX)
 #define vkGetMemoryFdKHR gpu::GetVulkanFunctionPointers()->vkGetMemoryFdKHRFn
+#endif
+
+#if defined(OS_FUCHSIA)
+#define vkImportSemaphoreZirconHandleFUCHSIA \
+  gpu::GetVulkanFunctionPointers()->vkImportSemaphoreZirconHandleFUCHSIAFn
+#define vkGetSemaphoreZirconHandleFUCHSIA \
+  gpu::GetVulkanFunctionPointers()->vkGetSemaphoreZirconHandleFUCHSIAFn
 #endif
 
 // Queue functions

@@ -279,6 +279,12 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   if (!vkGetImageMemoryRequirementsFn)
     return false;
 
+  vkGetImageSubresourceLayoutFn =
+      reinterpret_cast<PFN_vkGetImageSubresourceLayout>(
+          vkGetDeviceProcAddrFn(vk_device, "vkGetImageSubresourceLayout"));
+  if (!vkGetImageSubresourceLayoutFn)
+    return false;
+
   vkResetFencesFn = reinterpret_cast<PFN_vkResetFences>(
       vkGetDeviceProcAddrFn(vk_device, "vkResetFences"));
   if (!vkResetFencesFn)
@@ -324,6 +330,23 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   vkGetMemoryFdKHRFn = reinterpret_cast<PFN_vkGetMemoryFdKHR>(
       vkGetDeviceProcAddrFn(vk_device, "vkGetMemoryFdKHR"));
   if (!vkGetMemoryFdKHRFn)
+    return false;
+
+#endif
+
+#if defined(OS_FUCHSIA)
+  vkImportSemaphoreZirconHandleFUCHSIAFn =
+      reinterpret_cast<PFN_vkImportSemaphoreZirconHandleFUCHSIA>(
+          vkGetDeviceProcAddrFn(vk_device,
+                                "vkImportSemaphoreZirconHandleFUCHSIA"));
+  if (!vkImportSemaphoreZirconHandleFUCHSIAFn)
+    return false;
+
+  vkGetSemaphoreZirconHandleFUCHSIAFn =
+      reinterpret_cast<PFN_vkGetSemaphoreZirconHandleFUCHSIA>(
+          vkGetDeviceProcAddrFn(vk_device,
+                                "vkGetSemaphoreZirconHandleFUCHSIA"));
+  if (!vkGetSemaphoreZirconHandleFUCHSIAFn)
     return false;
 
 #endif

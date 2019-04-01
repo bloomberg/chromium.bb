@@ -6,7 +6,6 @@
 
 #include "base/android/android_hardware_buffer_compat.h"
 #include "base/android/scoped_hardware_buffer_handle.h"
-#include "base/files/scoped_file.h"
 #include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #include "gpu/vulkan/android/vulkan_implementation_android.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
@@ -85,16 +84,15 @@ TEST_F(VulkanImplementationAndroidTest, ExportImportSyncFd) {
   EXPECT_TRUE(vk_implementation_->SubmitSignalSemaphore(
       vk_context_provider_->GetDeviceQueue()->GetVulkanQueue(), semaphore1));
 
-  // Export a sync fd from the semaphore.
-  base::ScopedFD sync_fd;
-  EXPECT_TRUE(
-      vk_implementation_->GetSemaphoreFdKHR(vk_device_, semaphore1, &sync_fd));
-  EXPECT_GT(sync_fd.get(), -1);
+  // Export a handle from the semaphore.
+  SemaphoreHandle handle =
+      vk_implementation_->GetSemaphoreHandle(vk_device_, semaphore1);
+  EXPECT_TRUE(handle.is_valid());
 
-  // Import the above sync fd into a new semaphore.
-  VkSemaphore semaphore2;
-  EXPECT_TRUE(vk_implementation_->ImportSemaphoreFdKHR(
-      vk_device_, std::move(sync_fd), &semaphore2));
+  // Import the above semaphore handle into a new semaphore.
+  VkSemaphore semaphore2 =
+      vk_implementation_->ImportSemaphoreHandle(vk_device_, std::move(handle));
+  EXPECT_NE(semaphore2, static_cast<VkSemaphore>(VK_NULL_HANDLE));
 
   // Wait for the device to be idle.
   result = vkDeviceWaitIdle(vk_device_);

@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_instance.h"
+#include "gpu/vulkan/vulkan_posix_util.h"
 #include "gpu/vulkan/vulkan_surface.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/x/x11_types.h"
@@ -144,6 +145,19 @@ std::unique_ptr<gfx::GpuFence> VulkanImplementationX11::ExportVkFenceToGpuFence(
     VkFence vk_fence) {
   NOTREACHED();
   return nullptr;
+}
+
+VkSemaphore VulkanImplementationX11::ImportSemaphoreHandle(
+    VkDevice vk_device,
+    SemaphoreHandle sync_handle) {
+  return ImportVkSemaphoreHandlePosix(vk_device, std::move(sync_handle));
+}
+
+SemaphoreHandle VulkanImplementationX11::GetSemaphoreHandle(
+    VkDevice vk_device,
+    VkSemaphore vk_semaphore) {
+  return GetVkSemaphoreHandlePosix(
+      vk_device, vk_semaphore, VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT);
 }
 
 }  // namespace gpu
