@@ -8,16 +8,6 @@
   await TestRunner.loadModule('security_test_runner');
   await TestRunner.showPanel('security');
 
-  /** @type {!Protocol.Security.InsecureContentStatus} */
-  var insecureContentStatus = {
-    ranMixedContent: true,
-    displayedMixedContent: true,
-    ranContentWithCertErrors: false,
-    displayedContentWithCertErrors: false,
-    ranInsecureContentStyle: Protocol.Security.SecurityState.Insecure,
-    displayedInsecureContentStyle: Protocol.Security.SecurityState.Neutral
-  };
-
   var mixedExplanations = [
     {
       securityState: Protocol.Security.SecurityState.Neutral,
@@ -38,7 +28,7 @@
       .dispatchEventToListeners(
           Security.SecurityModel.Events.SecurityStateChanged,
           new Security.PageSecurityState(
-              Protocol.Security.SecurityState.Neutral, true, mixedExplanations, insecureContentStatus, null));
+              Protocol.Security.SecurityState.Neutral, true, mixedExplanations, null));
 
   var passive = new SDK.NetworkRequest(0, 'http://foo.test', 'https://foo.test', 0, 0, null);
   passive.mixedContentType = 'optionally-blockable';
