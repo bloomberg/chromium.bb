@@ -24,10 +24,12 @@ namespace {
 // Used for E2E latency measurements with UMA.
 const size_t kMaxTrackedCommittedServerVersions = 20;
 
-void HashSpecifics(const sync_pb::EntitySpecifics& specifics,
-                   std::string* hash) {
+std::string HashSpecifics(const sync_pb::EntitySpecifics& specifics) {
   DCHECK_GT(specifics.ByteSize(), 0);
-  base::Base64Encode(base::SHA1HashString(specifics.SerializeAsString()), hash);
+  std::string hash;
+  base::Base64Encode(base::SHA1HashString(specifics.SerializeAsString()),
+                     &hash);
+  return hash;
 }
 
 }  // namespace
@@ -110,9 +112,7 @@ bool ProcessorEntity::MatchesBaseData(const EntityData& data) const {
   if (data.is_deleted() || metadata_.base_specifics_hash().empty()) {
     return false;
   }
-  std::string hash;
-  HashSpecifics(data.specifics, &hash);
-  return hash == metadata_.base_specifics_hash();
+  return HashSpecifics(data.specifics) == metadata_.base_specifics_hash();
 }
 
 bool ProcessorEntity::IsUnsynced() const {
@@ -327,15 +327,13 @@ bool ProcessorEntity::MatchesSpecificsHash(
     const sync_pb::EntitySpecifics& specifics) const {
   DCHECK(!metadata_.is_deleted());
   DCHECK_GT(specifics.ByteSize(), 0);
-  std::string hash;
-  HashSpecifics(specifics, &hash);
-  return hash == metadata_.specifics_hash();
+  return HashSpecifics(specifics) == metadata_.specifics_hash();
 }
 
 void ProcessorEntity::UpdateSpecificsHash(
     const sync_pb::EntitySpecifics& specifics) {
   if (specifics.ByteSize() > 0) {
-    HashSpecifics(specifics, metadata_.mutable_specifics_hash());
+    *metadata_.mutable_specifics_hash() = HashSpecifics(specifics);
   } else {
     metadata_.clear_specifics_hash();
   }
