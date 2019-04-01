@@ -191,7 +191,9 @@ HRESULT WaitForLoginUIAndGetResult(
   // it.
   LOGFN(INFO) << "exit_code=" << *exit_code;
 
-  if (*exit_code == kUiecAbort) {
+  // Killed internally in the GLS or killed externally by selecting
+  // another credential while GLS is running.
+  if (*exit_code == kUiecAbort || *exit_code == kUiecKilled) {
     LOGFN(ERROR) << "Aborted hr=" << putHR(hr);
     return E_ABORT;
   } else if (*exit_code != kUiecSuccess) {
@@ -1407,7 +1409,7 @@ unsigned __stdcall CGaiaCredentialBase::WaitForLoginUI(void* param) {
   // If the process was killed by the credential in Terminate(), don't process
   // the error message since it is possible that the credential and/or the
   // provider no longer exists.
-  if (FAILED(hr) && exit_code != kUiecKilled) {
+  if (FAILED(hr)) {
     if (hr != E_ABORT)
       LOGFN(ERROR) << "WaitForLoginUIAndGetResult hr=" << putHR(hr);
 

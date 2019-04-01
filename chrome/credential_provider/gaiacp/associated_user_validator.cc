@@ -39,6 +39,7 @@ namespace {
 struct CheckReauthParams {
   base::string16 sid;
   base::string16 token_handle;
+  std::unique_ptr<WinHttpUrlFetcher> fetcher;
 };
 
 // Queries google to see whether the user's token handle is no longer valid or
@@ -48,16 +49,13 @@ unsigned __stdcall CheckReauthStatus(void* param) {
   std::unique_ptr<CheckReauthParams> reauth_info(
       reinterpret_cast<CheckReauthParams*>(param));
 
-  auto fetcher =
-      WinHttpUrlFetcher::Create(GURL(AssociatedUserValidator::kTokenInfoUrl));
-
-  if (fetcher) {
-    fetcher->SetRequestHeader("Content-Type",
-                              "application/x-www-form-urlencoded");
+  if (reauth_info->fetcher) {
+    reauth_info->fetcher->SetRequestHeader("Content-Type",
+                                           "application/x-www-form-urlencoded");
 
     std::string body = base::StringPrintf("token_handle=%ls",
                                           reauth_info->token_handle.c_str());
-    HRESULT hr = fetcher->SetRequestBody(body.c_str());
+    HRESULT hr = reauth_info->fetcher->SetRequestBody(body.c_str());
     if (FAILED(hr)) {
       LOGFN(ERROR) << "fetcher.SetRequestBody sid=" << reauth_info->sid
                    << " hr=" << putHR(hr);
@@ -65,7 +63,7 @@ unsigned __stdcall CheckReauthStatus(void* param) {
     }
 
     std::vector<char> response;
-    hr = fetcher->Fetch(&response);
+    hr = reauth_info->fetcher->Fetch(&response);
     if (FAILED(hr)) {
       LOGFN(INFO) << "fetcher.Fetch sid=" << reauth_info->sid
                   << " hr=" << putHR(hr);
@@ -418,7 +416,9 @@ void AssociatedUserValidator::StartTokenValidityQuery(
   // running and finish its execution without worrying about notifying anything
   // about the result.
   unsigned wait_thread_id;
-  CheckReauthParams* params = new CheckReauthParams{sid, token_handle};
+  CheckReauthParams* params = new CheckReauthParams{
+      sid, token_handle,
+      WinHttpUrlFetcher::Create(GURL(AssociatedUserValidator::kTokenInfoUrl))};
   uintptr_t wait_thread =
       _beginthreadex(nullptr, 0, CheckReauthStatus,
                      reinterpret_cast<void*>(params), 0, &wait_thread_id);

@@ -112,8 +112,6 @@ class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
   HRESULT ForkSaveAccountInfoStub(const std::unique_ptr<base::Value>& dict,
                                   BSTR* status_text) override;
 
-  void ResetInternalState() override;
-
   UiExitCodes default_exit_code_ = kUiecSuccess;
   std::string gls_email_;
   std::string gaia_id_override_;
@@ -289,12 +287,6 @@ void CTestCredentialBase<T>::DisplayErrorInUI(LONG status,
                                               BSTR status_text) {
   error_text_ = status_text;
   T::DisplayErrorInUI(status, substatus, status_text);
-}
-
-template <class T>
-void CTestCredentialBase<T>::ResetInternalState() {
-  gls_process_started_ = false;
-  T::ResetInternalState();
 }
 
 // This class is used to implement a test credential based off a fully

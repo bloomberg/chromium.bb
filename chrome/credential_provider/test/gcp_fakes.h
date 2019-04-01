@@ -308,6 +308,8 @@ class FakeInternetAvailabilityChecker : public InternetAvailabilityChecker {
   ~FakeInternetAvailabilityChecker() override;
 
   bool HasInternetConnection() override;
+  void SetHasInternetConnection(
+      HasInternetConnectionCheckType has_internet_connection);
 
  private:
   InternetAvailabilityChecker* original_checker_ = nullptr;

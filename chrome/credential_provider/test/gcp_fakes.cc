@@ -604,4 +604,9 @@ bool FakeInternetAvailabilityChecker::HasInternetConnection() {
   return has_internet_connection_ == kHicForceYes;
 }
 
+void FakeInternetAvailabilityChecker::SetHasInternetConnection(
+    HasInternetConnectionCheckType has_internet_connection) {
+  has_internet_connection_ = has_internet_connection;
+}
+
 }  // namespace credential_provider

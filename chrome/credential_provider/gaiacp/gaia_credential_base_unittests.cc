@@ -185,16 +185,12 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Abort) {
 
   ASSERT_EQ(S_OK, run_helper()->StartLogonProcessAndWait(cred));
 
-  // Now finish the logon.
-  CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE cpgsr;
-  CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION cpcs;
-  wchar_t* status_text;
-  CREDENTIAL_PROVIDER_STATUS_ICON status_icon;
-  ASSERT_EQ(S_OK,
-            cred->GetSerialization(&cpgsr, &cpcs, &status_text, &status_icon));
-  EXPECT_EQ(nullptr, status_text);
-  EXPECT_EQ(CPSI_NONE, status_icon);
-  EXPECT_EQ(CPGSR_NO_CREDENTIAL_NOT_FINISHED, cpgsr);
+  // Nothing should have been propagated to the provider, but also no
+  // error should be reported.
+  EXPECT_EQ(0u, provider.username().Length());
+  EXPECT_EQ(0u, provider.password().Length());
+  EXPECT_EQ(0u, provider.sid().Length());
+  EXPECT_EQ(FALSE, provider.credentials_changed_fired());
   EXPECT_EQ(nullptr, test->GetErrorText());
 
   EXPECT_EQ(S_OK, gaia_cred->Terminate());
@@ -572,6 +568,8 @@ TEST_F(GcpGaiaCredentialBaseTest, InvalidUserUnlockedAfterSignin) {
   EXPECT_EQ(false, validator.IsUserAccessBlocked(OLE2W(sid)));
   EXPECT_NE(S_OK,
             GetMachineRegDWORD(kWinlogonUserListRegKey, username, &reg_value));
+
+  ASSERT_EQ(S_OK, gaia_cred->Terminate());
 
   // No new user should be created.
   EXPECT_EQ(2ul, fake_os_user_manager()->GetUserCount());
