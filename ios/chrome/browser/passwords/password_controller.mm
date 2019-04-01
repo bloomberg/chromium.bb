@@ -97,8 +97,10 @@ enum class PasswordInfoBarType { SAVE, UPDATE };
 enum class PasswordSuggestionType {
   // Credentials are listed.
   CREDENTIALS = 0,
-  // Only "Show All" is listed.
+  // "Show All" is listed.
   SHOW_ALL = 1,
+  // "Suggest Password" is listed.
+  SUGGESTED = 2,
   COUNT
 };
 
@@ -403,9 +405,6 @@ void LogSuggestionShown(PasswordSuggestionType type) {
       [self.suggestionHelper retrieveSuggestionsWithFormName:formName
                                              fieldIdentifier:fieldIdentifier
                                                    fieldType:fieldType];
-  PasswordSuggestionType suggestion_type =
-      rawSuggestions.count > 0 ? PasswordSuggestionType::CREDENTIALS
-                               : PasswordSuggestionType::SHOW_ALL;
 
   NSMutableArray<FormSuggestion*>* suggestions = [NSMutableArray array];
   for (FormSuggestion* rawSuggestion in rawSuggestions) {
@@ -417,6 +416,9 @@ void LogSuggestionShown(PasswordSuggestionType type) {
                        displayDescription:rawSuggestion.displayDescription
                                      icon:nil
                                identifier:0]];
+  }
+  if (suggestions.count) {
+    LogSuggestionShown(PasswordSuggestionType::CREDENTIALS);
   }
 
   if ([self canGeneratePasswordForForm:formName
@@ -432,6 +434,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
                                icon:nil
                          identifier:autofill::
                                         POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY]];
+    LogSuggestionShown(PasswordSuggestionType::SUGGESTED);
   }
 
   // Once Manual Fallback is enabled the access to settings will exist as an
@@ -448,9 +451,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
                          identifier:
                              autofill::
                                  POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY]];
-  }
-  if (suggestions.count) {
-    LogSuggestionShown(suggestion_type);
+    LogSuggestionShown(PasswordSuggestionType::SHOW_ALL);
   }
 
   completion([suggestions copy], self);
@@ -475,7 +476,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
                         if (injected)
                           completion();
                       }];
-      // TODO(crbug.com/886583): add metrics.
+      LogSuggestionClicked(PasswordSuggestionType::SUGGESTED);
       return;
     }
     default: {
