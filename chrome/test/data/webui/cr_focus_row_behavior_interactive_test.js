@@ -37,6 +37,12 @@ CrFocusRowBehaviorTest.prototype = {
   },
 };
 
-TEST_F('CrFocusRowBehaviorTest', 'FocusTest', function() {
+// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
+GEN('#if defined(OS_WIN)');
+GEN('#define MAYBE_FocusTest DISABLED_FocusTest');
+GEN('#else');
+GEN('#define MAYBE_FocusTest FocusTest');
+GEN('#endif');
+TEST_F('CrFocusRowBehaviorTest', 'MAYBE_FocusTest', function() {
   mocha.run();
 });

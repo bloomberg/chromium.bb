@@ -10,12 +10,14 @@
 BookmarksFocusTest.All
 CrElementsActionMenuTest.All
 CrElementsCheckboxTest.All
+CrElementsExpandButtonTest.All
+CrElementsIconButtonFocusTest.All
 CrElementsInputTest.All
 CrElementsProfileAvatarSelectorFocusTest.All
 CrElementsToggleTest.All
 CrExtensionsOptionsPageTest.All
+CrFocusRowBehaviorTest.FocusTest
 CrSettingsAnimatedPagesTest.All
-CrSettingsFocusRowBehavior.FocusTest
 CrSettingsSyncPageTest.All
 HistoryFocusTest.All
 PrintPreviewDestinationDialogInteractiveTest.*
