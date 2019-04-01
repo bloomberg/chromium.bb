@@ -15,6 +15,7 @@
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/webrtc/api/stats/rtc_stats.h"
 
 namespace blink {
 
@@ -79,7 +80,7 @@ class DummyWebRTCRtpSender : public WebRTCRtpSender {
                      webrtc::DegradationPreference,
                      WebRTCVoidRequest) override {}
   void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>,
-                blink::RTCStatsFilter) override {}
+                const std::vector<webrtc::NonStandardGroupId>&) override {}
 
  private:
   scoped_refptr<DummyRtpSenderInternal> internal_;
@@ -133,7 +134,7 @@ class DummyWebRTCRtpReceiver : public WebRTCRtpReceiver {
     return WebVector<std::unique_ptr<WebRTCRtpSource>>();
   }
   void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>,
-                RTCStatsFilter) override {}
+                const std::vector<webrtc::NonStandardGroupId>&) override {}
   std::unique_ptr<webrtc::RtpParameters> GetParameters() const override {
     return nullptr;
   }
@@ -314,7 +315,7 @@ void MockWebRTCPeerConnectionHandler::GetStats(const WebRTCStatsRequest&) {}
 
 void MockWebRTCPeerConnectionHandler::GetStats(
     std::unique_ptr<WebRTCStatsReportCallback>,
-    blink::RTCStatsFilter) {}
+    const std::vector<webrtc::NonStandardGroupId>&) {}
 
 webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>
 MockWebRTCPeerConnectionHandler::AddTransceiverWithTrack(

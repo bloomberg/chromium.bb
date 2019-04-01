@@ -30,6 +30,7 @@
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_rtc_stats_request.h"
 #include "third_party/blink/public/platform/web_rtc_stats_response.h"
+#include "third_party/webrtc/api/stats/rtc_stats.h"
 
 namespace blink {
 class WebLocalFrame;
@@ -152,7 +153,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
 
   void GetStats(const blink::WebRTCStatsRequest& request) override;
   void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback> callback,
-                blink::RTCStatsFilter) override;
+                const std::vector<webrtc::NonStandardGroupId>&
+                    exposed_group_ids) override;
   webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
   AddTransceiverWithTrack(const blink::WebMediaStreamTrack& web_track,
                           const webrtc::RtpTransceiverInit& init) override;

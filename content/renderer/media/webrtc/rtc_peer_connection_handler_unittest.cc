@@ -945,7 +945,7 @@ TEST_F(RTCPeerConnectionHandlerTest, GetRTCStats) {
   std::unique_ptr<blink::WebRTCStatsReport> result;
   pc_handler_->GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>(
                             new MockRTCStatsReportCallback(&result)),
-                        blink::RTCStatsFilter::kIncludeNonStandardMembers);
+                        {});
   RunMessageLoopsUntilIdle();
   EXPECT_TRUE(result);
 
