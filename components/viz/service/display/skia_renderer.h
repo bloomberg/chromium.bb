@@ -175,7 +175,9 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   bool is_using_ddl() const { return draw_mode_ == DrawMode::DDL; }
 
   sk_sp<SkColorFilter> GetColorFilter(const gfx::ColorSpace& src,
-                                      const gfx::ColorSpace& dst);
+                                      const gfx::ColorSpace& dst,
+                                      float resource_offset,
+                                      float resource_multiplier);
   // A map from RenderPass id to the texture used to draw the RenderPass from.
   struct RenderPassBacking {
     sk_sp<SkSurface> render_pass_surface;

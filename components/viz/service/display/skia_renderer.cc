@@ -74,6 +74,13 @@ struct SkDrawRegion {
   SkPoint points[4];
 };
 
+// Additional YUV information to skia renderer to draw 9- and 10- bits color.
+struct YUVInput {
+  YUVInput() { memset(this, 0, sizeof(*this)); }
+  float offset;
+  float multiplier;
+};
+
 SkDrawRegion::SkDrawRegion(const gfx::QuadF& draw_region) {
   points[0] = gfx::PointFToSkPoint(draw_region.p1());
   points[1] = gfx::PointFToSkPoint(draw_region.p2());
@@ -1259,7 +1266,8 @@ void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
   gfx::ColorSpace dst_color_space =
       current_frame()->current_render_pass->color_space;
   sk_sp<SkColorFilter> color_filter =
-      GetColorFilter(src_color_space, dst_color_space);
+      GetColorFilter(src_color_space, dst_color_space, quad->resource_offset,
+                     quad->resource_multiplier);
 
   DCHECK(resource_provider_);
   ScopedYUVSkImageBuilder builder(this, quad, dst_color_space.ToSkColorSpace(),
@@ -1383,7 +1391,9 @@ void SkiaRenderer::PrepareCanvasForDrawQuads(
 }
 
 sk_sp<SkColorFilter> SkiaRenderer::GetColorFilter(const gfx::ColorSpace& src,
-                                                  const gfx::ColorSpace& dst) {
+                                                  const gfx::ColorSpace& dst,
+                                                  float resource_offset,
+                                                  float resource_multiplier) {
   sk_sp<SkColorFilter>& color_filter = color_filter_cache_[dst][src];
   if (!color_filter) {
     std::unique_ptr<gfx::ColorTransform> transform =
@@ -1393,8 +1403,20 @@ sk_sp<SkColorFilter> SkiaRenderer::GetColorFilter(const gfx::ColorSpace& src,
     // COLOR_CONVERSION_MODE_LUT).
     if (!transform->CanGetShaderSource())
       return nullptr;
+
+    YUVInput input;
+    input.offset = resource_offset;
+    input.multiplier = resource_multiplier;
+    sk_sp<SkData> data = SkData::MakeWithCopy(&input, sizeof(input));
+
     const char* hdr = R"(
+in uniform float offset;
+in uniform float multiplier;
+
 void main(inout half4 color) {
+  color.rgb -= half(offset);
+  color.rgb *= half(multiplier);
+
   // un-premultiply alpha
   if (color.a > 0)
     color.rgb /= color.a;
@@ -1406,9 +1428,10 @@ void main(inout half4 color) {
 )";
 
     std::string shader = hdr + transform->GetSkShaderSource() + ftr;
+
     color_filter =
         SkRuntimeColorFilterFactory(SkString(shader.c_str(), shader.size()))
-            .make(SkData::MakeEmpty());
+            .make(data);
   }
   return color_filter;
 }
