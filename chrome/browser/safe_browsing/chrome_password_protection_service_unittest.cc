@@ -237,6 +237,7 @@ class ChromePasswordProtectionServiceTest
   }
 
   CoreAccountInfo SetPrimaryAccount(const std::string& email) {
+    identity_test_env()->MakeAccountAvailable(email);
     return identity_test_env()->SetPrimaryAccount(email);
   }
 

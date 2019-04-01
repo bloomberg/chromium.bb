@@ -714,7 +714,6 @@ ChromePasswordProtectionService::GetSyncAccountType() const {
              : PasswordReuseEvent::GSUITE;
 }
 
-
 void ChromePasswordProtectionService::MaybeLogPasswordReuseLookupResult(
     content::WebContents* web_contents,
     PasswordReuseLookup::LookupResult result) {
@@ -977,8 +976,14 @@ AccountInfo ChromePasswordProtectionService::GetAccountInfo() const {
   auto* identity_manager = IdentityManagerFactory::GetForProfileIfExists(
       profile_->GetOriginalProfile());
 
-  return identity_manager ? identity_manager->GetPrimaryAccountInfoDeprecated()
-                          : AccountInfo();
+  if (!identity_manager)
+    return AccountInfo();
+
+  base::Optional<AccountInfo> primary_account_info =
+      identity_manager->FindExtendedAccountInfoForAccount(
+          identity_manager->GetPrimaryAccountInfo());
+
+  return primary_account_info.value_or(AccountInfo());
 }
 
 GURL ChromePasswordProtectionService::GetEnterpriseChangePasswordURL() const {
