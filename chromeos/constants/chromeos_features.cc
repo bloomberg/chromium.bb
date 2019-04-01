@@ -13,6 +13,11 @@ namespace features {
 const base::Feature kAutoScreenBrightness{"AutoScreenBrightness",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature containing param to block provided long term keys.
+const base::Feature kBlueZLongTermKeyBlocklist{
+    "BlueZLongTermKeyBlocklist", base::FEATURE_DISABLED_BY_DEFAULT};
+const char kBlueZLongTermKeyBlocklistParamName[] = "ltk_blocklist";
+
 // Enables or disables Crostini Backup.
 const base::Feature kCrostiniBackup{"CrostiniBackup",
                                     base::FEATURE_DISABLED_BY_DEFAULT};

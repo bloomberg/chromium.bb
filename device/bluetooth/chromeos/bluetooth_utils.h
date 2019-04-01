@@ -5,10 +5,12 @@
 #ifndef DEVICE_BLUETOOTH_CHROMEOS_BLUETOOTH_UTILS_H_
 #define DEVICE_BLUETOOTH_CHROMEOS_BLUETOOTH_UTILS_H_
 
+#include <vector>
+
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_export.h"
 
-// This file contains common utilities for filtering the bluetooth devices
+// This file contains common utilities, including filtering bluetooth devices
 // based on the filter criteria.
 namespace device {
 
@@ -25,6 +27,9 @@ device::BluetoothAdapter::DeviceList DEVICE_BLUETOOTH_EXPORT
 FilterBluetoothDeviceList(const BluetoothAdapter::DeviceList& devices,
                           BluetoothFilterType filter_type,
                           int max_devices);
+
+std::vector<std::vector<uint8_t>> DEVICE_BLUETOOTH_EXPORT
+GetBlockedLongTermKeys();
 
 }  // namespace device
 

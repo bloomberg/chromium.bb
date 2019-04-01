@@ -4,7 +4,15 @@
 
 #include "device/bluetooth/chromeos/bluetooth_utils.h"
 
+#include <string>
+
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
+#include "base/optional.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "device/base/features.h"
 
 namespace device {
@@ -16,6 +24,8 @@ const char kHIDServiceUUID[] = "1812";
 
 // https://www.bluetooth.com/specifications/assigned-numbers/16-bit-uuids-for-sdos.
 const char kSecurityKeyServiceUUID[] = "FFFD";
+
+const size_t kLongTermKeyHexStringLength = 32;
 
 // Get limited number of devices from |devices| and
 // prioritize paired/connecting devices over other devices.
@@ -91,6 +101,31 @@ device::BluetoothAdapter::DeviceList FilterBluetoothDeviceList(
       filter_type == BluetoothFilterType::KNOWN ? FilterUnknownDevices(devices)
                                                 : devices;
   return GetLimitedNumDevices(max_devices, filtered_devices);
+}
+
+std::vector<std::vector<uint8_t>> GetBlockedLongTermKeys() {
+  std::string blocklist = base::GetFieldTrialParamValueByFeature(
+      chromeos::features::kBlueZLongTermKeyBlocklist,
+      chromeos::features::kBlueZLongTermKeyBlocklistParamName);
+  std::vector<std::vector<uint8_t>> long_term_keys;
+  if (blocklist.empty())
+    return long_term_keys;
+
+  std::vector<std::string> hex_keys = base::SplitString(
+      blocklist, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  for (const auto& hex_key : hex_keys) {
+    // Must be |kLongTermKeyHexStringLength| nibbles in length.
+    if (hex_key.length() != kLongTermKeyHexStringLength) {
+      LOG(WARNING) << "Incorrect Long Term Key length";
+      continue;
+    }
+
+    std::vector<uint8_t> bytes_key;
+    if (base::HexStringToBytes(hex_key, &bytes_key))
+      long_term_keys.push_back(std::move(bytes_key));
+  }
+
+  return long_term_keys;
 }
 
 }  // namespace device
