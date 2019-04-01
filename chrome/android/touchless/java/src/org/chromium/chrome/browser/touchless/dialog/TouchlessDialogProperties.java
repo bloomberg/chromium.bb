@@ -12,6 +12,7 @@ import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModel.ReadableBooleanPropertyKey;
+import org.chromium.ui.modelutil.PropertyModel.WritableIntPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 
 import java.lang.annotation.Retention;
@@ -24,6 +25,15 @@ public class TouchlessDialogProperties {
     @Retention(RetentionPolicy.SOURCE)
     public @interface ListItemType {
         int DEFAULT = 0;
+    }
+
+    /** Possible priorities for this set of properties. */
+    @IntDef({Priority.HIGH, Priority.MEDIUM, Priority.LOW})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Priority {
+        int HIGH = 0;
+        int MEDIUM = 1;
+        int LOW = 2;
     }
 
     /** Properties that determine how list items are displayed in the touchless dialog. */
@@ -59,7 +69,34 @@ public class TouchlessDialogProperties {
     public static final WritableObjectPropertyKey<PropertyModel[]> LIST_MODELS =
             new WritableObjectPropertyKey<>();
 
-    public static final PropertyKey[] ALL_KEYS = {IS_FULLSCREEN, TITLE, LIST_MODELS};
+    /** The cancel event's name. */
+    public static final WritableObjectPropertyKey<String> CANCEL_NAME =
+            new WritableObjectPropertyKey<>();
+
+    /** What will happen when cancel is triggered. */
+    public static final WritableObjectPropertyKey<OnClickListener> CANCEL_ACTION =
+            new WritableObjectPropertyKey<>();
+
+    /** The name of the select action. */
+    public static final WritableObjectPropertyKey<String> SELECT_NAME =
+            new WritableObjectPropertyKey<>();
+
+    /** The alternative action's name. */
+    public static final WritableObjectPropertyKey<String> ALT_NAME =
+            new WritableObjectPropertyKey<>();
+
+    /** What will happen when alternative action is triggered. */
+    public static final WritableObjectPropertyKey<OnClickListener> ALT_ACTION =
+            new WritableObjectPropertyKey<>();
+
+    /** The priority for this set of properties. */
+    public static final WritableIntPropertyKey PRIORITY = new WritableIntPropertyKey();
+
+    public static final PropertyKey[] MINIMAL_DIALOG_KEYS = {
+            TITLE, CANCEL_NAME, CANCEL_ACTION, SELECT_NAME, ALT_NAME, ALT_ACTION, PRIORITY};
+
+    public static final PropertyKey[] ALL_KEYS = PropertyModel.concatKeys(
+            MINIMAL_DIALOG_KEYS, new PropertyKey[] {IS_FULLSCREEN, TITLE, LIST_MODELS});
 
     public static final PropertyKey[] ALL_DIALOG_KEYS =
             PropertyModel.concatKeys(ModalDialogProperties.ALL_KEYS, ALL_KEYS);
