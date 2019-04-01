@@ -7,9 +7,9 @@
 
 #include <string>
 
+#include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
-#include "chrome/browser/ui/app_list/search/search_util.h"
 #include "components/arc/common/app.mojom.h"
 #include "ui/gfx/image/image_skia.h"
 

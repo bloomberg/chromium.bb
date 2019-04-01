@@ -1,9 +1,11 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_UTIL_H_
-#define CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_UTIL_H_
+#ifndef ASH_PUBLIC_CPP_APP_LIST_APP_LIST_METRICS_H_
+#define ASH_PUBLIC_CPP_APP_LIST_APP_LIST_METRICS_H_
+
+#include "ash/public/cpp/ash_public_export.h"
 
 namespace app_list {
 // The type of the ChromeSearchResult. This is used for logging so do not
@@ -62,12 +64,15 @@ enum SearchResultType {
   APP_DATA_RESULT_PERSON,
   // An ArcAppDataSearchResult which is a note document.
   APP_DATA_RESULT_NOTE_DOCUMENT,
+  // An omnibox result which is opened via the assistant.
+  ASSISTANT_OMNIBOX_RESULT,
   // Boundary is always last.
   SEARCH_RESULT_TYPE_BOUNDARY
 };
 
-void RecordSearchResultOpenTypeHistogram(SearchResultType type);
+ASH_PUBLIC_EXPORT void RecordSearchResultOpenTypeHistogram(
+    SearchResultType type);
 
 }  // namespace app_list
 
-#endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_UTIL_H_
+#endif  // ASH_PUBLIC_CPP_APP_LIST_APP_LIST_METRICS_H_

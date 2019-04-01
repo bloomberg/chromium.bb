@@ -2115,6 +2115,7 @@ Unknown properties are collapsed to zero. -->
   <int value="22" label="Settings Shortcut"/>
   <int value="23" label="AppDataResult, Person From Contacts"/>
   <int value="24" label="AppDataResult, Note Document"/>
+  <int value="25" label="Omnibox, Assistant"/>
 </enum>
 
 <enum name="AppListSearchResultDisplayType">

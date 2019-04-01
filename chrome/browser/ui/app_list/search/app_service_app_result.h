@@ -7,9 +7,9 @@
 
 #include <memory>
 
+#include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/app_list/search/app_result.h"
-#include "chrome/browser/ui/app_list/search/search_util.h"
 #include "chrome/services/app_service/public/cpp/icon_cache.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 
