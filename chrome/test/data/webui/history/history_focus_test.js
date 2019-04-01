@@ -37,7 +37,13 @@ HistoryFocusTest.prototype = {
   },
 };
 
-TEST_F('HistoryFocusTest', 'All', function() {
+// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
+GEN('#if defined(OS_WIN)');
+GEN('#define MAYBE_All DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_All All');
+GEN('#endif');
+TEST_F('HistoryFocusTest', 'MAYBE_All', function() {
   suite('<history-toolbar>', function() {
     let app;
     let toolbar;
