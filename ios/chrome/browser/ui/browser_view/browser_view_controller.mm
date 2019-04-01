@@ -32,6 +32,7 @@
 #import "components/signin/ios/browser/account_consistency_service.h"
 #include "components/signin/ios/browser/active_state_manager.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/unified_consent/feature.h"
 #include "ios/chrome/app/tests_hook.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -4905,7 +4906,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)showSyncSettings {
-  [self.dispatcher showSyncSettingsFromViewController:self];
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    [self.dispatcher showGoogleServicesSettingsFromViewController:self];
+  } else {
+    [self.dispatcher showSyncSettingsFromViewController:self];
+  }
 }
 
 - (void)showSyncPassphraseSettings {

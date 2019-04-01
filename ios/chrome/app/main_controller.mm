@@ -37,6 +37,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/ukm/ios/features.h"
+#include "components/unified_consent/feature.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
@@ -1688,6 +1689,9 @@ enum class EnterTabSwitcherSnapshotResult {
 // TODO(crbug.com/779791) : Remove show settings commands from MainController.
 - (void)showSyncSettingsFromViewController:
     (UIViewController*)baseViewController {
+  // When unified consent feather is enabled,
+  // |showGoogleServicesSettingsFromViewController:| should be called.
+  DCHECK(!unified_consent::IsUnifiedConsentFeatureEnabled());
   if (_settingsNavigationController) {
     [_settingsNavigationController
         showSyncSettingsFromViewController:baseViewController];

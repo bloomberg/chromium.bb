@@ -1114,7 +1114,11 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 }
 
 - (void)showSyncSettings {
-  [self.dispatcher showSyncSettingsFromViewController:self];
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    [self.dispatcher showGoogleServicesSettingsFromViewController:self];
+  } else {
+    [self.dispatcher showSyncSettingsFromViewController:self];
+  }
 }
 
 - (void)showSyncPassphraseSettings {
