@@ -13,29 +13,32 @@
 #include "base/observer_list.h"
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_url_parameters.h"
+#include "components/download/public/common/simple_download_manager.h"
 
 namespace download {
 
 class DownloadItem;
-class SimpleDownloadManager;
 
 // This object allows swapping between different SimppleDownloadManager
 // instances so that callers don't need to know about the swap.
-class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManagerCoordinator {
+class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManagerCoordinator
+    : SimpleDownloadManager::Observer {
  public:
   class Observer {
    public:
     Observer() = default;
     virtual ~Observer() = default;
 
+    virtual void OnManagerGoingDown() {}
     virtual void OnDownloadsInitialized(bool active_downloads_only) {}
+    virtual void OnDownloadCreated(DownloadItem* item) {}
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
   SimpleDownloadManagerCoordinator();
-  ~SimpleDownloadManagerCoordinator();
+  ~SimpleDownloadManagerCoordinator() override;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -58,6 +61,10 @@ class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManagerCoordinator {
   bool has_all_history_downloads() const { return has_all_history_downloads_; }
 
  private:
+  // SimpleDownloadManager::Observer implementation.
+  void OnManagerGoingDown() override;
+  void OnDownloadCreated(DownloadItem* item) override;
+
   // Called when |simple_download_manager_| is initialized.
   void OnManagerInitialized(bool has_all_history_downloads);
 

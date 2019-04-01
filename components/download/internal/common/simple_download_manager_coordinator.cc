@@ -17,13 +17,19 @@ SimpleDownloadManagerCoordinator::SimpleDownloadManagerCoordinator()
       initialized_(false),
       weak_factory_(this) {}
 
-SimpleDownloadManagerCoordinator::~SimpleDownloadManagerCoordinator() = default;
+SimpleDownloadManagerCoordinator::~SimpleDownloadManagerCoordinator() {
+  for (auto& observer : observers_)
+    observer.OnManagerGoingDown();
+}
 
 void SimpleDownloadManagerCoordinator::SetSimpleDownloadManager(
     SimpleDownloadManager* simple_download_manager,
     bool manages_all_history_downloads) {
   DCHECK(simple_download_manager_);
+  if (simple_download_manager_)
+    simple_download_manager_->RemoveObserver(this);
   simple_download_manager_ = simple_download_manager;
+  simple_download_manager_->AddObserver(this);
   simple_download_manager_->NotifyWhenInitialized(base::BindOnce(
       &SimpleDownloadManagerCoordinator::OnManagerInitialized,
       weak_factory_.GetWeakPtr(), manages_all_history_downloads));
@@ -61,6 +67,15 @@ void SimpleDownloadManagerCoordinator::OnManagerInitialized(
   has_all_history_downloads_ = has_all_history_downloads;
   for (auto& observer : observers_)
     observer.OnDownloadsInitialized(!has_all_history_downloads);
+}
+
+void SimpleDownloadManagerCoordinator::OnManagerGoingDown() {
+  simple_download_manager_ = nullptr;
+}
+
+void SimpleDownloadManagerCoordinator::OnDownloadCreated(DownloadItem* item) {
+  for (auto& observer : observers_)
+    observer.OnDownloadCreated(item);
 }
 
 }  // namespace download

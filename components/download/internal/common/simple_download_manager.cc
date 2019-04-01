@@ -10,6 +10,14 @@ SimpleDownloadManager::SimpleDownloadManager() {}
 
 SimpleDownloadManager::~SimpleDownloadManager() = default;
 
+void SimpleDownloadManager::AddObserver(Observer* observer) {
+  simple_download_manager_observers_.AddObserver(observer);
+}
+
+void SimpleDownloadManager::RemoveObserver(Observer* observer) {
+  simple_download_manager_observers_.RemoveObserver(observer);
+}
+
 void SimpleDownloadManager::OnInitialized() {
   initialized_ = true;
   for (auto& callback : std::move(on_initialized_callbacks_))
