@@ -39779,6 +39779,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="Content Failure"/>
   <int value="8" label="Content Timeout"/>
   <int value="9" label="Unknown"/>
+  <int value="10" label="Redirect Found"/>
 </enum>
 
 <enum name="NetworkProblemType">
