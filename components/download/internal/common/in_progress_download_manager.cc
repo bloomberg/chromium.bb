@@ -153,6 +153,7 @@ InProgressDownloadManager::InProgressDownloadManager(
       download_start_observer_(nullptr),
       is_origin_secure_cb_(is_origin_secure_cb),
       url_security_policy_(url_security_policy),
+      use_empty_db_(in_progress_db_dir.empty()),
       weak_factory_(this) {
   Initialize(in_progress_db_dir);
 }
@@ -446,7 +447,8 @@ void InProgressDownloadManager::OnDBInitialized(
     bool success,
     std::unique_ptr<std::vector<DownloadDBEntry>> entries) {
 #if defined(OS_ANDROID)
-  if (DownloadCollectionBridge::NeedToRetrieveDisplayNames()) {
+  if (!use_empty_db_ &&
+      DownloadCollectionBridge::NeedToRetrieveDisplayNames()) {
     DownloadCollectionBridge::GetDisplayNamesCallback callback =
         base::BindOnce(&InProgressDownloadManager::OnDownloadNamesRetrieved,
                        weak_factory_.GetWeakPtr(), std::move(entries));
