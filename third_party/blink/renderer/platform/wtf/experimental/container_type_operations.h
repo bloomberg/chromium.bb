@@ -9,6 +9,7 @@
 // EXPERIMENTAL: DO NOT USE IN PRODUCTION CODE YET!
 // *****************************************************************************
 
+#include <stdint.h>
 #include <type_traits>
 #include <utility>
 

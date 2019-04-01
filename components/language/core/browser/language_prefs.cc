@@ -85,7 +85,7 @@ void LanguagePrefs::ResetEmptyFluentLanguagesToDefault() {
 }
 
 base::Value LanguagePrefs::GetDefaultFluentLanguages() {
-  std::set<const std::string> languages;
+  std::set<std::string> languages;
 #if defined(OS_CHROMEOS)
   // Preferred languages.
   std::string language = language::kFallbackInputMethodLocale;
