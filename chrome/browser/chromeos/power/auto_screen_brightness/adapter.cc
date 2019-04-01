@@ -56,38 +56,21 @@ Adapter::Adapter(Profile* profile,
                  ModelConfigLoader* model_config_loader,
                  MetricsReporter* metrics_reporter,
                  chromeos::PowerManagerClient* power_manager_client)
-    : profile_(profile),
-      als_reader_observer_(this),
-      brightness_monitor_observer_(this),
-      modeller_observer_(this),
-      model_config_loader_observer_(this),
-      power_manager_client_observer_(this),
-      metrics_reporter_(metrics_reporter),
-      power_manager_client_(power_manager_client),
-      tick_clock_(base::DefaultTickClock::GetInstance()),
-      weak_ptr_factory_(this) {
-  DCHECK(profile);
-  DCHECK(als_reader);
-  DCHECK(brightness_monitor);
-  DCHECK(modeller);
-  DCHECK(model_config_loader);
-  DCHECK(power_manager_client);
-
-  als_reader_observer_.Add(als_reader);
-  brightness_monitor_observer_.Add(brightness_monitor);
-  modeller_observer_.Add(modeller);
-  model_config_loader_observer_.Add(model_config_loader);
-  power_manager_client_observer_.Add(power_manager_client);
-
-  power_manager_client_->WaitForServiceToBeAvailable(
-      base::BindOnce(&Adapter::OnPowerManagerServiceAvailable,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
+    : Adapter(profile,
+              als_reader,
+              brightness_monitor,
+              modeller,
+              model_config_loader,
+              metrics_reporter,
+              power_manager_client,
+              base::DefaultTickClock::GetInstance()) {}
 
 Adapter::~Adapter() = default;
 
 void Adapter::OnAmbientLightUpdated(int lux) {
   // Ambient light data is only used when adapter is initialized to success.
+  // |ambient_light_values_| may not be available to use when adapter is being
+  // initialized.
   if (adapter_status_ != Status::kSuccess)
     return;
 
@@ -104,6 +87,7 @@ void Adapter::OnAlsReaderInitialized(AlsReader::AlsInitStatus status) {
   DCHECK(!als_init_status_);
 
   als_init_status_ = status;
+  als_init_time_ = tick_clock_->NowTicks();
   UpdateStatus();
 }
 
@@ -116,14 +100,26 @@ void Adapter::OnBrightnessMonitorInitialized(bool success) {
 
 void Adapter::OnUserBrightnessChanged(double old_brightness_percent,
                                       double new_brightness_percent) {
+  const base::TimeTicks now = tick_clock_->NowTicks();
   // We skip this notification if adapter hasn't been initialised because its
   // |params_| may change. We need to log even if adapter is initialized to
   // disabled.
   if (adapter_status_ == Status::kInitializing)
     return;
 
-  // TODO(jiameng): record current average als and update thresholds.
-  current_brightness_ = new_brightness_percent;
+  // |latest_brightness_change_time_|, |current_brightness_|,
+  // |log_average_ambient_lux_| and thresholds are only needed if adapter is
+  // |kSuccess|.
+  if (adapter_status_ == Status::kSuccess) {
+    DCHECK(ambient_light_values_);
+    const base::Optional<AlsAvgStdDev> als_avg_stddev =
+        ambient_light_values_->AverageAmbientWithStdDev(now);
+
+    OnBrightnessChanged(now, new_brightness_percent,
+                        als_avg_stddev ? base::Optional<double>(
+                                             ConvertToLog(als_avg_stddev->avg))
+                                       : base::nullopt);
+  }
 
   if (!metrics_reporter_)
     return;
@@ -161,9 +157,10 @@ void Adapter::OnUserBrightnessChanged(double old_brightness_percent,
 }
 
 void Adapter::OnUserBrightnessChangeRequested() {
-  // We skip this notification if adapter hasn't been initialised because its
-  // |params_| may change.
-  if (adapter_status_ == Status::kInitializing)
+  // We skip this notification if adapter hasn't been initialised (because its
+  // |params_| may change), or, if adapter is disabled (because adapter won't
+  // change brightness anyway).
+  if (adapter_status_ != Status::kSuccess)
     return;
 
   if (params_.user_adjustment_effect != UserAdjustmentEffect::kContinueAuto) {
@@ -210,17 +207,14 @@ void Adapter::OnModelConfigLoaded(base::Optional<ModelConfig> model_config) {
 }
 
 void Adapter::SuspendDone(const base::TimeDelta& /* sleep_duration */) {
-  // We skip this notification if adapter hasn't been initialised because its
-  // |params_| may change.
-  if (adapter_status_ == Status::kInitializing)
+  // We skip this notification if adapter hasn't been initialised (because its
+  // |params_| may change), or, if adapter is disabled (because adapter won't
+  // change brightness anyway).
+  if (adapter_status_ != Status::kSuccess)
     return;
 
   if (params_.user_adjustment_effect == UserAdjustmentEffect::kPauseAuto)
     adapter_disabled_by_user_adjustment_ = false;
-}
-
-void Adapter::SetTickClockForTesting(const base::TickClock* test_tick_clock) {
-  tick_clock_ = test_tick_clock;
 }
 
 Adapter::Status Adapter::GetStatusForTesting() const {
@@ -255,6 +249,60 @@ double Adapter::GetDarkeningThresholdForTesting() const {
   return *darkening_threshold_;
 }
 
+base::Optional<double> Adapter::GetCurrentLogAvgAlsForTesting() const {
+  return log_average_ambient_lux_;
+}
+
+std::unique_ptr<Adapter> Adapter::CreateForTesting(
+    Profile* profile,
+    AlsReader* als_reader,
+    BrightnessMonitor* brightness_monitor,
+    Modeller* modeller,
+    ModelConfigLoader* model_config_loader,
+    MetricsReporter* metrics_reporter,
+    chromeos::PowerManagerClient* power_manager_client,
+    const base::TickClock* tick_clock) {
+  return base::WrapUnique(new Adapter(
+      profile, als_reader, brightness_monitor, modeller, model_config_loader,
+      metrics_reporter, power_manager_client, tick_clock));
+}
+
+Adapter::Adapter(Profile* profile,
+                 AlsReader* als_reader,
+                 BrightnessMonitor* brightness_monitor,
+                 Modeller* modeller,
+                 ModelConfigLoader* model_config_loader,
+                 MetricsReporter* metrics_reporter,
+                 chromeos::PowerManagerClient* power_manager_client,
+                 const base::TickClock* tick_clock)
+    : profile_(profile),
+      als_reader_observer_(this),
+      brightness_monitor_observer_(this),
+      modeller_observer_(this),
+      model_config_loader_observer_(this),
+      power_manager_client_observer_(this),
+      metrics_reporter_(metrics_reporter),
+      power_manager_client_(power_manager_client),
+      tick_clock_(tick_clock),
+      weak_ptr_factory_(this) {
+  DCHECK(profile);
+  DCHECK(als_reader);
+  DCHECK(brightness_monitor);
+  DCHECK(modeller);
+  DCHECK(model_config_loader);
+  DCHECK(power_manager_client);
+
+  als_reader_observer_.Add(als_reader);
+  brightness_monitor_observer_.Add(brightness_monitor);
+  modeller_observer_.Add(modeller);
+  model_config_loader_observer_.Add(model_config_loader);
+  power_manager_client_observer_.Add(power_manager_client);
+
+  power_manager_client_->WaitForServiceToBeAvailable(
+      base::BindOnce(&Adapter::OnPowerManagerServiceAvailable,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
 void Adapter::InitParams(const ModelConfig& model_config) {
   if (!base::FeatureList::IsEnabled(features::kAutoScreenBrightness) &&
       model_config.metrics_key != "atlas") {
@@ -274,6 +322,10 @@ void Adapter::InitParams(const ModelConfig& model_config) {
       features::kAutoScreenBrightness, "darkening_log_lux_threshold",
       params_.darkening_log_lux_threshold);
 
+  params_.stabilization_threshold = GetFieldTrialParamByFeatureAsDouble(
+      features::kAutoScreenBrightness, "stabilization_threshold",
+      params_.stabilization_threshold);
+
   const int model_curve = base::GetFieldTrialParamByFeatureAsInt(
       features::kAutoScreenBrightness, "model_curve", 2);
   if (model_curve < 0 || model_curve > 2) {
@@ -284,7 +336,10 @@ void Adapter::InitParams(const ModelConfig& model_config) {
   params_.model_curve = static_cast<ModelCurve>(model_curve);
 
   const int auto_brightness_als_horizon_seconds =
-      model_config.auto_brightness_als_horizon_seconds;
+      GetFieldTrialParamByFeatureAsInt(
+          features::kAutoScreenBrightness,
+          "auto_brightness_als_horizon_seconds",
+          model_config.auto_brightness_als_horizon_seconds);
 
   if (auto_brightness_als_horizon_seconds <= 0) {
     adapter_status_ = Status::kDisabled;
@@ -371,10 +426,12 @@ void Adapter::UpdateStatus() {
 }
 
 base::Optional<Adapter::BrightnessChangeCause> Adapter::CanAdjustBrightness(
-    double current_log_average_ambient) const {
+    double current_log_average_ambient,
+    double stddev) const {
   if (adapter_status_ != Status::kSuccess ||
-      adapter_disabled_by_user_adjustment_)
+      adapter_disabled_by_user_adjustment_) {
     return base::nullopt;
+  }
 
   // Do not change brightness if it's set by the policy, but do not completely
   // disable the model as the policy could change.
@@ -385,18 +442,29 @@ base::Optional<Adapter::BrightnessChangeCause> Adapter::CanAdjustBrightness(
     return base::nullopt;
   }
 
-  if (latest_brightness_change_time_.is_null()) {
-    // Brightness hasn't been changed before.
+  if (!log_average_ambient_lux_) {
+    // Either
+    // 1. brightness hasn't been changed, or,
+    // 2. brightness was changed by the user but there wasn't any ALS data. This
+    //    case should be rare.
+    // In either case, we change brightness as soon as we have brightness.
     return BrightnessChangeCause::kInitialAlsReceived;
   }
 
   // The following thresholds should have been set last time when brightness was
   // changed.
-  if (current_log_average_ambient > *brightening_threshold_) {
+  DCHECK(brightening_threshold_);
+  DCHECK(darkening_threshold_);
+
+  if (current_log_average_ambient > *brightening_threshold_ &&
+      stddev <= params_.brightening_log_lux_threshold *
+                    params_.stabilization_threshold) {
     return BrightnessChangeCause::kBrightneningThresholdExceeded;
   }
 
-  if (current_log_average_ambient < *darkening_threshold_) {
+  if (current_log_average_ambient < *darkening_threshold_ &&
+      stddev <= params_.darkening_log_lux_threshold *
+                    params_.stabilization_threshold) {
     return BrightnessChangeCause::kDarkeningThresholdExceeded;
   }
 
@@ -406,6 +474,18 @@ base::Optional<Adapter::BrightnessChangeCause> Adapter::CanAdjustBrightness(
 void Adapter::MaybeAdjustBrightness(base::TimeTicks now) {
   DCHECK_EQ(adapter_status_, Status::kSuccess);
   DCHECK(ambient_light_values_);
+  DCHECK(!als_init_time_.is_null());
+  // Wait until we've had enough ALS data to calc avg.
+  if (now - als_init_time_ < params_.auto_brightness_als_horizon)
+    return;
+
+  // Check if we've waited long enough from previous brightness change (either
+  // by user or by model).
+  if (!latest_brightness_change_time_.is_null() &&
+      now - latest_brightness_change_time_ <
+          params_.auto_brightness_als_horizon)
+    return;
+
   const base::Optional<AlsAvgStdDev> als_avg_stddev =
       ambient_light_values_->AverageAmbientWithStdDev(now);
   if (!als_avg_stddev)
@@ -414,7 +494,7 @@ void Adapter::MaybeAdjustBrightness(base::TimeTicks now) {
   const double log_average_ambient_lux = ConvertToLog(als_avg_stddev->avg);
 
   const base::Optional<BrightnessChangeCause> brightness_change_cause =
-      CanAdjustBrightness(log_average_ambient_lux);
+      CanAdjustBrightness(log_average_ambient_lux, als_avg_stddev->stddev);
 
   if (!brightness_change_cause.has_value())
     return;
@@ -435,35 +515,22 @@ void Adapter::MaybeAdjustBrightness(base::TimeTicks now) {
   power_manager_client_->SetScreenBrightness(request);
 
   const base::TimeTicks brightness_change_time = tick_clock_->NowTicks();
-  if (!latest_brightness_change_time_.is_null()) {
+  if (!latest_model_brightness_change_time_.is_null()) {
     UMA_HISTOGRAM_LONG_TIMES(
         "AutoScreenBrightness.BrightnessChange.ElapsedTime",
-        brightness_change_time - latest_brightness_change_time_);
+        brightness_change_time - latest_model_brightness_change_time_);
   }
-  latest_brightness_change_time_ = brightness_change_time;
+  latest_model_brightness_change_time_ = brightness_change_time;
 
   const BrightnessChangeCause cause = *brightness_change_cause;
   UMA_HISTOGRAM_ENUMERATION("AutoScreenBrightness.BrightnessChange.Cause",
                             cause);
 
   WriteLogMessages(log_average_ambient_lux, *brightness, cause);
+  model_brightness_change_counter_++;
 
-  current_brightness_ = *brightness;
-  brightness_change_counter_++;
-
-  log_average_ambient_lux_ = log_average_ambient_lux;
-
-  UpdateBrightnessChangeThresholds();
-}
-
-void Adapter::UpdateBrightnessChangeThresholds() {
-  DCHECK_NE(adapter_status_, Status::kInitializing);
-  DCHECK(log_average_ambient_lux_);
-
-  brightening_threshold_ =
-      *log_average_ambient_lux_ + params_.brightening_log_lux_threshold;
-  darkening_threshold_ =
-      *log_average_ambient_lux_ - params_.darkening_log_lux_threshold;
+  OnBrightnessChanged(brightness_change_time, *brightness,
+                      log_average_ambient_lux);
 }
 
 base::Optional<double> Adapter::GetBrightnessBasedOnAmbientLogLux(
@@ -484,6 +551,31 @@ base::Optional<double> Adapter::GetBrightnessBasedOnAmbientLogLux(
   }
 }
 
+void Adapter::OnBrightnessChanged(base::TimeTicks now,
+                                  double new_brightness_percent,
+                                  base::Optional<double> new_log_als) {
+  DCHECK_NE(adapter_status_, Status::kInitializing);
+
+  current_brightness_ = new_brightness_percent;
+  latest_brightness_change_time_ = now;
+
+  UMA_HISTOGRAM_BOOLEAN("AutoScreenBrightness.MissingAlsWhenBrightnessChanged",
+                        !new_log_als);
+
+  if (!new_log_als)
+    return;
+
+  // Update |log_average_ambient_lux_| with the new reference value. Brightness
+  // will be changed by the model if next log-avg ALS value goes outside of the
+  // range
+  // [|darkening_threshold_|, |brightening_threshold_|].
+  // Thresholds in |params_| are absolute values to be added/subtracted from
+  // the reference values. Log-avg can be negative.
+  log_average_ambient_lux_ = new_log_als;
+  brightening_threshold_ = *new_log_als + params_.brightening_log_lux_threshold;
+  darkening_threshold_ = *new_log_als - params_.darkening_log_lux_threshold;
+}
+
 void Adapter::WriteLogMessages(double new_log_als,
                                double new_brightness,
                                BrightnessChangeCause cause) const {
@@ -498,7 +590,8 @@ void Adapter::WriteLogMessages(double new_log_als,
           ? base::StringPrintf("%.4f", current_brightness_.value()) + "%->"
           : "";
 
-  VLOG(1) << "Screen brightness change #" << brightness_change_counter_ << ": "
+  VLOG(1) << "Screen brightness change #" << model_brightness_change_counter_
+          << ": "
           << "brightness=" << old_brightness
           << base::StringPrintf("%.4f", new_brightness) << "%"
           << " cause=" << BrightnessChangeCauseToString(cause)
