@@ -76,6 +76,7 @@ void DataReductionProxyURLLoaderThrottle::BeforeWillProcessResponse(
   if (params::IsWarmupURL(response_url))
     return;
 
+  before_will_process_response_received_ = true;
   MaybeRetry(proxy_server, response_head.headers.get(), net::OK, defer);
 }
 
@@ -137,8 +138,10 @@ void DataReductionProxyURLLoaderThrottle::WillProcessResponse(
 void DataReductionProxyURLLoaderThrottle::WillOnCompleteWithError(
     const network::URLLoaderCompletionStatus& status,
     bool* defer) {
-  MaybeRetry(status.proxy_server, nullptr,
-             static_cast<net::Error>(status.error_code), defer);
+  if (!before_will_process_response_received_) {
+    MaybeRetry(status.proxy_server, nullptr,
+               static_cast<net::Error>(status.error_code), defer);
+  }
 }
 
 void DataReductionProxyURLLoaderThrottle::MarkProxiesAsBad(
