@@ -5307,7 +5307,10 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   x->using_dist_8x8 = cpi->oxcf.using_dist_8x8;
   x->tune_metric = cpi->oxcf.tuning;
 #endif
-  cm->setup_mi(cm);
+
+  if (!cpi->sf.use_nonrd_pick_mode) {
+    cm->setup_mi(cm);
+  }
 
   xd->mi = cm->mi_grid_visible;
   xd->mi[0] = cm->mi;
