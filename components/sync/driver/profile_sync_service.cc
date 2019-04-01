@@ -526,11 +526,11 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
 
   ReportPreviousSessionMemoryWarningCount();
 
-  // TODO(treib): Consider kicking off an access token fetch here. Currently,
-  // the flow goes as follows: The SyncEngine tries to connect to the server,
-  // but has no access token, so it ends up calling OnConnectionStatusChange(
-  // syncer::CONNECTION_AUTH_ERROR) which in turn causes SyncAuthManager to
-  // request a new access token. That seems needlessly convoluted.
+  // TODO(crbug.com/948148): Consider kicking off an access token fetch here.
+  // Currently, the flow goes as follows: The SyncEngine tries to connect to the
+  // server, but has no access token, so it ends up calling
+  // OnConnectionStatusChange(syncer::CONNECTION_AUTH_ERROR) which in turn
+  // causes SyncAuthManager to request a new access token.
 }
 
 void ProfileSyncService::Shutdown() {
