@@ -37765,6 +37765,8 @@ Called by update_use_counter_css.py.-->
   <int value="2" label="Interstitial"/>
   <int value="5" label="Opener x-origin"/>
   <int value="7" label="Sandbox no gesture"/>
+  <int value="8" label="Ad frame no gesture"/>
+  <int value="9" label="Ad frame gesture"/>
 </enum>
 
 <enum name="NavigationInterceptResult">

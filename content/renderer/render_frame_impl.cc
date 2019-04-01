@@ -486,7 +486,8 @@ CommonNavigationParams MakeCommonNavigationParams(
     const WebSecurityOrigin& current_origin,
     std::unique_ptr<blink::WebNavigationInfo> info,
     int load_flags,
-    bool has_download_sandbox_flag) {
+    bool has_download_sandbox_flag,
+    bool from_ad) {
   // A valid RequestorOrigin is always expected to be present.
   DCHECK(!info->url_request.RequestorOrigin().IsNull());
 
@@ -527,11 +528,11 @@ CommonNavigationParams MakeCommonNavigationParams(
   DCHECK(extra_data);
 
   NavigationDownloadPolicy download_policy;
-  RenderFrameImpl::MaybeSetOpenerAndSandboxDownloadPolicy(
+  RenderFrameImpl::MaybeSetDownloadFramePolicy(
       info->is_opener_navigation, info->url_request, current_origin,
       has_download_sandbox_flag,
       info->blocking_downloads_in_sandbox_without_user_activation_enabled,
-      &download_policy);
+      from_ad, &download_policy);
 
   return CommonNavigationParams(
       info->url_request.Url(), info->url_request.RequestorOrigin(), referrer,
@@ -1652,12 +1653,13 @@ blink::WebFrame* RenderFrameImpl::ResolveOpener(int opener_frame_routing_id) {
 }
 
 // static
-void RenderFrameImpl::MaybeSetOpenerAndSandboxDownloadPolicy(
+void RenderFrameImpl::MaybeSetDownloadFramePolicy(
     bool is_opener_navigation,
     const blink::WebURLRequest& request,
     const blink::WebSecurityOrigin& current_origin,
     bool has_download_sandbox_flag,
     bool blocking_downloads_in_sandbox_without_user_activation_enabled,
+    bool from_ad,
     NavigationDownloadPolicy* download_policy) {
   // Disallow downloads on an opener if the requestor is cross origin.
   // See crbug.com/632514.
@@ -1670,6 +1672,20 @@ void RenderFrameImpl::MaybeSetOpenerAndSandboxDownloadPolicy(
       download_policy->SetDisallowed(NavigationDownloadType::kSandboxNoGesture);
     } else {
       download_policy->SetAllowed(NavigationDownloadType::kSandboxNoGesture);
+    }
+  }
+  if (from_ad) {
+    if (!request.HasUserGesture()) {
+      if (base::FeatureList::IsEnabled(
+              blink::features::
+                  kBlockingDownloadsInAdFrameWithoutUserActivation)) {
+        download_policy->SetDisallowed(
+            NavigationDownloadType::kAdFrameNoGesture);
+      } else {
+        download_policy->SetAllowed(NavigationDownloadType::kAdFrameNoGesture);
+      }
+    } else {
+      download_policy->SetAllowed(NavigationDownloadType::kAdFrameGesture);
     }
   }
 }
@@ -6760,12 +6776,13 @@ void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info,
   bool has_download_sandbox_flag =
       info->initiator_frame_has_download_sandbox_flag ||
       current_frame_has_download_sandbox_flag;
+  bool from_ad = info->initiator_frame_is_ad || frame_->IsAdSubframe();
 
-  MaybeSetOpenerAndSandboxDownloadPolicy(
+  MaybeSetDownloadFramePolicy(
       info->is_opener_navigation, info->url_request,
       frame_->GetSecurityOrigin(), has_download_sandbox_flag,
       info->blocking_downloads_in_sandbox_without_user_activation_enabled,
-      &params.download_policy);
+      from_ad, &params.download_policy);
 
   Send(new FrameHostMsg_OpenURL(routing_id_, params));
 }
@@ -7085,10 +7102,12 @@ void RenderFrameImpl::BeginNavigationInternal(
   bool has_download_sandbox_flag =
       info->initiator_frame_has_download_sandbox_flag ||
       current_frame_has_download_sandbox_flag;
+  bool from_ad = info->initiator_frame_is_ad || frame_->IsAdSubframe();
 
   GetFrameHost()->BeginNavigation(
       MakeCommonNavigationParams(frame_->GetSecurityOrigin(), std::move(info),
-                                 load_flags, has_download_sandbox_flag),
+                                 load_flags, has_download_sandbox_flag,
+                                 from_ad),
       std::move(begin_navigation_params), std::move(blob_url_token),
       std::move(navigation_client_info), std::move(initiator_ptr));
 }

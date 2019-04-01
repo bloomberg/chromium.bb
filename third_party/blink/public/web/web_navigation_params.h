@@ -83,6 +83,9 @@ struct BLINK_EXPORT WebNavigationInfo {
   // in its sandbox flags set.
   bool initiator_frame_has_download_sandbox_flag = false;
 
+  // Whether the navigation initiator frame is an ad frame.
+  bool initiator_frame_is_ad = false;
+
   // Whether this is a navigation in the opener frame initiated
   // by the window.open'd frame.
   bool is_opener_navigation = false;

@@ -45,6 +45,7 @@ class WebRemoteFrameClient {
       bool is_opener_navigation,
       bool has_download_sandbox_flag,
       bool blocking_downloads_in_sandbox_without_user_activation_enabled,
+      bool initiator_frame_is_ad,
       mojo::ScopedMessagePipeHandle blob_url_token) {}
 
   virtual void FrameRectsChanged(const WebRect& local_frame_rect,

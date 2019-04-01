@@ -108,6 +108,7 @@ void RemoteFrameClientImpl::Navigate(
     bool should_replace_current_entry,
     bool is_opener_navigation,
     bool has_download_sandbox_flag,
+    bool initiator_frame_is_ad,
     mojom::blink::BlobURLTokenPtr blob_url_token) {
   bool blocking_downloads_in_sandbox_without_user_activation_enabled =
       RuntimeEnabledFeatures::
@@ -117,7 +118,7 @@ void RemoteFrameClientImpl::Navigate(
         WrappedResourceRequest(request), should_replace_current_entry,
         is_opener_navigation, has_download_sandbox_flag,
         blocking_downloads_in_sandbox_without_user_activation_enabled,
-        blob_url_token.PassInterface().PassHandle());
+        initiator_frame_is_ad, blob_url_token.PassInterface().PassHandle());
   }
 }
 

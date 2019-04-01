@@ -76,7 +76,9 @@ ResourceInterceptPolicy NavigationDownloadPolicy::GetResourceInterceptPolicy()
   if (disallowed_types.test(
           static_cast<size_t>(NavigationDownloadType::kSandboxNoGesture)) ||
       disallowed_types.test(
-          static_cast<size_t>(NavigationDownloadType::kOpenerCrossOrigin))) {
+          static_cast<size_t>(NavigationDownloadType::kAdFrameNoGesture)) ||
+      disallowed_types.test(
+          static_cast<size_t>(NavigationDownloadType::kAdFrameGesture))) {
     return ResourceInterceptPolicy::kAllowPluginOnly;
   }
   return disallowed_types.any() ? ResourceInterceptPolicy::kAllowNone

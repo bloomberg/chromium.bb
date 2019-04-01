@@ -10,6 +10,12 @@
 namespace blink {
 namespace features {
 
+// Enable intervention for download that was initiated from or occurred in an ad
+// frame without user activation.
+const base::Feature kBlockingDownloadsInAdFrameWithoutUserActivation{
+    "BlockingDownloadsInAdFrameWithoutUserActivation",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable defer commits a bit to avoid flash.
 const base::Feature kAvoidFlashBetweenNavigation{
     "AvoidFlashBetweenNavigation", base::FEATURE_DISABLED_BY_DEFAULT};

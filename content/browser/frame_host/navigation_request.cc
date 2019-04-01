@@ -1082,39 +1082,13 @@ void NavigationRequest::OnResponseStarted(
   // The |loader_|'s job is finished. It must not call the NavigationRequest
   // anymore from now.
   loader_.reset();
+  if (is_download)
+    RecordDownloadUseCountersPrePolicyCheck(download_policy);
   is_download_ = is_download && download_policy.IsDownloadAllowed();
+  if (is_download_)
+    RecordDownloadUseCountersPostPolicyCheck();
   is_stream_ = is_stream;
   request_id_ = request_id;
-
-  if (is_download) {
-    content::RenderFrameHost* rfh = frame_tree_node_->current_frame_host();
-    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
-        rfh, blink::mojom::WebFeature::kDownloadPrePolicyCheck);
-
-    // Log UseCounters for opener navigations.
-    if (download_policy.IsType(NavigationDownloadType::kOpenerCrossOrigin)) {
-      rfh->AddMessageToConsole(
-          blink::mojom::ConsoleMessageLevel::kError,
-          base::StringPrintf(
-              "Navigating a cross-origin opener to a download (%s) is "
-              "deprecated, see "
-              "https://www.chromestatus.com/feature/5742188281462784.",
-              navigation_handle_->GetURL().spec().c_str()));
-      GetContentClient()->browser()->LogWebFeatureForCurrentPage(
-          rfh, blink::mojom::WebFeature::kOpenerNavigationDownloadCrossOrigin);
-    }
-
-    // Log UseCounters for download in sandbox without user activation.
-    if (download_policy.IsType(NavigationDownloadType::kSandboxNoGesture)) {
-      GetContentClient()->browser()->LogWebFeatureForCurrentPage(
-          rfh, blink::mojom::WebFeature::kDownloadInSandboxWithoutUserGesture);
-    }
-
-    if (is_download_) {
-      GetContentClient()->browser()->LogWebFeatureForCurrentPage(
-          rfh, blink::mojom::WebFeature::kDownloadPostPolicyCheck);
-    }
-  }
 
   DCHECK_EQ(state_, STARTED);
   DCHECK(response);
@@ -2234,6 +2208,51 @@ int NavigationRequest::EstimateHistoryOffset() {
     return 1;
 
   return pending_index - current_index;
+}
+
+void NavigationRequest::RecordDownloadUseCountersPrePolicyCheck(
+    NavigationDownloadPolicy download_policy) {
+  content::RenderFrameHost* rfh = frame_tree_node_->current_frame_host();
+  GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+      rfh, blink::mojom::WebFeature::kDownloadPrePolicyCheck);
+
+  // Log UseCounters for opener navigations.
+  if (download_policy.IsType(NavigationDownloadType::kOpenerCrossOrigin)) {
+    rfh->AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kError,
+        base::StringPrintf(
+            "Navigating a cross-origin opener to a download (%s) is "
+            "deprecated, see "
+            "https://www.chromestatus.com/feature/5742188281462784.",
+            navigation_handle_->GetURL().spec().c_str()));
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        rfh, blink::mojom::WebFeature::kOpenerNavigationDownloadCrossOrigin);
+  }
+
+  // Log UseCounters for download in sandbox without user activation.
+  if (download_policy.IsType(NavigationDownloadType::kSandboxNoGesture)) {
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        rfh, blink::mojom::WebFeature::kDownloadInSandboxWithoutUserGesture);
+  }
+
+  // Log UseCounters for download in ad frame without user activation.
+  if (download_policy.IsType(NavigationDownloadType::kAdFrameNoGesture)) {
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        rfh, blink::mojom::WebFeature::kDownloadInAdFrameWithoutUserGesture);
+  }
+
+  // Log UseCounters for download in ad frame with user activation.
+  if (download_policy.IsType(NavigationDownloadType::kAdFrameGesture)) {
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        rfh, blink::mojom::WebFeature::kDownloadInAdFrameWithUserGesture);
+  }
+}
+
+void NavigationRequest::RecordDownloadUseCountersPostPolicyCheck() {
+  DCHECK(is_download_);
+  content::RenderFrameHost* rfh = frame_tree_node_->current_frame_host();
+  GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+      rfh, blink::mojom::WebFeature::kDownloadPostPolicyCheck);
 }
 
 }  // namespace content

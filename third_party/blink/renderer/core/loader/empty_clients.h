@@ -453,6 +453,7 @@ class CORE_EXPORT EmptyRemoteFrameClient : public RemoteFrameClient {
                 bool should_replace_current_entry,
                 bool is_opener_navigation,
                 bool prevent_sandboxed_download,
+                bool initiator_frame_is_ad,
                 mojom::blink::BlobURLTokenPtr) override {}
   unsigned BackForwardLength() override { return 0; }
   void CheckCompleted() override {}

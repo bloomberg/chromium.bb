@@ -9596,6 +9596,7 @@ class RemoteNavigationClient
       bool is_opener_navigation,
       bool has_download_sandbox_flag,
       bool blocking_downloads_in_sandbox_without_user_activation_enabled,
+      bool initiator_frame_is_ad,
       mojo::ScopedMessagePipeHandle) override {
     last_request_ = request;
   }

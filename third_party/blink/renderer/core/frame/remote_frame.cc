@@ -100,6 +100,7 @@ void RemoteFrame::Navigate(const FrameLoadRequest& passed_request,
 
   bool is_opener_navigation = false;
   bool initiator_frame_has_download_sandbox_flag = false;
+  bool initiator_frame_is_ad = false;
   LocalFrame* frame = frame_request.OriginDocument()
                           ? frame_request.OriginDocument()->GetFrame()
                           : nullptr;
@@ -108,6 +109,7 @@ void RemoteFrame::Navigate(const FrameLoadRequest& passed_request,
     initiator_frame_has_download_sandbox_flag =
         frame->GetSecurityContext() &&
         frame->GetSecurityContext()->IsSandboxed(kSandboxDownloads);
+    initiator_frame_is_ad = frame->IsAdSubframe();
   }
 
   bool current_frame_has_download_sandbox_flag =
@@ -119,7 +121,7 @@ void RemoteFrame::Navigate(const FrameLoadRequest& passed_request,
   Client()->Navigate(frame_request.GetResourceRequest(),
                      frame_load_type == WebFrameLoadType::kReplaceCurrentItem,
                      is_opener_navigation, has_download_sandbox_flag,
-                     frame_request.GetBlobURLToken());
+                     initiator_frame_is_ad, frame_request.GetBlobURLToken());
 }
 
 void RemoteFrame::DetachImpl(FrameDetachType type) {
