@@ -74,12 +74,7 @@ static std::vector<std::unique_ptr<VideoDecoder>> CreateVideoDecodersForTest(
 #endif
 
 #if BUILDFLAG(ENABLE_DAV1D_DECODER)
-  if (base::FeatureList::IsEnabled(kDav1dVideoDecoder))
-    video_decoders.push_back(std::make_unique<Dav1dVideoDecoder>(media_log));
-#if BUILDFLAG(ENABLE_LIBAOM_DECODER)
-  else
-    video_decoders.push_back(std::make_unique<AomVideoDecoder>(media_log));
-#endif
+  video_decoders.push_back(std::make_unique<Dav1dVideoDecoder>(media_log));
 #elif BUILDFLAG(ENABLE_LIBAOM_DECODER)
   video_decoders.push_back(std::make_unique<AomVideoDecoder>(media_log));
 #endif

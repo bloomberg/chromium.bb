@@ -88,12 +88,14 @@ declare_args() {
   # TODO(sanfin): Remove this flag when all builds enable CMA.
   is_cast_using_cma_backend = true
 
-  # Dav1d is only enabled when av1 decoding is enabled.
   if (is_win && target_cpu == "arm64") {
     # TODO: Enable dav1d for Windows ARM64. https://crbug.com/941022
     enable_dav1d_decoder = false
+  } else if (is_fuchsia && target_cpu == "x64") {
+    # TODO: Fix media_unittests for fuchsia X64. https://crbug.com/930300
+    enable_dav1d_decoder = false
   } else {
-    enable_dav1d_decoder = enable_libaom_decoder
+    enable_dav1d_decoder = !is_android && !is_ios
   }
 }
 
