@@ -339,6 +339,7 @@ void TaskManagerView::Init() {
   table_model_.reset(new TaskManagerTableModel(this));
   tab_table->SetModel(table_model_.get());
   tab_table->SetGrouper(this);
+  tab_table->set_sort_on_paint(true);
   tab_table->set_observer(this);
   tab_table->set_context_menu_controller(this);
   set_context_menu_controller(this);
