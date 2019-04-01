@@ -116,8 +116,6 @@ public class SyncCustomizationFragment extends PreferenceFragment
     private boolean mIsEngineInitialized;
     private boolean mIsPassphraseRequired;
 
-    private static final String DASHBOARD_URL = "https://www.google.com/settings/chrome/sync";
-
     private SwitchPreference mSyncEverything;
     private CheckBoxPreference mSyncAutofill;
     private CheckBoxPreference mSyncBookmarks;
@@ -503,23 +501,13 @@ public class SyncCustomizationFragment extends PreferenceFragment
                 return true;
             }
         } else if (preference == mManageSyncData) {
-            openDashboardTabInNewActivityStack();
+            SyncPreferenceUtils.openSyncDashboard(getActivity());
             return true;
         } else if (preference == mSyncErrorCard) {
             onSyncErrorCardClicked();
             return true;
         }
         return false;
-    }
-
-    /**
-     * Opens the Google Dashboard where the user can control the data stored for the account.
-     */
-    private void openDashboardTabInNewActivityStack() {
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(DASHBOARD_URL));
-        intent.setPackage(getActivity().getPackageName());
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
     }
 
     /**
