@@ -29,6 +29,10 @@ public class EmbeddedTestServerRule extends TestWatcher {
     @GuardedBy("mLock")
     private boolean mUseHttps;
 
+    @GuardedBy("mLock")
+    @ServerCertificate
+    private int mCertificateType = ServerCertificate.CERT_OK;
+
     @Override
     protected void finished(Description description) {
         super.finished(description);
@@ -51,7 +55,7 @@ public class EmbeddedTestServerRule extends TestWatcher {
                     Context context = InstrumentationRegistry.getContext();
                     mServer = mUseHttps
                             ? EmbeddedTestServer.createAndStartHTTPSServerWithPort(
-                                    context, ServerCertificate.CERT_OK, mServerPort)
+                                    context, mCertificateType, mServerPort)
                             : EmbeddedTestServer.createAndStartServerWithPort(context, mServerPort);
                 } catch (InterruptedException e) {
                     throw new EmbeddedTestServer.EmbeddedTestServerFailure(
@@ -84,6 +88,14 @@ public class EmbeddedTestServerRule extends TestWatcher {
         synchronized (mLock) {
             assert mServer == null;
             mUseHttps = useHttps;
+        }
+    }
+
+    /** Sets what type of certificate the server uses when running as an HTTPS server. */
+    public void setCertificateType(@ServerCertificate int certificateType) {
+        synchronized (mLock) {
+            assert mServer == null;
+            mCertificateType = certificateType;
         }
     }
 }

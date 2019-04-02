@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.vr.util.VrShellDelegateUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.RenderTestRule;
+import org.chromium.net.test.ServerCertificate;
 
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
@@ -47,6 +48,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-webvr"})
 @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
 public class VrBrowserNativeUiTest {
+    // We need to make sure the port is constant, otherwise the URL changes between test runs, which
+    // is really bad for image diff tests. There's nothing special about this port other than that
+    // it shouldn't be in use by anything.
+    private static final int SERVER_PORT = 39558;
+
     // We explicitly instantiate a rule here instead of using parameterization since this class
     // only ever runs in ChromeTabbedActivity.
     @Rule
@@ -340,24 +346,6 @@ public class VrBrowserNativeUiTest {
     }
 
     /**
-     * Tests that the page info popup appears when the security token in the URL bar is clicked.
-     */
-    @Test
-    @LargeTest
-    @Feature({"Browser", "RenderTest"})
-    public void testPageInfoAppearsOnSecurityTokenClick()
-            throws InterruptedException, TimeoutException, IOException {
-        NativeUiUtils.clickElementAndWaitForUiQuiescence(
-                UserFriendlyElementName.PAGE_INFO_BUTTON, new PointF());
-        // Workaround for https://crbug.com/893291, where the text doesn't actually show up until a
-        // bit after the element is drawn.
-        SystemClock.sleep(1000);
-        NativeUiUtils.waitForUiQuiescence();
-        RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
-                "page_info_visible_browser_ui", mRenderTestRule);
-    }
-
-    /**
      * Tests that data URLs have the data portion of the URL emphasized like in 2D browsing.
      */
     @Test
@@ -595,6 +583,17 @@ public class VrBrowserNativeUiTest {
                 "suggestion_clicking_bottom", cropBounds, mRenderTestRule);
     }
 
+    private void resizeContentWindowToMinimum() throws InterruptedException {
+        NativeUiUtils.selectRepositionBar();
+        NativeUiUtils.scrollFling(NativeUiUtils.ScrollDirection.DOWN);
+        // We need to ensure that the scroll has finished, but we can't use waitForUiQuiescence()
+        // because the UI is never quiescent while the reposition bar is being used. So, wait a
+        // suitable number of frames.
+        NativeUiUtils.waitNumFrames(2 * NativeUiUtils.NUM_STEPS_FLING_SCROLL);
+        NativeUiUtils.deselectRepositionBar();
+        NativeUiUtils.waitForUiQuiescence();
+    }
+
     /**
      * Tests that scrolling while holding the reposition bar causes the content window to be
      * resized and that the resize doesn't affect the dimensions reported to the webpage.
@@ -608,14 +607,7 @@ public class VrBrowserNativeUiTest {
                         "test_content_resizing_does_not_affect_webpage"),
                 PAGE_LOAD_TIMEOUT_S);
         mVrBrowserTestFramework.executeStepAndWait("stepGetInitialDimensions()");
-        NativeUiUtils.selectRepositionBar();
-        NativeUiUtils.scrollFling(NativeUiUtils.ScrollDirection.DOWN);
-        // We need to ensure that the scroll has finished, but we can't use waitForUiQuiescence()
-        // because the UI is never quiescent while the reposition bar is being used. So, wait a
-        // suitable number of frames.
-        NativeUiUtils.waitNumFrames(2 * NativeUiUtils.NUM_STEPS_FLING_SCROLL);
-        NativeUiUtils.deselectRepositionBar();
-        NativeUiUtils.waitForUiQuiescence();
+        resizeContentWindowToMinimum();
         RenderTestUtils.dumpAndCompare(
                 NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI, "scroll_resizing", mRenderTestRule);
         mVrBrowserTestFramework.executeStepAndWait("stepCheckDimensionsAfterResize()");
@@ -793,5 +785,65 @@ public class VrBrowserNativeUiTest {
                 () -> { NativeUiUtils.clickElement(UserFriendlyElementName.URL, new PointF()); });
         NativeUiUtils.performActionAndWaitForVisibilityStatus(
                 UserFriendlyElementName.OMNIBOX_VOICE_INPUT_BUTTON, false /* visible */, () -> {});
+    }
+
+    /**
+     * Tests that the security token and page info popup look correct on HTTP sites.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Browser", "RenderTest"})
+    public void testSecurityTokenOnHttp() throws InterruptedException, IOException {
+        mVrTestRule.getEmbeddedTestServerRule().setServerPort(SERVER_PORT);
+        testSecurityTokenImpl("security_token_http");
+    }
+
+    /**
+     * Tests that the security token and page info popup look correct on HTTPS sites.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Browser", "RenderTest"})
+    public void testSecurityTokenOnHttps() throws InterruptedException, IOException {
+        mVrTestRule.getEmbeddedTestServerRule().setServerPort(SERVER_PORT);
+        mVrTestRule.getEmbeddedTestServerRule().setServerUsesHttps(true);
+        testSecurityTokenImpl("security_token_https");
+    }
+
+    /**
+     * Tests that the security token and page info popup look correct on HTTPS sites when the
+     * server provides a bad certificate.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Browser", "RenderTest"})
+    public void testSecurityTokenOnHttpsBadCertificate() throws InterruptedException, IOException {
+        mVrTestRule.getEmbeddedTestServerRule().setServerPort(SERVER_PORT);
+        mVrTestRule.getEmbeddedTestServerRule().setServerUsesHttps(true);
+        mVrTestRule.getEmbeddedTestServerRule().setCertificateType(ServerCertificate.CERT_EXPIRED);
+        testSecurityTokenImpl("security_token_https_bad_cert");
+    }
+
+    private void testSecurityTokenImpl(String identifier) throws InterruptedException, IOException {
+        NativeUiUtils.enableMockedInput();
+        mVrTestRule.loadUrl(
+                mVrBrowserTestFramework.getEmbeddedServerUrlForHtmlTestFile("2d_permission_page"),
+                PAGE_LOAD_TIMEOUT_S);
+        // Wait for any residual animations from loading to go away.
+        NativeUiUtils.waitForUiQuiescence();
+        RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                identifier + "_url_bar_token", mRenderTestRule);
+        // Make the content window as small as possible to hide as much of it behind the upcoming
+        // popup. See https://crbug.com/947117.
+        // TODO(https://crbug.com/947117): Remove the resizing once the interstitials are no longer
+        // offset slightly vertically at random.
+        resizeContentWindowToMinimum();
+        NativeUiUtils.clickElementAndWaitForUiQuiescence(
+                UserFriendlyElementName.PAGE_INFO_BUTTON, new PointF());
+        // Workaround for https://crbug.com/893291, where the text doesn't actually show up until a
+        // bit after the element is drawn.
+        SystemClock.sleep(2000);
+        RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                identifier + "_popup", mRenderTestRule);
     }
 }
