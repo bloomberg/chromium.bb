@@ -79,4 +79,5 @@ public class UrlConstants {
 
     public static final String EXPLORE_HOST = "explore";
     public static final String EXPLORE_URL = "chrome-native://explore/";
+    public static final String CHROME_DINO_URL = "chrome://dino";
 }

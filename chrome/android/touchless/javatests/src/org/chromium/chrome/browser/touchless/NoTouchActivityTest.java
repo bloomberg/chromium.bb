@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.touchless;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
@@ -45,8 +47,6 @@ public class NoTouchActivityTest {
     @Before
     public void setUp() throws InterruptedException {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
-        mActivityTestRule.startMainActivityFromLauncher();
-        mActivity = mActivityTestRule.getActivity();
     }
 
     @After
@@ -60,8 +60,51 @@ public class NoTouchActivityTest {
     @Test
     @MediumTest
     public void testStartsUpToNewTabPage() throws Throwable {
+        mActivityTestRule.startMainActivityFromLauncher();
+        mActivity = mActivityTestRule.getActivity();
         Assert.assertTrue(
                 mActivity.getActivityTab().getNativePage() instanceof TouchlessNewTabPage);
+    }
+
+    /**
+     * Tests that the Dino game is launchable.
+     */
+    @Test
+    @MediumTest
+    public void testDinoGameIsLaunchable() throws Throwable {
+        Intent i = new Intent();
+        i.setAction(Intent.ACTION_MAIN);
+        i.addCategory(Intent.CATEGORY_LAUNCHER);
+        i.setClassName(InstrumentationRegistry.getTargetContext().getPackageName(),
+                NoTouchActivity.DINOSAUR_GAME_INTENT);
+        mActivityTestRule.startMainActivityFromIntent(i, null);
+        mActivity = mActivityTestRule.getActivity();
+        Assert.assertFalse(mActivity.getActivityTab().isNativePage());
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals("chrome://dino/",
+                    mActivity.getActivityTab().getWebContents().getLastCommittedUrl());
+        });
+    }
+
+    /**
+     * Tests that the Dino ACTION but with different URL loads dino.
+     */
+    @Test
+    @MediumTest
+    public void testDinoGameOnlyLoadsDino() throws Throwable {
+        Intent i = new Intent();
+        i.setAction(Intent.ACTION_MAIN);
+        i.addCategory(Intent.CATEGORY_LAUNCHER);
+        i.setClassName(InstrumentationRegistry.getTargetContext().getPackageName(),
+                NoTouchActivity.DINOSAUR_GAME_INTENT);
+        i.setData(Uri.parse("https://www.google.com"));
+        mActivityTestRule.startMainActivityFromIntent(i, null);
+        mActivity = mActivityTestRule.getActivity();
+        Assert.assertFalse(mActivity.getActivityTab().isNativePage());
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals("chrome://dino/",
+                    mActivity.getActivityTab().getWebContents().getLastCommittedUrl());
+        });
     }
 
     /**
@@ -70,6 +113,9 @@ public class NoTouchActivityTest {
     @Test
     @MediumTest
     public void testRecreateWithTabHistory() throws Throwable {
+        mActivityTestRule.startMainActivityFromLauncher();
+        mActivity = mActivityTestRule.getActivity();
+
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PATH));
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(mActivity.getActivityTab().getWebContents().getLastCommittedUrl(),
@@ -91,6 +137,9 @@ public class NoTouchActivityTest {
     @Test
     @MediumTest
     public void testSafeBrowsing() throws Throwable {
+        mActivityTestRule.startMainActivityFromLauncher();
+        mActivity = mActivityTestRule.getActivity();
+
         SafeBrowsingApiBridge.setSafeBrowsingHandlerType(
                 new MockSafeBrowsingApiHandler().getClass());
         final String url = mTestServer.getURL(TEST_PATH);

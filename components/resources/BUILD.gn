@@ -2,9 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/android/config.gni")
 import("//printing/buildflags/buildflags.gni")
-import("//tools/grit/grit_rule.gni")
 import("//third_party/brotli/brotli.gni")
+import("//tools/grit/grit_rule.gni")
 
 about_credits_file = "$target_gen_dir/about_credits.html"
 about_credits_file_bro = "$target_gen_dir/about_credits.bro"
@@ -33,6 +34,10 @@ grit("components_resources") {
     "enable_basic_printing=$enable_basic_printing",
     "enable_print_preview=$enable_print_preview",
   ]
+
+  if (is_android && notouch_build) {
+    defines += [ "HIDE_ERROR_MESSAGE_FOR_DINO_PAGE" ]
+  }
 
   deps = [
     ":compressed_about_credits",

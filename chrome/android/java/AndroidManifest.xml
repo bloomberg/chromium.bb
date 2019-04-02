@@ -341,6 +341,20 @@ by a child template that "extends" this file.
             </intent-filter>
         </activity>
 
+        {% if notouch_build == "true" %}
+        <activity-alias android:name="org.chromium.chrome.browser.touchless.DinoActivity"
+            android:targetActivity="org.chromium.chrome.browser.touchless.NoTouchActivity"
+            android:icon="@mipmap/dino"
+            ## Proposed brand name, not to be localized.
+            android:label="Dino Run"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+          </activity-alias>
+        {% endif %}
         <activity android:name="org.chromium.chrome.browser.LauncherShortcutActivity"
             android:theme="@android:style/Theme.NoDisplay"
             android:taskAffinity=""
