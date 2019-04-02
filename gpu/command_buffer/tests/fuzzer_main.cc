@@ -403,15 +403,16 @@ class CommandBufferSetup {
           gfx::ColorSpace::CreateSRGB(), usage);
     }
 
-    context_->MakeCurrent(surface_.get());
 #if defined(GPU_FUZZER_USE_RASTER_DECODER)
     CHECK(feature_info->feature_flags().chromium_raster_transport);
+    context_state_->MakeCurrent(nullptr);
     auto* context = context_state_->context();
     decoder_.reset(raster::RasterDecoder::Create(
         command_buffer_.get(), command_buffer_->service(), &outputter_,
         gpu_feature_info, gpu_preferences_, nullptr /* memory_tracker */,
         shared_image_manager_.get(), context_state_));
 #else
+    context_->MakeCurrent(surface_.get());
     // GLES2Decoder may Initialize feature_info differently than
     // SharedContextState and should have its own.
     auto decoder_feature_info = base::MakeRefCounted<gles2::FeatureInfo>(
