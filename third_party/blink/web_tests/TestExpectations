@@ -6130,6 +6130,11 @@ crbug.com/835943 [ Release ] http/tests/appcache/non-html.xhtml [ Crash Pass Fai
 crbug.com/946323 [ Mac ] editing/caret/caret-painting-low-dpi.html [ Failure Pass ]
 crbug.com/946624 virtual/user-activation-v2/http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-header.html [ Failure Pass ]
 
+#Imperceptible changes to Skia GPU blur
+skbug.com/8942 virtual/disable-blink-gen-property-trees/compositing/masks/mask-with-added-filters.html [ Failure Pass ]
+skbug.com/8942 virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ Failure Pass ]
+skbug.com/8942 compositing/masks/mask-with-added-filters.html [ Failure Pass ]
+
 # Sheriff 2019-03-28
 crbug.com/946890 external/wpt/html/semantics/embedded-content/media-elements/location-of-the-media-resource/currentSrc.html [ Failure Pass Crash ]
 crbug.com/946990 http/tests/devtools/application-panel/storage-view-reports-quota.js [ Pass Timeout ]
