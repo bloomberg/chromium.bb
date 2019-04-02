@@ -37,8 +37,8 @@ using metrics::WindowMetricsEvent;
 namespace {
 
 // Populates navigation-related metrics.
-void PopulatePageTransitionFeatures(tab_ranker::TabFeatures* tab,
-                                    ui::PageTransition page_transition) {
+void PopulatePageTransitionFeatures(ui::PageTransition page_transition,
+                                    tab_ranker::TabFeatures* tab) {
   // We only report the following core types.
   // Note: Redirects unrelated to clicking a link still get the "link" type.
   if (ui::PageTransitionCoreTypeIs(page_transition, ui::PAGE_TRANSITION_LINK) ||
@@ -58,31 +58,69 @@ void PopulatePageTransitionFeatures(tab_ranker::TabFeatures* tab,
       ui::PageTransitionIsRedirect(page_transition);
 }
 
+// Populates TabFeatures from |page_metrics|.
+void PopulateTabFeaturesFromPageMetrics(
+    const TabMetricsLogger::PageMetrics& page_metrics,
+    tab_ranker::TabFeatures* tab) {
+  static_assert(sizeof(TabMetricsLogger::PageMetrics) ==
+                    sizeof(int) * 4 + sizeof(ui::PageTransition),
+                "Make sure all fields in PageMetrics are considered here.");
+  tab->key_event_count = page_metrics.key_event_count;
+  tab->mouse_event_count = page_metrics.mouse_event_count;
+  tab->num_reactivations = page_metrics.num_reactivations;
+  tab->touch_event_count = page_metrics.touch_event_count;
+
+  PopulatePageTransitionFeatures(page_metrics.page_transition, tab);
+}
+
+// Populates TabFeatures that can be calculated simply from |web_contents|.
+void PopulateTabFeaturesFromWebContents(content::WebContents* web_contents,
+                                        tab_ranker::TabFeatures* tab_features) {
+  tab_features->has_before_unload_handler =
+      web_contents->GetMainFrame()->GetSuddenTerminationDisablerState(
+          blink::kBeforeUnloadHandler);
+  tab_features->has_form_entry =
+      web_contents->GetPageImportanceSignals().had_form_interaction;
+  tab_features->host = web_contents->GetLastCommittedURL().host();
+  tab_features->navigation_entry_count =
+      web_contents->GetController().GetEntryCount();
+
+  if (SiteEngagementService::IsEnabled()) {
+    tab_features->site_engagement_score =
+        TabMetricsLogger::GetSiteEngagementScore(web_contents);
+  }
+
+  // This checks if the tab was audible within the past two seconds, same as the
+  // audio indicator in the tab strip.
+  tab_features->was_recently_audible =
+      RecentlyAudibleHelper::FromWebContents(web_contents)
+          ->WasRecentlyAudible();
+}
+
+// Populates TabFeatures that calculated from |browser| including WindowMetrics
+// and PinState.
+void PopulateTabFeaturesFromBrowser(const Browser* browser,
+                                    content::WebContents* web_contents,
+                                    tab_ranker::TabFeatures* tab_features) {
+  // For pin state.
+  const TabStripModel* tab_strip_model = browser->tab_strip_model();
+  int index = tab_strip_model->GetIndexOfWebContents(web_contents);
+  DCHECK_NE(index, TabStripModel::kNoTab);
+  tab_features->is_pinned = tab_strip_model->IsTabPinned(index);
+
+  // For window features.
+  tab_ranker::WindowFeatures window =
+      TabMetricsLogger::CreateWindowFeatures(browser);
+  tab_features->window_is_active = window.is_active;
+  tab_features->window_show_state = window.show_state;
+  tab_features->window_tab_count = window.tab_count;
+  tab_features->window_type = window.type;
+}
+
 }  // namespace
 
 TabMetricsLogger::TabMetricsLogger() = default;
 TabMetricsLogger::~TabMetricsLogger() = default;
-
-// static
-TabMetricsEvent::ContentType TabMetricsLogger::GetContentTypeFromMimeType(
-    const std::string& mime_type) {
-  // Test for special cases before testing wildcard types.
-  if (mime_type.empty())
-    return TabMetricsEvent::CONTENT_TYPE_UNKNOWN;
-  if (net::MatchesMimeType("text/html", mime_type))
-    return TabMetricsEvent::CONTENT_TYPE_TEXT_HTML;
-  if (net::MatchesMimeType("application/*", mime_type))
-    return TabMetricsEvent::CONTENT_TYPE_APPLICATION;
-  if (net::MatchesMimeType("audio/*", mime_type))
-    return TabMetricsEvent::CONTENT_TYPE_AUDIO;
-  if (net::MatchesMimeType("image/*", mime_type))
-    return TabMetricsEvent::CONTENT_TYPE_IMAGE;
-  if (net::MatchesMimeType("text/*", mime_type))
-    return TabMetricsEvent::CONTENT_TYPE_TEXT;
-  if (net::MatchesMimeType("video/*", mime_type))
-    return TabMetricsEvent::CONTENT_TYPE_VIDEO;
-  return TabMetricsEvent::CONTENT_TYPE_OTHER;
-}
 
 // static
 int TabMetricsLogger::GetSiteEngagementScore(
@@ -104,44 +142,18 @@ int TabMetricsLogger::GetSiteEngagementScore(
 }
 
 // static
-tab_ranker::TabFeatures TabMetricsLogger::GetTabFeatures(
-    const Browser* browser,
-    const TabMetrics& tab_metrics,
-    base::TimeDelta inactive_duration) {
-  DCHECK(browser);
-  const TabStripModel* tab_strip_model = browser->tab_strip_model();
-  content::WebContents* web_contents = tab_metrics.web_contents;
+base::Optional<tab_ranker::TabFeatures> TabMetricsLogger::GetTabFeatures(
+    const PageMetrics& page_metrics,
+    content::WebContents* web_contents) {
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (!browser)
+    return base::nullopt;
 
   tab_ranker::TabFeatures tab;
+  PopulateTabFeaturesFromWebContents(web_contents, &tab);
+  PopulateTabFeaturesFromBrowser(browser, web_contents, &tab);
+  PopulateTabFeaturesFromPageMetrics(page_metrics, &tab);
 
-  tab.has_before_unload_handler =
-      web_contents->GetMainFrame()->GetSuddenTerminationDisablerState(
-          blink::kBeforeUnloadHandler);
-  tab.has_form_entry =
-      web_contents->GetPageImportanceSignals().had_form_interaction;
-  tab.host = web_contents->GetLastCommittedURL().host();
-
-  int index = tab_strip_model->GetIndexOfWebContents(web_contents);
-  DCHECK_NE(index, TabStripModel::kNoTab);
-  tab.is_pinned = tab_strip_model->IsTabPinned(index);
-
-  tab.key_event_count = tab_metrics.page_metrics.key_event_count;
-  tab.mouse_event_count = tab_metrics.page_metrics.mouse_event_count;
-  tab.navigation_entry_count = web_contents->GetController().GetEntryCount();
-  tab.num_reactivations = tab_metrics.page_metrics.num_reactivations;
-
-  PopulatePageTransitionFeatures(&tab, tab_metrics.page_transition);
-
-  if (SiteEngagementService::IsEnabled())
-    tab.site_engagement_score = GetSiteEngagementScore(web_contents);
-
-  tab.time_from_backgrounded = inactive_duration.InMilliseconds();
-  tab.touch_event_count = tab_metrics.page_metrics.touch_event_count;
-
-  // This checks if the tab was audible within the past two seconds, same as the
-  // audio indicator in the tab strip.
-  auto* audible_helper = RecentlyAudibleHelper::FromWebContents(web_contents);
-  tab.was_recently_audible = audible_helper->WasRecentlyAudible();
   return tab;
 }
 
