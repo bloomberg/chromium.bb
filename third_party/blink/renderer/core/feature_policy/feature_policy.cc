@@ -35,7 +35,9 @@ PolicyValue GetFallbackValueForFeature(mojom::FeaturePolicyFeature feature) {
     // Lossy images default to at most 0.5 bytes per pixel.
     return PolicyValue(0.5);
   }
-  if (feature == mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages) {
+  if (feature == mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages ||
+      feature ==
+          mojom::FeaturePolicyFeature::kUnoptimizedLosslessImagesStrict) {
     // Lossless images default to at most 1 byte per pixel.
     return PolicyValue(1.0);
   }

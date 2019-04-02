@@ -190,7 +190,12 @@
     {
       name: "UnoptimizedLosslessImages",
       feature_policy_name: "unoptimized-lossless-images",
-      depends_on: ["ExperimentalProductivityFeatures"],
+      depends_on: ["UnoptimizedImagePolicies"],
+    },
+    {
+      name: "UnoptimizedLosslessImagesStrict",
+      feature_policy_name: "unoptimized-lossless-images-strict",
+      depends_on: ["UnoptimizedImagePolicies"],
     },
     {
       name: "UnoptimizedLossyImages",
