@@ -411,6 +411,7 @@ def angle(c):
   soln = c.solutions.add()
   soln.name = 'angle'
   soln.url = 'https://chromium.googlesource.com/angle/angle.git'
+  c.got_revision_mapping['angle'] = 'got_revision'
 
 @config_ctx()
 def dawn(c):
