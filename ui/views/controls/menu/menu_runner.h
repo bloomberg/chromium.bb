@@ -37,7 +37,6 @@ class MenuRunnerHandler;
 class Widget;
 
 namespace internal {
-class DisplayChangeListener;
 class MenuRunnerImplInterface;
 }
 
@@ -159,30 +158,8 @@ class VIEWS_EXPORT MenuRunner {
   // is not NULL, this implementation will be used.
   std::unique_ptr<MenuRunnerHandler> runner_handler_;
 
-  std::unique_ptr<internal::DisplayChangeListener> display_change_listener_;
-
   DISALLOW_COPY_AND_ASSIGN(MenuRunner);
 };
-
-namespace internal {
-
-// DisplayChangeListener is intended to listen for changes in the display size
-// and cancel the menu. DisplayChangeListener is created when the menu is
-// shown.
-class DisplayChangeListener {
- public:
-  virtual ~DisplayChangeListener() = default;
-
-  // Creates the platform specified DisplayChangeListener, or NULL if there
-  // isn't one. Caller owns the returned value.
-  static DisplayChangeListener* Create(Widget* parent,
-                                       MenuRunner* runner);
-
- protected:
-  DisplayChangeListener() = default;
-};
-
-}  // namespace internal
 
 }  // namespace views
 
