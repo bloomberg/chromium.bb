@@ -124,7 +124,7 @@ class MockActionDelegate : public ActionDelegate {
 
   MOCK_METHOD3(SendKeyboardInput,
                void(const Selector& selector,
-                    const std::vector<std::string>& text_parts,
+                    const std::vector<UChar32>& codepoints,
                     base::OnceCallback<void(const ClientStatus&)> callback));
   MOCK_METHOD2(GetOuterHtml,
                void(const Selector& selector,

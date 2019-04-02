@@ -22,6 +22,7 @@
 #include "components/autofill_assistant/browser/devtools/devtools_client.h"
 #include "components/autofill_assistant/browser/rectf.h"
 #include "components/autofill_assistant/browser/selector.h"
+#include "third_party/icu/source/common/unicode/umachine.h"
 #include "url/gurl.h"
 
 namespace autofill {
@@ -120,12 +121,12 @@ class WebController {
       const std::string& value,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
-  // Sets the keyboard focus to |selector| and inputs the specified UTF-8
-  // characters in the specified order.
+  // Sets the keyboard focus to |selector| and inputs |codepoints|, one
+  // character at a time.
   // Returns the result through |callback|.
   virtual void SendKeyboardInput(
       const Selector& selector,
-      const std::vector<std::string>& utf8_chars,
+      const std::vector<UChar32>& codepoints,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
   // Return the outerHTML of |selector|.
@@ -356,19 +357,19 @@ class WebController {
       base::OnceCallback<void(const ClientStatus&)> callback);
   void OnClearFieldForSendKeyboardInput(
       const Selector& selector,
-      const std::vector<std::string>& utf8_chars,
+      const std::vector<UChar32>& codepoints,
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& status);
   void OnClickElementForSendKeyboardInput(
-      const std::vector<std::string>& utf8_chars,
+      const std::vector<UChar32>& codepoints,
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& click_status);
   void DispatchKeyboardTextDownEvent(
-      const std::vector<std::string>& utf8_chars,
+      const std::vector<UChar32>& codepoints,
       size_t index,
       base::OnceCallback<void(const ClientStatus&)> callback);
   void DispatchKeyboardTextUpEvent(
-      const std::vector<std::string>& utf8_chars,
+      const std::vector<UChar32>& codepoints,
       size_t index,
       base::OnceCallback<void(const ClientStatus&)> callback);
   void OnFindElementForSetAttribute(
@@ -381,13 +382,10 @@ class WebController {
                       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForSendKeyboardInput(
       const Selector& selector,
-      const std::vector<std::string>& utf8_chars,
+      const std::vector<UChar32>& codepoints,
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& status,
       std::unique_ptr<FindElementResult> element_result);
-  void OnPressKeyboard(int key_code,
-                       base::OnceCallback<void(bool)> callback,
-                       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForSetFieldValue(
       const std::string& value,
       base::OnceCallback<void(const ClientStatus&)> callback,
@@ -413,12 +411,12 @@ class WebController {
       std::unique_ptr<runtime::CallFunctionOnResult> result);
 
   // Creates a new instance of DispatchKeyEventParams for the specified type and
-  // text.
+  // unicode codepoint.
   using DispatchKeyEventParamsPtr =
       std::unique_ptr<autofill_assistant::input::DispatchKeyEventParams>;
-  static DispatchKeyEventParamsPtr CreateKeyEventParamsFromText(
+  static DispatchKeyEventParamsPtr CreateKeyEventParamsForCharacter(
       autofill_assistant::input::DispatchKeyEventType type,
-      const std::string& text);
+      const UChar32 codepoint);
 
   void OnSetCookie(base::OnceCallback<void(bool)> callback,
                    std::unique_ptr<network::SetCookieResult> result);

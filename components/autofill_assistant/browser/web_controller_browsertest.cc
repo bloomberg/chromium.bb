@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "components/autofill_assistant/browser/service.pb.h"
+#include "components/autofill_assistant/browser/string_conversions_util.h"
 #include "components/autofill_assistant/browser/web_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -365,11 +366,11 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   }
 
   ClientStatus SendKeyboardInput(const Selector& selector,
-                                 const std::vector<std::string>& text_parts) {
+                                 const std::vector<UChar32>& codepoints) {
     base::RunLoop run_loop;
     ClientStatus result;
     web_controller_->SendKeyboardInput(
-        selector, text_parts,
+        selector, codepoints,
         base::BindOnce(&WebControllerBrowserTest::OnSendKeyboardInput,
                        base::Unretained(this), run_loop.QuitClosure(),
                        &result));
@@ -821,17 +822,30 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SendKeyboardInput) {
-  std::vector<std::string> text_parts = {
-      "Z", /* ü */ "\xc3\xbc", "r", "i", "c", "h", "\r"};
-  std::vector<std::string> expected_values = {"Z\xc3\xbcrich"};
+  auto input = UTF8ToUnicode("Zürich");
+  std::string expected_output = "Zürich";
 
   std::vector<Selector> selectors;
   Selector a_selector;
   a_selector.selectors.emplace_back("#input6");
   selectors.emplace_back(a_selector);
   EXPECT_EQ(ACTION_APPLIED,
-            SendKeyboardInput(a_selector, text_parts).proto_status());
-  GetFieldsValue(selectors, expected_values);
+            SendKeyboardInput(a_selector, input).proto_status());
+  GetFieldsValue(selectors, {expected_output});
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       SendKeyboardInputSetsKeyProperty) {
+  auto input = UTF8ToUnicode("Zürich\r");
+  std::string expected_output = "ZürichEnter";
+
+  std::vector<Selector> selectors;
+  Selector a_selector;
+  a_selector.selectors.emplace_back("#input_js_event_listener");
+  selectors.emplace_back(a_selector);
+  EXPECT_EQ(ACTION_APPLIED,
+            SendKeyboardInput(a_selector, input).proto_status());
+  GetFieldsValue(selectors, {expected_output});
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SetAttribute) {

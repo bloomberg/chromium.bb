@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
+#include "components/autofill_assistant/browser/string_conversions_util.h"
 
 namespace autofill_assistant {
 
@@ -76,7 +77,7 @@ void SetFormFieldValueAction::OnSetFieldValue(ActionDelegate* delegate,
       // You should use the `keyboard_input' field instead.
       if (key_field.keycode() < 128) {  // US-ASCII
         delegate->SendKeyboardInput(
-            selector, {std::string(1, char(key_field.keycode()))},
+            selector, {key_field.keycode()},
             base::BindOnce(&SetFormFieldValueAction::OnSetFieldValue,
                            weak_ptr_factory_.GetWeakPtr(), delegate,
                            std::move(callback),
@@ -85,14 +86,14 @@ void SetFormFieldValueAction::OnSetFieldValue(ActionDelegate* delegate,
         DVLOG(3)
             << "SetFormFieldValueProto_KeyPress: field `keycode' is deprecated "
             << "and only supports US-ASCII values (encountered "
-            << key_field.keycode() << "). Use field `key' instead.";
+            << key_field.keycode() << "). Use field `keyboard_input' instead.";
         OnSetFieldValue(delegate, std::move(callback), next,
                         ClientStatus(INVALID_ACTION));
       }
       break;
     case SetFormFieldValueProto_KeyPress::kKeyboardInput:
       delegate->SendKeyboardInput(
-          selector, {key_field.keyboard_input()},
+          selector, UTF8ToUnicode(key_field.keyboard_input()),
           base::BindOnce(&SetFormFieldValueAction::OnSetFieldValue,
                          weak_ptr_factory_.GetWeakPtr(), delegate,
                          std::move(callback),
