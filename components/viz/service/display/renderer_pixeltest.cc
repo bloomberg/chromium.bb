@@ -4285,7 +4285,7 @@ TYPED_TEST(GLOnlyRendererPixelTest, TileQuadClamping) {
                                  cc::ExactPixelComparator(true)));
 }
 
-TYPED_TEST(GLOnlyRendererPixelTest, RoundedCornerSimple) {
+TYPED_TEST(GLOnlyRendererPixelTest, RoundedCornerSimpleSolidDrawQuad) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
   constexpr int kInset = 20;
   constexpr int kCornerRadius = 20;
@@ -4307,6 +4307,65 @@ TYPED_TEST(GLOnlyRendererPixelTest, RoundedCornerSimple) {
 
   auto* blue = root_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   blue->SetNew(shared_state_rounded, blue_rect, blue_rect, SK_ColorBLUE, false);
+
+  SharedQuadState* shared_state_normal = CreateTestSharedQuadState(
+      quad_to_target_transform, viewport_rect, root_pass.get(), gfx::RRectF());
+
+  auto* white = root_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  white->SetNew(shared_state_normal, red_rect, red_rect, SK_ColorWHITE, false);
+
+  RenderPassList pass_list;
+  pass_list.push_back(std::move(root_pass));
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      base::FilePath(FILE_PATH_LITERAL("rounded_corner_simple.png")),
+      cc::ExactPixelComparator(true)));
+}
+
+TYPED_TEST(GLOnlyRendererPixelTest, RoundedCornerSimpleTextureDrawQuad) {
+  gfx::Rect viewport_rect(this->device_viewport_size_);
+  constexpr int kInset = 20;
+  constexpr int kCornerRadius = 20;
+
+  int root_pass_id = 1;
+  std::unique_ptr<RenderPass> root_pass =
+      CreateTestRootRenderPass(root_pass_id, viewport_rect);
+
+  gfx::Transform quad_to_target_transform;
+  gfx::Rect blue_rect(0, 0, this->device_viewport_size_.width(),
+                      this->device_viewport_size_.height());
+  gfx::Rect red_rect = blue_rect;
+  blue_rect.Inset(kInset, kInset);
+
+  gfx::RRectF rounded_corner_rrect(gfx::RectF(blue_rect), kCornerRadius);
+  SharedQuadState* shared_state_rounded =
+      CreateTestSharedQuadState(quad_to_target_transform, viewport_rect,
+                                root_pass.get(), rounded_corner_rrect);
+
+  const uint8_t colors[] = {0, 0, 255, 255, 0, 0, 255, 255,
+                            0, 0, 255, 255, 0, 0, 255, 255};
+  ResourceId resource = CreateGpuResource(
+      this->child_context_provider_, this->child_resource_provider_.get(),
+      gfx::Size(2, 2), RGBA_8888, gfx::ColorSpace(), colors);
+
+  std::unordered_map<ResourceId, ResourceId> resource_map =
+      cc::SendResourceAndGetChildToParentMap(
+          {resource}, this->resource_provider_.get(),
+          this->child_resource_provider_.get(),
+          this->child_context_provider_.get());
+  ResourceId mapped_resource = resource_map[resource];
+  bool needs_blending = true;
+  const gfx::PointF uv_top_left(0.0f, 0.0f);
+  const gfx::PointF uv_bottom_right(1.0f, 1.0f);
+  const bool flipped = false;
+  const bool nearest_neighbor = false;
+  auto* blue = root_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
+  float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+  blue->SetNew(shared_state_rounded, blue_rect, blue_rect, needs_blending,
+               mapped_resource, true, uv_top_left, uv_bottom_right,
+               SK_ColorBLACK, vertex_opacity, flipped, nearest_neighbor,
+               /*secure_output_only=*/false, ui::ProtectedVideoType::kClear);
 
   SharedQuadState* shared_state_normal = CreateTestSharedQuadState(
       quad_to_target_transform, viewport_rect, root_pass.get(), gfx::RRectF());
