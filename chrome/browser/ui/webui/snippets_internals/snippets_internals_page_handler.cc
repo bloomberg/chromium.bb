@@ -25,8 +25,6 @@
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/variations/variations_associated_data.h"
 
-using ntp_snippets::AreAssetDownloadsEnabled;
-using ntp_snippets::AreOfflinePageDownloadsEnabled;
 using ntp_snippets::Category;
 using ntp_snippets::CategoryInfo;
 using ntp_snippets::CategoryStatus;
@@ -170,10 +168,6 @@ void SnippetsInternalsPageHandler::GetGeneralProperties(
   properties["flag-offlining-recent-pages-feature"] =
       BooleanToString(base::FeatureList::IsEnabled(
           offline_pages::kOffliningRecentPagesFeature));
-  properties["flag-asset-download-suggestions"] =
-      BooleanToString(AreAssetDownloadsEnabled());
-  properties["flag-offline-page-download-suggestions"] =
-      BooleanToString(AreOfflinePageDownloadsEnabled());
 
   if (remote_suggestions_provider_) {
     const ntp_snippets::RemoteSuggestionsFetcher* fetcher =

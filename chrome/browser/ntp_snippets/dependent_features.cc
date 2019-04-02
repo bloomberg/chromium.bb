@@ -20,15 +20,4 @@ bool IsSimplifiedNtpEnabled() {
 #endif  // OS_ANDROID
 }
 
-bool AreAssetDownloadsEnabled() {
-  return !IsSimplifiedNtpEnabled();
-}
-
-bool AreOfflinePageDownloadsEnabled() {
-  return !IsSimplifiedNtpEnabled();
-}
-bool IsDownloadsProviderEnabled() {
-  return AreAssetDownloadsEnabled() || AreOfflinePageDownloadsEnabled();
-}
-
 }  // namespace ntp_snippets

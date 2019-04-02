@@ -11,12 +11,6 @@ namespace ntp_snippets {
 
 bool IsSimplifiedNtpEnabled();
 
-bool AreAssetDownloadsEnabled();
-bool AreOfflinePageDownloadsEnabled();
-bool IsDownloadsProviderEnabled();
-
-bool IsPhysicalWebPageProviderEnabled();
-
 }  // namespace ntp_snippets
 
 #endif  // CHROME_BROWSER_NTP_SNIPPETS_DEPENDENT_FEATURES_H_

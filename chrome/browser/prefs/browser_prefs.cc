@@ -200,7 +200,6 @@
 #include "chrome/browser/android/usage_stats/usage_stats_bridge.h"
 #include "chrome/browser/geolocation/geolocation_permission_context_android.h"
 #include "chrome/browser/media/android/cdm/media_drm_origin_id_manager.h"
-#include "chrome/browser/ntp_snippets/download_suggestions_provider.h"
 #include "components/cdm/browser/media_drm_storage_impl.h"
 #include "components/feed/buildflags.h"
 #include "components/ntp_snippets/breaking_news/breaking_news_gcm_app_handler.h"
@@ -412,6 +411,14 @@ const char kCurrentThemeColors[] = "extensions.theme.colors";
 const char kCurrentThemeTints[] = "extensions.theme.tints";
 const char kCurrentThemeDisplayProperties[] = "extensions.theme.properties";
 
+#if defined(OS_ANDROID)
+// Deprecated 4/2019.
+const char kDismissedAssetDownloadSuggestions[] =
+    "ntp_suggestions.downloads.assets.dismissed_ids";
+const char kDismissedOfflinePageDownloadSuggestions[] =
+    "ntp_suggestions.downloads.offline_pages.dismissed_ids";
+#endif
+
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -448,6 +455,11 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterDictionaryPref(kCurrentThemeColors);
   registry->RegisterDictionaryPref(kCurrentThemeTints);
   registry->RegisterDictionaryPref(kCurrentThemeDisplayProperties);
+
+#if defined(OS_ANDROID)
+  registry->RegisterListPref(kDismissedAssetDownloadSuggestions);
+  registry->RegisterListPref(kDismissedOfflinePageDownloadSuggestions);
+#endif
 }
 
 }  // namespace
@@ -734,7 +746,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   contextual_suggestions::ContextualSuggestionsPrefs::RegisterProfilePrefs(
       registry);
   ContentSuggestionsNotifierService::RegisterProfilePrefs(registry);
-  DownloadSuggestionsProvider::RegisterProfilePrefs(registry);
   explore_sites::HistoryStatisticsReporter::RegisterPrefs(registry);
   ntp_snippets::BreakingNewsGCMAppHandler::RegisterProfilePrefs(registry);
   ntp_snippets::ClickBasedCategoryRanker::RegisterProfilePrefs(registry);
@@ -996,4 +1007,10 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(kCurrentThemeColors);
   profile_prefs->ClearPref(kCurrentThemeTints);
   profile_prefs->ClearPref(kCurrentThemeDisplayProperties);
+
+#if defined(OS_ANDROID)
+  // Added 4/2019.
+  profile_prefs->ClearPref(kDismissedAssetDownloadSuggestions);
+  profile_prefs->ClearPref(kDismissedOfflinePageDownloadSuggestions);
+#endif  // defined(OS_ANDROID)
 }
