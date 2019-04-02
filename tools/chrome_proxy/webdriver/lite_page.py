@@ -345,8 +345,11 @@ class LitePage(IntegrationTest):
 
       lite_page_responses = 0
       page_policies_responses = 0
+      checked_chrome_proxy_header = False
       for response in test_driver.GetHTTPResponses():
-        self.assertEqual('2G', response.request_headers['chrome-proxy-ect'])
+        if response.request_headers:
+          self.assertEqual('2G', response.request_headers['chrome-proxy-ect'])
+          checked_chrome_proxy_header = True
         if response.url.endswith('html'):
           if self.checkLitePageResponse(response):
             lite_page_responses = lite_page_responses + 1
@@ -356,6 +359,7 @@ class LitePage(IntegrationTest):
             page_policies_responses = page_policies_responses + 1
 
       self.assertTrue(lite_page_responses == 1 or page_policies_responses == 1)
+      self.assertTrue(checked_chrome_proxy_header)
 
       if (lite_page_responses == 1):
         self.assertPreviewShownViaHistogram(test_driver, 'LitePage')
@@ -384,8 +388,11 @@ class LitePage(IntegrationTest):
 
       test_driver.LoadURL('http://check.googlezip.net/test.html')
 
+      checked_chrome_proxy_header = False
       for response in test_driver.GetHTTPResponses():
-        self.assertEqual('4G', response.request_headers['chrome-proxy-ect'])
+        if response.request_headers:
+          self.assertEqual('4G', response.request_headers['chrome-proxy-ect'])
+          checked_chrome_proxy_header = True
         if response.url.endswith('html'):
           # Main resource should accept lite page but not be transformed.
           self.assertEqual('lite-page',
@@ -403,6 +410,7 @@ class LitePage(IntegrationTest):
 
       self.assertPreviewNotShownViaHistogram(test_driver, 'LoFi')
       self.assertPreviewNotShownViaHistogram(test_driver, 'LitePage')
+      self.assertTrue(checked_chrome_proxy_header)
 
   # Checks the default of whether server previews are enabled or not
   # based on whether running on Android (enabled) or not (disabled).

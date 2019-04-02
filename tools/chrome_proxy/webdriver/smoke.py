@@ -127,6 +127,8 @@ class Smoke(IntegrationTest):
         pid_in_page_count = 0
         page_id = ''
         for response in responses:
+          if not response.request_headers:
+            continue
           self.assertHasChromeProxyViaHeader(response)
           self.assertEqual(200, response.status)
           chrome_proxy_header = response.request_headers['chrome-proxy']
