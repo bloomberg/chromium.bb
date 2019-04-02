@@ -311,6 +311,11 @@ const char kNewPasswordFormParsingForSavingDescription[] =
     "version, currently under development. WARNING: when enabled, Password "
     "Manager might stop working";
 
+const char kNewOmniboxPopupLayoutName[] = "New omnibox popup";
+const char kNewOmniboxPopupLayoutDescription[] =
+    "Switches the omnibox suggestions and omnibox itself to display the new "
+    "design with favicons, new suggestion layout, rich entity support.";
+
 const char kNonModalDialogsName[] = "Use non-modal JavaScript dialogs";
 const char kNonModalDialogsDescription[] =
     "Presents JavaScript dialogs non-modally so that the user can change tabs "

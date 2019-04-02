@@ -31,3 +31,6 @@ const base::Feature kSettingsRefresh{"SettingsRefresh",
 
 const base::Feature kDisplaySearchEngineFavicon{
     "DisplaySearchEngineFavicon", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kNewOmniboxPopupLayout{"NewOmniboxPopupLayout",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};

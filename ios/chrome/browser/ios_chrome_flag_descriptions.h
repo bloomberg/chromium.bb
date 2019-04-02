@@ -248,6 +248,10 @@ extern const char kNewPasswordFormParsingDescription[];
 extern const char kNewPasswordFormParsingForSavingName[];
 extern const char kNewPasswordFormParsingForSavingDescription[];
 
+// Title and description for the flag to display new omnibox popup.
+extern const char kNewOmniboxPopupLayoutName[];
+extern const char kNewOmniboxPopupLayoutDescription[];
+
 // Title and description for the flag to enable non-modal JavaScript dialogs.
 extern const char kNonModalDialogsName[];
 extern const char kNonModalDialogsDescription[];

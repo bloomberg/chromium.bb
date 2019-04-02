@@ -35,4 +35,8 @@ extern const base::Feature kSettingsRefresh;
 // Feature to display search engine favicons in Settings.
 extern const base::Feature kDisplaySearchEngineFavicon;
 
+// Feature to display the new omnibox popup design with favicons, search engine
+// favicon in the omnibox, rich entities support, new layout.
+extern const base::Feature kNewOmniboxPopupLayout;
+
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_
