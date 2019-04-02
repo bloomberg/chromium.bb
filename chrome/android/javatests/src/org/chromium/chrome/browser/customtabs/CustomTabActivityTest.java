@@ -1748,8 +1748,8 @@ public class CustomTabActivityTest {
             messageChannelHelper.waitForCallback(0);
             String currentMessage = "Prerendering ";
             // Initial title update during prerender.
-            Assert.assertTrue(
-                    session.postMessage(currentMessage, null) == CustomTabsService.RESULT_SUCCESS);
+            Assert.assertEquals(
+                    CustomTabsService.RESULT_SUCCESS, session.postMessage(currentMessage, null));
             titleString = currentMessage;
         }
 
@@ -1771,8 +1771,8 @@ public class CustomTabActivityTest {
 
         String currentMessage = "and loading ";
         // Update title again and verify both updates went through with the channel still intact.
-        Assert.assertTrue(
-                session.postMessage(currentMessage, null) == CustomTabsService.RESULT_SUCCESS);
+        Assert.assertEquals(
+                CustomTabsService.RESULT_SUCCESS, session.postMessage(currentMessage, null));
         titleString += currentMessage;
 
         // Request a new channel, verify it was created.
@@ -1781,8 +1781,8 @@ public class CustomTabActivityTest {
 
         String newMessage = "and refreshing";
         // Update title again and verify both updates went through with the channel still intact.
-        Assert.assertTrue(
-                session.postMessage(newMessage, null) == CustomTabsService.RESULT_SUCCESS);
+        Assert.assertEquals(
+                CustomTabsService.RESULT_SUCCESS, session.postMessage(newMessage, null));
         titleString += newMessage;
 
         final String title = titleString;

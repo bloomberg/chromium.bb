@@ -86,6 +86,7 @@ public class FeatureUtilities {
     private static Boolean sFeedEnabled;
     private static Boolean sServiceManagerForBackgroundPrefetch;
     private static Boolean sIsNetworkServiceWarmUpEnabled;
+    private static Boolean sIsImmersiveUiModeEnabled;
 
     private static Boolean sDownloadAutoResumptionEnabledInNative;
 
@@ -206,6 +207,7 @@ public class FeatureUtilities {
         cacheFeedEnabled();
         cacheServiceManagerForBackgroundPrefetch();
         cacheNetworkServiceWarmUpEnabled();
+        cacheImmersiveUiModeEnabled();
 
         if (isHighEndPhone()) cacheGridTabSwitcherEnabled();
         if (isHighEndPhone()) cacheTabGroupsAndroidEnabled();
@@ -667,6 +669,24 @@ public class FeatureUtilities {
                     ChromePreferenceManager.NETWORK_SERVICE_WARM_UP_ENABLED_KEY, false);
         }
         return sIsNetworkServiceWarmUpEnabled;
+    }
+
+    private static void cacheImmersiveUiModeEnabled() {
+        ChromePreferenceManager.getInstance().writeBoolean(
+                ChromePreferenceManager.IMMERSIVE_UI_MODE_ENABLED,
+                ChromeFeatureList.isEnabled(ChromeFeatureList.IMMERSIVE_UI_MODE));
+    }
+
+    /**
+     * @return Whether immersive ui mode is enabled.
+     */
+    public static boolean isImmersiveUiModeEnabled() {
+        if (sIsImmersiveUiModeEnabled == null) {
+            sIsImmersiveUiModeEnabled = ChromePreferenceManager.getInstance().readBoolean(
+                    ChromePreferenceManager.IMMERSIVE_UI_MODE_ENABLED, false);
+        }
+
+        return sIsImmersiveUiModeEnabled;
     }
 
     private static native void nativeSetCustomTabVisible(boolean visible);

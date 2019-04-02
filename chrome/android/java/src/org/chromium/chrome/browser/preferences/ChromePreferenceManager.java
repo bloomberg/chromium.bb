@@ -334,6 +334,11 @@ public class ChromePreferenceManager {
     public static final String NETWORK_SERVICE_WARM_UP_ENABLED_KEY =
             "network_service_warm_up_enabled";
 
+    /**
+     * Key to cache whether immersive ui mode is enabled.
+     */
+    public static final String IMMERSIVE_UI_MODE_ENABLED = "immersive_ui_mode_enabled";
+
     private static class LazyHolder {
         static final ChromePreferenceManager INSTANCE = new ChromePreferenceManager();
     }

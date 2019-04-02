@@ -4,9 +4,12 @@
 
 package org.chromium.chrome.browser.ui;
 
+import android.support.annotation.Nullable;
+
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
+import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.ui.system.SystemUiCoordinator;
 
@@ -17,31 +20,46 @@ import org.chromium.chrome.browser.ui.system.SystemUiCoordinator;
  * The specific things this component will manage and how it will hook into Chrome*Activity are
  * still being discussed See https://crbug.com/931496.
  */
-public class RootUiCoordinator implements Destroyable, NativeInitObserver {
-    private SystemUiCoordinator mSystemUiCoordinator;
+public class RootUiCoordinator implements Destroyable, NativeInitObserver, InflationObserver {
     private ChromeActivity mActivity;
+    private @Nullable ImmersiveModeManager mImmersiveModeManager;
+    private SystemUiCoordinator mSystemUiCoordinator;
 
     /**
-     * Construct a new {@link RootUiCoordinator}.
-     * @param activityLifecycleDispatcher The {@link ActivityLifecycleDispatcher} for the containing
-     *         activity.
+     * Create a new {@link RootUiCoordinator} for the given activity.
      * @param activity The containing {@link ChromeActivity}. TODO(https://crbug.com/931496):
      *         Remove this in favor of passing in direct dependencies.
      */
-    public RootUiCoordinator(
-            ActivityLifecycleDispatcher activityLifecycleDispatcher, ChromeActivity activity) {
-        activityLifecycleDispatcher.register(this);
+    public static void create(ChromeActivity activity) {
+        new RootUiCoordinator(activity);
+    }
+
+    RootUiCoordinator(ChromeActivity activity) {
         mActivity = activity;
+        mActivity.getLifecycleDispatcher().register(this);
     }
 
     @Override
     public void destroy() {
+        mActivity = null;
         if (mSystemUiCoordinator != null) mSystemUiCoordinator.destroy();
+        if (mImmersiveModeManager != null) mImmersiveModeManager.destroy();
+    }
+
+    @Override
+    public void onPreInflationStartup() {}
+
+    @Override
+    public void onPostInflationStartup() {
+        mImmersiveModeManager = AppHooks.get().createImmersiveModeManager(
+                mActivity.getWindow().getDecorView().findViewById(android.R.id.content));
+        mSystemUiCoordinator =
+                new SystemUiCoordinator(mActivity.getWindow(), mActivity.getTabModelSelector(),
+                        mImmersiveModeManager, mActivity.getActivityType());
     }
 
     @Override
     public void onFinishNativeInitialization() {
-        mSystemUiCoordinator = new SystemUiCoordinator(mActivity.getWindow(),
-                mActivity.getTabModelSelector(), mActivity.getOverviewModeBehavior());
+        mSystemUiCoordinator.onNativeInitialized(mActivity.getOverviewModeBehavior());
     }
 }

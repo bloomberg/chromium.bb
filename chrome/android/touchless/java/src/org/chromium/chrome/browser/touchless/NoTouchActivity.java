@@ -188,6 +188,11 @@ public class NoTouchActivity extends SingleTabActivity {
     }
 
     @Override
+    public @ChromeActivity.ActivityType int getActivityType() {
+        return ChromeActivity.ActivityType.NO_TOUCH;
+    }
+
+    @Override
     protected void initializeToolbar() {}
 
     @Override

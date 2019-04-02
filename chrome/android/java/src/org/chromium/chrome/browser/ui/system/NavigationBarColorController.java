@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.chrome.browser.ui.ImmersiveModeManager;
 import org.chromium.chrome.browser.vr.VrModeObserver;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.ui.UiUtils;
@@ -41,8 +42,9 @@ class NavigationBarColorController implements VrModeObserver {
     // May be null if we return from the constructor early. Otherwise will be set.
     private final @Nullable TabModelSelector mTabModelSelector;
     private final @Nullable TabModelSelectorObserver mTabModelSelectorObserver;
-    private final @Nullable OverviewModeBehavior mOverviewModeBehavior;
-    private final @Nullable OverviewModeObserver mOverviewModeObserver;
+    private final @Nullable ImmersiveModeManager mImmersiveModeManager;
+    private @Nullable OverviewModeBehavior mOverviewModeBehavior;
+    private @Nullable OverviewModeObserver mOverviewModeObserver;
 
     private boolean mUseLightNavigation;
     private boolean mOverviewModeHiding;
@@ -52,16 +54,34 @@ class NavigationBarColorController implements VrModeObserver {
      * @param window The {@link Window} this controller should operate on.
      * @param tabModelSelector The {@link TabModelSelector} used to determine which tab model is
      *                         selected.
-     * @param overviewModeBehavior The {@link OverviewModeObserver} used to determine whether
-     *                             overview mode is showing.
+     * @param immersiveModeManager The {@link ImmersiveModeManager} for the containing activity.
      */
     NavigationBarColorController(Window window, TabModelSelector tabModelSelector,
-            OverviewModeBehavior overviewModeBehavior) {
+            @Nullable ImmersiveModeManager immersiveModeManager) {
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1;
 
         mWindow = window;
+        mImmersiveModeManager = immersiveModeManager;
         mRootView = (ViewGroup) mWindow.getDecorView().getRootView();
         mResources = mRootView.getResources();
+
+        if (immersiveModeManager != null && immersiveModeManager.isImmersiveModeSupported()) {
+            // TODO(https://crbug.com/937946): Hook up immersive mode observer.
+            mTabModelSelector = null;
+            mTabModelSelectorObserver = null;
+            mOverviewModeBehavior = null;
+            mOverviewModeObserver = null;
+
+            window.setNavigationBarColor(Color.TRANSPARENT);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                window.setNavigationBarDividerColor(Color.TRANSPARENT);
+            }
+            int visibility =
+                    mRootView.getSystemUiVisibility() & ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+            mRootView.setSystemUiVisibility(visibility);
+
+            return;
+        }
 
         // If we're not using a light navigation bar, it will always be black so there's no need
         // to register observers and manipulate coloring.
@@ -87,6 +107,34 @@ class NavigationBarColorController implements VrModeObserver {
         // TODO(https://crbug.com/806054): Observe tab loads to restrict black bottom nav to
         // incognito NTP.
 
+        updateNavigationBarColor();
+
+        VrModuleProvider.registerVrModeObserver(this);
+    }
+
+    /**
+     * Destroy this {@link NavigationBarColorController} instance.
+     */
+    public void destroy() {
+        if (mTabModelSelector != null) mTabModelSelector.removeObserver(mTabModelSelectorObserver);
+        if (mOverviewModeBehavior != null) {
+            mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
+        }
+        VrModuleProvider.unregisterVrModeObserver(this);
+    }
+
+    /**
+     * @param overviewModeBehavior The {@link OverviewModeBehavior} used to determine whether
+     *                             overview mode is showing.
+     */
+    public void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
+        // TODO(https://crbug.com/937946): Adjust after immersive mode manager is hooked up.
+        if (!mResources.getBoolean(R.bool.window_light_navigation_bar)
+                || (mImmersiveModeManager != null
+                        && mImmersiveModeManager.isImmersiveModeSupported())) {
+            return;
+        }
+
         mOverviewModeBehavior = overviewModeBehavior;
         mOverviewModeObserver = new EmptyOverviewModeObserver() {
             @Override
@@ -107,27 +155,14 @@ class NavigationBarColorController implements VrModeObserver {
             }
         };
         mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
-
         updateNavigationBarColor();
-
-        VrModuleProvider.registerVrModeObserver(this);
-    }
-
-    /**
-     * Destroy this {@link NavigationBarColorController} instance.
-     */
-    public void destroy() {
-        if (mTabModelSelector != null) mTabModelSelector.removeObserver(mTabModelSelectorObserver);
-        if (mOverviewModeBehavior != null) {
-            mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
-        }
-        VrModuleProvider.unregisterVrModeObserver(this);
     }
 
     @Override
     public void onExitVr() {
         // The platform ignores the light navigation bar system UI flag when launching an Activity
         // in VR mode, so we need to restore it when VR is exited.
+        // TODO(https://crbug.com/937946): How does this interact with immersive mode?
         updateSystemUiVisibility(mUseLightNavigation);
     }
 
@@ -136,11 +171,13 @@ class NavigationBarColorController implements VrModeObserver {
 
     @SuppressLint("NewApi")
     private void updateNavigationBarColor() {
-        boolean overviewVisible = mOverviewModeBehavior.overviewVisible() && !mOverviewModeHiding;
+        boolean overviewVisible = mOverviewModeBehavior != null
+                && mOverviewModeBehavior.overviewVisible() && !mOverviewModeHiding;
 
         boolean useLightNavigation;
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
-                || DeviceClassManager.enableAccessibilityLayout()) {
+        if (ChromeFeatureList.isInitialized()
+                && (ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
+                        || DeviceClassManager.enableAccessibilityLayout())) {
             useLightNavigation = !mTabModelSelector.isIncognitoSelected();
         } else {
             useLightNavigation = !mTabModelSelector.isIncognitoSelected() || overviewVisible;

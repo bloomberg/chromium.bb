@@ -54,8 +54,8 @@ public class WebApkActivity extends WebappActivity {
 
     @Override
     public boolean shouldPreferLightweightFre(Intent intent) {
-        // We cannot use getWebApkPackageName() because {@link WebappActivity#preInflationStartup()}
-        // may not have been called yet.
+        // We cannot use getWebApkPackageName() because
+        // {@link WebappActivity#performPreInflationStartup()} may not have been called yet.
         String webApkPackageName =
                 IntentUtils.safeGetStringExtra(intent, WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME);
 
@@ -127,9 +127,9 @@ public class WebApkActivity extends WebappActivity {
     }
 
     @Override
-    public void preInflationStartup() {
+    public void performPreInflationStartup() {
         // Decide whether to record startup UMA histograms. This is a similar check to the one done
-        // in ChromeTabbedActivity.preInflationStartup refer to the comment there for why.
+        // in ChromeTabbedActivity.performPreInflationStartup refer to the comment there for why.
         if (!LibraryLoader.getInstance().isInitialized()) {
             getActivityTabStartupMetricsTracker().trackStartupMetrics(STARTUP_UMA_HISTOGRAM_SUFFIX);
             // If there is a saved instance state, then the intent (and its stored timestamp) might
@@ -140,7 +140,7 @@ public class WebApkActivity extends WebappActivity {
                 mWebApkSplashscreenMetrics.trackSplashscreenMetrics(shellLaunchTimestampMs);
             }
         }
-        super.preInflationStartup();
+        super.performPreInflationStartup();
     }
 
     @Override
