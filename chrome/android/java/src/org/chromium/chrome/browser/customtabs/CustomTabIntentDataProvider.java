@@ -757,7 +757,7 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
      * @return If the Custom Tab is an info page.
      * See {@link #EXTRA_UI_TYPE}.
      */
-    boolean isInfoPage() {
+    public boolean isInfoPage() {
         return mUiType == CustomTabsUiType.INFO_PAGE;
     }
 

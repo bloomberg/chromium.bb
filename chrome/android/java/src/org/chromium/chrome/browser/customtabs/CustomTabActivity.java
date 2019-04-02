@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import static org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController.FinishReason.USER_NAVIGATION;
+
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -14,15 +16,12 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Bundle;
-import android.os.StrictMode;
 import android.provider.Browser;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.CustomTabsSessionToken;
-import android.support.v4.app.ActivityOptionsCompat;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.view.KeyEvent;
@@ -38,10 +37,8 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabTaskDescriptionHelper;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -58,6 +55,7 @@ import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModule;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController.FinishReason;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabFactory;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
@@ -66,7 +64,6 @@ import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActi
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityModule;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
-import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.gsa.GSAState;
 import org.chromium.chrome.browser.incognito.IncognitoTabHost;
@@ -84,11 +81,9 @@ import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 
 import java.lang.annotation.Retention;
@@ -100,18 +95,6 @@ import java.util.List;
  */
 public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent> {
     private static final String TAG = "CustomTabActivity";
-
-    // For CustomTabs.WebContentsStateOnLaunch, see histograms.xml. Append only.
-    @IntDef({WebContentsState.NO_WEBCONTENTS, WebContentsState.PRERENDERED_WEBCONTENTS,
-            WebContentsState.SPARE_WEBCONTENTS, WebContentsState.TRANSFERRED_WEBCONTENTS})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface WebContentsState {
-        int NO_WEBCONTENTS = 0;
-        int PRERENDERED_WEBCONTENTS = 1;
-        int SPARE_WEBCONTENTS = 2;
-        int TRANSFERRED_WEBCONTENTS = 3;
-        int NUM_ENTRIES = 4;
-    }
 
     // For CustomTabs.ConnectionStatusOnReturn, see histograms.xml. Append only.
     @IntDef({ConnectionStatus.DISCONNECTED, ConnectionStatus.DISCONNECTED_KEEP_ALIVE,
@@ -144,7 +127,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     /** Adds and removes observers from tabs when needed. */
     private TabObserverRegistrar mTabObserverRegistrar;
 
-    private boolean mIsClosing;
     private boolean mIsKeepAlive;
 
     private final CustomTabsConnection mConnection = CustomTabsConnection.getInstance();
@@ -182,7 +164,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         @Override
         public void onAllTabsClosed() {
             resetPostMessageHandlersForCurrentSession();
-            finishAndClose(false);
         }
     };
 
@@ -215,7 +196,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     @Override
     public void onStart() {
         super.onStart();
-        mIsClosing = false;
         mIsKeepAlive = mConnection.keepAliveForSession(
                 mIntentDataProvider.getSession(), mIntentDataProvider.getKeepAliveServiceIntent());
     }
@@ -349,14 +329,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
                         if (mIntentDataProvider.shouldEnableEmbeddedMediaExperience()) {
                             RecordUserAction.record("CustomTabs.CloseButtonClicked.DownloadsUI");
                         }
-                        if (getComponent().resolveCloseButtonNavigator()
-                                .navigateOnClose(getNavigationController())) {
-                            RecordUserAction.record(
-                                    "CustomTabs.CloseButtonClicked.GoToModuleManagedUrl");
-                            return;
-                        }
-                        recordClientConnectionStatus();
-                        finishAndClose(false);
+                        mNavigationController.navigateOnClose();
                     }
                 });
 
@@ -572,11 +545,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     public void onStopWithNative() {
         super.onStopWithNative();
         BrowserSessionContentUtils.removeActiveContentHandler(mBrowserSessionContentHandler);
-        if (mIsClosing) {
-            mTabController.closeAndForgetTab();
-        } else {
-            mTabController.saveState();
-        }
     }
 
     @Override
@@ -662,28 +630,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     }
 
     /**
-     * Finishes the activity and removes the reference from the Android recents.
-     *
-     * @param reparenting true iff the activity finishes due to tab reparenting.
-     */
-    public final void finishAndClose(boolean reparenting) {
-        if (mIsClosing) return;
-        mIsClosing = true;
-
-        if (!reparenting) {
-            // Closing the activity destroys the renderer as well. Re-create a spare renderer some
-            // time after, so that we have one ready for the next tab open. This does not increase
-            // memory consumption, as the current renderer goes away. We create a renderer as a lot
-            // of users open several Custom Tabs in a row. The delay is there to avoid jank in the
-            // transition animation when closing the tab.
-            PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT,
-                    () -> CustomTabsConnection.createSpareWebContents(), 500);
-        }
-
-        handleFinishAndClose();
-    }
-
-    /**
      * Internal implementation that finishes the activity and removes the references from Android
      * recents.
      */
@@ -697,31 +643,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
     @Override
     protected boolean handleBackPressed() {
-        if (!LibraryLoader.getInstance().isInitialized()) return false;
-
-        RecordUserAction.record("CustomTabs.SystemBack");
-        if (getActivityTab() == null) return false;
-
-        if (exitFullscreenIfShowing()) return true;
-
-        if (mDynamicModuleCoordinator != null &&
-                mDynamicModuleCoordinator.onBackPressedAsync(this::handleTabBackNavigation)) {
-            return true;
-        }
-
-        handleTabBackNavigation();
-        return true;
-    }
-
-    private void handleTabBackNavigation() {
-        if (!getToolbarManager().back()) {
-            if (getCurrentTabModel().getCount() > 1) {
-                getCurrentTabModel().closeTab(getActivityTab(), false, false, false);
-            } else {
-                recordClientConnectionStatus();
-                finishAndClose(false);
-            }
-        }
+        return mNavigationController.navigateOnBack();
     }
 
     private void recordClientConnectionStatus() {
@@ -833,7 +755,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             RecordUserAction.record("MobileMenuAddToBookmarks");
             return true;
         } else if (id == R.id.open_in_browser_id) {
-            if (openCurrentUrlInBrowser(false)) {
+            if (mNavigationController.openCurrentUrlInBrowser(false)) {
                 RecordUserAction.record("CustomTabsMenuOpenInChrome");
                 mConnection.notifyOpenInBrowser(mSession);
             }
@@ -875,63 +797,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     @VisibleForTesting
     public CustomTabIntentDataProvider getIntentDataProvider() {
         return mIntentDataProvider;
-    }
-
-    /**
-     * Opens the URL currently being displayed in the Custom Tab in the regular browser.
-     * @param forceReparenting Whether tab reparenting should be forced for testing.
-     *
-     * @return Whether or not the tab was sent over successfully.
-     */
-    boolean openCurrentUrlInBrowser(boolean forceReparenting) {
-        Tab tab = getActivityTab();
-        if (tab == null) return false;
-
-        String url = tab.getUrl();
-        if (DomDistillerUrlUtils.isDistilledPage(url)) {
-            url = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url);
-        }
-        if (TextUtils.isEmpty(url)) url = mIntentDataProvider.getUrlToLoad();
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-        boolean willChromeHandleIntent =
-                getIntentDataProvider().isOpenedByChrome() || getIntentDataProvider().isIncognito();
-
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
-        try {
-            willChromeHandleIntent |= ExternalNavigationDelegateImpl
-                    .willChromeHandleIntent(intent, true);
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
-
-        Bundle startActivityOptions = ActivityOptionsCompat.makeCustomAnimation(
-                this, R.anim.abc_fade_in, R.anim.abc_fade_out).toBundle();
-        if (willChromeHandleIntent || forceReparenting) {
-            Runnable finalizeCallback = new Runnable() {
-                @Override
-                public void run() {
-                    finishAndClose(true);
-                }
-            };
-
-            mTabController.detachAndStartReparenting(intent, startActivityOptions,
-                    finalizeCallback);
-        } else {
-            // Temporarily allowing disk access while fixing. TODO: http://crbug.com/581860
-            StrictMode.allowThreadDiskWrites();
-            try {
-                if (mIntentDataProvider.isInfoPage()) {
-                    IntentHandler.startChromeLauncherActivityForTrustedIntent(intent);
-                } else {
-                    startActivity(intent, startActivityOptions);
-                }
-            } finally {
-                StrictMode.setThreadPolicy(oldPolicy);
-            }
-        }
-        return true;
     }
 
     @Override
@@ -1019,7 +884,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
         @Override
         public void closeAllIncognitoTabs() {
-            finishAndClose(false);
+            mNavigationController.finish(FinishReason.OTHER);
         }
     }
 
@@ -1038,6 +903,10 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         mTabFactory = component.resolveTabFactory();
         component.resolveUmaTracker();
         mNavigationController = component.resolveNavigationController();
+        mNavigationController.setFinishHandler((reason) -> {
+            if (reason == USER_NAVIGATION) recordClientConnectionStatus();
+            handleFinishAndClose();
+        });
         component.resolveInitialPageLoader();
 
         if (mIntentDataProvider.isTrustedWebActivity()) {

@@ -49,7 +49,7 @@ public class CustomTabActivityUrlLoadingTest {
     @Before
     public void setUp() {
         mTabController = env.createTabController();
-        mNavigationController = env.createNavigationController();
+        mNavigationController = env.createNavigationController(mTabController);
         mInitialPageLoader = env.createInitialPageLoader(mNavigationController);
     }
 
