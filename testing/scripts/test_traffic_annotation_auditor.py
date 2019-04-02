@@ -17,7 +17,7 @@ import tempfile
 import common
 
 SHEET_CONFIG = {
-  "spreadsheet_id": "1x8orya9aed7khT5imuagG1Rjsy7HtAU1nOs-8CnaP9U",
+  "spreadsheet_id": "1TmBr9jnf1-hrjntiVBzT9EtkINGrtoBYFMWad2MBeaY",
   "annotations_sheet_name": "Annotations",
   "changes_sheet_name": "Changes Stats",
   "silent_change_columns": [],
