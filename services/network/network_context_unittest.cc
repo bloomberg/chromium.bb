@@ -4405,38 +4405,70 @@ class TestURLLoaderHeaderClient : public mojom::TrustedURLLoaderHeaderClient {
  public:
   class TestHeaderClient : public mojom::TrustedHeaderClient {
    public:
-    TestHeaderClient() : binding(this) {}
+    TestHeaderClient() : binding_(this) {}
 
     // network::mojom::TrustedHeaderClient:
     void OnBeforeSendHeaders(const net::HttpRequestHeaders& headers,
                              OnBeforeSendHeadersCallback callback) override {
       auto new_headers = headers;
       new_headers.SetHeader("foo", "bar");
-      std::move(callback).Run(on_before_send_headers_result, new_headers);
+      std::move(callback).Run(on_before_send_headers_result_, new_headers);
     }
+
     void OnHeadersReceived(const std::string& headers,
                            OnHeadersReceivedCallback callback) override {
       auto new_headers =
           base::MakeRefCounted<net::HttpResponseHeaders>(headers);
       new_headers->AddHeader("baz: qux");
-      std::move(callback).Run(on_headers_received_result,
+      std::move(callback).Run(on_headers_received_result_,
                               new_headers->raw_headers(), GURL());
     }
 
-    int on_before_send_headers_result = net::OK;
-    int on_headers_received_result = net::OK;
-    mojo::Binding<mojom::TrustedHeaderClient> binding;
+    void set_on_before_send_headers_result(int result) {
+      on_before_send_headers_result_ = result;
+    }
+
+    void set_on_headers_received_result(int result) {
+      on_headers_received_result_ = result;
+    }
+
+    void Bind(network::mojom::TrustedHeaderClientRequest request) {
+      binding_.Close();
+      binding_.Bind(std::move(request));
+    }
+
+   private:
+    int on_before_send_headers_result_ = net::OK;
+    int on_headers_received_result_ = net::OK;
+    mojo::Binding<mojom::TrustedHeaderClient> binding_;
+
+    DISALLOW_COPY_AND_ASSIGN(TestHeaderClient);
   };
+
+  explicit TestURLLoaderHeaderClient(
+      mojom::TrustedURLLoaderHeaderClientRequest request)
+      : binding_(this, std::move(request)) {}
 
   // network::mojom::TrustedURLLoaderHeaderClient:
   void OnLoaderCreated(
       int32_t request_id,
       network::mojom::TrustedHeaderClientRequest request) override {
-    header_client.binding.Close();
-    header_client.binding.Bind(std::move(request));
+    header_client_.Bind(std::move(request));
   }
 
-  TestHeaderClient header_client;
+  void set_on_before_send_headers_result(int result) {
+    header_client_.set_on_before_send_headers_result(result);
+  }
+
+  void set_on_headers_received_result(int result) {
+    header_client_.set_on_headers_received_result(result);
+  }
+
+ private:
+  TestHeaderClient header_client_;
+  mojo::Binding<mojom::TrustedURLLoaderHeaderClient> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestURLLoaderHeaderClient);
 };
 
 TEST_F(NetworkContextTest, HeaderClientModifiesHeaders) {
@@ -4455,8 +4487,8 @@ TEST_F(NetworkContextTest, HeaderClientModifiesHeaders) {
       mojom::URLLoaderFactoryParams::New();
   params->process_id = mojom::kBrowserProcessId;
   params->is_corb_enabled = false;
-  mojo::MakeStrongBinding(std::make_unique<TestURLLoaderHeaderClient>(),
-                          mojo::MakeRequest(&params->header_client));
+  TestURLLoaderHeaderClient header_client(
+      mojo::MakeRequest(&params->header_client));
   network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
                                           std::move(params));
 
@@ -4517,23 +4549,19 @@ TEST_F(NetworkContextTest, HeaderClientFailsRequest) {
   ResourceRequest request;
   request.url = test_server.GetURL("/echo");
 
-  auto header_client = std::make_unique<TestURLLoaderHeaderClient>();
-  auto* raw_header_client = header_client.get();
-
   mojom::URLLoaderFactoryPtr loader_factory;
   mojom::URLLoaderFactoryParamsPtr params =
       mojom::URLLoaderFactoryParams::New();
   params->process_id = mojom::kBrowserProcessId;
   params->is_corb_enabled = false;
-  mojo::MakeStrongBinding(std::move(header_client),
-                          mojo::MakeRequest(&params->header_client));
+  TestURLLoaderHeaderClient header_client(
+      mojo::MakeRequest(&params->header_client));
   network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
                                           std::move(params));
 
   // First, fail request on OnBeforeSendHeaders.
   {
-    raw_header_client->header_client.on_before_send_headers_result =
-        net::ERR_FAILED;
+    header_client.set_on_before_send_headers_result(net::ERR_FAILED);
     mojom::URLLoaderPtr loader;
     TestURLLoaderClient client;
     loader_factory->CreateLoaderAndStart(
@@ -4548,9 +4576,8 @@ TEST_F(NetworkContextTest, HeaderClientFailsRequest) {
 
   // Next, fail request on OnHeadersReceived.
   {
-    raw_header_client->header_client.on_before_send_headers_result = net::OK;
-    raw_header_client->header_client.on_headers_received_result =
-        net::ERR_FAILED;
+    header_client.set_on_before_send_headers_result(net::OK);
+    header_client.set_on_headers_received_result(net::ERR_FAILED);
     mojom::URLLoaderPtr loader;
     TestURLLoaderClient client;
     loader_factory->CreateLoaderAndStart(
@@ -4609,7 +4636,7 @@ class HangingTestURLLoaderHeaderClient
     DISALLOW_COPY_AND_ASSIGN(TestHeaderClient);
   };
 
-  HangingTestURLLoaderHeaderClient(
+  explicit HangingTestURLLoaderHeaderClient(
       mojom::TrustedURLLoaderHeaderClientRequest request)
       : binding_(this, std::move(request)) {}
 
