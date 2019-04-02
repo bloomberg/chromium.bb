@@ -280,11 +280,6 @@ TEST_F(SOCKSConnectJobTest, TimeoutDuringDnsResolution) {
 
 // Check that SOCKSConnectJob's timeout is respected for the handshake phase.
 TEST_F(SOCKSConnectJobTest, TimeoutDuringHandshake) {
-  // This test assumes TransportConnectJobs have a shorter timeout than
-  // SOCKSConnectJobs.
-  ASSERT_LT(TransportConnectJob::ConnectionTimeout(),
-            SOCKSConnectJob::ConnectionTimeout());
-
   host_resolver_.set_ondemand_mode(true);
 
   MockWrite writes[] = {
@@ -309,20 +304,17 @@ TEST_F(SOCKSConnectJobTest, TimeoutDuringHandshake) {
   EXPECT_TRUE(host_resolver_.has_pending_requests());
 
   // DNS resolution completes, and the socket connects.  The request should not
-  // time out, even after the TransportConnectJob's timeout passes.
+  // time out, even after the TransportConnectJob's timeout passes. The
+  // SOCKSConnectJob's handshake timer should also be started.
   host_resolver_.ResolveAllPending();
 
-  // The timer is now restarted with a value of
-  // SOCKSConnectJob::ConnectionTimeout() -
-  // TransportConnectJob::ConnectionTimeout(). Waiting until almost that much
-  // time has passed should cause no observable change in the SOCKSConnectJob's
-  // status.
-  FastForwardBy(SOCKSConnectJob::ConnectionTimeout() -
-                TransportConnectJob::ConnectionTimeout() - kTinyTime);
+  // Waiting until just before the SOCKS handshake times out. There should cause
+  // no observable change in the SOCKSConnectJob's status.
+  FastForwardBy(SOCKSConnectJob::HandshakeTimeoutForTesting() - kTinyTime);
   EXPECT_FALSE(test_delegate.has_result());
 
-  // Wait for exactly the SOCKSConnectJob's timeout has fully elapsed. The Job
-  // should time out.
+  // Wait for exactly the SOCKSConnectJob's handshake timeout has fully elapsed.
+  // The Job should time out.
   FastForwardBy(kTinyTime);
   EXPECT_FALSE(host_resolver_.has_pending_requests());
   EXPECT_TRUE(test_delegate.has_result());
