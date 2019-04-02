@@ -198,6 +198,17 @@ void SupervisedUserSettingsService::Shutdown() {
   store_->RemoveObserver(this);
 }
 
+void SupervisedUserSettingsService::WaitUntilReadyToSync(
+    base::OnceClosure done) {
+  DCHECK(!wait_until_ready_to_sync_cb_);
+  if (IsReady()) {
+    std::move(done).Run();
+  } else {
+    // Wait until OnInitializationCompleted().
+    wait_until_ready_to_sync_cb_ = std::move(done);
+  }
+}
+
 SyncMergeResult SupervisedUserSettingsService::MergeDataAndStartSyncing(
     ModelType type,
     const SyncDataList& initial_sync_data,
@@ -412,6 +423,10 @@ void SupervisedUserSettingsService::OnInitializationCompleted(bool success) {
   }
 
   DCHECK(IsReady());
+
+  if (wait_until_ready_to_sync_cb_)
+    std::move(wait_until_ready_to_sync_cb_).Run();
+
   InformSubscribers();
 }
 
