@@ -946,7 +946,8 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   _googleServicesSettingsCoordinator =
       [[GoogleServicesSettingsCoordinator alloc]
           initWithBaseViewController:self.navigationController
-                        browserState:_browserState];
+                        browserState:_browserState
+                                mode:GoogleServicesSettingsModeSettings];
   _googleServicesSettingsCoordinator.dispatcher = self.dispatcher;
   _googleServicesSettingsCoordinator.navigationController =
       self.navigationController;

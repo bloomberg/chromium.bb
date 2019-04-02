@@ -388,7 +388,8 @@ initWithRootViewController:(UIViewController*)rootViewController
   self.googleServicesSettingsCoordinator =
       [[GoogleServicesSettingsCoordinator alloc]
           initWithBaseViewController:self
-                        browserState:mainBrowserState_];
+                        browserState:mainBrowserState_
+                                mode:GoogleServicesSettingsModeSettings];
   self.googleServicesSettingsCoordinator.dispatcher =
       [delegate_ dispatcherForSettings];
   self.googleServicesSettingsCoordinator.navigationController = self;

@@ -48,7 +48,9 @@ using l10n_util::GetNSString;
   self.googleServicesSettingsCoordinator = [[GoogleServicesSettingsCoordinator
       alloc]
       initWithBaseViewController:self.advancedSigninSettingsNavigationController
-                    browserState:self.browserState];
+                    browserState:self.browserState
+                            mode:
+                              GoogleServicesSettingsModeAdvancedSigninSettings];
   self.googleServicesSettingsCoordinator.navigationController =
       self.advancedSigninSettingsNavigationController;
   [self.googleServicesSettingsCoordinator start];

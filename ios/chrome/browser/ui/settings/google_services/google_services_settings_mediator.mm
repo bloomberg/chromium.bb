@@ -143,12 +143,14 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 
 - (instancetype)initWithUserPrefService:(PrefService*)userPrefService
                        localPrefService:(PrefService*)localPrefService
-                       syncSetupService:(SyncSetupService*)syncSetupService {
+                       syncSetupService:(SyncSetupService*)syncSetupService
+                                   mode:(GoogleServicesSettingsMode)mode {
   self = [super init];
   if (self) {
     DCHECK(userPrefService);
     DCHECK(localPrefService);
     DCHECK(syncSetupService);
+    _mode = mode;
     _syncSetupService = syncSetupService;
     _autocompleteSearchPreference = [[PrefBackedBoolean alloc]
         initWithPrefService:userPrefService
@@ -189,7 +191,12 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   DCHECK(!self.accountItem);
   self.accountItem =
       [[TableViewAccountItem alloc] initWithType:IdentityItemType];
-  self.accountItem.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+  if (self.mode == GoogleServicesSettingsModeAdvancedSigninSettings) {
+    self.accountItem.mode = TableViewAccountModeNonTappable;
+  } else {
+    self.accountItem.accessoryType =
+        UITableViewCellAccessoryDisclosureIndicator;
+  }
   [model addItem:self.accountItem
       toSectionWithIdentifier:IdentitySectionIdentifier];
 }
