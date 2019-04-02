@@ -28,18 +28,44 @@ namespace ash {
 
 namespace {
 
-bool IsActive() {
-  return NetworkHandler::Get()->network_state_handler()->ConnectedNetworkByType(
-             NetworkTypePattern::NonVirtual()) != nullptr;
+const NetworkState* GetCurrentConnectedNetwork() {
+  NetworkStateHandler* state_handler =
+      NetworkHandler::Get()->network_state_handler();
+  const NetworkState* connected_network =
+      state_handler->ConnectedNetworkByType(NetworkTypePattern::NonVirtual());
+
+  if (!connected_network)
+    return nullptr;
+
+  // It is possible that a device type has been disabled but a network
+  // corresponding to that device has not yet been updated. If this is the case,
+  // that network should not be considered connected in this UI surface.
+  if (!state_handler->IsTechnologyEnabled(
+          NetworkTypePattern::Primitive(connected_network->type()))) {
+    return nullptr;
+  }
+
+  return connected_network;
+}
+
+bool ShouldToggleBeOn() {
+  // The toggle should always be on if Wi-Fi is enabled.
+  if (NetworkHandler::Get()->network_state_handler()->IsTechnologyEnabled(
+          NetworkTypePattern::WiFi())) {
+    return true;
+  }
+
+  // Otherwise, the toggle should be on if there is a connected network.
+  return GetCurrentConnectedNetwork() != nullptr;
 }
 
 const NetworkState* GetCurrentNetwork() {
   NetworkStateHandler* state_handler =
       NetworkHandler::Get()->network_state_handler();
-  const NetworkState* connected_network =
-      state_handler->ConnectedNetworkByType(NetworkTypePattern::NonVirtual());
+  const NetworkState* connected_network = GetCurrentConnectedNetwork();
   const NetworkState* connecting_network =
       state_handler->ConnectingNetworkByType(NetworkTypePattern::Wireless());
+
   // If connecting to a network, and there is either no connected network or
   // the connection was user requested, use the connecting network.
   if (connecting_network &&
@@ -162,10 +188,7 @@ void NetworkFeaturePodButton::Update() {
   else
     network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
 
-  SetToggled(
-      IsActive() ||
-      NetworkHandler::Get()->network_state_handler()->IsTechnologyEnabled(
-          NetworkTypePattern::WiFi()));
+  SetToggled(ShouldToggleBeOn());
   icon_button()->SetImage(views::Button::STATE_NORMAL, image);
 
   const NetworkState* network = GetCurrentNetwork();
