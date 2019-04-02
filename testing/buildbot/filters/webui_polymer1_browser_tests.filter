@@ -123,6 +123,7 @@ CrSettingsExtensionControlledIndicatorTest.*
 CrSettingsFindShortcutBehavior.*
 CrSettingsFingerprintListTest.*
 CrSettingsFingerprintProgressArcTest.*
+CrSettingsFocusRowBehavior.*
 CrSettingsGoogleAssistantPageTest.*
 CrSettingsImportDataDialogTest.*
 CrSettingsIncompatibleApplicationsPageTest.*
