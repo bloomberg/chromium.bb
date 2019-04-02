@@ -300,6 +300,11 @@ bool ServiceWorkerCacheWriter::IsCopying() const {
   return !compare_reader_ && copy_reader_;
 }
 
+int64_t ServiceWorkerCacheWriter::WriterResourceId() const {
+  DCHECK(writer_);
+  return writer_->response_id();
+}
+
 int ServiceWorkerCacheWriter::DoStart(int result) {
   bytes_written_ = 0;
   if (compare_reader_) {
@@ -440,8 +445,7 @@ int ServiceWorkerCacheWriter::DoWriteHeadersForCopy(int result) {
   DCHECK_GE(result, 0);
   DCHECK(writer_);
   state_ = STATE_WRITE_HEADERS_FOR_COPY_DONE;
-  return WriteInfoHelper(
-      writer_, IsCopying() ? headers_to_read_.get() : headers_to_write_.get());
+  return WriteInfo(IsCopying() ? headers_to_read_ : headers_to_write_);
 }
 
 int ServiceWorkerCacheWriter::DoWriteHeadersForCopyDone(int result) {
@@ -489,7 +493,7 @@ int ServiceWorkerCacheWriter::DoReadDataForCopyDone(int result) {
 int ServiceWorkerCacheWriter::DoWriteDataForCopy(int result) {
   state_ = STATE_WRITE_DATA_FOR_COPY_DONE;
   DCHECK_GT(result, 0);
-  return WriteDataHelper(writer_, data_to_copy_.get(), result);
+  return WriteData(data_to_copy_, result);
 }
 
 int ServiceWorkerCacheWriter::DoWriteDataForCopyDone(int result) {
@@ -507,7 +511,7 @@ int ServiceWorkerCacheWriter::DoWriteHeadersForPassthrough(int result) {
   DCHECK_GE(result, 0);
   DCHECK(writer_);
   state_ = STATE_WRITE_HEADERS_FOR_PASSTHROUGH_DONE;
-  return WriteInfoHelper(writer_, headers_to_write_.get());
+  return WriteInfo(headers_to_write_);
 }
 
 int ServiceWorkerCacheWriter::DoWriteHeadersForPassthroughDone(int result) {
@@ -519,7 +523,7 @@ int ServiceWorkerCacheWriter::DoWriteDataForPassthrough(int result) {
   DCHECK_GE(result, 0);
   state_ = STATE_WRITE_DATA_FOR_PASSTHROUGH_DONE;
   if (len_to_write_ > 0)
-    result = WriteDataHelper(writer_, data_to_write_.get(), len_to_write_);
+    result = WriteData(data_to_write_, len_to_write_);
   return result;
 }
 
@@ -576,35 +580,81 @@ int ServiceWorkerCacheWriter::ReadDataHelper(
   return adaptor->result();
 }
 
-int ServiceWorkerCacheWriter::WriteInfoHelper(
-    const std::unique_ptr<ServiceWorkerResponseWriter>& writer,
-    HttpResponseInfoIOBuffer* buf) {
+int ServiceWorkerCacheWriter::WriteInfoToResponseWriter(
+    scoped_refptr<HttpResponseInfoIOBuffer> response_info) {
   did_replace_ = true;
   net::CompletionOnceCallback run_callback = base::BindOnce(
       &ServiceWorkerCacheWriter::AsyncDoLoop, weak_factory_.GetWeakPtr());
   scoped_refptr<AsyncOnlyCompletionCallbackAdaptor> adaptor(
       new AsyncOnlyCompletionCallbackAdaptor(std::move(run_callback)));
-  writer->WriteInfo(
-      buf, base::BindOnce(&AsyncOnlyCompletionCallbackAdaptor::WrappedCallback,
-                          adaptor));
-  adaptor->set_async(true);
-  return adaptor->result();
-}
-
-int ServiceWorkerCacheWriter::WriteDataHelper(
-    const std::unique_ptr<ServiceWorkerResponseWriter>& writer,
-    net::IOBuffer* buf,
-    int buf_len) {
-  net::CompletionOnceCallback run_callback = base::BindOnce(
-      &ServiceWorkerCacheWriter::AsyncDoLoop, weak_factory_.GetWeakPtr());
-  scoped_refptr<AsyncOnlyCompletionCallbackAdaptor> adaptor(
-      new AsyncOnlyCompletionCallbackAdaptor(std::move(run_callback)));
-  writer->WriteData(
-      buf, buf_len,
+  writer_->WriteInfo(
+      response_info.get(),
       base::BindOnce(&AsyncOnlyCompletionCallbackAdaptor::WrappedCallback,
                      adaptor));
   adaptor->set_async(true);
   return adaptor->result();
+}
+
+int ServiceWorkerCacheWriter::WriteInfo(
+    scoped_refptr<HttpResponseInfoIOBuffer> response_info) {
+  if (write_observer_)
+    write_observer_->WillWriteInfo(response_info);
+
+  return WriteInfoToResponseWriter(std::move(response_info));
+}
+
+int ServiceWorkerCacheWriter::WriteDataToResponseWriter(
+    scoped_refptr<net::IOBuffer> data,
+    int length) {
+  net::CompletionOnceCallback run_callback = base::BindOnce(
+      &ServiceWorkerCacheWriter::AsyncDoLoop, weak_factory_.GetWeakPtr());
+  scoped_refptr<AsyncOnlyCompletionCallbackAdaptor> adaptor(
+      new AsyncOnlyCompletionCallbackAdaptor(std::move(run_callback)));
+  writer_->WriteData(
+      data.get(), length,
+      base::BindOnce(&AsyncOnlyCompletionCallbackAdaptor::WrappedCallback,
+                     adaptor));
+  adaptor->set_async(true);
+  return adaptor->result();
+}
+
+int ServiceWorkerCacheWriter::WriteData(scoped_refptr<net::IOBuffer> data,
+                                        int length) {
+  if (!write_observer_)
+    return WriteDataToResponseWriter(std::move(data), length);
+
+  auto complete_callback =
+      base::BindOnce(&ServiceWorkerCacheWriter::OnWillWriteDataCompleted,
+                     weak_factory_.GetWeakPtr(), data, length);
+
+  int result = write_observer_->WillWriteData(data, length,
+                                              std::move(complete_callback));
+
+  if (result == net::OK)
+    return WriteDataToResponseWriter(std::move(data), length);
+
+  if (result < 0 && result != net::ERR_IO_PENDING)
+    state_ = STATE_DONE;
+
+  return result;
+}
+
+// AsyncDoLoop() may need to be called to continue the state machine.
+void ServiceWorkerCacheWriter::OnWillWriteDataCompleted(
+    scoped_refptr<net::IOBuffer> data,
+    int length,
+    net::Error error) {
+  DCHECK_NE(error, net::ERR_IO_PENDING);
+  io_pending_ = false;
+  if (error != net::OK) {
+    state_ = STATE_DONE;
+    AsyncDoLoop(error);
+    return;
+  }
+
+  int result = WriteDataToResponseWriter(std::move(data), length);
+  if (result != net::ERR_IO_PENDING)
+    AsyncDoLoop(result);
 }
 
 void ServiceWorkerCacheWriter::AsyncDoLoop(int result) {
