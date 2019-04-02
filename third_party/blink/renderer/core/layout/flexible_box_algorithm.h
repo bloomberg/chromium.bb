@@ -251,12 +251,13 @@ class FlexLine {
   LayoutUnit initial_free_space;
   LayoutUnit remaining_free_space;
 
-  // These get filled in by ComputeLineItemsPosition (for now)
-  // TODO(cbiesinger): Move that to FlexibleBoxAlgorithm.
+  // These get filled in by ComputeLineItemsPosition
+  LayoutUnit main_axis_offset;
   LayoutUnit main_axis_extent;
   LayoutUnit cross_axis_offset;
   LayoutUnit cross_axis_extent;
   LayoutUnit max_ascent;
+  LayoutUnit sum_justify_adjustments;
 };
 
 // This class implements the CSS Flexbox layout algorithm:
@@ -312,6 +313,8 @@ class FlexLayoutAlgorithm {
   TransformedWritingMode GetTransformedWritingMode() const;
 
   bool ShouldApplyMinSizeAutoForChild(const LayoutBox& child) const;
+
+  LayoutUnit IntrinsicContentBlockSize() const;
 
   static TransformedWritingMode GetTransformedWritingMode(const ComputedStyle&);
 
