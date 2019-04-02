@@ -688,3 +688,18 @@ TEST_F(SupervisedUserURLFilterTest, GoogleFamiliesAlwaysAllowed) {
   EXPECT_FALSE(IsURLWhitelisted("https://families.google.com:8080/"));
   EXPECT_FALSE(IsURLWhitelisted("https://subdomain.families.google.com/"));
 }
+
+TEST_F(SupervisedUserURLFilterTest, PlayTermsAlwaysAllowed) {
+  filter_.SetDefaultFilteringBehavior(SupervisedUserURLFilter::BLOCK);
+  EXPECT_TRUE(IsURLWhitelisted("https://play.google.com/about/play-terms"));
+  EXPECT_TRUE(IsURLWhitelisted("https://play.google.com/about/play-terms/"));
+  EXPECT_TRUE(IsURLWhitelisted(
+      "https://play.google.com/intl/pt-BR_pt/about/play-terms/"));
+  EXPECT_TRUE(
+      IsURLWhitelisted("https://play.google.com/about/play-terms/index.html"));
+  EXPECT_FALSE(IsURLWhitelisted("http://play.google.com/about/play-terms/"));
+  EXPECT_FALSE(
+      IsURLWhitelisted("https://subdomain.play.google.com/about/play-terms/"));
+  EXPECT_FALSE(IsURLWhitelisted("https://play.google.com/"));
+  EXPECT_FALSE(IsURLWhitelisted("https://play.google.com/about"));
+}
