@@ -186,10 +186,11 @@ HidConnectionLinux::HidConnectionLinux(
     base::ScopedFD fd,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
     : HidConnection(device_info),
+      helper_(nullptr, base::OnTaskRunnerDeleter(blocking_task_runner)),
       blocking_task_runner_(std::move(blocking_task_runner)),
       weak_factory_(this) {
-  helper_ = std::make_unique<BlockingTaskRunnerHelper>(
-      std::move(fd), device_info, weak_factory_.GetWeakPtr());
+  helper_.reset(new BlockingTaskRunnerHelper(std::move(fd), device_info,
+                                             weak_factory_.GetWeakPtr()));
   blocking_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&BlockingTaskRunnerHelper::Start,
                                 base::Unretained(helper_.get())));
@@ -202,7 +203,7 @@ void HidConnectionLinux::PlatformClose() {
   // base::ScopedFD is destroyed on a thread where I/O is allowed is satisfied
   // and 2) any tasks posted to this task runner that refer to this file will
   // complete before it is closed.
-  blocking_task_runner_->DeleteSoon(FROM_HERE, helper_.release());
+  helper_.reset();
 }
 
 void HidConnectionLinux::PlatformWrite(
