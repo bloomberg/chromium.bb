@@ -65,17 +65,10 @@ class ASH_EXPORT CaptionContainerView : public views::Button {
   CaptionContainerView(EventDelegate* event_delegate, aura::Window* window);
   ~CaptionContainerView() override;
 
-  // Returns |cannot_snap_container_|. This will create it if it has not been
-  // already created.
-  RoundedRectView* GetCannotSnapContainer();
-
   void SetHeaderVisibility(HeaderVisibility visibility);
 
   // Sets the visiblity of |backdrop_view_|. Creates it if it is null.
   void SetBackdropVisibility(bool visible);
-
-  // Animates |cannot_snap_container_| to its visibility state.
-  void SetCannotSnapLabelVisibility(bool visible);
 
   void ResetEventDelegate();
 
@@ -86,7 +79,6 @@ class ASH_EXPORT CaptionContainerView : public views::Button {
 
   views::View* header_view() { return header_view_; }
   views::Label* title_label() { return title_label_; }
-  views::Label* cannot_snap_label() { return cannot_snap_label_; }
   RoundedRectView* backdrop_view() { return backdrop_view_; }
 
  protected:
@@ -116,13 +108,6 @@ class ASH_EXPORT CaptionContainerView : public views::Button {
   views::Label* title_label_ = nullptr;
   views::ImageView* image_view_ = nullptr;
   OverviewCloseButton* close_button_ = nullptr;
-
-  // A text label in the center of the window warning users that
-  // this window cannot be snapped for splitview.
-  views::Label* cannot_snap_label_ = nullptr;
-  // Use |cannot_snap_container_| to specify the padding surrounding
-  // |cannot_snap_label_| and to give the label rounded corners.
-  RoundedRectView* cannot_snap_container_ = nullptr;
 
   // A view that covers the area except the header. It is null when the window
   // associated is not pillar or letter boxed.

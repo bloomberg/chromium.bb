@@ -8,18 +8,22 @@
 #include <vector>
 
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/overview/overview_animation_type.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
+#include "ash/wm/overview/rounded_label_widget.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/scoped_overview_transform_window.h"
 #include "ash/wm/overview/start_animation_observer.h"
+#include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
@@ -287,6 +291,13 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
   // and UpdateHeaderLayout. Do not apply the shadow for drop target.
   if (new_animation_type == OVERVIEW_ANIMATION_NONE)
     UpdateMaskAndShadow();
+
+  if (cannot_snap_widget_) {
+    ScopedOverviewAnimationSettings settings(
+        new_animation_type, cannot_snap_widget_->GetNativeWindow());
+    cannot_snap_widget_->SetBoundsCenteredIn(
+        gfx::ToEnclosingRect(inset_bounds));
+  }
 }
 
 void OverviewItem::SendAccessibleSelectionEvent() {
@@ -345,17 +356,43 @@ void OverviewItem::OnMinimizedStateChanged() {
 void OverviewItem::UpdateCannotSnapWarningVisibility() {
   // Windows which can snap will never show this warning. Or if the window is
   // the drop target window, also do not show this warning.
+  bool visible = true;
   if (CanSnapInSplitview(GetWindow()) ||
       overview_grid_->IsDropTargetWindow(GetWindow())) {
-    caption_container_view_->SetCannotSnapLabelVisibility(false);
-    return;
+    visible = false;
+  } else {
+    const SplitViewController::State state =
+        Shell::Get()->split_view_controller()->state();
+    visible = state == SplitViewController::LEFT_SNAPPED ||
+              state == SplitViewController::RIGHT_SNAPPED;
   }
 
-  const SplitViewController::State state =
-      Shell::Get()->split_view_controller()->state();
-  const bool visible = state == SplitViewController::LEFT_SNAPPED ||
-                       state == SplitViewController::RIGHT_SNAPPED;
-  caption_container_view_->SetCannotSnapLabelVisibility(visible);
+  if (!visible && !cannot_snap_widget_)
+    return;
+
+  if (!cannot_snap_widget_) {
+    RoundedLabelWidget::InitParams params;
+    params.horizontal_padding = kSplitviewLabelHorizontalInsetDp;
+    params.vertical_padding = kSplitviewLabelVerticalInsetDp;
+    params.background_color = kSplitviewLabelBackgroundColor;
+    params.foreground_color = kSplitviewLabelEnabledColor;
+    params.rounding_dp = kSplitviewLabelRoundRectRadiusDp;
+    params.preferred_height = kSplitviewLabelPreferredHeightDp;
+    params.message_id = IDS_ASH_SPLIT_VIEW_CANNOT_SNAP;
+    params.parent =
+        root_window()->GetChildById(kShellWindowId_AlwaysOnTopContainer);
+    cannot_snap_widget_ = std::make_unique<RoundedLabelWidget>();
+    cannot_snap_widget_->Init(params);
+  }
+
+  DoSplitviewOpacityAnimation(cannot_snap_widget_->GetNativeWindow()->layer(),
+                              visible
+                                  ? SPLITVIEW_ANIMATION_OVERVIEW_ITEM_FADE_IN
+                                  : SPLITVIEW_ANIMATION_OVERVIEW_ITEM_FADE_OUT);
+  gfx::Rect bounds = gfx::ToEnclosingRect(target_bounds());
+  bounds.Inset(kWindowMargin, kWindowMargin);
+  bounds.Inset(gfx::Insets(0, kHeaderHeightDp, 0, 0));
+  cannot_snap_widget_->SetBoundsCenteredIn(bounds);
 }
 
 void OverviewItem::OnSelectorItemDragStarted(OverviewItem* item) {
@@ -537,6 +574,7 @@ void OverviewItem::OnStartingAnimationComplete() {
       GetWindowDimensionsType() !=
       ScopedOverviewTransformWindow::GridWindowFillMode::kNormal;
   caption_container_view_->SetBackdropVisibility(show_backdrop);
+  UpdateCannotSnapWarningVisibility();
 }
 
 void OverviewItem::SetOpacity(float opacity) {
@@ -757,7 +795,6 @@ void OverviewItem::CreateWindowLabel() {
   item_widget_->GetLayer()->Add(shadow_->layer());
 
   caption_container_view_ = new CaptionContainerView(this, GetWindow());
-  UpdateCannotSnapWarningVisibility();
   item_widget_->SetContentsView(caption_container_view_);
   item_widget_->Show();
   item_widget_->SetOpacity(0);

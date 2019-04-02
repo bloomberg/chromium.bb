@@ -23,6 +23,7 @@
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
+#include "ash/wm/overview/rounded_label_widget.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
@@ -36,13 +37,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
-#include "ui/views/controls/label.h"
-#include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_util.h"
@@ -161,49 +158,6 @@ bool IsWindowDragInProgress() {
 }
 
 }  // namespace
-
-// A label with rounded corners that is displayed when we enter overview with no
-// windows.
-class OverviewSession::NoWindowsView : public views::View {
- public:
-  NoWindowsView() {
-    SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kVertical,
-        gfx::Insets(kNoItemsIndicatorVerticalPaddingDp,
-                    kNoItemsIndicatorHorizontalPaddingDp)));
-    SetPaintToLayer(ui::LAYER_SOLID_COLOR);
-    layer()->SetColor(kNoItemsIndicatorBackgroundColor);
-    layer()->SetFillsBoundsOpaquely(false);
-
-    const std::array<uint32_t, 4> kRadii = {
-        kNoItemsIndicatorRoundingDp, kNoItemsIndicatorRoundingDp,
-        kNoItemsIndicatorRoundingDp, kNoItemsIndicatorRoundingDp};
-    layer()->SetRoundedCornerRadius(kRadii);
-    layer()->SetIsFastRoundedCorner(true);
-
-    label_ = new views::Label(
-        l10n_util::GetStringUTF16(IDS_ASH_OVERVIEW_NO_RECENT_ITEMS),
-        views::style::CONTEXT_LABEL);
-    label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-    label_->SetEnabledColor(kNoItemsIndicatorTextColor);
-    label_->SetBackgroundColor(kNoItemsIndicatorBackgroundColor);
-    label_->SetPaintToLayer();
-    label_->layer()->SetFillsBoundsOpaquely(false);
-    AddChildView(label_);
-  }
-  ~NoWindowsView() override = default;
-
-  // views::View:
-  gfx::Size GetPreferredSize() {
-    int width = label_->GetPreferredSize().width() +
-                2 * kNoItemsIndicatorHorizontalPaddingDp;
-    return gfx::Size(width, kNoItemsIndicatorHeightDp);
-  }
-
- private:
-  views::Label* label_ = nullptr;  // Owned by views hierarchy.
-  DISALLOW_COPY_AND_ASSIGN(NoWindowsView);
-};
 
 OverviewSession::OverviewSession(OverviewDelegate* delegate)
     : delegate_(delegate),
@@ -982,14 +936,23 @@ void OverviewSession::MaybeCreateAndPositionNoWindowsWidget() {
 
   if (!no_windows_widget_) {
     // Create and fade in the widget.
-    no_windows_widget_ = CreateBackgroundWidget(
-        Shell::GetPrimaryRootWindow(), ui::LAYER_NOT_DRAWN, SK_ColorTRANSPARENT,
-        0, 0, SK_ColorTRANSPARENT, 0.f, nullptr, true, false);
+    RoundedLabelWidget::InitParams params;
+    params.horizontal_padding = kNoItemsIndicatorHorizontalPaddingDp;
+    params.vertical_padding = kNoItemsIndicatorVerticalPaddingDp;
+    params.background_color = kNoItemsIndicatorBackgroundColor;
+    params.foreground_color = kNoItemsIndicatorTextColor;
+    params.rounding_dp = kNoItemsIndicatorRoundingDp;
+    params.preferred_height = kNoItemsIndicatorHeightDp;
+    params.message_id = IDS_ASH_OVERVIEW_NO_RECENT_ITEMS;
+    params.parent = Shell::GetPrimaryRootWindow()->GetChildById(
+        kShellWindowId_AlwaysOnTopContainer);
+    no_windows_widget_ = std::make_unique<RoundedLabelWidget>();
+    no_windows_widget_->Init(params);
+
     aura::Window* widget_window = no_windows_widget_->GetNativeWindow();
-    widget_window->SetName("OverviewNoWindowsLabel");
-    no_windows_widget_->SetContentsView(new NoWindowsView());
     ScopedOverviewAnimationSettings settings(OVERVIEW_ANIMATION_NO_RECENTS_FADE,
                                              widget_window);
+    widget_window->SetName("OverviewNoWindowsLabel");
     no_windows_widget_->SetOpacity(1.f);
   }
 
@@ -1008,11 +971,7 @@ void OverviewSession::MaybeCreateAndPositionNoWindowsWidget() {
         window, SplitViewController::LEFT);
   }
 
-  NoWindowsView* content_view =
-      static_cast<NoWindowsView*>(no_windows_widget_->GetContentsView());
-  DCHECK(content_view);
-  bounds.ClampToCenteredSize(content_view->GetPreferredSize());
-  window->SetBounds(bounds);
+  no_windows_widget_->SetBoundsCenteredIn(bounds);
 }
 
 }  // namespace ash

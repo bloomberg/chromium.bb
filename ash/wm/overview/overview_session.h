@@ -36,11 +36,11 @@ class Widget;
 }  // namespace views
 
 namespace ash {
-
 class OverviewDelegate;
 class OverviewGrid;
 class OverviewItem;
 class OverviewWindowDragController;
+class RoundedLabelWidget;
 class SplitViewDragIndicators;
 
 enum class IndicatorState;
@@ -252,7 +252,7 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   size_t num_items_for_testing() const { return num_items_; }
 
-  views::Widget* no_windows_widget_for_testing() {
+  RoundedLabelWidget* no_windows_widget_for_testing() {
     return no_windows_widget_.get();
   }
 
@@ -274,7 +274,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   void OnSplitViewDividerPositionChanged() override;
 
  private:
-  class NoWindowsView;
   friend class OverviewSessionTest;
 
   // |focus|, restores focus to the stored window.
@@ -316,7 +315,7 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   std::unique_ptr<views::Widget> overview_focus_widget_;
 
   // A widget that is shown if we entered overview without any windows opened.
-  std::unique_ptr<views::Widget> no_windows_widget_;
+  std::unique_ptr<RoundedLabelWidget> no_windows_widget_;
 
   // True when performing operations that may cause window activations. This is
   // used to prevent handling the resulting expected activation. This is
