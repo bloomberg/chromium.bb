@@ -56,6 +56,10 @@ Polymer({
     },
   },
 
+  listeners: {
+    'default-browser-change': 'onDefaultBrowserChange_',
+  },
+
   /** @override */
   ready: function() {
     this.defaultCheckPromise_ = new PromiseResolver();
@@ -78,6 +82,11 @@ Polymer({
     // TODO(scottchen): convert the request to cr.sendWithPromise
     // (see https://crbug.com/874520#c6).
     nux.NuxSetAsDefaultProxyImpl.getInstance().requestDefaultBrowserState();
+  },
+
+  /** @private */
+  onDefaultBrowserChange_: function() {
+    this.$$('cr-toast').show();
   },
 
   /**

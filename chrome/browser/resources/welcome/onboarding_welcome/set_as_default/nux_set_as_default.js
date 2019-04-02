@@ -86,6 +86,8 @@ Polymer({
   onDefaultBrowserChange_: function(status) {
     if (status.isDefault) {
       this.browserProxy_.recordSuccessfullySetDefault();
+      // Triggers toast in the containing welcome-app.
+      this.fire('default-browser-change');
       this.finished_();
       return;
     }

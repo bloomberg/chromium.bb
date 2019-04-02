@@ -166,6 +166,7 @@ OnboardingWelcomeSetAsDefaultTest = class extends OnboardingWelcomeBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
+      '../settings/test_util.js',
       'nux_set_as_default_test.js',
       'test_nux_set_as_default_proxy.js',
     ]);
