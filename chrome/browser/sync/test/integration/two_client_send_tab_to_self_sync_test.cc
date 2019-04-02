@@ -4,12 +4,15 @@
 
 #include "base/run_loop.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
+#include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/send_tab_to_self_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
+#include "components/sync/device_info/device_info_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
@@ -99,4 +102,31 @@ IN_PROC_BROWSER_TEST_F(TwoClientSendTabToSelfSyncTest,
                   SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile(1)),
                   SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile(0)))
                   .Wait());
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientSendTabToSelfSyncTest, IsActive) {
+  ASSERT_TRUE(SetupSync());
+
+  EXPECT_TRUE(send_tab_to_self_helper::SendTabToSelfActiveChecker(
+                  SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile(0)))
+                  .Wait());
+  EXPECT_TRUE(send_tab_to_self::IsUserSyncTypeActive(GetProfile(0)));
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientSendTabToSelfSyncTest, IsOnMultipleDevices) {
+  ASSERT_TRUE(SetupSync());
+
+  DeviceInfoSyncServiceFactory::GetForProfile(GetProfile(1))
+      ->GetDeviceInfoTracker()
+      ->ForcePulseForTest();
+  DeviceInfoSyncServiceFactory::GetForProfile(GetProfile(0))
+      ->GetDeviceInfoTracker()
+      ->ForcePulseForTest();
+
+  ASSERT_TRUE(send_tab_to_self_helper::SendTabToSelfMultiDeviceActiveChecker(
+                  DeviceInfoSyncServiceFactory::GetForProfile(GetProfile(1))
+                      ->GetDeviceInfoTracker())
+                  .Wait());
+
+  EXPECT_TRUE(send_tab_to_self::IsSyncingOnMultipleDevices(GetProfile(0)));
 }

@@ -27,11 +27,10 @@ bool IsFlagEnabled() {
   return base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf);
 }
 
-bool IsUserSyncTypeEnabled(Profile* profile) {
-  syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
-  return sync_service &&
-         sync_service->GetPreferredDataTypes().Has(syncer::SEND_TAB_TO_SELF);
+bool IsUserSyncTypeActive(Profile* profile) {
+  return SendTabToSelfSyncServiceFactory::GetForProfile(profile)
+      ->GetSendTabToSelfModel()
+      ->IsReady();
 }
 
 bool IsSyncingOnMultipleDevices(Profile* profile) {
@@ -54,7 +53,7 @@ bool ShouldOfferFeature(Profile* profile, content::WebContents* web_contents) {
     return false;
   }
 
-  return IsFlagEnabled() && IsUserSyncTypeEnabled(profile) &&
+  return IsFlagEnabled() && IsUserSyncTypeActive(profile) &&
          IsSyncingOnMultipleDevices(profile) &&
          IsContentRequirementsMet(web_contents->GetURL(), profile);
 }

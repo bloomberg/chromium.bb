@@ -3,9 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/time/time.h"
+#include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/send_tab_to_self_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/browser/ui/browser.h"
+#include "components/send_tab_to_self/send_tab_to_self_model.h"
+#include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
@@ -50,6 +54,35 @@ IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest,
                   SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile(0)),
                   GURL(kUrl))
                   .Wait());
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest, IsActive) {
+  ASSERT_TRUE(SetupSync());
+
+  EXPECT_TRUE(send_tab_to_self_helper::SendTabToSelfActiveChecker(
+                  SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile(0)))
+                  .Wait());
+  EXPECT_TRUE(send_tab_to_self::IsUserSyncTypeActive(GetProfile(0)));
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest, IsOnMultipleDevices) {
+  ASSERT_TRUE(SetupSync());
+
+  EXPECT_FALSE(send_tab_to_self::IsSyncingOnMultipleDevices(GetProfile(0)));
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest, IsFlagEnabled) {
+  ASSERT_TRUE(SetupSync());
+
+  EXPECT_TRUE(send_tab_to_self::IsFlagEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest, ShouldOfferFeature) {
+  ASSERT_TRUE(SetupSync());
+
+  EXPECT_FALSE(send_tab_to_self::ShouldOfferFeature(
+      GetBrowser(0)->profile(),
+      GetBrowser(0)->tab_strip_model()->GetActiveWebContents()));
 }
 
 }  // namespace

@@ -265,6 +265,7 @@ TEST_F(SyncPrefsTest, PreferredTypesNotKeepEverythingSynced) {
       expected_preferred_types.Put(SESSIONS);
       expected_preferred_types.Put(FAVICON_IMAGES);
       expected_preferred_types.Put(FAVICON_TRACKING);
+      expected_preferred_types.Put(SEND_TAB_TO_SELF);
     }
 
     expected_preferred_types.PutAll(AlwaysPreferredUserTypes());

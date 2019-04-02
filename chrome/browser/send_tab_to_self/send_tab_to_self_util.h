@@ -17,8 +17,8 @@ namespace send_tab_to_self {
 // Returns true if the 'send tab to self' flag is enabled.
 bool IsFlagEnabled();
 
-// Returns true if the SendTabToSelf sync datatype is enabled.
-bool IsUserSyncTypeEnabled(Profile* profile);
+// Returns true if the SendTabToSelf sync datatype is active.
+bool IsUserSyncTypeActive(Profile* profile);
 
 // Returns true if the user syncing on two or more devices.
 bool IsSyncingOnMultipleDevices(Profile* profile);

@@ -68,7 +68,7 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
   static std::unique_ptr<ModelTypeStore> DestroyAndStealStoreForTest(
       std::unique_ptr<DeviceInfoSyncBridge> bridge);
   bool IsPulseTimerRunningForTest() const;
-  void ForcePulseForTest();
+  void ForcePulseForTest() override;
 
  private:
   // Cache of all syncable and local data, stored by device cache guid.
