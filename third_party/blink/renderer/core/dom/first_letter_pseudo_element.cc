@@ -148,7 +148,8 @@ LayoutText* FirstLetterPseudoElement::FirstLetterTextLayoutObject(
     } else if (first_letter_text_layout_object->IsListMarker() ||
                first_letter_text_layout_object == marker) {
       first_letter_text_layout_object =
-          first_letter_text_layout_object->NextSibling();
+          first_letter_text_layout_object->NextInPreOrderAfterChildren(
+              parent_layout_object);
     } else if (first_letter_text_layout_object
                    ->IsFloatingOrOutOfFlowPositioned()) {
       if (first_letter_text_layout_object->Style()->StyleType() ==
