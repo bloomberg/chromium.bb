@@ -7,10 +7,9 @@
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_media_analytics_client.h"
 #include "chromeos/dbus/kerberos/fake_kerberos_client.h"
 #include "chromeos/dbus/kerberos/kerberos_client.h"
+#include "chromeos/dbus/media_analytics/fake_media_analytics_client.h"
 
 namespace chromeos {
 
@@ -66,41 +65,29 @@ void FakeUpstartClient::StartKerberosService(VoidDBusMethodCallback callback) {
 void FakeUpstartClient::StartMediaAnalytics(
     const std::vector<std::string>& /* upstart_env */,
     VoidDBusMethodCallback callback) {
-  FakeMediaAnalyticsClient* media_analytics_client =
-      static_cast<FakeMediaAnalyticsClient*>(
-          DBusThreadManager::Get()->GetMediaAnalyticsClient());
-  DLOG_IF(WARNING, media_analytics_client->process_running())
+  DLOG_IF(WARNING, FakeMediaAnalyticsClient::Get()->process_running())
       << "Trying to start media analytics which is already started.";
-  media_analytics_client->set_process_running(true);
+  FakeMediaAnalyticsClient::Get()->set_process_running(true);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
 void FakeUpstartClient::RestartMediaAnalytics(VoidDBusMethodCallback callback) {
-  FakeMediaAnalyticsClient* media_analytics_client =
-      static_cast<FakeMediaAnalyticsClient*>(
-          DBusThreadManager::Get()->GetMediaAnalyticsClient());
-  media_analytics_client->set_process_running(false);
-  media_analytics_client->set_process_running(true);
-  media_analytics_client->SetStateSuspended();
+  FakeMediaAnalyticsClient::Get()->set_process_running(false);
+  FakeMediaAnalyticsClient::Get()->set_process_running(true);
+  FakeMediaAnalyticsClient::Get()->SetStateSuspended();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
 void FakeUpstartClient::StopMediaAnalytics() {
-  FakeMediaAnalyticsClient* media_analytics_client =
-      static_cast<FakeMediaAnalyticsClient*>(
-          DBusThreadManager::Get()->GetMediaAnalyticsClient());
-  DLOG_IF(WARNING, !media_analytics_client->process_running())
+  DLOG_IF(WARNING, !FakeMediaAnalyticsClient::Get()->process_running())
       << "Trying to stop media analytics which is not started.";
-  media_analytics_client->set_process_running(false);
+  FakeMediaAnalyticsClient::Get()->set_process_running(false);
 }
 
 void FakeUpstartClient::StopMediaAnalytics(VoidDBusMethodCallback callback) {
-  FakeMediaAnalyticsClient* media_analytics_client =
-      static_cast<FakeMediaAnalyticsClient*>(
-          DBusThreadManager::Get()->GetMediaAnalyticsClient());
-  media_analytics_client->set_process_running(false);
+  FakeMediaAnalyticsClient::Get()->set_process_running(false);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true));
 }

@@ -43,7 +43,6 @@ class GsmSMSClient;
 class ImageBurnerClient;
 class ImageLoaderClient;
 class LorgnetteManagerClient;
-class MediaAnalyticsClient;
 class ModemMessagingClient;
 class OobeConfigurationClient;
 class RuntimeProbeClient;
@@ -134,7 +133,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManager {
   ImageBurnerClient* GetImageBurnerClient();
   ImageLoaderClient* GetImageLoaderClient();
   LorgnetteManagerClient* GetLorgnetteManagerClient();
-  MediaAnalyticsClient* GetMediaAnalyticsClient();
   ModemMessagingClient* GetModemMessagingClient();
   OobeConfigurationClient* GetOobeConfigurationClient();
   RuntimeProbeClient* GetRuntimeProbeClient();
@@ -190,7 +188,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManagerSetter {
   void SetDebugDaemonClient(std::unique_ptr<DebugDaemonClient> client);
   void SetImageBurnerClient(std::unique_ptr<ImageBurnerClient> client);
   void SetImageLoaderClient(std::unique_ptr<ImageLoaderClient> client);
-  void SetMediaAnalyticsClient(std::unique_ptr<MediaAnalyticsClient> client);
   void SetSeneschalClient(std::unique_ptr<SeneschalClient> client);
   void SetRuntimeProbeClient(std::unique_ptr<RuntimeProbeClient> client);
   void SetSessionManagerClient(std::unique_ptr<SessionManagerClient> client);

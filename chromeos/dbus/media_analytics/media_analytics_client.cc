@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/media_analytics_client.h"
+#include "chromeos/dbus/media_analytics/media_analytics_client.h"
 
 #include <cstdint>
 #include <string>
@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chromeos/dbus/media_analytics/fake_media_analytics_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -19,6 +20,12 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
+
+namespace {
+
+MediaAnalyticsClient* g_instance = nullptr;
+
+}  // namespace
 
 // The MediaAnalyticsClient implementation used in production.
 class MediaAnalyticsClientImpl : public MediaAnalyticsClient {
@@ -84,8 +91,7 @@ class MediaAnalyticsClientImpl : public MediaAnalyticsClient {
             weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
- protected:
-  void Init(dbus::Bus* bus) override {
+  void Init(dbus::Bus* bus) {
     dbus_proxy_ = bus->GetObjectProxy(
         media_perception::kMediaPerceptionServiceName,
         dbus::ObjectPath(media_perception::kMediaPerceptionServicePath));
@@ -171,12 +177,36 @@ class MediaAnalyticsClientImpl : public MediaAnalyticsClient {
   DISALLOW_COPY_AND_ASSIGN(MediaAnalyticsClientImpl);
 };
 
-MediaAnalyticsClient::~MediaAnalyticsClient() = default;
-
-MediaAnalyticsClient* MediaAnalyticsClient::Create() {
-  return new MediaAnalyticsClientImpl;
+MediaAnalyticsClient::MediaAnalyticsClient() {
+  DCHECK(!g_instance);
+  g_instance = this;
 }
 
-MediaAnalyticsClient::MediaAnalyticsClient() = default;
+MediaAnalyticsClient::~MediaAnalyticsClient() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
+
+// static
+void MediaAnalyticsClient::Initialize(dbus::Bus* bus) {
+  DCHECK(bus);
+  (new MediaAnalyticsClientImpl())->Init(bus);
+}
+
+// static
+void MediaAnalyticsClient::InitializeFake() {
+  new FakeMediaAnalyticsClient();
+}
+
+// static
+void MediaAnalyticsClient::Shutdown() {
+  DCHECK(g_instance);
+  delete g_instance;
+}
+
+// static
+MediaAnalyticsClient* MediaAnalyticsClient::Get() {
+  return g_instance;
+}
 
 }  // namespace chromeos

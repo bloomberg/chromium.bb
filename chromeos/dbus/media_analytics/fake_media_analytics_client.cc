@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/fake_media_analytics_client.h"
+#include "chromeos/dbus/media_analytics/fake_media_analytics_client.h"
 
 #include <utility>
 
@@ -12,12 +12,29 @@
 
 namespace chromeos {
 
+namespace {
+
+FakeMediaAnalyticsClient* g_instance = nullptr;
+
+}  // namespace
+
 FakeMediaAnalyticsClient::FakeMediaAnalyticsClient()
     : process_running_(false), weak_ptr_factory_(this) {
   current_state_.set_status(mri::State::UNINITIALIZED);
+  DCHECK(!g_instance);
+  g_instance = this;
 }
 
-FakeMediaAnalyticsClient::~FakeMediaAnalyticsClient() = default;
+FakeMediaAnalyticsClient::~FakeMediaAnalyticsClient() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
+
+// static
+FakeMediaAnalyticsClient* FakeMediaAnalyticsClient::Get() {
+  DCHECK(g_instance);
+  return g_instance;
+}
 
 bool FakeMediaAnalyticsClient::FireMediaPerceptionEvent(
     const mri::MediaPerception& media_perception) {
@@ -34,8 +51,6 @@ void FakeMediaAnalyticsClient::SetDiagnostics(
     const mri::Diagnostics& diagnostics) {
   diagnostics_ = diagnostics;
 }
-
-void FakeMediaAnalyticsClient::Init(dbus::Bus* bus) {}
 
 void FakeMediaAnalyticsClient::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);

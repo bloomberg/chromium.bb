@@ -31,7 +31,6 @@
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/media_perception/media_perception.pb.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
@@ -78,8 +77,7 @@ void StartGraphIfNeeded(chromeos::MediaAnalyticsClient* client,
 ViewsScreenLocker::ViewsScreenLocker(ScreenLocker* screen_locker)
     : screen_locker_(screen_locker),
       system_info_updater_(std::make_unique<MojoSystemInfoDispatcher>()),
-      media_analytics_client_(
-          chromeos::DBusThreadManager::Get()->GetMediaAnalyticsClient()) {
+      media_analytics_client_(chromeos::MediaAnalyticsClient::Get()) {
   LoginScreenClient::Get()->SetDelegate(this);
   user_board_view_mojo_ = std::make_unique<UserBoardViewMojo>();
   user_selection_screen_ =
