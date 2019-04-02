@@ -56,6 +56,7 @@ class WebGLDepthTexture;
 class WebGLLoseContext;
 class WebGLMultiDraw;
 class WebGLMultiDrawInstanced;
+class WebGLVideoTexture;
 
 class WebGLRenderingContext final : public WebGLRenderingContextBase {
   DEFINE_WRAPPERTYPEINFO();
@@ -128,6 +129,7 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
   Member<WebGLLoseContext> webgl_lose_context_;
   Member<WebGLMultiDraw> webgl_multi_draw_;
   Member<WebGLMultiDrawInstanced> webgl_multi_draw_instanced_;
+  Member<WebGLVideoTexture> webgl_video_texture_;
 };
 
 DEFINE_TYPE_CASTS(WebGLRenderingContext,

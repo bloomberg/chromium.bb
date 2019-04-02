@@ -171,6 +171,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         'WEBGL_lose_context',
         'WEBGL_multi_draw',
         'WEBGL_multi_draw_instanced',
+        'WEBGL_video_texture',
       ]
     else:
       return [
@@ -192,6 +193,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         'WEBGL_multi_draw',
         'WEBGL_multi_draw_instanced',
         'WEBGL_multiview',
+        'WEBGL_video_texture',
       ]
 
   def RunActualGpuTest(self, test_path, *args):
