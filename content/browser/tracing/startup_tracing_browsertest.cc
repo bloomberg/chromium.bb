@@ -74,9 +74,8 @@ IN_PROC_BROWSER_TEST_F(StartupTracingControllerTest, TestStartupTracing) {
   std::string trace;
   base::ScopedAllowBlockingForTesting allow_blocking;
   ASSERT_TRUE(base::ReadFileToString(temp_file_path_, &trace));
-  EXPECT_TRUE(
-      trace.find("TracingControllerImpl::InitStartupTracingForDuration") !=
-      std::string::npos);
+  EXPECT_TRUE(trace.find("BrowserMainLoop::InitStartupTracingForDuration") !=
+              std::string::npos);
 }
 
 }  // namespace content

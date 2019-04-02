@@ -303,6 +303,11 @@ static void SetUpGLibLogHandler() {
 }
 #endif  // defined(USE_GLIB)
 
+void OnStoppedStartupTracing(const base::FilePath& trace_file) {
+  VLOG(0) << "Completed startup tracing to " << trace_file.value();
+  tracing::TraceStartupConfig::GetInstance()->OnTraceToResultFileFinished();
+}
+
 // Tell compiler not to inline this function so it's possible to tell what
 // thread was unresponsive by inspecting the callstack.
 NOINLINE void ResetThread_IO(
@@ -1181,6 +1186,10 @@ void BrowserMainLoop::GetCompositingModeReporter(
 #endif
 }
 
+void BrowserMainLoop::StopStartupTracingTimer() {
+  startup_trace_timer_.Stop();
+}
+
 void BrowserMainLoop::InitializeMainThread() {
   TRACE_EVENT0("startup", "BrowserMainLoop::InitializeMainThread");
   base::PlatformThread::SetName("CrBrowserMain");
@@ -1591,9 +1600,25 @@ void BrowserMainLoop::InitializeMojo() {
   // Start startup tracing through TracingController's interface. TraceLog has
   // been enabled in content_main_runner where threads are not available. Now We
   // need to start tracing for all other tracing agents, which require threads.
-  // We can only do this after starting the main message loop to avoid calling
-  // MessagePumpForUI::ScheduleWork() before MessagePumpForUI::Start().
-  TracingControllerImpl::GetInstance()->StartStartupTracingIfNeeded();
+  auto* trace_startup_config = tracing::TraceStartupConfig::GetInstance();
+  if (trace_startup_config->IsEnabled()) {
+    // This checks kTraceConfigFile switch.
+    TracingController::GetInstance()->StartTracing(
+        trace_startup_config->GetTraceConfig(),
+        TracingController::StartTracingDoneCallback());
+  } else if (parsed_command_line_.HasSwitch(switches::kTraceToConsole)) {
+    TracingController::GetInstance()->StartTracing(
+        tracing::GetConfigForTraceToConsole(),
+        TracingController::StartTracingDoneCallback());
+  }
+  // Start tracing to a file for certain duration if needed. Only do this after
+  // starting the main message loop to avoid calling
+  // MessagePumpForUI::ScheduleWork() before MessagePumpForUI::Start() as it
+  // will crash the browser.
+  if (trace_startup_config->IsTracingStartupForDuration()) {
+    TRACE_EVENT0("startup", "BrowserMainLoop::InitStartupTracingForDuration");
+    InitStartupTracingForDuration();
+  }
 
   if (parts_) {
     parts_->ServiceManagerConnectionStarted(
@@ -1603,6 +1628,46 @@ void BrowserMainLoop::InitializeMojo() {
 #if BUILDFLAG(MOJO_RANDOM_DELAYS_ENABLED)
   mojo::BeginRandomMojoDelays();
 #endif
+}
+
+base::FilePath BrowserMainLoop::GetStartupTraceFileName() const {
+  base::FilePath trace_file;
+
+  trace_file = tracing::TraceStartupConfig::GetInstance()->GetResultFile();
+  if (trace_file.empty()) {
+#if defined(OS_ANDROID)
+    TracingControllerAndroid::GenerateTracingFilePath(&trace_file);
+#else
+    // Default to saving the startup trace into the current dir.
+    trace_file = base::FilePath().AppendASCII("chrometrace.log");
+#endif
+  }
+
+  return trace_file;
+}
+
+void BrowserMainLoop::InitStartupTracingForDuration() {
+  DCHECK(tracing::TraceStartupConfig::GetInstance()
+             ->IsTracingStartupForDuration());
+
+  startup_trace_file_ = GetStartupTraceFileName();
+
+  startup_trace_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromSeconds(
+          tracing::TraceStartupConfig::GetInstance()->GetStartupDuration()),
+      this, &BrowserMainLoop::EndStartupTracing);
+}
+
+void BrowserMainLoop::EndStartupTracing() {
+  // Do nothing if startup tracing is already stopped.
+  if (!tracing::TraceStartupConfig::GetInstance()->IsEnabled())
+    return;
+
+  TracingController::GetInstance()->StopTracing(
+      TracingController::CreateFileEndpoint(
+          startup_trace_file_,
+          base::Bind(OnStoppedStartupTracing, startup_trace_file_)));
 }
 
 void BrowserMainLoop::InitializeAudio() {

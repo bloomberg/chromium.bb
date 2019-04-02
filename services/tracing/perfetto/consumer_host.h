@@ -23,7 +23,6 @@ struct BindSourceInfo;
 
 namespace tracing {
 
-class JSONTraceExporter;
 class PerfettoService;
 
 // This is a Mojo interface which enables any client
@@ -46,16 +45,10 @@ class ConsumerHost : public perfetto::Consumer, public mojom::ConsumerHost {
   // mojom::ConsumerHost implementation.
   void EnableTracing(mojom::TracingSessionPtr tracing_session,
                      const perfetto::TraceConfig& config) override;
-  void ChangeTraceConfig(const perfetto::TraceConfig& config) override;
-  void DisableTracing() override;
   void ReadBuffers(mojo::ScopedDataPipeProducerHandle stream,
                    ReadBuffersCallback callback) override;
-  void DisableTracingAndEmitJson(
-      const std::string& agent_label_filter,
-      mojo::ScopedDataPipeProducerHandle stream,
-      DisableTracingAndEmitJsonCallback callback) override;
-  void RequestBufferUsage(RequestBufferUsageCallback callback) override;
 
+  void DisableTracing();
   void Flush(uint32_t timeout, base::OnceCallback<void(bool)> callback);
   void FreeBuffers();
 
@@ -68,11 +61,11 @@ class ConsumerHost : public perfetto::Consumer, public mojom::ConsumerHost {
   void OnTraceData(std::vector<perfetto::TracePacket> packets,
                    bool has_more) override;
   void OnObservableEvents(const perfetto::ObservableEvents&) override;
-  void OnTraceStats(bool success, const perfetto::TraceStats&) override;
 
   // Unused in Chrome.
   void OnDetach(bool success) override {}
   void OnAttach(bool success, const perfetto::TraceConfig&) override {}
+  void OnTraceStats(bool success, const perfetto::TraceStats&) override {}
 
   // Called by TracingService.
   void OnActiveServicePidAdded(base::ProcessId pid);
@@ -80,13 +73,8 @@ class ConsumerHost : public perfetto::Consumer, public mojom::ConsumerHost {
   void OnActiveServicePidsInitialized();
 
  private:
-  perfetto::TraceConfig AdjustTraceConfig(
-      const perfetto::TraceConfig& trace_config);
   void MaybeSendEnableTracingAck();
   bool IsExpectedPid(base::ProcessId pid) const;
-  void OnJSONTraceData(const std::string& json,
-                       base::DictionaryValue* metadata,
-                       bool has_more);
   void WriteToStream(const void* start, size_t size);
 
   PerfettoService* const service_;
@@ -98,8 +86,6 @@ class ConsumerHost : public perfetto::Consumer, public mojom::ConsumerHost {
   // If set, we didn't issue OnTracingEnabled() on the session yet. If set and
   // empty, no more pids are pending and we should issue OnTracingEnabled().
   base::Optional<std::set<base::ProcessId>> pending_enable_tracing_ack_pids_;
-  RequestBufferUsageCallback request_buffer_usage_callback_;
-  std::unique_ptr<JSONTraceExporter> json_trace_exporter_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -17,7 +17,6 @@ TRACING_EXPORT extern const char kTraceStartup[];
 TRACING_EXPORT extern const char kTraceStartupDuration[];
 TRACING_EXPORT extern const char kTraceStartupFile[];
 TRACING_EXPORT extern const char kTraceStartupRecordMode[];
-TRACING_EXPORT extern const char kTraceStartupOwner[];
 TRACING_EXPORT extern const char kDisablePerfetto[];
 TRACING_EXPORT extern const char kPerfettoDisableInterning[];
 TRACING_EXPORT extern const char kPerfettoOutputFile[];

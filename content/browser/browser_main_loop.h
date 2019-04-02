@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/task_scheduler/task_scheduler.h"
+#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/public/browser/browser_main_runner.h"
@@ -32,6 +33,7 @@ class Env;
 
 namespace base {
 class CommandLine;
+class FilePath;
 class HighResolutionTimerManager;
 class MemoryPressureMonitor;
 class PowerMonitor;
@@ -194,6 +196,12 @@ class CONTENT_EXPORT BrowserMainLoop {
   }
   midi::MidiService* midi_service() const { return midi_service_.get(); }
 
+  base::FilePath GetStartupTraceFileName() const;
+
+  const base::FilePath& startup_trace_file() const {
+    return startup_trace_file_;
+  }
+
   // Returns the task runner for tasks that that are critical to producing a new
   // CompositorFrame on resize. On Mac this will be the task runner provided by
   // WindowResizeHelperMac, on other platforms it will just be the thread task
@@ -225,6 +233,8 @@ class CONTENT_EXPORT BrowserMainLoop {
   void GetCompositingModeReporter(
       viz::mojom::CompositingModeReporterRequest request);
 
+  void StopStartupTracingTimer();
+
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   media::DeviceMonitorMac* device_monitor_mac() const {
     return device_monitor_mac_.get();
@@ -255,6 +265,8 @@ class CONTENT_EXPORT BrowserMainLoop {
   void MainMessageLoopRun();
 
   void InitializeMojo();
+  void InitStartupTracingForDuration();
+  void EndStartupTracing();
 
   void InitializeAudio();
 
@@ -277,6 +289,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   //   PostCreateThreads()
   //   BrowserThreadsStarted()
   //     InitializeMojo()
+  //     InitStartupTracingForDuration()
   //   PreMainMessageLoopRun()
 
   // Members initialized on construction ---------------------------------------
@@ -315,6 +328,12 @@ class CONTENT_EXPORT BrowserMainLoop {
   // Android implementation of ScreenOrientationDelegate
   std::unique_ptr<ScreenOrientationDelegate> screen_orientation_delegate_;
 #endif
+
+  // Members initialized in |InitStartupTracingForDuration()| ------------------
+  base::FilePath startup_trace_file_;
+
+  // This timer initiates trace file saving.
+  base::OneShotTimer startup_trace_timer_;
 
   // Members initialized in |Init()| -------------------------------------------
   // Destroy |parts_| before |main_message_loop_| (required) and before other
