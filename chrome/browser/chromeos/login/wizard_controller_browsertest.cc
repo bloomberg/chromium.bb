@@ -1115,7 +1115,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
  protected:
-  WizardControllerDeviceStateTest() : fake_session_manager_client_(nullptr) {
+  WizardControllerDeviceStateTest() {
     fake_statistics_provider_.SetMachineStatistic(
         system::kSerialNumberKeyForTest, "test");
     fake_statistics_provider_.SetMachineStatistic(system::kActivateDateKey,
@@ -1136,15 +1136,6 @@ class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
                 base::BindRepeating(&QuitLoopOnAutoEnrollmentProgress, state,
                                     &loop)));
     loop.Run();
-  }
-
-  void SetUpInProcessBrowserTestFixture() override {
-    WizardControllerFlowTest::SetUpInProcessBrowserTestFixture();
-
-    fake_session_manager_client_ = new FakeSessionManagerClient(
-        FakeSessionManagerClient::PolicyStorageType::kOnDisk);
-    DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        std::unique_ptr<SessionManagerClient>(fake_session_manager_client_));
   }
 
   void SetUpOnMainThread() override {
@@ -1178,9 +1169,6 @@ class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
   system::ScopedFakeStatisticsProvider fake_statistics_provider_;
 
   base::HistogramTester* histogram_tester() { return histogram_tester_.get(); }
-
- protected:
-  FakeSessionManagerClient* fake_session_manager_client_;
 
  private:
   ScopedStubInstallAttributes test_install_attributes_{
@@ -1230,7 +1218,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
   EXPECT_EQ(1,
             FakeCryptohomeClient::Get()
                 ->remove_firmware_management_parameters_from_tpm_call_count());
-  EXPECT_EQ(1, fake_session_manager_client_
+  EXPECT_EQ(1, FakeSessionManagerClient::Get()
                    ->clear_forced_re_enrollment_vpd_call_count());
 }
 
@@ -1299,7 +1287,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
   EXPECT_EQ(0,
             FakeCryptohomeClient::Get()
                 ->remove_firmware_management_parameters_from_tpm_call_count());
-  EXPECT_EQ(0, fake_session_manager_client_
+  EXPECT_EQ(0, FakeSessionManagerClient::Get()
                    ->clear_forced_re_enrollment_vpd_call_count());
 
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
@@ -1391,7 +1379,7 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
     EXPECT_EQ(
         0, FakeCryptohomeClient::Get()
                ->remove_firmware_management_parameters_from_tpm_call_count());
-    EXPECT_EQ(0, fake_session_manager_client_
+    EXPECT_EQ(0, FakeSessionManagerClient::Get()
                      ->clear_forced_re_enrollment_vpd_call_count());
   } else {
     // Check that guest sign-in is allowed if FRE was not explicitly required.
@@ -1399,7 +1387,7 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
     EXPECT_EQ(
         1, FakeCryptohomeClient::Get()
                ->remove_firmware_management_parameters_from_tpm_call_count());
-    EXPECT_EQ(1, fake_session_manager_client_
+    EXPECT_EQ(1, FakeSessionManagerClient::Get()
                      ->clear_forced_re_enrollment_vpd_call_count());
   }
 
@@ -1523,7 +1511,7 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
     EXPECT_EQ(
         0, FakeCryptohomeClient::Get()
                ->remove_firmware_management_parameters_from_tpm_call_count());
-    EXPECT_EQ(0, fake_session_manager_client_
+    EXPECT_EQ(0, FakeSessionManagerClient::Get()
                      ->clear_forced_re_enrollment_vpd_call_count());
   } else {
     // Don't expect that the auto enrollment screen will be hidden, because
@@ -1544,7 +1532,7 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
     EXPECT_EQ(
         0, FakeCryptohomeClient::Get()
                ->remove_firmware_management_parameters_from_tpm_call_count());
-    EXPECT_EQ(0, fake_session_manager_client_
+    EXPECT_EQ(0, FakeSessionManagerClient::Get()
                      ->clear_forced_re_enrollment_vpd_call_count());
   }
 }
@@ -2033,18 +2021,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
 
 class WizardControllerBrokenLocalStateTest : public WizardControllerTest {
  protected:
-  WizardControllerBrokenLocalStateTest()
-      : fake_session_manager_client_(nullptr) {}
-
-  ~WizardControllerBrokenLocalStateTest() override {}
-
-  void SetUpInProcessBrowserTestFixture() override {
-    WizardControllerTest::SetUpInProcessBrowserTestFixture();
-
-    fake_session_manager_client_ = new FakeSessionManagerClient;
-    DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        std::unique_ptr<SessionManagerClient>(fake_session_manager_client_));
-  }
+  WizardControllerBrokenLocalStateTest() = default;
+  ~WizardControllerBrokenLocalStateTest() override = default;
 
   void SetUpOnMainThread() override {
     PrefServiceFactory factory;
@@ -2058,13 +2036,8 @@ class WizardControllerBrokenLocalStateTest : public WizardControllerTest {
     WizardController::default_controller()->is_official_build_ = true;
   }
 
-  FakeSessionManagerClient* fake_session_manager_client() const {
-    return fake_session_manager_client_;
-  }
-
  private:
   std::unique_ptr<PrefService> local_state_;
-  FakeSessionManagerClient* fake_session_manager_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WizardControllerBrokenLocalStateTest);
 };
@@ -2086,10 +2059,10 @@ IN_PROC_BROWSER_TEST_F(WizardControllerBrokenLocalStateTest,
       "$('error-message').classList.contains('ui-state-local-state-error')"));
 
   // Emulates user click on the "Restart and Powerwash" button.
-  ASSERT_EQ(0, fake_session_manager_client()->start_device_wipe_call_count());
+  ASSERT_EQ(0, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
   ASSERT_TRUE(content::ExecuteScript(
       GetWebContents(), "$('error-message-md-powerwash-button').click();"));
-  ASSERT_EQ(1, fake_session_manager_client()->start_device_wipe_call_count());
+  ASSERT_EQ(1, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
 }
 
 class WizardControllerProxyAuthOnSigninTest : public WizardControllerTest {

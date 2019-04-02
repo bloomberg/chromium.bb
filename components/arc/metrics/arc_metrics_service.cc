@@ -16,7 +16,6 @@
 #include "base/system/sys_info.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
@@ -292,9 +291,7 @@ void ArcMetricsService::ReportBootProgress(
   }
 
   // Retrieve ARC full container's start time from session manager.
-  chromeos::SessionManagerClient* session_manager_client =
-      chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
-  session_manager_client->GetArcStartTime(base::BindOnce(
+  chromeos::SessionManagerClient::Get()->GetArcStartTime(base::BindOnce(
       &ArcMetricsService::OnArcStartTimeRetrieved,
       weak_ptr_factory_.GetWeakPtr(), std::move(events), boot_type));
 }

@@ -16,7 +16,6 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_manager/known_user.h"
@@ -63,9 +62,7 @@ void LoginDisplayMojo::Init(const user_manager::UserList& filtered_users,
       // does not regress. Autotests may also depend on it (ie,
       // login_SameSessionTwice).
       VLOG(1) << "Emitting login-prompt-visible";
-      chromeos::DBusThreadManager::Get()
-          ->GetSessionManagerClient()
-          ->EmitLoginPromptVisible();
+      SessionManagerClient::Get()->EmitLoginPromptVisible();
 
       content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,

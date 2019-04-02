@@ -44,6 +44,8 @@ constexpr char kStubSigninExtensionPolicyFileNameFragment[] =
 constexpr char kStubPerAccountPolicyKeyFileName[] = "policy.pub";
 constexpr char kEmptyAccountId[] = "";
 
+FakeSessionManagerClient* g_instance = nullptr;
+
 // Helper to asynchronously retrieve a file's content.
 std::string GetFileContent(const base::FilePath& path) {
   std::string result;
@@ -229,11 +231,20 @@ FakeSessionManagerClient::FakeSessionManagerClient(
       screen_is_locked_(false),
       arc_available_(false),
       delegate_(nullptr),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  DCHECK(!g_instance);
+  g_instance = this;
+}
 
-FakeSessionManagerClient::~FakeSessionManagerClient() = default;
+FakeSessionManagerClient::~FakeSessionManagerClient() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
 
-void FakeSessionManagerClient::Init(dbus::Bus* bus) {}
+// static
+FakeSessionManagerClient* FakeSessionManagerClient::Get() {
+  return g_instance;
+}
 
 void FakeSessionManagerClient::SetStubDelegate(StubDelegate* delegate) {
   delegate_ = delegate;

@@ -36,7 +36,6 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/assistant/buildflags.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -318,9 +317,7 @@ void SessionControllerClient::EmitAshInitialized() {
   // purely by emitting D-Bus signals, and thus has to be run whenever Ash is
   // started so Ash (DetachableBaseHandler in particular) gets the proper view
   // of the current detachable base state.
-  chromeos::DBusThreadManager::Get()
-      ->GetSessionManagerClient()
-      ->EmitAshInitialized();
+  chromeos::SessionManagerClient::Get()->EmitAshInitialized();
 }
 
 // static
@@ -407,9 +404,7 @@ void SessionControllerClient::DoLockScreen() {
     return;
 
   VLOG(1) << "Requesting screen lock from SessionControllerClient";
-  chromeos::DBusThreadManager::Get()
-      ->GetSessionManagerClient()
-      ->RequestLockScreen();
+  chromeos::SessionManagerClient::Get()->RequestLockScreen();
 }
 
 // static

@@ -83,16 +83,6 @@ void MaybeUpdateOptInCancelUMA(const ArcSupportHost* support_host) {
   UpdateOptInCancelUMA(OptInCancelReason::USER_CANCEL);
 }
 
-chromeos::SessionManagerClient* GetSessionManagerClient() {
-  // If the DBusThreadManager or the SessionManagerClient aren't available,
-  // there isn't much we can do. This should only happen when running tests.
-  if (!chromeos::DBusThreadManager::IsInitialized() ||
-      !chromeos::DBusThreadManager::Get() ||
-      !chromeos::DBusThreadManager::Get()->GetSessionManagerClient())
-    return nullptr;
-  return chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
-}
-
 // Returns true if launching the Play Store on OptIn succeeded is needed.
 // Launch Play Store app, except for the following cases:
 // * When Opt-in verification is disabled (for tests);
@@ -219,18 +209,16 @@ ArcSessionManager::ArcSessionManager(
   DCHECK(!g_arc_session_manager);
   g_arc_session_manager = this;
   arc_session_runner_->AddObserver(this);
-  chromeos::SessionManagerClient* client = GetSessionManagerClient();
-  if (client)
-    client->AddObserver(this);
+  if (chromeos::SessionManagerClient::Get())
+    chromeos::SessionManagerClient::Get()->AddObserver(this);
   ResetStabilityMetrics();
 }
 
 ArcSessionManager::~ArcSessionManager() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  chromeos::SessionManagerClient* client = GetSessionManagerClient();
-  if (client)
-    client->RemoveObserver(this);
+  if (chromeos::SessionManagerClient::Get())
+    chromeos::SessionManagerClient::Get()->RemoveObserver(this);
 
   Shutdown();
   arc_session_runner_->RemoveObserver(this);

@@ -985,7 +985,7 @@ void WizardController::OnTermsOfServiceScreenExit(
       break;
     case TermsOfServiceScreen::Result::DECLINED:
       // End the session and return to the login screen.
-      DBusThreadManager::Get()->GetSessionManagerClient()->StopSession();
+      SessionManagerClient::Get()->StopSession();
       break;
   }
 }
