@@ -25,7 +25,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/url_pattern.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "remoting/host/it2me/it2me_native_messaging_host_chromeos.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
@@ -96,7 +95,6 @@ struct BuiltInHost {
 
 std::unique_ptr<NativeMessageHost> CreateIt2MeHost() {
   return remoting::CreateIt2MeNativeMessagingHostForChromeOS(
-      g_browser_process->system_request_context(),
       base::CreateSingleThreadTaskRunnerWithTraits(
           {content::BrowserThread::IO}),
       base::CreateSingleThreadTaskRunnerWithTraits(

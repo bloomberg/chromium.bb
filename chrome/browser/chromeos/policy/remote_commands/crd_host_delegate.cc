@@ -305,7 +305,6 @@ void CRDHostDelegate::StartCRDHostAndGetCode(
 
   // TODO(antrim): set up watchdog timer (reasonable cutoff).
   host_ = remoting::CreateIt2MeNativeMessagingHostForChromeOS(
-      g_browser_process->system_request_context(),
       base::CreateSingleThreadTaskRunnerWithTraits(
           {content::BrowserThread::IO}),
       base::CreateSingleThreadTaskRunnerWithTraits(
