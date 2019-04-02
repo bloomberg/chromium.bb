@@ -100,8 +100,8 @@ OmniboxMetricsProvider::~OmniboxMetricsProvider() {
 
 void OmniboxMetricsProvider::OnRecordingEnabled() {
   subscription_ = OmniboxEventGlobalTracker::GetInstance()->RegisterCallback(
-      base::Bind(&OmniboxMetricsProvider::OnURLOpenedFromOmnibox,
-                 base::Unretained(this)));
+      base::BindRepeating(&OmniboxMetricsProvider::OnURLOpenedFromOmnibox,
+                          base::Unretained(this)));
 }
 
 void OmniboxMetricsProvider::OnRecordingDisabled() {

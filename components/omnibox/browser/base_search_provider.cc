@@ -213,8 +213,8 @@ void BaseSearchProvider::DeleteMatch(const AutocompleteMatch& match) {
   if (!match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey).empty()) {
     deletion_handlers_.push_back(std::make_unique<SuggestionDeletionHandler>(
         client(), match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey),
-        base::Bind(&BaseSearchProvider::OnDeletionComplete,
-                   base::Unretained(this))));
+        base::BindRepeating(&BaseSearchProvider::OnDeletionComplete,
+                            base::Unretained(this))));
   }
 
   const TemplateURL* template_url =
