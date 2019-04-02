@@ -310,8 +310,6 @@
     "extension_types": ["extension"],
     "platforms" : ["win", "mac", "linux"],
     "whitelist" : [
-      "FD15C63ABA854733FDCBC1D4D34A71E963A12ABD",  // https://crbug.com/825015
-      "08455FA7CB8734168378F731B00B354CEEE0088F",  // https://crbug.com/825015 - Test Extension
       "86D63D90308742AA65B8B29AE2D39FED2D6DC310",  // https://crbug.com/882461 SecureConnect
       "031E5E4A54C39E4F46E11CE643584E9187915908",  // https://crbug.com/882461 SecureConnect
       "349E89FE0296161007623C0B4096B617D7CECD54",  // https://crbug.com/882461 SecureConnect
