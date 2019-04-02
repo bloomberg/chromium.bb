@@ -53,6 +53,8 @@ class AuthPolicyCredentialsManager
       const chromeos::NetworkState* network) override;
   void OnShuttingDown() override;
 
+  KerberosFilesHandler* GetKerberosFilesHandlerForTesting();
+
  private:
   friend class AuthPolicyCredentialsManagerTest;
   // Calls AuthPolicyClient::GetUserStatus method.
@@ -128,6 +130,7 @@ class AuthPolicyCredentialsManagerFactory
   friend struct base::DefaultSingletonTraits<
       AuthPolicyCredentialsManagerFactory>;
   friend class AuthPolicyCredentialsManagerTest;
+  friend class ExistingUserControllerActiveDirectoryTest;
 
   AuthPolicyCredentialsManagerFactory();
   ~AuthPolicyCredentialsManagerFactory() override;
