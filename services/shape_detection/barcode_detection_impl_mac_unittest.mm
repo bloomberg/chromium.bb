@@ -49,7 +49,7 @@ std::unique_ptr<mojom::BarcodeDetection> CreateBarcodeDetectorImplMacVision(
   if (@available(macOS 10.13, *)) {
     if (!BarcodeDetectionImplMacVision::IsBlockedMacOSVersion()) {
       return std::make_unique<BarcodeDetectionImplMacVision>(
-          mojom::BarcodeDetectorOptions::New());
+          std::move(options));
     }
   }
   return nullptr;
@@ -101,9 +101,7 @@ class BarcodeDetectionImplMacTest : public TestWithParam<struct TestParams> {
  public:
   ~BarcodeDetectionImplMacTest() override = default;
 
-  void SetUp() override {
-    vision_framework_ = GetParam().library_load_callback.Run();
-  }
+  void SetUp() override {}
 
   void TearDown() override {
     if (vision_framework_)
@@ -152,6 +150,7 @@ TEST_P(BarcodeDetectionImplMacTest, ScanOneBarcode) {
                  << "Skipping test.";
     return;
   }
+  vision_framework_ = GetParam().library_load_callback.Run();
 
   // Generate a barcode image as a CIImage by using |qr_code_generator|.
   NSData* const qr_code_data =
@@ -195,5 +194,33 @@ TEST_P(BarcodeDetectionImplMacTest, ScanOneBarcode) {
 }
 
 INSTANTIATE_TEST_SUITE_P(, BarcodeDetectionImplMacTest, ValuesIn(kTestParams));
+
+TEST_F(BarcodeDetectionImplMacTest, HintFormats) {
+  if (@available(macOS 10.13, *)) {
+    vision_framework_ = LoadVisionLibrary();
+
+    auto vision_impl = std::make_unique<BarcodeDetectionImplMacVision>(
+        mojom::BarcodeDetectorOptions::New());
+    EXPECT_EQ([vision_impl->GetSymbologyHintsForTesting() count], 0u);
+
+    mojom::BarcodeDetectorOptionsPtr options =
+        mojom::BarcodeDetectorOptions::New();
+    options->formats = {
+        mojom::BarcodeFormat::PDF417, mojom::BarcodeFormat::QR_CODE,
+        mojom::BarcodeFormat::CODE_128, mojom::BarcodeFormat::ITF};
+    vision_impl =
+        std::make_unique<BarcodeDetectionImplMacVision>(std::move(options));
+    NSSet* expected = [NSSet
+        setWithObjects:@"VNBarcodeSymbologyPDF417", @"VNBarcodeSymbologyQR",
+                       @"VNBarcodeSymbologyCode128", @"VNBarcodeSymbologyITF14",
+                       @"VNBarcodeSymbologyI2of5",
+                       @"VNBarcodeSymbologyI2of5Checksum", nil];
+    EXPECT_TRUE(
+        [vision_impl->GetSymbologyHintsForTesting() isEqualTo:expected]);
+  } else {
+    LOG(WARNING) << "Barcode Detection with Vision not supported before 10.13, "
+                 << "skipping test.";
+  }
+}
 
 }  // shape_detection namespace

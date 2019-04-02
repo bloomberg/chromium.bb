@@ -31,6 +31,9 @@ void BarcodeDetectionProviderMac::Create(
 void BarcodeDetectionProviderMac::CreateBarcodeDetection(
     mojom::BarcodeDetectionRequest request,
     mojom::BarcodeDetectorOptionsPtr options) {
+  if (!vision_api_)
+    vision_api_ = VisionAPIInterface::Create();
+
   // Vision Framework needs at least MAC OS X 10.13.
   if (@available(macOS 10.13, *)) {
     if (!BarcodeDetectionImplMacVision::IsBlockedMacOSVersion()) {
