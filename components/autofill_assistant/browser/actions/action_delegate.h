@@ -16,6 +16,7 @@
 #include "components/autofill_assistant/browser/selector.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
+#include "third_party/icu/source/common/unicode/umachine.h"
 
 class GURL;
 
@@ -164,11 +165,11 @@ class ActionDelegate {
       const std::string& value,
       base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
-  // Sets the keyboard focus to |selector| and inputs the specified text parts.
+  // Sets the keyboard focus to |selector| and inputs the specified codepoints.
   // Returns the result through |callback|.
   virtual void SendKeyboardInput(
       const Selector& selector,
-      const std::vector<std::string>& text_parts,
+      const std::vector<UChar32>& codepoints,
       base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
   // Return the outerHTML of an element given by |selector|.

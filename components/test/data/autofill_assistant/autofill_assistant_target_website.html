@@ -157,6 +157,19 @@ found in the LICENSE file.
       <input id="input6" type="field" value="" />
     </div>
 
+    <div>
+      <input id="input_js_event_listener" type="text">
+      <!-- Uses the 'key' property of a keydown event. -->
+      <script>
+        var t = document.getElementById("input_js_event_listener");
+        t.addEventListener('keydown', e => {
+          var value = e.target.value;
+          e.preventDefault();
+          e.target.value = value + e.key;
+        });
+      </script>
+    </div>
+
     <div id="testOuterHtml"><span>Span</span><p>Paragraph</p></div>
 
     <div id="hidden" style="display: none;">This text is hidden</div>

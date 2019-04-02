@@ -117,6 +117,8 @@ jumbo_static_library("browser") {
     "service.cc",
     "service.h",
     "state.h",
+    "string_conversions_util.cc",
+    "string_conversions_util.h",
     "ui_controller.cc",
     "ui_controller.h",
     "ui_delegate.h",
@@ -165,6 +167,7 @@ source_set("unit_tests") {
     "script_executor_unittest.cc",
     "script_precondition_unittest.cc",
     "script_tracker_unittest.cc",
+    "string_conversions_util_unittest.cc",
   ]
 
   deps = [

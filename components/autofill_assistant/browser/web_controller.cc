@@ -12,11 +12,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/i18n/char_iterator.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
@@ -25,10 +23,13 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill_assistant/browser/rectf.h"
+#include "components/autofill_assistant/browser/string_conversions_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/events/keycodes/dom/dom_key.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
 
 namespace autofill_assistant {
 using autofill::ContentAutofillDriver;
@@ -1312,30 +1313,14 @@ void WebController::SetFieldValue(
   DVLOG(3) << __func__ << " " << selector << ", value=" << value
            << ", simulate_key_presses=" << simulate_key_presses;
   if (simulate_key_presses) {
-    std::vector<std::string> utf8_chars;
-    base::i18n::UTF8CharIterator iter(&value);
-    while (!iter.end()) {
-      wchar_t wide_char = iter.get();
-      std::string utf8_char;
-      if (!base::WideToUTF8(&wide_char, 1, &utf8_char)) {
-        DVLOG(1) << __func__
-                 << " Failed to convert character to UTF-8: " << wide_char;
-        std::move(callback).Run(ClientStatus(INVALID_ACTION));
-        return;
-      }
-
-      utf8_chars.push_back(utf8_char);
-      iter.Advance();
-    }
-
     // We first clear the field value, and then simulate the key presses.
     // TODO(crbug.com/806868): Disable keyboard during this action and then
     // reset to previous state.
     InternalSetFieldValue(
         selector, "",
         base::BindOnce(&WebController::OnClearFieldForSendKeyboardInput,
-                       weak_ptr_factory_.GetWeakPtr(), selector, utf8_chars,
-                       std::move(callback)));
+                       weak_ptr_factory_.GetWeakPtr(), selector,
+                       UTF8ToUnicode(value), std::move(callback)));
     return;
   }
   InternalSetFieldValue(selector, value, std::move(callback));
@@ -1354,72 +1339,81 @@ void WebController::InternalSetFieldValue(
 
 void WebController::OnClearFieldForSendKeyboardInput(
     const Selector& selector,
-    const std::vector<std::string>& utf8_chars,
+    const std::vector<UChar32>& codepoints,
     base::OnceCallback<void(const ClientStatus&)> callback,
     const ClientStatus& clear_status) {
   if (!clear_status.ok()) {
     std::move(callback).Run(clear_status);
     return;
   }
-  SendKeyboardInput(selector, utf8_chars, std::move(callback));
+  SendKeyboardInput(selector, codepoints, std::move(callback));
 }
 
 void WebController::OnClickElementForSendKeyboardInput(
-    const std::vector<std::string>& utf8_chars,
+    const std::vector<UChar32>& codepoints,
     base::OnceCallback<void(const ClientStatus&)> callback,
     const ClientStatus& click_status) {
   if (!click_status.ok()) {
     std::move(callback).Run(click_status);
     return;
   }
-  DispatchKeyboardTextDownEvent(utf8_chars, 0, std::move(callback));
+  DispatchKeyboardTextDownEvent(codepoints, 0, std::move(callback));
 }
 
 void WebController::DispatchKeyboardTextDownEvent(
-    const std::vector<std::string>& utf8_chars,
+    const std::vector<UChar32>& codepoints,
     size_t index,
     base::OnceCallback<void(const ClientStatus&)> callback) {
-  if (index >= utf8_chars.size()) {
+  if (index >= codepoints.size()) {
     std::move(callback).Run(OkClientStatus());
     return;
   }
 
   devtools_client_->GetInput()->DispatchKeyEvent(
-      CreateKeyEventParamsFromText(
+      CreateKeyEventParamsForCharacter(
           autofill_assistant::input::DispatchKeyEventType::KEY_DOWN,
-          utf8_chars[index]),
+          codepoints[index]),
       base::BindOnce(&WebController::DispatchKeyboardTextUpEvent,
-                     weak_ptr_factory_.GetWeakPtr(), utf8_chars, index,
+                     weak_ptr_factory_.GetWeakPtr(), codepoints, index,
                      std::move(callback)));
 }
 
 void WebController::DispatchKeyboardTextUpEvent(
-    const std::vector<std::string>& utf8_chars,
+    const std::vector<UChar32>& codepoints,
     size_t index,
     base::OnceCallback<void(const ClientStatus&)> callback) {
-  DCHECK_LT(index, utf8_chars.size());
+  DCHECK_LT(index, codepoints.size());
   devtools_client_->GetInput()->DispatchKeyEvent(
-      CreateKeyEventParamsFromText(
+      CreateKeyEventParamsForCharacter(
           autofill_assistant::input::DispatchKeyEventType::KEY_UP,
-          utf8_chars[index]),
+          codepoints[index]),
       base::BindOnce(&WebController::DispatchKeyboardTextDownEvent,
-                     weak_ptr_factory_.GetWeakPtr(), utf8_chars, index + 1,
+                     weak_ptr_factory_.GetWeakPtr(), codepoints, index + 1,
                      std::move(callback)));
 }
 
-auto WebController::CreateKeyEventParamsFromText(
+auto WebController::CreateKeyEventParamsForCharacter(
     autofill_assistant::input::DispatchKeyEventType type,
-    const std::string& text) -> DispatchKeyEventParamsPtr {
+    UChar32 codepoint) -> DispatchKeyEventParamsPtr {
   auto params = input::DispatchKeyEventParams::Builder().SetType(type).Build();
-  params->SetText(text);
-  return params;
-}
 
-void WebController::OnPressKeyboard(
-    int key_code,
-    base::OnceCallback<void(bool)> callback,
-    std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  std::move(callback).Run(result && !result->HasExceptionDetails());
+  std::string text;
+  if (AppendUnicodeToUTF8(codepoint, &text)) {
+    params->SetText(text);
+  } else {
+    DVLOG(1) << __func__
+             << ": Failed to convert codepoint to UTF-8: " << codepoint;
+  }
+
+  auto dom_key = ui::DomKey::FromCharacter(codepoint);
+  if (dom_key.IsValid()) {
+    params->SetKey(ui::KeycodeConverter::DomKeyToKeyString(dom_key));
+  } else {
+    DVLOG(1) << __func__
+             << ": Failed to set DomKey for codepoint: " << codepoint;
+  }
+
+  return params;
 }
 
 void WebController::OnFindElementForSetFieldValue(
@@ -1517,21 +1511,27 @@ void WebController::OnSetAttribute(
 
 void WebController::SendKeyboardInput(
     const Selector& selector,
-    const std::vector<std::string>& utf8_chars,
+    const std::vector<UChar32>& codepoints,
     base::OnceCallback<void(const ClientStatus&)> callback) {
-  DVLOG(3) << __func__ << " " << selector
-           << ", input=" << base::JoinString(utf8_chars, "");
+  if (VLOG_IS_ON(3)) {
+    std::string input_str;
+    if (!UnicodeToUTF8(codepoints, &input_str)) {
+      input_str.assign("<invalid input>");
+    }
+    DVLOG(3) << __func__ << " " << selector << ", input=" << input_str;
+  }
+
   DCHECK(!selector.empty());
   FindElement(selector, kVisibilityCheck,
               /* strict_mode= */ true,
               base::BindOnce(&WebController::OnFindElementForSendKeyboardInput,
                              weak_ptr_factory_.GetWeakPtr(), selector,
-                             utf8_chars, std::move(callback)));
+                             codepoints, std::move(callback)));
 }
 
 void WebController::OnFindElementForSendKeyboardInput(
     const Selector& selector,
-    const std::vector<std::string>& utf8_chars,
+    const std::vector<UChar32>& codepoints,
     base::OnceCallback<void(const ClientStatus&)> callback,
     const ClientStatus& status,
     std::unique_ptr<FindElementResult> element_result) {
@@ -1541,7 +1541,7 @@ void WebController::OnFindElementForSendKeyboardInput(
   }
   ClickElement(selector, base::BindOnce(
                              &WebController::OnClickElementForSendKeyboardInput,
-                             weak_ptr_factory_.GetWeakPtr(), utf8_chars,
+                             weak_ptr_factory_.GetWeakPtr(), codepoints,
                              std::move(callback)));
 }
 
