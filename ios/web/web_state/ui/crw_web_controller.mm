@@ -4916,6 +4916,11 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                                   rendererInitiated:rendererInitiated];
       } else if (_webUIManager) {
         [_webUIManager loadWebUIForURL:item->GetURL()];
+        // Pending item is stored in NavigationManager for WebUI navigations,
+        // because WebUIManager does not have access to NavigationContext.
+        if (web::features::StorePendingItemInContext() && context->GetItem()) {
+          self.navigationManagerImpl->SetPendingItem(context->ReleaseItem());
+        }
       }
     }
 
