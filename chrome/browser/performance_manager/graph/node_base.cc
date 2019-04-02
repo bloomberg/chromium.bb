@@ -19,6 +19,9 @@ NodeBase::NodeBase(resource_coordinator::CoordinationUnitType node_type,
 
 NodeBase::~NodeBase() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // The node must have been removed from the graph before destruction.
+  DCHECK(!NodeInGraph(this));
 }
 
 void NodeBase::JoinGraph() {}

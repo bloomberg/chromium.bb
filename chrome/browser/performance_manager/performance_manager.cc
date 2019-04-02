@@ -96,11 +96,11 @@ std::unique_ptr<ProcessNodeImpl> PerformanceManager::CreateProcessNode() {
   return CreateNodeImpl<ProcessNodeImpl>();
 }
 
-void PerformanceManager::DeletePageNode(
-    std::unique_ptr<PageNodeImpl> page_node) {
+void PerformanceManager::BatchDeleteNodes(
+    std::vector<std::unique_ptr<NodeBase>> nodes) {
   task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&PerformanceManager::DeletePageNodeImpl,
-                                base::Unretained(this), std::move(page_node)));
+      FROM_HERE, base::BindOnce(&PerformanceManager::BatchDeleteNodesImpl,
+                                base::Unretained(this), std::move(nodes)));
 }
 
 void PerformanceManager::PostBindInterface(
@@ -136,27 +136,34 @@ void PerformanceManager::DeleteNodeImpl(std::unique_ptr<NodeBase> node) {
 
 namespace {
 
-void DeleteChildrenAndNode(FrameNodeImpl* frame_node) {
+void RemoveFrameAndChildrenFromGraph(FrameNodeImpl* frame_node) {
   // Recurse on the first child while there is one.
   while (!frame_node->child_frame_nodes().empty())
-    DeleteChildrenAndNode(*(frame_node->child_frame_nodes().begin()));
+    RemoveFrameAndChildrenFromGraph(*(frame_node->child_frame_nodes().begin()));
 
   // Now that all children are deleted, delete this frame.
   frame_node->graph()->RemoveNode(frame_node);
-  delete frame_node;
 }
 
 }  // namespace
 
-void PerformanceManager::DeletePageNodeImpl(
-    std::unique_ptr<PageNodeImpl> page_node) {
+void PerformanceManager::BatchDeleteNodesImpl(
+    std::vector<std::unique_ptr<NodeBase>> nodes) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Delete the main frame nodes until no more exist.
-  while (!page_node->main_frame_nodes().empty())
-    DeleteChildrenAndNode(*(page_node->main_frame_nodes().begin()));
+  for (auto it = nodes.begin(); it != nodes.end(); ++it) {
+    if ((*it)->id().type == resource_coordinator::CoordinationUnitType::kPage) {
+      auto* page_node = PageNodeImpl::FromNodeBase(it->get());
 
-  graph_.RemoveNode(page_node.get());
+      // Delete the main frame nodes until no more exist.
+      while (!page_node->main_frame_nodes().empty())
+        RemoveFrameAndChildrenFromGraph(
+            *(page_node->main_frame_nodes().begin()));
+
+      graph_.RemoveNode(page_node);
+    }
+  }
+  // When |nodes| goes out of scope, all nodes are deleted.
 }
 
 void PerformanceManager::OnStart() {

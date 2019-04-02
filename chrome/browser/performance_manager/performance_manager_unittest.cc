@@ -69,6 +69,40 @@ TEST_F(PerformanceManagerTest, InstantiateNodes) {
   performance_manager()->DeleteNode(std::move(page_node));
 }
 
+TEST_F(PerformanceManagerTest, BatchDeleteNodes) {
+  // Create a page node and a small hierarchy of frames.
+  std::unique_ptr<PageNodeImpl> page_node =
+      performance_manager()->CreatePageNode();
+
+  std::unique_ptr<FrameNodeImpl> parent1_frame =
+      performance_manager()->CreateFrameNode(page_node.get(), nullptr);
+  std::unique_ptr<FrameNodeImpl> parent2_frame =
+      performance_manager()->CreateFrameNode(page_node.get(), nullptr);
+
+  std::unique_ptr<FrameNodeImpl> child1_frame =
+      performance_manager()->CreateFrameNode(page_node.get(),
+                                             parent1_frame.get());
+  std::unique_ptr<FrameNodeImpl> child2_frame =
+      performance_manager()->CreateFrameNode(page_node.get(),
+                                             parent2_frame.get());
+
+  std::vector<std::unique_ptr<NodeBase>> nodes;
+  for (size_t i = 0; i < 10; ++i) {
+    nodes.push_back(performance_manager()->CreateFrameNode(page_node.get(),
+                                                           child1_frame.get()));
+    nodes.push_back(performance_manager()->CreateFrameNode(page_node.get(),
+                                                           child1_frame.get()));
+  }
+
+  nodes.push_back(std::move(page_node));
+  nodes.push_back(std::move(parent1_frame));
+  nodes.push_back(std::move(parent2_frame));
+  nodes.push_back(std::move(child1_frame));
+  nodes.push_back(std::move(child2_frame));
+
+  performance_manager()->BatchDeleteNodes(std::move(nodes));
+}
+
 // TODO(siggi): More tests!
 // - Test the WebUI interface.
 // - Test the graph introspector interface.

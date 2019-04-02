@@ -90,6 +90,8 @@ TEST_F(SystemNodeImplTest, OnProcessCPUUsageReady) {
   EXPECT_EQ(0u, observer.system_event_seen_count());
   mock_graph.system->OnProcessCPUUsageReady();
   EXPECT_EQ(1u, observer.system_event_seen_count());
+
+  mock_graph.system->RemoveObserver(&observer);
 }
 
 TEST_F(SystemNodeImplTest, DistributeMeasurementBatch) {
@@ -173,6 +175,8 @@ TEST_F(SystemNodeImplTest, DistributeMeasurementBatch) {
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(190),
             mock_graph.other_page->cumulative_cpu_usage_estimate());
   EXPECT_EQ(50u, mock_graph.other_page->private_footprint_kb_estimate());
+
+  mock_graph.system->RemoveObserver(&observer);
 }
 
 }  // namespace performance_manager
