@@ -24,7 +24,8 @@ PASS createDataChannel with id 0 should succeed
 PASS createDataChannel with id 1 should succeed
 FAIL createDataChannel with id 65534 should succeed Failed to execute 'createDataChannel' on 'RTCPeerConnection': RTCDataChannel is not supported
 PASS createDataChannel with id -1 should throw TypeError
-FAIL createDataChannel with id 65535 should throw TypeError assert_throws: function "() => pc.createDataChannel('', { id })" threw object "NotSupportedError: Failed to execute 'createDataChannel' on 'RTCPeerConnection': RTCDataChannel is not supported" ("NotSupportedError") expected object "TypeError" ("TypeError")
+FAIL createDataChannel with id 65535 should throw TypeError assert_throws: function "() => pc.createDataChannel('',
+        { 'negotiated': true, 'id': id })" threw object "NotSupportedError: Failed to execute 'createDataChannel' on 'RTCPeerConnection': RTCDataChannel is not supported" ("NotSupportedError") expected object "TypeError" ("TypeError")
 PASS createDataChannel with id 65536 should throw TypeError
 FAIL createDataChannel with priority "high" should succeed assert_equals: expected (string) "high" but got (undefined) undefined
 FAIL createDataChannel with invalid priority should throw TypeError assert_throws: function "() => pc.createDataChannel('', { priority: 'invalid' })" did not throw
@@ -44,7 +45,7 @@ FAIL createDataChannel with too long protocol (2 byte unicode) should throw Type
     })" did not throw
 PASS createDataChannel with maximum length label and protocol should succeed
 PASS createDataChannel with negotiated false should succeed
-FAIL createDataChannel with negotiated false and id 42 should ignore the id assert_equals: Expect dc.id to be ignored (null) expected (object) null but got (number) 42
+PASS createDataChannel with negotiated false and id 42 should ignore the id
 FAIL createDataChannel with negotiated true and id not defined should throw TypeError assert_throws: function "() =>
     pc.createDataChannel('test', {
       negotiated: true
