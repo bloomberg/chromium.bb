@@ -25,7 +25,6 @@ class StreamPromiseResolver;
 class StreamStartAlgorithm;
 class UnderlyingSourceBase;
 class Visitor;
-class WritableStreamNative;
 
 // C++ implementation of ReadableStream.
 // See https://streams.spec.whatwg.org/#rs-model for background.
@@ -191,8 +190,6 @@ class ReadableStreamNative : public ReadableStream {
   friend class ReadableStreamDefaultController;
   friend class ReadableStreamDefaultReader;
 
-  struct PipeOptions;
-  class PipeToEngine;
   class ReadHandleImpl;
   class TeeEngine;
 
@@ -205,12 +202,6 @@ class ReadableStreamNative : public ReadableStream {
       ReadableStreamNative*,
       bool for_author_code,
       ExceptionState&);
-
-  // https://streams.spec.whatwg.org/#readable-stream-pipe-to
-  static ScriptPromise PipeTo(ScriptState*,
-                              ReadableStreamNative*,
-                              WritableStreamNative*,
-                              PipeOptions);
 
   // https://streams.spec.whatwg.org/#readable-stream-add-read-request
   static StreamPromiseResolver* AddReadRequest(ScriptState*,
@@ -261,16 +252,6 @@ class ReadableStreamNative : public ReadableStream {
   //
   // TODO(ricea): Functions for transferable streams.
   //
-
-  static void UnpackPipeOptions(ScriptState*,
-                                ScriptValue options,
-                                PipeOptions*,
-                                ExceptionState&);
-
-  static bool GetBoolean(ScriptState*,
-                         v8::Local<v8::Object> dictionary,
-                         const char* property_name,
-                         ExceptionState&);
 
   // Calls method |method_name| on |object|, passing no arguments, and ignoring
   // errors. Used for Blink lock notifications.
