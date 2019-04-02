@@ -71,9 +71,6 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // The IdentityManager instance associated with this instance.
   IdentityManager* identity_manager();
 
-  // Returns the FakeProfileOAuth2TokenService owned by IdentityManager.
-  FakeProfileOAuth2TokenService* fake_token_service();
-
   // Returns the |TestIdentityManagerObserver| watching the IdentityManager.
   TestIdentityManagerObserver* identity_manager_observer();
 
@@ -321,6 +318,9 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // is observed.
   void WaitForAccessTokenRequestIfNecessary(
       base::Optional<std::string> account_id);
+
+  // Returns the FakeProfileOAuth2TokenService owned by IdentityManager.
+  FakeProfileOAuth2TokenService* fake_token_service();
 
   // Owner of all dependencies that don't belong to IdentityManager.
   std::unique_ptr<IdentityManagerDependenciesOwner> dependencies_owner_;
