@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_global_scope.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/graphics/paint_worklet_paint_dispatcher.h"
+#include "third_party/blink/renderer/platform/graphics/paint_worklet_painter.h"
 
 namespace blink {
 
@@ -26,7 +27,8 @@ class WorkletGlobalScope;
 // TODO(smcgruer): Add the dispatcher logic.
 class MODULES_EXPORT PaintWorkletProxyClient
     : public GarbageCollectedFinalized<PaintWorkletProxyClient>,
-      public Supplement<WorkerClients> {
+      public Supplement<WorkerClients>,
+      public PaintWorkletPainter {
   USING_GARBAGE_COLLECTED_MIXIN(PaintWorkletProxyClient);
   DISALLOW_COPY_AND_ASSIGN(PaintWorkletProxyClient);
 
@@ -38,18 +40,22 @@ class MODULES_EXPORT PaintWorkletProxyClient
   PaintWorkletProxyClient(
       int worklet_id,
       scoped_refptr<PaintWorkletPaintDispatcher> compositor_paintee);
-  virtual ~PaintWorkletProxyClient() = default;
+  ~PaintWorkletProxyClient() override = default;
 
   void Trace(blink::Visitor*) override;
 
   virtual void SetGlobalScope(WorkletGlobalScope*);
+  void SetGlobalScopeForTesting(PaintWorkletGlobalScope*);
   void Dispose();
 
   static PaintWorkletProxyClient* From(WorkerClients*);
 
  private:
+  friend class PaintWorkletGlobalScopeTest;
+  friend class PaintWorkletProxyClientTest;
   FRIEND_TEST_ALL_PREFIXES(PaintWorkletProxyClientTest,
                            PaintWorkletProxyClientConstruction);
+  FRIEND_TEST_ALL_PREFIXES(PaintWorkletProxyClientTest, SetGlobalScope);
 
   scoped_refptr<PaintWorkletPaintDispatcher> compositor_paintee_;
   const int worklet_id_;
