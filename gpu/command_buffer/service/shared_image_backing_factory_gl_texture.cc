@@ -20,6 +20,7 @@
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/service_utils.h"
+#include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
@@ -520,7 +521,8 @@ class SharedImageBackingGLTexture : public SharedImageBackingWithReadAccess {
 
   std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
       SharedImageManager* manager,
-      MemoryTypeTracker* tracker) override {
+      MemoryTypeTracker* tracker,
+      scoped_refptr<SharedContextState> context_state) override {
     auto result = std::make_unique<SharedImageRepresentationSkiaImpl>(
         manager, this, cached_promise_texture_, tracker, texture_->target(),
         texture_->service_id());
@@ -628,7 +630,8 @@ class SharedImageBackingPassthroughGLTexture
   }
   std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
       SharedImageManager* manager,
-      MemoryTypeTracker* tracker) override {
+      MemoryTypeTracker* tracker,
+      scoped_refptr<SharedContextState> context_state) override {
     auto result = std::make_unique<SharedImageRepresentationSkiaImpl>(
         manager, this, cached_promise_texture_, tracker,
         texture_passthrough_->target(), texture_passthrough_->service_id());

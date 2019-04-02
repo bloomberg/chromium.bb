@@ -62,7 +62,7 @@ class SharedImageBackingFactoryAHBTest : public testing::Test {
     context_state_->InitializeGL(GpuPreferences(), std::move(feature_info));
 
     backing_factory_ = std::make_unique<SharedImageBackingFactoryAHB>(
-        workarounds, GpuFeatureInfo(), context_state_.get());
+        workarounds, GpuFeatureInfo());
 
     memory_type_tracker_ = std::make_unique<MemoryTypeTracker>(nullptr);
     shared_image_representation_factory_ =
@@ -118,7 +118,7 @@ TEST_F(SharedImageBackingFactoryAHBTest, Basic) {
 
   // Finally, validate a SharedImageRepresentationSkia.
   auto skia_representation = shared_image_representation_factory_->ProduceSkia(
-      gl_legacy_shared_image.mailbox());
+      gl_legacy_shared_image.mailbox(), context_state_.get());
   EXPECT_TRUE(skia_representation);
   auto surface = skia_representation->BeginWriteAccess(
       gr_context(), 0, SkSurfaceProps(0, kUnknown_SkPixelGeometry));
@@ -184,8 +184,8 @@ TEST_F(SharedImageBackingFactoryAHBTest, GLSkiaGL) {
   gl_representation.reset();
 
   // Next create a SharedImageRepresentationSkia to read back the texture data.
-  auto skia_representation =
-      shared_image_representation_factory_->ProduceSkia(mailbox);
+  auto skia_representation = shared_image_representation_factory_->ProduceSkia(
+      mailbox, context_state_.get());
   EXPECT_TRUE(skia_representation);
   auto promise_texture = skia_representation->BeginReadAccess(nullptr);
   EXPECT_TRUE(promise_texture);
@@ -294,7 +294,7 @@ TEST_F(SharedImageBackingFactoryAHBTest, OnlyOneWriter) {
       memory_type_tracker_.get(), shared_image_representation_factory_.get()};
 
   auto skia_representation = shared_image_representation_factory_->ProduceSkia(
-      gl_legacy_shared_image.mailbox());
+      gl_legacy_shared_image.mailbox(), context_state_.get());
   auto surface = skia_representation->BeginWriteAccess(
       gr_context(), 0, SkSurfaceProps(0, kUnknown_SkPixelGeometry));
 
@@ -316,9 +316,9 @@ TEST_F(SharedImageBackingFactoryAHBTest, CanHaveMultipleReaders) {
       memory_type_tracker_.get(), shared_image_representation_factory_.get()};
 
   auto skia_representation = shared_image_representation_factory_->ProduceSkia(
-      gl_legacy_shared_image.mailbox());
+      gl_legacy_shared_image.mailbox(), context_state_.get());
   auto skia_representation2 = shared_image_representation_factory_->ProduceSkia(
-      gl_legacy_shared_image.mailbox());
+      gl_legacy_shared_image.mailbox(), context_state_.get());
 
   sk_sp<SkSurface> surface =
       SkSurface::MakeNull(gl_legacy_shared_image.size().width(),
@@ -347,7 +347,7 @@ TEST_F(SharedImageBackingFactoryAHBTest,
       memory_type_tracker_.get(), shared_image_representation_factory_.get()};
 
   auto skia_representation = shared_image_representation_factory_->ProduceSkia(
-      gl_legacy_shared_image.mailbox());
+      gl_legacy_shared_image.mailbox(), context_state_.get());
   sk_sp<SkSurface> surface =
       SkSurface::MakeNull(gl_legacy_shared_image.size().width(),
                           gl_legacy_shared_image.size().height());
@@ -372,7 +372,7 @@ TEST_F(SharedImageBackingFactoryAHBTest, CannotWriteWhileReading) {
       memory_type_tracker_.get(), shared_image_representation_factory_.get()};
 
   auto skia_representation = shared_image_representation_factory_->ProduceSkia(
-      gl_legacy_shared_image.mailbox());
+      gl_legacy_shared_image.mailbox(), context_state_.get());
   sk_sp<SkSurface> surface =
       SkSurface::MakeNull(gl_legacy_shared_image.size().width(),
                           gl_legacy_shared_image.size().height());
@@ -396,7 +396,7 @@ TEST_F(SharedImageBackingFactoryAHBTest, CannotReadWhileWriting) {
       memory_type_tracker_.get(), shared_image_representation_factory_.get()};
 
   auto skia_representation = shared_image_representation_factory_->ProduceSkia(
-      gl_legacy_shared_image.mailbox());
+      gl_legacy_shared_image.mailbox(), context_state_.get());
   auto surface = skia_representation->BeginWriteAccess(
       gr_context(), 0, SkSurfaceProps(0, kUnknown_SkPixelGeometry));
 

@@ -218,11 +218,14 @@ ExternalVkImageBacking::ProduceGLTexturePassthrough(
 }
 
 std::unique_ptr<SharedImageRepresentationSkia>
-ExternalVkImageBacking::ProduceSkia(SharedImageManager* manager,
-                                    MemoryTypeTracker* tracker) {
+ExternalVkImageBacking::ProduceSkia(
+    SharedImageManager* manager,
+    MemoryTypeTracker* tracker,
+    scoped_refptr<SharedContextState> context_state) {
   // This backing type is only used when vulkan is enabled, so SkiaRenderer
   // should also be using Vulkan.
-  DCHECK(context_state_->use_vulkan_gr_context());
+  DCHECK_EQ(context_state_, context_state.get());
+  DCHECK(context_state->use_vulkan_gr_context());
   return std::make_unique<ExternalVkImageSkiaRepresentation>(manager, this,
                                                              tracker);
 }

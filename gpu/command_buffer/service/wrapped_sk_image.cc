@@ -6,6 +6,7 @@
 
 #include "base/hash/hash.h"
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
@@ -88,7 +89,8 @@ class WrappedSkImage : public SharedImageBacking {
  protected:
   std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
       SharedImageManager* manager,
-      MemoryTypeTracker* tracker) override;
+      MemoryTypeTracker* tracker,
+      scoped_refptr<SharedContextState> context_state) override;
 
  private:
   friend class gpu::raster::WrappedSkImageFactory;
@@ -278,7 +280,9 @@ std::unique_ptr<SharedImageBacking> WrappedSkImageFactory::CreateSharedImage(
 
 std::unique_ptr<SharedImageRepresentationSkia> WrappedSkImage::ProduceSkia(
     SharedImageManager* manager,
-    MemoryTypeTracker* tracker) {
+    MemoryTypeTracker* tracker,
+    scoped_refptr<SharedContextState> context_state) {
+  DCHECK_EQ(context_state_, context_state.get());
   return std::make_unique<WrappedSkImageRepresentation>(manager, this, tracker);
 }
 

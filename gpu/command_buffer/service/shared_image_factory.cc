@@ -78,7 +78,7 @@ SharedImageFactory::SharedImageFactory(
 #elif defined(OS_ANDROID) && BUILDFLAG(ENABLE_VULKAN)
   // For Android
   interop_backing_factory_ = std::make_unique<SharedImageBackingFactoryAHB>(
-      workarounds, gpu_feature_info, context_state);
+      workarounds, gpu_feature_info);
 #elif defined(OS_MACOSX)
   // OSX
   DCHECK(!using_vulkan_);
@@ -295,8 +295,10 @@ SharedImageRepresentationFactory::ProduceGLTexturePassthrough(
 }
 
 std::unique_ptr<SharedImageRepresentationSkia>
-SharedImageRepresentationFactory::ProduceSkia(const Mailbox& mailbox) {
-  return manager_->ProduceSkia(mailbox, tracker_.get());
+SharedImageRepresentationFactory::ProduceSkia(
+    const Mailbox& mailbox,
+    scoped_refptr<SharedContextState> context_state) {
+  return manager_->ProduceSkia(mailbox, tracker_.get(), context_state);
 }
 
 }  // namespace gpu

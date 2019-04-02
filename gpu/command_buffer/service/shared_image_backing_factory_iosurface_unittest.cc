@@ -126,8 +126,8 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Basic) {
   gl_representation.reset();
 
   // Finally, validate a SharedImageRepresentationSkia.
-  auto skia_representation =
-      shared_image_representation_factory_->ProduceSkia(mailbox);
+  auto skia_representation = shared_image_representation_factory_->ProduceSkia(
+      mailbox, context_state_);
   EXPECT_TRUE(skia_representation);
   auto surface = skia_representation->BeginWriteAccess(
       gr_context(), 0, SkSurfaceProps(0, kUnknown_SkPixelGeometry));
@@ -193,8 +193,8 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, GLSkiaGL) {
   gl_representation.reset();
 
   // Next create a SharedImageRepresentationSkia to read back the texture data.
-  auto skia_representation =
-      shared_image_representation_factory_->ProduceSkia(mailbox);
+  auto skia_representation = shared_image_representation_factory_->ProduceSkia(
+      mailbox, context_state_);
   EXPECT_TRUE(skia_representation);
   auto promise_texture = skia_representation->BeginReadAccess(nullptr);
   EXPECT_TRUE(promise_texture);

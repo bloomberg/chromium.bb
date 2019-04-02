@@ -6,6 +6,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_BACKING_H_
 
 #include "base/containers/flat_map.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/synchronization/lock.h"
 #include "components/viz/common/resources/resource_format.h"
@@ -23,6 +24,7 @@ class MemoryAllocatorDump;
 
 namespace gpu {
 class MailboxManager;
+class SharedContextState;
 class SharedImageManager;
 class SharedImageRepresentation;
 class SharedImageRepresentationGLTexture;
@@ -96,7 +98,8 @@ class GPU_GLES2_EXPORT SharedImageBacking {
                               MemoryTypeTracker* tracker);
   virtual std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
       SharedImageManager* manager,
-      MemoryTypeTracker* tracker);
+      MemoryTypeTracker* tracker,
+      scoped_refptr<SharedContextState> context_state);
 
   // Used by subclasses in Destroy.
   bool have_context() const;
