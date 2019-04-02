@@ -161,14 +161,14 @@ class Adapter : public AlsReader::Observer,
   base::Optional<MonotoneCubicSpline> GetGlobalCurveForTesting() const;
   base::Optional<MonotoneCubicSpline> GetPersonalCurveForTesting() const;
 
-  // Returns the average and std-dev over |ambient_light_values_|.
+  // Returns the average and std-dev over |log_als_values_|.
   base::Optional<AlsAvgStdDev> GetAverageAmbientWithStdDevForTesting(
       base::TimeTicks now);
   double GetBrighteningThresholdForTesting() const;
   double GetDarkeningThresholdForTesting() const;
 
-  // Returns |log_average_ambient_lux_|.
-  base::Optional<double> GetCurrentLogAvgAlsForTesting() const;
+  // Returns |average_log_ambient_lux_|.
+  base::Optional<double> GetCurrentAvgLogAlsForTesting() const;
 
   static std::unique_ptr<Adapter> CreateForTesting(
       Profile* profile,
@@ -209,8 +209,7 @@ class Adapter : public AlsReader::Observer,
   // the ambient light has changed beyond thresholds and has stabilized.
   // Returns nullopt if it shouldn't change the brightness.
   base::Optional<BrightnessChangeCause> CanAdjustBrightness(
-      double current_log_average_ambient,
-      double stddev) const;
+      const AlsAvgStdDev& log_als_avg_stddev) const;
 
   // Called when ambient light changes. It only changes screen brightness if
   // |CanAdjustBrightness| returns true and a required curve is set up:
@@ -232,7 +231,7 @@ class Adapter : public AlsReader::Observer,
   // Called when brightness is changed by the model or user. This function
   // updates |latest_brightness_change_time_|, |current_brightness_|. If
   // |new_log_als| is not nullopt, it will also update
-  // |log_average_ambient_lux_| and thresholds. |new_log_als| should be
+  // |average_log_ambient_lux_| and thresholds. |new_log_als| should be
   // available when this function is called, but may be nullopt when a user
   // changes brightness before any ALS reading comes in. We log an error if this
   // happens.
@@ -271,8 +270,9 @@ class Adapter : public AlsReader::Observer,
 
   // TODO(jiameng): refactor internal states and flags.
 
-  // This buffer will be used to store the recent ambient light values.
-  std::unique_ptr<AmbientLightSampleBuffer> ambient_light_values_;
+  // This buffer will be used to store the recent ambient light values in the
+  // log space.
+  std::unique_ptr<AmbientLightSampleBuffer> log_als_values_;
 
   base::Optional<AlsReader::AlsInitStatus> als_init_status_;
   // Time when AlsReader is initialized.
@@ -298,7 +298,7 @@ class Adapter : public AlsReader::Observer,
   // to check |adapter_disabled_by_user_adjustment_|.
   bool adapter_disabled_by_user_adjustment_ = false;
 
-  // The thresholds are calculated from the |log_average_ambient_lux_|.
+  // The thresholds are calculated from the |average_log_ambient_lux_|.
   // They are only updated when brightness is changed (either by user or model).
   base::Optional<double> brightening_threshold_;
   base::Optional<double> darkening_threshold_;
@@ -306,9 +306,9 @@ class Adapter : public AlsReader::Observer,
   base::Optional<MonotoneCubicSpline> global_curve_;
   base::Optional<MonotoneCubicSpline> personal_curve_;
 
-  // |log_average_ambient_lux_| is only recorded when screen brightness is
+  // |average_log_ambient_lux_| is only recorded when screen brightness is
   // changed by either model or user. New thresholds will be calculated from it.
-  base::Optional<double> log_average_ambient_lux_;
+  base::Optional<double> average_log_ambient_lux_;
 
   // Last time brightness change occurred, either by user or model.
   base::TimeTicks latest_brightness_change_time_;

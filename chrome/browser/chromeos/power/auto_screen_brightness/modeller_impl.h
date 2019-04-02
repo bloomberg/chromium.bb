@@ -88,7 +88,7 @@ class ModellerImpl : public Modeller,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
       const base::TickClock* tick_clock);
 
-  // Current average ambient light.
+  // Current average log ambient light.
   base::Optional<double> AverageAmbientForTesting(base::TimeTicks now);
 
   // Current number of training data points stored, which will be used for next
@@ -246,8 +246,8 @@ class ModellerImpl : public Modeller,
   // generates a new curve.
   base::Optional<MonotoneCubicSpline> current_curve_;
 
-  // Recent ambient values.
-  std::unique_ptr<AmbientLightSampleBuffer> ambient_light_values_;
+  // Recent log ambient values.
+  std::unique_ptr<AmbientLightSampleBuffer> log_als_values_;
 
   std::vector<TrainingDataPoint> data_cache_;
 
