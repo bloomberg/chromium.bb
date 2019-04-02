@@ -479,8 +479,8 @@ void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms(
   // Only records histograms on pages that have some ad bytes.
   if (aggregate_frame_data_->ad_bytes() == 0)
     return;
-  PAGE_BYTES_HISTOGRAM("PageLoad.Clients.Ads.Resources.Bytes.Ads",
-                       aggregate_frame_data_->ad_bytes());
+  PAGE_BYTES_HISTOGRAM("PageLoad.Clients.Ads.Resources.Bytes.Ads2",
+                       aggregate_frame_data_->ad_network_bytes());
   size_t unfinished_bytes = 0;
   for (auto const& kv :
        GetDelegate()->GetResourceTracker().unfinished_resources())
