@@ -888,6 +888,8 @@ void TemplateURLService::Shutdown() {
 }
 
 void TemplateURLService::WaitUntilReadyToSync(base::OnceClosure done) {
+  DCHECK(!on_loaded_callback_for_sync_);
+
   // We force a load here to allow remote updates to be processed, without
   // waiting for the lazy load.
   Load();

@@ -423,6 +423,7 @@ syncer::SyncError DeleteDirectiveHandler::ProcessLocalDeleteDirective(
 }
 
 void DeleteDirectiveHandler::WaitUntilReadyToSync(base::OnceClosure done) {
+  DCHECK(!wait_until_ready_to_sync_cb_);
   if (backend_loaded_) {
     std::move(done).Run();
   } else {
