@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 cr.define('cr.ui', function() {
+  /** @type {string} */
+  let lastKeyDownKey = '';
+
   /** @implements {cr.ui.FocusRowDelegate} */
   class FocusRowBehaviorDelegate {
     /**
@@ -136,6 +139,7 @@ cr.define('cr.ui', function() {
         this.listen(this, 'dom-change', 'addItems_');
         this.listen(this, 'mousedown', 'onMouseDown_');
         this.listen(this, 'blur', 'onBlur_');
+        this.listen(this, 'keydown', 'onKeydown_');
       });
     },
 
@@ -145,6 +149,7 @@ cr.define('cr.ui', function() {
       this.unlisten(this, 'dom-change', 'addItems_');
       this.unlisten(this, 'mousedown', 'onMouseDown_');
       this.unlisten(this, 'blur', 'onBlur_');
+      this.unlisten(this, 'keydown', 'onKeydown_');
       this.removeObservers_();
       if (this.firstControl_) {
         this.unlisten(this.firstControl_, 'keydown', 'onFirstControlKeydown_');
@@ -275,11 +280,11 @@ cr.define('cr.ui', function() {
       const restoreFocusToFirst =
           this.listBlurred && e.composedPath()[0] === this;
 
-      if (this.lastFocused && !restoreFocusToFirst) {
-        this.row_.getEquivalentElement(this.lastFocused).focus();
-      } else {
+      if (!this.lastFocused || restoreFocusToFirst) {
         const firstFocusable = assert(this.firstControl_);
         firstFocusable.focus();
+      } else if (lastKeyDownKey == 'ArrowDown' || lastKeyDownKey == 'ArrowUp') {
+        this.row_.getEquivalentElement(this.lastFocused).focus();
       }
       this.listBlurred = false;
     },
@@ -289,6 +294,11 @@ cr.define('cr.ui', function() {
       if (e.shiftKey && e.key === 'Tab') {
         this.focus();
       }
+    },
+
+    /** @param {!KeyboardEvent} e */
+    onKeydown_: function(e) {
+      lastKeyDownKey = e.key;
     },
 
     /** @private */
