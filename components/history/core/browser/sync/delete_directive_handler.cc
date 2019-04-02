@@ -342,6 +342,12 @@ DeleteDirectiveHandler::DeleteDirectiveHandler(
 
 DeleteDirectiveHandler::~DeleteDirectiveHandler() {}
 
+void DeleteDirectiveHandler::OnBackendLoaded() {
+  backend_loaded_ = true;
+  if (wait_until_ready_to_sync_cb_)
+    std::move(wait_until_ready_to_sync_cb_).Run();
+}
+
 bool DeleteDirectiveHandler::CreateDeleteDirectives(
     const std::set<int64_t>& global_ids,
     base::Time begin_time,
@@ -414,6 +420,15 @@ syncer::SyncError DeleteDirectiveHandler::ProcessLocalDeleteDirective(
                             sync_data);
   syncer::SyncChangeList changes(1, change);
   return sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
+}
+
+void DeleteDirectiveHandler::WaitUntilReadyToSync(base::OnceClosure done) {
+  if (backend_loaded_) {
+    std::move(done).Run();
+  } else {
+    // Wait until OnBackendLoaded() gets called.
+    wait_until_ready_to_sync_cb_ = std::move(done);
+  }
 }
 
 syncer::SyncMergeResult DeleteDirectiveHandler::MergeDataAndStartSyncing(

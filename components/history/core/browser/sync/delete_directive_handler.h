@@ -43,6 +43,10 @@ class DeleteDirectiveHandler : public syncer::SyncableService {
   explicit DeleteDirectiveHandler(BackendTaskScheduler backend_task_scheduler);
   ~DeleteDirectiveHandler() override;
 
+  // Notifies that HistoryBackend has been fully loaded and hence is ready to
+  // handle sync events.
+  void OnBackendLoaded();
+
   // Create delete directives for the deletion of visits identified by
   // |global_ids| (which may be empty), in the time range specified by
   // |begin_time| and |end_time|.
@@ -62,6 +66,7 @@ class DeleteDirectiveHandler : public syncer::SyncableService {
       const sync_pb::HistoryDeleteDirectiveSpecifics& delete_directive);
 
   // syncer::SyncableService implementation.
+  void WaitUntilReadyToSync(base::OnceClosure done) override;
   syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
@@ -86,6 +91,8 @@ class DeleteDirectiveHandler : public syncer::SyncableService {
                         const syncer::SyncDataList& delete_directives);
 
   const BackendTaskScheduler backend_task_scheduler_;
+  bool backend_loaded_ = false;
+  base::OnceClosure wait_until_ready_to_sync_cb_;
   base::CancelableTaskTracker internal_tracker_;
   std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;
   base::ThreadChecker thread_checker_;
