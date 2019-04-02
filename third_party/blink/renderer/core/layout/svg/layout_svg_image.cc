@@ -48,7 +48,7 @@ LayoutSVGImage::LayoutSVGImage(SVGImageElement* impl)
     : LayoutSVGModelObject(impl),
       needs_boundaries_update_(true),
       needs_transform_update_(true),
-      image_resource_(LayoutImageResource::Create()) {
+      image_resource_(MakeGarbageCollected<LayoutImageResource>()) {
   image_resource_->Initialize(this);
 }
 

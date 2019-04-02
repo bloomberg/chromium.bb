@@ -73,11 +73,12 @@ LayoutObject* ImageContentData::CreateLayoutObject(PseudoElement& pseudo,
                                                    LegacyLayout) const {
   LayoutImage* image = LayoutImage::CreateAnonymous(pseudo);
   image->SetPseudoStyle(&pseudo_style);
-  if (image_)
+  if (image_) {
     image->SetImageResource(
-        LayoutImageResourceStyleImage::Create(image_.Get()));
-  else
-    image->SetImageResource(LayoutImageResource::Create());
+        MakeGarbageCollected<LayoutImageResourceStyleImage>(image_.Get()));
+  } else {
+    image->SetImageResource(MakeGarbageCollected<LayoutImageResource>());
+  }
   return image;
 }
 

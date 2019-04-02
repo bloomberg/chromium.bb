@@ -109,7 +109,7 @@ LayoutObject* ImageInputType::CreateLayoutObject(const ComputedStyle& style,
   if (use_fallback_content_)
     return LayoutObjectFactory::CreateBlockFlow(GetElement(), style, legacy);
   LayoutImage* image = new LayoutImage(&GetElement());
-  image->SetImageResource(LayoutImageResource::Create());
+  image->SetImageResource(MakeGarbageCollected<LayoutImageResource>());
   return image;
 }
 

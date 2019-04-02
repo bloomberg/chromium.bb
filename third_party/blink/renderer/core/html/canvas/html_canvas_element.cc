@@ -1397,7 +1397,7 @@ HitTestCanvasResult* HTMLCanvasElement::GetControlAndIdIfHitRegionExists(
     const LayoutPoint& location) {
   if (Is2d())
     return context_->GetControlAndIdIfHitRegionExists(location);
-  return HitTestCanvasResult::Create(String(), nullptr);
+  return MakeGarbageCollected<HitTestCanvasResult>(String(), nullptr);
 }
 
 String HTMLCanvasElement::GetIdFromControl(const Element* element) {

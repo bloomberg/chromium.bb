@@ -35,7 +35,7 @@
 namespace blink {
 
 LayoutMedia::LayoutMedia(HTMLMediaElement* video) : LayoutImage(video) {
-  SetImageResource(LayoutImageResource::Create());
+  SetImageResource(MakeGarbageCollected<LayoutImageResource>());
 }
 
 LayoutMedia::~LayoutMedia() = default;

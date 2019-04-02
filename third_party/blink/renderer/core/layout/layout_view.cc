@@ -100,7 +100,7 @@ LayoutView::LayoutView(Document* document)
       layout_counter_count_(0),
       hit_test_count_(0),
       hit_test_cache_hits_(0),
-      hit_test_cache_(HitTestCache::Create()),
+      hit_test_cache_(MakeGarbageCollected<HitTestCache>()),
       autosize_h_scrollbar_mode_(kScrollbarAuto),
       autosize_v_scrollbar_mode_(kScrollbarAuto) {
   // init LayoutObject attributes

@@ -1419,8 +1419,8 @@ void Element::DispatchActivateInvisibleEventIfNeeded() {
   auto* activated_element_iterator = activated_elements.begin();
   for (Element* ancestor : invisible_ancestors) {
     DCHECK(activated_element_iterator != activated_elements.end());
-    ancestor->DispatchEvent(
-        *ActivateInvisibleEvent::Create(*activated_element_iterator));
+    ancestor->DispatchEvent(*MakeGarbageCollected<ActivateInvisibleEvent>(
+        *activated_element_iterator));
     ++activated_element_iterator;
   }
 }

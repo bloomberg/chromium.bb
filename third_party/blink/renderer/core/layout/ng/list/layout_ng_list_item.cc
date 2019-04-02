@@ -282,7 +282,8 @@ void LayoutNGListItem::UpdateMarkerContentIfNeeded() {
                                                          EDisplay::kInline);
       image->SetStyle(image_style);
       image->SetImageResource(
-          LayoutImageResourceStyleImage::Create(list_style_image));
+          MakeGarbageCollected<LayoutImageResourceStyleImage>(
+              list_style_image));
       image->SetIsGeneratedContent();
       marker_->AddChild(image);
     }
