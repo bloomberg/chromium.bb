@@ -2131,6 +2131,10 @@ bool ServiceWorkerVersion::ShouldRequireForegroundPriority(
   return false;
 }
 
+void ServiceWorkerVersion::UpdateForegroundPriority() {
+  embedded_worker_->UpdateForegroundPriority();
+}
+
 void ServiceWorkerVersion::InitializeGlobalScope() {
   DCHECK(service_worker_host_);
   scoped_refptr<ServiceWorkerRegistration> registration =

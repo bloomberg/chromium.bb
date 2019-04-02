@@ -223,7 +223,7 @@ ServiceWorkerProviderHost::PreCreateForSharedWorker(
       true /* is_parent_frame_secure */,
       mojo::MakeRequest(&((*out_provider_info)->host_ptr_info)),
       std::move(client_ptr_info), context));
-  host->render_process_id_ = process_id;
+  host->SetRenderProcessId(process_id);
 
   (*out_provider_info)->provider_id = host->provider_id();
   auto weak_ptr = host->AsWeakPtr();
@@ -696,7 +696,7 @@ void ServiceWorkerProviderHost::OnBeginNavigationCommit(int render_process_id,
 
   DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id_);
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, render_process_id);
-  render_process_id_ = render_process_id;
+  SetRenderProcessId(render_process_id);
 
   DCHECK_EQ(MSG_ROUTING_NONE, frame_id_);
   DCHECK_NE(MSG_ROUTING_NONE, render_frame_id);
@@ -718,7 +718,7 @@ ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
   DCHECK_EQ(provider_info->provider_id, provider_id());
 
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, process_id);
-  render_process_id_ = process_id;
+  SetRenderProcessId(process_id);
 
   network::mojom::URLLoaderFactoryAssociatedPtrInfo
       script_loader_factory_ptr_info;
@@ -1369,6 +1369,12 @@ void ServiceWorkerProviderHost::TransitionToClientPhase(ClientPhase new_phase) {
       break;
   }
   client_phase_ = new_phase;
+}
+
+void ServiceWorkerProviderHost::SetRenderProcessId(int process_id) {
+  render_process_id_ = process_id;
+  if (controller_)
+    controller_->UpdateForegroundPriority();
 }
 
 }  // namespace content

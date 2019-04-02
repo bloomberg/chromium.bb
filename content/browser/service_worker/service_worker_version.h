@@ -520,6 +520,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // should be kept at foreground priority.
   bool ShouldRequireForegroundPriority(int worker_process_id) const;
 
+  // Called when a controlled client's state changes in a way that might effect
+  // whether the service worker should be kept at foreground priority.
+  void UpdateForegroundPriority();
+
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;
   friend class EmbeddedWorkerInstanceTest;
