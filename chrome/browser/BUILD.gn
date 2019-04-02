@@ -925,8 +925,6 @@ jumbo_split_static_library("browser") {
     "ntp_snippets/contextual_content_suggestions_service_factory.h",
     "ntp_snippets/dependent_features.cc",
     "ntp_snippets/dependent_features.h",
-    "ntp_snippets/download_suggestions_provider.cc",
-    "ntp_snippets/download_suggestions_provider.h",
     "ntp_snippets/ntp_snippets_metrics.cc",
     "ntp_snippets/ntp_snippets_metrics.h",
     "ntp_tiles/chrome_custom_links_manager_factory.cc",

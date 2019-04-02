@@ -66,9 +66,6 @@ extern const char kSnippetThumbnailsRequestsDay[];
 // The pref name for the time of the last successful background fetch.
 extern const char kLastSuccessfulBackgroundFetchTime[];
 
-extern const char kDismissedAssetDownloadSuggestions[];
-extern const char kDismissedOfflinePageDownloadSuggestions[];
-
 extern const char kDismissedCategories[];
 
 // The pref name for the discounted average number of browsing sessions per hour

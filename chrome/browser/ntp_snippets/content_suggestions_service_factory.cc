@@ -63,10 +63,6 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/ntp/ntp_snippets_launcher.h"
-#include "chrome/browser/download/download_core_service.h"
-#include "chrome/browser/download/download_core_service_factory.h"
-#include "chrome/browser/download/download_history.h"
-#include "chrome/browser/ntp_snippets/download_suggestions_provider.h"
 #include "components/feed/feed_feature_list.h"
 #include "components/ntp_snippets/breaking_news/breaking_news_gcm_app_handler.h"
 #include "components/ntp_snippets/breaking_news/subscription_manager.h"
@@ -89,13 +85,10 @@ using content::BrowserThread;
 using history::HistoryService;
 using image_fetcher::ImageFetcherImpl;
 using language::UrlLanguageHistogram;
-using ntp_snippets::AreAssetDownloadsEnabled;
-using ntp_snippets::AreOfflinePageDownloadsEnabled;
 using ntp_snippets::BreakingNewsListener;
 using ntp_snippets::CategoryRanker;
 using ntp_snippets::ContentSuggestionsService;
 using ntp_snippets::GetFetchEndpoint;
-using ntp_snippets::IsDownloadsProviderEnabled;
 using ntp_snippets::PersistentScheduler;
 using ntp_snippets::PrefetchedPagesTracker;
 using ntp_snippets::RemoteSuggestionsDatabase;
@@ -107,7 +100,6 @@ using ntp_snippets::UserClassifier;
 using suggestions::ImageDecoderImpl;
 
 #if defined(OS_ANDROID)
-using content::DownloadManager;
 using ntp_snippets::BreakingNewsGCMAppHandler;
 using ntp_snippets::GetPushUpdatesSubscriptionEndpoint;
 using ntp_snippets::GetPushUpdatesUnsubscriptionEndpoint;
@@ -150,30 +142,6 @@ void RegisterWithPrefetching(ContentSuggestionsService* service,
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
 #if defined(OS_ANDROID)
-
-void RegisterDownloadsProviderIfEnabled(ContentSuggestionsService* service,
-                                        Profile* profile,
-                                        OfflinePageModel* offline_page_model) {
-  if (!IsDownloadsProviderEnabled()) {
-    return;
-  }
-
-  offline_page_model =
-      AreOfflinePageDownloadsEnabled() ? offline_page_model : nullptr;
-  DownloadManager* download_manager =
-      AreAssetDownloadsEnabled()
-          ? content::BrowserContext::GetDownloadManager(profile)
-          : nullptr;
-  DownloadCoreService* download_core_service =
-      DownloadCoreServiceFactory::GetForBrowserContext(profile);
-  DownloadHistory* download_history =
-      download_core_service->GetDownloadHistory();
-
-  auto provider = std::make_unique<DownloadSuggestionsProvider>(
-      service, offline_page_model, download_manager, download_history,
-      profile->GetPrefs(), base::DefaultClock::GetInstance());
-  service->RegisterProvider(std::move(provider));
-}
 
 bool AreGCMPushUpdatesEnabled() {
   return base::FeatureList::IsEnabled(ntp_snippets::kBreakingNewsPushFeature);
@@ -413,10 +381,6 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
 
   RegisterArticleProviderIfEnabled(service, profile, user_classifier_raw,
                                    offline_page_model, raw_debug_logger);
-
-#if defined(OS_ANDROID)
-  RegisterDownloadsProviderIfEnabled(service, profile, offline_page_model);
-#endif  // OS_ANDROID
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   RegisterWithPrefetching(service, profile);
