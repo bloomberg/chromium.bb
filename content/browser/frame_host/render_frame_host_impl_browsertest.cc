@@ -2293,4 +2293,36 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_FALSE(iframe->AccessibilityIsMainFrame());
 }
 
+void FileChooserCallback(base::RunLoop* run_loop,
+                         blink::mojom::FileChooserResultPtr result) {
+  run_loop->Quit();
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       FileChooserAfterRfhDeath) {
+  NavigateToURL(shell(), GURL("about:balnk"));
+  auto* rfh = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+  blink::mojom::FileChooserPtr chooser = rfh->BindFileChooserForTesting();
+
+  // Kill the renderer process.
+  RenderProcessHostWatcher crash_observer(
+      rfh->GetProcess(), RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  rfh->GetProcess()->Shutdown(0);
+  crash_observer.Wait();
+
+  // Call FileChooser methods.  The browser process should not crash.
+  base::RunLoop run_loop1;
+  chooser->OpenFileChooser(blink::mojom::FileChooserParams::New(),
+                           base::BindOnce(FileChooserCallback, &run_loop1));
+  run_loop1.Run();
+
+  base::RunLoop run_loop2;
+  chooser->EnumerateChosenDirectory(
+      base::FilePath(), base::BindOnce(FileChooserCallback, &run_loop2));
+  run_loop2.Run();
+
+  // Pass if this didn't crash.
+}
+
 }  // namespace content
