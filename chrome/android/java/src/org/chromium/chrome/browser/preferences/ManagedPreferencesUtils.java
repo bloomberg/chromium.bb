@@ -82,7 +82,7 @@ public class ManagedPreferencesUtils {
      */
     public static Drawable getManagedIconDrawable(
             @Nullable ManagedPreferenceDelegate delegate, Preference preference) {
-        if (delegate == null) return null;
+        if (delegate == null) return preference.getIcon();
 
         if (delegate.isPreferenceControlledByPolicy(preference)) {
             return PreferenceUtils.getTintedIcon(
@@ -92,7 +92,7 @@ public class ManagedPreferencesUtils {
                     preference.getContext(), getManagedByCustodianIconId());
         }
 
-        return null;
+        return preference.getIcon();
     }
 
     /**
