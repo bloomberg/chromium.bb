@@ -316,8 +316,8 @@ AudioWorkletNode* AudioWorkletNode::Create(
     return nullptr;
   }
 
-  MessageChannel* channel =
-      MessageChannel::Create(context->GetExecutionContext());
+  auto* channel =
+      MakeGarbageCollected<MessageChannel>(context->GetExecutionContext());
   MessagePortChannel processor_port_channel = channel->port2()->Disentangle();
 
   AudioWorkletNode* node = MakeGarbageCollected<AudioWorkletNode>(

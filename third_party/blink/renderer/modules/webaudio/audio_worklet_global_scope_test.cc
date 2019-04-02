@@ -182,7 +182,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
         global_scope->FindDefinition("testProcessor");
     EXPECT_TRUE(definition);
     EXPECT_EQ(definition->GetName(), "testProcessor");
-    MessageChannel* channel = MessageChannel::Create(thread->GlobalScope());
+    auto* channel = MakeGarbageCollected<MessageChannel>(thread->GlobalScope());
     MessagePortChannel dummy_port_channel = channel->port2()->Disentangle();
 
     AudioWorkletProcessor* processor =
@@ -283,7 +283,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
         )JS";
     ASSERT_TRUE(EvaluateScriptModule(global_scope, source_code));
 
-    MessageChannel* channel = MessageChannel::Create(thread->GlobalScope());
+    auto* channel = MakeGarbageCollected<MessageChannel>(thread->GlobalScope());
     MessagePortChannel dummy_port_channel = channel->port2()->Disentangle();
     AudioWorkletProcessor* processor =
         global_scope->CreateProcessor("testProcessor",

@@ -858,7 +858,7 @@ TEST(V8ScriptValueSerializerTest, DecodeImageDataV18) {
 
 MessagePort* MakeMessagePort(ExecutionContext* execution_context,
                              ::MojoHandle* unowned_handle_out = nullptr) {
-  MessagePort* port = MessagePort::Create(*execution_context);
+  auto* port = MakeGarbageCollected<MessagePort>(*execution_context);
   mojo::MessagePipe pipe;
   ::MojoHandle unowned_handle = pipe.handle0.get().value();
   port->Entangle(std::move(pipe.handle0));
@@ -894,7 +894,7 @@ TEST(V8ScriptValueSerializerTest, NeuteredMessagePortThrowsDataCloneError) {
                                  ExceptionState::kExecutionContext, "Window",
                                  "postMessage");
 
-  MessagePort* port = MessagePort::Create(*scope.GetExecutionContext());
+  auto* port = MakeGarbageCollected<MessagePort>(*scope.GetExecutionContext());
   EXPECT_TRUE(port->IsNeutered());
   v8::Local<v8::Value> wrapper = ToV8(port, scope.GetScriptState());
   Transferables transferables;

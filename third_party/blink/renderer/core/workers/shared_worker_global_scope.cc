@@ -115,7 +115,7 @@ const String SharedWorkerGlobalScope::name() const {
 
 void SharedWorkerGlobalScope::Connect(MessagePortChannel channel) {
   DCHECK(!IsContextPaused());
-  MessagePort* port = MessagePort::Create(*this);
+  auto* port = MakeGarbageCollected<MessagePort>(*this);
   port->Entangle(std::move(channel));
   MessageEvent* event =
       MessageEvent::Create(MakeGarbageCollected<MessagePortArray>(1, port),

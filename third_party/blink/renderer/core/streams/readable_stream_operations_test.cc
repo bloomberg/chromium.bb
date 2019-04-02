@@ -613,7 +613,8 @@ TEST(ReadableStreamOperationsTest, Serialize) {
                               V8String(scope.GetIsolate(), "hello")));
   ScriptValue internal_stream =
       CheckedGetInternalStream(scope.GetScriptState(), stream);
-  MessageChannel* channel = MessageChannel::Create(scope.GetExecutionContext());
+  auto* channel =
+      MakeGarbageCollected<MessageChannel>(scope.GetExecutionContext());
   ReadableStreamOperations::Serialize(scope.GetScriptState(), internal_stream,
                                       channel->port1(), ASSERT_NO_EXCEPTION);
   EXPECT_TRUE(ReadableStreamOperations::IsLocked(

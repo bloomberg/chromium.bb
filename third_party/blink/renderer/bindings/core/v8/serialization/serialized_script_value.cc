@@ -452,7 +452,7 @@ void SerializedScriptValue::TransferTransformStreams(
 MessagePort* SerializedScriptValue::AddStreamChannel(
     ExecutionContext* execution_context) {
   mojo::MessagePipe pipe;
-  MessagePort* local_port = MessagePort::Create(*execution_context);
+  auto* local_port = MakeGarbageCollected<MessagePort>(*execution_context);
   local_port->Entangle(std::move(pipe.handle0));
   stream_channels_.push_back(MessagePortChannel(std::move(pipe.handle1)));
   return local_port;
