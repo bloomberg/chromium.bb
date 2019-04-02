@@ -25,9 +25,7 @@ bool AreAssetDownloadsEnabled() {
 }
 
 bool AreOfflinePageDownloadsEnabled() {
-  return !IsSimplifiedNtpEnabled() &&
-         base::FeatureList::IsEnabled(
-             features::kOfflinePageDownloadSuggestionsFeature);
+  return !IsSimplifiedNtpEnabled();
 }
 bool IsDownloadsProviderEnabled() {
   return AreAssetDownloadsEnabled() || AreOfflinePageDownloadsEnabled();

@@ -2337,12 +2337,6 @@ const char kEnableRevampedContextMenuDescription[] =
     "Enables a revamped context menu when a link, image, or video is long "
     "pressed within Chrome.";
 
-const char kEnableNtpOfflinePageDownloadSuggestionsName[] =
-    "Show offline page downloads on the New Tab page";
-const char kEnableNtpOfflinePageDownloadSuggestionsDescription[] =
-    "If enabled, the list of content suggestions on the New Tab page will "
-    "contain pages that the user downloaded for later use.";
-
 const char kEnableNtpRemoteSuggestionsName[] =
     "Show server-side suggestions on the New Tab page";
 const char kEnableNtpRemoteSuggestionsDescription[] =
