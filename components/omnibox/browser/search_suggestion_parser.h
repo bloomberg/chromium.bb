@@ -331,16 +331,6 @@ class SearchSuggestionParser {
       bool is_keyword_result,
       Results* results);
 
-  // Creates or returns a WordMap for |input_text|. A WordMap is a mapping from
-  // characters to groups of words that start with those characters. See
-  // comments by AutocompleteProvider::CreateWordMapForString() for details.
-  static const AutocompleteProvider::WordMap& GetOrCreateWordMapForInputText(
-      const base::string16& input_text);
-
- private:
-  static std::pair<base::string16, AutocompleteProvider::WordMap>&
-  GetWordMapCache();
-
   DISALLOW_COPY_AND_ASSIGN(SearchSuggestionParser);
 };
 
