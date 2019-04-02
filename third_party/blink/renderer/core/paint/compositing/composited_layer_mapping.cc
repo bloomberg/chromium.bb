@@ -251,7 +251,7 @@ void CompositedLayerMapping::CreatePrimaryGraphicsLayer() {
       CreateGraphicsLayer(owning_layer_.GetCompositingReasons(),
                           owning_layer_.GetSquashingDisallowedReasons());
 
-  graphics_layer_->SetHitTestable(true);
+  UpdateHitTestableWithoutDrawsContent(true);
   UpdateOpacity(GetLayoutObject().StyleRef());
   UpdateTransform(GetLayoutObject().StyleRef());
   if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
@@ -277,6 +277,11 @@ void CompositedLayerMapping::DestroyGraphicsLayers() {
 
   scrolling_layer_ = nullptr;
   scrolling_contents_layer_ = nullptr;
+}
+
+void CompositedLayerMapping::UpdateHitTestableWithoutDrawsContent(
+    const bool& should_hit_test) {
+  graphics_layer_->SetHitTestableWithoutDrawsContent(should_hit_test);
 }
 
 void CompositedLayerMapping::UpdateOpacity(const ComputedStyle& style) {
@@ -1327,11 +1332,6 @@ void CompositedLayerMapping::UpdateMainGraphicsLayerGeometry(
   // layers.
   bool contents_visible = owning_layer_.HasVisibleContent() ||
                           HasVisibleNonCompositingDescendant(&owning_layer_);
-  // TODO(sunxd): Investigate and possibly implement computing hit test regions
-  // in PaintTouchActionRects code path, so that cc has correct pointer-events
-  // information.
-  // For now, there is no need to set graphics_layer_'s hit testable bit here,
-  // because it is always hit testable from cc's perspective.
   graphics_layer_->SetContentsVisible(contents_visible);
 
   // In BGPT mode, we do not need to update the backface visibility here, as it
@@ -2172,9 +2172,7 @@ void CompositedLayerMapping::PositionOverflowControlsLayers() {
       if (layer->HasContentsLayer())
         layer->SetContentsRect(IntRect(IntPoint(), frame_rect.Size()));
     }
-    bool h_bar_visible = h_bar && !layer->HasContentsLayer();
-    layer->SetDrawsContent(h_bar_visible);
-    layer->SetHitTestable(h_bar_visible);
+    layer->SetDrawsContent(h_bar && !layer->HasContentsLayer());
   }
 
   if (GraphicsLayer* layer = LayerForVerticalScrollbar()) {
@@ -2187,9 +2185,7 @@ void CompositedLayerMapping::PositionOverflowControlsLayers() {
       if (layer->HasContentsLayer())
         layer->SetContentsRect(IntRect(IntPoint(), frame_rect.Size()));
     }
-    bool v_bar_visible = v_bar && !layer->HasContentsLayer();
-    layer->SetDrawsContent(v_bar_visible);
-    layer->SetHitTestable(v_bar_visible);
+    layer->SetDrawsContent(v_bar && !layer->HasContentsLayer());
   }
 
   if (GraphicsLayer* layer = LayerForScrollCorner()) {
@@ -2200,7 +2196,6 @@ void CompositedLayerMapping::PositionOverflowControlsLayers() {
         ToIntSize(scroll_corner_and_resizer.Location()));
     layer->SetSize(gfx::Size(scroll_corner_and_resizer.Size()));
     layer->SetDrawsContent(!scroll_corner_and_resizer.IsEmpty());
-    layer->SetHitTestable(!scroll_corner_and_resizer.IsEmpty());
   }
 }
 
@@ -2391,7 +2386,7 @@ bool CompositedLayerMapping::UpdateForegroundLayer(
     if (!foreground_layer_) {
       foreground_layer_ =
           CreateGraphicsLayer(CompositingReason::kLayerForForeground);
-      foreground_layer_->SetHitTestable(true);
+      foreground_layer_->SetHitTestableWithoutDrawsContent(true);
       layer_changed = true;
     }
   } else if (foreground_layer_) {
@@ -2479,13 +2474,12 @@ bool CompositedLayerMapping::UpdateScrollingLayers(
       scrolling_layer_ =
           CreateGraphicsLayer(CompositingReason::kLayerForScrollingContainer);
       scrolling_layer_->SetDrawsContent(false);
-      scrolling_layer_->SetHitTestable(false);
       scrolling_layer_->SetMasksToBounds(true);
 
       // Inner layer which renders the content that scrolls.
       scrolling_contents_layer_ =
           CreateGraphicsLayer(CompositingReason::kLayerForScrollingContents);
-      scrolling_contents_layer_->SetHitTestable(true);
+      scrolling_contents_layer_->SetHitTestableWithoutDrawsContent(true);
 
       auto element_id = scrollable_area->GetCompositorElementId();
       scrolling_contents_layer_->SetElementId(element_id);
@@ -2642,7 +2636,6 @@ bool CompositedLayerMapping::UpdateSquashingLayers(
       squashing_layer_ =
           CreateGraphicsLayer(CompositingReason::kLayerForSquashingContents);
       squashing_layer_->SetDrawsContent(true);
-      squashing_layer_->SetHitTestable(true);
       layers_changed = true;
     }
 

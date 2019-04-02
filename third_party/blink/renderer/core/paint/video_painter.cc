@@ -55,7 +55,6 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
           gfx::Vector2dF(snapped_replaced_rect.X(), snapped_replaced_rect.Y()));
       layer->SetBounds(gfx::Size(snapped_replaced_rect.Size()));
       layer->SetIsDrawable(true);
-      layer->SetHitTestable(true);
       RecordForeignLayer(context, DisplayItem::kForeignLayerVideo, layer);
       return;
     }

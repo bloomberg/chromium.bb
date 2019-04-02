@@ -336,9 +336,15 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetContentsOpaque(bool opaque);
   bool contents_opaque() const { return inputs_.contents_opaque; }
 
-  // Set or get whether this layer should be a hit test target
-  void SetHitTestable(bool should_hit_test);
-  bool HitTestable() const;
+  // Set or get whether this layer should be a hit test target even if not
+  // visible. Normally if DrawsContent() is false, making the layer not
+  // contribute to the final composited output, the layer will not be eligable
+  // for hit testing since it is invisible. Set this to true to allow the layer
+  // to be hit tested regardless.
+  void SetHitTestableWithoutDrawsContent(bool should_hit_test);
+  bool hit_testable_without_draws_content() const {
+    return inputs_.hit_testable_without_draws_content;
+  }
 
   // Set or gets if this layer is a container for fixed position layers in its
   // subtree. Such layers will be positioned and transformed relative to this
@@ -930,8 +936,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
     bool is_root_for_isolated_group : 1;
 
-    // Hit testing depends on this bit.
-    bool hit_testable : 1;
+    // Hit testing depends on draws_content (see: |LayerImpl::should_hit_test|)
+    // and this bit can be set to cause the LayerImpl to be hit testable without
+    // draws_content.
+    bool hit_testable_without_draws_content : 1;
 
     bool contents_opaque : 1;
 

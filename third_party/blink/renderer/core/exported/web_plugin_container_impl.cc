@@ -178,7 +178,6 @@ void WebPluginContainerImpl::Paint(GraphicsContext& context,
         gfx::Vector2dF(frame_rect_.X(), frame_rect_.Y()));
     layer_->SetBounds(gfx::Size(frame_rect_.Size()));
     layer_->SetIsDrawable(true);
-    layer_->SetHitTestable(true);
     // When compositing is after paint, composited plugins should have their
     // layers inserted rather than invoking WebPlugin::paint.
     RecordForeignLayer(context, DisplayItem::kForeignLayerPlugin, layer_);
