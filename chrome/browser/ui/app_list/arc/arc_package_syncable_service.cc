@@ -121,6 +121,8 @@ bool ArcPackageSyncableService::IsPackageSyncing(
 }
 
 void ArcPackageSyncableService::WaitUntilReadyToSync(base::OnceClosure done) {
+  DCHECK(!wait_until_ready_to_sync_cb_);
+
   if (prefs_->package_list_initial_refreshed()) {
     std::move(done).Run();
     return;

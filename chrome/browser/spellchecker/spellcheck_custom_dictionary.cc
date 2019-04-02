@@ -298,6 +298,7 @@ void SpellcheckCustomDictionary::Load() {
 }
 
 void SpellcheckCustomDictionary::WaitUntilReadyToSync(base::OnceClosure done) {
+  DCHECK(!wait_until_ready_to_sync_cb_);
   if (is_loaded_)
     std::move(done).Run();
   else
