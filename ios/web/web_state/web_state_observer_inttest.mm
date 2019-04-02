@@ -1901,9 +1901,10 @@ TEST_P(WebStateObserverTest, ForwardPostNavigation) {
       .WillOnce(Return(true));
 
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
-  if (@available(iOS 12, *)) {
-    // On iOS 11 and earlier, ShouldAllowResponse is not called when going back
-    // after form submission.
+  if (@available(iOS 12.2, *)) {
+    // ShouldAllowResponse is called on iOS 12.0 and iOS 12.1,
+    // but not on iOS 12.2 or iOS 11.
+  } else if (@available(iOS 12, *)) {
     EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
         .WillOnce(Return(true));
   }
