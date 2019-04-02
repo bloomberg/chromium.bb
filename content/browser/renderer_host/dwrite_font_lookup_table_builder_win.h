@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/cancelable_callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/read_only_shared_memory_region.h"
@@ -164,6 +165,7 @@ class CONTENT_EXPORT DWriteFontLookupTableBuilder {
 
   bool caching_enabled_ = true;
   base::Optional<base::WaitableEvent> hang_event_for_testing_;
+  base::CancelableCallback<void()> timeout_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DWriteFontLookupTableBuilder);
 };
