@@ -27,7 +27,9 @@ class PixelExpectations(GpuTestExpectations):
     self.Skip('Pixel_OffscreenCanvasWebGLSoftwareCompositing', ['android'])
     self.Skip('Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker',
               ['android'])
-    # self.Skip('Pixel_CanvasDisplayLinearRGBUnaccelerated2D', ['android'])
+    self.Skip('Pixel_CanvasDisplayLinearRGBUnaccelerated2D', ['android'])
+    self.Skip('Pixel_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing', ['android'])
+    self.Skip('Pixel_CanvasDisplaySRGBUnaccelerated2D', ['android'])
     self.Skip('Pixel_CanvasUnacceleratedLowLatency2D', ['android'])
     self.Skip('Pixel_RepeatedWebGLTo2D_SoftwareCompositing', ['android'])
 
@@ -139,14 +141,17 @@ class PixelExpectations(GpuTestExpectations):
               ['android', 'nvidia'], bug=868596)
 
     # New tests, mark as failing
-    self.Fail('Pixel_CanvasDisplaySRGBUnaccelerated2D')
+    self.Fail('Pixel_CanvasDisplaySRGBUnaccelerated2D',
+              ['win', 'mac', 'linux', 'chromeos'])
     self.Fail('Pixel_CanvasDisplaySRGBUnaccelerated2DGPUCompositing')
     # float16 is not yet supported for accelerated canvases
     self.Fail('Pixel_CanvasDisplaySRGBAccelerated2D', bug=948141)
 
     # Color space has changed here so we need to rebaseline
-    self.Fail('Pixel_CanvasDisplayLinearRGBUnaccelerated2D')
-    self.Fail('Pixel_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing')
+    self.Fail('Pixel_CanvasDisplayLinearRGBUnaccelerated2D',
+              ['win', 'mac', 'linux', 'chromeos'])
+    self.Fail('Pixel_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing',
+              ['win', 'mac', 'linux', 'chromeos'])
     self.Fail('Pixel_CanvasDisplayLinearRGBAccelerated2D')
 
     # Fails on Nexus 5, 6 and 6P
