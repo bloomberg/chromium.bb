@@ -95,14 +95,6 @@ bool IsGeminiLakeOrLater() {
       cpuid.model() >= kGeminiLakeModelId;
   return is_geminilake_or_later;
 }
-bool IsSkyLakeOrLater() {
-  constexpr int kPentiumAndLaterFamily = 0x06;
-  constexpr int kFirstSkyLakeModelId = 0x4E;
-  static base::CPU cpuid;
-  static bool is_sky_lake_or_later = cpuid.family() == kPentiumAndLaterFamily &&
-                                     cpuid.model() >= kFirstSkyLakeModelId;
-  return is_sky_lake_or_later;
-}
 
 }  // namespace
 
@@ -1108,21 +1100,17 @@ VaapiVideoDecodeAccelerator::DecideBufferAllocationMode() const {
 
   // If we're here, we have to use the Vpp unit and allocate buffers for
   // |decoder_|; usually we'd have to allocate the |decoder_|s
-  // GetRequiredNumOfPictures() internally, but on SkyLake and later, we can
-  // allocate just |decoder_|s GetNumReferenceFrames() + 1. Moreover, we also
-  // request the |client_| to allocate less than the usual |decoder_|s
-  // GetRequiredNumOfPictures().
-  // TODO(crbug.com/912295): enable for previous architectures.
-  if (IsSkyLakeOrLater()) {
-    // Another +1 is experimentally needed for high-to-high resolution changes.
-    // TODO(mcasas): Figure out why and why only H264, see crbug.com/912295 and
-    // http://crrev.com/c/1363807/9/media/gpu/h264_decoder.cc#1449.
-    if (profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX)
-      return BufferAllocationMode::kReduced;
+  // GetRequiredNumOfPictures() internally, we can allocate just |decoder_|s
+  // GetNumReferenceFrames() + 1. Moreover, we also request the |client_| to
+  // allocate less than the usual |decoder_|s GetRequiredNumOfPictures().
 
-    return BufferAllocationMode::kSuperReduced;
-  }
-  return BufferAllocationMode::kNormal;
+  // Another +1 is experimentally needed for high-to-high resolution changes.
+  // TODO(mcasas): Figure out why and why only H264, see crbug.com/912295 and
+  // http://crrev.com/c/1363807/9/media/gpu/h264_decoder.cc#1449.
+  if (profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX)
+    return BufferAllocationMode::kReduced;
+
+  return BufferAllocationMode::kSuperReduced;
 }
 
 bool VaapiVideoDecodeAccelerator::IsBufferAllocationModeReducedOrSuperReduced()
