@@ -287,6 +287,7 @@
 ** query logic likewise merges doclists so that newer data knocks out
 ** older data.
 */
+#define CHROMIUM_FTS3_CHANGES 1
 
 #include "fts3Int.h"
 #if !defined(SQLITE_CORE) || defined(SQLITE_ENABLE_FTS3)
@@ -4016,7 +4017,11 @@ int sqlite3Fts3Init(sqlite3 *db){
   ** module with sqlite.
   */
   if( SQLITE_OK==rc
+#if CHROMIUM_FTS3_CHANGES && !SQLITE_TEST
+      /* fts3_tokenizer() disabled for security reasons. */
+#else
    && SQLITE_OK==(rc = sqlite3Fts3InitHashTable(db, pHash, "fts3_tokenizer"))
+#endif
    && SQLITE_OK==(rc = sqlite3_overload_function(db, "snippet", -1))
    && SQLITE_OK==(rc = sqlite3_overload_function(db, "offsets", 1))
    && SQLITE_OK==(rc = sqlite3_overload_function(db, "matchinfo", 1))
@@ -4026,6 +4031,9 @@ int sqlite3Fts3Init(sqlite3 *db){
     rc = sqlite3_create_module_v2(
         db, "fts3", &fts3Module, (void *)pHash, hashDestroy
     );
+#if CHROMIUM_FTS3_CHANGES && !SQLITE_TEST
+    /* Disable fts4 and tokenizer vtab pending review. */
+#else
     if( rc==SQLITE_OK ){
       rc = sqlite3_create_module_v2(
           db, "fts4", &fts3Module, (void *)pHash, 0
@@ -4034,6 +4042,7 @@ int sqlite3Fts3Init(sqlite3 *db){
     if( rc==SQLITE_OK ){
       rc = sqlite3Fts3InitTok(db, (void *)pHash);
     }
+#endif
     return rc;
   }
 
