@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_flags.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -75,6 +76,11 @@ constexpr auto kMinExpansionStepDuration =
     base::TimeDelta::FromMilliseconds(20);
 constexpr auto kMaxExpansionStepDuration =
     base::TimeDelta::FromMilliseconds(150);
+
+#if !defined(OS_MACOSX)
+// How long to delay before destroying an unused status bubble widget.
+constexpr auto kDestroyPopupDelay = base::TimeDelta::FromSeconds(10);
+#endif
 
 const gfx::FontList& GetFont() {
   return views::style::GetFont(views::style::CONTEXT_LABEL,
@@ -164,6 +170,12 @@ class StatusBubbleViews::StatusView : public views::View {
 
   void SetWidth(int new_width);
 
+  gfx::Animation* animation() { return animation_.get(); }
+
+  bool IsDestroyPopupTimerRunning() const {
+    return destroy_popup_timer_.IsRunning();
+  }
+
  private:
   class InitialTimer;
 
@@ -194,6 +206,11 @@ class StatusBubbleViews::StatusView : public views::View {
   base::string16 text_;
 
   gfx::Size popup_size_;
+
+  // A timer used to delay destruction of the popup widget. This is meant to
+  // balance the performance tradeoffs of rapid creation/destruction and the
+  // memory savings of closing the widget when it's hidden and unused.
+  base::OneShotTimer destroy_popup_timer_;
 
   base::WeakPtrFactory<StatusBubbleViews::StatusView> timer_factory_{this};
 
@@ -237,6 +254,7 @@ void StatusBubbleViews::StatusView::ShowInstantly() {
     GetWidget()->ShowInactive();
 #else
   GetWidget()->ShowInactive();
+  destroy_popup_timer_.Stop();
 #endif
 }
 
@@ -250,7 +268,13 @@ void StatusBubbleViews::StatusView::HideInstantly() {
   // Don't orderOut: the window on macOS. Doing so for a child window requires
   // it to be detached/reattached, which may trigger a space switch. Instead,
   // just leave the window fully transparent and unclickable.
-  status_bubble_->DestroyPopup();
+  GetWidget()->Hide();
+  destroy_popup_timer_.Stop();
+  // This isn't done in the constructor as tests may change the task runner
+  // after the fact.
+  destroy_popup_timer_.SetTaskRunner(status_bubble_->task_runner_);
+  destroy_popup_timer_.Start(FROM_HERE, kDestroyPopupDelay, status_bubble_,
+                             &StatusBubbleViews::DestroyPopup);
 #endif
 }
 
@@ -258,7 +282,7 @@ void StatusBubbleViews::StatusView::StartTimer(base::TimeDelta time) {
   if (timer_factory_.HasWeakPtrs())
     timer_factory_.InvalidateWeakPtrs();
 
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  status_bubble_->task_runner_->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&StatusBubbleViews::StatusView::OnTimer,
                      timer_factory_.GetWeakPtr()),
@@ -320,6 +344,10 @@ void StatusBubbleViews::StatusView::StartHiding() {
 }
 
 void StatusBubbleViews::StatusView::StartShowing() {
+#if !defined(OS_MACOSX)
+  destroy_popup_timer_.Stop();
+#endif
+
   if (state_ == BUBBLE_HIDDEN) {
     GetWidget()->ShowInactive();
     state_ = BUBBLE_SHOWING_TIMER;
@@ -603,7 +631,8 @@ void StatusBubbleViews::StatusViewExpander::SetBubbleWidth(int width) {
 const int StatusBubbleViews::kShadowThickness = 1;
 
 StatusBubbleViews::StatusBubbleViews(views::View* base_view)
-    : base_view_(base_view) {}
+    : base_view_(base_view),
+      task_runner_(base::ThreadTaskRunnerHandle::Get().get()) {}
 
 StatusBubbleViews::~StatusBubbleViews() {
   DestroyPopup();
@@ -752,7 +781,7 @@ void StatusBubbleViews::SetURL(const GURL& url) {
       ExpandBubble();
     } else if (url_formatter::FormatUrl(url).length() >
                url_text_.length()) {
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      task_runner_->PostDelayedTask(
           FROM_HERE,
           base::BindOnce(&StatusBubbleViews::ExpandBubble,
                          expand_timer_factory_.GetWeakPtr()),
@@ -798,6 +827,7 @@ void StatusBubbleViews::UpdateDownloadShelfVisibility(bool visible) {
 }
 
 void StatusBubbleViews::AvoidMouse(const gfx::Point& location) {
+  DCHECK(view_);
   // Get the position of the frame.
   gfx::Point top_left;
   views::View::ConvertPointToScreen(base_view_, &top_left);
@@ -935,4 +965,12 @@ void StatusBubbleViews::SetBubbleWidth(int width) {
 void StatusBubbleViews::CancelExpandTimer() {
   if (expand_timer_factory_.HasWeakPtrs())
     expand_timer_factory_.InvalidateWeakPtrs();
+}
+
+gfx::Animation* StatusBubbleViews::GetShowHideAnimationForTest() {
+  return view_ ? view_->animation() : nullptr;
+}
+
+bool StatusBubbleViews::IsDestroyPopupTimerRunningForTest() {
+  return view_ && view_->IsDestroyPopupTimerRunning();
 }
