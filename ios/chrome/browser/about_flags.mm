@@ -577,6 +577,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"new-omnibox-popup-layout", flag_descriptions::kNewOmniboxPopupLayoutName,
      flag_descriptions::kNewOmniboxPopupLayoutDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kNewOmniboxPopupLayout)},
+    {"fill-on-account-select-http",
+     flag_descriptions::kFillOnAccountSelectHttpName,
+     flag_descriptions::kFillOnAccountSelectHttpDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(password_manager::features::kFillOnAccountSelectHttp)},
 };
 
 // Add all switches from experimental flags to |command_line|.

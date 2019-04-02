@@ -216,6 +216,11 @@ extern const char kEnableClipboardProviderImageSuggestionsDescription[];
 extern const char kFCMInvalidationsName[];
 extern const char kFCMInvalidationsDescription[];
 
+// Title and description for the flag to enable fill passwords on account select
+// on HTTP origins.
+extern const char kFillOnAccountSelectHttpName[];
+extern const char kFillOnAccountSelectHttpDescription[];
+
 // Title and description for the command line switch used to determine the
 // active fullscreen viewport adjustment mode.
 extern const char kFullscreenViewportAdjustmentExperimentName[];
