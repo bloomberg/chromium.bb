@@ -69,30 +69,30 @@ class FlexItem {
   DISALLOW_NEW();
 
  public:
-  // flex_base_content_size includes scrollbar width but not border or padding.
+  // flex_base_content_size does not include border/scrollbar/padding.
   // min_max_sizes is the min and max size in the main axis direction.
   FlexItem(LayoutBox*,
            LayoutUnit flex_base_content_size,
            MinMaxSize min_max_sizes,
-           LayoutUnit main_axis_border_and_padding,
+           LayoutUnit main_axis_border_scrollbar_padding,
            LayoutUnit main_axis_margin);
 
   LayoutUnit HypotheticalMainAxisMarginBoxSize() const {
-    return hypothetical_main_content_size + main_axis_border_and_padding +
+    return hypothetical_main_content_size + main_axis_border_scrollbar_padding +
            main_axis_margin;
   }
 
   LayoutUnit FlexBaseMarginBoxSize() const {
-    return flex_base_content_size + main_axis_border_and_padding +
+    return flex_base_content_size + main_axis_border_scrollbar_padding +
            main_axis_margin;
   }
 
   LayoutUnit FlexedBorderBoxSize() const {
-    return flexed_content_size + main_axis_border_and_padding;
+    return flexed_content_size + main_axis_border_scrollbar_padding;
   }
 
   LayoutUnit FlexedMarginBoxSize() const {
-    return flexed_content_size + main_axis_border_and_padding +
+    return flexed_content_size + main_axis_border_scrollbar_padding +
            main_axis_margin;
   }
 
@@ -129,7 +129,7 @@ class FlexItem {
   const LayoutUnit flex_base_content_size;
   const MinMaxSize min_max_sizes;
   const LayoutUnit hypothetical_main_content_size;
-  const LayoutUnit main_axis_border_and_padding;
+  const LayoutUnit main_axis_border_scrollbar_padding;
   const LayoutUnit main_axis_margin;
   LayoutUnit flexed_content_size;
 
