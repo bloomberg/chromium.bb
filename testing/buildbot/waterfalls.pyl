@@ -1827,14 +1827,6 @@
           'gtest_tests': 'gpu_desktop_gtests',
           'gpu_telemetry_tests': 'gpu_common_win_and_linux_telemetry_tests',
         },
-        'use_multi_dimension_trigger_script': True,
-        'alternate_swarming_dimensions': [
-          {
-            'gpu': '10de:1cb3-410.78',
-            'os': 'Ubuntu',
-            'pool': 'Chrome-GPU',
-          },
-        ],
       },
       'Linux Release (NVIDIA)': {
         'browser_config': 'release',
@@ -1846,14 +1838,6 @@
           'gtest_tests': 'gpu_desktop_gtests',
           'gpu_telemetry_tests': 'gpu_common_win_and_linux_telemetry_tests',
         },
-        'use_multi_dimension_trigger_script': True,
-        'alternate_swarming_dimensions': [
-          {
-            'gpu': '10de:1cb3-410.78',
-            'os': 'Ubuntu',
-            'pool': 'Chrome-GPU',
-          },
-        ],
       },
       'Mac Debug (Intel)': {
         'browser_config': 'debug',
@@ -2242,14 +2226,6 @@
         'test_suites': {
           'gtest_tests': 'gpu_dawn_end2end_tests',
         },
-        'use_multi_dimension_trigger_script': True,
-        'alternate_swarming_dimensions': [
-          {
-            'gpu': '10de:1cb3-410.78',
-            'os': 'Ubuntu',
-            'pool': 'Chrome-GPU',
-          },
-        ],
       },
       'Dawn GPU Mac Release (Intel)': {
         'os_type': 'mac',
@@ -2325,14 +2301,6 @@
           'gtest_tests': 'gpu_fyi_linux_debug_gtests',
           'gpu_telemetry_tests': 'gpu_fyi_win_and_linux_telemetry_tests',
         },
-        'use_multi_dimension_trigger_script': True,
-        'alternate_swarming_dimensions': [
-          {
-            'gpu': '10de:1cb3-410.78',
-            'os': 'Ubuntu',
-            'pool': 'Chrome-GPU',
-          },
-        ],
       },
       'Linux FYI Experimental Release (Intel HD 630)': {
         'os_type': 'linux',
@@ -2370,14 +2338,6 @@
           'gtest_tests': 'gpu_fyi_linux_debug_gtests',
           'isolated_scripts': 'gpu_angle_perftests',
         },
-        'use_multi_dimension_trigger_script': True,
-        'alternate_swarming_dimensions': [
-          {
-            'gpu': '10de:1cb3-410.78',
-            'os': 'Ubuntu',
-            'pool': 'Chrome-GPU',
-          },
-        ],
       },
       'Linux FYI Ozone (Intel)': {
         'os_type': 'linux',
@@ -2427,14 +2387,6 @@
           'isolated_scripts': 'gpu_angle_perftests',
           'gpu_telemetry_tests': 'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests',
         },
-        'use_multi_dimension_trigger_script': True,
-        'alternate_swarming_dimensions': [
-          {
-            'gpu': '10de:1cb3-410.78',
-            'os': 'Ubuntu',
-            'pool': 'Chrome-GPU',
-          },
-        ],
       },
       'Linux FYI dEQP Release (Intel HD 630)': {
         'os_type': 'linux',
@@ -2455,14 +2407,6 @@
         'test_suites': {
           'gtest_tests': 'gpu_angle_deqp_linux_nvidia_gtests',
         },
-        'use_multi_dimension_trigger_script': True,
-        'alternate_swarming_dimensions': [
-          {
-            'gpu': '10de:1cb3-410.78',
-            'os': 'Ubuntu',
-            'pool': 'Chrome-GPU',
-          },
-        ],
       },
       'Mac FYI 10.14 Release (AMD)': {
         'os_type': 'mac',
@@ -2700,14 +2644,6 @@
           'isolated_scripts': 'gpu_angle_perftests',
           'gpu_telemetry_tests': 'gpu_fyi_optional_linux_telemetry_tests',
         },
-        'use_multi_dimension_trigger_script': True,
-        'alternate_swarming_dimensions': [
-          {
-            'gpu': '10de:1cb3-410.78',
-            'os': 'Ubuntu',
-            'pool': 'Chrome-GPU',
-          },
-        ],
       },
       'Optional Mac Release (Intel)': {
         'os_type': 'mac',
@@ -3825,14 +3761,6 @@
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_v8_desktop_telemetry_tests',
         },
-        'use_multi_dimension_trigger_script': True,
-        'alternate_swarming_dimensions': [
-          {
-            'gpu': '10de:1cb3-410.78',
-            'os': 'Ubuntu',
-            'pool': 'Chrome-GPU',
-          },
-        ],
       },
       'Linux V8 FYI Release - pointer compression (NVIDIA)': {
         'os_type': 'linux',
@@ -3843,14 +3771,6 @@
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_v8_desktop_telemetry_tests',
         },
-        'use_multi_dimension_trigger_script': True,
-        'alternate_swarming_dimensions': [
-          {
-            'gpu': '10de:1cb3-410.78',
-            'os': 'Ubuntu',
-            'pool': 'Chrome-GPU',
-          },
-        ],
       },
       'Mac V8 FYI Release (Intel)': {
         'browser_config': 'release',
