@@ -24,7 +24,6 @@
 // <include src="oobe_screen_autolaunch.js">
 // <include src="oobe_screen_enable_kiosk.js">
 // <include src="oobe_screen_terms_of_service.js">
-// <include src="oobe_screen_user_image.js">
 // <include src="oobe_screen_supervision_transition.js">
 // <include src="oobe_screen_assistant_optin_flow.js">
 // <include src="oobe_select.js">
@@ -77,7 +76,6 @@ cr.define('cr.ui.Oobe', function() {
       login.WrongHWIDScreen.register();
       login.AccountPickerScreen.register();
       login.GaiaSigninScreen.register();
-      login.UserImageScreen.register(/* lazyInit= */ true);
       login.ResetScreen.register();
       login.AutolaunchScreen.register();
       login.KioskEnableScreen.register();

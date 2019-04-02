@@ -189,8 +189,7 @@ constexpr const Entry kLegacyUmaOobeScreenNames[] = {
     {chromeos::OobeScreen::SCREEN_OOBE_WELCOME, "network"},
     {chromeos::OobeScreen::SCREEN_CREATE_SUPERVISED_USER_FLOW_DEPRECATED,
      "supervised-user-creation-flow"},
-    {chromeos::OobeScreen::SCREEN_TERMS_OF_SERVICE, "tos"},
-    {chromeos::OobeScreen::SCREEN_USER_IMAGE_PICKER, "image"}};
+    {chromeos::OobeScreen::SCREEN_TERMS_OF_SERVICE, "tos"}};
 
 void RecordUMAHistogramForOOBEStepCompletionTime(chromeos::OobeScreen screen,
                                                  base::TimeDelta step_time) {
@@ -1566,7 +1565,6 @@ bool WizardController::IsOOBEStepToTrack(OobeScreen screen_id) {
   return (screen_id == OobeScreen::SCREEN_OOBE_HID_DETECTION ||
           screen_id == OobeScreen::SCREEN_OOBE_WELCOME ||
           screen_id == OobeScreen::SCREEN_OOBE_UPDATE ||
-          screen_id == OobeScreen::SCREEN_USER_IMAGE_PICKER ||
           screen_id == OobeScreen::SCREEN_OOBE_EULA ||
           screen_id == OobeScreen::SCREEN_SPECIAL_LOGIN ||
           screen_id == OobeScreen::SCREEN_WRONG_HWID);
@@ -1584,7 +1582,6 @@ void WizardController::SkipPostLoginScreensForTesting() {
       current_screen_id == OobeScreen::SCREEN_SYNC_CONSENT ||
       current_screen_id == OobeScreen::SCREEN_FINGERPRINT_SETUP ||
       current_screen_id == OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE ||
-      current_screen_id == OobeScreen::SCREEN_USER_IMAGE_PICKER ||
       current_screen_id == OobeScreen::SCREEN_DISCOVER ||
       current_screen_id == OobeScreen::SCREEN_MARKETING_OPT_IN) {
     default_controller()->OnOobeFlowFinished();

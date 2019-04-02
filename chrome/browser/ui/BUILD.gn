@@ -1674,8 +1674,6 @@ jumbo_split_static_library("ui") {
       "webui/chromeos/login/update_screen_handler.h",
       "webui/chromeos/login/user_board_screen_handler.cc",
       "webui/chromeos/login/user_board_screen_handler.h",
-      "webui/chromeos/login/user_image_screen_handler.cc",
-      "webui/chromeos/login/user_image_screen_handler.h",
       "webui/chromeos/login/welcome_screen_handler.cc",
       "webui/chromeos/login/welcome_screen_handler.h",
       "webui/chromeos/login/wrong_hwid_screen_handler.cc",
