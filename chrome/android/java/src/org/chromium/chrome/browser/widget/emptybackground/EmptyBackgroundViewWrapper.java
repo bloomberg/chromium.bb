@@ -84,7 +84,7 @@ public class EmptyBackgroundViewWrapper {
             }
 
             @Override
-            public void allTabsPendingClosure(List<Tab> tabs) {
+            public void multipleTabsPendingClosure(List<Tab> tabs, boolean isAllTabs) {
                 updateEmptyContainerState();
             }
 

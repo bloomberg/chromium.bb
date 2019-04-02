@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.tabmodel;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 
+import java.util.List;
+
 /**
  * TabModel organizes all the open tabs and allows you to create new ones.  Regular and Incognito
  * tabs are kept in different TabModels.
@@ -48,6 +50,13 @@ public interface TabModel extends TabList {
      * @return The id of the next tab that would be visible.
      */
     public Tab getNextTabIfClosed(int id);
+
+    /**
+     * Close multiple tabs on this model.
+     * @param tabs The tabs to be closed.
+     * @param canUndo Whether or not this action can be undone.
+     */
+    public void closeMultipleTabs(List<Tab> tabs, boolean canUndo);
 
     /**
      * Close all the tabs on this model.

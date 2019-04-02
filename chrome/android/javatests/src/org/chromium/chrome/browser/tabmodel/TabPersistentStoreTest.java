@@ -781,7 +781,7 @@ public class TabPersistentStoreTest {
         final List<Integer> closedTabIds = new ArrayList<>();
         TabModelObserver closeObserver = new EmptyTabModelObserver() {
             @Override
-            public void allTabsPendingClosure(List<Tab> tabs) {
+            public void multipleTabsPendingClosure(List<Tab> tabs, boolean isAllTabs) {
                 for (Tab tab : tabs) closedTabIds.add(tab.getId());
             }
         };

@@ -13,6 +13,8 @@ import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 
+import java.util.List;
+
 /**
  * Simple TabModel that assumes that only one Tab exists.
  */
@@ -108,6 +110,11 @@ public class SingleTabModel implements TabModel {
         } else {
             ApiCompatibilityUtils.finishAndRemoveTask(mActivity);
         }
+    }
+
+    @Override
+    public void closeMultipleTabs(List<Tab> tabs, boolean canUndo) {
+        completeActivity();
     }
 
     @Override

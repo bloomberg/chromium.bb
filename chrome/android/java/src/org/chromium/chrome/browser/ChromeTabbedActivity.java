@@ -637,7 +637,8 @@ public class ChromeTabbedActivity
                 }
 
                 @Override
-                public void allTabsPendingClosure(List<Tab> tabs) {
+                public void multipleTabsPendingClosure(List<Tab> tabs, boolean isAllTabs) {
+                    if (!isAllTabs) return;
                     NewTabPageUma.recordNTPImpression(
                             NewTabPageUma.NTP_IMPESSION_POTENTIAL_NOTAB);
                 }

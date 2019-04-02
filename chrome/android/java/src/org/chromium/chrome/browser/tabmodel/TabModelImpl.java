@@ -378,6 +378,21 @@ public class TabModelImpl extends TabModelJniBridge {
     }
 
     @Override
+    public void closeMultipleTabs(List<Tab> tabs, boolean canUndo) {
+        for (Tab tab : tabs) {
+            if (!mTabs.contains(tab)) {
+                assert false : "Tried to close a tab from another model!";
+                continue;
+            }
+            tab.setClosing(true);
+            closeTab(tab, false, false, canUndo, false);
+        }
+        if (canUndo && supportsPendingClosures()) {
+            for (TabModelObserver obs : mObservers) obs.multipleTabsPendingClosure(tabs, false);
+        }
+    }
+
+    @Override
     public void closeAllTabs() {
         closeAllTabs(true, false);
     }
@@ -430,7 +445,8 @@ public class TabModelImpl extends TabModelJniBridge {
         }
 
         if (!uponExit && canUndo && supportsPendingClosures()) {
-            for (TabModelObserver obs : mObservers) obs.allTabsPendingClosure(closedTabs);
+            for (TabModelObserver obs : mObservers)
+                obs.multipleTabsPendingClosure(closedTabs, true);
         }
     }
 

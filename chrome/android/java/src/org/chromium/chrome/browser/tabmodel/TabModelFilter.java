@@ -179,9 +179,9 @@ public abstract class TabModelFilter extends EmptyTabModelObserver implements Ta
     }
 
     @Override
-    public void allTabsPendingClosure(List<Tab> tabs) {
+    public void multipleTabsPendingClosure(List<Tab> tabs, boolean isAllTabs) {
         for (TabModelObserver observer : mFilteredObservers) {
-            observer.allTabsPendingClosure(tabs);
+            observer.multipleTabsPendingClosure(tabs, isAllTabs);
         }
     }
 

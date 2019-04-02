@@ -570,7 +570,7 @@ public class ChromeTabUtils {
         final CallbackHelper closeCallback = new CallbackHelper();
         final TabModelObserver observer = new EmptyTabModelObserver() {
             @Override
-            public void allTabsPendingClosure(List<Tab> tabs) {
+            public void multipleTabsPendingClosure(List<Tab> tabs, boolean isAllTabs) {
                 closeCallback.notifyCalled();
             }
         };
