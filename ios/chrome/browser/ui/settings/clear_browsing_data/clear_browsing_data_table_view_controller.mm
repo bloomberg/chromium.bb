@@ -159,7 +159,7 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
-
+  [self.dataManager restartCounters:BrowsingDataRemoveMask::REMOVE_ALL];
   if (IsNewClearBrowsingDataUIEnabled()) {
     // Showing toolbar here because parent class hides toolbar in
     // viewWillDisappear:.

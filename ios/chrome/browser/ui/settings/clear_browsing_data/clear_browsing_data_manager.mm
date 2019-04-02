@@ -455,6 +455,28 @@ const std::vector<BrowsingDataRemoveMask> _browsingDataRemoveFlags = {
         [self accessibilityIdentifierFromItemType:itemType];
     tableViewClearDataItem.dataTypeMask = mask;
     tableViewClearDataItem.prefName = prefName;
+    if (IsNewClearBrowsingDataUIEnabled()) {
+      if (itemType == ItemTypeDataTypeCookiesSiteData) {
+        // Because there is no counter for cookies, an explanatory text is
+        // displayed.
+        tableViewClearDataItem.detailText =
+            l10n_util::GetNSString(IDS_DEL_COOKIES_COUNTER);
+      } else {
+        __weak ClearBrowsingDataManager* weakSelf = self;
+        __weak TableViewClearBrowsingDataItem* weakTableClearDataItem =
+            tableViewClearDataItem;
+        std::unique_ptr<BrowsingDataCounterWrapper> counter =
+            BrowsingDataCounterWrapper::CreateCounterWrapper(
+                prefName, self.browserState, prefs,
+                base::BindRepeating(^(
+                    const browsing_data::BrowsingDataCounter::Result& result) {
+                  weakTableClearDataItem.detailText =
+                      [weakSelf counterTextFromResult:result];
+                  [weakSelf.consumer updateCellsForItem:weakTableClearDataItem];
+                }));
+        _countersByMasks.emplace(mask, std::move(counter));
+      }
+    }
     clearDataItem = tableViewClearDataItem;
   }
   return clearDataItem;
