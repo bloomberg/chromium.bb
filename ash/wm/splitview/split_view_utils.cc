@@ -33,10 +33,10 @@ constexpr base::TimeDelta kOtherFadeInOutMs =
 // The delay before the other highlight starts fading in.
 constexpr base::TimeDelta kOtherFadeInDelayMs =
     base::TimeDelta::FromMilliseconds(117);
-// The animation speed for any animation on the indicator labels.
+// The time duration for the indicator label opacity animations.
 constexpr base::TimeDelta kLabelAnimationMs =
     base::TimeDelta::FromMilliseconds(83);
-// The delay before the indicator labels start animating.
+// The delay before the indicator labels start fading in.
 constexpr base::TimeDelta kLabelAnimationDelayMs =
     base::TimeDelta::FromMilliseconds(167);
 // The time duration for the window transformation animations.
@@ -66,30 +66,32 @@ void GetAnimationValuesForType(
     case SPLITVIEW_ANIMATION_TEXT_FADE_OUT_WITH_HIGHLIGHT:
     case SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN:
     case SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_OUT:
+    case SPLITVIEW_ANIMATION_PREVIEW_AREA_TEXT_SLIDE_IN:
+    case SPLITVIEW_ANIMATION_PREVIEW_AREA_TEXT_SLIDE_OUT:
       *out_duration = kHighlightsFadeInOutMs;
       *out_tween_type = gfx::Tween::FAST_OUT_SLOW_IN;
       return;
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_IN:
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_IN:
+    case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_TEXT_SLIDE_IN:
       *out_delay = kOtherFadeInDelayMs;
       *out_duration = kOtherFadeInOutMs;
       *out_tween_type = gfx::Tween::LINEAR_OUT_SLOW_IN;
       *out_preemption_strategy = ui::LayerAnimator::ENQUEUE_NEW_ANIMATION;
       return;
     case SPLITVIEW_ANIMATION_TEXT_FADE_IN:
-    case SPLITVIEW_ANIMATION_TEXT_SLIDE_IN:
       *out_delay = kLabelAnimationDelayMs;
       *out_duration = kLabelAnimationMs;
       *out_tween_type = gfx::Tween::LINEAR_OUT_SLOW_IN;
       *out_preemption_strategy = ui::LayerAnimator::ENQUEUE_NEW_ANIMATION;
       return;
     case SPLITVIEW_ANIMATION_TEXT_FADE_OUT:
-    case SPLITVIEW_ANIMATION_TEXT_SLIDE_OUT:
       *out_duration = kLabelAnimationMs;
       *out_tween_type = gfx::Tween::FAST_OUT_LINEAR_IN;
       return;
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_OUT:
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_OUT:
+    case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_TEXT_SLIDE_OUT:
       *out_duration = kOtherFadeInOutMs;
       *out_tween_type = gfx::Tween::FAST_OUT_LINEAR_IN;
       return;
@@ -184,12 +186,14 @@ void DoSplitviewTransformAnimation(ui::Layer* layer,
   switch (type) {
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_IN:
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_OUT:
+    case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_TEXT_SLIDE_IN:
+    case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_TEXT_SLIDE_OUT:
     case SPLITVIEW_ANIMATION_PREVIEW_AREA_NIX_INSET:
     case SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN:
     case SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_OUT:
+    case SPLITVIEW_ANIMATION_PREVIEW_AREA_TEXT_SLIDE_IN:
+    case SPLITVIEW_ANIMATION_PREVIEW_AREA_TEXT_SLIDE_OUT:
     case SPLITVIEW_ANIMATION_SET_WINDOW_TRANSFORM:
-    case SPLITVIEW_ANIMATION_TEXT_SLIDE_IN:
-    case SPLITVIEW_ANIMATION_TEXT_SLIDE_OUT:
       break;
     default:
       NOTREACHED() << "Not a valid split view transform type.";
