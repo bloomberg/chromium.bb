@@ -29,9 +29,11 @@
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/dtoa.h"
+#include "third_party/blink/renderer/platform/wtf/hex_number.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 #include "third_party/blink/renderer/platform/wtf/text/utf8.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -364,46 +366,42 @@ String String::EncodeForDebugging() const {
   if (IsNull())
     return "<null>";
 
-  String str;
-  str.append('"');
+  StringBuilder builder;
+  builder.Append('"');
   for (unsigned index = 0; index < length(); ++index) {
     // Print shorthands for select cases.
     UChar character = (*impl_)[index];
     switch (character) {
       case '\t':
-        str.append("\\t");
+        builder.Append("\\t");
         break;
       case '\n':
-        str.append("\\n");
+        builder.Append("\\n");
         break;
       case '\r':
-        str.append("\\r");
+        builder.Append("\\r");
         break;
       case '"':
-        str.append("\\\"");
+        builder.Append("\\\"");
         break;
       case '\\':
-        str.append("\\\\");
+        builder.Append("\\\\");
         break;
       default:
         if (IsASCIIPrintable(character)) {
-          str.append(static_cast<char>(character));
+          builder.Append(static_cast<char>(character));
         } else {
           // Print "\uXXXX" for control or non-ASCII characters.
-          str.append("\\u");
-          std::stringstream out;
-          out.width(4);
-          out.fill('0');
-          out.setf(std::ios_base::hex, std::ios_base::basefield);
-          out.setf(std::ios::uppercase);
-          out << character;
-          str.append(out.str().c_str());
+          builder.Append("\\u");
+          HexNumber::AppendByteAsHex(character >> 8, builder,
+                                     HexNumber::kUppercase);
+          HexNumber::AppendByteAsHex(character, builder, HexNumber::kUppercase);
         }
         break;
     }
   }
-  str.append('"');
-  return str;
+  builder.Append('"');
+  return builder.ToString();
 }
 
 String String::Number(float number) {
