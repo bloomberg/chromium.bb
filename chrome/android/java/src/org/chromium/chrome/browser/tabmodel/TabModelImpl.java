@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -423,7 +424,13 @@ public class TabModelImpl extends TabModelJniBridge {
             return;
         }
 
-        closeAllTabs(true, false, true);
+        // TODO(meiliang): This is a band-aid fix, should remove after LayoutManager is able to
+        // manage the Grid Tab Switcher.
+        // Disable animation if GridTabSwitcher or TabGroup is enabled.
+        boolean animate = !(FeatureUtilities.isGridTabSwitcherEnabled()
+                || FeatureUtilities.isTabGroupsAndroidEnabled());
+
+        closeAllTabs(animate, false, true);
     }
 
     /**
