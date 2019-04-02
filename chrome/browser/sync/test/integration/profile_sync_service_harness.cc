@@ -27,7 +27,7 @@
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 
-using browser_sync::ProfileSyncService;
+using syncer::ProfileSyncService;
 using syncer::SyncCycleSnapshot;
 
 namespace {

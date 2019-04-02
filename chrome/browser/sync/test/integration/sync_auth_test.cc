@@ -12,7 +12,7 @@
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_token_status.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/http/http_status_code.h"
@@ -52,7 +52,7 @@ constexpr char kMalformedOAuth2Token[] = R"({ "foo": )";
 // Waits until local changes are committed or an auth error is encountered.
 class TestForAuthError : public UpdatedProgressMarkerChecker {
  public:
-  explicit TestForAuthError(browser_sync::ProfileSyncService* service)
+  explicit TestForAuthError(syncer::ProfileSyncService* service)
       : UpdatedProgressMarkerChecker(service) {}
 
   // StatusChangeChecker implementation.
@@ -69,7 +69,7 @@ class TestForAuthError : public UpdatedProgressMarkerChecker {
 
 class SyncTransportActiveChecker : public SingleClientStatusChangeChecker {
  public:
-  explicit SyncTransportActiveChecker(browser_sync::ProfileSyncService* service)
+  explicit SyncTransportActiveChecker(syncer::ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
   // StatusChangeChecker implementation.
@@ -312,7 +312,7 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, DISABLED_TokenExpiry) {
 
 class NoAuthErrorChecker : public SingleClientStatusChangeChecker {
  public:
-  explicit NoAuthErrorChecker(browser_sync::ProfileSyncService* service)
+  explicit NoAuthErrorChecker(syncer::ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
   // StatusChangeChecker implementation.

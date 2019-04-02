@@ -30,8 +30,8 @@
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_token_status.h"
@@ -128,7 +128,7 @@ class MetricsConsentOverride {
 
 class SyncConnectionOkChecker : public SingleClientStatusChangeChecker {
  public:
-  explicit SyncConnectionOkChecker(browser_sync::ProfileSyncService* service)
+  explicit SyncConnectionOkChecker(syncer::ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
   bool IsExitConditionSatisfied() override {
@@ -398,7 +398,7 @@ class UkmConsentParamBrowserTest : public UkmBrowserTestBase,
 class UkmEnabledChecker : public SingleClientStatusChangeChecker {
  public:
   UkmEnabledChecker(UkmBrowserTestBase* test,
-                    browser_sync::ProfileSyncService* service,
+                    syncer::ProfileSyncService* service,
                     bool want_enabled)
       : SingleClientStatusChangeChecker(service),
         test_(test),

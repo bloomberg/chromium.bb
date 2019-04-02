@@ -10,8 +10,8 @@
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 
 namespace {
@@ -27,7 +27,7 @@ syncer::ModelTypeSet AllowedTypesInStandaloneTransportMode() {
 
 class SyncDisabledByUserChecker : public SingleClientStatusChangeChecker {
  public:
-  explicit SyncDisabledByUserChecker(browser_sync::ProfileSyncService* service)
+  explicit SyncDisabledByUserChecker(syncer::ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
   bool IsExitConditionSatisfied() override {

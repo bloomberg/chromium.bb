@@ -27,9 +27,9 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/test/fake_server/fake_server.h"
@@ -108,8 +108,7 @@ class PersonalDataLoadedObserverMock
 class WaitForNextWalletUpdateChecker : public StatusChangeChecker,
                                        public syncer::SyncServiceObserver {
  public:
-  explicit WaitForNextWalletUpdateChecker(
-      browser_sync::ProfileSyncService* service)
+  explicit WaitForNextWalletUpdateChecker(syncer::ProfileSyncService* service)
       : service_(service),
         initial_marker_(GetInitialMarker(service)),
         scoped_observer_(this) {
@@ -140,7 +139,7 @@ class WaitForNextWalletUpdateChecker : public StatusChangeChecker,
 
  private:
   static std::string GetInitialMarker(
-      const browser_sync::ProfileSyncService* service) {
+      const syncer::ProfileSyncService* service) {
     // GetLastCycleSnapshot() returns by value, so make sure to capture it for
     // iterator use.
     const syncer::SyncCycleSnapshot snap = service->GetLastCycleSnapshot();
@@ -153,10 +152,9 @@ class WaitForNextWalletUpdateChecker : public StatusChangeChecker,
     return marker_it->second;
   }
 
-  const browser_sync::ProfileSyncService* service_;
+  const syncer::ProfileSyncService* service_;
   const std::string initial_marker_;
-  ScopedObserver<browser_sync::ProfileSyncService,
-                 WaitForNextWalletUpdateChecker>
+  ScopedObserver<syncer::ProfileSyncService, WaitForNextWalletUpdateChecker>
       scoped_observer_;
 };
 

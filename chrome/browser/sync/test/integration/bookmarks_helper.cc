@@ -39,12 +39,12 @@
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_util.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/test/fake_server/entity_builder_factory.h"
 #include "components/sync_bookmarks/bookmark_change_processor.h"
 #include "content/public/test/test_utils.h"
@@ -1011,7 +1011,7 @@ std::string BookmarksTitleChecker::GetDebugMessage() const {
 }
 
 ServerBookmarksEqualityChecker::ServerBookmarksEqualityChecker(
-    browser_sync::ProfileSyncService* service,
+    syncer::ProfileSyncService* service,
     fake_server::FakeServer* fake_server,
     const std::vector<ExpectedBookmark>& expected_bookmarks,
     syncer::Cryptographer* cryptographer)

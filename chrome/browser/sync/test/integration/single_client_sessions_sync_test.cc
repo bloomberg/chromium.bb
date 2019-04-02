@@ -91,7 +91,7 @@ class IsHistoryURLSyncedChecker : public SingleClientStatusChangeChecker {
  public:
   IsHistoryURLSyncedChecker(const std::string& url,
                             fake_server::FakeServer* fake_server,
-                            browser_sync::ProfileSyncService* service)
+                            syncer::ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service),
         url_(url),
         fake_server_(fake_server) {}

@@ -15,7 +15,7 @@
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/browser_sync/profile_sync_components_factory_impl.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/model/fake_model_type_sync_bridge.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_error.h"
@@ -192,7 +192,7 @@ class MetadataAbsentChecker : public KeyChecker {
 // Wait for PREFERENCES to no longer be running.
 class PrefsNotRunningChecker : public SingleClientStatusChangeChecker {
  public:
-  explicit PrefsNotRunningChecker(browser_sync::ProfileSyncService* service)
+  explicit PrefsNotRunningChecker(syncer::ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
   bool IsExitConditionSatisfied() override {
@@ -207,7 +207,7 @@ class PrefsNotRunningChecker : public SingleClientStatusChangeChecker {
 // Wait for sync cycle failure.
 class SyncCycleFailedChecker : public SingleClientStatusChangeChecker {
  public:
-  explicit SyncCycleFailedChecker(browser_sync::ProfileSyncService* service)
+  explicit SyncCycleFailedChecker(syncer::ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
   bool IsExitConditionSatisfied() override {
