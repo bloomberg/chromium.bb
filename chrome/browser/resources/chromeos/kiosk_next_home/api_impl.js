@@ -164,8 +164,7 @@ class KioskNextHomeBridge {
 
   /** @override */
   uninstallApp(appId) {
-    // TODO(brunoad): Implement this method.
-    return Promise.reject('Not implemented.');
+    this.appControllerProxy_.uninstallApp(appId);
   }
 
   /** @override */

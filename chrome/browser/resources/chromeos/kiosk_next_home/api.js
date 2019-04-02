@@ -73,10 +73,11 @@ kioskNextHome.Bridge = class {
   launchHomeUrl(suffix) {}
 
   /**
-   * Uninstalls an app.
+   * Shows a prompt to uninstall the app with the given appId.
+   *
+   * We will notify listeners when the app is uninstalled through a readiness
+   * state change.
    * @param {string} appId App to uninstall.
-   * @return {!Promise} Resolves when app is uninstalled, or rejects in case of
-   *     failures.
    */
   uninstallApp(appId) {}
 

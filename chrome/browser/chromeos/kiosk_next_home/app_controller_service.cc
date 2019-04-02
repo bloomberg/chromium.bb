@@ -90,6 +90,10 @@ void AppControllerService::LaunchApp(const std::string& app_id) {
                              display::kDefaultDisplayId);
 }
 
+void AppControllerService::UninstallApp(const std::string& app_id) {
+  app_service_proxy_->Uninstall(app_id);
+}
+
 void AppControllerService::GetArcAndroidId(
     mojom::AppController::GetArcAndroidIdCallback callback) {
   arc::GetAndroidId(base::BindOnce(

@@ -50,6 +50,9 @@ interface AppController {
   // Launches the app with the given app_id.
   LaunchApp(string app_id);
 
+  // Shows a prompt to uninstall the app with the given app_id.
+  UninstallApp(string app_id);
+
   // Gets the Android ID for the ARC container.
   GetArcAndroidId() => (bool success, string android_id);
 
