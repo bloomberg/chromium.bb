@@ -1016,7 +1016,7 @@ class CORE_EXPORT LocalFrameView final
 
   MainThreadScrollingReasons main_thread_scrolling_reasons_;
 
-  std::unique_ptr<LocalFrameUkmAggregator> ukm_aggregator_;
+  scoped_refptr<LocalFrameUkmAggregator> ukm_aggregator_;
   unsigned forced_layout_stack_depth_;
   TimeTicks forced_layout_start_time_;
 

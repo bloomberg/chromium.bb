@@ -14,7 +14,7 @@
 namespace blink {
 
 LocalFrameUkmAggregator::ScopedUkmHierarchicalTimer::ScopedUkmHierarchicalTimer(
-    LocalFrameUkmAggregator* aggregator,
+    scoped_refptr<LocalFrameUkmAggregator> aggregator,
     size_t metric_index)
     : aggregator_(aggregator),
       metric_index_(metric_index),

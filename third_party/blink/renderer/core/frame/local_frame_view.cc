@@ -4365,9 +4365,9 @@ LayoutUnit LocalFrameView::CaretWidth() const {
 
 LocalFrameUkmAggregator& LocalFrameView::EnsureUkmAggregator() {
   if (!ukm_aggregator_) {
-    ukm_aggregator_.reset(
-        new LocalFrameUkmAggregator(frame_->GetDocument()->UkmSourceID(),
-                                    frame_->GetDocument()->UkmRecorder()));
+    ukm_aggregator_ = base::MakeRefCounted<LocalFrameUkmAggregator>(
+        frame_->GetDocument()->UkmSourceID(),
+        frame_->GetDocument()->UkmRecorder());
   }
   return *ukm_aggregator_;
 }
