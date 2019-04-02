@@ -2,21 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_BROWSER_SYNC_TEST_PROFILE_SYNC_SERVICE_H_
-#define COMPONENTS_BROWSER_SYNC_TEST_PROFILE_SYNC_SERVICE_H_
+#ifndef COMPONENTS_SYNC_DRIVER_TEST_PROFILE_SYNC_SERVICE_H_
+#define COMPONENTS_SYNC_DRIVER_TEST_PROFILE_SYNC_SERVICE_H_
 
 #include "base/macros.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/weak_handle.h"
 #include "components/sync/driver/data_type_manager.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/js/js_event_handler.h"
-#include "components/sync/test/engine/test_id_factory.h"
 
 namespace syncer {
-class SyncPrefs;
-}  // namespace syncer
 
-namespace browser_sync {
+class SyncPrefs;
 
 class TestProfileSyncService : public syncer::ProfileSyncService {
  public:
@@ -35,8 +32,6 @@ class TestProfileSyncService : public syncer::ProfileSyncService {
   // We implement our own version to avoid some DCHECKs.
   syncer::UserShare* GetUserShare() const override;
 
-  syncer::TestIdFactory* id_factory();
-
   // Raise visibility to ease testing.
   using ProfileSyncService::NotifyObservers;
 
@@ -49,11 +44,9 @@ class TestProfileSyncService : public syncer::ProfileSyncService {
   syncer::WeakHandle<syncer::JsEventHandler> GetJsEventHandler() override;
 
  private:
-  syncer::TestIdFactory id_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(TestProfileSyncService);
 };
 
-}  // namespace browser_sync
+}  // namespace syncer
 
-#endif  // COMPONENTS_BROWSER_SYNC_TEST_PROFILE_SYNC_SERVICE_H_
+#endif  // COMPONENTS_SYNC_DRIVER_TEST_PROFILE_SYNC_SERVICE_H_

@@ -13,9 +13,9 @@
 #include "base/run_loop.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/browser_sync/test_http_bridge_factory.h"
-#include "components/browser_sync/test_profile_sync_service.h"
 #include "components/sync/driver/glue/sync_backend_host_core.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
+#include "components/sync/driver/test_profile_sync_service.h"
 #include "components/sync/engine/sync_manager_factory_for_profile_sync_test.h"
 #include "components/sync/engine/test_engine_components_factory.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -134,7 +134,7 @@ void AbstractProfileSyncServiceTest::CreateSyncService(
       profile_sync_service_bundle_.CreateBasicInitParams(
           ProfileSyncService::AUTO_START, std::move(sync_client));
   sync_service_ =
-      std::make_unique<TestProfileSyncService>(std::move(init_params));
+      std::make_unique<syncer::TestProfileSyncService>(std::move(init_params));
 
   syncer::SyncApiComponentFactoryMock* components =
       profile_sync_service_bundle_.component_factory();
