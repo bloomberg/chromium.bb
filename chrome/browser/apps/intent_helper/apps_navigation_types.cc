@@ -4,7 +4,7 @@
 
 #include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
 
-namespace chromeos {
+namespace apps {
 
 IntentPickerAppInfo::IntentPickerAppInfo(apps::mojom::AppType type,
                                          const gfx::Image& icon,
@@ -20,4 +20,4 @@ IntentPickerAppInfo::IntentPickerAppInfo(IntentPickerAppInfo&& other) = default;
 IntentPickerAppInfo& IntentPickerAppInfo::operator=(
     IntentPickerAppInfo&& other) = default;
 
-}  // namespace chromeos
+}  // namespace apps

@@ -13,12 +13,12 @@
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "ui/gfx/image/image.h"
 
-namespace chromeos {
+namespace apps {
 
 // Describes the possible ways for the intent picker to be closed.
 enum class IntentPickerCloseReason {
   // There was an error in showing the intent picker.
-  ERROR,
+  PICKER_ERROR,
 
   // The user dismissed the picker without making a choice.
   DIALOG_DEACTIVATED,
@@ -96,7 +96,7 @@ using AppsNavigationCallback =
 using GetAppsCallback =
     base::OnceCallback<void(std::vector<IntentPickerAppInfo> apps)>;
 
-}  // namespace chromeos
+}  // namespace apps
 
 // Callback to pass the launch name and type of the app selected by the user,
 // along with the reason why the Bubble was closed and whether the decision
@@ -105,7 +105,7 @@ using GetAppsCallback =
 using IntentPickerResponse =
     base::OnceCallback<void(const std::string& launch_name,
                             apps::mojom::AppType app_type,
-                            chromeos::IntentPickerCloseReason close_reason,
+                            apps::IntentPickerCloseReason close_reason,
                             bool should_persist)>;
 
 #endif  // CHROME_BROWSER_APPS_INTENT_HELPER_APPS_NAVIGATION_TYPES_H_

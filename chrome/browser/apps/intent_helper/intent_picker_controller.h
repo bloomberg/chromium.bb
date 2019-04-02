@@ -10,7 +10,7 @@
 
 class Browser;
 
-namespace arc {
+namespace apps {
 
 // Controls the visibility of IntentPickerView by watching whenever the current
 // tab is switched. An object of this class is owned by IntentPickerView.
@@ -33,6 +33,6 @@ class IntentPickerController : public TabStripModelObserver {
   DISALLOW_COPY_AND_ASSIGN(IntentPickerController);
 };
 
-}  // namespace arc
+}  // namespace apps
 
 #endif  // CHROME_BROWSER_APPS_INTENT_HELPER_INTENT_PICKER_CONTROLLER_H_

@@ -10,13 +10,8 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
-#include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
 #include "chrome/browser/apps/intent_helper/intent_picker_auto_display_service.h"
 #include "chrome/browser/apps/intent_helper/page_transition_util.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
-#include "chrome/browser/chromeos/arc/intent_helper/arc_intent_picker_app_fetcher.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/prerender/prerender_contents.h"
@@ -26,10 +21,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_features.h"
-#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
-#include "components/arc/metrics/arc_metrics_constants.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/site_instance.h"
@@ -40,30 +32,6 @@
 namespace {
 
 constexpr char kGoogleCom[] = "google.com";
-
-// Removes the flag signaling that the current tab was started via
-// ChromeShellDelegate if the current throttle corresponds to a navigation
-// passing thru different domains or schemes, except if |current_url| has a
-// scheme different than http(s).
-void MaybeRemoveComingFromArcFlag(content::WebContents* web_contents,
-                                  const GURL& previous_url,
-                                  const GURL& current_url) {
-  // Let ArcExternalProtocolDialog handle these cases.
-  if (!current_url.SchemeIsHTTPOrHTTPS())
-    return;
-
-  if (url::Origin::Create(previous_url)
-          .IsSameOriginWith(url::Origin::Create(current_url))) {
-    return;
-  }
-
-  const char* key =
-      arc::ArcWebContentsData::ArcWebContentsData::kArcTransitionFlag;
-  arc::ArcWebContentsData* arc_data =
-      static_cast<arc::ArcWebContentsData*>(web_contents->GetUserData(key));
-  if (arc_data)
-    web_contents->RemoveUserData(key);
-}
 
 // Compares the host name of the referrer and target URL to decide whether
 // the navigation needs to be overridden.
@@ -133,33 +101,15 @@ bool IsDesktopPwasEnabled() {
 
 }  // namespace
 
-namespace chromeos {
+namespace apps {
 
 // static
 std::unique_ptr<content::NavigationThrottle>
 AppsNavigationThrottle::MaybeCreate(content::NavigationHandle* handle) {
   content::WebContents* web_contents = handle->GetWebContents();
-  const bool arc_enabled = arc::IsArcPlayStoreEnabledForProfile(
-      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
-
-  // Do not create the throttle if no apps can be installed.
-  if (!arc_enabled && !IsDesktopPwasEnabled())
+  if (!CanCreate(web_contents))
     return nullptr;
-
-  // Do not create the throttle in incognito or for a prerender navigation.
-  if (web_contents->GetBrowserContext()->IsOffTheRecord() ||
-      prerender::PrerenderContents::FromWebContents(web_contents) != nullptr) {
-    return nullptr;
-  }
-
-  // Do not create the throttle if there is no browser for the WebContents or we
-  // are already in an app browser. The former can happen if an initial
-  // navigation is reparented into a new app browser instance.
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  if (!browser || browser->is_app())
-    return nullptr;
-
-  return std::make_unique<AppsNavigationThrottle>(handle, arc_enabled);
+  return std::make_unique<AppsNavigationThrottle>(handle);
 }
 
 // static
@@ -167,11 +117,12 @@ void AppsNavigationThrottle::ShowIntentPickerBubble(
     content::WebContents* web_contents,
     IntentPickerAutoDisplayService* ui_auto_display_service,
     const GURL& url) {
-  arc::ArcIntentPickerAppFetcher::GetArcAppsForPicker(
-      web_contents, url,
-      base::BindOnce(
-          &AppsNavigationThrottle::FindPwaForUrlAndShowIntentPickerForApps,
-          web_contents, ui_auto_display_service, url));
+  std::vector<IntentPickerAppInfo> apps = FindPwaForUrl(web_contents, url, {});
+
+  ShowIntentPickerBubbleForAppsImpl(
+      web_contents, std::move(apps),
+      base::BindOnce(&OnIntentPickerClosed, web_contents,
+                     ui_auto_display_service, url));
 }
 
 // static
@@ -197,24 +148,7 @@ void AppsNavigationThrottle::OnIntentPickerClosed(
         ReparentWebContentsIntoAppBrowser(web_contents, extension);
       }
       break;
-    case apps::mojom::AppType::kArc:
-      if (arc::ArcIntentPickerAppFetcher::MaybeLaunchOrPersistArcApp(
-              url, launch_name, should_launch_app, should_persist)) {
-        CloseOrGoBack(web_contents);
-      } else {
-        close_reason = IntentPickerCloseReason::ERROR;
-      }
-      break;
     case apps::mojom::AppType::kUnknown:
-      // TODO(crbug.com/826982): This workaround can be removed when preferences
-      // are no longer persisted within the ARC container, it was necessary
-      // since chrome browser is neither a PWA or ARC app.
-      if (close_reason == IntentPickerCloseReason::STAY_IN_CHROME &&
-          should_persist) {
-        arc::ArcIntentPickerAppFetcher::MaybeLaunchOrPersistArcApp(
-            url, launch_name, /*should_launch_app=*/false,
-            /*should_persist=*/true);
-      }
       // We reach here if the picker was closed without an app being chosen,
       // e.g. due to the tab being closed. Keep count of this scenario so we can
       // stop the UI from showing after 2+ dismissals.
@@ -223,6 +157,7 @@ void AppsNavigationThrottle::OnIntentPickerClosed(
           ui_auto_display_service->IncrementCounter(url);
       }
       break;
+    case apps::mojom::AppType::kArc:
     case apps::mojom::AppType::kBuiltIn:
     case apps::mojom::AppType::kCrostini:
     case apps::mojom::AppType::kExtension:
@@ -243,13 +178,6 @@ void AppsNavigationThrottle::RecordUma(const std::string& selected_app_package,
 
   UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.IntentPickerDestinationPlatform",
                             platform);
-
-  if (app_type == apps::mojom::AppType::kArc &&
-      (close_reason == IntentPickerCloseReason::PREFERRED_APP_FOUND ||
-       close_reason == IntentPickerCloseReason::OPEN_APP)) {
-    UMA_HISTOGRAM_ENUMERATION("Arc.UserInteraction",
-                              arc::UserInteractionType::APP_STARTED_FROM_LINK);
-  }
 }
 
 // static
@@ -259,16 +187,32 @@ bool AppsNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
   return ShouldOverrideUrlLoading(previous_url, current_url);
 }
 
+// static
+void AppsNavigationThrottle::ShowIntentPickerBubbleForAppsImpl(
+    content::WebContents* web_contents,
+    std::vector<IntentPickerAppInfo> apps,
+    IntentPickerResponse callback) {
+  if (apps.empty())
+    return;
+
+  // It should be safe to bind |web_contents| since closing the current tab will
+  // close the intent picker and run the callback prior to the WebContents being
+  // deallocated.
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (!browser)
+    return;
+  browser->window()->ShowIntentPickerBubble(std::move(apps),
+                                            /*disable_stay_in_chrome=*/false,
+                                            std::move(callback));
+}
+
 AppsNavigationThrottle::AppsNavigationThrottle(
-    content::NavigationHandle* navigation_handle,
-    bool arc_enabled)
+    content::NavigationHandle* navigation_handle)
     : content::NavigationThrottle(navigation_handle),
-      arc_enabled_(arc_enabled),
       ui_displayed_(false),
       ui_auto_display_service_(
           IntentPickerAutoDisplayService::Get(Profile::FromBrowserContext(
-              navigation_handle->GetWebContents()->GetBrowserContext()))),
-      weak_factory_(this) {
+              navigation_handle->GetWebContents()->GetBrowserContext()))) {
   // |ui_auto_display_service_| can be null iff the call is coming from
   // IntentPickerView. Since the pointer to our service is never modified
   // (in case it is successfully created here) this check covers all the
@@ -308,6 +252,28 @@ AppsNavigationThrottle::WillRedirectRequest() {
 }
 
 // static
+bool AppsNavigationThrottle::CanCreate(content::WebContents* web_contents) {
+  // Do not create the throttle if no apps can be installed.
+  if (!IsDesktopPwasEnabled())
+    return false;
+
+  // Do not create the throttle in incognito or for a prerender navigation.
+  if (web_contents->GetBrowserContext()->IsOffTheRecord() ||
+      prerender::PrerenderContents::FromWebContents(web_contents) != nullptr) {
+    return false;
+  }
+
+  // Do not create the throttle if there is no browser for the WebContents or we
+  // are already in an app browser. The former can happen if an initial
+  // navigation is reparented into a new app browser instance.
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (!browser || browser->is_app())
+    return false;
+
+  return true;
+}
+
+// static
 AppsNavigationThrottle::Platform AppsNavigationThrottle::GetDestinationPlatform(
     const std::string& selected_launch_name,
     PickerAction picker_action) {
@@ -317,71 +283,19 @@ AppsNavigationThrottle::Platform AppsNavigationThrottle::GetDestinationPlatform(
       return Platform::ARC;
     case PickerAction::PWA_APP_PRESSED:
       return Platform::PWA;
-    case PickerAction::ERROR:
+    case PickerAction::PICKER_ERROR:
     case PickerAction::DIALOG_DEACTIVATED:
     case PickerAction::CHROME_PRESSED:
     case PickerAction::CHROME_PREFERRED_PRESSED:
       return Platform::CHROME;
     case PickerAction::PREFERRED_ACTIVITY_FOUND:
-      return arc::ArcIntentHelperBridge::IsIntentHelperPackage(
-                 selected_launch_name)
-                 ? Platform::CHROME
-                 : Platform::ARC;
     case PickerAction::OBSOLETE_ALWAYS_PRESSED:
     case PickerAction::OBSOLETE_JUST_ONCE_PRESSED:
     case PickerAction::INVALID:
-      NOTREACHED();
+      break;
   }
   NOTREACHED();
   return Platform::ARC;
-}
-
-// static
-AppsNavigationThrottle::PickerAction AppsNavigationThrottle::GetPickerAction(
-    apps::mojom::AppType app_type,
-    IntentPickerCloseReason close_reason,
-    bool should_persist) {
-  switch (close_reason) {
-    case IntentPickerCloseReason::ERROR:
-      return PickerAction::ERROR;
-    case IntentPickerCloseReason::DIALOG_DEACTIVATED:
-      return PickerAction::DIALOG_DEACTIVATED;
-    case IntentPickerCloseReason::PREFERRED_APP_FOUND:
-      return PickerAction::PREFERRED_ACTIVITY_FOUND;
-    case IntentPickerCloseReason::STAY_IN_CHROME:
-      return should_persist ? PickerAction::CHROME_PREFERRED_PRESSED
-                            : PickerAction::CHROME_PRESSED;
-    case IntentPickerCloseReason::OPEN_APP:
-      switch (app_type) {
-        case apps::mojom::AppType::kUnknown:
-          return PickerAction::INVALID;
-        case apps::mojom::AppType::kArc:
-          return should_persist ? PickerAction::ARC_APP_PREFERRED_PRESSED
-                                : PickerAction::ARC_APP_PRESSED;
-        case apps::mojom::AppType::kWeb:
-          return PickerAction::PWA_APP_PRESSED;
-        case apps::mojom::AppType::kBuiltIn:
-        case apps::mojom::AppType::kCrostini:
-        case apps::mojom::AppType::kExtension:
-          NOTREACHED();
-      }
-  }
-
-  NOTREACHED();
-  return PickerAction::INVALID;
-}
-
-// static
-void AppsNavigationThrottle::FindPwaForUrlAndShowIntentPickerForApps(
-    content::WebContents* web_contents,
-    IntentPickerAutoDisplayService* ui_auto_display_service,
-    const GURL& url,
-    std::vector<IntentPickerAppInfo> apps) {
-  std::vector<IntentPickerAppInfo> apps_for_picker =
-      FindPwaForUrl(web_contents, url, std::move(apps));
-
-  ShowIntentPickerBubbleForApps(web_contents, ui_auto_display_service, url,
-                                std::move(apps_for_picker));
 }
 
 // static
@@ -412,29 +326,6 @@ std::vector<IntentPickerAppInfo> AppsNavigationThrottle::FindPwaForUrl(
 }
 
 // static
-void AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
-    content::WebContents* web_contents,
-    IntentPickerAutoDisplayService* ui_auto_display_service,
-    const GURL& url,
-    std::vector<IntentPickerAppInfo> apps) {
-  if (apps.empty())
-    return;
-
-  // It should be safe to bind |web_contents| since closing the current tab will
-  // close the intent picker and run the callback prior to the WebContents being
-  // deallocated.
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  if (!browser)
-    return;
-
-  browser->window()->ShowIntentPickerBubble(
-      std::move(apps),
-      /*disable_stay_in_chrome=*/false,
-      base::BindOnce(&AppsNavigationThrottle::OnIntentPickerClosed,
-                     web_contents, ui_auto_display_service, url));
-}
-
-// static
 void AppsNavigationThrottle::CloseOrGoBack(content::WebContents* web_contents) {
   DCHECK(web_contents);
   if (web_contents->GetController().CanGoBack())
@@ -443,54 +334,75 @@ void AppsNavigationThrottle::CloseOrGoBack(content::WebContents* web_contents) {
     web_contents->ClosePage();
 }
 
-void AppsNavigationThrottle::CancelNavigation() {
-  content::WebContents* web_contents = navigation_handle()->GetWebContents();
-  if (web_contents && web_contents->GetController().IsInitialNavigation()) {
-    // Workaround for b/79167225, closing |web_contents| here may be dangerous.
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             base::BindOnce(&AppsNavigationThrottle::CloseTab,
-                                            weak_factory_.GetWeakPtr()));
-  } else {
-    CancelDeferredNavigation(content::NavigationThrottle::CANCEL_AND_IGNORE);
-  }
+bool AppsNavigationThrottle::ShouldDeferNavigationForArc(
+    content::NavigationHandle* handle) {
+  return false;
 }
 
-void AppsNavigationThrottle::OnDeferredNavigationProcessed(
-    AppsNavigationAction action,
+void AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
+    content::WebContents* web_contents,
+    IntentPickerAutoDisplayService* ui_auto_display_service,
+    const GURL& url,
     std::vector<IntentPickerAppInfo> apps) {
-  if (action == AppsNavigationAction::CANCEL) {
-    // We found a preferred ARC app to open; cancel the navigation and don't do
-    // anything else.
-    CancelNavigation();
-    return;
+  ShowIntentPickerBubbleForAppsImpl(
+      web_contents, std::move(apps),
+      base::BindOnce(&OnIntentPickerClosed, web_contents,
+                     ui_auto_display_service, url));
+}
+
+bool AppsNavigationThrottle::ShouldAutoDisplayUi(
+    const std::vector<IntentPickerAppInfo>& apps_for_picker,
+    content::WebContents* web_contents,
+    const GURL& url) {
+  if (apps_for_picker.empty())
+    return false;
+
+  // Check if all the app candidates are PWAs.
+  bool only_pwa_apps =
+      std::all_of(apps_for_picker.begin(), apps_for_picker.end(),
+                  [](const IntentPickerAppInfo& app_info) {
+                    return app_info.type == apps::mojom::AppType::kWeb;
+                  });
+  if (only_pwa_apps)
+    return false;
+
+  DCHECK(ui_auto_display_service_);
+  return ui_auto_display_service_->ShouldAutoDisplayUi(url);
+}
+
+// static
+AppsNavigationThrottle::PickerAction AppsNavigationThrottle::GetPickerAction(
+    apps::mojom::AppType app_type,
+    IntentPickerCloseReason close_reason,
+    bool should_persist) {
+  switch (close_reason) {
+    case IntentPickerCloseReason::PICKER_ERROR:
+      return PickerAction::PICKER_ERROR;
+    case IntentPickerCloseReason::DIALOG_DEACTIVATED:
+      return PickerAction::DIALOG_DEACTIVATED;
+    case IntentPickerCloseReason::PREFERRED_APP_FOUND:
+      return PickerAction::PREFERRED_ACTIVITY_FOUND;
+    case IntentPickerCloseReason::STAY_IN_CHROME:
+      return should_persist ? PickerAction::CHROME_PREFERRED_PRESSED
+                            : PickerAction::CHROME_PRESSED;
+    case IntentPickerCloseReason::OPEN_APP:
+      switch (app_type) {
+        case apps::mojom::AppType::kUnknown:
+          return PickerAction::INVALID;
+        case apps::mojom::AppType::kArc:
+          return should_persist ? PickerAction::ARC_APP_PREFERRED_PRESSED
+                                : PickerAction::ARC_APP_PRESSED;
+        case apps::mojom::AppType::kWeb:
+          return PickerAction::PWA_APP_PRESSED;
+        case apps::mojom::AppType::kBuiltIn:
+        case apps::mojom::AppType::kCrostini:
+        case apps::mojom::AppType::kExtension:
+          NOTREACHED();
+      }
   }
 
-  content::NavigationHandle* handle = navigation_handle();
-  content::WebContents* web_contents = handle->GetWebContents();
-  const GURL& url = handle->GetURL();
-
-  std::vector<IntentPickerAppInfo> apps_for_picker =
-      FindPwaForUrl(web_contents, url, std::move(apps));
-
-  // If we only have PWAs in the app list, do not show the intent picker.
-  // Instead just show the omnibox icon. This is to reduce annoyance to users
-  // until "Remember my choice" is available for desktop PWAs.
-  // TODO(crbug.com/826982): show the intent picker when the app registry is
-  // available to persist "Remember my choice" for PWAs.
-  if (ShouldAutoDisplayUi(apps_for_picker, web_contents, url)) {
-    ShowIntentPickerBubbleForApps(web_contents, ui_auto_display_service_, url,
-                                  std::move(apps_for_picker));
-  } else {
-    ui_displayed_ = false;
-    Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-    // If there were any candidates, show the intent picker icon in the omnibox
-    // so the user can manually pick if they wish.
-    if (browser && !apps_for_picker.empty())
-      browser->window()->SetIntentPickerViewVisibility(/*visible=*/true);
-  }
-
-  // We are about to resume the navigation, which may destroy this object.
-  Resume();
+  NOTREACHED();
+  return PickerAction::INVALID;
 }
 
 content::NavigationThrottle::ThrottleCheckResult
@@ -532,11 +444,7 @@ AppsNavigationThrottle::HandleRequest() {
   if (!ShouldOverrideUrlLoading(starting_url_, url))
     return content::NavigationThrottle::PROCEED;
 
-  if (arc_enabled_ &&
-      arc::ArcIntentPickerAppFetcher::WillGetArcAppsForNavigation(
-          handle,
-          base::BindOnce(&AppsNavigationThrottle::OnDeferredNavigationProcessed,
-                         weak_factory_.GetWeakPtr()))) {
+  if (ShouldDeferNavigationForArc(handle)) {
     // Handling is now deferred to ArcIntentPickerAppFetcher, which
     // asynchronously queries ARC for apps, and runs
     // OnDeferredNavigationProcessed() with an action based on whether an
@@ -563,31 +471,4 @@ AppsNavigationThrottle::HandleRequest() {
   return content::NavigationThrottle::PROCEED;
 }
 
-void AppsNavigationThrottle::CloseTab() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::WebContents* web_contents = navigation_handle()->GetWebContents();
-  if (web_contents)
-    web_contents->ClosePage();
-}
-
-bool AppsNavigationThrottle::ShouldAutoDisplayUi(
-    const std::vector<IntentPickerAppInfo>& apps_for_picker,
-    content::WebContents* web_contents,
-    const GURL& url) {
-  if (apps_for_picker.empty())
-    return false;
-
-  // Check if all the app candidates are PWAs.
-  bool only_pwa_apps =
-      std::all_of(apps_for_picker.begin(), apps_for_picker.end(),
-                  [](const IntentPickerAppInfo& app_info) {
-                    return app_info.type == apps::mojom::AppType::kWeb;
-                  });
-  if (only_pwa_apps)
-    return false;
-
-  DCHECK(ui_auto_display_service_);
-  return ui_auto_display_service_->ShouldAutoDisplayUi(url);
-}
-
-}  // namespace chromeos
+}  // namespace apps

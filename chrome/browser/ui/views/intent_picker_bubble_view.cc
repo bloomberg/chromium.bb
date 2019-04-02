@@ -10,13 +10,13 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/intent_helper/apps_navigation_throttle.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "content/public/browser/navigation_handle.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -33,13 +33,16 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/window/dialog_client_view.h"
 
+#if defined(OS_CHROMEOS)
+#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace {
 
 // TODO(djacobo): Replace this limit to correctly reflect the UI mocks, which
 // now instead of limiting the results to 3.5 will allow whatever fits in 256pt.
 // Using |kMaxAppResults| as a measure of how many apps we want to show.
-constexpr size_t kMaxAppResults =
-    chromeos::AppsNavigationThrottle::kMaxAppResults;
+constexpr size_t kMaxAppResults = apps::AppsNavigationThrottle::kMaxAppResults;
 // Main components sizes
 constexpr int kTitlePadding = 16;
 constexpr int kRowHeight = 32;
@@ -129,7 +132,7 @@ views::Widget* IntentPickerBubbleView::ShowBubble(
   if (!browser || !BrowserView::GetBrowserViewForBrowser(browser)) {
     std::move(intent_picker_cb)
         .Run(kInvalidLaunchName, apps::mojom::AppType::kUnknown,
-             chromeos::IntentPickerCloseReason::ERROR, false);
+             apps::IntentPickerCloseReason::PICKER_ERROR, false);
     return nullptr;
   }
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
@@ -142,7 +145,8 @@ views::Widget* IntentPickerBubbleView::ShowBubble(
     intent_picker_bubble_->SetAnchorView(anchor_view);
     intent_picker_bubble_->SetArrow(views::BubbleBorder::TOP_RIGHT);
   } else {
-    intent_picker_bubble_->set_parent_window(browser_view->GetNativeWindow());
+    intent_picker_bubble_->set_parent_window(
+        platform_util::GetViewForWindow(browser_view->GetNativeWindow()));
     // Using the TopContainerBoundsInScreen Rect to specify an anchor for the
     // the UI. Rect allow us to set the coordinates(x,y), the width and height
     // for the new Rectangle.
@@ -201,15 +205,20 @@ void IntentPickerBubbleView::CloseBubble() {
 bool IntentPickerBubbleView::Accept() {
   RunCallback(app_info_[selected_app_tag_].launch_name,
               app_info_[selected_app_tag_].type,
-              chromeos::IntentPickerCloseReason::OPEN_APP,
+              apps::IntentPickerCloseReason::OPEN_APP,
               remember_selection_checkbox_->checked());
   return true;
 }
 
 bool IntentPickerBubbleView::Cancel() {
-  RunCallback(arc::ArcIntentHelperBridge::kArcIntentHelperPackageName,
-              apps::mojom::AppType::kUnknown,
-              chromeos::IntentPickerCloseReason::STAY_IN_CHROME,
+  const char* launch_name =
+#if defined(OS_CHROMEOS)
+      arc::ArcIntentHelperBridge::kArcIntentHelperPackageName;
+#else
+      kInvalidLaunchName;
+#endif
+  RunCallback(launch_name, apps::mojom::AppType::kUnknown,
+              apps::IntentPickerCloseReason::STAY_IN_CHROME,
               remember_selection_checkbox_->checked());
   return true;
 }
@@ -218,7 +227,7 @@ bool IntentPickerBubbleView::Close() {
   // Whenever closing the bubble without pressing |Just once| or |Always| we
   // need to report back that the user didn't select anything.
   RunCallback(kInvalidLaunchName, apps::mojom::AppType::kUnknown,
-              chromeos::IntentPickerCloseReason::DIALOG_DEACTIVATED, false);
+              apps::IntentPickerCloseReason::DIALOG_DEACTIVATED, false);
   return true;
 }
 
@@ -238,11 +247,13 @@ void IntentPickerBubbleView::Init() {
   size_t i = 0;
   size_t to_erase = app_info_.size();
   for (const auto& app_info : app_info_) {
+#if defined(OS_CHROMEOS)
     if (arc::ArcIntentHelperBridge::IsIntentHelperPackage(
             app_info.launch_name)) {
       to_erase = i;
       continue;
     }
+#endif  // defined(OS_CHROMEOS)
     IntentPickerLabelButton* app_button = new IntentPickerLabelButton(
         this, &app_info.icon, app_info.launch_name, app_info.display_name);
     app_button->set_tag(i);
@@ -343,7 +354,7 @@ IntentPickerBubbleView::~IntentPickerBubbleView() {
 // the callback so the caller can Resume the navigation.
 void IntentPickerBubbleView::OnWidgetDestroying(views::Widget* widget) {
   RunCallback(kInvalidLaunchName, apps::mojom::AppType::kUnknown,
-              chromeos::IntentPickerCloseReason::DIALOG_DEACTIVATED, false);
+              apps::IntentPickerCloseReason::DIALOG_DEACTIVATED, false);
 }
 
 void IntentPickerBubbleView::ButtonPressed(views::Button* sender,
@@ -398,7 +409,7 @@ bool IntentPickerBubbleView::HasCandidates() const {
 void IntentPickerBubbleView::RunCallback(
     const std::string& launch_name,
     apps::mojom::AppType app_type,
-    chromeos::IntentPickerCloseReason close_reason,
+    apps::IntentPickerCloseReason close_reason,
     bool should_persist) {
   if (!intent_picker_cb_.is_null()) {
     // Calling Run() will make |intent_picker_cb_| null.

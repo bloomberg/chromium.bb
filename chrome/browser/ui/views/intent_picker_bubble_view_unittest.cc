@@ -23,7 +23,7 @@
 #include "ui/views/resources/grit/views_resources.h"
 #include "url/gurl.h"
 
-using AppInfo = chromeos::IntentPickerAppInfo;
+using AppInfo = apps::IntentPickerAppInfo;
 using content::WebContents;
 using content::OpenURLParams;
 using content::Referrer;
@@ -89,7 +89,7 @@ class IntentPickerBubbleViewTest : public BrowserWithTestWindowTest {
   // Dummy method to be called upon bubble closing.
   void OnBubbleClosed(const std::string& selected_app_package,
                       apps::mojom::AppType app_type,
-                      chromeos::IntentPickerCloseReason close_reason,
+                      apps::IntentPickerCloseReason close_reason,
                       bool should_persist) {}
 
   std::unique_ptr<IntentPickerBubbleView> bubble_;

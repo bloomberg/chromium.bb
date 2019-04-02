@@ -377,7 +377,6 @@
 #include "services/video_capture/public/mojom/constants.mojom.h"
 #elif defined(OS_CHROMEOS)
 #include "ash/public/interfaces/constants.mojom.h"
-#include "chrome/browser/apps/intent_helper/apps_navigation_throttle.h"
 #include "chrome/browser/ash_service_registry.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_backend_delegate.h"
@@ -457,7 +456,7 @@
 #include "chrome/browser/ui/search/new_tab_page_navigation_throttle.h"
 #include "chrome/common/importer/profile_import.mojom.h"
 #include "components/services/patch/public/interfaces/constants.mojom.h"
-#endif
+#endif  //  !defined(OS_ANDROID)
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
@@ -470,6 +469,16 @@
 #include "components/crash/content/app/breakpad_linux.h"
 #endif  // !defined(OS_ANDROID)
 #include "components/crash/content/browser/crash_handler_host_linux.h"
+#endif
+
+// TODO(crbug.com/939205):  Once the upcoming App Service is available, use a
+// single navigation throttle to display the intent picker on all platforms.
+#if !defined(OS_ANDROID)
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/apps/intent_helper/chromeos_apps_navigation_throttle.h"
+#else
+#include "chrome/browser/apps/intent_helper/apps_navigation_throttle.h"
+#endif
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -4217,9 +4226,17 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
         handle->GetURL().SchemeIsHTTPOrHTTPS()) {
       throttles.push_back(MergeSessionNavigationThrottle::Create(handle));
     }
+  }
+#endif
 
+#if !defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(features::kIntentPicker)) {
     auto url_to_apps_throttle =
-        chromeos::AppsNavigationThrottle::MaybeCreate(handle);
+#if defined(OS_CHROMEOS)
+        chromeos::ChromeOsAppsNavigationThrottle::MaybeCreate(handle);
+#else
+        apps::AppsNavigationThrottle::MaybeCreate(handle);
+#endif
     if (url_to_apps_throttle)
       throttles.push_back(std::move(url_to_apps_throttle));
   }

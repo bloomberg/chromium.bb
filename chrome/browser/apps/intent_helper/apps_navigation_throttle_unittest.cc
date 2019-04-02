@@ -4,11 +4,10 @@
 
 #include "chrome/browser/apps/intent_helper/apps_navigation_throttle.h"
 #include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
-#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace chromeos {
+namespace apps {
 
 TEST(AppsNavigationThrottleTest, TestShouldOverrideUrlLoading) {
   // A navigation within the same domain shouldn't be overridden except if the
@@ -85,26 +84,30 @@ TEST(AppsNavigationThrottleTest, TestShouldOverrideUrlLoading) {
 }
 
 TEST(AppsNavigationThrottleTest, TestGetPickerAction) {
-  // Expect PickerAction::ERROR if the close_reason is ERROR.
-  EXPECT_EQ(AppsNavigationThrottle::PickerAction::ERROR,
-            AppsNavigationThrottle::GetPickerAction(
-                apps::mojom::AppType::kUnknown, IntentPickerCloseReason::ERROR,
-                /*should_persist=*/true));
+  // Expect PickerAction::PICKER_ERROR if the close_reason is ERROR.
+  EXPECT_EQ(
+      AppsNavigationThrottle::PickerAction::PICKER_ERROR,
+      AppsNavigationThrottle::GetPickerAction(
+          apps::mojom::AppType::kUnknown, IntentPickerCloseReason::PICKER_ERROR,
+          /*should_persist=*/true));
 
-  EXPECT_EQ(AppsNavigationThrottle::PickerAction::ERROR,
-            AppsNavigationThrottle::GetPickerAction(
-                apps::mojom::AppType::kArc, IntentPickerCloseReason::ERROR,
-                /*should_persist=*/true));
+  EXPECT_EQ(
+      AppsNavigationThrottle::PickerAction::PICKER_ERROR,
+      AppsNavigationThrottle::GetPickerAction(
+          apps::mojom::AppType::kArc, IntentPickerCloseReason::PICKER_ERROR,
+          /*should_persist=*/true));
 
-  EXPECT_EQ(AppsNavigationThrottle::PickerAction::ERROR,
-            AppsNavigationThrottle::GetPickerAction(
-                apps::mojom::AppType::kUnknown, IntentPickerCloseReason::ERROR,
-                /*should_persist=*/false));
+  EXPECT_EQ(
+      AppsNavigationThrottle::PickerAction::PICKER_ERROR,
+      AppsNavigationThrottle::GetPickerAction(
+          apps::mojom::AppType::kUnknown, IntentPickerCloseReason::PICKER_ERROR,
+          /*should_persist=*/false));
 
-  EXPECT_EQ(AppsNavigationThrottle::PickerAction::ERROR,
-            AppsNavigationThrottle::GetPickerAction(
-                apps::mojom::AppType::kArc, IntentPickerCloseReason::ERROR,
-                /*should_persist=*/false));
+  EXPECT_EQ(
+      AppsNavigationThrottle::PickerAction::PICKER_ERROR,
+      AppsNavigationThrottle::GetPickerAction(
+          apps::mojom::AppType::kArc, IntentPickerCloseReason::PICKER_ERROR,
+          /*should_persist=*/false));
 
   // Expect PickerAction::DIALOG_DEACTIVATED if the close_reason is
   // DIALOG_DEACTIVATED.
@@ -210,51 +213,36 @@ TEST(AppsNavigationThrottleTest, TestGetPickerAction) {
 }
 
 TEST(AppsNavigationThrottleTest, TestGetDestinationPlatform) {
-  const std::string chrome_app =
-      arc::ArcIntentHelperBridge::kArcIntentHelperPackageName;
-  const std::string non_chrome_app = "fake_package";
+  const std::string app_id = "fake_package";
 
   // When the PickerAction is either ERROR or DIALOG_DEACTIVATED we MUST stay in
   // Chrome not taking into account the selected_app_package.
   EXPECT_EQ(AppsNavigationThrottle::Platform::CHROME,
             AppsNavigationThrottle::GetDestinationPlatform(
-                chrome_app, AppsNavigationThrottle::PickerAction::ERROR));
+                app_id, AppsNavigationThrottle::PickerAction::PICKER_ERROR));
   EXPECT_EQ(AppsNavigationThrottle::Platform::CHROME,
             AppsNavigationThrottle::GetDestinationPlatform(
-                non_chrome_app, AppsNavigationThrottle::PickerAction::ERROR));
-  EXPECT_EQ(AppsNavigationThrottle::Platform::CHROME,
-            AppsNavigationThrottle::GetDestinationPlatform(
-                chrome_app,
-                AppsNavigationThrottle::PickerAction::DIALOG_DEACTIVATED));
-  EXPECT_EQ(AppsNavigationThrottle::Platform::CHROME,
-            AppsNavigationThrottle::GetDestinationPlatform(
-                non_chrome_app,
-                AppsNavigationThrottle::PickerAction::DIALOG_DEACTIVATED));
-
-  // When the PickerAction is PWA_APP_PRESSED, always expect the platform to be
-  // PWA.
-  EXPECT_EQ(
-      AppsNavigationThrottle::Platform::PWA,
-      AppsNavigationThrottle::GetDestinationPlatform(
-          chrome_app, AppsNavigationThrottle::PickerAction::PWA_APP_PRESSED));
-
-  EXPECT_EQ(AppsNavigationThrottle::Platform::PWA,
-            AppsNavigationThrottle::GetDestinationPlatform(
-                non_chrome_app,
-                AppsNavigationThrottle::PickerAction::PWA_APP_PRESSED));
-
-  // Under any other PickerAction, stay in Chrome only if the package is Chrome.
-  // Otherwise redirect to ARC.
+                app_id, AppsNavigationThrottle::PickerAction::PICKER_ERROR));
   EXPECT_EQ(
       AppsNavigationThrottle::Platform::CHROME,
       AppsNavigationThrottle::GetDestinationPlatform(
-          chrome_app,
-          AppsNavigationThrottle::PickerAction::PREFERRED_ACTIVITY_FOUND));
+          app_id, AppsNavigationThrottle::PickerAction::DIALOG_DEACTIVATED));
   EXPECT_EQ(
-      AppsNavigationThrottle::Platform::ARC,
+      AppsNavigationThrottle::Platform::CHROME,
       AppsNavigationThrottle::GetDestinationPlatform(
-          non_chrome_app,
-          AppsNavigationThrottle::PickerAction::PREFERRED_ACTIVITY_FOUND));
+          app_id, AppsNavigationThrottle::PickerAction::DIALOG_DEACTIVATED));
+
+  // When the PickerAction is PWA_APP_PRESSED, always expect the platform to be
+  // PWA.
+  EXPECT_EQ(AppsNavigationThrottle::Platform::PWA,
+            AppsNavigationThrottle::GetDestinationPlatform(
+                app_id, AppsNavigationThrottle::PickerAction::PWA_APP_PRESSED));
+
+  EXPECT_EQ(AppsNavigationThrottle::Platform::PWA,
+            AppsNavigationThrottle::GetDestinationPlatform(
+                app_id, AppsNavigationThrottle::PickerAction::PWA_APP_PRESSED));
+
+  // TODO(crbug.com/939205): restore testing ARC picker redirection
 }
 
-}  // namespace chromeos
+}  // namespace apps

@@ -1032,6 +1032,7 @@ test("browser_tests") {
       "../browser/ui/views/content_test_utils.h",
       "../browser/ui/views/device_chooser_browsertest.cc",
       "../browser/ui/views/hats/hats_browsertest.cc",
+      "../browser/ui/views/intent_picker_bubble_view_browsertest.cc",
       "../browser/ui/views/try_chrome_dialog_win/try_chrome_dialog_browsertest.cc",
       "../browser/ui/views/webauthn/authenticator_dialog_view_browsertest.cc",
       "../browser/ui/web_applications/bookmark_app_browsertest.cc",
@@ -1287,7 +1288,6 @@ test("browser_tests") {
       if (is_chromeos) {
         sources += [
           "../browser/ui/views/extensions/request_file_system_dialog_browsertest.cc",
-          "../browser/ui/views/intent_picker_bubble_view_browsertest.cc",
           "//third_party/liblouis/wasm/liblouis_wrapper_browsertest.cc",
         ]
         deps += [ "//chrome/browser/chromeos" ]
@@ -3557,6 +3557,8 @@ test("unit_tests") {
   if (!is_android) {
     sources += [
       "../browser/apps/app_service/app_service_proxy_unittest.cc",
+      "../browser/apps/intent_helper/apps_navigation_throttle_unittest.cc",
+      "../browser/apps/intent_helper/page_transition_util_unittest.cc",
       "../browser/devtools/devtools_file_system_indexer_unittest.cc",
       "../browser/devtools/devtools_file_watcher_unittest.cc",
       "../browser/devtools/devtools_ui_bindings_unittest.cc",
@@ -3690,8 +3692,6 @@ test("unit_tests") {
       "../browser/ui/window_sizer/window_sizer_unittest.cc",
     ]
     sources += [
-      "../browser/apps/intent_helper/apps_navigation_throttle_unittest.cc",
-      "../browser/apps/intent_helper/page_transition_util_unittest.cc",
       "../browser/chromeos/crostini/crostini_mime_types_service_unittest.cc",
       "../browser/chromeos/crostini/crostini_registry_service_unittest.cc",
       "../browser/chromeos/crostini/crostini_reporting_util_unittest.cc",

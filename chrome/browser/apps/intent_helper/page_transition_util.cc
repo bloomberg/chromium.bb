@@ -4,7 +4,7 @@
 
 #include "chrome/browser/apps/intent_helper/page_transition_util.h"
 
-namespace chromeos {
+namespace apps {
 
 bool ShouldIgnoreNavigation(ui::PageTransition page_transition,
                             bool allow_form_submit,
@@ -42,4 +42,4 @@ ui::PageTransition MaskOutPageTransition(ui::PageTransition page_transition,
   return ui::PageTransitionFromInt(page_transition & ~mask);
 }
 
-}  // namespace chromeos
+}  // namespace apps

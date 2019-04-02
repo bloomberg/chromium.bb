@@ -19,9 +19,9 @@
 #include "chrome/browser/ui/page_action/page_action_icon_container.h"
 #include "chrome/common/buildflags.h"
 
-#if defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID)
 #include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  //  !defined(OS_ANDROID)
 
 class LocationBarTesting;
 class OmniboxView;
@@ -115,13 +115,12 @@ class TestBrowserWindow : public BrowserWindow {
   bool IsToolbarShowing() const override;
   void ShowUpdateChromeDialog() override {}
   void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) override {}
-#if defined(OS_CHROMEOS)
-  void ShowIntentPickerBubble(
-      std::vector<chromeos::IntentPickerAppInfo> app_info,
-      bool disable_stay_in_chrome,
-      IntentPickerResponse callback) override {}
+#if !defined(OS_ANDROID)
+  void ShowIntentPickerBubble(std::vector<apps::IntentPickerAppInfo> app_info,
+                              bool disable_stay_in_chrome,
+                              IntentPickerResponse callback) override {}
   void SetIntentPickerViewVisibility(bool visible) override {}
-#endif
+#endif  //  !define(OS_ANDROID)
   autofill::SaveCardBubbleView* ShowSaveCreditCardBubble(
       content::WebContents* contents,
       autofill::SaveCardBubbleController* controller,

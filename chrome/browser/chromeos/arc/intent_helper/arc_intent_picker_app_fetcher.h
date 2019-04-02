@@ -32,7 +32,7 @@ class ArcIntentPickerAppFetcher : content::WebContentsObserver {
   // |callback| when complete. Does not attempt to open preferred apps.
   static void GetArcAppsForPicker(content::WebContents* web_contents,
                                   const GURL& url,
-                                  chromeos::GetAppsCallback callback);
+                                  apps::GetAppsCallback callback);
 
   // Returns true if the navigation request represented by |handle| should be
   // deferred while ARC is queried for apps, and if so, |callback| will be run
@@ -40,7 +40,7 @@ class ArcIntentPickerAppFetcher : content::WebContentsObserver {
   // run if false is returned.
   static bool WillGetArcAppsForNavigation(
       content::NavigationHandle* handle,
-      chromeos::AppsNavigationCallback callback);
+      apps::AppsNavigationCallback callback);
 
   // Called to launch an ARC app if it was selected by the user, and persist the
   // preference to launch or stay in Chrome if |should_persist| is true. Returns
@@ -80,13 +80,13 @@ class ArcIntentPickerAppFetcher : content::WebContentsObserver {
   // of handling apps.
   void GetArcAppsForNavigation(mojom::IntentHelperInstance* instance,
                                const GURL& url,
-                               chromeos::AppsNavigationCallback callback);
+                               apps::AppsNavigationCallback callback);
 
   // Asychronously queries ARC for apps which can handle |url|. Runs |callback|
   // with the list of handling apps.
   void GetArcAppsForPicker(mojom::IntentHelperInstance* instance,
                            const GURL& url,
-                           chromeos::GetAppsCallback callback);
+                           apps::GetAppsCallback callback);
 
   // Determines if there are apps to show the intent picker, or if we should
   // open a preferred app. Runs |callback| to RESUME/CANCEL the navigation which
@@ -96,21 +96,21 @@ class ArcIntentPickerAppFetcher : content::WebContentsObserver {
   // navigation.
   void OnAppCandidatesReceivedForNavigation(
       const GURL& url,
-      chromeos::AppsNavigationCallback callback,
+      apps::AppsNavigationCallback callback,
       std::vector<mojom::IntentHandlerInfoPtr> app_candidates);
 
   // Determines if there are apps to show the intent picker. Runs |callback|
   // with the list of apps to show in the picker.
   void OnAppCandidatesReceivedForPicker(
       const GURL& url,
-      chromeos::GetAppsCallback callback,
+      apps::GetAppsCallback callback,
       std::vector<arc::mojom::IntentHandlerInfoPtr> app_candidates);
 
   // Returns NONE if there is no preferred app given the potential
   // |app_candidates| or if we had an error while checking for preferred apps.
   // Otherwise return the platform where the preferred app lives (for now only
   // ARC and NATIVE_CHROME).
-  chromeos::PreferredPlatform DidLaunchPreferredArcApp(
+  apps::PreferredPlatform DidLaunchPreferredArcApp(
       const GURL& url,
       const std::vector<mojom::IntentHandlerInfoPtr>& app_candidates);
 
@@ -118,12 +118,12 @@ class ArcIntentPickerAppFetcher : content::WebContentsObserver {
   // |app_candidates|. Calls OnAppIconsReceived() when finished.
   void GetArcAppIcons(const GURL& url,
                       std::vector<mojom::IntentHandlerInfoPtr> app_candidates,
-                      chromeos::GetAppsCallback callback);
+                      apps::GetAppsCallback callback);
 
   void OnAppIconsReceived(
       const GURL& url,
       std::vector<arc::mojom::IntentHandlerInfoPtr> app_candidates,
-      chromeos::GetAppsCallback callback,
+      apps::GetAppsCallback callback,
       std::unique_ptr<arc::ArcIntentHelperBridge::ActivityToIconsMap> icons);
 
   // content::WebContentsObserver overrides.
