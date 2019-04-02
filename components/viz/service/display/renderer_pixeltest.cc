@@ -4285,7 +4285,7 @@ TYPED_TEST(GLOnlyRendererPixelTest, TileQuadClamping) {
                                  cc::ExactPixelComparator(true)));
 }
 
-TYPED_TEST(GLOnlyRendererPixelTest, RoundedCornerSimpleSolidDrawQuad) {
+TYPED_TEST(RendererPixelTest, RoundedCornerSimpleSolidDrawQuad) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
   constexpr int kInset = 20;
   constexpr int kCornerRadius = 20;
@@ -4317,10 +4317,22 @@ TYPED_TEST(GLOnlyRendererPixelTest, RoundedCornerSimpleSolidDrawQuad) {
   RenderPassList pass_list;
   pass_list.push_back(std::move(root_pass));
 
-  EXPECT_TRUE(this->RunPixelTest(
-      &pass_list,
-      base::FilePath(FILE_PATH_LITERAL("rounded_corner_simple.png")),
-      cc::ExactPixelComparator(true)));
+  if (std::is_same<TypeParam, GLRenderer>() ||
+      std::is_same<TypeParam, cc::GLRendererWithExpandedViewport>()) {
+    // GL Renderer should have an exact match as that is the reference point.
+    EXPECT_TRUE(this->RunPixelTest(
+        &pass_list,
+        base::FilePath(FILE_PATH_LITERAL("rounded_corner_simple.png")),
+        cc::ExactPixelComparator(true)));
+  } else {
+    // Software/skia renderer uses skia rrect to create rounded corner clip.
+    // This results in a different corner path due to a different anti aliasing
+    // approach than the fragment shader in gl renderer.
+    EXPECT_TRUE(this->RunPixelTest(
+        &pass_list,
+        base::FilePath(FILE_PATH_LITERAL("rounded_corner_simple.png")),
+        cc::FuzzyPixelComparator(true, 0.55f, 0.f, 255.f, 255, 0)));
+  }
 }
 
 TYPED_TEST(GLOnlyRendererPixelTest, RoundedCornerSimpleTextureDrawQuad) {
@@ -4384,7 +4396,7 @@ TYPED_TEST(GLOnlyRendererPixelTest, RoundedCornerSimpleTextureDrawQuad) {
 
 // This draws a render pass with 2 solid color quads one of which has a rounded
 // corner. The render pass itself also has a rounded corner.
-TYPED_TEST(GLOnlyRendererPixelTest, RoundedCornerOnRenderPass) {
+TYPED_TEST(RendererPixelTest, RoundedCornerOnRenderPass) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
   constexpr int kInset = 20;
   constexpr int kCornerRadius = 20;
@@ -4397,29 +4409,34 @@ TYPED_TEST(GLOnlyRendererPixelTest, RoundedCornerOnRenderPass) {
   int child_pass_id = 2;
   gfx::Rect pass_rect(this->device_viewport_size_);
   pass_rect.Inset(kInset, kInset);
+  gfx::Rect child_pass_local_rect = gfx::Rect(pass_rect.size());
   gfx::Transform transform_to_root;
-  std::unique_ptr<RenderPass> child_pass =
-      CreateTestRenderPass(child_pass_id, pass_rect, transform_to_root);
+  transform_to_root.Translate(pass_rect.OffsetFromOrigin());
+  std::unique_ptr<RenderPass> child_pass = CreateTestRenderPass(
+      child_pass_id, child_pass_local_rect, transform_to_root);
 
-  gfx::Rect blue_rect = pass_rect;
-  blue_rect.Offset(-30, 40);
+  gfx::Rect blue_rect = child_pass_local_rect;
+  gfx::Vector2dF blue_offset_from_target(-30, 40);
   gfx::RRectF blue_rrect(gfx::RectF(blue_rect), kBlueCornerRadius);
+  blue_rrect.Offset(blue_offset_from_target);
   gfx::Transform quad_to_target_transform;
-  SharedQuadState* shared_state_with_rrect = CreateTestSharedQuadState(
-      quad_to_target_transform, viewport_rect, child_pass.get(), blue_rrect);
+  quad_to_target_transform.Translate(blue_offset_from_target);
+  SharedQuadState* shared_state_with_rrect =
+      CreateTestSharedQuadState(quad_to_target_transform, child_pass_local_rect,
+                                child_pass.get(), blue_rrect);
   auto* blue = child_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   blue->SetNew(shared_state_with_rrect, blue_rect, blue_rect, SK_ColorBLUE,
                false);
 
   SharedQuadState* shared_state_without_rrect = CreateTestSharedQuadState(
-      quad_to_target_transform, viewport_rect, child_pass.get(), gfx::RRectF());
-  gfx::Rect yellow_rect = pass_rect;
+      gfx::Transform(), child_pass_local_rect, child_pass.get(), gfx::RRectF());
+  gfx::Rect yellow_rect = child_pass_local_rect;
   yellow_rect.Offset(30, -60);
   auto* yellow = child_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   yellow->SetNew(shared_state_without_rrect, yellow_rect, yellow_rect,
                  SK_ColorYELLOW, false);
 
-  gfx::Rect white_rect = pass_rect;
+  gfx::Rect white_rect = child_pass_local_rect;
   auto* white = child_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   white->SetNew(shared_state_without_rrect, white_rect, white_rect,
                 SK_ColorWHITE, false);
@@ -4434,13 +4451,33 @@ TYPED_TEST(GLOnlyRendererPixelTest, RoundedCornerOnRenderPass) {
   pass_list.push_back(std::move(child_pass));
   pass_list.push_back(std::move(root_pass));
 
-  EXPECT_TRUE(this->RunPixelTest(
-      &pass_list,
-      base::FilePath(FILE_PATH_LITERAL("rounded_corner_render_pass.png")),
-      cc::ExactPixelComparator(true)));
+  if (std::is_same<TypeParam, GLRenderer>() ||
+      std::is_same<TypeParam, cc::GLRendererWithExpandedViewport>()) {
+    // GL Renderer should have an exact match as that is the reference point.
+    EXPECT_TRUE(this->RunPixelTest(
+        &pass_list,
+        base::FilePath(FILE_PATH_LITERAL("rounded_corner_render_pass.png")),
+        cc::ExactPixelComparator(true)));
+  } else if (std::is_same<TypeParam, SkiaRenderer>()) {
+    // This is a bug where the render pass is being clipped incorrectly in the
+    // skia renderer. Change the expectation to true when the following bug is
+    // fixed: https://crbug.com/947243
+    EXPECT_FALSE(this->RunPixelTest(
+        &pass_list,
+        base::FilePath(FILE_PATH_LITERAL("rounded_corner_render_pass.png")),
+        cc::FuzzyPixelComparator(true, 0.6f, 0.f, 255.f, 255, 0)));
+  } else {
+    // Software/skia renderer uses skia rrect to create rounded corner clip.
+    // This results in a different corner path due to a different anti aliasing
+    // approach than the fragment shader in gl renderer.
+    EXPECT_TRUE(this->RunPixelTest(
+        &pass_list,
+        base::FilePath(FILE_PATH_LITERAL("rounded_corner_render_pass.png")),
+        cc::FuzzyPixelComparator(true, 0.6f, 0.f, 255.f, 255, 0)));
+  }
 }
 
-TYPED_TEST(GLOnlyRendererPixelTest, RoundedCornerMultiRadii) {
+TYPED_TEST(RendererPixelTest, RoundedCornerMultiRadii) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
   constexpr std::array<uint32_t, 4> kCornerRadii = {5, 15, 25, 35};
   constexpr int kInset = 20;
@@ -4481,10 +4518,22 @@ TYPED_TEST(GLOnlyRendererPixelTest, RoundedCornerMultiRadii) {
   RenderPassList pass_list;
   pass_list.push_back(std::move(root_pass));
 
-  EXPECT_TRUE(this->RunPixelTest(
-      &pass_list,
-      base::FilePath(FILE_PATH_LITERAL("rounded_corner_multi_radii.png")),
-      cc::ExactPixelComparator(true)));
+  if (std::is_same<TypeParam, GLRenderer>() ||
+      std::is_same<TypeParam, cc::GLRendererWithExpandedViewport>()) {
+    // GL Renderer should have an exact match as that is the reference point.
+    EXPECT_TRUE(this->RunPixelTest(
+        &pass_list,
+        base::FilePath(FILE_PATH_LITERAL("rounded_corner_multi_radii.png")),
+        cc::ExactPixelComparator(true)));
+  } else {
+    // Software/skia renderer uses skia rrect to create rounded corner clip.
+    // This results in a different corner path due to a different anti aliasing
+    // approach than the fragment shader in gl renderer.
+    EXPECT_TRUE(this->RunPixelTest(
+        &pass_list,
+        base::FilePath(FILE_PATH_LITERAL("rounded_corner_multi_radii.png")),
+        cc::FuzzyPixelComparator(true, 0.55f, 0.f, 255.f, 255, 0)));
+  }
 }
 
 template <typename RendererType>

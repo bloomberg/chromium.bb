@@ -137,7 +137,7 @@ void SoftwareRenderer::SetScissorTestRect(const gfx::Rect& scissor_rect) {
 void SoftwareRenderer::SetClipRect(const gfx::Rect& rect) {
   if (!current_canvas_)
     return;
-  // Skia applies the current matrix to clip rects so we reset it temporary.
+  // Skia applies the current matrix to clip rects so we reset it temporarily.
   SkMatrix current_matrix = current_canvas_->getTotalMatrix();
   current_canvas_->resetMatrix();
   // SetClipRect is assumed to be applied temporarily, on an
@@ -148,6 +148,22 @@ void SoftwareRenderer::SetClipRect(const gfx::Rect& rect) {
             current_canvas_->imageInfo().height());
   current_canvas_->clipRect(gfx::RectToSkRect(rect));
   current_canvas_->setMatrix(current_matrix);
+}
+
+void SoftwareRenderer::SetClipRRect(const gfx::RRectF& rrect) {
+  if (!current_canvas_)
+    return;
+
+  gfx::Transform screen_transform =
+      current_frame()->window_matrix * current_frame()->projection_matrix;
+  SkRRect result;
+  if (SkRRect(rrect).transform(screen_transform.matrix(), &result)) {
+    // Skia applies the current matrix to clip rects so we reset it temporarily.
+    SkMatrix current_matrix = current_canvas_->getTotalMatrix();
+    current_canvas_->resetMatrix();
+    current_canvas_->clipRRect(result, true);
+    current_canvas_->setMatrix(current_matrix);
+  }
 }
 
 void SoftwareRenderer::ClearCanvas(SkColor color) {
@@ -210,6 +226,9 @@ void SoftwareRenderer::DoDrawQuad(const DrawQuad* quad,
   if (is_scissor_enabled_) {
     SetClipRect(scissor_rect_);
   }
+
+  if (ShouldApplyRoundedCorner(quad))
+    SetClipRRect(quad->shared_quad_state->rounded_corner_bounds);
 
   gfx::Transform quad_rect_matrix;
   QuadRectTransform(&quad_rect_matrix,

@@ -106,12 +106,15 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   void DoSingleDrawQuad(const DrawQuad* quad, const gfx::QuadF* draw_region);
 
   void PrepareCanvasForDrawQuads(
-      gfx::Transform contents_device_transform,
+      gfx::Transform quad_to_target_transform,
       const gfx::QuadF* draw_region,
       const gfx::Rect* scissor_rect,
+      const gfx::RRectF* rounded_corner_bounds,
       base::Optional<SkAutoCanvasRestore>* auto_canvas_restore);
   // Callers should init an SkAutoCanvasRestore before calling this function.
-  void PrepareCanvas(const gfx::Rect* scissor_rect, const gfx::Transform* cdt);
+  void PrepareCanvas(const gfx::Rect* scissor_rect,
+                     const gfx::RRectF* rounded_corner_bounds,
+                     const gfx::Transform* cdt);
 
   DrawQuadParams CalculateDrawQuadParams(const DrawQuad* quad,
                                          const gfx::QuadF* draw_region);
@@ -234,6 +237,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
     SkBlendMode blend_mode;
     SkFilterQuality filter_quality;
     bool has_scissor_rect;
+    const gfx::RRectF* rounded_corner_bounds;
   };
   BatchedQuadState batched_quad_state_;
   std::vector<SkCanvas::ImageSetEntry> batched_quads_;

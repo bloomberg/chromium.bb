@@ -793,4 +793,32 @@ bool DirectRenderer::HasAllocatedResourcesForTesting(
   return IsRenderPassResourceAllocated(render_pass_id);
 }
 
+bool DirectRenderer::ShouldApplyRoundedCorner(const DrawQuad* quad) const {
+  const SharedQuadState* sqs = quad->shared_quad_state;
+  const gfx::RRectF& rounded_corner_bounds = sqs->rounded_corner_bounds;
+
+  // There is no rounded corner set.
+  if (rounded_corner_bounds.IsEmpty())
+    return false;
+
+  const gfx::RectF target_quad = cc::MathUtil::MapClippedRect(
+      sqs->quad_to_target_transform, gfx::RectF(quad->visible_rect));
+
+  // If the rounded corner rect intersects with the quad, then we should run the
+  // fragment shader.
+  if (rounded_corner_bounds.rect().Intersects(target_quad))
+    return true;
+
+  // If the quad is not within the rounded corner bounds, neither does it
+  // intersect, we do not have to apply any rounded corner on it.
+  if (!rounded_corner_bounds.rect().Contains(target_quad))
+    return false;
+
+  // If the rounded corner bounding rect contains the quad but the rounded
+  // corner rrect does not, it means there is an intersection. Apply rounded
+  // corner on the quad.
+  SkRRect rrect = static_cast<SkRRect>(rounded_corner_bounds);
+  return !rrect.contains(gfx::RectFToSkRect(target_quad));
+}
+
 }  // namespace viz

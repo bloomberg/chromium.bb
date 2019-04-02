@@ -69,6 +69,7 @@ class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
   void ClearCanvas(SkColor color);
   void ClearFramebuffer();
   void SetClipRect(const gfx::Rect& rect);
+  void SetClipRRect(const gfx::RRectF& rrect);
   bool IsSoftwareResource(ResourceId resource_id) const;
 
   void DrawDebugBorderQuad(const DebugBorderDrawQuad* quad);
