@@ -24,7 +24,7 @@ Font& Font::operator=(const Font& other) {
   return *this;
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_IOS)
+#if defined(OS_MACOSX) || defined(OS_IOS)
 Font::Font(NativeFont native_font)
     : platform_font_(PlatformFont::CreateFromNativeFont(native_font)) {
 }

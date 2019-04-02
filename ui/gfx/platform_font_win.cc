@@ -272,10 +272,6 @@ HRESULT GetFamilyNameFromDirectWriteFont(IDWriteFont* dwrite_font,
 PlatformFontWin::PlatformFontWin() : font_ref_(GetBaseFontRef()) {
 }
 
-PlatformFontWin::PlatformFontWin(NativeFont native_font) {
-  InitWithCopyOfHFONT(native_font);
-}
-
 PlatformFontWin::PlatformFontWin(const std::string& font_name,
                                  int font_size) {
   InitWithFontNameAndSize(font_name, font_size);
@@ -566,6 +562,10 @@ Font PlatformFontWin::HFontToFont(HFONT hfont) {
 PlatformFontWin::PlatformFontWin(HFontRef* hfont_ref) : font_ref_(hfont_ref) {
 }
 
+PlatformFontWin::PlatformFontWin(NativeFont native_font) {
+  InitWithCopyOfHFONT(native_font);
+}
+
 PlatformFontWin::~PlatformFontWin() {
 }
 
@@ -644,11 +644,6 @@ PlatformFontWin::HFontRef::~HFontRef() {
 // static
 PlatformFont* PlatformFont::CreateDefault() {
   return new PlatformFontWin;
-}
-
-// static
-PlatformFont* PlatformFont::CreateFromNativeFont(NativeFont native_font) {
-  return new PlatformFontWin(native_font);
 }
 
 // static
