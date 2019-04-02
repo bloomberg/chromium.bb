@@ -104,6 +104,12 @@ config("compiler") {
     # Tell clang which version of MSVC to emulate.
     cflags += [ "-fmsc-version=1911" ]
 
+    # Emit table of address-taken functions for Control-Flow Guard (CFG). We
+    # don't emit the CFG checks themselves, but this enables the functions to
+    # be called by code that is built with those checks enabled, such as system
+    # libraries.
+    cflags += [ "/guard:cf,nochecks" ]
+
     if (is_component_build) {
       cflags += [
         # Do not export inline member functions. This makes component builds
