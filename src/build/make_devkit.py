@@ -94,7 +94,7 @@ def copyIncludeFiles(destDir):
       os.path.join(destDir, 'include', 'v8'),
       [os.path.join(srcDir, 'v8', 'include')])
 
-def generateMsvsMapFiles(destDir, version):
+def generateMsvsMapFiles(version):
   productAppend = '.' + version
   products = [
     'blpwtk2' + productAppend + '.dll',
@@ -108,26 +108,31 @@ def generateMsvsMapFiles(destDir, version):
     srcBinDir = os.path.join(srcDir, 'out', 'static_' + config)
     for p in products:
       binPath = os.path.join(srcBinDir, p)
-      mapPath = os.path.join(
-        srcBinDir, re.match('(.*)[.](?:\\bdll\\b|\\bexe\\b)$', p).group(1) + '.map')
+      mapPath = os.path.join(srcBinDir,
+        re.match('(.*)[.](?:\\bdll\\b|\\bexe\\b)$', p).group(1) + '.map')
 
-      # Append a '.llvm' to the original map file
-      shutil.move(mapPath, mapPath + '.llvm')
+      if os.path.exists(mapPath):
+        print("Generating MSVS map file for " + p)
 
-      # Execute dumpbin to generate the dumpbin-style map file
-      rc = bbutil.shellExecNoPipe(
-        'dumpbin -map {0} > {1}'.format(binPath, mapPath + '.dumpbin'))
-      if rc != 0:
-        raise Exception("dumpbin failed to generate map file")
+        # Append a '.llvm' to the original map file
+        shutil.move(mapPath, mapPath + '.llvm')
 
-      # Execute msvs_map.py to generate MSVS-style map file
-      rc = bbutil.shellExecNoPipe(
-        'python src/build/msvs_map.py --llvm-map {0} --dumpbin-map {1} > {2}'.format(
-            mapPath + '.llvm', mapPath + '.dumpbin', mapPath))
-      if rc != 0:
-        raise Exception("msvs_map.py failed to generate map file")
+        # Execute dumpbin to generate the dumpbin-style map file
+        rc = bbutil.shellExecNoPipe(
+          'dumpbin -map {0} > {1}'.format(binPath, mapPath + '.dumpbin'))
+        if rc != 0:
+          raise Exception("dumpbin failed to generate map file")
 
-def copyBin(destDir, version):
+        # Execute msvs_map.py to generate MSVS-style map file
+        rc = bbutil.shellExecNoPipe(
+          'python src/build/msvs_map.py --llvm-map {0} --dumpbin-map {1} > {2}'.format(
+              mapPath + '.llvm', mapPath + '.dumpbin', mapPath))
+        if rc != 0:
+          raise Exception("msvs_map.py failed to generate map file")
+      else:
+        print("Not generating MSVS map file for " + p)
+
+def copyBin(destDir, version, includeMap):
   productAppend = '.' + version
 
   products = [
@@ -146,14 +151,18 @@ def copyBin(destDir, version):
     'blpwtk2' + productAppend + '.pak',
     'content_shell.pak',
     'blpwtk2' + productAppend + '.dll.pdb',
-    'blpwtk2' + productAppend + '.map',
     'blpcr_egl' + productAppend + '.dll.pdb',
-    'blpcr_egl' + productAppend + '.map',
     'blpcr_glesv2' + productAppend + '.dll.pdb',
-    'blpcr_glesv2' + productAppend + '.map',
     'blpwtk2_subprocess' + productAppend + '.exe.pdb',
-    'blpwtk2_subprocess' + productAppend + '.map',
   ]
+
+  if includeMap:
+    products.extend([
+      'blpwtk2' + productAppend + '.map',
+      'blpcr_egl' + productAppend + '.map',
+      'blpcr_glesv2' + productAppend + '.map',
+      'blpwtk2_subprocess' + productAppend + '.map',
+    ])
 
   configs = ['debug', 'release']
   for config in configs:
@@ -222,8 +231,13 @@ def generateBuildNumber(contentVersion):
   # Get the release branch number
   currentBranchName = bbutil.getStrippedShellOutput(
           "git rev-parse --abbrev-ref HEAD")
-  releaseBranchNumber = int(re.match('release/trml/(\\d*)',
-          currentBranchName).group(1))
+
+  match = re.match('release/trml/(\\d*)', currentBranchName)
+
+  if not match:
+    raise Exception("You must be in a release branch to start a devkit build")
+
+  releaseBranchNumber = int(match.group(1))
 
   # Iterate through all tags and find the latest build number with a matching
   # version of Content and a matching release branch number.  If we don't find
@@ -269,6 +283,8 @@ def main(args):
   doClean = False
   doTag = False
   doPushTag = True
+  doGenerateMap = True
+
   for i in range(len(args)):
     if args[i] == '--outdir':
       outDir = args[i+1]
@@ -280,8 +296,10 @@ def main(args):
       doTag = True
     elif args[i] == '--nopushtag':
       doPushTag = False
+    elif args[i] == '--nomap':
+      doGenerateMap = False
     elif args[i].startswith('-'):
-      print("Usage: make_devkit.py --outdir <outdir> [--clean] [--maketag [--nopushtag] ] [--gn]")
+      print("Usage: make_devkit.py --outdir <outdir> [--clean] [--maketag [--nopushtag] ] [--gn] [--nomap]")
       return 1
 
   if not outDir:
@@ -314,7 +332,9 @@ def main(args):
     f.write(version)
 
   os.environ['GN_GENERATORS'] = 'ninja'
-  applyVariableToEnvironment('GN_DEFINES', 'bb_generate_map_files', 'true')
+
+  if doGenerateMap:
+    applyVariableToEnvironment('GN_DEFINES', 'bb_generate_map_files', 'true')
 
   print ("srcDir is : " + srcDir)
   os.chdir(srcDir)
@@ -357,9 +377,11 @@ def main(args):
   os.mkdir(os.path.join(destDir, 'lib', 'debug'))
   os.mkdir(os.path.join(destDir, 'lib', 'release'))
 
-  generateMsvsMapFiles(destDir, version)
+  if doGenerateMap:
+    generateMsvsMapFiles(version)
+
   copyIncludeFiles(destDir)
-  copyBin(destDir, version)
+  copyBin(destDir, version, doGenerateMap)
   copyLib(destDir, version)
 
   if doTag:
