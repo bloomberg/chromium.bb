@@ -713,13 +713,12 @@ NewPasswordFormManager::NewPasswordFormManager(
     const PasswordStore::FormDigest& form_digest)
     : client_(client),
       metrics_recorder_(metrics_recorder),
-      owned_form_fetcher_(
-          form_fetcher ? nullptr
-                       : std::make_unique<FormFetcherImpl>(
-                             form_digest,
-                             client_,
-                             true /* should_migrate_http_passwords */,
-                             true /* should_query_suppressed_https_forms */)),
+      owned_form_fetcher_(form_fetcher
+                              ? nullptr
+                              : std::make_unique<FormFetcherImpl>(
+                                    form_digest,
+                                    client_,
+                                    true /* should_migrate_http_passwords */)),
       form_fetcher_(form_fetcher ? form_fetcher : owned_form_fetcher_.get()),
       form_saver_(std::move(form_saver)),
       // TODO(https://crbug.com/831123): set correctly
