@@ -5,6 +5,7 @@
 #include "media/cdm/cdm_adapter.h"
 
 #include <stddef.h>
+#include <iomanip>
 #include <memory>
 #include <utility>
 
@@ -108,6 +109,12 @@ std::string GetHexKeyId(const cdm::InputBuffer_2& buffer) {
     return "N/A";
 
   return base::HexEncode(buffer.key_id, buffer.key_id_size);
+}
+
+std::string GetHexMask(uint32_t mask) {
+  std::stringstream hex_string;
+  hex_string << "0x" << std::setfill('0') << std::setw(8) << std::hex << mask;
+  return hex_string.str();
 }
 
 void* GetCdmHost(int host_interface_version, void* user_data) {
@@ -882,6 +889,8 @@ void CdmAdapter::OnChallengePlatformDone(
 void CdmAdapter::EnableOutputProtection(uint32_t desired_protection_mask) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT1("media", "CdmAdapter::EnableOutputProtection",
+               "desired_protection_mask", GetHexMask(desired_protection_mask));
 
   helper_->EnableProtection(
       desired_protection_mask,
@@ -893,10 +902,13 @@ void CdmAdapter::OnEnableOutputProtectionDone(bool success) {
   // CDM needs to call QueryOutputProtectionStatus() to see if it took effect
   // or not.
   DVLOG(1) << __func__ << ": success = " << success;
+  TRACE_EVENT1("media", "CdmAdapter::OnEnableOutputProtectionDone", "success",
+               success);
 }
 
 void CdmAdapter::QueryOutputProtectionStatus() {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT0("media", "CdmAdapter::QueryOutputProtectionStatus");
 
   ReportOutputProtectionQuery();
   helper_->QueryStatus(
@@ -908,8 +920,10 @@ void CdmAdapter::OnQueryOutputProtectionStatusDone(bool success,
                                                    uint32_t link_mask,
                                                    uint32_t protection_mask) {
   DVLOG(2) << __func__ << ": success = " << success;
-  TRACE_EVENT1("media", "CdmAdapter::OnQueryOutputProtectionStatusDone",
-               "success", success);
+  // Combining |link_mask| and |protection_mask| since there's no TRACE_EVENT3.
+  TRACE_EVENT2("media", "CdmAdapter::OnQueryOutputProtectionStatusDone",
+               "success", success, "link_mask, protection_mask",
+               GetHexMask(link_mask) + ", " + GetHexMask(protection_mask));
 
   // The bit mask definition must be consistent between media::OutputProtection
   // and cdm::ContentDecryptionModule* interfaces. This is statically asserted
