@@ -28,14 +28,16 @@
 #include "components/url_formatter/top_domains/top500_domains.h"
 #include "components/url_formatter/top_domains/top_domain_util.h"
 #include "content/public/browser/navigation_handle.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 namespace {
 
+using lookalikes::LookalikeUrlNavigationThrottle;
 using MatchType = LookalikeUrlInterstitialPage::MatchType;
 using UserAction = LookalikeUrlInterstitialPage::UserAction;
 using NavigationSuggestionEvent =
-    LookalikeUrlNavigationThrottle::NavigationSuggestionEvent;
+    lookalikes::LookalikeUrlNavigationThrottle::NavigationSuggestionEvent;
+using DomainInfo = lookalikes::DomainInfo;
+
 typedef content::NavigationThrottle::ThrottleCheckResult ThrottleCheckResult;
 
 void RecordEvent(
@@ -57,8 +59,7 @@ bool SkeletonsMatch(const url_formatter::Skeletons& skeletons1,
 }
 
 // Returns true if the domain given by |domain_info| is a top domain.
-bool IsTopDomain(
-    const LookalikeUrlNavigationThrottle::DomainInfo& domain_info) {
+bool IsTopDomain(const DomainInfo& domain_info) {
   // Top domains are only accessible through their skeletons, so query the top
   // domains trie for each skeleton of this domain.
   for (const std::string& skeleton : domain_info.skeletons) {
@@ -71,64 +72,19 @@ bool IsTopDomain(
   return false;
 }
 
-// Returns the eTLD+1 of |hostname|. This excludes private registries so that
-// GetETLDPlusOne("test.blogspot.com") returns "blogspot.com" (blogspot.com is
-// listed as a private registry). We do this to be consistent with
-// url_formatter's top domain list which doesn't have a notion of private
-// registries.
-std::string GetETLDPlusOne(const GURL& url) {
-  return net::registry_controlled_domains::GetDomainAndRegistry(
-      url, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
-}
-
 // Returns a site that the user has used before that the eTLD+1 in
 // |domain_and_registry| may be attempting to spoof, based on skeleton
 // comparison.
 std::string GetMatchingSiteEngagementDomain(
-    const std::set<GURL>& engaged_sites,
-    const LookalikeUrlNavigationThrottle::DomainInfo& navigated_domain) {
+    const std::vector<DomainInfo>& engaged_sites,
+    const DomainInfo& navigated_domain) {
   DCHECK(!navigated_domain.domain_and_registry.empty());
-  std::map<std::string, url_formatter::Skeletons>
-      domain_and_registry_to_skeleton;
-
-  for (const GURL& engaged_site : engaged_sites) {
-    DCHECK(engaged_site.SchemeIsHTTPOrHTTPS());
-    // If the user has engaged with eTLD+1 of this site, don't show any
-    // lookalike navigation suggestions. This ignores the scheme. That's okay as
-    // it's the more conservative option: If the user is engaged with
-    // http://domain.test, not showing the warning on https://domain.test is
-    // acceptable.
-    const std::string engaged_domain_and_registry =
-        GetETLDPlusOne(engaged_site);
-    // eTLD+1 can be empty for private domains (e.g. http://test).
-    if (engaged_domain_and_registry.empty()) {
-      continue;
-    }
-
-    if (navigated_domain.domain_and_registry == engaged_domain_and_registry) {
-      return std::string();
-    }
-
-    // Multiple domains can map to the same eTLD+1, avoid skeleton generation
-    // when possible.
-    auto it = domain_and_registry_to_skeleton.find(engaged_domain_and_registry);
-    url_formatter::Skeletons skeletons;
-    if (it == domain_and_registry_to_skeleton.end()) {
-      // Engaged site can be IDN. Decode as unicode and compute the skeleton
-      // from that. This skips all spoof checks so it will always return the
-      // unicode version of the domain.
-      const url_formatter::IDNConversionResult conversion_result =
-          url_formatter::UnsafeIDNToUnicodeWithDetails(
-              engaged_domain_and_registry);
-
-      skeletons = url_formatter::GetSkeletons(conversion_result.result);
-      domain_and_registry_to_skeleton[engaged_domain_and_registry] = skeletons;
-    } else {
-      skeletons = it->second;
-    }
-
-    if (SkeletonsMatch(navigated_domain.skeletons, skeletons)) {
-      return engaged_site.host();
+  for (const DomainInfo& engaged_site : engaged_sites) {
+    DCHECK(!engaged_site.domain_and_registry.empty());
+    DCHECK_NE(navigated_domain.domain_and_registry,
+              engaged_site.domain_and_registry);
+    if (SkeletonsMatch(navigated_domain.skeletons, engaged_site.skeletons)) {
+      return engaged_site.full_domain;
     }
   }
   return std::string();
@@ -136,22 +92,11 @@ std::string GetMatchingSiteEngagementDomain(
 
 }  // namespace
 
+namespace lookalikes {
+
 // static
 const char LookalikeUrlNavigationThrottle::kHistogramName[] =
     "NavigationSuggestion.Event";
-
-LookalikeUrlNavigationThrottle::DomainInfo::DomainInfo(
-    const std::string& arg_domain_and_registry,
-    const url_formatter::IDNConversionResult& arg_idn_result,
-    const url_formatter::Skeletons& arg_skeletons)
-    : domain_and_registry(arg_domain_and_registry),
-      idn_result(arg_idn_result),
-      skeletons(arg_skeletons) {}
-
-LookalikeUrlNavigationThrottle::DomainInfo::~DomainInfo() = default;
-
-LookalikeUrlNavigationThrottle::DomainInfo::DomainInfo(const DomainInfo&) =
-    default;
 
 LookalikeUrlNavigationThrottle::LookalikeUrlNavigationThrottle(
     content::NavigationHandle* navigation_handle)
@@ -255,31 +200,10 @@ LookalikeUrlNavigationThrottle::MaybeCreateNavigationThrottle(
   return std::make_unique<LookalikeUrlNavigationThrottle>(navigation_handle);
 }
 
-// static
-LookalikeUrlNavigationThrottle::DomainInfo
-LookalikeUrlNavigationThrottle::GetDomainInfo(const GURL& url) {
-  // Perform all computations on eTLD+1.
-  const std::string domain_and_registry = GetETLDPlusOne(url);
-  // eTLD+1 can be empty for private domains.
-  if (domain_and_registry.empty()) {
-    return DomainInfo(domain_and_registry, url_formatter::IDNConversionResult(),
-                      url_formatter::Skeletons());
-  }
-  // Compute skeletons using eTLD+1, skipping all spoofing checks. Spoofing
-  // checks in url_formatter can cause the converted result to be punycode.
-  // We want to avoid this in order to get an accurate skeleton for the unicode
-  // version of the domain.
-  const url_formatter::IDNConversionResult idn_result =
-      url_formatter::UnsafeIDNToUnicodeWithDetails(domain_and_registry);
-  const url_formatter::Skeletons skeletons =
-      url_formatter::GetSkeletons(idn_result.result);
-  return DomainInfo(domain_and_registry, idn_result, skeletons);
-}
-
 void LookalikeUrlNavigationThrottle::PerformChecksDeferred(
     const GURL& url,
     const DomainInfo& navigated_domain,
-    const std::set<GURL>& engaged_sites) {
+    const std::vector<DomainInfo>& engaged_sites) {
   ThrottleCheckResult result = LookalikeUrlNavigationThrottle::PerformChecks(
       url, navigated_domain, engaged_sites);
 
@@ -298,14 +222,23 @@ void LookalikeUrlNavigationThrottle::PerformChecksDeferred(
 ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
     const GURL& url,
     const DomainInfo& navigated_domain,
-    const std::set<GURL>& engaged_sites) {
+    const std::vector<DomainInfo>& engaged_sites) {
   std::string matched_domain;
   MatchType match_type;
 
   // Ensure that this URL is not already engaged. We can't use the synchronous
   // SiteEngagementService::IsEngagementAtLeast as it has side effects. We check
   // in PerformChecks to ensure we have up-to-date engaged_sites.
-  if (base::ContainsKey(engaged_sites, url.GetOrigin())) {
+  // This check ignores the scheme which is okay since it's more conservative:
+  // If the user is engaged with http://domain.test, not showing the warning on
+  // https://domain.test is acceptable.
+  const auto already_engaged =
+      std::find_if(engaged_sites.begin(), engaged_sites.end(),
+                   [navigated_domain](const DomainInfo& engaged_domain) {
+                     return (navigated_domain.domain_and_registry ==
+                             engaged_domain.domain_and_registry);
+                   });
+  if (already_engaged != engaged_sites.end()) {
     return content::NavigationThrottle::PROCEED;
   }
 
@@ -336,7 +269,7 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
 
 bool LookalikeUrlNavigationThrottle::GetMatchingDomain(
     const DomainInfo& navigated_domain,
-    const std::set<GURL>& engaged_sites,
+    const std::vector<DomainInfo>& engaged_sites,
     std::string* matched_domain,
     MatchType* match_type) {
   DCHECK(!navigated_domain.domain_and_registry.empty());
@@ -458,3 +391,5 @@ std::string LookalikeUrlNavigationThrottle::GetSimilarDomainFromTop500(
   }
   return std::string();
 }
+
+}  // namespace lookalikes

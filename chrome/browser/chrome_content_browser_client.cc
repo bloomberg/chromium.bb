@@ -4271,7 +4271,7 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 #endif
 
   std::unique_ptr<content::NavigationThrottle>
-      lookalike_url_navigation_throttle =
+      lookalike_url_navigation_throttle = lookalikes::
           LookalikeUrlNavigationThrottle::MaybeCreateNavigationThrottle(handle);
   if (lookalike_url_navigation_throttle)
     throttles.push_back(std::move(lookalike_url_navigation_throttle));

@@ -34,11 +34,13 @@
 
 namespace {
 
+using lookalikes::LookalikeUrlNavigationThrottle;
+using lookalikes::LookalikeUrlService;
 using security_interstitials::MetricsHelper;
 using security_interstitials::SecurityInterstitialCommand;
 using UkmEntry = ukm::builders::LookalikeUrl_NavigationSuggestion;
 using NavigationSuggestionEvent =
-    LookalikeUrlNavigationThrottle::NavigationSuggestionEvent;
+    lookalikes::LookalikeUrlNavigationThrottle::NavigationSuggestionEvent;
 
 using MatchType = LookalikeUrlInterstitialPage::MatchType;
 using UserAction = LookalikeUrlInterstitialPage::UserAction;
