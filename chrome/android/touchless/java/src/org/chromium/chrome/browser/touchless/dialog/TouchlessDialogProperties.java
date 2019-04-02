@@ -59,9 +59,6 @@ public class TouchlessDialogProperties {
      */
     public static final ReadableBooleanPropertyKey IS_FULLSCREEN = new ReadableBooleanPropertyKey();
 
-    /** The title of the dialog. */
-    public static final WritableObjectPropertyKey<String> TITLE = new WritableObjectPropertyKey<>();
-
     /**
      * The list of options to be displayed in the dialog. These models should be using the
      * {@link DialogListItemProperties} properties.
@@ -92,12 +89,11 @@ public class TouchlessDialogProperties {
     /** The priority for this set of properties. */
     public static final WritableIntPropertyKey PRIORITY = new WritableIntPropertyKey();
 
-    public static final PropertyKey[] MINIMAL_DIALOG_KEYS = {
-            TITLE, CANCEL_NAME, CANCEL_ACTION, SELECT_NAME, ALT_NAME, ALT_ACTION, PRIORITY};
-
-    public static final PropertyKey[] ALL_KEYS = PropertyModel.concatKeys(
-            MINIMAL_DIALOG_KEYS, new PropertyKey[] {IS_FULLSCREEN, TITLE, LIST_MODELS});
+    public static final PropertyKey[] MINIMAL_DIALOG_KEYS = {ModalDialogProperties.TITLE,
+            CANCEL_NAME, CANCEL_ACTION, SELECT_NAME, ALT_NAME, ALT_ACTION, PRIORITY};
 
     public static final PropertyKey[] ALL_DIALOG_KEYS =
-            PropertyModel.concatKeys(ModalDialogProperties.ALL_KEYS, ALL_KEYS);
+            PropertyModel.concatKeys(ModalDialogProperties.ALL_KEYS,
+                    new PropertyKey[] {CANCEL_NAME, CANCEL_ACTION, SELECT_NAME, ALT_NAME,
+                            ALT_ACTION, PRIORITY, IS_FULLSCREEN, LIST_MODELS});
 }
