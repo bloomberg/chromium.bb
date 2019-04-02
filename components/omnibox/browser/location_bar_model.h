@@ -64,10 +64,14 @@ class LocationBarModel {
   virtual const gfx::VectorIcon& GetVectorIcon() const = 0;
 
   // Returns text for the omnibox secure verbose chip, displayed next to the
-  // security icon on certain platforms.
+  // security icon on certain platforms.  Always returns the text corresponding
+  // to the currently displayed page, irrespective of any user input in
+  // progress or displayed suggestions.
   virtual base::string16 GetSecureDisplayText() const = 0;
 
-  // Returns text describing the security state for accessibility.
+  // Returns text describing the security state for accessibility.  Always
+  // returns the text corresponding to the currently displayed page,
+  // irrespective of any user input in progress or displayed suggestions.
   virtual base::string16 GetSecureAccessibilityText() const = 0;
 
   // Returns whether the URL for the current navigation entry should be
