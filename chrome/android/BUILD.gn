@@ -1583,6 +1583,7 @@ template("chrome_public_apk_or_module_tmpl") {
                              "is_modern",
                              "module_name",
                              "target_type",
+                             "enable_multidex",
                            ])
 
     deps = _chrome_public_shared_deps
@@ -1632,6 +1633,7 @@ template("chrome_public_apk_or_module_tmpl") {
 chrome_public_apk_or_module_tmpl("chrome_public_apk") {
   target_type = "android_apk"
   apk_name = "ChromePublic"
+  enable_multidex = is_java_debug
 }
 
 chrome_public_apk_or_module_tmpl("chrome_modern_public_apk") {
@@ -1906,11 +1908,6 @@ template("chrome_test_apk_tmpl") {
       proguard_enabled = true
       proguard_configs = [ "//chrome/android/java/apk_for_test.flags" ]
     }
-
-    # The test APK contains code from both the APK under test and the
-    # test APK when proguard is enabled. That causes this APK to exceed
-    # the dex limit.
-    enable_multidex = true
   }
 }
 
@@ -1963,9 +1960,6 @@ if (enable_vr) {
       ":chrome_test_vr_java",
     ]
     proguard_enabled = false
-
-    # APK exceeds dex limit if not enabled
-    enable_multidex = true
   }
 }
 
@@ -1986,11 +1980,6 @@ if (enable_arcore && package_arcore) {
       proguard_configs = [ "//base/android/proguard/enable_obfuscation.flags" ]
     }
     alternative_android_sdk_dep = webview_framework_dep
-
-    # The test APK contains code from both the APK under test and the
-    # test APK when proguard is enabled. That causes this APK to exceed
-    # the dex limit.
-    enable_multidex = proguard_enabled
 
     never_incremental = true
   }
