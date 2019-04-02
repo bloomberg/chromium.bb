@@ -46,7 +46,7 @@ constexpr size_t kMaxAppResults = apps::AppsNavigationThrottle::kMaxAppResults;
 // Main components sizes
 constexpr int kTitlePadding = 16;
 constexpr int kRowHeight = 32;
-constexpr int kMaxWidth = 320;
+constexpr int kMaxIntentPickerLabelButtonWidth = 320;
 constexpr gfx::Insets kSeparatorPadding(16, 0, 16, 0);
 constexpr SkColor kSeparatorColor = SkColorSetARGB(0x1F, 0x0, 0x0, 0x0);
 
@@ -82,7 +82,7 @@ class IntentPickerLabelButton : public views::LabelButton {
                     base::UTF8ToUTF16(base::StringPiece(display_name))),
         launch_name_(launch_name) {
     SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    SetMinSize(gfx::Size(kMaxWidth, kRowHeight));
+    SetMinSize(gfx::Size(kMaxIntentPickerLabelButtonWidth, kRowHeight));
     SetInkDropMode(InkDropMode::ON);
     if (!icon->IsEmpty())
       SetImage(views::ImageButton::STATE_NORMAL, *icon->ToImageSkia());
@@ -283,7 +283,7 @@ void IntentPickerBubbleView::Init() {
   views::ColumnSet* cs = layout->AddColumnSet(kColumnSetId);
   cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                 views::GridLayout::kFixedSize, views::GridLayout::FIXED,
-                kMaxWidth, 0);
+                kMaxIntentPickerLabelButtonWidth, 0);
 
   layout->StartRowWithPadding(views::GridLayout::kFixedSize, kColumnSetId,
                               views::GridLayout::kFixedSize, kTitlePadding);
@@ -298,7 +298,7 @@ void IntentPickerBubbleView::Init() {
   cs_padded->AddPaddingColumn(views::GridLayout::kFixedSize, kTitlePadding);
   cs_padded->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                        views::GridLayout::kFixedSize, views::GridLayout::FIXED,
-                       kMaxWidth - 2 * kTitlePadding, 0);
+                       kMaxIntentPickerLabelButtonWidth - 2 * kTitlePadding, 0);
 
   layout->StartRowWithPadding(views::GridLayout::kFixedSize, kColumnSetIdPadded,
                               views::GridLayout::kFixedSize, 0);
