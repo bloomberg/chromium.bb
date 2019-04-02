@@ -2050,10 +2050,6 @@ void Document::PropagateStyleToViewport() {
     overflow_y = EOverflow::kAuto;
   if (overflow_anchor == EOverflowAnchor::kVisible)
     overflow_anchor = EOverflowAnchor::kAuto;
-  // Column-gap is (ab)used by the current paged overflow implementation (in
-  // lack of other ways to specify gaps between pages), so we have to
-  // propagate it too.
-  GapLength column_gap = overflow_style->ColumnGap();
 
   cc::ScrollSnapType snap_type = overflow_style->GetScrollSnapType();
   ScrollBehavior scroll_behavior = document_element_style->GetScrollBehavior();
@@ -2085,7 +2081,6 @@ void Document::PropagateStyleToViewport() {
       viewport_style.OverflowAnchor() != overflow_anchor ||
       viewport_style.OverflowX() != overflow_x ||
       viewport_style.OverflowY() != overflow_y ||
-      viewport_style.ColumnGap() != column_gap ||
       viewport_style.GetScrollSnapType() != snap_type ||
       viewport_style.GetScrollBehavior() != scroll_behavior ||
       viewport_style.OverscrollBehaviorX() != overscroll_behavior_x ||
@@ -2106,7 +2101,6 @@ void Document::PropagateStyleToViewport() {
     new_style->SetOverflowAnchor(overflow_anchor);
     new_style->SetOverflowX(overflow_x);
     new_style->SetOverflowY(overflow_y);
-    new_style->SetColumnGap(column_gap);
     new_style->SetScrollSnapType(snap_type);
     new_style->SetScrollBehavior(scroll_behavior);
     new_style->SetOverscrollBehaviorX(overscroll_behavior_x);
