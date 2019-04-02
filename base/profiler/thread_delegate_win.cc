@@ -205,15 +205,14 @@ UnwindResult ThreadDelegateWin::WalkNativeFrames(
     uintptr_t stack_top,
     ModuleCache* module_cache,
     std::vector<ProfileBuilder::Frame>* stack) {
-  // Record the first frame from the context values.
-  const ModuleCache::Module* module =
-      module_cache->GetModuleForAddress(ContextPC(thread_context));
-  stack->emplace_back(ContextPC(thread_context), module);
+  // We expect the frame corresponding to the |thread_context| register state to
+  // exist within |stack|.
+  DCHECK_GT(stack->size(), 0u);
 
   Win32StackFrameUnwinder frame_unwinder;
   for (;;) {
-    if (!module) {
-      // There's no loaded module containing the instruction pointer. This can
+    if (!stack->back().module) {
+      // There's no loaded module corresponding to the current frame. This can
       // be due to executing code that is not in a module (e.g. V8 generated
       // code or runtime-generated code associated with third-party injected
       // DLLs). It can also be due to the the module having been unloaded since
@@ -233,15 +232,18 @@ UnwindResult ThreadDelegateWin::WalkNativeFrames(
       return UnwindResult::UNRECOGNIZED_FRAME;
     }
 
-    if (!frame_unwinder.TryUnwind(stack->size() == 1u, thread_context, module))
+    if (!frame_unwinder.TryUnwind(stack->size() == 1u, thread_context,
+                                  stack->back().module)) {
       return UnwindResult::ABORTED;
+    }
 
     if (ContextPC(thread_context) == 0)
       return UnwindResult::COMPLETED;
 
     // Record the frame to which we just unwound.
-    module = module_cache->GetModuleForAddress(ContextPC(thread_context));
-    stack->emplace_back(ContextPC(thread_context), module);
+    stack->emplace_back(
+        ContextPC(thread_context),
+        module_cache->GetModuleForAddress(ContextPC(thread_context)));
   }
 
   NOTREACHED();

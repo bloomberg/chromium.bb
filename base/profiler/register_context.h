@@ -54,6 +54,16 @@ inline uintptr_t& RegisterContextFramePointer(::CONTEXT* context) {
 #endif
 }
 
+inline uintptr_t& RegisterContextInstructionPointer(::CONTEXT* context) {
+#if defined(ARCH_CPU_X86_64)
+  return context->Rip;
+#elif defined(ARCH_CPU_ARM64)
+  return context->Pc;
+#else
+  return AsUintPtr(&context->Eip);
+#endif
+}
+
 #elif defined(OS_MACOSX) && !defined(OS_IOS)  // #if defined(OS_WIN)
 
 using RegisterContext = x86_thread_state64_t;
@@ -66,12 +76,18 @@ inline uintptr_t& RegisterContextFramePointer(x86_thread_state64_t* context) {
   return AsUintPtr(&context->__rbp);
 }
 
+inline uintptr_t& RegisterContextInstructionPointer(
+    x86_thread_state64_t* context) {
+  return AsUintPtr(&context->__rip);
+}
+
 #else  // #if defined(OS_WIN)
 
 // Placeholders for other platforms.
 struct RegisterContext {
   uintptr_t stack_pointer;
   uintptr_t frame_pointer;
+  uintptr_t instruction_pointer;
 };
 
 inline uintptr_t& RegisterContextStackPointer(RegisterContext* context) {
@@ -80,6 +96,10 @@ inline uintptr_t& RegisterContextStackPointer(RegisterContext* context) {
 
 inline uintptr_t& RegisterContextFramePointer(RegisterContext* context) {
   return context->frame_pointer;
+}
+
+inline uintptr_t& RegisterContextInstructionPointer(RegisterContext* context) {
+  return context->instruction_pointer;
 }
 
 #endif  // #if defined(OS_WIN)
