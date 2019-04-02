@@ -9,7 +9,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "v8/include/v8.h"
 
@@ -280,9 +279,8 @@ class ReadableStreamNative : public ReadableStream {
 
   bool is_disturbed_ = false;
   State state_ = kReadable;
-  TraceWrapperMember<ReadableStreamDefaultController>
-      readable_stream_controller_;
-  TraceWrapperMember<ReadableStreamDefaultReader> reader_;
+  Member<ReadableStreamDefaultController> readable_stream_controller_;
+  Member<ReadableStreamDefaultReader> reader_;
   TraceWrapperV8Reference<v8::Value> stored_error_;
 };
 
