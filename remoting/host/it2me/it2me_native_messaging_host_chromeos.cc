@@ -9,7 +9,6 @@
 #include "base/lazy_instance.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/it2me/it2me_native_messaging_host.h"
@@ -54,14 +53,13 @@ namespace remoting {
 
 std::unique_ptr<extensions::NativeMessageHost>
 CreateIt2MeNativeMessagingHostForChromeOS(
-    net::URLRequestContextGetter* system_request_context,
     scoped_refptr<base::SingleThreadTaskRunner> io_runnner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_runnner,
     policy::PolicyService* policy_service) {
   std::unique_ptr<It2MeHostFactory> host_factory(new It2MeHostFactory());
   std::unique_ptr<ChromotingHostContext> context =
       ChromotingHostContext::CreateForChromeOS(
-          base::WrapRefCounted(system_request_context), io_runnner, ui_runnner,
+          io_runnner, ui_runnner,
           base::CreateSingleThreadTaskRunnerWithTraits(
               {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
           GetInputInjector());
