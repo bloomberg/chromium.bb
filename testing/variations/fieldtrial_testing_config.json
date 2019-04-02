@@ -2011,9 +2011,11 @@
     "FCMInvalidationsExperiment": [
         {
             "platforms": [
+                "android",
                 "windows",
                 "mac",
-                "chromeos"
+                "chromeos",
+                "ios"
             ],
             "experiments": [
                 {
