@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
+#include "chrome/browser/chromeos/policy/tpm_auto_update_mode_policy_handler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
@@ -392,6 +393,13 @@ void EnrollmentScreen::OnOtherError(
 void EnrollmentScreen::OnDeviceEnrolled() {
   enrollment_succeeded_ = true;
   enrollment_helper_->GetDeviceAttributeUpdatePermission();
+
+  // Evaluates device policy TPMFirmwareUpdateSettings and updates the TPM if
+  // the policy is set to auto-update vulnerable TPM firmware at enrollment.
+  g_browser_process->platform_part()
+      ->browser_policy_connector_chromeos()
+      ->GetTPMAutoUpdateModePolicyHandler()
+      ->UpdateOnEnrollmentIfNeeded();
 }
 
 void EnrollmentScreen::OnActiveDirectoryCredsProvided(
