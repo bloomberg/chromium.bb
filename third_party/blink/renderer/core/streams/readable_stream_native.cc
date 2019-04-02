@@ -30,6 +30,611 @@
 
 namespace blink {
 
+struct ReadableStreamNative::PipeOptions {
+  PipeOptions() = default;
+  bool prevent_close = false;
+  bool prevent_abort = false;
+  bool prevent_cancel = false;
+};
+
+// PipeToEngine implements PipeTo(). All standard steps in this class come from
+// https://streams.spec.whatwg.org/#readable-stream-pipe-to
+//
+// This implementation is simple but suboptimal because it uses V8 promises to
+// drive its asynchronous state machine, allocating a lot of temporary V8
+// objects as a result.
+//
+// TODO(ricea): Create internal versions of ReadableStreamDefaultReader::Read()
+// and WritableStreamDefaultWriter::Write() to bypass promise creation and so
+// reduce the number of allocations on the hot path.
+class ReadableStreamNative::PipeToEngine
+    : public GarbageCollectedFinalized<PipeToEngine> {
+ public:
+  PipeToEngine(ScriptState* script_state, PipeOptions pipe_options)
+      : script_state_(script_state), pipe_options_(pipe_options) {}
+
+  // This is the main entrypoint for ReadableStreamPipeTo().
+  ScriptPromise Start(ReadableStreamNative* readable,
+                      WritableStreamNative* destination) {
+    // 1. Assert: ! IsReadableStream(source) is true.
+    DCHECK(readable);
+
+    // 2. Assert: ! IsWritableStream(dest) is true.
+    DCHECK(destination);
+
+    // Not relevant to C++ implementation:
+    // 3. Assert: Type(preventClose) is Boolean, Type(preventAbort) is Boolean,
+    //    and Type(preventCancel) is Boolean.
+
+    // TODO(ricea): Implement |signal|.
+    // 4. Assert: signal is undefined or signal is an instance of the
+    //    AbortSignal interface.
+
+    // 5. Assert: ! IsReadableStreamLocked(source) is false.
+    DCHECK(!ReadableStreamNative::IsLocked(readable));
+
+    // 6. Assert: ! IsWritableStreamLocked(dest) is false.
+    DCHECK(!WritableStreamNative::IsLocked(destination));
+
+    auto* isolate = script_state_->GetIsolate();
+    ExceptionState exception_state(isolate, ExceptionState::kUnknownContext, "",
+                                   "");
+
+    // 7. If !
+    //    IsReadableByteStreamController(source.[[readableStreamController]]) is
+    //    true, let reader be either ! AcquireReadableStreamBYOBReader(source)
+    //    or ! AcquireReadableStreamDefaultReader(source), at the user agent’s
+    //    discretion.
+    // 8. Otherwise, let reader be ! AcquireReadableStreamDefaultReader(source).
+    reader_ = ReadableStreamNative::AcquireDefaultReader(
+        script_state_, readable, false, exception_state);
+    DCHECK(!exception_state.HadException());
+
+    // 9. Let writer be ! AcquireWritableStreamDefaultWriter(dest).
+    writer_ = WritableStreamNative::AcquireDefaultWriter(
+        script_state_, destination, exception_state);
+    DCHECK(!exception_state.HadException());
+
+    // 10. Let shuttingDown be false.
+    DCHECK(!is_shutting_down_);
+
+    // 11. Let promise be a new promise.
+    promise_ = MakeGarbageCollected<StreamPromiseResolver>(script_state_);
+
+    // TODO(ricea): Implement abort:
+    // 12. If signal is not undefined, ...
+
+    // 13. In parallel ...
+    // The rest of the algorithm is described in terms of a series of
+    // constraints rather than as explicit steps.
+    if (CheckInitialState()) {
+      // Need to detect closing and error when we are not reading. This
+      // corresponds to the following conditions from the standard:
+      //     1. Errors must be propagated forward: if source.[[state]] is or
+      //        becomes "errored", ...
+      // and
+      //     3. Closing must be propagated forward: if source.[[state]] is or
+      //        becomes "closed", ...
+      ThenPromise(reader_->ClosedPromise()->V8Promise(isolate),
+                  &PipeToEngine::OnReaderClosed, &PipeToEngine::ReadableError);
+
+      // Need to detect error when we are not writing. This corresponds to this
+      // condition from the standard:
+      //    2. Errors must be propagated backward: if dest.[[state]] is or
+      //       becomes "errored", ...
+      // We do not need to detect closure of the writable end of the pipe,
+      // because we have it locked and so it can only be closed by us.
+      ThenPromise(writer_->ClosedPromise()->V8Promise(isolate), nullptr,
+                  &PipeToEngine::WritableError);
+
+      // Start the main read / write loop.
+      HandleNextEvent(Undefined());
+    }
+
+    // 14. Return promise.
+    return promise_->GetScriptPromise(script_state_);
+  }
+
+  StreamPromiseResolver* Promise() { return promise_; }
+
+  void Trace(Visitor* visitor) {
+    visitor->Trace(script_state_);
+    visitor->Trace(reader_);
+    visitor->Trace(writer_);
+    visitor->Trace(promise_);
+    visitor->Trace(last_write_);
+    visitor->Trace(shutdown_error_);
+  }
+
+ private:
+  // The implementation uses method pointers to maximise code reuse.
+
+  // |Action| represents an action that can be passed to the "Shutdown with an
+  // action" operation. Each Action is implemented as a method which delegates
+  // to some abstract operation, inferring the arguments from the state of
+  // |this|.
+  using Action = v8::Local<v8::Promise> (PipeToEngine::*)();
+
+  // This implementation uses ThenPromise() 7 times. Instead of creating a dozen
+  // separate subclasses of ScriptFunction, we use a single implementation and
+  // pass a method pointer at runtime to control the behaviour. Most
+  // PromiseReaction methods don't need to return a value, but because some do,
+  // the rest have to return undefined so that they can have the same method
+  // signature. Similarly, many of the methods ignore the argument that is
+  // passed to them.
+  using PromiseReaction =
+      v8::Local<v8::Value> (PipeToEngine::*)(v8::Local<v8::Value>);
+
+  class WrappedPromiseReaction : public ScriptFunction {
+   public:
+    static v8::Local<v8::Function> Create(ScriptState* script_state,
+                                          PipeToEngine* instance,
+                                          PromiseReaction method) {
+      auto* reaction = MakeGarbageCollected<WrappedPromiseReaction>(
+          script_state, instance, method);
+      return reaction->BindToV8Function();
+    }
+
+    WrappedPromiseReaction(ScriptState* script_state,
+                           PipeToEngine* instance,
+                           PromiseReaction method)
+        : ScriptFunction(script_state), instance_(instance), method_(method) {}
+
+    void CallRaw(const v8::FunctionCallbackInfo<v8::Value>& args) override {
+      DCHECK_EQ(args.Length(), 1);
+      auto result = (instance_->*method_)(args[0]);
+      args.GetReturnValue().Set(result);
+    }
+
+    void Trace(Visitor* visitor) override {
+      visitor->Trace(instance_);
+      ScriptFunction::Trace(visitor);
+    }
+
+   private:
+    TraceWrapperMember<PipeToEngine> instance_;
+    PromiseReaction method_;
+  };
+
+  // Checks the state of the streams and executes the shutdown handlers if
+  // necessary. Returns true if piping can continue.
+  bool CheckInitialState() {
+    auto* isolate = script_state_->GetIsolate();
+    const auto state = Readable()->state_;
+
+    // Both streams can be errored or closed. To perform the right action the
+    // order of the checks must match the standard: "the following conditions
+    // must be applied in order." This method only checks the initial state;
+    // detection of state changes elsewhere is done through checking promise
+    // reactions.
+
+    // a. Errors must be propagated forward: if source.[[state]] is or
+    //    becomes "errored",
+    if (state == kErrored) {
+      ReadableError(Readable()->GetStoredError(isolate));
+      return false;
+    }
+
+    // 2. Errors must be propagated backward: if dest.[[state]] is or becomes
+    //    "errored",
+    if (Destination()->IsErrored()) {
+      WritableError(Destination()->GetStoredError(isolate));
+      return false;
+    }
+
+    // 3. Closing must be propagated forward: if source.[[state]] is or
+    //    becomes "closed", then
+    if (state == kClosed) {
+      ReadableClosed();
+      return false;
+    }
+
+    // 4. Closing must be propagated backward: if !
+    //    WritableStreamCloseQueuedOrInFlight(dest) is true or dest.[[state]]
+    //    is "closed",
+    if (Destination()->IsClosingOrClosed()) {
+      WritableStartedClosed();
+      return false;
+    }
+
+    return true;
+  }
+
+  // HandleNextEvent() has an unused argument and return value because it is a
+  // PromiseReaction. HandleNextEvent() and ReadFulfilled() call each other
+  // asynchronously in a loop until the pipe completes.
+  v8::Local<v8::Value> HandleNextEvent(v8::Local<v8::Value>) {
+    DCHECK(!is_reading_);
+    if (is_shutting_down_) {
+      return Undefined();
+    }
+
+    base::Optional<double> desired_size = writer_->GetDesiredSizeInternal();
+    if (!desired_size.has_value()) {
+      // This can happen if abort() is queued but not yet started when
+      // pipeTo() is called. In that case [[storedError]] is not set yet, and
+      // we need to wait until it is before we can cancel the pipe. Once
+      // [[storedError]] has been set, the rejection handler set on the writer
+      // closed promise above will detect it, so all we need to do here is
+      // nothing.
+      return Undefined();
+    }
+
+    if (desired_size.value() <= 0) {
+      // Need to wait for backpressure to go away.
+      ThenPromise(
+          writer_->ReadyPromise()->V8Promise(script_state_->GetIsolate()),
+          &PipeToEngine::HandleNextEvent, &PipeToEngine::WritableError);
+      return Undefined();
+    }
+
+    is_reading_ = true;
+    ThenPromise(ReadableStreamDefaultReader::Read(script_state_, reader_)
+                    ->V8Promise(script_state_->GetIsolate()),
+                &PipeToEngine::ReadFulfilled, &PipeToEngine::ReadRejected);
+    return Undefined();
+  }
+
+  v8::Local<v8::Value> ReadFulfilled(v8::Local<v8::Value> result) {
+    is_reading_ = false;
+    DCHECK(result->IsObject());
+    auto* isolate = script_state_->GetIsolate();
+    v8::Local<v8::Value> value;
+    bool done = false;
+    bool unpack_succeeded =
+        V8UnpackIteratorResult(script_state_, result.As<v8::Object>(), &done)
+            .ToLocal(&value);
+    DCHECK(unpack_succeeded);
+    if (done) {
+      ReadableClosed();
+      return Undefined();
+    }
+    const auto write =
+        WritableStreamDefaultWriter::Write(script_state_, writer_, value);
+    last_write_.Set(isolate, write);
+    ThenPromise(write, nullptr, &PipeToEngine::WritableError);
+    HandleNextEvent(Undefined());
+    return Undefined();
+  }
+
+  v8::Local<v8::Value> ReadRejected(v8::Local<v8::Value>) {
+    is_reading_ = false;
+    ReadableError(Readable()->GetStoredError(script_state_->GetIsolate()));
+    return Undefined();
+  }
+
+  // If read() is in progress, then wait for it to tell us that the stream is
+  // closed so that we write all the data before shutdown.
+  v8::Local<v8::Value> OnReaderClosed(v8::Local<v8::Value>) {
+    if (!is_reading_) {
+      ReadableClosed();
+    }
+    return Undefined();
+  }
+
+  // 1. Errors must be propagated forward: if source.[[state]] is or
+  //    becomes "errored", then
+  v8::Local<v8::Value> ReadableError(v8::Local<v8::Value> error) {
+    // This function can be called during shutdown when the lock is released.
+    // Exit early in that case.
+    if (is_shutting_down_) {
+      return Undefined();
+    }
+
+    // a. If preventAbort is false, shutdown with an action of !
+    //    WritableStreamAbort(dest, source.[[storedError]]) and with
+    //    source.[[storedError]].
+    DCHECK(error->SameValue(
+        Readable()->GetStoredError(script_state_->GetIsolate())));
+    if (!pipe_options_.prevent_abort) {
+      ShutdownWithAction(&PipeToEngine::WritableStreamAbortAction, error);
+    } else {
+      // b. Otherwise, shutdown with source.[[storedError]].
+      Shutdown(error);
+    }
+    return Undefined();
+  }
+
+  // 2. Errors must be propagated backward: if dest.[[state]] is or becomes
+  //    "errored", then
+  v8::Local<v8::Value> WritableError(v8::Local<v8::Value> error) {
+    // This function can be called during shutdown when the lock is released.
+    // Exit early in that case.
+    if (is_shutting_down_) {
+      return Undefined();
+    }
+
+    // a. If preventCancel is false, shutdown with an action of !
+    //    ReadableStreamCancel(source, dest.[[storedError]]) and with
+    //    dest.[[storedError]].
+    DCHECK(error->SameValue(
+        Destination()->GetStoredError(script_state_->GetIsolate())));
+    if (!pipe_options_.prevent_cancel) {
+      ShutdownWithAction(&PipeToEngine::ReadableStreamCancelAction, error);
+    } else {
+      // b. Otherwise, shutdown with dest.[[storedError]].
+      Shutdown(error);
+    }
+    return Undefined();
+  }
+
+  // 3. Closing must be propagated forward: if source.[[state]] is or
+  //    becomes "closed", then
+  void ReadableClosed() {
+    // a. If preventClose is false, shutdown with an action of !
+    //    WritableStreamDefaultWriterCloseWithErrorPropagation(writer).
+    if (!pipe_options_.prevent_close) {
+      ShutdownWithAction(
+          &PipeToEngine::
+              WritableStreamDefaultWriterCloseWithErrorPropagationAction,
+          v8::MaybeLocal<v8::Value>());
+    } else {
+      // b. Otherwise, shutdown.
+      Shutdown(v8::MaybeLocal<v8::Value>());
+    }
+  }
+
+  // 4. Closing must be propagated backward: if !
+  //    WritableStreamCloseQueuedOrInFlight(dest) is true or dest.[[state]] is
+  //    "closed", then
+  void WritableStartedClosed() {
+    // a. Assert: no chunks have been read or written.
+    // This is trivially true because this method is only called from
+    // CheckInitialState().
+
+    // b. Let destClosed be a new TypeError.
+    const auto dest_closed = v8::Exception::TypeError(
+        V8String(script_state_->GetIsolate(), "Destination stream closed"));
+
+    // c. If preventCancel is false, shutdown with an action of !
+    //    ReadableStreamCancel(source, destClosed) and with destClosed.
+    if (!pipe_options_.prevent_cancel) {
+      ShutdownWithAction(&PipeToEngine::ReadableStreamCancelAction,
+                         dest_closed);
+    } else {
+      // d. Otherwise, shutdown with destClosed.
+      Shutdown(dest_closed);
+    }
+  }
+
+  // * Shutdown with an action: if any of the above requirements ask to shutdown
+  //   with an action |action|, optionally with an error |originalError|, then:
+  void ShutdownWithAction(Action action,
+                          v8::MaybeLocal<v8::Value> original_error) {
+    // a. If shuttingDown is true, abort these substeps.
+    if (is_shutting_down_) {
+      return;
+    }
+
+    // b. Set shuttingDown to true.
+    is_shutting_down_ = true;
+
+    // Store the action in case we need to call it asynchronously. This is safe
+    // because the |is_shutting_down_| guard flag ensures that we can only reach
+    // this assignment once.
+    shutdown_action_ = action;
+
+    // Store |original_error| as |shutdown_error_| if it was supplied.
+    v8::Local<v8::Value> original_error_local;
+    if (original_error.ToLocal(&original_error_local)) {
+      shutdown_error_.Set(script_state_->GetIsolate(), original_error_local);
+    }
+    v8::Local<v8::Promise> p;
+
+    // c. If dest.[[state]] is "writable" and !
+    //    WritableStreamCloseQueuedOrInFlight(dest) is false,
+    if (ShouldWriteQueuedChunks()) {
+      //  i. If any chunks have been read but not yet written, write them to
+      //     dest.
+      // ii. Wait until every chunk that has been read has been written
+      //     (i.e. the corresponding promises have settled).
+      p = ThenPromise(WriteQueuedChunks(), &PipeToEngine::InvokeShutdownAction);
+    } else {
+      // d. Let p be the result of performing action.
+      p = InvokeShutdownAction();
+    }
+
+    // e. Upon fulfillment of p, finalize, passing along originalError if it
+    //    was given.
+    // f. Upon rejection of p with reason newError, finalize with newError.
+    ThenPromise(p, &PipeToEngine::FinalizeWithOriginalErrorIfSet,
+                &PipeToEngine::FinalizeWithNewError);
+  }
+
+  // * Shutdown: if any of the above requirements or steps ask to shutdown,
+  //   optionally with an error error, then:
+  void Shutdown(v8::MaybeLocal<v8::Value> error_maybe) {
+    // a. If shuttingDown is true, abort these substeps.
+    if (is_shutting_down_) {
+      return;
+    }
+
+    // b. Set shuttingDown to true.
+    is_shutting_down_ = true;
+
+    // c. If dest.[[state]] is "writable" and !
+    //    WritableStreamCloseQueuedOrInFlight(dest) is false,
+    if (ShouldWriteQueuedChunks()) {
+      // Need to stash the value of |error_maybe| since we are calling
+      // Finalize() asynchronously.
+      v8::Local<v8::Value> error;
+      if (error_maybe.ToLocal(&error)) {
+        shutdown_error_.Set(script_state_->GetIsolate(), error);
+      }
+
+      //  i. If any chunks have been read but not yet written, write them to
+      //     dest.
+      // ii. Wait until every chunk that has been read has been written
+      //     (i.e. the corresponding promises have settled).
+      // d. Finalize, passing along error if it was given.
+      ThenPromise(WriteQueuedChunks(),
+                  &PipeToEngine::FinalizeWithOriginalErrorIfSet);
+    } else {
+      // d. Finalize, passing along error if it was given.
+      Finalize(error_maybe);
+    }
+  }
+
+  // Calls Finalize(), using the stored shutdown error rather than the value
+  // that was passed.
+  v8::Local<v8::Value> FinalizeWithOriginalErrorIfSet(v8::Local<v8::Value>) {
+    v8::MaybeLocal<v8::Value> error_maybe;
+    if (!shutdown_error_.IsEmpty()) {
+      error_maybe = shutdown_error_.NewLocal(script_state_->GetIsolate());
+    }
+    Finalize(error_maybe);
+    return Undefined();
+  }
+
+  // Calls Finalize(), using the value that was passed as the error.
+  v8::Local<v8::Value> FinalizeWithNewError(v8::Local<v8::Value> new_error) {
+    Finalize(new_error);
+    return Undefined();
+  }
+
+  // * Finalize: both forms of shutdown will eventually ask to finalize,
+  //   optionally with an error error, which means to perform the following
+  //   steps:
+  void Finalize(v8::MaybeLocal<v8::Value> error_maybe) {
+    // a. Perform ! WritableStreamDefaultWriterRelease(writer).
+    WritableStreamDefaultWriter::Release(script_state_, writer_);
+
+    // b. Perform ! ReadableStreamReaderGenericRelease(reader).
+    ReadableStreamNative::ReaderGenericRelease(script_state_, reader_);
+
+    // TODO(ricea): Implement signal.
+    // c. If signal is not undefined, remove abortAlgorithm from signal.
+
+    v8::Local<v8::Value> error;
+    if (error_maybe.ToLocal(&error)) {
+      // d. If error was given, reject promise with error.
+      promise_->Reject(script_state_, error);
+    } else {
+      // e. Otherwise, resolve promise with undefined.
+      promise_->ResolveWithUndefined(script_state_);
+    }
+  }
+
+  bool ShouldWriteQueuedChunks() const {
+    // "If dest.[[state]] is "writable" and !
+    // WritableStreamCloseQueuedOrInFlight(dest) is false"
+    return Destination()->IsWritable() &&
+           !WritableStreamNative::CloseQueuedOrInFlight(Destination());
+  }
+
+  v8::Local<v8::Promise> WriteQueuedChunks() {
+    if (!last_write_.IsEmpty()) {
+      // "Wait until every chunk that has been read has been written (i.e.
+      // the corresponding promises have settled)"
+      // This implies that we behave the same whether the promise fulfills or
+      // rejects. IgnoreErrors() will convert a rejection into a successful
+      // resolution.
+      return ThenPromise(last_write_.NewLocal(script_state_->GetIsolate()),
+                         nullptr, &PipeToEngine::IgnoreErrors);
+    }
+    return PromiseResolveWithUndefined(script_state_);
+  }
+
+  v8::Local<v8::Value> IgnoreErrors(v8::Local<v8::Value>) {
+    return Undefined();
+  }
+
+  // InvokeShutdownAction(), version for calling directly.
+  v8::Local<v8::Promise> InvokeShutdownAction() {
+    return (this->*shutdown_action_)();
+  }
+
+  // InvokeShutdownAction(), version for use as a PromiseReaction.
+  v8::Local<v8::Value> InvokeShutdownAction(v8::Local<v8::Value>) {
+    return InvokeShutdownAction();
+  }
+
+  v8::Local<v8::Value> ShutdownError() const {
+    DCHECK(!shutdown_error_.IsEmpty());
+    return shutdown_error_.NewLocal(script_state_->GetIsolate());
+  }
+
+  v8::Local<v8::Promise> WritableStreamAbortAction() {
+    return WritableStreamNative::Abort(script_state_, Destination(),
+                                       ShutdownError());
+  }
+
+  v8::Local<v8::Promise> ReadableStreamCancelAction() {
+    return ReadableStreamNative::Cancel(script_state_, Readable(),
+                                        ShutdownError());
+  }
+
+  v8::Local<v8::Promise>
+  WritableStreamDefaultWriterCloseWithErrorPropagationAction() {
+    return WritableStreamDefaultWriter::CloseWithErrorPropagation(script_state_,
+                                                                  writer_);
+  }
+
+  // Reduces the visual noise when we are returning an undefined value.
+  v8::Local<v8::Value> Undefined() {
+    return v8::Undefined(script_state_->GetIsolate());
+  }
+
+  WritableStreamNative* Destination() { return writer_->OwnerWritableStream(); }
+
+  const WritableStreamNative* Destination() const {
+    return writer_->OwnerWritableStream();
+  }
+
+  ReadableStreamNative* Readable() { return reader_->owner_readable_stream_; }
+
+  // Performs promise.then(on_fulfilled, on_rejected). The logic in this method
+  // is identical to StreamPromiseThen(), but the types are different. It's not
+  // possible to share the logic without using complex templates, which would
+  // duplicate the object code anyway.
+  v8::Local<v8::Promise> ThenPromise(v8::Local<v8::Promise> promise,
+                                     PromiseReaction on_fulfilled,
+                                     PromiseReaction on_rejected = nullptr) {
+    auto context = script_state_->GetContext();
+    v8::MaybeLocal<v8::Promise> result_maybe;
+    if (!on_fulfilled) {
+      DCHECK(on_rejected);
+      result_maybe = promise->Catch(
+          context,
+          WrappedPromiseReaction::Create(script_state_, this, on_rejected));
+    } else if (on_rejected) {
+      result_maybe = promise->Then(
+          context,
+          WrappedPromiseReaction::Create(script_state_, this, on_fulfilled),
+          WrappedPromiseReaction::Create(script_state_, this, on_rejected));
+    } else {
+      result_maybe = promise->Then(
+          context,
+          WrappedPromiseReaction::Create(script_state_, this, on_fulfilled));
+    }
+
+    v8::Local<v8::Promise> result;
+    if (!result_maybe.ToLocal(&result)) {
+      DVLOG(3) << "assuming that failure of promise->Then() is caused by "
+                  "shutdown and ignoring it";
+      // Try to create a dummy promise so that the calling code can continue. If
+      // we can't create one, then we can't return to the calling context so we
+      // have to crash. This shouldn't happen except on OOM.
+      result =
+          v8::Promise::Resolver::New(context).ToLocalChecked()->GetPromise();
+    }
+    return result;
+  }
+
+  TraceWrapperMember<ScriptState> script_state_;
+  PipeOptions pipe_options_;
+  TraceWrapperMember<ReadableStreamDefaultReader> reader_;
+  TraceWrapperMember<WritableStreamDefaultWriter> writer_;
+  TraceWrapperMember<StreamPromiseResolver> promise_;
+  TraceWrapperV8Reference<v8::Promise> last_write_;
+  Action shutdown_action_;
+  TraceWrapperV8Reference<v8::Value> shutdown_error_;
+  bool is_shutting_down_ = false;
+  bool is_reading_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(PipeToEngine);
+};
+
 class ReadableStreamNative::TeeEngine final
     : public GarbageCollectedFinalized<TeeEngine> {
  public:
@@ -700,8 +1305,37 @@ ScriptValue ReadableStreamNative::pipeThrough(ScriptState* script_state,
                                               ScriptValue transform_stream,
                                               ScriptValue options,
                                               ExceptionState& exception_state) {
-  exception_state.ThrowTypeError("pipeThrough not yet implemented");
-  return ScriptValue();
+  // TODO(ricea): Get the order of operations to strictly match the standard.
+  ScriptValue readable;
+  WritableStream* writable;
+  PipeThroughExtractReadableWritable(script_state, this, transform_stream,
+                                     &readable, &writable, exception_state);
+  if (exception_state.HadException()) {
+    return ScriptValue();
+  }
+
+  PipeOptions pipe_options;
+  UnpackPipeOptions(script_state, options, &pipe_options, exception_state);
+
+  DCHECK(RuntimeEnabledFeatures::StreamsNativeEnabled());
+
+  // This cast is safe because the following code will only be run when the
+  // native version of WritableStream is in use.
+  WritableStreamNative* writable_native =
+      static_cast<WritableStreamNative*>(writable);
+
+  // 8. Let _promise_ be ! ReadableStreamPipeTo(*this*, _writable_,
+  //    _preventClose_, _preventAbort_, _preventCancel_,
+  //   _signal_).
+
+  ScriptPromise promise =
+      PipeTo(script_state, this, writable_native, pipe_options);
+
+  // 9. Set _promise_.[[PromiseIsHandled]] to *true*.
+  promise.MarkAsHandled();
+
+  // 10. Return _readable_.
+  return readable;
 }
 
 ScriptPromise ReadableStreamNative::pipeTo(ScriptState* script_state,
@@ -717,8 +1351,24 @@ ScriptPromise ReadableStreamNative::pipeTo(ScriptState* script_state,
                                            ScriptValue destination_value,
                                            ScriptValue options,
                                            ExceptionState& exception_state) {
-  exception_state.ThrowTypeError("pipeTo not yet implemented");
-  return ScriptPromise();
+  WritableStream* destination = PipeToCheckSourceAndDestination(
+      script_state, this, destination_value, exception_state);
+  if (exception_state.HadException()) {
+    return ScriptPromise();
+  }
+  CHECK(destination);
+
+  PipeOptions pipe_options;
+  UnpackPipeOptions(script_state, options, &pipe_options, exception_state);
+
+  DCHECK(RuntimeEnabledFeatures::StreamsNativeEnabled());
+
+  // This cast is safe because the following code will only be run when the
+  // native version of WritableStream is in use.
+  WritableStreamNative* destination_native =
+      static_cast<WritableStreamNative*>(destination);
+
+  return PipeTo(script_state, this, destination_native, pipe_options);
 }
 
 ScriptValue ReadableStreamNative::tee(ScriptState* script_state,
@@ -826,6 +1476,14 @@ void ReadableStreamNative::Trace(Visitor* visitor) {
   visitor->Trace(reader_);
   visitor->Trace(stored_error_);
   ReadableStream::Trace(visitor);
+}
+
+ScriptPromise ReadableStreamNative::PipeTo(ScriptState* script_state,
+                                           ReadableStreamNative* readable,
+                                           WritableStreamNative* destination,
+                                           PipeOptions pipe_options) {
+  auto* engine = MakeGarbageCollected<PipeToEngine>(script_state, pipe_options);
+  return engine->Start(readable, destination);
 }
 
 //
@@ -1189,6 +1847,61 @@ void ReadableStreamNative::ReaderGenericRelease(
 //
 // TODO(ricea): Functions for transferable streams.
 //
+
+void ReadableStreamNative::UnpackPipeOptions(ScriptState* script_state,
+                                             ScriptValue options,
+                                             PipeOptions* pipe_options,
+                                             ExceptionState& exception_state) {
+  auto* isolate = script_state->GetIsolate();
+  v8::TryCatch block(isolate);
+  v8::Local<v8::Value> options_value = options.V8Value();
+  v8::Local<v8::Object> options_object;
+  if (options_value->IsUndefined()) {
+    options_object = v8::Object::New(isolate);
+  } else if (!options_value->ToObject(script_state->GetContext())
+                  .ToLocal(&options_object)) {
+    exception_state.RethrowV8Exception(block.Exception());
+    return;
+  }
+
+  // 4. Set preventClose to ! ToBoolean(preventClose), set preventAbort to !
+  // ToBoolean(preventAbort), and set preventCancel to !
+  // ToBoolean(preventCancel).
+  pipe_options->prevent_close =
+      GetBoolean(script_state, options_object, "preventClose", exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+
+  pipe_options->prevent_abort =
+      GetBoolean(script_state, options_object, "preventAbort", exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+
+  pipe_options->prevent_cancel = GetBoolean(script_state, options_object,
+                                            "preventCancel", exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+}
+
+bool ReadableStreamNative::GetBoolean(ScriptState* script_state,
+                                      v8::Local<v8::Object> dictionary,
+                                      const char* property_name,
+                                      ExceptionState& exception_state) {
+  auto* isolate = script_state->GetIsolate();
+  v8::TryCatch block(isolate);
+  v8::Local<v8::Value> property_value;
+  if (!dictionary
+           ->Get(script_state->GetContext(),
+                 V8AtomicString(isolate, property_name))
+           .ToLocal(&property_value)) {
+    exception_state.RethrowV8Exception(block.Exception());
+    return false;
+  }
+  return property_value->ToBoolean(isolate)->Value();
+}
 
 void ReadableStreamNative::CallNullaryMethod(ScriptState* script_state,
                                              v8::Local<v8::Object> object,
