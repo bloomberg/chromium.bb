@@ -237,6 +237,7 @@ crbug.com/606649 fast/dom/gc-dom-tree-lifetime.html [ Slow ]
 
 # Slow on Win Debug in part due to incremental linking.
 crbug.com/647192 [ Win Debug ] fast/css3-text/css3-word-break/word-break-all-ascii.html [ Slow ]
+crbug.com/948670 [ Mac10.13 Debug ] fast/css3-text/css3-word-break/word-break-all-ascii.html [ Slow ]
 
 # Slow on many platforms.
 crbug.com/866165 virtual/stable/webexposed/global-interface-listing.html [ Slow ]
