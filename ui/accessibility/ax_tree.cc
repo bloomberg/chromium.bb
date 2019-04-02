@@ -946,16 +946,13 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
   int original_level = original_node.GetIntAttribute(
       ax::mojom::IntAttribute::kHierarchicalLevel);
   // If original node is ordered set, then set its hierarchical level equal to
-  // its first child that sets a hierarchical level, if any.
-  if (ordered_set == &original_node) {
-    for (int32_t i = 0; i < original_node.GetUnignoredChildCount(); ++i) {
-      int32_t level =
-          original_node.GetUnignoredChildAtIndex(i)->GetIntAttribute(
-              ax::mojom::IntAttribute::kHierarchicalLevel);
-      if (level)
-        original_level =
-            original_level ? std::min(level, original_level) : level;
-    }
+  // its first child to ensure the items vector gets populated.
+  // This is due to ordered sets having a hierarchical level of 0, while their
+  // nodes have non-zero hierarchical values.
+  if ((ordered_set == &original_node) &&
+      ordered_set->GetUnignoredChildAtIndex(0)) {
+    original_level = ordered_set->GetUnignoredChildAtIndex(0)->GetIntAttribute(
+        ax::mojom::IntAttribute::kHierarchicalLevel);
   }
   int original_node_index = original_node.GetUnignoredIndexInParent();
   bool node_is_radio_button =
