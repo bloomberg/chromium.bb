@@ -287,6 +287,10 @@ bool CompositorFrameSinkSupport::WantsAnimateOnlyBeginFrames() const {
   return wants_animate_only_begin_frames_;
 }
 
+bool CompositorFrameSinkSupport::IsRoot() const {
+  return is_root_;
+}
+
 void CompositorFrameSinkSupport::DidNotProduceFrame(const BeginFrameAck& ack) {
   TRACE_EVENT2("viz", "CompositorFrameSinkSupport::DidNotProduceFrame",
                "ack.source_id", ack.source_id, "ack.sequence_number",
