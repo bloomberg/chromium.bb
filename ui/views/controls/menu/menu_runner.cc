@@ -45,14 +45,6 @@ void MenuRunner::RunMenuAt(Widget* parent,
     return;
   }
 
-  // The parent of the nested menu will have created a DisplayChangeListener, so
-  // we avoid creating a DisplayChangeListener if nested. Drop menus are
-  // transient, so we don't cancel in that case.
-  if ((run_types_ & (IS_NESTED | FOR_DROP)) == 0 && parent) {
-    display_change_listener_.reset(
-        internal::DisplayChangeListener::Create(parent, this));
-  }
-
   if ((run_types_ & CONTEXT_MENU) && !(run_types_ & FIXED_ANCHOR)) {
     switch (source_type) {
       case ui::MENU_SOURCE_NONE:
