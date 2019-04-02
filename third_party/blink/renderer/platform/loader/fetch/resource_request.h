@@ -418,6 +418,9 @@ class PLATFORM_EXPORT ResourceRequest final {
     return fetch_window_id_;
   }
 
+  void SetInspectorId(uint64_t inspector_id) { inspector_id_ = inspector_id; }
+  uint64_t InspectorId() const { return inspector_id_; }
+
  private:
   using SharableExtraData =
       base::RefCountedData<std::unique_ptr<WebURLRequest::ExtraData>>;
@@ -495,6 +498,8 @@ class PLATFORM_EXPORT ResourceRequest final {
   ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
 
   base::UnguessableToken fetch_window_id_;
+
+  uint64_t inspector_id_ = 0;
 };
 
 }  // namespace blink

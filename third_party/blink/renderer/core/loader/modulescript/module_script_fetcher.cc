@@ -66,7 +66,7 @@ bool ModuleScriptFetcher::WasModuleLoadSuccessful(
         mojom::ConsoleMessageSource::kJavaScript,
         mojom::ConsoleMessageLevel::kError, message,
         response.CurrentRequestUrl().GetString(), nullptr,
-        resource->Identifier()));
+        resource->InspectorId()));
     return false;
   }
 

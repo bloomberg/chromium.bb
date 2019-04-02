@@ -371,7 +371,6 @@ TEST(ImageResourceTest, MultipartImage) {
   // Emulate starting a real load, but don't expect any "real"
   // WebURLLoaderClient callbacks.
   ImageResource* image_resource = ImageResource::CreateForTest(test_url);
-  image_resource->SetIdentifier(CreateUniqueIdentifier());
   fetcher->StartLoad(image_resource);
 
   auto observer =
@@ -457,9 +456,9 @@ TEST(ImageResourceTest, BitmapMultipartImage) {
   ResourceFetcher* fetcher = CreateFetcher();
   KURL test_url(kTestURL);
   ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
-  ImageResource* image_resource =
-      ImageResource::Create(ResourceRequest(test_url));
-  image_resource->SetIdentifier(CreateUniqueIdentifier());
+  ResourceRequest resource_request(test_url);
+  resource_request.SetInspectorId(CreateUniqueIdentifier());
+  ImageResource* image_resource = ImageResource::Create(resource_request);
   fetcher->StartLoad(image_resource);
 
   ResourceResponse multipart_response(NullURL());
@@ -499,7 +498,6 @@ TEST(ImageResourceTest, CancelOnRemoveObserver) {
 
   // Emulate starting a real load.
   ImageResource* image_resource = ImageResource::CreateForTest(test_url);
-  image_resource->SetIdentifier(CreateUniqueIdentifier());
 
   fetcher->StartLoad(image_resource);
   GetMemoryCache()->Add(image_resource);
@@ -550,7 +548,6 @@ TEST(ImageResourceTest, CancelWithImageAndFinishObserver) {
 
   // Emulate starting a real load.
   ImageResource* image_resource = ImageResource::CreateForTest(test_url);
-  image_resource->SetIdentifier(CreateUniqueIdentifier());
 
   fetcher->StartLoad(image_resource);
   GetMemoryCache()->Add(image_resource);

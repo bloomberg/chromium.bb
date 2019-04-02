@@ -125,7 +125,6 @@ Resource::Resource(const ResourceRequest& request,
                    const ResourceLoaderOptions& options)
     : type_(type),
       status_(ResourceStatus::kNotStarted),
-      identifier_(0),
       encoded_size_(0),
       encoded_size_memory_usage_(0),
       decoded_size_(0),
@@ -927,7 +926,7 @@ String Resource::GetMemoryDumpName() const {
   return String::Format(
              "web_cache/%s_resources/",
              ResourceTypeToString(GetType(), Options().initiator_info.name)) +
-         String::Number(identifier_);
+         String::Number(InspectorId());
 }
 
 void Resource::SetCachePolicyBypassingCache() {
