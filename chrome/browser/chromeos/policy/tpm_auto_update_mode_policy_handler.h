@@ -46,6 +46,11 @@ class TPMAutoUpdateModePolicyHandler {
   void SetUpdateCheckerCallbackForTesting(
       const UpdateCheckerCallback& callback);
 
+  // Updates the TPM firmware if the device is set to update at enrollment via
+  // device policy option TPMFirmwareUpdateSettings.AutoUpdateMode. If the TPM
+  // firmware is not vulnerable the method will return without updating.
+  void UpdateOnEnrollmentIfNeeded();
+
  private:
   void OnPolicyChanged();
 

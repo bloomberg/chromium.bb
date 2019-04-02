@@ -18,6 +18,10 @@
 
 namespace {
 
+// Timeout for the TPM firmware update availability check.
+const base::TimeDelta kFirmwareAvailabilityCheckerTimeout =
+    base::TimeDelta::FromSeconds(20);
+
 // Reads the value of the the device setting key
 // TPMFirmwareUpdateSettings.AutoUpdateMode from a trusted store. If the value
 // is temporarily untrusted |callback| will be invoked later when trusted values
@@ -25,7 +29,7 @@ namespace {
 // via the device policy TPMFirmwareUpdateSettings.
 policy::AutoUpdateMode GetTPMAutoUpdateModeSetting(
     const chromeos::CrosSettings* cros_settings,
-    const base::RepeatingCallback<void()> callback) {
+    const base::RepeatingClosure callback) {
   if (!g_browser_process->platform_part()
            ->browser_policy_connector_chromeos()
            ->IsEnterpriseManaged()) {
@@ -33,7 +37,7 @@ policy::AutoUpdateMode GetTPMAutoUpdateModeSetting(
   }
 
   chromeos::CrosSettingsProvider::TrustedStatus status =
-      cros_settings->PrepareTrustedValues(base::BindRepeating(callback));
+      cros_settings->PrepareTrustedValues(callback);
   if (status != chromeos::CrosSettingsProvider::TRUSTED)
     return policy::AutoUpdateMode::kNever;
   const base::Value* tpm_settings =
@@ -102,7 +106,7 @@ void TPMAutoUpdateModePolicyHandler::OnPolicyChanged() {
 void TPMAutoUpdateModePolicyHandler::CheckForUpdate(
     base::OnceCallback<void(bool)> callback) {
   chromeos::tpm_firmware_update::UpdateAvailable(
-      std::move(callback), base::TimeDelta().FromSeconds(20));
+      std::move(callback), kFirmwareAvailabilityCheckerTimeout);
 }
 
 // static
@@ -119,6 +123,23 @@ void TPMAutoUpdateModePolicyHandler::OnUpdateAvailableCheckResult(
 void TPMAutoUpdateModePolicyHandler::SetUpdateCheckerCallbackForTesting(
     const UpdateCheckerCallback& callback) {
   update_checker_callback_ = callback;
+}
+
+void TPMAutoUpdateModePolicyHandler::UpdateOnEnrollmentIfNeeded() {
+  AutoUpdateMode auto_update_mode = GetTPMAutoUpdateModeSetting(
+      cros_settings_,
+      base::BindRepeating(
+          &TPMAutoUpdateModePolicyHandler::UpdateOnEnrollmentIfNeeded,
+          weak_factory_.GetWeakPtr()));
+
+  // If the TPM is set to update with user acknowlegment, always update on
+  // enrollment. The AutoUpdateMode.UserAcknowledgment flow is meant to give a
+  // warning to the user to backup their data. During enrollment there is no
+  // user data on the device.
+  if (auto_update_mode == AutoUpdateMode::kEnrollment ||
+      auto_update_mode == AutoUpdateMode::kUserAcknowledgment) {
+    update_checker_callback_.Run(base::BindOnce(&OnUpdateAvailableCheckResult));
+  }
 }
 
 }  // namespace policy
