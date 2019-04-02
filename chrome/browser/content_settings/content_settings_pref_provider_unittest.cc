@@ -535,13 +535,12 @@ TEST_F(PrefProviderTest, ClearAllContentSettingsRules) {
 
   // Legacy, persisted exception for CONTENT_SETTINGS_TYPE_PLUGINS with a
   // non-empty pattern, and non-empty resource identifier.
-  ResourceIdentifier res_id("abcde");
-  ASSERT_TRUE(SetLegacyPersistedPluginSetting(&prefs, pattern, wildcard, res_id,
-                                              value->DeepCopy()));
+  ASSERT_TRUE(SetLegacyPersistedPluginSetting(
+      &prefs, pattern, wildcard, ResourceIdentifier(), value->DeepCopy()));
 
-  // Same with an empty pattern and non-empty resource identifier.
-  ASSERT_TRUE(SetLegacyPersistedPluginSetting(&prefs, wildcard, wildcard,
-                                              res_id, value->DeepCopy()));
+  // Non-empty pattern, plugins, empty resource identifier.
+  provider.SetWebsiteSetting(pattern, wildcard, CONTENT_SETTINGS_TYPE_PLUGINS,
+                             ResourceIdentifier(), value->DeepCopy());
 #endif
 
   // Non-empty pattern, syncable, empty resource identifier.
