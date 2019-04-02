@@ -876,17 +876,68 @@ TEST(SpanTest, OperatorAt) {
   static constexpr int kArray[] = {1, 6, 1, 8, 0};
   constexpr span<const int> span(kArray);
 
-  static_assert(kArray[0] == span[0], "span[0] does not equal kArray[0]");
-  static_assert(kArray[1] == span[1], "span[1] does not equal kArray[1]");
-  static_assert(kArray[2] == span[2], "span[2] does not equal kArray[2]");
-  static_assert(kArray[3] == span[3], "span[3] does not equal kArray[3]");
-  static_assert(kArray[4] == span[4], "span[4] does not equal kArray[4]");
+  static_assert(&kArray[0] == &span[0],
+                "span[0] does not refer to the same element as kArray[0]");
+  static_assert(&kArray[1] == &span[1],
+                "span[1] does not refer to the same element as kArray[1]");
+  static_assert(&kArray[2] == &span[2],
+                "span[2] does not refer to the same element as kArray[2]");
+  static_assert(&kArray[3] == &span[3],
+                "span[3] does not refer to the same element as kArray[3]");
+  static_assert(&kArray[4] == &span[4],
+                "span[4] does not refer to the same element as kArray[4]");
+}
 
-  static_assert(kArray[0] == span(0), "span(0) does not equal kArray[0]");
-  static_assert(kArray[1] == span(1), "span(1) does not equal kArray[1]");
-  static_assert(kArray[2] == span(2), "span(2) does not equal kArray[2]");
-  static_assert(kArray[3] == span(3), "span(3) does not equal kArray[3]");
-  static_assert(kArray[4] == span(4), "span(4) does not equal kArray[4]");
+TEST(SpanTest, Front) {
+  static constexpr int kArray[] = {1, 6, 1, 8, 0};
+  constexpr span<const int> span(kArray);
+  static_assert(&kArray[0] == &span.front(),
+                "span.front() does not refer to the same element as kArray[0]");
+}
+
+TEST(SpanTest, Back) {
+  static constexpr int kArray[] = {1, 6, 1, 8, 0};
+  constexpr span<const int> span(kArray);
+  static_assert(&kArray[4] == &span.back(),
+                "span.back() does not refer to the same element as kArray[4]");
+}
+
+TEST(SpanTest, Swap) {
+  {
+    static int kArray1[] = {1, 1};
+    static int kArray2[] = {1, 2};
+    span<const int, 2> static_span1(kArray1);
+    span<const int, 2> static_span2(kArray2);
+
+    EXPECT_EQ(kArray1, static_span1.data());
+    EXPECT_EQ(kArray2, static_span2.data());
+
+    swap(static_span1, static_span2);
+
+    EXPECT_EQ(kArray2, static_span1.data());
+    EXPECT_EQ(kArray1, static_span2.data());
+  }
+
+  {
+    static int kArray1[] = {1};
+    static int kArray2[] = {1, 2};
+    span<const int> dynamic_span1(kArray1);
+    span<const int> dynamic_span2(kArray2);
+
+    EXPECT_EQ(kArray1, dynamic_span1.data());
+    EXPECT_EQ(1u, dynamic_span1.size());
+
+    EXPECT_EQ(kArray2, dynamic_span2.data());
+    EXPECT_EQ(2u, dynamic_span2.size());
+
+    swap(dynamic_span1, dynamic_span2);
+
+    EXPECT_EQ(kArray2, dynamic_span1.data());
+    EXPECT_EQ(2u, dynamic_span1.size());
+
+    EXPECT_EQ(kArray1, dynamic_span2.data());
+    EXPECT_EQ(1u, dynamic_span2.size());
+  }
 }
 
 TEST(SpanTest, Iterator) {
@@ -1053,6 +1104,46 @@ TEST(SpanTest, MakeSpanFromStaticSpan) {
                 "make_span(span) should have the same extent as span");
 }
 
+TEST(SpanTest, StdTupleSize) {
+  static_assert(std::tuple_size<span<int, 0>>::value == 0, "");
+  static_assert(std::tuple_size<span<int, 1>>::value == 1, "");
+  static_assert(std::tuple_size<span<int, 2>>::value == 2, "");
+}
+
+TEST(SpanTest, StdTupleElement) {
+  static_assert(std::is_same<int, std::tuple_element_t<0, span<int, 1>>>::value,
+                "");
+  static_assert(
+      std::is_same<const int,
+                   std::tuple_element_t<0, span<const int, 2>>>::value,
+      "");
+  static_assert(
+      std::is_same<const int*,
+                   std::tuple_element_t<1, span<const int*, 2>>>::value,
+      "");
+}
+
+TEST(SpanTest, StdGet) {
+  static constexpr int kArray[] = {1, 6, 1, 8, 0};
+  constexpr span<const int, 5> span(kArray);
+
+  static_assert(
+      &kArray[0] == &std::get<0>(span),
+      "std::get<0>(span) does not refer to the same element as kArray[0]");
+  static_assert(
+      &kArray[1] == &std::get<1>(span),
+      "std::get<1>(span) does not refer to the same element as kArray[1]");
+  static_assert(
+      &kArray[2] == &std::get<2>(span),
+      "std::get<2>(span) does not refer to the same element as kArray[2]");
+  static_assert(
+      &kArray[3] == &std::get<3>(span),
+      "std::get<3>(span) does not refer to the same element as kArray[3]");
+  static_assert(
+      &kArray[4] == &std::get<4>(span),
+      "std::get<4>(span) does not refer to the same element as kArray[4]");
+}
+
 TEST(SpanTest, EnsureConstexprGoodness) {
   static constexpr int kArray[] = {5, 4, 3, 2, 1};
   constexpr span<const int> constexpr_span(kArray);
@@ -1083,13 +1174,15 @@ TEST(SpanTest, OutOfBoundsDeath) {
 
   ASSERT_DEATH_IF_SUPPORTED(kEmptySpan[0], "");
 
-  ASSERT_DEATH_IF_SUPPORTED(kEmptySpan(0), "");
-
   ASSERT_DEATH_IF_SUPPORTED(kEmptySpan.first(1), "");
 
   ASSERT_DEATH_IF_SUPPORTED(kEmptySpan.last(1), "");
 
   ASSERT_DEATH_IF_SUPPORTED(kEmptySpan.subspan(1), "");
+
+  constexpr span<int> kEmptyDynamicSpan;
+  ASSERT_DEATH_IF_SUPPORTED(kEmptyDynamicSpan.front(), "");
+  ASSERT_DEATH_IF_SUPPORTED(kEmptyDynamicSpan.back(), "");
 }
 
 TEST(SpanTest, IteratorIsRangeMoveSafe) {
