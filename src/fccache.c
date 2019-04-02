@@ -172,6 +172,7 @@ FcDirCacheBasenameMD5 (FcConfig *config, const FcChar8 *dir, FcChar8 cache_base[
 	key = (FcChar8 *) malloc (dl + sl + 1);
 	memcpy (key, dir, dl);
 	memcpy (key + dl, salt, sl + 1);
+	key[dl + sl] = 0;
 	if (!orig_dir)
 		orig_dir = dir;
 	dir = key;
