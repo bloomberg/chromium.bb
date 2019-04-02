@@ -8380,6 +8380,13 @@
             }
           ],
           "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          },
           "shards": 4
         },
         "test": "angle_end2end_tests"
@@ -8399,7 +8406,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600
+          "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         },
         "test": "angle_unittests"
       },
@@ -8420,7 +8434,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600
+          "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         },
         "test": "browser_tests"
       },
@@ -8439,6 +8460,13 @@
             }
           ],
           "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          },
           "shards": 4
         },
         "test": "dawn_end2end_tests"
@@ -8457,7 +8485,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600
+          "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         },
         "test": "gl_tests"
       },
@@ -8474,7 +8509,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600
+          "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         },
         "test": "gl_unittests"
       },
@@ -8491,7 +8533,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600
+          "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         },
         "test": "gles2_conform_test"
       },
@@ -8505,7 +8554,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600
+          "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         },
         "test": "gpu_unittests"
       },
@@ -8523,7 +8579,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600
+          "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         },
         "test": "services_unittests"
       },
@@ -8537,7 +8600,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600
+          "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         },
         "test": "swiftshader_unittests"
       }
@@ -8565,7 +8635,14 @@
             }
           ],
           "expiration": 21600,
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         }
       },
       {
@@ -8590,7 +8667,14 @@
             }
           ],
           "expiration": 21600,
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         }
       },
       {
@@ -8615,7 +8699,14 @@
             }
           ],
           "expiration": 21600,
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         }
       },
       {
@@ -8640,7 +8731,14 @@
             }
           ],
           "expiration": 21600,
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         }
       },
       {
@@ -8669,7 +8767,14 @@
             }
           ],
           "expiration": 21600,
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         }
       },
       {
@@ -8701,7 +8806,14 @@
             }
           ],
           "expiration": 21600,
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         }
       },
       {
@@ -8741,7 +8853,14 @@
             }
           ],
           "expiration": 21600,
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         }
       },
       {
@@ -8767,7 +8886,14 @@
             }
           ],
           "expiration": 21600,
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         }
       },
       {
@@ -8792,7 +8918,14 @@
             }
           ],
           "expiration": 21600,
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         }
       },
       {
@@ -8820,6 +8953,13 @@
           ],
           "expiration": 21600,
           "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          },
           "shards": 20
         }
       },
@@ -8846,6 +8986,13 @@
           ],
           "expiration": 21600,
           "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          },
           "shards": 2
         }
       }
@@ -8869,6 +9016,13 @@
             }
           ],
           "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          },
           "shards": 4
         },
         "test": "angle_end2end_tests"
@@ -8888,7 +9042,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600
+          "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         },
         "test": "angle_unittests"
       },
@@ -8909,7 +9070,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600
+          "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         },
         "test": "browser_tests"
       },
@@ -8928,6 +9096,13 @@
             }
           ],
           "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          },
           "shards": 4
         },
         "test": "dawn_end2end_tests"
@@ -8946,7 +9121,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600
+          "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         },
         "test": "gl_tests"
       },
@@ -8963,7 +9145,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600
+          "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         },
         "test": "gl_unittests"
       },
@@ -8980,7 +9169,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600
+          "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         },
         "test": "gles2_conform_test"
       },
@@ -8994,7 +9190,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600
+          "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         },
         "test": "gpu_unittests"
       },
@@ -9012,7 +9215,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600
+          "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         },
         "test": "services_unittests"
       },
@@ -9026,7 +9236,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600
+          "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         },
         "test": "swiftshader_unittests"
       }
@@ -9054,7 +9271,14 @@
             }
           ],
           "expiration": 21600,
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         }
       },
       {
@@ -9079,7 +9303,14 @@
             }
           ],
           "expiration": 21600,
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         }
       },
       {
@@ -9104,7 +9335,14 @@
             }
           ],
           "expiration": 21600,
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         }
       },
       {
@@ -9129,7 +9367,14 @@
             }
           ],
           "expiration": 21600,
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         }
       },
       {
@@ -9158,7 +9403,14 @@
             }
           ],
           "expiration": 21600,
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         }
       },
       {
@@ -9190,7 +9442,14 @@
             }
           ],
           "expiration": 21600,
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         }
       },
       {
@@ -9230,7 +9489,14 @@
             }
           ],
           "expiration": 21600,
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         }
       },
       {
@@ -9256,7 +9522,14 @@
             }
           ],
           "expiration": 21600,
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         }
       },
       {
@@ -9281,7 +9554,14 @@
             }
           ],
           "expiration": 21600,
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         }
       },
       {
@@ -9309,6 +9589,13 @@
           ],
           "expiration": 21600,
           "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          },
           "shards": 20
         }
       },
@@ -9335,6 +9622,13 @@
           ],
           "expiration": 21600,
           "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          },
           "shards": 2
         }
       }
@@ -9358,6 +9652,13 @@
             }
           ],
           "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          },
           "shards": 4
         },
         "test": "angle_end2end_tests"
@@ -9377,7 +9678,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600
+          "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         },
         "test": "angle_unittests"
       },
@@ -9398,7 +9706,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600
+          "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         },
         "test": "browser_tests"
       },
@@ -9417,6 +9732,13 @@
             }
           ],
           "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          },
           "shards": 4
         },
         "test": "dawn_end2end_tests"
@@ -9435,7 +9757,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600
+          "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         },
         "test": "gl_tests"
       },
@@ -9452,7 +9781,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600
+          "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         },
         "test": "gl_unittests"
       },
@@ -9469,7 +9805,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600
+          "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         },
         "test": "gles2_conform_test"
       },
@@ -9483,7 +9826,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600
+          "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         },
         "test": "gpu_unittests"
       },
@@ -9501,7 +9851,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600
+          "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         },
         "test": "services_unittests"
       },
@@ -9515,7 +9872,14 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600
+          "expiration": 21600,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         },
         "test": "swiftshader_unittests"
       }
@@ -9543,7 +9907,14 @@
             }
           ],
           "expiration": 21600,
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         }
       },
       {
@@ -9568,7 +9939,14 @@
             }
           ],
           "expiration": 21600,
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         }
       },
       {
@@ -9593,7 +9971,14 @@
             }
           ],
           "expiration": 21600,
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         }
       },
       {
@@ -9618,7 +10003,14 @@
             }
           ],
           "expiration": 21600,
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         }
       },
       {
@@ -9647,7 +10039,14 @@
             }
           ],
           "expiration": 21600,
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         }
       },
       {
@@ -9679,7 +10078,14 @@
             }
           ],
           "expiration": 21600,
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         }
       },
       {
@@ -9719,7 +10125,14 @@
             }
           ],
           "expiration": 21600,
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         }
       },
       {
@@ -9745,7 +10158,14 @@
             }
           ],
           "expiration": 21600,
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         }
       },
       {
@@ -9770,7 +10190,14 @@
             }
           ],
           "expiration": 21600,
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          }
         }
       },
       {
@@ -9798,6 +10225,13 @@
           ],
           "expiration": 21600,
           "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          },
           "shards": 20
         }
       },
@@ -9824,6 +10258,13 @@
           ],
           "expiration": 21600,
           "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.14.4"
+              }
+            ]
+          },
           "shards": 2
         }
       }
