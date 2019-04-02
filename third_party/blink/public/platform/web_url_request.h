@@ -36,8 +36,10 @@
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "third_party/blink/public/common/service_worker/service_worker_types.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
+#include "ui/base/page_transition_types.h"
 
 namespace network {
 namespace mojom {
@@ -114,7 +116,58 @@ class WebURLRequest {
 
   class ExtraData {
    public:
+    void set_is_preprerendering(bool is_prerendering) {
+      is_prerendering_ = is_prerendering;
+    }
+    void set_render_frame_id(int render_frame_id) {
+      render_frame_id_ = render_frame_id;
+    }
+    void set_is_main_frame(bool is_main_frame) {
+      is_main_frame_ = is_main_frame;
+    }
+    void set_allow_download(bool allow_download) {
+      allow_download_ = allow_download;
+    }
+    ui::PageTransition transition_type() const { return transition_type_; }
+    void set_transition_type(ui::PageTransition transition_type) {
+      transition_type_ = transition_type;
+    }
+    int service_worker_provider_id() const {
+      return service_worker_provider_id_;
+    }
+    void set_service_worker_provider_id(int service_worker_provider_id) {
+      service_worker_provider_id_ = service_worker_provider_id;
+    }
+
+    // true if the request originated from within a service worker e.g. due to
+    // a fetch() in the service worker script.
+    void set_originated_from_service_worker(
+        bool originated_from_service_worker) {
+      originated_from_service_worker_ = originated_from_service_worker;
+    }
+    void set_initiated_in_secure_context(bool secure) {
+      initiated_in_secure_context_ = secure;
+    }
+
+    // Determines whether SameSite cookies will be attached to the request
+    // even when the request looks cross-site.
+    bool attach_same_site_cookies() const { return attach_same_site_cookies_; }
+    void set_attach_same_site_cookies(bool attach) {
+      attach_same_site_cookies_ = attach;
+    }
+
     virtual ~ExtraData() = default;
+
+   protected:
+    bool is_prerendering_ = false;
+    int render_frame_id_ = MSG_ROUTING_NONE;
+    bool is_main_frame_ = false;
+    bool allow_download_ = true;
+    ui::PageTransition transition_type_ = ui::PAGE_TRANSITION_LINK;
+    int service_worker_provider_id_ = blink::kInvalidServiceWorkerProviderId;
+    bool originated_from_service_worker_ = false;
+    bool initiated_in_secure_context_ = false;
+    bool attach_same_site_cookies_ = false;
   };
 
   BLINK_PLATFORM_EXPORT ~WebURLRequest();
