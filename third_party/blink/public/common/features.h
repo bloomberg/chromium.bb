@@ -19,7 +19,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature
     kEnableGpuRasterizationViewportRestriction;
 BLINK_COMMON_EXPORT extern const base::Feature kScriptStreaming;
-BLINK_COMMON_EXPORT extern const base::Feature kUserLevelMemoryPressureSignal;
 BLINK_COMMON_EXPORT extern const base::Feature kFirstContentfulPaintPlusPlus;
 BLINK_COMMON_EXPORT extern const base::Feature kFreezePurgeMemoryAllPagesFrozen;
 BLINK_COMMON_EXPORT extern const base::Feature kImplicitRootScroller;
