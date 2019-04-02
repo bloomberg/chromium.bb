@@ -204,17 +204,15 @@ void UsbServiceLinux::BlockingTaskRunnerHelper::OnDeviceRemoved(
 UsbServiceLinux::UsbServiceLinux()
     : UsbService(),
       blocking_task_runner_(CreateBlockingTaskRunner()),
+      helper_(nullptr, base::OnTaskRunnerDeleter(blocking_task_runner_)),
       weak_factory_(this) {
-  helper_ =
-      std::make_unique<BlockingTaskRunnerHelper>(weak_factory_.GetWeakPtr());
+  helper_.reset(new BlockingTaskRunnerHelper(weak_factory_.GetWeakPtr()));
   blocking_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&BlockingTaskRunnerHelper::Start,
                                 base::Unretained(helper_.get())));
 }
 
-UsbServiceLinux::~UsbServiceLinux() {
-  blocking_task_runner_->DeleteSoon(FROM_HERE, helper_.release());
-}
+UsbServiceLinux::~UsbServiceLinux() = default;
 
 void UsbServiceLinux::GetDevices(const GetDevicesCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

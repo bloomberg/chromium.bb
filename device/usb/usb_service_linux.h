@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "device/usb/usb_service.h"
 
 namespace device {
@@ -57,7 +58,7 @@ class UsbServiceLinux : public UsbService {
   std::list<GetDevicesCallback> enumeration_callbacks_;
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  std::unique_ptr<BlockingTaskRunnerHelper> helper_;
+  std::unique_ptr<BlockingTaskRunnerHelper, base::OnTaskRunnerDeleter> helper_;
   DeviceMap devices_by_path_;
 
   base::WeakPtrFactory<UsbServiceLinux> weak_factory_;

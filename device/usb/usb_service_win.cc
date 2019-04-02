@@ -290,6 +290,7 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
 UsbServiceWin::UsbServiceWin()
     : UsbService(),
       blocking_task_runner_(CreateBlockingTaskRunner()),
+      helper_(nullptr, base::OnTaskRunnerDeleter(blocking_task_runner_)),
       device_observer_(this),
       weak_factory_(this) {
   DeviceMonitorWin* device_monitor =
@@ -297,16 +298,13 @@ UsbServiceWin::UsbServiceWin()
   if (device_monitor)
     device_observer_.Add(device_monitor);
 
-  helper_ =
-      std::make_unique<BlockingTaskRunnerHelper>(weak_factory_.GetWeakPtr());
+  helper_.reset(new BlockingTaskRunnerHelper(weak_factory_.GetWeakPtr()));
   blocking_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&BlockingTaskRunnerHelper::EnumerateDevices,
                                 base::Unretained(helper_.get())));
 }
 
-UsbServiceWin::~UsbServiceWin() {
-  blocking_task_runner_->DeleteSoon(FROM_HERE, helper_.release());
-}
+UsbServiceWin::~UsbServiceWin() = default;
 
 void UsbServiceWin::GetDevices(const GetDevicesCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

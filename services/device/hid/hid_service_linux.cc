@@ -193,17 +193,17 @@ class HidServiceLinux::BlockingTaskRunnerHelper : public UdevWatcher::Observer {
 HidServiceLinux::HidServiceLinux()
     : blocking_task_runner_(
           base::CreateSequencedTaskRunnerWithTraits(kBlockingTaskTraits)),
+      helper_(nullptr, base::OnTaskRunnerDeleter(blocking_task_runner_)),
       weak_factory_(this) {
-  helper_ =
-      std::make_unique<BlockingTaskRunnerHelper>(weak_factory_.GetWeakPtr());
+  // We need to properly initialize |blocking_task_helper_| here because we need
+  // |weak_factory_| to be created first.
+  helper_.reset(new BlockingTaskRunnerHelper(weak_factory_.GetWeakPtr()));
   blocking_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&BlockingTaskRunnerHelper::Start,
                                 base::Unretained(helper_.get())));
 }
 
-HidServiceLinux::~HidServiceLinux() {
-  blocking_task_runner_->DeleteSoon(FROM_HERE, helper_.release());
-}
+HidServiceLinux::~HidServiceLinux() = default;
 
 base::WeakPtr<HidService> HidServiceLinux::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
