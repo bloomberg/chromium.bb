@@ -24,7 +24,6 @@ class ServiceWorkerProviderContext;
 class WebWorkerFetchContextImpl;
 struct NavigationResponseOverrideParameters;
 
-// PlzDedicatedWorker:
 // DedicatedWorkerHostFactoryClient intermediates between
 // blink::(Web)DedicatedWorker and content::DedicatedWorkerHostFactory. This
 // is bound with the thread where the execution context creating this worker
@@ -40,6 +39,8 @@ class DedicatedWorkerHostFactoryClient final
   ~DedicatedWorkerHostFactoryClient() override;
 
   // Implements blink::WebDedicatedWorkerHostFactoryClient.
+  void CreateWorkerHostDeprecated(
+      const blink::WebSecurityOrigin& script_origin) override;
   void CreateWorkerHost(const blink::WebURL& script_url,
                         const blink::WebSecurityOrigin& script_origin,
                         mojo::ScopedMessagePipeHandle blob_url_token) override;
