@@ -343,12 +343,12 @@ void AwRenderFrameExt::OnSetBackgroundColor(SkColor c) {
 
 void AwRenderFrameExt::OnSmoothScroll(int target_x,
                                       int target_y,
-                                      int duration_ms) {
+                                      uint64_t duration_ms) {
   blink::WebView* webview = GetWebView();
   if (!webview)
     return;
 
-  webview->SmoothScroll(target_x, target_y, static_cast<long>(duration_ms));
+  webview->SmoothScroll(target_x, target_y, duration_ms);
 }
 
 void AwRenderFrameExt::OnSetWillSuppressErrorPage(bool suppress) {
