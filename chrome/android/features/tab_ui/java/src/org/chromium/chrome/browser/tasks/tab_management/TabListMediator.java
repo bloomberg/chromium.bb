@@ -315,7 +315,8 @@ class TabListMediator {
                 super.onChildDraw(
                         c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
                 if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
-                    float alpha = 1f - Math.max(0, 0.8f * Math.abs(dX) / swipeToDismissThreshold);
+                    float alpha =
+                            Math.max(0.2f, 1f - 0.8f * Math.abs(dX) / swipeToDismissThreshold);
                     int index = mModel.indexFromId(((TabGridViewHolder) viewHolder).getTabId());
                     if (index == -1) return;
 
