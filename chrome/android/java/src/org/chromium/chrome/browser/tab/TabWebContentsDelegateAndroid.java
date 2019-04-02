@@ -510,7 +510,8 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
         // Following get* methods use this method instead of |Tab.getFullscreenManager|
         // because the latter can return null if invoked while the tab is in detached state.
         ChromeActivity activity = mTab.getActivity();
-        return activity != null ? activity.getFullscreenManager() : null;
+        return activity != null && !activity.isActivityFinishingOrDestroyed() ?
+                activity.getFullscreenManager() : null;
     }
 
     @Override
