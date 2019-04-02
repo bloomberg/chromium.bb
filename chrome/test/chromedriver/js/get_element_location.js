@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function getInViewCenterPoint(rect) {
+function getInViewPoint(rect) {
   var left = Math.max(0, rect.left);
   var right = Math.min(window.innerWidth, rect.right);
   var top = Math.max(0, rect.top);
@@ -11,7 +11,7 @@ function getInViewCenterPoint(rect) {
   var x = 0.5 * (left + right);
   var y = 0.5 * (top + bottom);
 
-  return [x, y];
+  return [x, y, rect.left, rect.top];
 }
 
 function inView(element) {
@@ -24,17 +24,17 @@ function inView(element) {
     return false;
   }
 
-  var centerPoint = getInViewCenterPoint(rectangles[0]);
-  if (centerPoint[0] <= 0 || centerPoint[1] <= 0 ||
-      centerPoint[0] >= window.innerWidth ||
-      centerPoint[1] >= window.innerHeight) {
+  var elementPoint = getInViewPoint(rectangles[0]);
+  if (elementPoint[0] <= 0 || elementPoint[1] <= 0 ||
+      elementPoint[0] >= window.innerWidth ||
+      elementPoint[1] >= window.innerHeight) {
     return false;
   }
 
   return true;
 }
 
-function getElementCenterLocation(element) {
+function getElementLocation(element, center) {
   // Check that node type is element.
   if (element.nodeType != 1)
     throw new Error(element + ' is not an element');
@@ -50,9 +50,16 @@ function getElementCenterLocation(element) {
   }
 
   var rect = element.getClientRects()[0];
-  var centerPoint = getInViewCenterPoint(rect);
-  return {
-      'x': centerPoint[0],
-      'y': centerPoint[1]
-  };
+  var elementPoint = getInViewPoint(rect);
+  if (center) {
+    return {
+        'x': elementPoint[0],
+        'y': elementPoint[1]
+    };
+  } else {
+    return {
+        'x': elementPoint[2],
+        'y': elementPoint[3]
+    };
+  }
 }
