@@ -7,6 +7,8 @@ package org.chromium.android_webview.test;
 import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.SINGLE_PROCESS;
 
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
@@ -23,9 +25,7 @@ import org.chromium.android_webview.test.services.MockVariationsSeedServer;
 import org.chromium.android_webview.test.util.VariationsTestUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.io.File;
 import java.io.IOException;
@@ -81,6 +81,8 @@ public class VariationsSeedLoaderTest {
         }
     }
 
+    private Handler mMainHandler;
+
     // Create a TestLoader, run it on the UI thread, and block until it's finished. The return value
     // indicates whether the loader decided to request a new seed.
     private boolean runTestLoaderBlocking() throws InterruptedException, TimeoutException {
@@ -93,7 +95,7 @@ public class VariationsSeedLoaderTest {
 
         CallbackHelper onRequestReceived = MockVariationsSeedServer.getRequestHelper();
         int requestsReceived = onRequestReceived.getCallCount();
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT, run);
+        Assert.assertTrue("Failed to post seed loader Runnable", mMainHandler.post(run));
         result.waitForCallback("Timed out waiting for loader to finish background work.", 0);
         if (result.wasSeedRequested()) {
             onRequestReceived.waitForCallback("Seed requested, but timed out waiting for request" +
@@ -105,6 +107,7 @@ public class VariationsSeedLoaderTest {
 
     @Before
     public void setUp() throws IOException {
+        mMainHandler = new Handler(Looper.getMainLooper());
         ContextUtils.initApplicationContextForTests(
                 InstrumentationRegistry.getInstrumentation()
                         .getTargetContext().getApplicationContext());

@@ -8,9 +8,10 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
 
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 
 import org.chromium.base.Callback;
-import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.download.DownloadInfo;
 import org.chromium.chrome.browser.download.DownloadItem;
@@ -30,7 +31,6 @@ import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.offline_items_collection.RenameResult;
 import org.chromium.components.offline_items_collection.ShareCallback;
 import org.chromium.components.offline_items_collection.VisualsCallback;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -66,9 +66,12 @@ public class StubbedProvider implements BackendProvider {
 
         @Override
         public void getAllDownloads(final boolean isOffTheRecord) {
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
-                mObserver.onAllDownloadsRetrieved(
-                        isOffTheRecord ? offTheRecordItems : regularItems, isOffTheRecord);
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mObserver.onAllDownloadsRetrieved(
+                            isOffTheRecord ? offTheRecordItems : regularItems, isOffTheRecord);
+                }
             });
         }
 
@@ -83,9 +86,12 @@ public class StubbedProvider implements BackendProvider {
         @Override
         public void removeDownload(
                 final String guid, final boolean isOffTheRecord, boolean externallyRemoved) {
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
-                mObserver.onDownloadItemRemoved(guid, isOffTheRecord);
-                removeDownloadCallback.notifyCalled();
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mObserver.onDownloadItemRemoved(guid, isOffTheRecord);
+                    removeDownloadCallback.notifyCalled();
+                }
             });
         }
 
@@ -126,7 +132,7 @@ public class StubbedProvider implements BackendProvider {
 
         @Override
         public void getAllItems(Callback<ArrayList<OfflineItem>> callback) {
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> callback.onResult(items));
+            mHandler.post(() -> callback.onResult(items));
         }
 
         @Override
@@ -138,9 +144,12 @@ public class StubbedProvider implements BackendProvider {
                 }
             }
 
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
-                observer.onItemRemoved(id);
-                deleteItemCallback.notifyCalled();
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    observer.onItemRemoved(id);
+                    deleteItemCallback.notifyCalled();
+                }
             });
         }
 
@@ -155,26 +164,23 @@ public class StubbedProvider implements BackendProvider {
 
         @Override
         public void getItemById(ContentId id, Callback<OfflineItem> callback) {
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> callback.onResult(null));
+            mHandler.post(() -> callback.onResult(null));
         }
 
         @Override
         public void getVisualsForItem(ContentId id, VisualsCallback callback) {
-            PostTask.postTask(
-                    UiThreadTaskTraits.DEFAULT, () -> callback.onVisualsAvailable(id, null));
+            mHandler.post(() -> callback.onVisualsAvailable(id, null));
         }
 
         @Override
         public void getShareInfoForItem(ContentId id, ShareCallback callback) {
-            PostTask.postTask(
-                    UiThreadTaskTraits.DEFAULT, () -> callback.onShareInfoAvailable(id, null));
+            mHandler.post(() -> callback.onShareInfoAvailable(id, null));
         }
 
         @Override
         public void renameItem(
                 ContentId id, String name, Callback<Integer /*RenameResult*/> callback) {
-            PostTask.postTask(
-                    UiThreadTaskTraits.DEFAULT, () -> callback.onResult(RenameResult.SUCCESS));
+            mHandler.post(() -> callback.onResult(RenameResult.SUCCESS));
         }
     }
 
@@ -197,7 +203,7 @@ public class StubbedProvider implements BackendProvider {
     public class StubbedUIDelegate implements UIDelegate {
         @Override
         public void deleteItem(DownloadHistoryItemWrapper item) {
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> item.removePermanently());
+            mHandler.post(() -> item.removePermanently());
         }
 
         @Override
@@ -206,6 +212,7 @@ public class StubbedProvider implements BackendProvider {
 
     private static final long ONE_GIGABYTE = 1024L * 1024L * 1024L;
 
+    private final Handler mHandler;
     private final StubbedDownloadDelegate mDownloadDelegate;
     private final StubbedOfflineContentProvider mOfflineContentProvider;
     private final SelectionDelegate<DownloadHistoryItemWrapper> mSelectionDelegate;
@@ -213,6 +220,7 @@ public class StubbedProvider implements BackendProvider {
     private UIDelegate mUIDelegate;
 
     public StubbedProvider() {
+        mHandler = new Handler(Looper.getMainLooper());
         mDownloadDelegate = new StubbedDownloadDelegate();
         mOfflineContentProvider = new StubbedOfflineContentProvider();
         mSelectionDelegate = new DownloadItemSelectionDelegate();
