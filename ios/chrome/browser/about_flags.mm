@@ -574,6 +574,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPasswordGenerationName,
      flag_descriptions::kPasswordGenerationDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(features::kPasswordGeneration)},
+    {"new-omnibox-popup-layout", flag_descriptions::kNewOmniboxPopupLayoutName,
+     flag_descriptions::kNewOmniboxPopupLayoutDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kNewOmniboxPopupLayout)},
 };
 
 // Add all switches from experimental flags to |command_line|.
