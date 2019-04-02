@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/scoped_refptr.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
@@ -73,7 +74,8 @@ class ExternalVkImageBacking : public SharedImageBacking {
                               MemoryTypeTracker* tracker) override;
   std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
       SharedImageManager* manager,
-      MemoryTypeTracker* tracker) override;
+      MemoryTypeTracker* tracker,
+      scoped_refptr<SharedContextState> context_state) override;
 
  private:
   SharedContextState* const context_state_;

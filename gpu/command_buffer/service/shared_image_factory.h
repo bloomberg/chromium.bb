@@ -118,7 +118,8 @@ class GPU_GLES2_EXPORT SharedImageRepresentationFactory {
   std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
   ProduceGLTexturePassthrough(const Mailbox& mailbox);
   std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
-      const Mailbox& mailbox);
+      const Mailbox& mailbox,
+      scoped_refptr<SharedContextState> context_State);
 
  private:
   SharedImageManager* manager_;

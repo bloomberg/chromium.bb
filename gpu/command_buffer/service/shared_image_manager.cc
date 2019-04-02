@@ -14,6 +14,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
+#include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "ui/gl/trace_util.h"
 
@@ -175,7 +176,8 @@ SharedImageManager::ProduceGLTexturePassthrough(const Mailbox& mailbox,
 
 std::unique_ptr<SharedImageRepresentationSkia> SharedImageManager::ProduceSkia(
     const Mailbox& mailbox,
-    MemoryTypeTracker* tracker) {
+    MemoryTypeTracker* tracker,
+    scoped_refptr<SharedContextState> context_state) {
   CALLED_ON_VALID_THREAD();
 
   AutoLock autolock(this);
@@ -186,7 +188,7 @@ std::unique_ptr<SharedImageRepresentationSkia> SharedImageManager::ProduceSkia(
     return nullptr;
   }
 
-  auto representation = (*found)->ProduceSkia(this, tracker);
+  auto representation = (*found)->ProduceSkia(this, tracker, context_state);
   if (!representation) {
     LOG(ERROR) << "SharedImageManager::ProduceSkia: Trying to produce a "
                   "Skia representation from an incompatible mailbox.";

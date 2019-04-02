@@ -484,8 +484,8 @@ bool SkiaOutputSurfaceImplNonDDL::WaitSyncToken(
 
 sk_sp<SkImage> SkiaOutputSurfaceImplNonDDL::MakeSkImageFromSharedImage(
     const ResourceMetadata& metadata) {
-  auto representation =
-      sir_factory_->ProduceSkia(metadata.mailbox_holder.mailbox);
+  auto representation = sir_factory_->ProduceSkia(
+      metadata.mailbox_holder.mailbox, shared_context_state_.get());
   if (!representation) {
     DLOG(ERROR) << "Failed to make the SkImage - SharedImage mailbox not "
                    "found in SharedImageManager.";

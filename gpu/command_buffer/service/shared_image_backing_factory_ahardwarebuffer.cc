@@ -16,6 +16,7 @@
 #include "base/android/scoped_hardware_buffer_handle.h"
 #include "base/containers/flat_set.h"
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
@@ -190,7 +191,6 @@ class SharedImageBackingAHB : public SharedImageBacking {
                         uint32_t usage,
                         base::android::ScopedHardwareBufferHandle handle,
                         size_t estimated_size,
-                        SharedContextState* context_state,
                         bool is_thread_safe);
 
   ~SharedImageBackingAHB() override;
@@ -200,7 +200,6 @@ class SharedImageBackingAHB : public SharedImageBacking {
   void Update() override;
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
   void Destroy() override;
-  SharedContextState* GetContextState() const;
   base::android::ScopedHardwareBufferHandle GetAhbHandle() const;
 
   bool BeginWrite(std::vector<base::ScopedFD>* fds_to_wait_on);
@@ -217,7 +216,8 @@ class SharedImageBackingAHB : public SharedImageBacking {
 
   std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
       SharedImageManager* manager,
-      MemoryTypeTracker* tracker) override;
+      MemoryTypeTracker* tracker,
+      scoped_refptr<SharedContextState> context_state) override;
 
  private:
   gles2::Texture* GenGLTexture();
@@ -226,7 +226,6 @@ class SharedImageBackingAHB : public SharedImageBacking {
   gles2::Texture* legacy_texture_ = nullptr;
 
   bool is_cleared_ = false;
-  SharedContextState* const context_state_ = nullptr;
 
   // All reads and writes must wait for exiting writes to complete.
   base::ScopedFD write_sync_fd_;
@@ -452,13 +451,15 @@ class SharedImageRepresentationSkiaGLAHB
 class SharedImageRepresentationSkiaVkAHB
     : public SharedImageRepresentationSkia {
  public:
-  SharedImageRepresentationSkiaVkAHB(SharedImageManager* manager,
-                                     SharedImageBacking* backing)
-      : SharedImageRepresentationSkia(manager, backing, nullptr) {
+  SharedImageRepresentationSkiaVkAHB(
+      SharedImageManager* manager,
+      SharedImageBacking* backing,
+      scoped_refptr<SharedContextState> context_state)
+      : SharedImageRepresentationSkia(manager, backing, nullptr),
+        context_state_(context_state) {
     SharedImageBackingAHB* ahb_backing =
         static_cast<SharedImageBackingAHB*>(backing);
     DCHECK(ahb_backing);
-    context_state_ = ahb_backing->GetContextState();
     DCHECK(context_state_);
     DCHECK(context_state_->vk_context_provider());
   }
@@ -656,7 +657,7 @@ class SharedImageRepresentationSkiaVkAHB
   sk_sp<SkPromiseImageTexture> promise_texture_;
   RepresentationAccessMode mode_ = RepresentationAccessMode::kNone;
   SkSurface* surface_ = nullptr;
-  SharedContextState* context_state_ = nullptr;
+  scoped_refptr<SharedContextState> context_state_ = nullptr;
 };
 
 SharedImageBackingAHB::SharedImageBackingAHB(
@@ -667,7 +668,6 @@ SharedImageBackingAHB::SharedImageBackingAHB(
     uint32_t usage,
     base::android::ScopedHardwareBufferHandle handle,
     size_t estimated_size,
-    SharedContextState* context_state,
     bool is_thread_safe)
     : SharedImageBacking(mailbox,
                          format,
@@ -676,8 +676,7 @@ SharedImageBackingAHB::SharedImageBackingAHB(
                          usage,
                          estimated_size,
                          is_thread_safe),
-      hardware_buffer_handle_(std::move(handle)),
-      context_state_(context_state) {
+      hardware_buffer_handle_(std::move(handle)) {
   DCHECK(hardware_buffer_handle_.is_valid());
 }
 
@@ -728,10 +727,6 @@ void SharedImageBackingAHB::Destroy() {
   hardware_buffer_handle_.reset();
 }
 
-SharedContextState* SharedImageBackingAHB::GetContextState() const {
-  return context_state_;
-}
-
 base::android::ScopedHardwareBufferHandle SharedImageBackingAHB::GetAhbHandle()
     const {
   AutoLock auto_lock(this);
@@ -753,14 +748,18 @@ SharedImageBackingAHB::ProduceGLTexture(SharedImageManager* manager,
 }
 
 std::unique_ptr<SharedImageRepresentationSkia>
-SharedImageBackingAHB::ProduceSkia(SharedImageManager* manager,
-                                   MemoryTypeTracker* tracker) {
-  DCHECK(context_state_);
+SharedImageBackingAHB::ProduceSkia(
+    SharedImageManager* manager,
+    MemoryTypeTracker* tracker,
+    scoped_refptr<SharedContextState> context_state) {
+  DCHECK(context_state);
 
   // Check whether we are in Vulkan mode OR GL mode and accordingly create
   // Skia representation.
-  if (context_state_->use_vulkan_gr_context())
-    return std::make_unique<SharedImageRepresentationSkiaVkAHB>(manager, this);
+  if (context_state->use_vulkan_gr_context()) {
+    return std::make_unique<SharedImageRepresentationSkiaVkAHB>(manager, this,
+                                                                context_state);
+  }
 
   auto* texture = GenGLTexture();
   if (!texture)
@@ -921,9 +920,7 @@ gles2::Texture* SharedImageBackingAHB::GenGLTexture() {
 
 SharedImageBackingFactoryAHB::SharedImageBackingFactoryAHB(
     const GpuDriverBugWorkarounds& workarounds,
-    const GpuFeatureInfo& gpu_feature_info,
-    SharedContextState* context_state)
-    : context_state_(context_state) {
+    const GpuFeatureInfo& gpu_feature_info) {
   scoped_refptr<gles2::FeatureInfo> feature_info =
       new gles2::FeatureInfo(workarounds, gpu_feature_info);
   feature_info->Initialize(ContextType::CONTEXT_TYPE_OPENGLES2, false,
@@ -1086,7 +1083,7 @@ SharedImageBackingFactoryAHB::CreateSharedImage(
   auto backing = std::make_unique<SharedImageBackingAHB>(
       mailbox, format, size, color_space, usage,
       base::android::ScopedHardwareBufferHandle::Adopt(buffer), estimated_size,
-      context_state_, is_thread_safe);
+      is_thread_safe);
   return backing;
 }
 

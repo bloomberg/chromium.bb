@@ -177,8 +177,8 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
   }
 
   // Finally, validate a SharedImageRepresentationSkia.
-  auto skia_representation =
-      shared_image_representation_factory_->ProduceSkia(mailbox);
+  auto skia_representation = shared_image_representation_factory_->ProduceSkia(
+      mailbox, context_state_.get());
   EXPECT_TRUE(skia_representation);
   auto surface = skia_representation->BeginWriteAccess(
       gr_context(), 0, SkSurfaceProps(0, kUnknown_SkPixelGeometry));
@@ -276,8 +276,8 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
   }
 
   // Finally, validate a SharedImageRepresentationSkia.
-  auto skia_representation =
-      shared_image_representation_factory_->ProduceSkia(mailbox);
+  auto skia_representation = shared_image_representation_factory_->ProduceSkia(
+      mailbox, context_state_.get());
   EXPECT_TRUE(skia_representation);
   auto surface = skia_representation->BeginWriteAccess(
       gr_context(), 0, SkSurfaceProps(0, kUnknown_SkPixelGeometry));

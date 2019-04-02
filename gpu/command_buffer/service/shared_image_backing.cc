@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/shared_image_backing.h"
 
 #include "gpu/command_buffer/service/memory_tracking.h"
+#include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 
 namespace gpu {
@@ -54,7 +55,8 @@ SharedImageBacking::ProduceGLTexturePassthrough(SharedImageManager* manager,
 
 std::unique_ptr<SharedImageRepresentationSkia> SharedImageBacking::ProduceSkia(
     SharedImageManager* manager,
-    MemoryTypeTracker* tracker) {
+    MemoryTypeTracker* tracker,
+    scoped_refptr<SharedContextState> context_state) {
   return nullptr;
 }
 

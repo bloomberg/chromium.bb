@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/shared_image_backing_factory_iosurface.h"
 
 #include "base/mac/scoped_cftyperef.h"
+#include "base/memory/scoped_refptr.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -228,7 +229,8 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
 
   std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
       SharedImageManager* manager,
-      MemoryTypeTracker* tracker) override {
+      MemoryTypeTracker* tracker,
+      scoped_refptr<SharedContextState> context_state) override {
     gles2::Texture* texture = GenGLTexture();
     if (!texture) {
       return nullptr;
