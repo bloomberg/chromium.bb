@@ -85,8 +85,7 @@ Polymer({
       this.$.pageselector.classList.toggle('invisible', !loaded);
       this.$.buttons.classList.toggle('invisible', !loaded);
       this.$.progress.style.opacity = loaded ? 0 : 1;
-      this.$['annotations-bar'].classList.toggle(
-          'invisible', !(loaded && this.annotationMode));
+      this.$['annotations-bar'].hidden = !loaded || !this.annotationMode;
     }
   },
 
