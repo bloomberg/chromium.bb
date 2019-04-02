@@ -197,14 +197,19 @@ void FrameNodeImpl::LeaveGraph() {
   DCHECK(child_frame_nodes_.empty());
 
   // Leave the page.
+  DCHECK(NodeInGraph(page_node_));
   page_node_->RemoveFrame(this);
 
   // Leave the frame hierarchy.
-  if (parent_frame_node_)
+  if (parent_frame_node_) {
+    DCHECK(NodeInGraph(parent_frame_node_));
     parent_frame_node_->RemoveChildFrame(this);
+  }
 
-  if (process_node_)
+  if (process_node_) {
+    DCHECK(NodeInGraph(process_node_));
     process_node_->RemoveFrame(this);
+  }
 }
 
 void FrameNodeImpl::OnEventReceived(resource_coordinator::mojom::Event event) {

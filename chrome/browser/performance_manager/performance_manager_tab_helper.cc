@@ -71,16 +71,16 @@ PerformanceManagerTabHelper::PerformanceManagerTabHelper(
 }
 
 PerformanceManagerTabHelper::~PerformanceManagerTabHelper() {
-  // Release all our frame pointers, ownership is implicitly delegated to
-  // the DeletePageNode call below.
-  // TODO(https://crbug.com/946687): Sanitize this by providing a
-  //    BatchDeleteNodes interface on the PerformanceManager.
+  // Ship our page and frame nodes to the PerformanceManager for incineration.
+  std::vector<std::unique_ptr<NodeBase>> nodes;
+  nodes.push_back(std::move(page_node_));
   for (auto& kv : frames_)
-    kv.second.release();
+    nodes.push_back(std::move(kv.second));
+
   frames_.clear();
 
   // Delete the page and its entire frame tree from the graph.
-  performance_manager_->DeletePageNode(std::move(page_node_));
+  performance_manager_->BatchDeleteNodes(std::move(nodes));
 
   if (first_ == this)
     first_ = next_;

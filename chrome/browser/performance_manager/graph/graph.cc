@@ -30,19 +30,17 @@ Graph::Graph() {
 Graph::~Graph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Because the graph has ownership of the CUs, and because the process CUs
-  // unregister on destruction, there is reentrancy to this class on
-  // destruction. The order of operations here is optimized to minimize the work
-  // done on destruction, as well as to make sure the cleanup is independent of
-  // the declaration order of member variables.
+  // Remove the system node from the graph, this should be the only node left.
+  if (system_node_.get()) {
+    RemoveNode(system_node_.get());
+    system_node_.reset();
+  }
 
-  // Kill all the observers first.
-  observers_.clear();
-  // Then clear up the CUs to ensure this happens before the PID map is
-  // destructed.
-  nodes_.clear();
-
+  DCHECK(nodes_.empty());
   DCHECK_EQ(0u, processes_by_pid_.size());
+
+  // Kill all the observers.
+  observers_.clear();
 }
 
 void Graph::RegisterObserver(std::unique_ptr<GraphObserver> observer) {

@@ -75,8 +75,10 @@ class PerformanceManager {
   template <typename NodeType>
   void DeleteNode(std::unique_ptr<NodeType> node);
 
-  // Deletes |page_node|'s frame tree and then the node itself.
-  void DeletePageNode(std::unique_ptr<PageNodeImpl> page_node);
+  // Each node in |nodes| must have been returned from one of the creation
+  // functions above. This function takes care of removing them from the graph
+  // in topological order and destroying them.
+  void BatchDeleteNodes(std::vector<std::unique_ptr<NodeBase>> nodes);
 
   // TODO(siggi): Can this be hidden away?
   scoped_refptr<base::SequencedTaskRunner> task_runner() const {
@@ -97,7 +99,7 @@ class PerformanceManager {
 
   void PostDeleteNode(std::unique_ptr<NodeBase> node);
   void DeleteNodeImpl(std::unique_ptr<NodeBase> node);
-  void DeletePageNodeImpl(std::unique_ptr<PageNodeImpl> node);
+  void BatchDeleteNodesImpl(std::vector<std::unique_ptr<NodeBase>> nodes);
 
   void OnStart();
   void OnStartImpl(std::unique_ptr<service_manager::Connector> connector);
