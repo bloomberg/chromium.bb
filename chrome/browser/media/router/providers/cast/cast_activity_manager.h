@@ -69,7 +69,8 @@ class CastSessionClient : public blink::mojom::PresentationConnection {
 
   // Changes the PresentationConnection state to CLOSED/TERMINATED and resets
   // PresentationConnection message pipes.
-  void CloseConnection();
+  void CloseConnection(
+      blink::mojom::PresentationConnectionCloseReason close_reason);
   void TerminateConnection();
 
   // blink::mojom::PresentationConnection implementation
@@ -220,7 +221,8 @@ class CastActivityRecord {
 
   // Closes / Terminates the PresentationConnections of all clients connected
   // to this activity.
-  void ClosePresentationConnections();
+  void ClosePresentationConnections(
+      blink::mojom::PresentationConnectionCloseReason close_reason);
   void TerminatePresentationConnections();
 
  private:
@@ -365,10 +367,22 @@ class CastActivityManager : public cast_channel::CastMessageHandler::Observer,
       const base::Optional<std::string>& error_string,
       RouteRequestResult::ResultCode result);
 
-  void RemoveActivity(ActivityMap::iterator activity_it,
-                      blink::mojom::PresentationConnectionState state =
-                          blink::mojom::PresentationConnectionState::TERMINATED,
-                      bool notify = true);
+  // Removes an activity, terminating any associated connections, then notifies
+  // the media router that routes have been updated.
+  void RemoveActivity(
+      ActivityMap::iterator activity_it,
+      blink::mojom::PresentationConnectionState state,
+      blink::mojom::PresentationConnectionCloseReason close_reason);
+
+  // Removes an activity without sending the usual notification.
+  //
+  // TODO(jrw): Figure out why it's desirable to avoid sending the usual
+  // notification sometimes.
+  void RemoveActivityWithoutNotification(
+      ActivityMap::iterator activity_it,
+      blink::mojom::PresentationConnectionState state,
+      blink::mojom::PresentationConnectionCloseReason close_reason);
+
   void NotifyAllOnRoutesUpdated();
   void NotifyOnRoutesUpdated(const MediaSource::Id& source_id,
                              const std::vector<MediaRoute>& routes);
