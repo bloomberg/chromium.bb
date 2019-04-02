@@ -42,7 +42,7 @@ void RemoveSwitchFromCommandLine(base::CommandLine* command_line,
 
 namespace content {
 
-template <int device_count>
+template <int device_count, bool enable_video_kind>
 class WebRtcDepthCaptureBrowserTest : public WebRtcContentBrowserTestBase {
  public:
   WebRtcDepthCaptureBrowserTest() {
@@ -62,15 +62,26 @@ class WebRtcDepthCaptureBrowserTest : public WebRtcContentBrowserTestBase {
     command_line->AppendSwitchASCII(
         fake_device_switch,
         base::StringPrintf("device-count=%d", device_count));
+    if (enable_video_kind) {
+      command_line->AppendSwitchASCII("--enable-blink-features",
+                                      "MediaCaptureDepthVideoKind");
+    }
     WebRtcContentBrowserTestBase::SetUpCommandLine(command_line);
   }
 };
 
+// Command lines must be configured in SetUpCommandLine, before the test is
+// multi-threaded, so any variations must be embedded in the test fixture.
+
 // Test using two video capture devices - a color and a 16-bit depth device.
-using WebRtcTwoDeviceDepthCaptureBrowserTest = WebRtcDepthCaptureBrowserTest<2>;
+using WebRtcTwoDeviceDepthCaptureBrowserTest =
+    WebRtcDepthCaptureBrowserTest<2, false>;
+using WebRtcTwoDeviceDepthCaptureVideoKindBrowserTest =
+    WebRtcDepthCaptureBrowserTest<2, true>;
 
 // Test using only a color device.
-using WebRtcOneDeviceDepthCaptureBrowserTest = WebRtcDepthCaptureBrowserTest<1>;
+using WebRtcOneDeviceDepthCaptureVideoKindBrowserTest =
+    WebRtcDepthCaptureBrowserTest<1, true>;
 
 IN_PROC_BROWSER_TEST_F(WebRtcTwoDeviceDepthCaptureBrowserTest,
                        GetDepthStreamAndCallCreateImageBitmap) {
@@ -84,12 +95,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcTwoDeviceDepthCaptureBrowserTest,
       "%s({video: true});", kGetDepthStreamAndCallCreateImageBitmap));
 }
 
-IN_PROC_BROWSER_TEST_F(WebRtcTwoDeviceDepthCaptureBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebRtcTwoDeviceDepthCaptureVideoKindBrowserTest,
                        GetStreamsByVideoKind) {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitchASCII("--enable-blink-features",
-                                  "MediaCaptureDepthVideoKind");
-
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(
@@ -100,12 +107,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcTwoDeviceDepthCaptureBrowserTest,
       base::StringPrintf("%s({video: true});", kGetStreamsByVideoKind));
 }
 
-IN_PROC_BROWSER_TEST_F(WebRtcOneDeviceDepthCaptureBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebRtcOneDeviceDepthCaptureVideoKindBrowserTest,
                        GetStreamsByVideoKindNoDepth) {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitchASCII("--enable-blink-features",
-                                  "MediaCaptureDepthVideoKind");
-
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(
