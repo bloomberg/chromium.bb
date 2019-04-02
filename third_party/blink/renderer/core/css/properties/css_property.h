@@ -48,11 +48,10 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
   bool IsValidForVisitedLink() const { return flags_ & kValidForVisitedLink; }
   bool IsShorthand() const { return flags_ & kShorthand; }
   bool IsLonghand() const { return flags_ & kLonghand; }
+  bool IsInherited() const { return flags_ & kInherited; }
 
   bool IsRepeated() const { return repetition_separator_ != '\0'; }
   char RepetitionSeparator() const { return repetition_separator_; }
-
-  virtual bool IsInherited() const { return false; }
 
   virtual bool IsAffectedByAll() const { return IsEnabled() && IsProperty(); }
   virtual bool IsLayoutDependentProperty() const { return false; }
@@ -89,7 +88,7 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
                                                    Vector<const CSSProperty*>&);
 
  protected:
-  enum Flag : uint8_t {
+  enum Flag : uint16_t {
     kInterpolable = 1 << 0,
     kCompositableProperty = 1 << 1,
     kDescriptor = 1 << 2,
@@ -97,11 +96,12 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
     kProperty = 1 << 4,
     kValidForVisitedLink = 1 << 5,
     kShorthand = 1 << 6,
-    kLonghand = 1 << 7
+    kLonghand = 1 << 7,
+    kInherited = 1 << 8
   };
 
   constexpr CSSProperty(CSSPropertyID property_id,
-                        uint8_t flags,
+                        uint16_t flags,
                         char repetition_separator)
       : CSSUnresolvedProperty(),
         property_id_(property_id),
@@ -128,7 +128,7 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
 
  private:
   CSSPropertyID property_id_;
-  uint8_t flags_;
+  uint16_t flags_;
   char repetition_separator_;
 };
 

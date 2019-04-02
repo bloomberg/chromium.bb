@@ -17,9 +17,8 @@ namespace blink {
 // (as returned by GetCSSPropertyVariable()) has been removed.
 class CORE_EXPORT Variable : public Longhand {
  public:
-  constexpr Variable() : Longhand(CSSPropertyID::kVariable, kProperty, '\0') {}
+  constexpr Variable() : Variable(true) {}
 
-  bool IsInherited() const override { return true; }
   bool IsAffectedByAll() const override { return false; }
   CSSPropertyName GetCSSPropertyName() const override {
     NOTREACHED();
@@ -32,6 +31,12 @@ class CORE_EXPORT Variable : public Longhand {
   }
 
   static bool IsStaticInstance(const CSSProperty&);
+
+ protected:
+  constexpr Variable(bool inherited)
+      : Longhand(CSSPropertyID::kVariable,
+                 kProperty | (inherited ? kInherited : 0),
+                 '\0') {}
 };
 
 }  // namespace blink

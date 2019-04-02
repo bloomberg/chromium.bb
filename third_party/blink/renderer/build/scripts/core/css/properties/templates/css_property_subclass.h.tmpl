@@ -49,6 +49,9 @@ class {{property_classname}} final : public {{property.namespace_group}} {
   {% if property.valid_for_visited_link %}
     | kValidForVisitedLink
   {% endif %}
+  {% if property.inherited %}
+    | kInherited
+  {% endif %}
     ,
   {% if property.separator != None %}
     '{{property.separator}}'
@@ -81,9 +84,6 @@ class {{property_classname}} final : public {{property.namespace_group}} {
   {% for property_method in property.property_methods %}
   {{property_method.return_type}} {{property_method.name}}{{property_method.parameters}} const override;
   {% endfor %}
-  {% if property.inherited %}
-  bool IsInherited() const override { return true; }
-  {% endif %}
   {% if property.separator != None %}
   {% endif %}
   {% if not property.affected_by_all %}
