@@ -236,14 +236,6 @@ IdentityManager* IdentityTestEnvironment::identity_manager() {
                                : owned_identity_manager_.get();
 }
 
-FakeProfileOAuth2TokenService* IdentityTestEnvironment::fake_token_service() {
-  // We can't absolutely guarantee that IdentityTestEnvironment was not given an
-  // IdentityManager that uses a non-fake FakeProfileOAuth2TokenService. If that
-  // ever happens, this will blow up. There doesn't seem to be a better option.
-  return static_cast<FakeProfileOAuth2TokenService*>(
-      identity_manager()->GetTokenService());
-}
-
 TestIdentityManagerObserver*
 IdentityTestEnvironment::identity_manager_observer() {
   return test_identity_manager_observer_.get();
@@ -450,6 +442,14 @@ void IdentityTestEnvironment::WaitForAccessTokenRequestIfNecessary(
   requesters_.back().account_id = std::move(account_id);
   requesters_.back().on_available = run_loop.QuitClosure();
   run_loop.Run();
+}
+
+FakeProfileOAuth2TokenService* IdentityTestEnvironment::fake_token_service() {
+  // We can't absolutely guarantee that IdentityTestEnvironment was not given an
+  // IdentityManager that uses a non-fake FakeProfileOAuth2TokenService. If that
+  // ever happens, this will blow up. There doesn't seem to be a better option.
+  return static_cast<FakeProfileOAuth2TokenService*>(
+      identity_manager()->GetTokenService());
 }
 
 void IdentityTestEnvironment::UpdateAccountInfoForAccount(
