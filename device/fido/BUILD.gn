@@ -217,6 +217,8 @@ component("fido") {
       "win/type_conversions.h",
       "win/webauthn_api.cc",
       "win/webauthn_api.h",
+      "win/webauthn_api_adapter.cc",
+      "win/webauthn_api_adapter.h",
     ]
   }
 }

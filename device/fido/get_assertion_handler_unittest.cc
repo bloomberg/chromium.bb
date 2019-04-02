@@ -48,6 +48,42 @@ using TestGetAssertionRequestCallback = test::StatusAndValuesCallbackReceiver<
 
 }  // namespace
 
+class TestObserver : public FidoRequestHandlerBase::Observer {
+ public:
+  TestObserver() {}
+  ~TestObserver() override {}
+
+  void set_controls_dispatch(bool controls_dispatch) {
+    controls_dispatch_ = controls_dispatch;
+  }
+
+ private:
+  // FidoRequestHandlerBase::Observer:
+  void OnTransportAvailabilityEnumerated(
+      FidoRequestHandlerBase::TransportAvailabilityInfo data) override {}
+  bool EmbedderControlsAuthenticatorDispatch(
+      const FidoAuthenticator&) override {
+    return controls_dispatch_;
+  }
+  void BluetoothAdapterPowerChanged(bool is_powered_on) override {}
+  void FidoAuthenticatorAdded(const FidoAuthenticator& authenticator) override {
+  }
+  void FidoAuthenticatorRemoved(base::StringPiece device_id) override {}
+  void FidoAuthenticatorIdChanged(base::StringPiece old_authenticator_id,
+                                  std::string new_authenticator_id) override {}
+  void FidoAuthenticatorPairingModeChanged(base::StringPiece authenticator_id,
+                                           bool is_in_pairing_mode) override {}
+  bool SupportsPIN() const override { return false; }
+  void CollectPIN(
+      base::Optional<int> attempts,
+      base::OnceCallback<void(std::string)> provide_pin_cb) override {
+    NOTREACHED();
+  }
+  void FinishCollectPIN() override { NOTREACHED(); }
+
+  bool controls_dispatch_ = false;
+};
+
 class FidoGetAssertionHandlerTest : public ::testing::Test {
  public:
   FidoGetAssertionHandlerTest() {
@@ -720,11 +756,18 @@ TEST(GetAssertionRequestHandlerWinTest, TestWinUsbDiscovery) {
             {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
         CtapGetAssertionRequest(test_data::kRelyingPartyId,
                                 test_data::kClientDataJson),
-
         cb.callback());
+    // Register an observer that disables automatic dispatch. Dispatch to the
+    // (unimplemented) fake Windows API would immediately result in an invalid
+    // response.
+    TestObserver observer;
+    observer.set_controls_dispatch(true);
+    handler->set_observer(&observer);
+
     scoped_task_environment.RunUntilIdle();
 
-    EXPECT_EQ(1u, handler->AuthenticatorsForTesting().size());
+    ASSERT_FALSE(cb.was_called());
+    EXPECT_EQ(handler->AuthenticatorsForTesting().size(), 1u);
     // Crudely distinguish authenticator type by FidoAuthenticator::GetId.
     EXPECT_EQ(
         enable_api ? WinWebAuthnApiAuthenticator::kAuthenticatorId : "hid:guid",
