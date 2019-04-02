@@ -107,6 +107,7 @@ void TabIcon::SetData(const TabRendererData& data) {
   SetIcon(data.url, data.favicon);
   SetNetworkState(data.network_state);
   SetIsCrashed(data.IsCrashed());
+  has_tab_renderer_data_ = true;
 
   const bool showing_load = ShowingLoadingAnimation();
 
@@ -392,10 +393,16 @@ void TabIcon::SetIsCrashed(bool is_crashed) {
     hiding_fraction_ = 0.0;
   } else {
     // Transitioned from non-crashed to crashed.
-    if (!crash_animation_)
-      crash_animation_ = std::make_unique<CrashAnimation>(this);
-    if (!crash_animation_->is_animating())
-      crash_animation_->Start();
+    if (!has_tab_renderer_data_) {
+      // This is the initial SetData(), so show the crashed icon directly
+      // without animating.
+      should_display_crashed_favicon_ = true;
+    } else {
+      if (!crash_animation_)
+        crash_animation_ = std::make_unique<CrashAnimation>(this);
+      if (!crash_animation_->is_animating())
+        crash_animation_->Start();
+    }
   }
   SchedulePaint();
 }
