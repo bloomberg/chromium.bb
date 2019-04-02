@@ -77,11 +77,12 @@ TEST_F(NGInlineLayoutTest, BlockWithTextAndAtomicInline) {
       NGBlockLayoutAlgorithm(node, constraint_space).Layout();
   EXPECT_TRUE(result);
 
-  String expected_text("Hello ");
-  expected_text.append(kObjectReplacementCharacter);
-  expected_text.append(".");
+  StringBuilder expected_text;
+  expected_text.Append("Hello ");
+  expected_text.Append(kObjectReplacementCharacter);
+  expected_text.Append('.');
   auto first_child = To<NGInlineNode>(node.FirstChild());
-  EXPECT_EQ(expected_text,
+  EXPECT_EQ(expected_text.ToString(),
             StringView(first_child.ItemsData(false).text_content, 0, 8));
 
   // Delete the line box tree to avoid leaks in the test.

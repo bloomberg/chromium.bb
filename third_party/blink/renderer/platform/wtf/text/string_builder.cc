@@ -115,6 +115,10 @@ void StringBuilder::ClearBuffer() {
   has_buffer_ = false;
 }
 
+void StringBuilder::Ensure16Bit() {
+  EnsureBuffer16(0);
+}
+
 void StringBuilder::Clear() {
   ClearBuffer();
   string_ = String();

@@ -21,8 +21,8 @@ namespace blink {
 class CSSPaintValueTest : public RenderingTest {
  public:
   void LoadTestData(const std::string& file_name) {
-    String testing_path = test::BlinkRootDir();
-    testing_path.append("/renderer/core/css/test_data/");
+    String testing_path =
+        test::BlinkRootDir() + "/renderer/core/css/test_data/";
     WebURL url = url_test_helpers::RegisterMockedURLLoadFromBase(
         WebString::FromUTF8(base_url_), testing_path,
         WebString::FromUTF8(file_name));

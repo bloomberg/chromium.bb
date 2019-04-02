@@ -267,11 +267,11 @@ TEST_F(ResourceLoaderTest, LoadResponseBody) {
 
   EXPECT_EQ(resource->GetStatus(), ResourceStatus::kCached);
   scoped_refptr<const SharedBuffer> buffer = resource->ResourceBuffer();
-  String data;
+  StringBuilder data;
   for (const auto& span : *buffer) {
-    data.append(String(span.data(), span.size()));
+    data.Append(span.data(), span.size());
   }
-  EXPECT_EQ(data, "hello");
+  EXPECT_EQ(data.ToString(), "hello");
 }
 
 TEST_F(ResourceLoaderTest, LoadDataURL_AsyncAndNonStream) {
@@ -294,11 +294,11 @@ TEST_F(ResourceLoaderTest, LoadDataURL_AsyncAndNonStream) {
   // The resource has a parsed body.
   EXPECT_EQ(resource->GetStatus(), ResourceStatus::kCached);
   scoped_refptr<const SharedBuffer> buffer = resource->ResourceBuffer();
-  String data;
+  StringBuilder data;
   for (const auto& span : *buffer) {
-    data.append(String(span.data(), span.size()));
+    data.Append(span.data(), span.size());
   }
-  EXPECT_EQ(data, "Hello World!");
+  EXPECT_EQ(data.ToString(), "Hello World!");
 }
 
 // Helper class which stores a BytesConsumer passed by RawResource and reads the
@@ -409,11 +409,11 @@ TEST_F(ResourceLoaderTest, LoadDataURL_Sync) {
   // The resource has a parsed body.
   EXPECT_EQ(resource->GetStatus(), ResourceStatus::kCached);
   scoped_refptr<const SharedBuffer> buffer = resource->ResourceBuffer();
-  String data;
+  StringBuilder data;
   for (const auto& span : *buffer) {
-    data.append(String(span.data(), span.size()));
+    data.Append(span.data(), span.size());
   }
-  EXPECT_EQ(data, "Hello World!");
+  EXPECT_EQ(data.ToString(), "Hello World!");
 }
 
 TEST_F(ResourceLoaderTest, LoadDataURL_SyncEmptyData) {
@@ -476,11 +476,11 @@ TEST_F(ResourceLoaderTest, LoadDataURL_DefersAsyncAndNonStream) {
   task_runner->RunUntilIdle();
   EXPECT_EQ(resource->GetStatus(), ResourceStatus::kCached);
   scoped_refptr<const SharedBuffer> buffer = resource->ResourceBuffer();
-  String data;
+  StringBuilder data;
   for (const auto& span : *buffer) {
-    data.append(String(span.data(), span.size()));
+    data.Append(span.data(), span.size());
   }
-  EXPECT_EQ(data, "Hello World!");
+  EXPECT_EQ(data.ToString(), "Hello World!");
 }
 
 TEST_F(ResourceLoaderTest, LoadDataURL_DefersAsyncAndStream) {

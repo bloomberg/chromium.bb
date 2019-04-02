@@ -191,6 +191,7 @@ class WTF_EXPORT StringBuilder {
   }
 
   bool Is8Bit() const { return is_8bit_; }
+  void Ensure16Bit();
 
   void Clear();
   void Swap(StringBuilder&);

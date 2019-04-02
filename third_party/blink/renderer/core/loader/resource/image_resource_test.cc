@@ -1987,8 +1987,7 @@ class ImageResourceCounterTest : public testing::Test {
 
   void CreateImageResource(const char* url_part, bool ua_resource) {
     // Create a unique fake data url.
-    String url("data:image/png;base64,");
-    url.append(url_part);
+    String url = StringView("data:image/png;base64,") + url_part;
 
     // Setup the fetcher and request.
     ResourceFetcher* fetcher = CreateFetcher();

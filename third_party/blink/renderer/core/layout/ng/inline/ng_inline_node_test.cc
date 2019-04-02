@@ -45,7 +45,7 @@ class NGInlineNodeForTest : public NGInlineNode {
               LayoutObject* layout_object = nullptr) {
     NGInlineNodeData* data = MutableData();
     unsigned start = data->text_content.length();
-    data->text_content.append(text);
+    data->text_content = data->text_content + text;
     data->items.push_back(NGInlineItem(NGInlineItem::kText, start,
                                        start + text.length(), style,
                                        layout_object));
@@ -54,7 +54,7 @@ class NGInlineNodeForTest : public NGInlineNode {
 
   void Append(UChar character) {
     NGInlineNodeData* data = MutableData();
-    data->text_content.append(character);
+    data->text_content = data->text_content + character;
     unsigned end = data->text_content.length();
     data->items.push_back(
         NGInlineItem(NGInlineItem::kBidiControl, end - 1, end, nullptr));

@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 namespace text_iterator_test {
@@ -141,13 +142,13 @@ std::string TextIteratorTest::IteratePartial(
 template <typename Tree>
 std::string TextIteratorTest::IterateWithIterator(
     typename Tree::TextIteratorType& iterator) {
-  String text_chunks;
+  StringBuilder text_chunks;
   for (; !iterator.AtEnd(); iterator.Advance()) {
-    text_chunks.append('[');
-    text_chunks.append(iterator.GetText().GetTextForTesting());
-    text_chunks.append(']');
+    text_chunks.Append('[');
+    text_chunks.Append(iterator.GetText().GetTextForTesting());
+    text_chunks.Append(']');
   }
-  return std::string(text_chunks.Utf8().data());
+  return std::string(text_chunks.ToString().Utf8().data());
 }
 
 Range* TextIteratorTest::GetBodyRange() const {

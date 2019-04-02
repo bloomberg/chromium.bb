@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/layout/layout_multi_column_set.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -37,17 +38,17 @@ LayoutMultiColumnFlowThread* MultiColumnRenderingTest::FindFlowThread(
 
 String MultiColumnRenderingTest::ColumnSetSignature(
     LayoutMultiColumnFlowThread* flow_thread) {
-  String signature = "";
+  StringBuilder signature;
   for (LayoutBox* column_box = flow_thread->FirstMultiColumnBox(); column_box;
        column_box = column_box->NextSiblingMultiColumnBox()) {
     if (column_box->IsLayoutMultiColumnSpannerPlaceholder())
-      signature.append('s');
+      signature.Append('s');
     else if (column_box->IsLayoutMultiColumnSet())
-      signature.append('c');
+      signature.Append('c');
     else
-      signature.append('?');
+      signature.Append('?');
   }
-  return signature;
+  return signature.ToString();
 }
 
 String MultiColumnRenderingTest::ColumnSetSignature(const char* multicol_id) {

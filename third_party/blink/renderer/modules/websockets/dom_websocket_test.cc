@@ -359,8 +359,7 @@ TEST(DOMWebSocketTest, isValidSubprotocolString) {
       "abcdefghijklmnopqrstuvwxyz|~";
   size_t length = strlen(kValidCharacters);
   for (size_t i = 0; i < length; ++i) {
-    String s;
-    s.append(static_cast<UChar>(kValidCharacters[i]));
+    String s(kValidCharacters + i, 1u);
     EXPECT_TRUE(DOMWebSocket::IsValidSubprotocolString(s));
   }
   for (size_t i = 0; i < 256; ++i) {
@@ -368,8 +367,8 @@ TEST(DOMWebSocketTest, isValidSubprotocolString) {
                   static_cast<char>(i)) != kValidCharacters + length) {
       continue;
     }
-    String s;
-    s.append(static_cast<UChar>(i));
+    char to_check = char{i};
+    String s(&to_check, 1u);
     EXPECT_FALSE(DOMWebSocket::IsValidSubprotocolString(s));
   }
 }

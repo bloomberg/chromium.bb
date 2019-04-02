@@ -458,8 +458,8 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
   }
 
   void LoadTestData(const std::string& file_name) {
-    String testing_path = test::BlinkRootDir();
-    testing_path.append("/renderer/core/animation/test_data/");
+    String testing_path =
+        test::BlinkRootDir() + "/renderer/core/animation/test_data/";
     WebURL url = url_test_helpers::RegisterMockedURLLoadFromBase(
         WebString::FromUTF8(base_url_), testing_path,
         WebString::FromUTF8(file_name));
