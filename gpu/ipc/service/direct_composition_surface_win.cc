@@ -11,6 +11,8 @@
 #include <utility>
 
 #include "base/containers/circular_deque.h"
+#include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -1034,6 +1036,12 @@ bool DCLayerTree::SwapChainPresenter::PresentToDecodeSwapChain(
       DLOG(ERROR) << "CreateDecodeSwapChainForCompositionSurfaceHandle failed "
                      "with error 0x"
                   << std::hex << hr;
+      // TODO(sunnyps): Temporary for debugging decode swap chain failures.
+      base::debug::Alias(&hr);
+      D3D11_TEXTURE2D_DESC texture_desc = {};
+      base::debug::Alias(&texture_desc);
+      image_dxgi->texture()->GetDesc(&texture_desc);
+      base::debug::DumpWithoutCrashing();
       return false;
     }
     DCHECK(decode_swap_chain_);
