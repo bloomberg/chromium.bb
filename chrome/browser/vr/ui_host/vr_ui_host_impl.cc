@@ -13,6 +13,8 @@
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
 #include "chrome/browser/vr/service/xr_runtime_manager.h"
@@ -101,6 +103,8 @@ void VRUiHostImpl::SetWebXRWebContents(content::WebContents* contents) {
           SessionMetricsHelper::FromWebContents(web_contents_);
       metrics_helper->SetWebVREnabled(false);
       metrics_helper->SetVRActive(false);
+      if (Browser* browser = chrome::FindBrowserWithWebContents(web_contents_))
+        browser->GetBubbleManager()->RemoveBubbleManagerObserver(this);
     }
     if (contents) {
       auto* metrics_helper = SessionMetricsHelper::FromWebContents(contents);
@@ -112,6 +116,8 @@ void VRUiHostImpl::SetWebXRWebContents(content::WebContents* contents) {
         metrics_helper->SetVRActive(true);
       }
       metrics_helper->RecordVrStartAction(VrStartAction::kPresentationRequest);
+      if (Browser* browser = chrome::FindBrowserWithWebContents(contents))
+        browser->GetBubbleManager()->AddBubbleManagerObserver(this);
     }
   }
 
@@ -225,6 +231,17 @@ void VRUiHostImpl::OnBubbleAdded() {
 void VRUiHostImpl::OnBubbleRemoved() {
   external_prompt_timeout_task_.Cancel();
   RemoveHeadsetNotificationPrompt();
+}
+
+void VRUiHostImpl::OnBubbleNeverShown(BubbleReference bubble) {}
+
+void VRUiHostImpl::OnBubbleClosed(BubbleReference bubble,
+                                  BubbleCloseReason reason) {
+  OnBubbleRemoved();
+}
+
+void VRUiHostImpl::OnBubbleShown(BubbleReference bubble) {
+  OnBubbleAdded();
 }
 
 void VRUiHostImpl::RemoveHeadsetNotificationPrompt() {

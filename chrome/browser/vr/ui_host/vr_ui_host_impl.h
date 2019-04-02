@@ -14,6 +14,7 @@
 #include "chrome/browser/vr/model/capturing_state_model.h"
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
 #include "chrome/browser/vr/service/vr_ui_host.h"
+#include "components/bubble/bubble_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "services/device/public/mojom/geolocation_config.mojom.h"
 
@@ -25,7 +26,8 @@ class VRBrowserRendererThreadWin;
 // component. Used on the browser's main thread.
 class VRUiHostImpl : public VRUiHost,
                      public PermissionRequestManager::Observer,
-                     public BrowserXRRuntimeObserver {
+                     public BrowserXRRuntimeObserver,
+                     public BubbleManager::BubbleManagerObserver {
  public:
   VRUiHostImpl(device::mojom::XRDeviceId device_id,
                device::mojom::XRCompositorHostPtr compositor);
@@ -49,6 +51,12 @@ class VRUiHostImpl : public VRUiHost,
   // PermissionRequestManager::Observer
   void OnBubbleAdded() override;
   void OnBubbleRemoved() override;
+
+  // content::BubbleManager::BubbleManagerObserver
+  void OnBubbleNeverShown(BubbleReference bubble) override;
+  void OnBubbleClosed(BubbleReference bubble,
+                      BubbleCloseReason reason) override;
+  void OnBubbleShown(BubbleReference bubble) override;
 
   void RemoveHeadsetNotificationPrompt();
   void SetLocationInfoOnUi();
