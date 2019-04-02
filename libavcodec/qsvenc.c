@@ -468,13 +468,6 @@ static int init_video_param(AVCodecContext *avctx, QSVEncContext *q)
     int target_bitrate_kbps, max_bitrate_kbps, brc_param_multiplier;
     int buffer_size_in_kilobytes, initial_delay_in_kilobytes;
     int ret;
-    mfxVersion ver;
-
-    ret = MFXQueryVersion(q->session,&ver);
-    if (ret != MFX_ERR_NONE) {
-        av_log(avctx, AV_LOG_ERROR, "Error getting the session handle\n");
-        return AVERROR_UNKNOWN;
-    }
 
     ret = ff_qsv_codec_id_to_mfx(avctx->codec_id);
     if (ret < 0)
@@ -495,9 +488,18 @@ static int init_video_param(AVCodecContext *avctx, QSVEncContext *q)
         }
     }
 
+    if (q->low_power) {
 #if QSV_HAVE_VDENC
-    q->param.mfx.LowPower           = q->low_power ? MFX_CODINGOPTION_ON : MFX_CODINGOPTION_OFF;
+        q->param.mfx.LowPower = MFX_CODINGOPTION_ON;
+#else
+        av_log(avctx, AV_LOG_WARNING, "The low_power option is "
+                            "not supported with this MSDK version.\n");
+        q->low_power = 0;
+        q->param.mfx.LowPower = MFX_CODINGOPTION_OFF;
 #endif
+    } else
+        q->param.mfx.LowPower = MFX_CODINGOPTION_OFF;
+
     q->param.mfx.CodecProfile       = q->profile;
     q->param.mfx.TargetUsage        = avctx->compression_level;
     q->param.mfx.GopPicSize         = FFMAX(0, avctx->gop_size);
@@ -530,7 +532,7 @@ static int init_video_param(AVCodecContext *avctx, QSVEncContext *q)
     // If the minor version is greater than or equal to 19,
     // then can use the same alignment settings as H.264 for HEVC
     q->width_align = (avctx->codec_id != AV_CODEC_ID_HEVC ||
-                      QSV_RUNTIME_VERSION_ATLEAST(ver, 1, 19)) ? 16 : 32;
+                      QSV_RUNTIME_VERSION_ATLEAST(q->ver, 1, 19)) ? 16 : 32;
     q->param.mfx.FrameInfo.Width = FFALIGN(avctx->width, q->width_align);
 
     if (avctx->flags & AV_CODEC_FLAG_INTERLACED_DCT) {
@@ -690,7 +692,10 @@ FF_ENABLE_DEPRECATION_WARNINGS
 #endif
 
 #if QSV_HAVE_TRELLIS
-            q->extco2.Trellis = q->trellis;
+            if (avctx->trellis >= 0)
+                q->extco2.Trellis = (avctx->trellis == 0) ? MFX_TRELLIS_OFF : (MFX_TRELLIS_I | MFX_TRELLIS_P | MFX_TRELLIS_B);
+            else
+                q->extco2.Trellis = MFX_TRELLIS_UNKNOWN;
 #endif
 
 #if QSV_VERSION_ATLEAST(1, 8)
@@ -729,7 +734,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
 #endif
 
 #if QSV_HAVE_MF
-            if (QSV_RUNTIME_VERSION_ATLEAST(ver, 1, 25)) {
+            if (QSV_RUNTIME_VERSION_ATLEAST(q->ver, 1, 25)) {
                 q->extmfp.Header.BufferId     = MFX_EXTBUFF_MULTI_FRAME_PARAM;
                 q->extmfp.Header.BufferSz     = sizeof(q->extmfp);
 
@@ -805,22 +810,37 @@ static int qsv_retrieve_enc_params(AVCodecContext *avctx, QSVEncContext *q)
     };
 #endif
 
-    mfxExtBuffer *ext_buffers[] = {
-        (mfxExtBuffer*)&extradata,
-        (mfxExtBuffer*)&co,
-#if QSV_HAVE_CO2
-        (mfxExtBuffer*)&co2,
-#endif
-#if QSV_HAVE_CO3
-        (mfxExtBuffer*)&co3,
-#endif
+#if QSV_HAVE_CO_VPS
+    uint8_t vps_buf[128];
+    mfxExtCodingOptionVPS extradata_vps = {
+        .Header.BufferId = MFX_EXTBUFF_CODING_OPTION_VPS,
+        .Header.BufferSz = sizeof(extradata_vps),
+        .VPSBuffer       = vps_buf,
+        .VPSBufSize      = sizeof(vps_buf),
     };
+#endif
+
+    mfxExtBuffer *ext_buffers[2 + QSV_HAVE_CO2 + QSV_HAVE_CO3 + QSV_HAVE_CO_VPS];
 
     int need_pps = avctx->codec_id != AV_CODEC_ID_MPEG2VIDEO;
-    int ret;
+    int ret, ext_buf_num = 0, extradata_offset = 0;
+
+    ext_buffers[ext_buf_num++] = (mfxExtBuffer*)&extradata;
+    ext_buffers[ext_buf_num++] = (mfxExtBuffer*)&co;
+#if QSV_HAVE_CO2
+    ext_buffers[ext_buf_num++] = (mfxExtBuffer*)&co2;
+#endif
+#if QSV_HAVE_CO3
+    ext_buffers[ext_buf_num++] = (mfxExtBuffer*)&co3;
+#endif
+#if QSV_HAVE_CO_VPS
+    q->hevc_vps = ((avctx->codec_id == AV_CODEC_ID_HEVC) && QSV_RUNTIME_VERSION_ATLEAST(q->ver, 1, 17));
+    if (q->hevc_vps)
+        ext_buffers[ext_buf_num++] = (mfxExtBuffer*)&extradata_vps;
+#endif
 
     q->param.ExtParam    = ext_buffers;
-    q->param.NumExtParam = FF_ARRAY_ELEMS(ext_buffers);
+    q->param.NumExtParam = ext_buf_num;
 
     ret = MFXVideoENCODE_GetVideoParam(q->session, &q->param);
     if (ret < 0)
@@ -829,20 +849,37 @@ static int qsv_retrieve_enc_params(AVCodecContext *avctx, QSVEncContext *q)
 
     q->packet_size = q->param.mfx.BufferSizeInKB * q->param.mfx.BRCParamMultiplier * 1000;
 
-    if (!extradata.SPSBufSize || (need_pps && !extradata.PPSBufSize)) {
+    if (!extradata.SPSBufSize || (need_pps && !extradata.PPSBufSize)
+#if QSV_HAVE_CO_VPS
+        || (q->hevc_vps && !extradata_vps.VPSBufSize)
+#endif
+    ) {
         av_log(avctx, AV_LOG_ERROR, "No extradata returned from libmfx.\n");
         return AVERROR_UNKNOWN;
     }
 
-    avctx->extradata = av_malloc(extradata.SPSBufSize + need_pps * extradata.PPSBufSize +
-                                 AV_INPUT_BUFFER_PADDING_SIZE);
+    avctx->extradata_size = extradata.SPSBufSize + need_pps * extradata.PPSBufSize;
+#if QSV_HAVE_CO_VPS
+    avctx->extradata_size += q->hevc_vps * extradata_vps.VPSBufSize;
+#endif
+
+    avctx->extradata = av_malloc(avctx->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);
     if (!avctx->extradata)
         return AVERROR(ENOMEM);
 
-    memcpy(avctx->extradata,                        sps_buf, extradata.SPSBufSize);
-    if (need_pps)
-        memcpy(avctx->extradata + extradata.SPSBufSize, pps_buf, extradata.PPSBufSize);
-    avctx->extradata_size = extradata.SPSBufSize + need_pps * extradata.PPSBufSize;
+#if QSV_HAVE_CO_VPS
+    if (q->hevc_vps) {
+        memcpy(avctx->extradata, vps_buf, extradata_vps.VPSBufSize);
+        extradata_offset += extradata_vps.VPSBufSize;
+    }
+#endif
+
+    memcpy(avctx->extradata + extradata_offset, sps_buf, extradata.SPSBufSize);
+    extradata_offset += extradata.SPSBufSize;
+    if (need_pps) {
+        memcpy(avctx->extradata + extradata_offset, pps_buf, extradata.PPSBufSize);
+        extradata_offset += extradata.PPSBufSize;
+    }
     memset(avctx->extradata + avctx->extradata_size, 0, AV_INPUT_BUFFER_PADDING_SIZE);
 
     cpb_props = ff_add_cpb_side_data(avctx);
@@ -984,6 +1021,12 @@ int ff_qsv_enc_init(AVCodecContext *avctx, QSVEncContext *q)
     ret = qsvenc_init_session(avctx, q);
     if (ret < 0)
         return ret;
+
+    ret = MFXQueryVersion(q->session,&q->ver);
+    if (ret < 0) {
+        return ff_qsv_print_error(avctx, ret,
+                                  "Error querying mfx version");
+    }
 
     // in the mfxInfoMFX struct, JPEG is different from other codecs
     switch (avctx->codec_id) {
