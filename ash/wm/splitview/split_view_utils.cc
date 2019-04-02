@@ -30,8 +30,8 @@ constexpr base::TimeDelta kHighlightsFadeInOutMs =
 // The animation speed which the other highlight fades in or out.
 constexpr base::TimeDelta kOtherFadeInOutMs =
     base::TimeDelta::FromMilliseconds(133);
-// The delay before the other highlight starts fading in or out.
-constexpr base::TimeDelta kOtherFadeOutDelayMs =
+// The delay before the other highlight starts fading in.
+constexpr base::TimeDelta kOtherFadeInDelayMs =
     base::TimeDelta::FromMilliseconds(117);
 // The animation speed for any animation on the indicator labels.
 constexpr base::TimeDelta kLabelAnimationMs =
@@ -64,13 +64,17 @@ void GetAnimationValuesForType(
     case SPLITVIEW_ANIMATION_OVERVIEW_ITEM_FADE_OUT:
     case SPLITVIEW_ANIMATION_TEXT_FADE_IN_WITH_HIGHLIGHT:
     case SPLITVIEW_ANIMATION_TEXT_FADE_OUT_WITH_HIGHLIGHT:
-    case SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN_OUT:
+    case SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN:
+    case SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_OUT:
       *out_duration = kHighlightsFadeInOutMs;
       *out_tween_type = gfx::Tween::FAST_OUT_SLOW_IN;
       return;
+    case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_IN:
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_IN:
+      *out_delay = kOtherFadeInDelayMs;
       *out_duration = kOtherFadeInOutMs;
       *out_tween_type = gfx::Tween::LINEAR_OUT_SLOW_IN;
+      *out_preemption_strategy = ui::LayerAnimator::ENQUEUE_NEW_ANIMATION;
       return;
     case SPLITVIEW_ANIMATION_TEXT_FADE_IN:
     case SPLITVIEW_ANIMATION_TEXT_SLIDE_IN:
@@ -86,10 +90,8 @@ void GetAnimationValuesForType(
       return;
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_OUT:
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_OUT:
-      *out_delay = kOtherFadeOutDelayMs;
       *out_duration = kOtherFadeInOutMs;
-      *out_tween_type = gfx::Tween::LINEAR_OUT_SLOW_IN;
-      *out_preemption_strategy = ui::LayerAnimator::ENQUEUE_NEW_ANIMATION;
+      *out_tween_type = gfx::Tween::FAST_OUT_LINEAR_IN;
       return;
     case SPLITVIEW_ANIMATION_SET_WINDOW_TRANSFORM:
       *out_duration = kWindowTransformMs;
@@ -142,6 +144,7 @@ void DoSplitviewOpacityAnimation(ui::Layer* layer,
       target_opacity = kPreviewAreaHighlightOpacity;
       break;
     case SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN:
+    case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_IN:
       target_opacity = kHighlightOpacity;
       break;
     case SPLITVIEW_ANIMATION_OVERVIEW_ITEM_FADE_IN:
@@ -182,7 +185,8 @@ void DoSplitviewTransformAnimation(ui::Layer* layer,
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_IN:
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_OUT:
     case SPLITVIEW_ANIMATION_PREVIEW_AREA_NIX_INSET:
-    case SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN_OUT:
+    case SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN:
+    case SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_OUT:
     case SPLITVIEW_ANIMATION_SET_WINDOW_TRANSFORM:
     case SPLITVIEW_ANIMATION_TEXT_SLIDE_IN:
     case SPLITVIEW_ANIMATION_TEXT_SLIDE_OUT:

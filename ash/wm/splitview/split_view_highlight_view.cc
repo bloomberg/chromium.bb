@@ -78,10 +78,10 @@ SplitViewHighlightView::SplitViewHighlightView(bool is_right_or_bottom)
 
 SplitViewHighlightView::~SplitViewHighlightView() = default;
 
-void SplitViewHighlightView::SetBounds(const gfx::Rect& bounds,
-                                       bool landscape,
-                                       bool animate,
-                                       bool nixing_preview_inset) {
+void SplitViewHighlightView::SetBounds(
+    const gfx::Rect& bounds,
+    bool landscape,
+    const base::Optional<SplitviewAnimationType>& animation_type) {
   if (bounds == this->bounds() && landscape == landscape_)
     return;
 
@@ -95,8 +95,9 @@ void SplitViewHighlightView::SetBounds(const gfx::Rect& bounds,
   const bool slides_from_right = base::i18n::IsRTL() && landscape
                                      ? !is_right_or_bottom_
                                      : is_right_or_bottom_;
-  if ((slides_from_right || nixing_preview_inset) && animate &&
-      !offset.IsZero()) {
+  if (!offset.IsZero() && animation_type &&
+      (slides_from_right ||
+       *animation_type == SPLITVIEW_ANIMATION_PREVIEW_AREA_NIX_INSET)) {
     gfx::Rect old_left_top_bounds = left_top_->bounds();
     gfx::Rect old_right_middle_bounds = right_bottom_->bounds();
     gfx::Rect old_middle_bounds = middle_->bounds();
@@ -139,23 +140,20 @@ void SplitViewHighlightView::SetBounds(const gfx::Rect& bounds,
   right_bottom_bounds = GetMirroredRect(right_bottom_bounds);
   middle_bounds = GetMirroredRect(middle_bounds);
 
-  // If |animate|, calculate the needed transform from old bounds to new bounds
-  // and apply it. Otherwise set the new bounds and reset the transforms on all
-  // items.
-  if (animate) {
-    const SplitviewAnimationType animation_type =
-        nixing_preview_inset ? SPLITVIEW_ANIMATION_PREVIEW_AREA_NIX_INSET
-                             : SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN_OUT;
+  // If |animation_type| has a value, calculate the needed transform from old
+  // bounds to new bounds and apply it. Otherwise set the new bounds and reset
+  // the transforms on all items.
+  if (animation_type) {
     DoSplitviewTransformAnimation(
-        middle_->layer(), animation_type,
+        middle_->layer(), *animation_type,
         CalculateTransformFromRects(middle_->bounds(), middle_bounds,
                                     landscape));
     DoSplitviewTransformAnimation(
-        left_top_->layer(), animation_type,
+        left_top_->layer(), *animation_type,
         CalculateTransformFromRects(left_top_->bounds(), left_top_bounds,
                                     landscape));
     DoSplitviewTransformAnimation(
-        right_bottom_->layer(), animation_type,
+        right_bottom_->layer(), *animation_type,
         CalculateTransformFromRects(right_bottom_->bounds(),
                                     right_bottom_bounds, landscape));
   } else {
@@ -216,6 +214,21 @@ void SplitViewHighlightView::OnIndicatorTypeChanged(
         layer(), is_this_the_preview
                      ? SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_IN
                      : SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_OUT);
+    return;
+  }
+
+  if (SplitViewDragIndicators::IsPreviewAreaState(previous_indicator_state)) {
+    const bool was_this_the_preview =
+        is_right_or_bottom_ !=
+        SplitViewDragIndicators::IsPreviewAreaOnLeftTopOfScreen(
+            previous_indicator_state);
+    DoSplitviewOpacityAnimation(
+        layer(), Shell::Get()->split_view_controller()->state() ==
+                         SplitViewController::NO_SNAP
+                     ? (was_this_the_preview
+                            ? SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN
+                            : SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_IN)
+                     : SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_OUT);
     return;
   }
 

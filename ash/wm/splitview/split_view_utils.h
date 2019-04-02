@@ -27,10 +27,11 @@ enum SplitviewAnimationType {
   // to drag a selector item.
   SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN,
   SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_OUT,
-  // Used to fade out the other highlight. There are normally two highlights,
-  // one on each side. When entering a state with a preview highlight, one
-  // highlight is the preview highlight, and the other highlight is the other
-  // highlight.
+  // Used to fade in and out the other highlight. There are normally two
+  // highlights, one on each side. When entering a state with a preview
+  // highlight, one highlight is the preview highlight, and the other highlight
+  // is the other highlight.
+  SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_IN,
   SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_OUT,
   // Used to fade in and out the preview area highlight which indicates the
   // bounds of the window that is about to get snapped.
@@ -55,7 +56,8 @@ enum SplitviewAnimationType {
   SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_IN,
   SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_OUT,
   // Used to slide in and out the preview area highlight.
-  SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN_OUT,
+  SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN,
+  SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_OUT,
   // Used to slide in the text labels.
   SPLITVIEW_ANIMATION_TEXT_SLIDE_IN,
   SPLITVIEW_ANIMATION_TEXT_SLIDE_OUT,
