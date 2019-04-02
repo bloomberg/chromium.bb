@@ -20,8 +20,6 @@ namespace blink {
 namespace {
 
 class DetailsTestCase {
-  USING_FAST_MALLOC(DetailsTestCase);
-
  public:
   DetailsTestCase(
       PaymentTestDetailToChange detail,
