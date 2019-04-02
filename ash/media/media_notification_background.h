@@ -42,13 +42,16 @@ class ASH_EXPORT MediaNotificationBackground : public views::Background {
  private:
   friend class MediaNotificationBackgroundTest;
   friend class MediaNotificationViewTest;
-  FRIEND_TEST_ALL_PREFIXES(MediaNotificationBackgroundTest, BoundsSanityCheck);
+  FRIEND_TEST_ALL_PREFIXES(MediaNotificationBackgroundRTLTest,
+                           BoundsSanityCheck);
 
   int GetArtworkWidth(const gfx::Size& view_size) const;
   int GetArtworkVisibleWidth(const gfx::Size& view_size) const;
   gfx::Rect GetArtworkBounds(const gfx::Rect& view_bounds) const;
   gfx::Rect GetFilledBackgroundBounds(const gfx::Rect& view_bounds) const;
   gfx::Rect GetGradientBounds(const gfx::Rect& view_bounds) const;
+  SkPoint GetGradientStartPoint(const gfx::Rect& draw_bounds) const;
+  SkPoint GetGradientEndPoint(const gfx::Rect& draw_bounds) const;
 
   // Reference to the owning view that this is a background for.
   views::View* owner_;
