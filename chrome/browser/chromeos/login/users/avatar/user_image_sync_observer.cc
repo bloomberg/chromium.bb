@@ -35,8 +35,6 @@ bool IsIndexSupported(int index) {
 
 }  // anonymous namespace
 
-UserImageSyncObserver::Observer::~Observer() {}
-
 UserImageSyncObserver::UserImageSyncObserver(const user_manager::User* user)
     : user_(user),
       prefs_(NULL),
@@ -70,14 +68,6 @@ void UserImageSyncObserver::RegisterProfilePrefs(
       kUserImageInfo, user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
 }
 
-void UserImageSyncObserver::AddObserver(Observer* observer) {
-  observer_list_.AddObserver(observer);
-}
-
-void UserImageSyncObserver::RemoveObserver(Observer* observer) {
-  observer_list_.RemoveObserver(observer);
-}
-
 void UserImageSyncObserver::OnProfileGained(Profile* profile) {
   prefs_ = PrefServiceSyncableFromProfile(profile);
   pref_change_registrar_.reset(new PrefChangeRegistrar);
@@ -102,8 +92,6 @@ void UserImageSyncObserver::OnInitialSync() {
     UpdateLocalImageFromSynced();
     local_image_updated = true;
   }
-  for (auto& observer : observer_list_)
-    observer.OnInitialSync(local_image_updated);
 }
 
 void UserImageSyncObserver::OnPreferenceChanged(const std::string& pref_name) {

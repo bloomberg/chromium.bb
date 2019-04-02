@@ -76,7 +76,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/user_board_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/user_image_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/wrong_hwid_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/user_image_source.h"
@@ -390,9 +389,6 @@ void OobeUI::ConfigureOobeDisplay() {
       std::make_unique<AppDownloadingScreenHandler>(js_calls_container_.get()));
 
   AddScreenHandler(
-      std::make_unique<UserImageScreenHandler>(js_calls_container_.get()));
-
-  AddScreenHandler(
       std::make_unique<UserBoardScreenHandler>(js_calls_container_.get()));
 
   AddScreenHandler(
@@ -652,10 +648,6 @@ AssistantOptInFlowScreenView* OobeUI::GetAssistantOptInFlowScreenView() {
 
 MultiDeviceSetupScreenView* OobeUI::GetMultiDeviceSetupScreenView() {
   return GetView<MultiDeviceSetupScreenHandler>();
-}
-
-UserImageView* OobeUI::GetUserImageView() {
-  return GetView<UserImageScreenHandler>();
 }
 
 ErrorScreen* OobeUI::GetErrorScreen() {

@@ -65,7 +65,6 @@ class SigninScreenHandlerDelegate;
 class SyncConsentScreenView;
 class TermsOfServiceScreenView;
 class UserBoardView;
-class UserImageView;
 class UpdateView;
 class UpdateRequiredView;
 class SupervisionTransitionScreenView;
@@ -122,7 +121,6 @@ class OobeUI : public ui::MojoWebUIController {
   ArcTermsOfServiceScreenView* GetArcTermsOfServiceScreenView();
   RecommendAppsScreenView* GetRecommendAppsScreenView();
   AppDownloadingScreenView* GetAppDownloadingScreenView();
-  UserImageView* GetUserImageView();
   ErrorScreen* GetErrorScreen();
   WrongHWIDScreenView* GetWrongHWIDScreenView();
   AutoEnrollmentCheckScreenView* GetAutoEnrollmentCheckScreenView();

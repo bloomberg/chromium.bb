@@ -31,7 +31,6 @@ const char* kScreenNames[] = {
     "autolaunch",                      // SCREEN_KIOSK_AUTOLAUNCH
     "kiosk-enable",                    // SCREEN_KIOSK_ENABLE
     "error-message",                   // SCREEN_ERROR_MESSAGE
-    "user-image",                      // SCREEN_USER_IMAGE_PICKER
     "tpm-error-message",               // SCREEN_TPM_ERROR
     "password-changed",                // SCREEN_PASSWORD_CHANGED
     "supervised-user-creation",        // SCREEN_CREATE_SUPERVISED_USER_FLOW

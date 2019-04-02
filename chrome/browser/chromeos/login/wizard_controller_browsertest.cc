@@ -45,7 +45,6 @@
 #include "chrome/browser/chromeos/login/screens/mock_welcome_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_wrong_hwid_screen.h"
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
-#include "chrome/browser/chromeos/login/screens/user_image_screen.h"
 #include "chrome/browser/chromeos/login/screens/welcome_screen.h"
 #include "chrome/browser/chromeos/login/screens/wrong_hwid_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"

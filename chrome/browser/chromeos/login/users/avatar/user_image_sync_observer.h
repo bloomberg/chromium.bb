@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/observer_list.h"
 #include "components/sync_preferences/pref_service_syncable_observer.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
@@ -41,16 +40,6 @@ class UserImageSyncObserver
       public content::NotificationObserver,
       public user_manager::UserManager::Observer {
  public:
-  class Observer {
-   public:
-    // Called right after image info synced (i.e. |is_synced| became |true|).
-    // |local_image_updated| indicates if we desided to update local image in
-    // result of sync.
-    virtual void OnInitialSync(bool local_image_updated) = 0;
-    virtual ~Observer();
-  };
-
- public:
   explicit UserImageSyncObserver(const user_manager::User* user);
   ~UserImageSyncObserver() override;
 
@@ -59,11 +48,6 @@ class UserImageSyncObserver
 
   // Returns |true| if sync was initialized and prefs have actual state.
   bool is_synced() const { return is_synced_; }
-
-  // Adds |observer| into observers list.
-  void AddObserver(Observer* observer);
-  // Removes |observer| from observers list.
-  void RemoveObserver(Observer* observer);
 
  private:
   // sync_preferences::PrefServiceSyncableObserver implementation.
@@ -103,7 +87,6 @@ class UserImageSyncObserver
   bool is_synced_;
   // Indicates if local user image changed during initialization.
   bool local_image_changed_;
-  base::ObserverList<Observer>::Unchecked observer_list_;
 };
 
 }  // namespace chromeos

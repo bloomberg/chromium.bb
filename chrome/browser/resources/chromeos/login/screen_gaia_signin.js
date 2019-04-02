@@ -881,9 +881,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       if (!$('offline-gaia').hidden)
         $('offline-gaia').focus();
-
-      // Warm up the user images screen.
-      Oobe.getInstance().preloadScreen({id: SCREEN_USER_IMAGE_PICKER});
     },
 
     /**

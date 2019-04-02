@@ -323,11 +323,6 @@ class OobeInteractiveUITest
     LOG(INFO) << "OobeInteractiveUITest: 'discover' screen done.";
   }
 
-  void WaitForUserImageScreen() {
-    test::CreateOobeScreenWaiter("user-image")->Wait();
-    LOG(INFO) << "OobeInteractiveUITest: Switched to 'user-image' screen.";
-  }
-
   void SimpleEndToEnd();
 
   base::Optional<std::string> quick_unlock_private_get_auth_token_password_;
