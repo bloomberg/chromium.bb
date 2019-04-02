@@ -247,11 +247,6 @@ const SendTabToSelfEntry* SendTabToSelfBridge::AddEntry(
     return nullptr;
   }
 
-  if (navigation_time.is_null()) {
-    UMA_HISTOGRAM_ENUMERATION(kAddEntryStatus, FAILURE);
-    return nullptr;
-  }
-
   if (!url.is_valid()) {
     UMA_HISTOGRAM_ENUMERATION(kAddEntryStatus, FAILURE);
     return nullptr;

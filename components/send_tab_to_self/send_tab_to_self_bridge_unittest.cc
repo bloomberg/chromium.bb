@@ -446,8 +446,9 @@ TEST_F(SendTabToSelfBridgeTest, AddInvalidEntries) {
   EXPECT_EQ(nullptr, bridge()->AddEntry(GURL("http//google.com"), "d",
                                         AdvanceAndGetTime(), "target_device"));
 
-  // Add Entry should fail on an invalid navigation_time.
-  EXPECT_EQ(nullptr, bridge()->AddEntry(GURL("http://www.example.com/"), "d",
+  // Add Entry should succeed on an invalid navigation_time, since that is the
+  // case for sending links.
+  EXPECT_NE(nullptr, bridge()->AddEntry(GURL("http://www.example.com/"), "d",
                                         base::Time(), "target_device"));
 }
 
