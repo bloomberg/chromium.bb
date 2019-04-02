@@ -130,9 +130,16 @@ class CORE_EXPORT LocalFrameUkmAggregator
     kScrollingCoordinator,
     kHandleInputEvents,
     kAnimate,
+    kUpdateLayers,
+    kProxyCommit,
     kCount,
     kMainFrame
   };
+
+  typedef struct MetricInitializationData {
+    String name;
+    bool has_uma;
+  } MetricInitializationData;
 
  private:
   friend class LocalFrameUkmAggregatorTest;
@@ -144,20 +151,22 @@ class CORE_EXPORT LocalFrameUkmAggregator
   }
 
   // Add an entry in this arrray every time a new metric is added.
-  static const Vector<String>& metric_strings() {
+  static const Vector<MetricInitializationData>& metrics_data() {
     // Leaky construction to avoid exit-time destruction.
-    static const Vector<String>* strings =
-        new Vector<String>{"Compositing",
-                           "CompositingCommit",
-                           "IntersectionObservation",
-                           "Paint",
-                           "PrePaint",
-                           "StyleAndLayout",
-                           "ForcedStyleAndLayout",
-                           "ScrollingCoordinator",
-                           "HandleInputEvents",
-                           "Animate"};
-    return *strings;
+    static const Vector<MetricInitializationData>* data =
+        new Vector<MetricInitializationData>{{"Compositing", true},
+                                             {"CompositingCommit", true},
+                                             {"IntersectionObservation", true},
+                                             {"Paint", true},
+                                             {"PrePaint", true},
+                                             {"StyleAndLayout", true},
+                                             {"ForcedStyleAndLayout", true},
+                                             {"ScrollingCoordinator", true},
+                                             {"HandleInputEvents", true},
+                                             {"Animate", true},
+                                             {"UpdateLayers", false},
+                                             {"ProxyCommit", true}};
+    return *data;
   }
 
   // Modify this array if the UMA ratio metrics should be bucketed in a

@@ -62,6 +62,9 @@ class LayerTreeViewDelegate {
   // Notifies that the draw commands for a committed frame have been issued.
   virtual void DidCommitAndDrawCompositorFrame() = 0;
 
+  // Notifies that a compositor frame commit operation is about to start.
+  virtual void WillCommitCompositorFrame() = 0;
+
   // Notifies about a compositor frame commit operation having finished.
   virtual void DidCommitCompositorFrame() = 0;
 
@@ -78,6 +81,11 @@ class LayerTreeViewDelegate {
   // (at the same time Tracing measurements are taken).
   virtual void RecordStartOfFrameMetrics() = 0;
   virtual void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) = 0;
+
+  // Notification of the beginning and end of LayerTreeHost::UpdateLayers, for
+  // metrics collection.
+  virtual void BeginUpdateLayers() = 0;
+  virtual void EndUpdateLayers() = 0;
 
   // Requests a visual frame-based update to the state of the delegate if there
   // is an update available.

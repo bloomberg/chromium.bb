@@ -451,7 +451,12 @@ void LayerTreeView::DidBeginMainFrame() {
   delegate_->DidBeginMainFrame();
 }
 
+void LayerTreeView::WillUpdateLayers() {
+  delegate_->BeginUpdateLayers();
+}
+
 void LayerTreeView::DidUpdateLayers() {
+  delegate_->EndUpdateLayers();
   // Dump property trees and layers if run with:
   //   --vmodule=layer_tree_view=3
   VLOG(3) << "After updating layers:\n"
@@ -545,7 +550,9 @@ void LayerTreeView::DidFailToInitializeLayerTreeFrameSink() {
                                 weak_factory_.GetWeakPtr()));
 }
 
-void LayerTreeView::WillCommit() {}
+void LayerTreeView::WillCommit() {
+  delegate_->WillCommitCompositorFrame();
+}
 
 void LayerTreeView::DidCommit() {
   delegate_->DidCommitCompositorFrame();

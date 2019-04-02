@@ -69,6 +69,22 @@ void WebViewFrameWidget::EndRafAlignedInput() {
   web_view_->EndRafAlignedInput();
 }
 
+void WebViewFrameWidget::BeginUpdateLayers() {
+  web_view_->BeginRafAlignedInput();
+}
+
+void WebViewFrameWidget::EndUpdateLayers() {
+  web_view_->EndRafAlignedInput();
+}
+
+void WebViewFrameWidget::BeginCommitCompositorFrame() {
+  web_view_->BeginCommitCompositorFrame();
+}
+
+void WebViewFrameWidget::EndCommitCompositorFrame() {
+  web_view_->EndCommitCompositorFrame();
+}
+
 void WebViewFrameWidget::RecordStartOfFrameMetrics() {
   web_view_->RecordStartOfFrameMetrics();
 }

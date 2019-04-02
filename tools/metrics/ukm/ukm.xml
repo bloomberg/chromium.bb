@@ -1571,6 +1571,26 @@ be describing additional metrics about the same event.
       range [0,100].
     </summary>
   </metric>
+  <metric name="ProxyCommit">
+    <summary>
+      The time taken for the proxy to commit to the impl thread in microseconds
+      during the sampled frame.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="ProxyCommitPercentage">
+    <summary>
+      The percentage of the main frame time used to commit to the impl thread.
+      An int in the range [0,100].
+    </summary>
+  </metric>
   <metric name="ScrollingCoordinator">
     <summary>
       The time taken for scrolling coordinator for the main frame in
@@ -1700,6 +1720,26 @@ be describing additional metrics about the same event.
     <summary>
       The percentage of the main frame time used in style and layout work. An
       int in the range [0,100].
+    </summary>
+  </metric>
+  <metric name="UpdateLayers">
+    <summary>
+      The time taken for LayerTreeHost::UpdateLayers in microseconds during the
+      sampled frame
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="UpdateLayersPercentage">
+    <summary>
+      The percentage of the main frame time used by LayerTreeHost::UpdateLayers.
+      An int in the range [0,100].
     </summary>
   </metric>
 </event>

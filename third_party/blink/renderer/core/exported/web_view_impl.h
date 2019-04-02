@@ -438,6 +438,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void DidBeginFrame() override;
   void BeginRafAlignedInput() override;
   void EndRafAlignedInput() override;
+  void BeginUpdateLayers() override;
+  void EndUpdateLayers() override;
+  void BeginCommitCompositorFrame() override;
+  void EndCommitCompositorFrame() override;
   void RecordStartOfFrameMetrics() override;
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
   void UpdateLifecycle(LifecycleUpdate requested_update,
@@ -701,7 +705,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   Persistent<ResizeViewportAnchor> resize_viewport_anchor_;
 
-  base::TimeTicks raf_aligned_input_start_time_;
+  // Set when a measurement begins, reset when the measurement is taken.
+  base::Optional<base::TimeTicks> raf_aligned_input_start_time_;
+  base::Optional<base::TimeTicks> update_layers_start_time_;
+  base::Optional<base::TimeTicks> commit_compositor_frame_start_time_;
 };
 
 // We have no ways to check if the specified WebView is an instance of

@@ -120,6 +120,20 @@ class WebWidget {
   virtual void BeginRafAlignedInput() {}
   virtual void EndRafAlignedInput() {}
 
+  // Methods called to mark the beginning and end of the
+  // LayerTreeHost::UpdateLayers method. Only called when gathering main frame
+  // UMA and UKM. That is, when RecordStartOfFrameMetrics has been called, and
+  // before RecordEndOfFrameMetrics has been called.
+  virtual void BeginUpdateLayers() {}
+  virtual void EndUpdateLayers() {}
+
+  // Methods called to mark the beginning and end of a commit to the impl
+  // thread for a frame. Only called when gathering main frame
+  // UMA and UKM. That is, when RecordStartOfFrameMetrics has been called, and
+  // before RecordEndOfFrameMetrics has been called.
+  virtual void BeginCommitCompositorFrame() {}
+  virtual void EndCommitCompositorFrame() {}
+
   // Called to run through the entire set of document lifecycle phases needed
   // to render a frame of the web widget. This MUST be called before Paint,
   // and it may result in calls to WebViewClient::DidInvalidateRect (for
