@@ -8,6 +8,7 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_coordinator.h"
+#import "ios/chrome/browser/ui/settings/google_services/google_services_settings_mode.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -36,7 +37,8 @@
   self.googleServicesSettingsCoordinator =
       [[GoogleServicesSettingsCoordinator alloc]
           initWithBaseViewController:self.navigationController
-                        browserState:self.browserState];
+                        browserState:self.browserState
+                                mode:GoogleServicesSettingsModeSettings];
   self.googleServicesSettingsCoordinator.navigationController =
       self.navigationController;
   [self.googleServicesSettingsCoordinator start];

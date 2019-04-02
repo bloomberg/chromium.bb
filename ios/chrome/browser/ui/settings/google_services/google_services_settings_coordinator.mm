@@ -31,6 +31,8 @@
     GoogleServicesSettingsViewControllerPresentationDelegate,
     ManageSyncSettingsCoordinatorDelegate>
 
+// Google services settings mode.
+@property(nonatomic, assign, readonly) GoogleServicesSettingsMode mode;
 // Google services settings mediator.
 @property(nonatomic, strong) GoogleServicesSettingsMediator* mediator;
 // Returns the authentication service.
@@ -52,6 +54,17 @@
 
 @implementation GoogleServicesSettingsCoordinator
 
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+                                      mode:(GoogleServicesSettingsMode)mode {
+  if ([super initWithBaseViewController:viewController
+                           browserState:browserState]) {
+    _mode = mode;
+  }
+  return self;
+}
+
 - (void)start {
   UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
                                ? UITableViewStylePlain
@@ -68,7 +81,8 @@
   self.mediator = [[GoogleServicesSettingsMediator alloc]
       initWithUserPrefService:self.browserState->GetPrefs()
              localPrefService:GetApplicationContext()->GetLocalState()
-             syncSetupService:syncSetupService];
+             syncSetupService:syncSetupService
+                         mode:self.mode];
   self.mediator.consumer = viewController;
   self.mediator.authService = self.authService;
   self.mediator.identityManager =
