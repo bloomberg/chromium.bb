@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/browser/label_formatter_test_utils.h"
 
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/strings/grit/components_strings.h"

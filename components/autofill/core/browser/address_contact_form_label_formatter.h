@@ -28,6 +28,27 @@ class AddressContactFormLabelFormatter : public LabelFormatter {
 
   base::string16 GetLabelForFocusedGroup(const AutofillProfile& profile,
                                          FieldTypeGroup group) const override;
+
+ private:
+  // Returns a label to show the user when |focused_field_type_| belongs to the
+  // name or address groups. The elements of the label and their ordering
+  // depend on the data in |profile| and on |focused_group|.
+  base::string16 GetLabelForProfileOnFocusedNameOrAddress(
+      const AutofillProfile& profile,
+      FieldTypeGroup focused_group) const;
+
+  // Returns a label to show the user when |focused_field_type_| belongs to the
+  // phone or email groups. The elements of the label and their ordering depend
+  // on the data in |profile| and on |focused_group|.
+  base::string16 GetLabelForProfileOnFocusedPhoneOrEmail(
+      const AutofillProfile& profile,
+      FieldTypeGroup focused_group) const;
+
+  // True if this formatter's associated form has a street address field. A
+  // form may have an address-related field, e.g. zip code, without having a
+  // street address field. If a form does not include a street address field,
+  // street addresses should not appear in labels.
+  bool form_has_street_address_;
 };
 
 }  // namespace autofill

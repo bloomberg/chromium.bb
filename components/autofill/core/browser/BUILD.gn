@@ -487,6 +487,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "address_combobox_model_unittest.cc",
+    "address_contact_form_label_formatter_unittest.cc",
     "address_email_form_label_formatter_unittest.cc",
     "address_field_unittest.cc",
     "address_form_label_formatter_unittest.cc",
