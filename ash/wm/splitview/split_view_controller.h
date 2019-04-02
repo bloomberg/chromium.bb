@@ -112,6 +112,8 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // are adjusted to its minimum size if the desired bounds are smaller than
   // its minumum bounds. Note: the snapped window bounds can't be pushed
   // outside of the workspace area.
+  // TODO(xdai): Investigate if we need to pass in |window| as splitview windows
+  // should always be parented to the primary root window.
   gfx::Rect GetSnappedWindowBoundsInParent(aura::Window* window,
                                            SnapPosition snap_position);
   gfx::Rect GetSnappedWindowBoundsInScreen(aura::Window* window,

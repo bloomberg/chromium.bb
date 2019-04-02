@@ -225,6 +225,9 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   void SuspendReposition();
   void ResumeReposition();
 
+  // Returns true if all its window grids don't have any window item.
+  bool IsEmpty() const;
+
   OverviewDelegate* delegate() { return delegate_; }
 
   SplitViewDragIndicators* split_view_drag_indicators() {
@@ -249,6 +252,10 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   size_t num_items_for_testing() const { return num_items_; }
 
+  views::Widget* no_windows_widget_for_testing() {
+    return no_windows_widget_.get();
+  }
+
   // display::DisplayObserver:
   void OnDisplayRemoved(const display::Display& display) override;
   void OnDisplayMetricsChanged(const display::Display& display,
@@ -266,10 +273,8 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
                                SplitViewController::State state) override;
   void OnSplitViewDividerPositionChanged() override;
 
-  // Returns true if all its window grids don't have any window item.
-  bool IsEmpty() const;
-
  private:
+  class NoWindowsView;
   friend class OverviewSessionTest;
 
   // |focus|, restores focus to the stored window.
@@ -285,6 +290,8 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   // Called when the display area for the overview window grids changed.
   void OnDisplayBoundsChanged();
+
+  void MaybeCreateAndPositionNoWindowsWidget();
 
   // Tracks observed windows.
   base::flat_set<aura::Window*> observed_windows_;
@@ -307,6 +314,9 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // virtual desks UI when that is complete, or we may be able to add some
   // mechanism to trigger accessibility events without a focused window.
   std::unique_ptr<views::Widget> overview_focus_widget_;
+
+  // A widget that is shown if we entered overview without any windows opened.
+  std::unique_ptr<views::Widget> no_windows_widget_;
 
   // True when performing operations that may cause window activations. This is
   // used to prevent handling the resulting expected activation. This is

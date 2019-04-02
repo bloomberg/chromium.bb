@@ -75,7 +75,7 @@ base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
       return kHomeLauncherTransition;
     case OVERVIEW_ANIMATION_DROP_TARGET_FADE_IN:
       return kDropTargetFadeIn;
-    case OVERVIEW_ANIMATION_SHIELD_FADE:
+    case OVERVIEW_ANIMATION_NO_RECENTS_FADE:
     case OVERVIEW_ANIMATION_SELECTION_WINDOW_SHADOW:
     case OVERVIEW_ANIMATION_SELECTION_WINDOW:
       return kOverviewSelectorTransition;
@@ -146,7 +146,7 @@ ui::AnimationMetricsReporter* GetMetricsReporter(
     case OVERVIEW_ANIMATION_NONE:
     case OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW:
     case OVERVIEW_ANIMATION_DROP_TARGET_FADE_IN:
-    case OVERVIEW_ANIMATION_SHIELD_FADE:
+    case OVERVIEW_ANIMATION_NO_RECENTS_FADE:
     case OVERVIEW_ANIMATION_SELECTION_WINDOW_SHADOW:
     case OVERVIEW_ANIMATION_SELECTION_WINDOW:
     case OVERVIEW_ANIMATION_OVERVIEW_TITLE_FADE_IN:
@@ -237,7 +237,7 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
       break;
-    case OVERVIEW_ANIMATION_SHIELD_FADE:
+    case OVERVIEW_ANIMATION_NO_RECENTS_FADE:
     case OVERVIEW_ANIMATION_SELECTION_WINDOW_SHADOW:
       animation_settings_->SetTweenType(gfx::Tween::EASE_IN_OUT);
       animation_settings_->SetPreemptionStrategy(
