@@ -65,10 +65,13 @@ bool PageActionIconView::Update() {
   return false;
 }
 
+SkColor PageActionIconView::GetLabelColorForTesting() const {
+  return label()->enabled_color();
+}
+
 SkColor PageActionIconView::GetTextColor() const {
-  // Returns the color of the label shown during animation.
   return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_LabelDisabledColor);
+      ui::NativeTheme::kColorId_TextfieldDefaultColor);
 }
 
 void PageActionIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -144,6 +147,7 @@ void PageActionIconView::ViewHierarchyChanged(
 }
 
 void PageActionIconView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  IconLabelBubbleView::OnNativeThemeChanged(theme);
   UpdateIconImage();
 }
 

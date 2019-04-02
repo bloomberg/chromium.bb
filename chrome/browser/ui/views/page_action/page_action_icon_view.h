@@ -59,6 +59,8 @@ class PageActionIconView : public IconLabelBubbleView {
   // Retrieve the text to be used for a tooltip or accessible name.
   virtual base::string16 GetTextForTooltipAndAccessibleName() const = 0;
 
+  SkColor GetLabelColorForTesting() const;
+
  protected:
   enum ExecuteSource {
     EXECUTE_SOURCE_MOUSE,
