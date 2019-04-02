@@ -163,6 +163,11 @@ std::vector<ProfileBuilder::Frame> StackSamplerImpl::WalkStack(
   // fewer.
   stack.reserve(128);
 
+  // Record the first frame from the context values.
+  stack.emplace_back(RegisterContextInstructionPointer(thread_context),
+                     module_cache_->GetModuleForAddress(
+                         RegisterContextInstructionPointer(thread_context)));
+
   thread_delegate_->WalkNativeFrames(thread_context, stack_top, module_cache_,
                                      &stack);
 
