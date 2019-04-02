@@ -77,8 +77,6 @@ SoftwareImageDecodeCacheUtils::DoDecodeImage(
   bool result = paint_image.Decode(target_pixels->data(), &target_info,
                                    std::move(color_space),
                                    key.frame_key().frame_index(), client_id);
-  MSAN_CHECK_MEM_IS_INITIALIZED(
-      target_pixels->data(), target_info.minRowBytes() * target_info.height());
   if (!result) {
     target_pixels->Unlock();
     return nullptr;
@@ -110,9 +108,6 @@ SoftwareImageDecodeCacheUtils::GenerateCacheEntryFromCandidate(
     bool result = candidate_image.image()->readPixels(
         target_info, target_pixels->data(), target_info.minRowBytes(),
         key.src_rect().x(), key.src_rect().y(), SkImage::kDisallow_CachingHint);
-    MSAN_CHECK_MEM_IS_INITIALIZED(
-        target_pixels->data(),
-        target_info.minRowBytes() * target_info.height());
     // We have a decoded image, and we're reading into already allocated memory.
     // This should never fail.
     DCHECK(result) << key.ToString();
@@ -150,8 +145,6 @@ SoftwareImageDecodeCacheUtils::GenerateCacheEntryFromCandidate(
   } else {
     result = decoded_pixmap.scalePixels(target_pixmap, filter_quality);
   }
-  MSAN_CHECK_MEM_IS_INITIALIZED(
-      target_pixels->data(), target_info.minRowBytes() * target_info.height());
   DCHECK(result) << key.ToString();
 
   return std::make_unique<CacheEntry>(
