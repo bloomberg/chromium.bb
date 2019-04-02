@@ -45,7 +45,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -319,49 +318,6 @@ class AppListBackgroundShieldView : public views::View {
   int corner_radius_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListBackgroundShieldView);
-};
-
-// Animation used to translate AppListView as well as its child views.
-class AppListAnimation : public ui::LayerAnimationElement {
- public:
-  AppListAnimation(gfx::PointF start_pos,
-                   gfx::PointF end_pos,
-                   base::TimeDelta duration,
-                   gfx::Tween::Type tween_type,
-                   AppListView* view)
-      : ui::LayerAnimationElement(ui::LayerAnimationElement::TRANSFORM,
-                                  duration),
-        transform_(
-            std::make_unique<ui::InterpolatedTranslation>(start_pos, end_pos)),
-        view_(view),
-        tween_type_(tween_type) {}
-
-  ~AppListAnimation() override = default;
-
-  // ui::LayerAnimationElement:
-  void OnStart(ui::LayerAnimationDelegate* delegate) override {}
-  bool OnProgress(double current,
-                  ui::LayerAnimationDelegate* delegate) override {
-    const double progress = gfx::Tween::CalculateValue(tween_type_, current);
-    delegate->SetTransformFromAnimation(
-        transform_->Interpolate(progress),
-        ui::PropertyChangeReason::FROM_ANIMATION);
-
-    // Update child views' layout at each animation frame because child views'
-    // padding changes along with the app list view's bounds.
-    view_->app_list_main_view()->contents_view()->UpdateYPositionAndOpacity();
-
-    return true;
-  }
-  void OnGetTarget(TargetValue* target) const override {}
-  void OnAbort(ui::LayerAnimationDelegate* delegate) override {}
-
- private:
-  std::unique_ptr<ui::InterpolatedTransform> transform_;
-  AppListView* view_;
-  gfx::Tween::Type tween_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListAnimation);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1382,8 +1338,7 @@ void AppListView::StartAnimationForState(AppListViewState target_state) {
   ui::Layer* layer = fullscreen_widget_->GetLayer();
   layer->SetBounds(target_bounds);
   gfx::Transform transform;
-  const int y_offset = original_state_y - target_state_y;
-  transform.Translate(0, y_offset);
+  transform.Translate(0, original_state_y - target_state_y);
   layer->SetTransform(transform);
 
   ui::LayerAnimator* animator = layer->GetAnimator();
@@ -1397,11 +1352,12 @@ void AppListView::StartAnimationForState(AppListViewState target_state) {
   settings.SetAnimationMetricsReporter(state_animation_metrics_reporter_.get());
   settings.AddObserver(transition_animation_observer_.get());
 
-  animator->StartAnimation(
-      new ui::LayerAnimationSequence(std::make_unique<AppListAnimation>(
-          gfx::PointF(0, y_offset), gfx::PointF(),
-          base::TimeDelta::FromMilliseconds(animation_duration),
-          gfx::Tween::EASE_OUT, this)));
+  layer->SetTransform(gfx::Transform());
+
+  // In transition animation, layout is only performed after it is complete,
+  // which makes the child views jump. So update y positions in advance here to
+  // avoid that.
+  app_list_main_view_->contents_view()->UpdateYPositionAndOpacity();
 }
 
 void AppListView::StartCloseAnimation(base::TimeDelta animation_duration) {
