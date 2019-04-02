@@ -11,7 +11,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "content/public/common/resource_type.h"
 #include "content/public/renderer/request_peer.h"
 #include "services/network/public/cpp/resource_response_info.h"
 
@@ -29,7 +28,6 @@ class SecurityFilterPeer final : public content::RequestPeer {
 
   static std::unique_ptr<content::RequestPeer>
   CreateSecurityFilterPeerForDeniedRequest(
-      content::ResourceType resource_type,
       std::unique_ptr<content::RequestPeer> peer,
       int os_error);
 
@@ -47,16 +45,11 @@ class SecurityFilterPeer final : public content::RequestPeer {
   scoped_refptr<base::TaskRunner> GetTaskRunner() override;
 
  private:
-  SecurityFilterPeer(std::unique_ptr<content::RequestPeer> peer,
-                     const std::string& mime_type,
-                     const std::string& data);
+  explicit SecurityFilterPeer(std::unique_ptr<content::RequestPeer> peer);
 
-  static scoped_refptr<net::HttpResponseHeaders> CreateHeaders(
-      const std::string& mime_type);
+  static scoped_refptr<net::HttpResponseHeaders> CreateHeaders();
 
   std::unique_ptr<content::RequestPeer> original_peer_;
-  std::string mime_type_;
-  std::string data_;
 
   DISALLOW_COPY_AND_ASSIGN(SecurityFilterPeer);
 };

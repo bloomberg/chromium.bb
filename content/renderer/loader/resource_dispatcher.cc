@@ -284,8 +284,7 @@ void ResourceDispatcher::OnRequestComplete(
 
   if (delegate_) {
     std::unique_ptr<RequestPeer> new_peer = delegate_->OnRequestComplete(
-        std::move(request_info->peer), request_info->resource_type,
-        status.error_code);
+        std::move(request_info->peer), status.error_code);
     DCHECK(new_peer);
     request_info->peer = std::move(new_peer);
   }

@@ -87,7 +87,6 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
 
   std::unique_ptr<content::RequestPeer> OnRequestComplete(
       std::unique_ptr<content::RequestPeer> current_peer,
-      content::ResourceType resource_type,
       int error_code) override {
     // Update the browser about our cache.
     // Rate limit informing the host of our cache stats.
@@ -105,7 +104,7 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
 
     // Resource canceled with a specific error are filtered.
     return SecurityFilterPeer::CreateSecurityFilterPeerForDeniedRequest(
-        resource_type, std::move(current_peer), error_code);
+        std::move(current_peer), error_code);
   }
 
   std::unique_ptr<content::RequestPeer> OnReceivedResponse(

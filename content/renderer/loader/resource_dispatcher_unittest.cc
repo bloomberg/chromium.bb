@@ -182,7 +182,6 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
 
   std::unique_ptr<RequestPeer> OnRequestComplete(
       std::unique_ptr<RequestPeer> current_peer,
-      ResourceType resource_type,
       int error_code) override {
     return current_peer;
   }

@@ -9,26 +9,18 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "base/strings/stringprintf.h"
-#include "chrome/grit/generated_resources.h"
-#include "content/public/renderer/fixed_received_data.h"
-#include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
-#include "ui/base/l10n/l10n_util.h"
 
 SecurityFilterPeer::SecurityFilterPeer(
-    std::unique_ptr<content::RequestPeer> peer,
-    const std::string& mime_type,
-    const std::string& data)
-    : original_peer_(std::move(peer)), mime_type_(mime_type), data_(data) {}
+    std::unique_ptr<content::RequestPeer> peer)
+    : original_peer_(std::move(peer)) {}
 SecurityFilterPeer::~SecurityFilterPeer() {}
 
 // static
 std::unique_ptr<content::RequestPeer>
 SecurityFilterPeer::CreateSecurityFilterPeerForDeniedRequest(
-    content::ResourceType resource_type,
     std::unique_ptr<content::RequestPeer> peer,
     int os_error) {
   // Create a filter for SSL and CERT errors.
@@ -46,24 +38,8 @@ SecurityFilterPeer::CreateSecurityFilterPeerForDeniedRequest(
     case net::ERR_CERT_WEAK_KEY:
     case net::ERR_CERT_NAME_CONSTRAINT_VIOLATION:
     case net::ERR_INSECURE_RESPONSE:
-    case net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN: {
-      std::string mime_type;
-      std::string data;
-      if (content::IsResourceTypeFrame(resource_type)) {
-        // TODO(jcampan): use a different message when getting a
-        // phishing/malware error.
-        data = base::StringPrintf(
-            "<html><meta charset='UTF-8'>"
-            "<body style='background-color:#990000;color:white;'>"
-            "%s</body></html>",
-            net::EscapeForHTML(
-                l10n_util::GetStringUTF8(IDS_UNSAFE_FRAME_MESSAGE))
-                .c_str());
-        mime_type = "text/html";
-      }
-      return base::WrapUnique(
-          new SecurityFilterPeer(std::move(peer), mime_type, data));
-    }
+    case net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN:
+      return base::WrapUnique(new SecurityFilterPeer(std::move(peer)));
     default:
       // For other errors, we use our normal error handling.
       return peer;
@@ -102,14 +78,9 @@ void SecurityFilterPeer::OnTransferSizeUpdated(int transfer_size_diff) {
 void SecurityFilterPeer::OnCompletedRequest(
     const network::URLLoaderCompletionStatus& status) {
   network::ResourceResponseInfo info;
-  info.mime_type = mime_type_;
-  info.headers = CreateHeaders(mime_type_);
-  info.content_length = static_cast<int>(data_.size());
+  info.headers = CreateHeaders();
+  info.content_length = 0;
   original_peer_->OnReceivedResponse(info);
-  if (!data_.empty()) {
-    original_peer_->OnReceivedData(std::make_unique<content::FixedReceivedData>(
-        data_.data(), data_.size()));
-  }
   network::URLLoaderCompletionStatus ok_status(status);
   ok_status.error_code = net::OK;
   original_peer_->OnCompletedRequest(ok_status);
@@ -119,8 +90,7 @@ scoped_refptr<base::TaskRunner> SecurityFilterPeer::GetTaskRunner() {
   return original_peer_->GetTaskRunner();
 }
 
-scoped_refptr<net::HttpResponseHeaders> SecurityFilterPeer::CreateHeaders(
-    const std::string& mime_type) {
+scoped_refptr<net::HttpResponseHeaders> SecurityFilterPeer::CreateHeaders() {
   std::string raw_headers;
   raw_headers.append("HTTP/1.1 200 OK");
   raw_headers.push_back('\0');
@@ -130,11 +100,6 @@ scoped_refptr<net::HttpResponseHeaders> SecurityFilterPeer::CreateHeaders(
   // resource).
   raw_headers.append("cache-control: no-cache");
   raw_headers.push_back('\0');
-  if (!mime_type.empty()) {
-    raw_headers.append("content-type: ");
-    raw_headers.append(mime_type);
-    raw_headers.push_back('\0');
-  }
   raw_headers.push_back('\0');
   return base::MakeRefCounted<net::HttpResponseHeaders>(raw_headers);
 }
