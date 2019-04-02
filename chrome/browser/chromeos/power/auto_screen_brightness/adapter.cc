@@ -304,11 +304,7 @@ Adapter::Adapter(Profile* profile,
 }
 
 void Adapter::InitParams(const ModelConfig& model_config) {
-  if (!base::FeatureList::IsEnabled(features::kAutoScreenBrightness) &&
-      model_config.metrics_key != "atlas") {
-    // TODO(jiameng): eventually we will control which device has adapter
-    // enabled by finch. For now, atlas will always be enabled. We'll change the
-    // fixed behaviour when finch experiment for it is set up.
+  if (!base::FeatureList::IsEnabled(features::kAutoScreenBrightness)) {
     adapter_status_ = Status::kDisabled;
     return;
   }

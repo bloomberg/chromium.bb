@@ -993,25 +993,6 @@ TEST_F(AdapterTest, FeatureDisabled) {
   EXPECT_EQ(adapter_->GetCurrentAvgLogAlsForTesting(), base::nullopt);
 }
 
-TEST_F(AdapterTest, FeatureEnabledForAtlas) {
-  // An empty param map will not enable the experiment flag.
-  std::map<std::string, std::string> empty_params;
-
-  // But metrics_key="atlas" means it's always enabled.
-  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
-       global_curve_, personal_curve_, GetTestModelConfig("atlas"),
-       empty_params);
-
-  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
-  EXPECT_TRUE(adapter_->GetGlobalCurveForTesting());
-  EXPECT_TRUE(adapter_->GetPersonalCurveForTesting());
-
-  ForwardTimeAndReportAls({1, 2, 3, 4, 5});
-  EXPECT_EQ(test_observer_.num_changes(), 1);
-  CheckAvgLog({1, 2, 3, 4, 5},
-              adapter_->GetCurrentAvgLogAlsForTesting().value());
-}
-
 TEST_F(AdapterTest, ValidParameters) {
   Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
        global_curve_, personal_curve_, GetTestModelConfig(), default_params_);
