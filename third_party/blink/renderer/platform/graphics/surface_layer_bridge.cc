@@ -155,7 +155,6 @@ void SurfaceLayerBridge::CreateSurfaceLayer() {
 
   surface_layer_->SetStretchContentToFillBounds(true);
   surface_layer_->SetIsDrawable(true);
-  surface_layer_->SetHitTestable(true);
   surface_layer_->SetMayContainVideo(true);
 
   if (observer_) {

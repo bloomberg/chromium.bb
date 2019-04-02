@@ -75,7 +75,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
       draws_content_(false),
       paints_hit_test_(false),
       contents_visible_(true),
-      hit_testable_(false),
+      hit_testable_without_draws_content_(false),
       needs_check_raster_invalidation_(false),
       has_scroll_parent_(false),
       has_clip_parent_(false),
@@ -94,7 +94,6 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
 #endif
   layer_ = cc::PictureLayer::Create(this);
   CcLayer()->SetIsDrawable(draws_content_ && contents_visible_);
-  CcLayer()->SetHitTestable(hit_testable_);
   CcLayer()->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
 
   UpdateTrackingRasterInvalidations();
@@ -545,7 +544,6 @@ void GraphicsLayer::SetupContentsLayer(cc::Layer* contents_layer) {
   // contents_layer, for the correctness of early exit conditions in
   // SetDrawsContent() and SetContentsVisible().
   contents_layer_->SetIsDrawable(contents_visible_);
-  contents_layer_->SetHitTestable(contents_visible_);
 
   // Insert the content layer first. Video elements require this, because they
   // have shadow content that must display in front of the video.
@@ -834,11 +832,11 @@ void GraphicsLayer::SetIsRootForIsolatedGroup(bool isolated) {
   CcLayer()->SetIsRootForIsolatedGroup(isolated);
 }
 
-void GraphicsLayer::SetHitTestable(bool should_hit_test) {
-  if (hit_testable_ == should_hit_test)
+void GraphicsLayer::SetHitTestableWithoutDrawsContent(bool should_hit_test) {
+  if (hit_testable_without_draws_content_ == should_hit_test)
     return;
-  hit_testable_ = should_hit_test;
-  CcLayer()->SetHitTestable(should_hit_test);
+  hit_testable_without_draws_content_ = should_hit_test;
+  CcLayer()->SetHitTestableWithoutDrawsContent(should_hit_test);
 }
 
 void GraphicsLayer::SetContentsNeedsDisplay() {

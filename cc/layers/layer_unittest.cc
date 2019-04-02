@@ -1420,29 +1420,30 @@ TEST_F(LayerTest, PushUpdatesShouldHitTest) {
       LayerImpl::Create(host_impl_.active_tree(), 1);
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(1,
                                   layer_tree_host_->SetRootLayer(root_layer));
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(5);
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(3);
 
   // A layer that draws content should be hit testable.
   root_layer->SetIsDrawable(true);
-  root_layer->SetHitTestable(true);
   root_layer->PushPropertiesTo(impl_layer.get());
   EXPECT_TRUE(impl_layer->DrawsContent());
-  EXPECT_TRUE(impl_layer->HitTestable());
+  EXPECT_FALSE(impl_layer->hit_testable_without_draws_content());
+  EXPECT_TRUE(impl_layer->ShouldHitTest());
 
   // A layer that does not draw content and does not hit test without drawing
   // content should not be hit testable.
   root_layer->SetIsDrawable(false);
-  root_layer->SetHitTestable(false);
   root_layer->PushPropertiesTo(impl_layer.get());
   EXPECT_FALSE(impl_layer->DrawsContent());
-  EXPECT_FALSE(impl_layer->HitTestable());
+  EXPECT_FALSE(impl_layer->hit_testable_without_draws_content());
+  EXPECT_FALSE(impl_layer->ShouldHitTest());
 
   // |SetHitTestableWithoutDrawsContent| should cause a layer to become hit
   // testable even though it does not draw content.
-  root_layer->SetHitTestable(true);
+  root_layer->SetHitTestableWithoutDrawsContent(true);
   root_layer->PushPropertiesTo(impl_layer.get());
   EXPECT_FALSE(impl_layer->DrawsContent());
-  EXPECT_TRUE(impl_layer->HitTestable());
+  EXPECT_TRUE(impl_layer->hit_testable_without_draws_content());
+  EXPECT_TRUE(impl_layer->ShouldHitTest());
 }
 
 void ReceiveCopyOutputResult(int* result_count,

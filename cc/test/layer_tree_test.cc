@@ -158,11 +158,9 @@ void CreateVirtualViewportLayers(Layer* root_layer,
 
   inner_viewport_container_layer->SetBounds(inner_bounds);
   inner_viewport_scroll_layer->SetScrollable(inner_bounds);
-  inner_viewport_scroll_layer->SetHitTestable(true);
   inner_viewport_scroll_layer->SetBounds(outer_bounds);
   outer_viewport_container_layer->SetBounds(outer_bounds);
   outer_scroll_layer->SetScrollable(outer_bounds);
-  outer_scroll_layer->SetHitTestable(true);
 
   inner_viewport_scroll_layer->SetIsContainerForFixedPositionLayers(true);
   outer_scroll_layer->SetIsContainerForFixedPositionLayers(true);
@@ -186,7 +184,6 @@ void CreateVirtualViewportLayers(Layer* root_layer,
 
   outer_viewport_scroll_layer->SetBounds(scroll_bounds);
   outer_viewport_scroll_layer->SetIsDrawable(true);
-  outer_viewport_scroll_layer->SetHitTestable(true);
   CreateVirtualViewportLayers(root_layer, outer_viewport_scroll_layer,
                               inner_bounds, outer_bounds, host);
 }
@@ -908,7 +905,6 @@ void LayerTreeTest::SetupTree() {
                                              initial_device_scale_factor_,
                                              viz::LocalSurfaceIdAllocation());
   layer_tree_host()->root_layer()->SetIsDrawable(true);
-  layer_tree_host()->root_layer()->SetHitTestable(true);
   layer_tree_host()->SetElementIdsForTesting();
 }
 

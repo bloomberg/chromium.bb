@@ -924,7 +924,6 @@ cc::Layer* DrawingBuffer::CcLayer() {
     layer_ = cc::TextureLayer::CreateForMailbox(this);
 
     layer_->SetIsDrawable(true);
-    layer_->SetHitTestable(true);
     layer_->SetContentsOpaque(!want_alpha_channel_);
     layer_->SetBlendBackgroundColor(want_alpha_channel_);
     // If premultiplied_alpha_false_texture_ exists, then premultiplied_alpha_

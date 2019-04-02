@@ -704,7 +704,6 @@ void VisualViewport::SetupScrollbar(ScrollbarOrientation orientation) {
         scrollbar_layer_group->layer.get(),
         /*prevent_contents_opaque_changes=*/false);
     scrollbar_graphics_layer->SetDrawsContent(false);
-    scrollbar_graphics_layer->SetHitTestable(false);
     scrollbar_layer_group->scrollbar_layer->SetScrollElementId(
         inner_viewport_scroll_layer_->CcLayer()->element_id());
   }

@@ -391,7 +391,6 @@ static void DetachScrollbarLayer(GraphicsLayer* scrollbar_graphics_layer) {
 
   scrollbar_graphics_layer->SetContentsToCcLayer(nullptr, false);
   scrollbar_graphics_layer->SetDrawsContent(true);
-  scrollbar_graphics_layer->SetHitTestable(true);
 }
 
 static void SetupScrollbarLayer(
@@ -411,7 +410,6 @@ static void SetupScrollbarLayer(
       scrollbar_layer_group->layer.get(),
       /*prevent_contents_opaque_changes=*/false);
   scrollbar_graphics_layer->SetDrawsContent(false);
-  scrollbar_graphics_layer->SetHitTestable(false);
 }
 
 void ScrollingCoordinator::AddScrollbarLayerGroup(

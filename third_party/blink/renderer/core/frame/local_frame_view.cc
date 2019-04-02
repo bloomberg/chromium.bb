@@ -2589,8 +2589,10 @@ static void CollectDrawableLayersForLayerListRecursively(
   // that don't for the purposes of hit testing. For example, an empty div
   // will not draw content but needs to create a layer to ensure scroll events
   // do not pass through it.
-  if (layer->PaintsContentOrHitTest() || layer->GetHitTestable())
+  if (layer->PaintsContentOrHitTest() ||
+      layer->GetHitTestableWithoutDrawsContent()) {
     RecordGraphicsLayerAsForeignLayer(context, layer);
+  }
 
   if (auto* contents_layer = layer->ContentsLayer()) {
     RecordForeignLayer(context, DisplayItem::kForeignLayerContentsWrapper,

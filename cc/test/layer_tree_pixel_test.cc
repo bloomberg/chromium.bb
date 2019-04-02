@@ -159,7 +159,6 @@ scoped_refptr<SolidColorLayer> LayerTreePixelTest::CreateSolidColorLayer(
     const gfx::Rect& rect, SkColor color) {
   scoped_refptr<SolidColorLayer> layer = SolidColorLayer::Create();
   layer->SetIsDrawable(true);
-  layer->SetHitTestable(true);
   layer->SetBounds(rect.size());
   layer->SetPosition(gfx::PointF(rect.origin()));
   layer->SetOffsetToTransformParent(
