@@ -8,8 +8,10 @@ import android.os.Build;
 import android.support.annotation.Nullable;
 import android.view.Window;
 
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.ui.ImmersiveModeManager;
 
 /**
  * A UI coordinator that manages the system status bar and bottom navigation bar.
@@ -22,16 +24,35 @@ public class SystemUiCoordinator {
 
     /**
      * Construct a new {@link SystemUiCoordinator}.
+     *
      * @param window The {@link Window} associated with the containing activity.
      * @param tabModelSelector The {@link TabModelSelector} for the containing activity.
+     * @param immersiveModeManager The {@link ImmersiveModeManager} for the containing activity.
+     * @param activityType The {@link org.chromium.chrome.browser.ChromeActivity.ActivityType} of
+     *         the containing activity
+     */
+    public SystemUiCoordinator(Window window, TabModelSelector tabModelSelector,
+            @Nullable ImmersiveModeManager immersiveModeManager,
+            @ChromeActivity.ActivityType int activityType) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1
+                && activityType == ChromeActivity.ActivityType.TABBED) {
+            mNavigationBarColorController = new NavigationBarColorController(
+                    window, tabModelSelector, immersiveModeManager);
+        }
+    }
+
+    /**
+     * Called when native initialization has finished to provide additional activity-scoped objects
+     * only available after native initialization.
+     *
      * @param overviewModeBehavior The {@link OverviewModeBehavior} for the containing activity
      *         if the current activity supports an overview mode, or null otherwise.
      */
-    public SystemUiCoordinator(Window window, TabModelSelector tabModelSelector,
-            @Nullable OverviewModeBehavior overviewModeBehavior) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1 && overviewModeBehavior != null) {
-            mNavigationBarColorController = new NavigationBarColorController(
-                    window, tabModelSelector, overviewModeBehavior);
+    public void onNativeInitialized(@Nullable OverviewModeBehavior overviewModeBehavior) {
+        if (mNavigationBarColorController != null) {
+            assert overviewModeBehavior != null;
+
+            mNavigationBarColorController.setOverviewModeBehavior(overviewModeBehavior);
         }
     }
 

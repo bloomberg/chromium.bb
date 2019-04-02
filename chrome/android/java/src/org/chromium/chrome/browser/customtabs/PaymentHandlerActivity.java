@@ -25,8 +25,8 @@ public class PaymentHandlerActivity extends CustomTabActivity {
     private boolean mHaveNotifiedServiceWorker;
 
     @Override
-    public void preInflationStartup() {
-        super.preInflationStartup();
+    public void performPreInflationStartup() {
+        super.performPreInflationStartup();
         updateHeight();
         addObserverForPaymentsWhenTabReady();
     }

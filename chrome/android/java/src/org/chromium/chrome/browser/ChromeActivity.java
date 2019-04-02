@@ -24,6 +24,7 @@ import android.os.Handler;
 import android.os.Process;
 import android.os.SystemClock;
 import android.support.annotation.CallSuper;
+import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
@@ -187,6 +188,8 @@ import org.chromium.ui.widget.Toast;
 import org.chromium.webapk.lib.client.WebApkNavigationClient;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -214,6 +217,20 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * No control container to inflate during initialization.
      */
     public static final int NO_CONTROL_CONTAINER = -1;
+
+    /**
+     * The different types of activities extending ChromeActivity.
+     */
+    @IntDef({ActivityType.BASE, ActivityType.TABBED, ActivityType.CUSTOM_TAB, ActivityType.WEBAPP,
+            ActivityType.NO_TOUCH})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ActivityType {
+        int BASE = 0;
+        int TABBED = 1;
+        int CUSTOM_TAB = 2;
+        int WEBAPP = 3;
+        int NO_TOUCH = 4;
+    }
 
     /**
      * No toolbar layout to inflate during initialization.
@@ -331,11 +348,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private final Runnable mUpdateStateChangedListener = this::onUpdateStateChanged;
 
     /**
-     * The main coordinator for UI components in this activity.
-     */
-    private RootUiCoordinator mRootUiCoordinator;
-
-    /**
      * @param factory The {@link AppMenuHandlerFactory} for creating {@link #mAppMenuHandler}
      */
     @VisibleForTesting
@@ -349,19 +361,19 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     @Override
-    public void preInflationStartup() {
+    public void performPreInflationStartup() {
         // Create component before calling super to give its members a chance to catch
         // onPreInflationStartup event.
         mComponent = createComponent();
 
-        super.preInflationStartup();
+        super.performPreInflationStartup();
 
         // TODO(https://crbug.com/931496): Remove dependency on ChromeActivity in favor of passing
         // in direct dependencies on needed classes. While migrating code from Chrome*Activity
         // to the RootUiCoordinator, passing the activity is an easy way to get access to a
         // number of objects that will ultimately be owned by the RootUiCoordinator. This is not
-        // a pattern that is recommended.
-        mRootUiCoordinator = new RootUiCoordinator(getLifecycleDispatcher(), this);
+        // a recommended pattern.
+        RootUiCoordinator.create(this);
 
         VrModuleProvider.getDelegate().doPreInflationStartup(this, getSavedInstanceState());
 
@@ -426,9 +438,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     @SuppressLint("NewApi")
     @Override
-    public void postInflationStartup() {
-        try (TraceEvent te = TraceEvent.scoped("ChromeActivity.postInflationStartup")) {
-            super.postInflationStartup();
+    public void performPostInflationStartup() {
+        try (TraceEvent te = TraceEvent.scoped("ChromeActivity.performPostInflationStartup")) {
+            super.performPostInflationStartup();
 
             ViewGroup coordinator = findViewById(R.id.coordinator);
             mScrimView = new ScrimView(this, (fraction) -> {
@@ -1106,10 +1118,17 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     /**
+     * @return The type for this activity.
+     */
+    public @ActivityType int getActivityType() {
+        return ActivityType.BASE;
+    }
+
+    /**
      * @return Whether the given activity contains a CustomTab.
      */
     public boolean isCustomTab() {
-        return false;
+        return getActivityType() == ActivityType.CUSTOM_TAB;
     }
 
     /**

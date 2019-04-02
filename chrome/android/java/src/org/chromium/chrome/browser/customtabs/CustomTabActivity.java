@@ -181,8 +181,8 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     }
 
     @Override
-    public boolean isCustomTab() {
-        return true;
+    public @ActivityType int getActivityType() {
+        return ActivityType.CUSTOM_TAB;
     }
 
     @Override
@@ -208,12 +208,12 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     }
 
     @Override
-    public void preInflationStartup() {
+    public void performPreInflationStartup() {
         // Parse the data from the Intent before calling super to allow the Intent to customize
         // the Activity parameters, including the background of the page.
         mIntentDataProvider = new CustomTabIntentDataProvider(getIntent(), this);
 
-        super.preInflationStartup();
+        super.performPreInflationStartup();
         mTabProvider.addObserver(mTabChangeObserver);
         // We might have missed an onInitialTabCreated event.
         resetPostMessageHandlersForCurrentSession();
@@ -252,8 +252,8 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     }
 
     @Override
-    public void postInflationStartup() {
-        super.postInflationStartup();
+    public void performPostInflationStartup() {
+        super.performPostInflationStartup();
 
         getToolbarManager().setCloseButtonDrawable(mIntentDataProvider.getCloseButtonDrawable());
         getToolbarManager().setShowTitle(mIntentDataProvider.getTitleVisibilityState()

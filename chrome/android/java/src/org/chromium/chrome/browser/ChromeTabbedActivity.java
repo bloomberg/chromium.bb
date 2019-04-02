@@ -877,6 +877,11 @@ public class ChromeTabbedActivity
     }
 
     @Override
+    public @ActivityType int getActivityType() {
+        return ActivityType.TABBED;
+    }
+
+    @Override
     public ChromeTabCreator getTabCreator(boolean incognito) {
         return (ChromeTabCreator) super.getTabCreator(incognito);
     }
@@ -1487,8 +1492,8 @@ public class ChromeTabbedActivity
     }
 
     @Override
-    public void preInflationStartup() {
-        super.preInflationStartup();
+    public void performPreInflationStartup() {
+        super.performPreInflationStartup();
 
         // Decide whether to record startup UMA histograms. This is done  early in the main
         // Activity.onCreate() to avoid recording navigation delays when they require user input to
@@ -1545,8 +1550,8 @@ public class ChromeTabbedActivity
     }
 
     @Override
-    public void postInflationStartup() {
-        super.postInflationStartup();
+    public void performPostInflationStartup() {
+        super.performPostInflationStartup();
 
         // Critical path for startup. Create the minimum objects needed
         // to allow a blank screen draw (without depending on any native code)

@@ -34,6 +34,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.SingleTabActivity;
 import org.chromium.chrome.browser.WarmupManager;
@@ -171,6 +172,11 @@ public class WebappActivity extends SingleTabActivity {
         }
     }
 
+    @Override
+    public @ChromeActivity.ActivityType int getActivityType() {
+        return ChromeActivity.ActivityType.WEBAPP;
+    }
+
     protected boolean loadUrlIfPostShareTarget(WebappInfo webappInfo) {
         return false;
     }
@@ -258,7 +264,7 @@ public class WebappActivity extends SingleTabActivity {
     }
 
     @Override
-    public void preInflationStartup() {
+    public void performPreInflationStartup() {
         Intent intent = getIntent();
         String id = WebappInfo.idFromIntent(intent);
         WebappInfo info = popWebappInfo(id);
@@ -308,7 +314,7 @@ public class WebappActivity extends SingleTabActivity {
         // of the WebappActivity explicitly to make it speak the short name of the Web App.
         setTitle(mWebappInfo.shortName());
 
-        super.preInflationStartup();
+        super.performPreInflationStartup();
 
         if (mWebappInfo.displayMode() == WebDisplayMode.FULLSCREEN) {
             enterImmersiveMode();

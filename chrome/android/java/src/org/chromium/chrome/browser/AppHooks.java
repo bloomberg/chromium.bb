@@ -12,6 +12,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
+import android.view.View;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -54,6 +55,7 @@ import org.chromium.chrome.browser.survey.SurveyController;
 import org.chromium.chrome.browser.tab.AuthenticatorNavigationInterceptor;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.touchless.TouchlessUiController;
+import org.chromium.chrome.browser.ui.ImmersiveModeManager;
 import org.chromium.chrome.browser.usage_stats.DigitalWellbeingClient;
 import org.chromium.chrome.browser.webapps.GooglePlayWebApkInstallDelegate;
 import org.chromium.chrome.browser.webauth.Fido2ApiHandler;
@@ -448,5 +450,13 @@ public abstract class AppHooks {
     public void registerChromeRenderFrameHostInterfaces(
             InterfaceRegistry registry, RenderFrameHost renderFrameHost) {
         return;
+    }
+
+    /**
+     * @param contentView The root content view for the containing activity.
+     * @return A new {@link ImmersiveModeManager} or null if there isn't one.
+     */
+    public @Nullable ImmersiveModeManager createImmersiveModeManager(View contentView) {
+        return null;
     }
 }

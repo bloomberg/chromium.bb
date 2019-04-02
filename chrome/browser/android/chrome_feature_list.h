@@ -69,6 +69,7 @@ extern const base::Feature kHideUserDataFromIncognitoNotifications;
 extern const base::Feature kHomePageButtonForceEnabled;
 extern const base::Feature kHomepageTile;
 extern const base::Feature kHorizontalTabSwitcherAndroid;
+extern const base::Feature kImmersiveUiMode;
 extern const base::Feature kImprovedA2HS;
 extern const base::Feature kInlineUpdateFlow;
 extern const base::Feature kIntentBlockExternalFormRedirectsNoGesture;
