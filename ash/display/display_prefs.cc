@@ -929,6 +929,14 @@ void DisplayPrefs::LoadDisplayPreferences() {
   LoadDisplayRotationState(local_state);
   LoadDisplayTouchAssociations(local_state);
 
+  // Now that the display prefs have been loaded, request to reconfigure the
+  // displays, but signal the display manager to restore the mirror state of
+  // external displays from the loaded prefs (if any).
+  Shell::Get()
+      ->display_manager()
+      ->set_should_restore_mirror_mode_from_display_prefs(true);
+  Shell::Get()->display_configurator()->OnConfigurationChanged();
+
   // Ensure that we have a reasonable initial display power state if
   // powerd fails to send us one over D-Bus. Otherwise, we won't restore
   // displays correctly after retaking control when changing virtual terminals.

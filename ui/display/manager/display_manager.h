@@ -337,6 +337,10 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
     external_display_mirror_info_ = external_display_mirror_info;
   }
 
+  void set_should_restore_mirror_mode_from_display_prefs(bool value) {
+    should_restore_mirror_mode_from_display_prefs_ = value;
+  }
+
   const base::Optional<MixedMirrorModeParams>& mixed_mirror_mode_params()
       const {
     return mixed_mirror_mode_params_;
@@ -643,6 +647,11 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
 
   // Stores external displays that were in mirror mode before.
   std::set<int64_t> external_display_mirror_info_;
+
+  // This is set to true when the display prefs have been loaded from local
+  // state to signal that we should restore the mirror mode state from
+  // |external_display_mirror_info_| in the upcoming display re-configuration.
+  bool should_restore_mirror_mode_from_display_prefs_ = false;
 
   // True if mirror mode should not be restored. Only used in test.
   bool disable_restoring_mirror_mode_for_test_ = false;
