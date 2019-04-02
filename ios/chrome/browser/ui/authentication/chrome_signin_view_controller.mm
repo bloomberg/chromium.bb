@@ -74,6 +74,11 @@ const int64_t kMinimunPendingStateDurationMs = 300;
 // Internal padding between the title and image in the "More" button.
 const CGFloat kMoreButtonPadding = 5.0f;
 
+// The maximum size for th unified consent embedded view on regular width and
+// regular height layout.
+const CGFloat kUCEmbeddedViewMaxWidthForRegularLayout = 600;
+const CGFloat kUCEmbeddedViewMaxHeightForRegularLayout = 600;
+
 struct AuthenticationViewConstants {
   CGFloat PrimaryFontSize;
   CGFloat SecondaryFontSize;
@@ -99,9 +104,9 @@ const AuthenticationViewConstants kRegularConstants = {
     1.5 * kCompactConstants.SecondaryFontSize,
     kCompactConstants.GradientHeight,
     1.5 * kCompactConstants.ButtonHeight,
-    32,
-    32,
-    32,
+    32,  // ButtonHorizontalPadding
+    32,  // ButtonTopPadding
+    32,  // ButtonBottomPadding
 };
 
 enum AuthenticationState {
@@ -395,22 +400,43 @@ enum AuthenticationState {
 }
 
 - (void)updateLayout {
-  AuthenticationViewConstants constants;
-  if ([self.traitCollection horizontalSizeClass] ==
-      UIUserInterfaceSizeClassRegular) {
-    constants = kRegularConstants;
-  } else {
-    constants = kCompactConstants;
-  }
+  BOOL isRegularSizeClass = IsRegularXRegularSizeClass(self.traitCollection);
+  AuthenticationViewConstants constants =
+      isRegularSizeClass ? kRegularConstants : kCompactConstants;
 
   [self layoutButtons:constants];
 
+  // Layout |_embeddedView|.
   CGSize viewSize = self.view.bounds.size;
-  CGFloat collectionViewHeight =
-      _primaryButton.frame.origin.y - constants.ButtonTopPadding;
-  CGRect collectionViewFrame =
-      CGRectMake(0, 0, viewSize.width, collectionViewHeight);
-  [_embeddedView setFrame:collectionViewFrame];
+  CGPoint contentViewOrigin = CGPointZero;
+  CGSize collectionViewSize =
+      CGSizeMake(viewSize.width,
+                 _primaryButton.frame.origin.y - constants.ButtonTopPadding);
+  if (_unifiedConsentEnabled) {
+    if (isRegularSizeClass &&
+        !UIContentSizeCategoryIsAccessibilityCategory(
+            self.traitCollection.preferredContentSizeCategory)) {
+      // Constraint the size to (|kUCEmbeddedViewMaxWidthForRegularLayout| x
+      // |kUCEmbeddedViewMaxHeightForRegularLayout|) on regular layout. This is
+      // required to avoid having a lot of empty space between |_embeddedView|
+      // and the buttons.
+      if (collectionViewSize.width > kUCEmbeddedViewMaxWidthForRegularLayout) {
+        contentViewOrigin.x = floorf((collectionViewSize.width -
+                                      kUCEmbeddedViewMaxWidthForRegularLayout) /
+                                     2);
+        collectionViewSize.width = kUCEmbeddedViewMaxWidthForRegularLayout;
+      }
+      if (collectionViewSize.height >
+          kUCEmbeddedViewMaxHeightForRegularLayout) {
+        contentViewOrigin.y =
+            floorf((collectionViewSize.height -
+                    kUCEmbeddedViewMaxHeightForRegularLayout) /
+                   2);
+        collectionViewSize.height = kUCEmbeddedViewMaxHeightForRegularLayout;
+      }
+    }
+  }
+  [_embeddedView setFrame:CGRect{contentViewOrigin, collectionViewSize}];
 
   // Layout the gradient view right above the buttons.
   CGFloat gradientOriginY = _primaryButton.frame.origin.y -
