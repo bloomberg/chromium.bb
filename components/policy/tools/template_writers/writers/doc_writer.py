@@ -226,10 +226,9 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     example_value = policy['example_value']
     self.AddElement(parent, 'dt', {}, 'Android/Linux:')
     element = self._AddStyledElement(parent, 'dd', ['.monospace', '.pre-wrap'])
-    text = []
-    for item in example_value:
-      text.append('"%s"' % item)
-    self.AddText(element, '[%s]' % ', '.join(text))
+    self.AddText(
+        element,
+        '[\n%s\n]' % ',\n'.join('  "%s"' % item for item in example_value))
 
   def _AddListExample(self, parent, policy):
     '''Adds the example value of a 'list' policy to a DOM node. Example output:
@@ -245,7 +244,12 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
         Software\Policies\ChromiumOS\DisabledPlugins\1 = "Shockwave Flash"
       </dd>
       <dt>Android/Linux:</dt>
-      <dd>["Java", "Shockwave Flash"]</dd>
+      <dd>
+        [
+          "Java",
+          "Shockwave Flash"
+        ]
+      </dd>
       <dt>Mac:</dt>
       <dd>
         <array>
@@ -328,7 +332,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     self.AddElement(parent, 'dt', {}, os_header)
     element = self._AddStyledElement(parent, 'dd', ['.monospace', '.pre-wrap'])
     key_name = self._GetRegistryKeyName(policy, is_win)
-    example = json.dumps(policy['example_value'])
+    example = json.dumps(policy['example_value'], indent=2, sort_keys=True)
     self.AddText(element, '%s\\%s = %s' % (key_name, policy['name'], example))
 
   def _AddDictionaryExampleAndroidLinux(self, parent, policy):
@@ -342,7 +346,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     '''
     self.AddElement(parent, 'dt', {}, 'Android/Linux:')
     element = self._AddStyledElement(parent, 'dd', ['.monospace', '.pre-wrap'])
-    example = json.dumps(policy['example_value'])
+    example = json.dumps(policy['example_value'], indent=2, sort_keys=True)
     self.AddText(element, '%s: %s' % (policy['name'], example))
 
   def _AddDictionaryExample(self, parent, policy):
@@ -352,16 +356,21 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     <dl>
       <dt>Windows (Windows clients):</dt>
       <dd>
-        Software\Policies\Chromium\ProxySettings = "{ 'ProxyMode': 'direct' }"
+        Software\Policies\Chromium\ProxySettings = {
+          "ProxyMode": "direct"
+        }
       </dd>
       <dt>Windows (Chromium OS clients):</dt>
       <dd>
-        Software\Policies\ChromiumOS\ProxySettings = "{ 'ProxyMode': 'direct' }"
+        Software\Policies\ChromiumOS\ProxySettings = {
+          "ProxyMode": "direct"
+        }
       </dd>
       <dt>Android/Linux:</dt>
-      <dd>"ProxySettings": {
-        "ProxyMode": "direct"
-      }
+      <dd>
+        ProxySettings: {
+          "ProxyMode": "direct"
+        }
       </dd>
       <dt>Mac:</dt>
       <dd>
