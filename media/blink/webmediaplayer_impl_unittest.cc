@@ -861,6 +861,8 @@ TEST_F(WebMediaPlayerImplTest, LazyLoadPreloadMetadataSuspend) {
   const int64_t data_source_size = GetDataSourceMemoryUsage();
   EXPECT_GT(data_source_size, 0);
   EXPECT_EQ(reported_memory_ - data_source_size, 0);
+
+  EXPECT_CALL(*surface_layer_bridge_ptr_, ClearObserver());
 }
 
 // Verify that preload=metadata suspend video w/ poster uses zero video memory.
@@ -892,6 +894,8 @@ TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspendNoVideoMemoryUsage) {
   const int64_t data_source_size = GetDataSourceMemoryUsage();
   EXPECT_GT(data_source_size, 0);
   EXPECT_EQ(reported_memory_ - data_source_size, 0);
+
+  EXPECT_CALL(*surface_layer_bridge_ptr_, ClearObserver());
 }
 
 // Verify that preload=metadata suspend is aborted if we know the element will
@@ -1323,6 +1327,24 @@ TEST_F(WebMediaPlayerImplTest, Encrypted) {
 TEST_F(WebMediaPlayerImplTest, Waiting_NoDecryptionKey) {
   InitializeWebMediaPlayerImpl();
 
+  scoped_refptr<cc::Layer> layer = cc::Layer::Create();
+  EXPECT_CALL(*surface_layer_bridge_ptr_, GetCcLayer())
+      .WillRepeatedly(Return(layer.get()));
+
+  if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
+    EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
+    EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
+    EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
+        .WillOnce(ReturnRef(surface_id_));
+    EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
+        .WillOnce(Return(base::TimeTicks()));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _));
+    EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(true)).Times(1);
+    EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false)).Times(1);
+  } else {
+    EXPECT_CALL(client_, SetCcLayer(NotNull()));
+  }
+
   // Use non-encrypted file here since we don't have a CDM. Otherwise pipeline
   // initialization will stall waiting for a CDM to be set.
   LoadAndWaitForMetadata(kVideoOnlyTestFile);
@@ -1331,6 +1353,8 @@ TEST_F(WebMediaPlayerImplTest, Waiting_NoDecryptionKey) {
   EXPECT_CALL(encrypted_client_, DidResumePlaybackBlockedForKey());
 
   OnWaiting(WaitingReason::kNoDecryptionKey);
+
+  EXPECT_CALL(*surface_layer_bridge_ptr_, ClearObserver());
 }
 
 TEST_F(WebMediaPlayerImplTest, VideoConfigChange) {
@@ -1385,6 +1409,8 @@ TEST_F(WebMediaPlayerImplTest, VideoConfigChange) {
   OnVideoConfigChange(new_color_config);
   ASSERT_EQ(last_reporter, GetVideoStatsReporter());
   ASSERT_EQ(VP8PROFILE_MIN, GetVideoStatsReporterCodecProfile());
+
+  EXPECT_CALL(*surface_layer_bridge_ptr_, ClearObserver());
 }
 
 TEST_F(WebMediaPlayerImplTest, NaturalSizeChange) {
@@ -1425,6 +1451,8 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange) {
   ASSERT_NE(orig_stats_reporter, GetVideoStatsReporter());
   ASSERT_TRUE(GetVideoStatsReporter()->MatchesBucketedNaturalSize(
       gfx::Size(1920, 1080)));
+
+  EXPECT_CALL(*surface_layer_bridge_ptr_, ClearObserver());
 }
 
 TEST_F(WebMediaPlayerImplTest, NaturalSizeChange_Rotated) {
@@ -1466,6 +1494,8 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange_Rotated) {
   ASSERT_NE(orig_stats_reporter, GetVideoStatsReporter());
   ASSERT_TRUE(GetVideoStatsReporter()->MatchesBucketedNaturalSize(
       gfx::Size(1080, 1920)));
+
+  EXPECT_CALL(*surface_layer_bridge_ptr_, ClearObserver());
 }
 
 TEST_F(WebMediaPlayerImplTest, VideoLockedWhenPausedWhenHidden) {
@@ -1522,6 +1552,8 @@ TEST_F(WebMediaPlayerImplTest, VideoLockedWhenPausedWhenHidden) {
   // Foregrounding the player unsets the lock.
   ForegroundPlayer();
   EXPECT_FALSE(IsVideoLockedWhenPausedWhenHidden());
+
+  EXPECT_CALL(*surface_layer_bridge_ptr_, ClearObserver());
 }
 
 TEST_F(WebMediaPlayerImplTest, BackgroundIdlePauseTimerDependsOnAudio) {
@@ -1581,6 +1613,8 @@ TEST_F(WebMediaPlayerImplTest, InfiniteDuration) {
   wmpi_->Pause();
   EXPECT_EQ(0, wmpi_->CurrentTime());
   EXPECT_EQ(base::TimeDelta(), GetCurrentTimeInternal());
+
+  EXPECT_CALL(*surface_layer_bridge_ptr_, ClearObserver());
 }
 
 TEST_F(WebMediaPlayerImplTest, SetContentsLayerGetsWebLayerFromBridge) {
