@@ -48,28 +48,6 @@ int GetAccessFlags(PageAccessibilityConfiguration accessibility) {
   }
 }
 
-#if defined(OS_LINUX) && defined(ARCH_CPU_64_BITS)
-
-// Multiple guarded memory regions may exceed the process address space limit.
-// This function will raise or lower the limit by |amount|.
-bool AdjustAddressSpaceLimit(int64_t amount) {
-  struct rlimit old_rlimit;
-  if (getrlimit(RLIMIT_AS, &old_rlimit))
-    return false;
-  const rlim_t new_limit =
-      CheckAdd(old_rlimit.rlim_cur, amount).ValueOrDefault(old_rlimit.rlim_max);
-  const struct rlimit new_rlimit = {std::min(new_limit, old_rlimit.rlim_max),
-                                    old_rlimit.rlim_max};
-  // setrlimit will fail if limit > old_rlimit.rlim_max.
-  return setrlimit(RLIMIT_AS, &new_rlimit) == 0;
-}
-
-// Current WASM guarded memory regions have 8 GiB of address space. There are
-// schemes that reduce that to 4 GiB.
-constexpr size_t kMinimumGuardedMemorySize = 1ULL << 32;  // 4 GiB
-
-#endif  // defined(OS_LINUX) && defined(ARCH_CPU_64_BITS)
-
 void* SystemAllocPagesInternal(void* hint,
                                size_t length,
                                PageAccessibilityConfiguration accessibility,
@@ -143,13 +121,6 @@ void SetSystemPagesAccessInternal(
 
 void FreePagesInternal(void* address, size_t length) {
   CHECK(!munmap(address, length));
-
-#if defined(OS_LINUX) && defined(ARCH_CPU_64_BITS)
-  // Restore the address space limit.
-  if (length >= kMinimumGuardedMemorySize) {
-    CHECK(AdjustAddressSpaceLimit(-base::checked_cast<int64_t>(length)));
-  }
-#endif
 }
 
 void DecommitSystemPagesInternal(void* address, size_t length) {
