@@ -362,3 +362,14 @@ function doubleTapAt(xPosition, yPosition) {
 function approx_equals(actual, expected, epsilon) {
   return actual >= expected - epsilon && actual <= expected + epsilon;
 }
+
+// Returns the given element's client rect center in an object with |x| and |y|
+// properties. Client rect being relative to the layout viewport. i.e. this will
+// not do what you thing if the page is pinch-zoomed.
+function elementCenter(element) {
+  const rect = element.getBoundingClientRect();
+  return {
+    x: rect.x + rect.width / 2,
+    y: rect.y + rect.height / 2
+  };
+}
