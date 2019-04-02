@@ -22,8 +22,7 @@ namespace extensions {
 namespace {
 
 using RenderFrameMap =
-    base::flat_map<content::RenderFrame*,
-                   std::unique_ptr<MimeHandlerViewContainerManager>>;
+    base::flat_map<int32_t, std::unique_ptr<MimeHandlerViewContainerManager>>;
 
 RenderFrameMap* GetRenderFrameMap() {
   static base::NoDestructor<RenderFrameMap> instance;
@@ -48,13 +47,14 @@ void MimeHandlerViewContainerManager::BindRequest(
 MimeHandlerViewContainerManager* MimeHandlerViewContainerManager::Get(
     content::RenderFrame* render_frame,
     bool create_if_does_not_exits) {
+  int32_t routing_id = render_frame->GetRoutingID();
   auto& map = *GetRenderFrameMap();
-  if (base::ContainsKey(map, render_frame))
-    return map[render_frame].get();
+  if (base::ContainsKey(map, routing_id))
+    return map[routing_id].get();
   if (create_if_does_not_exits) {
-    map[render_frame] =
+    map[routing_id] =
         std::make_unique<MimeHandlerViewContainerManager>(render_frame);
-    return map[render_frame].get();
+    return map[routing_id].get();
   }
   return nullptr;
 }
@@ -68,7 +68,7 @@ MimeHandlerViewContainerManager::~MimeHandlerViewContainerManager() {}
 void MimeHandlerViewContainerManager::OnDestruct() {
   bindings_.CloseAllBindings();
   // This will delete the class.
-  GetRenderFrameMap()->erase(render_frame());
+  GetRenderFrameMap()->erase(routing_id());
 }
 
 void MimeHandlerViewContainerManager::CreateFrameContainer(
