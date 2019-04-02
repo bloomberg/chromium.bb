@@ -8006,6 +8006,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_TURNED_OFF" desc="Description text for the state of camera or microphone">
           Turned off
         </message>
+        <message name="IDS_CAMERA_TURNED_OFF" desc="Description text in the omnibox icon showing when camera permission is turned off.">
+          Camera turned off
+        </message>
+        <message name="IDS_MIC_TURNED_OFF" desc="Decription text in the omnibox icon showing when microphone permission is turned off.">
+          Microphone turned off
+        </message>
       </if>
 
       <!-- Protected media identifier permission infobar -->
