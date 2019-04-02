@@ -12217,6 +12217,7 @@ Called by update_net_error_codes.py.-->
   <int value="92" label="Incognito Window Counter"/>
   <int value="93" label="Crostini App Uninstaller"/>
   <int value="94" label="Crostini Container Upgrade"/>
+  <int value="95" label="Incognito Menu"/>
 </enum>
 
 <enum name="DialogOriginRelationship">

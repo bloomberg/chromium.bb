@@ -41,30 +41,6 @@ class ProfileChooserView : public ProfileMenuViewBase,
                            public views::ButtonListener,
                            public identity::IdentityManager::Observer {
  public:
-  // Shows the bubble if one is not already showing.  This allows us to easily
-  // make a button toggle the bubble on and off when clicked: we unconditionally
-  // call this function when the button is clicked and if the bubble isn't
-  // showing it will appear while if it is showing, nothing will happen here and
-  // the existing bubble will auto-close due to focus loss.
-  // There are 2 ways to position the Bubble, if |anchor_button| is set, then
-  // |parent_window| and |anchor_rect| are ignored. Otherwise, |parent_window|
-  // and |anchor_rect| have to be set.
-  static void ShowBubble(
-      profiles::BubbleViewMode view_mode,
-      const signin::ManageAccountsParams& manage_accounts_params,
-      signin_metrics::AccessPoint access_point,
-      views::Button* anchor_button,
-      gfx::NativeView parent_window,
-      const gfx::Rect& anchor_rect,
-      Browser* browser,
-      bool is_source_keyboard);
-
- private:
-  friend class ProfileChooserViewExtensionsTest;
-
-  typedef std::vector<size_t> Indexes;
-  typedef std::map<views::Button*, int> ButtonIndexes;
-
   ProfileChooserView(views::Button* anchor_button,
                      const gfx::Rect& anchor_rect,
                      gfx::NativeView parent_window,
@@ -73,6 +49,15 @@ class ProfileChooserView : public ProfileMenuViewBase,
                      signin::GAIAServiceType service_type,
                      signin_metrics::AccessPoint access_point);
   ~ProfileChooserView() override;
+
+ private:
+  friend class ProfileChooserViewExtensionsTest;
+
+  typedef std::vector<size_t> Indexes;
+  typedef std::map<views::Button*, int> ButtonIndexes;
+
+  // ProfileMenuViewBase:
+  void FocusButtonOnKeyboardOpen() override;
 
   // views::BubbleDialogDelegateView:
   void Init() override;
@@ -95,7 +80,7 @@ class ProfileChooserView : public ProfileMenuViewBase,
   // Tests set this to "false" for more consistent operation.
   static bool close_on_deactivate_for_testing_;
 
-  void ResetView();
+  void Reset();
 
   // Shows the bubble with the |view_to_display|.
   void ShowView(profiles::BubbleViewMode view_to_display,
@@ -103,14 +88,8 @@ class ProfileChooserView : public ProfileMenuViewBase,
   // Shows the bubble view or opens a tab based on given |mode|.
   void ShowViewOrOpenTab(profiles::BubbleViewMode mode);
 
-  // Focuses the first profile button in the menu list.
-  void FocusFirstProfileButton();
-
   // Adds the profile chooser view.
   void AddProfileChooserView(AvatarMenu* avatar_menu);
-
-  // Adds the incognito window count view.
-  void AddIncognitoWindowCountView();
 
   // Adds the main profile card for the profile |avatar_item|. |is_guest| is
   // used to determine whether to show any Sign in/Sign out/Manage accounts

@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
@@ -57,10 +56,6 @@ namespace {
 
 // Helpers --------------------------------------------------------------------
 
-constexpr int kFixedMenuWidthPreDice = 240;
-constexpr int kFixedMenuWidthDice = 288;
-constexpr int kIconSize = 16;
-
 // Spacing between the edge of the user menu and the top/bottom or left/right of
 // the menu items.
 constexpr int kMenuEdgeMargin = 16;
@@ -87,46 +82,12 @@ BadgedProfilePhoto::BadgeType GetProfileBadgeType(Profile* profile) {
   return BadgedProfilePhoto::BADGE_TYPE_NONE;
 }
 
-gfx::ImageSkia CreateVectorIcon(const gfx::VectorIcon& icon) {
-  return gfx::CreateVectorIcon(
-      icon, kIconSize,
-      ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled()
-          ? gfx::kGoogleGrey500
-          : gfx::kChromeIconGrey);
-}
-
 }  // namespace
 
 // ProfileChooserView ---------------------------------------------------------
 
 // static
 bool ProfileChooserView::close_on_deactivate_for_testing_ = true;
-
-// static
-void ProfileChooserView::ShowBubble(
-    profiles::BubbleViewMode view_mode,
-    const signin::ManageAccountsParams& manage_accounts_params,
-    signin_metrics::AccessPoint access_point,
-    views::Button* anchor_button,
-    gfx::NativeView parent_window,
-    const gfx::Rect& anchor_rect,
-    Browser* browser,
-    bool is_source_keyboard) {
-  if (IsShowing())
-    return;
-
-  DCHECK_EQ(browser->profile()->IsIncognito(),
-            view_mode == profiles::BUBBLE_VIEW_MODE_INCOGNITO);
-
-  ProfileChooserView* bubble = new ProfileChooserView(
-      anchor_button, anchor_rect, parent_window, browser, view_mode,
-      manage_accounts_params.service_type, access_point);
-  views::BubbleDialogDelegateView::CreateBubble(bubble)->Show();
-  base::RecordAction(base::UserMetricsAction("ProfileChooser_Show"));
-
-  if (is_source_keyboard)
-    bubble->FocusFirstProfileButton();
-}
 
 ProfileChooserView::ProfileChooserView(views::Button* anchor_button,
                                        const gfx::Rect& anchor_rect,
@@ -142,13 +103,13 @@ ProfileChooserView::ProfileChooserView(views::Button* anchor_button,
       dice_enabled_(AccountConsistencyModeManager::IsDiceEnabledForProfile(
           browser->profile())) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::PROFILE_CHOOSER);
-  set_menu_width(dice_enabled_ ? kFixedMenuWidthDice : kFixedMenuWidthPreDice);
-  ResetView();
+  base::RecordAction(base::UserMetricsAction("ProfileChooser_Show"));
 }
 
 ProfileChooserView::~ProfileChooserView() = default;
 
-void ProfileChooserView::ResetView() {
+void ProfileChooserView::Reset() {
+  ProfileMenuViewBase::Reset();
   open_other_profile_indexes_map_.clear();
   sync_error_button_ = nullptr;
   signin_current_profile_button_ = nullptr;
@@ -167,6 +128,7 @@ void ProfileChooserView::ResetView() {
 }
 
 void ProfileChooserView::Init() {
+  Reset();
   set_close_on_deactivate(close_on_deactivate_for_testing_);
 
   avatar_menu_.reset(new AvatarMenu(
@@ -210,15 +172,6 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
     return;
   }
 
-  if (browser()->profile()->IsOffTheRecord() &&
-      !browser()->profile()->IsGuestSession() &&
-      view_to_display != profiles::BUBBLE_VIEW_MODE_INCOGNITO) {
-    LOG(WARNING) << "Expected incognito menu in incognito mode.";
-    return;
-  }
-
-  ResetView();
-  ResetMenu();
   view_mode_ = view_to_display;
   switch (view_mode_) {
     case profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN:
@@ -228,11 +181,12 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
       // See |SigninViewController::ShouldShowSigninForMode|.
       NOTREACHED();
       break;
+    case profiles::BUBBLE_VIEW_MODE_INCOGNITO:
+      // Covered in IncognitoView.
+      NOTREACHED();
+      break;
     case profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER:
       AddProfileChooserView(avatar_menu);
-      break;
-    case profiles::BUBBLE_VIEW_MODE_INCOGNITO:
-      AddIncognitoWindowCountView();
       break;
   }
   RepopulateViewFromMenuItems();
@@ -251,7 +205,7 @@ void ProfileChooserView::ShowViewOrOpenTab(profiles::BubbleViewMode mode) {
   }
 }
 
-void ProfileChooserView::FocusFirstProfileButton() {
+void ProfileChooserView::FocusButtonOnKeyboardOpen() {
   if (first_profile_button_)
     first_profile_button_->RequestFocus();
 }
@@ -267,23 +221,13 @@ void ProfileChooserView::OnWidgetClosing(views::Widget* /*widget*/) {
 }
 
 views::View* ProfileChooserView::GetInitiallyFocusedView() {
-#if defined(OS_MACOSX)
-  // On Mac, buttons are not focusable when full keyboard access is turned off,
-  // causing views::Widget to fall back to focusing the first focusable View.
-  // This behavior is not desired in the |ProfileChooserView| because of its
-  // menu-like design using |HoverButtons|. Avoid this by returning null when
-  // full keyboard access is off.
-  if (!GetFocusManager() || !GetFocusManager()->keyboard_accessible())
-    return nullptr;
-#endif
-  return signin_current_profile_button_;
+  return ShouldProvideInitiallyFocusedView() ? signin_current_profile_button_
+                                             : nullptr;
 }
 
 base::string16 ProfileChooserView::GetAccessibleWindowTitle() const {
   return l10n_util::GetStringUTF16(
-      view_mode_ == profiles::BUBBLE_VIEW_MODE_INCOGNITO
-          ? IDS_INCOGNITO_BUBBLE_ACCESSIBLE_TITLE
-          : IDS_PROFILES_PROFILE_BUBBLE_ACCESSIBLE_TITLE);
+      IDS_PROFILES_PROFILE_BUBBLE_ACCESSIBLE_TITLE);
 }
 
 void ProfileChooserView::ButtonPressed(views::Button* sender,
@@ -311,14 +255,6 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     // If this is a guest session, close all the guest browser windows.
     if (browser()->profile()->IsGuestSession()) {
       profiles::CloseGuestProfileWindows();
-    } else if (browser()->profile()->GetProfileType() ==
-               Profile::INCOGNITO_PROFILE) {
-      // Skipping before-unload trigger to give incognito mode users a chance to
-      // close all incognito windows without needing to confirm closing the open
-      // forms.
-      BrowserList::CloseAllBrowsersWithIncognitoProfile(
-          browser()->profile(), base::DoNothing(), base::DoNothing(),
-          true /* skip_beforeunload */);
     } else {
       base::RecordAction(
           base::UserMetricsAction("ProfileChooser_ManageClicked"));
@@ -414,43 +350,6 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   }
 }
 
-void ProfileChooserView::AddIncognitoWindowCountView() {
-  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  int incognito_window_count =
-      BrowserList::GetIncognitoSessionsActiveForProfile(browser()->profile());
-  auto incognito_icon = std::make_unique<views::ImageView>();
-  // The icon color is set to match the menu text, which guarantees sufficient
-  // contrast and a consistent visual appearance.
-  const SkColor icon_color = provider->GetTypographyProvider().GetColor(
-      *this, views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY);
-  incognito_icon->SetImage(
-      gfx::CreateVectorIcon(kIncognitoProfileIcon, icon_color));
-
-  // TODO(https://crbug.com/915120): This Button is never clickable. Replace
-  // by an alternative list item.
-  std::unique_ptr<HoverButton> profile_card = std::make_unique<HoverButton>(
-      nullptr, std::move(incognito_icon),
-      l10n_util::GetStringUTF16(IDS_INCOGNITO_PROFILE_MENU_TITLE),
-      incognito_window_count > 1
-          ? l10n_util::GetPluralStringFUTF16(IDS_INCOGNITO_WINDOW_COUNT_MESSAGE,
-                                             incognito_window_count)
-          : base::string16());
-  profile_card->SetEnabled(false);
-
-  ProfileMenuViewBase::MenuItems menu_items;
-  menu_items.push_back(std::move(profile_card));
-  AddMenuItems(menu_items, true);
-
-  std::unique_ptr<HoverButton> close_button = std::make_unique<HoverButton>(
-      this, gfx::CreateVectorIcon(kCloseAllIcon, 16, gfx::kChromeIconGrey),
-      l10n_util::GetStringUTF16(IDS_INCOGNITO_PROFILE_MENU_CLOSE_BUTTON));
-  users_button_ = close_button.get();
-
-  menu_items.clear();
-  menu_items.push_back(std::move(close_button));
-  AddMenuItems(menu_items, true);
-}
-
 void ProfileChooserView::AddProfileChooserView(AvatarMenu* avatar_menu) {
   // Separate items into active and alternatives.
   const AvatarMenu::Item* active_item = nullptr;
@@ -516,8 +415,8 @@ bool ProfileChooserView::AddSyncErrorViewIfNeeded(
 
   // Adds the sync problem icon.
   views::ImageView* sync_problem_icon = new views::ImageView();
-  sync_problem_icon->SetImage(
-      gfx::CreateVectorIcon(kSyncProblemIcon, kIconSize, gfx::kGoogleRed700));
+  sync_problem_icon->SetImage(gfx::CreateVectorIcon(
+      kSyncProblemIcon, GetDefaultIconSize(), gfx::kGoogleRed700));
   view->AddChildView(sync_problem_icon);
 
   // Adds a vertical view to organize the error title, message, and button.
@@ -859,7 +758,8 @@ void ProfileChooserView::AddOptionsView(bool display_lock,
     const AvatarMenu::Item& item = avatar_menu->GetItemAt(i);
     if (!item.active) {
       gfx::Image image = profiles::GetSizedAvatarIcon(
-          item.icon, true, kIconSize, kIconSize, profiles::SHAPE_CIRCLE);
+          item.icon, true, GetDefaultIconSize(), GetDefaultIconSize(),
+          profiles::SHAPE_CIRCLE);
       std::unique_ptr<HoverButton> button = std::make_unique<HoverButton>(
           this, *image.ToImageSkia(),
           profiles::GetProfileSwitcherTextForItem(item));
@@ -899,7 +799,7 @@ void ProfileChooserView::AddOptionsView(bool display_lock,
   if (display_lock) {
     std::unique_ptr<HoverButton> button = std::make_unique<HoverButton>(
         this,
-        gfx::CreateVectorIcon(vector_icons::kLockIcon, kIconSize,
+        gfx::CreateVectorIcon(vector_icons::kLockIcon, GetDefaultIconSize(),
                               gfx::kChromeIconGrey),
         l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_SIGNOUT_BUTTON));
     lock_button_ = button.get();

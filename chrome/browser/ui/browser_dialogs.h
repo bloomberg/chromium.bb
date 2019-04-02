@@ -263,7 +263,7 @@ enum class DialogIdentifier {
   CROSTINI_UPGRADE = 89,
   HATS_BUBBLE = 90,
   CROSTINI_APP_RESTART = 91,
-  INCOGNITO_WINDOW_COUNTER = 92,
+  INCOGNITO_WINDOW_COUNT = 92,
   CROSTINI_APP_UNINSTALLER = 93,
   CROSTINI_CONTAINER_UPGRADE = 94,
   // Add values above this line with a corresponding label in
