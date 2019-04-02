@@ -997,6 +997,9 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // Support method for ITextRangeProvider::GetAttributeValue
   HRESULT GetTextAttributeValue(TEXTATTRIBUTEID attribute_id, VARIANT* result);
 
+  // IRawElementProviderSimple support method.
+  bool IsPatternProviderSupported(PATTERNID pattern_id);
+
  protected:
   // This is hard-coded; all products based on the Chromium engine will have the
   // same framework name, so that assistive technology can detect any
@@ -1194,6 +1197,14 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   // Helper method for getting the vertical scroll percent.
   double GetVerticalScrollPercent();
+
+  // IRawElementProviderSimple support methods.
+
+  using PatternProviderFactoryMethod = HRESULT (*)(AXPlatformNodeWin*,
+                                                   IUnknown**);
+
+  PatternProviderFactoryMethod GetPatternProviderFactoryMethod(
+      PATTERNID pattern_id);
 };
 
 }  // namespace ui
