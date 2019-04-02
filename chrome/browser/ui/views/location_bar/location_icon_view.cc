@@ -115,14 +115,15 @@ int LocationIconView::GetMinimumLabelTextWidth() const {
 }
 
 bool LocationIconView::ShouldShowText() const {
-  const auto* location_bar_model = delegate_->GetLocationBarModel();
+  if (delegate_->IsEditingOrEmpty())
+    return false;
 
-  if (!delegate_->IsEditingOrEmpty()) {
-    const GURL& url = location_bar_model->GetURL();
-    if (url.SchemeIs(content::kChromeUIScheme) ||
-        url.SchemeIs(extensions::kExtensionScheme) ||
-        url.SchemeIs(url::kFileScheme))
-      return true;
+  const auto* location_bar_model = delegate_->GetLocationBarModel();
+  const GURL& url = location_bar_model->GetURL();
+  if (url.SchemeIs(content::kChromeUIScheme) ||
+      url.SchemeIs(extensions::kExtensionScheme) ||
+      url.SchemeIs(url::kFileScheme)) {
+    return true;
   }
 
   return !location_bar_model->GetSecureDisplayText().empty();
@@ -133,6 +134,9 @@ const views::InkDrop* LocationIconView::get_ink_drop_for_testing() {
 }
 
 base::string16 LocationIconView::GetText() const {
+  if (delegate_->IsEditingOrEmpty())
+    return base::string16();
+
   if (delegate_->GetLocationBarModel()->GetURL().SchemeIs(
           content::kChromeUIScheme))
     return l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);

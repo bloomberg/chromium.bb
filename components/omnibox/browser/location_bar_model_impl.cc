@@ -180,7 +180,7 @@ LocationBarModelImpl::SecureChipText LocationBarModelImpl::GetSecureChipText()
   if (IsOfflinePage())
     return SecureChipText(l10n_util::GetStringUTF16(IDS_OFFLINE_VERBOSE_STATE));
 
-  switch (GetSecurityLevel(false)) {
+  switch (GetSecurityLevel(true)) {
     case security_state::HTTP_SHOW_WARNING:
       return SecureChipText(
           l10n_util::GetStringUTF16(IDS_NOT_SECURE_VERBOSE_STATE));
