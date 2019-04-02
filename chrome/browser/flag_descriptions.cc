@@ -3205,6 +3205,10 @@ const char kExperimentalAccessibilityChromeVoxRichTextIndicationDescription[] =
     "Enable ChromeVox rich text indication, which automatically notifies the "
     "user of text styling.";
 
+const char kFileManagerFeedbackPanelDescription[] =
+    "Enable new feedback panel in the Files app.";
+const char kFileManagerFeedbackPanelName[] = "Files App. feedback panel";
+
 const char kFileManagerTouchModeName[] = "Files App. touch mode";
 const char kFileManagerTouchModeDescription[] =
     "Touchscreen-specific interactions of the Files app.";

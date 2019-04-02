@@ -2057,6 +2057,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "file-manager-feedback-panel",
+    "owners": [ "adanilo" ],
+    "expiry_milestone": 77
+  },
+  {
     "name": "fill-on-account-select",
     "owners": [ "jdoerrie" ],
     "expiry_milestone": 76

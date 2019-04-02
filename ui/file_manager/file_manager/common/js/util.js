@@ -1332,6 +1332,14 @@ util.timeoutPromise = (promise, ms, opt_message) => {
 };
 
 /**
+ * Examines whether the new feedback panel mode is enabled.
+ * @return {boolean} True if the new feedback panel UI mode is enabled.
+ */
+util.isFeedbackPanelEnabled = () => {
+  return loadTimeData.getBoolean('FEEDBACK_PANEL_ENABLED');
+};
+
+/**
  * Retrieves all entries inside the given |rootEntry|.
  * @param {!DirectoryEntry} rootEntry
  * @param {function(!Array<!Entry>)} entriesCallback Called when some chunk of

@@ -33261,6 +33261,7 @@ from previous Chrome versions.
   <int value="-55592344" label="SyncPseudoUSSDictionary:disabled"/>
   <int value="-52483823" label="disable-new-video-renderer"/>
   <int value="-52241456" label="enable-single-click-autofill"/>
+  <int value="-51567065" label="EnableFeedbackPanel:disabled"/>
   <int value="-50628385"
       label="ContentSuggestionsThumbnailDominantColor:enabled"/>
   <int value="-50021298" label="ash-adjustable-large-cursor"/>
@@ -34547,6 +34548,7 @@ from previous Chrome versions.
   <int value="2005614493" label="tab-management-experiment-type-dill"/>
   <int value="2006413281"
       label="ContextualSuggestionsAlternateCardLayout:enabled"/>
+  <int value="2008599705" label="EnableFeedbackPanel:enabled"/>
   <int value="2009097351" label="memlog-sampling-rate"/>
   <int value="2009362691" label="AllowStartingServiceManagerOnly:enabled"/>
   <int value="2014331873" label="NTPDownloadSuggestions:disabled"/>
