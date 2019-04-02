@@ -199,17 +199,6 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   CHECK(!callback.is_null());
   CHECK(response);
 
-  // TODO(rch): remove this once we figure out why channel ID is not being
-  // sent when it should be.
-  HostPortPair origin = HostPortPair::FromURL(request_info_->url);
-  if (origin.Equals(HostPortPair("accounts.google.com", 443)) &&
-      request_headers.HasHeader(HttpRequestHeaders::kCookie)) {
-    SSLInfo ssl_info;
-    GetSSLInfo(&ssl_info);
-    UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.CookieSentToAccountsOverChannelId",
-                          ssl_info.channel_id_sent);
-  }
-
   // In order to rendezvous with a push stream, the session still needs to be
   // available. Otherwise the stream needs to be available.
   if ((!found_promise_ && !stream_) || !quic_session()->IsConnected())

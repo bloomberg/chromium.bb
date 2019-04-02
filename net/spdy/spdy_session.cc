@@ -53,7 +53,6 @@
 #include "net/spdy/spdy_log_util.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/spdy/spdy_stream.h"
-#include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"
@@ -777,12 +776,6 @@ bool SpdySession::CanPool(TransportSecurityState* transport_security_state,
   if (ssl_info.client_cert_sent &&
       !(ssl_config_service.CanShareConnectionWithClientCerts(old_hostname) &&
         ssl_config_service.CanShareConnectionWithClientCerts(new_hostname))) {
-    return false;
-  }
-
-  if (ssl_info.channel_id_sent &&
-      ChannelIDService::GetDomainForHost(new_hostname) !=
-          ChannelIDService::GetDomainForHost(old_hostname)) {
     return false;
   }
 
