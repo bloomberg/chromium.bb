@@ -70,6 +70,8 @@ class MockDeviceInfoTracker : public DeviceInfoTracker {
 
   void Add(const DeviceInfo* device) { devices_.push_back(device); }
 
+  void ForcePulseForTest() override { NOTREACHED(); }
+
  private:
   // DeviceInfo stored here are not owned.
   std::vector<const DeviceInfo*> devices_;

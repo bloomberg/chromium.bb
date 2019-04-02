@@ -32,6 +32,7 @@ class FakeTracker : public DeviceInfoTracker {
   void AddObserver(Observer* observer) override {}
   void RemoveObserver(Observer* observer) override {}
   int CountActiveDevices() const override { return count_; }
+  void ForcePulseForTest() override {}
 
  private:
   int count_;

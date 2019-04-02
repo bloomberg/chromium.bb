@@ -68,6 +68,7 @@ PrefGroupsMap ComputePrefGroups() {
   pref_groups[PROXY_TABS].Put(SESSIONS);
   pref_groups[PROXY_TABS].Put(FAVICON_IMAGES);
   pref_groups[PROXY_TABS].Put(FAVICON_TRACKING);
+  pref_groups[PROXY_TABS].Put(SEND_TAB_TO_SELF);
 
   return pref_groups;
 }

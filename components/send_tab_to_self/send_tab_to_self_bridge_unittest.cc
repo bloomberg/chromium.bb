@@ -452,6 +452,14 @@ TEST_F(SendTabToSelfBridgeTest, AddInvalidEntries) {
                                         base::Time(), "target_device"));
 }
 
+TEST_F(SendTabToSelfBridgeTest, IsBridgeReady) {
+  InitializeBridge();
+  ASSERT_TRUE(bridge()->IsReady());
+
+  DisableBridge();
+  ASSERT_FALSE(bridge()->IsReady());
+}
+
 TEST_F(SendTabToSelfBridgeTest, AddDuplicateEntries) {
   InitializeBridge();
 

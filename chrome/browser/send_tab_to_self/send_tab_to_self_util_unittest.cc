@@ -53,6 +53,8 @@ class TestDeviceInfoTracker : public syncer::DeviceInfoTracker {
   void RemoveObserver(Observer* observer) override {}
   int CountActiveDevices() const override { return active_devices_; }
 
+  void ForcePulseForTest() override {}
+
  protected:
   int active_devices_;
 };
@@ -162,23 +164,6 @@ TEST_F(SendTabToSelfUtilTest, IsFlagEnabled_False) {
   EXPECT_FALSE(IsFlagEnabled());
 }
 
-TEST_F(SendTabToSelfUtilTest, IsUserSyncTypeEnabled_True) {
-  syncer::ModelTypeSet enabled_modeltype(syncer::SEND_TAB_TO_SELF);
-  test_sync_service_->SetPreferredDataTypes(enabled_modeltype);
-
-  EXPECT_TRUE(IsUserSyncTypeEnabled(profile()));
-
-  test_sync_service_->SetPreferredDataTypes(syncer::ModelTypeSet::All());
-
-  EXPECT_TRUE(IsUserSyncTypeEnabled(profile()));
-}
-
-TEST_F(SendTabToSelfUtilTest, IsUserSyncTypeEnabled_False) {
-  test_sync_service_->SetPreferredDataTypes(syncer::ModelTypeSet());
-
-  EXPECT_FALSE(IsUserSyncTypeEnabled(profile()));
-}
-
 TEST_F(SendTabToSelfUtilTest, IsSyncingOnMultipleDevices_True) {
   mock_device_sync_service_->SetTrackerActiveDevices(2);
 
@@ -207,51 +192,6 @@ TEST_F(SendTabToSelfUtilTest, NativePage) {
 
 TEST_F(SendTabToSelfUtilTest, IncognitoMode) {
   EXPECT_FALSE(IsContentRequirementsMet(url_, incognito_profile_));
-}
-
-TEST_F(SendTabToSelfUtilTest, ShouldOfferFeature_True) {
-  SetUpAllTrueEnv();
-
-  EXPECT_TRUE(
-      ShouldOfferFeature(browser()->profile(),
-                         browser()->tab_strip_model()->GetActiveWebContents()));
-}
-
-TEST_F(SendTabToSelfUtilTest, ShouldOfferFeature_IsFlagEnabled_False) {
-  SetUpFeatureDisabledEnv();
-  EXPECT_FALSE(
-      ShouldOfferFeature(browser()->profile(),
-                         browser()->tab_strip_model()->GetActiveWebContents()));
-}
-
-TEST_F(SendTabToSelfUtilTest, ShouldOfferFeature_IsUserSyncTypeEnabled_False) {
-  SetUpAllTrueEnv();
-  test_sync_service_->SetPreferredDataTypes(syncer::ModelTypeSet());
-
-  EXPECT_FALSE(
-      ShouldOfferFeature(browser()->profile(),
-                         browser()->tab_strip_model()->GetActiveWebContents()));
-}
-
-TEST_F(SendTabToSelfUtilTest,
-       ShouldOfferFeature_IsSyncingOnMultipleDevices_False) {
-  SetUpAllTrueEnv();
-  mock_device_sync_service_->SetTrackerActiveDevices(0);
-
-  EXPECT_FALSE(
-      ShouldOfferFeature(browser()->profile(),
-                         browser()->tab_strip_model()->GetActiveWebContents()));
-}
-
-TEST_F(SendTabToSelfUtilTest,
-       ShouldOfferFeature_IsContentRequirementsMet_False) {
-  SetUpAllTrueEnv();
-  url_ = GURL("192.168.0.0");
-  NavigateAndCommitActiveTabWithTitle(browser(), url_, title_);
-
-  EXPECT_FALSE(
-      ShouldOfferFeature(browser()->profile(),
-                         browser()->tab_strip_model()->GetActiveWebContents()));
 }
 
 }  // namespace
