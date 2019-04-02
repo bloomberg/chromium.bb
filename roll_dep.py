@@ -92,7 +92,7 @@ def generate_commit_message(
   lines = logs.splitlines()
   cleaned_lines = [
       l for l in lines
-      if not l.endswith('recipe-roller Roll recipe dependencies (trivial).')
+      if not l.endswith('Roll recipe dependencies (trivial).')
   ]
   logs = '\n'.join(cleaned_lines) + '\n'
 
