@@ -27,7 +27,7 @@ class AccessibilityTreeFormatterUia : public AccessibilityTreeFormatter {
   void AddDefaultFilters(
       std::vector<PropertyFilter>* property_filters) override;
 
-  void SetUpCommandLineForTestPass(base::CommandLine* command_line) override;
+  static void SetUpCommandLineForTestPass(base::CommandLine* command_line);
 
   const base::FilePath::StringType GetExpectedFileSuffix() override;
 

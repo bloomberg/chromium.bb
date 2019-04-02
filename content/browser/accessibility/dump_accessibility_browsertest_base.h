@@ -26,7 +26,8 @@ namespace content {
 // testing accessibility in Chromium.
 //
 // See content/test/data/accessibility/readme.md for an overview.
-class DumpAccessibilityTestBase : public ContentBrowserTest {
+class DumpAccessibilityTestBase : public ContentBrowserTest,
+                                  public ::testing::WithParamInterface<size_t> {
  public:
   DumpAccessibilityTestBase();
   ~DumpAccessibilityTestBase() override;

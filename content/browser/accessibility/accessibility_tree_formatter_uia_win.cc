@@ -242,10 +242,11 @@ void AccessibilityTreeFormatterUia::AddDefaultFilters(
   AddPropertyFilter(property_filters, "IsDataValidForForm=true");
   AddPropertyFilter(property_filters, "IsRequiredForForm=true");
 }
+
+// static
 void AccessibilityTreeFormatterUia::SetUpCommandLineForTestPass(
     base::CommandLine* command_line) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      ::switches::kEnableExperimentalUIAutomation);
+  command_line->AppendSwitch(::switches::kEnableExperimentalUIAutomation);
 }
 
 std::unique_ptr<base::DictionaryValue>

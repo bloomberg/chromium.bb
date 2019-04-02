@@ -50,7 +50,11 @@ class AccessibilityEventRecorder {
       BrowserAccessibilityManager* manager,
       base::ProcessId pid,
       const base::StringPiece& application_name_match_pattern);
-  static std::vector<EventRecorderFactory> GetTestPasses();
+  struct TestPass {
+    const char* name;
+    EventRecorderFactory create_recorder;
+  };
+  static std::vector<TestPass> GetTestPasses();
 
   AccessibilityEventRecorder(BrowserAccessibilityManager* manager);
   virtual ~AccessibilityEventRecorder();

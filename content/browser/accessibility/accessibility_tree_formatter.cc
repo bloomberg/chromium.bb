@@ -223,9 +223,6 @@ void AccessibilityTreeFormatter::AddPropertyFilter(
   property_filters->push_back(PropertyFilter(base::ASCIIToUTF16(filter), type));
 }
 
-void AccessibilityTreeFormatter::SetUpCommandLineForTestPass(
-    base::CommandLine* command_line) {}
-
 void AccessibilityTreeFormatter::AddDefaultFilters(
     std::vector<PropertyFilter>* property_filters) {}
 }  // namespace content

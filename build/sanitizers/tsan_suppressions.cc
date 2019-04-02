@@ -204,9 +204,6 @@ char kTSanDefaultSuppressions[] =
     // http://crbug.com/797998
     "race:content::SandboxIPCHandler::HandleLocaltime\n"
 
-    // https://crbug.com/946481
-    "race:content::DumpAccessibilityTestBase::RunTestForPlatform\n"
-
     // End of suppressions.
     ;  // Please keep this semicolon.
 
