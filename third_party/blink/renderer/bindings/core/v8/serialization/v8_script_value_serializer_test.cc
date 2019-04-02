@@ -961,8 +961,8 @@ TEST(V8ScriptValueSerializerTest, RoundTripMojoHandle) {
   V8TestingScope scope;
 
   mojo::MessagePipe pipe;
-  MojoHandle* handle =
-      MojoHandle::Create(mojo::ScopedHandle::From(std::move(pipe.handle0)));
+  auto* handle = MakeGarbageCollected<MojoHandle>(
+      mojo::ScopedHandle::From(std::move(pipe.handle0)));
   v8::Local<v8::Value> wrapper = ToV8(handle, scope.GetScriptState());
   Transferables transferables;
   transferables.mojo_handles.push_back(handle);
@@ -982,8 +982,8 @@ TEST(V8ScriptValueSerializerTest, UntransferredMojoHandleThrowsDataCloneError) {
                                  "postMessage");
 
   mojo::MessagePipe pipe;
-  MojoHandle* handle =
-      MojoHandle::Create(mojo::ScopedHandle::From(std::move(pipe.handle0)));
+  auto* handle = MakeGarbageCollected<MojoHandle>(
+      mojo::ScopedHandle::From(std::move(pipe.handle0)));
   v8::Local<v8::Value> wrapper = ToV8(handle, scope.GetScriptState());
   Transferables transferables;
 
