@@ -259,8 +259,14 @@ class TestDriver:
         arg_key = GetDictKey(override_arg)
         if (arg_key in original_args
             and original_args[arg_key] in self._chrome_args):
-          self._chrome_args.remove(original_args[arg_key])
-          self._logger.info('Removed Chrome flag. %s', original_args[arg_key])
+          if arg_key == '--enable-features':
+            new_features = override_arg[len('--enable-features='):]
+            self._chrome_args.remove(original_args[arg_key])
+            override_arg = original_args[arg_key]+','+new_features
+            self._logger.info('Appended features. %s', new_features)
+          else:
+            self._chrome_args.remove(original_args[arg_key])
+            self._logger.info('Removed Chrome flag. %s', original_args[arg_key])
         self._chrome_args.add(override_arg)
         self._logger.info('Added Chrome flag. %s', override_arg)
     # Always add the flag that allows histograms to be queried in javascript.
