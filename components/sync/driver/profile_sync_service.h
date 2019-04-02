@@ -46,11 +46,6 @@
 #include "services/identity/public/cpp/identity_manager.h"
 #include "url/gurl.h"
 
-// TODO(crbug.com/896303): Move TestProfileSyncService into namespace sync too.
-namespace browser_sync {
-class TestProfileSyncService;
-}  // namespace browser_sync
-
 namespace network {
 class NetworkConnectionTracker;
 class SharedURLLoaderFactory;
@@ -270,7 +265,7 @@ class ProfileSyncService : public syncer::SyncService,
   syncer::SyncClient* GetSyncClientForTest();
 
  private:
-  friend class browser_sync::TestProfileSyncService;
+  friend class TestProfileSyncService;
 
   // Passed as an argument to StopImpl to control whether or not the sync
   // engine should clear its data directory when it shuts down. See StopImpl

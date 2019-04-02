@@ -2,17 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browser_sync/test_profile_sync_service.h"
+#include "components/sync/driver/test_profile_sync_service.h"
 
 #include <utility>
 
 #include "base/run_loop.h"
 
-namespace browser_sync {
-
-syncer::TestIdFactory* TestProfileSyncService::id_factory() {
-  return &id_factory_;
-}
+namespace syncer {
 
 syncer::WeakHandle<syncer::JsEventHandler>
 TestProfileSyncService::GetJsEventHandler() {
@@ -39,4 +35,4 @@ syncer::UserShare* TestProfileSyncService::GetUserShare() const {
   return engine_->GetUserShare();
 }
 
-}  // namespace browser_sync
+}  // namespace syncer

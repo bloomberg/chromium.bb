@@ -819,6 +819,8 @@ static_library("test_support_driver") {
     "driver/sync_client_mock.h",
     "driver/sync_user_settings_mock.cc",
     "driver/sync_user_settings_mock.h",
+    "driver/test_profile_sync_service.cc",
+    "driver/test_profile_sync_service.h",
     "driver/test_sync_service.cc",
     "driver/test_sync_service.h",
     "driver/test_sync_user_settings.cc",
