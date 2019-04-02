@@ -78,6 +78,12 @@ class MixedRealityRenderLoop : public XRCompositorCommon {
       ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem>
       stage_origin_;
   bool stage_transform_needs_updating_ = false;
+  Microsoft::WRL::ComPtr<ABI::Windows::Perception::Spatial::
+                             ISpatialLocatorAttachedFrameOfReference>
+      attached_;
+  bool emulated_position_ = false;
+  base::Optional<gfx::Transform> last_origin_from_attached_;
+
   std::unique_ptr<MixedRealityWindow> window_;
   mojom::VRDisplayInfoPtr current_display_info_;
   base::RepeatingCallback<void(mojom::VRDisplayInfoPtr)>
