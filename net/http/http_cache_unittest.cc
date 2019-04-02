@@ -30,6 +30,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/traced_value.h"
 #include "net/base/cache_type.h"
+#include "net/base/completion_repeating_callback.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/features.h"
 #include "net/base/host_port_pair.h"
@@ -11349,10 +11350,15 @@ TEST_F(HttpCacheTest, CacheEntryStatusCantConditionalize) {
             response_info.cache_entry_status);
 }
 
-class TestCompletionCallbackForHttpCache : public TestCompletionCallback {
+class TestCompletionCallbackForHttpCache : public TestCompletionCallbackBase {
  public:
   TestCompletionCallbackForHttpCache() {}
   ~TestCompletionCallbackForHttpCache() override = default;
+
+  CompletionRepeatingCallback callback() {
+    return base::BindRepeating(&TestCompletionCallbackForHttpCache::SetResult,
+                               base::Unretained(this));
+  }
 
   const std::vector<int>& results() { return results_; }
 
