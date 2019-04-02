@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "components/login/localized_values_builder.h"
 #include "content/public/browser/web_ui.h"
@@ -32,10 +31,6 @@ void BaseWebUIHandler::GetLocalizedStrings(base::DictionaryValue* dict) {
 }
 
 void BaseWebUIHandler::RegisterMessages() {
-  if (!user_acted_method_path_.empty()) {
-    AddCallback(user_acted_method_path_, &BaseScreenHandler::HandleUserAction);
-  }
-
   DeclareJSCallbacks();
 }
 
@@ -68,12 +63,6 @@ OobeScreen BaseWebUIHandler::GetCurrentScreen() const {
   return oobe_ui->current_screen();
 }
 
-void BaseWebUIHandler::SetBaseScreen(BaseScreen* base_screen) {
-  if (base_screen_ == base_screen)
-    return;
-  base_screen_ = base_screen;
-}
-
 void BaseWebUIHandler::InsertIntoList(std::vector<base::Value>*) {}
 
 void BaseWebUIHandler::MaybeRecordIncomingEvent(
@@ -94,11 +83,6 @@ void BaseWebUIHandler::OnRawCallback(
     const base::ListValue* args) {
   MaybeRecordIncomingEvent(function_name, args);
   callback.Run(args);
-}
-
-void BaseWebUIHandler::HandleUserAction(const std::string& action_id) {
-  if (base_screen_)
-    base_screen_->OnUserAction(action_id);
 }
 
 }  // namespace chromeos
