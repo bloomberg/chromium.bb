@@ -25,15 +25,15 @@
 
 namespace {
 
-using dom_distiller::ViewRequestDelegate;
-using dom_distiller::DistilledArticleProto;
 using dom_distiller::ArticleDistillationUpdate;
-using dom_distiller::ViewerHandle;
-using dom_distiller::SourcePageHandleWebContents;
+using dom_distiller::DistilledArticleProto;
+using dom_distiller::DistillerPage;
 using dom_distiller::DomDistillerService;
 using dom_distiller::DomDistillerServiceFactory;
-using dom_distiller::DistillerPage;
 using dom_distiller::SourcePageHandle;
+using dom_distiller::SourcePageHandleWebContents;
+using dom_distiller::ViewerHandle;
+using dom_distiller::ViewRequestDelegate;
 
 // An no-op ViewRequestDelegate which holds a ViewerHandle and deletes itself
 // after the WebContents navigates or goes away. This class is a band-aid to
@@ -86,19 +86,15 @@ void SelfDeletingRequestDelegate::WebContentsDestroyed() {
 
 SelfDeletingRequestDelegate::SelfDeletingRequestDelegate(
     content::WebContents* web_contents)
-    : WebContentsObserver(web_contents) {
-}
+    : WebContentsObserver(web_contents) {}
 
-SelfDeletingRequestDelegate::~SelfDeletingRequestDelegate() {
-}
+SelfDeletingRequestDelegate::~SelfDeletingRequestDelegate() {}
 
 void SelfDeletingRequestDelegate::OnArticleReady(
-    const DistilledArticleProto* article_proto) {
-}
+    const DistilledArticleProto* article_proto) {}
 
 void SelfDeletingRequestDelegate::OnArticleUpdated(
-    ArticleDistillationUpdate article_update) {
-}
+    ArticleDistillationUpdate article_update) {}
 
 void SelfDeletingRequestDelegate::TakeViewerHandle(
     std::unique_ptr<ViewerHandle> viewer_handle) {
