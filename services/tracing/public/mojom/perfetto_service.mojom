@@ -71,6 +71,10 @@ struct ChromeConfig {
   // base::trace_event::TraceConfig object rather then the json encoded string
   // used currently.
   string trace_config;
+
+  // When enabled the data source is supposed to only emit fields in the output
+  // proto that are guaranteed to not contain any sensitive data.
+  bool privacy_filtering_enabled;
 };
 
 struct DataSourceConfig {
