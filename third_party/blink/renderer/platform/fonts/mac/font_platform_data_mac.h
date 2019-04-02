@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (c) 2019, Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,47 +28,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CRYPTO_NORMALIZE_ALGORITHM_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_CRYPTO_NORMALIZE_ALGORITHM_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_MAC_FONT_PLATFORM_DATA_MAC_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_MAC_FONT_PLATFORM_DATA_MAC_H_
 
-#include "third_party/blink/public/platform/web_crypto.h"
-#include "third_party/blink/public/platform/web_crypto_algorithm.h"
-#include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/renderer/bindings/modules/v8/dictionary_or_string.h"
-#include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include <memory>
+
+@class NSFont;
 
 namespace blink {
 
-struct AlgorithmError {
-  STACK_ALLOCATED();
+enum class FontOrientation;
+class FontPlatformData;
+class FontVariationSettings;
 
- public:
-  WebCryptoErrorType error_type;
-  WebString error_details;
-};
-
-typedef DictionaryOrString AlgorithmIdentifier;
-
-// Converts a javascript AlgorithmIdentifier to a WebCryptoAlgorithm object.
-//
-// This corresponds with "normalizing" [1] the algorithm, and then validating
-// the expected parameters for the algorithm/operation combination.
-//
-// On success returns true and sets the WebCryptoAlgorithm.
-//
-// On failure normalizeAlgorithm returns false and sets the AlgorithmError with
-// a error type and a (non-localized) debug string.
-//
-// [1] http://www.w3.org/TR/WebCryptoAPI/#algorithm-normalizing-rules
-MODULES_EXPORT WARN_UNUSED_RESULT bool NormalizeAlgorithm(
-    const AlgorithmIdentifier&,
-    WebCryptoOperation,
-    WebCryptoAlgorithm&,
-    AlgorithmError*);
+std::unique_ptr<FontPlatformData> FontPlatformDataFromNSFont(
+    NSFont*,
+    float size,
+    bool synthetic_bold,
+    bool synthetic_italic,
+    FontOrientation,
+    FontVariationSettings*);
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_MAC_FONT_PLATFORM_DATA_MAC_H_

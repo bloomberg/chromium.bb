@@ -25,7 +25,7 @@
 #include "third_party/blink/renderer/platform/mac/graphics_context_canvas.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
-OBJC_CLASS NSGraphicsContext;
+@class NSGraphicsContext;
 
 namespace cc {
 class PaintCanvas;

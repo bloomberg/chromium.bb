@@ -21,7 +21,7 @@
  *
  */
 
-#import "third_party/blink/renderer/platform/fonts/font_platform_data.h"
+#import "third_party/blink/renderer/platform/fonts/mac/font_platform_data_mac.h"
 
 #import <AppKit/NSFont.h>
 #import <AvailabilityMacros.h>
@@ -33,6 +33,7 @@
 #import "third_party/blink/public/platform/mac/web_sandbox_support.h"
 #import "third_party/blink/public/platform/platform.h"
 #import "third_party/blink/renderer/platform/fonts/font.h"
+#import "third_party/blink/renderer/platform/fonts/font_platform_data.h"
 #import "third_party/blink/renderer/platform/fonts/opentype/font_settings.h"
 #import "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_face.h"
 #import "third_party/blink/renderer/platform/web_test_support.h"
@@ -110,6 +111,46 @@ static sk_sp<SkTypeface> LoadFromBrowserProcess(NSFont* ns_font,
   return return_font;
 }
 
+std::unique_ptr<FontPlatformData> FontPlatformDataFromNSFont(
+    NSFont* ns_font,
+    float size,
+    bool synthetic_bold,
+    bool synthetic_italic,
+    FontOrientation orientation,
+    FontVariationSettings* variation_settings) {
+  DCHECK(ns_font);
+  sk_sp<SkTypeface> typeface;
+  if (CanLoadInProcess(ns_font)) {
+    typeface.reset(SkCreateTypefaceFromCTFont(base::mac::NSToCFCast(ns_font)));
+  } else {
+    // In process loading fails for cases where third party font manager
+    // software registers fonts in non system locations such as /Library/Fonts
+    // and ~/Library Fonts, see crbug.com/72727 or crbug.com/108645.
+    typeface = LoadFromBrowserProcess(ns_font, size);
+  }
+
+  if (variation_settings && variation_settings->size() < UINT16_MAX) {
+    SkFontArguments::Axis axes[variation_settings->size()];
+    for (size_t i = 0; i < variation_settings->size(); ++i) {
+      AtomicString feature_tag = variation_settings->at(i).Tag();
+      axes[i] = {AtomicStringToFourByteTag(feature_tag),
+                 SkFloatToScalar(variation_settings->at(i).Value())};
+    }
+    sk_sp<SkFontMgr> fm(SkFontMgr::RefDefault());
+    // TODO crbug.com/670246: Refactor this to a future Skia API that acccepts
+    // axis parameters on system fonts directly.
+    typeface = fm->makeFromStream(
+        typeface->openStream(nullptr)->duplicate(),
+        SkFontArguments().setAxes(axes, variation_settings->size()));
+  }
+
+  return std::make_unique<FontPlatformData>(
+      std::move(typeface),
+      CString(),  // family_ doesn't exist on Mac, this avoids conversion from
+                  // NSString which requires including a //base header
+      size, synthetic_bold, synthetic_italic, orientation);
+}
+
 void FontPlatformData::SetupSkFont(SkFont* skfont,
                                    float,
                                    const Font* font) const {
@@ -165,45 +206,6 @@ void FontPlatformData::SetupSkFont(SkFont* skfont,
       (font->GetFontDescription().FontSmoothing() == kAntialiased ||
        font->GetFontDescription().TextRendering() == kGeometricPrecision))
     skfont->setHinting(SkFontHinting::kNone);
-}
-
-FontPlatformData::FontPlatformData(NSFont* ns_font,
-                                   float size,
-                                   bool synthetic_bold,
-                                   bool synthetic_italic,
-                                   FontOrientation orientation,
-                                   FontVariationSettings* variation_settings)
-    : text_size_(size),
-      synthetic_bold_(synthetic_bold),
-      synthetic_italic_(synthetic_italic),
-      orientation_(orientation),
-      is_hash_table_deleted_value_(false) {
-  DCHECK(ns_font);
-  sk_sp<SkTypeface> typeface;
-  if (CanLoadInProcess(ns_font)) {
-    typeface.reset(SkCreateTypefaceFromCTFont(base::mac::NSToCFCast(ns_font)));
-  } else {
-    // In process loading fails for cases where third party font manager
-    // software registers fonts in non system locations such as /Library/Fonts
-    // and ~/Library Fonts, see crbug.com/72727 or crbug.com/108645.
-    typeface = LoadFromBrowserProcess(ns_font, size);
-  }
-
-  if (variation_settings && variation_settings->size() < UINT16_MAX) {
-    SkFontArguments::Axis axes[variation_settings->size()];
-    for (size_t i = 0; i < variation_settings->size(); ++i) {
-      AtomicString feature_tag = variation_settings->at(i).Tag();
-      axes[i] = {AtomicStringToFourByteTag(feature_tag),
-                 SkFloatToScalar(variation_settings->at(i).Value())};
-    }
-    sk_sp<SkFontMgr> fm(SkFontMgr::RefDefault());
-    // TODO crbug.com/670246: Refactor this to a future Skia API that acccepts
-    // axis parameters on system fonts directly.
-    typeface = fm->makeFromStream(
-        typeface->openStream(nullptr)->duplicate(),
-        SkFontArguments().setAxes(axes, variation_settings->size()));
-  }
-  typeface_ = typeface;
 }
 
 }  // namespace blink

@@ -89,7 +89,7 @@ FontPlatformData::FontPlatformData(float size,
 
 FontPlatformData::FontPlatformData(const FontPlatformData& source)
     : typeface_(source.typeface_),
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
       family_(source.family_),
 #endif
       text_size_(source.text_size_),
@@ -111,7 +111,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& source)
 
 FontPlatformData::FontPlatformData(const FontPlatformData& src, float text_size)
     : FontPlatformData(src.typeface_,
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
                        src.family_.data(),
 #else
                        CString(),
@@ -129,7 +129,7 @@ FontPlatformData::FontPlatformData(sk_sp<SkTypeface> typeface,
                                    bool synthetic_italic,
                                    FontOrientation orientation)
     : typeface_(typeface),
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
       family_(family),
 #endif
       text_size_(text_size),
@@ -180,7 +180,7 @@ const FontPlatformData& FontPlatformData::operator=(
     return *this;
 
   typeface_ = other.typeface_;
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
   family_ = other.family_;
 #endif
   text_size_ = other.text_size_;

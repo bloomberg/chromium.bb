@@ -49,12 +49,7 @@
 #include "third_party/skia/include/core/SkTypeface.h"
 
 #if defined(OS_MACOSX)
-OBJC_CLASS NSFont;
-
-typedef struct CGFont* CGFontRef;
 typedef const struct __CTFont* CTFontRef;
-
-#include <objc/objc-auto.h>
 #endif  // defined(OS_MACOSX)
 
 class SkFont;
@@ -65,7 +60,6 @@ namespace blink {
 
 class Font;
 class HarfBuzzFace;
-class FontVariationSettings;
 
 class PLATFORM_EXPORT FontPlatformData {
   USING_FAST_MALLOC(FontPlatformData);
@@ -84,14 +78,6 @@ class PLATFORM_EXPORT FontPlatformData {
                    bool synthetic_italic,
                    FontOrientation = FontOrientation::kHorizontal);
   FontPlatformData(const FontPlatformData& src, float text_size);
-#if defined(OS_MACOSX)
-  FontPlatformData(NSFont*,
-                   float size,
-                   bool synthetic_bold,
-                   bool synthetic_italic,
-                   FontOrientation,
-                   FontVariationSettings*);
-#endif
   FontPlatformData(const sk_sp<SkTypeface>,
                    const CString& name,
                    float text_size,
@@ -171,7 +157,7 @@ class PLATFORM_EXPORT FontPlatformData {
 #endif
 
   sk_sp<SkTypeface> typeface_;
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
   CString family_;
 #endif
 

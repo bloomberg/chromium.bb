@@ -31,7 +31,7 @@
 #import "third_party/blink/renderer/core/paint/theme_painter_mac.h"
 #import "third_party/blink/renderer/platform/wtf/hash_map.h"
 
-OBJC_CLASS BlinkLayoutThemeNotificationObserver;
+@class BlinkLayoutThemeNotificationObserver;
 
 namespace blink {
 
