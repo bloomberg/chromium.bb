@@ -8,7 +8,13 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
+#include "third_party/blink/renderer/platform/graphics/paint_worklet_painter.h"
 #include "third_party/blink/renderer/platform/graphics/platform_paint_worklet_layer_painter.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 namespace blink {
@@ -25,9 +31,26 @@ class PLATFORM_EXPORT PaintWorkletPaintDispatcher
 
   PaintWorkletPaintDispatcher() = default;
 
+  // Interface for use by the PaintWorklet thread(s) to request calls.
+  // (To the given Painter on the given TaskRunner.)
+  void RegisterPaintWorkletPainter(
+      PaintWorkletPainter*,
+      scoped_refptr<base::SingleThreadTaskRunner> mutator_runner);
+
+  void UnregisterPaintWorkletPainter(PaintWorkletPainter*);
+
   sk_sp<cc::PaintRecord> Paint(cc::PaintWorkletInput*);
 
  private:
+  friend class PaintWorkletProxyClientTest;
+  // We can have more than one task-runner because using a worklet inside a
+  // frame with a different origin causes a new global scope => new thread.
+  using PaintWorkletPainterToTaskRunnerMap =
+      HashMap<CrossThreadPersistent<PaintWorkletPainter>,
+              scoped_refptr<base::SingleThreadTaskRunner>>;
+
+  PaintWorkletPainterToTaskRunnerMap painter_map_;
+
   DISALLOW_COPY_AND_ASSIGN(PaintWorkletPaintDispatcher);
 };
 

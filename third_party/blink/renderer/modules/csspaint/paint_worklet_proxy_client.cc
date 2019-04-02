@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_proxy_client.h"
 
+#include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -41,6 +42,14 @@ PaintWorkletProxyClient::PaintWorkletProxyClient(
 
 void PaintWorkletProxyClient::Trace(blink::Visitor* visitor) {
   Supplement<WorkerClients>::Trace(visitor);
+  PaintWorkletPainter::Trace(visitor);
+}
+
+void PaintWorkletProxyClient::SetGlobalScopeForTesting(
+    PaintWorkletGlobalScope* global_scope) {
+  DCHECK(global_scope);
+  DCHECK(global_scope->IsContextThread());
+  global_scope_ = global_scope;
 }
 
 void PaintWorkletProxyClient::SetGlobalScope(WorkletGlobalScope* global_scope) {
@@ -51,11 +60,17 @@ void PaintWorkletProxyClient::SetGlobalScope(WorkletGlobalScope* global_scope) {
   DCHECK(state_ == RunState::kUninitialized);
 
   global_scope_ = static_cast<PaintWorkletGlobalScope*>(global_scope);
+  scoped_refptr<base::SingleThreadTaskRunner> global_scope_runner =
+      global_scope_->GetThread()->GetTaskRunner(TaskType::kMiscPlatformAPI);
   state_ = RunState::kWorking;
+
+  compositor_paintee_->RegisterPaintWorkletPainter(this, global_scope_runner);
 }
 
 void PaintWorkletProxyClient::Dispose() {
   if (state_ == RunState::kWorking) {
+    compositor_paintee_->UnregisterPaintWorkletPainter(this);
+
     DCHECK(global_scope_);
     DCHECK(global_scope_->IsContextThread());
 
@@ -63,6 +78,8 @@ void PaintWorkletProxyClient::Dispose() {
     // PaintWorkletGlobalScope and PaintWorkletProxyClient.
     global_scope_ = nullptr;
   }
+
+  compositor_paintee_ = nullptr;
 
   DCHECK(state_ != RunState::kDisposed);
   state_ = RunState::kDisposed;

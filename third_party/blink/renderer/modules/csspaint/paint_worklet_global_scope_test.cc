@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_proxy_client.h"
 #include "third_party/blink/renderer/modules/worklet/animation_and_paint_worklet_thread.h"
 #include "third_party/blink/renderer/modules/worklet/worklet_thread_test_common.h"
+#include "third_party/blink/renderer/platform/graphics/paint_worklet_paint_dispatcher.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
@@ -32,24 +33,32 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
     Document* document = &GetDocument();
     document->SetURL(KURL("https://example.com/"));
     document->UpdateSecurityOrigin(SecurityOrigin::Create(document->Url()));
+
+    dispatcher_ = base::MakeRefCounted<PaintWorkletPaintDispatcher>();
+    proxy_client_ =
+        MakeGarbageCollected<PaintWorkletProxyClient>(1, dispatcher_);
     reporting_proxy_ = std::make_unique<WorkerReportingProxy>();
   }
 
-  using TestCalback = void (
-      PaintWorkletGlobalScopeTest::*)(WorkerThread*, base::WaitableEvent*);
+  using TestCallback =
+      void (PaintWorkletGlobalScopeTest::*)(WorkerThread*,
+                                            PaintWorkletProxyClient*,
+                                            base::WaitableEvent*);
 
   // Create a new paint worklet and run the callback task on it. Terminate the
   // worklet once the task completion is signaled.
-  void RunTestOnWorkletThread(TestCalback callback) {
+  void RunTestOnWorkletThread(TestCallback callback) {
     std::unique_ptr<WorkerThread> worklet =
-        CreateThreadAndProvidePaintWorkletProxyClient(&GetDocument(),
-                                                      reporting_proxy_.get());
+        CreateThreadAndProvidePaintWorkletProxyClient(
+            &GetDocument(), reporting_proxy_.get(), proxy_client_);
     base::WaitableEvent waitable_event;
     PostCrossThreadTask(
         *worklet->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBind(callback, CrossThreadUnretained(this),
-                        CrossThreadUnretained(worklet.get()),
-                        CrossThreadUnretained(&waitable_event)));
+        CrossThreadBind(
+            callback, CrossThreadUnretained(this),
+            CrossThreadUnretained(worklet.get()),
+            CrossThreadPersistent<PaintWorkletProxyClient>(proxy_client_),
+            CrossThreadUnretained(&waitable_event)));
     waitable_event.Wait();
     waitable_event.Reset();
 
@@ -58,9 +67,14 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
   }
 
   void RunBasicParsingTestOnWorklet(WorkerThread* thread,
+                                    PaintWorkletProxyClient* proxy_client,
                                     base::WaitableEvent* waitable_event) {
     ASSERT_TRUE(thread->IsCurrentThread());
-    auto* global_scope = To<PaintWorkletGlobalScope>(thread->GlobalScope());
+    proxy_client->SetGlobalScopeForTesting(
+        static_cast<PaintWorkletGlobalScope*>(
+            To<WorkletGlobalScope>(thread->GlobalScope())));
+    CrossThreadPersistent<PaintWorkletGlobalScope> global_scope =
+        proxy_client->global_scope_;
     ScriptState* script_state =
         global_scope->ScriptController()->GetScriptState();
     ASSERT_TRUE(script_state);
@@ -101,6 +115,8 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
   }
 
  private:
+  scoped_refptr<PaintWorkletPaintDispatcher> dispatcher_;
+  Persistent<PaintWorkletProxyClient> proxy_client_;
   std::unique_ptr<WorkerReportingProxy> reporting_proxy_;
 };
 
