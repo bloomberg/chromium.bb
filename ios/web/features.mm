@@ -8,11 +8,6 @@ namespace web {
 namespace features {
 
 bool StorePendingItemInContext() {
-  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager)) {
-    // TODO(crbug.com/899827): Store Pending Item in NavigationContext with
-    // slim-navigation-manager.
-    return false;
-  }
   return base::FeatureList::IsEnabled(kStorePendingItemInContext);
 }
 
