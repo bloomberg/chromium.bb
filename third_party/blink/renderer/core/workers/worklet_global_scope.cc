@@ -63,6 +63,7 @@ WorkletGlobalScope::WorkletGlobalScope(
     : WorkerOrWorkletGlobalScope(
           isolate,
           creation_params->global_scope_name,
+          creation_params->parent_devtools_token,
           creation_params->v8_cache_options,
           creation_params->worker_clients,
           std::move(creation_params->web_worker_fetch_context),

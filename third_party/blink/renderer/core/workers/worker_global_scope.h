@@ -133,9 +133,6 @@ class CORE_EXPORT WorkerGlobalScope
   OffscreenFontSelector* GetFontSelector() { return font_selector_; }
 
   CoreProbeSink* GetProbeSink() final;
-  const base::UnguessableToken& GetParentDevToolsToken() {
-    return parent_devtools_token_;
-  }
 
   // EventTarget
   ExecutionContext* GetExecutionContext() const final;
@@ -219,7 +216,6 @@ class CORE_EXPORT WorkerGlobalScope
   KURL url_;
   const mojom::ScriptType script_type_;
   const String user_agent_;
-  const base::UnguessableToken parent_devtools_token_;
   std::unique_ptr<WorkerSettings> worker_settings_;
 
   mutable Member<WorkerLocation> location_;

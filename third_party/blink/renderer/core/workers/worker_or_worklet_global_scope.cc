@@ -163,12 +163,14 @@ class OutsideSettingsCSPDelegate final
 WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
     v8::Isolate* isolate,
     const String& name,
+    const base::UnguessableToken& parent_devtools_token,
     V8CacheOptions v8_cache_options,
     WorkerClients* worker_clients,
     scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context,
     WorkerReportingProxy& reporting_proxy)
     : ExecutionContext(isolate),
       name_(name),
+      parent_devtools_token_(parent_devtools_token),
       worker_clients_(worker_clients),
       web_worker_fetch_context_(std::move(web_worker_fetch_context)),
       script_controller_(
