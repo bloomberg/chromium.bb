@@ -305,14 +305,6 @@ void AudioParamHandler::CalculateTimelineValues(float* values,
       sample_rate, sample_rate, MinValue(), MaxValue()));
 }
 
-int AudioParamHandler::ComputeQHistogramValue(float new_value) const {
-  // For the Q value, assume a useful range is [0, 25] and that 0.25 dB
-  // resolution is good enough.  Then, we can map the floating point Q value (in
-  // dB) to an integer just by multipling by 4 and rounding.
-  new_value = clampTo(new_value, 0.0, 25.0);
-  return static_cast<int>(4 * new_value + 0.5);
-}
-
 // ----------------------------------------------------------------
 
 AudioParam::AudioParam(BaseAudioContext& context,

@@ -216,8 +216,6 @@ class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
                             bool sample_accurate);
   void CalculateTimelineValues(float* values, unsigned number_of_values);
 
-  int ComputeQHistogramValue(float) const;
-
   // The type of AudioParam, indicating what this AudioParam represents and what
   // node it belongs to.  Mostly for informational purposes and doesn't affect
   // implementation.
