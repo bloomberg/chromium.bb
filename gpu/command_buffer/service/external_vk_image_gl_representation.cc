@@ -81,7 +81,8 @@ void ExternalVkImageGlRepresentation::EndAccess() {
       (current_access_mode_ == GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
   current_access_mode_ = 0;
 
-  VkSemaphore semaphore = backing_impl()->CreateExternalVkSemaphore();
+  VkSemaphore semaphore =
+      vk_implementation()->CreateExternalSemaphore(backing_impl()->device());
   if (semaphore == VK_NULL_HANDLE) {
     // TODO(crbug.com/933452): We should be able to handle this failure more
     // gracefully rather than shutting down the whole process.
@@ -125,6 +126,12 @@ GLuint ExternalVkImageGlRepresentation::ImportVkSemaphoreIntoGL(
     SemaphoreHandle handle) {
   if (!handle.is_valid())
     return 0;
+  if (handle.vk_handle_type() !=
+      VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT) {
+    DLOG(ERROR) << "Importing semaphore handle of unexpected type:"
+                << handle.vk_handle_type();
+    return 0;
+  }
   base::ScopedFD fd = handle.TakeHandle();
   gl::GLApi* api = gl::g_current_gl_context;
   GLuint gl_semaphore;

@@ -35,6 +35,7 @@ class VulkanImplementationScenic : public gpu::VulkanImplementation {
   std::unique_ptr<gfx::GpuFence> ExportVkFenceToGpuFence(
       VkDevice vk_device,
       VkFence vk_fence) override;
+  VkSemaphore CreateExternalSemaphore(VkDevice vk_device) override;
   VkSemaphore ImportSemaphoreHandle(VkDevice vk_device,
                                     gpu::SemaphoreHandle handle) override;
   gpu::SemaphoreHandle GetSemaphoreHandle(VkDevice vk_device,

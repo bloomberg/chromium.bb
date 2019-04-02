@@ -35,6 +35,7 @@ class COMPONENT_EXPORT(VULKAN_ANDROID) VulkanImplementationAndroid
   std::unique_ptr<gfx::GpuFence> ExportVkFenceToGpuFence(
       VkDevice vk_device,
       VkFence vk_fence) override;
+  VkSemaphore CreateExternalSemaphore(VkDevice vk_device) override;
   VkSemaphore ImportSemaphoreHandle(VkDevice vk_device,
                                     SemaphoreHandle handle) override;
   SemaphoreHandle GetSemaphoreHandle(VkDevice vk_device,

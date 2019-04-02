@@ -133,7 +133,8 @@ void ExternalVkImageSkiaRepresentation::EndAccess(bool readonly) {
   // Cleanup resources for previous accessing.
   DestroySemaphore(end_access_semaphore_, end_access_fence_);
 
-  end_access_semaphore_ = backing_impl()->CreateExternalVkSemaphore();
+  end_access_semaphore_ =
+      vk_implementation()->CreateExternalSemaphore(backing_impl()->device());
   // Submit wait semaphore to the queue. Note that Skia uses the same queue
   // exposed by vk_queue(), so this will work due to Vulkan queue ordering.
   if (!vk_implementation()->SubmitSignalSemaphore(

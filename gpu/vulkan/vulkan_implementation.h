@@ -90,9 +90,18 @@ class VULKAN_EXPORT VulkanImplementation {
     return SubmitWaitSemaphores(vk_queue, {vk_semaphore}, vk_fence);
   }
 
+  // Creates semaphore that can be exported to external handles of the specified
+  // |handle_types|.
+  VkSemaphore CreateExternalSemaphore(
+      VkDevice vk_device,
+      VkExternalSemaphoreHandleTypeFlags handle_types);
+
+  // Creates a semaphore that can be exported using GetSemaphoreHandle().
+  virtual VkSemaphore CreateExternalSemaphore(VkDevice vk_device) = 0;
+
   // Import a VkSemaphore from a platform-specific handle.
-  // Handle types that don't allow permanent import are imported with temporary
-  // permanence (VK_SEMAPHORE_IMPORT_TEMPORARY_BIT).
+  // Handle types that don't allow permanent import are imported with
+  // temporary permanence (VK_SEMAPHORE_IMPORT_TEMPORARY_BIT).
   virtual VkSemaphore ImportSemaphoreHandle(VkDevice vk_device,
                                             SemaphoreHandle handle) = 0;
 

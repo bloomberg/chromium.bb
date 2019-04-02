@@ -15,25 +15,6 @@ VulkanImplementation::VulkanImplementation() {}
 
 VulkanImplementation::~VulkanImplementation() {}
 
-std::unique_ptr<VulkanDeviceQueue> CreateVulkanDeviceQueue(
-    VulkanImplementation* vulkan_implementation,
-    uint32_t option) {
-  auto device_queue = std::make_unique<VulkanDeviceQueue>(
-      vulkan_implementation->GetVulkanInstance()->vk_instance());
-  auto callback = base::BindRepeating(
-      &VulkanImplementation::GetPhysicalDevicePresentationSupport,
-      base::Unretained(vulkan_implementation));
-  std::vector<const char*> required_extensions =
-      vulkan_implementation->GetRequiredDeviceExtensions();
-  if (!device_queue->Initialize(option, std::move(required_extensions),
-                                callback)) {
-    device_queue->Destroy();
-    return nullptr;
-  }
-
-  return device_queue;
-}
-
 bool VulkanImplementation::SubmitSignalSemaphore(VkQueue vk_queue,
                                                  VkSemaphore vk_semaphore,
                                                  VkFence vk_fence) {
@@ -64,6 +45,47 @@ bool VulkanImplementation::SubmitWaitSemaphores(
     return false;
   }
   return true;
+}
+
+VkSemaphore VulkanImplementation::CreateExternalSemaphore(
+    VkDevice vk_device,
+    VkExternalSemaphoreHandleTypeFlags handle_types) {
+  VkExportSemaphoreCreateInfo export_info = {
+      VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO};
+  export_info.handleTypes = handle_types;
+
+  VkSemaphoreCreateInfo sem_info = {VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+                                    &export_info};
+
+  VkSemaphore semaphore = VK_NULL_HANDLE;
+  VkResult result =
+      vkCreateSemaphore(vk_device, &sem_info, nullptr, &semaphore);
+
+  if (result != VK_SUCCESS) {
+    DLOG(ERROR) << "Failed to create VkSemaphore: " << result;
+    return VK_NULL_HANDLE;
+  }
+
+  return semaphore;
+}
+
+std::unique_ptr<VulkanDeviceQueue> CreateVulkanDeviceQueue(
+    VulkanImplementation* vulkan_implementation,
+    uint32_t option) {
+  auto device_queue = std::make_unique<VulkanDeviceQueue>(
+      vulkan_implementation->GetVulkanInstance()->vk_instance());
+  auto callback = base::BindRepeating(
+      &VulkanImplementation::GetPhysicalDevicePresentationSupport,
+      base::Unretained(vulkan_implementation));
+  std::vector<const char*> required_extensions =
+      vulkan_implementation->GetRequiredDeviceExtensions();
+  if (!device_queue->Initialize(option, std::move(required_extensions),
+                                callback)) {
+    device_queue->Destroy();
+    return nullptr;
+  }
+
+  return device_queue;
 }
 
 }  // namespace gpu
