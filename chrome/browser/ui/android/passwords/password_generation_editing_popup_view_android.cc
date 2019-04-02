@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/android/passwords/password_generation_popup_view_android.h"
+#include "chrome/browser/ui/android/passwords/password_generation_editing_popup_view_android.h"
 
 #include <jni.h>
 
@@ -21,11 +21,12 @@
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
-PasswordGenerationPopupViewAndroid::PasswordGenerationPopupViewAndroid(
-    PasswordGenerationPopupController* controller)
+PasswordGenerationEditingPopupViewAndroid::
+    PasswordGenerationEditingPopupViewAndroid(
+        PasswordGenerationPopupController* controller)
     : controller_(controller) {}
 
-void PasswordGenerationPopupViewAndroid::Dismissed(
+void PasswordGenerationEditingPopupViewAndroid::Dismissed(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   if (controller_)
@@ -34,16 +35,10 @@ void PasswordGenerationPopupViewAndroid::Dismissed(
   delete this;
 }
 
-void PasswordGenerationPopupViewAndroid::PasswordSelected(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& object) {
-  if (controller_)
-    controller_->PasswordAccepted();
-}
+PasswordGenerationEditingPopupViewAndroid::
+    ~PasswordGenerationEditingPopupViewAndroid() {}
 
-PasswordGenerationPopupViewAndroid::~PasswordGenerationPopupViewAndroid() {}
-
-void PasswordGenerationPopupViewAndroid::Show() {
+void PasswordGenerationEditingPopupViewAndroid::Show() {
   ui::ViewAndroid* view_android = controller_->container_view();
 
   DCHECK(view_android);
@@ -60,8 +55,8 @@ void PasswordGenerationPopupViewAndroid::Show() {
   UpdateBoundsAndRedrawPopup();
 }
 
-void PasswordGenerationPopupViewAndroid::Hide() {
-  controller_ = NULL;
+void PasswordGenerationEditingPopupViewAndroid::Hide() {
+  controller_ = nullptr;
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!java_object_.is_null()) {
     Java_PasswordGenerationPopupBridge_hide(env, java_object_);
@@ -71,9 +66,9 @@ void PasswordGenerationPopupViewAndroid::Hide() {
   }
 }
 
-void PasswordGenerationPopupViewAndroid::UpdateState() {}
+void PasswordGenerationEditingPopupViewAndroid::UpdateState() {}
 
-void PasswordGenerationPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
+void PasswordGenerationEditingPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
   if (java_object_.is_null())
     return;
 
@@ -86,24 +81,16 @@ void PasswordGenerationPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
   DCHECK(view_android);
   view_android->SetAnchorRect(view, controller_->element_bounds());
   JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> password =
-      base::android::ConvertUTF16ToJavaString(env, controller_->password());
-  ScopedJavaLocalRef<jstring> suggestion =
-      base::android::ConvertUTF16ToJavaString(env,
-                                              controller_->SuggestedText());
   ScopedJavaLocalRef<jstring> help =
       base::android::ConvertUTF16ToJavaString(env, controller_->HelpText());
 
-  Java_PasswordGenerationPopupBridge_show(
-      env, java_object_, controller_->IsRTL(),
-      controller_->state() ==
-          PasswordGenerationPopupController::kOfferGeneration,
-      password, suggestion, help);
+  Java_PasswordGenerationPopupBridge_show(env, java_object_,
+                                          controller_->IsRTL(), help);
 }
 
-void PasswordGenerationPopupViewAndroid::PasswordSelectionUpdated() {}
+void PasswordGenerationEditingPopupViewAndroid::PasswordSelectionUpdated() {}
 
-bool PasswordGenerationPopupViewAndroid::IsPointInPasswordBounds(
+bool PasswordGenerationEditingPopupViewAndroid::IsPointInPasswordBounds(
     const gfx::Point& point) {
   NOTREACHED();
   return false;
@@ -112,5 +99,5 @@ bool PasswordGenerationPopupViewAndroid::IsPointInPasswordBounds(
 // static
 PasswordGenerationPopupView* PasswordGenerationPopupView::Create(
     PasswordGenerationPopupController* controller) {
-  return new PasswordGenerationPopupViewAndroid(controller);
+  return new PasswordGenerationEditingPopupViewAndroid(controller);
 }
