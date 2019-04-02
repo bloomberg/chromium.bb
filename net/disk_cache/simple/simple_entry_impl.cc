@@ -543,6 +543,15 @@ int SimpleEntryImpl::ReadSparseData(int64_t offset,
                       CreateNetLogSparseOperationCallback(offset, buf_len));
   }
 
+  if (offset < 0 || buf_len < 0) {
+    if (net_log_.IsCapturing()) {
+      net_log_.AddEvent(
+          net::NetLogEventType::SIMPLE_CACHE_ENTRY_READ_SPARSE_END,
+          CreateNetLogReadWriteCompleteCallback(net::ERR_INVALID_ARGUMENT));
+    }
+    return net::ERR_INVALID_ARGUMENT;
+  }
+
   ScopedOperationRunner operation_runner(this);
   pending_operations_.push(SimpleEntryOperation::ReadSparseOperation(
       this, offset, buf_len, buf, std::move(callback)));
@@ -561,6 +570,15 @@ int SimpleEntryImpl::WriteSparseData(int64_t offset,
         CreateNetLogSparseOperationCallback(offset, buf_len));
   }
 
+  if (offset < 0 || buf_len < 0) {
+    if (net_log_.IsCapturing()) {
+      net_log_.AddEvent(
+          net::NetLogEventType::SIMPLE_CACHE_ENTRY_WRITE_SPARSE_END,
+          CreateNetLogReadWriteCompleteCallback(net::ERR_INVALID_ARGUMENT));
+    }
+    return net::ERR_INVALID_ARGUMENT;
+  }
+
   ScopedOperationRunner operation_runner(this);
   pending_operations_.push(SimpleEntryOperation::WriteSparseOperation(
       this, offset, buf_len, buf, std::move(callback)));
@@ -572,6 +590,8 @@ int SimpleEntryImpl::GetAvailableRange(int64_t offset,
                                        int64_t* start,
                                        CompletionOnceCallback callback) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
+  if (offset < 0 || len < 0)
+    return net::ERR_INVALID_ARGUMENT;
 
   ScopedOperationRunner operation_runner(this);
   pending_operations_.push(SimpleEntryOperation::GetAvailableRangeOperation(
