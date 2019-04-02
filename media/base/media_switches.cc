@@ -390,6 +390,11 @@ const base::Feature kMediaDrmPreprovisioningAtStartup{
 const base::Feature kAImageReaderVideoOutput{"AImageReaderVideoOutput",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Prevents using SurfaceLayer for videos. This is meant to be used by embedders
+// that cannot support SurfaceLayer at the moment.
+const base::Feature kDisableSurfaceLayerForVideo{
+    "DisableSurfaceLayerForVideo", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
