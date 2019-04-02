@@ -254,7 +254,7 @@ public class ManualFillingControllerTest {
         when(mMockActivity.findViewById(android.R.id.content)).thenReturn(mMockContentView);
         mLastMockWebContents = mock(WebContents.class);
         when(mMockActivity.getCurrentWebContents()).then(i -> mLastMockWebContents);
-        when(mMockResources.getDimensionPixelSize(anyInt())).thenReturn(48);
+        setContentAreaDimensions(2.f, 80, 300);
         PasswordAccessorySheetCoordinator.IconProvider.getInstance().setIconForTesting(mMockIcon);
         mController.initialize(mMockWindow, mMockKeyboardAccessory, mMockAccessorySheet);
     }
@@ -648,6 +648,35 @@ public class ManualFillingControllerTest {
     }
 
     @Test
+    public void testRestrictsSheetSizeIfVerticalSpaceChanges() {
+        // Resize the screen from 300x80@2.f to 300x160@2.f.
+        setContentAreaDimensions(2.f, 160, 300);
+        mMediator.onLayoutChange(mMockContentView, 0, 0, 320, 600, 0, 0, 160, 600);
+        reset(mMockKeyboardAccessory);
+
+        addBrowserTab(mMediator, 1234, null);
+        SheetProviderHelper tabHelper = new SheetProviderHelper();
+        mController.registerPasswordProvider(tabHelper.getSheetDataProvider());
+        when(mMockKeyboard.isSoftKeyboardShowing(eq(mMockActivity), any())).thenReturn(true);
+        when(mMockKeyboardAccessory.hasContents()).thenReturn(true);
+
+        // Show the accessory bar:
+        mController.showWhenKeyboardIsVisible();
+        verify(mMockKeyboardAccessory).requestShowing();
+        when(mMockKeyboardAccessory.isShown()).thenReturn(true);
+
+        // Simulate an open tab:
+        when(mMockKeyboardAccessory.hasActiveTab()).thenReturn(true);
+        when(mMockAccessorySheet.getHeight()).thenReturn(120); // Return height of a large keyboard.
+        mMediator.onLayoutChange(mMockContentView, 0, 0, 320, 264, 0, 0, 320, 600);
+
+        // An orientation change will not close the open sheet but restrict its size:
+        simulateOrientationChange(2.0f, 300, 160);
+        // Expect that the remaining space is at least 80dp plus height of accessory bar (48dp).
+        verify(mMockAccessorySheet).setHeight(64); // == 2f * (160dp - 80dp - 48dp))
+    }
+
+    @Test
     public void testClosingTabDoesntAffectUnitializedComponents() {
         // A leftover tab is closed before the filling component could pick up the active tab.
         closeBrowserTab(mMediator, mock(Tab.class));
@@ -745,6 +774,8 @@ public class ManualFillingControllerTest {
         when(mMockWindow.getDisplay()).thenReturn(mockDisplay);
         when(mLastMockWebContents.getHeight()).thenReturn(heightDp);
         when(mLastMockWebContents.getWidth()).thenReturn(widthDp);
+        // Return the correct keyboard_accessory_height for the current density:
+        when(mMockResources.getDimensionPixelSize(anyInt())).thenReturn((int) (density * 48));
     }
 
     /**
