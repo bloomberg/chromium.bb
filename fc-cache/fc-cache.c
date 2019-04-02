@@ -404,6 +404,17 @@ main (int argc, char **argv)
 	return 1;
     }
 
+    if (verbose)
+    {
+	const FcChar8 *dir;
+
+	printf ("Font directories:\n");
+	while ((dir = FcStrListNext (list)))
+	{
+	    printf ("\t%s\n", dir);
+	}
+	FcStrListFirst(list);
+    }
     changed = 0;
     ret = scanDirs (list, config, force, really_force, verbose, error_on_no_fonts, &changed);
     FcStrListDone (list);
