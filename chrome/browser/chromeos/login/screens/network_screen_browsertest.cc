@@ -21,9 +21,6 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
-#include "chromeos/dbus/shill_manager_client.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -57,8 +54,6 @@ class NetworkScreenTest : public InProcessBrowserTest {
 
   void SetUpInProcessBrowserTestFixture() override {
     InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-    DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        std::make_unique<FakeSessionManagerClient>());
   }
 
   void SetUpOnMainThread() override {

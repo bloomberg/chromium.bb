@@ -134,13 +134,6 @@ void ScopedCrosSettingsTestHelper::CopyStoredValue(const std::string& path) {
   }
 }
 
-void ScopedCrosSettingsTestHelper::SetFakeSessionManager() {
-  DeviceSettingsService::Get()->SetSessionManager(
-      &fake_session_manager_client_, new ownership::MockOwnerKeyUtil());
-  DeviceSettingsService::Get()->Load();
-  content::RunAllTasksUntilIdle();
-}
-
 StubInstallAttributes* ScopedCrosSettingsTestHelper::InstallAttributes() {
   return test_install_attributes_->Get();
 }
