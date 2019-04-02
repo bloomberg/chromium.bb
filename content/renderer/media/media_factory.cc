@@ -13,6 +13,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "build/buildflag.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "content/public/common/content_client.h"
@@ -143,6 +144,11 @@ blink::WebMediaPlayer::SurfaceLayerMode
 MediaFactory::GetVideoSurfaceLayerMode() {
   if (features::IsMultiProcessMash())
     return blink::WebMediaPlayer::SurfaceLayerMode::kNever;
+
+#if defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(media::kDisableSurfaceLayerForVideo))
+    return blink::WebMediaPlayer::SurfaceLayerMode::kNever;
+#endif  // OS_ANDROID
 
   if (base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo))
     return blink::WebMediaPlayer::SurfaceLayerMode::kAlways;
