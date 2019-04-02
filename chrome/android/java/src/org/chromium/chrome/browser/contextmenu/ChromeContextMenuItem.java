@@ -18,6 +18,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.DefaultBrowserInfo;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
 
@@ -172,6 +173,10 @@ public class ChromeContextMenuItem implements ContextMenuItem {
                 case Item.BROWSER_ACTIONS_OPEN_IN_INCOGNITO_TAB:
                     return R.string.browser_actions_open_in_private_tab;
             }
+        }
+
+        if (FeatureUtilities.isTabGroupsAndroidEnabled() && item == Item.OPEN_IN_NEW_TAB) {
+            return R.string.contextmenu_open_in_new_tab_group;
         }
 
         return STRING_IDS[item];
