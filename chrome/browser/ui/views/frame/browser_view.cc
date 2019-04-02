@@ -1205,6 +1205,12 @@ void BrowserView::FocusInactivePopupForAccessibility() {
   if (GetLocationBarView()->ActivateFirstInactiveBubbleForAccessibility())
     return;
 
+  if (toolbar_ && toolbar_->toolbar_page_action_container() &&
+      toolbar_->toolbar_page_action_container()
+          ->ActivateFirstInactiveBubbleForAccessibility()) {
+    return;
+  }
+
   if (infobar_container_->child_count() > 0)
     infobar_container_->SetPaneFocusAndFocusDefault();
 }

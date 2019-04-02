@@ -28,8 +28,10 @@
 #include "chrome/browser/ui/views/autofill/dialog_view_ids.h"
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
 #include "chrome/browser/ui/views/autofill/save_card_icon_view.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
@@ -2777,6 +2779,71 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
 
   EXPECT_TRUE(GetSaveCardBubbleViews());
   EXPECT_TRUE(GetSaveCardBubbleViews()->visible());
+}
+
+#if defined(OS_MACOSX)
+// TODO(crbug.com/823543): Widget activation doesn't work on Mac.
+#define MAYBE_ActivateFirstInactiveBubbleForAccessibility \
+  DISABLED_ActivateFirstInactiveBubbleForAccessibility
+#else
+#define MAYBE_ActivateFirstInactiveBubbleForAccessibility \
+  ActivateFirstInactiveBubbleForAccessibility
+#endif
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
+                       MAYBE_ActivateFirstInactiveBubbleForAccessibility) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  ToolbarView* toolbar_view = browser_view->toolbar();
+  EXPECT_FALSE(toolbar_view->toolbar_page_action_container()
+                   ->ActivateFirstInactiveBubbleForAccessibility());
+
+  ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
+  NavigateTo(kCreditCardUploadForm);
+  FillAndSubmitForm();
+  WaitForObservedEvent();
+
+  // Ensures the bubble's widget is visible, but inactive. Active widgets are
+  // focused by accessibility, so not of concern.
+  views::Widget* widget = GetSaveCardBubbleViews()->GetWidget();
+  widget->Deactivate();
+  widget->ShowInactive();
+  EXPECT_TRUE(widget->IsVisible());
+  EXPECT_FALSE(widget->IsActive());
+
+  EXPECT_TRUE(toolbar_view->toolbar_page_action_container()
+                  ->ActivateFirstInactiveBubbleForAccessibility());
+
+  // Ensure the bubble's widget refreshed appropriately.
+  EXPECT_TRUE(GetSaveCardIconView()->visible());
+  EXPECT_TRUE(widget->IsVisible());
+  EXPECT_TRUE(widget->IsActive());
+}
+
+// Ensures the credit card icon updates its visibility when switching between
+// tabs.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
+                       IconAndBubbleVisibilityAfterTabSwitching) {
+  ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
+  NavigateTo(kCreditCardUploadForm);
+  FillAndSubmitForm();
+  WaitForObservedEvent();
+
+  // Ensures flow is triggered, and bubble and icon view are visible.
+  EXPECT_TRUE(GetSaveCardIconView()->visible());
+  EXPECT_TRUE(GetSaveCardBubbleViews()->visible());
+
+  AddTabAtIndex(1, GURL("http://example.com/"), ui::PAGE_TRANSITION_TYPED);
+  TabStripModel* tab_model = browser()->tab_strip_model();
+  tab_model->ActivateTabAt(1, {TabStripModel::GestureType::kOther});
+
+  // Ensures bubble and icon go away if user navigates to another tab.
+  EXPECT_FALSE(GetSaveCardIconView()->visible());
+  EXPECT_FALSE(GetSaveCardBubbleViews());
+
+  tab_model->ActivateTabAt(0, {TabStripModel::GestureType::kOther});
+
+  // If the user navigates back, shows only the icon not the bubble.
+  EXPECT_TRUE(GetSaveCardIconView()->visible());
+  EXPECT_FALSE(GetSaveCardBubbleViews());
 }
 
 }  // namespace autofill

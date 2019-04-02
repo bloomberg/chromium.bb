@@ -32,6 +32,10 @@ class ToolbarPageActionIconContainerView : public ToolbarIconContainerView,
 
   PageActionIconView* GetIconView(PageActionIconType icon_type);
 
+  // Activate the first visible but inactive PageActionIconView for
+  // accessibility.
+  bool ActivateFirstInactiveBubbleForAccessibility();
+
   // ToolbarIconContainerView:
   void UpdateAllIcons() override;
 
@@ -51,9 +55,13 @@ class ToolbarPageActionIconContainerView : public ToolbarIconContainerView,
   }
 
  private:
+  bool FocusInactiveBubbleForIcon(PageActionIconView* icon_view);
+
   autofill::LocalCardMigrationIconView* local_card_migration_icon_view_ =
       nullptr;
   autofill::SaveCardIconView* save_card_icon_view_ = nullptr;
+
+  std::vector<PageActionIconView*> page_action_icons_;
 
   Browser* const browser_;
 
