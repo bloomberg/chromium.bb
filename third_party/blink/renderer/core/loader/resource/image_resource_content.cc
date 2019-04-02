@@ -527,9 +527,13 @@ bool ImageResourceContent::IsAcceptableCompressionRatio(
   }
   if (MIMETypeRegistry::IsLosslessImageMIMEType(mime_type)) {
     // Enforce the lossless image policy.
-    return context.IsFeatureEnabled(
+    bool enabled_by_10k_policy = context.IsFeatureEnabled(
         mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages,
         PolicyValue(compression_ratio_10k), ReportOptions::kReportOnFailure);
+    bool enabled_by_1k_policy = context.IsFeatureEnabled(
+        mojom::FeaturePolicyFeature::kUnoptimizedLosslessImagesStrict,
+        PolicyValue(compression_ratio_1k), ReportOptions::kReportOnFailure);
+    return enabled_by_10k_policy && enabled_by_1k_policy;
   }
 
   return true;

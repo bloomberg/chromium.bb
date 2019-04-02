@@ -22731,6 +22731,7 @@ Called by update_net_error_codes.py.-->
   <int value="44" label="IdleDetection"/>
   <int value="45" label="UnoptimizedLossyImages"/>
   <int value="46" label="UnoptimizedLosslessImages"/>
+  <int value="47" label="UnoptimizedLosslessImagesStrict"/>
 </enum>
 
 <enum name="FeedbackSource">
