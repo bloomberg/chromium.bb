@@ -499,7 +499,7 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
           index >= serialized_script_value_->MojoHandles().size()) {
         return nullptr;
       }
-      return MojoHandle::Create(
+      return MakeGarbageCollected<MojoHandle>(
           std::move(serialized_script_value_->MojoHandles()[index]));
     }
     case kOffscreenCanvasTransferTag: {

@@ -40,10 +40,10 @@ MojoCreateMessagePipeResult* Mojo::createMessagePipe() {
 
   result_dict->setResult(result);
   if (result == MOJO_RESULT_OK) {
-    result_dict->setHandle0(
-        MojoHandle::Create(mojo::ScopedHandle::From(std::move(handle0))));
-    result_dict->setHandle1(
-        MojoHandle::Create(mojo::ScopedHandle::From(std::move(handle1))));
+    result_dict->setHandle0(MakeGarbageCollected<MojoHandle>(
+        mojo::ScopedHandle::From(std::move(handle0))));
+    result_dict->setHandle1(MakeGarbageCollected<MojoHandle>(
+        mojo::ScopedHandle::From(std::move(handle1))));
   }
   return result_dict;
 }
@@ -70,10 +70,10 @@ MojoCreateDataPipeResult* Mojo::createDataPipe(
   MojoResult result = mojo::CreateDataPipe(&options, &producer, &consumer);
   result_dict->setResult(result);
   if (result == MOJO_RESULT_OK) {
-    result_dict->setProducer(
-        MojoHandle::Create(mojo::ScopedHandle::From(std::move(producer))));
-    result_dict->setConsumer(
-        MojoHandle::Create(mojo::ScopedHandle::From(std::move(consumer))));
+    result_dict->setProducer(MakeGarbageCollected<MojoHandle>(
+        mojo::ScopedHandle::From(std::move(producer))));
+    result_dict->setConsumer(MakeGarbageCollected<MojoHandle>(
+        mojo::ScopedHandle::From(std::move(consumer))));
   }
   return result_dict;
 }
@@ -89,7 +89,8 @@ MojoCreateSharedBufferResult* Mojo::createSharedBuffer(unsigned num_bytes) {
 
   result_dict->setResult(result);
   if (result == MOJO_RESULT_OK) {
-    result_dict->setHandle(MojoHandle::Create(mojo::MakeScopedHandle(handle)));
+    result_dict->setHandle(
+        MakeGarbageCollected<MojoHandle>(mojo::MakeScopedHandle(handle)));
   }
   return result_dict;
 }
@@ -125,7 +126,8 @@ MojoHandle* Mojo::getDocumentInterfaceBrokerHandle(ScriptState* script_state) {
 
   mojo::MessagePipe pipe;
   document->BindDocumentInterfaceBroker(std::move(pipe.handle0));
-  return MojoHandle::Create(mojo::ScopedHandle::From(std::move(pipe.handle1)));
+  return MakeGarbageCollected<MojoHandle>(
+      mojo::ScopedHandle::From(std::move(pipe.handle1)));
 }
 
 // static
@@ -137,7 +139,7 @@ MojoHandle* Mojo::replaceDocumentInterfaceBrokerForTesting(
   Document* document = static_cast<Document*>(execution_context);
   DCHECK(document);
 
-  return MojoHandle::Create(
+  return MakeGarbageCollected<MojoHandle>(
       mojo::ScopedHandle::From(document->SetDocumentInterfaceBrokerForTesting(
           mojo::ScopedMessagePipeHandle(mojo::MessagePipeHandle(
               test_broker_handle->TakeHandle().release().value())))));

@@ -397,7 +397,7 @@ class JsToCppTest : public testing::Test {
     ASSERT_TRUE(start_fn->IsFunction());
     v8::Local<v8::Object> global_proxy = scope.GetContext()->Global();
     v8::Local<v8::Value> args[1] = {
-        ToV8(MojoHandle::Create(
+        ToV8(MakeGarbageCollected<MojoHandle>(
                  mojo::ScopedHandle::From(js_side_request.PassMessagePipe())),
              global_proxy, scope.GetIsolate())};
     V8ScriptRunner::CallFunction(start_fn.As<v8::Function>(),
