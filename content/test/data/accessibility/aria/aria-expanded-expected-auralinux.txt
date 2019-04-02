@@ -1,0 +1,9 @@
+[document web]
+++[menu]
+++++[menu item] name='New' haspopup:menu
+++++[menu item] name='Open' expanded haspopup:menu
+++++[menu item] name='Save'
+++++[menu item] name='Quit' expanded
+++[separator] horizontal current=0.000000 minimum=0.000000 maximum=0.000000
+++[separator] horizontal current=0.000000 minimum=0.000000 maximum=0.000000
+++[separator] horizontal current=0.000000 minimum=0.000000 maximum=0.000000
