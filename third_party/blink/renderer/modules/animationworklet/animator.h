@@ -7,7 +7,6 @@
 
 #include "third_party/blink/renderer/modules/animationworklet/worklet_group_effect_proxy.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/graphics/animation_worklet_mutators_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -44,7 +43,7 @@ class Animator final : public GarbageCollectedFinalized<Animator>,
  private:
   // This object keeps the definition object, and animator instance alive.
   // It participates in wrapper tracing as it holds onto V8 wrappers.
-  TraceWrapperMember<AnimatorDefinition> definition_;
+  Member<AnimatorDefinition> definition_;
   TraceWrapperV8Reference<v8::Value> instance_;
 
   Member<WorkletGroupEffectProxy> group_effect_;

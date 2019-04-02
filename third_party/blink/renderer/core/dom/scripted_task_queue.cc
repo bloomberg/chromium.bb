@@ -40,7 +40,7 @@ class ScriptedTaskQueue::WrappedCallback
   void Reject() { resolver_->Reject(); }
 
  private:
-  TraceWrapperMember<V8TaskQueuePostCallback> callback_;
+  Member<V8TaskQueuePostCallback> callback_;
   Member<ScriptPromiseResolver> resolver_;
   TaskHandle task_handle_;
 

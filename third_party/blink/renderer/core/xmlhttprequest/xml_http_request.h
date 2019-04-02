@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/core/xmlhttprequest/xml_http_request_progress_event_throttle.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_string.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
@@ -306,7 +305,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   // using case insensitive comparison functions if needed.
   AtomicString mime_type_override_;
   TimeDelta timeout_;
-  TraceWrapperMember<Blob> response_blob_;
+  Member<Blob> response_blob_;
 
   TaskHandle pending_abort_event_;
 
@@ -320,7 +319,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   // Avoid using a flat WTF::String here and rather use a traced v8::String
   // which internally builds a string rope.
   GC_PLUGIN_IGNORE("crbug.com/841830") TraceWrapperV8String response_text_;
-  TraceWrapperMember<Document> response_document_;
+  Member<Document> response_document_;
   Member<DocumentParser> response_document_parser_;
 
   scoped_refptr<SharedBuffer> binary_response_builder_;
@@ -328,7 +327,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   int64_t length_downloaded_to_blob_ = 0;
   int64_t length_downloaded_to_blob_last_reported_ = 0;
 
-  TraceWrapperMember<DOMArrayBuffer> response_array_buffer_;
+  Member<DOMArrayBuffer> response_array_buffer_;
 
   // Used for onprogress tracking
   int64_t received_length_ = 0;

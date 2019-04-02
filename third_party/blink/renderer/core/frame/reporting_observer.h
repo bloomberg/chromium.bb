@@ -61,7 +61,7 @@ class CORE_EXPORT ReportingObserver final
 
  private:
   Member<ExecutionContext> execution_context_;
-  TraceWrapperMember<V8ReportingObserverCallback> callback_;
+  Member<V8ReportingObserverCallback> callback_;
   Member<ReportingObserverOptions> options_;
   HeapVector<Member<Report>> report_queue_;
   bool registered_;

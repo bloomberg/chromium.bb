@@ -3859,14 +3859,14 @@ bool Element::NeedsOcclusionTracking() const {
   return false;
 }
 
-HeapHashMap<TraceWrapperMember<ResizeObserver>, Member<ResizeObservation>>*
+HeapHashMap<Member<ResizeObserver>, Member<ResizeObservation>>*
 Element::ResizeObserverData() const {
   if (HasRareData())
     return GetElementRareData()->ResizeObserverData();
   return nullptr;
 }
 
-HeapHashMap<TraceWrapperMember<ResizeObserver>, Member<ResizeObservation>>&
+HeapHashMap<Member<ResizeObserver>, Member<ResizeObservation>>&
 Element::EnsureResizeObserverData() {
   return EnsureElementRareData().EnsureResizeObserverData();
 }
@@ -5391,7 +5391,7 @@ void Element::LogUpdateAttributeIfIsolatedWorldAndInDocument(
 
 void Element::Trace(Visitor* visitor) {
   if (HasRareData())
-    visitor->TraceWithWrappers(GetElementRareData());
+    visitor->Trace(GetElementRareData());
   visitor->Trace(element_data_);
   ContainerNode::Trace(visitor);
 }

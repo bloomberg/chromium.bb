@@ -52,7 +52,7 @@ class WritableStreamNative::PendingAbortRequest final
   }
 
  private:
-  TraceWrapperMember<StreamPromiseResolver> promise_;
+  Member<StreamPromiseResolver> promise_;
   TraceWrapperV8Reference<v8::Value> reason_;
   const bool was_already_erroring_;
 
@@ -494,8 +494,8 @@ void WritableStreamNative::FinishErroring(ScriptState* script_state,
     }
 
    private:
-    TraceWrapperMember<WritableStreamNative> stream_;
-    TraceWrapperMember<StreamPromiseResolver> promise_;
+    Member<WritableStreamNative> stream_;
+    Member<StreamPromiseResolver> promise_;
   };
 
   class RejectPromiseFunction final : public StreamScriptFunction {
@@ -524,8 +524,8 @@ void WritableStreamNative::FinishErroring(ScriptState* script_state,
     }
 
    private:
-    TraceWrapperMember<WritableStreamNative> stream_;
-    TraceWrapperMember<StreamPromiseResolver> promise_;
+    Member<WritableStreamNative> stream_;
+    Member<StreamPromiseResolver> promise_;
   };
 
   StreamThenPromise(script_state->GetContext(), promise,

@@ -44,7 +44,7 @@ class XMLParserScriptRunner final
 
   // https://html.spec.whatwg.org/C/#pending-parsing-blocking-script
   // TODO(crbug/717643): Support module scripts, and turn this into
-  // TraceWrapperMember<>.
+  // Member<>.
   Member<PendingScript> parser_blocking_script_;
 
   Member<XMLParserScriptRunnerHost> host_;

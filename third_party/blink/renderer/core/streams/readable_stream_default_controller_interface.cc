@@ -181,7 +181,7 @@ class ReadableStreamDefaultControllerNative final
   }
 
  private:
-  TraceWrapperMember<ReadableStreamDefaultController> controller_;
+  Member<ReadableStreamDefaultController> controller_;
 };
 
 }  // namespace

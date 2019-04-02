@@ -82,9 +82,9 @@ class CORE_EXPORT TextTrackList final : public EventTargetWithInlineData {
 
   Member<HTMLMediaElement> owner_;
 
-  HeapVector<TraceWrapperMember<TextTrack>> add_track_tracks_;
-  HeapVector<TraceWrapperMember<TextTrack>> element_tracks_;
-  HeapVector<TraceWrapperMember<TextTrack>> inband_tracks_;
+  HeapVector<Member<TextTrack>> add_track_tracks_;
+  HeapVector<Member<TextTrack>> element_tracks_;
+  HeapVector<Member<TextTrack>> inband_tracks_;
 };
 
 }  // namespace blink

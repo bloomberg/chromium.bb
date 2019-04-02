@@ -48,8 +48,7 @@ class CORE_EXPORT LayoutWorkletGlobalScope final : public WorkletGlobalScope {
 
  private:
   // https://drafts.css-houdini.org/css-layout-api/#layout-definitions
-  typedef HeapHashMap<String, TraceWrapperMember<CSSLayoutDefinition>>
-      DefinitionMap;
+  typedef HeapHashMap<String, Member<CSSLayoutDefinition>> DefinitionMap;
   DefinitionMap layout_definitions_;
   Member<PendingLayoutRegistry> pending_layout_registry_;
 };

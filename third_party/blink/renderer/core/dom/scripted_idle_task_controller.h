@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/core/dom/idle_deadline.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -73,7 +72,7 @@ class CORE_EXPORT ScriptedIdleTaskController
     void Trace(Visitor*) override;
 
    private:
-    TraceWrapperMember<V8IdleRequestCallback> callback_;
+    Member<V8IdleRequestCallback> callback_;
   };
 
   int RegisterCallback(IdleTask*, const IdleRequestOptions*);

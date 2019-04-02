@@ -364,7 +364,7 @@ class CORE_EXPORT HTMLCanvasElement final
 
   IntSize size_;
 
-  TraceWrapperMember<CanvasRenderingContext> context_;
+  Member<CanvasRenderingContext> context_;
   // Used only for WebGL currently.
   bool context_creation_was_blocked_;
 

@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
 #include "third_party/blink/renderer/core/scroll/scroll_customization.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 
 // This needs to be here because element.cc also depends on it.
@@ -1048,16 +1047,16 @@ class CORE_EXPORT Node : public EventTarget {
 
   NodeRareData& CreateRareData();
 
-  const HeapVector<TraceWrapperMember<MutationObserverRegistration>>*
+  const HeapVector<Member<MutationObserverRegistration>>*
   MutationObserverRegistry();
-  const HeapHashSet<TraceWrapperMember<MutationObserverRegistration>>*
+  const HeapHashSet<Member<MutationObserverRegistration>>*
   TransientMutationObserverRegistry();
 
   uint32_t node_flags_;
-  TraceWrapperMember<Node> parent_or_shadow_host_node_;
+  Member<Node> parent_or_shadow_host_node_;
   Member<TreeScope> tree_scope_;
-  TraceWrapperMember<Node> previous_;
-  TraceWrapperMember<Node> next_;
+  Member<Node> previous_;
+  Member<Node> next_;
   // When a node has rare data we move the layoutObject into the rare data.
   union DataUnion {
     DataUnion() : node_layout_data_(&NodeRenderingData::SharedEmptyData()) {}

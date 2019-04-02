@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -158,7 +157,7 @@ class CORE_EXPORT IntersectionObserver final
  private:
   void ClearWeakMembers(Visitor*);
 
-  const TraceWrapperMember<IntersectionObserverDelegate> delegate_;
+  const Member<IntersectionObserverDelegate> delegate_;
   WeakMember<Element> root_;
   HeapLinkedHashSet<WeakMember<IntersectionObservation>> observations_;
   Vector<float> thresholds_;

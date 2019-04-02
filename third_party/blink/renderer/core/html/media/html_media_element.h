@@ -41,7 +41,6 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
 #include "third_party/blink/renderer/platform/audio/audio_source_provider.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
@@ -621,12 +620,12 @@ class CORE_EXPORT HTMLMediaElement
 
   // If any portion of an attached HTMLMediaElement (HTMLME) and the MediaSource
   // Extensions (MSE) API is alive (having pending activity or traceable from a
-  // GC root), the whole group is not GC'ed. Here, using TraceWrapperMember,
+  // GC root), the whole group is not GC'ed. Here, using Member,
   // instead of Member, because |media_source_|'s wrapper needs to remain alive
   // at least to successfully dispatch any events enqueued by behavior of the
   // HTMLME+MSE API. It makes |media_source_|'s wrapper remain alive as long as
   // this HTMLMediaElement's wrapper is alive.
-  TraceWrapperMember<HTMLMediaSource> media_source_;
+  Member<HTMLMediaSource> media_source_;
 
   // Stores "official playback position", updated periodically from "current
   // playback position". Official playback position should not change while
@@ -662,9 +661,9 @@ class CORE_EXPORT HTMLMediaElement
 
   bool was_always_muted_ : 1;
 
-  TraceWrapperMember<AudioTrackList> audio_tracks_;
-  TraceWrapperMember<VideoTrackList> video_tracks_;
-  TraceWrapperMember<TextTrackList> text_tracks_;
+  Member<AudioTrackList> audio_tracks_;
+  Member<VideoTrackList> video_tracks_;
+  Member<TextTrackList> text_tracks_;
   HeapVector<Member<TextTrack>> text_tracks_when_resource_selection_began_;
 
   Member<CueTimeline> cue_timeline_;

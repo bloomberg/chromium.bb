@@ -51,7 +51,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/tree_ordered_list.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -103,11 +102,10 @@ class CORE_EXPORT StyleEngine final
   explicit StyleEngine(Document&);
   ~StyleEngine() override;
 
-  const HeapVector<TraceWrapperMember<StyleSheet>>&
-  StyleSheetsForStyleSheetList(TreeScope&);
+  const HeapVector<Member<StyleSheet>>& StyleSheetsForStyleSheetList(
+      TreeScope&);
 
-  const HeapVector<
-      std::pair<StyleSheetKey, TraceWrapperMember<CSSStyleSheet>>>&
+  const HeapVector<std::pair<StyleSheetKey, Member<CSSStyleSheet>>>&
   InjectedAuthorStyleSheets() const {
     return injected_author_style_sheets_;
   }
@@ -463,8 +461,7 @@ class CORE_EXPORT StyleEngine final
 
   Member<CSSStyleSheet> inspector_style_sheet_;
 
-  TraceWrapperMember<DocumentStyleSheetCollection>
-      document_style_sheet_collection_;
+  Member<DocumentStyleSheetCollection> document_style_sheet_collection_;
 
   Member<StyleRuleUsageTracker> tracker_;
 
@@ -514,9 +511,9 @@ class CORE_EXPORT StyleEngine final
   std::unique_ptr<StyleResolverStats> style_resolver_stats_;
   unsigned style_for_element_count_ = 0;
 
-  HeapVector<std::pair<StyleSheetKey, TraceWrapperMember<CSSStyleSheet>>>
+  HeapVector<std::pair<StyleSheetKey, Member<CSSStyleSheet>>>
       injected_user_style_sheets_;
-  HeapVector<std::pair<StyleSheetKey, TraceWrapperMember<CSSStyleSheet>>>
+  HeapVector<std::pair<StyleSheetKey, Member<CSSStyleSheet>>>
       injected_author_style_sheets_;
 
   ActiveStyleSheetVector active_user_style_sheets_;

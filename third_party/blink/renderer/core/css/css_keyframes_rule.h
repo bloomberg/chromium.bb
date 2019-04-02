@@ -119,10 +119,9 @@ class CSSKeyframesRule final : public CSSRule {
  private:
   CSSRule::Type type() const override { return kKeyframesRule; }
 
-  TraceWrapperMember<StyleRuleKeyframes> keyframes_rule_;
-  mutable HeapVector<TraceWrapperMember<CSSKeyframeRule>>
-      child_rule_cssom_wrappers_;
-  mutable TraceWrapperMember<CSSRuleList> rule_list_cssom_wrapper_;
+  Member<StyleRuleKeyframes> keyframes_rule_;
+  mutable HeapVector<Member<CSSKeyframeRule>> child_rule_cssom_wrappers_;
+  mutable Member<CSSRuleList> rule_list_cssom_wrapper_;
   bool is_prefixed_;
 };
 

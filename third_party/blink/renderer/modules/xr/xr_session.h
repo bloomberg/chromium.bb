@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame_request_callback_collection.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/geometry/double_size.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
@@ -94,8 +93,7 @@ class XRSession final : public EventTargetWithInlineData,
   int requestAnimationFrame(V8XRFrameRequestCallback*);
   void cancelAnimationFrame(int id);
 
-  using InputSourceMap =
-      HeapHashMap<uint32_t, TraceWrapperMember<XRInputSource>>;
+  using InputSourceMap = HeapHashMap<uint32_t, Member<XRInputSource>>;
 
   HeapVector<Member<XRInputSource>> getInputSources() const;
 
@@ -234,7 +232,7 @@ class XRSession final : public EventTargetWithInlineData,
 
   mojo::Binding<device::mojom::blink::XRSessionClient> client_binding_;
 
-  TraceWrapperMember<XRFrameRequestCallbackCollection> callback_collection_;
+  Member<XRFrameRequestCallbackCollection> callback_collection_;
   std::unique_ptr<TransformationMatrix> base_pose_matrix_;
 
   WTF::Vector<float> non_immersive_projection_matrix_;

@@ -39,7 +39,7 @@ class CORE_EXPORT ScriptedTaskQueueController final
   void Trace(Visitor*) override;
 
  private:
-  HeapHashMap<String, TraceWrapperMember<ScriptedTaskQueue>> task_queues_;
+  HeapHashMap<String, Member<ScriptedTaskQueue>> task_queues_;
 };
 
 }  // namespace blink

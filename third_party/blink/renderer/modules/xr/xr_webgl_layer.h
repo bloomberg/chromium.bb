@@ -91,7 +91,7 @@ class XRWebGLLayer final : public XRLayer {
 
   scoped_refptr<XRWebGLDrawingBuffer::MirrorClient> mirror_client_;
 
-  TraceWrapperMember<WebGLRenderingContextBase> webgl_context_;
+  Member<WebGLRenderingContextBase> webgl_context_;
   scoped_refptr<XRWebGLDrawingBuffer> drawing_buffer_;
   Member<WebGLFramebuffer> framebuffer_;
 

@@ -30,7 +30,6 @@
 #include "third_party/blink/renderer/core/css/style_recalc.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/html/collection_type.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -456,8 +455,8 @@ class CORE_EXPORT ContainerNode : public Node {
                                                      ExceptionState&) const;
   inline bool IsChildTypeAllowed(const Node& child) const;
 
-  TraceWrapperMember<Node> first_child_;
-  TraceWrapperMember<Node> last_child_;
+  Member<Node> first_child_;
+  Member<Node> last_child_;
 };
 
 DEFINE_NODE_TYPE_CASTS(ContainerNode, IsContainerNode());

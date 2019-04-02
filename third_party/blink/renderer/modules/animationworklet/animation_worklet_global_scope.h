@@ -70,11 +70,10 @@ class MODULES_EXPORT AnimationWorkletGlobalScope : public WorkletGlobalScope {
                               const String& name,
                               WorkletAnimationOptions* options,
                               int num_effects);
-  typedef HeapHashMap<String, TraceWrapperMember<AnimatorDefinition>>
-      DefinitionMap;
+  typedef HeapHashMap<String, Member<AnimatorDefinition>> DefinitionMap;
   DefinitionMap animator_definitions_;
 
-  typedef HeapHashMap<int, TraceWrapperMember<Animator>> AnimatorMap;
+  typedef HeapHashMap<int, Member<Animator>> AnimatorMap;
   AnimatorMap animators_;
 
   bool registered_ = false;

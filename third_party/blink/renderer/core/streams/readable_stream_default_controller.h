@@ -7,8 +7,6 @@
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -118,12 +116,12 @@ class ReadableStreamDefaultController : public ScriptWrappable {
   bool is_pulling_ = false;
   bool is_started_ = false;
   bool enable_blink_lock_notifications_ = false;
-  TraceWrapperMember<StreamAlgorithm> cancel_algorithm_;
-  TraceWrapperMember<ReadableStreamNative> controlled_readable_stream_;
-  TraceWrapperMember<StreamAlgorithm> pull_algorithm_;
-  TraceWrapperMember<QueueWithSizes> queue_;
+  Member<StreamAlgorithm> cancel_algorithm_;
+  Member<ReadableStreamNative> controlled_readable_stream_;
+  Member<StreamAlgorithm> pull_algorithm_;
+  Member<QueueWithSizes> queue_;
   double strategy_high_water_mark_ = 0.0;
-  TraceWrapperMember<StrategySizeAlgorithm> strategy_size_algorithm_;
+  Member<StrategySizeAlgorithm> strategy_size_algorithm_;
   TraceWrapperV8Reference<v8::Object> lock_notify_target_;
 };
 

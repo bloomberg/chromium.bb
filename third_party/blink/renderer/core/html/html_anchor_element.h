@@ -127,7 +127,7 @@ class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
 
   unsigned link_relations_ : 31;
   mutable LinkHash cached_visited_link_hash_;
-  TraceWrapperMember<RelList> rel_list_;
+  Member<RelList> rel_list_;
 };
 
 inline LinkHash HTMLAnchorElement::VisitedLinkHash() const {

@@ -90,19 +90,16 @@ class CORE_EXPORT ScriptCustomElementDefinition final
                                                 ExceptionState&);
 
   Member<ScriptState> script_state_;
-  TraceWrapperMember<V8CustomElementConstructor> constructor_;
-  TraceWrapperMember<V8VoidFunction> connected_callback_;
-  TraceWrapperMember<V8VoidFunction> disconnected_callback_;
-  TraceWrapperMember<V8CustomElementAdoptedCallback> adopted_callback_;
-  TraceWrapperMember<V8CustomElementAttributeChangedCallback>
-      attribute_changed_callback_;
-  TraceWrapperMember<V8CustomElementFormAssociatedCallback>
-      form_associated_callback_;
-  TraceWrapperMember<V8VoidFunction> form_reset_callback_;
-  TraceWrapperMember<V8CustomElementDisabledStateChangedCallback>
+  Member<V8CustomElementConstructor> constructor_;
+  Member<V8VoidFunction> connected_callback_;
+  Member<V8VoidFunction> disconnected_callback_;
+  Member<V8CustomElementAdoptedCallback> adopted_callback_;
+  Member<V8CustomElementAttributeChangedCallback> attribute_changed_callback_;
+  Member<V8CustomElementFormAssociatedCallback> form_associated_callback_;
+  Member<V8VoidFunction> form_reset_callback_;
+  Member<V8CustomElementDisabledStateChangedCallback>
       disabled_state_changed_callback_;
-  TraceWrapperMember<V8CustomElementRestoreStateCallback>
-      restore_state_callback_;
+  Member<V8CustomElementRestoreStateCallback> restore_state_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ScriptCustomElementDefinition);
 };

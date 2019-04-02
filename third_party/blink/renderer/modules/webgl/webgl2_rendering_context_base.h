@@ -8,7 +8,6 @@
 #include <memory>
 #include "third_party/blink/renderer/modules/webgl/webgl_extension.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 
@@ -1112,37 +1111,34 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                                  GLsizei height,
                                  const char* function_name);
 
-  TraceWrapperMember<WebGLFramebuffer> read_framebuffer_binding_;
-  TraceWrapperMember<WebGLTransformFeedback> transform_feedback_binding_;
+  Member<WebGLFramebuffer> read_framebuffer_binding_;
+  Member<WebGLTransformFeedback> transform_feedback_binding_;
   // This instance isn't exposed to JavaScript, which is why it's a
-  // Member rather than TraceWrapperMember.
+  // Member rather than Member.
   Member<WebGLTransformFeedback> default_transform_feedback_;
 
   std::set<GLenum> supported_internal_formats_storage_;
   std::set<GLenum> compressed_texture_formats_etc2eac_;
 
-  TraceWrapperMember<WebGLBuffer> bound_copy_read_buffer_;
-  TraceWrapperMember<WebGLBuffer> bound_copy_write_buffer_;
-  TraceWrapperMember<WebGLBuffer> bound_pixel_pack_buffer_;
-  TraceWrapperMember<WebGLBuffer> bound_pixel_unpack_buffer_;
-  TraceWrapperMember<WebGLBuffer> bound_transform_feedback_buffer_;
-  TraceWrapperMember<WebGLBuffer> bound_uniform_buffer_;
-  TraceWrapperMember<WebGLBuffer> bound_atomic_counter_buffer_;
-  TraceWrapperMember<WebGLBuffer> bound_shader_storage_buffer_;
+  Member<WebGLBuffer> bound_copy_read_buffer_;
+  Member<WebGLBuffer> bound_copy_write_buffer_;
+  Member<WebGLBuffer> bound_pixel_pack_buffer_;
+  Member<WebGLBuffer> bound_pixel_unpack_buffer_;
+  Member<WebGLBuffer> bound_transform_feedback_buffer_;
+  Member<WebGLBuffer> bound_uniform_buffer_;
+  Member<WebGLBuffer> bound_atomic_counter_buffer_;
+  Member<WebGLBuffer> bound_shader_storage_buffer_;
 
-  HeapVector<TraceWrapperMember<WebGLBuffer>>
-      bound_indexed_atomic_counter_buffers_;
-  HeapVector<TraceWrapperMember<WebGLBuffer>>
-      bound_indexed_shader_storage_buffers_;
-  HeapVector<TraceWrapperMember<WebGLBuffer>> bound_indexed_uniform_buffers_;
+  HeapVector<Member<WebGLBuffer>> bound_indexed_atomic_counter_buffers_;
+  HeapVector<Member<WebGLBuffer>> bound_indexed_shader_storage_buffers_;
+  HeapVector<Member<WebGLBuffer>> bound_indexed_uniform_buffers_;
   GLint max_transform_feedback_separate_attribs_;
   wtf_size_t max_bound_uniform_buffer_index_;
 
-  TraceWrapperMember<WebGLQuery> current_boolean_occlusion_query_;
-  TraceWrapperMember<WebGLQuery>
-      current_transform_feedback_primitives_written_query_;
-  TraceWrapperMember<WebGLQuery> current_elapsed_query_;
-  HeapVector<TraceWrapperMember<WebGLSampler>> sampler_units_;
+  Member<WebGLQuery> current_boolean_occlusion_query_;
+  Member<WebGLQuery> current_transform_feedback_primitives_written_query_;
+  Member<WebGLQuery> current_elapsed_query_;
+  HeapVector<Member<WebGLSampler>> sampler_units_;
 
   GLint pack_row_length_;
   GLint pack_skip_pixels_;

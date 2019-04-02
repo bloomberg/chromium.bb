@@ -119,8 +119,8 @@ class MODULES_EXPORT Geolocation final
  private:
   // Customized HeapHashSet class that checks notifiers' timers. Notifier's
   // timer may be active only when the notifier is owned by the Geolocation.
-  class GeoNotifierSet : private HeapHashSet<TraceWrapperMember<GeoNotifier>> {
-    using BaseClass = HeapHashSet<TraceWrapperMember<GeoNotifier>>;
+  class GeoNotifierSet : private HeapHashSet<Member<GeoNotifier>> {
+    using BaseClass = HeapHashSet<Member<GeoNotifier>>;
 
    public:
     using BaseClass::Trace;
@@ -204,7 +204,7 @@ class MODULES_EXPORT Geolocation final
                                             mojom::PermissionStatus);
 
   GeoNotifierSet one_shots_;
-  TraceWrapperMember<GeolocationWatchers> watchers_;
+  Member<GeolocationWatchers> watchers_;
   // GeoNotifiers that are in the middle of invocation.
   //
   // |HandleError(error)| and |MakeSuccessCallbacks| need to clear |one_shots_|
@@ -217,7 +217,7 @@ class MODULES_EXPORT Geolocation final
   // TODO(https://crbug.com/796145): Remove this hack once on-stack objects
   // get supported by either of wrapper-tracing or unified GC.
   GeoNotifierSet one_shots_being_invoked_;
-  HeapVector<TraceWrapperMember<GeoNotifier>> watchers_being_invoked_;
+  HeapVector<Member<GeoNotifier>> watchers_being_invoked_;
   Member<Geoposition> last_position_;
 
   RevocableInterfacePtr<device::mojom::blink::Geolocation> geolocation_;

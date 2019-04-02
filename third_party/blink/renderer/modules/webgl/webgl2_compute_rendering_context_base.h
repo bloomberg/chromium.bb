@@ -7,7 +7,6 @@
 
 #include "third_party/blink/renderer/modules/webgl/webgl2_rendering_context_base.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 

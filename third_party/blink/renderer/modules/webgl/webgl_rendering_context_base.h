@@ -582,15 +582,13 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     DISALLOW_NEW();
 
    public:
-    TraceWrapperMember<WebGLTexture> texture2d_binding_;
-    TraceWrapperMember<WebGLTexture> texture_cube_map_binding_;
-    TraceWrapperMember<WebGLTexture> texture3d_binding_;
-    TraceWrapperMember<WebGLTexture> texture2d_array_binding_;
-    TraceWrapperMember<WebGLTexture> texture_video_image_binding_;
+    Member<WebGLTexture> texture2d_binding_;
+    Member<WebGLTexture> texture_cube_map_binding_;
+    Member<WebGLTexture> texture3d_binding_;
+    Member<WebGLTexture> texture2d_array_binding_;
+    Member<WebGLTexture> texture_video_image_binding_;
 
     void Trace(blink::Visitor*);
-    // Wrappers are traced by parent since TextureUnitState is not a heap
-    // object.
   };
 
   scoped_refptr<StaticBitmapImage> GetImage(
@@ -731,7 +729,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // to the back-buffer of m_context.
   scoped_refptr<DrawingBuffer> drawing_buffer_;
 
-  TraceWrapperMember<WebGLContextGroup> context_group_;
+  Member<WebGLContextGroup> context_group_;
 
   bool is_origin_top_left_ = false;
 
@@ -757,10 +755,10 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   // List of bound VBO's. Used to maintain info about sizes for ARRAY_BUFFER and
   // stored values for ELEMENT_ARRAY_BUFFER
-  TraceWrapperMember<WebGLBuffer> bound_array_buffer_;
+  Member<WebGLBuffer> bound_array_buffer_;
 
   Member<WebGLVertexArrayObjectBase> default_vertex_array_object_;
-  TraceWrapperMember<WebGLVertexArrayObjectBase> bound_vertex_array_object_;
+  Member<WebGLVertexArrayObjectBase> bound_vertex_array_object_;
   void SetBoundVertexArrayObject(WebGLVertexArrayObjectBase*);
 
   enum VertexAttribValueType {
@@ -773,9 +771,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   unsigned max_vertex_attribs_;
   void SetVertexAttribType(GLuint index, VertexAttribValueType);
 
-  TraceWrapperMember<WebGLProgram> current_program_;
-  TraceWrapperMember<WebGLFramebuffer> framebuffer_binding_;
-  TraceWrapperMember<WebGLRenderbuffer> renderbuffer_binding_;
+  Member<WebGLProgram> current_program_;
+  Member<WebGLFramebuffer> framebuffer_binding_;
+  Member<WebGLRenderbuffer> renderbuffer_binding_;
 
   bool xr_compatible_;
 
@@ -938,11 +936,11 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     Member<T>& extension_field_;
     // ExtensionTracker holds it's own reference to the extension to ensure
     // that it is not deleted before this object's destructor is called
-    TraceWrapperMember<T> extension_;
+    Member<T> extension_;
   };
 
   bool extension_enabled_[kWebGLExtensionNameCount];
-  HeapVector<TraceWrapperMember<ExtensionTracker>> extensions_;
+  HeapVector<Member<ExtensionTracker>> extensions_;
   HashSet<String> disabled_extensions_;
 
   template <typename T>

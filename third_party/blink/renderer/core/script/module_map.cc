@@ -44,7 +44,7 @@ class ModuleMap::Entry final : public GarbageCollectedFinalized<Entry>,
   // Implements ModuleScriptLoaderClient
   void NotifyNewSingleModuleFinished(ModuleScript*) override;
 
-  TraceWrapperMember<ModuleScript> module_script_;
+  Member<ModuleScript> module_script_;
   Member<ModuleMap> map_;
 
   // Correspond to the HTML spec: "fetching" state.
@@ -126,7 +126,7 @@ void ModuleMap::FetchSingleModuleScript(
   // entry's value changes, then queue a task on the networking task source to
   // proceed with running the following steps.</spec>
   MapImpl::AddResult result = map_.insert(request.Url(), nullptr);
-  TraceWrapperMember<Entry>& entry = result.stored_value->value;
+  Member<Entry>& entry = result.stored_value->value;
   if (result.is_new_entry) {
     entry = Entry::Create(this);
 
