@@ -60,10 +60,6 @@ extern const base::Feature kEnableStereoAudioInput;
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kTimerNotification;
 
-// Enables Assistant alarm timer manager integration.
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-extern const base::Feature kEnableAssistantAlarmTimerManager;
-
 // Enables power management features i.e. Wake locks and wake up alarms.
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kEnablePowerManager;
@@ -83,8 +79,6 @@ extern const base::Feature kTimerTicks;
 // Enables Assistant key remapping on keyboards.
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kAssistantKeyRemapping;
-
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsAlarmTimerManagerEnabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsAppSupportEnabled();
 
