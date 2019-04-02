@@ -26,6 +26,7 @@ namespace {
 // Total of Test samples including left and right channels.
 #define NUM_SAMPLES 64
 
+constexpr size_t kBytesPerSample = sizeof(int32_t);
 constexpr int kNumInputChannels = 2;
 constexpr int kInputSampleRate = 48000;
 constexpr int kInputFrames = NUM_SAMPLES / 2;
@@ -162,8 +163,7 @@ constexpr int32_t kTestData[NUM_SAMPLES] = {
 std::unique_ptr<::media::AudioBus> GetTestData() {
   int samples = NUM_SAMPLES / kNumInputChannels;
   auto data = ::media::AudioBus::Create(kNumInputChannels, samples);
-  data->FromInterleaved<::media::SignedInt32SampleTypeTraits>(kTestData,
-                                                              samples);
+  data->FromInterleaved(kTestData, samples, kBytesPerSample);
   return data;
 }
 
