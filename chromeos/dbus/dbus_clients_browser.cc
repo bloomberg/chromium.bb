@@ -30,7 +30,6 @@
 #include "chromeos/dbus/fake_image_burner_client.h"
 #include "chromeos/dbus/fake_image_loader_client.h"
 #include "chromeos/dbus/fake_lorgnette_manager_client.h"
-#include "chromeos/dbus/fake_media_analytics_client.h"
 #include "chromeos/dbus/fake_oobe_configuration_client.h"
 #include "chromeos/dbus/fake_runtime_probe_client.h"
 #include "chromeos/dbus/fake_seneschal_client.h"
@@ -39,7 +38,6 @@
 #include "chromeos/dbus/image_burner_client.h"
 #include "chromeos/dbus/image_loader_client.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
-#include "chromeos/dbus/media_analytics_client.h"
 #include "chromeos/dbus/oobe_configuration_client.h"
 #include "chromeos/dbus/runtime_probe_client.h"
 #include "chromeos/dbus/seneschal_client.h"
@@ -121,11 +119,6 @@ DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
     lorgnette_manager_client_.reset(new FakeLorgnetteManagerClient);
 
   if (use_real_clients)
-    media_analytics_client_.reset(MediaAnalyticsClient::Create());
-  else
-    media_analytics_client_.reset(new FakeMediaAnalyticsClient);
-
-  if (use_real_clients)
     oobe_configuration_client_ = OobeConfigurationClient::Create();
   else
     oobe_configuration_client_.reset(new FakeOobeConfigurationClient);
@@ -172,7 +165,6 @@ void DBusClientsBrowser::Initialize(dbus::Bus* system_bus) {
   image_burner_client_->Init(system_bus);
   image_loader_client_->Init(system_bus);
   lorgnette_manager_client_->Init(system_bus);
-  media_analytics_client_->Init(system_bus);
   oobe_configuration_client_->Init(system_bus);
   runtime_probe_client_->Init(system_bus);
   seneschal_client_->Init(system_bus);

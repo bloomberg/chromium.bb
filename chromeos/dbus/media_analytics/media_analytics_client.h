@@ -2,22 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_MEDIA_ANALYTICS_CLIENT_H_
-#define CHROMEOS_DBUS_MEDIA_ANALYTICS_CLIENT_H_
+#ifndef CHROMEOS_DBUS_MEDIA_ANALYTICS_MEDIA_ANALYTICS_CLIENT_H_
+#define CHROMEOS_DBUS_MEDIA_ANALYTICS_MEDIA_ANALYTICS_CLIENT_H_
 
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
-#include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/media_perception/media_perception.pb.h"
+
+namespace dbus {
+class Bus;
+}
 
 namespace chromeos {
 
 // MediaAnalyticsClient is used to communicate with a media analytics process
 // running outside of Chrome.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) MediaAnalyticsClient : public DBusClient {
+class COMPONENT_EXPORT(MEDIA_ANALYTICS_CLIENT) MediaAnalyticsClient {
  public:
   class Observer {
    public:
@@ -29,7 +32,17 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) MediaAnalyticsClient : public DBusClient {
     virtual ~Observer() = default;
   };
 
-  ~MediaAnalyticsClient() override;
+  // Creates and initializes the global instance. |bus| must not be null.
+  static void Initialize(dbus::Bus* bus);
+
+  // Creates and initializes a fake global instance if not already created.
+  static void InitializeFake();
+
+  // Destroys the global instance which must have been initialized.
+  static void Shutdown();
+
+  // Returns the global instance if initialized. May return null.
+  static MediaAnalyticsClient* Get();
 
   // Adds or removes an observer.
   virtual void AddObserver(Observer* observer) = 0;
@@ -59,7 +72,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) MediaAnalyticsClient : public DBusClient {
   static MediaAnalyticsClient* Create();
 
  protected:
+  // Initialize/Shutdown should be used instead.
   MediaAnalyticsClient();
+  virtual ~MediaAnalyticsClient();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaAnalyticsClient);
@@ -67,4 +82,4 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) MediaAnalyticsClient : public DBusClient {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_MEDIA_ANALYTICS_CLIENT_H_
+#endif  // CHROMEOS_DBUS_MEDIA_ANALYTICS_MEDIA_ANALYTICS_CLIENT_H_

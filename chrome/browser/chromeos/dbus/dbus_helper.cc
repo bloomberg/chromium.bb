@@ -16,6 +16,7 @@
 #include "chromeos/dbus/hammerd/hammerd_client.h"
 #include "chromeos/dbus/kerberos/kerberos_client.h"
 #include "chromeos/dbus/machine_learning/machine_learning_client.h"
+#include "chromeos/dbus/media_analytics/media_analytics_client.h"
 #include "chromeos/dbus/permission_broker/permission_broker_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
@@ -56,6 +57,7 @@ void InitializeDBus() {
     CryptohomeClient::Initialize(bus);
     KerberosClient::Initialize(bus);
     MachineLearningClient::Initialize(bus);
+    MediaAnalyticsClient::Initialize(bus);
     PermissionBrokerClient::Initialize(bus);
     PowerManagerClient::Initialize(bus);
     SystemClockClient::Initialize(bus);
@@ -66,6 +68,7 @@ void InitializeDBus() {
     CryptohomeClient::InitializeFake();
     KerberosClient::InitializeFake();
     MachineLearningClient::InitializeFake();
+    MediaAnalyticsClient::InitializeFake();
     PermissionBrokerClient::InitializeFake();
     PowerManagerClient::InitializeFake();
     SystemClockClient::InitializeFake();
@@ -84,6 +87,7 @@ void ShutdownDBus() {
   SystemClockClient::Shutdown();
   PowerManagerClient::Shutdown();
   PermissionBrokerClient::Shutdown();
+  MediaAnalyticsClient::Shutdown();
   MachineLearningClient::Shutdown();
   KerberosClient::Shutdown();
   CryptohomeClient::Shutdown();

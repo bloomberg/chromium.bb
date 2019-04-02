@@ -12,7 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/media_analytics_client.h"
+#include "chromeos/dbus/media_analytics/media_analytics_client.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/media_perception_private/conversion_utils.h"
@@ -140,8 +140,7 @@ MediaPerceptionAPIManager::MediaPerceptionAPIManager(
       analytics_process_state_(AnalyticsProcessState::IDLE),
       scoped_observer_(this),
       weak_ptr_factory_(this) {
-  scoped_observer_.Add(
-      chromeos::DBusThreadManager::Get()->GetMediaAnalyticsClient());
+  scoped_observer_.Add(chromeos::MediaAnalyticsClient::Get());
 }
 
 MediaPerceptionAPIManager::~MediaPerceptionAPIManager() {
@@ -161,9 +160,7 @@ void MediaPerceptionAPIManager::SetMountPointNonEmptyForTesting() {
 
 void MediaPerceptionAPIManager::GetState(APIStateCallback callback) {
   if (analytics_process_state_ == AnalyticsProcessState::RUNNING) {
-    chromeos::MediaAnalyticsClient* dbus_client =
-        chromeos::DBusThreadManager::Get()->GetMediaAnalyticsClient();
-    dbus_client->GetState(
+    chromeos::MediaAnalyticsClient::Get()->GetState(
         base::BindOnce(&MediaPerceptionAPIManager::StateCallback,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
     return;
@@ -351,9 +348,7 @@ void MediaPerceptionAPIManager::SetState(
 
 void MediaPerceptionAPIManager::SetStateInternal(APIStateCallback callback,
                                                  const mri::State& state) {
-  chromeos::MediaAnalyticsClient* dbus_client =
-      chromeos::DBusThreadManager::Get()->GetMediaAnalyticsClient();
-  dbus_client->SetState(
+  chromeos::MediaAnalyticsClient::Get()->SetState(
       state,
       base::BindOnce(&MediaPerceptionAPIManager::StateCallback,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -361,9 +356,7 @@ void MediaPerceptionAPIManager::SetStateInternal(APIStateCallback callback,
 
 void MediaPerceptionAPIManager::GetDiagnostics(
     const APIGetDiagnosticsCallback& callback) {
-  chromeos::MediaAnalyticsClient* dbus_client =
-      chromeos::DBusThreadManager::Get()->GetMediaAnalyticsClient();
-  dbus_client->GetDiagnostics(
+  chromeos::MediaAnalyticsClient::Get()->GetDiagnostics(
       base::Bind(&MediaPerceptionAPIManager::GetDiagnosticsCallback,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
@@ -417,12 +410,10 @@ void MediaPerceptionAPIManager::SendMojoInvitation(
 
   base::ScopedFD fd =
       channel.TakeRemoteEndpoint().TakePlatformHandle().TakeFD();
-  chromeos::DBusThreadManager::Get()
-      ->GetMediaAnalyticsClient()
-      ->BootstrapMojoConnection(
-          std::move(fd),
-          base::BindOnce(&MediaPerceptionAPIManager::OnBootstrapMojoConnection,
-                         weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  chromeos::MediaAnalyticsClient::Get()->BootstrapMojoConnection(
+      std::move(fd),
+      base::BindOnce(&MediaPerceptionAPIManager::OnBootstrapMojoConnection,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void MediaPerceptionAPIManager::OnBootstrapMojoConnection(

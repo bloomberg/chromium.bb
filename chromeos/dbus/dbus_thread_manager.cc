@@ -29,7 +29,6 @@
 #include "chromeos/dbus/image_burner_client.h"
 #include "chromeos/dbus/image_loader_client.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
-#include "chromeos/dbus/media_analytics_client.h"
 #include "chromeos/dbus/modem_messaging_client.h"
 #include "chromeos/dbus/runtime_probe_client.h"
 #include "chromeos/dbus/seneschal_client.h"
@@ -208,11 +207,6 @@ ImageLoaderClient* DBusThreadManager::GetImageLoaderClient() {
 
 LorgnetteManagerClient* DBusThreadManager::GetLorgnetteManagerClient() {
   return clients_browser_ ? clients_browser_->lorgnette_manager_client_.get()
-                          : nullptr;
-}
-
-MediaAnalyticsClient* DBusThreadManager::GetMediaAnalyticsClient() {
-  return clients_browser_ ? clients_browser_->media_analytics_client_.get()
                           : nullptr;
 }
 
@@ -426,12 +420,6 @@ void DBusThreadManagerSetter::SetImageBurnerClient(
 void DBusThreadManagerSetter::SetImageLoaderClient(
     std::unique_ptr<ImageLoaderClient> client) {
   DBusThreadManager::Get()->clients_browser_->image_loader_client_ =
-      std::move(client);
-}
-
-void DBusThreadManagerSetter::SetMediaAnalyticsClient(
-    std::unique_ptr<MediaAnalyticsClient> client) {
-  DBusThreadManager::Get()->clients_browser_->media_analytics_client_ =
       std::move(client);
 }
 

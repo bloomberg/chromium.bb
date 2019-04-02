@@ -2,26 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_FAKE_MEDIA_ANALYTICS_CLIENT_H_
-#define CHROMEOS_DBUS_FAKE_MEDIA_ANALYTICS_CLIENT_H_
+#ifndef CHROMEOS_DBUS_MEDIA_ANALYTICS_FAKE_MEDIA_ANALYTICS_CLIENT_H_
+#define CHROMEOS_DBUS_MEDIA_ANALYTICS_FAKE_MEDIA_ANALYTICS_CLIENT_H_
 
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chromeos/dbus/media_analytics_client.h"
+#include "chromeos/dbus/media_analytics/media_analytics_client.h"
 #include "chromeos/dbus/media_perception/media_perception.pb.h"
 
 namespace chromeos {
 
 // MediaAnalyticsClient is used to communicate with a media analytics process
 // running outside of Chrome.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeMediaAnalyticsClient
+class COMPONENT_EXPORT(MEDIA_ANALYTICS_CLIENT) FakeMediaAnalyticsClient
     : public MediaAnalyticsClient {
  public:
   FakeMediaAnalyticsClient();
   ~FakeMediaAnalyticsClient() override;
+
+  // Checks that a FakeMediaAnalyticsClient instance was initialized and returns
+  // it.
+  static FakeMediaAnalyticsClient* Get();
 
   // Inherited from MediaAnalyticsClient.
   void AddObserver(Observer* observer) override;
@@ -32,9 +36,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeMediaAnalyticsClient
   void GetDiagnostics(DBusMethodCallback<mri::Diagnostics> callback) override;
   void BootstrapMojoConnection(base::ScopedFD file_descriptor,
                                VoidDBusMethodCallback callback) override;
-
-  // Inherited from DBusClient.
-  void Init(dbus::Bus* bus) override;
 
   // Fires a fake media perception event.
   bool FireMediaPerceptionEvent(const mri::MediaPerception& media_perception);
@@ -80,4 +81,4 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeMediaAnalyticsClient
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_FAKE_MEDIA_ANALYTICS_CLIENT_H_
+#endif  // CHROMEOS_DBUS_MEDIA_ANALYTICS_FAKE_MEDIA_ANALYTICS_CLIENT_H_

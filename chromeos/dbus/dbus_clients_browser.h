@@ -30,7 +30,6 @@ class EasyUnlockClient;
 class ImageBurnerClient;
 class ImageLoaderClient;
 class LorgnetteManagerClient;
-class MediaAnalyticsClient;
 class OobeConfigurationClient;
 class RuntimeProbeClient;
 class SeneschalClient;
@@ -67,7 +66,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusClientsBrowser {
   std::unique_ptr<ImageBurnerClient> image_burner_client_;
   std::unique_ptr<ImageLoaderClient> image_loader_client_;
   std::unique_ptr<LorgnetteManagerClient> lorgnette_manager_client_;
-  std::unique_ptr<MediaAnalyticsClient> media_analytics_client_;
   std::unique_ptr<OobeConfigurationClient> oobe_configuration_client_;
   std::unique_ptr<RuntimeProbeClient> runtime_probe_client_;
   std::unique_ptr<SeneschalClient> seneschal_client_;
