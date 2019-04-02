@@ -1817,8 +1817,8 @@
   },
   {
     "name": "enable-usbguard",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "allenwebb", "mnissler", "jorgelo" ],
+    "expiry_milestone": 80
   },
   {
     "name": "enable-use-zoom-for-dsf",
