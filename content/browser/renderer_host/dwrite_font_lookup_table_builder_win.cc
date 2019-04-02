@@ -384,11 +384,10 @@ void DWriteFontLookupTableBuilder::PrepareFontUniqueNameTable() {
   }
   // Post a task to catch timeouts should one of the
   // tasks will eventually not reply.
+  timeout_callback_.Reset(base::BindRepeating(
+      &DWriteFontLookupTableBuilder::OnTimeout, base::Unretained(this)));
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&DWriteFontLookupTableBuilder::OnTimeout,
-                     base::Unretained(this)),
-      kFontIndexingTimeout);
+      FROM_HERE, timeout_callback_.callback(), kFontIndexingTimeout);
 }
 
 // static
@@ -470,7 +469,7 @@ DWriteFontLookupTableBuilder::ExtractPathAndNamesFromFamily(
         [&extracted_names, &hr,
          &font](DWRITE_INFORMATIONAL_STRING_ID font_info_string_id) {
           // Now get names, and make them point to the added font.
-          IDWriteLocalizedStrings* font_id_keyed_names;
+          Microsoft::WRL::ComPtr<IDWriteLocalizedStrings> font_id_keyed_names;
           BOOL has_id_keyed_names;
           {
             base::ScopedBlockingCall scoped_blocking_call(
@@ -481,7 +480,7 @@ DWriteFontLookupTableBuilder::ExtractPathAndNamesFromFamily(
               return;
           }
 
-          ExtractCaseFoldedLocalizedStrings(font_id_keyed_names,
+          ExtractCaseFoldedLocalizedStrings(font_id_keyed_names.Get(),
                                             &extracted_names);
         };
 
@@ -550,19 +549,21 @@ void DWriteFontLookupTableBuilder::FinalizeFontTable() {
   DCHECK(!font_table_built_.IsSignaled());
   ScopedAutoSignal auto_signal(&font_table_built_);
 
-  bool timed_out = false;
-  if (base::TimeTicks::Now() - start_time_ > kFontIndexingTimeout) {
-    font_unique_name_table_->clear_fonts();
-    font_unique_name_table_->clear_name_map();
-    timed_out = true;
-  }
-  UMA_HISTOGRAM_BOOLEAN("DirectWrite.Fonts.Proxy.TableBuildTimedOut",
-                        timed_out);
+  timeout_callback_.Cancel();
 
   // Make sure that whatever happens in the remainder of this function the
   // FontUniqueNameTable object gets released by moving it to a local variable.
   std::unique_ptr<blink::FontUniqueNameTable> font_unique_name_table(
       std::move(font_unique_name_table_));
+
+  bool timed_out = false;
+  if (base::TimeTicks::Now() - start_time_ > kFontIndexingTimeout) {
+    font_unique_name_table->clear_fonts();
+    font_unique_name_table->clear_name_map();
+    timed_out = true;
+  }
+  UMA_HISTOGRAM_BOOLEAN("DirectWrite.Fonts.Proxy.TableBuildTimedOut",
+                        timed_out);
 
   unsigned num_font_files = font_unique_name_table->fonts_size();
 
