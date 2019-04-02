@@ -80,6 +80,7 @@ class DiskCacheEntryTest : public DiskCacheTestWithCache {
   void UpdateSparseEntry();
   void DoomSparseEntry();
   void PartialSparseEntry();
+  void SparseInvalidArg();
   bool SimpleCacheMakeBadChecksumEntry(const std::string& key, int data_size);
   bool SimpleCacheThirdStreamFileExists(const char* key);
   void SyncDoomEntry(const char* key);
@@ -2401,6 +2402,52 @@ TEST_F(DiskCacheEntryTest, MemoryPartialSparseEntry) {
   SetMemoryOnlyMode();
   InitCache();
   PartialSparseEntry();
+}
+
+void DiskCacheEntryTest::SparseInvalidArg() {
+  std::string key("key");
+  disk_cache::Entry* entry = nullptr;
+  ASSERT_THAT(CreateEntry(key, &entry), IsOk());
+
+  const int kSize = 2048;
+  scoped_refptr<net::IOBuffer> buf = base::MakeRefCounted<net::IOBuffer>(kSize);
+  CacheTestFillBuffer(buf->data(), kSize, false);
+
+  EXPECT_EQ(net::ERR_INVALID_ARGUMENT,
+            WriteSparseData(entry, -1, buf.get(), kSize));
+  EXPECT_EQ(net::ERR_INVALID_ARGUMENT,
+            WriteSparseData(entry, 0, buf.get(), -1));
+
+  EXPECT_EQ(net::ERR_INVALID_ARGUMENT,
+            ReadSparseData(entry, -1, buf.get(), kSize));
+  EXPECT_EQ(net::ERR_INVALID_ARGUMENT, ReadSparseData(entry, 0, buf.get(), -1));
+
+  int64_t start_out;
+  EXPECT_EQ(
+      net::ERR_INVALID_ARGUMENT,
+      DiskCacheTestWithCache::GetAvailableRange(entry, -1, kSize, &start_out));
+  EXPECT_EQ(
+      net::ERR_INVALID_ARGUMENT,
+      DiskCacheTestWithCache::GetAvailableRange(entry, 0, -1, &start_out));
+
+  entry->Close();
+}
+
+TEST_F(DiskCacheEntryTest, SparseInvalidArg) {
+  InitCache();
+  SparseInvalidArg();
+}
+
+TEST_F(DiskCacheEntryTest, MemoryOnlySparseInvalidArg) {
+  SetMemoryOnlyMode();
+  InitCache();
+  SparseInvalidArg();
+}
+
+TEST_F(DiskCacheEntryTest, SimpleSparseInvalidArg) {
+  SetSimpleCacheMode();
+  InitCache();
+  SparseInvalidArg();
 }
 
 // Tests that corrupt sparse children are removed automatically.
