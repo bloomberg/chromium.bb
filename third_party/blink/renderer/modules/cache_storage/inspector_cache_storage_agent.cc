@@ -65,10 +65,11 @@ namespace blink {
 namespace {
 
 String BuildCacheId(const String& security_origin, const String& cache_name) {
-  String id(security_origin);
-  id.append('|');
-  id.append(cache_name);
-  return id;
+  StringBuilder id;
+  id.Append(security_origin);
+  id.Append('|');
+  id.Append(cache_name);
+  return id.ToString();
 }
 
 ProtocolResponse ParseCacheId(const String& id,

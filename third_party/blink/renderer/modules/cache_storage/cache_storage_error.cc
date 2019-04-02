@@ -43,7 +43,8 @@ String GetDefaultMessage(mojom::CacheStorageError web_error) {
 DOMException* CacheStorageError::CreateException(
     mojom::CacheStorageError web_error,
     const String& message) {
-  String final_message = message ? message : GetDefaultMessage(web_error);
+  String final_message =
+      !message.IsEmpty() ? message : GetDefaultMessage(web_error);
   switch (web_error) {
     case mojom::CacheStorageError::kSuccess:
       // This function should only be called with an error.

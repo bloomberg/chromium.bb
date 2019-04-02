@@ -113,38 +113,6 @@ void String::append(const StringView& string) {
   impl_ = std::move(new_impl);
 }
 
-template <typename CharacterType>
-inline void String::AppendInternal(CharacterType c) {
-  // FIXME: This is extremely inefficient. So much so that we might want to
-  // take this out of String's API. We can make it better by optimizing the
-  // case where exactly one String is pointing at this StringImpl, but even
-  // then it's going to require a call into the allocator every single time.
-  if (!impl_) {
-    impl_ = StringImpl::Create(&c, 1);
-    return;
-  }
-
-  // FIXME: We should be able to create an 8 bit string via this code path.
-  UChar* data;
-  CHECK_LT(impl_->length(), std::numeric_limits<unsigned>::max());
-  scoped_refptr<StringImpl> new_impl =
-      StringImpl::CreateUninitialized(impl_->length() + 1, data);
-  if (impl_->Is8Bit())
-    StringImpl::CopyChars(data, impl_->Characters8(), impl_->length());
-  else
-    StringImpl::CopyChars(data, impl_->Characters16(), impl_->length());
-  data[impl_->length()] = c;
-  impl_ = std::move(new_impl);
-}
-
-void String::append(LChar c) {
-  AppendInternal(c);
-}
-
-void String::append(UChar c) {
-  AppendInternal(c);
-}
-
 int CodePointCompare(const String& a, const String& b) {
   return CodePointCompare(a.Impl(), b.Impl());
 }

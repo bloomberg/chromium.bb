@@ -80,6 +80,7 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -261,10 +262,10 @@ class InspectorPostBodyParser
   ~InspectorPostBodyParser() {
     if (error_)
       return;
-    String result;
+    StringBuilder result;
     for (const auto& part : parts_)
-      result.append(part);
-    callback_->sendSuccess(result);
+      result.Append(part);
+    callback_->sendSuccess(result.ToString());
   }
 
   void BlobReadCallback(String* destination,

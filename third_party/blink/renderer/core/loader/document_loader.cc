@@ -103,6 +103,7 @@
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -1377,7 +1378,7 @@ void DocumentLoader::DidCommitNavigation(
 // origin policy (if any).
 // Headers go first, which means that the per-page headers override the
 // origin policy features.
-void MergeFeaturesFromOriginPolicy(WTF::String& feature_policy,
+void MergeFeaturesFromOriginPolicy(WTF::StringBuilder& feature_policy,
                                    const String& origin_policy_string) {
   if (origin_policy_string.IsEmpty())
     return;
@@ -1389,9 +1390,9 @@ void MergeFeaturesFromOriginPolicy(WTF::String& feature_policy,
 
   for (const std::string& policy : origin_policy->GetFeaturePolicies()) {
     if (!feature_policy.IsEmpty()) {
-      feature_policy.append(',');
+      feature_policy.Append(',');
     }
-    feature_policy.append(
+    feature_policy.Append(
         WTF::String::FromUTF8(policy.data(), policy.length()));
   }
 }
@@ -1536,10 +1537,10 @@ void DocumentLoader::InstallNewDocument(
   // FeaturePolicy is reset in the browser process on commit, so this needs to
   // be initialized and replicated to the browser process after commit messages
   // are sent in didCommitNavigation().
-  WTF::String feature_policy(
-      response_.HttpHeaderField(http_names::kFeaturePolicy));
+  WTF::StringBuilder feature_policy;
+  feature_policy.Append(response_.HttpHeaderField(http_names::kFeaturePolicy));
   MergeFeaturesFromOriginPolicy(feature_policy, origin_policy_);
-  document->ApplyFeaturePolicyFromHeader(feature_policy);
+  document->ApplyFeaturePolicyFromHeader(feature_policy.ToString());
 
   WTF::String report_only_feature_policy(
       response_.HttpHeaderField(http_names::kFeaturePolicyReportOnly));

@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -264,14 +265,14 @@ class Cache::BarrierCallbackForPut final
               if (error->value == mojom::blink::CacheStorageError::kSuccess) {
                 resolver->Resolve();
               } else {
-                String message;
+                StringBuilder message;
                 if (error->message) {
-                  message.append(method_name);
-                  message.append(": ");
-                  message.append(error->message);
+                  message.Append(method_name);
+                  message.Append(": ");
+                  message.Append(error->message);
                 }
-                resolver->Reject(
-                    CacheStorageError::CreateException(error->value, message));
+                resolver->Reject(CacheStorageError::CreateException(
+                    error->value, message.ToString()));
               }
             },
             method_name_, WrapPersistent(resolver_.Get()),
@@ -947,13 +948,13 @@ ScriptPromise Cache::DeleteImpl(ScriptState* script_state,
                   resolver->Resolve(false);
                   break;
                 default:
-                  String message;
+                  StringBuilder message;
                   if (error->message) {
-                    message.append("Cache.delete(): ");
-                    message.append(error->message);
+                    message.Append("Cache.delete(): ");
+                    message.Append(error->message);
                   }
                   resolver->Reject(CacheStorageError::CreateException(
-                      error->value, message));
+                      error->value, message.ToString()));
                   break;
               }
             } else {

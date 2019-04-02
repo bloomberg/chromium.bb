@@ -793,7 +793,7 @@ void InspectorStyle::PopulateAllProperties(
       continue;
     bool important = !style_->getPropertyPriority(name).IsEmpty();
     if (important)
-      value.append(" !important");
+      value = value + " !important";
     result.push_back(CSSPropertySourceData(
         name, value, !style_->getPropertyPriority(name).IsEmpty(), false, true,
         SourceRange()));

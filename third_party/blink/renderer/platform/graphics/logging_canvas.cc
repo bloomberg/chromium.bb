@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder.h"
 #include "third_party/blink/renderer/platform/wtf/hex_number.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -333,21 +334,23 @@ String StringForSkColor(const SkColor& color) {
   return String(result.data(), result.size());
 }
 
-void AppendFlagToString(String* flags_string, bool is_set, const String& name) {
+void AppendFlagToString(StringBuilder* flags_string,
+                        bool is_set,
+                        const StringView& name) {
   if (!is_set)
     return;
   if (flags_string->length())
-    flags_string->append("|");
-  flags_string->append(name);
+    flags_string->Append("|");
+  flags_string->Append(name);
 }
 
 String StringForSkPaintFlags(const SkPaint& paint) {
   if (!paint.isAntiAlias() && !paint.isDither())
     return "none";
-  String flags_string = "";
+  StringBuilder flags_string;
   AppendFlagToString(&flags_string, paint.isAntiAlias(), "AntiAlias");
   AppendFlagToString(&flags_string, paint.isDither(), "Dither");
-  return flags_string;
+  return flags_string.ToString();
 }
 
 String FilterQualityName(SkFilterQuality filter_quality) {

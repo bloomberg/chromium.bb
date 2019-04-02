@@ -980,15 +980,18 @@ void XMLHttpRequest::ThrowForLoadFailureIfNeeded(
   if (exception_code_ == DOMExceptionCode::kNoError)
     return;
 
-  String message = "Failed to load '" + url_.ElidedString() + "'";
+  StringBuilder message;
+  message.Append("Failed to load '");
+  message.Append(url_.ElidedString());
+  message.Append('\'');
   if (reason.IsNull()) {
-    message.append('.');
+    message.Append('.');
   } else {
-    message.append(": ");
-    message.append(reason);
+    message.Append(": ");
+    message.Append(reason);
   }
 
-  exception_state.ThrowDOMException(exception_code_, message);
+  exception_state.ThrowDOMException(exception_code_, message.ToString());
 }
 
 void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,

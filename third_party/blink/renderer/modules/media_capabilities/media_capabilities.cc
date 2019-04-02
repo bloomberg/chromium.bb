@@ -378,18 +378,16 @@ bool IsAudioConfigurationSupported(const WebAudioConfiguration& audio_config,
   if (!media::ParseAudioCodecString(audio_config.mime_type.Ascii(),
                                     audio_config.codec.Ascii(),
                                     &is_audio_codec_ambiguous, &audio_codec)) {
-    console_warning->append(("Failed to parse audio contentType: " +
-                             audio_config.mime_type.Ascii() +
-                             "; codecs=" + audio_config.codec.Ascii())
-                                .c_str());
+    *console_warning = StringView("Failed to parse audio contentType: ") +
+                       String{audio_config.mime_type} +
+                       StringView("; codecs=") + String{audio_config.codec};
 
     return false;
   }
 
   if (is_audio_codec_ambiguous) {
-    console_warning->append(("Invalid (ambiguous) audio codec string: " +
-                             audio_config.codec.Ascii())
-                                .c_str());
+    *console_warning = StringView("Invalid (ambiguous) audio codec string: ") +
+                       String{audio_config.codec};
 
     return false;
   }
