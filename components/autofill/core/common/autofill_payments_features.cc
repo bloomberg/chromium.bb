@@ -24,7 +24,7 @@ const base::Feature kAutofillCreditCardAblationExperiment{
     "AutofillCreditCardAblationExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAutofillCreditCardLocalCardMigration{
-    "AutofillCreditCardLocalCardMigration", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillCreditCardLocalCardMigration", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAutofillDoNotUploadSaveUnsupportedCards{
     "AutofillDoNotUploadSaveUnsupportedCards",
@@ -57,8 +57,7 @@ const base::Feature kAutofillImportNonFocusableCreditCardForms{
 // and result of the migration after starting the migration. When disabled,
 // there is no feedback for the migration.
 const base::Feature kAutofillLocalCardMigrationShowFeedback{
-    "AutofillLocalCardMigrationShowFeedback",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillLocalCardMigrationShowFeedback", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether offering to migrate cards will consider data from the
 // Autofill strike database (new version).
