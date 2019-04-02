@@ -91,7 +91,6 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase {
 
   // InputMethodEngineBase overrides.
   void Enable(const std::string& component_id) override;
-  void Disable() override;
   bool IsActive() const override;
 
   // ui::IMEEngineHandlerInterface overrides.
@@ -146,6 +145,8 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase {
                          bool is_visible) override;
   void CommitTextToInputContext(int context_id,
                                 const std::string& text) override;
+  void DeleteSurroundingTextToInputContext(int offset,
+                                           size_t number_of_chars) override;
   bool SendKeyEvent(ui::KeyEvent* event, const std::string& code) override;
 
   // Enables overriding input view page to Virtual Keyboard window.
