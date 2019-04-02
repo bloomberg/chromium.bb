@@ -150,6 +150,10 @@ class MODULES_EXPORT AXObjectCacheImpl
   void HandleLayoutComplete(LayoutObject*) override;
   void HandleScrolledToAnchor(const Node* anchor_node) override;
 
+  // Called when the frame rect changes, which can sometimes happen
+  // without producing any layout or other notifications.
+  void HandleFrameRectsChanged(Document&) override;
+
   const AtomicString& ComputedRoleForNode(Node*) override;
   String ComputedNameForNode(Node*) override;
 

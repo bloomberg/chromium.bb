@@ -3474,6 +3474,13 @@ void LocalFrameView::FrameRectsChanged() {
   });
 
   GetFrame().Client()->FrameRectsChanged(FrameRect());
+
+  // It's possible for changing the frame rect to not generate a layout
+  // or any other event tracked by accessibility, we've seen this with
+  // Android WebView. Ensure that the root of the accessibility tree is
+  // invalidated so that it gets the right bounding rect.
+  if (AXObjectCache* cache = ExistingAXObjectCache())
+    cache->HandleFrameRectsChanged(*GetFrame().GetDocument());
 }
 
 void LocalFrameView::SetLayoutSizeInternal(const IntSize& size) {

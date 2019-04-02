@@ -133,6 +133,10 @@ class CORE_EXPORT AXObjectCache
   virtual void HandleLayoutComplete(LayoutObject*) = 0;
   virtual void HandleScrolledToAnchor(const Node* anchor_node) = 0;
 
+  // Called when the frame rect changes, which can sometimes happen
+  // without producing any layout or other notifications.
+  virtual void HandleFrameRectsChanged(Document&) = 0;
+
   virtual const AtomicString& ComputedRoleForNode(Node*) = 0;
   virtual String ComputedNameForNode(Node*) = 0;
 
