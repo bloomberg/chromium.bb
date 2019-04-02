@@ -1218,6 +1218,20 @@ TEST_F(TrackEventJsonExporterTest, TaskExecutionAddedAsArgs) {
   ASSERT_TRUE(events[0]->HasArg("src_func"));
   EXPECT_EQ("file_name", events[0]->GetKnownArgAsString("src_file"));
   EXPECT_EQ("function_name", events[0]->GetKnownArgAsString("src_func"));
+
+  // A source location without function name converts into a single "src" arg.
+  trace_packet_protos[3]
+      .mutable_interned_data()
+      ->mutable_source_locations(0)
+      ->clear_function_name();
+  FinalizePackets(trace_packet_protos);
+
+  ASSERT_EQ(
+      1u, trace_analyzer()->FindEvents(
+              Query(Query::EVENT_NAME) == Query::String("legacy_event_name_3"),
+              &events));
+  ASSERT_TRUE(events[0]->HasArg("src"));
+  EXPECT_EQ("file_name", events[0]->GetKnownArgAsString("src"));
 }
 
 TEST_F(TrackEventJsonExporterTest, DebugAnnotationRequiresName) {
