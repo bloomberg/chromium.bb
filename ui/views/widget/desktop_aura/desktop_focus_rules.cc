@@ -17,7 +17,8 @@ DesktopFocusRules::DesktopFocusRules(aura::Window* content_window)
 DesktopFocusRules::~DesktopFocusRules() {}
 
 bool DesktopFocusRules::CanActivateWindow(const aura::Window* window) const {
-  if (window && content_window_->GetRootWindow()->Contains(window) &&
+  if (window && IsToplevelWindow(window) &&
+      content_window_->GetRootWindow()->Contains(window) &&
       wm::WindowStateIs(window->GetRootWindow(), ui::SHOW_STATE_MINIMIZED)) {
     return true;
   }
@@ -44,7 +45,7 @@ bool DesktopFocusRules::SupportsChildActivation(
 bool DesktopFocusRules::IsWindowConsideredVisibleForActivation(
     const aura::Window* window) const {
   // |content_window_| is initially hidden and made visible from Show(). Even in
-  // this state we still want it to be active.
+  // this state we still want it to be activatable.
   return BaseFocusRules::IsWindowConsideredVisibleForActivation(window) ||
       (window == content_window_);
 }

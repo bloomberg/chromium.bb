@@ -45,6 +45,7 @@
 #include "ui/views/widget/widget_observer.h"
 #include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/transient_window_manager.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace views {
 
@@ -1183,6 +1184,41 @@ TEST_F(DesktopWindowTreeHostMusTest, ServerBoundsChangeIngoresMinMax) {
   static_cast<aura::WindowTreeHostMus*>(widget->GetNativeWindow()->GetHost())
       ->SetBoundsFromServer(server_bounds, viz::LocalSurfaceIdAllocation());
   EXPECT_EQ(server_bounds, widget->GetWindowBoundsInScreen());
+}
+
+// Verify that focusing a child window makes the toplevel window active.
+TEST_F(DesktopWindowTreeHostMusTest, DontActivateNonToplevelWindow) {
+  std::unique_ptr<Widget> toplevel(CreateWidget());
+  toplevel->Show();
+
+  aura::Window* child = new aura::Window(nullptr);
+  child->Init(ui::LAYER_SOLID_COLOR);
+  toplevel->GetNativeView()->AddChild(child);
+  ASSERT_TRUE(child->CanFocus());
+
+  wm::ActivationClient* activation_client =
+      wm::GetActivationClient(toplevel->GetNativeView()->GetRootWindow());
+
+  // Focus |child| in normal state. |toplevel| is the active window and |child|
+  // is focused.
+  child->Focus();
+  EXPECT_EQ(toplevel->GetNativeView(), activation_client->GetActiveWindow());
+  EXPECT_TRUE(toplevel->IsActive());
+  EXPECT_TRUE(child->HasFocus());
+
+  // Minimize |toplevel|.
+  toplevel->Minimize();
+  ASSERT_TRUE(toplevel->IsMinimized());
+  EXPECT_EQ(nullptr, activation_client->GetActiveWindow());
+  EXPECT_FALSE(toplevel->IsActive());
+  EXPECT_FALSE(child->HasFocus());
+
+  // Focus |child| again. |toplevel| is the active window and |child| is
+  // focused.
+  child->Focus();
+  EXPECT_EQ(toplevel->GetNativeView(), activation_client->GetActiveWindow());
+  EXPECT_TRUE(toplevel->IsActive());
+  EXPECT_TRUE(child->HasFocus());
 }
 
 }  // namespace views

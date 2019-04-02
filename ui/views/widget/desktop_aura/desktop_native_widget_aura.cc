@@ -4,6 +4,9 @@
 
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 
+#include <memory>
+
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
@@ -419,6 +422,7 @@ void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
     // only aura activation changes).
     aura::Window* active_window = activation_client->GetActiveWindow();
     if (active_window) {
+      base::AutoReset<bool> scoped(&is_handling_deactivation_, true);
       activation_client->DeactivateWindow(active_window);
       GetInputMethod()->OnBlur();
     }
@@ -1146,10 +1150,11 @@ void DesktopNativeWidgetAura::OnWindowActivated(
   DCHECK(content_window_ == gained_active || content_window_ == lost_active);
   if (gained_active == content_window_ && restore_focus_on_activate_) {
     restore_focus_on_activate_ = false;
-    // For OS_LINUX, desktop native widget may not be activated when child
-    // widgets gets aura activation changes. Only when desktop native widget is
-    // active, we can rely on aura activation to restore focused view.
-    if (GetWidget()->IsActive())
+    // For OS_LINUX, desktop native widget may be activated during deactivation
+    // when the active aura::Window is not |content_window_|. In such case,
+    // skip RestoreFocusedView so that we don't activate the widget immediately
+    // after its deactivation.
+    if (!is_handling_deactivation_)
       GetWidget()->GetFocusManager()->RestoreFocusedView();
   } else if (lost_active == content_window_ && GetWidget()->HasFocusManager()) {
     DCHECK(!restore_focus_on_activate_);
