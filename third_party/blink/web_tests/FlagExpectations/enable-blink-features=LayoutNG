@@ -315,7 +315,6 @@ crbug.com/591099 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/591099 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-align-self-001.html [ Failure ]
 crbug.com/591099 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-align-self-vertWM-004.html [ Failure ]
 crbug.com/591099 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/grid-abspos-staticpos-justify-self-vertWM-001.html [ Failure ]
-crbug.com/591099 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-multicol-002.html [ Pass ]
 crbug.com/591099 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-suffix.html [ Failure ]
 crbug.com/591099 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/redefine-builtin.html [ Failure ]
 crbug.com/591099 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-horiz-002.xhtml [ Pass ]

@@ -560,7 +560,6 @@ crbug.com/881057 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central
 crbug.com/881057 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-005.html [ Failure ]
 crbug.com/880802 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-ignored-cases-ruby-stacking-and-clipping-001.html [ Failure ]
 crbug.com/881057 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-stacking-context-001b.html [ Failure ]
-crbug.com/863454 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-multicol-002.html [ Failure ]
 crbug.com/863454 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-multicol-003.html [ Failure ]
 
 # [css-align]
