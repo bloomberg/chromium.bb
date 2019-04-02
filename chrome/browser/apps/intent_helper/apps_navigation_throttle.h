@@ -23,6 +23,11 @@ class NavigationHandle;
 class WebContents;
 }  // namespace content
 
+namespace chromeos {
+FORWARD_DECLARE_TEST(ChromeOsAppsNavigationThrottleTest,
+                     TestGetDestinationPlatform);
+}  // namespace chromeos
+
 class IntentPickerAutoDisplayService;
 
 namespace apps {
@@ -185,6 +190,8 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
  private:
   FRIEND_TEST_ALL_PREFIXES(AppsNavigationThrottleTest, TestGetPickerAction);
   FRIEND_TEST_ALL_PREFIXES(AppsNavigationThrottleTest,
+                           TestGetDestinationPlatform);
+  FRIEND_TEST_ALL_PREFIXES(chromeos::ChromeOsAppsNavigationThrottleTest,
                            TestGetDestinationPlatform);
 
   // Converts the provided |app_type|, |close_reason| and |should_persist|

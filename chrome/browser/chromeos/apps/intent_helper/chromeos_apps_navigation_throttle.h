@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "chrome/browser/apps/intent_helper/apps_navigation_throttle.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
@@ -67,6 +68,9 @@ class ChromeOsAppsNavigationThrottle : public apps::AppsNavigationThrottle {
   ~ChromeOsAppsNavigationThrottle() override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ChromeOsAppsNavigationThrottleTest,
+                           TestGetDestinationPlatform);
+
   static void FindPwaForUrlAndShowIntentPickerForApps(
       content::WebContents* web_contents,
       IntentPickerAutoDisplayService* ui_auto_display_service,
