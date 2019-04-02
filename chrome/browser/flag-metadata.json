@@ -944,8 +944,8 @@
   },
   {
     "name": "enable-chrome-duet",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "mdjones" ],
+    "expiry_milestone": 79
   },
   {
     "name": "enable-chromeos-account-manager",
