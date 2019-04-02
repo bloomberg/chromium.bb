@@ -83,6 +83,7 @@ class TabListMediator {
     private final TabListModel mModel;
     private final TabModelSelector mTabModelSelector;
     private final ThumbnailProvider mThumbnailProvider;
+    private final TabActionListener mTabClosedListener;
     private final TitleProvider mTitleProvider;
     private final CreateGroupButtonProvider mCreateGroupButtonProvider;
     private final String mComponentName;
@@ -124,16 +125,6 @@ class TabListMediator {
 
             RecordHistogram.recordSparseHistogram(
                     "Tabs.TabOffsetOfSwitch." + mComponentName, fromIndex - toIndex);
-        }
-    };
-
-    private final TabActionListener mTabClosedListener = new TabActionListener() {
-        @Override
-        public void run(int tabId) {
-            mTabModelSelector.getCurrentModel().closeTab(
-                    TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), tabId), false,
-                    false, true);
-            RecordUserAction.record("MobileTabClosed." + mComponentName);
         }
     };
 
@@ -181,6 +172,8 @@ class TabListMediator {
      * @param thumbnailProvider {@link ThumbnailProvider} to provide screenshot related details.
      * @param titleProvider {@link TitleProvider} for a given tab's title to show.
      * @param tabListFaviconProvider Provider for all favicon related drawables.
+     * @param closeRelatedTabs Whether all related tabs should be closed in {@link
+     *         TabProperties#TAB_CLOSED_LISTENER}.
      * @param createGroupButtonProvider {@link CreateGroupButtonProvider} to provide "Create group"
      *                                   button information. It's null when "Create group" is not
      *                                   possible.
@@ -188,7 +181,7 @@ class TabListMediator {
      */
     public TabListMediator(TabListModel model, TabModelSelector tabModelSelector,
             @Nullable ThumbnailProvider thumbnailProvider, @Nullable TitleProvider titleProvider,
-            TabListFaviconProvider tabListFaviconProvider,
+            TabListFaviconProvider tabListFaviconProvider, boolean closeRelatedTabs,
             @Nullable CreateGroupButtonProvider createGroupButtonProvider, String componentName) {
         mTabModelSelector = tabModelSelector;
         mThumbnailProvider = thumbnailProvider;
@@ -237,6 +230,25 @@ class TabListMediator {
         };
 
         mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(mTabModelObserver);
+
+        mTabClosedListener = new TabActionListener() {
+            @Override
+            public void run(int tabId) {
+                RecordUserAction.record("MobileTabClosed." + mComponentName);
+                if (closeRelatedTabs) {
+                    List<Tab> related = mTabModelSelector.getTabModelFilterProvider()
+                                                .getCurrentTabModelFilter()
+                                                .getRelatedTabList(tabId);
+                    if (related.size() > 1) {
+                        mTabModelSelector.getCurrentModel().closeMultipleTabs(related, true);
+                        return;
+                    }
+                }
+                mTabModelSelector.getCurrentModel().closeTab(
+                        TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), tabId), false,
+                        false, true);
+            }
+        };
     }
 
     /**

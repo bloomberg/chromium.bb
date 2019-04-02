@@ -59,7 +59,7 @@ public class GridTabSwitcherCoordinator
         };
 
         mTabGridCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
-                tabModelSelector, mMultiThumbnailCardProvider, titleProvider,
+                tabModelSelector, mMultiThumbnailCardProvider, titleProvider, true,
                 mMediator::getCreateGroupButtonOnClickListener, compositorViewHolder, true,
                 COMPONENT_NAME);
 
