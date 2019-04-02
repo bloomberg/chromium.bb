@@ -54,15 +54,9 @@ base::OnceCallback<void(Arg)> CreateReceiver(BrowserThread::ID run_quit_thread,
                         out);
 }
 
-template <typename Arg>
-base::OnceCallback<void(Arg)> CreateReceiverOnCurrentThread(
-    base::Optional<Arg>* out,
-    base::OnceClosure quit = base::OnceClosure()) {
-  BrowserThread::ID id;
-  bool ret = BrowserThread::GetCurrentThreadIdentifier(&id);
-  DCHECK(ret);
-  return CreateReceiver(id, std::move(quit), out);
-}
+base::OnceCallback<void(blink::ServiceWorkerStatusCode)>
+ReceiveServiceWorkerStatus(base::Optional<blink::ServiceWorkerStatusCode>* out,
+                           base::OnceClosure quit_closure);
 
 // Container for keeping the Mojo connection to the service worker provider on
 // the renderer alive.

@@ -824,9 +824,11 @@ TEST_F(ServiceWorkerJobTest, UnregisterWaitingSetsRedundant) {
       registration.get(), script_url, blink::mojom::ScriptType::kClassic, 1L,
       helper_->context()->AsWeakPtr());
   base::Optional<blink::ServiceWorkerStatusCode> status;
-  version->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                       CreateReceiverOnCurrentThread(&status));
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop run_loop;
+  version->StartWorker(
+      ServiceWorkerMetrics::EventType::UNKNOWN,
+      ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
+  run_loop.Run();
   ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
 
   version->set_fetch_handler_existence(

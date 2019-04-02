@@ -249,6 +249,19 @@ base::WeakPtr<ServiceWorkerProviderHost> CreateProviderHostForWindow(
   return host;
 }
 
+base::OnceCallback<void(blink::ServiceWorkerStatusCode)>
+ReceiveServiceWorkerStatus(base::Optional<blink::ServiceWorkerStatusCode>* out,
+                           base::OnceClosure quit_closure) {
+  return base::BindOnce(
+      [](base::OnceClosure quit_closure,
+         base::Optional<blink::ServiceWorkerStatusCode>* out,
+         blink::ServiceWorkerStatusCode result) {
+        *out = result;
+        std::move(quit_closure).Run();
+      },
+      std::move(quit_closure), out);
+}
+
 base::WeakPtr<ServiceWorkerProviderHost>
 CreateProviderHostForServiceWorkerContext(
     int process_id,

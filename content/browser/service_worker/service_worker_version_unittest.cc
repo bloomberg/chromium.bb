@@ -42,8 +42,16 @@
 namespace content {
 namespace service_worker_version_unittest {
 
-void VerifyCalled(bool* called) {
-  *called = true;
+base::OnceCallback<void()> VerifyCalled(
+    bool* called,
+    base::OnceClosure quit_closure = base::OnceClosure()) {
+  return base::BindOnce(
+      [](bool* called, base::OnceClosure quit_closure) {
+        *called = true;
+        if (!quit_closure.is_null())
+          std::move(quit_closure).Run();
+      },
+      called, std::move(quit_closure));
 }
 
 void ObserveStatusChanges(ServiceWorkerVersion* version,
@@ -95,9 +103,11 @@ class TestServiceImpl : public mojom::TestService {
 void StartWorker(ServiceWorkerVersion* version,
                  ServiceWorkerMetrics::EventType purpose) {
   base::Optional<blink::ServiceWorkerStatusCode> status;
-  version->StartWorker(purpose, CreateReceiverOnCurrentThread(&status));
+  base::RunLoop run_loop;
+  version->StartWorker(
+      purpose, ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
   EXPECT_EQ(EmbeddedWorkerStatus::STARTING, version->running_status());
-  base::RunLoop().RunUntilIdle();
+  run_loop.Run();
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version->running_status());
 }
@@ -155,11 +165,11 @@ class ServiceWorkerVersionTest : public testing::Test {
 
     // Make the registration findable via storage functions.
     base::Optional<blink::ServiceWorkerStatusCode> status;
+    base::RunLoop run_loop;
     helper_->context()->storage()->StoreRegistration(
-        registration_.get(),
-        version_.get(),
-        CreateReceiverOnCurrentThread(&status));
-    base::RunLoop().RunUntilIdle();
+        registration_.get(), version_.get(),
+        ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
+    run_loop.Run();
     ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
   }
 
@@ -183,23 +193,22 @@ class ServiceWorkerVersionTest : public testing::Test {
 
   void SimulateDispatchEvent(ServiceWorkerMetrics::EventType event_type) {
     base::Optional<blink::ServiceWorkerStatusCode> status;
+    base::RunLoop run_loop;
 
     // Make sure worker is running.
-    version_->RunAfterStartWorker(event_type,
-                                  CreateReceiverOnCurrentThread(&status));
-    base::RunLoop().RunUntilIdle();
+    version_->RunAfterStartWorker(
+        event_type,
+        ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
+    run_loop.Run();
     EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
     EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
 
     // Start request, as if an event is being dispatched.
-    int request_id = version_->StartRequest(
-        event_type, CreateReceiverOnCurrentThread(&status));
+    int request_id = version_->StartRequest(event_type, base::DoNothing());
     base::RunLoop().RunUntilIdle();
 
     // And finish request, as if a response to the event was received.
     EXPECT_TRUE(version_->FinishRequest(request_id, true /* was_handled */));
-    base::RunLoop().RunUntilIdle();
-    EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
   }
 
   void SetTickClockForTesting(base::SimpleTestTickClock* tick_clock) {
@@ -257,19 +266,28 @@ TEST_F(ServiceWorkerVersionTest, ConcurrentStartAndStop) {
   base::Optional<blink::ServiceWorkerStatusCode> status1;
   base::Optional<blink::ServiceWorkerStatusCode> status2;
   base::Optional<blink::ServiceWorkerStatusCode> status3;
-  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                        CreateReceiverOnCurrentThread(&status1));
-  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                        CreateReceiverOnCurrentThread(&status2));
+  base::RunLoop run_loop_1;
+  base::RunLoop run_loop_2;
+  base::RunLoop run_loop_3;
 
+  version_->StartWorker(
+      ServiceWorkerMetrics::EventType::UNKNOWN,
+      ReceiveServiceWorkerStatus(&status1, run_loop_1.QuitClosure()));
   EXPECT_EQ(EmbeddedWorkerStatus::STARTING, version_->running_status());
+  version_->StartWorker(
+      ServiceWorkerMetrics::EventType::UNKNOWN,
+      ReceiveServiceWorkerStatus(&status2, run_loop_2.QuitClosure()));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
 
   // Call StartWorker() after it's started.
-  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                        CreateReceiverOnCurrentThread(&status3));
-  base::RunLoop().RunUntilIdle();
+  version_->StartWorker(
+      ServiceWorkerMetrics::EventType::UNKNOWN,
+      ReceiveServiceWorkerStatus(&status3, run_loop_3.QuitClosure()));
+
+  run_loop_1.Run();
+  run_loop_2.Run();
+  run_loop_3.Run();
 
   // All should just succeed.
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status1.value());
@@ -280,11 +298,15 @@ TEST_F(ServiceWorkerVersionTest, ConcurrentStartAndStop) {
     // Call StopWorker() multiple times.
     bool has_stopped1 = false;
     bool has_stopped2 = false;
-    version_->StopWorker(base::BindOnce(&VerifyCalled, &has_stopped1));
-    version_->StopWorker(base::BindOnce(&VerifyCalled, &has_stopped2));
+    base::RunLoop run_loop_1;
+    base::RunLoop run_loop_2;
+
+    version_->StopWorker(VerifyCalled(&has_stopped1, run_loop_1.QuitClosure()));
+    version_->StopWorker(VerifyCalled(&has_stopped2, run_loop_2.QuitClosure()));
 
     EXPECT_EQ(EmbeddedWorkerStatus::STOPPING, version_->running_status());
-    base::RunLoop().RunUntilIdle();
+    run_loop_1.Run();
+    run_loop_2.Run();
     EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
 
     // All StopWorker should just succeed.
@@ -296,24 +318,29 @@ TEST_F(ServiceWorkerVersionTest, ConcurrentStartAndStop) {
   status1.reset();
   status2.reset();
 
-  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                        CreateReceiverOnCurrentThread(&status1));
+  base::RunLoop run_loop_4;
+  base::RunLoop run_loop_5;
+
+  version_->StartWorker(
+      ServiceWorkerMetrics::EventType::UNKNOWN,
+      ReceiveServiceWorkerStatus(&status1, run_loop_4.QuitClosure()));
 
   EXPECT_EQ(EmbeddedWorkerStatus::STARTING, version_->running_status());
-  base::RunLoop().RunUntilIdle();
+  run_loop_4.Run();
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
 
   {
     // Call StopWorker()
     bool has_stopped = false;
-    version_->StopWorker(base::BindOnce(&VerifyCalled, &has_stopped));
+    version_->StopWorker(VerifyCalled(&has_stopped));
 
     // And try calling StartWorker while StopWorker is in queue.
-    version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                          CreateReceiverOnCurrentThread(&status2));
+    version_->StartWorker(
+        ServiceWorkerMetrics::EventType::UNKNOWN,
+        ReceiveServiceWorkerStatus(&status2, run_loop_5.QuitClosure()));
 
     EXPECT_EQ(EmbeddedWorkerStatus::STOPPING, version_->running_status());
-    base::RunLoop().RunUntilIdle();
+    run_loop_5.Run();
     EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
 
     // All should just succeed.
@@ -342,7 +369,7 @@ TEST_F(ServiceWorkerVersionTest, DispatchEventToStoppedWorker) {
 
   // Stop the worker, and then dispatch an event immediately after that.
   bool has_stopped = false;
-  version_->StopWorker(base::BindOnce(&VerifyCalled, &has_stopped));
+  version_->StopWorker(VerifyCalled(&has_stopped));
   SimulateDispatchEvent(ServiceWorkerMetrics::EventType::INSTALL);
   EXPECT_TRUE(has_stopped);
 
@@ -363,20 +390,24 @@ TEST_F(ServiceWorkerVersionTest, StartUnregisteredButStillLiveWorker) {
 
   // Delete the registration.
   base::Optional<blink::ServiceWorkerStatusCode> status;
+  base::RunLoop run_loop;
   helper_->context()->storage()->DeleteRegistration(
       registration_->id(), registration_->scope().GetOrigin(),
-      CreateReceiverOnCurrentThread(&status));
-  base::RunLoop().RunUntilIdle();
+      ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
+  run_loop.Run();
   ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
 
   // The live registration is marked as deleted, but still exists.
   ASSERT_TRUE(registration_->is_deleted());
 
-  // Stop the worker.
-  bool has_stopped = false;
-  version_->StopWorker(base::BindOnce(&VerifyCalled, &has_stopped));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(has_stopped);
+  {
+    // Stop the worker.
+    bool has_stopped = false;
+    base::RunLoop run_loop;
+    version_->StopWorker(VerifyCalled(&has_stopped, run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(has_stopped);
+  }
 
   // Dispatch an event on the unregistered and stopped but still live worker.
   SimulateDispatchEvent(ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME);
@@ -390,8 +421,7 @@ TEST_F(ServiceWorkerVersionTest, InstallAndWaitCompletion) {
 
   // Wait for the completion.
   bool status_change_called = false;
-  version_->RegisterStatusChangeCallback(
-      base::BindOnce(&VerifyCalled, &status_change_called));
+  version_->RegisterStatusChangeCallback(VerifyCalled(&status_change_called));
 
   // Dispatch an install event.
   SimulateDispatchEvent(ServiceWorkerMetrics::EventType::INSTALL);
@@ -411,8 +441,7 @@ TEST_F(ServiceWorkerVersionTest, ActivateAndWaitCompletion) {
 
   // Wait for the completion.
   bool status_change_called = false;
-  version_->RegisterStatusChangeCallback(
-      base::BindOnce(&VerifyCalled, &status_change_called));
+  version_->RegisterStatusChangeCallback(VerifyCalled(&status_change_called));
 
   // Dispatch an activate event.
   SimulateDispatchEvent(ServiceWorkerMetrics::EventType::ACTIVATE);
@@ -469,8 +498,10 @@ TEST_F(ServiceWorkerVersionTest, Doom) {
 
 TEST_F(ServiceWorkerVersionTest, SetDevToolsAttached) {
   base::Optional<blink::ServiceWorkerStatusCode> status;
-  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                        CreateReceiverOnCurrentThread(&status));
+  base::RunLoop run_loop;
+  version_->StartWorker(
+      ServiceWorkerMetrics::EventType::UNKNOWN,
+      ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
 
   ASSERT_EQ(EmbeddedWorkerStatus::STARTING, version_->running_status());
 
@@ -492,7 +523,7 @@ TEST_F(ServiceWorkerVersionTest, SetDevToolsAttached) {
   EXPECT_FALSE(version_->start_time_.is_null());
   EXPECT_TRUE(version_->skip_recording_startup_time_);
 
-  base::RunLoop().RunUntilIdle();
+  run_loop.Run();
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
 }
@@ -531,8 +562,9 @@ TEST_F(ServiceWorkerVersionTest, StaleUpdate_StartWorker) {
 
   // Update is actually scheduled after the worker stops.
   bool has_stopped = false;
-  version_->StopWorker(base::BindOnce(&VerifyCalled, &has_stopped));
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop run_loop;
+  version_->StopWorker(VerifyCalled(&has_stopped, run_loop.QuitClosure()));
+  run_loop.Run();
   EXPECT_TRUE(has_stopped);
   EXPECT_TRUE(version_->stale_time_.is_null());
   EXPECT_TRUE(version_->update_timer_.IsRunning());
@@ -669,26 +701,35 @@ TEST_F(ServiceWorkerVersionTest, RestartWorker) {
   StartWorker(version_.get(),
               ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME);
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  bool has_stopped = false;
 
-  base::Optional<blink::ServiceWorkerStatusCode> event_status;
-  version_->StartRequest(ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME,
-                         CreateReceiverOnCurrentThread(&event_status));
+  base::Optional<blink::ServiceWorkerStatusCode> status;
+  base::RunLoop run_loop;
+  version_->StartRequest(
+      ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME,
+      ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
 
   // Restart the worker. The inflight event should have been failed.
-  bool has_stopped = false;
-  version_->StopWorker(base::BindOnce(&VerifyCalled, &has_stopped));
+  version_->StopWorker(VerifyCalled(&has_stopped));
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPING, version_->running_status());
-  base::Optional<blink::ServiceWorkerStatusCode> start_status;
-  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                        CreateReceiverOnCurrentThread(&start_status));
-  base::RunLoop().RunUntilIdle();
+  run_loop.Run();
 
-  // All inflight events should have been aborted.
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorFailed, event_status.value());
+  {
+    base::Optional<blink::ServiceWorkerStatusCode> status;
+    base::RunLoop run_loop;
+    version_->StartWorker(
+        ServiceWorkerMetrics::EventType::UNKNOWN,
+        ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
+    run_loop.Run();
+
+    // The worker should have been successfully re-started after stopped.
+    EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
+  }
+
   // The worker should have been stopped.
   EXPECT_TRUE(has_stopped);
-  // The worker should have been successfully re-started after stopped.
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, start_status.value());
+  // All inflight events should have been aborted.
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorFailed, status.value());
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
 
   // SetAllRequestExpirations() after restarting should not crash since all
@@ -738,15 +779,16 @@ TEST_F(ServiceWorkerVersionTest, RequestTimeout) {
       helper_->AddNewPendingServiceWorker<DelayMessageWorker>(helper_.get());
 
   base::Optional<blink::ServiceWorkerStatusCode> error_status;
+  base::RunLoop run_loop;
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   client->UnblockStartWorker();
   StartWorker(version_.get(),
               ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME);
 
   // Create a request.
-  int request_id =
-      version_->StartRequest(ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME,
-                             CreateReceiverOnCurrentThread(&error_status));
+  int request_id = version_->StartRequest(
+      ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME,
+      ReceiveServiceWorkerStatus(&error_status, run_loop.QuitClosure()));
 
   // Dispatch a dummy event.
   version_->endpoint()->DispatchExtendableMessageEvent(
@@ -784,19 +826,20 @@ TEST_F(ServiceWorkerVersionTest, RequestTimeout) {
 
 TEST_F(ServiceWorkerVersionTest, RequestNowTimeout) {
   base::Optional<blink::ServiceWorkerStatusCode> status;
+  base::RunLoop run_loop;
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   StartWorker(version_.get(), ServiceWorkerMetrics::EventType::SYNC);
 
   // Create a request that should expire Now().
   int request_id = version_->StartRequestWithCustomTimeout(
       ServiceWorkerMetrics::EventType::SYNC,
-      CreateReceiverOnCurrentThread(&status), base::TimeDelta(),
-      ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
+      ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()),
+      base::TimeDelta(), ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(version_->timeout_timer_.IsRunning());
   version_->timeout_timer_.user_task().Run();
-  base::RunLoop().RunUntilIdle();
+  run_loop.Run();
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorTimeout, status.value());
 
   EXPECT_FALSE(version_->FinishRequest(request_id, true /* was_handled */));
@@ -807,30 +850,35 @@ TEST_F(ServiceWorkerVersionTest, RequestNowTimeout) {
 
 TEST_F(ServiceWorkerVersionTest, RequestNowTimeoutKill) {
   base::Optional<blink::ServiceWorkerStatusCode> status;
+  base::RunLoop run_loop;
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   StartWorker(version_.get(), ServiceWorkerMetrics::EventType::SYNC);
 
   // Create a request that should expire Now().
   int request_id = version_->StartRequestWithCustomTimeout(
       ServiceWorkerMetrics::EventType::SYNC,
-      CreateReceiverOnCurrentThread(&status), base::TimeDelta(),
-      ServiceWorkerVersion::KILL_ON_TIMEOUT);
+      ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()),
+      base::TimeDelta(), ServiceWorkerVersion::KILL_ON_TIMEOUT);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(version_->timeout_timer_.IsRunning());
   version_->timeout_timer_.user_task().Run();
-  base::RunLoop().RunUntilIdle();
+  run_loop.Run();
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorTimeout, status.value());
 
   EXPECT_FALSE(version_->FinishRequest(request_id, true /* was_handled */));
 
   // KILL_ON_TIMEOUT timeouts should stop the service worker.
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
 }
 
 TEST_F(ServiceWorkerVersionTest, RequestCustomizedTimeout) {
   base::Optional<blink::ServiceWorkerStatusCode> first_status;
   base::Optional<blink::ServiceWorkerStatusCode> second_status;
+  base::RunLoop first_run_loop;
+  base::RunLoop second_run_loop;
+
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   StartWorker(version_.get(), ServiceWorkerMetrics::EventType::SYNC);
 
@@ -841,13 +889,13 @@ TEST_F(ServiceWorkerVersionTest, RequestCustomizedTimeout) {
   int timeout_seconds = 10;
   int first_request_id = version_->StartRequestWithCustomTimeout(
       ServiceWorkerMetrics::EventType::SYNC,
-      CreateReceiverOnCurrentThread(&first_status),
+      ReceiveServiceWorkerStatus(&first_status, first_run_loop.QuitClosure()),
       base::TimeDelta::FromSeconds(2 * timeout_seconds),
       ServiceWorkerVersion::KILL_ON_TIMEOUT);
 
   int second_request_id = version_->StartRequestWithCustomTimeout(
       ServiceWorkerMetrics::EventType::SYNC,
-      CreateReceiverOnCurrentThread(&second_status),
+      ReceiveServiceWorkerStatus(&second_status, second_run_loop.QuitClosure()),
       base::TimeDelta::FromSeconds(timeout_seconds),
       ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
 
@@ -862,7 +910,7 @@ TEST_F(ServiceWorkerVersionTest, RequestCustomizedTimeout) {
   // Now advance time until the second task timeout should expire.
   tick_clock.Advance(base::TimeDelta::FromSeconds(timeout_seconds + 1));
   version_->timeout_timer_.user_task().Run();
-  base::RunLoop().RunUntilIdle();
+  second_run_loop.Run();
   EXPECT_FALSE(first_status);
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorTimeout,
             second_status.value());
@@ -873,7 +921,7 @@ TEST_F(ServiceWorkerVersionTest, RequestCustomizedTimeout) {
   // Now advance time until both tasks should be expired.
   tick_clock.Advance(base::TimeDelta::FromSeconds(timeout_seconds + 1));
   version_->timeout_timer_.user_task().Run();
-  base::RunLoop().RunUntilIdle();
+  first_run_loop.Run();
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorTimeout,
             first_status.value());
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorTimeout,
@@ -884,6 +932,7 @@ TEST_F(ServiceWorkerVersionTest, RequestCustomizedTimeout) {
 
   EXPECT_FALSE(
       version_->FinishRequest(second_request_id, true /* was_handled */));
+  base::RunLoop().RunUntilIdle();
 
   // KILL_ON_TIMEOUT timeouts should stop the service worker.
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
@@ -892,26 +941,29 @@ TEST_F(ServiceWorkerVersionTest, RequestCustomizedTimeout) {
 TEST_F(ServiceWorkerVersionTest, MixedRequestTimeouts) {
   base::Optional<blink::ServiceWorkerStatusCode> sync_status;
   base::Optional<blink::ServiceWorkerStatusCode> fetch_status;
+  base::RunLoop sync_run_loop;
+  base::RunLoop fetch_run_loop;
+
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   StartWorker(version_.get(),
               ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME);
 
   // Create a fetch request that should expire sometime later.
-  int fetch_request_id =
-      version_->StartRequest(ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME,
-                             CreateReceiverOnCurrentThread(&fetch_status));
+  int fetch_request_id = version_->StartRequest(
+      ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME,
+      ReceiveServiceWorkerStatus(&fetch_status, fetch_run_loop.QuitClosure()));
   // Create a request that should expire Now().
   int sync_request_id = version_->StartRequestWithCustomTimeout(
       ServiceWorkerMetrics::EventType::SYNC,
-      CreateReceiverOnCurrentThread(&sync_status), base::TimeDelta(),
-      ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
+      ReceiveServiceWorkerStatus(&sync_status, sync_run_loop.QuitClosure()),
+      base::TimeDelta(), ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(sync_status);
 
   // Verify the sync has timed out but not the fetch.
   EXPECT_TRUE(version_->timeout_timer_.IsRunning());
   version_->timeout_timer_.user_task().Run();
-  base::RunLoop().RunUntilIdle();
+  sync_run_loop.Run();
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorTimeout, sync_status.value());
   EXPECT_FALSE(fetch_status);
 
@@ -925,13 +977,14 @@ TEST_F(ServiceWorkerVersionTest, MixedRequestTimeouts) {
   // Verify that the fetch times out later.
   version_->SetAllRequestExpirations(base::TimeTicks::Now());
   version_->timeout_timer_.user_task().Run();
-  base::RunLoop().RunUntilIdle();
+  fetch_run_loop.Run();
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorTimeout,
             fetch_status.value());
 
   // Fetch request should no longer exist.
   EXPECT_FALSE(
       version_->FinishRequest(fetch_request_id, true /* was_handled */));
+  base::RunLoop().RunUntilIdle();
 
   // Other timeouts do stop the service worker.
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
@@ -939,10 +992,12 @@ TEST_F(ServiceWorkerVersionTest, MixedRequestTimeouts) {
 
 TEST_F(ServiceWorkerVersionTest, FailToStart_RendererCrash) {
   base::Optional<blink::ServiceWorkerStatusCode> status;
+  base::RunLoop run_loop;
   auto* client = helper_->AddNewPendingInstanceClient<
       DelayedFakeEmbeddedWorkerInstanceClient>(helper_.get());
-  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                        CreateReceiverOnCurrentThread(&status));
+  version_->StartWorker(
+      ServiceWorkerMetrics::EventType::UNKNOWN,
+      ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
   base::RunLoop().RunUntilIdle();
 
   // Callback has not completed yet.
@@ -952,8 +1007,7 @@ TEST_F(ServiceWorkerVersionTest, FailToStart_RendererCrash) {
   // Simulate renderer crash: break EmbeddedWorkerInstance's Mojo connection to
   // the renderer-side client.
   client->Disconnect();
-  base::RunLoop().RunUntilIdle();
-
+  run_loop.Run();
   // Callback completed.
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorStartWorkerFailed,
             status.value());
@@ -962,13 +1016,15 @@ TEST_F(ServiceWorkerVersionTest, FailToStart_RendererCrash) {
 
 TEST_F(ServiceWorkerVersionTest, FailToStart_Timeout) {
   base::Optional<blink::ServiceWorkerStatusCode> status;
+  base::RunLoop run_loop;
 
   // Start starting the worker.
   auto* client = helper_->AddNewPendingInstanceClient<
       DelayedFakeEmbeddedWorkerInstanceClient>(helper_.get());
   client->UnblockStopWorker();
-  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                        CreateReceiverOnCurrentThread(&status));
+  version_->StartWorker(
+      ServiceWorkerMetrics::EventType::UNKNOWN,
+      ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
   base::RunLoop().RunUntilIdle();
 
   // Callback has not completed yet.
@@ -981,8 +1037,9 @@ TEST_F(ServiceWorkerVersionTest, FailToStart_Timeout) {
                           ServiceWorkerVersion::kStartNewWorkerTimeout -
                           base::TimeDelta::FromMinutes(1);
   version_->timeout_timer_.user_task().Run();
-  base::RunLoop().RunUntilIdle();
+  run_loop.Run();
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorTimeout, status.value());
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
 }
 
@@ -997,7 +1054,8 @@ TEST_F(ServiceWorkerVersionTest, StallInStopping_DetachThenStart) {
 
   // Try to stop the worker.
   bool has_stopped = false;
-  version_->StopWorker(base::BindOnce(&VerifyCalled, &has_stopped));
+  base::RunLoop run_loop;
+  version_->StopWorker(VerifyCalled(&has_stopped, run_loop.QuitClosure()));
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPING, version_->running_status());
   base::RunLoop().RunUntilIdle();
 
@@ -1011,7 +1069,7 @@ TEST_F(ServiceWorkerVersionTest, StallInStopping_DetachThenStart) {
                          ServiceWorkerVersion::kStopWorkerTimeout -
                          base::TimeDelta::FromSeconds(1);
   version_->timeout_timer_.user_task().Run();
-  base::RunLoop().RunUntilIdle();
+  run_loop.Run();
   EXPECT_TRUE(has_stopped);
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
 
@@ -1035,13 +1093,15 @@ TEST_F(ServiceWorkerVersionTest, StallInStopping_DetachThenRestart) {
 
   // Try to stop the worker.
   bool has_stopped = false;
-  version_->StopWorker(base::BindOnce(&VerifyCalled, &has_stopped));
+  version_->StopWorker(VerifyCalled(&has_stopped));
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPING, version_->running_status());
 
   // Worker is now stalled in stopping. Add a start worker request.
   base::Optional<blink::ServiceWorkerStatusCode> start_status;
-  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                        CreateReceiverOnCurrentThread(&start_status));
+  base::RunLoop run_loop;
+  version_->StartWorker(
+      ServiceWorkerMetrics::EventType::UNKNOWN,
+      ReceiveServiceWorkerStatus(&start_status, run_loop.QuitClosure()));
 
   // Simulate timeout. The worker should stop and get restarted.
   EXPECT_TRUE(version_->timeout_timer_.IsRunning());
@@ -1049,7 +1109,7 @@ TEST_F(ServiceWorkerVersionTest, StallInStopping_DetachThenRestart) {
                          ServiceWorkerVersion::kStopWorkerTimeout -
                          base::TimeDelta::FromSeconds(1);
   version_->timeout_timer_.user_task().Run();
-  base::RunLoop().RunUntilIdle();
+  run_loop.Run();
   EXPECT_TRUE(has_stopped);
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, start_status.value());
 }
@@ -1116,9 +1176,11 @@ TEST_F(ServiceWorkerVersionTest, BadOrigin) {
       helper_->context()->storage()->NewVersionId(),
       helper_->context()->AsWeakPtr());
   base::Optional<blink::ServiceWorkerStatusCode> status;
-  version->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                       CreateReceiverOnCurrentThread(&status));
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop run_loop;
+  version->StartWorker(
+      ServiceWorkerMetrics::EventType::UNKNOWN,
+      ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
+  run_loop.Run();
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorDisallowed, status.value());
 }
 
@@ -1129,9 +1191,11 @@ TEST_F(ServiceWorkerVersionTest,
 
   // Start the worker before we have a controllee.
   base::Optional<blink::ServiceWorkerStatusCode> status;
-  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                        CreateReceiverOnCurrentThread(&status));
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop run_loop;
+  version_->StartWorker(
+      ServiceWorkerMetrics::EventType::UNKNOWN,
+      ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
+  run_loop.Run();
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
   EXPECT_EQ(
       0,
@@ -1165,9 +1229,11 @@ TEST_F(ServiceWorkerVersionTest,
 
   // Start the worker before we have a controllee.
   base::Optional<blink::ServiceWorkerStatusCode> status;
-  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                        CreateReceiverOnCurrentThread(&status));
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop run_loop;
+  version_->StartWorker(
+      ServiceWorkerMetrics::EventType::UNKNOWN,
+      ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
+  run_loop.Run();
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
   EXPECT_EQ(
       0,
@@ -1191,9 +1257,11 @@ TEST_F(ServiceWorkerVersionTest,
 
   // Start the worker before we have a controllee.
   base::Optional<blink::ServiceWorkerStatusCode> status;
-  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                        CreateReceiverOnCurrentThread(&status));
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop run_loop;
+  version_->StartWorker(
+      ServiceWorkerMetrics::EventType::UNKNOWN,
+      ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
+  run_loop.Run();
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
   EXPECT_EQ(
       0,
@@ -1254,9 +1322,11 @@ TEST_F(ServiceWorkerVersionTest,
   // Starting the worker should notify the RenderProcessHost of the foreground
   // worker.
   base::Optional<blink::ServiceWorkerStatusCode> status;
-  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                        CreateReceiverOnCurrentThread(&status));
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop run_loop;
+  version_->StartWorker(
+      ServiceWorkerMetrics::EventType::UNKNOWN,
+      ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
+  run_loop.Run();
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
   EXPECT_EQ(
       1,
@@ -1286,9 +1356,11 @@ TEST_F(ServiceWorkerVersionNoFetchHandlerTest,
 
   // Start the worker before we have a controllee.
   base::Optional<blink::ServiceWorkerStatusCode> status;
-  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                        CreateReceiverOnCurrentThread(&status));
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop run_loop;
+  version_->StartWorker(
+      ServiceWorkerMetrics::EventType::UNKNOWN,
+      ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
+  run_loop.Run();
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
   EXPECT_EQ(
       0,
@@ -1307,27 +1379,36 @@ TEST_F(ServiceWorkerVersionNoFetchHandlerTest,
 
 TEST_F(ServiceWorkerVersionTest, FailToStart_UseNewRendererProcess) {
   base::Optional<blink::ServiceWorkerStatusCode> status;
+  base::RunLoop run_loop_1;
   ServiceWorkerContextCore* context = helper_->context();
   int64_t id = version_->version_id();
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
 
   // Start once. It should choose the "existing process".
-  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                        CreateReceiverOnCurrentThread(&status));
-  base::RunLoop().RunUntilIdle();
+  version_->StartWorker(
+      ServiceWorkerMetrics::EventType::UNKNOWN,
+      ReceiveServiceWorkerStatus(&status, run_loop_1.QuitClosure()));
+  run_loop_1.Run();
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
   EXPECT_EQ(helper_->mock_render_process_id(),
             version_->embedded_worker()->process_id());
-  version_->StopWorker(base::DoNothing());
-  base::RunLoop().RunUntilIdle();
+  {
+    bool has_stopped = false;
+    base::RunLoop run_loop;
+    version_->StopWorker(VerifyCalled(&has_stopped, run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(has_stopped);
+  }
 
   // Fail once.
   status.reset();
   helper_->AddPendingInstanceClient(
       std::make_unique<FailStartInstanceClient>(helper_.get()));
-  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                        CreateReceiverOnCurrentThread(&status));
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop run_loop_2;
+  version_->StartWorker(
+      ServiceWorkerMetrics::EventType::UNKNOWN,
+      ReceiveServiceWorkerStatus(&status, run_loop_2.QuitClosure()));
+  run_loop_2.Run();
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorStartWorkerFailed,
             status.value());
   EXPECT_EQ(1, context->GetVersionFailureCount(id));
@@ -1336,18 +1417,22 @@ TEST_F(ServiceWorkerVersionTest, FailToStart_UseNewRendererProcess) {
   status.reset();
   helper_->AddPendingInstanceClient(
       std::make_unique<FailStartInstanceClient>(helper_.get()));
-  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                        CreateReceiverOnCurrentThread(&status));
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop run_loop_3;
+  version_->StartWorker(
+      ServiceWorkerMetrics::EventType::UNKNOWN,
+      ReceiveServiceWorkerStatus(&status, run_loop_3.QuitClosure()));
+  run_loop_3.Run();
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorStartWorkerFailed,
             status.value());
   EXPECT_EQ(2, context->GetVersionFailureCount(id));
 
   // Succeed. It should choose the "new process".
   status.reset();
-  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                        CreateReceiverOnCurrentThread(&status));
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop run_loop_4;
+  version_->StartWorker(
+      ServiceWorkerMetrics::EventType::UNKNOWN,
+      ReceiveServiceWorkerStatus(&status, run_loop_4.QuitClosure()));
+  run_loop_4.Run();
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
   EXPECT_EQ(helper_->new_render_process_id(),
             version_->embedded_worker()->process_id());
@@ -1358,9 +1443,11 @@ TEST_F(ServiceWorkerVersionTest, FailToStart_UseNewRendererProcess) {
   // Start again. It should choose the "existing process" again as we no longer
   // force creation of a new process.
   status.reset();
-  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                        CreateReceiverOnCurrentThread(&status));
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop run_loop_5;
+  version_->StartWorker(
+      ServiceWorkerMetrics::EventType::UNKNOWN,
+      ReceiveServiceWorkerStatus(&status, run_loop_5.QuitClosure()));
+  run_loop_5.Run();
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
   EXPECT_EQ(helper_->mock_render_process_id(),
             version_->embedded_worker()->process_id());
@@ -1370,12 +1457,15 @@ TEST_F(ServiceWorkerVersionTest, FailToStart_UseNewRendererProcess) {
 
 TEST_F(ServiceWorkerVersionTest, FailToStart_RestartStalledWorker) {
   base::Optional<blink::ServiceWorkerStatusCode> status;
+  base::RunLoop run_loop;
   // Stall in starting.
   auto* client = helper_->AddNewPendingInstanceClient<
       DelayedFakeEmbeddedWorkerInstanceClient>(helper_.get());
   client->UnblockStopWorker();
-  version_->StartWorker(ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME,
-                        CreateReceiverOnCurrentThread(&status));
+  version_->StartWorker(
+      ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME,
+      ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
+
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(status);
 
@@ -1384,8 +1474,8 @@ TEST_F(ServiceWorkerVersionTest, FailToStart_RestartStalledWorker) {
   // was already consumed, so a default fake instance client will be created,
   // which starts normally.
   bool has_stopped = false;
-  version_->StopWorker(base::BindOnce(&VerifyCalled, &has_stopped));
-  base::RunLoop().RunUntilIdle();
+  version_->StopWorker(VerifyCalled(&has_stopped));
+  run_loop.Run();
 
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
   EXPECT_TRUE(has_stopped);
@@ -1398,15 +1488,18 @@ class ServiceWorkerNavigationHintUMATest : public ServiceWorkerVersionTest {
 
   void StartWorker(ServiceWorkerMetrics::EventType purpose) {
     base::Optional<blink::ServiceWorkerStatusCode> status;
-    version_->StartWorker(purpose, CreateReceiverOnCurrentThread(&status));
-    base::RunLoop().RunUntilIdle();
+    base::RunLoop run_loop;
+    version_->StartWorker(
+        purpose, ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
+    run_loop.Run();
     EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
   }
 
   void StopWorker() {
     bool has_stopped = false;
-    version_->StopWorker(base::BindOnce(&VerifyCalled, &has_stopped));
-    base::RunLoop().RunUntilIdle();
+    base::RunLoop run_loop;
+    version_->StopWorker(VerifyCalled(&has_stopped, run_loop.QuitClosure()));
+    run_loop.Run();
     EXPECT_TRUE(has_stopped);
   }
 
@@ -1451,11 +1544,16 @@ TEST_F(ServiceWorkerNavigationHintUMATest, ConcurrentStart) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   base::Optional<blink::ServiceWorkerStatusCode> status1;
   base::Optional<blink::ServiceWorkerStatusCode> status2;
-  version_->StartWorker(ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME,
-                        CreateReceiverOnCurrentThread(&status1));
-  version_->StartWorker(ServiceWorkerMetrics::EventType::NAVIGATION_HINT,
-                        CreateReceiverOnCurrentThread(&status2));
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop run_loop_1;
+  base::RunLoop run_loop_2;
+  version_->StartWorker(
+      ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME,
+      ReceiveServiceWorkerStatus(&status1, run_loop_1.QuitClosure()));
+  version_->StartWorker(
+      ServiceWorkerMetrics::EventType::NAVIGATION_HINT,
+      ReceiveServiceWorkerStatus(&status2, run_loop_2.QuitClosure()));
+  run_loop_1.Run();
+  run_loop_2.Run();
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status1.value());
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status2.value());
   StopWorker();
@@ -1464,11 +1562,16 @@ TEST_F(ServiceWorkerNavigationHintUMATest, ConcurrentStart) {
 
   status1.reset();
   status2.reset();
-  version_->StartWorker(ServiceWorkerMetrics::EventType::NAVIGATION_HINT,
-                        CreateReceiverOnCurrentThread(&status2));
-  version_->StartWorker(ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME,
-                        CreateReceiverOnCurrentThread(&status1));
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop run_loop_3;
+  base::RunLoop run_loop_4;
+  version_->StartWorker(
+      ServiceWorkerMetrics::EventType::NAVIGATION_HINT,
+      ReceiveServiceWorkerStatus(&status2, run_loop_4.QuitClosure()));
+  version_->StartWorker(
+      ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME,
+      ReceiveServiceWorkerStatus(&status1, run_loop_3.QuitClosure()));
+  run_loop_4.Run();
+  run_loop_3.Run();
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status1.value());
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status2.value());
   SimulateDispatchEvent(ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME);
@@ -1482,7 +1585,7 @@ TEST_F(ServiceWorkerNavigationHintUMATest, ConcurrentStart) {
 TEST_F(ServiceWorkerNavigationHintUMATest, StartWhileStopping) {
   StartWorker(ServiceWorkerMetrics::EventType::NAVIGATION_HINT);
   bool has_stopped = false;
-  version_->StopWorker(base::BindOnce(&VerifyCalled, &has_stopped));
+  version_->StopWorker(VerifyCalled(&has_stopped));
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPING, version_->running_status());
   histogram_tester_.ExpectTotalCount(kStartHintPrecision, 0);
 

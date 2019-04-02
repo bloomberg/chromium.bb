@@ -401,10 +401,11 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
     version_1->SetMainScriptHttpResponseInfo(
         EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
     base::Optional<blink::ServiceWorkerStatusCode> status;
+    base::RunLoop run_loop;
     context()->storage()->StoreRegistration(
         registration_.get(), version_1.get(),
-        CreateReceiverOnCurrentThread(&status));
-    base::RunLoop().RunUntilIdle();
+        ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
+    run_loop.Run();
     ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
 
     // Give the active version a controllee.
