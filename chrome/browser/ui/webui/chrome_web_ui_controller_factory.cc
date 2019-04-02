@@ -897,6 +897,10 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
   if (page_url.host_piece() == chrome::kChromeUIManagementHost)
     return ManagementUI::GetFaviconResourceBytes(scale_factor);
 
+  // Android doesn't use the App Management page.
+  if (page_url.host_piece() == chrome::kChromeUIAppManagementHost)
+    return settings_utils::GetFaviconResourceBytes(scale_factor);
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (page_url.host_piece() == chrome::kChromeUIExtensionsHost) {
     return extensions::ExtensionsUI::GetFaviconResourceBytes(scale_factor);
