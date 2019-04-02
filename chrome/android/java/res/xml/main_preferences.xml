@@ -65,12 +65,11 @@
         android:key="homepage"
         android:order="11"
         android:title="@string/options_homepage_title"/>
-    <!-- TODO(huayinz): Change to a proper string. -->
     <Preference
-        android:fragment="org.chromium.chrome.browser.preferences.NightModePreferences"
-        android:key="night_mode"
+        android:fragment="org.chromium.chrome.browser.preferences.themes.ThemePreferences"
+        android:key="ui_theme"
         android:order="12"
-        android:title="Dark mode" />
+        android:title="@string/prefs_themes" />
 
     <PreferenceCategory
         android:key="advanced_section"

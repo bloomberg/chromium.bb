@@ -204,10 +204,10 @@ public class ChromePreferenceManager {
     public static final String NIGHT_MODE_CCT_AVAILABLE_KEY = "night_mode_cct_available";
 
     /**
-     * Whether or not night mode is enabled from user settings.
-     * Default value is false.
+     * The current theme setting in the user settings.
+     * Default value is System default (see {@link ThemePreference.ThemeSetting}).
      */
-    public static final String NIGHT_MODE_SETTINGS_ENABLED_KEY = "night_mode_settings_enabled";
+    public static final String UI_THEME_SETTING_KEY = "ui_theme_setting";
 
     /**
      * Whether or not the download auto-resumption is enabled in native.

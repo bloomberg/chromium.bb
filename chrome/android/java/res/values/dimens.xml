@@ -604,4 +604,7 @@
     <dimen name="tab_grid_thumbnail_card_default_size">152dp</dimen>
     <dimen name="swipe_to_dismiss_threshold">72dp</dimen>
 
+    <!-- RadioButtonWithDescription dimensions -->
+    <dimen name="radio_button_with_description_padding">12dp</dimen>
+
 </resources>
