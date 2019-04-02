@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
@@ -14,6 +15,10 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/platform_notification_context.h"
 #include "content/public/browser/storage_partition.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/notifications/notification_trigger_scheduler_android.h"
+#endif
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -52,7 +57,11 @@ void TriggerNotificationsForProfile(Profile* profile) {
 // static
 std::unique_ptr<NotificationTriggerScheduler>
 NotificationTriggerScheduler::Create() {
+#if defined(OS_ANDROID)
+  return base::WrapUnique(new NotificationTriggerSchedulerAndroid());
+#else
   return base::WrapUnique(new NotificationTriggerScheduler());
+#endif
 }
 
 // static

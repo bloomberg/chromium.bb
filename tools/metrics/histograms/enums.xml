@@ -4232,6 +4232,7 @@ Unknown properties are collapsed to zero. -->
   <int value="18" label="Download auto-resumption task"/>
   <int value="19" label="One shot Background Sync wake up task"/>
   <int value="20" label="Notification scheduler task"/>
+  <int value="21" label="Notification trigger task"/>
 </enum>
 
 <enum name="BackgroundTracingState">

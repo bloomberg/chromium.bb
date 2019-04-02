@@ -28,7 +28,7 @@ class NotificationTriggerScheduler {
   // StoragePartition of profiles that have pending notifications at that time.
   // If there is an existing earlier trigger set, this is a nop. Otherwise this
   // overwrites the existing trigger so only the earliest is set at any time.
-  void ScheduleTrigger(base::Time timestamp);
+  virtual void ScheduleTrigger(base::Time timestamp);
 
   // Triggers pending notifications for |partition|.
   // TODO(knollr): Mock the actual storage partitions to observe this call in
