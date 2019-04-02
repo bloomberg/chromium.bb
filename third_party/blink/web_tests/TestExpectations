@@ -16,54 +16,6 @@ Bug(none) webgpu/fence.html [ Skip ]
 
 crbug.com/807686 crbug.com/24182 jquery/manipulation.html [ Timeout Pass ]
 
-# See crbug.com/891427. These tests either fail or become flaky on one or more
-# platforms when --enable-display-compositor-pixel-dump is turned on. They need
-# triage. Note that these overlap with several existing entries in this
-# TestExpectations file. All of those have been commented out with a pointer back
-# up to this section. So if you close one of these, you should search for the
-# same test elsewhere, to see if perhaps you need to uncomment the old line.
-### These fail on all platforms:
-## Next 18 can be viewed in this run, by clicking on "Did not pass 11183":
-## https://test-results.appspot.com/data/layout_results/linux-blink-rel/1237/webkit_layout_tests%20%28with%20patch%29/layout-test-results/results.html
-crbug.com/891427 virtual/threaded/animations/responsive/viewport-unit-transform-responsive.html [ Timeout ]
-crbug.com/891427 virtual/disable-blink-gen-property-trees/animations/responsive/viewport-unit-transform-responsive.html [ Skip ]
-crbug.com/891427 virtual/threaded/animations/responsive/viewport-unit-translate-responsive.html [ Timeout ]
-crbug.com/891427 virtual/disable-blink-gen-property-trees/animations/responsive/viewport-unit-translate-responsive.html [ Skip ]
-crbug.com/891427 virtual/fractional_scrolling/fast/scrolling/editor-command-scroll-page-scale.html [ Pass Failure ]
-crbug.com/891427 fast/replaced/replaced-breaking.html [ Failure ]
-crbug.com/891427 virtual/android/fullscreen/rendering/backdrop-video.html [ Failure ]
-crbug.com/891427 virtual/android/rootscroller/set-root-scroller.html [ Failure ]
-crbug.com/891427 virtual/android/rootscroller/set-rootscroller-before-load.html [ Failure ]
-crbug.com/891427 virtual/android/url-bar/bottom-and-top-fixed-sticks-to-top.html [ Failure ]
-## Next 4 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_chromium_rel_ng/216317
-crbug.com/891427 virtual/threaded/animations/timing/animation-duration-infinite.html [ Failure ]
-crbug.com/891427 virtual/disable-blink-gen-property-trees/animations/timing/animation-duration-infinite.html [ Skip ]
-crbug.com/891427 editing/selection/drag-in-iframe.html [ Failure ]
-crbug.com/891427 fast/overflow/transformed-frame-scrollIntoView.html [ Crash ]
-
-### Flaky on trybots:
-### Note: this list includes anything that flaked even once during my (many)
-### test runs with the flag enabled. It is very possible that some of these
-### were random flakes, or were already flaky before the flag was turned on.
-# Next 3 here: https://ci.chromium.org/buildbot/tryserver.blink/linux-blink-rel/1215
-crbug.com/891427 animations/responsive/viewport-unit-transform-responsive.html [ Pass Failure Timeout Crash ]
-crbug.com/891427 animations/responsive/viewport-unit-translate-responsive.html [ Pass Failure Timeout Crash ]
-crbug.com/891427 virtual/android/rootscroller/rootscroller-during-fullscreen.html [ Pass Failure Timeout Crash ]
-# Next 2 here: https://ci.chromium.org/buildbot/tryserver.blink/win7-blink-rel/1183
-crbug.com/891427 external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Pass Failure Timeout Crash ]
-crbug.com/891427 fast/canvas/canvas-drawImage-live-video.html [ Pass Failure Timeout Crash ]
-# Next 1 here: https://ci.chromium.org/buildbot/tryserver.blink/win7-blink-rel/1180
-crbug.com/891427 editing/pasteboard/drop-text-without-selection.html [ Pass Failure Timeout Crash ]
-# Next 4 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel/1541
-crbug.com/891427 virtual/android/rootscroller/gesture-scroll-document-not-root-scroller.html [ Pass Failure Timeout Crash ]
-crbug.com/891427 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.js [ Pass Failure Timeout Crash ]
-# Next 4 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel/1547
-crbug.com/891427 virtual/threaded/external/wpt/css/css-scroll-snap/snap-at-user-scroll-end-manual.html [ Pass Failure Timeout Crash ]
-# Next 1 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win7-blink-rel/1504
-crbug.com/891427 tables/mozilla_expected_failures/marvin/table_overflow_dirty_reflow_tbody.html [ Pass Failure Timeout Crash ]
-# Next 1 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win10-blink-rel/1510
-crbug.com/891427 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.js [ Pass Failure Timeout Crash ]
-
 # The following tests need to remove the assumption that user activation is
 # available in child/sibling frames.  This assumption doesn't hold with User
 # Activation v2 (UAv2).
@@ -86,30 +38,7 @@ crbug.com/928838 external/wpt/html/user-activation/activation-transfer-with-clic
 crbug.com/928838 external/wpt/html/user-activation/activation-transfer-without-click.tentative.html [ Failure ]
 crbug.com/928838 external/wpt/html/user-activation/activation-transfer-cross-origin-with-click.sub.tentative.html [ Failure ]
 
-# The following fail only on Mac.
-crbug.com/891427 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
-crbug.com/891427 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
-crbug.com/891427 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
-crbug.com/891427 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Pass Failure Timeout Crash ]
-crbug.com/891427 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Pass Failure Timeout Crash ]
-
-# The following fail only on Android.
-crbug.com/891427 [ Android ] virtual/threaded/synthetic_gestures/smooth-scroll-tiny-delta.html [ Pass Failure Timeout Crash ]
 crbug.com/898987 [ Android ] synthetic_gestures/smooth-scroll-tiny-delta.html [ Failure Pass Timeout ]
-
-# These 6 are special. They are tied to both of these CLs:
-#   - https://chromium-review.googlesource.com/c/chromium/src/+/1213864
-#   - https://chromium-review.googlesource.com/c/chromium/src/+/1308038
-# and they only seem (really) flaky when the second CL is in place. But I believe
-# they are related to timing and to the same issues as above.
-# Here is an example: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_chromium_rel_ng/221340
-crbug.com/891427 fast/block/float/4145535Crash.html [ Pass Failure Timeout Crash ]
-crbug.com/891427 virtual/layout_ng/fast/block/float/4145535Crash.html [ Pass Failure Timeout Crash ]
-crbug.com/891427 http/tests/webfont/font-display-intervention.html [ Pass Failure Timeout Crash ]
-crbug.com/891427 paint/invalidation/scroll/fixed-img-src-change-after-scroll.html [ Pass Failure Timeout Crash ]
-crbug.com/891427 virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scrollbar-changing-style-relayout-body-scrollablearea.html [ Pass Failure Timeout Crash ]
-crbug.com/891427 virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scrollbar-changing-style-relayout-div-body-scrollablearea.html [ Pass Failure Timeout Crash ]
-
 
 # These two are left over from crbug.com/881040, I rebaselined them twice and
 # they continue to fail.
@@ -120,9 +49,6 @@ crbug.com/881040 media/controls/lazy-loaded-style.html [ Failure Pass ]
 crbug.com/887140 hdr/color-jpeg-with-color-profile.html [ Failure ]
 crbug.com/887140 hdr/color-profile-video.html [ Failure ]
 crbug.com/887140 hdr/video-canvas-alpha.html [ Failure ]
-
-# This was disabled by sheriff on Dec 31. Also failing on Win7, will need more investigation.
-crbug.com/891427 [ Mac Win7 ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
 
 # Unexpected failures (due to leaks?)
 crbug.com/927454 [ Linux ] external/wpt/pointerevents/pointerevent_pointerleave_descendant_over.html [ Pass Failure ]
@@ -1787,6 +1713,86 @@ crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_move/move_
 crbug.com/894651 virtual/bidi-caret-affinity/editing/selection/modify_move/move_right_word_09_rtl_multi_line.html [ Failure ]
 
 # ====== LayoutNG-only failures until here ======
+
+
+# ====== OOPIF-mode failures from here ======
+
+# See crbug.com/891427. These tests either fail or become flaky on one or more
+# platforms when --enable-display-compositor-pixel-dump is turned on. They need
+# triage. Note that these overlap with several existing entries in this
+# TestExpectations file. All of those have been commented out with a pointer back
+# up to this section. So if you close one of these, you should search for the
+# same test elsewhere, to see if perhaps you need to uncomment the old line.
+### These fail on all platforms:
+## Next 10 can be viewed in this run, by clicking on "Did not pass 11183":
+## https://test-results.appspot.com/data/layout_results/linux-blink-rel/1237/webkit_layout_tests%20%28with%20patch%29/layout-test-results/results.html
+crbug.com/891427 virtual/threaded/animations/responsive/viewport-unit-transform-responsive.html [ Timeout ]
+crbug.com/891427 virtual/disable-blink-gen-property-trees/animations/responsive/viewport-unit-transform-responsive.html [ Skip ]
+crbug.com/891427 virtual/threaded/animations/responsive/viewport-unit-translate-responsive.html [ Timeout ]
+crbug.com/891427 virtual/disable-blink-gen-property-trees/animations/responsive/viewport-unit-translate-responsive.html [ Skip ]
+crbug.com/891427 virtual/fractional_scrolling/fast/scrolling/editor-command-scroll-page-scale.html [ Pass Failure ]
+crbug.com/891427 fast/replaced/replaced-breaking.html [ Failure ]
+crbug.com/891427 virtual/android/fullscreen/rendering/backdrop-video.html [ Failure ]
+crbug.com/891427 virtual/android/rootscroller/set-root-scroller.html [ Failure ]
+crbug.com/891427 virtual/android/rootscroller/set-rootscroller-before-load.html [ Failure ]
+crbug.com/891427 virtual/android/url-bar/bottom-and-top-fixed-sticks-to-top.html [ Failure ]
+## Next 4 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_chromium_rel_ng/216317
+crbug.com/891427 virtual/threaded/animations/timing/animation-duration-infinite.html [ Failure ]
+crbug.com/891427 virtual/disable-blink-gen-property-trees/animations/timing/animation-duration-infinite.html [ Skip ]
+crbug.com/891427 editing/selection/drag-in-iframe.html [ Failure ]
+crbug.com/891427 fast/overflow/transformed-frame-scrollIntoView.html [ Crash ]
+
+### Flaky on trybots:
+### Note: this list includes anything that flaked even once during my (many)
+### test runs with the flag enabled. It is very possible that some of these
+### were random flakes, or were already flaky before the flag was turned on.
+# Next 3 here: https://ci.chromium.org/buildbot/tryserver.blink/linux-blink-rel/1215
+crbug.com/891427 animations/responsive/viewport-unit-transform-responsive.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 animations/responsive/viewport-unit-translate-responsive.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/android/rootscroller/rootscroller-during-fullscreen.html [ Pass Failure Timeout Crash ]
+# Next 2 here: https://ci.chromium.org/buildbot/tryserver.blink/win7-blink-rel/1183
+crbug.com/891427 external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 fast/canvas/canvas-drawImage-live-video.html [ Pass Failure Timeout Crash ]
+# Next 1 here: https://ci.chromium.org/buildbot/tryserver.blink/win7-blink-rel/1180
+crbug.com/891427 editing/pasteboard/drop-text-without-selection.html [ Pass Failure Timeout Crash ]
+# Next 2 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel/1541
+crbug.com/891427 virtual/android/rootscroller/gesture-scroll-document-not-root-scroller.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.js [ Pass Failure Timeout Crash ]
+# Next 1 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel/1547
+crbug.com/891427 virtual/threaded/external/wpt/css/css-scroll-snap/snap-at-user-scroll-end-manual.html [ Pass Failure Timeout Crash ]
+# Next 1 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win7-blink-rel/1504
+crbug.com/891427 tables/mozilla_expected_failures/marvin/table_overflow_dirty_reflow_tbody.html [ Pass Failure Timeout Crash ]
+# Next 1 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win10-blink-rel/1510
+crbug.com/891427 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.js [ Pass Failure Timeout Crash ]
+
+# The following fail only on Mac.
+crbug.com/891427 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Pass Failure Timeout Crash ]
+
+# The following fail only on Android.
+crbug.com/891427 [ Android ] virtual/threaded/synthetic_gestures/smooth-scroll-tiny-delta.html [ Pass Failure Timeout Crash ]
+
+# These 6 are special. They are tied to both of these CLs:
+#   - https://chromium-review.googlesource.com/c/chromium/src/+/1213864
+#   - https://chromium-review.googlesource.com/c/chromium/src/+/1308038
+# and they only seem (really) flaky when the second CL is in place. But I believe
+# they are related to timing and to the same issues as above.
+# Here is an example: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_chromium_rel_ng/221340
+crbug.com/891427 fast/block/float/4145535Crash.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/layout_ng/fast/block/float/4145535Crash.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 http/tests/webfont/font-display-intervention.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 paint/invalidation/scroll/fixed-img-src-change-after-scroll.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scrollbar-changing-style-relayout-body-scrollablearea.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scrollbar-changing-style-relayout-div-body-scrollablearea.html [ Pass Failure Timeout Crash ]
+
+# This was disabled by sheriff on Dec 31. Also failing on Win7, will need more investigation.
+crbug.com/891427 [ Mac Win7 ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
+
+# ====== OOPIF-mode failures until here ======
+
 
 ### sheriff 2018-05-28
 crbug.com/840238 http/tests/devtools/elements/shadow/shadow-distribution.js [ Failure ]
