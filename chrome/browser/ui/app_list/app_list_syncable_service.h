@@ -167,6 +167,7 @@ class AppListSyncableService : public syncer::SyncableService,
   const SyncItemMap& sync_items() const { return sync_items_; }
 
   // syncer::SyncableService
+  void WaitUntilReadyToSync(base::OnceClosure done) override;
   syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
@@ -321,6 +322,7 @@ class AppListSyncableService : public syncer::SyncableService,
   bool first_app_list_sync_;
   const bool is_app_service_enabled_;
   std::string oem_folder_name_;
+  base::OnceClosure wait_until_ready_to_sync_cb_;
 
   // List of observers.
   base::ObserverList<Observer>::Unchecked observer_list_;

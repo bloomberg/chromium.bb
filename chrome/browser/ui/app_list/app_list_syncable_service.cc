@@ -393,6 +393,9 @@ void AppListSyncableService::BuildModel() {
   }
 
   HandleUpdateFinished();
+
+  if (wait_until_ready_to_sync_cb_)
+    std::move(wait_until_ready_to_sync_cb_).Run();
 }
 
 void AppListSyncableService::AddObserverAndStart(Observer* observer) {
@@ -777,6 +780,17 @@ void AppListSyncableService::PruneEmptySyncFolders() {
 
 void AppListSyncableService::InstallDefaultPageBreaksForTest() {
   InstallDefaultPageBreaks();
+}
+
+void AppListSyncableService::WaitUntilReadyToSync(base::OnceClosure done) {
+  DCHECK(!wait_until_ready_to_sync_cb_);
+
+  if (IsInitialized()) {
+    std::move(done).Run();
+  } else {
+    // Wait until initialization is completed in BuildModel();
+    wait_until_ready_to_sync_cb_ = std::move(done);
+  }
 }
 
 syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
