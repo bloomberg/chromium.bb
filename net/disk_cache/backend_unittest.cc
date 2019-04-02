@@ -4918,3 +4918,27 @@ TEST_F(DiskCacheBackendTest, NonEmptyCorruptSimpleCacheDoesNotRecover) {
       &cache, cb.callback());
   EXPECT_THAT(cb.GetResult(rv), IsError(net::ERR_FAILED));
 }
+
+TEST_F(DiskCacheBackendTest, SimpleOwnershipTransferBackendDestroyRace) {
+  const char kKey[] = "skeleton";
+
+  // See https://crbug.com/946349
+  // This tests that if the SimpleBackendImpl is destroyed after SimpleEntryImpl
+  // decides to return an entry to the caller, but before the callback is run
+  // that no entry is leaked.
+  SetSimpleCacheMode();
+  InitCache();
+
+  disk_cache::Entry* entry = nullptr;
+  ASSERT_THAT(CreateEntry(kKey, &entry), IsOk());
+  // Make sure create actually succeeds, not just optimistically.
+  RunUntilIdle();
+
+  disk_cache::Entry* alias = nullptr;
+  // This is relying on the alias code resulting in synchronous posting of async
+  // result, so that backend destruction can be neatly slotted in between.
+  EXPECT_EQ(net::ERR_IO_PENDING,
+            cache_->OpenEntry(kKey, net::HIGHEST, &alias, base::DoNothing()));
+  cache_.reset();
+  entry->Close();
+}

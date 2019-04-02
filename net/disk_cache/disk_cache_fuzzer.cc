@@ -159,14 +159,9 @@ class DiskCacheLPMFuzzer {
   // Used as a callback for entry-opening backend calls. Will record the entry
   // in the map as usable and will release any entry-specific calls waiting for
   // the entry to be ready.
-  void OpenCacheEntryCallback(uint64_t entry_id,
-                              bool async,
-                              bool set_is_sparse,
-                              int rv);
-
-  // Same as above but takes the final entry_ptr from |ewo| and frees |ewo|.
-  void OpenOrCreateCacheEntryCallback(
-      scoped_refptr<base::RefCountedData<disk_cache::EntryWithOpened>> ewo,
+  void OpenCacheEntryCallback(
+      scoped_refptr<base::RefCountedData<disk_cache::EntryWithOpened>>
+          entry_result,
       uint64_t entry_id,
       bool async,
       bool set_is_sparse,
@@ -347,14 +342,26 @@ void DiskCacheLPMFuzzer::RunTaskForTest(base::OnceClosure closure) {
 
 // Resets the cb in the map so that WriteData and other calls that work on an
 // entry don't wait for its result.
-void DiskCacheLPMFuzzer::OpenCacheEntryCallback(uint64_t entry_id,
-                                                bool async,
-                                                bool set_is_sparse,
-                                                int rv) {
+void DiskCacheLPMFuzzer::OpenCacheEntryCallback(
+    scoped_refptr<base::RefCountedData<disk_cache::EntryWithOpened>>
+        entry_result,
+    uint64_t entry_id,
+    bool async,
+    bool set_is_sparse,
+    int rv) {
   // TODO(mpdenton) if this fails should we delete the entry entirely?
   // Would need to mark it for deletion and delete it later, as
   // IsValidEntry might be waiting for it.
   EntryInfo* ei = &open_cache_entries_[entry_id];
+
+  // It's important to write the pointer here and not let it be set directly
+  // by OpenEntry & co., since the callback is when the item is transferred to
+  // the client, so there may be a window in between the write and callback
+  // where the backend is destroyed, invalidating the transfer.
+  // Writes can also happen on a different thread, so unless the read is
+  // sequenced with it, it would be a race, and ei->entry_ptr is read quite a
+  // bit.
+  ei->entry_ptr = entry_result->data.entry;
   ei->tcb->callback().Run(rv);
   // If this entry was just created, set it as sparse if applicable.
   if (set_is_sparse && ei->entry_ptr) {
@@ -365,17 +372,6 @@ void DiskCacheLPMFuzzer::OpenCacheEntryCallback(uint64_t entry_id,
                 << ei->entry_ptr->GetKey() << "\" callback (rv = " << rv << ")]"
                 << std::endl;
   }
-}
-
-void DiskCacheLPMFuzzer::OpenOrCreateCacheEntryCallback(
-    scoped_refptr<base::RefCountedData<disk_cache::EntryWithOpened>> ewo,
-    uint64_t entry_id,
-    bool async,
-    bool set_is_sparse,
-    int rv) {
-  open_cache_entries_[entry_id].entry_ptr = ewo->data.entry;
-  OpenCacheEntryCallback(entry_id, async, set_is_sparse && !ewo->data.entry,
-                         rv);
 }
 
 int DiskCacheLPMFuzzer::WaitOnEntry(EntryInfo* ei, int rv) {
@@ -469,23 +465,28 @@ void DiskCacheLPMFuzzer::RunCommands(
         std::string key_str = ToKey(key_id);
         created_cache_entries_[key_id] = key_str;
 
+        auto entry_result = base::MakeRefCounted<
+            base::RefCountedData<disk_cache::EntryWithOpened>>();
+        disk_cache::EntryWithOpened* entry_result_ptr = &entry_result->data;
         EntryInfo* entry_info = &open_cache_entries_[entry_id];
 
         entry_info->tcb = std::make_unique<net::TestCompletionCallback>();
-        net::CompletionOnceCallback cb =
-            base::BindOnce(&DiskCacheLPMFuzzer::OpenCacheEntryCallback,
-                           base::Unretained(this), entry_id, async, is_sparse);
+        net::CompletionOnceCallback cb = base::BindOnce(
+            &DiskCacheLPMFuzzer::OpenCacheEntryCallback, base::Unretained(this),
+            entry_result, entry_id, async, is_sparse);
 
         MAYBE_PRINT << "CreateEntry(\"" << key_str
                     << "\", set_is_sparse = " << is_sparse
                     << ") = " << std::flush;
-        int rv = cache_->CreateEntry(key_str, pri, &entry_info->entry_ptr,
+        int rv = cache_->CreateEntry(key_str, pri, &entry_result_ptr->entry,
                                      std::move(cb));
         if (!async || rv != net::ERR_IO_PENDING) {
           rv = WaitOnEntry(entry_info, rv);
           // Ensure we mark sparsity, even if the callback never ran.
-          if (rv == net::OK)
+          if (rv == net::OK) {
+            entry_info->entry_ptr = entry_result_ptr->entry;
             sparse_entry_tracker_[entry_info->entry_ptr] = is_sparse;
+          }
           MAYBE_PRINT << rv << std::endl;
         } else if (rv == net::ERR_IO_PENDING) {
           MAYBE_PRINT << "net::ERR_IO_PENDING (async)" << std::endl;
@@ -508,20 +509,25 @@ void DiskCacheLPMFuzzer::RunCommands(
         if (open_cache_entries_.find(entry_id) != open_cache_entries_.end())
           continue;  // Don't overwrite a currently open cache entry.
 
+        auto entry_result = base::MakeRefCounted<
+            base::RefCountedData<disk_cache::EntryWithOpened>>();
+        disk_cache::EntryWithOpened* entry_result_ptr = &entry_result->data;
         EntryInfo* entry_info = &open_cache_entries_[entry_id];
 
         entry_info->tcb = std::make_unique<net::TestCompletionCallback>();
-        net::CompletionOnceCallback cb =
-            base::BindOnce(&DiskCacheLPMFuzzer::OpenCacheEntryCallback,
-                           base::Unretained(this), entry_id, async, false);
+        net::CompletionOnceCallback cb = base::BindOnce(
+            &DiskCacheLPMFuzzer::OpenCacheEntryCallback, base::Unretained(this),
+            entry_result, entry_id, async, false);
 
         auto key_it = GetNextValue(&created_cache_entries_, key_id);
         MAYBE_PRINT << "OpenEntry(\"" << key_it->second
                     << "\") = " << std::flush;
-        int rv = cache_->OpenEntry(key_it->second, pri, &entry_info->entry_ptr,
-                                   std::move(cb));
+        int rv = cache_->OpenEntry(key_it->second, pri,
+                                   &entry_result_ptr->entry, std::move(cb));
         if (!async || rv != net::ERR_IO_PENDING) {
           rv = WaitOnEntry(entry_info, rv);
+          if (rv == net::OK)
+            entry_info->entry_ptr = entry_result_ptr->entry;
           MAYBE_PRINT << rv << std::endl;
         } else {
           MAYBE_PRINT << "net::ERR_IO_PENDING (async)" << std::endl;
@@ -558,31 +564,32 @@ void DiskCacheLPMFuzzer::RunCommands(
         }
 
         // Setup for callbacks.
-        auto ewo = base::MakeRefCounted<
+        auto entry_result = base::MakeRefCounted<
             base::RefCountedData<disk_cache::EntryWithOpened>>();
-        disk_cache::EntryWithOpened* ewo_ptr = &ewo->data;
+        disk_cache::EntryWithOpened* entry_result_ptr = &entry_result->data;
 
         EntryInfo* entry_info = &open_cache_entries_[entry_id];
 
         entry_info->tcb = std::make_unique<net::TestCompletionCallback>();
         net::CompletionOnceCallback cb = base::BindOnce(
-            &DiskCacheLPMFuzzer::OpenOrCreateCacheEntryCallback,
-            base::Unretained(this), ewo, entry_id, async, is_sparse);
+            &DiskCacheLPMFuzzer::OpenCacheEntryCallback, base::Unretained(this),
+            entry_result, entry_id, async, is_sparse);
 
         // Will only be set as sparse if it is created and not opened.
         MAYBE_PRINT << "OpenOrCreateEntry(\"" << key_str
                     << "\", set_is_sparse = " << is_sparse
                     << ") = " << std::flush;
-        int rv =
-            cache_->OpenOrCreateEntry(key_str, pri, ewo_ptr, std::move(cb));
+        int rv = cache_->OpenOrCreateEntry(key_str, pri, entry_result_ptr,
+                                           std::move(cb));
         if (!async || rv != net::ERR_IO_PENDING) {
           rv = WaitOnEntry(entry_info, rv);
-          // We still hold a reference to |ewo| so we can use it.
-          entry_info->entry_ptr = ewo_ptr->entry;
+          // We still hold a reference to |entry_result| so we can use it.
+          entry_info->entry_ptr = entry_result_ptr->entry;
           // Ensure we mark sparsity, even if the callback never ran.
-          if (rv == net::OK && !ewo_ptr->opened)
+          if (rv == net::OK && !entry_result_ptr->opened)
             sparse_entry_tracker_[entry_info->entry_ptr] = is_sparse;
-          MAYBE_PRINT << rv << ", opened = " << ewo_ptr->opened << std::endl;
+          MAYBE_PRINT << rv << ", opened = " << entry_result_ptr->opened
+                      << std::endl;
         } else {
           MAYBE_PRINT << "net::ERR_IO_PENDING (async)" << std::endl;
         }
@@ -803,19 +810,23 @@ void DiskCacheLPMFuzzer::RunCommands(
 
         auto iterator_it = GetNextValue(&open_iterators_, it_id);
 
+        auto entry_result = base::MakeRefCounted<
+            base::RefCountedData<disk_cache::EntryWithOpened>>();
+        disk_cache::EntryWithOpened* entry_result_ptr = &entry_result->data;
         EntryInfo* entry_info = &open_cache_entries_[entry_id];
 
         entry_info->tcb = std::make_unique<net::TestCompletionCallback>();
-        net::CompletionOnceCallback cb =
-            base::BindOnce(&DiskCacheLPMFuzzer::OpenCacheEntryCallback,
-                           base::Unretained(this), entry_id, async, false);
+        net::CompletionOnceCallback cb = base::BindOnce(
+            &DiskCacheLPMFuzzer::OpenCacheEntryCallback, base::Unretained(this),
+            entry_result, entry_id, async, false);
 
         MAYBE_PRINT << "Iterator(" << ione.it_id()
                     << ").OpenNextEntry() = " << std::flush;
-        int rv = iterator_it->second->OpenNextEntry(&entry_info->entry_ptr,
+        int rv = iterator_it->second->OpenNextEntry(&entry_result_ptr->entry,
                                                     std::move(cb));
         if (!async || rv != net::ERR_IO_PENDING) {
           rv = WaitOnEntry(entry_info, rv);
+          entry_info->entry_ptr = entry_result_ptr->entry;
           // Print return value, and key if applicable.
           if (!entry_info->entry_ptr) {
             MAYBE_PRINT << rv << std::endl;
