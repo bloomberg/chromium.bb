@@ -3286,7 +3286,7 @@
       },
       {
         "args": [
-          "--dbus-stubs",
+          "--dbus-stub",
           "--gtest_filter=SplitViewTest.SplitViewResize"
         ],
         "swarming": {
