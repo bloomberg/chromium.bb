@@ -120,7 +120,7 @@ DocumentLoader::DocumentLoader(
       data_received_(false),
       navigation_type_(navigation_type),
       document_load_timing_(*this),
-      application_cache_host_(ApplicationCacheHost::Create(this)),
+      application_cache_host_(MakeGarbageCollected<ApplicationCacheHost>(this)),
       service_worker_network_provider_(
           std::move(params_->service_worker_network_provider)),
       was_blocked_after_csp_(false),
@@ -458,7 +458,7 @@ void DocumentLoader::SetHistoryItemStateForCommit(
     WebFrameLoadType load_type,
     HistoryNavigationType navigation_type) {
   if (!history_item_ || !IsBackForwardLoadType(load_type))
-    history_item_ = HistoryItem::Create();
+    history_item_ = MakeGarbageCollected<HistoryItem>();
 
   history_item_->SetURL(UrlForHistory());
   history_item_->SetReferrer(SecurityPolicy::GenerateReferrer(

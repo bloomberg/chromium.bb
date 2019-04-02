@@ -286,7 +286,7 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
 
   ProvideContextFeaturesTo(*page_, std::make_unique<PagePopupFeaturesClient>());
   DEFINE_STATIC_LOCAL(Persistent<LocalFrameClient>, empty_local_frame_client,
-                      (EmptyLocalFrameClient::Create()));
+                      (MakeGarbageCollected<EmptyLocalFrameClient>()));
   LocalFrame* frame =
       LocalFrame::Create(empty_local_frame_client, *page_, nullptr);
   frame->SetPagePopupOwner(popup_client_->OwnerElement());

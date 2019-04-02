@@ -53,10 +53,6 @@ class CORE_EXPORT ApplicationCacheHost final
     : public GarbageCollectedFinalized<ApplicationCacheHost>,
       public WebApplicationCacheHostClient {
  public:
-  static ApplicationCacheHost* Create(DocumentLoader* loader) {
-    return MakeGarbageCollected<ApplicationCacheHost>(loader);
-  }
-
   explicit ApplicationCacheHost(DocumentLoader*);
   ~ApplicationCacheHost() override;
   void DetachFromDocumentLoader();

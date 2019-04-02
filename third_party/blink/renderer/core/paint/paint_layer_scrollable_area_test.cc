@@ -34,7 +34,7 @@ class ScrollableAreaMockChromeClient : public EmptyChromeClient {
 class PaintLayerScrollableAreaTestBase : public RenderingTest {
  public:
   PaintLayerScrollableAreaTestBase()
-      : RenderingTest(EmptyLocalFrameClient::Create()),
+      : RenderingTest(MakeGarbageCollected<EmptyLocalFrameClient>()),
         chrome_client_(MakeGarbageCollected<ScrollableAreaMockChromeClient>()) {
   }
 

@@ -190,7 +190,7 @@ ResourceRequest FrameLoader::ResourceRequestForReload(
 
 FrameLoader::FrameLoader(LocalFrame* frame)
     : frame_(frame),
-      progress_tracker_(ProgressTracker::Create(frame)),
+      progress_tracker_(MakeGarbageCollected<ProgressTracker>(frame)),
       in_restore_scroll_(false),
       forced_sandbox_flags_(kSandboxNone),
       dispatching_did_clear_window_object_in_main_world_(false),

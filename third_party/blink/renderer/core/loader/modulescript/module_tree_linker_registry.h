@@ -19,10 +19,6 @@ class CORE_EXPORT ModuleTreeLinkerRegistry
     : public GarbageCollected<ModuleTreeLinkerRegistry>,
       public NameClient {
  public:
-  static ModuleTreeLinkerRegistry* Create() {
-    return MakeGarbageCollected<ModuleTreeLinkerRegistry>();
-  }
-
   ModuleTreeLinkerRegistry() = default;
 
   void Trace(blink::Visitor*);

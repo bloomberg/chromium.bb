@@ -27,7 +27,8 @@ using testing::MatchesRegex;
 
 class LayoutObjectTest : public RenderingTest {
  public:
-  LayoutObjectTest() : RenderingTest(EmptyLocalFrameClient::Create()) {}
+  LayoutObjectTest()
+      : RenderingTest(MakeGarbageCollected<EmptyLocalFrameClient>()) {}
 
  protected:
   template <bool should_have_wrapper>

@@ -36,10 +36,6 @@ class MockLinkLoaderClient final
   USING_GARBAGE_COLLECTED_MIXIN(MockLinkLoaderClient);
 
  public:
-  static MockLinkLoaderClient* Create(bool should_load) {
-    return MakeGarbageCollected<MockLinkLoaderClient>(should_load);
-  }
-
   explicit MockLinkLoaderClient(bool should_load) : should_load_(should_load) {}
 
   void Trace(blink::Visitor* visitor) override {
@@ -138,7 +134,8 @@ class LinkLoaderPreloadTestBase : public testing::Test {
     ASSERT_TRUE(fetcher);
     dummy_page_holder_->GetFrame().GetSettings()->SetScriptEnabled(true);
     Persistent<MockLinkLoaderClient> loader_client =
-        MockLinkLoaderClient::Create(expected.link_loader_should_load_value);
+        MakeGarbageCollected<MockLinkLoaderClient>(
+            expected.link_loader_should_load_value);
     LinkLoader* loader = LinkLoader::Create(loader_client.Get());
     url_test_helpers::RegisterMockedErrorURLLoad(params.href);
     loader->LoadLink(params, dummy_page_holder_->GetDocument());
@@ -534,7 +531,7 @@ TEST_P(LinkLoaderModulePreloadTest, ModulePreload) {
       ToScriptStateForMainWorld(dummy_page_holder->GetDocument().GetFrame()),
       modulator);
   Persistent<MockLinkLoaderClient> loader_client =
-      MockLinkLoaderClient::Create(true);
+      MakeGarbageCollected<MockLinkLoaderClient>(true);
   LinkLoader* loader = LinkLoader::Create(loader_client.Get());
   KURL href_url = KURL(NullURL(), test_case.href);
   LinkLoadParameters params(
@@ -585,7 +582,8 @@ TEST_F(LinkLoaderTest, Prefetch) {
         std::make_unique<DummyPageHolder>(IntSize(500, 500));
     dummy_page_holder->GetFrame().GetSettings()->SetScriptEnabled(true);
     Persistent<MockLinkLoaderClient> loader_client =
-        MockLinkLoaderClient::Create(test_case.link_loader_should_load_value);
+        MakeGarbageCollected<MockLinkLoaderClient>(
+            test_case.link_loader_should_load_value);
     LinkLoader* loader = LinkLoader::Create(loader_client.Get());
     KURL href_url = KURL(NullURL(), test_case.href);
     url_test_helpers::RegisterMockedErrorURLLoad(href_url);
@@ -634,7 +632,7 @@ TEST_F(LinkLoaderTest, DNSPrefetch) {
     dummy_page_holder->GetDocument().GetSettings()->SetDNSPrefetchingEnabled(
         true);
     Persistent<MockLinkLoaderClient> loader_client =
-        MockLinkLoaderClient::Create(test_case.should_load);
+        MakeGarbageCollected<MockLinkLoaderClient>(test_case.should_load);
     LinkLoader* loader = LinkLoader::Create(loader_client.Get());
     KURL href_url = KURL(KURL(String("http://example.com")), test_case.href);
     LinkLoadParameters params(
@@ -671,7 +669,7 @@ TEST_F(LinkLoaderTest, Preconnect) {
     auto dummy_page_holder =
         std::make_unique<DummyPageHolder>(IntSize(500, 500));
     Persistent<MockLinkLoaderClient> loader_client =
-        MockLinkLoaderClient::Create(test_case.should_load);
+        MakeGarbageCollected<MockLinkLoaderClient>(test_case.should_load);
     LinkLoader* loader = LinkLoader::Create(loader_client.Get());
     KURL href_url = KURL(KURL(String("http://example.com")), test_case.href);
     LinkLoadParameters params(
@@ -700,7 +698,7 @@ TEST_F(LinkLoaderTest, PreloadAndPrefetch) {
   ASSERT_TRUE(fetcher);
   dummy_page_holder->GetFrame().GetSettings()->SetScriptEnabled(true);
   Persistent<MockLinkLoaderClient> loader_client =
-      MockLinkLoaderClient::Create(true);
+      MakeGarbageCollected<MockLinkLoaderClient>(true);
   LinkLoader* loader = LinkLoader::Create(loader_client.Get());
   KURL href_url = KURL(KURL(), "https://www.example.com/");
   url_test_helpers::RegisterMockedErrorURLLoad(href_url);

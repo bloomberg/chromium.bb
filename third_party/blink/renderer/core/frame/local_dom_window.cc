@@ -529,7 +529,7 @@ ApplicationCache* LocalDOMWindow::applicationCache() const {
         document(), WebFeature::kApplicationCacheAPIInsecureOrigin);
   }
   if (!application_cache_)
-    application_cache_ = ApplicationCache::Create(GetFrame());
+    application_cache_ = MakeGarbageCollected<ApplicationCache>(GetFrame());
   return application_cache_.Get();
 }
 

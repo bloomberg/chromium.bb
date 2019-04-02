@@ -100,7 +100,7 @@ ModuleScript* ModuleMap::Entry::GetModuleScript() const {
 
 ModuleMap::ModuleMap(Modulator* modulator)
     : modulator_(modulator),
-      loader_registry_(ModuleScriptLoaderRegistry::Create()) {
+      loader_registry_(MakeGarbageCollected<ModuleScriptLoaderRegistry>()) {
   DCHECK(modulator);
 }
 

@@ -66,17 +66,6 @@ unsigned NavigationDisablerForBeforeUnload::navigation_disable_count_ = 0;
 
 class ScheduledRedirect final : public ScheduledNavigation {
  public:
-  static ScheduledRedirect* Create(double delay,
-                                   Document* origin_document,
-                                   const KURL& url,
-                                   Document::HttpRefreshType http_refresh_type,
-                                   WebFrameLoadType frame_load_type,
-                                   base::TimeTicks input_timestamp) {
-    return MakeGarbageCollected<ScheduledRedirect>(
-        delay, origin_document, url, http_refresh_type, frame_load_type,
-        input_timestamp);
-  }
-
   ScheduledRedirect(double delay,
                     Document* origin_document,
                     const KURL& url,
@@ -217,9 +206,9 @@ void NavigationScheduler::ScheduleRedirect(
     WebFrameLoadType frame_load_type = WebFrameLoadType::kStandard;
     if (delay <= 1)
       frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
-    Schedule(ScheduledRedirect::Create(delay, frame_->GetDocument(), url,
-                                       http_refresh_type, frame_load_type,
-                                       InputTimestamp()),
+    Schedule(MakeGarbageCollected<ScheduledRedirect>(
+                 delay, frame_->GetDocument(), url, http_refresh_type,
+                 frame_load_type, InputTimestamp()),
              kDoNotCancelParsing);
   }
 }

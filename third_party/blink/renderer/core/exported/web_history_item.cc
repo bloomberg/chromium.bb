@@ -45,7 +45,7 @@
 namespace blink {
 
 void WebHistoryItem::Initialize() {
-  private_ = HistoryItem::Create();
+  private_ = MakeGarbageCollected<HistoryItem>();
 }
 
 void WebHistoryItem::Reset() {

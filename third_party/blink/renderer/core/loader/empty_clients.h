@@ -78,10 +78,6 @@ enum class GlobalObjectReusePolicy;
 
 class CORE_EXPORT EmptyChromeClient : public ChromeClient {
  public:
-  static EmptyChromeClient* Create() {
-    return MakeGarbageCollected<EmptyChromeClient>();
-  }
-
   ~EmptyChromeClient() override = default;
   void ChromeDestroyed() override {}
 
@@ -238,10 +234,6 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
 
 class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
  public:
-  static EmptyLocalFrameClient* Create() {
-    return MakeGarbageCollected<EmptyLocalFrameClient>();
-  }
-
   EmptyLocalFrameClient() = default;
   ~EmptyLocalFrameClient() override = default;
 

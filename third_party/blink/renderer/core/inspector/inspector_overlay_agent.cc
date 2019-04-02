@@ -848,7 +848,7 @@ Page* InspectorOverlayAgent::OverlayPage() {
   overlay_settings.SetLoadsImagesAutomatically(true);
 
   DEFINE_STATIC_LOCAL(Persistent<LocalFrameClient>, dummy_local_frame_client,
-                      (EmptyLocalFrameClient::Create()));
+                      (MakeGarbageCollected<EmptyLocalFrameClient>()));
   LocalFrame* frame =
       LocalFrame::Create(dummy_local_frame_client, *overlay_page_, nullptr);
   frame->SetView(LocalFrameView::Create(*frame));
@@ -880,7 +880,7 @@ void InspectorOverlayAgent::UpdateFrameForTool() {
   }
 
   DEFINE_STATIC_LOCAL(Persistent<LocalFrameClient>, dummy_local_frame_client,
-                      (EmptyLocalFrameClient::Create()));
+                      (MakeGarbageCollected<EmptyLocalFrameClient>()));
   LocalFrame* frame =
       LocalFrame::Create(dummy_local_frame_client, *OverlayPage(), nullptr);
   frame->SetView(LocalFrameView::Create(*frame));
