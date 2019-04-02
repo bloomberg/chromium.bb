@@ -15,6 +15,7 @@
 
 namespace blink {
 
+class MediaControlsOrientationLockDelegate;
 class MediaControlsTouchlessMediaEventListener;
 class MediaControlsTextTrackManager;
 
@@ -98,9 +99,10 @@ class MODULES_EXPORT MediaControlsTouchlessImpl final
   void OnMediaControlsMenuHostConnectionError();
 
   Member<MediaControlsTouchlessMediaEventListener> media_event_listener_;
-  TaskRunnerTimer<MediaControlsTouchlessImpl> hide_media_controls_timer_;
-
   Member<MediaControlsTextTrackManager> text_track_manager_;
+  Member<MediaControlsOrientationLockDelegate> orientation_lock_delegate_;
+
+  TaskRunnerTimer<MediaControlsTouchlessImpl> hide_media_controls_timer_;
 
   mojom::blink::MediaControlsMenuHostPtr media_controls_host_;
 
