@@ -232,9 +232,11 @@ class CastActivityManagerTest
 
   // Precondition: |LaunchSession()| must be called first.
   void LaunchSessionResponseFailure() {
-    // 2 things will happen:
+    // 3 things will happen:
     // (1) Route is removed
     // (2) Issue will be sent.
+    // (3) The PresentationConnection associated with the route will be closed
+    //     with error.
     cast_channel::LaunchSessionResponse response;
     response.result = cast_channel::LaunchSessionResponse::Result::kError;
     std::move(launch_session_callback_).Run(std::move(response));
@@ -243,7 +245,8 @@ class CastActivityManagerTest
     ExpectEmptyRouteUpdate();
     EXPECT_CALL(
         *client_connection_,
-        DidChangeState(blink::mojom::PresentationConnectionState::TERMINATED));
+        DidClose(
+            blink::mojom::PresentationConnectionCloseReason::CONNECTION_ERROR));
     RunUntilIdle();
   }
 

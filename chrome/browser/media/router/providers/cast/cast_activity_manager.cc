@@ -211,11 +211,10 @@ void CastSessionClient::SendResultResponse(int sequence_number,
   }
 }
 
-void CastSessionClient::CloseConnection() {
-  if (connection_) {
-    // TODO(jrw): Pass in PresentationConnectionCloseReason.
-    connection_->DidClose(PresentationConnectionCloseReason::CLOSED);
-  }
+void CastSessionClient::CloseConnection(
+    PresentationConnectionCloseReason close_reason) {
+  if (connection_)
+    connection_->DidClose(close_reason);
 
   TearDownPresentationConnection();
 }
@@ -245,6 +244,9 @@ mojom::RoutePresentationConnectionPtr CastActivityRecord::AddClient(
       client_id, origin, tab_id, auto_join_policy, data_decoder_, this);
   auto presentation_connection = client->Init();
   connected_clients_.emplace(client_id, std::move(client));
+
+  // Route is now local due to connected client.
+  route_.set_local(true);
   return presentation_connection;
 }
 
@@ -338,7 +340,8 @@ void CastActivityRecord::HandleLeaveSession(const std::string& client_id) {
   for (const auto& client_id : leaving_client_ids) {
     auto leaving_client_it = connected_clients_.find(client_id);
     CHECK(leaving_client_it != connected_clients_.end());
-    leaving_client_it->second->CloseConnection();
+    leaving_client_it->second->CloseConnection(
+        PresentationConnectionCloseReason::CLOSED);
     connected_clients_.erase(leaving_client_it);
   }
 }
@@ -355,9 +358,10 @@ void CastActivityRecord::SendMessageToClient(
   it->second->SendMessageToClient(std::move(message));
 }
 
-void CastActivityRecord::ClosePresentationConnections() {
+void CastActivityRecord::ClosePresentationConnections(
+    PresentationConnectionCloseReason close_reason) {
   for (auto& client : connected_clients_)
-    client.second->CloseConnection();
+    client.second->CloseConnection(close_reason);
 }
 
 void CastActivityRecord::TerminatePresentationConnections() {
@@ -551,19 +555,30 @@ void CastActivityManager::LaunchSessionAfterTerminatingExisting(
   DoLaunchSession(std::move(params));
 }
 
-void CastActivityManager::RemoveActivity(ActivityMap::iterator activity_it,
-                                         PresentationConnectionState state,
-                                         bool notify) {
-  DCHECK(state == PresentationConnectionState::CLOSED ||
-         state == PresentationConnectionState::TERMINATED);
-  if (state == PresentationConnectionState::CLOSED)
-    activity_it->second->ClosePresentationConnections();
-  else
-    activity_it->second->TerminatePresentationConnections();
+void CastActivityManager::RemoveActivity(
+    ActivityMap::iterator activity_it,
+    PresentationConnectionState state,
+    PresentationConnectionCloseReason close_reason) {
+  RemoveActivityWithoutNotification(activity_it, state, close_reason);
+  NotifyAllOnRoutesUpdated();
+}
+
+void CastActivityManager::RemoveActivityWithoutNotification(
+    ActivityMap::iterator activity_it,
+    PresentationConnectionState state,
+    PresentationConnectionCloseReason close_reason) {
+  switch (state) {
+    case PresentationConnectionState::CLOSED:
+      activity_it->second->ClosePresentationConnections(close_reason);
+      break;
+    case PresentationConnectionState::TERMINATED:
+      activity_it->second->TerminatePresentationConnections();
+      break;
+    default:
+      DLOG(ERROR) << "Invalid state: " << state;
+  }
 
   activities_.erase(activity_it);
-  if (notify)
-    NotifyAllOnRoutesUpdated();
 }
 
 void CastActivityManager::TerminateSession(
@@ -587,7 +602,8 @@ void CastActivityManager::TerminateSession(
   // still pending.
   if (!session_id) {
     DVLOG(2) << "Terminated route has no session ID.";
-    RemoveActivity(activity_it);
+    RemoveActivity(activity_it, PresentationConnectionState::TERMINATED,
+                   PresentationConnectionCloseReason::CLOSED);
     std::move(callback).Run(base::nullopt, RouteRequestResult::OK);
     return;
   }
@@ -693,8 +709,12 @@ void CastActivityManager::OnSessionAddedOrUpdated(const MediaSinkInternal& sink,
     // whether it even happens in practice; I haven't been able to trigger it.
     //
     // TODO(jrw): Try to come up with a test to exercise this code.
-    RemoveActivity(activity_it, PresentationConnectionState::TERMINATED,
-                   /* notify */ false);
+    //
+    // TODO(jrw): Figure out why this code was originally written to explicitly
+    // avoid calling NotifyAllOnRoutesUpdated().
+    RemoveActivityWithoutNotification(
+        activity_it, PresentationConnectionState::TERMINATED,
+        PresentationConnectionCloseReason::CLOSED);
     AddNonLocalActivityRecord(sink, session);
   }
   NotifyAllOnRoutesUpdated();
@@ -702,8 +722,10 @@ void CastActivityManager::OnSessionAddedOrUpdated(const MediaSinkInternal& sink,
 
 void CastActivityManager::OnSessionRemoved(const MediaSinkInternal& sink) {
   auto it = FindActivityBySink(sink);
-  if (it != activities_.end())
-    RemoveActivity(it);
+  if (it != activities_.end()) {
+    RemoveActivity(it, PresentationConnectionState::TERMINATED,
+                   PresentationConnectionCloseReason::CLOSED);
+  }
 }
 
 void CastActivityManager::OnMediaStatusUpdated(const MediaSinkInternal& sink,
@@ -791,7 +813,8 @@ void CastActivityManager::HandleLaunchSessionResponse(
 
   if (response.result != cast_channel::LaunchSessionResponse::Result::kOk) {
     DLOG(ERROR) << "Failed to launch session for " << route_id;
-    RemoveActivity(activity_it);
+    RemoveActivity(activity_it, PresentationConnectionState::CLOSED,
+                   PresentationConnectionCloseReason::CONNECTION_ERROR);
     SendFailedToCastIssue(sink.sink().id(), route_id);
     return;
   }
@@ -799,7 +822,8 @@ void CastActivityManager::HandleLaunchSessionResponse(
   auto session = CastSession::From(sink, *response.receiver_status);
   if (!session) {
     DLOG(ERROR) << "Unable to get session from launch response";
-    RemoveActivity(activity_it);
+    RemoveActivity(activity_it, PresentationConnectionState::CLOSED,
+                   PresentationConnectionCloseReason::CONNECTION_ERROR);
     SendFailedToCastIssue(sink.sink().id(), route_id);
     return;
   }
@@ -836,7 +860,8 @@ void CastActivityManager::HandleStopSessionResponse(
   }
 
   if (result == cast_channel::Result::kOk) {
-    RemoveActivity(activity_it);
+    RemoveActivity(activity_it, PresentationConnectionState::TERMINATED,
+                   PresentationConnectionCloseReason::CLOSED);
     std::move(callback).Run(base::nullopt, RouteRequestResult::OK);
   } else {
     std::move(callback).Run("Failed to terminate route",
