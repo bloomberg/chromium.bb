@@ -15,10 +15,10 @@
         no-footer-padding>
       <iron-icon src="chrome://oobe/playstore.svg" slot="oobe-icon">
       </iron-icon>
-      <h1 slot="title" hidden="[[!hasSingleApp]]">
+      <h1 slot="title" id="title-singular" hidden="[[!hasSingleApp]]">
         [[i18nDynamic(locale, 'appDownloadingScreenTitleSingular')]]
       </h1>
-      <h1 slot="title" hidden="[[hasSingleApp]]">
+      <h1 slot="title" id="title-plural" hidden="[[hasSingleApp]]">
         [[i18nDynamic(locale, 'appDownloadingScreenTitlePlural', numOfApps)]]
       </h1>
       <div slot="subtitle">
