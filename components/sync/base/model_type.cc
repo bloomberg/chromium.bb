@@ -26,7 +26,6 @@
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/protocol/theme_specifics.pb.h"
 #include "components/sync/protocol/typed_url_specifics.pb.h"
-#include "components/sync/syncable/syncable_proto_util.h"
 
 namespace syncer {
 
@@ -339,8 +338,6 @@ FullModelTypeSet ToFullModelTypeSet(ModelTypeSet in) {
 
 // Note: keep this consistent with GetModelType in entry.cc!
 ModelType GetModelType(const sync_pb::SyncEntity& sync_entity) {
-  DCHECK(!IsRoot(sync_entity));  // Root shouldn't ever go over the wire.
-
   ModelType specifics_type = GetModelTypeFromSpecifics(sync_entity.specifics());
   if (specifics_type != UNSPECIFIED)
     return specifics_type;
@@ -348,7 +345,7 @@ ModelType GetModelType(const sync_pb::SyncEntity& sync_entity) {
   // Loose check for server-created top-level folders that aren't
   // bound to a particular model type.
   if (!sync_entity.server_defined_unique_tag().empty() &&
-      IsFolder(sync_entity)) {
+      sync_entity.folder()) {
     return TOP_LEVEL_FOLDER;
   }
 
