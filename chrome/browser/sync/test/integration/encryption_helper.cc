@@ -7,10 +7,10 @@
 
 #include "base/base64.h"
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/sync_base_switches.h"
 #include "components/sync/base/system_encryptor.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/engine/sync_engine_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -141,7 +141,7 @@ void SetNigoriInFakeServer(fake_server::FakeServer* fake_server,
 }  // namespace encryption_helper
 
 ServerNigoriChecker::ServerNigoriChecker(
-    browser_sync::ProfileSyncService* service,
+    syncer::ProfileSyncService* service,
     fake_server::FakeServer* fake_server,
     syncer::PassphraseType expected_passphrase_type)
     : SingleClientStatusChangeChecker(service),
@@ -164,7 +164,7 @@ std::string ServerNigoriChecker::GetDebugMessage() const {
 }
 
 PassphraseRequiredStateChecker::PassphraseRequiredStateChecker(
-    browser_sync::ProfileSyncService* service,
+    syncer::ProfileSyncService* service,
     bool desired_state)
     : SingleClientStatusChangeChecker(service), desired_state_(desired_state) {}
 

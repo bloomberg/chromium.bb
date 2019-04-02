@@ -73,8 +73,6 @@
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
 #endif  // defined(OS_CHROMEOS)
 
-using browser_sync::ProfileSyncService;
-
 namespace {
 
 void UpdateNetworkTimeOnUIThread(base::Time network_time,
@@ -113,9 +111,9 @@ syncer::SyncService* ProfileSyncServiceFactory::GetForProfile(
 }
 
 // static
-ProfileSyncService*
+syncer::ProfileSyncService*
 ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(Profile* profile) {
-  return static_cast<ProfileSyncService*>(GetForProfile(profile));
+  return static_cast<syncer::ProfileSyncService*>(GetForProfile(profile));
 }
 
 ProfileSyncServiceFactory::ProfileSyncServiceFactory()
@@ -169,7 +167,7 @@ ProfileSyncServiceFactory::~ProfileSyncServiceFactory() = default;
 
 KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  ProfileSyncService::InitParams init_params;
+  syncer::ProfileSyncService::InitParams init_params;
 
   Profile* profile = Profile::FromBrowserContext(context);
 
@@ -210,7 +208,7 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
     if (local_sync_backend_folder.empty())
       return nullptr;
 
-    init_params.start_behavior = ProfileSyncService::AUTO_START;
+    init_params.start_behavior = syncer::ProfileSyncService::AUTO_START;
   }
 #endif  // defined(OS_WIN)
 
@@ -256,11 +254,12 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
     // need to take care that ProfileSyncService doesn't get tripped up between
     // those two cases. Bug 88109.
     init_params.start_behavior = browser_defaults::kSyncAutoStarts
-                                     ? ProfileSyncService::AUTO_START
-                                     : ProfileSyncService::MANUAL_START;
+                                     ? syncer::ProfileSyncService::AUTO_START
+                                     : syncer::ProfileSyncService::MANUAL_START;
   }
 
-  auto pss = std::make_unique<ProfileSyncService>(std::move(init_params));
+  auto pss =
+      std::make_unique<syncer::ProfileSyncService>(std::move(init_params));
   pss->Initialize();
   return pss.release();
 }

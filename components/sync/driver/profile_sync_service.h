@@ -46,12 +46,18 @@
 #include "services/identity/public/cpp/identity_manager.h"
 #include "url/gurl.h"
 
+// TODO(crbug.com/896303): Move TestProfileSyncService into namespace sync too.
+namespace browser_sync {
+class TestProfileSyncService;
+}  // namespace browser_sync
+
 namespace network {
 class NetworkConnectionTracker;
 class SharedURLLoaderFactory;
 }  // namespace network
 
 namespace syncer {
+
 class BackendMigrator;
 class NetworkResources;
 class SyncAuthManager;
@@ -60,10 +66,6 @@ struct CommitCounters;
 struct StatusCounters;
 struct UpdateCounters;
 struct UserShare;
-}  // namespace syncer
-
-// TODO(crbug.com/896303): Change to namespace syncer.
-namespace browser_sync {
 
 // Look at the syncer::SyncService interface for information on how to use this
 // class. You should not need to know about ProfileSyncService directly.
@@ -268,7 +270,7 @@ class ProfileSyncService : public syncer::SyncService,
   syncer::SyncClient* GetSyncClientForTest();
 
  private:
-  friend class TestProfileSyncService;
+  friend class browser_sync::TestProfileSyncService;
 
   // Passed as an argument to StopImpl to control whether or not the sync
   // engine should clear its data directory when it shuts down. See StopImpl
@@ -522,6 +524,6 @@ class ProfileSyncService : public syncer::SyncService,
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };
 
-}  // namespace browser_sync
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_PROFILE_SYNC_SERVICE_H_

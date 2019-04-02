@@ -18,7 +18,7 @@ class SyncPrefs;
 
 namespace browser_sync {
 
-class TestProfileSyncService : public ProfileSyncService {
+class TestProfileSyncService : public syncer::ProfileSyncService {
  public:
   explicit TestProfileSyncService(InitParams init_params);
 
