@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://wicg.github.io/writable-files/#filesystemwriter
+// https://wicg.github.io/native-file-system/#filesystemwriter
 [
     NoInterfaceObject,
     RuntimeEnabled=WritableFiles
