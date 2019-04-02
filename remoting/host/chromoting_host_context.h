@@ -54,7 +54,6 @@ class ChromotingHostContext {
   // the IO Thread of the browser process).
   // Instead, we re-use the |url_request_context_getter| in the browser process.
   static std::unique_ptr<ChromotingHostContext> CreateForChromeOS(
-      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
