@@ -4113,6 +4113,45 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="HistoryNavigation" singular="True">
+  <owner>altimin@chromium.org</owner>
+  <owner>arthursonzogni@chromium.org</owner>
+  <summary>
+    Metrics recorded each time we commit a history navigation, which are needed
+    to estimate benefits of back-forward cache.
+  </summary>
+  <metric name="LastCommittedSourceIdForTheSameDocument">
+    <summary>
+      For history navigations and reloads, the source id of the previous
+      navigation which loaded the page we're trying to navigate back to.
+    </summary>
+  </metric>
+  <metric name="NavigatedToTheMostRecentEntryForDocument">
+    <summary>
+      Boolean for whether we navigated to the same navigation entry as the one
+      which was last visible.
+
+      It can be false when subframes or same-document navigations are present.
+      For example, after navigating from http://foo to http://foo#bar and then
+      http://bar and then going back by 2 entries will mean we went to
+      http://foo while the last committed entry from this document was
+      http://foo#bar.
+
+      It's expected to be rare, but might be problematic for back-forward cache.
+    </summary>
+  </metric>
+  <metric name="TimeSinceNavigatedAwayFromDocument">
+    <summary>
+      Time in milliseconds from the moment the current navigation stopped being
+      active to the start of the current navigation.
+
+      This is clamped to hours for values greater than 3 hours, to minutes for
+      values greater than 3 minutes, to seconds for values greater than 5
+      seconds.
+    </summary>
+  </metric>
+</event>
+
 <event name="OfflinePages.SavePageRequested">
   <obsolete>
     Deprecated 03/2019

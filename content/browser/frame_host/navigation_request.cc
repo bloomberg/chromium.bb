@@ -571,8 +571,15 @@ NavigationRequest::NavigationRequest(
 
   // Add necessary headers that may not be present in the
   // mojom::BeginNavigationParams.
-  if (entry)
+  if (entry) {
     nav_entry_id_ = entry->GetUniqueID();
+    // TODO(altimin, crbug.com/933147): Remove this logic after we are done
+    // with implementing back-forward cache.
+    if (frame_tree_node->IsMainFrame() && entry->back_forward_cache_metrics()) {
+      entry->back_forward_cache_metrics()
+          ->MainFrameDidStartNavigationToDocument();
+    }
+  }
 
   std::string user_agent_override;
   if (commit_params.is_overriding_user_agent ||

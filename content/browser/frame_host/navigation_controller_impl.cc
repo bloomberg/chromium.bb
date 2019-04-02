@@ -1020,6 +1020,24 @@ bool NavigationControllerImpl::RendererDidNavigate(
     details->previous_entry_index = -1;
   }
 
+  // TODO(altimin, crbug.com/933147): Remove this logic after we are done with
+  // implementing back-forward cache.
+
+  // Create a new metrics object or reuse the previous one depending on whether
+  // it's a main frame navigation or not.
+  scoped_refptr<BackForwardCacheMetrics> back_forward_cache_metrics =
+      BackForwardCacheMetrics::CreateOrReuseBackForwardCacheMetrics(
+          GetLastCommittedEntry(), !rfh->GetParent(),
+          params.document_sequence_number);
+  // Notify the last active entry that we have navigated away.
+  if (!rfh->GetParent() && !is_same_document_navigation) {
+    if (NavigationEntryImpl* navigation_entry = GetLastCommittedEntry()) {
+      if (auto* metrics = navigation_entry->back_forward_cache_metrics()) {
+        metrics->MainFrameDidNavigateAwayFromDocument();
+      }
+    }
+  }
+
   // If there is a pending entry at this point, it should have a SiteInstance,
   // except for restored entries.
   bool was_restored = false;
@@ -1148,6 +1166,15 @@ bool NavigationControllerImpl::RendererDidNavigate(
   NavigationEntryImpl* active_entry = GetLastCommittedEntry();
   active_entry->SetTimestamp(timestamp);
   active_entry->SetHttpStatusCode(params.http_status_code);
+  // TODO(altimin, crbug.com/933147): Remove this logic after we are done with
+  // implementing back-forward cache.
+  if (!active_entry->back_forward_cache_metrics()) {
+    active_entry->set_back_forward_cache_metrics(
+        std::move(back_forward_cache_metrics));
+  }
+  active_entry->back_forward_cache_metrics()->DidCommitNavigation(
+      navigation_request->navigation_handle()->GetNavigationId(),
+      active_entry->GetUniqueID(), rfh->frame_tree_node()->IsMainFrame());
 
   // Grab the corresponding FrameNavigationEntry for a few updates, but only if
   // the SiteInstance matches (to avoid updating the wrong entry by mistake).

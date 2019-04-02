@@ -17,6 +17,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "content/browser/frame_host/back_forward_cache_metrics.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/site_instance_impl.h"
@@ -418,6 +419,17 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
     should_skip_on_back_forward_ui_ = should_skip;
   }
 
+  BackForwardCacheMetrics* back_forward_cache_metrics() {
+    return back_forward_cache_metrics_.get();
+  }
+
+  void set_back_forward_cache_metrics(
+      scoped_refptr<BackForwardCacheMetrics> metrics) {
+    DCHECK(metrics);
+    DCHECK(!back_forward_cache_metrics_);
+    back_forward_cache_metrics_ = metrics;
+  }
+
  private:
   // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
   // Session/Tab restore save portions of this class so that it can be recreated
@@ -547,6 +559,11 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   // navigations.
   // TODO(shivanisha): Persist this field once the intervention is stable.
   bool should_skip_on_back_forward_ui_;
+
+  // TODO(altimin, crbug.com/933147): Remove this logic after we are done
+  // with implement back-forward cache.
+  // It is preserved at commit but not persisted.
+  scoped_refptr<BackForwardCacheMetrics> back_forward_cache_metrics_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationEntryImpl);
 };
