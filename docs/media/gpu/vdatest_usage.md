@@ -129,10 +129,8 @@ instance, they will be `test-25fps.h264.frames/frame_%{frame-num}_320x180_I420.y
 ### How to generate md5 values of decoded frames for a new video stream
 
 It is necessary to generate md5 values of decoded frames for new test streams.
-For this purpose, run VDATest with `--gtest_filter=VideoDecodeAcceleratorTest.DISABLED_GenMD5 --gtest_also_run_disabled_tests`.
-The md5 values of decoded frames are written in `*.frames.md5`. For instance,
-`test-25fps.h264.frames.md5` for `test-25fps.h264`. Note that if there is already
-the `.frames.md5` file, this overwrites the file.
+ffmpeg with `-f framemd5` can be used for this purpose. For instance,
+`ffmpeg -i test-25fps.h264 -f framemd5 test-25fps.frames.md5`
 
 ## Basic VEA usage
 

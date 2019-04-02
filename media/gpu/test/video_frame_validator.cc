@@ -75,10 +75,6 @@ void VideoFrameValidator::Destroy() {
   DCHECK_EQ(0u, num_frames_validating_);
 }
 
-const std::vector<std::string>& VideoFrameValidator::GetFrameChecksums() const {
-  return frame_checksums_;
-}
-
 std::vector<VideoFrameValidator::MismatchedFrameInfo>
 VideoFrameValidator::GetMismatchedFramesInfo() const {
   base::AutoLock auto_lock(frame_validator_lock_);
@@ -140,7 +136,6 @@ void VideoFrameValidator::ProcessVideoFrameTask(
   std::string computed_md5 = ComputeMD5FromVideoFrame(validated_frame.get());
 
   base::AutoLock auto_lock(frame_validator_lock_);
-  frame_checksums_.push_back(computed_md5);
 
   if (expected_frame_checksums_.size() > 0) {
     LOG_IF(FATAL, frame_index >= expected_frame_checksums_.size())
