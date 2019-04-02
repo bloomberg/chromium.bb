@@ -56,6 +56,7 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
     START_DOWNLOADING,  // PluginVm image downloading should be started.
     DOWNLOADING,        // PluginVm image downloading is in progress.
     UNZIPPING,          // Downloaded PluginVm image unzipping is in progress.
+    REGISTERING,        // PluginVm image registering is in progress.
     FINISHED,           // PluginVm environment setting has been finished.
     ERROR,              // Something unexpected happened.
   };
@@ -68,6 +69,8 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
   void AddedToWidget() override;
 
  private:
+  void OnRegistered(bool success);
+
   base::string16 GetMessage() const;
   base::string16 GetDownloadProgressMessage(uint64_t downlaoded_bytes,
                                             int64_t content_length) const;
