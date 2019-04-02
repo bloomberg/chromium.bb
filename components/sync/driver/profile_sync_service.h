@@ -62,13 +62,13 @@ struct StatusCounters;
 struct UpdateCounters;
 struct UserShare;
 
-// Look at the syncer::SyncService interface for information on how to use this
-// class. You should not need to know about ProfileSyncService directly.
-class ProfileSyncService : public syncer::SyncService,
-                           public syncer::SyncEngineHost,
-                           public syncer::SyncPrefObserver,
-                           public syncer::DataTypeManagerObserver,
-                           public syncer::UnrecoverableErrorHandler,
+// Look at the SyncService interface for information on how to use this class.
+// You should not need to know about ProfileSyncService directly.
+class ProfileSyncService : public SyncService,
+                           public SyncEngineHost,
+                           public SyncPrefObserver,
+                           public DataTypeManagerObserver,
+                           public UnrecoverableErrorHandler,
                            public identity::IdentityManager::Observer {
  public:
   // If AUTO_START, sync will set IsFirstSetupComplete() automatically and sync
@@ -87,12 +87,12 @@ class ProfileSyncService : public syncer::SyncService,
     InitParams(InitParams&& other);
     ~InitParams();
 
-    std::unique_ptr<syncer::SyncClient> sync_client;
+    std::unique_ptr<SyncClient> sync_client;
     identity::IdentityManager* identity_manager = nullptr;
     std::vector<invalidation::IdentityProvider*>
         invalidations_identity_providers;
     StartBehavior start_behavior = MANUAL_START;
-    syncer::NetworkTimeUpdateCallback network_time_update_callback;
+    NetworkTimeUpdateCallback network_time_update_callback;
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
     network::NetworkConnectionTracker* network_connection_tracker = nullptr;
     std::string debug_identifier;
@@ -111,9 +111,9 @@ class ProfileSyncService : public syncer::SyncService,
   // TODO(mastiz): Rename this to Start().
   void Initialize();
 
-  // syncer::SyncService implementation
-  syncer::SyncUserSettings* GetUserSettings() override;
-  const syncer::SyncUserSettings* GetUserSettings() const override;
+  // SyncService implementation
+  SyncUserSettings* GetUserSettings() override;
+  const SyncUserSettings* GetUserSettings() const override;
   int GetDisableReasons() const override;
   TransportState GetTransportState() const override;
   bool IsLocalSyncEnabled() const override;
@@ -121,73 +121,65 @@ class ProfileSyncService : public syncer::SyncService,
   bool IsAuthenticatedAccountPrimary() const override;
   GoogleServiceAuthError GetAuthError() const override;
   bool RequiresClientUpgrade() const override;
-  std::unique_ptr<syncer::SyncSetupInProgressHandle> GetSetupInProgressHandle()
+  std::unique_ptr<SyncSetupInProgressHandle> GetSetupInProgressHandle()
       override;
   bool IsSetupInProgress() const override;
-  syncer::ModelTypeSet GetRegisteredDataTypes() const override;
-  syncer::ModelTypeSet GetForcedDataTypes() const override;
-  syncer::ModelTypeSet GetPreferredDataTypes() const override;
-  syncer::ModelTypeSet GetActiveDataTypes() const override;
+  ModelTypeSet GetRegisteredDataTypes() const override;
+  ModelTypeSet GetForcedDataTypes() const override;
+  ModelTypeSet GetPreferredDataTypes() const override;
+  ModelTypeSet GetActiveDataTypes() const override;
   void StopAndClear() override;
-  void OnDataTypeRequestsSyncStartup(syncer::ModelType type) override;
-  void TriggerRefresh(const syncer::ModelTypeSet& types) override;
-  void ReenableDatatype(syncer::ModelType type) override;
-  void ReadyForStartChanged(syncer::ModelType type) override;
+  void OnDataTypeRequestsSyncStartup(ModelType type) override;
+  void TriggerRefresh(const ModelTypeSet& types) override;
+  void ReenableDatatype(ModelType type) override;
+  void ReadyForStartChanged(ModelType type) override;
   void SetInvalidationsForSessionsEnabled(bool enabled) override;
-  void AddObserver(syncer::SyncServiceObserver* observer) override;
-  void RemoveObserver(syncer::SyncServiceObserver* observer) override;
-  bool HasObserver(const syncer::SyncServiceObserver* observer) const override;
-  syncer::UserShare* GetUserShare() const override;
-  syncer::SyncTokenStatus GetSyncTokenStatus() const override;
-  bool QueryDetailedSyncStatusForDebugging(
-      syncer::SyncStatus* result) const override;
+  void AddObserver(SyncServiceObserver* observer) override;
+  void RemoveObserver(SyncServiceObserver* observer) override;
+  bool HasObserver(const SyncServiceObserver* observer) const override;
+  UserShare* GetUserShare() const override;
+  SyncTokenStatus GetSyncTokenStatus() const override;
+  bool QueryDetailedSyncStatusForDebugging(SyncStatus* result) const override;
   base::Time GetLastSyncedTime() const override;
-  syncer::SyncCycleSnapshot GetLastCycleSnapshot() const override;
+  SyncCycleSnapshot GetLastCycleSnapshot() const override;
   std::unique_ptr<base::Value> GetTypeStatusMapForDebugging() override;
   const GURL& sync_service_url() const override;
   std::string unrecoverable_error_message() const override;
   base::Location unrecoverable_error_location() const override;
-  void AddProtocolEventObserver(
-      syncer::ProtocolEventObserver* observer) override;
-  void RemoveProtocolEventObserver(
-      syncer::ProtocolEventObserver* observer) override;
-  void AddTypeDebugInfoObserver(
-      syncer::TypeDebugInfoObserver* observer) override;
-  void RemoveTypeDebugInfoObserver(
-      syncer::TypeDebugInfoObserver* observer) override;
-  base::WeakPtr<syncer::JsController> GetJsController() override;
+  void AddProtocolEventObserver(ProtocolEventObserver* observer) override;
+  void RemoveProtocolEventObserver(ProtocolEventObserver* observer) override;
+  void AddTypeDebugInfoObserver(TypeDebugInfoObserver* observer) override;
+  void RemoveTypeDebugInfoObserver(TypeDebugInfoObserver* observer) override;
+  base::WeakPtr<JsController> GetJsController() override;
   void GetAllNodes(const base::Callback<void(std::unique_ptr<base::ListValue>)>&
                        callback) override;
 
   // SyncEngineHost implementation.
   void OnEngineInitialized(
-      syncer::ModelTypeSet initial_types,
-      const syncer::WeakHandle<syncer::JsBackend>& js_backend,
-      const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
-          debug_info_listener,
+      ModelTypeSet initial_types,
+      const WeakHandle<JsBackend>& js_backend,
+      const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
       const std::string& cache_guid,
       const std::string& session_name,
       const std::string& birthday,
       const std::string& bag_of_chips,
       bool success) override;
-  void OnSyncCycleCompleted(const syncer::SyncCycleSnapshot& snapshot) override;
-  void OnProtocolEvent(const syncer::ProtocolEvent& event) override;
+  void OnSyncCycleCompleted(const SyncCycleSnapshot& snapshot) override;
+  void OnProtocolEvent(const ProtocolEvent& event) override;
   void OnDirectoryTypeCommitCounterUpdated(
-      syncer::ModelType type,
-      const syncer::CommitCounters& counters) override;
+      ModelType type,
+      const CommitCounters& counters) override;
   void OnDirectoryTypeUpdateCounterUpdated(
-      syncer::ModelType type,
-      const syncer::UpdateCounters& counters) override;
-  void OnDatatypeStatusCounterUpdated(
-      syncer::ModelType type,
-      const syncer::StatusCounters& counters) override;
-  void OnConnectionStatusChange(syncer::ConnectionStatus status) override;
-  void OnMigrationNeededForTypes(syncer::ModelTypeSet types) override;
-  void OnActionableError(const syncer::SyncProtocolError& error) override;
+      ModelType type,
+      const UpdateCounters& counters) override;
+  void OnDatatypeStatusCounterUpdated(ModelType type,
+                                      const StatusCounters& counters) override;
+  void OnConnectionStatusChange(ConnectionStatus status) override;
+  void OnMigrationNeededForTypes(ModelTypeSet types) override;
+  void OnActionableError(const SyncProtocolError& error) override;
 
   // DataTypeManagerObserver implementation.
-  void OnConfigureDone(
-      const syncer::DataTypeManager::ConfigureResult& result) override;
+  void OnConfigureDone(const DataTypeManager::ConfigureResult& result) override;
   void OnConfigureStart() override;
 
   // IdentityManager::Observer implementation.
@@ -205,7 +197,7 @@ class ProfileSyncService : public syncer::SyncService,
   bool HasCookieJarMismatch(
       const std::vector<gaia::ListedAccount>& cookie_jar_accounts);
 
-  // syncer::UnrecoverableErrorHandler implementation.
+  // UnrecoverableErrorHandler implementation.
   void OnUnrecoverableError(const base::Location& from_here,
                             const std::string& message) override;
 
@@ -227,7 +219,7 @@ class ProfileSyncService : public syncer::SyncService,
   bool IsPassphrasePrompted() const;
   void SetPassphrasePrompted(bool prompted);
 
-  syncer::PassphraseRequiredReason GetPassphraseRequiredReasonForTest() const;
+  PassphraseRequiredReason GetPassphraseRequiredReasonForTest() const;
 
   // Returns whether or not the underlying sync engine has made any
   // local changes to items that have not yet been synced with the
@@ -235,7 +227,7 @@ class ProfileSyncService : public syncer::SyncService,
   void HasUnsyncedItemsForTest(base::OnceCallback<void(bool)> cb) const;
 
   // Used by MigrationWatcher.  May return null.
-  syncer::BackendMigrator* GetBackendMigratorForTest();
+  BackendMigrator* GetBackendMigratorForTest();
 
   // Used by tests to inspect interaction with OAuth2TokenService.
   bool IsRetryingAccessTokenFetchForTest() const;
@@ -251,18 +243,18 @@ class ProfileSyncService : public syncer::SyncService,
   // the real NetworkResources were already used before the test had a chance
   // to call this.
   void OverrideNetworkResourcesForTest(
-      std::unique_ptr<syncer::NetworkResources> network_resources);
+      std::unique_ptr<NetworkResources> network_resources);
 
-  bool IsDataTypeControllerRunningForTest(syncer::ModelType type) const;
+  bool IsDataTypeControllerRunningForTest(ModelType type) const;
 
   // Sometimes we need to wait for tasks on the sync thread in tests.
   scoped_refptr<base::SingleThreadTaskRunner> GetSyncThreadTaskRunnerForTest()
       const;
 
   // Some tests rely on injecting calls to the encryption observer.
-  syncer::SyncEncryptionHandler::Observer* GetEncryptionObserverForTest();
+  SyncEncryptionHandler::Observer* GetEncryptionObserverForTest();
 
-  syncer::SyncClient* GetSyncClientForTest();
+  SyncClient* GetSyncClientForTest();
 
  private:
   friend class TestProfileSyncService;
@@ -286,13 +278,11 @@ class ProfileSyncService : public syncer::SyncService,
   };
 
   // Virtual for testing.
-  virtual syncer::WeakHandle<syncer::JsEventHandler> GetJsEventHandler();
+  virtual WeakHandle<JsEventHandler> GetJsEventHandler();
 
-  syncer::SyncEngine::HttpPostProviderFactoryGetter
-  MakeHttpPostProviderFactoryGetter();
+  SyncEngine::HttpPostProviderFactoryGetter MakeHttpPostProviderFactoryGetter();
 
-  syncer::WeakHandle<syncer::UnrecoverableErrorHandler>
-  GetUnrecoverableErrorHandler();
+  WeakHandle<UnrecoverableErrorHandler> GetUnrecoverableErrorHandler();
 
   // Callbacks for SyncAuthManager.
   void AccountStateChanged();
@@ -312,11 +302,11 @@ class ProfileSyncService : public syncer::SyncService,
   void ReconfigureDatatypeManager(bool bypass_setup_in_progress_check);
 
   // Helper to install and configure a data type manager.
-  void ConfigureDataTypeManager(syncer::ConfigureReason reason);
+  void ConfigureDataTypeManager(ConfigureReason reason);
 
   // Shuts down the engine sync components.
   // |reason| dictates if syncing is being disabled or not.
-  void ShutdownImpl(syncer::ShutdownReason reason);
+  void ShutdownImpl(ShutdownReason reason);
 
   // Helper for OnUnrecoverableError.
   void OnUnrecoverableErrorImpl(const base::Location& from_here,
@@ -372,25 +362,25 @@ class ProfileSyncService : public syncer::SyncService,
   void OnSetupInProgressHandleDestroyed();
 
   // Called by SyncServiceCrypto when a passphrase is required or accepted.
-  void ReconfigureDueToPassphrase(syncer::ConfigureReason reason);
+  void ReconfigureDueToPassphrase(ConfigureReason reason);
 
   // This profile's SyncClient, which abstracts away non-Sync dependencies and
   // the Sync API component factory.
-  const std::unique_ptr<syncer::SyncClient> sync_client_;
+  const std::unique_ptr<SyncClient> sync_client_;
 
   // The class that handles getting, setting, and persisting sync preferences.
-  syncer::SyncPrefs sync_prefs_;
+  SyncPrefs sync_prefs_;
 
   // Encapsulates user signin - used to set/get the user's authenticated
   // email address and sign-out upon error.
   identity::IdentityManager* const identity_manager_;
 
   // The user-configurable knobs. Non-null between Initialize() and Shutdown().
-  std::unique_ptr<syncer::SyncUserSettingsImpl> user_settings_;
+  std::unique_ptr<SyncUserSettingsImpl> user_settings_;
 
   // Handles tracking of the authenticated account and acquiring access tokens.
   // Only null after Shutdown().
-  std::unique_ptr<syncer::SyncAuthManager> auth_manager_;
+  std::unique_ptr<SyncAuthManager> auth_manager_;
 
   // An identifier representing this instance for debugging purposes.
   const std::string debug_identifier_;
@@ -401,7 +391,7 @@ class ProfileSyncService : public syncer::SyncService,
   const GURL sync_service_url_;
 
   // A utility object containing logic and state relating to encryption.
-  syncer::SyncServiceCrypto crypto_;
+  SyncServiceCrypto crypto_;
 
   // The thread where all the sync operations happen. This thread is kept alive
   // until browser shutdown and reused if sync is turned off and on again. It is
@@ -411,14 +401,14 @@ class ProfileSyncService : public syncer::SyncService,
 
   // Our asynchronous engine to communicate with sync components living on
   // other threads.
-  std::unique_ptr<syncer::SyncEngine> engine_;
+  std::unique_ptr<SyncEngine> engine_;
 
   // Used to ensure that certain operations are performed on the sequence that
   // this object was created on.
   SEQUENCE_CHECKER(sequence_checker_);
 
   // Cache of the last SyncCycleSnapshot received from the sync engine.
-  syncer::SyncCycleSnapshot last_snapshot_;
+  SyncCycleSnapshot last_snapshot_;
 
   // The time that OnConfigureStart is called. This member is zero if
   // OnConfigureStart has not yet been called, and is reset to zero once
@@ -426,7 +416,7 @@ class ProfileSyncService : public syncer::SyncService,
   base::Time sync_configure_start_time_;
 
   // Callback to update the network time; used for initializing the engine.
-  syncer::NetworkTimeUpdateCallback network_time_update_callback_;
+  NetworkTimeUpdateCallback network_time_update_callback_;
 
   // The URL loader factory for the sync.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
@@ -457,30 +447,30 @@ class ProfileSyncService : public syncer::SyncService,
   base::Location unrecoverable_error_location_;
 
   // Manages the start and stop of the data types.
-  std::unique_ptr<syncer::DataTypeManager> data_type_manager_;
+  std::unique_ptr<DataTypeManager> data_type_manager_;
 
-  base::ObserverList<syncer::SyncServiceObserver>::Unchecked observers_;
-  base::ObserverList<syncer::ProtocolEventObserver>::Unchecked
+  base::ObserverList<SyncServiceObserver>::Unchecked observers_;
+  base::ObserverList<ProtocolEventObserver>::Unchecked
       protocol_event_observers_;
-  base::ObserverList<syncer::TypeDebugInfoObserver>::Unchecked
+  base::ObserverList<TypeDebugInfoObserver>::Unchecked
       type_debug_info_observers_;
 
-  syncer::SyncJsController sync_js_controller_;
+  SyncJsController sync_js_controller_;
 
   // This allows us to gracefully handle an ABORTED return code from the
   // DataTypeManager in the event that the server informed us to cease and
   // desist syncing immediately.
   bool expect_sync_configuration_aborted_;
 
-  std::unique_ptr<syncer::BackendMigrator> migrator_;
+  std::unique_ptr<BackendMigrator> migrator_;
 
   // This is the last |SyncProtocolError| we received from the server that had
   // an action set on it.
-  syncer::SyncProtocolError last_actionable_error_;
+  SyncProtocolError last_actionable_error_;
 
   // Tracks the set of failed data types (those that encounter an error
   // or must delay loading for some reason).
-  syncer::DataTypeStatusTable::TypeErrorMap data_type_error_map_;
+  DataTypeStatusTable::TypeErrorMap data_type_error_map_;
 
   // This providers tells the invalidations code which identity to register for.
   // The account that it registers for should be the same as the currently
@@ -489,14 +479,14 @@ class ProfileSyncService : public syncer::SyncService,
       invalidations_identity_providers_;
 
   // List of available data type controllers.
-  syncer::DataTypeController::TypeMap data_type_controllers_;
+  DataTypeController::TypeMap data_type_controllers_;
 
-  std::unique_ptr<syncer::NetworkResources> network_resources_;
+  std::unique_ptr<NetworkResources> network_resources_;
 
   const StartBehavior start_behavior_;
-  std::unique_ptr<syncer::StartupController> startup_controller_;
+  std::unique_ptr<StartupController> startup_controller_;
 
-  std::unique_ptr<syncer::SyncStoppedReporter> sync_stopped_reporter_;
+  std::unique_ptr<SyncStoppedReporter> sync_stopped_reporter_;
 
   // Listens for the system being under memory pressure.
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
