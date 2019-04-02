@@ -143,9 +143,6 @@ const char kArcStartMode[] = "arc-start-mode";
 const char kArcTransitionMigrationRequired[] =
     "arc-transition-migration-required";
 
-// Screenshot testing: specifies the directoru where artifacts will be stored.
-const char kArtifactsDir[] = "artifacts-dir";
-
 // If this flag is set, it indicates that this device is a "Cellular First"
 // device. Cellular First devices use cellular telephone data networks as
 // their primary means of connecting to the internet.
@@ -325,10 +322,6 @@ const char kEnablePhysicalKeyboardAutocorrect[] =
 // Enables request of tablet site (via user agent override).
 const char kEnableRequestTabletSite[] = "enable-request-tablet-site";
 
-// Enables using screenshots in tests and seets mode.
-const char kEnableScreenshotTestingWithMode[] =
-    "enable-screenshot-testing-with-mode";
-
 // Enables the touch calibration option in MD settings UI for valid touch
 // displays.
 const char kEnableTouchCalibrationSetting[] =
@@ -409,10 +402,6 @@ const char kForceLoginManagerInTests[] = "force-login-manager-in-tests";
 
 // Force system compositor mode when set.
 const char kForceSystemCompositorMode[] = "force-system-compositor-mode";
-
-// Screenshot testing: specifies the directory where the golden screenshots are
-// stored.
-const char kGoldenScreenshotsDir[] = "golden-screenshots-dir";
 
 // Indicates that the browser is in "browse without sign-in" (Guest session)
 // mode. Should completely disable extensions, sync and bookmarks.

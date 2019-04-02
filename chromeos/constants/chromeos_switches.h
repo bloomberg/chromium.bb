@@ -48,7 +48,6 @@ extern const char kArcPlayStoreAutoUpdate[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcStartMode[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kArcTransitionMigrationRequired[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArtifactsDir[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kCellularFirst[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kChildWallpaperLarge[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kChildWallpaperSmall[];
@@ -129,8 +128,6 @@ extern const char kEnablePhysicalKeyboardAutocorrect[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableRequestTabletSite[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kEnableScreenshotTestingWithMode[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableTouchCalibrationSetting[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableTouchpadThreeFingerClick[];
@@ -165,7 +162,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kForceLoginManagerInTests[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kForceSystemCompositorMode[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kGoldenScreenshotsDir[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kGuestSession[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kGuestWallpaperLarge[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kGuestWallpaperSmall[];
