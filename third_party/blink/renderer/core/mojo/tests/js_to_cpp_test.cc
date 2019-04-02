@@ -52,22 +52,16 @@ const float kExpectedFloatNan = std::numeric_limits<float>::quiet_NaN();
 #define EXPECT_NAN(x) EXPECT_NE(x, x)
 
 String MojoBindingsScriptPath() {
-  String filepath = test::ExecutableDir();
-  filepath.append("/gen/mojo/public/js/mojo_bindings.js");
-  return filepath;
+  return test::ExecutableDir() + "/gen/mojo/public/js/mojo_bindings.js";
 }
 
 String TestBindingsScriptPath() {
-  String filepath = test::ExecutableDir();
-  filepath.append(
-      "/gen/third_party/blink/renderer/core/mojo/tests/JsToCpp.mojom.js");
-  return filepath;
+  return test::ExecutableDir() +
+         "/gen/third_party/blink/renderer/core/mojo/tests/JsToCpp.mojom.js";
 }
 
 String TestScriptPath() {
-  String filepath = test::BlinkRootDir();
-  filepath.append("/renderer/core/mojo/tests/JsToCppTest.js");
-  return filepath;
+  return test::BlinkRootDir() + "/renderer/core/mojo/tests/JsToCppTest.js";
 }
 
 v8::Local<v8::Value> ExecuteScript(const String& script_path,

@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -458,12 +459,13 @@ TEST_F(CopylessPasteExtractorTest, repeatedObject) {
 }
 
 TEST_F(CopylessPasteExtractorTest, truncateLongString) {
-  String maxLengthString;
+  StringBuilder maxLengthString;
   for (int i = 0; i < 200; ++i) {
-    maxLengthString.append("a");
+    maxLengthString.Append("a");
   }
-  String tooLongString(maxLengthString);
-  tooLongString.append("a");
+  StringBuilder tooLongString;
+  tooLongString.Append(maxLengthString);
+  tooLongString.Append("a");
   SetHTMLInnerHTML(
       "<body>"
       "<script type=\"application/ld+json\">"
@@ -471,7 +473,7 @@ TEST_F(CopylessPasteExtractorTest, truncateLongString) {
       "\n"
       "{\"@type\": \"Restaurant\","
       "\"name\": \"" +
-      tooLongString +
+      tooLongString.ToString() +
       "\""
       "}\n"
       "\n"
@@ -489,7 +491,7 @@ TEST_F(CopylessPasteExtractorTest, truncateLongString) {
   EntityPtr restaurant = Entity::New();
   restaurant->type = "Restaurant";
   restaurant->properties.push_back(
-      createStringProperty("name", maxLengthString));
+      createStringProperty("name", maxLengthString.ToString()));
 
   expected->entities.push_back(std::move(restaurant));
   EXPECT_EQ(expected, extracted);
@@ -533,14 +535,15 @@ TEST_F(CopylessPasteExtractorTest, enforceTypeWhitelist) {
 }
 
 TEST_F(CopylessPasteExtractorTest, truncateTooManyValuesInField) {
-  String largeRepeatedField = "[";
+  StringBuilder largeRepeatedField;
+  largeRepeatedField.Append("[");
   for (int i = 0; i < 101; ++i) {
-    largeRepeatedField.append("\"a\"");
+    largeRepeatedField.Append("\"a\"");
     if (i != 100) {
-      largeRepeatedField.append(", ");
+      largeRepeatedField.Append(", ");
     }
   }
-  largeRepeatedField.append("]");
+  largeRepeatedField.Append("]");
   SetHTMLInnerHTML(
       "<body>"
       "<script type=\"application/ld+json\">"
@@ -548,7 +551,7 @@ TEST_F(CopylessPasteExtractorTest, truncateTooManyValuesInField) {
       "\n"
       "{\"@type\": \"Restaurant\","
       "\"name\": " +
-      largeRepeatedField +
+      largeRepeatedField.ToString() +
       "}\n"
       "\n"
       "</script>"
@@ -582,11 +585,11 @@ TEST_F(CopylessPasteExtractorTest, truncateTooManyValuesInField) {
 }
 
 TEST_F(CopylessPasteExtractorTest, truncateTooManyFields) {
-  String tooManyFields;
+  StringBuilder tooManyFields;
   for (int i = 0; i < 20; ++i) {
-    tooManyFields.append(String::Format("\"%d\": \"a\"", i));
+    tooManyFields.Append(String::Format("\"%d\": \"a\"", i));
     if (i != 19) {
-      tooManyFields.append(",\n");
+      tooManyFields.Append(",\n");
     }
   }
   SetHTMLInnerHTML(
@@ -595,7 +598,7 @@ TEST_F(CopylessPasteExtractorTest, truncateTooManyFields) {
       "\n"
       "\n"
       "{\"@type\": \"Restaurant\"," +
-      tooManyFields +
+      tooManyFields.ToString() +
       "}\n"
       "\n"
       "</script>"

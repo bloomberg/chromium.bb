@@ -20,15 +20,17 @@
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/testing/layer_tree_host_embedder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
 void PaintPropertyTreeBuilderTest::LoadTestData(const char* file_name) {
-  String full_path = test::BlinkRootDir();
-  full_path.append("/renderer/core/paint/test_data/");
-  full_path.append(file_name);
+  StringBuilder full_path;
+  full_path.Append(test::BlinkRootDir());
+  full_path.Append("/renderer/core/paint/test_data/");
+  full_path.Append(file_name);
   const Vector<char> input_buffer =
-      test::ReadFromFile(full_path)->CopyAs<Vector<char>>();
+      test::ReadFromFile(full_path.ToString())->CopyAs<Vector<char>>();
   SetBodyInnerHTML(String(input_buffer.data(), input_buffer.size()));
 }
 

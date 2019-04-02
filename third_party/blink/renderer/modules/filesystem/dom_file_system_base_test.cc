@@ -13,9 +13,8 @@ namespace blink {
 class DOMFileSystemBaseTest : public testing::Test {
  public:
   DOMFileSystemBaseTest() {
-    file_path_ = test::BlinkRootDir();
-    file_path_.append(
-        "/renderer/modules/filesystem/dom_file_system_base_test.cc");
+    file_path_ = test::BlinkRootDir() +
+                 "/renderer/modules/filesystem/dom_file_system_base_test.cc";
     GetFileMetadata(file_path_, file_metadata_);
     file_metadata_.platform_path = file_path_;
   }

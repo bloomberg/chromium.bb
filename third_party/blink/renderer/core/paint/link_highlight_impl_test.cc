@@ -273,9 +273,11 @@ TEST_P(LinkHighlightImplTest, HighlightInvalidation) {
 
   // Change the touched element's height to 12px.
   auto& style = touch_element->getAttribute(html_names::kStyleAttr);
-  String new_style = style.GetString();
-  new_style.append("height: 12px;");
-  touch_element->setAttribute(html_names::kStyleAttr, AtomicString(new_style));
+  StringBuilder new_style;
+  new_style.Append(style.GetString());
+  new_style.Append("height: 12px;");
+  touch_element->setAttribute(html_names::kStyleAttr,
+                              new_style.ToAtomicString());
   UpdateAllLifecyclePhases();
 
   const auto& highlights =

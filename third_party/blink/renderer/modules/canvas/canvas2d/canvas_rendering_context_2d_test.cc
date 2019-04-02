@@ -868,20 +868,21 @@ static void TestDrawHighBitDepthPNGsOnWideGamutCanvas(
                                         "_DisplayP3", "_ProPhoto", "_Rec2020"};
   std::vector<String> alpha_status = {"_opaque", "_transparent"};
 
-  String path = test::CoreTestDataPath();
-  path.append("/png-16bit/");
+  StringBuilder path;
+  path.Append(test::CoreTestDataPath());
+  path.Append("/png-16bit/");
   for (auto interlace : interlace_status) {
     for (auto color_profile : color_profiles) {
       for (auto alpha : alpha_status) {
-        String filename = "2x2_16bit";
-        filename.append(interlace);
-        filename.append(color_profile);
-        filename.append(alpha);
-        filename.append(".png");
-        String full_path = path;
-        full_path.append(filename);
-        TestDrawSingleHighBitDepthPNGOnCanvas(full_path, context, document,
-                                              script_state);
+        StringBuilder full_path;
+        full_path.Append(path);
+        full_path.Append("2x2_16bit");
+        full_path.Append(interlace);
+        full_path.Append(color_profile);
+        full_path.Append(alpha);
+        full_path.Append(".png");
+        TestDrawSingleHighBitDepthPNGOnCanvas(full_path.ToString(), context,
+                                              document, script_state);
       }
     }
   }
