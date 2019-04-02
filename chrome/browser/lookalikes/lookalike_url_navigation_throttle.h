@@ -22,6 +22,10 @@ class NavigationHandle;
 
 class Profile;
 
+namespace lookalikes {
+
+struct DomainInfo;
+
 // Observes navigations and shows an interstitial if the navigated domain name
 // is visually similar to a top domain or a domain with a site engagement score.
 class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
@@ -41,16 +45,6 @@ class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
     kMaxValue = kMatchEditDistance,
   };
 
-  struct DomainInfo {
-    const std::string domain_and_registry;
-    const url_formatter::IDNConversionResult idn_result;
-    const url_formatter::Skeletons skeletons;
-    DomainInfo(const std::string& arg_domain_and_registry,
-               const url_formatter::IDNConversionResult& arg_idn_result,
-               const url_formatter::Skeletons& arg_skeletons);
-    ~DomainInfo();
-    DomainInfo(const DomainInfo& other);
-  };
 
   static const char kHistogramName[];
 
@@ -71,18 +65,17 @@ class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
 
   ThrottleCheckResult HandleThrottleRequest(const GURL& url);
 
-  static DomainInfo GetDomainInfo(const GURL& url);
-
   // Performs synchronous top domain and engaged site checks on the navigated
   // |url|. Uses |engaged_sites| for the engaged site checks.
-  ThrottleCheckResult PerformChecks(const GURL& url,
-                                    const DomainInfo& navigated_domain,
-                                    const std::set<GURL>& engaged_sites);
+  ThrottleCheckResult PerformChecks(
+      const GURL& url,
+      const DomainInfo& navigated_domain,
+      const std::vector<DomainInfo>& engaged_sites);
 
   // A void-returning variant, only used with deferred throttle results.
   void PerformChecksDeferred(const GURL& url,
                              const DomainInfo& navigated_domain,
-                             const std::set<GURL>& engaged_sites);
+                             const std::vector<DomainInfo>& engaged_sites);
 
   // Returns true if a domain is visually similar to the hostname of |url|. The
   // matching domain can be a top domain or an engaged site. Similarity check
@@ -90,7 +83,7 @@ class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
   // returns true, match details will be written into |matched_domain| and
   // |match_type|. They cannot be nullptr.
   bool GetMatchingDomain(const DomainInfo& navigated_domain,
-                         const std::set<GURL>& engaged_sites,
+                         const std::vector<DomainInfo>& engaged_sites,
                          std::string* matched_domain,
                          LookalikeUrlInterstitialPage::MatchType* match_type);
 
@@ -115,5 +108,7 @@ class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
   Profile* profile_;
   base::WeakPtrFactory<LookalikeUrlNavigationThrottle> weak_factory_;
 };
+
+}  // namespace lookalikes
 
 #endif  // CHROME_BROWSER_LOOKALIKES_LOOKALIKE_URL_NAVIGATION_THROTTLE_H_
