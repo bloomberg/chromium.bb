@@ -103,13 +103,6 @@ class NET_EXPORT_PRIVATE SSLConnectJob : public ConnectJob,
 
   void GetAdditionalErrorState(ClientSocketHandle* handle) override;
 
-  // Returns the connection timeout that will be used by a HttpProxyConnectJob
-  // created with the specified parameters, given current network conditions.
-  // TODO(mmenke): Remove this once it's no longer needed.
-  static base::TimeDelta ConnectionTimeout(
-      const SSLSocketParams& params,
-      const NetworkQualityEstimator* network_quality_estimator);
-
   // Returns the timeout for the SSL handshake. This is the same for all
   // connections regardless of whether or not there is a proxy in use.
   static base::TimeDelta HandshakeTimeoutForTesting();

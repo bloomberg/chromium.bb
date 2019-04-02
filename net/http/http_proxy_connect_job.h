@@ -112,9 +112,13 @@ class NET_EXPORT_PRIVATE HttpProxyConnectJob : public ConnectJob,
                         base::OnceClosure restart_with_auth_callback,
                         ConnectJob* job) override;
 
-  // Returns the connection timeout that will be used by a HttpProxyConnectJob
-  // created with the specified parameters, given current network conditions.
-  static base::TimeDelta ConnectionTimeout(
+  // In some cases, a timeout that's stricter than the TCP (+SSL, if applicable)
+  // is used for HTTP proxies during connection establishment and SSL
+  // negotiation for the connection to the proxy itself. In those cases, returns
+  // the connection timeout that will be used by a HttpProxyConnectJob created
+  // with the specified parameters, given current network conditions. Otherwise,
+  // returns base::TimeDelta().
+  static base::TimeDelta AlternateNestedConnectionTimeout(
       const HttpProxySocketParams& params,
       const NetworkQualityEstimator* network_quality_estimator);
 

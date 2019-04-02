@@ -195,27 +195,6 @@ void SSLConnectJob::GetAdditionalErrorState(ClientSocketHandle* handle) {
   handle->set_connection_attempts(connection_attempts_);
 }
 
-base::TimeDelta SSLConnectJob::ConnectionTimeout(
-    const SSLSocketParams& params,
-    const NetworkQualityEstimator* network_quality_estimator) {
-  SSLSocketParams::ConnectionType connection_type = params.GetConnectionType();
-
-  base::TimeDelta nested_job_timeout;
-  switch (connection_type) {
-    case SSLSocketParams::DIRECT:
-      nested_job_timeout = TransportConnectJob::ConnectionTimeout();
-      break;
-    case SSLSocketParams::SOCKS_PROXY:
-      nested_job_timeout = SOCKSConnectJob::ConnectionTimeout();
-      break;
-    case SSLSocketParams::HTTP_PROXY:
-      nested_job_timeout = HttpProxyConnectJob::ConnectionTimeout(
-          *params.GetHttpProxyConnectionParams(), network_quality_estimator);
-      break;
-  }
-  return nested_job_timeout + kSSLHandshakeTimeout;
-}
-
 base::TimeDelta SSLConnectJob::HandshakeTimeoutForTesting() {
   return kSSLHandshakeTimeout;
 }
