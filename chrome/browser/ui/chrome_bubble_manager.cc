@@ -179,3 +179,6 @@ void ChromeBubbleManager::ChromeBubbleMetrics::OnBubbleClosed(
 
   LogBubbleCloseReason(bubble, reason);
 }
+
+void ChromeBubbleManager::ChromeBubbleMetrics::OnBubbleShown(
+    BubbleReference bubble) {}
