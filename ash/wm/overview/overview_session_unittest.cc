@@ -1636,51 +1636,30 @@ TEST_F(OverviewSessionTest, OverviewWhileDragging) {
 
 // Verify that the overview no windows indicator appears when entering overview
 // mode with no windows.
-TEST_F(OverviewSessionTest, OverviewNoWindowsIndicator) {
+TEST_F(OverviewSessionTest, NoWindowsIndicator) {
   // Verify that by entering overview mode without windows, the no items
   // indicator appears.
   ToggleOverview();
   ASSERT_TRUE(overview_session());
-  EXPECT_EQ(0u, GetWindowItemsForRoot(0).size());
-  EXPECT_TRUE(overview_session()
-                  ->grid_list_for_testing()[0]
-                  ->IsNoItemsIndicatorLabelVisibleForTesting());
+  ASSERT_EQ(0u, GetWindowItemsForRoot(0).size());
+  EXPECT_TRUE(overview_session()->no_windows_widget_for_testing());
 }
 
 // Verify that the overview no windows indicator position is as expected.
-TEST_F(OverviewSessionTest, OverviewNoWindowsIndicatorPosition) {
+TEST_F(OverviewSessionTest, NoWindowsIndicatorPosition) {
   UpdateDisplay("400x300");
-  // Midpoint of height minus shelf.
-  const int expected_y = (300 - ShelfConstants::shelf_size()) / 2;
-
-  // Helper to check points. Uses EXPECT_NEAR on each coordinate to account for
-  // rounding.
-  auto check_point = [](const gfx::Point& expected, const gfx::Point& actual) {
-    EXPECT_NEAR(expected.x(), actual.x(), 1);
-    EXPECT_NEAR(expected.y(), actual.y(), 1);
-  };
 
   ToggleOverview();
   ASSERT_TRUE(overview_session());
+  views::Widget* no_windows_widget =
+      overview_session()->no_windows_widget_for_testing();
+  ASSERT_TRUE(no_windows_widget);
 
   // Verify that originally the label is in the center of the workspace.
-  OverviewGrid* grid = overview_session()->grid_list_for_testing()[0].get();
-  check_point(gfx::Point(200, expected_y),
-              grid->GetNoItemsIndicatorLabelBoundsForTesting().CenterPoint());
-
-  // Verify that when grid bounds are on the left, the label is centered on the
-  // left side of the workspace.
-  grid->SetBoundsAndUpdatePositions(
-      gfx::Rect(0, 0, 200, 300 - ShelfConstants::shelf_size()));
-  check_point(gfx::Point(100, expected_y),
-              grid->GetNoItemsIndicatorLabelBoundsForTesting().CenterPoint());
-
-  // Verify that when grid bounds are on the right, the label is centered on the
-  // right side of the workspace.
-  grid->SetBoundsAndUpdatePositions(
-      gfx::Rect(200, 0, 200, 300 - ShelfConstants::shelf_size()));
-  check_point(gfx::Point(300, expected_y),
-              grid->GetNoItemsIndicatorLabelBoundsForTesting().CenterPoint());
+  // Midpoint of height minus shelf.
+  int expected_y = (300 - ShelfConstants::shelf_size()) / 2;
+  EXPECT_EQ(gfx::Point(200, expected_y),
+            no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
 
   // Verify that after rotating the display, the label is centered in the
   // workspace 300x(400-shelf).
@@ -1689,33 +1668,63 @@ TEST_F(OverviewSessionTest, OverviewNoWindowsIndicatorPosition) {
   display_manager()->SetDisplayRotation(
       display.id(), display::Display::ROTATE_90,
       display::Display::RotationSource::ACTIVE);
-  check_point(gfx::Point(150, (400 - ShelfConstants::shelf_size()) / 2),
-              grid->GetNoItemsIndicatorLabelBoundsForTesting().CenterPoint());
+  expected_y = (400 - ShelfConstants::shelf_size()) / 2;
+  EXPECT_EQ(gfx::Point(150, (400 - ShelfConstants::shelf_size()) / 2),
+            no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
+}
+
+TEST_F(OverviewSessionTest, NoWindowsIndicatorPositionSplitview) {
+  UpdateDisplay("400x300");
+  std::unique_ptr<aura::Window> window(CreateTestWindow());
+
+  ToggleOverview();
+  ASSERT_TRUE(overview_session());
+  views::Widget* no_windows_widget =
+      overview_session()->no_windows_widget_for_testing();
+  EXPECT_FALSE(no_windows_widget);
+
+  // Tests that when snapping a window to the left in splitview, the no windows
+  // indicator shows up in the middle of the right side of the screen.
+  auto* split_view_controller = Shell::Get()->split_view_controller();
+  split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
+  no_windows_widget = overview_session()->no_windows_widget_for_testing();
+  ASSERT_TRUE(no_windows_widget);
+
+  // There is a 8dp divider in splitview, the indicator should take that into
+  // account.
+  const int bounds_left = 200 + 4;
+  int expected_x = bounds_left + (400 - (bounds_left)) / 2;
+  const int expected_y = (300 - ShelfConstants::shelf_size()) / 2;
+  EXPECT_EQ(gfx::Point(expected_x, expected_y),
+            no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
+
+  // Tests that when snapping a window to the right in splitview, the no windows
+  // indicator shows up in the middle of the left side of the screen.
+  split_view_controller->SnapWindow(window.get(), SplitViewController::RIGHT);
+  expected_x = /*bounds_right=*/(200 - 4) / 2;
+  EXPECT_EQ(gfx::Point(expected_x, expected_y),
+            no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
 }
 
 // Verify that when opening overview mode with multiple displays, the no items
-// indicator on the primary grid if there are no windows. Also verify that
-// we do not exit overview mode until all the grids are empty.
-TEST_F(OverviewSessionTest, OverviewNoWindowsIndicatorMultiDisplay) {
-  // Helper function to help reduce lines of code. Returns the list of grids
-  // in overview mode.
-  auto grids = [this]() -> const std::vector<std::unique_ptr<OverviewGrid>>& {
-    EXPECT_TRUE(overview_session());
-    return overview_session()->grid_list_for_testing();
-  };
-
+// indicator on the primary grid if there are no windows.
+TEST_F(OverviewSessionTest, NoWindowsIndicatorPositionMultiDisplay) {
   UpdateDisplay("400x400,400x400,400x400");
 
-  // Enter overview mode. Verify that the no windows indicator is visible on the
-  // primary display but not on the other two.
+  // Enter overview mode. Verify that the no windows indicator is located on the
+  // primary display.
   ToggleOverview();
-  base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(overview_session());
-  ASSERT_EQ(3u, grids().size());
-  EXPECT_TRUE(grids()[0]->IsNoItemsIndicatorLabelVisibleForTesting());
-  EXPECT_FALSE(grids()[1]->IsNoItemsIndicatorLabelVisibleForTesting());
-  EXPECT_FALSE(grids()[2]->IsNoItemsIndicatorLabelVisibleForTesting());
-  ToggleOverview();
+  views::Widget* no_windows_widget =
+      overview_session()->no_windows_widget_for_testing();
+  const int expected_y = (400 - ShelfConstants::shelf_size()) / 2;
+  EXPECT_EQ(gfx::Point(200, expected_y),
+            no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
+}
+
+// Tests that we do not exit overview mode until all the grids are empty.
+TEST_F(OverviewSessionTest, ExitOverviewWhenAllGridsEmpty) {
+  UpdateDisplay("400x400,400x400,400x400");
 
   // Create two windows with widgets (widgets are needed to close the windows
   // later in the test), one each on the first two monitors.
@@ -1731,15 +1740,10 @@ TEST_F(OverviewSessionTest, OverviewNoWindowsIndicatorMultiDisplay) {
   // Enter overview mode. Verify that the no windows indicator is not visible on
   // any display.
   ToggleOverview();
-  base::RunLoop().RunUntilIdle();
+  auto& grids = overview_session()->grid_list_for_testing();
   ASSERT_TRUE(overview_session());
-  ASSERT_EQ(3u, grids().size());
-  EXPECT_FALSE(grids()[0]->IsNoItemsIndicatorLabelVisibleForTesting());
-  EXPECT_FALSE(grids()[1]->IsNoItemsIndicatorLabelVisibleForTesting());
-  EXPECT_FALSE(grids()[2]->IsNoItemsIndicatorLabelVisibleForTesting());
-  EXPECT_FALSE(grids()[0]->empty());
-  EXPECT_FALSE(grids()[1]->empty());
-  EXPECT_TRUE(grids()[2]->empty());
+  ASSERT_EQ(3u, grids.size());
+  EXPECT_FALSE(overview_session()->no_windows_widget_for_testing());
 
   OverviewItem* item1 = GetWindowItemForWindow(0, window1);
   OverviewItem* item2 = GetWindowItemForWindow(1, window2);
@@ -1750,13 +1754,11 @@ TEST_F(OverviewSessionTest, OverviewNoWindowsIndicatorMultiDisplay) {
   item2->CloseWindow();
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(overview_session());
-  ASSERT_EQ(3u, grids().size());
-  EXPECT_FALSE(grids()[0]->IsNoItemsIndicatorLabelVisibleForTesting());
-  EXPECT_FALSE(grids()[1]->IsNoItemsIndicatorLabelVisibleForTesting());
-  EXPECT_FALSE(grids()[2]->IsNoItemsIndicatorLabelVisibleForTesting());
-  EXPECT_FALSE(grids()[0]->empty());
-  EXPECT_TRUE(grids()[1]->empty());
-  EXPECT_TRUE(grids()[2]->empty());
+  ASSERT_EQ(3u, grids.size());
+  EXPECT_FALSE(grids[0]->empty());
+  EXPECT_TRUE(grids[1]->empty());
+  EXPECT_TRUE(grids[2]->empty());
+  EXPECT_FALSE(overview_session()->no_windows_widget_for_testing());
 
   // Close |item1|. Verify that since no windows are open, we exit overview
   // mode.

@@ -15,6 +15,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_delegate.h"
@@ -22,6 +23,8 @@
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
+#include "ash/wm/overview/scoped_overview_animation_settings.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/switchable_windows.h"
@@ -32,10 +35,14 @@
 #include "base/metrics/user_metrics.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/base/hit_test.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_util.h"
@@ -43,6 +50,16 @@
 namespace ash {
 
 namespace {
+
+// Values for the no items indicator which appears when opening overview mode
+// with no opened windows.
+constexpr int kNoItemsIndicatorHeightDp = 32;
+constexpr int kNoItemsIndicatorHorizontalPaddingDp = 16;
+constexpr int kNoItemsIndicatorRoundingDp = 16;
+constexpr int kNoItemsIndicatorVerticalPaddingDp = 8;
+constexpr SkColor kNoItemsIndicatorBackgroundColor =
+    SkColorSetA(SK_ColorBLACK, 204);
+constexpr SkColor kNoItemsIndicatorTextColor = SK_ColorWHITE;
 
 // Triggers a shelf visibility update on all root window controllers.
 void UpdateShelfVisibility() {
@@ -130,7 +147,63 @@ gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
   return bounds;
 }
 
+bool IsWindowDragInProgress() {
+  auto windows = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+  for (auto* window : windows) {
+    wm::WindowState* window_state = wm::GetWindowState(window);
+    if (window_state && window_state->is_dragged() &&
+        (window_state->drag_details()->window_component == HTCLIENT ||
+         window_state->drag_details()->window_component == HTCAPTION)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
+
+// A label with rounded corners that is displayed when we enter overview with no
+// windows.
+class OverviewSession::NoWindowsView : public views::View {
+ public:
+  NoWindowsView() {
+    SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::kVertical,
+        gfx::Insets(kNoItemsIndicatorVerticalPaddingDp,
+                    kNoItemsIndicatorHorizontalPaddingDp)));
+    SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+    layer()->SetColor(kNoItemsIndicatorBackgroundColor);
+    layer()->SetFillsBoundsOpaquely(false);
+
+    const std::array<uint32_t, 4> kRadii = {
+        kNoItemsIndicatorRoundingDp, kNoItemsIndicatorRoundingDp,
+        kNoItemsIndicatorRoundingDp, kNoItemsIndicatorRoundingDp};
+    layer()->SetRoundedCornerRadius(kRadii);
+    layer()->SetIsFastRoundedCorner(true);
+
+    label_ = new views::Label(
+        l10n_util::GetStringUTF16(IDS_ASH_OVERVIEW_NO_RECENT_ITEMS),
+        views::style::CONTEXT_LABEL);
+    label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+    label_->SetEnabledColor(kNoItemsIndicatorTextColor);
+    label_->SetBackgroundColor(kNoItemsIndicatorBackgroundColor);
+    label_->SetPaintToLayer();
+    label_->layer()->SetFillsBoundsOpaquely(false);
+    AddChildView(label_);
+  }
+  ~NoWindowsView() override = default;
+
+  // views::View:
+  gfx::Size GetPreferredSize() {
+    int width = label_->GetPreferredSize().width() +
+                2 * kNoItemsIndicatorHorizontalPaddingDp;
+    return gfx::Size(width, kNoItemsIndicatorHeightDp);
+  }
+
+ private:
+  views::Label* label_ = nullptr;  // Owned by views hierarchy.
+  DISALLOW_COPY_AND_ASSIGN(NoWindowsView);
+};
 
 OverviewSession::OverviewSession(OverviewDelegate* delegate)
     : delegate_(delegate),
@@ -224,6 +297,8 @@ void OverviewSession::Init(const WindowList& windows,
     }
   }
 
+  MaybeCreateAndPositionNoWindowsWidget();
+
   // Create the widget that will receive focus while in overview mode for
   // accessiblity purposes.
   overview_focus_widget_ = std::make_unique<views::Widget>();
@@ -304,6 +379,13 @@ void OverviewSession::Shutdown() {
 
   grid_list_.clear();
   UpdateShelfVisibility();
+
+  if (no_windows_widget_) {
+    // Fade out the no windows widget. This animation continues past the
+    // lifetime of |this|.
+    FadeOutWidgetAndMaybeSlideOnExit(std::move(no_windows_widget_),
+                                     OVERVIEW_ANIMATION_RESTORE_WINDOW);
+  }
 }
 
 void OverviewSession::CancelSelection() {
@@ -657,6 +739,14 @@ void OverviewSession::ResumeReposition() {
     grid->set_suspend_reposition(false);
 }
 
+bool OverviewSession::IsEmpty() const {
+  for (const auto& grid : grid_list_) {
+    if (!grid->empty())
+      return false;
+  }
+  return true;
+}
+
 void OverviewSession::OnDisplayRemoved(const display::Display& display) {
   // TODO(flackr): Keep window selection active on remaining displays.
   CancelSelection();
@@ -815,14 +905,6 @@ void OverviewSession::OnSplitViewDividerPositionChanged() {
   PositionWindows(/*animate=*/false);
 }
 
-bool OverviewSession::IsEmpty() const {
-  for (const auto& grid : grid_list_) {
-    if (!grid->empty())
-      return false;
-  }
-  return true;
-}
-
 void OverviewSession::ResetFocusRestoreWindow(bool focus) {
   if (!restore_focus_window_)
     return;
@@ -882,8 +964,55 @@ void OverviewSession::OnDisplayBoundsChanged() {
                               /*divider_changed=*/false));
   }
   PositionWindows(/*animate=*/false);
+  MaybeCreateAndPositionNoWindowsWidget();
   if (split_view_drag_indicators_)
     split_view_drag_indicators_->OnDisplayBoundsChanged();
+}
+
+void OverviewSession::MaybeCreateAndPositionNoWindowsWidget() {
+  // Hide the widget if there is an item in overview or there are none but there
+  // is a window drag in progress. It is possible for a window drag to be in
+  // progress when we notify that split view has started so check for that case.
+  if (!IsEmpty() ||
+      (IsWindowDragInProgress() &&
+       !Shell::Get()->split_view_controller()->IsSplitViewModeActive())) {
+    no_windows_widget_.reset();
+    return;
+  }
+
+  if (!no_windows_widget_) {
+    // Create and fade in the widget.
+    no_windows_widget_ = CreateBackgroundWidget(
+        Shell::GetPrimaryRootWindow(), ui::LAYER_NOT_DRAWN, SK_ColorTRANSPARENT,
+        0, 0, SK_ColorTRANSPARENT, 0.f, nullptr, true, false);
+    aura::Window* widget_window = no_windows_widget_->GetNativeWindow();
+    widget_window->SetName("OverviewNoWindowsLabel");
+    no_windows_widget_->SetContentsView(new NoWindowsView());
+    ScopedOverviewAnimationSettings settings(OVERVIEW_ANIMATION_NO_RECENTS_FADE,
+                                             widget_window);
+    no_windows_widget_->SetOpacity(1.f);
+  }
+
+  // The widget is centered in the work area, unless we are in split view with
+  // one window snapped.
+  aura::Window* window = no_windows_widget_->GetNativeWindow();
+  gfx::Rect bounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+  auto* split_view_controller = Shell::Get()->split_view_controller();
+  if (split_view_controller->state() == SplitViewController::LEFT_SNAPPED) {
+    bounds = split_view_controller->GetSnappedWindowBoundsInScreen(
+        window, SplitViewController::RIGHT);
+  } else if (split_view_controller->state() ==
+             SplitViewController::RIGHT_SNAPPED) {
+    bounds = split_view_controller->GetSnappedWindowBoundsInScreen(
+        window, SplitViewController::LEFT);
+  }
+
+  NoWindowsView* content_view =
+      static_cast<NoWindowsView*>(no_windows_widget_->GetContentsView());
+  DCHECK(content_view);
+  bounds.ClampToCenteredSize(content_view->GetPreferredSize());
+  window->SetBounds(bounds);
 }
 
 }  // namespace ash
