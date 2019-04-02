@@ -16,6 +16,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/common/service_worker/service_worker_types.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
@@ -200,7 +201,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // Consumed on the worker thread to create |fallback_factory_|.
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory_info_;
 
-  int service_worker_provider_id_ = kInvalidServiceWorkerProviderId;
+  int service_worker_provider_id_ = blink::kInvalidServiceWorkerProviderId;
   blink::mojom::ControllerServiceWorkerMode is_controlled_by_service_worker_ =
       blink::mojom::ControllerServiceWorkerMode::kNoController;
 

@@ -34,6 +34,7 @@
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/service_worker/service_worker_types.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -197,7 +198,7 @@ scoped_refptr<WebWorkerFetchContextImpl> WebWorkerFetchContextImpl::Create(
     worker_fetch_context->set_client_id(provider_context->client_id());
   } else {
     worker_fetch_context->set_service_worker_provider_id(
-        kInvalidServiceWorkerProviderId);
+        blink::kInvalidServiceWorkerProviderId);
     worker_fetch_context->set_is_controlled_by_service_worker(
         blink::mojom::ControllerServiceWorkerMode::kNoController);
   }

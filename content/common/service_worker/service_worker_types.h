@@ -54,7 +54,6 @@ extern const char kServiceWorkerCopyScriptError[];
 
 // Constants for invalid identifiers.
 static const int kInvalidEmbeddedWorkerThreadId = -1;
-static const int kInvalidServiceWorkerProviderId = -1;
 static const int64_t kInvalidServiceWorkerResourceId = -1;
 
 // The HTTP cache is bypassed for Service Worker scripts if the last network

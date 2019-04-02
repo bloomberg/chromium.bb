@@ -569,6 +569,7 @@ source_set("blink_headers") {
     "//third_party/webrtc/rtc_base:rtc_base",
     "//third_party/webrtc/rtc_base:rtc_task_queue",
     "//third_party/webrtc_overrides:init_webrtc",
+    "//ui/base:base",
     "//v8:v8_headers",
   ]
 }

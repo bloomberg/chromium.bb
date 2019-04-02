@@ -95,6 +95,7 @@ source_set("headers") {
     "screen_orientation/web_screen_orientation_type.h",
     "service_worker/service_worker_status_code.h",
     "service_worker/service_worker_type_converters.h",
+    "service_worker/service_worker_types.h",
     "service_worker/service_worker_utils.h",
     "user_agent/user_agent_metadata.h",
   ]
