@@ -574,8 +574,6 @@ test("browser_tests") {
       "//components/module_installer/android:module_installer_stub_java",
       "//v8:v8_external_startup_data_assets",
     ]
-
-    enable_multidex = true
   } else {  # Not Android.
     sources += [
       # The list of sources which is only used by chrome browser tests on
@@ -3275,8 +3273,6 @@ test("unit_tests") {
     } else {
       deps += [ "//v8:v8_external_startup_data_assets" ]
     }
-
-    enable_multidex = true
   } else {
     # !is_android
     sources += [

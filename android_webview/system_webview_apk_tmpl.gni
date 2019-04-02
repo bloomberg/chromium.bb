@@ -104,9 +104,7 @@ template("system_webview_apk_tmpl") {
     # Used as an additional apk in test scripts.
     never_incremental = true
 
-    if (is_java_debug) {
-      enable_multidex = true
-    } else {
+    if (!is_java_debug) {
       proguard_enabled = true
       if (!defined(proguard_configs)) {
         proguard_configs = []

@@ -1180,7 +1180,6 @@ test("content_browsertests") {
   }
 
   if (is_android) {
-    enable_multidex = true
     if (is_component_build) {
       sources += [ "../browser/android/render_widget_host_connector.cc" ]
     }
@@ -1348,10 +1347,6 @@ test("content_unittests") {
   # component builds.
   if (is_component_build) {
     check_includes = false
-  }
-
-  if (is_android) {
-    enable_multidex = true
   }
 
   defines = []
