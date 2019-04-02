@@ -10,8 +10,12 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/profiles/incognito_menu_view.h"
+#include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
@@ -25,6 +29,10 @@ ProfileMenuViewBase* g_profile_bubble_ = nullptr;
 
 // Helpers --------------------------------------------------------------------
 
+constexpr int kFixedMenuWidthPreDice = 240;
+constexpr int kFixedMenuWidthDice = 288;
+constexpr int kIconSize = 16;
+
 // If the bubble is too large to fit on the screen, it still needs to be at
 // least this tall to show one row.
 constexpr int kMinimumScrollableContentHeight = 40;
@@ -32,6 +40,37 @@ constexpr int kMinimumScrollableContentHeight = 40;
 }  // namespace
 
 // ProfileMenuViewBase ---------------------------------------------------------
+
+// static
+void ProfileMenuViewBase::ShowBubble(
+    profiles::BubbleViewMode view_mode,
+    const signin::ManageAccountsParams& manage_accounts_params,
+    signin_metrics::AccessPoint access_point,
+    views::Button* anchor_button,
+    gfx::NativeView parent_window,
+    const gfx::Rect& anchor_rect,
+    Browser* browser,
+    bool is_source_keyboard) {
+  if (IsShowing())
+    return;
+
+  DCHECK_EQ(browser->profile()->IsIncognito(),
+            view_mode == profiles::BUBBLE_VIEW_MODE_INCOGNITO);
+
+  ProfileMenuViewBase* bubble;
+  if (view_mode == profiles::BUBBLE_VIEW_MODE_INCOGNITO) {
+    bubble = new IncognitoMenuView(anchor_button, anchor_rect, parent_window,
+                                   browser);
+  } else {
+    bubble = new ProfileChooserView(
+        anchor_button, anchor_rect, parent_window, browser, view_mode,
+        manage_accounts_params.service_type, access_point);
+  }
+
+  views::BubbleDialogDelegateView::CreateBubble(bubble)->Show();
+  if (is_source_keyboard)
+    bubble->FocusButtonOnKeyboardOpen();
+}
 
 // static
 bool ProfileMenuViewBase::IsShowing() {
@@ -75,6 +114,10 @@ ProfileMenuViewBase::ProfileMenuViewBase(views::Button* anchor_button,
   // The arrow keys can be used to tab between items.
   AddAccelerator(ui::Accelerator(ui::VKEY_DOWN, ui::EF_NONE));
   AddAccelerator(ui::Accelerator(ui::VKEY_UP, ui::EF_NONE));
+
+  bool dice_enabled = AccountConsistencyModeManager::IsDiceEnabledForProfile(
+      browser->profile());
+  menu_width_ = dice_enabled ? kFixedMenuWidthDice : kFixedMenuWidthPreDice;
 }
 
 ProfileMenuViewBase::~ProfileMenuViewBase() {
@@ -150,7 +193,7 @@ int ProfileMenuViewBase::GetMaxHeight() const {
   return std::max(kMinimumScrollableContentHeight, available_space);
 }
 
-void ProfileMenuViewBase::ResetMenu() {
+void ProfileMenuViewBase::Reset() {
   menu_item_groups_.clear();
 }
 
@@ -215,4 +258,29 @@ void ProfileMenuViewBase::RepopulateViewFromMenuItems() {
     // SizeToContents() will perform a layout, but only if the size changed.
     Layout();
   }
+}
+
+gfx::ImageSkia ProfileMenuViewBase::CreateVectorIcon(
+    const gfx::VectorIcon& icon) {
+  return gfx::CreateVectorIcon(
+      icon, kIconSize,
+      ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled()
+          ? gfx::kGoogleGrey500
+          : gfx::kChromeIconGrey);
+}
+
+int ProfileMenuViewBase::GetDefaultIconSize() {
+  return kIconSize;
+}
+
+bool ProfileMenuViewBase::ShouldProvideInitiallyFocusedView() const {
+#if defined(OS_MACOSX)
+  // On Mac, buttons are not focusable when full keyboard access is turned off,
+  // causing views::Widget to fall back to focusing the first focusable View.
+  // This behavior is not desired in profile menus because of the menu-like
+  // design using |HoverButtons|.
+  if (!GetFocusManager() || !GetFocusManager()->keyboard_accessible())
+    return false;
+#endif
+  return true;
 }

@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/close_bubble_on_tab_activation_helper.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
@@ -34,6 +35,24 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
                             public views::BubbleDialogDelegateView,
                             public views::StyledLabelListener {
  public:
+  // Shows the bubble if one is not already showing.  This allows us to easily
+  // make a button toggle the bubble on and off when clicked: we unconditionally
+  // call this function when the button is clicked and if the bubble isn't
+  // showing it will appear while if it is showing, nothing will happen here and
+  // the existing bubble will auto-close due to focus loss.
+  // There are 2 ways to position the Bubble, if |anchor_button| is set, then
+  // |parent_window| and |anchor_rect| are ignored. Otherwise, |parent_window|
+  // and |anchor_rect| have to be set.
+  static void ShowBubble(
+      profiles::BubbleViewMode view_mode,
+      const signin::ManageAccountsParams& manage_accounts_params,
+      signin_metrics::AccessPoint access_point,
+      views::Button* anchor_button,
+      gfx::NativeView parent_window,
+      const gfx::Rect& anchor_rect,
+      Browser* browser,
+      bool is_source_keyboard);
+
   static bool IsShowing();
   static void Hide();
 
@@ -48,7 +67,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
                       Browser* browser);
   ~ProfileMenuViewBase() override;
 
-  void ResetMenu();
+  void Reset();
   // Adds a set of menu items, either as a |new_group| (using a separator) or
   // appended to the last added items. Takes ownership of the items and passes
   // them to the underlying view when menu is built using
@@ -64,13 +83,23 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
 
   views::Button* anchor_button() const { return anchor_button_; }
 
-  // TODO(https://crbug.com/934689): Remove menu_width functions and make
-  // decision inside this class.
+  bool ShouldProvideInitiallyFocusedView() const;
+
+  // TODO(https://crbug.com/934689): Remove menu_width function and make
+  // decisions inside this class.
   int menu_width() { return menu_width_; }
-  void set_menu_width(int menu_width) { menu_width_ = menu_width; }
+
+  gfx::ImageSkia CreateVectorIcon(const gfx::VectorIcon& icon);
+
+  // TODO(https://crbug.com/934689): Remove function and make decisions inside
+  // this class.
+  int GetDefaultIconSize();
 
  private:
   friend class ProfileChooserViewExtensionsTest;
+
+  // Requests focus for a button when opened by keyboard.
+  virtual void FocusButtonOnKeyboardOpen() {}
 
   // views::BubbleDialogDelegateView:
   void WindowClosing() override;
