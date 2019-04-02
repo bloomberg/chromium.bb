@@ -208,6 +208,96 @@ TEST_F(SSLConnectJobTest, TCPFail) {
   }
 }
 
+TEST_F(SSLConnectJobTest, TCPTimeout) {
+  const base::TimeDelta kTinyTime = base::TimeDelta::FromMicroseconds(1);
+
+  // Make request hang.
+  host_resolver_.set_ondemand_mode(true);
+
+  TestConnectJobDelegate test_delegate;
+  std::unique_ptr<ConnectJob> ssl_connect_job =
+      CreateConnectJob(&test_delegate);
+  ASSERT_THAT(ssl_connect_job->Connect(), test::IsError(ERR_IO_PENDING));
+
+  // Right up until just before the TCP connection timeout, the job does not
+  // time out.
+  FastForwardBy(TransportConnectJob::ConnectionTimeout() - kTinyTime);
+  EXPECT_FALSE(test_delegate.has_result());
+
+  // But at the exact time of TCP connection timeout, the job fails.
+  FastForwardBy(kTinyTime);
+  EXPECT_TRUE(test_delegate.has_result());
+  EXPECT_THAT(test_delegate.WaitForResult(), test::IsError(ERR_TIMED_OUT));
+}
+
+TEST_F(SSLConnectJobTest, SSLTimeoutSyncConnect) {
+  const base::TimeDelta kTinyTime = base::TimeDelta::FromMicroseconds(1);
+
+  // DNS lookup and transport connect complete synchronously, but SSL
+  // negotiation hangs.
+  host_resolver_.set_synchronous_mode(true);
+  StaticSocketDataProvider data;
+  data.set_connect_data(MockConnect(SYNCHRONOUS, OK));
+  socket_factory_.AddSocketDataProvider(&data);
+  SSLSocketDataProvider ssl(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_factory_.AddSSLSocketDataProvider(&ssl);
+
+  // Make request hang.
+  TestConnectJobDelegate test_delegate;
+  std::unique_ptr<ConnectJob> ssl_connect_job =
+      CreateConnectJob(&test_delegate);
+  ASSERT_THAT(ssl_connect_job->Connect(), test::IsError(ERR_IO_PENDING));
+
+  // Right up until just before the SSL handshake timeout, the job does not time
+  // out.
+  FastForwardBy(SSLConnectJob::HandshakeTimeoutForTesting() - kTinyTime);
+  EXPECT_FALSE(test_delegate.has_result());
+
+  // But at the exact SSL handshake timeout time, the job fails.
+  FastForwardBy(kTinyTime);
+  EXPECT_TRUE(test_delegate.has_result());
+  EXPECT_THAT(test_delegate.WaitForResult(), test::IsError(ERR_TIMED_OUT));
+}
+
+TEST_F(SSLConnectJobTest, SSLTimeoutAsyncTcpConnect) {
+  const base::TimeDelta kTinyTime = base::TimeDelta::FromMicroseconds(1);
+
+  // DNS lookup is asynchronous, and later SSL negotiation hangs.
+  host_resolver_.set_ondemand_mode(true);
+  StaticSocketDataProvider data;
+  data.set_connect_data(MockConnect(SYNCHRONOUS, OK));
+  socket_factory_.AddSocketDataProvider(&data);
+  SSLSocketDataProvider ssl(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_factory_.AddSSLSocketDataProvider(&ssl);
+
+  TestConnectJobDelegate test_delegate;
+  std::unique_ptr<ConnectJob> ssl_connect_job =
+      CreateConnectJob(&test_delegate);
+  // Connecting should hand on the TransportConnectJob connect.
+  ASSERT_THAT(ssl_connect_job->Connect(), test::IsError(ERR_IO_PENDING));
+
+  // Right up until just before the TCP connection timeout, the job does not
+  // time out.
+  FastForwardBy(TransportConnectJob::ConnectionTimeout() - kTinyTime);
+  EXPECT_FALSE(test_delegate.has_result());
+
+  // The DNS lookup completes, and a TCP connection is immediately establshed,
+  // which cancels the TCP connection timer. The SSL handshake timer is started,
+  // and the SSL handshake hangs.
+  host_resolver_.ResolveOnlyRequestNow();
+  EXPECT_FALSE(test_delegate.has_result());
+
+  // Right up until just before the SSL handshake timeout, the job does not time
+  // out.
+  FastForwardBy(SSLConnectJob::HandshakeTimeoutForTesting() - kTinyTime);
+  EXPECT_FALSE(test_delegate.has_result());
+
+  // But at the exact SSL handshake timeout time, the job fails.
+  FastForwardBy(kTinyTime);
+  EXPECT_TRUE(test_delegate.has_result());
+  EXPECT_THAT(test_delegate.WaitForResult(), test::IsError(ERR_TIMED_OUT));
+}
+
 TEST_F(SSLConnectJobTest, BasicDirectSync) {
   host_resolver_.set_synchronous_mode(true);
   StaticSocketDataProvider data;
