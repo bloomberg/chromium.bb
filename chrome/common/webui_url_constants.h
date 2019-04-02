@@ -29,6 +29,7 @@ extern const char kChromeUIAccessibilityHost[];
 extern const char kChromeUIAppIconHost[];
 extern const char kChromeUIAppIconURL[];
 extern const char kChromeUIAppLauncherPageHost[];
+extern const char kChromeUIAppManagementHost[];
 extern const char kChromeUIAppsURL[];
 extern const char kChromeUIAutofillInternalsHost[];
 extern const char kChromeUIBluetoothInternalsHost[];
