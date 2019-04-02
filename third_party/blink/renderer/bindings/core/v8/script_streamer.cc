@@ -498,7 +498,7 @@ ScriptStreamer::ScriptStreamer(
       suppressed_reason_(kInvalid),
       compile_options_(compile_options),
       script_url_string_(script_resource->Url().Copy().GetString()),
-      script_resource_identifier_(script_resource->Identifier()),
+      script_resource_identifier_(script_resource->InspectorId()),
       // Unfortunately there's no dummy encoding value in the enum; let's use
       // one we don't stream.
       encoding_(v8::ScriptCompiler::StreamedSource::TWO_BYTE),

@@ -695,7 +695,6 @@ Resource* ResourceFetcher::ResourceForStaticData(
   resource->SetDataBufferingPolicy(kBufferData);
   if (data->size())
     resource->SetResourceBuffer(data);
-  resource->SetIdentifier(CreateUniqueIdentifier());
   resource->SetCacheIdentifier(cache_identifier);
   resource->Finish(TimeTicks(), task_runner_.get());
 
@@ -918,6 +917,7 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
                                            ResourceClient* client) {
   uint64_t identifier = CreateUniqueIdentifier();
   ResourceRequest& resource_request = params.MutableResourceRequest();
+  resource_request.SetInspectorId(identifier);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
       TRACE_DISABLED_BY_DEFAULT("network"), "ResourceLoad",
       TRACE_ID_WITH_SCOPE("BlinkResourceID", TRACE_ID_LOCAL(identifier)),
@@ -1043,10 +1043,8 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   // TODO(yoav): turn to a DCHECK. See https://crbug.com/690632
   CHECK_EQ(resource->GetType(), resource_type);
 
-  if (policy != kUse) {
-    resource->SetIdentifier(identifier);
+  if (policy != kUse)
     resource->VirtualTimePauser() = std::move(pauser);
-  }
 
   if (client)
     client->SetResource(resource, task_runner_.get());
@@ -1089,7 +1087,7 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   if (policy != kUse)
     InsertAsPreloadIfNecessary(resource, params, resource_type);
 
-  if (resource->Identifier() != identifier ||
+  if (resource->InspectorId() != identifier ||
       (!resource->StillNeedsLoad() && !resource->IsLoading())) {
     TRACE_EVENT_NESTABLE_ASYNC_END1(
         TRACE_DISABLED_BY_DEFAULT("network"), "ResourceLoad",
@@ -1828,7 +1826,7 @@ void ResourceFetcher::HandleLoaderFinish(
     }
   }
   Context().DispatchDidFinishLoading(
-      resource->Identifier(), response_end, encoded_data_length,
+      resource->InspectorId(), response_end, encoded_data_length,
       resource->GetResponse().DecodedBodyLength(), should_report_corb_blocking,
       FetchContext::ResourceResponseType::kNotFromMemoryCache);
   resource->ReloadIfLoFiOrPlaceholderImage(this, Resource::kReloadIfNeeded);
@@ -1858,7 +1856,7 @@ void ResourceFetcher::HandleLoaderError(Resource* resource,
   const bool is_internal_request = resource->Options().initiator_info.name ==
                                    fetch_initiator_type_names::kInternal;
   Context().DispatchDidFail(
-      resource->LastResourceRequest().Url(), resource->Identifier(), error,
+      resource->LastResourceRequest().Url(), resource->InspectorId(), error,
       resource->GetResponse().EncodedDataLength(), is_internal_request);
   resource->ReloadIfLoFiOrPlaceholderImage(this, Resource::kReloadIfNeeded);
 }
@@ -1892,13 +1890,13 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
 
     ResourceResponse response;
 
-    blink::probe::PlatformSendRequest probe(&Context(), resource->Identifier(),
+    blink::probe::PlatformSendRequest probe(&Context(), resource->InspectorId(),
                                             request, response,
                                             resource->Options().initiator_info);
 
     resource->VirtualTimePauser().PauseVirtualTime();
-    Context().DispatchWillSendRequest(resource->Identifier(), request, response,
-                                      resource->GetType(),
+    Context().DispatchWillSendRequest(resource->InspectorId(), request,
+                                      response, resource->GetType(),
                                       resource->Options().initiator_info);
 
     // TODO(shaochuan): Saving modified ResourceRequest back to |resource|,
@@ -1990,10 +1988,10 @@ void ResourceFetcher::UpdateAllImageResourcePriorities() {
     TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(
         TRACE_DISABLED_BY_DEFAULT("network"), "ResourcePrioritySet",
         TRACE_ID_WITH_SCOPE("BlinkResourceID",
-                            TRACE_ID_LOCAL(resource->Identifier())),
+                            TRACE_ID_LOCAL(resource->InspectorId())),
         "data", ResourcePrioritySetData(resource_load_priority));
     Context().DispatchDidChangeResourcePriority(
-        resource->Identifier(), resource_load_priority,
+        resource->InspectorId(), resource_load_priority,
         resource_priority.intra_priority_value);
   }
 }
@@ -2032,7 +2030,7 @@ void ResourceFetcher::EmulateLoadStartedForInspector(
                        resource->LastResourceRequest().Url(), params.Options(),
                        SecurityViolationReportingPolicy::kReport,
                        resource->LastResourceRequest().GetRedirectStatus());
-  RequestLoadStarted(resource->Identifier(), resource, params, kUse);
+  RequestLoadStarted(resource->InspectorId(), resource, params, kUse);
 }
 
 void ResourceFetcher::PrepareForLeakDetection() {

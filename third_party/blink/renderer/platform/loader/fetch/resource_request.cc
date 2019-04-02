@@ -129,6 +129,7 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
   request->SetRequestedWithHeader(GetRequestedWithHeader());
   request->SetClientDataHeader(GetClientDataHeader());
   request->SetUkmSourceId(GetUkmSourceId());
+  request->SetInspectorId(InspectorId());
 
   return request;
 }

@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
+#include "third_party/blink/renderer/platform/loader/fetch/unique_identifier.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -222,6 +223,7 @@ ImageResource* ImageResource::Create(const ResourceRequest& request) {
 
 ImageResource* ImageResource::CreateForTest(const KURL& url) {
   ResourceRequest request(url);
+  request.SetInspectorId(CreateUniqueIdentifier());
   return Create(request);
 }
 

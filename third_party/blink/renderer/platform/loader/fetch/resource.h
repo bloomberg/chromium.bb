@@ -168,8 +168,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
     return *error_;
   }
 
-  void SetIdentifier(uint64_t identifier) { identifier_ = identifier; }
-  uint64_t Identifier() const { return identifier_; }
+  uint64_t InspectorId() const { return LastResourceRequest().InspectorId(); }
 
   virtual bool ShouldIgnoreHTTPStatusCodeErrors() const { return false; }
 
@@ -533,8 +532,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   base::Optional<ResourceError> error_;
 
   TimeTicks load_response_end_;
-
-  uint64_t identifier_;
 
   size_t encoded_size_;
   size_t encoded_size_memory_usage_;

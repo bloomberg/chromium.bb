@@ -269,7 +269,7 @@ void ClassicPendingScript::NotifyFinished(Resource* resource) {
       TRACE_DISABLED_BY_DEFAULT("v8.compile"),
       "ClassicPendingScript::NotifyFinished", this, TRACE_EVENT_FLAG_FLOW_OUT,
       "data",
-      inspector_parse_script_event::Data(GetResource()->Identifier(),
+      inspector_parse_script_event::Data(GetResource()->InspectorId(),
                                          GetResource()->Url().GetString()));
 
   bool error_occurred = GetResource()->ErrorOccurred() || integrity_failure_;

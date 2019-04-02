@@ -581,7 +581,7 @@ bool ThreadableLoader::RedirectReceived(
       return client_->WillFollowRedirect(new_url, redirect_response);
 
     if (!actual_request_.IsNull()) {
-      ReportResponseReceived(resource->Identifier(), redirect_response);
+      ReportResponseReceived(resource->InspectorId(), redirect_response);
 
       HandlePreflightFailure(
           original_url,
@@ -649,7 +649,7 @@ bool ThreadableLoader::RedirectReceived(
     }
 
     probe::DidReceiveCorsRedirectResponse(
-        execution_context_, resource->Identifier(),
+        execution_context_, resource->InspectorId(),
         GetDocument() && GetDocument()->GetFrame()
             ? GetDocument()->GetFrame()->Loader().GetDocumentLoader()
             : nullptr,
@@ -835,13 +835,13 @@ void ThreadableLoader::ResponseReceived(Resource* resource,
   if (out_of_blink_cors_ && !response.WasFetchedViaServiceWorker()) {
     DCHECK(actual_request_.IsNull());
     fallback_request_for_service_worker_ = ResourceRequest();
-    client_->DidReceiveResponse(resource->Identifier(), response);
+    client_->DidReceiveResponse(resource->InspectorId(), response);
     return;
   }
 
   // Code path for legacy Blink CORS.
   if (!actual_request_.IsNull()) {
-    ReportResponseReceived(resource->Identifier(), response);
+    ReportResponseReceived(resource->InspectorId(), response);
     HandlePreflightResponse(response);
     return;
   }
@@ -853,7 +853,7 @@ void ThreadableLoader::ResponseReceived(Resource* resource,
       // therefore fallback-to-network is handled in the browser process when
       // the ServiceWorker does not call respondWith().)
       DCHECK(!fallback_request_for_service_worker_.IsNull());
-      ReportResponseReceived(resource->Identifier(), response);
+      ReportResponseReceived(resource->InspectorId(), response);
       LoadFallbackRequestForServiceWorker();
       return;
     }
@@ -873,7 +873,7 @@ void ThreadableLoader::ResponseReceived(Resource* resource,
     }
 
     fallback_request_for_service_worker_ = ResourceRequest();
-    client_->DidReceiveResponse(resource->Identifier(), response);
+    client_->DidReceiveResponse(resource->InspectorId(), response);
     return;
   }
 
@@ -895,7 +895,7 @@ void ThreadableLoader::ResponseReceived(Resource* resource,
         response.HttpHeaderFields(), fetch_credentials_mode_,
         *GetSecurityOrigin());
     if (access_error) {
-      ReportResponseReceived(resource->Identifier(), response);
+      ReportResponseReceived(resource->InspectorId(), response);
       DispatchDidFail(
           ResourceError(response.CurrentRequestUrl(), *access_error));
       return;
@@ -905,7 +905,7 @@ void ThreadableLoader::ResponseReceived(Resource* resource,
   DCHECK_EQ(&response, &resource->GetResponse());
   resource->SetResponseType(response_tainting_);
   DCHECK_EQ(response.GetType(), response_tainting_);
-  client_->DidReceiveResponse(resource->Identifier(), response);
+  client_->DidReceiveResponse(resource->InspectorId(), response);
 }
 
 void ThreadableLoader::ResponseBodyReceived(Resource*, BytesConsumer& body) {
@@ -968,7 +968,7 @@ void ThreadableLoader::NotifyFinished(Resource* resource) {
   // downloaded file.
   Persistent<Resource> protect = GetResource();
   Clear();
-  client->DidFinishLoading(resource->Identifier());
+  client->DidFinishLoading(resource->InspectorId());
 }
 
 void ThreadableLoader::DidTimeout(TimerBase* timer) {

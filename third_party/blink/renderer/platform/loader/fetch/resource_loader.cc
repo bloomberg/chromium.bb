@@ -792,7 +792,7 @@ bool ResourceLoader::WillFollowRedirect(
                            unused_virtual_time_pauser,
                            resource_->GetType());
   Context().DispatchWillSendRequest(
-      resource_->Identifier(), *new_request, redirect_response_to_pass,
+      resource_->InspectorId(), *new_request, redirect_response_to_pass,
       resource_->GetType(), options.initiator_info);
 
   // First-party cookie logic moved from DocumentLoader in Blink to
@@ -1009,7 +1009,7 @@ void ResourceLoader::DidReceiveResponseInternal(
 
   // FrameType never changes during the lifetime of a request.
   Context().DispatchDidReceiveResponse(
-      resource_->Identifier(), initial_request, response_to_pass, resource_,
+      resource_->InspectorId(), initial_request, response_to_pass, resource_,
       FetchContext::ResourceResponseType::kNotFromMemoryCache);
 
   // When streaming, unpause virtual time early to prevent deadlocking
@@ -1082,13 +1082,13 @@ void ResourceLoader::DidStartLoadingResponseBody(
 void ResourceLoader::DidReceiveData(const char* data, int length) {
   CHECK_GE(length, 0);
 
-  Context().DispatchDidReceiveData(resource_->Identifier(), data, length);
+  Context().DispatchDidReceiveData(resource_->InspectorId(), data, length);
   resource_->AppendData(data, length);
 }
 
 void ResourceLoader::DidReceiveTransferSizeUpdate(int transfer_size_diff) {
   DCHECK_GT(transfer_size_diff, 0);
-  Context().DispatchDidReceiveEncodedData(resource_->Identifier(),
+  Context().DispatchDidReceiveEncodedData(resource_->InspectorId(),
                                           transfer_size_diff);
 }
 
@@ -1096,7 +1096,7 @@ void ResourceLoader::DidFinishLoadingFirstPartInMultipart() {
   TRACE_EVENT_NESTABLE_ASYNC_END1(
       TRACE_DISABLED_BY_DEFAULT("network"), "ResourceLoad",
       TRACE_ID_WITH_SCOPE("BlinkResourceID",
-                          TRACE_ID_LOCAL(resource_->Identifier())),
+                          TRACE_ID_LOCAL(resource_->InspectorId())),
       "endData", EndResourceLoadData(RequestOutcome::kSuccess));
 
   fetcher_->HandleLoaderFinish(
@@ -1142,7 +1142,7 @@ void ResourceLoader::DidFinishLoading(
   TRACE_EVENT_NESTABLE_ASYNC_END1(
       TRACE_DISABLED_BY_DEFAULT("network"), "ResourceLoad",
       TRACE_ID_WITH_SCOPE("BlinkResourceID",
-                          TRACE_ID_LOCAL(resource_->Identifier())),
+                          TRACE_ID_LOCAL(resource_->InspectorId())),
       "endData", EndResourceLoadData(RequestOutcome::kSuccess));
 
   fetcher_->HandleLoaderFinish(
@@ -1205,7 +1205,7 @@ void ResourceLoader::HandleError(const ResourceError& error) {
   TRACE_EVENT_NESTABLE_ASYNC_END1(
       TRACE_DISABLED_BY_DEFAULT("network"), "ResourceLoad",
       TRACE_ID_WITH_SCOPE("BlinkResourceID",
-                          TRACE_ID_LOCAL(resource_->Identifier())),
+                          TRACE_ID_LOCAL(resource_->InspectorId())),
       "endData", EndResourceLoadData(RequestOutcome::kFail));
 
   fetcher_->HandleLoaderError(resource_.Get(), error,
@@ -1367,7 +1367,7 @@ void ResourceLoader::OnProgress(uint64_t delta) {
   if (scheduler_client_id_ == ResourceLoadScheduler::kInvalidClientId)
     return;
 
-  Context().DispatchDidReceiveData(resource_->Identifier(), nullptr, delta);
+  Context().DispatchDidReceiveData(resource_->InspectorId(), nullptr, delta);
   resource_->DidDownloadData(delta);
 }
 
@@ -1378,7 +1378,7 @@ void ResourceLoader::FinishedCreatingBlob(
   if (scheduler_client_id_ == ResourceLoadScheduler::kInvalidClientId)
     return;
 
-  Context().DispatchDidDownloadToBlob(resource_->Identifier(), blob.get());
+  Context().DispatchDidDownloadToBlob(resource_->InspectorId(), blob.get());
   resource_->DidDownloadToBlob(blob);
 
   blob_finished_ = true;
