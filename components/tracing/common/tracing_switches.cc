@@ -54,18 +54,6 @@ const char kTraceStartupFile[]              = "trace-startup-file";
 // "record-until-full" mode will be used.
 const char kTraceStartupRecordMode[] = "trace-startup-record-mode";
 
-// Specifies the coordinator of the startup tracing session. If the legacy
-// tracing backend is used instead of perfetto, providing this flag is not
-// necessary. Valid values: 'controller', 'devtools'. Defaults to 'controller'.
-//
-// If 'controller' is specified, the session is controlled and stopped via the
-// TracingController (e.g. to implement the timeout).
-//
-// If 'devtools' is specified, the startup tracing session will be owned by
-// DevTools and thus can be controlled (i.e. stopped) via the DevTools Tracing
-// domain on the first session connected to the browser endpoint.
-const char kTraceStartupOwner[] = "trace-startup-owner";
-
 // Disables the perfetto tracing backend. We need a separate command line
 // argument from the kTracingPerfettoBackend feature, because feature flags are
 // parsed too late during startup for early startup tracing support.

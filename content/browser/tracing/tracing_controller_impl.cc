@@ -21,9 +21,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/tracing/common/trace_startup_config.h"
-#include "components/tracing/common/trace_to_console.h"
-#include "components/tracing/common/tracing_switches.h"
-#include "content/browser/browser_shutdown_profile_dumper.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/tracing/file_tracing_provider_impl.h"
 #include "content/browser/tracing/perfetto_file_tracer.h"
@@ -60,7 +57,6 @@
 
 #if defined(OS_ANDROID)
 #include "base/debug/elf_reader.h"
-#include "content/browser/android/tracing_controller_android.h"
 
 // Symbol with virtual address of the start of ELF header of the current binary.
 extern char __ehdr_start;
@@ -140,11 +136,6 @@ bool IsCurrentSessionRemote() {
   return current_session_id != glass_session_id;
 }
 #endif
-
-void OnStoppedStartupTracing(const base::FilePath& trace_file) {
-  VLOG(0) << "Completed startup tracing to " << trace_file.value();
-  tracing::TraceStartupConfig::GetInstance()->OnTraceToResultFileFinished();
-}
 
 }  // namespace
 
@@ -389,83 +380,6 @@ bool TracingControllerImpl::StartTracing(
   // TODO(chiniforooshan): The actual success value should be sent by the
   // callback asynchronously.
   return true;
-}
-
-void TracingControllerImpl::StartStartupTracingIfNeeded() {
-  auto* trace_startup_config = tracing::TraceStartupConfig::GetInstance();
-  if (trace_startup_config->AttemptAdoptBySessionOwner(
-          tracing::TraceStartupConfig::SessionOwner::kTracingController)) {
-    StartTracing(trace_startup_config->GetTraceConfig(),
-                 StartTracingDoneCallback());
-  } else if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-                 switches::kTraceToConsole)) {
-    StartTracing(tracing::GetConfigForTraceToConsole(),
-                 StartTracingDoneCallback());
-  }
-
-  if (trace_startup_config->IsTracingStartupForDuration()) {
-    TRACE_EVENT0("startup",
-                 "TracingControllerImpl::InitStartupTracingForDuration");
-    InitStartupTracingForDuration();
-  }
-}
-
-base::FilePath TracingControllerImpl::GetStartupTraceFileName() const {
-  base::FilePath trace_file;
-
-  trace_file = tracing::TraceStartupConfig::GetInstance()->GetResultFile();
-  if (trace_file.empty()) {
-#if defined(OS_ANDROID)
-    TracingControllerAndroid::GenerateTracingFilePath(&trace_file);
-#else
-    // Default to saving the startup trace into the current dir.
-    trace_file = base::FilePath().AppendASCII("chrometrace.log");
-#endif
-  }
-
-  return trace_file;
-}
-
-void TracingControllerImpl::InitStartupTracingForDuration() {
-  DCHECK(tracing::TraceStartupConfig::GetInstance()
-             ->IsTracingStartupForDuration());
-
-  startup_trace_file_ = GetStartupTraceFileName();
-
-  startup_trace_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromSeconds(
-          tracing::TraceStartupConfig::GetInstance()->GetStartupDuration()),
-      this, &TracingControllerImpl::EndStartupTracing);
-}
-
-void TracingControllerImpl::EndStartupTracing() {
-  // Do nothing if startup tracing is already stopped.
-  if (!tracing::TraceStartupConfig::GetInstance()->IsEnabled())
-    return;
-
-  StopTracing(CreateFileEndpoint(
-      startup_trace_file_,
-      base::BindRepeating(OnStoppedStartupTracing, startup_trace_file_)));
-}
-
-std::unique_ptr<BrowserShutdownProfileDumper>
-TracingControllerImpl::FinalizeStartupTracingIfNeeded() {
-  // There are two cases:
-  // 1. Startup duration is not reached.
-  // 2. Or if the trace should be saved to file for --trace-config-file flag.
-  if (startup_trace_timer_.IsRunning()) {
-    startup_trace_timer_.Stop();
-    if (startup_trace_file_ != base::FilePath().AppendASCII("none")) {
-      return std::make_unique<BrowserShutdownProfileDumper>(
-          startup_trace_file_);
-    }
-  } else if (tracing::TraceStartupConfig::GetInstance()
-                 ->ShouldTraceToResultFile()) {
-    return std::make_unique<BrowserShutdownProfileDumper>(
-        GetStartupTraceFileName());
-  }
-  return nullptr;
 }
 
 bool TracingControllerImpl::StopTracing(
