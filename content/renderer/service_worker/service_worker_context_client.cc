@@ -348,6 +348,19 @@ ServiceWorkerContextClient::~ServiceWorkerContextClient() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
 }
 
+void ServiceWorkerContextClient::StartWorkerContext(
+    std::unique_ptr<blink::WebEmbeddedWorker> worker,
+    const blink::WebEmbeddedWorkerStartData& start_data) {
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  worker_ = std::move(worker);
+  worker_->StartWorkerContext(start_data);
+}
+
+blink::WebEmbeddedWorker& ServiceWorkerContextClient::worker() {
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  return *worker_;
+}
+
 void ServiceWorkerContextClient::WorkerReadyForInspectionOnMainThread() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   (*instance_host_)->OnReadyForInspection();

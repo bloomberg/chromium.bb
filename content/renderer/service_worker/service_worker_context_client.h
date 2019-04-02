@@ -35,6 +35,7 @@
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h"
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_client.h"
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_proxy.h"
+#include "third_party/blink/public/web/web_embedded_worker.h"
 #include "v8/include/v8.h"
 
 namespace base {
@@ -93,6 +94,12 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
   // Called on the main thread.
   ~ServiceWorkerContextClient() override;
+
+  // Called on the main thread.
+  void StartWorkerContext(std::unique_ptr<blink::WebEmbeddedWorker> worker,
+                          const blink::WebEmbeddedWorkerStartData& start_data);
+  // Called on the main thread.
+  blink::WebEmbeddedWorker& worker();
 
   // WebServiceWorkerContextClient overrides.
   void WorkerReadyForInspectionOnMainThread() override;
@@ -424,6 +431,8 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // Detects disconnection from the network service.
   network::mojom::URLLoaderFactoryPtr
       network_service_connection_error_handler_holder_;
+
+  std::unique_ptr<blink::WebEmbeddedWorker> worker_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextClient);
 };

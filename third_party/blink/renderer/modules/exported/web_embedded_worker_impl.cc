@@ -81,7 +81,7 @@ namespace blink {
 
 // static
 std::unique_ptr<WebEmbeddedWorker> WebEmbeddedWorker::Create(
-    std::unique_ptr<WebServiceWorkerContextClient> client,
+    WebServiceWorkerContextClient* client,
     std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>
         installed_scripts_manager_params,
     mojo::ScopedMessagePipeHandle content_settings_handle,
@@ -103,11 +103,11 @@ std::unique_ptr<WebEmbeddedWorker> WebEmbeddedWorker::Create(
 
 // static
 std::unique_ptr<WebEmbeddedWorkerImpl> WebEmbeddedWorkerImpl::CreateForTesting(
-    std::unique_ptr<WebServiceWorkerContextClient> client,
+    WebServiceWorkerContextClient* client,
     std::unique_ptr<ServiceWorkerInstalledScriptsManager>
         installed_scripts_manager) {
   auto worker_impl = std::make_unique<WebEmbeddedWorkerImpl>(
-      std::move(client), nullptr /* installed_scripts_manager_params */,
+      client, nullptr /* installed_scripts_manager_params */,
       std::make_unique<ServiceWorkerContentSettingsProxy>(
           nullptr /* host_info */),
       nullptr /* cache_storage_info */, nullptr /* interface_provider_info */);
@@ -117,14 +117,14 @@ std::unique_ptr<WebEmbeddedWorkerImpl> WebEmbeddedWorkerImpl::CreateForTesting(
 }
 
 WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
-    std::unique_ptr<WebServiceWorkerContextClient> client,
+    WebServiceWorkerContextClient* client,
     std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>
         installed_scripts_manager_params,
     std::unique_ptr<ServiceWorkerContentSettingsProxy> content_settings_client,
     mojom::blink::CacheStoragePtrInfo cache_storage_info,
     service_manager::mojom::blink::InterfaceProviderPtrInfo
         interface_provider_info)
-    : worker_context_client_(std::move(client)),
+    : worker_context_client_(client),
       content_settings_client_(std::move(content_settings_client)),
       pause_after_download_state_(kDontPauseAfterDownload),
       waiting_for_debugger_state_(kNotWaitingForDebugger),
