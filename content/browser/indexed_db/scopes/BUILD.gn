@@ -5,7 +5,10 @@
 import("//third_party/protobuf/proto_library.gni")
 
 proto_library("scopes_metadata_proto") {
-  visibility = [ "//content/browser/*" ]
+  visibility = [
+    "//content/browser/*",
+    "//content/test/*",
+  ]
 
   proto_in_dir = "."
   proto_out_dir = "content/browser/indexed_db/scopes"

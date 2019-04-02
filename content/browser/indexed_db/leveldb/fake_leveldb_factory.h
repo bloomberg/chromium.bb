@@ -23,6 +23,18 @@ class FakeLevelDBFactory : public DefaultLevelDBFactory {
   FakeLevelDBFactory();
   ~FakeLevelDBFactory() override;
 
+  struct FlakePoint {
+    int calls_before_flake;
+    leveldb::Status flake_status;
+    std::string replaced_get_result;
+  };
+
+  // The returned callback will trigger the database to be broken, and forever
+  // return the given status.
+  static std::unique_ptr<leveldb::DB> CreateFlakyDB(
+      std::unique_ptr<leveldb::DB> db,
+      std::queue<FlakePoint> flake_points);
+
   static scoped_refptr<LevelDBState> GetBrokenLevelDB(
       leveldb::Status error_to_return,
       const base::FilePath& reported_file_path);
