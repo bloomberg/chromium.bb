@@ -56,14 +56,14 @@ class CommandLine;
 class ScopedTempDir;
 }  // namespace base
 
-namespace browser_sync {
-class ProfileSyncService;
-}  // namespace browser_sync
-
 namespace fake_server {
 class FakeServer;
 class FakeServerInvalidationService;
 }  // namespace fake_server
+
+namespace syncer {
+class ProfileSyncService;
+}  // namespace syncer
 
 // This is the base class for integration tests for all sync data types. Derived
 // classes must be defined for each sync data type. Individual tests are defined
@@ -134,10 +134,10 @@ class SyncTest : public InProcessBrowserTest {
   std::vector<ProfileSyncServiceHarness*> GetSyncClients();
 
   // Returns a ProfileSyncService at the given index.
-  browser_sync::ProfileSyncService* GetSyncService(int index);
+  syncer::ProfileSyncService* GetSyncService(int index);
 
   // Returns the set of ProfileSyncServices.
-  std::vector<browser_sync::ProfileSyncService*> GetSyncServices();
+  std::vector<syncer::ProfileSyncService*> GetSyncServices();
 
   // Returns a pointer to the sync profile that is used to verify changes to
   // individual sync profiles. Callee owns the object and manages its lifetime.

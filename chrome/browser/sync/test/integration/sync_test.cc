@@ -46,7 +46,6 @@
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
@@ -56,6 +55,7 @@
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sync/base/invalidation_helper.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/engine/sync_engine_switches.h"
@@ -88,7 +88,7 @@
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #endif  // BUILDFLAG(ENABLE_APP_LIST)
 
-using browser_sync::ProfileSyncService;
+using syncer::ProfileSyncService;
 
 namespace switches {
 const char kPasswordFileForTest[] = "password-file-for-test";

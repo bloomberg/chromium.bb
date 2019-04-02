@@ -5,12 +5,12 @@
 #include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
 
 #include "base/logging.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/profile_sync_service.h"
 
 MultiClientStatusChangeChecker::MultiClientStatusChangeChecker(
-    std::vector<browser_sync::ProfileSyncService*> services)
+    std::vector<syncer::ProfileSyncService*> services)
     : services_(services), scoped_observer_(this) {
-  for (browser_sync::ProfileSyncService* service : services) {
+  for (syncer::ProfileSyncService* service : services) {
     scoped_observer_.Add(service);
   }
 }

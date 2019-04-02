@@ -5,8 +5,14 @@
 #ifndef COMPONENTS_BROWSER_SYNC_PROFILE_SYNC_SERVICE_H_
 #define COMPONENTS_BROWSER_SYNC_PROFILE_SYNC_SERVICE_H_
 
-// TODO(crbug.com/896303): Have clients use the sync/driver version directly and
-// then get rid of this header.
 #include "components/sync/driver/profile_sync_service.h"
+
+namespace browser_sync {
+
+// TODO(crbug.com/896303): Have clients use syncer::ProfileSyncService directly
+// and then get rid of this header.
+using ProfileSyncService = syncer::ProfileSyncService;
+
+}  // namespace browser_sync
 
 #endif  // COMPONENTS_BROWSER_SYNC_PROFILE_SYNC_SERVICE_H_

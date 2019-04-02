@@ -13,9 +13,9 @@
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
 #include "components/sync/driver/sync_service_observer.h"
 
-namespace browser_sync {
+namespace syncer {
 class ProfileSyncService;
-}  // namespace browser_sync
+}  // namespace syncer
 
 // This class provides some common functionality for StatusChangeCheckers that
 // observe many ProfileSyncServices.  This class is abstract.  Its descendants
@@ -24,7 +24,7 @@ class MultiClientStatusChangeChecker : public StatusChangeChecker,
                                        public syncer::SyncServiceObserver {
  public:
   explicit MultiClientStatusChangeChecker(
-      std::vector<browser_sync::ProfileSyncService*> services);
+      std::vector<syncer::ProfileSyncService*> services);
   ~MultiClientStatusChangeChecker() override;
 
   // Called when waiting times out.
@@ -38,14 +38,13 @@ class MultiClientStatusChangeChecker : public StatusChangeChecker,
   std::string GetDebugMessage() const override = 0;
 
  protected:
-  const std::vector<browser_sync::ProfileSyncService*>& services() {
+  const std::vector<syncer::ProfileSyncService*>& services() {
     return services_;
   }
 
  private:
-  std::vector<browser_sync::ProfileSyncService*> services_;
-  ScopedObserver<browser_sync::ProfileSyncService,
-                 MultiClientStatusChangeChecker>
+  std::vector<syncer::ProfileSyncService*> services_;
+  ScopedObserver<syncer::ProfileSyncService, MultiClientStatusChangeChecker>
       scoped_observer_;
 };
 
