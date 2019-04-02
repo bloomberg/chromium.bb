@@ -19,6 +19,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/referrer.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "ui/gfx/color_utils.h"
 
 class PwaInstallViewBrowserTest : public InProcessBrowserTest {
  public:
@@ -218,4 +219,23 @@ IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
   ASSERT_TRUE(app_banner_manager_->WaitForInstallableCheck());
   EXPECT_TRUE(pwa_install_view_->visible());
   EXPECT_TRUE(pwa_install_view_->is_animating_label());
+}
+
+// Tests that the icon label is visible against the omnibox background after the
+// native widget becomes active.
+IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest, TextContrast) {
+  NavigateToURL(GetInstallableAppURL());
+  ASSERT_TRUE(app_banner_manager_->WaitForInstallableCheck());
+  EXPECT_TRUE(pwa_install_view_->visible());
+  EXPECT_TRUE(pwa_install_view_->is_animating_label());
+
+  pwa_install_view_->GetWidget()->OnNativeWidgetActivationChanged(true);
+
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  SkColor omnibox_background = browser_view->GetLocationBarView()->GetColor(
+      OmniboxPart::LOCATION_BAR_BACKGROUND);
+  SkColor label_color = pwa_install_view_->GetLabelColorForTesting();
+  EXPECT_EQ(SkColorGetA(label_color), SK_AlphaOPAQUE);
+  EXPECT_GT(color_utils::GetContrastRatio(omnibox_background, label_color),
+            color_utils::kMinimumReadableContrastRatio);
 }
