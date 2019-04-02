@@ -71,7 +71,8 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t data_size) {
   if (hash & kFuzzMessagePorts) {
     MessagePortArray* message_ports = MakeGarbageCollected<MessagePortArray>(3);
     std::generate(message_ports->begin(), message_ports->end(), []() {
-      MessagePort* port = MessagePort::Create(g_page_holder->GetDocument());
+      auto* port =
+          MakeGarbageCollected<MessagePort>(g_page_holder->GetDocument());
       port->Entangle(mojo::MessagePipe().handle0);
       return port;
     });
