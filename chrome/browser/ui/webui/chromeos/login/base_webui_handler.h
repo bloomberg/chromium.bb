@@ -29,7 +29,6 @@ class LocalizedValuesBuilder;
 
 namespace chromeos {
 
-class BaseScreen;
 class OobeUI;
 
 // Base class for all oobe/login WebUI handlers. These handlers are the binding
@@ -37,9 +36,6 @@ class OobeUI;
 //
 // If the deriving type is associated with a specific OobeScreen, it should
 // derive from BaseScreenHandler instead of BaseWebUIHandler.
-//
-// TODO(jdufault): Move all OobeScreen related concepts out of BaseWebUIHandler
-// and into BaseScreenHandler.
 class BaseWebUIHandler : public content::WebUIMessageHandler {
  public:
   explicit BaseWebUIHandler(JSCallsContainer* js_calls_container);
@@ -63,17 +59,6 @@ class BaseWebUIHandler : public content::WebUIMessageHandler {
   }
 
  protected:
-  // Set the method identifier for a userActed callback. The actual callback
-  // will be registered in RegisterMessages so this should be called in the
-  // constructor. This takes the full method path, ie,
-  // "login.WelcomeScreen.userActed".
-  //
-  // If this is not called then userActed-style callbacks will not be available
-  // for the screen.
-  void set_user_acted_method_path(const std::string& user_acted_method_path) {
-    user_acted_method_path_ = user_acted_method_path;
-  }
-
   // All subclasses should implement this method to provide localized values.
   virtual void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) = 0;
@@ -151,8 +136,6 @@ class BaseWebUIHandler : public content::WebUIMessageHandler {
   // Whether page is ready.
   bool page_is_ready() const { return page_is_ready_; }
 
-  void SetBaseScreen(BaseScreen* base_screen);
-
  private:
   friend class OobeUI;
 
@@ -193,16 +176,8 @@ class BaseWebUIHandler : public content::WebUIMessageHandler {
     ::login::CallbackWrapper<Args...>(callback, args);
   }
 
-  // Handles user action.
-  void HandleUserAction(const std::string& action_id);
-
-  // Path that is used to invoke user actions.
-  std::string user_acted_method_path_;
-
   // Keeps whether page is ready.
   bool page_is_ready_ = false;
-
-  BaseScreen* base_screen_ = nullptr;
 
   // The string id used in the async asset load in JS. If it is set to a
   // non empty value, the Initialize will be deferred until the underlying load
