@@ -17,6 +17,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -232,6 +233,18 @@ class ThreadedPerfettoService : public mojom::TracingSession {
     *tracing_enabled = tracing_enabled_;
   }
 
+  perfetto::DataSourceConfig GetProducerClientConfig() {
+    perfetto::DataSourceConfig config;
+    base::RunLoop wait_loop;
+    task_runner_->PostTaskAndReply(
+        FROM_HERE, base::BindLambdaForTesting([&]() {
+          config = producer_->producer_client()->data_source()->config();
+        }),
+        wait_loop.QuitClosure());
+    wait_loop.Run();
+    return config;
+  }
+
  private:
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   std::unique_ptr<PerfettoService> perfetto_service_;
@@ -307,9 +320,17 @@ class TracingConsumerTest : public testing::Test,
     return trace_config;
   }
 
-  void EnableTracingWithDataSourceName(const std::string& data_source_name) {
-    threaded_service_->EnableTracingWithConfig(
-        GetDefaultTraceConfig(data_source_name));
+  void EnableTracingWithDataSourceName(const std::string& data_source_name,
+                                       bool enable_privacy_filtering = false) {
+    perfetto::TraceConfig config = GetDefaultTraceConfig(data_source_name);
+    if (enable_privacy_filtering) {
+      for (auto& source : *config.mutable_data_sources()) {
+        source.mutable_config()
+            ->mutable_chrome_config()
+            ->set_privacy_filtering_enabled(true);
+      }
+    }
+    threaded_service_->EnableTracingWithConfig(config);
   }
 
   bool IsTracingEnabled() {
@@ -508,6 +529,22 @@ TEST_F(TracingConsumerTest,
 
   threaded_perfetto_service()->SetPidsInitialized();
   EXPECT_TRUE(IsTracingEnabled());
+}
+
+TEST_F(TracingConsumerTest, PrivacyFilterConfig) {
+  EnableTracingWithDataSourceName(mojom::kTraceEventDataSourceName,
+                                  /* enable_privacy_filtering =*/true);
+
+  base::RunLoop wait_for_tracing_start;
+  threaded_perfetto_service()->CreateProducer(
+      mojom::kTraceEventDataSourceName, 10u,
+      wait_for_tracing_start.QuitClosure());
+
+  wait_for_tracing_start.Run();
+  EXPECT_TRUE(threaded_perfetto_service()
+                  ->GetProducerClientConfig()
+                  .chrome_config()
+                  .privacy_filtering_enabled());
 }
 
 }  // namespace tracing

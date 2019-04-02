@@ -30,7 +30,7 @@ void TestDataSource::WritePacketBigly() {
   payload.get()[kLargeMessageSize - 1] = 0;
 
   std::unique_ptr<perfetto::TraceWriter> writer =
-      producer_client_->CreateTraceWriter(target_buffer_);
+      producer_client_->CreateTraceWriter(config_.target_buffer());
   CHECK(writer);
 
   writer->NewTracePacket()->set_for_testing()->set_str(payload.get(),
@@ -41,11 +41,11 @@ void TestDataSource::StartTracing(
     ProducerClient* producer_client,
     const perfetto::DataSourceConfig& data_source_config) {
   producer_client_ = producer_client;
-  target_buffer_ = data_source_config.target_buffer();
+  config_ = data_source_config;
 
   if (send_packet_count_ > 0) {
     std::unique_ptr<perfetto::TraceWriter> writer =
-        producer_client_->CreateTraceWriter(target_buffer_);
+        producer_client_->CreateTraceWriter(config_.target_buffer());
     CHECK(writer);
 
     for (size_t i = 0; i < send_packet_count_; i++) {

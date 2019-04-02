@@ -33,10 +33,12 @@ class TestDataSource : public ProducerClient::DataSourceBase {
       base::OnceClosure stop_complete_callback = base::OnceClosure()) override;
   void Flush(base::RepeatingClosure flush_complete_callback) override;
 
+  const perfetto::DataSourceConfig& config() { return config_; }
+
  private:
   ProducerClient* producer_client_ = nullptr;
   const size_t send_packet_count_;
-  uint32_t target_buffer_ = 0;
+  perfetto::DataSourceConfig config_;
 };
 
 class MockProducerClient : public ProducerClient {
@@ -158,6 +160,8 @@ class MockProducer {
   virtual ~MockProducer();
 
   void WritePacketBigly(base::OnceClosure on_write_complete);
+
+  MockProducerClient* producer_client() { return producer_client_.get(); }
 
  private:
   std::unique_ptr<MockProducerClient> producer_client_;
