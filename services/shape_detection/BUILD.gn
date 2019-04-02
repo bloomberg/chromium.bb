@@ -137,6 +137,7 @@ source_set("tests") {
     ":lib",
     "//base",
     "//base/test:test_support",
+    "//mojo/public/cpp/test_support:test_utils",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",

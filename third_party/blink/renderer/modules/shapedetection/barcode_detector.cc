@@ -12,24 +12,85 @@
 #include "third_party/blink/renderer/core/html/canvas/canvas_image_source.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/modules/imagecapture/point_2d.h"
+#include "third_party/blink/renderer/modules/shapedetection/barcode_detector_options.h"
 #include "third_party/blink/renderer/modules/shapedetection/detected_barcode.h"
 
 namespace blink {
 
-BarcodeDetector* BarcodeDetector::Create(ExecutionContext* context) {
-  return MakeGarbageCollected<BarcodeDetector>(context);
+namespace {
+
+shape_detection::mojom::blink::BarcodeFormat StringToBarcodeFormat(
+    const WebString& format_string) {
+  if (format_string == "aztec")
+    return shape_detection::mojom::blink::BarcodeFormat::AZTEC;
+  if (format_string == "code_128")
+    return shape_detection::mojom::blink::BarcodeFormat::CODE_128;
+  if (format_string == "code_39")
+    return shape_detection::mojom::blink::BarcodeFormat::CODE_39;
+  if (format_string == "code_93")
+    return shape_detection::mojom::blink::BarcodeFormat::CODE_93;
+  if (format_string == "codabar")
+    return shape_detection::mojom::blink::BarcodeFormat::CODABAR;
+  if (format_string == "data_matrix")
+    return shape_detection::mojom::blink::BarcodeFormat::DATA_MATRIX;
+  if (format_string == "ean_13")
+    return shape_detection::mojom::blink::BarcodeFormat::EAN_13;
+  if (format_string == "ean_8")
+    return shape_detection::mojom::blink::BarcodeFormat::EAN_8;
+  if (format_string == "itf")
+    return shape_detection::mojom::blink::BarcodeFormat::ITF;
+  if (format_string == "pdf417")
+    return shape_detection::mojom::blink::BarcodeFormat::PDF417;
+  if (format_string == "qr_code")
+    return shape_detection::mojom::blink::BarcodeFormat::QR_CODE;
+  if (format_string == "upc_a")
+    return shape_detection::mojom::blink::BarcodeFormat::UPC_A;
+  if (format_string == "upc_e")
+    return shape_detection::mojom::blink::BarcodeFormat::UPC_E;
+  return shape_detection::mojom::blink::BarcodeFormat::UNKNOWN;
 }
 
-BarcodeDetector::BarcodeDetector(ExecutionContext* context) : ShapeDetector() {
+}  // anonymous namespace
+
+BarcodeDetector* BarcodeDetector::Create(ExecutionContext* context,
+                                         const BarcodeDetectorOptions* options,
+                                         ExceptionState& exception_state) {
+  return MakeGarbageCollected<BarcodeDetector>(context, options,
+                                               exception_state);
+}
+
+BarcodeDetector::BarcodeDetector(ExecutionContext* context,
+                                 const BarcodeDetectorOptions* options,
+                                 ExceptionState& exception_state)
+    : ShapeDetector() {
+  auto barcode_detector_options =
+      shape_detection::mojom::blink::BarcodeDetectorOptions::New();
+
+  if (options->hasFormats()) {
+    // TODO(https://github.com/WICG/shape-detection-api/issues/66):
+    // potentially process UNKNOWN as platform-specific formats.
+    for (const auto& format_string : options->formats()) {
+      auto format = StringToBarcodeFormat(format_string);
+      if (format != shape_detection::mojom::blink::BarcodeFormat::UNKNOWN)
+        barcode_detector_options->formats.push_back(format);
+    }
+
+    if (barcode_detector_options->formats.IsEmpty()) {
+      exception_state.ThrowTypeError("Hint option provided, but is empty.");
+      return;
+    }
+  }
+
   // See https://bit.ly/2S0zRAS for task types.
   auto task_runner = context->GetTaskRunner(TaskType::kMiscPlatformAPI);
   auto request = mojo::MakeRequest(&barcode_provider_, task_runner);
   if (auto* interface_provider = context->GetInterfaceProvider()) {
     interface_provider->GetInterface(std::move(request));
   }
+
   barcode_provider_->CreateBarcodeDetection(
       mojo::MakeRequest(&barcode_service_, task_runner),
-      shape_detection::mojom::blink::BarcodeDetectorOptions::New());
+      std::move(barcode_detector_options));
 
   barcode_service_.set_connection_error_handler(
       WTF::Bind(&BarcodeDetector::OnBarcodeServiceConnectionError,
@@ -38,7 +99,9 @@ BarcodeDetector::BarcodeDetector(ExecutionContext* context) : ShapeDetector() {
 
 ScriptPromise BarcodeDetector::getSupportedFormats(ScriptState* script_state) {
   ExecutionContext* context = ExecutionContext::From(script_state);
-  BarcodeDetector* detector = BarcodeDetector::Create(context);
+  NonThrowableExceptionState exception_state;
+  BarcodeDetector* detector = BarcodeDetector::Create(
+      context, BarcodeDetectorOptions::Create(), exception_state);
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();

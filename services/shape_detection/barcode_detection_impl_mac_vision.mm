@@ -53,6 +53,62 @@ mojom::BarcodeFormat ToBarcodeFormat(NSString* symbology) {
   return mojom::BarcodeFormat::UNKNOWN;
 }
 
+void UpdateSymbologyHint(mojom::BarcodeFormat format,
+                         NSMutableSet<NSString*>* hint) {
+  // TODO(crbug/943106): use SDK header-declared constants after updating SDK.
+  switch (format) {
+    case mojom::BarcodeFormat::AZTEC:
+      [hint addObject:@"VNBarcodeSymbologyAztec"];
+      return;
+    case mojom::BarcodeFormat::CODE_128:
+      [hint addObject:@"VNBarcodeSymbologyCode128"];
+      return;
+    case mojom::BarcodeFormat::CODE_39:
+      [hint addObjectsFromArray:@[
+        @"VNBarcodeSymbologyCode39", @"VNBarcodeSymbologyCode39Checksum",
+        @"VNBarcodeSymbologyCode39FullASCII",
+        @"VNBarcodeSymbologyCode39FullASCIIChecksum"
+      ]];
+      return;
+    case mojom::BarcodeFormat::CODE_93:
+      [hint addObjectsFromArray:@[
+        @"VNBarcodeSymbologyCode93", @"VNBarcodeSymbologyCode93i"
+      ]];
+      return;
+    case mojom::BarcodeFormat::CODABAR:
+      return;
+    case mojom::BarcodeFormat::DATA_MATRIX:
+      [hint addObject:@"VNBarcodeSymbologyDataMatrix"];
+      return;
+    case mojom::BarcodeFormat::EAN_13:
+      [hint addObject:@"VNBarcodeSymbologyEAN13"];
+      return;
+    case mojom::BarcodeFormat::EAN_8:
+      [hint addObject:@"VNBarcodeSymbologyEAN8"];
+      return;
+    case mojom::BarcodeFormat::ITF:
+      [hint addObjectsFromArray:@[
+        @"VNBarcodeSymbologyITF14", @"VNBarcodeSymbologyI2of5",
+        @"VNBarcodeSymbologyI2of5Checksum"
+      ]];
+      return;
+    case mojom::BarcodeFormat::PDF417:
+      [hint addObject:@"VNBarcodeSymbologyPDF417"];
+      return;
+    case mojom::BarcodeFormat::QR_CODE:
+      [hint addObject:@"VNBarcodeSymbologyQR"];
+      return;
+    case mojom::BarcodeFormat::UPC_A:
+      return;
+    case mojom::BarcodeFormat::UPC_E:
+      [hint addObject:@"VNBarcodeSymbologyUPC_E"];
+      return;
+    case mojom::BarcodeFormat::UNKNOWN:
+      NOTREACHED();
+      return;
+  }
+}
+
 }  // unnamed namespace
 
 // static
@@ -73,12 +129,24 @@ BarcodeDetectionImplMacVision::BarcodeDetectionImplMacVision(
     return;
   }
 
+  NSMutableSet<NSString*>* symbology_hints = [NSMutableSet set];
+  for (const auto& hint : options->formats) {
+    if (hint == mojom::BarcodeFormat::UNKNOWN) {
+      mojo::ReportBadMessage("Formats hint contains UNKNOWN BarcodeFormat.");
+      return;
+    }
+
+    UpdateSymbologyHint(hint, symbology_hints);
+  }
+  symbology_hints_.reset([symbology_hints retain]);
+
   // The repeating callback will not be run if BarcodeDetectionImplMacVision
   // object has already been destroyed.
   barcodes_async_request_ = VisionAPIAsyncRequestMac::Create(
       request_class,
       base::BindRepeating(&BarcodeDetectionImplMacVision::OnBarcodesDetected,
-                          weak_factory_.GetWeakPtr()));
+                          weak_factory_.GetWeakPtr()),
+      symbology_hints_.get());
 }
 
 BarcodeDetectionImplMacVision::~BarcodeDetectionImplMacVision() = default;
@@ -171,6 +239,10 @@ BarcodeDetectionImplMacVision::GetSupportedSymbologies(
   }
   return std::vector<shape_detection::mojom::BarcodeFormat>(results.begin(),
                                                             results.end());
+}
+
+NSSet<NSString*>* BarcodeDetectionImplMacVision::GetSymbologyHintsForTesting() {
+  return symbology_hints_.get();
 }
 
 }  // namespace shape_detection

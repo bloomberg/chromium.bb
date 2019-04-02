@@ -16,17 +16,22 @@
 namespace blink {
 
 class ExecutionContext;
+class BarcodeDetectorOptions;
 
 class MODULES_EXPORT BarcodeDetector final : public ShapeDetector {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static BarcodeDetector* Create(ExecutionContext*);
+  static BarcodeDetector* Create(ExecutionContext*,
+                                 const BarcodeDetectorOptions*,
+                                 ExceptionState& exception_state);
 
   // Barcode Detection API functions.
   static ScriptPromise getSupportedFormats(ScriptState*);
 
-  explicit BarcodeDetector(ExecutionContext*);
+  explicit BarcodeDetector(ExecutionContext*,
+                           const BarcodeDetectorOptions*,
+                           ExceptionState& exception_state);
 
   void Trace(blink::Visitor*) override;
 

@@ -13,6 +13,10 @@
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/test_support/test_utils.h"
+#include "services/shape_detection/barcode_detection_impl_mac_vision.h"
 #include "services/shape_detection/barcode_detection_provider_mac.h"
 #include "services/shape_detection/public/mojom/barcodedetection_provider.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -217,6 +221,34 @@ TEST_F(BarcodeDetectionProviderMacTest, EnumerateSupportedBarcodesErrored) {
   provider_->EnumerateSupportedFormats(base::BindOnce(
       &BarcodeDetectionProviderMacTest::EnumerateSupportedFormatsCallback,
       base::Unretained(this), std::vector<mojom::BarcodeFormat>()));
+}
+
+TEST_F(BarcodeDetectionProviderMacTest, HintFormats) {
+  if (!is_vision_available_) {
+    LOG(WARNING) << "Barcode Detection with Vision not supported before 10.13, "
+                 << "skipping test.";
+    return;
+  }
+
+  vision_framework_ =
+      dlopen("/System/Library/Frameworks/Vision.framework/Vision", RTLD_LAZY);
+
+  mojom::BarcodeDetectionProviderPtr provider_ptr;
+  auto provider_request = mojo::MakeRequest(&provider_ptr);
+  mojo::MakeStrongBinding(CreateBarcodeProviderMac(CreateVisionAPI()),
+                          std::move(provider_request));
+
+  mojom::BarcodeDetectionPtr impl;
+  auto impl_request = mojo::MakeRequest(&impl);
+  auto options = mojom::BarcodeDetectorOptions::New();
+  options->formats = {mojom::BarcodeFormat::UNKNOWN};
+
+  mojo::test::BadMessageObserver observer;
+  provider_ptr->CreateBarcodeDetection(std::move(impl_request),
+                                       std::move(options));
+
+  EXPECT_EQ("Formats hint contains UNKNOWN BarcodeFormat.",
+            observer.WaitForBadMessage());
 }
 
 }  // shape_detection namespace

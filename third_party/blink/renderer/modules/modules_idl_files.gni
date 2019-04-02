@@ -704,6 +704,7 @@ modules_dictionary_idl_files =
           "service_worker/fetch_event_init.idl",
           "service_worker/navigation_preload_state.idl",
           "service_worker/registration_options.idl",
+          "shapedetection/barcode_detector_options.idl",
           "shapedetection/face_detector_options.idl",
           "shapedetection/landmark.idl",
           "speech/speech_recognition_error_init.idl",
