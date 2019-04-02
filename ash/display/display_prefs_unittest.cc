@@ -1368,6 +1368,44 @@ TEST_F(DisplayPrefsTest, ExternalDisplayMirrorInfo) {
   EXPECT_EQ(0U, pref_external_display_mirror_info->GetSize());
 }
 
+TEST_F(DisplayPrefsTest, ExternalDisplayConnectedBeforeLoadingPrefs) {
+  LoggedInAsUser();
+
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      chromeos::switches::kFirstExecAfterBoot);
+
+  const int64_t internal_display_id =
+      display::test::DisplayManagerTestApi(display_manager())
+          .SetFirstDisplayAsInternalDisplay();
+  constexpr int64_t external_display_id = 210000001;
+  display::ManagedDisplayInfo external_display_info =
+      display::CreateDisplayInfo(external_display_id,
+                                 gfx::Rect(1, 1, 500, 500));
+
+  // Both internal and external displays connect before the prefs are loaded.
+  std::vector<display::ManagedDisplayInfo> display_info_list;
+  display_info_list.push_back(display::CreateDisplayInfo(
+      internal_display_id, gfx::Rect(0, 0, 100, 100)));
+  display_info_list.push_back(external_display_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+
+  EXPECT_FALSE(display_manager()->IsInMirrorMode());
+  EXPECT_EQ(2u, display_manager()->num_connected_displays());
+
+  // Add external display id to the external display mirror info.
+  std::set<int64_t> external_display_mirror_info;
+  const int64_t external_display_masked_id =
+      display::GetDisplayIdWithoutOutputIndex(external_display_id);
+  external_display_mirror_info.emplace(external_display_masked_id);
+  StoreExternalDisplayMirrorInfo(external_display_mirror_info);
+
+  // Load the preferences and simulate a native display reconfiguration. Expect
+  // that we are mirroring now.
+  LoadDisplayPreferences();
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_TRUE(display_manager()->IsInMirrorMode());
+}
+
 TEST_F(DisplayPrefsTest, DisplayMixedMirrorMode) {
   LoggedInAsUser();
 

@@ -1329,11 +1329,14 @@ bool DisplayManager::ShouldSetMirrorModeOn(const DisplayIdList& new_id_list) {
     return true;
   }
 
-  if (num_connected_displays_ <= 1) {
-    // The ChromeOS just boots up or it only has one display. Restore mirror
-    // mode based on the external displays' mirror info stored in the
-    // preferences. Mirror mode should be on if one of the external displays was
-    // in mirror mode before.
+  if (should_restore_mirror_mode_from_display_prefs_ ||
+      num_connected_displays_ <= 1) {
+    // The ChromeOS just boots up, the display prefs have just been loaded, or
+    // we only have one display. Restore mirror mode based on the external
+    // displays' mirror info stored in the preferences. Mirror mode should be on
+    // if one of the external displays was in mirror mode before.
+    should_restore_mirror_mode_from_display_prefs_ = false;
+
     for (int64_t id : new_id_list) {
       if (external_display_mirror_info_.count(
               GetDisplayIdWithoutOutputIndex(id))) {
