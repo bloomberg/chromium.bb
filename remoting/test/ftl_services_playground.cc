@@ -18,70 +18,27 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
-#include "remoting/base/fake_oauth_token_getter.h"
 #include "remoting/base/oauth_token_getter_impl.h"
 #include "remoting/signaling/ftl_device_id_provider.h"
 #include "remoting/signaling/ftl_grpc_context.h"
 #include "remoting/signaling/ftl_services.grpc.pb.h"
 #include "remoting/signaling/grpc_support/grpc_async_unary_request.h"
-#include "remoting/test/test_oauth_token_factory.h"
+#include "remoting/test/cli_util.h"
+#include "remoting/test/test_oauth_token_getter.h"
 #include "remoting/test/test_token_storage.h"
 
 namespace {
 
 constexpr char kSwitchNameHelp[] = "help";
-constexpr char kSwitchNameAuthCode[] = "code";
 constexpr char kSwitchNameUsername[] = "username";
 constexpr char kSwitchNameStoragePath[] = "storage-path";
 constexpr char kSwitchNameNoAutoSignin[] = "no-auto-signin";
-
-// Reads a newline-terminated string from stdin.
-std::string ReadString() {
-  const int kMaxLen = 1024;
-  std::string str(kMaxLen, 0);
-  char* result = fgets(&str[0], kMaxLen, stdin);
-  if (!result)
-    return std::string();
-  size_t newline_index = str.find('\n');
-  if (newline_index != std::string::npos)
-    str[newline_index] = '\0';
-  str.resize(strlen(&str[0]));
-  return str;
-}
-
-// Read the value of |switch_name| from command line if it exists, otherwise
-// read from stdin.
-std::string ReadStringFromCommandLineOrStdin(const std::string& switch_name,
-                                             const std::string& read_prompt) {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switch_name)) {
-    return command_line->GetSwitchValueASCII(switch_name);
-  }
-  printf("%s", read_prompt.c_str());
-  return ReadString();
-}
-
-// Wait for the user to press enter key on an anonymous thread and calls
-// |on_done| once it is done.
-void WaitForEnterKey(base::OnceClosure on_done) {
-  base::PostTaskWithTraitsAndReply(FROM_HERE, {base::MayBlock()},
-                                   base::BindOnce([]() { getchar(); }),
-                                   std::move(on_done));
-}
 
 bool NeedsManualSignin() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kSwitchNameNoAutoSignin);
 }
-
-struct CommandOption {
- public:
-  std::string name;
-  base::RepeatingClosure callback;
-};
 
 }  // namespace
 
@@ -97,7 +54,7 @@ bool FtlServicesPlayground::ShouldPrintHelp() {
 
 void FtlServicesPlayground::PrintHelp() {
   printf(
-      "Usage: %s [--no-auto-signin] [--code=<auth-code>] "
+      "Usage: %s [--no-auto-signin] [--auth-code=<auth-code>] "
       "[--storage-path=<storage-path>] [--username=<example@gmail.com>]\n",
       base::CommandLine::ForCurrentProcess()
           ->GetProgram()
@@ -107,11 +64,8 @@ void FtlServicesPlayground::PrintHelp() {
 
 void FtlServicesPlayground::StartAndAuthenticate() {
   DCHECK(!storage_);
-  DCHECK(!token_getter_factory_);
   DCHECK(!token_getter_);
   DCHECK(!executor_);
-
-  token_getter_factory_ = std::make_unique<TestOAuthTokenGetterFactory>();
 
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   std::string username = cmd_line->GetSwitchValueASCII(kSwitchNameUsername);
@@ -119,72 +73,37 @@ void FtlServicesPlayground::StartAndAuthenticate() {
       cmd_line->GetSwitchValuePath(kSwitchNameStoragePath);
   storage_ = test::TestTokenStorage::OnDisk(username, storage_path);
 
-  std::string access_token = storage_->FetchAccessToken();
+  token_getter_ = std::make_unique<test::TestOAuthTokenGetter>(storage_.get());
+
   base::RunLoop run_loop;
-  if (access_token.empty()) {
-    AuthenticateAndResetServices(run_loop.QuitClosure());
-  } else {
-    VLOG(0) << "Reusing access token: " << access_token;
-    token_getter_ = std::make_unique<FakeOAuthTokenGetter>(
-        OAuthTokenGetter::Status::SUCCESS, "fake_email@gmail.com",
-        access_token);
-    ResetServices(run_loop.QuitClosure());
-  }
+  token_getter_->Initialize(
+      base::BindOnce(&FtlServicesPlayground::ResetServices,
+                     weak_factory_.GetWeakPtr(), run_loop.QuitClosure()));
   run_loop.Run();
 
   StartLoop();
 }
 
 void FtlServicesPlayground::StartLoop() {
-  while (true) {
-    base::RunLoop run_loop;
-    std::vector<CommandOption> options{
-        {"GetIceServer",
-         base::BindRepeating(&FtlServicesPlayground::GetIceServer,
-                             weak_factory_.GetWeakPtr(),
-                             run_loop.QuitClosure())},
-        {"PullMessages",
-         base::BindRepeating(&FtlServicesPlayground::PullMessages,
-                             weak_factory_.GetWeakPtr(),
-                             run_loop.QuitClosure())},
-        {"ReceiveMessages",
-         base::BindRepeating(&FtlServicesPlayground::StartReceivingMessages,
-                             weak_factory_.GetWeakPtr(),
-                             run_loop.QuitWhenIdleClosure())},
-        {"SendMessage", base::BindRepeating(&FtlServicesPlayground::SendMessage,
-                                            weak_factory_.GetWeakPtr(),
-                                            run_loop.QuitClosure())},
-        {"Quit", base::NullCallback()}};
+  std::vector<test::CommandOption> options{
+      {"GetIceServer", base::BindRepeating(&FtlServicesPlayground::GetIceServer,
+                                           weak_factory_.GetWeakPtr())},
+      {"PullMessages", base::BindRepeating(&FtlServicesPlayground::PullMessages,
+                                           weak_factory_.GetWeakPtr())},
+      {"ReceiveMessages",
+       base::BindRepeating(&FtlServicesPlayground::StartReceivingMessages,
+                           weak_factory_.GetWeakPtr())},
+      {"SendMessage", base::BindRepeating(&FtlServicesPlayground::SendMessage,
+                                          weak_factory_.GetWeakPtr())}};
 
-    if (NeedsManualSignin()) {
-      options.insert(
-          options.begin(),
-          {"SignInGaia", base::BindRepeating(&FtlServicesPlayground::SignInGaia,
-                                             weak_factory_.GetWeakPtr(),
-                                             run_loop.QuitClosure())});
-    }
-
-    printf("\nOptions:\n");
-    int print_option_number = 1;
-    for (const auto& option : options) {
-      printf("  %d. %s\n", print_option_number, option.name.c_str());
-      print_option_number++;
-    }
-    printf("\nYour choice [number]: ");
-    int choice = 0;
-    base::StringToInt(ReadString(), &choice);
-    if (choice < 1 || static_cast<size_t>(choice) > options.size()) {
-      fprintf(stderr, "Unknown option\n");
-      continue;
-    }
-    auto& callback = options[choice - 1].callback;
-    if (callback.is_null()) {
-      // Quit
-      return;
-    }
-    callback.Run();
-    run_loop.Run();
+  if (NeedsManualSignin()) {
+    options.insert(
+        options.begin(),
+        {"SignInGaia", base::BindRepeating(&FtlServicesPlayground::SignInGaia,
+                                           weak_factory_.GetWeakPtr())});
   }
+
+  test::RunCommandOptionsLoop(options);
 }
 
 void FtlServicesPlayground::ResetServices(base::OnceClosure on_done) {
@@ -207,44 +126,6 @@ void FtlServicesPlayground::ResetServices(base::OnceClosure on_done) {
   } else {
     SignInGaia(std::move(on_done));
   }
-}
-
-void FtlServicesPlayground::AuthenticateAndResetServices(
-    base::OnceClosure on_done) {
-  static const std::string read_auth_code_prompt = base::StringPrintf(
-      "Please authenticate at:\n\n"
-      "  %s\n\n"
-      "Enter the auth code: ",
-      TestOAuthTokenGetterFactory::GetAuthorizationCodeUri().c_str());
-  std::string auth_code = ReadStringFromCommandLineOrStdin(
-      kSwitchNameAuthCode, read_auth_code_prompt);
-
-  // Make sure we don't try to reuse an auth code.
-  base::CommandLine::ForCurrentProcess()->RemoveSwitch(kSwitchNameAuthCode);
-
-  // We can't get back the refresh token since we have first-party scope, so
-  // we are not trying to store it.
-  token_getter_ = token_getter_factory_->CreateFromIntermediateCredentials(
-      auth_code,
-      base::DoNothing::Repeatedly<const std::string&, const std::string&>());
-
-  // Get the access token so that we can reuse it for next time.
-  base::OnceClosure on_access_token_done =
-      base::BindOnce(&FtlServicesPlayground::ResetServices,
-                     weak_factory_.GetWeakPtr(), std::move(on_done));
-  token_getter_->CallWithToken(base::BindOnce(
-      &FtlServicesPlayground::OnAccessToken, weak_factory_.GetWeakPtr(),
-      std::move(on_access_token_done)));
-}
-
-void FtlServicesPlayground::OnAccessToken(base::OnceClosure on_done,
-                                          OAuthTokenGetter::Status status,
-                                          const std::string& user_email,
-                                          const std::string& access_token) {
-  DCHECK(status == OAuthTokenGetter::Status::SUCCESS);
-  VLOG(0) << "Received access_token: " << access_token;
-  storage_->StoreAccessToken(access_token);
-  std::move(on_done).Run();
 }
 
 void FtlServicesPlayground::GetIceServer(base::OnceClosure on_done) {
@@ -334,10 +215,10 @@ void FtlServicesPlayground::SendMessage(base::OnceClosure on_done) {
   VLOG(0) << "Running SendMessage...";
 
   printf("Receiver ID: ");
-  std::string receiver_id = ReadString();
+  std::string receiver_id = test::ReadString();
 
   printf("Receiver registration ID (base64, optional): ");
-  std::string registration_id_base64 = ReadString();
+  std::string registration_id_base64 = test::ReadString();
 
   std::string registration_id;
   bool success = base::Base64Decode(registration_id_base64, &registration_id);
@@ -359,7 +240,7 @@ void FtlServicesPlayground::DoSendMessage(const std::string& receiver_id,
   }
 
   printf("Message (enter nothing to quit): ");
-  std::string message = ReadString();
+  std::string message = test::ReadString();
 
   if (message.empty()) {
     std::move(on_done).Run();
@@ -424,9 +305,9 @@ void FtlServicesPlayground::OnStartReceivingMessagesDone(
     return;
   }
   printf("Started receiving messages. Press enter to stop streaming...\n");
-  WaitForEnterKey(base::BindOnce(&FtlServicesPlayground::StopReceivingMessages,
-                                 weak_factory_.GetWeakPtr(),
-                                 std::move(on_done)));
+  test::WaitForEnterKey(
+      base::BindOnce(&FtlServicesPlayground::StopReceivingMessages,
+                     weak_factory_.GetWeakPtr(), std::move(on_done)));
 }
 
 void FtlServicesPlayground::HandleGrpcStatusError(base::OnceClosure on_done,
@@ -438,7 +319,7 @@ void FtlServicesPlayground::HandleGrpcStatusError(base::OnceClosure on_done,
           "Request is unauthenticated. You should run SignInGaia first if "
           "you haven't done so, otherwise your OAuth token might be expired. \n"
           "Request for new OAuth token? [y/N]: ");
-      std::string result = ReadString();
+      std::string result = test::ReadString();
       if (result != "y" && result != "Y") {
         std::move(on_done).Run();
         return;
@@ -446,7 +327,9 @@ void FtlServicesPlayground::HandleGrpcStatusError(base::OnceClosure on_done,
     }
     VLOG(0) << "Grpc request failed to authenticate. "
             << "Trying to reauthenticate...";
-    AuthenticateAndResetServices(std::move(on_done));
+    token_getter_->ResetWithAuthenticationFlow(
+        base::BindOnce(&FtlServicesPlayground::ResetServices,
+                       weak_factory_.GetWeakPtr(), std::move(on_done)));
     return;
   }
 

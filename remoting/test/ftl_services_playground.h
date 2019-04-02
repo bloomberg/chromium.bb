@@ -19,10 +19,11 @@
 namespace remoting {
 
 namespace test {
-class TestTokenStorage;
-}  // namespace test
 
-class TestOAuthTokenGetterFactory;
+class TestOAuthTokenGetter;
+class TestTokenStorage;
+
+}  // namespace test
 
 class FtlServicesPlayground {
  public:
@@ -41,11 +42,6 @@ class FtlServicesPlayground {
 
   void StartLoop();
   void ResetServices(base::OnceClosure on_done);
-  void AuthenticateAndResetServices(base::OnceClosure on_done);
-  void OnAccessToken(base::OnceClosure on_done,
-                     OAuthTokenGetter::Status status,
-                     const std::string& user_email,
-                     const std::string& access_token);
 
   void GetIceServer(base::OnceClosure on_done);
   void OnGetIceServerResponse(base::OnceClosure on_done,
@@ -77,8 +73,7 @@ class FtlServicesPlayground {
                              const grpc::Status& status);
 
   std::unique_ptr<test::TestTokenStorage> storage_;
-  std::unique_ptr<TestOAuthTokenGetterFactory> token_getter_factory_;
-  std::unique_ptr<OAuthTokenGetter> token_getter_;
+  std::unique_ptr<test::TestOAuthTokenGetter> token_getter_;
   std::unique_ptr<GrpcAuthenticatedExecutor> executor_;
 
   std::unique_ptr<FtlRegistrationManager> registration_manager_;

@@ -12,6 +12,8 @@ static_library("test_support") {
     "access_token_fetcher.h",
     "chromoting_test_driver_environment.cc",
     "chromoting_test_driver_environment.h",
+    "cli_util.cc",
+    "cli_util.h",
     "connection_setup_info.cc",
     "connection_setup_info.h",
     "connection_time_observer.cc",
@@ -49,6 +51,8 @@ static_library("test_support") {
     "scroll_frame_generator.h",
     "test_chromoting_client.cc",
     "test_chromoting_client.h",
+    "test_oauth_token_getter.cc",
+    "test_oauth_token_getter.h",
     "test_token_storage.cc",
     "test_token_storage.h",
     "test_video_renderer.cc",
@@ -176,19 +180,16 @@ if (enable_remoting_host && !is_android && !is_chromeos) {
   }
 }
 
-# A binary for testing and fiddling the FTL signaling process.
+# A binary for testing and fiddling FTL services.
 executable("ftl_services_playground") {
   testonly = true
   sources = [
     "ftl_services_playground.cc",
     "ftl_services_playground.h",
     "ftl_services_playground_main.cc",
-    "test_oauth_token_factory.cc",
-    "test_oauth_token_factory.h",
-    "test_token_storage.cc",
-    "test_token_storage.h",
   ]
   deps = [
+    ":test_support",
     "//google_apis",
     "//mojo/core/embedder",
     "//remoting/base",
