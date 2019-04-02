@@ -314,6 +314,13 @@ class FlexLayoutAlgorithm {
 
   bool ShouldApplyMinSizeAutoForChild(const LayoutBox& child) const;
 
+  // Returns the intrinsic size of this box in the block direction. Call this
+  // after all flex lines have been created and processed (ie. after the
+  // ComputeLineItemsPosition stage).
+  // For a column flexbox, this will return the max across all flex lines of
+  // the length of the line, minus any added spacing due to justification.
+  // For row flexboxes, this returns the bottom (block axis) of the last flex
+  // line. In both cases, border/padding is not included.
   LayoutUnit IntrinsicContentBlockSize() const;
 
   static TransformedWritingMode GetTransformedWritingMode(const ComputedStyle&);
