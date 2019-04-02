@@ -251,9 +251,6 @@ bool DrawAndScaleImage(const DrawImage& draw_image,
     }
     return paint_image.Decode(pixmap.writable_addr(), &info, color_space,
                               draw_image.frame_index(), client_id);
-
-    MSAN_CHECK_MEM_IS_INITIALIZED(target_pixmap->addr(),
-                                  target_pixmap->computeByteSize());
   }
 
   // If we can't decode/scale directly, we will handle this in 2 steps.
@@ -306,9 +303,6 @@ bool DrawAndScaleImage(const DrawImage& draw_image,
   if (initial_decode_failed)
     return false;
 
-  MSAN_CHECK_MEM_IS_INITIALIZED(decode_bitmap.getPixels(),
-                                decode_bitmap.computeByteSize());
-
   if (decode_to_f16_using_n32_intermediate) {
     return ImageDecodeCacheUtils::ScaleToHalfFloatPixmapUsingN32Intermediate(
         decode_pixmap, &pixmap, filter_quality);
@@ -346,13 +340,7 @@ bool DrawAndScaleImage(const DrawImage& draw_image,
         unscaled_pixmap_v.scalePixels(*pixmap_v, filter_quality);
     return all_planes_scaled_successfully;
   }
-
-  if (decode_pixmap.scalePixels(pixmap, filter_quality)) {
-    MSAN_CHECK_MEM_IS_INITIALIZED(target_pixmap->addr(),
-                                  target_pixmap->computeByteSize());
-    return true;
-  }
-  return false;
+  return decode_pixmap.scalePixels(pixmap, filter_quality);
 }
 
 // Takes ownership of the backing texture of an SkImage. This allows us to
