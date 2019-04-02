@@ -355,7 +355,7 @@ ModelType GetModelType(const sync_pb::SyncEntity& sync_entity) {
   // This is an item of a datatype we can't understand. Maybe it's
   // from the future?  Either we mis-encoded the object, or the
   // server sent us entries it shouldn't have.
-  NOTREACHED() << "Unknown datatype in sync proto.";
+  DVLOG(1) << "Unknown datatype in sync proto.";
   return UNSPECIFIED;
 }
 
