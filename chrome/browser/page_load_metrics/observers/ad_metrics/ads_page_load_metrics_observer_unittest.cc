@@ -714,6 +714,37 @@ TEST_F(AdsPageLoadMetricsObserverTest, FilterAds_DoNotLogMetrics) {
                  0u /* non_ad_cached_kb */, 0u /* non_ad_uncached_kb */);
 }
 
+// Tests that main frame ad bytes are recorded correctly.
+TEST_F(AdsPageLoadMetricsObserverTest, MainFrameAdBytesRecorded) {
+  NavigateMainFrame(kNonAdUrl);
+
+  ResourceDataUpdate(main_rfh(), ResourceCached::NOT_CACHED, 10,
+                     "" /* mime_type */, true /* is_ad_resource */);
+  ResourceDataUpdate(main_rfh(), ResourceCached::CACHED, 10, "" /* mime_type */,
+                     true /* is_ad_resource */);
+
+  RenderFrameHost* subframe =
+      RenderFrameHostTester::For(main_rfh())->AppendChild("foo");
+  std::unique_ptr<NavigationSimulator> simulator =
+      NavigationSimulator::CreateRendererInitiated(GURL(kDefaultDisallowedUrl),
+                                                   subframe);
+  ResourceDataUpdate(subframe, ResourceCached::NOT_CACHED, 10,
+                     "" /* mime_type */, true /* is_ad_resource */);
+  ResourceDataUpdate(subframe, ResourceCached::CACHED, 10, "" /* mime_type */,
+                     true /* is_ad_resource */);
+  simulator->Commit();
+
+  NavigateMainFrame(kNonAdUrl);
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("Bytes.MainFrame.Ads.Total"), 20, 1);
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("Bytes.MainFrame.Ads.Network"), 10, 1);
+
+  // Verify page total for network bytes.
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("Resources.Bytes.Ads2"), 20, 1);
+}
+
 // UKM metrics for ad page load are recorded correctly.
 TEST_F(AdsPageLoadMetricsObserverTest, AdPageLoadUKM) {
   ukm::TestAutoSetUkmRecorder ukm_recorder;

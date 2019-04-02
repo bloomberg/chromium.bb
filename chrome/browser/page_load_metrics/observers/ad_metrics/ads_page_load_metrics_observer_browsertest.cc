@@ -625,8 +625,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   histogram_tester.ExpectBucketCount(
       "PageLoad.Clients.Ads.Bytes.FullPage.Network", 5, 1);
   // We have received 4 KB of ads and 1 KB of mainframe ads.
-  histogram_tester.ExpectBucketCount("PageLoad.Clients.Ads.Resources.Bytes.Ads",
-                                     4, 1);
+  histogram_tester.ExpectBucketCount(
+      "PageLoad.Clients.Ads.Resources.Bytes.Ads2", 4, 1);
   histogram_tester.ExpectBucketCount(
       "PageLoad.Clients.Ads.Bytes.MainFrame.Ads.Total", 1, 1);
 
