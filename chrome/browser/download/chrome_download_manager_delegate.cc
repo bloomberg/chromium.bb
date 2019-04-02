@@ -242,12 +242,6 @@ using CanDownloadCallback =
     base::OnceCallback<void(bool /* storage permission granted */,
                             bool /*allow*/)>;
 
-// Remove this function once DownloadRequestLimiter::Callback() is declared as a
-// OnceCallback
-void CheckDownloadComplete(CanDownloadCallback can_download_cb, bool allow) {
-  std::move(can_download_cb).Run(true, allow);
-}
-
 void CheckCanDownload(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const GURL& url,
@@ -256,9 +250,8 @@ void CheckCanDownload(
   DownloadRequestLimiter* limiter =
       g_browser_process->download_request_limiter();
   if (limiter) {
-    DownloadRequestLimiter::Callback cb =
-        base::Bind(&CheckDownloadComplete, base::Passed(&can_download_cb));
-    limiter->CanDownload(web_contents_getter, url, request_method, cb);
+    limiter->CanDownload(web_contents_getter, url, request_method,
+                         base::BindOnce(std::move(can_download_cb), true));
   }
 }
 

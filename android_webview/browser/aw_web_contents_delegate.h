@@ -37,7 +37,7 @@ class AwWebContentsDelegate
                  bool final_update) override;
   void CanDownload(const GURL& url,
                    const std::string& request_method,
-                   const base::Callback<void(bool)>& callback) override;
+                   base::OnceCallback<void(bool)> callback) override;
   void RunFileChooser(content::RenderFrameHost* render_frame_host,
                       std::unique_ptr<content::FileSelectListener> listener,
                       const blink::mojom::FileChooserParams& params) override;

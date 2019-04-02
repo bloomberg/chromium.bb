@@ -238,7 +238,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
                                   blink::MediaStreamType type) final;
   void CanDownload(const GURL& url,
                    const std::string& request_method,
-                   const base::Callback<void(bool)>& callback) final;
+                   base::OnceCallback<void(bool)> callback) final;
   content::JavaScriptDialogManager* GetJavaScriptDialogManager(
       content::WebContents* source) final;
   void AddNewContents(content::WebContents* source,

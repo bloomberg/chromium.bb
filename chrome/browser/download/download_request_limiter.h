@@ -78,7 +78,7 @@ class DownloadRequestLimiter
 
   // The callback from CanDownloadOnIOThread. This is invoked on the io thread.
   // The boolean parameter indicates whether or not the download is allowed.
-  typedef base::Callback<void(bool /*allow*/)> Callback;
+  using Callback = base::OnceCallback<void(bool /*allow*/)>;
 
   // TabDownloadState maintains the download state for a particular tab.
   // TabDownloadState prompts the user with an infobar as necessary.
@@ -132,8 +132,7 @@ class DownloadRequestLimiter
     // Asks the user if they really want to allow the download.
     // See description above CanDownloadOnIOThread for details on lifetime of
     // callback.
-    void PromptUserForDownload(
-        const DownloadRequestLimiter::Callback& callback);
+    void PromptUserForDownload(DownloadRequestLimiter::Callback callback);
 
     // Invoked from DownloadRequestDialogDelegate. Notifies the delegates and
     // changes the status appropriately. Virtual for testing.
@@ -229,7 +228,7 @@ class DownloadRequestLimiter
                        web_contents_getter,
                    const GURL& url,
                    const std::string& request_method,
-                   const Callback& callback);
+                   Callback callback);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DownloadTest, DownloadResourceThrottleCancels);
@@ -262,14 +261,14 @@ class DownloadRequestLimiter
   // potentially prompting the user.
   void CanDownloadImpl(content::WebContents* originating_contents,
                        const std::string& request_method,
-                       const Callback& callback);
+                       Callback callback);
 
   // Invoked when decision to download has been made.
   void OnCanDownloadDecided(
       const content::ResourceRequestInfo::WebContentsGetter&
           web_contents_getter,
       const std::string& request_method,
-      const Callback& orig_callback,
+      Callback orig_callback,
       bool allow);
 
   // Removes the specified TabDownloadState from the internal map and deletes
@@ -281,7 +280,10 @@ class DownloadRequestLimiter
       content::WebContents* contents);
 
   // Sets the callback for tests to know the result of OnCanDownloadDecided().
-  void SetOnCanDownloadDecidedCallbackForTesting(Callback callback);
+  using CanDownloadDecidedCallback =
+      base::RepeatingCallback<void(bool /*allow*/)>;
+  void SetOnCanDownloadDecidedCallbackForTesting(
+      CanDownloadDecidedCallback callback);
 
   // TODO(bauerb): Change this to use WebContentsUserData.
   // Maps from tab to download state. The download state for a tab only exists
@@ -291,7 +293,7 @@ class DownloadRequestLimiter
   typedef std::map<content::WebContents*, TabDownloadState*> StateMap;
   StateMap state_map_;
 
-  Callback on_can_download_decided_callback_;
+  CanDownloadDecidedCallback on_can_download_decided_callback_;
 
   // Weak ptr factory used when |CanDownload| asks the delegate asynchronously
   // about the download.
