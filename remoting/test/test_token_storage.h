@@ -27,6 +27,9 @@ class TestTokenStorage : public FtlDeviceIdProvider::TokenStorage {
   virtual std::string FetchRefreshToken() = 0;
   virtual bool StoreRefreshToken(const std::string& refresh_token) = 0;
 
+  virtual std::string FetchUserEmail() = 0;
+  virtual bool StoreUserEmail(const std::string& user_email) = 0;
+
   virtual std::string FetchAccessToken() = 0;
   virtual bool StoreAccessToken(const std::string& access_token) = 0;
 
