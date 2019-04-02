@@ -92,7 +92,7 @@ class CORE_EXPORT HTMLIFrameElement final
   bool allow_fullscreen_;
   bool allow_payment_request_;
   bool collapsed_by_client_;
-  TraceWrapperMember<HTMLIFrameElementSandbox> sandbox_;
+  Member<HTMLIFrameElementSandbox> sandbox_;
   Member<DOMFeaturePolicy> policy_;
   // This represents a subset of sandbox flags set through 'sandbox' attribute
   // that will be converted to feature policies as part of the container

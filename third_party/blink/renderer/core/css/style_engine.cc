@@ -134,8 +134,8 @@ TreeScopeStyleSheetCollection* StyleEngine::StyleSheetCollectionFor(
   return it->value.Get();
 }
 
-const HeapVector<TraceWrapperMember<StyleSheet>>&
-StyleEngine::StyleSheetsForStyleSheetList(TreeScope& tree_scope) {
+const HeapVector<Member<StyleSheet>>& StyleEngine::StyleSheetsForStyleSheetList(
+    TreeScope& tree_scope) {
   DCHECK(Master());
   TreeScopeStyleSheetCollection& collection =
       EnsureStyleSheetCollectionFor(tree_scope);
@@ -157,10 +157,10 @@ StyleEngine::StyleSheetsForStyleSheetList(TreeScope& tree_scope) {
 void StyleEngine::InjectSheet(const StyleSheetKey& key,
                               StyleSheetContents* sheet,
                               WebDocument::CSSOrigin origin) {
-  HeapVector<std::pair<StyleSheetKey, TraceWrapperMember<CSSStyleSheet>>>&
-      injected_style_sheets = origin == WebDocument::kUserOrigin
-                                  ? injected_user_style_sheets_
-                                  : injected_author_style_sheets_;
+  HeapVector<std::pair<StyleSheetKey, Member<CSSStyleSheet>>>&
+      injected_style_sheets =
+          origin == WebDocument::kUserOrigin ? injected_user_style_sheets_
+                                             : injected_author_style_sheets_;
   injected_style_sheets.push_back(
       std::make_pair(key, CSSStyleSheet::Create(sheet, *document_)));
   if (origin == WebDocument::kUserOrigin)
@@ -171,10 +171,10 @@ void StyleEngine::InjectSheet(const StyleSheetKey& key,
 
 void StyleEngine::RemoveInjectedSheet(const StyleSheetKey& key,
                                       WebDocument::CSSOrigin origin) {
-  HeapVector<std::pair<StyleSheetKey, TraceWrapperMember<CSSStyleSheet>>>&
-      injected_style_sheets = origin == WebDocument::kUserOrigin
-                                  ? injected_user_style_sheets_
-                                  : injected_author_style_sheets_;
+  HeapVector<std::pair<StyleSheetKey, Member<CSSStyleSheet>>>&
+      injected_style_sheets =
+          origin == WebDocument::kUserOrigin ? injected_user_style_sheets_
+                                             : injected_author_style_sheets_;
   // Remove the last sheet that matches.
   const auto& it = std::find_if(injected_style_sheets.rbegin(),
                                 injected_style_sheets.rend(),

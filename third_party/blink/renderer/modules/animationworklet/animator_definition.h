@@ -7,7 +7,6 @@
 
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -41,9 +40,9 @@ class MODULES_EXPORT AnimatorDefinition final
  private:
   // This object keeps the constructor function, animate, and state function
   // alive. It participates in wrapper tracing as it holds onto V8 wrappers.
-  TraceWrapperMember<V8AnimatorConstructor> constructor_;
-  TraceWrapperMember<V8AnimateCallback> animate_;
-  TraceWrapperMember<V8Function> state_;
+  Member<V8AnimatorConstructor> constructor_;
+  Member<V8AnimateCallback> animate_;
+  Member<V8Function> state_;
 };
 
 }  // namespace blink

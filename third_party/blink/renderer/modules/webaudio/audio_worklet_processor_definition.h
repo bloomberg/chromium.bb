@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_param_descriptor.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
@@ -69,8 +68,8 @@ class MODULES_EXPORT AudioWorkletProcessorDefinition final
 
   // The definition is per global scope. The active instance of
   // |AudioProcessorWorklet| should be passed into these to perform JS function.
-  TraceWrapperMember<V8BlinkAudioWorkletProcessorConstructor> constructor_;
-  TraceWrapperMember<V8BlinkAudioWorkletProcessCallback> process_;
+  Member<V8BlinkAudioWorkletProcessorConstructor> constructor_;
+  Member<V8BlinkAudioWorkletProcessCallback> process_;
 
   HeapVector<Member<AudioParamDescriptor>> audio_param_descriptors_;
 };

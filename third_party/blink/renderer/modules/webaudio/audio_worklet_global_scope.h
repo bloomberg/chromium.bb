@@ -113,11 +113,9 @@ class MODULES_EXPORT AudioWorkletGlobalScope final : public WorkletGlobalScope {
  private:
   bool is_closing_ = false;
 
-  typedef HeapHashMap<String,
-                      TraceWrapperMember<AudioWorkletProcessorDefinition>>
+  typedef HeapHashMap<String, Member<AudioWorkletProcessorDefinition>>
       ProcessorDefinitionMap;
-  typedef HeapVector<TraceWrapperMember<AudioWorkletProcessor>>
-      ProcessorInstances;
+  typedef HeapVector<Member<AudioWorkletProcessor>> ProcessorInstances;
 
   ProcessorDefinitionMap processor_definition_map_;
   ProcessorInstances processor_instances_;

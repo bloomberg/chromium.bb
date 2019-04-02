@@ -65,7 +65,6 @@
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -1673,15 +1672,15 @@ class CORE_EXPORT Document : public ContainerNode,
   PendingSheetLayout pending_sheet_layout_;
 
   Member<LocalFrame> frame_;
-  TraceWrapperMember<LocalDOMWindow> dom_window_;
-  TraceWrapperMember<HTMLImportsController> imports_controller_;
+  Member<LocalDOMWindow> dom_window_;
+  Member<HTMLImportsController> imports_controller_;
 
   // The document of creator browsing context for frame-less documents such as
   // documents created by DOMParser and DOMImplementation.
   WeakMember<Document> context_document_;
 
   Member<ResourceFetcher> fetcher_;
-  TraceWrapperMember<DocumentParser> parser_;
+  Member<DocumentParser> parser_;
   Member<ContextFeatures> context_features_;
 
   bool well_formed_;
@@ -1706,7 +1705,7 @@ class CORE_EXPORT Document : public ContainerNode,
   AtomicString mime_type_;
 
   Member<DocumentType> doc_type_;
-  TraceWrapperMember<DOMImplementation> implementation_;
+  Member<DOMImplementation> implementation_;
 
   Member<CSSStyleSheet> elem_sheet_;
 
@@ -1754,8 +1753,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   MutationObserverOptions mutation_observer_types_;
 
-  TraceWrapperMember<StyleEngine> style_engine_;
-  TraceWrapperMember<StyleSheetList> style_sheet_list_;
+  Member<StyleEngine> style_engine_;
+  Member<StyleSheetList> style_sheet_list_;
 
   Member<FormController> form_controller_;
 
@@ -1803,7 +1802,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   double start_time_;
 
-  TraceWrapperMember<ScriptRunner> script_runner_;
+  Member<ScriptRunner> script_runner_;
 
   HeapVector<Member<ScriptElementBase>> current_script_stack_;
 
@@ -1866,9 +1865,8 @@ class CORE_EXPORT Document : public ContainerNode,
   bool write_recursion_is_too_deep_;
   unsigned write_recursion_depth_;
 
-  TraceWrapperMember<ScriptedAnimationController>
-      scripted_animation_controller_;
-  TraceWrapperMember<ScriptedIdleTaskController> scripted_idle_task_controller_;
+  Member<ScriptedAnimationController> scripted_animation_controller_;
+  Member<ScriptedIdleTaskController> scripted_idle_task_controller_;
   Member<TextAutosizer> text_autosizer_;
 
   Member<V0CustomElementRegistrationContext> registration_context_;
@@ -1904,8 +1902,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   Member<CanvasFontCache> canvas_font_cache_;
 
-  TraceWrapperMember<IntersectionObserverController>
-      intersection_observer_controller_;
+  Member<IntersectionObserverController> intersection_observer_controller_;
   Member<ResizeObserverController> resize_observer_controller_;
 
   int node_count_;

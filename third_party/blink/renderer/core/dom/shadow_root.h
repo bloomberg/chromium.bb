@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
@@ -182,7 +181,7 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   }
   void Distribute();
 
-  TraceWrapperMember<StyleSheetList> style_sheet_list_;
+  Member<StyleSheetList> style_sheet_list_;
   Member<SlotAssignment> slot_assignment_;
   Member<ShadowRootV0> shadow_root_v0_;
   unsigned child_shadow_root_count_ : 16;

@@ -84,7 +84,7 @@ class HTMLImportsController final
                                HTMLImport* parent,
                                HTMLImportChildClient*);
 
-  TraceWrapperMember<HTMLImportTreeRoot> root_;
+  Member<HTMLImportTreeRoot> root_;
   using LoaderList = HeapVector<Member<HTMLImportLoader>>;
   LoaderList loaders_;
 };

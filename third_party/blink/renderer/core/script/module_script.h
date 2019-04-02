@@ -135,7 +135,7 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
   //   Document -> ScriptRunner -> ScriptLoader -> ModulePendingScript
   //   -> ModulePendingScriptTreeClient -> ModuleScript.
   // All the classes/references on the graphs above should be
-  // TraceWrapperMember<>/etc.,
+  // Member<>/etc.,
   //
   // A parse error and an error to rethrow belong to a script, not to a
   // |parse_error_| and |error_to_rethrow_| should belong to a script (i.e.

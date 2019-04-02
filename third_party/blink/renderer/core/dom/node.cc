@@ -2364,8 +2364,8 @@ void Node::DidMoveToNewDocument(Document& old_document) {
     GetDocument().GetFrame()->GetEventHandlerRegistry().DidMoveIntoPage(*this);
   }
 
-  if (const HeapVector<TraceWrapperMember<MutationObserverRegistration>>*
-          registry = MutationObserverRegistry()) {
+  if (const HeapVector<Member<MutationObserverRegistration>>* registry =
+          MutationObserverRegistry()) {
     for (const auto& registration : *registry) {
       GetDocument().AddMutationObserverTypes(registration->MutationTypes());
     }
@@ -2420,7 +2420,7 @@ void Node::RemoveAllEventListenersRecursively() {
 }
 
 using EventTargetDataMap =
-    HeapHashMap<WeakMember<Node>, TraceWrapperMember<EventTargetData>>;
+    HeapHashMap<WeakMember<Node>, Member<EventTargetData>>;
 static EventTargetDataMap& GetEventTargetDataMap() {
   DEFINE_STATIC_LOCAL(Persistent<EventTargetDataMap>, map,
                       (MakeGarbageCollected<EventTargetDataMap>()));
@@ -2441,7 +2441,7 @@ EventTargetData& Node::EnsureEventTargetData() {
   return *data;
 }
 
-const HeapVector<TraceWrapperMember<MutationObserverRegistration>>*
+const HeapVector<Member<MutationObserverRegistration>>*
 Node::MutationObserverRegistry() {
   if (!HasRareData())
     return nullptr;
@@ -2451,7 +2451,7 @@ Node::MutationObserverRegistry() {
   return &data->Registry();
 }
 
-const HeapHashSet<TraceWrapperMember<MutationObserverRegistration>>*
+const HeapHashSet<Member<MutationObserverRegistration>>*
 Node::TransientMutationObserverRegistry() {
   if (!HasRareData())
     return nullptr;
@@ -2532,7 +2532,7 @@ void Node::RegisterMutationObserver(
 
 void Node::UnregisterMutationObserver(
     MutationObserverRegistration* registration) {
-  const HeapVector<TraceWrapperMember<MutationObserverRegistration>>* registry =
+  const HeapVector<Member<MutationObserverRegistration>>* registry =
       MutationObserverRegistry();
   DCHECK(registry);
   if (!registry)
@@ -2554,8 +2554,8 @@ void Node::RegisterTransientMutationObserver(
 
 void Node::UnregisterTransientMutationObserver(
     MutationObserverRegistration* registration) {
-  const HeapHashSet<TraceWrapperMember<MutationObserverRegistration>>*
-      transient_registry = TransientMutationObserverRegistry();
+  const HeapHashSet<Member<MutationObserverRegistration>>* transient_registry =
+      TransientMutationObserverRegistry();
   DCHECK(transient_registry);
   if (!transient_registry)
     return;
@@ -2570,13 +2570,13 @@ void Node::NotifyMutationObserversNodeWillDetach() {
 
   ScriptForbiddenScope forbid_script_during_raw_iteration;
   for (Node* node = parentNode(); node; node = node->parentNode()) {
-    if (const HeapVector<TraceWrapperMember<MutationObserverRegistration>>*
-            registry = node->MutationObserverRegistry()) {
+    if (const HeapVector<Member<MutationObserverRegistration>>* registry =
+            node->MutationObserverRegistry()) {
       for (const auto& registration : *registry)
         registration->ObservedSubtreeNodeWillDetach(*this);
     }
 
-    if (const HeapHashSet<TraceWrapperMember<MutationObserverRegistration>>*
+    if (const HeapHashSet<Member<MutationObserverRegistration>>*
             transient_registry = node->TransientMutationObserverRegistry()) {
       for (auto& registration : *transient_registry)
         registration->ObservedSubtreeNodeWillDetach(*this);
@@ -3082,8 +3082,8 @@ void Node::Trace(Visitor* visitor) {
   // rareData() and data_.node_layout_data_ share their storage. We have to
   // trace only one of them.
   if (HasRareData())
-    visitor->TraceWithWrappers(RareData());
-  visitor->TraceWithWrappers(GetEventTargetData());
+    visitor->Trace(RareData());
+  visitor->Trace(GetEventTargetData());
   visitor->Trace(tree_scope_);
   EventTarget::Trace(visitor);
 }

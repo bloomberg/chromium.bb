@@ -63,7 +63,7 @@ class LockManager final : public ScriptWrappable,
   void RemovePendingRequest(LockRequestImpl*);
   bool IsPendingRequest(LockRequestImpl*);
 
-  HeapHashSet<TraceWrapperMember<LockRequestImpl>> pending_requests_;
+  HeapHashSet<Member<LockRequestImpl>> pending_requests_;
   HeapHashSet<Member<Lock>> held_locks_;
 
   mojom::blink::LockManagerPtr service_;

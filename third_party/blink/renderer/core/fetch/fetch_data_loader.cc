@@ -108,7 +108,7 @@ class FetchDataLoaderAsBlobHandle final : public FetchDataLoader,
   }
 
  private:
-  TraceWrapperMember<BytesConsumer> consumer_;
+  Member<BytesConsumer> consumer_;
   Member<FetchDataLoader::Client> client_;
 
   String mime_type_;
@@ -253,7 +253,7 @@ class FetchDataLoaderAsArrayBuffer final : public FetchDataLoader,
     return true;
   }
 
-  TraceWrapperMember<BytesConsumer> consumer_;
+  Member<BytesConsumer> consumer_;
   Member<FetchDataLoader::Client> client_;
 
   unsigned bytes_used_;
@@ -310,7 +310,7 @@ class FetchDataLoaderAsFailure final : public FetchDataLoader,
   }
 
  private:
-  TraceWrapperMember<BytesConsumer> consumer_;
+  Member<BytesConsumer> consumer_;
   Member<FetchDataLoader::Client> client_;
 };
 
@@ -480,7 +480,7 @@ class FetchDataLoaderAsFormData final : public FetchDataLoader,
     std::unique_ptr<TextResourceDecoder> string_decoder_;
   };
 
-  TraceWrapperMember<BytesConsumer> consumer_;
+  Member<BytesConsumer> consumer_;
   Member<FetchDataLoader::Client> client_;
   Member<FormData> form_data_;
   Member<MultipartParser> multipart_parser_;
@@ -548,7 +548,7 @@ class FetchDataLoaderAsString final : public FetchDataLoader,
   }
 
  private:
-  TraceWrapperMember<BytesConsumer> consumer_;
+  Member<BytesConsumer> consumer_;
   Member<FetchDataLoader::Client> client_;
 
   std::unique_ptr<TextResourceDecoder> decoder_;
@@ -692,7 +692,7 @@ class FetchDataLoaderAsDataPipe final : public FetchDataLoader,
 
   void Dispose() { data_pipe_watcher_.Cancel(); }
 
-  TraceWrapperMember<BytesConsumer> consumer_;
+  Member<BytesConsumer> consumer_;
   Member<FetchDataLoader::Client> client_;
 
   mojo::ScopedDataPipeProducerHandle out_data_pipe_;

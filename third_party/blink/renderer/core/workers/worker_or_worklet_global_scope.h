@@ -193,7 +193,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
   // LocalDOMWindow::modulator_ workaround equivalent.
   // TODO(kouhei): Remove this.
-  TraceWrapperMember<Modulator> modulator_;
+  Member<Modulator> modulator_;
 };
 
 template <>

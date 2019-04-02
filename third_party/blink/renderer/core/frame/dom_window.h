@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -153,7 +152,7 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
   // of this object.
   const Member<WindowProxyManager> window_proxy_manager_;
   Member<InputDeviceCapabilitiesConstants> input_capabilities_;
-  mutable TraceWrapperMember<Location> location_;
+  mutable Member<Location> location_;
 
   // Set to true when close() has been called. Needed for
   // |window.closed| determinism; having it return 'true'

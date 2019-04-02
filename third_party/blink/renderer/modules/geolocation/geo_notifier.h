@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_position_error_callback.h"
 #include "third_party/blink/renderer/modules/geolocation/position_options.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/timer.h"
 
@@ -96,8 +95,8 @@ class GeoNotifier final : public GarbageCollectedFinalized<GeoNotifier>,
   void TimerFired(TimerBase*);
 
   Member<Geolocation> geolocation_;
-  TraceWrapperMember<V8PositionCallback> success_callback_;
-  TraceWrapperMember<V8PositionErrorCallback> error_callback_;
+  Member<V8PositionCallback> success_callback_;
+  Member<V8PositionErrorCallback> error_callback_;
   Member<const PositionOptions> options_;
   Member<Timer> timer_;
   Member<PositionError> fatal_error_;

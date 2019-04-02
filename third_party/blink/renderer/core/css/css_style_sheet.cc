@@ -69,7 +69,7 @@ class StyleSheetCSSRuleList final : public CSSRuleList {
 
   CSSStyleSheet* GetStyleSheet() const override { return style_sheet_; }
 
-  TraceWrapperMember<CSSStyleSheet> style_sheet_;
+  Member<CSSStyleSheet> style_sheet_;
 };
 
 #if DCHECK_IS_ON()
@@ -308,7 +308,7 @@ CSSRule* CSSStyleSheet::item(unsigned index) {
     child_rule_cssom_wrappers_.Grow(rule_count);
   DCHECK_EQ(child_rule_cssom_wrappers_.size(), rule_count);
 
-  TraceWrapperMember<CSSRule>& css_rule = child_rule_cssom_wrappers_[index];
+  Member<CSSRule>& css_rule = child_rule_cssom_wrappers_[index];
   if (!css_rule)
     css_rule = contents_->RuleAt(index)->CreateCSSOMWrapper(this);
   return css_rule.Get();

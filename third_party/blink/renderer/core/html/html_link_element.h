@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/core/html/link_style.h"
 #include "third_party/blink/renderer/core/html/rel_list.h"
 #include "third_party/blink/renderer/core/loader/link_loader_client.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 
 namespace blink {
@@ -168,9 +167,9 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   String integrity_;
   String importance_;
   network::mojom::ReferrerPolicy referrer_policy_;
-  TraceWrapperMember<DOMTokenList> sizes_;
+  Member<DOMTokenList> sizes_;
   Vector<IntSize> icon_sizes_;
-  TraceWrapperMember<RelList> rel_list_;
+  Member<RelList> rel_list_;
   LinkRelAttribute rel_attribute_;
   String scope_;
 

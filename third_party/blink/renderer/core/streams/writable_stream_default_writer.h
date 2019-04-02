@@ -7,7 +7,6 @@
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -131,9 +130,9 @@ class WritableStreamDefaultWriter final : public ScriptWrappable {
   // |closed_promise_| and |ready_promise_| are implemented as resolvers. The
   // names come from the slots [[closedPromise]] and [[readyPromise]] in the
   // standard.
-  TraceWrapperMember<StreamPromiseResolver> closed_promise_;
-  TraceWrapperMember<WritableStreamNative> owner_writable_stream_;
-  TraceWrapperMember<StreamPromiseResolver> ready_promise_;
+  Member<StreamPromiseResolver> closed_promise_;
+  Member<WritableStreamNative> owner_writable_stream_;
+  Member<StreamPromiseResolver> ready_promise_;
 };
 
 }  // namespace blink

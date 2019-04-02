@@ -7,8 +7,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
-#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -64,10 +62,10 @@ class ReadableStreamDefaultReader : public ScriptWrappable {
   friend class ReadableStreamDefaultController;
   friend class ReadableStreamNative;
 
-  TraceWrapperMember<StreamPromiseResolver> closed_promise_;
+  Member<StreamPromiseResolver> closed_promise_;
   bool for_author_code_ = true;
-  TraceWrapperMember<ReadableStreamNative> owner_readable_stream_;
-  HeapDeque<TraceWrapperMember<StreamPromiseResolver>> read_requests_;
+  Member<ReadableStreamNative> owner_readable_stream_;
+  HeapDeque<Member<StreamPromiseResolver>> read_requests_;
 };
 
 }  // namespace blink

@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/modules/webdatabase/sql_transaction_backend.h"
 #include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_database.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"

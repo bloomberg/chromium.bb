@@ -7,7 +7,6 @@
 
 #include "third_party/blink/public/mojom/filesystem/file_writer.mojom-blink.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 
@@ -50,7 +49,7 @@ class FileSystemWriter final : public ScriptWrappable {
   mojom::blink::FileWriterPtr writer_;
 
   Member<ScriptPromiseResolver> pending_operation_;
-  TraceWrapperMember<FetchDataLoader> stream_loader_;
+  Member<FetchDataLoader> stream_loader_;
 };
 
 }  // namespace blink

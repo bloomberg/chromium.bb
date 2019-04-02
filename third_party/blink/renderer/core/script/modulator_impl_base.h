@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -99,8 +98,8 @@ class ModulatorImplBase : public Modulator {
 
   Member<ScriptState> script_state_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  TraceWrapperMember<ModuleMap> map_;
-  TraceWrapperMember<ModuleTreeLinkerRegistry> tree_linker_registry_;
+  Member<ModuleMap> map_;
+  Member<ModuleTreeLinkerRegistry> tree_linker_registry_;
   Member<ModuleRecordResolver> module_record_resolver_;
   Member<DynamicModuleResolver> dynamic_module_resolver_;
 

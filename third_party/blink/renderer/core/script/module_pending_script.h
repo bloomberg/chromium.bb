@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/core/script/pending_script.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 
@@ -41,8 +40,8 @@ class ModulePendingScriptTreeClient final : public ModuleTreeClient {
   void NotifyModuleTreeLoadFinished(ModuleScript*) override;
 
   bool finished_ = false;
-  TraceWrapperMember<ModuleScript> module_script_;
-  TraceWrapperMember<ModulePendingScript> pending_script_;
+  Member<ModuleScript> module_script_;
+  Member<ModulePendingScript> pending_script_;
 };
 
 // PendingScript for a module script
@@ -87,7 +86,7 @@ class CORE_EXPORT ModulePendingScript : public PendingScript {
 
   void CheckState() const override {}
 
-  TraceWrapperMember<ModulePendingScriptTreeClient> module_tree_client_;
+  Member<ModulePendingScriptTreeClient> module_tree_client_;
   bool ready_ = false;
   const bool is_external_;
 };

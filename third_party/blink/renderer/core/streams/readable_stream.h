@@ -19,7 +19,7 @@ class UnderlyingSourceBase;
 class MessagePort;
 
 // This is an implementation of the corresponding IDL interface.
-// Use TraceWrapperMember to hold a reference to an instance of this class.
+// Use Member to hold a reference to an instance of this class.
 class CORE_EXPORT ReadableStream : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -28,7 +28,7 @@ class CORE_EXPORT ReadableStream : public ScriptWrappable {
   // to a call to ReadableStreamDefaultReaderRead on the underlying stream.
   //
   // It has awkward garbage collection semantics: either it must be kept in a
-  // TraceWrapperMember, or the ReadableStream must outlive it.
+  // Member, or the ReadableStream must outlive it.
   //
   // This is a transitional interface while the streams C++ port is in progress.
   // Eventually callers will just use ReadableStreamDefaultReader objects

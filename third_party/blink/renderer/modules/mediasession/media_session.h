@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -73,8 +72,7 @@ class MODULES_EXPORT MediaSession final
 
   mojom::blink::MediaSessionPlaybackState playback_state_;
   Member<MediaMetadata> metadata_;
-  HeapHashMap<String, TraceWrapperMember<V8MediaSessionActionHandler>>
-      action_handlers_;
+  HeapHashMap<String, Member<V8MediaSessionActionHandler>> action_handlers_;
   mojom::blink::MediaSessionServicePtr service_;
   mojo::Binding<blink::mojom::blink::MediaSessionClient> client_binding_;
 };

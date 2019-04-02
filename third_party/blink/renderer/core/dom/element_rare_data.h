@@ -41,7 +41,6 @@
 #include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_definition.h"
 #include "third_party/blink/renderer/core/intersection_observer/element_intersection_observer_data.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
@@ -188,8 +187,8 @@ class ElementRareData : public NodeRareData {
     return *intersection_observer_data_;
   }
 
-  using ResizeObserverDataMap = HeapHashMap<TraceWrapperMember<ResizeObserver>,
-                                            Member<ResizeObservation>>;
+  using ResizeObserverDataMap =
+      HeapHashMap<Member<ResizeObserver>, Member<ResizeObservation>>;
 
   ResizeObserverDataMap* ResizeObserverData() const {
     return resize_observer_data_;
@@ -217,30 +216,29 @@ class ElementRareData : public NodeRareData {
   ScrollOffset saved_layer_scroll_offset_;
   AtomicString nonce_;
 
-  TraceWrapperMember<DatasetDOMStringMap> dataset_;
-  TraceWrapperMember<ShadowRoot> shadow_root_;
-  TraceWrapperMember<DOMTokenList> class_list_;
-  TraceWrapperMember<DOMTokenList> part_;
+  Member<DatasetDOMStringMap> dataset_;
+  Member<ShadowRoot> shadow_root_;
+  Member<DOMTokenList> class_list_;
+  Member<DOMTokenList> part_;
   std::unique_ptr<NamesMap> part_names_map_;
-  TraceWrapperMember<NamedNodeMap> attribute_map_;
-  TraceWrapperMember<AttrNodeList> attr_node_list_;
-  TraceWrapperMember<InlineCSSStyleDeclaration> cssom_wrapper_;
-  TraceWrapperMember<InlineStylePropertyMap> cssom_map_wrapper_;
+  Member<NamedNodeMap> attribute_map_;
+  Member<AttrNodeList> attr_node_list_;
+  Member<InlineCSSStyleDeclaration> cssom_wrapper_;
+  Member<InlineStylePropertyMap> cssom_map_wrapper_;
 
   Member<ElementAnimations> element_animations_;
-  TraceWrapperMember<ElementIntersectionObserverData>
-      intersection_observer_data_;
-  TraceWrapperMember<ResizeObserverDataMap> resize_observer_data_;
+  Member<ElementIntersectionObserverData> intersection_observer_data_;
+  Member<ResizeObserverDataMap> resize_observer_data_;
 
   // TODO(davaajav):remove this field when v0 custom elements are deprecated
   Member<V0CustomElementDefinition> v0_custom_element_definition_;
   Member<CustomElementDefinition> custom_element_definition_;
   AtomicString is_value_;
-  TraceWrapperMember<ElementInternals> element_internals_;
+  Member<ElementInternals> element_internals_;
 
   Member<PseudoElementData> pseudo_element_data_;
 
-  TraceWrapperMember<AccessibleNode> accessible_node_;
+  Member<AccessibleNode> accessible_node_;
 
   WeakMember<DisplayLockContext> display_lock_context_;
   bool did_attach_internals_ = false;

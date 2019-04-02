@@ -24,7 +24,6 @@
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
@@ -105,7 +104,7 @@ class TransformStreamTest : public ::testing::Test {
    private:
     // Self-reference to keep this object referenced from V8.
     ScriptValue this_as_v8_value_;
-    TraceWrapperMember<TransformStream> stream_;
+    Member<TransformStream> stream_;
   };
 
   Persistent<Holder> holder_;

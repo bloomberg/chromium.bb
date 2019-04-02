@@ -165,7 +165,7 @@ void WritableStreamDefaultController::SetUp(
     }
 
    private:
-    TraceWrapperMember<WritableStreamNative> stream_;
+    Member<WritableStreamNative> stream_;
   };
 
   class RejectPromiseFunction final : public StreamScriptFunction {
@@ -195,7 +195,7 @@ void WritableStreamDefaultController::SetUp(
     }
 
    private:
-    TraceWrapperMember<WritableStreamNative> stream_;
+    Member<WritableStreamNative> stream_;
   };
 
   StreamThenPromise(
@@ -513,7 +513,7 @@ void WritableStreamDefaultController::ProcessClose(
     }
 
    private:
-    TraceWrapperMember<WritableStreamNative> stream_;
+    Member<WritableStreamNative> stream_;
   };
 
   class RejectFunction final : public StreamScriptFunction {
@@ -535,7 +535,7 @@ void WritableStreamDefaultController::ProcessClose(
     }
 
    private:
-    TraceWrapperMember<WritableStreamNative> stream_;
+    Member<WritableStreamNative> stream_;
   };
 
   StreamThenPromise(script_state->GetContext(), sinkClosePromise,
@@ -612,8 +612,8 @@ void WritableStreamDefaultController::ProcessWrite(
     }
 
    private:
-    TraceWrapperMember<WritableStreamNative> stream_;
-    TraceWrapperMember<WritableStreamDefaultController> controller_;
+    Member<WritableStreamNative> stream_;
+    Member<WritableStreamDefaultController> controller_;
   };
 
   class RejectFunction : public StreamScriptFunction {
@@ -647,8 +647,8 @@ void WritableStreamDefaultController::ProcessWrite(
     }
 
    private:
-    TraceWrapperMember<WritableStreamNative> stream_;
-    TraceWrapperMember<WritableStreamDefaultController> controller_;
+    Member<WritableStreamNative> stream_;
+    Member<WritableStreamDefaultController> controller_;
   };
 
   StreamThenPromise(

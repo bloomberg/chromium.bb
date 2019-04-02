@@ -137,7 +137,7 @@ class MediaElementAudioSourceNode final : public AudioNode,
       UNLOCK_FUNCTION(GetMediaElementAudioSourceHandler().GetProcessLock());
 
  private:
-  TraceWrapperMember<HTMLMediaElement> media_element_;
+  Member<HTMLMediaElement> media_element_;
 };
 
 }  // namespace blink

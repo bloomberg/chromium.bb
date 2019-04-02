@@ -89,7 +89,7 @@ class CORE_EXPORT ShadowRootV0 final
  private:
   ShadowRoot& GetShadowRoot() const { return *shadow_root_; }
 
-  TraceWrapperMember<ShadowRoot> shadow_root_;
+  Member<ShadowRoot> shadow_root_;
   unsigned descendant_shadow_element_count_ = 0;
   unsigned descendant_content_element_count_ = 0;
   HeapVector<Member<V0InsertionPoint>> descendant_insertion_points_;

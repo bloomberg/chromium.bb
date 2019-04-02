@@ -144,7 +144,7 @@ class FetchRequestData final
   // FIXME: Support m_useURLCredentialsFlag;
   // FIXME: Support m_redirectCount;
   Tainting response_tainting_;
-  TraceWrapperMember<BodyStreamBuffer> buffer_;
+  Member<BodyStreamBuffer> buffer_;
   String mime_type_;
   String integrity_;
   ResourceLoadPriority priority_;

@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/streams/transform_stream.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -43,7 +42,7 @@ class TextEncoderStream final : public ScriptWrappable {
  private:
   class Transformer;
 
-  const TraceWrapperMember<TransformStream> transform_;
+  const Member<TransformStream> transform_;
 
   DISALLOW_COPY_AND_ASSIGN(TextEncoderStream);
 };

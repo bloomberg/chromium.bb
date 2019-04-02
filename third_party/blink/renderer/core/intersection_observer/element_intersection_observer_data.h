@@ -7,7 +7,6 @@
 
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -35,8 +34,7 @@ class ElementIntersectionObserverData
 
  private:
   // IntersectionObservations for which the Node owning this data is target.
-  HeapHashMap<TraceWrapperMember<IntersectionObserver>,
-              Member<IntersectionObservation>>
+  HeapHashMap<Member<IntersectionObserver>, Member<IntersectionObservation>>
       intersection_observations_;
 };
 

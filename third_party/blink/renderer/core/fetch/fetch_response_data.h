@@ -123,8 +123,8 @@ class CORE_EXPORT FetchResponseData final
   uint16_t status_;
   AtomicString status_message_;
   Member<FetchHeaderList> header_list_;
-  TraceWrapperMember<FetchResponseData> internal_response_;
-  TraceWrapperMember<BodyStreamBuffer> buffer_;
+  Member<FetchResponseData> internal_response_;
+  Member<BodyStreamBuffer> buffer_;
   String mime_type_;
   Time response_time_;
   String cache_storage_cache_name_;

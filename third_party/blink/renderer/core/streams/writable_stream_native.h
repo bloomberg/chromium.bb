@@ -7,7 +7,6 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
@@ -189,7 +188,7 @@ class CORE_EXPORT WritableStreamNative : public WritableStream {
   void Trace(Visitor*) override;
 
  private:
-  using PromiseQueue = HeapDeque<TraceWrapperMember<StreamPromiseResolver>>;
+  using PromiseQueue = HeapDeque<Member<StreamPromiseResolver>>;
 
   class PendingAbortRequest;
 
@@ -217,14 +216,13 @@ class CORE_EXPORT WritableStreamNative : public WritableStream {
   // |state_| is here out of order so it doesn't require 7 bytes of padding.
   State state_ = kWritable;
 
-  TraceWrapperMember<StreamPromiseResolver> close_request_;
-  TraceWrapperMember<StreamPromiseResolver> in_flight_write_request_;
-  TraceWrapperMember<StreamPromiseResolver> in_flight_close_request_;
-  TraceWrapperMember<PendingAbortRequest> pending_abort_request_;
+  Member<StreamPromiseResolver> close_request_;
+  Member<StreamPromiseResolver> in_flight_write_request_;
+  Member<StreamPromiseResolver> in_flight_close_request_;
+  Member<PendingAbortRequest> pending_abort_request_;
   TraceWrapperV8Reference<v8::Value> stored_error_;
-  TraceWrapperMember<WritableStreamDefaultController>
-      writable_stream_controller_;
-  TraceWrapperMember<WritableStreamDefaultWriter> writer_;
+  Member<WritableStreamDefaultController> writable_stream_controller_;
+  Member<WritableStreamDefaultWriter> writer_;
   PromiseQueue write_requests_;
 };
 

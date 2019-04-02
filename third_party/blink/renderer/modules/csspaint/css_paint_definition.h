@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -92,8 +91,8 @@ class MODULES_EXPORT CSSPaintDefinition final
   // This object keeps the class instance object, constructor function and
   // paint function alive. It participates in wrapper tracing as it holds onto
   // V8 wrappers.
-  TraceWrapperMember<V8NoArgumentConstructor> constructor_;
-  TraceWrapperMember<V8PaintCallback> paint_;
+  Member<V8NoArgumentConstructor> constructor_;
+  Member<V8PaintCallback> paint_;
 
   // At the moment there is only ever one instance of a paint class per type.
   TraceWrapperV8Reference<v8::Value> instance_;

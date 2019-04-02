@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/core/svg/properties/svg_property_info.h"
 #include "third_party/blink/renderer/core/svg/properties/svg_property_tear_off.h"
 #include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 
 namespace blink {
@@ -110,7 +109,7 @@ class SVGAnimatedPropertyBase : public GarbageCollectedMixin {
   const unsigned initial_value_storage_ : kInitialValueStorageBits;
 
   unsigned base_value_needs_synchronization_ : 1;
-  TraceWrapperMember<SVGElement> context_element_;
+  Member<SVGElement> context_element_;
   const QualifiedName& attribute_name_;
   DISALLOW_COPY_AND_ASSIGN(SVGAnimatedPropertyBase);
 };

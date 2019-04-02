@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -63,7 +62,7 @@ class PLATFORM_EXPORT BufferingBytesConsumer final
   void OnStateChange() override;
   void BufferData();
 
-  const TraceWrapperMember<BytesConsumer> bytes_consumer_;
+  const Member<BytesConsumer> bytes_consumer_;
   Deque<Vector<char>> buffer_;
   size_t offset_for_first_chunk_ = 0;
   bool is_buffering_ = true;
