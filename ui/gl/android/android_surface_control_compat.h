@@ -92,6 +92,9 @@ class GL_EXPORT SurfaceControl {
     Transaction();
     ~Transaction();
 
+    Transaction(Transaction&& other);
+    Transaction& operator=(Transaction&& other);
+
     void SetVisibility(const Surface& surface, bool show);
     void SetZOrder(const Surface& surface, int32_t z);
     void SetBuffer(const Surface& surface,
@@ -118,7 +121,10 @@ class GL_EXPORT SurfaceControl {
     void Apply();
 
    private:
+    int id_;
     ASurfaceTransaction* transaction_;
+
+    DISALLOW_COPY_AND_ASSIGN(Transaction);
   };
 };
 }  // namespace gl
