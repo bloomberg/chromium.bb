@@ -33338,6 +33338,7 @@ from previous Chrome versions.
   <int value="60023885" label="AutofillNoLocalSaveOnUnmaskSuccess:disabled"/>
   <int value="61205887" label="enable-text-input-focus-manager"/>
   <int value="61466986" label="AsyncDns:disabled"/>
+  <int value="63187126" label="DownloadsAutoResumptionNative:enabled"/>
   <int value="64942701" label="OfflinePagesSvelteConcurrentLoading:disabled"/>
   <int value="66897259" label="ModalPermissionDialogView:enabled"/>
   <int value="67639499" label="stop-loading-in-background:disabled"/>
@@ -33736,6 +33737,7 @@ from previous Chrome versions.
   <int value="730024226" label="enable-out-of-process-pdf"/>
   <int value="730750097" label="PermissionsBlacklist:disabled"/>
   <int value="731757746" label="ArcEnableDocumentsProviderInFilesApp:disabled"/>
+  <int value="731775657" label="DownloadsAutoResumptionNative:disabled"/>
   <int value="731779469" label="BlinkHeapUnifiedGarbageCollection:enabled"/>
   <int value="732703958" label="enable-gesture-tap-highlight"/>
   <int value="734900932" label="RecurrentInterstitialFeature:enabled"/>
