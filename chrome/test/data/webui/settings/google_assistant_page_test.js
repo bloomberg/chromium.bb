@@ -65,7 +65,7 @@ suite('GoogleAssistantHandler', function() {
 
   test('toggleAssistant', function() {
     Polymer.dom.flush();
-    const button = page.$$('#googleAssistantEnable');
+    const button = page.$$('#google-assistant-enable');
     assertTrue(!!button);
     assertFalse(button.disabled);
     assertFalse(button.checked);
@@ -77,12 +77,12 @@ suite('GoogleAssistantHandler', function() {
   });
 
   test('toggleAssistantContext', function() {
-    let button = page.$$('#googleAssistantContextEnable');
+    let button = page.$$('#google-assistant-context-enable');
     assertFalse(!!button);
     page.setPrefValue('settings.voice_interaction.enabled', true);
     page.setPrefValue('settings.voice_interaction.context.enabled', false);
     Polymer.dom.flush();
-    button = page.$$('#googleAssistantContextEnable');
+    button = page.$$('#google-assistant-context-enable');
     assertTrue(!!button);
     assertFalse(button.disabled);
     assertFalse(button.checked);
@@ -95,12 +95,12 @@ suite('GoogleAssistantHandler', function() {
   });
 
   test('toggleAssistantHotword', function() {
-    let button = page.$$('#googleAssistantHotwordEnable');
+    let button = page.$$('#google-assistant-hotword-enable');
     assertFalse(!!button);
     page.setPrefValue('settings.voice_interaction.enabled', true);
     page.setPrefValue('settings.voice_interaction.hotword.enabled', false);
     Polymer.dom.flush();
-    button = page.$$('#googleAssistantHotwordEnable');
+    button = page.$$('#google-assistant-hotword-enable');
     assertTrue(!!button);
     assertFalse(button.disabled);
     assertFalse(button.checked);
@@ -113,7 +113,7 @@ suite('GoogleAssistantHandler', function() {
   });
 
   test('tapOnRetrainVoiceModel', function() {
-    let button = page.$$('#retrainVoiceModel');
+    let button = page.$$('#retrain-voice-model');
     assertFalse(!!button);
     page.setPrefValue('settings.voice_interaction.enabled', true);
     page.setPrefValue('settings.voice_interaction.hotword.enabled', true);
@@ -121,7 +121,7 @@ suite('GoogleAssistantHandler', function() {
         'settings.voice_interaction.activity_control.consent_status',
         ConsentStatus.kActivityControlAccepted);
     Polymer.dom.flush();
-    button = page.$$('#retrainVoiceModel');
+    button = page.$$('#retrain-voice-model');
     assertTrue(!!button);
 
     button.click();
@@ -130,11 +130,11 @@ suite('GoogleAssistantHandler', function() {
   });
 
   test('retrainButtonVisibility', function() {
-    let button = page.$$('#retrainVoiceModel');
+    let button = page.$$('#retrain-voice-model');
     assertFalse(!!button);
     page.setPrefValue('settings.voice_interaction.enabled', true);
     Polymer.dom.flush();
-    button = page.$$('#retrainVoiceModel');
+    button = page.$$('#retrain-voice-model');
     assertFalse(!!button);
 
     // Hotword enabled.
@@ -145,7 +145,7 @@ suite('GoogleAssistantHandler', function() {
         'settings.voice_interaction.activity_control.consent_status',
         ConsentStatus.kUnauthorized);
     Polymer.dom.flush();
-    button = page.$$('#retrainVoiceModel');
+    button = page.$$('#retrain-voice-model');
     assertFalse(!!button);
 
     // Hotword disabled.
@@ -156,7 +156,7 @@ suite('GoogleAssistantHandler', function() {
         'settings.voice_interaction.activity_control.consent_status',
         ConsentStatus.kActivityControlAccepted);
     Polymer.dom.flush();
-    button = page.$$('#retrainVoiceModel');
+    button = page.$$('#retrain-voice-model');
     assertFalse(!!button);
 
     // Hotword enabled.
@@ -167,17 +167,17 @@ suite('GoogleAssistantHandler', function() {
         'settings.voice_interaction.activity_control.consent_status',
         ConsentStatus.kActivityControlAccepted);
     Polymer.dom.flush();
-    button = page.$$('#retrainVoiceModel');
+    button = page.$$('#retrain-voice-model');
     assertTrue(!!button);
   });
 
   test('toggleAssistantNotification', function() {
-    let button = page.$$('#googleAssistantNotificationEnable');
+    let button = page.$$('#google-assistant-notification-enable');
     assertFalse(!!button);
     page.setPrefValue('settings.voice_interaction.enabled', true);
     page.setPrefValue('settings.voice_interaction.notification.enabled', false);
     Polymer.dom.flush();
-    button = page.$$('#googleAssistantNotificationEnable');
+    button = page.$$('#google-assistant-notification-enable');
     assertTrue(!!button);
     assertFalse(button.disabled);
     assertFalse(button.checked);
@@ -191,12 +191,12 @@ suite('GoogleAssistantHandler', function() {
   });
 
   test('toggleAssistantLaunchWithMicOpen', function() {
-    let button = page.$$('#googleAssistantLaunchWithMicOpen');
+    let button = page.$$('#google-assistant-launch-with-mic-open');
     assertFalse(!!button);
     page.setPrefValue('settings.voice_interaction.enabled', true);
     page.setPrefValue('settings.voice_interaction.launch_with_mic_open', false);
     Polymer.dom.flush();
-    button = page.$$('#googleAssistantLaunchWithMicOpen');
+    button = page.$$('#google-assistant-launch-with-mic-open');
     assertTrue(!!button);
     assertFalse(button.disabled);
     assertFalse(button.checked);
@@ -210,11 +210,11 @@ suite('GoogleAssistantHandler', function() {
   });
 
   test('tapOnAssistantSettings', function() {
-    let button = page.$$('#googleAssistantSettings');
+    let button = page.$$('#google-assistant-settings');
     assertFalse(!!button);
     page.setPrefValue('settings.voice_interaction.enabled', true);
     Polymer.dom.flush();
-    button = page.$$('#googleAssistantSettings');
+    button = page.$$('#google-assistant-settings');
     assertTrue(!!button);
 
     button.click();
@@ -223,7 +223,7 @@ suite('GoogleAssistantHandler', function() {
   });
 
   test('dspHotwordDropdownEnabled', function() {
-    let dropdown = page.$$('#dspHotwordState');
+    let dropdown = page.$$('#dsp-hotword-state');
     assertFalse(!!dropdown);
 
     page.setPrefValue('settings.voice_interaction.enabled', true);
@@ -234,12 +234,12 @@ suite('GoogleAssistantHandler', function() {
     });
 
     Polymer.dom.flush();
-    dropdown = page.$$('#dspHotwordState');
+    dropdown = page.$$('#dsp-hotword-state');
     assertFalse(dropdown.hasAttribute('disabled'));
   });
 
   test('dspHotwordDropdownDisabled', function() {
-    let dropdown = page.$$('#dspHotwordState');
+    let dropdown = page.$$('#dsp-hotword-state');
     assertFalse(!!dropdown);
 
     page.setPrefValue('settings.voice_interaction.enabled', true);
@@ -250,7 +250,7 @@ suite('GoogleAssistantHandler', function() {
     });
 
     Polymer.dom.flush();
-    dropdown = page.$$('#dspHotwordState');
+    dropdown = page.$$('#dsp-hotword-state');
     assertTrue(dropdown.hasAttribute('disabled'));
   });
 

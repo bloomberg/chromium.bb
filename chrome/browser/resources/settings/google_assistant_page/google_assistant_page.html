@@ -39,7 +39,7 @@
         width: 24px;
       }
     </style>
-    <settings-toggle-button id="googleAssistantEnable"
+    <settings-toggle-button id="google-assistant-enable"
         class="first primary-toggle"
         pref="{{prefs.settings.voice_interaction.enabled}}"
         label="[[getAssistantOnOffLabel_(
@@ -47,13 +47,13 @@
     </settings-toggle-button>
     <template is="dom-if"
         if="[[prefs.settings.voice_interaction.enabled.value]]">
-      <settings-toggle-button id="googleAssistantContextEnable"
+      <settings-toggle-button id="google-assistant-context-enable"
           pref="{{prefs.settings.voice_interaction.context.enabled}}"
           label="$i18n{googleAssistantEnableContext}"
           sub-label="$i18n{googleAssistantEnableContextDescription}">
       </settings-toggle-button>
       <template is="dom-if" if="[[assistantFeatureEnabled_]]">
-        <settings-toggle-button id="googleAssistantHotwordEnable"
+        <settings-toggle-button id="google-assistant-hotword-enable"
             pref="{{prefs.settings.voice_interaction.hotword.enabled}}"
             label="$i18n{googleAssistantEnableHotword}"
             sub-label="$i18n{googleAssistantEnableHotwordDescription}"
@@ -79,7 +79,7 @@
                 pref="{{prefs.settings.voice_interaction.hotword.enabled}}">
             </cr-policy-pref-indicator>
           </template>
-          <select id="dspHotwordState" class="md-select"
+          <select id="dsp-hotword-state" class="md-select"
               aria-labelledby="googleAssistantEnableHotword"
               on-change="onDspHotwordStateChange_"
               disabled="[[hotwordEnforced_]]">
@@ -101,25 +101,25 @@
                 $i18n{googleAssistantVoiceSettingsDescription}
               </div>
             </div>
-            <controlled-button id="retrainVoiceModel" class="secondary-button"
+            <controlled-button id="retrain-voice-model" class="secondary-button"
                 on-click="onRetrainVoiceModelTapped_"
                 label="$i18n{googleAssistantVoiceSettingsRetrainButton}"
                 pref="{{prefs.settings.voice_interaction.hotword.enabled}}">
             </controlled-button>
           </div>
         </template>
-        <settings-toggle-button id="googleAssistantNotificationEnable"
+        <settings-toggle-button id="google-assistant-notification-enable"
             pref="{{prefs.settings.voice_interaction.notification.enabled}}"
             label="$i18n{googleAssistantEnableNotification}"
             sub-label="$i18n{googleAssistantEnableNotificationDescription}">
         </settings-toggle-button>
-        <settings-toggle-button id="googleAssistantLaunchWithMicOpen"
+        <settings-toggle-button id="google-assistant-launch-with-mic-open"
             pref="{{prefs.settings.voice_interaction.launch_with_mic_open}}"
             label="$i18n{googleAssistantLaunchWithMicOpen}"
             sub-label="$i18n{googleAssistantLaunchWithMicOpenDescription}">
         </settings-toggle-button>
       </template>
-      <div id="googleAssistantSettings" class="settings-box"
+      <div id="google-assistant-settings" class="settings-box"
           on-click="onGoogleAssistantSettingsTapped_" actionable>
         <div class="start">
           $i18n{googleAssistantSettings}

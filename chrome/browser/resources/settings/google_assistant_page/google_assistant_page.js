@@ -144,7 +144,7 @@ Polymer({
 
   /** @private */
   onDspHotwordStateChange_: function() {
-    switch (Number(this.$$('#dspHotwordState').value)) {
+    switch (Number(this.$$('#dsp-hotword-state').value)) {
       case DspHotwordState.DEFAULT_ON:
         this.setPrefValue('settings.voice_interaction.hotword.enabled', true);
         this.setPrefValue(
@@ -208,8 +208,8 @@ Polymer({
       this.dspHotwordState_ = DspHotwordState.DEFAULT_ON;
     }
 
-    if (this.$$('#dspHotwordState')) {
-      this.$$('#dspHotwordState').value = this.dspHotwordState_;
+    if (this.$$('#dsp-hotword-state')) {
+      this.$$('#dsp-hotword-state').value = this.dspHotwordState_;
     }
   },
 });
