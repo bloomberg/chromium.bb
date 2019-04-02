@@ -8,6 +8,43 @@
 #include "components/omnibox/browser/scored_history_match.h"
 #include "in_memory_url_index_types.h"
 
+namespace {
+
+base::string16 clean(base::string16 text) {
+  const size_t kMaxTextLength = 200;
+  return base::i18n::ToLower(text.substr(0, kMaxTextLength));
+}
+
+}  // namespace
+
+TermMatches FindTermMatches(base::string16 find_text,
+                            base::string16 text,
+                            bool allow_prefix_matching,
+                            bool allow_mid_word_matching) {
+  find_text = clean(find_text);
+  text = clean(text);
+
+  if (allow_prefix_matching &&
+      base::StartsWith(text, find_text, base::CompareCase::SENSITIVE))
+    return {{0, 0, find_text.length()}};
+
+  String16Vector find_terms =
+      String16VectorFromString16(find_text, false, NULL);
+
+  TermMatches matches = MatchTermsInString(find_terms, text);
+  matches = SortMatches(matches);
+  matches = DeoverlapMatches(matches);
+
+  if (allow_mid_word_matching)
+    return matches;
+
+  WordStarts word_starts;
+  String16VectorFromString16(text, false, &word_starts);
+  return ScoredHistoryMatch::FilterTermMatchesByWordStarts(
+      matches, WordStarts(find_terms.size(), 0), word_starts, 0,
+      std::string::npos);
+}
+
 ACMatchClassifications ClassifyTermMatches(TermMatches matches,
                                            size_t text_length,
                                            int match_style,

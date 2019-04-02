@@ -181,9 +181,7 @@ void SearchSuggestionParser::SuggestResult::ClassifyMatchContents(
   }
 
   match_contents_class_ = AutocompleteProvider::ClassifyAllMatchesInString(
-      input_text,
-      SearchSuggestionParser::GetOrCreateWordMapForInputText(input_text),
-      match_contents_, true);
+      input_text, match_contents_, true);
 }
 
 void SearchSuggestionParser::SuggestResult::SetAnswer(
@@ -565,26 +563,4 @@ bool SearchSuggestionParser::ParseSuggestResults(
   }
   results->relevances_from_server = relevances != nullptr;
   return true;
-}
-
-// static
-const AutocompleteProvider::WordMap&
-SearchSuggestionParser::GetOrCreateWordMapForInputText(
-    const base::string16& input_text) {
-  auto& cache = GetWordMapCache();
-  if (cache.first != input_text) {
-    auto new_cache = std::make_pair(
-        input_text, AutocompleteProvider::CreateWordMapForString(input_text));
-    cache.swap(new_cache);
-  }
-  return cache.second;
-}
-
-// static
-std::pair<base::string16, AutocompleteProvider::WordMap>&
-SearchSuggestionParser::GetWordMapCache() {
-  static base::NoDestructor<
-      std::pair<base::string16, AutocompleteProvider::WordMap>>
-      word_map_cache;
-  return *word_map_cache;
 }
