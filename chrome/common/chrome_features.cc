@@ -455,14 +455,6 @@ const base::Feature kNtlmV2Enabled{"NtlmV2Enabled",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-// If enabled, the list of content suggestions on the New Tab page will contain
-// pages that the user downloaded for later use.
-// DO NOT check directly whether this feature is enabled (i.e. do not use
-// base::FeatureList::IsEnabled()). It is enabled conditionally. Use
-// |AreOfflinePageDownloadsEnabled| instead.
-const base::Feature kOfflinePageDownloadSuggestionsFeature{
-    "NTPOfflinePageDownloadSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if defined(OS_ANDROID)
 // Enables or disabled the OOM intervention.
 const base::Feature kOomIntervention{"OomIntervention",

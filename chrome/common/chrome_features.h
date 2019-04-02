@@ -292,9 +292,6 @@ extern const base::Feature kNewTabLoadingAnimation;
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kNtlmV2Enabled;
 #endif
 
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kOfflinePageDownloadSuggestionsFeature;
-
 #if defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kOomIntervention;
 #endif
