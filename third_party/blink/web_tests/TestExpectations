@@ -5739,37 +5739,6 @@ crbug.com/902633 virtual/streams-native/http/tests/streams/transferable/writable
 crbug.com/902633 virtual/streams-native/http/tests/streams/transferable/shared-worker.html [ Pass Failure ]
 crbug.com/902633 virtual/streams-native/http/tests/streams/transferable/worker.html [ Pass Failure ]
 
-# PipeTo() is currently disabled in the StreamsNative implementation of streams,
-# which causes these timeouts.
-### virtual/streams-native/external/wpt/fetch/api/request/
-crbug.com/902633 virtual/streams-native/external/wpt/fetch/api/request/request-keepalive-quota.html [ Timeout ]
-
-### virtual/streams-native/external/wpt/fetch/api/response/
-crbug.com/902633 virtual/streams-native/external/wpt/fetch/api/response/response-stream-with-broken-then.any.worker.html [ Timeout ]
-
-### virtual/streams-native/external/wpt/streams/piping/
-crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/abort.any.html [ Timeout ]
-crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/abort.any.serviceworker.html [ Timeout ]
-crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/abort.any.sharedworker.html [ Timeout ]
-crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/abort.any.worker.html [ Timeout ]
-crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/close-propagation-forward.any.html [ Timeout ]
-crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/close-propagation-forward.any.serviceworker.html [ Timeout ]
-crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/close-propagation-forward.any.sharedworker.html [ Timeout ]
-crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/close-propagation-forward.any.worker.html [ Timeout ]
-crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/error-propagation-backward.any.html [ Timeout ]
-crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/error-propagation-backward.any.serviceworker.html [ Timeout ]
-crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/error-propagation-backward.any.sharedworker.html [ Timeout ]
-crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/error-propagation-backward.any.worker.html [ Timeout ]
-crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/error-propagation-forward.any.html [ Timeout ]
-crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/error-propagation-forward.any.serviceworker.html [ Timeout ]
-crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/error-propagation-forward.any.sharedworker.html [ Timeout ]
-crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/error-propagation-forward.any.worker.html [ Timeout ]
-crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/then-interception.any.serviceworker.html [ Timeout ]
-crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/then-interception.any.sharedworker.html [ Timeout ]
-crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/then-interception.any.worker.html [ Timeout ]
-
-### virtual/streams-native/http/tests/streams/chromium/
-crbug.com/902633 virtual/streams-native/http/tests/streams/chromium/touching-global-object.html [ Timeout ]
 
 # Sheriff 2019-01-03
 crbug.com/918905 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/block-size-with-min-or-max-content-table-1b.html [ Pass Failure ]
