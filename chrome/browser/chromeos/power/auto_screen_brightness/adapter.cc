@@ -69,16 +69,16 @@ Adapter::~Adapter() = default;
 
 void Adapter::OnAmbientLightUpdated(int lux) {
   // Ambient light data is only used when adapter is initialized to success.
-  // |ambient_light_values_| may not be available to use when adapter is being
+  // |log_als_values_| may not be available to use when adapter is being
   // initialized.
   if (adapter_status_ != Status::kSuccess)
     return;
 
-  DCHECK(ambient_light_values_);
+  DCHECK(log_als_values_);
 
   const base::TimeTicks now = tick_clock_->NowTicks();
 
-  ambient_light_values_->SaveToBuffer({lux, now});
+  log_als_values_->SaveToBuffer({ConvertToLog(lux), now});
 
   MaybeAdjustBrightness(now);
 }
@@ -108,17 +108,17 @@ void Adapter::OnUserBrightnessChanged(double old_brightness_percent,
     return;
 
   // |latest_brightness_change_time_|, |current_brightness_|,
-  // |log_average_ambient_lux_| and thresholds are only needed if adapter is
+  // |average_log_ambient_lux_| and thresholds are only needed if adapter is
   // |kSuccess|.
   if (adapter_status_ == Status::kSuccess) {
-    DCHECK(ambient_light_values_);
-    const base::Optional<AlsAvgStdDev> als_avg_stddev =
-        ambient_light_values_->AverageAmbientWithStdDev(now);
+    DCHECK(log_als_values_);
+    const base::Optional<AlsAvgStdDev> log_als_avg_stddev =
+        log_als_values_->AverageAmbientWithStdDev(now);
 
     OnBrightnessChanged(now, new_brightness_percent,
-                        als_avg_stddev ? base::Optional<double>(
-                                             ConvertToLog(als_avg_stddev->avg))
-                                       : base::nullopt);
+                        log_als_avg_stddev
+                            ? base::Optional<double>(log_als_avg_stddev->avg)
+                            : base::nullopt);
   }
 
   if (!metrics_reporter_)
@@ -237,8 +237,8 @@ base::Optional<MonotoneCubicSpline> Adapter::GetPersonalCurveForTesting()
 
 base::Optional<AlsAvgStdDev> Adapter::GetAverageAmbientWithStdDevForTesting(
     base::TimeTicks now) {
-  DCHECK(ambient_light_values_);
-  return ambient_light_values_->AverageAmbientWithStdDev(now);
+  DCHECK(log_als_values_);
+  return log_als_values_->AverageAmbientWithStdDev(now);
 }
 
 double Adapter::GetBrighteningThresholdForTesting() const {
@@ -249,8 +249,8 @@ double Adapter::GetDarkeningThresholdForTesting() const {
   return *darkening_threshold_;
 }
 
-base::Optional<double> Adapter::GetCurrentLogAvgAlsForTesting() const {
-  return log_average_ambient_lux_;
+base::Optional<double> Adapter::GetCurrentAvgLogAlsForTesting() const {
+  return average_log_ambient_lux_;
 }
 
 std::unique_ptr<Adapter> Adapter::CreateForTesting(
@@ -349,7 +349,7 @@ void Adapter::InitParams(const ModelConfig& model_config) {
 
   params_.auto_brightness_als_horizon =
       base::TimeDelta::FromSeconds(auto_brightness_als_horizon_seconds);
-  ambient_light_values_ = std::make_unique<AmbientLightSampleBuffer>(
+  log_als_values_ = std::make_unique<AmbientLightSampleBuffer>(
       params_.auto_brightness_als_horizon);
 
   // TODO(jiameng): move this to device config once we complete experiments.
@@ -426,8 +426,7 @@ void Adapter::UpdateStatus() {
 }
 
 base::Optional<Adapter::BrightnessChangeCause> Adapter::CanAdjustBrightness(
-    double current_log_average_ambient,
-    double stddev) const {
+    const AlsAvgStdDev& log_als_avg_stddev) const {
   if (adapter_status_ != Status::kSuccess ||
       adapter_disabled_by_user_adjustment_) {
     return base::nullopt;
@@ -442,7 +441,7 @@ base::Optional<Adapter::BrightnessChangeCause> Adapter::CanAdjustBrightness(
     return base::nullopt;
   }
 
-  if (!log_average_ambient_lux_) {
+  if (!average_log_ambient_lux_) {
     // Either
     // 1. brightness hasn't been changed, or,
     // 2. brightness was changed by the user but there wasn't any ALS data. This
@@ -456,15 +455,15 @@ base::Optional<Adapter::BrightnessChangeCause> Adapter::CanAdjustBrightness(
   DCHECK(brightening_threshold_);
   DCHECK(darkening_threshold_);
 
-  if (current_log_average_ambient > *brightening_threshold_ &&
-      stddev <= params_.brightening_log_lux_threshold *
-                    params_.stabilization_threshold) {
+  if (log_als_avg_stddev.avg > *brightening_threshold_ &&
+      log_als_avg_stddev.stddev <= params_.brightening_log_lux_threshold *
+                                       params_.stabilization_threshold) {
     return BrightnessChangeCause::kBrightneningThresholdExceeded;
   }
 
-  if (current_log_average_ambient < *darkening_threshold_ &&
-      stddev <= params_.darkening_log_lux_threshold *
-                    params_.stabilization_threshold) {
+  if (log_als_avg_stddev.avg < *darkening_threshold_ &&
+      log_als_avg_stddev.stddev <= params_.darkening_log_lux_threshold *
+                                       params_.stabilization_threshold) {
     return BrightnessChangeCause::kDarkeningThresholdExceeded;
   }
 
@@ -473,7 +472,7 @@ base::Optional<Adapter::BrightnessChangeCause> Adapter::CanAdjustBrightness(
 
 void Adapter::MaybeAdjustBrightness(base::TimeTicks now) {
   DCHECK_EQ(adapter_status_, Status::kSuccess);
-  DCHECK(ambient_light_values_);
+  DCHECK(log_als_values_);
   DCHECK(!als_init_time_.is_null());
   // Wait until we've had enough ALS data to calc avg.
   if (now - als_init_time_ < params_.auto_brightness_als_horizon)
@@ -486,21 +485,19 @@ void Adapter::MaybeAdjustBrightness(base::TimeTicks now) {
           params_.auto_brightness_als_horizon)
     return;
 
-  const base::Optional<AlsAvgStdDev> als_avg_stddev =
-      ambient_light_values_->AverageAmbientWithStdDev(now);
-  if (!als_avg_stddev)
+  const base::Optional<AlsAvgStdDev> log_als_avg_stddev =
+      log_als_values_->AverageAmbientWithStdDev(now);
+  if (!log_als_avg_stddev)
     return;
 
-  const double log_average_ambient_lux = ConvertToLog(als_avg_stddev->avg);
-
   const base::Optional<BrightnessChangeCause> brightness_change_cause =
-      CanAdjustBrightness(log_average_ambient_lux, als_avg_stddev->stddev);
+      CanAdjustBrightness(*log_als_avg_stddev);
 
   if (!brightness_change_cause.has_value())
     return;
 
   const base::Optional<double> brightness =
-      GetBrightnessBasedOnAmbientLogLux(log_average_ambient_lux);
+      GetBrightnessBasedOnAmbientLogLux(log_als_avg_stddev->avg);
 
   // This could occur if curve isn't set up (e.g. when we want to use
   // personal only that's not yet available).
@@ -526,11 +523,11 @@ void Adapter::MaybeAdjustBrightness(base::TimeTicks now) {
   UMA_HISTOGRAM_ENUMERATION("AutoScreenBrightness.BrightnessChange.Cause",
                             cause);
 
-  WriteLogMessages(log_average_ambient_lux, *brightness, cause);
+  WriteLogMessages(log_als_avg_stddev->avg, *brightness, cause);
   model_brightness_change_counter_++;
 
   OnBrightnessChanged(brightness_change_time, *brightness,
-                      log_average_ambient_lux);
+                      log_als_avg_stddev->avg);
 }
 
 base::Optional<double> Adapter::GetBrightnessBasedOnAmbientLogLux(
@@ -565,13 +562,13 @@ void Adapter::OnBrightnessChanged(base::TimeTicks now,
   if (!new_log_als)
     return;
 
-  // Update |log_average_ambient_lux_| with the new reference value. Brightness
+  // Update |average_log_ambient_lux_| with the new reference value. Brightness
   // will be changed by the model if next log-avg ALS value goes outside of the
   // range
   // [|darkening_threshold_|, |brightening_threshold_|].
   // Thresholds in |params_| are absolute values to be added/subtracted from
   // the reference values. Log-avg can be negative.
-  log_average_ambient_lux_ = new_log_als;
+  average_log_ambient_lux_ = new_log_als;
   brightening_threshold_ = *new_log_als + params_.brightening_log_lux_threshold;
   darkening_threshold_ = *new_log_als - params_.darkening_log_lux_threshold;
 }
@@ -581,8 +578,8 @@ void Adapter::WriteLogMessages(double new_log_als,
                                BrightnessChangeCause cause) const {
   DCHECK_EQ(adapter_status_, Status::kSuccess);
   const std::string old_log_als =
-      log_average_ambient_lux_
-          ? base::StringPrintf("%.4f", log_average_ambient_lux_.value()) + "->"
+      average_log_ambient_lux_
+          ? base::StringPrintf("%.4f", average_log_ambient_lux_.value()) + "->"
           : "";
 
   const std::string old_brightness =

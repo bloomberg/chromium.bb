@@ -41,15 +41,18 @@ namespace auto_screen_brightness {
 
 namespace {
 
-// Checks |actual_log_avg| is equal to the log avg calculated from
-// |expected_data|.
-void CheckLogAvg(const std::vector<double>& expected_data,
-                 double actual_log_avg) {
+// Checks |actual_avg_log| is equal to the avg log calculated from
+// |expected_data|. |expected_data| contains absolute lux value, not log lux.
+void CheckAvgLog(const std::vector<double>& expected_data,
+                 double actual_avg_log) {
   const size_t count = expected_data.size();
   CHECK_NE(count, 0u);
-  const double expected_log_avg = ConvertToLog(
-      std::accumulate(expected_data.begin(), expected_data.end(), 0.0) / count);
-  EXPECT_DOUBLE_EQ(actual_log_avg, expected_log_avg);
+  const double expected_avg_log =
+      std::accumulate(
+          expected_data.begin(), expected_data.end(), 0.0,
+          [](double sum, double lux) { return sum + ConvertToLog(lux); }) /
+      count;
+  EXPECT_DOUBLE_EQ(actual_avg_log, expected_avg_log);
 }
 
 // Testing modeller.
@@ -496,8 +499,8 @@ TEST_F(AdapterTest, FirstAlsAfterAlsReaderInitTime) {
 
   ForwardTimeAndReportAls({100});
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  CheckLogAvg({1, 2, 3, 4, 100},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({1, 2, 3, 4, 100},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 }
 
 // First ALS comes in at the same time when AlsReader is initialized. Hence
@@ -516,8 +519,8 @@ TEST_F(AdapterTest, FirstAlsAtAlsReaderInitTime) {
 
   ForwardTimeAndReportAls({100});
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  CheckLogAvg({1, 2, 3, 4, 100},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({1, 2, 3, 4, 100},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 }
 
 TEST_F(AdapterTest, SequenceOfBrightnessUpdatesWithDefaultParams) {
@@ -536,45 +539,45 @@ TEST_F(AdapterTest, SequenceOfBrightnessUpdatesWithDefaultParams) {
   // Brightness is changed for the first time after the 5th reading.
   ForwardTimeAndReportAls({5});
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  CheckLogAvg({1, 2, 3, 4, 5},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({1, 2, 3, 4, 5},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   // Several other ALS readings come in, but need to wait for
   // |params.auto_brightness_als_horizon_seconds| to pass before having any
   // effect
   ForwardTimeAndReportAls({20});
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  CheckLogAvg({1, 2, 3, 4, 5},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({1, 2, 3, 4, 5},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   ForwardTimeAndReportAls({30});
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  CheckLogAvg({1, 2, 3, 4, 5},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({1, 2, 3, 4, 5},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   ForwardTimeAndReportAls({40});
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  CheckLogAvg({1, 2, 3, 4, 5},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({1, 2, 3, 4, 5},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   ForwardTimeAndReportAls({50});
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  CheckLogAvg({1, 2, 3, 4, 5},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({1, 2, 3, 4, 5},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   // The next ALS reading triggers brightness change.
   ForwardTimeAndReportAls({60});
   EXPECT_EQ(test_observer_.num_changes(), 2);
-  CheckLogAvg({20, 30, 40, 50, 60},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({20, 30, 40, 50, 60},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   // |params.auto_brightness_als_horizon_seconds| has elapsed since we've made
   // the change, but there's no new ALS value, hence no brightness change is
   // triggered.
   thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(10));
   EXPECT_EQ(test_observer_.num_changes(), 2);
-  CheckLogAvg({20, 30, 40, 50, 60},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({20, 30, 40, 50, 60},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   EXPECT_EQ(adapter_->GetAverageAmbientWithStdDevForTesting(
                 thread_bundle_.NowTicks()),
@@ -583,7 +586,7 @@ TEST_F(AdapterTest, SequenceOfBrightnessUpdatesWithDefaultParams) {
   // A new ALS value triggers a brightness change.
   ForwardTimeAndReportAls({100});
   EXPECT_EQ(test_observer_.num_changes(), 3);
-  CheckLogAvg({100}, adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({100}, adapter_->GetCurrentAvgLogAlsForTesting().value());
 }
 
 // A user brightness change comes in when ALS readings exist. This also disables
@@ -604,12 +607,12 @@ TEST_F(AdapterTest, UserBrightnessChangeAlsReadingExists) {
       "AutoScreenBrightness.MissingAlsWhenBrightnessChanged", false, 1);
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
   EXPECT_FALSE(adapter_->IsAppliedForTesting());
-  CheckLogAvg({1, 2, 3, 4}, adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({1, 2, 3, 4}, adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   // An als reading comes in but will not change the brightness.
   ForwardTimeAndReportAls({100});
   EXPECT_EQ(test_observer_.num_changes(), 0);
-  CheckLogAvg({1, 2, 3, 4}, adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({1, 2, 3, 4}, adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   // Another user manual adjustment comes in.
   thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
@@ -619,8 +622,8 @@ TEST_F(AdapterTest, UserBrightnessChangeAlsReadingExists) {
   EXPECT_FALSE(adapter_->IsAppliedForTesting());
   histogram_tester_.ExpectUniqueSample(
       "AutoScreenBrightness.MissingAlsWhenBrightnessChanged", false, 2);
-  CheckLogAvg({2, 3, 4, 100},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({2, 3, 4, 100},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 }
 
 // Same as |UserBrightnessChangeAlsReadingExists| except that user adjustment
@@ -644,19 +647,19 @@ TEST_F(AdapterTest, UserBrightnessChangeAlsReadingExistsContinue) {
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
   EXPECT_TRUE(adapter_->IsAppliedForTesting());
   EXPECT_EQ(test_observer_.num_changes(), 0);
-  CheckLogAvg({2, 4, 6, 8}, adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({2, 4, 6, 8}, adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   // Four ALS readings come in, but not enough time has passed since user
   // brightness change.
   ForwardTimeAndReportAls({4, 6, 8, 2});
   EXPECT_EQ(test_observer_.num_changes(), 0);
-  CheckLogAvg({2, 4, 6, 8}, adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({2, 4, 6, 8}, adapter_->GetCurrentAvgLogAlsForTesting().value());
 
-  // Another ALS reading is in, but avg is the same as reference ALS (when user
-  // changed brightness). Hence no change to brightness.
+  // Another ALS reading is in and triggers brightness change.
   ForwardTimeAndReportAls({5});
-  EXPECT_EQ(test_observer_.num_changes(), 0);
-  CheckLogAvg({2, 4, 6, 8}, adapter_->GetCurrentLogAvgAlsForTesting().value());
+  EXPECT_EQ(test_observer_.num_changes(), 1);
+  CheckAvgLog({4, 6, 8, 2, 5},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   // Another user manual adjustment comes in.
   thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
@@ -665,8 +668,8 @@ TEST_F(AdapterTest, UserBrightnessChangeAlsReadingExistsContinue) {
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
   EXPECT_TRUE(adapter_->IsAppliedForTesting());
   histogram_tester_.ExpectUniqueSample(
-      "AutoScreenBrightness.MissingAlsWhenBrightnessChanged", false, 2);
-  CheckLogAvg({6, 8, 2, 5}, adapter_->GetCurrentLogAvgAlsForTesting().value());
+      "AutoScreenBrightness.MissingAlsWhenBrightnessChanged", false, 3);
+  CheckAvgLog({6, 8, 2, 5}, adapter_->GetCurrentAvgLogAlsForTesting().value());
 }
 
 // Same as |UserBrightnessChangeAlsReadingExists| except that the 1st user
@@ -682,15 +685,15 @@ TEST_F(AdapterTest, UserBrightnessChangeAlsReadingAbsent) {
 
   histogram_tester_.ExpectUniqueSample(
       "AutoScreenBrightness.MissingAlsWhenBrightnessChanged", true, 1);
-  EXPECT_EQ(adapter_->GetCurrentLogAvgAlsForTesting(), base::nullopt);
+  EXPECT_EQ(adapter_->GetCurrentAvgLogAlsForTesting(), base::nullopt);
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
   EXPECT_FALSE(adapter_->IsAppliedForTesting());
-  EXPECT_FALSE(adapter_->GetCurrentLogAvgAlsForTesting());
+  EXPECT_FALSE(adapter_->GetCurrentAvgLogAlsForTesting());
 
   // ALS readings come in but will not change the brightness.
   ForwardTimeAndReportAls({100, 101, 102, 103, 104});
   EXPECT_EQ(test_observer_.num_changes(), 0);
-  EXPECT_FALSE(adapter_->GetCurrentLogAvgAlsForTesting());
+  EXPECT_FALSE(adapter_->GetCurrentAvgLogAlsForTesting());
 
   // Another user manual adjustment comes in.
   thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
@@ -701,8 +704,8 @@ TEST_F(AdapterTest, UserBrightnessChangeAlsReadingAbsent) {
       "AutoScreenBrightness.MissingAlsWhenBrightnessChanged", false, 1);
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
   EXPECT_FALSE(adapter_->IsAppliedForTesting());
-  CheckLogAvg({101, 102, 103, 104},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({101, 102, 103, 104},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 }
 
 // Same as |UserBrightnessChangeAlsReadingAbsent| except that user adjustment
@@ -720,18 +723,18 @@ TEST_F(AdapterTest, UserBrightnessChangeAlsReadingAbsentContinue) {
 
   histogram_tester_.ExpectUniqueSample(
       "AutoScreenBrightness.MissingAlsWhenBrightnessChanged", true, 1);
-  EXPECT_EQ(adapter_->GetCurrentLogAvgAlsForTesting(), base::nullopt);
+  EXPECT_EQ(adapter_->GetCurrentAvgLogAlsForTesting(), base::nullopt);
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
   EXPECT_TRUE(adapter_->IsAppliedForTesting());
-  EXPECT_FALSE(adapter_->GetCurrentLogAvgAlsForTesting());
+  EXPECT_FALSE(adapter_->GetCurrentAvgLogAlsForTesting());
 
   // ALS readings come in, and will trigger a brightness change.
   ForwardTimeAndReportAls({100});
   EXPECT_EQ(test_observer_.num_changes(), 0);
   ForwardTimeAndReportAls({101, 102, 103, 104});
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  CheckLogAvg({100, 101, 102, 103, 104},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({100, 101, 102, 103, 104},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   // Another user manual adjustment comes in.
   thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
@@ -742,8 +745,8 @@ TEST_F(AdapterTest, UserBrightnessChangeAlsReadingAbsentContinue) {
       "AutoScreenBrightness.MissingAlsWhenBrightnessChanged", false, 2);
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
   EXPECT_TRUE(adapter_->IsAppliedForTesting());
-  CheckLogAvg({101, 102, 103, 104},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({101, 102, 103, 104},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 }
 
 // Set |brightening_log_lux_threshold| to a very high value to effectively make
@@ -764,40 +767,40 @@ TEST_F(AdapterTest, BrighteningThreshold) {
   EXPECT_EQ(test_observer_.num_changes(), 0);
   ForwardTimeAndReportAls({5});
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  CheckLogAvg({1, 2, 3, 4, 5},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({1, 2, 3, 4, 5},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
   EXPECT_DOUBLE_EQ(adapter_->GetBrighteningThresholdForTesting(),
-                   adapter_->GetCurrentLogAvgAlsForTesting().value() + 100);
+                   adapter_->GetCurrentAvgLogAlsForTesting().value() + 100);
   EXPECT_DOUBLE_EQ(adapter_->GetDarkeningThresholdForTesting(),
-                   adapter_->GetCurrentLogAvgAlsForTesting().value() - 0.00001);
+                   adapter_->GetCurrentAvgLogAlsForTesting().value() - 0.00001);
 
   ForwardTimeAndReportAls({4, 4, 4, 4, 4});
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  CheckLogAvg({1, 2, 3, 4, 5},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({1, 2, 3, 4, 5},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
   EXPECT_DOUBLE_EQ(adapter_->GetBrighteningThresholdForTesting(),
-                   adapter_->GetCurrentLogAvgAlsForTesting().value() + 100);
+                   adapter_->GetCurrentAvgLogAlsForTesting().value() + 100);
   EXPECT_DOUBLE_EQ(adapter_->GetDarkeningThresholdForTesting(),
-                   adapter_->GetCurrentLogAvgAlsForTesting().value() - 0.00001);
+                   adapter_->GetCurrentAvgLogAlsForTesting().value() - 0.00001);
 
   // Darkening is still possible.
   ForwardTimeAndReportAls({1});
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  CheckLogAvg({1, 2, 3, 4, 5},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({1, 2, 3, 4, 5},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
   EXPECT_DOUBLE_EQ(adapter_->GetBrighteningThresholdForTesting(),
-                   adapter_->GetCurrentLogAvgAlsForTesting().value() + 100);
+                   adapter_->GetCurrentAvgLogAlsForTesting().value() + 100);
   EXPECT_DOUBLE_EQ(adapter_->GetDarkeningThresholdForTesting(),
-                   adapter_->GetCurrentLogAvgAlsForTesting().value() - 0.00001);
+                   adapter_->GetCurrentAvgLogAlsForTesting().value() - 0.00001);
 
   ForwardTimeAndReportAls({1});
   EXPECT_EQ(test_observer_.num_changes(), 2);
-  CheckLogAvg({4, 4, 4, 1, 1},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({4, 4, 4, 1, 1},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
   EXPECT_DOUBLE_EQ(adapter_->GetBrighteningThresholdForTesting(),
-                   adapter_->GetCurrentLogAvgAlsForTesting().value() + 100);
+                   adapter_->GetCurrentAvgLogAlsForTesting().value() + 100);
   EXPECT_DOUBLE_EQ(adapter_->GetDarkeningThresholdForTesting(),
-                   adapter_->GetCurrentLogAvgAlsForTesting().value() - 0.00001);
+                   adapter_->GetCurrentAvgLogAlsForTesting().value() - 0.00001);
 }
 
 // Set |darkening_log_lux_threshold| to a very high value to effectively make
@@ -812,29 +815,29 @@ TEST_F(AdapterTest, DarkeningThreshold) {
   EXPECT_EQ(test_observer_.num_changes(), 0);
   ForwardTimeAndReportAls({50});
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  CheckLogAvg({10, 20, 30, 40, 50},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({10, 20, 30, 40, 50},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
   EXPECT_DOUBLE_EQ(adapter_->GetBrighteningThresholdForTesting(),
-                   adapter_->GetCurrentLogAvgAlsForTesting().value() + 0.00001);
+                   adapter_->GetCurrentAvgLogAlsForTesting().value() + 0.00001);
   EXPECT_DOUBLE_EQ(adapter_->GetDarkeningThresholdForTesting(),
-                   adapter_->GetCurrentLogAvgAlsForTesting().value() - 100);
+                   adapter_->GetCurrentAvgLogAlsForTesting().value() - 100);
 
-  ForwardTimeAndReportAls({29, 29, 29, 29, 29});
+  ForwardTimeAndReportAls({25, 25, 25, 25, 25});
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  CheckLogAvg({10, 20, 30, 40, 50},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({10, 20, 30, 40, 50},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
   EXPECT_DOUBLE_EQ(adapter_->GetBrighteningThresholdForTesting(),
-                   adapter_->GetCurrentLogAvgAlsForTesting().value() + 0.00001);
+                   adapter_->GetCurrentAvgLogAlsForTesting().value() + 0.00001);
   EXPECT_DOUBLE_EQ(adapter_->GetDarkeningThresholdForTesting(),
-                   adapter_->GetCurrentLogAvgAlsForTesting().value() - 100);
+                   adapter_->GetCurrentAvgLogAlsForTesting().value() - 100);
 
   ForwardTimeAndReportAls({40});
-  CheckLogAvg({29, 29, 29, 29, 40},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({25, 25, 25, 25, 40},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
   EXPECT_DOUBLE_EQ(adapter_->GetBrighteningThresholdForTesting(),
-                   adapter_->GetCurrentLogAvgAlsForTesting().value() + 0.00001);
+                   adapter_->GetCurrentAvgLogAlsForTesting().value() + 0.00001);
   EXPECT_DOUBLE_EQ(adapter_->GetDarkeningThresholdForTesting(),
-                   adapter_->GetCurrentLogAvgAlsForTesting().value() - 100);
+                   adapter_->GetCurrentAvgLogAlsForTesting().value() - 100);
 }
 
 // Set |stabilization_threshold| to a very low value so that the average really
@@ -847,19 +850,19 @@ TEST_F(AdapterTest, StablizationThreshold) {
 
   ForwardTimeAndReportAls({10, 20, 30, 40, 50});
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  CheckLogAvg({10, 20, 30, 40, 50},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({10, 20, 30, 40, 50},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 
-  // A slight fluctuation means brightness is not changed.
-  ForwardTimeAndReportAls({29, 29, 29, 29, 28});
+  // A fluctuation means brightness is not changed.
+  ForwardTimeAndReportAls({29, 29, 29, 29, 20});
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  CheckLogAvg({10, 20, 30, 40, 50},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({10, 20, 30, 40, 50},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 
-  ForwardTimeAndReportAls({28, 28, 28, 28});
+  ForwardTimeAndReportAls({20, 20, 20, 20});
   EXPECT_EQ(test_observer_.num_changes(), 2);
-  CheckLogAvg({28, 28, 28, 28, 28},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({20, 20, 20, 20, 20},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 }
 
 // Shorten |auto_brightness_als_horizon| to 1 second. Averaging period is
@@ -875,15 +878,15 @@ TEST_F(AdapterTest, AlsHorizon) {
 
   ForwardTimeAndReportAls({10});
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  CheckLogAvg({10}, adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({10}, adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   ForwardTimeAndReportAls({100});
   EXPECT_EQ(test_observer_.num_changes(), 2);
-  CheckLogAvg({100}, adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({100}, adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   ForwardTimeAndReportAls({2});
   EXPECT_EQ(test_observer_.num_changes(), 3);
-  CheckLogAvg({2}, adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({2}, adapter_->GetCurrentAvgLogAlsForTesting().value());
 }
 
 TEST_F(AdapterTest, UsePersonalCurve) {
@@ -901,14 +904,14 @@ TEST_F(AdapterTest, UsePersonalCurve) {
   // because there is no personal curve.
   ForwardTimeAndReportAls({1, 2, 3, 4, 5, 6, 7, 8});
   EXPECT_EQ(test_observer_.num_changes(), 0);
-  EXPECT_EQ(adapter_->GetCurrentLogAvgAlsForTesting(), base::nullopt);
+  EXPECT_EQ(adapter_->GetCurrentAvgLogAlsForTesting(), base::nullopt);
 
   // Personal curve is received, it does not lead to any immediate brightness
   // change.
   thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   fake_modeller_.ReportModelTrained(*personal_curve_);
   EXPECT_EQ(test_observer_.num_changes(), 0);
-  EXPECT_EQ(adapter_->GetCurrentLogAvgAlsForTesting(), base::nullopt);
+  EXPECT_EQ(adapter_->GetCurrentAvgLogAlsForTesting(), base::nullopt);
 
   // Another ALS comes in, which triggers a brightness change.
   ReportAls(20);
@@ -916,13 +919,13 @@ TEST_F(AdapterTest, UsePersonalCurve) {
   EXPECT_EQ(test_observer_.GetCause(),
             power_manager::BacklightBrightnessChange_Cause_MODEL);
 
-  CheckLogAvg({5, 6, 7, 8, 20},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({5, 6, 7, 8, 20},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   // Brightness is changed according to the personal curve.
   EXPECT_DOUBLE_EQ(test_observer_.GetBrightnessPercent(),
                    personal_curve_->Interpolate(
-                       adapter_->GetCurrentLogAvgAlsForTesting().value()));
+                       adapter_->GetCurrentAvgLogAlsForTesting().value()));
 }
 
 TEST_F(AdapterTest, UseGlobalCurve) {
@@ -936,13 +939,13 @@ TEST_F(AdapterTest, UseGlobalCurve) {
 
   ForwardTimeAndReportAls({1, 2, 3, 4, 5});
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  CheckLogAvg({1, 2, 3, 4, 5},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({1, 2, 3, 4, 5},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   // Brightness is changed according to the global curve.
   EXPECT_DOUBLE_EQ(test_observer_.GetBrightnessPercent(),
                    global_curve_->Interpolate(
-                       adapter_->GetCurrentLogAvgAlsForTesting().value()));
+                       adapter_->GetCurrentAvgLogAlsForTesting().value()));
 
   // A new personal curve is received but adapter still uses the global curve.
   thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(20));
@@ -955,7 +958,7 @@ TEST_F(AdapterTest, UseGlobalCurve) {
   // Brightness is changed according to the global curve.
   EXPECT_DOUBLE_EQ(test_observer_.GetBrightnessPercent(),
                    global_curve_->Interpolate(
-                       adapter_->GetCurrentLogAvgAlsForTesting().value()));
+                       adapter_->GetCurrentAvgLogAlsForTesting().value()));
 }
 
 TEST_F(AdapterTest, BrightnessSetByPolicy) {
@@ -967,7 +970,7 @@ TEST_F(AdapterTest, BrightnessSetByPolicy) {
 
   ForwardTimeAndReportAls({1, 2, 3, 4, 5, 6, 7, 8});
   EXPECT_EQ(test_observer_.num_changes(), 0);
-  EXPECT_EQ(adapter_->GetCurrentLogAvgAlsForTesting(), base::nullopt);
+  EXPECT_EQ(adapter_->GetCurrentAvgLogAlsForTesting(), base::nullopt);
 }
 
 TEST_F(AdapterTest, FeatureDisabled) {
@@ -987,7 +990,7 @@ TEST_F(AdapterTest, FeatureDisabled) {
   // No brightness is changed.
   ForwardTimeAndReportAls({1, 2, 3, 4, 5, 6, 7, 8});
   EXPECT_EQ(test_observer_.num_changes(), 0);
-  EXPECT_EQ(adapter_->GetCurrentLogAvgAlsForTesting(), base::nullopt);
+  EXPECT_EQ(adapter_->GetCurrentAvgLogAlsForTesting(), base::nullopt);
 }
 
 TEST_F(AdapterTest, FeatureEnabledForAtlas) {
@@ -1005,8 +1008,8 @@ TEST_F(AdapterTest, FeatureEnabledForAtlas) {
 
   ForwardTimeAndReportAls({1, 2, 3, 4, 5});
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  CheckLogAvg({1, 2, 3, 4, 5},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({1, 2, 3, 4, 5},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 }
 
 TEST_F(AdapterTest, ValidParameters) {
@@ -1042,8 +1045,8 @@ TEST_F(AdapterTest, UserAdjustmentEffectDisable) {
   // Brightness is changed for the 1st time.
   ForwardTimeAndReportAls({1, 2, 3, 4, 5});
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  CheckLogAvg({1, 2, 3, 4, 5},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({1, 2, 3, 4, 5},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   // Adapter will not be applied after a user manual adjustment.
   ReportUserBrightnessChangeRequest(20.0, 30.0);
@@ -1052,8 +1055,8 @@ TEST_F(AdapterTest, UserAdjustmentEffectDisable) {
 
   ForwardTimeAndReportAls({6, 7, 8, 9, 10, 11});
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  CheckLogAvg({1, 2, 3, 4, 5},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({1, 2, 3, 4, 5},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   // SuspendDone is received, which does not enable Adapter.
   ReportSuspendDone();
@@ -1062,8 +1065,8 @@ TEST_F(AdapterTest, UserAdjustmentEffectDisable) {
 
   ForwardTimeAndReportAls({11, 12, 13, 14, 15, 16});
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  CheckLogAvg({1, 2, 3, 4, 5},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({1, 2, 3, 4, 5},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 }
 
 TEST_F(AdapterTest, UserAdjustmentEffectPause) {
@@ -1083,8 +1086,8 @@ TEST_F(AdapterTest, UserAdjustmentEffectPause) {
   // Brightness is changed for the 1st time.
   ForwardTimeAndReportAls({1, 2, 3, 4, 5});
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  CheckLogAvg({1, 2, 3, 4, 5},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({1, 2, 3, 4, 5},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   // User manually changes brightness so that adapter will not be applied.
   ReportUserBrightnessChangeRequest(20.0, 30.0);
@@ -1094,8 +1097,8 @@ TEST_F(AdapterTest, UserAdjustmentEffectPause) {
   // New ALS data will not trigger brightness update.
   ForwardTimeAndReportAls({101, 102, 103, 104, 105, 106, 107, 108});
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  CheckLogAvg({1, 2, 3, 4, 5},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({1, 2, 3, 4, 5},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   // // SuspendDone is received, which reenables adapter.
   ReportSuspendDone();
@@ -1105,21 +1108,21 @@ TEST_F(AdapterTest, UserAdjustmentEffectPause) {
   // Another ALS results in a brightness change.
   ForwardTimeAndReportAls({109});
   EXPECT_EQ(test_observer_.num_changes(), 2);
-  CheckLogAvg({105, 106, 107, 108, 109},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({105, 106, 107, 108, 109},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   // Another user brightness change.
   ReportUserBrightnessChangeRequest(40.0, 50.0);
-  CheckLogAvg({105, 106, 107, 108, 109},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({105, 106, 107, 108, 109},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
   EXPECT_FALSE(adapter_->IsAppliedForTesting());
 
   // New ALS data will not trigger brightness update.
   ForwardTimeAndReportAls({200});
   EXPECT_EQ(test_observer_.num_changes(), 2);
-  CheckLogAvg({105, 106, 107, 108, 109},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({105, 106, 107, 108, 109},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   // SuspendDone is received, which reenables adapter.
   ReportSuspendDone();
@@ -1129,13 +1132,13 @@ TEST_F(AdapterTest, UserAdjustmentEffectPause) {
   // Als readings come in but not sufficient time since user changed brightness.
   ForwardTimeAndReportAls({201, 202, 203});
   EXPECT_EQ(test_observer_.num_changes(), 2);
-  CheckLogAvg({105, 106, 107, 108, 109},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({105, 106, 107, 108, 109},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   ForwardTimeAndReportAls({204});
   EXPECT_EQ(test_observer_.num_changes(), 3);
-  CheckLogAvg({200, 201, 202, 203, 204},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({200, 201, 202, 203, 204},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 }
 
 TEST_F(AdapterTest, UserAdjustmentEffectContinue) {
@@ -1155,26 +1158,26 @@ TEST_F(AdapterTest, UserAdjustmentEffectContinue) {
   // Brightness is changed for the 1st time.
   ForwardTimeAndReportAls({1, 2, 3, 4, 5});
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  CheckLogAvg({1, 2, 3, 4, 5},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({1, 2, 3, 4, 5},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   ForwardTimeAndReportAls({10});
   // User manual adjustment doesn't disable adapter.
   ReportUserBrightnessChangeRequest(40.0, 50.0);
-  CheckLogAvg({2, 3, 4, 5, 10},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({2, 3, 4, 5, 10},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
   EXPECT_TRUE(adapter_->IsAppliedForTesting());
 
   ForwardTimeAndReportAls({100, 101, 102, 103});
-  CheckLogAvg({2, 3, 4, 5, 10},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({2, 3, 4, 5, 10},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   ForwardTimeAndReportAls({104});
   EXPECT_EQ(test_observer_.num_changes(), 2);
-  CheckLogAvg({100, 101, 102, 103, 104},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({100, 101, 102, 103, 104},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 }
 
 // Default user adjustment effect for atlas is Continue.
@@ -1196,26 +1199,26 @@ TEST_F(AdapterTest, UserAdjustmentEffectContinueDefaultForAtlas) {
   // Brightness is changed for the 1st time.
   ForwardTimeAndReportAls({1, 2, 3, 4, 5});
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  CheckLogAvg({1, 2, 3, 4, 5},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({1, 2, 3, 4, 5},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   ForwardTimeAndReportAls({10});
   // User manual adjustment doesn't disable adapter.
   ReportUserBrightnessChangeRequest(40.0, 50.0);
-  CheckLogAvg({2, 3, 4, 5, 10},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({2, 3, 4, 5, 10},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
   EXPECT_TRUE(adapter_->IsAppliedForTesting());
 
   ForwardTimeAndReportAls({100, 101, 102, 103});
-  CheckLogAvg({2, 3, 4, 5, 10},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({2, 3, 4, 5, 10},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   ForwardTimeAndReportAls({104});
   EXPECT_EQ(test_observer_.num_changes(), 2);
-  CheckLogAvg({100, 101, 102, 103, 104},
-              adapter_->GetCurrentLogAvgAlsForTesting().value());
+  CheckAvgLog({100, 101, 102, 103, 104},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
 }
 
 }  // namespace auto_screen_brightness

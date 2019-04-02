@@ -485,17 +485,19 @@ TEST_F(ModellerImplTest, OnAmbientLightUpdated) {
     thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
     const int lux = i == 0 ? first_lux : i;
     fake_als_reader_.ReportAmbientLightUpdate(lux);
-    running_sum += lux;
-    EXPECT_EQ(modeller_->AverageAmbientForTesting(thread_bundle_.NowTicks()),
-              running_sum / (i + 1));
+    running_sum += ConvertToLog(lux);
+    EXPECT_DOUBLE_EQ(
+        modeller_->AverageAmbientForTesting(thread_bundle_.NowTicks()).value(),
+        running_sum / (i + 1));
   }
 
   // Add another one should push the oldest |first_lux| out of the horizon.
   thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   fake_als_reader_.ReportAmbientLightUpdate(100);
-  running_sum = running_sum + 100 - first_lux;
-  EXPECT_EQ(modeller_->AverageAmbientForTesting(thread_bundle_.NowTicks()),
-            running_sum / horizon_in_seconds);
+  running_sum = running_sum + ConvertToLog(100) - ConvertToLog(first_lux);
+  EXPECT_DOUBLE_EQ(
+      modeller_->AverageAmbientForTesting(thread_bundle_.NowTicks()).value(),
+      running_sum / horizon_in_seconds);
 }
 
 // User brightness changes are received, training example cache reaches
@@ -523,9 +525,9 @@ TEST_F(ModellerImplTest, OnUserBrightnessChanged) {
     const double brightness_old = 10.0 + i;
     const double brightness_new = 20.0 + i;
     modeller_->OnUserBrightnessChanged(brightness_old, brightness_new);
-    expected_data.push_back(
-        {brightness_old, brightness_new,
-         ConvertToLog(modeller_->AverageAmbientForTesting(now).value()), now});
+    expected_data.push_back({brightness_old, brightness_new,
+                             modeller_->AverageAmbientForTesting(now).value(),
+                             now});
   }
 
   // Training should not have started.
@@ -538,9 +540,9 @@ TEST_F(ModellerImplTest, OnUserBrightnessChanged) {
   const double brightness_old = 85;
   const double brightness_new = 95;
   modeller_->OnUserBrightnessChanged(brightness_old, brightness_new);
-  expected_data.push_back(
-      {brightness_old, brightness_new,
-       ConvertToLog(modeller_->AverageAmbientForTesting(now).value()), now});
+  expected_data.push_back({brightness_old, brightness_new,
+                           modeller_->AverageAmbientForTesting(now).value(),
+                           now});
   thread_bundle_.RunUntilIdle();
 
   EXPECT_EQ(0u, modeller_->NumberTrainingDataPointsForTesting());
@@ -577,9 +579,9 @@ TEST_F(ModellerImplTest, MultipleUserActivities) {
     const double brightness_old = 10.0 + i;
     const double brightness_new = 20.0 + i;
     modeller_->OnUserBrightnessChanged(brightness_old, brightness_new);
-    expected_data.push_back(
-        {brightness_old, brightness_new,
-         ConvertToLog(modeller_->AverageAmbientForTesting(now).value()), now});
+    expected_data.push_back({brightness_old, brightness_new,
+                             modeller_->AverageAmbientForTesting(now).value(),
+                             now});
   }
 
   EXPECT_EQ(modeller_->NumberTrainingDataPointsForTesting(), 10u);
