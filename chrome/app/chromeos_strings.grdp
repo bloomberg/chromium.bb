@@ -3823,6 +3823,9 @@
   <message name="IDS_PLUGIN_VM_LAUNCHER_UNZIPPING_MESSAGE" desc="Description of the current state of PluginVm environment setting." translateable="false">
     Configuring <ph name="APP_NAME">PluginVm</ph> image...
   </message>
+  <message name="IDS_PLUGIN_VM_LAUNCHER_REGISTERING_MESSAGE" desc="Description of the current state of PluginVm environment setting." translateable="false">
+    Putting on final touches...
+  </message>
   <message name="IDS_PLUGIN_VM_LAUNCHER_FINISHED_MESSAGE" desc="Description of the current state of PluginVm environment setting." translateable="false">
     Set up was successfully completed. Click on the launch button to start using <ph name="APP_NAME">PluginVm</ph>.
   </message>

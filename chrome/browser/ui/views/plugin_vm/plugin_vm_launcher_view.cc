@@ -174,6 +174,7 @@ int PluginVmLauncherView::GetDialogButtons() const {
     case State::START_DOWNLOADING:
     case State::DOWNLOADING:
     case State::UNZIPPING:
+    case State::REGISTERING:
       return ui::DIALOG_BUTTON_CANCEL;
     case State::FINISHED:
       return ui::DIALOG_BUTTON_OK;
@@ -187,7 +188,8 @@ base::string16 PluginVmLauncherView::GetDialogButtonLabel(
   switch (state_) {
     case State::START_DOWNLOADING:
     case State::DOWNLOADING:
-    case State::UNZIPPING: {
+    case State::UNZIPPING:
+    case State::REGISTERING: {
       DCHECK_EQ(button, ui::DIALOG_BUTTON_CANCEL);
       return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
     }
@@ -225,6 +227,9 @@ bool PluginVmLauncherView::Cancel() {
     plugin_vm_image_manager_->CancelDownload();
   if (state_ == State::UNZIPPING)
     plugin_vm_image_manager_->CancelUnzipping();
+
+  // TODO(https://crbug.com/947014): Cancel registering.
+
   return true;
 }
 
@@ -306,8 +311,11 @@ void PluginVmLauncherView::OnUnzipped() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::UNZIPPING);
 
-  state_ = State::FINISHED;
+  state_ = State::REGISTERING;
   OnStateUpdated();
+
+  // TODO(https://crbug.com/947014): Add call to register PluginVm image.
+  OnRegistered(true);
 }
 
 void PluginVmLauncherView::OnUnzippingFailed() {
@@ -317,11 +325,27 @@ void PluginVmLauncherView::OnUnzippingFailed() {
   OnStateUpdated();
 }
 
+void PluginVmLauncherView::OnRegistered(bool success) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_EQ(state_, State::REGISTERING);
+
+  if (!success) {
+    state_ = State::ERROR;
+    OnStateUpdated();
+    return;
+  }
+
+  state_ = State::FINISHED;
+  OnStateUpdated();
+  // TODO(https://crbug.com/904848): Mark image as registered.
+}
+
 base::string16 PluginVmLauncherView::GetBigMessage() {
   switch (state_) {
     case State::START_DOWNLOADING:
     case State::DOWNLOADING:
     case State::UNZIPPING:
+    case State::REGISTERING:
       return l10n_util::GetStringUTF16(
           IDS_PLUGIN_VM_LAUNCHER_ENVIRONMENT_SETTING_TITLE);
     case State::FINISHED:
@@ -345,9 +369,9 @@ void PluginVmLauncherView::OnStateUpdated() {
   SetMessageLabel();
   SetBigImage();
 
-  const bool progress_bar_visible = state_ == State::START_DOWNLOADING ||
-                                    state_ == State::DOWNLOADING ||
-                                    state_ == State::UNZIPPING;
+  const bool progress_bar_visible =
+      state_ == State::START_DOWNLOADING || state_ == State::DOWNLOADING ||
+      state_ == State::UNZIPPING || state_ == State::REGISTERING;
   progress_bar_->SetVisible(progress_bar_visible);
   // Values outside the range [0,1] display an infinite loading animation.
   progress_bar_->SetValue(-1);
@@ -376,6 +400,9 @@ base::string16 PluginVmLauncherView::GetMessage() const {
     case State::UNZIPPING:
       return l10n_util::GetStringUTF16(
           IDS_PLUGIN_VM_LAUNCHER_UNZIPPING_MESSAGE);
+    case State::REGISTERING:
+      return l10n_util::GetStringUTF16(
+          IDS_PLUGIN_VM_LAUNCHER_REGISTERING_MESSAGE);
     case State::FINISHED:
       return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_FINISHED_MESSAGE);
     case State::ERROR:
