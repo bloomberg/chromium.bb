@@ -90,6 +90,13 @@ DumpAccessibilityTestBase::~DumpAccessibilityTestBase() {}
 void DumpAccessibilityTestBase::SetUpCommandLine(
     base::CommandLine* command_line) {
   IsolateAllSitesForTesting(command_line);
+
+  // Each test pass might require custom command-line setup
+  auto passes = AccessibilityTreeFormatter::GetTestPasses();
+  size_t current_pass = GetParam();
+  CHECK_LT(current_pass, passes.size());
+  if (passes[current_pass].set_up_command_line)
+    passes[current_pass].set_up_command_line(command_line);
 }
 
 void DumpAccessibilityTestBase::SetUpOnMainThread() {
@@ -201,14 +208,19 @@ void DumpAccessibilityTestBase::RunTest(const base::FilePath file_path,
   // Get all the tree formatters; the test is run independently on each one.
   auto formatters = AccessibilityTreeFormatter::GetTestPasses();
   auto event_recorders = AccessibilityEventRecorder::GetTestPasses();
-  DCHECK(event_recorders.size() == formatters.size());
+  CHECK(event_recorders.size() == formatters.size());
 
-  int pass_count = formatters.size();
-  for (int pass = 0; pass < pass_count; ++pass) {
-    formatter_factory_ = formatters[pass];
-    event_recorder_factory_ = event_recorders[pass];
-    RunTestForPlatform(file_path, file_dir);
-  }
+  // The current test number is supplied as a test parameter.
+  size_t current_pass = GetParam();
+  CHECK_LT(current_pass, formatters.size());
+  CHECK_EQ(std::string(formatters[current_pass].name),
+           std::string(event_recorders[current_pass].name));
+
+  formatter_factory_ = formatters[current_pass].create_formatter;
+  event_recorder_factory_ = event_recorders[current_pass].create_recorder;
+
+  RunTestForPlatform(file_path, file_dir);
+
   formatter_factory_ = nullptr;
   event_recorder_factory_ = nullptr;
 }
@@ -217,10 +229,6 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
     const base::FilePath file_path,
     const char* file_dir) {
   formatter_ = formatter_factory_();
-
-  base::test::ScopedCommandLine scoped_command_line;
-  formatter_->SetUpCommandLineForTestPass(
-      scoped_command_line.GetProcessCommandLine());
 
   // Disable the "hot tracked" state (set when the mouse is hovering over
   // an object) because it makes test output change based on the mouse position.

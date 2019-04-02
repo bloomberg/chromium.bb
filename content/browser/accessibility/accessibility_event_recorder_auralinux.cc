@@ -97,12 +97,12 @@ std::unique_ptr<AccessibilityEventRecorder> AccessibilityEventRecorder::Create(
       manager, pid, application_name_match_pattern);
 }
 
-std::vector<AccessibilityEventRecorder::EventRecorderFactory>
+std::vector<AccessibilityEventRecorder::TestPass>
 AccessibilityEventRecorder::GetTestPasses() {
   // Both the Blink pass and native pass use the same recorder
   return {
-      &AccessibilityEventRecorder::Create,
-      &AccessibilityEventRecorder::Create,
+      {"blink", &AccessibilityEventRecorder::Create},
+      {"linux", &AccessibilityEventRecorder::Create},
   };
 }
 

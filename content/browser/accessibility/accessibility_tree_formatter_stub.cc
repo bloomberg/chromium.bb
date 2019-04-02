@@ -35,11 +35,11 @@ AccessibilityTreeFormatter::Create() {
 }
 
 // static
-std::vector<AccessibilityTreeFormatter::FormatterFactory>
+std::vector<AccessibilityTreeFormatter::TestPass>
 AccessibilityTreeFormatter::GetTestPasses() {
   return {
-      &AccessibilityTreeFormatterBlink::CreateBlink,
-      &AccessibilityTreeFormatter::Create,
+      {"blink", &AccessibilityTreeFormatterBlink::CreateBlink},
+      {"native", &AccessibilityTreeFormatter::Create},
   };
 }
 #endif

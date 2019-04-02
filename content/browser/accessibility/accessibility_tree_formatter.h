@@ -71,10 +71,13 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
   // Get a set of factory methods to create tree-formatters, one for each test
   // pass; see |DumpAccessibilityTestBase|.
   using FormatterFactory = std::unique_ptr<AccessibilityTreeFormatter> (*)();
-  static std::vector<FormatterFactory> GetTestPasses();
-
-  // Called to allow each test pass to alter the command-line
-  virtual void SetUpCommandLineForTestPass(base::CommandLine* command_line);
+  using CommandLineHelper = void (*)(base::CommandLine* command_line);
+  struct TestPass {
+    const char* name;
+    FormatterFactory create_formatter;
+    CommandLineHelper set_up_command_line;
+  };
+  static std::vector<TestPass> GetTestPasses();
 
   virtual void AddDefaultFilters(std::vector<PropertyFilter>* property_filters);
 
