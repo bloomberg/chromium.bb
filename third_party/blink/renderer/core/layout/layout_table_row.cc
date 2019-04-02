@@ -331,8 +331,10 @@ void LayoutTableRow::AddLayoutOverflowFromCell(const LayoutTableCell* cell) {
 }
 
 void LayoutTableRow::AddVisualOverflowFromCell(const LayoutTableCell* cell) {
-  if (cell->HasSelfPaintingLayer())
-    return;
+  // Note: we include visual overflow of even self-painting cells,
+  // because the row needs to expand to contain their area in order to paint
+  // background and collapsed borders. This is different than any other
+  // LayoutObject subtype.
 
   // Table row paints its background behind cells. If the cell spans multiple
   // rows, the row's visual rect should be expanded to cover the cell.
