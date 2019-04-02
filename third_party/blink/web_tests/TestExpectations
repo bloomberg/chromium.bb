@@ -6191,4 +6191,6 @@ crbug.com/947023 external/wpt/fetch/sec-metadata/xslt.tentative.https.sub.html [
 
 ## Temp while landing a fix from webrtc importer
 crbug.com/948055 external/wpt/webrtc/RTCDataChannel-id.html [ Failure Pass ]
-
+crbug.com/948055 external/wpt/webrtc/RTCPeerConnection-createDataChannel.html [ Failure Pass ]
+crbug.com/948055 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCDataChannel-id.html [ Failure Pass ]
+crbug.com/948055 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-createDataChannel.html [ Failure Pass ]
