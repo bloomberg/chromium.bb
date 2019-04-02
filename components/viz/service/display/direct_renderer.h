@@ -210,6 +210,8 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
     return reshape_surface_size_;
   }
 
+  bool ShouldApplyRoundedCorner(const DrawQuad* quad) const;
+
   const RendererSettings* const settings_;
   OutputSurface* const output_surface_;
   DisplayResourceProvider* const resource_provider_;

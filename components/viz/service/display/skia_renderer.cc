@@ -339,7 +339,8 @@ struct SkiaRenderer::DrawQuadParams {
                  float opacity,
                  SkFilterQuality filter_quality,
                  const gfx::QuadF* draw_region,
-                 bool enable_scissor_rect);
+                 bool enable_scissor_rect,
+                 const gfx::RRectF* rounded_corner_bounds);
 
   // window_matrix * projection_matrix * quad_to_target_transform
   gfx::Transform content_device_transform;
@@ -361,6 +362,8 @@ struct SkiaRenderer::DrawQuadParams {
   // canvas. Is false if is_scissor_enabled_ is false or the scissor was
   // explicitly applied to the visible geometry already.
   bool has_scissor_rect;
+  // The rounded corner clip to be applied. This is in target space.
+  const gfx::RRectF* rounded_corner_bounds;
 
   SkPaint paint() const {
     SkPaint p;
@@ -372,21 +375,24 @@ struct SkiaRenderer::DrawQuadParams {
   }
 };
 
-SkiaRenderer::DrawQuadParams::DrawQuadParams(const gfx::Transform& cdt,
-                                             const gfx::RectF visible_rect,
-                                             unsigned aa_flags,
-                                             SkBlendMode blend_mode,
-                                             float opacity,
-                                             SkFilterQuality filter_quality,
-                                             const gfx::QuadF* draw_region,
-                                             bool has_scissor_rect)
+SkiaRenderer::DrawQuadParams::DrawQuadParams(
+    const gfx::Transform& cdt,
+    const gfx::RectF visible_rect,
+    unsigned aa_flags,
+    SkBlendMode blend_mode,
+    float opacity,
+    SkFilterQuality filter_quality,
+    const gfx::QuadF* draw_region,
+    bool has_scissor_rect,
+    const gfx::RRectF* rounded_corner_bounds)
     : content_device_transform(cdt),
       visible_rect(visible_rect),
       aa_flags(aa_flags),
       blend_mode(blend_mode),
       opacity(opacity),
       filter_quality(filter_quality),
-      has_scissor_rect(has_scissor_rect) {
+      has_scissor_rect(has_scissor_rect),
+      rounded_corner_bounds(rounded_corner_bounds) {
   if (draw_region) {
     this->draw_region.emplace(*draw_region);
   }
@@ -818,6 +824,7 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
 }
 
 void SkiaRenderer::PrepareCanvas(const gfx::Rect* scissor_rect,
+                                 const gfx::RRectF* rounded_corner_bounds,
                                  const gfx::Transform* cdt) {
   // Scissor is applied in the device space (CTM == I) and since no changes
   // to the canvas persist, CTM should already be the identity
@@ -826,6 +833,9 @@ void SkiaRenderer::PrepareCanvas(const gfx::Rect* scissor_rect,
   if (scissor_rect) {
     current_canvas_->clipRect(gfx::RectToSkRect(*scissor_rect));
   }
+
+  if (rounded_corner_bounds && !rounded_corner_bounds->IsEmpty())
+    current_canvas_->clipRRect(SkRRect(*rounded_corner_bounds), true);
 
   if (cdt) {
     SkMatrix m;
@@ -842,7 +852,8 @@ SkiaRenderer::DrawQuadParams SkiaRenderer::CalculateDrawQuadParams(
           quad->shared_quad_state->quad_to_target_transform,
       gfx::RectF(quad->visible_rect), SkCanvas::kNone_QuadAAFlags,
       quad->shared_quad_state->blend_mode, quad->shared_quad_state->opacity,
-      GetFilterQuality(quad), draw_region, is_scissor_enabled_);
+      GetFilterQuality(quad), draw_region, is_scissor_enabled_,
+      &quad->shared_quad_state->rounded_corner_bounds);
 
   params.content_device_transform.FlattenTo2d();
 
@@ -926,6 +937,13 @@ bool SkiaRenderer::MustFlushBatchedQuads(const DrawQuad* new_quad,
   if (!no_scissor && !same_scissor)
     return true;
 
+  if (batched_quad_state_.rounded_corner_bounds &&
+      params.rounded_corner_bounds &&
+      *batched_quad_state_.rounded_corner_bounds !=
+          *params.rounded_corner_bounds) {
+    return true;
+  }
+
   return false;
 }
 
@@ -943,6 +961,7 @@ void SkiaRenderer::AddQuadToBatch(const DrawQuadParams& params,
 
     batched_quad_state_.blend_mode = params.blend_mode;
     batched_quad_state_.filter_quality = params.filter_quality;
+    batched_quad_state_.rounded_corner_bounds = params.rounded_corner_bounds;
   }
 
   // Add entry, with optional clip quad and shared transform
@@ -970,7 +989,7 @@ void SkiaRenderer::FlushBatchedQuads() {
   PrepareCanvas(batched_quad_state_.has_scissor_rect
                     ? &batched_quad_state_.scissor_rect
                     : nullptr,
-                nullptr);
+                batched_quad_state_.rounded_corner_bounds, nullptr);
 
   SkPaint paint;
   paint.setFilterQuality(batched_quad_state_.filter_quality);
@@ -992,7 +1011,7 @@ void SkiaRenderer::DrawColoredQuad(const DrawQuadParams& params,
 
   SkAutoCanvasRestore acr(current_canvas_, true /* do_save */);
   PrepareCanvas(params.has_scissor_rect ? &scissor_rect_ : nullptr,
-                &params.content_device_transform);
+                params.rounded_corner_bounds, &params.content_device_transform);
 
   color = SkColorSetA(color, params.opacity * SkColorGetA(color));
   const SkPoint* draw_region =
@@ -1012,7 +1031,7 @@ void SkiaRenderer::DrawSingleImage(const DrawQuadParams& params,
 
   SkAutoCanvasRestore acr(current_canvas_, true /* do_save */);
   PrepareCanvas(params.has_scissor_rect ? &scissor_rect_ : nullptr,
-                &params.content_device_transform);
+                params.rounded_corner_bounds, &params.content_device_transform);
   // Use -1 for matrix index since the cdt is set on the canvas.
   // Assume params.opacity has been somehow handled in the SkPaint
   // (setAlphaf, color filter, image filter node, etc.).
@@ -1030,7 +1049,8 @@ void SkiaRenderer::DrawDebugBorderQuad(const DebugBorderDrawQuad* quad,
 
   SkAutoCanvasRestore acr(current_canvas_, true /* do_save */);
   // We need to apply the matrix manually to have pixel-sized stroke width.
-  PrepareCanvas(params.has_scissor_rect ? &scissor_rect_ : nullptr, nullptr);
+  PrepareCanvas(params.has_scissor_rect ? &scissor_rect_ : nullptr, nullptr,
+                nullptr);
   SkMatrix cdt;
   gfx::TransformToFlattenedSkMatrix(params.content_device_transform, &cdt);
 
@@ -1067,7 +1087,7 @@ void SkiaRenderer::DrawPictureQuad(const PictureDrawQuad* quad,
 
   SkAutoCanvasRestore acr(current_canvas_, true /* do_save */);
   PrepareCanvas(params.has_scissor_rect ? &scissor_rect_ : nullptr,
-                &params.content_device_transform);
+                params.rounded_corner_bounds, &params.content_device_transform);
 
   // Unlike other quads which draw visible_rect or draw_region as their geometry
   // these represent the valid windows of content to show for the display list,
@@ -1313,11 +1333,13 @@ void SkiaRenderer::DoSingleDrawQuad(const DrawQuad* quad,
   base::Optional<SkAutoCanvasRestore> auto_canvas_restore;
   const gfx::Rect* scissor_rect =
       is_scissor_enabled_ ? &scissor_rect_ : nullptr;
-  gfx::Transform contents_device_transform =
-      current_frame()->window_matrix * current_frame()->projection_matrix *
-      quad->shared_quad_state->quad_to_target_transform;
-  PrepareCanvasForDrawQuads(contents_device_transform, draw_region,
-                            scissor_rect, &auto_canvas_restore);
+  const gfx::RRectF* rounded_corner_bounds =
+      ShouldApplyRoundedCorner(quad)
+          ? &quad->shared_quad_state->rounded_corner_bounds
+          : nullptr;
+  PrepareCanvasForDrawQuads(quad->shared_quad_state->quad_to_target_transform,
+                            draw_region, scissor_rect, rounded_corner_bounds,
+                            &auto_canvas_restore);
 
   SkPaint paint;
   if (settings_->force_antialiasing ||
@@ -1377,16 +1399,28 @@ void SkiaRenderer::DoSingleDrawQuad(const DrawQuad* quad,
 }
 
 void SkiaRenderer::PrepareCanvasForDrawQuads(
-    gfx::Transform contents_device_transform,
+    gfx::Transform quad_to_target_transform,
     const gfx::QuadF* draw_region,
     const gfx::Rect* scissor_rect,
+    const gfx::RRectF* rounded_corner_bounds,
     base::Optional<SkAutoCanvasRestore>* auto_canvas_restore) {
-  if (draw_region || scissor_rect) {
+  gfx::Transform screen_transform =
+      current_frame()->window_matrix * current_frame()->projection_matrix;
+  screen_transform.FlattenTo2d();
+  if (draw_region || scissor_rect || rounded_corner_bounds) {
     auto_canvas_restore->emplace(current_canvas_, true /* do_save */);
     if (scissor_rect)
       current_canvas_->clipRect(gfx::RectToSkRect(*scissor_rect));
+    if (rounded_corner_bounds) {
+      SkRRect result;
+      if (SkRRect(*rounded_corner_bounds)
+              .transform(screen_transform.matrix(), &result)) {
+        current_canvas_->clipRRect(result, true);
+      }
+    }
   }
-
+  gfx::Transform contents_device_transform =
+      screen_transform * quad_to_target_transform;
   contents_device_transform.FlattenTo2d();
   SkMatrix sk_device_matrix;
   gfx::TransformToFlattenedSkMatrix(contents_device_transform,
