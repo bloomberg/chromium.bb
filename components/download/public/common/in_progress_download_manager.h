@@ -263,6 +263,9 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   // Used to check if the URL is safe.
   URLSecurityPolicy url_security_policy_;
 
+  // Whether this object uses an empty database and no history will be saved.
+  bool use_empty_db_;
+
   base::WeakPtrFactory<InProgressDownloadManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InProgressDownloadManager);
