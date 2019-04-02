@@ -12,8 +12,8 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 
 class Profile;
@@ -140,7 +140,7 @@ class ProfileSyncServiceHarness {
   bool AwaitSyncTransportActive();
 
   // Returns the ProfileSyncService member of the sync client.
-  browser_sync::ProfileSyncService* service() const { return service_; }
+  syncer::ProfileSyncService* service() const { return service_; }
 
   // Returns the debug name for this profile. Used for logging.
   const std::string& profile_debug_name() const { return profile_debug_name_; }
@@ -199,7 +199,7 @@ class ProfileSyncServiceHarness {
   Profile* const profile_;
 
   // ProfileSyncService object associated with |profile_|.
-  browser_sync::ProfileSyncService* const service_;
+  syncer::ProfileSyncService* const service_;
 
   // Prevents Sync from running until configuration is complete.
   std::unique_ptr<syncer::SyncSetupInProgressHandle> sync_blocker_;

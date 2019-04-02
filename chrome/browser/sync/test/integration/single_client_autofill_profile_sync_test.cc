@@ -12,9 +12,9 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_prefs.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,8 +23,7 @@ namespace {
 
 class AutofillProfileDisabledChecker : public SingleClientStatusChangeChecker {
  public:
-  explicit AutofillProfileDisabledChecker(
-      browser_sync::ProfileSyncService* service)
+  explicit AutofillProfileDisabledChecker(syncer::ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
   ~AutofillProfileDisabledChecker() override = default;
 

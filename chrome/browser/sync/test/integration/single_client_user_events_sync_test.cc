@@ -58,7 +58,7 @@ CommitResponse::ResponseType TransientErrorFirst(
 
 class UserEventEqualityChecker : public SingleClientStatusChangeChecker {
  public:
-  UserEventEqualityChecker(browser_sync::ProfileSyncService* service,
+  UserEventEqualityChecker(syncer::ProfileSyncService* service,
                            FakeServer* fake_server,
                            std::vector<UserEventSpecifics> expected_specifics)
       : SingleClientStatusChangeChecker(service), fake_server_(fake_server) {
@@ -121,7 +121,7 @@ class UserEventEqualityChecker : public SingleClientStatusChangeChecker {
 class UserEventCaseChecker : public SingleClientStatusChangeChecker {
  public:
   UserEventCaseChecker(
-      browser_sync::ProfileSyncService* service,
+      syncer::ProfileSyncService* service,
       FakeServer* fake_server,
       std::multiset<UserEventSpecifics::EventCase> expected_cases)
       : SingleClientStatusChangeChecker(service),

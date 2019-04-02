@@ -10,7 +10,7 @@
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/test/fake_server/fake_server_http_post_provider.h"
 #include "content/public/test/network_connection_change_simulator.h"
 #include "net/base/network_change_notifier.h"
@@ -40,7 +40,7 @@ class SyncExponentialBackoffTest : public SyncTest {
 // exponential backoff after it encounters an error.
 class ExponentialBackoffChecker : public SingleClientStatusChangeChecker {
  public:
-  explicit ExponentialBackoffChecker(browser_sync::ProfileSyncService* pss)
+  explicit ExponentialBackoffChecker(syncer::ProfileSyncService* pss)
       : SingleClientStatusChangeChecker(pss) {
     const SyncCycleSnapshot& snap = service()->GetLastCycleSnapshot();
     retry_verifier_.Initialize(snap);
