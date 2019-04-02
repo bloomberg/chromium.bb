@@ -5,6 +5,6 @@
   "manifest_version": 2,
   "name": "Service worker extension: native messaging Port connection test",
   "description": "Test the basic functionality of passing native messages.",
-  "background": {"service_worker_script": "service_worker_background.js"},
+  "background": {"service_worker": "service_worker_background.js"},
   "permissions": ["nativeMessaging"]
 }

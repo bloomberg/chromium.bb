@@ -22,8 +22,7 @@ const char kBackgroundAllowJsAccess[] = "background.allow_js_access";
 const char kBackgroundPage[] = "background.page";
 const char kBackgroundPersistent[] = "background.persistent";
 const char kBackgroundScripts[] = "background.scripts";
-const char kBackgroundServiceWorkerScript[] =
-    "background.service_worker_script";
+const char kBackgroundServiceWorkerScript[] = "background.service_worker";
 const char kBluetooth[] = "bluetooth";
 const char kBookmarkUI[] = "bookmarks_ui";
 const char kBrowserAction[] = "browser_action";
@@ -327,7 +326,7 @@ const char kInvalidBackgroundScript[] =
 const char kInvalidBackgroundScripts[] =
     "Invalid value for 'background.scripts'.";
 const char kInvalidBackgroundServiceWorkerScript[] =
-    "Invalid value for 'background.service_worker_script'.";
+    "Invalid value for 'background.service_worker'.";
 const char kInvalidBackgroundInHostedApp[] =
     "Invalid value for 'background_page'. Hosted apps must specify an "
     "absolute HTTPS URL for the background page.";
