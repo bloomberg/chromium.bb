@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "content/renderer/p2p/mdns_responder_adapter.h"
 #include "content/renderer/p2p/network_list_manager.h"
 #include "content/renderer/p2p/network_list_observer.h"
 #include "third_party/webrtc/rtc_base/mdns_responder_interface.h"
@@ -29,7 +28,9 @@ class IpcNetworkManager : public rtc::NetworkManagerBase,
                           public NetworkListObserver {
  public:
   // Constructor doesn't take ownership of the |network_list_manager|.
-  CONTENT_EXPORT IpcNetworkManager(NetworkListManager* network_list_manager);
+  CONTENT_EXPORT IpcNetworkManager(
+      NetworkListManager* network_list_manager,
+      std::unique_ptr<webrtc::MdnsResponderInterface> mdns_responder);
   ~IpcNetworkManager() override;
 
   // rtc:::NetworkManager:
@@ -43,13 +44,11 @@ class IpcNetworkManager : public rtc::NetworkManagerBase,
       const net::IPAddress& default_ipv4_local_address,
       const net::IPAddress& default_ipv6_local_address) override;
 
-  void SetMdnsResponder(std::unique_ptr<MdnsResponderAdapter> mdns_responder);
-
  private:
   void SendNetworksChangedSignal();
 
   NetworkListManager* network_list_manager_;
-  std::unique_ptr<MdnsResponderAdapter> mdns_responder_;
+  std::unique_ptr<webrtc::MdnsResponderInterface> mdns_responder_;
   int start_count_ = 0;
   bool network_list_received_ = false;
 
