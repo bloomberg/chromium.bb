@@ -235,8 +235,7 @@ std::unique_ptr<base::DictionaryValue> CreateDictionaryFrom(
   return dict;
 }
 
-Status GetVisibleCookies(Session* session,
-                         WebView* web_view,
+Status GetVisibleCookies(WebView* web_view,
                          std::list<Cookie>* cookies) {
   std::string current_page_url;
   Status status = GetUrl(web_view, std::string(), &current_page_url);
@@ -258,10 +257,6 @@ Status GetVisibleCookies(Session* session,
     cookie_dict->GetString("value", &value);
     std::string domain;
     cookie_dict->GetString("domain", &domain);
-    if (session->w3c_compliant) {
-      if (domain[0] == '.')
-        domain.erase(0, 1);
-    }
     std::string path;
     cookie_dict->GetString("path", &path);
     double expiry = 0;
@@ -1779,12 +1774,14 @@ Status ExecuteGetCookies(Session* session,
                          std::unique_ptr<base::Value>* value,
                          Timeout* timeout) {
   std::list<Cookie> cookies;
-  Status status = GetVisibleCookies(session, web_view, &cookies);
+  Status status = GetVisibleCookies(web_view, &cookies);
   if (status.IsError())
     return status;
   std::unique_ptr<base::ListValue> cookie_list(new base::ListValue());
-  for (std::list<Cookie>::const_iterator it = cookies.begin();
+  for (std::list<Cookie>::iterator it = cookies.begin();
        it != cookies.end(); ++it) {
+    if (session->w3c_compliant && it->domain[0] == '.')
+      it->domain.erase(0, 1);
     cookie_list->Append(CreateDictionaryFrom(*it));
   }
   *value = std::move(cookie_list);
@@ -1801,13 +1798,15 @@ Status ExecuteGetNamedCookie(Session* session,
     return Status(kInvalidArgument, "missing 'cookie name'");
 
   std::list<Cookie> cookies;
-  Status status = GetVisibleCookies(session, web_view, &cookies);
+  Status status = GetVisibleCookies(web_view, &cookies);
   if (status.IsError())
     return status;
 
-  for (std::list<Cookie>::const_iterator it = cookies.begin();
+  for (std::list<Cookie>::iterator it = cookies.begin();
        it != cookies.end(); ++it) {
     if (name == it->name) {
+      if (session->w3c_compliant && it->domain[0] == '.')
+        it->domain.erase(0, 1);
       value->reset(CreateDictionaryFrom(*it)->DeepCopy());
       return Status(kOk);
     }
@@ -1888,7 +1887,7 @@ Status ExecuteDeleteCookie(Session* session,
     return status;
 
   std::list<Cookie> cookies;
-  status = GetVisibleCookies(session, web_view, &cookies);
+  status = GetVisibleCookies(web_view, &cookies);
   if (status.IsError())
     return status;
 
@@ -1909,7 +1908,7 @@ Status ExecuteDeleteAllCookies(Session* session,
                                std::unique_ptr<base::Value>* value,
                                Timeout* timeout) {
   std::list<Cookie> cookies;
-  Status status = GetVisibleCookies(session, web_view, &cookies);
+  Status status = GetVisibleCookies(web_view, &cookies);
   if (status.IsError())
     return status;
 
