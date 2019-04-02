@@ -67,7 +67,6 @@ namespace viz {
 class FrameSinkManagerImpl;
 class ContextProvider;
 class HostFrameSinkManager;
-class RasterContextProvider;
 }
 
 namespace ui {
@@ -87,11 +86,10 @@ class COMPOSITOR_EXPORT ContextFactoryObserver {
  public:
   virtual ~ContextFactoryObserver() {}
 
-  // Notifies that the viz::ContextProviders returned from
-  // ui::ContextFactory::SharedMainThreadContextProvider and/or
-  // ui::ContextFactory::SharedMainThreadRasterContextProvider were lost.
-  // When this is called, the old resources (e.g. shared context, GL helper)
-  // still exist, but are about to be destroyed. Getting a reference to those
+  // Notifies that the viz::ContextProvider returned from
+  // ui::ContextFactory::SharedMainThreadContextProvider was lost.  When this
+  // is called, the old resources (e.g. shared context, GL helper) still
+  // exist, but are about to be destroyed. Getting a reference to those
   // resources from the ContextFactory (e.g. through
   // SharedMainThreadContextProvider()) will return newly recreated, valid
   // resources.
@@ -172,11 +170,6 @@ class COMPOSITOR_EXPORT ContextFactory {
   // main thread.
   virtual scoped_refptr<viz::ContextProvider>
   SharedMainThreadContextProvider() = 0;
-
-  // Return a reference to a shared offscreen context provider usable from the
-  // main thread.
-  virtual scoped_refptr<viz::RasterContextProvider>
-  SharedMainThreadRasterContextProvider() = 0;
 
   // Destroys per-compositor data.
   virtual void RemoveCompositor(Compositor* compositor) = 0;

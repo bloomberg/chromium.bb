@@ -65,9 +65,6 @@ class InProcessContextFactory : public ContextFactory,
 
   scoped_refptr<viz::ContextProvider> SharedMainThreadContextProvider()
       override;
-  scoped_refptr<viz::RasterContextProvider>
-  SharedMainThreadRasterContextProvider() override;
-
   void RemoveCompositor(Compositor* compositor) override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;

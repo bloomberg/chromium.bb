@@ -51,11 +51,6 @@ FakeContextFactory::SharedMainThreadContextProvider() {
   return nullptr;
 }
 
-scoped_refptr<viz::RasterContextProvider>
-FakeContextFactory::SharedMainThreadRasterContextProvider() {
-  return nullptr;
-}
-
 void FakeContextFactory::RemoveCompositor(ui::Compositor* compositor) {
   frame_sink_ = nullptr;
 }
