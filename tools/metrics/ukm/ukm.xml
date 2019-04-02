@@ -4947,6 +4947,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="SuppressedAccount.Generated.HTTPSNotHTTP">
+    <obsolete>
+      Deprecated 03/2019.
+    </obsolete>
     <summary>
       Records, for each password form seen by the password manager, whether
       there were `suppressed` credentials, meaning stored credentials that were
@@ -4960,6 +4963,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="SuppressedAccount.Generated.PSLMatching">
+    <obsolete>
+      Deprecated 03/2019.
+    </obsolete>
     <summary>
       Records, for each password form seen by the password manager, whether
       there were `suppressed` credentials, meaning stored credentials that were
@@ -4974,6 +4980,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="SuppressedAccount.Generated.SameOrganizationName">
+    <obsolete>
+      Deprecated 03/2019.
+    </obsolete>
     <summary>
       Records, for each password form seen by the password manager, whether
       there were `suppressed` credentials, meaning stored credentials that were
@@ -4987,6 +4996,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="SuppressedAccount.Manual.HTTPSNotHTTP">
+    <obsolete>
+      Deprecated 03/2019.
+    </obsolete>
     <summary>
       Records, for each password form seen by the password manager, whether
       there were `suppressed` credentials, meaning stored credentials that were
@@ -5000,6 +5012,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="SuppressedAccount.Manual.PSLMatching">
+    <obsolete>
+      Deprecated 03/2019.
+    </obsolete>
     <summary>
       Records, for each password form seen by the password manager, whether
       there were `suppressed` credentials, meaning stored credentials that were
@@ -5014,6 +5029,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="SuppressedAccount.Manual.SameOrganizationName">
+    <obsolete>
+      Deprecated 03/2019.
+    </obsolete>
     <summary>
       Records, for each password form seen by the password manager, whether
       there were `suppressed` credentials, meaning stored credentials that were

@@ -123,13 +123,12 @@ PasswordFormManager::PasswordFormManager(
           observed_form.IsPossibleChangePasswordFormWithoutUsername()),
       client_(client),
       form_saver_(std::move(form_saver)),
-      owned_form_fetcher_(
-          form_fetcher ? nullptr
-                       : std::make_unique<FormFetcherImpl>(
-                             PasswordStore::FormDigest(observed_form),
-                             client,
-                             true /* should_migrate_http_passwords */,
-                             true /* should_query_suppressed_https_forms */)),
+      owned_form_fetcher_(form_fetcher
+                              ? nullptr
+                              : std::make_unique<FormFetcherImpl>(
+                                    PasswordStore::FormDigest(observed_form),
+                                    client,
+                                    true /* should_migrate_http_passwords */)),
       form_fetcher_(form_fetcher ? form_fetcher : owned_form_fetcher_.get()),
       votes_uploader_(client, observed_form.IsPossibleChangePasswordForm()) {
   // Non-HTML forms should not need any interaction with the renderer, and hence
@@ -162,10 +161,6 @@ void PasswordFormManager::Init(
 
 PasswordFormManager::~PasswordFormManager() {
   form_fetcher_->RemoveConsumer(this);
-
-  metrics_recorder_->RecordHistogramsOnSuppressedAccounts(
-      observed_form_.origin.SchemeIsCryptographic(), *form_fetcher_,
-      pending_credentials_);
 }
 
 // static

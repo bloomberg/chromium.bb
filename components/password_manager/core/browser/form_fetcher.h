@@ -76,42 +76,6 @@ class FormFetcher {
   virtual const std::vector<const autofill::PasswordForm*>&
   GetBlacklistedMatches() const = 0;
 
-  // The following accessors return various kinds of `suppressed` credentials.
-  // These are stored credentials that are not (auto-)filled, because they are
-  // for an origin that is similar to, but not exactly matching the origin that
-  // this FormFetcher was created for. They are used for recording metrics on
-  // how often such -- potentially, but not necessarily related -- credentials
-  // are not offered to the user, unduly increasing log-in friction.
-  //
-  // There are currently three kinds of suppressed credentials:
-  //  1.) HTTPS credentials not filled on the HTTP version of the origin.
-  //  2.) PSL-matches that are not auto-filled (but filled on account select).
-  //  3.) Same-organization name credentials, not filled.
-  //
-  // Results below are queried on a best-effort basis, might be somewhat stale,
-  // and are available shortly after the Consumer::OnFetchCompleted callback.
-
-  // When this instance fetches forms for an HTTP origin: Returns saved
-  // credentials, if any, found for the HTTPS version of that origin. Empty
-  // otherwise.
-  virtual const std::vector<const autofill::PasswordForm*>&
-  GetSuppressedHTTPSForms() const = 0;
-
-  // Returns saved credentials, if any, for PSL-matching origins. Autofilling
-  // these is suppressed, however, they *can be* filled on account select.
-  virtual const std::vector<const autofill::PasswordForm*>&
-  GetSuppressedPSLMatchingForms() const = 0;
-
-  // Returns saved credentials, if any, found for HTTP/HTTPS origins with the
-  // same organization name as the origin this FormFetcher was created for.
-  virtual const std::vector<const autofill::PasswordForm*>&
-  GetSuppressedSameOrganizationNameForms() const = 0;
-
-  // Whether querying suppressed forms (of all flavors) was attempted and did
-  // complete at least once during the lifetime of this instance, regardless of
-  // whether there have been any results.
-  virtual bool DidCompleteQueryingSuppressedForms() const = 0;
-
   // Fetches stored matching logins. In addition the statistics is fetched on
   // platforms with the password bubble. This is called automatically during
   // construction and can be called manually later as well to cause an update

@@ -557,78 +557,6 @@ int PasswordFormMetricsRecorder::GetActionsTaken() const {
              (manager_action_ + kManagerActionMax * submit_result_);
 }
 
-void PasswordFormMetricsRecorder::RecordHistogramsOnSuppressedAccounts(
-    bool observed_form_origin_has_cryptographic_scheme,
-    const FormFetcher& form_fetcher,
-    const PasswordForm& pending_credentials) {
-  UMA_HISTOGRAM_BOOLEAN("PasswordManager.QueryingSuppressedAccountsFinished",
-                        form_fetcher.DidCompleteQueryingSuppressedForms());
-
-  if (!form_fetcher.DidCompleteQueryingSuppressedForms())
-    return;
-
-  SuppressedAccountExistence best_match = kSuppressedAccountNone;
-
-  if (!observed_form_origin_has_cryptographic_scheme) {
-    best_match = GetBestMatchingSuppressedAccount(
-        form_fetcher.GetSuppressedHTTPSForms(), PasswordForm::TYPE_GENERATED,
-        pending_credentials);
-    UMA_HISTOGRAM_ENUMERATION(
-        "PasswordManager.SuppressedAccount.Generated.HTTPSNotHTTP",
-        GetHistogramSampleForSuppressedAccounts(best_match),
-        kMaxSuppressedAccountStats);
-    ukm_entry_builder_.SetSuppressedAccount_Generated_HTTPSNotHTTP(best_match);
-
-    best_match = GetBestMatchingSuppressedAccount(
-        form_fetcher.GetSuppressedHTTPSForms(), PasswordForm::TYPE_MANUAL,
-        pending_credentials);
-    UMA_HISTOGRAM_ENUMERATION(
-        "PasswordManager.SuppressedAccount.Manual.HTTPSNotHTTP",
-        GetHistogramSampleForSuppressedAccounts(best_match),
-        kMaxSuppressedAccountStats);
-    ukm_entry_builder_.SetSuppressedAccount_Manual_HTTPSNotHTTP(best_match);
-  }
-
-  best_match = GetBestMatchingSuppressedAccount(
-      form_fetcher.GetSuppressedPSLMatchingForms(),
-      PasswordForm::TYPE_GENERATED, pending_credentials);
-  UMA_HISTOGRAM_ENUMERATION(
-      "PasswordManager.SuppressedAccount.Generated.PSLMatching",
-      GetHistogramSampleForSuppressedAccounts(best_match),
-      kMaxSuppressedAccountStats);
-  ukm_entry_builder_.SetSuppressedAccount_Generated_PSLMatching(best_match);
-  best_match = GetBestMatchingSuppressedAccount(
-      form_fetcher.GetSuppressedPSLMatchingForms(), PasswordForm::TYPE_MANUAL,
-      pending_credentials);
-  UMA_HISTOGRAM_ENUMERATION(
-      "PasswordManager.SuppressedAccount.Manual.PSLMatching",
-      GetHistogramSampleForSuppressedAccounts(best_match),
-      kMaxSuppressedAccountStats);
-  ukm_entry_builder_.SetSuppressedAccount_Manual_PSLMatching(best_match);
-
-  best_match = GetBestMatchingSuppressedAccount(
-      form_fetcher.GetSuppressedSameOrganizationNameForms(),
-      PasswordForm::TYPE_GENERATED, pending_credentials);
-  UMA_HISTOGRAM_ENUMERATION(
-      "PasswordManager.SuppressedAccount.Generated.SameOrganizationName",
-      GetHistogramSampleForSuppressedAccounts(best_match),
-      kMaxSuppressedAccountStats);
-  ukm_entry_builder_.SetSuppressedAccount_Generated_SameOrganizationName(
-      best_match);
-  best_match = GetBestMatchingSuppressedAccount(
-      form_fetcher.GetSuppressedSameOrganizationNameForms(),
-      PasswordForm::TYPE_MANUAL, pending_credentials);
-  UMA_HISTOGRAM_ENUMERATION(
-      "PasswordManager.SuppressedAccount.Manual.SameOrganizationName",
-      GetHistogramSampleForSuppressedAccounts(best_match),
-      kMaxSuppressedAccountStats);
-  ukm_entry_builder_.SetSuppressedAccount_Manual_SameOrganizationName(
-      best_match);
-
-  if (current_bubble_ != CurrentBubbleOfInterest::kNone)
-    RecordUIDismissalReason(metrics_util::NO_DIRECT_INTERACTION);
-}
-
 void PasswordFormMetricsRecorder::RecordPasswordBubbleShown(
     metrics_util::CredentialSourceType credential_source_type,
     metrics_util::UIDisplayDisposition display_disposition) {
@@ -713,42 +641,6 @@ void PasswordFormMetricsRecorder::RecordUIDismissalReason(
 
 void PasswordFormMetricsRecorder::RecordFillEvent(ManagerAutofillEvent event) {
   ukm_entry_builder_.SetManagerFill_Action(event);
-}
-
-PasswordFormMetricsRecorder::SuppressedAccountExistence
-PasswordFormMetricsRecorder::GetBestMatchingSuppressedAccount(
-    const std::vector<const PasswordForm*>& suppressed_forms,
-    PasswordForm::Type manual_or_generated,
-    const PasswordForm& pending_credentials) const {
-  SuppressedAccountExistence best_matching_account = kSuppressedAccountNone;
-  for (const PasswordForm* form : suppressed_forms) {
-    if (form->type != manual_or_generated)
-      continue;
-
-    SuppressedAccountExistence current_account;
-    if (pending_credentials.password_value.empty())
-      current_account = kSuppressedAccountExists;
-    else if (form->username_value != pending_credentials.username_value)
-      current_account = kSuppressedAccountExistsDifferentUsername;
-    else if (form->password_value != pending_credentials.password_value)
-      current_account = kSuppressedAccountExistsSameUsername;
-    else
-      current_account = kSuppressedAccountExistsSameUsernameAndPassword;
-
-    best_matching_account = std::max(best_matching_account, current_account);
-  }
-  return best_matching_account;
-}
-
-int PasswordFormMetricsRecorder::GetHistogramSampleForSuppressedAccounts(
-    SuppressedAccountExistence best_matching_account) const {
-  // Encoding: most significant digit is the |best_matching_account|.
-  int mixed_base_encoding = 0;
-  mixed_base_encoding += best_matching_account;
-  mixed_base_encoding *= PasswordFormMetricsRecorder::kMaxNumActionsTakenNew;
-  mixed_base_encoding += GetActionsTakenNew();
-  DCHECK_LT(mixed_base_encoding, kMaxSuppressedAccountStats);
-  return mixed_base_encoding;
 }
 
 }  // namespace password_manager

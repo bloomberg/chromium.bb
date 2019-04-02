@@ -247,15 +247,6 @@ void PasswordStore::GetLogins(const FormDigest& form,
   }
 }
 
-void PasswordStore::GetLoginsForSameOrganizationName(
-    const std::string& signon_realm,
-    PasswordStoreConsumer* consumer) {
-  PostLoginsTaskAndReplyToConsumerWithResult(
-      consumer,
-      base::BindOnce(&PasswordStore::GetLoginsForSameOrganizationNameImpl, this,
-                     signon_realm));
-}
-
 void PasswordStore::GetAutofillableLogins(PasswordStoreConsumer* consumer) {
   PostLoginsTaskAndReplyToConsumerWithResult(
       consumer,
@@ -793,13 +784,6 @@ PasswordStore::GetLoginsImpl(const FormDigest& form) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   SCOPED_UMA_HISTOGRAM_TIMER("PasswordManager.StorePerformance.GetLogins");
   return FillMatchingLogins(form);
-}
-
-std::vector<std::unique_ptr<autofill::PasswordForm>>
-PasswordStore::GetLoginsForSameOrganizationNameImpl(
-    const std::string& signon_realm) {
-  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
-  return FillLoginsForSameOrganizationName(signon_realm);
 }
 
 std::vector<std::unique_ptr<PasswordForm>>

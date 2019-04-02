@@ -43190,6 +43190,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PasswordManagerSuppressedAccountCrossActionsTaken">
+  <obsolete>
+    Deprecated 03/2019.
+  </obsolete>
   <summary>
     The value is a mixed-base encoding of the combination of four attributes:
     whether there were suppressed stored credentials (and the kind if there

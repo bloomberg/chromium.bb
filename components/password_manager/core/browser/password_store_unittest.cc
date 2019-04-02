@@ -55,10 +55,6 @@ constexpr const char kTestPSLMatchingWebOrigin[] =
     "https://psl.example.com/origin";
 constexpr const char kTestUnrelatedWebRealm[] = "https://notexample.com/";
 constexpr const char kTestUnrelatedWebOrigin[] = "https:/notexample.com/origin";
-constexpr const char kTestSameOrganizationNameWebRealm[] =
-    "https://example.appspot.com/";
-constexpr const char kTestSameOrganizationNameWebOrigin[] =
-    "https://example.appspot.com/origin";
 constexpr const char kTestInsecureWebRealm[] = "http://one.example.com/";
 constexpr const char kTestInsecureWebOrigin[] = "http://one.example.com/origin";
 constexpr const char kTestAndroidRealm1[] =
@@ -847,59 +843,6 @@ TEST_F(PasswordStoreTest, GetAllLoginsWithAffiliationAndBrandingInformation) {
   // Since GetAutofillableLoginsWithAffiliationAndBrandingInformation
   // schedules a request for affiliation information to UI thread, don't
   // shutdown UI thread until there are no tasks in the UI queue.
-  WaitForPasswordStore();
-  store->ShutdownOnUIThread();
-}
-
-TEST_F(PasswordStoreTest, GetLoginsForSameOrganizationName) {
-  static constexpr const PasswordFormData kSameOrganizationCredentials[] = {
-      // Credential that is an exact match of the observed form.
-      {PasswordForm::SCHEME_HTML, kTestWebRealm1, kTestWebOrigin1, "", L"", L"",
-       L"", L"username_value_1", L"", true, 1},
-      // Credential that is a PSL match of the observed form.
-      {PasswordForm::SCHEME_HTML, kTestPSLMatchingWebRealm,
-       kTestPSLMatchingWebOrigin, "", L"", L"", L"", L"username_value_2", L"",
-       true, 1},
-      // Credential for the HTTP version of the observed form. (Should not be
-      // filled, but returned as part of same-organization-name matches).
-      {PasswordForm::SCHEME_HTML, kTestInsecureWebRealm, kTestInsecureWebOrigin,
-       "", L"", L"", L"", L"username_value_3", L"", true, 1},
-      // Credential for a signon realm with a different TLD, but same
-      // organization identifying name.
-      {PasswordForm::SCHEME_HTML, kTestSameOrganizationNameWebRealm,
-       kTestSameOrganizationNameWebOrigin, "", L"", L"", L"",
-       L"username_value_4", L"", true, 1},
-  };
-
-  static constexpr const PasswordFormData kNotSameOrganizationCredentials[] = {
-      // Unrelated Web credential.
-      {PasswordForm::SCHEME_HTML, kTestUnrelatedWebRealm,
-       kTestUnrelatedWebOrigin, "", L"", L"", L"", L"username_value_5", L"",
-       true, 1},
-      // Credential for an affiliated Android application.
-      {PasswordForm::SCHEME_HTML, kTestAndroidRealm1, "", "", L"", L"", L"",
-       L"username_value_6", L"", true, 1}};
-
-  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      std::make_unique<LoginDatabase>(test_login_db_file_path())));
-  store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
-
-  std::vector<std::unique_ptr<PasswordForm>> expected_results;
-  for (const auto& form_data : kSameOrganizationCredentials) {
-    expected_results.push_back(FillPasswordFormWithData(form_data));
-    store->AddLogin(*expected_results.back());
-  }
-
-  for (const auto& form_data : kNotSameOrganizationCredentials) {
-    store->AddLogin(*FillPasswordFormWithData(form_data));
-  }
-
-  const std::string observed_form_realm = kTestWebRealm1;
-  MockPasswordStoreConsumer mock_consumer;
-  EXPECT_CALL(mock_consumer,
-              OnGetPasswordStoreResultsConstRef(
-                  UnorderedPasswordFormElementsAre(&expected_results)));
-  store->GetLoginsForSameOrganizationName(observed_form_realm, &mock_consumer);
   WaitForPasswordStore();
   store->ShutdownOnUIThread();
 }

@@ -241,8 +241,6 @@ class PasswordManagerTest : public testing::Test {
   void SetUp() override {
     store_ = new testing::StrictMock<MockPasswordStore>;
     EXPECT_CALL(*store_, ReportMetrics(_, _, _)).Times(AnyNumber());
-    EXPECT_CALL(*store_, GetLoginsForSameOrganizationName(_, _))
-        .Times(AnyNumber());
     CHECK(store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr));
 
     ON_CALL(client_, GetPasswordStore()).WillByDefault(Return(store_.get()));
@@ -2206,12 +2204,10 @@ TEST_F(PasswordManagerTest, PasswordGenerationPresavePasswordAndLogin) {
     if (found_matched_logins_in_store) {
       EXPECT_CALL(*store_, GetLogins(_, _))
           .WillRepeatedly(WithArg<1>(InvokeConsumer(form)));
-      EXPECT_CALL(*store_, GetLoginsForSameOrganizationName(_, _));
       EXPECT_CALL(driver_, FillPasswordForm(_)).Times(2);
     } else {
       EXPECT_CALL(*store_, GetLogins(_, _))
           .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
-      EXPECT_CALL(*store_, GetLoginsForSameOrganizationName(_, _));
     }
     std::unique_ptr<PasswordFormManagerForUI> form_manager;
     if (found_matched_logins_in_store) {
