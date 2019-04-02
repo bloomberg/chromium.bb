@@ -195,19 +195,19 @@ bool WebsiteSettingsFilterAdapter(
 }
 
 #if BUILDFLAG(ENABLE_NACL)
-void ClearNaClCacheOnIOThread(const base::Closure& callback) {
+void ClearNaClCacheOnIOThread(base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  nacl::NaClBrowser::GetInstance()->ClearValidationCache(callback);
+  nacl::NaClBrowser::GetInstance()->ClearValidationCache(std::move(callback));
 }
 
 void ClearPnaclCacheOnIOThread(base::Time begin,
                                base::Time end,
-                               const base::Closure& callback) {
+                               base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   pnacl::PnaclHost::GetInstance()->ClearTranslationCacheEntriesBetween(
-      begin, end, callback);
+      begin, end, std::move(callback));
 }
 #endif
 
@@ -885,16 +885,14 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 #if BUILDFLAG(ENABLE_NACL)
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(
-            &ClearNaClCacheOnIOThread,
-            base::AdaptCallbackForRepeating(UIThreadTrampoline(
-                CreateTaskCompletionClosure(TracingDataType::kNaclCache)))));
+        base::BindOnce(&ClearNaClCacheOnIOThread,
+                       UIThreadTrampoline(CreateTaskCompletionClosure(
+                           TracingDataType::kNaclCache))));
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(
-            &ClearPnaclCacheOnIOThread, delete_begin_, delete_end_,
-            base::AdaptCallbackForRepeating(UIThreadTrampoline(
-                CreateTaskCompletionClosure(TracingDataType::kPnaclCache)))));
+        base::BindOnce(&ClearPnaclCacheOnIOThread, delete_begin_, delete_end_,
+                       UIThreadTrampoline(CreateTaskCompletionClosure(
+                           TracingDataType::kPnaclCache))));
 #endif
 
     // The PrerenderManager may have a page actively being prerendered, which
