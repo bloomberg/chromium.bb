@@ -380,6 +380,16 @@ FakeSessionManagerClient::BlockingRetrieveDeviceLocalAccountPolicy(
 void FakeSessionManagerClient::RetrievePolicy(
     const login_manager::PolicyDescriptor& descriptor,
     RetrievePolicyCallback callback) {
+  // Simulate load error.
+  if (force_retrieve_policy_load_error_) {
+    enterprise_management::PolicyFetchResponse empty;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), RetrievePolicyResponseType::SUCCESS,
+                       empty.SerializeAsString()));
+    return;
+  }
+
   if (policy_storage_ == PolicyStorageType::kOnDisk) {
     base::FilePath policy_path =
         GetStubPolicyFilePath(descriptor, nullptr /* key_path */);
@@ -451,7 +461,7 @@ void FakeSessionManagerClient::StorePolicy(
   }
 
   // Simulate failure.
-  if (!store_policy_success_) {
+  if (force_store_policy_failure_) {
     PostReply(FROM_HERE, std::move(callback), false /* success */);
     return;
   }

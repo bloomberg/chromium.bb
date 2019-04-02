@@ -133,9 +133,17 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSessionManagerClient
         supports_restart_to_apply_user_flags;
   }
 
-  void set_store_policy_success(bool success) {
-    store_policy_success_ = success;
+  // If |force_failure| is true, forces StorePolicy() to fail.
+  void ForceStorePolicyFailure(bool force_failure) {
+    force_store_policy_failure_ = force_failure;
   }
+
+  // If |force_load_error| is true, forces RetrievePolicy() to succeed with an
+  // empty policy blob. This simulates a policy load error in session manager.
+  void ForceRetrievePolicyLoadError(bool force_load_error) {
+    force_retrieve_policy_load_error_ = force_load_error;
+  }
+
   // Accessors for device policy. Only available for
   // PolicyStorageType::kInMemory.
   const std::string& device_policy() const;
@@ -226,8 +234,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSessionManagerClient
   const PolicyStorageType policy_storage_;
   std::map<std::string, std::string> policy_;
 
-  // If set to false, StorePolicy() always fails.
-  bool store_policy_success_ = true;
+  // If set to true, StorePolicy() always fails.
+  bool force_store_policy_failure_ = false;
+
+  // It set to true, RetrievePolicy() always succeeds with an empty policy blob.
+  // This simulates a policy load error in session manager.
+  bool force_retrieve_policy_load_error_ = false;
 
   int clear_forced_re_enrollment_vpd_call_count_;
   int start_device_wipe_call_count_;
