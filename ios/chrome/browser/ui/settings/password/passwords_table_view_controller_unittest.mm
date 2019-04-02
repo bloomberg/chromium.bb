@@ -81,7 +81,7 @@ class PasswordsTableViewControllerTest : public ChromeTableViewControllerTest {
         static_cast<PasswordsTableViewController*>(controller());
     std::vector<std::unique_ptr<autofill::PasswordForm>> passwords;
     passwords.push_back(std::move(form));
-    [passwords_controller onGetPasswordStoreResults:passwords];
+    [passwords_controller onGetPasswordStoreResults:std::move(passwords)];
   }
 
   // Creates and adds a saved password form.

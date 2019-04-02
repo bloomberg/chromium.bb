@@ -273,14 +273,15 @@ class MockLoginDatabaseReturn {
 };
 
 void LoginDatabaseQueryCallback(password_manager::LoginDatabase* login_db,
-                                bool autofillable,
                                 MockLoginDatabaseReturn* mock_return) {
-  std::vector<std::unique_ptr<PasswordForm>> forms;
-  if (autofillable)
-    EXPECT_TRUE(login_db->GetAutofillableLogins(&forms));
-  else
-    EXPECT_TRUE(login_db->GetBlacklistLogins(&forms));
-  mock_return->OnLoginDatabaseQueryDone(forms);
+  password_manager::PrimaryKeyToFormMap key_to_form_map;
+  EXPECT_EQ(password_manager::FormRetrievalResult::kSuccess,
+            login_db->GetAllLogins(&key_to_form_map));
+  std::vector<std::unique_ptr<PasswordForm>> results;
+  results.reserve(key_to_form_map.size());
+  for (auto& key_to_form : key_to_form_map)
+    results.push_back(std::move(key_to_form.second));
+  mock_return->OnLoginDatabaseQueryDone(results);
 }
 
 // Generate |count| expected logins, either auto-fillable or blacklisted.
@@ -542,11 +543,9 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
   feature_list.InitAndDisableFeature(
       password_manager::features::kMigrateLinuxToLoginDB);
 
-  std::vector<std::unique_ptr<PasswordForm>> expected_autofillable;
-  InitExpectedForms(true, 5, &expected_autofillable);
-
-  std::vector<std::unique_ptr<PasswordForm>> expected_blacklisted;
-  InitExpectedForms(false, 5, &expected_blacklisted);
+  std::vector<std::unique_ptr<PasswordForm>> expected_forms;
+  InitExpectedForms(true, 5, &expected_forms);
+  InitExpectedForms(false, 5, &expected_forms);
 
   const base::FilePath login_db_file = test_login_db_file_path();
   std::unique_ptr<password_manager::LoginDatabase> login_db(
@@ -560,10 +559,7 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
   ASSERT_TRUE(base::GetFileInfo(login_db_file, &db_file_start_info));
 
   // Populate the login DB with logins that should be migrated.
-  for (const auto& form : expected_autofillable) {
-    EXPECT_EQ(AddChangeForForm(*form), login_db->AddLogin(*form));
-  }
-  for (const auto& form : expected_blacklisted) {
+  for (const auto& form : expected_forms) {
     EXPECT_EQ(AddChangeForForm(*form), login_db->AddLogin(*form));
   }
 
@@ -582,50 +578,25 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
 
   MockPasswordStoreConsumer consumer;
 
-  // The autofillable forms should have been migrated to the native backend.
-  EXPECT_CALL(consumer,
-              OnGetPasswordStoreResultsConstRef(
-                  UnorderedPasswordFormElementsAre(&expected_autofillable)));
-
-  store->GetAutofillableLogins(&consumer);
-  WaitForPasswordStore();
-
-  // The blacklisted forms should have been migrated to the native backend.
-  EXPECT_CALL(consumer,
-              OnGetPasswordStoreResultsConstRef(
-                  UnorderedPasswordFormElementsAre(&expected_blacklisted)));
-
-  store->GetBlacklistLogins(&consumer);
+  // All forms should have been migrated to the native backend.
+  EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(
+                            UnorderedPasswordFormElementsAre(&expected_forms)));
+  store->GetAllLogins(&consumer);
   WaitForPasswordStore();
 
   MockLoginDatabaseReturn ld_return;
 
   if (GetParam() == WORKING_BACKEND) {
-    // No autofillable logins should be left in the login DB.
+    // No logins should be left in the login DB.
     EXPECT_CALL(ld_return, OnLoginDatabaseQueryDone(IsEmpty()));
   } else {
-    // The autofillable logins should still be in the login DB.
+    // All logins should still be in the login DB.
     EXPECT_CALL(ld_return,
                 OnLoginDatabaseQueryDone(
-                    UnorderedPasswordFormElementsAre(&expected_autofillable)));
+                    UnorderedPasswordFormElementsAre(&expected_forms)));
   }
 
-  LoginDatabaseQueryCallback(store->login_db(), true, &ld_return);
-
-  WaitForPasswordStore();
-
-  if (GetParam() == WORKING_BACKEND) {
-    // Likewise, no blacklisted logins should be left in the login DB.
-    EXPECT_CALL(ld_return, OnLoginDatabaseQueryDone(IsEmpty()));
-  } else {
-    // The blacklisted logins should still be in the login DB.
-    EXPECT_CALL(ld_return,
-                OnLoginDatabaseQueryDone(
-                    UnorderedPasswordFormElementsAre(&expected_blacklisted)));
-  }
-
-  LoginDatabaseQueryCallback(store->login_db(), false, &ld_return);
-
+  LoginDatabaseQueryCallback(store->login_db(), &ld_return);
   WaitForPasswordStore();
 
   if (GetParam() == WORKING_BACKEND) {
