@@ -185,7 +185,11 @@ public class PickerCategoryView extends RelativeLayout
         mSpacingDecoration = new GridSpacingItemDecoration(mColumns, mPadding);
         mRecyclerView.addItemDecoration(mSpacingDecoration);
 
-        mPickerAdapter.notifyDataSetChanged();
+        // Configuration change can happen at any time, even before the photos have been
+        // enumerated (when mPickerBitmaps is null, causing: https://crbug.com/947657). There's no
+        // need to call notifyDataSetChanged in that case because it will be called once the photo
+        // list becomes ready.
+        if (mPickerBitmaps != null) mPickerAdapter.notifyDataSetChanged();
     }
 
     /**
