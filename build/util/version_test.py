@@ -43,7 +43,9 @@ class _VersionTest(unittest.TestCase):
       'chrome_modern_version_code',
       'monochrome_version_code',
       'trichrome_version_code',
-      'webview_version_code',
+      'webview_stable_version_code',
+      'webview_beta_version_code',
+      'webview_dev_version_code',
   ]
 
   _EXAMPLE_ANDROID_TEMPLATE = (
@@ -108,7 +110,10 @@ class _VersionTest(unittest.TestCase):
                              r'\bchrome_modern_version_code = "\d+"\s')
     self.assertRegexpMatches(contents, r'\bmonochrome_version_code = "\d+"\s')
     self.assertRegexpMatches(contents, r'\btrichrome_version_code = "\d+"\s')
-    self.assertRegexpMatches(contents, r'\bwebview_version_code = "\d+"\s')
+    self.assertRegexpMatches(contents,
+                             r'\bwebview_stable_version_code = "\d+"\s')
+    self.assertRegexpMatches(contents, r'\bwebview_beta_version_code = "\d+"\s')
+    self.assertRegexpMatches(contents, r'\bwebview_dev_version_code = "\d+"\s')
 
   def testBuildOutputAndroidArchVariantsArm64(self):
     """Assert 64-bit-specific version codes"""

@@ -7,6 +7,24 @@ modern, monochrome, trichrome), Play Store considers them the same app
 and will push the supported app with the highest version code to devices.
 (note Play Store does not support hosting two different apps with same
 version code and package name)
+
+Each key in this dict represents a unique version code that will be used for
+one or more android chrome apks.
+
+Webview channels must have unique version codes for a couple reasons:
+a) Play Store does not support having the same version code for different
+   versions of a package. Without unique codes, promoting a beta apk to stable
+   would require first removing the beta version.
+b) Firebase project support (used by official builders) requires unique
+   [version code + package name].
+   We cannot add new webview package names for new channels because webview
+   packages are whitelisted by Android as webview providers.
+
+WEBVIEW_STABLE, WEBVIEW_BETA, WEBVIEW_DEV are all used for standalone webview,
+whereas the others are used for various chrome apks.
+
+Note that a final digit of '3' for webview is reserved for Trichrome Webview.
+The same versionCode is used for both Trichrome Chrome and Trichrome Webview.
 """
 ANDROID_CHROME_APK_VERSION_CODE_DIFFS = {
     'CHROME': 0,
@@ -14,7 +32,9 @@ ANDROID_CHROME_APK_VERSION_CODE_DIFFS = {
     'MONOCHROME': 2,
     'TRICHROME': 3,
     'NOTOUCH_CHROME': 4,
-    'WEBVIEW': 0
+    'WEBVIEW_STABLE': 0,
+    'WEBVIEW_BETA': 1,
+    'WEBVIEW_DEV': 2,
 }
 
 """The architecture preference is encoded into the version_code for devices

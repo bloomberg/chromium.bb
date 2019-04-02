@@ -128,8 +128,12 @@ template("system_webview_apk_tmpl") {
     if (!defined(version_code)) {
       if (_use_trichrome_library) {
         version_code = trichrome_version_code
+      } else if (android_channel == "dev") {
+        version_code = webview_dev_version_code
+      } else if (android_channel == "beta") {
+        version_code = webview_beta_version_code
       } else {
-        version_code = webview_version_code
+        version_code = webview_stable_version_code
       }
     }
     if (!defined(version_name)) {

@@ -44,7 +44,9 @@ if (target_os == "mac") {
       "monochrome_version_code = \"@MONOCHROME_VERSION_CODE@\" " +
       "trichrome_version_code = \"@TRICHROME_VERSION_CODE@\" " +
       "notouch_chrome_version_code = \"@NOTOUCH_CHROME_VERSION_CODE@\" " +
-      "webview_version_code = \"@WEBVIEW_VERSION_CODE@\" "
+      "webview_stable_version_code = \"@WEBVIEW_STABLE_VERSION_CODE@\" " +
+      "webview_beta_version_code = \"@WEBVIEW_BETA_VERSION_CODE@\" " +
+      "webview_dev_version_code = \"@WEBVIEW_DEV_VERSION_CODE@\" "
 
   if (target_cpu == "arm64" || target_cpu == "x64") {
     _version_dictionary_template +=
@@ -99,7 +101,9 @@ if (target_os == "mac") {
                            "monochrome_version_code",
                            "trichrome_version_code",
                            "notouch_chrome_version_code",
-                           "webview_version_code",
+                           "webview_stable_version_code",
+                           "webview_beta_version_code",
+                           "webview_dev_version_code",
                            "monochrome_64_32_version_code",
                            "monochrome_64_version_code",
                          ])
@@ -113,7 +117,9 @@ if (target_os == "mac") {
     "Monochrome=$monochrome_version_code",
     "TrichromeChrome=$trichrome_version_code",
     "NoTouchChrome=$notouch_chrome_version_code",
-    "Webview=$webview_version_code",
+    "WebviewStable=$webview_stable_version_code",
+    "WebviewBeta=$webview_beta_version_code",
+    "WebviewDev=$webview_dev_version_code",
   ]
 
   if (target_cpu == "arm64" || target_cpu == "x64") {
