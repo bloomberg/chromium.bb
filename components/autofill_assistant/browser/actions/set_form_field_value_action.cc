@@ -41,9 +41,6 @@ void SetFormFieldValueAction::OnWaitForElement(ActionDelegate* delegate,
     return;
   }
 
-  // TODO(crbug.com/806868): Add flag to allow simulating key presses to set
-  // field value.
-
   // Start with first value, then call OnSetFieldValue() recursively until done.
   OnSetFieldValue(delegate, std::move(callback), /* next = */ 0,
                   OkClientStatus());
@@ -66,10 +63,11 @@ void SetFormFieldValueAction::OnSetFieldValue(ActionDelegate* delegate,
     case SetFormFieldValueProto_KeyPress::kText:
       delegate->SetFieldValue(
           selector, key_field.text(),
-          /* simulate_key_presses = */ false,
+          proto_.set_form_value().simulate_key_presses(),
           base::BindOnce(&SetFormFieldValueAction::OnSetFieldValue,
                          weak_ptr_factory_.GetWeakPtr(), delegate,
-                         std::move(callback), /* next = */ next + 1));
+                         std::move(callback),
+                         /* next = */ next + 1));
       break;
     case SetFormFieldValueProto_KeyPress::kKeycode:
       // DEPRECATED: the field `keycode' used to contain a single character to
@@ -81,7 +79,8 @@ void SetFormFieldValueAction::OnSetFieldValue(ActionDelegate* delegate,
             selector, {std::string(1, char(key_field.keycode()))},
             base::BindOnce(&SetFormFieldValueAction::OnSetFieldValue,
                            weak_ptr_factory_.GetWeakPtr(), delegate,
-                           std::move(callback), /* next = */ next + 1));
+                           std::move(callback),
+                           /* next = */ next + 1));
       } else {
         DVLOG(3)
             << "SetFormFieldValueProto_KeyPress: field `keycode' is deprecated "
@@ -96,7 +95,8 @@ void SetFormFieldValueAction::OnSetFieldValue(ActionDelegate* delegate,
           selector, {key_field.keyboard_input()},
           base::BindOnce(&SetFormFieldValueAction::OnSetFieldValue,
                          weak_ptr_factory_.GetWeakPtr(), delegate,
-                         std::move(callback), /* next = */ next + 1));
+                         std::move(callback),
+                         /* next = */ next + 1));
       break;
     default:
       DVLOG(1) << "Unrecognized field for SetFormFieldValueProto_KeyPress";

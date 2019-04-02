@@ -807,6 +807,9 @@ message SetFormFieldValueProto {
 
   // The value to set.
   repeated KeyPress value = 2;
+
+  // Whether to send key press events when setting values to HTML fields.
+  optional bool simulate_key_presses = 5;
 }
 
 // Set an element attribute to a specific value.
