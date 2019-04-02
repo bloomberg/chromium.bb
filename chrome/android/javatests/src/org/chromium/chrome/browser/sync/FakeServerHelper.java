@@ -351,19 +351,20 @@ public class FakeServerHelper {
      * In other words, this method injects a tombstone into the fake Sync server.
      *
      * @param id the server ID of the entity to delete
-     * @param clientDefinedUniqueTag the client defined unique tag of the entity to delete
+     * @param clientTagHash the client defined unique tag hash of the entity to delete (or an empty
+     *         string if sync does not care about this being a hash)
      */
     public void deleteEntity(final String id) {
         deleteEntity(id, "");
     }
 
-    public void deleteEntity(final String id, final String clientDefinedUniqueTag) {
+    public void deleteEntity(final String id, final String clientTagHash) {
         checkFakeServerInitialized("useFakeServer must be called before deleting an entity.");
         TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
             @Override
             public Void call() {
-                nativeDeleteEntity(mNativeFakeServerHelperAndroid, sNativeFakeServer, id,
-                        clientDefinedUniqueTag);
+                nativeDeleteEntity(
+                        mNativeFakeServerHelperAndroid, sNativeFakeServer, id, clientTagHash);
                 return null;
             }
         });
