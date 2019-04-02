@@ -42,6 +42,7 @@ extern const base::Feature kCCTResourcePrefetch;
 extern const base::Feature kCCTTargetTranslateLanguage;
 extern const base::Feature kChromeDuetFeature;
 extern const base::Feature kChromeDuetAdaptive;
+extern const base::Feature kDontAutoHideBrowserControls;
 extern const base::Feature kChromeSmartSelection;
 extern const base::Feature kCommandLineOnNonRooted;
 extern const base::Feature kContentSuggestionsScrollToLoad;

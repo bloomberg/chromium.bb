@@ -192,6 +192,7 @@ public abstract class ChromeFeatureList {
     public static final String CCT_TARGET_TRANSLATE_LANGUAGE = "CCTTargetTranslateLanguage";
     public static final String CHROME_DUET = "ChromeDuet";
     public static final String CHROME_DUET_ADAPTIVE = "ChromeDuetAdaptive";
+    public static final String DONT_AUTO_HIDE_BROWSER_CONTROLS = "DontAutoHideBrowserControls";
     public static final String CHROME_SMART_SELECTION = "ChromeSmartSelection";
     public static final String CLEAR_OLD_BROWSING_DATA = "ClearOldBrowsingData";
     public static final String CLIPBOARD_CONTENT_SETTING = "ClipboardContentSetting";
