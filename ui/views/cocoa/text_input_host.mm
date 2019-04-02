@@ -245,8 +245,7 @@ bool TextInputHost::GetSelectionText(bool* out_result,
   gfx::Range selection_range;
   if (!text_input_client_->GetEditableSelectionRange(&selection_range))
     return true;
-  base::string16 text;
-  *out_result = text_input_client_->GetTextFromRange(selection_range, &text);
+  *out_result = text_input_client_->GetTextFromRange(selection_range, out_text);
   return true;
 }
 
