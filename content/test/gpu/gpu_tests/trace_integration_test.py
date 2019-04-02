@@ -8,7 +8,6 @@ import sys
 from gpu_tests import gpu_integration_test
 from gpu_tests import path_util
 from gpu_tests import pixel_test_pages
-from gpu_tests import trace_test_expectations
 
 from telemetry.timeline import model as model_module
 from telemetry.timeline import tracing_config
@@ -185,7 +184,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   @classmethod
   def _CreateExpectations(cls):
-    return trace_test_expectations.TraceTestExpectations()
+    raise NotImplementedError
 
   @classmethod
   def SetUpProcess(cls):
@@ -375,6 +374,13 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       self.fail('No valid frame statistics being collected: %s',
           TraceIntegrationTest._SwapChainPresentationModeListToStr(
               presentation_mode_history))
+
+  @classmethod
+  def ExpectationsFiles(cls):
+    return [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                     'test_expectations',
+                     'trace_test_expectations.txt')]
 
 
 def load_tests(loader, tests, pattern):
