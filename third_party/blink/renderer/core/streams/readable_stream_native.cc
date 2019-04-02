@@ -663,9 +663,9 @@ class ReadableStreamNative::TeeEngine final
   class PullAlgorithm;
   class CancelAlgorithm;
 
-  Member<ReadableStreamNative> stream_;
-  Member<ReadableStreamDefaultReader> reader_;
-  Member<StreamPromiseResolver> cancel_promise_;
+  TraceWrapperMember<ReadableStreamNative> stream_;
+  TraceWrapperMember<ReadableStreamDefaultReader> reader_;
+  TraceWrapperMember<StreamPromiseResolver> cancel_promise_;
   bool closed_ = false;
 
   // The standard contains a number of pairs of variables with one for each
@@ -674,8 +674,8 @@ class ReadableStreamNative::TeeEngine final
   // to "canceled1" in the standard.
   bool canceled_[2] = {false, false};
   TraceWrapperV8Reference<v8::Value> reason_[2];
-  Member<ReadableStreamNative> branch_[2];
-  Member<ReadableStreamDefaultController> controller_[2];
+  TraceWrapperMember<ReadableStreamNative> branch_[2];
+  TraceWrapperMember<ReadableStreamDefaultController> controller_[2];
 
   DISALLOW_COPY_AND_ASSIGN(TeeEngine);
 };
@@ -795,10 +795,10 @@ class ReadableStreamNative::TeeEngine::PullAlgorithm final
     }
 
    private:
-    Member<TeeEngine> engine_;
+    TraceWrapperMember<TeeEngine> engine_;
   };
 
-  Member<TeeEngine> engine_;
+  TraceWrapperMember<TeeEngine> engine_;
 };
 
 class ReadableStreamNative::TeeEngine::CancelAlgorithm final
@@ -854,7 +854,7 @@ class ReadableStreamNative::TeeEngine::CancelAlgorithm final
   }
 
  private:
-  Member<TeeEngine> engine_;
+  TraceWrapperMember<TeeEngine> engine_;
   const int branch_;
 };
 
@@ -964,7 +964,7 @@ void ReadableStreamNative::TeeEngine::Start(ScriptState* script_state,
     }
 
    private:
-    Member<TeeEngine> engine_;
+    TraceWrapperMember<TeeEngine> engine_;
   };
 
   // 18. Upon rejection of reader.[[closedPromise]] with reason r,
@@ -995,7 +995,7 @@ class ReadableStreamNative::ReadHandleImpl final
   }
 
  private:
-  const Member<ReadableStreamDefaultReader> reader_;
+  const TraceWrapperMember<ReadableStreamDefaultReader> reader_;
 };
 
 ReadableStreamNative* ReadableStreamNative::Create(

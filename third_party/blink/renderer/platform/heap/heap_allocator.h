@@ -137,7 +137,7 @@ class PLATFORM_EXPORT HeapAllocator {
   }
 
   template <typename T>
-  static void BackingWriteBarrier(Member<T>* address, size_t size) {
+  static void BackingWriteBarrier(TraceWrapperMember<T>* address, size_t size) {
     MarkingVisitor::WriteBarrier(address);
   }
 
@@ -717,6 +717,18 @@ struct VectorTraits<blink::SameThreadCheckedMember<T>>
 };
 
 template <typename T>
+struct VectorTraits<blink::TraceWrapperMember<T>>
+    : VectorTraitsBase<blink::TraceWrapperMember<T>> {
+  STATIC_ONLY(VectorTraits);
+  static const bool kNeedsDestruction = false;
+  static const bool kCanInitializeWithMemset = true;
+  static const bool kCanClearUnusedSlotsWithMemset = true;
+  static const bool kCanMoveWithMemcpy = true;
+  static const bool kCanCopyWithMemcpy = true;
+  static const bool kCanSwapUsingCopyOrMove = true;
+};
+
+template <typename T>
 struct VectorTraits<blink::WeakMember<T>>
     : VectorTraitsBase<blink::WeakMember<T>> {
   STATIC_ONLY(VectorTraits);
@@ -849,6 +861,39 @@ struct HashTraits<blink::SameThreadCheckedMember<T>>
   static blink::SameThreadCheckedMember<T> EmptyValue() {
     return blink::SameThreadCheckedMember<T>(nullptr, nullptr);
   }
+};
+
+template <typename T>
+struct HashTraits<blink::TraceWrapperMember<T>>
+    : SimpleClassHashTraits<blink::TraceWrapperMember<T>> {
+  STATIC_ONLY(HashTraits);
+  // FIXME: Implement proper const'ness for iterator types. Requires support
+  // in the marking Visitor.
+  using PeekInType = T*;
+  using IteratorGetType = blink::TraceWrapperMember<T>*;
+  using IteratorConstGetType = const blink::TraceWrapperMember<T>*;
+  using IteratorReferenceType = blink::TraceWrapperMember<T>&;
+  using IteratorConstReferenceType = const blink::TraceWrapperMember<T>&;
+  static IteratorReferenceType GetToReferenceConversion(IteratorGetType x) {
+    return *x;
+  }
+  static IteratorConstReferenceType GetToReferenceConstConversion(
+      IteratorConstGetType x) {
+    return *x;
+  }
+
+  using PeekOutType = T*;
+
+  template <typename U>
+  static void Store(const U& value, blink::TraceWrapperMember<T>& storage) {
+    storage = value;
+  }
+
+  static PeekOutType Peek(const blink::TraceWrapperMember<T>& value) {
+    return value;
+  }
+
+  static blink::TraceWrapperMember<T> EmptyValue() { return nullptr; }
 };
 
 template <typename T>

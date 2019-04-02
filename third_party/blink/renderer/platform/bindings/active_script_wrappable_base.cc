@@ -46,7 +46,7 @@ void ActiveScriptWrappableBase::TraceActiveScriptWrappables(
       continue;
 
     ScriptWrappable* script_wrappable = active_wrappable->ToScriptWrappable();
-    visitor->Trace(script_wrappable);
+    visitor->TraceWithWrappers(script_wrappable);
   }
 }
 
