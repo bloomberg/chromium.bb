@@ -12,6 +12,7 @@
 #include "gpu/vulkan/vulkan_instance.h"
 #include "gpu/vulkan/vulkan_posix_util.h"
 #include "gpu/vulkan/vulkan_surface.h"
+#include "gpu/vulkan/vulkan_util.h"
 #include "ui/gfx/gpu_fence.h"
 
 namespace ui {
@@ -131,7 +132,7 @@ std::unique_ptr<gfx::GpuFence> VulkanImplementationGbm::ExportVkFenceToGpuFence(
 
 VkSemaphore VulkanImplementationGbm::CreateExternalSemaphore(
     VkDevice vk_device) {
-  return VulkanImplementation::CreateExternalSemaphore(
+  return gpu::CreateExternalVkSemaphore(
       vk_device, VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT);
 }
 

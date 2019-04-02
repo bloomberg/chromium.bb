@@ -67,35 +67,6 @@ class VULKAN_EXPORT VulkanImplementation {
       VkDevice vk_device,
       VkFence vk_fence) = 0;
 
-  // Submits a semaphore to be signalled to the vulkan queue. Semaphore is
-  // signalled once this submission is executed. vk_fence is an optional handle
-  // to fence to be signaled once this submission completes execution.
-  bool SubmitSignalSemaphore(VkQueue vk_queue,
-                             VkSemaphore vk_semaphore,
-                             VkFence vk_fence = VK_NULL_HANDLE);
-
-  // Submits semaphores to be waited upon to the vulkan queue. Semaphores are
-  // waited on before this submission is executed. vk_fence is an optional
-  // handle to fence to be signaled once this submission completes execution.
-  bool SubmitWaitSemaphores(VkQueue vk_queue,
-                            const std::vector<VkSemaphore>& vk_semaphores,
-                            VkFence vk_fence = VK_NULL_HANDLE);
-
-  // Submits a semaphore to be waited upon to the vulkan queue. Semaphore is
-  // waited on before this submission is executed. vk_fence is an optional
-  // handle to fence to be signaled once this submission completes execution.
-  bool SubmitWaitSemaphore(VkQueue vk_queue,
-                           VkSemaphore vk_semaphore,
-                           VkFence vk_fence = VK_NULL_HANDLE) {
-    return SubmitWaitSemaphores(vk_queue, {vk_semaphore}, vk_fence);
-  }
-
-  // Creates semaphore that can be exported to external handles of the specified
-  // |handle_types|.
-  VkSemaphore CreateExternalSemaphore(
-      VkDevice vk_device,
-      VkExternalSemaphoreHandleTypeFlags handle_types);
-
   // Creates a semaphore that can be exported using GetSemaphoreHandle().
   virtual VkSemaphore CreateExternalSemaphore(VkDevice vk_device) = 0;
 
