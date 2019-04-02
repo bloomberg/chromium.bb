@@ -5857,6 +5857,7 @@
                 "chromeos",
                 "linux",
                 "ios",
+                "android",
                 "android_webview"
             ],
             "experiments": [
