@@ -312,7 +312,6 @@ LayoutUnit FlexLine::ApplyMainAxisAutoMarginAdjustment() {
 
 void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_offset,
                                         LayoutUnit& cross_axis_offset) {
-  this->main_axis_offset = main_axis_offset;
   // Recalculate the remaining free space. The adjustment for flex factors
   // between 0..1 means we can't just use remainingFreeSpace here.
   remaining_free_space = container_main_inner_size;
@@ -327,11 +326,8 @@ void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_offset,
 
   LayoutUnit auto_margin_offset = ApplyMainAxisAutoMarginAdjustment();
   const LayoutUnit available_free_space = remaining_free_space;
-  LayoutUnit initial_position =
-      FlexLayoutAlgorithm::InitialContentPositionOffset(
-          available_free_space, justify_content, line_items.size());
-  main_axis_offset += initial_position;
-  sum_justify_adjustments += initial_position;
+  main_axis_offset += FlexLayoutAlgorithm::InitialContentPositionOffset(
+      available_free_space, justify_content, line_items.size());
   LayoutUnit max_descent;  // Used when align-items: baseline.
   LayoutUnit max_child_cross_axis_extent;
   bool should_flip_main_axis = !algorithm->StyleRef().IsColumnFlexDirection() &&
@@ -377,11 +373,9 @@ void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_offset,
 
     if (i != line_items.size() - 1) {
       // The last item does not get extra space added.
-      LayoutUnit space_between =
+      main_axis_offset +=
           FlexLayoutAlgorithm::ContentDistributionSpaceBetweenChildren(
               available_free_space, justify_content, line_items.size());
-      main_axis_offset += space_between;
-      sum_justify_adjustments += space_between;
     }
   }
 
@@ -494,27 +488,6 @@ bool FlexLayoutAlgorithm::ShouldApplyMinSizeAutoForChild(
 
   return !child.ShouldApplySizeContainment() &&
          MainAxisOverflowForChild(child) == EOverflow::kVisible;
-}
-
-LayoutUnit FlexLayoutAlgorithm::IntrinsicContentBlockSize() const {
-  if (flex_lines_.IsEmpty())
-    return LayoutUnit();
-
-  if (IsColumnFlow()) {
-    LayoutUnit max_size;
-    for (const FlexLine& line : flex_lines_) {
-      // Subtract main_axis_offset to remove border/padding
-      max_size = std::max(line.main_axis_extent - line.sum_justify_adjustments -
-                              line.main_axis_offset,
-                          max_size);
-    }
-    return max_size;
-  }
-
-  const FlexLine& last_line = flex_lines_.back();
-  // Subtract the first line's offset to remove border/padding
-  return last_line.cross_axis_offset + last_line.cross_axis_extent -
-         flex_lines_.front().cross_axis_offset;
 }
 
 TransformedWritingMode FlexLayoutAlgorithm::GetTransformedWritingMode() const {
