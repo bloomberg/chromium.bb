@@ -40,7 +40,6 @@
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/shared_memory_data_consumer_handle.h"
 #include "content/renderer/loader/sync_load_response.h"
-#include "content/renderer/loader/url_response_body_consumer.h"
 #include "content/renderer/loader/web_url_request_util.h"
 #include "net/base/data_url.h"
 #include "net/base/filename_util.h"
@@ -401,6 +400,13 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
 
  private:
   friend class base::RefCounted<Context>;
+  // The maximal number of bytes consumed in a task. When there are more bytes
+  // in the data pipe, they will be consumed in following tasks. Setting a too
+  // small number will generate ton of tasks but setting a too large number will
+  // lead to thread janks. Also, some clients cannot handle too large chunks
+  // (512k for example).
+  static constexpr uint32_t kMaxNumConsumedBytesInTask = 64 * 1024;
+
   ~Context();
 
   class ReceivedDataImpl : public ReceivedData {
@@ -573,6 +579,9 @@ class WebURLLoaderImpl::SinkPeer : public RequestPeer {
 };
 
 // WebURLLoaderImpl::Context --------------------------------------------------
+
+// static
+constexpr uint32_t WebURLLoaderImpl::Context::kMaxNumConsumedBytesInTask;
 
 WebURLLoaderImpl::Context::Context(
     WebURLLoaderImpl* loader,
@@ -981,10 +990,9 @@ void WebURLLoaderImpl::Context::OnBodyAvailable(
     }
     in_two_phase_read_ = true;
     DCHECK_EQ(MOJO_RESULT_OK, rv);
-    DCHECK_LE(read_bytes, URLResponseBodyConsumer::kMaxNumConsumedBytesInTask);
-    available_bytes = std::min(
-        available_bytes,
-        URLResponseBodyConsumer::kMaxNumConsumedBytesInTask - read_bytes);
+    DCHECK_LE(read_bytes, kMaxNumConsumedBytesInTask);
+    available_bytes =
+        std::min(available_bytes, kMaxNumConsumedBytesInTask - read_bytes);
     if (available_bytes == 0) {
       // We've already read kMaxNumConsumedBytesInTask bytes of the body in this
       // task. Defer the remaining to the next task.
