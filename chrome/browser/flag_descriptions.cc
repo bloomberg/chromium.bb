@@ -711,6 +711,11 @@ const char kEnableNetworkServiceInProcessName[] =
 const char kEnableNetworkServiceInProcessDescription[] =
     "Runs the network service in the browser process.";
 
+const char kDownloadAutoResumptionNativeName[] =
+    "Enable download auto-resumption in native";
+const char kDownloadAutoResumptionNativeDescription[] =
+    "Enables download auto-resumption in native";
+
 const char kEnableNewDownloadBackendName[] = "Enable new download backend";
 const char kEnableNewDownloadBackendDescription[] =
     "Enables the new download backend that uses offline content provider";
