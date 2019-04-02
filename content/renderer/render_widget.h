@@ -341,10 +341,13 @@ class CONTENT_EXPORT RenderWidget
   void RequestNewLayerTreeFrameSink(
       LayerTreeFrameSinkCallback callback) override;
   void DidCommitAndDrawCompositorFrame() override;
+  void WillCommitCompositorFrame() override;
   void DidCommitCompositorFrame() override;
   void DidCompletePageScaleAnimation() override;
   void RecordStartOfFrameMetrics() override;
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
+  void BeginUpdateLayers() override;
+  void EndUpdateLayers() override;
   void UpdateVisualState() override;
   void WillBeginCompositorFrame() override;
 

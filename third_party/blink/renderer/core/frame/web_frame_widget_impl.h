@@ -85,6 +85,10 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void DidBeginFrame() override;
   void BeginRafAlignedInput() override;
   void EndRafAlignedInput() override;
+  void BeginUpdateLayers() override;
+  void EndUpdateLayers() override;
+  void BeginCommitCompositorFrame() override;
+  void EndCommitCompositorFrame() override;
   void RecordStartOfFrameMetrics() override;
   void RecordEndOfFrameMetrics(base::TimeTicks) override;
   void UpdateLifecycle(LifecycleUpdate requested_update,
@@ -188,7 +192,12 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   cc::AnimationHost* animation_host_ = nullptr;
   scoped_refptr<cc::Layer> root_layer_;
   GraphicsLayer* root_graphics_layer_ = nullptr;
-  base::TimeTicks raf_aligned_input_start_time_;
+
+  // Metrics gathering timing information
+  base::Optional<base::TimeTicks> raf_aligned_input_start_time_;
+  base::Optional<base::TimeTicks> update_layers_start_time_;
+  base::Optional<base::TimeTicks> commit_compositor_frame_start_time_;
+
   bool is_accelerated_compositing_active_ = false;
 
   bool suppress_next_keypress_event_ = false;

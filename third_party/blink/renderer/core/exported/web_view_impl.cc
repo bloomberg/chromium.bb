@@ -1518,15 +1518,51 @@ void WebViewImpl::DidBeginFrame() {
 }
 
 void WebViewImpl::BeginRafAlignedInput() {
-  raf_aligned_input_start_time_ = CurrentTimeTicks();
+  if (MainFrameImpl()) {
+    raf_aligned_input_start_time_.emplace(CurrentTimeTicks());
+  }
 }
 
 void WebViewImpl::EndRafAlignedInput() {
   if (MainFrameImpl()) {
+    DCHECK(raf_aligned_input_start_time_);
     MainFrameImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
         LocalFrameUkmAggregator::kHandleInputEvents,
-        raf_aligned_input_start_time_, CurrentTimeTicks());
+        raf_aligned_input_start_time_.value(), CurrentTimeTicks());
   }
+  raf_aligned_input_start_time_.reset();
+}
+
+void WebViewImpl::BeginUpdateLayers() {
+  if (MainFrameImpl()) {
+    update_layers_start_time_.emplace(CurrentTimeTicks());
+  }
+}
+
+void WebViewImpl::EndUpdateLayers() {
+  if (MainFrameImpl()) {
+    DCHECK(update_layers_start_time_);
+    MainFrameImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
+        LocalFrameUkmAggregator::kUpdateLayers,
+        update_layers_start_time_.value(), CurrentTimeTicks());
+  }
+  update_layers_start_time_.reset();
+}
+
+void WebViewImpl::BeginCommitCompositorFrame() {
+  if (MainFrameImpl()) {
+    commit_compositor_frame_start_time_.emplace(CurrentTimeTicks());
+  }
+}
+
+void WebViewImpl::EndCommitCompositorFrame() {
+  // Some tests call this without ever beginning a frame.
+  if (MainFrameImpl() && commit_compositor_frame_start_time_) {
+    MainFrameImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
+        LocalFrameUkmAggregator::kProxyCommit,
+        commit_compositor_frame_start_time_.value(), CurrentTimeTicks());
+  }
+  commit_compositor_frame_start_time_.reset();
 }
 
 void WebViewImpl::RecordStartOfFrameMetrics() {

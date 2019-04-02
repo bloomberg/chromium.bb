@@ -44,12 +44,13 @@ class LocalFrameUkmAggregatorTest : public testing::Test {
 
   std::string GetMetricName(int index) {
     return std::string(
-        LocalFrameUkmAggregator::metric_strings()[index].Utf8().data());
+        LocalFrameUkmAggregator::metrics_data()[index].name.Utf8().data());
   }
 
   std::string GetPercentageMetricName(int index) {
-    return std::string(
-               LocalFrameUkmAggregator::metric_strings()[index].Utf8().data()) +
+    return std::string(LocalFrameUkmAggregator::metrics_data()[index]
+                           .name.Utf8()
+                           .data()) +
            "Percentage";
   }
 

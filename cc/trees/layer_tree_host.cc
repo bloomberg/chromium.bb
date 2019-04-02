@@ -690,6 +690,7 @@ bool LayerTreeHost::UpdateLayers() {
   DCHECK(!root_layer()->parent());
   base::ElapsedTimer timer;
 
+  client_->WillUpdateLayers();
   bool result = DoUpdateLayers();
   client_->DidUpdateLayers();
   micro_benchmark_controller_.DidUpdateLayers();

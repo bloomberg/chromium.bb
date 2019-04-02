@@ -1194,9 +1194,16 @@ void RenderWidget::DidCommitAndDrawCompositorFrame() {
   Send(new WidgetHostMsg_DidCommitAndDrawCompositorFrame(routing_id_));
 }
 
+void RenderWidget::WillCommitCompositorFrame() {
+  if (GetWebWidget())
+    GetWebWidget()->BeginCommitCompositorFrame();
+}
+
 void RenderWidget::DidCommitCompositorFrame() {
   if (delegate())
     delegate()->DidCommitCompositorFrameForWidget();
+  if (GetWebWidget())
+    GetWebWidget()->EndCommitCompositorFrame();
 }
 
 void RenderWidget::DidCompletePageScaleAnimation() {
@@ -1314,17 +1321,23 @@ void RenderWidget::RecordTimeToFirstActivePaint() {
 }
 
 void RenderWidget::RecordStartOfFrameMetrics() {
-  if (!GetWebWidget())
-    return;
-
-  GetWebWidget()->RecordStartOfFrameMetrics();
+  if (GetWebWidget())
+    GetWebWidget()->RecordStartOfFrameMetrics();
 }
 
 void RenderWidget::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {
-  if (!GetWebWidget())
-    return;
+  if (GetWebWidget())
+    GetWebWidget()->RecordEndOfFrameMetrics(frame_begin_time);
+}
 
-  GetWebWidget()->RecordEndOfFrameMetrics(frame_begin_time);
+void RenderWidget::BeginUpdateLayers() {
+  if (GetWebWidget())
+    GetWebWidget()->BeginUpdateLayers();
+}
+
+void RenderWidget::EndUpdateLayers() {
+  if (GetWebWidget())
+    GetWebWidget()->BeginUpdateLayers();
 }
 
 void RenderWidget::WillBeginCompositorFrame() {

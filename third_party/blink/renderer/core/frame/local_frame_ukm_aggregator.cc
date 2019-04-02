@@ -76,7 +76,7 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
   absolute_metric_records_.ReserveInitialCapacity(kCount);
   main_frame_percentage_records_.ReserveInitialCapacity(kCount);
   for (unsigned i = 0; i < (unsigned)kCount; ++i) {
-    const auto& metric_name = metric_strings()[i];
+    const MetricInitializationData& metric_data = metrics_data()[i];
 
     // Absolute records report the absolute time for each metric, both
     // average and worst case. They have an associated UMA too that we
@@ -84,15 +84,21 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
     auto& absolute_record = absolute_metric_records_.emplace_back();
     absolute_record.reset();
     String uma_name = uma_preamble;
-    uma_name.append(metric_name);
+    uma_name.append(metric_data.name);
     uma_name.append(uma_postscript);
-    absolute_record.uma_counter.reset(
-        new CustomCountHistogram(uma_name.Utf8().data(), 0, 10000000, 50));
+    if (metric_data.has_uma) {
+      absolute_record.uma_counter.reset(
+          new CustomCountHistogram(uma_name.Utf8().data(), 0, 10000000, 50));
+    }
+
+    // Percentage records report the ratio of each metric to the primary metric,
+    // average and worst case. UMA counters are also associated with the
+    // ratios and we allocate and own them here.
     auto& percentage_record = main_frame_percentage_records_.emplace_back();
     percentage_record.reset();
     for (auto bucket_substring : threshold_substrings) {
       String uma_percentage_name = uma_percentage_preamble;
-      uma_percentage_name.append(metric_name);
+      uma_percentage_name.append(metric_data.name);
       uma_percentage_name.append(uma_percentage_postscript);
       uma_percentage_name.append(bucket_substring);
       percentage_record.uma_counters_per_bucket.push_back(
@@ -121,7 +127,9 @@ void LocalFrameUkmAggregator::RecordSample(size_t metric_index,
   DCHECK_LT(metric_index, absolute_metric_records_.size());
   auto& record = absolute_metric_records_[metric_index];
   record.interval_duration += duration;
-  record.uma_counter->CountMicroseconds(duration);
+  // Record the UMA
+  if (record.uma_counter)
+    record.uma_counter->CountMicroseconds(duration);
 
   // Only record ratios when inside a main frame.
   if (in_main_frame_update_) {
@@ -252,6 +260,16 @@ void LocalFrameUkmAggregator::RecordEvent() {
       case kAnimate:
         builder.SetAnimate(absolute_record.interval_duration.InMicroseconds())
             .SetAnimatePercentage(percentage);
+        break;
+      case kUpdateLayers:
+        builder
+            .SetUpdateLayers(absolute_record.interval_duration.InMicroseconds())
+            .SetUpdateLayersPercentage(percentage);
+        break;
+      case kProxyCommit:
+        builder
+            .SetProxyCommit(absolute_record.interval_duration.InMicroseconds())
+            .SetProxyCommitPercentage(percentage);
         break;
       case kCount:
       case kMainFrame:

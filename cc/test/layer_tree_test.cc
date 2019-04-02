@@ -437,6 +437,7 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
 
   void DidBeginMainFrame() override { test_hooks_->DidBeginMainFrame(); }
 
+  void WillUpdateLayers() override {}
   void DidUpdateLayers() override {}
 
   void BeginMainFrame(const viz::BeginFrameArgs& args) override {
