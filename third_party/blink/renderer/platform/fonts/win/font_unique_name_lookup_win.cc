@@ -7,6 +7,8 @@
 #include "base/files/file_path.h"
 #include "mojo/public/mojom/base/shared_memory.mojom-blink.h"
 #include "third_party/blink/public/mojom/dwrite_font_proxy/dwrite_font_proxy.mojom-blink.h"
+#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
 
@@ -32,7 +34,7 @@ FontUniqueNameLookupWin::~FontUniqueNameLookupWin() = default;
 
 sk_sp<SkTypeface> FontUniqueNameLookupWin::MatchUniqueName(
     const String& font_unique_name) {
-  if (!EnsureMatchingServiceConnected<mojom::blink::DWriteFontProxyPtr>())
+  if (!EnsureMatchingServiceConnected())
     return nullptr;
 
   base::Optional<FontTableMatcher::MatchResult> match_result =
@@ -70,6 +72,28 @@ sk_sp<SkTypeface> FontUniqueNameLookupWin::MatchUniqueName(
   windows_unique_local_font_instantiation_histogram.Count(result);
 
   return local_typeface;
+}
+
+bool FontUniqueNameLookupWin::EnsureMatchingServiceConnected() {
+  if (font_table_matcher_)
+    return true;
+
+  mojom::blink::DWriteFontProxyPtr service;
+  Platform::Current()->GetInterfaceProvider()->GetInterface(
+      mojo::MakeRequest(&service));
+
+  base::ReadOnlySharedMemoryRegion region_ptr;
+  if (!service->GetUniqueNameLookupTable(&region_ptr)) {
+    // Tests like StyleEngineTest do not set up a full browser where Blink can
+    // connect to a browser side service for font lookups. Placing a DCHECK here
+    // is too strict for such a case.
+    LOG(ERROR) << "Unable to connect to browser side service for src: local() "
+                  "font lookup.";
+    return false;
+  }
+
+  font_table_matcher_ = std::make_unique<FontTableMatcher>(region_ptr.Map());
+  return true;
 }
 
 }  // namespace blink
