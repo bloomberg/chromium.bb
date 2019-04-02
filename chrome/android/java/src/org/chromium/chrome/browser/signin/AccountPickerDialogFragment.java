@@ -12,6 +12,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.util.ObjectsCompat;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -112,8 +113,15 @@ public class AccountPickerDialogFragment extends DialogFragment {
         public ViewHolder onCreateViewHolder(ViewGroup viewGroup, @ViewType int viewType) {
             LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
             if (viewType == ViewType.NEW_ACCOUNT) {
-                View view =
-                        inflater.inflate(R.layout.account_picker_new_account_row, viewGroup, false);
+                TextView view = (TextView) inflater.inflate(
+                        R.layout.account_picker_new_account_row, viewGroup, false);
+                // Set the vector drawable programmatically because app:drawableStartCompat is only
+                // available after AndroidX appcompat library.
+                // TODO(https://crbug.com/948367): Use app:drawableStartCompat.
+                view.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                        AppCompatResources.getDrawable(
+                                viewGroup.getContext(), R.drawable.ic_add_circle_40dp),
+                        null, null, null);
                 return new ViewHolder(view);
             }
             View view = inflater.inflate(R.layout.account_picker_row, viewGroup, false);
