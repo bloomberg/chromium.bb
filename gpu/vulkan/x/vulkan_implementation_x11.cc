@@ -147,6 +147,12 @@ std::unique_ptr<gfx::GpuFence> VulkanImplementationX11::ExportVkFenceToGpuFence(
   return nullptr;
 }
 
+VkSemaphore VulkanImplementationX11::CreateExternalSemaphore(
+    VkDevice vk_device) {
+  return VulkanImplementation::CreateExternalSemaphore(
+      vk_device, VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT);
+}
+
 VkSemaphore VulkanImplementationX11::ImportSemaphoreHandle(
     VkDevice vk_device,
     SemaphoreHandle sync_handle) {

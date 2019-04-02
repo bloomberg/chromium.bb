@@ -126,6 +126,13 @@ VulkanImplementationScenic::ExportVkFenceToGpuFence(VkDevice vk_device,
   return nullptr;
 }
 
+VkSemaphore VulkanImplementationScenic::CreateExternalSemaphore(
+    VkDevice vk_device) {
+  return VulkanImplementation::CreateExternalSemaphore(
+      vk_device,
+      VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_TEMP_ZIRCON_EVENT_BIT_FUCHSIA);
+}
+
 VkSemaphore VulkanImplementationScenic::ImportSemaphoreHandle(
     VkDevice vk_device,
     gpu::SemaphoreHandle handle) {

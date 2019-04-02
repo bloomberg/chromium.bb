@@ -107,6 +107,12 @@ VulkanImplementationAndroid::ExportVkFenceToGpuFence(VkDevice vk_device,
   return nullptr;
 }
 
+VkSemaphore VulkanImplementationAndroid::CreateExternalSemaphore(
+    VkDevice vk_device) {
+  return VulkanImplementation::CreateExternalSemaphore(
+      vk_device, VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT);
+}
+
 VkSemaphore VulkanImplementationAndroid::ImportSemaphoreHandle(
     VkDevice vk_device,
     SemaphoreHandle sync_handle) {

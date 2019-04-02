@@ -44,8 +44,6 @@ class ExternalVkImageBacking : public SharedImageBacking {
   }
   using SharedImageBacking::have_context;
 
-  VkSemaphore CreateExternalVkSemaphore();
-
   // Notifies the backing that an access will start. Return false if there is
   // currently any other conflict access in progress. Otherwise, returns true
   // and semaphore handles which will be waited on before accessing.

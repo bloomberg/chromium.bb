@@ -45,28 +45,6 @@ ExternalVkImageBacking::~ExternalVkImageBacking() {
   // Destroy() will do any necessary cleanup.
 }
 
-VkSemaphore ExternalVkImageBacking::CreateExternalVkSemaphore() {
-  VkExportSemaphoreCreateInfo export_info;
-  export_info.sType = VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO;
-  export_info.pNext = nullptr;
-  export_info.handleTypes = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT;
-
-  VkSemaphoreCreateInfo sem_info;
-  sem_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-  sem_info.pNext = &export_info;
-  sem_info.flags = 0;
-
-  VkSemaphore semaphore = VK_NULL_HANDLE;
-  VkResult result = vkCreateSemaphore(device(), &sem_info, nullptr, &semaphore);
-
-  if (result != VK_SUCCESS) {
-    LOG(ERROR) << "Failed to create VkSemaphore: " << result;
-    return VK_NULL_HANDLE;
-  }
-
-  return semaphore;
-}
-
 bool ExternalVkImageBacking::BeginAccess(
     bool readonly,
     std::vector<SemaphoreHandle>* semaphore_handles) {

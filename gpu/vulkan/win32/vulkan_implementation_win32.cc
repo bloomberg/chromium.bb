@@ -105,6 +105,12 @@ VulkanImplementationWin32::ExportVkFenceToGpuFence(VkDevice vk_device,
   return nullptr;
 }
 
+VkSemaphore VulkanImplementationWin32::CreateExternalSemaphore(
+    VkDevice vk_device) {
+  NOTIMPLEMENTED();
+  return VK_NULL_HANDLE;
+}
+
 VkSemaphore VulkanImplementationWin32::ImportSemaphoreHandle(
     VkDevice vk_device,
     SemaphoreHandle handle) {

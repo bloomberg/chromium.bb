@@ -178,9 +178,11 @@ std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
   SkPixmap pixmap(ii, pixel_data.data(), row_bytes);
   surface->writePixels(pixmap, 0, 0);
 
-  VkSemaphore semaphore = vk_backing->CreateExternalVkSemaphore();
   auto* vk_implementation =
       context_state_->vk_context_provider()->GetVulkanImplementation();
+
+  VkSemaphore semaphore =
+      vk_implementation->CreateExternalSemaphore(vk_backing->device());
   VkDevice device = context_state_->vk_context_provider()
                         ->GetDeviceQueue()
                         ->GetVulkanDevice();
