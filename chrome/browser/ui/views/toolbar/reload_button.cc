@@ -89,9 +89,6 @@ void ReloadButton::ChangeMode(Mode mode, bool force) {
 
 void ReloadButton::LoadImages() {
   ChangeModeInternal(visible_mode_);
-
-  SchedulePaint();
-  PreferredSizeChanged();
 }
 
 void ReloadButton::OnMouseExited(const ui::MouseEvent& event) {
