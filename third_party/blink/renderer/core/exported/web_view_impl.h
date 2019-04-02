@@ -133,7 +133,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void FocusDocumentView(WebFrame*) override;
   void SetInitialFocus(bool reverse) override;
   void ClearFocusedElement() override;
-  void SmoothScroll(int target_x, int target_y, long duration_ms) override;
+  void SmoothScroll(int target_x, int target_y, uint64_t duration_ms) override;
   void AdvanceFocus(bool reverse) override;
   void AdvanceFocusAcrossFrames(WebFocusType,
                                 WebRemoteFrame* from,

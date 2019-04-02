@@ -2150,7 +2150,9 @@ void WebViewImpl::ZoomAndScrollToFocusedEditableElementRect(
   }
 }
 
-void WebViewImpl::SmoothScroll(int target_x, int target_y, long duration_ms) {
+void WebViewImpl::SmoothScroll(int target_x,
+                               int target_y,
+                               uint64_t duration_ms) {
   IntPoint target_position(target_x, target_y);
   StartPageScaleAnimation(target_position, false, PageScaleFactor(),
                           (double)duration_ms / 1000);
