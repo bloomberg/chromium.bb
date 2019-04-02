@@ -552,12 +552,27 @@ FcConfigAddFontDir (FcConfig	    *config,
 		    const FcChar8   *m,
 		    const FcChar8   *salt)
 {
+    if (FcDebug() & FC_DBG_CACHE)
+    {
+	if (m)
+	{
+	    printf ("%s -> %s (salt: %s)\n", d, m, salt);
+	}
+	else if (salt)
+	{
+	    printf ("%s (salt: %s)\n", d, salt);
+	}
+    }
     return FcStrSetAddFilenamePairWithSalt (config->fontDirs, d, m, salt);
 }
 
 FcBool
 FcConfigResetFontDirs (FcConfig *config)
 {
+    if (FcDebug() & FC_DBG_CACHE)
+    {
+	printf ("Reset font directories!\n");
+    }
     return FcStrSetDeleteAll (config->fontDirs);
 }
 

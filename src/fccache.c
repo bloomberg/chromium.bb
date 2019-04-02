@@ -150,17 +150,20 @@ static const char bin2hex[] = { '0', '1', '2', '3',
 static FcChar8 *
 FcDirCacheBasenameMD5 (FcConfig *config, const FcChar8 *dir, FcChar8 cache_base[CACHEBASE_LEN])
 {
-    FcChar8		*new_dir;
+    FcChar8		*new_dir = NULL;
     unsigned char 	hash[16];
     FcChar8		*hex_hash, *key = NULL;
     int			cnt;
     struct MD5Context 	ctx;
-    const FcChar8	*salt;
+    const FcChar8	*salt, *orig_dir = NULL;
 
     salt = FcConfigMapSalt (config, dir);
     new_dir = FcConfigMapFontPath(config, dir);
     if (new_dir)
+    {
+	orig_dir = dir;
 	dir = new_dir;
+    }
     if (salt)
     {
 	size_t dl = strlen ((const char *) dir);
@@ -169,6 +172,8 @@ FcDirCacheBasenameMD5 (FcConfig *config, const FcChar8 *dir, FcChar8 cache_base[
 	key = (FcChar8 *) malloc (dl + sl + 1);
 	memcpy (key, dir, dl);
 	memcpy (key + dl, salt, sl + 1);
+	if (!orig_dir)
+		orig_dir = dir;
 	dir = key;
     }
     MD5Init (&ctx);
@@ -176,8 +181,6 @@ FcDirCacheBasenameMD5 (FcConfig *config, const FcChar8 *dir, FcChar8 cache_base[
 
     MD5Final (hash, &ctx);
 
-    if (new_dir)
-	FcStrFree(new_dir);
     if (key)
 	FcStrFree (key);
 
@@ -190,6 +193,13 @@ FcDirCacheBasenameMD5 (FcConfig *config, const FcChar8 *dir, FcChar8 cache_base[
     }
     hex_hash[2*cnt] = 0;
     strcat ((char *) cache_base, "-" FC_ARCHITECTURE FC_CACHE_SUFFIX);
+    if (FcDebug() & FC_DBG_CACHE)
+    {
+	printf ("cache: %s (dir: %s%s%s%s, salt: %s)\n", cache_base, orig_dir ? orig_dir : dir, new_dir ? " (mapped to " : "", new_dir ? (char *)new_dir : "", new_dir ? ")" : "", salt);
+    }
+
+    if (new_dir)
+	FcStrFree(new_dir);
 
     return cache_base;
 }
