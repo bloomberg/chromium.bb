@@ -26,7 +26,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import functools
 import json
 import optparse
 import unittest
@@ -581,43 +580,30 @@ class PortTest(LoggingTestCase):
         self.assertEqual(port.tests(['virtual/virtual_wpt_dom/external/wpt/dom/ranges/Range-attributes.html']),
                          ['virtual/virtual_wpt_dom/external/wpt/dom/ranges/Range-attributes.html'])
 
-    def test_is_test_file(self):
+    def test_is_non_wpt_test_file(self):
         port = self.make_port(with_tests=True)
-        is_test_file = functools.partial(Port.is_test_file, port, port.host.filesystem)
-        self.assertTrue(is_test_file('', 'foo.html'))
-        self.assertTrue(is_test_file('', 'foo.svg'))
-        self.assertTrue(is_test_file('', 'test-ref-test.html'))
-        self.assertTrue(is_test_file('devtools', 'a.js'))
-        self.assertFalse(is_test_file('', 'foo.png'))
-        self.assertFalse(is_test_file('', 'foo-expected.html'))
-        self.assertFalse(is_test_file('', 'foo-expected.svg'))
-        self.assertFalse(is_test_file('', 'foo-expected.xht'))
-        self.assertFalse(is_test_file('', 'foo-expected-mismatch.html'))
-        self.assertFalse(is_test_file('', 'foo-expected-mismatch.svg'))
-        self.assertFalse(is_test_file('', 'foo-expected-mismatch.xhtml'))
-        self.assertFalse(is_test_file('', 'foo-ref.html'))
-        self.assertFalse(is_test_file('', 'foo-notref.html'))
-        self.assertFalse(is_test_file('', 'foo-notref.xht'))
-        self.assertFalse(is_test_file('', 'foo-ref.xhtml'))
-        self.assertFalse(is_test_file('', 'ref-foo.html'))
-        self.assertFalse(is_test_file('', 'notref-foo.xhr'))
+        self.assertTrue(port.is_non_wpt_test_file('', 'foo.html'))
+        self.assertTrue(port.is_non_wpt_test_file('', 'foo.svg'))
+        self.assertTrue(port.is_non_wpt_test_file('', 'test-ref-test.html'))
+        self.assertTrue(port.is_non_wpt_test_file('devtools', 'a.js'))
+        self.assertFalse(port.is_non_wpt_test_file('', 'foo.png'))
+        self.assertFalse(port.is_non_wpt_test_file('', 'foo-expected.html'))
+        self.assertFalse(port.is_non_wpt_test_file('', 'foo-expected.svg'))
+        self.assertFalse(port.is_non_wpt_test_file('', 'foo-expected.xht'))
+        self.assertFalse(port.is_non_wpt_test_file('', 'foo-expected-mismatch.html'))
+        self.assertFalse(port.is_non_wpt_test_file('', 'foo-expected-mismatch.svg'))
+        self.assertFalse(port.is_non_wpt_test_file('', 'foo-expected-mismatch.xhtml'))
+        self.assertFalse(port.is_non_wpt_test_file('', 'foo-ref.html'))
+        self.assertFalse(port.is_non_wpt_test_file('', 'foo-notref.html'))
+        self.assertFalse(port.is_non_wpt_test_file('', 'foo-notref.xht'))
+        self.assertFalse(port.is_non_wpt_test_file('', 'foo-ref.xhtml'))
+        self.assertFalse(port.is_non_wpt_test_file('', 'ref-foo.html'))
+        self.assertFalse(port.is_non_wpt_test_file('', 'notref-foo.xhr'))
 
-    def test_is_test_file_in_wpt(self):
-        port = self.make_port(with_tests=True)
-        filesystem = port.host.filesystem
-        PortTest._add_manifest_to_mock_file_system(filesystem)
-
-        # A file not in MANIFEST.json is not a test even if it has .html suffix.
-        self.assertFalse(port.is_test_file(filesystem, WEB_TEST_DIR + '/external/wpt/common', 'blank.html'))
-
-        # .js is not a test in general, but it is if MANIFEST.json contains an
-        # entry for it.
-        self.assertTrue(port.is_test_file(filesystem, WEB_TEST_DIR + '/external/wpt/console', 'console-is-a-namespace.any.js'))
-
-        # A file in external/wpt, not a sub directory.
-        self.assertFalse(port.is_test_file(filesystem, WEB_TEST_DIR + '/external/wpt', 'testharness_runner.html'))
-        # A file in external/wpt_automation.
-        self.assertTrue(port.is_test_file(filesystem, WEB_TEST_DIR + '/external/wpt_automation', 'foo.html'))
+        self.assertFalse(port.is_non_wpt_test_file(WEB_TEST_DIR + '/external/wpt/common', 'blank.html'))
+        self.assertFalse(port.is_non_wpt_test_file(WEB_TEST_DIR + '/external/wpt/console', 'console-is-a-namespace.any.js'))
+        self.assertFalse(port.is_non_wpt_test_file(WEB_TEST_DIR + '/external/wpt', 'testharness_runner.html'))
+        self.assertTrue(port.is_non_wpt_test_file(WEB_TEST_DIR + '/external/wpt_automation', 'foo.html'))
 
     def test_is_wpt_test(self):
         self.assertTrue(Port.is_wpt_test('external/wpt/dom/ranges/Range-attributes.html'))
