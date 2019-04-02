@@ -33,7 +33,7 @@ class GFX_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
 
   // Creates an appropriate PlatformFont implementation.
   static PlatformFont* CreateDefault();
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_IOS)
+#if defined(OS_MACOSX) || defined(OS_IOS)
   static PlatformFont* CreateFromNativeFont(NativeFont native_font);
 #endif
   // Creates a PlatformFont implementation with the specified |font_name|

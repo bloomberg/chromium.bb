@@ -24,7 +24,6 @@ namespace gfx {
 class GFX_EXPORT PlatformFontWin : public PlatformFont {
  public:
   PlatformFontWin();
-  explicit PlatformFontWin(NativeFont native_font);
   PlatformFontWin(const std::string& font_name, int font_size);
 
   // Dialog units to pixels conversion.
@@ -68,6 +67,7 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
   FRIEND_TEST_ALL_PREFIXES(PlatformFontWinTest, Metrics_SkiaVersusGDI);
   FRIEND_TEST_ALL_PREFIXES(PlatformFontWinTest, DirectWriteFontSubstitution);
 
+  explicit PlatformFontWin(NativeFont native_font);
   ~PlatformFontWin() override;
 
   // Chrome text drawing bottoms out in the Windows GDI functions that take an

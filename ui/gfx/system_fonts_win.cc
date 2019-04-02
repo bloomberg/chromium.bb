@@ -6,8 +6,11 @@
 
 #include "base/containers/flat_map.h"
 #include "base/no_destructor.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
+#include "base/win/scoped_select_object.h"
 #include "base/win/win_client_metrics.h"
 #include "ui/gfx/platform_font.h"
 
@@ -68,6 +71,27 @@ class SystemFonts {
                            << font_adjustment.font_family_override
                            << " cannot be copied into LOGFONT structure.";
     }
+  }
+
+  static Font GetFontFromLOGFONT(const LOGFONT* logfont) {
+    // Finds a matching font by triggering font mapping. The font mapper finds
+    // the closest physical font for a given logical font.
+    base::win::ScopedGDIObject<HFONT> font(::CreateFontIndirect(logfont));
+    base::win::ScopedGetDC screen_dc(NULL);
+    base::win::ScopedSelectObject scoped_font(screen_dc, font.get());
+
+    // Retrieve the name and height of the mapped font (physical font).
+    LOGFONT mapped_font_info;
+    GetObject(font.get(), sizeof(mapped_font_info), &mapped_font_info);
+    std::string font_name = base::SysWideToUTF8(mapped_font_info.lfFaceName);
+
+    TEXTMETRIC mapped_font_metrics;
+    GetTextMetrics(screen_dc, &mapped_font_metrics);
+    const int font_size =
+        std::max<int>(1, mapped_font_metrics.tmHeight -
+                             mapped_font_metrics.tmInternalLeading);
+
+    return Font(PlatformFont::CreateFromNameAndSize(font_name, font_size));
   }
 
   static void SetGetMinimumFontSizeCallback(
@@ -153,11 +177,7 @@ class SystemFonts {
     // Cap at minimum font size.
     logfont->lfHeight = AdjustFontSize(logfont->lfHeight, 0);
 
-    // Create the Font object.
-    HFONT font = ::CreateFontIndirect(logfont);
-    DLOG_ASSERT(font);
-    system_fonts_.emplace(system_font,
-                          gfx::PlatformFont::CreateFromNativeFont(font));
+    system_fonts_.emplace(system_font, GetFontFromLOGFONT(logfont));
   }
 
   // Returns the system DPI scale (standard DPI being 1.0).
@@ -221,9 +241,7 @@ Font AdjustExistingSystemFont(NativeFont existing_font,
   logfont.lfHeight = SystemFonts::AdjustFontSize(logfont.lfHeight, 0);
 
   // Create the Font object.
-  HFONT hfont = CreateFontIndirect(&logfont);
-  DCHECK(hfont);
-  return Font(PlatformFont::CreateFromNativeFont(hfont));
+  return SystemFonts::GetFontFromLOGFONT(&logfont);
 }
 
 int AdjustFontSize(int lf_height, int size_delta) {
