@@ -55,6 +55,8 @@ class UiUtils {
   static VRBrowserRendererThreadWin* GetRendererThread();
   static BrowserRenderer* GetBrowserRenderer();
 
+  void WatchElementForVisibilityStatusForTesting(
+      VisibilityChangeExpectation visibility_expectation);
   std::string UiTestOperationResultToString(UiTestOperationResult& result);
 
   std::unique_ptr<BrowserTestBrowserRendererBrowserInterface> interface_;

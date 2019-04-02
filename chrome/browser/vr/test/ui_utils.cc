@@ -75,9 +75,8 @@ void UiUtils::PerformActionAndWaitForVisibilityStatus(
 
   main_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &BrowserRenderer::WatchElementForVisibilityStatusForTesting,
-          base::Unretained(GetBrowserRenderer()), visibility_expectation));
+      base::BindOnce(&UiUtils::WatchElementForVisibilityStatusForTesting,
+                     base::Unretained(this), visibility_expectation));
 
   wait_loop.Run();
 
@@ -86,6 +85,19 @@ void UiUtils::PerformActionAndWaitForVisibilityStatus(
   CHECK(result == UiTestOperationResult::kVisibilityMatch)
       << "UI reported non-visibility-matched result '"
       << UiTestOperationResultToString(result) << "'";
+}
+
+void UiUtils::WatchElementForVisibilityStatusForTesting(
+    VisibilityChangeExpectation visibility_expectation) {
+  BrowserRenderer* browser_renderer = UiUtils::GetBrowserRenderer();
+  if (browser_renderer) {
+    interface_ =
+        std::make_unique<BrowserTestBrowserRendererBrowserInterface>(this);
+    browser_renderer->SetBrowserRendererBrowserInterfaceForTesting(
+        interface_.get());
+    browser_renderer->WatchElementForVisibilityStatusForTesting(
+        visibility_expectation);
+  }
 }
 
 void UiUtils::ReportUiOperationResult(const UiTestOperationType& action_type,
