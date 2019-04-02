@@ -9,14 +9,7 @@
 
 namespace arc {
 
-class ArcGraphicsJankDetectorTest : public testing::Test {
- public:
-  ArcGraphicsJankDetectorTest() = default;
-  ~ArcGraphicsJankDetectorTest() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ArcGraphicsJankDetectorTest);
-};
+using ArcGraphicsJankDetectorTest = testing::Test;
 
 TEST_F(ArcGraphicsJankDetectorTest, Generic) {
   int jank_count = 0;
