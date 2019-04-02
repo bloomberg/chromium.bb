@@ -22,6 +22,7 @@
 #include "sql/meta_table.h"
 #include "sql/sql_features.h"
 #include "sql/statement.h"
+#include "sql/test/database_test_peer.h"
 #include "sql/test/error_callback_support.h"
 #include "sql/test/scoped_error_expecter.h"
 #include "sql/test/sql_test_base.h"
@@ -30,19 +31,6 @@
 #include "third_party/sqlite/sqlite3.h"
 
 namespace sql {
-
-class DatabaseTestPeer {
- public:
-  static bool AttachDatabase(Database* db,
-                             const base::FilePath& other_db_path,
-                             const char* attachment_point) {
-    return db->AttachDatabase(other_db_path, attachment_point,
-                              InternalApiToken());
-  }
-  static bool DetachDatabase(Database* db, const char* attachment_point) {
-    return db->DetachDatabase(attachment_point, InternalApiToken());
-  }
-};
 
 namespace {
 
