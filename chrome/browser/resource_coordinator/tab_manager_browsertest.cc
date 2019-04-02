@@ -1495,8 +1495,10 @@ Browser* CreateBrowserWithTabs(int num_tabs) {
 
 }  // namespace
 
-// Flaky on Linux.  Times out on Windows debug builds. http://crbug.com/772839.
-#if defined(OS_LINUX) || (defined(OS_WIN) && !defined(NDEBUG))
+// Flaky on Linux.  Times out on Windows and Mac debug builds.
+// http://crbug.com/772839.
+#if defined(OS_LINUX) || \
+    ((defined(OS_WIN) || defined(OS_MACOSX)) && !defined(NDEBUG))
 #define MAYBE_DiscardTabsWithMinimizedAndOccludedWindows \
   DISABLED_DiscardTabsWithMinimizedAndOccludedWindows
 #else
