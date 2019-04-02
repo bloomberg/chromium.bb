@@ -993,6 +993,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-cros-ime-input-logic-fst",
+    "owners": [ "essential-inputs-team@google.com" ],
+    "expiry_milestone": 77
+  },
+  {
     "name": "enable-cros-ime-service",
     "owners": [ "essential-inputs-team@google.com" ],
     "expiry_milestone": 76

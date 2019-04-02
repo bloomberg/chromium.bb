@@ -33652,6 +33652,8 @@ from previous Chrome versions.
   <int value="609580715" label="ArcCupsApi:disabled"/>
   <int value="610545308" label="enable-potentially-annoying-security-features"/>
   <int value="613629912" label="LookalikeUrlNavigationSuggestions:enabled"/>
+  <int value="616660621" label="ImeInputLogicFst:disabled"/>
+  <int value="620989380" label="ImeInputLogicFst:enabled"/>
   <int value="623772100" label="EnableIncognitoWindowCounter:disabled"/>
   <int value="624317932" label="print-pdf-as-image"/>
   <int value="624368375" label="OmniboxEntitySuggestions:enabled"/>

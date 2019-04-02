@@ -3235,6 +3235,10 @@ const char kGestureTypingDescription[] =
     "Enable/Disable gesture typing option in the settings page for the virtual "
     "keyboard.";
 
+const char kImeInputLogicFstName[] = "Enable FST Input Logic on IME";
+const char kImeInputLogicFstDescription[] =
+    "Enable FST Input Logic to replace the IME legacy input logic on NaCl";
+
 const char kImeServiceName[] = "Enable IME service";
 const char kImeServiceDescription[] =
     "Enable IME service to provide the IME functionality instead of NaCl";
