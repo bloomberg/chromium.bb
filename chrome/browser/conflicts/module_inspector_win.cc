@@ -13,10 +13,10 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/conflicts/module_info_util_win.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/services/util_win/public/mojom/constants.mojom.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -97,8 +97,8 @@ ModuleInspector::ModuleInspector(
           base::FeatureList::IsEnabled(kDisableBackgroundModuleInspection)),
       test_connector_(nullptr),
       weak_ptr_factory_(this) {
-  // Use AfterStartupTaskUtils to be notified when startup is finished.
-  AfterStartupTaskUtils::PostTask(
+  // Use PostAfterStartupTask to be notified when startup is finished.
+  content::BrowserThread::PostAfterStartupTask(
       FROM_HERE, base::SequencedTaskRunnerHandle::Get(),
       base::BindOnce(&ModuleInspector::OnStartupFinished,
                      weak_ptr_factory_.GetWeakPtr()));
