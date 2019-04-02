@@ -104,6 +104,10 @@ const char* const kCrxDownloadUrls[] = {
 const char kFamiliesSecureUrl[] = "https://families.google.com/";
 const char kFamiliesUrl[] = "http://families.google.com/";
 
+// Play Store terms of service path:
+const char kPlayStoreHost[] = "play.google.com";
+const char kPlayTermsPath[] = "/about/play-terms";
+
 // This class encapsulates all the state that is required during construction of
 // a new SupervisedUserURLFilter::Contents.
 class FilterBuilder {
@@ -337,6 +341,16 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
                             GURL(kFamiliesSecureUrl).GetOrigin()}));
   if (base::ContainsKey(*kWhitelistedOrigins, effective_url.GetOrigin()))
     return ALLOW;
+
+  // Check Play Store terms of service.
+  // path_piece is checked separetly from the host to match international pages
+  // like https://play.google.com/intl/pt-BR_pt/about/play-terms/.
+  if (effective_url.SchemeIs(url::kHttpsScheme) &&
+      effective_url.host_piece() == kPlayStoreHost &&
+      effective_url.path_piece().find(kPlayTermsPath) !=
+          base::StringPiece::npos) {
+    return ALLOW;
+  }
 
   // Check manual blacklists and whitelists.
   FilteringBehavior manual_result =
