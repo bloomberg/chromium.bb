@@ -7,6 +7,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
+#include "ash/wm/splitview/split_view_utils.h"
+#include "base/optional.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -35,10 +37,10 @@ class ASH_EXPORT SplitViewHighlightView : public views::View {
   explicit SplitViewHighlightView(bool is_right_or_bottom);
   ~SplitViewHighlightView() override;
 
+  // Updates bounds, animating if |animation_type| has a value.
   void SetBounds(const gfx::Rect& bounds,
                  bool landscape,
-                 bool animate,
-                 bool nixing_preview_inset = false);
+                 const base::Optional<SplitviewAnimationType>& animation_type);
 
   void SetColor(SkColor color);
 

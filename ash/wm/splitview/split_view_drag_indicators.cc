@@ -403,6 +403,13 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
     const IndicatorState preview_state =
         nix_preview_inset ? previous_indicator_state_ : indicator_state_;
     const bool preview_left = preview_state == IndicatorState::kPreviewAreaLeft;
+    // |preview_left_or_top| indicates a preview area on the physical left or
+    // top of the screen (corresponding to kPreviewAreaLeft in primary screen
+    // orientations, and kPreviewAreaRight in nonprimary screen orientations).
+    const bool preview_left_or_top =
+        IsPreviewAreaOnLeftTopOfScreen(preview_state);
+    base::Optional<SplitviewAnimationType> left_highlight_animation_type;
+    base::Optional<SplitviewAnimationType> right_highlight_animation_type;
     if (IsPreviewAreaState(indicator_state_) || nix_preview_inset) {
       // Get the preview area bounds from the split view controller.
       gfx::Rect preview_area_bounds =
@@ -435,20 +442,54 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
       if (!landscape)
         other_bounds.Transpose();
 
-      if (IsPreviewAreaOnLeftTopOfScreen(preview_state)) {
+      if (preview_left_or_top) {
         left_highlight_bounds = preview_area_bounds;
         right_highlight_bounds = other_bounds;
+        if (animate) {
+          if (nix_preview_inset) {
+            left_highlight_animation_type =
+                SPLITVIEW_ANIMATION_PREVIEW_AREA_NIX_INSET;
+          } else {
+            left_highlight_animation_type =
+                SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN;
+            right_highlight_animation_type =
+                SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_OUT;
+          }
+        }
       } else {
         other_bounds.set_origin(highlight_padding_point);
         left_highlight_bounds = other_bounds;
         right_highlight_bounds = preview_area_bounds;
+        if (animate) {
+          if (nix_preview_inset) {
+            right_highlight_animation_type =
+                SPLITVIEW_ANIMATION_PREVIEW_AREA_NIX_INSET;
+          } else {
+            left_highlight_animation_type =
+                SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_OUT;
+            right_highlight_animation_type =
+                SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN;
+          }
+        }
+      }
+    } else if (IsPreviewAreaState(previous_indicator_state_) && animate) {
+      if (preview_left_or_top) {
+        left_highlight_animation_type =
+            SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_OUT;
+        right_highlight_animation_type =
+            SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_IN;
+      } else {
+        left_highlight_animation_type =
+            SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_IN;
+        right_highlight_animation_type =
+            SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_OUT;
       }
     }
 
     left_highlight_view_->SetBounds(GetMirroredRect(left_highlight_bounds),
-                                    landscape, animate, nix_preview_inset);
+                                    landscape, left_highlight_animation_type);
     right_highlight_view_->SetBounds(GetMirroredRect(right_highlight_bounds),
-                                     landscape, animate, nix_preview_inset);
+                                     landscape, right_highlight_animation_type);
 
     // Calculate the bounds of the views which contain the guidance text and
     // icon. Rotate the two views in landscape mode.
