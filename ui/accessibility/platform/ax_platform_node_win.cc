@@ -34,6 +34,7 @@
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate_utils_win.h"
+#include "ui/accessibility/platform/ax_platform_node_textchildprovider_win.h"
 #include "ui/accessibility/platform/ax_platform_node_textprovider_win.h"
 #include "ui/accessibility/platform/ax_platform_relation_win.h"
 #include "ui/base/win/atl_module.h"
@@ -199,6 +200,15 @@ void AppendTextToString(base::string16 extra_text, base::string16* string) {
   }
 
   *string += base::string16(L". ") + extra_text;
+}
+
+// Helper function to GetPatternProviderFactoryMethod that, given a node,
+// will return a pattern interface through result based on the provided type T.
+template <typename T>
+HRESULT PatternProvider(AXPlatformNodeWin* node, IUnknown** result) {
+  node->AddRef();
+  *result = static_cast<T*>(node);
+  return S_OK;
 }
 
 }  // namespace
@@ -3494,137 +3504,13 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PATTERN_PROVIDER);
   UIA_VALIDATE_CALL_1_ARG(result);
 
-  const AXNodeData& data = GetData();
+  *result = nullptr;
 
-  switch (pattern_id) {
-    case UIA_ExpandCollapsePatternId:
-      if (SupportsExpandCollapse(data)) {
-        AddRef();
-        *result = static_cast<IExpandCollapseProvider*>(this);
-      }
-      break;
+  PatternProviderFactoryMethod factory_method =
+      GetPatternProviderFactoryMethod(pattern_id);
+  if (factory_method)
+    (*factory_method)(this, result);
 
-    case UIA_GridPatternId:
-      if (IsTableLike(data.role)) {
-        AddRef();
-        *result = static_cast<IGridProvider*>(this);
-      }
-      break;
-
-    case UIA_GridItemPatternId:
-      if (IsCellOrTableHeader(data.role)) {
-        AddRef();
-        *result = static_cast<IGridItemProvider*>(this);
-      }
-      break;
-
-    case UIA_InvokePatternId:
-      if (IsInvokable(data)) {
-        AddRef();
-        *result = static_cast<IInvokeProvider*>(this);
-      }
-      break;
-
-    case UIA_RangeValuePatternId:
-      if (IsRangeValueSupported(data)) {
-        AddRef();
-        *result = static_cast<IRangeValueProvider*>(this);
-      }
-      break;
-
-    case UIA_ScrollPatternId:
-      if (IsScrollable()) {
-        AddRef();
-        *result = static_cast<IScrollProvider*>(this);
-      }
-      break;
-
-    case UIA_ScrollItemPatternId:
-      AddRef();
-      *result = static_cast<IScrollItemProvider*>(this);
-      break;
-
-    case UIA_SelectionItemPatternId:
-      if (IsSelectionItemSupported()) {
-        AddRef();
-        *result = static_cast<ISelectionItemProvider*>(this);
-      }
-      break;
-
-    case UIA_SelectionPatternId:
-      if (IsContainerWithSelectableChildren(data.role)) {
-        AddRef();
-        *result = static_cast<ISelectionProvider*>(this);
-      }
-      break;
-
-    case UIA_TablePatternId:
-      if (IsTableLike(data.role)) {
-        AddRef();
-        *result = static_cast<ITableProvider*>(this);
-      }
-      break;
-
-    case UIA_TableItemPatternId:
-      if (IsCellOrTableHeader(data.role)) {
-        AddRef();
-        *result = static_cast<ITableItemProvider*>(this);
-      }
-      break;
-
-    case UIA_TextEditPatternId:
-    case UIA_TextPatternId:
-      if (IsTextOnlyObject() || IsDocument() ||
-          HasBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot)) {
-        return AXPlatformNodeTextProviderWin::Create(this, result);
-      }
-      break;
-
-    case UIA_TogglePatternId:
-      if (SupportsToggle(data.role)) {
-        AddRef();
-        *result = static_cast<IToggleProvider*>(this);
-      }
-      break;
-
-    case UIA_ValuePatternId:
-      if (IsValuePatternSupported(GetDelegate())) {
-        AddRef();
-        *result = static_cast<IValueProvider*>(this);
-      }
-      break;
-
-    case UIA_WindowPatternId:
-      if (HasBoolAttribute(ax::mojom::BoolAttribute::kModal)) {
-        AddRef();
-        *result = static_cast<IWindowProvider*>(this);
-      }
-      break;
-
-    // Not currently implemented.
-    case UIA_AnnotationPatternId:
-    case UIA_CustomNavigationPatternId:
-    case UIA_DockPatternId:
-    case UIA_DragPatternId:
-    case UIA_DropTargetPatternId:
-    case UIA_ItemContainerPatternId:
-    case UIA_MultipleViewPatternId:
-    case UIA_ObjectModelPatternId:
-    case UIA_SpreadsheetPatternId:
-    case UIA_SpreadsheetItemPatternId:
-    case UIA_StylesPatternId:
-    case UIA_SynchronizedInputPatternId:
-    case UIA_TextChildPatternId:
-    case UIA_TextPattern2Id:
-    case UIA_TransformPatternId:
-    case UIA_TransformPattern2Id:
-    case UIA_VirtualizedItemPatternId:
-      break;
-
-    // Provided by UIA Core; we should not implement.
-    case UIA_LegacyIAccessiblePatternId:
-      break;
-  }
   return S_OK;
 }
 
@@ -4099,6 +3985,12 @@ HRESULT AXPlatformNodeWin::GetTextAttributeValue(TEXTATTRIBUTEID attribute_id,
   }
 
   return S_OK;
+}
+
+// IRawElementProviderSimple support methods.
+
+bool AXPlatformNodeWin::IsPatternProviderSupported(PATTERNID pattern_id) {
+  return GetPatternProviderFactoryMethod(pattern_id);
 }
 
 //
@@ -6708,6 +6600,135 @@ double AXPlatformNodeWin::GetVerticalScrollPercent() {
   float y_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMax);
   float y = GetIntAttribute(ax::mojom::IntAttribute::kScrollY);
   return 100.0 * (y - y_min) / (y_max - y_min);
+}
+
+// IRawElementProviderSimple support methods.
+
+AXPlatformNodeWin::PatternProviderFactoryMethod
+AXPlatformNodeWin::GetPatternProviderFactoryMethod(PATTERNID pattern_id) {
+  const AXNodeData& data = GetData();
+
+  switch (pattern_id) {
+    case UIA_ExpandCollapsePatternId:
+      if (SupportsExpandCollapse(data)) {
+        return &PatternProvider<IExpandCollapseProvider>;
+      }
+      break;
+
+    case UIA_GridPatternId:
+      if (IsTableLike(data.role)) {
+        return &PatternProvider<IGridProvider>;
+      }
+      break;
+
+    case UIA_GridItemPatternId:
+      if (IsCellOrTableHeader(data.role)) {
+        return &PatternProvider<IGridItemProvider>;
+      }
+      break;
+
+    case UIA_InvokePatternId:
+      if (IsInvokable(data)) {
+        return &PatternProvider<IInvokeProvider>;
+      }
+      break;
+
+    case UIA_RangeValuePatternId:
+      if (IsRangeValueSupported(data)) {
+        return &PatternProvider<IRangeValueProvider>;
+      }
+      break;
+
+    case UIA_ScrollPatternId:
+      if (IsScrollable()) {
+        return &PatternProvider<IScrollProvider>;
+      }
+      break;
+
+    case UIA_ScrollItemPatternId:
+      return &PatternProvider<IScrollItemProvider>;
+      break;
+
+    case UIA_SelectionItemPatternId:
+      if (IsSelectionItemSupported()) {
+        return &PatternProvider<ISelectionItemProvider>;
+      }
+      break;
+
+    case UIA_SelectionPatternId:
+      if (IsContainerWithSelectableChildren(data.role)) {
+        return &PatternProvider<ISelectionProvider>;
+      }
+      break;
+
+    case UIA_TablePatternId:
+      if (IsTableLike(data.role)) {
+        return &PatternProvider<ITableProvider>;
+      }
+      break;
+
+    case UIA_TableItemPatternId:
+      if (IsCellOrTableHeader(data.role)) {
+        return &PatternProvider<ITableItemProvider>;
+      }
+      break;
+
+    case UIA_TextChildPatternId:
+      if (AXPlatformNodeTextChildProviderWin::GetTextContainer(this)) {
+        return &AXPlatformNodeTextChildProviderWin::CreateTextChildProvider;
+      }
+      break;
+
+    case UIA_TextEditPatternId:
+    case UIA_TextPatternId:
+      if (IsTextOnlyObject() || IsDocument() ||
+          HasBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot)) {
+        return &AXPlatformNodeTextProviderWin::Create;
+      }
+      break;
+
+    case UIA_TogglePatternId:
+      if (SupportsToggle(data.role)) {
+        return &PatternProvider<IToggleProvider>;
+      }
+      break;
+
+    case UIA_ValuePatternId:
+      if (IsValuePatternSupported(GetDelegate())) {
+        return &PatternProvider<IValueProvider>;
+      }
+      break;
+
+    case UIA_WindowPatternId:
+      if (HasBoolAttribute(ax::mojom::BoolAttribute::kModal)) {
+        return &PatternProvider<IWindowProvider>;
+      }
+      break;
+
+    // Not currently implemented.
+    case UIA_AnnotationPatternId:
+    case UIA_CustomNavigationPatternId:
+    case UIA_DockPatternId:
+    case UIA_DragPatternId:
+    case UIA_DropTargetPatternId:
+    case UIA_ItemContainerPatternId:
+    case UIA_MultipleViewPatternId:
+    case UIA_ObjectModelPatternId:
+    case UIA_SpreadsheetPatternId:
+    case UIA_SpreadsheetItemPatternId:
+    case UIA_StylesPatternId:
+    case UIA_SynchronizedInputPatternId:
+    case UIA_TextPattern2Id:
+    case UIA_TransformPatternId:
+    case UIA_TransformPattern2Id:
+    case UIA_VirtualizedItemPatternId:
+      break;
+
+    // Provided by UIA Core; we should not implement.
+    case UIA_LegacyIAccessiblePatternId:
+      break;
+  }
+  return nullptr;
 }
 
 }  // namespace ui

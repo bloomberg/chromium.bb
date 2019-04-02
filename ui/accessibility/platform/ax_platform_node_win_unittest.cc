@@ -4537,40 +4537,41 @@ TEST_F(AXPlatformNodeWinTest, TestGetPatternProviderSupportedPatterns) {
             GetSupportedPatternsFromNodeId(root_id));
 
   EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
-                        UIA_ExpandCollapsePatternId}),
+                        UIA_ExpandCollapsePatternId, UIA_TextChildPatternId}),
             GetSupportedPatternsFromNodeId(text_field_with_combo_box_id));
 
   EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_GridPatternId,
-                        UIA_TablePatternId}),
+                        UIA_TablePatternId, UIA_TextChildPatternId}),
             GetSupportedPatternsFromNodeId(table_id));
 
   EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_GridItemPatternId,
-                        UIA_TableItemPatternId}),
+                        UIA_TableItemPatternId, UIA_TextChildPatternId}),
             GetSupportedPatternsFromNodeId(table_cell_id));
 
   EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
-                        UIA_RangeValuePatternId}),
+                        UIA_RangeValuePatternId, UIA_TextChildPatternId}),
             GetSupportedPatternsFromNodeId(meter_id));
 
-  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ScrollPatternId}),
+  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ScrollPatternId,
+                        UIA_TextChildPatternId}),
             GetSupportedPatternsFromNodeId(group_with_scroll_id));
 
   EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
                         UIA_SelectionPatternId, UIA_GridPatternId,
-                        UIA_TablePatternId}),
+                        UIA_TablePatternId, UIA_TextChildPatternId}),
             GetSupportedPatternsFromNodeId(grid_id));
 
   EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
                         UIA_GridItemPatternId, UIA_TableItemPatternId,
-                        UIA_SelectionItemPatternId}),
+                        UIA_TextChildPatternId, UIA_SelectionItemPatternId}),
             GetSupportedPatternsFromNodeId(grid_cell_id));
 
   EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
-                        UIA_TogglePatternId}),
+                        UIA_TextChildPatternId, UIA_TogglePatternId}),
             GetSupportedPatternsFromNodeId(checkbox_id));
 
   EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
-                        UIA_InvokePatternId}),
+                        UIA_InvokePatternId, UIA_TextChildPatternId}),
             GetSupportedPatternsFromNodeId(link_id));
 }
 

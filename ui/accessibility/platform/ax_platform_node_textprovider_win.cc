@@ -133,32 +133,21 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::GetVisibleRanges(
 STDMETHODIMP AXPlatformNodeTextProviderWin::RangeFromChild(
     IRawElementProviderSimple* child,
     ITextRangeProvider** range) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXT_RANGEFROMCHILD);
   UIA_VALIDATE_TEXTPROVIDER_CALL_1_ARG(child);
-
-  DVLOG(1) << __func__;
 
   *range = nullptr;
 
   Microsoft::WRL::ComPtr<ui::AXPlatformNodeWin> child_platform_node;
-  if (child->QueryInterface(IID_PPV_ARGS(&child_platform_node)) != S_OK)
+  if (!SUCCEEDED(child->QueryInterface(IID_PPV_ARGS(&child_platform_node))))
     return UIA_E_INVALIDOPERATION;
 
   if (!owner()->IsDescendant(child_platform_node.Get()))
     return E_INVALIDARG;
 
-  // Start and end should be leaf text positions.
-  AXNodePosition::AXPositionInstance start = child_platform_node->GetDelegate()
-                                                 ->CreateTextPositionAt(0)
-                                                 ->AsLeafTextPosition();
+  *range = GetRangeFromChild(owner(), child_platform_node.Get());
 
-  AXNodePosition::AXPositionInstance end =
-      child_platform_node->GetDelegate()
-          ->CreateTextPositionAt(start->MaxTextOffset())
-          ->AsLeafTextPosition()
-          ->CreatePositionAtEndOfAnchor();
-
-  return AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
-      owner_, std::move(start), std::move(end), range);
+  return S_OK;
 }
 
 STDMETHODIMP AXPlatformNodeTextProviderWin::RangeFromPoint(
@@ -229,6 +218,34 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::GetConversionTarget(
     ITextRangeProvider** range) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTEDIT_GETCONVERSIONTARGET);
   return E_NOTIMPL;
+}
+
+ITextRangeProvider* AXPlatformNodeTextProviderWin::GetRangeFromChild(
+    ui::AXPlatformNodeWin* ancestor,
+    ui::AXPlatformNodeWin* descendant) {
+  ITextRangeProvider* range = nullptr;
+
+  DCHECK(ancestor);
+  DCHECK(descendant);
+  DCHECK(descendant->GetDelegate());
+  DCHECK(ancestor->IsDescendant(descendant));
+
+  // Start and end should be leaf text positions.
+  AXNodePosition::AXPositionInstance start =
+      descendant->GetDelegate()->CreateTextPositionAt(0)->AsLeafTextPosition();
+
+  AXNodePosition::AXPositionInstance end =
+      descendant->GetDelegate()
+          ->CreateTextPositionAt(start->MaxTextOffset())
+          ->AsLeafTextPosition()
+          ->CreatePositionAtEndOfAnchor();
+
+  if (!SUCCEEDED(AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
+          ancestor, std::move(start), std::move(end), &range))) {
+    return nullptr;
+  }
+
+  return range;
 }
 
 ui::AXPlatformNodeWin* AXPlatformNodeTextProviderWin::owner() const {

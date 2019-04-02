@@ -53,6 +53,12 @@ class __declspec(uuid("3e1c192b-4348-45ac-8eb6-4b58eeb3dcca"))
 
   STDMETHOD(GetConversionTarget)(ITextRangeProvider** range) override;
 
+  // ITextProvider supporting methods.
+
+  static ITextRangeProvider* GetRangeFromChild(
+      ui::AXPlatformNodeWin* ancestor,
+      ui::AXPlatformNodeWin* descendant);
+
  private:
   friend class AXPlatformNodeTextProviderTest;
   ui::AXPlatformNodeWin* owner() const;
