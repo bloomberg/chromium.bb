@@ -10233,6 +10233,12 @@ interface WebGLUniformLocation
 interface WebGLVertexArrayObject
     attribute @@toStringTag
     method constructor
+interface WebGLVideoFrameInfo
+    attribute @@toStringTag
+    getter currentTime
+    getter textureHeight
+    getter textureWidth
+    method constructor
 interface WebKitCSSMatrix : DOMMatrixReadOnly
     attribute @@toStringTag
     getter a

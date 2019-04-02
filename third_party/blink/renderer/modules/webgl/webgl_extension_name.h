@@ -44,6 +44,7 @@ enum WebGLExtensionName {
   kWebGLMultiDrawName,
   kWebGLMultiDrawInstancedName,
   kWebGLMultiviewName,
+  kWebGLVideoTextureName,
   kWebGLExtensionNameCount,  // Must be the last entry
 };
 }  // namespace blink
