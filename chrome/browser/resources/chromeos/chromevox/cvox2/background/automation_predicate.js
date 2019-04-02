@@ -618,6 +618,10 @@ AutomationPredicate.multiline = function(node) {
  */
 AutomationPredicate.autoScrollable = function(node) {
   return !!node.scrollable &&
+      (node.standardActions.includes(
+           chrome.automation.ActionType.SCROLL_FORWARD) ||
+       node.standardActions.includes(
+           chrome.automation.ActionType.SCROLL_BACKWARD)) &&
       (node.role == Role.GRID || node.role == Role.LIST ||
        node.role == Role.POP_UP_BUTTON || node.role == Role.SCROLL_VIEW);
 };
