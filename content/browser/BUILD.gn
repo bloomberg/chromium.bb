@@ -1060,6 +1060,8 @@ jumbo_source_set("browser") {
     "indexed_db/scopes/disjoint_range_lock_manager.h",
     "indexed_db/scopes/leveldb_scopes_coding.cc",
     "indexed_db/scopes/leveldb_scopes_coding.h",
+    "indexed_db/scopes/leveldb_scopes_tasks.cc",
+    "indexed_db/scopes/leveldb_scopes_tasks.h",
     "indexed_db/scopes/leveldb_state.cc",
     "indexed_db/scopes/leveldb_state.h",
     "indexed_db/scopes/scope_lock.cc",

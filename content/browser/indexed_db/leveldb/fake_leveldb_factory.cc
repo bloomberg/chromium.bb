@@ -22,6 +22,166 @@
 namespace content {
 namespace indexed_db {
 namespace {
+class FlakyIterator;
+
+// FlakyDB is a leveldb::DB wrapper that will flake in a predictable pattern
+// given a queue of |flake_points|. After a flake, the database will continue
+// operating as normal.
+class FlakyDB : public leveldb::DB {
+ public:
+  FlakyDB(std::unique_ptr<leveldb::DB> db,
+          std::queue<FakeLevelDBFactory::FlakePoint> flake_points)
+      : db_(std::move(db)), flake_points_(std::move(flake_points)) {
+    DCHECK(db_);
+  }
+  ~FlakyDB() override = default;
+
+  // Returns a FlakePoint if the current operation is flaky with the flake
+  // information. Otherwise it returns a base::nullopt.
+  // This call is threadsafe.
+  base::Optional<FakeLevelDBFactory::FlakePoint> FlakePointForNextOperation() {
+    base::AutoLock lock(lock_);
+    if (flake_points_.empty())
+      return base::nullopt;
+    DCHECK_GE(flake_points_.front().calls_before_flake, 0);
+    flake_points_.front().calls_before_flake--;
+    FakeLevelDBFactory::FlakePoint flake_point = flake_points_.front();
+    if (flake_point.calls_before_flake >= 0)
+      return base::nullopt;
+    flake_points_.pop();
+    return flake_point;
+  }
+
+  // Implementations of the DB interface
+  leveldb::Status Put(const leveldb::WriteOptions& options,
+                      const leveldb::Slice& key,
+                      const leveldb::Slice& value) override {
+    base::Optional<FakeLevelDBFactory::FlakePoint> flake_status =
+        FlakePointForNextOperation();
+    if (flake_status.has_value())
+      return flake_status->flake_status;
+    return db_->Put(options, key, value);
+  }
+  leveldb::Status Delete(const leveldb::WriteOptions& options,
+                         const leveldb::Slice& key) override {
+    base::Optional<FakeLevelDBFactory::FlakePoint> flake_status =
+        FlakePointForNextOperation();
+    if (flake_status.has_value())
+      return flake_status->flake_status;
+    return db_->Delete(options, key);
+  }
+  leveldb::Status Write(const leveldb::WriteOptions& options,
+                        leveldb::WriteBatch* updates) override {
+    base::Optional<FakeLevelDBFactory::FlakePoint> flake_status =
+        FlakePointForNextOperation();
+    if (flake_status.has_value())
+      return flake_status->flake_status;
+    return db_->Write(options, updates);
+  }
+  leveldb::Status Get(const leveldb::ReadOptions& options,
+                      const leveldb::Slice& key,
+                      std::string* value) override {
+    base::Optional<FakeLevelDBFactory::FlakePoint> flake_status =
+        FlakePointForNextOperation();
+    if (flake_status.has_value()) {
+      if (flake_status->flake_status.ok())
+        *value = flake_status->replaced_get_result;
+      return flake_status->flake_status;
+    }
+    return db_->Get(options, key, value);
+  }
+  leveldb::Iterator* NewIterator(const leveldb::ReadOptions& options) override;
+  const leveldb::Snapshot* GetSnapshot() override { return db_->GetSnapshot(); }
+  void ReleaseSnapshot(const leveldb::Snapshot* snapshot) override {
+    return db_->ReleaseSnapshot(snapshot);
+  }
+  bool GetProperty(const leveldb::Slice& property,
+                   std::string* value) override {
+    return db_->GetProperty(property, value);
+  }
+  void GetApproximateSizes(const leveldb::Range* range,
+                           int n,
+                           uint64_t* sizes) override {
+    db_->GetApproximateSizes(range, n, sizes);
+  }
+  void CompactRange(const leveldb::Slice* begin,
+                    const leveldb::Slice* end) override {
+    db_->CompactRange(begin, end);
+  }
+
+ private:
+  base::Lock lock_;
+  const std::unique_ptr<leveldb::DB> db_;
+  std::queue<FakeLevelDBFactory::FlakePoint> flake_points_ GUARDED_BY(lock_);
+};
+
+// FlakyIterator calls its parent's FlakePointForNextOperation method to
+// determine the validity at any position. Because an iterator maintains state,
+// it stores the current result from FlakePointForNextOperation in the
+// current_flake_ variable. This is reset & optionally set during a Seek*, Next,
+// or Prev call. LevelDB iterators are not thread-safe.
+class FlakyIterator : public leveldb::Iterator {
+ public:
+  FlakyIterator(FlakyDB* db, std::unique_ptr<leveldb::Iterator> delegate)
+      : db_(db), delegate_(std::move(delegate)) {}
+  bool Valid() const override {
+    if (current_flake_ && !current_flake_->flake_status.ok())
+      return false;
+    return delegate_->Valid();
+  }
+  void SeekToFirst() override {
+    current_flake_ = db_->FlakePointForNextOperation();
+    delegate_->SeekToFirst();
+  }
+  void SeekToLast() override {
+    current_flake_ = db_->FlakePointForNextOperation();
+    delegate_->SeekToLast();
+  }
+  void Seek(const leveldb::Slice& target) override {
+    current_flake_ = db_->FlakePointForNextOperation();
+    delegate_->Seek(target);
+  }
+  void Next() override {
+    current_flake_ = db_->FlakePointForNextOperation();
+    delegate_->Next();
+  }
+  void Prev() override {
+    current_flake_ = db_->FlakePointForNextOperation();
+    delegate_->Prev();
+  }
+  leveldb::Slice key() const override {
+    if (current_flake_ && !current_flake_->flake_status.ok())
+      return leveldb::Slice();
+    return delegate_->key();
+  }
+  leveldb::Slice value() const override {
+    if (current_flake_ && !current_flake_->flake_status.ok())
+      return leveldb::Slice();
+    if (current_flake_)
+      return current_flake_->replaced_get_result;
+    return delegate_->value();
+  }
+  leveldb::Status status() const override {
+    if (current_flake_)
+      return current_flake_->flake_status;
+    return delegate_->status();
+  }
+
+ private:
+  // The raw pointer is safe because iterators must be deleted before their
+  // databases.
+  FlakyDB* const db_;
+
+  // The current flake is cleared & optionally set on every call to Seek*, Next,
+  // and Prev.
+  base::Optional<FakeLevelDBFactory::FlakePoint> current_flake_;
+  std::unique_ptr<leveldb::Iterator> delegate_;
+};
+
+leveldb::Iterator* FlakyDB::NewIterator(const leveldb::ReadOptions& options) {
+  return new FlakyIterator(this, base::WrapUnique(db_->NewIterator(options)));
+}
+
 class BrokenIterator : public leveldb::Iterator {
  public:
   BrokenIterator(leveldb::Status returned_status)
@@ -203,13 +363,10 @@ FakeLevelDBFactory::FakeLevelDBFactory() = default;
 FakeLevelDBFactory::~FakeLevelDBFactory() {}
 
 // static
-scoped_refptr<LevelDBState> FakeLevelDBFactory::GetBrokenLevelDB(
-    leveldb::Status error_to_return,
-    const base::FilePath& reported_file_path) {
-  return LevelDBState::CreateForDiskDB(
-      indexed_db::GetDefaultLevelDBComparator(),
-      indexed_db::GetDefaultIndexedDBComparator(),
-      std::make_unique<BrokenDB>(error_to_return), reported_file_path);
+std::unique_ptr<leveldb::DB> FakeLevelDBFactory::CreateFlakyDB(
+    std::unique_ptr<leveldb::DB> db,
+    std::queue<FlakePoint> flake_points) {
+  return std::make_unique<FlakyDB>(std::move(db), std::move(flake_points));
 }
 
 // static
@@ -221,6 +378,16 @@ FakeLevelDBFactory::CreateBreakableDB(std::unique_ptr<leveldb::DB> db) {
   base::OnceCallback<void(leveldb::Status)> callback = base::BindOnce(
       &BreakOnCallbackDB::Break, base::Unretained(breakable_db.get()));
   return std::make_pair(std::move(breakable_db), std::move(callback));
+}
+
+// static
+scoped_refptr<LevelDBState> FakeLevelDBFactory::GetBrokenLevelDB(
+    leveldb::Status error_to_return,
+    const base::FilePath& reported_file_path) {
+  return LevelDBState::CreateForDiskDB(
+      indexed_db::GetDefaultLevelDBComparator(),
+      indexed_db::GetDefaultIndexedDBComparator(),
+      std::make_unique<BrokenDB>(error_to_return), reported_file_path);
 }
 
 void FakeLevelDBFactory::EnqueueNextOpenDBResult(

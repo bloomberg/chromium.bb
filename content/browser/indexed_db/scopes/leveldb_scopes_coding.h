@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_INDEXED_DB_SCOPES_LEVELDB_SCOPES_CODING_H_
 
 #include <stdint.h>
+#include <limits>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -33,6 +34,8 @@ static constexpr int64_t kMinSupportedVersion = 1;
 static constexpr int64_t kCurrentVersion = 1;
 
 static constexpr int64_t kFirstScopeNumber = 0;
+static constexpr int64_t kFirstSequenceNumberToWrite =
+    std::numeric_limits<int64_t>::max();
 
 CONTENT_EXPORT std::tuple<bool /*success*/, int64_t /*scope_id*/>
 ParseScopeMetadataId(leveldb::Slice key,
@@ -61,6 +64,11 @@ class CONTENT_EXPORT ScopesEncoder {
   // enumerates all metadata entries. Each metadata entry value is expected to
   // be a LevelDBScopesScopeMetadata.
   leveldb::Slice ScopeMetadataPrefix(base::span<const uint8_t> scopes_prefix);
+
+  // Returns a key prefix for all scope tasks for all scopes. This is intended
+  // to be used for unit tests which test for the presence of any scope task
+  // data after all cleanup has finished.
+  leveldb::Slice TasksKeyPrefix(base::span<const uint8_t> scopes_prefix);
 
   // Returns a key prefix that only scope tasks keys for the given
   // |scope_number| use. This is intended to be used to delete all tasks, or
@@ -98,6 +106,9 @@ class CONTENT_EXPORT ScopesEncoder {
  private:
   std::string key_buffer_;
 };
+
+std::tuple<bool, int64_t> ParseScopeMetadata(leveldb::Slice key,
+                                             int prefix_bytes_to_skip);
 
 }  // namespace content
 

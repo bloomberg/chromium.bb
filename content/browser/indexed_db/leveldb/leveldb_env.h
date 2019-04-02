@@ -11,7 +11,6 @@
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/no_destructor.h"
 #include "base/optional.h"
 #include "content/browser/indexed_db/leveldb/leveldb_comparator.h"
 #include "content/browser/indexed_db/scopes/leveldb_state.h"
@@ -41,10 +40,11 @@ class LevelDBEnv : public leveldb_env::ChromiumEnv {
 namespace indexed_db {
 
 // Visible for testing.
-leveldb_env::Options GetLevelDBOptions(leveldb::Env* env,
-                                       const leveldb::Comparator* comparator,
-                                       size_t write_buffer_size,
-                                       bool paranoid_checks);
+CONTENT_EXPORT leveldb_env::Options GetLevelDBOptions(
+    leveldb::Env* env,
+    const leveldb::Comparator* comparator,
+    size_t write_buffer_size,
+    bool paranoid_checks);
 
 // Factory class used to open leveldb databases, and stores all necessary
 // objects in a LevelDBState. This interface exists so that it can be mocked out

@@ -67,6 +67,14 @@ leveldb::Slice ScopesEncoder::ScopeMetadataPrefix(
   return leveldb::Slice(key_buffer_);
 }
 
+leveldb::Slice ScopesEncoder::TasksKeyPrefix(base::span<const uint8_t> prefix) {
+  key_buffer_.clear();
+  key_buffer_.assign(reinterpret_cast<const char*>(prefix.data()),
+                     prefix.size());
+  key_buffer_.push_back(leveldb_scopes::kLogByte);
+  return leveldb::Slice(key_buffer_);
+}
+
 leveldb::Slice ScopesEncoder::TasksKeyPrefix(base::span<const uint8_t> prefix,
                                              int64_t scope_number) {
   key_buffer_.clear();
@@ -84,8 +92,8 @@ leveldb::Slice ScopesEncoder::UndoTaskKeyPrefix(
   key_buffer_.assign(reinterpret_cast<const char*>(prefix.data()),
                      prefix.size());
   key_buffer_.push_back(leveldb_scopes::kLogByte);
-  key_buffer_.push_back(leveldb_scopes::kUndoTasksByte);
   EncodeVarInt(scope_number, &key_buffer_);
+  key_buffer_.push_back(leveldb_scopes::kUndoTasksByte);
   return leveldb::Slice(key_buffer_);
 }
 
@@ -96,8 +104,8 @@ leveldb::Slice ScopesEncoder::CleanupTaskKeyPrefix(
   key_buffer_.assign(reinterpret_cast<const char*>(prefix.data()),
                      prefix.size());
   key_buffer_.push_back(leveldb_scopes::kLogByte);
-  key_buffer_.push_back(leveldb_scopes::kCleanupTasksByte);
   EncodeVarInt(scope_number, &key_buffer_);
+  key_buffer_.push_back(leveldb_scopes::kCleanupTasksByte);
   return leveldb::Slice(key_buffer_);
 }
 
@@ -117,6 +125,18 @@ leveldb::Slice ScopesEncoder::CleanupTaskKey(
   CleanupTaskKeyPrefix(scopes_prefix, scope_number);
   EncodeInt(cleanup_sequence_number, &key_buffer_);
   return leveldb::Slice(key_buffer_);
+}
+
+std::tuple<bool, int64_t> ParseScopeMetadata(leveldb::Slice key,
+                                             int prefix_bytes_to_skip) {
+  int64_t scope_id = 0;
+  DCHECK_GE(prefix_bytes_to_skip, 0);
+  if (key.size() < static_cast<size_t>(prefix_bytes_to_skip + 1))
+    return std::make_tuple(false, 0);
+  base::StringPiece part(key.data() + prefix_bytes_to_skip,
+                         key.size() - prefix_bytes_to_skip);
+  bool success = DecodeVarInt(&part, &scope_id);
+  return std::make_tuple(success, scope_id);
 }
 
 }  // namespace content
