@@ -650,7 +650,7 @@ def GeneralTemplates(site_config):
       site_config.templates.internal,
       display_label=config_lib.DISPLAY_LABEL_RELEASE,
       build_type=constants.CANARY_TYPE,
-      luci_builder=config_lib.LUCI_BUILDER_RELEASE,
+      luci_builder=config_lib.LUCI_BUILDER_PROD,
       chroot_use_image=False,
       suite_scheduling=True,
       # Because release builders never use prebuilts, they need the
