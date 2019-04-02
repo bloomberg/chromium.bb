@@ -427,8 +427,8 @@ TEST_F(PnaclHostTest, ClearTranslationCache) {
   EXPECT_EQ(2, GetCacheSize());
   net::TestCompletionCallback cb;
   // Since we are using a memory backend, the clear should happen immediately.
-  host_->ClearTranslationCacheEntriesBetween(
-      base::Time(), base::Time(), base::Bind(cb.callback(), 0));
+  host_->ClearTranslationCacheEntriesBetween(base::Time(), base::Time(),
+                                             base::BindOnce(cb.callback(), 0));
   // Check that the translation cache has been cleared before flushing the
   // queues, because the backend will be freed once it is.
   EXPECT_EQ(0, GetCacheSize());
