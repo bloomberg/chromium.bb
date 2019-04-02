@@ -839,16 +839,17 @@ void GlobalHistogramAllocator::ConstructFilePathsForUploadDir(
 bool GlobalHistogramAllocator::CreateSpareFile(const FilePath& spare_path,
                                                size_t size) {
   FilePath temp_spare_path = spare_path.AddExtension(FILE_PATH_LITERAL(".tmp"));
-  bool success = true;
+  bool success;
   {
     File spare_file(temp_spare_path, File::FLAG_CREATE_ALWAYS |
                                          File::FLAG_READ | File::FLAG_WRITE);
-    if (!spare_file.IsValid())
-      return false;
+    success = spare_file.IsValid();
 
-    MemoryMappedFile mmfile;
-    success = mmfile.Initialize(std::move(spare_file), {0, size},
-                                MemoryMappedFile::READ_WRITE_EXTEND);
+    if (success) {
+      MemoryMappedFile mmfile;
+      success = mmfile.Initialize(std::move(spare_file), {0, size},
+                                  MemoryMappedFile::READ_WRITE_EXTEND);
+    }
   }
 
   if (success)
