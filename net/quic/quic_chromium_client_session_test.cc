@@ -72,26 +72,13 @@ const char kServerHostname[] = "test.example.com";
 const uint16_t kServerPort = 443;
 const size_t kMaxReadersPerQuicSession = 5;
 
-// A subclass of QuicChromiumClientSession with GetSSLInfo overriden to allow
-// forcing the value of SSLInfo::channel_id_sent to true.
+// A subclass of QuicChromiumClientSession that allows OnPathDegrading to be
+// mocked.
 class TestingQuicChromiumClientSession : public QuicChromiumClientSession {
  public:
   using QuicChromiumClientSession::QuicChromiumClientSession;
 
-  bool GetSSLInfo(SSLInfo* ssl_info) const override {
-    bool ret = QuicChromiumClientSession::GetSSLInfo(ssl_info);
-    if (ret)
-      ssl_info->channel_id_sent =
-          ssl_info->channel_id_sent || force_channel_id_sent_;
-    return ret;
-  }
-
-  void OverrideChannelIDSent() { force_channel_id_sent_ = true; }
-
   MOCK_METHOD0(OnPathDegrading, void());
-
- private:
-  bool force_channel_id_sent_ = false;
 };
 
 class QuicChromiumClientSessionTest
@@ -1302,39 +1289,6 @@ TEST_P(QuicChromiumClientSessionTest, CanPool) {
       session_->CanPool("mail.google.com", PRIVACY_MODE_DISABLED, SocketTag()));
 }
 
-TEST_P(QuicChromiumClientSessionTest, ConnectionPooledWithTlsChannelId) {
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<quic::QuicEncryptedPacket> settings_packet(
-      client_maker_.MakeInitialSettingsPacket(1, nullptr));
-  MockWrite writes[] = {
-      MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1)};
-  socket_data_.reset(new SequencedSocketData(reads, writes));
-  Initialize();
-  // Load a cert that is valid for:
-  //   www.example.org
-  //   mail.example.org
-  //   www.example.com
-
-  ProofVerifyDetailsChromium details;
-  details.cert_verify_result.verified_cert =
-      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
-  ASSERT_TRUE(details.cert_verify_result.verified_cert.get());
-
-  CompleteCryptoHandshake();
-  session_->OnProofVerifyDetailsAvailable(details);
-  QuicChromiumClientSessionPeer::SetHostname(session_.get(), "www.example.org");
-  session_->OverrideChannelIDSent();
-
-  EXPECT_TRUE(
-      session_->CanPool("www.example.org", PRIVACY_MODE_DISABLED, SocketTag()));
-  EXPECT_TRUE(session_->CanPool("mail.example.org", PRIVACY_MODE_DISABLED,
-                                SocketTag()));
-  EXPECT_FALSE(session_->CanPool("mail.example.com", PRIVACY_MODE_DISABLED,
-                                 SocketTag()));
-  EXPECT_FALSE(
-      session_->CanPool("mail.google.com", PRIVACY_MODE_DISABLED, SocketTag()));
-}
-
 TEST_P(QuicChromiumClientSessionTest, ConnectionNotPooledWithDifferentPin) {
   // Configure the TransportSecurityStateSource so that kPreloadedPKPHost will
   // have static PKP pins set.
@@ -1371,7 +1325,6 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionNotPooledWithDifferentPin) {
   CompleteCryptoHandshake();
   session_->OnProofVerifyDetailsAvailable(details);
   QuicChromiumClientSessionPeer::SetHostname(session_.get(), kNoPinsHost);
-  session_->OverrideChannelIDSent();
 
   EXPECT_FALSE(
       session_->CanPool(kPreloadedPKPHost, PRIVACY_MODE_DISABLED, SocketTag()));
@@ -1404,7 +1357,6 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionPooledWithMatchingPin) {
   CompleteCryptoHandshake();
   session_->OnProofVerifyDetailsAvailable(details);
   QuicChromiumClientSessionPeer::SetHostname(session_.get(), "www.example.org");
-  session_->OverrideChannelIDSent();
 
   EXPECT_TRUE(session_->CanPool("mail.example.org", PRIVACY_MODE_DISABLED,
                                 SocketTag()));

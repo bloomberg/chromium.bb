@@ -737,14 +737,6 @@ TEST_F(SpdySessionPoolTest, IPPoolingClientCert) {
   RunIPPoolingDisabledTest(&ssl);
 }
 
-// Verifies that an SSL connection with channel ID disables SPDY IP pooling.
-TEST_F(SpdySessionPoolTest, IPPoolingChannelID) {
-  SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.ssl_info.channel_id_sent = true;
-  ssl.next_proto = kProtoHTTP2;
-  RunIPPoolingDisabledTest(&ssl);
-}
-
 // Construct a Pool with SpdySessions in various availability states. Simulate
 // an IP address change. Ensure sessions gracefully shut down. Regression test
 // for crbug.com/379469.

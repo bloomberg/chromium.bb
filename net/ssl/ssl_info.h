@@ -98,9 +98,6 @@ class NET_EXPORT SSLInfo {
   // a Certificate message with no client certificate in it does not count.
   bool client_cert_sent = false;
 
-  // True if a channel ID was sent to the server.
-  bool channel_id_sent = false;
-
   // True if data was received over early data on the server. This field is only
   // set for server sockets.
   bool early_data_received = false;
