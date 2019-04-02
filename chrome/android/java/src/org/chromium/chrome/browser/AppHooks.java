@@ -394,6 +394,15 @@ public abstract class AppHooks {
     }
 
     /**
+     * Get the UI controller from the activity if it exists.
+     * @param activity The activity to get the UI controller from.
+     * @return The UI controller or null.
+     */
+    public TouchlessUiController getTouchlessUiControllerForActivity(ChromeActivity activity) {
+        return null;
+    }
+
+    /**
      * Checks the Google Play services availability on the this device.
      *
      * This is a workaround for the

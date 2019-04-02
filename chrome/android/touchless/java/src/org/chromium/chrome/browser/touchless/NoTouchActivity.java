@@ -274,4 +274,11 @@ public class NoTouchActivity extends SingleTabActivity {
             mUiController = null;
         }
     }
+
+    /**
+     * @return A UI controller implementation.
+     */
+    public TouchlessUiController getTouchlessUiController() {
+        return mUiController;
+    }
 }

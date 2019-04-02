@@ -6,8 +6,22 @@ package org.chromium.chrome.browser.touchless;
 
 import android.view.KeyEvent;
 
+import org.chromium.ui.modelutil.PropertyModel;
+
 /** A controller for touchless UI. */
 public interface TouchlessUiController {
+    /**
+     * Add a model to the queue to be shown.
+     * @param model The model to add.
+     */
+    default void addModelToQueue(PropertyModel model) {}
+
+    /**
+     * Remove a model from the queue to be shown.
+     * @param model The model to remove.
+     */
+    default void removeModelFromQueue(PropertyModel model) {}
+
     /**
      * A notification that a key event occurred.
      * @param event The event object.
