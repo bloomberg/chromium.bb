@@ -154,7 +154,6 @@ jumbo_source_set("internal") {
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//components/account_id",
-    "//components/crash/core/common:crash_key",  # Remove once https://crbug.com/685996 is fixed.
     "//components/data_use_measurement/core",
     "//components/prefs",
     "//components/strings",
