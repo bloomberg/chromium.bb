@@ -6,6 +6,7 @@
 #define COMPONENTS_SYNC_TEST_FAKE_SYNC_ENCRYPTION_HANDLER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
@@ -52,8 +53,7 @@ class FakeSyncEncryptionHandler : public KeystoreKeysHandler,
 
   // KeystoreKeysHandler implementation.
   bool NeedKeystoreKey() const override;
-  bool SetKeystoreKeys(
-      const google::protobuf::RepeatedPtrField<std::string>& keys) override;
+  bool SetKeystoreKeys(const std::vector<std::string>& keys) override;
 
   Cryptographer* cryptographer() { return &cryptographer_; }
 

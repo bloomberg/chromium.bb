@@ -785,14 +785,14 @@ bool SyncEncryptionHandlerImpl::NeedKeystoreKey() const {
 }
 
 bool SyncEncryptionHandlerImpl::SetKeystoreKeys(
-    const google::protobuf::RepeatedPtrField<google::protobuf::string>& keys) {
+    const std::vector<std::string>& keys) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   syncable::ReadTransaction trans(FROM_HERE, user_share_->directory.get());
-  if (keys.size() == 0)
+  if (keys.empty())
     return false;
   // The last key in the vector is the current keystore key. The others are kept
   // around for decryption only.
-  const std::string& raw_keystore_key = keys.Get(keys.size() - 1);
+  const std::string& raw_keystore_key = keys.back();
   if (raw_keystore_key.empty())
     return false;
 
@@ -803,8 +803,8 @@ bool SyncEncryptionHandlerImpl::SetKeystoreKeys(
   // Go through and save the old keystore keys. We always persist all keystore
   // keys the server sends us.
   old_keystore_keys_.resize(keys.size() - 1);
-  for (int i = 0; i < keys.size() - 1; ++i)
-    base::Base64Encode(keys.Get(i), &old_keystore_keys_[i]);
+  for (size_t i = 0; i < keys.size() - 1; ++i)
+    base::Base64Encode(keys[i], &old_keystore_keys_[i]);
 
   Cryptographer* cryptographer = &UnlockVaultMutable(&trans)->cryptographer;
 

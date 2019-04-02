@@ -5,7 +5,7 @@
 #include "components/sync/engine_impl/get_updates_processor.h"
 
 #include <stddef.h>
-
+#include <string>
 #include <utility>
 
 #include "base/trace_event/trace_event.h"
@@ -17,6 +17,7 @@
 #include "components/sync/engine_impl/update_handler.h"
 #include "components/sync/nigori/keystore_keys_handler.h"
 #include "components/sync/syncable/syncable_read_transaction.h"
+#include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
 namespace syncer {
 
@@ -40,9 +41,12 @@ SyncerError HandleGetEncryptionKeyResponse(
     LOG(ERROR) << "Failed to receive encryption key from server.";
     return SyncerError(SyncerError::SERVER_RESPONSE_VALIDATION_FAILED);
   }
+
+  const google::protobuf::RepeatedPtrField<std::string>& raw_keys =
+      update_response.get_updates().encryption_keys();
   success =
       context->model_type_registry()->keystore_keys_handler()->SetKeystoreKeys(
-          update_response.get_updates().encryption_keys());
+          std::vector<std::string>(raw_keys.begin(), raw_keys.end()));
 
   DVLOG(1) << "GetUpdates returned "
            << update_response.get_updates().encryption_keys_size()

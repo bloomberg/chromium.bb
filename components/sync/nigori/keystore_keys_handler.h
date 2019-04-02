@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_SYNC_NIGORI_KEYSTORE_KEYS_HANDLER_H_
 #define COMPONENTS_SYNC_NIGORI_KEYSTORE_KEYS_HANDLER_H_
 
-#include <google/protobuf/repeated_field.h>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 
@@ -23,8 +23,7 @@ class KeystoreKeysHandler {
 
   // Sets the keystore keys the server returned for this account.
   // Returns true on success, false otherwise.
-  virtual bool SetKeystoreKeys(
-      const google::protobuf::RepeatedPtrField<std::string>& keys) = 0;
+  virtual bool SetKeystoreKeys(const std::vector<std::string>& keys) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KeystoreKeysHandler);

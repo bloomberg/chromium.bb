@@ -68,10 +68,10 @@ bool FakeSyncEncryptionHandler::NeedKeystoreKey() const {
 }
 
 bool FakeSyncEncryptionHandler::SetKeystoreKeys(
-    const google::protobuf::RepeatedPtrField<std::string>& keys) {
-  if (keys.size() == 0)
+    const std::vector<std::string>& keys) {
+  if (keys.empty())
     return false;
-  std::string new_key = keys.Get(keys.size() - 1);
+  std::string new_key = keys.back();
   if (new_key.empty())
     return false;
   keystore_key_ = new_key;

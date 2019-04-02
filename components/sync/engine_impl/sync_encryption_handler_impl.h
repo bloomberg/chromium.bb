@@ -84,8 +84,7 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
 
   // KeystoreKeysHandler implementation.
   bool NeedKeystoreKey() const override;
-  bool SetKeystoreKeys(
-      const google::protobuf::RepeatedPtrField<std::string>& keys) override;
+  bool SetKeystoreKeys(const std::vector<std::string>& keys) override;
 
   // Unsafe getters. Use only if sync is not up and running and there is no risk
   // of other threads calling this.
