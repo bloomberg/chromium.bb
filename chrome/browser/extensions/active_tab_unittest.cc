@@ -61,7 +61,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/login/login_state/scoped_test_public_session_login_state.h"
 #include "components/account_id/account_id.h"
-#include "components/browser_sync/browser_sync_switches.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #endif
 

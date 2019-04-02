@@ -5,10 +5,6 @@
 #ifndef COMPONENTS_BROWSER_SYNC_BROWSER_SYNC_SWITCHES_H_
 #define COMPONENTS_BROWSER_SYNC_BROWSER_SYNC_SWITCHES_H_
 
-// TODO(crbug.com/896303): Have clients that need it include this directly, and
-// get rid of this temporary redirect.
-#include "components/sync/driver/sync_driver_switches.h"
-
 namespace switches {
 
 extern const char kDisableSyncTypes[];
