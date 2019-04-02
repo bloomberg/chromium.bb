@@ -34,6 +34,7 @@
 #include "ui/views/view.h"
 #include "ui/views/view_model.h"
 #include "ui/views/view_targeter_delegate.h"
+#include "ui/views/widget/widget_observer.h"
 
 class NewTabButton;
 class StackedTabStripLayout;
@@ -72,6 +73,7 @@ class TabStrip : public views::AccessiblePaneView,
                  public views::MouseWatcherListener,
                  public views::ViewObserver,
                  public views::ViewTargeterDelegate,
+                 public views::WidgetObserver,
                  public TabController,
                  public BrowserRootView::DropTarget,
                  public ui::MaterialDesignControllerObserver {
@@ -625,6 +627,8 @@ class TabStrip : public views::AccessiblePaneView,
   void OnMouseMoved(const ui::MouseEvent& event) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
+  void AddedToWidget() override;
+  void RemovedFromWidget() override;
 
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -634,6 +638,9 @@ class TabStrip : public views::AccessiblePaneView,
 
   // views::ViewObserver:
   void OnViewIsDeleting(views::View* observed_view) override;
+
+  // views::WidgetObserver:
+  void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 
   // ui::MaterialDesignControllerObserver:
   void OnTouchUiChanged() override;

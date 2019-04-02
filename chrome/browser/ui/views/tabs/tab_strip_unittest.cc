@@ -62,16 +62,21 @@ class TestAXEventObserver : public views::AXEventObserver {
     if (event_type == ax::mojom::Event::kSelectionRemove) {
       remove_count_++;
     }
+    if (event_type == ax::mojom::Event::kSelection) {
+      change_count_++;
+    }
     if (event_type == ax::mojom::Event::kSelectionAdd) {
       add_count_++;
     }
   }
 
   int add_count() { return add_count_; }
+  int change_count() { return change_count_; }
   int remove_count() { return remove_count_; }
 
  private:
   int add_count_ = 0;
+  int change_count_ = 0;
   int remove_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestAXEventObserver);
@@ -278,7 +283,8 @@ TEST_P(TabStripTest, AccessibilityEvents) {
   ui::ListSelectionModel selection;
   selection.SetSelectedIndex(1);
   tab_strip_->SetSelection(selection);
-  EXPECT_EQ(1, observer.add_count());
+  EXPECT_EQ(0, observer.add_count());
+  EXPECT_EQ(1, observer.change_count());
   EXPECT_EQ(0, observer.remove_count());
 
   // When removing tabs, SetSelection() is called before RemoveTabAt(), as
@@ -286,8 +292,15 @@ TEST_P(TabStripTest, AccessibilityEvents) {
   selection.SetSelectedIndex(0);
   tab_strip_->SetSelection(selection);
   tab_strip_->RemoveTabAt(nullptr, 1, true);
-  EXPECT_EQ(2, observer.add_count());
-  EXPECT_EQ(1, observer.remove_count());
+  EXPECT_EQ(0, observer.add_count());
+  EXPECT_EQ(2, observer.change_count());
+  EXPECT_EQ(0, observer.remove_count());
+
+  // When activating widget, refire selection event on tab.
+  widget_->OnNativeWidgetActivationChanged(true);
+  EXPECT_EQ(0, observer.add_count());
+  EXPECT_EQ(3, observer.change_count());
+  EXPECT_EQ(0, observer.remove_count());
 }
 
 TEST_P(TabStripTest, AccessibilityData) {
