@@ -40,6 +40,8 @@ class LabelFormatter {
   // Returns a label to show the user. The elements of the label and their
   // ordering depend on the kind of LabelFormatter, the data in |profile|, and
   // on the focused |group|.
+  // Subclasses may return labels that span one or two lines. If a label is
+  // intended to span two lines, then it contains a kMultilineLabelDelimiter.
   virtual base::string16 GetLabelForFocusedGroup(
       const AutofillProfile& profile,
       FieldTypeGroup group) const = 0;

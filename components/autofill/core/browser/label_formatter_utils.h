@@ -32,6 +32,10 @@ constexpr uint32_t kPhone = 1 << 3;
 
 const size_t kMaxNumberOfParts = 2;
 
+// Indicates where to split the label text when the label spans two lines.
+// This is used in the kAutofillUseImprovedLabelDisambiguation feature.
+constexpr char kMultilineLabelDelimiter[] = "\n";
+
 // Returns true if kName is set in |groups|.
 bool ContainsName(uint32_t groups);
 
@@ -63,6 +67,11 @@ std::vector<ServerFieldType> ExtractSpecifiedAddressFieldTypes(
     bool extract_street_address_types,
     const std::vector<ServerFieldType>& types);
 
+// Returns a collection of the types in |types| that belong to the
+// ADDRESS_HOME or ADDRESS_BILLING FieldTypeGroups.
+std::vector<ServerFieldType> ExtractAddressFieldTypes(
+    const std::vector<ServerFieldType>& types);
+
 // Adds |part| to |parts| if |part| is not an empty string.
 void AddLabelPartIfNotEmpty(const base::string16& part,
                             std::vector<base::string16>* parts);
@@ -78,6 +87,16 @@ void AddLabelPartIfNotEmpty(const base::string16& part,
 // happen when (A) a profile has only name and email address information and
 // (B) the user with this profile interacts with a contact form.
 base::string16 ConstructLabelLine(const std::vector<base::string16>& parts);
+
+// Returns the text to be displayed in a multiline label plus maybe a
+// delimiting character. If |top_line| and |bottom_line| are both non-empty,
+// then a delimiter is placed between them.
+//
+// Suppose kMultilineLabelDelimiter is "\n", |top_line| is "Elena Barulina",
+// and |bottom_line| is "(845) 269-25-32 • ebarulina@saratov.edu". In this
+// case, "Elena Barulina\n(845) 269-25-32 • ebarulina@saratov.edu" is returned.
+base::string16 ConstructLabelLines(const base::string16& top_line,
+                                   const base::string16& bottom_line);
 
 // Returns a pared down copy of |profile|. The copy has the same guid, origin,
 // country and language codes, and |field_types| as |profile|.

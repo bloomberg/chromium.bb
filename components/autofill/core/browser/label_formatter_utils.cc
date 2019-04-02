@@ -99,6 +99,21 @@ std::vector<ServerFieldType> ExtractSpecifiedAddressFieldTypes(
   return extracted_address_types;
 }
 
+std::vector<ServerFieldType> ExtractAddressFieldTypes(
+    const std::vector<ServerFieldType>& types) {
+  std::vector<ServerFieldType> only_address_types;
+
+  // Note that GetStorableType maps billing fields to their corresponding non-
+  // billing fields, e.g. ADDRESS_HOME_ZIP is mapped to ADDRESS_BILLING_ZIP.
+  std::copy_if(
+      types.begin(), types.end(), std::back_inserter(only_address_types),
+      [](ServerFieldType type) {
+        return AutofillType(AutofillType(type).GetStorableType()).group() ==
+               ADDRESS_HOME;
+      });
+  return only_address_types;
+}
+
 void AddLabelPartIfNotEmpty(const base::string16& part,
                             std::vector<base::string16>* parts) {
   if (!part.empty()) {
@@ -111,6 +126,18 @@ base::string16 ConstructLabelLine(const std::vector<base::string16>& parts) {
              ? l10n_util::GetStringFUTF16(IDS_AUTOFILL_SUGGESTION_LABEL,
                                           parts.front(), parts.back())
              : base::JoinString(parts, base::string16());
+}
+
+base::string16 ConstructLabelLines(const base::string16& top_line,
+                                   const base::string16& bottom_line) {
+  if (top_line.empty()) {
+    return bottom_line;
+  }
+  if (bottom_line.empty()) {
+    return top_line;
+  }
+  return base::JoinString({top_line, bottom_line},
+                          base::ASCIIToUTF16(kMultilineLabelDelimiter));
 }
 
 AutofillProfile MakeTrimmedProfile(const AutofillProfile& profile,
