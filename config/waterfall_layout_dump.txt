@@ -312,6 +312,7 @@
   firmware-lulu-6301.136.B-firmwarebranch
   firmware-mccloud-5827.B-firmwarebranch
   firmware-monroe-4921.B-firmwarebranch
+  firmware-nami-10775.108.B-firmwarebranch
   firmware-nami-10775.B-firmwarebranch
   firmware-ninja-5216.383.B-firmwarebranch
   firmware-nocturne-10984.B-firmwarebranch
@@ -1837,6 +1838,7 @@
   firmware-lulu-6301.136.B-firmwarebranch-tryjob
   firmware-mccloud-5827.B-firmwarebranch-tryjob
   firmware-monroe-4921.B-firmwarebranch-tryjob
+  firmware-nami-10775.108.B-firmwarebranch-tryjob
   firmware-nami-10775.B-firmwarebranch-tryjob
   firmware-ninja-5216.383.B-firmwarebranch-tryjob
   firmware-nocturne-10984.B-firmwarebranch-tryjob
