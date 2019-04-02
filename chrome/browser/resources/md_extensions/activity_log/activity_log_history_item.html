@@ -4,7 +4,6 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="../shared_style.html">
 <link rel="import" href="../shared_vars.html">
@@ -100,20 +99,18 @@
         </button>
       </paper-icon-button-light>
     </div>
-    <iron-collapse opened="[[data.expanded]]">
-      <div id="page-url-list" hidden$="[[!isExpandable_]]">
-        <template is="dom-repeat" items="[[getPageUrls_(data)]]">
-          <div class="page-url">
-            <a class="page-url-link" href="[[item.page]]" target="_blank"
-                title="[[item.page]]">[[item.page]]</a>
-            <span class="page-url-count"
-                hidden$="[[!shouldShowPageUrlCount_(data)]]">
-              [[item.count]]
-            </span>
-          </div>
-        </template>
-      </div>
-    </iron-collapse>
+    <div id="page-url-list" hidden$="[[!data.expanded]]">
+      <template is="dom-repeat" items="[[getPageUrls_(data)]]">
+        <div class="page-url">
+          <a class="page-url-link" href="[[item.page]]" target="_blank"
+              title="[[item.page]]">[[item.page]]</a>
+          <span class="page-url-count"
+              hidden$="[[!shouldShowPageUrlCount_(data)]]">
+            [[item.count]]
+          </span>
+        </div>
+      </template>
+    </div>
   </template>
   <script src="activity_log_history_item.js"></script>
 </dom-module>

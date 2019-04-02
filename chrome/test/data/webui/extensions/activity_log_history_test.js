@@ -152,10 +152,11 @@ suite('ExtensionsActivityLogHistoryTest', function() {
         'activity-log-history-item');
   }
 
-  // We know an item is expanded if its iron-collapse is opened.
+  // We know an item is expanded if its page-url-list is not hidden.
   function getExpandedItems() {
-    return Array.from(getHistoryItems())
-        .filter(item => item.$$('iron-collapse').opened);
+    return Array.from(getHistoryItems()).filter(item => {
+      return item.$$('#page-url-list:not([hidden])');
+    });
   }
 
   test('activities are present for extension', function() {
