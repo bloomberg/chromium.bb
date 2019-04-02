@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 216 tests; 203 PASS, 13 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 216 tests; 202 PASS, 14 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Navigator: original interface defined
 PASS Partial dictionary WebGLContextAttributes: original dictionary defined
@@ -124,7 +124,7 @@ PASS XRRigidTransform interface: existence and properties of interface prototype
 PASS XRRigidTransform interface: attribute position
 PASS XRRigidTransform interface: attribute orientation
 PASS XRRigidTransform interface: attribute matrix
-PASS XRRigidTransform interface: operation inverse()
+FAIL XRRigidTransform interface: attribute inverse assert_throws: getting property on prototype object must throw TypeError function "function () { [native code] }" did not throw
 PASS XRRay interface: existence and properties of interface object
 PASS XRRay interface object length
 PASS XRRay interface object name
