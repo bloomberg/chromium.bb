@@ -271,6 +271,8 @@ void MixedRealityRenderLoop::StopRuntime() {
   holographic_space_ = nullptr;
   origin_ = nullptr;
   stage_origin_ = nullptr;
+  last_origin_from_attached_ = base::nullopt;
+  attached_ = nullptr;
 
   holographic_frame_ = nullptr;
   timestamp_ = nullptr;
@@ -309,6 +311,12 @@ void MixedRealityRenderLoop::InitializeOrigin() {
   if (FAILED(hr))
     return;
 
+  if (!attached_) {
+    hr = locator->CreateAttachedFrameOfReferenceAtCurrentHeading(&attached_);
+    if (FAILED(hr))
+      return;
+  }
+
   ComPtr<ISpatialStationaryFrameOfReference> stationary_frame;
   hr = locator->CreateStationaryFrameOfReferenceAtCurrentLocation(
       &stationary_frame);
@@ -320,9 +328,6 @@ void MixedRealityRenderLoop::InitializeOrigin() {
   hr = stationary_frame->get_CoordinateSystem(&origin_);
   if (FAILED(hr))
     return;
-
-  // TODO(billorr): Consider adding support for using an attached frame for
-  // orientation-only experiences.
 }
 
 void MixedRealityRenderLoop::InitializeStageOrigin() {
@@ -353,6 +358,8 @@ void MixedRealityRenderLoop::InitializeStageOrigin() {
 void MixedRealityRenderLoop::OnSessionStart() {
   // Each session should start with new origins.
   origin_ = nullptr;
+  attached_ = nullptr;
+  last_origin_from_attached_ = base::nullopt;
   InitializeOrigin();
 
   stage_origin_ = nullptr;
@@ -717,7 +724,7 @@ mojom::XRFrameDataPtr MixedRealityRenderLoop::GetNextFrameData() {
   mojom::XRFrameDataPtr ret =
       CreateDefaultFrameData(timestamp_, next_frame_id_);
 
-  if (!origin_ || !pose_) {
+  if ((!attached_ && !origin_) || !pose_) {
     TRACE_EVENT_INSTANT0("xr", "No origin or no pose",
                          TRACE_EVENT_SCOPE_THREAD);
     // If we don't have an origin or pose for this frame, we can still give out
@@ -725,23 +732,44 @@ mojom::XRFrameDataPtr MixedRealityRenderLoop::GetNextFrameData() {
     return ret;
   }
 
+  ComPtr<ISpatialCoordinateSystem> attached_coordinates;
+  HRESULT hr = attached_->GetStationaryCoordinateSystemAtTimestamp(
+      timestamp_.Get(), &attached_coordinates);
+  if (FAILED(hr))
+    return ret;
+
   Microsoft::WRL::ComPtr<ABI::Windows::Foundation::IReference<
       ABI::Windows::Graphics::Holographic::HolographicStereoTransform>>
       view_ref;
-  HRESULT hr = pose_->TryGetViewTransform(origin_.Get(), &view_ref);
-  if (FAILED(hr) || !view_ref) {
-    // If we can't locate origin_, throw it away and try to get a new origin
-    // next frame.
-    // TODO(billorr): Try to keep the origin working over multiple frames, doing
-    // some transform work.
-    TRACE_EVENT_INSTANT0("xr", "Failed to locate origin",
-                         TRACE_EVENT_SCOPE_THREAD);
-    origin_ = nullptr;
-
-    // TODO(https://crbug.com/945408): Determine whether StageOrigin should only
-    // be nulled out when we get the changed event.
-    stage_origin_ = nullptr;
-    return ret;
+  if (origin_ &&
+      SUCCEEDED(pose_->TryGetViewTransform(origin_.Get(), &view_ref)) &&
+      view_ref) {
+    // TODO(http://crbug.com/931393): Send down emulated_position_, and report
+    // reset events when this changes.
+    emulated_position_ = false;
+    ComPtr<IReference<ABI::Windows::Foundation::Numerics::Matrix4x4>>
+        attached_to_origin_ref;
+    hr = attached_coordinates->TryGetTransformTo(origin_.Get(),
+                                                 &attached_to_origin_ref);
+    if (SUCCEEDED(hr) && attached_to_origin_ref) {
+      ABI::Windows::Foundation::Numerics::Matrix4x4 transform;
+      hr = attached_to_origin_ref->get_Value(&transform);
+      DCHECK(SUCCEEDED(hr));
+      last_origin_from_attached_ = gfx::Transform(
+          transform.M11, transform.M21, transform.M31, transform.M41,
+          transform.M12, transform.M22, transform.M32, transform.M42,
+          transform.M13, transform.M23, transform.M33, transform.M43,
+          transform.M14, transform.M24, transform.M34, transform.M44);
+    }
+  } else {
+    emulated_position_ = true;
+    if (FAILED(pose_->TryGetViewTransform(attached_coordinates.Get(),
+                                          &view_ref)) ||
+        !view_ref) {
+      TRACE_EVENT_INSTANT0("xr", "Failed to locate origin",
+                           TRACE_EVENT_SCOPE_THREAD);
+      return ret;
+    }
   }
 
   ABI::Windows::Graphics::Holographic::HolographicStereoTransform view;
@@ -801,6 +829,33 @@ mojom::XRFrameDataPtr MixedRealityRenderLoop::GetNextFrameData() {
   }
 
   ret->pose->input_state = input_helper_->GetInputState(origin_, timestamp_);
+
+  if (emulated_position_ && last_origin_from_attached_) {
+    gfx::DecomposedTransform attached_from_view_decomp;
+    attached_from_view_decomp.quaternion = gfx::Quaternion(
+        (*ret->pose->orientation)[0], (*ret->pose->orientation)[1],
+        (*ret->pose->orientation)[2], (*ret->pose->orientation)[3]);
+    for (int i = 0; i < 3; ++i) {
+      attached_from_view_decomp.translate[i] = (*ret->pose->position)[i];
+    }
+    gfx::Transform attached_from_view =
+        gfx::ComposeTransform(attached_from_view_decomp);
+    gfx::Transform origin_from_view =
+        (*last_origin_from_attached_) * attached_from_view;
+    gfx::DecomposedTransform origin_from_view_decomposed;
+    bool success =
+        gfx::DecomposeTransform(&origin_from_view_decomposed, origin_from_view);
+    DCHECK(success);
+    ret->pose->orientation = std::vector<float>{
+        static_cast<float>(origin_from_view_decomposed.quaternion.x()),
+        static_cast<float>(origin_from_view_decomposed.quaternion.y()),
+        static_cast<float>(origin_from_view_decomposed.quaternion.z()),
+        static_cast<float>(origin_from_view_decomposed.quaternion.w())};
+    ret->pose->position = std::vector<float>{
+        static_cast<float>(origin_from_view_decomposed.translate[0]),
+        static_cast<float>(origin_from_view_decomposed.translate[1]),
+        static_cast<float>(origin_from_view_decomposed.translate[2])};
+  }
 
   return ret;
 }
