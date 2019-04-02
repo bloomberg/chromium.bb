@@ -877,7 +877,7 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
   bool need_alpha_channel = false;
   bool support_locking = false;
   bool support_gles2_interface = true;
-  bool support_raster_interface = true;
+  bool support_raster_interface = false;
   bool support_grcontext = false;
   shared_main_thread_contexts_ = CreateContextCommon(
       std::move(gpu_channel_host), gpu::kNullSurfaceHandle, need_alpha_channel,
@@ -890,14 +890,6 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
     shared_main_thread_contexts_->RemoveObserver(this);
     shared_main_thread_contexts_ = nullptr;
   }
-  return shared_main_thread_contexts_;
-}
-
-scoped_refptr<viz::RasterContextProvider>
-GpuProcessTransportFactory::SharedMainThreadRasterContextProvider() {
-  SharedMainThreadContextProvider();
-  DCHECK(!shared_main_thread_contexts_ ||
-         shared_main_thread_contexts_->RasterInterface());
   return shared_main_thread_contexts_;
 }
 
