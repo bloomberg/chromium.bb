@@ -10,6 +10,7 @@
 #include "ash/magnifier/docked_magnifier_controller.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller.h"
 #include "ash/session/test_session_controller_client.h"
@@ -4359,6 +4360,53 @@ TEST_F(SplitViewAppDraggingTest, FlingWhenSplitViewIsActive) {
       window2.get()));
   EXPECT_EQ(SplitViewController::RIGHT_SNAPPED,
             split_view_controller()->state());
+}
+
+// Tests the backdrop bounds during window drag.
+TEST_F(SplitViewAppDraggingTest, BackdropBoundsDuringDrag) {
+  InitializeWindow();
+  std::unique_ptr<aura::Window> window2 = CreateTestWindowWithWidget(true);
+  split_view_controller()->SnapWindow(window(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+  EXPECT_EQ(window2.get(), wm::GetActiveWindow());
+
+  const aura::Window* default_container =
+      Shell::GetPrimaryRootWindowController()->GetContainer(
+          kShellWindowId_DefaultContainer);
+
+  // Backdrop window should below two snapped windows and its bounds should be
+  // the same as the container bounds.
+  EXPECT_EQ(3U, default_container->children().size());
+  EXPECT_EQ(window(), default_container->children()[1]);
+  EXPECT_EQ(window2.get(), default_container->children()[2]);
+  EXPECT_EQ(default_container->bounds(),
+            default_container->children()[0]->bounds());
+
+  // Start window drag and activate the dragged window during drag.
+  gfx::Point location(0, 10);
+  SendScrollStartAndUpdate(location);
+  wm::ActivateWindow(window());
+
+  aura::Window::Windows windows = default_container->children();
+  auto it = std::find(windows.begin(), windows.end(), window2.get());
+  // Backdrop window should be the window that just below the snapped |window2|
+  // and its bounds should be the same as the snapped window during drag.
+  aura::Window* backdrop_window = nullptr;
+  if (it != windows.begin())
+    backdrop_window = *(--it);
+  DCHECK(backdrop_window);
+  EXPECT_EQ(window2->bounds(), backdrop_window->bounds());
+
+  // Backdrop should restore back to container bounds after drag.
+  EndScrollSequence();
+  EXPECT_EQ(window(), wm::GetActiveWindow());
+  windows = default_container->children();
+  it = std::find(windows.begin(), windows.end(), window2.get());
+  if (it != windows.begin())
+    backdrop_window = *(--it);
+  DCHECK(backdrop_window);
+  EXPECT_EQ(backdrop_window->bounds(), default_container->bounds());
 }
 
 }  // namespace ash
