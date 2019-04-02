@@ -50,8 +50,6 @@ struct ProgressItem;
 class CORE_EXPORT ProgressTracker final
     : public GarbageCollectedFinalized<ProgressTracker> {
  public:
-  static ProgressTracker* Create(LocalFrame*);
-
   explicit ProgressTracker(LocalFrame*);
   ~ProgressTracker();
   void Trace(blink::Visitor*);

@@ -206,7 +206,7 @@ void ModuleTreeLinkerTest::SetUp() {
 }
 
 TEST_F(ModuleTreeLinkerTest, FetchTreeNoDeps) {
-  ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
+  auto* registry = MakeGarbageCollected<ModuleTreeLinkerRegistry>();
 
   KURL url("http://example.com/root.js");
   TestModuleTreeClient* client = MakeGarbageCollected<TestModuleTreeClient>();
@@ -228,7 +228,8 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeNoDeps) {
 TEST_F(ModuleTreeLinkerTest, FetchTreeInstantiationFailure) {
   GetModulator()->SetInstantiateShouldFail(true);
 
-  ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
+  ModuleTreeLinkerRegistry* registry =
+      MakeGarbageCollected<ModuleTreeLinkerRegistry>();
 
   KURL url("http://example.com/root.js");
   TestModuleTreeClient* client = MakeGarbageCollected<TestModuleTreeClient>();
@@ -254,7 +255,8 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeInstantiationFailure) {
 }
 
 TEST_F(ModuleTreeLinkerTest, FetchTreeWithSingleDependency) {
-  ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
+  ModuleTreeLinkerRegistry* registry =
+      MakeGarbageCollected<ModuleTreeLinkerRegistry>();
 
   KURL url("http://example.com/root.js");
   TestModuleTreeClient* client = MakeGarbageCollected<TestModuleTreeClient>();
@@ -281,7 +283,8 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeWithSingleDependency) {
 }
 
 TEST_F(ModuleTreeLinkerTest, FetchTreeWith3Deps) {
-  ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
+  ModuleTreeLinkerRegistry* registry =
+      MakeGarbageCollected<ModuleTreeLinkerRegistry>();
 
   KURL url("http://example.com/root.js");
   TestModuleTreeClient* client = MakeGarbageCollected<TestModuleTreeClient>();
@@ -321,7 +324,8 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeWith3Deps) {
 }
 
 TEST_F(ModuleTreeLinkerTest, FetchTreeWith3Deps1Fail) {
-  ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
+  ModuleTreeLinkerRegistry* registry =
+      MakeGarbageCollected<ModuleTreeLinkerRegistry>();
 
   KURL url("http://example.com/root.js");
   TestModuleTreeClient* client = MakeGarbageCollected<TestModuleTreeClient>();
@@ -380,7 +384,8 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeWith3Deps1Fail) {
 }
 
 TEST_F(ModuleTreeLinkerTest, FetchDependencyTree) {
-  ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
+  ModuleTreeLinkerRegistry* registry =
+      MakeGarbageCollected<ModuleTreeLinkerRegistry>();
 
   KURL url("http://example.com/depth1.js");
   TestModuleTreeClient* client = MakeGarbageCollected<TestModuleTreeClient>();
@@ -406,7 +411,8 @@ TEST_F(ModuleTreeLinkerTest, FetchDependencyTree) {
 }
 
 TEST_F(ModuleTreeLinkerTest, FetchDependencyOfCyclicGraph) {
-  ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
+  ModuleTreeLinkerRegistry* registry =
+      MakeGarbageCollected<ModuleTreeLinkerRegistry>();
 
   KURL url("http://example.com/a.js");
   TestModuleTreeClient* client = MakeGarbageCollected<TestModuleTreeClient>();

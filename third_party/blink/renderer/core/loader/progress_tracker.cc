@@ -65,10 +65,6 @@ struct ProgressItem {
   DISALLOW_COPY_AND_ASSIGN(ProgressItem);
 };
 
-ProgressTracker* ProgressTracker::Create(LocalFrame* frame) {
-  return MakeGarbageCollected<ProgressTracker>(frame);
-}
-
 ProgressTracker::ProgressTracker(LocalFrame* frame)
     : frame_(frame),
       last_notified_progress_value_(0),

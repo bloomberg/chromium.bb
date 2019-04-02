@@ -35,8 +35,8 @@ TEST(InternalPopupMenuTest, WriteDocumentInStyleDirtyTree) {
   HTMLSelectElement* select =
       ToHTMLSelectElement(document.getElementById("select"));
   ASSERT_TRUE(select);
-  InternalPopupMenu* menu =
-      InternalPopupMenu::Create(EmptyChromeClient::Create(), *select);
+  InternalPopupMenu* menu = InternalPopupMenu::Create(
+      MakeGarbageCollected<EmptyChromeClient>(), *select);
 
   document.body()->SetInlineStyleProperty(CSSPropertyID::kColor, "blue");
 

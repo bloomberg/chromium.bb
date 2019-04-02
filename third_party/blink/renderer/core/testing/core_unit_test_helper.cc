@@ -35,7 +35,7 @@ void LocalFrameClientWithParent::Detached(FrameDetachType) {
 
 ChromeClient& RenderingTest::GetChromeClient() const {
   DEFINE_STATIC_LOCAL(Persistent<EmptyChromeClient>, client,
-                      (EmptyChromeClient::Create()));
+                      (MakeGarbageCollected<EmptyChromeClient>()));
   return *client;
 }
 

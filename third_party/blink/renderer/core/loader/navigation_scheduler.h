@@ -55,10 +55,6 @@ class ScheduledNavigation;
 class CORE_EXPORT NavigationScheduler final
     : public GarbageCollectedFinalized<NavigationScheduler> {
  public:
-  static NavigationScheduler* Create(LocalFrame* frame) {
-    return MakeGarbageCollected<NavigationScheduler>(frame);
-  }
-
   explicit NavigationScheduler(LocalFrame*);
   ~NavigationScheduler();
 

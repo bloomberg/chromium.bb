@@ -31,7 +31,7 @@ ModulatorImplBase::ModulatorImplBase(ScriptState* script_state)
       task_runner_(ExecutionContext::From(script_state_)
                        ->GetTaskRunner(TaskType::kNetworking)),
       map_(ModuleMap::Create(this)),
-      tree_linker_registry_(ModuleTreeLinkerRegistry::Create()),
+      tree_linker_registry_(MakeGarbageCollected<ModuleTreeLinkerRegistry>()),
       module_record_resolver_(ModuleRecordResolverImpl::Create(
           this,
           ExecutionContext::From(script_state_))),

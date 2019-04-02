@@ -17,7 +17,8 @@ namespace blink {
 
 class PaintLayerClipperTest : public RenderingTest {
  public:
-  PaintLayerClipperTest() : RenderingTest(EmptyLocalFrameClient::Create()) {}
+  PaintLayerClipperTest()
+      : RenderingTest(MakeGarbageCollected<EmptyLocalFrameClient>()) {}
 
   void SetUp() override {
     WebTestSupport::SetMockThemeEnabledForTest(true);

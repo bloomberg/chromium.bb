@@ -147,8 +147,8 @@ void ValidationMessageOverlayDelegate::CreatePage(const FrameOverlay& overlay) {
   page_->GetSettings().SetMinimumLogicalFontSize(
       main_settings.GetMinimumLogicalFontSize());
 
-  LocalFrame* frame =
-      LocalFrame::Create(EmptyLocalFrameClient::Create(), *page_, nullptr);
+  auto* frame = LocalFrame::Create(
+      MakeGarbageCollected<EmptyLocalFrameClient>(), *page_, nullptr);
   frame->SetView(LocalFrameView::Create(*frame, view_size));
   frame->Init();
   frame->View()->SetCanHaveScrollbars(false);

@@ -961,7 +961,7 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
           IsMainFrame() ? FrameScheduler::FrameType::kMainFrame
                         : FrameScheduler::FrameType::kSubframe)),
       loader_(this),
-      navigation_scheduler_(NavigationScheduler::Create(this)),
+      navigation_scheduler_(MakeGarbageCollected<NavigationScheduler>(this)),
       script_controller_(MakeGarbageCollected<ScriptController>(
           *this,
           *static_cast<LocalWindowProxyManager*>(GetWindowProxyManager()))),
