@@ -455,8 +455,10 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
      */
     public Intent prepareUrlIntent(Intent intent, String url) {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.setComponent(new ComponentName(
-                InstrumentationRegistry.getTargetContext(), ChromeLauncherActivity.class));
+        if (intent.getComponent() == null) {
+            intent.setComponent(new ComponentName(
+                    InstrumentationRegistry.getTargetContext(), ChromeLauncherActivity.class));
+        }
 
         if (url != null) {
             intent.setData(Uri.parse(url));

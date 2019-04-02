@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.IntentHandlerDelegate;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.SingleTabActivity;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
@@ -44,6 +45,8 @@ import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
  */
 public class NoTouchActivity extends SingleTabActivity {
     private static final String BUNDLE_TAB_ID = "tabId";
+    public static final String DINOSAUR_GAME_INTENT =
+            "org.chromium.chrome.browser.touchless.DinoActivity";
 
     @VisibleForTesting
     static final String LAST_BACKGROUNDED_TIME_MS_PREF = "NoTouchActivity.BackgroundTimeMs";
@@ -155,6 +158,11 @@ public class NoTouchActivity extends SingleTabActivity {
             Intent intent = getIntent();
             mIntentHandlingTimeMs = SystemClock.uptimeMillis();
             if (intent != null) {
+                // Treat Dino intent action like a url request for chrome://dino
+                if (DINOSAUR_GAME_INTENT.equals(intent.getComponent().getClassName())) {
+                    intent.setData(Uri.parse(UrlConstants.CHROME_DINO_URL));
+                }
+
                 if (!mIntentHandler.shouldIgnoreIntent(intent)) {
                     intentWithEffect = mIntentHandler.onNewIntent(intent);
                 }
@@ -167,6 +175,11 @@ public class NoTouchActivity extends SingleTabActivity {
     @Override
     public void onNewIntent(Intent intent) {
         mIntentHandlingTimeMs = SystemClock.uptimeMillis();
+
+        if (DINOSAUR_GAME_INTENT.equals(intent.getComponent().getClassName())) {
+            intent.setData(Uri.parse(UrlConstants.CHROME_DINO_URL));
+        }
+
         super.onNewIntent(intent);
     }
 
