@@ -122,11 +122,20 @@ ModuleDatabase::~ModuleDatabase() {
 
 // static
 scoped_refptr<base::SequencedTaskRunner> ModuleDatabase::GetTaskRunner() {
-  static base::LazySequencedTaskRunner g_task_runner =
+  static constexpr base::Feature kDistinctModuleDatabaseSequence{
+      "DistinctModuleDatabaseSequence", base::FEATURE_DISABLED_BY_DEFAULT};
+
+  static base::LazySequencedTaskRunner g_ui_task_runner =
       LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
           base::TaskTraits(content::BrowserThread::UI));
+  static base::LazySequencedTaskRunner g_distinct_task_runner =
+      LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
+          base::TaskTraits(base::TaskPriority::BEST_EFFORT,
+                           base::TaskShutdownBehavior::BLOCK_SHUTDOWN));
 
-  return g_task_runner.Get();
+  return base::FeatureList::IsEnabled(kDistinctModuleDatabaseSequence)
+             ? g_distinct_task_runner.Get()
+             : g_ui_task_runner.Get();
 }
 
 // static
