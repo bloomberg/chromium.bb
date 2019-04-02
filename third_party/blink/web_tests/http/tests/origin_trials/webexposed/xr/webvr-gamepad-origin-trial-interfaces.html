@@ -20,8 +20,10 @@ interfaces_to_check = [
   'GamepadPose'
 ];
 
-// Skip this test if flags are not set properly.
-if (!self.internals.runtimeFlags.webVRGamepadSupportEnabled) {
+// Check that the interfaces and properties are not present without the token.
+// Experimental web platform features are always enabled when this test is run
+// normally, so do not check them in that case.
+if (!self.internals.runtimeFlags.webVREnabled) {
   test(t => {
     OriginTrialsHelper.check_properties_missing(this, properties_to_check);
   }, "The WebVR-specific Gamepad properties are not available without a token.");
@@ -33,33 +35,24 @@ if (!self.internals.runtimeFlags.webVRGamepadSupportEnabled) {
 
 OriginTrialsHelper.add_token(token);
 
-// TODO(https://crbug.com/920025): Remove this line. This check does not work
-// because of https://crbug.com/946246 but will be moot after fixing 920025.
-if (self.internals.runtimeFlags.webVRGamepadSupportEnabled) {
-  test(t => {
-    OriginTrialsHelper.check_properties(this, properties_to_check);
-  }, 'The WebVR-specific Gamepad properties are available.');
-}
+test(t => {
+  OriginTrialsHelper.check_properties(this, properties_to_check);
+}, 'The WebVR-specific Gamepad properties are available.');
 
-// TODO(https://crbug.com/920025): Remove this line. This check does not work
-// because of https://crbug.com/946246 but will be moot after fixing 920025.
-if (self.internals.runtimeFlags.webVRGamepadSupportEnabled) {
-  test(t => {
-    OriginTrialsHelper.check_interfaces(this, interfaces_to_check);
-    // Check the properties of the interfaces_to_check.
-    OriginTrialsHelper.check_properties(this, {
-      'GamepadPose': [
-        'hasOrientation',
-        'hasPosition',
-        'position',
-        'linearVelocity',
-        'linearAcceleration',
-        'orientation',
-        'angularVelocity',
-        'angularAcceleration'
-      ]
-    });
-  }, 'The WebVR-specific Gamepad interfaces and their properties are available.');
-}
-
+test(t => {
+  OriginTrialsHelper.check_interfaces(this, interfaces_to_check);
+  // Check the properties of the interfaces_to_check.
+  OriginTrialsHelper.check_properties(this, {
+    'GamepadPose': [
+      'hasOrientation',
+      'hasPosition',
+      'position',
+      'linearVelocity',
+      'linearAcceleration',
+      'orientation',
+      'angularVelocity',
+      'angularAcceleration'
+    ]
+  });
+}, 'The WebVR-specific Gamepad interfaces and their properties are available.');
 </script>

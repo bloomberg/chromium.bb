@@ -564,8 +564,8 @@ public class WebXrVrInputTest {
     }
 
     /**
-     * Verifies that a Gamepad API gamepad is not returned when using WebXR and a Daydream View if
-     * WebXRGamepadSupport is not explicitly enabled. Correctness testing for
+     * Verifies that a Gamepad API gamepad is not returned when using WebXR and a Daydream headset
+     * if WebXRGamepadSupport is not explicitly enabled. Correctness testing for
      * https://crbug.com/830935.
      */
     @Test
@@ -600,7 +600,7 @@ public class WebXrVrInputTest {
     }
 
     /**
-     * Verifies that a Gamepad API gamepad is returned when using WebXR  and Daydream View if
+     * Verifies that a Gamepad API gamepad is returned when using WebXR and a Daydream headset if
      * WebXRGamepadSupport is explicitly enabled. Correctness testing for https://crbug.com/830935.
      */
     @Test
@@ -634,7 +634,7 @@ public class WebXrVrInputTest {
 
     /**
      * Verifies that a Gamepad API gamepad is not returned when not using WebXR, WebVR, or the
-     * WebXRGamepadSupport feature with Daydream View. Correctness testing for
+     * WebXRGamepadSupport feature with a Daydream headset. Correctness testing for
      * https://crbug.com/830935.
      */
     @Test
@@ -665,6 +665,13 @@ public class WebXrVrInputTest {
     private void webxrGamepadSupportImpl(int numExpectedGamepads, boolean webxrPresent,
             boolean daydream) throws InterruptedException {
         if (webxrPresent) {
+            // TODO(https://crbug.com/947581): Update the test and remove this when Gamepads are
+            // supported by WebXR again. getGamepads() should always return 0, and the test should
+            // check that too. For now, change the expected value rather than disabling the tests
+            // since we actually expect 0 gamepads in all cases after removing WebXRGamepadSupport
+            // (https://crbug.com/920025).
+            numExpectedGamepads = 0;
+
             mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
                     WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_webxr_gamepad_support"),
                     PAGE_LOAD_TIMEOUT_S);

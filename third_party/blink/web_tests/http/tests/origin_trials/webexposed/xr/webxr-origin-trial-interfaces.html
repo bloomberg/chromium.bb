@@ -35,4 +35,27 @@ OriginTrialsHelper.add_token(token_m73);
 test(t => {
   OriginTrialsHelper.check_properties(this, properties_to_check);
 }, "WebXR's entrypoint properties are available with WebXRDeviceM73 token.");
+
+
+// Ensure that no Gamepad Extensions are enabled.
+
+gamepad_properties_to_check = {
+  'Gamepad': ['pose', 'hand', 'displayId'],
+};
+
+gamepad_interfaces_to_check = [
+  'GamepadPose'
+];
+
+// Experimental web platform features are always enabled when this test is run
+// normally, so do not check in that case.
+if (!self.internals.runtimeFlags.webVREnabled) {
+  test(t => {
+    OriginTrialsHelper.check_properties_missing(this, gamepad_properties_to_check);
+  }, "WebVR-specific Gamepad properties are not available.");
+
+  test(t => {
+    OriginTrialsHelper.check_interfaces_missing(this, gamepad_interfaces_to_check);
+  }, "WebVR-specific Gamepad interfaces are not available.");
+}
 </script>

@@ -2125,12 +2125,6 @@ const char kWebXrDescription[] =
     "Enables access to experimental APIs to interact with Virtual Reality (VR) "
     "and Augmented Reality (AR) devices.";
 
-const char kWebXrGamepadSupportName[] = "WebXR Gamepad Support";
-const char kWebXrGamepadSupportDescription[] =
-    "Expose VR controllers as Gamepads for use with the WebXR Device API. Each "
-    "XRInputSource will have a corresponding Gamepad instance. Requires that "
-    "WebXR Device API is also enabled.";
-
 const char kWebXrHitTestName[] = "WebXR Hit Test";
 const char kWebXrHitTestDescription[] =
     "Enables access to raycasting against estimated XR scene geometry.";
