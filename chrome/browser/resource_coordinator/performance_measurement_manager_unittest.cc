@@ -4,13 +4,11 @@
 
 #include "chrome/browser/resource_coordinator/performance_measurement_manager.h"
 
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/resource_coordinator/page_signal_receiver.h"
 #include "chrome/browser/resource_coordinator/render_process_probe.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
-#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,10 +39,6 @@ class PerformanceMeasurementManagerTest
 };
 
 TEST_F(PerformanceMeasurementManagerTest, StartMeasurementOnPageAlmostIdle) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kPageAlmostIdle);
-  ASSERT_TRUE(resource_coordinator::IsPageAlmostIdleSignalEnabled());
-
   PageSignalReceiver psr;
   PerformanceMeasurementManager performance_measurement_manager(
       &psr, &mock_render_process_probe());

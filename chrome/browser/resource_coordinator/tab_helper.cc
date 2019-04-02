@@ -86,10 +86,6 @@ void ResourceCoordinatorTabHelper::DidReceiveResponse() {
   TabLoadTracker::Get()->DidReceiveResponse(web_contents());
 }
 
-void ResourceCoordinatorTabHelper::DidStopLoading() {
-  TabLoadTracker::Get()->DidStopLoading(web_contents());
-}
-
 void ResourceCoordinatorTabHelper::DidFailLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url,

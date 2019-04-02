@@ -1647,9 +1647,6 @@ extern const char kOmniboxTabSwitchSuggestionsDescription[];
 extern const char kOmniboxTailSuggestionsName[];
 extern const char kOmniboxTailSuggestionsDescription[];
 
-extern const char kPageAlmostIdleName[];
-extern const char kPageAlmostIdleDescription[];
-
 extern const char kProactiveTabFreezeAndDiscardName[];
 extern const char kProactiveTabFreezeAndDiscardDescription[];
 

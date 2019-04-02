@@ -2771,11 +2771,6 @@ const char kOmniboxTailSuggestionsDescription[] =
     "Enable receiving tail suggestions, a type of search suggestion based on "
     "the last few words in the query, for the Omnibox.";
 
-const char kPageAlmostIdleName[] = "Page Almost Idle";
-const char kPageAlmostIdleDescription[] =
-    "Make session restore use a definition of loading that waits for CPU and "
-    "network quiescence.";
-
 const char kProactiveTabFreezeAndDiscardName[] =
     "Proactive Tab Freeze and Discard";
 const char kProactiveTabFreezeAndDiscardDescription[] =

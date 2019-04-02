@@ -2676,11 +2676,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "page-almost-idle",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "passive-event-listeners-due-to-fling",
     "owners": [ "sahel", "input-dev" ],
     "expiry_milestone": 76

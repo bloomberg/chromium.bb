@@ -14,7 +14,6 @@
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
 #include "chrome/browser/performance_manager/resource_coordinator_clock.h"
-#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace performance_manager {
@@ -193,7 +192,6 @@ void PageSignalGeneratorImpl::BindToInterface(
 
 PageSignalGeneratorImpl::PageData* PageSignalGeneratorImpl::GetPageData(
     const PageNodeImpl* page_node) {
-  DCHECK(resource_coordinator::IsPageAlmostIdleSignalEnabled());
   // There are two ways to enter this function:
   // 1. Via On*PropertyChange calls. The backing PageData is guaranteed to
   //    exist in this case as the lifetimes are managed by the CU graph.
