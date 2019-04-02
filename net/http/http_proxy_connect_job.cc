@@ -718,8 +718,9 @@ int HttpProxyConnectJob::DoQuicProxyCreateStreamComplete(int result) {
 int HttpProxyConnectJob::DoRestartWithAuth() {
   DCHECK(transport_socket_);
 
-  // TODO(mmenke): This should presumably restart the timeout timer using the
-  // handshake timeout.
+  // Start the timeout timer again.
+  ResetTimer(kHttpProxyConnectJobTunnelTimeout);
+
   next_state_ = STATE_RESTART_WITH_AUTH_COMPLETE;
   return transport_socket_->RestartWithAuth(base::BindOnce(
       &HttpProxyConnectJob::OnIOComplete, base::Unretained(this)));
