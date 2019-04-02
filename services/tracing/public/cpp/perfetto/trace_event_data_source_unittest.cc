@@ -734,6 +734,52 @@ TEST_F(TraceEventDataSourceTest, EventWithConvertableArgs) {
   EXPECT_EQ(annotations[1].legacy_json_value(), kArgValue2);
 }
 
+TEST_F(TraceEventDataSourceTest, TaskExecutionEvent) {
+  CreateTraceEventDataSource();
+
+  INTERNAL_TRACE_EVENT_ADD(
+      TRACE_EVENT_PHASE_INSTANT, "toplevel", "ThreadControllerImpl::RunTask",
+      TRACE_EVENT_SCOPE_THREAD | TRACE_EVENT_FLAG_TYPED_PROTO_ARGS, "src_file",
+      "my_file", "src_func", "my_func");
+
+  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 2u);
+  auto* e_packet = producer_client()->GetFinalizedPacket(1);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_INSTANT, TRACE_EVENT_SCOPE_THREAD);
+
+  const auto& annotations = e_packet->track_event().debug_annotations();
+  EXPECT_EQ(annotations.size(), 0);
+
+  EXPECT_EQ(e_packet->track_event().task_execution().posted_from_iid(), 1u);
+  const auto& locations = e_packet->interned_data().source_locations();
+  EXPECT_EQ(locations.size(), 1);
+  EXPECT_EQ(locations[0].file_name(), "my_file");
+  EXPECT_EQ(locations[0].function_name(), "my_func");
+}
+
+TEST_F(TraceEventDataSourceTest, TaskExecutionEventWithoutFunction) {
+  CreateTraceEventDataSource();
+
+  INTERNAL_TRACE_EVENT_ADD(
+      TRACE_EVENT_PHASE_INSTANT, "toplevel", "ThreadControllerImpl::RunTask",
+      TRACE_EVENT_SCOPE_THREAD | TRACE_EVENT_FLAG_TYPED_PROTO_ARGS, "src",
+      "my_file");
+
+  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 2u);
+  auto* e_packet = producer_client()->GetFinalizedPacket(1);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_INSTANT, TRACE_EVENT_SCOPE_THREAD);
+
+  const auto& annotations = e_packet->track_event().debug_annotations();
+  EXPECT_EQ(annotations.size(), 0);
+
+  EXPECT_EQ(e_packet->track_event().task_execution().posted_from_iid(), 1u);
+  const auto& locations = e_packet->interned_data().source_locations();
+  EXPECT_EQ(locations.size(), 1);
+  EXPECT_EQ(locations[0].file_name(), "my_file");
+  EXPECT_FALSE(locations[0].has_function_name());
+}
+
 TEST_F(TraceEventDataSourceTest, UpdateDurationOfCompleteEvent) {
   CreateTraceEventDataSource();
 

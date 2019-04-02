@@ -6,6 +6,7 @@
 
 #include <cinttypes>
 
+#include "base/json/string_escape.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_packet.pb.h"
@@ -420,13 +421,25 @@ void TrackEventJSONExporter::HandleTaskExecution(
   auto iter =
       current_state_.interned_source_locations_.find(task.posted_from_iid());
   DCHECK(iter != current_state_.interned_source_locations_.end());
+
+  // If source locations were turned off, only the file is provided. JSON
+  // expects the event to then have only an "src" attribute.
+  if (iter->second.second.empty()) {
+    auto* maybe_arg = args_builder->MaybeAddArg("src");
+    if (maybe_arg) {
+      base::EscapeJSONString(iter->second.first, true,
+                             maybe_arg->mutable_out());
+    }
+    return;
+  }
+
   auto* maybe_arg = args_builder->MaybeAddArg("src_file");
   if (maybe_arg) {
-    maybe_arg->AppendF("\"%s\"", iter->second.first.c_str());
+    base::EscapeJSONString(iter->second.first, true, maybe_arg->mutable_out());
   }
   maybe_arg = args_builder->MaybeAddArg("src_func");
   if (maybe_arg) {
-    maybe_arg->AppendF("\"%s\"", iter->second.second.c_str());
+    base::EscapeJSONString(iter->second.second, true, maybe_arg->mutable_out());
   }
 }
 

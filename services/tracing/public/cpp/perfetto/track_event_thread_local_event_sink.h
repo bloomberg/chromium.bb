@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/component_export.h"
 #include "base/time/time.h"
@@ -58,7 +59,8 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
   InterningIndex<const char*> interned_event_categories_;
   InterningIndex<const char*, std::string> interned_event_names_;
   InterningIndex<const char*, std::string> interned_annotation_names_;
-  InterningIndex<void*> interned_source_locations_;
+  InterningIndex<std::pair<const char*, const char*>>
+      interned_source_locations_;
 
   bool reset_incremental_state_ = true;
   base::TimeTicks last_timestamp_;
