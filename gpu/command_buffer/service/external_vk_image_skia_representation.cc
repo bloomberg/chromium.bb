@@ -9,6 +9,7 @@
 
 #include "base/trace_event/trace_event.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
+#include "gpu/vulkan/vulkan_util.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 
@@ -106,8 +107,8 @@ sk_sp<SkPromiseImageTexture> ExternalVkImageSkiaRepresentation::BeginAccess(
   if (!begin_access_semaphores_.empty()) {
     // Submit wait semaphore to the queue. Note that Skia uses the same queue
     // exposed by vk_queue(), so this will work due to Vulkan queue ordering.
-    if (!vk_implementation()->SubmitWaitSemaphores(
-            vk_queue(), begin_access_semaphores_, begin_access_fence_)) {
+    if (!SubmitWaitVkSemaphores(vk_queue(), begin_access_semaphores_,
+                                begin_access_fence_)) {
       LOG(ERROR) << "Failed to wait on semaphore";
       // Since the semaphore was not actually sent to the queue, it is safe to
       // destroy the |begin_access_semaphores_| here.
@@ -137,8 +138,8 @@ void ExternalVkImageSkiaRepresentation::EndAccess(bool readonly) {
       vk_implementation()->CreateExternalSemaphore(backing_impl()->device());
   // Submit wait semaphore to the queue. Note that Skia uses the same queue
   // exposed by vk_queue(), so this will work due to Vulkan queue ordering.
-  if (!vk_implementation()->SubmitSignalSemaphore(
-          vk_queue(), end_access_semaphore_, end_access_fence_)) {
+  if (!SubmitSignalVkSemaphore(vk_queue(), end_access_semaphore_,
+                               end_access_fence_)) {
     LOG(ERROR) << "Failed to wait on semaphore";
     // Since the semaphore was not actually sent to the queue, it is safe to
     // destroy the |end_access_semaphore_| here.

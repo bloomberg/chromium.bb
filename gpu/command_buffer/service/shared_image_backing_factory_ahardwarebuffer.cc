@@ -35,6 +35,7 @@
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_implementation.h"
+#include "gpu/vulkan/vulkan_util.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
@@ -510,8 +511,7 @@ class SharedImageRepresentationSkiaVkAHB
     for (size_t i = 0; i < sync_fds.size(); ++i) {
       // Submit wait semaphore to the queue. Note that Skia uses the same queue
       // exposed by vk_queue(), so this will work due to Vulkan queue ordering.
-      if (!vk_implementation()->SubmitWaitSemaphore(vk_queue(),
-                                                    semaphores[i])) {
+      if (!SubmitWaitVkSemaphore(vk_queue(), semaphores[i])) {
         failed_to_insert_semaphores = true;
         break;
       }
@@ -576,7 +576,7 @@ class SharedImageRepresentationSkiaVkAHB
 
       // Submit wait semaphore to the queue. Note that Skia uses the same queue
       // exposed by vk_queue(), so this will work due to Vulkan queue ordering.
-      if (!vk_implementation()->SubmitWaitSemaphore(vk_queue(), semaphore)) {
+      if (!SubmitWaitVkSemaphore(vk_queue(), semaphore)) {
         vkDestroySemaphore(vk_device(), semaphore, nullptr);
         return nullptr;
       }

@@ -19,6 +19,7 @@
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_instance.h"
 #include "gpu/vulkan/vulkan_surface.h"
+#include "gpu/vulkan/vulkan_util.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/ozone/platform/scenic/scenic_surface.h"
@@ -128,7 +129,7 @@ VulkanImplementationScenic::ExportVkFenceToGpuFence(VkDevice vk_device,
 
 VkSemaphore VulkanImplementationScenic::CreateExternalSemaphore(
     VkDevice vk_device) {
-  return VulkanImplementation::CreateExternalSemaphore(
+  return gpu::CreateExternalVkSemaphore(
       vk_device,
       VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_TEMP_ZIRCON_EVENT_BIT_FUCHSIA);
 }

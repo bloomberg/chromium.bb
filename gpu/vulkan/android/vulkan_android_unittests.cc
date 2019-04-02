@@ -9,6 +9,7 @@
 #include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #include "gpu/vulkan/android/vulkan_implementation_android.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
+#include "gpu/vulkan/vulkan_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gpu {
@@ -81,7 +82,7 @@ TEST_F(VulkanImplementationAndroidTest, ExportImportSyncFd) {
   // signal operation pending execution before the export.
   // Semaphores can be signaled by including them in a batch as part of a queue
   // submission command, defining a queue operation to signal that semaphore.
-  EXPECT_TRUE(vk_implementation_->SubmitSignalSemaphore(
+  EXPECT_TRUE(SubmitSignalVkSemaphore(
       vk_context_provider_->GetDeviceQueue()->GetVulkanQueue(), semaphore1));
 
   // Export a handle from the semaphore.
