@@ -172,6 +172,7 @@ class GC_PLUGIN_IGNORE(
                                  TraceDescriptor desc) final;
 
   // Unused Visitor overrides.
+  void VisitWithWrappers(void* object, TraceDescriptor desc) final {}
   void VisitWeak(void* object,
                  void** object_slot,
                  TraceDescriptor desc,

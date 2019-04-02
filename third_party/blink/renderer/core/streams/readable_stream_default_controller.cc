@@ -367,7 +367,7 @@ void ReadableStreamDefaultController::CallPullIfNeeded(
     }
 
    private:
-    const Member<ReadableStreamDefaultController> controller_;
+    const TraceWrapperMember<ReadableStreamDefaultController> controller_;
   };
 
   class RejectFunction : public StreamScriptFunction {
@@ -388,7 +388,7 @@ void ReadableStreamDefaultController::CallPullIfNeeded(
     }
 
    private:
-    const Member<ReadableStreamDefaultController> controller_;
+    const TraceWrapperMember<ReadableStreamDefaultController> controller_;
   };
 
   StreamThenPromise(
@@ -557,7 +557,7 @@ void ReadableStreamDefaultController::SetUp(
     }
 
    private:
-    const Member<ReadableStreamDefaultController> controller_;
+    const TraceWrapperMember<ReadableStreamDefaultController> controller_;
   };
 
   class RejectFunction : public StreamScriptFunction {
@@ -578,7 +578,7 @@ void ReadableStreamDefaultController::SetUp(
     }
 
    private:
-    const Member<ReadableStreamDefaultController> controller_;
+    const TraceWrapperMember<ReadableStreamDefaultController> controller_;
   };
 
   StreamThenPromise(

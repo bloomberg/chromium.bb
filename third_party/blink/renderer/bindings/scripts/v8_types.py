@@ -277,7 +277,7 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
             return v8_type_name
         if not used_in_cpp_sequence:
             return v8_type_name + '*'
-        return cpp_template_type('Member', v8_type_name)
+        return cpp_template_type('TraceWrapperMember', v8_type_name)
 
     if base_idl_type == 'void':
         return base_idl_type
@@ -514,7 +514,8 @@ def impl_includes_for_type(idl_type, interfaces_info):
         includes_for_type.add('platform/wtf/text/wtf_string.h')
     if idl_type.is_callback_function:
         component = IdlType.callback_functions[base_idl_type]['component_dir']
-        return set(['bindings/%s/v8/%s' % (component, binding_header_filename(base_idl_type))])
+        return set(['bindings/%s/v8/%s' % (component, binding_header_filename(base_idl_type)),
+                    'platform/bindings/trace_wrapper_member.h'])
     if base_idl_type in interfaces_info:
         interface_info = interfaces_info[base_idl_type]
         includes_for_type.add(interface_info['include_path'])

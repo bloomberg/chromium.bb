@@ -55,6 +55,7 @@ class MarkingVerifier final : public Visitor {
   }
   void RegisterWeakCallback(void*, WeakCallback) final {}
   void Visit(const TraceWrapperV8Reference<v8::Value>&) final {}
+  void VisitWithWrappers(void*, TraceDescriptor) final {}
 
  private:
   void VerifyChild(void* object, void* base_object_payload) {
