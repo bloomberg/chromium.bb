@@ -282,10 +282,13 @@ cr.define('extensions', function() {
      * @param {boolean} expanded
      */
     expandItems_: function(expanded) {
-      this.activityData_.filter(item => item.countsByUrl.size > 0)
-          .forEach((item, index) => {
-            this.set(`activityData_.${index}.expanded`, expanded);
-          });
+      // Do not use .filter here as we need the original index of the item
+      // in |activityData_|.
+      this.activityData_.forEach((item, index) => {
+        if (item.countsByUrl.size > 0) {
+          this.set(`activityData_.${index}.expanded`, expanded);
+        }
+      });
       this.$$('cr-action-menu').close();
     },
 
