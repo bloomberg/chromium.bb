@@ -65,21 +65,22 @@ Polymer({
 
   /** @override */
   attached: function() {
-    let direction = this.matches(':host-context([dir=rtl]) cr-toggle') ? -1 : 1;
+    const direction =
+        this.matches(':host-context([dir=rtl]) cr-toggle') ? -1 : 1;
 
     this.boundPointerMove_ = (e) => {
       // Prevent unwanted text selection to occur while moving the pointer, this
       // is important.
       e.preventDefault();
 
-      let diff = e.clientX - this.pointerDownX_;
+      const diff = e.clientX - this.pointerDownX_;
       if (Math.abs(diff) < this.MOVE_THRESHOLD_PX) {
         return;
       }
 
       this.handledInPointerMove_ = true;
 
-      let shouldToggle = (diff * direction < 0 && this.checked) ||
+      const shouldToggle = (diff * direction < 0 && this.checked) ||
           (diff * direction > 0 && !this.checked);
       if (shouldToggle) {
         this.toggleState_(false);
@@ -183,18 +184,10 @@ Polymer({
     }
   },
 
-  /** @private */
-  onButtonFocus_: function() {
-    // Forward 'focus' to the enclosing element, so that a subsequent 'Space'
-    // keystroke does not trigger both 'keypress' and 'click' which would toggle
-    // the state twice erroneously.
-    this.focus();
-  },
-
   // customize the element's ripple
   _createRipple: function() {
     this._rippleContainer = this.$.knob;
-    let ripple = Polymer.PaperRippleBehavior._createRipple();
+    const ripple = Polymer.PaperRippleBehavior._createRipple();
     ripple.id = 'ink';
     ripple.setAttribute('recenters', '');
     ripple.classList.add('circle', 'toggle-ink');
