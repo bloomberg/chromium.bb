@@ -1556,15 +1556,6 @@
       origin_trial_feature_name: "WebVR1.1M62",
       status: "experimental",
     },
-    // Extensions to the Gamepad API for WebVR. Formerly GamepadExtensions.
-    // Although not separately controllable, it is still a separate feature
-    // for clarity in the IDL.
-    // TODO(https://crbug.com/920025): Consider merging with "WebVR".
-    {
-      name: "WebVRGamepadSupport",
-      implied_by: ["WebVR"],
-      status: "experimental",
-    },
     {
       name: "WebVTTRegions",
       status: "experimental",
@@ -1572,16 +1563,6 @@
     {
       name: "WebXR",
       origin_trial_feature_name: "WebXRDeviceM73",
-      status: "experimental",
-    },
-    // Subset of the Gamepad extensions used for early WebXR implementations
-    // that exposed VR controller functionality as Gamepads.
-    // TODO(https://crbug.com/920025): Remove this.
-    {
-      name: "WebXRGamepadSupport",
-      origin_trial_feature_name: "WebXRGamepadSupport",
-      // This feature is a strict subset of the WebVR Gamepad extensions.
-      implied_by: ["WebVRGamepadSupport"],
       status: "experimental",
     },
     {

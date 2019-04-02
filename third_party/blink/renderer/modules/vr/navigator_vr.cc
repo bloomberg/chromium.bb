@@ -35,10 +35,23 @@ const char kNotAssociatedWithDocumentMessage[] =
     "The object is no longer associated with a document.";
 
 const char kCannotUseBothNewAndOldAPIMessage[] =
-    "Cannot use navigator.getVRDisplays if the XR API is already in "
-    "use.";
+    "Cannot use navigator.getVRDisplays if the XR API is already in use.";
 
 }  // namespace
+
+bool NavigatorVR::HasWebVrBeenUsed(Document& document) {
+  if (!document.GetFrame() || !document.GetFrame()->DomWindow())
+    return false;
+  Navigator& navigator = *document.GetFrame()->DomWindow()->navigator();
+
+  NavigatorVR* supplement = Supplement<Navigator>::From<NavigatorVR>(navigator);
+  if (!supplement) {
+    // No supplement means neither WebVR nor WebXR have been used.
+    return false;
+  }
+
+  return NavigatorVR::From(navigator).did_use_webvr_;
+}
 
 NavigatorVR* NavigatorVR::From(Document& document) {
   if (!document.GetFrame() || !document.GetFrame()->DomWindow())
@@ -92,25 +105,8 @@ XR* NavigatorVR::xr() {
     }
 
     xr_ = XR::Create(*frame, ukm_source_id_);
-    MaybeLogDidUseGamepad();
   }
   return xr_;
-}
-
-void NavigatorVR::SetDidUseGamepad() {
-  did_use_gamepad_ = true;
-  MaybeLogDidUseGamepad();
-}
-
-void NavigatorVR::MaybeLogDidUseGamepad() {
-  // If we have used WebXR and Gamepad, and haven't already logged the metric,
-  // record that Gamepad is used.
-  if (xr_ && did_use_gamepad_ && !did_log_did_use_gamepad_) {
-    ukm::builders::XR_WebXR(ukm_source_id_)
-        .SetDidGetGamepads(1)
-        .Record(GetDocument()->UkmRecorder());
-    did_log_did_use_gamepad_ = true;
-  }
 }
 
 ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state,
@@ -124,6 +120,8 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state,
 }
 
 ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state) {
+  did_use_webvr_ = true;
+
   if (!GetDocument()) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,

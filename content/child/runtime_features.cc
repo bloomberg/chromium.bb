@@ -190,9 +190,6 @@ void SetIndividualRuntimeFeatures(
   if (base::FeatureList::IsEnabled(features::kWebXr))
     WebRuntimeFeatures::EnableWebXR(true);
 
-  if (base::FeatureList::IsEnabled(features::kWebXrGamepadSupport))
-    WebRuntimeFeatures::EnableWebXRGamepadSupport(true);
-
   if (base::FeatureList::IsEnabled(features::kWebXrHitTest))
     WebRuntimeFeatures::EnableWebXRHitTest(true);
 

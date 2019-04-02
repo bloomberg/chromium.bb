@@ -109,11 +109,12 @@ static void SampleGamepad(uint32_t index,
   }
 }
 
-static void SampleGamepads(GamepadDispatcher* gamepad_dispatcher,
-                           GamepadList* into,
-                           ExecutionContext* context,
-                           const TimeTicks& navigation_start,
-                           const TimeTicks& gamepads_start) {
+void SampleGamepads(GamepadDispatcher* gamepad_dispatcher,
+                    GamepadList* into,
+                    ExecutionContext* context,
+                    const TimeTicks& navigation_start,
+                    const TimeTicks& gamepads_start,
+                    bool include_xr_gamepads) {
   device::Gamepads gamepads;
 
   gamepad_dispatcher->SampleGamepads(gamepads);
@@ -121,20 +122,7 @@ static void SampleGamepads(GamepadDispatcher* gamepad_dispatcher,
   for (uint32_t i = 0; i < device::Gamepads::kItemsLengthCap; ++i) {
     device::Gamepad& web_gamepad = gamepads.items[i];
 
-    bool hide_xr_gamepad = false;
-    if (web_gamepad.is_xr) {
-      bool webxr_enabled =
-          (context && origin_trials::WebXRGamepadSupportEnabled(context) &&
-           origin_trials::WebXREnabled(context));
-      bool webvr_enabled = (context && origin_trials::WebVREnabled(context));
-
-      if (!webxr_enabled && !webvr_enabled) {
-        // If neither WebXR nor WebVR are enabled, we should not expose XR-
-        // backed gamepads.
-        hide_xr_gamepad = true;
-      }
-    }
-
+    bool hide_xr_gamepad = web_gamepad.is_xr && !include_xr_gamepads;
     if (hide_xr_gamepad) {
       into->Set(i, nullptr);
     } else if (web_gamepad.connected) {
@@ -147,6 +135,20 @@ static void SampleGamepads(GamepadDispatcher* gamepad_dispatcher,
       into->Set(i, nullptr);
     }
   }
+}
+
+// XR-backed controllers are only exposed via this path for WebVR (not
+// WebXR). Controllers are only exposed during VR presentation, so we can
+// just check if WebVR has been used. WebXR cannot be used once WebVR has been.
+bool ShouldIncludeXrGamepads(LocalFrame* frame) {
+  if (!frame)
+    return false;
+
+  Document* document = frame->GetDocument();
+  if (!document)
+    return false;
+
+  return NavigatorVR::HasWebVrBeenUsed(*document);
 }
 
 }  // namespace
@@ -177,15 +179,6 @@ GamepadList* NavigatorGamepad::getGamepads(Navigator& navigator) {
 }
 
 GamepadList* NavigatorGamepad::Gamepads() {
-  // Tell VR that gamepad is in use.
-  Document* document = GetFrame() ? GetFrame()->GetDocument() : nullptr;
-  if (document) {
-    NavigatorVR* navigator_vr = NavigatorVR::From(*document);
-    if (navigator_vr) {
-      navigator_vr->SetDidUseGamepad();
-    }
-  }
-
   SampleAndCompareGamepadState();
 
   // Ensure |gamepads_| is not null.
@@ -339,8 +332,12 @@ void NavigatorGamepad::SampleAndCompareGamepadState() {
       // Allocate a buffer to hold the new gamepad state, if needed.
       if (!gamepads_back_)
         gamepads_back_ = GamepadList::Create();
+
+      bool include_xr_gamepads = ShouldIncludeXrGamepads(GetFrame());
+
       SampleGamepads(gamepad_dispatcher_, gamepads_back_.Get(),
-                     execution_context, navigation_start_, gamepads_start_);
+                     execution_context, navigation_start_, gamepads_start_,
+                     include_xr_gamepads);
 
       // Compare the new sample with the previous sample and record which
       // gamepad events should be dispatched. Swap buffers if the gamepad

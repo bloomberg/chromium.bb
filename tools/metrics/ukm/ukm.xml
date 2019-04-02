@@ -6992,6 +6992,9 @@ be describing additional metrics about the same event.
 <event name="XR.WebXR" singular="True">
   <owner>billorr@chromium.org</owner>
   <metric name="DidGetGamepads">
+    <obsolete>
+      Deprecated in M75.
+    </obsolete>
     <summary>
       Boolean value that indicates that the Gamepad API was used on a WebXR
       site.

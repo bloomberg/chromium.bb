@@ -173,12 +173,6 @@ const base::Feature kFreezeFramesOnVisibility{
 const base::Feature kNetworkQualityEstimatorWebHoldback{
     "NetworkQualityEstimatorWebHoldback", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When WebXR Device API is enabled, exposes VR controllers as Gamepads and
-// enables additional Gamepad attributes for use with WebXR Device API. Each
-// XRInputSource will have a corresponding Gamepad instance.
-const base::Feature kWebXrGamepadSupport{"WebXRGamepadSupport",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Causes the implementations of guests (inner WebContents) to use
 // out-of-process iframes.
 // TODO(533069): Remove once BrowserPlugin is removed.
