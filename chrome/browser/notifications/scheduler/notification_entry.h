@@ -17,6 +17,7 @@ namespace notifications {
 // record.
 struct NotificationEntry {
   NotificationEntry(SchedulerClientType type, const std::string& guid);
+  NotificationEntry(const NotificationEntry& other);
   ~NotificationEntry();
 
   // The type of the notification.
@@ -25,8 +26,10 @@ struct NotificationEntry {
   // The unique id of the notification database entry.
   std::string guid;
 
+  // Contains information to construct the notification.
   NotificationData notification_data;
 
+  // Scheduling details.
   ScheduleParams schedule_params;
 };
 

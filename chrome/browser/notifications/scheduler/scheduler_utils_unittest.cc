@@ -11,20 +11,31 @@ namespace notifications {
 namespace {
 
 // Verifies we can get the correct time stamp at certain hour in yesterday.
-TEST(SchedulerUtilsTest, ToLocalYesterdayHour) {
-  base::Time today, yesterday, expected;
+TEST(SchedulerUtilsTest, ToLocalHour) {
+  base::Time today, another_day, expected;
 
-  // Retrieve a timestamp of yesterday at 6am.
+  // Timestamp of another day in the past.
   EXPECT_TRUE(base::Time::FromString("10/15/07 12:45:12 PM", &today));
-  EXPECT_TRUE(ToLocalYesterdayHour(6, today, &yesterday));
+  EXPECT_TRUE(ToLocalHour(6, today, -1, &another_day));
   EXPECT_TRUE(base::Time::FromString("10/14/07 06:00:00 AM", &expected));
-  EXPECT_EQ(expected, yesterday);
+  EXPECT_EQ(expected, another_day);
 
-  // Test an edge case, that the time is 0 am of a Monday.
   EXPECT_TRUE(base::Time::FromString("03/25/19 00:00:00 AM", &today));
-  EXPECT_TRUE(ToLocalYesterdayHour(0, today, &yesterday));
+  EXPECT_TRUE(ToLocalHour(0, today, -1, &another_day));
   EXPECT_TRUE(base::Time::FromString("03/24/19 00:00:00 AM", &expected));
-  EXPECT_EQ(expected, yesterday);
+  EXPECT_EQ(expected, another_day);
+
+  // Timestamp of the same day.
+  EXPECT_TRUE(base::Time::FromString("03/25/19 00:00:00 AM", &today));
+  EXPECT_TRUE(ToLocalHour(0, today, 0, &another_day));
+  EXPECT_TRUE(base::Time::FromString("03/25/19 00:00:00 AM", &expected));
+  EXPECT_EQ(expected, another_day);
+
+  // Timestamp of another day in the future.
+  EXPECT_TRUE(base::Time::FromString("03/25/19 06:35:27 AM", &today));
+  EXPECT_TRUE(ToLocalHour(16, today, 7, &another_day));
+  EXPECT_TRUE(base::Time::FromString("04/01/19 16:00:00 PM", &expected));
+  EXPECT_EQ(expected, another_day);
 }
 
 }  // namespace

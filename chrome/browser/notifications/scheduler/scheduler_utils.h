@@ -9,12 +9,16 @@
 
 namespace notifications {
 
-// Retrieves the time stamp of a certain hour at yesterday.
+// Retrieves the time stamp of a certain hour at a certain day from today.
 // |hour| must be in the range of [0, 23].
 // |today| is a timestamp to define today, usually caller can directly pass in
 // the current system time.
+// |day_delta| is the different between the output date and today.
 // Returns false if the conversion is failed.
-bool ToLocalYesterdayHour(int hour, const base::Time& today, base::Time* out);
+bool ToLocalHour(int hour,
+                 const base::Time& today,
+                 int day_delta,
+                 base::Time* out);
 
 }  // namespace notifications
 
