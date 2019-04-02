@@ -311,6 +311,34 @@ IN_PROC_BROWSER_TEST_F(AuraWindowVideoCaptureDeviceBrowserTest,
   StopAndDeAllocate();
 }
 
+#if defined(OS_CHROMEOS)
+// On ChromeOS, another window may occlude a window that is being captured.
+// Make sure the visibility is set to visible during capture if it's occluded.
+IN_PROC_BROWSER_TEST_F(AuraWindowVideoCaptureDeviceBrowserTest,
+                       CapturesOccludedWindows) {
+  // TODO(crbug.com/877172): CopyOutputRequests not allowed.
+  if (features::IsSingleProcessMash())
+    return;
+  NavigateToInitialDocument();
+  AllocateAndStartAndWaitForFirstFrame();
+
+  ASSERT_EQ(aura::Window::OcclusionState::VISIBLE,
+            shell()->web_contents()->GetNativeView()->occlusion_state());
+  // Create a window on top of the window being captured with same size so that
+  // it is occluded.
+  auto window = std::make_unique<aura::Window>(nullptr);
+  window->Init(ui::LAYER_TEXTURED);
+  shell()->window()->GetRootWindow()->AddChild(window.get());
+  window->SetBounds(shell()->window()->bounds());
+  window->Show();
+  EXPECT_EQ(aura::Window::OcclusionState::VISIBLE,
+            shell()->web_contents()->GetNativeView()->occlusion_state());
+
+  window.reset();
+  StopAndDeAllocate();
+}
+#endif  // defined(OS_CHROMEOS)
+
 class AuraWindowVideoCaptureDeviceBrowserTestP
     : public AuraWindowVideoCaptureDeviceBrowserTest,
       public testing::WithParamInterface<std::tuple<bool, bool>> {
