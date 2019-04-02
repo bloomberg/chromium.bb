@@ -44987,6 +44987,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="56" label="NOSTATE_PREFETCH_FINISHED"/>
   <int value="57" label="LOW_END_DEVICE"/>
   <int value="58" label="FINAL_STATUS_BROWSER_SWITCH"/>
+  <int value="59" label="FINAL_STATUS_GWS_HOLDBACK"/>
 </enum>
 
 <enum name="PrerenderHoverEvent">

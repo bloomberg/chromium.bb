@@ -391,6 +391,19 @@ class PrerenderTest : public testing::Test {
     return LauncherHasRunningPrerender(kDefaultChildId, last_prerender_id());
   }
 
+  // Shorthand to add a simple prerender with a reasonable source. Returns
+  // true iff the prerender has been added to the PrerenderManager by the
+  // PrerenderLinkManager and the PrerenderManager returned a handle. The
+  // referrer is set to a google domain.
+  bool AddSimpleGWSPrerender(const GURL& url) {
+    content::Referrer referrer;
+    referrer.url = GURL("https://www.google.com");
+    prerender_link_manager()->OnAddPrerender(
+        kDefaultChildId, GetNextPrerenderID(), url, kDefaultRelTypes, referrer,
+        kSize, kDefaultRenderViewRouteId);
+    return LauncherHasRunningPrerender(kDefaultChildId, last_prerender_id());
+  }
+
   void DisablePrerender() {
     profile_.GetPrefs()->SetInteger(
         prefs::kNetworkPredictionOptions,
@@ -455,6 +468,66 @@ TEST_F(PrerenderTest, SimpleLoadMode) {
   prerender_manager()->SetMode(
       PrerenderManager::PRERENDER_MODE_SIMPLE_LOAD_EXPERIMENT);
   EXPECT_FALSE(AddSimplePrerender(url));
+}
+
+TEST_F(PrerenderTest, GWSPrefetchHoldbackNonGWSSReferrer) {
+  GURL url("http://www.notgoogle.com/");
+  test_utils::RestorePrerenderMode restore_prerender_mode;
+
+  prerender_manager()->SetMode(
+      PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kGWSPrefetchHoldback);
+  prerender_manager()->CreateNextPrerenderContents(
+      url, FINAL_STATUS_MANAGER_SHUTDOWN);
+
+  EXPECT_TRUE(AddSimplePrerender(url));
+}
+
+TEST_F(PrerenderTest, GWSPrefetchHoldbackGWSReferrer) {
+  GURL url("http://www.notgoogle.com/");
+  test_utils::RestorePrerenderMode restore_prerender_mode;
+
+  prerender_manager()->SetMode(
+      PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kGWSPrefetchHoldback);
+  prerender_manager()->CreateNextPrerenderContents(
+      url, ORIGIN_GWS_PRERENDER, FINAL_STATUS_MANAGER_SHUTDOWN);
+
+  EXPECT_FALSE(AddSimpleGWSPrerender(url));
+}
+
+TEST_F(PrerenderTest, GWSPrefetchHoldbackOffNonGWSReferrer) {
+  GURL url("http://www.notgoogle.com/");
+  test_utils::RestorePrerenderMode restore_prerender_mode;
+
+  prerender_manager()->SetMode(
+      PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(kGWSPrefetchHoldback);
+  prerender_manager()->CreateNextPrerenderContents(
+      url, FINAL_STATUS_MANAGER_SHUTDOWN);
+
+  EXPECT_TRUE(AddSimplePrerender(url));
+}
+
+TEST_F(PrerenderTest, GWSPrefetchHoldbackOffGWSReferrer) {
+  GURL url("http://www.notgoogle.com/");
+  test_utils::RestorePrerenderMode restore_prerender_mode;
+
+  prerender_manager()->SetMode(
+      PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(kGWSPrefetchHoldback);
+  prerender_manager()->CreateNextPrerenderContents(
+      url, ORIGIN_GWS_PRERENDER, FINAL_STATUS_MANAGER_SHUTDOWN);
+
+  EXPECT_TRUE(AddSimpleGWSPrerender(url));
 }
 
 TEST_F(PrerenderTest, PrerenderDisabledOnLowEndDevice) {
