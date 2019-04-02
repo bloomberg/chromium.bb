@@ -36,6 +36,10 @@ const base::Feature kEnableGpuRasterizationViewportRestriction{
 const base::Feature kScriptStreaming{"ScriptStreaming",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables user level memory pressure signal generation on Android.
+const base::Feature kUserLevelMemoryPressureSignal{
+    "UserLevelMemoryPressureSignal", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable FCP++ by experiment. See https://crbug.com/869924
 const base::Feature kFirstContentfulPaintPlusPlus{
     "FirstContentfulPaintPlusPlus", base::FEATURE_DISABLED_BY_DEFAULT};

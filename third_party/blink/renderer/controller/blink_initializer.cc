@@ -59,6 +59,7 @@
 #if defined(OS_ANDROID)
 #include "third_party/blink/renderer/controller/crash_memory_metrics_reporter_impl.h"
 #include "third_party/blink/renderer/controller/oom_intervention_impl.h"
+#include "third_party/blink/renderer/controller/user_level_memory_pressure_signal_generator.h"
 #endif
 
 namespace blink {
@@ -133,6 +134,9 @@ void InitializeCommon(Platform* platform,
     MemoryAblationExperiment::MaybeStartForRenderer(task_runner);
 
 #if defined(OS_ANDROID)
+  // Initialize UserLevelMemoryPressureSignalGenerator so it starts monitoring.
+  UserLevelMemoryPressureSignalGenerator::Instance();
+
   // Initialize CrashMemoryMetricsReporterImpl in order to assure that memory
   // allocation does not happen in OnOOMCallback.
   CrashMemoryMetricsReporterImpl::Instance();

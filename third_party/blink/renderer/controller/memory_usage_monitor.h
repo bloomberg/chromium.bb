@@ -29,6 +29,7 @@ class CONTROLLER_EXPORT MemoryUsageMonitor {
 
  public:
   static MemoryUsageMonitor& Instance();
+  static void SetInstanceForTesting(MemoryUsageMonitor*);
 
   class Observer : public base::CheckedObserver {
    public:
