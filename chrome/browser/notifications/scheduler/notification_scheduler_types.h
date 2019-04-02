@@ -12,6 +12,7 @@ enum class SchedulerClientType {
   // Test only values.
   kTest1 = -1,
   kTest2 = -2,
+  kTest3 = -3,
 
   // Default value of client type.
   kUnknown = 0,

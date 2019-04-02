@@ -12,6 +12,8 @@ NotificationEntry::NotificationEntry(SchedulerClientType type,
                                      const std::string& guid)
     : type(type), guid(guid) {}
 
+NotificationEntry::NotificationEntry(const NotificationEntry& other) = default;
+
 NotificationEntry::~NotificationEntry() = default;
 
 }  // namespace notifications

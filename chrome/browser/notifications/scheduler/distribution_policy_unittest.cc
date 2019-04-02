@@ -30,6 +30,12 @@ TEST(DistributionPolicyTest, EvenDistributionHigherMorning) {
             5);
   EXPECT_EQ(MaxToShow(policy.get(), SchedulerTaskTime::kEvening, 4 /* quota */),
             4);
+
+  // Test 0 quota.
+  EXPECT_EQ(MaxToShow(policy.get(), SchedulerTaskTime::kMorning, 0 /* quota */),
+            0);
+  EXPECT_EQ(MaxToShow(policy.get(), SchedulerTaskTime::kMorning, 0 /* quota */),
+            0);
 }
 
 }  // namespace
