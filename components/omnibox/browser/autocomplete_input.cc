@@ -207,8 +207,8 @@ metrics::OmniboxInputType AutocompleteInput::Parse(
 
   // Treat javascript: scheme queries followed by things that are unlikely to
   // be code as QUERY, rather than script to execute (URL).
-  if (RE2::FullMatch(base::UTF16ToUTF8(text), "(?i)javascript:([^;=().]*)")) {
-    return metrics::OmniboxInputType::QUERY;
+  if (RE2::FullMatch(base::UTF16ToUTF8(text), "(?i)javascript:([^;=().\"]*)")) {
+    return metrics::OmniboxInputType::UNKNOWN;
   }
 
   // If the user typed a scheme, and it's HTTP or HTTPS, we know how to parse it
