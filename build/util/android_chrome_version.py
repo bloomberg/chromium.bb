@@ -67,6 +67,7 @@ ARCH_VERSION_CODE_DIFF = {
 ARCH_CHOICES = ARCH_VERSION_CODE_DIFF.keys()
 
 """ "Next" builds get +5 last version code digit.
+
 We choose 5 because it won't conflict with values in
 ANDROID_CHROME_APK_VERSION_CODE_DIFFS
 
@@ -77,6 +78,29 @@ when working with unreleased Android versions: upgrading android will install
 the chrome build (the "next" build) that uses the new android sdk.
 """
 NEXT_BUILD_VERSION_CODE_DIFF = 100005
+
+"""For 64-bit architectures, some packages have multiple targets with version
+codes that differ by the second-to-last digit (the architecture digit). This is
+for various combinations of 32-bit vs 64-bit chrome and webview. The
+default/traditional configuration is 32-bit chrome with 64-bit webview, but we
+are adding:
++ 64-bit chrome with 32-bit webview
++ 64-bit combined Chrome and Webview (only one library)
++ (maybe someday 32-bit chrome with 32-bit webview)
+
+The naming scheme followed here is <chrome>_<webview>,
+e.g. 64_32 is 64-bit chrome with 32-bit webview.
+"""
+ARCH64_APK_VARIANTS = {
+    '64_32': {
+        'PACKAGES': frozenset(['MONOCHROME']),
+        'MODIFIER': 10
+    },
+    '64': {
+        'PACKAGES': frozenset(['MONOCHROME']),
+        'MODIFIER': 20
+    }
+}
 
 
 def GenerateVersionCodes(version_values, arch, is_next_build):
@@ -114,6 +138,16 @@ def GenerateVersionCodes(version_values, arch, is_next_build):
 
   version_codes = {}
   for apk, diff in ANDROID_CHROME_APK_VERSION_CODE_DIFFS.iteritems():
-    version_codes[apk + '_VERSION_CODE'] = str(new_version_code + diff)
+    version_code_name = apk + '_VERSION_CODE'
+    version_code_val = new_version_code + diff
+    version_codes[version_code_name] = str(version_code_val)
+
+    if arch == 'arm64' or arch == 'x64':
+      for variant, config in ARCH64_APK_VARIANTS.iteritems():
+        if apk in config['PACKAGES']:
+          variant_name = apk + '_' + variant + '_VERSION_CODE'
+          variant_val = version_code_val + config['MODIFIER']
+          version_codes[variant_name] = str(variant_val)
+
 
   return version_codes

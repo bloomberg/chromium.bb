@@ -1732,6 +1732,8 @@ template("monochrome_public_apk_or_module_tmpl") {
                              "resource_ids_provider_dep",
                              "target_type",
                              "use_trichrome_library",
+                             "version_code",
+                             "version_name",
                            ])
     android_manifest = _android_manifest
     android_manifest_dep = ":${target_name}__android_manifest"
@@ -1761,12 +1763,12 @@ template("monochrome_public_apk_or_module_tmpl") {
     add_unwind_tables_in_apk =
         _add_unwind_tables_in_chrome_32bit_apk && _needs_arm32_lib &&
         (!defined(use_trichrome_library) || !use_trichrome_library)
-
-    version_name = chrome_version_name
   }
 }
 
 monochrome_public_apk_or_module_tmpl("monochrome_public_apk") {
+  version_code = monochrome_version_code
+  version_name = chrome_version_name
   apk_name = "MonochromePublic"
   target_type = "android_apk"
 
@@ -1799,6 +1801,8 @@ android_resources("trichrome_dummy_resources") {
 }
 
 monochrome_public_apk_or_module_tmpl("trichrome_chrome_apk") {
+  version_code = trichrome_version_code
+  version_name = chrome_version_name
   apk_name = "TrichromeChrome"
   target_type = "android_apk"
   use_trichrome_library = true
@@ -2071,6 +2075,19 @@ template("monochrome_public_bundle_tmpl") {
     _min_sdk_version = 24
   }
 
+  if (_is_trichrome) {
+    _version_code = trichrome_version_code
+  } else if (defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser) {
+    if (invoker.build_apk_secondary_abi && invoker.include_32_bit_webview) {
+      _version_code = monochrome_64_32_version_code
+    } else {
+      _version_code = monochrome_64_version_code
+    }
+  } else {
+    _version_code = monochrome_version_code
+  }
+  _version_name = chrome_version_name
+
   monochrome_public_apk_or_module_tmpl(_base_module_target_name) {
     forward_variables_from(invoker,
                            [
@@ -2081,6 +2098,8 @@ template("monochrome_public_bundle_tmpl") {
     module_name = _bundle_name + "Base"
     target_type = "android_app_bundle_module"
     is_base_module = true
+    version_code = _version_code
+    version_name = _version_name
   }
 
   if (modularize_ar) {
@@ -2098,12 +2117,8 @@ template("monochrome_public_bundle_tmpl") {
       module_name = "Ar" + _bundle_name
       base_module_target = ":$_base_module_target_name"
       native_switches = _native_switches
-      if (_is_trichrome) {
-        version_code = trichrome_version_code
-      } else {
-        version_code = monochrome_version_code
-      }
-      version_name = chrome_version_name
+      version_code = _version_code
+      version_name = _version_name
     }
   }
 
@@ -2112,13 +2127,9 @@ template("monochrome_public_bundle_tmpl") {
       manifest_package = manifest_package
       module_name = "Vr" + _bundle_name
       base_module_target = ":$_base_module_target_name"
-      if (_is_trichrome) {
-        version_code = trichrome_version_code
-      } else {
-        version_code = monochrome_version_code
-      }
-      version_name = chrome_version_name
       uncompress_shared_libraries = true
+      version_code = _version_code
+      version_name = _version_name
     }
   }
 
@@ -2126,13 +2137,9 @@ template("monochrome_public_bundle_tmpl") {
     manifest_package = manifest_package
     module_name = "TabUiMonochromePublic"
     base_module_target = ":$_base_module_target_name"
-    if (_is_trichrome) {
-      version_code = trichrome_version_code
-    } else {
-      version_code = monochrome_version_code
-    }
-    version_name = chrome_version_name
     uncompress_shared_libraries = true
+    version_code = _version_code
+    version_name = _version_name
   }
 
   android_app_bundle(target_name) {

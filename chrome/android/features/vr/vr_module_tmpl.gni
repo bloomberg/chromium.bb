@@ -12,6 +12,8 @@ assert(enable_vr)
 assert(modularize_vr)
 
 template("vr_module_tmpl") {
+  assert(defined(invoker.version_code))
+  assert(defined(invoker.version_name))
   assert(defined(invoker.manifest_package))
   assert(defined(invoker.module_name))
   assert(defined(invoker.base_module_target))
