@@ -52,6 +52,10 @@ class PLATFORM_EXPORT LocalCurrentGraphicsContext {
   IntRect inflated_dirty_rect_;
   GraphicsContextCanvas graphics_context_canvas_;
 
+  // Inflate an IntRect to account for any bleeding that would happen due to
+  // anti-aliasing.
+  IntRect InflateRectForAA(const IntRect&);
+
   DISALLOW_COPY_AND_ASSIGN(LocalCurrentGraphicsContext);
 };
 }

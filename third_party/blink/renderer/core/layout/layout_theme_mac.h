@@ -171,6 +171,90 @@ class LayoutThemeMac final : public LayoutTheme {
   static const int kSliderTrackWidth = 5;
   static const int kSliderTrackBorderWidth = 1;
 
+  LayoutUnit BaselinePositionAdjustment(const ComputedStyle&) const override;
+
+  FontDescription ControlFont(ControlPart,
+                              const FontDescription&,
+                              float zoom_factor) const override;
+
+  LengthSize GetControlSize(ControlPart,
+                            const FontDescription&,
+                            const LengthSize&,
+                            float zoom_factor) const override;
+  LengthSize MinimumControlSize(ControlPart,
+                                const FontDescription&,
+                                float zoom_factor) const override;
+
+  LengthBox ControlPadding(ControlPart,
+                           const FontDescription&,
+                           const Length& zoomed_box_top,
+                           const Length& zoomed_box_right,
+                           const Length& zoomed_box_bottom,
+                           const Length& zoomed_box_left,
+                           float zoom_factor) const override;
+  LengthBox ControlBorder(ControlPart,
+                          const FontDescription&,
+                          const LengthBox& zoomed_box,
+                          float zoom_factor) const override;
+
+  bool ControlRequiresPreWhiteSpace(ControlPart part) const override {
+    return part == kPushButtonPart;
+  }
+
+  // Add visual overflow (e.g., the check on an OS X checkbox). The rect passed
+  // in is in zoomed coordinates so the inflation should take that into account
+  // and make sure the inflation amount is also scaled by the zoomFactor.
+  void AddVisualOverflowHelper(ControlPart,
+                               ControlStates,
+                               float zoom_factor,
+                               IntRect& border_box) const;
+
+  // Adjust style as per platform selection.
+  void AdjustControlPartStyle(ComputedStyle&) override;
+
+  // Function for ThemePainter
+  static CORE_EXPORT IntRect InflateRect(const IntRect&,
+                                         const IntSize&,
+                                         const int* margins,
+                                         float zoom_level = 1.0f);
+
+  // Inflate an IntRect to account for its focus ring.
+  // TODO: Consider using computing the focus ring's bounds with
+  // -[NSCell focusRingMaskBoundsForFrame:inView:]).
+  static CORE_EXPORT IntRect InflateRectForFocusRing(const IntRect&);
+
+  static CORE_EXPORT LengthSize CheckboxSize(const FontDescription&,
+                                             const LengthSize& zoomed_size,
+                                             float zoom_factor);
+  static CORE_EXPORT NSButtonCell* Checkbox(ControlStates,
+                                            const IntRect& zoomed_rect,
+                                            float zoom_factor);
+  static CORE_EXPORT const IntSize* CheckboxSizes();
+  static CORE_EXPORT const int* CheckboxMargins(NSControlSize);
+  static CORE_EXPORT NSView* EnsuredView(const IntSize&);
+
+  static CORE_EXPORT const IntSize* RadioSizes();
+  static CORE_EXPORT const int* RadioMargins(NSControlSize);
+  static CORE_EXPORT LengthSize RadioSize(const FontDescription&,
+                                          const LengthSize& zoomed_size,
+                                          float zoom_factor);
+  static CORE_EXPORT NSButtonCell* Radio(ControlStates,
+                                         const IntRect& zoomed_rect,
+                                         float zoom_factor);
+
+  static CORE_EXPORT const IntSize* ButtonSizes();
+  static CORE_EXPORT const int* ButtonMargins(NSControlSize);
+  static CORE_EXPORT NSButtonCell* Button(ControlPart,
+                                          ControlStates,
+                                          const IntRect& zoomed_rect,
+                                          float zoom_factor);
+
+  static CORE_EXPORT NSControlSize
+  ControlSizeFromPixelSize(const IntSize* sizes,
+                           const IntSize& min_zoomed_size,
+                           float zoom_factor);
+  static CORE_EXPORT const IntSize* StepperSizes();
+
  protected:
   String ExtraFullscreenStyleSheet() override;
 

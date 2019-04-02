@@ -54,8 +54,7 @@ unsigned LayoutThemeDefault::inactive_selection_foreground_color_ = 0xff323232;
 
 TimeDelta LayoutThemeDefault::caret_blink_interval_;
 
-LayoutThemeDefault::LayoutThemeDefault()
-    : LayoutTheme(nullptr), painter_(*this) {
+LayoutThemeDefault::LayoutThemeDefault() : LayoutTheme(), painter_(*this) {
   caret_blink_interval_ = LayoutTheme::CaretBlinkInterval();
 }
 
