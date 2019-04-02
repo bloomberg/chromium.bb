@@ -207,12 +207,34 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
     ssl_data->next_proto = kProtoHTTP2;
   }
 
-  base::TimeDelta GetProxyConnectionTimeout() {
+  // Return the timeout for establishing the lower layer connection. i.e., for
+  // an HTTP proxy, the TCP connection timeout, and for an HTTPS proxy, the
+  // TCP+SSL connection timeout. In many cases, this will return the return
+  // value of the "AlternateNestedConnectionTimeout()".
+  base::TimeDelta GetNestedConnectionTimeout() {
+    base::TimeDelta normal_nested_connection_timeout =
+        TransportConnectJob::ConnectionTimeout();
+    if (GetParam() != HTTP)
+      normal_nested_connection_timeout +=
+          SSLConnectJob::HandshakeTimeoutForTesting();
+
     // Doesn't actually matter whether or not this is for a tunnel - the
     // connection timeout is the same, though it probably shouldn't be the same,
     // since tunnels need an extra round trip.
-    return HttpProxyConnectJob::ConnectionTimeout(
-        *CreateParams(true /* tunnel */), network_quality_estimator_.get());
+    base::TimeDelta alternate_connection_timeout =
+        HttpProxyConnectJob::AlternateNestedConnectionTimeout(
+            *CreateParams(true /* tunnel */), network_quality_estimator_.get());
+
+    // If there's an alternate connection timeout, and it's less than the
+    // standard TCP+SSL timeout (Which is also applied by the nested connect
+    // jobs), return the alternate connection timeout. Otherwise, return the
+    // normal timeout.
+    if (!alternate_connection_timeout.is_zero() &&
+        alternate_connection_timeout < normal_nested_connection_timeout) {
+      return alternate_connection_timeout;
+    }
+
+    return normal_nested_connection_timeout;
   }
 
  protected:
@@ -1283,12 +1305,8 @@ TEST_P(HttpProxyConnectJobTest, TestTimeoutsAuthChallenge) {
     EXPECT_TRUE(session_deps_.host_resolver->has_pending_requests());
     EXPECT_EQ(LOAD_STATE_RESOLVING_HOST, connect_job->GetLoadState());
 
-    // Run until just before timeout. The proxy timeout can be less than the
-    // connection timeout, as it can be set based on the
-    // NetworkQualityEstimator, which the connection timeout is not.
-    FastForwardBy(std::min(TransportConnectJob::ConnectionTimeout(),
-                           GetProxyConnectionTimeout()) -
-                  kTinyTime);
+    // Run until just before timeout.
+    FastForwardBy(GetNestedConnectionTimeout() - kTinyTime);
     EXPECT_FALSE(test_delegate.has_result());
 
     // Wait until timeout, if appropriate.
@@ -1326,7 +1344,7 @@ TEST_P(HttpProxyConnectJobTest, TestTimeoutsAuthChallenge) {
     EXPECT_FALSE(test_delegate.has_result());
 
     // ConnectJobs cannot timeout while showing an auth dialog.
-    FastForwardBy(base::TimeDelta::FromDays(1) + GetProxyConnectionTimeout());
+    FastForwardBy(base::TimeDelta::FromDays(1));
     EXPECT_FALSE(test_delegate.has_result());
 
     // Send credentials
@@ -1338,14 +1356,9 @@ TEST_P(HttpProxyConnectJobTest, TestTimeoutsAuthChallenge) {
     // When sending proxy auth on the same socket a challenge was just received
     // on, all subsequent proxy handshakes cannot timeout. However, H2 always
     // follows the establish new connection path, which means its second proxy
-    // handshake *can* timeout. Retrying with an already established H2 stream
-    // uses the entire proxy timeout for just establishing the tunnel, rather
-    // than the tunnel timeout.
-    //
-    // TODO(https://crbug.com/937137): This behavior seems strange. Should we do
-    // something about it?
+    // handshake *can* timeout.
     if (GetParam() == SPDY) {
-      FastForwardBy(GetProxyConnectionTimeout() - kTinyTime);
+      FastForwardBy(HttpProxyConnectJob::TunnelTimeoutForTesting() - kTinyTime);
       EXPECT_FALSE(test_delegate.has_result());
 
       if (timeout_phase == TimeoutPhase::SECOND_PROXY_HANDSHAKE) {
@@ -1357,7 +1370,7 @@ TEST_P(HttpProxyConnectJobTest, TestTimeoutsAuthChallenge) {
       }
     } else {
       // See above comment for explanation.
-      FastForwardBy(base::TimeDelta::FromDays(1) + GetProxyConnectionTimeout());
+      FastForwardBy(base::TimeDelta::FromDays(1));
       EXPECT_FALSE(test_delegate.has_result());
     }
 
@@ -1440,12 +1453,8 @@ TEST_P(HttpProxyConnectJobTest, TestTimeoutsAuthChallengeNewConnection) {
     EXPECT_TRUE(session_deps_.host_resolver->has_pending_requests());
     EXPECT_EQ(LOAD_STATE_RESOLVING_HOST, connect_job->GetLoadState());
 
-    // Run until just before timeout. The proxy timeout can be less than the
-    // connection timeout, as it can be set based on the
-    // NetworkQualityEstimator, which the connection timeout is not.
-    FastForwardBy(std::min(TransportConnectJob::ConnectionTimeout(),
-                           GetProxyConnectionTimeout()) -
-                  kTinyTime);
+    // Run until just before timeout.
+    FastForwardBy(GetNestedConnectionTimeout() - kTinyTime);
     EXPECT_FALSE(test_delegate.has_result());
 
     // Wait until timeout, if appropriate.
@@ -1484,7 +1493,7 @@ TEST_P(HttpProxyConnectJobTest, TestTimeoutsAuthChallengeNewConnection) {
     EXPECT_FALSE(test_delegate.has_result());
 
     // ConnectJobs cannot timeout while showing an auth dialog.
-    FastForwardBy(base::TimeDelta::FromDays(1) + GetProxyConnectionTimeout());
+    FastForwardBy(base::TimeDelta::FromDays(1));
     EXPECT_FALSE(test_delegate.has_result());
 
     // Send credentials
@@ -1500,12 +1509,8 @@ TEST_P(HttpProxyConnectJobTest, TestTimeoutsAuthChallengeNewConnection) {
     EXPECT_TRUE(session_deps_.host_resolver->has_pending_requests());
     EXPECT_EQ(LOAD_STATE_RESOLVING_HOST, connect_job->GetLoadState());
 
-    // Run until just before timeout. The proxy timeout can be less than the
-    // connection timeout, as it can be set based on the
-    // NetworkQualityEstimator, which the connection timeout is not.
-    FastForwardBy(std::min(TransportConnectJob::ConnectionTimeout(),
-                           GetProxyConnectionTimeout()) -
-                  kTinyTime);
+    // Run until just before timeout.
+    FastForwardBy(GetNestedConnectionTimeout() - kTinyTime);
     EXPECT_FALSE(test_delegate.has_result());
 
     // Wait until timeout, if appropriate.
@@ -1545,20 +1550,39 @@ TEST_P(HttpProxyConnectJobTest, TestTimeoutsAuthChallengeNewConnection) {
   }
 }
 
+TEST_P(HttpProxyConnectJobTest, ConnectionTimeoutNoNQE) {
+  // Doesn't actually matter whether or not this is for a tunnel - the
+  // connection timeout is the same, though it probably shouldn't be the same,
+  // since tunnels need an extra round trip.
+  base::TimeDelta alternate_connection_timeout =
+      HttpProxyConnectJob::AlternateNestedConnectionTimeout(
+          *CreateParams(true /* tunnel */),
+          nullptr /* network_quality_estimator */);
+
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  // On Android and iOS, when there's no NQE, there's a hard-coded alternate
+  // proxy timeout.
+  EXPECT_EQ(base::TimeDelta::FromSeconds(10), alternate_connection_timeout);
+#else
+  // On other platforms, there is not.
+  EXPECT_EQ(base::TimeDelta(), alternate_connection_timeout);
+#endif
+}
+
 TEST_P(HttpProxyConnectJobTest, ConnectionTimeoutMin) {
   // Set RTT estimate to a low value.
   base::TimeDelta rtt_estimate = base::TimeDelta::FromMilliseconds(1);
   network_quality_estimator_->SetStartTimeNullHttpRtt(rtt_estimate);
 
-  EXPECT_LE(base::TimeDelta(), GetProxyConnectionTimeout());
+  EXPECT_LE(base::TimeDelta(), GetNestedConnectionTimeout());
 
   // Test against a large value.
-  EXPECT_GE(base::TimeDelta::FromMinutes(10), GetProxyConnectionTimeout());
+  EXPECT_GE(base::TimeDelta::FromMinutes(10), GetNestedConnectionTimeout());
 
 #if (defined(OS_ANDROID) || defined(OS_IOS))
-  EXPECT_EQ(base::TimeDelta::FromSeconds(8), GetProxyConnectionTimeout());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(8), GetNestedConnectionTimeout());
 #else
-  EXPECT_EQ(base::TimeDelta::FromSeconds(30), GetProxyConnectionTimeout());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(30), GetNestedConnectionTimeout());
 #endif
 }
 
@@ -1567,15 +1591,15 @@ TEST_P(HttpProxyConnectJobTest, ConnectionTimeoutMax) {
   base::TimeDelta rtt_estimate = base::TimeDelta::FromSeconds(100);
   network_quality_estimator_->SetStartTimeNullHttpRtt(rtt_estimate);
 
-  EXPECT_LE(base::TimeDelta(), GetProxyConnectionTimeout());
+  EXPECT_LE(base::TimeDelta(), GetNestedConnectionTimeout());
 
   // Test against a large value.
-  EXPECT_GE(base::TimeDelta::FromMinutes(10), GetProxyConnectionTimeout());
+  EXPECT_GE(base::TimeDelta::FromMinutes(10), GetNestedConnectionTimeout());
 
 #if (defined(OS_ANDROID) || defined(OS_IOS))
-  EXPECT_EQ(base::TimeDelta::FromSeconds(30), GetProxyConnectionTimeout());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(30), GetNestedConnectionTimeout());
 #else
-  EXPECT_EQ(base::TimeDelta::FromSeconds(60), GetProxyConnectionTimeout());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(60), GetNestedConnectionTimeout());
 #endif
 }
 
@@ -1589,22 +1613,22 @@ TEST_P(HttpProxyConnectJobTest, ConnectionTimeoutWithExperiment) {
 
   InitAdaptiveTimeoutFieldTrialWithParams(false, kMultiplier, kMultiplier,
                                           kMinTimeout, kMaxTimeout);
-  EXPECT_LE(base::TimeDelta(), GetProxyConnectionTimeout());
+  EXPECT_LE(base::TimeDelta(), GetNestedConnectionTimeout());
 
   base::TimeDelta rtt_estimate = base::TimeDelta::FromSeconds(4);
   network_quality_estimator_->SetStartTimeNullHttpRtt(rtt_estimate);
   base::TimeDelta expected_connection_timeout = kMultiplier * rtt_estimate;
-  EXPECT_EQ(expected_connection_timeout, GetProxyConnectionTimeout());
+  EXPECT_EQ(expected_connection_timeout, GetNestedConnectionTimeout());
 
   // Connection timeout should not exceed kMaxTimeout.
   rtt_estimate = base::TimeDelta::FromSeconds(25);
   network_quality_estimator_->SetStartTimeNullHttpRtt(rtt_estimate);
-  EXPECT_EQ(kMaxTimeout, GetProxyConnectionTimeout());
+  EXPECT_EQ(kMaxTimeout, GetNestedConnectionTimeout());
 
   // Connection timeout should not be less than kMinTimeout.
   rtt_estimate = base::TimeDelta::FromSeconds(0);
   network_quality_estimator_->SetStartTimeNullHttpRtt(rtt_estimate);
-  EXPECT_EQ(kMinTimeout, GetProxyConnectionTimeout());
+  EXPECT_EQ(kMinTimeout, GetNestedConnectionTimeout());
 }
 
 // Tests the connection timeout values when the field trial parameters are
@@ -1617,26 +1641,26 @@ TEST_P(HttpProxyConnectJobTest, ConnectionTimeoutExperimentDifferentParams) {
 
   InitAdaptiveTimeoutFieldTrialWithParams(false, kMultiplier, kMultiplier,
                                           kMinTimeout, kMaxTimeout);
-  EXPECT_LE(base::TimeDelta(), GetProxyConnectionTimeout());
+  EXPECT_LE(base::TimeDelta(), GetNestedConnectionTimeout());
 
   base::TimeDelta rtt_estimate = base::TimeDelta::FromSeconds(2);
   network_quality_estimator_->SetStartTimeNullHttpRtt(rtt_estimate);
-  EXPECT_EQ(kMultiplier * rtt_estimate, GetProxyConnectionTimeout());
+  EXPECT_EQ(kMultiplier * rtt_estimate, GetNestedConnectionTimeout());
 
   // A change in RTT estimate should also change the connection timeout.
   rtt_estimate = base::TimeDelta::FromSeconds(7);
   network_quality_estimator_->SetStartTimeNullHttpRtt(rtt_estimate);
-  EXPECT_EQ(kMultiplier * rtt_estimate, GetProxyConnectionTimeout());
+  EXPECT_EQ(kMultiplier * rtt_estimate, GetNestedConnectionTimeout());
 
   // Connection timeout should not exceed kMaxTimeout.
   rtt_estimate = base::TimeDelta::FromSeconds(35);
   network_quality_estimator_->SetStartTimeNullHttpRtt(rtt_estimate);
-  EXPECT_EQ(kMaxTimeout, GetProxyConnectionTimeout());
+  EXPECT_EQ(kMaxTimeout, GetNestedConnectionTimeout());
 
   // Connection timeout should not be less than kMinTimeout.
   rtt_estimate = base::TimeDelta::FromSeconds(0);
   network_quality_estimator_->SetStartTimeNullHttpRtt(rtt_estimate);
-  EXPECT_EQ(kMinTimeout, GetProxyConnectionTimeout());
+  EXPECT_EQ(kMinTimeout, GetNestedConnectionTimeout());
 }
 
 TEST_P(HttpProxyConnectJobTest, ConnectionTimeoutWithConnectionProperty) {
@@ -1653,9 +1677,10 @@ TEST_P(HttpProxyConnectJobTest, ConnectionTimeoutWithConnectionProperty) {
   // By default, connection timeout should return the timeout for secure
   // proxies.
   if (GetParam() != HTTP) {
-    EXPECT_EQ(kSecureMultiplier * kRttEstimate, GetProxyConnectionTimeout());
+    EXPECT_EQ(kSecureMultiplier * kRttEstimate, GetNestedConnectionTimeout());
   } else {
-    EXPECT_EQ(kNonSecureMultiplier * kRttEstimate, GetProxyConnectionTimeout());
+    EXPECT_EQ(kNonSecureMultiplier * kRttEstimate,
+              GetNestedConnectionTimeout());
   }
 }
 
@@ -1664,30 +1689,30 @@ TEST_P(HttpProxyConnectJobTest, ConnectionTimeoutWithConnectionProperty) {
 TEST_P(HttpProxyConnectJobTest, ProxyPoolTimeoutWithExperimentDefaultParams) {
   InitAdaptiveTimeoutFieldTrialWithParams(true, 0, 0, base::TimeDelta(),
                                           base::TimeDelta());
-  EXPECT_LE(base::TimeDelta(), GetProxyConnectionTimeout());
+  EXPECT_LE(base::TimeDelta(), GetNestedConnectionTimeout());
 
   // Timeout should be |http_rtt_multiplier| times the HTTP RTT
   // estimate.
   base::TimeDelta rtt_estimate = base::TimeDelta::FromMilliseconds(10);
   network_quality_estimator_->SetStartTimeNullHttpRtt(rtt_estimate);
   // Connection timeout should not be less than the HTTP RTT estimate.
-  EXPECT_LE(rtt_estimate, GetProxyConnectionTimeout());
+  EXPECT_LE(rtt_estimate, GetNestedConnectionTimeout());
 
   // A change in RTT estimate should also change the connection timeout.
   rtt_estimate = base::TimeDelta::FromSeconds(10);
   network_quality_estimator_->SetStartTimeNullHttpRtt(rtt_estimate);
   // Connection timeout should not be less than the HTTP RTT estimate.
-  EXPECT_LE(rtt_estimate, GetProxyConnectionTimeout());
+  EXPECT_LE(rtt_estimate, GetNestedConnectionTimeout());
 
   // Set RTT to a very large value.
   rtt_estimate = base::TimeDelta::FromMinutes(60);
   network_quality_estimator_->SetStartTimeNullHttpRtt(rtt_estimate);
-  EXPECT_GT(rtt_estimate, GetProxyConnectionTimeout());
+  EXPECT_GT(rtt_estimate, GetNestedConnectionTimeout());
 
   // Set RTT to a very small value.
   rtt_estimate = base::TimeDelta::FromSeconds(0);
   network_quality_estimator_->SetStartTimeNullHttpRtt(rtt_estimate);
-  EXPECT_LT(rtt_estimate, GetProxyConnectionTimeout());
+  EXPECT_LT(rtt_estimate, GetNestedConnectionTimeout());
 }
 
 }  // namespace net

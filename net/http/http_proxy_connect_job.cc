@@ -260,44 +260,39 @@ void HttpProxyConnectJob::OnNeedsProxyAuth(
   NOTREACHED();
 }
 
-base::TimeDelta HttpProxyConnectJob::ConnectionTimeout(
+base::TimeDelta HttpProxyConnectJob::AlternateNestedConnectionTimeout(
     const HttpProxySocketParams& params,
     const NetworkQualityEstimator* network_quality_estimator) {
+  base::TimeDelta default_alternate_timeout;
+
+  // On Android and iOS, a default proxy connection timeout is used instead of
+  // the actual TCP/SSL timeouts of nested jobs.
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  default_alternate_timeout = kHttpProxyConnectJobTunnelTimeout;
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+
   bool is_https = params.ssl_params() != nullptr;
   // HTTP proxy connections can't be on top of proxy connections.
   DCHECK(!is_https ||
          params.ssl_params()->GetConnectionType() == SSLSocketParams::DIRECT);
 
-  if (network_quality_estimator) {
-    base::Optional<base::TimeDelta> http_rtt_estimate =
-        network_quality_estimator->GetHttpRTT();
-    if (http_rtt_estimate) {
-      int32_t multiplier =
-          is_https
-              ? GetProxyTimeoutExperiments()->ssl_http_rtt_multiplier()
-              : GetProxyTimeoutExperiments()->non_ssl_http_rtt_multiplier();
-      base::TimeDelta timeout = base::TimeDelta::FromMicroseconds(
-          multiplier * http_rtt_estimate.value().InMicroseconds());
-      // Ensure that connection timeout is between
-      // |min_proxy_connection_timeout_| and |max_proxy_connection_timeout_|.
-      return base::ClampToRange(
-          timeout, GetProxyTimeoutExperiments()->min_proxy_connection_timeout(),
-          GetProxyTimeoutExperiments()->max_proxy_connection_timeout());
-    }
-  }
+  if (!network_quality_estimator)
+    return default_alternate_timeout;
 
-  // Return the default proxy connection timeout.
-  base::TimeDelta nested_job_timeout;
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-  if (is_https) {
-    nested_job_timeout = SSLConnectJob::ConnectionTimeout(
-        *params.ssl_params(), network_quality_estimator);
-  } else {
-    nested_job_timeout = TransportConnectJob::ConnectionTimeout();
-  }
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+  base::Optional<base::TimeDelta> http_rtt_estimate =
+      network_quality_estimator->GetHttpRTT();
+  if (!http_rtt_estimate)
+    return default_alternate_timeout;
 
-  return nested_job_timeout + kHttpProxyConnectJobTunnelTimeout;
+  int32_t multiplier =
+      is_https ? GetProxyTimeoutExperiments()->ssl_http_rtt_multiplier()
+               : GetProxyTimeoutExperiments()->non_ssl_http_rtt_multiplier();
+  base::TimeDelta timeout = multiplier * http_rtt_estimate.value();
+  // Ensure that connection timeout is between
+  // |min_proxy_connection_timeout_| and |max_proxy_connection_timeout_|.
+  return base::ClampToRange(
+      timeout, GetProxyTimeoutExperiments()->min_proxy_connection_timeout(),
+      GetProxyTimeoutExperiments()->max_proxy_connection_timeout());
 }
 
 base::TimeDelta HttpProxyConnectJob::TunnelTimeoutForTesting() {
@@ -417,7 +412,8 @@ int HttpProxyConnectJob::DoLoop(int result) {
 
 int HttpProxyConnectJob::DoBeginConnect() {
   connect_start_time_ = base::TimeTicks::Now();
-  ResetTimer(ConnectionTimeout(*params_, network_quality_estimator()));
+  ResetTimer(
+      AlternateNestedConnectionTimeout(*params_, network_quality_estimator()));
   switch (GetProxyServerScheme()) {
     case ProxyServer::SCHEME_QUIC:
       next_state_ = STATE_QUIC_PROXY_CREATE_SESSION;
@@ -461,11 +457,6 @@ int HttpProxyConnectJob::DoTransportConnectComplete(int result) {
   }
 
   has_established_connection_ = true;
-
-  // Reset the timer to just the length of time allowed for HttpProxy handshake
-  // so that a fast TCP connection plus a slow HttpProxy failure doesn't take
-  // longer to timeout than it should.
-  ResetTimer(kHttpProxyConnectJobTunnelTimeout);
 
   next_state_ = STATE_HTTP_PROXY_CONNECT;
   return result;
@@ -556,6 +547,11 @@ int HttpProxyConnectJob::DoSSLConnectComplete(int result) {
 int HttpProxyConnectJob::DoHttpProxyConnect() {
   next_state_ = STATE_HTTP_PROXY_CONNECT_COMPLETE;
 
+  // Reset the timer to just the length of time allowed for HttpProxy handshake
+  // so that a fast TCP connection plus a slow HttpProxy failure doesn't take
+  // longer to timeout than it should.
+  ResetTimer(kHttpProxyConnectJobTunnelTimeout);
+
   if (params_->transport_params()) {
     UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpProxy.ConnectLatency.Insecure.Success",
                                base::TimeTicks::Now() - connect_start_time_);
@@ -595,6 +591,12 @@ int HttpProxyConnectJob::DoSpdyProxyCreateStream() {
   DCHECK(using_spdy_);
   DCHECK(params_->tunnel());
   DCHECK(params_->ssl_params());
+
+  // Reset the timer to just the length of time allowed for HttpProxy handshake
+  // so that a fast TCP connection plus a slow HttpProxy failure doesn't take
+  // longer to timeout than it should.
+  ResetTimer(kHttpProxyConnectJobTunnelTimeout);
+
   SpdySessionKey key(
       params_->ssl_params()->GetDirectConnectionParams()->destination(),
       ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
@@ -651,6 +653,11 @@ int HttpProxyConnectJob::DoQuicProxyCreateSession() {
   DCHECK(ssl_params);
   DCHECK(params_->tunnel());
   DCHECK(!common_connect_job_params()->quic_supported_versions->empty());
+
+  // Reset the timer to just the length of time allowed for HttpProxy handshake
+  // so that a fast TCP connection plus a slow HttpProxy failure doesn't take
+  // longer to timeout than it should.
+  ResetTimer(kHttpProxyConnectJobTunnelTimeout);
 
   next_state_ = STATE_QUIC_PROXY_CREATE_STREAM;
   const HostPortPair& proxy_server =
@@ -711,6 +718,8 @@ int HttpProxyConnectJob::DoQuicProxyCreateStreamComplete(int result) {
 int HttpProxyConnectJob::DoRestartWithAuth() {
   DCHECK(transport_socket_);
 
+  // TODO(mmenke): This should presumably restart the timeout timer using the
+  // handshake timeout.
   next_state_ = STATE_RESTART_WITH_AUTH_COMPLETE;
   return transport_socket_->RestartWithAuth(base::BindOnce(
       &HttpProxyConnectJob::OnIOComplete, base::Unretained(this)));
