@@ -156,25 +156,24 @@ void TextPaintTimingDetector::RecordText(
   if (records_manager_.HasRecorded(node_id))
     return;
 
-  uint64_t visual_size = 0;
   // Compared to object.FirstFragment().VisualRect(), this will include other
   // fragments of the object.
   LayoutRect visual_rect = object.FragmentsVisualRectBoundingBox();
-  if (!visual_rect.IsEmpty()) {
-    visual_size = frame_view_->GetPaintTimingDetector().CalculateVisualSize(
-        visual_rect, current_paint_chunk_properties);
-  }
+  if (visual_rect.IsEmpty())
+    return;
+
+  uint64_t visual_size =
+      frame_view_->GetPaintTimingDetector().CalculateVisualSize(
+          visual_rect, current_paint_chunk_properties);
   DVLOG(2) << "Node id (" << node_id << "): size=" << visual_size
            << ", type=" << object.DebugName();
 
   // When visual_size == 0, it either means the text size is 0 or the text is
   // out of viewport. In either case, we don't record their time for efficiency.
-  if (visual_size == 0) {
+  if (visual_size == 0)
     records_manager_.RecordInvisibleNode(node_id);
-  } else {
+  else
     records_manager_.RecordVisibleNode(node_id, visual_size, object);
-    records_manager_.QueueToMeasurePaintTime(node_id);
-  }
 
   if (records_manager_.HasTooManyNodes()) {
     TRACE_EVENT_INSTANT2("loading", "TextPaintTimingDetector::OverNodeLimit",
@@ -221,9 +220,8 @@ void TextRecordsManager::AssignPaintTimeToQueuedNodes(
   // that only one or zero callback will be called after one OnPaintFinished.
   DCHECK_GT(texts_queued_for_paint_time_.size(), 0UL);
   while (!texts_queued_for_paint_time_.empty()) {
-    DOMNodeId node_id = texts_queued_for_paint_time_.front();
-    DCHECK(visible_node_map_.Contains(node_id));
-    TextRecord* record = visible_node_map_.at(node_id);
+    base::WeakPtr<TextRecord>& record = texts_queued_for_paint_time_.front();
+    DCHECK(visible_node_map_.Contains(record->node_id));
     DCHECK_EQ(record->paint_time, base::TimeTicks());
     record->paint_time = timestamp;
 
@@ -235,8 +233,7 @@ void TextRecordsManager::AssignPaintTimeToQueuedNodes(
 void TextRecordsManager::MarkNodeReattachedIfNeeded(const DOMNodeId& node_id) {
   if (!detached_ids_.Contains(node_id))
     return;
-  DCHECK(visible_node_map_.Contains(node_id) ||
-         invisible_node_ids_.Contains(node_id));
+  DCHECK(visible_node_map_.Contains(node_id));
   detached_ids_.erase(node_id);
   is_result_invalidated_ = true;
 }
@@ -269,13 +266,15 @@ void TextRecordsManager::RecordVisibleNode(const DOMNodeId& node_id,
   }
   record->text = text;
 #endif
-  size_ordered_set_.insert(record->AsWeakPtr());
+  size_ordered_set_.emplace(record->AsWeakPtr());
+  QueueToMeasurePaintTime(record->AsWeakPtr());
   visible_node_map_.insert(node_id, std::move(record));
   is_result_invalidated_ = true;
 }
 
-void TextRecordsManager::QueueToMeasurePaintTime(const DOMNodeId& node_id) {
-  texts_queued_for_paint_time_.push(node_id);
+void TextRecordsManager::QueueToMeasurePaintTime(
+    base::WeakPtr<TextRecord> record) {
+  texts_queued_for_paint_time_.emplace(record);
 }
 
 bool TextRecordsManager::HasTooManyNodes() const {

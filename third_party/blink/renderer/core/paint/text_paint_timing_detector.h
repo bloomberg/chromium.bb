@@ -59,7 +59,6 @@ class TextRecordsManager {
   bool NeedMeausuringPaintTime() const {
     return !texts_queued_for_paint_time_.empty();
   }
-  void QueueToMeasurePaintTime(const DOMNodeId&);
   void AssignPaintTimeToQueuedNodes(const base::TimeTicks&);
 
   bool HasTooManyNodes() const;
@@ -73,6 +72,7 @@ class TextRecordsManager {
   }
 
  private:
+  void QueueToMeasurePaintTime(base::WeakPtr<TextRecord>);
   // This is used to cache the largest text paint result for better efficiency.
   // The result will be invalidated whenever any change is done to the variables
   // used in |FindLargestPaintCandidate|.
@@ -84,7 +84,7 @@ class TextRecordsManager {
   // the largest node efficiently. Note that the entries in |size_ordered_set_|
   // and |visible_node_map_| should always be added/deleted together.
   TextRecordSet size_ordered_set_;
-  std::queue<DOMNodeId> texts_queued_for_paint_time_;
+  std::queue<base::WeakPtr<TextRecord>> texts_queued_for_paint_time_;
   TextRecord* cached_largest_paint_candidate_;
 
   DISALLOW_COPY_AND_ASSIGN(TextRecordsManager);
