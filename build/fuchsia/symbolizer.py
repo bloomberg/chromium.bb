@@ -32,7 +32,10 @@ def SymbolizerFilter(input_fd, build_ids_file):
       stdin=input_fd,
       close_fds=True)
 
-  for line in symbolizer_proc.stdout:
+  while True:
+    line = symbolizer_proc.stdout.readline()
+    if not line:
+      break
     yield line
 
   symbolizer_proc.wait()
