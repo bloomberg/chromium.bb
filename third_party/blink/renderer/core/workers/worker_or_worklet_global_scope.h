@@ -42,12 +42,14 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   using SecurityContext::GetSecurityOrigin;
   using SecurityContext::GetContentSecurityPolicy;
 
-  WorkerOrWorkletGlobalScope(v8::Isolate*,
-                             const String& name,
-                             V8CacheOptions,
-                             WorkerClients*,
-                             scoped_refptr<WebWorkerFetchContext>,
-                             WorkerReportingProxy&);
+  WorkerOrWorkletGlobalScope(
+      v8::Isolate*,
+      const String& name,
+      const base::UnguessableToken& parent_devtools_token,
+      V8CacheOptions,
+      WorkerClients*,
+      scoped_refptr<WebWorkerFetchContext>,
+      WorkerReportingProxy&);
   ~WorkerOrWorkletGlobalScope() override;
 
   // EventTarget
@@ -113,6 +115,9 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
       const FetchClientSettingsObject&);
 
   const String Name() const { return name_; }
+  const base::UnguessableToken& GetParentDevToolsToken() {
+    return parent_devtools_token_;
+  }
 
   WorkerClients* Clients() const { return worker_clients_.Get(); }
 
@@ -155,6 +160,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   bool web_fetch_context_initialized_ = false;
 
   const String name_;
+  const base::UnguessableToken parent_devtools_token_;
 
   CrossThreadPersistent<WorkerClients> worker_clients_;
 
