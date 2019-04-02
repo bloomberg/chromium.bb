@@ -545,12 +545,23 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
       board (str): Board name.
     """
     prefixes = []
+    # The preference of picking the binhost file for a board is in the same
+    # order of prefixes, so it's critical to make sure
+    # <board>-POSTSUBMIT_BINHOST.conf is at the top of |prefixes| list.
+    if board:
+      prefixes = [board]
+      # 'eve-kvm' is very close to 'eve' (see crbug.com/947238).
+      # TODO: remove this once 'eve-kvm' is merged back to 'eve'.
+      if board == 'eve-kvm':
+        prefixes.append('eve')
+      # Add reference board if applicable.
+      if '_' in board:
+        prefixes.append(board.split('_')[0])
+
+    # Add base architecture board.
     arch = self.GetStandardField(STANDARD_FIELD_ARCH)
     if arch in _ARCH_MAPPING:
       prefixes.append(_ARCH_MAPPING[arch])
-
-    if board:
-      prefixes = [board, board.split('_')[0]] + prefixes
 
     filenames = ['%s-POSTSUBMIT_BINHOST.conf' % p for p in prefixes]
 
