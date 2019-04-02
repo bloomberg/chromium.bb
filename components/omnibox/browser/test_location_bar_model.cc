@@ -65,11 +65,6 @@ base::string16 TestLocationBarModel::GetSecureAccessibilityText() const {
   return base::string16();
 }
 
-base::string16 TestLocationBarModel::GetEVCertName() const {
-  return (security_level_ == security_state::EV_SECURE) ? ev_cert_name_
-                                                        : base::string16();
-}
-
 bool TestLocationBarModel::ShouldDisplayURL() const {
   return should_display_url_;
 }

@@ -70,10 +70,6 @@ class LocationBarModel {
   // Returns text describing the security state for accessibility.
   virtual base::string16 GetSecureAccessibilityText() const = 0;
 
-  // Returns the name of the EV cert holder.  This returns an empty string if
-  // the security level is not EV_SECURE.
-  virtual base::string16 GetEVCertName() const = 0;
-
   // Returns whether the URL for the current navigation entry should be
   // in the location bar.
   virtual bool ShouldDisplayURL() const = 0;

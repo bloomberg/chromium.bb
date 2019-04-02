@@ -37,7 +37,6 @@ class LocationBarModelImpl : public LocationBarModel {
   const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetSecureDisplayText() const override;
   base::string16 GetSecureAccessibilityText() const override;
-  base::string16 GetEVCertName() const override;
   bool ShouldDisplayURL() const override;
   bool IsOfflinePage() const override;
 
