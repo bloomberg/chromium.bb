@@ -3019,7 +3019,6 @@ crbug.com/626703 [ Mac10.12 ] external/wpt/websockets/Secure-Close-server-initia
 crbug.com/626703 [ Mac10.12 ] external/wpt/websockets/constructor/018.html?wss [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/websockets/Secure-Send-binary-arraybufferview-uint8-offset.any.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/websockets/constructor/010.html?wss [ Timeout ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-block-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-lists/list-item-definition.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-contain/contain-content-011.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-contain/contain-strict-011.html [ Failure ]

@@ -130,10 +130,11 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
       const LayoutBox& child) const;
   LayoutUnit CrossAxisExtent() const;
   LayoutUnit MainAxisContentExtent(LayoutUnit content_logical_height);
-  LayoutUnit ComputeMainAxisExtentForChild(const LayoutBox& child,
-                                           SizeType,
-                                           const Length& size,
-                                           LayoutUnit border_and_padding) const;
+  LayoutUnit ComputeMainAxisExtentForChild(
+      const LayoutBox& child,
+      SizeType,
+      const Length& size,
+      LayoutUnit border_scrollbar_padding) const;
 
   LayoutUnit ContentInsetBottom() const;
   LayoutUnit ContentInsetRight() const;
@@ -152,7 +153,7 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   void SetFlowAwareLocationForChild(LayoutBox& child, const LayoutPoint&);
   LayoutUnit ComputeInnerFlexBaseSizeForChild(
       LayoutBox& child,
-      LayoutUnit main_axis_border_and_padding,
+      LayoutUnit main_axis_border_scrollbar_padding,
       ChildLayoutType = kLayoutIfNeeded);
   void AdjustAlignmentForChild(LayoutBox& child, LayoutUnit);
   bool MainAxisLengthIsDefinite(const LayoutBox& child,
@@ -176,9 +177,10 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
 
   LayoutUnit ComputeChildMarginValue(const Length& margin);
   void PrepareOrderIteratorAndMargins();
-  MinMaxSize ComputeMinAndMaxSizesForChild(const FlexLayoutAlgorithm& algorithm,
-                                           const LayoutBox& child,
-                                           LayoutUnit border_and_padding) const;
+  MinMaxSize ComputeMinAndMaxSizesForChild(
+      const FlexLayoutAlgorithm& algorithm,
+      const LayoutBox& child,
+      LayoutUnit border_scrollbar_padding) const;
   LayoutUnit AdjustChildSizeForAspectRatioCrossAxisMinAndMax(
       const LayoutBox& child,
       LayoutUnit child_size) const;
