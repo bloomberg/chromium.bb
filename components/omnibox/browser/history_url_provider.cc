@@ -582,7 +582,7 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
     params_ = params.release();  // This object will be destroyed in
                                  // QueryComplete() once we're done with it.
     history_service->ScheduleAutocomplete(
-        base::Bind(&HistoryURLProvider::ExecuteWithDB, this, params_));
+        base::BindRepeating(&HistoryURLProvider::ExecuteWithDB, this, params_));
   }
 }
 

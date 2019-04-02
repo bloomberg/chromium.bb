@@ -172,9 +172,9 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
       return;
     }
 
-    ts->GetMostVisitedURLs(
-        base::Bind(&ZeroSuggestProvider::OnMostVisitedUrlsAvailable,
-                   weak_ptr_factory_.GetWeakPtr(), most_visited_request_num_));
+    ts->GetMostVisitedURLs(base::BindRepeating(
+        &ZeroSuggestProvider::OnMostVisitedUrlsAvailable,
+        weak_ptr_factory_.GetWeakPtr(), most_visited_request_num_));
     return;
   }
 

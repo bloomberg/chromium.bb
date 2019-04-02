@@ -396,8 +396,8 @@ void AutocompleteProviderTest::ResetControllerWithTestProviders(
   provider1->set_listener(controller_.get());
   provider2->set_listener(controller_.get());
 
-  client_->set_closure(base::Bind(&AutocompleteProviderTest::CopyResults,
-                                  base::Unretained(this)));
+  client_->set_closure(base::BindRepeating(
+      &AutocompleteProviderTest::CopyResults, base::Unretained(this)));
 
   if (provider1_ptr)
     *provider1_ptr = provider1;

@@ -77,8 +77,8 @@ void OmniboxController::OnResultChanged(bool default_match_changed) {
   // passed in to eliminate the potential for crashes on shutdown.
   client_->OnResultChanged(
       result(), default_match_changed,
-      base::Bind(&OmniboxController::SetRichSuggestionBitmap,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&OmniboxController::SetRichSuggestionBitmap,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void OmniboxController::InvalidateCurrentMatch() {
