@@ -205,8 +205,6 @@ class MediaNotificationViewTest : public AshTestBase {
         request_id_.ToString());
   }
 
-  bool is_expanded() const { return view_->expanded_; }
-
   const base::UnguessableToken& request_id() const { return request_id_; }
 
   const gfx::ImageSkia& GetArtworkImage() const {
@@ -216,6 +214,12 @@ class MediaNotificationViewTest : public AshTestBase {
   const gfx::ImageSkia& GetAppIcon() const {
     return view_->header_row_->app_icon_for_testing();
   }
+
+  bool expand_button_enabled() const {
+    return header_row()->expand_button()->visible();
+  }
+
+  bool IsActuallyExpanded() const { return view_->IsActuallyExpanded(); }
 
   void SimulateButtonClick(MediaSessionAction action) {
     views::Button* button = GetButtonForAction(action);
@@ -483,6 +487,8 @@ TEST_F(MediaNotificationViewTest, PlayToggle_FromObserver_PlaybackState) {
 }
 
 TEST_F(MediaNotificationViewTest, MetadataIsDisplayed) {
+  EnableAllActions();
+
   EXPECT_TRUE(title_artist_row()->visible());
   EXPECT_TRUE(title_label()->visible());
   EXPECT_TRUE(artist_label()->visible());
@@ -494,6 +500,8 @@ TEST_F(MediaNotificationViewTest, MetadataIsDisplayed) {
 }
 
 TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver) {
+  EnableAllActions();
+
   media_session::MediaMetadata metadata;
   metadata.title = base::ASCIIToUTF16("title2");
   metadata.artist = base::ASCIIToUTF16("artist2");
@@ -543,7 +551,7 @@ TEST_F(MediaNotificationViewTest, Buttons_WhenCollapsed) {
 
   view()->SetExpanded(false);
 
-  EXPECT_FALSE(is_expanded());
+  EXPECT_FALSE(IsActuallyExpanded());
 
   EXPECT_TRUE(IsActionButtonVisible(MediaSessionAction::kPlay));
   EXPECT_TRUE(IsActionButtonVisible(MediaSessionAction::kPreviousTrack));
@@ -569,7 +577,7 @@ TEST_F(MediaNotificationViewTest, Buttons_WhenExpanded) {
 
   view()->SetExpanded(true);
 
-  EXPECT_TRUE(is_expanded());
+  EXPECT_TRUE(IsActuallyExpanded());
 
   EXPECT_TRUE(IsActionButtonVisible(MediaSessionAction::kPlay));
   EXPECT_TRUE(IsActionButtonVisible(MediaSessionAction::kPreviousTrack));
@@ -579,7 +587,9 @@ TEST_F(MediaNotificationViewTest, Buttons_WhenExpanded) {
 }
 
 TEST_F(MediaNotificationViewTest, ClickHeader_ToggleExpand) {
-  EXPECT_TRUE(is_expanded());
+  EnableAllActions();
+
+  EXPECT_TRUE(IsActuallyExpanded());
 
   {
     gfx::Point cursor_location(1, 1);
@@ -588,7 +598,7 @@ TEST_F(MediaNotificationViewTest, ClickHeader_ToggleExpand) {
     GetEventGenerator()->ClickLeftButton();
   }
 
-  EXPECT_FALSE(is_expanded());
+  EXPECT_FALSE(IsActuallyExpanded());
 
   {
     gfx::Point cursor_location(1, 1);
@@ -597,7 +607,7 @@ TEST_F(MediaNotificationViewTest, ClickHeader_ToggleExpand) {
     GetEventGenerator()->ClickLeftButton();
   }
 
-  EXPECT_TRUE(is_expanded());
+  EXPECT_TRUE(IsActuallyExpanded());
 }
 
 TEST_F(MediaNotificationViewTest, ActionButtonsHiddenByDefault) {
@@ -678,6 +688,92 @@ TEST_F(MediaNotificationViewTest, UpdateIconFromItem) {
 
   EXPECT_EQ(message_center::kSmallImageSizeMD, GetAppIcon().width());
   EXPECT_EQ(message_center::kSmallImageSizeMD, GetAppIcon().height());
+}
+
+TEST_F(MediaNotificationViewTest, ExpandableDefaultState) {
+  EXPECT_FALSE(IsActuallyExpanded());
+  EXPECT_FALSE(expand_button_enabled());
+}
+
+TEST_F(MediaNotificationViewTest, ExpandablePlayPauseActionCountsOnce) {
+  EXPECT_FALSE(IsActuallyExpanded());
+  EXPECT_FALSE(expand_button_enabled());
+
+  EnableAction(MediaSessionAction::kPreviousTrack);
+  EnableAction(MediaSessionAction::kNextTrack);
+  EnableAction(MediaSessionAction::kPlay);
+  EnableAction(MediaSessionAction::kPause);
+
+  EXPECT_FALSE(IsActuallyExpanded());
+  EXPECT_FALSE(expand_button_enabled());
+
+  media_session::mojom::MediaSessionInfoPtr session_info(
+      media_session::mojom::MediaSessionInfo::New());
+  session_info->playback_state =
+      media_session::mojom::MediaPlaybackState::kPlaying;
+  view()->UpdateWithMediaSessionInfo(session_info);
+
+  EXPECT_FALSE(IsActuallyExpanded());
+  EXPECT_FALSE(expand_button_enabled());
+
+  EnableAction(MediaSessionAction::kSeekForward);
+
+  EXPECT_TRUE(IsActuallyExpanded());
+  EXPECT_TRUE(expand_button_enabled());
+}
+
+TEST_F(MediaNotificationViewTest, BecomeExpandableAndWasNotExpandable) {
+  EXPECT_FALSE(IsActuallyExpanded());
+  EXPECT_FALSE(expand_button_enabled());
+
+  EnableAllActions();
+
+  EXPECT_TRUE(IsActuallyExpanded());
+  EXPECT_TRUE(expand_button_enabled());
+}
+
+TEST_F(MediaNotificationViewTest, BecomeExpandableButWasAlreadyExpandable) {
+  EXPECT_FALSE(IsActuallyExpanded());
+  EXPECT_FALSE(expand_button_enabled());
+
+  EnableAllActions();
+
+  EXPECT_TRUE(IsActuallyExpanded());
+  EXPECT_TRUE(expand_button_enabled());
+
+  DisableAction(MediaSessionAction::kSeekForward);
+
+  EXPECT_TRUE(IsActuallyExpanded());
+  EXPECT_TRUE(expand_button_enabled());
+}
+
+TEST_F(MediaNotificationViewTest, BecomeNotExpandableAndWasExpandable) {
+  EXPECT_FALSE(IsActuallyExpanded());
+  EXPECT_FALSE(expand_button_enabled());
+
+  EnableAllActions();
+
+  EXPECT_TRUE(IsActuallyExpanded());
+  EXPECT_TRUE(expand_button_enabled());
+
+  DisableAction(MediaSessionAction::kPreviousTrack);
+  DisableAction(MediaSessionAction::kNextTrack);
+  DisableAction(MediaSessionAction::kSeekBackward);
+  DisableAction(MediaSessionAction::kSeekForward);
+
+  EXPECT_FALSE(IsActuallyExpanded());
+  EXPECT_FALSE(expand_button_enabled());
+}
+
+TEST_F(MediaNotificationViewTest,
+       BecomeNotExpandableButWasAlreadyNotExpandable) {
+  EXPECT_FALSE(IsActuallyExpanded());
+  EXPECT_FALSE(expand_button_enabled());
+
+  EnableAction(MediaSessionAction::kSeekForward);
+
+  EXPECT_FALSE(IsActuallyExpanded());
+  EXPECT_FALSE(expand_button_enabled());
 }
 
 }  // namespace ash

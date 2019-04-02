@@ -82,13 +82,16 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
   void CreateMediaButton(const gfx::VectorIcon& icon,
                          media_session::mojom::MediaSessionAction action);
 
-  bool IsActionButtonVisible(
-      media_session::mojom::MediaSessionAction action) const;
-
   void UpdateActionButtonsVisibility();
   void UpdateViewForExpandedState();
 
   MediaNotificationBackground* GetMediaNotificationBackground();
+
+  bool IsExpandable() const;
+  bool IsActuallyExpanded() const;
+
+  std::set<media_session::mojom::MediaSessionAction> CalculateVisibleActions(
+      bool expanded) const;
 
   // View containing close and settings buttons.
   std::unique_ptr<message_center::NotificationControlButtonsView>
