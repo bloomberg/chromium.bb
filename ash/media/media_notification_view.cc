@@ -35,6 +35,10 @@ constexpr int kRightMarginSize = message_center::kNotificationWidth / 5;
 // notification is expanded.
 constexpr int kRightMarginExpandedSize = message_center::kNotificationWidth / 4;
 
+// The number of actions supported when the notification is expanded or not.
+constexpr size_t kMediaNotificationActionsCount = 3;
+constexpr size_t kMediaNotificationExpandedActionsCount = 5;
+
 // Dimensions.
 constexpr int kDefaultMarginSize = 8;
 constexpr int kMediaButtonIconSize = 28;
@@ -48,16 +52,18 @@ constexpr int kMediaNotificationHeaderTopInset = 6;
 constexpr int kMediaNotificationHeaderRightInset = 6;
 constexpr int kMediaNotificationHeaderInset = 0;
 
+// The action buttons in order of preference. If there is not enough space to
+// show all the action buttons then this is used to determine which will be
+// shown.
+constexpr MediaSessionAction kMediaNotificationPreferredActions[] = {
+    MediaSessionAction::kPlay,          MediaSessionAction::kPause,
+    MediaSessionAction::kPreviousTrack, MediaSessionAction::kNextTrack,
+    MediaSessionAction::kSeekBackward,  MediaSessionAction::kSeekForward,
+};
+
 SkColor GetMediaNotificationColor(const views::View& view) {
   return views::style::GetColor(view, views::style::CONTEXT_LABEL,
                                 views::style::STYLE_PRIMARY);
-}
-
-bool ShouldShowActionWhenCollapsed(MediaSessionAction action) {
-  return action == MediaSessionAction::kPlay ||
-         action == MediaSessionAction::kPause ||
-         action == MediaSessionAction::kNextTrack ||
-         action == MediaSessionAction::kPreviousTrack;
 }
 
 }  // namespace
@@ -76,7 +82,6 @@ MediaNotificationView::MediaNotificationView(
   // |header_row_| contains app_icon, app_name, control buttons, etc.
   header_row_ = new message_center::NotificationHeaderView(
       control_buttons_view_.get(), this);
-  header_row_->SetExpandButtonEnabled(true);
   header_row_->SetAppName(
       message_center::MessageCenter::Get()->GetSystemNotificationAppName());
   header_row_->ClearAppIcon();
@@ -243,7 +248,8 @@ void MediaNotificationView::UpdateWithMediaSessionInfo(
   MediaSessionAction action =
       playing ? MediaSessionAction::kPause : MediaSessionAction::kPlay;
   play_pause_button_->set_tag(static_cast<int>(action));
-  play_pause_button_->SetVisible(IsActionButtonVisible(action));
+
+  UpdateActionButtonsVisibility();
 
   PreferredSizeChanged();
   Layout();
@@ -268,7 +274,9 @@ void MediaNotificationView::UpdateWithMediaMetadata(
 void MediaNotificationView::UpdateWithMediaActions(
     const std::set<media_session::mojom::MediaSessionAction>& actions) {
   enabled_actions_ = actions;
-  UpdateActionButtonsVisibility();
+
+  header_row_->SetExpandButtonEnabled(IsExpandable());
+  UpdateViewForExpandedState();
 
   PreferredSizeChanged();
   Layout();
@@ -305,35 +313,27 @@ void MediaNotificationView::UpdateControlButtonsVisibilityWithNotification(
   UpdateControlButtonsVisibility();
 }
 
-bool MediaNotificationView::IsActionButtonVisible(
-    MediaSessionAction action) const {
-  // Not all media sessions support the same actions.
-  bool visible = base::ContainsKey(enabled_actions_, action);
-
-  // We should reduce the number of action buttons we show when we are
-  // collapsed.
-  // TODO(beccahughes): Use priority based ranking here
-  if (!expanded_ && visible)
-    visible = ShouldShowActionWhenCollapsed(action);
-
-  return visible;
-}
-
 void MediaNotificationView::UpdateActionButtonsVisibility() {
+  std::set<MediaSessionAction> visible_actions =
+      CalculateVisibleActions(IsActuallyExpanded());
+
   for (int i = 0; i < button_row_->child_count(); ++i) {
     views::Button* action_button =
         views::Button::AsButton(button_row_->child_at(i));
 
-    action_button->SetVisible(IsActionButtonVisible(
+    action_button->SetVisible(base::ContainsKey(
+        visible_actions,
         static_cast<MediaSessionAction>(action_button->tag())));
   }
 }
 
 void MediaNotificationView::UpdateViewForExpandedState() {
+  bool expanded = IsActuallyExpanded();
+
   // Adjust the layout of the |main_row_| based on the expanded state. If the
   // notification is expanded then the buttons should be below the title/artist
   // information. If it is collapsed then the buttons will be to the right.
-  if (expanded_) {
+  if (expanded) {
     main_row_
         ->SetLayoutManager(std::make_unique<views::BoxLayout>(
             views::BoxLayout::kVertical,
@@ -355,9 +355,9 @@ void MediaNotificationView::UpdateViewForExpandedState() {
   main_row_->Layout();
 
   GetMediaNotificationBackground()->UpdateArtworkMaxWidthPct(
-      expanded_ ? kMediaImageMaxWidthExpandedPct : kMediaImageMaxWidthPct);
+      expanded ? kMediaImageMaxWidthExpandedPct : kMediaImageMaxWidthPct);
 
-  header_row_->SetExpanded(expanded_);
+  header_row_->SetExpanded(expanded);
 
   UpdateActionButtonsVisibility();
 }
@@ -375,6 +375,43 @@ void MediaNotificationView::CreateMediaButton(const gfx::VectorIcon& icon,
 MediaNotificationBackground*
 MediaNotificationView::GetMediaNotificationBackground() {
   return static_cast<MediaNotificationBackground*>(background());
+}
+
+bool MediaNotificationView::IsExpandable() const {
+  // If we can show more notifications if we were expanded then we should be
+  // expandable.
+  return CalculateVisibleActions(true).size() > kMediaNotificationActionsCount;
+}
+
+bool MediaNotificationView::IsActuallyExpanded() const {
+  return expanded_ && IsExpandable();
+}
+
+std::set<MediaSessionAction> MediaNotificationView::CalculateVisibleActions(
+    bool expanded) const {
+  size_t max_actions = expanded ? kMediaNotificationExpandedActionsCount
+                                : kMediaNotificationActionsCount;
+  std::set<MediaSessionAction> visible_actions;
+
+  for (auto& action : kMediaNotificationPreferredActions) {
+    if (visible_actions.size() >= max_actions)
+      break;
+
+    // If the action is play or pause then we should only make it visible if the
+    // current play pause button has that action.
+    if ((action == MediaSessionAction::kPlay ||
+         action == MediaSessionAction::kPause) &&
+        static_cast<MediaSessionAction>(play_pause_button_->tag()) != action) {
+      continue;
+    }
+
+    if (!base::ContainsKey(enabled_actions_, action))
+      continue;
+
+    visible_actions.insert(action);
+  }
+
+  return visible_actions;
 }
 
 }  // namespace ash
