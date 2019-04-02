@@ -46,7 +46,7 @@ from blinkpy.common import read_checksum_from_png
 from blinkpy.common.memoized import memoized
 from blinkpy.common.path_finder import PathFinder
 from blinkpy.common.system.path import abspath_to_uri
-from blinkpy.w3c.wpt_manifest import WPTManifest
+from blinkpy.w3c.wpt_manifest import WPTManifest, MANIFEST_NAME
 from blinkpy.web_tests.layout_package.bot_test_expectations import BotTestExpectationsFactory
 from blinkpy.web_tests.models.test_configuration import TestConfiguration
 from blinkpy.web_tests.models.test_expectations import TestExpectationParser
@@ -101,6 +101,15 @@ WPT_FINGERPRINT = 'Nxvaj3+bY3oVrTc+Jp7m3E3sB1n3lXtnMDCyBsqEXiY='
 SXG_FINGERPRINT = '55qC1nKu2A88ESbFmk5sTPQS/ScG+8DD7P+2bgFA9iM='
 # And one for external/wpt/signed-exchange/resources/127.0.0.1.sxg.pem
 SXG_WPT_FINGERPRINT = '0Rt4mT6SJXojEMHTnKnlJ/hBKMBcI4kteBlhR1eTTdk='
+
+# The following two constants must match. When adding a new WPT root, also
+# remember to add an alias rule to third_party/wpt/wpt.config.json.
+WPT_DIRS = ['external/wpt']
+# WPT_REGEX captures: 1. the root directory of WPT relative to web_tests
+# (without a trailing slash), 2. the path of the test within WPT (without a
+# leading slash).
+WPT_REGEX = re.compile(r'^(?:virtual/[^/]+/)?(external/wpt)/(.*)$')
+
 
 class Port(object):
     """Abstract class for Port-specific hooks for the web_test package."""
@@ -401,7 +410,6 @@ class Port(object):
                 return True
             except OSError as e:
                 _log.error('httpd launch error: ' + repr(e))
-                pass
         _log.error('No httpd found. Cannot run http tests.')
         return False
 
@@ -688,15 +696,13 @@ class Port(object):
             return reftest_list
 
         # Try to extract information from MANIFEST.json.
-        match = re.match(r'virtual/[^/]+/', test_name)
-        if match:
-            test_name = test_name[match.end(0):]
-        match = re.match(r'external/wpt/(.*)', test_name)
+        match = WPT_REGEX.match(test_name)
         if not match:
             return []
-        path_in_wpt = match.group(1)
-        for expectation, ref_path_in_wpt in self._wpt_manifest().extract_reference_list(path_in_wpt):
-            ref_absolute_path = self._filesystem.join(self.web_tests_dir(), 'external/wpt' + ref_path_in_wpt)
+        wpt_path = match.group(1)
+        path_in_wpt = match.group(2)
+        for expectation, ref_path_in_wpt in self._wpt_manifest(wpt_path).extract_reference_list(path_in_wpt):
+            ref_absolute_path = self._filesystem.join(self.web_tests_dir(), wpt_path + ref_path_in_wpt)
             reftest_list.append((expectation, ref_absolute_path))
         return reftest_list
 
@@ -718,26 +724,29 @@ class Port(object):
         suites = self.virtual_test_suites()
         if paths:
             tests.extend(self._virtual_tests_matching_paths(paths, suites))
-            if any('external' in path for path in paths):
+            if (any(wpt_path in path for wpt_path in WPT_DIRS for path in paths)
+                    # TODO(robertma): Remove this special case when external/wpt is moved to wpt.
+                    or any('external' in path for path in paths)):
                 tests.extend(self._wpt_test_urls_matching_paths(paths))
         else:
             tests.extend(self._all_virtual_tests(suites))
-            tests.extend(['external/wpt' + test for test in self._wpt_manifest().all_urls()])
+            tests.extend([wpt_path + test for wpt_path in WPT_DIRS
+                          for test in self._wpt_manifest(wpt_path).all_urls()])
 
         return tests
 
     def real_tests(self, paths):
+        """Find all real tests in paths except WPT."""
         # When collecting test cases, skip these directories.
-        skipped_directories = set([
-            'platform', 'resources', 'support', 'script-tests',
-            'reference', 'reftest', 'external'
-        ])
-        is_non_wpt_real_test_file = lambda fs, dirname, filename: (
-            self.is_test_file(fs, dirname, filename)
-            and not re.search(r'[/\\]external[/\\]wpt([/\\].*)?$', dirname)
-        )
+        skipped_directories = set(
+            ['platform', 'resources', 'support', 'script-tests',
+             'reference', 'reftest']
+            # Also ignore all WPT directories. Note that this is only an
+            # optimization; is_non_wpt_test_file should skip WPT regardless.
+            + WPT_DIRS)
         files = find_files.find(self._filesystem, self.web_tests_dir(), paths, skipped_directories,
-                                is_non_wpt_real_test_file, self.test_key)
+                                lambda _, dirname, filename: self.is_non_wpt_test_file(dirname, filename),
+                                self.test_key)
         return [self.relative_test_filename(f) for f in files]
 
     @staticmethod
@@ -759,56 +768,44 @@ class Port(object):
         '.htm', '.php', '.svg', '.mht', '.pdf',
     ])
 
-    @staticmethod
-    def _has_supported_extension(filesystem, filename):
+    def _has_supported_extension(self, filename):
         """Returns True if filename is one of the file extensions we want to run a test on."""
-        extension = filesystem.splitext(filename)[1]
-        return extension in Port.supported_file_extensions
+        extension = self._filesystem.splitext(filename)[1]
+        return extension in self.supported_file_extensions
 
-    def is_test_file(self, filesystem, dirname, filename):
-        match = re.search(r'[/\\]external[/\\]wpt([/\\].*)?$', dirname)
-        if match:
-            if match.group(1):
-                path_in_wpt = match.group(1)[1:].replace('\\', '/') + '/' + filename
-            else:
-                path_in_wpt = filename
-            return self._wpt_manifest().is_test_file(path_in_wpt)
-        extension = filesystem.splitext(filename)[1]
+    def is_non_wpt_test_file(self, dirname, filename):
+        # Convert dirname to a relative path to web_tests with slashes
+        # normalized and ensure it has a trailing slash.
+        normalized_test_dir = self.relative_test_filename(dirname) + self.TEST_PATH_SEPARATOR
+        if any([normalized_test_dir.startswith(d + self.TEST_PATH_SEPARATOR) for d in WPT_DIRS]):
+            return False
+        extension = self._filesystem.splitext(filename)[1]
         if 'inspector-protocol' in dirname and extension == '.js':
             return True
         if 'devtools' in dirname and extension == '.js':
             return True
-        return Port._has_supported_extension(
-            filesystem, filename) and not Port.is_reference_html_file(filesystem, dirname, filename)
-
-    def _convert_wpt_file_path_to_url_paths(self, file_path):
-        tests = []
-        # Path separators are normalized by relative_test_filename().
-        match = re.search(r'external/wpt/(.*)$', file_path)
-        if not match:
-            return [file_path]
-        urls = self._wpt_manifest().file_path_to_url_paths(match.group(1))
-        for url in urls:
-            tests.append(file_path[0:match.start(1)] + url)
-        return tests
+        return (self._has_supported_extension(filename) and
+                not Port.is_reference_html_file(self._filesystem, dirname, filename))
 
     @memoized
-    def _wpt_manifest(self):
-        manifest_path = self._filesystem.join(self.web_tests_dir(), 'external', 'wpt', 'MANIFEST.json')
+    def _wpt_manifest(self, path):
+        assert path in WPT_DIRS
+        # Convert '/' to the platform-specific separator.
+        path = self._filesystem.normpath(path)
+        manifest_path = self._filesystem.join(self.web_tests_dir(), path, MANIFEST_NAME)
         if not self._filesystem.exists(manifest_path):
             _log.error('Manifest not found at %s. Remove the --no-manifest-update argument to generate it.', manifest_path)
             return WPTManifest('{}')
         return WPTManifest(self._filesystem.read_text_file(manifest_path))
 
     def is_slow_wpt_test(self, test_file):
-        match = re.match(r'virtual/[^/]+/', test_file)
-        if match:
-            test_file = test_file[match.end(0):]
-        # WPTManifest.is_slow_test() takes a WPT URL with the leading slash.
-        match = re.match(r'external/wpt(.*)', test_file)
+        match = WPT_REGEX.match(test_file)
         if not match:
             return False
-        return self._wpt_manifest().is_slow_test(match.group(1))
+        wpt_path = match.group(1)
+        path_in_wpt = match.group(2)
+        # WPTManifest.is_slow_test() takes a WPT URL with the leading slash.
+        return self._wpt_manifest(wpt_path).is_slow_test('/' + path_in_wpt)
 
     def test_key(self, test_name):
         """Turns a test name into a pair of sublists: the natural sort key of the
@@ -1180,7 +1177,7 @@ class Port(object):
     @staticmethod
     def is_wpt_test(test):
         """Whether a test is considered a web-platform-tests test."""
-        return re.match(r'(virtual/[^/]+/)?external/wpt/', test)
+        return WPT_REGEX.match(test)
 
     @staticmethod
     def should_use_wptserve(test):
@@ -1617,39 +1614,49 @@ class Port(object):
         return '*' in path
 
     def _wpt_test_urls_matching_paths(self, paths):
-        tests = []
+        # This is to make sure "external[\\/]?" can also match to external/wpt.
+        # TODO(robertma): Remove this special case when external/wpt is moved to wpt.
+        paths = [self._filesystem.join(path, 'wpt') if path.rstrip('\\/').endswith('external')
+                 else path for path in paths]
         # '/' is used throughout this function instead of filesystem.sep as the WPT manifest always
         # uses '/' for paths (it is not OS dependent).
         if self._filesystem.sep != '/':
             paths = [path.replace(self._filesystem.sep, '/') for path in paths]
 
-        for test_url_path in self._wpt_manifest().all_urls():
+        tests = []
+        for wpt_path in WPT_DIRS:
+            tests += self._wpt_test_urls(wpt_path, paths)
+        return tests
+
+    def _wpt_test_urls(self, wpt_path, paths):
+        tests = []
+        for test_url_path in self._wpt_manifest(wpt_path).all_urls():
             if test_url_path[0] == '/':
                 test_url_path = test_url_path[1:]
 
-            full_test_url_path = 'external/wpt/' + test_url_path
+            full_test_url_path = wpt_path + '/' + test_url_path
 
             for path in paths:
-                if 'external' not in path:
+                if not path.startswith(wpt_path):
                     continue
 
-                wpt_path = path.replace('external/wpt/', '')
+                # Also remove the slash after wpt_path, if any.
+                path_in_wpt = path[len(wpt_path) + 1:]
 
-                # When `test_url_path` is test.any.html or test.any.worker.html and path is test.any.js
+                # When `test_url_path` is test.any.html etc., and `path_in_wpt` is test.any.js:
                 matches_any_js_test = (
-                    self._wpt_manifest().is_test_file(wpt_path)
-                    and test_url_path.startswith(re.sub(r'\.js$', '', wpt_path))
+                    self._wpt_manifest(wpt_path).is_test_file(path_in_wpt)
+                    and test_url_path.startswith(re.sub(r'\.js$', '', path_in_wpt))
                 )
 
-                # Get a list of directories for both paths, filter empty strings
+                # For all other path matches within WPT:
+                # Get a list of directories for both paths, filter empty strings.
                 full_test_url_directories = filter(None, full_test_url_path.split('/'))
                 path_directories = filter(None, path.split('/'))
+                test_is_in_path = path_directories == full_test_url_directories[0:len(path_directories)]
 
-                # For all other path matches within WPT
-                if matches_any_js_test or path_directories == full_test_url_directories[0:len(path_directories)]:
-                    wpt_file_paths = self._convert_wpt_file_path_to_url_paths(test_url_path)
-                    tests.extend('external/wpt/' + wpt_file_path for wpt_file_path in wpt_file_paths)
-
+                if matches_any_js_test or test_is_in_path:
+                    tests.append(full_test_url_path)
         return tests
 
     def _populate_virtual_suite(self, suite):

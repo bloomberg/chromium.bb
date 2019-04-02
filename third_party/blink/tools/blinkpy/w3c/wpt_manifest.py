@@ -7,6 +7,12 @@
 The MANIFEST.json file contains metadata about files in web-platform-tests,
 such as what tests exist, and extra information about each test, including
 test type, options, URLs to use, and reference file paths if applicable.
+
+Naming conventions:
+* A (file) path is a relative file system path from the root of WPT. It does not
+  have a leading slash or a query string.
+* A (test) URL is the path (with an optional query string) to the test on
+  wptserve. It always has a leading slash.
 """
 
 import json
@@ -17,13 +23,15 @@ from blinkpy.common.path_finder import PathFinder
 
 _log = logging.getLogger(__file__)
 
-
+# The default filename of manifest expected by `wpt`.
+MANIFEST_NAME = 'MANIFEST.json'
 # The filename used for the base manifest includes the version as a
 # workaround for trouble landing huge changes to the base manifest when
 # the version changes. See https://crbug.com/876717.
 BASE_MANIFEST_NAME = 'WPT_BASE_MANIFEST_5.json'
 
 # TODO(robertma): Use the official wpt.manifest module.
+
 
 class WPTManifest(object):
     """A simple abstraction of WPT MANIFEST.json.
@@ -53,8 +61,6 @@ class WPTManifest(object):
         [[reference_url1, "=="], [reference_url2, "!="], ...]
     """
 
-
-
     def __init__(self, json_content):
         self.raw_dict = json.loads(json_content)
         self.test_types = ('manual', 'reftest', 'testharness')
@@ -63,9 +69,8 @@ class WPTManifest(object):
         """Finds manifest items for the given WPT path.
 
         Args:
-            path_in_wpt: A file path relative to the root of WPT. Note that this
-                is different from a WPT URL; a file path does not have a leading
-                slash or a query string.
+            path_in_wpt: A file path relative to the root of WPT without a
+                leading slash or a query string.
 
         Returns:
             A list of manifest items, or None if not found.
@@ -124,23 +129,14 @@ class WPTManifest(object):
         return frozenset(self.all_url_items().keys())
 
     def is_test_file(self, path_in_wpt):
+        """Checks if path_in_wpt is a test file according to the manifest."""
         return self._items_for_file_path(path_in_wpt) is not None
 
     def is_test_url(self, url):
-        """Checks if url is a valid test in the manifest.
-
-        The url must be the WPT test name with a leading slash (/).
-        """
+        """Checks if url is a valid test in the manifest."""
         if url[0] != '/':
             raise Exception('Test url missing leading /: %s' % url)
         return url in self.all_urls()
-
-    def file_path_to_url_paths(self, path_in_wpt):
-        manifest_items = self._items_for_file_path(path_in_wpt)
-        assert manifest_items is not None
-        # Remove the leading slashes when returning.
-        return [self._get_url_from_item(item)[1:]
-                for item in manifest_items if self._is_not_jsshell(item)]
 
     def is_slow_test(self, url):
         """Checks if a WPT is slow (long timeout) according to the manifest.
@@ -178,25 +174,33 @@ class WPTManifest(object):
         return reftest_list
 
     @staticmethod
-    def ensure_manifest(host):
-        """Updates the MANIFEST.json file, or generates if it does not exist."""
+    def ensure_manifest(host, path=None):
+        """Updates the MANIFEST.json file, or generates if it does not exist.
+
+        Args:
+            path: The path to a WPT root (relative to web_tests, optional).
+        """
+        if path is None:
+            path = host.filesystem.join('external', 'wpt')
         finder = PathFinder(host.filesystem)
-        manifest_path = finder.path_from_web_tests('external', 'wpt', 'MANIFEST.json')
-        base_manifest_path = finder.path_from_web_tests('external', BASE_MANIFEST_NAME)
+        wpt_path = finder.path_from_web_tests(path)
+        manifest_path = host.filesystem.join(wpt_path, MANIFEST_NAME)
 
-        if not host.filesystem.exists(base_manifest_path):
-            _log.error('Manifest base not found at "%s".', base_manifest_path)
-            host.filesystem.write_text_file(base_manifest_path, '{}')
+        # TODO(crbug.com/853815): perhaps also cache the manifest for wpt_internal.
+        if 'external' in path:
+            base_manifest_path = finder.path_from_web_tests('external', BASE_MANIFEST_NAME)
+            if not host.filesystem.exists(base_manifest_path):
+                _log.error('Manifest base not found at "%s".', base_manifest_path)
+                host.filesystem.write_text_file(base_manifest_path, '{}')
 
-        # Unconditionally replace MANIFEST.json with the base manifest even if
-        # the former exists, to avoid regenerating the manifest from scratch
-        # when the manifest version changes. Remove the destination first as
-        # copyfile will fail if the two files are hardlinked or symlinked.
-        if host.filesystem.exists(manifest_path):
-            host.filesystem.remove(manifest_path)
-        host.filesystem.copyfile(base_manifest_path, manifest_path)
+            # Unconditionally replace MANIFEST.json with the base manifest even if
+            # the former exists, to avoid regenerating the manifest from scratch
+            # when the manifest version changes. Remove the destination first as
+            # copyfile will fail if the two files are hardlinked or symlinked.
+            if host.filesystem.exists(manifest_path):
+                host.filesystem.remove(manifest_path)
+            host.filesystem.copyfile(base_manifest_path, manifest_path)
 
-        wpt_path = finder.path_from_web_tests('external', 'wpt')
         WPTManifest.generate_manifest(host, wpt_path)
 
         _log.debug('Manifest generation completed.')
