@@ -149,8 +149,15 @@ class CORE_EXPORT ScrollingCoordinator final
                                           const PaintLayer* parent);
   void UpdateClipParentForGraphicsLayer(GraphicsLayer* child,
                                         const PaintLayer* parent);
-  Region ComputeShouldHandleScrollGestureOnMainThreadRegion(
-      const LocalFrame*) const;
+
+  // Computes the NonFastScrollableRegions for the given local root frame. It
+  // outputs a separate region for areas that scroll with the viewport and
+  // those that are fixed to it since these regions will need to go on separate
+  // layers.
+  void ComputeShouldHandleScrollGestureOnMainThreadRegion(
+      const LocalFrame*,
+      Region* scrolling_region,
+      Region* fixed_region) const;
 
   void UpdateTouchEventTargetRectsIfNeeded(LocalFrame*);
 
@@ -191,7 +198,7 @@ class CORE_EXPORT ScrollingCoordinator final
       MainThreadScrollingReasons);
 
   void SetShouldHandleScrollGestureOnMainThreadRegion(const Region&,
-                                                      LocalFrameView*);
+                                                      GraphicsLayer*);
 
   void AddScrollbarLayerGroup(ScrollableArea*,
                               ScrollbarOrientation,
