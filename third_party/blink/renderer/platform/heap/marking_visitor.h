@@ -80,10 +80,6 @@ class PLATFORM_EXPORT MarkingVisitor : public Visitor {
                desc.callback);
   }
 
-  void VisitWithWrappers(void*, TraceDescriptor) final {
-    // Ignore as the object is also passed to Visit(void*, TraceDescriptor).
-  }
-
   void VisitWeak(void* object,
                  void** object_slot,
                  TraceDescriptor desc,
