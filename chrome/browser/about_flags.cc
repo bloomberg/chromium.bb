@@ -2527,6 +2527,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"crostini-usb-support", flag_descriptions::kCrostiniUsbSupportName,
      flag_descriptions::kCrostiniUsbSupportDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniUsbSupport)},
+    {"file-manager-feedback-panel",
+     flag_descriptions::kFileManagerFeedbackPanelName,
+     flag_descriptions::kFileManagerFeedbackPanelDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kEnableFileManagerFeedbackPanel)},
 #endif  // OS_CHROMEOS
 
 #if defined(OS_WIN)

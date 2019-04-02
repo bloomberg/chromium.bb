@@ -49,6 +49,9 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
                        Profile::FromBrowserContext(browser_context())));
   dict->SetBoolean("DRIVE_FS_ENABLED",
                    base::FeatureList::IsEnabled(chromeos::features::kDriveFs));
+  dict->SetBoolean("FEEDBACK_PANEL_ENABLED",
+                   base::FeatureList::IsEnabled(
+                       chromeos::features::kEnableFileManagerFeedbackPanel));
   dict->SetBoolean(
       "MY_FILES_VOLUME_ENABLED",
       base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume));

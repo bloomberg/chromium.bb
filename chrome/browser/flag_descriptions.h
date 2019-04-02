@@ -1937,6 +1937,9 @@ extern const char kExperimentalAccessibilityChromeVoxRichTextIndicationName[];
 extern const char
     kExperimentalAccessibilityChromeVoxRichTextIndicationDescription[];
 
+extern const char kFileManagerFeedbackPanelDescription[];
+extern const char kFileManagerFeedbackPanelName[];
+
 extern const char kFileManagerTouchModeName[];
 extern const char kFileManagerTouchModeDescription[];
 
