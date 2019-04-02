@@ -153,7 +153,7 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
   virtual HitTestCanvasResult* GetControlAndIdIfHitRegionExists(
       const LayoutPoint& location) {
     NOTREACHED();
-    return HitTestCanvasResult::Create(String(), nullptr);
+    return MakeGarbageCollected<HitTestCanvasResult>(String(), nullptr);
   }
   virtual String GetIdFromControl(const Element* element) { return String(); }
   virtual void ResetUsageTracking() {}

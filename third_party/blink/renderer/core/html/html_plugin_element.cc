@@ -365,7 +365,7 @@ LayoutObject* HTMLPlugInElement::CreateLayoutObject(const ComputedStyle& style,
 
   if (IsImageType()) {
     LayoutImage* image = new LayoutImage(this);
-    image->SetImageResource(LayoutImageResource::Create());
+    image->SetImageResource(MakeGarbageCollected<LayoutImageResource>());
     return image;
   }
 

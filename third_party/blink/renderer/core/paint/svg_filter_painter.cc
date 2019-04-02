@@ -109,7 +109,7 @@ GraphicsContext* SVGFilterPainter::PrepareEffect(
       Intersection(filter->FilterRegion(), object.StrokeBoundingBox()));
   filter->GetSourceGraphic()->SetSourceRect(source_region);
 
-  FilterData* filter_data = FilterData::Create();
+  auto* filter_data = MakeGarbageCollected<FilterData>();
   filter_data->last_effect = filter->LastEffect();
   filter_data->node_map = node_map;
   DCHECK_EQ(filter_data->state_, FilterData::kInitial);

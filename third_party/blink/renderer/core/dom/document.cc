@@ -6709,9 +6709,10 @@ IntersectionObserverController* Document::GetIntersectionObserverController() {
 
 IntersectionObserverController&
 Document::EnsureIntersectionObserverController() {
-  if (!intersection_observer_controller_)
+  if (!intersection_observer_controller_) {
     intersection_observer_controller_ =
-        IntersectionObserverController::Create(this);
+        MakeGarbageCollected<IntersectionObserverController>(this);
+  }
   return *intersection_observer_controller_;
 }
 
@@ -7230,7 +7231,7 @@ float Document::DevicePixelRatio() const {
 
 TextAutosizer* Document::GetTextAutosizer() {
   if (!text_autosizer_)
-    text_autosizer_ = TextAutosizer::Create(this);
+    text_autosizer_ = MakeGarbageCollected<TextAutosizer>(this);
   return text_autosizer_.Get();
 }
 

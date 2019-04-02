@@ -661,7 +661,7 @@ bool CanvasRenderingContext2D::ParseColorOrCurrentColor(
 HitTestCanvasResult* CanvasRenderingContext2D::GetControlAndIdIfHitRegionExists(
     const LayoutPoint& location) {
   if (HitRegionsCount() <= 0)
-    return HitTestCanvasResult::Create(String(), nullptr);
+    return MakeGarbageCollected<HitTestCanvasResult>(String(), nullptr);
 
   LayoutBox* box = canvas()->GetLayoutBox();
   FloatPoint local_pos =
@@ -680,12 +680,12 @@ HitTestCanvasResult* CanvasRenderingContext2D::GetControlAndIdIfHitRegionExists(
   if (hit_region) {
     Element* control = hit_region->Control();
     if (control && canvas()->IsSupportedInteractiveCanvasFallback(*control)) {
-      return HitTestCanvasResult::Create(hit_region->Id(),
-                                         hit_region->Control());
+      return MakeGarbageCollected<HitTestCanvasResult>(hit_region->Id(),
+                                                       hit_region->Control());
     }
-    return HitTestCanvasResult::Create(hit_region->Id(), nullptr);
+    return MakeGarbageCollected<HitTestCanvasResult>(hit_region->Id(), nullptr);
   }
-  return HitTestCanvasResult::Create(String(), nullptr);
+  return MakeGarbageCollected<HitTestCanvasResult>(String(), nullptr);
 }
 
 String CanvasRenderingContext2D::GetIdFromControl(const Element* element) {

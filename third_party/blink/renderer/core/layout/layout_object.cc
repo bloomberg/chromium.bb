@@ -227,11 +227,12 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
     image->SetStyleInternal(const_cast<ComputedStyle*>(&style));
     if (const StyleImage* style_image =
             To<ImageContentData>(content_data)->GetImage()) {
-      image->SetImageResource(LayoutImageResourceStyleImage::Create(
-          const_cast<StyleImage*>(style_image)));
+      image->SetImageResource(
+          MakeGarbageCollected<LayoutImageResourceStyleImage>(
+              const_cast<StyleImage*>(style_image)));
       image->SetIsGeneratedContent();
     } else {
-      image->SetImageResource(LayoutImageResource::Create());
+      image->SetImageResource(MakeGarbageCollected<LayoutImageResource>());
     }
     image->SetStyleInternal(nullptr);
     return image;
