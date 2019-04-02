@@ -85,8 +85,17 @@ class ChannelMac : public Channel,
       return;
     }
 
+    // If the channel is not fully established, queue pending messages.
     if (!handshake_done_) {
       pending_messages_.push_back(std::move(message));
+      return;
+    }
+
+    // If messages are being queued, enqueue |message| and try to flush
+    // the queue.
+    if (send_buffer_contains_message_ || !pending_messages_.empty()) {
+      pending_messages_.push_back(std::move(message));
+      SendPendingMessagesLocked();
       return;
     }
 
@@ -284,14 +293,40 @@ class ChannelMac : public Channel,
     return true;
   }
 
+  void SendPendingMessages() {
+    base::AutoLock lock(write_lock_);
+    SendPendingMessagesLocked();
+  }
+
   void SendPendingMessagesLocked() {
+    // If a previous send failed due to the receiver's kernel message queue
+    // being full, attempt to send that failed message first.
+    if (send_buffer_contains_message_ && !reject_writes_) {
+      auto* header =
+          reinterpret_cast<mach_msg_header_t*>(send_buffer_.address());
+      if (!MachMessageSendLocked(header)) {
+        // The send failed again. If the peer is still unable to receive,
+        // MachMessageSendLocked() will have arranged another attempt. If an
+        // error occurred, the channel will be shut down.
+        return;
+      }
+    }
+
+    // Try and send any other pending messages that were queued.
     while (!pending_messages_.empty() && !reject_writes_) {
-      SendMessageLocked(std::move(pending_messages_.front()));
+      bool did_send = SendMessageLocked(std::move(pending_messages_.front()));
+      // If the message failed to send because the kernel message queue is
+      // full, the message will have been fully serialized and
+      // |send_buffer_contains_message_| will be set to true. The Mojo message
+      // object can be destroyed at this point.
       pending_messages_.pop_front();
+      if (!did_send)
+        break;
     }
   }
 
-  void SendMessageLocked(MessagePtr message) {
+  bool SendMessageLocked(MessagePtr message) {
+    DCHECK(!send_buffer_contains_message_);
     base::BufferIterator<char> buffer(
         reinterpret_cast<char*>(send_buffer_.address()), send_buffer_.size());
 
@@ -351,7 +386,7 @@ class ChannelMac : public Channel,
           if (kr != KERN_SUCCESS) {
             MACH_LOG(ERROR, kr) << "fileport_makeport";
             OnWriteErrorLocked(Error::kDisconnected);
-            return;
+            return false;
           }
           descriptor->disposition = MACH_MSG_TYPE_MOVE_SEND;
           break;
@@ -381,15 +416,35 @@ class ChannelMac : public Channel,
     }
 
     header->msgh_size = round_msg(buffer.position());
+    return MachMessageSendLocked(header);
+  }
 
-    kern_return_t kr =
-        mach_msg(header, MACH_SEND_MSG, header->msgh_size, 0, MACH_PORT_NULL,
-                 MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
+  bool MachMessageSendLocked(mach_msg_header_t* header) {
+    kern_return_t kr = mach_msg(header, MACH_SEND_MSG | MACH_SEND_TIMEOUT,
+                                header->msgh_size, 0, MACH_PORT_NULL,
+                                /*timeout=*/0, MACH_PORT_NULL);
     if (kr != KERN_SUCCESS) {
-      MACH_LOG_IF(ERROR, kr != MACH_SEND_INVALID_DEST, kr) << "mach_msg send";
-      mach_msg_destroy(header);
-      OnWriteErrorLocked(Error::kDisconnected);
+      if (kr == MACH_SEND_TIMED_OUT) {
+        // The kernel message queue for the peer's receive port is full, so the
+        // send timed out. Since the send buffer contains a fully serialized
+        // message, set a flag to indicate this condition and arrange to try
+        // sending it again.
+        send_buffer_contains_message_ = true;
+        io_task_runner_->PostTask(
+            FROM_HERE, base::BindOnce(&ChannelMac::SendPendingMessages, this));
+      } else {
+        // If the message failed to send for other reasons, destroy it and
+        // close the channel.
+        MACH_LOG_IF(ERROR, kr != MACH_SEND_INVALID_DEST, kr) << "mach_msg send";
+        send_buffer_contains_message_ = false;
+        mach_msg_destroy(header);
+        OnWriteErrorLocked(Error::kDisconnected);
+      }
+      return false;
     }
+
+    send_buffer_contains_message_ = false;
+    return true;
   }
 
   // base::MessageLoopCurrent::DestructionObserver:
@@ -616,8 +671,13 @@ class ChannelMac : public Channel,
   bool reject_writes_ = false;
   // IO buffer for sending Mach messages.
   base::mac::ScopedMachVM send_buffer_;
-  // When |handshake_done_| is false, messages are queued here. Once the
-  // handshake is complete, this queue is flushed and remains empty.
+  // If a message timed out during send in MachMessageSendLocked(), this will
+  // be true to indicate that |send_buffer_| contains a message that must
+  // be sent. If this is true, then other calls to Write() queue messages onto
+  // |pending_messages_|.
+  bool send_buffer_contains_message_ = false;
+  // When |handshake_done_| is false or |send_buffer_contains_message_| is true,
+  // calls to Write() will enqueue messages here.
   base::circular_deque<MessagePtr> pending_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelMac);
