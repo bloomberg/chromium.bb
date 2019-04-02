@@ -39,6 +39,9 @@ constexpr uint32_t kMagicChunkIndex =
 // signal by the service.
 constexpr int kMaxEventsBeforeIncrementalStateReset = 1000;
 
+// Replacement string for names of events with TRACE_EVENT_FLAG_COPY.
+const char* const kPrivacyFiltered = "PRIVACY_FILTERED";
+
 base::ThreadTicks ThreadNow() {
   return base::ThreadTicks::IsSupported()
              ? base::subtle::ThreadTicksNowIgnoringOverride()
@@ -51,36 +54,7 @@ const char* kTaskExecutionEventNames[3] = {"ThreadControllerImpl::RunTask",
                                            "ThreadController::Task",
                                            "TaskScheduler_RunTask"};
 
-}  // namespace
-
-// static
-constexpr size_t TrackEventThreadLocalEventSink::kMaxCompleteEventDepth;
-
-TrackEventThreadLocalEventSink::TrackEventThreadLocalEventSink(
-    std::unique_ptr<perfetto::StartupTraceWriter> trace_writer,
-    uint32_t session_id,
-    bool disable_interning)
-    : ThreadLocalEventSink(std::move(trace_writer),
-                           session_id,
-                           disable_interning),
-      // TODO(eseckler): Tune these values experimentally.
-      interned_event_categories_(1000),
-      interned_event_names_(1000, 100),
-      interned_annotation_names_(1000, 100),
-      interned_source_locations_(1000),
-      process_id_(TraceLog::GetInstance()->process_id()),
-      thread_id_(static_cast<int>(base::PlatformThread::CurrentId())) {}
-
-TrackEventThreadLocalEventSink::~TrackEventThreadLocalEventSink() {}
-
-// TODO(eseckler): Trigger this upon a signal from the perfetto, once perfetto
-// supports this.
-void TrackEventThreadLocalEventSink::ResetIncrementalState() {
-  reset_incremental_state_ = true;
-  events_since_last_incremental_state_reset_ = 0;
-}
-
-void TrackEventThreadLocalEventSink::AddConvertableToTraceFormat(
+void AddConvertableToTraceFormat(
     base::trace_event::ConvertableToTraceFormat* value,
     perfetto::protos::pbzero::DebugAnnotation* annotation) {
   PerfettoProtoAppender proto_appender(annotation);
@@ -90,6 +64,84 @@ void TrackEventThreadLocalEventSink::AddConvertableToTraceFormat(
 
   std::string json = value->ToString();
   annotation->set_legacy_json_value(json.c_str());
+}
+
+void WriteDebugAnnotations(
+    base::trace_event::TraceEvent* trace_event,
+    TrackEvent* track_event,
+    InterningIndexEntry** current_packet_interning_entries) {
+  for (size_t i = 0; i < trace_event->arg_size() && trace_event->arg_name(i);
+       ++i) {
+    auto type = trace_event->arg_type(i);
+    auto* annotation = track_event->add_debug_annotations();
+
+    annotation->set_name_iid(current_packet_interning_entries[i]->id);
+
+    if (type == TRACE_VALUE_TYPE_CONVERTABLE) {
+      AddConvertableToTraceFormat(trace_event->arg_convertible_value(i),
+                                  annotation);
+      continue;
+    }
+
+    auto& value = trace_event->arg_value(i);
+    switch (type) {
+      case TRACE_VALUE_TYPE_BOOL:
+        annotation->set_bool_value(value.as_bool);
+        break;
+      case TRACE_VALUE_TYPE_UINT:
+        annotation->set_uint_value(value.as_uint);
+        break;
+      case TRACE_VALUE_TYPE_INT:
+        annotation->set_int_value(value.as_int);
+        break;
+      case TRACE_VALUE_TYPE_DOUBLE:
+        annotation->set_double_value(value.as_double);
+        break;
+      case TRACE_VALUE_TYPE_POINTER:
+        annotation->set_pointer_value(static_cast<uint64_t>(
+            reinterpret_cast<uintptr_t>(value.as_pointer)));
+        break;
+      case TRACE_VALUE_TYPE_STRING:
+      case TRACE_VALUE_TYPE_COPY_STRING:
+        annotation->set_string_value(value.as_string ? value.as_string
+                                                     : "NULL");
+        break;
+      default:
+        NOTREACHED() << "Don't know how to serialize this value";
+        break;
+    }
+  }
+}
+
+}  // namespace
+
+// static
+constexpr size_t TrackEventThreadLocalEventSink::kMaxCompleteEventDepth;
+
+TrackEventThreadLocalEventSink::TrackEventThreadLocalEventSink(
+    std::unique_ptr<perfetto::StartupTraceWriter> trace_writer,
+    uint32_t session_id,
+    bool disable_interning,
+    bool proto_writer_filtering_enabled)
+    : ThreadLocalEventSink(std::move(trace_writer),
+                           session_id,
+                           disable_interning),
+      // TODO(eseckler): Tune these values experimentally.
+      interned_event_categories_(1000),
+      interned_event_names_(1000, 100),
+      interned_annotation_names_(1000, 100),
+      interned_source_locations_(1000),
+      process_id_(TraceLog::GetInstance()->process_id()),
+      thread_id_(static_cast<int>(base::PlatformThread::CurrentId())),
+      privacy_filtering_enabled_(proto_writer_filtering_enabled) {}
+
+TrackEventThreadLocalEventSink::~TrackEventThreadLocalEventSink() {}
+
+// TODO(eseckler): Trigger this upon a signal from the perfetto, once perfetto
+// supports this.
+void TrackEventThreadLocalEventSink::ResetIncrementalState() {
+  reset_incremental_state_ = true;
+  events_since_last_incremental_state_reset_ = 0;
 }
 
 void TrackEventThreadLocalEventSink::AddTraceEvent(
@@ -172,12 +224,16 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
   InterningIndexEntry* interned_source_location = nullptr;
 
   if (copy_strings) {
-    interned_name =
-        interned_event_names_.LookupOrAdd(std::string(trace_event->name()));
-    for (size_t i = 0; i < trace_event->arg_size() && trace_event->arg_name(i);
-         ++i) {
-      interned_annotation_names[i] = interned_annotation_names_.LookupOrAdd(
-          std::string(trace_event->arg_name(i)));
+    if (privacy_filtering_enabled_) {
+      interned_name = interned_event_names_.LookupOrAdd(kPrivacyFiltered);
+    } else {
+      interned_name =
+          interned_event_names_.LookupOrAdd(std::string(trace_event->name()));
+      for (size_t i = 0;
+           i < trace_event->arg_size() && trace_event->arg_name(i); ++i) {
+        interned_annotation_names[i] = interned_annotation_names_.LookupOrAdd(
+            std::string(trace_event->arg_name(i)));
+      }
     }
   } else {
     interned_name = interned_event_names_.LookupOrAdd(trace_event->name());
@@ -203,7 +259,7 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
             std::make_pair(trace_event->arg_value(0).as_string,
                            static_cast<const char*>(nullptr)));
       }
-    } else {
+    } else if (!privacy_filtering_enabled_) {
       for (size_t i = 0;
            i < trace_event->arg_size() && trace_event->arg_name(i); ++i) {
         interned_annotation_names[i] =
@@ -254,48 +310,8 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
   if (interned_source_location) {
     track_event->set_task_execution()->set_posted_from_iid(
         interned_source_location->id);
-  } else {
-    for (size_t i = 0; i < trace_event->arg_size() && trace_event->arg_name(i);
-         ++i) {
-      auto type = trace_event->arg_type(i);
-      auto* annotation = track_event->add_debug_annotations();
-
-      annotation->set_name_iid(interned_annotation_names[i]->id);
-
-      if (type == TRACE_VALUE_TYPE_CONVERTABLE) {
-        AddConvertableToTraceFormat(trace_event->arg_convertible_value(i),
-                                    annotation);
-        continue;
-      }
-
-      auto& value = trace_event->arg_value(i);
-      switch (type) {
-        case TRACE_VALUE_TYPE_BOOL:
-          annotation->set_bool_value(value.as_bool);
-          break;
-        case TRACE_VALUE_TYPE_UINT:
-          annotation->set_uint_value(value.as_uint);
-          break;
-        case TRACE_VALUE_TYPE_INT:
-          annotation->set_int_value(value.as_int);
-          break;
-        case TRACE_VALUE_TYPE_DOUBLE:
-          annotation->set_double_value(value.as_double);
-          break;
-        case TRACE_VALUE_TYPE_POINTER:
-          annotation->set_pointer_value(static_cast<uint64_t>(
-              reinterpret_cast<uintptr_t>(value.as_pointer)));
-          break;
-        case TRACE_VALUE_TYPE_STRING:
-        case TRACE_VALUE_TYPE_COPY_STRING:
-          annotation->set_string_value(value.as_string ? value.as_string
-                                                       : "NULL");
-          break;
-        default:
-          NOTREACHED() << "Don't know how to serialize this value";
-          break;
-      }
-    }
+  } else if (!privacy_filtering_enabled_) {
+    WriteDebugAnnotations(trace_event, track_event, interned_annotation_names);
   }
 
   auto* legacy_event = track_event->set_legacy_event();
@@ -350,8 +366,12 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
       break;
   }
 
-  if (id_flags && trace_event->scope() != trace_event_internal::kGlobalScope) {
-    legacy_event->set_id_scope(trace_event->scope());
+  // TODO(ssid): Add scope field as enum and do not filter this field.
+  if (!privacy_filtering_enabled_) {
+    if (id_flags &&
+        trace_event->scope() != trace_event_internal::kGlobalScope) {
+      legacy_event->set_id_scope(trace_event->scope());
+    }
   }
 
   if (flags & TRACE_EVENT_FLAG_ASYNC_TTS) {
@@ -402,7 +422,9 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
   if (!interned_name->was_emitted) {
     auto* name_entry = interned_data->add_legacy_event_names();
     name_entry->set_iid(interned_name->id);
-    name_entry->set_name(trace_event->name());
+    name_entry->set_name(copy_strings && privacy_filtering_enabled_
+                             ? kPrivacyFiltered
+                             : trace_event->name());
     interned_name->was_emitted = true;
   }
 
@@ -414,7 +436,7 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
       source_location_entry->set_function_name(
           trace_event->arg_value(1).as_string);
     }
-  } else {
+  } else if (!privacy_filtering_enabled_) {
     for (size_t i = 0; i < trace_event->arg_size() && trace_event->arg_name(i);
          ++i) {
       DCHECK(interned_annotation_names[i]);

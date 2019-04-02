@@ -92,6 +92,10 @@ class MockProducerClient : public ProducerClient {
   const google::protobuf::RepeatedPtrField<perfetto::protos::ChromeMetadata>
   GetChromeMetadata(size_t packet_index = 0) {
     FlushPacketIfPossible();
+    if (metadata_packets_.empty()) {
+      return google::protobuf::RepeatedPtrField<
+          perfetto::protos::ChromeMetadata>();
+    }
     EXPECT_GT(metadata_packets_.size(), packet_index);
 
     auto event_bundle = metadata_packets_[packet_index]->chrome_events();
@@ -174,7 +178,11 @@ std::unique_ptr<perfetto::TraceWriter> MockProducerClient::CreateTraceWriter(
 
 class TraceEventDataSourceTest : public testing::Test {
  public:
-  void SetUp() override { ProducerClient::ResetTaskRunnerForTesting(); }
+  void SetUp() override {
+    ProducerClient::ResetTaskRunnerForTesting();
+    producer_client_ = std::make_unique<MockProducerClient>(
+        scoped_task_environment_.GetMainThreadTaskRunner());
+  }
 
   void TearDown() override {
     if (base::trace_event::TraceLog::GetInstance()->IsEnabled()) {
@@ -196,13 +204,13 @@ class TraceEventDataSourceTest : public testing::Test {
     producer_client_.reset();
   }
 
-  void CreateTraceEventDataSource() {
-    producer_client_ = std::make_unique<MockProducerClient>(
-        scoped_task_environment_.GetMainThreadTaskRunner());
-
+  void CreateTraceEventDataSource(bool privacy_filtering_enabled = false) {
     TraceEventDataSource::ResetForTesting();
-    TraceEventDataSource::GetInstance()->StartTracing(
-        producer_client(), perfetto::DataSourceConfig());
+    perfetto::DataSourceConfig config;
+    config.mutable_chrome_config()->set_privacy_filtering_enabled(
+        privacy_filtering_enabled);
+    TraceEventDataSource::GetInstance()->StartTracing(producer_client(),
+                                                      config);
   }
 
   MockProducerClient* producer_client() { return producer_client_.get(); }
@@ -893,6 +901,87 @@ TEST_F(TraceEventDataSourceTest, InternedStrings) {
     // entries to be emitted again, with the same interning IDs.
     TraceEventDataSource::GetInstance()->ResetIncrementalStateForTesting();
   }
+}
+
+TEST_F(TraceEventDataSourceTest, FilteringSimpleTraceEvent) {
+  CreateTraceEventDataSource(/* privacy_filtering_enabled =*/true);
+  TRACE_EVENT_BEGIN0(kCategoryGroup, "bar");
+
+  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 2u);
+
+  auto* td_packet = producer_client()->GetFinalizedPacket();
+  ExpectThreadDescriptor(td_packet);
+
+  auto* e_packet = producer_client()->GetFinalizedPacket(1);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_BEGIN);
+
+  ExpectEventCategories(e_packet, {{1u, kCategoryGroup}});
+  ExpectEventNames(e_packet, {{1u, "bar"}});
+  ExpectDebugAnnotationNames(e_packet, {});
+}
+
+TEST_F(TraceEventDataSourceTest, FilteringEventWithArgs) {
+  CreateTraceEventDataSource(/* privacy_filtering_enabled =*/true);
+  TRACE_EVENT_INSTANT2(kCategoryGroup, "bar", TRACE_EVENT_SCOPE_THREAD, "foo",
+                       42, "bar", "string_val");
+
+  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 2u);
+  auto* e_packet = producer_client()->GetFinalizedPacket(1);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_INSTANT, TRACE_EVENT_SCOPE_THREAD);
+
+  const auto& annotations = e_packet->track_event().debug_annotations();
+  EXPECT_EQ(annotations.size(), 0);
+
+  ExpectEventCategories(e_packet, {{1u, kCategoryGroup}});
+  ExpectEventNames(e_packet, {{1u, "bar"}});
+  ExpectDebugAnnotationNames(e_packet, {});
+}
+
+TEST_F(TraceEventDataSourceTest, FilteringEventWithFlagCopy) {
+  CreateTraceEventDataSource(/* privacy_filtering_enabled =*/true);
+  TRACE_EVENT_INSTANT2(kCategoryGroup, "bar",
+                       TRACE_EVENT_SCOPE_THREAD | TRACE_EVENT_FLAG_COPY,
+                       "arg1_name", "arg1_val", "arg2_name", "arg2_val");
+
+  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 2u);
+  auto* e_packet = producer_client()->GetFinalizedPacket(1);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_INSTANT, TRACE_EVENT_SCOPE_THREAD);
+
+  const auto& annotations = e_packet->track_event().debug_annotations();
+  EXPECT_EQ(annotations.size(), 0);
+
+  ExpectEventCategories(e_packet, {{1u, kCategoryGroup}});
+  ExpectEventNames(e_packet, {{1u, "PRIVACY_FILTERED"}});
+  ExpectDebugAnnotationNames(e_packet, {});
+}
+
+TEST_F(TraceEventDataSourceTest, FilteringMetadataSource) {
+  auto metadata_source = std::make_unique<TraceEventMetadataSource>();
+  metadata_source->AddGeneratorFunction(base::BindRepeating([]() {
+    auto metadata = std::make_unique<base::DictionaryValue>();
+    metadata->SetInteger("foo_int", 42);
+    metadata->SetString("foo_str", "bar");
+    metadata->SetBoolean("foo_bool", true);
+
+    auto child_dict = std::make_unique<base::DictionaryValue>();
+    child_dict->SetString("child_str", "child_val");
+    metadata->Set("child_dict", std::move(child_dict));
+    return metadata;
+  }));
+
+  perfetto::DataSourceConfig config;
+  config.mutable_chrome_config()->set_privacy_filtering_enabled(true);
+  metadata_source->StartTracing(producer_client(), config);
+
+  base::RunLoop wait_for_stop;
+  metadata_source->StopTracing(wait_for_stop.QuitClosure());
+  wait_for_stop.Run();
+
+  auto metadata = producer_client()->GetChromeMetadata();
+  EXPECT_EQ(0, metadata.size());
 }
 
 class TraceEventDataSourceNoInterningTest : public TraceEventDataSourceTest {

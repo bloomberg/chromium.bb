@@ -89,13 +89,15 @@ void TraceEventMetadataSource::StartTracing(
     const perfetto::DataSourceConfig& data_source_config) {
   // TODO(eseckler): Once we support streaming of trace data, it would make
   // sense to emit the metadata on startup, so the UI can display it right away.
+  privacy_filtering_enabled_ =
+      data_source_config.chrome_config().privacy_filtering_enabled();
   trace_writer_ =
       producer_client->CreateTraceWriter(data_source_config.target_buffer());
 }
 
 void TraceEventMetadataSource::StopTracing(
     base::OnceClosure stop_complete_callback) {
-  if (trace_writer_) {
+  if (trace_writer_ && !privacy_filtering_enabled_) {
     // Write metadata at the end of tracing to make it less likely that it is
     // overridden by other trace data in perfetto's ring buffer.
     origin_task_runner_->PostTaskAndReply(
@@ -104,6 +106,7 @@ void TraceEventMetadataSource::StopTracing(
                        base::Unretained(this), std::move(trace_writer_)),
         std::move(stop_complete_callback));
   } else {
+    trace_writer_.reset();
     std::move(stop_complete_callback).Run();
   }
 }
@@ -205,6 +208,9 @@ void TraceEventDataSource::SetupStartupTracing() {
 void TraceEventDataSource::StartTracing(
     ProducerClient* producer_client,
     const perfetto::DataSourceConfig& data_source_config) {
+  privacy_filtering_enabled_ =
+      data_source_config.chrome_config().privacy_filtering_enabled();
+
   std::unique_ptr<perfetto::StartupTraceWriterRegistry> unbound_writer_registry;
   {
     base::AutoLock lock(lock_);
@@ -219,6 +225,9 @@ void TraceEventDataSource::StartTracing(
   session_id_.fetch_add(1u, std::memory_order_relaxed);
 
   if (unbound_writer_registry) {
+    // TODO(ssid): Startup tracing should know about filtering output.
+    CHECK(!privacy_filtering_enabled_);
+
     // TODO(oysteine): Investigate why trace events emitted by something in
     // BindStartupTraceWriterRegistry() causes deadlocks.
     AutoThreadLocalBoolean thread_is_in_trace_event(
@@ -368,7 +377,8 @@ ThreadLocalEventSink* TraceEventDataSource::CreateThreadLocalEventSink(
   }
 
   return new TrackEventThreadLocalEventSink(std::move(trace_writer), session_id,
-                                            disable_interning_);
+                                            disable_interning_,
+                                            privacy_filtering_enabled_);
 }
 
 // static
