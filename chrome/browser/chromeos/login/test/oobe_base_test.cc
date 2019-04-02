@@ -19,7 +19,6 @@
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
-#include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -77,15 +76,6 @@ void OobeBaseTest::SetUpCommandLine(base::CommandLine* command_line) {
   MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
 }
 
-void OobeBaseTest::SetUpInProcessBrowserTestFixture() {
-  network_portal_detector_ = new NetworkPortalDetectorTestImpl();
-  network_portal_detector::InitializeForTesting(network_portal_detector_);
-  network_portal_detector_->SetDefaultNetworkForTesting(
-      FakeShillManagerClient::kFakeEthernetNetworkGuid);
-
-  MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-}
-
 void OobeBaseTest::SetUpOnMainThread() {
   // Start the accept thread as the sandbox host process has already been
   // spawned.
@@ -121,46 +111,6 @@ bool OobeBaseTest::ShouldForceWebUiLogin() {
 
 bool OobeBaseTest::ShouldWaitForOobeUI() {
   return true;
-}
-
-void OobeBaseTest::SimulateNetworkOffline() {
-  NetworkPortalDetector::CaptivePortalState offline_state;
-  offline_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE;
-  network_portal_detector_->SetDetectionResultsForTesting(
-      FakeShillManagerClient::kFakeEthernetNetworkGuid, offline_state);
-  network_portal_detector_->NotifyObserversForTesting();
-}
-
-base::Closure OobeBaseTest::SimulateNetworkOfflineClosure() {
-  return base::Bind(&OobeBaseTest::SimulateNetworkOffline,
-                    base::Unretained(this));
-}
-
-void OobeBaseTest::SimulateNetworkOnline() {
-  NetworkPortalDetector::CaptivePortalState online_state;
-  online_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
-  online_state.response_code = 204;
-  network_portal_detector_->SetDetectionResultsForTesting(
-      FakeShillManagerClient::kFakeEthernetNetworkGuid, online_state);
-  network_portal_detector_->NotifyObserversForTesting();
-}
-
-base::Closure OobeBaseTest::SimulateNetworkOnlineClosure() {
-  return base::Bind(&OobeBaseTest::SimulateNetworkOnline,
-                    base::Unretained(this));
-}
-
-void OobeBaseTest::SimulateNetworkPortal() {
-  NetworkPortalDetector::CaptivePortalState portal_state;
-  portal_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL;
-  network_portal_detector_->SetDetectionResultsForTesting(
-      FakeShillManagerClient::kFakeEthernetNetworkGuid, portal_state);
-  network_portal_detector_->NotifyObserversForTesting();
-}
-
-base::Closure OobeBaseTest::SimulateNetworkPortalClosure() {
-  return base::Bind(&OobeBaseTest::SimulateNetworkPortal,
-                    base::Unretained(this));
 }
 
 content::WebUI* OobeBaseTest::GetLoginUI() {

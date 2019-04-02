@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "chrome/browser/chromeos/login/test/network_portal_detector_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -78,6 +79,7 @@ class DeviceDisablingTest
   void UpdateState(NetworkError::ErrorReason reason) override;
 
   std::unique_ptr<base::RunLoop> network_state_change_wait_run_loop_;
+  NetworkPortalDetectorMixin network_portal_detector_{&mixin_host_};
 
  private:
   FakeSessionManagerClient* fake_session_manager_client_;
@@ -213,7 +215,8 @@ IN_PROC_BROWSER_TEST_F(DeviceDisablingTest, DisableWithEphemeralUsers) {
   ASSERT_TRUE(signin_screen_handler);
   signin_screen_handler->SetOfflineTimeoutForTesting(
       base::TimeDelta::FromSeconds(0));
-  SimulateNetworkOffline();
+  network_portal_detector_.SimulateDefaultNetworkState(
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE);
   network_state_change_wait_run_loop_->Run();
   network_state_informer->RemoveObserver(this);
   base::RunLoop().RunUntilIdle();

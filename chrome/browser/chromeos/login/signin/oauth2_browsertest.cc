@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/network_portal_detector_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -467,7 +468,13 @@ class OAuth2Test : public OobeBaseTest {
     request_deferers_[path] = request_deferer;
   }
 
+  void SimulateNetworkOnline() {
+    network_portal_detector_.SimulateDefaultNetworkState(
+        NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
+  }
+
   FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
+  NetworkPortalDetectorMixin network_portal_detector_{&mixin_host_};
 
  private:
   base::FilePath test_data_dir_;
