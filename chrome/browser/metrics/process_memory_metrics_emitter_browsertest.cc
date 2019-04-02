@@ -776,8 +776,9 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 }
 
 // Test is flaky on chromeos and linux. https://crbug.com/938054.
+// Test is flaky on mac: https://crbug.com/948674.
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
-    defined(OS_CHROMEOS) || defined(OS_LINUX)
+    defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX)
 #define MAYBE_ForegroundAndBackgroundPages DISABLED_ForegroundAndBackgroundPages
 #else
 #define MAYBE_ForegroundAndBackgroundPages ForegroundAndBackgroundPages
