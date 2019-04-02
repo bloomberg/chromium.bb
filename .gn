@@ -286,6 +286,8 @@ check_targets = [
 
   #"//jingle/*",
 
+  "//libassistant/communication/*",
+
   "//media/*",
   "//mojo/*",
 
