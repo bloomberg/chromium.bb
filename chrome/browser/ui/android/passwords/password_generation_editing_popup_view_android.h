@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ANDROID_PASSWORDS_PASSWORD_GENERATION_POPUP_VIEW_ANDROID_H_
-#define CHROME_BROWSER_UI_ANDROID_PASSWORDS_PASSWORD_GENERATION_POPUP_VIEW_ANDROID_H_
+#ifndef CHROME_BROWSER_UI_ANDROID_PASSWORDS_PASSWORD_GENERATION_EDITING_POPUP_VIEW_ANDROID_H_
+#define CHROME_BROWSER_UI_ANDROID_PASSWORDS_PASSWORD_GENERATION_EDITING_POPUP_VIEW_ANDROID_H_
 
 #include <jni.h>
 
@@ -15,23 +15,23 @@
 
 class PasswordGenerationPopupController;
 
-// The android implementation of the password generation UI.
-class PasswordGenerationPopupViewAndroid : public PasswordGenerationPopupView {
+// The android implementation of the password generation explanation popup.
+// Note that as opposed to the desktop generation popup, this one is not used
+// for displaying a password suggestion, but only for displaying help text
+// while the user is editing a generated password.
+class PasswordGenerationEditingPopupViewAndroid
+    : public PasswordGenerationPopupView {
  public:
   // Builds the UI for the |controller|.
-  explicit PasswordGenerationPopupViewAndroid(
+  explicit PasswordGenerationEditingPopupViewAndroid(
       PasswordGenerationPopupController* controller);
 
   // Called from JNI when the popup was dismissed.
   void Dismissed(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
-  // Called from JNI when the suggested password was selected.
-  void PasswordSelected(JNIEnv* env,
-                        const base::android::JavaParamRef<jobject>& object);
-
  private:
   // The popup owns itself.
-  virtual ~PasswordGenerationPopupViewAndroid();
+  virtual ~PasswordGenerationEditingPopupViewAndroid();
 
   // PasswordGenerationPopupView implementation.
   void Show() override;
@@ -50,7 +50,7 @@ class PasswordGenerationPopupViewAndroid : public PasswordGenerationPopupView {
   // Popup view to be anchored to the container.
   ui::ViewAndroid::ScopedAnchorView popup_;
 
-  DISALLOW_COPY_AND_ASSIGN(PasswordGenerationPopupViewAndroid);
+  DISALLOW_COPY_AND_ASSIGN(PasswordGenerationEditingPopupViewAndroid);
 };
 
-#endif  // CHROME_BROWSER_UI_ANDROID_PASSWORDS_PASSWORD_GENERATION_POPUP_VIEW_ANDROID_H_
+#endif  // CHROME_BROWSER_UI_ANDROID_PASSWORDS_PASSWORD_GENERATION_EDITING_POPUP_VIEW_ANDROID_H_

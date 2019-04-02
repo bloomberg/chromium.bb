@@ -85,9 +85,6 @@
     <color name="distilled_page_prefs_selected">#999999</color>
     <color name="distilled_page_prefs_unselected">@android:color/white</color>
 
-    <!-- Password generation popup colors -->
-    <color name="password_generation_divider_color">#E5E5E5</color>
-
     <!-- Preferences Colors -->
     <color name="pref_accent_color">@color/light_active_color</color>
     <color name="pref_dragged_row_background">@color/white_alpha_90</color>
