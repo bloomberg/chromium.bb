@@ -695,6 +695,7 @@
     veyron_rialto-release
     veyron_speedy-release
     veyron_tiger-release
+    viking-release
     whirlwind-release
     winky-release
     wizpig-release
@@ -2993,6 +2994,7 @@
     veyron_rialto-release-tryjob
     veyron_speedy-release-tryjob
     veyron_tiger-release-tryjob
+    viking-release-tryjob
     whirlwind-release-tryjob
     winky-release-tryjob
     wizpig-release-tryjob

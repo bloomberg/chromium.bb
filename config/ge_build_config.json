@@ -554,18 +554,6 @@
       ]
     },
     {
-      "name": "fizz-labstation",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": false,
-          "board_group": "",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "gale",
       "configs": [
         {
@@ -1430,6 +1418,18 @@
       ]
     },
     {
+      "name": "viking",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "",
+          "arch": "UNKNOWN"
+        }
+      ]
+    },
+    {
       "name": "whirlwind",
       "configs": [
         {
@@ -1758,12 +1758,6 @@
       "models": [
         {
           "board_name": "fizz",
-          "name": "fizz",
-          "cq_test_enabled": false,
-          "release_builder_test_pool": "bvt"
-        },
-        {
-          "board_name": "fizz",
           "name": "jax",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
@@ -1844,6 +1838,21 @@
         },
         {
           "board_name": "fizz-accelerator",
+          "name": "wukong",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        }
+      ]
+    },
+    {
+      "name": "fizz-labstation",
+      "reference_board_name": "fizz-labstation",
+      "arch": "X86_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": true,
+      "models": [
+        {
+          "board_name": "fizz-labstation",
           "name": "wukong",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
@@ -2316,6 +2325,12 @@
         {
           "board_name": "octopus",
           "name": "bip",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "octopus",
+          "name": "bluebird",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         },
