@@ -7,5 +7,5 @@
     "matches": ["*://*/*"],
     "js": ["content_script.js"]
   }],
-  "background": {"service_worker_script": "service_worker_background.js"}
+  "background": {"service_worker": "service_worker_background.js"}
 }

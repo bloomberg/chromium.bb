@@ -1695,7 +1695,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLazyBackgroundTest, ConsoleLogging) {
            "name": "Test Extension",
            "manifest_version": 2,
            "version": "0.1",
-           "background": {"service_worker_script": "script.js"}
+           "background": {"service_worker": "script.js"}
          })");
   constexpr char kScript[] =
       R"(// First, log a message using the normal, built-in blink console.
