@@ -146,6 +146,10 @@ void ConnectJob::ResetTimer(base::TimeDelta remaining_time) {
     timer_.Start(FROM_HERE, remaining_time, this, &ConnectJob::OnTimeout);
 }
 
+bool ConnectJob::TimerIsRunning() const {
+  return timer_.IsRunning();
+}
+
 void ConnectJob::LogConnectStart() {
   connect_timing_.connect_start = base::TimeTicks::Now();
   net_log().BeginEvent(net_log_connect_event_type_);

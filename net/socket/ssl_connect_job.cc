@@ -32,6 +32,14 @@
 
 namespace net {
 
+namespace {
+
+// Timeout for the SSL handshake portion of the connect.
+constexpr base::TimeDelta kSSLHandshakeTimeout(
+    base::TimeDelta::FromSeconds(30));
+
+}  // namespace
+
 SSLSocketParams::SSLSocketParams(
     scoped_refptr<TransportSocketParams> direct_params,
     scoped_refptr<SOCKSSocketParams> socks_proxy_params,
@@ -87,9 +95,6 @@ SSLSocketParams::GetHttpProxyConnectionParams() const {
   return http_proxy_params_;
 }
 
-// Timeout for the SSL handshake portion of the connect.
-static const int kSSLHandshakeTimeoutInSeconds = 30;
-
 SSLConnectJob::SSLConnectJob(
     RequestPriority priority,
     const SocketTag& socket_tag,
@@ -97,16 +102,16 @@ SSLConnectJob::SSLConnectJob(
     scoped_refptr<SSLSocketParams> params,
     ConnectJob::Delegate* delegate,
     const NetLogWithSource* net_log)
-    : ConnectJob(priority,
-                 socket_tag,
-                 ConnectionTimeout(
-                     *params,
-                     common_connect_job_params->network_quality_estimator),
-                 common_connect_job_params,
-                 delegate,
-                 net_log,
-                 NetLogSourceType::SSL_CONNECT_JOB,
-                 NetLogEventType::SSL_CONNECT_JOB_CONNECT),
+    : ConnectJob(
+          priority,
+          socket_tag,
+          // The SSLConnectJob's timer is only started during the SSL handshake.
+          base::TimeDelta(),
+          common_connect_job_params,
+          delegate,
+          net_log,
+          NetLogSourceType::SSL_CONNECT_JOB,
+          NetLogEventType::SSL_CONNECT_JOB_CONNECT),
       params_(std::move(params)),
       callback_(base::BindRepeating(&SSLConnectJob::OnIOComplete,
                                     base::Unretained(this))) {}
@@ -159,8 +164,9 @@ void SSLConnectJob::OnNeedsProxyAuth(
     ConnectJob* job) {
   DCHECK_EQ(next_state_, STATE_TUNNEL_CONNECT_COMPLETE);
 
-  // Stop running the connection timer while potentially waiting for user input.
-  ResetTimer(base::TimeDelta());
+  // The timer shouldn't have started running yet, since the handshake only
+  // starts after a tunnel has been established through the proxy.
+  DCHECK(!TimerIsRunning());
 
   // Just pass the callback up to the consumer. This class doesn't need to do
   // anything once credentials are provided.
@@ -207,8 +213,11 @@ base::TimeDelta SSLConnectJob::ConnectionTimeout(
           *params.GetHttpProxyConnectionParams(), network_quality_estimator);
       break;
   }
-  return nested_job_timeout +
-         base::TimeDelta::FromSeconds(kSSLHandshakeTimeoutInSeconds);
+  return nested_job_timeout + kSSLHandshakeTimeout;
+}
+
+base::TimeDelta SSLConnectJob::HandshakeTimeoutForTesting() {
+  return kSSLHandshakeTimeout;
 }
 
 void SSLConnectJob::OnIOComplete(int result) {
@@ -267,6 +276,7 @@ int SSLConnectJob::DoLoop(int result) {
 int SSLConnectJob::DoTransportConnect() {
   DCHECK(!nested_connect_job_);
   DCHECK(params_->GetDirectConnectionParams());
+  DCHECK(!TimerIsRunning());
 
   next_state_ = STATE_TRANSPORT_CONNECT_COMPLETE;
   nested_connect_job_ = TransportConnectJob::CreateTransportConnectJob(
@@ -295,6 +305,7 @@ int SSLConnectJob::DoTransportConnectComplete(int result) {
 int SSLConnectJob::DoSOCKSConnect() {
   DCHECK(!nested_connect_job_);
   DCHECK(params_->GetSocksProxyConnectionParams());
+  DCHECK(!TimerIsRunning());
 
   next_state_ = STATE_SOCKS_CONNECT_COMPLETE;
   nested_connect_job_ = std::make_unique<SOCKSConnectJob>(
@@ -315,6 +326,7 @@ int SSLConnectJob::DoSOCKSConnectComplete(int result) {
 int SSLConnectJob::DoTunnelConnect() {
   DCHECK(!nested_connect_job_);
   DCHECK(params_->GetHttpProxyConnectionParams());
+  DCHECK(!TimerIsRunning());
 
   next_state_ = STATE_TUNNEL_CONNECT_COMPLETE;
   scoped_refptr<HttpProxySocketParams> http_proxy_params =
@@ -350,10 +362,12 @@ int SSLConnectJob::DoTunnelConnectComplete(int result) {
 
 int SSLConnectJob::DoSSLConnect() {
   TRACE_EVENT0(NetTracingCategory(), "SSLConnectJob::DoSSLConnect");
+  DCHECK(!TimerIsRunning());
+
   next_state_ = STATE_SSL_CONNECT_COMPLETE;
 
-  // Reset the timeout to just the time allowed for the SSL handshake.
-  ResetTimer(base::TimeDelta::FromSeconds(kSSLHandshakeTimeoutInSeconds));
+  // Set the timeout to just the time allowed for the SSL handshake.
+  ResetTimer(kSSLHandshakeTimeout);
 
   // If the handle has a fresh socket, get its connect start and DNS times.
   const LoadTimingInfo::ConnectTiming* socket_connect_timing = nullptr;

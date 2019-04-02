@@ -233,7 +233,15 @@ class NET_EXPORT_PRIVATE ConnectJob {
   void NotifyDelegateOfProxyAuth(const HttpResponseInfo& response,
                                  HttpAuthController* auth_controller,
                                  base::OnceClosure restart_with_auth_callback);
+
+  // If |remaining_time| is base::TimeDelta(), stops the timeout timer, if it's
+  // running. Otherwise, Starts / restarts the timeout timer to trigger in the
+  // specified amount of time.
   void ResetTimer(base::TimeDelta remaining_time);
+
+  // Returns whether or not the timeout timer is running. Only intended for use
+  // by DCHECKs.
+  bool TimerIsRunning() const;
 
   // Connection establishment timing information.
   // TODO(mmenke): This should be private.
