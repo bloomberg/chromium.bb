@@ -74,8 +74,8 @@ class NET_EXPORT_PRIVATE SOCKSConnectJob : public ConnectJob,
   LoadState GetLoadState() const override;
   bool HasEstablishedConnection() const override;
 
-  // Returns the connection timeout used by SOCKSConnectJobs.
-  static base::TimeDelta ConnectionTimeout();
+  // Returns the handshake timeout used by SOCKSConnectJobs.
+  static base::TimeDelta HandshakeTimeoutForTesting();
 
  private:
   enum State {
