@@ -3710,6 +3710,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp11) {
     EXPECT_EQ(10, response->headers->GetContentLength());
     EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
     EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
+    EXPECT_FALSE(response->did_use_http_auth);
 
     TestCompletionCallback callback2;
 
@@ -3726,6 +3727,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp11) {
     EXPECT_EQ(10, response->headers->GetContentLength());
     EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
     EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
+    EXPECT_TRUE(response->did_use_http_auth);
 
     // Flush the idle socket before the NetLog and HttpNetworkTransaction go
     // out of scope.
@@ -6740,6 +6742,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxyAuthRetry) {
   EXPECT_EQ(407, response->headers->response_code());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
   EXPECT_TRUE(CheckBasicSecureProxyAuth(response->auth_challenge.get()));
+  EXPECT_FALSE(response->did_use_http_auth);
 
   TestCompletionCallback callback2;
 
@@ -6761,6 +6764,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxyAuthRetry) {
   EXPECT_EQ(200, response->headers->response_code());
   EXPECT_EQ(100, response->headers->GetContentLength());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
+  EXPECT_TRUE(response->did_use_http_auth);
 
   // The password prompt info should not be set.
   EXPECT_FALSE(response->auth_challenge);

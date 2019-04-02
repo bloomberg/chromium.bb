@@ -625,6 +625,7 @@ void HttpNetworkTransaction::OnNeedsProxyAuth(
   establishing_tunnel_ = true;
   response_.headers = proxy_response.headers;
   response_.auth_challenge = proxy_response.auth_challenge;
+  response_.did_use_http_auth = proxy_response.did_use_http_auth;
 
   if (response_.headers.get() && !ContentEncodingsValid()) {
     DoCallback(ERR_CONTENT_DECODING_FAILED);
