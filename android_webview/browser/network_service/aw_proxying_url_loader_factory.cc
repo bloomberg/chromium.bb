@@ -292,12 +292,6 @@ void InterceptedRequest::Restart() {
 
   request_.load_flags =
       UpdateLoadFlags(request_.load_flags, io_thread_client.get());
-  if (!AwCookieAccessPolicy::GetInstance()->ShouldAllowCookiesForRequest(
-          request_, process_id_)) {
-    request_.load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
-    request_.load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
-  }
-
   if (ShouldNotInterceptRequest()) {
     // equivalent to no interception
     InterceptResponseReceived(nullptr);
@@ -758,6 +752,25 @@ void AwProxyingURLLoaderFactory::CreateLoaderAndStart(
 
   network::mojom::URLLoaderFactoryPtr target_factory_clone;
   target_factory_->Clone(MakeRequest(&target_factory_clone));
+
+  bool global_cookie_policy =
+      AwCookieAccessPolicy::GetInstance()->GetShouldAcceptCookies();
+  // process_id == 0 means the render_frame_id is actually a valid
+  // frame_tree_node_id, otherwise use it as a valid render_frame_id.
+  int frame_tree_node_id = process_id_
+                               ? content::RenderFrameHost::kNoFrameTreeNodeId
+                               : request.render_frame_id;
+  bool third_party_cookie_policy =
+      AwCookieAccessPolicy::GetInstance()->GetShouldAcceptThirdPartyCookies(
+          process_id_, request.render_frame_id, frame_tree_node_id);
+  if (!global_cookie_policy) {
+    options |= network::mojom::kURLLoadOptionBlockAllCookies;
+  } else if (!third_party_cookie_policy && !request.url.SchemeIsFile()) {
+    // Special case: if the application has asked that we allow file:// scheme
+    // URLs to set cookies, we need to avoid setting a cookie policy (as file://
+    // scheme URLs are third-party to everything).
+    options |= network::mojom::kURLLoadOptionBlockThirdPartyCookies;
+  }
 
   // manages its own lifecycle
   // TODO(timvolodine): consider keeping track of requests.

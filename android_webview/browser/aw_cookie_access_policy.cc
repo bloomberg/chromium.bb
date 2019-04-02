@@ -13,7 +13,6 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/websocket_handshake_request_info.h"
 #include "net/base/net_errors.h"
-#include "services/network/public/cpp/resource_request.h"
 
 using base::AutoLock;
 using content::BrowserThread;
@@ -46,21 +45,6 @@ bool AwCookieAccessPolicy::GetShouldAcceptCookies() {
 void AwCookieAccessPolicy::SetShouldAcceptCookies(bool allow) {
   AutoLock lock(lock_);
   accept_cookies_ = allow;
-}
-
-bool AwCookieAccessPolicy::ShouldAllowCookiesForRequest(
-    const network::ResourceRequest& request,
-    int process_id) {
-  // process_id == 0 means the render_frame_id is actually a valid
-  // frame_tree_node_id, otherwise use it as a valid render_frame_id.
-  int frame_tree_node_id = process_id
-                               ? content::RenderFrameHost::kNoFrameTreeNodeId
-                               : request.render_frame_id;
-  bool global = GetShouldAcceptCookies();
-  bool third_party = GetShouldAcceptThirdPartyCookies(
-      process_id, request.render_frame_id, frame_tree_node_id);
-  return AwStaticCookiePolicy(global, third_party)
-      .AllowGet(request.url, request.site_for_cookies);
 }
 
 bool AwCookieAccessPolicy::GetShouldAcceptThirdPartyCookies(

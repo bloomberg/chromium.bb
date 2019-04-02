@@ -271,6 +271,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                        int32_t process_id,
                        int32_t render_frame_id,
                        const url::Origin& origin,
+                       uint32_t options,
                        mojom::AuthenticationHandlerPtr auth_handler,
                        mojom::TrustedHeaderClientPtr header_client) override;
   void CreateNetLogExporter(mojom::NetLogExporterRequest request) override;

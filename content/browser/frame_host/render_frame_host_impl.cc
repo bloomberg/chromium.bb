@@ -5670,14 +5670,15 @@ void RenderFrameHostImpl::CreateWebSocket(
   network::mojom::AuthenticationHandlerPtr auth_handler;
 
   network::mojom::TrustedHeaderClientPtr header_client;
+  uint32_t options = network::mojom::kWebSocketOptionNone;
   GetContentClient()->browser()->WillCreateWebSocket(
-      this, &request, &auth_handler, &header_client);
+      this, &request, &auth_handler, &header_client, &options);
 
   // This is to support usage of WebSockets in cases in which there is an
   // associated RenderFrame. This is important for showing the correct security
   // state of the page and also honoring user override of bad certificates.
   WebSocketManager::CreateWebSocket(
-      process_->GetID(), routing_id_, last_committed_origin_,
+      process_->GetID(), routing_id_, last_committed_origin_, options,
       std::move(auth_handler), std::move(header_client), std::move(request));
 }
 

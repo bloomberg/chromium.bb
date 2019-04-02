@@ -107,6 +107,15 @@ bool NetworkServiceNetworkDelegate::OnCanGetCookies(
         request.url(), request.site_for_cookies(), cookie_list,
         !allowed_from_caller);
   }
+  if (url_loader && allowed_from_caller) {
+    return url_loader->AllowCookies(request.url(), request.site_for_cookies());
+  }
+#if !defined(OS_IOS)
+  WebSocket* web_socket = WebSocket::ForRequest(request);
+  if (web_socket && allowed_from_caller) {
+    return web_socket->AllowCookies(request.url());
+  }
+#endif  // !defined(OS_IOS)
   return allowed_from_caller;
 }
 
@@ -122,6 +131,15 @@ bool NetworkServiceNetworkDelegate::OnCanSetCookie(
         request.url(), request.site_for_cookies(), cookie,
         !allowed_from_caller);
   }
+  if (url_loader && allowed_from_caller) {
+    return url_loader->AllowCookies(request.url(), request.site_for_cookies());
+  }
+#if !defined(OS_IOS)
+  WebSocket* web_socket = WebSocket::ForRequest(request);
+  if (web_socket && allowed_from_caller) {
+    return web_socket->AllowCookies(request.url());
+  }
+#endif  // !defined(OS_IOS)
   return allowed_from_caller;
 }
 

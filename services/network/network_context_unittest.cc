@@ -174,7 +174,8 @@ void SetDefaultContentSetting(ContentSetting setting,
 
 std::unique_ptr<TestURLLoaderClient> FetchRequest(
     const ResourceRequest& request,
-    NetworkContext* network_context) {
+    NetworkContext* network_context,
+    int url_loader_options = mojom::kURLLoadOptionNone) {
   mojom::URLLoaderFactoryPtr loader_factory;
   auto params = mojom::URLLoaderFactoryParams::New();
   params->process_id = mojom::kBrowserProcessId;
@@ -186,7 +187,7 @@ std::unique_ptr<TestURLLoaderClient> FetchRequest(
   mojom::URLLoaderPtr loader;
   loader_factory->CreateLoaderAndStart(
       mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-      0 /* options */, request, client->CreateInterfacePtr(),
+      url_loader_options, request, client->CreateInterfacePtr(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   client->RunUntilComplete();
@@ -2069,6 +2070,25 @@ void GetCookieListCallback(base::RunLoop* run_loop,
                            const net::CookieStatusList& excluded_cookies) {
   *result_out = result;
   run_loop->Quit();
+}
+
+bool SetCookieHelper(NetworkContext* network_context,
+                     const GURL& url,
+                     const std::string& key,
+                     const std::string& value) {
+  mojom::CookieManagerPtr cookie_manager;
+  network_context->GetCookieManager(mojo::MakeRequest(&cookie_manager));
+  base::RunLoop run_loop;
+  bool result = false;
+  cookie_manager->SetCanonicalCookie(
+      net::CanonicalCookie(key, value, url.host(), "/", base::Time(),
+                           base::Time(), base::Time(), false, false,
+                           net::CookieSameSite::NO_RESTRICTION,
+                           net::COOKIE_PRIORITY_LOW),
+      url.scheme(), net::CookieOptions(),
+      base::BindOnce(&SetCookieCallback, &run_loop, &result));
+  run_loop.Run();
+  return result;
 }
 
 TEST_F(NetworkContextTest, CookieManager) {
@@ -5360,6 +5380,138 @@ TEST_F(NetworkContextTest, MaximumCount) {
 
   client3->RunUntilComplete();
   ASSERT_EQ(client3->completion_status().error_code, net::OK);
+}
+
+TEST_F(NetworkContextTest, AllowAllCookies) {
+  net::test_server::EmbeddedTestServer test_server;
+  test_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("services/test/data")));
+  ASSERT_TRUE(test_server.Start());
+
+  GURL server_url = test_server.GetURL("/echoheader?Cookie");
+  GURL first_party_url(server_url);
+  GURL third_party_url("http://www.some.other.origin.test/");
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  EXPECT_TRUE(
+      SetCookieHelper(network_context.get(), server_url, "TestCookie", "1"));
+
+  int url_loader_options = mojom::kURLLoadOptionNone;
+
+  ResourceRequest first_party_request;
+  first_party_request.url = server_url;
+  first_party_request.site_for_cookies = first_party_url;
+
+  std::unique_ptr<TestURLLoaderClient> client = FetchRequest(
+      first_party_request, network_context.get(), url_loader_options);
+
+  std::string response_body;
+  ASSERT_TRUE(client->response_body().is_valid());
+  EXPECT_TRUE(mojo::BlockingCopyToString(client->response_body_release(),
+                                         &response_body));
+  EXPECT_EQ("TestCookie=1", response_body);
+
+  ResourceRequest third_party_request;
+  third_party_request.url = server_url;
+  third_party_request.site_for_cookies = third_party_url;
+
+  client = FetchRequest(third_party_request, network_context.get(),
+                        url_loader_options);
+
+  ASSERT_TRUE(client->response_body().is_valid());
+  EXPECT_TRUE(mojo::BlockingCopyToString(client->response_body_release(),
+                                         &response_body));
+  EXPECT_EQ("TestCookie=1", response_body);
+}
+
+TEST_F(NetworkContextTest, BlockThirdPartyCookies) {
+  net::test_server::EmbeddedTestServer test_server;
+  test_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("services/test/data")));
+  ASSERT_TRUE(test_server.Start());
+
+  GURL server_url = test_server.GetURL("/echoheader?Cookie");
+  GURL first_party_url(server_url);
+  GURL third_party_url("http://www.some.other.origin.test/");
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  EXPECT_TRUE(
+      SetCookieHelper(network_context.get(), server_url, "TestCookie", "1"));
+
+  int url_loader_options = mojom::kURLLoadOptionBlockThirdPartyCookies;
+
+  ResourceRequest first_party_request;
+  first_party_request.url = server_url;
+  first_party_request.site_for_cookies = first_party_url;
+
+  std::unique_ptr<TestURLLoaderClient> client = FetchRequest(
+      first_party_request, network_context.get(), url_loader_options);
+
+  std::string response_body;
+  ASSERT_TRUE(client->response_body().is_valid());
+  EXPECT_TRUE(mojo::BlockingCopyToString(client->response_body_release(),
+                                         &response_body));
+  EXPECT_EQ("TestCookie=1", response_body);
+
+  ResourceRequest third_party_request;
+  third_party_request.url = server_url;
+  third_party_request.site_for_cookies = third_party_url;
+
+  client = FetchRequest(third_party_request, network_context.get(),
+                        url_loader_options);
+
+  ASSERT_TRUE(client->response_body().is_valid());
+  EXPECT_TRUE(mojo::BlockingCopyToString(client->response_body_release(),
+                                         &response_body));
+  EXPECT_EQ("None", response_body);
+}
+
+TEST_F(NetworkContextTest, BlockAllCookies) {
+  net::test_server::EmbeddedTestServer test_server;
+  test_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("services/test/data")));
+  ASSERT_TRUE(test_server.Start());
+
+  GURL server_url = test_server.GetURL("/echoheader?Cookie");
+  GURL first_party_url(server_url);
+  GURL third_party_url("http://www.some.other.origin.test/");
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  EXPECT_TRUE(
+      SetCookieHelper(network_context.get(), server_url, "TestCookie", "1"));
+
+  int url_loader_options = mojom::kURLLoadOptionBlockAllCookies;
+
+  ResourceRequest first_party_request;
+  first_party_request.url = server_url;
+  first_party_request.site_for_cookies = first_party_url;
+
+  std::unique_ptr<TestURLLoaderClient> client = FetchRequest(
+      first_party_request, network_context.get(), url_loader_options);
+
+  std::string response_body;
+  ASSERT_TRUE(client->response_body().is_valid());
+  EXPECT_TRUE(mojo::BlockingCopyToString(client->response_body_release(),
+                                         &response_body));
+  EXPECT_EQ("None", response_body);
+
+  ResourceRequest third_party_request;
+  third_party_request.url = server_url;
+  third_party_request.site_for_cookies = third_party_url;
+
+  client = FetchRequest(third_party_request, network_context.get(),
+                        url_loader_options);
+
+  ASSERT_TRUE(client->response_body().is_valid());
+  EXPECT_TRUE(mojo::BlockingCopyToString(client->response_body_release(),
+                                         &response_body));
+  EXPECT_EQ("None", response_body);
 }
 
 }  // namespace

@@ -22,6 +22,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/base/static_cookie_policy.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
@@ -316,6 +317,7 @@ WebSocket::WebSocket(
     int child_id,
     int frame_id,
     url::Origin origin,
+    uint32_t options,
     base::TimeDelta delay)
     : delegate_(std::move(delegate)),
       binding_(this, std::move(request)),
@@ -324,6 +326,7 @@ WebSocket::WebSocket(
       pending_connection_tracker_(std::move(pending_connection_tracker)),
       delay_(delay),
       pending_flow_control_quota_(0),
+      options_(options),
       child_id_(child_id),
       frame_id_(frame_id),
       origin_(std::move(origin)),
@@ -447,6 +450,21 @@ void WebSocket::StartClosingHandshake(uint16_t code,
   }
 
   ignore_result(channel_->StartClosingHandshake(code, reason));
+}
+
+bool WebSocket::AllowCookies(const GURL& url) const {
+  const GURL site_for_cookies = origin_.GetURL();
+  net::StaticCookiePolicy::Type policy =
+      net::StaticCookiePolicy::ALLOW_ALL_COOKIES;
+  if (options_ & mojom::kWebSocketOptionBlockAllCookies) {
+    policy = net::StaticCookiePolicy::BLOCK_ALL_COOKIES;
+  } else if (options_ & mojom::kWebSocketOptionBlockThirdPartyCookies) {
+    policy = net::StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES;
+  } else {
+    return true;
+  }
+  return net::StaticCookiePolicy(policy).CanAccessCookies(
+             url, site_for_cookies) == net::OK;
 }
 
 int WebSocket::OnBeforeStartTransaction(net::CompletionOnceCallback callback,

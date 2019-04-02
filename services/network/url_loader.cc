@@ -25,6 +25,7 @@
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/mime_sniffer.h"
+#include "net/base/static_cookie_policy.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_file_element_reader.h"
 #include "net/ssl/client_cert_store.h"
@@ -1144,6 +1145,21 @@ void URLLoader::SetAllowReportingRawHeaders(bool allow) {
 
 uint32_t URLLoader::GetResourceType() const {
   return resource_type_;
+}
+
+bool URLLoader::AllowCookies(const GURL& url,
+                             const GURL& site_for_cookies) const {
+  net::StaticCookiePolicy::Type policy =
+      net::StaticCookiePolicy::ALLOW_ALL_COOKIES;
+  if (options_ & mojom::kURLLoadOptionBlockAllCookies) {
+    policy = net::StaticCookiePolicy::BLOCK_ALL_COOKIES;
+  } else if (options_ & mojom::kURLLoadOptionBlockThirdPartyCookies) {
+    policy = net::StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES;
+  } else {
+    return true;
+  }
+  return net::StaticCookiePolicy(policy).CanAccessCookies(
+             url, site_for_cookies) == net::OK;
 }
 
 // static

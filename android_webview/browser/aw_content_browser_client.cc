@@ -983,6 +983,26 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
   return true;
 }
 
+void AwContentBrowserClient::WillCreateWebSocket(
+    content::RenderFrameHost* frame,
+    network::mojom::WebSocketRequest* request,
+    network::mojom::AuthenticationHandlerPtr* auth_handler,
+    network::mojom::TrustedHeaderClientPtr* header_client,
+    uint32_t* options) {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(frame);
+  AwContents* aw_contents = AwContents::FromWebContents(web_contents);
+
+  bool global_cookie_policy =
+      AwCookieAccessPolicy::GetInstance()->GetShouldAcceptCookies();
+  bool third_party_cookie_policy = aw_contents->AllowThirdPartyCookies();
+  if (!global_cookie_policy) {
+    *options |= network::mojom::kWebSocketOptionBlockAllCookies;
+  } else if (!third_party_cookie_policy) {
+    *options |= network::mojom::kWebSocketOptionBlockThirdPartyCookies;
+  }
+}
+
 std::string AwContentBrowserClient::GetProduct() const {
   return android_webview::GetProduct();
 }

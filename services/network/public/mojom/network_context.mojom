@@ -42,6 +42,15 @@ import "services/network/public/mojom/ct_log_info.mojom";
 [EnableIf=is_trial_comparison_cert_verifier_supported]
 import "services/network/public/mojom/trial_comparison_cert_verifier.mojom";
 
+const uint32 kWebSocketOptionNone = 0;
+// Disallow the request from sending cookies. Disallow the response from writing
+// cookies.
+const uint32 kWebSocketOptionBlockAllCookies = 1;
+// Similar to |kWebSocketOptionBlockAllCookies|, but only for third party
+// cookies.
+const uint32 kWebSocketOptionBlockThirdPartyCookies = 2;
+
+// Indicates that execution is blocking on the completion of the request.
 // The browser can provide a CustomProxyConfig to a CustomProxyConfigClient
 // running in the network service. The network service will use the given proxy
 // configuration if a request matches the proxy rules and all the other
@@ -790,6 +799,7 @@ interface NetworkContext {
   ClearBadProxiesCache() => ();
 
   // Creates a WebSocket connection.
+  // |options| may be a combination of the kWebSocketOption* flags.
   // If |header_client| is set, requests with the kURLLoadOptionUseHeaderClient
   // option will callback to the |header_client|, allowing the Cookie/Referrer
   // request headers and Cookie response headers to be modified. This has a
@@ -799,6 +809,7 @@ interface NetworkContext {
                   int32 process_id,
                   int32 render_frame_id,
                   url.mojom.Origin origin,
+                  uint32 options,
                   AuthenticationHandler? auth_handler,
                   TrustedHeaderClient? header_client);
 

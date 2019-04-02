@@ -1302,6 +1302,7 @@ void NetworkContext::CreateWebSocket(
     int32_t process_id,
     int32_t render_frame_id,
     const url::Origin& origin,
+    uint32_t options,
     mojom::AuthenticationHandlerPtr auth_handler,
     mojom::TrustedHeaderClientPtr header_client) {
 #if !defined(OS_IOS)
@@ -1309,7 +1310,7 @@ void NetworkContext::CreateWebSocket(
     websocket_factory_ = std::make_unique<WebSocketFactory>(this);
   websocket_factory_->CreateWebSocket(
       std::move(request), std::move(auth_handler), std::move(header_client),
-      process_id, render_frame_id, origin);
+      process_id, render_frame_id, origin, options);
 #endif  // !defined(OS_IOS)
 }
 

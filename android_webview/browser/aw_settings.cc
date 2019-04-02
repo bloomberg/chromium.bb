@@ -71,6 +71,7 @@ AwSettings::AwSettings(JNIEnv* env,
     : WebContentsObserver(web_contents),
       renderer_prefs_initialized_(false),
       javascript_can_open_windows_automatically_(false),
+      allow_third_party_cookies_(false),
       aw_settings_(env, obj) {
   web_contents->SetUserData(kAwSettingsUserDataKey,
                             std::make_unique<AwSettingsUserData>(this));
@@ -91,6 +92,10 @@ AwSettings::~AwSettings() {
 
 bool AwSettings::GetJavaScriptCanOpenWindowsAutomatically() {
   return javascript_can_open_windows_automatically_;
+}
+
+bool AwSettings::GetAllowThirdPartyCookies() {
+  return allow_third_party_cookies_;
 }
 
 void AwSettings::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -143,6 +148,7 @@ void AwSettings::UpdateEverythingLocked(JNIEnv* env,
   UpdateRendererPreferencesLocked(env, obj);
   UpdateOffscreenPreRasterLocked(env, obj);
   UpdateWillSuppressErrorStateLocked(env, obj);
+  UpdateCookiePolicyLocked(env, obj);
 }
 
 void AwSettings::UpdateUserAgentLocked(JNIEnv* env,
@@ -259,6 +265,15 @@ void AwSettings::UpdateRendererPreferencesLocked(
     storage_partition->GetNetworkContext()->SetAcceptLanguage(
         net::HttpUtil::ExpandLanguageList(prefs->accept_languages));
   }
+}
+
+void AwSettings::UpdateCookiePolicyLocked(JNIEnv* env,
+                                          const JavaParamRef<jobject>& obj) {
+  if (!web_contents())
+    return;
+
+  allow_third_party_cookies_ =
+      Java_AwSettings_getAcceptThirdPartyCookiesLocked(env, obj);
 }
 
 void AwSettings::UpdateOffscreenPreRasterLocked(

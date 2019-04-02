@@ -793,6 +793,12 @@ FindHelper* AwContents::GetFindHelper() {
   return find_helper_.get();
 }
 
+bool AwContents::AllowThirdPartyCookies() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  AwSettings* aw_settings = AwSettings::FromWebContents(web_contents_.get());
+  return aw_settings->GetAllowThirdPartyCookies();
+}
+
 void AwContents::OnFindResultReceived(int active_ordinal,
                                       int match_count,
                                       bool finished) {

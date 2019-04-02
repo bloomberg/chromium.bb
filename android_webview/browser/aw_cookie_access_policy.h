@@ -16,10 +16,6 @@ namespace content {
 class ResourceContext;
 }
 
-namespace network {
-struct ResourceRequest;
-}
-
 class GURL;
 
 namespace android_webview {
@@ -34,10 +30,6 @@ class AwCookieAccessPolicy {
   // Can we read/write any cookies?
   bool GetShouldAcceptCookies();
   void SetShouldAcceptCookies(bool allow);
-
-  // Should cookies be readable/writable for |request|?
-  bool ShouldAllowCookiesForRequest(const network::ResourceRequest& request,
-                                    int process_id);
 
   // Can we read/write third party cookies?
   // |render_process_id| and |render_frame_id| must be valid.

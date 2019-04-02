@@ -118,6 +118,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   uint32_t GetProcessId() const;
   uint32_t GetResourceType() const;
 
+  // Whether this URLLoader should allow sending/setting cookies for requests
+  // with |url| and |site_for_cookies|. This decision is based on the options
+  // passed to URLLoaderFactory::CreateLoaderAndStart().
+  bool AllowCookies(const GURL& url, const GURL& site_for_cookies) const;
+
   const net::HttpRequestHeaders& custom_proxy_pre_cache_headers() const {
     return custom_proxy_pre_cache_headers_;
   }

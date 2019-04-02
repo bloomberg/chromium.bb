@@ -1559,6 +1559,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
       ->CreateWebSocket(std::move(request), network::mojom::kBrowserProcessId,
                         host->GetProcess()->GetID(),
                         url::Origin::Create(GURL("http://example.com")),
+                        network::mojom::kWebSocketOptionNone,
                         std::move(auth_handler), nullptr);
   web_socket.reset();
 }
