@@ -2228,6 +2228,10 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(
          chromeos::switches::kEnableEncryptionMigration,
          chromeos::switches::kDisableEncryptionMigration)},
+    {"enable-cros-ime-input-logic-fst",
+     flag_descriptions::kImeInputLogicFstName,
+     flag_descriptions::kImeInputLogicFstDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kImeInputLogicFst)},
     {"enable-cros-ime-service", flag_descriptions::kImeServiceName,
      flag_descriptions::kImeServiceDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kImeServiceConnectable)},

@@ -1955,6 +1955,9 @@ extern const char kFsNosymfollowDescription[];
 extern const char kGestureTypingName[];
 extern const char kGestureTypingDescription[];
 
+extern const char kImeInputLogicFstName[];
+extern const char kImeInputLogicFstDescription[];
+
 extern const char kImeServiceName[];
 extern const char kImeServiceDescription[];
 
