@@ -658,11 +658,11 @@ void WebMediaPlayerMS::OnRequestPictureInPicture() {
 
 void WebMediaPlayerMS::SetSinkId(
     const blink::WebString& sink_id,
-    std::unique_ptr<blink::WebSetSinkIdCallbacks> web_callback) {
+    blink::WebSetSinkIdCompleteCallback completion_callback) {
   DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   media::OutputDeviceStatusCB callback =
-      media::ConvertToOutputDeviceStatusCB(std::move(web_callback));
+      media::ConvertToOutputDeviceStatusCB(std::move(completion_callback));
   if (audio_renderer_) {
     audio_renderer_->SwitchOutputDevice(sink_id.Utf8(), std::move(callback));
   } else {

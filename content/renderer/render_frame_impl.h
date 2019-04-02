@@ -859,7 +859,7 @@ class CONTENT_EXPORT RenderFrameImpl
                                  const blink::WebURL& url) override;
   void CheckIfAudioSinkExistsAndIsAuthorized(
       const blink::WebString& sink_id,
-      std::unique_ptr<blink::WebSetSinkIdCallbacks> callbacks) override;
+      blink::WebSetSinkIdCompleteCallback callback) override;
   std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() override;
   void DraggableRegionsChanged() override;
   // |rect_to_scroll| is with respect to this frame's origin. |rect_to_scroll|
