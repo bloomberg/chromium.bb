@@ -615,6 +615,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   void TransitionToClientPhase(ClientPhase new_phase);
 
+  void SetRenderProcessId(int process_id);
+
   // Unique among all provider hosts.
   const int provider_id_;
 

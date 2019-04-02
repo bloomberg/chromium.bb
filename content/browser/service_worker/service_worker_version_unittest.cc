@@ -1185,6 +1185,58 @@ TEST_F(ServiceWorkerVersionTest,
 }
 
 TEST_F(ServiceWorkerVersionTest,
+       ForegroundServiceWorkerCountUpdatedByControlleeProcessIdChange) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(features::kServiceWorkerForegroundPriority);
+
+  // Start the worker before we have a controllee.
+  base::Optional<blink::ServiceWorkerStatusCode> status;
+  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
+                        CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
+  EXPECT_EQ(
+      0,
+      helper_->mock_render_process_host()->foreground_service_worker_count());
+
+  // Add a controllee, but don't begin the navigation commit yet.  This will
+  // cause the client to have an invalid process id like we see in real
+  // navigations.
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  registration_->SetActiveVersion(version_);
+  ServiceWorkerRemoteProviderEndpoint remote_endpoint;
+  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForWindow::New();
+  base::WeakPtr<ServiceWorkerProviderHost> host =
+      ServiceWorkerProviderHost::PreCreateNavigationHost(
+          helper_->context()->AsWeakPtr(), true /* is_parent_frame_secure */,
+          base::NullCallback(), &provider_info);
+  remote_endpoint.BindForWindow(std::move(provider_info));
+  host->UpdateUrls(registration_->scope(), registration_->scope());
+  host->SetControllerRegistration(registration_,
+                                  false /* notify_controllerchange */);
+  EXPECT_TRUE(version_->HasControllee());
+  EXPECT_TRUE(host->controller());
+
+  // RenderProcessHost should be notified of foreground worker.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(
+      1,
+      helper_->mock_render_process_host()->foreground_service_worker_count());
+
+  // Now begin the navigation commit with the same process id used by the
+  // worker. This should cause the worker to stop being considered foreground
+  // priority.
+  host->OnBeginNavigationCommit(version_->embedded_worker()->process_id(),
+                                /* render_frame_id = */ 1);
+
+  // RenderProcessHost should be notified of foreground worker.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(
+      0,
+      helper_->mock_render_process_host()->foreground_service_worker_count());
+}
+
+TEST_F(ServiceWorkerVersionTest,
        ForegroundServiceWorkerCountUpdatedByWorkerStatus) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kServiceWorkerForegroundPriority);
