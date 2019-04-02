@@ -22,6 +22,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/manifest_url_handlers.h"
+#include "extensions/common/one_shot_event.h"
 
 using std::string;
 
@@ -57,6 +58,11 @@ void ThemeSyncableService::OnThemeChange() {
     use_system_theme_by_default_ =
         current_specifics.use_system_theme_by_default();
   }
+}
+
+void ThemeSyncableService::WaitUntilReadyToSync(base::OnceClosure done) {
+  extensions::ExtensionSystem::Get(profile_)->ready().Post(FROM_HERE,
+                                                           std::move(done));
 }
 
 syncer::SyncMergeResult ThemeSyncableService::MergeDataAndStartSyncing(
