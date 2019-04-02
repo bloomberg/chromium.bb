@@ -5,12 +5,9 @@
 #include "ash/wm/overview/caption_container_view.h"
 
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
-#include "ash/wm/splitview/split_view_constants.h"
-#include "ash/wm/splitview/split_view_utils.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -180,30 +177,6 @@ CaptionContainerView::CaptionContainerView(EventDelegate* event_delegate,
 
 CaptionContainerView::~CaptionContainerView() = default;
 
-RoundedRectView* CaptionContainerView::GetCannotSnapContainer() {
-  if (!cannot_snap_container_) {
-    cannot_snap_label_ = new views::Label(
-        l10n_util::GetStringUTF16(IDS_ASH_SPLIT_VIEW_CANNOT_SNAP));
-    cannot_snap_label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-    cannot_snap_label_->SetAutoColorReadabilityEnabled(false);
-    cannot_snap_label_->SetEnabledColor(kSplitviewLabelEnabledColor);
-    cannot_snap_label_->SetBackgroundColor(kSplitviewLabelBackgroundColor);
-
-    cannot_snap_container_ = new RoundedRectView(
-        kSplitviewLabelRoundRectRadiusDp, kSplitviewLabelBackgroundColor);
-    cannot_snap_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kVertical,
-        gfx::Insets(kSplitviewLabelVerticalInsetDp,
-                    kSplitviewLabelHorizontalInsetDp)));
-    cannot_snap_container_->AddChildView(cannot_snap_label_);
-    cannot_snap_container_->set_can_process_events_within_subtree(false);
-    AddChildWithLayer(this, cannot_snap_container_);
-    cannot_snap_container_->layer()->SetOpacity(0.f);
-    Layout();
-  }
-  return cannot_snap_container_;
-}
-
 void CaptionContainerView::SetHeaderVisibility(HeaderVisibility visibility) {
   DCHECK(close_button_->layer());
   DCHECK(header_view_->layer());
@@ -232,16 +205,6 @@ void CaptionContainerView::SetBackdropVisibility(bool visible) {
   backdrop_view_->SetVisible(visible);
 }
 
-void CaptionContainerView::SetCannotSnapLabelVisibility(bool visible) {
-  if (!cannot_snap_container_ && !visible)
-    return;
-
-  DoSplitviewOpacityAnimation(GetCannotSnapContainer()->layer(),
-                              visible
-                                  ? SPLITVIEW_ANIMATION_OVERVIEW_ITEM_FADE_IN
-                                  : SPLITVIEW_ANIMATION_OVERVIEW_ITEM_FADE_OUT);
-}
-
 void CaptionContainerView::ResetEventDelegate() {
   event_delegate_ = nullptr;
   close_button_->ResetEventDelegate();
@@ -265,22 +228,6 @@ void CaptionContainerView::Layout() {
     gfx::Rect backdrop_bounds = bounds;
     backdrop_bounds.Inset(0, visible_height, 0, 0);
     backdrop_view_->SetBoundsRect(backdrop_bounds);
-  }
-
-  if (cannot_snap_container_) {
-    gfx::Size label_size = cannot_snap_label_->CalculatePreferredSize();
-    label_size.set_width(
-        std::min(label_size.width() + 2 * kSplitviewLabelHorizontalInsetDp,
-                 bounds.width() - 2 * kSplitviewLabelHorizontalInsetDp));
-    label_size.set_height(
-        std::max(label_size.height(), kSplitviewLabelPreferredHeightDp));
-
-    // Position the cannot snap label in the middle of the item, minus the
-    // title.
-    gfx::Rect cannot_snap_bounds = GetLocalBounds();
-    cannot_snap_bounds.Inset(0, visible_height, 0, 0);
-    cannot_snap_bounds.ClampToCenteredSize(label_size);
-    cannot_snap_container_->SetBoundsRect(cannot_snap_bounds);
   }
 
   // Position the header at the top.

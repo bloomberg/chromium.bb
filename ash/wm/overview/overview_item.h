@@ -28,6 +28,7 @@ class Widget;
 
 namespace ash {
 class OverviewGrid;
+class RoundedLabelWidget;
 
 // This class represents an item in overview mode.
 class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
@@ -234,6 +235,9 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   float GetCloseButtonVisibilityForTesting() const;
   float GetTitlebarOpacityForTesting() const;
   gfx::Rect GetShadowBoundsForTesting();
+  RoundedLabelWidget* cannot_snap_widget_for_testing() {
+    return cannot_snap_widget_.get();
+  }
 
  private:
   friend class OverviewSessionTest;
@@ -283,17 +287,18 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // when the item is selected.
   bool selected_ = false;
 
-  // A widget that covers the |transform_window_|. The widget has
+  // A widget stacked under the |transform_window_|. The widget has
   // |caption_container_view_| as its contents view. The widget is backed by a
   // NOT_DRAWN layer since most of its surface is transparent.
   std::unique_ptr<views::Widget> item_widget_;
 
-  // Container view that owns a Button view covering the |transform_window_|.
-  // That button serves as an event shield to receive all events such as clicks
-  // targeting the |transform_window_| or the overview header above the window.
-  // The shield button owns a header view which shows an icon, close button and
-  // title.
+  // The view associated with |item_widget_|. Contains a title, close button and
+  // maybe a backdrop. Forwards certain events to |this|.
   CaptionContainerView* caption_container_view_ = nullptr;
+
+  // A widget with text that may show up on top of |transform_window_| to notify
+  // users this window cannot be snapped.
+  std::unique_ptr<RoundedLabelWidget> cannot_snap_widget_;
 
   // Pointer to the Overview that owns the OverviewGrid containing |this|.
   // Guaranteed to be non-null for the lifetime of |this|.

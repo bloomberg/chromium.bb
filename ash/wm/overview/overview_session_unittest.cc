@@ -32,6 +32,7 @@
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
+#include "ash/wm/overview/rounded_label_widget.h"
 #include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
@@ -291,10 +292,6 @@ class OverviewSessionTest : public AshTestBase {
 
   views::Label* GetLabelView(OverviewItem* item) {
     return item->caption_container_view_->title_label();
-  }
-
-  views::Label* GetCannotSnapLabelView(OverviewItem* item) {
-    return item->caption_container_view_->cannot_snap_label();
   }
 
   RoundedRectView* GetBackdropView(OverviewItem* item) {
@@ -1651,7 +1648,7 @@ TEST_F(OverviewSessionTest, NoWindowsIndicatorPosition) {
 
   ToggleOverview();
   ASSERT_TRUE(overview_session());
-  views::Widget* no_windows_widget =
+  RoundedLabelWidget* no_windows_widget =
       overview_session()->no_windows_widget_for_testing();
   ASSERT_TRUE(no_windows_widget);
 
@@ -1679,7 +1676,7 @@ TEST_F(OverviewSessionTest, NoWindowsIndicatorPositionSplitview) {
 
   ToggleOverview();
   ASSERT_TRUE(overview_session());
-  views::Widget* no_windows_widget =
+  RoundedLabelWidget* no_windows_widget =
       overview_session()->no_windows_widget_for_testing();
   EXPECT_FALSE(no_windows_widget);
 
@@ -1715,7 +1712,7 @@ TEST_F(OverviewSessionTest, NoWindowsIndicatorPositionMultiDisplay) {
   // primary display.
   ToggleOverview();
   ASSERT_TRUE(overview_session());
-  views::Widget* no_windows_widget =
+  RoundedLabelWidget* no_windows_widget =
       overview_session()->no_windows_widget_for_testing();
   const int expected_y = (400 - ShelfConstants::shelf_size()) / 2;
   EXPECT_EQ(gfx::Point(200, expected_y),
@@ -3734,17 +3731,18 @@ TEST_F(SplitViewOverviewSessionTest, OverviewUnsnappableIndicatorVisibility) {
       GetWindowItemForWindow(grid_index, unsnappable_window.get());
 
   // Note: |cannot_snap_label_view_| and its parent will be created on demand.
-  EXPECT_FALSE(GetCannotSnapLabelView(snappable_overview_item));
-  ASSERT_FALSE(GetCannotSnapLabelView(unsnappable_overview_item));
+  EXPECT_FALSE(snappable_overview_item->cannot_snap_widget_for_testing());
+  ASSERT_FALSE(unsnappable_overview_item->cannot_snap_widget_for_testing());
 
   // Snap the extra snappable window to enter split view mode.
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   ASSERT_TRUE(split_view_controller()->IsSplitViewModeActive());
-  EXPECT_FALSE(GetCannotSnapLabelView(snappable_overview_item));
-  ASSERT_TRUE(GetCannotSnapLabelView(unsnappable_overview_item));
-  ASSERT_TRUE(GetCannotSnapLabelView(unsnappable_overview_item)->parent());
+  EXPECT_FALSE(snappable_overview_item->cannot_snap_widget_for_testing());
+  ASSERT_TRUE(unsnappable_overview_item->cannot_snap_widget_for_testing());
   ui::Layer* unsnappable_layer =
-      GetCannotSnapLabelView(unsnappable_overview_item)->parent()->layer();
+      unsnappable_overview_item->cannot_snap_widget_for_testing()
+          ->GetNativeWindow()
+          ->layer();
   EXPECT_EQ(1.f, unsnappable_layer->opacity());
 
   // Exiting the splitview will hide the unsnappable label.
