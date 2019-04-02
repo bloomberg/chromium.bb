@@ -1353,25 +1353,14 @@ TEST_P(HttpProxyConnectJobTest, TestTimeoutsAuthChallenge) {
     test_delegate.RunAuthCallback();
     EXPECT_FALSE(test_delegate.has_result());
 
-    // When sending proxy auth on the same socket a challenge was just received
-    // on, all subsequent proxy handshakes cannot timeout. However, H2 always
-    // follows the establish new connection path, which means its second proxy
-    // handshake *can* timeout.
-    if (GetParam() == SPDY) {
-      FastForwardBy(HttpProxyConnectJob::TunnelTimeoutForTesting() - kTinyTime);
-      EXPECT_FALSE(test_delegate.has_result());
+    FastForwardBy(HttpProxyConnectJob::TunnelTimeoutForTesting() - kTinyTime);
+    EXPECT_FALSE(test_delegate.has_result());
 
-      if (timeout_phase == TimeoutPhase::SECOND_PROXY_HANDSHAKE) {
-        FastForwardBy(kTinyTime);
-        ASSERT_TRUE(test_delegate.has_result());
-        EXPECT_THAT(test_delegate.WaitForResult(),
-                    test::IsError(ERR_TIMED_OUT));
-        continue;
-      }
-    } else {
-      // See above comment for explanation.
-      FastForwardBy(base::TimeDelta::FromDays(1));
-      EXPECT_FALSE(test_delegate.has_result());
+    if (timeout_phase == TimeoutPhase::SECOND_PROXY_HANDSHAKE) {
+      FastForwardBy(kTinyTime);
+      ASSERT_TRUE(test_delegate.has_result());
+      EXPECT_THAT(test_delegate.WaitForResult(), test::IsError(ERR_TIMED_OUT));
+      continue;
     }
 
     data_->Resume();
