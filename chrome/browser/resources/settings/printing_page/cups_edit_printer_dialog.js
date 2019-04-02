@@ -31,7 +31,8 @@ Polymer({
      * The current PPD in use by the printer.
      * @private
      */
-    existingUserPPDMessage_: String,
+    userPPD_: String,
+
 
     /**
      * If the printer info has changed since loading this dialog. This will
@@ -72,7 +73,7 @@ Polymer({
   },
 
   observers: [
-    'onPrinterInfoChanged_(activePrinter.*)',
+    'onPrinterInfoChange_(activePrinter.*)',
     'selectedEditManufacturerChanged_(activePrinter.ppdManufacturer)',
   ],
 
@@ -86,12 +87,8 @@ Polymer({
     settings.CupsPrintersBrowserProxyImpl.getInstance()
         .getCupsPrinterManufacturersList()
         .then(this.manufacturerListChanged_.bind(this));
-    const basename =
+    this.userPPD_ =
         settings.printing.getBaseName(this.activePrinter.printerPPDPath);
-    if (basename) {
-      this.existingUserPPDMessage_ =
-          loadTimeData.getStringF('currentPpdMessage', basename);
-    }
   },
 
   /**
@@ -253,6 +250,6 @@ Polymer({
   printerPPDPathChanged_: function(path) {
     this.set('activePrinter.printerPPDPath', path);
     this.invalidPPD_ = !path;
-    this.newUserPPD_ = settings.printing.getBaseName(path);
+    this.userPPD_ = settings.printing.getBaseName(path);
   },
 });

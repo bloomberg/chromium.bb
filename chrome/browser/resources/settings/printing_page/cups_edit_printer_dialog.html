@@ -96,18 +96,13 @@
         </div>
         <div class="settings-box two-line">
           <cr-input class="browse-file-input" readonly tabindex="-1"
-              value="[[newUserPPD_]]" label="$i18n{selectDriver}"
+              value="[[userPPD_]]" label="$i18n{selectDriver}"
               error-message="$i18n{selectDriverErrorMessage}"
               invalid="[[invalidPPD_]]">
           </cr-input>
           <paper-button class="browse-button" on-click="onBrowseFile_">
             $i18n{selectDriverButtonText}
           </paper-button>
-          <template is="dom-if" if="[[existingUserPPDMessage_]]">
-            <div class="secondary" id="existingUserPPD">
-              [[existingUserPPDMessage_]]
-            </div>
-          </template>
         </div>
       </div>
       <div slot="dialog-buttons">
