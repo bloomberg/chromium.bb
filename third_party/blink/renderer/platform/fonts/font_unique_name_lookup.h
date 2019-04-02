@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_UNIQUE_NAME_LOOKUP_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_UNIQUE_NAME_LOOKUP_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -34,6 +35,24 @@ class FontUniqueNameLookup {
   virtual sk_sp<SkTypeface> MatchUniqueName(const String& font_unique_name) = 0;
 
   virtual ~FontUniqueNameLookup() = default;
+
+  // Below: Methods for asynchronously retrieving the FontUniqueNameLookup
+  // table. Currently needed on Windows, on other platforms the implementation
+  // is synchronous.
+
+  // Determines whether fonts can be uniquely matched synchronously.
+  virtual bool IsFontUniqueNameLookupReadyForSyncLookup() { return true; }
+
+  // If fonts cannot be uniquely matched synchronously, send a Mojo IPC call to
+  // prepare the lookup table, and wait for the callback. Once the callback has
+  // been called, IsFontUniqueNameLookupReadyForSyncLookup() will become true.
+  // PrepareFontUniqueNameLookup() must not be called if
+  // IsFontUniqueNameLookupReadyForSyncLookup() is true already.
+  using NotifyFontUniqueNameLookupReady = base::OnceCallback<void()>;
+  virtual void PrepareFontUniqueNameLookup(
+      NotifyFontUniqueNameLookupReady callback) {
+    NOTREACHED();
+  }
 
  protected:
   FontUniqueNameLookup();

@@ -701,16 +701,16 @@ void FontFace::InitCSSFontFace(ExecutionContext* context, const CSSValue& src) {
     // (remote font to download).
     const CSSFontFaceSrcValue& item = To<CSSFontFaceSrcValue>(src_list.Item(i));
 
+    FontSelector* font_selector = nullptr;
+    if (auto* document = DynamicTo<Document>(context)) {
+      font_selector = document->GetStyleEngine().GetFontSelector();
+    } else if (auto* scope = DynamicTo<WorkerGlobalScope>(context)) {
+      font_selector = scope->GetFontSelector();
+    } else {
+      NOTREACHED();
+    }
     if (!item.IsLocal()) {
       if (ContextAllowsDownload(context) && item.IsSupportedFormat()) {
-        FontSelector* font_selector = nullptr;
-        if (auto* document = DynamicTo<Document>(context)) {
-          font_selector = document->GetStyleEngine().GetFontSelector();
-        } else if (auto* scope = DynamicTo<WorkerGlobalScope>(context)) {
-          font_selector = scope->GetFontSelector();
-        } else {
-          NOTREACHED();
-        }
         RemoteFontFaceSource* source =
             MakeGarbageCollected<RemoteFontFaceSource>(
                 css_font_face_, font_selector,
@@ -719,8 +719,8 @@ void FontFace::InitCSSFontFace(ExecutionContext* context, const CSSValue& src) {
         css_font_face_->AddSource(source);
       }
     } else {
-      css_font_face_->AddSource(
-          MakeGarbageCollected<LocalFontFaceSource>(item.GetResource()));
+      css_font_face_->AddSource(MakeGarbageCollected<LocalFontFaceSource>(
+          css_font_face_, font_selector, item.GetResource()));
     }
   }
 
