@@ -12,7 +12,6 @@
 #include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "components/account_id/account_id.h"
-#include "components/crash/core/common/crash_key.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
@@ -57,16 +56,6 @@ void UserCloudPolicyManager::SetSigninAccountId(const AccountId& account_id) {
 void UserCloudPolicyManager::Connect(
     PrefService* local_state,
     std::unique_ptr<CloudPolicyClient> client) {
-  // TODO(emaxx): Remove the crash key after the crashes tracked at
-  // https://crbug.com/685996 are fixed.
-  if (core()->client()) {
-    static crash_reporter::CrashKeyString<1024> connect_callstack_key(
-        "user-cloud-policy-manager-connect-trace");
-    crash_reporter::SetCrashKeyStringToStackTrace(&connect_callstack_key,
-                                                  connect_callstack_);
-  } else {
-    connect_callstack_ = base::debug::StackTrace();
-  }
   CHECK(!core()->client());
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
