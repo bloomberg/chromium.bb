@@ -76,11 +76,10 @@ bool WebContentsDelegate::TakeFocus(WebContents* source, bool reverse) {
   return false;
 }
 
-void WebContentsDelegate::CanDownload(
-    const GURL& url,
-    const std::string& request_method,
-    const base::Callback<void(bool)>& callback) {
-  callback.Run(true);
+void WebContentsDelegate::CanDownload(const GURL& url,
+                                      const std::string& request_method,
+                                      base::OnceCallback<void(bool)> callback) {
+  std::move(callback).Run(true);
 }
 
 bool WebContentsDelegate::HandleContextMenu(RenderFrameHost* render_frame_host,

@@ -237,12 +237,11 @@ bool OffscreenTab::ShouldFocusPageAfterCrash() {
   return false;
 }
 
-void OffscreenTab::CanDownload(
-    const GURL& url,
-    const std::string& request_method,
-    const base::RepeatingCallback<void(bool)>& callback) {
+void OffscreenTab::CanDownload(const GURL& url,
+                               const std::string& request_method,
+                               base::OnceCallback<void(bool)> callback) {
   // Offscreen tab pages are not allowed to download files.
-  callback.Run(false);
+  std::move(callback).Run(false);
 }
 
 bool OffscreenTab::HandleContextMenu(

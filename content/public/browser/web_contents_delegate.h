@@ -243,7 +243,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Invoking the |callback| synchronously is OK.
   virtual void CanDownload(const GURL& url,
                            const std::string& request_method,
-                           const base::Callback<void(bool)>& callback);
+                           base::OnceCallback<void(bool)> callback);
 
   // Returns true if the context menu operation was handled by the delegate.
   virtual bool HandleContextMenu(RenderFrameHost* render_frame_host,

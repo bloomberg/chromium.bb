@@ -104,10 +104,10 @@ class PrerenderContents::WebContentsDelegateImpl
 
   void CanDownload(const GURL& url,
                    const std::string& request_method,
-                   const base::Callback<void(bool)>& callback) override {
+                   base::OnceCallback<void(bool)> callback) override {
     prerender_contents_->Destroy(FINAL_STATUS_DOWNLOAD);
     // Cancel the download.
-    callback.Run(false);
+    std::move(callback).Run(false);
   }
 
   bool ShouldCreateWebContents(

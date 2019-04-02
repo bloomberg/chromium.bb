@@ -4,6 +4,8 @@
 
 #include "components/offline_pages/content/background_loader/background_loader_contents.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/public/browser/web_contents.h"
@@ -22,7 +24,7 @@ class BackgroundLoaderContentsTest : public testing::Test,
   void SetUp() override;
   void TearDown() override;
 
-  void CanDownload(const base::Callback<void(bool)>& callback) override;
+  void CanDownload(base::OnceCallback<void(bool)> callback) override;
 
   BackgroundLoaderContents* contents() { return contents_.get(); }
 
@@ -71,9 +73,9 @@ void BackgroundLoaderContentsTest::TearDown() {
 }
 
 void BackgroundLoaderContentsTest::CanDownload(
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   delegate_called_ = true;
-  callback.Run(true);
+  std::move(callback).Run(true);
 }
 
 void BackgroundLoaderContentsTest::DownloadCallback(bool download) {
@@ -110,8 +112,8 @@ TEST_F(BackgroundLoaderContentsTest, DoesNotFocusAfterCrash) {
 TEST_F(BackgroundLoaderContentsTest, CannotDownloadNoDelegate) {
   contents()->CanDownload(
       GURL::EmptyGURL(), std::string(),
-      base::BindRepeating(&BackgroundLoaderContentsTest::DownloadCallback,
-                          base::Unretained(this)));
+      base::BindOnce(&BackgroundLoaderContentsTest::DownloadCallback,
+                     base::Unretained(this)));
   WaitForSignal();
   ASSERT_FALSE(download());
   ASSERT_FALSE(can_download_delegate_called());
@@ -121,8 +123,8 @@ TEST_F(BackgroundLoaderContentsTest, CanDownload_DelegateCalledWhenSet) {
   SetDelegate();
   contents()->CanDownload(
       GURL::EmptyGURL(), std::string(),
-      base::BindRepeating(&BackgroundLoaderContentsTest::DownloadCallback,
-                          base::Unretained(this)));
+      base::BindOnce(&BackgroundLoaderContentsTest::DownloadCallback,
+                     base::Unretained(this)));
   WaitForSignal();
   ASSERT_TRUE(download());
   ASSERT_TRUE(can_download_delegate_called());
