@@ -273,10 +273,9 @@ void AudioInputResource::Run() {
 
     // Convert an AudioBus from deinterleaved float to interleaved integer data.
     // Store the result in a preallocated |client_buffer_|.
-    static_assert(kBitsPerAudioInputSample == 16,
-                  "ToInterleaved expects 2 bytes.");
-    audio_bus_->ToInterleaved<media::SignedInt16SampleTypeTraits>(
-        audio_bus_->frames(), reinterpret_cast<int16_t*>(client_buffer_.get()));
+    audio_bus_->ToInterleaved(audio_bus_->frames(),
+                              kBitsPerAudioInputSample / 8,
+                              client_buffer_.get());
 
     // Inform other side that we have read the data from the shared memory.
     ++buffer_index;

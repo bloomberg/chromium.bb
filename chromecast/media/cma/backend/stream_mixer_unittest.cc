@@ -142,8 +142,7 @@ std::unique_ptr<::media::AudioBus> GetTestData(size_t index) {
   CHECK_LT(index, NUM_DATA_SETS);
   int frames = NUM_SAMPLES / kNumChannels;
   auto data = ::media::AudioBus::Create(kNumChannels, frames);
-  data->FromInterleaved<::media::SignedInt32SampleTypeTraits>(kTestData[index],
-                                                              frames);
+  data->FromInterleaved(kTestData[index], frames, kBytesPerSample);
   return data;
 }
 
@@ -710,8 +709,7 @@ TEST_F(StreamMixerTest, TwoUnscaledStreamsMixProperlyWithEdgeCases) {
   // Populate the streams with data.
   for (size_t i = 0; i < inputs.size(); ++i) {
     auto test_data = ::media::AudioBus::Create(kNumChannels, kNumFrames);
-    test_data->FromInterleaved<::media::SignedInt32SampleTypeTraits>(
-        kEdgeData[i], kNumFrames);
+    test_data->FromInterleaved(kEdgeData[i], kNumFrames, kBytesPerSample);
     inputs[i]->SetData(std::move(test_data));
     EXPECT_CALL(*inputs[i], FillAudioPlaybackFrames(_, _, _)).Times(1);
   }
@@ -726,8 +724,7 @@ TEST_F(StreamMixerTest, TwoUnscaledStreamsMixProperlyWithEdgeCases) {
 
   // Use the hand-calculated results above.
   auto expected = ::media::AudioBus::Create(kNumChannels, kNumFrames);
-  expected->FromInterleaved<::media::SignedInt32SampleTypeTraits>(kResult,
-                                                                  kNumFrames);
+  expected->FromInterleaved(kResult, kNumFrames, kBytesPerSample);
 
   CompareAudioData(*expected, *actual);
 

@@ -35,12 +35,11 @@ class CONTENT_EXPORT SpeechRecognizerImpl
       public media::AudioCapturerSource::CaptureCallback,
       public SpeechRecognitionEngine::Delegate {
  public:
-  static constexpr int kAudioSampleRate = 16000;
-  static constexpr media::ChannelLayout kChannelLayout =
-      media::CHANNEL_LAYOUT_MONO;
-  static constexpr int kNumBitsPerAudioSample = 16;
-  static constexpr int kNoSpeechTimeoutMs = 8000;
-  static constexpr int kEndpointerEstimationTimeMs = 300;
+  static const int kAudioSampleRate;
+  static const media::ChannelLayout kChannelLayout;
+  static const int kNumBitsPerAudioSample;
+  static const int kNoSpeechTimeoutMs;
+  static const int kEndpointerEstimationTimeMs;
 
   static void SetAudioEnvironmentForTesting(
       media::AudioSystem* audio_system,
