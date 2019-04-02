@@ -335,8 +335,6 @@ void TraceConfig::Merge(const TraceConfig& config) {
   }
   DCHECK_EQ(trace_buffer_size_in_events_, config.trace_buffer_size_in_events_)
       << "Cannot change trace buffer size";
-  DCHECK_EQ(trace_buffer_size_in_kb_, config.trace_buffer_size_in_kb_)
-      << "Cannot change trace buffer size";
 
   category_filter_.Merge(config.category_filter_);
   memory_dump_config_.Merge(config.memory_dump_config_);
