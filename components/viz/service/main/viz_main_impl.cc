@@ -248,7 +248,14 @@ void VizMainImpl::CreateFrameSinkManagerInternal(
     DCHECK_EQ(gl::GetGLImplementation(), gl::kGLImplementationDisabled);
   }
 
-  DCHECK(!task_executor_);
+  // When the host loses its connection to the viz process, it assumes the
+  // process has crashed and tries to reinitialize it. However, it is possible
+  // to have lost the connection for other reasons (e.g. deserialization
+  // errors) and the viz process is already set up. We cannot recreate
+  // FrameSinkManagerImpl, so just do a hard CHECK rather than crashing down the
+  // road so that all crash reports caused by this issue look the same and have
+  // the same signature. https://crbug.com/928845
+  CHECK(!task_executor_);
   task_executor_ = std::make_unique<gpu::GpuInProcessThreadService>(
       gpu_thread_task_runner_, gpu_service_->scheduler(),
       gpu_service_->sync_point_manager(), gpu_service_->mailbox_manager(),
