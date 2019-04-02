@@ -254,4 +254,18 @@ public class GCMMessageTest {
             assertArrayEquals(rawData, copiedMessage.getRawData());
         }
     }
+
+    /**
+     * Tests that getOriginalPriority returns Priority.NONE if it was not set in the bundle.
+     */
+    @Test
+    public void testNullOriginalPriority() throws JSONException {
+        Bundle extras = new Bundle();
+
+        // Compose a simple message that lacks all optional fields.
+        extras.putString("subtype", "MyAppId");
+        GCMMessage message = new GCMMessage("MySenderId", extras);
+
+        assertEquals(GCMMessage.Priority.NONE, message.getOriginalPriority());
+    }
 }

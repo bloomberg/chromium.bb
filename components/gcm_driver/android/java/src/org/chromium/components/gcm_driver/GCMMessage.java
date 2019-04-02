@@ -200,6 +200,10 @@ public class GCMMessage {
     }
 
     public @Priority int getOriginalPriority() {
+        if (mOriginalPriority == null) {
+            return Priority.NONE;
+        }
+
         switch (mOriginalPriority) {
             case "normal":
                 return Priority.NORMAL;
