@@ -1616,10 +1616,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kHostedAppQuitNotification)},
 #endif  // OS_MACOSX
 #if defined(OS_ANDROID)
-    {"disable-pull-to-refresh-effect",
-     flag_descriptions::kPullToRefreshEffectName,
-     flag_descriptions::kPullToRefreshEffectDescription, kOsAndroid,
-     SINGLE_DISABLE_VALUE_TYPE(switches::kDisablePullToRefreshEffect)},
     {"translate-force-trigger-on-english",
      flag_descriptions::kTranslateForceTriggerOnEnglishName,
      flag_descriptions::kTranslateForceTriggerOnEnglishDescription, kOsAndroid,
