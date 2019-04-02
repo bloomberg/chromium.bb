@@ -19,7 +19,7 @@
 #if defined(OS_WIN)
 #include <Winuser.h>
 #include "device/fido/win/discovery.h"
-#include "device/fido/win/webauthn_api.h"
+#include "device/fido/win/webauthn_api_adapter.h"
 #endif  // defined(OS_WIN)
 
 namespace device {
@@ -94,11 +94,10 @@ std::unique_ptr<FidoDiscoveryBase> FidoDiscoveryFactory::CreateCable(
 std::unique_ptr<FidoDiscoveryBase>
 FidoDiscoveryFactory::MaybeCreateWinWebAuthnApiDiscovery() {
   if (!base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi) ||
-      !WinWebAuthnApi::GetDefault()->IsAvailable()) {
+      !WinWebAuthnApiAdapter::IsAvailable()) {
     return nullptr;
   }
   return std::make_unique<WinWebAuthnApiAuthenticatorDiscovery>(
-      WinWebAuthnApi::GetDefault(),
       // TODO(martinkr): Inject the window from which the request
       // originated. Windows uses this parameter to center the
       // dialog over the parent. The dialog should be centered

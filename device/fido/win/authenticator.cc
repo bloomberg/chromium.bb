@@ -39,21 +39,17 @@ const char WinWebAuthnApiAuthenticator::kAuthenticatorId[] =
 bool WinWebAuthnApiAuthenticator::
     IsUserVerifyingPlatformAuthenticatorAvailable() {
   BOOL result;
-  return WinWebAuthnApi::GetDefault()->IsAvailable() &&
-         WinWebAuthnApi::GetDefault()
-                 ->IsUserVerifyingPlatformAuthenticatorAvailable(&result) ==
-             S_OK &&
+  return WinWebAuthnApiAdapter::IsAvailable() &&
+         WinWebAuthnApiAdapter().IsUserVerifyingPlatformAuthenticatorAvailable(
+             &result) == S_OK &&
          result == TRUE;
 }
 
-WinWebAuthnApiAuthenticator::WinWebAuthnApiAuthenticator(
-    WinWebAuthnApi* win_api,
-    HWND current_window)
+WinWebAuthnApiAuthenticator::WinWebAuthnApiAuthenticator(HWND current_window)
     : FidoAuthenticator(),
-      win_api_(win_api),
       current_window_(current_window),
       weak_factory_(this) {
-  CHECK(win_api_->IsAvailable());
+  CHECK(WinWebAuthnApiAdapter::IsAvailable());
   CoCreateGuid(&cancellation_id_);
 }
 
@@ -110,7 +106,7 @@ void WinWebAuthnApiAuthenticator::MakeCredential(
     authenticator_attachment =
         ToWinAuthenticatorAttachment(request.authenticator_attachment());
   }
-  win_api_->AuthenticatorMakeCredential(
+  win_api_.AuthenticatorMakeCredential(
       current_window_, cancellation_id_, std::move(rp), std::move(user),
       std::move(cose_credential_parameter_values), std::move(client_data_json),
       std::move(extensions), std::move(exclude_list),
@@ -137,13 +133,13 @@ void WinWebAuthnApiAuthenticator::MakeCredentialDone(
     CtapMakeCredentialRequest request,
     MakeCredentialCallback callback,
     HRESULT hresult,
-    WinWebAuthnApi::ScopedCredentialAttestation credential_attestation) {
+    WinWebAuthnApiAdapter::ScopedCredentialAttestation credential_attestation) {
   DCHECK(is_pending_);
   is_pending_ = false;
   const CtapDeviceResponseCode status =
       hresult == S_OK ? CtapDeviceResponseCode::kSuccess
                       : WinErrorNameToCtapDeviceResponseCode(
-                            base::string16(win_api_->GetErrorName(hresult)));
+                            base::string16(win_api_.GetErrorName(hresult)));
   if (waiting_for_cancellation_) {
     // Don't bother invoking the reply callback if the caller has already
     // cancelled the operation.
@@ -199,7 +195,7 @@ void WinWebAuthnApiAuthenticator::GetAssertion(CtapGetAssertionRequest request,
     authenticator_attachment = WEBAUTHN_AUTHENTICATOR_ATTACHMENT_ANY;
   }
 
-  win_api_->AuthenticatorGetAssertion(
+  win_api_.AuthenticatorGetAssertion(
       current_window_, cancellation_id_, std::move(rp_id16),
       std::move(opt_app_id16), std::move(client_data_json),
       std::move(allow_list),
@@ -226,13 +222,13 @@ void WinWebAuthnApiAuthenticator::GetAssertionDone(
     CtapGetAssertionRequest request,
     GetAssertionCallback callback,
     HRESULT hresult,
-    WinWebAuthnApi::ScopedAssertion assertion) {
+    WinWebAuthnApiAdapter::ScopedAssertion assertion) {
   DCHECK(is_pending_);
   is_pending_ = false;
   const CtapDeviceResponseCode status =
       hresult == S_OK ? CtapDeviceResponseCode::kSuccess
                       : WinErrorNameToCtapDeviceResponseCode(
-                            base::string16(win_api_->GetErrorName(hresult)));
+                            base::string16(win_api_.GetErrorName(hresult)));
   if (waiting_for_cancellation_) {
     // Don't bother invoking the reply callback if the caller has already
     // cancelled the operation.
@@ -253,7 +249,7 @@ void WinWebAuthnApiAuthenticator::Cancel() {
 
   waiting_for_cancellation_ = true;
   // This returns immediately.
-  win_api_->CancelCurrentOperation(&cancellation_id_);
+  win_api_.CancelCurrentOperation(&cancellation_id_);
 }
 
 std::string WinWebAuthnApiAuthenticator::GetId() const {
