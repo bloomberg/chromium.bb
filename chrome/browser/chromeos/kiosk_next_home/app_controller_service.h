@@ -62,6 +62,8 @@ class AppControllerService : public mojom::AppController,
   // AppServiceProxy.
   mojom::AppPtr CreateAppPtr(const apps::AppUpdate& update);
 
+  bool AppIsRelevantForKioskNextHome(const apps::AppUpdate& update);
+
   // Tries to get the Android package name for this app from ARC++.
   // If we can't find the package name or this is not an Android app we return
   // an empty string.

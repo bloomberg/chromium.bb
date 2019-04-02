@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/arc/arc_service_manager.h"
@@ -70,7 +71,9 @@ void AppControllerService::GetApps(
   // be consumed. Refer to AppRegistryCache::ForEachApp for more information.
   app_service_proxy_->AppRegistryCache().ForEachApp(
       [this, &app_list](const apps::AppUpdate& update) {
-        app_list.push_back(CreateAppPtr(update));
+        // Only include relevant apps.
+        if (AppIsRelevantForKioskNextHome(update))
+          app_list.push_back(CreateAppPtr(update));
       });
   std::move(callback).Run(std::move(app_list));
 }
@@ -129,11 +132,16 @@ void AppControllerService::LaunchHomeUrl(const std::string& suffix,
 }
 
 void AppControllerService::OnAppUpdate(const apps::AppUpdate& update) {
-  // Skip this event if no relevant fields have changed.
+  // Skip this event if there were no changes to the fields that we are
+  // interested in.
   if (!update.StateIsNull() && !update.NameChanged() &&
-      !update.ReadinessChanged()) {
+      !update.ReadinessChanged() && !update.ShowInLauncherChanged()) {
     return;
   }
+
+  // Skip this app if it's not relevant.
+  if (!AppIsRelevantForKioskNextHome(update))
+    return;
 
   if (client_) {
     client_->OnAppChanged(CreateAppPtr(update));
@@ -152,6 +160,19 @@ mojom::AppPtr AppControllerService::CreateAppPtr(
     app->android_package_name = MaybeGetAndroidPackageName(app->app_id);
   }
   return app;
+}
+
+bool AppControllerService::AppIsRelevantForKioskNextHome(
+    const apps::AppUpdate& update) {
+  // The Kiosk Next Home app should never be returned since it's considered an
+  // implementation detail.
+  if (update.AppId() == extension_misc::kKioskNextHomeAppId) {
+    return false;
+  }
+
+  // We only consider relevant apps that can be shown in the launcher.
+  // This skips hidden apps like Galery, Web store, Welcome app, etc.
+  return update.ShowInLauncher() == apps::mojom::OptionalBool::kTrue;
 }
 
 const std::string& AppControllerService::MaybeGetAndroidPackageName(
