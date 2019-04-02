@@ -1512,7 +1512,7 @@ public class CustomTabsConnection {
         return mHiddenTabHolder.getSpeculationParamsForTesting();
     }
 
-    /* package */ static void createSpareWebContents() {
+    public static void createSpareWebContents() {
         if (SysUtils.isLowEndDevice()) return;
         WarmupManager.getInstance().createSpareWebContents(WarmupManager.FOR_CCT);
     }

@@ -283,7 +283,8 @@ public class TrustedCdnPublisherUrlTest {
         final Tab tab = customTabActivity.getActivityTab();
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
             Assert.assertEquals(publisherUrl, TrustedCdn.getPublisherUrl(tab));
-            customTabActivity.openCurrentUrlInBrowser(true);
+            customTabActivity.getComponent().resolveNavigationController()
+                    .openCurrentUrlInBrowser(true);
             Assert.assertNull(customTabActivity.getActivityTab());
         });
 

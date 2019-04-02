@@ -194,6 +194,7 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
 
         mPageCriteria = url -> (isModuleLoading() || isModuleLoaded()) && isModuleManagedUrl(url);
         closeButtonNavigator.setLandingPageCriteria(mPageCriteria);
+        mNavigationController.setBackHandler(this::onBackPressedAsync);
 
         activityLifecycleDispatcher.register(this);
     }
@@ -286,10 +287,10 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
     /**
      * @see IActivityDelegate#onBackPressedAsync
      */
-    public boolean onBackPressedAsync(Runnable notHandledRunnable) {
+    public boolean onBackPressedAsync(Runnable defaultBackHandler) {
         if (mModuleEntryPoint != null &&
                 mModuleEntryPoint.getModuleVersion() >= ON_BACK_PRESSED_ASYNC_API_VERSION) {
-            mActivityDelegate.onBackPressedAsync(notHandledRunnable);
+            mActivityDelegate.onBackPressedAsync(defaultBackHandler);
             return true;
         }
 

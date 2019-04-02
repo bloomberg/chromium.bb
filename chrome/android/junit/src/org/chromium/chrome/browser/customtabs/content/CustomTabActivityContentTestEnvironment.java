@@ -25,6 +25,7 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.UserDataHost;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabObserver;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -33,6 +34,7 @@ import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.customtabs.CloseButtonNavigator;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabNavigationEventObserver;
@@ -40,13 +42,18 @@ import org.chromium.chrome.browser.customtabs.CustomTabObserver;
 import org.chromium.chrome.browser.customtabs.CustomTabTabPersistencePolicy;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.TabObserverRegistrar;
+import org.chromium.chrome.browser.customtabs.shadows.ShadowExternalNavigationDelegateImpl;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
+import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -78,6 +85,10 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
     @Mock public TabModelSelectorImpl tabModelSelector;
     @Mock public TabModel tabModel;
     @Mock public CustomTabNavigationEventObserver navigationEventObserver;
+    @Mock public CloseButtonNavigator closeButtonNavigator;
+    @Mock public ToolbarManager toolbarManager;
+    @Mock public ChromeBrowserInitializer browserInitializer;
+    @Mock public ChromeFullscreenManager fullscreenManager;
     public final CustomTabActivityTabProvider tabProvider = new CustomTabActivityTabProvider();
 
     @Captor public ArgumentCaptor<ActivityTabObserver> activityTabObserverCaptor;
@@ -90,7 +101,7 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
     @Override
     protected void starting(Description description) {
         RecordHistogram.setDisabledForTests(true);
-
+        RecordUserAction.setDisabledForTests(true);
         MockitoAnnotations.initMocks(this);
 
         tabFromFactory = prepareTab();
@@ -102,6 +113,7 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
         when(tabFactory.getTabModelSelector()).thenReturn(tabModelSelector);
         when(tabModelSelector.getModel(anyBoolean())).thenReturn(tabModel);
         when(connection.getSpeculatedUrl(any())).thenReturn(SPECULATED_URL);
+        when(browserInitializer.hasNativeInitializationCompleted()).thenReturn(true);
 
         doNothing().when(activityTabProvider).addObserverAndTrigger(
                 activityTabObserverCaptor.capture());
@@ -113,7 +125,9 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
     @Override
     protected void finished(Description description) {
         RecordHistogram.setDisabledForTests(false);
+        RecordUserAction.setDisabledForTests(false);
         AsyncTabParamsManager.getAsyncTabParams().clear();
+        ShadowExternalNavigationDelegateImpl.setWillChromeHandleIntent(false);
     }
 
     public CustomTabActivityTabController createTabController() {
@@ -127,9 +141,12 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
                 () -> customTabObserver, webContentsFactory, navigationEventObserver, tabProvider);
     }
 
-    public CustomTabActivityNavigationController createNavigationController() {
-        return new CustomTabActivityNavigationController(tabProvider,
-                intentDataProvider, connection, () -> customTabObserver);
+    public CustomTabActivityNavigationController createNavigationController(
+            CustomTabActivityTabController tabController) {
+        return new CustomTabActivityNavigationController(tabController, tabProvider,
+                intentDataProvider, connection, () -> customTabObserver, closeButtonNavigator,
+                () -> toolbarManager, browserInitializer, activity, lifecycleDispatcher,
+                () -> fullscreenManager);
     }
 
     public CustomTabActivityInitialPageLoader createInitialPageLoader(
@@ -191,6 +208,10 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
         Tab tab = mock(Tab.class);
         when(tab.getView()).thenReturn(mock(View.class));
         when(tab.getUserDataHost()).thenReturn(new UserDataHost());
+        WebContents webContents = mock(WebContents.class);
+        when(tab.getWebContents()).thenReturn(webContents);
+        NavigationController navigationController = mock(NavigationController.class);
+        when(webContents.getNavigationController()).thenReturn(navigationController);
         return tab;
     }
 }

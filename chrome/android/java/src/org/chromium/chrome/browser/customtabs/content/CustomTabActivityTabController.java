@@ -145,7 +145,7 @@ public class CustomTabActivityTabController implements InflationObserver, Native
      * Detaches the tab and starts reparenting into the browser using given {@param intent} and
      * {@param startActivityOptions}.
      */
-    public void detachAndStartReparenting(Intent intent, Bundle startActivityOptions,
+    void detachAndStartReparenting(Intent intent, Bundle startActivityOptions,
             Runnable finishCallback) {
         Tab tab = mTabProvider.getTab();
         if (tab == null) {
@@ -156,14 +156,24 @@ public class CustomTabActivityTabController implements InflationObserver, Native
         tab.detachAndStartReparenting(intent, startActivityOptions, finishCallback);
     }
 
+    /**
+     * Closes the current tab. This doesn't necessarily lead to closing the entire activity, in
+     * case links with target="_blank" were followed. See the comment to
+     * {@link CustomTabActivityTabProvider.Observer#onAllTabsClosed}.
+     */
+    void closeTab() {
+        mTabFactory.getTabModelSelector().getCurrentModel().closeTab(mTabProvider.getTab(),
+                false, false, false);
+    }
+
     /** Closes the tab and deletes related metadata. */
-    public void closeAndForgetTab() {
+    void closeAndForgetTab() {
         mTabFactory.getTabModelSelector().closeAllTabs(true);
         mTabPersistencePolicy.deleteMetadataStateFileAsync();
     }
 
     /** Save the current state of the tab. */
-    public void saveState() {
+    void saveState() {
         mTabFactory.getTabModelSelector().saveState();
     }
 

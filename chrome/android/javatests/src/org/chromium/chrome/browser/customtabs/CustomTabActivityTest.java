@@ -87,6 +87,7 @@ import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController.FinishReason;
 import org.chromium.chrome.browser.dependency_injection.ModuleFactoryOverrides;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
@@ -2178,7 +2179,7 @@ public class CustomTabActivityTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertFalse(WarmupManager.getInstance().hasSpareWebContents());
             final CustomTabActivity activity = mCustomTabActivityTestRule.getActivity();
-            activity.finishAndClose(false);
+            activity.getComponent().resolveNavigationController().finish(FinishReason.OTHER);
         });
         CriteriaHelper.pollUiThread(new Criteria("No new spare renderer") {
             @Override
@@ -2580,7 +2581,8 @@ public class CustomTabActivityTest {
         };
         tabToBeReparented.addObserver(observer);
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
-            getActivity().openCurrentUrlInBrowser(true);
+            getActivity().getComponent().resolveNavigationController()
+                    .openCurrentUrlInBrowser(true);
             Assert.assertNull(getActivity().getActivityTab());
         });
         // Use the extended CriteriaHelper timeout to make sure we get an activity
