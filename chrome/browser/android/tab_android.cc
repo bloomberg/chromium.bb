@@ -159,8 +159,10 @@ int TabAndroid::GetAndroidId() const {
 
 base::string16 TabAndroid::GetTitle() const {
   JNIEnv* env = base::android::AttachCurrentThread();
-  return base::android::ConvertJavaStringToUTF16(
-      Java_Tab_getTitle(env, weak_java_tab_.get(env)));
+  ScopedJavaLocalRef<jstring> java_title =
+      Java_Tab_getTitle(env, weak_java_tab_.get(env));
+  return java_title ? base::android::ConvertJavaStringToUTF16(java_title)
+                    : base::string16();
 }
 
 bool TabAndroid::IsNativePage() const {
