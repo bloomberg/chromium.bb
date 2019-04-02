@@ -103,11 +103,9 @@ class IOThread : public content::BrowserThreadDelegate {
     // URLRequestContext when network service is enabled.
     std::unique_ptr<net::HostResolver> deprecated_host_resolver;
 
-    // When the network service is enabled, this holds on to a
+    // When the network service is disabled, this holds on to a
     // content::NetworkContext class that owns |system_request_context|.
     std::unique_ptr<network::mojom::NetworkContext> system_network_context;
-    // When the network service is disabled, this owns |system_request_context|.
-    network::URLRequestContextOwner system_request_context_owner;
     net::URLRequestContext* system_request_context;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     scoped_refptr<extensions::EventRouterForwarder>

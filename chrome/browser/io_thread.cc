@@ -30,7 +30,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/data_use_measurement/chrome_data_use_ascriber.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
-#include "chrome/browser/net/failing_url_request_interceptor.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_features.h"
@@ -232,9 +231,12 @@ net_log::ChromeNetLog* IOThread::net_log() {
 
 net::URLRequestContextGetter* IOThread::system_url_request_context_getter() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!system_url_request_context_getter_.get()) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+      !system_url_request_context_getter_.get()) {
     system_url_request_context_getter_ =
         base::MakeRefCounted<SystemURLRequestContextGetter>(this);
+  } else {
+    NOTREACHED();
   }
   return system_url_request_context_getter_.get();
 }
@@ -280,7 +282,8 @@ void IOThread::CleanUp() {
 
   system_url_request_context_getter_ = nullptr;
 
-  globals_->system_request_context->proxy_resolution_service()->OnShutdown();
+  if (globals_->system_request_context)
+    globals_->system_request_context->proxy_resolution_service()->OnShutdown();
 
   // Release objects that the net::URLRequestContext could have been pointing
   // to.
@@ -324,23 +327,6 @@ void IOThread::ConstructSystemRequestContext() {
             std::make_unique<net::NetworkQualityEstimatorParams>(
                 std::map<std::string, std::string>()),
             net_log_);
-    net::URLRequestContextBuilder builder;
-    std::vector<std::unique_ptr<net::URLRequestInterceptor>>
-        url_request_interceptors;
-    url_request_interceptors.emplace_back(
-        std::make_unique<FailingURLRequestInterceptor>());
-    builder.SetInterceptors(std::move(url_request_interceptors));
-    builder.set_network_quality_estimator(
-        globals_->deprecated_network_quality_estimator.get());
-    builder.SetCertVerifier(
-        std::make_unique<WrappedCertVerifierForIOThreadTesting>());
-    builder.set_proxy_resolution_service(
-        net::ProxyResolutionService::CreateDirect());
-    globals_->system_request_context_owner =
-        network::URLRequestContextOwner(nullptr, builder.Build());
-    globals_->system_request_context =
-        globals_->system_request_context_owner.url_request_context.get();
-    network_context_params_.reset();
   } else {
     std::unique_ptr<network::URLRequestContextBuilderMojo> builder =
         std::make_unique<network::URLRequestContextBuilderMojo>();
