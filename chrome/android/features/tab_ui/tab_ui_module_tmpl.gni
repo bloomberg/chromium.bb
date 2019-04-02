@@ -7,6 +7,9 @@ import("//build/config/locales.gni")
 import("//chrome/android/features/module_names_to_package_ids.gni")
 
 template("tab_ui_module_tmpl") {
+  assert(defined(invoker.version_code))
+  assert(defined(invoker.version_name))
+
   _manifest = "$target_gen_dir/$target_name/AndroidManifest.xml"
   _manifest_target = "${target_name}__manifest"
   jinja_template(_manifest_target) {

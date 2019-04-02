@@ -46,6 +46,12 @@ if (target_os == "mac") {
       "notouch_chrome_version_code = \"@NOTOUCH_CHROME_VERSION_CODE@\" " +
       "webview_version_code = \"@WEBVIEW_VERSION_CODE@\" "
 
+  if (target_cpu == "arm64" || target_cpu == "x64") {
+    _version_dictionary_template +=
+        "monochrome_64_32_version_code = \"@MONOCHROME_64_32_VERSION_CODE@\" " +
+        "monochrome_64_version_code = \"@MONOCHROME_64_VERSION_CODE@\" "
+  }
+
   _script_arguments += [
     "-a",
     target_cpu,
@@ -94,18 +100,28 @@ if (target_os == "mac") {
                            "trichrome_version_code",
                            "notouch_chrome_version_code",
                            "webview_version_code",
+                           "monochrome_64_32_version_code",
+                           "monochrome_64_version_code",
                          ])
 
   chrome_version_name = chrome_version_full
 
-  write_file("$root_out_dir/chrome_versions.txt",
-             [
-               "VersionName=$chrome_version_name",
-               "Chrome=$chrome_version_code",
-               "ChromeModern=$chrome_modern_version_code",
-               "Monochrome=$monochrome_version_code",
-               "TrichromeChrome=$trichrome_version_code",
-               "NoTouchChrome=$notouch_chrome_version_code",
-               "Webview=$webview_version_code",
-             ])
+  lines_to_write = [
+    "VersionName=$chrome_version_name",
+    "Chrome=$chrome_version_code",
+    "ChromeModern=$chrome_modern_version_code",
+    "Monochrome=$monochrome_version_code",
+    "TrichromeChrome=$trichrome_version_code",
+    "NoTouchChrome=$notouch_chrome_version_code",
+    "Webview=$webview_version_code",
+  ]
+
+  if (target_cpu == "arm64" || target_cpu == "x64") {
+    lines_to_write += [
+      "Monochrome_64_32=$monochrome_64_32_version_code",
+      "Monochrome_64=$monochrome_64_version_code",
+    ]
+  }
+
+  write_file("$root_out_dir/chrome_versions.txt", lines_to_write)
 }

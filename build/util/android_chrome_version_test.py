@@ -144,6 +144,20 @@ class _VersionTest(unittest.TestCase):
 
     self.assertEqual(arch_chrome_version_code, '372000030')
 
+  def testGenerateVersionCodesAndroidArchArm64Variants(self):
+    """Assert it handles 64-bit-specific additional version codes correctly.
+
+    Some additional version codes are generated for 64-bit architectures.
+    See docstring on android_chrome_version.ARCH64_APK_VARIANTS for more info.
+    """
+    output = GenerateVersionCodes(
+        self.EXAMPLE_VERSION_VALUES, arch='arm64', is_next_build=False)
+    arch_monochrome_64_32_version_code = output['MONOCHROME_64_32_VERSION_CODE']
+    arch_monochrome_64_version_code = output['MONOCHROME_64_VERSION_CODE']
+
+    self.assertEqual(arch_monochrome_64_32_version_code, '372000042')
+    self.assertEqual(arch_monochrome_64_version_code, '372000052')
+
   def testGenerateVersionCodesAndroidArchX64(self):
     """Assert it handles different architectures correctly.
 
@@ -157,6 +171,20 @@ class _VersionTest(unittest.TestCase):
     arch_chrome_version_code = output['CHROME_VERSION_CODE']
 
     self.assertEqual(arch_chrome_version_code, '372000060')
+
+  def testGenerateVersionCodesAndroidArchX64Variants(self):
+    """Assert it handles 64-bit-specific additional version codes correctly.
+
+    Some additional version codes are generated for 64-bit architectures.
+    See docstring on android_chrome_version.ARCH64_APK_VARIANTS for more info.
+    """
+    output = GenerateVersionCodes(
+        self.EXAMPLE_VERSION_VALUES, arch='x64', is_next_build=False)
+    arch_monochrome_64_32_version_code = output['MONOCHROME_64_32_VERSION_CODE']
+    arch_monochrome_64_version_code = output['MONOCHROME_64_VERSION_CODE']
+
+    self.assertEqual(arch_monochrome_64_32_version_code, '372000072')
+    self.assertEqual(arch_monochrome_64_version_code, '372000082')
 
   def testGenerateVersionCodesAndroidArchOrderArm(self):
     """Assert it handles different architectures correctly.

@@ -291,6 +291,7 @@ template("monochrome_public_common_apk_or_module_tmpl") {
     _enable_multidex = is_java_debug || multidex_in_release
   }
   chrome_public_common_apk_or_module_tmpl(target_name) {
+    forward_variables_from(invoker, [ "version_code" ])
     is_trichrome =
         defined(invoker.use_trichrome_library) && invoker.use_trichrome_library
     is_monochrome = !is_trichrome
