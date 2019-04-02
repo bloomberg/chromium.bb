@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_spacing.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -624,10 +625,10 @@ bool NGInlineLayoutAlgorithm::ApplyJustify(LayoutUnit space,
     return false;
 
   // Construct the line text to compute spacing for.
-  String line_text =
-      StringView(line_info->ItemsData().text_content, line_info->StartOffset(),
-                 end_offset - line_info->StartOffset())
-          .ToString();
+  StringBuilder line_text_builder;
+  line_text_builder.Append(StringView(line_info->ItemsData().text_content,
+                                      line_info->StartOffset(),
+                                      end_offset - line_info->StartOffset()));
 
   // Append a hyphen if the last word is hyphenated. The hyphen is in
   // |ShapeResult|, but not in text. |ShapeResultSpacing| needs the text that
@@ -635,9 +636,10 @@ bool NGInlineLayoutAlgorithm::ApplyJustify(LayoutUnit space,
   DCHECK(!line_info->Results().IsEmpty());
   const NGInlineItemResult& last_item_result = line_info->Results().back();
   if (last_item_result.text_end_effect == NGTextEndEffect::kHyphen)
-    line_text.append(last_item_result.item->Style()->HyphenString());
+    line_text_builder.Append(last_item_result.item->Style()->HyphenString());
 
   // Compute the spacing to justify.
+  String line_text = line_text_builder.ToString();
   ShapeResultSpacing<String> spacing(line_text);
   spacing.SetExpansion(space, line_info->BaseDirection(),
                        line_info->LineStyle().GetTextJustify());

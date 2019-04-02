@@ -110,8 +110,7 @@ BuildObjectForAnimationEffect(KeyframeEffect* effect) {
 static std::unique_ptr<protocol::Animation::KeyframeStyle>
 BuildObjectForStringKeyframe(const StringKeyframe* keyframe,
                              double computed_offset) {
-  String offset = String::NumberToStringECMAScript(computed_offset * 100);
-  offset.append('%');
+  String offset = String::NumberToStringECMAScript(computed_offset * 100) + "%";
 
   std::unique_ptr<protocol::Animation::KeyframeStyle> keyframe_object =
       protocol::Animation::KeyframeStyle::create()

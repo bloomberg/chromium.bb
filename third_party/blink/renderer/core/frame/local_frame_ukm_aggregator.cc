@@ -8,6 +8,7 @@
 #include "base/rand_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -83,12 +84,13 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
     // own and allocate here.
     auto& absolute_record = absolute_metric_records_.emplace_back();
     absolute_record.reset();
-    String uma_name = uma_preamble;
-    uma_name.append(metric_data.name);
-    uma_name.append(uma_postscript);
+    StringBuilder uma_name;
+    uma_name.Append(uma_preamble);
+    uma_name.Append(metric_data.name);
+    uma_name.Append(uma_postscript);
     if (metric_data.has_uma) {
-      absolute_record.uma_counter.reset(
-          new CustomCountHistogram(uma_name.Utf8().data(), 0, 10000000, 50));
+      absolute_record.uma_counter.reset(new CustomCountHistogram(
+          uma_name.ToString().Utf8().data(), 0, 10000000, 50));
     }
 
     // Percentage records report the ratio of each metric to the primary metric,
@@ -97,13 +99,14 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
     auto& percentage_record = main_frame_percentage_records_.emplace_back();
     percentage_record.reset();
     for (auto bucket_substring : threshold_substrings) {
-      String uma_percentage_name = uma_percentage_preamble;
-      uma_percentage_name.append(metric_data.name);
-      uma_percentage_name.append(uma_percentage_postscript);
-      uma_percentage_name.append(bucket_substring);
+      StringBuilder uma_percentage_name;
+      uma_percentage_name.Append(uma_percentage_preamble);
+      uma_percentage_name.Append(metric_data.name);
+      uma_percentage_name.Append(uma_percentage_postscript);
+      uma_percentage_name.Append(bucket_substring);
       percentage_record.uma_counters_per_bucket.push_back(
           std::make_unique<CustomCountHistogram>(
-              uma_percentage_name.Utf8().data(), 0, 10000000, 50));
+              uma_percentage_name.ToString().Utf8().data(), 0, 10000000, 50));
     }
   }
 }

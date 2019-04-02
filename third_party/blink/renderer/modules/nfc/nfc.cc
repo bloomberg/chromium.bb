@@ -146,8 +146,7 @@ struct TypeConverter<NDEFRecordPtr, String> {
   static NDEFRecordPtr Convert(const String& string) {
     NDEFRecordPtr record = NDEFRecord::New();
     record->record_type = NDEFRecordType::TEXT;
-    record->media_type = kPlainTextMimeType;
-    record->media_type.append(kCharSetUTF8);
+    record->media_type = StringView(kPlainTextMimeType) + kCharSetUTF8;
     record->data = mojo::ConvertTo<Vector<uint8_t>>(string);
     return record;
   }
@@ -237,7 +236,7 @@ struct TypeConverter<NDEFRecordPtr, blink::NDEFRecord*> {
       case NDEFRecordType::TEXT:
       case NDEFRecordType::URL:
         setMediaType(recordPtr, record->mediaType(), kPlainTextMimeType);
-        recordPtr->media_type.append(kCharSetUTF8);
+        recordPtr->media_type = recordPtr->media_type + kCharSetUTF8;
         break;
       case NDEFRecordType::JSON:
         setMediaType(recordPtr, record->mediaType(), kJsonMimeType);

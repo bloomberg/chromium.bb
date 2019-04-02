@@ -191,13 +191,12 @@ void MediaControlPopupMenuElement::SetPosition() {
 
   WTF::String bottom_str_value =
       WTF::String::Number(dom_window->innerHeight() -
-                          bounding_client_rect->bottom() + kPopupMenuMarginPx);
+                          bounding_client_rect->bottom() + kPopupMenuMarginPx) +
+      kPx;
   WTF::String right_str_value =
       WTF::String::Number(dom_window->innerWidth() -
-                          bounding_client_rect->right() + kPopupMenuMarginPx);
-
-  bottom_str_value.append(kPx);
-  right_str_value.append(kPx);
+                          bounding_client_rect->right() + kPopupMenuMarginPx) +
+      kPx;
 
   style()->setProperty(&GetDocument(), "bottom", bottom_str_value, kImportant,
                        ASSERT_NO_EXCEPTION);

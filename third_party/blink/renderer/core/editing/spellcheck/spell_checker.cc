@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -263,20 +264,21 @@ static void AddMarker(Document* document,
   if (!SpellChecker::IsSpellCheckingEnabledAt(range_to_mark.EndPosition()))
     return;
 
-  String description;
+  StringBuilder description;
   for (wtf_size_t i = 0; i < descriptions.size(); ++i) {
     if (i != 0)
-      description.append('\n');
-    description.append(descriptions[i]);
+      description.Append('\n');
+    description.Append(descriptions[i]);
   }
 
   if (type == DocumentMarker::kSpelling) {
-    document->Markers().AddSpellingMarker(range_to_mark, description);
+    document->Markers().AddSpellingMarker(range_to_mark,
+                                          description.ToString());
     return;
   }
 
   DCHECK_EQ(type, DocumentMarker::kGrammar);
-  document->Markers().AddGrammarMarker(range_to_mark, description);
+  document->Markers().AddGrammarMarker(range_to_mark, description.ToString());
 }
 
 void SpellChecker::MarkAndReplaceFor(

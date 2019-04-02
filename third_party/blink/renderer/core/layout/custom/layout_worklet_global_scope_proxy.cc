@@ -36,8 +36,8 @@ LayoutWorkletGlobalScopeProxy::LayoutWorkletGlobalScopeProxy(
   reporting_proxy_ =
       std::make_unique<MainThreadWorkletReportingProxy>(document);
 
-  String global_scope_name("LayoutWorklet #");
-  global_scope_name.append(String::Number(global_scope_number));
+  String global_scope_name =
+      StringView("LayoutWorklet #") + String::Number(global_scope_number);
 
   WorkerClients* worker_clients = WorkerClients::Create();
   ProvideContentSettingsClientToWorker(

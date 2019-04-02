@@ -36,8 +36,8 @@ PaintWorkletGlobalScopeProxy::PaintWorkletGlobalScopeProxy(
   reporting_proxy_ =
       std::make_unique<MainThreadWorkletReportingProxy>(document);
 
-  String global_scope_name = "PaintWorklet #";
-  global_scope_name.append(String::Number(global_scope_number));
+  String global_scope_name =
+      StringView("PaintWorklet #") + String::Number(global_scope_number);
 
   WorkerClients* worker_clients = WorkerClients::Create();
   ProvideContentSettingsClientToWorker(
