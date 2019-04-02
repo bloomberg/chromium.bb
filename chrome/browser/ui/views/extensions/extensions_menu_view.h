@@ -5,17 +5,25 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSIONS_MENU_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSIONS_MENU_VIEW_H_
 
+#include <memory>
+
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/controls/button/button.h"
+
+namespace gfx {
+struct VectorIcon;
+}  // namespace gfx
 
 namespace views {
-class View;
+class ImageButton;
 }  // namespace views
 
 // This bubble view displays a list of user extensions.
 // TODO(pbos): Once there's more functionality in here (getting to
 // chrome://extensions, pinning, extension settings), update this comment.
-class ExtensionsMenuView : public views::BubbleDialogDelegateView,
+class ExtensionsMenuView : public views::ButtonListener,
+                           public views::BubbleDialogDelegateView,
                            public ToolbarActionsModel::Observer {
  public:
   ExtensionsMenuView(views::View* anchor_view, Browser* browser);
@@ -25,6 +33,9 @@ class ExtensionsMenuView : public views::BubbleDialogDelegateView,
   static bool IsShowing();
   static void Hide();
   static ExtensionsMenuView* GetExtensionsMenuViewForTesting();
+
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::BubbleDialogDelegateView:
   base::string16 GetAccessibleWindowTitle() const override;
@@ -48,6 +59,11 @@ class ExtensionsMenuView : public views::BubbleDialogDelegateView,
 
  private:
   void Repopulate();
+
+  std::unique_ptr<views::ImageButton> CreateImageButtonForHeader(
+      const gfx::VectorIcon& icon,
+      int id,
+      const base::string16& tooltip);
 
   Browser* const browser_;
   ToolbarActionsModel* const model_;
