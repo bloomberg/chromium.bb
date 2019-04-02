@@ -104,7 +104,8 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
     v8::Isolate* isolate = script_state->GetIsolate();
     ASSERT_TRUE(isolate);
     ScriptState::Scope scope(script_state);
-    ASSERT_TRUE(EvaluateScriptModule(global_scope, source_code));
+    ASSERT_TRUE(global_scope->ScriptController()->Evaluate(
+        ScriptSourceCode(source_code), SanitizeScriptErrors::kDoNotSanitize));
     waitable_event->Signal();
   }
 
@@ -130,7 +131,8 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
               animate () {}
             });
           )JS";
-      ASSERT_TRUE(EvaluateScriptModule(global_scope, source_code));
+      ASSERT_TRUE(global_scope->ScriptController()->Evaluate(
+          ScriptSourceCode(source_code), SanitizeScriptErrors::kDoNotSanitize));
 
       AnimatorDefinition* definition =
           global_scope->FindDefinitionForTest("test");
@@ -141,7 +143,8 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
       // registerAnimator() with a null class definition should fail to define
       // an animator.
       String source_code = "registerAnimator('null', null);";
-      ASSERT_FALSE(EvaluateScriptModule(global_scope, source_code));
+      ASSERT_FALSE(global_scope->ScriptController()->Evaluate(
+          ScriptSourceCode(source_code), SanitizeScriptErrors::kDoNotSanitize));
       EXPECT_FALSE(global_scope->FindDefinitionForTest("null"));
     }
 
@@ -180,7 +183,8 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
               }
             });
         )JS";
-    ASSERT_TRUE(EvaluateScriptModule(global_scope, source_code));
+    ASSERT_TRUE(global_scope->ScriptController()->Evaluate(
+        ScriptSourceCode(source_code), SanitizeScriptErrors::kDoNotSanitize));
 
     ScriptValue constructed_before =
         global_scope->ScriptController()->EvaluateAndReturnValueForTest(
@@ -256,7 +260,8 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
             registerAnimator('stateless_animator', Stateless);
             registerAnimator('foo', Foo);
         )JS";
-    ASSERT_TRUE(EvaluateScriptModule(global_scope, source_code));
+    ASSERT_TRUE(global_scope->ScriptController()->Evaluate(
+        ScriptSourceCode(source_code), SanitizeScriptErrors::kDoNotSanitize));
 
     AnimatorDefinition* first_definition =
         global_scope->FindDefinitionForTest("stateful_animator");
@@ -427,25 +432,6 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
   }
 
   std::unique_ptr<WorkerReportingProxy> reporting_proxy_;
-
- private:
-  // Returns false when a script evaluation error happens.
-  bool EvaluateScriptModule(AnimationWorkletGlobalScope* global_scope,
-                            const String& source_code) {
-    ScriptState* script_state =
-        global_scope->ScriptController()->GetScriptState();
-    EXPECT_TRUE(script_state);
-    const KURL js_url("https://example.com/worklet.js");
-    ModuleRecord module = ModuleRecord::Compile(
-        script_state->GetIsolate(), source_code, js_url, js_url,
-        ScriptFetchOptions(), TextPosition::MinimumPosition(),
-        ASSERT_NO_EXCEPTION);
-    EXPECT_FALSE(module.IsNull());
-    ScriptValue exception = module.Instantiate(script_state);
-    EXPECT_TRUE(exception.IsEmpty());
-    ScriptValue value = module.Evaluate(script_state);
-    return value.IsEmpty();
-  }
 };
 
 TEST_F(AnimationWorkletGlobalScopeTest, BasicParsing) {
