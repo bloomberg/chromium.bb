@@ -18,11 +18,14 @@ import android.widget.TextView;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
+import org.chromium.chrome.browser.lifecycle.StartStopWithNativeObserver;
 import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
@@ -36,6 +39,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDeleg
 import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionProcessor;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
+import org.chromium.components.omnibox.AnswerType;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
@@ -53,7 +57,8 @@ import java.util.List;
 /**
  * Handles updating the model state for the currently visible omnibox suggestions.
  */
-class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionHost {
+class AutocompleteMediator
+        implements OnSuggestionsReceivedListener, SuggestionHost, StartStopWithNativeObserver {
     /** A struct containing information about the suggestion and its view type. */
     private static class SuggestionViewInfo {
         /** The suggestion this info represents. */
@@ -134,6 +139,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
     private int mLayoutDirection;
 
     private WindowAndroid mWindowAndroid;
+    private ActivityLifecycleDispatcher mLifecycleDispatcher;
 
     public AutocompleteMediator(Context context, AutocompleteDelegate delegate,
             UrlBarEditingTextStateProvider textProvider, PropertyModel listPropertyModel) {
@@ -150,12 +156,37 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
                 delegate, (suggestion) -> onSelection(suggestion, 0));
     }
 
+    @Override
+    public void onStartWithNative() {}
+
+    @Override
+    public void onStopWithNative() {
+        recordAnswersHistogram();
+    }
+
     /**
-     * Clear and notify observers that all suggestions are gone.
+     * Clear all suggestions and update counter of whether AiS Answer was presented (and if so - of
+     * what type). Does not notify any property observers of the change.
      */
-    public void clearSuggestions() {
+    private void clearSuggestions() {
         mCurrentModels.clear();
         notifyPropertyModelsChanged();
+    }
+
+    /**
+     * Record presence of AiS answers.
+     *
+     * Note: At the time of writing this functionality, AiS was offering at most one answer to any
+     * query. If this changes before the metric is expired, the code below may need either
+     * revisiting or a secondary metric telling us how many answer suggestions have been shown.
+     */
+    private void recordAnswersHistogram() {
+        for (SuggestionViewInfo info : mCurrentModels) {
+            if (info.suggestion.hasAnswer()) {
+                RecordHistogram.recordEnumeratedHistogram("Omnibox.AnswerInSuggestShown",
+                        info.suggestion.getAnswer().getType(), AnswerType.TOTAL_COUNT);
+            }
+        }
     }
 
     /**
@@ -202,7 +233,21 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
 
     /** Set the WindowAndroid instance associated with the containing Activity. */
     void setWindowAndroid(WindowAndroid window) {
+        if (mLifecycleDispatcher != null) {
+            mLifecycleDispatcher.unregister(this);
+        }
+
         mWindowAndroid = window;
+        if (window != null && window.getActivity().get() != null
+                && window.getActivity().get() instanceof AsyncInitializationActivity) {
+            mLifecycleDispatcher =
+                    ((AsyncInitializationActivity) mWindowAndroid.getActivity().get())
+                            .getLifecycleDispatcher();
+        }
+
+        if (mLifecycleDispatcher != null) {
+            mLifecycleDispatcher.register(this);
+        }
     }
 
     /**
@@ -291,6 +336,10 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
                 });
             }
         } else {
+            // Record presence of answers as user stops interacting with omnibox.
+            // This covers actions such as pressing 'back' button or choosing an answer.
+            recordAnswersHistogram();
+
             mSuggestionVisibilityState = SuggestionVisibilityState.DISALLOWED;
             mHasStartedNewOmniboxEditSession = false;
             mNewOmniboxEditSessionTimestamp = -1;
