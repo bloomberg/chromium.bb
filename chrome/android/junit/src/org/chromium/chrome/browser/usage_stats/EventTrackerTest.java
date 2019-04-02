@@ -11,6 +11,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -22,6 +23,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.Callback;
 import org.chromium.base.Promise;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.test.support.DisableHistogramsRule;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,8 +34,8 @@ import java.util.List;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class EventTrackerTest {
-    private EventTracker mEventTracker;
-
+    @Rule
+    public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
     @Mock
     private UsageStatsBridge mBridge;
     @Captor
@@ -44,6 +46,8 @@ public class EventTrackerTest {
     private ArgumentCaptor<Callback<Boolean>> mWriteCallbackCaptor;
     @Captor
     private ArgumentCaptor<Callback<Boolean>> mDeleteCallbackCaptor;
+
+    private EventTracker mEventTracker;
 
     @Before
     public void setUp() {

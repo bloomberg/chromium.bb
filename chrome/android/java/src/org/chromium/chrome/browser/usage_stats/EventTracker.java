@@ -43,6 +43,7 @@ public class EventTracker {
     public Promise<List<WebsiteEvent>> queryWebsiteEvents(long start, long end) {
         assert start < end;
         return mRootPromise.then((Function<List<WebsiteEvent>, List<WebsiteEvent>>) (result) -> {
+            UsageStatsMetricsReporter.reportMetricsEvent(UsageStatsMetricsEvent.QUERY_EVENTS);
             List<WebsiteEvent> sublist = sublistFromTimeRange(start, end, result);
             List<WebsiteEvent> sublistCopy = new ArrayList<>(sublist.size());
             sublistCopy.addAll(sublist);

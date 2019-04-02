@@ -54792,6 +54792,18 @@ Full version information for the fingerprint enum values:
   <int value="13" label="kContentId"/>
 </enum>
 
+<enum name="UsageStatsEvents">
+  <int value="0" label="Opt In"/>
+  <int value="1" label="Opt Out"/>
+  <int value="2" label="Start Tracking Token"/>
+  <int value="3" label="Stop Tracking Token"/>
+  <int value="4" label="Suspend Sites"/>
+  <int value="5" label="Unsuspend Sites"/>
+  <int value="6" label="Query Events"/>
+  <int value="7" label="Clear All History"/>
+  <int value="8" label="Clear Range of History"/>
+</enum>
+
 <enum name="UsedInDraw">
   <obsolete>
     Deprecated 02/2017 in Issue 675840.

@@ -54,6 +54,8 @@ public class TokenTracker {
                 return;
             }
 
+            UsageStatsMetricsReporter.reportMetricsEvent(
+                    UsageStatsMetricsEvent.START_TRACKING_TOKEN);
             String token = mTokenGenerator.nextToken();
             Map<String, String> resultCopy = new HashMap<>(result);
             resultCopy.put(token, fqdn);
@@ -83,6 +85,8 @@ public class TokenTracker {
                 return;
             }
 
+            UsageStatsMetricsReporter.reportMetricsEvent(
+                    UsageStatsMetricsEvent.STOP_TRACKING_TOKEN);
             Map<String, String> resultCopy = new HashMap<>(result);
             resultCopy.remove(token);
             mBridge.setTokenMappings(resultCopy, (didSucceed) -> {

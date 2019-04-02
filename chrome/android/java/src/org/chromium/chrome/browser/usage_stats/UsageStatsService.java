@@ -95,9 +95,12 @@ public class UsageStatsService {
         prefServiceBridge.setBoolean(Pref.USAGE_STATS_ENABLED, state);
 
         if (mOptInState == state) return;
-
         mOptInState = state;
         mClient.notifyOptInStateChange(mOptInState);
+
+        @UsageStatsMetricsEvent
+        int event = state ? UsageStatsMetricsEvent.OPT_IN : UsageStatsMetricsEvent.OPT_OUT;
+        UsageStatsMetricsReporter.reportMetricsEvent(event);
     }
 
     /** Query for all events that occurred in the half-open range [start, end) */
@@ -146,6 +149,7 @@ public class UsageStatsService {
 
     public void onAllHistoryDeleted() {
         ThreadUtils.assertOnUiThread();
+        UsageStatsMetricsReporter.reportMetricsEvent(UsageStatsMetricsEvent.CLEAR_ALL_HISTORY);
         mClient.notifyAllHistoryCleared();
         mEventTracker.clearAll().except((exception) -> {
             // Retry once; if the subsequent attempt fails, log the failure and move on.
@@ -157,6 +161,7 @@ public class UsageStatsService {
 
     public void onHistoryDeletedInRange(long startTimeMs, long endTimeMs) {
         ThreadUtils.assertOnUiThread();
+        UsageStatsMetricsReporter.reportMetricsEvent(UsageStatsMetricsEvent.CLEAR_HISTORY_RANGE);
         // endTimeMs could be Long.MAX_VALUE, which doesn't play well when converting into a
         // Timestamp proto. It doesn't make any sense to delete into the future, so we can
         // reasonably cap endTimeMs at now.

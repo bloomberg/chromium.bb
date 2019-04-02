@@ -1630,6 +1630,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/usage_stats/UsageStatsBridge.java",
   "java/src/org/chromium/chrome/browser/usage_stats/UsageStatsConsentActivity.java",
   "java/src/org/chromium/chrome/browser/usage_stats/UsageStatsConsentDialog.java",
+  "java/src/org/chromium/chrome/browser/usage_stats/UsageStatsMetricsEvent.java",
+  "java/src/org/chromium/chrome/browser/usage_stats/UsageStatsMetricsReporter.java",
   "java/src/org/chromium/chrome/browser/usage_stats/UsageStatsService.java",
   "java/src/org/chromium/chrome/browser/usage_stats/WebsiteEvent.java",
   "java/src/org/chromium/chrome/browser/util/AccessibilityUtil.java",

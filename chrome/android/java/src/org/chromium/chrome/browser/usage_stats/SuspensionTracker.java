@@ -38,8 +38,12 @@ public class SuspensionTracker {
                 // succeeds.
                 List<String> resultCopy = new ArrayList<>(result);
                 if (suspended) {
+                    UsageStatsMetricsReporter.reportMetricsEvent(
+                            UsageStatsMetricsEvent.SUSPEND_SITES);
                     resultCopy.addAll(fqdns);
                 } else {
+                    UsageStatsMetricsReporter.reportMetricsEvent(
+                            UsageStatsMetricsEvent.UNSUSPEND_SITES);
                     resultCopy.removeAll(fqdns);
                 }
 
