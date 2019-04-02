@@ -19,6 +19,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
 #include "jni/AwContentsStatics_jni.h"
@@ -130,6 +131,11 @@ void JNI_AwContentsStatics_SetCheckClearTextPermitted(
   // path).
   AwContentBrowserClient::set_check_cleartext_permitted(permitted);
   AwURLRequestContextGetter::set_check_cleartext_permitted(permitted);
+}
+
+// static
+jboolean JNI_AwContentsStatics_IsMultiProcessEnabled(JNIEnv* env) {
+  return !content::RenderProcessHost::run_renderer_in_process();
 }
 
 }  // namespace android_webview

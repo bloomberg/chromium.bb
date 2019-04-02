@@ -462,6 +462,10 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                     public Uri getSafeBrowsingPrivacyPolicyUrl() {
                         return sharedStatics.getSafeBrowsingPrivacyPolicyUrl();
                     }
+
+                    public boolean isMultiProcessEnabled() {
+                        return sharedStatics.isMultiProcessEnabled();
+                    }
                 };
             }
         }
