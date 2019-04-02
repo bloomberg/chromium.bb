@@ -111,12 +111,15 @@ class CORE_EXPORT ImagePaintTimingDetector final
   // We will never destroy the pointers within |visible_node_map_|. Once created
   // they will exist for the whole life cycle of |visible_node_map_|.
   HashMap<DOMNodeId, std::unique_ptr<ImageRecord>> visible_node_map_;
+  // This stores the image records, which are ordered by size.
   ImageRecordSet size_ordered_set_;
+  // Use |DOMNodeId| instead of |ImageRecord|* for the efficiency of inserting
+  // and erasing.
   HashSet<DOMNodeId> detached_ids_;
 
   // Node-ids of records pending swap time are stored in this queue until they
   // get a swap time.
-  std::queue<DOMNodeId> images_queued_for_paint_time_;
+  std::queue<base::WeakPtr<ImageRecord>> images_queued_for_paint_time_;
 
   // Used to report the last candidates of each metric.
   unsigned largest_image_candidate_index_max_ = 0;

@@ -195,12 +195,13 @@ void ImagePaintTimingDetector::OnPaintFinished() {
     return;
   // If the last frame index of queue has changed, it means there are new
   // records pending timing.
-  DOMNodeId node_id = images_queued_for_paint_time_.back();
+  base::WeakPtr<ImageRecord>& record = images_queued_for_paint_time_.back();
   // As we never remove nodes from |visible_node_map_|, all of
   // |visible_node_map_| must exist.
-  DCHECK(visible_node_map_.Contains(node_id));
-  unsigned new_frame_index = visible_node_map_.at(node_id)->frame_index;
-  if (last_queued_frame_index_ >= new_frame_index)
+  DCHECK(visible_node_map_.Contains(record->node_id));
+  unsigned new_frame_index = record->frame_index;
+  DCHECK(last_queued_frame_index_ <= new_frame_index);
+  if (last_queued_frame_index_ == new_frame_index)
     return;
 
   last_queued_frame_index_ = new_frame_index;
@@ -257,15 +258,10 @@ void ImagePaintTimingDetector::ReportSwapTime(
     base::TimeTicks timestamp) {
   // The callback is safe from race-condition only when running on main-thread.
   DCHECK(ThreadState::Current()->IsMainThread());
-  // Not guranteed to be non-empty, because records can be removed between
-  // callback registration and invocation.
+  DCHECK(!images_queued_for_paint_time_.empty());
   while (!images_queued_for_paint_time_.empty()) {
-    DOMNodeId node_id = images_queued_for_paint_time_.front();
-    if (!visible_node_map_.Contains(node_id)) {
-      images_queued_for_paint_time_.pop();
-      continue;
-    }
-    ImageRecord* record = visible_node_map_.at(node_id);
+    base::WeakPtr<ImageRecord>& record = images_queued_for_paint_time_.front();
+    DCHECK(visible_node_map_.Contains(record->node_id));
     if (record->frame_index > last_queued_frame_index)
       break;
     record->paint_time = timestamp;
@@ -342,7 +338,7 @@ void ImagePaintTimingDetector::RecordImage(
     // Mind that first_size has to be assigned at the push of
     // |size_ordered_set_| since it's the sorting key.
     record->first_size = rect_size;
-    size_ordered_set_.insert(record->AsWeakPtr());
+    size_ordered_set_.emplace(record->AsWeakPtr());
     visible_node_map_.insert(node_id, std::move(record));
     if (visible_node_map_.size() + invisible_node_ids_.size() >
         kImageNodeNumberLimit) {
@@ -356,8 +352,10 @@ void ImagePaintTimingDetector::RecordImage(
   if (visible_node_map_.Contains(node_id) &&
       !visible_node_map_.at(node_id)->loaded && IsLoaded(object)) {
     // The image is just loaded.
-    images_queued_for_paint_time_.push(node_id);
-    ImageRecord* record = visible_node_map_.at(node_id);
+    DCHECK(visible_node_map_.Contains(node_id));
+    std::unique_ptr<ImageRecord>& record =
+        visible_node_map_.find(node_id)->value;
+    images_queued_for_paint_time_.emplace(record->AsWeakPtr());
     record->frame_index = frame_index_;
     record->loaded = true;
   }
