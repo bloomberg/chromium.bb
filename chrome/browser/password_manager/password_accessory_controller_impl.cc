@@ -44,7 +44,6 @@ bool PasswordAccessoryController::AllowedForWebContents(
   if (vr::VrTabHelper::IsInVr(web_contents)) {
     return false;  // TODO(crbug.com/865749): Reenable if works for VR keyboard.
   }
-  // Either #passwords-keyboards-accessory or #experimental-ui must be enabled.
   return base::FeatureList::IsEnabled(
       password_manager::features::kPasswordsKeyboardAccessory);
 }

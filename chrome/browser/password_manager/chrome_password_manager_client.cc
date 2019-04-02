@@ -418,7 +418,6 @@ void ChromePasswordManagerClient::PasswordWasAutofilled(
     const GURL& origin,
     const std::vector<const PasswordForm*>* federated_matches) const {
 #if defined(OS_ANDROID)
-  // Either #passwords-keyboards-accessory or #experimental-ui must be enabled.
   if (!PasswordAccessoryController::AllowedForWebContents(web_contents())) {
     return;  // No need to even create the bridge if it's not going to be used.
   }
@@ -662,7 +661,6 @@ void ChromePasswordManagerClient::AutomaticGenerationStatusChanged(
               CPMD_BAD_ORIGIN_AUTOMATIC_GENERATION_STATUS_CHANGED))
     return;
 #if defined(OS_ANDROID)
-  // Either #passwords-keyboards-accessory or #experimental-ui must be enabled.
   if (PasswordGenerationController::AllowedForWebContents(web_contents())) {
     if (available) {
       password_manager::PasswordManagerDriver* driver =
@@ -998,7 +996,6 @@ void ChromePasswordManagerClient::FocusedInputChanged(
     bool is_fillable,
     bool is_password_field) {
 #if defined(OS_ANDROID)
-  // Either #passwords-keyboards-accessory or #experimental-ui must be enabled.
   if (PasswordAccessoryController::AllowedForWebContents(web_contents())) {
     PasswordAccessoryController::GetOrCreate(web_contents())
         ->RefreshSuggestionsForField(last_committed_origin, is_fillable,
