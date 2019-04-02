@@ -589,14 +589,15 @@ bool WebFrameTestClient::ShouldContinueNavigation(
 
 void WebFrameTestClient::CheckIfAudioSinkExistsAndIsAuthorized(
     const blink::WebString& sink_id,
-    std::unique_ptr<blink::WebSetSinkIdCallbacks> web_callbacks) {
+    blink::WebSetSinkIdCompleteCallback completion_callback) {
   std::string device_id = sink_id.Utf8();
   if (device_id == "valid" || device_id.empty())
-    web_callbacks->OnSuccess();
+    std::move(completion_callback).Run(/*error =*/base::nullopt);
   else if (device_id == "unauthorized")
-    web_callbacks->OnError(blink::WebSetSinkIdError::kNotAuthorized);
+    std::move(completion_callback)
+        .Run(blink::WebSetSinkIdError::kNotAuthorized);
   else
-    web_callbacks->OnError(blink::WebSetSinkIdError::kNotFound);
+    std::move(completion_callback).Run(blink::WebSetSinkIdError::kNotFound);
 }
 
 void WebFrameTestClient::DidClearWindowObject() {

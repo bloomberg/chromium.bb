@@ -7308,8 +7308,9 @@ void RenderFrameImpl::BindMhtmlFileWriter(
 
 void RenderFrameImpl::CheckIfAudioSinkExistsAndIsAuthorized(
     const blink::WebString& sink_id,
-    std::unique_ptr<blink::WebSetSinkIdCallbacks> callbacks) {
-  std::move(media::ConvertToOutputDeviceStatusCB(std::move(callbacks)))
+    blink::WebSetSinkIdCompleteCallback completion_callback) {
+  std::move(
+      media::ConvertToOutputDeviceStatusCB(std::move(completion_callback)))
       .Run(AudioDeviceFactory::GetOutputDeviceInfo(
                GetRoutingID(), media::AudioSinkParameters(0, sink_id.Utf8()))
                .device_status());

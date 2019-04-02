@@ -799,8 +799,8 @@ class BLINK_EXPORT WebLocalFrameClient {
   // provided via the callbacks.
   virtual void CheckIfAudioSinkExistsAndIsAuthorized(
       const WebString& sink_id,
-      std::unique_ptr<WebSetSinkIdCallbacks> callbacks) {
-    callbacks->OnError(WebSetSinkIdError::kNotSupported);
+      WebSetSinkIdCompleteCallback callback) {
+    std::move(callback).Run(WebSetSinkIdError::kNotSupported);
   }
 
   // Visibility ----------------------------------------------------------

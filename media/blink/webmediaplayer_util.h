@@ -57,10 +57,10 @@ ConvertToEmeInitDataType(blink::WebEncryptedMediaInitDataType init_data_type);
 blink::WebEncryptedMediaInitDataType MEDIA_BLINK_EXPORT
 ConvertToWebInitDataType(EmeInitDataType init_data_type);
 
-// Wraps a blink::WebSetSinkIdCallbacks into a media::OutputDeviceStatusCB
-// and binds it to the current thread
+// Wraps a blink::WebSetSinkIdCompleteCallback into a
+// media::OutputDeviceStatusCB and binds it to the current thread
 OutputDeviceStatusCB MEDIA_BLINK_EXPORT ConvertToOutputDeviceStatusCB(
-    std::unique_ptr<blink::WebSetSinkIdCallbacks> callbacks);
+    blink::WebSetSinkIdCompleteCallback completion_callback);
 
 }  // namespace media
 

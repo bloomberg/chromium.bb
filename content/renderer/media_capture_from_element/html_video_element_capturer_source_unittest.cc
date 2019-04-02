@@ -58,7 +58,7 @@ class MockWebMediaPlayer : public blink::WebMediaPlayer,
     return blink::WebTimeRanges();
   }
   void SetSinkId(const blink::WebString& sinkId,
-                 std::unique_ptr<blink::WebSetSinkIdCallbacks>) override {}
+                 blink::WebSetSinkIdCompleteCallback) override {}
   bool HasVideo() const override { return true; }
   bool HasAudio() const override { return false; }
   blink::WebSize NaturalSize() const override { return blink::WebSize(16, 10); }

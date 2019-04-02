@@ -119,7 +119,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   void OnRequestPictureInPicture() override;
   void SetSinkId(
       const blink::WebString& sink_id,
-      std::unique_ptr<blink::WebSetSinkIdCallbacks> web_callback) override;
+      blink::WebSetSinkIdCompleteCallback completion_callback) override;
   void SetPreload(blink::WebMediaPlayer::Preload preload) override;
   blink::WebTimeRanges Buffered() const override;
   blink::WebTimeRanges Seekable() const override;

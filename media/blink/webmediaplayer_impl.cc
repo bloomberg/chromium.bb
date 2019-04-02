@@ -924,12 +924,12 @@ void WebMediaPlayerImpl::OnRequestPictureInPicture() {
 
 void WebMediaPlayerImpl::SetSinkId(
     const blink::WebString& sink_id,
-    std::unique_ptr<blink::WebSetSinkIdCallbacks> web_callback) {
+    blink::WebSetSinkIdCompleteCallback completion_callback) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DVLOG(1) << __func__;
 
   OutputDeviceStatusCB callback =
-      ConvertToOutputDeviceStatusCB(std::move(web_callback));
+      ConvertToOutputDeviceStatusCB(std::move(completion_callback));
   media_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&SetSinkIdOnMediaThread, audio_source_provider_,
                                 sink_id.Utf8(), std::move(callback)));
