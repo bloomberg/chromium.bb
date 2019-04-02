@@ -459,7 +459,9 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     # Test for build_ids.
     bs.GetBuildStatuses(build_ids=build_ids)
     bs.cidb_conn.GetBuildStatuses.assert_called_once_with(build_ids)
-    # Test for neither arguments.
+    # Test for error conditions.
+    with self.assertRaises(buildstore.BuildStoreException):
+      bs.GetBuildStatuses(buildbucket_ids=buildbucket_ids, build_ids=build_ids)
     self.assertEqual(bs.GetBuildStatuses(), [])
     init.return_value = False
     with self.assertRaises(buildstore.BuildStoreException):

@@ -518,23 +518,18 @@ class BuildStore(object):
     """
     if not self.InitializeClients():
       raise BuildStoreException('BuildStore clients could not be initialized.')
-    if not self._read_from_bb:
-      if buildbucket_ids and build_ids:
-        raise BuildStoreException('GetBuildStatuses: Cannot process both '
-                                  'buildbucket_ids and build_ids.')
-      if buildbucket_ids:
-        buildbucket_ids = [x for x in buildbucket_ids if x is not None]
-      if buildbucket_ids:
-        return self.cidb_conn.GetBuildStatusesWithBuildbucketIds(
-            buildbucket_ids)
-      elif build_ids:
-        build_ids = [x for x in build_ids if x is not None]
-        if build_ids:
-          return self.cidb_conn.GetBuildStatuses(build_ids)
-        else:
-          return []
-      else:
-        return []
+    if buildbucket_ids and build_ids:
+      raise BuildStoreException('GetBuildStatuses: Cannot process both '
+                                'buildbucket_ids and build_ids.')
+    # build_ids have to serviced from CIDB. This codepath will be defunct after
+    # CQ is shut down.
+    if build_ids:
+      return self.cidb_conn.GetBuildStatuses(build_ids)
+    if not self._read_from_bb and buildbucket_ids:
+      return self.cidb_conn.GetBuildStatusesWithBuildbucketIds(
+          buildbucket_ids)
+    else:
+      return []
 
 
 #pylint: disable=unused-argument
