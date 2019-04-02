@@ -1,6 +1,4 @@
-CONSOLE ERROR: line 79: Uncaught (in promise) BAD: TypeError: Cannot read property 'constructor' of null
 This is a testharness.js-based test.
-Harness Error. harness_status.status = 1 , harness_status.message = undefined
 FAIL worker.postMessage should be able to transfer a ReadableStream assert_true: the original stream should be locked expected true got false
 FAIL postMessage in a worker should be able to transfer a ReadableStream promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'constructor' of null"
 Harness: the test ran to completion.
