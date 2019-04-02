@@ -277,25 +277,25 @@ suite('SecurityKeysSetPINDialog', function() {
     assertShown('locked');
   });
 
-  function setNewPINEntries(pinValue, confirmPINValue) {
-    const newPIN = dialog.$.newPIN;
-    const confirmPIN = dialog.$.confirmPIN;
-    newPIN.value = pinValue;
+  function setPINEntry(inputElement, pinValue) {
+    inputElement.value = pinValue;
     // Dispatch input events to trigger validation and UI updates.
-    newPIN.dispatchEvent(
+    inputElement.dispatchEvent(
         new CustomEvent('input', {bubbles: true, cancelable: true}));
-    confirmPIN.value = confirmPINValue;
-    confirmPIN.dispatchEvent(
-        new CustomEvent('input', {bubbles: true, cancelable: true}));
+  }
+
+  function setNewPINEntry(pinValue) {
+    setPINEntry(dialog.$.newPIN, pinValue);
+  }
+
+  function setNewPINEntries(pinValue, confirmPINValue) {
+    setPINEntry(dialog.$.newPIN, pinValue);
+    setPINEntry(dialog.$.confirmPIN, confirmPINValue);
   }
 
   function setChangePINEntries(currentPINValue, pinValue, confirmPINValue) {
     setNewPINEntries(pinValue, confirmPINValue);
-    const currentPIN = dialog.$.currentPIN;
-    currentPIN.value = currentPINValue;
-    // Dispatch input events to trigger validation and UI updates.
-    currentPIN.dispatchEvent(
-        new CustomEvent('input', {bubbles: true, cancelable: true}));
+    setPINEntry(dialog.$.currentPIN, currentPINValue);
   }
 
   test('SetPIN', async function() {
@@ -397,6 +397,15 @@ suite('SecurityKeysSetPINDialog', function() {
 
     setChangePINEntries('4321', '1234', '1234');
     assertFalse(dialog.$.pinSubmit.disabled);  // Note True -> False
+
+    // Changing the new PIN so that it no longer matches the confirm PIN should
+    // prevent submitting the dialog.
+    setNewPINEntry('12345');
+    assertTrue(dialog.$.pinSubmit.disabled);
+
+    // Fixing the new PIN should be sufficient to address that.
+    setNewPINEntry('1234');
+    assertFalse(dialog.$.pinSubmit.disabled);
 
     let setPINResolver = new PromiseResolver();
     browserProxy.setResponseFor('setPIN', setPINResolver.promise);

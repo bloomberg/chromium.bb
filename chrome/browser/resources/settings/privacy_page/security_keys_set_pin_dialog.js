@@ -226,6 +226,13 @@ Polymer({
   /** @private */
   validateNewPIN_: function() {
     this.newPINValid_ = isValidPIN(this.newPIN_);
+    // The new PIN might have been changed to match the confirmation PIN, thus
+    // changing it might make the confirmation PIN valid. An empty value is
+    // considered valid to stop it immediately turning red before the user has
+    // entered anything, but |updatePINButtonValid_| knows that it needs to be
+    // non-empty before the dialog can be submitted.
+    this.confirmPINValid_ = this.confirmPIN_.length == 0 ||
+        (this.newPINValid_ && this.confirmPIN_ == this.newPIN_);
     this.updatePINButtonValid_();
   },
 
