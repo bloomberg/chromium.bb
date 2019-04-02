@@ -551,4 +551,21 @@ TEST_F(BubbleDialogDelegateViewTest, VisibleAnchorChanges) {
   bubble_widget->Hide();
 }
 
+TEST_F(BubbleDialogDelegateViewTest, GetThemeProvider_FromAnchorWidget) {
+  std::unique_ptr<Widget> anchor_widget(CreateTestWidget());
+  TestBubbleDialogDelegateView* bubble_delegate =
+      new TestBubbleDialogDelegateView(nullptr);
+  bubble_delegate->set_parent_window(anchor_widget->GetNativeView());
+
+  Widget* bubble_widget =
+      BubbleDialogDelegateView::CreateBubble(bubble_delegate);
+  bubble_widget->Show();
+  EXPECT_NE(bubble_widget->GetThemeProvider(),
+            anchor_widget->GetThemeProvider());
+
+  bubble_delegate->SetAnchorView(anchor_widget->GetRootView());
+  EXPECT_EQ(bubble_widget->GetThemeProvider(),
+            anchor_widget->GetThemeProvider());
+}
+
 }  // namespace views

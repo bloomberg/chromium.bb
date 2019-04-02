@@ -35,6 +35,25 @@ namespace views {
 
 namespace {
 
+// Override base functionality of Widget to give bubble dialogs access to the
+// theme provider of the window they're anchored to.
+class BubbleWidget : public Widget {
+ public:
+  BubbleWidget() = default;
+
+  // Widget:
+  const ui::ThemeProvider* GetThemeProvider() const override {
+    BubbleDialogDelegateView* const bubble_delegate =
+        static_cast<BubbleDialogDelegateView*>(widget_delegate());
+    if (!bubble_delegate || !bubble_delegate->anchor_widget())
+      return Widget::GetThemeProvider();
+    return bubble_delegate->anchor_widget()->GetThemeProvider();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BubbleWidget);
+};
+
 // The frame view for bubble dialog widgets. These are not user-sizable so have
 // simplified logic for minimum and maximum sizes to avoid repeated calls to
 // CalculatePreferredSize().
@@ -61,7 +80,7 @@ bool CustomShadowsSupported() {
 
 // Create a widget to host the bubble.
 Widget* CreateBubbleWidget(BubbleDialogDelegateView* bubble) {
-  Widget* bubble_widget = new Widget();
+  Widget* bubble_widget = new BubbleWidget();
   Widget::InitParams bubble_params(Widget::InitParams::TYPE_BUBBLE);
   bubble_params.delegate = bubble;
   bubble_params.opacity = CustomShadowsSupported()
