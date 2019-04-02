@@ -3414,10 +3414,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutoplayIgnoreWebAudioDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(media::kAutoplayIgnoreWebAudio)},
 
-    {"upcoming-ui-features", flag_descriptions::kExperimentalUiName,
-     flag_descriptions::kExperimentalUiDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kExperimentalUi)},
-
 #if defined(OS_ANDROID)
     {"cct-module", flag_descriptions::kCCTModuleName,
      flag_descriptions::kCCTModuleDescription, kOsAndroid,

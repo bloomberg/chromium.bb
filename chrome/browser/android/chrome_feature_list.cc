@@ -71,7 +71,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kClipboardContentSetting,
     &features::kDownloadsLocationChange,
     &features::kExperimentalAppBanners,
-    &features::kExperimentalUi,
     &features::kIncognitoStrings,
     &features::kOverscrollHistoryNavigation,
     &features::kPermissionDelegation,

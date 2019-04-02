@@ -16,11 +16,6 @@ const base::Feature kCalculateNativeWinOcclusion{
     "CalculateNativeWinOcclusion", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // OW_WIN
 
-// Enables all upcoming UI features.
-// Deprecated - DO NOT USE (See http://crbug.com/947314).
-const base::Feature kExperimentalUi{"ExperimentalUi",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-
 #if defined(OS_CHROMEOS)
 // Integrate input method specific settings to Chrome OS settings page.
 // https://crbug.com/895886.

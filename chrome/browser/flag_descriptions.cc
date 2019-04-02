@@ -3514,9 +3514,6 @@ const char kWebContentsOcclusionDescription[] =
 
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 
-const char kExperimentalUiName[] = "Use all upcoming UI features";
-const char kExperimentalUiDescription[] = "Use all upcoming UI features.";
-
 // Feature flags --------------------------------------------------------------
 
 #if defined(DCHECK_IS_CONFIGURABLE)
