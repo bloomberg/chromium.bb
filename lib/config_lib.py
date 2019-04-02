@@ -199,14 +199,6 @@ def GetHWTestEnv(builder_run_config, model_config=None, suite_config=None):
   Returns:
     A string variable to indiate the hwtest environment.
   """
-  # arc-*ts-qual suites use a different logic because they use a separate pool
-  # on the release builder.
-  if suite_config.suite in [
-      constants.HWTEST_CTS_QUAL_SUITE, constants.HWTEST_GTS_QUAL_SUITE]:
-    if builder_run_config.enable_skylab_cts_hw_tests:
-      return constants.ENV_SKYLAB
-    return constants.ENV_AUTOTEST
-
   enable_suite = True if suite_config is None else suite_config.enable_skylab
   enable_model = True if model_config is None else model_config.enable_skylab
   if (builder_run_config.enable_skylab_hw_tests
@@ -868,13 +860,8 @@ def DefaultSettings():
       # failures.
       vm_test_runs=1,
 
-      # If True, run SkylabHWTestStage instead of HWTestStage for suites that
-      # use pools other than pool:cts.
+      # If True, run SkylabHWTestStage instead of HWTestStage.
       enable_skylab_hw_tests=False,
-
-      # If True, run SkylabHWTestStage instead of HWTestStage for suites that
-      # use pool:cts.
-      enable_skylab_cts_hw_tests=False,
 
       # A list of HWTestConfig objects to run.
       hw_tests=[],
