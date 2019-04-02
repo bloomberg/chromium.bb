@@ -212,6 +212,9 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
   // Notifies InputContextHanlder to commit |text|.
   virtual void CommitTextToInputContext(int context_id,
                                         const std::string& text) = 0;
+  // Notifies InputContextHandler to delete surrounding text.
+  virtual void DeleteSurroundingTextToInputContext(int offset,
+                                                   size_t number_of_chars) = 0;
   // Sends the key event to the window tree host.
   virtual bool SendKeyEvent(ui::KeyEvent* ui_event,
                             const std::string& code) = 0;

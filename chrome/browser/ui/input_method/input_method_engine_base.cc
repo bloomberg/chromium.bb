@@ -211,9 +211,8 @@ void InputMethodEngineBase::Enable(const std::string& component_id) {
 void InputMethodEngineBase::Disable() {
   std::string last_component_id{active_component_id_};
   active_component_id_.clear();
-  if (ui::IMEBridge::Get()->GetInputContextHandler())
-    ui::IMEBridge::Get()->GetInputContextHandler()->CommitText(
-        base::UTF16ToUTF8(composition_text_->text));
+  CommitTextToInputContext(context_id_,
+                           base::UTF16ToUTF8(composition_text_->text));
   composition_text_.reset(new ui::CompositionText());
   observer_->OnDeactivated(last_component_id);
 }
@@ -320,10 +319,7 @@ bool InputMethodEngineBase::DeleteSurroundingText(int context_id,
 
   // TODO(nona): Return false if there is ongoing composition.
 
-  ui::IMEInputContextHandlerInterface* input_context =
-      ui::IMEBridge::Get()->GetInputContextHandler();
-  if (input_context)
-    input_context->DeleteSurroundingText(offset, number_of_chars);
+  DeleteSurroundingTextToInputContext(offset, number_of_chars);
 
   return true;
 }
@@ -418,21 +414,14 @@ void InputMethodEngineBase::KeyEventHandled(const std::string& extension_id,
   handling_key_event_ = false;
   // When finish handling key event, take care of the unprocessed commitText
   // and setComposition calls.
-  ui::IMEInputContextHandlerInterface* input_context =
-      ui::IMEBridge::Get()->GetInputContextHandler();
   if (commit_text_changed_) {
-    if (input_context) {
-      input_context->CommitText(text_);
-    }
+    CommitTextToInputContext(context_id_, text_);
     text_ = "";
     commit_text_changed_ = false;
   }
 
   if (composition_changed_) {
-    if (input_context) {
-      input_context->UpdateCompositionText(
-          composition_, composition_.selection.start(), true);
-    }
+    UpdateComposition(composition_, composition_.selection.start(), true);
     composition_ = ui::CompositionText();
     composition_changed_ = false;
   }

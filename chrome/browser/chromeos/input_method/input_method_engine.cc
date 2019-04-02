@@ -64,11 +64,17 @@ const int kDefaultPageSize = 9;
 class MojoHelper : public ime::mojom::ImeEngine,
                    public ime::mojom::ImeEngineFactory {
  public:
-  MojoHelper(InputMethodEngine* engine,
-             ime::mojom::ImeEngineFactoryRegistryPtr registry)
-      : engine_(engine), factory_binding_(this), engine_binding_(this) {
+  explicit MojoHelper(InputMethodEngine* engine)
+      : engine_(engine), factory_binding_(this), engine_binding_(this) {}
+  ~MojoHelper() override = default;
+
+  void Activate(ime::mojom::ImeEngineFactoryRegistryPtr registry) {
     ime::mojom::ImeEngineFactoryPtr factory_ptr;
+    factory_binding_.Close();
     factory_binding_.Bind(mojo::MakeRequest(&factory_ptr));
+    factory_binding_.set_connection_error_handler(
+        base::BindOnce(&MojoHelper::OnConnectionLost, base::Unretained(this)));
+
     if (registry) {
       registry_ = std::move(registry);
     } else {
@@ -79,11 +85,11 @@ class MojoHelper : public ime::mojom::ImeEngine,
     }
     registry_->ActivateFactory(std::move(factory_ptr));
   }
-  ~MojoHelper() override = default;
 
   // ime::mojom::ImeEngineFactory overrides:
   void CreateEngine(ime::mojom::ImeEngineRequest engine_request,
                     ime::mojom::ImeEngineClientPtr client) override {
+    engine_binding_.Close();
     engine_binding_.Bind(std::move(engine_request));
     engine_client_ = std::move(client);
   }
@@ -112,7 +118,11 @@ class MojoHelper : public ime::mojom::ImeEngine,
     engine_->SetCompositionBounds(bounds);
   }
 
-  ime::mojom::ImeEngineClientPtr& engine_client() { return engine_client_; }
+  bool IsConnected() const { return engine_client_.is_bound(); }
+
+  ime::mojom::ImeEngineClientProxy* engine_client() {
+    return engine_client_.get();
+  }
 
   void FlushForTesting() {
     if (registry_)
@@ -122,6 +132,14 @@ class MojoHelper : public ime::mojom::ImeEngine,
   }
 
  private:
+  void OnConnectionLost() {
+    // After the connection to |ImeEngineFactoryRegistry| is broken, break the
+    // connection to the client, so that the client can reconnect through Window
+    // Service.
+    engine_binding_.Close();
+    engine_client_.reset();
+  }
+
   InputMethodEngine* engine_;
   mojo::Binding<ime::mojom::ImeEngineFactory> factory_binding_;
   mojo::Binding<ime::mojom::ImeEngine> engine_binding_;
@@ -152,20 +170,16 @@ InputMethodEngine::InputMethodEngine()
     : candidate_window_(new ui::CandidateWindow()),
       window_visible_(false),
       is_mirroring_(false),
-      is_casting_(false) {}
+      is_casting_(false) {
+  mojo_helper_ = std::make_unique<MojoHelper>(this);
+}
 
 InputMethodEngine::~InputMethodEngine() {}
 
 void InputMethodEngine::Enable(const std::string& component_id) {
   InputMethodEngineBase::Enable(component_id);
   EnableInputView();
-  mojo_helper_ = std::make_unique<MojoHelper>(
-      this, std::move(ime_engine_factory_registry_));
-}
-
-void InputMethodEngine::Disable() {
-  InputMethodEngineBase::Disable();
-  mojo_helper_.reset();
+  mojo_helper_->Activate(std::move(ime_engine_factory_registry_));
 }
 
 bool InputMethodEngine::IsActive() const {
@@ -355,23 +369,50 @@ void InputMethodEngine::UpdateComposition(
     const ui::CompositionText& composition_text,
     uint32_t cursor_pos,
     bool is_visible) {
-  ui::IMEInputContextHandlerInterface* input_context =
-      ui::IMEBridge::Get()->GetInputContextHandler();
-  if (input_context)
-    input_context->UpdateCompositionText(composition_text, cursor_pos,
-                                         is_visible);
+  if (mojo_helper_->IsConnected()) {
+    NOTIMPLEMENTED_LOG_ONCE();
+  } else {
+    ui::IMEInputContextHandlerInterface* input_context =
+        ui::IMEBridge::Get()->GetInputContextHandler();
+    if (input_context)
+      input_context->UpdateCompositionText(composition_text, cursor_pos,
+                                           is_visible);
+  }
 }
 
 void InputMethodEngine::CommitTextToInputContext(int context_id,
                                                  const std::string& text) {
-  ui::IMEBridge::Get()->GetInputContextHandler()->CommitText(text);
+  bool committed = false;
+  if (mojo_helper_->IsConnected()) {
+    NOTIMPLEMENTED_LOG_ONCE();
+  } else {
+    ui::IMEInputContextHandlerInterface* input_context =
+        ui::IMEBridge::Get()->GetInputContextHandler();
+    if (input_context) {
+      input_context->CommitText(text);
+      committed = true;
+    }
+  }
 
-  // Records histograms for committed characters.
-  if (!composition_text_->text.empty()) {
+  if (committed && !composition_text_->text.empty()) {
+    // Records histograms for committed characters.
     base::string16 wtext = base::UTF8ToUTF16(text);
     UMA_HISTOGRAM_CUSTOM_COUNTS("InputMethod.CommitLength", wtext.length(), 1,
                                 25, 25);
     composition_text_.reset(new ui::CompositionText());
+  }
+}
+
+void InputMethodEngine::DeleteSurroundingTextToInputContext(
+    int offset,
+    size_t number_of_chars) {
+  if (mojo_helper_->IsConnected()) {
+    NOTIMPLEMENTED_LOG_ONCE();
+  } else {
+    ui::IMEInputContextHandlerInterface* input_context =
+        ui::IMEBridge::Get()->GetInputContextHandler();
+    if (input_context)
+      input_context->DeleteSurroundingText(offset, number_of_chars);
   }
 }
 
@@ -381,18 +422,23 @@ bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
   if (event->key_code() == ui::VKEY_UNKNOWN)
     event->set_key_code(ui::DomKeycodeToKeyboardCode(code));
 
-  ui::IMEInputContextHandlerInterface* input_context =
-      ui::IMEBridge::Get()->GetInputContextHandler();
-  if (!input_context)
-    return false;
-
   // Marks the simulated key event is from the Virtual Keyboard.
   ui::Event::Properties properties;
   properties[ui::kPropertyFromVK] = std::vector<uint8_t>();
   event->SetProperties(properties);
 
-  input_context->SendKeyEvent(event);
-  return true;
+  bool sent = false;
+  if (mojo_helper_->IsConnected()) {
+    NOTIMPLEMENTED_LOG_ONCE();
+  } else {
+    ui::IMEInputContextHandlerInterface* input_context =
+        ui::IMEBridge::Get()->GetInputContextHandler();
+    if (input_context) {
+      input_context->SendKeyEvent(event);
+      sent = true;
+    }
+  }
+  return sent;
 }
 
 void InputMethodEngine::EnableInputView() {
