@@ -1,0 +1,5 @@
+[document web]
+++[text] name='Before'
+++[separator] horizontal current=0.000000 minimum=0.000000 maximum=0.000000
+++[separator] horizontal current=1.000000 minimum=1.000000 maximum=3.000000
+++[text] name='After'
