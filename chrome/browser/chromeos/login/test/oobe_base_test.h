@@ -18,8 +18,6 @@ class WindowedNotificationObserver;
 
 namespace chromeos {
 
-class NetworkPortalDetectorTestImpl;
-
 // Base class for OOBE, login, SAML and Kiosk tests.
 class OobeBaseTest : public MixinBasedInProcessBrowserTest {
  public:
@@ -34,7 +32,6 @@ class OobeBaseTest : public MixinBasedInProcessBrowserTest {
   // MixinBasedInProcessBrowserTest::
   void SetUp() override;
   void SetUpCommandLine(base::CommandLine* command_line) override;
-  void SetUpInProcessBrowserTestFixture() override;
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
 
@@ -48,15 +45,6 @@ class OobeBaseTest : public MixinBasedInProcessBrowserTest {
   // Oobe UI to start up before initializing all mix-ins.
   virtual bool ShouldWaitForOobeUI();
 
-  // Network status control functions.
-  void SimulateNetworkOffline();
-  void SimulateNetworkOnline();
-  void SimulateNetworkPortal();
-
-  base::Closure SimulateNetworkOfflineClosure();
-  base::Closure SimulateNetworkOnlineClosure();
-  base::Closure SimulateNetworkPortalClosure();
-
   // Returns chrome://oobe WebUI.
   content::WebUI* GetLoginUI();
 
@@ -69,8 +57,6 @@ class OobeBaseTest : public MixinBasedInProcessBrowserTest {
   void WaitForSigninScreen();
   void WaitForEnrollmentSuccess();
   test::JSChecker SigninFrameJS();
-
-  NetworkPortalDetectorTestImpl* network_portal_detector_ = nullptr;
 
   // Whether to use background networking. Note this is only effective when it
   // is set before SetUpCommandLine is invoked.

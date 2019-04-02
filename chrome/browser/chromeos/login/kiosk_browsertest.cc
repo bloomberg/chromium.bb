@@ -30,6 +30,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/network_portal_detector_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/test/test_condition_waiter.h"
@@ -600,12 +601,11 @@ class KioskTest : public OobeBaseTest {
     apps_loaded_signal.Wait();
   }
 
-  void StartAppLaunchFromLoginScreen(const base::Closure& network_setup_cb) {
+  void StartAppLaunchFromLoginScreen(
+      NetworkPortalDetector::CaptivePortalStatus network_status) {
     PrepareAppLaunch();
 
-    if (!network_setup_cb.is_null())
-      network_setup_cb.Run();
-
+    network_portal_detector_.SimulateDefaultNetworkState(network_status);
     EXPECT_TRUE(LaunchApp(test_app_id(), false));
   }
 
@@ -730,7 +730,8 @@ class KioskTest : public OobeBaseTest {
     ScopedCanConfigureNetwork can_configure_network(true, true);
 
     // Start app launch and wait for network connectivity timeout.
-    StartAppLaunchFromLoginScreen(SimulateNetworkOfflineClosure());
+    StartAppLaunchFromLoginScreen(
+        NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE);
     OobeScreenWaiter splash_waiter(OobeScreen::SCREEN_APP_LAUNCH_SPLASH);
     splash_waiter.Wait();
     WaitForAppLaunchNetworkTimeout();
@@ -791,6 +792,16 @@ class KioskTest : public OobeBaseTest {
     return base::Value();
   }
 
+  void SimulateNetworkOnline() {
+    network_portal_detector_.SimulateDefaultNetworkState(
+        NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
+  }
+
+  void SimulateNetworkOffline() {
+    network_portal_detector_.SimulateDefaultNetworkState(
+        NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE);
+  }
+
   AppLaunchController* GetAppLaunchController() {
     return LoginDisplayHost::default_host()->GetAppLaunchController();
   }
@@ -819,6 +830,8 @@ class KioskTest : public OobeBaseTest {
   const AccountId test_owner_account_id_ =
       AccountId::FromUserEmail(kTestOwnerEmail);
 
+  NetworkPortalDetectorMixin network_portal_detector_{&mixin_host_};
+
  private:
   bool use_consumer_kiosk_mode_ = true;
   std::string test_app_id_;
@@ -831,7 +844,8 @@ class KioskTest : public OobeBaseTest {
 };
 
 IN_PROC_BROWSER_TEST_F(KioskTest, InstallAndLaunchApp) {
-  StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());
+  StartAppLaunchFromLoginScreen(
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
   WaitForAppLaunchSuccess();
   KioskAppManager::App app;
   ASSERT_TRUE(KioskAppManager::Get()->GetApp(test_app_id(), &app));
@@ -842,7 +856,8 @@ IN_PROC_BROWSER_TEST_F(KioskTest, InstallAndLaunchApp) {
 IN_PROC_BROWSER_TEST_F(KioskTest, ZoomSupport) {
   ExtensionTestMessageListener app_window_loaded_listener("appWindowLoaded",
                                                           false);
-  StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());
+  StartAppLaunchFromLoginScreen(
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
   EXPECT_TRUE(app_window_loaded_listener.WaitUntilSatisfied());
 
   Profile* app_profile = ProfileManager::GetPrimaryUserProfile();
@@ -914,7 +929,8 @@ IN_PROC_BROWSER_TEST_F(KioskTest, ZoomSupport) {
 IN_PROC_BROWSER_TEST_F(KioskTest, NotSignedInWithGAIAAccount) {
   // Tests that the kiosk session is not considered to be logged in with a GAIA
   // account.
-  StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());
+  StartAppLaunchFromLoginScreen(
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
   WaitForAppLaunchSuccess();
   EXPECT_EQ(extensions::Manifest::EXTERNAL_PREF, GetInstalledAppLocation());
 
@@ -942,7 +958,8 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppWithNetworkConfigAccelerator) {
   AppLaunchController::SetBlockAppLaunchForTesting(true);
 
   // Start app launch and wait for network connectivity timeout.
-  StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());
+  StartAppLaunchFromLoginScreen(
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
   OobeScreenWaiter splash_waiter(OobeScreen::SCREEN_APP_LAUNCH_SPLASH);
   splash_waiter.Wait();
 
@@ -971,7 +988,8 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkDownConfigureNotAllowed) {
   ScopedCanConfigureNetwork can_configure_network(false, true);
 
   // Start app launch and wait for network connectivity timeout.
-  StartAppLaunchFromLoginScreen(SimulateNetworkOfflineClosure());
+  StartAppLaunchFromLoginScreen(
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE);
   OobeScreenWaiter splash_waiter(OobeScreen::SCREEN_APP_LAUNCH_SPLASH);
   splash_waiter.Wait();
   WaitForAppLaunchNetworkTimeout();
@@ -989,7 +1007,8 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkPortal) {
   ScopedCanConfigureNetwork can_configure_network(true, false);
 
   // Start app launch with network portal state.
-  StartAppLaunchFromLoginScreen(SimulateNetworkPortalClosure());
+  StartAppLaunchFromLoginScreen(
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL);
 
   OobeScreenWaiter app_splash_waiter(OobeScreen::SCREEN_APP_LAUNCH_SPLASH);
   app_splash_waiter.set_no_assert_last_screen();
@@ -1010,7 +1029,8 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppUserCancel) {
   // Make fake_cws_ return empty update response.
   set_test_app_version("");
   OobeScreenWaiter splash_waiter(OobeScreen::SCREEN_APP_LAUNCH_SPLASH);
-  StartAppLaunchFromLoginScreen(SimulateNetworkOfflineClosure());
+  StartAppLaunchFromLoginScreen(
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE);
   splash_waiter.Wait();
 
   settings_helper_.SetBoolean(
@@ -1313,7 +1333,8 @@ IN_PROC_BROWSER_TEST_F(KioskTest, GetVolumeList) {
   set_test_crx_file(test_app_id() + ".crx");
 
   extensions::ResultCatcher catcher;
-  StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());
+  StartAppLaunchFromLoginScreen(
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
@@ -1903,7 +1924,8 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_PreserveLocalData) {
   set_test_crx_file(test_app_id() + ".crx");
 
   extensions::ResultCatcher catcher;
-  StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());
+  StartAppLaunchFromLoginScreen(
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
   WaitForAppLaunchWithOptions(true /* check_launch_data */,
                               false /* terminate_app */);
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -1916,7 +1938,8 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PreserveLocalData) {
   set_test_app_version("2.0.0");
   set_test_crx_file(test_app_id() + "_v2_read_and_verify_data.crx");
   extensions::ResultCatcher catcher;
-  StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());
+  StartAppLaunchFromLoginScreen(
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
   WaitForAppLaunchWithOptions(true /* check_launch_data */,
                               false /* terminate_app */);
 
@@ -1974,6 +1997,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, IncompliantPlatformDelayInstall) {
 
   StartUIForAppLaunch();
   SimulateNetworkOnline();
+
   EXPECT_TRUE(LaunchApp(test_app_id(), false));
   WaitForAppLaunchSuccess();
 
@@ -2425,7 +2449,8 @@ IN_PROC_BROWSER_TEST_F(KioskVirtualKeyboardTest, RestrictFeatures) {
   set_test_crx_file(test_app_id() + ".crx");
 
   extensions::ResultCatcher catcher;
-  StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());
+  StartAppLaunchFromLoginScreen(
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
