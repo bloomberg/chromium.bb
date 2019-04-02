@@ -1202,6 +1202,7 @@ NavigationSimulatorImpl::BuildDidCommitProvisionalLoadParams(
   params->gesture =
       has_user_gesture_ ? NavigationGestureUser : NavigationGestureAuto;
   params->history_list_was_cleared = history_list_was_cleared_;
+  params->did_create_new_entry = DidCreateNewEntry();
 
   if (failed_navigation) {
     // Note: Error pages must commit in a unique origin. So it is left unset.
@@ -1214,25 +1215,25 @@ NavigationSimulatorImpl::BuildDidCommitProvisionalLoadParams(
     params->should_update_history = true;
   }
 
+  CHECK(same_document || request_);
+  params->nav_entry_id = request_ ? request_->nav_entry_id() : 0;
+
+  // Simulate Blink assigning a item sequence number and document sequence
+  // number to the navigation.
+  params->item_sequence_number = ++g_unique_identifier;
   if (same_document) {
-    params->nav_entry_id = 0;
-    params->did_create_new_entry = false;
-
-    params->page_state =
-        PageState::CreateForTesting(navigation_url_, false, nullptr, nullptr);
+    FrameNavigationEntry* current_entry =
+        web_contents_->GetController().GetLastCommittedEntry()->GetFrameEntry(
+            frame_tree_node_);
+    params->document_sequence_number =
+        current_entry->document_sequence_number();
   } else {
-    CHECK(request_);
-    params->nav_entry_id = request_->nav_entry_id();
-    params->did_create_new_entry = DidCreateNewEntry();
-
-    // Simulate Blink assigning an item and document sequence number to the
-    // navigation.
-    params->item_sequence_number = ++g_unique_identifier;
     params->document_sequence_number = ++g_unique_identifier;
-    params->page_state = PageState::CreateForTestingWithSequenceNumbers(
-        navigation_url_, params->item_sequence_number,
-        params->document_sequence_number);
   }
+
+  params->page_state = PageState::CreateForTestingWithSequenceNumbers(
+      navigation_url_, params->item_sequence_number,
+      params->document_sequence_number);
 
   return params;
 }
