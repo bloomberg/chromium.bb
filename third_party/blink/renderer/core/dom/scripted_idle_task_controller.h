@@ -101,7 +101,7 @@ class CORE_EXPORT ScriptedIdleTaskController
     uint32_t timeout_millis() const { return timeout_millis_; }
 
    private:
-    TraceWrapperMember<IdleTask> task_;
+    Member<IdleTask> task_;
     TimeTicks queue_timestamp_;
     uint32_t timeout_millis_;
   };
