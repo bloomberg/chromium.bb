@@ -80,13 +80,14 @@ TraceStartupConfig::GetDefaultBrowserStartupConfig() {
   return trace_config;
 }
 
-TraceStartupConfig::TraceStartupConfig()
-    : is_enabled_(false),
-      is_enabled_from_background_tracing_(false),
-      trace_config_(base::trace_event::TraceConfig()),
-      startup_duration_(0),
-      should_trace_to_result_file_(false),
-      finished_writing_to_file_(false) {
+TraceStartupConfig::TraceStartupConfig() {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switches::kDisablePerfetto) &&
+      command_line->GetSwitchValueASCII(switches::kTraceStartupOwner) ==
+          "devtools") {
+    session_owner_ = SessionOwner::kDevToolsTracingHandler;
+  }
+
   if (EnableFromCommandLine()) {
     DCHECK(IsEnabled());
   } else if (EnableFromConfigFile()) {
@@ -115,7 +116,8 @@ void TraceStartupConfig::SetDisabled() {
 }
 
 bool TraceStartupConfig::IsTracingStartupForDuration() const {
-  return IsEnabled() && startup_duration_ > 0;
+  return IsEnabled() && startup_duration_ > 0 &&
+         session_owner_ == SessionOwner::kTracingController;
 }
 
 base::trace_event::TraceConfig TraceStartupConfig::GetTraceConfig() const {
@@ -155,6 +157,20 @@ void TraceStartupConfig::SetBackgroundStartupTracingEnabled(bool enabled) {
 #if defined(OS_ANDROID)
   base::android::SetBackgroundStartupTracingFlag(enabled);
 #endif
+}
+
+TraceStartupConfig::SessionOwner TraceStartupConfig::GetSessionOwner() const {
+  DCHECK(IsEnabled());
+  return session_owner_;
+}
+
+bool TraceStartupConfig::AttemptAdoptBySessionOwner(SessionOwner owner) {
+  if (IsEnabled() && GetSessionOwner() == owner && !session_adopted_) {
+    // The session can only be adopted once.
+    session_adopted_ = true;
+    return true;
+  }
+  return false;
 }
 
 bool TraceStartupConfig::EnableFromCommandLine() {

@@ -25,6 +25,7 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/browser_shutdown_profile_dumper.h"
 #include "content/browser/notification_service_impl.h"
+#include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/common/content_switches_internal.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -181,26 +182,9 @@ void BrowserMainRunnerImpl::Shutdown() {
 
   main_loop_->PreShutdown();
 
-  // If startup tracing has not been finished yet, replace it's dumper
-  // with special version, which would save trace file on exit (i.e.
-  // startup tracing becomes a version of shutdown tracing).
-  // There are two cases:
-  // 1. Startup duration is not reached.
-  // 2. Or if the trace should be saved to file for --trace-config-file flag.
-  std::unique_ptr<BrowserShutdownProfileDumper> startup_profiler;
-  if (tracing::TraceStartupConfig::GetInstance()
-          ->IsTracingStartupForDuration()) {
-    main_loop_->StopStartupTracingTimer();
-    if (main_loop_->startup_trace_file() !=
-        base::FilePath().AppendASCII("none")) {
-      startup_profiler.reset(
-          new BrowserShutdownProfileDumper(main_loop_->startup_trace_file()));
-    }
-  } else if (tracing::TraceStartupConfig::GetInstance()
-                 ->ShouldTraceToResultFile()) {
-    base::FilePath result_file = main_loop_->GetStartupTraceFileName();
-    startup_profiler.reset(new BrowserShutdownProfileDumper(result_file));
-  }
+  // Finalize the startup tracing session if it is still active.
+  std::unique_ptr<BrowserShutdownProfileDumper> startup_profiler =
+      TracingControllerImpl::GetInstance()->FinalizeStartupTracingIfNeeded();
 
   // The shutdown tracing got enabled in AttemptUserExit earlier, but someone
   // needs to write the result to disc. For that a dumper needs to get created
