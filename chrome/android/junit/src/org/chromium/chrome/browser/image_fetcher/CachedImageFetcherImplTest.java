@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.cached_image_fetcher;
+package org.chromium.chrome.browser.image_fetcher;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyObject;
 import static org.mockito.ArgumentMatchers.eq;
@@ -50,7 +51,7 @@ public class CachedImageFetcherImplTest {
     CachedImageFetcherImpl mCachedImageFetcher;
 
     @Mock
-    CachedImageFetcherBridge mCachedImageFetcherBridge;
+    ImageFetcherBridge mCachedImageFetcherBridge;
     @Mock
     Bitmap mBitmap;
     @Mock
@@ -69,7 +70,8 @@ public class CachedImageFetcherImplTest {
             return null;
         })
                 .when(mCachedImageFetcherBridge)
-                .fetchImage(eq(URL), eq(UMA_CLIENT_NAME), mCallbackCaptor.capture());
+                .fetchImage(eq(getConfig()), eq(URL), eq(UMA_CLIENT_NAME), anyInt(), anyInt(),
+                        mCallbackCaptor.capture());
     }
 
     @Test
@@ -84,7 +86,8 @@ public class CachedImageFetcherImplTest {
         verify(mCachedImageFetcher)
                 .fetchImageImpl(eq(URL), eq(UMA_CLIENT_NAME), eq(WIDTH_PX), eq(HEIGHT_PX), any());
         verify(mCachedImageFetcherBridge, never()) // Should never make it to native.
-                .fetchImage(eq(URL), eq(UMA_CLIENT_NAME), any());
+                .fetchImage(
+                        eq(getConfig()), eq(URL), eq(UMA_CLIENT_NAME), anyInt(), anyInt(), any());
 
         // Verify metrics have been reported.
         verify(mCachedImageFetcherBridge)
@@ -103,7 +106,9 @@ public class CachedImageFetcherImplTest {
 
         verify(mCachedImageFetcher)
                 .fetchImageImpl(eq(URL), eq(UMA_CLIENT_NAME), eq(WIDTH_PX), eq(HEIGHT_PX), any());
-        verify(mCachedImageFetcherBridge).fetchImage(eq(URL), eq(UMA_CLIENT_NAME), any());
+        verify(mCachedImageFetcherBridge)
+                .fetchImage(
+                        eq(getConfig()), eq(URL), eq(UMA_CLIENT_NAME), anyInt(), anyInt(), any());
     }
 
     @Test
@@ -117,7 +122,9 @@ public class CachedImageFetcherImplTest {
 
         verify(mCachedImageFetcher)
                 .fetchImageImpl(eq(URL), eq(UMA_CLIENT_NAME), eq(0), eq(0), any());
-        verify(mCachedImageFetcherBridge, never()).fetchImage(eq(URL), eq(UMA_CLIENT_NAME), any());
+        verify(mCachedImageFetcherBridge, never())
+                .fetchImage(
+                        eq(getConfig()), eq(URL), eq(UMA_CLIENT_NAME), anyInt(), anyInt(), any());
     }
 
     @Test
@@ -131,7 +138,9 @@ public class CachedImageFetcherImplTest {
 
         verify(mCachedImageFetcher)
                 .fetchImageImpl(eq(URL), eq(UMA_CLIENT_NAME), eq(0), eq(0), any());
-        verify(mCachedImageFetcherBridge).fetchImage(eq(URL), eq(UMA_CLIENT_NAME), any());
+        verify(mCachedImageFetcherBridge)
+                .fetchImage(
+                        eq(getConfig()), eq(URL), eq(UMA_CLIENT_NAME), anyInt(), anyInt(), any());
     }
 
     @Test
@@ -149,8 +158,12 @@ public class CachedImageFetcherImplTest {
                 .fetchImageImpl(eq(URL), eq(UMA_CLIENT_NAME), eq(0), eq(0), any());
         verify(mCachedImageFetcher)
                 .fetchImageImpl(eq(URL), eq(UMA_CLIENT_NAME + "2"), eq(0), eq(0), any());
-        verify(mCachedImageFetcherBridge).fetchImage(eq(URL), eq(UMA_CLIENT_NAME), any());
-        verify(mCachedImageFetcherBridge).fetchImage(eq(URL), eq(UMA_CLIENT_NAME + "2"), any());
+        verify(mCachedImageFetcherBridge)
+                .fetchImage(
+                        eq(getConfig()), eq(URL), eq(UMA_CLIENT_NAME), anyInt(), anyInt(), any());
+        verify(mCachedImageFetcherBridge)
+                .fetchImage(eq(getConfig()), eq(URL), eq(UMA_CLIENT_NAME + "2"), anyInt(), anyInt(),
+                        any());
     }
 
     @Test
@@ -180,5 +193,9 @@ public class CachedImageFetcherImplTest {
         ShadowLooper.runUiThreadTasks();
 
         verify(mCachedImageFetcherBridge).fetchGif(eq(URL), eq(UMA_CLIENT_NAME), any());
+    }
+
+    private @ImageFetcherConfig int getConfig() {
+        return ImageFetcherConfig.DISK_CACHE_ONLY;
     }
 }

@@ -34,7 +34,7 @@ class ImageDecoder;
 class ImageFetcherParams {
   // Only allow the bridge to access the private function set_skip_transcoding
   // used for gif download.
-  friend class CachedImageFetcherBridge;
+  friend class ImageFetcherBridge;
 
  public:
   // Sets the UMA client name to report feature-specific metrics. Make sure

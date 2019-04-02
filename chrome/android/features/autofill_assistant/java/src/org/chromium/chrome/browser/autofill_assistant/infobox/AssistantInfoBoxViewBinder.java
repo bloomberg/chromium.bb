@@ -12,7 +12,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import org.chromium.chrome.autofill_assistant.R;
-import org.chromium.chrome.browser.cached_image_fetcher.CachedImageFetcher;
+import org.chromium.chrome.browser.image_fetcher.CachedImageFetcher;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 

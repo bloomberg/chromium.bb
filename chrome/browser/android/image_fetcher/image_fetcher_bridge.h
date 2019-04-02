@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_CACHED_IMAGE_FETCHER_CACHED_IMAGE_FETCHER_BRIDGE_H_
-#define CHROME_BROWSER_ANDROID_CACHED_IMAGE_FETCHER_CACHED_IMAGE_FETCHER_BRIDGE_H_
+#ifndef CHROME_BROWSER_ANDROID_IMAGE_FETCHER_IMAGE_FETCHER_BRIDGE_H_
+#define CHROME_BROWSER_ANDROID_IMAGE_FETCHER_IMAGE_FETCHER_BRIDGE_H_
 
 #include <memory>
 #include <string>
@@ -16,14 +16,14 @@
 
 namespace image_fetcher {
 
-class ImageFetcher;
+class ImageFetcherService;
 
-// Native counterpart of CachedImageFetcherBridge.java.
-class CachedImageFetcherBridge {
+// Native counterpart of ImageFetcherBridge.java.
+class ImageFetcherBridge {
  public:
-  CachedImageFetcherBridge(ImageFetcher* cached_image_fetcher,
-                           base::FilePath base_file_path);
-  ~CachedImageFetcherBridge();
+  ImageFetcherBridge(ImageFetcherService* image_fetcher_service,
+                     base::FilePath base_file_path);
+  ~ImageFetcherBridge();
 
   void Destroy(JNIEnv* j_env, const base::android::JavaRef<jobject>& j_this);
 
@@ -40,6 +40,7 @@ class CachedImageFetcherBridge {
 
   void FetchImage(JNIEnv* j_env,
                   const base::android::JavaRef<jobject>& j_this,
+                  const jint j_image_fetcher_config,
                   const base::android::JavaRef<jstring>& j_url,
                   const base::android::JavaRef<jstring>& j_client_name,
                   const base::android::JavaRef<jobject>& j_callback);
@@ -69,15 +70,15 @@ class CachedImageFetcherBridge {
                       const gfx::Image& image,
                       const RequestMetadata& request_metadata);
 
-  // Owned by CachedImageFetcherService.
-  ImageFetcher* cached_image_fetcher_;
+  // This service outlives the bridge.
+  ImageFetcherService* image_fetcher_service_;
   base::FilePath base_file_path_;
 
-  base::WeakPtrFactory<CachedImageFetcherBridge> weak_ptr_factory_;
+  base::WeakPtrFactory<ImageFetcherBridge> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(CachedImageFetcherBridge);
+  DISALLOW_COPY_AND_ASSIGN(ImageFetcherBridge);
 };
 
 }  // namespace image_fetcher
 
-#endif  // CHROME_BROWSER_ANDROID_CACHED_IMAGE_FETCHER_CACHED_IMAGE_FETCHER_BRIDGE_H_
+#endif  // CHROME_BROWSER_ANDROID_IMAGE_FETCHER_IMAGE_FETCHER_BRIDGE_H_

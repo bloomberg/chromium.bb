@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.cached_image_fetcher;
+package org.chromium.chrome.browser.image_fetcher;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -38,15 +38,15 @@ public class CachedImageFetcherImpl implements CachedImageFetcher {
     }
 
     // The native bridge.
-    private CachedImageFetcherBridge mCachedImageFetcherBridge;
+    private ImageFetcherBridge mCachedImageFetcherBridge;
 
     /**
      * Creates a CachedImageFetcher for the current user.
      *
      * @param profile Profile of the user we are fetching for.
      */
-    private CachedImageFetcherImpl(Profile profile) {
-        this(new CachedImageFetcherBridge(profile));
+    CachedImageFetcherImpl(Profile profile) {
+        this(new ImageFetcherBridge(profile));
     }
 
     /**
@@ -55,7 +55,7 @@ public class CachedImageFetcherImpl implements CachedImageFetcher {
      * @param bridge Mock bridge to use.
      */
     @VisibleForTesting
-    CachedImageFetcherImpl(CachedImageFetcherBridge bridge) {
+    CachedImageFetcherImpl(ImageFetcherBridge bridge) {
         mCachedImageFetcherBridge = bridge;
     }
 
@@ -136,8 +136,8 @@ public class CachedImageFetcherImpl implements CachedImageFetcher {
                     reportEvent(clientName, CachedImageFetcherEvent.JAVA_DISK_CACHE_HIT);
                     mCachedImageFetcherBridge.reportCacheHitTime(clientName, startTimeMillis);
                 } else {
-                    mCachedImageFetcherBridge.fetchImage(
-                            url, clientName, (Bitmap bitmapFromNative) -> {
+                    mCachedImageFetcherBridge.fetchImage(ImageFetcherConfig.DISK_CACHE_ONLY, url,
+                            clientName, 0, 0, (Bitmap bitmapFromNative) -> {
                                 callback.onResult(bitmapFromNative);
                                 mCachedImageFetcherBridge.reportTotalFetchTimeFromNative(
                                         clientName, startTimeMillis);

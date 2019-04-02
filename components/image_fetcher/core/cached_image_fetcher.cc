@@ -76,11 +76,10 @@ std::string EncodeSkBitmapToPNG(const std::string& uma_client_name,
 
 }  // namespace
 
-CachedImageFetcher::CachedImageFetcher(
-    std::unique_ptr<ImageFetcher> image_fetcher,
-    scoped_refptr<ImageCache> image_cache,
-    bool read_only)
-    : image_fetcher_(std::move(image_fetcher)),
+CachedImageFetcher::CachedImageFetcher(ImageFetcher* image_fetcher,
+                                       scoped_refptr<ImageCache> image_cache,
+                                       bool read_only)
+    : image_fetcher_(image_fetcher),
       image_cache_(image_cache),
       read_only_(read_only),
       weak_ptr_factory_(this) {

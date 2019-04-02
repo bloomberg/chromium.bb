@@ -10,8 +10,6 @@ static_library("core") {
   sources = [
     "cached_image_fetcher.cc",
     "cached_image_fetcher.h",
-    "cached_image_fetcher_service.cc",
-    "cached_image_fetcher_service.h",
     "image_data_fetcher.cc",
     "image_data_fetcher.h",
     "image_decoder.h",
@@ -19,6 +17,8 @@ static_library("core") {
     "image_fetcher.h",
     "image_fetcher_impl.cc",
     "image_fetcher_impl.h",
+    "image_fetcher_service.cc",
+    "image_fetcher_service.h",
     "image_fetcher_types.h",
     "request_metadata.cc",
     "request_metadata.h",
@@ -85,6 +85,7 @@ if (is_android) {
   java_cpp_enum("cached_image_fetcher_java_enums_srcjar") {
     sources = [
       "cache/cached_image_fetcher_metrics_reporter.h",
+      "image_fetcher_service.h",
     ]
   }
 }

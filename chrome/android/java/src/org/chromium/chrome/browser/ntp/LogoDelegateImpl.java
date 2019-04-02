@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.ntp;
 
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.cached_image_fetcher.CachedImageFetcher;
+import org.chromium.chrome.browser.image_fetcher.CachedImageFetcher;
 import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.profiles.Profile;
