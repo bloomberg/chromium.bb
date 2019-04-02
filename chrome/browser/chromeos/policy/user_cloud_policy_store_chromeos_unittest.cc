@@ -347,7 +347,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, StoreWithRotationValidationError) {
 
 TEST_F(UserCloudPolicyStoreChromeOSTest, StoreFail) {
   // Let store policy fail.
-  session_manager_client_->set_store_policy_success(false);
+  session_manager_client_->ForceStorePolicyFailure(true);
 
   store_->Store(policy_.policy());
   RunLoopAndExpectError(CloudPolicyStore::STATUS_STORE_ERROR);
