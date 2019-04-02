@@ -25,6 +25,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/page_importance_signals.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_types.h"
@@ -33,13 +34,12 @@ using content::WebContentsTester;
 using metrics::WindowMetricsEvent;
 using tab_ranker::WindowFeatures;
 
-// Sanity checks for functions in TabMetricsLogger.
-// See TabActivityWatcherTest for more thorough tab usage UKM tests.
-using TabMetricsLoggerTest = ChromeRenderViewHostTestHarness;
-
 namespace {
 
-const char* kTestUrl = "https://example.com/";
+constexpr char kChromiumUrl[] = "https://www.chromium.org";
+constexpr char kChromiumDomain[] = "www.chromium.org";
+constexpr char kExampleUrl[] = "https://example.com/test.html";
+constexpr char kExampleDomain[] = "example.com";
 
 // TestBrowserWindow whose show state can be modified.
 class FakeBrowserWindow : public TestBrowserWindow {
@@ -100,7 +100,7 @@ class FakeBrowserWindow : public TestBrowserWindow {
   }
 
  private:
-  Browser* browser_;
+  Browser* browser_ = nullptr;
   bool is_active_ = false;
   ui::WindowShowState show_state_ = ui::SHOW_STATE_NORMAL;
 
@@ -108,6 +108,98 @@ class FakeBrowserWindow : public TestBrowserWindow {
 };
 
 }  // namespace
+
+// Sanity checks for functions in TabMetricsLogger.
+// See TabActivityWatcherTest for more thorough tab usage UKM tests.
+class TabMetricsLoggerTest : public ChromeRenderViewHostTestHarness {
+ protected:
+  void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
+
+    params_ = new Browser::CreateParams(profile(), true);
+    browser_ = CreateBrowserWithTestWindowForParams(params_);
+    tab_strip_model_ = browser_->tab_strip_model();
+
+    // Add a foreground tab.
+    web_contents_ = tab_activity_simulator_.AddWebContentsAndNavigate(
+        tab_strip_model_, GURL(kChromiumUrl));
+    tab_strip_model_->ActivateTabAt(0);
+    web_contents_tester_ = WebContentsTester::For(web_contents_);
+  }
+
+  TabActivitySimulator tab_activity_simulator_;
+  Browser::CreateParams* params_;
+  std::unique_ptr<Browser> browser_;
+  TabStripModel* tab_strip_model_;
+  content::WebContents* web_contents_;
+  content::WebContentsTester* web_contents_tester_;
+  TabMetricsLogger::PageMetrics pg_metrics_;
+
+  void TearDown() override {
+    tab_strip_model_->CloseAllTabs();
+    browser_.reset();
+    ChromeRenderViewHostTestHarness::TearDown();
+  }
+
+  tab_ranker::TabFeatures CurrentTabFeatures() {
+    return TabMetricsLogger::GetTabFeatures(pg_metrics_, web_contents_).value();
+  }
+
+  // Adds a tab and simulates a basic navigation.
+  void AddTab(Browser* browser) {
+    content::WebContentsTester::For(
+        tab_activity_simulator_.AddWebContentsAndNavigate(
+            browser->tab_strip_model(), GURL(kExampleUrl)))
+        ->TestSetIsLoading(false);
+  }
+};
+
+// Tests has_form_entry.
+TEST_F(TabMetricsLoggerTest, GetHasFormEntry) {
+  EXPECT_FALSE(CurrentTabFeatures().has_form_entry);
+  content::PageImportanceSignals signal;
+  signal.had_form_interaction = true;
+  web_contents_tester_->SetPageImportanceSignals(signal);
+  EXPECT_TRUE(CurrentTabFeatures().has_form_entry);
+}
+
+// Tests is_pinned.
+TEST_F(TabMetricsLoggerTest, GetPinState) {
+  EXPECT_FALSE(CurrentTabFeatures().is_pinned);
+  tab_strip_model_->SetTabPinned(0, true);
+  EXPECT_TRUE(CurrentTabFeatures().is_pinned);
+}
+
+// Tests navigation_entry_count.
+TEST_F(TabMetricsLoggerTest, GetNavigationEntryCount) {
+  EXPECT_EQ(CurrentTabFeatures().navigation_entry_count, 1);
+  tab_activity_simulator_.Navigate(web_contents_, GURL(kChromiumUrl),
+                                   pg_metrics_.page_transition);
+  EXPECT_EQ(CurrentTabFeatures().navigation_entry_count, 2);
+  tab_activity_simulator_.Navigate(web_contents_, GURL(kChromiumUrl),
+                                   pg_metrics_.page_transition);
+  EXPECT_EQ(CurrentTabFeatures().navigation_entry_count, 3);
+}
+
+// Tests site_engagement_score.
+TEST_F(TabMetricsLoggerTest, GetSiteEngagementScore) {
+  EXPECT_EQ(CurrentTabFeatures().site_engagement_score, 0);
+  SiteEngagementService::Get(profile())->ResetBaseScoreForURL(
+      GURL(kChromiumUrl), 91);
+  EXPECT_EQ(CurrentTabFeatures().site_engagement_score, 90);
+}
+
+// Tests was_recently_audible.
+TEST_F(TabMetricsLoggerTest, GetAudibleState) {
+  EXPECT_FALSE(CurrentTabFeatures().was_recently_audible);
+  web_contents_tester_->SetIsCurrentlyAudible(true);
+  EXPECT_TRUE(CurrentTabFeatures().was_recently_audible);
+}
+
+// Tests host.
+TEST_F(TabMetricsLoggerTest, GetHost) {
+  EXPECT_EQ(CurrentTabFeatures().host, kChromiumDomain);
+}
 
 // Tests creating a flat TabFeatures structure for logging a tab and its
 // TabMetrics state.
@@ -125,22 +217,19 @@ TEST_F(TabMetricsLoggerTest, GetTabFeatures) {
 
   // Add a background tab to test.
   content::WebContents* bg_contents =
-      tab_activity_simulator.AddWebContentsAndNavigate(
-          tab_strip_model, GURL("http://example.com/test.html"));
+      tab_activity_simulator.AddWebContentsAndNavigate(tab_strip_model,
+                                                       GURL(kExampleUrl));
   WebContentsTester::For(bg_contents)->TestSetIsLoading(false);
 
   {
-    TabMetricsLogger::TabMetrics bg_metrics;
-    bg_metrics.web_contents = bg_contents;
+    TabMetricsLogger::PageMetrics bg_metrics;
     bg_metrics.page_transition = ui::PAGE_TRANSITION_FORM_SUBMIT;
 
-    base::TimeDelta inactive_duration = base::TimeDelta::FromSeconds(10);
-
-    tab_ranker::TabFeatures bg_features = TabMetricsLogger::GetTabFeatures(
-        browser.get(), bg_metrics, inactive_duration);
+    tab_ranker::TabFeatures bg_features =
+        TabMetricsLogger::GetTabFeatures(bg_metrics, bg_contents).value();
     EXPECT_EQ(bg_features.has_before_unload_handler, false);
     EXPECT_EQ(bg_features.has_form_entry, false);
-    EXPECT_EQ(bg_features.host, "example.com");
+    EXPECT_EQ(bg_features.host, kExampleDomain);
     EXPECT_EQ(bg_features.is_pinned, false);
     EXPECT_EQ(bg_features.key_event_count, 0);
     EXPECT_EQ(bg_features.mouse_event_count, 0);
@@ -152,8 +241,6 @@ TEST_F(TabMetricsLoggerTest, GetTabFeatures) {
     EXPECT_EQ(bg_features.page_transition_is_redirect, false);
     ASSERT_TRUE(bg_features.site_engagement_score.has_value());
     EXPECT_EQ(bg_features.site_engagement_score.value(), 0);
-    EXPECT_EQ(bg_features.time_from_backgrounded,
-              inactive_duration.InMilliseconds());
     EXPECT_EQ(bg_features.touch_event_count, 0);
     EXPECT_EQ(bg_features.was_recently_audible, false);
   }
@@ -161,28 +248,25 @@ TEST_F(TabMetricsLoggerTest, GetTabFeatures) {
   // Update tab features.
   ui::PageTransition page_transition = static_cast<ui::PageTransition>(
       ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-  tab_activity_simulator.Navigate(bg_contents, GURL("https://www.chromium.org"),
+  tab_activity_simulator.Navigate(bg_contents, GURL(kChromiumUrl),
                                   page_transition);
   tab_strip_model->SetTabPinned(1, true);
   SiteEngagementService::Get(profile())->ResetBaseScoreForURL(
-      GURL("https://www.chromium.org"), 91);
+      GURL(kChromiumUrl), 91);
 
   {
-    TabMetricsLogger::TabMetrics bg_metrics;
-    bg_metrics.web_contents = bg_contents;
+    TabMetricsLogger::PageMetrics bg_metrics;
     bg_metrics.page_transition = page_transition;
-    bg_metrics.page_metrics.key_event_count = 3;
-    bg_metrics.page_metrics.mouse_event_count = 42;
-    bg_metrics.page_metrics.num_reactivations = 5;
-    bg_metrics.page_metrics.touch_event_count = 10;
+    bg_metrics.key_event_count = 3;
+    bg_metrics.mouse_event_count = 42;
+    bg_metrics.num_reactivations = 5;
+    bg_metrics.touch_event_count = 10;
 
-    base::TimeDelta inactive_duration = base::TimeDelta::FromSeconds(5);
-
-    tab_ranker::TabFeatures bg_features = TabMetricsLogger::GetTabFeatures(
-        browser.get(), bg_metrics, inactive_duration);
+    tab_ranker::TabFeatures bg_features =
+        TabMetricsLogger::GetTabFeatures(bg_metrics, bg_contents).value();
     EXPECT_EQ(bg_features.has_before_unload_handler, false);
     EXPECT_EQ(bg_features.has_form_entry, false);
-    EXPECT_EQ(bg_features.host, "www.chromium.org");
+    EXPECT_EQ(bg_features.host, kChromiumDomain);
     EXPECT_EQ(bg_features.is_pinned, true);
     EXPECT_EQ(bg_features.key_event_count, 3);
     EXPECT_EQ(bg_features.mouse_event_count, 42);
@@ -195,8 +279,6 @@ TEST_F(TabMetricsLoggerTest, GetTabFeatures) {
     ASSERT_TRUE(bg_features.site_engagement_score.has_value());
     // Site engagement score should round down to the nearest 10.
     EXPECT_EQ(bg_features.site_engagement_score.value(), 90);
-    EXPECT_EQ(bg_features.time_from_backgrounded,
-              inactive_duration.InMilliseconds());
     EXPECT_EQ(bg_features.touch_event_count, 10);
     EXPECT_EQ(bg_features.was_recently_audible, false);
   }
@@ -213,8 +295,7 @@ class TabMetricsLoggerUKMTest : public ::testing::Test {
   // Returns a new source_id associated with the test url.
   ukm::SourceId GetSourceId() {
     const ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
-    test_ukm_recorder_.UpdateSourceURL(source_id,
-                                       GURL("https://www.chromium.org"));
+    test_ukm_recorder_.UpdateSourceURL(source_id, GURL(kChromiumUrl));
     return source_id;
   }
 
@@ -322,28 +403,8 @@ TEST_F(TabMetricsLoggerUKMTest, LogForegroundedOrClosedMetrics) {
                             });
 }
 
-// Tests WindowFeatures generated by CreateWindowFeatures.
-class CreateWindowFeaturesTest : public ChromeRenderViewHostTestHarness {
- protected:
-  CreateWindowFeaturesTest() = default;
-  ~CreateWindowFeaturesTest() override = default;
-
-  // Adds a tab and simulates a basic navigation.
-  void AddTab(Browser* browser) {
-    content::WebContentsTester::For(
-        tab_activity_simulator_.AddWebContentsAndNavigate(
-            browser->tab_strip_model(), GURL(kTestUrl)))
-        ->TestSetIsLoading(false);
-  }
-
- private:
-  TabActivitySimulator tab_activity_simulator_;
-
-  DISALLOW_COPY_AND_ASSIGN(CreateWindowFeaturesTest);
-};
-
 // Tests CreateWindowFeatures of two browser windows.
-TEST_F(CreateWindowFeaturesTest, Basic) {
+TEST_F(TabMetricsLoggerTest, CreateWindowFeaturesTest) {
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
       FakeBrowserWindow::CreateBrowserWithFakeWindowForParams(&params);
@@ -395,7 +456,7 @@ TEST_F(CreateWindowFeaturesTest, Basic) {
 }
 
 // Tests moving a tab between browser windows.
-TEST_F(CreateWindowFeaturesTest, MoveTabToOtherWindow) {
+TEST_F(TabMetricsLoggerTest, CreateWindowFeaturesTestMoveTabToOtherWindow) {
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> starting_browser =
       FakeBrowserWindow::CreateBrowserWithFakeWindowForParams(&params);
@@ -443,7 +504,7 @@ TEST_F(CreateWindowFeaturesTest, MoveTabToOtherWindow) {
 }
 
 // Tests replacing a tab.
-TEST_F(CreateWindowFeaturesTest, ReplaceTab) {
+TEST_F(TabMetricsLoggerTest, CreateWindowFeaturesTestReplaceTab) {
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
       FakeBrowserWindow::CreateBrowserWithFakeWindowForParams(&params);
