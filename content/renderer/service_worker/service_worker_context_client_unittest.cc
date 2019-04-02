@@ -72,9 +72,8 @@ struct ContextClientPipes {
 // is called on EmbeddedWorkerInstanceClientImpl so it can self-destruct.
 class FakeWebEmbeddedWorker : public blink::WebEmbeddedWorker {
  public:
-  explicit FakeWebEmbeddedWorker(
-      std::unique_ptr<ServiceWorkerContextClient> context_client)
-      : context_client_(std::move(context_client)) {}
+  explicit FakeWebEmbeddedWorker(ServiceWorkerContextClient* context_client)
+      : context_client_(context_client) {}
 
   void StartWorkerContext(const blink::WebEmbeddedWorkerStartData&) override {}
   void TerminateWorkerContext() override {
@@ -88,7 +87,7 @@ class FakeWebEmbeddedWorker : public blink::WebEmbeddedWorker {
                          mojo::ScopedInterfaceEndpointHandle) override {}
 
  private:
-  std::unique_ptr<ServiceWorkerContextClient> context_client_;
+  ServiceWorkerContextClient* context_client_;
 };
 
 class MockWebServiceWorkerContextProxy
@@ -322,10 +321,15 @@ class ServiceWorkerContextClientTest : public testing::Test {
         nullptr /* preference_watcher_request */,
         nullptr /* subresource_loaders */,
         blink::scheduler::GetSingleThreadTaskRunnerForTesting());
+
     auto* context_client_raw = context_client.get();
 
-    embedded_worker_instance_client->worker_ =
-        std::make_unique<FakeWebEmbeddedWorker>(std::move(context_client));
+    embedded_worker_instance_client->service_worker_context_client_ =
+        std::move(context_client);
+    context_client_raw->StartWorkerContext(
+        std::make_unique<FakeWebEmbeddedWorker>(context_client_raw),
+        blink::WebEmbeddedWorkerStartData());
+
     // TODO(falken): We should mock a worker thread task runner instead of
     // using GetSingleThreadTaskRunnerForTesting() again, since that's the
     // runner we used to mock the main thread when constructing the context
