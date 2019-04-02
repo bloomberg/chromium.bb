@@ -1136,8 +1136,8 @@ ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
     return ui::POST_DISPATCH_PERFORM_DEFAULT;
   }
 
+  base::WeakPtr<MenuController> this_ref = AsWeakPtr();
   if (event->type() == ui::ET_KEY_PRESSED) {
-    base::WeakPtr<MenuController> this_ref = AsWeakPtr();
 #if defined(OS_MACOSX)
     // Special handling for Option-Up and Option-Down, which should behave like
     // Home and End respectively in menus.
@@ -1182,6 +1182,11 @@ ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
   ViewsDelegate::ProcessMenuAcceleratorResult result =
       ViewsDelegate::GetInstance()->ProcessAcceleratorWhileMenuShowing(
           accelerator);
+  // Above can lead to |this| being deleted.
+  if (!this_ref) {
+    event->StopPropagation();
+    return ui::POST_DISPATCH_NONE;
+  }
   if (result == ViewsDelegate::ProcessMenuAcceleratorResult::CLOSE_MENU) {
     CancelAll();
     event->StopPropagation();
