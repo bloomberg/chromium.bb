@@ -55,7 +55,7 @@
                 languages.supported, languages.enabled.*, filterValue_)]]">
           <template>
             <cr-checkbox class="list-item no-outline"
-                checked="[[willAdd_(item.code)]]" tabindex$="[[tabIndex]]"
+                checked="[[willAdd_(item.code)]]" tab-index="[[tabIndex]]"
                 title$="[[item.nativeDisplayName]]"
                 on-change="onLanguageCheckboxChange_">
               [[getDisplayText_(item)]]
