@@ -188,8 +188,13 @@ void TopLevelAllocator::InvalidateLocalSurfaceId() {
 }
 
 void TopLevelAllocator::OnDeviceScaleFactorChanged() {
-  AllocateLocalSurfaceId();
-  NotifyServerOfLocalSurfaceId();
+  // TopLevelAllocator does not have to allocate the new local surface id on
+  // device scale factor change. When the DSF changes, the window server first
+  // catches it, regenerates the local surface id, and then notifies the bounds
+  // with the new local surface id to the client. Therefore it should simply
+  // accept the new local surface id from the server. See the test case
+  // WindowTreeClientTest.SetBoundsFromServerDoesntCallWindowBoundsChanged and
+  // also https://crbug.com/942647.
 }
 
 void TopLevelAllocator::OnDidChangeBounds(const gfx::Size& size_in_pixels,
@@ -218,12 +223,7 @@ void TopLevelAllocator::DidGenerateLocalSurfaceIdAllocation(
   compositor->SetScaleAndSize(window_tree_host->device_scale_factor(),
                               window_tree_host->GetBoundsInPixels().size(),
                               local_surface_id_allocation_);
-  NotifyServerOfLocalSurfaceId();
-}
-
-void TopLevelAllocator::NotifyServerOfLocalSurfaceId() {
-  WindowTreeHostMus* host =
-      static_cast<WindowTreeHostMus*>(GetWindow()->GetHost());
+  WindowTreeHostMus* host = WindowTreeHostMus::ForWindow(GetWindow());
   window_tree_client()->OnWindowTreeHostBoundsWillChange(host,
                                                          host->bounds_in_dip());
 }

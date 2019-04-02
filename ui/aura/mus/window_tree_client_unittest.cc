@@ -2419,6 +2419,40 @@ TEST_F(WindowTreeClientTest, OnWindowDeletedDoesntNotifyServer) {
   EXPECT_FALSE(window_tree()->has_change());
 }
 
+TEST_F(WindowTreeClientTest, SetBoundsFromServerDoesntCallWindowBoundsChanged) {
+  WindowTreeHostMus window_tree_host(
+      CreateInitParamsForTopLevel(window_tree_client_impl()));
+  Window* top_level = window_tree_host.window();
+  window_tree_host.InitHost();
+
+  const gfx::Rect bounds(10, 20, 150, 200);
+  ws::mojom::WindowDataPtr data = ws::mojom::WindowData::New();
+  data->window_id = server_id(top_level);
+  data->bounds = bounds;
+  const int64_t display_id = 10;
+  uint32_t change_id;
+  ASSERT_TRUE(window_tree()->GetAndRemoveFirstChangeOfType(
+      WindowTreeChangeType::NEW_TOP_LEVEL, &change_id));
+  const viz::LocalSurfaceIdAllocation lsia =
+      GenerateLocalSurfaceIdForNewTopLevel();
+  window_tree_client()->OnTopLevelCreated(change_id, std::move(data),
+                                          display_id, true, lsia);
+  EXPECT_EQ(lsia, top_level->GetLocalSurfaceIdAllocation());
+
+  window_tree()->AckAllChanges();
+  test_screen()->SetDeviceScaleFactor(2.0f);
+  // Generates a new local surface id from the server.
+  const viz::LocalSurfaceIdAllocation lsia2 =
+      GenerateLocalSurfaceIdForNewTopLevel();
+  window_tree_client()->OnWindowBoundsChanged(server_id(top_level), bounds,
+                                              lsia2);
+  EXPECT_EQ(0u,
+            window_tree()->GetChangeCountForType(WindowTreeChangeType::BOUNDS));
+  // The local surface id is updated from lsia2, so it won't match with either.
+  EXPECT_NE(lsia, top_level->GetLocalSurfaceIdAllocation());
+  EXPECT_EQ(lsia2, top_level->GetLocalSurfaceIdAllocation());
+}
+
 TEST_F(WindowTreeClientTestHighDPI, SetBounds) {
   const gfx::Rect new_bounds(gfx::Rect(0, 0, 100, 100));
   ASSERT_NE(new_bounds, root_window()->bounds());
