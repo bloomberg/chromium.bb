@@ -156,4 +156,7 @@ public class Features {
     // WebViewRendererClient.onRendererResponsive()
     public static final String WEB_VIEW_RENDERER_CLIENT_BASIC_USAGE =
             "WEB_VIEW_RENDERER_CLIENT_BASIC_USAGE";
+
+    // WebViewCompat.isMultiProcessEnabled
+    public static final String MULTI_PROCESS_QUERY = "MULTI_PROCESS_QUERY";
 }
