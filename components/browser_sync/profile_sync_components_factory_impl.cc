@@ -21,7 +21,6 @@
 #include "components/autofill/core/browser/webdata/autofill_wallet_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/browser_sync/browser_sync_client.h"
-#include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/history/core/browser/sync/history_delete_directives_data_type_controller.h"
 #include "components/history/core/browser/sync/history_delete_directives_model_type_controller.h"

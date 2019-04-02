@@ -4,6 +4,8 @@
 
 #include "components/browser_sync/profile_sync_service.h"
 
+#include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -14,7 +16,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
-#include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/profile_sync_test_util.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/sync/base/pref_names.h"
