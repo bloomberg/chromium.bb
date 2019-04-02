@@ -1,15 +1,10 @@
-AutomationFocusChanged on role=menu, name=menu
 MenuOpened on role=menu, name=menu
 === Start Continuation ===
-AutomationFocusChanged on role=menu, name=submenu1
 MenuClosed on role=menu, name=menu
 MenuOpened on role=menu, name=submenu1
 === Start Continuation ===
-AutomationFocusChanged on role=document
 MenuClosed on role=menu, name=submenu1
 === Start Continuation ===
-AutomationFocusChanged on role=menu, name=submenu2
 MenuOpened on role=menu, name=submenu2
 === Start Continuation ===
-AutomationFocusChanged on role=menuitem, name=option
 MenuClosed on role=menu, name=submenu2

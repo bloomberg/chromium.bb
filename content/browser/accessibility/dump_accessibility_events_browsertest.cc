@@ -71,6 +71,9 @@ class DumpAccessibilityEventsTest : public DumpAccessibilityTestBase {
     property_filters->push_back(
         PropertyFilter(base::ASCIIToUTF16("EVENT_OBJECT_FOCUS*DOCUMENT*"),
                        PropertyFilter::DENY));
+    property_filters->push_back(
+        PropertyFilter(base::ASCIIToUTF16("AutomationFocusChanged*document*"),
+                       PropertyFilter::DENY));
   }
 
   std::vector<std::string> Dump(std::vector<std::string>& run_until) override;
