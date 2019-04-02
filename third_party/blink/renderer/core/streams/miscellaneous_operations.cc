@@ -693,4 +693,86 @@ ScriptValue CallTeeAndReturnBranchArray(ScriptState* script_state,
   return ScriptValue(script_state, array);
 }
 
+void ScriptValueToObject(ScriptState* script_state,
+                         ScriptValue value,
+                         v8::Local<v8::Object>* object,
+                         ExceptionState& exception_state) {
+  auto* isolate = script_state->GetIsolate();
+  DCHECK(!value.IsEmpty());
+  auto v8_value = value.V8Value();
+  // All the object parameters in the standard are default-initialised to an
+  // empty object.
+  if (v8_value->IsUndefined()) {
+    *object = v8::Object::New(isolate);
+    return;
+  }
+  v8::TryCatch try_catch(isolate);
+  if (!v8_value->ToObject(script_state->GetContext()).ToLocal(object)) {
+    exception_state.RethrowV8Exception(try_catch.Exception());
+    return;
+  }
+}
+
+StrategyUnpacker::StrategyUnpacker(ScriptState* script_state,
+                                   ScriptValue strategy,
+                                   ExceptionState& exception_state) {
+  auto* isolate = script_state->GetIsolate();
+  auto context = script_state->GetContext();
+  v8::Local<v8::Object> strategy_object;
+  ScriptValueToObject(script_state, strategy, &strategy_object,
+                      exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+
+  // This is used in several places. The steps here are taken from
+  // https://streams.spec.whatwg.org/#ws-constructor.
+  // 2. Let size be ? GetV(strategy, "size").
+  v8::TryCatch try_catch(isolate);
+  if (!strategy_object->Get(context, V8AtomicString(isolate, "size"))
+           .ToLocal(&size_)) {
+    exception_state.RethrowV8Exception(try_catch.Exception());
+    return;
+  }
+
+  // 3. Let highWaterMark be ? GetV(strategy, "highWaterMark").
+  if (!strategy_object->Get(context, V8AtomicString(isolate, "highWaterMark"))
+           .ToLocal(&high_water_mark_)) {
+    exception_state.RethrowV8Exception(try_catch.Exception());
+    return;
+  }
+}
+
+StrategySizeAlgorithm* StrategyUnpacker::MakeSizeAlgorithm(
+    ScriptState* script_state,
+    ExceptionState& exception_state) const {
+  DCHECK(!size_.IsEmpty());
+  // 6. Let sizeAlgorithm be ? MakeSizeAlgorithmFromSizeFunction(size).
+  return MakeSizeAlgorithmFromSizeFunction(script_state, size_,
+                                           exception_state);
+}
+
+double StrategyUnpacker::GetHighWaterMark(
+    ScriptState* script_state,
+    int default_value,
+    ExceptionState& exception_state) const {
+  DCHECK(!high_water_mark_.IsEmpty());
+  // 7. If highWaterMark is undefined, let highWaterMark be 1.
+  if (high_water_mark_->IsUndefined()) {
+    return default_value;
+  }
+
+  v8::TryCatch try_catch(script_state->GetIsolate());
+  v8::Local<v8::Number> high_water_mark_as_number;
+  if (!high_water_mark_->ToNumber(script_state->GetContext())
+           .ToLocal(&high_water_mark_as_number)) {
+    exception_state.RethrowV8Exception(try_catch.Exception());
+    return 0.0;
+  }
+
+  // 8. Set highWaterMark to ? ValidateAndNormalizeHighWaterMark(highWaterMark)
+  return ValidateAndNormalizeHighWaterMark(high_water_mark_as_number->Value(),
+                                           exception_state);
+}
+
 }  // namespace blink

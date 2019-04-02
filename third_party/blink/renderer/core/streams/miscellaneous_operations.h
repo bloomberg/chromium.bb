@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -141,6 +142,47 @@ CORE_EXPORT WritableStream* PipeToCheckSourceAndDestination(
 ScriptValue CallTeeAndReturnBranchArray(ScriptState* script_state,
                                         ReadableStream* readable,
                                         ExceptionState& exception_state);
+
+// Converts |value| to an object. |value| must not be empty. If |value| is
+// undefined, an empty object will be returned. If |value| is JavaScript null,
+// then an exception will be thrown. In the standard, this is performed as part
+// of the GetV() operation, but in this implementation we do it explicitly
+// before looking up any properties.
+void ScriptValueToObject(ScriptState* script_state,
+                         ScriptValue value,
+                         v8::Local<v8::Object>* object,
+                         ExceptionState& exception_state);
+
+// This class is used for unpacking strategies in the constructors of
+// ReadableStream, WritableStream and TransformStream. For example, steps 2.,
+// 3., 6., 7. and 8. of https://streams.spec.whatwg.org/#ws-constructor.
+class StrategyUnpacker final {
+  STACK_ALLOCATED();
+
+ public:
+  // Looks up the "size" and "highWaterMark" properties on |strategy|. May run
+  // arbitrary user code. The object cannot be used if
+  // exception_state.HadException() is true.
+  StrategyUnpacker(ScriptState*, ScriptValue strategy, ExceptionState&);
+  ~StrategyUnpacker() = default;
+
+  // Performs MakeSizeAlgorithmFromSizeFunction on |size_|. Because this method
+  // can throw an exception, the timing when it is called is observable.
+  StrategySizeAlgorithm* MakeSizeAlgorithm(ScriptState*, ExceptionState&) const;
+
+  // If |high_water_mark_| is defined, converts it to a number and call
+  // ValidateAndNormalizeHighWaterMark on it. Otherwise returns |default_value|.
+  // May run arbitrary user code.
+  double GetHighWaterMark(ScriptState*,
+                          int default_value,
+                          ExceptionState&) const;
+
+ private:
+  v8::Local<v8::Value> size_;
+  v8::Local<v8::Value> high_water_mark_;
+
+  DISALLOW_COPY_AND_ASSIGN(StrategyUnpacker);
+};
 
 }  // namespace blink
 

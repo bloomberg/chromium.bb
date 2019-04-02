@@ -74,44 +74,23 @@ WritableStreamNative::WritableStreamNative(ScriptState* script_state,
   auto context = script_state->GetContext();
   auto* isolate = script_state->GetIsolate();
 
-  auto underlying_sink_value = raw_underlying_sink.V8Value();
-  if (underlying_sink_value->IsUndefined()) {
-    underlying_sink_value = v8::Object::New(isolate);
-  }
-  v8::TryCatch try_catch(isolate);
   v8::Local<v8::Object> underlying_sink;
-  if (!underlying_sink_value->ToObject(context).ToLocal(&underlying_sink)) {
-    exception_state.RethrowV8Exception(try_catch.Exception());
-    return;
-  }
-
-  auto strategy_value = raw_strategy.V8Value();
-  if (strategy_value->IsUndefined()) {
-    strategy_value = v8::Object::New(isolate);
-  }
-  v8::Local<v8::Object> strategy;
-  v8::MaybeLocal<v8::Object> strategy_maybe = strategy_value->ToObject(context);
-  if (!strategy_maybe.ToLocal(&strategy)) {
-    exception_state.RethrowV8Exception(try_catch.Exception());
+  ScriptValueToObject(script_state, raw_underlying_sink, &underlying_sink,
+                      exception_state);
+  if (exception_state.HadException()) {
     return;
   }
 
   // 2. Let size be ? GetV(strategy, "size").
-  v8::Local<v8::Value> size;
-  if (!strategy->Get(context, V8AtomicString(isolate, "size")).ToLocal(&size)) {
-    exception_state.RethrowV8Exception(try_catch.Exception());
-    return;
-  }
-
   // 3. Let highWaterMark be ? GetV(strategy, "highWaterMark").
-  v8::Local<v8::Value> high_water_mark_value;
-  if (!strategy->Get(context, V8AtomicString(isolate, "highWaterMark"))
-           .ToLocal(&high_water_mark_value)) {
-    exception_state.RethrowV8Exception(try_catch.Exception());
+  StrategyUnpacker strategy_unpacker(script_state, raw_strategy,
+                                     exception_state);
+  if (exception_state.HadException()) {
     return;
   }
 
   // 4. Let type be ? GetV(underlyingSink, "type").
+  v8::TryCatch try_catch(isolate);
   v8::Local<v8::Value> type;
   if (!underlying_sink->Get(context, V8AtomicString(isolate, "type"))
            .ToLocal(&type)) {
@@ -127,27 +106,16 @@ WritableStreamNative::WritableStreamNative(ScriptState* script_state,
 
   // 6. Let sizeAlgorithm be ? MakeSizeAlgorithmFromSizeFunction(size).
   auto* size_algorithm =
-      MakeSizeAlgorithmFromSizeFunction(script_state, size, exception_state);
+      strategy_unpacker.MakeSizeAlgorithm(script_state, exception_state);
   if (exception_state.HadException()) {
     return;
   }
   DCHECK(size_algorithm);
 
   // 7. If highWaterMark is undefined, let highWaterMark be 1.
-  double high_water_mark = 1;
-  if (!high_water_mark_value->IsUndefined()) {
-    v8::Local<v8::Number> high_water_mark_as_number;
-    if (!high_water_mark_value->ToNumber(context).ToLocal(
-            &high_water_mark_as_number)) {
-      exception_state.RethrowV8Exception(try_catch.Exception());
-      return;
-    }
-    high_water_mark = high_water_mark_as_number->Value();
-  }
-
   // 8. Set highWaterMark to ? ValidateAndNormalizeHighWaterMark(highWaterMark).
-  high_water_mark =
-      ValidateAndNormalizeHighWaterMark(high_water_mark, exception_state);
+  double high_water_mark =
+      strategy_unpacker.GetHighWaterMark(script_state, 1, exception_state);
   if (exception_state.HadException()) {
     return;
   }
