@@ -1518,9 +1518,6 @@ extern const char kOffliningRecentPagesDescription[];
 extern const char kProgressBarThrottleName[];
 extern const char kProgressBarThrottleDescription[];
 
-extern const char kPullToRefreshEffectName[];
-extern const char kPullToRefreshEffectDescription[];
-
 extern const char kPwaImprovedSplashScreenName[];
 extern const char kPwaImprovedSplashScreenDescription[];
 extern const char kPwaPersistentNotificationName[];

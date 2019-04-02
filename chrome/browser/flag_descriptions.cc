@@ -2542,10 +2542,6 @@ const char kProgressBarThrottleName[] = "Android progress update throttling.";
 const char kProgressBarThrottleDescription[] =
     "Limit the maximum progress update to make progress appear smoother.";
 
-const char kPullToRefreshEffectName[] = "The pull-to-refresh effect";
-const char kPullToRefreshEffectDescription[] =
-    "Page reloads triggered by vertically overscrolling content.";
-
 const char kPwaImprovedSplashScreenName[] =
     "Improved Splash Screen for standalone PWAs";
 const char kPwaImprovedSplashScreenDescription[] =
