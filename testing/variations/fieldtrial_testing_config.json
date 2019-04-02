@@ -2922,6 +2922,21 @@
             ]
         }
     ],
+    "NativeWindowOcclusionTrackerWin": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "NativeWindowOcclusionTrackerWin",
+                    "enable_features": [
+                        "CalculateNativeWinOcclusion"
+                    ]
+                }
+            ]
+        }
+    ],
     "NaviOnboarding": [
         {
             "platforms": [
@@ -5692,6 +5707,21 @@
                     "params": {
                         "blocklist_additions": "00060000:e,fffd:e,ed5f25a4:e"
                     }
+                }
+            ]
+        }
+    ],
+    "WebContentsOcclusion": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "WindowsWebContentsOcclusion",
+                    "enable_features": [
+                        "WebContentsOcclusion"
+                    ]
                 }
             ]
         }
