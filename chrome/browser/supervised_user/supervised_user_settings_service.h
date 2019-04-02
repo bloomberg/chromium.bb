@@ -130,6 +130,7 @@ class SupervisedUserSettingsService : public KeyedService,
   void Shutdown() override;
 
   // SyncableService implementation:
+  void WaitUntilReadyToSync(base::OnceClosure done) override;
   syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
@@ -177,6 +178,9 @@ class SupervisedUserSettingsService : public KeyedService,
   bool active_;
 
   bool initialization_failed_;
+
+  // Set when WaitUntilReadyToSync() is invoked before initialization completes.
+  base::OnceClosure wait_until_ready_to_sync_cb_;
 
   // A set of local settings that are fixed and not configured remotely.
   std::unique_ptr<base::DictionaryValue> local_settings_;

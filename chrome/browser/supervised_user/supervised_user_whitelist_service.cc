@@ -143,6 +143,12 @@ syncer::SyncData SupervisedUserWhitelistService::CreateWhitelistSyncData(
   return syncer::SyncData::CreateLocalData(id, name, specifics);
 }
 
+void SupervisedUserWhitelistService::WaitUntilReadyToSync(
+    base::OnceClosure done) {
+  // This service handles sync events at any time.
+  std::move(done).Run();
+}
+
 syncer::SyncMergeResult
 SupervisedUserWhitelistService::MergeDataAndStartSyncing(
     syncer::ModelType type,
