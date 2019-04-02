@@ -1492,6 +1492,16 @@ void AssistantManagerServiceImpl::SendAssistantFeedback(
 }
 
 void AssistantManagerServiceImpl::UpdateMediaState() {
+  if (media_session_info_ptr_ &&
+      media_session_info_ptr_->state ==
+          media_session::mojom::MediaSessionInfo::SessionState::kSuspended &&
+      media_session_info_ptr_->playback_state ==
+          media_session::mojom::MediaPlaybackState::kPlaying) {
+    // It is a intermediate state caused by some providers override the playback
+    // state. We considered it as invalid and skip reporting the state.
+    return;
+  }
+
   // TODO(llin): MediaSession Integrated providers (include the libassistant
   // internal media provider) will trigger media state change event. Only
   // update the external media status if the state changes is triggered by
