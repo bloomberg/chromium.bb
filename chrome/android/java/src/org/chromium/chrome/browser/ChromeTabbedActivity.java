@@ -730,7 +730,8 @@ public class ChromeTabbedActivity
                 FeedProcessScopeFactory.getFeedAppLifecycle();
             }
 
-            if (BuildInfo.isAtLeastQ()) {
+            if (BuildInfo.isAtLeastQ()
+                    && ChromeFeatureList.isEnabled(ChromeFeatureList.USAGE_STATS)) {
                 UsageStatsService.getInstance().createPageViewObserver(mTabModelSelectorImpl, this);
             }
 

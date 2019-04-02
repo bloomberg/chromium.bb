@@ -11,6 +11,7 @@ import org.chromium.base.Promise;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.AppHooks;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -74,7 +75,17 @@ public class UsageStatsService {
     public boolean getOptInState() {
         ThreadUtils.assertOnUiThread();
         PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
-        return prefServiceBridge.getBoolean(Pref.USAGE_STATS_ENABLED);
+        boolean enabledByPref = prefServiceBridge.getBoolean(Pref.USAGE_STATS_ENABLED);
+        boolean enabledByFeature = ChromeFeatureList.isEnabled(ChromeFeatureList.USAGE_STATS);
+        // If the user has previously opted in, but the feature has been turned off, we need to
+        // treat it as if they opted out; otherwise they'll have no UI affordance for clearing
+        // whatever data Digital Wellbeing has stored.
+        if (enabledByPref && !enabledByFeature) {
+            onAllHistoryDeleted();
+            setOptInState(false);
+        }
+
+        return enabledByPref && enabledByFeature;
     }
 
     /** Sets the user's opt in state. */

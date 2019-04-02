@@ -169,6 +169,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kTabSwitcherOnReturn,
     &kTrustedWebActivity,
     &kTrustedWebActivityPostMessage,
+    &kUsageStatsFeature,
     &kVideoPersistence,
     &kVrBrowsingFeedback,
     &network::features::kNetworkService,
@@ -488,6 +489,9 @@ const base::Feature kTrustedWebActivity{"TrustedWebActivity",
 
 const base::Feature kTrustedWebActivityPostMessage{
     "TrustedWebActivityPostMessage", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kUsageStatsFeature{"UsageStats",
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kUserMediaScreenCapturing{
     "UserMediaScreenCapturing", base::FEATURE_DISABLED_BY_DEFAULT};
