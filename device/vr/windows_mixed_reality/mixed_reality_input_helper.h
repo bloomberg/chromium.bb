@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/synchronization/lock.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 
 namespace device {
@@ -24,14 +25,52 @@ class MixedRealityInputHelper {
       Microsoft::WRL::ComPtr<ABI::Windows::Perception::IPerceptionTimestamp>
           timestamp);
 
+  void Dispose();
+
  private:
   bool EnsureSpatialInteractionManager();
+
+  mojom::XRInputSourceStatePtr LockedParseWindowsSourceState(
+      Microsoft::WRL::ComPtr<
+          ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceState>
+          state,
+      Microsoft::WRL::ComPtr<
+          ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem> origin);
+
+  HRESULT OnSourcePressed(
+      ABI::Windows::UI::Input::Spatial::ISpatialInteractionManager* sender,
+      ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceEventArgs*
+          args);
+  HRESULT OnSourceReleased(
+      ABI::Windows::UI::Input::Spatial::ISpatialInteractionManager* sender,
+      ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceEventArgs*
+          args);
+  HRESULT ProcessSourceEvent(
+      ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceEventArgs*
+          raw_args,
+      bool is_pressed);
+
+  void SubscribeEvents();
+  void UnsubscribeEvents();
 
   Microsoft::WRL::ComPtr<
       ABI::Windows::UI::Input::Spatial::ISpatialInteractionManager>
       spatial_interaction_manager_;
-  std::unordered_map<uint32_t, bool> controller_pressed_state_;
+  EventRegistrationToken pressed_token_;
+  EventRegistrationToken released_token_;
+
+  struct ControllerState {
+    bool pressed;
+    bool clicked;
+  };
+  std::unordered_map<uint32_t, ControllerState> controller_states_;
   HWND hwnd_;
+
+  std::vector<Microsoft::WRL::ComPtr<
+      ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceState>>
+      pending_voice_states_;
+
+  base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(MixedRealityInputHelper);
 };
