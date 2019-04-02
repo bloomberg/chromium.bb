@@ -433,20 +433,16 @@ class TestBuildStore(cros_test_lib.MockTestCase):
                             return_value=True)
     bs = BuildStore()
     bs.cidb_conn = mock.MagicMock()
-    build_ids = ['build 1', 'build 2']
     buildbucket_ids = ['bucket 1', 'bucket 2']
     # Test for buildbucket_ids.
     bs.GetBuildsStages(buildbucket_ids=buildbucket_ids)
     bs.cidb_conn.GetBuildsStagesWithBuildbucketIds.assert_called_once_with(
         buildbucket_ids)
-    # Test for build_ids.
-    bs.GetBuildsStages(build_ids=build_ids)
-    bs.cidb_conn.GetBuildsStages.assert_called_once_with(build_ids)
-    # Test for neither arguments.
-    self.assertEqual(bs.GetBuildsStages(), [])
+    # Test for empty argument.
+    self.assertEqual(bs.GetBuildsStages([]), [])
     init.return_value = False
     with self.assertRaises(buildstore.BuildStoreException):
-      bs.GetBuildsStages(build_ids=build_ids)
+      bs.GetBuildsStages(buildbucket_ids=buildbucket_ids)
 
   def testGetBuildStatuses(self):
     """Tests the redirect for GetBuildStatuses function."""

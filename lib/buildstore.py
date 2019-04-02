@@ -482,11 +482,10 @@ class BuildStore(object):
       else:
         return []
 
-  def GetBuildsStages(self, build_ids=None, buildbucket_ids=None):
+  def GetBuildsStages(self, buildbucket_ids):
     """Gets all the stages for all listed build_ids.
 
     Args:
-      build_ids: list of CIDB ids of the builds to fetch the stages for.
       buildbucket_ids: list of Buildbucket IDs to query for.
 
     Returns:
@@ -497,9 +496,7 @@ class BuildStore(object):
     if not self.InitializeClients():
       raise BuildStoreException('BuildStore clients could not be initialized.')
     if not self._read_from_bb:
-      if build_ids:
-        return self.cidb_conn.GetBuildsStages(build_ids)
-      elif buildbucket_ids:
+      if buildbucket_ids:
         return self.cidb_conn.GetBuildsStagesWithBuildbucketIds(buildbucket_ids)
       else:
         return []
