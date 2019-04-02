@@ -402,10 +402,10 @@ void CollectedCookiesViews::Init() {
 
   // Add margin above the content. The left, right, and bottom margins are added
   // by the content itself.
-  set_margins(
+  SetBorder(views::CreateEmptyBorder(
       gfx::Insets(provider->GetDistanceMetric(
                       views::DISTANCE_DIALOG_CONTENT_MARGIN_TOP_CONTROL),
-                  0, 0, 0));
+                  0, 0, 0)));
 
   const int single_column_layout_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(single_column_layout_id);
