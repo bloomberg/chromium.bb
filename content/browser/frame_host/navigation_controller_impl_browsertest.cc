@@ -7060,6 +7060,84 @@ IN_PROC_BROWSER_TEST_F(
             EvalJs(web_contents, "self.origin"));
 }
 
+// This test simulates a same-document navigation, being restarted as a
+// cross-document one. It starts a network loader, but fails and an error page
+// is committed instead. The RenderFrameHost selected initially for the initial
+// navigation is not suitable for the error page. It needs to be reset when
+// restarting the navigation. See https://crbug.com/936962.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTestNoServer,
+                       NavigationRestartedAsCrossDocumentFailToLoad) {
+  net::test_server::ControllableHttpResponse response_success(
+      embedded_test_server(), "/title1.html");
+  net::test_server::ControllableHttpResponse response_error(
+      embedded_test_server(), "/title1.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+
+  // 1. Navigate to a simple page with no-cache, no-store.
+  GURL start_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  {
+    UrlCommitObserver history_commit_observer(root, start_url);
+    shell()->LoadURL(start_url);
+    response_success.WaitForRequest();
+    response_success.Send(
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: text/html; charset=utf-8\r\n"
+        "Cache-Control: no-cache, no-store\r\n"
+        "\r\n"
+        "The server speaks HTTP!");
+    response_success.Done();
+    history_commit_observer.Wait();
+    EXPECT_EQ(0, web_contents->GetController().GetLastCommittedEntryIndex());
+  }
+
+  // 2. Perform a same-document navigation forward.
+  {
+    GURL same_document_url(
+        embedded_test_server()->GetURL("a.com", "/title1.html#foo"));
+    EXPECT_TRUE(NavigateToURL(shell(), same_document_url));
+    EXPECT_EQ(1, web_contents->GetController().GetLastCommittedEntryIndex());
+  }
+
+  // 3. Create a HistoryNavigationBeforeCommitInjector, which will perform a
+  // same-document back navigation just before a cross-origin, same process
+  // navigation commits. This triggers a race condition and forces the
+  // same-document navigation to restart as a cross-document one.
+  TestNavigationManager error_page(shell()->web_contents(), start_url);
+  {
+    GURL cross_origin_url(
+        embedded_test_server()->GetURL("suborigin.a.com", "/title2.html"));
+    HistoryNavigationBeforeCommitInjector trigger(web_contents,
+                                                  cross_origin_url);
+
+    // Navigate cross-origin, waiting for the commit to occur.
+    UrlCommitObserver cross_origin_commit_observer(root, cross_origin_url);
+    shell()->LoadURL(cross_origin_url);
+    cross_origin_commit_observer.Wait();
+    EXPECT_EQ(cross_origin_url, web_contents->GetLastCommittedURL());
+    EXPECT_EQ(2, web_contents->GetController().GetLastCommittedEntryIndex());
+    EXPECT_TRUE(trigger.did_trigger_history_navigation());
+  }
+
+  // 4. The restarted navigation is now loading its content from the network,
+  // and the server produces invalid content. An error page is displayed.
+  {
+    response_error.WaitForRequest();
+    response_error.Send("The server doesn't support HTTP anymore");
+    response_error.Done();
+    error_page.WaitForNavigationFinished();
+    EXPECT_FALSE(error_page.was_successful());
+    WaitForLoadStop(shell()->web_contents());
+    EXPECT_EQ(0, web_contents->GetController().GetLastCommittedEntryIndex());
+    EXPECT_EQ(
+        PAGE_TYPE_ERROR,
+        web_contents->GetController().GetLastCommittedEntry()->GetPageType());
+  }
+}
+
 // Test that verifies that Referer and Origin http headers are correctly sent
 // to the final destination of a cross-site POST with a few redirects thrown in.
 // This test is somewhat related to https://crbug.com/635400.
