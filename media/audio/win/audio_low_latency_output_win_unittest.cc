@@ -130,11 +130,13 @@ class ReadFromFileAudioSource : public AudioOutputStream::AudioSourceCallback {
 
     // Use samples read from a data file and fill up the audio buffer
     // provided to us in the callback.
-    if (pos_ + static_cast<int>(max_size) > file_size())
+    if (pos_ + max_size > file_size())
       max_size = file_size() - pos_;
     int frames = max_size / (dest->channels() * kBitsPerSample / 8);
     if (max_size) {
-      dest->FromInterleaved(file_->data() + pos_, frames, kBitsPerSample / 8);
+      static_assert(kBitsPerSample == 16, "FromInterleaved expects 2 bytes.");
+      dest->FromInterleaved<SignedInt16SampleTypeTraits>(
+          reinterpret_cast<const int16_t*>(file_->data() + pos_), frames);
       pos_ += max_size;
     }
     return frames;

@@ -184,15 +184,15 @@ TEST_F(ExternalAudioPipelineTest, ExternalAudioPipelineLoopbackData) {
 
   // Prepare data for test.
   const size_t kSampleSize = 64;
-  char test_data[kSampleSize];
+  uint8_t test_data[kSampleSize];
   for (size_t i = 0; i < kSampleSize; ++i)
     test_data[i] = i;
 
   // Set test data in AudioBus.
   const auto kNumFrames = kSampleSize / kNumChannels;
   auto data = ::media::AudioBus::Create(kNumChannels, kNumFrames);
-  const size_t kBytesPerSample = sizeof(test_data[0]);
-  data->FromInterleaved(&test_data, kNumFrames, kBytesPerSample);
+  data->FromInterleaved<::media::UnsignedInt8SampleTypeTraits>(test_data,
+                                                               kNumFrames);
   // Prepare data for compare.
   auto expected = ::media::AudioBus::Create(kNumChannels, kNumFrames);
   data->CopyTo(expected.get());
