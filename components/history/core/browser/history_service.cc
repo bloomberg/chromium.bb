@@ -1173,6 +1173,7 @@ void HistoryService::DeleteLocalAndRemoteUrl(WebHistoryService* web_history,
 void HistoryService::OnDBLoaded() {
   DCHECK(thread_checker_.CalledOnValidThread());
   backend_loaded_ = true;
+  delete_directive_handler_->OnBackendLoaded();
   NotifyHistoryServiceLoaded();
 }
 

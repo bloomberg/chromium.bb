@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/files/scoped_temp_dir.h"
+#include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -21,6 +22,7 @@
 #include "components/sync/model/fake_sync_change_processor.h"
 #include "components/sync/model/sync_change_processor_wrapper_for_test.h"
 #include "components/sync/model/sync_error_factory.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace history {
@@ -129,6 +131,25 @@ class HistoryDeleteDirectiveHandlerTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(HistoryDeleteDirectiveHandlerTest);
 };
+
+// Tests calling WaitUntilReadyToSync() after the backend has already been
+// loaded, which should report completion immediately.
+TEST_F(HistoryDeleteDirectiveHandlerTest, SyncAlreadyReadyToSync) {
+  base::MockCallback<base::OnceClosure> ready_cb;
+  handler()->OnBackendLoaded();
+  EXPECT_CALL(ready_cb, Run());
+  handler()->WaitUntilReadyToSync(ready_cb.Get());
+}
+
+// Tests calling WaitUntilReadyToSync() befire the backend has been loaded,
+// which should only report completion after the backend loading is completed.
+TEST_F(HistoryDeleteDirectiveHandlerTest, WaitUntilReadyToSync) {
+  base::MockCallback<base::OnceClosure> ready_cb;
+  EXPECT_CALL(ready_cb, Run()).Times(0);
+  handler()->WaitUntilReadyToSync(ready_cb.Get());
+  EXPECT_CALL(ready_cb, Run());
+  handler()->OnBackendLoaded();
+}
 
 // Create a local delete directive and process it while sync is
 // online, and then when offline. The delete directive should be sent to sync,
