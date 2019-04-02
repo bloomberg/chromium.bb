@@ -29,13 +29,7 @@ BookmarksFocusTest.prototype = {
   ]),
 };
 
-// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
-GEN('#if defined(OS_WIN)');
-GEN('#define MAYBE_All DISABLED_All');
-GEN('#else');
-GEN('#define MAYBE_All All');
-GEN('#endif');
-TEST_F('BookmarksFocusTest', 'MAYBE_All', function() {
+TEST_F('BookmarksFocusTest', 'All', function() {
   suite('<bookmarks-folder-node>', function() {
     let rootNode;
     let store;
