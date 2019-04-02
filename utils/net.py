@@ -19,9 +19,10 @@ import time
 import urllib
 import urlparse
 
-from third_party import requests
-from third_party.requests import adapters
-from third_party.requests import structures
+# third_party/
+import requests
+from requests import adapters
+from requests import structures
 
 from utils import authenticators
 from utils import oauth

@@ -19,15 +19,23 @@ import signal
 import stat
 import sys
 import tarfile
-import tempfile
 import threading
 import time
 import zlib
 
-from third_party import colorama
-from third_party.depot_tools import fix_encoding
-from third_party.depot_tools import subcommand
+from utils import tools
+tools.force_local_third_party()
 
+# third_party/
+import colorama
+from depot_tools import fix_encoding
+from depot_tools import subcommand
+
+# pylint: disable=ungrouped-imports
+import auth
+import isolated_format
+import isolate_storage
+import local_caching
 from utils import file_path
 from utils import fs
 from utils import logging_utils
@@ -35,12 +43,6 @@ from utils import net
 from utils import on_error
 from utils import subprocess42
 from utils import threading_utils
-from utils import tools
-
-import auth
-import isolated_format
-import isolate_storage
-import local_caching
 
 
 # Version of isolate protocol passed to the server in /handshake request.

@@ -20,31 +20,29 @@ import threading
 import time
 import urllib
 
-from third_party import colorama
-from third_party.depot_tools import fix_encoding
-from third_party.depot_tools import subcommand
-
-from utils import file_path
-from utils import fs
-from utils import logging_utils
-from third_party.chromium import natsort
-from utils import net
-from utils import on_error
-from utils import subprocess42
-from utils import threading_utils
 from utils import tools
+tools.force_local_third_party()
 
+# third_party/
+import colorama
+from chromium import natsort
+from depot_tools import fix_encoding
+from depot_tools import subcommand
+
+# pylint: disable=ungrouped-imports
 import auth
 import cipd
 import isolateserver
 import isolate_storage
-import isolated_format
 import local_caching
 import run_isolated
-
-
-ROOT_DIR = os.path.dirname(os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding())))
+from utils import file_path
+from utils import fs
+from utils import logging_utils
+from utils import net
+from utils import on_error
+from utils import subprocess42
+from utils import threading_utils
 
 
 class Failure(Exception):

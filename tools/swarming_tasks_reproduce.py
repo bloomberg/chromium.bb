@@ -15,13 +15,15 @@ import sys
 import tempfile
 import urllib
 
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
+    __file__.decode(sys.getfilesystemencoding()))))
 
 
 def capture_swarming(server, cmd, *args):
   cmd = [
-      sys.executable, os.path.join(BASE_DIR, 'swarming.py'), cmd, '-S', server]
+    sys.executable,
+    os.path.join(CLIENT_DIR, 'swarming.py'), cmd, '-S', server,
+  ]
   cmd.extend(args)
   logging.info('%s', ' '.join(args))
   return subprocess.check_output(cmd)

@@ -23,20 +23,25 @@ import sys
 import tempfile
 import time
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
+CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
     __file__.decode(sys.getfilesystemencoding()))))
+sys.path.insert(0, CLIENT_DIR)
 
-# Must be first import.
+from utils import tools
+tools.force_local_third_party()
+
+# third_party/
+import colorama
+from depot_tools import fix_encoding
+
+# pylint: disable=ungrouped-imports
 import parallel_execution
-
-from third_party import colorama
-from third_party.depot_tools import fix_encoding
 from utils import file_path
 from utils import tools
 
 
 def check_output(cmd):
-  return subprocess.check_output([sys.executable] + cmd, cwd=ROOT_DIR)
+  return subprocess.check_output([sys.executable] + cmd, cwd=CLIENT_DIR)
 
 
 def archive_tree(isolate_server):
@@ -46,7 +51,7 @@ def archive_tree(isolate_server):
   """
   cmd = [
       'isolateserver.py', 'archive', '--isolate-server', isolate_server,
-      ROOT_DIR, '--blacklist="\\.git"',
+      CLIENT_DIR, '--blacklist="\\.git"',
   ]
   if logging.getLogger().isEnabledFor(logging.INFO):
     cmd.append('--verbose')
@@ -168,10 +173,10 @@ def main():
 
   oses = ['Linux', 'Mac', 'Windows']
   tests = [
-      os.path.relpath(i, ROOT_DIR)
+      os.path.relpath(i, CLIENT_DIR)
       for i in (
-      glob.glob(os.path.join(ROOT_DIR, 'tests', '*_test.py')) +
-      glob.glob(os.path.join(ROOT_DIR, 'googletest', 'tests', '*_test.py')))
+      glob.glob(os.path.join(CLIENT_DIR, 'tests', '*_test.py')) +
+      glob.glob(os.path.join(CLIENT_DIR, 'googletest', 'tests', '*_test.py')))
   ]
   valid_tests = sorted(map(os.path.basename, tests))
   assert len(valid_tests) == len(set(valid_tests)), (

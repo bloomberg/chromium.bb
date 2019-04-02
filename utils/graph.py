@@ -5,7 +5,8 @@
 import os
 import re
 
-from third_party import colorama
+# third_party/
+import colorama
 
 
 UNITS = ('', 'k', 'm', 'g', 't', 'p', 'e', 'z', 'y')

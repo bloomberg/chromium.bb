@@ -20,15 +20,19 @@ import random
 import sys
 import time
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
+CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
     __file__.decode(sys.getfilesystemencoding()))))
-sys.path.insert(0, ROOT_DIR)
+sys.path.insert(0, CLIENT_DIR)
 
-from third_party import colorama
+from utils import tools
+tools.force_local_third_party()
 
+# third_party/
+import colorama
+
+# pylint: disable=ungrouped-imports
 import isolateserver
 import local_caching
-
 from utils import graph
 from utils import threading_utils
 
