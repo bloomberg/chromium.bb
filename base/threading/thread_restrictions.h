@@ -168,6 +168,9 @@ class InFlightIO;
 namespace functions {
 class ExecScriptScopedAllowBaseSyncPrimitives;
 }
+namespace history_report {
+class HistoryReportJniBridge;
+}
 namespace gpu {
 class GpuChannelHost;
 }
@@ -390,6 +393,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   friend class content::ServiceWorkerContextClient;
   friend class content::SessionStorageDatabase;
   friend class functions::ExecScriptScopedAllowBaseSyncPrimitives;
+  friend class history_report::HistoryReportJniBridge;
   friend class internal::TaskTracker;
   friend class leveldb::LevelDBMojoProxy;
   friend class leveldb_env::DBTracker;
