@@ -37,6 +37,14 @@ constexpr int kHostedAppMenuMargin = 7;
 constexpr int kFramePaddingLeft = 75;
 constexpr double kTitlePaddingWidthFraction = 0.1;
 
+FullscreenToolbarStyle GetUserPreferredToolbarStyle(bool always_show) {
+  // In Kiosk mode, we don't show top Chrome UI.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
+    return FullscreenToolbarStyle::TOOLBAR_NONE;
+  return always_show ? FullscreenToolbarStyle::TOOLBAR_PRESENT
+                     : FullscreenToolbarStyle::TOOLBAR_HIDDEN;
+}
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -55,9 +63,8 @@ BrowserNonClientFrameViewMac::BrowserNonClientFrameViewMac(
         [[FullscreenToolbarControllerViews alloc]
             initWithBrowserView:browser_view]);
     [fullscreen_toolbar_controller_
-        setToolbarStyle:*show_fullscreen_toolbar_
-                            ? FullscreenToolbarStyle::TOOLBAR_PRESENT
-                            : FullscreenToolbarStyle::TOOLBAR_HIDDEN];
+        setToolbarStyle:GetUserPreferredToolbarStyle(
+                            *show_fullscreen_toolbar_)];
   }
 
   if (browser_view->IsBrowserTypeHostedApp()) {
@@ -184,9 +191,7 @@ void BrowserNonClientFrameViewMac::UpdateFullscreenTopUI(
       needs_check_tab_fullscreen) {
     new_style = FullscreenToolbarStyle::TOOLBAR_NONE;
   } else {
-    new_style = *show_fullscreen_toolbar_
-                    ? FullscreenToolbarStyle::TOOLBAR_PRESENT
-                    : FullscreenToolbarStyle::TOOLBAR_HIDDEN;
+    new_style = GetUserPreferredToolbarStyle(*show_fullscreen_toolbar_);
   }
   [fullscreen_toolbar_controller_ setToolbarStyle:new_style];
 
