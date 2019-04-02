@@ -55,12 +55,15 @@ enum SplitviewAnimationType {
   // Used to slide in and out the other highlight.
   SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_IN,
   SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_OUT,
+  // Used to slide in and out the text label on the other highlight.
+  SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_TEXT_SLIDE_IN,
+  SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_TEXT_SLIDE_OUT,
   // Used to slide in and out the preview area highlight.
   SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN,
   SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_OUT,
-  // Used to slide in the text labels.
-  SPLITVIEW_ANIMATION_TEXT_SLIDE_IN,
-  SPLITVIEW_ANIMATION_TEXT_SLIDE_OUT,
+  // Used to slide in and out the text label on the preview area highlight.
+  SPLITVIEW_ANIMATION_PREVIEW_AREA_TEXT_SLIDE_IN,
+  SPLITVIEW_ANIMATION_PREVIEW_AREA_TEXT_SLIDE_OUT,
   // Used to animate the inset of the preview area to nothing.
   SPLITVIEW_ANIMATION_PREVIEW_AREA_NIX_INSET,
   // Used to apply window transform on the selector item after it gets snapped
