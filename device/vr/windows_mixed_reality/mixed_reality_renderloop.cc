@@ -280,6 +280,9 @@ void MixedRealityRenderLoop::StopRuntime() {
   pose_ = nullptr;
   rendering_params_ = nullptr;
   camera_ = nullptr;
+
+  if (input_helper_)
+    input_helper_->Dispose();
   input_helper_ = nullptr;
 
   if (window_)
