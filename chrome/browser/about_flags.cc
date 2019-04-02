@@ -3176,11 +3176,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(printing::features::kUsePdfCompositorServiceForPrint)},
 #endif
 
-    {"autofill-prefilled-fields",
-     flag_descriptions::kAutofillPrefilledFieldsName,
-     flag_descriptions::kAutofillPrefilledFieldsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(autofill::features::kAutofillPrefilledFields)},
-
     {"autofill-profile-client-validation",
      flag_descriptions::kAutofillProfileClientValidationName,
      flag_descriptions::kAutofillProfileClientValidationDescription, kOsAll,

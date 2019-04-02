@@ -660,10 +660,7 @@ autofillManagerFromWebState:(web::WebState*)webState
 
   [jsAutofillManager_ toggleTrackingFormMutations:YES inFrame:frame];
 
-  [jsAutofillManager_ toggleTrackingUserEditedFields:
-                          base::FeatureList::IsEnabled(
-                              autofill::features::kAutofillPrefilledFields)
-                                             inFrame:frame];
+  [jsAutofillManager_ toggleTrackingUserEditedFields:true inFrame:frame];
 
   [self scanFormsInWebState:webState inFrame:frame];
 }

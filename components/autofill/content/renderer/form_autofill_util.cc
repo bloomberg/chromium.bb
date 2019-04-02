@@ -1061,8 +1061,7 @@ void ForEachMatchingFormFieldCommon(
         // field is not skipped.
         (IsAutofillableInputElement(input_element) ||
          IsTextAreaElement(*element)) &&
-        (element->UserHasEditedTheField() ||
-         !base::FeatureList::IsEnabled(features::kAutofillPrefilledFields)) &&
+        element->UserHasEditedTheField() &&
         !SanitizedFieldIsEmpty(element->Value().Utf16()) &&
         (!element->HasAttribute(*kValue) ||
          element->GetAttribute(*kValue) != element->Value()) &&
@@ -1074,7 +1073,6 @@ void ForEachMatchingFormFieldCommon(
     // Check if we should autofill/preview/clear a select element or leave it.
     if (!force_override && !is_initiating_element &&
         IsSelectElement(*element) && element->UserHasEditedTheField() &&
-        base::FeatureList::IsEnabled(features::kAutofillPrefilledFields) &&
         !SanitizedFieldIsEmpty(element->Value().Utf16()))
       continue;
 
