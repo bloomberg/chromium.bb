@@ -145,8 +145,8 @@ void MediaNotificationBackground::Paint(gfx::Canvas* canvas,
 
     const SkColor colors[2] = {
         background_color, SkColorSetA(background_color, SK_AlphaTRANSPARENT)};
-    const SkPoint points[2] = {gfx::PointToSkPoint(draw_bounds.left_center()),
-                               gfx::PointToSkPoint(draw_bounds.right_center())};
+    const SkPoint points[2] = {GetGradientStartPoint(draw_bounds),
+                               GetGradientEndPoint(draw_bounds)};
 
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
@@ -211,7 +211,8 @@ gfx::Rect MediaNotificationBackground::GetArtworkBounds(
 
   // The artwork should be positioned on the far right hand side of the
   // notification and be the same height.
-  return gfx::Rect(view_bounds.right() - width, 0, width, view_bounds.height());
+  return owner_->GetMirroredRect(
+      gfx::Rect(view_bounds.right() - width, 0, width, view_bounds.height()));
 }
 
 gfx::Rect MediaNotificationBackground::GetFilledBackgroundBounds(
@@ -220,7 +221,7 @@ gfx::Rect MediaNotificationBackground::GetFilledBackgroundBounds(
   // taken up by the artwork.
   gfx::Rect bounds = gfx::Rect(view_bounds);
   bounds.Inset(0, 0, GetArtworkVisibleWidth(view_bounds.size()), 0);
-  return bounds;
+  return owner_->GetMirroredRect(bounds);
 }
 
 gfx::Rect MediaNotificationBackground::GetGradientBounds(
@@ -229,9 +230,21 @@ gfx::Rect MediaNotificationBackground::GetGradientBounds(
     return gfx::Rect(0, 0, 0, 0);
 
   // The gradient should appear above the artwork on the left.
-  gfx::Rect filled_bounds = GetFilledBackgroundBounds(view_bounds);
-  return gfx::Rect(filled_bounds.right(), view_bounds.y(),
-                   kMediaImageGradientWidth, view_bounds.height());
+  return owner_->GetMirroredRect(gfx::Rect(
+      view_bounds.width() - GetArtworkVisibleWidth(view_bounds.size()),
+      view_bounds.y(), kMediaImageGradientWidth, view_bounds.height()));
+}
+
+SkPoint MediaNotificationBackground::GetGradientStartPoint(
+    const gfx::Rect& draw_bounds) const {
+  return gfx::PointToSkPoint(base::i18n::IsRTL() ? draw_bounds.right_center()
+                                                 : draw_bounds.left_center());
+}
+
+SkPoint MediaNotificationBackground::GetGradientEndPoint(
+    const gfx::Rect& draw_bounds) const {
+  return gfx::PointToSkPoint(base::i18n::IsRTL() ? draw_bounds.left_center()
+                                                 : draw_bounds.right_center());
 }
 
 }  // namespace ash
