@@ -93,6 +93,8 @@ class StaticFunctionsTest(cros_test_lib.MockTestCase):
     fake_id = 8921795536486453568
     buildbucket_v2.UpdateSelfCommonBuildProperties(critical=True)
     self.underlying_function.assert_called_with('critical', True)
+    buildbucket_v2.UpdateSelfCommonBuildProperties(cidb_id=fake_value)
+    self.underlying_function.assert_called_with('cidb_id', fake_value)
     buildbucket_v2.UpdateSelfCommonBuildProperties(
         chrome_version=fake_value)
     self.underlying_function.assert_called_with('chrome_version', fake_value)

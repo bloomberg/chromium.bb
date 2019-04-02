@@ -55,7 +55,7 @@ def UpdateSelfBuildPropertiesNonBlocking(key, value):
   logging.PrintKitchenSetBuildProperty(key, value)
 
 def UpdateSelfCommonBuildProperties(
-    critical=None, chrome_version=None, milestone_version=None,
+    critical=None, cidb_id=None, chrome_version=None, milestone_version=None,
     platform_version=None, full_version=None, toolchain_url=None,
     build_type=None, unibuild=None, suite_scheduling=None,
     killed_child_builds=None, board=None, main_firmware_version=None,
@@ -67,6 +67,7 @@ def UpdateSelfCommonBuildProperties(
 
   Args:
     critical: (Optional) |important| flag of the build.
+    cidb_id: (Optional) CIDB ID of the build.
     chrome_version: (Optional) version of chrome of the build. Eg "74.0.3687.0".
     milestone_version: (Optional) milestone version of  of the build. Eg "74".
     platform_version: (Optional) platform version of the build. Eg "11671.0.0".
@@ -84,6 +85,8 @@ def UpdateSelfCommonBuildProperties(
   """
   if critical is not None:
     UpdateSelfBuildPropertiesNonBlocking('critical', critical)
+  if cidb_id is not None:
+    UpdateSelfBuildPropertiesNonBlocking('cidb_id', cidb_id)
   if chrome_version is not None:
     UpdateSelfBuildPropertiesNonBlocking('chrome_version', chrome_version)
   if milestone_version is not None:

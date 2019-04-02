@@ -147,7 +147,7 @@ class TestBuildStore(cros_test_lib.MockTestCase):
         'something-paladin', 'bot_hostname', important=True,
         timeout_seconds='timeout')
     buildbucket_v2.UpdateSelfCommonBuildProperties.assert_called_once_with(
-        critical=True)
+        cidb_id=build_id, critical=True)
     self.assertEqual(build_id, 0)
 
   def testGetBuildMessages(self):

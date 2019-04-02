@@ -165,7 +165,8 @@ class BuildStore(object):
           builder_name, build_number, build_config, bot_hostname,
           master_build_id, timeout_seconds, important, buildbucket_id, branch)
     if self._write_to_bb:
-      buildbucket_v2.UpdateSelfCommonBuildProperties(critical=important)
+      buildbucket_v2.UpdateSelfCommonBuildProperties(critical=important,
+                                                     cidb_id=build_id)
 
     return build_id
 
