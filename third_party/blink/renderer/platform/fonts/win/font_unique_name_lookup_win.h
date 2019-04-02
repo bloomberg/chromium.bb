@@ -17,6 +17,8 @@ class FontUniqueNameLookupWin : public FontUniqueNameLookup {
   sk_sp<SkTypeface> MatchUniqueName(const String& font_unique_name) override;
 
  private:
+  bool EnsureMatchingServiceConnected();
+
   DISALLOW_COPY_AND_ASSIGN(FontUniqueNameLookupWin);
 };
 
