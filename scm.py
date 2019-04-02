@@ -226,7 +226,7 @@ class GIT(object):
     return remote, upstream_branch
 
   @staticmethod
-  def RefToRemoteRef(ref, remote=None):
+  def RefToRemoteRef(ref, remote):
     """Convert a checkout ref to the equivalent remote ref.
 
     Returns:
@@ -240,10 +240,24 @@ class GIT(object):
     m = re.match('^(refs/(remotes/)?)?branch-heads/', ref or '')
     if m:
       return ('refs/remotes/branch-heads/', ref.replace(m.group(0), ''))
-    if remote:
-      m = re.match('^((refs/)?remotes/)?%s/|(refs/)?heads/' % remote, ref or '')
-      if m:
-        return ('refs/remotes/%s/' % remote, ref.replace(m.group(0), ''))
+
+    m = re.match('^((refs/)?remotes/)?%s/|(refs/)?heads/' % remote, ref or '')
+    if m:
+      return ('refs/remotes/%s/' % remote, ref.replace(m.group(0), ''))
+
+    return None
+
+  @staticmethod
+  def RemoteRefToRef(ref, remote):
+    assert remote, 'A remote must be given'
+    if not ref or not ref.startswith('refs/'):
+      return None
+    if not ref.startswith('refs/remotes/'):
+      return ref
+    if ref.startswith('refs/remotes/branch-heads/'):
+      return 'refs' + ref[len('refs/remotes'):]
+    if ref.startswith('refs/remotes/%s/' % remote):
+      return 'refs/heads' + ref[len('refs/remotes/%s' % remote):]
     return None
 
   @staticmethod

@@ -1299,21 +1299,19 @@ class GitWrapper(SCMWrapper):
   def _Fetch(self, options, remote=None, prune=False, quiet=False,
              refspec=None):
     cfg = gclient_utils.DefaultIndexPackConfig(self.url)
-    # When a mirror is configured, it fetches only the refs/heads, and possibly
-    # the refs/branch-heads and refs/tags, but not the refs/changes. So, if
-    # we're asked to fetch a refs/changes ref from the mirror, it won't have it.
-    # This makes sure that we always fetch refs/changes directly from the
-    # repository and not from the mirror.
-    if refspec and refspec.startswith('refs/changes'):
-      remote, _ = gclient_utils.SplitUrlRevision(self.url)
-      # Make sure that we fetch the (remote) refs/changes/xx ref to the (local)
-      # refs/changes/xx ref.
-      if ':' not in refspec:
-        refspec += ':' + refspec
-    if (refspec and refspec.startswith('refs/remotes/branch-heads')
-        and not getattr(options, 'with_branch_heads', False)):
-      refspec = '%s:%s' % (refspec.replace('/remotes', '', 1), refspec)
-
+    # When updating, the ref is modified to be a remote ref .
+    # (e.g. refs/heads/NAME becomes refs/remotes/REMOTE/NAME).
+    # Try to reverse that mapping.
+    original_ref = scm.GIT.RemoteRefToRef(refspec, self.remote)
+    if original_ref:
+      refspec = original_ref + ':' + refspec
+      # When a mirror is configured, it only fetches
+      # refs/{heads,branch-heads,tags}/*.
+      # If asked to fetch other refs, we must fetch those directly from the
+      # repository, and not from the mirror.
+      if not original_ref.startswith(
+          ('refs/heads/', 'refs/branch-heads/', 'refs/tags/')):
+        remote, _ = gclient_utils.SplitUrlRevision(self.url)
     fetch_cmd =  cfg + [
         'fetch',
         remote or self.remote,
