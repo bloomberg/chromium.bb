@@ -42,10 +42,6 @@ namespace blink {
 
 namespace {
 
-#if defined(OS_WIN)
-static const uint16_t kHIGHBITMASKSHORT = 0x8000;
-#endif
-
 const int kVKeyProcessKey = 229;
 const int kVKeySpatNavBack = 233;
 
@@ -498,10 +494,7 @@ void KeyboardEventManager::SetCurrentCapsLockState(
 bool KeyboardEventManager::CurrentCapsLockState() {
   switch (g_override_caps_lock_state) {
     case OverrideCapsLockState::kDefault:
-#if defined(OS_WIN)
-      // FIXME: Does this even work inside the sandbox?
-      return GetKeyState(VK_CAPITAL) & 1;
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
       return GetCurrentKeyModifiers() & alphaLock;
 #else
       // Caps lock state use is limited to Mac password input
@@ -518,14 +511,7 @@ bool KeyboardEventManager::CurrentCapsLockState() {
 
 WebInputEvent::Modifiers KeyboardEventManager::GetCurrentModifierState() {
   unsigned modifiers = 0;
-#if defined(OS_WIN)
-  if (GetKeyState(VK_SHIFT) & kHIGHBITMASKSHORT)
-    modifiers |= WebInputEvent::kShiftKey;
-  if (GetKeyState(VK_CONTROL) & kHIGHBITMASKSHORT)
-    modifiers |= WebInputEvent::kControlKey;
-  if (GetKeyState(VK_MENU) & kHIGHBITMASKSHORT)
-    modifiers |= WebInputEvent::kAltKey;
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   UInt32 current_modifiers = GetCurrentKeyModifiers();
   if (current_modifiers & ::shiftKey)
     modifiers |= WebInputEvent::kShiftKey;
