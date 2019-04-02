@@ -117,7 +117,7 @@ int LocationIconView::GetMinimumLabelTextWidth() const {
 bool LocationIconView::ShouldShowText() const {
   const auto* location_bar_model = delegate_->GetLocationBarModel();
 
-  if (!location_bar_model->input_in_progress()) {
+  if (!delegate_->IsEditingOrEmpty()) {
     const GURL& url = location_bar_model->GetURL();
     if (url.SchemeIs(content::kChromeUIScheme) ||
         url.SchemeIs(extensions::kExtensionScheme) ||
