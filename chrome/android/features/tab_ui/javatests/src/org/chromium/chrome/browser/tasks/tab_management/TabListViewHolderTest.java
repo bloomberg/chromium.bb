@@ -10,6 +10,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.MediumTest;
@@ -22,6 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
@@ -111,11 +113,24 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     @MediumTest
     @UiThreadTest
     public void testSelected() throws Exception {
-        mGridModel.set(TabProperties.IS_SELECTED, true);
-        Assert.assertTrue(((FrameLayout) (mTabGridViewHolder.itemView)).getForeground() != null);
-        mGridModel.set(TabProperties.IS_SELECTED, false);
-        Assert.assertFalse(((FrameLayout) (mTabGridViewHolder.itemView)).getForeground() != null);
-
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
+            mGridModel.set(TabProperties.IS_SELECTED, true);
+            Assert.assertTrue(
+                    ((FrameLayout) (mTabGridViewHolder.itemView)).getForeground() != null);
+            mGridModel.set(TabProperties.IS_SELECTED, false);
+            Assert.assertFalse(
+                    ((FrameLayout) (mTabGridViewHolder.itemView)).getForeground() != null);
+        } else {
+            mGridModel.set(TabProperties.IS_SELECTED, true);
+            Drawable selectedDrawable =
+                    mTabGridViewHolder.itemView.findViewById(R.id.background_view).getBackground();
+            Assert.assertTrue(selectedDrawable != null);
+            mGridModel.set(TabProperties.IS_SELECTED, false);
+            Drawable elevationDrawable =
+                    mTabGridViewHolder.itemView.findViewById(R.id.background_view).getBackground();
+            Assert.assertTrue(elevationDrawable != null);
+            Assert.assertNotSame(selectedDrawable, elevationDrawable);
+        }
         mStripModel.set(TabProperties.IS_SELECTED, true);
         Assert.assertTrue(((FrameLayout) (mTabStripViewHolder.itemView)).getForeground() != null);
         mStripModel.set(TabProperties.IS_SELECTED, false);

@@ -7,10 +7,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/background_view"
+        android:background="@drawable/popup_bg"
+        android:layout_margin="3dp"
+        android:visibility="gone"/>
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:elevation="4dp"
+        android:layout_gravity="center"
         android:background="@drawable/tab_grid_card_background"
         android:layout_margin="8dp">
             <ImageView
@@ -26,13 +34,12 @@
                 android:layout_height="wrap_content"
                 android:layout_toEndOf="@id/tab_favicon"
                 android:layout_marginEnd="32dp"
+                android:gravity="center_vertical"
                 android:minHeight="32dp"
                 android:requiresFadingEdge="horizontal"
                 android:fadingEdgeLength="24dp"
                 android:ellipsize="none"
                 android:singleLine="true"
-                android:paddingBottom="6dp"
-                android:paddingTop="6dp"
                 android:textAppearance="@style/TextAppearance.BlackTitle2"/>
             <org.chromium.ui.widget.RoundedCornerImageView
                 android:id="@+id/tab_thumbnail"
