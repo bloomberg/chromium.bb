@@ -234,12 +234,13 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
       return;
     }
 
+    uint32_t options = network::mojom::kWebSocketOptionNone;
     network::mojom::TrustedHeaderClientPtr header_client;
     GetContentClient()->browser()->WillCreateWebSocket(
-        frame, &request, &auth_handler, &header_client);
+        frame, &request, &auth_handler, &header_client, &options);
 
     WebSocketManager::CreateWebSocket(
-        process_id_, ancestor_render_frame_id_, origin_,
+        process_id_, ancestor_render_frame_id_, origin_, options,
         std::move(auth_handler), std::move(header_client), std::move(request));
   }
 

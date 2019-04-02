@@ -166,6 +166,7 @@ void WebSocketManager::CreateWebSocket(
     int process_id,
     int frame_id,
     url::Origin origin,
+    uint32_t options,
     network::mojom::AuthenticationHandlerPtr auth_handler,
     network::mojom::TrustedHeaderClientPtr header_client,
     network::mojom::WebSocketRequest request) {
@@ -179,7 +180,7 @@ void WebSocketManager::CreateWebSocket(
     network::mojom::NetworkContext* network_context =
         storage_partition->GetNetworkContext();
     network_context->CreateWebSocket(std::move(request), process_id, frame_id,
-                                     origin, std::move(auth_handler),
+                                     origin, options, std::move(auth_handler),
                                      std::move(header_client));
     return;
   }
@@ -207,7 +208,7 @@ void WebSocketManager::CreateWebSocket(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&WebSocketManager::DoCreateWebSocket,
                      base::Unretained(handle->manager()), frame_id,
-                     std::move(origin), std::move(request)));
+                     std::move(origin), options, std::move(request)));
 }
 
 WebSocketManager::WebSocketManager(int process_id,
@@ -240,6 +241,7 @@ WebSocketManager::~WebSocketManager() {
 void WebSocketManager::DoCreateWebSocket(
     int frame_id,
     url::Origin origin,
+    uint32_t options,
     network::mojom::WebSocketRequest request) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -264,7 +266,7 @@ void WebSocketManager::DoCreateWebSocket(
   impls_.insert(DoCreateWebSocketInternal(
       std::make_unique<Delegate>(this), std::move(request),
       throttler_.IssuePendingConnectionTracker(), process_id_, frame_id,
-      std::move(origin), throttler_.CalculateDelay()));
+      std::move(origin), options, throttler_.CalculateDelay()));
 
   if (!throttling_period_timer_.IsRunning()) {
     throttling_period_timer_.Start(
@@ -288,11 +290,12 @@ std::unique_ptr<network::WebSocket> WebSocketManager::DoCreateWebSocketInternal(
     int child_id,
     int frame_id,
     url::Origin origin,
+    uint32_t options,
     base::TimeDelta delay) {
   return std::make_unique<network::WebSocket>(
       std::move(delegate), std::move(request), nullptr, nullptr,
       std::move(pending_connection_tracker), child_id, frame_id,
-      std::move(origin), delay);
+      std::move(origin), options, delay);
 }
 
 net::URLRequestContext* WebSocketManager::GetURLRequestContext() {

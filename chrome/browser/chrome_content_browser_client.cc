@@ -4969,7 +4969,8 @@ void ChromeContentBrowserClient::WillCreateWebSocket(
     content::RenderFrameHost* frame,
     network::mojom::WebSocketRequest* request,
     network::mojom::AuthenticationHandlerPtr* auth_handler,
-    network::mojom::TrustedHeaderClientPtr* header_client) {
+    network::mojom::TrustedHeaderClientPtr* header_client,
+    uint32_t* options) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   auto* web_request_api =
       extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(

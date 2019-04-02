@@ -3085,6 +3085,81 @@ TEST_F(URLLoaderTest, ClientAuthCertificateWithInvalidSignature) {
   EXPECT_EQ(net::ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED,
             client()->completion_status().error_code);
 }
+
+TEST_F(URLLoaderTest, BlockAllCookies) {
+  MockNetworkServiceClient network_service_client;
+
+  GURL site_for_cookies("http://www.example.com.test/");
+  GURL first_party_url(site_for_cookies);
+  GURL third_party_url("http://www.some.other.origin.test/");
+
+  ResourceRequest request = CreateResourceRequest("GET", first_party_url);
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = kProcessId;
+  params.is_corb_enabled = false;
+  std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
+      context(), &network_service_client,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), mojom::kURLLoadOptionBlockAllCookies, request,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
+
+  EXPECT_FALSE(url_loader->AllowCookies(first_party_url, site_for_cookies));
+  EXPECT_FALSE(url_loader->AllowCookies(third_party_url, site_for_cookies));
+}
+
+TEST_F(URLLoaderTest, BlockOnlyThirdPartyCookies) {
+  MockNetworkServiceClient network_service_client;
+
+  GURL site_for_cookies("http://www.example.com.test/");
+  GURL first_party_url(site_for_cookies);
+  GURL third_party_url("http://www.some.other.origin.test/");
+
+  ResourceRequest request = CreateResourceRequest("GET", first_party_url);
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = kProcessId;
+  params.is_corb_enabled = false;
+  std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
+      context(), &network_service_client,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), mojom::kURLLoadOptionBlockThirdPartyCookies,
+      request, client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
+      &params, 0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
+
+  EXPECT_TRUE(url_loader->AllowCookies(first_party_url, site_for_cookies));
+  EXPECT_FALSE(url_loader->AllowCookies(third_party_url, site_for_cookies));
+}
+
+TEST_F(URLLoaderTest, AllowAllCookies) {
+  MockNetworkServiceClient network_service_client;
+
+  GURL site_for_cookies("http://www.example.com.test/");
+  GURL first_party_url(site_for_cookies);
+  GURL third_party_url("http://www.some.other.origin.test/");
+
+  ResourceRequest request = CreateResourceRequest("GET", first_party_url);
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = kProcessId;
+  params.is_corb_enabled = false;
+  std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
+      context(), &network_service_client,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
+
+  EXPECT_TRUE(url_loader->AllowCookies(first_party_url, site_for_cookies));
+  EXPECT_TRUE(url_loader->AllowCookies(third_party_url, site_for_cookies));
+}
 #endif  // !defined(OS_IOS)
 
 }  // namespace network

@@ -1264,7 +1264,8 @@ class CONTENT_EXPORT ContentBrowserClient {
       RenderFrameHost* frame,
       network::mojom::WebSocketRequest* request,
       network::mojom::AuthenticationHandlerPtr* authentication_handler,
-      network::mojom::TrustedHeaderClientPtr* header_client);
+      network::mojom::TrustedHeaderClientPtr* header_client,
+      uint32_t* options);
 
   // Allows the embedder to returns a list of request interceptors that can
   // intercept a navigation request.
