@@ -364,7 +364,6 @@ class GTestTest(RemoteTest):
       # interactive_ui_tests needs some special setup. See crbug.com/946685#c4
       # TODO(bpastene): Put all this behind a flag if more suites need it.
       device_test_script_contents += [
-          'export CR_SOURCE_ROOT=/tmp',
           'stop ui',
       ]
       # The UI service on the device owns the chronos user session, so shutting
