@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_view_manager/cr_view_manager.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
@@ -35,10 +36,17 @@
         right: initial;
         top: initial;
       }
+
+      cr-toast {
+        min-width: initial;
+      }
     </style>
     <cr-view-manager id="viewManager" hidden="[[!modulesInitialized_]]">
       <landing-view id="step-landing" slot="view" class="active"></landing-view>
     </cr-view-manager>
+    <cr-toast duration="3000">
+      <div>$i18n{defaultBrowserChanged}</div>
+    </cr-toast>
   </template>
   <script src="welcome_app.js"></script>
 </dom-module>
