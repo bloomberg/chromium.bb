@@ -470,32 +470,32 @@ class Sysroot(object):
 
     config = []
     chrome_binhost = board and self._ChromeBinhost(board)
-    postsubmit_binhost, postsubmit_binhost_internal = self._PostsubmitBinhosts(
-        board)
-
-    config.append("""
+#    postsubmit_binhost, postsubmit_binhost_internal = self._PostsubmitBinhosts(
+#        board)
+#
+#    config.append("""
 # FULL_BINHOST is populated by the full builders. It is listed first because it
 # is the lowest priority binhost. It is better to download packages from the
 # postsubmit binhost because they are fresher packages.
-PORTAGE_BINHOST="$FULL_BINHOST"
-""")
+#PORTAGE_BINHOST="$FULL_BINHOST"
+#""")
 
-    if postsubmit_binhost:
-      config.append("""
+#    if postsubmit_binhost:
+#      config.append("""
 # POSTSUBMIT_BINHOST is populated by the postsubmit builders. If the same
 # package is provided by both the postsubmit and full binhosts, the package is
 # downloaded from the postsubmit binhost.
-source %s
-PORTAGE_BINHOST="$PORTAGE_BINHOST $POSTSUBMIT_BINHOST"
-""" % postsubmit_binhost)
+#source %s
+#PORTAGE_BINHOST="$PORTAGE_BINHOST $POSTSUBMIT_BINHOST"
+#""" % postsubmit_binhost)
 
-    if postsubmit_binhost_internal:
-      config.append("""
+#    if postsubmit_binhost_internal:
+#      config.append("""
 # The internal POSTSUBMIT_BINHOST is populated by the internal postsubmit
 # builders. It takes priority over the public postsubmit binhost.
-source %s
-PORTAGE_BINHOST="$PORTAGE_BINHOST $POSTSUBMIT_BINHOST"
-""" % postsubmit_binhost_internal)
+#source %s
+#PORTAGE_BINHOST="$PORTAGE_BINHOST $POSTSUBMIT_BINHOST"
+#""" % postsubmit_binhost_internal)
 
     if chrome_binhost:
       config.append("""
@@ -544,6 +544,8 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
     Args:
       board (str): Board name.
     """
+    if board != "Some non-existing board":
+      return None, None
     prefixes = []
     arch = self.GetStandardField(STANDARD_FIELD_ARCH)
     if arch in _ARCH_MAPPING:
