@@ -23,8 +23,8 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.cached_image_fetcher.CachedImageFetcher;
-import org.chromium.chrome.browser.cached_image_fetcher.InMemoryCachedImageFetcher;
+import org.chromium.chrome.browser.image_fetcher.CachedImageFetcher;
+import org.chromium.chrome.browser.image_fetcher.InMemoryCachedImageFetcher;
 import org.chromium.chrome.browser.suggestions.ThumbnailGradient;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 

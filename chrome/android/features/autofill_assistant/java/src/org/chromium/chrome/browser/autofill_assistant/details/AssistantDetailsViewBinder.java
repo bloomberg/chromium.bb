@@ -27,9 +27,9 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.autofill_assistant.R;
-import org.chromium.chrome.browser.cached_image_fetcher.CachedImageFetcher;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
+import org.chromium.chrome.browser.image_fetcher.CachedImageFetcher;
 import org.chromium.chrome.browser.modaldialog.AppModalPresenter;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;

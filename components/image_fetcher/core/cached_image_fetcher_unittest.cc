@@ -105,10 +105,10 @@ class CachedImageFetcherTest : public testing::Test {
     auto decoder = std::make_unique<FakeImageDecoder>();
     fake_image_decoder_ = decoder.get();
 
+    image_fetcher_ = std::make_unique<image_fetcher::ImageFetcherImpl>(
+        std::move(decoder), shared_factory_);
     cached_image_fetcher_ = std::make_unique<CachedImageFetcher>(
-        std::make_unique<image_fetcher::ImageFetcherImpl>(std::move(decoder),
-                                                          shared_factory_),
-        image_cache_, read_only);
+        image_fetcher_.get(), image_cache_, read_only);
 
     RunUntilIdle();
   }
@@ -128,6 +128,7 @@ class CachedImageFetcherTest : public testing::Test {
   MOCK_METHOD1(OnImageLoaded, void(std::string));
 
  private:
+  std::unique_ptr<ImageFetcher> image_fetcher_;
   std::unique_ptr<CachedImageFetcher> cached_image_fetcher_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
