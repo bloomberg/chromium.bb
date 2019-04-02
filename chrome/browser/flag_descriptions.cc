@@ -140,10 +140,6 @@ const char kAutofillNoLocalSaveOnUploadSuccessDescription[] =
     "When enabled, no local copy of server card will be saved when credit card "
     "upload succeeds.";
 
-const char kAutofillPrefilledFieldsName[] = "Autofill Prefilled Fields";
-const char kAutofillPrefilledFieldsDescription[] =
-    "Allows autofill to fill fields previously filled by the website";
-
 const char kAutofillProfileClientValidationName[] =
     "Autofill Validates Profiles By Client";
 const char kAutofillProfileClientValidationDescription[] =

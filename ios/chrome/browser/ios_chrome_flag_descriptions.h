@@ -117,10 +117,6 @@ extern const char kAutofillNoLocalSaveOnUnmaskSuccessDescription[];
 extern const char kAutofillNoLocalSaveOnUploadSuccessName[];
 extern const char kAutofillNoLocalSaveOnUploadSuccessDescription[];
 
-// Title and description for the flag to control the dynamic autofill.
-extern const char kAutofillPrefilledFieldsName[];
-extern const char kAutofillPrefilledFieldsDescription[];
-
 // Enforcing restrictions to enable/disable autofill small form support.
 extern const char kAutofillEnforceMinRequiredFieldsForHeuristicsName[];
 extern const char kAutofillEnforceMinRequiredFieldsForHeuristicsDescription[];

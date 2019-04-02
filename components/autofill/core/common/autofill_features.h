@@ -42,7 +42,6 @@ extern const base::Feature kAutofillManualFallbackPhaseTwo;
 extern const base::Feature kAutofillMetadataUploads;
 extern const base::Feature kAutofillOverrideWithRaterConsensus;
 extern const base::Feature kAutofillPreferServerNamePredictions;
-extern const base::Feature kAutofillPrefilledFields;
 extern const base::Feature kAutofillProfileServerValidation;
 extern const base::Feature kAutofillRestrictUnownedFieldsToFormlessCheckout;
 extern const base::Feature kAutofillRichMetadataQueries;

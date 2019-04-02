@@ -113,9 +113,6 @@ extern const char kAutofillNoLocalSaveOnUnmaskSuccessDescription[];
 extern const char kAutofillNoLocalSaveOnUploadSuccessName[];
 extern const char kAutofillNoLocalSaveOnUploadSuccessDescription[];
 
-extern const char kAutofillPrefilledFieldsName[];
-extern const char kAutofillPrefilledFieldsDescription[];
-
 extern const char kAutofillProfileClientValidationName[];
 extern const char kAutofillProfileClientValidationDescription[];
 

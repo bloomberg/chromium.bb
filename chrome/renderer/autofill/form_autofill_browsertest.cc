@@ -1466,10 +1466,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
 
     expected.id_attribute = ASCIIToUTF16("city");
     expected.name = expected.id_attribute;
-    expected.value =
-        base::FeatureList::IsEnabled(features::kAutofillPrefilledFields)
-            ? ASCIIToUTF16("Montreal")
-            : control_elements[4].Value().Utf16();
+    expected.value = ASCIIToUTF16("Montreal");
     if (placeholder_city) {
       expected.label = ASCIIToUTF16(placeholder_city);
       expected.placeholder = ASCIIToUTF16(placeholder_city);
@@ -1477,18 +1474,14 @@ class FormAutofillTest : public ChromeRenderViewTest {
       expected.label.clear();
       expected.placeholder.clear();
     }
-    expected.is_autofilled =
-        base::FeatureList::IsEnabled(features::kAutofillPrefilledFields);
+    expected.is_autofilled = true;
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[4]);
 
     expected.form_control_type = "select-one";
     expected.id_attribute = ASCIIToUTF16("state");
     expected.name_attribute = ASCIIToUTF16("state");
     expected.name = expected.name_attribute;
-    expected.value =
-        base::FeatureList::IsEnabled(features::kAutofillPrefilledFields)
-            ? ASCIIToUTF16("AA")
-            : control_elements[5].Value().Utf16();
+    expected.value = ASCIIToUTF16("AA");
     if (placeholder_state) {
       expected.label = ASCIIToUTF16(placeholder_state);
       expected.placeholder = ASCIIToUTF16(placeholder_state);
@@ -1496,8 +1489,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
       expected.label.clear();
       expected.placeholder.clear();
     }
-    expected.is_autofilled =
-        base::FeatureList::IsEnabled(features::kAutofillPrefilledFields);
+    expected.is_autofilled = true;
     expected.max_length = 0;
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[5]);
 

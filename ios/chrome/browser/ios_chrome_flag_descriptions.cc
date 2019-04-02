@@ -151,10 +151,6 @@ const char kAutofillNoLocalSaveOnUploadSuccessDescription[] =
     "When enabled, no local copy of server card will be saved when credit card "
     "upload succeeds.";
 
-const char kAutofillPrefilledFieldsName[] = "Autofill prefilled forms";
-const char kAutofillPrefilledFieldsDescription[] =
-    "Fills forms that contain a programmatically filled value.";
-
 const char kAutofillEnforceMinRequiredFieldsForHeuristicsName[] =
     "Autofill Enforce Min Required Fields For Heuristics";
 const char kAutofillEnforceMinRequiredFieldsForHeuristicsDescription[] =

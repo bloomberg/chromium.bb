@@ -117,11 +117,6 @@ const base::Feature kAutofillMetadataUploads{"AutofillMetadataUploads",
 const base::Feature kAutofillPreferServerNamePredictions{
     "AutofillPreferServerNamePredictions", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether Autofill should fill fields previously filled by the
-// website.
-const base::Feature kAutofillPrefilledFields{"AutofillPrefilledFields",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether Autofill uses server-side validation to ensure that fields
 // with invalid data are not suggested.
 const base::Feature kAutofillProfileServerValidation{
