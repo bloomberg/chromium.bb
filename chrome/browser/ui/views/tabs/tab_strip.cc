@@ -805,15 +805,6 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& new_selection) {
       base::STLSetDifference<ui::ListSelectionModel::SelectedIndices>(
           new_selection.selected_indices(), selected_tabs_.selected_indices());
 
-  // Fire accessibility events that reflect the changes to selection.
-  for (auto tab_index : no_longer_selected) {
-    tab_at(tab_index)->NotifyAccessibilityEvent(
-        ax::mojom::Event::kSelectionRemove, true);
-  }
-  for (auto tab_index : newly_selected) {
-    tab_at(tab_index)->NotifyAccessibilityEvent(ax::mojom::Event::kSelectionAdd,
-                                                true);
-  }
   tab_at(new_selection.active())
       ->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
   selected_tabs_ = new_selection;
@@ -825,6 +816,16 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& new_selection) {
        base::STLSetUnion<ui::ListSelectionModel::SelectedIndices>(
            no_longer_selected, newly_selected)) {
     tab_at(tab_index)->SelectedStateChanged();
+  }
+}
+
+void TabStrip::OnWidgetActivationChanged(views::Widget* widget, bool active) {
+  if (active && selected_tabs_.active() >= 0) {
+    // When the browser window is activated, fire a selection event on the
+    // currently active tab, to help enable per-tab modes in assistive
+    // technologies.
+    tab_at(selected_tabs_.active())
+        ->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
   }
 }
 
@@ -2789,6 +2790,14 @@ void TabStrip::OnMouseEntered(const ui::MouseEvent& event) {
 
 void TabStrip::OnMouseExited(const ui::MouseEvent& event) {
   UpdateHoverCard(nullptr, false);
+}
+
+void TabStrip::AddedToWidget() {
+  GetWidget()->AddObserver(this);
+}
+
+void TabStrip::RemovedFromWidget() {
+  GetWidget()->RemoveObserver(this);
 }
 
 void TabStrip::OnGestureEvent(ui::GestureEvent* event) {
