@@ -57,8 +57,7 @@ class WebSocketHandleImpl : public WebSocketHandle,
 
  private:
   void Disconnect();
-  void OnConnectionError(uint32_t custom_reason,
-                         const std::string& description);
+  void OnConnectionError();
 
   // network::mojom::blink::WebSocketClient methods:
   void OnFailChannel(const String& reason) override;
