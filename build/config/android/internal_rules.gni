@@ -143,6 +143,9 @@ template("write_build_config") {
     if (defined(invoker.android_manifest_dep)) {
       deps += [ invoker.android_manifest_dep ]
     }
+    if (defined(invoker.base_module_build_config_target)) {
+      deps += [ invoker.base_module_build_config_target ]
+    }
 
     script = "//build/android/gyp/write_build_config.py"
     depfile = "$target_gen_dir/$target_name.d"
@@ -476,6 +479,12 @@ template("write_build_config") {
         "--main-class",
         invoker.main_class,
       ]
+    }
+    if (defined(invoker.base_module_build_config)) {
+      _rebased_base_module_build_config =
+          rebase_path(invoker.base_module_build_config, root_build_dir)
+      args +=
+          [ "--base-module-build-config=$_rebased_base_module_build_config" ]
     }
     if (current_toolchain != default_toolchain) {
       # This has to be a built-time error rather than a GN assert because many
@@ -3346,8 +3355,10 @@ if (enable_java_templates) {
       if (type == "android_app_bundle_module") {
         forward_variables_from(invoker,
                                [
-                                 "proto_resources_path",
+                                 "base_module_build_config",
+                                 "base_module_build_config_target",
                                  "module_rtxt_path",
+                                 "proto_resources_path",
                                ])
       }
       build_config = _build_config
