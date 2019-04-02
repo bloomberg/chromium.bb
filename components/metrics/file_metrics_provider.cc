@@ -84,6 +84,8 @@ enum EmbeddedProfileResult : int {
   EMBEDDED_PROFILE_FOUND,
   EMBEDDED_PROFILE_FALLBACK,
   EMBEDDED_PROFILE_DROPPED,
+  EMBEDDED_PROFILE_WAS_BASE,
+  EMBEDDED_PROFILE_WAS_FULL,
   EMBEDDED_PROFILE_ACTION_MAX
 };
 
@@ -642,6 +644,12 @@ bool FileMetricsProvider::ProvideIndependentMetricsOnTaskRunner(
     UMA_HISTOGRAM_TIMES("UMA.FileMetricsProvider.EmbeddedProfile.RecordTime",
                         base::Time::Now() - start_time);
     RecordEmbeddedProfileResult(EMBEDDED_PROFILE_FOUND);
+
+    if (system_profile_proto->hardware().has_cpu()) {
+      RecordEmbeddedProfileResult(EMBEDDED_PROFILE_WAS_FULL);
+    } else {
+      RecordEmbeddedProfileResult(EMBEDDED_PROFILE_WAS_BASE);
+    }
     return true;
   }
 
