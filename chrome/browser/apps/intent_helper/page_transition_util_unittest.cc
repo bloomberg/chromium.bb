@@ -6,7 +6,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
 
-namespace chromeos {
+namespace apps {
 
 // Tests that ShouldIgnoreNavigation returns false only for
 // PAGE_TRANSITION_LINK.
@@ -213,4 +213,4 @@ TEST(PageTransitionUtilTest, TestShouldIgnoreNavigationWithNonProdScenarios) {
       false, true));
 }
 
-}  // namespace chromeos
+}  // namespace apps

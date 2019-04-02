@@ -48,6 +48,7 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
+#include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 #include "chrome/browser/ui/views/location_bar/keyword_hint_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_layout.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
@@ -110,10 +111,6 @@
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
-#endif
 
 namespace {
 
@@ -255,10 +252,8 @@ void LocationBarView::Init() {
       page_action_icons_.push_back(local_card_migration_icon_view_);
     }
 
-#if defined(OS_CHROMEOS)
     page_action_icons_.push_back(intent_picker_view_ =
                                      new IntentPickerView(browser_, this));
-#endif
 
     page_action_icons_.push_back(
         star_view_ = new StarView(command_updater(), browser_, this));
@@ -547,10 +542,8 @@ void LocationBarView::Layout() {
   if (star_view_)
     add_trailing_decoration(star_view_);
   add_trailing_decoration(page_action_icon_container_view_);
-#if defined(OS_CHROMEOS)
   if (intent_picker_view_)
     add_trailing_decoration(intent_picker_view_);
-#endif
   if (save_credit_card_icon_view_)
     add_trailing_decoration(save_credit_card_icon_view_);
   if (local_card_migration_icon_view_)
@@ -775,9 +768,7 @@ int LocationBarView::GetMinimumTrailingWidth() const {
       IncrementalMinimumWidth(save_credit_card_icon_view_) +
       IncrementalMinimumWidth(local_card_migration_icon_view_);
 
-#if defined(OS_CHROMEOS)
   trailing_width += IncrementalMinimumWidth(intent_picker_view_);
-#endif  // defined(OS_CHROMEOS)
 
   for (auto* content_setting_view : content_setting_views_)
     trailing_width += IncrementalMinimumWidth(content_setting_view);

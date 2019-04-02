@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 #include "chrome/browser/ui/views/frame/browser_root_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
+#include "chrome/browser/ui/views/intent_picker_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/custom_tab_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
@@ -31,7 +32,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/intent_helper/arc_intent_picker_app_fetcher.h"
-#include "chrome/browser/ui/views/intent_picker_bubble_view.h"
 #include "components/arc/common/intent_helper.mojom.h"  // nogncheck https://crbug.com/784179
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #endif  // defined(OS_CHROMEOS)
@@ -112,12 +112,10 @@ class ToolbarView : public views::AccessiblePaneView,
   // Returns true if the app menu is focused.
   bool IsAppMenuFocused();
 
-#if defined(OS_CHROMEOS)
   void ShowIntentPickerBubble(
       std::vector<IntentPickerBubbleView::AppInfo> app_info,
       bool disable_stay_in_chrome,
       IntentPickerResponse callback);
-#endif  // defined(OS_CHROMEOS)
 
   // Shows a bookmark bubble and anchors it appropriately.
   void ShowBookmarkBubble(const GURL& url,

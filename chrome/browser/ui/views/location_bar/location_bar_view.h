@@ -144,11 +144,9 @@ class LocationBarView : public LocationBar,
   // Toggles the star on or off.
   void SetStarToggled(bool on);
 
-#if defined(OS_CHROMEOS)
   // The intent picker, should not always be visible.  It will be null when
   // |browser_| is null.
   IntentPickerView* intent_picker_view() { return intent_picker_view_; }
-#endif  // defined(OS_CHROMEOS)
 
   // The star. It may not be visible.  It will be null when |browser_| is null.
   StarView* star_view() { return star_view_; }
@@ -412,11 +410,9 @@ class LocationBarView : public LocationBar,
   autofill::LocalCardMigrationIconView* local_card_migration_icon_view_ =
       nullptr;
 
-#if defined(OS_CHROMEOS)
-  // The intent picker for accessing ARC's apps.  It will be null when
+  // The intent picker for accessing apps.  It will be null when
   // |browser_| is null.
   IntentPickerView* intent_picker_view_ = nullptr;
-#endif  // defined(OS_CHROMEOS)
 
   // The star for bookmarking.  It will be null when |browser_| is null.
   StarView* star_view_ = nullptr;

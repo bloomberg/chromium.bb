@@ -31,9 +31,9 @@
 #include "chrome/browser/ui/in_product_help/in_product_help.h"
 #endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 
-#if defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID)
 #include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  //  !defined(OS_ANDROID)
 
 class Browser;
 class DownloadShelf;
@@ -317,18 +317,18 @@ class BrowserWindow : public ui::BaseWindow {
   // Shows the Update Recommended dialog box.
   virtual void ShowUpdateChromeDialog() = 0;
 
-#if defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID)
   // Shows the intent picker bubble. |app_info| contains the app candidates to
   // display, |disable_stay_in_chrome| allows to disable 'Stay in Chrome' (used
   // for non-http(s) queries), and |callback| helps to continue the flow back to
   // either AppsNavigationThrottle or ArcExternalProtocolDialog capturing the
   // user's decision and storing UMA metrics.
   virtual void ShowIntentPickerBubble(
-      std::vector<chromeos::IntentPickerAppInfo> app_info,
+      std::vector<apps::IntentPickerAppInfo> app_info,
       bool disable_stay_in_chrome,
       IntentPickerResponse callback) = 0;
   virtual void SetIntentPickerViewVisibility(bool visible) = 0;
-#endif  // defined(OS_CHROMEOS)
+#endif  //  !defined(OS_ANDROID)
 
   // Shows the Bookmark bubble. |url| is the URL being bookmarked,
   // |already_bookmarked| is true if the url is already bookmarked.

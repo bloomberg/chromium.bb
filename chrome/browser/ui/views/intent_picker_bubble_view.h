@@ -58,7 +58,7 @@ class IntentPickerLabelButton;
 class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
                                public views::ButtonListener {
  public:
-  using AppInfo = chromeos::IntentPickerAppInfo;
+  using AppInfo = apps::IntentPickerAppInfo;
 
   ~IntentPickerBubbleView() override;
   static views::Widget* ShowBubble(views::View* anchor_view,
@@ -126,7 +126,7 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
   IntentPickerLabelButton* GetIntentPickerLabelButtonAt(size_t index);
   void RunCallback(const std::string& launch_name,
                    apps::mojom::AppType app_type,
-                   chromeos::IntentPickerCloseReason close_reason,
+                   apps::IntentPickerCloseReason close_reason,
                    bool should_persist);
 
   // Returns true if this picker has candidates for the user to choose from, and

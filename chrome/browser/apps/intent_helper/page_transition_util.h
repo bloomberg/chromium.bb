@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "ui/base/page_transition_types.h"
 
-namespace chromeos {
+namespace apps {
 
 // Returns true if ARC should ignore the navigation with the |page_transition|.
 bool ShouldIgnoreNavigation(ui::PageTransition page_transition,
@@ -19,6 +19,6 @@ bool ShouldIgnoreNavigation(ui::PageTransition page_transition,
 ui::PageTransition MaskOutPageTransition(ui::PageTransition page_transition,
                                          ui::PageTransition mask);
 
-}  // namespace chromeos
+}  // namespace apps
 
 #endif  // CHROME_BROWSER_APPS_INTENT_HELPER_PAGE_TRANSITION_UTIL_H_

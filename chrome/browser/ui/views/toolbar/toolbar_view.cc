@@ -37,6 +37,8 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/media_router/cast_toolbar_button.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -87,14 +89,9 @@
 #include "chrome/browser/ui/views/critical_notification_bubble_view.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
-#else
+#if !defined(OS_CHROMEOS)
 #include "chrome/browser/signin/signin_global_error_factory.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_sign_in_delegate.h"
-#endif
-
-#if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/outdated_upgrade_bubble_view.h"
 #endif
 
@@ -368,7 +365,6 @@ bool ToolbarView::IsAppMenuFocused() {
   return app_menu_button_ && app_menu_button_->HasFocus();
 }
 
-#if defined(OS_CHROMEOS)
 void ToolbarView::ShowIntentPickerBubble(
     std::vector<IntentPickerBubbleView::AppInfo> app_info,
     bool disable_stay_in_chrome,
@@ -385,7 +381,6 @@ void ToolbarView::ShowIntentPickerBubble(
         disable_stay_in_chrome, std::move(callback));
   }
 }
-#endif  // defined(OS_CHROMEOS)
 
 void ToolbarView::ShowBookmarkBubble(
     const GURL& url,

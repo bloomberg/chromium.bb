@@ -91,6 +91,7 @@
 #include "chrome/browser/ui/views/hats/hats_bubble_view.h"
 #include "chrome/browser/ui/views/ime/ime_warning_bubble_view.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
+#include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
@@ -169,7 +170,6 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/window_properties.h"
 #include "chrome/browser/ui/views/frame/top_controls_slide_controller_chromeos.h"
-#include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "ui/base/ui_base_features.h"
 #else
@@ -1293,7 +1293,6 @@ void BrowserView::ShowUpdateChromeDialog() {
   UpdateRecommendedMessageBox::Show(GetNativeWindow());
 }
 
-#if defined(OS_CHROMEOS)
 void BrowserView::ShowIntentPickerBubble(
     std::vector<IntentPickerBubbleView::AppInfo> app_info,
     bool disable_stay_in_chrome,
@@ -1313,7 +1312,6 @@ void BrowserView::SetIntentPickerViewVisibility(bool visible) {
     location_bar->Layout();
   }
 }
-#endif  // defined(OS_CHROMEOS)
 
 void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
   toolbar_->ShowBookmarkBubble(url, already_bookmarked,

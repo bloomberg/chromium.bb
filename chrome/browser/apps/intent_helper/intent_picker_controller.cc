@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 
-namespace arc {
+namespace apps {
 
 IntentPickerController::IntentPickerController(Browser* browser)
     : browser_(browser) {
@@ -34,4 +34,4 @@ void IntentPickerController::ResetVisibility() {
   browser_->window()->SetIntentPickerViewVisibility(/*visible=*/false);
 }
 
-}  // namespace arc
+}  // namespace apps

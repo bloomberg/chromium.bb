@@ -13,6 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "url/gurl.h"
@@ -24,11 +25,7 @@ class WebContents;
 
 class IntentPickerAutoDisplayService;
 
-namespace chromeos {
-
-enum class AppsNavigationAction;
-enum class IntentPickerCloseReason;
-struct IntentPickerAppInfo;
+namespace apps {
 
 // Allows navigation to be routed to an installed app on Chrome OS, and provides
 // a static method for showing an intent picker for the current URL to display
@@ -75,8 +72,12 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
   static bool ShouldOverrideUrlLoadingForTesting(const GURL& previous_url,
                                                  const GURL& current_url);
 
-  AppsNavigationThrottle(content::NavigationHandle* navigation_handle,
-                         bool arc_enabled);
+  static void ShowIntentPickerBubbleForAppsImpl(
+      content::WebContents* web_contents,
+      std::vector<IntentPickerAppInfo> apps,
+      IntentPickerResponse callback);
+
+  explicit AppsNavigationThrottle(content::NavigationHandle* navigation_handle);
   ~AppsNavigationThrottle() override;
 
   // content::NavigationHandle overrides
@@ -85,16 +86,17 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
   content::NavigationThrottle::ThrottleCheckResult WillRedirectRequest()
       override;
 
- private:
-  FRIEND_TEST_ALL_PREFIXES(AppsNavigationThrottleTest, TestGetPickerAction);
-  FRIEND_TEST_ALL_PREFIXES(AppsNavigationThrottleTest,
-                           TestGetDestinationPlatform);
+  // Overridden for Chrome OS to allow asynchronous handling of ARC apps.
+  virtual void OnDeferredNavigationProcessed(
+      AppsNavigationAction action,
+      std::vector<IntentPickerAppInfo> apps) {}
 
+ protected:
   // These enums are used to define the buckets for an enumerated UMA histogram
   // and need to be synced with histograms.xml. This enum class should also be
   // treated as append-only.
   enum class PickerAction : int {
-    ERROR = 0,
+    PICKER_ERROR = 0,
     // DIALOG_DEACTIVATED keeps track of the user dismissing the UI via clicking
     // the close button or clicking outside of the IntentPickerBubbleView
     // surface. As with CHROME_PRESSED, the user stays in Chrome, however we
@@ -128,6 +130,9 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
     kMaxValue = PWA,
   };
 
+  // Checks whether we can create the apps_navigation_throttle.
+  static bool CanCreate(content::WebContents* web_contents);
+
   // Determines the destination of the current navigation. We know that if the
   // |picker_action| is either ERROR or DIALOG_DEACTIVATED the navigation MUST
   // stay in Chrome, and when |picker_action| is PWA_APP_PRESSED the navigation
@@ -137,18 +142,6 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
       const std::string& selected_launch_name,
       PickerAction picker_action);
 
-  // Converts the provided |app_type|, |close_reason| and |should_persist|
-  // boolean to a PickerAction value for recording in UMA.
-  static PickerAction GetPickerAction(apps::mojom::AppType app_type,
-                                      IntentPickerCloseReason close_reason,
-                                      bool should_persist);
-
-  static void FindPwaForUrlAndShowIntentPickerForApps(
-      content::WebContents* web_contents,
-      IntentPickerAutoDisplayService* ui_auto_display_service,
-      const GURL& url,
-      std::vector<IntentPickerAppInfo> apps);
-
   // If an installed PWA exists that can handle |url|, prepends it to |apps| and
   // returns the new list.
   static std::vector<IntentPickerAppInfo> FindPwaForUrl(
@@ -156,26 +149,20 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
       const GURL& url,
       std::vector<IntentPickerAppInfo> apps);
 
-  static void ShowIntentPickerBubbleForApps(
+  static void CloseOrGoBack(content::WebContents* web_contents);
+
+  // Overridden for Chrome OS to allow arc handling.
+  virtual void MaybeRemoveComingFromArcFlag(content::WebContents* web_contents,
+                                            const GURL& previous_url,
+                                            const GURL& current_url) {}
+
+  virtual bool ShouldDeferNavigationForArc(content::NavigationHandle* handle);
+
+  virtual void ShowIntentPickerBubbleForApps(
       content::WebContents* web_contents,
       IntentPickerAutoDisplayService* ui_auto_display_service,
       const GURL& url,
       std::vector<IntentPickerAppInfo> apps);
-
-  static void CloseOrGoBack(content::WebContents* web_contents);
-
-  void CancelNavigation();
-
-  content::NavigationThrottle::ThrottleCheckResult HandleRequest();
-
-  // Passed as a callback to allow ARC-specific code to asynchronously inform
-  // this object of the apps which can handle this URL, and optionally request
-  // that the navigation be completely cancelled (e.g. if a preferred app has
-  // been opened).
-  void OnDeferredNavigationProcessed(AppsNavigationAction action,
-                                     std::vector<IntentPickerAppInfo> apps);
-
-  void CloseTab();
 
   // Whether or not the intent picker UI should be displayed without the user
   // clicking in the omnibox's icon.
@@ -183,12 +170,6 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
       const std::vector<IntentPickerAppInfo>& apps_for_picker,
       content::WebContents* web_contents,
       const GURL& url);
-
-  // A reference to the starting GURL.
-  GURL starting_url_;
-
-  // True if ARC is enabled, false otherwise.
-  const bool arc_enabled_;
 
   // Keeps track of whether we already shown the UI or preferred app. Since
   // AppsNavigationThrottle cannot wait for the user (due to the non-blocking
@@ -201,11 +182,25 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
   // UI.
   IntentPickerAutoDisplayService* ui_auto_display_service_;
 
-  base::WeakPtrFactory<AppsNavigationThrottle> weak_factory_;
+ private:
+  FRIEND_TEST_ALL_PREFIXES(AppsNavigationThrottleTest, TestGetPickerAction);
+  FRIEND_TEST_ALL_PREFIXES(AppsNavigationThrottleTest,
+                           TestGetDestinationPlatform);
+
+  // Converts the provided |app_type|, |close_reason| and |should_persist|
+  // boolean to a PickerAction value for recording in UMA.
+  static PickerAction GetPickerAction(apps::mojom::AppType app_type,
+                                      IntentPickerCloseReason close_reason,
+                                      bool should_persist);
+
+  content::NavigationThrottle::ThrottleCheckResult HandleRequest();
+
+  // A reference to the starting GURL.
+  GURL starting_url_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsNavigationThrottle);
 };
 
-}  // namespace chromeos
+}  // namespace apps
 
 #endif  // CHROME_BROWSER_APPS_INTENT_HELPER_APPS_NAVIGATION_THROTTLE_H_

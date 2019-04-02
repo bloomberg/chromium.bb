@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/top_controls_slide_controller.h"
 #include "chrome/browser/ui/views/frame/web_contents_close_handler.h"
+#include "chrome/browser/ui/views/intent_picker_bubble_view.h"
 #include "chrome/browser/ui/views/load_complete_listener.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
@@ -46,10 +47,6 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/client_view.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/views/intent_picker_bubble_view.h"
-#endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 #include "chrome/browser/ui/views/feature_promos/reopen_tab_promo_controller.h"
@@ -364,13 +361,11 @@ class BrowserView : public BrowserWindow,
   bool IsToolbarVisible() const override;
   bool IsToolbarShowing() const override;
   void ShowUpdateChromeDialog() override;
-#if defined(OS_CHROMEOS)
   void ShowIntentPickerBubble(
       std::vector<IntentPickerBubbleView::AppInfo> app_info,
       bool disable_stay_in_chrome,
       IntentPickerResponse callback) override;
   void SetIntentPickerViewVisibility(bool visible) override;
-#endif  // defined(OS_CHROMEOS)
   void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) override;
   autofill::SaveCardBubbleView* ShowSaveCreditCardBubble(
       content::WebContents* contents,

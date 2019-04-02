@@ -5069,9 +5069,23 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_TOOLTIP_FIND" desc="The tooltip for the find button">
         Find
       </message>
-      <if expr="chromeos">
+
+      <!-- Strings for intent picker -->
+      <if expr="not is_android">
         <message name="IDS_TOOLTIP_INTENT_PICKER_ICON" desc="The tooltip for the intent picker bubble icon">
           To open this link, choose an app
+        </message>
+        <message name="IDS_INTENT_PICKER_BUBBLE_VIEW_OPEN_WITH" desc="Message contained in a label used as a header for a list of applications from which the user will pick one.">
+          Open with
+        </message>
+        <message name="IDS_INTENT_PICKER_BUBBLE_VIEW_REMEMBER_SELECTION" desc="Message contained in a checkbox that must be marked in order for the intent picker to not be shown again for a similar URL.">
+          Remember my choice
+        </message>
+        <message name="IDS_INTENT_PICKER_BUBBLE_VIEW_USE_APP" desc="Message contained in a button to continue the navigation in an app selected by the user.">
+          Use app
+        </message>
+        <message name="IDS_INTENT_PICKER_BUBBLE_VIEW_STAY_IN_CHROME" desc="Message contained in a button to continue the navigation within Chrome.">
+          Stay in Chrome
         </message>
       </if>
 
