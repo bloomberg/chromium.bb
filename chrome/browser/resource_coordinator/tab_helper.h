@@ -32,7 +32,6 @@ class ResourceCoordinatorTabHelper
   // WebContentsObserver overrides.
   void DidStartLoading() override;
   void DidReceiveResponse() override;
-  void DidStopLoading() override;
   void DidFailLoad(content::RenderFrameHost* render_frame_host,
                    const GURL& validated_url,
                    int error_code,

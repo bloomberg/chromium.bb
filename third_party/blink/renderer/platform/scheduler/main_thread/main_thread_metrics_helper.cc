@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
-#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "third_party/blink/public/platform/scheduler/web_renderer_process_type.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/renderer_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
@@ -40,6 +39,9 @@ constexpr base::TimeDelta kThreadLoadTrackerReportingInterval =
     base::TimeDelta::FromSeconds(1);
 constexpr base::TimeDelta kLongIdlePeriodDiscardingThreshold =
     base::TimeDelta::FromMinutes(3);
+
+// Main thread load percentage that is considered low.
+constexpr int kMainThreadTaskLoadLowPercentage = 25;
 
 }  // namespace
 
@@ -88,8 +90,6 @@ MainThreadMetricsHelper::MainThreadMetricsHelper(
     : MetricsHelper(WebThreadType::kMainThread, has_cpu_timing_for_each_task),
       main_thread_scheduler_(main_thread_scheduler),
       renderer_shutting_down_(false),
-      is_page_almost_idle_signal_enabled_(
-          ::resource_coordinator::IsPageAlmostIdleSignalEnabled()),
       main_thread_load_tracker_(
           now,
           base::BindRepeating(
@@ -563,9 +563,6 @@ void MainThreadMetricsHelper::RecordBackgroundMainThreadTaskLoad(
 
 void MainThreadMetricsHelper::ReportLowThreadLoadForPageAlmostIdleSignal(
     int load_percentage) {
-  if (!is_page_almost_idle_signal_enabled_)
-    return;
-
   // Avoid sending IPCs when the renderer is shutting down as this wreaks havoc
   // in test harnesses. These messages aren't needed in production code either
   // as the endpoint receiving them dies shortly after and does nothing with
@@ -573,17 +570,14 @@ void MainThreadMetricsHelper::ReportLowThreadLoadForPageAlmostIdleSignal(
   if (renderer_shutting_down_)
     return;
 
-  static const int main_thread_task_load_low_threshold =
-      ::resource_coordinator::GetMainThreadTaskLoadLowThreshold();
-
   if (auto* renderer_resource_coordinator =
           RendererResourceCoordinator::Get()) {
     // Avoid sending duplicate IPCs when the state doesn't change.
-    if (load_percentage <= main_thread_task_load_low_threshold &&
+    if (load_percentage <= kMainThreadTaskLoadLowPercentage &&
         main_thread_task_load_state_ != MainThreadTaskLoadState::kLow) {
       renderer_resource_coordinator->SetMainThreadTaskLoadIsLow(true);
       main_thread_task_load_state_ = MainThreadTaskLoadState::kLow;
-    } else if (load_percentage > main_thread_task_load_low_threshold &&
+    } else if (load_percentage > kMainThreadTaskLoadLowPercentage &&
                main_thread_task_load_state_ != MainThreadTaskLoadState::kHigh) {
       renderer_resource_coordinator->SetMainThreadTaskLoadIsLow(false);
       main_thread_task_load_state_ = MainThreadTaskLoadState::kHigh;

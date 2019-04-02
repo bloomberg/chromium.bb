@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/loader/idleness_detector.h"
 
-#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -50,11 +49,9 @@ void IdlenessDetector::DomContentLoadedEventFired() {
   network_2_quiet_ = TimeTicks();
   network_0_quiet_ = TimeTicks();
 
-  if (::resource_coordinator::IsPageAlmostIdleSignalEnabled()) {
-    if (auto* frame_resource_coordinator =
-            local_frame_->GetFrameResourceCoordinator()) {
-      frame_resource_coordinator->SetNetworkAlmostIdle(false);
-    }
+  if (auto* frame_resource_coordinator =
+          local_frame_->GetFrameResourceCoordinator()) {
+    frame_resource_coordinator->SetNetworkAlmostIdle(false);
   }
   OnDidLoadResource();
 }
@@ -137,12 +134,10 @@ void IdlenessDetector::WillProcessTask(base::TimeTicks start_time) {
     probe::LifecycleEvent(
         local_frame_, loader, "networkAlmostIdle",
         network_2_quiet_start_time_.since_origin().InSecondsF());
-    if (::resource_coordinator::IsPageAlmostIdleSignalEnabled()) {
       if (auto* frame_resource_coordinator =
               local_frame_->GetFrameResourceCoordinator()) {
         frame_resource_coordinator->SetNetworkAlmostIdle(true);
       }
-    }
     local_frame_->GetDocument()->Fetcher()->OnNetworkQuiet();
     if (WebServiceWorkerNetworkProvider* service_worker_network_provider =
             loader->GetServiceWorkerNetworkProvider()) {

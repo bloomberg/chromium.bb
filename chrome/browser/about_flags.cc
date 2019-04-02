@@ -129,7 +129,6 @@
 #include "services/media_session/public/cpp/features.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
-#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "storage/browser/fileapi/file_system_features.h"
 #include "third_party/blink/public/common/experiments/memory_ablation_experiment.h"
@@ -3446,9 +3445,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(
          features::kSessionRestorePrioritizesBackgroundUseCases)},
-    {"page-almost-idle", flag_descriptions::kPageAlmostIdleName,
-     flag_descriptions::kPageAlmostIdleDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kPageAlmostIdle)},
     {"proactive-tab-freeze-and-discard",
      flag_descriptions::kProactiveTabFreezeAndDiscardName,
      flag_descriptions::kProactiveTabFreezeAndDiscardDescription, kOsDesktop,
