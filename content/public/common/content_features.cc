@@ -289,6 +289,12 @@ const base::Feature kMojoVideoCaptureSecondary{
 const base::Feature kNetworkServiceInProcess{"NetworkServiceInProcess",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Turns on / off the new accessibility selection code which uses a more
+// predictable algorithm for mapping between positions in the DOM and the
+// accessibility trees.
+const base::Feature kNewAccessibilitySelection{
+    "NewAccessibilitySelection", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Kill switch for Web Notification content images.
 const base::Feature kNotificationContentImage{"NotificationContentImage",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
