@@ -6285,12 +6285,20 @@ void RenderFrameImpl::BeginNavigation(
   // context and they're trying to navigate to a different context.
   const GURL& url = info->url_request.Url();
 
+  // When an MHTML Archive is present, it should be used to serve iframe
+  // content instead of doing a network request. This should never be true for
+  // the main frame.
+  bool use_archive = (info->archive_status ==
+                      blink::WebNavigationInfo::ArchiveStatus::Present) &&
+                     !url.SchemeIs(url::kDataScheme);
+  DCHECK(!(use_archive && IsMainFrame()));
+
 #ifdef OS_ANDROID
   bool render_view_was_created_by_renderer =
       render_view_->was_created_by_renderer_;
   // The handlenavigation API is deprecated and will be removed once
   // crbug.com/325351 is resolved.
-  if (!IsURLHandledByNetworkStack(url) && !url.is_empty() &&
+  if (!url.is_empty() && !use_archive && !IsURLHandledByNetworkStack(url) &&
       GetContentClient()->renderer()->HandleNavigation(
           this, true /* is_content_initiated */,
           render_view_was_created_by_renderer, frame_, info->url_request,
@@ -6314,7 +6322,10 @@ void RenderFrameImpl::BeginNavigation(
   // that have history items, or if it's staying at the initial about:blank URL,
   // fall back to loading the default url.  (We remove each name as we encounter
   // it, because it will only be used once as the frame is created.)
-  if (info->is_history_navigation_in_new_child_frame && frame_->Parent()) {
+  // Note: Skip this logic for MHTML files (|use_archive|), which should load
+  // their subframes from the archive and not from history.
+  if (info->is_history_navigation_in_new_child_frame && frame_->Parent() &&
+      !use_archive) {
     // Check whether the browser has a history item for this frame that isn't
     // just staying at the initial about:blank document.
     bool should_ask_browser = false;
@@ -6429,12 +6440,6 @@ void RenderFrameImpl::BeginNavigation(
 
     for (auto& observer : observers_)
       observer.DidStartNavigation(url, info->navigation_type);
-
-    // When an MHTML Archive is present, it should be used to serve iframe
-    // content instead of doing a network request.
-    bool use_archive = (info->archive_status ==
-                        blink::WebNavigationInfo::ArchiveStatus::Present) &&
-                       !url.SchemeIs(url::kDataScheme);
 
     // Navigations which require network request should be sent to the browser.
     if (!use_archive && IsURLHandledByNetworkStack(url)) {
