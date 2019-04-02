@@ -546,7 +546,7 @@
 
 - (void)passwordFetcher:(PasswordFetcher*)passwordFetcher
       didFetchPasswords:
-          (std::vector<std::unique_ptr<autofill::PasswordForm>>&)passwords {
+          (std::vector<std::unique_ptr<autofill::PasswordForm>>)passwords {
   self.consumer.passwordButtonHidden = passwords.empty();
 }
 

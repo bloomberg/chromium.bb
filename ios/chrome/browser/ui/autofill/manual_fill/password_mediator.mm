@@ -111,13 +111,12 @@ BOOL AreCredentialsAtIndexesConnected(
 
 - (void)passwordFetcher:(PasswordFetcher*)passwordFetcher
       didFetchPasswords:
-          (std::vector<std::unique_ptr<autofill::PasswordForm>>&)passwords {
+          (std::vector<std::unique_ptr<autofill::PasswordForm>>)passwords {
   NSMutableArray<ManualFillCredential*>* credentials =
       [[NSMutableArray alloc] initWithCapacity:passwords.size()];
-  for (auto it = passwords.begin(); it != passwords.end(); ++it) {
-    autofill::PasswordForm& form = **it;
+  for (const auto& form : passwords) {
     ManualFillCredential* credential =
-        [[ManualFillCredential alloc] initWithPasswordForm:form];
+        [[ManualFillCredential alloc] initWithPasswordForm:*form];
     [credentials addObject:credential];
   }
   self.credentials = credentials;

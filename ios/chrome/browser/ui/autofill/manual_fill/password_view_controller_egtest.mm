@@ -136,17 +136,11 @@ class TestStoreConsumer : public password_manager::PasswordStoreConsumer {
   const std::vector<autofill::PasswordForm>& GetStoreResults() {
     results_.clear();
     ResetObtained();
-    GetPasswordStore()->GetAutofillableLogins(this);
+    GetPasswordStore()->GetAllLogins(this);
     bool responded = base::test::ios::WaitUntilConditionOrTimeout(1.0, ^bool {
       return !AreObtainedReset();
     });
     GREYAssert(responded, @"Obtaining fillable items took too long.");
-    AppendObtainedToResults();
-    GetPasswordStore()->GetBlacklistLogins(this);
-    responded = base::test::ios::WaitUntilConditionOrTimeout(1.0, ^bool {
-      return !AreObtainedReset();
-    });
-    GREYAssert(responded, @"Obtaining blacklisted items took too long.");
     AppendObtainedToResults();
     return results_;
   }

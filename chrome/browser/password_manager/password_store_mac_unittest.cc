@@ -276,7 +276,7 @@ TEST_P(PasswordStoreMacTest, OperationsOnABadDatabaseSilentlyFail) {
   FinishAsyncProcessing();
   EXPECT_THAT(mock_consumer.forms(), IsEmpty());
 
-  store()->GetBlacklistLogins(&mock_consumer);
+  store()->GetAllLogins(&mock_consumer);
   FinishAsyncProcessing();
   EXPECT_THAT(mock_consumer.forms(), IsEmpty());
 

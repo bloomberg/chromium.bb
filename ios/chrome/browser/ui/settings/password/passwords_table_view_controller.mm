@@ -170,9 +170,6 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   // A helper object for passing data about saved passwords from a finished
   // password store request to the PasswordsTableViewController.
   std::unique_ptr<ios::SavePasswordsConsumer> savedPasswordsConsumer_;
-  // A helper object for passing data about blacklisted sites from a finished
-  // password store request to the PasswordsTableViewController.
-  std::unique_ptr<ios::SavePasswordsConsumer> blacklistPasswordsConsumer_;
   // The list of the user's saved passwords.
   std::vector<std::unique_ptr<autofill::PasswordForm>> savedForms_;
   // The list of the user's blacklisted sites.
@@ -501,13 +498,11 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 #pragma mark - SavePasswordsConsumerDelegate
 
 - (void)onGetPasswordStoreResults:
-    (std::vector<std::unique_ptr<autofill::PasswordForm>>&)result {
-  if (result.empty()) {
+    (std::vector<std::unique_ptr<autofill::PasswordForm>>)results {
+  if (results.empty()) {
     return;
   }
-  for (auto it = result.begin(); it != result.end(); ++it) {
-    // PasswordForm is needed when user wants to delete the site/password.
-    auto form = std::make_unique<autofill::PasswordForm>(**it);
+  for (auto& form : results) {
     if (form->blacklisted_by_user)
       blacklistedForms_.push_back(std::move(form));
     else
@@ -718,9 +713,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 // Starts requests for saved and blacklisted passwords to the store.
 - (void)getLoginsFromPasswordStore {
   savedPasswordsConsumer_.reset(new ios::SavePasswordsConsumer(self));
-  passwordStore_->GetAutofillableLogins(savedPasswordsConsumer_.get());
-  blacklistPasswordsConsumer_.reset(new ios::SavePasswordsConsumer(self));
-  passwordStore_->GetBlacklistLogins(blacklistPasswordsConsumer_.get());
+  passwordStore_->GetAllLogins(savedPasswordsConsumer_.get());
 }
 
 - (void)updateExportPasswordsButton {
