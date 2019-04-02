@@ -100,9 +100,9 @@ void LayoutFrameSet::LayOutAxis(GridAxis& axis,
   int grid_len = axis.sizes_.size();
   DCHECK(grid_len);
 
-  int total_relative = 0;
+  int64_t total_relative = 0;
   int64_t total_fixed = 0;
-  int total_percent = 0;
+  int64_t total_percent = 0;
   int count_relative = 0;
   int count_fixed = 0;
   int count_percent = 0;
