@@ -406,7 +406,10 @@ cursors.Cursor.prototype = {
           case Movement.DIRECTIONAL:
             var pred = unit == Unit.TEXT ? AutomationPredicate.leaf :
                                            AutomationPredicate.object;
-            newNode =
+            const explicitFocus = dir == Dir.FORWARD ?
+                originalNode.nextFocus :
+                originalNode.previousFocus;
+            newNode = explicitFocus ||
                 AutomationUtil.findNextNode(newNode, dir, pred) || originalNode;
             newIndex = cursors.NODE_INDEX;
             break;
