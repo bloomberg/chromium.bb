@@ -10,13 +10,13 @@
 
 #include "base/bind.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/background_fetch/background_fetch_delegate_impl.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "components/download/public/background_service/download_metadata.h"
 #include "components/download/public/background_service/download_service.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "url/origin.h"
 
@@ -70,7 +70,7 @@ void BackgroundFetchDownloadClient::OnServiceInitialized(
 
     if (download.paused) {
       // We need to resurface the notification in a paused state.
-      AfterStartupTaskUtils::PostTask(
+      content::BrowserThread::PostAfterStartupTask(
           FROM_HERE, base::SequencedTaskRunnerHandle::Get(),
           base::BindOnce(&BackgroundFetchDelegateImpl::RestartPausedDownload,
                          GetDelegate()->GetWeakPtr(), download.guid));
