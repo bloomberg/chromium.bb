@@ -388,6 +388,7 @@ class ManualFillingMediator extends EmptyTabObserver
         int newControlsHeight = calculateAccessoryBarHeight();
         int newControlsOffset = 0;
         if (mKeyboardAccessory.hasActiveTab()) {
+            restrictForcedAccessorySheetHeight();
             newControlsHeight += mAccessorySheet.getHeight();
             newControlsOffset += mAccessorySheet.getHeight();
         }
@@ -461,6 +462,24 @@ class ManualFillingMediator extends EmptyTabObserver
         return Math.max(mActivity.getResources().getDimensionPixelSize(
                                 org.chromium.chrome.R.dimen.keyboard_accessory_suggestion_height),
                 getKeyboard().calculateKeyboardHeight(rootView));
+    }
+
+    /**
+     * Double-checks that the accessory sheet height doesn't cover the whole page. Usually it is
+     * suppressed in these cases but if it is forced open (e.g. by rotation), this might not hold.
+     */
+    private void restrictForcedAccessorySheetHeight() {
+        WebContents webContents = mActivity.getCurrentWebContents();
+        if (webContents == null) return;
+        float density = mWindowAndroid.getDisplay().getDipScale();
+        // The maximal height for the sheet ensures a minimal amount of WebContents space.
+        @Px
+        int maxHeight = mKeyboardExtensionSizeManager.getKeyboardExtensionHeight();
+        maxHeight += Math.round(density * webContents.getHeight());
+        maxHeight -= Math.round(density * MINIMAL_AVAILABLE_VERTICAL_SPACE);
+        maxHeight -= calculateAccessoryBarHeight();
+        if (mAccessorySheet.getHeight() <= maxHeight) return; // Sheet height needs no adjustment!
+        mAccessorySheet.setHeight(maxHeight);
     }
 
     private @Px int calculateAccessoryBarHeight() {
