@@ -164,23 +164,6 @@ const gfx::VectorIcon& LocationBarModelImpl::GetVectorIcon() const {
 #endif
 }
 
-base::string16 LocationBarModelImpl::GetEVCertName() const {
-  if (GetSecurityLevel(false) != security_state::EV_SECURE)
-    return base::string16();
-
-  // Note: cert is guaranteed non-NULL or the security level would be NONE.
-  scoped_refptr<net::X509Certificate> cert = delegate_->GetCertificate();
-  DCHECK(cert);
-
-  // EV are required to have an organization name and country.
-  DCHECK(!cert->subject().organization_names.empty());
-  DCHECK(!cert->subject().country_name.empty());
-  return l10n_util::GetStringFUTF16(
-      IDS_SECURE_CONNECTION_EV,
-      base::UTF8ToUTF16(cert->subject().organization_names[0]),
-      base::UTF8ToUTF16(cert->subject().country_name));
-}
-
 LocationBarModelImpl::SecureChipText LocationBarModelImpl::GetSecureChipText()
     const {
   // Note that displayed text (the first output) will be implicitly used as the
@@ -201,7 +184,7 @@ LocationBarModelImpl::SecureChipText LocationBarModelImpl::GetSecureChipText()
     case security_state::HTTP_SHOW_WARNING:
       return SecureChipText(
           l10n_util::GetStringUTF16(IDS_NOT_SECURE_VERBOSE_STATE));
-    case security_state::EV_SECURE:
+    case security_state::EV_SECURE: {
       if (securityUIStudyParam ==
           OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterEvToSecure)
         return SecureChipText(
@@ -210,7 +193,20 @@ LocationBarModelImpl::SecureChipText LocationBarModelImpl::GetSecureChipText()
           OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterBothToLock)
         return SecureChipText(base::string16(), l10n_util::GetStringUTF16(
                                                     IDS_SECURE_VERBOSE_STATE));
-      return SecureChipText(GetEVCertName());
+
+      // Note: Cert is guaranteed non-NULL or the security level would be NONE.
+      scoped_refptr<net::X509Certificate> cert = delegate_->GetCertificate();
+      DCHECK(cert);
+
+      // EV are required to have an organization name and country.
+      DCHECK(!cert->subject().organization_names.empty());
+      DCHECK(!cert->subject().country_name.empty());
+
+      return SecureChipText(l10n_util::GetStringFUTF16(
+          IDS_SECURE_CONNECTION_EV,
+          base::UTF8ToUTF16(cert->subject().organization_names[0]),
+          base::UTF8ToUTF16(cert->subject().country_name)));
+    }
     case security_state::SECURE:
       if (securityUIStudyParam !=
           OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterKeepSecureChip)
