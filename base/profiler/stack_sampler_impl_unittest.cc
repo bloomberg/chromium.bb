@@ -119,37 +119,11 @@ class TestThreadDelegate : public ThreadDelegate {
   RegisterContext* thread_context_;
 };
 
-class TestModule : public ModuleCache::Module {
- public:
-  TestModule(uintptr_t base_address, size_t size)
-      : base_address_(base_address), size_(size) {}
-
-  uintptr_t GetBaseAddress() const override { return base_address_; }
-  std::string GetId() const override { return ""; }
-  FilePath GetDebugBasename() const override { return FilePath(); }
-  size_t GetSize() const override { return size_; }
-
- private:
-  const uintptr_t base_address_;
-  const size_t size_;
-};
-
-// Injects a fake module covering the initial instruction pointer value, to
-// avoid asking the OS to look it up. Windows doesn't return a consistent error
-// code when doing so, and we DCHECK_EQ the expected error code.
-void InjectModuleForContextInstructionPointer(
-    const std::vector<uintptr_t>& stack,
-    ModuleCache* module_cache) {
-  module_cache->InjectModuleForTesting(
-      std::make_unique<TestModule>(stack[0], sizeof(uintptr_t)));
-}
-
 }  // namespace
 
 TEST(StackSamplerImplTest, CopyStack) {
   ModuleCache module_cache;
   const std::vector<uintptr_t> stack = {0, 1, 2, 3, 4};
-  InjectModuleForContextInstructionPointer(stack, &module_cache);
   std::vector<uintptr_t> stack_copy;
   StackSamplerImpl stack_sampler_impl(
       std::make_unique<TestThreadDelegate>(stack, &stack_copy), &module_cache);
@@ -166,7 +140,6 @@ TEST(StackSamplerImplTest, CopyStack) {
 TEST(StackSamplerImplTest, CopyStackBufferTooSmall) {
   ModuleCache module_cache;
   std::vector<uintptr_t> stack = {0, 1, 2, 3, 4};
-  InjectModuleForContextInstructionPointer(stack, &module_cache);
   std::vector<uintptr_t> stack_copy;
   StackSamplerImpl stack_sampler_impl(
       std::make_unique<TestThreadDelegate>(stack, &stack_copy), &module_cache);
@@ -191,7 +164,6 @@ TEST(StackSamplerImplTest, CopyStackAndRewritePointers) {
   std::vector<uintptr_t> stack(2);
   stack[0] = reinterpret_cast<uintptr_t>(&stack[0]);
   stack[1] = reinterpret_cast<uintptr_t>(&stack[1]);
-  InjectModuleForContextInstructionPointer(stack, &module_cache);
   std::vector<uintptr_t> stack_copy;
   uintptr_t stack_copy_bottom;
   StackSamplerImpl stack_sampler_impl(
@@ -212,8 +184,7 @@ TEST(StackSamplerImplTest, CopyStackAndRewritePointers) {
 
 TEST(StackSamplerImplTest, RewriteRegisters) {
   ModuleCache module_cache;
-  std::vector<uintptr_t> stack = {0, 1, 2};
-  InjectModuleForContextInstructionPointer(stack, &module_cache);
+  std::vector<uintptr_t> stack(3);
   uintptr_t stack_copy_bottom;
   RegisterContext thread_context;
   RegisterContextFramePointer(&thread_context) =

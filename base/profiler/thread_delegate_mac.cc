@@ -231,9 +231,11 @@ UnwindResult ThreadDelegateMac::WalkNativeFrames(
     uintptr_t stack_top,
     ModuleCache* module_cache,
     std::vector<ProfileBuilder::Frame>* stack) {
-  // We expect the frame corresponding to the |thread_context| register state to
-  // exist within |stack|.
-  DCHECK_GT(stack->size(), 0u);
+  // Record the first frame from the context values.
+  unw_word_t instruction_pointer = thread_context->__rip;
+  const ModuleCache::Module* module =
+      module_cache->GetModuleForAddress(instruction_pointer);
+  stack->emplace_back(instruction_pointer, module);
 
   // There isn't an official way to create a unw_context other than to create it
   // from the current state of the current thread's stack. Since we're walking a
@@ -248,17 +250,20 @@ UnwindResult ThreadDelegateMac::WalkNativeFrames(
   // Avoid an out-of-bounds read bug in libunwind that can crash us in some
   // circumstances. If we're subject to that case, just record the first frame
   // and bail. See MayTriggerUnwInitLocalCrash for details.
-  if (stack->back().module && MayTriggerUnwInitLocalCrash(stack->back().module))
+  const ModuleCache::Module* leaf_frame_module =
+      module_cache->GetModuleForAddress(instruction_pointer);
+  if (leaf_frame_module && MayTriggerUnwInitLocalCrash(leaf_frame_module))
     return UnwindResult::ABORTED;
 
   unw_cursor_t unwind_cursor;
   unw_init_local(&unwind_cursor, &unwind_context);
 
+  bool at_top_frame = true;
   int step_result;
   for (;;) {
     // First frame unwind step, check pre-conditions for attempting a frame
     // unwind.
-    if (!stack->back().module) {
+    if (!module) {
       // There's no loaded module containing the instruction pointer. This is
       // due to either executing code that is not in a module (e.g. V8
       // runtime-generated code), or to a previous bad unwind.
@@ -284,8 +289,8 @@ UnwindResult ThreadDelegateMac::WalkNativeFrames(
     // is very fragile. It's a complex DWARF unwind that needs to restore the
     // entire thread context which was saved by the kernel when the interrupt
     // occurred.
-    if (stack->back().instruction_pointer >= sigtramp_start_ &&
-        stack->back().instruction_pointer < sigtramp_end_) {
+    if (instruction_pointer >= sigtramp_start_ &&
+        instruction_pointer < sigtramp_end_) {
       return UnwindResult::ABORTED;
     }
 
@@ -299,13 +304,13 @@ UnwindResult ThreadDelegateMac::WalkNativeFrames(
     unw_get_reg(&unwind_cursor, UNW_REG_SP, &prev_stack_pointer);
     step_result = unw_step(&unwind_cursor);
 
-    if (step_result == 0 && stack->size() == 1u) {
+    if (step_result == 0 && at_top_frame) {
       // libunwind is designed to be triggered by user code on their own thread,
       // if it hits a library that has no unwind info for the function that is
       // being executed, it just stops. This isn't a problem in the normal case,
-      // but in the case where this is the first frame unwind, it's quite
-      // possible that the stack being walked is stopped in a function that
-      // bridges to the kernel and thus is missing the unwind info.
+      // but in this case, it's quite possible that the stack being walked is
+      // stopped in a function that bridges to the kernel and thus is missing
+      // the unwind info.
 
       // For now, just unwind the single case where the thread is stopped in a
       // function in libsystem_kernel.
@@ -326,11 +331,9 @@ UnwindResult ThreadDelegateMac::WalkNativeFrames(
       return UnwindResult::ABORTED;
 
     // Fourth frame unwind step: record the frame to which we just unwound.
-    unw_word_t instruction_pointer;
     unw_get_reg(&unwind_cursor, UNW_REG_IP, &instruction_pointer);
     unw_word_t stack_pointer;
     unw_get_reg(&unwind_cursor, UNW_REG_SP, &stack_pointer);
-
     // Record the frame if the last step was successful.
     if (step_result > 0 ||
         // libunwind considers the unwind complete and returns 0 if no unwind
@@ -341,9 +344,8 @@ UnwindResult ThreadDelegateMac::WalkNativeFrames(
         // whether the stack pointer was moved by unw_step. If so, record the
         // new frame to enable non-native unwinders to continue the unwinding.
         (step_result == 0 && stack_pointer > prev_stack_pointer)) {
-      stack->emplace_back(
-          instruction_pointer,
-          module_cache->GetModuleForAddress(instruction_pointer));
+      module = module_cache->GetModuleForAddress(instruction_pointer);
+      stack->emplace_back(instruction_pointer, module);
     }
 
     // libunwind returns 0 if it can't continue because no unwind info was found
@@ -357,6 +359,8 @@ UnwindResult ThreadDelegateMac::WalkNativeFrames(
     // signify that we couldn't unwind further.
     if (step_result == 0)
       return UnwindResult::UNRECOGNIZED_FRAME;
+
+    at_top_frame = false;
   }
 
   NOTREACHED();
