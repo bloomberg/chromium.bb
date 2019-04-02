@@ -321,10 +321,15 @@ void ToolbarView::AnimationProgressed(const gfx::Animation* animation) {
 void ToolbarView::Update(WebContents* tab) {
   if (location_bar_)
     location_bar_->Update(tab);
+
   if (browser_actions_)
     browser_actions_->RefreshToolbarActionViews();
+
   if (reload_)
     reload_->set_menu_enabled(chrome::IsDebuggerAttachedToCurrentTab(browser_));
+
+  if (toolbar_page_action_container_)
+    toolbar_page_action_container_->UpdateAllIcons();
 }
 
 void ToolbarView::SetToolbarVisibility(bool visible) {

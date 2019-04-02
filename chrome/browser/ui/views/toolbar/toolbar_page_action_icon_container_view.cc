@@ -9,6 +9,8 @@
 #include "chrome/browser/ui/views/autofill/save_card_icon_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/widget/widget.h"
 
 ToolbarPageActionIconContainerView::ToolbarPageActionIconContainerView(
     CommandUpdater* command_updater,
@@ -20,8 +22,7 @@ ToolbarPageActionIconContainerView::ToolbarPageActionIconContainerView(
       // what we want here. Put placeholders for now.
       views::style::GetFont(CONTEXT_TOOLBAR_BUTTON,
                             views::style::STYLE_PRIMARY));
-  local_card_migration_icon_view_->SetVisible(false);
-  AddChildView(local_card_migration_icon_view_);
+  page_action_icons_.push_back(local_card_migration_icon_view_);
 
   save_card_icon_view_ = new autofill::SaveCardIconView(
       command_updater, browser, this,
@@ -29,19 +30,20 @@ ToolbarPageActionIconContainerView::ToolbarPageActionIconContainerView(
       // what we want here. Put placeholders for now.
       views::style::GetFont(CONTEXT_TOOLBAR_BUTTON,
                             views::style::STYLE_PRIMARY));
-  save_card_icon_view_->SetVisible(false);
-  AddChildView(save_card_icon_view_);
+  page_action_icons_.push_back(save_card_icon_view_);
+
+  for (PageActionIconView* icon_view : page_action_icons_) {
+    icon_view->SetVisible(false);
+    AddChildView(icon_view);
+  }
 }
 
 ToolbarPageActionIconContainerView::~ToolbarPageActionIconContainerView() =
     default;
 
 void ToolbarPageActionIconContainerView::UpdateAllIcons() {
-  if (local_card_migration_icon_view_)
-    local_card_migration_icon_view_->Update();
-
-  if (save_card_icon_view_)
-    save_card_icon_view_->Update();
+  for (PageActionIconView* icon_view : page_action_icons_)
+    icon_view->Update();
 }
 
 PageActionIconView* ToolbarPageActionIconContainerView::GetIconView(
@@ -55,6 +57,15 @@ PageActionIconView* ToolbarPageActionIconContainerView::GetIconView(
       NOTREACHED();
       return nullptr;
   }
+}
+
+bool ToolbarPageActionIconContainerView::
+    ActivateFirstInactiveBubbleForAccessibility() {
+  for (PageActionIconView* icon_view : page_action_icons_) {
+    if (FocusInactiveBubbleForIcon(icon_view))
+      return true;
+  }
+  return false;
 }
 
 void ToolbarPageActionIconContainerView::UpdatePageActionIcon(
@@ -72,4 +83,17 @@ SkColor ToolbarPageActionIconContainerView::GetPageActionInkDropColor() const {
 content::WebContents*
 ToolbarPageActionIconContainerView::GetWebContentsForPageActionIconView() {
   return browser_->tab_strip_model()->GetActiveWebContents();
+}
+
+bool ToolbarPageActionIconContainerView::FocusInactiveBubbleForIcon(
+    PageActionIconView* icon_view) {
+  if (!icon_view->visible() || !icon_view->GetBubble())
+    return false;
+
+  views::Widget* widget = icon_view->GetBubble()->GetWidget();
+  if (widget && widget->IsVisible() && !widget->IsActive()) {
+    widget->Show();
+    return true;
+  }
+  return false;
 }
