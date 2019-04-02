@@ -15,9 +15,11 @@
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/track/text_track.h"
 #include "third_party/blink/renderer/core/html/track/text_track_list.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_orientation_lock_delegate.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_text_track_manager.h"
 #include "third_party/blink/renderer/modules/media_controls/touchless/elements/media_controls_touchless_overlay_element.h"
 #include "third_party/blink/renderer/modules/media_controls/touchless/media_controls_touchless_media_event_listener.h"
@@ -60,12 +62,13 @@ MediaControlsTouchlessImpl::MediaControlsTouchlessImpl(
       media_event_listener_(
           MakeGarbageCollected<MediaControlsTouchlessMediaEventListener>(
               media_element)),
+      text_track_manager_(
+          MakeGarbageCollected<MediaControlsTextTrackManager>(media_element)),
+      orientation_lock_delegate_(nullptr),
       hide_media_controls_timer_(
           media_element.GetDocument().GetTaskRunner(TaskType::kInternalMedia),
           this,
-          &MediaControlsTouchlessImpl::HideMediaControlsTimerFired),
-      text_track_manager_(
-          MakeGarbageCollected<MediaControlsTextTrackManager>(media_element)) {
+          &MediaControlsTouchlessImpl::HideMediaControlsTimerFired) {
   SetShadowPseudoId(AtomicString("-internal-media-controls-touchless"));
   media_event_listener_->AddObserver(this);
 }
@@ -83,6 +86,14 @@ MediaControlsTouchlessImpl* MediaControlsTouchlessImpl::Create(
   // Controls start hidden.
   controls->MakeTransparent();
 
+  if (RuntimeEnabledFeatures::VideoFullscreenOrientationLockEnabled() &&
+      media_element.IsHTMLVideoElement()) {
+    // Initialize the orientation lock when going fullscreen feature.
+    controls->orientation_lock_delegate_ =
+        MakeGarbageCollected<MediaControlsOrientationLockDelegate>(
+            ToHTMLVideoElement(media_element));
+  }
+
   MediaControlsTouchlessResourceLoader::
       InjectMediaControlsTouchlessUAStyleSheet();
 
@@ -93,13 +104,22 @@ MediaControlsTouchlessImpl* MediaControlsTouchlessImpl::Create(
 Node::InsertionNotificationRequest MediaControlsTouchlessImpl::InsertedInto(
     ContainerNode& root) {
   media_event_listener_->Attach();
+
+  if (orientation_lock_delegate_)
+    orientation_lock_delegate_->Attach();
+
   return HTMLDivElement::InsertedInto(root);
 }
 
 void MediaControlsTouchlessImpl::RemovedFrom(ContainerNode& insertion_point) {
   HTMLDivElement::RemovedFrom(insertion_point);
+
   Hide();
+
   media_event_listener_->Detach();
+
+  if (orientation_lock_delegate_)
+    orientation_lock_delegate_->Detach();
 }
 
 void MediaControlsTouchlessImpl::MakeOpaque() {
@@ -353,6 +373,7 @@ void MediaControlsTouchlessImpl::MaybeJump(int seconds) {
 void MediaControlsTouchlessImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(media_event_listener_);
   visitor->Trace(text_track_manager_);
+  visitor->Trace(orientation_lock_delegate_);
   MediaControls::Trace(visitor);
   HTMLDivElement::Trace(visitor);
 }
