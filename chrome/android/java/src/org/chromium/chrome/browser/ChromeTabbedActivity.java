@@ -1596,8 +1596,8 @@ public class ChromeTabbedActivity
         mContentContainer = (ViewGroup) findViewById(android.R.id.content);
         mControlContainer = (ToolbarControlContainer) findViewById(R.id.control_container);
 
-        mUndoBarPopupController = new UndoBarController(this, mTabModelSelectorImpl,
-                getSnackbarManager());
+        mUndoBarPopupController =
+                new UndoBarController(this, mTabModelSelectorImpl, this::getSnackbarManager);
     }
 
     @Override
