@@ -12,7 +12,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom-blink.h"
-#include "third_party/blink/renderer/platform/wtf/compiler.h"
 
 namespace blink {
 

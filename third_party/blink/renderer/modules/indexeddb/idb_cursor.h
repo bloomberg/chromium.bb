@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_cursor.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/wtf/compiler.h"
 
 namespace blink {
 

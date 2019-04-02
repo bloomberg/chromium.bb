@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLL_ANIMATOR_MAC_H_
 
 #include <memory>
+
 #include "base/mac/scoped_nsobject.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
@@ -37,9 +38,9 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/timer.h"
 
-OBJC_CLASS BlinkScrollAnimationHelperDelegate;
-OBJC_CLASS BlinkScrollbarPainterControllerDelegate;
-OBJC_CLASS BlinkScrollbarPainterDelegate;
+@class BlinkScrollAnimationHelperDelegate;
+@class BlinkScrollbarPainterControllerDelegate;
+@class BlinkScrollbarPainterDelegate;
 
 typedef id ScrollbarPainterController;
 

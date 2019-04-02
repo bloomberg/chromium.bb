@@ -665,6 +665,7 @@ jumbo_component("platform") {
     "fonts/mac/font_cache_mac.mm",
     "fonts/mac/font_matcher_mac.h",
     "fonts/mac/font_matcher_mac.mm",
+    "fonts/mac/font_platform_data_mac.h",
     "fonts/mac/font_platform_data_mac.mm",
     "fonts/ng_text_fragment_paint_info.h",
     "fonts/opentype/font_format_check.cc",

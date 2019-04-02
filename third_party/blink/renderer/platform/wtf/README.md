@@ -63,7 +63,6 @@ The below is a list of major libraries. For a complete list, look at
 
 * **Compile-time switch macros**
 
-  [compiler.h] (e.g. `OBJC_CLASS`),
   [cpu.h] (e.g. `WTF_CPU_ARM_NEON`),
 
 * **Miscellaneous**
@@ -104,7 +103,6 @@ current location][4] platform/wtf.
 [functional.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/functional.h
 [threading.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/threading.h
 [threading_primitives.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/threading_primitives.h
-[compiler.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/compiler.h
 [cpu.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/cpu.h
 [build_config.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/build_config.h
 [std_lib_extras.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/std_lib_extras.h

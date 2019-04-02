@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/timer.h"
-#include "third_party/blink/renderer/platform/wtf/compiler.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 
 namespace blink {

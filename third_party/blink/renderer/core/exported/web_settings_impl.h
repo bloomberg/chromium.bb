@@ -34,7 +34,6 @@
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/compiler.h"
 
 namespace blink {
 

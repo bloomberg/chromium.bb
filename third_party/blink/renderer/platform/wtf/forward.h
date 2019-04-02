@@ -23,7 +23,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "third_party/blink/renderer/platform/wtf/compiler.h"
+
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
 template <typename T>
