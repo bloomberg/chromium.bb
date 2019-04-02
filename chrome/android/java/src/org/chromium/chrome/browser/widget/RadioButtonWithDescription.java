@@ -54,6 +54,10 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
 
         if (attrs != null) applyAttributes(attrs);
 
+        final int padding =
+                getResources().getDimensionPixelSize(R.dimen.radio_button_with_description_padding);
+        setPaddingRelative(padding, padding, padding, padding);
+
         // We want RadioButtonWithDescription to handle the clicks itself.
         setOnClickListener(this);
         // Make it focusable for navigation via key events (tab/up/down keys)
@@ -67,6 +71,15 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
 
         String titleText = a.getString(R.styleable.RadioButtonWithDescription_titleText);
         if (titleText != null) mTitle.setText(titleText);
+
+        String descriptionText =
+                a.getString(R.styleable.RadioButtonWithDescription_descriptionText);
+        if (descriptionText != null) {
+            mDescription.setText(descriptionText);
+            mDescription.setVisibility(View.VISIBLE);
+        } else {
+            ((LayoutParams) mTitle.getLayoutParams()).addRule(RelativeLayout.CENTER_VERTICAL);
+        }
 
         a.recycle();
     }
@@ -98,7 +111,14 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
      */
     public void setDescriptionText(CharSequence text) {
         mDescription.setText(text);
-        mDescription.setVisibility(TextUtils.isEmpty(text) ? View.GONE : View.VISIBLE);
+
+        if (TextUtils.isEmpty(text)) {
+            ((LayoutParams) mTitle.getLayoutParams()).addRule(RelativeLayout.CENTER_VERTICAL);
+            mDescription.setVisibility(View.GONE);
+        } else {
+            ((LayoutParams) mTitle.getLayoutParams()).removeRule(RelativeLayout.CENTER_VERTICAL);
+            mDescription.setVisibility(View.VISIBLE);
+        }
     }
 
     /**

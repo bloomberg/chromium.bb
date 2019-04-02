@@ -17,7 +17,6 @@
         android:id="@+id/allowed"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
         android:paddingStart="?android:attr/listPreferredItemPaddingStart"
         android:background="?android:attr/selectableItemBackground"
         app:titleText="@string/website_settings_category_allowed" />
@@ -26,7 +25,6 @@
         android:id="@+id/ask"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
         android:paddingStart="?android:attr/listPreferredItemPaddingStart"
         android:background="?android:attr/selectableItemBackground"
         app:titleText="@string/website_settings_category_ask" />
