@@ -38,21 +38,6 @@ function MetadataDispatcher(port) {
   this.port_ = port;
   this.port_.onmessage = this.onMessage.bind(this);
 
-  // Make sure to update component_extension_resources.grd
-  // when adding new parsers.
-  importScripts(
-      FILE_MANAGER_HOST__METADATA_DISPATCHER +
-      '/foreground/js/metadata/exif_parser.js');
-  importScripts(
-      FILE_MANAGER_HOST__METADATA_DISPATCHER +
-      '/foreground/js/metadata/image_parsers.js');
-  importScripts(
-      FILE_MANAGER_HOST__METADATA_DISPATCHER +
-      '/foreground/js/metadata/mpeg_parser.js');
-  importScripts(
-      FILE_MANAGER_HOST__METADATA_DISPATCHER +
-      '/foreground/js/metadata/id3_parser.js');
-
   const patterns = [];
 
   this.parserInstances_ = [];
@@ -260,3 +245,19 @@ if (global.constructor.name == 'SharedWorkerGlobalScope') {
 registerParserClass = parserClass => {
   MetadataDispatcher.parserClasses_.push(parserClass);
 };
+
+// Note: update component_extension_resources.grd when adding new parsers and
+// that these parser scripts imports must be done last, see crbug.com/946959,
+// at least after the definition of registerParserClass above.
+importScripts(
+    FILE_MANAGER_HOST__METADATA_DISPATCHER +
+    '/foreground/js/metadata/exif_parser.js');
+importScripts(
+    FILE_MANAGER_HOST__METADATA_DISPATCHER +
+    '/foreground/js/metadata/image_parsers.js');
+importScripts(
+    FILE_MANAGER_HOST__METADATA_DISPATCHER +
+    '/foreground/js/metadata/mpeg_parser.js');
+importScripts(
+    FILE_MANAGER_HOST__METADATA_DISPATCHER +
+    '/foreground/js/metadata/id3_parser.js');
