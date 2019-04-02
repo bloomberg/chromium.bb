@@ -343,10 +343,6 @@ void SystemNetworkContextManager::SetUp(
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     *network_context_request = mojo::MakeRequest(&io_thread_network_context_);
     *network_context_params = CreateNetworkContextParams();
-  } else {
-    // Just use defaults if the network service is enabled, since
-    // CreateNetworkContextParams() can only be called once.
-    *network_context_params = CreateDefaultNetworkContextParams();
   }
   *is_quic_allowed = is_quic_allowed_;
   *http_auth_static_params = CreateHttpAuthStaticParams(local_state_);
