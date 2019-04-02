@@ -1388,6 +1388,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['android', 'qualcomm'], bug=906740)
     self.Fail('deqp/functional/gles3/shaderderivate_dfdy.html',
         ['android', 'qualcomm'], bug=906745)
+    self.Flaky('deqp/functional/gles3/multisample.html',
+        ['android', 'qualcomm'], bug=695742)
+    self.Flaky('conformance2/transform_feedback/switching-objects.html',
+        ['android', 'qualcomm'], bug=832238)
     # This test is flaky but can fail three times in a row so it must be
     # marked as Fail instead of Flaky.
     self.Fail('deqp/functional/gles3/shaderbuiltinvar.html',
