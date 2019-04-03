@@ -2064,6 +2064,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       * 'waiting' - waiting for review
       * 'reply'   - waiting for uploader to reply to review
       * 'lgtm'    - Code-Review label has been set
+      * 'dry-run' - dry-running in the commit queue
       * 'commit'  - in the commit queue
       * 'closed'  - successfully submitted or abandoned
     """
@@ -2079,10 +2080,14 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     if data['status'] in ('ABANDONED', 'MERGED'):
       return 'closed'
 
-    if data['labels'].get('Commit-Queue', {}).get('approved'):
-      # The section will have an "approved" subsection if anyone has voted
-      # the maximum value on the label.
+    cq_label = data['labels'].get('Commit-Queue', {})
+    max_cq_vote = 0
+    for vote in cq_label.get('all', []):
+      max_cq_vote = max(max_cq_vote, vote.get('value', 0))
+    if max_cq_vote == 2:
       return 'commit'
+    if max_cq_vote == 1:
+      return 'dry-run'
 
     if data['labels'].get('Code-Review', {}).get('approved'):
       return 'lgtm'
