@@ -1948,6 +1948,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'chell',
       'cheza',
       'cobblepot',
+      'coral',
       'cyan',
       'daisy',
       'daisy_skate',
@@ -2052,7 +2053,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # Paladin configs that exist and should stay as experimental until further
   # notice, preferably with a comment indicating why and a bug.
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
-      'coral', # contact: xixuan@
       'eve-arcnext', # contact: ihf@ (crbug.com/826755)
       'fizz-moblab', # contact: haddowk@ (crbug.com/937344)
       'kevin-arcnext', # contact: linben@
@@ -3427,8 +3427,8 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
 
   ### Release configs.
 
+  # Used for future bvt migration.
   _release_experimental_boards = frozenset([
-      'coral',
   ])
 
   _release_enable_skylab_hwtest = frozenset([

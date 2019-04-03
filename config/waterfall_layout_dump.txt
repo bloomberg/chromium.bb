@@ -437,6 +437,7 @@
     cheza-postsubmit
     clapper-postsubmit
     cobblepot-postsubmit
+    coral-postsubmit
     cyan-postsubmit
     daisy-postsubmit
     daisy_skate-postsubmit
@@ -2747,6 +2748,7 @@
     cheza-postsubmit-tryjob
     clapper-postsubmit-tryjob
     cobblepot-postsubmit-tryjob
+    coral-postsubmit-tryjob
     cyan-postsubmit-tryjob
     daisy-postsubmit-tryjob
     daisy_skate-postsubmit-tryjob
