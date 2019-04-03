@@ -22,14 +22,6 @@ namespace {
 
 class DynamicImportTreeClient final : public ModuleTreeClient {
  public:
-  static DynamicImportTreeClient* Create(
-      const KURL& url,
-      Modulator* modulator,
-      ScriptPromiseResolver* promise_resolver) {
-    return MakeGarbageCollected<DynamicImportTreeClient>(url, modulator,
-                                                         promise_resolver);
-  }
-
   DynamicImportTreeClient(const KURL& url,
                           Modulator* modulator,
                           ScriptPromiseResolver* promise_resolver)
@@ -250,8 +242,8 @@ void DynamicModuleResolver::ResolveDynamically(
   // <spec step="2.4">Fetch a module script graph given url, referencing
   // script's settings object, "script", and options. Wait until the algorithm
   // asynchronously completes with result.</spec>
-  auto* tree_client =
-      DynamicImportTreeClient::Create(url, modulator_.Get(), promise_resolver);
+  auto* tree_client = MakeGarbageCollected<DynamicImportTreeClient>(
+      url, modulator_.Get(), promise_resolver);
   // TODO(kouhei): ExecutionContext::From(modulator_->GetScriptState()) is
   // highly discouraged since it breaks layering. Rewrite this.
   auto* execution_context =

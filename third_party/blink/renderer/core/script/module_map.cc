@@ -22,10 +22,6 @@ class ModuleMap::Entry final : public GarbageCollectedFinalized<Entry>,
   USING_GARBAGE_COLLECTED_MIXIN(ModuleMap::Entry);
 
  public:
-  static Entry* Create(ModuleMap* map) {
-    return MakeGarbageCollected<Entry>(map);
-  }
-
   explicit Entry(ModuleMap*);
   ~Entry() override {}
 
@@ -128,7 +124,7 @@ void ModuleMap::FetchSingleModuleScript(
   MapImpl::AddResult result = map_.insert(request.Url(), nullptr);
   Member<Entry>& entry = result.stored_value->value;
   if (result.is_new_entry) {
-    entry = Entry::Create(this);
+    entry = MakeGarbageCollected<Entry>(this);
 
     // Steps 4-9 loads a new single module script.
     // Delegates to ModuleScriptLoader via Modulator.

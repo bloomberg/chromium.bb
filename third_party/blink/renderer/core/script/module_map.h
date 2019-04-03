@@ -31,10 +31,6 @@ class CORE_EXPORT ModuleMap final : public GarbageCollected<ModuleMap>,
   class Entry;
 
  public:
-  static ModuleMap* Create(Modulator* modulator) {
-    return MakeGarbageCollected<ModuleMap>(modulator);
-  }
-
   explicit ModuleMap(Modulator*);
 
   void Trace(blink::Visitor*);

@@ -45,10 +45,6 @@ class CORE_EXPORT ScriptRunner final
     : public GarbageCollectedFinalized<ScriptRunner>,
       public NameClient {
  public:
-  static ScriptRunner* Create(Document* document) {
-    return MakeGarbageCollected<ScriptRunner>(document);
-  }
-
   explicit ScriptRunner(Document*);
 
   void QueueScriptForExecution(PendingScript*);

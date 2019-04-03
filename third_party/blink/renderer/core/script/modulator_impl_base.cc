@@ -30,12 +30,13 @@ ModulatorImplBase::ModulatorImplBase(ScriptState* script_state)
     : script_state_(script_state),
       task_runner_(ExecutionContext::From(script_state_)
                        ->GetTaskRunner(TaskType::kNetworking)),
-      map_(ModuleMap::Create(this)),
+      map_(MakeGarbageCollected<ModuleMap>(this)),
       tree_linker_registry_(MakeGarbageCollected<ModuleTreeLinkerRegistry>()),
-      module_record_resolver_(ModuleRecordResolverImpl::Create(
+      module_record_resolver_(MakeGarbageCollected<ModuleRecordResolverImpl>(
           this,
           ExecutionContext::From(script_state_))),
-      dynamic_module_resolver_(DynamicModuleResolver::Create(this)) {
+      dynamic_module_resolver_(
+          MakeGarbageCollected<DynamicModuleResolver>(this)) {
   DCHECK(script_state_);
   DCHECK(task_runner_);
 }

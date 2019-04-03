@@ -125,8 +125,9 @@ void ModuleRecordResolverImplTest::SetUp() {
 
 TEST_F(ModuleRecordResolverImplTest, RegisterResolveSuccess) {
   V8TestingScope scope;
-  ModuleRecordResolver* resolver = ModuleRecordResolverImpl::Create(
-      Modulator(), scope.GetExecutionContext());
+  ModuleRecordResolver* resolver =
+      MakeGarbageCollected<ModuleRecordResolverImpl>(
+          Modulator(), scope.GetExecutionContext());
   Modulator()->SetScriptState(scope.GetScriptState());
 
   ModuleScript* referrer_module_script =
