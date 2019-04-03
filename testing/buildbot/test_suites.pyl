@@ -415,6 +415,12 @@
       'crypto_unittests': {},
       'display_unittests': {},
       'google_apis_unittests': {},
+      'interactive_ui_tests': {
+        'args': [
+          '--dbus-stub',
+          '--gtest_filter=SplitViewTest.SplitViewResize',
+        ],
+      },
       'ipc_tests': {},
       'jingle_unittests': {},
       'latency_unittests': {},
@@ -458,12 +464,6 @@
 
     'chromeos_device_friendly_gtests_experimental': {
       'chrome_login_tast_tests': {},
-      'interactive_ui_tests': {
-        'args': [
-          '--dbus-stub',
-          '--gtest_filter=SplitViewTest.SplitViewResize',
-        ],
-      },
       'services_unittests': {
         'args': [
           '--vpython-dir=../../vpython_dir_linux_amd64',

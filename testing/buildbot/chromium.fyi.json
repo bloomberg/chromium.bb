@@ -3286,25 +3286,6 @@
       },
       {
         "args": [
-          "--dbus-stub",
-          "--gtest_filter=SplitViewTest.SplitViewResize"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "kvm": "1",
-              "os": "Ubuntu-14.04",
-              "pool": "Chrome-CrOS-VM"
-            }
-          ],
-          "hard_timeout": 3600,
-          "io_timeout": 3600
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
           "--vpython-dir=../../vpython_dir_linux_amd64",
           "--ozone-platform=headless",
           "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.services_unittests.filter"
@@ -3556,6 +3537,26 @@
           "io_timeout": 3600
         },
         "test": "google_apis_unittests"
+      },
+      {
+        "args": [
+          "--dbus-stub",
+          "--gtest_filter=SplitViewTest.SplitViewResize"
+        ],
+        "isolate_coverage_data": true,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-14.04",
+              "pool": "Chrome-CrOS-VM"
+            }
+          ],
+          "hard_timeout": 3600,
+          "io_timeout": 3600
+        },
+        "test": "interactive_ui_tests"
       },
       {
         "isolate_coverage_data": true,
