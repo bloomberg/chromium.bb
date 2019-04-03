@@ -28,6 +28,10 @@ const char kTestFallbackURL[] = "http://test/fallback";
 // Size of dummy favicon image.
 const CGFloat kTestFaviconSize = 57;
 
+// FaviconLoaderTest is parameterized on this enum to test both
+// FaviconLoader::FaviconForPageUrl and FaviconLoader::FaviconForIconUrl.
+enum FaviconUrlType { TEST_PAGE_URL, TEST_ICON_URL };
+
 // FakeLargeIconService mimics a LargeIconService that returns a LargeIconResult
 // with a test favicon image for kTestFaviconURL and a LargeIconResult
 // initialized with FallbackIconStyle.
@@ -36,6 +40,9 @@ class FakeLargeIconService : public favicon::LargeIconServiceImpl {
   FakeLargeIconService()
       : favicon::LargeIconServiceImpl(/*favicon_service=*/nullptr,
                                       /*image_fetcher=*/nullptr) {}
+
+  // Returns LargeIconResult with valid bitmap if |page_url| is
+  // |kTestFaviconURL|, or LargeIconResult with fallback style.
   base::CancelableTaskTracker::TaskId
   GetLargeIconRawBitmapOrFallbackStyleForPageUrl(
       const GURL& page_url,
@@ -66,14 +73,43 @@ class FakeLargeIconService : public favicon::LargeIconServiceImpl {
 
     return 1;
   }
+
+  // Returns the same as |GetLargeIconRawBitmapOrFallbackStyleForPageUrl|.
+  base::CancelableTaskTracker::TaskId
+  GetLargeIconRawBitmapOrFallbackStyleForIconUrl(
+      const GURL& icon_url,
+      int min_source_size_in_pixel,
+      int desired_size_in_pixel,
+      const favicon_base::LargeIconCallback& callback,
+      base::CancelableTaskTracker* tracker) override {
+    return GetLargeIconRawBitmapOrFallbackStyleForPageUrl(
+        icon_url, min_source_size_in_pixel, desired_size_in_pixel, callback,
+        tracker);
+  }
 };
 
-class FaviconLoaderTest : public PlatformTest {
+class FaviconLoaderTest : public PlatformTest,
+                          public ::testing::WithParamInterface<FaviconUrlType> {
  protected:
   FaviconLoaderTest() : favicon_loader_(&large_icon_service_) {}
 
   FakeLargeIconService large_icon_service_;
   FaviconLoader favicon_loader_;
+
+  // Returns FaviconLoader::FaviconForPageUrl or
+  // FaviconLoader::FaviconForIconUrl depending on the TEST_P param.
+  FaviconAttributes* FaviconForUrl(
+      const GURL& url,
+      FaviconLoader::FaviconAttributesCompletionBlock callback) {
+    if (GetParam() == TEST_PAGE_URL) {
+      return favicon_loader_.FaviconForPageUrl(
+          url, kTestFaviconSize, kTestFaviconSize,
+          /*fallback_to_google_server=*/false, callback);
+    } else {
+      return favicon_loader_.FaviconForIconUrl(url, kTestFaviconSize,
+                                               kTestFaviconSize, callback);
+    }
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FaviconLoaderTest);
@@ -81,21 +117,19 @@ class FaviconLoaderTest : public PlatformTest {
 
 // Tests that image is returned when a favicon is retrieved from
 // LargeIconService.
-TEST_F(FaviconLoaderTest, Favicon) {
+TEST_P(FaviconLoaderTest, FaviconForPageUrl) {
   __block bool callback_executed = false;
   auto confirmation_block = ^(FaviconAttributes* favicon_attributes) {
     callback_executed = true;
     EXPECT_TRUE(favicon_attributes.faviconImage);
   };
-  favicon_loader_.FaviconForUrl(
-      GURL(kTestFaviconURL), kTestFaviconSize, kTestFaviconSize,
-      /*fallback_to_google_server=*/false, confirmation_block);
+  FaviconForUrl(GURL(kTestFaviconURL), confirmation_block);
   EXPECT_TRUE(callback_executed);
 }
 
 // Tests that fallback data is provided when no favicon is retrieved from
 // LargeIconService.
-TEST_F(FaviconLoaderTest, FallbackIcon) {
+TEST_P(FaviconLoaderTest, FallbackIcon) {
   __block bool callback_executed = false;
   auto confirmation_block = ^(FaviconAttributes* favicon_attributes) {
     callback_executed = true;
@@ -104,29 +138,29 @@ TEST_F(FaviconLoaderTest, FallbackIcon) {
     EXPECT_TRUE(favicon_attributes.textColor);
     EXPECT_TRUE(favicon_attributes.backgroundColor);
   };
-  favicon_loader_.FaviconForUrl(
-      GURL(kTestFallbackURL), kTestFaviconSize, kTestFaviconSize,
-      /*fallback_to_google_server=*/false, confirmation_block);
+  FaviconForUrl(GURL(kTestFallbackURL), confirmation_block);
   EXPECT_TRUE(callback_executed);
 }
 
 // Tests that when favicon is in cache, it is returned immediately. The callback
 // should never be executed.
-TEST_F(FaviconLoaderTest, Cache) {
+TEST_P(FaviconLoaderTest, Cache) {
   // Favicon retrieval that should put it in the cache.
-  favicon_loader_.FaviconForUrl(GURL(kTestFaviconURL), kTestFaviconSize,
-                                kTestFaviconSize,
-                                /*fallback_to_google_server=*/false, nil);
+  FaviconForUrl(GURL(kTestFaviconURL), nil);
   __block bool callback_executed = false;
   auto confirmation_block = ^(FaviconAttributes* faviconAttributes) {
     callback_executed = true;
   };
-  FaviconAttributes* attributes_result = favicon_loader_.FaviconForUrl(
-      GURL(kTestFaviconURL), kTestFaviconSize, kTestFaviconSize,
-      /*fallback_to_google_server=*/false, confirmation_block);
+  FaviconAttributes* attributes_result =
+      FaviconForUrl(GURL(kTestFaviconURL), confirmation_block);
   EXPECT_TRUE(attributes_result.faviconImage);
   // Favicon should be returned by cache, so callback should never exectue.
   EXPECT_FALSE(callback_executed);
 }
+
+INSTANTIATE_TEST_SUITE_P(ProgrammaticFaviconLoaderTest,
+                         FaviconLoaderTest,
+                         ::testing::Values(FaviconUrlType::TEST_PAGE_URL,
+                                           FaviconUrlType::TEST_ICON_URL));
 
 }  // namespace

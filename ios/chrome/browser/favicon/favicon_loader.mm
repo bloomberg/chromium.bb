@@ -25,7 +25,7 @@
 #endif
 
 namespace {
-extern const CGFloat kFallbackIconDefaultTextColor = 0xAAAAAA;
+const CGFloat kFallbackIconDefaultTextColor = 0xAAAAAA;
 
 // NetworkTrafficAnnotationTag for fetching favicon from a Google server.
 const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
@@ -55,15 +55,15 @@ FaviconLoader::~FaviconLoader() {}
 // TODO(pinkerton): How do we update the favicon if it's changed on the web?
 // We can possibly just rely on this class being purged or the app being killed
 // to reset it, but then how do we ensure the FaviconService is updated?
-FaviconAttributes* FaviconLoader::FaviconForUrl(
-    const GURL& url,
+FaviconAttributes* FaviconLoader::FaviconForPageUrl(
+    const GURL& page_url,
     float size_in_points,
     float min_size_in_points,
     bool fallback_to_google_server,  // retrieve favicon from Google Server if
                                      // GetLargeIconOrFallbackStyle() doesn't
                                      // return valid favicon.
     FaviconAttributesCompletionBlock block) {
-  NSString* key = base::SysUTF8ToNSString(url.spec());
+  NSString* key = base::SysUTF8ToNSString(page_url.spec());
   FaviconAttributes* value = [favicon_cache_ objectForKey:key];
   if (value) {
     return value;
@@ -73,7 +73,7 @@ FaviconAttributes* FaviconLoader::FaviconForUrl(
       [UIScreen mainScreen].scale * size_in_points;
   const CGFloat min_favicon_size_in_pixels =
       [UIScreen mainScreen].scale * min_size_in_points;
-  GURL block_url(url);
+  GURL block_page_url(page_url);
   auto favicon_block = ^(const favicon_base::LargeIconResult& result) {
     // GetLargeIconOrFallbackStyle() either returns a valid favicon (which can
     // be the default favicon) or fallback attributes.
@@ -97,20 +97,20 @@ FaviconAttributes* FaviconLoader::FaviconForUrl(
           ^(const favicon_base::GoogleFaviconServerRequestStatus status) {
             // Update the time when the icon was last requested - postpone thus
             // the automatic eviction of the favicon from the favicon database.
-            large_icon_service_->TouchIconFromGoogleServer(block_url);
+            large_icon_service_->TouchIconFromGoogleServer(block_page_url);
 
             // Favicon should be loaded to the db that backs LargeIconService
             // now.  Fetch it again. Even if the request was not successful, the
             // fallback style will be used.
-            FaviconForUrl(block_url, size_in_points, min_size_in_points,
-                          /*continueToGoogleServer=*/false, block);
-
+            FaviconForPageUrl(block_page_url, size_in_points,
+                              min_size_in_points,
+                              /*continueToGoogleServer=*/false, block);
           };
 
       large_icon_service_
           ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
               favicon::FaviconServerFetcherParams::CreateForMobile(
-                  block_url, min_favicon_size_in_pixels,
+                  block_page_url, min_favicon_size_in_pixels,
                   favicon_size_in_pixels),
               /*may_page_url_be_private=*/true, kTrafficAnnotation,
               base::BindRepeating(favicon_loaded_from_server_block));
@@ -118,21 +118,13 @@ FaviconAttributes* FaviconLoader::FaviconForUrl(
     }
 
     // Did not get valid favicon back and are not attempting to retrieve one
-    // from a Google Server
+    // from a Google Server.
     DCHECK(result.fallback_icon_style);
-    UIColor* textColor =
-        skia::UIColorFromSkColor(result.fallback_icon_style->text_color);
-    UIColor* backgroundColor =
-        skia::UIColorFromSkColor(result.fallback_icon_style->background_color);
-    if (IsUIRefreshPhase1Enabled()) {
-      textColor = UIColorFromRGB(kFallbackIconDefaultTextColor);
-      backgroundColor = [UIColor clearColor];
-    }
     FaviconAttributes* attributes = [FaviconAttributes
         attributesWithMonogram:base::SysUTF16ToNSString(
-                                   favicon::GetFallbackIconText(block_url))
-                     textColor:textColor
-               backgroundColor:backgroundColor
+                                   favicon::GetFallbackIconText(block_page_url))
+                     textColor:UIColorFromRGB(kFallbackIconDefaultTextColor)
+               backgroundColor:UIColor.clearColor
         defaultBackgroundColor:result.fallback_icon_style->
                                is_default_background_color];
 
@@ -144,15 +136,71 @@ FaviconAttributes* FaviconLoader::FaviconForUrl(
 
   DCHECK(large_icon_service_);
   large_icon_service_->GetLargeIconRawBitmapOrFallbackStyleForPageUrl(
-      block_url, min_favicon_size_in_pixels, favicon_size_in_pixels,
+      page_url, min_favicon_size_in_pixels, favicon_size_in_pixels,
       base::BindRepeating(favicon_block), &cancelable_task_tracker_);
 
-  if (IsUIRefreshPhase1Enabled()) {
-    return [FaviconAttributes
-        attributesWithImage:[UIImage imageNamed:@"default_world_favicon"]];
-  }
   return [FaviconAttributes
-      attributesWithImage:[UIImage imageNamed:@"default_favicon"]];
+      attributesWithImage:[UIImage imageNamed:@"default_world_favicon"]];
+}
+
+FaviconAttributes* FaviconLoader::FaviconForIconUrl(
+    const GURL& icon_url,
+    float size_in_points,
+    float min_size_in_points,
+    FaviconAttributesCompletionBlock block) {
+  NSString* key = base::SysUTF8ToNSString(icon_url.spec());
+  FaviconAttributes* value = [favicon_cache_ objectForKey:key];
+  if (value) {
+    return value;
+  }
+
+  const CGFloat favicon_size_in_pixels =
+      [UIScreen mainScreen].scale * size_in_points;
+  const CGFloat min_favicon_size_in_pixels =
+      [UIScreen mainScreen].scale * min_size_in_points;
+  GURL block_icon_url(icon_url);
+  auto favicon_block = ^(const favicon_base::LargeIconResult& result) {
+    // GetLargeIconOrFallbackStyle() either returns a valid favicon (which can
+    // be the default favicon) or fallback attributes.
+    if (result.bitmap.is_valid()) {
+      scoped_refptr<base::RefCountedMemory> data =
+          result.bitmap.bitmap_data.get();
+      // The favicon code assumes favicons are PNG-encoded.
+      UIImage* favicon =
+          [UIImage imageWithData:[NSData dataWithBytes:data->front()
+                                                length:data->size()]];
+      FaviconAttributes* attributes =
+          [FaviconAttributes attributesWithImage:favicon];
+      [favicon_cache_ setObject:attributes forKey:key];
+      if (block) {
+        block(attributes);
+      }
+      return;
+    }
+    // Did not get valid favicon back and are not attempting to retrieve one
+    // from a Google Server
+    DCHECK(result.fallback_icon_style);
+    FaviconAttributes* attributes = [FaviconAttributes
+        attributesWithMonogram:base::SysUTF16ToNSString(
+                                   favicon::GetFallbackIconText(block_icon_url))
+                     textColor:UIColorFromRGB(kFallbackIconDefaultTextColor)
+               backgroundColor:UIColor.clearColor
+        defaultBackgroundColor:result.fallback_icon_style->
+                               is_default_background_color];
+
+    [favicon_cache_ setObject:attributes forKey:key];
+    if (block) {
+      block(attributes);
+    }
+  };
+
+  DCHECK(large_icon_service_);
+  large_icon_service_->GetLargeIconRawBitmapOrFallbackStyleForIconUrl(
+      icon_url, min_favicon_size_in_pixels, favicon_size_in_pixels,
+      base::BindRepeating(favicon_block), &cancelable_task_tracker_);
+
+  return [FaviconAttributes
+      attributesWithImage:[UIImage imageNamed:@"default_world_favicon"]];
 }
 
 void FaviconLoader::CancellAllRequests() {
