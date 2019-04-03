@@ -221,6 +221,10 @@ public class WebApkUma {
         }
     }
 
+    public static void recordWebApkUninstalled() {
+        RecordHistogram.recordBooleanHistogram("WebApk.Uninstall.Browser", true);
+    }
+
     /**
      * Records the requests of Android runtime permissions which haven't been granted to Chrome when
      * Chrome is running in WebAPK runtime.
