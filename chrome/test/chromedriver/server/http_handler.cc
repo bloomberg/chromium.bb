@@ -1142,24 +1142,10 @@ HttpHandler::PrepareStandardResponse(
 
   base::DictionaryValue body_params;
   if (status.IsError()){
-    // Separates status default message from additional details.
-    std::string error;
-    std::string message(status.message());
-    std::string::size_type separator = message.find_first_of(":\n");
-    if (separator == std::string::npos) {
-      error = message;
-      message.clear();
-    } else {
-      error = message.substr(0, separator);
-      separator++;
-      while (separator < message.length() && message[separator] == ' ')
-        separator++;
-      message = message.substr(separator);
-    }
     std::unique_ptr<base::DictionaryValue> inner_params(
         new base::DictionaryValue());
-    inner_params->SetString("error", error);
-    inner_params->SetString("message", message);
+    inner_params->SetString("error", StatusCodeToString(status.code()));
+    inner_params->SetString("message", status.message());
     inner_params->SetString("stacktrace", status.stack_trace());
     body_params.SetDictionary("value", std::move(inner_params));
   } else {
