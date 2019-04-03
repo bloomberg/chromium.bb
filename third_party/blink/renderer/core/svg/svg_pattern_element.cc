@@ -246,8 +246,7 @@ static void SetPatternAttributes(const SVGPatternElement& element,
 }
 
 const SVGPatternElement* SVGPatternElement::ReferencedElement() const {
-  return ToSVGPatternElementOrNull(
-      TargetElementFromIRIString(HrefString(), GetTreeScope()));
+  return ToSVGPatternElementOrNull(resource_ ? resource_->Target() : nullptr);
 }
 
 void SVGPatternElement::CollectPatternAttributes(
