@@ -115,9 +115,11 @@ ScrollAnimatorBase& ScrollableArea::GetScrollAnimator() const {
 
 ProgrammaticScrollAnimator& ScrollableArea::GetProgrammaticScrollAnimator()
     const {
-  if (!programmatic_scroll_animator_)
+  if (!programmatic_scroll_animator_) {
     programmatic_scroll_animator_ =
-        ProgrammaticScrollAnimator::Create(const_cast<ScrollableArea*>(this));
+        MakeGarbageCollected<ProgrammaticScrollAnimator>(
+            const_cast<ScrollableArea*>(this));
+  }
 
   return *programmatic_scroll_animator_;
 }
