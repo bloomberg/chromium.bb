@@ -2139,6 +2139,7 @@ static_library("test_support") {
     "login/test/test_condition_waiter.h",
     "login/test/test_predicate_waiter.cc",
     "login/test/test_predicate_waiter.h",
+    "printing/printing_fakes.h",
     "scoped_set_running_on_chromeos_for_testing.cc",
     "scoped_set_running_on_chromeos_for_testing.h",
     "settings/scoped_testing_cros_settings.cc",
