@@ -99,6 +99,7 @@
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/mathml_names.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/root_scroller_util.h"
@@ -2960,11 +2961,13 @@ void Node::SetCustomElementState(CustomElementState new_state) {
 
   if (element->IsDefined() != was_defined) {
     element->PseudoStateChanged(CSSSelector::kPseudoDefined);
-    element->PseudoStateChanged(CSSSelector::kPseudoUnresolved);
+    if (origin_trials::CustomElementsV0Enabled(&GetDocument()))
+      element->PseudoStateChanged(CSSSelector::kPseudoUnresolved);
   }
 }
 
 void Node::SetV0CustomElementState(V0CustomElementState new_state) {
+  DCHECK(origin_trials::CustomElementsV0Enabled(&GetDocument()));
   V0CustomElementState old_state = GetV0CustomElementState();
 
   switch (new_state) {
