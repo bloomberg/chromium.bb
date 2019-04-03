@@ -91,16 +91,6 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) ImeKeyboard {
   // non-UI threads.
   virtual bool SetAutoRepeatRate(const AutoRepeatRate& rate) = 0;
 
-  // On success, set current auto repeat rate on |out_rate| and returns true.
-  // Returns false otherwise. This function is protected: for testability.
-  static COMPONENT_EXPORT(
-      UI_BASE_IME_CHROMEOS) bool GetAutoRepeatRateForTesting(AutoRepeatRate*
-                                                                 out_rate);
-
-  // Returns false if |layout_name| contains a bad character.
-  static COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) bool CheckLayoutNameForTesting(
-      const std::string& layout_name);
-
   bool caps_lock_is_enabled_;
   std::string last_layout_;
 
