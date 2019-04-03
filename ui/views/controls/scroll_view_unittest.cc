@@ -744,10 +744,10 @@ TEST_F(ScrollViewTest, ScrollChildToVisibleOnFocus) {
   auto contents = std::make_unique<CustomView>();
   contents->SetPreferredSize(gfx::Size(500, 1000));
   auto* contents_ptr = scroll_view_->SetContents(std::move(contents));
-  FixedView* child = new FixedView;
+  auto child = std::make_unique<FixedView>();
   child->SetPreferredSize(gfx::Size(10, 10));
   child->SetPosition(gfx::Point(0, 405));
-  contents_ptr->AddChildView(child);
+  auto* child_ptr = contents_ptr->AddChildView(std::move(child));
 
   scroll_view_->SetBoundsRect(gfx::Rect(0, 0, 100, 100));
   scroll_view_->Layout();
@@ -756,7 +756,7 @@ TEST_F(ScrollViewTest, ScrollChildToVisibleOnFocus) {
   // Set focus to the child control. This should cause the control to scroll to
   // y=405 height=10. Like the above test, this should make the y position of
   // the content at (405 + 10) - viewport_height (scroll region bottom aligned).
-  child->SetFocus();
+  child_ptr->SetFocus();
   const int viewport_height = test_api.contents_viewport()->height();
 
   // Expect there to be a horizontal scrollbar, making the viewport shorter.
@@ -906,8 +906,7 @@ TEST_F(ScrollViewTest, ChildWithLayerTest) {
   if (test_api.contents_viewport()->layer())
     return;
 
-  View* child = new View();
-  contents->AddChildView(child);
+  View* child = contents->AddChildView(std::make_unique<View>());
   child->SetPaintToLayer(ui::LAYER_TEXTURED);
 
   ASSERT_TRUE(test_api.contents_viewport()->layer());
@@ -922,8 +921,7 @@ TEST_F(ScrollViewTest, ChildWithLayerTest) {
   child->DestroyLayer();
   EXPECT_FALSE(test_api.contents_viewport()->layer());
 
-  View* child_child = new View();
-  child->AddChildView(child_child);
+  child->AddChildView(std::make_unique<View>());
   EXPECT_FALSE(test_api.contents_viewport()->layer());
   child->SetPaintToLayer(ui::LAYER_TEXTURED);
   EXPECT_TRUE(test_api.contents_viewport()->layer());
@@ -940,8 +938,7 @@ TEST_F(ScrollViewTest, DontCreateLayerOnViewportIfLayerOnScrollViewCreated) {
 
   scroll_view_->SetPaintToLayer();
 
-  View* child = new View();
-  contents->AddChildView(child);
+  View* child = contents->AddChildView(std::make_unique<View>());
   child->SetPaintToLayer(ui::LAYER_TEXTURED);
 
   EXPECT_FALSE(test_api.contents_viewport()->layer());

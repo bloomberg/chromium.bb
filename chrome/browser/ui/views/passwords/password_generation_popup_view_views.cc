@@ -50,16 +50,19 @@ class PasswordGenerationPopupViewViews::GeneratedPasswordBox
     BuildColumnSet(layout);
     layout->StartRow(views::GridLayout::kFixedSize, 0);
 
-    layout->AddView(autofill::CreateLabelWithColorReadabilityDisabled(
-        suggestion, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-        state == PasswordGenerationPopupController::kOfferGeneration
-            ? views::style::STYLE_PRIMARY
-            : STYLE_SECONDARY));
+    layout->AddView(
+        autofill::CreateLabelWithColorReadabilityDisabled(
+            suggestion, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
+            state == PasswordGenerationPopupController::kOfferGeneration
+                ? views::style::STYLE_PRIMARY
+                : STYLE_SECONDARY)
+            .release());
 
     DCHECK(!password_label_);
     password_label_ = autofill::CreateLabelWithColorReadabilityDisabled(
-        password, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-        STYLE_SECONDARY_MONOSPACED);
+                          password, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
+                          STYLE_SECONDARY_MONOSPACED)
+                          .release();
     layout->AddView(password_label_);
   }
 

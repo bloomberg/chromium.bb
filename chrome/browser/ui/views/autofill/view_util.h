@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_VIEW_UTIL_H_
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_VIEW_UTIL_H_
 
+#include <memory>
+
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "content/public/browser/web_contents.h"
@@ -41,7 +43,7 @@ views::Textfield* CreateCvcTextfield();
 // Returns a new label with auto-color readability disabled to ensure consistent
 // colors in the title when a dark native theme is applied
 // (https://crbug.com/881514).
-views::Label* CreateLabelWithColorReadabilityDisabled(
+std::unique_ptr<views::Label> CreateLabelWithColorReadabilityDisabled(
     const base::string16& text,
     int text_context,
     int text_style);
