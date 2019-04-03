@@ -4,7 +4,7 @@
 
 #import "ios/showcase/omnibox_popup/sc_omnibox_popup_coordinator.h"
 
-#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_legacy_view_controller.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_controller.h"
 #import "ios/showcase/common/coordinator.h"
 #import "ios/showcase/common/protocol_alerter.h"
 #import "ios/showcase/omnibox_popup/sc_omnibox_popup_container_view_controller.h"
@@ -36,7 +36,7 @@
   // Ignore didScroll because it's fired all the time.
   [self.alerter ignoreSelector:@selector(autocompleteResultConsumerDidScroll:)];
 
-  self.popupViewController = [[OmniboxPopupLegacyViewController alloc] init];
+  self.popupViewController = [[OmniboxPopupViewController alloc] init];
   self.popupViewController.delegate =
       static_cast<id<AutocompleteResultConsumerDelegate>>(self.alerter);
 
