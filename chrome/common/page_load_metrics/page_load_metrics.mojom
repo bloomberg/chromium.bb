@@ -231,19 +231,6 @@ struct CpuTiming {
   mojo_base.mojom.TimeDelta task_time;
 };
 
-// Metrics about the count of resources that were lazy loaded in the frame.
-struct DeferredResourceCounts {
-  // The count of frames that were deferred due to lazy load.
-  uint64 deferred_frames = 0;
-  // The count of frames that were loaded after being deferred due to lazy load.
-  uint64 frames_loaded_after_deferral = 0;
-
-  // The count of images that were deferred due to lazy load.
-  uint64 deferred_images = 0;
-  // The count of images that were loaded after being deferred due to lazy load.
-  uint64 images_loaded_after_deferral = 0;
-};
-
 // Sent from renderer to browser process when the PageLoadTiming for the
 // associated frame changed.
 interface PageLoadMetrics {
@@ -252,6 +239,5 @@ interface PageLoadMetrics {
                PageLoadFeatures new_features,
                array<ResourceDataUpdate> resources,
                FrameRenderDataUpdate render_data,
-               CpuTiming cpu_load_timing,
-               DeferredResourceCounts new_deferred_resource_data);
+               CpuTiming cpu_load_timing);
 };
