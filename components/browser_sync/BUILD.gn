@@ -50,8 +50,6 @@ source_set("unit_tests") {
   sources = [
     "profile_sync_service_autofill_unittest.cc",
     "profile_sync_service_bookmark_unittest.cc",
-    "profile_sync_service_startup_unittest.cc",
-    "profile_sync_service_unittest.cc",
   ]
 
   deps = [
@@ -98,8 +96,6 @@ static_library("test_support") {
   sources = [
     "abstract_profile_sync_service_test.cc",
     "abstract_profile_sync_service_test.h",
-    "profile_sync_test_util.cc",
-    "profile_sync_test_util.h",
     "test_http_bridge_factory.cc",
     "test_http_bridge_factory.h",
   ]

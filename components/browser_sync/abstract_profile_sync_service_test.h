@@ -11,8 +11,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/browser_sync/profile_sync_test_util.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/driver/profile_sync_service_bundle.h"
 #include "components/sync/syncable/change_record.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -42,7 +42,7 @@ class AbstractProfileSyncServiceTest : public testing::Test {
 
   syncer::TestProfileSyncService* sync_service() { return sync_service_.get(); }
 
-  ProfileSyncServiceBundle* profile_sync_service_bundle() {
+  syncer::ProfileSyncServiceBundle* profile_sync_service_bundle() {
     return &profile_sync_service_bundle_;
   }
 
@@ -51,7 +51,7 @@ class AbstractProfileSyncServiceTest : public testing::Test {
   base::Thread data_type_thread_;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  ProfileSyncServiceBundle profile_sync_service_bundle_;
+  syncer::ProfileSyncServiceBundle profile_sync_service_bundle_;
   std::unique_ptr<syncer::TestProfileSyncService> sync_service_;
 
   base::ScopedTempDir temp_dir_;  // To pass to the backend host.

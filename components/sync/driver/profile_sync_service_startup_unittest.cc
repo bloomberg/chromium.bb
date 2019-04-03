@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/profile_sync_service.h"
 
 #include "base/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/browser_sync/profile_sync_test_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/driver/data_type_manager_mock.h"
 #include "components/sync/driver/fake_data_type_controller.h"
+#include "components/sync/driver/profile_sync_service_bundle.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
 #include "components/sync/driver/sync_client_mock.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -21,10 +21,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using syncer::DataTypeManager;
-using syncer::DataTypeManagerMock;
-using syncer::FakeSyncEngine;
-using syncer::MockSyncEngine;
 using testing::_;
 using testing::ByMove;
 using testing::DoAll;
@@ -33,17 +29,16 @@ using testing::Mock;
 using testing::NiceMock;
 using testing::Return;
 
-namespace browser_sync {
+namespace syncer {
 
 namespace {
 
 const char kEmail[] = "test_user@gmail.com";
 
 void SetError(DataTypeManager::ConfigureResult* result) {
-  syncer::DataTypeStatusTable::TypeErrorMap errors;
-  errors[syncer::BOOKMARKS] =
-      syncer::SyncError(FROM_HERE, syncer::SyncError::UNRECOVERABLE_ERROR,
-                        "Error", syncer::BOOKMARKS);
+  DataTypeStatusTable::TypeErrorMap errors;
+  errors[BOOKMARKS] =
+      SyncError(FROM_HERE, SyncError::UNRECOVERABLE_ERROR, "Error", BOOKMARKS);
   result->data_type_status_table.UpdateFailedDataTypes(errors);
 }
 
@@ -56,7 +51,7 @@ ACTION_P(InvokeOnConfigureStart, sync_service) {
 ACTION_P3(InvokeOnConfigureDone, sync_service, error_callback, result) {
   DataTypeManager::ConfigureResult configure_result =
       static_cast<DataTypeManager::ConfigureResult>(result);
-  if (result.status == syncer::DataTypeManager::ABORTED)
+  if (result.status == DataTypeManager::ABORTED)
     error_callback.Run(&configure_result);
   sync_service->OnConfigureDone(configure_result);
 }
@@ -71,20 +66,17 @@ class ProfileSyncServiceStartupTest : public testing::Test {
         ->SetAutomaticIssueOfAccessTokens(true);
   }
 
-  ~ProfileSyncServiceStartupTest() override {
-    sync_service_->Shutdown();
-  }
+  ~ProfileSyncServiceStartupTest() override { sync_service_->Shutdown(); }
 
-  void CreateSyncService(ProfileSyncService::StartBehavior start_behavior,
-                         syncer::ModelTypeSet registered_types =
-                             syncer::ModelTypeSet(syncer::BOOKMARKS)) {
-    syncer::DataTypeController::TypeVector controllers;
-    for (syncer::ModelType type : registered_types) {
-      controllers.push_back(
-          std::make_unique<syncer::FakeDataTypeController>(type));
+  void CreateSyncService(
+      ProfileSyncService::StartBehavior start_behavior,
+      ModelTypeSet registered_types = ModelTypeSet(BOOKMARKS)) {
+    DataTypeController::TypeVector controllers;
+    for (ModelType type : registered_types) {
+      controllers.push_back(std::make_unique<FakeDataTypeController>(type));
     }
 
-    std::unique_ptr<syncer::SyncClientMock> sync_client =
+    std::unique_ptr<SyncClientMock> sync_client =
         profile_sync_service_bundle_.CreateSyncClientMock();
     ON_CALL(*sync_client, CreateDataTypeControllers(_))
         .WillByDefault(Return(ByMove(std::move(controllers))));
@@ -133,7 +125,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     return sync_engine_raw;
   }
 
-  syncer::SyncPrefs* sync_prefs() { return &sync_prefs_; }
+  SyncPrefs* sync_prefs() { return &sync_prefs_; }
 
   ProfileSyncService* sync_service() { return sync_service_.get(); }
 
@@ -141,7 +133,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     return profile_sync_service_bundle_.pref_service();
   }
 
-  syncer::SyncApiComponentFactoryMock* component_factory() {
+  SyncApiComponentFactoryMock* component_factory() {
     return profile_sync_service_bundle_.component_factory();
   }
 
@@ -152,7 +144,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   ProfileSyncServiceBundle profile_sync_service_bundle_;
-  syncer::SyncPrefs sync_prefs_;
+  SyncPrefs sync_prefs_;
   std::unique_ptr<ProfileSyncService> sync_service_;
 };
 
@@ -173,10 +165,10 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   // Should not actually start, rather just clean things up and wait
   // to be enabled.
   sync_service()->Initialize();
-  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN |
-                syncer::SyncService::DISABLE_REASON_USER_CHOICE,
+  EXPECT_EQ(SyncService::DISABLE_REASON_NOT_SIGNED_IN |
+                SyncService::DISABLE_REASON_USER_CHOICE,
             sync_service()->GetDisableReasons());
-  EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
+  EXPECT_EQ(SyncService::TransportState::DISABLED,
             sync_service()->GetTransportState());
 
   // Preferences should be back to defaults.
@@ -189,9 +181,9 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   sync_service()->GetUserSettings()->SetSyncRequested(true);
   auto sync_blocker = sync_service()->GetSetupInProgressHandle();
   EXPECT_FALSE(sync_service()->IsEngineInitialized());
-  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN,
+  EXPECT_EQ(SyncService::DISABLE_REASON_NOT_SIGNED_IN,
             sync_service()->GetDisableReasons());
-  EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
+  EXPECT_EQ(SyncService::TransportState::DISABLED,
             sync_service()->GetTransportState());
 
   SimulateTestUserSignin();
@@ -199,9 +191,9 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   // Now we're signed in, so the engine can start. Engine initialization is
   // immediate in this test, so we bypass the INITIALIZING state.
   EXPECT_TRUE(sync_service()->IsEngineInitialized());
-  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NONE,
+  EXPECT_EQ(SyncService::DISABLE_REASON_NONE,
             sync_service()->GetDisableReasons());
-  EXPECT_EQ(syncer::SyncService::TransportState::PENDING_DESIRED_CONFIGURATION,
+  EXPECT_EQ(SyncService::TransportState::PENDING_DESIRED_CONFIGURATION,
             sync_service()->GetTransportState());
 
   // Simulate the UI telling sync it has finished setting up. Note that this is
@@ -215,7 +207,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
       .WillByDefault(Return(DataTypeManager::CONFIGURED));
   sync_blocker.reset();
   ASSERT_FALSE(sync_service()->IsSetupInProgress());
-  EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
+  EXPECT_EQ(SyncService::TransportState::ACTIVE,
             sync_service()->GetTransportState());
   // Sync-the-feature is still not active, but rather pending confirmation.
   EXPECT_FALSE(sync_service()->IsSyncFeatureEnabled());
@@ -231,10 +223,10 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   // This should have fully enabled sync.
   EXPECT_TRUE(sync_service()->IsSyncFeatureEnabled());
   EXPECT_TRUE(sync_service()->IsSyncFeatureActive());
-  EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
+  EXPECT_EQ(SyncService::TransportState::ACTIVE,
             sync_service()->GetTransportState());
 
-  EXPECT_CALL(*data_type_manager, Stop(syncer::BROWSER_SHUTDOWN));
+  EXPECT_CALL(*data_type_manager, Stop(BROWSER_SHUTDOWN));
 }
 #endif  // OS_CHROMEOS
 
@@ -255,7 +247,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartNoCredentials) {
 
   // ProfileSyncService should now be active, but of course not have an access
   // token.
-  EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
+  EXPECT_EQ(SyncService::TransportState::ACTIVE,
             sync_service()->GetTransportState());
   EXPECT_TRUE(sync_service()->GetAccessTokenForTest().empty());
   // Note that ProfileSyncService is not in an auth error state - no auth was
@@ -282,9 +274,9 @@ TEST_F(ProfileSyncServiceStartupTest, StartInvalidCredentials) {
   // state. It'll take either a browser restart or a full sign-out+sign-in to
   // get out of this.
   EXPECT_TRUE(sync_service()->HasUnrecoverableError());
-  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR,
+  EXPECT_EQ(SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR,
             sync_service()->GetDisableReasons());
-  EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
+  EXPECT_EQ(SyncService::TransportState::DISABLED,
             sync_service()->GetTransportState());
 }
 
@@ -309,7 +301,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartCrosNoCredentials) {
       .WillByDefault(Return(DataTypeManager::CONFIGURED));
 
   // Sync should be considered active, even though there is no refresh token.
-  EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
+  EXPECT_EQ(SyncService::TransportState::ACTIVE,
             sync_service()->GetTransportState());
   // Since we're in AUTO_START mode, FirstSetupComplete gets set automatically.
   EXPECT_TRUE(sync_service()->GetUserSettings()->IsFirstSetupComplete());
@@ -333,9 +325,9 @@ TEST_F(ProfileSyncServiceStartupTest, StartCrosFirstTime) {
   // a refresh token.
   UpdateCredentials();
   sync_service()->Initialize();
-  EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
+  EXPECT_EQ(SyncService::TransportState::ACTIVE,
             sync_service()->GetTransportState());
-  EXPECT_CALL(*data_type_manager, Stop(syncer::BROWSER_SHUTDOWN));
+  EXPECT_CALL(*data_type_manager, Stop(BROWSER_SHUTDOWN));
 }
 
 TEST_F(ProfileSyncServiceStartupTest, StartNormal) {
@@ -358,10 +350,10 @@ TEST_F(ProfileSyncServiceStartupTest, StartNormal) {
   ON_CALL(*data_type_manager, state())
       .WillByDefault(Return(DataTypeManager::CONFIGURED));
 
-  EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
+  EXPECT_EQ(SyncService::TransportState::ACTIVE,
             sync_service()->GetTransportState());
 
-  EXPECT_CALL(*data_type_manager, Stop(syncer::BROWSER_SHUTDOWN));
+  EXPECT_CALL(*data_type_manager, Stop(BROWSER_SHUTDOWN));
 }
 
 TEST_F(ProfileSyncServiceStartupTest, StopSync) {
@@ -376,7 +368,7 @@ TEST_F(ProfileSyncServiceStartupTest, StopSync) {
 
   sync_service()->Initialize();
 
-  EXPECT_CALL(*data_type_manager, Stop(syncer::STOP_SYNC));
+  EXPECT_CALL(*data_type_manager, Stop(STOP_SYNC));
   // On SetSyncRequested(false), the sync service will immediately start up
   // again in transport mode.
   SetUpFakeSyncEngine();
@@ -420,9 +412,9 @@ TEST_F(ProfileSyncServiceStartupTest, DisableSync) {
 // therefore being left unset.
 TEST_F(ProfileSyncServiceStartupTest, StartRecoverDatatypePrefs) {
   // Clear the datatype preference fields (simulating bug 154940).
-  pref_service()->ClearPref(syncer::prefs::kSyncKeepEverythingSynced);
-  for (syncer::ModelType type : syncer::UserSelectableTypes()) {
-    pref_service()->ClearPref(syncer::SyncPrefs::GetPrefNameForDataType(type));
+  pref_service()->ClearPref(prefs::kSyncKeepEverythingSynced);
+  for (ModelType type : UserSelectableTypes()) {
+    pref_service()->ClearPref(SyncPrefs::GetPrefNameForDataType(type));
   }
 
   sync_prefs()->SetFirstSetupComplete();
@@ -446,8 +438,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartDontRecoverDatatypePrefs) {
   // Explicitly set Keep Everything Synced to false and have only bookmarks
   // enabled.
   sync_prefs()->SetDataTypesConfiguration(/*keep_everything_synced=*/false,
-                                          syncer::UserTypes(),
-                                          {syncer::BOOKMARKS});
+                                          UserTypes(), {BOOKMARKS});
 
   sync_prefs()->SetFirstSetupComplete();
   CreateSyncService(ProfileSyncService::MANUAL_START);
@@ -478,7 +469,7 @@ TEST_F(ProfileSyncServiceStartupTest, ManagedStartup) {
   EXPECT_CALL(*component_factory(), CreateDataTypeManager(_, _, _, _, _, _))
       .Times(0);
   sync_service()->Initialize();
-  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY,
+  EXPECT_EQ(SyncService::DISABLE_REASON_ENTERPRISE_POLICY,
             sync_service()->GetDisableReasons());
 }
 
@@ -499,9 +490,9 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   // this test).
   sync_service()->Initialize();
   EXPECT_TRUE(sync_service()->IsEngineInitialized());
-  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NONE,
+  EXPECT_EQ(SyncService::DISABLE_REASON_NONE,
             sync_service()->GetDisableReasons());
-  EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
+  EXPECT_EQ(SyncService::TransportState::ACTIVE,
             sync_service()->GetTransportState());
   EXPECT_TRUE(sync_service()->IsSyncFeatureEnabled());
   EXPECT_TRUE(sync_service()->IsSyncFeatureActive());
@@ -510,13 +501,13 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   Mock::VerifyAndClearExpectations(data_type_manager);
   EXPECT_CALL(*data_type_manager, state())
       .WillOnce(Return(DataTypeManager::CONFIGURED));
-  EXPECT_CALL(*data_type_manager, Stop(syncer::DISABLE_SYNC));
+  EXPECT_CALL(*data_type_manager, Stop(DISABLE_SYNC));
 
   sync_prefs()->SetManagedForTest(true);
-  ASSERT_EQ(syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY,
+  ASSERT_EQ(SyncService::DISABLE_REASON_ENTERPRISE_POLICY,
             sync_service()->GetDisableReasons());
   EXPECT_FALSE(sync_service()->IsEngineInitialized());
-  EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
+  EXPECT_EQ(SyncService::TransportState::DISABLED,
             sync_service()->GetTransportState());
   EXPECT_FALSE(sync_service()->IsSyncFeatureEnabled());
   EXPECT_FALSE(sync_service()->IsSyncFeatureActive());
@@ -534,11 +525,11 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
 
   sync_prefs()->SetManagedForTest(false);
 
-  ASSERT_EQ(syncer::SyncService::DISABLE_REASON_NONE,
+  ASSERT_EQ(SyncService::DISABLE_REASON_NONE,
             sync_service()->GetDisableReasons());
 
   EXPECT_TRUE(sync_service()->IsEngineInitialized());
-  EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
+  EXPECT_EQ(SyncService::TransportState::ACTIVE,
             sync_service()->GetTransportState());
   // Sync-the-feature is still considered off because disabling Sync through
   // policy also reset the first-setup-complete flag.
@@ -555,7 +546,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
   SetUpFakeSyncEngine();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManagerMock();
   DataTypeManager::ConfigureStatus status = DataTypeManager::ABORTED;
-  DataTypeManager::ConfigureResult result(status, syncer::ModelTypeSet());
+  DataTypeManager::ConfigureResult result(status, ModelTypeSet());
   EXPECT_CALL(*data_type_manager, Configure(_, _))
       .WillRepeatedly(
           DoAll(InvokeOnConfigureStart(sync_service()),
@@ -566,7 +557,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
   ON_CALL(*data_type_manager, IsNigoriEnabled()).WillByDefault(Return(true));
   sync_service()->Initialize();
   EXPECT_TRUE(sync_service()->HasUnrecoverableError());
-  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR,
+  EXPECT_EQ(SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR,
             sync_service()->GetDisableReasons());
 }
 
@@ -583,9 +574,9 @@ TEST_F(ProfileSyncServiceStartupTest, StartDownloadFailed) {
 
   auto sync_blocker = sync_service()->GetSetupInProgressHandle();
   sync_blocker.reset();
-  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR,
+  EXPECT_EQ(SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR,
             sync_service()->GetDisableReasons());
-  EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
+  EXPECT_EQ(SyncService::TransportState::DISABLED,
             sync_service()->GetTransportState());
 }
 
@@ -606,24 +597,23 @@ TEST_F(ProfileSyncServiceStartupTest, FullStartupSequenceFirstTime) {
 
   // Note: Deferred startup is only enabled if SESSIONS is among the preferred
   // data types.
-  CreateSyncService(ProfileSyncService::MANUAL_START,
-                    syncer::ModelTypeSet(syncer::SESSIONS));
+  CreateSyncService(ProfileSyncService::MANUAL_START, ModelTypeSet(SESSIONS));
   sync_service()->Initialize();
 
   // There is no signed-in user, so also nobody has decided that Sync should be
   // started.
-  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN |
-                syncer::SyncService::DISABLE_REASON_USER_CHOICE,
+  EXPECT_EQ(SyncService::DISABLE_REASON_NOT_SIGNED_IN |
+                SyncService::DISABLE_REASON_USER_CHOICE,
             sync_service()->GetDisableReasons());
-  EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
+  EXPECT_EQ(SyncService::TransportState::DISABLED,
             sync_service()->GetTransportState());
 
   // Sign in. Now Sync-the-transport could start, but gets deferred by default.
   // Sync-the-feature still doesn't start until the user says they want it.
   SimulateTestUserSignin();
-  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_USER_CHOICE,
+  EXPECT_EQ(SyncService::DISABLE_REASON_USER_CHOICE,
             sync_service()->GetDisableReasons());
-  EXPECT_EQ(syncer::SyncService::TransportState::START_DEFERRED,
+  EXPECT_EQ(SyncService::TransportState::START_DEFERRED,
             sync_service()->GetTransportState());
   EXPECT_FALSE(sync_service()->IsSyncFeatureEnabled());
 
@@ -633,19 +623,19 @@ TEST_F(ProfileSyncServiceStartupTest, FullStartupSequenceFirstTime) {
   EXPECT_CALL(*sync_engine, Initialize(_));
   sync_service()->GetUserSettings()->SetSyncRequested(true);
   auto setup_in_progress_handle = sync_service()->GetSetupInProgressHandle();
-  EXPECT_EQ(syncer::SyncService::TransportState::INITIALIZING,
+  EXPECT_EQ(SyncService::TransportState::INITIALIZING,
             sync_service()->GetTransportState());
 
   // Once the engine calls back and says it's initialized, we're just waiting
   // for the user to finish the initial configuration (choosing data types etc.)
   // before actually syncing data.
-  sync_service()->OnEngineInitialized(
-      syncer::ModelTypeSet(), syncer::WeakHandle<syncer::JsBackend>(),
-      syncer::WeakHandle<syncer::DataTypeDebugInfoListener>(), "test-guid",
-      "test-session-name", "test-birthday", "test-bag-of-chips",
-      /*success=*/true);
+  sync_service()->OnEngineInitialized(ModelTypeSet(), WeakHandle<JsBackend>(),
+                                      WeakHandle<DataTypeDebugInfoListener>(),
+                                      "test-guid", "test-session-name",
+                                      "test-birthday", "test-bag-of-chips",
+                                      /*success=*/true);
   ASSERT_TRUE(sync_service()->IsEngineInitialized());
-  EXPECT_EQ(syncer::SyncService::TransportState::PENDING_DESIRED_CONFIGURATION,
+  EXPECT_EQ(SyncService::TransportState::PENDING_DESIRED_CONFIGURATION,
             sync_service()->GetTransportState());
   EXPECT_FALSE(sync_service()->IsSyncFeatureEnabled());
 
@@ -654,7 +644,7 @@ TEST_F(ProfileSyncServiceStartupTest, FullStartupSequenceFirstTime) {
   // isn't enough though, because setup is still considered in progress (we
   // haven't released the setup-in-progress handle).
   sync_service()->GetUserSettings()->SetFirstSetupComplete();
-  EXPECT_EQ(syncer::SyncService::TransportState::PENDING_DESIRED_CONFIGURATION,
+  EXPECT_EQ(SyncService::TransportState::PENDING_DESIRED_CONFIGURATION,
             sync_service()->GetTransportState());
   EXPECT_TRUE(sync_service()->IsSyncFeatureEnabled());
 
@@ -668,18 +658,18 @@ TEST_F(ProfileSyncServiceStartupTest, FullStartupSequenceFirstTime) {
   setup_in_progress_handle.reset();
   // While DataTypeManager configuration is ongoing, the overall state is still
   // CONFIGURING.
-  EXPECT_EQ(syncer::SyncService::TransportState::CONFIGURING,
+  EXPECT_EQ(SyncService::TransportState::CONFIGURING,
             sync_service()->GetTransportState());
   EXPECT_TRUE(sync_service()->IsSyncFeatureActive());
 
   // Finally, once the DataTypeManager says it's done with configuration, Sync
   // is actually fully up and running.
-  DataTypeManager::ConfigureResult configure_result(
-      DataTypeManager::OK, syncer::ModelTypeSet(syncer::SESSIONS));
+  DataTypeManager::ConfigureResult configure_result(DataTypeManager::OK,
+                                                    ModelTypeSet(SESSIONS));
   ON_CALL(*data_type_manager, state())
       .WillByDefault(Return(DataTypeManager::CONFIGURED));
   sync_service()->OnConfigureDone(configure_result);
-  EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
+  EXPECT_EQ(SyncService::TransportState::ACTIVE,
             sync_service()->GetTransportState());
   EXPECT_TRUE(sync_service()->IsSyncFeatureActive());
 }
@@ -700,44 +690,43 @@ TEST_F(ProfileSyncServiceStartupTest, FullStartupSequenceNthTime) {
 
   // Note: Deferred startup is only enabled if SESSIONS is among the preferred
   // data types.
-  CreateSyncService(ProfileSyncService::MANUAL_START,
-                    syncer::ModelTypeSet(syncer::SESSIONS));
+  CreateSyncService(ProfileSyncService::MANUAL_START, ModelTypeSet(SESSIONS));
   sync_service()->Initialize();
 
   // Nothing is preventing Sync from starting, but it should be deferred so as
   // to now slow down browser startup.
-  EXPECT_EQ(syncer::SyncService::TransportState::START_DEFERRED,
+  EXPECT_EQ(SyncService::TransportState::START_DEFERRED,
             sync_service()->GetTransportState());
 
   // Wait for the deferred startup timer to expire. The Sync service will start
   // and initialize the engine.
   EXPECT_CALL(*sync_engine, Initialize(_));
   FastForwardUntilNoTasksRemain();
-  EXPECT_EQ(syncer::SyncService::TransportState::INITIALIZING,
+  EXPECT_EQ(SyncService::TransportState::INITIALIZING,
             sync_service()->GetTransportState());
 
   // Once the engine calls back and says it's initialized, the DataTypeManager
   // will get configured, since initial setup is already done.
   EXPECT_CALL(*data_type_manager, Configure(_, _));
-  sync_service()->OnEngineInitialized(
-      syncer::ModelTypeSet(), syncer::WeakHandle<syncer::JsBackend>(),
-      syncer::WeakHandle<syncer::DataTypeDebugInfoListener>(), "test-guid",
-      "test-session-name", "test-birthday", "test-bag-of-chips",
-      /*success=*/true);
+  sync_service()->OnEngineInitialized(ModelTypeSet(), WeakHandle<JsBackend>(),
+                                      WeakHandle<DataTypeDebugInfoListener>(),
+                                      "test-guid", "test-session-name",
+                                      "test-birthday", "test-bag-of-chips",
+                                      /*success=*/true);
   ON_CALL(*data_type_manager, state())
       .WillByDefault(Return(DataTypeManager::CONFIGURING));
-  EXPECT_EQ(syncer::SyncService::TransportState::CONFIGURING,
+  EXPECT_EQ(SyncService::TransportState::CONFIGURING,
             sync_service()->GetTransportState());
 
   // Finally, once the DataTypeManager says it's done with configuration, Sync
   // is actually fully up and running.
-  DataTypeManager::ConfigureResult configure_result(
-      DataTypeManager::OK, syncer::ModelTypeSet(syncer::SESSIONS));
+  DataTypeManager::ConfigureResult configure_result(DataTypeManager::OK,
+                                                    ModelTypeSet(SESSIONS));
   ON_CALL(*data_type_manager, state())
       .WillByDefault(Return(DataTypeManager::CONFIGURED));
   sync_service()->OnConfigureDone(configure_result);
-  EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
+  EXPECT_EQ(SyncService::TransportState::ACTIVE,
             sync_service()->GetTransportState());
 }
 
-}  // namespace browser_sync
+}  // namespace syncer
