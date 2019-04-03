@@ -1535,8 +1535,8 @@ bool OverviewGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,
                                           int* out_max_bottom,
                                           int* out_min_right,
                                           int* out_max_right) {
-  out_rects->resize(window_list_.size());
-  bool windows_fit = true;
+  const size_t window_count = window_list_.size();
+  out_rects->resize(window_count);
 
   // Start in the top-left corner of |bounds|.
   int left = bounds.x();
@@ -1553,21 +1553,18 @@ bool OverviewGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,
   // All elements are of same height and only the height is necessary to
   // determine each item's scale.
   const gfx::Size item_size(0, height);
-  size_t i = 0;
-  for (const auto& window : window_list_) {
-    if (window->animating_to_close() ||
-        (ignored_item && ignored_item == window.get())) {
-      // Increment the index anyways. PositionWindows will handle skipping this
-      // entry.
-      ++i;
+  for (size_t i = 0u; i < window_count; ++i) {
+    if (window_list_[i]->animating_to_close() ||
+        (ignored_item && ignored_item == window_list_[i].get())) {
       continue;
     }
 
-    const gfx::RectF target_bounds = window->GetTargetBoundsInScreen();
-    int width = std::max(1, gfx::ToFlooredInt(target_bounds.width() *
-                                              window->GetItemScale(item_size)) +
-                                2 * kWindowMargin);
-    switch (window->GetWindowDimensionsType()) {
+    const gfx::RectF target_bounds = window_list_[i]->GetTargetBoundsInScreen();
+    int width = std::max(
+        1, gfx::ToFlooredInt(target_bounds.width() *
+                             window_list_[i]->GetItemScale(item_size)) +
+               2 * kWindowMargin);
+    switch (window_list_[i]->GetWindowDimensionsType()) {
       case ScopedOverviewTransformWindow::GridWindowFillMode::kLetterBoxed:
         width = ScopedOverviewTransformWindow::kExtremeWindowRatioThreshold *
                 height;
@@ -1592,15 +1589,7 @@ bool OverviewGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,
       // row does not fit within the available width.
       if (top + height > bounds.bottom() ||
           bounds.x() + width > bounds.right()) {
-        windows_fit = false;
-        // If the |ignored_item| is the last item, update |out_max_bottom|
-        // before breaking the loop, but no need to add the height, as the last
-        // item does not contribute to the grid bounds.
-        if (window_list_.back()->animating_to_close() ||
-            (ignored_item && ignored_item == window_list_.back().get())) {
-          *out_max_bottom = top;
-        }
-        break;
+        return false;
       }
       left = bounds.x();
     }
@@ -1611,16 +1600,16 @@ bool OverviewGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,
     // Increment horizontal position using sanitized positive |width()|.
     left += gfx::ToRoundedInt((*out_rects)[i].width());
 
-    if (++i == out_rects->size()) {
-      // Update the narrowest and widest row width for the last row.
-      if (*out_min_right > left)
-        *out_min_right = left;
-      if (*out_max_right < left)
-        *out_max_right = left;
-    }
     *out_max_bottom = top + height;
   }
-  return windows_fit;
+
+  // Update the narrowest and widest row width for the last row.
+  if (*out_min_right > left)
+    *out_min_right = left;
+  if (*out_max_right < left)
+    *out_max_right = left;
+
+  return true;
 }
 
 void OverviewGrid::CalculateOverviewItemAnimationState(
