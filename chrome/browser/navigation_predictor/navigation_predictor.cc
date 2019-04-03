@@ -808,6 +808,12 @@ base::Optional<url::Origin> NavigationPredictor::GetOriginToPreconnect(
   if (source_is_default_search_engine_page_)
     return base::nullopt;
 
+  if (base::GetFieldTrialParamByFeatureAsBool(
+          blink::features::kNavigationPredictor, "preconnect_skip_link_scores",
+          false)) {
+    return document_origin;
+  }
+
   // Compute preconnect score for each origins: Multiple anchor elements on
   // the webpage may point to the same origin. The preconnect score for an
   // origin is computed by taking sum of score of all anchor elements that
