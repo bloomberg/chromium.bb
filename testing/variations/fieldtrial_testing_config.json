@@ -35,6 +35,24 @@
             ]
         }
     ],
+    "AccessibilityImageDescriptions": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "AccessibilityImageDescriptions",
+                    "enable_features": [
+                        "ExperimentalAccessibilityLabels"
+                    ]
+                }
+            ]
+        }
+    ],
     "AccountConsistencyVariations": [
         {
             "platforms": [
