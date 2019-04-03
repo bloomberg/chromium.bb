@@ -57,6 +57,9 @@ extern const char kAllowSignedHTTPExchangeCertsWithoutExtensionDescription[];
 extern const char kAllowStartingServiceManagerOnlyName[];
 extern const char kAllowStartingServiceManagerOnlyDescription[];
 
+extern const char kUpdatedCellularActivationUiName[];
+extern const char kUpdatedCellularActivationUiDescription[];
+
 extern const char kUseMessagesGoogleComDomainName[];
 extern const char kUseMessagesGoogleComDomainDescription[];
 

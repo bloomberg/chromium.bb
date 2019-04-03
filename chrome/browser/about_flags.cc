@@ -1324,6 +1324,10 @@ const FeatureEntry kFeatureEntries[] = {
         SINGLE_DISABLE_VALUE_TYPE(
             chromeos::switches::kDisableOfficeEditingComponentApp),
     },
+    {"updated_cellular_activation_ui",
+     flag_descriptions::kUpdatedCellularActivationUiName,
+     flag_descriptions::kUpdatedCellularActivationUiDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kUpdatedCellularActivationUi)},
     {"use_messages_google_com_domain",
      flag_descriptions::kUseMessagesGoogleComDomainName,
      flag_descriptions::kUseMessagesGoogleComDomainDescription, kOsCrOS,
