@@ -1420,9 +1420,6 @@ extern const char kExploreSitesDescription[];
 extern const char kForegroundNotificationManagerName[];
 extern const char kForegroundNotificationManagerDescription[];
 
-extern const char kGrantNotificationsToDSEName[];
-extern const char kGrantNotificationsToDSENameDescription[];
-
 extern const char kHomePageButtonName[];
 extern const char kHomePageButtonDescription[];
 

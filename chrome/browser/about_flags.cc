@@ -3056,13 +3056,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableNetworkLoggingToFileDescription, kOsAll,
      SINGLE_VALUE_TYPE(network::switches::kLogNetLog)},
 
-#if defined(OS_ANDROID)
-    {"grant-notifications-to-dse",
-     flag_descriptions::kGrantNotificationsToDSEName,
-     flag_descriptions::kGrantNotificationsToDSENameDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kGrantNotificationsToDSE)},
-#endif
-
     {"enable-mark-http-as", flag_descriptions::kMarkHttpAsName,
      flag_descriptions::kMarkHttpAsDescription, kOsAll,
      FEATURE_WITH_PARAMS_VALUE_TYPE(

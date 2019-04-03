@@ -2367,12 +2367,6 @@ const char kForegroundNotificationManagerDescription[] =
     "Enable foreground notification manager to handle foreground service and "
     "notification.";
 
-const char kGrantNotificationsToDSEName[] =
-    "Grant notifications to the Default Search Engine";
-const char kGrantNotificationsToDSENameDescription[] =
-    "Automatically grant the notifications permission to the Default Search "
-    "Engine";
-
 const char kHomePageButtonName[] = "Force Enable Home Page Button";
 const char kHomePageButtonDescription[] = "Displays a home button if enabled.";
 

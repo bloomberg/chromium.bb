@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/android/search_permissions/search_geolocation_disclosure_tab_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -14,7 +13,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -172,11 +170,6 @@ SearchPermissionsService::SearchPermissionsService(Profile* profile)
 bool SearchPermissionsService::IsPermissionControlledByDSE(
     ContentSettingsType type,
     const url::Origin& requesting_origin) {
-  if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS &&
-      !base::FeatureList::IsEnabled(features::kGrantNotificationsToDSE)) {
-    return false;
-  }
-
   if (type != CONTENT_SETTINGS_TYPE_GEOLOCATION &&
       type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
     return false;
@@ -202,8 +195,7 @@ void SearchPermissionsService::ResetDSEPermission(ContentSettingsType type) {
 
 void SearchPermissionsService::ResetDSEPermissions() {
   ResetDSEPermission(CONTENT_SETTINGS_TYPE_GEOLOCATION);
-  if (base::FeatureList::IsEnabled(features::kGrantNotificationsToDSE))
-    ResetDSEPermission(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  ResetDSEPermission(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 }
 
 void SearchPermissionsService::Shutdown() {
@@ -237,12 +229,9 @@ void SearchPermissionsService::OnDSEChanged() {
           pref.geolocation_setting_to_restore, old_dse_name != new_dse_name);
   ContentSetting notifications_setting_to_restore =
       pref.notifications_setting_to_restore;
-  // Only update the notifications part of the pref if the feature is enabled.
-  if (base::FeatureList::IsEnabled(features::kGrantNotificationsToDSE)) {
-    notifications_setting_to_restore = UpdatePermissionAndReturnPrevious(
-        CONTENT_SETTINGS_TYPE_NOTIFICATIONS, old_dse_origin, new_dse_origin,
-        pref.notifications_setting_to_restore, old_dse_name != new_dse_name);
-  }
+  notifications_setting_to_restore = UpdatePermissionAndReturnPrevious(
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, old_dse_origin, new_dse_origin,
+      pref.notifications_setting_to_restore, old_dse_name != new_dse_name);
 
   // Write the pref for restoring the old values when the DSE changes.
   pref.dse_name = new_dse_name;
@@ -404,8 +393,7 @@ void SearchPermissionsService::InitializeSettingsIfNeeded() {
 
   // Initialize the notifications part of the pref if needed.
   PrefValue pref = GetDSEPref();
-  if (base::FeatureList::IsEnabled(features::kGrantNotificationsToDSE) &&
-      pref.notifications_setting_to_restore == CONTENT_SETTING_DEFAULT) {
+  if (pref.notifications_setting_to_restore == CONTENT_SETTING_DEFAULT) {
     ContentSetting notifications_setting_to_restore =
         GetContentSetting(dse_origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
     ContentSetting dse_notifications_setting = notifications_setting_to_restore;
@@ -423,16 +411,6 @@ void SearchPermissionsService::InitializeSettingsIfNeeded() {
 
     // Write the pref for restoring the old values when the DSE changes.
     pref.notifications_setting_to_restore = notifications_setting_to_restore;
-    SetDSEPref(pref);
-  } else if (!base::FeatureList::IsEnabled(
-                 features::kGrantNotificationsToDSE) &&
-             pref.notifications_setting_to_restore != CONTENT_SETTING_DEFAULT) {
-    // Handle the case where the feature has been disabled. Restore the pref
-    // value and reset the setting to restore to DEFAULT.
-    RestoreOldSettingAndReturnPrevious(GURL(pref.dse_origin),
-                                       CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-                                       pref.notifications_setting_to_restore);
-    pref.notifications_setting_to_restore = CONTENT_SETTING_DEFAULT;
     SetDSEPref(pref);
   }
 }

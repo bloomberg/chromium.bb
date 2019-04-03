@@ -2148,11 +2148,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "grant-notifications-to-dse",
-    "owners": [ "raymes" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "handwriting-gesture",
     "owners": [ "shend" ],
     "expiry_milestone": 76
