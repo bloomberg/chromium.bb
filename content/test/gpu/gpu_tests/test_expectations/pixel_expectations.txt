@@ -17,7 +17,9 @@ crbug.com/653538 [ win amd-0x6613 ] Pixel_GpuRasterization_BlueBox [ RetryOnFail
 [ android ] Pixel_OffscreenCanvasWebGLSoftwareCompositing [ Skip ]
 [ android ] Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker [ Skip ]
 [ android ] Pixel_CanvasDisplayLinearRGBUnaccelerated2D [ Skip ]
+[ android ] Pixel_CanvasDisplaySRGBUnaccelerated2D [ Skip ]
 [ android ] Pixel_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing [ Skip ]
+[ android ] Pixel_CanvasDisplaySRGBUnaccelerated2DGPUCompositing [ Skip ]
 [ android ] Pixel_CanvasDisplaySRGBUnaccelerated2D [ Skip ]
 [ android ] Pixel_CanvasUnacceleratedLowLatency2D [ Skip ]
 [ android ] Pixel_RepeatedWebGLTo2D_SoftwareCompositing [ Skip ]
@@ -119,26 +121,8 @@ crbug.com/868596 [ android nvidia ] Pixel_CanvasLowLatencyWebGL [ Failure ]
 
 crbug.com/868596 [ android nvidia ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ Failure ]
 
-# New tests, mark as failing
-[ win ] Pixel_CanvasDisplaySRGBUnaccelerated2D [ Failure ]
-[ mac ] Pixel_CanvasDisplaySRGBUnaccelerated2D [ Failure ]
-[ linux ] Pixel_CanvasDisplaySRGBUnaccelerated2D [ Failure ]
-[ chromeos ] Pixel_CanvasDisplaySRGBUnaccelerated2D [ Failure ]
-Pixel_CanvasDisplaySRGBUnaccelerated2DGPUCompositing [ Failure ]
-
 # float16 is not yet supported for accelerated canvases
 crbug.com/948141 Pixel_CanvasDisplaySRGBAccelerated2D [ Failure ]
-
-# Color space has changed here so we need to rebaseline
-[ win ] Pixel_CanvasDisplayLinearRGBUnaccelerated2D [ Failure ]
-[ mac ] Pixel_CanvasDisplayLinearRGBUnaccelerated2D [ Failure ]
-[ linux ] Pixel_CanvasDisplayLinearRGBUnaccelerated2D [ Failure ]
-[ chromeos ] Pixel_CanvasDisplayLinearRGBUnaccelerated2D [ Failure ]
-[ win ] Pixel_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing [ Failure ]
-[ mac ] Pixel_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing [ Failure ]
-[ linux ] Pixel_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing [ Failure ]
-[ chromeos ] Pixel_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing [ Failure ]
-Pixel_CanvasDisplayLinearRGBAccelerated2D [ Failure ]
 
 # Fails on Nexus 5, 6 and 6P
 crbug.com/883500 [ android qualcomm-adreno-(tm)-330 ] Pixel_BackgroundImage [ Failure ]
