@@ -55,7 +55,6 @@ class CORE_EXPORT DisplayLockContext final
     kUpdating,
     kCommitting,
     kUnlocked,
-    kPendingAcquire,
   };
 
   // The type of style that was blocked by this display lock.
@@ -141,10 +140,8 @@ class CORE_EXPORT DisplayLockContext final
   bool ShouldCommitForActivation() const;
 
   // Returns true if this lock is locked. Note from the outside perspective, the
-  // lock is locked any time the state is not kUnlocked or kPendingAcquire.
-  bool IsLocked() const {
-    return state_ != kUnlocked && state_ != kPendingAcquire;
-  }
+  // lock is locked any time the state is not kUnlocked.
+  bool IsLocked() const { return state_ != kUnlocked; }
 
   // Called when the layout tree is attached. This is used to verify
   // containment.
@@ -190,6 +187,11 @@ class CORE_EXPORT DisplayLockContext final
     needs_effective_whitelisted_touch_action_update_ =
         needs_effective_whitelisted_touch_action_update;
     needs_prepaint_subtree_walk_ = true;
+  }
+
+  const LayoutRect& GetLockedFrameRect() const {
+    DCHECK(locked_frame_rect_);
+    return *locked_frame_rect_;
   }
 
  private:

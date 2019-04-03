@@ -278,6 +278,7 @@ crbug.com/414283 virtual/fractional_scrolling_threaded/fast/scrolling/fractional
 crbug.com/882663 display-lock [ Skip ]
 crbug.com/926276 virtual/display-lock/display-lock/lock-after-append/nested-update.html [ Timeout ]
 crbug.com/926276 virtual/display-lock/display-lock/lock-after-append/nested-update-and-commit.html [ Timeout ]
+crbug.com/944412 virtual/display-lock/display-lock/lock-after-append/acquire-on-no-containment.html [ Crash Pass ]
 
 # Sheriff 2018/05/25
 crbug.com/846747 http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]

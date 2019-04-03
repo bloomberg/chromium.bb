@@ -54,7 +54,12 @@ TEST_F(DisplayLockBudgetTest, UnyieldingBudget) {
   // Note that we're not testing the display lock here, just the budget so we
   // can do minimal work to ensure we have a context, ignoring containment and
   // other requirements.
-  SetBodyInnerHTML(R"HTML(
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      div {
+        contain: style layout;
+      }
+    </style>
     <div id="container"></div>
   )HTML");
 
@@ -68,11 +73,8 @@ TEST_F(DisplayLockBudgetTest, UnyieldingBudget) {
   ASSERT_TRUE(element->GetDisplayLockContext());
   UnyieldingDisplayLockBudget budget(element->GetDisplayLockContext());
 
-  // Since the lifecycle is clean, we don't actually need any updates.
-  EXPECT_FALSE(budget.NeedsLifecycleUpdates());
-
-  // Dirtying the element will cause us to do updates.
-  element->GetLayoutObject()->SetNeedsLayout("");
+  // When acquiring, we need to update the layout with the locked size, so we
+  // need an update.
   EXPECT_TRUE(budget.NeedsLifecycleUpdates());
 
   // Check everything twice since it shouldn't matter how many times we ask the
@@ -88,8 +90,6 @@ TEST_F(DisplayLockBudgetTest, UnyieldingBudget) {
     budget.DidPerformPhase(DisplayLockBudget::Phase::kStyle);
     budget.DidPerformPhase(DisplayLockBudget::Phase::kLayout);
     budget.DidPerformPhase(DisplayLockBudget::Phase::kPrePaint);
-    UpdateAllLifecyclePhasesForTest();
-    EXPECT_FALSE(budget.NeedsLifecycleUpdates());
   }
 }
 
@@ -111,11 +111,8 @@ TEST_F(DisplayLockBudgetTest, StrictYieldingBudget) {
   ASSERT_TRUE(element->GetDisplayLockContext());
   StrictYieldingDisplayLockBudget budget(element->GetDisplayLockContext());
 
-  // Since the lifecycle is clean, we don't actually need any updates.
-  EXPECT_FALSE(budget.NeedsLifecycleUpdates());
-
-  // Dirtying the element will cause us to do updates.
-  element->GetLayoutObject()->SetNeedsLayout("");
+  // When acquiring, we need to update the layout with the locked size, so we
+  // need an update.
   EXPECT_TRUE(budget.NeedsLifecycleUpdates());
 
   {
@@ -232,7 +229,12 @@ TEST_F(DisplayLockBudgetTest,
   // Note that we're not testing the display lock here, just the budget so we
   // can do minimal work to ensure we have a context, ignoring containment and
   // other requirements.
-  SetBodyInnerHTML(R"HTML(
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      div {
+        contain: style layout;
+      }
+    </style>
     <div id="container"></div>
   )HTML");
 
@@ -246,18 +248,8 @@ TEST_F(DisplayLockBudgetTest,
   ASSERT_TRUE(element->GetDisplayLockContext());
   StrictYieldingDisplayLockBudget budget(element->GetDisplayLockContext());
 
-  // Since the lifecycle is clean, we don't actually need any updates.
-  EXPECT_FALSE(budget.NeedsLifecycleUpdates());
-
-  // Dirtying the element will cause us to do updates.
-  element->GetLayoutObject()->SetNeedsLayout("");
-  EXPECT_TRUE(budget.NeedsLifecycleUpdates());
-
-  // Cleaning the lifecycle phases makes the budget not want any more updates.
-  UpdateAllLifecyclePhasesForTest();
-  EXPECT_FALSE(budget.NeedsLifecycleUpdates());
-
-  element->GetLayoutObject()->SetNeedsLayout("");
+  // When acquiring, we need to update the layout with the locked size, so we
+  // need an update.
   EXPECT_TRUE(budget.NeedsLifecycleUpdates());
   budget.WillStartLifecycleUpdate();
 
@@ -296,11 +288,8 @@ TEST_F(DisplayLockBudgetTest, YieldingBudget) {
 
   WTF::ScopedMockClock clock;
 
-  // Since the lifecycle is clean, we don't actually need any updates.
-  EXPECT_FALSE(budget.NeedsLifecycleUpdates());
-
-  // Dirtying the element will cause us to do updates.
-  element->GetLayoutObject()->SetNeedsLayout("");
+  // When acquiring, we need to update the layout with the locked size, so we
+  // need an update.
   EXPECT_TRUE(budget.NeedsLifecycleUpdates());
 
   budget.WillStartLifecycleUpdate();
@@ -410,8 +399,9 @@ TEST_F(DisplayLockBudgetTest, YieldingBudgetMarksNextPhase) {
 
   WTF::ScopedMockClock clock;
 
-  // Since the lifecycle is clean, we don't actually need any updates.
-  EXPECT_FALSE(budget->NeedsLifecycleUpdates());
+  // When acquiring, we need to update the layout with the locked size, so we
+  // need an update.
+  EXPECT_TRUE(budget->NeedsLifecycleUpdates());
 
   // Dirtying the element will cause us to do updates.
   GetDocument().getElementById("child")->SetInnerHTMLFromString("a");

@@ -442,8 +442,12 @@ void LayoutBlock::UpdateLayout() {
   if (auto* context = GetDisplayLockContext()) {
     // In a display locked element, we might be prevented from doing layout in
     // which case we should abort.
-    if (LayoutBlockedByDisplayLock())
+    if (LayoutBlockedByDisplayLock()) {
+      // TODO(vmpstr): This is probably wrong, we need to do full self-layout
+      // here, but for now just update our frame rect.
+      SetFrameRect(context->GetLockedFrameRect());
       return;
+    }
     // If we're display locked, then our layout should go into a pending frame
     // rect without updating the frame rect visible to the ancestors. The
     // following scoped object provides this functionality: it puts in place the
