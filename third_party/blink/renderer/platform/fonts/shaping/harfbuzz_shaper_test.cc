@@ -1507,13 +1507,7 @@ TEST_F(HarfBuzzShaperTest, SafeToBreakLatinDiscretionaryLigatures) {
   }
 
   // Add zero-width spaces at some of the safe to break offsets.
-  String inserted_zero_width_spaces = test_word;
-  inserted_zero_width_spaces.Ensure16Bit();
-  unsigned enlarged_by = 0;
-  for (unsigned safe_to_break_position : safe_to_break_positions) {
-    inserted_zero_width_spaces.insert(u"\u200B",
-                                      safe_to_break_position + enlarged_by++);
-  }
+  String inserted_zero_width_spaces(u"RA\u200BD\u200BDAYoVa\u200BD\u200BD");
   HarfBuzzShaper refShaper(inserted_zero_width_spaces);
   scoped_refptr<ShapeResult> referenceResult =
       refShaper.Shape(&testFont, TextDirection::kLtr);

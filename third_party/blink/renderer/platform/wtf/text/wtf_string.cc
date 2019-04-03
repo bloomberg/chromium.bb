@@ -66,53 +66,6 @@ String::String(const char* characters, size_t length)
     : String(characters, SafeCast<unsigned>(length)) {}
 #endif  // defined(ARCH_CPU_64_BITS)
 
-void String::append(const StringView& string) {
-  if (string.IsEmpty())
-    return;
-  if (!impl_) {
-    impl_ = string.ToString().ReleaseImpl();
-    return;
-  }
-
-  // FIXME: This is extremely inefficient. So much so that we might want to
-  // take this out of String's API. We can make it better by optimizing the
-  // case where exactly one String is pointing at this StringImpl, but even
-  // then it's going to require a call into the allocator every single time.
-
-  if (impl_->Is8Bit() && string.Is8Bit()) {
-    LChar* data;
-    CHECK_LE(string.length(),
-             std::numeric_limits<unsigned>::max() - impl_->length());
-    scoped_refptr<StringImpl> new_impl = StringImpl::CreateUninitialized(
-        impl_->length() + string.length(), data);
-    memcpy(data, impl_->Characters8(), impl_->length() * sizeof(LChar));
-    memcpy(data + impl_->length(), string.Characters8(),
-           string.length() * sizeof(LChar));
-    impl_ = std::move(new_impl);
-    return;
-  }
-
-  UChar* data;
-  CHECK_LE(string.length(),
-           std::numeric_limits<unsigned>::max() - impl_->length());
-  scoped_refptr<StringImpl> new_impl =
-      StringImpl::CreateUninitialized(impl_->length() + string.length(), data);
-
-  if (impl_->Is8Bit())
-    StringImpl::CopyChars(data, impl_->Characters8(), impl_->length());
-  else
-    StringImpl::CopyChars(data, impl_->Characters16(), impl_->length());
-
-  if (string.Is8Bit())
-    StringImpl::CopyChars(data + impl_->length(), string.Characters8(),
-                          string.length());
-  else
-    StringImpl::CopyChars(data + impl_->length(), string.Characters16(),
-                          string.length());
-
-  impl_ = std::move(new_impl);
-}
-
 int CodePointCompare(const String& a, const String& b) {
   return CodePointCompare(a.Impl(), b.Impl());
 }
@@ -120,67 +73,6 @@ int CodePointCompare(const String& a, const String& b) {
 int CodePointCompareIgnoringASCIICase(const String& a, const char* b) {
   return CodePointCompareIgnoringASCIICase(a.Impl(),
                                            reinterpret_cast<const LChar*>(b));
-}
-
-template <typename CharType>
-scoped_refptr<StringImpl> InsertInternal(scoped_refptr<StringImpl> impl,
-                                         const CharType* characters_to_insert,
-                                         unsigned length_to_insert,
-                                         unsigned position) {
-  if (!length_to_insert)
-    return impl;
-
-  DCHECK(characters_to_insert);
-  UChar* data;  // FIXME: We should be able to create an 8 bit string here.
-  CHECK_LE(length_to_insert,
-           std::numeric_limits<unsigned>::max() - impl->length());
-  scoped_refptr<StringImpl> new_impl =
-      StringImpl::CreateUninitialized(impl->length() + length_to_insert, data);
-
-  if (impl->Is8Bit())
-    StringImpl::CopyChars(data, impl->Characters8(), position);
-  else
-    StringImpl::CopyChars(data, impl->Characters16(), position);
-
-  StringImpl::CopyChars(data + position, characters_to_insert,
-                        length_to_insert);
-
-  if (impl->Is8Bit())
-    StringImpl::CopyChars(data + position + length_to_insert,
-                          impl->Characters8() + position,
-                          impl->length() - position);
-  else
-    StringImpl::CopyChars(data + position + length_to_insert,
-                          impl->Characters16() + position,
-                          impl->length() - position);
-
-  return new_impl;
-}
-
-void String::insert(const StringView& string, unsigned position) {
-  if (string.IsEmpty()) {
-    if (string.IsNull())
-      return;
-    if (IsNull())
-      impl_ = string.ToString().ReleaseImpl();
-    return;
-  }
-
-  if (position >= length()) {
-    if (string.Is8Bit())
-      append(string);
-    else
-      append(string);
-    return;
-  }
-
-  DCHECK(impl_);
-  if (string.Is8Bit())
-    impl_ = InsertInternal(std::move(impl_), string.Characters8(),
-                           string.length(), position);
-  else
-    impl_ = InsertInternal(std::move(impl_), string.Characters16(),
-                           string.length(), position);
 }
 
 UChar32 String::CharacterStartingAt(unsigned i) const {

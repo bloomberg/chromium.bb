@@ -581,16 +581,18 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOMAfterNoMatches) {
 
 TEST_F(TextFinderTest, ScopeWithTimeouts) {
   // Make a long string.
-  String text(Vector<UChar>(100));
-  text.Fill('a');
   String search_pattern("abc");
+  StringBuilder text;
   // Make 4 substrings "abc" in text.
-  text.insert(search_pattern, 1);
-  text.insert(search_pattern, 10);
-  text.insert(search_pattern, 50);
-  text.insert(search_pattern, 90);
+  for (int i = 0; i < 100; ++i) {
+    if (i == 1 || i == 10 || i == 50 || i == 90) {
+      text.Append(search_pattern);
+    } else {
+      text.Append('a');
+    }
+  }
 
-  GetDocument().body()->SetInnerHTMLFromString(text);
+  GetDocument().body()->SetInnerHTMLFromString(text.ToString());
   GetDocument().UpdateStyleAndLayout();
 
   int identifier = 0;
