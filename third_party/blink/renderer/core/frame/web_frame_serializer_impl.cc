@@ -98,6 +98,20 @@
 
 namespace blink {
 
+namespace {
+
+// Generate the default base tag declaration.
+String GenerateBaseTagDeclaration(const WebString& base_target) {
+  // TODO(yosin) We should call |FrameSerializer::baseTagDeclarationOf()|.
+  if (base_target.IsEmpty())
+    return String("<base href=\".\">");
+  String base_string = "<base href=\".\" target=\"" +
+                       static_cast<const String&>(base_target) + "\">";
+  return base_string;
+}
+
+}  // namespace
+
 // Maximum length of data buffer which is used to temporary save generated
 // html content data. This is a soft limit which might be passed if a very large
 // contegious string is found in the html document.
@@ -239,8 +253,7 @@ String WebFrameSerializerImpl::PostActionAfterSerializeEndTag(
   if (IsHTMLBaseElement(*element)) {
     result.Append("-->");
     // Append a new base tag declaration.
-    result.Append(WebFrameSerializer::GenerateBaseTagDeclaration(
-        param->document->BaseTarget()));
+    result.Append(GenerateBaseTagDeclaration(param->document->BaseTarget()));
   }
 
   return result.ToString();

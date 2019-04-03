@@ -494,14 +494,4 @@ WebString WebFrameSerializer::GenerateMarkOfTheWebDeclaration(
   return builder.ToString();
 }
 
-WebString WebFrameSerializer::GenerateBaseTagDeclaration(
-    const WebString& base_target) {
-  // TODO(yosin) We should call |FrameSerializer::baseTagDeclarationOf()|.
-  if (base_target.IsEmpty())
-    return String("<base href=\".\">");
-  String base_string = "<base href=\".\" target=\"" +
-                       static_cast<const String&>(base_target) + "\">";
-  return base_string;
-}
-
 }  // namespace blink
