@@ -80,47 +80,92 @@
       }
 
       #blue-circle-container::after {
+        -webkit-mask: url(../images/background_svgs/blue_circle.svg) no-repeat
+            top left;
         animation: blue-circle-anim-y 9s cubic-bezier(0.25, 0, 0.2, 1) infinite;
-        content: url(../images/background_svgs/blue_circle.svg);
+        background-color: var(--navi-shape-blue-color);
+        content: ' '; /* Content needs to be non-empty */
+        height: 43px;
         position: absolute;
+        width: 43px;
       }
 
       #yellow-dots {
+        -webkit-mask: url(../images/background_svgs/yellow_dots.svg) no-repeat
+            top left;
+        background-color: var(--navi-shape-yellow-dots-color);
+        content: ' '; /* Content needs to be non-empty */
+        height: 57px;
         left: 13%;
         top: 18%;
+        width: 76px;
       }
 
       #grey-rounded-rectangle {
+        -webkit-mask: url(../images/background_svgs/grey_rounded_rectangle.svg)
+            no-repeat top left;
         animation: grey-rounded-rectangle-anim 10s cubic-bezier(0.4, 0, 0.2, 1)
             infinite;
+        background-color: var(--navi-shape-grey-color);
+        content: ' '; /* Content needs to be non-empty */
+        height: 132px;
         left: -42px;
         top: 45%;
+        width: 132px;
       }
 
       #red-triangle {
+        -webkit-mask: url(../images/background_svgs/red_triangle.svg) no-repeat
+            bottom left;
         animation: red-triangle-anim 9.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        background-color: var(--navi-shape-red-color);
         bottom: 15%;
+        content: ' '; /* Content needs to be non-empty */
+        height: 74px;
         left: 12%;
+        width: 65px;
       }
 
       #yellow-semicircle {
+        -webkit-mask: url(../images/background_svgs/yellow_semicircle.svg)
+            no-repeat top right;
         animation: yellow-semicircle-anim 10s cubic-bezier(0.4, 0, 0.2, 1)
             infinite;
+        background-color: var(--navi-shape-yellow-semicircle-color);
+        content: ' '; /* Content needs to be non-empty */
+        height: 171px;
         right: 28.5%;
         top: -50px;
         transform: rotate(-7deg);
+        width: 211px;
       }
 
       #green-rectangle {
+        -webkit-mask: url(../images/background_svgs/green_rectangle.svg)
+            no-repeat bottom right;
         animation: green-rectangle-anim 40s infinite linear;
+        background-color: var(--navi-shape-green-color);
         bottom: 8%;
+        content: ' '; /* Content needs to be non-empty */
+        height: 371px;
         right: -255px;
+        width: 371px;
       }
 
       #grey-oval {
+        -webkit-mask: url(../images/background_svgs/grey_oval.svg) no-repeat
+            bottom right;
+        background-color: var(--navi-shape-grey-color);
         bottom: calc(8% + 24px);  /* Relative to green-rectangle. */
+        content: ' '; /* Content needs to be non-empty */
+        height: 100px;
         mix-blend-mode: multiply;
         right: 48px;
+        width: 100px;
+      }
+
+      :host-context([dark]) #grey-oval {
+        mix-blend-mode: screen;
       }
     </style>
     <div id="container">
@@ -128,17 +173,12 @@
            the blue-circle svg, because the animation needs to curve so x and y
            needs to be animated separately. -->
       <span id="blue-circle-container"></span>
-      <img id="green-rectangle" alt=""
-          src="../images/background_svgs/green_rectangle.svg">
-      <img id="grey-oval" alt="" src="../images/background_svgs/grey_oval.svg">
-      <img id="grey-rounded-rectangle" alt=""
-          src="../images/background_svgs/grey_rounded_rectangle.svg">
-      <img id="red-triangle" alt=""
-          src="../images/background_svgs/red_triangle.svg">
-      <img id="yellow-dots" alt=""
-          src="../images/background_svgs/yellow_dots.svg">
-      <img id="yellow-semicircle" alt=""
-          src="../images/background_svgs/yellow_semicircle.svg">
+      <span id="green-rectangle"></span>
+      <span id="grey-oval"></span>
+      <span id="grey-rounded-rectangle"></span>
+      <span id="red-triangle"></span>
+      <span id="yellow-dots"></span>
+      <span id="yellow-semicircle"></span>
     </div>
   </template>
   <script src="onboarding_background.js"></script>
