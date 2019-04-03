@@ -357,10 +357,11 @@ static void setup_frame(AV1_COMP *cpi) {
     av1_setup_past_independence(cm);
   }
 
-  if (cm->current_frame.frame_type == KEY_FRAME && cm->show_frame) {
-    set_sb_size(&cm->seq_params, select_sb_size(cpi));
-  } else if (frame_is_sframe(cm)) {
-    set_sb_size(&cm->seq_params, select_sb_size(cpi));
+  if ((cm->current_frame.frame_type == KEY_FRAME && cm->show_frame) ||
+      frame_is_sframe(cm)) {
+    if (!cpi->seq_params_locked) {
+      set_sb_size(&cm->seq_params, select_sb_size(cpi));
+    }
   } else {
     const RefCntBuffer *const primary_ref_buf = get_primary_ref_frame_buf(cm);
     if (primary_ref_buf == NULL) {
