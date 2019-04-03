@@ -449,10 +449,6 @@ class CORE_EXPORT NGConstraintSpace final {
         other.bitfields_.percentage_block_storage)
       return false;
 
-    if (bitfields_.replaced_percentage_inline_storage !=
-        other.bitfields_.replaced_percentage_inline_storage)
-      return false;
-
     if (bitfields_.replaced_percentage_block_storage !=
         other.bitfields_.replaced_percentage_block_storage)
       return false;
@@ -567,7 +563,6 @@ class CORE_EXPORT NGConstraintSpace final {
           flags(kFixedSizeBlockIsDefinite),
           percentage_inline_storage(kSameAsAvailable),
           percentage_block_storage(kSameAsAvailable),
-          replaced_percentage_inline_storage(kSameAsAvailable),
           replaced_percentage_block_storage(kSameAsAvailable) {}
 
     bool MaySkipLayout(const Bitfields& other) const {
@@ -587,7 +582,6 @@ class CORE_EXPORT NGConstraintSpace final {
 
     unsigned percentage_inline_storage : 2;           // NGPercentageStorage
     unsigned percentage_block_storage : 2;            // NGPercentageStorage
-    unsigned replaced_percentage_inline_storage : 2;  // NGPercentageStorage
     unsigned replaced_percentage_block_storage : 2;   // NGPercentageStorage
   };
 
