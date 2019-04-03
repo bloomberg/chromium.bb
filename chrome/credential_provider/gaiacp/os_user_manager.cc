@@ -414,6 +414,30 @@ HRESULT OSUserManager::CreateLogonToken(const wchar_t* domain,
 
 HRESULT OSUserManager::GetUserSID(const wchar_t* domain,
                                   const wchar_t* username,
+                                  base::string16* sid_string) {
+  DCHECK(sid_string);
+  sid_string->clear();
+
+  PSID sid;
+  HRESULT hr = GetUserSID(domain, username, &sid);
+
+  if (SUCCEEDED(hr)) {
+    wchar_t* sid_buffer;
+    if (::ConvertSidToStringSid(sid, &sid_buffer)) {
+      *sid_string = sid_buffer;
+      ::LocalFree(sid_buffer);
+    } else {
+      hr = HRESULT_FROM_WIN32(::GetLastError());
+      LOGFN(ERROR) << "ConvertStringSidToSid hr=" << putHR(hr);
+    }
+    ::LocalFree(sid);
+  }
+
+  return hr;
+}
+
+HRESULT OSUserManager::GetUserSID(const wchar_t* domain,
+                                  const wchar_t* username,
                                   PSID* sid) {
   DCHECK(username);
   DCHECK(sid);

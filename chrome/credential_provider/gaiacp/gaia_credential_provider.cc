@@ -17,6 +17,7 @@
 #include "chrome/common/chrome_version.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/associated_user_validator.h"
+#include "chrome/credential_provider/gaiacp/auth_utils.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_other_user.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
@@ -66,8 +67,8 @@ HRESULT InitializeReauthCredential(CGaiaCredentialProvider* provider,
   }
 
   // Get the user's email address.  If not found, proceed anyway.  The net
-  // effect is that the user will need to enter their email address
-  // manually instead of it being pre-filled.
+  // effect is that the user will need to enter their email address manually
+  // instead of it being pre-filled.
   wchar_t email[64];
   ULONG email_length = base::size(email);
   hr = GetUserProperty(sid.c_str(), kUserEmail, email, &email_length);
@@ -152,7 +153,7 @@ HRESULT CGaiaCredentialProvider::CreateAnonymousCredentialIfNeeded(
   if (SUCCEEDED(hr)) {
     hr = cred->Initialize(this);
     if (SUCCEEDED(hr)) {
-      users_.emplace_back(cred);
+      AddCredentialAndCheckAutoLogon(cred, base::string16());
     } else {
       LOG(ERROR) << "Could not create credential hr=" << putHR(hr);
     }
@@ -162,10 +163,7 @@ HRESULT CGaiaCredentialProvider::CreateAnonymousCredentialIfNeeded(
 }
 
 HRESULT CGaiaCredentialProvider::CreateReauthCredentials(
-    ICredentialProviderUserArray* users,
-    std::set<base::string16>* reauth_sids) {
-  DCHECK(reauth_sids);
-  reauth_sids->clear();
+    ICredentialProviderUserArray* users) {
   std::map<base::string16, std::pair<base::string16, base::string16>>
       sid_to_username;
 
@@ -240,11 +238,35 @@ HRESULT CGaiaCredentialProvider::CreateReauthCredentials(
       return hr;
     }
 
-    reauth_sids->insert(sid);
-    users_.emplace_back(cred);
+    AddCredentialAndCheckAutoLogon(cred, sid);
   }
 
   return S_OK;
+}
+
+void CGaiaCredentialProvider::AddCredentialAndCheckAutoLogon(
+    const CComPtr<IGaiaCredential>& cred,
+    const base::string16& sid) {
+  USES_CONVERSION;
+  users_.emplace_back(cred);
+
+  if (sid.empty())
+    return;
+
+  if (set_serialization_sid_.empty())
+    return;
+
+  // If serialization sid is set, then try to see if this credential is a reauth
+  // credential that needs to be auto signed in.
+  CComPtr<IReauthCredential> associated_user;
+  if (FAILED(cred.QueryInterface(&associated_user)))
+    return;
+
+  if (set_serialization_sid_ != sid)
+    return;
+
+  index_ = users_.size() - 1;
+  new_user_sid_ = W2COLE(sid.c_str());
 }
 
 // Static.
@@ -308,8 +330,8 @@ HRESULT CGaiaCredentialProvider::OnUserAuthenticated(
   new_user_sid_ = sid;
 
   // Tell winlogon.exe that credential info has changed.  This provider will
-  // make the newly created user the default login credential with auto
-  // logon enabled.  See GetCredentialCount() for more details.
+  // make the newly created user the default login credential with auto logon
+  // enabled.  See GetCredentialCount() for more details.
   HRESULT hr = S_OK;
   if (events_ && fire_credentials_changed)
     hr = events_->CredentialsChanged(advise_context_);
@@ -341,8 +363,7 @@ HRESULT CGaiaCredentialProvider::SetUserArray(
   if (FAILED(hr))
     LOG(ERROR) << "Could not create anonymous credential hr=" << putHR(hr);
 
-  std::set<base::string16> reauth_sids;
-  hr = CreateReauthCredentials(users, &reauth_sids);
+  hr = CreateReauthCredentials(users);
   if (FAILED(hr))
     LOG(ERROR) << "CreateReauthCredentials hr=" << putHR(hr);
 
@@ -365,17 +386,28 @@ HRESULT CGaiaCredentialProvider::SetUsageScenario(
 
 HRESULT CGaiaCredentialProvider::SetSerialization(
     const CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs) {
+  LOGFN(ERROR);
   DCHECK(pcpcs);
 
-  // NOTE: we only need to support this method if we want to support the
-  // CredUI or support remote login with gaia creds.  We are likely to want
-  // to support both, but not for prototype.
-  if (pcpcs->clsidCredentialProvider == CLSID_GaiaCredentialProvider) {
-    // Unmarshall the serialized buffer and fill in partial fields as needed.
-    // Examine cpusflags for things like admin-only, cred-in-only, etc.
-    LOGFN(INFO) << " authpkg=" << pcpcs->ulAuthenticationPackage
-                << " setsize=" << pcpcs->cbSerialization;
-  }
+  if (pcpcs->clsidCredentialProvider != CLSID_GaiaCredentialProvider)
+    return E_NOTIMPL;
+
+  ULONG auth_package_id;
+  HRESULT hr = GetAuthenticationPackageId(&auth_package_id);
+  if (FAILED(hr))
+    return E_NOTIMPL;
+
+  if (pcpcs->ulAuthenticationPackage != auth_package_id)
+    return E_NOTIMPL;
+
+  if (pcpcs->cbSerialization == 0)
+    return E_NOTIMPL;
+
+  // If serialziation data is set, try to extract the sid for the user
+  // referenced in the serialization data.
+  hr = DetermineUserSidFromAuthenticationBuffer(pcpcs, &set_serialization_sid_);
+  if (FAILED(hr))
+    LOGFN(ERROR) << "DetermineUserSidFromAuthenticationBuffer hr=" << putHR(hr);
 
   return S_OK;
 }
@@ -397,23 +429,22 @@ HRESULT CGaiaCredentialProvider::UnAdvise() {
   HRESULT hr = DestroyCredentials();
   LOGFN(INFO) << "hr=" << putHR(hr);
 
-  // Delete the startup sentinel file if any still exists. It can still exist
-  // in 2 cases:
+  // Delete the startup sentinel file if any still exists. It can still exist in
+  // 2 cases:
 
-  // 1. The UnAdvise should only occur after the user has logged in, so if
-  // they never selected any gaia credential and just used normal credentials
-  // this function will be called in that situation and it is guaranteed that
-  // the user has at least been able provide some input to winlogon.
-  // 2. When no usage scenario is supported, none of the credentials will be
-  // selected and thus the gcpw startup sentinel file will not be deleted.
-  // So in the case where the user is asked for CPUS_CRED_UI enough times,
-  // the sentinel file size will keep growing without being deleted and
-  // eventually GCPW will be disabled completely. In the unsupported usage
-  // scenario, FinalRelease will be called shortly after SetUsageScenario
-  // if the function returns E_NOTIMPL so try to catch potential crashes
-  // of the destruction of the provider when it is not used because
-  // crashes in this case will prevent the cred ui from coming up and not
-  // allow the user to access their desired resource.
+  // 1. The UnAdvise should only occur after the user has logged in, so if they
+  // never selected any gaia credential and just used normal credentials this
+  // function will be called in that situation and it is guaranteed that the
+  // user has at least been able provide some input to winlogon. 2. When no
+  // usage scenario is supported, none of the credentials will be selected and
+  // thus the gcpw startup sentinel file will not be deleted. So in the case
+  // where the user is asked for CPUS_CRED_UI enough times, the sentinel file
+  // size will keep growing without being deleted and eventually GCPW will be
+  // disabled completely. In the unsupported usage scenario, FinalRelease will
+  // be called shortly after SetUsageScenario if the function returns E_NOTIMPL
+  // so try to catch potential crashes of the destruction of the provider when
+  // it is not used because crashes in this case will prevent the cred ui from
+  // coming up and not allow the user to access their desired resource.
   DeleteStartupSentinel();
 
   return S_OK;
