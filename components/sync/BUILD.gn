@@ -812,6 +812,8 @@ static_library("test_support_driver") {
     "driver/mock_sync_service.h",
     "driver/model_associator_mock.cc",
     "driver/model_associator_mock.h",
+    "driver/profile_sync_service_bundle.cc",
+    "driver/profile_sync_service_bundle.h",
     "driver/sync_api_component_factory_mock.cc",
     "driver/sync_api_component_factory_mock.h",
     "driver/sync_client_mock.cc",
@@ -839,10 +841,15 @@ static_library("test_support_driver") {
   deps = [
     ":sync",
     ":test_support_engine",
+    ":test_support_model",
+    "//components/invalidation/impl:test_support",
+    "//components/pref_registry",
     "//components/signin/core/browser:shared",
     "//components/sync_preferences:test_support",
     "//components/version_info",
+    "//components/version_info:generate_version_info",
     "//google_apis",
+    "//services/identity/public/cpp:test_support",
   ]
 }
 
@@ -880,6 +887,8 @@ source_set("unit_tests") {
     "driver/glue/sync_engine_impl_unittest.cc",
     "driver/model_association_manager_unittest.cc",
     "driver/model_type_controller_unittest.cc",
+    "driver/profile_sync_service_startup_unittest.cc",
+    "driver/profile_sync_service_unittest.cc",
     "driver/shared_change_processor_unittest.cc",
     "driver/startup_controller_unittest.cc",
     "driver/sync_auth_manager_unittest.cc",
@@ -981,6 +990,7 @@ source_set("unit_tests") {
     "//components/sync_preferences:test_support",
     "//components/variations",
     "//components/version_info",
+    "//components/version_info:generate_version_info",
     "//components/version_info:version_string",
     "//google_apis",
     "//google_apis:test_support",

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_BROWSER_SYNC_PROFILE_SYNC_TEST_UTIL_H_
-#define COMPONENTS_BROWSER_SYNC_PROFILE_SYNC_TEST_UTIL_H_
+#ifndef COMPONENTS_SYNC_DRIVER_PROFILE_SYNC_SERVICE_BUNDLE_H_
+#define COMPONENTS_SYNC_DRIVER_PROFILE_SYNC_SERVICE_BUNDLE_H_
 
 #include <memory>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/sync/device_info/device_info_sync_service_impl.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
 #include "components/sync/driver/sync_client_mock.h"
 #include "components/sync/model/test_model_type_store_service.h"
@@ -21,7 +21,7 @@
 #include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/test/test_url_loader_factory.h"
 
-namespace browser_sync {
+namespace syncer {
 
 // Aggregate this class to get all necessary support for creating a
 // ProfileSyncService in tests. The test still needs to have its own
@@ -33,14 +33,14 @@ class ProfileSyncServiceBundle {
   ~ProfileSyncServiceBundle();
 
   // Creates a mock sync client that leverages the dependencies in this bundle.
-  std::unique_ptr<syncer::SyncClientMock> CreateSyncClientMock();
+  std::unique_ptr<SyncClientMock> CreateSyncClientMock();
 
   // Creates an InitParams instance with the specified |start_behavior| and
   // |sync_client|, and fills the rest with dummy values and objects owned by
   // the bundle.
   ProfileSyncService::InitParams CreateBasicInitParams(
       ProfileSyncService::StartBehavior start_behavior,
-      std::unique_ptr<syncer::SyncClient> sync_client);
+      std::unique_ptr<SyncClient> sync_client);
 
   // Accessors
 
@@ -60,7 +60,7 @@ class ProfileSyncServiceBundle {
     return identity_test_env_.identity_manager();
   }
 
-  syncer::SyncApiComponentFactoryMock* component_factory() {
+  SyncApiComponentFactoryMock* component_factory() {
     return &component_factory_;
   }
 
@@ -72,16 +72,16 @@ class ProfileSyncServiceBundle {
     return &fake_invalidation_service_;
   }
 
-  syncer::DeviceInfoSyncService* device_info_sync_service() {
+  DeviceInfoSyncService* device_info_sync_service() {
     return &device_info_sync_service_;
   }
 
  private:
   sync_preferences::TestingPrefServiceSyncable pref_service_;
-  syncer::TestModelTypeStoreService model_type_store_service_;
-  syncer::DeviceInfoSyncServiceImpl device_info_sync_service_;
+  TestModelTypeStoreService model_type_store_service_;
+  DeviceInfoSyncServiceImpl device_info_sync_service_;
   identity::IdentityTestEnvironment identity_test_env_;
-  testing::NiceMock<syncer::SyncApiComponentFactoryMock> component_factory_;
+  testing::NiceMock<SyncApiComponentFactoryMock> component_factory_;
   std::unique_ptr<invalidation::ProfileIdentityProvider> identity_provider_;
   invalidation::FakeInvalidationService fake_invalidation_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
@@ -89,6 +89,6 @@ class ProfileSyncServiceBundle {
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceBundle);
 };
 
-}  // namespace browser_sync
+}  // namespace syncer
 
-#endif  // COMPONENTS_BROWSER_SYNC_PROFILE_SYNC_TEST_UTIL_H_
+#endif  // COMPONENTS_SYNC_DRIVER_PROFILE_SYNC_SERVICE_BUNDLE_H_

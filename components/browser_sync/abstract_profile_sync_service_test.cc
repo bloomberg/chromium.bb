@@ -130,9 +130,9 @@ void AbstractProfileSyncServiceTest::CreateSyncService(
     std::unique_ptr<syncer::SyncClient> sync_client,
     base::OnceClosure initialization_success_callback) {
   ASSERT_TRUE(sync_client);
-  ProfileSyncService::InitParams init_params =
+  syncer::ProfileSyncService::InitParams init_params =
       profile_sync_service_bundle_.CreateBasicInitParams(
-          ProfileSyncService::AUTO_START, std::move(sync_client));
+          syncer::ProfileSyncService::AUTO_START, std::move(sync_client));
   sync_service_ =
       std::make_unique<syncer::TestProfileSyncService>(std::move(init_params));
 
