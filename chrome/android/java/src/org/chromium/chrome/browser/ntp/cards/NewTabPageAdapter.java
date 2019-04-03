@@ -141,8 +141,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
 
     @Override
     public void onBindViewHolder(NewTabPageViewHolder holder, int position, List<Object> payloads) {
-        if (payloads.isEmpty()) {
-            onBindViewHolder(holder, position);
+        if (payloads == null || payloads.isEmpty()) {
+            mRoot.onBindViewHolder(holder, position, null);
             return;
         }
 
@@ -153,7 +153,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
 
     @Override
     public void onBindViewHolder(NewTabPageViewHolder holder, final int position) {
-        mRoot.onBindViewHolder(holder, position, null);
+        onBindViewHolder(holder, position, null);
     }
 
     @Override
@@ -288,10 +288,12 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         return RecyclerView.NO_POSITION;
     }
 
+    @VisibleForTesting
     public SectionList getSectionListForTesting() {
         return mSections;
     }
 
+    @VisibleForTesting
     public InnerNode getRootForTesting() {
         return mRoot;
     }

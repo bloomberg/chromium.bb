@@ -10,6 +10,14 @@ import org.chromium.ui.modelutil.PropertyModel;
 
 class TouchlessNewTabPageProperties {
     public static final PropertyModel
+            .ReadableObjectPropertyKey<Callback<TouchlessNewTabPageFocusInfo>>
+                    FOCUS_CHANGE_CALLBACK = new PropertyModel.ReadableObjectPropertyKey<>();
+
+    public static final PropertyModel
+            .ReadableObjectPropertyKey<TouchlessNewTabPageFocusInfo> INITIAL_FOCUS =
+            new PropertyModel.ReadableObjectPropertyKey<>();
+
+    public static final PropertyModel
             .ReadableObjectPropertyKey<ScrollPositionInfo> INITIAL_SCROLL_POSITION =
             new PropertyModel.ReadableObjectPropertyKey<>();
 
@@ -17,6 +25,6 @@ class TouchlessNewTabPageProperties {
             .ReadableObjectPropertyKey<Callback<ScrollPositionInfo>> SCROLL_POSITION_CALLBACK =
             new PropertyModel.ReadableObjectPropertyKey<>();
 
-    public static final PropertyKey[] ALL_KEYS = {
+    public static final PropertyKey[] ALL_KEYS = {FOCUS_CHANGE_CALLBACK, INITIAL_FOCUS,
             INITIAL_SCROLL_POSITION, SCROLL_POSITION_CALLBACK};
 }
