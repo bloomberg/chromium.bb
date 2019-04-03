@@ -69,6 +69,40 @@ TEST_F(
           print_header_interactive_test.TestNames.FocusPrintOnReady);
     });
 
+PrintPreviewButtonStripInteractiveTest =
+    class extends PrintPreviewInteractiveUITest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/button_strip.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      ROOT_PATH + 'chrome/test/data/webui/settings/test_util.js',
+      'button_strip_interactive_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return button_strip_interactive_test.suiteName;
+  }
+};
+
+// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
+GEN('#if defined(OS_WIN)');
+GEN('#define MAYBE_FocusPrintOnReady DISABLED_FocusPrintOnReady');
+GEN('#else');
+GEN('#define MAYBE_FocusPrintOnReady FocusPrintOnReady');
+GEN('#endif');
+TEST_F(
+    'PrintPreviewButtonStripInteractiveTest', 'MAYBE_FocusPrintOnReady',
+    function() {
+      this.runMochaTest(
+          button_strip_interactive_test.TestNames.FocusPrintOnReady);
+    });
+
 PrintPreviewDestinationDialogInteractiveTest =
     class extends PrintPreviewInteractiveUITest {
   /** @override */

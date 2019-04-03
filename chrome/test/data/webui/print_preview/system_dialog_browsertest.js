@@ -105,8 +105,11 @@ cr.define('system_dialog_browsertest', function() {
           })
           .then(() => {
             // Expect disabled print button
-            const header = sidebar.$$('print-preview-header');
-            const printButton = header.$$('.action-button');
+            const parentElement =
+                loadTimeData.getBoolean('newPrintPreviewLayoutEnabled') ?
+                sidebar.$$('print-preview-button-strip') :
+                sidebar.$$('print-preview-header');
+            const printButton = parentElement.$$('.action-button');
             assertTrue(printButton.disabled);
             assertTrue(linkContainer.disabled);
             assertFalse(link.hidden);
