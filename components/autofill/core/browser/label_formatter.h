@@ -39,14 +39,14 @@ class LabelFormatter {
  protected:
   // Returns a label to show the user. The elements of the label and their
   // ordering depend on the kind of LabelFormatter, the data in |profile|, and
-  // on the focused |group|.
+  // on |focused_group|.
   // Subclasses may return labels that span one or two lines. If a label is
   // intended to span two lines, then it contains a kMultilineLabelDelimiter.
-  virtual base::string16 GetLabelForFocusedGroup(
+  virtual base::string16 GetLabelForProfile(
       const AutofillProfile& profile,
-      FieldTypeGroup group) const = 0;
+      FieldTypeGroup focused_group) const = 0;
 
-  // Returns the FieldTypeGroup with which focused_field_type_ is associated.
+  // Returns the FieldTypeGroup with which |focused_field_type_| is associated.
   // Billing field types are mapped to their corresponding home address field
   // types. For example, if focused_field_type_ is ADDRESS_BILLING_ZIP, then
   // the resulting FieldTypeGroup is ADDRESS_HOME instead of ADDRESS_BILLING.

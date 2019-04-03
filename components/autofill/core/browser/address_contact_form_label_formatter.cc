@@ -17,12 +17,12 @@ AddressContactFormLabelFormatter::AddressContactFormLabelFormatter(
 
 AddressContactFormLabelFormatter::~AddressContactFormLabelFormatter() {}
 
-base::string16 AddressContactFormLabelFormatter::GetLabelForFocusedGroup(
+base::string16 AddressContactFormLabelFormatter::GetLabelForProfile(
     const AutofillProfile& profile,
-    FieldTypeGroup group) const {
-  return group == NAME || group == ADDRESS_HOME
-             ? GetLabelForProfileOnFocusedNameOrAddress(profile, group)
-             : GetLabelForProfileOnFocusedPhoneOrEmail(profile, group);
+    FieldTypeGroup focused_group) const {
+  return focused_group == NAME || focused_group == ADDRESS_HOME
+             ? GetLabelForProfileOnFocusedNameOrAddress(profile, focused_group)
+             : GetLabelForProfileOnFocusedPhoneOrEmail(profile, focused_group);
 }
 
 // Note that the order in which parts of the label are added--national address

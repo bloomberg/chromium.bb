@@ -26,8 +26,9 @@ class AddressContactFormLabelFormatter : public LabelFormatter {
 
   ~AddressContactFormLabelFormatter() override;
 
-  base::string16 GetLabelForFocusedGroup(const AutofillProfile& profile,
-                                         FieldTypeGroup group) const override;
+  base::string16 GetLabelForProfile(
+      const AutofillProfile& profile,
+      FieldTypeGroup focused_group) const override;
 
  private:
   // Returns a label to show the user when |focused_field_type_| belongs to the

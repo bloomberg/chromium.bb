@@ -26,8 +26,9 @@ class AddressEmailFormLabelFormatter : public LabelFormatter {
 
   ~AddressEmailFormLabelFormatter() override;
 
-  base::string16 GetLabelForFocusedGroup(const AutofillProfile& profile,
-                                         FieldTypeGroup group) const override;
+  base::string16 GetLabelForProfile(
+      const AutofillProfile& profile,
+      FieldTypeGroup focused_group) const override;
 
  private:
   // True if this formatter's associated form has a street address field. A

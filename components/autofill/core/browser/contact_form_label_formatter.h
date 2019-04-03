@@ -26,8 +26,9 @@ class ContactFormLabelFormatter : public LabelFormatter {
 
   ~ContactFormLabelFormatter() override;
 
-  base::string16 GetLabelForFocusedGroup(const AutofillProfile& profile,
-                                         FieldTypeGroup group) const override;
+  base::string16 GetLabelForProfile(
+      const AutofillProfile& profile,
+      FieldTypeGroup focused_group) const override;
 
  private:
   // Returns |profile|'s email address if |profile| has a valid email address
