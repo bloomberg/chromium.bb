@@ -140,10 +140,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Skip('conformance/rendering/texture-switch-performance.html',
         bug=735483)
 
-    # Too flaky with ANGLE's OpenGL backend to just mark Flaky
-    self.Fail('conformance/extensions/oes-vertex-array-object.html',
-        ['win', 'opengl'], bug=920033)
-
     # Passthrough command decoder / OpenGL
     self.Fail(
         'conformance/textures/canvas/tex-2d-alpha-alpha-unsigned_byte.html',
@@ -602,10 +598,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['linux', 'amd', 'no_angle'], bug=479260)
     self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
         ['linux', 'amd', 'no_passthrough'], bug=479952)
-
-    # Linux passthrough, all vendors
-    self.Fail('conformance/extensions/oes-vertex-array-object.html',
-        ['linux', 'passthrough'], bug=920033)
 
     # Linux passthrough AMD
     self.Fail('conformance/renderbuffers/' +
