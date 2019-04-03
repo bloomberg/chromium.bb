@@ -3822,7 +3822,7 @@ def ApplyCustomOverrides(site_config):
   # Some boards in toolchain builder are not using the same configuration as
   # release builders. Configure it here since it's easier, for both
   # llvm-toolchain and llvm-next-toolchain builders.
-  for board in ['lakitu', 'guado_moblab', 'gale', 'whirlwind']:
+  for board in ['lakitu', 'guado_moblab', 'gale', 'mistral', 'whirlwind']:
     if board is 'lakitu':
       overwritten_configs[board+'-llvm-toolchain'] = {
           'vm_tests': [config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
@@ -3840,7 +3840,7 @@ def ApplyCustomOverrides(site_config):
           ],
           'hw_tests_override': None # If not set, *-tryjob won't be updated
       }
-    else: # This is the case for gale and whirlwind
+    else: # This is the case for gale, mistral and whirlwind
       overwritten_configs[board+'-llvm-toolchain'] = {
           'hw_tests': [
               config_lib.HWTestConfig(

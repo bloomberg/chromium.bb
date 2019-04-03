@@ -44,6 +44,7 @@ arm_internal_release_boards = frozenset([
     'kukui',
     'lasilla-ground',
     'littlejoe',
+    'mistral',
     'nyan_big',
     'nyan_blaze',
     'nyan_kitty',

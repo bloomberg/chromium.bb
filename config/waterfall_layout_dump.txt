@@ -3032,6 +3032,7 @@
   mistral-llvm-toolchain-tryjob
   mistral-no-vmtest-pre-cq
   mistral-paladin-tryjob
+  mistral-payloads-tryjob
   mistral-postsubmit-tryjob
   mistral-pre-cq
   mistral-release-tryjob
