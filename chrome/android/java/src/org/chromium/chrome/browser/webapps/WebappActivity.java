@@ -709,7 +709,16 @@ public class WebappActivity extends SingleTabActivity {
                         if (getActivityTab().canGoBack()) {
                             getActivityTab().goBack();
                         } else {
-                            ApiCompatibilityUtils.finishAndRemoveTask(WebappActivity.this);
+                            if (mWebappInfo.isSplashProvidedByWebApk()) {
+                                // We need to call into WebAPK to finish activity stack because:
+                                // 1) WebApkActivity is not the root of the task.
+                                // 2) The activity stack no longer has focus and thus cannot rely on
+                                //    the client's Activity#onResume() behaviour.
+                                WebApkServiceClient.getInstance().finishAndRemoveTaskSdk23(
+                                        (WebApkActivity) WebappActivity.this);
+                            } else {
+                                ApiCompatibilityUtils.finishAndRemoveTask(WebappActivity.this);
+                            }
                         }
                     }
                 }, MS_BEFORE_NAVIGATING_BACK_FROM_INTERSTITIAL);
