@@ -26,45 +26,89 @@
 
 namespace base {
 
-// Test is currently incorrect on Windows x86.
-#if !defined(OS_WIN) || !defined(ARCH_CPU_X86)
+// Ensure that base::Value is as small as possible, i.e. that there is
+// no wasted space after the inner value due to alignment constraints.
+// Distinguish between the 'header' that includes |type_| and and the inner
+// value that follows it, which can be a bool, int, double, string, blob, list
+// or dict.
+//
+// This test is only enabled when NDEBUG is defined. This way the test will not
+// fail in debug builds that sometimes contain larger versions of the standard
+// containers used inside base::Value.
+#if defined(NDEBUG)
+
+static size_t AlignSizeTo(size_t size, size_t alignment) {
+  EXPECT_TRUE((alignment & (alignment - 1)) == 0)
+      << "Alignment " << alignment << " is not a power of 2!";
+  return (size + (alignment - 1u)) & ~(alignment - 1u);
+}
+
 TEST(ValuesTest, SizeOfValue) {
-  // Ensure that base::Value is as small as possible, i.e. that there is
-  // no wasted space after the inner value due to alignment constraints.
-  // Distinguish between the 'header' that includes |type_| and and the inner
-  // value that follows it, which can be a bool, int, double, string, blob, list
-  // or dict.
-#define INNER_TYPES_LIST(X)            \
-  X(bool, bool_value_)                 \
-  X(int, int_value_)                   \
-  X(double, double_value_)             \
-  X(std::string, string_value_)        \
-  X(Value::BlobStorage, binary_value_) \
-  X(Value::ListStorage, list_)         \
+#define INNER_TYPES_LIST(X)              \
+  X(bool, bool_value_)                   \
+  X(int, int_value_)                     \
+  X(Value::DoubleStorage, double_value_) \
+  X(std::string, string_value_)          \
+  X(Value::BlobStorage, binary_value_)   \
+  X(Value::ListStorage, list_)           \
   X(Value::DictStorage, dict_)
 
-#define INNER_STRUCT_LIMIT(type, value) offsetof(Value, value) + sizeof(type),
+#define INNER_FIELD_ALIGNMENT(type, value) alignof(type),
 
-  // Return the maximum size in bytes of each inner struct inside base::Value
-  size_t max_inner_struct_limit =
-      std::max({INNER_TYPES_LIST(INNER_STRUCT_LIMIT)});
+  // The maximum alignment of each inner struct value field inside base::Value
+  size_t max_inner_value_alignment =
+      std::max({INNER_TYPES_LIST(INNER_FIELD_ALIGNMENT)});
+
+  // Check that base::Value has the smallest alignment possible. This would
+  // fail if the header would contain something that has a larger alignment
+  // than necessary.
+  EXPECT_EQ(max_inner_value_alignment, alignof(Value));
+
+  // Find the offset of each inner value. Which should normally not be
+  // larger than 4. Note that we use std::max(4, ...) because bool_value_
+  // could be stored just after the |bool_type_| field, with an offset of
+  // 1, and that would be ok.
+#define INNER_VALUE_START_OFFSET(type, value) offsetof(Value, value),
+
+  size_t min_inner_value_offset =
+      std::min({INNER_TYPES_LIST(INNER_VALUE_START_OFFSET)});
+
+  // Inner fields may contain pointers, which have an alignment of 8
+  // on most 64-bit platforms.
+  size_t expected_min_offset = alignof(void*);
+
+  EXPECT_EQ(expected_min_offset, min_inner_value_offset);
 
   // Ensure that base::Value is not larger than necessary, i.e. that there is
-  // no un-necessary padding afte the structs due to alignment constraints of
+  // no un-necessary padding after the structs due to alignment constraints of
   // one of the inner fields.
-  EXPECT_EQ(max_inner_struct_limit, sizeof(Value));
-  if (max_inner_struct_limit != sizeof(Value)) {
+#define INNER_STRUCT_END_OFFSET(type, value) \
+  offsetof(Value, value) + sizeof(type),
+
+  // The maximum size in bytes of each inner struct inside base::Value,
+  size_t max_inner_struct_end_offset =
+      std::max({INNER_TYPES_LIST(INNER_STRUCT_END_OFFSET)});
+
+  // The expected value size.
+  size_t expected_value_size =
+      AlignSizeTo(max_inner_struct_end_offset, alignof(Value));
+
+  EXPECT_EQ(expected_value_size, sizeof(Value));
+  if (min_inner_value_offset != expected_min_offset ||
+      expected_value_size != sizeof(Value)) {
     // The following are useful to understand what's wrong when the EXPECT_EQ()
-    // above actually fails.
-#define PRINT_INNER_FIELD_INFO(x, y) \
-  LOG(INFO) << #y " type=" #x " size=" << sizeof(x) << " align=" << alignof(x);
+    // above actually fail.
+#define PRINT_INNER_FIELD_INFO(x, y)                           \
+  LOG(INFO) << #y " type=" #x " offset=" << offsetof(Value, y) \
+            << " size=" << sizeof(x) << " align=" << alignof(x);
 
     LOG(INFO) << "Value size=" << sizeof(Value) << " align=" << alignof(Value);
     INNER_TYPES_LIST(PRINT_INNER_FIELD_INFO)
-    LOG(INFO) << "max_inner_struct_limit=" << max_inner_struct_limit;
+    LOG(INFO) << "max_inner_struct_end_offset=" << max_inner_struct_end_offset;
   }
 }
-#endif
+
+#endif  // NDEBUG
 
 TEST(ValuesTest, TestNothrow) {
   static_assert(std::is_nothrow_move_constructible<Value>::value,

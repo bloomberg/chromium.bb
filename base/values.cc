@@ -12,6 +12,7 @@
 #include <ostream>
 #include <utility>
 
+#include "base/bit_cast.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -35,6 +36,9 @@ namespace base {
 static_assert(std::is_standard_layout<Value>::value,
               "base::Value should be a standard-layout C++ class in order "
               "to avoid undefined behaviour in its implementation!");
+
+static_assert(sizeof(Value::DoubleStorage) == sizeof(double),
+              "The double and DoubleStorage types should have the same size");
 
 namespace {
 
@@ -110,8 +114,6 @@ Value::Value(Value&& that) noexcept {
   InternalMoveConstructFrom(std::move(that));
 }
 
-Value::Value() noexcept : type_(Type::NONE) {}
-
 Value::Value(Type type) : type_(type) {
   // Initialize with the default value.
   switch (type_) {
@@ -125,7 +127,7 @@ Value::Value(Type type) : type_(type) {
       int_value_ = 0;
       return;
     case Type::DOUBLE:
-      double_value_ = 0.0;
+      double_value_ = bit_cast<DoubleStorage>(0.0);
       return;
     case Type::STRING:
       new (&string_value_) std::string();
@@ -149,21 +151,16 @@ Value::Value(Type type) : type_(type) {
   CHECK(false);
 }
 
-Value::Value(bool in_bool)
-    : bool_type_(Type::BOOLEAN),
-      bool_value_(in_bool) {}
+Value::Value(bool in_bool) : type_(Type::BOOLEAN), bool_value_(in_bool) {}
 
-Value::Value(int in_int)
-    : int_type_(Type::INTEGER),
-      int_value_(in_int) {}
+Value::Value(int in_int) : type_(Type::INTEGER), int_value_(in_int) {}
 
 Value::Value(double in_double)
-    : double_type_(Type::DOUBLE),
-      double_value_(in_double) {
-  if (!std::isfinite(double_value_)) {
+    : type_(Type::DOUBLE), double_value_(bit_cast<DoubleStorage>(in_double)) {
+  if (!std::isfinite(in_double)) {
     NOTREACHED() << "Non-finite (i.e. NaN or positive/negative infinity) "
                  << "values cannot be represented in JSON";
-    double_value_ = 0.0;
+    double_value_ = bit_cast<DoubleStorage>(0.0);
   }
 }
 
@@ -172,8 +169,7 @@ Value::Value(const char* in_string) : Value(std::string(in_string)) {}
 Value::Value(StringPiece in_string) : Value(std::string(in_string)) {}
 
 Value::Value(std::string&& in_string) noexcept
-    : string_type_(Type::STRING),
-      string_value_(std::move(in_string)) {
+    : type_(Type::STRING), string_value_(std::move(in_string)) {
   DCHECK(IsStringUTF8(string_value_));
 }
 
@@ -182,19 +178,15 @@ Value::Value(const char16* in_string16) : Value(StringPiece16(in_string16)) {}
 Value::Value(StringPiece16 in_string16) : Value(UTF16ToUTF8(in_string16)) {}
 
 Value::Value(const std::vector<char>& in_blob)
-    : binary_type_(Type::BINARY),
-      binary_value_(in_blob.begin(), in_blob.end()) {}
+    : type_(Type::BINARY), binary_value_(in_blob.begin(), in_blob.end()) {}
 
 Value::Value(base::span<const uint8_t> in_blob)
-    : binary_type_(Type::BINARY),
-      binary_value_(in_blob.begin(), in_blob.end()) {}
+    : type_(Type::BINARY), binary_value_(in_blob.begin(), in_blob.end()) {}
 
 Value::Value(BlobStorage&& in_blob) noexcept
-    : binary_type_(Type::BINARY),
-      binary_value_(std::move(in_blob)) {}
+    : type_(Type::BINARY), binary_value_(std::move(in_blob)) {}
 
-Value::Value(const DictStorage& in_dict)
-    : dict_type_(Type::DICTIONARY), dict_() {
+Value::Value(const DictStorage& in_dict) : type_(Type::DICTIONARY), dict_() {
   dict_.reserve(in_dict.size());
   for (const auto& it : in_dict) {
     dict_.try_emplace(dict_.end(), it.first,
@@ -203,24 +195,26 @@ Value::Value(const DictStorage& in_dict)
 }
 
 Value::Value(DictStorage&& in_dict) noexcept
-    : dict_type_(Type::DICTIONARY),
-      dict_(std::move(in_dict)) {}
+    : type_(Type::DICTIONARY), dict_(std::move(in_dict)) {}
 
-Value::Value(const ListStorage& in_list) : list_type_(Type::LIST), list_() {
+Value::Value(const ListStorage& in_list) : type_(Type::LIST), list_() {
   list_.reserve(in_list.size());
   for (const auto& val : in_list)
     list_.emplace_back(val.Clone());
 }
 
 Value::Value(ListStorage&& in_list) noexcept
-    : list_type_(Type::LIST),
-      list_(std::move(in_list)) {}
+    : type_(Type::LIST), list_(std::move(in_list)) {}
 
 Value& Value::operator=(Value&& that) noexcept {
   InternalCleanup();
   InternalMoveConstructFrom(std::move(that));
 
   return *this;
+}
+
+double Value::AsDoubleInternal() const {
+  return bit_cast<double>(double_value_);
 }
 
 Value Value::Clone() const {
@@ -232,7 +226,7 @@ Value Value::Clone() const {
     case Type::INTEGER:
       return Value(int_value_);
     case Type::DOUBLE:
-      return Value(double_value_);
+      return Value(AsDoubleInternal());
     case Type::STRING:
       return Value(string_value_);
     case Type::BINARY:
@@ -277,7 +271,7 @@ int Value::GetInt() const {
 
 double Value::GetDouble() const {
   if (is_double())
-    return double_value_;
+    return AsDoubleInternal();
   if (is_int())
     return int_value_;
   CHECK(false);
@@ -342,9 +336,10 @@ base::Optional<double> Value::FindDoubleKey(StringPiece key) const {
   const Value* result = FindKey(key);
   if (result) {
     if (result->is_int())
-      return base::make_optional(static_cast<double>(result->int_value_));
-    if (result->is_double())
-      return base::make_optional(result->double_value_);
+      return static_cast<double>(result->int_value_);
+    if (result->is_double()) {
+      return result->AsDoubleInternal();
+    }
   }
   return base::nullopt;
 }
@@ -601,7 +596,7 @@ bool Value::GetAsInteger(int* out_value) const {
 
 bool Value::GetAsDouble(double* out_value) const {
   if (out_value && is_double()) {
-    *out_value = double_value_;
+    *out_value = AsDoubleInternal();
     return true;
   }
   if (out_value && is_int()) {
@@ -696,7 +691,7 @@ bool operator==(const Value& lhs, const Value& rhs) {
     case Value::Type::INTEGER:
       return lhs.int_value_ == rhs.int_value_;
     case Value::Type::DOUBLE:
-      return lhs.double_value_ == rhs.double_value_;
+      return lhs.AsDoubleInternal() == rhs.AsDoubleInternal();
     case Value::Type::STRING:
       return lhs.string_value_ == rhs.string_value_;
     case Value::Type::BINARY:
@@ -741,7 +736,7 @@ bool operator<(const Value& lhs, const Value& rhs) {
     case Value::Type::INTEGER:
       return lhs.int_value_ < rhs.int_value_;
     case Value::Type::DOUBLE:
-      return lhs.double_value_ < rhs.double_value_;
+      return lhs.AsDoubleInternal() < rhs.AsDoubleInternal();
     case Value::Type::STRING:
       return lhs.string_value_ < rhs.string_value_;
     case Value::Type::BINARY:

@@ -83,6 +83,8 @@ class BASE_EXPORT Value {
   using BlobStorage = std::vector<uint8_t>;
   using DictStorage = flat_map<std::string, std::unique_ptr<Value>>;
   using ListStorage = std::vector<Value>;
+  // See technical note below explaining why this is used.
+  using DoubleStorage = struct { alignas(4) char v[sizeof(double)]; };
 
   enum class Type {
     NONE = 0,
@@ -111,7 +113,10 @@ class BASE_EXPORT Value {
   static std::unique_ptr<Value> ToUniquePtrValue(Value val);
 
   Value(Value&& that) noexcept;
-  Value() noexcept;  // A null value.
+  Value() noexcept {}  // A null value
+  // Fun fact: using '= default' above instead of '{}' does not work because
+  // the compiler complains that the default constructor was deleted since
+  // the inner union contains fields with non-default constructors.
 
   // Value's copy constructor and copy assignment operator are deleted. Use this
   // to obtain a deep copy explicitly.
@@ -405,82 +410,29 @@ class BASE_EXPORT Value {
   size_t EstimateMemoryUsage() const;
 
  protected:
-  // Technical note:
-  // The naive way to implement a tagged union leads to wasted bytes
-  // in the object on CPUs like ARM ones, which impose an 8-byte alignment
-  // for double values. I.e. if one does something like:
+  // Special case for doubles, which are aligned to 8 bytes on some
+  // 32-bit architectures. In this case, a simple declaration as a
+  // double member would make the whole union 8 byte-aligned, which
+  // would also force 4 bytes of wasted padding space before it in
+  // the Value layout.
   //
-  //    struct TaggedValue {
-  //      int type_;                    // size = 1, align = 4
-  //      union {
-  //        bool bool_value_;           // size = 1, align = 1
-  //        int int_value_;             // size = 4, align = 4
-  //        double double_value_;       // size = 8, align = 8
-  //        std::string string_value_;  // size = 12, align = 4  (32-bit)
-  //      };
-  //    };
-  //
-  // The end result is that the union will have an alignment of 8, and a size
-  // of 16, due to 4 extra padding bytes following |string_value_| to respect
-  // the alignment requirement.
-  //
-  // As a consequence, the struct TaggedValue will have a size of 24 bytes,
-  // due to the size of the union (16), the size of |type_| (4) and 4 bytes
-  // of padding between |type_| and the union to respect its alignment.
-  //
-  // This means 8 bytes of unused memory per instance on 32-bit ARM!
-  //
-  // To reclaim these, a union of structs is used instead, in order to ensure
-  // that |double_value_| below is always located at an offset that is a
-  // multiple of 8, relative to the start of the overall data structure.
-  //
-  // Each struct must declare its own |type_| field, which must have a different
-  // name, to appease the C++ compiler.
-  //
-  // Using this technique sizeof(base::Value) == 16 on 32-bit ARM instead
-  // of 24, without losing any information. Results are unchanged for x86,
-  // x86_64 and arm64 (16, 32 and 32 bytes respectively).
+  // To override this, store the value as an array of 32-bit integers, and
+  // perform the appropriate bit casts when reading / writing to it.
+  Type type_ = Type::NONE;
+
   union {
-    struct {
-      // TODO(crbug.com/646113): Make these private once DictionaryValue and
-      // ListValue are properly inlined.
-      Type type_ : 8;
-    };
-    struct {
-      Type bool_type_ : 8;
-      bool bool_value_;
-    };
-    struct {
-      Type int_type_ : 8;
-      int int_value_;
-    };
-    struct {
-      Type double_type_ : 8;
-      // Subtle: On architectures that require it, the compiler will ensure
-      // that |double_value_|'s offset is a multiple of 8 (e.g. 32-bit ARM).
-      // See technical note above to understand why it is important.
-      double double_value_;
-    };
-    struct {
-      Type string_type_ : 8;
-      std::string string_value_;
-    };
-    struct {
-      Type binary_type_ : 8;
-      BlobStorage binary_value_;
-    };
-    struct {
-      Type dict_type_ : 8;
-      DictStorage dict_;
-    };
-    struct {
-      Type list_type_ : 8;
-      ListStorage list_;
-    };
+    bool bool_value_;
+    int int_value_;
+    DoubleStorage double_value_;
+    std::string string_value_;
+    BlobStorage binary_value_;
+    DictStorage dict_;
+    ListStorage list_;
   };
 
  private:
   friend class ValuesTest_SizeOfValue_Test;
+  double AsDoubleInternal() const;
   void InternalMoveConstructFrom(Value&& that);
   void InternalCleanup();
 
