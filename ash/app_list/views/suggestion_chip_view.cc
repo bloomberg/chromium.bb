@@ -167,7 +167,7 @@ void SuggestionChipView::OnBlur() {
 
 void SuggestionChipView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   if (chip_mask_)
-    chip_mask_->layer()->SetBounds(GetContentsBounds());
+    chip_mask_->layer()->SetBounds(GetLocalBounds());
 }
 
 bool SuggestionChipView::OnKeyPressed(const ui::KeyEvent& event) {
