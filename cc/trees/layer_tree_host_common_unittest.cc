@@ -7333,15 +7333,15 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   ExecuteCalculateDrawProperties(grand_parent_raw);
 
   // No layers have animations.
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(grand_parent_raw));
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(parent_raw));
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(child_raw));
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(grand_child_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(grand_parent_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(parent_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(child_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(grand_child_raw));
 
-  EXPECT_EQ(0.f, GetStartingAnimationScale(grand_parent_raw));
-  EXPECT_EQ(0.f, GetStartingAnimationScale(parent_raw));
-  EXPECT_EQ(0.f, GetStartingAnimationScale(child_raw));
-  EXPECT_EQ(0.f, GetStartingAnimationScale(grand_child_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(grand_parent_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(parent_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(child_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(grand_child_raw));
 
   TransformOperations translation;
   translation.AppendTranslate(1.f, 2.f, 3.f);
@@ -7380,15 +7380,15 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
                                   TransformOperations(), translation);
 
   // No layers have scale-affecting animations.
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(grand_parent_raw));
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(parent_raw));
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(child_raw));
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(grand_child_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(grand_parent_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(parent_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(child_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(grand_child_raw));
 
-  EXPECT_EQ(0.f, GetStartingAnimationScale(grand_parent_raw));
-  EXPECT_EQ(0.f, GetStartingAnimationScale(parent_raw));
-  EXPECT_EQ(0.f, GetStartingAnimationScale(child_raw));
-  EXPECT_EQ(0.f, GetStartingAnimationScale(grand_child_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(grand_parent_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(parent_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(child_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(grand_child_raw));
 
   TransformOperations scale;
   scale.AppendScale(5.f, 4.f, 3.f);
@@ -7399,13 +7399,13 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   ExecuteCalculateDrawProperties(grand_parent_raw);
 
   // Only |child| has a scale-affecting animation.
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(grand_parent_raw));
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(parent_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(grand_parent_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(parent_raw));
   EXPECT_EQ(5.f, GetMaximumAnimationScale(child_raw));
   EXPECT_EQ(5.f, GetMaximumAnimationScale(grand_child_raw));
 
-  EXPECT_EQ(0.f, GetStartingAnimationScale(grand_parent_raw));
-  EXPECT_EQ(0.f, GetStartingAnimationScale(parent_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(grand_parent_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(parent_raw));
   EXPECT_EQ(1.f, GetStartingAnimationScale(child_raw));
   EXPECT_EQ(1.f, GetStartingAnimationScale(grand_child_raw));
 
@@ -7419,13 +7419,13 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   EXPECT_EQ(5.f, GetMaximumAnimationScale(parent_raw));
   // We don't support combining animated scales from two nodes; 0.f means
   // that the maximum scale could not be computed.
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(child_raw));
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(grand_child_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(child_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(grand_child_raw));
 
   EXPECT_EQ(1.f, GetStartingAnimationScale(grand_parent_raw));
   EXPECT_EQ(1.f, GetStartingAnimationScale(parent_raw));
-  EXPECT_EQ(0.f, GetStartingAnimationScale(child_raw));
-  EXPECT_EQ(0.f, GetStartingAnimationScale(grand_child_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(child_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(grand_child_raw));
 
   AddAnimatedTransformToAnimation(parent_animation.get(), 1.0,
                                   TransformOperations(), scale);
@@ -7434,14 +7434,14 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
 
   // |grand_parent|, |parent|, and |child| have scale-affecting animations.
   EXPECT_EQ(5.f, GetMaximumAnimationScale(grand_parent_raw));
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(parent_raw));
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(child_raw));
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(grand_child_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(parent_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(child_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(grand_child_raw));
 
   EXPECT_EQ(1.f, GetStartingAnimationScale(grand_parent_raw));
-  EXPECT_EQ(0.f, GetStartingAnimationScale(parent_raw));
-  EXPECT_EQ(0.f, GetStartingAnimationScale(child_raw));
-  EXPECT_EQ(0.f, GetStartingAnimationScale(grand_child_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(parent_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(child_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(grand_child_raw));
 
   grand_parent_animation->AbortKeyframeModelsWithProperty(
       TargetProperty::TRANSFORM, false);
@@ -7460,15 +7460,15 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
 
   // |child| has a scale-affecting animation but computing the maximum of this
   // animation is not supported.
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(grand_parent_raw));
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(parent_raw));
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(child_raw));
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(grand_child_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(grand_parent_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(parent_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(child_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(grand_child_raw));
 
-  EXPECT_EQ(0.f, GetStartingAnimationScale(grand_parent_raw));
-  EXPECT_EQ(0.f, GetStartingAnimationScale(parent_raw));
-  EXPECT_EQ(0.f, GetStartingAnimationScale(child_raw));
-  EXPECT_EQ(0.f, GetStartingAnimationScale(grand_child_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(grand_parent_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(parent_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(child_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(grand_child_raw));
 
   child_animation->AbortKeyframeModelsWithProperty(TargetProperty::TRANSFORM,
                                                    false);
@@ -7485,12 +7485,12 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
 
   // |grand_parent| and |parent| each have scale 2.f. |parent| has a  scale
   // animation with maximum scale 5.f.
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(grand_parent_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(grand_parent_raw));
   EXPECT_EQ(10.f, GetMaximumAnimationScale(parent_raw));
   EXPECT_EQ(10.f, GetMaximumAnimationScale(child_raw));
   EXPECT_EQ(10.f, GetMaximumAnimationScale(grand_child_raw));
 
-  EXPECT_EQ(0.f, GetStartingAnimationScale(grand_parent_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(grand_parent_raw));
   EXPECT_EQ(2.f, GetStartingAnimationScale(parent_raw));
   EXPECT_EQ(2.f, GetStartingAnimationScale(child_raw));
   EXPECT_EQ(2.f, GetStartingAnimationScale(grand_child_raw));
@@ -7502,15 +7502,15 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   ExecuteCalculateDrawProperties(grand_parent_raw);
 
   // |child| has a transform that's neither a translation nor a scale.
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(grand_parent_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(grand_parent_raw));
   EXPECT_EQ(10.f, GetMaximumAnimationScale(parent_raw));
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(child_raw));
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(grand_child_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(child_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(grand_child_raw));
 
-  EXPECT_EQ(0.f, GetStartingAnimationScale(grand_parent_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(grand_parent_raw));
   EXPECT_EQ(2.f, GetStartingAnimationScale(parent_raw));
-  EXPECT_EQ(0.f, GetStartingAnimationScale(child_raw));
-  EXPECT_EQ(0.f, GetStartingAnimationScale(grand_child_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(child_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(grand_child_raw));
 
   parent_raw->test_properties()->transform = perspective_matrix;
   grand_parent_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
@@ -7518,15 +7518,15 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
 
   // |parent| and |child| have transforms that are neither translations nor
   // scales.
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(grand_parent_raw));
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(parent_raw));
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(child_raw));
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(grand_child_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(grand_parent_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(parent_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(child_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(grand_child_raw));
 
-  EXPECT_EQ(0.f, GetStartingAnimationScale(grand_parent_raw));
-  EXPECT_EQ(0.f, GetStartingAnimationScale(parent_raw));
-  EXPECT_EQ(0.f, GetStartingAnimationScale(child_raw));
-  EXPECT_EQ(0.f, GetStartingAnimationScale(grand_child_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(grand_parent_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(parent_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(child_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(grand_child_raw));
 
   parent_raw->test_properties()->transform = gfx::Transform();
   child_raw->test_properties()->transform = gfx::Transform();
@@ -7536,15 +7536,15 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   ExecuteCalculateDrawProperties(grand_parent_raw);
 
   // |grand_parent| has a transform that's neither a translation nor a scale.
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(grand_parent_raw));
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(parent_raw));
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(child_raw));
-  EXPECT_EQ(0.f, GetMaximumAnimationScale(grand_child_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(grand_parent_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(parent_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(child_raw));
+  EXPECT_EQ(kNotScaled, GetMaximumAnimationScale(grand_child_raw));
 
-  EXPECT_EQ(0.f, GetStartingAnimationScale(grand_parent_raw));
-  EXPECT_EQ(0.f, GetStartingAnimationScale(parent_raw));
-  EXPECT_EQ(0.f, GetStartingAnimationScale(child_raw));
-  EXPECT_EQ(0.f, GetStartingAnimationScale(grand_child_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(grand_parent_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(parent_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(child_raw));
+  EXPECT_EQ(kNotScaled, GetStartingAnimationScale(grand_child_raw));
 }
 
 static void GatherDrawnLayers(LayerTreeImpl* tree_impl,
@@ -7847,8 +7847,8 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
       child1_layer->test_properties()->mask_layer->GetIdealContentsScale());
   EXPECT_FLOAT_EQ(5.f, child2_layer->GetIdealContentsScale());
 
-  EXPECT_FLOAT_EQ(0.f, GetMaximumAnimationScale(root_layer));
-  EXPECT_FLOAT_EQ(0.f, GetMaximumAnimationScale(child1_layer));
+  EXPECT_FLOAT_EQ(kNotScaled, GetMaximumAnimationScale(root_layer));
+  EXPECT_FLOAT_EQ(kNotScaled, GetMaximumAnimationScale(child1_layer));
   EXPECT_FLOAT_EQ(8.f, GetMaximumAnimationScale(child2_layer));
 
   // Changing page-scale would affect ideal_contents_scale and
@@ -7877,8 +7877,8 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
       child1_layer->test_properties()->mask_layer->GetIdealContentsScale());
   EXPECT_FLOAT_EQ(15.f, child2_layer->GetIdealContentsScale());
 
-  EXPECT_FLOAT_EQ(0.f, GetMaximumAnimationScale(root_layer));
-  EXPECT_FLOAT_EQ(0.f, GetMaximumAnimationScale(child1_layer));
+  EXPECT_FLOAT_EQ(kNotScaled, GetMaximumAnimationScale(root_layer));
+  EXPECT_FLOAT_EQ(kNotScaled, GetMaximumAnimationScale(child1_layer));
   EXPECT_FLOAT_EQ(24.f, GetMaximumAnimationScale(child2_layer));
 
   // Changing device-scale would affect ideal_contents_scale and
@@ -7897,8 +7897,8 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
       child1_layer->test_properties()->mask_layer->GetIdealContentsScale());
   EXPECT_FLOAT_EQ(60.f, child2_layer->GetIdealContentsScale());
 
-  EXPECT_FLOAT_EQ(0.f, GetMaximumAnimationScale(root_layer));
-  EXPECT_FLOAT_EQ(0.f, GetMaximumAnimationScale(child1_layer));
+  EXPECT_FLOAT_EQ(kNotScaled, GetMaximumAnimationScale(root_layer));
+  EXPECT_FLOAT_EQ(kNotScaled, GetMaximumAnimationScale(child1_layer));
   EXPECT_FLOAT_EQ(96.f, GetMaximumAnimationScale(child2_layer));
 }
 
@@ -7950,12 +7950,12 @@ TEST_F(LayerTreeHostCommonTest, AnimationScales) {
   root_layer->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(root_layer);
 
-  EXPECT_FLOAT_EQ(0.f, GetMaximumAnimationScale(root_layer));
-  EXPECT_FLOAT_EQ(0.f, GetMaximumAnimationScale(child1_layer));
+  EXPECT_FLOAT_EQ(kNotScaled, GetMaximumAnimationScale(root_layer));
+  EXPECT_FLOAT_EQ(kNotScaled, GetMaximumAnimationScale(child1_layer));
   EXPECT_FLOAT_EQ(24.f, GetMaximumAnimationScale(child2_layer));
 
-  EXPECT_FLOAT_EQ(0.f, GetStartingAnimationScale(root_layer));
-  EXPECT_FLOAT_EQ(0.f, GetStartingAnimationScale(child1_layer));
+  EXPECT_FLOAT_EQ(kNotScaled, GetStartingAnimationScale(root_layer));
+  EXPECT_FLOAT_EQ(kNotScaled, GetStartingAnimationScale(child1_layer));
   EXPECT_FLOAT_EQ(3.f, GetStartingAnimationScale(child2_layer));
 
   // Correctly updates animation scale when layer property changes.
@@ -8017,11 +8017,11 @@ TEST_F(LayerTreeHostCommonTest,
   root_layer->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(root_layer);
 
-  EXPECT_FLOAT_EQ(0.f, GetMaximumAnimationScale(root_layer));
-  EXPECT_FLOAT_EQ(0.f, GetMaximumAnimationScale(child_layer));
+  EXPECT_FLOAT_EQ(kNotScaled, GetMaximumAnimationScale(root_layer));
+  EXPECT_FLOAT_EQ(kNotScaled, GetMaximumAnimationScale(child_layer));
 
-  EXPECT_FLOAT_EQ(0.f, GetStartingAnimationScale(root_layer));
-  EXPECT_FLOAT_EQ(0.f, GetStartingAnimationScale(child_layer));
+  EXPECT_FLOAT_EQ(kNotScaled, GetStartingAnimationScale(root_layer));
+  EXPECT_FLOAT_EQ(kNotScaled, GetStartingAnimationScale(child_layer));
 }
 
 TEST_F(LayerTreeHostCommonTest, VisibleContentRectInChildRenderSurface) {

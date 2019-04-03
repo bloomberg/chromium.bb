@@ -5694,10 +5694,21 @@ void LayerTreeHostImpl::ElementIsAnimatingChanged(
       list_type == ElementListType::ACTIVE ? active_tree() : pending_tree();
   // TODO(wkorman): Explore enabling DCHECK in ElementIsAnimatingChanged()
   // below. Currently enabling causes batch of unit test failures.
-  if (tree &&
-      tree->property_trees()->ElementIsAnimatingChanged(
-          mutator_host(), element_id_map, list_type, mask, state, false))
+  if (tree && tree->property_trees()->ElementIsAnimatingChanged(
+                  element_id_map, mask, state, false))
     tree->set_needs_update_draw_properties();
+}
+
+void LayerTreeHostImpl::AnimationScalesChanged(ElementId element_id,
+                                               ElementListType list_type,
+                                               float maximum_scale,
+                                               float starting_scale) {
+  if (LayerTreeImpl* tree = list_type == ElementListType::ACTIVE
+                                ? active_tree()
+                                : pending_tree()) {
+    tree->property_trees()->AnimationScalesChanged(element_id, maximum_scale,
+                                                   starting_scale);
+  }
 }
 
 void LayerTreeHostImpl::ScrollOffsetAnimationFinished() {

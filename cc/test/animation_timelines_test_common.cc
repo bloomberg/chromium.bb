@@ -146,6 +146,11 @@ void TestHostClient::ElementIsAnimatingChanged(
   }
 }
 
+void TestHostClient::AnimationScalesChanged(ElementId element_id,
+                                            ElementListType list_type,
+                                            float maximum_scale,
+                                            float starting_scale) {}
+
 void TestHostClient::SetScrollOffsetForAnimation(
     const gfx::ScrollOffset& scroll_offset) {
   scroll_offset_ = scroll_offset;
