@@ -16,6 +16,7 @@
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/ec_key.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
+#include "third_party/boringssl/src/include/openssl/rsa.h"
 
 namespace net {
 
@@ -84,6 +85,23 @@ bool GetClientCertInfo(const X509Certificate* certificate,
   *out_type = EVP_PKEY_id(key.get());
   *out_max_length = EVP_PKEY_size(key.get());
   return true;
+}
+
+base::Optional<std::vector<uint8_t>> AddPSSPadding(
+    EVP_PKEY* pubkey,
+    const EVP_MD* md,
+    base::span<const uint8_t> digest) {
+  RSA* rsa = EVP_PKEY_get0_RSA(pubkey);
+  if (!rsa) {
+    return base::nullopt;
+  }
+  std::vector<uint8_t> ret(RSA_size(rsa));
+  if (digest.size() != EVP_MD_size(md) ||
+      !RSA_padding_add_PKCS1_PSS_mgf1(rsa, ret.data(), digest.data(), md, md,
+                                      -1 /* salt length is digest length */)) {
+    return base::nullopt;
+  }
+  return ret;
 }
 
 }  // namespace net
