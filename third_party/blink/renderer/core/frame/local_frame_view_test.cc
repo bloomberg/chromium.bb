@@ -51,7 +51,7 @@ class AnimationMockChromeClient : public EmptyChromeClient {
 class LocalFrameViewTest : public RenderingTest {
  protected:
   LocalFrameViewTest()
-      : RenderingTest(SingleChildLocalFrameClient::Create()),
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()),
         chrome_client_(MakeGarbageCollected<AnimationMockChromeClient>()) {
     EXPECT_CALL(GetAnimationMockChromeClient(), AttachRootGraphicsLayer(_, _))
         .Times(AnyNumber());

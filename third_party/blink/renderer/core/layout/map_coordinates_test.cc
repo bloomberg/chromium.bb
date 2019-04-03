@@ -13,7 +13,8 @@ namespace blink {
 
 class MapCoordinatesTest : public RenderingTest {
  public:
-  MapCoordinatesTest() : RenderingTest(SingleChildLocalFrameClient::Create()) {}
+  MapCoordinatesTest()
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
   FloatPoint MapLocalToAncestor(const LayoutObject*,
                                 const LayoutBoxModelObject* ancestor,
                                 FloatPoint,

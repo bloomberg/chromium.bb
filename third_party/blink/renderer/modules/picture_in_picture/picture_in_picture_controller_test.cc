@@ -169,7 +169,8 @@ TEST_F(PictureInPictureControllerTest, EnterPictureInPictureFiresEvent) {
   PictureInPictureControllerImpl::From(GetDocument())
       .EnterPictureInPicture(Video(), nullptr);
 
-  WaitForEvent::Create(Video(), event_type_names::kEnterpictureinpicture);
+  MakeGarbageCollected<WaitForEvent>(Video(),
+                                     event_type_names::kEnterpictureinpicture);
 
   EXPECT_NE(nullptr, PictureInPictureControllerImpl::From(GetDocument())
                          .PictureInPictureElement());
@@ -191,11 +192,13 @@ TEST_F(PictureInPictureControllerTest, ExitPictureInPictureFiresEvent) {
 
   PictureInPictureControllerImpl::From(GetDocument())
       .EnterPictureInPicture(Video(), nullptr);
-  WaitForEvent::Create(Video(), event_type_names::kEnterpictureinpicture);
+  MakeGarbageCollected<WaitForEvent>(Video(),
+                                     event_type_names::kEnterpictureinpicture);
 
   PictureInPictureControllerImpl::From(GetDocument())
       .ExitPictureInPicture(Video(), nullptr);
-  WaitForEvent::Create(Video(), event_type_names::kLeavepictureinpicture);
+  MakeGarbageCollected<WaitForEvent>(Video(),
+                                     event_type_names::kLeavepictureinpicture);
 
   EXPECT_EQ(nullptr, PictureInPictureControllerImpl::From(GetDocument())
                          .PictureInPictureElement());
@@ -215,7 +218,8 @@ TEST_F(PictureInPictureControllerTest, StartObserving) {
   PictureInPictureControllerImpl::From(GetDocument())
       .EnterPictureInPicture(Video(), nullptr);
 
-  WaitForEvent::Create(Video(), event_type_names::kEnterpictureinpicture);
+  MakeGarbageCollected<WaitForEvent>(Video(),
+                                     event_type_names::kEnterpictureinpicture);
 
   EXPECT_TRUE(PictureInPictureControllerImpl::From(GetDocument())
                   .GetDelegateBindingForTesting()
@@ -239,11 +243,13 @@ TEST_F(PictureInPictureControllerTest, StopObserving) {
 
   PictureInPictureControllerImpl::From(GetDocument())
       .EnterPictureInPicture(Video(), nullptr);
-  WaitForEvent::Create(Video(), event_type_names::kEnterpictureinpicture);
+  MakeGarbageCollected<WaitForEvent>(Video(),
+                                     event_type_names::kEnterpictureinpicture);
 
   PictureInPictureControllerImpl::From(GetDocument())
       .ExitPictureInPicture(Video(), nullptr);
-  WaitForEvent::Create(Video(), event_type_names::kLeavepictureinpicture);
+  MakeGarbageCollected<WaitForEvent>(Video(),
+                                     event_type_names::kLeavepictureinpicture);
 
   EXPECT_FALSE(PictureInPictureControllerImpl::From(GetDocument())
                    .GetDelegateBindingForTesting()
@@ -265,7 +271,8 @@ TEST_F(PictureInPictureControllerTest, PlayPauseButton_InfiniteDuration) {
   PictureInPictureControllerImpl::From(GetDocument())
       .EnterPictureInPicture(Video(), nullptr);
 
-  WaitForEvent::Create(Video(), event_type_names::kEnterpictureinpicture);
+  MakeGarbageCollected<WaitForEvent>(Video(),
+                                     event_type_names::kEnterpictureinpicture);
 
   // `SetDelegate()` may or may not have been called yet. Waiting a bit for it.
   test::RunPendingTasks();
@@ -287,7 +294,8 @@ TEST_F(PictureInPictureControllerTest, PlayPauseButton_MediaSource) {
   PictureInPictureControllerImpl::From(GetDocument())
       .EnterPictureInPicture(Video(), nullptr);
 
-  WaitForEvent::Create(Video(), event_type_names::kEnterpictureinpicture);
+  MakeGarbageCollected<WaitForEvent>(Video(),
+                                     event_type_names::kEnterpictureinpicture);
 
   // `SetDelegate()` may or may not have been called yet. Waiting a bit for it.
   test::RunPendingTasks();

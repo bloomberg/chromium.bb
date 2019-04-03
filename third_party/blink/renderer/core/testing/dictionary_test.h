@@ -27,10 +27,6 @@ class DictionaryTest : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DictionaryTest* Create() {
-    return MakeGarbageCollected<DictionaryTest>();
-  }
-
   DictionaryTest();
   ~DictionaryTest() override;
 

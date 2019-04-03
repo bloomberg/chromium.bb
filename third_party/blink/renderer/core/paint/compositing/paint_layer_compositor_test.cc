@@ -16,7 +16,7 @@ namespace {
 class PaintLayerCompositorTest : public RenderingTest {
  public:
   PaintLayerCompositorTest()
-      : RenderingTest(SingleChildLocalFrameClient::Create()) {}
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 
  private:
   void SetUp() override {

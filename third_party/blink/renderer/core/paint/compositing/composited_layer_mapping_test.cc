@@ -20,7 +20,7 @@ namespace blink {
 class CompositedLayerMappingTest : public RenderingTest {
  public:
   CompositedLayerMappingTest()
-      : RenderingTest(SingleChildLocalFrameClient::Create()) {}
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 
  protected:
   IntRect RecomputeInterestRect(const GraphicsLayer* graphics_layer) {

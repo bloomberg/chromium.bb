@@ -25,7 +25,7 @@ bool UsesNGLayout(const Element& element) {
 class ForceLegacyLayoutTest : public RenderingTest {
  public:
   ForceLegacyLayoutTest()
-      : RenderingTest(SingleChildLocalFrameClient::Create()) {}
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 };
 
 TEST_F(ForceLegacyLayoutTest, ForceLegacyBfcRecalcAncestorStyle) {

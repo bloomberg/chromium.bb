@@ -336,7 +336,7 @@ GCObservation* Internals::observeGC(ScriptValue script_value) {
     return nullptr;
   }
 
-  return GCObservation::Create(observed_value);
+  return MakeGarbageCollected<GCObservation>(observed_value);
 }
 
 unsigned Internals::updateStyleAndReturnAffectedElementCount(
@@ -1944,7 +1944,7 @@ HitTestLayerRectList* Internals::touchEventTargetLayerRects(
 
     const auto& content_layers = pac->GetExtraDataForTesting()->content_layers;
 
-    HitTestLayerRectList* hit_test_rects = HitTestLayerRectList::Create();
+    auto* hit_test_rects = MakeGarbageCollected<HitTestLayerRectList>();
     for (const auto& layer : content_layers) {
       const cc::TouchActionRegion& touch_action_region =
           layer->touch_action_region();
@@ -1986,7 +1986,7 @@ HitTestLayerRectList* Internals::touchEventTargetLayerRects(
       // on layers outside the document hierarchy (e.g. when we replace the
       // document with a video layer).
       if (GraphicsLayer* root_layer = compositor->PaintRootGraphicsLayer()) {
-        HitTestLayerRectList* hit_test_rects = HitTestLayerRectList::Create();
+        auto* hit_test_rects = MakeGarbageCollected<HitTestLayerRectList>();
         AccumulateTouchActionRectList(compositor, root_layer, hit_test_rects);
         return hit_test_rects;
       }
@@ -2575,31 +2575,31 @@ void Internals::removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(
 }
 
 TypeConversions* Internals::typeConversions() const {
-  return TypeConversions::Create();
+  return MakeGarbageCollected<TypeConversions>();
 }
 
 DictionaryTest* Internals::dictionaryTest() const {
-  return DictionaryTest::Create();
+  return MakeGarbageCollected<DictionaryTest>();
 }
 
 RecordTest* Internals::recordTest() const {
-  return RecordTest::Create();
+  return MakeGarbageCollected<RecordTest>();
 }
 
 SequenceTest* Internals::sequenceTest() const {
-  return SequenceTest::create();
+  return MakeGarbageCollected<SequenceTest>();
 }
 
 UnionTypesTest* Internals::unionTypesTest() const {
-  return UnionTypesTest::Create();
+  return MakeGarbageCollected<UnionTypesTest>();
 }
 
 OriginTrialsTest* Internals::originTrialsTest() const {
-  return OriginTrialsTest::Create();
+  return MakeGarbageCollected<OriginTrialsTest>();
 }
 
 CallbackFunctionTest* Internals::callbackFunctionTest() const {
-  return CallbackFunctionTest::Create();
+  return MakeGarbageCollected<CallbackFunctionTest>();
 }
 
 Vector<String> Internals::getReferencedFilePaths() const {

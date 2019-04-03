@@ -22,7 +22,7 @@ namespace blink {
 class SpatialNavigationTest : public RenderingTest {
  public:
   SpatialNavigationTest()
-      : RenderingTest(SingleChildLocalFrameClient::Create()) {}
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 
   LayoutRect TopOfVisualViewport() {
     LayoutRect visual_viewport = RootViewport(&GetFrame());

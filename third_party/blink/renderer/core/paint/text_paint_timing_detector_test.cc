@@ -16,7 +16,7 @@ class TextPaintTimingDetectorTest
       private ScopedFirstContentfulPaintPlusPlusForTest {
  public:
   TextPaintTimingDetectorTest()
-      : RenderingTest(SingleChildLocalFrameClient::Create()),
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()),
         ScopedFirstContentfulPaintPlusPlusForTest(true) {}
   void SetUp() override {
     RenderingTest::SetUp();

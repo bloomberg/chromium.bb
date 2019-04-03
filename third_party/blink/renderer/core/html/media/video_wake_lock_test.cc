@@ -118,16 +118,16 @@ class VideoWakeLockTest : public PageTestBase {
     PictureInPictureController::From(GetDocument())
         .EnterPictureInPicture(Video(), nullptr);
 
-    WaitForEvent::Create(video_.Get(),
-                         event_type_names::kEnterpictureinpicture);
+    MakeGarbageCollected<WaitForEvent>(
+        video_.Get(), event_type_names::kEnterpictureinpicture);
   }
 
   void SimulateLeavePictureInPicture() {
     PictureInPictureController::From(GetDocument())
         .ExitPictureInPicture(Video(), nullptr);
 
-    WaitForEvent::Create(video_.Get(),
-                         event_type_names::kLeavepictureinpicture);
+    MakeGarbageCollected<WaitForEvent>(
+        video_.Get(), event_type_names::kLeavepictureinpicture);
   }
 
  private:

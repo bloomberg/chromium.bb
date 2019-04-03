@@ -94,7 +94,7 @@ TEST_F(VideoAutoFullscreen, PlayTriggersFullscreenWithoutPlaysInline) {
                                        UserGestureToken::kNewGesture);
   Video()->Play();
 
-  WaitForEvent::Create(Video(), event_type_names::kPlay);
+  MakeGarbageCollected<WaitForEvent>(Video(), event_type_names::kPlay);
   test::RunPendingTasks();
 
   EXPECT_TRUE(Video()->IsFullscreen());
@@ -109,7 +109,7 @@ TEST_F(VideoAutoFullscreen, PlayDoesNotTriggerFullscreenWithPlaysInline) {
                                        UserGestureToken::kNewGesture);
   Video()->Play();
 
-  WaitForEvent::Create(Video(), event_type_names::kPlay);
+  MakeGarbageCollected<WaitForEvent>(Video(), event_type_names::kPlay);
   test::RunPendingTasks();
 
   EXPECT_FALSE(Video()->IsFullscreen());
@@ -123,7 +123,7 @@ TEST_F(VideoAutoFullscreen, ExitFullscreenPausesWithoutPlaysInline) {
                                        UserGestureToken::kNewGesture);
   Video()->Play();
 
-  WaitForEvent::Create(Video(), event_type_names::kPlay);
+  MakeGarbageCollected<WaitForEvent>(Video(), event_type_names::kPlay);
   test::RunPendingTasks();
   ASSERT_TRUE(Video()->IsFullscreen());
 
@@ -144,7 +144,7 @@ TEST_F(VideoAutoFullscreen, ExitFullscreenDoesNotPauseWithPlaysInline) {
                                        UserGestureToken::kNewGesture);
   Video()->Play();
 
-  WaitForEvent::Create(Video(), event_type_names::kPlay);
+  MakeGarbageCollected<WaitForEvent>(Video(), event_type_names::kPlay);
   Video()->webkitEnterFullscreen();
   test::RunPendingTasks();
   ASSERT_TRUE(Video()->IsFullscreen());

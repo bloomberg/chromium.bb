@@ -21,7 +21,8 @@ namespace blink {
 class BoxPaintInvalidatorTest : public PaintControllerPaintTest {
  public:
   BoxPaintInvalidatorTest()
-      : PaintControllerPaintTest(SingleChildLocalFrameClient::Create()) {}
+      : PaintControllerPaintTest(
+            MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 
  protected:
   PaintInvalidationReason ComputePaintInvalidationReason(
