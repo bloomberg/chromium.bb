@@ -91,7 +91,7 @@ void MimeHandlerViewContainerManager::DestroyFrameContainer(
 void MimeHandlerViewContainerManager::RetryCreatingMimeHandlerViewGuest(
     int32_t element_instance_id) {
   if (auto* frame_container = GetFrameContainer(element_instance_id))
-    frame_container->DestroyFrameContainer();
+    frame_container->RetryCreatingMimeHandlerViewGuest();
 }
 
 void MimeHandlerViewContainerManager::DidLoad(int32_t element_instance_id) {
