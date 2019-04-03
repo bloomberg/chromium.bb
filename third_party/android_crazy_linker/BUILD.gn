@@ -74,6 +74,7 @@ if (is_android) {
         "src/src/crazy_linker_elf_view.h",
         "src/src/crazy_linker_error.cpp",
         "src/src/crazy_linker_error.h",
+        "src/src/crazy_linker_expected.h",
         "src/src/crazy_linker_globals.cpp",
         "src/src/crazy_linker_globals.h",
         "src/src/crazy_linker_gnu_hash_table.cpp",
@@ -159,6 +160,7 @@ if (is_android) {
       "src/src/crazy_linker_elf_hash_table_unittest.cpp",
       "src/src/crazy_linker_elf_symbols_unittest.cpp",
       "src/src/crazy_linker_error_unittest.cpp",
+      "src/src/crazy_linker_expected_unittest.cpp",
       "src/src/crazy_linker_globals_unittest.cpp",
       "src/src/crazy_linker_gnu_hash_table_unittest.cpp",
       "src/src/crazy_linker_line_reader_unittest.cpp",
@@ -177,6 +179,9 @@ if (is_android) {
     ]
 
     include_dirs = [ "src/src" ]
+
+    # Required by crazy_linker_expected_unittest.cpp
+    defines = [ "CRAZY_DEBUG=1" ]
 
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
