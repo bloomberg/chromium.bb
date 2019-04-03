@@ -23,10 +23,10 @@ namespace {
 
 std::unique_ptr<BookmarkAppInstallationTask> InstallationTaskCreateWrapper(
     Profile* profile,
+    web_app::InstallFinalizer* install_finalizer,
     web_app::InstallOptions install_options) {
   return std::make_unique<BookmarkAppInstallationTask>(
-      profile, std::make_unique<BookmarkAppInstallFinalizer>(profile),
-      std::move(install_options));
+      profile, install_finalizer, std::move(install_options));
 }
 
 }  // namespace
@@ -43,9 +43,11 @@ struct PendingBookmarkAppManager::TaskAndCallback {
 
 PendingBookmarkAppManager::PendingBookmarkAppManager(
     Profile* profile,
-    web_app::AppRegistrar* registrar)
+    web_app::AppRegistrar* registrar,
+    web_app::InstallFinalizer* install_finalizer)
     : profile_(profile),
       registrar_(registrar),
+      install_finalizer_(install_finalizer),
       uninstaller_(
           std::make_unique<BookmarkAppUninstaller>(profile_, registrar_)),
       extension_ids_map_(profile->GetPrefs()),
@@ -57,7 +59,8 @@ PendingBookmarkAppManager::~PendingBookmarkAppManager() = default;
 void PendingBookmarkAppManager::Install(web_app::InstallOptions install_options,
                                         OnceInstallCallback callback) {
   pending_tasks_and_callbacks_.push_front(std::make_unique<TaskAndCallback>(
-      task_factory_.Run(profile_, std::move(install_options)),
+      task_factory_.Run(profile_, install_finalizer_,
+                        std::move(install_options)),
       std::move(callback)));
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -71,7 +74,9 @@ void PendingBookmarkAppManager::InstallApps(
     const RepeatingInstallCallback& callback) {
   for (auto& install_options : install_options_list) {
     pending_tasks_and_callbacks_.push_back(std::make_unique<TaskAndCallback>(
-        task_factory_.Run(profile_, std::move(install_options)), callback));
+        task_factory_.Run(profile_, install_finalizer_,
+                          std::move(install_options)),
+        callback));
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(

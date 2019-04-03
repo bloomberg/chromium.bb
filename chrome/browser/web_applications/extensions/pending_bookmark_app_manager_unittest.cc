@@ -18,6 +18,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/timer/mock_timer.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_installation_task.h"
@@ -77,12 +78,12 @@ class TestBookmarkAppInstallationTask : public BookmarkAppInstallationTask {
  public:
   TestBookmarkAppInstallationTask(Profile* profile,
                                   web_app::TestAppRegistrar* registrar,
+                                  web_app::InstallFinalizer* install_finalizer,
                                   web_app::InstallOptions install_options,
                                   bool succeeds)
-      : BookmarkAppInstallationTask(
-            profile,
-            std::make_unique<web_app::TestInstallFinalizer>(),
-            std::move(install_options)),
+      : BookmarkAppInstallationTask(profile,
+                                    install_finalizer,
+                                    std::move(install_options)),
         profile_(profile),
         registrar_(registrar),
         succeeds_(succeeds),
@@ -198,6 +199,7 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     registrar_ = std::make_unique<web_app::TestAppRegistrar>();
+    install_finalizer_ = std::make_unique<web_app::TestInstallFinalizer>();
   }
 
   void TearDown() override {
@@ -207,10 +209,12 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
 
   std::unique_ptr<BookmarkAppInstallationTask> CreateInstallationTask(
       Profile* profile,
+      web_app::InstallFinalizer* install_finalizer,
       web_app::InstallOptions install_options,
       bool succeeds) {
     auto task = std::make_unique<TestBookmarkAppInstallationTask>(
-        profile, registrar_.get(), std::move(install_options), succeeds);
+        profile, registrar_.get(), install_finalizer,
+        std::move(install_options), succeeds);
     auto* task_ptr = task.get();
     task->SetOnInstallCalled(base::BindLambdaForTesting([this, task_ptr]() {
       ++install_run_count_;
@@ -227,15 +231,19 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
 
   std::unique_ptr<BookmarkAppInstallationTask> CreateSuccessfulInstallationTask(
       Profile* profile,
+      web_app::InstallFinalizer* install_finalizer,
       web_app::InstallOptions install_options) {
-    return CreateInstallationTask(profile, std::move(install_options),
+    return CreateInstallationTask(profile, install_finalizer,
+                                  std::move(install_options),
                                   true /* succeeds */);
   }
 
   std::unique_ptr<BookmarkAppInstallationTask> CreateFailingInstallationTask(
       Profile* profile,
+      web_app::InstallFinalizer* install_finalizer,
       web_app::InstallOptions install_options) {
-    return CreateInstallationTask(profile, std::move(install_options),
+    return CreateInstallationTask(profile, install_finalizer,
+                                  std::move(install_options),
                                   false /* succeeds */);
   }
 
@@ -314,7 +322,7 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<PendingBookmarkAppManager>
   GetPendingBookmarkAppManagerWithTestFactories() {
     auto manager = std::make_unique<PendingBookmarkAppManager>(
-        profile(), registrar_.get());
+        profile(), registrar_.get(), install_finalizer_.get());
     manager->SetTaskFactoryForTesting(successful_installation_task_creator());
 
     // The test suite doesn't support multiple uninstallers.
@@ -375,6 +383,8 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
   PendingBookmarkAppManager::TaskFactory failing_installation_task_creator_;
 
   std::unique_ptr<web_app::TestAppRegistrar> registrar_;
+  std::unique_ptr<web_app::TestInstallFinalizer> install_finalizer_;
+
   TestBookmarkAppUninstaller* uninstaller_ = nullptr;
   web_app::TestWebAppUrlLoader* url_loader_ = nullptr;
 

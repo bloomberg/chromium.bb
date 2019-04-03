@@ -44,11 +44,11 @@ void BookmarkAppInstallationTask::CreateTabHelpers(
 
 BookmarkAppInstallationTask::BookmarkAppInstallationTask(
     Profile* profile,
-    std::unique_ptr<web_app::InstallFinalizer> install_finalizer,
+    web_app::InstallFinalizer* install_finalizer,
     web_app::InstallOptions install_options)
     : profile_(profile),
+      install_finalizer_(install_finalizer),
       extension_ids_map_(profile_->GetPrefs()),
-      install_finalizer_(std::move(install_finalizer)),
       install_options_(std::move(install_options)) {}
 
 BookmarkAppInstallationTask::~BookmarkAppInstallationTask() = default;

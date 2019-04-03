@@ -30,6 +30,7 @@ class WebContents;
 
 namespace web_app {
 class AppRegistrar;
+class InstallFinalizer;
 }  // namespace web_app
 
 namespace extensions {
@@ -43,11 +44,16 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
  public:
   using WebContentsFactory =
       base::RepeatingCallback<std::unique_ptr<content::WebContents>(Profile*)>;
-  using TaskFactory = base::RepeatingCallback<std::unique_ptr<
-      BookmarkAppInstallationTask>(Profile*, web_app::InstallOptions)>;
+  using TaskFactory =
+      base::RepeatingCallback<std::unique_ptr<BookmarkAppInstallationTask>(
+          Profile*,
+          web_app::InstallFinalizer*,
+          web_app::InstallOptions)>;
 
-  explicit PendingBookmarkAppManager(Profile* profile,
-                                     web_app::AppRegistrar* registrar_);
+  explicit PendingBookmarkAppManager(
+      Profile* profile,
+      web_app::AppRegistrar* registrar,
+      web_app::InstallFinalizer* install_finalizer);
   ~PendingBookmarkAppManager() override;
 
   // web_app::PendingAppManager
@@ -84,6 +90,7 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
 
   Profile* profile_;
   web_app::AppRegistrar* registrar_;
+  web_app::InstallFinalizer* install_finalizer_;
   std::unique_ptr<BookmarkAppUninstaller> uninstaller_;
   web_app::ExtensionIdsMap extension_ids_map_;
 

@@ -57,7 +57,7 @@ class BookmarkAppInstallationTask {
   // policy, etc.
   explicit BookmarkAppInstallationTask(
       Profile* profile,
-      std::unique_ptr<web_app::InstallFinalizer> install_finalizer,
+      web_app::InstallFinalizer* install_finalizer,
       web_app::InstallOptions install_options);
 
   virtual ~BookmarkAppInstallationTask();
@@ -76,10 +76,9 @@ class BookmarkAppInstallationTask {
                          web_app::InstallResultCode code);
 
   Profile* profile_;
+  web_app::InstallFinalizer* install_finalizer_;
 
   web_app::ExtensionIdsMap extension_ids_map_;
-
-  std::unique_ptr<web_app::InstallFinalizer> install_finalizer_;
 
   const web_app::InstallOptions install_options_;
 

@@ -121,6 +121,8 @@ class BookmarkAppInstallationTaskTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
+    install_finalizer_ = std::make_unique<web_app::TestInstallFinalizer>();
+
     // CrxInstaller in BookmarkAppInstaller needs an ExtensionService, so
     // create one for the profile.
     TestExtensionSystem* test_system =
@@ -137,6 +139,10 @@ class BookmarkAppInstallationTaskTest : public ChromeRenderViewHostTestHarness {
   TestBookmarkAppHelper& test_helper() {
     DCHECK(test_helper_);
     return *test_helper_;
+  }
+
+  web_app::TestInstallFinalizer* install_finalizer() {
+    return install_finalizer_.get();
   }
 
  private:
@@ -170,6 +176,7 @@ class BookmarkAppInstallationTaskTest : public ChromeRenderViewHostTestHarness {
         }));
   }
 
+  std::unique_ptr<web_app::TestInstallFinalizer> install_finalizer_;
   TestBookmarkAppHelper* test_helper_ = nullptr;
   GURL app_url_{kWebAppUrl};
 
@@ -179,7 +186,7 @@ class BookmarkAppInstallationTaskTest : public ChromeRenderViewHostTestHarness {
 TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_InstallationSucceeds) {
   auto task = std::make_unique<BookmarkAppInstallationTask>(
-      profile(), std::make_unique<web_app::TestInstallFinalizer>(),
+      profile(), install_finalizer(),
       web_app::InstallOptions(app_url(), web_app::LaunchContainer::kDefault,
                               web_app::InstallSource::kInternal));
 
@@ -222,7 +229,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
 TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_InstallationFails) {
   auto task = std::make_unique<BookmarkAppInstallationTask>(
-      profile(), std::make_unique<web_app::TestInstallFinalizer>(),
+      profile(), install_finalizer(),
       web_app::InstallOptions(app_url(), web_app::LaunchContainer::kWindow,
                               web_app::InstallSource::kInternal));
 
@@ -260,8 +267,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
                                           web_app::InstallSource::kInternal);
   install_options.add_to_desktop = false;
   auto task = std::make_unique<BookmarkAppInstallationTask>(
-      profile(), std::make_unique<web_app::TestInstallFinalizer>(),
-      std::move(install_options));
+      profile(), install_finalizer(), std::move(install_options));
 
   bool callback_called = false;
   task->Install(web_contents(),
@@ -290,8 +296,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
                                           web_app::InstallSource::kInternal);
   install_options.add_to_quick_launch_bar = false;
   auto task = std::make_unique<BookmarkAppInstallationTask>(
-      profile(), std::make_unique<web_app::TestInstallFinalizer>(),
-      std::move(install_options));
+      profile(), install_finalizer(), std::move(install_options));
 
   bool callback_called = false;
   task->Install(web_contents(),
@@ -323,8 +328,7 @@ TEST_F(
   install_options.add_to_desktop = false;
   install_options.add_to_quick_launch_bar = false;
   auto task = std::make_unique<BookmarkAppInstallationTask>(
-      profile(), std::make_unique<web_app::TestInstallFinalizer>(),
-      std::move(install_options));
+      profile(), install_finalizer(), std::move(install_options));
 
   bool callback_called = false;
   task->Install(web_contents(),
@@ -353,8 +357,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
       web_app::InstallOptions(app_url(), web_app::LaunchContainer::kWindow,
                               web_app::InstallSource::kInternal);
   auto task = std::make_unique<BookmarkAppInstallationTask>(
-      profile(), std::make_unique<web_app::TestInstallFinalizer>(),
-      std::move(install_options));
+      profile(), install_finalizer(), std::move(install_options));
 
   bool callback_called = false;
   task->Install(web_contents(),
@@ -381,8 +384,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
       web_app::InstallOptions(app_url(), web_app::LaunchContainer::kTab,
                               web_app::InstallSource::kInternal);
   auto task = std::make_unique<BookmarkAppInstallationTask>(
-      profile(), std::make_unique<web_app::TestInstallFinalizer>(),
-      std::move(install_options));
+      profile(), install_finalizer(), std::move(install_options));
 
   bool callback_called = false;
   task->Install(web_contents(),
@@ -409,8 +411,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
       web_app::InstallOptions(app_url(), web_app::LaunchContainer::kDefault,
                               web_app::InstallSource::kInternal);
   auto task = std::make_unique<BookmarkAppInstallationTask>(
-      profile(), std::make_unique<web_app::TestInstallFinalizer>(),
-      std::move(install_options));
+      profile(), install_finalizer(), std::move(install_options));
 
   bool callback_called = false;
   task->Install(web_contents(),
@@ -436,8 +437,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
       web_app::InstallOptions(app_url(), web_app::LaunchContainer::kDefault,
                               web_app::InstallSource::kExternalPolicy);
   auto task = std::make_unique<BookmarkAppInstallationTask>(
-      profile(), std::make_unique<web_app::TestInstallFinalizer>(),
-      std::move(install_options));
+      profile(), install_finalizer(), std::move(install_options));
 
   bool callback_called = false;
   task->Install(web_contents(),
@@ -460,11 +460,8 @@ TEST_F(BookmarkAppInstallationTaskTest,
 TEST_F(BookmarkAppInstallationTaskTest, InstallPlaceholder) {
   web_app::InstallOptions options(app_url(), web_app::LaunchContainer::kWindow,
                                   web_app::InstallSource::kExternalPolicy);
-  auto finalizer = std::make_unique<web_app::TestInstallFinalizer>();
-  auto* finalizer_ptr = finalizer.get();
-
   auto task = std::make_unique<BookmarkAppInstallationTask>(
-      profile(), std::move(finalizer), std::move(options));
+      profile(), install_finalizer(), std::move(options));
 
   base::RunLoop run_loop;
   task->InstallPlaceholder(base::BindLambdaForTesting(
@@ -474,9 +471,9 @@ TEST_F(BookmarkAppInstallationTaskTest, InstallPlaceholder) {
 
         EXPECT_TRUE(IsPlaceholderApp(profile(), app_url()));
 
-        EXPECT_TRUE(finalizer_ptr->finalized_policy_install());
+        EXPECT_TRUE(install_finalizer()->finalized_policy_install());
         std::unique_ptr<WebApplicationInfo> web_app_info =
-            finalizer_ptr->web_app_info();
+            install_finalizer()->web_app_info();
 
         EXPECT_EQ(base::UTF8ToUTF16(app_url().spec()), web_app_info->title);
         EXPECT_EQ(app_url(), web_app_info->app_url);

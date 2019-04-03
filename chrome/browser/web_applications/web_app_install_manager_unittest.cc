@@ -112,11 +112,11 @@ class WebAppInstallManagerTest : public WebAppTest {
     icon_manager_ =
         std::make_unique<WebAppIconManager>(profile(), std::move(file_utils));
 
-    auto install_finalizer = std::make_unique<WebAppInstallFinalizer>(
+    install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
         registrar_.get(), icon_manager_.get());
 
     install_manager_ = std::make_unique<WebAppInstallManager>(
-        profile(), std::move(install_finalizer));
+        profile(), install_finalizer_.get());
   }
 
   void CreateRendererAppInfo(const GURL& url,
@@ -157,10 +157,15 @@ class WebAppInstallManagerTest : public WebAppTest {
   }
 
   void SetInstallFinalizerForTesting() {
-    auto install_finalizer = std::make_unique<TestInstallFinalizer>();
-    install_finalizer_ = install_finalizer.get();
-    install_manager_->SetInstallFinalizerForTesting(
-        std::move(install_finalizer));
+    auto test_install_finalizer = std::make_unique<TestInstallFinalizer>();
+    test_install_finalizer_ = test_install_finalizer.get();
+    install_finalizer_ = std::move(test_install_finalizer);
+    install_manager_->SetInstallFinalizerForTesting(test_install_finalizer_);
+  }
+
+  TestInstallFinalizer& test_install_finalizer() {
+    DCHECK(test_install_finalizer_);
+    return *test_install_finalizer_;
   }
 
   void SetIconsMapToRetrieve(IconsMap icons_map) {
@@ -213,11 +218,14 @@ class WebAppInstallManagerTest : public WebAppTest {
   std::unique_ptr<WebAppRegistrar> registrar_;
   std::unique_ptr<WebAppIconManager> icon_manager_;
   std::unique_ptr<WebAppInstallManager> install_manager_;
+  std::unique_ptr<InstallFinalizer> install_finalizer_;
 
   // Owned by install_manager_:
   TestFileUtils* file_utils_ = nullptr;
   TestDataRetriever* data_retriever_ = nullptr;
-  TestInstallFinalizer* install_finalizer_ = nullptr;
+
+ private:
+  TestInstallFinalizer* test_install_finalizer_ = nullptr;
 };
 
 TEST_F(WebAppInstallManagerTest, InstallFromWebContents) {
@@ -426,7 +434,7 @@ TEST_F(WebAppInstallManagerTest, GetIcons) {
   InstallWebApp();
 
   std::unique_ptr<WebApplicationInfo> web_app_info =
-      install_finalizer_->web_app_info();
+      test_install_finalizer().web_app_info();
 
   // Make sure that icons have been generated for all sub sizes.
   EXPECT_TRUE(ContainsOneIconOfEachSize(*web_app_info));
@@ -455,7 +463,7 @@ TEST_F(WebAppInstallManagerTest, GetIcons_NoIconsProvided) {
   InstallWebApp();
 
   std::unique_ptr<WebApplicationInfo> web_app_info =
-      install_finalizer_->web_app_info();
+      test_install_finalizer().web_app_info();
 
   // Make sure that icons have been generated for all sizes.
   EXPECT_TRUE(ContainsOneIconOfEachSize(*web_app_info));
@@ -613,15 +621,15 @@ TEST_F(WebAppInstallManagerTest, FinalizerMethodsCalled) {
 
   InstallWebApp();
 
-  EXPECT_EQ(1, install_finalizer_->num_create_os_shortcuts_calls());
-  EXPECT_EQ(1, install_finalizer_->num_reparent_tab_calls());
-  EXPECT_EQ(1, install_finalizer_->num_reveal_appshim_calls());
-  EXPECT_EQ(1, install_finalizer_->num_pin_app_to_shelf_calls());
+  EXPECT_EQ(1, test_install_finalizer().num_create_os_shortcuts_calls());
+  EXPECT_EQ(1, test_install_finalizer().num_reparent_tab_calls());
+  EXPECT_EQ(1, test_install_finalizer().num_reveal_appshim_calls());
+  EXPECT_EQ(1, test_install_finalizer().num_pin_app_to_shelf_calls());
 }
 
 TEST_F(WebAppInstallManagerTest, FinalizerMethodsNotCalled) {
   PrepareTestAppInstall();
-  install_finalizer_->SetNextFinalizeInstallResult(
+  test_install_finalizer().SetNextFinalizeInstallResult(
       AppId(), InstallResultCode::kFailedUnknownReason);
 
   InstallResult result = InstallWebAppAndGetResults();
@@ -629,10 +637,10 @@ TEST_F(WebAppInstallManagerTest, FinalizerMethodsNotCalled) {
   EXPECT_TRUE(result.app_id.empty());
   EXPECT_EQ(InstallResultCode::kFailedUnknownReason, result.code);
 
-  EXPECT_EQ(0, install_finalizer_->num_create_os_shortcuts_calls());
-  EXPECT_EQ(0, install_finalizer_->num_reparent_tab_calls());
-  EXPECT_EQ(0, install_finalizer_->num_reveal_appshim_calls());
-  EXPECT_EQ(0, install_finalizer_->num_pin_app_to_shelf_calls());
+  EXPECT_EQ(0, test_install_finalizer().num_create_os_shortcuts_calls());
+  EXPECT_EQ(0, test_install_finalizer().num_reparent_tab_calls());
+  EXPECT_EQ(0, test_install_finalizer().num_reveal_appshim_calls());
+  EXPECT_EQ(0, test_install_finalizer().num_pin_app_to_shelf_calls());
 }
 
 // TODO(loyso): Convert more tests from bookmark_app_helper_unittest.cc
