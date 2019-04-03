@@ -136,63 +136,6 @@ class DisplayLockContextTest : public testing::Test {
   frame_test_helpers::WebViewHelper web_view_helper_;
 };
 
-TEST_F(DisplayLockContextTest, LockBeforeAppendStyleDirtyBits) {
-  SetHtmlInnerHTML(R"HTML(
-    <style>
-    div {
-      width: 100px;
-      height: 100px;
-      contain: content;
-    }
-    </style>
-    <body></body>
-  )HTML");
-  auto* element = GetDocument().CreateRawElement(html_names::kDivTag);
-  auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
-  {
-    ScriptState::Scope scope(script_state);
-    element->getDisplayLockForBindings()->acquire(script_state, nullptr);
-  }
-  GetDocument().body()->appendChild(element);
-
-  // We immediately finish acquiring the lock.
-  EXPECT_FALSE(
-      element->GetDisplayLockContext()->ShouldStyle(DisplayLockContext::kSelf));
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldStyle(
-      DisplayLockContext::kChildren));
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout());
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
-
-  // If the element is dirty, it will stay dirty.
-  element->setAttribute("style", "color: red;");
-  EXPECT_TRUE(element->NeedsStyleRecalc());
-  EXPECT_FALSE(element->ChildNeedsStyleRecalc());
-
-  UpdateAllLifecyclePhasesForTest();
-  EXPECT_TRUE(element->NeedsStyleRecalc());
-  EXPECT_FALSE(element->GetComputedStyle());
-
-  // If we block style recalc on element when we traverse to it, we should mark
-  // it dirty appropriately later.
-  GetDocument().body()->SetNeedsStyleRecalc(
-      kSubtreeStyleChange, StyleChangeReasonForTracing::Create("test"));
-  UpdateAllLifecyclePhasesForTest();
-  EXPECT_FALSE(GetDocument().body()->ChildNeedsStyleRecalc());
-  EXPECT_TRUE(element->NeedsStyleRecalc());
-  EXPECT_EQ(element->GetStyleChangeType(), kLocalStyleChange);
-  {
-    ScriptState::Scope scope(script_state);
-    element->getDisplayLockForBindings()->commit(script_state);
-  }
-  EXPECT_TRUE(GetDocument().body()->ChildNeedsStyleRecalc());
-  EXPECT_TRUE(element->NeedsStyleRecalc());
-  EXPECT_EQ(element->GetStyleChangeType(), kSubtreeStyleChange);
-  UpdateAllLifecyclePhasesForTest();
-  EXPECT_FALSE(GetDocument().body()->ChildNeedsStyleRecalc());
-  EXPECT_FALSE(element->NeedsStyleRecalc());
-}
-
 TEST_F(DisplayLockContextTest, LockAfterAppendStyleDirtyBits) {
   SetHtmlInnerHTML(R"HTML(
     <style>
@@ -211,17 +154,6 @@ TEST_F(DisplayLockContextTest, LockAfterAppendStyleDirtyBits) {
     ScriptState::Scope scope(script_state);
     element->getDisplayLockForBindings()->acquire(script_state, nullptr);
   }
-  // We should be in pending acquire state. In this mode, we're still
-  // technically not locked.
-  EXPECT_TRUE(
-      element->GetDisplayLockContext()->ShouldStyle(DisplayLockContext::kSelf));
-  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldStyle(
-      DisplayLockContext::kChildren));
-  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldLayout());
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
-
-  UpdateAllLifecyclePhasesForTest();
 
   // Finished acquiring the lock.
   // Note that because the element is locked after append, the "self" phase for
@@ -339,17 +271,6 @@ TEST_F(DisplayLockContextTest, LockedElementIsNotSearchableViaTextFinder) {
     element->getDisplayLockForBindings()->acquire(script_state, nullptr);
   }
 
-  // We should be in pending acquire state. In this mode, we're still
-  // technically not locked.
-  EXPECT_TRUE(
-      element->GetDisplayLockContext()->ShouldStyle(DisplayLockContext::kSelf));
-  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldStyle(
-      DisplayLockContext::kChildren));
-  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldLayout());
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
-
   UpdateAllLifecyclePhasesForTest();
 
   // Sanity checks to ensure the element is locked.
@@ -428,16 +349,6 @@ TEST_F(DisplayLockContextTest, LockedElementIsNotSearchableViaFindInPage) {
     ScriptState::Scope scope(script_state);
     element->getDisplayLockForBindings()->acquire(script_state, nullptr);
   }
-
-  // We should be in pending acquire state, which means we would allow things
-  // like style and layout but disallow paint. This is still considered an
-  // unlocked state.
-  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldStyle(
-      DisplayLockContext::kChildren));
-  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldLayout());
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
 
   UpdateAllLifecyclePhasesForTest();
 
@@ -922,16 +833,6 @@ TEST_F(DisplayLockContextTest, LockedElementAndDescendantsAreNotFocusable) {
     element->getDisplayLockForBindings()->acquire(script_state, nullptr);
   }
 
-  // We should be in pending acquire state, which means we would allow things
-  // like style and layout but disallow paint. This is sitll considered an
-  // unlocked state.
-  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldStyle(
-      DisplayLockContext::kChildren));
-  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldLayout());
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
-
   UpdateAllLifecyclePhasesForTest();
 
   // Sanity checks to ensure the element is locked.
@@ -1011,19 +912,15 @@ TEST_F(DisplayLockContextTest, DisplayLockPreventsActivation) {
     container->getDisplayLockForBindings()->acquire(script_state, nullptr);
   }
 
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
-  EXPECT_FALSE(host->DisplayLockPreventsActivation());
-  EXPECT_FALSE(container->DisplayLockPreventsActivation());
-  EXPECT_FALSE(slotted->DisplayLockPreventsActivation());
-
-  UpdateAllLifecyclePhasesForTest();
-
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
   EXPECT_FALSE(host->DisplayLockPreventsActivation());
   EXPECT_TRUE(container->DisplayLockPreventsActivation());
   EXPECT_TRUE(slotted->DisplayLockPreventsActivation());
+
+  // Ensure that we resolve the acquire callback, thus finishing the acquire
+  // step.
+  UpdateAllLifecyclePhasesForTest();
 
   {
     ScriptState::Scope scope(script_state);
@@ -1074,15 +971,6 @@ TEST_F(DisplayLockContextTest,
     ScriptState::Scope scope(script_state);
     element->getDisplayLockForBindings()->acquire(script_state, nullptr);
   }
-  // We should be in pending acquire state, which means we would allow things
-  // like style and layout but disallow paint. This is still considered an
-  // unlocked state.
-  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldStyle(
-      DisplayLockContext::kChildren));
-  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldLayout());
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
 
   UpdateAllLifecyclePhasesForTest();
 

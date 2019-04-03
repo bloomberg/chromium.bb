@@ -39,6 +39,7 @@ const char* kContainmentNotSatisfied =
     "Containment requirement is not satisfied.";
 const char* kElementIsDisconnected = "Element is disconnected.";
 const char* kLockCommitted = "Lock commit was requested.";
+const char* kInvalidOptions = "Invalid options.";
 }  // namespace rejection_names
 
 // Helper function to convert a display locking state to a string. Used in
@@ -53,8 +54,6 @@ std::string StateToString(DisplayLockContext::State state) {
       return "kCommitting";
     case DisplayLockContext::kUnlocked:
       return "kUnlocked";
-    case DisplayLockContext::kPendingAcquire:
-      return "kPendingAcquire";
   }
   return "";
 }
@@ -75,6 +74,12 @@ ScriptPromise GetResolvedPromise(ScriptState* script_state) {
   auto promise = resolver->Promise();
   resolver->Resolve();
   return promise;
+}
+
+base::Optional<LayoutSize> ParseAndVerifySize(const Vector<double>& size) {
+  if (size.size() != 2 || size[0] < 0 || size[1] < 0)
+    return {};
+  return LayoutSize(static_cast<float>(size[0]), static_cast<float>(size[1]));
 }
 
 }  // namespace
@@ -156,45 +161,59 @@ ScriptPromise DisplayLockContext::acquire(ScriptState* script_state,
   }
   activatable_ = options && options->activatable();
 
+  if (options && options->hasSize()) {
+    auto parsed_size = ParseAndVerifySize(options->size());
+    if (!parsed_size) {
+      return GetRejectedPromise(script_state, rejection_names::kInvalidOptions);
+    }
+    locked_frame_rect_ = LayoutRect(LayoutPoint(), *parsed_size);
+  } else {
+    locked_frame_rect_ = LayoutRect();
+  }
+
   // We always reschedule a timeout task even if we're not starting a new
   // acquire. The reason for this is that the last acquire dictates the timeout
   // interval. Note that the following call cancels any existing timeout tasks.
   RescheduleTimeoutTask(timeout_ms);
 
-  if (state_ == kPendingAcquire) {
-    DCHECK(acquire_resolver_);
+  if (acquire_resolver_)
     return acquire_resolver_->Promise();
-  }
-  DCHECK(!acquire_resolver_);
 
-  // At this point, if we're not unlocked, then we must already be locked.
-  if (state_ != kUnlocked)
+  // At this point, we updated state based on the options so if we're locked,
+  // resolve.
+  if (IsLocked())
     return GetResolvedPromise(script_state);
 
   update_budget_.reset();
-  is_locked_after_connect_ = element_->isConnected();
 
-  // If we're already connected then we need to ensure that 1. layout is clean
-  // and 2. we have removed the current painted output.
+  // If we're already connected then we need to ensure that we update our layout
+  // size based on the options and we have cleared the painted output.
   if (ConnectedToView()) {
     acquire_resolver_ =
         MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-    state_ = kPendingAcquire;
+    if (auto* layout_object = element_->GetLayoutObject()) {
+      layout_object->SetNeedsLayout(
+          layout_invalidation_reason::kDisplayLockCommitting);
+    }
     MarkPaintLayerNeedsRepaint();
     ScheduleAnimation();
+    // TODO(vmpstr): This needs to be set after invalidation above, since we
+    // want the object to layout once. After the changes to separate self and
+    // child layout, this would no longer be required and we can set the
+    // container as locked earlier.
+    state_ = kLocked;
     return acquire_resolver_->Promise();
   }
 
-  // Otherwise (if we're not connected), we can acquire the lock immediately.
-  locked_frame_rect_ = LayoutRect();
   state_ = kLocked;
+  // Otherwise (if we're not connected), resolve immediately.
   return GetResolvedPromise(script_state);
 }
 
 ScriptPromise DisplayLockContext::update(ScriptState* script_state) {
   TRACE_EVENT0("blink", "DisplayLockContext::update()");
   // Reject if we're unlocked or disconnected.
-  if (state_ == kUnlocked || state_ == kPendingAcquire || !ConnectedToView()) {
+  if (state_ == kUnlocked || !ConnectedToView()) {
     return GetRejectedPromise(script_state,
                               rejection_names::kElementIsUnlocked);
   }
@@ -251,8 +270,7 @@ ScriptPromise DisplayLockContext::updateAndCommit(ScriptState* script_state) {
   // If we're in a state where a co-operative update doesn't make sense (e.g. we
   // haven't acquired the lock, or we're already sync committing), then do
   // whatever commit() would do.
-  if (state_ == kPendingAcquire || state_ == kCommitting ||
-      !ConnectedToView()) {
+  if (state_ == kCommitting || !ConnectedToView()) {
     return commit(script_state);
   }
 
@@ -314,8 +332,7 @@ void DisplayLockContext::FinishResolver(Member<ScriptPromiseResolver>* resolver,
 }
 
 bool DisplayLockContext::ShouldStyle(LifecycleTarget target) const {
-  return (target == kSelf && is_locked_after_connect_) || update_forced_ ||
-         state_ > kUpdating ||
+  return target == kSelf || update_forced_ || state_ > kUpdating ||
          (state_ == kUpdating &&
           update_budget_->ShouldPerformPhase(DisplayLockBudget::Phase::kStyle));
 }
@@ -327,10 +344,8 @@ void DisplayLockContext::DidStyle(LifecycleTarget target) {
     return;
   }
 
-  if (state_ != kCommitting && state_ != kUpdating &&
-      state_ != kPendingAcquire && !update_forced_) {
+  if (state_ != kCommitting && state_ != kUpdating && !update_forced_)
     return;
-  }
 
   blocked_style_traversal_type_ = kStyleUpdateNotRequired;
 
@@ -478,21 +493,24 @@ void DisplayLockContext::StartCommit() {
     return;
   }
 
-  // If we have just started to acquire, we can unlock immediately since we
-  // didn't have a chance to lock yet.
-  if (state_ == kPendingAcquire) {
+  // If we have an acquire resolver, it means that we haven't had a chance to
+  // run the lifecycle yet to clear the painted output. However, we're being
+  // requested to commit. So, we can commit immediately and reject the acquire
+  // callback at the same time.
+  if (acquire_resolver_) {
     FinishAcquireResolver(kReject, rejection_names::kLockCommitted);
     FinishCommitResolver(kResolve);
     CancelTimeoutTask();
     state_ = kUnlocked;
-    return;
+  } else if (state_ != kUpdating) {
+    ScheduleAnimation();
   }
 
-  if (state_ != kUpdating)
-    ScheduleAnimation();
+  // We might already be unlocked due to above, but we should still mark
+  // ancestor chains for updates below.
+  if (state_ < kCommitting)
+    state_ = kCommitting;
 
-  DCHECK_LT(state_, kCommitting);
-  state_ = kCommitting;
   update_budget_.reset();
 
   // We're committing without a budget, so ensure we can reach style.
@@ -686,27 +704,18 @@ void DisplayLockContext::WillStartLifecycleUpdate(const LocalFrameView& view) {
 }
 
 void DisplayLockContext::DidFinishLifecycleUpdate(const LocalFrameView& view) {
-  if (state_ == kPendingAcquire) {
+  if (acquire_resolver_) {
     if (!ElementSupportsDisplayLocking()) {
       FinishAcquireResolver(kReject, rejection_names::kContainmentNotSatisfied);
       CancelTimeoutTask();
       state_ = kUnlocked;
       return;
     }
-
     FinishAcquireResolver(kResolve);
-    state_ = kLocked;
-    auto* layout_object = element_->GetLayoutObject();
-    // TODO(vmpstr): Note that we may be in a nested display lock, so it's
-    // unclear which frame rect to save here since we have not necessarily done
-    // a layout to acquire this lock. We need to figure out what to do here. For
-    // now, just stash whatever the current frame rect is. See crbug.com/926276.
-    if (layout_object && layout_object->IsBox()) {
-      locked_frame_rect_ = ToLayoutBox(layout_object)->FrameRect();
-    } else {
-      locked_frame_rect_ = LayoutRect();
-    }
-    return;
+    // TODO(vmpstr): When size: auto is supported, we need to get the size from
+    // the layout object here.
+    DCHECK(locked_frame_rect_);
+    // Fallthrough here in case we're already updating.
   }
 
   if (state_ == kCommitting) {
