@@ -63,10 +63,10 @@ MenuButtonController::PressedLock::~PressedLock() {
 ////////////////////////////////////////////////////////////////////////////////
 
 MenuButtonController::MenuButtonController(
-    MenuButton* menu_button,
+    Button* button,
     MenuButtonListener* listener,
     std::unique_ptr<ButtonControllerDelegate> delegate)
-    : ButtonController(menu_button, std::move(delegate)), listener_(listener) {}
+    : ButtonController(button, std::move(delegate)), listener_(listener) {}
 
 MenuButtonController::~MenuButtonController() = default;
 
@@ -238,9 +238,7 @@ bool MenuButtonController::Activate(const ui::Event* event) {
 
     // We don't set our state here. It's handled in the MenuController code or
     // by our click listener.
-    // TODO(cyan): Remove the static cast.
-    listener_->OnMenuButtonClicked(static_cast<MenuButton*>(button()),
-                                   menu_position, event);
+    listener_->OnMenuButtonClicked(button(), menu_position, event);
 
     if (!ref) {
       // The menu was deleted while showing. Don't attempt any processing.

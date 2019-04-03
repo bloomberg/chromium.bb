@@ -40,8 +40,7 @@ class VIEWS_EXPORT MenuButtonController : public ButtonController {
     DISALLOW_COPY_AND_ASSIGN(PressedLock);
   };
 
-  // TODO(cyan): MenuButtonController should take in a Button.
-  MenuButtonController(MenuButton* menu_button,
+  MenuButtonController(Button* button,
                        MenuButtonListener* listener,
                        std::unique_ptr<ButtonControllerDelegate> delegate);
   ~MenuButtonController() override;

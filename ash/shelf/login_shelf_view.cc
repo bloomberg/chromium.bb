@@ -323,7 +323,7 @@ class KioskAppsButton : public views::MenuButton,
   }
 
   // views::MenuButtonListener:
-  void OnMenuButtonClicked(MenuButton* source,
+  void OnMenuButtonClicked(Button* source,
                            const gfx::Point& point,
                            const ui::Event* event) override {
     if (!is_launch_enabled_)

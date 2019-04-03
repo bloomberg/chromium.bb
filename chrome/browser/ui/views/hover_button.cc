@@ -396,7 +396,7 @@ void HoverButton::SetSubtitleColor(SkColor color) {
     subtitle_->SetEnabledColor(color);
 }
 
-void HoverButton::OnMenuButtonClicked(MenuButton* source,
+void HoverButton::OnMenuButtonClicked(Button* source,
                                       const gfx::Point& point,
                                       const ui::Event* event) {
   if (listener_)

@@ -407,7 +407,7 @@ void ToolbarView::ShowBookmarkBubble(
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, views::MenuButtonListener implementation:
 
-void ToolbarView::OnMenuButtonClicked(views::MenuButton* source,
+void ToolbarView::OnMenuButtonClicked(views::Button* source,
                                       const gfx::Point& point,
                                       const ui::Event* event) {
   TRACE_EVENT0("views", "ToolbarView::OnMenuButtonClicked");

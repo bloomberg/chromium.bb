@@ -80,7 +80,7 @@ class ToolbarActionView : public views::MenuButton,
   void UpdateState() override;
 
   // views::MenuButtonListener:
-  void OnMenuButtonClicked(views::MenuButton* source,
+  void OnMenuButtonClicked(views::Button* source,
                            const gfx::Point& point,
                            const ui::Event* event) override;
 

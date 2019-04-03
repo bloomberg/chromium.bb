@@ -22,7 +22,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/window/hit_test_utils.h"
 
@@ -71,7 +71,7 @@ void HostedAppMenuButton::StartHighlightAnimation() {
                              this, &HostedAppMenuButton::FadeHighlightOff);
 }
 
-void HostedAppMenuButton::OnMenuButtonClicked(views::MenuButton* source,
+void HostedAppMenuButton::OnMenuButtonClicked(views::Button* source,
                                               const gfx::Point& point,
                                               const ui::Event* event) {
   Browser* browser = browser_view_->browser();

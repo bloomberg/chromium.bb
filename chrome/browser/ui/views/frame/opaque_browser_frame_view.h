@@ -83,7 +83,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::MenuButtonListener:
-  void OnMenuButtonClicked(views::MenuButton* source,
+  void OnMenuButtonClicked(views::Button* source,
                            const gfx::Point& point,
                            const ui::Event* event) override;
 
