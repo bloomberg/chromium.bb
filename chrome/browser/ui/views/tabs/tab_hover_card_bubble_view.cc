@@ -9,17 +9,24 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_features.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/thumbnails/thumbnail_image.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "components/url_formatter/url_formatter.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/native_theme/native_theme.h"
+#include "ui/resources/grit/ui_resources.h"
+#include "ui/views/background.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -201,8 +208,10 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   if (AreHoverCardImagesEnabled()) {
     preview_image_ = new views::ImageView();
     preview_image_->SetVisible(AreHoverCardImagesEnabled());
-    preview_image_->SetHorizontalAlignment(views::ImageViewBase::LEADING);
+    preview_image_->SetHorizontalAlignment(views::ImageViewBase::CENTER);
+    preview_image_->SetVerticalAlignment(views::ImageViewBase::CENTER);
     preview_image_->SetImageSize(GetTabHoverCardPreviewImageSize());
+    preview_image_->SetPreferredSize(GetTabHoverCardPreviewImageSize());
     AddChildView(preview_image_);
   }
 
@@ -322,13 +331,39 @@ void TabHoverCardBubbleView::UpdateCardContent(TabRendererData data) {
     if (!data.thumbnail.AsImageSkiaAsync(
             base::BindOnce(&TabHoverCardBubbleView::UpdatePreviewImage,
                            weak_factory_.GetWeakPtr()))) {
-      preview_image_->SetImage(gfx::ImageSkia());
+      // Check the no-preview color and size to see if it needs to be
+      // regenerated. DPI or theme change can cause a regeneration.
+      const SkColor foreground_color = GetThemeProvider()->GetColor(
+          ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_FOREGROUND);
+
+      // Set the no-preview placeholder image. All sizes are in DIPs.
+      // gfx::CreateVectorIcon() caches its result so there's no need to store
+      // images here; if a particular size/color combination has already been
+      // requested it will be low-cost to request it again.
+      constexpr gfx::Size kNoPreviewImageSize{64, 64};
+      const gfx::ImageSkia no_preview_image = gfx::CreateVectorIcon(
+          kGlobeIcon, kNoPreviewImageSize.width(), foreground_color);
+      preview_image_->SetImage(no_preview_image);
+      preview_image_->SetImageSize(kNoPreviewImageSize);
+      preview_image_->SetPreferredSize(GetTabHoverCardPreviewImageSize());
+
+      // Also possibly regenerate the background if it has changed.
+      const SkColor background_color = GetThemeProvider()->GetColor(
+          ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_BACKGROUND);
+      if (!preview_image_->background() ||
+          preview_image_->background()->get_color() != background_color) {
+        preview_image_->SetBackground(
+            views::CreateSolidBackground(background_color));
+      }
     }
   }
 }
 
 void TabHoverCardBubbleView::UpdatePreviewImage(gfx::ImageSkia preview_image) {
   preview_image_->SetImage(preview_image);
+  preview_image_->SetImageSize(GetTabHoverCardPreviewImageSize());
+  preview_image_->SetPreferredSize(GetTabHoverCardPreviewImageSize());
+  preview_image_->SetBackground(nullptr);
 }
 
 gfx::Size TabHoverCardBubbleView::CalculatePreferredSize() const {
