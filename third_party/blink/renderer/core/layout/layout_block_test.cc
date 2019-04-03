@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
+
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
-
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
@@ -71,6 +72,30 @@ TEST_F(LayoutBlockTest, OverflowWithTransformAndPerspective) {
   LayoutBox* scroller =
       ToLayoutBox(GetDocument().getElementById("target")->GetLayoutObject());
   EXPECT_EQ(119.5, scroller->LayoutOverflowRect().Width().ToFloat());
+}
+
+TEST_F(LayoutBlockTest, NestedInlineVisualOverflow) {
+  // Only exercises legacy code.
+  if (RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+  SetBodyInnerHTML(R"HTML(
+    <label style="font-size: 0px">
+      <input type="radio" style="margin-left: -15px">
+    </label>
+  )HTML");
+  LayoutBlockFlow* body =
+      ToLayoutBlockFlow(GetDocument().body()->GetLayoutObject());
+  RootInlineBox* box = body->FirstRootBox();
+#if defined(OS_MACOSX)
+  EXPECT_EQ(LayoutRect(-17, 0, 16, 19),
+            box->VisualOverflowRect(box->LineTop(), box->LineBottom()));
+#elif defined(OS_ANDROID)
+  EXPECT_EQ(LayoutRect(-15, 3, 19, 16),
+            box->VisualOverflowRect(box->LineTop(), box->LineBottom()));
+#else
+  EXPECT_EQ(LayoutRect(-15, 3, 16, 13),
+            box->VisualOverflowRect(box->LineTop(), box->LineBottom()));
+#endif
 }
 
 }  // namespace blink

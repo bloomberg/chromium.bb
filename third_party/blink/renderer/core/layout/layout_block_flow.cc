@@ -4639,25 +4639,16 @@ void LayoutBlockFlow::RecalcInlineChildrenVisualOverflow() {
     return;
   }
 
-  ListHashSet<RootInlineBox*> line_boxes;
   for (InlineWalker walker(LineLayoutBlockFlow(this)); !walker.AtEnd();
        walker.Advance()) {
     LayoutObject* layout_object = walker.Current().GetLayoutObject();
     RecalcNormalFlowChildVisualOverflowIfNeeded(layout_object);
-    if (layout_object->IsBox()) {
-      if (InlineBox* inline_box_wrapper =
-              ToLayoutBox(layout_object)->InlineBoxWrapper())
-        line_boxes.insert(&inline_box_wrapper->Root());
-    }
   }
 
   // Child inline boxes' self visual overflow is already computed at the same
   // time as layout overflow. But we need to add replaced children visual rects.
-  for (ListHashSet<RootInlineBox*>::const_iterator it = line_boxes.begin();
-       it != line_boxes.end(); ++it) {
-    RootInlineBox* box = *it;
+  for (RootInlineBox* box = FirstRootBox(); box; box = box->NextRootBox())
     box->AddReplacedChildrenVisualOverflow(box->LineTop(), box->LineBottom());
-  }
 }
 
 PositionWithAffinity LayoutBlockFlow::PositionForPoint(
