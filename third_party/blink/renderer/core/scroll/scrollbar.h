@@ -48,14 +48,6 @@ class WebMouseEvent;
 class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
                               public DisplayItemClient {
  public:
-  static Scrollbar* Create(ScrollableArea* scrollable_area,
-                           ScrollbarOrientation orientation,
-                           ScrollbarControlSize size,
-                           ChromeClient* chrome_client) {
-    return MakeGarbageCollected<Scrollbar>(scrollable_area, orientation, size,
-                                           chrome_client);
-  }
-
   // Theme object ownership remains with the caller and it must outlive the
   // scrollbar.
   static Scrollbar* CreateForTesting(ScrollableArea* scrollable_area,

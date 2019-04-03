@@ -27,10 +27,6 @@ class ProgrammaticScrollAnimator : public ScrollAnimatorCompositorCoordinator {
   DISALLOW_COPY_AND_ASSIGN(ProgrammaticScrollAnimator);
 
  public:
-  static ProgrammaticScrollAnimator* Create(ScrollableArea* scrollable_area) {
-    return MakeGarbageCollected<ProgrammaticScrollAnimator>(scrollable_area);
-  }
-
   explicit ProgrammaticScrollAnimator(ScrollableArea*);
   ~ProgrammaticScrollAnimator() override;
 
