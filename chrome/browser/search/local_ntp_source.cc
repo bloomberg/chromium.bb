@@ -838,8 +838,6 @@ void LocalNtpSource::StartDataRequest(
       return;
     }
 
-    // TODO(crbug/909931): There's no need to fetch the promo on each load,
-    // we can sometimes use cached data.
     promo_requests_.emplace_back(base::TimeTicks::Now(), callback);
     promo_service_->Refresh();
 

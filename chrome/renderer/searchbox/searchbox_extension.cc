@@ -71,8 +71,6 @@ const char kCSSBackgroundImageFormat[] = "-webkit-image-set("
     "url(chrome-search://theme/IDR_THEME_NTP_BACKGROUND?%s) 1x, "
     "url(chrome-search://theme/IDR_THEME_NTP_BACKGROUND@2x?%s) 2x)";
 
-const char kCSSBackgroundColorFormat[] = "rgba(%d,%d,%d,%s)";
-
 const char kCSSBackgroundPositionCenter[] = "center";
 const char kCSSBackgroundPositionLeft[] = "left";
 const char kCSSBackgroundPositionTop[] = "top";
@@ -202,23 +200,6 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
   // True if dark mode should be applied to the NTP.
   // Value is always valid.
   builder.Set("usingDarkMode", theme_info.using_dark_mode);
-
-  // The theme background color is in RGBA format "rgba(R,G,B,A)" where R, G and
-  // B are between 0 and 255 inclusive, and A is a double between 0 and 1
-  // inclusive.
-  // This is the CSS "background-color" format.
-  // Value is always valid.
-  // TODO(jfweitz): Remove this field after GWS is modified to use the new
-  // backgroundColorRgba field.
-  builder.Set(
-      "colorRgba",
-      // Convert the alpha using NumberToString because StringPrintf will
-      // use locale specific formatters (e.g., use , instead of . in
-      // German).
-      base::StringPrintf(
-          kCSSBackgroundColorFormat, theme_info.background_color.r,
-          theme_info.background_color.g, theme_info.background_color.b,
-          base::NumberToString(theme_info.background_color.a / 255.0).c_str()));
 
   // Theme color for background as an array with the RGBA components in order.
   // Value is always valid.

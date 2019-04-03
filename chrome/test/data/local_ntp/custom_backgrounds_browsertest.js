@@ -237,7 +237,6 @@ test.customBackgrounds.testClickCollectionOfflineShowErrorMsg = function() {
 
 
 // TODO(crbug.com/857256): add tests for:
-//  * Image attributions.
 //  * Image upload flow.
 //  * Online/offline.
 

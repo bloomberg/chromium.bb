@@ -291,7 +291,6 @@ doodles.logDoodleImpression = function(logUrl, isAnimated) {
 
 
 /**
- * TODO(896461): Add more click tracking parameters and testing.
  * Logs a doodle sharing event.
  * Uses the ct param provided in metadata.onClickUrl to track the doodle.
  *

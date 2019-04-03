@@ -14,7 +14,7 @@
 #endif
 
 // Base class for URL data sources for chrome-search:// iframed content.
-// TODO(treib): This has only one subclass outside of tests,
+// TODO(crbug.com/947608): This has only one subclass outside of tests,
 // MostVisitedIframeSource. Merge the two classes?
 class IframeSource : public content::URLDataSource {
  public:

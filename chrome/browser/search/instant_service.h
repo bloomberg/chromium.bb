@@ -104,10 +104,7 @@ class InstantService : public KeyedService,
   // using a non-Google search provider. Marked virtual for mocking in tests.
   virtual bool ResetCustomLinks();
 
-  // Invoked by the InstantController to update theme information for NTP.
-  //
-  // TODO(kmadhusu): Invoking this from InstantController shouldn't be
-  // necessary. Investigate more and remove this from here.
+  // Invoked to update theme information for the NTP.
   void UpdateThemeInfo();
 
   // Invoked when a background pref update is received via sync, triggering
