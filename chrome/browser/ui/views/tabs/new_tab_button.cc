@@ -114,6 +114,7 @@ void NewTabButton::CloseBubble() {
 
 void NewTabButton::FrameColorsChanged() {
   UpdateInkDropBaseColor();
+  SchedulePaint();
 }
 
 void NewTabButton::AnimateInkDropToStateForTesting(views::InkDropState state) {
