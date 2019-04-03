@@ -116,8 +116,8 @@ void ImageFetcherBridge::FetchImageData(JNIEnv* j_env,
   // We can skip transcoding here because this method is used in java as
   // ImageFetcher.fetchGif, which decodes the data in a Java-only library.
   params.set_skip_transcoding(true);
-  // TODO(wylieb): We checked disk in Java, so provide a way to tell
-  // ImageFetcher to skip checking disk in native.
+  // We checked disk in Java, so we can skip it for native.
+  params.set_skip_disk_cache_read(true);
   image_fetcher_service_
       ->GetImageFetcher(image_fetcher::ImageFetcherConfig::kDiskCacheOnly)
       ->FetchImageData(GURL(url),
@@ -140,8 +140,8 @@ void ImageFetcherBridge::FetchImage(JNIEnv* j_env,
       base::android::ConvertJavaStringToUTF8(j_client_name);
 
   ImageFetcherParams params(kTrafficAnnotation, client_name);
-  // TODO(wylieb): We checked disk in Java, so provide a way to tell
-  // ImageFetcher to skip checking disk in native.
+  // We checked disk in Java, so we can skip it for native.
+  params.set_skip_disk_cache_read(true);
   image_fetcher_service_->GetImageFetcher(config)->FetchImage(
       GURL(url),
       base::BindOnce(&ImageFetcherBridge::OnImageFetched,

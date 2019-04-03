@@ -109,13 +109,18 @@ void CachedImageFetcher::FetchImageAndData(
   CachedImageFetcherMetricsReporter::ReportEvent(
       request.params.uma_client_name(), CachedImageFetcherEvent::kImageRequest);
 
-  // First, try to load the image from the cache, then try the network.
-  image_cache_->LoadImage(
-      read_only_, image_url.spec(),
-      base::BindOnce(&CachedImageFetcher::OnImageFetchedFromCache,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(request),
-                     std::move(image_data_callback),
-                     std::move(image_callback)));
+  if (params.skip_disk_cache_read()) {
+    EnqueueFetchImageFromNetwork(request, std::move(image_data_callback),
+                                 std::move(image_callback));
+  } else {
+    // First, try to load the image from the cache, then try the network.
+    image_cache_->LoadImage(
+        read_only_, image_url.spec(),
+        base::BindOnce(&CachedImageFetcher::OnImageFetchedFromCache,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(request),
+                       std::move(image_data_callback),
+                       std::move(image_callback)));
+  }
 }
 
 void CachedImageFetcher::OnImageFetchedFromCache(
