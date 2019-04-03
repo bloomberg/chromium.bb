@@ -49,12 +49,10 @@ class ArCoreDevice : public VRDeviceBase {
     return weak_ptr_factory_.GetWeakPtr();
   }
 
-  // TODO(crbug.com/893348): these should not be public.
-  // Use callbacks instead.
+ private:
   void OnRequestInstallArModuleResult(bool success);
   void OnRequestInstallSupportedArCoreResult(bool success);
 
- private:
   // VRDeviceBase implementation
   void OnMailboxBridgeReady();
   void OnArCoreGlThreadInitialized();
