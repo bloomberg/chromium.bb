@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "chrome/browser/performance_manager/graph/graph.h"
-#include "chrome/browser/performance_manager/observers/coordination_unit_graph_observer.h"
+#include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 
 namespace performance_manager {

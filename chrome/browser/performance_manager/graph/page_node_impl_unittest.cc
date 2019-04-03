@@ -11,7 +11,7 @@
 #include "chrome/browser/performance_manager/graph/mock_graphs.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/resource_coordinator_clock.h"
+#include "chrome/browser/performance_manager/performance_manager_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {
@@ -21,13 +21,13 @@ namespace {
 class PageNodeImplTest : public GraphTestHarness {
  public:
   void SetUp() override {
-    ResourceCoordinatorClock::SetClockForTesting(&clock_);
+    PerformanceManagerClock::SetClockForTesting(&clock_);
 
     // Sets a valid starting time.
     clock_.SetNowTicks(base::TimeTicks::Now());
   }
 
-  void TearDown() override { ResourceCoordinatorClock::ResetClockForTesting(); }
+  void TearDown() override { PerformanceManagerClock::ResetClockForTesting(); }
 
  protected:
   void AdvanceClock(base::TimeDelta delta) { clock_.Advance(delta); }
@@ -119,7 +119,7 @@ TEST_F(PageNodeImplTest, TimeSinceLastNavigation) {
 
   // 1st navigation.
   mock_graph.page->OnMainFrameNavigationCommitted(
-      ResourceCoordinatorClock::NowTicks(), 10u, "http://www.example.org");
+      PerformanceManagerClock::NowTicks(), 10u, "http://www.example.org");
   EXPECT_EQ("http://www.example.org", mock_graph.page->main_frame_url());
   EXPECT_EQ(10u, mock_graph.page->navigation_id());
   AdvanceClock(base::TimeDelta::FromSeconds(11));
@@ -128,7 +128,7 @@ TEST_F(PageNodeImplTest, TimeSinceLastNavigation) {
 
   // 2nd navigation.
   mock_graph.page->OnMainFrameNavigationCommitted(
-      ResourceCoordinatorClock::NowTicks(), 20u,
+      PerformanceManagerClock::NowTicks(), 20u,
       "http://www.example.org/bobcat");
   EXPECT_EQ("http://www.example.org/bobcat", mock_graph.page->main_frame_url());
   EXPECT_EQ(20u, mock_graph.page->navigation_id());

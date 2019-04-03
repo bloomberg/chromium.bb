@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/performance_manager/resource_coordinator_clock.h"
+#include "chrome/browser/performance_manager/performance_manager_clock.h"
 
 #include "base/time/tick_clock.h"
 
@@ -17,20 +17,20 @@ const base::TickClock*& g_tick_clock_for_testing() {
 
 }  // namespace
 
-base::TimeTicks ResourceCoordinatorClock::NowTicks() {
+base::TimeTicks PerformanceManagerClock::NowTicks() {
   return g_tick_clock_for_testing() ? g_tick_clock_for_testing()->NowTicks()
                                     : base::TimeTicks::Now();
 }
 
-const base::TickClock* ResourceCoordinatorClock::GetClockForTesting() {
+const base::TickClock* PerformanceManagerClock::GetClockForTesting() {
   return g_tick_clock_for_testing();
 }
 
-void ResourceCoordinatorClock::ResetClockForTesting() {
+void PerformanceManagerClock::ResetClockForTesting() {
   g_tick_clock_for_testing() = nullptr;
 }
 
-void ResourceCoordinatorClock::SetClockForTesting(
+void PerformanceManagerClock::SetClockForTesting(
     const base::TickClock* tick_clock) {
   DCHECK(!g_tick_clock_for_testing());
   g_tick_clock_for_testing() = tick_clock;

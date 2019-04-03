@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_PROPERTIES_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_PROPERTIES_H_
 
-#include "chrome/browser/performance_manager/observers/coordination_unit_graph_observer.h"
+#include "chrome/browser/performance_manager/observers/graph_observer.h"
 
 namespace performance_manager {
 

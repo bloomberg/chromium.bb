@@ -13,7 +13,7 @@
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
-#include "chrome/browser/performance_manager/resource_coordinator_clock.h"
+#include "chrome/browser/performance_manager/performance_manager_clock.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace performance_manager {
@@ -217,7 +217,7 @@ void PageSignalGeneratorImpl::DispatchPageSignal(const PageNodeImpl* page_node,
 }
 
 void PageSignalGeneratorImpl::PageData::Reset() {
-  last_state_change = ResourceCoordinatorClock::NowTicks();
+  last_state_change = PerformanceManagerClock::NowTicks();
   performance_estimate_issued = false;
 }
 

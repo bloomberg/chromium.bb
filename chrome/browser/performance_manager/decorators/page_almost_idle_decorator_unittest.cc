@@ -15,8 +15,8 @@
 #include "chrome/browser/performance_manager/graph/mock_graphs.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/observers/coordination_unit_graph_observer.h"
-#include "chrome/browser/performance_manager/resource_coordinator_clock.h"
+#include "chrome/browser/performance_manager/observers/graph_observer.h"
+#include "chrome/browser/performance_manager/performance_manager_clock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -61,7 +61,7 @@ class PageAlmostIdleDecoratorTest : public GraphTestHarness {
     paid_ = paid.get();
     graph()->RegisterObserver(std::move(paid));
   }
-  void TearDown() override { ResourceCoordinatorClock::ResetClockForTesting(); }
+  void TearDown() override { PerformanceManagerClock::ResetClockForTesting(); }
 
   void TestPageAlmostIdleTransitions(bool timeout);
 
@@ -85,7 +85,7 @@ void PageAlmostIdleDecoratorTest::TestPageAlmostIdleTransitions(bool timeout) {
   using Data = PageAlmostIdleDecorator::Data;
   using LIS = Data::LoadIdleState;
 
-  ResourceCoordinatorClock::SetClockForTesting(task_env().GetMockTickClock());
+  PerformanceManagerClock::SetClockForTesting(task_env().GetMockTickClock());
   task_env().FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   MockSinglePageInSingleProcessGraph mock_graph(graph());
@@ -131,11 +131,11 @@ void PageAlmostIdleDecoratorTest::TestPageAlmostIdleTransitions(bool timeout) {
   EXPECT_EQ(LIS::kLoadedNotIdling, page_data->load_idle_state_);
   EXPECT_TRUE(page_data->idling_timer_.IsRunning());
 
-  base::TimeTicks start = ResourceCoordinatorClock::NowTicks();
+  base::TimeTicks start = PerformanceManagerClock::NowTicks();
   if (timeout) {
     // Let the timeout run down. The final state transition should occur.
     task_env().FastForwardUntilNoTasksRemain();
-    base::TimeTicks end = ResourceCoordinatorClock::NowTicks();
+    base::TimeTicks end = PerformanceManagerClock::NowTicks();
     base::TimeDelta elapsed = end - start;
     EXPECT_LE(kLoadedAndIdlingTimeout, elapsed);
     EXPECT_LE(kWaitingForIdleTimeout, elapsed);
@@ -148,7 +148,7 @@ void PageAlmostIdleDecoratorTest::TestPageAlmostIdleTransitions(bool timeout) {
 
     // Let the idle timer evaluate. The final state transition should occur.
     task_env().FastForwardUntilNoTasksRemain();
-    base::TimeTicks end = ResourceCoordinatorClock::NowTicks();
+    base::TimeTicks end = PerformanceManagerClock::NowTicks();
     base::TimeDelta elapsed = end - start;
     EXPECT_LE(kLoadedAndIdlingTimeout, elapsed);
     EXPECT_GT(kWaitingForIdleTimeout, elapsed);
@@ -162,8 +162,8 @@ void PageAlmostIdleDecoratorTest::TestPageAlmostIdleTransitions(bool timeout) {
   EXPECT_FALSE(Data::GetForTesting(page_node));
 
   // Post a navigation. The state should reset.
-  page_node->OnMainFrameNavigationCommitted(
-      ResourceCoordinatorClock::NowTicks(), 1, "https://www.example.org");
+  page_node->OnMainFrameNavigationCommitted(PerformanceManagerClock::NowTicks(),
+                                            1, "https://www.example.org");
   page_data = Data::GetForTesting(page_node);
   EXPECT_EQ(LIS::kLoadingNotStarted, page_data->load_idle_state_);
   EXPECT_FALSE(page_data->idling_timer_.IsRunning());

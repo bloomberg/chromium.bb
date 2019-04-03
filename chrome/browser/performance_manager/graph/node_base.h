@@ -15,7 +15,7 @@
 #include "base/sequence_checker.h"
 #include "chrome/browser/performance_manager/graph/graph.h"
 #include "chrome/browser/performance_manager/graph/properties.h"
-#include "chrome/browser/performance_manager/observers/coordination_unit_graph_observer.h"
+#include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

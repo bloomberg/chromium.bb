@@ -11,7 +11,7 @@
 #include "chrome/browser/performance_manager/graph/graph_test_harness.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/resource_coordinator_clock.h"
+#include "chrome/browser/performance_manager/performance_manager_clock.h"
 #include "components/ukm/test_ukm_recorder.h"
 
 namespace performance_manager {
@@ -33,14 +33,14 @@ class MAYBE_MetricsCollectorTest : public GraphTestHarness {
 
   void SetUp() override {
     MetricsCollector* metrics_collector = new MetricsCollector();
-    ResourceCoordinatorClock::SetClockForTesting(&clock_);
+    PerformanceManagerClock::SetClockForTesting(&clock_);
 
     // Sets a valid starting time.
     clock_.SetNowTicks(base::TimeTicks::Now());
     graph()->RegisterObserver(base::WrapUnique(metrics_collector));
   }
 
-  void TearDown() override { ResourceCoordinatorClock::ResetClockForTesting(); }
+  void TearDown() override { PerformanceManagerClock::ResetClockForTesting(); }
 
  protected:
   static constexpr char kDummyUrl[] = "http://www.example.org";
@@ -60,8 +60,8 @@ constexpr char MAYBE_MetricsCollectorTest::kDummyUrl[];
 TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstTitleUpdatedUMA) {
   auto page_node = CreateNode<PageNodeImpl>();
 
-  page_node->OnMainFrameNavigationCommitted(
-      ResourceCoordinatorClock::NowTicks(), kDummyID, kDummyUrl);
+  page_node->OnMainFrameNavigationCommitted(PerformanceManagerClock::NowTicks(),
+                                            kDummyID, kDummyUrl);
   AdvanceClock(kTestMetricsReportDelayTimeout);
 
   page_node->SetIsVisible(true);
@@ -93,8 +93,8 @@ TEST_F(MAYBE_MetricsCollectorTest,
        FromBackgroundedToFirstTitleUpdatedUMA5MinutesTimeout) {
   auto page_node = CreateNode<PageNodeImpl>();
 
-  page_node->OnMainFrameNavigationCommitted(
-      ResourceCoordinatorClock::NowTicks(), kDummyID, kDummyUrl);
+  page_node->OnMainFrameNavigationCommitted(PerformanceManagerClock::NowTicks(),
+                                            kDummyID, kDummyUrl);
   page_node->SetIsVisible(false);
   page_node->OnTitleUpdated();
   // The page is within 5 minutes after main frame navigation was committed,
@@ -112,8 +112,8 @@ TEST_F(MAYBE_MetricsCollectorTest,
   auto page_node = CreateNode<PageNodeImpl>();
   auto frame_node = CreateNode<FrameNodeImpl>(page_node.get(), nullptr);
 
-  page_node->OnMainFrameNavigationCommitted(
-      ResourceCoordinatorClock::NowTicks(), kDummyID, kDummyUrl);
+  page_node->OnMainFrameNavigationCommitted(PerformanceManagerClock::NowTicks(),
+                                            kDummyID, kDummyUrl);
   AdvanceClock(kTestMetricsReportDelayTimeout);
 
   page_node->SetIsVisible(true);
@@ -147,8 +147,8 @@ TEST_F(
   auto page_node = CreateNode<PageNodeImpl>();
   auto frame_node = CreateNode<FrameNodeImpl>(page_node.get(), nullptr);
 
-  page_node->OnMainFrameNavigationCommitted(
-      ResourceCoordinatorClock::NowTicks(), kDummyID, kDummyUrl);
+  page_node->OnMainFrameNavigationCommitted(PerformanceManagerClock::NowTicks(),
+                                            kDummyID, kDummyUrl);
   page_node->SetIsVisible(false);
   frame_node->OnNonPersistentNotificationCreated();
   // The page is within 5 minutes after main frame navigation was committed,
@@ -164,8 +164,8 @@ TEST_F(
 TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstFaviconUpdatedUMA) {
   auto page_node = CreateNode<PageNodeImpl>();
 
-  page_node->OnMainFrameNavigationCommitted(
-      ResourceCoordinatorClock::NowTicks(), kDummyID, kDummyUrl);
+  page_node->OnMainFrameNavigationCommitted(PerformanceManagerClock::NowTicks(),
+                                            kDummyID, kDummyUrl);
   AdvanceClock(kTestMetricsReportDelayTimeout);
 
   page_node->SetIsVisible(true);
@@ -197,8 +197,8 @@ TEST_F(MAYBE_MetricsCollectorTest,
        FromBackgroundedToFirstFaviconUpdatedUMA5MinutesTimeout) {
   auto page_node = CreateNode<PageNodeImpl>();
 
-  page_node->OnMainFrameNavigationCommitted(
-      ResourceCoordinatorClock::NowTicks(), kDummyID, kDummyUrl);
+  page_node->OnMainFrameNavigationCommitted(PerformanceManagerClock::NowTicks(),
+                                            kDummyID, kDummyUrl);
   page_node->SetIsVisible(false);
   page_node->OnFaviconUpdated();
   // The page is within 5 minutes after main frame navigation was committed,
@@ -226,8 +226,8 @@ TEST_F(MAYBE_MetricsCollectorTest, ResponsivenessMetric) {
   GURL url = GURL("https://google.com/foobar");
   ukm_recorder.UpdateSourceURL(id, url);
   page_node->SetUkmSourceId(id);
-  page_node->OnMainFrameNavigationCommitted(
-      ResourceCoordinatorClock::NowTicks(), kDummyID, kDummyUrl);
+  page_node->OnMainFrameNavigationCommitted(PerformanceManagerClock::NowTicks(),
+                                            kDummyID, kDummyUrl);
 
   for (int count = 1; count < kDefaultFrequencyUkmEQTReported; ++count) {
     process_node->SetExpectedTaskQueueingDuration(

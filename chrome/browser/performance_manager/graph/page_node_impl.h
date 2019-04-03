@@ -12,7 +12,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/performance_manager/graph/node_attached_data.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
-#include "chrome/browser/performance_manager/observers/coordination_unit_graph_observer.h"
+#include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace performance_manager {
