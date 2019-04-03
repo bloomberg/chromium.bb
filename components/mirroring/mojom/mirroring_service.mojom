@@ -24,7 +24,4 @@ interface MirroringService {
         ResourceProvider resource_provider,
         CastMessageChannel outbound_channel,
         CastMessageChannel& inbound_channel);
-
-  // TODO(xjz): Add interfaces to get the streaming events/stats and mirroring
-  // logs.
 };
