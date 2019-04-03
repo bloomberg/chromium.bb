@@ -1118,12 +1118,6 @@
     ],
   },
   'sizes': {
-    'remove_from': [
-      'win32-dbg',
-      'win32-rel',
-      'win-dbg',
-      'win-rel',
-    ],
     'modifications': {
       # chromium.android.fyi
       'Android Cronet KitKat Builder': {

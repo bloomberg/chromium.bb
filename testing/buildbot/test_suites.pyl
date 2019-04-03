@@ -4211,9 +4211,6 @@
       'checkbins': {
         'script': 'checkbins.py',
       },
-      'sizes': {
-        'script': 'sizes.py',
-      },
     },
 
     'site_isolation_android_fyi_gtests': {
