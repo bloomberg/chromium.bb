@@ -86,8 +86,23 @@ bool IsEnrolledWithGoogleMdm(const base::string16& mdm_url) {
   auto get_device_registration_info_function =
       GET_MDM_FUNCTION_POINTER(library, GetDeviceRegistrationInfo);
   if (!get_device_registration_info_function) {
+    // On Windows < 1803 the function GetDeviceRegistrationInfo does not exist
+    // in MDMRegistration.dll so we have to fallback to the less accurate
+    // IsDeviceRegisteredWithManagement. This can return false positives if the
+    // machine is registered to MDM but to a different server.
     LOGFN(ERROR) << "GET_MDM_FUNCTION_POINTER(GetDeviceRegistrationInfo)";
-    return false;
+    auto is_device_registered_with_management_function =
+        GET_MDM_FUNCTION_POINTER(library, IsDeviceRegisteredWithManagement);
+    if (!is_device_registered_with_management_function) {
+      LOGFN(ERROR)
+          << "GET_MDM_FUNCTION_POINTER(IsDeviceRegisteredWithManagement)";
+      return false;
+    } else {
+      BOOL is_managed = FALSE;
+      HRESULT hr = is_device_registered_with_management_function(&is_managed, 0,
+                                                                 nullptr);
+      return SUCCEEDED(hr) && is_managed;
+    }
   }
 
   MANAGEMENT_REGISTRATION_INFO* info;
