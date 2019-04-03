@@ -98,6 +98,16 @@ struct StructTraits<arc::mojom::VideoEncodeAcceleratorConfigDataView,
     return input.initial_framerate.has_value();
   }
 
+  static uint32_t gop_length(
+      const media::VideoEncodeAccelerator::Config& input) {
+    return input.gop_length.value_or(0);
+  }
+
+  static bool has_gop_length(
+      const media::VideoEncodeAccelerator::Config& input) {
+    return input.gop_length.has_value();
+  }
+
   static uint8_t h264_output_level(
       const media::VideoEncodeAccelerator::Config& input) {
     return input.h264_output_level.value_or(0);

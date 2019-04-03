@@ -1398,10 +1398,10 @@ bool V4L2VideoEncodeAccelerator::InitControls(const Config& config) {
   ctrl.value = 1;
   ctrls.push_back(ctrl);
 
-  // Disable periodic key frames.
+  // Set GOP length, or default 0 to disable periodic key frames.
   memset(&ctrl, 0, sizeof(ctrl));
   ctrl.id = V4L2_CID_MPEG_VIDEO_GOP_SIZE;
-  ctrl.value = 0;
+  ctrl.value = config.gop_length.value_or(0);
   ctrls.push_back(ctrl);
 
   // Ignore return value as these controls are optional.

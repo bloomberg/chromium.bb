@@ -328,7 +328,7 @@ void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
   input_visible_size_ = input_visible_size;
   const media::VideoEncodeAccelerator::Config config(
       media::PIXEL_FORMAT_I420, input_visible_size_, profile, bitrate * 1000,
-      base::nullopt, base::nullopt, base::nullopt,
+      base::nullopt, base::nullopt, base::nullopt, base::nullopt,
       video_content_type_ == webrtc::VideoContentType::SCREENSHARE
           ? media::VideoEncodeAccelerator::Config::ContentType::kDisplay
           : media::VideoEncodeAccelerator::Config::ContentType::kCamera);
