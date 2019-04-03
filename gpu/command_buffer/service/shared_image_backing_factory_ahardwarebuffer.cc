@@ -790,7 +790,9 @@ bool SharedImageBackingAHB::BeginWrite(
   (*fds_to_wait_on) = std::move(read_sync_fds_);
   // Assign a known state back to the moved-from read_sync_fds
   read_sync_fds_ = std::vector<base::ScopedFD>{};
-  fds_to_wait_on->emplace_back(std::move(write_sync_fd_));
+  // For the first BeginWrite access, the |write_sync_fd_| is invalid.
+  if (write_sync_fd_.is_valid())
+    fds_to_wait_on->emplace_back(std::move(write_sync_fd_));
 
   return true;
 }
