@@ -314,10 +314,17 @@ def run_executable(cmd, env, stdoutfile=None):
   cmd[0] = cmd[0].replace('/', os.path.sep)
   cmd = fix_python_path(cmd)
 
+  # We also want to print the GTEST env vars that were set by the caller,
+  # because you need them to reproduce the task properly.
+  env_to_print = extra_env.copy()
+  for env_var_name in ('GTEST_SHARD_INDEX', 'GTEST_TOTAL_SHARDS'):
+      if env_var_name in env:
+          env_to_print[env_var_name] = env[env_var_name]
+
   print('Additional test environment:\n%s\n'
         'Command: %s\n' % (
         '\n'.join('    %s=%s' %
-            (k, v) for k, v in sorted(extra_env.iteritems())),
+            (k, v) for k, v in sorted(env_to_print.iteritems())),
         ' '.join(cmd)))
   sys.stdout.flush()
   env.update(extra_env or {})
