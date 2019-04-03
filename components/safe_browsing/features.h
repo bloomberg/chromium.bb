@@ -69,6 +69,9 @@ extern const base::Feature kInspectRarContentFeature;
 // Controls whether we use AP download protection.
 extern const base::Feature kUseAPDownloadProtection;
 
+// Controls whether the user has forcible enabled AP download protection.
+extern const base::Feature kForceUseAPDownloadProtection;
+
 base::ListValue GetFeatureStatusList();
 
 }  // namespace safe_browsing

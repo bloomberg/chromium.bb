@@ -64,6 +64,9 @@ const base::Feature kInspectRarContentFeature{
 const base::Feature kUseAPDownloadProtection{"UseAPDownloadProtection",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kForceUseAPDownloadProtection{
+    "ForceUseAPDownloadProtection", base::FEATURE_DISABLED_BY_DEFAULT};
+
 namespace {
 // List of experimental features. Boolean value for each list member should be
 // set to true if the experiment is currently running at a probability other
@@ -84,6 +87,7 @@ constexpr struct {
     {&kTriggerThrottlerDailyQuotaFeature, false},
     {&kUseLocalBlacklistsV2, true},
     {&kUseAPDownloadProtection, false},
+    {&kForceUseAPDownloadProtection, false},
 };
 
 // Adds the name and the enabled/disabled status of a given feature.
