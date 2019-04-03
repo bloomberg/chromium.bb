@@ -421,6 +421,32 @@ Status ElementInViewCenter(Session* session,
   return Status(kOk);
 }
 
+bool IsRepeatedClickEvent(float x,
+                          float y,
+                          float last_x,
+                          float last_y,
+                          int click_count,
+                          const base::TimeTicks& timestamp,
+                          const base::TimeTicks& last_mouse_click_time) {
+  const int kDoubleClickTimeMS = 500;
+  const int kDoubleClickRange = 4;
+
+  if (click_count == 0)
+    return false;
+
+  base::TimeDelta time_difference = timestamp - last_mouse_click_time;
+  if (time_difference.InMilliseconds() > kDoubleClickTimeMS)
+    return false;
+
+  if (std::abs(x - last_x) > kDoubleClickRange / 2)
+    return false;
+
+  if (std::abs(y - last_y) > kDoubleClickRange / 2)
+    return false;
+
+  return true;
+}
+
 }  // namespace
 
 Status ExecuteWindowCommand(const WindowCommand& command,
@@ -1468,6 +1494,19 @@ Status ExecutePerformActions(Session* session,
           event.y = mouse_locations[j].y();
         }
         event.modifiers = key_modifiers;
+        if (event.type == kPressedMouseEventType) {
+          base::TimeTicks timestamp = base::TimeTicks::Now();
+          bool is_repeated_click = IsRepeatedClickEvent(
+              event.x, event.y, session->mouse_position.x,
+              session->mouse_position.y, session->click_count, timestamp,
+              session->mouse_click_timestamp);
+          event.click_count = is_repeated_click ? 2 : 1;
+          session->mouse_position = WebPoint(event.x, event.y);
+          session->click_count = event.click_count;
+          session->mouse_click_timestamp = timestamp;
+        } else if (event.type == kReleasedMouseEventType) {
+          event.click_count = session->click_count;
+        }
         dispatch_mouse_events.push_back(event);
       }
     }
@@ -1552,6 +1591,9 @@ Status ExecuteReleaseActions(Session* session,
   session->input_cancel_list.clear();
   session->input_state_table.Clear();
   session->active_input_sources.Clear();
+  session->mouse_position = WebPoint(0, 0);
+  session->click_count = 0;
+  session->mouse_click_timestamp = base::TimeTicks::Now();
 
   return Status(kOk);
 }
