@@ -3142,17 +3142,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Pinapayagan lang ang awtomatikong pag-playback para sa mga domain na tahasang nakalista sa patakarang <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Kung gusto mong i-enable ang awtomatikong pag-playback para sa lahat ng site, pag-isipang magdagdag ng http://* at https://* sa listahang ito.
 
           Kung iiwanang hindi nakatakda ang patakarang ito, manual na mababago ng user ang setting na ito.</translation>
-<translation id="7229876938563670511">Nagko-configure sa URL ng default na home page sa <ph name="PRODUCT_NAME" /> at pumipigil na mabago ito ng mga user.
-
-          Mabubuksan ang home page sa pamamagitan ng button ng Home. Kinokontrol ng mga patakaran ng RestoreOnStartup ang mga page na magbubukas kapag nag-start up.
-
-          Ang uri ng home page ay maaaring itakda sa URL na tutukuyin mo rito, o maaari itong itakda sa Page ng Bagong Tab. Kung pipiliin mo ang Page ng Bagong Tab, hindi magkakaroon ng bisa ang patakarang ito.
-
-          Kung ie-enable mo ang setting na ito, hindi mababago ng mga user ang URL ng kanilang home page sa <ph name="PRODUCT_NAME" />, ngunit mapipili pa rin nila ang Page ng Bagong Tab bilang home page nila.
-
-          Kung iiwang hindi nakatakda ang patakarang ito, papayagan ang user na siya mismo ang pumili ng kanyang home page, kung hindi rin nakatakda ang HomepageIsNewTabPage.
-
-          Available lang ang patakarang ito sa mga instance ng Windows na kasama sa domain ng<ph name="MS_AD_NAME" />. O kaya, sa mga instance ng Windows 10 Pro o Enterprise na naka-enroll para sa pamamahala sa device.</translation>
 <translation id="7229975860249300121">Naglalaman ng karaniwang expression na ginagamit para tukuyin kung aling Google account ang maaaring itakda bilang mga pangunahing account sa browser sa <ph name="PRODUCT_NAME" /> (ibig sabihin, ang account na napili sa panahon ng proseso ng pag-opt in sa Pag-sync).
 
       May ipapakitang naaangkop na error kung susubukan ng isang user na magtakda ng pangunahing account sa browser gamit ang isang username na hindi tumutugma sa pattern na ito.

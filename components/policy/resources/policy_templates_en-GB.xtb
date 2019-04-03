@@ -1736,11 +1736,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           If false or unset, then the content provider returns no information.</translation>
 <translation id="435461861920493948">Contains a list of patterns which are used to control the visiblity of accounts in <ph name="PRODUCT_NAME" />.
 
-      EachGoogle Accounton the device will be compared to patterns stored in this policy to determine the account visibility in <ph name="PRODUCT_NAME" />. The account will be visible if its name matches any pattern on the list. Otherwise, the account will be hidden.
+      Each Google Account on the device will be compared to patterns stored in this policy to determine the account visibility in <ph name="PRODUCT_NAME" />. The account will be visible if its name matches any pattern on the list. Otherwise, the account will be hidden.
 
       Use the wildcard character '*' to match zero or more arbitrary characters. The escape character is '\', so to match actual '*' or '\' characters, put a '\' in front of them.
 
-      If this policy is not set, allGoogle Accounts on the device will be visible in <ph name="PRODUCT_NAME" />.</translation>
+      If this policy is not set, all Google Accounts on the device will be visible in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4360826270668210664">If this policy is set, the remote access host will require authenticating clients to obtain an authentication token from this URL in order to connect. Must be used in conjunction with RemoteAccessHostTokenValidationUrl.
 
           This feature is currently disabled server-side.</translation>
@@ -3131,22 +3131,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           Automatic playback is only allowed for domains explicitly listed in the <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> policy. If you want to enabled automatic playback for all sites, consider adding http://* and https://* to this list.
 
           If this policy is left not set, the user will be able to change this setting manually.</translation>
-<translation id="7229876938563670511">Configures the default homepage URL in <ph name="PRODUCT_NAME" /> and prevents users from changing it.
-
-          The homepage is the page opened by the Home button. The pages that open on start-up are controlled by the RestoreOnStartup policies.
-
-          The homepage type can either be set to a URL that you specify here or set to the new tab page. If you select the new tab page, then this policy does not take effect.
-
-          If you enable this setting, users cannot change their homepage URL in <ph name="PRODUCT_NAME" />, but they can still choose the new tab page as their home page.
-
-          Leaving this policy not set will also allow the user to choose their own homepage if HomepageIsNewTabPage is not set.
-
-          This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
-<translation id="7229975860249300121">Contains a regular expression which is used to determine whichGoogle Accounts can be set as browser primary accounts in <ph name="PRODUCT_NAME" /> (i.e. the account that is chosen during the Sync opt-in flow).
+<translation id="7229975860249300121">Contains a regular expression which is used to determine which Google Accounts can be set as browser primary accounts in <ph name="PRODUCT_NAME" /> (i.e. the account that is chosen during the Sync opt-in flow).
 
       An appropriate error is displayed if a user tries to set a browser primary account with a username that does not match this pattern.
 
-      If this policy is left not set or blank, then the user can set anyGoogle Accountas a browser primary account in <ph name="PRODUCT_NAME" />.</translation>
+      If this policy is left not set or blank, then the user can set any Google Account as a browser primary account in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="723103540848640830">Set the minimum length of the lock screen PIN</translation>
 <translation id="7232816984286843471">If the policy is set to false, unaffiliated users will not be allowed to use Crostini.
 

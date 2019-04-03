@@ -3118,17 +3118,6 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
           Automātiska atskaņošana ir atļauta tikai tiem domēniem, kas skaidri norādīti politikā <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Ja vēlaties iespējot automātisko atskaņošanu visām vietnēm, pievienojiet šim sarakstam http://* un https://*.
 
           Ja šī politika nav iestatīta, lietotājs varēs mainīt šo iestatījumu manuāli.</translation>
-<translation id="7229876938563670511">Konfigurē noklusējuma sākumlapas URL pārlūkprogrammā <ph name="PRODUCT_NAME" /> un neļauj lietotājiem to mainīt.
-
-          Sākumlapa ir lapa, kas tiek atvērta, nospiežot pogu Sākums. RestoreOnStartup politikas nosaka lapas, kas tiek atvērtas pārlūkprogrammas sākumlapā.
-
-          Sākumlapas veids var būt iestatīts kā URL, ko norādāt šeit, vai kā jaunas cilnes lapa. Ja atlasīsiet jaunas cilnes lapu, šī politika nebūs spēkā.
-
-          Ja iespējosiet šo iestatījumu, lietotāji nevarēs mainīt savas sākumlapas URL pārlūkprogrammā <ph name="PRODUCT_NAME" />, taču joprojām varēs izvēlēties jaunas cilnes lapu kā savu sākumlapu.
-
-          Ja šī politika un politika HomepageIsNewTabPage nebūs iestatīta, lietotājs varēs izvēlēties savu sākumlapu.
-
-          Šī politika ir pieejama tikai Windows instancēs, kas ir savienotas ar <ph name="MS_AD_NAME" /> domēnu, vai Windows 10 Pro vai Enterprise instancēs, kas ir reģistrētas ierīču pārvaldībai.</translation>
 <translation id="7229975860249300121">Satur parastu izteiksmi, kas tiek izmantota, lai noteiktu, kuri Google konti var tikt iestatīti kā pārlūka primārie konti produktam <ph name="PRODUCT_NAME" /> (piemēram, konts, kas ir atlasīts sinhronizācijas izvēles plūsmā).
 
       Ja lietotājs mēģina iestatīt pārlūka primāro kontu, izmantojot lietotājvārdu, kas neatbilst paraugam, tiek parādīts atbilstošs kļūdas ziņojums.

@@ -1079,7 +1079,6 @@
 <translation id="7152423860607593928">ቁጥር-14 (የደብዳቤ ፖስታ)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> እና <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ተጨማሪ}one{<ph name="PAYMENT_METHOD_PREVIEW" /> እና <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ተጨማሪ}other{<ph name="PAYMENT_METHOD_PREVIEW" /> እና <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ተጨማሪ}}</translation>
 <translation id="7153618581592392745">ፈዘዝ ያለ ወይን ጠጅ</translation>
-<translation id="7158980942472052083">ልክ ያልሆነ ዩአርኤል። መደበኛ ዕቅድ ያለው ዩአርኤል መሆን አለበት።</translation>
 <translation id="717330890047184534">የGaia መታወቂያ፦</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> እና <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ተጨማሪ}one{<ph name="SHIPPING_OPTION_PREVIEW" /> እና <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ተጨማሪ}other{<ph name="SHIPPING_OPTION_PREVIEW" /> እና <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ተጨማሪ}}</translation>
 <translation id="7177397715882417099">የሚሄዱበት አገልጋይ <ph name="ORIGIN" /> ለጠየቁ ሁሉ የደህንነት መመሪያ እንዲተገበር ጠይቋል። ነገር ግን መመሪያን ከማድረስ ይልቅ አሳሹን ወደ ሌላ ቦታ አዙሮታል፣ ይህም አሳሹ የ<ph name="SITE" /> ጥያቄዎን ከማሟላት ይከለክለዋል።</translation>

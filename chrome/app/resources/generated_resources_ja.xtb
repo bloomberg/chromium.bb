@@ -147,7 +147,7 @@
 <translation id="1193273168751563528">管理対象セッションを開始します</translation>
 <translation id="1195447618553298278">不明なエラーです。</translation>
 <translation id="1197979282329025000"><ph name="PRINTER_NAME" /> プリンタのプリンタ機能の取得中にエラーが発生しました。このプリンタを <ph name="CLOUD_PRINT_NAME" /> に登録できませんでした。</translation>
-<translation id="119944043368869598">すべてクリア</translation>
+<translation id="119944043368869598">すべて削除</translation>
 <translation id="1201402288615127009">次へ</translation>
 <translation id="1202596434010270079">キオスクアプリを更新しました。USB スティックを取り外してください。</translation>
 <translation id="120368089816228251">音符</translation>
@@ -461,7 +461,7 @@
 <translation id="166278006618318542">サブジェクトの公開鍵アルゴリズム</translation>
 <translation id="166439687370499867">共有のネットワーク設定を変更することはできません</translation>
 <translation id="1665611772925418501">ファイルを修正することができませんでした。</translation>
-<translation id="1670399744444387456">基本</translation>
+<translation id="1670399744444387456">基本設定</translation>
 <translation id="167160931442925455">最大</translation>
 <translation id="1673103856845176271">セキュリティ上の理由で、ファイルにアクセスできませんでした。</translation>
 <translation id="1673137583248014546"><ph name="URL" /> よりセキュリティ キーのメーカーとモデルの読み取り許可を求められています</translation>
@@ -3135,7 +3135,7 @@
    <ph name="LINE_BREAKS" />
    アーカイブまたは仮想ディスク上のすべてのファイルを閉じてから、もう一度お試しください。</translation>
 <translation id="5687326903064479980">タイムゾーン</translation>
-<translation id="5689516760719285838">現在地</translation>
+<translation id="5689516760719285838">位置情報</translation>
 <translation id="56907980372820799">データをリンク</translation>
 <translation id="5691511426247308406">ファミリー</translation>
 <translation id="5691596662111998220"><ph name="FILE_NAME" /> が存在しません。</translation>
@@ -3456,7 +3456,7 @@
 <translation id="6144938890088808325">Chromebooks の改善にご協力ください</translation>
 <translation id="6146563240635539929">動画</translation>
 <translation id="6147020289383635445">印刷プレビューの表示に失敗しました。</translation>
-<translation id="614940544461990577">次をお試しください:</translation>
+<translation id="614940544461990577">次をお試しください</translation>
 <translation id="6150853954427645995">このファイルを保存してオフラインで使用できるようにするには、オンラインに戻ってファイルを右クリックし、[<ph name="OFFLINE_CHECKBOX_NAME" />] オプションを選択します。</translation>
 <translation id="6150961653851236686">この言語がページを翻訳する場合に使用されます</translation>
 <translation id="6151323131516309312"><ph name="SEARCH_KEY" /> を押して <ph name="SITE_NAME" /> を検索</translation>
@@ -4044,7 +4044,7 @@
 <translation id="7051943809462976355">マウスを探しています...</translation>
 <translation id="7052237160939977163">パフォーマンス追跡データを送信する</translation>
 <translation id="7053983685419859001">ブロック</translation>
-<translation id="7055152154916055070">リダイレクトがブロックされました:</translation>
+<translation id="7055152154916055070">リダイレクトがブロックされました</translation>
 <translation id="7056526158851679338">デバイスを検証(&amp;I)</translation>
 <translation id="7059858479264779982">自動起動に設定する</translation>
 <translation id="7059893117020417984">シークレット モードを使うには、その他アイコンのメニューからシークレット ウィンドウを開きます</translation>
@@ -4684,7 +4684,7 @@
 <translation id="7978450511781612192">この操作を行うと Google アカウントからログアウトし、ブックマーク、履歴、パスワードなどの設定は同期されなくなります。</translation>
 <translation id="7979036127916589816">同期エラー</translation>
 <translation id="7980084013673500153">アセット ID: <ph name="ASSET_ID" /></translation>
-<translation id="7981313251711023384">ページをプリロードして閲覧と検索をすばやく行えるようにする</translation>
+<translation id="7981313251711023384">ページをプリロードして、閲覧と検索をすばやく行えるようにします</translation>
 <translation id="798145602633458219">検索ボックスに候補<ph name="SUGGESTION_NAME" />を追加します</translation>
 <translation id="7982083145464587921">このエラーを修正するには、デバイスを再起動してください。</translation>
 <translation id="7982283708762922719">高さ</translation>
@@ -4724,7 +4724,7 @@
       購入した映画、テレビ番組、音楽、書籍、その他のアプリ内購入のコンテンツも削除される可能性があります。
       <ph name="LINE_BREAKS2" />
       他の端末のアプリやコンテンツに影響はありません。</translation>
-<translation id="8026334261755873520">閲覧履歴データを削除する</translation>
+<translation id="8026334261755873520">閲覧履歴データの削除</translation>
 <translation id="8028060951694135607">Microsoft キー回復</translation>
 <translation id="8028803902702117856"><ph name="FILE_NAME" /> をダウンロードしています。<ph name="SIZE" /> 完了</translation>
 <translation id="8028993641010258682">サイズ</translation>
@@ -5350,7 +5350,7 @@
 <translation id="8978154919215542464">オン - すべて同期</translation>
 <translation id="897939795688207351"><ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - クラッシュしました</translation>
-<translation id="8983677657449185470">セーフ ブラウジングの改善に協力する</translation>
+<translation id="8983677657449185470">セーフ ブラウジングの改善への協力</translation>
 <translation id="8986362086234534611">削除</translation>
 <translation id="8986494364107987395">使用統計データと障害レポートを Google に自動送信します</translation>
 <translation id="8987927404178983737">月</translation>

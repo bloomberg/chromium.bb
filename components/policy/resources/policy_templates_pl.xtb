@@ -3030,17 +3030,6 @@ Jeśli ta zasada nie zostanie skonfigurowana, nie będą obowiązywały żadne o
           Automatyczne odtwarzanie jest dozwolone tylko w domenach bezpośrednio wskazanych w zasadzie <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Jeśli chcesz zezwolić na automatyczne odtwarzanie we wszystkich witrynach, dodaj do tej listy http://* i https://*.
 
           Jeśli ta zasada nie jest ustawiona, użytkownik może zmienić to ustawienie ręcznie.</translation>
-<translation id="7229876938563670511">Służy do konfigurowania adresu URL domyślnej strony głównej w <ph name="PRODUCT_NAME" /> i blokuje użytkownikom możliwość jego zmiany.
-
-          Strona główna otwiera się po kliknięciu przycisku strony głównej. Listę stron otwieranych po uruchomieniu określają zasady RestoreOnStartup.
-
-          Typ strony głównej możesz określić, wpisując tu URL lub wybierając stronę Nowa karta. Jeśli wybierzesz stronę Nowa karta, ta zasada nie będzie działać.
-
-          Gdy to ustawienie jest włączone, użytkownicy nie mogą zmienić adresu URL strony głównej w <ph name="PRODUCT_NAME" />. Mogą jednak nadal wybrać stronę Nowa karta na stronę główną.
-
-          Gdy ta zasada jest nieskonfigurowana, użytkownicy mogą samodzielnie wybrać stronę główną, jeśli zasada HomepageIsNewTabPage także jest nieskonfigurowana.
-
-          Ta zasada jest dostępna tylko w wystąpieniach systemu Windows, które należą do domeny <ph name="MS_AD_NAME" />, oraz w wystąpieniach systemu Windows 10 Pro lub Enterprise zarejestrowanych w funkcji zarządzania urządzeniami.</translation>
 <translation id="7229975860249300121">Zawiera wyrażenie regularne określające, które konta Google można ustawić jako konta podstawowe przeglądarki w <ph name="PRODUCT_NAME" /> (czyli konta, które można wybrać podczas włączania synchronizacji).
 
       Gdy użytkownik spróbuje ustawić konto podstawowe przeglądarki o nazwie, która nie pasuje do tego wzorca, wyświetli się odpowiedni komunikat o błędzie.

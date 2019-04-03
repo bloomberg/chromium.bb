@@ -3051,17 +3051,6 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
           Az automatikus lejátszás csak a(z) <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> házirendben kifejezetten feltüntetett domainek számára engedélyezett. Ha minden webhely számára szeretné engedélyezni az automatikus lejátszást, fontolja meg a http://* és a https://* felvételét erre a listára.
 
           Ha nem állítja be a házirendet, a felhasználó manuálisan tudja módosítani ezt a beállítást.</translation>
-<translation id="7229876938563670511">Beállítja a kezdőlap alapértelmezett címét a <ph name="PRODUCT_NAME" /> böngészőben, és megakadályozza, hogy a felhasználók módosítsák.
-
-          A kezdőlapot a Főoldal gomb megnyomásával lehet megnyitni. Az indításkor megnyíló oldalakat a RestoreOnStartup házirendek szabályozzák.
-
-          A kezdőlap lehet egy itt megadott konkrét URL vagy az Új lap oldal. Ha az Új lap oldalt választja, akkor ez a házirend nem lép érvénybe.
-
-          Ha megadja ezt a beállítást, a felhasználók nem tudják megváltoztatni a kezdőlap URL-jét a <ph name="PRODUCT_NAME" /> böngészőben, ám változatlanul választhatják az Új lap oldalt kezdőlapként.
-
-          Ha nem állítja be sem ezt, sem a HomepageIsNewTabPage házirendet, akkor a felhasználó választhatja ki a kezdőlapot.
-
-          Ez a házirend csak olyan Windows-példányokon hozzáférhető, amelyek csatlakoznak <ph name="MS_AD_NAME" />-domainhez, illetve csak olyan Windows 10 Pro- vagy Enterprise-példányokon használható, amelyeken aktiválva van az eszközkezelés.</translation>
 <translation id="7229975860249300121">Tartalmaz egy reguláris kifejezést, amely annak a megállapítására szolgál, hogy mely Google-fiókok állíthatók be a böngésző elsődleges fiókjaként a <ph name="PRODUCT_NAME" /> böngészőben (tehát például ez az a fiók, amely kiválasztásra kerül a szinkronizálás bekapcsolási folyamatában).
 
       Ha egy felhasználó olyan felhasználónévvel próbál elsődleges böngészőfiókot megadni, amelyik nem egyezik ezzel a mintával, megjelenik egy erre figyelmeztető hibaüzenet.

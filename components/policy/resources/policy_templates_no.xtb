@@ -1287,7 +1287,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
           Hvis denne innstillingen er slått av, kan ikke brukerne lagre nye passord. De kan likevel bruke passord som er lagret tidligere.
 
           Hvis denne regelen er slått av eller på, kan ikke brukerne endre eller overstyre den i <ph name="PRODUCT_NAME" />. Hvis regelen ikke er angitt, er lagring av passord tillatt (men brukerne kan slå det av).</translation>
-<translation id="3496296378755072552">Passordbehandling</translation>
+<translation id="3496296378755072552">Passordlagring</translation>
 <translation id="3500732098526756068">Lar deg kontrollere utløsingen av advarsler for passordbeskyttelse. Med passordbeskyttelse varsles brukere ved gjenbruk av beskyttede passord på potensielt mistenkelige nettsteder.
 
       Du kan bruke reglene «PasswordProtectionLoginURLs» og «PasswordProtectionChangePasswordURL» til å konfigurere hvilke passord som skal beskyttes.
@@ -1748,7 +1748,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="445270821089253489">Kontrollerer hva slags bruker- og enhetsinformasjon som rapporteres.</translation>
 <translation id="4454820008017317557">Vis verktøylinjeikonet for <ph name="PRODUCT_NAME" /></translation>
 <translation id="4467952432486360968">Blokkér tredjeparts informasjonskapsler</translation>
-<translation id="4474167089968829729">Slå på lagring av passord i passordbehandleren</translation>
+<translation id="4474167089968829729">Slå på lagring av passord i passordlagringsfunksjonen</translation>
 <translation id="4476769083125004742">Hvis denne regelen er angitt som <ph name="BLOCK_GEOLOCATION_SETTING" />, kan ikke Android-apper bruke posisjonsinformasjon. Hvis du angir en annen verdi for denne regelen, eller hvis du ikke angir noen ting, blir brukeren bedt om samtykke når Android-apper prøver å få tilgang til posisjonsinformasjon.</translation>
 <translation id="4480694116501920047">Tving Sikkert Søk</translation>
 <translation id="4482640907922304445">Viser Startside-knappen i verktøylinjen til <ph name="PRODUCT_NAME" />.
@@ -3056,7 +3056,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Hvis denne regelen er angitt som en filbane, brukes den filen som en kjørbar
       fil.</translation>
-<translation id="7167436895080860385">Gi brukere tillatelse til å se passord i passordbehandlingen (avviklet)</translation>
+<translation id="7167436895080860385">Gi brukere tillatelse til å se passord i passordlagringsfunksjonen (avviklet)</translation>
 <translation id="7173856672248996428">Midlertidig profil</translation>
 <translation id="717630378807352957">Tillat alle skrivere fra konfigurasjonsfilen.</translation>
 <translation id="7176721759719212761">Angir om det er tillatt med oppvekkingslåser. Utvidelser kan be om skjermoppvekkingslåser via Power Management Extension API. ARC-apper kan også be om dem.
@@ -3083,17 +3083,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
           Automatisk avspilling tillates bare for domener som er oppført eksplisitt i <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />-regelen. Hvis du vil slå på automatisk avspilling for alle nettsteder, kan du vurdere å legge til http://* og https://* i denne listen.
 
           Hvis denne regelen ikke er angitt, kan brukeren endre denne innstillingen manuelt.</translation>
-<translation id="7229876938563670511">Konfigurerer nettadressen for startsiden som brukes som standard i <ph name="PRODUCT_NAME" />, og forhindrer at brukerne kan endre den.
-
-          Startsiden er siden som åpnes med hjemknappen. Hvilke sider som åpnes ved oppstart, kontrolleres av RestoreOnStartup-reglene.
-
-          Typen startside kan angis som enten en nettadresse du spesifiserer her, eller siden for nye faner. Hvis du velger å bruke siden for nye faner, har ikke denne regelen noen virkning.
-
-          Hvis du slår på denne innstillingen, kan ikke brukerne endre nettadressen for startsiden i <ph name="PRODUCT_NAME" />, men de kan fortsatt velge å bruke siden for nye faner som startside.
-
-          Hvis du ikke angir denne regelen, kan brukerne velge startside selv – såfremt ikke HomepageIsNewTabPage også er angitt.
-
-          Denne regelen er bare tilgjengelig på Windows-forekomster som er tilknyttet <ph name="MS_AD_NAME" />-domener, eller Windows 10 Pro- eller Enterprise-forekomster som er registrert for enhetsadministrering.</translation>
 <translation id="7229975860249300121">Inneholder et regulært uttrykk som brukes til å fastslå hvilke Google-kontoer som kan angis som hovedkontoer for nettlesere i <ph name="PRODUCT_NAME" /> (dvs. kontoen som velges i løpet av flyten for registreringen for synkronisering).
 
       En passende feil vises hvis brukere prøver å angi en hovedkonto for en nettleser med et brukernavn som ikke samsvarer med dette mønsteret.
@@ -3586,7 +3575,7 @@ MERK: Frem til versjon 45 ble denne regelen bare støttet i kioskmodus.</transla
 
       Hvis denne retningslinjen ikke angis, er det ingen unntak fra retningslinjen URLBlacklist.</translation>
 <translation id="8176035528522326671">Tillat at bedriftsbrukeren bare er primær flerprofilbruker (standardatferd for bedriftsadministrerte brukere)</translation>
-<translation id="8214600119442850823">Konfigurerer passordbehandlingen.</translation>
+<translation id="8214600119442850823">Konfigurerer passordlagring.</translation>
 <translation id="8217516105848565518">Denne regelen er avviklet. Bruk RemoteAccessHostDomainList i stedet.</translation>
 <translation id="8244525275280476362">Maksimal innlastingsforsinkelse etter ugyldiggjøring av en innstilling</translation>
 <translation id="8256688113167012935">Kontrollerer hvilket kontonavn <ph name="PRODUCT_OS_NAME" /> viser på påloggingsskjermen for enhetens tilhørende lokale konto.

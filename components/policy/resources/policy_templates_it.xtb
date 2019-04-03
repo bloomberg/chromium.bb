@@ -2992,17 +2992,6 @@ Se questa norma non viene impostata gli utenti possono modificare l'elenco di ap
           La riproduzione automatica è consentita soltanto per i domini elencati esplicitamente nella norma <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Se vuoi attivare la riproduzione automatica per tutti i siti, potresti aggiungere http://* e https://* a questo elenco.
 
           Se questa norma non viene impostata, l'utente potrà cambiare manualmente questa impostazione.</translation>
-<translation id="7229876938563670511">Consente di configurare l'URL della home page di <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificarlo.
-
-          La home page è la pagina che viene aperta facendo clic sul pulsante Home. Le pagine che si aprono all'avvio vengono stabilite dalle norme RestoreOnStartup.
-
-          La home page può essere un URL specificato qui oppure la pagina Nuova scheda. Se selezioni la pagina Nuova scheda, questa norma non viene applicata.
-
-          Se attivi questa impostazione, gli utenti non possono cambiare l'URL della home page di <ph name="PRODUCT_NAME" />, ma possono scegliere come home page la pagina Nuova scheda.
-
-          Se questa norma non viene impostata e non viene impostata neanche la norma HomepageIsNewTabPage, l'utente potrà scegliere la home page che preferisce.
-
-          Questa norma è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi.</translation>
 <translation id="7229975860249300121">Contiene un'espressione regolare che viene usata per stabilire quali Account Google possono essere impostati come account principali del browser in <ph name="PRODUCT_NAME" /> (ossia l'account che viene scelto durante la procedura di attivazione della sincronizzazione).
 
       Viene visualizzato un errore appropriato se un utente cerca di impostare un account principale del browser con un nome utente non corrispondente allo schema indicato.

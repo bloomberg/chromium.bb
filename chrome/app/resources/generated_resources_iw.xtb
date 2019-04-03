@@ -1392,7 +1392,7 @@
 <translation id="3045447014237878114">האתר הזה הוריד קבצים מרובים באופן אוטומטי</translation>
 <translation id="3046910703532196514">דף אינטרנט, שלם</translation>
 <translation id="304747341537320566">מנועי דיבור</translation>
-<translation id="3047644958362961983">‏המידע הזה עוזר לנו להבין בצורה טובה יותר את הבעיה שלך ב-Assistant. המידע נשמר לתקופה של עד 90 ימים והגישה אליו מוגבלת רק לצוותי ההנדסה והמשוב המתאימים.</translation>
+<translation id="3047644958362961983">‏המידע הזה עוזר לנו להבין בצורה טובה יותר את הבעיה שלך ב-Assistant. הוא נשמר לתקופה של עד 90 ימים והגישה אליו מוגבלת: רק צוותי ההנדסה והמשוב המתאימים רשאים לגשת אליו.</translation>
 <translation id="3053013834507634016">שימוש במפתח אישור </translation>
 <translation id="3057861065630527966">גבה את התמונות והסרטונים</translation>
 <translation id="3058498974290601450">אפשר להפעיל את הסנכרון בכל זמן דרך ההגדרות</translation>
@@ -4522,7 +4522,7 @@
 <translation id="7788383851298063850">ספר לנו מה קורה</translation>
 <translation id="7788444488075094252">שפות וקלט</translation>
 <translation id="7788668840732459509">מיקום:</translation>
-<translation id="7789963078219276159">הרקע של דף הפתיחה השתנה לרקע <ph name="CATEGORY" />.</translation>
+<translation id="7789963078219276159">הרקע של דף הפתיחה הוחלף, ועכשיו מופיעה בו התמונה<ph name="CATEGORY" />.</translation>
 <translation id="7791543448312431591">הוספה</translation>
 <translation id="7792012425874949788">משהו השתבש בכניסה לחשבון</translation>
 <translation id="7792388396321542707">הפסק שיתוף</translation>

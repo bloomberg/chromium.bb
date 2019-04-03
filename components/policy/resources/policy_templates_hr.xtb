@@ -3039,17 +3039,6 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
           Automatska reprodukcija dopuštena je samo za domene koje su izričito navedene u pravilu <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Ako želite omogućiti automatsku reprodukciju za sve web-lokacije, razmislite o dodavanju http://* i https://* na taj popis.
 
           Ako se to pravilo ne postavi, korisnik će tu postavku moći promijeniti ručno.</translation>
-<translation id="7229876938563670511">Konfigurira URL zadane početne stranice u pregledniku <ph name="PRODUCT_NAME" /> i korisnicima onemogućuje da ga promijene.
-
-          Početna je stranica ona koja se otvara gumbom početnog zaslona. Stranicama koje se otvaraju prilikom pokretanja upravljaju pravila RestoreOnStartup.
-
-          Za vrstu početne stranice možete postaviti URL koji navedete ovdje ili web-stranicu stranicu nove kartice. Ako odaberete web-stranicu nove kartice, ovo se pravilo ne primjenjuje.
-
-          Ako omogućite tu postavku, korisnici neće moći promijeniti URL početne stranice u pregledniku <ph name="PRODUCT_NAME" />, ali će kao početnu stranicu moći odabrati web-stranicu nove kartice.
-
-          Ako se to pravilo ne postavi, korisnik će moći samostalno odabrati početnu stranicu u slučaju da se ne postavi ni pravilo HomepageIsNewTabPage.
-
-          Pravilo je dostupno samo na instancama Windowsa koje su pridružene domeni <ph name="MS_AD_NAME" /> ili instancama Windowsa 10 Pro ili Enterprise prijavljenim za upravljanje uređajima.</translation>
 <translation id="7229975860249300121">Sadrži regularni izraz koji se upotrebljava za određivanje Google računa koji se mogu postaviti kao primarni računi preglednika <ph name="PRODUCT_NAME" /> (to je račun koji se odabire prilikom tijeka uključivanja sinkronizacije).
 
       Prikazuje se odgovarajuća pogreška ako se korisnik pokuša prijaviti korisničkim imenom koje se ne podudara s uzorkom.

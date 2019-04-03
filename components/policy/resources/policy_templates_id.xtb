@@ -2999,17 +2999,6 @@ Jika kebijakan ini disetel ke false, permintaan penguncian layar saat aktif akan
           Pemutaran otomatis hanya diizinkan untuk domain yang secara eksplisit dicantumkan di kebijakan <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Jika Anda ingin mengaktifkan pemutaran otomatis untuk semua situs, pertimbangkanlah menambahkan http://* dan https://* ke daftar ini.
 
           Jika kebijakan ini tidak disetel, pengguna dapat mengubah setelan ini secara manual.</translation>
-<translation id="7229876938563670511">Mengonfigurasi URL halaman beranda default di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubahnya.
-
-          Halaman beranda adalah halaman yang dibuka oleh tombol Layar utama. Halaman yang terbuka saat browser diluncurkan dikontrol oleh kebijakan RestoreOnStartup.
-
-          Jenis halaman beranda dapat disetel ke URL yang Anda tentukan di sini atau disetel ke Halaman Tab Baru. Jika Anda memilih Halaman Tab Baru, maka kebijakan ini tidak akan berpengaruh.
-
-          Jika Anda mengaktifkan setelan ini, pengguna tidak dapat mengubah URL halaman beranda di <ph name="PRODUCT_NAME" />, tetapi mereka tetap dapat memilih Halaman Tab Baru sebagai halaman beranda.
-
-          Membiarkan kebijakan ini tidak disetel akan memungkinkan pengguna memilih halaman berandanya sendiri jika HomepageIsNewTabPage juga tidak disetel.
-
-          Kebijakan ini hanya tersedia pada instance Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" />, atau instance Windows 10 Pro atau Enterprise yang terdaftar untuk pengelolaan perangkat.</translation>
 <translation id="7229975860249300121">Berisi ekspresi reguler yang digunakan untuk menentukan akun Google mana yang dapat disetel sebagai akun utama browser di <ph name="PRODUCT_NAME" /> (akun yang dipilih selama alur keikutsertaan Sinkronisasi).
 
 Error yang sesuai ditampilkan jika pengguna mencoba untuk menyetel akun utama browser dengan nama pengguna yang tidak cocok dengan pola ini.

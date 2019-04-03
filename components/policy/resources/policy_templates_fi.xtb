@@ -3050,17 +3050,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
           Automaattinen toisto on sallittu vain käytännössä <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> ilmoitetuille verkkotunnuksille. Jos haluat sallia automaattisen toiston kaikille sivustoille, sinun kannattaa lisätä luetteloon http://* ja https://*.
 
           Jos käytäntöä ei ole määritetty, käyttäjä voi muuttaa asetusta manuaalisesti.</translation>
-<translation id="7229876938563670511">Määrittää etusivun URL-osoitteen, jota <ph name="PRODUCT_NAME" /> käyttää oletuksena, ja estää käyttäjiä muuttamasta sitä.
-
-          Etusivu avautuu, kun käyttäjä valitsee Etusivu-painikkeen. Käynnistyksen yhteydessä avautuvat sivut määritetään RestoreOnStartup-käytännöillä.
-
-          Etusivuksi voidaan asettaa joko tässä määrittämäsi URL-osoite tai Uusi välilehti ‑sivu. Jos valitset Uusi välilehti ‑sivun, tätä käytäntöä ei sovelleta.
-
-          Jos otat tämän asetuksen käyttöön, käyttäjät eivät voi valita, mitä URL-osoitetta <ph name="PRODUCT_NAME" /> käyttää etusivuna, mutta he voivat asettaa Uusi välilehti ‑sivun etusivukseen.
-
-          Jos tätä ja HomepageIsNewTabPage-käytäntöä ei ole määritetty, käyttäjät voivat valita etusivun itse.
-
-          Tämä käytäntö on käytettävissä vain Windows-esiintymissä, jotka on yhdistetty <ph name="MS_AD_NAME" /> ‑verkkotunnukseen, tai Windows 10 Pro- ja Enterprise ‑esiintymissä, jotka on rekisteröity laitteiden hallinnointiohjelmaan.</translation>
 <translation id="7229975860249300121">Määrittää säännöllisellä lausekkeella, mitkä Google-tilit <ph name="PRODUCT_NAME" /> voi asettaa selaimen päätiliksi, joka valitaan synkronoinnin käyttöönoton yhteydessä.
 
       Jos käyttäjä yrittää asettaa selaimen päätiliksi tilin, joka ei vastaa kuviota, hän näkee virheviestin.

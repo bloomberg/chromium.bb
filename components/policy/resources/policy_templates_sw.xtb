@@ -3101,17 +3101,6 @@ inapatikana tu kwenye Windows na ${safari} inapatikana tu kwenye Windows na Mac 
           Uchezaji tena wa kiotomatiki huruhusiwa kwa vikoa vilivyoorodheshwa wazi katika sera ya <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Kama ungependa kuwasha uchezaji kiotomatiki wa tovuti zote zingatia kuongeza http://* na https://* kwenye orodha hii.
 
          Ikiwa sera hii itaachwa bila kuwekwa, mtumiaji ataweza kubadilisha mipangilio hii yeye mwenyewe.</translation>
-<translation id="7229876938563670511">Huweka URL chaguomsingi ya ukurasa wa mwanzo katika <ph name="PRODUCT_NAME" /> na huzuia watumiaji kuibadilisha.
-
-          Ukurasa wa mwanzo ni ukurasa unaofunguliwa na kitufe cha Mwanzo. Kurasa zinazofunguka kifaa kinapowashwa zinadhibitiwa na sera za RestoreOnStartup.
-
-          Aina ya ukurasa wa mwanzo inaweza kuwekwa kwenye URL unayobainisha hapa au kuwekwa kwenye Ukurasa Mpya wa Kichupo. Ukichagua Ukurasa Mpya wa Kichupo, basi sera hii haitatekelezwa.
-
-          Ukiwasha mipangilio hii, watumiaji hawawezi kubadilisha URL ya ukurasa wao wa kwanza katika <ph name="PRODUCT_NAME" />, lakini bado wanaweza kuchagua Ukurasa Mpya wa Kichupo kama ukurasa wao wa kwanza.
-
-          Kuiacha sera hii bila kuwekwa kutamruhusu mtumiaji kuchagua ukurasa huu wa mwanzo mwenyewe iwapo HomepageIsNewTabPage haijawekwa pia.
-
-          Sera hii inapatikana kwenye matukio ya Windows ambayo yameunganishwa kwenye kikoa cha <ph name="MS_AD_NAME" />. au matukio ya Windows 10 Pro au Enterprise yaliyojumuishwa katika usimamizi wa kifaa.</translation>
 <translation id="7229975860249300121">Inajumuisha kilinganishi ambacho kinatumiwa kubainisha aina za akaunti za Google ambazo zinaweza kuwekwa kuwa kivinjari cha akaunti ya msingi katika <ph name="PRODUCT_NAME" /> (yaani akaunti ambayo inachaguliwa wakati wa mchakato wa kuchagua kutekeleza Usawazishaji).
 
       Hitilafu inayofaa itaonyeshwa iwapo mtumiaji atajaribu kuweka akaunti ya msingi ya kivinjari pamoja na jina la mtumiaji ambalo halilingani na mchoro huu.

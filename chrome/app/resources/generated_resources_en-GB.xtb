@@ -2284,7 +2284,7 @@
 <translation id="44141919652824029">Allow '<ph name="APP_NAME" />' to get the list of your attached USB devices?</translation>
 <translation id="4414232939543644979">New &amp;Incognito Window</translation>
 <translation id="4415245286584082850">No devices found. Open a help centre article in a new tab.</translation>
-<translation id="4415276339145661267">Manage yourGoogle Account</translation>
+<translation id="4415276339145661267">Manage your Google Account</translation>
 <translation id="4415748029120993980">SECG elliptic curve secp384r1 (aka NIST P-384)</translation>
 <translation id="4416582610654027550">Type a valid URL</translation>
 <translation id="4419409365248380979">Always allow <ph name="HOST" /> to set cookies</translation>
@@ -2602,7 +2602,7 @@
 <translation id="4907161631261076876">This file is not commonly downloaded and may be dangerous.</translation>
 <translation id="4907306957610201395">Permission Category</translation>
 <translation id="4908811072292128752">Open a new tab to browse two sites at once</translation>
-<translation id="4909038193460299775">Because this account is managed by <ph name="DOMAIN" />, your bookmarks, history, passwords and other settings will be cleared from this device. However, your data will remain stored in your Google Accountand can be managed on <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
+<translation id="4909038193460299775">Because this account is managed by <ph name="DOMAIN" />, your bookmarks, history, passwords and other settings will be cleared from this device. However, your data will remain stored in your Google Account and can be managed on <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
 <translation id="4909359680501173791">You are enrolled successfully</translation>
 <translation id="4912643508233590958">Idle Wake Ups</translation>
 <translation id="491691592645955587">Switch to a secure browser</translation>
@@ -2633,7 +2633,7 @@
 <translation id="4955710816792587366">Choose your PIN</translation>
 <translation id="4955814292505481804">Annual</translation>
 <translation id="4957949153200969297">Only enable features related to <ph name="IDS_SHORT_PRODUCT_NAME" /> Sync</translation>
-<translation id="4959262764292427323">Passwords are saved in your Google Accountso that you can use them on any device</translation>
+<translation id="4959262764292427323">Passwords are saved in your Google Account so that you can use them on any device</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> – <ph name="PROFILE_NAME" /></translation>
 <translation id="4964455510556214366">Arrangement</translation>
 <translation id="4964673849688379040">Checking...</translation>
@@ -5500,7 +5500,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="93343527085570547">Go to the <ph name="BEGIN_LINK1" />Legal Help page<ph name="END_LINK1" /> to request content changes for legal reasons. Some account and system information may be sent to Google. We will use the information that you give us to help address technical issues and to improve our services, subject to our <ph name="BEGIN_LINK2" />Privacy Policy<ph name="END_LINK2" /> and <ph name="BEGIN_LINK3" />Terms of Service<ph name="END_LINK3" />.</translation>
 <translation id="93393615658292258">Password only</translation>
 <translation id="934503638756687833">Items not listed here will also be removed, if needed. Learn more about &lt;a href="<ph name="URL" />"&gt;unwanted software protection&lt;/a&gt; in the Chrome privacy white paper.</translation>
-<translation id="935490618240037774">Your bookmarks, history, passwords and other settings will be synced to yourGoogle Accountso that you can use them on all of your devices.</translation>
+<translation id="935490618240037774">Your bookmarks, history, passwords and other settings will be synced to your Google Account so that you can use them on all of your devices.</translation>
 <translation id="935854577147268200">Smart Lock phone changed. Enter your password to update Smart Lock. Next time, your phone will unlock your <ph name="DEVICE_TYPE" />. You can turn off Smart Lock in Settings</translation>
 <translation id="936801553271523408">System diagnostic data</translation>
 <translation id="93766956588638423">Repair extension</translation>

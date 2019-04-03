@@ -2679,17 +2679,6 @@
           “自动播放”仅适用于 <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> 政策中明确列出的网域。如果要为所有网站启用“自动播放”，可以将 http://* 和 https://* 添加到此列表。
 
           如果此策略未设置，用户将能够手动更改此项设置。</translation>
-<translation id="7229876938563670511">配置 <ph name="PRODUCT_NAME" /> 中的默认主页网址，并禁止用户更改此配置。
-
-          主页是由“主页”按钮打开的网页。启动时打开的网页是由 RestoreOnStartup 政策控制的。
-
-          您既可将主页类型设为在此处指定的网址，也可将其设为“新标签页”。如果您选择“新标签页”，此政策将不会产生任何效力。
-
-          如果您启用了此设置，用户将无法更改 <ph name="PRODUCT_NAME" /> 中的主页网址，但仍可选择“新标签页”作为主页。
-
-          如果此政策未设置，并且 HomepageIsNewTabPage 也未设置，用户将可以自行选择主页。
-
-          此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
 <translation id="7229975860249300121">这项政策包含一个正则表达式，用于决定哪些 Google 帐号可以设定为 <ph name="PRODUCT_NAME" /> 中的浏览器主帐号（也就是在同步功能启用流程中所选的帐号）。
 
       如果用户尝试使用与此格式不匹配的用户名设置浏览器主帐号，就会显示相应错误。

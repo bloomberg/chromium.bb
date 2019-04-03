@@ -3152,17 +3152,6 @@
           Automatisk uppspelning tillåts endast för domäner som har angetts i principen <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Om du vill aktivera automatisk uppspelning för alla webbplatser kan du lägga till http://* och https://* på denna lista.
 
           Om denna princip inte anges kan användaren ändra denna inställning manuellt.</translation>
-<translation id="7229876938563670511">Konfigurerar webbadressen för standardstartsidan i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar den.
-
-          Startsidan är den sida som öppnas med hemknappen. Vilka sidor som öppnas vid start avgörs av principerna i RestoreOnStartup.
-
-          Startsidans typ kan vara en webbadress du anger här eller sidan Ny flik. Om du väljer Sidan Ny flik används inte den här principen.
-
-          Om du aktiverar den här inställningen kan användarna inte ändra webbadress för startsidan i <ph name="PRODUCT_NAME" />, men de kan ändå välja att använda sidan Ny flik som startsida.
-
-          Om den här principen inte ställs in kan användaren välja startsida själv om HomepageIsNewTabPage inte heller är inställd.
-
-          Den här principen är bara tillgänglig i Windows-instanser som är kopplade till en <ph name="MS_AD_NAME" />-domän, eller i Windows 10 Pro- eller Enterprise-instanser som är registrerade i enhetshantering.</translation>
 <translation id="7229975860249300121">Innehåller ett reguljärt uttryck som används för att styra vilka Google-konton som får vara primärt webbläsarkonto i <ph name="PRODUCT_NAME" /> (dvs. det konto som anges i samband med valet att använda synkronisering).
 
       Ett felmeddelande visas om en användare försöker ange ett primärt webbläsarkonto med ett användarnamn som inte matchar detta mönster. 

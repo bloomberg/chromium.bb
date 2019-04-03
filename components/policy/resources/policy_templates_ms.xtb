@@ -3141,17 +3141,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
           Main balik automatik hanya dibenarkan untuk domain yang disenaraikan dalam dasar <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> dengan jelas. Jika anda mahu mendayakan main balik automatik untuk semua tapak, pertimbangkan untuk menambahkan http://* dan https://* pada senarai ini.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, pengguna akan dapat menukar tetapan ini secara manual.</translation>
-<translation id="7229876938563670511">Mengkonfigurasi URL halaman utama lalai dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukarnya.
-
-          Halaman utama ialah halaman yang dibuka oleh butang Skrin Utama. Halaman yang dibuka semasa permulaan dikawal oleh dasar RestoreOnStartup.
-
-          Jenis halaman utama boleh ditetapkan kepada URL yang anda tentukan di sini atau ditetapkan kepada Halaman Tab Baharu. Jika anda memilih Halaman Tab Baharu, maka dasar ini tidak terpakai.
-
-          Jika anda mendayakan tetapan ini, pengguna tidak boleh menukar URL halaman utama mereka dalam <ph name="PRODUCT_NAME" />, tetapi mereka masih boleh memilih Halaman Tab Baharu sebagai halaman utama mereka.
-
-          Membiarkan dasar ini tidak ditetapkan akan membolehkan pengguna memilih sendiri halaman utama mereka jika HomepageIsNewTabPage tidak ditetapkan juga.
-
-          Dasar ini hanya tersedia pada tika Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" /> atau tika Windows 10 Pro atau Enterprise yang didaftarkan untuk pengurusan peranti.</translation>
 <translation id="7229975860249300121">Mengandungi ungkapan nalar yang digunakan untuk menentukan akaun Google yang boleh ditetapkan sebagai akaun utama penyemak imbas dalam <ph name="PRODUCT_NAME" /> (iaitu akaun yang dipilih semasa aliran ikut serta Penyegerakan).
 
       Ralat yang berkenaan akan dipaparkan jika pengguna cuba menetapkan akaun utama penyemak imbas dengan nama pengguna yang tidak sepadan dengan corak ini.

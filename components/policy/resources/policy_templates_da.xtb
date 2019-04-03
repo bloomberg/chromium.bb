@@ -3029,17 +3029,6 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
           Automatisk afspilning er kun tilladt på domæner, der udtrykkeligt er angivet i politikken <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Hvis du vil aktivere automatisk afspilning på alle websites, kan du eventuelt føje http://* og https://* til denne liste.
 
           Hvis denne politik ikke angives, kan brugeren ændre indstillingen manuelt.</translation>
-<translation id="7229876938563670511">Konfigurerer webadressen for standardstartsiden i <ph name="PRODUCT_NAME" /> og forhindrer, at brugerne ændrer den.
-
-          Startsiden åbnes ved hjælp af knappen Start. De sider, der åbnes ved opstart, styres af RestoreOnStartup-politikkerne.
-
-          Startsiden kan enten være en webadresse, du angiver her, eller indstillet til siden Ny fane. Hvis du vælger siden Ny fane, træder denne politik ikke i kraft.
-
-          Hvis du aktiverer denne indstilling, kan brugerne ikke ændre webadressen for deres startside i <ph name="PRODUCT_NAME" />, men de kan stadig vælge siden Ny fane som startside.
-
-          Hvis hverken denne politik eller HomepageIsNewTabPage er angivet, kan brugerne selv vælge startside.
-
-          Denne politik er kun tilgængelig for Windows-forekomster, der er knyttet til et <ph name="MS_AD_NAME" />-domæne, eller Windows 10 Pro- eller Enterprise-forekomster, der er tilmeldt administration af enheder.</translation>
 <translation id="7229975860249300121">Indeholder et regulært udtryk, som bruges til at afgøre, hvilke Google-konti der kan angives som primære konti for browseren i <ph name="PRODUCT_NAME" /> (dvs. den konto, der vælges i forbindelse med tilmeldingen til synkronisering).
 
       Der vises en fejl, hvis en bruger forsøger at angive en primær konto for browseren med et brugernavn, som ikke stemmer overens med dette mønster.

@@ -1082,7 +1082,6 @@
 <translation id="7152423860607593928">Number-14 (என்வலப்)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" />, மேலும் <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />, மேலும் <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7153618581592392745">லாவெண்டர் நிறம்</translation>
-<translation id="7158980942472052083">தவறான URL நிலையான திட்டமுள்ள ஒரு URL ஆக இருக்க வேண்டும்.</translation>
 <translation id="717330890047184534">Gaia ஐடி:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" />, மேலும் <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />, மேலும் <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="7177397715882417099">நீங்கள் செல்லும் <ph name="ORIGIN" /> சேவையகம், அதனுடன் தொடர்புடைய எல்லாக் கோரிக்கைகளுக்கும்

@@ -1076,7 +1076,6 @@
 <translation id="7152423860607593928">നമ്പർ-14 (എൻവലപ്പ്)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> എന്നതും മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> എണ്ണവും}other{<ph name="PAYMENT_METHOD_PREVIEW" /> എന്നതും മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> എണ്ണവും}}</translation>
 <translation id="7153618581592392745">ലാവെൻഡർ</translation>
-<translation id="7158980942472052083">URL അസാധുവാണ്. സ്‌റ്റാൻഡേർഡ് സ്‌കീമുള്ള URL ആയിരിക്കണം.</translation>
 <translation id="717330890047184534">Gaia ഐഡി:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> എന്നതും മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> എണ്ണവും}other{<ph name="SHIPPING_OPTION_PREVIEW" /> എന്നതും മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> എണ്ണവും}}</translation>
 <translation id="7177397715882417099">സെർവർ ഉപയോഗിച്ച് നിങ്ങൾ പോകുന്ന <ph name="ORIGIN" /> സൈറ്റ്, അതിൻ്റെ എല്ലാ അഭ്യർത്ഥനകളിലേക്കും ഒരു സുരക്ഷാ നയം ബാധകമാക്കുമെന്ന് ഇത് അഭ്യർത്ഥിച്ചിരിക്കുന്നു. എന്നാൽ ഒരു നയം നിർവഹിക്കുന്നതിന് പകരം ഇത് ബ്രൗസറിനെ മറ്റിടത്തേയ്ക്ക് റീഡയറക്‌ട് ചെയ്‌തതിനാൽ, <ph name="SITE" />എന്നതിനുള്ള നിങ്ങളുടെ അഭ്യർത്ഥന പൂർത്തീകരിക്കാൻ ബ്രൗസറിന് കഴിയുന്നില്ല.</translation>

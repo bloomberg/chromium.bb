@@ -3145,17 +3145,6 @@
           Automatinis atkūrimas leidžiamas tik tuose domenuose, kurie yra aiškiai nurodyti politikoje „<ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />“. Jei norite įgalinti atkūrimą visose svetainėse, pabandykite prie šio sąrašo pridėti „http://*“ ir „https://*“.
 
           Jei ši politika bus nenustatyta, naudotojas galės keisti šį nustatymą patys.</translation>
-<translation id="7229876938563670511">Konfigūruojamas numatytasis pagrindinio puslapio URL „<ph name="PRODUCT_NAME" />“ ir naudotojams neleidžiama jo keisti.
-
-          Pagrindinis puslapis – tai tas puslapis, kuris atidaromas spustelėjus pagrindinio puslapio mygtuką. Kokie puslapiai atidaromi paleidžiant, nustatoma pagal politiką „RestoreOnStartup“.
-
-          Pagrindinio puslapio tipas gali būti siunčiamas čia nurodytu URL arba nustatytas kaip Naujo skirtuko puslapis. Jei pasirinksite Naujo skirtuko puslapį, ši politika neįsigalios.
-
-          Jei įgalinsite šį nustatymą, naudotojai negalės pakeisti pagrindinio puslapio URL „<ph name="PRODUCT_NAME" />“, bet vis tiek galės pasirinkti Naujo skirtuko puslapį kaip pagrindinį.
-
-          Nenustačius šios politikos, naudotojas galės pats pasirinkti pagrindinį puslapį, jei nebus nustatyta ir politika „HomepageIsNewTabPage“.
-
-          Ši politika pasiekiama tik „Windows“ objektuose, kurie susieti su „<ph name="MS_AD_NAME" />“ domenu, arba „Windows 10 Pro“ ar „Enterprise“ objektuose, kurie užregistruoti naudoti įrenginių tvarkymo funkciją.</translation>
 <translation id="7229975860249300121">Nurodant, kurios „Google“ paskyros gali būti nustatytos kaip naršyklės pagrindinės paskyros sistemoje „<ph name="PRODUCT_NAME" />“ (t. y. paskyra, kuri pasirenkama atliekant sinchronizavimo pasirinkimo veiksmus), naudojamas reguliarusis reiškinys.
 
       Jei naudotojas bando nustatyti naršyklės pagrindinę paskyrą naudotojo vardu, neatitinkančiu šio šablono, pateikiama atitinkama klaida.

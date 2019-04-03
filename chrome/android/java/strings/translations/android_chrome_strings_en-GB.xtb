@@ -333,6 +333,7 @@
 <translation id="3443221991560634068">Reload the current page</translation>
 <translation id="3445014427084483498">Just now</translation>
 <translation id="3452612588551937789">Sign in with your Google Account to get your bookmarks, history, passwords and other settings on all your devices.</translation>
+<translation id="3478363558367712427">You can choose your search engine</translation>
 <translation id="3492207499832628349">New incognito tab</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /> about suggested content</translation>
 <translation id="3513704683820682405">Augmented Reality</translation>
@@ -854,7 +855,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="723171743924126238">Select images</translation>
 <translation id="7243308994586599757">Options available near bottom of the screen</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> selected</translation>
-<translation id="7253272406652746122">Add a Google Accountfrom the Accounts page in your device’s Settings app.</translation>
+<translation id="7253272406652746122">Add a Google Account from the Accounts page in your device’s Settings app.</translation>
 <translation id="7274013316676448362">Blocked site</translation>
 <translation id="7291387454912369099">Assistant Triggered Checkout</translation>
 <translation id="729975465115245577">Your device doesn’t have an app to store the passwords file.</translation>

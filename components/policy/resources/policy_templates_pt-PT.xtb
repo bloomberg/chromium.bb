@@ -3049,17 +3049,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           A reprodução automática só está autorizada para domínios explicitamente listados na política <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Se pretender ativar a reprodução automática para todos os sites, pondere adicionar http://* e https://* a esta lista.
 
           Se esta política não for definida, o utilizador pode alterar manualmente esta definição.</translation>
-<translation id="7229876938563670511">Configura o URL da página inicial predefinida no <ph name="PRODUCT_NAME" /> e impede os utilizadores de o alterarem.
-
-          A página inicial é a página aberta com o botão página inicial. As páginas abertas no arranque são controladas pelas políticas RestoreOnStartup.
-
-          O tipo de página inicial pode ser definido como um URL especificado aqui ou como a página Novo separador. Se selecionar a página Novo separador, esta política não tem efeito.
-
-          Se ativar esta definição, os utilizadores não podem alterar o URL da página inicial no <ph name="PRODUCT_NAME" />, mas podem escolher a página Novo separador como a página inicial.
-
-          Deixar esta política por definir irá permitir ao utilizador escolher a respetiva página inicial se HomepageIsNewTabPage também não estiver definida.
-
-          Esta política está apenas disponível em instâncias do Windows associadas a um domínio do <ph name="MS_AD_NAME" /> ou em instâncias do Windows 10 Pro ou Enterprise inscritas para gestão de dispositivos.</translation>
 <translation id="7229975860249300121">Contém uma expressão regular que é utilizada para determinar que Contas Google podem ser definidas como contas principais do navegador no <ph name="PRODUCT_NAME" /> (ou seja, a conta escolhida durante o fluxo de optar pela Sincronização).
 
       É apresentado um erro adequado quando um utilizador tenta definir uma conta principal do navegador com um nome de utilizador que não corresponde a este padrão.

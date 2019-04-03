@@ -200,7 +200,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="6468844726266617801">{0,plural, =1{Relaunch Chrome within a day}other{Relaunch Chrome within # days}}</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome Dev</translation>
 <translation id="6566149418543181476">Updating Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
-<translation id="6598387184982954187">You're using <ph name="PROFILE_EMAIL" /> to sync your Chrome stuff. To update your sync preference or to use Chrome without aGoogle Account, visit <ph name="SETTINGS_LINK" />.</translation>
+<translation id="6598387184982954187">You're using <ph name="PROFILE_EMAIL" /> to sync your Chrome stuff. To update your sync preference or to use Chrome without a Google Account, visit <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Copied to Chrome</translation>
 <translation id="6634887557811630702">Google Chrome is up to date.</translation>
 <translation id="6676384891291319759">Access the Internet</translation>

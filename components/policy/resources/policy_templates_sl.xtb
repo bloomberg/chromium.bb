@@ -3148,17 +3148,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           Samodejno predvajanje je dovoljeno samo za domene, ki so izrecno navedene v pravilniku <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Če želite samodejno predvajanje omogočiti za vsa spletna mesta, razmislite o tem, da bi na ta seznam dodali http://* in https://*.
 
           Če ta pravilnik ni nastavljen, bo lahko uporabnik to nastavitev spremenil ročno.</translation>
-<translation id="7229876938563670511">Konfigurira privzeti URL domače strani za brskalnik <ph name="PRODUCT_NAME" /> in uporabnikom prepreči, da bi ga spreminjali.
-
-          Domača stran je stran, ki se odpre ob kliku gumba »Domača stran«.  Strani, ki se odprejo ob zagonu, določajo pravilniki RestoreOnStartup.
-
-          Vrsta začetne strani je lahko določena z URL-jem, ki ga navedete tukaj, ali nastavljena na nov zavihek s povezavami. Če izberete nov zavihek s povezavami, ta pravilnik nima vpliva.
-
-          Če omogočite to nastavitev, uporabniki ne bodo mogli spremeniti URL-ja domače strani za brskalnik <ph name="PRODUCT_NAME" />, lahko pa kot domačo stran še vedno izberejo nov zavihek s povezavami.
-
-          Če tega pravilnika ne nastavite, bo lahko uporabnik sam izbral domačo stran, če ni nastavljen tudi pravilnik HomepageIsNewTabPage.
-
-          Ta pravilnik je na voljo samo v primerkih s sistemom Windows, ki so pridruženi v domeno <ph name="MS_AD_NAME" />, ali primerkih s sistemom Windows 10 Pro ali Enterprise, ki so včlanjeni v upravljanje naprav.</translation>
 <translation id="7229975860249300121">Vsebuje regularni izraz, ki se uporablja za ugotavljanje, katere Google Račune je mogoče nastaviti kot primarne račune brskalnika v brskalniku <ph name="PRODUCT_NAME" /> (tj. račun, ki je izbran med potekom omogočanja sinhronizacije).
 
       Če uporabnik poskusi nastaviti primarni račun brskalnika z uporabniškim imenom, ki se ne ujema s tem vzorcem, se prikaže ustrezna napaka.

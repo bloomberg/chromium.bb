@@ -3139,17 +3139,6 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
           La reproducción automática solo se permite en dominios indicados de forma explícita en la política <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Si quieres habilitarla en todos los sitios web, añade http://* y https://* a esta lista.
 
           Si no se asigna ningún valor a esta política, el usuario puede cambiar esta configuración manualmente.</translation>
-<translation id="7229876938563670511">Permite configurar la URL de la página principal predeterminada de <ph name="PRODUCT_NAME" /> y evita que los usuarios la modifiquen.
-
-          La página principal es la página que abre el botón de página de inicio. Las páginas que se abren al iniciarse el navegador están controladas por las políticas RestoreOnStartup.
-
-          La página principal puede ser una URL que se especifique aquí o la página Nueva pestaña. Si seleccionas la página Nueva pestaña, esta política no se tendrá en cuenta.
-
-          Si habilitas esta opción, los usuarios no podrán modificar la URL de la página principal de <ph name="PRODUCT_NAME" />, pero podrán seguir seleccionando la página Nueva pestaña como su página principal.
-
-          Si no se define esta política ni HomepageIsNewTabPage, el usuario podrá seleccionar la página principal que quiera.
-
-          Esta política solo está disponible en instancias de Windows que estén vinculadas a un dominio de <ph name="MS_AD_NAME" /> y en instancias de Windows 10 Pro o Enterprise que se hayan registrado para gestionar dispositivos.</translation>
 <translation id="7229975860249300121">Contiene una expresión regular que se usa para determinar qué cuentas de Google pueden establecerse como cuentas principales de navegador en <ph name="PRODUCT_NAME" /> (por ejemplo, la cuenta elegida durante el proceso de activación de la sincronización).
 
       Si el usuario intenta establecer una cuenta principal de navegador con un nombre de usuario que no coincide con este patrón, se muestra un error.

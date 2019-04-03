@@ -3144,17 +3144,6 @@ Kui jätate selle reegli määramata, ei ole kasutajate sisselogimine piiratud. 
           Automaatne taasesitus on lubatud ainult domeenidel, mis on reeglis <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> selgesõnaliselt loetletud. Kui soovite lubada automaatse taasesituse kõigil saitidel, kaaluge sellesse loendisse protokollide http://* ja https://* lisamist.
 
           Kui see reegel on määramata, saab kasutaja seda seadet käsitsi muuta.</translation>
-<translation id="7229876938563670511">Seadistab rakenduse <ph name="PRODUCT_NAME" /> avalehe vaike-URL-i ja keelab kasutajatel selle muutmise.
-
-          Avaleht on leht, mis avaneb nupu Avaleht vajutamisel. Käivitamisel avatavaid lehti juhivad reeglid RestoreOnStartup.
-
-          Avalehe tüübiks saab seadistada siin määratud URL-i või uue vahelehe. Kui valite uue vahelehe, siis seda reeglit ei jõustata.
-
-          Kui lubate selle seade, ei saa kasutajad avalehe URL-i teenuses <ph name="PRODUCT_NAME" /> muuta, kuid nad saavad avaleheks valida siiski uue vahelehe.
-
-          Kui seda reeglit ei määrata, saab kasutaja ise valida oma avalehe, kui ka reegel HomepageIsNewTabPage on määramata.
-
-          Reegel on saadaval ainult Windowsi eksemplarides, mis on liidetud domeeniga <ph name="MS_AD_NAME" />, ja Windows 10 Pro või Enterprise'i eksemplaridega, mis on registreeritud seadmehalduse teenuses.</translation>
 <translation id="7229975860249300121">Sisaldab regulaaravaldist, mis määrab, millised Google'i kontod saab teenuses <ph name="PRODUCT_NAME" /> brauseri peamisteks kontodeks seadistada.
 
       Kui kasutaja üritab määrata brauseri peamist kontot, mille kasutajanimi ei kattu mustriga, kuvatakse vastav veasõnum.

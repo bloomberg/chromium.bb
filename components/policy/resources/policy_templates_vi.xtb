@@ -3137,17 +3137,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
           Chỉ các miền nêu rõ ràng trong chính sách <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> mới được phép tự động phát lại. Nếu bạn muốn bật tự động phát lại cho tất cả các trang web, hãy cân nhắc việc thêm http://* và https://* vào danh sách này.
 
           Nếu bạn không đặt chính sách này, người dùng sẽ có thể thay đổi cài đặt này theo cách thủ công.</translation>
-<translation id="7229876938563670511">Định cấu hình URL trang chủ mặc định trong <ph name="PRODUCT_NAME" /> và ngăn không cho người dùng thay đổi URL đó.
-
-          Trang chủ là trang mở ra khi người dùng nhấn nút Trang chủ. Các trang mở ra khi khởi động do chính sách RestoreOnStartup kiểm soát.
-
-          Bạn có thể đặt loại trang chủ thành một URL mà bạn chỉ định tại đây hoặc đặt thành Trang tab mới. Nếu bạn chọn Trang tab mới, thì chính sách này không có hiệu lực.
-
-          Nếu bạn bật tùy chọn cài đặt này, thì người dùng không thể thay đổi URL trang chủ của họ trong <ph name="PRODUCT_NAME" /> nhưng vẫn có thể chọn Trang tab mới làm trang chủ.
-
-          Nếu bạn không đặt chính sách này, thì người dùng sẽ được phép tự chọn trang chủ của họ trong trường hợp bạn cũng không đặt chính sách HomepageIsNewTabPage.
-
-          Chính sách này chỉ có trên các phiên bản Windows liên kết với miền <ph name="MS_AD_NAME" /> hoặc phiên bản Windows 10 Pro hay Enterprise đã đăng ký quản lý thiết bị.</translation>
 <translation id="7229975860249300121">Có chứa một biểu thức chính quy dùng để xác định Tài khoản Google nào có thể đặt làm tài khoản chính của trình duyệt trong <ph name="PRODUCT_NAME" /> (tức là tài khoản này được chọn trong quy trình chọn tham gia Đồng bộ hóa).
 
       Một lỗi phù hợp sẽ hiển thị nếu người dùng cố gắng đặt tài khoản chính của trình duyệt bằng một tên người dùng không khớp với mẫu này.

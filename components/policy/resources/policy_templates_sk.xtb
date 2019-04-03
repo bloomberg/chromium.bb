@@ -3105,17 +3105,6 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
           Automatické prehrávanie je povolené iba pre domény výslovne uvedené v pravidle <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Ak chcete povoliť automatické prehrávanie pre všetky weby, odporúčame do tohto zoznamu pridať výrazy http://* a https://*.
 
           Ak toto pravidlo nenastavíte, používateľ bude môcť nastavenie zmeniť ručne.</translation>
-<translation id="7229876938563670511">Konfiguruje predvolenú webovú adresu domovskej stránky prehliadača <ph name="PRODUCT_NAME" /> a zabraňuje používateľom jej úpravu.
-
-          Domovská stránka je stránka, ktorá sa otvára tlačidlom Domovská stránka. Stránky, ktoré sa otvoria po spustení, sú ovládané pravidlami RestoreOnStartup.
-
-          Typ domovskej stránky môže byť nastavený buď na tu uvedenú webovú adresu, alebo na stránku na novej karte. Ak vyberiete stránku na novej karte, toto pravidlo sa neuplatní.
-
-          Ak toto nastavenie povolíte, používatelia nebudú môcť v prehliadači <ph name="PRODUCT_NAME" /> zmeniť webovú adresu domovskej stránky, budú však stále môcť nastaviť svoju domovskú stránku na stránku na novej karte.
-
-          Ak ponecháte toto pravidlo nenastavené, umožní to používateľovi zvoliť si domovskú stránku samostatne v prípade, keď nie je nastavené ani pravidlo HomepageIsNewTabPage.
-
-          Toto pravidlo je k dispozícii iba v inštanciách systému Windows, ktoré sú zapojené do domény <ph name="MS_AD_NAME" />, alebo v inštanciách systému Windows 10 Pro alebo Enterprise, ktoré sú zaregistrované do správy zariadení.</translation>
 <translation id="7229975860249300121">Obsahuje regulárny výraz, ktorý sa používa na určenie toho, ktoré účty Google je možné nastaviť ako hlavné účty prehliadača <ph name="PRODUCT_NAME" /> (t. j. tie, ktoré sa vyberú pri aktivovaní synchronizácie).
 
       Ak sa používateľ pokúsi nastaviť hlavný účet prehliadača pomocou používateľského mena, ktoré sa nezhoduje s týmto vzorom, zobrazí sa príslušná chyba.

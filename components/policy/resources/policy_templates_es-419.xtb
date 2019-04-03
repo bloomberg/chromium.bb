@@ -3029,17 +3029,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
           La reproducción automática solo se permite para los sitios indicados explícitamente en la política <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Si quieres habilitar la reproducción automática para todos los sitios, agrega http://* y https://* a esta lista.
 
           Si no estableces esta política, el usuario podrá cambiar la configuración de forma manual.</translation>
-<translation id="7229876938563670511">Configura la URL de la página principal predeterminada en <ph name="PRODUCT_NAME" /> y evita que los usuarios la modifiquen.
-
-          La página principal es la página que se abre con el botón Página principal. Las páginas que se abren al inicio se controlan a través de las políticas RestoreOnStartup.
-
-          El tipo de página principal puede configurarse como una URL que se especifica aquí o establecerse en la página Nueva pestaña. Si se selecciona la página Nueva pestaña, esta política no se aplica.
-
-          Si se habilita esta configuración, los usuarios no pueden cambiar la URL de la página principal en <ph name="PRODUCT_NAME" />, pero pueden elegir la página Nueva pestaña como página principal.
-
-          Si esta política no se establece, el usuario puede elegir la página principal cuando tampoco se establece HomepageIsNewTabPage.
-
-          Esta política está disponible en instancias de Windows vinculadas a un dominio de <ph name="MS_AD_NAME" /> o instancias de Windows 10 Pro o Enterprise habilitadas para la administración de dispositivos.</translation>
 <translation id="7229975860249300121">Contiene una expresión regular que se usa para determinar qué Cuentas de Google se pueden establecer como las principales del navegador en <ph name="PRODUCT_NAME" /> (es decir, la cuenta que se elige en el proceso de aceptación de la sincronización).
 
       Si un usuario intenta establecer una cuenta principal en el navegador con un nombre de usuario que no coincida con este patrón, se mostrará un error.

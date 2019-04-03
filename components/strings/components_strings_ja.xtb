@@ -127,7 +127,7 @@
       &lt;p&gt;&lt;strong&gt;設定&lt;/strong&gt;アプリの [&lt;strong&gt;全般&lt;/strong&gt;] セクションで日時を調整してください。&lt;/p&gt;</translation>
 <translation id="1569487616857761740">有効期限の入力</translation>
 <translation id="1581080074034554886">CVC</translation>
-<translation id="1583429793053364125">このウェブページを表示中に問題が発生しました。</translation>
+<translation id="1583429793053364125">このウェブページの表示中に問題が発生しました。</translation>
 <translation id="1592005682883173041">ローカルデータへのアクセス</translation>
 <translation id="1594030484168838125">選択</translation>
 <translation id="161042844686301425">シアン</translation>
@@ -236,7 +236,7 @@
 <translation id="2202020181578195191">有効期限（年）を正しい形式で入力してください</translation>
 <translation id="2212735316055980242">ポリシーが見つかりません</translation>
 <translation id="2213606439339815911">エントリを取得しています...</translation>
-<translation id="2218879909401188352"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> では現在、悪意のあるユーザーによって危険なアプリ（端末に問題を生じたり、モバイル利用料に不明瞭な請求を加えたり、個人情報を抜き取ったりするアプリ）がインストールされる可能性があります。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2218879909401188352"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> では現在、悪意のあるユーザーによって危険なアプリ（端末に問題を生じさせたり、モバイル利用料に不明瞭な請求を加えたり、個人情報を抜き取ったりするアプリ）がインストールされる可能性があります。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">インターネットに接続されていません</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />診断アプリ<ph name="END_LINK" />を使用して接続を修正してください</translation>
 <translation id="2239100178324503013">送信</translation>
@@ -479,7 +479,7 @@
 <translation id="3600246354004376029"><ph name="TITLE" />、<ph name="DOMAIN" />、<ph name="TIME" /></translation>
 <translation id="3614103345592970299">サイズ 2</translation>
 <translation id="3615877443314183785">有効期限（日）を入力してください</translation>
-<translation id="36224234498066874">閲覧履歴を消去...</translation>
+<translation id="36224234498066874">閲覧履歴データを削除...</translation>
 <translation id="362276910939193118">全履歴を表示</translation>
 <translation id="3630155396527302611">ネットワークへのアクセスを許可されたプログラムとして既に表示されている場合は、
       いったんリストから削除し、もう一度追加してみてください。</translation>
@@ -794,7 +794,7 @@
 <translation id="5386426401304769735">このサイトの証明書チェーンには SHA-1 を使って署名された証明書が含まれています。</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="540969355065856584">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は現在有効ではありません。設定が不適切か、悪意のあるユーザーによって接続が妨害されている可能性があります。</translation>
-<translation id="5421136146218899937">閲覧履歴データの消去...</translation>
+<translation id="5421136146218899937">閲覧履歴データを削除...</translation>
 <translation id="5430298929874300616">ブックマークを削除</translation>
 <translation id="5431657950005405462">ファイルが見つかりませんでした</translation>
 <translation id="5439770059721715174">「<ph name="ERROR_PATH" />」でスキーマ確認エラー: <ph name="ERROR" /></translation>
@@ -848,7 +848,7 @@
 <translation id="5684874026226664614">このページを翻訳できませんでした。</translation>
 <translation id="5685654322157854305">配送先住所を追加</translation>
 <translation id="5689199277474810259">JSON にエクスポート</translation>
-<translation id="5689516760719285838">現在地</translation>
+<translation id="5689516760719285838">位置情報</translation>
 <translation id="570530837424789914">管理...</translation>
 <translation id="57094364128775171">安全なパスワードを自動生成…</translation>
 <translation id="5710435578057952990">このウェブサイトの ID は確認されていません。</translation>
@@ -922,7 +922,7 @@
 <translation id="6144381551823904650">{COUNT,plural, =0{なし}=1{1 個のパスワード（同期済み）}other{# 個のパスワード（同期済み）}}</translation>
 <translation id="6146055958333702838">ケーブルを確認し、使用しているネットワーク デバイス（ルーター、モデムなど）を
     再起動してください。</translation>
-<translation id="614940544461990577">次をお試しください:</translation>
+<translation id="614940544461990577">次をお試しください</translation>
 <translation id="6151417162996330722">サーバー証明書の有効期限が長すぎます。</translation>
 <translation id="6157877588268064908">配送方法と要件を確認するには、住所を選択してください</translation>
 <translation id="6165508094623778733">詳しく見る</translation>
@@ -1056,7 +1056,7 @@
 <translation id="6993898126790112050">6x9（封筒）</translation>
 <translation id="6996312675313362352"><ph name="ORIGINAL_LANGUAGE" />を常に翻訳</translation>
 <translation id="7012363358306927923">中国銀聯</translation>
-<translation id="7016992613359344582">料金の請求は 1 回限りの場合も毎月行われる場合もあり、課金されたかどうかわからないこともあります。</translation>
+<translation id="7016992613359344582">料金の請求は 1 回限りの場合も繰り返し行われる場合もあり、課金されたかどうかわからないこともあります。</translation>
 <translation id="7029809446516969842">パスワード</translation>
 <translation id="7050187094878475250"><ph name="DOMAIN" /> にアクセスしようとしましたが、サーバーに提示された証明書の有効期限が長すぎて信頼性を確認できませんでした。</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{現在、このカードは保存できません}other{現在、これらのカードは保存できません}}</translation>
@@ -1078,7 +1078,6 @@
 <translation id="7152423860607593928">Number-14（封筒）</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" />（他 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 件）}other{<ph name="PAYMENT_METHOD_PREVIEW" />（他 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 件）}}</translation>
 <translation id="7153618581592392745">ラベンダー</translation>
-<translation id="7158980942472052083">URL が無効です。標準スキームの URL を指定してください。</translation>
 <translation id="717330890047184534">GAIA ID:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" />（他 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 件）}other{<ph name="SHIPPING_OPTION_PREVIEW" />（他 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 件）}}</translation>
 <translation id="7177397715882417099">アクセスしているサーバー <ph name="ORIGIN" /> では、サーバーへのすべてのリクエストにセキュリティ ポリシーを適用することが求められていますが、ポリシーは送信されず、ブラウザは他の場所にリダイレクトされたため、ブラウザは <ph name="SITE" /> のリクエストを満たすことができません。</translation>
@@ -1323,7 +1322,7 @@
 <translation id="8368476060205742148">Google Play 開発者サービス</translation>
 <translation id="8371889962595521444">カスタムルート証明書</translation>
 <translation id="8380941800586852976">危険</translation>
-<translation id="8381674639488873545">料金の請求は 1 回限りの場合も毎月行われる場合もあり、課金されたかどうかわからないこともあります。<ph name="BEGIN_LINK" />理解したうえで表示する<ph name="END_LINK" /></translation>
+<translation id="8381674639488873545">料金の請求は 1 回限りの場合も繰り返し行われる場合もあり、課金されたかどうかわからないこともあります。<ph name="BEGIN_LINK" />理解したうえで表示する<ph name="END_LINK" /></translation>
 <translation id="8382348898565613901">最近アクセスしたブックマークがここに表示されます</translation>
 <translation id="8398259832188219207">クラッシュ レポートが <ph name="UPLOAD_TIME" /> にアップロードされました</translation>
 <translation id="8412145213513410671">障害数（<ph name="CRASH_COUNT" />）</translation>
@@ -1442,7 +1441,7 @@
 <translation id="9154194610265714752">更新完了</translation>
 <translation id="9157595877708044936">セットアップ中...</translation>
 <translation id="9158625974267017556">C6（封筒）</translation>
-<translation id="9168814207360376865">お支払い方法を保存しているかどうかの確認をサイトに許可する</translation>
+<translation id="9168814207360376865">お支払い方法を保存しているかどうかの確認をサイトに許可します</translation>
 <translation id="9169664750068251925">このサイトでは常にブロック</translation>
 <translation id="9170848237812810038">取消(&amp;U)</translation>
 <translation id="9171296965991013597">アプリを終了しますか？</translation>

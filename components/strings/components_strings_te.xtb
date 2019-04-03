@@ -1080,7 +1080,6 @@
 <translation id="7152423860607593928">నంబర్-14 (ఎన్వలప్)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7153618581592392745">లావెండర్ రంగు</translation>
-<translation id="7158980942472052083">చెల్లని URL. తప్పక ప్రామాణిక స్కీమ్‌ని కలిగిన URL అయి ఉండాలి.</translation>
 <translation id="717330890047184534">Gaia ID:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="7177397715882417099">మీరు వెళ్లాలనుకుంటున్న సర్వర్ <ph name="ORIGIN" /> దానికి చేసే అన్ని అభ్యర్థనలకు భద్రతా విధానం వర్తిస్తుందని తెలియజేసింది. కానీ విధానాన్ని డెలివరీ చేయడానికి బదులు అది బ్రౌజర్‌ను మరెక్కడికో మళ్లించింది, దీని వలన <ph name="SITE" /> కోసం మీ అభ్యర్థనను పూర్తి చేయకుండా బ్రౌజర్‌ను నివారిస్తుంది.</translation>

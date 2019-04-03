@@ -3024,17 +3024,6 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
           A reprodução automática só é permitida para domínios explicitamente listados na política <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Se você quiser ativar a reprodução automática para todos os sites, recomendamos que adicione http://* e https://* a essa lista.
 
           Se esta política for deixada sem definição, o usuário poderá alterar essa configuração manualmente.</translation>
-<translation id="7229876938563670511">Configura o URL padrão da página inicial no <ph name="PRODUCT_NAME" /> e impede os usuários de alterá-lo.
-
-          A página inicial é aquela aberta pelo botão "Página inicial". As páginas que são abertas na inicialização são controladas pelas políticas RestoreOnStartup.
-
-          O tipo da página inicial pode ser configurado como um URL que você especifica aqui ou como a página nova guia. Se você selecionar a página nova guia, esta política não terá efeito.
-
-          Se você ativar essa configuração, os usuários não poderão alterar o URL da página inicial deles no <ph name="PRODUCT_NAME" />, mas eles ainda poderão escolher a página nova guia como página inicial.
-
-          Se esta política não for definida, o usuário poderá escolher a própria página inicial caso HomepageIsNewTabPage também não esteja definida.
-
-          Esta política está disponível apenas em instâncias do Windows associadas a um domínio <ph name="MS_AD_NAME" /> ou instâncias do Windows 10 Pro ou Enterprise inscritas no gerenciamento de dispositivos.</translation>
 <translation id="7229975860249300121">Contém uma expressão regular que é usada para determinar quais Contas do Google podem ser definidas como contas principais do navegador no <ph name="PRODUCT_NAME" /> (isto é, a conta escolhida durante o fluxo de ativação de sincronização).
 
       Se o usuário tentar configurar uma conta principal com um nome de usuário que não corresponde a esse padrão, o erro correspondente será exibido.

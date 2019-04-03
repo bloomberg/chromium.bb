@@ -1056,7 +1056,7 @@
 <translation id="6965978654500191972">裝置</translation>
 <translation id="6970216967273061347">District</translation>
 <translation id="6973656660372572881">已指定固定的 Proxy 伺服器和 .pac 指令碼網址。</translation>
-<translation id="6973932557599545801">抱歉，目前無法提供協助，請您自行填入資料。</translation>
+<translation id="6973932557599545801">抱歉，目前無法提供協助，請自行填入資料。</translation>
 <translation id="6979158407327259162">Google 雲端硬碟</translation>
 <translation id="6979440798594660689">靜音 (預設)</translation>
 <translation id="6984479912851154518">即將離開私密模式，改為使用外部應用程式付款，要繼續嗎？</translation>
@@ -1086,7 +1086,6 @@
 <translation id="7152423860607593928">Number-14 (Envelope)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> 和另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 種付款方式}other{<ph name="PAYMENT_METHOD_PREVIEW" /> 和另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 種付款方式}}</translation>
 <translation id="7153618581592392745">淡紫色</translation>
-<translation id="7158980942472052083">網址無效。網址必須採用標準架構。</translation>
 <translation id="717330890047184534">GAIA ID：</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" />和另外 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 種選項}other{<ph name="SHIPPING_OPTION_PREVIEW" />和另外 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 種選項}}</translation>
 <translation id="7177397715882417099">你的目標伺服器「<ph name="ORIGIN" />」要求為其收到的所有要求

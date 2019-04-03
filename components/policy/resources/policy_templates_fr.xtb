@@ -3138,17 +3138,6 @@ Ces règles sont ignorées, sauf si l'hôte Bureau à distance Chrome est instal
           La lecture automatique n'est autorisée que pour les domaines indiqués dans la règle <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Si vous souhaitez autoriser la lecture automatique pour tous les sites, vous pouvez ajouter http://* et https://* à cette liste.
 
           Si cette règle n'est pas définie, l'utilisateur peut modifier ce paramètre manuellement.</translation>
-<translation id="7229876938563670511">Permet de configurer l'URL de la page d'accueil par défaut dans <ph name="PRODUCT_NAME" /> et d'empêcher les utilisateurs de la modifier.
-
-          La page d'accueil est la page qui s'ouvre lorsque l'utilisateur clique sur le bouton Accueil. Les pages qui s'affichent au démarrage sont gérées par les règles RestoreOnStartup.
-
-          La page d'accueil peut être une URL que vous définissez ici, ou une page Nouvel onglet. Dans ce dernier cas, cette règle ne s'applique pas.
-
-          Si vous activez ce paramètre, les utilisateurs ne peuvent pas modifier l'URL de leur page d'accueil dans <ph name="PRODUCT_NAME" />. Toutefois, ils peuvent définir la page Nouvel onglet comme page d'accueil.
-
-          Si cette règle n'est pas définie, l'utilisateur peut choisir lui-même sa page d'accueil, à condition que la règle HomepageIsNewTabPage ne soit pas également configurée.
-
-          Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, ou sur les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils.</translation>
 <translation id="7229975860249300121">Contient une expression régulière utilisée pour déterminer quels comptes Google peuvent être configurés comme comptes de navigation principaux sur <ph name="PRODUCT_NAME" /> (par exemple, le compte choisi au moment d'activer la synchronisation).
 
       Le message d'erreur approprié s'affiche si l'utilisateur essaie de définir un compte de navigation principal dont l'identifiant ne correspond pas à ce format.

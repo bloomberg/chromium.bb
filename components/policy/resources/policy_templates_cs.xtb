@@ -3056,17 +3056,6 @@ Pokud tato zásada není nastavená, budou se do zařízení moci přihlašovat 
           Automatické přehrávání je povoleno pouze u domén, které jsou výslovně uvedeny v zásadě <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Chcete-li automatické přehrávání povolit pro všechny weby, přidejte do tohoto seznamu položky http://* a https://*.
 
           Pokud je tato zásada ponechána nenastavená, uživatel toto nastavení bude moci ručně změnit.</translation>
-<translation id="7229876938563670511">Nakonfiguruje v prohlížeči <ph name="PRODUCT_NAME" /> adresu URL výchozí domovské stránky a zabrání uživatelům, aby toto nastavení změnili.
-
-          Domovská stránka je stránka, která se otevírá tlačítkem Domovská stránka. Stránky, které se otevírají po spuštění, jsou určeny zásadami RestoreOnStartup.
-
-          Typ domovské stránky může být nastaven na adresu URL, kterou zde zadáte, nebo na stránku Nová karta. Pokud zvolíte stránku Nová karta, tato zásada se nebude uplatňovat.
-
-          Pokud toto nastavení aktivujete, uživatelé v prohlížeči <ph name="PRODUCT_NAME" /> nebudou moci změnit adresu URL domovské stránky. Jako domovskou stránku však stále budou moci nastavit stránku Nová karta.
-
-          Pokud tuto zásadu nenastavíte a není nastavená ani zásada HomepageIsNewTabPage, uživatelé si budou moci zvolit vlastní domovskou stránku.
-
-          Tato zásada je k dispozici jen v instancích systému Windows, které jsou připojené k doméně <ph name="MS_AD_NAME" />, nebo v instancích systému Windows 10 Pro nebo Enterprise, které jsou zaregistrované ke správě zařízení.</translation>
 <translation id="7229975860249300121">Obsahuje regulární výraz určující účty Google, které lze v prohlížeči <ph name="PRODUCT_NAME" /> nastavit jako primární (tj. jako účet, který se vybere během procesu přihlášení k synchronizaci).
 
       Pokud se uživatel pokusí nastavit v prohlížeči primární účet s uživatelským jménem, které se neshoduje s tímto vzorem, zobrazí se odpovídající chybová zpráva.

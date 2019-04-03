@@ -2718,17 +2718,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           L'execució automàtica només es permet per als dominis enumerats de manera expressa a la política <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Per permetre-la per a tots els llocs web, us recomanem afegir http://* i https://* a aquesta enumeració.
 
           Si aquesta política no es defineix, l'usuari podrà canviar l'opció de configuració manualment.</translation>
-<translation id="7229876938563670511">Configura l'URL de la pàgina d'inici predeterminada a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris el canviïn.
-
-          La pàgina d'inici és la que s'obre amb el botó Inici. Les pàgines que s'obren en iniciar el navegador les controlen les polítiques RestoreOnStartup.
-
-          El tipus de pàgina d'inici es pot definir per un URL que especifiquis o per la pàgina Pestanya nova. Si selecciones la pàgina Pestanya nova, aquesta política no s'aplicarà.
-
-          Si actives aquesta opció de configuració, els usuaris no podran canviar el seu URL de pàgina d'inici a <ph name="PRODUCT_NAME" />, però sí que podran triar la pàgina Pestanya nova com a pàgina d'inici.
-
-          Si deixes aquesta política sense establir i HomepageIsNewTabPage també es deixa sense establir, l'usuari podrà triar la seva pàgina d'inici.
-
-          Aquesta política només està disponible en instàncies de Windows que s'hagin unit a un domini de <ph name="MS_AD_NAME" /> o instàncies de Windows 10 Pro o Enterprise que s'hagin inscrit per a la gestió de dispositius.</translation>
 <translation id="7229975860249300121">Conté una expressió regular que es fa servir per determinar quins comptes de Google es poden definir com a comptes principals del navegador a <ph name="PRODUCT_NAME" /> (és a dir, el compte que es tria durant el flux d'activació de Sincronització).
 
       Si un usuari prova de definir un compte principal del navegador amb un nom d'usuari que no coincideix amb aquest patró, es mostra un error adient.

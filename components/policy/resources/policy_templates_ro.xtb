@@ -3053,17 +3053,6 @@ nu poate fi stabilit de utilizator din setările browserului.
           Redarea automată este permisă numai pentru domeniile listate în mod explicit în politica <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Dacă dorești să activezi redarea automată pentru toate site-urile, îți recomandăm să adaugi http://* și https://* în această listă.
 
           Dacă politica nu este setată, utilizatorul va putea modifica această setare manual.</translation>
-<translation id="7229876938563670511">Configurează adresa URL a paginii de pornire prestabilite în <ph name="PRODUCT_NAME" /> și nu le permite utilizatorilor să o schimbe.
-
-          Pagina de pornire este cea pe care o deschizi apăsând pe butonul Pagina de pornire. Paginile care se deschid la pornire sunt controlate de politicile RestoreOnStartup.
-
-          Tipul paginii de pornire poate fi setat la o adresă URL pe care o specifici aici sau la pagina Filă nouă. Dacă selectezi pagina Filă nouă, atunci această politică este ignorată.
-
-          Dacă activezi această setare, utilizatorii nu pot modifica adresa URL a paginii de pornire din <ph name="PRODUCT_NAME" />, dar pot, totuși, să aleagă pagina Filă nouă ca pagină de pornire.
-
-          Dacă această politică nu este configurată, utilizatorii vor putea să aleagă singuri pagina de pornire, atunci când nu este setată nici HomepageIsNewTabPage.
-
-          Această politică este disponibilă doar în instanțe Windows asociate unui domeniu <ph name="MS_AD_NAME" />, instanțele Windows 10 Pro sau instanțele Enterprise care au fost înscrise pentru gestionarea dispozitivului.</translation>
 <translation id="7229975860249300121">Conține o expresie regulată folosită pentru a stabili ce Conturi Google pot fi setate drept conturi principale în browser în <ph name="PRODUCT_NAME" /> (de exemplu contul ales în timpul înscrierii la sincronizare).
 
       Este afișată o eroare corespunzătoare dacă un utilizator încearcă să seteze un cont principal de browser cu un nume de utilizator care nu se potrivește cu acest model.
