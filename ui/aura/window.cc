@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -1106,11 +1107,23 @@ void Window::NotifyWindowVisibilityChangedUp(aura::Window* target,
 }
 
 bool Window::CleanupGestureState() {
+  // If it's in the process already, nothing has to be done. Reentrant can
+  // happen through some event handlers for CancelActiveTouches().
+  if (cleaning_up_gesture_state_)
+    return false;
+
+  base::AutoReset<bool> in_cleanup(&cleaning_up_gesture_state_, true);
   bool state_modified = false;
   state_modified |= env_->gesture_recognizer()->CancelActiveTouches(this);
   state_modified |= env_->gesture_recognizer()->CleanupStateForConsumer(this);
-  for (auto iter = children_.begin(); iter != children_.end(); ++iter) {
-    state_modified |= (*iter)->CleanupGestureState();
+  // Potentially event handlers for CancelActiveTouches() within
+  // CleanupGestureState may change the window hierarchy (or reorder the
+  // |children_|), and therefore iterating over |children_| is not safe. Use
+  // WindowTracker to track the list of children.
+  WindowTracker children(children_);
+  while (!children.windows().empty()) {
+    Window* child = children.Pop();
+    state_modified |= child->CleanupGestureState();
   }
   return state_modified;
 }
