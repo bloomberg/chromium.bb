@@ -15341,7 +15341,7 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
   src.Intersect(dst);
 
   GLenum final_internal_format = TextureManager::AdjustTexInternalFormat(
-      feature_info_.get(), internal_format);
+      feature_info_.get(), internal_format, type);
   if (workarounds().force_int_or_srgb_cube_texture_complete &&
       texture->target() == GL_TEXTURE_CUBE_MAP &&
       (GLES2Util::IsIntegerFormat(final_internal_format) ||
@@ -17752,7 +17752,7 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
     api()->glTexImage2DFn(
         dest_target, dest_level,
         TextureManager::AdjustTexInternalFormat(feature_info_.get(),
-                                                internal_format),
+                                                internal_format, dest_type),
         source_width, source_height, 0,
         TextureManager::AdjustTexFormat(feature_info_.get(), format), dest_type,
         nullptr);

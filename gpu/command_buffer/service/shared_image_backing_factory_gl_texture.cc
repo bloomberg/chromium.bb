@@ -711,8 +711,8 @@ SharedImageBackingFactoryGLTexture::SharedImageBackingFactoryGLTexture(
       info.swizzle = gles2::TextureManager::GetCompatibilitySwizzle(
           feature_info.get(), gl_format);
       info.image_internal_format =
-          gles2::TextureManager::AdjustTexInternalFormat(feature_info.get(),
-                                                         image_internal_format);
+          gles2::TextureManager::AdjustTexInternalFormat(
+              feature_info.get(), image_internal_format, gl_type);
       info.adjusted_format =
           gles2::TextureManager::AdjustTexFormat(feature_info.get(), gl_format);
     }
