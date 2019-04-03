@@ -38,7 +38,10 @@ void RecordBloatedRendererHandling(
 
 PageSignalGeneratorImpl::PageSignalGeneratorImpl() = default;
 
-PageSignalGeneratorImpl::~PageSignalGeneratorImpl() = default;
+PageSignalGeneratorImpl::~PageSignalGeneratorImpl() {
+  // Unregister from the system node, as it may outlive this instance.
+  graph()->FindOrCreateSystemNode()->RemoveObserver(this);
+}
 
 void PageSignalGeneratorImpl::AddReceiver(
     resource_coordinator::mojom::PageSignalReceiverPtr receiver) {

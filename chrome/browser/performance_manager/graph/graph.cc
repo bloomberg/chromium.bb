@@ -30,6 +30,11 @@ Graph::Graph() {
 Graph::~Graph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // All observers should have been removed before the graph is deleted.
+  DCHECK(observers_.empty());
+  // All process nodes should have been removed already.
+  DCHECK(processes_by_pid_.empty());
+
   // Remove the system node from the graph, this should be the only node left.
   if (system_node_.get()) {
     RemoveNode(system_node_.get());
@@ -37,23 +42,32 @@ Graph::~Graph() {
   }
 
   DCHECK(nodes_.empty());
-  DCHECK_EQ(0u, processes_by_pid_.size());
-
-  // Kill all the observers.
-  observers_.clear();
 }
 
-void Graph::RegisterObserver(std::unique_ptr<GraphObserver> observer) {
+void Graph::RegisterObserver(GraphObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observer->set_node_graph(this);
-  observers_.push_back(std::move(observer));
+  observers_.push_back(observer);
+}
+
+void Graph::UnregisterObserver(GraphObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  bool removed = false;
+  for (auto it = observers_.begin(); it != observers_.end(); ++it) {
+    if (*it == observer) {
+      observers_.erase(it);
+      removed = true;
+      break;
+    }
+  }
+  DCHECK(removed);
 }
 
 void Graph::OnNodeAdded(NodeBase* node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (auto& observer : observers_) {
+  for (auto* observer : observers_) {
     if (observer->ShouldObserve(node)) {
-      node->AddObserver(observer.get());
+      node->AddObserver(observer);
       observer->OnNodeAdded(node);
     }
   }

@@ -46,11 +46,10 @@ class TestGraphObserver : public GraphObserver {
 
 TEST_F(GraphObserverTest, CallbacksInvoked) {
   EXPECT_TRUE(graph()->observers_for_testing().empty());
-  graph()->RegisterObserver(std::make_unique<TestGraphObserver>());
+  auto observer = std::make_unique<TestGraphObserver>();
+  graph()->RegisterObserver(observer.get());
   EXPECT_EQ(1u, graph()->observers_for_testing().size());
 
-  TestGraphObserver* observer = static_cast<TestGraphObserver*>(
-      graph()->observers_for_testing()[0].get());
 
   {
     auto page_node = CreateNode<PageNodeImpl>();
@@ -63,6 +62,8 @@ TEST_F(GraphObserverTest, CallbacksInvoked) {
   }
 
   EXPECT_EQ(2u, observer->node_destroyed_count());
+
+  graph()->UnregisterObserver(observer.get());
 }
 
 }  // namespace performance_manager

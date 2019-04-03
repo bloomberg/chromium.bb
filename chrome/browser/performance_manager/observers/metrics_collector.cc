@@ -91,7 +91,7 @@ void MetricsCollector::OnFrameEventReceived(
         metrics_report_record_map_.find(page_node->id())->second;
     record.first_non_persistent_notification_created.OnSignalReceived(
         frame_node->IsMainFrame(), page_node->TimeSinceLastVisibilityChange(),
-        graph().ukm_recorder());
+        graph()->ukm_recorder());
   }
 }
 
@@ -106,7 +106,7 @@ void MetricsCollector::OnPageEventReceived(
         metrics_report_record_map_.find(page_node->id())->second;
     record.first_title_updated.OnSignalReceived(
         true, page_node->TimeSinceLastVisibilityChange(),
-        graph().ukm_recorder());
+        graph()->ukm_recorder());
   } else if (event == resource_coordinator::mojom::Event::kFaviconUpdated) {
     // Only record metrics while it is backgrounded.
     if (page_node->is_visible() || !ShouldReportMetrics(page_node))
@@ -115,7 +115,7 @@ void MetricsCollector::OnPageEventReceived(
         metrics_report_record_map_.find(page_node->id())->second;
     record.first_favicon_updated.OnSignalReceived(
         true, page_node->TimeSinceLastVisibilityChange(),
-        graph().ukm_recorder());
+        graph()->ukm_recorder());
   }
 }
 
@@ -169,7 +169,7 @@ void MetricsCollector::RecordExpectedQueueingTimeForUkm(
   state.num_unreported_eqt_measurements = 0u;
   ukm::builders::ResponsivenessMeasurement(state.ukm_source_id)
       .SetExpectedTaskQueueingDuration(expected_queueing_time.InMilliseconds())
-      .Record(graph().ukm_recorder());
+      .Record(graph()->ukm_recorder());
 }
 
 void MetricsCollector::UpdateUkmSourceIdForPage(

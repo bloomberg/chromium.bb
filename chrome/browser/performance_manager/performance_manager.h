@@ -91,6 +91,7 @@ class PerformanceManager {
 
   PerformanceManager();
 
+  void RegisterObserver(std::unique_ptr<GraphObserver> observer);
   void PostBindInterface(const std::string& interface_name,
                          mojo::ScopedMessagePipeHandle message_pipe);
 
@@ -118,6 +119,10 @@ class PerformanceManager {
   // The performance task runner.
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   Graph graph_;
+
+  // The registered graph observers.
+  std::vector<std::unique_ptr<GraphObserver>> observers_;
+
   CoordinationUnitIntrospectorImpl introspector_;
 
   // Provided to |graph_|.

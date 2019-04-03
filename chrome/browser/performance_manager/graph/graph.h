@@ -45,9 +45,12 @@ class Graph {
   }
   ukm::UkmRecorder* ukm_recorder() const { return ukm_recorder_; }
 
-  void RegisterObserver(std::unique_ptr<GraphObserver> observer);
-  void OnNodeAdded(NodeBase* node);
-  void OnBeforeNodeRemoved(NodeBase* node);
+  // Register |observer| on the graph.
+  void RegisterObserver(GraphObserver* observer);
+
+  // Unregister |observer| from observing graph changes. Note that this does not
+  // unregister |observer| from any nodes it's subscribed to.
+  void UnregisterObserver(GraphObserver* observer);
 
   SystemNodeImpl* FindOrCreateSystemNode();
   std::vector<ProcessNodeImpl*> GetAllProcessNodes();
@@ -58,11 +61,10 @@ class Graph {
   ProcessNodeImpl* GetProcessNodeByPid(base::ProcessId pid);
   NodeBase* GetNodeByID(const resource_coordinator::CoordinationUnitID cu_id);
 
-  std::vector<std::unique_ptr<GraphObserver>>& observers_for_testing() {
-    return observers_;
-  }
+  std::vector<GraphObserver*>& observers_for_testing() { return observers_; }
 
-  // Lifetime management functions for node owners.
+  // Management functions for node owners, any node added to the graph must be
+  // removed from the graph before it's deleted.
   void AddNewNode(NodeBase* new_node);
   void RemoveNode(NodeBase* node);
 
@@ -77,6 +79,9 @@ class Graph {
       std::unordered_map<resource_coordinator::CoordinationUnitID, NodeBase*>;
   using ProcessByPidMap = std::unordered_map<base::ProcessId, ProcessNodeImpl*>;
 
+  void OnNodeAdded(NodeBase* node);
+  void OnBeforeNodeRemoved(NodeBase* node);
+
   // Process PID map for use by ProcessNodeImpl.
   friend class ProcessNodeImpl;
   void BeforeProcessPidChange(ProcessNodeImpl* process,
@@ -88,7 +93,7 @@ class Graph {
   std::unique_ptr<SystemNodeImpl> system_node_;
   CUIDMap nodes_;
   ProcessByPidMap processes_by_pid_;
-  std::vector<std::unique_ptr<GraphObserver>> observers_;
+  std::vector<GraphObserver*> observers_;
   ukm::UkmRecorder* ukm_recorder_ = nullptr;
 
   // User data storage for the graph.
