@@ -82,8 +82,24 @@ std::unique_ptr<VRUiHost> VRUiHostImpl::Create(
   return std::make_unique<VRUiHostImpl>(device_id, std::move(compositor));
 }
 
+bool IsValidInfo(device::mojom::VRDisplayInfoPtr& info) {
+  // Numeric properties are validated elsewhere, but we expect a stereo headset.
+  if (!info)
+    return false;
+  if (!info->leftEye)
+    return false;
+  if (!info->rightEye)
+    return false;
+  return true;
+}
+
 void VRUiHostImpl::SetWebXRWebContents(content::WebContents* contents) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  if (!IsValidInfo(info_)) {
+    XRRuntimeManager::ExitImmersivePresentation();
+    return;
+  }
 
   // Eventually the contents will be used to poll for permissions, or determine
   // what overlays should show.
@@ -164,6 +180,11 @@ void VRUiHostImpl::SetVRDisplayInfo(
     device::mojom::VRDisplayInfoPtr display_info) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(1) << __func__;
+
+  if (!IsValidInfo(display_info)) {
+    XRRuntimeManager::ExitImmersivePresentation();
+    return;
+  }
 
   info_ = std::move(display_info);
   if (ui_rendering_thread_) {
