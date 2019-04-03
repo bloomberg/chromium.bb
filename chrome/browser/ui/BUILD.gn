@@ -510,6 +510,7 @@ jumbo_split_static_library("ui") {
     "//device/base",
     "//device/usb",
     "//extensions/buildflags",
+    "//gpu/config",
     "//media",
     "//net:net",
     "//ppapi/buildflags",

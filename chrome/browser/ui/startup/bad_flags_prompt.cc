@@ -35,6 +35,7 @@
 #include "content/public/common/content_switches.h"
 #include "extensions/common/switches.h"
 #include "google_apis/gaia/gaia_switches.h"
+#include "gpu/config/gpu_switches.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -126,6 +127,10 @@ static const char* kBadFlags[] = {
     // Enables save data feature which can cause user traffic to be proxied via
     // Google's data reduction proxy servers.
     data_reduction_proxy::switches::kEnableDataReductionProxy,
+
+    // GPU sanboxing isn't implemented for the Web GPU API yet meaning it would
+    // be possible to read GPU data for other Chromium processes.
+    switches::kEnableUnsafeWebGPU,
 };
 #endif  // OS_ANDROID
 
