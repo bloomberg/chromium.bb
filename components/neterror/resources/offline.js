@@ -118,7 +118,7 @@ Runner.config = {
   GRAVITY: 0.6,
   INITIAL_JUMP_VELOCITY: 12,
   INVERT_FADE_DURATION: 12000,
-  INVERT_DISTANCE: 700,
+  INVERT_DISTANCE: 100,
   MAX_BLINK_COUNT: 3,
   MAX_CLOUDS: 6,
   MAX_OBSTACLE_LENGTH: 3,
@@ -981,13 +981,16 @@ Runner.prototype = {
    * @param {boolean} Whether to reset colors.
    */
   invert: function(reset) {
+    let htmlEl = document.firstElementChild;
+
     if (reset) {
-      document.body.classList.toggle(Runner.classes.INVERTED, false);
+      htmlEl.classList.toggle(Runner.classes.INVERTED,
+          false);
       this.invertTimer = 0;
       this.inverted = false;
     } else {
-      this.inverted = document.body.classList.toggle(Runner.classes.INVERTED,
-          this.invertTrigger);
+      this.inverted = htmlEl.classList.toggle(
+          Runner.classes.INVERTED, this.invertTrigger);
     }
   }
 };
