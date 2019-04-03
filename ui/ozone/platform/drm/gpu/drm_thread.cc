@@ -208,6 +208,10 @@ void DrmThread::CreateBufferFromHandle(
   *out_framebuffer = std::move(framebuffer);
 }
 
+void DrmThread::SetClearOverlayCacheCallback(base::RepeatingClosure callback) {
+  display_manager_->SetClearOverlayCacheCallback(std::move(callback));
+}
+
 void DrmThread::SchedulePageFlip(
     gfx::AcceleratedWidget widget,
     std::vector<DrmOverlayPlane> planes,

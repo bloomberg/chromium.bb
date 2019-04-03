@@ -78,6 +78,7 @@ class DrmThread : public base::Thread,
                               gfx::NativePixmapHandle handle,
                               std::unique_ptr<GbmBuffer>* buffer,
                               scoped_refptr<DrmFramebuffer>* framebuffer);
+  void SetClearOverlayCacheCallback(base::RepeatingClosure callback);
   void AddBindingCursorDevice(ozone::mojom::DeviceCursorRequest request);
   void AddBindingDrmDevice(ozone::mojom::DrmDeviceRequest request);
 

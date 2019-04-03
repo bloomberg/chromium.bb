@@ -55,6 +55,11 @@ class DrmThreadProxy {
                               std::unique_ptr<GbmBuffer>* buffer,
                               scoped_refptr<DrmFramebuffer>* framebuffer);
 
+  // Sets a callback that will be notified when display configuration may have
+  // changed to clear the overlay configuration cache. |callback| will be run on
+  // origin thread.
+  void SetClearOverlayCacheCallback(base::RepeatingClosure reset_callback);
+
   // Checks if overlay |candidates| can be displayed asynchronously and then
   // runs |callback|. Testing the overlay configuration requires posting a task
   // to the DRM thread, but |callback| will be run on origin thread.

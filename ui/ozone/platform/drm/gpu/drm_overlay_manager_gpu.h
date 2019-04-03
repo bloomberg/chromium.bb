@@ -21,11 +21,6 @@ class DrmOverlayManagerGpu : public DrmOverlayManager {
   explicit DrmOverlayManagerGpu(DrmThreadProxy* drm_thread_proxy);
   ~DrmOverlayManagerGpu() override;
 
-  // TODO(crbug.com/930173): Plumb some sort of display configuration
-  // information into this class. DrmOverlayManagerHost checks if the overlay
-  // candidates are contained by the display rect. The overlay configuration
-  // cache also needs to be reset when display configuration changes.
-
  private:
   // DrmOverlayManager:
   void SendOverlayValidationRequest(
@@ -39,7 +34,9 @@ class DrmOverlayManagerGpu : public DrmOverlayManager {
 
   DrmThreadProxy* const drm_thread_proxy_;
 
-  base::WeakPtrFactory<DrmOverlayManagerGpu> weak_ptr_factory_;
+  bool has_set_clear_cache_callback_ = false;
+
+  base::WeakPtrFactory<DrmOverlayManagerGpu> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DrmOverlayManagerGpu);
 };
