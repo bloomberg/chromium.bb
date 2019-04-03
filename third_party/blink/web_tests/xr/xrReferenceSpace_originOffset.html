@@ -82,7 +82,7 @@ let testFunction =
           let grip_pose = frame.getPose(source.gripSpace, referenceSpace);
           let input_pose = frame.getPose(source.targetRaySpace, referenceSpace);
 
-          let view_matrix = pose.views[0].transform.inverse().matrix;
+          let view_matrix = pose.views[0].transform.inverse.matrix;
           let grip_matrix = grip_pose.transform.matrix;
           let ray_matrix = input_pose.transform.matrix;
 

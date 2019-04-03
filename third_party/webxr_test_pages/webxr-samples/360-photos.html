@@ -186,7 +186,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           for (let view of pose.views) {
             let renderView = new WebXRView();
             renderView.projectionMatrix = view.projectionMatrix;
-            renderView.viewMatrix = view.transform.inverse().matrix;
+            renderView.viewMatrix = view.transform.inverse.matrix;
             renderView.viewport = session.renderState.baseLayer.getViewport(view);
 
             // It's important to take into account which eye the view is

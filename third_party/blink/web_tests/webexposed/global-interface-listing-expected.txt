@@ -10540,11 +10540,11 @@ interface XRRenderState
     method constructor
 interface XRRigidTransform
     attribute @@toStringTag
+    getter inverse
     getter matrix
     getter orientation
     getter position
     method constructor
-    method inverse
 interface XRSession : EventTarget
     attribute @@toStringTag
     getter environmentBlendMode

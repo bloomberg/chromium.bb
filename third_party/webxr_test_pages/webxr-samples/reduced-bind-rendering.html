@@ -234,7 +234,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             // scene.drawXRViews() function, which handles gathering these
             // values internally.
             renderView.projectionMatrix = view.projectionMatrix;
-            renderView.viewMatrix = view.transform.inverse().matrix;
+            renderView.viewMatrix = view.transform.inverse.matrix;
             renderView.viewport = session.renderState.baseLayer.getViewport(view);
             views.push(renderView);
           }

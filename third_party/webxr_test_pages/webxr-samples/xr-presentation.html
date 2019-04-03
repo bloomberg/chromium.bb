@@ -206,7 +206,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             // projection and view matricies from the current view and pose.
             // We bound the framebuffer and viewport up above, and are passing
             // in the appropriate matrices here to be used when rendering.
-            scene.draw(view.projectionMatrix, view.transform.inverse().matrix);
+            scene.draw(view.projectionMatrix, view.transform.inverse.matrix);
           }
         } else {
           // There's several options for handling cases where no pose is given.
