@@ -212,9 +212,9 @@ void FindInPageManagerImpl::WebFrameWillBecomeUnavailable(WebState* web_state,
   last_find_request_.RemoveFrame(web_frame);
 
   if (delegate_ && last_find_request_.query) {
-    delegate_->DidCountMatches(web_state_,
-                               last_find_request_.GetTotalMatchCount(),
-                               last_find_request_.query);
+    delegate_->DidHighlightMatches(web_state_,
+                                   last_find_request_.GetTotalMatchCount(),
+                                   last_find_request_.query);
   }
 }
 
@@ -324,9 +324,9 @@ void FindInPageManagerImpl::ProcessFindInPageResult(const std::string& frame_id,
 
 void FindInPageManagerImpl::LastFindRequestCompleted() {
   if (delegate_) {
-    delegate_->DidCountMatches(web_state_,
-                               last_find_request_.GetTotalMatchCount(),
-                               last_find_request_.query);
+    delegate_->DidHighlightMatches(web_state_,
+                                   last_find_request_.GetTotalMatchCount(),
+                                   last_find_request_.query);
   }
   int total_matches = last_find_request_.GetTotalMatchCount();
   if (total_matches == 0) {
@@ -341,7 +341,7 @@ void FindInPageManagerImpl::LastFindRequestCompleted() {
 void FindInPageManagerImpl::NotifyDelegateDidSelectMatch(
     const base::Value* result) {
   if (delegate_) {
-    delegate_->DidHighlightMatch(
+    delegate_->DidSelectMatch(
         web_state_, last_find_request_.GetCurrentSelectedMatchIndex());
   }
 }

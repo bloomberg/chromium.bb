@@ -105,9 +105,9 @@ class FindInPageManagerImpl : public FindInPageManager,
   void ProcessFindInPageResult(const std::string& frame_id,
                                const int request_id,
                                const base::Value* result);
-  // Calls delegate DidCountMatches() method if |delegate_| is set and starts a
-  // FindInPageNext find. Called when the last frame returns results from a Find
-  // request.
+  // Calls delegate DidHighlightMatches() method if |delegate_| is set and
+  // starts a FindInPageNext find. Called when the last frame returns results
+  // from a Find request.
   void LastFindRequestCompleted();
   // Calls delegate DidSelectMatch() method to pass back index selected if
   // |delegate_| is set. |result| is a byproduct of using base::BindOnce() to
