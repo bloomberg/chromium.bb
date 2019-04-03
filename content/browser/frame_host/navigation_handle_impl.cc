@@ -1009,8 +1009,7 @@ void NavigationHandleImpl::OnCommitTimeout() {
   render_process_blocked_state_changed_subscription_.reset();
   GetRenderFrameHost()->GetRenderWidgetHost()->RendererIsUnresponsive(
       base::BindRepeating(&NavigationHandleImpl::RestartCommitTimeout,
-                          weak_factory_.GetWeakPtr()),
-      metrics::RendererHangCause::kCommitTimeout);
+                          weak_factory_.GetWeakPtr()));
 }
 
 // static
