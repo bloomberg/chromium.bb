@@ -59,7 +59,7 @@ class FakeServerHttpPostProvider
   void HandleCommandOnFakeServerThread(int* http_status_code,
                                        std::string* response);
 
-  static bool network_enabled_;
+  static std::atomic_bool network_enabled_;
 
   // |fake_server_| should only be dereferenced on the same thread as
   // |fake_server_task_runner_| runs on.
