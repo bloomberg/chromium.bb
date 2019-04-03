@@ -549,8 +549,9 @@ static const arg_def_t enable_angle_delta =
             "Enable intra angle delta (0: false, 1: true (default))");
 static const arg_def_t disable_trellis_quant =
     ARG_DEF(NULL, "disable-trellis-quant", 1,
-            "Disable trellis optimization of quantized coefficients (0: false ("
-            "default) 1: true  2: partial true)");
+            "Disable trellis optimization of quantized coefficients (0: false "
+            "1: true  2: true for rd search 3: true for estimate yrd serch "
+            "(default))");
 static const arg_def_t enable_qm =
     ARG_DEF(NULL, "enable-qm", 1,
             "Enable quantisation matrices (0: false (default), 1: true)");

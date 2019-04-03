@@ -584,7 +584,8 @@ enum aome_enc_control_id {
    *
    *                          0 = apply trellis quantization
    *                          1 = do not apply trellis quantization
-   *                          2 = disable trellis quantization partially
+   *                          2 = disable trellis quantization in rd search
+   *                          3 = disable trellis quantization in estimate yrd
    *
    *  By default, the encoder applies optimization on quantized
    *  coefficients.

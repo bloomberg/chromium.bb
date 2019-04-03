@@ -169,7 +169,7 @@ static struct av1_extracfg default_extra_cfg = {
   !CONFIG_SHARP_SETTINGS,  // enable_cdef
   1,                       // enable_restoration
   1,                       // enable_obmc
-  0,                       // disable_trellis_quant
+  3,                       // disable_trellis_quant
   0,                       // enable_qm
   DEFAULT_QM_Y,            // qm_y
   DEFAULT_QM_U,            // qm_u
