@@ -19,6 +19,7 @@
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
 #include "content/public/browser/session_storage_usage_info.h"
 #include "content/public/browser/storage_usage_info.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -59,7 +60,7 @@ class DOMStorageContextImplTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  TestBrowserThreadBundle test_browser_thread_bundle_;
   base::ScopedTempDir temp_dir_;
   scoped_refptr<MockSpecialStoragePolicy> storage_policy_;
   scoped_refptr<MockDOMStorageTaskRunner> task_runner_;
