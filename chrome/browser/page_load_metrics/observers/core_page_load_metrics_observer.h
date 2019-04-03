@@ -71,6 +71,7 @@ extern const char kHistogramPageLoadTotalBytes[];
 extern const char kHistogramPageLoadNetworkBytes[];
 extern const char kHistogramPageLoadCacheBytes[];
 extern const char kHistogramPageLoadNetworkBytesIncludingHeaders[];
+extern const char kHistogramPageLoadUnfinishedBytes[];
 
 extern const char kHistogramLoadTypeTotalBytesForwardBack[];
 extern const char kHistogramLoadTypeNetworkBytesForwardBack[];

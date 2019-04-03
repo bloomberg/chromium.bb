@@ -481,12 +481,6 @@ void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms(
     return;
   PAGE_BYTES_HISTOGRAM("PageLoad.Clients.Ads.Resources.Bytes.Ads2",
                        aggregate_frame_data_->ad_network_bytes());
-  size_t unfinished_bytes = 0;
-  for (auto const& kv :
-       GetDelegate()->GetResourceTracker().unfinished_resources())
-    unfinished_bytes += kv.second->received_data_length;
-  PAGE_BYTES_HISTOGRAM("PageLoad.Clients.Ads.Resources.Bytes.Unfinished",
-                       unfinished_bytes);
   auto* ukm_recorder = ukm::UkmRecorder::Get();
   ukm::builders::AdPageLoad builder(source_id);
   builder.SetTotalBytes(aggregate_frame_data_->network_bytes() >> 10)
