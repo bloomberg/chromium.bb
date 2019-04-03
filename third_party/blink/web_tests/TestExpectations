@@ -2843,8 +2843,12 @@ crbug.com/748549 external/wpt/network-error-logging [ Skip ]
 
 crbug.com/863896 http/tests/permissions/test-query.html [ Timeout ]
 
-# This test requires enabling the flag CustomUserTiming in a virtual test.
-crbug.com/758385 http/tests/performance-timing/custom-user-timing/ [ Skip ]
+# These tests will pass when we ship User Timing L3.
+crbug.com/758385 external/wpt/user-timing/mark-errors.html [ Failure ]
+crbug.com/758385 external/wpt/user-timing/mark-l3.html [ Failure ]
+crbug.com/758385 external/wpt/user-timing/mark-measure-return-objects.html [ Failure ]
+crbug.com/758385 external/wpt/user-timing/measure-l3.html [ Failure ]
+crbug.com/758385 external/wpt/user-timing/measure-with-dict.html [ Failure ]
 
 crbug.com/876485 fast/performance/performance-measure-null-exception.html [ Failure ]
 

@@ -1,14 +1,9 @@
 <!DOCTYPE HTML>
 <meta charset=utf-8>
-<title>Custom User Timing: Mark</title>
+<title>User Timing L3: mark</title>
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
-<script src="performanceobservers.js"></script>
-<h1>Custom User Timing: Mark</h1>
-<p>
-Performance.mark method takes in custom detail and custom start time.
-</p>
-<div id="log"></div>
+<script src="resources/user-timing-helpers.js"></script>
 <script>
   async_test(function (t) {
     let mark_entries = [];
