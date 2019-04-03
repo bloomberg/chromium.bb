@@ -13,6 +13,7 @@
 #include "base/system/sys_info.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/tpm/tpm_token_info_getter.h"
 #include "crypto/nss_util.h"
 

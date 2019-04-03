@@ -547,7 +547,6 @@ test("browser_tests") {
       "//chromeos:test_support",
       "//chromeos/components/drivefs:test_support",
       "//chromeos/dbus:test_support",
-      "//chromeos/dbus/session_manager",
       "//components/arc:arc_test_support",
       "//components/exo:test_support",
       "//components/prefs",

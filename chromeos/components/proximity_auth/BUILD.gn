@@ -56,7 +56,6 @@ static_library("proximity_auth") {
     "//chromeos/components/proximity_auth/public/interfaces",
     "//chromeos/constants",
     "//chromeos/dbus",
-    "//chromeos/dbus/session_manager",
     "//chromeos/services/multidevice_setup/public/cpp",
     "//chromeos/services/multidevice_setup/public/cpp:prefs",
     "//chromeos/services/secure_channel/public/cpp/client",

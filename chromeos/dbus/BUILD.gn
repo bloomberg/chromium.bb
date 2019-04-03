@@ -16,8 +16,10 @@ component("dbus") {
     "//dbus",
   ]
   deps = [
+    ":authpolicy_proto",
     ":cicerone_proto",
     ":concierge_proto",
+    ":login_manager_proto",
     ":metrics_event_proto",
     ":oobe_config_proto",
     ":plugin_vm_service_proto",
@@ -27,8 +29,20 @@ component("dbus") {
     ":smbprovider_proto",
     ":vm_applications_apps_proto",
     "//base",
+
+    # TODO(stevenjb): Remove these once auth_policy and session_manager are
+    # extracted. https://crbug.com/647367.
+    "//chromeos/dbus/cryptohome",
+    "//chromeos/dbus/cryptohome:cryptohome_proto",
+
+    # TODO(stevenjb): Remove these once upstart gets its own BUILD.gn file.
+    # https://crbug.com/647367.
+    "//chromeos/dbus/kerberos",
+    "//chromeos/dbus/media_analytics",
+    "//chromeos/dbus/media_analytics:media_perception_proto",
     "//components/account_id",
     "//components/device_event_log",
+    "//components/policy:cloud_policy_proto_generated_compile",
     "//components/policy/proto",
     "//net",
     "//url",
@@ -44,6 +58,10 @@ component("dbus") {
     "arc_oemcrypto_client.h",
     "audio_node.cc",
     "audio_node.h",
+    "auth_policy/auth_policy_client.cc",
+    "auth_policy/auth_policy_client.h",
+    "auth_policy/fake_auth_policy_client.cc",
+    "auth_policy/fake_auth_policy_client.h",
     "cec_service_client.cc",
     "cec_service_client.h",
     "cicerone_client.cc",
@@ -160,6 +178,10 @@ component("dbus") {
     "runtime_probe_client.h",
     "seneschal_client.cc",
     "seneschal_client.h",
+    "session_manager/fake_session_manager_client.cc",
+    "session_manager/fake_session_manager_client.h",
+    "session_manager/session_manager_client.cc",
+    "session_manager/session_manager_client.h",
     "shill_client_helper.cc",
     "shill_client_helper.h",
     "shill_device_client.cc",
@@ -180,6 +202,10 @@ component("dbus") {
     "sms_client.h",
     "update_engine_client.cc",
     "update_engine_client.h",
+    "upstart/fake_upstart_client.cc",
+    "upstart/fake_upstart_client.h",
+    "upstart/upstart_client.cc",
+    "upstart/upstart_client.h",
     "util/version_loader.cc",
     "util/version_loader.h",
     "virtual_file_provider_client.cc",
@@ -239,11 +265,9 @@ source_set("unit_tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
-    "//chromeos/dbus/auth_policy",
     "//chromeos/dbus/biod:test_support",
     "//chromeos/dbus/cryptohome",
     "//chromeos/dbus/cryptohome:attestation_proto",
-    "//chromeos/dbus/session_manager",
     "//components/account_id",
     "//dbus",
     "//dbus:test_support",
@@ -283,6 +307,14 @@ source_set("unit_tests") {
   ]
 }
 
+proto_library("authpolicy_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/authpolicy/active_directory_info.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/authpolicy"
+}
+
 proto_library("cicerone_proto") {
   sources = [
     "//third_party/cros_system_api/dbus/vm_cicerone/cicerone_service.proto",
@@ -297,6 +329,15 @@ proto_library("concierge_proto") {
   ]
 
   proto_out_dir = "chromeos/dbus/concierge"
+}
+
+proto_library("login_manager_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/login_manager/arc.proto",
+    "//third_party/cros_system_api/dbus/login_manager/policy_descriptor.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/login_manager"
 }
 
 proto_library("metrics_event_proto") {

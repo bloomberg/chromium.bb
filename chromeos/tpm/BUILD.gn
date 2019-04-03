@@ -11,6 +11,7 @@ component("tpm") {
   deps = [
     "//base",
     "//chromeos/cryptohome",
+    "//chromeos/dbus",
     "//chromeos/dbus/constants",
     "//chromeos/dbus/cryptohome",
     "//chromeos/dbus/cryptohome:cryptohome_proto",

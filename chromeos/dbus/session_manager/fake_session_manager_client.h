@@ -22,7 +22,7 @@ namespace chromeos {
 
 // A fake implementation of session_manager. Accepts policy blobs to be set and
 // returns them unmodified.
-class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSessionManagerClient
     : public SessionManagerClient {
  public:
   enum class PolicyStorageType {
