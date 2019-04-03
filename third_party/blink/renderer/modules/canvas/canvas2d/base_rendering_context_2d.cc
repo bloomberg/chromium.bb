@@ -1735,14 +1735,23 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
     return;
 
   if (dirty_width < 0) {
-    dirty_x += dirty_width;
-    dirty_width = base::saturated_cast<int>(base::SafeUnsignedAbs(dirty_width));
+    if (dirty_x < 0) {
+      dirty_x = dirty_width = 0;
+    } else {
+      dirty_x += dirty_width;
+      dirty_width =
+          base::saturated_cast<int>(base::SafeUnsignedAbs(dirty_width));
+    }
   }
 
   if (dirty_height < 0) {
-    dirty_y += dirty_height;
-    dirty_height =
-        base::saturated_cast<int>(base::SafeUnsignedAbs(dirty_height));
+    if (dirty_y < 0) {
+      dirty_y = dirty_height = 0;
+    } else {
+      dirty_y += dirty_height;
+      dirty_height =
+          base::saturated_cast<int>(base::SafeUnsignedAbs(dirty_height));
+    }
   }
 
   IntRect dest_rect(dirty_x, dirty_y, dirty_width, dirty_height);
