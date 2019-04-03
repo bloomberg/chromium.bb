@@ -21,6 +21,7 @@ from chromite.lib import metadata_lib
 from chromite.lib.luci.prpc.client import Client, ProtocolError
 
 from infra_libs.buildbucket.proto import build_pb2, rpc_pb2, common_pb2
+from infra_libs.buildbucket.proto import step_pb2
 
 class BuildbucketV2Test(cros_test_lib.MockTestCase):
   """Tests for buildbucket_v2."""
@@ -53,6 +54,30 @@ class BuildbucketV2Test(cros_test_lib.MockTestCase):
     bbv2.GetBuild('some-id')
     self.get_build_request_fn.assert_called_with(id='some-id')
     self.get_build_function.assert_called_with(fake_get_build_request)
+
+  def testGetBuildStages(self):
+    """Test the GetBuildStages functionality."""
+    bbv2 = buildbucket_v2.BuildbucketV2()
+    start_time = Timestamp()
+    start_time.GetCurrentTime()
+    step = step_pb2.Step(name='stage_name', start_time=start_time,
+                         status=2)
+    build_with_steps = build_pb2.Build(steps=[step])
+    get_build_fn = self.PatchObject(bbv2, 'GetBuild',
+                                    return_value=build_with_steps)
+    get_build_status_fn = self.PatchObject(
+        bbv2, 'GetBuildStatus',
+        return_value={'build_config': 'something-paladin'})
+    expected_result = [{
+        'name': 'stage_name',
+        'start_time': datetime.datetime.fromtimestamp(start_time.seconds),
+        'finish_time': None,
+        'buildbucket_id': 1234,
+        'status': constants.BUILDER_STATUS_INFLIGHT,
+        'build_config': 'something-paladin'}]
+    self.assertEqual(bbv2.GetBuildStages(1234), expected_result)
+    get_build_fn.assert_called_once_with(1234, properties='steps')
+    get_build_status_fn.assert_called_once_with(1234)
 
   def testGetKilledChildBuildsWithValidId(self):
     """Test a valid query flow."""
@@ -289,3 +314,23 @@ class StaticFunctionsTest(cros_test_lib.MockTestCase):
         build_type='canary',
         unibuild=True,
         suite_scheduling=False)
+
+  def testBuildStepToDict(self):
+    """Test the working of BuildStepToDict."""
+    build_values = {
+        'buildbucket_id': 1234,
+        'build_config': 'something-paladin'}
+    start_time = Timestamp()
+    start_time.GetCurrentTime()
+    step = step_pb2.Step(name='stage_name', start_time=start_time,
+                         status=2)
+    expected_result = {
+        'name': 'stage_name',
+        'start_time': datetime.datetime.fromtimestamp(start_time.seconds),
+        'finish_time': None,
+        'buildbucket_id': 1234,
+        'status': constants.BUILDER_STATUS_INFLIGHT,
+        'build_config': 'something-paladin'}
+
+    self.assertEqual(buildbucket_v2.BuildStepToDict(step, build_values),
+                     expected_result)

@@ -139,6 +139,32 @@ def UpdateBuildMetadata(metadata):
       unibuild=d.get('unibuild', False),
       suite_scheduling=d.get('suite_scheduling', False))
 
+def BuildStepToDict(step, build_values=None):
+  """Extract information from a Buildbucket Step instance.
+
+  Reference:
+  https://chromium.googlesource.com/infra/luci/luci-go/+/master/buildbucket/proto/step.proto
+
+  Args:
+    step: A step_pb2.Step instance from Buildbucket to be extracted.
+    build_values: A dictionary of values to be included in the result.
+
+  Returns:
+    A dictionary with the following keys: name, status, start_time and end_time
+    in addition to the keys in build_values.
+  """
+  step_info = {'name': step.name}
+  if step.status is not None and step.status in BB_STATUS_DICT:
+    step_info['status'] = BB_STATUS_DICT[step.status]
+  else:
+    step_info['status'] = None
+  step_info['start_time'] = utils.TimestampToDatetime(step.start_time)
+  step_info['finish_time'] = utils.TimestampToDatetime(step.end_time)
+
+  if build_values:
+    step_info.update(build_values)
+  return step_info
+
 
 class BuildbucketV2(object):
   """Connection to Buildbucket V2 database."""
@@ -196,6 +222,24 @@ class BuildbucketV2(object):
       if ('killed_child_builds' in build_properties and
           build_properties['killed_child_builds'] is not 'None'):
         return ast.literal_eval(build_properties['killed_child_builds'])
+
+  def GetBuildStages(self, buildbucket_id):
+    """Get all the Recipe steps/CBuildbot stages of a build.
+
+    Args:
+      buildbucket_id: ID of the build in buildbucket.
+
+    Returns:
+      A dictionary with keys (id, name, status, last_updated,
+      start_time, finish_time).
+    """
+    properties = 'steps'
+    build_with_steps = self.GetBuild(buildbucket_id, properties=properties)
+    build_status = self.GetBuildStatus(buildbucket_id)
+    build_values = {'buildbucket_id': buildbucket_id}
+    build_values['build_config'] = build_status['build_config']
+    return [BuildStepToDict(step, build_values)
+            for step in build_with_steps.steps]
 
   def GetBuildStatus(self, buildbucket_id):
     """Retrieve the build status for build corresponding to buildbucket_id.
