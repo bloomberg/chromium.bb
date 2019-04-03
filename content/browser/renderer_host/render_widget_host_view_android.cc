@@ -194,7 +194,6 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
   // layer is managed by the DelegatedFrameHost.
   view_.SetLayer(cc::Layer::Create());
   view_.set_event_handler(this);
-
   if (using_browser_compositor_) {
     delegated_frame_host_client_ =
         std::make_unique<DelegatedFrameHostClientAndroid>(this);
@@ -278,6 +277,15 @@ bool RenderWidgetHostViewAndroid::SynchronizeVisualProperties(
   } else {
     local_surface_id_allocator_.GenerateId();
   }
+
+  // If we still have an invalid viz::LocalSurfaceId, then we are hidden and
+  // evicted. This will have been triggered by a child acknowledging a previous
+  // synchronization message via DidUpdateVisualProperties. The child has not
+  // prompted any further property changes, so we do not need to continue
+  // syncrhonization. Nor do we want to embed an invalid surface.
+  if (!local_surface_id_allocator_.HasValidLocalSurfaceIdAllocation())
+    return false;
+
   if (delegated_frame_host_) {
     delegated_frame_host_->EmbedSurface(
         local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()

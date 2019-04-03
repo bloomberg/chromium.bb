@@ -354,6 +354,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool HasFallbackSurface() const override;
 
  private:
+  friend class RenderWidgetHostViewAndroidTest;
+
   MouseWheelPhaseHandler* GetMouseWheelPhaseHandler() override;
 
   void EvictDelegatedFrame();

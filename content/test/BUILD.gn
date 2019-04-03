@@ -53,6 +53,10 @@ jumbo_static_library("test_support") {
     "../browser/media/session/mock_media_session_player_observer.h",
     "../browser/media/session/mock_media_session_service_impl.cc",
     "../browser/media/session/mock_media_session_service_impl.h",
+    "../browser/renderer_host/input/mock_input_router.cc",
+    "../browser/renderer_host/input/mock_input_router.h",
+    "../browser/renderer_host/mock_render_widget_host.cc",
+    "../browser/renderer_host/mock_render_widget_host.h",
     "../browser/service_worker/embedded_worker_test_helper.cc",
     "../browser/service_worker/embedded_worker_test_helper.h",
     "../browser/service_worker/fake_embedded_worker_instance_client.cc",
@@ -2163,6 +2167,7 @@ test("content_unittests") {
       "../browser/android/url_request_content_job_unittest.cc",
       "../browser/font_unique_name_lookup/font_unique_name_lookup_unittest.cc",
       "../browser/media/capture/screen_capture_device_android_unittest.cc",
+      "../browser/renderer_host/render_widget_host_view_android_unittest.cc",
       "../renderer/java/gin_java_bridge_value_converter_unittest.cc",
       "../renderer/media/android/stream_texture_wrapper_impl_unittest.cc",
     ]
