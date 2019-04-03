@@ -31,10 +31,6 @@ const char* UdevWatcher::Filter::subsystem() const {
 
 UdevWatcher::Observer::~Observer() = default;
 
-void UdevWatcher::Observer::OnDeviceAdded(ScopedUdevDevicePtr device) {}
-
-void UdevWatcher::Observer::OnDeviceRemoved(ScopedUdevDevicePtr device) {}
-
 std::unique_ptr<UdevWatcher> UdevWatcher::StartWatching(
     Observer* observer,
     const std::vector<Filter>& filters) {
