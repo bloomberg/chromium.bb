@@ -533,6 +533,13 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     dirty_objects.push_back(dirty_object);
   }
 
+  // Keep track of if the host node for a plugin has been invalidated,
+  // because if so, the plugin subtree will need to be re-serialized.
+  bool invalidate_plugin_subtree = false;
+  if (plugin_tree_source_ && !plugin_host_node_.IsDetached()) {
+    invalidate_plugin_subtree = !serializer_.IsInClientTree(plugin_host_node_);
+  }
+
   // Now serialize all dirty objects. Keep track of IDs serialized
   // so we don't have to serialize the same node twice.
   std::set<int32_t> already_serialized_ids;
@@ -555,8 +562,11 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
       continue;
     }
 
+    if (update.node_id_to_clear > 0)
+      invalidate_plugin_subtree = true;
+
     if (plugin_tree_source_)
-      AddPluginTreeToUpdate(&update);
+      AddPluginTreeToUpdate(&update, invalidate_plugin_subtree);
 
     // For each node in the update, set the location in our map from
     // ids to locations.
@@ -868,9 +878,17 @@ void RenderAccessibilityImpl::OnDestruct() {
 }
 
 void RenderAccessibilityImpl::AddPluginTreeToUpdate(
-    AXContentTreeUpdate* update) {
+    AXContentTreeUpdate* update,
+    bool invalidate_plugin_subtree) {
+  const WebDocument& document = GetMainDocument();
+  if (invalidate_plugin_subtree)
+    plugin_serializer_->Reset();
+
   for (size_t i = 0; i < update->nodes.size(); ++i) {
     if (update->nodes[i].role == ax::mojom::Role::kEmbeddedObject) {
+      plugin_host_node_ =
+          WebAXObject::FromWebDocumentByID(document, update->nodes[i].id);
+
       const ui::AXNode* root = plugin_tree_source_->GetRoot();
       update->nodes[i].child_ids.push_back(root->id());
 

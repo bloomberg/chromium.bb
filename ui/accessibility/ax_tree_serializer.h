@@ -446,7 +446,8 @@ void AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::InvalidateSubtree(
 template <typename AXSourceNode, typename AXNodeData, typename AXTreeData>
 bool AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::IsInClientTree(
     AXSourceNode node) {
-  return !!ClientTreeNodeById(tree_->GetId(node));
+  ClientTreeNode* client_node = ClientTreeNodeById(tree_->GetId(node));
+  return client_node ? !client_node->invalid : false;
 }
 
 template <typename AXSourceNode, typename AXNodeData, typename AXTreeData>
