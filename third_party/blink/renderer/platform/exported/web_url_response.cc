@@ -186,7 +186,7 @@ void WebURLResponse::ClearHttpHeaderField(const WebString& name) {
   resource_response_->ClearHttpHeaderField(name);
 }
 
-void WebURLResponse::VisitHTTPHeaderFields(
+void WebURLResponse::VisitHttpHeaderFields(
     WebHTTPHeaderVisitor* visitor) const {
   const HTTPHeaderMap& map = resource_response_->HttpHeaderFields();
   for (HTTPHeaderMap::const_iterator it = map.begin(); it != map.end(); ++it)

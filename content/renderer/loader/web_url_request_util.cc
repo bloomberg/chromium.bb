@@ -213,14 +213,14 @@ net::HttpRequestHeaders GetWebURLRequestHeaders(
     const blink::WebURLRequest& request) {
   net::HttpRequestHeaders headers;
   HttpRequestHeadersVisitor visitor(&headers);
-  request.VisitHTTPHeaderFields(&visitor);
+  request.VisitHttpHeaderFields(&visitor);
   return headers;
 }
 
 std::string GetWebURLRequestHeadersAsString(
     const blink::WebURLRequest& request) {
   HeaderFlattener flattener;
-  request.VisitHTTPHeaderFields(&flattener);
+  request.VisitHttpHeaderFields(&flattener);
   return flattener.GetBuffer();
 }
 
