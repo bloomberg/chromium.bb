@@ -109,14 +109,6 @@ bool MIMETypeRegistry::IsSupportedImageMIMETypeForEncoding(
           EqualIgnoringASCIICase(mime_type, "image/webp"));
 }
 
-bool MIMETypeRegistry::IsModernImageMIMEType(const String& mime_type) {
-  return (EqualIgnoringASCIICase(mime_type, "image/gif") ||
-          EqualIgnoringASCIICase(mime_type, "image/jpeg") ||
-          EqualIgnoringASCIICase(mime_type, "image/png") ||
-          EqualIgnoringASCIICase(mime_type, "image/svg+xml") ||
-          EqualIgnoringASCIICase(mime_type, "image/webp"));
-}
-
 bool MIMETypeRegistry::IsSupportedJavaScriptMIMEType(const String& mime_type) {
   return blink::IsSupportedJavascriptMimeType(ToLowerASCIIOrEmpty(mime_type));
 }
