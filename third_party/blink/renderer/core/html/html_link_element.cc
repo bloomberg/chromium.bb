@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/link_loader.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -186,13 +187,25 @@ LinkResource* HTMLLinkElement::LinkResourceToProcess() {
   }
 
   if (!link_) {
-    if (rel_attribute_.IsImport() &&
-        origin_trials::HTMLImportsEnabled(&GetDocument()) &&
-        // HTMLImportsOnlyChrome lets the document import only chrome resource.
-        (!RuntimeEnabledFeatures::HTMLImportsOnlyChromeEnabled() ||
-         (Href().Protocol() == "chrome" ||
-          Href().Protocol() == "chrome-extension"))) {
-      link_ = MakeGarbageCollected<LinkImport>(this);
+    if (rel_attribute_.IsImport()) {
+      // Only create an import link when HTML imports are enabled. Either:
+      // 1) For chrome internal resources only, if HTMLImportsOnlyChromeEnabled.
+      // 2) The WebComponentsV0 origin trial is enabled.
+      bool imports_enabled =
+          RuntimeEnabledFeatures::HTMLImportsOnlyChromeEnabled() &&
+          (Href().Protocol() == "chrome" ||
+           Href().Protocol() == "chrome-extension");
+      if (!imports_enabled) {
+        // Ensure the origin trial context is created, as the enabled check will
+        // return false if the context doesn't exist yet.
+        OriginTrialContext::FromOrCreate(&GetDocument());
+        imports_enabled = origin_trials::HTMLImportsEnabled(&GetDocument());
+      }
+      if (imports_enabled) {
+        link_ = MakeGarbageCollected<LinkImport>(this);
+      } else {
+        return nullptr;
+      }
     } else if (rel_attribute_.IsManifest()) {
       link_ = LinkManifest::Create(this);
     } else {

@@ -223,7 +223,24 @@ bool OriginTrialContext::IsFeatureEnabled(OriginTrialFeature feature) const {
   if (!RuntimeEnabledFeatures::OriginTrialsEnabled())
     return false;
 
-  return enabled_features_.Contains(feature);
+  if (enabled_features_.Contains(feature))
+    return true;
+
+  // HTML imports do not have a browsing context, see:
+  //  - Spec: https://w3c.github.io/webcomponents/spec/imports/#terminology
+  //  - Spec issue: https://github.com/w3c/webcomponents/issues/197
+  // For the purposes of origin trials, we consider imported documents to be
+  // part of the master document. Thus, check if the trial is enabled in the
+  // master document and use that result.
+  auto* document = DynamicTo<Document>(GetSupplementable());
+  if (!document || !document->IsHTMLImport())
+    return false;
+
+  const OriginTrialContext* context =
+      OriginTrialContext::From(&document->MasterDocument());
+  if (!context)
+    return false;
+  return context->IsFeatureEnabled(feature);
 }
 
 bool OriginTrialContext::EnableTrialFromToken(const String& token) {
