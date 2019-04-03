@@ -560,7 +560,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
       [BookmarkHomeSharedState desiredFaviconSizePt];
   CGFloat minFaviconSizeInPoints = [BookmarkHomeSharedState minFaviconSizePt];
 
-  FaviconAttributes* cachedAttributes = self.faviconLoader->FaviconForUrl(
+  FaviconAttributes* cachedAttributes = self.faviconLoader->FaviconForPageUrl(
       blockURL, desiredFaviconSizeInPoints, minFaviconSizeInPoints,
       /*fallback_to_google_server=*/fallbackToGoogleServer, faviconLoadedBlock);
   DCHECK(cachedAttributes);

@@ -48,8 +48,8 @@ class LargeIconService : public KeyedService {
       const favicon_base::LargeIconCallback& callback,
       base::CancelableTaskTracker* tracker) = 0;
 
-  // Behaves the same as GetLargeIconOrFallbackStyleForPageUrl(), only returns
-  // the large icon (if available) decoded.
+  // Behaves the same as GetLargeIconRawBitmapOrFallbackStyleForPageUrl(), only
+  // returns the large icon (if available) decoded.
   virtual base::CancelableTaskTracker::TaskId
   GetLargeIconImageOrFallbackStyleForPageUrl(
       const GURL& page_url,
