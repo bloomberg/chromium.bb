@@ -246,8 +246,10 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
                                            kFeaturePolicyBlocked));
   }
 
-  // If we no longer have a valid service connection reject the request.
-  if (!service_) {
+  // If we no longer have a valid service connection reject the request, unless
+  // it was for an inline mode.  In which case, we'll end up creating the
+  // session in OnRequestSessionReturned.
+  if (!service_ && mode != XRSession::kModeInline) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kNotFoundError,
                                            kNoDevicesMessage));
@@ -329,6 +331,11 @@ void XR::DispatchRequestSession(PendingSessionQuery* query) {
 void XR::EnsureDevice() {
   // Exit if we have a device or are waiting for a device.
   if (device_ || pending_device_) {
+    return;
+  }
+
+  if (!service_) {
+    OnRequestDeviceReturned(nullptr);
     return;
   }
 
@@ -527,6 +534,12 @@ void XR::Dispose() {
     frame_provider_->Dispose();
 
   device_ = nullptr;
+
+  // If we failed out with an outstanding call to RequestDevice, we may have
+  // pending promises that need to be resolved.  Fake a call that we found no
+  // devices to free up those promises.
+  if (pending_device_)
+    OnRequestDeviceReturned(nullptr);
 }
 
 void XR::OnEnvironmentProviderDisconnect() {
