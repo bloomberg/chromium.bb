@@ -9,7 +9,7 @@
 Polymer({
   is: 'oobe-welcome-md',
 
-  behaviors: [I18nBehavior, OobeDialogHostBehavior],
+  behaviors: [I18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
 
   properties: {
     /**
@@ -74,8 +74,13 @@ Polymer({
     /**
      * Controls displaying of "Enable debugging features" link.
      */
-    debuggingLinkVisible: Boolean,
+    debuggingLinkVisible_: Boolean,
   },
+
+  /** @override */
+  EXTERNAL_API: [
+    'onInputMethodIdSetFromBackend',
+  ],
 
   /**
    * Flag that ensures that OOBE configuration is applied only once.
@@ -85,14 +90,29 @@ Polymer({
 
   /** @override */
   ready: function() {
+    this.initializeLoginScreen('WelcomeScreen', {
+      commonScreenSize: true,
+      enableDebuggingAllowed: true,
+      enterDemoModeAllowed: true,
+      noAnimatedTransition: true,
+      postponeEnrollmentAllowed: true,
+    });
     this.updateLocalizedContent();
   },
 
-  onBeforeShow: function() {
+  /**
+   * Event handler that is invoked just before the screen is shown.
+   * TODO (https://crbug.com/948932): Define this type.
+   * @param {Object} data Screen init payload.
+   */
+  onBeforeShow: function(data) {
     this.behaviors.forEach((behavior) => {
       if (behavior.onBeforeShow)
         behavior.onBeforeShow.call(this);
     });
+
+    this.debuggingLinkVisible_ =
+        data && 'isDeveloperMode' in data && data['isDeveloperMode'];
 
     if (this.fullScreenDialog)
       this.$.welcomeScreen.fullScreenDialog = true;
@@ -111,6 +131,7 @@ Polymer({
 
   /**
    * This is called when UI strings are changed.
+   * @override
    */
   updateLocalizedContent: function() {
     this.languages = loadTimeData.getValue('languageList');
@@ -136,6 +157,7 @@ Polymer({
   /**
    * Called when OOBE configuration is loaded.
    * @param {!OobeTypes.OobeConfiguration} configuration
+   * @override
    */
   updateOobeConfiguration: function(configuration) {
     if (!this.configuration_applied_)
@@ -156,7 +178,7 @@ Polymer({
     if (configuration.language) {
       var currentLanguage = loadTimeData.getString('language');
       if (currentLanguage != configuration.language) {
-        this.screen.onLanguageSelected_(configuration.language);
+        this.applySelectedLanguage_(configuration.language);
         // Trigger language change without marking it as applied.
         // applyOobeConfiguration will be called again once language change
         // was applied.
@@ -164,7 +186,7 @@ Polymer({
       }
     }
     if (configuration.inputMethod)
-      this.screen.onKeyboardSelected_(configuration.inputMethod);
+      this.applySelectedLkeyboard_(configuration.inputMethod);
 
     if (configuration.welcomeNext)
       this.onWelcomeNextButtonClicked_();
@@ -178,6 +200,7 @@ Polymer({
   /**
    * Updates "device in tablet mode" state when tablet mode is changed.
    * @param {Boolean} isInTabletMode True when in tablet mode.
+   * @override
    */
   setTabletModeState: function(isInTabletMode) {
     this.$.welcomeScreen.isInTabletMode = isInTabletMode;
@@ -314,7 +337,17 @@ Polymer({
     var item = event.detail;
     var languageId = item.value;
     this.currentLanguage = item.title;
-    this.screen.onLanguageSelected_(languageId);
+    this.applySelectedLanguage_(languageId);
+  },
+
+  /**
+   * Switch UI language.
+   *
+   * @param {!OobeTypes.LanguageDsc} languageId
+   * @private
+   */
+  applySelectedLanguage_: function(languageId) {
+    chrome.send('WelcomeScreen.setLocaleId', [languageId]);
   },
 
   /**
@@ -327,14 +360,24 @@ Polymer({
     var item = event.detail;
     var inputMethodId = item.value;
     this.currentKeyboard = item.title;
-    this.screen.onKeyboardSelected_(inputMethodId);
+    this.applySelectedLkeyboard_(inputMethodId);
+  },
+
+  /**
+   * Switch keyboard layout.
+   *
+   * @param {!OobeTypes.IMEDsc} inputMethodId
+   * @private
+   */
+  applySelectedLkeyboard_: function(inputMethodId) {
+    chrome.send('WelcomeScreen.setInputMethodId', [inputMethodId]);
   },
 
   onLanguagesChanged_: function() {
     this.currentLanguage = getSelectedTitle(this.languages);
   },
 
-  setSelectedKeyboard: function(keyboard_id) {
+  onInputMethodIdSetFromBackend: function(keyboard_id) {
     var found = false;
     for (var i = 0; i < this.keyboards.length; ++i) {
       if (this.keyboards[i].value != keyboard_id) {
@@ -411,7 +454,7 @@ Polymer({
     if (!item)
       return;
 
-    this.screen.onTimezoneSelected_(item.value);
+    chrome.send('WelcomeScreen.setTimezoneId', [item.value]);
   },
 
   /** ******************** AdvancedOptions section ******************* */

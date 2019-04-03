@@ -6,8 +6,9 @@
  * @fileoverview Display manager for WebUI OOBE and login.
  */
 
+// <include src="display_manager_types.js">
+
 // TODO(xiyuan): Find a better to share those constants.
-/** @const */ var SCREEN_OOBE_WELCOME = 'connect';
 /** @const */ var SCREEN_OOBE_NETWORK = 'network-selection';
 /** @const */ var SCREEN_OOBE_HID_DETECTION = 'hid-detection';
 /** @const */ var SCREEN_OOBE_EULA = 'eula';
@@ -120,8 +121,8 @@ cr.define('cr.ui.login', function() {
    * @const
    */
   var SCREEN_GROUPS = [[
-    SCREEN_OOBE_WELCOME, SCREEN_OOBE_NETWORK, SCREEN_OOBE_EULA,
-    SCREEN_OOBE_UPDATE, SCREEN_OOBE_AUTO_ENROLLMENT_CHECK
+    SCREEN_OOBE_NETWORK, SCREEN_OOBE_EULA, SCREEN_OOBE_UPDATE,
+    SCREEN_OOBE_AUTO_ENROLLMENT_CHECK
   ]];
   /**
    * Group of screens (screen IDs) where factory-reset screen invocation is
@@ -130,7 +131,6 @@ cr.define('cr.ui.login', function() {
    * @const
    */
   var RESET_AVAILABLE_SCREEN_GROUP = [
-    SCREEN_OOBE_WELCOME,
     SCREEN_OOBE_NETWORK,
     SCREEN_OOBE_EULA,
     SCREEN_OOBE_UPDATE,
@@ -163,7 +163,6 @@ cr.define('cr.ui.login', function() {
    */
   var ENABLE_DEBUGGING_AVAILABLE_SCREEN_GROUP = [
     SCREEN_OOBE_HID_DETECTION,
-    SCREEN_OOBE_WELCOME,
     SCREEN_OOBE_NETWORK,
     SCREEN_OOBE_EULA,
     SCREEN_OOBE_UPDATE,
@@ -179,16 +178,6 @@ cr.define('cr.ui.login', function() {
   var NOT_ANIMATED_SCREEN_GROUP = [
     SCREEN_OOBE_ENABLE_DEBUGGING,
     SCREEN_OOBE_RESET,
-  ];
-
-  /**
-   * Group of screens (screen IDs) where demo mode setup invocation is
-   * available.
-   * @type Array<string>
-   * @const
-   */
-  var DEMO_MODE_SETUP_AVAILABLE_SCREEN_GROUP = [
-    SCREEN_OOBE_WELCOME,
   ];
 
   /**
@@ -210,6 +199,12 @@ cr.define('cr.ui.login', function() {
      * Registered screens.
      */
     screens_: [],
+
+    /**
+     * Attributes of the registered screens.
+     * @type {Array<DisplayManagerScreenAttributes>}
+     */
+    screensAttributes_: [],
 
     /**
      * Current OOBE step, index in the screens array.
@@ -401,20 +396,23 @@ cr.define('cr.ui.login', function() {
         return;
       }
       var currentStepId = this.screens_[this.currentStep_];
+      var attributes = this.screensAttributes_[this.currentStep_] || {};
       if (name == ACCELERATOR_CANCEL) {
         if (this.currentScreen && this.currentScreen.cancel) {
           this.currentScreen.cancel();
         }
       } else if (name == ACCELERATOR_ENABLE_DEBBUGING) {
-        if (ENABLE_DEBUGGING_AVAILABLE_SCREEN_GROUP.indexOf(currentStepId) !=
+        if (attributes.enableDebuggingAllowed ||
+            ENABLE_DEBUGGING_AVAILABLE_SCREEN_GROUP.indexOf(currentStepId) !=
             -1) {
           chrome.send('toggleEnableDebuggingScreen');
         }
       } else if (name == ACCELERATOR_ENROLLMENT) {
-        if (currentStepId == SCREEN_GAIA_SIGNIN ||
+        if (attributes.startEnrollmentAllowed ||
+            currentStepId == SCREEN_GAIA_SIGNIN ||
             currentStepId == SCREEN_ACCOUNT_PICKER) {
           chrome.send('toggleEnrollmentScreen');
-        } else if (
+        } else if (attributes.postponeEnrollmentAllowed ||
             currentStepId == SCREEN_OOBE_WELCOME ||
             currentStepId == SCREEN_OOBE_NETWORK ||
             currentStepId == SCREEN_OOBE_EULA) {
@@ -423,7 +421,8 @@ cr.define('cr.ui.login', function() {
           chrome.send('skipUpdateEnrollAfterEula');
         }
       } else if (name == ACCELERATOR_KIOSK_ENABLE) {
-        if (currentStepId == SCREEN_GAIA_SIGNIN ||
+        if (attributes.toggleKioskAllowed ||
+            currentStepId == SCREEN_GAIA_SIGNIN ||
             currentStepId == SCREEN_ACCOUNT_PICKER) {
           chrome.send('toggleKioskEnableScreen');
         }
@@ -431,11 +430,13 @@ cr.define('cr.ui.login', function() {
         if (this.allowToggleVersion_)
           $('version-labels').hidden = !$('version-labels').hidden;
       } else if (name == ACCELERATOR_RESET) {
-        if (currentStepId == SCREEN_OOBE_RESET)
+        if (currentStepId == SCREEN_OOBE_RESET) {
           $('reset').send(
               login.Screen.CALLBACK_USER_ACTED, USER_ACTION_ROLLBACK_TOGGLED);
-        else if (RESET_AVAILABLE_SCREEN_GROUP.indexOf(currentStepId) != -1)
+        } else if (attributes.resetAllowed ||
+            RESET_AVAILABLE_SCREEN_GROUP.indexOf(currentStepId) != -1) {
           chrome.send('toggleResetScreen');
+        }
       } else if (name == ACCELERATOR_DEVICE_REQUISITION) {
         if (this.isOobeUI())
           this.showDeviceRequisitionPrompt_();
@@ -524,6 +525,9 @@ cr.define('cr.ui.login', function() {
       var nextStepId = this.screens_[nextStepIndex];
       var oldStep = $(currentStepId);
       var newStep = $(nextStepId);
+      var currentStepAttributes = this.screensAttributes_[this.currentStep_] ||
+                                  {};
+      var newStepAttributes = this.screensAttributes_[nextStepIndex] || {};
 
       // Disable controls before starting animation.
       this.disableButtons_(oldStep, true);
@@ -546,15 +550,19 @@ cr.define('cr.ui.login', function() {
       // TODO(alemate): make every screen a single Polymer element, so that
       // we could simply use OobeDialogHostBehavior in stead of this.
       for(let dialog of newStep.getElementsByTagName('oobe-dialog'))
-        dialog.onBeforeShow();
+        dialog.onBeforeShow(screenData);
 
       if (newStep.defaultControl && newStep.defaultControl.onBeforeShow)
-        newStep.defaultControl.onBeforeShow();
+        newStep.defaultControl.onBeforeShow(screenData);
 
       newStep.classList.remove('hidden');
 
-      if (this.isOobeUI() && this.screenIsAnimated_(nextStepId) &&
-          this.screenIsAnimated_(currentStepId)) {
+      var currentIsAnimated = !currentStepAttributes.noAnimatedTransition &&
+                              this.screenIsAnimated_(currentStepId);
+      var newIsAnimated = !newStepAttributes.noAnimatedTransition &&
+                          this.screenIsAnimated_(nextStepId);
+
+      if (this.isOobeUI() && currentIsAnimated && newIsAnimated) {
         // Start gliding animation for OOBE steps.
         if (nextStepIndex > this.currentStep_) {
           for (var i = this.currentStep_; i < nextStepIndex; ++i)
@@ -569,7 +577,8 @@ cr.define('cr.ui.login', function() {
         // Start fading animation for login display or reset screen.
         oldStep.classList.add('faded');
         newStep.classList.remove('faded');
-        if (!this.screenIsAnimated_(nextStepId)) {
+        if (newStepAttributes.noAnimatedTransition ||
+            !this.screenIsAnimated_(nextStepId)) {
           newStep.classList.remove('left');
           newStep.classList.remove('right');
         }
@@ -721,10 +730,14 @@ cr.define('cr.ui.login', function() {
     /**
      * Register an oobe screen.
      * @param {Element} el Decorated screen element.
+     * @param {DisplayManagerScreenAttributes} attributes
      */
-    registerScreen: function(el) {
+    registerScreen: function(el, attributes) {
       var screenId = el.id;
+      assert(screenId);
+
       this.screens_.push(screenId);
+      this.screensAttributes_.push(attributes);
 
       // No headers on Chrome OS
       var headerSections = $('header-sections');
@@ -736,6 +749,10 @@ cr.define('cr.ui.login', function() {
         headerSections.appendChild(header);
       }
       this.appendButtons_(el.buttons, screenId);
+
+      if (attributes && attributes.commonScreenSize) {
+        SCREEN_GROUPS[0].push(screenId);
+      }
 
       if (el.updateOobeConfiguration && this.oobe_configuration_)
         el.updateOobeConfiguration(this.oobe_configuration_);
@@ -965,7 +982,8 @@ cr.define('cr.ui.login', function() {
       }
 
       var currentStepId = this.screens_[this.currentStep_];
-      if (!DEMO_MODE_SETUP_AVAILABLE_SCREEN_GROUP.includes(currentStepId))
+      var attributes = this.screensAttributes_[this.currentStep_] || {};
+      if (!attributes.enterDemoModeAllowed)
         return;
 
       if (!this.enableDemoModeDialog_) {

@@ -83,12 +83,10 @@ document.addEventListener('DOMContentLoaded', function() {
 // <include src="oobe_screen_hid_detection.js">
 // <include src="oobe_screen_network.js">
 // <include src="oobe_screen_update.js">
-// <include src="oobe_screen_welcome.js">
 // <include src="multi_tap_detector.js">
 // <include src="web_view_helper.js">
 
 cr.define('cr.ui.Oobe', function() {
-
   return {
     /**
      * Initializes the OOBE flow.  This will cause all C++ handlers to
@@ -98,7 +96,6 @@ cr.define('cr.ui.Oobe', function() {
       cr.ui.login.DisplayManager.initialize();
       login.HIDDetectionScreen.register();
       login.WrongHWIDScreen.register();
-      login.WelcomeScreen.register();
       login.NetworkScreen.register();
       login.EulaScreen.register();
       login.UpdateScreen.register();
@@ -162,7 +159,7 @@ cr.define('cr.ui.Oobe', function() {
      * @param {!Object} data New dictionary with a11y features state.
      */
     refreshA11yInfo: function(data) {
-      $('oobe-welcome-md').a11yStatus = data;
+      $('connect').a11yStatus = data;
     },
 
     /**

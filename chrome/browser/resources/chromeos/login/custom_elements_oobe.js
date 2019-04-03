@@ -10,6 +10,7 @@
 // <include src="oobe-screen.js">
 
 // <include src="oobe_dialog_host_behavior.js">
+// <include src="login_screen_behavior.js">
 // <include src="gaia_buttons.js">
 // <include src="gaia_card.js">
 // <include src="gaia_header.js">

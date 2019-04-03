@@ -52,8 +52,7 @@ const char kLanguageSelect[] = "languageSelect";
 const char kKeyboardSelect[] = "keyboardSelect";
 
 std::string GetGetSelectStatement(const std::string& selectId) {
-  return "document.getElementById('oobe-welcome-md').$." + selectId +
-         ".$.select";
+  return "document.getElementById('connect').$." + selectId + ".$.select";
 }
 
 const char kUSLayout[] = "xkb:us::eng";
