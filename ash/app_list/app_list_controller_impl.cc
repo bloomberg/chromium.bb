@@ -28,7 +28,9 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wallpaper/wallpaper_controller.h"
@@ -550,6 +552,14 @@ void AppListControllerImpl::OnTabletModeStarted() {
 }
 
 void AppListControllerImpl::OnTabletModeEnded() {
+  base::Optional<app_list::AppListPresenterImpl::ScopedDismissAnimationDisabler>
+      dismiss_animation_disabler;
+  aura::Window* window = presenter_.GetWindow();
+  if (window && RootWindowController::ForWindow(window)
+                    ->GetShelfLayoutManager()
+                    ->HasVisibleWindow()) {
+    dismiss_animation_disabler.emplace(presenter());
+  }
   if (IsVisible())
     presenter_.GetView()->OnTabletModeChanged(false);
 

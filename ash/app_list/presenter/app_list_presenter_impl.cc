@@ -153,7 +153,7 @@ void AppListPresenterImpl::Dismiss(base::TimeTicks event_time_stamp) {
     view_->GetWidget()->Deactivate();
 
   delegate_->OnClosing();
-  ScheduleAnimation();
+  ScheduleDismissAnimation();
   NotifyTargetVisibilityChanged(GetTargetVisibility());
   base::RecordAction(base::UserMetricsAction("Launcher_Dismiss"));
 }
@@ -309,7 +309,7 @@ void AppListPresenterImpl::ResetView() {
   view_ = nullptr;
 }
 
-void AppListPresenterImpl::ScheduleAnimation() {
+void AppListPresenterImpl::ScheduleDismissAnimation() {
   // Stop observing previous animation.
   StopObservingImplicitAnimations();
 
@@ -320,8 +320,9 @@ void AppListPresenterImpl::ScheduleAnimation() {
   const gfx::Vector2d offset =
       delegate_->GetVisibilityAnimationOffset(root_window);
   const base::TimeDelta animation_duration =
-      delegate_->GetVisibilityAnimationDuration(root_window,
-                                                view_->is_fullscreen());
+      dismiss_without_animation_ ? base::TimeDelta::FromMilliseconds(0)
+                                 : delegate_->GetVisibilityAnimationDuration(
+                                       root_window, /*is_visible=*/false);
   gfx::Rect target_bounds = widget->GetNativeView()->bounds();
   target_bounds.Offset(offset);
   widget->GetNativeView()->SetBounds(target_bounds);
