@@ -131,6 +131,9 @@ void FakeFontCollection::MapCharacters(
 void FakeFontCollection::GetUniqueNameLookupTable(
     GetUniqueNameLookupTableCallback callback) {}
 
+void FakeFontCollection::GetUniqueNameLookupTableIfAvailable(
+    GetUniqueNameLookupTableIfAvailableCallback callback) {}
+
 FakeFontCollection::~FakeFontCollection() = default;
 
 }  // namespace content

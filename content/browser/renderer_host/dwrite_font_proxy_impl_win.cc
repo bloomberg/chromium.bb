@@ -392,10 +392,26 @@ void DWriteFontProxyImpl::MapCharacters(
   DCHECK_GT(result->mapped_length, 0u);
 }
 
+void DWriteFontProxyImpl::GetUniqueNameLookupTableIfAvailable(
+    GetUniqueNameLookupTableIfAvailableCallback callback) {
+  DCHECK(base::FeatureList::IsEnabled(features::kFontSrcLocalMatching));
+  base::ReadOnlySharedMemoryRegion invalid_region;
+  callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+      std::move(callback), false, std::move(invalid_region));
+
+  if (!DWriteFontLookupTableBuilder::GetInstance()
+           ->FontUniqueNameTableReady()) {
+    return;
+  }
+
+  std::move(callback).Run(
+      true,
+      DWriteFontLookupTableBuilder::GetInstance()->DuplicateMemoryRegion());
+}
+
 void DWriteFontProxyImpl::GetUniqueNameLookupTable(
     GetUniqueNameLookupTableCallback callback) {
   DCHECK(base::FeatureList::IsEnabled(features::kFontSrcLocalMatching));
-  InitializeDirectWrite();
   callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       std::move(callback), base::ReadOnlySharedMemoryRegion());
 

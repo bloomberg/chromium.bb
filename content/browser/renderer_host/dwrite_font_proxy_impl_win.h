@@ -59,6 +59,9 @@ class CONTENT_EXPORT DWriteFontProxyImpl
                      const base::string16& base_family_name,
                      MapCharactersCallback callback) override;
 
+  void GetUniqueNameLookupTableIfAvailable(
+      GetUniqueNameLookupTableIfAvailableCallback callback) override;
+
   void GetUniqueNameLookupTable(
       GetUniqueNameLookupTableCallback callback) override;
 

@@ -51,12 +51,23 @@ interface DWriteFontProxy {
      => (array<mojo_base.mojom.FilePath> file_paths,
          array<mojo_base.mojom.File> file_handles);
 
-  // Returns a protobuf structured lookup list of
+  // Synchronously returns a protobuf structured lookup list of
+  // (full_font_name|postscript_name) => (font_file + ttc_index) to the
+  // renderer process as a ReadOnlySharedMemoryRegion if it is available
+  // immediately without any blocking operations. Use FontTableMatcher to
+  // perform searches in it. If it is not available without blocking operations,
+  // sync_available is false and no shared memory region is provided.
+  [Sync]
+  GetUniqueNameLookupTableIfAvailable()
+      => (bool sync_available,
+          mojo_base.mojom.ReadOnlySharedMemoryRegion? font_lookup_table);
+
+  // Asynchronously returns a protobuf structured lookup list of
   // (full_font_name|postscript_name) => (font_file + ttc_index) to the
   // renderer process as a ReadOnlySharedMemoryRegion. The lookup list is built
   // on the first renderer call to retrieving this list. Use FontTableMatcher
-  // to perform searches in it.
-  [Sync]
+  // to perform searches in it. Retrieval may take up to several seconds if the
+  // table needs rebuilding on browser side.
   GetUniqueNameLookupTable() =>
   (mojo_base.mojom.ReadOnlySharedMemoryRegion font_lookup_table);
 

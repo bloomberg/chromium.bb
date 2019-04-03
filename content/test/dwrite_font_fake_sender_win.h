@@ -119,6 +119,8 @@ class FakeFontCollection : public blink::mojom::DWriteFontProxy {
                      uint32_t reading_direction,
                      const base::string16& base_family_name,
                      MapCharactersCallback callback) override;
+  void GetUniqueNameLookupTableIfAvailable(
+      GetUniqueNameLookupTableIfAvailableCallback callback) override;
   void GetUniqueNameLookupTable(
       GetUniqueNameLookupTableCallback callback) override;
 

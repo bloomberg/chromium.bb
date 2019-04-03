@@ -52,10 +52,14 @@ class CONTENT_EXPORT DWriteFontLookupTableBuilder {
   // constructed. Call only after ScheduleBuildFontUniqueNameTable().
   bool EnsureFontUniqueNameTable();
 
+  // Returns whether the indexing has completed and the shared memory region is
+  // immediately ready without any sync operations.
+  bool FontUniqueNameTableReady();
+
   // Posts a task to load from cache or build (if cache not available) the
   // unique name table index, should only be called once at browser startup,
-  // after that, use EnsureFontUniqueNameTable() and DuplicatedMemoryRegion() to
-  // retrieve the lookup structure buffer.
+  // after that, use EnsureFontUniqueNameTable() and
+  // DuplicatedMemoryRegion() to retrieve the lookup structure buffer.
   void SchedulePrepareFontUniqueNameTable();
 
   enum class SlowDownMode { kDelayEachTask, kHangOneTask, kNoSlowdown };

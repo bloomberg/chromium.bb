@@ -117,6 +117,16 @@ INSTANTIATE_TEST_SUITE_P(
         DWriteFontLookupTableBuilder::SlowDownMode::kDelayEachTask,
         DWriteFontLookupTableBuilder::SlowDownMode::kHangOneTask));
 
+TEST_F(DWriteFontLookupTableBuilderTest, TestReadyEarly) {
+  font_lookup_table_builder_->SetSlowDownIndexingForTesting(
+      DWriteFontLookupTableBuilder::SlowDownMode::kHangOneTask);
+  font_lookup_table_builder_->SchedulePrepareFontUniqueNameTable();
+  ASSERT_FALSE(font_lookup_table_builder_->FontUniqueNameTableReady());
+  font_lookup_table_builder_->ResumeFromHangForTesting();
+  font_lookup_table_builder_->EnsureFontUniqueNameTable();
+  ASSERT_TRUE(font_lookup_table_builder_->FontUniqueNameTableReady());
+}
+
 TEST_F(DWriteFontLookupTableBuilderTest, RepeatedScheduling) {
   for (unsigned i = 0; i < 3; ++i) {
     font_lookup_table_builder_->ResetLookupTableForTesting();
