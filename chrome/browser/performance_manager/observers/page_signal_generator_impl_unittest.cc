@@ -15,7 +15,7 @@
 #include "chrome/browser/performance_manager/graph/mock_graphs.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/resource_coordinator_clock.h"
+#include "chrome/browser/performance_manager/performance_manager_clock.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
@@ -101,7 +101,7 @@ class PageSignalGeneratorImplTest : public GraphTestHarness {
     // transition driven by it.
     graph()->RegisterObserver(std::make_unique<PageAlmostIdleDecorator>());
   }
-  void TearDown() override { ResourceCoordinatorClock::ResetClockForTesting(); }
+  void TearDown() override { PerformanceManagerClock::ResetClockForTesting(); }
 
   MockPageSignalGeneratorImpl* page_signal_generator() {
     return page_signal_generator_;
@@ -263,7 +263,7 @@ std::unique_ptr<ProcessResourceMeasurementBatch> CreateMeasurementBatch(
 }  // namespace
 
 TEST_F(PageSignalGeneratorImplTest, OnLoadTimePerformanceEstimate) {
-  ResourceCoordinatorClock::SetClockForTesting(task_env().GetMockTickClock());
+  PerformanceManagerClock::SetClockForTesting(task_env().GetMockTickClock());
 
   MockSinglePageInSingleProcessGraph mock_graph(graph());
 
@@ -278,7 +278,7 @@ TEST_F(PageSignalGeneratorImplTest, OnLoadTimePerformanceEstimate) {
 
   // Ensure that a navigation resets the performance measurement state.
   base::TimeTicks navigation_committed_time =
-      ResourceCoordinatorClock::NowTicks();
+      PerformanceManagerClock::NowTicks();
   page_node->OnMainFrameNavigationCommitted(navigation_committed_time, 1,
                                             "https://www.google.com/");
   page_node->SetPageAlmostIdleForTesting(false);
@@ -287,7 +287,7 @@ TEST_F(PageSignalGeneratorImplTest, OnLoadTimePerformanceEstimate) {
   page_node->SetPageAlmostIdleForTesting(true);
   EXPECT_TRUE(page_node->page_almost_idle());
 
-  base::TimeTicks event_time = ResourceCoordinatorClock::NowTicks();
+  base::TimeTicks event_time = PerformanceManagerClock::NowTicks();
 
   // A measurement that starts before an initiating state change should not
   // result in a notification.
@@ -324,7 +324,7 @@ TEST_F(PageSignalGeneratorImplTest, OnLoadTimePerformanceEstimate) {
   task_env().FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   // Make sure a second run around the state machine generates a second event.
-  navigation_committed_time = ResourceCoordinatorClock::NowTicks();
+  navigation_committed_time = PerformanceManagerClock::NowTicks();
   page_node->OnMainFrameNavigationCommitted(navigation_committed_time, 2,
                                             "https://example.org/bobcat");
   page_node->SetPageAlmostIdleForTesting(false);
@@ -333,7 +333,7 @@ TEST_F(PageSignalGeneratorImplTest, OnLoadTimePerformanceEstimate) {
   page_node->SetPageAlmostIdleForTesting(true);
   EXPECT_TRUE(page_node->page_almost_idle());
 
-  event_time = ResourceCoordinatorClock::NowTicks();
+  event_time = PerformanceManagerClock::NowTicks();
 
   // Dispatch another measurement and verify another notification is fired.
   mock_graph.system->DistributeMeasurementBatch(CreateMeasurementBatch(

@@ -11,7 +11,7 @@
 #include "chrome/browser/performance_manager/graph/node_base.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/observers/coordination_unit_graph_observer.h"
+#include "chrome/browser/performance_manager/observers/graph_observer.h"
 
 namespace performance_manager {
 

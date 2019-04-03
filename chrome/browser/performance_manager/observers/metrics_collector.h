@@ -11,7 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/performance_manager/observers/background_metrics_reporter.h"
-#include "chrome/browser/performance_manager/observers/coordination_unit_graph_observer.h"
+#include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 

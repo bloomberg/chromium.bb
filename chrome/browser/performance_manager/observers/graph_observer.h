@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_OBSERVERS_COORDINATION_UNIT_GRAPH_OBSERVER_H_
-#define CHROME_BROWSER_PERFORMANCE_MANAGER_OBSERVERS_COORDINATION_UNIT_GRAPH_OBSERVER_H_
+#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_OBSERVERS_GRAPH_OBSERVER_H_
+#define CHROME_BROWSER_PERFORMANCE_MANAGER_OBSERVERS_GRAPH_OBSERVER_H_
 
 #include "base/macros.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
@@ -97,4 +97,4 @@ class GraphObserver {
 
 }  // namespace performance_manager
 
-#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_OBSERVERS_COORDINATION_UNIT_GRAPH_OBSERVER_H_
+#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_OBSERVERS_GRAPH_OBSERVER_H_

@@ -9,7 +9,7 @@
 #include "chrome/browser/performance_manager/graph/graph_test_harness.h"
 #include "chrome/browser/performance_manager/graph/mock_graphs.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
-#include "chrome/browser/performance_manager/resource_coordinator_clock.h"
+#include "chrome/browser/performance_manager/performance_manager_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {
@@ -20,7 +20,7 @@ TEST_F(WebUIGraphDumpImplTest, Create) {
   Graph graph;
   MockMultiplePagesWithMultipleProcessesGraph mock_graph(&graph);
 
-  base::TimeTicks now = ResourceCoordinatorClock::NowTicks();
+  base::TimeTicks now = PerformanceManagerClock::NowTicks();
 
   constexpr char kExampleUrl[] = "http://www.example.org";
   mock_graph.page->OnMainFrameNavigationCommitted(now, 1, kExampleUrl);

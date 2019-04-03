@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_OBSERVERS_WORKING_SET_TRIMMER_WIN_H_
 
 #include "base/macros.h"
-#include "chrome/browser/performance_manager/observers/coordination_unit_graph_observer.h"
+#include "chrome/browser/performance_manager/observers/graph_observer.h"
 
 namespace performance_manager {
 

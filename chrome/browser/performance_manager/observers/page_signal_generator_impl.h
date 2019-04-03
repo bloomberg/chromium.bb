@@ -10,7 +10,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/performance_manager/observers/coordination_unit_graph_observer.h"
+#include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/resource_coordinator/public/mojom/page_signal.mojom.h"
