@@ -157,6 +157,7 @@ crbug.com/856601 [ Linux ] external/wpt/IndexedDB/idlharness.any.sharedworker.ht
 crbug.com/856601 [ Linux ] external/wpt/IndexedDB/idlharness.any.worker.html [ Timeout Pass ]
 crbug.com/856601 [ Linux ] external/wpt/IndexedDB/idlharness.https.any.serviceworker.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/IndexedDB/interfaces.any.html [ Pass Timeout ]
+crbug.com/856601 [ Linux ] external/wpt/appmanifest/idlharness.window.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/bluetooth/idl/idlharness.tentative.window.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/cookie-store/idlharness.tentative.https.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/css/css-animations/idlharness.html [ Pass Timeout ]
@@ -170,6 +171,7 @@ crbug.com/856601 [ Linux ] external/wpt/fetch/cors-rfc1918/idlharness.tentative.
 crbug.com/856601 [ Linux ] external/wpt/fetch/cors-rfc1918/idlharness.tentative.any.worker.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/gamepad/idlharness.window.html [ Timeout Pass ]
 crbug.com/856601 [ Linux ] external/wpt/hr-time/idlharness.any.sharedworker.html [ Pass Timeout ]
+crbug.com/856601 [ Linux ] external/wpt/media-capabilities/idlharness.any.worker.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/mediacapture-image/idlharness.window.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/mediacapture-streams/idlharness.https.window.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/netinfo/idlharness.any.worker.html [ Pass Timeout ]
@@ -193,6 +195,7 @@ crbug.com/856601 [ Linux ] external/wpt/speech-api/idlharness.window.html [ Pass
 crbug.com/856601 [ Linux ] external/wpt/subresource-integrity/idlharness.window.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/svg/idlharness.window.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/touch-events/idlharness.window.html [ Pass Timeout ]
+crbug.com/856601 [ Linux ] external/wpt/wake-lock/idlharness.https.any.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/webstorage/idlharness.window.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaDevices-IDL-enumerateDevices.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/idlharness.https.window.html [ Pass Timeout ]
@@ -220,7 +223,10 @@ crbug.com/856601 [ Linux ] virtual/service-worker-servicification/external/wpt/s
 crbug.com/856601 [ Linux ] virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/idlharness.https.window.html [ Timeout Pass ]
 crbug.com/856601 [ Linux ] external/wpt/css/filter-effects/interfaces.any.html [ Timeout Pass ]
 crbug.com/856601 [ Linux ] external/wpt/webxr/idlharness.https.window.html [ Timeout Pass ]
-
+crbug.com/856601 [ Linux ] virtual/streams-native/external/wpt/fetch/api/idl.any.sharedworker.html [ Pass Timeout ]
+crbug.com/856601 [ Linux ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/idlharness.https.window.html [ Pass Timeout ]
+crbug.com/856601 [ Linux ] fast/js/toString-stack-overflow.html [ Pass Timeout ]
+crbug.com/856601 [ Linux ] virtual/nobinary-for-devtools/http/tests/devtools/editor/text-editor-ctrl-d-2.js [ Pass Timeout ]
 
 # background-fetch tests crash on MSAN
 crbug.com/869818 [ Linux ] external/wpt/background-fetch/fetch.https.window.html [ Pass Crash ]
