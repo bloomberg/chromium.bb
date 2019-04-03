@@ -200,10 +200,7 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
   // so the correct JS context is used for global variables such as
   // currentWindowInternal, appWindowData, etc.
   apiFunctions.setHandleRequest('initializeAppWindow', function(params) {
-    currentWindowInternal =
-        getInternalApi ?
-            getInternalApi('app.currentWindowInternal') :
-            binding.create('app.currentWindowInternal').generate();
+    currentWindowInternal = getInternalApi('app.currentWindowInternal');
     var AppWindow = function() {
       this.innerBounds = new Bounds('innerBounds');
       this.outerBounds = new Bounds('outerBounds');

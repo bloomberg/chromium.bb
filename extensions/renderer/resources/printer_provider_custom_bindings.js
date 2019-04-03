@@ -2,10 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var printerProviderInternal =
-    getInternalApi ?
-        getInternalApi('printerProviderInternal') :
-        require('binding').Binding.create('printerProviderInternal').generate();
+var printerProviderInternal = getInternalApi('printerProviderInternal');
 var blobNatives = requireNative('blob_natives');
 
 var printerProviderSchema =
