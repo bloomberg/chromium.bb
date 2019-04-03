@@ -41,6 +41,7 @@ namespace WFC = ABI::Windows::Foundation::Collections;
 namespace WFN = ABI::Windows::Foundation::Numerics;
 namespace WInput = ABI::Windows::UI::Input::Spatial;
 
+using ABI::Windows::Foundation::IEventHandler;
 using ABI::Windows::Foundation::IReference;
 using ABI::Windows::Foundation::Numerics::Matrix4x4;
 
@@ -136,7 +137,10 @@ MixedRealityRenderLoop::MixedRealityRenderLoop(
     base::RepeatingCallback<void(mojom::VRDisplayInfoPtr)>
         on_display_info_changed)
     : XRCompositorCommon(),
-      on_display_info_changed_(std::move(on_display_info_changed)) {}
+      on_display_info_changed_(std::move(on_display_info_changed)),
+      weak_ptr_factory_(this) {
+  stage_changed_token_.value = 0;
+}
 
 MixedRealityRenderLoop::~MixedRealityRenderLoop() {
   Stop();
@@ -271,6 +275,7 @@ void MixedRealityRenderLoop::StopRuntime() {
   holographic_space_ = nullptr;
   origin_ = nullptr;
   stage_origin_ = nullptr;
+  ClearStageStatics();
   last_origin_from_attached_ = base::nullopt;
   attached_ = nullptr;
 
@@ -335,27 +340,71 @@ void MixedRealityRenderLoop::InitializeOrigin() {
 
 void MixedRealityRenderLoop::InitializeStageOrigin() {
   TRACE_EVENT0("xr", "InitializeStageOrigin");
+  if (!EnsureStageStatics())
+    return;
   stage_transform_needs_updating_ = true;
 
   // Try to get a SpatialStageFrameOfReference.  We'll use this to calculate
   // the transform between the poses we're handing out and where the floor is.
-  ComPtr<ISpatialStageFrameOfReferenceStatics> spatial_stage_statics;
-  base::win::ScopedHString spatial_stage_string =
-      base::win::ScopedHString::Create(
-          RuntimeClass_Windows_Perception_Spatial_SpatialStageFrameOfReference);
-  HRESULT hr = base::win::RoGetActivationFactory(
-      spatial_stage_string.get(), IID_PPV_ARGS(&spatial_stage_statics));
-  if (FAILED(hr))
-    return;
-
   ComPtr<ISpatialStageFrameOfReference> spatial_stage;
-  hr = spatial_stage_statics->get_Current(&spatial_stage);
+  HRESULT hr = stage_statics_->get_Current(&spatial_stage);
   if (FAILED(hr) || !spatial_stage) {
     TraceError(ErrorLocation::kAcquireCurrentStage, hr);
     return;
   }
 
   spatial_stage->get_CoordinateSystem(&stage_origin_);
+}
+
+bool MixedRealityRenderLoop::EnsureStageStatics() {
+  if (stage_statics_)
+    return true;
+
+  base::win::ScopedHString spatial_stage_string =
+      base::win::ScopedHString::Create(
+          RuntimeClass_Windows_Perception_Spatial_SpatialStageFrameOfReference);
+  HRESULT hr = base::win::RoGetActivationFactory(spatial_stage_string.get(),
+                                                 IID_PPV_ARGS(&stage_statics_));
+  if (FAILED(hr))
+    return false;
+
+  auto weak_this = weak_ptr_factory_.GetWeakPtr();
+  scoped_refptr<base::SingleThreadTaskRunner> thread_runner = task_runner();
+
+  auto callback = Microsoft::WRL::Callback<IEventHandler<IInspectable*>>(
+      [weak_this, thread_runner](IInspectable*, IInspectable*) {
+        thread_runner->PostTask(
+            FROM_HERE,
+            base::BindOnce(&MixedRealityRenderLoop::OnCurrentStageChanged,
+                           weak_this));
+        return S_OK;
+      });
+
+  DCHECK(stage_changed_token_.value == 0);
+  hr =
+      stage_statics_->add_CurrentChanged(callback.Get(), &stage_changed_token_);
+  DCHECK(SUCCEEDED(hr));
+
+  return true;
+}
+
+void MixedRealityRenderLoop::ClearStageStatics() {
+  if (!stage_statics_)
+    return;
+
+  HRESULT hr = S_OK;
+  if (stage_changed_token_.value != 0) {
+    hr = stage_statics_->remove_CurrentChanged(stage_changed_token_);
+    stage_changed_token_.value = 0;
+    DCHECK(SUCCEEDED(hr));
+  }
+
+  stage_statics_ = nullptr;
+}
+
+void MixedRealityRenderLoop::OnCurrentStageChanged() {
+  stage_origin_ = nullptr;
+  InitializeStageOrigin();
 }
 
 void MixedRealityRenderLoop::OnSessionStart() {
