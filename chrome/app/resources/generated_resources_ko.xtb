@@ -1534,7 +1534,6 @@
 <translation id="3435688026795609344">'<ph name="EXTENSION_NAME" />'이(가) <ph name="CODE_TYPE" />을(를) 요청하고 있습니다.</translation>
 <translation id="3435738964857648380">보안</translation>
 <translation id="3435896845095436175">사용</translation>
-<translation id="3436038974659740746">사용자 정의 맞춤법</translation>
 <translation id="3438633801274389918">닌자</translation>
 <translation id="3439153939049640737"><ph name="HOST" />에서 마이크에 액세스하도록 항상 허용</translation>
 <translation id="3439970425423980614">미리보기에서 PDF 여는 중</translation>
@@ -1864,7 +1863,6 @@
 <translation id="3908393983276948098"><ph name="PLUGIN_NAME" />이(가) 이전 버전입니다.</translation>
 <translation id="3908501907586732282">확장 프로그램 사용</translation>
 <translation id="3909477809443608991"><ph name="URL" />에서 보호된 콘텐츠를 재생하려고 합니다. Google에서 이 기기의 신원을 확인하며 이 사이트에서 이 기기에 액세스할 수 있습니다.</translation>
-<translation id="3909690856344416952"><ph name="LANGUAGE_1" />, <ph name="LANGUAGE_2" /> 외 1개</translation>
 <translation id="3909791450649380159">잘라내기(&amp;T)</translation>
 <translation id="3911073280391218446"><ph name="USER_DISPLAY_NAME" />(이 기기에서 사용된 이름)</translation>
 <translation id="3911824782900911339">새 탭 페이지</translation>
@@ -2127,7 +2125,6 @@
 <translation id="435527878592612277">사진 선택</translation>
 <translation id="4356334633973342967">또는 드라이버 지정:</translation>
 <translation id="4358169392473932247">사용자 인증 정보의 내부 저장이 요청되었으나, 보안 키가 이 기능을 지원하지 않습니다.</translation>
-<translation id="4358353773267946514"><ph name="LANGUAGE_1" />, <ph name="LANGUAGE_2" /></translation>
 <translation id="4359408040881008151">함께 설치된 확장 프로그램입니다.</translation>
 <translation id="4359717112757026264">도시 풍경</translation>
 <translation id="4361142739114356624">이 클라이언트 인증서의 비공개 키가 없거나 잘못되었습니다.</translation>
@@ -2179,7 +2176,6 @@
 <translation id="443475966875174318">호환되지 않는 애플리케이션 업데이트 또는 삭제</translation>
 <translation id="4441124369922430666">컴퓨터를 켤 때 이 앱을 자동으로 시작하시겠습니까?</translation>
 <translation id="444134486829715816">펼치기...</translation>
-<translation id="4441548209689510310">맞춤법 검사기 옵션 표시</translation>
 <translation id="4442424173763614572">DNS 조회 실패</translation>
 <translation id="4443536555189480885">도움말(&amp;H)</translation>
 <translation id="4444304522807523469">USB나 로컬 네트워크에 포함된 문서 스캐너에 액세스</translation>
@@ -2975,7 +2971,6 @@
 <translation id="5736796278325406685">올바른 사용자 이름을 입력하세요.</translation>
 <translation id="5739235828260127894">확인을 기다리는 중입니다. <ph name="LINK_BEGIN" />자세히 알아보기<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">아주 크게</translation>
-<translation id="5740331643563157105"><ph name="LANGUAGE_1" />, <ph name="LANGUAGE_2" /> 외 <ph name="NUM_ADDITIONAL_LANGUAGES" />개</translation>
 <translation id="574209121243317957">높낮이</translation>
 <translation id="5746169159649715125">PDF로 저장</translation>
 <translation id="5747552184818312860">만료</translation>

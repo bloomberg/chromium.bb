@@ -1534,7 +1534,6 @@
 <translation id="3435688026795609344">"<ph name="EXTENSION_NAME" />" zahtijeva vaš <ph name="CODE_TYPE" /></translation>
 <translation id="3435738964857648380">Sigurnost</translation>
 <translation id="3435896845095436175">Omogući</translation>
-<translation id="3436038974659740746">Prilagođen način pisanja</translation>
 <translation id="3438633801274389918">Nindža</translation>
 <translation id="3439153939049640737">Uvijek dopusti hostu <ph name="HOST" /> pristup mikrofonu</translation>
 <translation id="3439970425423980614">Otvori PDF u Pregledu</translation>
@@ -1864,7 +1863,6 @@
 <translation id="3908393983276948098">Dodatak <ph name="PLUGIN_NAME" /> zastario je</translation>
 <translation id="3908501907586732282">Omogući proširenje</translation>
 <translation id="3909477809443608991"><ph name="URL" /> želi reproducirati zaštićeni sadržaj. Google će potvrditi identitet vašeg uređaja i ta će mu web-lokacija moći pristupiti.</translation>
-<translation id="3909690856344416952"><ph name="LANGUAGE_1" />, <ph name="LANGUAGE_2" /> i još jedan</translation>
 <translation id="3909791450649380159">Iz&amp;reži</translation>
 <translation id="3911073280391218446"><ph name="USER_DISPLAY_NAME" /> (ime koji se upotrebljava na tom uređaju)</translation>
 <translation id="3911824782900911339">Stranica Nova kartica</translation>
@@ -2129,7 +2127,6 @@
 <translation id="435527878592612277">Odaberite fotografiju</translation>
 <translation id="4356334633973342967">Možete i navesti vlastiti upravljački program:</translation>
 <translation id="4358169392473932247">Taj sigurnosni ključ ne podržava internu pohranu vjerodajnica, no zatražena je ta značajka.</translation>
-<translation id="4358353773267946514"><ph name="LANGUAGE_1" />, <ph name="LANGUAGE_2" /></translation>
 <translation id="4359408040881008151">Instalirano zbog ovisnih proširenja.</translation>
 <translation id="4359717112757026264">Gradski krajolik</translation>
 <translation id="4361142739114356624">Privatni ključ za ovaj certifikat klijenta nedostaje ili nije važeći</translation>
@@ -2181,7 +2178,6 @@
 <translation id="443475966875174318">Ažuriranje ili uklanjanje nekompatibilnih aplikacija</translation>
 <translation id="4441124369922430666">Želite li automatski pokrenuti tu aplikaciju kada se uređaj uključi?</translation>
 <translation id="444134486829715816">Proširi...</translation>
-<translation id="4441548209689510310">Prikaži opcije provjere pravopisa</translation>
 <translation id="4442424173763614572">Nije uspjelo pretraživanje DNS poslužitelja</translation>
 <translation id="4443536555189480885">&amp;Help (Pomoć)</translation>
 <translation id="4444304522807523469">pristupiti skenerima dokumenata priključenim preko USB-a ili na lokalnu mrežu</translation>
@@ -2977,7 +2973,6 @@
 <translation id="5736796278325406685">Unesite važeće korisničko ime</translation>
 <translation id="5739235828260127894">Čeka se potvrda. <ph name="LINK_BEGIN" />Saznajte više<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Vrlo velik</translation>
-<translation id="5740331643563157105"><ph name="LANGUAGE_1" />, <ph name="LANGUAGE_2" /> i još <ph name="NUM_ADDITIONAL_LANGUAGES" /></translation>
 <translation id="574209121243317957">Visina glasa</translation>
 <translation id="5746169159649715125">Spremi kao PDF</translation>
 <translation id="5747552184818312860">Istječe</translation>

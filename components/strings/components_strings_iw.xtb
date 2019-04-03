@@ -480,7 +480,7 @@
 <translation id="3592413004129370115">Italian (Envelope)‎</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3614103345592970299">גודל 2</translation>
-<translation id="361438452008624280">רשומה ברשימה "<ph name="LANGUAGE_ID" />": לא ידוע או שפה לא נתמכת.</translation>
+<translation id="361438452008624280">רשומה ברשימה "<ph name="LANGUAGE_ID" />": שפה לא מוכרת או לא נתמכת.</translation>
 <translation id="3615877443314183785">עליך להזין תאריך תפוגה חוקי</translation>
 <translation id="36224234498066874">ניקוי נתוני גלישה…</translation>
 <translation id="362276910939193118">כל ההיסטוריה</translation>
@@ -1062,7 +1062,7 @@ Del</translation>
 <translation id="6965978654500191972">התקן</translation>
 <translation id="6970216967273061347">מחוז</translation>
 <translation id="6973656660372572881">‏צוינו שרתי Proxy קבועים וכתובת אתר של הסקריפט מסוג ‎.Pac</translation>
-<translation id="6973932557599545801">אין לי אפשרות לעזור. עליך להמשיך בעצמך.</translation>
+<translation id="6973932557599545801">לצערי אין לי אפשרות לעזור. עליך להמשיך בעצמך.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">השתקה (ברירת מחדל)</translation>
 <translation id="6984479912851154518">בחרת לצאת ממצב פרטי כדי לשלם באמצעות אפליקציה חיצונית. להמשיך?</translation>

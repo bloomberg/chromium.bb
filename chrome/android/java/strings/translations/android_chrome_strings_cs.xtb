@@ -214,6 +214,7 @@
 <translation id="2536728043171574184">Prohlížíte offline kopii stránky</translation>
 <translation id="2546283357679194313">Soubory cookie a data webových stránek</translation>
 <translation id="2567385386134582609">OBRÁZEK</translation>
+<translation id="257088987046510401">Motivy</translation>
 <translation id="2570922361219980984">Přístup k poloze je vypnut také v tomto zařízení. Zapnete jej v <ph name="BEGIN_LINK" />Nastavení Android<ph name="END_LINK" />.</translation>
 <translation id="257931822824936280">Rozbaleno – kliknutím sbalíte</translation>
 <translation id="2581165646603367611">Tímto vymažete soubory cookie, mezipaměť a další data webů, která Chrome považuje za nedůležitá.</translation>
@@ -329,6 +330,7 @@
 <translation id="3443221991560634068">Znovu načíst aktuální stránku</translation>
 <translation id="3445014427084483498">Právě teď</translation>
 <translation id="3452612588551937789">Přihlaste se pomocí účtu Google a získejte záložky, historii, hesla a další nastavení do všech svých zařízení.</translation>
+<translation id="3478363558367712427">Můžete si vybrat vyhledávač</translation>
 <translation id="3492207499832628349">Nová anonymní karta</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /> o navrhovaném obsahu</translation>
 <translation id="3513704683820682405">Rozšířená realita</translation>

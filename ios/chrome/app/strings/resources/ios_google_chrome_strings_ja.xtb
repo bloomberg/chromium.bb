@@ -9,7 +9,7 @@
 <translation id="2147651015520127414">このウェブサイトの証明書が <ph name="ISSUER" /> 発行のものであると確認されました。</translation>
 <translation id="2199719347983604670">Chrome 同期のデータ</translation>
 <translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
-<translation id="2342981853652716282">Chrome にログインすれば、ブックマーク、パスワード、その他の設定をどの端末からでもご利用いただけます。</translation>
+<translation id="2342981853652716282">Chrome にログインすると、ブックマーク、パスワード、その他の設定をどの端末からでもご利用いただけます。</translation>
 <translation id="2347208864470321755">この機能を有効にすると、外国語のページで翻訳ツールが表示されます。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">画像を保存するには、[設定] をタップして写真の使用を Chrome に許可してください</translation>
 <translation id="2576431527583832481">Chrome のアップデートが見つかりました。新しいバージョンが利用可能です。</translation>
@@ -48,7 +48,7 @@
 <translation id="7265369419224458312">パソコンで開いたタブにこちらからアクセスできます。パソコンでChromeを開き、メニューから[Chromeにログイン]を選択してください。</translation>
 <translation id="728488472449859922">Google Chrome の QR スキャナをオンにする</translation>
 <translation id="7400722733683201933">Google Chrome について</translation>
-<translation id="7437998757836447326">Chromeからログアウト</translation>
+<translation id="7437998757836447326">Chrome からログアウト</translation>
 <translation id="756809126120519699">Chrome データの消去完了</translation>
 <translation id="7626032353295482388">Chrome へようこそ</translation>
 <translation id="840168496893712993">アドオンが原因でChromeがクラッシュしました。アドオンをアンインストールしてみてください。</translation>

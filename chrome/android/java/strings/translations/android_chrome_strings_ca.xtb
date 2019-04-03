@@ -214,6 +214,7 @@
 <translation id="2536728043171574184">S'està mostrant una còpia sense connexió d'aquesta pàgina</translation>
 <translation id="2546283357679194313">Dades de llocs web i galetes</translation>
 <translation id="2567385386134582609">IMATGE</translation>
+<translation id="257088987046510401">Temes</translation>
 <translation id="2570922361219980984">L'accés a la ubicació també està desactivat en aquest dispositiu. Activa'l a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="257931822824936280">Vista desplegada (feu clic per replegar-la)</translation>
 <translation id="2581165646603367611">Amb aquesta acció, se suprimiran les galetes, la memòria cau i altres dades de llocs que Chrome no consideri importants.</translation>
@@ -328,6 +329,7 @@
 <translation id="3443221991560634068">Torna a carregar la pàgina actual</translation>
 <translation id="3445014427084483498">Ara mateix</translation>
 <translation id="3452612588551937789">Inicia la sessió amb el compte de Google per tenir les adreces d'interès, l'historial, les contrasenyes i altres opcions de configuració en tots els dispositius.</translation>
+<translation id="3478363558367712427">Pots triar el motor de cerca que prefereixis</translation>
 <translation id="3492207499832628349">Pestanya d'incògnit nova</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /> sobre el contingut suggerit</translation>
 <translation id="3513704683820682405">Realitat augmentada</translation>

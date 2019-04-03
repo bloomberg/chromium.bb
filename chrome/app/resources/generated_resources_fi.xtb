@@ -1534,7 +1534,6 @@
 <translation id="3435688026795609344"><ph name="EXTENSION_NAME" /> pyytää kohdetta <ph name="CODE_TYPE" />.</translation>
 <translation id="3435738964857648380">Turvallisuus</translation>
 <translation id="3435896845095436175">Ota käyttöön</translation>
-<translation id="3436038974659740746">Muokkaa tarkistuksen sanaluetteloa</translation>
 <translation id="3438633801274389918">Ninja</translation>
 <translation id="3439153939049640737">Anna sivuston <ph name="HOST" /> aina käyttää mikrofoniasi</translation>
 <translation id="3439970425423980614">PDF:n avaaminen esikatselussa</translation>
@@ -1864,7 +1863,6 @@
 <translation id="3908393983276948098"><ph name="PLUGIN_NAME" /> on vanhentunut.</translation>
 <translation id="3908501907586732282">Ota laajennus käyttöön</translation>
 <translation id="3909477809443608991"><ph name="URL" /> haluaa toistaa suojattua sisältöä. Google vahvistaa laitteesi identiteetin, ja myös sivusto voi saada pääsyn laitteesi identiteettitietoihin.</translation>
-<translation id="3909690856344416952"><ph name="LANGUAGE_1" />, <ph name="LANGUAGE_2" /> ja 1 muu</translation>
 <translation id="3909791450649380159">L&amp;eikkaa</translation>
 <translation id="3911073280391218446"><ph name="USER_DISPLAY_NAME" /> (nimi on jo käytössä tällä laitteella)</translation>
 <translation id="3911824782900911339">Uusi välilehti -sivu</translation>
@@ -2126,7 +2124,6 @@
 <translation id="435527878592612277">Valitse valokuva</translation>
 <translation id="4356334633973342967">Tai määritä oma ajuri:</translation>
 <translation id="4358169392473932247">Kyseinen suojausavain ei tue kirjautumistietojen sisäistä tallennustilaa, mutta ominaisuutta on pyydetty.</translation>
-<translation id="4358353773267946514"><ph name="LANGUAGE_1" />, <ph name="LANGUAGE_2" /></translation>
 <translation id="4359408040881008151">Asennettiin, koska muut laajennukset ovat riippuvaisia tästä laajennuksesta.</translation>
 <translation id="4359717112757026264">Kaupunkimaisema</translation>
 <translation id="4361142739114356624">Tämän käyttöoikeusvarmenteen yksityinen avain puuttuu tai on virheellinen.</translation>
@@ -2178,7 +2175,6 @@
 <translation id="443475966875174318">Päivitä yhteensopimattomat sovellukset tai poista ne</translation>
 <translation id="4441124369922430666">Haluatko käynnistää tämän sovelluksen automaattisesti koneen käynnistyessä?</translation>
 <translation id="444134486829715816">Laajenna...</translation>
-<translation id="4441548209689510310">Näytä oikeinkirjoituksen tarkistusasetukset</translation>
 <translation id="4442424173763614572">DNS-haku epäonnistui</translation>
 <translation id="4443536555189480885">O&amp;hje</translation>
 <translation id="4444304522807523469">Käyttää USB:n tai lähiverkon kautta yhdistettyjä dokumenttiskannereita</translation>
@@ -2974,7 +2970,6 @@
 <translation id="5736796278325406685">Anna kelvollinen käyttäjänimi</translation>
 <translation id="5739235828260127894">Odotetaan vahvistusta. <ph name="LINK_BEGIN" />Lisätietoja<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Hyvin suuri</translation>
-<translation id="5740331643563157105"><ph name="LANGUAGE_1" />, <ph name="LANGUAGE_2" /> ja <ph name="NUM_ADDITIONAL_LANGUAGES" /> muuta</translation>
 <translation id="574209121243317957">Äänenkorkeus</translation>
 <translation id="5746169159649715125">Tallenna PDF-muodossa</translation>
 <translation id="5747552184818312860">Vanhenee</translation>

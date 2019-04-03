@@ -119,7 +119,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="1781173782405573156">Preskočiť kláves</translation>
 <translation id="1787176709638001873">Text úpravy hesla</translation>
 <translation id="1802710350767629429">Zobraziť poznámky k aktualizácii</translation>
-<translation id="1810107444790159527">Pole s ponukou</translation>
+<translation id="1810107444790159527">Zoznamové pole</translation>
 <translation id="1812527064848182527">na šírku</translation>
 <translation id="1828385960365606039">máj</translation>
 <translation id="1834891354138622109">Stĺpec</translation>
@@ -369,7 +369,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{dolár}few{# znaky dolára}many{# dollar signs}other{# znakov dolára}}</translation>
 <translation id="3659787053479271466">upozornenie</translation>
-<translation id="3665563998540286755"><ph name="VALUE" />, pole zoznamu</translation>
+<translation id="3665563998540286755"><ph name="VALUE" />, zoznamové pole</translation>
 <translation id="3681531118904532409">Papájová</translation>
 <translation id="3687295507293856493">Vykonať odhad v hlavičke stĺpca aktuálnej bunky</translation>
 <translation id="3692274950075847560">V:<ph name="RESULT" /></translation>
@@ -557,7 +557,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="4975416682604111799">milisekundy</translation>
 <translation id="49787999531187221">Rozšírenie ChromeVox je teraz neaktívne</translation>
 <translation id="4979404613699303341">Predchádzajúce tlačidlo</translation>
-<translation id="4982773647088557172"><ph name="VALUE" />, <ph name="NAME" />, pole zoznamu</translation>
+<translation id="4982773647088557172"><ph name="VALUE" />, <ph name="NAME" />, zoznamové pole</translation>
 <translation id="4983588134362688868">Prechod do hornej časti stránky</translation>
 <translation id="4986606102545753256"><ph name="NAME" />, okno</translation>
 <translation id="4993152509206108683">Hodnotenie: <ph name="PERCENT" /> %</translation>

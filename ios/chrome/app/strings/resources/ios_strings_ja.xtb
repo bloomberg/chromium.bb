@@ -63,7 +63,7 @@
 <translation id="1752547299766512813">パスワードの保存</translation>
 <translation id="1753905327828125965">よくアクセスするページ</translation>
 <translation id="1809939268435598390">フォルダーを削除</translation>
-<translation id="1813414402673211292">閲覧履歴の消去</translation>
+<translation id="1813414402673211292">閲覧履歴データの削除</translation>
 <translation id="1820259098641718022">リーディング リストに追加しました</translation>
 <translation id="1828824471510190776">パスワードを自動生成...</translation>
 <translation id="1876721852596493031">使用状況データ送信</translation>
@@ -371,7 +371,7 @@
 <translation id="6730682669179532099">パスワードをエクスポートできません</translation>
 <translation id="6780034285637185932">郵便番号</translation>
 <translation id="6785453220513215166">クラッシュレポートを送信しています...</translation>
-<translation id="679325081238418596">ブックマーク、履歴、パスワードなどの設定がどの端末でも利用できるようになります</translation>
+<translation id="679325081238418596">ブックマーク、履歴、パスワードなどの設定をどの端末でも利用できるようにします</translation>
 <translation id="6797885426782475225">音声検索</translation>
 <translation id="6807889908376551050">すべて表示...</translation>
 <translation id="681368974849482173">作成済みのアイテム</translation>
@@ -396,7 +396,7 @@
 <translation id="7133798577887235672">氏名</translation>
 <translation id="7136892417564438900">カメラを使用できません</translation>
 <translation id="7159472599653637159">モバイルサイトをリクエスト</translation>
-<translation id="7167621057293532233">データ タイプ</translation>
+<translation id="7167621057293532233">データの種類</translation>
 <translation id="7189598951263744875">共有...</translation>
 <translation id="7192050974311852563">ログ記録を開始</translation>
 <translation id="7203585745079012652">回答を音声で聞く</translation>
@@ -497,7 +497,7 @@
 <translation id="8971089644512329999">OK</translation>
 <translation id="8976382372951310360">ヘルプ</translation>
 <translation id="8981454092730389528">Google アクティビティ管理</translation>
-<translation id="8985320356172329008">次のユーザーとして Google にログインしています:</translation>
+<translation id="8985320356172329008">次のユーザーとして Google にログインしています</translation>
 <translation id="902659348151742535">検索、広告、その他の Google サービスをカスタマイズする目的で、Google が閲覧履歴を使用することがあります。</translation>
 <translation id="9034759925968272072">Google アカウントへのログイン状態は維持されます。Google アカウントでの他の形式の閲覧履歴が <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> に残ることがあります。</translation>
 <translation id="9039373489628511875">帯域幅</translation>
@@ -515,7 +515,7 @@
 <translation id="9223358826628549784">クラッシュレポートを送信しました。</translation>
 <translation id="935490618240037774">ブックマーク、履歴、パスワード、その他の設定が Google アカウントに同期され、どの端末でも利用できるようになります。</translation>
 <translation id="976982866697960176">同期データを管理...</translation>
-<translation id="988141524645182168">その他のデバイス</translation>
+<translation id="988141524645182168">他のデバイス</translation>
 <translation id="989988560359834682">住所の編集</translation>
 <translation id="994757059139821576">記事の候補表示</translation>
 </translationbundle>

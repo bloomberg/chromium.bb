@@ -1531,7 +1531,6 @@
 <translation id="3435688026795609344"><ph name="EXTENSION_NAME" /> изисква вашия <ph name="CODE_TYPE" /></translation>
 <translation id="3435738964857648380">Сигурност</translation>
 <translation id="3435896845095436175">Активиране</translation>
-<translation id="3436038974659740746">Персонализиран правопис</translation>
 <translation id="3438633801274389918">Нинджа</translation>
 <translation id="3439153939049640737">Достъпът на <ph name="HOST" /> до микрофона ви винаги да е разрешен</translation>
 <translation id="3439970425423980614">Отваря се визуализация на PDF</translation>
@@ -1863,7 +1862,6 @@
 <translation id="3908393983276948098">Приставката <ph name="PLUGIN_NAME" /> не е актуална</translation>
 <translation id="3908501907586732282">Активиране на разширението</translation>
 <translation id="3909477809443608991"><ph name="URL" /> иска разрешение за възпроизвеждане на защитено съдържание. Идентичността на устройството ви ще бъде потвърдена от Google и този сайт може да осъществи достъп до нея.</translation>
-<translation id="3909690856344416952"><ph name="LANGUAGE_1" />, <ph name="LANGUAGE_2" /> и още 1</translation>
 <translation id="3909791450649380159">Изрязва&amp;не</translation>
 <translation id="3911073280391218446"><ph name="USER_DISPLAY_NAME" /> (името се използва на това устройство)</translation>
 <translation id="3911824782900911339">Нов раздел в браузъра</translation>
@@ -2128,7 +2126,6 @@
 <translation id="435527878592612277">Изберете своя снимка</translation>
 <translation id="4356334633973342967">Или ръчно посочете драйвер:</translation>
 <translation id="4358169392473932247">Този ключ за сигурност не поддържа заявената функция за вътрешно хранилище за идентификационни данни.</translation>
-<translation id="4358353773267946514"><ph name="LANGUAGE_1" /> и <ph name="LANGUAGE_2" /></translation>
 <translation id="4359408040881008151">Инсталирано заради зависимо разширение или съответно разширения.</translation>
 <translation id="4359717112757026264">Градски пейзажи</translation>
 <translation id="4361142739114356624">Частният ключ за този клиентски сертификат липсва или е невалиден</translation>
@@ -2180,7 +2177,6 @@
 <translation id="443475966875174318">Актуализиране или премахване на несъвместими приложения</translation>
 <translation id="4441124369922430666">Искате ли това приложение да стартира автоматично при включването на компютъра?</translation>
 <translation id="444134486829715816">Разгъване...</translation>
-<translation id="4441548209689510310">Показване на опциите за проверка на правописа</translation>
 <translation id="4442424173763614572">Търсенето в DNS не бе успешно</translation>
 <translation id="4443536555189480885">&amp;Помощ</translation>
 <translation id="4444304522807523469">Достъп до скенери на документи, свързани чрез USB или с локалната мрежа</translation>
@@ -2977,7 +2973,6 @@
 <translation id="5736796278325406685">Моля, въведете валидно потребителско име</translation>
 <translation id="5739235828260127894">Чака се потвърждение. <ph name="LINK_BEGIN" />Научете повече<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Много голям</translation>
-<translation id="5740331643563157105"><ph name="LANGUAGE_1" />, <ph name="LANGUAGE_2" /> и още <ph name="NUM_ADDITIONAL_LANGUAGES" /></translation>
 <translation id="574209121243317957">Височина</translation>
 <translation id="5746169159649715125">Запазване като PDF файл</translation>
 <translation id="5747552184818312860">Изтича на</translation>
