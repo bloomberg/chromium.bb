@@ -104,7 +104,7 @@ class SkiaOutputSurfaceImplOnGpu {
     return sync_point_client_state_->command_buffer_id();
   }
   const OutputSurface::Capabilities capabilities() const {
-    return capabilities_;
+    return output_device_->capabilities();
   }
   const base::WeakPtr<SkiaOutputSurfaceImplOnGpu>& weak_ptr() const {
     return weak_ptr_;
@@ -209,7 +209,6 @@ class SkiaOutputSurfaceImplOnGpu {
   scoped_refptr<gl::GLSurface> gl_surface_;
   scoped_refptr<gpu::SharedContextState> context_state_;
   const gl::GLVersionInfo* gl_version_info_ = nullptr;
-  OutputSurface::Capabilities capabilities_;
 
   std::unique_ptr<SkiaOutputDevice> output_device_;
 

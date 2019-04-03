@@ -17,8 +17,10 @@ SkiaOutputDeviceOffscreen::SkiaOutputDeviceOffscreen(
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
     : SkiaOutputDevice(did_swap_buffer_complete_callback),
       gr_context_(gr_context),
-      flipped_(flipped),
-      has_alpha_(has_alpha) {}
+      has_alpha_(has_alpha) {
+  capabilities_.flipped_output_surface = flipped;
+  capabilities_.supports_post_sub_buffer = true;
+}
 
 SkiaOutputDeviceOffscreen::~SkiaOutputDeviceOffscreen() = default;
 
@@ -32,8 +34,15 @@ void SkiaOutputDeviceOffscreen::Reshape(const gfx::Size& size,
       has_alpha_ ? kPremul_SkAlphaType : kOpaque_SkAlphaType);
   draw_surface_ = SkSurface::MakeRenderTarget(
       gr_context_, SkBudgeted::kNo, image_info, 0 /* sampleCount */,
-      flipped_ ? kTopLeft_GrSurfaceOrigin : kBottomLeft_GrSurfaceOrigin,
+      capabilities_.flipped_output_surface ? kTopLeft_GrSurfaceOrigin
+                                           : kBottomLeft_GrSurfaceOrigin,
       nullptr /* surfaceProps */);
+}
+
+gfx::SwapResponse SkiaOutputDeviceOffscreen::PostSubBuffer(
+    const gfx::Rect& rect,
+    BufferPresentedCallback feedback) {
+  return SwapBuffers(std::move(feedback));
 }
 
 gfx::SwapResponse SkiaOutputDeviceOffscreen::SwapBuffers(

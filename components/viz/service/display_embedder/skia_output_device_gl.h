@@ -42,10 +42,6 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice {
     DCHECK(gr_context_);
     return supports_alpha_;
   }
-  bool supports_stencil() {
-    DCHECK(gr_context_);
-    return supports_stencil_;
-  }
 
   // SkiaOutputDevice implementation:
   void Reshape(const gfx::Size& size,
@@ -53,7 +49,6 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice {
                const gfx::ColorSpace& color_space,
                bool has_alpha) override;
   gfx::SwapResponse SwapBuffers(BufferPresentedCallback feedback) override;
-  bool SupportPostSubBuffer() override;
   gfx::SwapResponse PostSubBuffer(const gfx::Rect& rect,
                                   BufferPresentedCallback feedback) override;
 
@@ -64,11 +59,8 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice {
 
   GrContext* gr_context_ = nullptr;
   scoped_refptr<gl::GLSurface> gl_surface_;
-  sk_sp<SkSurface> sk_surface_;
 
   bool supports_alpha_ = false;
-  bool supports_stencil_ = false;
-  bool supports_post_sub_buffer_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputDeviceGL);
 };

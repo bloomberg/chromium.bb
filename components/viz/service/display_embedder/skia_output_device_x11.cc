@@ -31,6 +31,9 @@ SkiaOutputDeviceX11::SkiaOutputDeviceX11(
                          << widget_;
   bpp_ = gfx::BitsPerPixelForPixmapDepth(display_, attributes_.depth);
   support_rendr_ = ui::QueryRenderSupport(display_);
+
+  capabilities_.flipped_output_surface = false;
+  capabilities_.supports_post_sub_buffer = true;
 }
 
 SkiaOutputDeviceX11::~SkiaOutputDeviceX11() {
@@ -53,10 +56,6 @@ gfx::SwapResponse SkiaOutputDeviceX11::SwapBuffers(
   return PostSubBuffer(
       gfx::Rect(0, 0, draw_surface_->width(), draw_surface_->height()),
       std::move(feedback));
-}
-
-bool SkiaOutputDeviceX11::SupportPostSubBuffer() {
-  return true;
 }
 
 gfx::SwapResponse SkiaOutputDeviceX11::PostSubBuffer(

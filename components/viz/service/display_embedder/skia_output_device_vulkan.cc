@@ -23,7 +23,10 @@ SkiaOutputDeviceVulkan::SkiaOutputDeviceVulkan(
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
     : SkiaOutputDevice(did_swap_buffer_complete_callback),
       context_provider_(context_provider),
-      surface_handle_(surface_handle) {}
+      surface_handle_(surface_handle) {
+  capabilities_.flipped_output_surface = true;
+  capabilities_.supports_post_sub_buffer = false;
+}
 
 SkiaOutputDeviceVulkan::~SkiaOutputDeviceVulkan() {
   if (vulkan_surface_)

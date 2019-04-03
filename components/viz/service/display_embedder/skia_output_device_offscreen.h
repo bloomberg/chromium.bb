@@ -27,10 +27,11 @@ class SkiaOutputDeviceOffscreen : public SkiaOutputDevice {
                const gfx::ColorSpace& color_space,
                bool has_alpha) override;
   gfx::SwapResponse SwapBuffers(BufferPresentedCallback feedback) override;
+  gfx::SwapResponse PostSubBuffer(const gfx::Rect& rect,
+                                  BufferPresentedCallback feedback) override;
 
  protected:
   GrContext* const gr_context_;
-  const bool flipped_;
   const bool has_alpha_;
 
  private:

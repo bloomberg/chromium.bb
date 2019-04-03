@@ -28,7 +28,6 @@ class SkiaOutputDeviceX11 final : public SkiaOutputDeviceOffscreen {
                const gfx::ColorSpace& color_space,
                bool has_alpha) override;
   gfx::SwapResponse SwapBuffers(BufferPresentedCallback feedback) override;
-  bool SupportPostSubBuffer() override;
   gfx::SwapResponse PostSubBuffer(const gfx::Rect& rect,
                                   BufferPresentedCallback feedback) override;
 
