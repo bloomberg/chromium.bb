@@ -1017,15 +1017,16 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
   ASSERT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
 
   // The metric gets recorded.
-  histogram_tester_.ExpectTotalCount("Autofill.WalletUseDate.Card", 1);
-  histogram_tester_.ExpectTimeBucketCount(
-      "Autofill.WalletUseDate.Card",
-      /*sample=*/base::TimeDelta::FromDays(1),
+  histogram_tester_.ExpectTotalCount("Autofill.WalletUseDateInMinutes.Card", 1);
+  histogram_tester_.ExpectBucketCount(
+      "Autofill.WalletUseDateInMinutes.Card",
+      /*sample=*/base::TimeDelta::FromDays(1).InMinutes(),
       /*count=*/1);
-  histogram_tester_.ExpectTotalCount("Autofill.WalletUseDate.Address", 1);
-  histogram_tester_.ExpectTimeBucketCount(
-      "Autofill.WalletUseDate.Address",
-      /*sample=*/base::TimeDelta::FromDays(1),
+  histogram_tester_.ExpectTotalCount("Autofill.WalletUseDateInMinutes.Address",
+                                     1);
+  histogram_tester_.ExpectBucketCount(
+      "Autofill.WalletUseDateInMinutes.Address",
+      /*sample=*/base::TimeDelta::FromDays(1).InMinutes(),
       /*count=*/1);
 }
 

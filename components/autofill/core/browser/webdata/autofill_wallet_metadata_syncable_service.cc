@@ -400,18 +400,24 @@ AutofillWalletMetadataSyncableService::MergeDataAndStartSyncing(
         base::TimeDelta::FromMicroseconds(specifics.use_date()));
     switch (specifics.type()) {
       case sync_pb::WalletMetadataSpecifics::ADDRESS:
-        UMA_HISTOGRAM_CUSTOM_TIMES("Autofill.WalletUseDate.Address",
-                                   /*sample=*/AutofillClock::Now() - use_date,
-                                   /*min=*/base::TimeDelta::FromMilliseconds(1),
-                                   /*max=*/base::TimeDelta::FromDays(365),
-                                   /*bucket_count=*/50);
+        // TODO(crbug.com/949034): Consider adding standard functions for
+        // recording large times in seconds/minutes.
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "Autofill.WalletUseDateInMinutes.Address",
+            /*sample=*/(AutofillClock::Now() - use_date).InMinutes(),
+            /*min=*/base::TimeDelta::FromMinutes(1).InMinutes(),
+            /*max=*/base::TimeDelta::FromDays(365).InMinutes(),
+            /*bucket_count=*/50);
         break;
       case sync_pb::WalletMetadataSpecifics::CARD:
-        UMA_HISTOGRAM_CUSTOM_TIMES("Autofill.WalletUseDate.Card",
-                                   /*sample=*/AutofillClock::Now() - use_date,
-                                   /*min=*/base::TimeDelta::FromMilliseconds(1),
-                                   /*max=*/base::TimeDelta::FromDays(365),
-                                   /*bucket_count=*/50);
+        // TODO(crbug.com/949034): Consider adding standard functions for
+        // recording large times in seconds/minutes.
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "Autofill.WalletUseDateInMinutes.Card",
+            /*sample=*/(AutofillClock::Now() - use_date).InMinutes(),
+            /*min=*/base::TimeDelta::FromMinutes(1).InMinutes(),
+            /*max=*/base::TimeDelta::FromDays(365).InMinutes(),
+            /*bucket_count=*/50);
         break;
       case sync_pb::WalletMetadataSpecifics::UNKNOWN:
         NOTREACHED();
