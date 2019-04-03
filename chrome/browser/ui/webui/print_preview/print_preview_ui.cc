@@ -242,6 +242,8 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
     {"printPagesLabel", IDS_PRINT_PREVIEW_PRINT_PAGES_LABEL},
     {"printPreviewPageLabelPlural", IDS_PRINT_PREVIEW_PAGE_LABEL_PLURAL},
     {"printPreviewPageLabelSingular", IDS_PRINT_PREVIEW_PAGE_LABEL_SINGULAR},
+    {"printPreviewNewSummaryFormatShort",
+     IDS_PRINT_PREVIEW_NEW_SUMMARY_FORMAT_SHORT},
     {"printPreviewSheetsLabelPlural", IDS_PRINT_PREVIEW_SHEETS_LABEL_PLURAL},
     {"printPreviewSheetsLabelSingular",
      IDS_PRINT_PREVIEW_SHEETS_LABEL_SINGULAR},
@@ -321,6 +323,10 @@ void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
       base::FeatureList::IsEnabled(features::kCloudPrinterHandler);
   source->AddBoolean("cloudPrinterHandlerEnabled",
                      cloud_printer_handler_enabled);
+  bool new_print_preview_layout_enabled =
+      base::FeatureList::IsEnabled(features::kNewPrintPreviewLayout);
+  source->AddBoolean("newPrintPreviewLayoutEnabled",
+                     new_print_preview_layout_enabled);
 }
 
 std::vector<std::string> SetupPrintPreviewPlugin(

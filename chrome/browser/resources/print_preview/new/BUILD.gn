@@ -10,6 +10,7 @@ js_type_check("closure_compile") {
     ":advanced_settings_dialog",
     ":advanced_settings_item",
     ":app",
+    ":button_strip",
     ":color_settings",
     ":copies_settings",
     ":destination_dialog",
@@ -19,6 +20,7 @@ js_type_check("closure_compile") {
     ":dpi_settings",
     ":duplex_settings",
     ":header",
+    ":header_new",
     ":highlight_utils",
     ":input_behavior",
     ":layout_settings",
@@ -64,12 +66,14 @@ js_library("app") {
 js_library("print_preview_sidebar") {
   deps = [
     ":advanced_options_settings",
+    ":button_strip",
     ":color_settings",
     ":copies_settings",
     ":destination_settings",
     ":dpi_settings",
     ":duplex_settings",
     ":header",
+    ":header_new",
     ":layout_settings",
     ":link_container",
     ":margins_settings",
@@ -84,17 +88,33 @@ js_library("print_preview_sidebar") {
     "..:metrics",
     "../data:destination",
     "//ui/webui/resources/cr_elements:cr_container_shadow_behavior",
+    "//ui/webui/resources/js:load_time_data",
+  ]
+}
+
+js_library("button_strip") {
+  deps = [
+    ":state",
+    "../data:destination",
+    "//ui/webui/resources/js:cr",
   ]
 }
 
 js_library("header") {
   deps = [
-    ":model",
     ":settings_behavior",
     ":state",
     "../data:destination",
     "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js:load_time_data",
+  ]
+}
+
+js_library("header_new") {
+  deps = [
+    ":settings_behavior",
+    ":state",
+    "../data:destination",
+    "//ui/webui/resources/js:cr",
   ]
 }
 

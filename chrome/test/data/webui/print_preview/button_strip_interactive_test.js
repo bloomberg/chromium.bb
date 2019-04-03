@@ -1,48 +1,44 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('print_header_interactive_test', function() {
+cr.define('button_strip_interactive_test', function() {
   /** @enum {string} */
   const TestNames = {
     FocusPrintOnReady: 'focus print on ready',
   };
 
-  const suiteName = 'PrintHeaderInteractiveTest';
+  const suiteName = 'ButtonStripInteractiveTest';
 
   suite(suiteName, function() {
-    /** @type {?PrintPreviewHeaderElement} */
-    let header = null;
+    /** @type {?PrintPreviewButtonStripElement} */
+    let buttonStrip = null;
 
     /** @override */
     setup(function() {
       loadTimeData.overrideValues({
-        newPrintPreviewLayoutEnabled: false,
+        newPrintPreviewLayoutEnabled: true,
       });
       PolymerTest.clearBody();
-      const model = document.createElement('print-preview-model');
-      document.body.appendChild(model);
 
-      header = document.createElement('print-preview-header');
-      header.settings = model.settings;
-      header.destination = new print_preview.Destination(
+      buttonStrip = document.createElement('print-preview-button-strip');
+      buttonStrip.destination = new print_preview.Destination(
           'FooDevice', print_preview.DestinationType.GOOGLE,
           print_preview.DestinationOrigin.COOKIES, 'FooName',
           print_preview.DestinationConnectionStatus.ONLINE);
-      header.state = print_preview_new.State.NOT_READY;
-      test_util.fakeDataBind(model, header, 'settings');
-      document.body.appendChild(header);
+      buttonStrip.state = print_preview_new.State.NOT_READY;
+      document.body.appendChild(buttonStrip);
     });
 
     // Tests that the print button is automatically focused when the destination
     // is ready.
     test(assert(TestNames.FocusPrintOnReady), function() {
-      const printButton = header.$$('.action-button');
+      const printButton = buttonStrip.$$('.action-button');
       assertTrue(!!printButton);
       const whenFocusDone = test_util.eventToPromise('focus', printButton);
 
       // Simulate initialization finishing.
-      header.state = print_preview_new.State.READY;
+      buttonStrip.state = print_preview_new.State.READY;
       return whenFocusDone;
     });
   });

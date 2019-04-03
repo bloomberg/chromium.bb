@@ -947,6 +947,78 @@ TEST_F('PrintPreviewHeaderTest', 'EnterprisePolicy', function() {
   this.runMochaTest(header_test.TestNames.EnterprisePolicy);
 });
 
+PrintPreviewHeaderNewTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/header_new.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../settings/test_util.js',
+      'header_new_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return header_new_test.suiteName;
+  }
+};
+
+TEST_F('PrintPreviewHeaderNewTest', 'HeaderPrinterTypes', function() {
+  this.runMochaTest(header_new_test.TestNames.HeaderPrinterTypes);
+});
+
+TEST_F('PrintPreviewHeaderNewTest', 'HeaderWithDuplex', function() {
+  this.runMochaTest(header_new_test.TestNames.HeaderWithDuplex);
+});
+
+TEST_F('PrintPreviewHeaderNewTest', 'HeaderWithCopies', function() {
+  this.runMochaTest(header_new_test.TestNames.HeaderWithCopies);
+});
+
+TEST_F('PrintPreviewHeaderNewTest', 'HeaderChangesForState', function() {
+  this.runMochaTest(header_new_test.TestNames.HeaderChangesForState);
+});
+
+TEST_F('PrintPreviewHeaderNewTest', 'EnterprisePolicy', function() {
+  this.runMochaTest(header_new_test.TestNames.EnterprisePolicy);
+});
+
+PrintPreviewButtonStripTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/button_strip.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../settings/test_util.js',
+      'button_strip_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return button_strip_test.suiteName;
+  }
+};
+
+TEST_F('PrintPreviewButtonStripTest', 'ButtonStripChangesForState', function() {
+  this.runMochaTest(button_strip_test.TestNames.ButtonStripChangesForState);
+});
+
+TEST_F('PrintPreviewButtonStripTest', 'ButtonOrder', function() {
+  this.runMochaTest(button_strip_test.TestNames.ButtonOrder);
+});
+
+TEST_F('PrintPreviewButtonStripTest', 'ButtonStripFiresEvents', function() {
+  this.runMochaTest(button_strip_test.TestNames.ButtonStripFiresEvents);
+});
+
 PrintPreviewDestinationItemTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {

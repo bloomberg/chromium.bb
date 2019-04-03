@@ -56,8 +56,11 @@ cr.define('print_button_test', function() {
         // preview is ready.
         if (printBeforePreviewReady) {
           const sidebar = page.$$('print-preview-sidebar');
-          const header = sidebar.$$('print-preview-header');
-          const printButton = header.$$('.action-button');
+          const parentElement =
+              loadTimeData.getBoolean('newPrintPreviewLayoutEnabled') ?
+              sidebar.$$('print-preview-button-strip') :
+              sidebar.$$('print-preview-header');
+          const printButton = parentElement.$$('.action-button');
           assertFalse(printButton.disabled);
           printButton.click();
         }

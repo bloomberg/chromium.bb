@@ -153,16 +153,23 @@ cr.define('invalid_settings_browsertest', function() {
       const overlay = previewAreaEl.$$('.preview-area-overlay-layer');
       const messageEl = previewAreaEl.$$('.preview-area-message');
       const sidebar = page.$$('print-preview-sidebar');
-      const header = sidebar.$$('print-preview-header');
-      const printButton = header.$$('.action-button');
+      let printButton = null;
       const destinationSettings =
           sidebar.$$('print-preview-destination-settings');
 
-      return Promise
-          .all([
-            print_preview.Model.whenReady(),
-            nativeLayer.whenCalled('getInitialSettings'),
-          ])
+      return test_util.waitForRender(page)
+          .then(() => {
+            const parentElement =
+                loadTimeData.getBoolean('newPrintPreviewLayoutEnabled') ?
+                sidebar.$$('print-preview-button-strip') :
+                sidebar.$$('print-preview-header');
+            printButton = parentElement.$$('.action-button');
+
+            return Promise.all([
+              print_preview.Model.whenReady(),
+              nativeLayer.whenCalled('getInitialSettings'),
+            ]);
+          })
           .then(function() {
             destinationSettings.destinationStore_.startLoadAllDestinations();
             // Wait for the preview request.
@@ -208,8 +215,8 @@ cr.define('invalid_settings_browsertest', function() {
           })
           .then(
               /**
-               * @param {string} printTicket The print ticket print() was called
-               *     for.
+               * @param {string} printTicket The print ticket print() was
+               *     called for.
                */
               function(printTicket) {
                 // Sanity check some printing argument values.
@@ -256,19 +263,25 @@ cr.define('invalid_settings_browsertest', function() {
       const overlayEl = previewAreaEl.$$('.preview-area-overlay-layer');
       const messageEl = previewAreaEl.$$('.preview-area-message');
       const sidebar = page.$$('print-preview-sidebar');
-      const header = sidebar.$$('print-preview-header');
-      const printButton = header.$$('.action-button');
+      let printButton = null;
       const destinationSettings =
           sidebar.$$('print-preview-destination-settings');
       const scalingSettings = sidebar.$$('print-preview-scaling-settings')
                                   .$$('print-preview-number-settings-section');
       const layoutSettings = sidebar.$$('print-preview-layout-settings');
 
-      return Promise
-          .all([
-            print_preview.Model.whenReady(),
-            nativeLayer.whenCalled('getInitialSettings'),
-          ])
+      return test_util.waitForRender(page)
+          .then(() => {
+            const parentElement =
+                loadTimeData.getBoolean('newPrintPreviewLayoutEnabled') ?
+                sidebar.$$('print-preview-button-strip') :
+                sidebar.$$('print-preview-header');
+            printButton = parentElement.$$('.action-button');
+            return Promise.all([
+              print_preview.Model.whenReady(),
+              nativeLayer.whenCalled('getInitialSettings'),
+            ]);
+          })
           .then(function() {
             // Set this to enable the scaling input.
             page.setSetting('customScaling', true);
@@ -318,7 +331,8 @@ cr.define('invalid_settings_browsertest', function() {
             // The destination select dropdown should still be enabled.
             assertFalse(destinationSettings.$.destinationSelect.disabled);
 
-            // Message text should have changed and overlay should be invisible.
+            // Message text should have changed and overlay should be
+            // invisible.
             assertFalse(messageEl.textContent.includes(expectedMessageStart));
             assertTrue(overlayEl.classList.contains('invisible'));
           });
@@ -344,16 +358,22 @@ cr.define('invalid_settings_browsertest', function() {
           const overlayEl = previewAreaEl.$$('.preview-area-overlay-layer');
           const messageEl = previewAreaEl.$$('.preview-area-message');
           const sidebar = page.$$('print-preview-sidebar');
-          const header = sidebar.$$('print-preview-header');
-          const printButton = header.$$('.action-button');
+          let printButton = null;
           const destinationSettings =
               sidebar.$$('print-preview-destination-settings');
 
-          return Promise
-              .all([
-                print_preview.Model.whenReady(),
-                nativeLayer.whenCalled('getInitialSettings'),
-              ])
+          return test_util.waitForRender(page)
+              .then(() => {
+                const parentElement =
+                    loadTimeData.getBoolean('newPrintPreviewLayoutEnabled') ?
+                    sidebar.$$('print-preview-button-strip') :
+                    sidebar.$$('print-preview-header');
+                printButton = parentElement.$$('.action-button');
+                return Promise.all([
+                  print_preview.Model.whenReady(),
+                  nativeLayer.whenCalled('getInitialSettings'),
+                ]);
+              })
               .then(function() {
                 // Start loading cloud destinations so that the printer
                 // capabilities arrive.
