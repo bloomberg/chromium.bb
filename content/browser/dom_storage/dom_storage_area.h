@@ -110,6 +110,7 @@ class CONTENT_EXPORT DOMStorageArea
 
  private:
   friend class DOMStorageAreaTest;
+  friend class DOMStorageAreaMock;
   FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaParamTest, DOMStorageAreaBasics);
   FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaTest, BackingDatabaseOpened);
   FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaParamTest, ShallowCopyWithBacking);
@@ -117,6 +118,8 @@ class CONTENT_EXPORT DOMStorageArea
   FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaTest, SetCacheOnlyKeysWithBacking);
   FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaTest, TestDatabaseFilePath);
   FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaParamTest, CommitTasks);
+  FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaParamTest,
+                           ChangesDuringInflightCommitGetCommitted);
   FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaParamTest, CommitChangesAtShutdown);
   FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaParamTest, PurgeMemory);
   FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaTest, RateLimiter);
@@ -178,7 +181,7 @@ class CONTENT_EXPORT DOMStorageArea
     ~CommitBatchHolder();
   };
 
-  ~DOMStorageArea();
+  virtual ~DOMStorageArea();
 
   // Loads the map for this origin into the |map_| if desired load state is not
   // met and into the |map| if it's not null.
@@ -197,7 +200,7 @@ class CONTENT_EXPORT DOMStorageArea
   bool HasCommitBatchInFlight() const;
   void PopulateCommitBatchValues();
   void StartCommitTimer();
-  void OnCommitTimer();
+  virtual void OnCommitTimer();
   void PostCommitTask();
   void CommitChanges(const CommitBatch* commit_batch);
   void OnCommitComplete();
