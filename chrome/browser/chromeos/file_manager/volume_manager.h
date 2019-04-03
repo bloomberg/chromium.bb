@@ -433,6 +433,7 @@ class VolumeManager : public KeyedService,
                     std::unique_ptr<Volume> volume);
   void DoUnmountEvent(chromeos::MountError error_code, const Volume& volume);
   void OnExternalStorageDisabledChangedUnmountCallback(
+      std::vector<std::string> remaining_mount_paths,
       chromeos::MountError error_code);
 
   // Returns the path of the mount point for drive.

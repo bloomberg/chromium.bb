@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1050,17 +1051,28 @@ void VolumeManager::OnProvidedFileSystemUnmount(
 }
 
 void VolumeManager::OnExternalStorageDisabledChangedUnmountCallback(
+    std::vector<std::string> remaining_mount_paths,
     chromeos::MountError error_code) {
-  if (disk_mount_manager_->mount_points().empty())
+  LOG_IF(ERROR, error_code != chromeos::MOUNT_ERROR_NONE)
+      << "Unmount on ExternalStorageDisabled policy change failed: "
+      << error_code;
+
+  while (!remaining_mount_paths.empty()) {
+    std::string mount_path = remaining_mount_paths.back();
+    remaining_mount_paths.pop_back();
+    if (!base::ContainsKey(disk_mount_manager_->mount_points(), mount_path)) {
+      // The mount point could have already been removed for another reason
+      // (i.e. the disk was removed by the user).
+      continue;
+    }
+
+    disk_mount_manager_->UnmountPath(
+        mount_path, chromeos::UNMOUNT_OPTIONS_NONE,
+        base::BindOnce(
+            &VolumeManager::OnExternalStorageDisabledChangedUnmountCallback,
+            weak_ptr_factory_.GetWeakPtr(), std::move(remaining_mount_paths)));
     return;
-  // Repeat until unmount all paths
-  const std::string& mount_path =
-      disk_mount_manager_->mount_points().begin()->second.mount_path;
-  disk_mount_manager_->UnmountPath(
-      mount_path, chromeos::UNMOUNT_OPTIONS_NONE,
-      base::BindOnce(
-          &VolumeManager::OnExternalStorageDisabledChangedUnmountCallback,
-          weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void VolumeManager::OnArcPlayStoreEnabledChanged(bool enabled) {
@@ -1107,17 +1119,26 @@ void VolumeManager::OnExternalStorageDisabledChanged() {
   // make it available.
   if (profile_->GetPrefs()->GetBoolean(prefs::kExternalStorageDisabled)) {
     // We do not iterate on mount_points directly, because mount_points can
-    // be changed by UnmountPath().
-    // TODO(hidehiko): Is it necessary to unmount mounted archives, too, here?
-    if (disk_mount_manager_->mount_points().empty())
+    // be changed by UnmountPath(). Also, a failing unmount shouldn't be retried
+    // indefinitely. So make a set of all the mount points that should be
+    // unmounted (all external media mounts), and iterate through them.
+    std::vector<std::string> remaining_mount_paths;
+    for (auto& mount_point : disk_mount_manager_->mount_points()) {
+      if (mount_point.second.mount_type == chromeos::MOUNT_TYPE_DEVICE) {
+        remaining_mount_paths.push_back(mount_point.first);
+      }
+    }
+    if (remaining_mount_paths.empty()) {
       return;
-    const std::string& mount_path =
-        disk_mount_manager_->mount_points().begin()->second.mount_path;
+    }
+
+    std::string mount_path = remaining_mount_paths.back();
+    remaining_mount_paths.pop_back();
     disk_mount_manager_->UnmountPath(
         mount_path, chromeos::UNMOUNT_OPTIONS_NONE,
         base::BindOnce(
             &VolumeManager::OnExternalStorageDisabledChangedUnmountCallback,
-            weak_ptr_factory_.GetWeakPtr()));
+            weak_ptr_factory_.GetWeakPtr(), std::move(remaining_mount_paths)));
   }
 }
 
