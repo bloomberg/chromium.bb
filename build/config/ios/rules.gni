@@ -297,7 +297,6 @@ template("create_signed_bundle") {
     bundle_contents_dir = bundle_root_dir
     bundle_resources_dir = bundle_contents_dir
     bundle_executable_dir = bundle_contents_dir
-    bundle_plugins_dir = "$bundle_contents_dir/PlugIns"
 
     if (!defined(public_deps)) {
       public_deps = []
@@ -1757,7 +1756,7 @@ template("ios_xctest_bundle") {
         "$root_out_dir/$_output_name.xctest",
       ]
       outputs = [
-        "{{bundle_plugins_dir}}/$_output_name.xctest",
+        "{{bundle_contents_dir}}/PlugIns/$_output_name.xctest",
       ]
     }
   }

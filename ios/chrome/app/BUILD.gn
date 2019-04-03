@@ -368,7 +368,7 @@ if (current_toolchain == default_toolchain) {
         "$root_out_dir/content_widget_extension.appex",
       ]
       outputs = [
-        "{{bundle_plugins_dir}}/{{source_file_part}}",
+        "{{bundle_contents_dir}}/PlugIns/{{source_file_part}}",
       ]
     }
   }
@@ -382,7 +382,7 @@ if (current_toolchain == default_toolchain) {
         "$root_out_dir/search_widget_extension.appex",
       ]
       outputs = [
-        "{{bundle_plugins_dir}}/{{source_file_part}}",
+        "{{bundle_contents_dir}}/PlugIns/{{source_file_part}}",
       ]
     }
   }
@@ -396,7 +396,7 @@ if (current_toolchain == default_toolchain) {
         "$root_out_dir/share_extension.appex",
       ]
       outputs = [
-        "{{bundle_plugins_dir}}/{{source_file_part}}",
+        "{{bundle_contents_dir}}/PlugIns/{{source_file_part}}",
       ]
     }
   }

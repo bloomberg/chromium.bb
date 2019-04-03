@@ -267,7 +267,6 @@ template("ios_static_framework") {
     bundle_contents_dir = bundle_root_dir
     bundle_executable_dir = bundle_contents_dir
     bundle_resources_dir = bundle_contents_dir
-    bundle_plugins_dir = bundle_contents_dir
     deps = [
       ":$_framework_binary_target",
       ":$_framework_headers_target",
