@@ -81,7 +81,7 @@ void MetricsCollector::OnFrameEventReceived(
     resource_coordinator::mojom::Event event) {
   if (event ==
       resource_coordinator::mojom::Event::kNonPersistentNotificationCreated) {
-    auto* page_node = frame_node->GetPageNode();
+    auto* page_node = frame_node->page_node();
     // Only record metrics while it is backgrounded.
     if (!page_node || page_node->is_visible() ||
         !ShouldReportMetrics(page_node)) {
@@ -144,7 +144,7 @@ void MetricsCollector::OnExpectedTaskQueueingDurationSample(
   for (auto* frame_node : process_node->GetFrameNodes()) {
     if (!frame_node->IsMainFrame())
       continue;
-    auto* page_node = frame_node->GetPageNode();
+    auto* page_node = frame_node->page_node();
     if (!IsCollectingExpectedQueueingTimeForUkm(page_node->id()))
       continue;
     RecordExpectedQueueingTimeForUkm(page_node->id(), sample);

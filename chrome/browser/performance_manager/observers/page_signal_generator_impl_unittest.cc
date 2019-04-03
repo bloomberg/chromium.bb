@@ -283,7 +283,7 @@ TEST_F(PageSignalGeneratorImplTest, OnLoadTimePerformanceEstimate) {
   base::TimeTicks navigation_committed_time =
       PerformanceManagerClock::NowTicks();
   page_node->OnMainFrameNavigationCommitted(navigation_committed_time, 1,
-                                            "https://www.google.com/");
+                                            GURL("https://www.google.com/"));
   page_node->SetPageAlmostIdleForTesting(false);
   task_env().FastForwardUntilNoTasksRemain();
   EXPECT_FALSE(page_node->page_almost_idle());
@@ -308,11 +308,12 @@ TEST_F(PageSignalGeneratorImplTest, OnLoadTimePerformanceEstimate) {
 
   {
     base::RunLoop run_loop;
-    EXPECT_CALL(mock_receiver, OnLoadTimePerformanceEstimate(
-                                   IdentityMatches(mock_graph.page->id(), 1u,
-                                                   "https://www.google.com/"),
-                                   event_time - navigation_committed_time,
-                                   base::TimeDelta::FromMicroseconds(15), 150))
+    EXPECT_CALL(mock_receiver,
+                OnLoadTimePerformanceEstimate(
+                    IdentityMatches(mock_graph.page->id(), 1u,
+                                    GURL("https://www.google.com/")),
+                    event_time - navigation_committed_time,
+                    base::TimeDelta::FromMicroseconds(15), 150))
         .WillOnce(
             ::testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
     run_loop.Run();
@@ -329,7 +330,7 @@ TEST_F(PageSignalGeneratorImplTest, OnLoadTimePerformanceEstimate) {
   // Make sure a second run around the state machine generates a second event.
   navigation_committed_time = PerformanceManagerClock::NowTicks();
   page_node->OnMainFrameNavigationCommitted(navigation_committed_time, 2,
-                                            "https://example.org/bobcat");
+                                            GURL("https://example.org/bobcat"));
   page_node->SetPageAlmostIdleForTesting(false);
   task_env().FastForwardUntilNoTasksRemain();
   EXPECT_FALSE(page_node->page_almost_idle());
@@ -347,7 +348,7 @@ TEST_F(PageSignalGeneratorImplTest, OnLoadTimePerformanceEstimate) {
     EXPECT_CALL(mock_receiver,
                 OnLoadTimePerformanceEstimate(
                     IdentityMatches(mock_graph.page->id(), 2u,
-                                    "https://example.org/bobcat"),
+                                    GURL("https://example.org/bobcat")),
                     event_time - navigation_committed_time,
                     base::TimeDelta::FromMicroseconds(25), 250))
         .WillOnce(

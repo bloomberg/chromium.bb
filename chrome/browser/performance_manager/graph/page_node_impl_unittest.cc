@@ -58,7 +58,7 @@ TEST_F(PageNodeImplTest, RemoveFrame) {
   EXPECT_EQ(1u, page_node->GetFrameNodes().size());
   EXPECT_TRUE(
       base::ContainsValue(page_node->GetFrameNodes(), frame_node.get()));
-  EXPECT_EQ(page_node.get(), frame_node->GetPageNode());
+  EXPECT_EQ(page_node.get(), frame_node->page_node());
 
   frame_node.reset();
 
@@ -118,19 +118,20 @@ TEST_F(PageNodeImplTest, TimeSinceLastNavigation) {
   EXPECT_TRUE(mock_graph.page->TimeSinceLastNavigation().is_zero());
 
   // 1st navigation.
+  GURL url("http://www.example.org");
   mock_graph.page->OnMainFrameNavigationCommitted(
-      PerformanceManagerClock::NowTicks(), 10u, "http://www.example.org");
-  EXPECT_EQ("http://www.example.org", mock_graph.page->main_frame_url());
+      PerformanceManagerClock::NowTicks(), 10u, url);
+  EXPECT_EQ(url, mock_graph.page->main_frame_url());
   EXPECT_EQ(10u, mock_graph.page->navigation_id());
   AdvanceClock(base::TimeDelta::FromSeconds(11));
   EXPECT_EQ(base::TimeDelta::FromSeconds(11),
             mock_graph.page->TimeSinceLastNavigation());
 
   // 2nd navigation.
+  url = GURL("http://www.example.org/bobcat");
   mock_graph.page->OnMainFrameNavigationCommitted(
-      PerformanceManagerClock::NowTicks(), 20u,
-      "http://www.example.org/bobcat");
-  EXPECT_EQ("http://www.example.org/bobcat", mock_graph.page->main_frame_url());
+      PerformanceManagerClock::NowTicks(), 20u, url);
+  EXPECT_EQ(url, mock_graph.page->main_frame_url());
   EXPECT_EQ(20u, mock_graph.page->navigation_id());
   AdvanceClock(base::TimeDelta::FromSeconds(17));
   EXPECT_EQ(base::TimeDelta::FromSeconds(17),

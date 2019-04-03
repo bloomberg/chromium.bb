@@ -92,7 +92,7 @@ void PageSignalGeneratorImpl::OnFrameEventReceived(
       resource_coordinator::mojom::Event::kNonPersistentNotificationCreated)
     return;
 
-  auto* page_node = frame_node->GetPageNode();
+  auto* page_node = frame_node->page_node();
   if (!page_node)
     return;
 
@@ -179,7 +179,7 @@ void PageSignalGeneratorImpl::OnExpectedTaskQueueingDurationSample(
   for (auto* frame_node : process_node->GetFrameNodes()) {
     if (!frame_node->IsMainFrame())
       continue;
-    auto* page_node = frame_node->GetPageNode();
+    auto* page_node = frame_node->page_node();
     DispatchPageSignal(page_node,
                        &resource_coordinator::mojom::PageSignalReceiver::
                            SetExpectedTaskQueueingDuration,
@@ -214,7 +214,7 @@ void PageSignalGeneratorImpl::DispatchPageSignal(const PageNodeImpl* page_node,
         (receiver->*m)(
             resource_coordinator::PageNavigationIdentity{
                 page_node->id(), page_node->navigation_id(),
-                page_node->main_frame_url()},
+                page_node->main_frame_url().spec()},
             std::forward<Params>(params)...);
       });
 }

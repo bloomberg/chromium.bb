@@ -42,10 +42,19 @@ TEST_F(FrameNodeImplTest, AddFrameHierarchyBasic) {
   auto child2_node = CreateNode<FrameNodeImpl>(page.get(), parent_node.get());
   auto child3_node = CreateNode<FrameNodeImpl>(page.get(), parent_node.get());
 
-  EXPECT_EQ(nullptr, parent_node->GetParentFrameNode());
+  EXPECT_EQ(nullptr, parent_node->parent_frame_node());
   EXPECT_EQ(2u, parent_node->child_frame_nodes().size());
-  EXPECT_EQ(parent_node.get(), child2_node->GetParentFrameNode());
-  EXPECT_EQ(parent_node.get(), child3_node->GetParentFrameNode());
+  EXPECT_EQ(parent_node.get(), child2_node->parent_frame_node());
+  EXPECT_EQ(parent_node.get(), child3_node->parent_frame_node());
+}
+
+TEST_F(FrameNodeImplTest, Url) {
+  auto page = CreateNode<PageNodeImpl>();
+  auto frame_node = CreateNode<FrameNodeImpl>(page.get(), nullptr);
+  EXPECT_TRUE(frame_node->url().is_empty());
+  const GURL url("http://www.foo.com/");
+  frame_node->set_url(url);
+  EXPECT_EQ(url, frame_node->url());
 }
 
 TEST_F(FrameNodeImplTest, RemoveChildFrame) {
@@ -56,15 +65,15 @@ TEST_F(FrameNodeImplTest, RemoveChildFrame) {
 
   // Ensure correct Parent-child relationships have been established.
   EXPECT_EQ(1u, parent_frame_node->child_frame_nodes().size());
-  EXPECT_TRUE(!parent_frame_node->GetParentFrameNode());
+  EXPECT_TRUE(!parent_frame_node->parent_frame_node());
   EXPECT_EQ(0u, child_frame_node->child_frame_nodes().size());
-  EXPECT_EQ(parent_frame_node.get(), child_frame_node->GetParentFrameNode());
+  EXPECT_EQ(parent_frame_node.get(), child_frame_node->parent_frame_node());
 
   child_frame_node.reset();
 
   // Parent-child relationships should no longer exist.
   EXPECT_EQ(0u, parent_frame_node->child_frame_nodes().size());
-  EXPECT_TRUE(!parent_frame_node->GetParentFrameNode());
+  EXPECT_TRUE(!parent_frame_node->parent_frame_node());
 }
 
 TEST_F(FrameNodeImplTest, LifecycleStatesTransitions) {
@@ -76,10 +85,10 @@ TEST_F(FrameNodeImplTest, LifecycleStatesTransitions) {
   ASSERT_TRUE(mock_graph.frame->IsMainFrame());
   ASSERT_TRUE(mock_graph.other_frame->IsMainFrame());
   ASSERT_FALSE(mock_graph.child_frame->IsMainFrame());
-  ASSERT_EQ(mock_graph.child_frame->GetParentFrameNode(),
+  ASSERT_EQ(mock_graph.child_frame->parent_frame_node(),
             mock_graph.other_frame.get());
-  ASSERT_EQ(mock_graph.frame->GetPageNode(), mock_graph.page.get());
-  ASSERT_EQ(mock_graph.other_frame->GetPageNode(), mock_graph.other_page.get());
+  ASSERT_EQ(mock_graph.frame->page_node(), mock_graph.page.get());
+  ASSERT_EQ(mock_graph.other_frame->page_node(), mock_graph.other_page.get());
 
   // Freezing a child frame should not affect the page state.
   mock_graph.child_frame->SetLifecycleState(

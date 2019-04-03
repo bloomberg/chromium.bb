@@ -93,7 +93,7 @@ std::set<PageNodeImpl*> ProcessNodeImpl::GetAssociatedPageCoordinationUnits()
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::set<PageNodeImpl*> page_nodes;
   for (auto* frame_node : frame_nodes_) {
-    if (auto* page_node = frame_node->GetPageNode())
+    if (auto* page_node = frame_node->page_node())
       page_nodes.insert(page_node);
   }
   return page_nodes;

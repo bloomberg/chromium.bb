@@ -31,7 +31,7 @@ bool HostsMainFrame(ProcessNodeImpl* process, PageNodeImpl* page) {
     return false;
   }
 
-  return main_frame->GetProcessNode() == process;
+  return main_frame->process_node() == process;
 }
 
 }  // namespace

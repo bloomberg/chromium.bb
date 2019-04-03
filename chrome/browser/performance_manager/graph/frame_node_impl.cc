@@ -25,38 +25,6 @@ FrameNodeImpl::~FrameNodeImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void FrameNodeImpl::SetProcess(ProcessNodeImpl* process_node) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(NodeInGraph(process_node));
-  DCHECK(!process_node_);
-  process_node_ = process_node;
-  process_node->AddFrame(this);
-}
-
-void FrameNodeImpl::AddChildFrame(FrameNodeImpl* child_frame_node) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(child_frame_node);
-  DCHECK_EQ(this, child_frame_node->GetParentFrameNode());
-  DCHECK_NE(this, child_frame_node);
-  DCHECK(NodeInGraph(child_frame_node));
-  DCHECK(!HasFrameNodeInAncestors(child_frame_node) &&
-         !child_frame_node->HasFrameNodeInDescendants(this));
-
-  bool inserted = child_frame_nodes_.insert(child_frame_node).second;
-  DCHECK(inserted);
-}
-
-void FrameNodeImpl::RemoveChildFrame(FrameNodeImpl* child_frame_node) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(child_frame_node);
-  DCHECK_EQ(this, child_frame_node->GetParentFrameNode());
-  DCHECK_NE(this, child_frame_node);
-  DCHECK(NodeInGraph(child_frame_node));
-
-  size_t removed = child_frame_nodes_.erase(child_frame_node);
-  DCHECK_EQ(1u, removed);
-}
-
 void FrameNodeImpl::SetNetworkAlmostIdle(bool network_almost_idle) {
   network_almost_idle_.SetAndMaybeNotify(this, network_almost_idle);
 }
@@ -105,10 +73,8 @@ void FrameNodeImpl::SetInterventionPolicy(
   resource_coordinator::mojom::InterventionPolicy old_policy =
       intervention_policy_[i];
   intervention_policy_[i] = policy;
-  if (auto* page_node = GetPageNode()) {
-    page_node->OnFrameInterventionPolicyChanged(this, intervention, old_policy,
-                                                policy);
-  }
+  page_node_->OnFrameInterventionPolicyChanged(this, intervention, old_policy,
+                                               policy);
 }
 
 void FrameNodeImpl::OnNonPersistentNotificationCreated() {
@@ -116,23 +82,59 @@ void FrameNodeImpl::OnNonPersistentNotificationCreated() {
       resource_coordinator::mojom::Event::kNonPersistentNotificationCreated);
 }
 
-FrameNodeImpl* FrameNodeImpl::GetParentFrameNode() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+FrameNodeImpl* FrameNodeImpl::parent_frame_node() const {
   return parent_frame_node_;
 }
 
-PageNodeImpl* FrameNodeImpl::GetPageNode() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+PageNodeImpl* FrameNodeImpl::page_node() const {
   return page_node_;
 }
 
-ProcessNodeImpl* FrameNodeImpl::GetProcessNode() const {
+ProcessNodeImpl* FrameNodeImpl::process_node() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return process_node_;
 }
 
-bool FrameNodeImpl::IsMainFrame() const {
+const std::set<FrameNodeImpl*>& FrameNodeImpl::child_frame_nodes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return child_frame_nodes_;
+}
+
+resource_coordinator::mojom::LifecycleState FrameNodeImpl::lifecycle_state()
+    const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return lifecycle_state_;
+}
+
+bool FrameNodeImpl::has_nonempty_beforeunload() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return has_nonempty_beforeunload_;
+}
+
+const GURL& FrameNodeImpl::url() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return url_;
+}
+
+bool FrameNodeImpl::network_almost_idle() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return network_almost_idle_.value();
+}
+
+void FrameNodeImpl::SetProcess(ProcessNodeImpl* process_node) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(NodeInGraph(process_node));
+  DCHECK(!process_node_);
+  process_node_ = process_node;
+  process_node->AddFrame(this);
+}
+
+void FrameNodeImpl::set_url(const GURL& url) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  url_ = url;
+}
+
+bool FrameNodeImpl::IsMainFrame() const {
   return !parent_frame_node_;
 }
 
@@ -170,6 +172,30 @@ void FrameNodeImpl::SetAllInterventionPoliciesForTesting(
             i),
         policy);
   }
+}
+
+void FrameNodeImpl::AddChildFrame(FrameNodeImpl* child_frame_node) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(child_frame_node);
+  DCHECK_EQ(this, child_frame_node->parent_frame_node());
+  DCHECK_NE(this, child_frame_node);
+  DCHECK(NodeInGraph(child_frame_node));
+  DCHECK(!HasFrameNodeInAncestors(child_frame_node) &&
+         !child_frame_node->HasFrameNodeInDescendants(this));
+
+  bool inserted = child_frame_nodes_.insert(child_frame_node).second;
+  DCHECK(inserted);
+}
+
+void FrameNodeImpl::RemoveChildFrame(FrameNodeImpl* child_frame_node) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(child_frame_node);
+  DCHECK_EQ(this, child_frame_node->parent_frame_node());
+  DCHECK_NE(this, child_frame_node);
+  DCHECK(NodeInGraph(child_frame_node));
+
+  size_t removed = child_frame_nodes_.erase(child_frame_node);
+  DCHECK_EQ(1u, removed);
 }
 
 void FrameNodeImpl::JoinGraph() {

@@ -14,6 +14,7 @@
 #include "chrome/browser/performance_manager/graph/node_base.h"
 #include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "url/gurl.h"
 
 namespace performance_manager {
 
@@ -38,7 +39,7 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
   void OnTitleUpdated();
   void OnMainFrameNavigationCommitted(base::TimeTicks navigation_committed_time,
                                       int64_t navigation_id,
-                                      const std::string& url);
+                                      const GURL& url);
 
   // There is no direct relationship between processes and pages. However,
   // frames are accessible by both processes and frames, so we find all of the
@@ -96,7 +97,7 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
   }
   bool page_almost_idle() const { return page_almost_idle_.value(); }
 
-  const std::string& main_frame_url() const { return main_frame_url_; }
+  const GURL& main_frame_url() const { return main_frame_url_; }
   int64_t navigation_id() const { return navigation_id_; }
 
   // Invoked when the state of a frame in this page changes.
@@ -212,7 +213,7 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
 
   // The URL the main frame last committed a navigation to and the unique ID of
   // the associated navigation handle.
-  std::string main_frame_url_;
+  GURL main_frame_url_;
   int64_t navigation_id_ = 0;
 
   // The aggregate intervention policy states for this page. These are

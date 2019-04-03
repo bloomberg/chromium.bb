@@ -156,35 +156,43 @@ void PerformanceManagerTabHelper::OnVisibilityChanged(
 
 void PerformanceManagerTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->HasCommitted() ||
-      navigation_handle->IsSameDocument()) {
+  if (!navigation_handle->HasCommitted())
     return;
-  }
 
   // Grab the current time up front, as this is as close as we'll get to the
   // original commit time.
   base::TimeTicks navigation_committed_time = base::TimeTicks::Now();
 
+  // Find the associated frame node.
   content::RenderFrameHost* render_frame_host =
       navigation_handle->GetRenderFrameHost();
-  // Make sure the hierarchical structure is constructed before sending signal
-  // to the performance manager.
+  auto frame_it = frames_.find(render_frame_host);
   // TODO(siggi): Ideally this would be a DCHECK, but it seems it's possible
   //     to get a DidFinishNavigation notification for a deleted frame with
   //     the network service.
-  auto it = frames_.find(render_frame_host);
-  if (it != frames_.end()) {
-    if (navigation_handle->IsInMainFrame()) {
-      OnMainFrameNavigation(navigation_handle->GetNavigationId());
-      performance_manager_->task_runner()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&PageNodeImpl::OnMainFrameNavigationCommitted,
-                         base::Unretained(page_node_.get()),
-                         navigation_committed_time,
-                         navigation_handle->GetNavigationId(),
-                         navigation_handle->GetURL().spec()));
-    }
+  if (frame_it == frames_.end())
+    return;
+  auto* frame_node = frame_it->second.get();
+
+  // Notify the frame of the committed URL.
+  GURL url = navigation_handle->GetURL();
+  performance_manager_->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&FrameNodeImpl::set_url,
+                                base::Unretained(frame_node), url));
+
+  if (navigation_handle->IsSameDocument() ||
+      !navigation_handle->IsInMainFrame()) {
+    return;
   }
+
+  // Make sure the hierarchical structure is constructed before sending signal
+  // to the performance manager.
+  OnMainFrameNavigation(navigation_handle->GetNavigationId());
+  performance_manager_->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&PageNodeImpl::OnMainFrameNavigationCommitted,
+                                base::Unretained(page_node_.get()),
+                                navigation_committed_time,
+                                navigation_handle->GetNavigationId(), url));
 }
 
 void PerformanceManagerTabHelper::TitleWasSet(content::NavigationEntry* entry) {
