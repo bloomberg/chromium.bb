@@ -304,6 +304,7 @@
   }
   _lastSeenParams = params;
   _hasLastSeenParams = YES;
+  [self.consumer prepareToShowSuggestions];
   [self retrieveSuggestionsForForm:params webState:webState];
 }
 
