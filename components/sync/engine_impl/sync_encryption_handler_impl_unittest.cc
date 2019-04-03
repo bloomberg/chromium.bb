@@ -1752,9 +1752,9 @@ TEST_F(SyncEncryptionHandlerImplTest, SetCustomPassAfterMigration) {
   VerifyPassphraseType(PassphraseType::CUSTOM_PASSPHRASE);
   EXPECT_TRUE(encryption_handler()->IsEncryptEverythingEnabled());
   EXPECT_FALSE(encryption_handler()->custom_passphrase_time().is_null());
-  VerifyMigratedNigoriWithTimestamp(
-      migration_time, PassphraseType::CUSTOM_PASSPHRASE, kNewKey,
-      {KeyDerivationParams::CreateForScrypt(kScryptSalt)});
+  VerifyMigratedNigoriWithTimestamp(migration_time,
+                                    PassphraseType::CUSTOM_PASSPHRASE, kNewKey,
+                                    {KeyDerivationParams::CreateForPbkdf2()});
 
   // Check that the cryptographer can decrypt the old key.
   sync_pb::EncryptedData old_encrypted;
@@ -1770,9 +1770,8 @@ TEST_F(SyncEncryptionHandlerImplTest, SetCustomPassAfterMigration) {
   keystore_cryptographer.EncryptString("string", &keystore_encrypted);
   EXPECT_TRUE(GetCryptographer()->CanDecrypt(keystore_encrypted));
 
-  // Check that the cryptographer is encrypting with the new key.
-  KeyParams new_key = {KeyDerivationParams::CreateForScrypt(kScryptSalt),
-                       kNewKey};
+  // Check the the cryptographer is encrypting with the new key.
+  KeyParams new_key = {KeyDerivationParams::CreateForPbkdf2(), kNewKey};
   Cryptographer new_cryptographer(GetCryptographer()->encryptor());
   new_cryptographer.AddKey(new_key);
   sync_pb::EncryptedData new_encrypted;
@@ -1784,7 +1783,7 @@ TEST_F(SyncEncryptionHandlerImplTest, SetCustomPassAfterMigration) {
   VerifyRestoreAfterExplicitPaspshrase(
       migration_time, kNewKey, captured_bootstrap_token, captured_nigori_state,
       PassphraseType::CUSTOM_PASSPHRASE,
-      {KeyDerivationParams::CreateForScrypt(kScryptSalt)});
+      {KeyDerivationParams::CreateForPbkdf2()});
 }
 
 // Test that if a client without a keystore key (e.g. one without keystore
@@ -1865,9 +1864,9 @@ TEST_F(SyncEncryptionHandlerImplTest,
   VerifyPassphraseType(PassphraseType::CUSTOM_PASSPHRASE);
   EXPECT_TRUE(encryption_handler()->IsEncryptEverythingEnabled());
   EXPECT_FALSE(encryption_handler()->custom_passphrase_time().is_null());
-  VerifyMigratedNigoriWithTimestamp(
-      migration_time, PassphraseType::CUSTOM_PASSPHRASE, kNewKey,
-      {KeyDerivationParams::CreateForScrypt(kScryptSalt)});
+  VerifyMigratedNigoriWithTimestamp(migration_time,
+                                    PassphraseType::CUSTOM_PASSPHRASE, kNewKey,
+                                    {KeyDerivationParams::CreateForPbkdf2()});
 
   // Check that the cryptographer can decrypt the old key.
   sync_pb::EncryptedData old_encrypted;
@@ -1882,9 +1881,8 @@ TEST_F(SyncEncryptionHandlerImplTest,
   keystore_cryptographer.EncryptString("string", &keystore_encrypted);
   EXPECT_TRUE(GetCryptographer()->CanDecrypt(keystore_encrypted));
 
-  // Check that the cryptographer is encrypting with the new key.
-  KeyParams new_key = {KeyDerivationParams::CreateForScrypt(kScryptSalt),
-                       kNewKey};
+  // Check the the cryptographer is encrypting with the new key.
+  KeyParams new_key = {KeyDerivationParams::CreateForPbkdf2(), kNewKey};
   Cryptographer new_cryptographer(GetCryptographer()->encryptor());
   new_cryptographer.AddKey(new_key);
   sync_pb::EncryptedData new_encrypted;
@@ -1896,7 +1894,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
   VerifyRestoreAfterExplicitPaspshrase(
       migration_time, kNewKey, captured_bootstrap_token, captured_nigori_state,
       PassphraseType::CUSTOM_PASSPHRASE,
-      {KeyDerivationParams::CreateForScrypt(kScryptSalt)});
+      {KeyDerivationParams::CreateForPbkdf2()});
 }
 
 // Test that if a client without a keystore key (e.g. one without keystore
