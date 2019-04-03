@@ -706,6 +706,7 @@ target(link_target_type, "renderer") {
     "//third_party/webrtc/stats",
     "//third_party/webrtc/system_wrappers",
     "//third_party/webrtc_overrides:init_webrtc",
+    "//third_party/webrtc_overrides:task_queue_factory",
     "//third_party/widevine/cdm:headers",
     "//ui/accessibility",
     "//ui/base",
