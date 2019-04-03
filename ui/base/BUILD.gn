@@ -720,6 +720,10 @@ jumbo_static_library("test_support") {
       "//ui/base/ime",
       "//ui/events",
     ]
+
+    if (is_win) {
+      deps += [ "//ui/base/ime/win" ]
+    }
   }
 
   if (is_chromeos) {
@@ -732,6 +736,7 @@ jumbo_static_library("test_support") {
     deps += [
       # Generates a header used by input_method_whitelist.cc
       "//chromeos/ime:gencode",
+      "//ui/base/ime/chromeos",
     ]
   }
 
@@ -895,36 +900,6 @@ test("ui_base_unittests") {
     ]
   }
 
-  if (build_ime) {
-    sources += [
-      "ime/candidate_window_unittest.cc",
-      "ime/chromeos/extension_ime_util_unittest.cc",
-      "ime/chromeos/ime_keyboard_unittest.cc",
-      "ime/chromeos/input_method_util_unittest.cc",
-      "ime/composition_text_unittest.cc",
-      "ime/input_method_base_unittest.cc",
-      "ime/input_method_chromeos_unittest.cc",
-      "ime/mojo/ime_struct_traits_unittest.cc",
-      "ime/win/imm32_manager_unittest.cc",
-      "ime/win/on_screen_keyboard_display_manager_unittest.cc",
-      "ime/win/tsf_input_scope_unittest.cc",
-      "ime/win/tsf_text_store_unittest.cc",
-    ]
-    if (is_linux && use_aura && !is_chromeos) {
-      if (use_x11 || use_ozone) {
-        sources += [ "ime/input_method_auralinux_unittest.cc" ]
-      } else {
-        sources += [ "ime/input_method_minimal_unittest.cc" ]
-      }
-    }
-    if (use_x11) {
-      sources += [ "ime/composition_text_util_pango_unittest.cc" ]
-    }
-    if (is_chromeos || use_ozone) {
-      sources += [ "ime/character_composer_unittest.cc" ]
-    }
-  }
-
   deps = [
     ":ui_base_test_resources_grit",
     ":ui_base_unittests_bundle_data",
@@ -951,6 +926,51 @@ test("ui_base_unittests") {
     "//ui/strings",
     "//url",
   ]
+
+  if (build_ime) {
+    sources += [
+      "ime/candidate_window_unittest.cc",
+      "ime/composition_text_unittest.cc",
+      "ime/input_method_base_unittest.cc",
+      "ime/mojo/ime_struct_traits_unittest.cc",
+    ]
+    if (is_win) {
+      sources += [
+        "ime/win/imm32_manager_unittest.cc",
+        "ime/win/on_screen_keyboard_display_manager_unittest.cc",
+        "ime/win/tsf_input_scope_unittest.cc",
+        "ime/win/tsf_text_store_unittest.cc",
+      ]
+      deps += [ "//ui/base/ime/win" ]
+    }
+    if (is_chromeos) {
+      sources += [
+        "ime/chromeos/extension_ime_util_unittest.cc",
+        "ime/chromeos/ime_keyboard_unittest.cc",
+        "ime/chromeos/input_method_chromeos_unittest.cc",
+        "ime/chromeos/input_method_util_unittest.cc",
+      ]
+      deps += [ "//ui/base/ime/chromeos" ]
+    }
+    if (is_linux && use_aura && !is_chromeos) {
+      if (use_x11 || use_ozone) {
+        sources += [ "ime/linux/input_method_auralinux_unittest.cc" ]
+        deps += [
+          "//ui/base/ime/init",
+          "//ui/base/ime/linux",
+        ]
+      }
+      if (!use_x11) {
+        sources += [ "ime/input_method_minimal_unittest.cc" ]
+      }
+    }
+    if (use_x11) {
+      sources += [ "ime/linux/composition_text_util_pango_unittest.cc" ]
+    }
+    if (is_chromeos || use_ozone) {
+      sources += [ "ime/character_composer_unittest.cc" ]
+    }
+  }
 
   # Include the correct ui_base_test resources per platform.
   if (is_android) {

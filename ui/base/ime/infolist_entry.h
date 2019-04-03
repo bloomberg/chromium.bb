@@ -11,7 +11,7 @@
 namespace ui {
 
 // The data model of infolist window.
-struct COMPONENT_EXPORT(UI_BASE_IME_TYPES) InfolistEntry {
+struct COMPONENT_EXPORT(UI_BASE_IME) InfolistEntry {
   base::string16 title;
   base::string16 body;
   bool highlighted;

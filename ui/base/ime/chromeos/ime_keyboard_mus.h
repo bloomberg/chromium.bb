@@ -16,7 +16,8 @@ class InputDeviceControllerClient;
 namespace chromeos {
 namespace input_method {
 
-class COMPONENT_EXPORT(UI_BASE_IME) ImeKeyboardMus : public ImeKeyboard {
+class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) ImeKeyboardMus
+    : public ImeKeyboard {
  public:
   explicit ImeKeyboardMus(
       ws::InputDeviceControllerClient* input_device_controller_client);

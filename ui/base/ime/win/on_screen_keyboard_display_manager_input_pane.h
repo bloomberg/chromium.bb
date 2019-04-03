@@ -26,7 +26,7 @@ class OnScreenKeyboardTest;
 
 // This class provides an implementation of the OnScreenKeyboardDisplayManager
 // that uses InputPane which is available on Windows >= 10.0.10240.0.
-class COMPONENT_EXPORT(UI_BASE_IME)
+class COMPONENT_EXPORT(UI_BASE_IME_WIN)
     OnScreenKeyboardDisplayManagerInputPane final
     : public InputMethodKeyboardController {
  public:

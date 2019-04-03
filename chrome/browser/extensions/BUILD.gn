@@ -1000,6 +1000,7 @@ jumbo_static_library("extensions") {
       "//remoting/host",
       "//remoting/host/it2me:chrome_os_host",
       "//third_party/protobuf:protobuf_lite",
+      "//ui/base/ime/chromeos",
       "//ui/chromeos",
       "//ui/chromeos/events",
       "//ui/file_manager",

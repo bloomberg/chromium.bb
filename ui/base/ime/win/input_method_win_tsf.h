@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_IME_INPUT_METHOD_WIN_TSF_H_
-#define UI_BASE_IME_INPUT_METHOD_WIN_TSF_H_
+#ifndef UI_BASE_IME_WIN_INPUT_METHOD_WIN_TSF_H_
+#define UI_BASE_IME_WIN_INPUT_METHOD_WIN_TSF_H_
 
 #include <windows.h>
 
 #include <string>
 
 #include "base/component_export.h"
-#include "ui/base/ime/input_method_win_base.h"
+#include "ui/base/ime/win/input_method_win_base.h"
 
 namespace ui {
 
 class TSFEventRouter;
 
 // An InputMethod implementation based on Windows TSF API.
-class COMPONENT_EXPORT(UI_BASE_IME) InputMethodWinTSF
+class COMPONENT_EXPORT(UI_BASE_IME_WIN) InputMethodWinTSF
     : public InputMethodWinBase {
  public:
   InputMethodWinTSF(internal::InputMethodDelegate* delegate,
@@ -56,4 +56,4 @@ class COMPONENT_EXPORT(UI_BASE_IME) InputMethodWinTSF
 
 }  // namespace ui
 
-#endif  // UI_BASE_IME_INPUT_METHOD_WIN_TSF_H_
+#endif  // UI_BASE_IME_WIN_INPUT_METHOD_WIN_TSF_H_

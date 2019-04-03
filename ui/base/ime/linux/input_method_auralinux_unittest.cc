@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/ime/input_method_auralinux.h"
+#include "ui/base/ime/linux/input_method_auralinux.h"
 
 #include <stddef.h>
 
@@ -12,8 +12,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/dummy_text_input_client.h"
+#include "ui/base/ime/init/input_method_initializer.h"
 #include "ui/base/ime/input_method_delegate.h"
-#include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/ime/linux/fake_input_method_context.h"
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
 #include "ui/events/event.h"

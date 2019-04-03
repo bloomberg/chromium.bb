@@ -20,7 +20,7 @@ class Profile;
 namespace chromeos {
 
 // Represents an engine in component extension IME.
-struct COMPONENT_EXPORT(UI_BASE_IME) ComponentExtensionEngine {
+struct COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) ComponentExtensionEngine {
   ComponentExtensionEngine();
   ComponentExtensionEngine(const ComponentExtensionEngine& other);
   ~ComponentExtensionEngine();
@@ -35,7 +35,7 @@ struct COMPONENT_EXPORT(UI_BASE_IME) ComponentExtensionEngine {
 };
 
 // Represents a component extension IME.
-struct COMPONENT_EXPORT(UI_BASE_IME) ComponentExtensionIME {
+struct COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) ComponentExtensionIME {
   ComponentExtensionIME();
   ComponentExtensionIME(const ComponentExtensionIME& other);
   ~ComponentExtensionIME();
@@ -48,7 +48,8 @@ struct COMPONENT_EXPORT(UI_BASE_IME) ComponentExtensionIME {
 };
 
 // Provides an interface to list/load/unload for component extension IME.
-class COMPONENT_EXPORT(UI_BASE_IME) ComponentExtensionIMEManagerDelegate {
+class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS)
+    ComponentExtensionIMEManagerDelegate {
  public:
   ComponentExtensionIMEManagerDelegate();
   virtual ~ComponentExtensionIMEManagerDelegate();
@@ -70,7 +71,7 @@ class COMPONENT_EXPORT(UI_BASE_IME) ComponentExtensionIMEManagerDelegate {
 };
 
 // This class manages component extension input method.
-class COMPONENT_EXPORT(UI_BASE_IME) ComponentExtensionIMEManager {
+class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) ComponentExtensionIMEManager {
  public:
   ComponentExtensionIMEManager();
   virtual ~ComponentExtensionIMEManager();

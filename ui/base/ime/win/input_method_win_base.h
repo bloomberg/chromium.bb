@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_IME_INPUT_METHOD_WIN_BASE_H_
-#define UI_BASE_IME_INPUT_METHOD_WIN_BASE_H_
+#ifndef UI_BASE_IME_WIN_INPUT_METHOD_WIN_BASE_H_
+#define UI_BASE_IME_WIN_INPUT_METHOD_WIN_BASE_H_
 
 #include <windows.h>
 
@@ -18,7 +18,7 @@
 namespace ui {
 
 // A common InputMethod base implementation for Windows.
-class COMPONENT_EXPORT(UI_BASE_IME) InputMethodWinBase
+class COMPONENT_EXPORT(UI_BASE_IME_WIN) InputMethodWinBase
     : public InputMethodBase {
  public:
   InputMethodWinBase(internal::InputMethodDelegate* delegate,
@@ -97,4 +97,4 @@ class COMPONENT_EXPORT(UI_BASE_IME) InputMethodWinBase
 
 }  // namespace ui
 
-#endif  // UI_BASE_IME_INPUT_METHOD_WIN_BASE_H_
+#endif  // UI_BASE_IME_WIN_INPUT_METHOD_WIN_BASE_H_

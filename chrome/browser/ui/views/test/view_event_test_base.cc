@@ -14,7 +14,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "mojo/core/embedder/embedder.h"
 #include "ui/base/clipboard/clipboard.h"
-#include "ui/base/ime/input_method_initializer.h"
+#include "ui/base/ime/init/input_method_initializer.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"

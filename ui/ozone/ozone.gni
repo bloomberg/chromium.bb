@@ -67,7 +67,6 @@ declare_args() {
       ozone_platform = "x11"
       ozone_platform_gbm = true
       ozone_platform_x11 = true
-      ozone_platform_wayland = true
     } else if (is_desktop_linux) {
       ozone_platform = "x11"
       ozone_platform_wayland = true

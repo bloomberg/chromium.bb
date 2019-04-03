@@ -20,7 +20,7 @@ class KeyEvent;
 
 // A class to recognize compose and dead key sequence.
 // Outputs composed character.
-class COMPONENT_EXPORT(UI_BASE_IME_TYPES) CharacterComposer {
+class COMPONENT_EXPORT(UI_BASE_IME) CharacterComposer {
  public:
   using ComposeBuffer = std::vector<DomKey>;
 

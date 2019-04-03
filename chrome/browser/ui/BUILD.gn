@@ -1315,6 +1315,10 @@ jumbo_split_static_library("ui") {
       deps += [ "//ui/ozone" ]
     }
 
+    if (is_linux && !is_chromeos) {
+      deps += [ "//ui/base/ime/linux" ]
+    }
+
     if (!toolkit_views) {
       sources += [ "media_router/cloud_services_dialog.cc" ]
     }
@@ -1816,7 +1820,7 @@ jumbo_split_static_library("ui") {
       "//services/device/public/mojom",
       "//services/ws/public/cpp",
       "//services/ws/public/mojom",
-      "//ui/base/ime",
+      "//ui/base/ime/chromeos",
       "//ui/chromeos",
       "//ui/chromeos/events",
       "//ui/compositor_extra",

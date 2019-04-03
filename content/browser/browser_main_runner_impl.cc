@@ -29,7 +29,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "third_party/skia/include/core/SkGraphics.h"
-#include "ui/base/ime/input_method_initializer.h"
+#include "ui/base/ime/init/input_method_initializer.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/android/tracing_controller_android.h"

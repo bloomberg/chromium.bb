@@ -18,7 +18,7 @@ class TextEditCommandAuraLinux;
 //
 // On desktop Linux, we've traditionally supported the user's custom
 // keybindings. We need to support this in both content/ and in views/.
-class COMPONENT_EXPORT(UI_BASE_IME) TextEditKeyBindingsDelegateAuraLinux {
+class COMPONENT_EXPORT(UI_BASE_IME_LINUX) TextEditKeyBindingsDelegateAuraLinux {
  public:
   // Matches a key event against the users' platform specific key bindings,
   // false will be returned if the key event doesn't correspond to a predefined
@@ -33,10 +33,10 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextEditKeyBindingsDelegateAuraLinux {
 
 // Sets/Gets the global TextEditKeyBindingsDelegateAuraLinux. No ownership
 // changes. Can be NULL.
-COMPONENT_EXPORT(UI_BASE_IME)
+COMPONENT_EXPORT(UI_BASE_IME_LINUX)
 void SetTextEditKeyBindingsDelegate(
     TextEditKeyBindingsDelegateAuraLinux* delegate);
-COMPONENT_EXPORT(UI_BASE_IME)
+COMPONENT_EXPORT(UI_BASE_IME_LINUX)
 TextEditKeyBindingsDelegateAuraLinux* GetTextEditKeyBindingsDelegate();
 
 }  // namespace ui

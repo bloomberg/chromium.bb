@@ -5,7 +5,7 @@
 #include "components/exo/test/exo_test_base_aura.h"
 
 #include "components/exo/wm_helper.h"
-#include "ui/base/ime/input_method_factory.h"
+#include "ui/base/ime/init/input_method_factory.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/wm/core/default_activation_client.h"

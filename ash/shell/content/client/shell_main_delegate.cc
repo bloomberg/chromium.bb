@@ -19,7 +19,7 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/ws/ime/test_ime_driver/public/mojom/constants.mojom.h"
 #include "services/ws/ime/test_ime_driver/test_ime_application.h"
-#include "ui/base/ime/input_method_initializer.h"
+#include "ui/base/ime/init/input_method_initializer.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace ash {

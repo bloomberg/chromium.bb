@@ -9,8 +9,8 @@
 
 #include "chrome/browser/chromeos/accessibility/accessibility_input_method_observer.h"
 #include "chrome/browser/ui/views/ime_driver/remote_text_input_client.h"
+#include "ui/base/ime/chromeos/input_method_chromeos.h"
 #include "ui/base/ime/ime_bridge.h"
-#include "ui/base/ime/input_method_chromeos.h"
 
 namespace {
 

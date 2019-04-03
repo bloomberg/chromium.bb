@@ -106,6 +106,7 @@ jumbo_component("libgtkui") {
     "//ui/aura",
     "//ui/base",
     "//ui/base/ime",
+    "//ui/base/ime/linux",
     "//ui/display",
     "//ui/events",
     "//ui/events:dom_keyboard_layout",

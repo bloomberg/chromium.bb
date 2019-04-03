@@ -74,7 +74,7 @@ struct CompositionText;
 //   hand, we can NEVER disable either TSF or CUAS in Windows Vista, i.e.
 //   THIS CLASS IS NOT ONLY USED ON THE INPUT CONTEXTS OF EAST-ASIAN
 //   LANGUAGES BUT ALSO USED ON THE INPUT CONTEXTS OF ALL LANGUAGES.
-class COMPONENT_EXPORT(UI_BASE_IME) IMM32Manager {
+class COMPONENT_EXPORT(UI_BASE_IME_WIN) IMM32Manager {
  public:
   IMM32Manager();
   virtual ~IMM32Manager();

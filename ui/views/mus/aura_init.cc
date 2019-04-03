@@ -12,7 +12,7 @@
 #include "build/build_config.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/env.h"
-#include "ui/base/ime/input_method_initializer.h"
+#include "ui/base/ime/init/input_method_initializer.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"

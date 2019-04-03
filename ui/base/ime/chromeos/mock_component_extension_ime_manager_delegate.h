@@ -12,7 +12,7 @@
 namespace chromeos {
 namespace input_method {
 
-class COMPONENT_EXPORT(UI_BASE_IME) MockComponentExtIMEManagerDelegate
+class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) MockComponentExtIMEManagerDelegate
     : public ComponentExtensionIMEManagerDelegate {
  public:
   MockComponentExtIMEManagerDelegate();

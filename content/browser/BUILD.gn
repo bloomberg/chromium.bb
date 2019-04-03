@@ -202,7 +202,7 @@ jumbo_source_set("browser") {
     "//ui/base:buildflags",
     "//ui/base/clipboard",
     "//ui/base/idle",
-    "//ui/base/ime",
+    "//ui/base/ime/init",
     "//ui/base/mpris/buildflags",
     "//ui/display",
     "//ui/display/types",
@@ -2523,6 +2523,10 @@ jumbo_source_set("browser") {
       "renderer_host/render_widget_host_view_event_handler.cc",
       "renderer_host/render_widget_host_view_event_handler.h",
     ]
+
+    if (is_linux && !is_chromeos) {
+      deps += [ "//ui/base/ime/linux" ]
+    }
   } else {  # Not aura.
     sources -= [
       "media/desktop_media_window_registry_aura.cc",

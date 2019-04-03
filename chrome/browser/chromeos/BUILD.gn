@@ -240,6 +240,7 @@ source_set("chromeos") {
     "//ui/aura",
     "//ui/base",
     "//ui/base/idle",
+    "//ui/base/ime/chromeos",
     "//ui/chromeos",
     "//ui/chromeos/events",
     "//ui/compositor",
@@ -2650,7 +2651,8 @@ source_set("unit_tests") {
     "//third_party/blink/public:blink_headers",
     "//third_party/icu",
     "//third_party/leveldatabase",
-    "//ui/base/ime",
+    "//ui/base/ime/chromeos",
+    "//ui/base/ime/init",
     "//ui/chromeos/resources",
   ]
   data = [
