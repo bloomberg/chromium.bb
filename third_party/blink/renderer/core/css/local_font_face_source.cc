@@ -41,13 +41,11 @@ LocalFontFaceSource::LocalFontFaceSource(CSSFontFace* css_font_face,
 LocalFontFaceSource::~LocalFontFaceSource() {}
 
 bool LocalFontFaceSource::IsLocalNonBlocking() const {
-#if defined(OS_MACOSX)
-  return true;
-#else
   FontUniqueNameLookup* unique_name_lookup =
       FontGlobalContext::Get()->GetFontUniqueNameLookup();
+  if (!unique_name_lookup)
+    return true;
   return unique_name_lookup->IsFontUniqueNameLookupReadyForSyncLookup();
-#endif
 }
 
 bool LocalFontFaceSource::IsLocalFontAvailable(
