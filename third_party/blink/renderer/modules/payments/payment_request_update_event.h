@@ -46,11 +46,20 @@ class MODULES_EXPORT PaymentRequestUpdateEvent : public Event,
 
   void Trace(blink::Visitor*) override;
 
+  void OnUpdateEventTimeoutForTesting();
+
  private:
+  // This class is declared here because it requires privileges to access some
+  // PaymentRequestUpdateEvent's member fields, such as request_, abort_timer_.
+  class UpdatePaymentDetailsFunction;
+
+  void OnUpdateEventTimeout(TimerBase*);
+
   // True after event.updateWith() was called.
   bool wait_for_update_;
 
   Member<PaymentRequestDelegate> request_;
+  TaskRunnerTimer<PaymentRequestUpdateEvent> abort_timer_;
 };
 
 }  // namespace blink

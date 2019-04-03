@@ -67,7 +67,6 @@ class MODULES_EXPORT PaymentRequest final
   ~PaymentRequest() override;
 
   ScriptPromise show(ScriptState*);
-  ScriptPromise show(ScriptState*, ScriptPromise details_promise);
   ScriptPromise abort(ScriptState*);
 
   const String& id() const { return id_; }
@@ -101,7 +100,6 @@ class MODULES_EXPORT PaymentRequest final
   void Trace(blink::Visitor*) override;
 
   void OnCompleteTimeoutForTesting();
-  void OnUpdatePaymentDetailsTimeoutForTesting();
 
   enum {
     // Implementation defined constants controlling the allowed list length
@@ -134,7 +132,6 @@ class MODULES_EXPORT PaymentRequest final
   void WarnNoFavicon() override;
 
   void OnCompleteTimeout(TimerBase*);
-  void OnUpdatePaymentDetailsTimeout(TimerBase*);
 
   // Clears the promise resolvers and closes the Mojo connection.
   void ClearResolversAndCloseMojoConnection();
@@ -165,8 +162,6 @@ class MODULES_EXPORT PaymentRequest final
   payments::mojom::blink::PaymentRequestPtr payment_provider_;
   mojo::Binding<payments::mojom::blink::PaymentRequestClient> client_binding_;
   TaskRunnerTimer<PaymentRequest> complete_timer_;
-  TaskRunnerTimer<PaymentRequest> update_payment_details_timer_;
-  bool is_waiting_for_show_promise_to_resolve_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequest);
 };

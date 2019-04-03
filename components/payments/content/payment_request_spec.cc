@@ -100,7 +100,6 @@ PaymentRequestSpec::~PaymentRequestSpec() {}
 
 void PaymentRequestSpec::UpdateWith(mojom::PaymentDetailsPtr details) {
   DCHECK(details_);
-  DCHECK(details_->total || details->total);
   if (details->total)
     details_->total = std::move(details->total);
   if (!details->display_items.empty())
@@ -215,15 +214,9 @@ bool PaymentRequestSpec::has_payer_error() const {
 
 void PaymentRequestSpec::RecomputeSpecForDetails() {
   // Reparse the |details_| and update the observers.
-  bool is_initialization =
-      current_update_reason_ == UpdateReason::INITIAL_PAYMENT_DETAILS;
-  UpdateSelectedShippingOption(/*after_update=*/!is_initialization);
+  UpdateSelectedShippingOption(/*after_update=*/true);
 
   NotifyOnSpecUpdated();
-
-  if (is_initialization)
-    NotifyInitialized();
-
   current_update_reason_ = UpdateReason::NONE;
 }
 
@@ -234,10 +227,6 @@ void PaymentRequestSpec::AddObserver(Observer* observer) {
 
 void PaymentRequestSpec::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
-}
-
-bool PaymentRequestSpec::IsInitialized() const {
-  return current_update_reason_ != UpdateReason::INITIAL_PAYMENT_DETAILS;
 }
 
 bool PaymentRequestSpec::request_shipping() const {
@@ -376,7 +365,7 @@ void PaymentRequestSpec::UpdateSelectedShippingOption(bool after_update) {
   selected_shipping_option_ = nullptr;
   selected_shipping_option_error_.clear();
   if (details_->shipping_options->empty() || !details_->error.empty()) {
-    // The merchant provided either no shipping options or an error message.
+    // No options are provided by the merchant.
     if (after_update) {
       // This is after an update, which means that the selected address is not
       // supported. The merchant may have customized the error string, or a
