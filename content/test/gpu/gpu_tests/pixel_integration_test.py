@@ -10,7 +10,6 @@ import sys
 from gpu_tests import gpu_integration_test
 from gpu_tests import cloud_storage_integration_test_base
 from gpu_tests import path_util
-from gpu_tests import pixel_expectations
 from gpu_tests import pixel_test_pages
 from gpu_tests import color_profile_manager
 
@@ -109,7 +108,7 @@ class PixelIntegrationTest(
 
   @classmethod
   def _CreateExpectations(cls):
-    return pixel_expectations.PixelExpectations()
+    raise NotImplementedError
 
   @classmethod
   def GenerateGpuTests(cls, options):
@@ -356,6 +355,13 @@ class PixelIntegrationTest(
     # solution of provoking the GPU process crash from this renderer
     # process was chosen.
     tab.EvaluateJavaScript('chrome.gpuBenchmarking.crashGpuProcess()')
+
+  @classmethod
+  def ExpectationsFiles(cls):
+    return [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                     'test_expectations',
+                     'pixel_expectations.txt')]
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.
