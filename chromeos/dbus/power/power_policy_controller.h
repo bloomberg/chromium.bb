@@ -78,32 +78,39 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) PowerPolicyController
     PrefValues();
     ~PrefValues();
 
-    int ac_screen_dim_delay_ms;
-    int ac_screen_off_delay_ms;
-    int ac_screen_lock_delay_ms;
-    int ac_idle_warning_delay_ms;
-    int ac_idle_delay_ms;
-    int battery_screen_dim_delay_ms;
-    int battery_screen_off_delay_ms;
-    int battery_screen_lock_delay_ms;
-    int battery_idle_warning_delay_ms;
-    int battery_idle_delay_ms;
-    Action ac_idle_action;
-    Action battery_idle_action;
-    Action lid_closed_action;
-    bool use_audio_activity;
-    bool use_video_activity;
-    double ac_brightness_percent;
-    double battery_brightness_percent;
-    bool allow_wake_locks;
-    bool allow_screen_wake_locks;
-    bool enable_auto_screen_lock;
-    double presentation_screen_dim_delay_factor;
-    double user_activity_screen_dim_delay_factor;
-    bool wait_for_initial_user_activity;
-    bool force_nonzero_brightness_for_user_activity;
-    bool peak_shift_enabled;
-    int peak_shift_battery_threshold;
+    // -1 is interpreted as "unset" by powerd, resulting in powerd's default
+    // delays being used instead. There are no similarly-interpreted values for
+    // the other fields, unfortunately (but the default values would only reach
+    // powerd if Chrome failed to override them with the pref-assigned values).
+    int ac_screen_dim_delay_ms = -1;
+    int ac_screen_off_delay_ms = -1;
+    int ac_screen_lock_delay_ms = -1;
+    int ac_idle_warning_delay_ms = -1;
+    int ac_idle_delay_ms = -1;
+    int battery_screen_dim_delay_ms = -1;
+    int battery_screen_off_delay_ms = -1;
+    int battery_screen_lock_delay_ms = -1;
+    int battery_idle_warning_delay_ms = -1;
+    int battery_idle_delay_ms = -1;
+
+    Action ac_idle_action = ACTION_SUSPEND;
+    Action battery_idle_action = ACTION_SUSPEND;
+    Action lid_closed_action = ACTION_SUSPEND;
+
+    bool use_audio_activity = true;
+    bool use_video_activity = true;
+    double ac_brightness_percent = -1.0;
+    double battery_brightness_percent = -1.0;
+    bool allow_wake_locks = true;
+    bool allow_screen_wake_locks = true;
+    bool enable_auto_screen_lock = false;
+    double presentation_screen_dim_delay_factor = 1.0;
+    double user_activity_screen_dim_delay_factor = 1.0;
+    bool wait_for_initial_user_activity = false;
+    bool force_nonzero_brightness_for_user_activity = true;
+    bool fast_suspend_when_backlights_forced_off = true;
+    bool peak_shift_enabled = false;
+    int peak_shift_battery_threshold = -1;
     std::vector<PeakShiftDayConfiguration> peak_shift_day_configurations;
   };
 
@@ -151,6 +158,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) PowerPolicyController
   // is overridden to ensure that the system doesn't suspend or shut
   // down.
   void NotifyChromeIsExiting();
+
+  // Adjusts policy when the display is forced off in response to the
+  // user tapping the power button, or when it's no longer forced off.
+  void HandleBacklightsForcedOffForPowerButton(bool forced_off);
 
   // Adjusts policy when the migration of a user homedir to a new
   // encryption format starts or stops. While migration is active,
@@ -234,6 +245,14 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) PowerPolicyController
 
   // True if Chrome is in the process of exiting.
   bool chrome_is_exiting_ = false;
+
+  // True if the screen is currently forced off due to the user having tapped
+  // the power button.
+  bool backlights_forced_off_for_power_button_ = false;
+
+  // True if suspend delays should be shortened when
+  // |backlights_forced_off_for_power_button_| is true. Set from prefs.
+  bool fast_suspend_when_backlights_forced_off_ = true;
 
   // True if a user homedir is in the process of migrating encryption formats.
   bool encryption_migration_active_ = false;
