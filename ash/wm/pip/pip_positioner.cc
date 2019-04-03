@@ -278,10 +278,13 @@ gfx::Rect PipPositioner::GetPositionAfterMovementAreaChange(
   // Restore to previous bounds if we have them. This lets us move the PIP
   // window back to its original bounds after transient movement area changes,
   // like the keyboard popping up and pushing the PIP window up.
-  const gfx::Rect bounds_in_screen =
-      window_state->HasRestoreBounds()
-          ? window_state->GetRestoreBoundsInScreen()
-          : window_state->window()->GetBoundsInScreen();
+  gfx::Rect bounds_in_screen = window_state->window()->GetBoundsInScreen();
+  // If the client changes the window size, don't try to resize it back for
+  // restore.
+  if (window_state->HasRestoreBounds()) {
+    bounds_in_screen.set_origin(
+        window_state->GetRestoreBoundsInScreen().origin());
+  }
   return GetRestingPosition(window_state->GetDisplay(), bounds_in_screen);
 }
 

@@ -246,4 +246,30 @@ TEST_F(
   EXPECT_EQ(gfx::Rect(408, 292, 100, 100), window->GetBoundsInScreen());
 }
 
+TEST_F(PipTest, PipRestoreOnWorkAreaChangeDoesNotChangeWindowSize) {
+  ForceHideShelvesForTest();
+  UpdateDisplay("400x400");
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(200, 200, 100, 100)));
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  const wm::WMEvent enter_pip(wm::WM_EVENT_PIP);
+  window_state->OnWMEvent(&enter_pip);
+  window->Show();
+
+  // Position the PIP window on the side of the screen where it will be next
+  // to an edge and therefore in a resting position for the whole test.
+  const gfx::Rect bounds = gfx::Rect(292, 200, 100, 100);
+  window->SetBounds(bounds);
+  // Set the restore bounds to be a different size.
+  window_state->SetRestoreBoundsInParent(gfx::Rect(342, 250, 50, 100));
+  EXPECT_TRUE(window_state->HasRestoreBounds());
+
+  // Update the work area so that the PIP window should be pushed upward.
+  UpdateDisplay("400x200");
+  ForceHideShelvesForTest();
+
+  // The PIP window should not change size.
+  EXPECT_EQ(gfx::Rect(292, 92, 100, 100), window->GetBoundsInScreen());
+}
+
 }  // namespace ash
