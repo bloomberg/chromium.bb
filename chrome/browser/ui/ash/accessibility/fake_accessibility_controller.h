@@ -46,6 +46,7 @@ class FakeAccessibilityController : ash::mojom::AccessibilityController {
       ash::mojom::DictationToggleSource source) override;
   void ForwardKeyEventsToSwitchAccess(bool should_forward) override;
   void GetBatteryDescription(GetBatteryDescriptionCallback callback) override;
+  void SetVirtualKeyboardVisible(bool is_visible) override;
 
  private:
   void Bind(mojo::ScopedMessagePipeHandle handle);

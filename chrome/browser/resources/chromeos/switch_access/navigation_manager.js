@@ -301,7 +301,8 @@ class NavigationManager {
     if (!this.textInputManager_.enterKeyboard(this.node_))
       return;
 
-    this.selectCurrentNode();
+    chrome.accessibilityPrivate.setVirtualKeyboardVisible(
+        true /* is_visible */);
     this.setScope_(this.textInputManager_.getKeyboard(this.desktop_));
   }
 
@@ -320,6 +321,8 @@ class NavigationManager {
     }
 
     this.textInputManager_.returnToTextFocus();
+    chrome.accessibilityPrivate.setVirtualKeyboardVisible(
+        false /* isVisible */);
     return true;
   }
 

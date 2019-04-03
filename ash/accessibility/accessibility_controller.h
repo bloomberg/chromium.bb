@@ -186,6 +186,7 @@ class ASH_EXPORT AccessibilityController
   void ToggleDictationFromSource(mojom::DictationToggleSource source) override;
   void ForwardKeyEventsToSwitchAccess(bool should_forward) override;
   void GetBatteryDescription(GetBatteryDescriptionCallback callback) override;
+  void SetVirtualKeyboardVisible(bool is_visible) override;
 
   // SessionObserver:
   void OnSigninScreenPrefServiceInitialized(PrefService* prefs) override;

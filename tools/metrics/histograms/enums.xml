@@ -18935,6 +18935,7 @@ Called by update_net_error_codes.py.-->
   <int value="1325" label="AUTOTESTPRIVATE_SETSHELFAUTOHIDEBEHAVIOR"/>
   <int value="1326" label="AUTOTESTPRIVATE_EXPORTCROSTINI"/>
   <int value="1327" label="AUTOTESTPRIVATE_IMPORTCROSTINI"/>
+  <int value="1328" label="ACCESSIBILITY_PRIVATE_SETVIRTUALKEYBOARDVISIBLE"/>
 </enum>
 
 <enum name="ExtensionIconState">

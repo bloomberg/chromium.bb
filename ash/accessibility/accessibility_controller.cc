@@ -1283,4 +1283,13 @@ void AccessibilityController::GetBatteryDescription(
       true /* Enables full description*/));
 }
 
+void AccessibilityController::SetVirtualKeyboardVisible(bool is_visible) {
+  if (is_visible) {
+    Shell::Get()->ash_keyboard_controller()->ShowKeyboard();
+  } else {
+    Shell::Get()->ash_keyboard_controller()->HideKeyboard(
+        mojom::HideReason::kUser);
+  }
+}
+
 }  // namespace ash
