@@ -332,6 +332,7 @@ android_library("chrome_java") {
     "//skia/public/interfaces:interfaces_java",
     "//third_party/android_data_chart:android_data_chart_java",
     "//third_party/android_deps:android_arch_lifecycle_common_java",
+    "//third_party/android_deps:android_arch_lifecycle_common_java8_java",
     "//third_party/android_deps:android_arch_lifecycle_runtime_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:com_android_support_design_java",

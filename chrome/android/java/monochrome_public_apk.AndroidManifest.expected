@@ -1186,7 +1186,6 @@
         android:name="com.google.android.apps.chrome.webapps.WebappManager"
         android:targetActivity="org.chromium.chrome.browser.webapps.WebappLauncherActivity"/>
     <meta-data android:name="android.allow_multiple_resumed_activities" android:value="true"/>
-    <meta-data android:name="android.arch.lifecycle.VERSION" android:value="27.0.0-SNAPSHOT"/>
     <meta-data
         android:name="android.content.APP_RESTRICTIONS"
         android:resource="@xml/app_restrictions"/>
