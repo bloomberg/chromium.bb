@@ -1307,6 +1307,14 @@ void AutomationInternalCustomBindings::DestroyAccessibilityTree(
 
   ui::AXTreeID tree_id = ui::AXTreeID::FromString(
       *v8::String::Utf8Value(args.GetIsolate(), args[0]));
+  auto& child_tree_id_reverse_map =
+      AutomationAXTreeWrapper::GetChildTreeIDReverseMap();
+  base::EraseIf(
+      child_tree_id_reverse_map,
+      [tree_id](const std::pair<ui::AXTreeID, AutomationAXTreeWrapper*>& pair) {
+        return pair.first == tree_id || pair.second->tree_id() == tree_id;
+      });
+
   auto iter = tree_id_to_tree_wrapper_map_.find(tree_id);
   if (iter == tree_id_to_tree_wrapper_map_.end())
     return;
