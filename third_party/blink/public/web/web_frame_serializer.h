@@ -131,9 +131,6 @@ class WebFrameSerializer {
       const WebString& charset);
   // Generate the MOTW declaration.
   BLINK_EXPORT static WebString GenerateMarkOfTheWebDeclaration(const WebURL&);
-  // Generate the default base tag declaration.
-  BLINK_EXPORT static WebString GenerateBaseTagDeclaration(
-      const WebString& base_target);
 };
 
 }  // namespace blink
