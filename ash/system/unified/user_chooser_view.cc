@@ -4,11 +4,16 @@
 
 #include "ash/system/unified/user_chooser_view.h"
 
+#include <memory>
+#include <string>
+
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/model/enterprise_domain_model.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
@@ -159,6 +164,17 @@ base::string16 GetUserItemAccessibleString(int user_index) {
 
   if (user_session->user_info->type == user_manager::USER_TYPE_GUEST)
     return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_GUEST_LABEL);
+
+  if (user_session->user_info->type == user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
+    std::string display_domain = Shell::Get()
+                                     ->system_tray_model()
+                                     ->enterprise_domain()
+                                     ->enterprise_display_domain();
+    return l10n_util::GetStringFUTF16(
+        IDS_ASH_STATUS_TRAY_PUBLIC_LABEL,
+        base::UTF8ToUTF16(user_session->user_info->display_name),
+        base::UTF8ToUTF16(display_domain));
+  }
 
   return l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_USER_INFO_ACCESSIBILITY,
