@@ -439,6 +439,7 @@ fast/css/first-letter-hover.html
 fast/css/first-letter-visibility.html
 fast/css/first-letter-wbr.html
 fast/css/focus-ring-multiline.html
+fast/css/font-face-default-font.html
 fast/css-generated-content/bug-106384.html
 fast/css-generated-content/table-with-scrollbar-corner.html
 fast/css/getComputedStyle/getComputedStyle-margin-percentage.html
