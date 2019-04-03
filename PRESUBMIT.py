@@ -582,7 +582,7 @@ _BANNED_CPP_FUNCTIONS = (
       (),
     ),
     (
-      r'base::SharedMemory(|Handle)',
+      r'/base::SharedMemory(|Handle)',
       (
           'base::SharedMemory is deprecated. Please use',
           '{Writable,ReadOnly}SharedMemoryRegion instead.',
