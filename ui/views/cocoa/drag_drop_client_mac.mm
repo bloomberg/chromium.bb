@@ -62,12 +62,7 @@ void DragDropClientMac::StartDragAndDrop(
   NSImage* image = gfx::NSImageFromImageSkiaWithColorSpace(
       provider_mac.GetDragImage(), base::mac::GetSRGBColorSpace());
 
-  // TODO(crbug/876201): This shouldn't happen. When a repro for this
-  // is identified and the bug is fixed, change the early return to
-  // a DCHECK.
-  if (!image || NSEqualSizes([image size], NSZeroSize))
-    return;
-
+  DCHECK(!NSEqualSizes([image size], NSZeroSize));
   NSDraggingItem* drag_item = provider_mac.GetDraggingItem();
 
   // Subtract the image's height from the y location so that the mouse will be
