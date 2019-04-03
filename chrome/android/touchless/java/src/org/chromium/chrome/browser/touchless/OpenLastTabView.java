@@ -22,6 +22,7 @@ import org.chromium.ui.widget.ChipView;
 /**
  * View for the button to open the last tab.
  */
+// TODO(crbug.com/948858): Add render tests for this view.
 public class OpenLastTabView extends FrameLayout {
     private LinearLayout mPlaceholder;
     private ChipView mLastTabChip;
@@ -44,8 +45,10 @@ public class OpenLastTabView extends FrameLayout {
         TextView primaryTextView = mLastTabChip.getPrimaryTextView();
         TextView secondaryTextView = mLastTabChip.getSecondaryTextView();
 
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams params =
+                new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT);
+        // Allow timestamp to expand to as much as it needs.
+        params.weight = 1;
         primaryTextView.setLayoutParams(params);
         primaryTextView.setSingleLine(true);
         primaryTextView.setEllipsize(TextUtils.TruncateAt.END);
@@ -58,8 +61,9 @@ public class OpenLastTabView extends FrameLayout {
         params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         secondaryTextView.setLayoutParams(params);
-        secondaryTextView.setMinWidth(getContext().getResources().getDimensionPixelSize(
-                R.dimen.open_last_tab_timestamp_min_width));
+        secondaryTextView.setSingleLine(true);
+        // Note: this should never actually need to truncate, but I've included it as a fallback.
+        secondaryTextView.setEllipsize(TextUtils.TruncateAt.END);
         secondaryTextView.setTextAlignment(TEXT_ALIGNMENT_VIEW_END);
         ApiCompatibilityUtils.setTextAppearance(
                 secondaryTextView, R.style.TextAppearance_BlackCaption);
