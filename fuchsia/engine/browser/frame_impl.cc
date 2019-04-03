@@ -23,6 +23,7 @@
 #include "content/public/common/was_activated_option.h"
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/engine/browser/context_impl.h"
+#include "fuchsia/engine/browser/legacy_message_port_bridge.h"
 #include "fuchsia/engine/browser/message_port_impl.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -431,7 +432,7 @@ void FrameImpl::PostMessage(chromium::web::WebMessage message,
       return;
     }
 
-    mojo::ScopedMessagePipeHandle port = MessagePortImpl::FromFidl(
+    mojo::ScopedMessagePipeHandle port = LegacyMessagePortBridge::FromFidl(
         std::move(message.outgoing_transfer->message_port()));
     if (!port) {
       callback(false);
