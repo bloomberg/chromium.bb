@@ -940,6 +940,7 @@ class MetaBuildWrapper(object):
     """
 
     android = 'target_os="android"' in vals['gn_args']
+    ios = 'target_os="ios"' in vals['gn_args']
     fuchsia = 'target_os="fuchsia"' in vals['gn_args']
     win = self.platform == 'win32' or 'target_os="win"' in vals['gn_args']
     possible_runtime_deps_rpaths = {}
@@ -961,8 +962,8 @@ class MetaBuildWrapper(object):
         rpaths = [
             target + '.runtime_deps',
             'obj/%s.stamp.runtime_deps' % label.replace(':', '/')]
-      elif fuchsia:
-        # Only emit a runtime deps file for the group() target on Fuchsia.
+      elif ios or fuchsia:
+        # iOS and Fuchsia targets end up as groups.
         label = isolate_map[target]['label']
         rpaths = ['obj/%s.stamp.runtime_deps' % label.replace(':', '/')]
       elif (isolate_map[target]['type'] == 'script' or
