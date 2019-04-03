@@ -45,7 +45,7 @@ extern const base::Feature kImeServiceConnectable;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kInstantTethering;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kVideoPlayerNativeControls;
+extern const base::Feature kSplitSettings;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kUseMessagesGoogleComDomain;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
@@ -54,6 +54,10 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kUserActivityPrediction;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kUserActivityPredictionMlService;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kVideoPlayerNativeControls;
+
+// Keep alphabetized.
 
 }  // namespace features
 

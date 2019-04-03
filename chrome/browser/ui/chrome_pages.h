@@ -84,8 +84,8 @@ GURL GetSettingsUrl(const std::string& sub_page);
 bool IsTrustedPopupWindowWithScheme(const Browser* browser,
                                     const std::string& scheme);
 
-
 // Various things that open in a settings UI.
+// NOTE: For Chrome OS settings, use SettingsWindowManager::ShowOSSettings().
 void ShowSettings(Browser* browser);
 void ShowSettingsSubPage(Browser* browser, const std::string& sub_page);
 void ShowSettingsSubPageForProfile(Profile* profile,
