@@ -250,12 +250,8 @@ bool AvatarToolbarButton::IsIncognito() const {
 }
 
 bool AvatarToolbarButton::IsIncognitoCounterActive() const {
-#if defined(OS_CHROMEOS)
-  return false;
-#else
   return IsIncognito() &&
          base::FeatureList::IsEnabled(features::kEnableIncognitoWindowCounter);
-#endif  // defined(OS_CHROMEOS)
 }
 
 bool AvatarToolbarButton::ShouldShowGenericIcon() const {
