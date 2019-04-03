@@ -27,7 +27,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/tpm/stub_install_attributes.h"
@@ -303,19 +302,11 @@ class SiteIsolationFlagHandlingTest
   void SetUpInProcessBrowserTestFixture() override {
     policy::LoginPolicyTestBase::SetUpInProcessBrowserTestFixture();
 
-    // Set up fake_session_manager_client_ so we can verify the flags for the
-    // user session.
-    auto fake_session_manager_client =
-        std::make_unique<FakeSessionManagerClient>(
-            FakeSessionManagerClient::PolicyStorageType::kOnDisk);
-    fake_session_manager_client_ = fake_session_manager_client.get();
-    DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        std::move(fake_session_manager_client));
-
     // Mark that chrome restart can be requested.
     // Note that AttemptRestart() is mocked out in UserSessionManager through
     // |SetAttemptRestartClosureInTests| (set up in SetUpOnMainThread).
-    fake_session_manager_client_->set_supports_restart_to_apply_user_flags(
+    SessionManagerClient::InitializeFake();
+    FakeSessionManagerClient::Get()->set_supports_restart_to_apply_user_flags(
         true);
   }
 
@@ -355,10 +346,6 @@ class SiteIsolationFlagHandlingTest
 
   bool HasAttemptRestartBeenCalled() const { return attempt_restart_called_; }
 
-  FakeSessionManagerClient* fake_session_manager_client() {
-    return fake_session_manager_client_;
-  }
-
   // Called when log-in was successful.
   bool UserSessionStarted(const content::NotificationSource& source,
                           const content::NotificationDetails& details) {
@@ -388,8 +375,6 @@ class SiteIsolationFlagHandlingTest
   // Observes for user session start.
   std::unique_ptr<content::WindowedNotificationObserver>
       user_session_started_observer_;
-  // Unowned pointer - owned by DBusThreadManager.
-  FakeSessionManagerClient* fake_session_manager_client_;
   policy::MockConfigurationPolicyProvider provider_;
   chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
   DISALLOW_COPY_AND_ASSIGN(SiteIsolationFlagHandlingTest);
@@ -427,7 +412,7 @@ IN_PROC_BROWSER_TEST_P(SiteIsolationFlagHandlingTest, FlagHandlingTest) {
   AccountId test_account_id =
       AccountId::FromUserEmailGaiaId(GetAccount(), kTestUserGaiaId);
   std::vector<std::string> flags_for_user;
-  bool has_flags_for_user = fake_session_manager_client()->GetFlagsForUser(
+  bool has_flags_for_user = FakeSessionManagerClient::Get()->GetFlagsForUser(
       cryptohome::CreateAccountIdentifierFromAccountId(test_account_id),
       &flags_for_user);
   EXPECT_TRUE(has_flags_for_user);

@@ -32,9 +32,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
-#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
@@ -182,10 +180,6 @@ class ShutdownPolicyLockerTest : public ShutdownPolicyBaseTest {
   ~ShutdownPolicyLockerTest() override = default;
 
   void SetUpInProcessBrowserTestFixture() override {
-    fake_session_manager_client_ = new FakeSessionManagerClient;
-    DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        std::unique_ptr<SessionManagerClient>(fake_session_manager_client_));
-
     ShutdownPolicyBaseTest::SetUpInProcessBrowserTestFixture();
     zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
         ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
@@ -207,7 +201,6 @@ class ShutdownPolicyLockerTest : public ShutdownPolicyBaseTest {
 
  private:
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
-  FakeSessionManagerClient* fake_session_manager_client_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ShutdownPolicyLockerTest);
 };

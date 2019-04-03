@@ -74,7 +74,6 @@
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/cryptohome/cryptohome_util.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/login/auth/key.h"
@@ -888,12 +887,12 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
       last_login_attempt_account_id_);
   if (failure.reason() == AuthFailure::OWNER_REQUIRED) {
     ShowError(IDS_LOGIN_ERROR_OWNER_REQUIRED, error);
+    // Using Untretained here is safe because SessionManagerClient is destroyed
+    // after the task runner, in ChromeBrowserMainParts::PostDestroyThreads().
     base::PostDelayedTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(
-            &SessionManagerClient::StopSession,
-            base::Unretained(
-                DBusThreadManager::Get()->GetSessionManagerClient())),
+        base::BindOnce(&SessionManagerClient::StopSession,
+                       base::Unretained(SessionManagerClient::Get())),
         base::TimeDelta::FromMilliseconds(kSafeModeRestartUiDelayMs));
   } else if (failure.reason() == AuthFailure::TPM_ERROR) {
     ShowTPMError();
@@ -1168,8 +1167,7 @@ void ExistingUserController::OnOldEncryptionDetected(
       chromeos::GetDeviceDMTokenForUserPolicyGetter(
           user_context.GetAccountId()));
   pre_signin_policy_fetcher_ = std::make_unique<policy::PreSigninPolicyFetcher>(
-      CryptohomeClient::Get(),
-      DBusThreadManager::Get()->GetSessionManagerClient(),
+      CryptohomeClient::Get(), SessionManagerClient::Get(),
       std::move(cloud_policy_client), IsActiveDirectoryManaged(),
       user_context.GetAccountId(),
       cryptohome::KeyDefinition::CreateForPassword(

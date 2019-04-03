@@ -96,9 +96,9 @@ class StatsReportingControllerTest : public testing::Test {
       content::TestBrowserThreadBundle::IO_MAINLOOP};
   TestingPrefServiceSimple local_state_;
   ScopedStubInstallAttributes scoped_install_attributes_;
+  FakeSessionManagerClient fake_session_manager_client_;
   ScopedTestDeviceSettingsService scoped_device_settings_;
   ScopedTestCrosSettings scoped_cros_settings_{RegisterPrefs(&local_state_)};
-  FakeSessionManagerClient fake_session_manager_client_;
   policy::DevicePolicyBuilder device_policy_;
 
   bool value_at_last_notification_{false};

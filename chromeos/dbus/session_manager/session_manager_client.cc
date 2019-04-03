@@ -39,6 +39,8 @@ namespace chromeos {
 
 namespace {
 
+SessionManagerClient* g_instance = nullptr;
+
 using RetrievePolicyResponseType =
     SessionManagerClient::RetrievePolicyResponseType;
 
@@ -126,8 +128,7 @@ base::ScopedFD CreatePasswordPipe(const std::string& data) {
 // The SessionManagerClient implementation used in production.
 class SessionManagerClientImpl : public SessionManagerClient {
  public:
-  SessionManagerClientImpl() : weak_ptr_factory_(this) {}
-
+  SessionManagerClientImpl() = default;
   ~SessionManagerClientImpl() override = default;
 
   // SessionManagerClient overrides:
@@ -482,8 +483,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
- protected:
-  void Init(dbus::Bus* bus) override {
+  void Init(dbus::Bus* bus) {
     session_manager_proxy_ = bus->GetObjectProxy(
         login_manager::kSessionManagerServiceName,
         dbus::ObjectPath(login_manager::kSessionManagerServicePath));
@@ -841,22 +841,52 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<SessionManagerClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<SessionManagerClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SessionManagerClientImpl);
 };
 
-SessionManagerClient::SessionManagerClient() = default;
+SessionManagerClient::SessionManagerClient() {
+  DCHECK(!g_instance);
+  g_instance = this;
+}
 
-SessionManagerClient::~SessionManagerClient() = default;
+SessionManagerClient::~SessionManagerClient() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
 
-SessionManagerClient* SessionManagerClient::Create(
-    DBusClientImplementationType type) {
-  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new SessionManagerClientImpl();
-  DCHECK_EQ(FAKE_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new FakeSessionManagerClient(
-      FakeSessionManagerClient::PolicyStorageType::kOnDisk);
+// static
+void SessionManagerClient::Initialize(dbus::Bus* bus) {
+  DCHECK(bus);
+  (new SessionManagerClientImpl)->Init(bus);
+}
+
+// static
+void SessionManagerClient::InitializeFake() {
+  // Do not create a new fake if it was initialized early in a browser test (for
+  // early setup calls dependent on SessionManagerClient).
+  if (!FakeSessionManagerClient::Get()) {
+    new FakeSessionManagerClient(
+        FakeSessionManagerClient::PolicyStorageType::kOnDisk);
+  }
+}
+
+// static
+void SessionManagerClient::InitializeFakeInMemory() {
+  new FakeSessionManagerClient(
+      FakeSessionManagerClient::PolicyStorageType::kInMemory);
+}
+
+// static
+void SessionManagerClient::Shutdown() {
+  DCHECK(g_instance);
+  delete g_instance;
+}
+
+// static
+SessionManagerClient* SessionManagerClient::Get() {
+  return g_instance;
 }
 
 }  // namespace chromeos
