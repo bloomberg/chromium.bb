@@ -724,7 +724,8 @@ class ErrorCallbacks : public MockIndexedDBCallbacks {
   DISALLOW_COPY_AND_ASSIGN(ErrorCallbacks);
 };
 
-TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
+// Disabled due to flakiness: see https://crbug.com/947667.
+TEST_F(IndexedDBFactoryTest, DISABLED_DatabaseFailedOpen) {
   const Origin origin = Origin::Create(GURL("http://localhost:81"));
   const base::string16 db_name(ASCIIToUTF16("db"));
   const int64_t transaction_id = 1;
