@@ -80,8 +80,6 @@ StartupTabs StartupTabProviderImpl::GetOnboardingTabs(Profile* profile) const {
   standard_params.is_supervised_user = profile->IsSupervised();
   standard_params.is_force_signin_enabled = signin_util::IsForceSigninEnabled();
 
-// TODO(scottchen): make win-10 also show NUX onboarding page when its enabled.
-
 #if defined(OS_WIN)
   // Windows 10 has unique onboarding policies and content. However, if
   // NuxOnboarding is enabled, the standard welcome URL should still
