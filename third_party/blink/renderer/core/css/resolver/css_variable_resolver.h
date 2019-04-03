@@ -54,6 +54,12 @@ class CORE_EXPORT CSSVariableResolver {
   virtual void ApplyAnimation(const AtomicString& name) {}
 
  private:
+  // The maximum number of tokens that may be produced by a var()
+  // reference.
+  //
+  // https://drafts.csswg.org/css-variables/#long-variables
+  static const size_t kMaxSubstitutionTokens = 16384;
+
   struct Options {
     STACK_ALLOCATED();
 
@@ -213,6 +219,8 @@ class CORE_EXPORT CSSVariableResolver {
   // need to be tracked for additional cycles, and invalidation only
   // applies back to cycle starts.
   HashSet<AtomicString> cycle_start_points_;
+
+  friend class CSSVariableResolverTest;
 };
 
 }  // namespace blink

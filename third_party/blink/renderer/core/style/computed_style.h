@@ -1153,7 +1153,7 @@ class ComputedStyle : public ComputedStyleBase,
   void RemoveVariable(const AtomicString&, bool is_inherited_property);
 
   // Handles both inherited and non-inherited variables
-  CSSVariableData* GetVariable(const AtomicString&) const;
+  CORE_EXPORT CSSVariableData* GetVariable(const AtomicString&) const;
 
   CSSVariableData* GetVariable(const AtomicString&,
                                bool is_inherited_property) const;
