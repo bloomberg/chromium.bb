@@ -186,7 +186,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   }
 
   EncodedFormData* HttpBody() const;
-  void SetHTTPBody(scoped_refptr<EncodedFormData>);
+  void SetHttpBody(scoped_refptr<EncodedFormData>);
 
   bool AllowStoredCredentials() const;
   void SetAllowStoredCredentials(bool allow_credentials);

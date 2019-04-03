@@ -158,7 +158,7 @@ ResourceRequest HistoryItem::GenerateResourceRequest(
   request.SetCacheMode(cache_mode);
   if (form_data_) {
     request.SetHTTPMethod(http_names::kPOST);
-    request.SetHTTPBody(form_data_);
+    request.SetHttpBody(form_data_);
     request.SetHTTPContentType(form_content_type_);
     request.SetHTTPOriginToMatchReferrerIfNeeded();
   }

@@ -712,7 +712,7 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
   if (fetch_request_data_->Method() != http_names::kGET &&
       fetch_request_data_->Method() != http_names::kHEAD) {
     if (fetch_request_data_->Buffer()) {
-      request.SetHTTPBody(
+      request.SetHttpBody(
           fetch_request_data_->Buffer()->DrainAsFormData(exception_state));
       if (exception_state.HadException())
         return;

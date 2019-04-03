@@ -190,8 +190,8 @@ WebHTTPBody WebURLRequest::HttpBody() const {
   return WebHTTPBody(resource_request_->HttpBody());
 }
 
-void WebURLRequest::SetHTTPBody(const WebHTTPBody& http_body) {
-  resource_request_->SetHTTPBody(http_body);
+void WebURLRequest::SetHttpBody(const WebHTTPBody& http_body) {
+  resource_request_->SetHttpBody(http_body);
 }
 
 bool WebURLRequest::ReportUploadProgress() const {

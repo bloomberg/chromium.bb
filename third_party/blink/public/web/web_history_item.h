@@ -110,7 +110,7 @@ class WebHistoryItem {
   BLINK_EXPORT void SetHTTPContentType(const WebString&);
 
   BLINK_EXPORT WebHTTPBody HttpBody() const;
-  BLINK_EXPORT void SetHTTPBody(const WebHTTPBody&);
+  BLINK_EXPORT void SetHttpBody(const WebHTTPBody&);
 
   BLINK_EXPORT WebVector<WebString> GetReferencedFilePaths() const;
 
