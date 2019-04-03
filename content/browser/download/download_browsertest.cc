@@ -3784,10 +3784,13 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, FetchErrorResponseBodyResumption) {
             std::string("header_value"));
 }
 
+// Verify WebUI download will success with an associated renderer process.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadFromWebUI) {
   GURL webui_url("chrome://resources/images/apps/blue_button.png");
   NavigateToURL(shell(), webui_url);
   SetupEnsureNoPendingDownloads();
+
+  // Creates download parameters with renderer process information.
   std::unique_ptr<download::DownloadUrlParameters> download_parameters(
       DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
           shell()->web_contents(), webui_url, TRAFFIC_ANNOTATION_FOR_TESTS));
@@ -3801,6 +3804,32 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadFromWebUI) {
   DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
   ASSERT_EQ(1u, downloads.size());
   ASSERT_EQ(download::DownloadItem::COMPLETE, downloads[0]->GetState());
+}
+
+// Verify WebUI download will gracefully fail without an associated renderer
+// process.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadFromWebUIWithoutRenderer) {
+  GURL webui_url("chrome://resources/images/apps/blue_button.png");
+  NavigateToURL(shell(), webui_url);
+  SetupEnsureNoPendingDownloads();
+
+  // Creates download parameters without any renderer process information.
+  auto download_parameters = std::make_unique<download::DownloadUrlParameters>(
+      webui_url, TRAFFIC_ANNOTATION_FOR_TESTS);
+  std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(shell(), 1));
+  DownloadManagerForShell(shell())->DownloadUrl(std::move(download_parameters));
+  observer->WaitForFinished();
+
+  EXPECT_TRUE(EnsureNoPendingDownloads());
+
+  std::vector<download::DownloadItem*> downloads;
+  DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
+  ASSERT_EQ(1u, downloads.size());
+
+  // WebUI or other UrlLoaderFacotry will not handle request without a valid
+  // render frame host, download should gracefully fail without triggering
+  // crash.
+  ASSERT_EQ(download::DownloadItem::INTERRUPTED, downloads[0]->GetState());
 }
 
 // Test fixture for forcing MHTML download.
