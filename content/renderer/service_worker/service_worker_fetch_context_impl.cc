@@ -111,7 +111,7 @@ void ServiceWorkerFetchContextImpl::WillSendRequest(
   request.SetExtraData(std::move(extra_data));
 
   if (!renderer_preferences_.enable_referrers) {
-    request.SetHTTPReferrer(blink::WebString(),
+    request.SetHttpReferrer(blink::WebString(),
                             network::mojom::ReferrerPolicy::kDefault);
   }
 }

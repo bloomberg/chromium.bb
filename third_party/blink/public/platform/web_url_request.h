@@ -208,10 +208,10 @@ class WebURLRequest {
 
   BLINK_PLATFORM_EXPORT WebString HttpHeaderField(const WebString& name) const;
   // It's not possible to set the referrer header using this method. Use
-  // SetHTTPReferrer instead.
+  // SetHttpReferrer instead.
   BLINK_PLATFORM_EXPORT void SetHttpHeaderField(const WebString& name,
                                                 const WebString& value);
-  BLINK_PLATFORM_EXPORT void SetHTTPReferrer(const WebString& referrer,
+  BLINK_PLATFORM_EXPORT void SetHttpReferrer(const WebString& referrer,
                                              network::mojom::ReferrerPolicy);
   BLINK_PLATFORM_EXPORT void AddHttpHeaderField(const WebString& name,
                                                 const WebString& value);

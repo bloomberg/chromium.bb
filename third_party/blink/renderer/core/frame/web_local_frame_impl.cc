@@ -960,7 +960,7 @@ void WebLocalFrameImpl::SetReferrerForRequest(WebURLRequest& request,
   String referrer = referrer_url.IsEmpty()
                         ? GetFrame()->GetDocument()->OutgoingReferrer()
                         : String(referrer_url.GetString());
-  request.ToMutableResourceRequest().SetHTTPReferrer(
+  request.ToMutableResourceRequest().SetHttpReferrer(
       SecurityPolicy::GenerateReferrer(
           GetFrame()->GetDocument()->GetReferrerPolicy(), request.Url(),
           referrer));

@@ -105,7 +105,7 @@ void WorkerShadowPage::WillSendRequest(WebURLRequest& request) {
     request.SetHttpHeaderField(WebString::FromUTF8(kDoNotTrackHeader), "1");
   }
   if (!preferences_.enable_referrers) {
-    request.SetHTTPReferrer(WebString(),
+    request.SetHttpReferrer(WebString(),
                             network::mojom::ReferrerPolicy::kDefault);
   }
 }

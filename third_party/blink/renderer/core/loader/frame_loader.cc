@@ -177,7 +177,7 @@ ResourceRequest FrameLoader::ResourceRequestForReload(
   // TODO(domfarolino): Stop storing ResourceRequest's generated referrer as a
   // header and instead use a separate member. See https://crbug.com/850813.
   if (client_redirect_policy == ClientRedirectPolicy::kClientRedirect) {
-    request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
+    request.SetHttpReferrer(SecurityPolicy::GenerateReferrer(
         frame_->GetDocument()->GetReferrerPolicy(),
         frame_->GetDocument()->Url(),
         frame_->GetDocument()->OutgoingReferrer()));
@@ -631,7 +631,7 @@ void FrameLoader::SetReferrerForFrameRequest(FrameLoadRequest& frame_request) {
 
   // TODO(domfarolino): Stop storing ResourceRequest's generated referrer as a
   // header and instead use a separate member. See https://crbug.com/850813.
-  request.SetHTTPReferrer(referrer);
+  request.SetHttpReferrer(referrer);
   request.SetHTTPOriginToMatchReferrerIfNeeded();
 }
 
