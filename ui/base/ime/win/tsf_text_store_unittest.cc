@@ -1117,6 +1117,8 @@ class ScenarioTestCallback : public TSFTextStoreTestCallback {
     composition_range()->set_start(0);
     composition_range()->set_end(5);
 
+    // Need to set |has_composition_range_| to indicate composition scenario.
+    *has_composition_range() = true;
     return S_OK;
   }
 
@@ -1211,6 +1213,7 @@ class GetTextExtTestCallback : public TSFTextStoreTestCallback {
   HRESULT LockGranted(DWORD flags) {
     SetInternalState(L"0123456789012", 0, 0, 0);
     layout_prepared_character_num_ = 13;
+    has_composition_text_ = true;
 
     TsViewCookie view_cookie = 0;
     EXPECT_EQ(S_OK, text_store_->GetActiveView(&view_cookie));
@@ -1231,7 +1234,8 @@ class GetTextExtTestCallback : public TSFTextStoreTestCallback {
     GetTextExtNoLayoutTest(view_cookie, 13, 13);
 
     layout_prepared_character_num_ = 0;
-    GetTextExtNoLayoutTest(view_cookie, 0, 0);
+    has_composition_text_ = false;
+    GetTextExtTest(view_cookie, 0, 0, 1, 2, 4, 6);
 
     SetInternalState(L"", 0, 0, 0);
     GetTextExtTest(view_cookie, 0, 0, 1, 2, 4, 6);
@@ -1241,12 +1245,14 @@ class GetTextExtTestCallback : public TSFTextStoreTestCallback {
     // bounds.
     SetInternalState(L"abc", 0, 0, 3);
     layout_prepared_character_num_ = 2;
+    has_composition_text_ = true;
     GetTextExtTest(view_cookie, 0, 0, 11, 12, 11, 20);
 
     // TODO(nona, kinaba): Remove following test case after PPAPI supporting
     // GetCompositionCharacterBounds.
     SetInternalState(L"a", 0, 0, 1);
     layout_prepared_character_num_ = 0;
+    has_composition_text_ = false;
     GetTextExtTest(view_cookie, 0, 1, 1, 2, 4, 6);
     return S_OK;
   }
@@ -1263,8 +1269,11 @@ class GetTextExtTestCallback : public TSFTextStoreTestCallback {
 
   gfx::Rect GetCaretBounds() { return gfx::Rect(1, 2, 3, 4); }
 
+  bool ClientHasCompositionText() { return has_composition_text_; }
+
  private:
   uint32_t layout_prepared_character_num_;
+  bool has_composition_text_;
 
   DISALLOW_COPY_AND_ASSIGN(GetTextExtTestCallback);
 };
@@ -1278,6 +1287,10 @@ TEST_F(TSFTextStoreTest, GetTextExtTest) {
   EXPECT_CALL(text_input_client_, GetCompositionCharacterBounds(_, _))
       .WillRepeatedly(Invoke(
           &callback, &GetTextExtTestCallback::GetCompositionCharacterBounds));
+
+  EXPECT_CALL(text_input_client_, HasCompositionText())
+      .WillRepeatedly(
+          Invoke(&callback, &GetTextExtTestCallback::ClientHasCompositionText));
 
   EXPECT_CALL(*sink_, OnLockGranted(_))
       .WillOnce(Invoke(&callback, &GetTextExtTestCallback::LockGranted));
@@ -1567,6 +1580,10 @@ TEST_F(TSFTextStoreTest, KeyEventTest) {
 // 8.  renderer proc changes buffer from "" to "OPQ".
 // 9.  renderer proc changes buffer from "OPQ" to "OPR".
 // 10. renderer proc changes buffer from "OPR" to "SPR".
+// 11. renderer proc changes buffer from "SPR" to "STPR".
+// 12. renderer proc changes buffer from "STPR" to "PR".
+// 13. renderer proc changes buffer from "PR" to "UPR".
+// 14. renderer proc changes buffer from "UPR" to "UPVWR".
 class DiffingAlgorithmTestCallback : public TSFTextStoreTestCallback {
  public:
   explicit DiffingAlgorithmTestCallback(TSFTextStore* text_store)
@@ -1916,6 +1933,153 @@ class DiffingAlgorithmTestCallback : public TSFTextStoreTestCallback {
     GetSelectionTest(0, 1);
     return S_OK;
   }
+  // 11. renderer proc changes buffer from "SPR" to "STPR".
+  HRESULT LockGranted11(DWORD flags) {
+    SetTextRange(0, 4);
+    SetTextBuffer(L"STPR");
+    SetSelectionRange(2, 2);
+    return S_OK;
+  }
+
+  HRESULT OnTextChange11(DWORD flag, const TS_TEXTCHANGE* pChange) {
+    HRESULT result = S_OK;
+    EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+    EXPECT_EQ(1, pChange->acpStart);
+    EXPECT_EQ(1, pChange->acpOldEnd);
+    EXPECT_EQ(2, pChange->acpNewEnd);
+
+    EXPECT_EQ(S_OK, result);
+    return S_OK;
+  }
+
+  HRESULT LockGranted11a(DWORD flags) {
+    GetTextTest(1, 2, L"T", 2);
+
+    return S_OK;
+  }
+
+  HRESULT OnSelectionChange11() {
+    HRESULT result = S_OK;
+    EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+    EXPECT_EQ(S_OK, result);
+    return S_OK;
+  }
+
+  HRESULT LockGranted11b(DWORD flags) {
+    GetSelectionTest(2, 2);
+    return S_OK;
+  }
+
+  // 12. renderer proc changes buffer from "STPR" to "PR".
+  HRESULT LockGranted12(DWORD flags) {
+    SetTextRange(0, 2);
+    SetTextBuffer(L"PR");
+    SetSelectionRange(0, 0);
+    return S_OK;
+  }
+
+  HRESULT OnTextChange12(DWORD flag, const TS_TEXTCHANGE* pChange) {
+    HRESULT result = S_OK;
+    EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+    EXPECT_EQ(0, pChange->acpStart);
+    EXPECT_EQ(2, pChange->acpOldEnd);
+    EXPECT_EQ(0, pChange->acpNewEnd);
+
+    EXPECT_EQ(S_OK, result);
+    return S_OK;
+  }
+
+  HRESULT LockGranted12a(DWORD flags) {
+    GetTextTest(0, 2, L"PR", 2);
+
+    return S_OK;
+  }
+
+  HRESULT OnSelectionChange12() {
+    HRESULT result = S_OK;
+    EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+    EXPECT_EQ(S_OK, result);
+    return S_OK;
+  }
+
+  HRESULT LockGranted12b(DWORD flags) {
+    GetSelectionTest(0, 0);
+    return S_OK;
+  }
+
+  // 13. renderer proc changes buffer from "PR" to "UPR".
+  HRESULT LockGranted13(DWORD flags) {
+    SetTextRange(0, 3);
+    SetTextBuffer(L"UPR");
+    SetSelectionRange(1, 1);
+    return S_OK;
+  }
+
+  HRESULT OnTextChange13(DWORD flag, const TS_TEXTCHANGE* pChange) {
+    HRESULT result = S_OK;
+    EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+    EXPECT_EQ(0, pChange->acpStart);
+    EXPECT_EQ(0, pChange->acpOldEnd);
+    EXPECT_EQ(1, pChange->acpNewEnd);
+
+    EXPECT_EQ(S_OK, result);
+    return S_OK;
+  }
+
+  HRESULT LockGranted13a(DWORD flags) {
+    GetTextTest(0, 1, L"U", 1);
+
+    return S_OK;
+  }
+
+  HRESULT OnSelectionChange13() {
+    HRESULT result = S_OK;
+    EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+    EXPECT_EQ(S_OK, result);
+    return S_OK;
+  }
+
+  HRESULT LockGranted13b(DWORD flags) {
+    GetSelectionTest(1, 1);
+    return S_OK;
+  }
+
+  // 14. renderer proc changes buffer from "UPR" to "UPVWR".
+  HRESULT LockGranted14(DWORD flags) {
+    SetTextRange(0, 5);
+    SetTextBuffer(L"UPVWR");
+    SetSelectionRange(4, 4);
+    return S_OK;
+  }
+
+  HRESULT OnTextChange14(DWORD flag, const TS_TEXTCHANGE* pChange) {
+    HRESULT result = S_OK;
+    EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+    EXPECT_EQ(2, pChange->acpStart);
+    EXPECT_EQ(2, pChange->acpOldEnd);
+    EXPECT_EQ(4, pChange->acpNewEnd);
+
+    EXPECT_EQ(S_OK, result);
+    return S_OK;
+  }
+
+  HRESULT LockGranted14a(DWORD flags) {
+    GetTextTest(2, 4, L"VW", 4);
+
+    return S_OK;
+  }
+
+  HRESULT OnSelectionChange14() {
+    HRESULT result = S_OK;
+    EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+    EXPECT_EQ(S_OK, result);
+    return S_OK;
+  }
+
+  HRESULT LockGranted14b(DWORD flags) {
+    GetSelectionTest(4, 4);
+    return S_OK;
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DiffingAlgorithmTestCallback);
@@ -1934,7 +2098,15 @@ TEST_F(TSFTextStoreTest, DiffingAlgorithmTest) {
       .WillOnce(Invoke(&callback, &DiffingAlgorithmTestCallback::OnTextChange8))
       .WillOnce(Invoke(&callback, &DiffingAlgorithmTestCallback::OnTextChange9))
       .WillOnce(
-          Invoke(&callback, &DiffingAlgorithmTestCallback::OnTextChange10));
+          Invoke(&callback, &DiffingAlgorithmTestCallback::OnTextChange10))
+      .WillOnce(
+          Invoke(&callback, &DiffingAlgorithmTestCallback::OnTextChange11))
+      .WillOnce(
+          Invoke(&callback, &DiffingAlgorithmTestCallback::OnTextChange12))
+      .WillOnce(
+          Invoke(&callback, &DiffingAlgorithmTestCallback::OnTextChange13))
+      .WillOnce(
+          Invoke(&callback, &DiffingAlgorithmTestCallback::OnTextChange14));
 
   EXPECT_CALL(*sink_, OnSelectionChange())
       .WillOnce(
@@ -1953,8 +2125,16 @@ TEST_F(TSFTextStoreTest, DiffingAlgorithmTest) {
           Invoke(&callback, &DiffingAlgorithmTestCallback::OnSelectionChange8))
       .WillOnce(
           Invoke(&callback, &DiffingAlgorithmTestCallback::OnSelectionChange9))
+      .WillOnce(
+          Invoke(&callback, &DiffingAlgorithmTestCallback::OnSelectionChange10))
+      .WillOnce(
+          Invoke(&callback, &DiffingAlgorithmTestCallback::OnSelectionChange11))
+      .WillOnce(
+          Invoke(&callback, &DiffingAlgorithmTestCallback::OnSelectionChange12))
+      .WillOnce(
+          Invoke(&callback, &DiffingAlgorithmTestCallback::OnSelectionChange13))
       .WillOnce(Invoke(&callback,
-                       &DiffingAlgorithmTestCallback::OnSelectionChange10));
+                       &DiffingAlgorithmTestCallback::OnSelectionChange14));
 
   EXPECT_CALL(text_input_client_, InsertText(_))
       .WillOnce(Invoke(&callback, &DiffingAlgorithmTestCallback::InsertText2));
@@ -1989,7 +2169,27 @@ TEST_F(TSFTextStoreTest, DiffingAlgorithmTest) {
       .WillOnce(
           Invoke(&callback, &DiffingAlgorithmTestCallback::LockGranted10a))
       .WillOnce(
-          Invoke(&callback, &DiffingAlgorithmTestCallback::LockGranted10b));
+          Invoke(&callback, &DiffingAlgorithmTestCallback::LockGranted10b))
+      .WillOnce(Invoke(&callback, &DiffingAlgorithmTestCallback::LockGranted11))
+      .WillOnce(
+          Invoke(&callback, &DiffingAlgorithmTestCallback::LockGranted11a))
+      .WillOnce(
+          Invoke(&callback, &DiffingAlgorithmTestCallback::LockGranted11b))
+      .WillOnce(Invoke(&callback, &DiffingAlgorithmTestCallback::LockGranted12))
+      .WillOnce(
+          Invoke(&callback, &DiffingAlgorithmTestCallback::LockGranted12a))
+      .WillOnce(
+          Invoke(&callback, &DiffingAlgorithmTestCallback::LockGranted12b))
+      .WillOnce(Invoke(&callback, &DiffingAlgorithmTestCallback::LockGranted13))
+      .WillOnce(
+          Invoke(&callback, &DiffingAlgorithmTestCallback::LockGranted13a))
+      .WillOnce(
+          Invoke(&callback, &DiffingAlgorithmTestCallback::LockGranted13b))
+      .WillOnce(Invoke(&callback, &DiffingAlgorithmTestCallback::LockGranted14))
+      .WillOnce(
+          Invoke(&callback, &DiffingAlgorithmTestCallback::LockGranted14a))
+      .WillOnce(
+          Invoke(&callback, &DiffingAlgorithmTestCallback::LockGranted14b));
 
   ON_CALL(text_input_client_, GetTextRange(_))
       .WillByDefault(
@@ -2034,6 +2234,17 @@ TEST_F(TSFTextStoreTest, DiffingAlgorithmTest) {
   EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
   EXPECT_EQ(S_OK, result);
   result = kInvalidResult;
+  EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+  EXPECT_EQ(S_OK, result);
+  result = kInvalidResult;
+  EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+  EXPECT_EQ(S_OK, result);
+  result = kInvalidResult;
+  EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+  EXPECT_EQ(S_OK, result);
+  result = kInvalidResult;
+  EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+  EXPECT_EQ(S_OK, result);
 }
 
 }  // namespace
