@@ -8,11 +8,11 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/ui/app_list/search/app_result.h"
-#include "chrome/browser/ui/app_list/search/search_util.h"
 #include "components/favicon_base/favicon_types.h"
 #include "url/gurl.h"
 

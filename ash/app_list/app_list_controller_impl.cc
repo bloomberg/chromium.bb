@@ -25,6 +25,7 @@
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
@@ -892,7 +893,15 @@ void AppListControllerImpl::OpenSearchResult(
   if (presenter_.IsVisible() && result->is_omnibox_search() &&
       IsAssistantAllowedAndEnabled() &&
       app_list_features::IsEmbeddedAssistantUIEnabled()) {
-    // TODO(newcomer): Record search result launches via assistant.
+    // Record the assistant result. Other types of results are recorded in
+    // |client_| where there is richer data on SearchResultType.
+    DCHECK_EQ(ash::mojom::AppListLaunchedFrom::kLaunchedFromSearchBox,
+              launched_from)
+        << "Only log search results which are represented to the user as "
+           "search results (ie. search results in the search result page) not "
+           "chips.";
+    app_list::RecordSearchResultOpenTypeHistogram(
+        app_list::ASSISTANT_OMNIBOX_RESULT);
     Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
         AssistantEntryPoint::kLauncherSearchResult);
     Shell::Get()->assistant_controller()->OpenUrl(

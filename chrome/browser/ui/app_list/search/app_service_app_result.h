@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_APP_SERVICE_APP_RESULT_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_APP_SERVICE_APP_RESULT_H_
 
+
+#include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/app_list/search/app_result.h"
-#include "chrome/browser/ui/app_list/search/search_util.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 
 class AppListControllerDelegate;
