@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "build/build_config.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -43,6 +44,10 @@ class FakeOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate {
   void RevokeCredentials(const std::string& account_id) override;
   void ExtractCredentials(OAuth2TokenService* to_service,
                           const std::string& account_id) override;
+
+#if defined(OS_IOS)
+  void ReloadAccountsFromSystem(const std::string& primary_account_id) override;
+#endif
 
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       const override;
