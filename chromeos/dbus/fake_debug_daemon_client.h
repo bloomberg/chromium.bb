@@ -85,7 +85,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeDebugDaemonClient
                                     const std::string& uri,
                                     CupsAddPrinterCallback callback) override;
   void CupsRemovePrinter(const std::string& name,
-                         const CupsRemovePrinterCallback& callback,
+                         CupsRemovePrinterCallback callback,
                          const base::Closure& error_callback) override;
   void StartConcierge(ConciergeCallback callback) override;
   void StopConcierge(ConciergeCallback callback) override;

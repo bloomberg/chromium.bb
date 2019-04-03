@@ -248,14 +248,14 @@ void FakeDebugDaemonClient::CupsAddAutoConfiguredPrinter(
 
 void FakeDebugDaemonClient::CupsRemovePrinter(
     const std::string& name,
-    const DebugDaemonClient::CupsRemovePrinterCallback& callback,
+    DebugDaemonClient::CupsRemovePrinterCallback callback,
     const base::Closure& error_callback) {
   const bool has_printer = base::ContainsKey(printers_, name);
   if (has_printer)
     printers_.erase(name);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, has_printer));
+      FROM_HERE, base::BindOnce(std::move(callback), has_printer));
 }
 
 void FakeDebugDaemonClient::StartConcierge(ConciergeCallback callback) {

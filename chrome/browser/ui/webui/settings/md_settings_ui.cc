@@ -228,7 +228,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
         std::make_unique<chromeos::settings::CrostiniHandler>(profile));
   }
   AddSettingsPageUIHandler(
-      std::make_unique<chromeos::settings::CupsPrintersHandler>(web_ui));
+      chromeos::settings::CupsPrintersHandler::Create(web_ui));
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::FingerprintHandler>(profile));
   if (chromeos::switches::IsAssistantEnabled()) {
