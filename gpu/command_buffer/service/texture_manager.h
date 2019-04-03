@@ -1028,7 +1028,11 @@ class GPU_GLES2_EXPORT TextureManager
       case GL_SAMPLER_2D_RECT_ARB:
         return black_texture_ids_[kRectangleARB];
       default:
-        NOTREACHED();
+        // The above covers ES 2, but ES 3 has many more sampler types. Rather
+        // than create a texture for all of them, just use the 0 texture, which
+        // should always be incomplete, and rely on the driver to return black
+        // when sampling it. Hopefully ES 3 drivers are better about actually
+        // returning black when sampling an incomplete texture.
         return 0;
     }
   }
@@ -1186,7 +1190,8 @@ class GPU_GLES2_EXPORT TextureManager
       const gles2::FeatureInfo* feature_info,
       GLenum format);
   static GLenum AdjustTexInternalFormat(const gles2::FeatureInfo* feature_info,
-                                        GLenum format);
+                                        GLenum format,
+                                        GLenum type);
   static GLenum AdjustTexFormat(const gles2::FeatureInfo* feature_info,
                                 GLenum format);
 
