@@ -55061,6 +55061,23 @@ Full version information for the fingerprint enum values:
   <int value="7" label="Invalid argument"/>
 </enum>
 
+<enum name="UpdateDynamicRulesStatus">
+  <int value="0" label="kSuccess"/>
+  <int value="1" label="kErrorReadJSONRules"/>
+  <int value="2" label="kErrorRuleCountExceeded"/>
+  <int value="3" label="kErrorCreateTemporarySource"/>
+  <int value="4" label="kErrorWriteTemporaryJSONRuleset"/>
+  <int value="5" label="kErrorWriteTemporaryIndexedRuleset"/>
+  <int value="6" label="kErrorInvalidRules"/>
+  <int value="7" label="kErrorCreateDynamicRulesDirectory"/>
+  <int value="8" label="kErrorReplaceIndexedFile"/>
+  <int value="9" label="kErrorReplaceJSONFile"/>
+  <int value="10" label="kErrorCreateMatcher_InvalidPath"/>
+  <int value="11" label="kErrorCreateMatcher_FileReadError"/>
+  <int value="12" label="kErrorCreateMatcher_ChecksumMismatch"/>
+  <int value="13" label="kErrorCreateMatcher_VersionMismatch"/>
+</enum>
+
 <enum name="UpdateEngineAttemptResult">
   <int value="0" label="Update Succeeded"/>
   <int value="1" label="Internal Error"/>

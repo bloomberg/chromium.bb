@@ -12,14 +12,18 @@
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "components/crx_file/id_util.h"
 #include "components/version_info/version_info.h"
 #include "content/public/test/test_service_manager_context.h"
+#include "extensions/browser/api/declarative_net_request/constants.h"
+#include "extensions/browser/api/declarative_net_request/parse_info.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/browser/api/declarative_net_request/test_utils.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extensions_test.h"
+#include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
 #include "extensions/common/features/feature_channel.h"
 #include "services/data_decoder/public/cpp/testing_json_parser.h"
@@ -28,6 +32,18 @@
 namespace extensions {
 namespace declarative_net_request {
 namespace {
+
+api::declarative_net_request::Rule GetAPIRule(const TestRule& rule) {
+  std::unique_ptr<base::DictionaryValue> value = rule.ToValue();
+  EXPECT_TRUE(value);
+  api::declarative_net_request::Rule result;
+  base::string16 error;
+  EXPECT_TRUE(
+      api::declarative_net_request::Rule::Populate(*value, &result, &error))
+      << error;
+  EXPECT_TRUE(error.empty()) << error;
+  return result;
+}
 
 struct LoadRulesetResult {
   bool has_new_checksum = false;
@@ -56,6 +72,44 @@ class FileSequenceHelperTest : public ExtensionsTest {
     GetExtensionFileTaskRunner()->DeleteSoon(FROM_HERE, std::move(helper_));
     base::RunLoop().RunUntilIdle();
     ExtensionsTest::TearDown();
+  }
+
+  void TestAddDynamicRules(
+      RulesetSource source,
+      std::vector<api::declarative_net_request::Rule> rules_to_add,
+      UpdateDynamicRulesStatus expected_status,
+      base::Optional<std::string> expected_error,
+      bool expected_did_load_successfully) {
+    base::RunLoop run_loop;
+    auto add_rules_callback = base::BindOnce(
+        [](base::RunLoop* run_loop, bool expected_did_load_successfully,
+           base::Optional<std::string> expected_error, LoadRequestData data,
+           base::Optional<std::string> error) {
+          EXPECT_EQ(1u, data.rulesets.size());
+          EXPECT_EQ(expected_did_load_successfully,
+                    data.rulesets[0].did_load_successfully());
+          EXPECT_EQ(expected_error, error) << error.value_or("no actual error");
+          run_loop->Quit();
+        },
+        &run_loop, expected_did_load_successfully, expected_error);
+
+    ExtensionId extension_id = crx_file::id_util::GenerateId("dummy_extension");
+    LoadRequestData data(extension_id);
+    data.rulesets.emplace_back(std::move(source));
+
+    // Unretained is safe because |helper_| outlives the |add_rules_task|.
+    auto add_rules_task =
+        base::BindOnce(&FileSequenceHelper::UpdateDynamicRules,
+                       base::Unretained(helper_.get()), std::move(data),
+                       std::move(rules_to_add), DynamicRuleUpdateAction::kAdd,
+                       std::move(add_rules_callback));
+
+    base::HistogramTester tester;
+    GetExtensionFileTaskRunner()->PostTask(FROM_HERE,
+                                           std::move(add_rules_task));
+    run_loop.Run();
+    tester.ExpectUniqueSample(kUpdateDynamicRulesStatusHistogram,
+                              expected_status, 1 /* expected_count */);
   }
 
   void TestLoadRulesets(const std::vector<TestCase>& test_cases) {
@@ -182,6 +236,44 @@ TEST_F(FileSequenceHelperTest, MultipleRulesets) {
   }
 
   TestLoadRulesets(test_cases);
+}
+
+// Tests updating dynamic rules.
+TEST_F(FileSequenceHelperTest, UpdateDynamicRules) {
+  // Simulate adding rules for the first time i.e. with no JSON and indexed
+  // ruleset files.
+  RulesetSource source = CreateTemporarySource();
+  base::DeleteFile(source.json_path(), false /* recursive */);
+  base::DeleteFile(source.indexed_path(), false /* recursive */);
+
+  // Test success.
+  std::vector<api::declarative_net_request::Rule> api_rules;
+  {
+    SCOPED_TRACE("Test adding a valid rule");
+    api_rules.push_back(GetAPIRule(CreateGenericRule()));
+    TestAddDynamicRules(source.Clone(), std::move(api_rules),
+                        UpdateDynamicRulesStatus::kSuccess,
+                        base::nullopt /* expected_error */,
+                        true /* expected_did_load_successfully*/);
+  }
+
+  // Test adding an invalid rule, e.g. a redirect rule without priority.
+  {
+    SCOPED_TRACE("Test adding an invalid rule");
+    TestRule rule = CreateGenericRule();
+    rule.id = kMinValidID + 1;
+    rule.action->type = std::string("redirect");
+    rule.action->redirect_url = std::string("http://google.com");
+    api_rules.clear();
+    api_rules.push_back(GetAPIRule(rule));
+    TestAddDynamicRules(
+        source.Clone(), std::move(api_rules),
+        UpdateDynamicRulesStatus::kErrorInvalidRules,
+        ParseInfo(ParseResult::ERROR_EMPTY_REDIRECT_RULE_PRIORITY,
+                  kMinValidID + 1)
+            .GetErrorDescription(),
+        false /* expected_did_load_successfully */);
+  }
 }
 
 }  // namespace

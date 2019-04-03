@@ -51,6 +51,8 @@ const char kIndexAndPersistRulesTimeHistogram[] =
     "Extensions.DeclarativeNetRequest.IndexAndPersistRulesTime";
 const char kManifestRulesCountHistogram[] =
     "Extensions.DeclarativeNetRequest.ManifestRulesCount";
+const char kUpdateDynamicRulesStatusHistogram[] =
+    "Extensions.DeclarativeNetRequest.UpdateDynamicRulesStatus";
 
 }  // namespace declarative_net_request
 }  // namespace extensions
