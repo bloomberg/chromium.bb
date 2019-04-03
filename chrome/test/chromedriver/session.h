@@ -125,6 +125,8 @@ struct Session {
   std::vector<std::unique_ptr<CommandListener>> command_listeners;
   bool strict_file_interactability;
   std::string unhandled_prompt_behavior;
+  int click_count;
+  base::TimeTicks mouse_click_timestamp;
 };
 
 Session* GetThreadLocalSession();
