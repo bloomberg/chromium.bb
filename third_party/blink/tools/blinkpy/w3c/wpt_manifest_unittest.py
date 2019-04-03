@@ -32,6 +32,7 @@ class WPTManifestUnitTest(unittest.TestCase):
                     '/mock-checkout/third_party/blink/tools/blinkpy/third_party/wpt/wpt/wpt',
                     'manifest',
                     '--work',
+                    '--no-download',
                     '--tests-root',
                     MOCK_WEB_TESTS + 'external/wpt',
                 ]
@@ -57,6 +58,7 @@ class WPTManifestUnitTest(unittest.TestCase):
                     '/mock-checkout/third_party/blink/tools/blinkpy/third_party/wpt/wpt/wpt',
                     'manifest',
                     '--work',
+                    '--no-download',
                     '--tests-root',
                     MOCK_WEB_TESTS + 'external/wpt',
                 ]
@@ -69,6 +71,42 @@ class WPTManifestUnitTest(unittest.TestCase):
 
         with self.assertRaises(ScriptError):
             WPTManifest.ensure_manifest(host)
+
+    def test_ensure_manifest_takes_optional_dest(self):
+        host = MockHost()
+        WPTManifest.ensure_manifest(host, 'wpt_internal')
+        self.assertEqual(
+            host.executive.calls,
+            [
+                [
+                    'python',
+                    '/mock-checkout/third_party/blink/tools/blinkpy/third_party/wpt/wpt/wpt',
+                    'manifest',
+                    '--work',
+                    '--no-download',
+                    '--tests-root',
+                    MOCK_WEB_TESTS + 'wpt_internal',
+                ]
+            ]
+        )
+
+    def test_does_not_throw_when_missing_some_test_types(self):
+        manifest_json = '''
+{
+    "items": {
+        "testharness": {
+            "test.any.js": [
+                ["/test.any.html", {}]
+            ]
+        }
+    }
+}
+        '''
+        manifest = WPTManifest(manifest_json)
+        self.assertTrue(manifest.is_test_file('test.any.js'))
+        self.assertEqual(manifest.all_url_items(),
+                         {u'/test.any.html': [u'/test.any.html', {}]})
+        self.assertEqual(manifest.extract_reference_list('/foo/bar.html'), [])
 
     def test_all_url_items_skips_jsshell_tests(self):
         manifest_json = '''

@@ -102,14 +102,6 @@ SXG_FINGERPRINT = '55qC1nKu2A88ESbFmk5sTPQS/ScG+8DD7P+2bgFA9iM='
 # And one for external/wpt/signed-exchange/resources/127.0.0.1.sxg.pem
 SXG_WPT_FINGERPRINT = '0Rt4mT6SJXojEMHTnKnlJ/hBKMBcI4kteBlhR1eTTdk='
 
-# The following two constants must match. When adding a new WPT root, also
-# remember to add an alias rule to third_party/wpt/wpt.config.json.
-WPT_DIRS = ['external/wpt']
-# WPT_REGEX captures: 1. the root directory of WPT relative to web_tests
-# (without a trailing slash), 2. the path of the test within WPT (without a
-# leading slash).
-WPT_REGEX = re.compile(r'^(?:virtual/[^/]+/)?(external/wpt)/(.*)$')
-
 
 class Port(object):
     """Abstract class for Port-specific hooks for the web_test package."""
@@ -181,6 +173,19 @@ class Port(object):
     BASELINE_EXTENSIONS = ('.wav', '.txt', '.png')
 
     FLAG_EXPECTATIONS_PREFIX = 'FlagExpectations'
+
+    # The following two constants must match. When adding a new WPT root, also
+    # remember to add an alias rule to third_party/wpt/wpt.config.json.
+    # WPT_DIRS maps WPT roots on the file system to URL prefixes on wptserve.
+    # The order matters: the empty URL prefix MUST be the last one.
+    WPT_DIRS = collections.OrderedDict([
+        ('wpt_internal', 'wpt_internal/'),
+        ('external/wpt', ''),
+    ])
+    # WPT_REGEX captures: 1. the root directory of WPT relative to web_tests
+    # (without a trailing slash), 2. the path of the test within WPT (without a
+    # leading slash).
+    WPT_REGEX = re.compile(r'^(?:virtual/[^/]+/)?(external/wpt|wpt_internal)/(.*)$')
 
     # Because this is an abstract base class, arguments to functions may be
     # unused in this class - pylint: disable=unused-argument
@@ -696,7 +701,7 @@ class Port(object):
             return reftest_list
 
         # Try to extract information from MANIFEST.json.
-        match = WPT_REGEX.match(test_name)
+        match = self.WPT_REGEX.match(test_name)
         if not match:
             return []
         wpt_path = match.group(1)
@@ -724,13 +729,13 @@ class Port(object):
         suites = self.virtual_test_suites()
         if paths:
             tests.extend(self._virtual_tests_matching_paths(paths, suites))
-            if (any(wpt_path in path for wpt_path in WPT_DIRS for path in paths)
+            if (any(wpt_path in path for wpt_path in self.WPT_DIRS for path in paths)
                     # TODO(robertma): Remove this special case when external/wpt is moved to wpt.
                     or any('external' in path for path in paths)):
                 tests.extend(self._wpt_test_urls_matching_paths(paths))
         else:
             tests.extend(self._all_virtual_tests(suites))
-            tests.extend([wpt_path + test for wpt_path in WPT_DIRS
+            tests.extend([wpt_path + test for wpt_path in self.WPT_DIRS
                           for test in self._wpt_manifest(wpt_path).all_urls()])
 
         return tests
@@ -740,10 +745,10 @@ class Port(object):
         # When collecting test cases, skip these directories.
         skipped_directories = set(
             ['platform', 'resources', 'support', 'script-tests',
-             'reference', 'reftest']
-            # Also ignore all WPT directories. Note that this is only an
-            # optimization; is_non_wpt_test_file should skip WPT regardless.
-            + WPT_DIRS)
+             'reference', 'reftest'])
+        # Also ignore all WPT directories. Note that this is only an
+        # optimization; is_non_wpt_test_file should skip WPT regardless.
+        skipped_directories |= set(self.WPT_DIRS)
         files = find_files.find(self._filesystem, self.web_tests_dir(), paths, skipped_directories,
                                 lambda _, dirname, filename: self.is_non_wpt_test_file(dirname, filename),
                                 self.test_key)
@@ -777,7 +782,7 @@ class Port(object):
         # Convert dirname to a relative path to web_tests with slashes
         # normalized and ensure it has a trailing slash.
         normalized_test_dir = self.relative_test_filename(dirname) + self.TEST_PATH_SEPARATOR
-        if any([normalized_test_dir.startswith(d + self.TEST_PATH_SEPARATOR) for d in WPT_DIRS]):
+        if any(normalized_test_dir.startswith(d + self.TEST_PATH_SEPARATOR) for d in self.WPT_DIRS):
             return False
         extension = self._filesystem.splitext(filename)[1]
         if 'inspector-protocol' in dirname and extension == '.js':
@@ -789,7 +794,7 @@ class Port(object):
 
     @memoized
     def _wpt_manifest(self, path):
-        assert path in WPT_DIRS
+        assert path in self.WPT_DIRS
         # Convert '/' to the platform-specific separator.
         path = self._filesystem.normpath(path)
         manifest_path = self._filesystem.join(self.web_tests_dir(), path, MANIFEST_NAME)
@@ -799,7 +804,7 @@ class Port(object):
         return WPTManifest(self._filesystem.read_text_file(manifest_path))
 
     def is_slow_wpt_test(self, test_file):
-        match = WPT_REGEX.match(test_file)
+        match = self.WPT_REGEX.match(test_file)
         if not match:
             return False
         wpt_path = match.group(1)
@@ -1177,7 +1182,7 @@ class Port(object):
     @staticmethod
     def is_wpt_test(test):
         """Whether a test is considered a web-platform-tests test."""
-        return WPT_REGEX.match(test)
+        return Port.WPT_REGEX.match(test)
 
     @staticmethod
     def should_use_wptserve(test):
@@ -1624,7 +1629,7 @@ class Port(object):
             paths = [path.replace(self._filesystem.sep, '/') for path in paths]
 
         tests = []
-        for wpt_path in WPT_DIRS:
+        for wpt_path in self.WPT_DIRS:
             tests += self._wpt_test_urls(wpt_path, paths)
         return tests
 

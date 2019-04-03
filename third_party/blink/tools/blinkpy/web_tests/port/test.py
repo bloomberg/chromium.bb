@@ -31,7 +31,6 @@ import time
 
 from blinkpy.common import exit_codes
 from blinkpy.common.system.crash_logs import CrashLogs
-from blinkpy.web_tests.models import test_run_results
 from blinkpy.web_tests.models.test_configuration import TestConfiguration
 from blinkpy.web_tests.port.base import Port, VirtualTestSuite
 from blinkpy.web_tests.port.driver import DeviceFailure, Driver, DriverOutput
@@ -513,6 +512,7 @@ class TestPort(Port):
                              args=['--virtual-arg'], references_use_default_args=True),
             VirtualTestSuite(prefix='virtual_wpt', base='external/wpt', args=['--virtual-arg']),
             VirtualTestSuite(prefix='virtual_wpt_dom', base='external/wpt/dom', args=['--virtual-arg']),
+            VirtualTestSuite(prefix='virtual_wpt_dom', base='wpt_internal/dom', args=['--virtual-arg']),
         ]
 
 
