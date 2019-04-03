@@ -20,9 +20,10 @@ void FakePageTimingSender::SendTiming(
     mojom::PageLoadFeaturesPtr new_features,
     std::vector<mojom::ResourceDataUpdatePtr> resources,
     const mojom::FrameRenderDataUpdate& render_data,
-    const mojom::CpuTimingPtr& cpu_timing) {
+    const mojom::CpuTimingPtr& cpu_timing,
+    mojom::DeferredResourceCountsPtr new_deferred_resource_data) {
   validator_->UpdateTiming(timing, metadata, new_features, resources,
-                           render_data, cpu_timing);
+                           render_data, cpu_timing, new_deferred_resource_data);
 }
 
 FakePageTimingSender::PageTimingValidator::PageTimingValidator() {}
@@ -123,7 +124,8 @@ void FakePageTimingSender::PageTimingValidator::UpdateTiming(
     const mojom::PageLoadFeaturesPtr& new_features,
     const std::vector<mojom::ResourceDataUpdatePtr>& resources,
     const mojom::FrameRenderDataUpdate& render_data,
-    const mojom::CpuTimingPtr& cpu_timing) {
+    const mojom::CpuTimingPtr& cpu_timing,
+    const mojom::DeferredResourceCountsPtr& new_deferred_resource_data) {
   actual_timings_.push_back(timing.Clone());
   if (!cpu_timing->task_time.is_zero()) {
     actual_cpu_timings_.push_back(cpu_timing.Clone());

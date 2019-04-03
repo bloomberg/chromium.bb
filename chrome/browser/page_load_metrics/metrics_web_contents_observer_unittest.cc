@@ -276,12 +276,13 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
 
   void SimulateCpuTimingUpdate(const mojom::CpuTiming& timing,
                                content::RenderFrameHost* render_frame_host) {
-    observer()->OnTimingUpdated(render_frame_host, previous_timing_->Clone(),
-                                mojom::PageLoadMetadataPtr(base::in_place),
-                                mojom::PageLoadFeaturesPtr(base::in_place),
-                                std::vector<mojom::ResourceDataUpdatePtr>(),
-                                mojom::FrameRenderDataUpdatePtr(base::in_place),
-                                timing.Clone());
+    observer()->OnTimingUpdated(
+        render_frame_host, previous_timing_->Clone(),
+        mojom::PageLoadMetadataPtr(base::in_place),
+        mojom::PageLoadFeaturesPtr(base::in_place),
+        std::vector<mojom::ResourceDataUpdatePtr>(),
+        mojom::FrameRenderDataUpdatePtr(base::in_place), timing.Clone(),
+        mojom::DeferredResourceCountsPtr(base::in_place));
   }
 
   void SimulateTimingUpdate(const mojom::PageLoadTiming& timing,
@@ -299,12 +300,14 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
       const mojom::PageLoadTiming& timing,
       content::RenderFrameHost* render_frame_host) {
     previous_timing_ = timing.Clone();
-    observer()->OnTimingUpdated(render_frame_host, timing.Clone(),
-                                mojom::PageLoadMetadataPtr(base::in_place),
-                                mojom::PageLoadFeaturesPtr(base::in_place),
-                                std::vector<mojom::ResourceDataUpdatePtr>(),
-                                mojom::FrameRenderDataUpdatePtr(base::in_place),
-                                mojom::CpuTimingPtr(base::in_place));
+    observer()->OnTimingUpdated(
+        render_frame_host, timing.Clone(),
+        mojom::PageLoadMetadataPtr(base::in_place),
+        mojom::PageLoadFeaturesPtr(base::in_place),
+        std::vector<mojom::ResourceDataUpdatePtr>(),
+        mojom::FrameRenderDataUpdatePtr(base::in_place),
+        mojom::CpuTimingPtr(base::in_place),
+        mojom::DeferredResourceCountsPtr(base::in_place));
   }
 
   void AttachObserver() {
