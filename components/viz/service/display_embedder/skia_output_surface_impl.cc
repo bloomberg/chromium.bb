@@ -320,12 +320,20 @@ void SkiaOutputSurfaceImpl::BindToClient(OutputSurfaceClient* client) {
 
 void SkiaOutputSurfaceImpl::EnsureBackbuffer() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  NOTIMPLEMENTED();
+  // impl_on_gpu_ is released on the GPU thread by a posted task from
+  // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
+  auto callback = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::EnsureBackbuffer,
+                                 base::Unretained(impl_on_gpu_.get()));
+  ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
 }
 
 void SkiaOutputSurfaceImpl::DiscardBackbuffer() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  NOTIMPLEMENTED();
+  // impl_on_gpu_ is released on the GPU thread by a posted task from
+  // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
+  auto callback = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::DiscardBackbuffer,
+                                 base::Unretained(impl_on_gpu_.get()));
+  ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
 }
 
 void SkiaOutputSurfaceImpl::BindFramebuffer() {

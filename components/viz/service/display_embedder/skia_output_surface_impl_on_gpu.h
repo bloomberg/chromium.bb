@@ -123,6 +123,8 @@ class SkiaOutputSurfaceImplOnGpu {
       std::vector<gpu::SyncToken> sync_tokens,
       uint64_t sync_fence_release);
   void SwapBuffers(OutputSurfaceFrame frame);
+  void EnsureBackbuffer() { output_device_->EnsureBackbuffer(); }
+  void DiscardBackbuffer() { output_device_->DiscardBackbuffer(); }
   void FinishPaintRenderPass(RenderPassId id,
                              std::unique_ptr<SkDeferredDisplayList> ddl,
                              std::vector<gpu::SyncToken> sync_tokens,

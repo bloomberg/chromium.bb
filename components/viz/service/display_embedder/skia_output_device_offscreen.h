@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
 
 class GrContext;
 
@@ -29,12 +30,16 @@ class SkiaOutputDeviceOffscreen : public SkiaOutputDevice {
   gfx::SwapResponse SwapBuffers(BufferPresentedCallback feedback) override;
   gfx::SwapResponse PostSubBuffer(const gfx::Rect& rect,
                                   BufferPresentedCallback feedback) override;
+  void EnsureBackbuffer() override;
+  void DiscardBackbuffer() override;
 
  protected:
   GrContext* const gr_context_;
   const bool has_alpha_;
 
  private:
+  SkImageInfo image_info_;
+
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputDeviceOffscreen);
 };
 

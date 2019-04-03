@@ -52,6 +52,12 @@ class SkiaOutputDevice {
     return capabilities_;
   }
 
+  // EnsureBackbuffer called when output surface is visible and may be drawn to.
+  // DiscardBackbuffer called when output surface is hidden and will not be
+  // drawn to. Default no-op.
+  virtual void EnsureBackbuffer();
+  virtual void DiscardBackbuffer();
+
  protected:
   void StartSwapBuffers(base::Optional<BufferPresentedCallback> feedback);
   gfx::SwapResponse FinishSwapBuffers(gfx::SwapResult result);
