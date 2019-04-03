@@ -6,6 +6,7 @@
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "chrome/renderer/extensions/automation_internal_custom_bindings.h"
 #include "extensions/common/extension_messages.h"
+#include "ui/accessibility/ax_language_info.h"
 #include "ui/accessibility/ax_node.h"
 
 namespace extensions {
@@ -307,6 +308,21 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
   for (const auto& targeted_event : event_generator_) {
     api::automation::EventType event_type =
         ToAutomationEvent(targeted_event.event_params.event);
+
+    // Perform language detection first thing if we see a load complete event.
+    // We have to run *before* we send the load complete event to javascript
+    // otherwise code which runs immediately on load complete will not be able
+    // to see the results of language detection.
+    //
+    // Currently language detection only runs once for initial load complete,
+    // any content loaded after this will not have language detection performed
+    // for it.
+    if (event_type == api::automation::EVENT_TYPE_LOADCOMPLETE) {
+      DetectLanguageForSubtree(tree_.root(), &tree_);
+      if (!LabelLanguageForSubtree(tree_.root(), &tree_))
+        LOG(FATAL) << "Language detection failed at step: Label";
+    }
+
     if (IsEventTypeHandledByAXEventGenerator(event_type)) {
       ui::AXEvent generated_event;
       generated_event.id = targeted_event.node->id();
