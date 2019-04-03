@@ -115,6 +115,12 @@ bool FindInPageManagerImpl::FindRequest::GoToNextMatch() {
   if (GetTotalMatchCount() == 0) {
     return false;
   }
+  // No currently selected match, but there are matches. Move iterator to
+  // beginning. This can happen if a frame containing the currently selected
+  // match is removed from the page.
+  if (selected_frame_id == frame_order.end()) {
+    selected_frame_id = frame_order.begin();
+  }
 
   bool next_match_is_in_selected_frame =
       selected_match_index_in_selected_frame + 1 <
@@ -141,6 +147,12 @@ bool FindInPageManagerImpl::FindRequest::GoToPreviousMatch() {
   if (GetTotalMatchCount() == 0) {
     return false;
   }
+  // No currently selected match, but there are matches. Move iterator to
+  // beginning. This can happen if a frame containing the currently selected
+  // matchs is removed from the page.
+  if (selected_frame_id == frame_order.end()) {
+    selected_frame_id = frame_order.begin();
+  }
 
   bool previous_match_is_in_selected_frame =
       selected_match_index_in_selected_frame - 1 >= 0;
@@ -163,6 +175,25 @@ bool FindInPageManagerImpl::FindRequest::GoToPreviousMatch() {
   return true;
 }
 
+void FindInPageManagerImpl::FindRequest::RemoveFrame(WebFrame* web_frame) {
+  if (IsSelectedFrame(web_frame)) {
+    // If currently selecting match in frame that will become unavailable,
+    // there will no longer be a selected match. Reset to unselected match
+    // state.
+    selected_frame_id = frame_order.end();
+    selected_match_index_in_selected_frame = -1;
+  }
+  frame_order.remove(web_frame->GetFrameId());
+  frame_match_count.erase(web_frame->GetFrameId());
+}
+
+bool FindInPageManagerImpl::FindRequest::IsSelectedFrame(WebFrame* web_frame) {
+  if (selected_frame_id == frame_order.end()) {
+    return false;
+  }
+  return *selected_frame_id == web_frame->GetFrameId();
+}
+
 void FindInPageManagerImpl::WebFrameDidBecomeAvailable(WebState* web_state,
                                                        WebFrame* web_frame) {
   const std::string frame_id = web_frame->GetFrameId();
@@ -178,8 +209,13 @@ void FindInPageManagerImpl::WebFrameDidBecomeAvailable(WebState* web_state,
 
 void FindInPageManagerImpl::WebFrameWillBecomeUnavailable(WebState* web_state,
                                                           WebFrame* web_frame) {
-  last_find_request_.frame_order.remove(web_frame->GetFrameId());
-  last_find_request_.frame_match_count.erase(web_frame->GetFrameId());
+  last_find_request_.RemoveFrame(web_frame);
+
+  if (delegate_ && last_find_request_.query) {
+    delegate_->DidCountMatches(web_state_,
+                               last_find_request_.GetTotalMatchCount(),
+                               last_find_request_.query);
+  }
 }
 
 void FindInPageManagerImpl::WebStateDestroyed(WebState* web_state) {
