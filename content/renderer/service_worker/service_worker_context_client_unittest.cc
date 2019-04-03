@@ -29,7 +29,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/fetch/fetch_api_request_headers_map.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
@@ -278,8 +277,7 @@ class ServiceWorkerContextClientTest : public testing::Test {
   }
 
   void EnableServicification() {
-    feature_list_.InitWithFeatures({network::features::kNetworkService}, {});
-    ASSERT_TRUE(blink::ServiceWorkerUtils::IsServicificationEnabled());
+    feature_list_.InitAndEnableFeature(network::features::kNetworkService);
   }
 
   // Creates an empty struct to initialize ServiceWorkerProviderContext.

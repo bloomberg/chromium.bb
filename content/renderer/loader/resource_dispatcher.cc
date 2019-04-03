@@ -45,7 +45,6 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
 
@@ -563,9 +562,8 @@ int ResourceDispatcher::StartAsync(
       static_cast<int>(blink::mojom::RequestContextType::FETCH)) {
     // MIME sniffing should be disabled for a request initiated by fetch().
     options |= network::mojom::kURLLoadOptionSniffMimeType;
-    if (blink::ServiceWorkerUtils::IsServicificationEnabled())
-      throttles.push_back(
-          std::make_unique<MimeSniffingThrottle>(loading_task_runner));
+    throttles.push_back(
+        std::make_unique<MimeSniffingThrottle>(loading_task_runner));
   }
   if (is_sync) {
     options |= network::mojom::kURLLoadOptionSynchronous;

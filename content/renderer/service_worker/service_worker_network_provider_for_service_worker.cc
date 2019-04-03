@@ -14,7 +14,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "ipc/ipc_message.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -70,8 +69,7 @@ ServiceWorkerNetworkProviderForServiceWorker::CreateURLLoader(
 
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   // RenderThreadImpl may be null in some tests.
-  if (render_thread && script_loader_factory() &&
-      blink::ServiceWorkerUtils::IsServicificationEnabled()) {
+  if (render_thread && script_loader_factory()) {
     // TODO(crbug.com/796425): Temporarily wrap the raw
     // mojom::URLLoaderFactory pointer into SharedURLLoaderFactory.
     return std::make_unique<WebURLLoaderImpl>(
