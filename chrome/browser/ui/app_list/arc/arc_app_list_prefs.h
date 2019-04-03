@@ -169,7 +169,10 @@ class ArcAppListPrefs : public KeyedService,
 
     virtual void OnNotificationsEnabledChanged(
         const std::string& package_name, bool enabled) {}
-    // Notifies that package has been installed.
+    // Notifies that package has been installed. This may be called in two
+    // cases:
+    // a) the package is being newly installed
+    // b) the package is already installed, and is being updated
     virtual void OnPackageInstalled(
         const arc::mojom::ArcPackageInfo& package_info) {}
     // Notifies that package has been modified.
