@@ -94,7 +94,15 @@ ArCoreDevice::ArCoreDevice()
     : ArCoreDevice(std::make_unique<ArCoreImplFactory>(),
                    std::make_unique<ArImageTransportFactory>(),
                    std::make_unique<vr::MailboxToSurfaceBridge>(),
-                   std::make_unique<vr::ArCoreJavaUtils>(this),
+                   std::make_unique<vr::ArCoreJavaUtils>(
+                       base::BindRepeating(
+                           &ArCoreDevice::OnRequestInstallArModuleResult,
+                           base::Unretained(
+                               this)),  // unretained is fine since ArCoreDevice
+                                        // owns the ArCoreJavaUtils instance
+                       base::BindRepeating(
+                           &ArCoreDevice::OnRequestInstallSupportedArCoreResult,
+                           base::Unretained(this))),  // ditto
                    std::make_unique<ArCorePermissionHelper>()) {}
 
 ArCoreDevice::~ArCoreDevice() {
