@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "components/sync/engine/net/http_post_provider_factory.h"
@@ -74,6 +75,8 @@ class FakeServerHttpPostProvider
   std::string request_content_;
   std::string request_content_type_;
   std::string extra_request_headers_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(FakeServerHttpPostProvider);
 };
