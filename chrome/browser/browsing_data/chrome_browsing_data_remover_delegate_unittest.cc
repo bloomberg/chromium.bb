@@ -2088,8 +2088,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveContentSettings) {
 
 #if defined(OS_ANDROID)
   expect_geolocation_dse_origin = true;
-  expect_notifications_dse_origin =
-      base::FeatureList::IsEnabled(features::kGrantNotificationsToDSE);
+  expect_notifications_dse_origin = true;
 #endif
 
   ContentSettingsForOneType host_settings;
