@@ -132,7 +132,7 @@ class AppListClientImpl
   AppListControllerDelegate* GetControllerDelegate();
   Profile* GetCurrentAppListProfile() const;
 
-  app_list::SearchController* GetSearchControllerForTest();
+  app_list::SearchController* search_controller();
 
   AppListModelUpdater* GetModelUpdaterForTest();
 

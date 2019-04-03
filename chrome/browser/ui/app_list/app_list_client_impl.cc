@@ -190,7 +190,7 @@ void AppListClientImpl::ActivateItem(const std::string& id, int event_flags) {
     return;
   model_updater_->ActivateChromeItem(id, event_flags);
 
-  // Send training signal to search controller.
+  // Send a training signal to the search controller.
   const auto* item = model_updater_->FindItem(id);
   if (item) {
     search_controller_->Train(
@@ -360,7 +360,7 @@ void AppListClientImpl::SetUpSearchUI() {
       app_list::CreateSearchController(profile_, model_updater_, this);
 }
 
-app_list::SearchController* AppListClientImpl::GetSearchControllerForTest() {
+app_list::SearchController* AppListClientImpl::search_controller() {
   return search_controller_.get();
 }
 
