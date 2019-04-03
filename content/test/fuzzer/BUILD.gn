@@ -46,6 +46,8 @@ fuzzer_test("origin_policy_parser_fuzzer") {
     "origin_policy_parser_fuzzer.cc",
   ]
   deps = [
+    "//base",
+    "//base:i18n",
     "//content/test:test_support",
   ]
   dict =
