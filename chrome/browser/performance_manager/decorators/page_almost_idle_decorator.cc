@@ -110,7 +110,7 @@ void PageAlmostIdleDecorator::UpdateLoadIdleStateFrame(
     return;
 
   // Update the load idle state of the page associated with this frame.
-  auto* page_node = frame_node->GetPageNode();
+  auto* page_node = frame_node->page_node();
   if (!page_node)
     return;
   UpdateLoadIdleStatePage(page_node);
@@ -233,7 +233,7 @@ bool PageAlmostIdleDecorator::IsIdling(const PageNodeImpl* page_node) {
     return false;
 
   // Get the process CU associated with this main frame.
-  const auto* process_node = main_frame_node->GetProcessNode();
+  const auto* process_node = main_frame_node->process_node();
   if (!process_node)
     return false;
 

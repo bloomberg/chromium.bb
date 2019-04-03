@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
 #include "chrome/browser/performance_manager/observers/graph_observer.h"
+#include "url/gurl.h"
 
 namespace performance_manager {
 
@@ -48,26 +49,29 @@ class FrameNodeImpl
       resource_coordinator::mojom::InterventionPolicy policy) override;
   void OnNonPersistentNotificationCreated() override;
 
+  // Getters for const properties. These can be called from any thread.
+  FrameNodeImpl* parent_frame_node() const;
+  PageNodeImpl* page_node() const;
+
+  // Getters for non-const properties. These are not thread safe.
+  ProcessNodeImpl* process_node() const;
+  const std::set<FrameNodeImpl*>& child_frame_nodes() const;
+  resource_coordinator::mojom::LifecycleState lifecycle_state() const;
+  bool has_nonempty_beforeunload() const;
+  const GURL& url() const;
+  bool network_almost_idle() const;
+
+  // Setters can only be called from the performance manager sequence.
   // TODO(siggi): The process node can be provided at construction.
   void SetProcess(ProcessNodeImpl* process_node);
+  void set_url(const GURL& url);
 
-  FrameNodeImpl* GetParentFrameNode() const;
-  PageNodeImpl* GetPageNode() const;
-  ProcessNodeImpl* GetProcessNode() const;
+  // A frame is a main frame if it has no |parent_frame_node|. This can be
+  // called from any thread.
   bool IsMainFrame() const;
-
-  resource_coordinator::mojom::LifecycleState lifecycle_state() const {
-    return lifecycle_state_;
-  }
-  bool has_nonempty_beforeunload() const { return has_nonempty_beforeunload_; }
-  bool network_almost_idle() const { return network_almost_idle_.value(); }
 
   // Returns true if all intervention policies have been set for this frame.
   bool AreAllInterventionPoliciesSet() const;
-
-  const std::set<FrameNodeImpl*>& child_frame_nodes() const {
-    return child_frame_nodes_;
-  }
 
   // Sets the same policy for all intervention types in this frame. Causes
   // Page::OnFrameInterventionPolicyChanged to be invoked.
@@ -95,12 +99,14 @@ class FrameNodeImpl
 
   FrameNodeImpl* const parent_frame_node_;
   PageNodeImpl* const page_node_;
+
   ProcessNodeImpl* process_node_;
   std::set<FrameNodeImpl*> child_frame_nodes_;
-
   resource_coordinator::mojom::LifecycleState lifecycle_state_ =
       resource_coordinator::mojom::LifecycleState::kRunning;
   bool has_nonempty_beforeunload_ = false;
+  GURL url_;
+
   // Network is considered almost idle when there are no more than 2 network
   // connections.
   ObservedProperty::

@@ -55,10 +55,10 @@ PageNodeImpl::~PageNodeImpl() {
 void PageNodeImpl::AddFrame(FrameNodeImpl* frame_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(frame_node);
-  DCHECK_EQ(this, frame_node->GetPageNode());
+  DCHECK_EQ(this, frame_node->page_node());
   DCHECK(NodeInGraph(frame_node));
 
-  if (frame_node->GetParentFrameNode() == nullptr) {
+  if (frame_node->parent_frame_node() == nullptr) {
     main_frame_nodes_.insert(frame_node);
   }
   ++frame_node_count_;
@@ -74,11 +74,11 @@ void PageNodeImpl::AddFrame(FrameNodeImpl* frame_node) {
 void PageNodeImpl::RemoveFrame(FrameNodeImpl* frame_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(frame_node);
-  DCHECK_EQ(this, frame_node->GetPageNode());
+  DCHECK_EQ(this, frame_node->page_node());
   DCHECK(NodeInGraph(frame_node));
 
   --frame_node_count_;
-  if (frame_node->GetParentFrameNode() == nullptr) {
+  if (frame_node->parent_frame_node() == nullptr) {
     size_t removed = main_frame_nodes_.erase(frame_node);
     DCHECK_EQ(1u, removed);
   }
@@ -120,7 +120,7 @@ void PageNodeImpl::OnTitleUpdated() {
 void PageNodeImpl::OnMainFrameNavigationCommitted(
     base::TimeTicks navigation_committed_time,
     int64_t navigation_id,
-    const std::string& url) {
+    const GURL& url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   navigation_committed_time_ = navigation_committed_time;
   main_frame_url_ = url;
@@ -133,7 +133,7 @@ std::set<ProcessNodeImpl*> PageNodeImpl::GetAssociatedProcessCoordinationUnits()
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::set<ProcessNodeImpl*> process_nodes;
   ForAllFrameNodes([&process_nodes](FrameNodeImpl* frame_node) -> bool {
-    if (auto* process_node = frame_node->GetProcessNode())
+    if (auto* process_node = frame_node->process_node())
       process_nodes.insert(process_node);
     return true;
   });
@@ -190,7 +190,7 @@ void PageNodeImpl::OnFrameLifecycleStateChanged(
     FrameNodeImpl* frame_node,
     resource_coordinator::mojom::LifecycleState old_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(this, frame_node->GetPageNode());
+  DCHECK_EQ(this, frame_node->page_node());
   DCHECK_NE(old_state, frame_node->lifecycle_state());
 
   int delta = 0;

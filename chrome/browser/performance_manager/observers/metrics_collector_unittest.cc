@@ -13,6 +13,7 @@
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager_clock.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "url/gurl.h"
 
 namespace performance_manager {
 
@@ -20,6 +21,7 @@ const char kResponsivenessMeasurement[] = "ResponsivenessMeasurement";
 const char kExpectedQueueingTime[] = "ExpectedTaskQueueingDuration";
 const base::TimeDelta kTestMetricsReportDelayTimeout =
     kMetricsReportDelayTimeout + base::TimeDelta::FromSeconds(1);
+const GURL kDummyUrl("http://www.example.org");
 
 // TODO(crbug.com/759905) Enable on Windows once this bug is fixed.
 #if defined(OS_WIN)
@@ -46,7 +48,6 @@ class MAYBE_MetricsCollectorTest : public GraphTestHarness {
   }
 
  protected:
-  static constexpr char kDummyUrl[] = "http://www.example.org";
   static constexpr uint64_t kDummyID = 1u;
 
   void AdvanceClock(base::TimeDelta delta) { clock_.Advance(delta); }
@@ -59,8 +60,6 @@ class MAYBE_MetricsCollectorTest : public GraphTestHarness {
 
   DISALLOW_COPY_AND_ASSIGN(MAYBE_MetricsCollectorTest);
 };
-
-constexpr char MAYBE_MetricsCollectorTest::kDummyUrl[];
 
 TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstTitleUpdatedUMA) {
   auto page_node = CreateNode<PageNodeImpl>();

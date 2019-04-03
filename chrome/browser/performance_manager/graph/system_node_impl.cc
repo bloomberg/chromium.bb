@@ -79,7 +79,7 @@ void SystemNodeImpl::DistributeMeasurementBatch(
             base::TimeDelta::FromMicroseconds(frames.size());
 
         for (FrameNodeImpl* frame : frames) {
-          PageNodeImpl* page = frame->GetPageNode();
+          PageNodeImpl* page = frame->page_node();
           if (page) {
             page->set_usage_estimate_time(last_measurement_end_time_);
             page->set_cumulative_cpu_usage_estimate(
@@ -142,7 +142,7 @@ void SystemNodeImpl::DistributeMeasurementBatch(
     uint64_t private_footprint_kb_sum = 0;
     const auto& frames = page->GetFrameNodes();
     for (FrameNodeImpl* frame : frames) {
-      ProcessNodeImpl* process = frame->GetProcessNode();
+      ProcessNodeImpl* process = frame->process_node();
       if (process) {
         private_footprint_kb_sum +=
             process->private_footprint_kb() / process->GetFrameNodes().size();

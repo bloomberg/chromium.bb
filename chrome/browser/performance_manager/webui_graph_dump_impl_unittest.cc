@@ -22,7 +22,7 @@ TEST_F(WebUIGraphDumpImplTest, Create) {
 
   base::TimeTicks now = PerformanceManagerClock::NowTicks();
 
-  constexpr char kExampleUrl[] = "http://www.example.org";
+  const GURL kExampleUrl("http://www.example.org");
   mock_graph.page->OnMainFrameNavigationCommitted(now, 1, kExampleUrl);
   mock_graph.other_page->OnMainFrameNavigationCommitted(now, 2, kExampleUrl);
 
