@@ -357,18 +357,15 @@ void FeedbackPrivateSendFeedbackFunction::OnAllLogsFetched(
   feedback_data->SetAndCompressSystemInfo(std::move(sys_logs));
 
   if (send_histograms) {
-    auto histograms = std::make_unique<std::string>();
-    *histograms =
+    std::string histograms =
         base::StatisticsRecorder::ToJSON(base::JSON_VERBOSITY_LEVEL_FULL);
-    if (!histograms->empty())
-      feedback_data->SetAndCompressHistograms(std::move(histograms));
+    feedback_data->SetAndCompressHistograms(std::move(histograms));
   }
 
   if (send_bluetooth_logs) {
-    std::unique_ptr<std::string> bluetooth_logs =
-        std::make_unique<std::string>();
+    std::string bluetooth_logs;
     if (base::ReadFileToString(base::FilePath(kBluetoothLogsFilePath),
-                               bluetooth_logs.get())) {
+                               &bluetooth_logs)) {
       feedback_data->AddFile(kBluetoothLogsAttachmentName,
                              std::move(bluetooth_logs));
     }

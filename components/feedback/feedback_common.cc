@@ -55,11 +55,8 @@ bool BelowCompressionThreshold(const std::string& content) {
 
 // Converts the system logs into a string that we can compress and send
 // with the report.
-// TODO(dcheng): This should probably just take advantage of string's move
-// constructor.
-std::unique_ptr<std::string> LogsToString(
-    const FeedbackCommon::SystemLogsMap& sys_info) {
-  std::unique_ptr<std::string> syslogs_string(new std::string);
+std::string LogsToString(const FeedbackCommon::SystemLogsMap& sys_info) {
+  std::string syslogs_string;
   for (const auto& iter : sys_info) {
     std::string key = iter.first;
     std::string value = iter.second;
@@ -73,11 +70,11 @@ std::unique_ptr<std::string> LogsToString(
       continue;
 
     if (value.find("\n") != std::string::npos) {
-      syslogs_string->append(key + "=" + kMultilineIndicatorString +
-                             kMultilineStartString + value + "\n" +
-                             kMultilineEndString);
+      syslogs_string.append(key + "=" + kMultilineIndicatorString +
+                            kMultilineStartString + value + "\n" +
+                            kMultilineEndString);
     } else {
-      syslogs_string->append(key + "=" + value + "\n");
+      syslogs_string.append(key + "=" + value + "\n");
     }
   }
   return syslogs_string;
@@ -118,7 +115,7 @@ void AddAttachment(userfeedback::ExtensionSubmit* feedback_data,
 ////////////////////////////////////////////////////////////////////////////////
 
 FeedbackCommon::AttachedFile::AttachedFile(const std::string& filename,
-                                           std::unique_ptr<std::string> data)
+                                           std::string data)
     : name(filename), data(std::move(data)) {}
 
 FeedbackCommon::AttachedFile::~AttachedFile() {}
@@ -129,23 +126,21 @@ FeedbackCommon::AttachedFile::~AttachedFile() {}
 
 FeedbackCommon::FeedbackCommon() : product_id_(-1) {}
 
-void FeedbackCommon::AddFile(const std::string& filename,
-                             std::unique_ptr<std::string> data) {
+void FeedbackCommon::AddFile(const std::string& filename, std::string data) {
   base::AutoLock lock(attachments_lock_);
-  attachments_.emplace_back(new AttachedFile(filename, std::move(data)));
+  attachments_.emplace_back(filename, std::move(data));
 }
 
 void FeedbackCommon::AddLog(const std::string& name, const std::string& value) {
-  if (!logs_)
-    logs_ = base::WrapUnique(new SystemLogsMap);
-  (*logs_)[name] = value;
+  logs_[name] = value;
 }
 
-void FeedbackCommon::AddLogs(std::unique_ptr<SystemLogsMap> logs) {
-  if (logs_)
-    logs_->insert(logs->begin(), logs->end());
-  else
+void FeedbackCommon::AddLogs(SystemLogsMap logs) {
+  // The empty logs_ case is just an optimization.
+  if (logs_.empty())
     logs_ = std::move(logs);
+  else
+    logs.insert(logs.begin(), logs.end());
 }
 
 void FeedbackCommon::PrepareReport(
@@ -191,7 +186,7 @@ void FeedbackCommon::PrepareReport(
 
   AddFilesAndLogsToReport(feedback_data);
 
-  if (image() && image()->size()) {
+  if (image().size()) {
     userfeedback::PostedScreenshot screenshot;
     screenshot.set_mime_type(kPngMimeType);
 
@@ -202,7 +197,7 @@ void FeedbackCommon::PrepareReport(
     dimensions.set_height(0.0);
 
     *(screenshot.mutable_dimensions()) = dimensions;
-    screenshot.set_binary_content(*image());
+    screenshot.set_binary_content(image());
 
     *(feedback_data->mutable_screenshot()) = screenshot;
   }
@@ -213,13 +208,12 @@ void FeedbackCommon::PrepareReport(
 
 FeedbackCommon::~FeedbackCommon() {}
 
-void FeedbackCommon::CompressFile(
-    const base::FilePath& filename,
-    const std::string& zipname,
-    std::unique_ptr<std::string> data_to_be_compressed) {
-  std::unique_ptr<std::string> compressed_data(new std::string());
-  if (feedback_util::ZipString(filename, *data_to_be_compressed,
-                               compressed_data.get())) {
+void FeedbackCommon::CompressFile(const base::FilePath& filename,
+                                  const std::string& zipname,
+                                  std::string data_to_be_compressed) {
+  std::string compressed_data;
+  if (feedback_util::ZipString(filename, std::move(data_to_be_compressed),
+                               &compressed_data)) {
     std::string attachment_file_name = zipname;
     if (attachment_file_name.empty()) {
       // We need to use the UTF8Unsafe methods here to accommodate Windows,
@@ -232,10 +226,8 @@ void FeedbackCommon::CompressFile(
 }
 
 void FeedbackCommon::CompressLogs() {
-  if (!logs_)
-    return;
-  std::unique_ptr<std::string> logs = LogsToString(*logs_);
-  if (!logs->empty()) {
+  std::string logs = LogsToString(logs_);
+  if (!logs.empty()) {
     CompressFile(base::FilePath(kLogsFilename), kLogsAttachmentName,
                  std::move(logs));
   }
@@ -245,13 +237,10 @@ void FeedbackCommon::AddFilesAndLogsToReport(
     userfeedback::ExtensionSubmit* feedback_data) const {
   for (size_t i = 0; i < attachments(); ++i) {
     const AttachedFile* file = attachment(i);
-    AddAttachment(feedback_data, file->name.c_str(), *file->data);
+    AddAttachment(feedback_data, file->name.c_str(), file->data);
   }
 
-  if (!logs_)
-    return;
-
-  for (const auto& iter : *logs_) {
+  for (const auto& iter : logs_) {
     if (BelowCompressionThreshold(iter.second)) {
       // Small enough logs should end up in the report data itself. However,
       // they're still added as part of the system_logs.zip file.

@@ -36,11 +36,10 @@ class FeedbackData : public FeedbackCommon {
 
   // Sets the histograms for this instance and kicks off its
   // compression.
-  void SetAndCompressHistograms(std::unique_ptr<std::string> histograms);
+  void SetAndCompressHistograms(std::string histograms);
 
   // Sets the attached file data and kicks off its compression.
-  void AttachAndCompressFileData(
-      std::unique_ptr<std::string> attached_filedata);
+  void AttachAndCompressFileData(std::string attached_filedata);
 
   // Returns true if we've completed all the tasks needed before we can send
   // feedback - at this time this is includes getting the feedback page data
