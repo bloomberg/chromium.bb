@@ -1442,9 +1442,22 @@ bool VaapiWrapper::UploadVideoFrameToSurface(
     VASurfaceID va_surface_id) {
   base::AutoLock auto_lock(*va_lock_);
 
+  const gfx::Size size = frame->coded_size();
+  bool va_create_put_fallback = false;
   VAImage image;
   VAStatus va_res = vaDeriveImage(va_display_, va_surface_id, &image);
-  VA_SUCCESS_OR_RETURN(va_res, "vaDeriveImage failed", false);
+  if (va_res == VA_STATUS_ERROR_OPERATION_FAILED) {
+    DVLOG(4) << "vaDeriveImage failed and fallback to Create_PutImage";
+    va_create_put_fallback = true;
+    constexpr VAImageFormat kImageFormatNV12{.fourcc = VA_FOURCC_NV12,
+                                             .byte_order = VA_LSB_FIRST,
+                                             .bits_per_pixel = 12};
+    VAImageFormat image_format = kImageFormatNV12;
+
+    va_res = vaCreateImage(va_display_, &image_format, size.width(),
+                           size.height(), &image);
+    VA_SUCCESS_OR_RETURN(va_res, "vaCreateImage failed", false);
+  }
   base::ScopedClosureRunner vaimage_deleter(
       base::Bind(&DestroyVAImage, va_display_, image));
 
@@ -1453,7 +1466,7 @@ bool VaapiWrapper::UploadVideoFrameToSurface(
     return false;
   }
 
-  if (gfx::Rect(image.width, image.height) < gfx::Rect(frame->coded_size())) {
+  if (gfx::Rect(image.width, image.height) < gfx::Rect(size)) {
     LOG(ERROR) << "Buffer too small to fit the frame.";
     return false;
   }
@@ -1492,6 +1505,12 @@ bool VaapiWrapper::UploadVideoFrameToSurface(
         LOG(ERROR) << "Unsupported pixel format: " << frame->format();
         return false;
     }
+  }
+  if (va_create_put_fallback) {
+    va_res = vaPutImage(va_display_, va_surface_id, image.image_id, 0, 0,
+                        size.width(), size.height(), 0, 0, size.width(),
+                        size.height());
+    VA_SUCCESS_OR_RETURN(va_res, "vaPutImage failed", false);
   }
   return ret == 0;
 }
