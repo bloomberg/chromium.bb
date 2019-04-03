@@ -79,7 +79,7 @@ constexpr inline TypeUniqueId UniqueIdFromType() {
   constexpr const char* compiler_specific_anonymous_namespace_fragment =
 #if defined(__clang__)
       "base::internal::UniqueIdFromType() [Type = (anonymous namespace)::";
-#elif defined(__clang__)
+#elif defined(COMPILER_GCC)
       "base::internal::UniqueIdFromType() [with T = {anonymous}::";
 #elif defined(COMPILER_MSVC)
       "base::internal::UniqueIdFromType<`anonymous namespace'::";
