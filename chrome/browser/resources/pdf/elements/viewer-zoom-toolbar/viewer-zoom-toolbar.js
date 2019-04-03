@@ -16,8 +16,20 @@ Polymer({
     visible_: {type: Boolean, value: true}
   },
 
+  listeners: {
+    'focus': 'onFocus_',
+  },
+
   isVisible: function() {
     return this.visible_;
+  },
+
+  /** @private */
+  onFocus_: function() {
+    // This can only happen when the plugin is shown within Print Preview.
+    if (!this.visible_) {
+      this.show();
+    }
   },
 
   /**

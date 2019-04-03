@@ -138,6 +138,10 @@ cr.define('print_preview_new', function() {
       this.plugin_.sendKeyEvent(e);
     }
 
+    hideToolbars() {
+      this.plugin_.hideToolbars();
+    }
+
     /**
      * @param {boolean} eventsEnabled Whether pointer events should be captured
      *     by the plugin.

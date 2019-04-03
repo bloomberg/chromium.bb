@@ -984,6 +984,9 @@ PDFViewer.prototype = {
       case 'sendKeyEvent':
         this.handleKeyEvent_(DeserializeKeyEvent(message.data.keyEvent));
         return true;
+      case 'hideToolbars':
+        this.toolbarManager_.resetKeyboardNavigationAndHideToolbars();
+        return true;
       case 'scrollPosition':
         const position = this.viewport_.position;
         position.y += message.data.y;
