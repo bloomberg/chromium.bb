@@ -5,10 +5,11 @@
 #ifndef UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_TEXTCHILDPROVIDER_WIN_H_
 #define UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_TEXTCHILDPROVIDER_WIN_H_
 
+#include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 
 namespace ui {
-class AXPlatformNodeTextChildProviderWin
+class AX_EXPORT AXPlatformNodeTextChildProviderWin
     : public CComObjectRootEx<CComMultiThreadModel>,
       public ITextChildProvider {
  public:
