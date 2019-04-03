@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.preferences.themes;
 
 import static org.chromium.chrome.browser.preferences.ChromePreferenceManager.UI_THEME_SETTING_KEY;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 import android.support.annotation.IntDef;
@@ -15,6 +16,7 @@ import android.widget.ListView;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
+import org.chromium.ui.UiUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -54,6 +56,15 @@ public class ThemePreferences extends PreferenceFragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        // On O_MR1, the flag View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR in this fragment is not
+        // updated to the attribute android:windowLightNavigationBar set in preference theme, so
+        // we set the flag explicitly to workaround the issue. See https://crbug.com/942551.
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O_MR1) {
+            UiUtils.setNavigationBarIconColor(getActivity().getWindow().getDecorView(),
+                    getResources().getBoolean(R.bool.window_light_navigation_bar));
+        }
+
         ListView listView = getView().findViewById(android.R.id.list);
         listView.setDivider(null);
     }

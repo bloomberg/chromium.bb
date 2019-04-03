@@ -163,7 +163,7 @@ class NavigationBarColorController implements VrModeObserver {
         // The platform ignores the light navigation bar system UI flag when launching an Activity
         // in VR mode, so we need to restore it when VR is exited.
         // TODO(https://crbug.com/937946): How does this interact with immersive mode?
-        updateSystemUiVisibility(mUseLightNavigation);
+        UiUtils.setNavigationBarIconColor(mRootView, mUseLightNavigation);
     }
 
     @Override
@@ -195,7 +195,7 @@ class NavigationBarColorController implements VrModeObserver {
 
         setNavigationBarColor(useLightNavigation);
 
-        updateSystemUiVisibility(useLightNavigation);
+        UiUtils.setNavigationBarIconColor(mRootView, useLightNavigation);
     }
 
     @SuppressLint("NewApi")
@@ -206,15 +206,5 @@ class NavigationBarColorController implements VrModeObserver {
                                     mResources, R.color.bottom_system_nav_divider_color)
                             : Color.BLACK);
         }
-    }
-
-    private void updateSystemUiVisibility(boolean useLightNavigation) {
-        int visibility = mRootView.getSystemUiVisibility();
-        if (useLightNavigation) {
-            visibility |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-        } else {
-            visibility &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-        }
-        mRootView.setSystemUiVisibility(visibility);
     }
 }
