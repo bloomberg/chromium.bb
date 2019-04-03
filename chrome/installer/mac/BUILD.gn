@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/util/branding.gni")
-import("//build/util/version.gni")
 import("//build/config/features.gni")
 import("//build/config/mac/base_rules.gni")
+import("//build/util/branding.gni")
+import("//build/util/version.gni")
 
 group("mac") {
   public_deps = [
@@ -76,7 +76,7 @@ copy("copies") {
   ]
 
   sources = [
-    "$root_gen_dir/chrome/entitlements.plist",
+    "$root_gen_dir/chrome/app-entitlements.plist",
     "$root_out_dir/goobsdiff",
     "$root_out_dir/goobspatch",
     "$root_out_dir/liblzma_decompress.dylib",

@@ -789,8 +789,8 @@ if (is_win) {
   }
 
   compile_entitlements("entitlements") {
-    entitlements_templates = [ "app/entitlements.plist" ]
-    output_name = "$target_gen_dir/entitlements.plist"
+    entitlements_templates = [ "app/app-entitlements.plist" ]
+    output_name = "$target_gen_dir/app-entitlements.plist"
     substitutions = [
       "CHROMIUM_BUNDLE_ID=$chrome_mac_bundle_id",
       "CHROMIUM_TEAM_ID=$chrome_mac_team_id",
