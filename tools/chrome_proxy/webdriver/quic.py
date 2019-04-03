@@ -60,14 +60,5 @@ class Quic(IntegrationTest):
       self.assertLessEqual(1, proxy_status['count'])
       self.assertEqual(0, proxy_status['sum'])
 
-      # Navigate to one more page to ensure that established QUIC connection
-      # is used for the next request. Give 3 seconds extra headroom for the QUIC
-      # connection to be established.
-      time.sleep(3)
-      t.LoadURL('http://check.googlezip.net/test.html')
-      proxy_usage = t.GetHistogram('Net.QuicAlternativeProxy.Usage')
-      # Bucket ALTERNATIVE_PROXY_USAGE_NO_RACE should have at least onesample.
-      self.assertLessEqual(1, proxy_usage['buckets'][0]['count'])
-
 if __name__ == '__main__':
   IntegrationTest.RunAllTests()
