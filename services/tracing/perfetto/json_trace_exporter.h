@@ -51,12 +51,17 @@ class JSONTraceExporter {
                                    const char* event_name,
                                    ArgumentNameFilterPredicate*)>;
 
+  // Given a metadata name, returns if the event should be filtered or not.
+  using MetadataFilterPredicate =
+      base::RepeatingCallback<bool(const std::string& metadata_name)>;
+
   using OnTraceEventJSONCallback =
       base::RepeatingCallback<void(const std::string& json,
                                    base::DictionaryValue* metadata,
                                    bool has_more)>;
 
   JSONTraceExporter(ArgumentFilterPredicate argument_filter_predicate,
+                    MetadataFilterPredicate metadata_filter_predicate,
                     OnTraceEventJSONCallback callback);
   virtual ~JSONTraceExporter();
 
@@ -64,8 +69,12 @@ class JSONTraceExporter {
   // |json_callback| passed in the constructor with the converted trace data.
   void OnTraceData(std::vector<perfetto::TracePacket> packets, bool has_more);
 
-  void SetArgumentFilterForTesting(const ArgumentFilterPredicate& predicate) {
-    argument_filter_predicate_ = predicate;
+  void SetArgumentFilterForTesting(ArgumentFilterPredicate predicate) {
+    argument_filter_predicate_ = std::move(predicate);
+  }
+
+  void SetMetdataFilterPredicateForTesting(MetadataFilterPredicate predicate) {
+    metadata_filter_predicate_ = std::move(predicate);
   }
 
   void set_label_filter(const std::string& label_filter) {
@@ -259,6 +268,7 @@ class JSONTraceExporter {
   std::string legacy_system_ftrace_output_;
   std::unique_ptr<base::DictionaryValue> metadata_;
   ArgumentFilterPredicate argument_filter_predicate_;
+  MetadataFilterPredicate metadata_filter_predicate_;
 
   DISALLOW_COPY_AND_ASSIGN(JSONTraceExporter);
 };

@@ -57,15 +57,18 @@ class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
           base::BindRepeating(&IsMetadataWhitelisted));
     }
 
-    auto arg_filter_predicate =
-        chrome_config.IsArgumentFilterEnabled()
-            ? base::trace_event::TraceLog::GetInstance()
-                  ->GetArgumentFilterPredicate()
-            : JSONTraceExporter::ArgumentFilterPredicate();
+    JSONTraceExporter::ArgumentFilterPredicate arg_filter_predicate;
+    JSONTraceExporter::MetadataFilterPredicate metadata_filter_predicate;
+    if (chrome_config.IsArgumentFilterEnabled()) {
+      auto* trace_log = base::trace_event::TraceLog::GetInstance();
+      arg_filter_predicate = trace_log->GetArgumentFilterPredicate();
+      metadata_filter_predicate = trace_log->GetMetadataFilterPredicate();
+    }
     auto json_event_callback = base::BindRepeating(
         &TracingSession::OnJSONTraceEventCallback, base::Unretained(this));
     json_trace_exporter_ = std::make_unique<TrackEventJSONExporter>(
-        std::move(arg_filter_predicate), std::move(json_event_callback));
+        std::move(arg_filter_predicate), std::move(metadata_filter_predicate),
+        std::move(json_event_callback));
     perfetto::TracingService* service =
         PerfettoService::GetInstance()->GetService();
     consumer_endpoint_ = service->ConnectConsumer(this, /*uid=*/0);

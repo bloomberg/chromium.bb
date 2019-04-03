@@ -29,8 +29,10 @@ const std::string& GetInternedName(
 
 TrackEventJSONExporter::TrackEventJSONExporter(
     JSONTraceExporter::ArgumentFilterPredicate argument_filter_predicate,
+    JSONTraceExporter::MetadataFilterPredicate metadata_filter_predicate,
     JSONTraceExporter::OnTraceEventJSONCallback callback)
     : JSONTraceExporter(std::move(argument_filter_predicate),
+                        std::move(metadata_filter_predicate),
                         std::move(callback)),
       current_state_(0) {}
 

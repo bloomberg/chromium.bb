@@ -85,8 +85,10 @@ struct FakeTraceInfo {
 class TestJSONTraceExporter : public JSONTraceExporter {
  public:
   TestJSONTraceExporter(ArgumentFilterPredicate argument_filter_predicate,
+                        MetadataFilterPredicate metadata_filter_predicate,
                         OnTraceEventJSONCallback callback)
       : JSONTraceExporter(std::move(argument_filter_predicate),
+                          std::move(metadata_filter_predicate),
                           std::move(callback)) {}
   ~TestJSONTraceExporter() override = default;
 
@@ -189,6 +191,7 @@ class JsonTraceExporterTest : public testing::Test {
   JsonTraceExporterTest()
       : json_trace_exporter_(new TestJSONTraceExporter(
             JSONTraceExporter::ArgumentFilterPredicate(),
+            JSONTraceExporter::MetadataFilterPredicate(),
             base::BindRepeating(&JsonTraceExporterTest::OnTraceEventJSON,
                                 base::Unretained(this)))) {}
 
@@ -613,6 +616,33 @@ TEST_F(JsonTraceExporterTest, TestMetadata) {
             "{\"traceEvents\":[],"
             "\"metadata\":{\"metadata_1\":true,"
             "\"metadata_2\":{\"dict\":{\"bool\":true}}}}");
+}
+
+TEST_F(JsonTraceExporterTest, TestMetadataFiltering) {
+  json_trace_exporter_->SetMetdataFilterPredicateForTesting(
+      base::BindRepeating([](const std::string& name) -> bool {
+        return name.find("2") != std::string::npos;
+      }));
+
+  json_trace_exporter_->metadata.emplace_back();
+  auto& m1 = json_trace_exporter_->metadata.back();
+  m1.set_name("metadata_1");
+  m1.set_bool_value(true);
+  json_trace_exporter_->metadata.emplace_back();
+  auto& m2 = json_trace_exporter_->metadata.back();
+  m2.set_name("metadata_20");
+  m2.set_int_value(50);
+  json_trace_exporter_->metadata.emplace_back();
+  auto& m3 = json_trace_exporter_->metadata.back();
+  m3.set_name("metadata_21");
+  m3.set_json_value("{\"dict\":{\"bool\":true}}");
+  json_trace_exporter_->OnTraceData(std::vector<perfetto::TracePacket>(),
+                                    false);
+  EXPECT_EQ(unparsed_trace_data_,
+            "{\"traceEvents\":[],"
+            "\"metadata\":{\"metadata_1\":\"__stripped__\","
+            "\"metadata_20\":50,"
+            "\"metadata_21\":{\"dict\":{\"bool\":true}}}}");
 }
 
 TEST_F(JsonTraceExporterTest, ComplexMultipleCallback) {
