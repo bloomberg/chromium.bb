@@ -14,6 +14,7 @@ cr.define('extension_manager_tests', function() {
     ToggleIncognitoMode: 'toggle incognito mode',
     Uninstall: 'uninstall',
     UninstallFromDetails: 'uninstall while in details view',
+    SetItemData: 'set item data',
     UpdateItemData: 'update item data',
     UpdateFromActivityLog: 'update from activity log',
     KioskMode: 'kiosk mode',
@@ -114,6 +115,26 @@ cr.define('extension_manager_tests', function() {
       expectEquals(alphaFromStore.id, manager.extensions_[5].id);
     });
 
+    test(assert(TestNames.SetItemData), function() {
+      const description = 'description';
+
+      const extension =
+          extension_test_util.createExtensionInfo({description: description});
+      simulateExtensionInstall(extension);
+
+      // The detail view is not present until navigation.
+      expectFalse(!!manager.$$('extensions-detail-view'));
+      extensions.navigation.navigateTo(
+          {page: Page.DETAILS, extensionId: extension.id});
+      const detailsView = manager.$$('extensions-detail-view');
+      expectTrue(!!detailsView);  // View should now be present.
+      expectEquals(extension.id, detailsView.data.id);
+      expectEquals(description, detailsView.data.description);
+      expectEquals(
+          description,
+          detailsView.$$('.section .section-content').textContent.trim());
+    });
+
     test(assert(TestNames.UpdateItemData), function() {
       const oldDescription = 'old description';
       const newDescription = 'new description';
@@ -127,19 +148,9 @@ cr.define('extension_manager_tests', function() {
       });
       simulateExtensionInstall(secondExtension);
 
-      let data = manager.extensions_[0];
-      // The detail view is not present until navigation.
-      expectFalse(!!manager.$$('extensions-detail-view'));
-      // TODO(scottchen): maybe testing too many things in a single unit test.
       extensions.navigation.navigateTo(
           {page: Page.DETAILS, extensionId: extension.id});
       const detailsView = manager.$$('extensions-detail-view');
-      expectTrue(!!detailsView);  // View should now be present.
-      expectEquals(extension.id, detailsView.data.id);
-      expectEquals(oldDescription, detailsView.data.description);
-      expectEquals(
-          oldDescription,
-          detailsView.$$('.section .section-content').textContent.trim());
 
       let extensionCopy = Object.assign({}, extension);
       extensionCopy.description = newDescription;
@@ -147,11 +158,6 @@ cr.define('extension_manager_tests', function() {
         event_type: chrome.developerPrivate.EventType.PREFS_CHANGED,
         extensionInfo: extensionCopy,
       });
-      expectEquals(extension.id, detailsView.data.id);
-      expectEquals(newDescription, detailsView.data.description);
-      expectEquals(
-          newDescription,
-          detailsView.$$('.section .section-content').textContent.trim());
 
       // Updating a different extension shouldn't have any impact.
       let secondExtensionCopy = Object.assign({}, secondExtension);
