@@ -88,6 +88,11 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
       InterpolationQuality = kInterpolationNone);
 
   virtual bool IsSVGImage() const { return false; }
+  // TODO(v.paturi): Remove this function once
+  // |ShouldApplyDarkModeFilterToImage| is refactored.
+  // It's suggested that this function not be used anywhere
+  // else in the mean time.
+  virtual bool IsSVGImageForContainer() const { return false; }
   virtual bool IsBitmapImage() const { return false; }
   virtual bool IsStaticBitmapImage() const { return false; }
   virtual bool IsPlaceholderImage() const { return false; }
