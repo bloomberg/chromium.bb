@@ -161,15 +161,19 @@ safely, without memory corruption.
 The trick of this technique lies in finding a sufficiently-trivial grammar, and
 committing to its limitations.
 
-Another good approach is to define a Mojo message type for the information you
-want, extract that information from a complex input object in a sandboxed
-process, and then send the information to a higher-privileged process in a Mojo
-message using the message type. That way, the higher-privileged process need
-only process objects adhering to a well-defined, generally low-complexity
-grammar. This is a big part of why [we like for Mojo messages to use structured
-types](mojo.md#Use-structured-types).
+Another good approach is to
 
-For example, it would be safe enough to convert a PNG to an `SkBitmap` in a
+  1. define a new Mojo message type for the information you want;
+  2. extract that information from a complex input object in a sandboxed
+     process; and then
+  3. send the result to a higher-privileged process in a Mojo message using the
+     new message type.
+
+That way, the higher-privileged process need only process objects adhering to a
+well-defined, generally low-complexity grammar. This is a big part of why [we
+like for Mojo messages to use structured types](mojo.md#Use-structured-types).
+
+For example, it should be safe enough to convert a PNG to an `SkBitmap` in a
 sandboxed process, and then send the `SkBitmap` to a higher-privileged process
 via IPC. Although there may be bugs in the IPC message deserialization code
 and/or in Skia's `SkBitmap` handling code, we consider this safe enough for a
@@ -177,10 +181,12 @@ few reasons:
 
   * we must accept the risk of bugs in Mojo deserialization; but thankfully
   * Mojo deserialization is very amenable to fuzzing; and
-  * it's a big improvement to scope bugs to smaller areas, like deserialization
-    functions and very simple classes like `SkBitmap` and `SkPixmap`; and
-  * ultimately this process results in parsing significantly simpler grammars
-    (PNG → Mojo + `SkBitmap` in this case).
+  * it's a big improvement to scope bugs to smaller areas, like IPC
+    deserialization functions and very simple classes like `SkBitmap` and
+    `SkPixmap`.
+
+Ultimately this process results in parsing significantly simpler grammars. (PNG
+→ Mojo + `SkBitmap` in this case.)
 
 > (We have to accept the risk of memory safety bugs in Mojo deserialization
 > because C++'s high performance is crucial in such a throughput- and
