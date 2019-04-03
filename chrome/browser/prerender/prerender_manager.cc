@@ -757,8 +757,10 @@ void PrerenderManager::MaybePreconnect(Origin origin,
 
   auto* loading_predictor = predictors::LoadingPredictorFactory::GetForProfile(
       Profile::FromBrowserContext(profile_));
-  loading_predictor->PrepareForPageLoad(
-      url_arg, predictors::HintOrigin::OMNIBOX_PRERENDER_FALLBACK, true);
+  if (loading_predictor) {
+    loading_predictor->PrepareForPageLoad(
+        url_arg, predictors::HintOrigin::OMNIBOX_PRERENDER_FALLBACK, true);
+  }
 }
 
 std::unique_ptr<PrerenderHandle>
