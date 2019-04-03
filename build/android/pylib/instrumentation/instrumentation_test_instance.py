@@ -381,14 +381,6 @@ class MissingJUnit4RunnerException(test_exception.TestException):
         'JUnit4 runner is not provided or specified in test apk manifest.')
 
 
-class UnmatchedFilterException(test_exception.TestException):
-  """Raised when a user specifies a filter that doesn't match any tests."""
-
-  def __init__(self, filter_str):
-    super(UnmatchedFilterException, self).__init__(
-        'Test filter "%s" matched no tests.' % filter_str)
-
-
 def GetTestName(test, sep='#'):
   """Gets the name of the given test.
 
@@ -882,7 +874,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     if self._test_filter and not filtered_tests:
       for t in inflated_tests:
         logging.debug('  %s', GetUniqueTestName(t))
-      raise UnmatchedFilterException(self._test_filter)
+      logging.warning('Unmatched Filter: %s', self._test_filter)
     return filtered_tests
 
   # pylint: disable=no-self-use
