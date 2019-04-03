@@ -44,13 +44,4 @@ void RemoveSinkFromMediaStreamTrack(const WebMediaStreamTrack& track,
     video_track->RemoveSink(sink);
 }
 
-void OnFrameDroppedAtMediaStreamSink(
-    const WebMediaStreamTrack& track,
-    media::VideoCaptureFrameDropReason reason) {
-  MediaStreamVideoTrack* const video_track =
-      MediaStreamVideoTrack::GetVideoTrack(track);
-  if (video_track)
-    video_track->OnFrameDropped(reason);
-}
-
 }  // namespace blink

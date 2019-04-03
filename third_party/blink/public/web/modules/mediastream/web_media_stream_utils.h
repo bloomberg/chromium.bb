@@ -36,11 +36,6 @@ BLINK_EXPORT void AddSinkToMediaStreamTrack(
 BLINK_EXPORT void RemoveSinkFromMediaStreamTrack(
     const WebMediaStreamTrack& track,
     WebMediaStreamSink* sink);
-
-BLINK_EXPORT void OnFrameDroppedAtMediaStreamSink(
-    const WebMediaStreamTrack& track,
-    media::VideoCaptureFrameDropReason reason);
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_WEB_MEDIA_STREAM_UTILS_H_
