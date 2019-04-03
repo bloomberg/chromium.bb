@@ -38,7 +38,14 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
                             public ui::SelectFileDialog::Listener,
                             public CupsPrintersManager::Observer {
  public:
-  explicit CupsPrintersHandler(content::WebUI* webui);
+  static std::unique_ptr<CupsPrintersHandler> Create(content::WebUI* webui);
+
+  static std::unique_ptr<CupsPrintersHandler> CreateForTesting(
+      Profile* profile,
+      scoped_refptr<PpdProvider> ppd_provider,
+      std::unique_ptr<PrinterConfigurer> printer_configurer,
+      CupsPrintersManager* printers_manager);
+
   ~CupsPrintersHandler() override;
 
   // SettingsPageUIHandler overrides:
@@ -46,7 +53,14 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
 
+  void SetWebUIForTest(content::WebUI* web_ui);
+
  private:
+  CupsPrintersHandler(Profile* profile,
+                      scoped_refptr<PpdProvider> ppd_provider,
+                      std::unique_ptr<PrinterConfigurer> printer_configurer,
+                      CupsPrintersManager* printers_manager);
+
   // Gets all CUPS printers and return it to WebUI.
   void HandleGetCupsPrintersList(const base::ListValue* args);
   void HandleUpdateCupsPrinter(const base::ListValue* args);

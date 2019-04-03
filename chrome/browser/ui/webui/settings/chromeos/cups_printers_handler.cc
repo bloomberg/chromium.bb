@@ -253,14 +253,41 @@ Printer::PpdReference GetPpdReference(const base::Value* info) {
 
 }  // namespace
 
-CupsPrintersHandler::CupsPrintersHandler(content::WebUI* webui)
-    : profile_(Profile::FromWebUI(webui)),
-      ppd_provider_(CreatePpdProvider(profile_)),
-      printer_configurer_(PrinterConfigurer::Create(profile_)),
-      printers_manager_(
-          CupsPrintersManagerFactory::GetForBrowserContext(profile_)),
+CupsPrintersHandler::CupsPrintersHandler(
+    Profile* profile,
+    scoped_refptr<PpdProvider> ppd_provider,
+    std::unique_ptr<PrinterConfigurer> printer_configurer,
+    CupsPrintersManager* printers_manager)
+    : profile_(profile),
+      ppd_provider_(ppd_provider),
+      printer_configurer_(std::move(printer_configurer)),
+      printers_manager_(printers_manager),
       printers_manager_observer_(this),
       weak_factory_(this) {}
+
+// static
+std::unique_ptr<CupsPrintersHandler> CupsPrintersHandler::Create(
+    content::WebUI* webui) {
+  Profile* profile(Profile::FromWebUI(webui));
+  auto ppd_provider = CreatePpdProvider(profile);
+  auto printer_configurer = PrinterConfigurer::Create(profile);
+  CupsPrintersManager* printers_manager =
+      CupsPrintersManagerFactory::GetForBrowserContext(profile);
+  // Using 'new' to access non-public constructor.
+  return base::WrapUnique(new CupsPrintersHandler(
+      profile, ppd_provider, std::move(printer_configurer), printers_manager));
+}
+
+// static
+std::unique_ptr<CupsPrintersHandler> CupsPrintersHandler::CreateForTesting(
+    Profile* profile,
+    scoped_refptr<PpdProvider> ppd_provider,
+    std::unique_ptr<PrinterConfigurer> printer_configurer,
+    CupsPrintersManager* printers_manager) {
+  // Using 'new' to access non-public constructor.
+  return base::WrapUnique(new CupsPrintersHandler(
+      profile, ppd_provider, std::move(printer_configurer), printers_manager));
+}
 
 CupsPrintersHandler::~CupsPrintersHandler() = default;
 
@@ -331,6 +358,10 @@ void CupsPrintersHandler::OnJavascriptDisallowed() {
   printers_manager_observer_.RemoveAll();
 }
 
+void CupsPrintersHandler::SetWebUIForTest(content::WebUI* web_ui) {
+  set_web_ui(web_ui);
+}
+
 void CupsPrintersHandler::HandleGetCupsPrintersList(
     const base::ListValue* args) {
   AllowJavascript();
@@ -395,8 +426,9 @@ void CupsPrintersHandler::HandleRemoveCupsPrinter(const base::ListValue* args) {
   printers_manager_->RemoveConfiguredPrinter(printer_id);
 
   DebugDaemonClient* client = DBusThreadManager::Get()->GetDebugDaemonClient();
-  client->CupsRemovePrinter(
-      printer_name, base::Bind(&OnRemovedPrinter, protocol), base::DoNothing());
+  client->CupsRemovePrinter(printer_id,
+                            base::BindOnce(&OnRemovedPrinter, protocol),
+                            base::DoNothing());
 }
 
 void CupsPrintersHandler::HandleGetPrinterInfo(const base::ListValue* args) {

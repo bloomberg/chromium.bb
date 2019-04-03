@@ -212,14 +212,14 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DebugDaemonClient
       CupsAddPrinterCallback callback) = 0;
 
   // A callback to handle the result of CupsRemovePrinter.
-  using CupsRemovePrinterCallback = base::Callback<void(bool success)>;
+  using CupsRemovePrinterCallback = base::OnceCallback<void(bool success)>;
 
   // Calls CupsRemovePrinter.  |name| is the printer name as registered in
   // CUPS.  |callback| is called with true if removing the printer from CUPS was
   // successful and false if there was an error.  |error_callback| will be
   // called if there was an error in communicating with debugd.
   virtual void CupsRemovePrinter(const std::string& name,
-                                 const CupsRemovePrinterCallback& callback,
+                                 CupsRemovePrinterCallback callback,
                                  const base::Closure& error_callback) = 0;
 
   // A callback to handle the result of StartConcierge/StopConcierge.

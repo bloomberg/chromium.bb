@@ -502,10 +502,9 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void CupsRemovePrinter(
-      const std::string& name,
-      const DebugDaemonClient::CupsRemovePrinterCallback& callback,
-      const base::Closure& error_callback) override {
+  void CupsRemovePrinter(const std::string& name,
+                         DebugDaemonClient::CupsRemovePrinterCallback callback,
+                         const base::Closure& error_callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kCupsRemovePrinter);
     dbus::MessageWriter writer(&method_call);
@@ -514,7 +513,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&DebugDaemonClientImpl::OnPrinterRemoved,
-                       weak_ptr_factory_.GetWeakPtr(), callback,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                        error_callback));
   }
 
@@ -790,12 +789,12 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     std::move(callback).Run(dbus_error);
   }
 
-  void OnPrinterRemoved(const CupsRemovePrinterCallback& callback,
+  void OnPrinterRemoved(CupsRemovePrinterCallback callback,
                         const base::Closure& error_callback,
                         dbus::Response* response) {
     bool result = false;
     if (response && dbus::MessageReader(response).PopBool(&result))
-      callback.Run(result);
+      std::move(callback).Run(result);
     else
       error_callback.Run();
   }
