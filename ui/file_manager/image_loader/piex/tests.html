@@ -180,11 +180,19 @@ piex wasm raw image preview / thumbnail test page
 
     // Fetch the image in an array buffer.
     let time = performance.now();
-    const buffer = await fetch(image).then(r => r.arrayBuffer());
+    const buffer = await fetch(image).then((response) => {
+      if (!response.ok)
+        throw new Error('failed fetching image ' + image);
+      return response.arrayBuffer();
+    }).catch(onerror);
+    if (!buffer)
+      return;
+
+    // Log the fetch time.
     const elapsed = performance.now() - time;
     console.log('test: fetch time', elapsed.toFixed(3));
 
-    // Extract its preview and thumbnail images, render them.
+    // Extract the preview|thumbnail images, render them.
     new Promise((resolve, reject) => {
       new ImageBuffer(buffer).process(resolve, reject);
     }).then((imageBuffer) => {
