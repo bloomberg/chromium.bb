@@ -9,9 +9,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:targetApi="21"
     tools:ignore="VectorRaster"
-    android:width="248dp"
+    android:width="232dp"
     android:height="107dp"
-    android:viewportWidth="248"
+    android:viewportWidth="232"
     android:viewportHeight="107">
   <path
       android:pathData="M156.91,3.733l18.155,31.59l-90.126,-1.508l12.968,-31.662z"
