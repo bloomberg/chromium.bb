@@ -113,6 +113,10 @@ class ThemeProperties {
     COLOR_INFOBAR,
     COLOR_STATUS_BUBBLE,
 
+    // Colors used when displaying hover cards.
+    COLOR_HOVER_CARD_NO_PREVIEW_FOREGROUND,
+    COLOR_HOVER_CARD_NO_PREVIEW_BACKGROUND,
+
     // The throbber colors for tabs or anything on a toolbar (currently, only
     // the download shelf). If you're adding a throbber elsewhere, such as in
     // a dialog or bubble, you likely want

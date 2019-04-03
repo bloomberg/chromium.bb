@@ -48,6 +48,10 @@ base::Optional<SkColor> GetIncognitoColor(int id) {
     case ThemeProperties::COLOR_TOOLBAR:
     case ThemeProperties::COLOR_NTP_BACKGROUND:
       return SkColorSetRGB(0x32, 0x36, 0x39);
+    case ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_FOREGROUND:
+      return gfx::kGoogleGrey700;
+    case ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_BACKGROUND:
+      return gfx::kGoogleGrey900;
     case ThemeProperties::COLOR_BOOKMARK_TEXT:
     case ThemeProperties::COLOR_TAB_TEXT:
     case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_ACTIVE:
@@ -216,6 +220,10 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
     case COLOR_TOOLBAR:
     case COLOR_STATUS_BUBBLE:
       return SK_ColorWHITE;
+    case COLOR_HOVER_CARD_NO_PREVIEW_FOREGROUND:
+      return gfx::kGoogleGrey300;
+    case COLOR_HOVER_CARD_NO_PREVIEW_BACKGROUND:
+      return gfx::kGoogleGrey050;
     case COLOR_BACKGROUND_TAB_TEXT:
     case COLOR_BACKGROUND_TAB_TEXT_INACTIVE:
     case COLOR_BOOKMARK_TEXT:
