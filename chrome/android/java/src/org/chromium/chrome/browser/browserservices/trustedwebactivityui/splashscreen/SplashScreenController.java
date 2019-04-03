@@ -68,13 +68,6 @@ public class SplashScreenController implements InflationObserver {
 
     private static final String TAG = "TwaSplashScreens";
 
-    // TODO(pshmakov): Use constants from TrustedWebUtils when they land there.
-    static final String EXTRA_SPLASH_SCREEN_PARAMS =
-            "android.support.customtabs.trusted.EXTRA_SPLASH_SCREEN_PARAMS";
-
-    static final String KEY_SPLASH_SCREEN_BACKGROUND_COLOR =
-            "android.support.customtabs.trusted.KEY_SPLASH_SCREEN_BACKGROUND_COLOR";
-
     private final Activity mActivity;
     private final ActivityLifecycleDispatcher mLifecycleDispatcher;
     private final TabObserverRegistrar mTabObserverRegistrar;
@@ -127,8 +120,10 @@ public class SplashScreenController implements InflationObserver {
             mLifecycleDispatcher.unregister(this);
             return;
         }
-        Bundle params = mIntentDataProvider.getIntent().getBundleExtra(EXTRA_SPLASH_SCREEN_PARAMS);
-        int backgroundColor = params.getInt(KEY_SPLASH_SCREEN_BACKGROUND_COLOR, Color.WHITE);
+        Bundle params = mIntentDataProvider.getIntent().getBundleExtra(
+                TrustedWebUtils.EXTRA_SPLASH_SCREEN_PARAMS);
+        int backgroundColor = params.getInt(TrustedWebUtils.SplashScreenParamKey.BACKGROUND_COLOR,
+                Color.WHITE);
 
         mSplashView = new ImageView(mActivity);
         mSplashView.setLayoutParams(new ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT));
@@ -212,8 +207,8 @@ public class SplashScreenController implements InflationObserver {
     public static boolean intentIsForTwaWithSplashScreen(Intent intent) {
         boolean isTrustedWebActivity = IntentUtils.safeGetBooleanExtra(intent,
                 TrustedWebUtils.EXTRA_LAUNCH_AS_TRUSTED_WEB_ACTIVITY, false);
-        boolean requestsSplashScreen =
-                IntentUtils.safeGetParcelableExtra(intent, EXTRA_SPLASH_SCREEN_PARAMS) != null;
+        boolean requestsSplashScreen = IntentUtils.safeGetParcelableExtra(intent,
+                        TrustedWebUtils.EXTRA_SPLASH_SCREEN_PARAMS) != null;
         return isTrustedWebActivity && requestsSplashScreen;
     }
 
