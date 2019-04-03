@@ -183,7 +183,7 @@
     This computer is not detected as enterprise managed so policy can only automatically install extensions hosted on the Chrome Webstore. The Chrome Webstore update URL is "<ph name="CWS_UPDATE_URL">$1<ex>https://clients2.google.com/service/update2/crx</ex></ph>".
   </message>
   <message name="IDS_POLICY_HOMEPAGE_LOCATION_ERROR" desc="The text displayed in the status column when the homepage URL given by the HomepageLocation policy is invalid.">
-    Invalid URL. Must be a URL with a standard scheme.
+    Invalid URL. Must be a URL with a standard scheme, e.g http://example.com or https://example.com.
   </message>
   <message name="IDS_POLICY_PROXY_MODE_DISABLED_ERROR" desc="The text displayed in the status column when use of a proxy is disabled but a proxy configuration is given.">
     Use of a proxy is disabled but an explicit proxy configuration is specified.
