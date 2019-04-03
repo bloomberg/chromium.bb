@@ -42,6 +42,10 @@ class PageActionIconView : public IconLabelBubbleView {
     virtual SkColor GetPageActionInkDropColor() const = 0;
 
     virtual content::WebContents* GetWebContentsForPageActionIconView() = 0;
+
+    // Delegate should override and return true when the user is editing the
+    // location bar contents.
+    virtual bool IsLocationBarUserInputInProgress() const;
   };
 
   // Updates the color of the icon, this must be set before the icon is drawn.
@@ -135,6 +139,9 @@ class PageActionIconView : public IconLabelBubbleView {
 
   bool active() const { return active_; }
 
+  // Delegate accessor for subclasses.
+  Delegate* delegate() const { return delegate_; }
+
  private:
   // The size of the icon image (excluding the ink drop).
   int icon_size_ = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
@@ -143,10 +150,10 @@ class PageActionIconView : public IconLabelBubbleView {
   SkColor icon_color_ = gfx::kPlaceholderColor;
 
   // The CommandUpdater for the Browser object that owns the location bar.
-  CommandUpdater* command_updater_;
+  CommandUpdater* const command_updater_;
 
   // Delegate for access to associated state.
-  Delegate* delegate_;
+  Delegate* const delegate_;
 
   // The command ID executed when the user clicks this icon.
   const int command_id_;
