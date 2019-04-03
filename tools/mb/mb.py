@@ -1176,7 +1176,7 @@ class MetaBuildWrapper(object):
     elif is_android and test_type != "script":
       cmdline = []
       if asan:
-        cmdline += [os.path.join('bin', 'run_with_asan')]
+        cmdline += [os.path.join('bin', 'run_with_asan'), '--']
       cmdline += [
           '../../testing/test_env.py',
           '../../build/android/test_wrapper/logdog_wrapper.py',
