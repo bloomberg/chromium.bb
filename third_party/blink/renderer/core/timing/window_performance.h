@@ -51,10 +51,6 @@ class CORE_EXPORT WindowPerformance final : public Performance,
   friend class WindowPerformanceTest;
 
  public:
-  static WindowPerformance* Create(LocalDOMWindow* window) {
-    return MakeGarbageCollected<WindowPerformance>(window);
-  }
-
   explicit WindowPerformance(LocalDOMWindow*);
   ~WindowPerformance() override;
 

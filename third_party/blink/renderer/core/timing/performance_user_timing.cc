@@ -229,7 +229,7 @@ PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
       "blink.user_timing", measure_name.Utf8().data(), hash,
       trace_event::ToTraceTimestamp(end_time_monotonic));
 
-  PerformanceMeasure* measure = PerformanceMeasure::Create(
+  auto* measure = MakeGarbageCollected<PerformanceMeasure>(
       script_state, measure_name, start_time, end_time, detail);
   InsertPerformanceEntry(measures_map_, *measure);
   if (end_time >= start_time) {

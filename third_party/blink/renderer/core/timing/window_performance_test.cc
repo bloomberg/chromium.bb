@@ -88,8 +88,8 @@ class WindowPerformanceTest : public testing::Test {
   void ResetPerformance() {
     page_holder_ = std::make_unique<DummyPageHolder>(IntSize(800, 600));
     page_holder_->GetDocument().SetURL(KURL("https://example.com"));
-    performance_ =
-        WindowPerformance::Create(page_holder_->GetDocument().domWindow());
+    performance_ = MakeGarbageCollected<WindowPerformance>(
+        page_holder_->GetDocument().domWindow());
     performance_->time_origin_ = GetTimeOrigin();
   }
 
