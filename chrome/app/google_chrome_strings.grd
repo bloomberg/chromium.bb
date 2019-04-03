@@ -439,22 +439,43 @@ Google Chrome is unable to recover your settings.
                desc="Message shown on the download shelf when the download is known to change settings in the browser.">
         <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> may be dangerous, so Chrome has blocked it.
       </message>
+      <message name="IDS_PROMPT_DOWNLOAD_CHANGES_SETTINGS_IN_ADVANCED_PROTECTION"
+               desc="Message shown on the download shelf when the download is known to change settings in the browser. This variant is shown when the user is enrolled in the Advanced Protection program.">
+        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> may be dangerous, so Chrome has blocked it. You're defended by Advanced Protection.
+      </message>
 
       <message name="IDS_PROMPT_MALICIOUS_DOWNLOAD_URL"
          desc="Message shown to the user to validate the download when the download url is classified to lead to malware by the safebrowsing database.">
         This file is dangerous, so Chrome has blocked it.
       </message>
+      <message name="IDS_PROMPT_MALICIOUS_DOWNLOAD_URL_IN_ADVANCED_PROTECTION"
+         desc="Message shown to the user to validate the download when the download url is classified to lead to malware by the safebrowsing database. This variant is shown when the user is enrolled in the Advanced Protection program.">
+        This file is dangerous, so Chrome has blocked it. Your'e defended by Advanced Protection.
+      </message>
       <message name="IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT"
          desc="Message shown to the user to validate the download when the download content is classified to lead to malware by safebrowsing.">
         <ph name="FILE_NAME">$1<ex>malware.exe</ex></ph> is dangerous, so Chrome has blocked it.
+      </message>
+      <message name="IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT_IN_ADVANCED_PROTECTION"
+         desc="Message shown to the user to validate the download when the download content is classified to lead to malware by safebrowsing. This variant is shown when the user is enrolled in the Advanced Protection program.">
+        <ph name="FILE_NAME">$1<ex>malware.exe</ex></ph> is dangerous, so Chrome has blocked it. You're defended by Advanced Protection.
       </message>
       <message name="IDS_BLOCK_REASON_DANGEROUS_DOWNLOAD"
          desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it is malware.">
         This file is dangerous, so Chrome has blocked it.
       </message>
+      <message name="IDS_BLOCK_REASON_DANGEROUS_DOWNLOAD_IN_ADVANCED_PROTECTION"
+         desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it is malware. This variant is shown when the user is enrolled in the Advanced Protection program.">
+        This file is dangerous, so Chrome has blocked it. You're defended by Advanced Protection.
+      </message>
+
       <message name="IDS_BLOCK_REASON_UNWANTED_DOWNLOAD"
          desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it is unwanted sofware.">
         This file may be dangerous, so Chrome has blocked it.
+      </message>
+      <message name="IDS_BLOCK_REASON_UNWANTED_DOWNLOAD_IN_ADVANCED_PROTECTION"
+         desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it is unwanted sofware. This variant is shown when the user is enrolled in the Advanced Protection program.">
+        This file may be dangerous, so Chrome has blocked it. You're defended by Advanced Protection.
       </message>
 
       <!-- Abandon in-progress downloads confirmation dialog -->

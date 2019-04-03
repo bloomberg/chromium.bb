@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/downloads/downloads_dom_handler.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
@@ -75,12 +76,26 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   // Dangerous file.
   source->AddLocalizedString("dangerFileDesc",
                              IDS_BLOCK_REASON_GENERIC_DOWNLOAD);
-  source->AddLocalizedString("dangerDownloadDesc",
-                             IDS_BLOCK_REASON_DANGEROUS_DOWNLOAD);
-  source->AddLocalizedString("dangerUncommonDesc",
-                             IDS_BLOCK_REASON_UNCOMMON_DOWNLOAD);
-  source->AddLocalizedString("dangerSettingsDesc",
-                             IDS_BLOCK_REASON_UNWANTED_DOWNLOAD);
+
+  bool requests_ap_verdicts = safe_browsing::AdvancedProtectionStatusManager::
+      RequestsAdvancedProtectionVerdicts(profile);
+
+  source->AddLocalizedString(
+      "dangerDownloadDesc",
+      requests_ap_verdicts
+          ? IDS_BLOCK_REASON_DANGEROUS_DOWNLOAD_IN_ADVANCED_PROTECTION
+          : IDS_BLOCK_REASON_DANGEROUS_DOWNLOAD);
+  source->AddLocalizedString(
+      "dangerUncommonDesc",
+      requests_ap_verdicts
+          ? IDS_BLOCK_REASON_UNCOMMON_DOWNLOAD_IN_ADVANCED_PROTECTION
+          : IDS_BLOCK_REASON_UNCOMMON_DOWNLOAD);
+  source->AddLocalizedString(
+      "dangerSettingsDesc",
+      requests_ap_verdicts
+          ? IDS_BLOCK_REASON_UNWANTED_DOWNLOAD_IN_ADVANCED_PROTECTION
+          : IDS_BLOCK_REASON_UNWANTED_DOWNLOAD);
+
   source->AddLocalizedString("dangerSave", IDS_CONFIRM_DOWNLOAD);
   source->AddLocalizedString("dangerRestore", IDS_CONFIRM_DOWNLOAD_RESTORE);
   source->AddLocalizedString("dangerDiscard", IDS_DISCARD_DOWNLOAD);
