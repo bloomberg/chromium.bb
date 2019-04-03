@@ -10,6 +10,9 @@
 #include <set>
 #include <vector>
 
+#include "base/strings/string16.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/win/scoped_handle.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
 #include "chrome/credential_provider/gaiacp/gaia_resources.h"
@@ -65,8 +68,13 @@ class ATL_NO_VTABLE CGaiaCredentialProvider
   // Creates all the reauth credentials from the users that is returned from
   // |users|. Fills |reauth_sids| with the list of user sids for which a reauth
   // credential was created.
-  HRESULT CreateReauthCredentials(ICredentialProviderUserArray* users,
-                                  std::set<base::string16>* reauth_sids);
+  HRESULT CreateReauthCredentials(ICredentialProviderUserArray* users);
+
+  // This function will always add |cred| to |users_| and will also try to
+  // check if the |sid| matches the one set in |set_serialization_sid_| to
+  // allow auto logon of remote connections.
+  void AddCredentialAndCheckAutoLogon(const CComPtr<IGaiaCredential>& cred,
+                                      const base::string16& sid);
 
   void ClearTransient();
   void CleanupOlderVersions();
@@ -115,6 +123,8 @@ class ATL_NO_VTABLE CGaiaCredentialProvider
   // Index in the |users_| array of the credential that performed the
   // authentication.
   size_t index_ = std::numeric_limits<size_t>::max();
+
+  base::string16 set_serialization_sid_;
 };
 
 // OBJECT_ENTRY_AUTO() contains an extra semicolon.

@@ -58,6 +58,9 @@ class [[clang::lto_visibility_public]] OSUserManager {
   // should free it with a call to LocalFree().
   virtual HRESULT GetUserSID(const wchar_t* domain, const wchar_t* username,
                              PSID* sid);
+  // Gets the SID in string format of the given OS user.
+  HRESULT GetUserSID(const wchar_t* domain, const wchar_t* username,
+                     base::string16* sid_string);
 
   // Finds a user created from a gaia account by its SID.  Returns S_OK if a
   // user with the given SID exists, HRESULT_FROM_WIN32(ERROR_NONE_MAPPED)
