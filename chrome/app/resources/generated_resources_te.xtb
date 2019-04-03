@@ -1534,7 +1534,6 @@
 <translation id="3435688026795609344">"<ph name="EXTENSION_NAME" />" మీ <ph name="CODE_TYPE" />ని అభ్యర్థిస్తోంది</translation>
 <translation id="3435738964857648380">భద్రత</translation>
 <translation id="3435896845095436175">ప్రారంభించండి</translation>
-<translation id="3436038974659740746">అనుకూల స్పెల్ చెక్</translation>
 <translation id="3438633801274389918">నింజా</translation>
 <translation id="3439153939049640737">మీ మైక్రోఫోన్‌ను యాక్సెస్ చేయడానికి <ph name="HOST" />ని ఎల్లప్పుడూ అనుమతించండి</translation>
 <translation id="3439970425423980614">PDFను ప్రివ్యూలో తెరుస్తోంది</translation>
@@ -1857,14 +1856,13 @@
 <translation id="3898521660513055167">టోకెన్ స్థితి</translation>
 <translation id="389901847090970821">కీబోర్డ్‌ను ఎంచుకోండి</translation>
 <translation id="3899879303189199559">సంవత్సరానికి పైగా ఆఫ్‌లైన్‌లో ఉంది</translation>
-<translation id="3900105072479897941">రీసెట్ చేయడానికి అనుమతించబడలేదు. కొన్ని సెక్యూరిటీ కీలను చొప్పించిన తర్వాత కొన్ని సెకన్లలోపు మాత్రమే రీసెట్ చేయడానికి అవి అనుమతించవచ్చు—మీరు ప్రక్రియను మరింత త్వరగా తిరిగి పూర్తి చేయాలని భావింవచ్చు.</translation>
+<translation id="3900105072479897941">రీసెట్ చేయడానికి అనుమతించబడలేదు. కొన్ని సెక్యూరిటీ కీలను చొప్పించిన తర్వాత కొన్ని సెకన్లలోపు మాత్రమే రీసెట్ చేయడానికి అవి అనుమతించవచ్చు—మీరు ప్రక్రియను మరింత త్వరగా తిరిగి పూర్తి చేయాలని భావించవచ్చు.</translation>
 <translation id="3900966090527141178">పాస్‌వర్డ్‌లను ఎగుమతి చేయండి</translation>
 <translation id="3901991538546252627"><ph name="NAME" />కి కనెక్ట్ చేస్తోంది</translation>
 <translation id="3905761538810670789">యాప్‌ను సరి చేయి</translation>
 <translation id="3908393983276948098"><ph name="PLUGIN_NAME" /> కాలం చెల్లినది</translation>
 <translation id="3908501907586732282">ఎక్స్‌టెన్ష‌న్‌ను ప్రారంభించు</translation>
 <translation id="3909477809443608991">రక్షిత కంటెంట్‌ను ప్లే చేయడానికి <ph name="URL" /> అనుమతి కోరుతుంది. మీ పరికరం గుర్తింపు Google ద్వారా ధృవీకరించబడుతుంది, దీనిని ఈ సైట్ ద్వారా యాక్సెస్ చేయవచ్చు</translation>
-<translation id="3909690856344416952"><ph name="LANGUAGE_1" />, <ph name="LANGUAGE_2" /> మరియు మరొకటి</translation>
 <translation id="3909791450649380159">క&amp;త్తిరించు</translation>
 <translation id="3911073280391218446"><ph name="USER_DISPLAY_NAME" /> (ఈ పరికరంలో ఉపయోగించబడిన పేరు)</translation>
 <translation id="3911824782900911339">కొత్త‌ ట్యాబ్ పేజీ</translation>
@@ -2129,7 +2127,6 @@
 <translation id="435527878592612277">మీ ఫోటోని ఎంచుకోండి</translation>
 <translation id="4356334633973342967">లేదంటే, మీ స్వంత డ్రైవర్‌ను పేర్కొనండి:</translation>
 <translation id="4358169392473932247">ఆధారాల అంతర్గత నిల్వకు ఆ భద్రతా కీ మద్దతు ఇవ్వదు, కానీ ఆ ఫీచర్ అభ్యర్థించబడింది.</translation>
-<translation id="4358353773267946514"><ph name="LANGUAGE_1" />, <ph name="LANGUAGE_2" /></translation>
 <translation id="4359408040881008151">ఆధారిత పొడిగింపు(లు) కారణంగా ఇన్‌స్టాల్ చేయబడింది.</translation>
 <translation id="4359717112757026264">నగర చిత్రాలు</translation>
 <translation id="4361142739114356624">ఈ క్లయింట్ ప్రమాణపత్రం యొక్క ప్రైవేట్ కీ లేదు లేదా చెల్లదు</translation>
@@ -2181,7 +2178,6 @@
 <translation id="443475966875174318">అనుకూలంగా లేని అప్లికేషన్‌లను అప్‌డేట్ చేయండి లేదా తీసివేయండి</translation>
 <translation id="4441124369922430666">మెషీన్ ప్రారంభించబడినప్పుడు ఆటోమేటిక్‌గా ఈ యాప్ ప్రారంభించబడాలని మీరు కోరుకుంటున్నారా?</translation>
 <translation id="444134486829715816">విస్తరించు...</translation>
-<translation id="4441548209689510310">స్పెల్ చెక్ ఎంపికలను చూపు</translation>
 <translation id="4442424173763614572">DNS శోధన విఫలమైంది</translation>
 <translation id="4443536555189480885">&amp;సహాయం</translation>
 <translation id="4444304522807523469">USB ద్వారా లేదా స్థానిక నెట్‌వర్క్‌లో జోడించిన పత్రం స్కానర్‌లను యాక్సెస్ చేయండి</translation>
@@ -2977,7 +2973,6 @@
 <translation id="5736796278325406685">దయచేసి చెల్లుబాటు అయ్యే వినియోగదారు పేరును నమోదు చేయండి</translation>
 <translation id="5739235828260127894">ధృవీకరణ కోసం వేచి ఉంది. <ph name="LINK_BEGIN" />మరింత తెలుసుకోండి<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">చాలా పెద్దవిగా</translation>
-<translation id="5740331643563157105"><ph name="LANGUAGE_1" />, <ph name="LANGUAGE_2" /> మరియు మరో <ph name="NUM_ADDITIONAL_LANGUAGES" /></translation>
 <translation id="574209121243317957">పిచ్</translation>
 <translation id="5746169159649715125">PDF లాగా సేవ్ చేయి</translation>
 <translation id="5747552184818312860">గడువు ముగింపు</translation>

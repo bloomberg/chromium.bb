@@ -214,6 +214,7 @@
 <translation id="2536728043171574184">正在查看此网页的离线副本</translation>
 <translation id="2546283357679194313">Cookie 和网站数据</translation>
 <translation id="2567385386134582609">图片</translation>
+<translation id="257088987046510401">主题背景</translation>
 <translation id="2570922361219980984">此设备的位置信息使用权也已关闭；若想开启这项权限，请转到 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />。</translation>
 <translation id="257931822824936280">已展开 - 点击此处即可收起。</translation>
 <translation id="2581165646603367611">这会清除 Chrome 认为不重要的网站的 Cookie、缓存和其他数据。</translation>
@@ -328,6 +329,7 @@
 <translation id="3443221991560634068">重新加载当前网页</translation>
 <translation id="3445014427084483498">刚刚</translation>
 <translation id="3452612588551937789">登录 Google 帐号，即可获取您在任何登录过的设备上的书签、密码、历史记录及其他设置。</translation>
+<translation id="3478363558367712427">您可自行选择要使用的搜索引擎</translation>
 <translation id="3492207499832628349">打开新的无痕式标签页</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />详细了解<ph name="END_LINK" />推荐内容</translation>
 <translation id="3513704683820682405">增强现实</translation>

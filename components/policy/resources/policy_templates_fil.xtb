@@ -1,6 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
+<translation id="1002439864875515590">Kung nakatakda ang patakarang ito sa isang blangkong string o hindi naka-configure, hindi magpapakita ng opsyon sa pag-autocomplete ang <ph name="PRODUCT_OS_NAME" /> sa flow ng pag-sign in ng user.
+      Kung nakatakda ang patakarang ito sa isang string na kumakatawan sa isang domain name, magpapakita ang <ph name="PRODUCT_OS_NAME" /> ng opsyon sa pag-autocomplete sa pag-sign in ng user na nagbibigay-daan sa user na i-type lang ang kanyang user name nang walang extension ng domain name.  Mao-overwrite ng user ang extension ng domain name na ito.
+      Kung ang value ng patakaran ay hindi isang wastong domain, hindi ilalapat ang patakaran.</translation>
 <translation id="101438888985615157">I-rotate ang screen nang 180 degrees</translation>
 <translation id="1016912092715201525">Kino-configure ang mga default na pagsusuri ng browser sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang mga ito.
 
@@ -941,6 +944,16 @@
       Kung hindi pinagana ang setting na ito, hindi makakagamit ng JavaScript ang mga web page at hindi mababago ng user ang setting na iyon.
 
       Kung pinagana o hindi nakatakda ang setting na ito, makakagamit ng JavaScript ang mga web page ngunit mababago ng user ang setting na iyon.</translation>
+<translation id="2747157663401642394">Kino-configure ang mga setting ng pamamahala ng extension para sa <ph name="PRODUCT_NAME" />.
+
+          Kinokontrol ng patakarang ito ang maraming setting, kabilang ang mga setting na kinokontrol ng anumang kasalukuyang patakarang nauugnay sa extension. Io-override ng patakarang ito ang anumang patakaran ng legacy kung naitakda ang pareho.
+
+          Nagmamapa ang patakarang ito ng extension ID o ng isang URL ng update sa configuration nito. Gamit ang isang extension ID, ilalapat ang configuration sa tinukoy na extension lang. Maaaring itakda ang isang default na configuration para sa espesyal na ID <ph name="DEFAULT_SCOPE" /> na ilalapat sa lahat ng extension na walang nakatakdang custom na configuration sa patakarang ito. Gamit ang isang URL ng update, ilalapat ang configuration sa lahat ng extension na may eksaktong URL ng update na nakasaad sa manifest ng extension na ito, gaya ng nakasaad sa <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Para sa mga instance ng Windows na hindi kasama sa isang domain ng <ph name="MS_AD_NAME" />, nililimitahan ang pwersahang pag-install sa mga app at extension na nakalista sa Chrome Web Store.
+
+          Para sa kumpletong paglalarawan ng mga posibleng setting at istruktura ng patakarang ito, mangyaring bumisita sa https://www.chromium.org/administrators/policy-list-3/extension-settings-full
+          </translation>
 <translation id="2753637905605932878">Paghigpitan ang hanay ng mga lokal na UDP port na ginagamit ng WebRTC</translation>
 <translation id="2755385841634849932">Kinokontrol ng patakarang ito ang availability ng pag-back up at pag-restore sa Android.
 
@@ -2079,6 +2092,7 @@
       Kapag nakatakda ang patakarang ito, itinuturing napanuntunan ang bawat item, kagaya ng patakarang <ph name="URL_LIST_POLICY_NAME" />. Gayunpaman, baliktad ang pagturing dito: hindi magbubukas ng alternatibong browser ang mga tutugmang panuntunan.
 
       Hindi gaya ng <ph name="URL_LIST_POLICY_NAME" />, nalalapat sa magkabilang direksyon ang mga panuntunan. Ibig sabihin, kapag mayroon ng Internet Explorer add-in at naka-enable ito, kinokontrol din nito kung dapat buksan ng <ph name="IE_PRODUCT_NAME" /> ang mga URL na ito sa <ph name="PRODUCT_NAME" />.</translation>
+<translation id="5124368997194894978">I-enable ang boot on AC (alternating current)</translation>
 <translation id="5130288486815037971">Kung naka-enable ang mga RC4 na cipher suite sa TLS o hindi</translation>
 <translation id="5141670636904227950">Itakda ang default na uri ng magnifier ng screen na naka-enable sa screen sa pag-login</translation>
 <translation id="5142301680741828703">Palaging i-render ang mga sumusunod na pattern ng URL sa <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -2879,6 +2893,17 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang '3,' at magagawa ng user na baguhin ito.</translation>
 <translation id="663685822663765995">Paghigpitan ang printing color mode</translation>
 <translation id="6641981670621198190">Huwag paganahin ang suporta para sa mga API ng mga 3D na graphic</translation>
+<translation id="6646056064606561298">I-enable ang patakaran sa pamamahala ng baterya na boot on AC.
+
+          Nagbibigay ang Boot on AC ng pagkakataon para sa system na awtomatikong mag-boot up mula sa NAKA-OFF/Naka-hibernate kapag ipinasok ang line power.
+
+          Kung nakatakda sa true ang patakarang ito, palaging naka-enable ang boot on AC kung sinusuportahan sa device.
+
+          Kung nakatakda sa false ang patakarang ito, palaging naka-disable ang boot on AC.
+
+          Kung itatakda mo ang patakarang ito, hindi ito mababago o mao-override ng mga user.
+
+          Kung hindi nakatakda ang patakarang ito, naka-disable ang boot on AC at hindi mae-enable ng user.</translation>
 <translation id="6647965994887675196">Kung nakatakda sa true, maaaring gumawa at gumamit ng mga pinapangasiwaang user.
 
           Kung nakatakda sa false o hindi naka-configure, idi-disable ang paggawa at pag-log in ng pinapangasiwaang user. Itatago ang lahat ng umiiral na pinapangasiwaang user.

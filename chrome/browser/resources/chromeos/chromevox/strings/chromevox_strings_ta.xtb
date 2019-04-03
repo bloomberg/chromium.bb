@@ -54,6 +54,7 @@
 <translation id="1319608975892113573">முன் மேற்கோள் குறி இல்லை</translation>
 <translation id="1321576897702511272">ChromeVox உதவியை மறை</translation>
 <translation id="1325946044405407859">டான்</translation>
+<translation id="1331634987653814322">பிரெயில் அமைப்புகள்</translation>
 <translation id="1331702245475014624"><ph name="TOTAL" /> / <ph name="INDEX" /></translation>
 <translation id="1334095593597963605">எழுத்து மற்றும் சொல் எதிரொலி</translation>
 <translation id="1334570596456017464">சப்ஸ்கிரிப்ட்</translation>
@@ -548,6 +549,7 @@
 <translation id="489907760999452556">அக இணைப்பு</translation>
 <translation id="4915087353619183190">’கற்றல் பயன்முறையைத்’ தொடங்குகிறது. அதன் செயல்பாட்டைப் பற்றி அறிய, ஒரு qwerty விசையையோ புதுப்பிக்கக்கூடிய பிரெய்ல் விசையையோ அல்லது தொடு சைகையையோ அழுத்தவும். வெளியேற, 'control + w' அல்லது escape விசையை அழுத்தவும்.</translation>
 <translation id="492295894462528572">அறிமுகம்</translation>
+<translation id="4943781537993885772">காட்சிப்படுத்தும் விதம்</translation>
 <translation id="495170559598752135">செயல்கள்</translation>
 <translation id="4953585991029886728">உரையைத் திருத்து</translation>
 <translation id="4954534434583049121">முந்தைய மேற்கோள் குறி</translation>
@@ -714,6 +716,7 @@
 <translation id="6006050241733874051">படிவம்</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{பின்கோடு}other{# பின்கோடுகள்}}</translation>
 <translation id="6017514345406065928">பச்சை</translation>
+<translation id="6021969570711251331">ஒன்றன் மேல் ஒன்று காட்சிப்படுத்தப்படும்</translation>
 <translation id="6034000775414344507">வெளிர் சாம்பல்</translation>
 <translation id="6037602951055904232">முன்னோக்கி நகர்த்து</translation>
 <translation id="6042826534790431634">செயல்படுத்த, தேடல்+Space விசைகளை அழுத்தவும்.</translation>
@@ -764,6 +767,7 @@
 <translation id="6438968337250688271"><ph name="NAME" />, மெனு</translation>
 <translation id="6444046323172968959">விழிப்பூட்டல் செய்தி</translation>
 <translation id="6452403590345320472">உள்ளடக்க அட்டவணை</translation>
+<translation id="6454456397828627257">அருகருகே</translation>
 <translation id="6459511626086141404">தட்டையான விசைவரைபடம்</translation>
 <translation id="6468049171101508116">அடுத்த பொத்தான்</translation>
 <translation id="646954774886932461">பொருளடக்கம்</translation>

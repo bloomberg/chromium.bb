@@ -907,7 +907,7 @@
 <translation id="2435457462613246316">Vis passord</translation>
 <translation id="2436186046335138073">Vil du la <ph name="HANDLER_HOSTNAME" /> åpne alle <ph name="PROTOCOL" />-linker?</translation>
 <translation id="2436707352762155834">Minimum</translation>
-<translation id="2439545803278355377">Skriv inn den nye PIN-koden din. En PIN-kode må ha minst fire tegn og kan bestå av bokstaver, tall og andre tegn.</translation>
+<translation id="2439545803278355377">Skriv inn den nye PIN-koden. En PIN-kode må ha minst fire tegn og kan bestå av bokstaver, tall og andre tegn.</translation>
 <translation id="2440604414813129000">Vis &amp;kilde</translation>
 <translation id="2442182690962765671">Siden svarer ikke. Du kan vente, eller du kan ta av VR-brillene.</translation>
 <translation id="2445081178310039857">Det kreves en rotkatalog for utvidelsen</translation>
@@ -1529,7 +1529,6 @@
 <translation id="3435688026795609344">«<ph name="EXTENSION_NAME" />» ber om <ph name="CODE_TYPE" /></translation>
 <translation id="3435738964857648380">Sikkerhet</translation>
 <translation id="3435896845095436175">Slå på</translation>
-<translation id="3436038974659740746">Egendefinert staving</translation>
 <translation id="3438633801274389918">Ninja</translation>
 <translation id="3439153939049640737">Tillat alltid at <ph name="HOST" /> bruker mikrofonen din</translation>
 <translation id="3439970425423980614">Åpner PDF i forhåndsvisning</translation>
@@ -1859,7 +1858,6 @@
 <translation id="3908393983276948098"><ph name="PLUGIN_NAME" /> er foreldet</translation>
 <translation id="3908501907586732282">Aktiver utvidelsen</translation>
 <translation id="3909477809443608991"><ph name="URL" /> ber om tillatelse til å spille beskyttet innhold. Identiteten til enheten din bekreftes av Google og kan bli gjort tilgjengelig for dette nettstedet.</translation>
-<translation id="3909690856344416952"><ph name="LANGUAGE_1" />, <ph name="LANGUAGE_2" /> og ett til</translation>
 <translation id="3909791450649380159">Klipp u&amp;t</translation>
 <translation id="3911073280391218446"><ph name="USER_DISPLAY_NAME" /> (navnet som brukes på denne enheten)</translation>
 <translation id="3911824782900911339">Siden Ny fane</translation>
@@ -2122,7 +2120,6 @@
 <translation id="435527878592612277">Velg bilde</translation>
 <translation id="4356334633973342967">Du kan også angi driveren manuelt:</translation>
 <translation id="4358169392473932247">Den sikkerhetsnøkkelen støtter ikke internlagring av legitimasjon, men det er den forespurte funksjonen.</translation>
-<translation id="4358353773267946514"><ph name="LANGUAGE_1" />, <ph name="LANGUAGE_2" /></translation>
 <translation id="4359408040881008151">Installert på grunn av avhengige utvidelser.</translation>
 <translation id="4359717112757026264">Bybilde</translation>
 <translation id="4361142739114356624">Privatnøkkelen for dette klientsertifikatet mangler eller er ugyldig</translation>
@@ -2174,7 +2171,6 @@
 <translation id="443475966875174318">Oppdater eller fjern inkompatible programmer</translation>
 <translation id="4441124369922430666">Vil du starte denne appen automatisk når maskinen slås på?</translation>
 <translation id="444134486829715816">Utvid</translation>
-<translation id="4441548209689510310">Vis alternativer for stavekontroll</translation>
 <translation id="4442424173763614572">DNS-søk mislyktes</translation>
 <translation id="4443536555189480885">&amp;Hjelp</translation>
 <translation id="4444304522807523469">Få tilgang til dokumentskannere som er tilkoblet via USB eller på det lokale nettverket</translation>
@@ -2970,7 +2966,6 @@
 <translation id="5736796278325406685">Skriv inn et gyldig brukernavn</translation>
 <translation id="5739235828260127894">Venter på bekreftelse. <ph name="LINK_BEGIN" />Finn ut mer<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Veldig stor</translation>
-<translation id="5740331643563157105"><ph name="LANGUAGE_1" />, <ph name="LANGUAGE_2" /> og <ph name="NUM_ADDITIONAL_LANGUAGES" /> til</translation>
 <translation id="574209121243317957">Stemmeleie</translation>
 <translation id="5746169159649715125">Lagre som PDF</translation>
 <translation id="5747552184818312860">Utløper</translation>
@@ -3809,7 +3804,7 @@
 <translation id="7063129466199351735">Behandler snarveier …</translation>
 <translation id="7063311912041006059">Nettadresse med <ph name="SPECIAL_SYMBOL" /> i stedet for søket</translation>
 <translation id="7063957500469387217">Konfigurer eller administrer skrivere i Google Cloud Print.</translation>
-<translation id="7064482796689484940">Den sikkerhetsnøkkelen støtter ikke noen former for personlig identifisering (f.eks. en fingeravtrykkssensor eller PIN-kode), men det er den forespurte funksjonen.</translation>
+<translation id="7064482796689484940">Den sikkerhetsnøkkelen støtter ikke noen former for personlig identifisering (f.eks. fingeravtrykkssensor eller PIN-kode), men det er den forespurte funksjonen.</translation>
 <translation id="7065223852455347715">Denne enheten er låst i en modus som forhindrer bedriftsregistrering. Hvis du vil registrere enheten, må du du gjenopprette enheten først.</translation>
 <translation id="7065534935986314333">Om systemet</translation>
 <translation id="706626672220389329">Feil ved aktivering av deling. Den spesifiserte delingen er allerede aktivert.</translation>

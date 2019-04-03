@@ -1309,7 +1309,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
           Hvis denne innstillingen er slått av, kan ikke brukerne lagre nye passord. De kan likevel bruke passord som er lagret tidligere.
 
           Hvis denne regelen er slått av eller på, kan ikke brukerne endre eller overstyre den i <ph name="PRODUCT_NAME" />. Hvis regelen ikke er angitt, er lagring av passord tillatt (men brukerne kan slå det av).</translation>
-<translation id="3496296378755072552">Passordbehandling</translation>
+<translation id="3496296378755072552">Passordlagring</translation>
 <translation id="3500732098526756068">Lar deg kontrollere utløsingen av advarsler for passordbeskyttelse. Med passordbeskyttelse varsles brukere ved gjenbruk av beskyttede passord på potensielt mistenkelige nettsteder.
 
       Du kan bruke reglene «PasswordProtectionLoginURLs» og «PasswordProtectionChangePasswordURL» til å konfigurere hvilke passord som skal beskyttes.
@@ -1782,7 +1782,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="445270821089253489">Kontrollerer hva slags bruker- og enhetsinformasjon som rapporteres.</translation>
 <translation id="4454820008017317557">Vis verktøylinjeikonet for <ph name="PRODUCT_NAME" /></translation>
 <translation id="4467952432486360968">Blokkér tredjeparts informasjonskapsler</translation>
-<translation id="4474167089968829729">Slå på lagring av passord i passordbehandleren</translation>
+<translation id="4474167089968829729">Slå på lagring av passord i passordlagringsfunksjonen</translation>
 <translation id="4476769083125004742">Hvis denne regelen er angitt som <ph name="BLOCK_GEOLOCATION_SETTING" />, kan ikke Android-apper bruke posisjonsinformasjon. Hvis du angir en annen verdi for denne regelen, eller hvis du ikke angir noen ting, blir brukeren bedt om samtykke når Android-apper prøver å få tilgang til posisjonsinformasjon.</translation>
 <translation id="4480694116501920047">Tving Sikkert Søk</translation>
 <translation id="4482640907922304445">Viser Startside-knappen i verktøylinjen til <ph name="PRODUCT_NAME" />.
@@ -2049,7 +2049,7 @@ Hvis denne regelen ikke er angitt, blir ingen nettsteder lagt til på listen.
 Hvis denne regelen er angitt, blir hvert element behandlet som en regel – på samme måte som regelen <ph name="URL_LIST_POLICY_NAME" />. Men logikken er reversert: Samsvarende regler åpnes ikke i en alternativ nettleser.
 
 I motsetning til <ph name="URL_LIST_POLICY_NAME" /> gjelder denne regelen begge veier. Det betyr at når Internet Explorer-tilleggsprogrammet er installert og aktivert, kontrollerer det også om <ph name="IE_PRODUCT_NAME" /> skal åpne disse nettadressene i <ph name="PRODUCT_NAME" />.</translation>
-<translation id="5124368997194894978">Slå på oppstart ved strømtilkobling (vekselstrøm)</translation>
+<translation id="5124368997194894978">Slå på oppstart ved tilkobling til strømnettet</translation>
 <translation id="5130288486815037971">Definerer om RC4-chifferserier i TLS er slått på</translation>
 <translation id="5141670636904227950">Angi standard skjermforstørrelsestype som er aktivert på påloggingssiden</translation>
 <translation id="5142301680741828703">Alltid gjengi følgende nettadressemønstre i <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -2849,7 +2849,7 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 <translation id="6641981670621198190">Deaktiver støtte for programmeringsgrensesnitt for 3D-grafikk</translation>
 <translation id="6646056064606561298">Slå på regelen for administrering av oppstart ved strømtilkobling.
 
-          Med oppstart ved strømtilkobling får systemet muligheten til å starte opp automatisk fra AV/hvilemodus når enheten kobles til et strømuttak.
+          Med oppstart ved strømtilkobling får systemet muligheten til å starte opp automatisk fra AV/hvilemodus når enheten kobles til strømnettet.
 
           Hvis denne regelen er satt til «true» (sann), er oppstart ved strømtilkobling alltid slått på hvis enheten støtter det.
 
@@ -3139,7 +3139,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Hvis denne regelen er angitt som en filbane, brukes den filen som en kjørbar
       fil.</translation>
-<translation id="7167436895080860385">Gi brukere tillatelse til å se passord i passordbehandlingen (avviklet)</translation>
+<translation id="7167436895080860385">Gi brukere tillatelse til å se passord i passordlagringsfunksjonen (avviklet)</translation>
 <translation id="7173856672248996428">Midlertidig profil</translation>
 <translation id="717630378807352957">Tillat alle skrivere fra konfigurasjonsfilen.</translation>
 <translation id="7176721759719212761">Angir om det er tillatt med oppvekkingslåser. Utvidelser kan be om skjermoppvekkingslåser via Power Management Extension API. ARC-apper kan også be om dem.
@@ -3635,7 +3635,7 @@ MERK: Frem til versjon 45 ble denne regelen bare støttet i kioskmodus.</transla
 
       Hvis denne retningslinjen ikke angis, er det ingen unntak fra retningslinjen URLBlacklist.</translation>
 <translation id="8176035528522326671">Tillat at bedriftsbrukeren bare er primær flerprofilbruker (standardatferd for bedriftsadministrerte brukere)</translation>
-<translation id="8214600119442850823">Konfigurerer passordbehandlingen.</translation>
+<translation id="8214600119442850823">Konfigurerer passordlagring.</translation>
 <translation id="8217516105848565518">Denne regelen er avviklet. Bruk RemoteAccessHostDomainList i stedet.</translation>
 <translation id="8244525275280476362">Maksimal innlastingsforsinkelse etter ugyldiggjøring av en innstilling</translation>
 <translation id="8256688113167012935">Kontrollerer hvilket kontonavn <ph name="PRODUCT_OS_NAME" /> viser på påloggingsskjermen for enhetens tilhørende lokale konto.

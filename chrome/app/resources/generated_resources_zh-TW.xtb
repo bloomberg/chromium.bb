@@ -1533,7 +1533,6 @@
 <translation id="3435688026795609344">「<ph name="EXTENSION_NAME" />」要求你提供 <ph name="CODE_TYPE" /></translation>
 <translation id="3435738964857648380">安全性</translation>
 <translation id="3435896845095436175">啟用</translation>
-<translation id="3436038974659740746">自訂拼字</translation>
 <translation id="3438633801274389918">忍者</translation>
 <translation id="3439153939049640737">一律允許 <ph name="HOST" /> 存取你的麥克風</translation>
 <translation id="3439970425423980614">正在預覽中開啟 PDF</translation>
@@ -1863,7 +1862,6 @@
 <translation id="3908393983276948098">「<ph name="PLUGIN_NAME" />」版本過舊</translation>
 <translation id="3908501907586732282">啟用擴充功能</translation>
 <translation id="3909477809443608991"><ph name="URL" /> 想要播放受到保護的內容。Google 會驗證你的裝置身分，這個網站可能也會存取你的裝置身分。</translation>
-<translation id="3909690856344416952"><ph name="LANGUAGE_1" />、<ph name="LANGUAGE_2" />和另外 1 種語言</translation>
 <translation id="3909791450649380159">剪下(&amp;T)</translation>
 <translation id="3911073280391218446"><ph name="USER_DISPLAY_NAME" /> (這個裝置上已其他人使用這個名稱)</translation>
 <translation id="3911824782900911339">新分頁</translation>
@@ -2127,7 +2125,6 @@
 <translation id="435527878592612277">請選取你的相片</translation>
 <translation id="4356334633973342967">或指定你自己的硬碟：</translation>
 <translation id="4358169392473932247">這個安全金鑰不支援將憑證儲存在內部儲存空間，但網站要求執行這項功能。</translation>
-<translation id="4358353773267946514"><ph name="LANGUAGE_1" />、<ph name="LANGUAGE_2" /></translation>
 <translation id="4359408040881008151">你已安裝相依的擴充功能，因此必須一併安裝這個擴充功能。</translation>
 <translation id="4359717112757026264">城市景觀</translation>
 <translation id="4361142739114356624">這個用戶端憑證沒有私密金鑰或私密金鑰無效</translation>
@@ -2179,7 +2176,6 @@
 <translation id="443475966875174318">更新或移除不相容的應用程式</translation>
 <translation id="4441124369922430666">你要在裝置開機時自動啟動這個應用程式嗎？</translation>
 <translation id="444134486829715816">展開...</translation>
-<translation id="4441548209689510310">顯示拼字檢查選項</translation>
 <translation id="4442424173763614572">DNS 查詢失敗</translation>
 <translation id="4443536555189480885">說明(&amp;H)</translation>
 <translation id="4444304522807523469">存取透過 USB 附加或是在區域網路上的文件掃描器</translation>
@@ -2975,7 +2971,6 @@
 <translation id="5736796278325406685">請輸入有效的使用者名稱</translation>
 <translation id="5739235828260127894">等待驗證中。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">非常大</translation>
-<translation id="5740331643563157105"><ph name="LANGUAGE_1" />、<ph name="LANGUAGE_2" />和另外 <ph name="NUM_ADDITIONAL_LANGUAGES" /> 種語言</translation>
 <translation id="574209121243317957">音調</translation>
 <translation id="5746169159649715125">另存為 PDF</translation>
 <translation id="5747552184818312860">有效期限</translation>
