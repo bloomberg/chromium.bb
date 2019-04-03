@@ -50,6 +50,7 @@ const GURL kImageUrl = GURL("http://gstatic.img.com/foo.jpg");
 
 constexpr char kUmaClientName[] = "TestUma";
 constexpr char kImageData[] = "data";
+constexpr char kImageDataOther[] = "other";
 
 const char kCachedImageFetcherEventHistogramName[] =
     "CachedImageFetcher.Events";
@@ -336,6 +337,26 @@ TEST_F(CachedImageFetcherTest, FetchImageWithoutTranscodingDoesNotDecode) {
 
     RunUntilIdle();
   }
+}
+
+TEST_F(CachedImageFetcherTest, FetchImageWithSkipDiskCache) {
+  // Save the image in the database.
+  image_cache()->SaveImage(kImageUrl.spec(), kImageDataOther);
+  RunUntilIdle();
+  test_url_loader_factory()->AddResponse(kImageUrl.spec(), kImageData);
+
+  base::MockCallback<ImageDataFetcherCallback> data_callback;
+  base::MockCallback<ImageFetcherCallback> image_callback;
+
+  ImageFetcherParams params(TRAFFIC_ANNOTATION_FOR_TESTS, kUmaClientName);
+  params.set_skip_disk_cache_read(true);
+
+  EXPECT_CALL(data_callback, Run(kImageData, _));
+  EXPECT_CALL(image_callback, Run(NonEmptyImage(), _));
+  cached_image_fetcher()->FetchImageAndData(kImageUrl, data_callback.Get(),
+                                            image_callback.Get(), params);
+
+  RunUntilIdle();
 }
 
 }  // namespace image_fetcher
