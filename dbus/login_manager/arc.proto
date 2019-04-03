@@ -30,7 +30,10 @@ message StartArcMiniContainerRequest {
   optional PlayStoreAutoUpdate play_store_auto_update = 4
       [default = AUTO_UPDATE_DEFAULT];
 
-  // Next ID to use: 5
+  // Experiment flag for ARC Custom Tabs.
+  optional bool arc_custom_tabs_experiment = 5 [default = false];
+
+  // Next ID to use: 6
 }
 
 // ARC upgrade options sent from Chrome to session manager. This message is used
