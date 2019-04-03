@@ -184,7 +184,7 @@ class WebAssociatedURLLoaderTest : public testing::Test,
     request.SetFetchCredentialsMode(
         network::mojom::FetchCredentialsMode::kOmit);
     if (EqualIgnoringASCIICase(WebString::FromUTF8(header_field), "referer")) {
-      request.SetHTTPReferrer(WebString::FromUTF8(header_value),
+      request.SetHttpReferrer(WebString::FromUTF8(header_value),
                               network::mojom::ReferrerPolicy::kDefault);
     } else {
       request.SetHttpHeaderField(WebString::FromUTF8(header_field),

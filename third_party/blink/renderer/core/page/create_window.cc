@@ -339,7 +339,7 @@ DOMWindow* CreateWindow(const KURL& completed_url,
   // ensure the proper referrer is set now.
   // TODO(domfarolino): Stop setting ResourceRequest's HTTP Referrer and store
   // this is a separate member. See https://crbug.com/850813.
-  frame_request.GetResourceRequest().SetHTTPReferrer(
+  frame_request.GetResourceRequest().SetHttpReferrer(
       SecurityPolicy::GenerateReferrer(
           active_frame->GetDocument()->GetReferrerPolicy(), completed_url,
           active_frame->GetDocument()->OutgoingReferrer()));

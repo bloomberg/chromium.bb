@@ -152,8 +152,8 @@ class PLATFORM_EXPORT ResourceRequest final {
   const AtomicString& HttpReferrer() const {
     return HttpHeaderField(http_names::kReferer);
   }
-  void SetHTTPReferrer(const Referrer&);
-  bool DidSetHTTPReferrer() const { return did_set_http_referrer_; }
+  void SetHttpReferrer(const Referrer&);
+  bool DidSetHttpReferrer() const { return did_set_http_referrer_; }
   void ClearHTTPReferrer();
 
   void SetReferrerPolicy(network::mojom::ReferrerPolicy referrer_policy) {

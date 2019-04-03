@@ -114,7 +114,7 @@ StyleImage* CSSImageSetValue::CacheImage(
     // transforms. https://bugs.webkit.org/show_bug.cgi?id=81698
     ImageWithScale image = BestImageForScaleFactor(device_scale_factor);
     ResourceRequest resource_request(document.CompleteURL(image.image_url));
-    resource_request.SetHTTPReferrer(image.referrer);
+    resource_request.SetHttpReferrer(image.referrer);
     ResourceLoaderOptions options;
     options.initiator_info.name = parser_mode_ == kUASheetMode
                                       ? fetch_initiator_type_names::kUacss

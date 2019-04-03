@@ -115,7 +115,7 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
       GetResourceFetcherProperties().GetFetchClientSettingsObject();
   // TODO(domfarolino): we can probably *just set* the HTTP `Referer` here
   // no matter what now.
-  if (!request.DidSetHTTPReferrer()) {
+  if (!request.DidSetHttpReferrer()) {
     String referrer_to_use = request.ReferrerString();
     network::mojom::ReferrerPolicy referrer_policy_to_use =
         request.GetReferrerPolicy();
@@ -129,7 +129,7 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
 
     // TODO(domfarolino): Stop storing ResourceRequest's referrer as a header
     // and store it elsewhere. See https://crbug.com/850813.
-    request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
+    request.SetHttpReferrer(SecurityPolicy::GenerateReferrer(
         referrer_policy_to_use, request.Url(), referrer_to_use));
   } else {
     CHECK_EQ(

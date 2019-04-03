@@ -158,7 +158,7 @@ void WebURLRequest::SetHttpHeaderField(const WebString& name,
   resource_request_->SetHttpHeaderField(name, value);
 }
 
-void WebURLRequest::SetHTTPReferrer(
+void WebURLRequest::SetHttpReferrer(
     const WebString& web_referrer,
     network::mojom::ReferrerPolicy referrer_policy) {
   // WebString doesn't have the distinction between empty and null. We use
@@ -168,7 +168,7 @@ void WebURLRequest::SetHTTPReferrer(
       web_referrer.IsEmpty() ? Referrer::NoReferrer() : String(web_referrer);
   // TODO(domfarolino): Stop storing ResourceRequest's generated referrer as a
   // header and instead use a separate member. See https://crbug.com/850813.
-  resource_request_->SetHTTPReferrer(Referrer(referrer, referrer_policy));
+  resource_request_->SetHttpReferrer(Referrer(referrer, referrer_policy));
 }
 
 void WebURLRequest::AddHttpHeaderField(const WebString& name,

@@ -860,7 +860,7 @@ void InspectorNetworkAgent::PrepareRequest(
       // seems to require storing the referrer info that is currently stored
       // inside state_'s kExtraRequestHeaders, somewhere else.
       if (header_name.LowerASCII() == http_names::kReferer.LowerASCII()) {
-        request.SetHTTPReferrer(
+        request.SetHttpReferrer(
             Referrer(value, network::mojom::ReferrerPolicy::kAlways));
       } else {
         request.SetHttpHeaderField(header_name, AtomicString(value));

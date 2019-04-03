@@ -5343,7 +5343,7 @@ void RenderFrameImpl::WillSendRequestInternal(blink::WebURLRequest& request,
       WebUserGestureIndicator::IsProcessingUserGesture(frame_));
 
   if (!render_view_->renderer_preferences_.enable_referrers)
-    request.SetHTTPReferrer(WebString(),
+    request.SetHttpReferrer(WebString(),
                             network::mojom::ReferrerPolicy::kDefault);
 }
 
