@@ -164,11 +164,14 @@ void Event::setLegacyReturnValue(ScriptState* script_state, bool return_value) {
   if (return_value) {
     UseCounter::Count(ExecutionContext::From(script_state),
                       WebFeature::kEventSetReturnValueTrue);
+    // Don't allow already prevented events to be reset.
+    if (!defaultPrevented())
+      default_prevented_ = false;
   } else {
     UseCounter::Count(ExecutionContext::From(script_state),
                       WebFeature::kEventSetReturnValueFalse);
+    preventDefault();
   }
-  SetDefaultPrevented(!return_value);
 }
 
 const AtomicString& Event::InterfaceName() const {
