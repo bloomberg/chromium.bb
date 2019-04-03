@@ -125,6 +125,7 @@ import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.survey.ChromeSurveyController;
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabAssociatedApp;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate;
@@ -1954,7 +1955,8 @@ public class ChromeTabbedActivity
         // - we decided not to close the tab
         // - we decided to close the tab, but it was opened by an external app, so we will go
         //   exit Chrome on top of closing the tab
-        final boolean minimizeApp = !shouldCloseTab || currentTab.isCreatedForExternalApp();
+        final boolean minimizeApp =
+                !shouldCloseTab || TabAssociatedApp.isOpenedFromExternalApp(currentTab);
         if (minimizeApp) {
             if (shouldCloseTab) {
                 recordBackPressedUma(

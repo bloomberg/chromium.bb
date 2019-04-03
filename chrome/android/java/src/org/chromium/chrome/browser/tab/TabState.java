@@ -358,7 +358,7 @@ public class TabState {
         if (!tab.isInitialized()) return null;
         TabState tabState = new TabState();
         tabState.contentsState = getWebContentsState(tab);
-        tabState.openerAppId = tab.getAppAssociatedWith();
+        tabState.openerAppId = TabAssociatedApp.getAppId(tab);
         tabState.parentId = tab.getParentId();
         tabState.timestampMillis = tab.getTimestampMillis();
         tabState.tabLaunchTypeAtCreation = tab.getLaunchTypeAtInitialTabCreation();
@@ -369,6 +369,16 @@ public class TabState {
                 : TabThemeColorHelper.getColor(tab);
         tabState.rootId = tab.getRootId();
         return tabState;
+    }
+
+    /**
+     * Restores fields of a Tab from this TabState.
+     * @param tab Tab to restore.
+     */
+    public void restoreFields(Tab tab) {
+        // TODO(jinsukkim): Handle this with a new TabObserver method.
+        TabAssociatedApp.from(tab).setAppId(openerAppId);
+        TabThemeColorHelper.get(tab).updateFromTabState(this);
     }
 
     /** Returns an object representing the state of the Tab's WebContents. */

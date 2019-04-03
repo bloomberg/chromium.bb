@@ -39,6 +39,7 @@ import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabAssociatedApp;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParams;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
@@ -292,7 +293,7 @@ public class CustomTabActivityTabController implements InflationObserver, Native
         if (tab == null) return null;
         RecordHistogram.recordEnumeratedHistogram("CustomTabs.WebContentsStateOnLaunch",
                 WebContentsState.PRERENDERED_WEBCONTENTS, WebContentsState.NUM_ENTRIES);
-        tab.setAppAssociatedWith(mConnection.getClientPackageNameForSession(mSession));
+        TabAssociatedApp.from(tab).setAppId(mConnection.getClientPackageNameForSession(mSession));
         if (mIntentDataProvider.shouldEnableEmbeddedMediaExperience()) {
             tab.enableEmbeddedMediaExperience(true);
         }
@@ -307,9 +308,10 @@ public class CustomTabActivityTabController implements InflationObserver, Native
                 CustomTabIntentDataProvider.EXTRA_BROWSER_LAUNCH_SOURCE, LaunchSourceType.OTHER);
         if (launchSource == LaunchSourceType.WEBAPK) {
             String webapkPackageName = mIntent.getStringExtra(Browser.EXTRA_APPLICATION_ID);
-            tab.setAppAssociatedWith(webapkPackageName);
+            TabAssociatedApp.from(tab).setAppId(webapkPackageName);
         } else {
-            tab.setAppAssociatedWith(mConnection.getClientPackageNameForSession(mSession));
+            TabAssociatedApp.from(tab).setAppId(
+                    mConnection.getClientPackageNameForSession(mSession));
         }
 
         tab.initialize(webContents, mCustomTabDelegateFactory.get(), false /*initiallyHidden*/,

@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ServiceTabLauncher;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabAssociatedApp;
 import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabParentIntent;
@@ -268,7 +269,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
         // Let's try to find an existing tab that was started by that app.
         for (int i = 0; i < mTabModel.getCount(); i++) {
             Tab tab = mTabModel.getTabAt(i);
-            if (appId.equals(tab.getAppAssociatedWith())) {
+            if (appId.equals(TabAssociatedApp.getAppId(tab))) {
                 // We don't reuse the tab, we create a new one at the same index instead.
                 // Reusing a tab would require clearing the navigation history and clearing the
                 // contents (we would not want the previous content to show).
@@ -276,7 +277,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
                 loadUrlParams.setIntentReceivedTimestamp(intentTimestamp);
                 Tab newTab = createNewTab(
                         loadUrlParams, TabLaunchType.FROM_EXTERNAL_APP, null, i, intent);
-                newTab.setAppAssociatedWith(appId);
+                TabAssociatedApp.from(newTab).setAppId(appId);
                 mTabModel.closeTab(tab, false, false, false);
                 return newTab;
             }
@@ -284,7 +285,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
 
         // No tab for that app, we'll have to create a new one.
         Tab tab = launchUrl(url, TabLaunchType.FROM_EXTERNAL_APP, intent, intentTimestamp);
-        tab.setAppAssociatedWith(appId);
+        TabAssociatedApp.from(tab).setAppId(appId);
         return tab;
     }
 
