@@ -28,7 +28,6 @@ FontUniqueNameLookup::GetPlatformUniqueNameLookup() {
 #elif defined(OS_WIN)
   return std::make_unique<FontUniqueNameLookupWin>();
 #else
-  NOTREACHED();
   return nullptr;
 #endif
 }
