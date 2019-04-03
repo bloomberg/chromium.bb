@@ -497,6 +497,24 @@ bool ShelfLayoutManager::ShouldBlurShelfBackground() {
          state_.session_state == session_manager::SessionState::ACTIVE;
 }
 
+bool ShelfLayoutManager::HasVisibleWindow() const {
+  aura::Window* root = shelf_widget_->GetNativeWindow()->GetRootWindow();
+  const aura::Window::Windows windows =
+      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
+  // Process the window list and check if there are any visible windows.
+  // Ignore app list windows that may be animating to hide after dismissal.
+  for (auto* window : windows) {
+    if (window->IsVisible() && !IsAppListWindow(window) &&
+        root->Contains(window)) {
+      return true;
+    }
+  }
+  auto* pip_container = Shell::GetContainer(root, kShellWindowId_PipContainer);
+  // The PIP window is not activatable and is not in the MRU list, but count
+  // it as a visible window for shelf auto-hide purposes. See crbug.com/942991.
+  return !pip_container->children().empty();
+}
+
 void ShelfLayoutManager::OnWindowResized() {
   LayoutShelf();
 }
@@ -1166,24 +1184,6 @@ gfx::Rect ShelfLayoutManager::GetAutoHideShowShelfRegionInScreen() const {
   // keyboard is visible.
   return screen_util::SnapBoundsToDisplayEdge(show_shelf_region_in_screen,
                                               shelf_widget_->GetNativeWindow());
-}
-
-bool ShelfLayoutManager::HasVisibleWindow() const {
-  aura::Window* root = shelf_widget_->GetNativeWindow()->GetRootWindow();
-  const aura::Window::Windows windows =
-      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
-  // Process the window list and check if there are any visible windows.
-  // Ignore app list windows that may be animating to hide after dismissal.
-  for (auto* window : windows) {
-    if (window->IsVisible() && !IsAppListWindow(window) &&
-        root->Contains(window)) {
-      return true;
-    }
-  }
-  auto* pip_container = Shell::GetContainer(root, kShellWindowId_PipContainer);
-  // The PIP window is not activatable and is not in the MRU list, but count
-  // it as a visible window for shelf auto-hide purposes. See crbug.com/942991.
-  return !pip_container->children().empty();
 }
 
 ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
