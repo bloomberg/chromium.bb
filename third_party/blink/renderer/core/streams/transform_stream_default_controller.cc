@@ -2,21 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/streams/transform_stream_default_controller_wrapper.h"
+#include "third_party/blink/renderer/core/streams/transform_stream_default_controller.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
-#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 
-TransformStreamDefaultControllerWrapper::
-    TransformStreamDefaultControllerWrapper(ScriptState* script_state,
-                                            v8::Local<v8::Value> controller)
+TransformStreamDefaultController::TransformStreamDefaultController(
+    ScriptState* script_state,
+    v8::Local<v8::Value> controller)
     : script_state_(script_state), controller_(controller) {
   DCHECK(controller->IsObject());
 }
 
-void TransformStreamDefaultControllerWrapper::Enqueue(
+void TransformStreamDefaultController::Enqueue(
     v8::Local<v8::Value> chunk,
     ExceptionState& exception_state) {
   DCHECK(controller_->IsObject());

@@ -14,7 +14,7 @@
 #include "base/stl_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_string_resource.h"
 #include "third_party/blink/renderer/core/streams/retain_wrapper_during_construction.h"
-#include "third_party/blink/renderer/core/streams/transform_stream_default_controller_interface.h"
+#include "third_party/blink/renderer/core/streams/transform_stream_default_controller.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_transformer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -37,7 +37,7 @@ class TextEncoderStream::Transformer final : public TransformStreamTransformer {
   // Implements the "encode and enqueue a chunk" algorithm. For efficiency, only
   // the characters at the end of chunks are special-cased.
   void Transform(v8::Local<v8::Value> chunk,
-                 TransformStreamDefaultControllerInterface* controller,
+                 TransformStreamDefaultController* controller,
                  ExceptionState& exception_state) override {
     // Let |input| be the result of converting |chunk| to a DOMString. If this
     // throws an exception, then return a promise rejected with that exception.
@@ -73,7 +73,7 @@ class TextEncoderStream::Transformer final : public TransformStreamTransformer {
   }
 
   // Implements the "encode and flush" algorithm.
-  void Flush(TransformStreamDefaultControllerInterface* controller,
+  void Flush(TransformStreamDefaultController* controller,
              ExceptionState& exception_state) override {
     if (!pending_high_surrogate_.has_value())
       return;

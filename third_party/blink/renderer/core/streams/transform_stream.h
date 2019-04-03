@@ -24,8 +24,8 @@ class TransformStreamTransformer;
 class Visitor;
 class WritableStream;
 
-// Creates and wraps a (readable, writable) pair in a TransformStream object.
-// The transformation may be defined in C++ or JavaScript.
+// Creates and wraps a JavaScript TransformStream object with a transformation
+// defined in C++. Provides access to the readable and writable streams.
 //
 // On-heap references to this class must always be via a Member, and
 // must always have an ancestor in the V8 heap, or the internal JavaScript
