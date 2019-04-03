@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/system/accessibility/autoclick_menu_bubble_controller.h"
+
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf.h"
@@ -77,10 +78,8 @@ void AutoclickMenuBubbleController::ShowBubble(
   TrayBubbleView::InitParams init_params;
   init_params.delegate = this;
   // Anchor within the overlay container.
-  // TODO(katie): Use kShellWindowId_AccessibilityPanelContainer. But there's
-  // a crash if I use this now, need to investigate first.
   init_params.parent_window = Shell::GetContainer(
-      Shell::GetPrimaryRootWindow(), kShellWindowId_OverlayContainer);
+      Shell::GetPrimaryRootWindow(), kShellWindowId_AutoclickContainer);
   init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
   init_params.insets =
       gfx::Insets(kUnifiedMenuPadding, kUnifiedMenuPadding,
