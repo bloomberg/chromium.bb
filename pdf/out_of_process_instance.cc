@@ -402,6 +402,10 @@ void ScaleRect(float scale, pp::Rect* rect) {
   rect->SetRect(left, top, right - left, bottom - top);
 }
 
+bool IsSaveDataSizeValid(size_t size) {
+  return size > 0 && size <= kMaximumSavedFileSize;
+}
+
 }  // namespace
 
 OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
@@ -1455,13 +1459,13 @@ void OutOfProcessInstance::SaveToBuffer(const std::string& token) {
   message.Set(kJSFileName, pp::Var(file_name));
   // This will be overwritten if the save is successful.
   message.Set(kJSDataToSave, pp::Var(pp::Var::Null()));
-  const bool hasUnsavedChanges =
+  const bool has_unsaved_changes =
       edit_mode_ && !base::FeatureList::IsEnabled(features::kSaveEditedPDFForm);
-  message.Set(kJSHasUnsavedChanges, pp::Var(hasUnsavedChanges));
+  message.Set(kJSHasUnsavedChanges, pp::Var(has_unsaved_changes));
 
   if (ShouldSaveEdits()) {
     std::vector<uint8_t> data = engine_->GetSaveData();
-    if (data.size() > 0 && data.size() <= kMaximumSavedFileSize) {
+    if (IsSaveDataSizeValid(data.size())) {
       pp::VarArrayBuffer buffer(data.size());
       std::copy(data.begin(), data.end(),
                 reinterpret_cast<char*>(buffer.Map()));
@@ -1470,7 +1474,7 @@ void OutOfProcessInstance::SaveToBuffer(const std::string& token) {
   } else {
     DCHECK(base::FeatureList::IsEnabled(features::kPDFAnnotations));
     uint32_t length = engine_->GetLoadedByteSize();
-    if (length > 0 && length <= kMaximumSavedFileSize) {
+    if (IsSaveDataSizeValid(length)) {
       pp::VarArrayBuffer buffer(length);
       if (engine_->ReadLoadedBytes(length, buffer.Map())) {
         message.Set(kJSDataToSave, buffer);
@@ -1657,7 +1661,7 @@ void OutOfProcessInstance::DocumentLoadComplete(
   }
   metadata_message.Set(
       pp::Var(kJSCanSerializeDocument),
-      pp::Var(engine_->GetLoadedByteSize() <= kMaximumSavedFileSize));
+      pp::Var(IsSaveDataSizeValid(engine_->GetLoadedByteSize())));
 
   pp::VarArray bookmarks = engine_->GetBookmarks();
   metadata_message.Set(pp::Var(kJSBookmarks), bookmarks);
