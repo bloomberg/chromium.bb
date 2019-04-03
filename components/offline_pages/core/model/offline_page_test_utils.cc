@@ -78,6 +78,12 @@ std::ostream& operator<<(std::ostream& out, const OfflinePageItem& item) {
   if (!item.digest.empty()) {
     value.SetKey("digest", Value(item.digest));
   }
+  if (!item.snippet.empty()) {
+    value.SetKey("snippet", Value(item.snippet));
+  }
+  if (!item.attribution.empty()) {
+    value.SetKey("attribution", Value(item.attribution));
+  }
 
   std::string value_string;
   base::JSONWriter::Write(value, &value_string);
