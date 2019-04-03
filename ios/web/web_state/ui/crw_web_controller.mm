@@ -4500,6 +4500,12 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   self.webStateImpl->GetNavigationManagerImpl()
       .OnRendererInitiatedNavigationStarted(webViewURL);
 
+  // When a client-side redirect occurs while an interstitial warning is
+  // displayed, clear the warning and its navigation item, so that a new
+  // pending item is created for |context| in |registerLoadRequestForURL|. See
+  // crbug.com/861836.
+  self.webStateImpl->ClearTransientContent();
+
   std::unique_ptr<web::NavigationContextImpl> navigationContext =
       [self registerLoadRequestForURL:webViewURL
                sameDocumentNavigation:NO
