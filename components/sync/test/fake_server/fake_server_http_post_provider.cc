@@ -15,7 +15,7 @@
 namespace fake_server {
 
 // static
-bool FakeServerHttpPostProvider::network_enabled_ = true;
+std::atomic_bool FakeServerHttpPostProvider::network_enabled_(true);
 
 FakeServerHttpPostProviderFactory::FakeServerHttpPostProviderFactory(
     const base::WeakPtr<FakeServer>& fake_server,
@@ -150,18 +150,15 @@ void FakeServerHttpPostProvider::Abort() {
   synchronous_post_completion_.Signal();
 }
 
+// static
 void FakeServerHttpPostProvider::DisableNetwork() {
-  // TODO(crbug.com/947691,crbug.com/947692): This causes flakiness on TSan
-  // because this variable is set on the main thread (a.k.a.
-  // |fake_server_task_runner_|), but read on the Sync thread (corresponding to
-  // |sequence_checker_|).
+  // Note: This may be called on any thread.
   network_enabled_ = false;
 }
 
+// static
 void FakeServerHttpPostProvider::EnableNetwork() {
-  // TODO(crbug.com/947691,crbug.com/947692): This causes flakiness on TSan
-  // because this variable is set on the main thread, but read on the Sync
-  // thread.
+  // Note: This may be called on any thread.
   network_enabled_ = true;
 }
 
