@@ -209,14 +209,6 @@ class BrowserViewControllerTest : public BlockCleanupTest {
                                       forProtocol:@protocol(PageInfoCommands)];
     id mockApplicationCommandHandler =
         OCMProtocolMock(@protocol(ApplicationCommands));
-    bvc_ = [[BrowserViewController alloc]
-                      initWithTabModel:tabModel_
-                          browserState:chrome_browser_state_.get()
-                     dependencyFactory:factory
-            applicationCommandEndpoint:mockApplicationCommandHandler
-                     commandDispatcher:command_dispatcher_
-        browserContainerViewController:[[BrowserContainerViewController alloc]
-                                           init]];
 
     // Stub methods for TabModel.
     NSUInteger tabCount = 1;
@@ -235,17 +227,24 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     web::WebState::CreateParams params(chrome_browser_state_.get());
     std::unique_ptr<web::WebState> webState = web::WebState::Create(params);
     webStateImpl_.reset(static_cast<web::WebStateImpl*>(webState.release()));
+    AttachTabHelpers(webStateImpl_.get(), NO);
     [currentTab setWebState:webStateImpl_.get()];
-
-    SnapshotTabHelper::CreateForWebState(webStateImpl_.get(),
-                                         [[NSUUID UUID] UUIDString]);
-    SadTabTabHelper::CreateForWebState(webStateImpl_.get());
 
     // Load TemplateURLService.
     TemplateURLService* template_url_service =
         ios::TemplateURLServiceFactory::GetForBrowserState(
             chrome_browser_state_.get());
     template_url_service->Load();
+
+    // Instantiate the BVC.
+    bvc_ = [[BrowserViewController alloc]
+                      initWithTabModel:tabModel_
+                          browserState:chrome_browser_state_.get()
+                     dependencyFactory:factory
+            applicationCommandEndpoint:mockApplicationCommandHandler
+                     commandDispatcher:command_dispatcher_
+        browserContainerViewController:[[BrowserContainerViewController alloc]
+                                           init]];
 
     // Force the view to load.
     UIWindow* window = [[UIWindow alloc] initWithFrame:CGRectZero];

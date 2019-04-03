@@ -1414,6 +1414,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       urlLoadingNotifier->RemoveObserver(_URLLoadingObserverBridge.get());
   }
 
+  // Uninstall delegates so that any delegate callbacks triggered by subsequent
+  // WebStateDestroyed() signals are not handled.
+  for (NSUInteger index = 0; index < self.tabModel.count; ++index)
+    [self uninstallDelegatesForTab:[self.tabModel tabAtIndex:index]];
+
   // Disconnect child coordinators.
   [_activityServiceCoordinator disconnect];
   [self.popupMenuCoordinator stop];
