@@ -116,7 +116,8 @@ class AshTestBase : public testing::Test {
   static std::unique_ptr<views::Widget> CreateTestWidget(
       views::WidgetDelegate* delegate = nullptr,
       int container_id = kShellWindowId_DefaultContainer,
-      const gfx::Rect& bounds = gfx::Rect());
+      const gfx::Rect& bounds = gfx::Rect(),
+      bool show = true);
 
   // Returns the set of properties for creating a proxy window.
   std::map<std::string, std::vector<uint8_t>> CreatePropertiesForProxyWindow(

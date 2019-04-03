@@ -115,8 +115,24 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
     DISALLOW_COPY_AND_ASSIGN(ScopedForceVisible);
   };
 
+  // Holds occlusion related information for tracked windows.
+  struct OcclusionData {
+    // Occlusion state for a tracked window.
+    Window::OcclusionState occlusion_state = Window::OcclusionState::UNKNOWN;
+    // Region in root window coordinates that is occluded.
+    SkRegion occluded_region;
+  };
+
   // Start tracking the occlusion state of |window|.
   void Track(Window* window);
+
+  // Compute the occlusion state and occluded region that |window| will have
+  // once all bounds, transform, opacity, and visibility animations have
+  // completed. |window| must be a window that has its occlusion state tracked.
+  OcclusionData ComputeTargetOcclusionForWindow(Window* window);
+
+  // Returns true if there are ignored animating windows.
+  bool HasIgnoredAnimatingWindows() const { return !animated_windows_.empty(); }
 
   // Set a callback to determine whether a window has content to draw in
   // addition to layer type check (window layer type != ui::LAYER_NOT_DRAWN).
@@ -150,14 +166,6 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
 
     // The occlusion state of the root window's host.
     Window::OcclusionState occlusion_state = Window::OcclusionState::UNKNOWN;
-  };
-
-  // Holds occlusion related information for tracked windows.
-  struct OcclusionData {
-    // Occlusion state for a tracked window.
-    Window::OcclusionState occlusion_state = Window::OcclusionState::UNKNOWN;
-    // Region in root window coordinates that is occluded.
-    SkRegion occluded_region;
   };
 
   WindowOcclusionTracker();
@@ -296,6 +304,12 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   void ForceWindowVisible(Window* window);
   void RemoveForceWindowVisible(Window* window);
 
+  // Returns true if the occlusion tracker should use target bounds, opacity
+  // transform, and visibility for occlusion computation. This will be true
+  // if the target occlusion state of a window is being computed via
+  // |ComputeTargetOcclusionForWindow|.
+  bool ShouldUseTargetValues() const;
+
   // ui::LayerAnimationObserver:
   void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override;
   void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override;
@@ -367,6 +381,12 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
 
   // Optional factory to create occlusion change builder.
   OcclusionChangeBuilderFactory occlusion_change_builder_factory_;
+
+  // Stores the window for which the occlusion tracker is computing the
+  // occlusion based on target bounds, opacity, transform, and visibility
+  // values. If the occlusion tracker is not computing for a specific window
+  // (most of the time it is not), this will be nullptr.
+  Window* target_occlusion_window_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WindowOcclusionTracker);
 };
