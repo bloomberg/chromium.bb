@@ -33,6 +33,12 @@ ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenInlineReply;
 ASH_PUBLIC_EXPORT extern const base::Feature
     kLockScreenHideSensitiveNotificationsSupport;
 
+// Enables hiding of ARC media notifications. If this is enabled, all ARC
+// notifications that are of the media type will not be shown. This
+// is because they will be replaced by native media session notifications.
+// TODO(beccahughes): Remove after launch. (https://crbug.com/897836)
+ASH_PUBLIC_EXPORT extern const base::Feature kHideArcMediaNotifications;
+
 // Enables the media session notification. If this is enabled, we will show
 // a notification that shows the currently playing media with controls.
 // TODO(beccahughes): Remove after launch. (https://crbug.com/897836)
@@ -81,6 +87,8 @@ ASH_PUBLIC_EXPORT extern const base::Feature kUseShaderRoundedCorner;
 
 // Enables the notification stacking bar redesigned UI.
 ASH_PUBLIC_EXPORT extern const base::Feature kNotificationStackingBarRedesign;
+
+ASH_PUBLIC_EXPORT bool IsHideArcMediaNotificationsEnabled();
 
 ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerAppEnabled();
 
