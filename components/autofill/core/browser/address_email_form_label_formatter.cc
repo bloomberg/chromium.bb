@@ -20,23 +20,23 @@ AddressEmailFormLabelFormatter::~AddressEmailFormLabelFormatter() {}
 // Note that the order--name, address, and email--in which parts of the label
 // are added ensures that the label is formatted correctly for |group| and for
 // this kind of formatter.
-base::string16 AddressEmailFormLabelFormatter::GetLabelForFocusedGroup(
+base::string16 AddressEmailFormLabelFormatter::GetLabelForProfile(
     const AutofillProfile& profile,
-    FieldTypeGroup group) const {
+    FieldTypeGroup focused_group) const {
   std::vector<base::string16> label_parts;
 
-  if (group != NAME) {
+  if (focused_group != NAME) {
     AddLabelPartIfNotEmpty(GetLabelName(profile, app_locale()), &label_parts);
   }
 
-  if (group != ADDRESS_HOME) {
+  if (focused_group != ADDRESS_HOME) {
     AddLabelPartIfNotEmpty(
         GetLabelAddress(form_has_street_address_, profile, app_locale(),
                         field_types_for_labels()),
         &label_parts);
   }
 
-  if (group != EMAIL) {
+  if (focused_group != EMAIL) {
     AddLabelPartIfNotEmpty(GetLabelEmail(profile, app_locale()), &label_parts);
   }
 

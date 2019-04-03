@@ -17,10 +17,10 @@ AddressFormLabelFormatter::AddressFormLabelFormatter(
 
 AddressFormLabelFormatter::~AddressFormLabelFormatter() {}
 
-base::string16 AddressFormLabelFormatter::GetLabelForFocusedGroup(
+base::string16 AddressFormLabelFormatter::GetLabelForProfile(
     const AutofillProfile& profile,
-    FieldTypeGroup group) const {
-  if (group != ADDRESS_HOME) {
+    FieldTypeGroup focused_group) const {
+  if (focused_group != ADDRESS_HOME) {
     return GetLabelNationalAddress(profile, app_locale(),
                                    field_types_for_labels());
   } else {

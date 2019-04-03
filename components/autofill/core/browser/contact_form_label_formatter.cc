@@ -19,22 +19,21 @@ ContactFormLabelFormatter::ContactFormLabelFormatter(
 ContactFormLabelFormatter::~ContactFormLabelFormatter() {}
 
 // Note that the order--phone, name, and email--in which parts of the label
-// are added ensures that the label is formatted correctly for the focused
-// group.
-base::string16 ContactFormLabelFormatter::GetLabelForFocusedGroup(
+// are added ensures that the label is formatted correctly for |focused_group|.
+base::string16 ContactFormLabelFormatter::GetLabelForProfile(
     const AutofillProfile& profile,
-    FieldTypeGroup group) const {
+    FieldTypeGroup focused_group) const {
   std::vector<base::string16> label_parts;
 
-  if (group != PHONE_HOME) {
+  if (focused_group != PHONE_HOME) {
     AddLabelPartIfNotEmpty(MaybeGetPhone(profile), &label_parts);
   }
 
-  if (group != NAME) {
+  if (focused_group != NAME) {
     AddLabelPartIfNotEmpty(GetLabelName(profile, app_locale()), &label_parts);
   }
 
-  if (group != EMAIL) {
+  if (focused_group != EMAIL) {
     AddLabelPartIfNotEmpty(MaybeGetEmail(profile), &label_parts);
   }
 

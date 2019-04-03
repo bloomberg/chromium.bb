@@ -26,15 +26,15 @@ LabelFormatter::LabelFormatter(const std::string& app_locale,
                                ServerFieldType focused_field_type,
                                const std::vector<ServerFieldType>& field_types)
     : app_locale_(app_locale), focused_field_type_(focused_field_type) {
-  const FieldTypeGroup group = GetFocusedNonBillingGroup();
+  const FieldTypeGroup focused_group = GetFocusedNonBillingGroup();
   std::set<FieldTypeGroup> groups{NAME, ADDRESS_HOME, EMAIL, PHONE_HOME};
 
   // If a user is focused on an address field, then parts of the address may be
   // shown in the label. For example, if the user is focusing on a street
   // address field, then it may be helpful to show the city in the label.
   // Otherwise, the focused field should not appear in the label.
-  if (group != ADDRESS_HOME) {
-    groups.erase(group);
+  if (focused_group != ADDRESS_HOME) {
+    groups.erase(focused_group);
   }
 
   // Countries are excluded to prevent them from appearing in labels with
@@ -57,8 +57,7 @@ std::vector<base::string16> LabelFormatter::GetLabels(
     const std::vector<AutofillProfile*>& profiles) const {
   std::vector<base::string16> labels;
   for (const AutofillProfile* profile : profiles) {
-    labels.push_back(
-        GetLabelForFocusedGroup(*profile, GetFocusedNonBillingGroup()));
+    labels.push_back(GetLabelForProfile(*profile, GetFocusedNonBillingGroup()));
   }
   return labels;
 }
