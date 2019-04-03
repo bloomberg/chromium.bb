@@ -60,6 +60,10 @@ CWV_EXPORT
 // The local file is not deleted automatically. It is the caller's
 // responsibility to delete it when it is unnecessary. This method can only be
 // called if the task is not in progress.
+//
+// NOTE: It is currently required that an instance of CWVWebView which created
+// this task is not deallocated before this method is called.
+// TODO(crbug.com/932099): Remove the restriction.
 - (void)startDownloadToLocalFileAtPath:(NSString*)path;
 
 // Cancels the download.
