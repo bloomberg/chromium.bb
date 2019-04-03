@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "services/device/public/mojom/serial.mojom.h"
@@ -33,7 +32,6 @@ class SerialPortImpl : public mojom::SerialPort {
   static void Create(
       const base::FilePath& path,
       mojom::SerialPortRequest request,
-      mojom::SerialPortConnectionWatcherPtrInfo watcher,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
   SerialPortImpl(const base::FilePath& path,
@@ -41,9 +39,6 @@ class SerialPortImpl : public mojom::SerialPort {
   ~SerialPortImpl() override;
 
  private:
-  void SetWatcher(mojo::StrongBindingPtr<mojom::SerialPort> owning_binding,
-                  mojom::SerialPortConnectionWatcherPtrInfo watcher);
-
   // mojom::SerialPort methods:
   void Open(mojom::SerialConnectionOptionsPtr options,
             mojo::ScopedDataPipeConsumerHandle in_stream,
@@ -71,14 +66,8 @@ class SerialPortImpl : public mojom::SerialPort {
                                const mojo::HandleSignalsState& state);
   void WriteToOutStream(uint32_t bytes_read, mojom::SerialReceiveError error);
 
-  // Underlying connection to the serial port.
   scoped_refptr<SerialIoHandler> io_handler_;
-
-  // Client interfaces.
   mojom::SerialPortClientAssociatedPtr client_;
-  mojom::SerialPortConnectionWatcherPtr watcher_;
-
-  // Data pipes for input and output.
   mojo::ScopedDataPipeConsumerHandle in_stream_;
   mojo::SimpleWatcher in_stream_watcher_;
   mojo::ScopedDataPipeProducerHandle out_stream_;

@@ -631,7 +631,6 @@ SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {
       return theme_provider->GetColor(ThemeProperties::COLOR_TAB_PIP_PLAYING);
     case TabAlertState::BLUETOOTH_CONNECTED:
     case TabAlertState::USB_CONNECTED:
-    case TabAlertState::SERIAL_CONNECTED:
     case TabAlertState::NONE:
     case TabAlertState::VR_PRESENTING_IN_HEADSET:
       return button_color_;
@@ -755,10 +754,6 @@ base::string16 Tab::GetTooltipText(const base::string16& title,
     case TabAlertState::USB_CONNECTED:
       result.append(
           l10n_util::GetStringUTF16(IDS_TOOLTIP_TAB_ALERT_STATE_USB_CONNECTED));
-      break;
-    case TabAlertState::SERIAL_CONNECTED:
-      result.append(l10n_util::GetStringUTF16(
-          IDS_TOOLTIP_TAB_ALERT_STATE_SERIAL_CONNECTED));
       break;
     case TabAlertState::PIP_PLAYING:
       result.append(
