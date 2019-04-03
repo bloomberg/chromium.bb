@@ -57,7 +57,6 @@ base::Optional<SearchSuggestData> JsonToSearchSuggestionData(
     return base::nullopt;
   }
 
-  // TODO(crbug.com/919905): Investigate if SafeHtml should be used here.
   std::string suggestions_html = std::string();
   if (!query_suggestions->GetString("query_suggestions_with_html",
                                     &suggestions_html)) {

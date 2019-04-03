@@ -338,7 +338,6 @@ function getThemeBackgroundInfo() {
       alternateLogo: false,
       backgroundColorRgba:
           (isDarkModeEnabled ? [50, 54, 57, 255] : [255, 255, 255, 255]),
-      colorRgba: [255, 255, 255, 255],
       headerColorRgba: [150, 150, 150, 255],
       linkColorRgba: [6, 55, 116, 255],
       sectionBorderColorRgba: [150, 150, 150, 255],
