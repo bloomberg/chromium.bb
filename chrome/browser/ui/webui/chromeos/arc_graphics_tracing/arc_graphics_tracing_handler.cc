@@ -14,15 +14,10 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/linux_util.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/process/process_iterator.h"
-#include "base/strings/string_split.h"
-#include "base/strings/string_tokenizer.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/arc/tracing/arc_cpu_model.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_graphics_jank_detector.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_graphics_model.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_model.h"
@@ -79,74 +74,6 @@ std::pair<base::Value, std::string> MaybeLoadLastGraphicsModel(
   return std::make_pair(std::move(*model), "Loaded last tracing model");
 }
 
-class ProcessFilterPassAll : public base::ProcessFilter {
- public:
-  ProcessFilterPassAll() = default;
-  ~ProcessFilterPassAll() override = default;
-
-  // base::ProcessFilter:
-  bool Includes(const base::ProcessEntry& process) const override {
-    return true;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ProcessFilterPassAll);
-};
-
-// Reads name of thread from /proc/pid/task/tid/status.
-bool ReadNameFromStatus(pid_t pid, pid_t tid, std::string* out_name) {
-  std::string status;
-  if (!base::ReadFileToString(base::FilePath(base::StringPrintf(
-                                  "/proc/%d/task/%d/status", pid, tid)),
-                              &status)) {
-    return false;
-  }
-  base::StringTokenizer tokenizer(status, "\n");
-  while (tokenizer.GetNext()) {
-    base::StringPiece value_str(tokenizer.token_piece());
-    if (!value_str.starts_with("Name:"))
-      continue;
-    std::vector<base::StringPiece> split_value_str = base::SplitStringPiece(
-        value_str, "\t", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-    DCHECK_EQ(2U, split_value_str.size());
-    *out_name = split_value_str[1].as_string();
-    return true;
-  }
-
-  return false;
-}
-
-// Helper that clarifies thread and process names. Tracing events may not have
-// enough data for this. Also it determines the process pid the thread belongs
-// to.
-void UpdateThreads(arc::ArcCpuModel::ThreadMap* threads) {
-  ProcessFilterPassAll filter_pass_all;
-  base::ProcessIterator process_iterator(&filter_pass_all);
-
-  std::vector<pid_t> tids;
-  std::string name;
-  for (const auto& process : process_iterator.Snapshot()) {
-    tids.clear();
-    base::GetThreadsForProcess(process.pid(), &tids);
-    bool process_in_use = threads->find(process.pid()) != threads->end();
-    for (pid_t tid : tids) {
-      if (threads->find(tid) != threads->end()) {
-        process_in_use = true;
-        (*threads)[tid].pid = process.pid();
-        if (!ReadNameFromStatus(process.pid(), tid, &(*threads)[tid].name))
-          LOG(WARNING) << "Failed to update thread name " << tid;
-      }
-    }
-    if (process_in_use) {
-      (*threads)[process.pid()].pid = process.pid();
-      if (!ReadNameFromStatus(process.pid(), process.pid(),
-                              &(*threads)[process.pid()].name)) {
-        LOG(WARNING) << "Failed to update process name " << process.pid();
-      }
-    }
-  }
-}
-
 std::pair<base::Value, std::string> BuildGraphicsModel(
     const std::string& data,
     base::DictionaryValue tasks_info,
@@ -166,8 +93,6 @@ std::pair<base::Value, std::string> BuildGraphicsModel(
   arc::ArcTracingGraphicsModel graphics_model;
   if (!graphics_model.Build(common_model))
     return std::make_pair(base::Value(), "Failed to build tracing model");
-
-  UpdateThreads(&graphics_model.cpu_model().thread_map());
 
   std::unique_ptr<base::DictionaryValue> model = graphics_model.Serialize();
   model->SetKey(kKeyTasks, std::move(tasks_info));

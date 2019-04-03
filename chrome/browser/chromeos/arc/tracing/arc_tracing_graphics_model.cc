@@ -35,7 +35,6 @@ constexpr char kKeyActivity[] = "activity";
 constexpr char kKeyAndroid[] = "android";
 constexpr char kKeyBuffers[] = "buffers";
 constexpr char kKeyChrome[] = "chrome";
-constexpr char kKeyCpu[] = "cpu";
 constexpr char kKeyDuration[] = "duration";
 constexpr char kKeyGlobalEvents[] = "global_events";
 constexpr char kKeyViews[] = "views";
@@ -759,12 +758,12 @@ void GetAndroidTopEvents(const ArcTracingModel& common_model,
 base::ListValue SerializeEvents(
     const ArcTracingGraphicsModel::BufferEvents& events) {
   base::ListValue list;
-  for (const auto& event : events) {
+  for (auto& event : events) {
     base::ListValue event_value;
     event_value.GetList().push_back(base::Value(static_cast<int>(event.type)));
     event_value.GetList().push_back(
         base::Value(static_cast<double>(event.timestamp)));
-    list.GetList().emplace_back(std::move(event_value));
+    list.GetList().push_back(std::move(event_value));
   }
   return list;
 }
@@ -823,7 +822,7 @@ bool LoadEvents(const base::Value* value,
 
     if (!entry.GetList()[1].is_double() && !entry.GetList()[1].is_int())
       return false;
-    const int64_t timestamp = entry.GetList()[1].GetDouble();
+    const int timestamp = entry.GetList()[1].GetDouble();
     if (timestamp < previous_timestamp)
       return false;
     out_events->emplace_back(
@@ -980,8 +979,6 @@ bool ArcTracingGraphicsModel::Build(const ArcTracingModel& common_model) {
     return false;
   }
 
-  cpu_model_.CopyFrom(common_model.cpu_model());
-
   NormalizeTimestamps();
 
   return true;
@@ -1012,23 +1009,11 @@ void ArcTracingGraphicsModel::NormalizeTimestamps() {
     }
   }
 
-  for (const auto& cpu_events : cpu_model_.all_cpu_events()) {
-    if (!cpu_events.empty()) {
-      min = std::min(min, cpu_events.front().timestamp);
-      max = std::max(max, cpu_events.back().timestamp);
-    }
-  }
-
   duration_ = max - min + 1;
 
   for (BufferEvents* buffer : all_buffers) {
     for (auto& event : *buffer)
       event.timestamp -= min;
-  }
-
-  for (auto& cpu_events : cpu_model_.all_cpu_events()) {
-    for (auto& cpu_event : cpu_events)
-      cpu_event.timestamp -= min;
   }
 }
 
@@ -1037,7 +1022,6 @@ void ArcTracingGraphicsModel::Reset() {
   android_top_level_.Reset();
   view_buffers_.clear();
   chrome_buffer_id_to_task_id_.clear();
-  cpu_model_.Reset();
   duration_ = 0;
 }
 
@@ -1069,9 +1053,6 @@ std::unique_ptr<base::DictionaryValue> ArcTracingGraphicsModel::Serialize()
 
   // Chrome top events
   root->SetKey(kKeyChrome, SerializeEventsContainer(chrome_top_level_));
-
-  // CPU.
-  root->SetKey(kKeyCpu, cpu_model_.Serialize());
 
   // Duration.
   root->SetKey(kKeyDuration, base::Value(static_cast<double>(duration_)));
@@ -1128,9 +1109,6 @@ bool ArcTracingGraphicsModel::LoadFromValue(const base::DictionaryValue& root) {
     return false;
 
   if (!LoadEventsContainer(root.FindKey(kKeyChrome), &chrome_top_level_))
-    return false;
-
-  if (!cpu_model_.Load(root.FindKey(kKeyCpu)))
     return false;
 
   const base::Value* duration = root.FindKey(kKeyDuration);

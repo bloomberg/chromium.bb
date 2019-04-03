@@ -17,12 +17,6 @@ namespace {
 constexpr char kAndroidCategory[] = "android";
 constexpr char kTracingMarkWrite[] = ": tracing_mark_write: ";
 constexpr int kTracingMarkWriteLength = sizeof(kTracingMarkWrite) - 1;
-constexpr char kCpuIdle[] = ": cpu_idle: ";
-constexpr int kCpuIdleLength = sizeof(kCpuIdle) - 1;
-constexpr char kSchedWakeUp[] = ": sched_wakeup: ";
-constexpr int kSchedWakeUpLength = sizeof(kSchedWakeUp) - 1;
-constexpr char kSchedSwitch[] = ": sched_switch: ";
-constexpr int kSchedSwitchLength = sizeof(kSchedSwitch) - 1;
 constexpr char kTraceEventClockSync[] = "trace_event_clock_sync: ";
 constexpr int kTraceEventClockSyncLength = sizeof(kTraceEventClockSync) - 1;
 
@@ -87,147 +81,6 @@ void SelectRecursively(
     for (const auto& child : event->children())
       SelectRecursively(level + 1, child.get(), selector, collector);
   }
-}
-
-struct GraphicsEventsContext {
-  // To keep in correct order of creation. This converts pair of 'B' and 'E'
-  // events to the completed event, 'X'.
-  ArcTracingModel::TracingEvents converted_events;
-  std::map<uint32_t, std::vector<ArcTracingEvent*>>
-      per_thread_pending_events_stack;
-};
-
-bool HandleGraphicsEvent(GraphicsEventsContext* context,
-                         double timestamp,
-                         uint32_t tid,
-                         const std::string& line,
-                         size_t event_position) {
-  if (event_position + kTraceEventClockSyncLength < line.length() &&
-      !strncmp(&line[event_position], kTraceEventClockSync,
-               kTraceEventClockSyncLength)) {
-    // Ignore this service message.
-    return true;
-  }
-
-  if (line[event_position + 1] != '|') {
-    LOG(ERROR) << "Cannot recognize trace marker event: " << line;
-    return false;
-  }
-
-  const char phase = line[event_position];
-
-  uint32_t pid;
-  switch (phase) {
-    case TRACE_EVENT_PHASE_BEGIN:
-    case TRACE_EVENT_PHASE_COUNTER: {
-      const size_t name_pos = ParseUint32(line, event_position + 2, '|', &pid);
-      if (name_pos == std::string::npos) {
-        LOG(ERROR) << "Cannot parse pid of trace event: " << line;
-        return false;
-      }
-      const std::string name = line.substr(name_pos + 1);
-      std::unique_ptr<ArcTracingEvent> event =
-          std::make_unique<ArcTracingEvent>(base::DictionaryValue());
-      event->SetPid(pid);
-      event->SetTid(tid);
-      event->SetTimestamp(timestamp);
-      event->SetCategory(kAndroidCategory);
-      event->SetName(name);
-      if (phase == TRACE_EVENT_PHASE_BEGIN)
-        context->per_thread_pending_events_stack[tid].push_back(event.get());
-      else
-        event->SetPhase(TRACE_EVENT_PHASE_COUNTER);
-      context->converted_events.push_back(std::move(event));
-    } break;
-    case TRACE_EVENT_PHASE_END: {
-      // Beginning event may not exist.
-      if (context->per_thread_pending_events_stack[tid].empty())
-        return true;
-      if (ParseUint32(line, event_position + 2, '\0', &pid) ==
-          std::string::npos) {
-        LOG(ERROR) << "Cannot parse pid of trace event: " << line;
-        return false;
-      }
-      ArcTracingEvent* completed_event =
-          context->per_thread_pending_events_stack[tid].back();
-      context->per_thread_pending_events_stack[tid].pop_back();
-      completed_event->SetPhase(TRACE_EVENT_PHASE_COMPLETE);
-      completed_event->SetDuration(timestamp - completed_event->GetTimestamp());
-    } break;
-    default:
-      LOG(ERROR) << "Unsupported type of trace event: " << line;
-      return false;
-  }
-  return true;
-}
-
-bool HandleCpuIdle(AllCpuEvents* all_cpu_events,
-                   double timestamp,
-                   uint32_t cpu_id,
-                   uint32_t tid,
-                   const std::string& line,
-                   size_t event_position) {
-  if (tid) {
-    LOG(ERROR) << "cpu_idle belongs to non-idle thread: " << line;
-    return false;
-  }
-  uint32_t state;
-  uint32_t cpu_id_from_event;
-  if (sscanf(&line[event_position], "state=%d cpu_id=%d", &state,
-             &cpu_id_from_event) != 2 ||
-      cpu_id != cpu_id_from_event) {
-    LOG(ERROR) << "Failed to parse cpu_idle event: " << line;
-    return false;
-  }
-
-  return AddAllCpuEvent(all_cpu_events, cpu_id, timestamp,
-                        state == 0xffffffff ? ArcCpuEvent::Type::kIdleOut
-                                            : ArcCpuEvent::Type::kIdleIn,
-                        0 /* tid */);
-}
-
-bool HandleSchedWakeUp(AllCpuEvents* all_cpu_events,
-                       double timestamp,
-                       uint32_t cpu_id,
-                       uint32_t tid,
-                       const std::string& line,
-                       size_t event_position) {
-  const char* data = strstr(&line[event_position], " pid=");
-  uint32_t target_tid;
-  uint32_t target_priority;
-  uint32_t target_cpu_id;
-  if (!data || sscanf(data, " pid=%d prio=%d target_cpu=%d", &target_tid,
-                      &target_priority, &target_cpu_id) != 3) {
-    LOG(ERROR) << "Failed to parse sched_wakeup event: " << line;
-    return false;
-  }
-
-  if (!target_tid) {
-    LOG(ERROR) << "Cannot wake-up idle thread: " << line;
-    return false;
-  }
-
-  return AddAllCpuEvent(all_cpu_events, target_cpu_id, timestamp,
-                        ArcCpuEvent::Type::kWakeUp, target_tid);
-}
-
-bool HandleSchedSwitch(AllCpuEvents* all_cpu_events,
-                       double timestamp,
-                       uint32_t cpu_id,
-                       uint32_t tid,
-                       const std::string& line,
-                       size_t event_position) {
-  const char* data = strstr(&line[event_position], " next_pid=");
-  uint32_t next_tid;
-  uint32_t next_priority;
-  if (!data || sscanf(data, " next_pid=%d next_prio=%d", &next_tid,
-                      &next_priority) != 2) {
-    LOG(ERROR) << "Failed to parse sched_switch event: " << line;
-    return false;
-  }
-
-  return AddAllCpuEvent(all_cpu_events, cpu_id, timestamp,
-                        ArcCpuEvent::Type::kActive, next_tid);
 }
 
 }  // namespace
@@ -387,9 +240,11 @@ bool ArcTracingModel::ProcessEvent(base::ListValue* events) {
 
 bool ArcTracingModel::ConvertSysTraces(const std::string& sys_traces) {
   size_t new_line_pos = 0;
-
-  GraphicsEventsContext graphics_events_context;
-
+  // To keep in correct order of creation. This converts pair of 'B' and 'E'
+  // events to the completed event, 'X'.
+  TracingEvents converted_events;
+  std::map<uint32_t, std::vector<ArcTracingEvent*>>
+      per_thread_pending_events_stack;
   while (true) {
     // Get end of line.
     size_t end_line_pos = sys_traces.find('\n', new_line_pos);
@@ -409,8 +264,7 @@ bool ArcTracingModel::ConvertSysTraces(const std::string& sys_traces) {
     //               | |       |   ||||       |         |
     // Until TIMESTAMP we have fixed position for elements.
     if (line.length() < 35 || line[16] != '-' || line[22] != ' ' ||
-        line[23] != '[' || line[27] != ']' || line[28] != ' ' ||
-        line[33] != ' ') {
+        line[28] != ' ' || line[33] != ' ') {
       LOG(ERROR) << "Cannot recognize trace event: " << line;
       return false;
     }
@@ -420,22 +274,6 @@ bool ArcTracingModel::ConvertSysTraces(const std::string& sys_traces) {
       LOG(ERROR) << "Cannot parse tid in trace event: " << line;
       return false;
     }
-
-    if (cpu_model_.thread_map().find(tid) == cpu_model_.thread_map().end()) {
-      int thread_name_start = 0;
-      while (line[thread_name_start] == ' ')
-        ++thread_name_start;
-      cpu_model_.thread_map()[tid] = ArcCpuModel::ThreadInfo(
-          ArcCpuModel::kUnknownPid,
-          line.substr(thread_name_start, 16 - thread_name_start));
-    }
-
-    uint32_t cpu_id;
-    if (ParseUint32(line, 24, ']', &cpu_id) == std::string::npos) {
-      LOG(ERROR) << "Cannot parse CPU id in trace event: " << line;
-      return false;
-    }
-
     uint32_t timestamp_high;
     uint32_t timestamp_low;
     const size_t pos_dot = ParseUint32(line, 34, '.', &timestamp_high);
@@ -443,6 +281,7 @@ bool ArcTracingModel::ConvertSysTraces(const std::string& sys_traces) {
       LOG(ERROR) << "Cannot parse timestamp in trace event: " << line;
       return false;
     }
+
     const size_t separator_position =
         ParseUint32(line, pos_dot + 1, ':', &timestamp_low);
     if (separator_position == std::string::npos) {
@@ -450,41 +289,79 @@ bool ArcTracingModel::ConvertSysTraces(const std::string& sys_traces) {
       return false;
     }
 
+    const size_t event_position = separator_position + kTracingMarkWriteLength;
+    // Skip not relevant information. We only have interest what was written
+    // from Android using tracing marker.
+    if (event_position + 2 >= line.length() ||
+        strncmp(&line[separator_position], kTracingMarkWrite,
+                kTracingMarkWriteLength)) {
+      continue;
+    }
+
+    if (event_position + kTraceEventClockSyncLength < line.length() &&
+        !strncmp(&line[event_position], kTraceEventClockSync,
+                 kTraceEventClockSyncLength)) {
+      // Ignore this service message.
+      continue;
+    }
+
+    if (line[event_position + 1] != '|') {
+      LOG(ERROR) << "Cannot recognize trace marker event: " << line;
+      return false;
+    }
+
+    const char phase = line[event_position];
     const double timestamp = 1000000L * timestamp_high + timestamp_low;
     if (timestamp < min_timestamp_ || timestamp >= max_timestamp_)
       continue;
 
-    if (!strncmp(&line[separator_position], kTracingMarkWrite,
-                 kTracingMarkWriteLength)) {
-      if (!HandleGraphicsEvent(&graphics_events_context, timestamp, tid, line,
-                               separator_position + kTracingMarkWriteLength)) {
+    uint32_t pid;
+    switch (phase) {
+      case TRACE_EVENT_PHASE_BEGIN:
+      case TRACE_EVENT_PHASE_COUNTER: {
+        const size_t name_pos =
+            ParseUint32(line, event_position + 2, '|', &pid);
+        if (name_pos == std::string::npos) {
+          LOG(ERROR) << "Cannot parse pid of trace event: " << line;
+          return false;
+        }
+        const std::string name = line.substr(name_pos + 1);
+        std::unique_ptr<ArcTracingEvent> event =
+            std::make_unique<ArcTracingEvent>(base::DictionaryValue());
+        event->SetPid(pid);
+        event->SetTid(tid);
+        event->SetTimestamp(timestamp);
+        event->SetCategory(kAndroidCategory);
+        event->SetName(name);
+        if (phase == TRACE_EVENT_PHASE_BEGIN)
+          per_thread_pending_events_stack[tid].push_back(event.get());
+        else
+          event->SetPhase(TRACE_EVENT_PHASE_COUNTER);
+        converted_events.push_back(std::move(event));
+      } break;
+      case TRACE_EVENT_PHASE_END: {
+        // Beginning event may not exist.
+        if (per_thread_pending_events_stack[tid].empty())
+          continue;
+        if (ParseUint32(line, event_position + 2, '\0', &pid) ==
+            std::string::npos) {
+          LOG(ERROR) << "Cannot parse pid of trace event: " << line;
+          return false;
+        }
+        ArcTracingEvent* completed_event =
+            per_thread_pending_events_stack[tid].back();
+        per_thread_pending_events_stack[tid].pop_back();
+        completed_event->SetPhase(TRACE_EVENT_PHASE_COMPLETE);
+        completed_event->SetDuration(timestamp -
+                                     completed_event->GetTimestamp());
+      } break;
+      default:
+        LOG(ERROR) << "Unsupported type of trace event: " << line;
         return false;
-      }
-    } else if (!strncmp(&line[separator_position], kCpuIdle, kCpuIdleLength)) {
-      if (!HandleCpuIdle(&cpu_model_.all_cpu_events(), timestamp, cpu_id, tid,
-                         line, separator_position + kCpuIdleLength)) {
-        return false;
-      }
-    } else if (!strncmp(&line[separator_position], kSchedWakeUp,
-                        kSchedWakeUpLength)) {
-      if (!HandleSchedWakeUp(&cpu_model_.all_cpu_events(), timestamp, cpu_id,
-                             tid, line,
-                             separator_position + kSchedWakeUpLength)) {
-        return false;
-      }
-    } else if (!strncmp(&line[separator_position], kSchedSwitch,
-                        kSchedSwitchLength)) {
-      if (!HandleSchedSwitch(&cpu_model_.all_cpu_events(), timestamp, cpu_id,
-                             tid, line,
-                             separator_position + kSchedSwitchLength)) {
-        return false;
-      }
     }
   }
-
   // Close all pending tracing event, assuming last event is 0 duration.
-  for (auto& pending_events :
-       graphics_events_context.per_thread_pending_events_stack) {
+  for (auto& pending_events : per_thread_pending_events_stack) {
     if (pending_events.second.empty())
       continue;
     const double last_timestamp = pending_events.second.back()->GetTimestamp();
@@ -496,7 +373,7 @@ bool ArcTracingModel::ConvertSysTraces(const std::string& sys_traces) {
   }
 
   // Now put events to the thread models.
-  for (auto& converted_event : graphics_events_context.converted_events) {
+  for (auto& converted_event : converted_events) {
     if (!AddToThread(std::move(converted_event))) {
       LOG(ERROR) << "Cannot add systrace event to threads";
       return false;
