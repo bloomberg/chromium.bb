@@ -474,10 +474,6 @@ class WebContents : public PageNavigator,
   // Device.
   virtual bool IsConnectedToBluetoothDevice() = 0;
 
-  // Indicates whether any frame in the WebContents is connected to a serial
-  // port.
-  virtual bool IsConnectedToSerialPort() const = 0;
-
   // Indicates whether a video is in Picture-in-Picture for |this|.
   virtual bool HasPictureInPictureVideo() = 0;
 

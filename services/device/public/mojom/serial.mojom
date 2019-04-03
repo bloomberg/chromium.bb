@@ -91,13 +91,7 @@ struct SerialPortControlSignals {
 // Discovers and enumerates serial devices available to the host.
 interface SerialPortManager {
   GetDevices() => (array<SerialPortInfo> devices);
-
-  // Creates a SerialPort instance attached to the port represented by |token|.
-  // When the pipe passed in |port_request| is closed the optional pipe passed
-  // in |watcher| will also be closed.
-  GetPort(mojo_base.mojom.UnguessableToken token,
-          SerialPort& port_request,
-          SerialPortConnectionWatcher? watcher);
+  GetPort(mojo_base.mojom.UnguessableToken token, SerialPort& port_request);
 };
 
 // Performs asynchronous I/O on serial devices.
@@ -145,7 +139,4 @@ interface SerialPort {
 interface SerialPortClient {
   OnReadError(SerialReceiveError error);
   OnSendError(SerialSendError error);
-};
-
-interface SerialPortConnectionWatcher {
 };

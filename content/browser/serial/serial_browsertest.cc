@@ -14,7 +14,6 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,55 +24,6 @@ using testing::Return;
 namespace content {
 
 namespace {
-
-class FakeSerialPort : public device::mojom::SerialPort {
- public:
-  FakeSerialPort(device::mojom::SerialPortConnectionWatcherPtr watcher)
-      : watcher_(std::move(watcher)) {}
-  ~FakeSerialPort() override = default;
-
-  // device::mojom::SerialPort
-  void Open(device::mojom::SerialConnectionOptionsPtr options,
-            mojo::ScopedDataPipeConsumerHandle in_stream,
-            mojo::ScopedDataPipeProducerHandle out_stream,
-            device::mojom::SerialPortClientAssociatedPtrInfo client,
-            OpenCallback callback) override {
-    in_stream_ = std::move(in_stream);
-    out_stream_ = std::move(out_stream);
-    client_ = std::move(client);
-    std::move(callback).Run(true);
-  }
-  void ClearSendError(mojo::ScopedDataPipeConsumerHandle consumer) override {
-    NOTREACHED();
-  }
-  void ClearReadError(mojo::ScopedDataPipeProducerHandle producer) override {
-    NOTREACHED();
-  }
-  void Flush(FlushCallback callback) override { NOTREACHED(); }
-  void GetControlSignals(GetControlSignalsCallback callback) override {
-    NOTREACHED();
-  }
-  void SetControlSignals(device::mojom::SerialHostControlSignalsPtr signals,
-                         SetControlSignalsCallback callback) override {
-    NOTREACHED();
-  }
-  void ConfigurePort(device::mojom::SerialConnectionOptionsPtr options,
-                     ConfigurePortCallback callback) override {
-    NOTREACHED();
-  }
-  void GetPortInfo(GetPortInfoCallback callback) override { NOTREACHED(); }
-  void SetBreak(SetBreakCallback callback) override { NOTREACHED(); }
-  void ClearBreak(ClearBreakCallback callback) override { NOTREACHED(); }
-
- private:
-  // Mojo handles to keep open in order to simulate an active connection.
-  device::mojom::SerialPortConnectionWatcherPtr watcher_;
-  mojo::ScopedDataPipeConsumerHandle in_stream_;
-  mojo::ScopedDataPipeProducerHandle out_stream_;
-  device::mojom::SerialPortClientAssociatedPtrInfo client_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeSerialPort);
-};
 
 class FakeSerialPortManager : public device::mojom::SerialPortManager {
  public:
@@ -94,12 +44,7 @@ class FakeSerialPortManager : public device::mojom::SerialPortManager {
   }
 
   void GetPort(const base::UnguessableToken& token,
-               device::mojom::SerialPortRequest request,
-               device::mojom::SerialPortConnectionWatcherPtr watcher) override {
-    mojo::MakeStrongBinding(
-        std::make_unique<FakeSerialPort>(std::move(watcher)),
-        std::move(request));
-  }
+               device::mojom::SerialPortRequest request) override {}
 
  private:
   std::map<base::UnguessableToken, device::mojom::SerialPortInfoPtr> ports_;
@@ -195,9 +140,15 @@ IN_PROC_BROWSER_TEST_F(SerialTest, GetPorts) {
       .WillOnce(Return(false))
       .WillOnce(Return(true));
 
-  EXPECT_EQ(
-      2, EvalJs(shell(),
-                R"(navigator.serial.getPorts().then(ports => ports.length))"));
+  int result;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      shell(),
+      "navigator.serial.getPorts()"
+      "    .then(ports => {"
+      "        domAutomationController.send(ports.length);"
+      "    });",
+      &result));
+  EXPECT_EQ(2, result);
 }
 
 IN_PROC_BROWSER_TEST_F(SerialTest, RequestPort) {
@@ -208,53 +159,17 @@ IN_PROC_BROWSER_TEST_F(SerialTest, RequestPort) {
   EXPECT_CALL(delegate(), RunChooserInternal)
       .WillOnce(Return(ByMove(std::move(port))));
 
-  EXPECT_EQ(true, EvalJs(shell(),
-                         R"((async () => {
-                           let port = await navigator.serial.requestPort({});
-                           return port instanceof SerialPort;
-                         })())"));
-}
-
-IN_PROC_BROWSER_TEST_F(SerialTest, OpenAndClosePort) {
-  NavigateToURL(shell(), GetTestUrl(nullptr, "simple_page.html"));
-
-  auto port = device::mojom::SerialPortInfo::New();
-  port->token = base::UnguessableToken::Create();
-  port_manager()->AddPort(std::move(port));
-
-  EXPECT_CALL(delegate(), HasPortPermission(_, _)).WillOnce(Return(true));
-
-  EXPECT_FALSE(shell()->web_contents()->IsConnectedToSerialPort());
-  EXPECT_EQ(nullptr, EvalJs(shell(),
-                            R"((async () => {
-                              let ports = await navigator.serial.getPorts();
-                              window.port = ports[0];
-                              await window.port.open({});
-                            })())"));
-  EXPECT_TRUE(shell()->web_contents()->IsConnectedToSerialPort());
-  EXPECT_EQ(nullptr, EvalJs(shell(), "window.port.close()"));
-  EXPECT_FALSE(shell()->web_contents()->IsConnectedToSerialPort());
-}
-
-IN_PROC_BROWSER_TEST_F(SerialTest, OpenAndNavigate) {
-  NavigateToURL(shell(), GetTestUrl(nullptr, "simple_page.html"));
-
-  auto port = device::mojom::SerialPortInfo::New();
-  port->token = base::UnguessableToken::Create();
-  port_manager()->AddPort(std::move(port));
-
-  EXPECT_CALL(delegate(), HasPortPermission(_, _)).WillOnce(Return(true));
-
-  EXPECT_FALSE(shell()->web_contents()->IsConnectedToSerialPort());
-  EXPECT_EQ(nullptr, EvalJs(shell(),
-                            R"((async () => {
-                              let ports = await navigator.serial.getPorts();
-                              await ports[0].open({});
-                            })())"));
-  EXPECT_TRUE(shell()->web_contents()->IsConnectedToSerialPort());
-
-  NavigateToURL(shell(), GetTestUrl(nullptr, "simple_page.html"));
-  EXPECT_FALSE(shell()->web_contents()->IsConnectedToSerialPort());
+  bool result;
+  EXPECT_TRUE(
+      ExecuteScriptAndExtractBool(shell(),
+                                  "navigator.serial.requestPort({})"
+                                  "    .then(port => {"
+                                  "        domAutomationController.send(true);"
+                                  "    }, error => {"
+                                  "        domAutomationController.send(false);"
+                                  "    });",
+                                  &result));
+  EXPECT_TRUE(result);
 }
 
 }  // namespace content

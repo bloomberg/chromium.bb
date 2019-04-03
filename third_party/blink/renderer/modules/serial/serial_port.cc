@@ -3,43 +3,36 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/modules/serial/serial_port.h"
-
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/streams/readable_stream.h"
-#include "third_party/blink/renderer/core/streams/writable_stream.h"
-#include "third_party/blink/renderer/modules/serial/serial.h"
 
 namespace blink {
 
-SerialPort::SerialPort(Serial* parent, mojom::blink::SerialPortInfoPtr info)
-    : info_(std::move(info)), parent_(parent) {}
+SerialPort::SerialPort(mojom::blink::SerialPortInfoPtr info)
+    : info_(std::move(info)) {}
 
 SerialPort::~SerialPort() = default;
 
+ReadableStream* SerialPort::in() {
+  return nullptr;
+}
+
+WritableStream* SerialPort::out() {
+  return nullptr;
+}
+
 ScriptPromise SerialPort::open(ScriptState* script_state,
                                const SerialOptions* options) {
-  if (port_)
-    return ScriptPromise::CastUndefined(script_state);
-
-  parent_->GetPort(info_->token, mojo::MakeRequest(&port_));
-  // TODO(https://crbug.com/884928): Call port_->Open() and initialize the
-  // ReadableStream and WritableStream.
-  return ScriptPromise::CastUndefined(script_state);
+  return ScriptPromise::RejectWithDOMException(
+      script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError));
 }
 
 ScriptPromise SerialPort::close(ScriptState* script_state) {
-  ContextDestroyed();
-  return ScriptPromise::CastUndefined(script_state);
+  return ScriptPromise::RejectWithDOMException(
+      script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError));
 }
 
-void SerialPort::ContextDestroyed() {
-  // Release connection-related resources as quickly as possible.
-  port_.reset();
-}
-
-void SerialPort::Trace(Visitor* visitor) {
-  visitor->Trace(parent_);
-  ScriptWrappable::Trace(visitor);
+const base::UnguessableToken& SerialPort::Token() const {
+  return info_->token;
 }
 
 }  // namespace blink

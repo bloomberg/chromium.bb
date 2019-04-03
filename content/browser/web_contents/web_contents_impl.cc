@@ -583,6 +583,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
           GetContentClient()->browser()->GetAXModeForBrowserContext(
               browser_context)),
       audio_stream_monitor_(this),
+      bluetooth_connected_device_count_(0),
       media_web_contents_observer_(
           std::make_unique<MediaWebContentsObserver>(this)),
       media_device_group_id_salt_base_(
@@ -1539,10 +1540,6 @@ bool WebContentsImpl::IsCurrentlyAudible() {
 
 bool WebContentsImpl::IsConnectedToBluetoothDevice() {
   return bluetooth_connected_device_count_ > 0;
-}
-
-bool WebContentsImpl::IsConnectedToSerialPort() const {
-  return serial_active_frame_count_ > 0;
 }
 
 bool WebContentsImpl::HasPictureInPictureVideo() {
@@ -6714,31 +6711,6 @@ void WebContentsImpl::DecrementBluetoothConnectedDeviceCount() {
   if (bluetooth_connected_device_count_ == 0) {
     NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
   }
-}
-
-void WebContentsImpl::IncrementSerialActiveFrameCount() {
-  // Trying to invalidate the tab state while being destroyed could result in a
-  // use after free.
-  if (IsBeingDestroyed())
-    return;
-
-  // Notify for UI updates if the state changes.
-  serial_active_frame_count_++;
-  if (serial_active_frame_count_ == 1)
-    NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
-}
-
-void WebContentsImpl::DecrementSerialActiveFrameCount() {
-  // Trying to invalidate the tab state while being destroyed could result in a
-  // use after free.
-  if (IsBeingDestroyed())
-    return;
-
-  // Notify for UI updates if the state changes.
-  DCHECK_NE(0u, serial_active_frame_count_);
-  serial_active_frame_count_--;
-  if (serial_active_frame_count_ == 0)
-    NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
 }
 
 void WebContentsImpl::SetHasPersistentVideo(bool has_persistent_video) {
