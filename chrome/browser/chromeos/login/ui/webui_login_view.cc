@@ -33,7 +33,6 @@
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -508,9 +507,7 @@ void WebUILoginView::OnLoginPromptVisible() {
   TRACE_EVENT0("chromeos", "WebUILoginView::OnLoginPromptVisible");
   if (should_emit_login_prompt_visible_) {
     VLOG(1) << "Login WebUI >> login-prompt-visible";
-    chromeos::DBusThreadManager::Get()
-        ->GetSessionManagerClient()
-        ->EmitLoginPromptVisible();
+    SessionManagerClient::Get()->EmitLoginPromptVisible();
   }
 
   webui_visible_ = true;

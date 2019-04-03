@@ -34,7 +34,6 @@
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/guest_view/browser/guest_view_manager.h"
@@ -449,11 +448,11 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
 
     device_policy_test_helper_.device_policy()->Build();
 
-    fake_session_manager_client_->set_device_policy(
+    FakeSessionManagerClient::Get()->set_device_policy(
         device_policy_test_helper_.device_policy()->GetBlob());
     PrefChangeWatcher watcher(prefs::kManagedAutoSelectCertificateForUrls,
                               ProfileHelper::GetSigninProfile()->GetPrefs());
-    fake_session_manager_client_->OnPropertyChangeComplete(true);
+    FakeSessionManagerClient::Get()->OnPropertyChangeComplete(true);
 
     watcher.Wait();
   }
@@ -478,11 +477,11 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
 
     device_policy_test_helper_.device_policy()->Build();
 
-    fake_session_manager_client_->set_device_policy(
+    FakeSessionManagerClient::Get()->set_device_policy(
         device_policy_test_helper_.device_policy()->GetBlob());
     PrefChangeWatcher watcher(onc::prefs::kDeviceOpenNetworkConfiguration,
                               g_browser_process->local_state());
-    fake_session_manager_client_->OnPropertyChangeComplete(true);
+    FakeSessionManagerClient::Get()->OnPropertyChangeComplete(true);
     watcher.Wait();
   }
 
@@ -542,15 +541,12 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    auto fake_session_manager_client =
-        std::make_unique<FakeSessionManagerClient>();
-    fake_session_manager_client_ = fake_session_manager_client.get();
-    DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        std::move(fake_session_manager_client));
     device_policy_test_helper_.InstallOwnerKey();
     device_policy_test_helper_.MarkAsEnterpriseOwned();
 
-    fake_session_manager_client_->set_device_policy(
+    // Override FakeSessionManagerClient. This will be shut down by the browser.
+    chromeos::SessionManagerClient::InitializeFakeInMemory();
+    FakeSessionManagerClient::Get()->set_device_policy(
         device_policy_test_helper_.device_policy()->GetBlob());
 
     WebviewLoginTest::SetUpInProcessBrowserTestFixture();
@@ -605,8 +601,6 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
   }
 
   policy::DevicePolicyCrosTestHelper device_policy_test_helper_;
-  // Unowned pointer - owned by DBusThreadManager.
-  FakeSessionManagerClient* fake_session_manager_client_;
   std::unique_ptr<crypto::ScopedTestSystemNSSKeySlot> test_system_slot_;
   scoped_refptr<net::X509Certificate> client_cert_;
   std::unique_ptr<net::SpawnedTestServer> https_server_;
@@ -827,7 +821,7 @@ class WebviewProxyAuthLoginTest : public WebviewLoginTest {
     ASSERT_TRUE(auth_proxy_server_->Start());
 
     // Prepare device policy which will be used for two purposes:
-    // - given to |fake_session_manager_client_|, so the device appears to have
+    // - given to FakeSessionManagerClient, so the device appears to have
     //   registered for policy.
     // - the payload is given to |policy_test_server_|, so we can download fresh
     //   policy.
@@ -850,23 +844,16 @@ class WebviewProxyAuthLoginTest : public WebviewLoginTest {
   void SetUpInProcessBrowserTestFixture() override {
     WebviewLoginTest::SetUpInProcessBrowserTestFixture();
 
-    // Use a fake SessionManagerClient to be able to pretend that the device has
-    // been enrolled and registered for policy (and has a device DMToken).
-    auto fake_session_manager_client =
-        std::make_unique<FakeSessionManagerClient>();
-    fake_session_manager_client_ = fake_session_manager_client.get();
-    DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        std::move(fake_session_manager_client));
     device_policy_test_helper_.InstallOwnerKey();
     device_policy_test_helper_.MarkAsEnterpriseOwned();
 
-    fake_session_manager_client_->set_device_policy(
+    FakeSessionManagerClient::Get()->set_device_policy(
         device_policy_builder()->GetBlob());
 
     // Set some fake state keys to make sure they are not empty.
     std::vector<std::string> state_keys;
     state_keys.push_back("1");
-    fake_session_manager_client_->set_server_backed_state_keys(state_keys);
+    FakeSessionManagerClient::Get()->set_server_backed_state_keys(state_keys);
   }
 
   void SetUpOnMainThread() override {
@@ -938,11 +925,6 @@ class WebviewProxyAuthLoginTest : public WebviewLoginTest {
   std::unique_ptr<net::SpawnedTestServer> auth_proxy_server_;
   LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
   policy::DevicePolicyCrosTestHelper device_policy_test_helper_;
-
-  // FakeDBusThreadManager uses FakeSessionManagerClient.
-  std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter_;
-  // Unowned pointer - owned by DBusThreadManager.
-  chromeos::FakeSessionManagerClient* fake_session_manager_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WebviewProxyAuthLoginTest);
 };

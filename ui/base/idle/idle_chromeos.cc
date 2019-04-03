@@ -18,8 +18,7 @@ int CalculateIdleTime() {
 }
 
 bool CheckIdleStateIsLocked() {
-  return chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
-      IsScreenLocked();
+  return chromeos::SessionManagerClient::Get()->IsScreenLocked();
 }
 
 }  // namespace ui

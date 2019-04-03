@@ -100,7 +100,9 @@ AffiliationTestHelper::AffiliationTestHelper(
     chromeos::FakeAuthPolicyClient* fake_auth_policy_client)
     : management_type_(management_type),
       fake_session_manager_client_(fake_session_manager_client),
-      fake_auth_policy_client_(fake_auth_policy_client) {}
+      fake_auth_policy_client_(fake_auth_policy_client) {
+  DCHECK(fake_session_manager_client);
+}
 
 void AffiliationTestHelper::CheckPreconditions() {
   ASSERT_TRUE(fake_session_manager_client_);

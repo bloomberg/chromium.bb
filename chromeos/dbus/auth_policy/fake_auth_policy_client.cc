@@ -17,7 +17,6 @@
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/cryptohome/tpm_util.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/proto/cloud_policy.pb.h"
@@ -198,13 +197,10 @@ void FakeAuthPolicyClient::RefreshDevicePolicy(RefreshPolicyCallback callback) {
     return;
   }
 
-  SessionManagerClient* session_manager_client =
-      DBusThreadManager::Get()->GetSessionManagerClient();
-
   // On first refresh, we need to restore |machine_name| and |dm_token| from
   // the stored policy.
   if (machine_name_.empty() || dm_token_.empty()) {
-    session_manager_client->RetrieveDevicePolicy(
+    SessionManagerClient::Get()->RetrieveDevicePolicy(
         base::BindOnce(&FakeAuthPolicyClient::OnDevicePolicyRetrieved,
                        weak_factory_.GetWeakPtr(), std::move(callback)));
     return;
@@ -221,9 +217,6 @@ void FakeAuthPolicyClient::RefreshUserPolicy(const AccountId& account_id,
     std::move(callback).Run(authpolicy::ERROR_DBUS_FAILURE);
     return;
   }
-
-  SessionManagerClient* session_manager_client =
-      DBusThreadManager::Get()->GetSessionManagerClient();
 
   em::CloudPolicySettings policy;
   std::string payload;
@@ -243,7 +236,7 @@ void FakeAuthPolicyClient::RefreshUserPolicy(const AccountId& account_id,
 
   cryptohome::AccountIdentifier account_identifier;
   account_identifier.set_account_id(account_id.GetAccountIdKey());
-  session_manager_client->StorePolicyForUser(
+  SessionManagerClient::Get()->StorePolicyForUser(
       account_identifier, response.SerializeAsString(),
       base::BindOnce(&OnStorePolicy, std::move(callback)));
 }
@@ -336,9 +329,7 @@ void FakeAuthPolicyClient::StoreDevicePolicy(RefreshPolicyCallback callback) {
   em::PolicyFetchResponse response;
   response.set_policy_data(policy_data.SerializeAsString());
 
-  SessionManagerClient* session_manager_client =
-      DBusThreadManager::Get()->GetSessionManagerClient();
-  session_manager_client->StoreDevicePolicy(
+  SessionManagerClient::Get()->StoreDevicePolicy(
       response.SerializeAsString(),
       base::BindOnce(&OnStorePolicy, std::move(callback)));
 }

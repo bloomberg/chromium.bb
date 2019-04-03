@@ -25,7 +25,6 @@
 #include "chrome/browser/ui/ash/media_client.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -244,12 +243,11 @@ void ScreenTimeController::ForceScreenLockByPolicy() {
   // cause a bug (https://crbug.com/924844).
   if (base::FeatureList::IsEnabled(features::kDMServerOAuthForChildUser) &&
       session_manager::SessionManager::Get()->session_state() !=
-          session_manager::SessionState::ACTIVE)
+          session_manager::SessionState::ACTIVE) {
     return;
+  }
 
-  chromeos::DBusThreadManager::Get()
-      ->GetSessionManagerClient()
-      ->RequestLockScreen();
+  chromeos::SessionManagerClient::Get()->RequestLockScreen();
 }
 
 void ScreenTimeController::OnScreenLockByPolicy(

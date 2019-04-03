@@ -7,10 +7,9 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/cryptohome/tpm_util.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/account_id/account_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,26 +34,19 @@ class FakeAuthPolicyClientTest : public ::testing::Test {
   FakeAuthPolicyClient* authpolicy_client() {
     return FakeAuthPolicyClient::Get();
   }
-  FakeSessionManagerClient* session_manager_client() {
-    return session_manager_client_ptr_;
-  }
 
   void SetUp() override {
     ::testing::Test::SetUp();
-    auto session_manager_client = std::make_unique<FakeSessionManagerClient>();
-    session_manager_client_ptr_ = session_manager_client.get();
-    // DBusThreadManager::GetSetterForTesting initializes DBusThreadManager.
-    DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        std::move(session_manager_client));
     CryptohomeClient::InitializeFake();
+    SessionManagerClient::InitializeFakeInMemory();
     AuthPolicyClient::InitializeFake();
     authpolicy_client()->DisableOperationDelayForTesting();
   }
 
   void TearDown() override {
     AuthPolicyClient::Shutdown();
+    SessionManagerClient::Shutdown();
     CryptohomeClient::Shutdown();
-    DBusThreadManager::Shutdown();
   }
 
   void JoinAdDomain(const std::string& machine_name,
@@ -107,7 +99,6 @@ class FakeAuthPolicyClientTest : public ::testing::Test {
   int service_is_available_called_num_ = 0;
 
  private:
-  FakeSessionManagerClient* session_manager_client_ptr_;  // not owned.
   base::MessageLoop loop_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAuthPolicyClientTest);
@@ -334,9 +325,9 @@ TEST_F(FakeAuthPolicyClientTest, RefreshDevicePolicyStoresPolicy) {
   {
     // Retrieve device policy from the session manager.
     std::string response_blob;
-    EXPECT_EQ(
-        SessionManagerClient::RetrievePolicyResponseType::SUCCESS,
-        session_manager_client()->BlockingRetrieveDevicePolicy(&response_blob));
+    EXPECT_EQ(SessionManagerClient::RetrievePolicyResponseType::SUCCESS,
+              SessionManagerClient::Get()->BlockingRetrieveDevicePolicy(
+                  &response_blob));
     em::PolicyFetchResponse response;
     EXPECT_TRUE(response.ParseFromString(response_blob));
     EXPECT_TRUE(response.has_policy_data());

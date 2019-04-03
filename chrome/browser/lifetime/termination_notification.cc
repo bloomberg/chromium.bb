@@ -65,9 +65,7 @@ void NotifyAndTerminate(bool fast_path, RebootPolicy reboot_policy) {
     } else if (chrome::IsAttemptingShutdown()) {
       // Don't ask SessionManager to stop session if the shutdown request comes
       // from session manager.
-      chromeos::DBusThreadManager::Get()
-          ->GetSessionManagerClient()
-          ->StopSession();
+      chromeos::SessionManagerClient::Get()->StopSession();
     }
   } else {
     if (chrome::IsAttemptingShutdown()) {

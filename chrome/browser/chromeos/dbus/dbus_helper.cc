@@ -19,6 +19,7 @@
 #include "chromeos/dbus/media_analytics/media_analytics_client.h"
 #include "chromeos/dbus/permission_broker/permission_broker_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
 #include "chromeos/tpm/install_attributes.h"
@@ -60,6 +61,7 @@ void InitializeDBus() {
     MediaAnalyticsClient::Initialize(bus);
     PermissionBrokerClient::Initialize(bus);
     PowerManagerClient::Initialize(bus);
+    SessionManagerClient::Initialize(bus);
     SystemClockClient::Initialize(bus);
     UpstartClient::Initialize(bus);
   } else {
@@ -71,6 +73,7 @@ void InitializeDBus() {
     MediaAnalyticsClient::InitializeFake();
     PermissionBrokerClient::InitializeFake();
     PowerManagerClient::InitializeFake();
+    SessionManagerClient::InitializeFake();
     SystemClockClient::InitializeFake();
     UpstartClient::InitializeFake();
   }
@@ -85,6 +88,7 @@ void InitializeDBus() {
 void ShutdownDBus() {
   UpstartClient::Shutdown();
   SystemClockClient::Shutdown();
+  SessionManagerClient::Shutdown();
   PowerManagerClient::Shutdown();
   PermissionBrokerClient::Shutdown();
   MediaAnalyticsClient::Shutdown();

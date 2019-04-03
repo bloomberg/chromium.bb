@@ -17,7 +17,6 @@
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/dbus/cryptohome/tpm_util.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/login_manager/policy_descriptor.pb.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/tpm/stub_install_attributes.h"
@@ -82,11 +81,6 @@ class ComponentActiveDirectoryPolicyTest
   }
 
   void SetUp() override {
-    // Create a fake session manager client to store test policy.
-    session_manager_client_ = new chromeos::FakeSessionManagerClient();
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        base::WrapUnique(session_manager_client_));
-
     // CryptohomeClient needs to be initialized before
     // tpm_util::LockDeviceActiveDirectoryForTesting.
     chromeos::CryptohomeClient::InitializeFake();
@@ -161,7 +155,7 @@ class ComponentActiveDirectoryPolicyTest
     builder_.set_payload(policy);
     builder_.Build();
     base::RunLoop run_loop;
-    session_manager_client_->StorePolicy(
+    chromeos::FakeSessionManagerClient::Get()->StorePolicy(
         descriptor, builder_.GetBlob(),
         base::BindOnce(&ExpectSuccess, run_loop.QuitClosure()));
     run_loop.Run();
@@ -180,7 +174,6 @@ class ComponentActiveDirectoryPolicyTest
   scoped_refptr<const extensions::Extension> extension_;
   std::unique_ptr<ExtensionTestMessageListener> event_listener_;
   chromeos::ScopedStubInstallAttributes install_attributes_;
-  chromeos::SessionManagerClient* session_manager_client_;  // Not owned.
   ComponentActiveDirectoryPolicyBuilder builder_;
 };
 

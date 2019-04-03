@@ -568,7 +568,7 @@ void UserSessionManager::CompleteGuestSessionLogin(const GURL& start_url) {
   const base::CommandLine user_flags(base::CommandLine::NO_PROGRAM);
   if (!about_flags::AreSwitchesIdenticalToCurrentCommandLine(
           user_flags, *base::CommandLine::ForCurrentProcess(), NULL)) {
-    DBusThreadManager::Get()->GetSessionManagerClient()->SetFlagsForUser(
+    SessionManagerClient::Get()->SetFlagsForUser(
         cryptohome::CreateAccountIdentifierFromAccountId(
             user_manager::GuestAccountId()),
         base::CommandLine::StringVector());
@@ -686,9 +686,8 @@ void UserSessionManager::RestoreAuthenticationSession(Profile* user_profile) {
 
 void UserSessionManager::RestoreActiveSessions() {
   user_sessions_restore_in_progress_ = true;
-  DBusThreadManager::Get()->GetSessionManagerClient()->RetrieveActiveSessions(
-      base::BindOnce(&UserSessionManager::OnRestoreActiveSessions,
-                     AsWeakPtr()));
+  SessionManagerClient::Get()->RetrieveActiveSessions(base::BindOnce(
+      &UserSessionManager::OnRestoreActiveSessions, AsWeakPtr()));
 }
 
 bool UserSessionManager::UserSessionsRestored() const {
@@ -890,9 +889,7 @@ bool UserSessionManager::RespectLocalePreference(
 bool UserSessionManager::RestartToApplyPerSessionFlagsIfNeed(
     Profile* profile,
     bool early_restart) {
-  SessionManagerClient* session_manager_client =
-      DBusThreadManager::Get()->GetSessionManagerClient();
-  if (!session_manager_client->SupportsRestartToApplyUserFlags())
+  if (!SessionManagerClient::Get()->SupportsRestartToApplyUserFlags())
     return false;
 
   if (ProfileHelper::IsSigninProfile(profile) ||
@@ -1128,7 +1125,7 @@ void UserSessionManager::StoreUserContextDataBeforeProfileIsCreated() {
 void UserSessionManager::StartCrosSession() {
   BootTimesRecorder* btl = BootTimesRecorder::Get();
   btl->AddLoginTimeMarker("StartSession-Start", false);
-  DBusThreadManager::Get()->GetSessionManagerClient()->StartSession(
+  SessionManagerClient::Get()->StartSession(
       cryptohome::CreateAccountIdentifierFromAccountId(
           user_context_.GetAccountId()));
   btl->AddLoginTimeMarker("StartSession-End", false);
@@ -1137,7 +1134,7 @@ void UserSessionManager::StartCrosSession() {
 void UserSessionManager::OnUserNetworkPolicyParsed(bool send_password) {
   if (send_password) {
     if (user_context_.GetPasswordKey()->GetSecret().size() > 0) {
-      DBusThreadManager::Get()->GetSessionManagerClient()->SaveLoginPassword(
+      SessionManagerClient::Get()->SaveLoginPassword(
           user_context_.GetPasswordKey()->GetSecret());
     } else {
       LOG(WARNING) << "Not saving password because password is empty.";
@@ -1886,7 +1883,7 @@ void UserSessionManager::OnRestoreActiveSessions(
     LOG(ERROR) << "Could not get list of active user sessions after crash.";
     // If we could not get list of active user sessions it is safer to just
     // sign out so that we don't get in the inconsistent state.
-    DBusThreadManager::Get()->GetSessionManagerClient()->StopSession();
+    SessionManagerClient::Get()->StopSession();
     return;
   }
 
@@ -2313,9 +2310,7 @@ void UserSessionManager::SetSwitchesForUser(
                         pair.second.end());
   }
 
-  SessionManagerClient* session_manager_client =
-      DBusThreadManager::Get()->GetSessionManagerClient();
-  session_manager_client->SetFlagsForUser(
+  SessionManagerClient::Get()->SetFlagsForUser(
       cryptohome::CreateAccountIdentifierFromAccountId(account_id),
       all_switches);
 }
