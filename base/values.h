@@ -86,7 +86,7 @@ class BASE_EXPORT Value {
   // See technical note below explaining why this is used.
   using DoubleStorage = struct { alignas(4) char v[sizeof(double)]; };
 
-  enum class Type {
+  enum class Type : unsigned char {
     NONE = 0,
     BOOLEAN,
     INTEGER,
