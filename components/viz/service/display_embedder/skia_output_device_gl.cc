@@ -119,4 +119,12 @@ gfx::SwapResponse SkiaOutputDeviceGL::PostSubBuffer(
       rect.x(), rect.y(), rect.width(), rect.height(), std::move(feedback)));
 }
 
+void SkiaOutputDeviceGL::EnsureBackbuffer() {
+  gl_surface_->SetBackbufferAllocation(true);
+}
+
+void SkiaOutputDeviceGL::DiscardBackbuffer() {
+  gl_surface_->SetBackbufferAllocation(false);
+}
+
 }  // namespace viz

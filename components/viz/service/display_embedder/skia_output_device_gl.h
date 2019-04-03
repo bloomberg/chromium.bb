@@ -51,6 +51,8 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice {
   gfx::SwapResponse SwapBuffers(BufferPresentedCallback feedback) override;
   gfx::SwapResponse PostSubBuffer(const gfx::Rect& rect,
                                   BufferPresentedCallback feedback) override;
+  void EnsureBackbuffer() override;
+  void DiscardBackbuffer() override;
 
  private:
   const gpu::SurfaceHandle surface_handle_;

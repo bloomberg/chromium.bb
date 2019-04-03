@@ -28,12 +28,12 @@ void SkiaOutputDeviceOffscreen::Reshape(const gfx::Size& size,
                                         float device_scale_factor,
                                         const gfx::ColorSpace& color_space,
                                         bool has_alpha) {
-  auto image_info = SkImageInfo::Make(
+  image_info_ = SkImageInfo::Make(
       size.width(), size.height(),
       has_alpha_ ? kRGBA_8888_SkColorType : kRGB_888x_SkColorType,
       has_alpha_ ? kPremul_SkAlphaType : kOpaque_SkAlphaType);
   draw_surface_ = SkSurface::MakeRenderTarget(
-      gr_context_, SkBudgeted::kNo, image_info, 0 /* sampleCount */,
+      gr_context_, SkBudgeted::kNo, image_info_, 0 /* sampleCount */,
       capabilities_.flipped_output_surface ? kTopLeft_GrSurfaceOrigin
                                            : kBottomLeft_GrSurfaceOrigin,
       nullptr /* surfaceProps */);
@@ -52,6 +52,20 @@ gfx::SwapResponse SkiaOutputDeviceOffscreen::SwapBuffers(
 
   StartSwapBuffers(std::move(feedback));
   return FinishSwapBuffers(gfx::SwapResult::SWAP_ACK);
+}
+
+void SkiaOutputDeviceOffscreen::EnsureBackbuffer() {
+  if (!image_info_.isEmpty() && !draw_surface_) {
+    draw_surface_ = SkSurface::MakeRenderTarget(
+        gr_context_, SkBudgeted::kNo, image_info_, 0 /* sampleCount */,
+        capabilities_.flipped_output_surface ? kTopLeft_GrSurfaceOrigin
+                                             : kBottomLeft_GrSurfaceOrigin,
+        nullptr /* surfaceProps */);
+  }
+}
+
+void SkiaOutputDeviceOffscreen::DiscardBackbuffer() {
+  draw_surface_.reset();
 }
 
 }  // namespace viz

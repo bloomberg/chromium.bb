@@ -58,4 +58,7 @@ gfx::SwapResponse SkiaOutputDevice::FinishSwapBuffers(gfx::SwapResult result) {
   return response;
 }
 
+void SkiaOutputDevice::EnsureBackbuffer() {}
+void SkiaOutputDevice::DiscardBackbuffer() {}
+
 }  // namespace viz
