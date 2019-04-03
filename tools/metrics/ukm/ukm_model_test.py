@@ -34,7 +34,16 @@ PRETTY_XML = """
       </history>
     </aggregation>
   </metric>
-  <metric name="Metric2"/>
+  <metric name="Metric2">
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration export="False"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Metric3"/>
 </event>
 
 </ukm-configuration>
