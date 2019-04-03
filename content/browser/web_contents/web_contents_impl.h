@@ -344,6 +344,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void SetAudioMuted(bool mute) override;
   bool IsCurrentlyAudible() override;
   bool IsConnectedToBluetoothDevice() override;
+  bool IsConnectedToSerialPort() const override;
   bool HasPictureInPictureVideo() override;
   bool IsCrashed() override;
   void SetIsCrashed(base::TerminationStatus status, int error_code) override;
@@ -936,6 +937,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Modify the counter of connected devices for this WebContents.
   void IncrementBluetoothConnectedDeviceCount();
   void DecrementBluetoothConnectedDeviceCount();
+
+  // Modify the counter of frames in this WebContents actively using serial
+  // ports.
+  void IncrementSerialActiveFrameCount();
+  void DecrementSerialActiveFrameCount();
 
   // Called when the WebContents gains or loses a persistent video.
   void SetHasPersistentVideo(bool has_persistent_video);
@@ -1756,7 +1762,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Created on-demand to mute all audio output from this WebContents.
   std::unique_ptr<WebContentsAudioMuter> audio_muter_;
 
-  size_t bluetooth_connected_device_count_;
+  size_t bluetooth_connected_device_count_ = 0;
+  size_t serial_active_frame_count_ = 0;
 
   bool has_picture_in_picture_video_ = false;
 

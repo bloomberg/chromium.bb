@@ -1910,6 +1910,9 @@ base::string16 BrowserView::GetAccessibleTabLabel(bool include_app_name,
     case TabAlertState::BLUETOOTH_CONNECTED:
       return l10n_util::GetStringFUTF16(
           IDS_TAB_AX_LABEL_BLUETOOTH_CONNECTED_FORMAT, title);
+    case TabAlertState::SERIAL_CONNECTED:
+      return l10n_util::GetStringFUTF16(
+          IDS_TAB_AX_LABEL_SERIAL_CONNECTED_FORMAT, title);
     case TabAlertState::MEDIA_RECORDING:
       return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_MEDIA_RECORDING_FORMAT,
                                         title);
@@ -1922,7 +1925,6 @@ base::string16 BrowserView::GetAccessibleTabLabel(bool include_app_name,
     case TabAlertState::PIP_PLAYING:
       return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_PIP_PLAYING_FORMAT,
                                         title);
-
     case TabAlertState::DESKTOP_CAPTURING:
       return l10n_util::GetStringFUTF16(
           IDS_TAB_AX_LABEL_DESKTOP_CAPTURING_FORMAT, title);

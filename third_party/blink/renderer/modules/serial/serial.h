@@ -36,11 +36,17 @@ class Serial final : public EventTargetWithInlineData,
   ExecutionContext* GetExecutionContext() const override;
   const AtomicString& InterfaceName() const override;
 
+  // ContextLifecycleObserver
+  void ContextDestroyed(ExecutionContext*) override;
+
+  // Web-exposed interfaces
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connect, kConnect)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect, kDisconnect)
   ScriptPromise getPorts(ScriptState*);
   ScriptPromise requestPort(ScriptState*, const SerialPortRequestOptions*);
 
+  void GetPort(const base::UnguessableToken& token,
+               device::mojom::blink::SerialPortRequest request);
   void Trace(Visitor*) override;
 
  private:
