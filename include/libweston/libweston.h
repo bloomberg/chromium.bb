@@ -299,6 +299,7 @@ struct weston_output {
 
 	enum weston_hdcp_protection desired_protection;
 	enum weston_hdcp_protection current_protection;
+	bool allow_protection;
 
 	void (*start_repaint_loop)(struct weston_output *output);
 	int (*repaint)(struct weston_output *output,
@@ -2457,6 +2458,10 @@ weston_head_from_resource(struct wl_resource *resource);
 
 struct weston_head *
 weston_output_get_first_head(struct weston_output *output);
+
+void
+weston_output_allow_protection(struct weston_output *output,
+			       bool allow_protection);
 
 int
 weston_compositor_enable_touch_calibrator(struct weston_compositor *compositor,

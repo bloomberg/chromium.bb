@@ -545,6 +545,15 @@ multiheaded environment with a single compositor for multiple output and input
 configurations. The default seat is called "default" and will always be
 present. This seat can be constrained like any other.
 .RE
+.TP 7
+.BI "allow_hdcp=" true
+Allows HDCP support for this output. If set to true, HDCP can be tried for the
+content-protection, provided by the backends, on this output.
+The content-protection can actually be realized, only if the hardwares (source
+and sink) support HDCP, and the backend has the implementation of
+content-protection protocol. By default, HDCP support is always allowed for an
+output.
+.RE
 .SH "INPUT-METHOD SECTION"
 .TP 7
 .BI "path=" "@weston_libexecdir@/weston-keyboard"

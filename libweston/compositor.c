@@ -6036,6 +6036,7 @@ weston_output_init(struct weston_output *output,
 	wl_signal_init(&output->user_destroy_signal);
 	output->enabled = false;
 	output->desired_protection = WESTON_HDCP_DISABLE;
+	output->allow_protection = true;
 
 	wl_list_init(&output->head_list);
 
@@ -6487,6 +6488,23 @@ weston_output_get_first_head(struct weston_output *output)
 
 	return container_of(output->head_list.next,
 			    struct weston_head, output_link);
+}
+
+/** Allow/Disallow content-protection support for an output
+ *
+ * This function sets the allow_protection member for an output. Setting of
+ * this field will allow the compositor to attempt content-protection for this
+ * output, for a backend that supports the content-protection protocol.
+ *
+ * \param output The weston_output for whom the content-protection is to be
+ * allowed.
+ * \param allow_protection The bool value which is to be set.
+ */
+WL_EXPORT void
+weston_output_allow_protection(struct weston_output *output,
+			       bool allow_protection)
+{
+	output->allow_protection = allow_protection;
 }
 
 static void
