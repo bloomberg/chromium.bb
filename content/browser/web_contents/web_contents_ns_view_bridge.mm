@@ -41,16 +41,11 @@ WebContentsNSViewBridge::~WebContentsNSViewBridge() {
   [cocoa_view_ removeFromSuperview];
 }
 
-void WebContentsNSViewBridge::SetParentNSView(
-    uint64_t parent_ns_view_id,
-    const std::vector<uint8_t>& parent_token) {
+void WebContentsNSViewBridge::SetParentNSView(uint64_t parent_ns_view_id) {
   NSView* parent_ns_view = ui::NSViewIds::GetNSView(parent_ns_view_id);
   // If the browser passed an invalid handle, then there is no recovery.
   CHECK(parent_ns_view);
   [parent_ns_view addSubview:cocoa_view_];
-
-  // TODO(https://crbug.com/924955): Ignore the accessibility token because
-  // using it causes crashes.
 }
 
 void WebContentsNSViewBridge::ResetParentNSView() {

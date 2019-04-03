@@ -316,9 +316,6 @@ void RenderWidgetHostViewMac::SetParentUiLayer(ui::Layer* parent_ui_layer) {
 
 void RenderWidgetHostViewMac::SetParentAccessibilityElement(
     id parent_accessibility_element) {
-  // Set the parent only for the in-browser-process RenderWidgetHostViewCocoa.
-  // TODO(https://crbug.com/944698): Don't even involve the
-  // RenderWidgetHostViewCocoa in the accessibility tree.
   [cocoa_view() setAccessibilityParentElement:parent_accessibility_element];
 }
 
@@ -1935,13 +1932,6 @@ void RenderWidgetHostViewMac::StartSpeaking() {
 
 void RenderWidgetHostViewMac::StopSpeaking() {
   ui::TextServicesContextMenu::StopSpeaking();
-}
-
-void RenderWidgetHostViewMac::SyncGetRootAccessibilityElement(
-    SyncGetRootAccessibilityElementCallback callback) {
-  id element_id = GetRootBrowserAccessibilityElement();
-  std::move(callback).Run(
-      getpid(), ui::RemoteAccessibility::GetTokenForLocalElement(element_id));
 }
 
 void RenderWidgetHostViewMac::SetRemoteAccessibilityWindowToken(
