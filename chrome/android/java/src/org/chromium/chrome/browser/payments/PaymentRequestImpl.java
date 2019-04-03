@@ -109,13 +109,6 @@ public class PaymentRequestImpl
      */
     public interface PaymentRequestServiceObserverForTest {
         /**
-         * Called after an instance of PaymentRequestImpl has been created.
-         *
-         * @param paymentRequest The newly created instance of PaymentRequestImpl.
-         */
-        void onPaymentRequestCreated(PaymentRequestImpl paymentRequest);
-
-        /**
          * Called when an abort request was denied.
          */
         void onPaymentRequestServiceUnableToAbort();
@@ -309,7 +302,6 @@ public class PaymentRequestImpl
     private boolean mHideServerAutofillInstruments;
     private ContactEditor mContactEditor;
     private boolean mHasRecordedAbortReason;
-    private boolean mWaitForUpdatedDetails;
     private Map<String, CurrencyFormatter> mCurrencyFormatterMap;
     private TabModelSelector mObservedTabModelSelector;
     private TabModel mObservedTabModel;
@@ -383,8 +375,6 @@ public class PaymentRequestImpl
 
         mJourneyLogger = new JourneyLogger(mIsIncognito, mWebContents);
         mCurrencyFormatterMap = new HashMap<>();
-
-        if (sObserverForTest != null) sObserverForTest.onPaymentRequestCreated(this);
     }
 
     /**
@@ -482,19 +472,7 @@ public class PaymentRequestImpl
         }
         mJourneyLogger.setRequestedPaymentMethodTypes(mMerchantSupportsAutofillPaymentInstruments,
                 requestedMethodGoogle, requestedMethodOther);
-        calculateWhetherShouldSkipShowingPaymentRequestUi(
-                false /* skipUiForNonUrlPaymentMethodIdentifiersForTest */);
-    }
 
-    /**
-     * Calculate whether the browser payment sheet should be skipped directly into the payment app.
-     *
-     * @param skipUiForNonUrlPaymentMethodIdentifiersForTest Whether non-URL payment method
-     *                                                       identifiers should skip UI. Used only
-     *                                                       in tests.
-     */
-    private void calculateWhetherShouldSkipShowingPaymentRequestUi(
-            boolean skipUiForNonUrlPaymentMethodIdentifiersForTest) {
         // If there is a single payment method and the merchant has not requested any other
         // information, we can safely go directly to the payment app instead of showing
         // Payment Request UI.
@@ -507,8 +485,7 @@ public class PaymentRequestImpl
                 // This excludes AutofillPaymentApp as its UI is rendered inline in
                 // the payment request UI, thus can't be skipped.
                 && mMethodData.keySet().iterator().next() != null
-                && (mMethodData.keySet().iterator().next().startsWith(UrlConstants.HTTPS_URL_PREFIX)
-                        || skipUiForNonUrlPaymentMethodIdentifiersForTest);
+                && mMethodData.keySet().iterator().next().startsWith(UrlConstants.HTTPS_URL_PREFIX);
     }
 
     /** @return Whether the UI was built. */
@@ -549,7 +526,7 @@ public class PaymentRequestImpl
                     false /* includeNameInLabel */);
         }
 
-        if (mRequestShipping && !mWaitForUpdatedDetails) {
+        if (mRequestShipping) {
             createShippingSection(activity, Collections.unmodifiableList(profiles));
         }
 
@@ -645,7 +622,7 @@ public class PaymentRequestImpl
      * Called by the merchant website to show the payment request to the user.
      */
     @Override
-    public void show(boolean isUserGesture, boolean waitForUpdatedDetails) {
+    public void show(boolean isUserGesture) {
         if (mClient == null) return;
 
         if (mUI != null) {
@@ -680,8 +657,6 @@ public class PaymentRequestImpl
         }
 
         mIsUserGestureShow = isUserGesture;
-        mWaitForUpdatedDetails = waitForUpdatedDetails;
-
         if (!mShouldSkipShowingPaymentRequestUi) {
             if (!buildUI(chromeActivity)) return;
             mUI.show();
@@ -694,7 +669,7 @@ public class PaymentRequestImpl
         // If we are skipping showing the Payment Request UI, we should call into the
         // PaymentApp immediately after we determine the instruments are ready and UI is shown.
         if (mShouldSkipShowingPaymentRequestUi && isFinishedQueryingPaymentApps()
-                && mIsCurrentPaymentRequestShowing && !mWaitForUpdatedDetails) {
+                && mIsCurrentPaymentRequestShowing) {
             assert !mPaymentMethodsSection.isEmpty();
 
             PaymentInstrument selectedInstrument =
@@ -863,23 +838,10 @@ public class PaymentRequestImpl
     public void updateWith(PaymentDetails details) {
         if (mClient == null) return;
 
-        if (mWaitForUpdatedDetails) {
-            initializeWithUpdatedDetails(details);
-            return;
-        }
-
         if (mUI == null) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(
                     "PaymentRequestUpdateEvent.updateWith() called without PaymentRequest.show()");
-            return;
-        }
-
-        if (!mRequestShipping) {
-            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            disconnectFromClientWithDebugMessage(
-                    "PaymentRequestUpdateEvent.updateWith() called without passing a promise into "
-                    + "PaymentRequest.show() and without requestShipping:true");
             return;
         }
 
@@ -910,49 +872,6 @@ public class PaymentRequestImpl
         enableUserInterfaceAfterPaymentRequestUpdateEvent();
     }
 
-    private void initializeWithUpdatedDetails(PaymentDetails details) {
-        assert mWaitForUpdatedDetails;
-
-        ChromeActivity chromeActivity = ChromeActivity.fromWebContents(mWebContents);
-        if (chromeActivity == null) {
-            mJourneyLogger.setNotShown(NotShownReason.OTHER);
-            disconnectFromClientWithDebugMessage("Unable to find Chrome activity");
-            return;
-        }
-
-        if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return;
-
-        if (details.total == null) {
-            mJourneyLogger.setNotShown(NotShownReason.OTHER);
-            disconnectFromClientWithDebugMessage(
-                    "PaymentRequestUpdateEvent.updateWith() called without a total amount when "
-                    + "resolving the promise passed into PaymentRequest.show()");
-            return;
-        }
-
-        if (!TextUtils.isEmpty(details.error)) {
-            mJourneyLogger.setNotShown(NotShownReason.OTHER);
-            disconnectFromClientWithDebugMessage(
-                    "PaymentRequestUpdateEvent.updateWith() called with an error when resolving "
-                    + "the promise passed into PaymentRequest.show()");
-            return;
-        }
-
-        if (mRequestShipping) {
-            createShippingSection(chromeActivity,
-                    Collections.unmodifiableList(
-                            PersonalDataManager.getInstance().getProfilesToSuggest(
-                                    false /* includeNameInLabel */)));
-        }
-
-        if (!mShouldSkipShowingPaymentRequestUi) {
-            enableUserInterfaceAfterPaymentRequestUpdateEvent();
-        }
-
-        mWaitForUpdatedDetails = false;
-        triggerPaymentAppUiSkipIfApplicable(chromeActivity);
-    }
-
     /**
      * Called when the merchant received a new shipping address, shipping option, or payment method
      * info, but did not update the payment details in response.
@@ -977,13 +896,11 @@ public class PaymentRequestImpl
     }
 
     private void enableUserInterfaceAfterPaymentRequestUpdateEvent() {
-        if (mPaymentInformationCallback != null && mPaymentMethodsSection != null) {
+        if (mPaymentInformationCallback != null) {
             providePaymentInformation();
         } else {
             mUI.updateOrderSummarySection(mUiShoppingCart);
-            if (mRequestShipping) {
-                mUI.updateSection(PaymentRequestUI.DataType.SHIPPING_OPTIONS, mUiShippingOptions);
-            }
+            mUI.updateSection(PaymentRequestUI.DataType.SHIPPING_OPTIONS, mUiShippingOptions);
         }
     }
 
@@ -1207,7 +1124,7 @@ public class PaymentRequestImpl
     public void getDefaultPaymentInformation(Callback<PaymentInformation> callback) {
         mPaymentInformationCallback = callback;
 
-        if (mPaymentMethodsSection == null || mWaitForUpdatedDetails) return;
+        if (mPaymentMethodsSection == null) return;
 
         mHandler.post(() -> {
             if (mUI != null) providePaymentInformation();
@@ -1967,9 +1884,7 @@ public class PaymentRequestImpl
         updateInstrumentModifiedTotals();
 
         // UI has requested the full list of payment instruments. Provide it now.
-        if (mPaymentInformationCallback != null && !mWaitForUpdatedDetails) {
-            providePaymentInformation();
-        }
+        if (mPaymentInformationCallback != null) providePaymentInformation();
 
         SettingsAutofillAndPaymentsObserver.getInstance().registerObserver(this);
 
@@ -2206,12 +2121,6 @@ public class PaymentRequestImpl
     @VisibleForTesting
     public static void setIsLocalCanMakePaymentQueryQuotaEnforcedForTest() {
         sIsLocalCanMakePaymentQueryQuotaEnforcedForTest = true;
-    }
-
-    @VisibleForTesting
-    /* package */ void setSkipUIForNonURLPaymentMethodIdentifiersForTest() {
-        calculateWhetherShouldSkipShowingPaymentRequestUi(
-                true /* skipUiForNonUrlPaymentMethodIdentifiersForTest */);
     }
 
     /**
