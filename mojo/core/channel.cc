@@ -22,7 +22,6 @@
 #include "mojo/public/cpp/platform/features.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-#include "base/debug/dump_without_crashing.h"
 #include "base/mac/mach_logging.h"
 #elif defined(OS_WIN)
 #include "base/win/win_util.h"
@@ -798,11 +797,6 @@ Channel::DispatchResult Channel::TryDispatchMessage(
 }
 
 void Channel::OnError(Error error) {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  // TODO(crbug.com/946372): Remove when fixed.
-  if (base::FeatureList::IsEnabled(features::kMojoChannelMac))
-    base::debug::DumpWithoutCrashing();
-#endif
   if (delegate_)
     delegate_->OnChannelError(error);
 }
