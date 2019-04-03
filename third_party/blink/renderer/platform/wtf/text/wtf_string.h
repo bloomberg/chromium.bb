@@ -485,8 +485,8 @@ class WTF_EXPORT String {
   static String Make8BitFrom16BitSource(const UChar*,
                                         wtf_size_t) WARN_UNUSED_RESULT;
   template <wtf_size_t inlineCapacity>
-  static String Make8BitFrom16BitSource(
-      const Vector<UChar, inlineCapacity>& buffer) WARN_UNUSED_RESULT {
+  static WARN_UNUSED_RESULT String
+  Make8BitFrom16BitSource(const Vector<UChar, inlineCapacity>& buffer) {
     return Make8BitFrom16BitSource(buffer.data(), buffer.size());
   }
 
