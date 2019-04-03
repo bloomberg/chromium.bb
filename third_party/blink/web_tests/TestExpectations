@@ -6160,3 +6160,6 @@ crbug.com/947023 external/wpt/fetch/sec-metadata/xslt.tentative.https.sub.html [
 # Sheriff 2019-04-02
 crbug.com/947690 [ Debug ] http/tests/history/back-during-beforeunload.html [ Pass Failure ]
 crbug.com/948785 [ Debug ] virtual/user-activation-v2/fast/events/pointerevents/pointer-event-consumed-touchstart-in-slop-region.html [ Pass Failure ]
+
+# Sheriff 2019-04-03
+crbug.com/947951 [ Win7 ] external/wpt/pointerevents/pointerevent_touch-action-inherit_child-auto-child-none_touch.html [ Pass Failure ]
