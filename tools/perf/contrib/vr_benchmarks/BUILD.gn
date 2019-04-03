@@ -37,7 +37,10 @@ group("vr_perf_tests") {
       "//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk",
     ]
 
-    data_deps += [ "//chrome/android:vr_nfc_simulator_apk" ]
+    data_deps += [
+      "//chrome/android:chrome_modern_public_bundle",
+      "//chrome/android:vr_nfc_simulator_apk",
+    ]
 
     # We'll only ever use the assets if it's a Chrome-branded build. We don't have
     # a way of checking whether the files are actually present to copy, but the
