@@ -151,12 +151,14 @@ TEST(PaymentRequestUpdateEventTest, AddressChangeUpdateWithTimeout) {
   request->show(scope.GetScriptState())
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall(&error_message));
 
-  event->OnUpdateEventTimeoutForTesting();
+  static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
+      ->OnShippingAddressChange(BuildPaymentAddressForTest());
+  request->OnUpdatePaymentDetailsTimeoutForTesting();
 
   v8::MicrotasksScope::PerformCheckpoint(scope.GetScriptState()->GetIsolate());
   EXPECT_EQ(
-      "AbortError: Timed out waiting for a response to a "
-      "'shippingaddresschange' event",
+      "AbortError: Timed out waiting for a "
+      "PaymentRequestUpdateEvent.updateWith(promise) to resolve.",
       error_message);
 
   event->updateWith(
@@ -165,7 +167,9 @@ TEST(PaymentRequestUpdateEventTest, AddressChangeUpdateWithTimeout) {
           ->Promise(),
       scope.GetExceptionState());
 
-  EXPECT_FALSE(scope.GetExceptionState().HadException());
+  EXPECT_TRUE(scope.GetExceptionState().HadException());
+  EXPECT_EQ("PaymentRequest is no longer interactive",
+            scope.GetExceptionState().Message());
 }
 
 TEST(PaymentRequestUpdateEventTest, OptionChangeUpdateWithTimeout) {
@@ -185,12 +189,14 @@ TEST(PaymentRequestUpdateEventTest, OptionChangeUpdateWithTimeout) {
   request->show(scope.GetScriptState())
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall(&error_message));
 
-  event->OnUpdateEventTimeoutForTesting();
+  static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
+      ->OnShippingAddressChange(BuildPaymentAddressForTest());
+  request->OnUpdatePaymentDetailsTimeoutForTesting();
 
   v8::MicrotasksScope::PerformCheckpoint(scope.GetScriptState()->GetIsolate());
   EXPECT_EQ(
-      "AbortError: Timed out waiting for a response to a "
-      "'shippingoptionchange' event",
+      "AbortError: Timed out waiting for a "
+      "PaymentRequestUpdateEvent.updateWith(promise) to resolve.",
       error_message);
 
   event->updateWith(
@@ -199,7 +205,9 @@ TEST(PaymentRequestUpdateEventTest, OptionChangeUpdateWithTimeout) {
           ->Promise(),
       scope.GetExceptionState());
 
-  EXPECT_FALSE(scope.GetExceptionState().HadException());
+  EXPECT_TRUE(scope.GetExceptionState().HadException());
+  EXPECT_EQ("PaymentRequest is no longer interactive",
+            scope.GetExceptionState().Message());
 }
 
 TEST(PaymentRequestUpdateEventTest, AddressChangePromiseTimeout) {
@@ -215,21 +223,23 @@ TEST(PaymentRequestUpdateEventTest, AddressChangePromiseTimeout) {
   event->SetTrusted(true);
   event->SetPaymentRequest(request);
   event->SetEventPhase(Event::kCapturingPhase);
-  auto* payment_details =
-      MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState());
   String error_message;
   request->show(scope.GetScriptState())
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall(&error_message));
+  static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
+      ->OnShippingAddressChange(BuildPaymentAddressForTest());
+  auto* payment_details =
+      MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState());
   event->updateWith(scope.GetScriptState(), payment_details->Promise(),
                     scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
 
-  event->OnUpdateEventTimeoutForTesting();
+  request->OnUpdatePaymentDetailsTimeoutForTesting();
 
   v8::MicrotasksScope::PerformCheckpoint(scope.GetScriptState()->GetIsolate());
   EXPECT_EQ(
-      "AbortError: Timed out waiting for a response to a "
-      "'shippingaddresschange' event",
+      "AbortError: Timed out waiting for a "
+      "PaymentRequestUpdateEvent.updateWith(promise) to resolve.",
       error_message);
 
   payment_details->Resolve("foo");
@@ -248,21 +258,23 @@ TEST(PaymentRequestUpdateEventTest, OptionChangePromiseTimeout) {
   event->SetTrusted(true);
   event->SetPaymentRequest(request);
   event->SetEventPhase(Event::kCapturingPhase);
-  auto* payment_details =
-      MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState());
   String error_message;
   request->show(scope.GetScriptState())
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall(&error_message));
+  static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
+      ->OnShippingAddressChange(BuildPaymentAddressForTest());
+  auto* payment_details =
+      MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState());
   event->updateWith(scope.GetScriptState(), payment_details->Promise(),
                     scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
 
-  event->OnUpdateEventTimeoutForTesting();
+  request->OnUpdatePaymentDetailsTimeoutForTesting();
 
   v8::MicrotasksScope::PerformCheckpoint(scope.GetScriptState()->GetIsolate());
   EXPECT_EQ(
-      "AbortError: Timed out waiting for a response to a "
-      "'shippingoptionchange' event",
+      "AbortError: Timed out waiting for a "
+      "PaymentRequestUpdateEvent.updateWith(promise) to resolve.",
       error_message);
 
   payment_details->Resolve("foo");

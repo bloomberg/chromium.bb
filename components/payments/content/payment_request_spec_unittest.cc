@@ -32,6 +32,8 @@ class PaymentRequestSpecTest : public testing::Test,
 
   void RecreateSpecWithOptionsAndDetails(mojom::PaymentOptionsPtr options,
                                          mojom::PaymentDetailsPtr details) {
+    if (!details->total)
+      details->total = mojom::PaymentItem::New();
     spec_ = std::make_unique<PaymentRequestSpec>(
         std::move(options), std::move(details),
         std::vector<mojom::PaymentMethodDataPtr>(), this, "en-US");

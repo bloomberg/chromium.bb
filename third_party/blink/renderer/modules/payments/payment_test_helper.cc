@@ -205,6 +205,13 @@ payments::mojom::blink::PaymentResponsePtr BuildPaymentResponseForTest() {
   return result;
 }
 
+payments::mojom::blink::PaymentAddressPtr BuildPaymentAddressForTest() {
+  payments::mojom::blink::PaymentAddressPtr result =
+      payments::mojom::blink::PaymentAddress::New();
+  result->country = "US";
+  return result;
+}
+
 void MakePaymentRequestOriginSecure(Document& document) {
   document.SetSecurityOrigin(
       SecurityOrigin::Create(KURL("https://www.example.com/")));
