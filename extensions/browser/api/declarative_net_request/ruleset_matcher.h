@@ -7,8 +7,10 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "components/url_pattern_index/url_pattern_index.h"
+#include "extensions/browser/api/declarative_net_request/flat/extension_ruleset_generated.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -81,10 +83,14 @@ class RulesetMatcher {
   ~RulesetMatcher();
 
   // Returns whether the ruleset has a matching blocking rule.
-  bool HasMatchingBlockRule(const RequestParams& params) const;
+  bool HasMatchingBlockRule(const RequestParams& params) const {
+    return GetMatchingRule(params, flat::ActionIndex_block);
+  }
 
   // Returns whether the ruleset has a matching allow rule.
-  bool HasMatchingAllowRule(const RequestParams& params) const;
+  bool HasMatchingAllowRule(const RequestParams& params) const {
+    return GetMatchingRule(params, flat::ActionIndex_allow);
+  }
 
   // Returns whether the ruleset has a matching redirect rule. Populates
   // |redirect_url| on returning true. |redirect_url| must not be null.
@@ -106,12 +112,19 @@ class RulesetMatcher {
 
   explicit RulesetMatcher(std::string ruleset_data, size_t id, size_t priority);
 
+  const url_pattern_index::flat::UrlRule* GetMatchingRule(
+      const RequestParams& params,
+      flat::ActionIndex index,
+      UrlPatternIndexMatcher::FindRuleStrategy strategy =
+          UrlPatternIndexMatcher::FindRuleStrategy::kAny) const;
+
   const std::string ruleset_data_;
 
   const flat::ExtensionIndexedRuleset* const root_;
-  const UrlPatternIndexMatcher blocking_matcher_;
-  const UrlPatternIndexMatcher allowing_matcher_;
-  const UrlPatternIndexMatcher redirect_matcher_;
+
+  // UrlPatternIndexMatchers corresponding to entries in flat::ActionIndex.
+  const std::vector<UrlPatternIndexMatcher> matchers_;
+
   const ExtensionMetadataList* const metadata_list_;
 
   size_t id_;

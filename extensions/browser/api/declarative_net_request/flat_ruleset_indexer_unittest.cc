@@ -206,9 +206,12 @@ void AddRulesAndVerifyIndex(const std::vector<IndexedRule>& blocking_rules,
       flat::GetExtensionIndexedRuleset(data.data());
   ASSERT_TRUE(ruleset);
 
-  VerifyIndexEquality(blocking_rules, ruleset->blocking_index());
-  VerifyIndexEquality(allowing_rules, ruleset->allowing_index());
-  VerifyIndexEquality(redirect_rules, ruleset->redirect_index());
+  VerifyIndexEquality(blocking_rules,
+                      ruleset->index_list()->Get(flat::ActionIndex_block));
+  VerifyIndexEquality(allowing_rules,
+                      ruleset->index_list()->Get(flat::ActionIndex_allow));
+  VerifyIndexEquality(redirect_rules,
+                      ruleset->index_list()->Get(flat::ActionIndex_redirect));
   VerifyExtensionMetadata(redirect_rules, ruleset->extension_metadata());
 }
 

@@ -13,7 +13,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
 #include "content/public/common/resource_type.h"
-#include "extensions/browser/api/declarative_net_request/flat/extension_ruleset_generated.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
@@ -28,10 +27,6 @@ namespace {
 
 using FindRuleStrategy =
     url_pattern_index::UrlPatternIndexMatcher::FindRuleStrategy;
-
-// Don't exclude generic rules from being matched. A generic rule is one with
-// an empty included domains list.
-const bool kDisableGenericRules = false;
 
 // Maps content::ResourceType to flat_rule::ElementType.
 flat_rule::ElementType GetElementType(content::ResourceType type) {
@@ -93,6 +88,19 @@ bool IsThirdPartyRequest(const GURL& url, const url::Origin& document_origin) {
       net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 }
 
+std::vector<url_pattern_index::UrlPatternIndexMatcher> GetMatchers(
+    const flat::ExtensionIndexedRuleset* root) {
+  DCHECK(root);
+  DCHECK(root->index_list());
+  DCHECK_EQ(flat::ActionIndex_count, root->index_list()->size());
+
+  std::vector<url_pattern_index::UrlPatternIndexMatcher> matchers;
+  matchers.reserve(flat::ActionIndex_count);
+  for (const flat_rule::UrlPatternIndex* index : *(root->index_list()))
+    matchers.emplace_back(index);
+  return matchers;
+}
+
 }  // namespace
 
 RequestParams::RequestParams(const WebRequestInfo& info)
@@ -145,34 +153,13 @@ RulesetMatcher::LoadRulesetResult RulesetMatcher::CreateVerifiedMatcher(
 
 RulesetMatcher::~RulesetMatcher() = default;
 
-bool RulesetMatcher::HasMatchingBlockRule(const RequestParams& params) const {
-  DCHECK(params.url);
-  return blocking_matcher_.FindMatch(
-      *params.url, params.first_party_origin, params.element_type,
-      flat_rule::ActivationType_NONE, params.is_third_party,
-      kDisableGenericRules, FindRuleStrategy::kAny);
-}
-
-bool RulesetMatcher::HasMatchingAllowRule(const RequestParams& params) const {
-  DCHECK(params.url);
-  return allowing_matcher_.FindMatch(
-      *params.url, params.first_party_origin, params.element_type,
-      flat_rule::ActivationType_NONE, params.is_third_party,
-      kDisableGenericRules, FindRuleStrategy::kAny);
-}
-
 bool RulesetMatcher::HasMatchingRedirectRule(const RequestParams& params,
                                              GURL* redirect_url) const {
   DCHECK(redirect_url);
-  DCHECK(params.url);
   DCHECK_NE(flat_rule::ElementType_WEBSOCKET, params.element_type);
 
-  // Retrieve the highest priority matching rule corresponding to the given
-  // request parameters.
-  const flat_rule::UrlRule* rule = redirect_matcher_.FindMatch(
-      *params.url, params.first_party_origin, params.element_type,
-      flat_rule::ActivationType_NONE, params.is_third_party,
-      kDisableGenericRules, FindRuleStrategy::kHighestPriority);
+  const flat_rule::UrlRule* rule = GetMatchingRule(
+      params, flat::ActionIndex_redirect, FindRuleStrategy::kHighestPriority);
   if (!rule)
     return false;
 
@@ -196,12 +183,28 @@ RulesetMatcher::RulesetMatcher(std::string ruleset_data,
                                size_t priority)
     : ruleset_data_(std::move(ruleset_data)),
       root_(flat::GetExtensionIndexedRuleset(ruleset_data_.data())),
-      blocking_matcher_(root_->blocking_index()),
-      allowing_matcher_(root_->allowing_index()),
-      redirect_matcher_(root_->redirect_index()),
+      matchers_(GetMatchers(root_)),
       metadata_list_(root_->extension_metadata()),
       id_(id),
       priority_(priority) {}
+
+const flat_rule::UrlRule* RulesetMatcher::GetMatchingRule(
+    const RequestParams& params,
+    flat::ActionIndex index,
+    FindRuleStrategy strategy) const {
+  DCHECK_LT(index, flat::ActionIndex_count);
+  DCHECK_GE(index, 0);
+  DCHECK(params.url);
+
+  // Don't exclude generic rules from being matched. A generic rule is one with
+  // an empty included domains list.
+  const bool kDisableGenericRules = false;
+
+  return matchers_[index].FindMatch(
+      *params.url, params.first_party_origin, params.element_type,
+      flat_rule::ActivationType_NONE, params.is_third_party,
+      kDisableGenericRules, strategy);
+}
 
 }  // namespace declarative_net_request
 }  // namespace extensions
