@@ -17,6 +17,7 @@
 #include "media/filters/vp9_parser.h"
 #include "media/gpu/accelerated_video_decoder.h"
 #include "media/gpu/vp9_picture.h"
+#include "media/gpu/vp9_reference_frame_vector.h"
 
 namespace media {
 
@@ -59,12 +60,11 @@ class MEDIA_GPU_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
     // |lf_params| does not need to remain valid after this method returns.
     //
     // Return true when successful, false otherwise.
-    virtual bool SubmitDecode(
-        const scoped_refptr<VP9Picture>& pic,
-        const Vp9SegmentationParams& segm_params,
-        const Vp9LoopFilterParams& lf_params,
-        const std::vector<scoped_refptr<VP9Picture>>& ref_pictures,
-        const base::Closure& done_cb) = 0;
+    virtual bool SubmitDecode(const scoped_refptr<VP9Picture>& pic,
+                              const Vp9SegmentationParams& segm_params,
+                              const Vp9LoopFilterParams& lf_params,
+                              const Vp9ReferenceFrameVector& reference_frames,
+                              const base::Closure& done_cb) = 0;
 
     // Schedule output (display) of |pic|.
     //
@@ -92,8 +92,9 @@ class MEDIA_GPU_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
     DISALLOW_COPY_AND_ASSIGN(VP9Accelerator);
   };
 
-  VP9Decoder(std::unique_ptr<VP9Accelerator> accelerator,
-             const VideoColorSpace& container_color_space = VideoColorSpace());
+  explicit VP9Decoder(
+      std::unique_ptr<VP9Accelerator> accelerator,
+      const VideoColorSpace& container_color_space = VideoColorSpace());
   ~VP9Decoder() override;
 
   // AcceleratedVideoDecoder implementation.
@@ -146,7 +147,7 @@ class MEDIA_GPU_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
   const VideoColorSpace container_color_space_;
 
   // Reference frames currently in use.
-  std::vector<scoped_refptr<VP9Picture>> ref_frames_;
+  Vp9ReferenceFrameVector ref_frames_;
 
   // Current coded resolution.
   gfx::Size pic_size_;

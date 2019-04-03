@@ -27,7 +27,7 @@ class VaapiVP9Accelerator : public VP9Decoder::VP9Accelerator {
   bool SubmitDecode(const scoped_refptr<VP9Picture>& pic,
                     const Vp9SegmentationParams& seg,
                     const Vp9LoopFilterParams& lf,
-                    const std::vector<scoped_refptr<VP9Picture>>& ref_pictures,
+                    const Vp9ReferenceFrameVector& reference_frames,
                     const base::Closure& done_cb) override;
 
   bool OutputPicture(const scoped_refptr<VP9Picture>& pic) override;
