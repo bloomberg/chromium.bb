@@ -74,6 +74,7 @@ import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabAssociatedApp;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
@@ -648,7 +649,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
     private void recordClientConnectionStatus() {
         String packageName =
-                (getActivityTab() == null) ? null : getActivityTab().getAppAssociatedWith();
+                (getActivityTab() == null) ? null : TabAssociatedApp.getAppId(getActivityTab());
         if (packageName == null) return; // No associated package
 
         boolean isConnected =

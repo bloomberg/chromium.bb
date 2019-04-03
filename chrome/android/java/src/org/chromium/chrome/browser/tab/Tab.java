@@ -205,12 +205,6 @@ public class Tab
     private String mUrl;
 
     /**
-     * The external application that this Tab is associated with (null if not associated with any
-     * app). Allows reusing of tabs opened from the same application.
-     */
-    private String mAppAssociatedWith;
-
-    /**
      * True while a page load is in progress.
      */
     private boolean mIsLoading;
@@ -370,12 +364,10 @@ public class Tab
      */
     private void restoreFieldsFromState(TabState state) {
         assert state != null;
-        mAppAssociatedWith = state.openerAppId;
+        state.restoreFields(this);
         mFrozenContentsState = state.contentsState;
         mTimestampMillis = state.timestampMillis;
         mUrl = state.getVirtualUrlFromState();
-
-        TabThemeColorHelper.get(this).updateFromTabState(state);
         mTitle = state.getDisplayTitleFromState();
         mLaunchTypeAtCreation = state.tabLaunchTypeAtCreation;
         mRootId = state.rootId == Tab.INVALID_TAB_ID ? mId : state.rootId;
@@ -443,11 +435,6 @@ public class Tab
                 mIsNativePageCommitPending = maybeShowNativePage(params.getUrl(), false);
             }
 
-            // Clear the app association if the user navigated to a different page from the omnibox.
-            if ((params.getTransitionType() & PageTransition.FROM_ADDRESS_BAR)
-                    == PageTransition.FROM_ADDRESS_BAR) {
-                mAppAssociatedWith = null;
-            }
             if ("chrome://java-crash/".equals(params.getUrl())) {
                 return handleJavaCrash();
             }
@@ -1787,29 +1774,6 @@ public class Tab
     }
 
     /**
-     * @see #setAppAssociatedWith(String) for more information.
-     * TODO(aurimas): investigate reducing the visibility of this method after TabModel refactoring.
-     *
-     * @return The id of the application associated with that tab (null if not
-     *         associated with an app).
-     */
-    public String getAppAssociatedWith() {
-        return mAppAssociatedWith;
-    }
-
-    /**
-     * Associates this tab with the external app with the specified id. Once a Tab is associated
-     * with an app, it is reused when a new page is opened from that app (unless the user typed in
-     * the location bar or in the page, in which case the tab is dissociated from any app)
-     * TODO(aurimas): investigate reducing the visibility of this method after TabModel refactoring.
-     *
-     * @param appId The ID of application associated with the tab.
-     */
-    public void setAppAssociatedWith(String appId) {
-        mAppAssociatedWith = appId;
-    }
-
-    /**
      * @return See {@link #mTimestampMillis}.
      */
     long getTimestampMillis() {
@@ -2124,15 +2088,6 @@ public class Tab
      */
     protected boolean isRendererUnresponsive() {
         return mIsRendererUnresponsive;
-    }
-
-    /**
-     * @return Whether or not the tab was opened by an app other than Chrome.
-     */
-    public boolean isCreatedForExternalApp() {
-        String packageName = ContextUtils.getApplicationContext().getPackageName();
-        return getLaunchType() == TabLaunchType.FROM_EXTERNAL_APP
-                && !TextUtils.equals(getAppAssociatedWith(), packageName);
     }
 
     /**

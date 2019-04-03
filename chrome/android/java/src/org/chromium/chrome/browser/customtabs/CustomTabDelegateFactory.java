@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.fullscreen.ComposedBrowserControlsVisibilityD
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabAssociatedApp;
 import org.chromium.chrome.browser.tab.TabContextMenuItemDelegate;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate;
@@ -272,8 +273,8 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
         if (mIsOpenedByChrome) {
             mNavigationDelegate = new ExternalNavigationDelegateImpl(tab);
         } else {
-            mNavigationDelegate = new CustomTabNavigationDelegate(tab, tab.getAppAssociatedWith(),
-                    mExternalAuthUtils);
+            mNavigationDelegate = new CustomTabNavigationDelegate(
+                    tab, TabAssociatedApp.getAppId(tab), mExternalAuthUtils);
         }
         return new ExternalNavigationHandler(mNavigationDelegate);
     }

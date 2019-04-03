@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.compositor.CompositorView;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabAssociatedApp;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
@@ -1117,7 +1118,7 @@ public class VrShell extends GvrLayout
             // If hitting back would minimize Chrome, disable the back button.
             // See ChromeTabbedActivity#handleBackPressed().
             willCloseTab = ChromeTabbedActivity.backShouldCloseTab(mTab)
-                    && !mTab.isCreatedForExternalApp();
+                    && !TabAssociatedApp.isOpenedFromExternalApp(mTab);
         }
         boolean canGoBack = mTab.canGoBack() || willCloseTab;
         boolean canGoForward = mTab.canGoForward();

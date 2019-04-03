@@ -13,8 +13,6 @@ import org.chromium.chrome.browser.media.ui.MediaSessionTabHelper;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
 import org.chromium.components.content_capture.ContentCaptureFeatures;
 import org.chromium.components.content_capture.ContentCaptureReceiverManager;
-import org.chromium.content_public.browser.ImeAdapter;
-import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
@@ -58,26 +56,11 @@ public final class TabHelpers {
         SwipeRefreshHandler.from(tab);
         TabFavicon.from(tab);
         TrustedCdn.from(tab);
+        TabAssociatedApp.from(tab);
 
         WebContents webContents = tab.getWebContents();
 
         // Initializes WebContents objects.
-
-        // TODO(jinsukkim): Split this up into a new userdata and FullscreenHandler.
-        ImeAdapter.fromWebContents(webContents).addEventObserver(new ImeEventObserver() {
-            @Override
-            public void onImeEvent() {
-                // Some text was set in the page. Don't reuse it if a tab is open from the same
-                // external application, we might lose some user data.
-                tab.setAppAssociatedWith(null);
-            }
-
-            @Override
-            public void onNodeAttributeUpdated(boolean editable, boolean password) {
-                if (tab.getFullscreenManager() == null) return;
-                tab.updateFullscreenEnabledState();
-            }
-        });
         SelectionPopupController.fromWebContents(webContents)
                 .setActionModeCallback(new ChromeActionModeCallback(tab, webContents));
 
