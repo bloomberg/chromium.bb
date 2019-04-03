@@ -20,6 +20,7 @@
 #include "components/viz/common/gpu/context_lost_observer.h"
 #include "components/viz/common/gpu/context_lost_reason.h"
 #include "components/viz/common/resources/platform_color.h"
+#include "components/viz/common/viz_utils.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
@@ -73,8 +74,7 @@ gpu::ContextCreationAttribs CreateAttributes(
     NOTREACHED();
   }
 
-  if (!requires_alpha_channel &&
-      base::SysInfo::AmountOfPhysicalMemoryMB() <= 512) {
+  if (!requires_alpha_channel && PreferRGB565ResourcesForDisplay()) {
     // See compositor_impl_android.cc for more information about this.
     // It is inside GetCompositorContextAttributes().
     attributes.alpha_size = 0;
