@@ -956,6 +956,7 @@ if (enable_vr || (enable_arcore && package_arcore)) {
           ]
 
       data = [
+        "//chrome/test/data/android/",
         "//chrome/android/shared_preference_files/test/",
         "//components/test/data/js_dialogs/render_tests/",
         "//components/test/data/permission_dialogs/render_tests/",

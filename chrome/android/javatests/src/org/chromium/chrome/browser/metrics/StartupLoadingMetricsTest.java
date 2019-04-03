@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.webapps.WebApkActivity;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -54,8 +55,8 @@ public class StartupLoadingMetricsTest {
     private static final String WEBAPK_SUFFIX = WebApkActivity.STARTUP_UMA_HISTOGRAM_SUFFIX;
 
     @Rule
-    public ChromeActivityTestRule<ChromeTabbedActivity> mTabbedActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeTabbedActivity.class);
+    public ChromeTabbedActivityTestRule mTabbedActivityTestRule =
+            new ChromeTabbedActivityTestRule();
     @Rule
     public ChromeActivityTestRule<WebApkActivity> mWebApkActivityTestRule =
             new ChromeActivityTestRule<>(WebApkActivity.class);
