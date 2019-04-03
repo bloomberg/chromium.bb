@@ -40,6 +40,7 @@
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/crypto/normalize_algorithm.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
@@ -331,6 +332,9 @@ class MODULES_EXPORT RTCPeerConnection final
       bool success);
   void NoteVoidRequestCompleted(RTCSetSessionDescriptionOperation operation,
                                 bool success);
+  static void GenerateCertificateCompleted(
+      ScriptPromiseResolver* resolver,
+      rtc::scoped_refptr<rtc::RTCCertificate> certificate);
   // Checks if the document that the peer connection lives in has ever executed
   // getUserMedia().
   bool HasDocumentMedia() const;

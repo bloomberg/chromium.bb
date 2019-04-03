@@ -31,12 +31,11 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_CERTIFICATE_GENERATOR_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_CERTIFICATE_GENERATOR_H_
 
-#include "third_party/blink/public/platform/web_callbacks.h"
+#include <memory>
+
 #include "third_party/blink/public/platform/web_rtc_key_params.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
-
-#include <memory>
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -45,7 +44,7 @@ class SingleThreadTaskRunner;
 namespace blink {
 
 using WebRTCCertificateCallback =
-    WebCallbacks<rtc::scoped_refptr<rtc::RTCCertificate>, void>;
+    base::OnceCallback<void(rtc::scoped_refptr<rtc::RTCCertificate>)>;
 
 // Interface defining a class that can generate WebRTCCertificates
 // asynchronously.
@@ -58,12 +57,12 @@ class WebRTCCertificateGenerator {
   // completed.
   virtual void GenerateCertificate(
       const WebRTCKeyParams&,
-      std::unique_ptr<WebRTCCertificateCallback> observer,
+      WebRTCCertificateCallback completion_callback,
       scoped_refptr<base::SingleThreadTaskRunner>) = 0;
   virtual void GenerateCertificateWithExpiration(
       const WebRTCKeyParams&,
       uint64_t expires_ms,
-      std::unique_ptr<WebRTCCertificateCallback> observer,
+      WebRTCCertificateCallback completion_callback,
       scoped_refptr<base::SingleThreadTaskRunner>) = 0;
 
   // Determines if the parameters are supported by |GenerateCertificate|.

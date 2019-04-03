@@ -277,30 +277,6 @@ OfferExtmapAllowMixedSetting GetOfferExtmapAllowMixedSetting(
              : OfferExtmapAllowMixedSetting::kDisabled;
 }
 
-// Helper class for RTCPeerConnection::generateCertificate.
-class WebRTCCertificateObserver : public WebRTCCertificateCallback {
- public:
-  // Takes ownership of |resolver|.
-  static WebRTCCertificateObserver* Create(ScriptPromiseResolver* resolver) {
-    return new WebRTCCertificateObserver(resolver);
-  }
-
-  ~WebRTCCertificateObserver() override = default;
-
- private:
-  explicit WebRTCCertificateObserver(ScriptPromiseResolver* resolver)
-      : resolver_(resolver) {}
-
-  void OnSuccess(rtc::scoped_refptr<rtc::RTCCertificate> certificate) override {
-    resolver_->Resolve(
-        MakeGarbageCollected<RTCCertificate>(std::move(certificate)));
-  }
-
-  void OnError() override { resolver_->Reject(); }
-
-  Persistent<ScriptPromiseResolver> resolver_;
-};
-
 webrtc::PeerConnectionInterface::IceTransportsType IceTransportPolicyFromString(
     const String& policy) {
   if (policy == "relay")
@@ -1168,6 +1144,18 @@ void RTCPeerConnection::NoteVoidRequestCompleted(
   }
 }
 
+void RTCPeerConnection::GenerateCertificateCompleted(
+    ScriptPromiseResolver* resolver,
+    rtc::scoped_refptr<rtc::RTCCertificate> certificate) {
+  if (!certificate) {
+    resolver->Reject();
+    return;
+  }
+
+  resolver->Resolve(
+      MakeGarbageCollected<RTCCertificate>(std::move(certificate)));
+}
+
 bool RTCPeerConnection::HasDocumentMedia() const {
   UserMediaController* user_media_controller = UserMediaController::From(
       To<Document>(GetExecutionContext())->GetFrame());
@@ -1649,8 +1637,10 @@ ScriptPromise RTCPeerConnection::generateCertificate(
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  std::unique_ptr<WebRTCCertificateObserver> certificate_observer(
-      WebRTCCertificateObserver::Create(resolver));
+  // Helper closure callback for RTCPeerConnection::generateCertificate.
+  auto completion_callback =
+      WTF::Bind(RTCPeerConnection::GenerateCertificateCompleted,
+                WrapPersistent(resolver));
 
   // Generate certificate. The |certificateObserver| will resolve the promise
   // asynchronously upon completion. The observer will manage its own
@@ -1660,10 +1650,10 @@ ScriptPromise RTCPeerConnection::generateCertificate(
           ->GetTaskRunner(blink::TaskType::kInternalMedia);
   if (!expires) {
     certificate_generator->GenerateCertificate(
-        key_params.value(), std::move(certificate_observer), task_runner);
+        key_params.value(), std::move(completion_callback), task_runner);
   } else {
     certificate_generator->GenerateCertificateWithExpiration(
-        key_params.value(), expires.value(), std::move(certificate_observer),
+        key_params.value(), expires.value(), std::move(completion_callback),
         task_runner);
   }
 

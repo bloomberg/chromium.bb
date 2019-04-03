@@ -320,14 +320,14 @@ class TestWebRTCCertificateGenerator
     : public blink::WebRTCCertificateGenerator {
   void GenerateCertificate(
       const blink::WebRTCKeyParams& key_params,
-      std::unique_ptr<blink::WebRTCCertificateCallback> callback,
+      blink::WebRTCCertificateCallback completion_callback,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
     NOTIMPLEMENTED();
   }
   void GenerateCertificateWithExpiration(
       const blink::WebRTCKeyParams& key_params,
       uint64_t expires_ms,
-      std::unique_ptr<blink::WebRTCCertificateCallback> callback,
+      blink::WebRTCCertificateCallback completion_callback,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
     NOTIMPLEMENTED();
   }
