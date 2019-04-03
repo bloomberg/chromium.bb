@@ -294,8 +294,11 @@ void SynchronousCompositorProxy::BeginFrame(
     needs_begin_frame_for_animate_input_ = false;
     input_handler_proxy_->SynchronouslyAnimate(args.frame_time);
   }
-  if (needs_begin_frame_for_frame_sink_ && layer_tree_frame_sink_)
-    layer_tree_frame_sink_->BeginFrame(args, presentation_feedbacks);
+  if (layer_tree_frame_sink_) {
+    layer_tree_frame_sink_->DidPresentCompositorFrame(presentation_feedbacks);
+    if (needs_begin_frame_for_frame_sink_)
+      layer_tree_frame_sink_->BeginFrame(args);
+  }
 
   SyncCompositorCommonRendererParams param;
   PopulateCommonParams(&param);

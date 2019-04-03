@@ -543,14 +543,17 @@ void SynchronousLayerTreeFrameSink::OnNeedsBeginFrames(
   }
 }
 
-void SynchronousLayerTreeFrameSink::BeginFrame(
-    const viz::BeginFrameArgs& args,
+void SynchronousLayerTreeFrameSink::DidPresentCompositorFrame(
     const viz::PresentationFeedbackMap& presentation_feedbacks) {
-  if (client_) {
-    for (const auto& pair : presentation_feedbacks) {
-      client_->DidPresentCompositorFrame(pair.first, pair.second);
-    }
+  if (!client_)
+    return;
+  for (const auto& pair : presentation_feedbacks) {
+    client_->DidPresentCompositorFrame(pair.first, pair.second);
   }
+}
+
+void SynchronousLayerTreeFrameSink::BeginFrame(
+    const viz::BeginFrameArgs& args) {
   if (external_begin_frame_source_)
     external_begin_frame_source_->OnBeginFrame(args);
 }
