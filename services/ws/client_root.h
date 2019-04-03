@@ -15,6 +15,7 @@
 #include "components/viz/host/host_frame_sink_client.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tree_host_observer.h"
+#include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -46,6 +47,7 @@ class WindowTree;
 class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
     : public aura::WindowObserver,
       public aura::WindowTreeHostObserver,
+      public display::DisplayObserver,
       public viz::HostFrameSinkClient {
  public:
   ClientRoot(WindowTree* window_tree, aura::Window* window, bool is_top_level);
@@ -155,8 +157,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
 
   // aura::WindowTreeHostObserver:
   void OnHostResized(aura::WindowTreeHost* host) override;
-  void OnHostMovedInPixels(aura::WindowTreeHost* host,
-                           const gfx::Point& new_origin_in_pixels) override;
+
+  // display::DisplayObsever:
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t changed_metrics) override;
 
   // viz::HostFrameSinkClient:
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
