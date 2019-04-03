@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
@@ -148,14 +149,39 @@ std::vector<dnr_api::Rule> RemoveRulesFromVector(
   return result;
 }
 
-// Helper to create the new list of dynamic rules. Returns false on failure.
+UpdateDynamicRulesStatus GetStatusForLoadRulesetError(
+    RulesetMatcher::LoadRulesetResult result) {
+  using Result = RulesetMatcher::LoadRulesetResult;
+  switch (result) {
+    case Result::kLoadSuccess:
+      break;
+    case Result::kLoadErrorInvalidPath:
+      return UpdateDynamicRulesStatus::kErrorCreateMatcher_InvalidPath;
+    case Result::kLoadErrorFileRead:
+      return UpdateDynamicRulesStatus::kErrorCreateMatcher_FileReadError;
+    case Result::kLoadErrorChecksumMismatch:
+      return UpdateDynamicRulesStatus::kErrorCreateMatcher_ChecksumMismatch;
+    case Result::kLoadErrorVersionMismatch:
+      return UpdateDynamicRulesStatus::kErrorCreateMatcher_VersionMismatch;
+    case Result::kLoadResultMax:
+      break;
+  }
+
+  NOTREACHED();
+  return UpdateDynamicRulesStatus::kSuccess;
+}
+
+// Helper to create the new list of dynamic rules. Returns false on failure and
+// populates |error| and |status|.
 bool GetNewDynamicRules(const RulesetSource& source,
                         std::vector<dnr_api::Rule> rules,
                         DynamicRuleUpdateAction action,
                         std::vector<dnr_api::Rule>* new_rules,
-                        std::string* error) {
+                        std::string* error,
+                        UpdateDynamicRulesStatus* status) {
   DCHECK(new_rules);
   DCHECK(error);
+  DCHECK(status);
 
   // Read the current set of rules. Note: this is trusted JSON and hence it is
   // ok to parse in the browser itself.
@@ -171,6 +197,7 @@ bool GetNewDynamicRules(const RulesetSource& source,
   // - kJSONParseError, kJSONIsNotList: These denote JSON ruleset corruption.
   //   Assume the current set of rules is empty.
   if (result.status == ReadJSONRulesResult::Status::kFileReadError) {
+    *status = UpdateDynamicRulesStatus::kErrorReadJSONRules;
     *error = kInternalErrorUpdatingDynamicRules;
     return false;
   }
@@ -186,6 +213,7 @@ bool GetNewDynamicRules(const RulesetSource& source,
   }
 
   if (new_rules->size() > source.rule_count_limit()) {
+    *status = UpdateDynamicRulesStatus::kErrorRuleCountExceeded;
     *error = kDynamicRuleCountExceeded;
     return false;
   }
@@ -194,22 +222,22 @@ bool GetNewDynamicRules(const RulesetSource& source,
 }
 
 // Returns true on success and populates |ruleset_checksum|. Returns false on
-// failure and populates |error|.
+// failure and populates |error| and |status|.
 bool UpdateAndIndexDynamicRules(
     const RulesetSource& source,
     std::vector<api::declarative_net_request::Rule> rules,
     DynamicRuleUpdateAction action,
     int* ruleset_checksum,
-    std::string* error) {
+    std::string* error,
+    UpdateDynamicRulesStatus* status) {
   DCHECK(ruleset_checksum);
   DCHECK(error);
+  DCHECK(status);
 
-  // TODO(crbug.com/930961): Add histograms for the various cases in which
-  // updating dynamic rules can fail.
   std::vector<dnr_api::Rule> new_rules;
-  if (!GetNewDynamicRules(source, std::move(rules), action, &new_rules,
-                          error)) {
-    return false;  // |error| already populated.
+  if (!GetNewDynamicRules(source, std::move(rules), action, &new_rules, error,
+                          status)) {
+    return false;  // |error| and |status| already populated.
   }
 
   // Initially write the new JSON and indexed rulesets to temporary files to
@@ -219,12 +247,14 @@ bool UpdateAndIndexDynamicRules(
                                            source.rule_count_limit());
   if (!temporary_source) {
     *error = kInternalErrorUpdatingDynamicRules;
+    *status = UpdateDynamicRulesStatus::kErrorCreateTemporarySource;
     return false;
   }
 
   // Persist JSON.
   if (!temporary_source->WriteRulesToJSON(new_rules)) {
     *error = kInternalErrorUpdatingDynamicRules;
+    *status = UpdateDynamicRulesStatus::kErrorWriteTemporaryJSONRuleset;
     return false;
   }
 
@@ -233,6 +263,9 @@ bool UpdateAndIndexDynamicRules(
                                                           ruleset_checksum);
   if (info.result() != ParseResult::SUCCESS) {
     *error = info.GetErrorDescription();
+    *status = info.result() == ParseResult::ERROR_PERSISTING_RULESET
+                  ? UpdateDynamicRulesStatus::kErrorWriteTemporaryIndexedRuleset
+                  : UpdateDynamicRulesStatus::kErrorInvalidRules;
     return false;
   }
 
@@ -246,6 +279,7 @@ bool UpdateAndIndexDynamicRules(
   // base::ReplaceFile.
   if (!base::CreateDirectory(source.indexed_path().DirName())) {
     *error = kInternalErrorUpdatingDynamicRules;
+    *status = UpdateDynamicRulesStatus::kErrorCreateDynamicRulesDirectory;
     return false;
   }
 
@@ -255,6 +289,7 @@ bool UpdateAndIndexDynamicRules(
   if (!base::ReplaceFile(temporary_source->indexed_path(),
                          source.indexed_path(), nullptr /* error */)) {
     *error = kInternalErrorUpdatingDynamicRules;
+    *status = UpdateDynamicRulesStatus::kErrorReplaceIndexedFile;
     return false;
   }
 
@@ -267,6 +302,7 @@ bool UpdateAndIndexDynamicRules(
     // that the indexed ruleset checksum is inconsistent and reindex the JSON
     // ruleset.
     *error = kInternalErrorUpdatingDynamicRules;
+    *status = UpdateDynamicRulesStatus::kErrorReplaceJSONFile;
     return false;
   }
 
@@ -361,8 +397,11 @@ void FileSequenceHelper::UpdateDynamicRules(
   RulesetInfo& dynamic_ruleset = load_data.rulesets[0];
   DCHECK(!dynamic_ruleset.expected_checksum());
 
-  auto dispatch_callback = [&ui_callback,
-                            &load_data](base::Optional<std::string> error) {
+  auto log_status_and_dispatch_callback = [&ui_callback, &load_data](
+                                              base::Optional<std::string> error,
+                                              UpdateDynamicRulesStatus status) {
+    base::UmaHistogramEnumeration(kUpdateDynamicRulesStatusHistogram, status);
+
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(std::move(ui_callback), std::move(load_data),
@@ -371,24 +410,30 @@ void FileSequenceHelper::UpdateDynamicRules(
 
   int new_ruleset_checksum = -1;
   std::string error;
+  UpdateDynamicRulesStatus status = UpdateDynamicRulesStatus::kSuccess;
   if (!UpdateAndIndexDynamicRules(dynamic_ruleset.source(), std::move(rules),
-                                  action, &new_ruleset_checksum, &error)) {
+                                  action, &new_ruleset_checksum, &error,
+                                  &status)) {
     DCHECK(!error.empty());
-    dispatch_callback(std::move(error));
+    log_status_and_dispatch_callback(std::move(error), status);
     return;
   }
 
+  DCHECK_EQ(UpdateDynamicRulesStatus::kSuccess, status);
   dynamic_ruleset.set_expected_checksum(new_ruleset_checksum);
   dynamic_ruleset.set_new_checksum(new_ruleset_checksum);
   dynamic_ruleset.CreateVerifiedMatcher();
 
   if (!dynamic_ruleset.did_load_successfully()) {
-    dispatch_callback(kInternalErrorUpdatingDynamicRules);
+    status =
+        GetStatusForLoadRulesetError(dynamic_ruleset.load_ruleset_result());
+    log_status_and_dispatch_callback(kInternalErrorUpdatingDynamicRules,
+                                     status);
     return;
   }
 
   // Success.
-  dispatch_callback(base::nullopt);
+  log_status_and_dispatch_callback(base::nullopt, status);
 }
 
 void FileSequenceHelper::OnRulesetsReindexed(LoadRulesetsUICallback ui_callback,

@@ -33,6 +33,30 @@ enum class ParseResult {
   ERROR_INVALID_URL_FILTER,
 };
 
+// Describes the ways in which updating dynamic rules can fail.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class UpdateDynamicRulesStatus {
+  kSuccess = 0,
+  kErrorReadJSONRules = 1,
+  kErrorRuleCountExceeded = 2,
+  kErrorCreateTemporarySource = 3,
+  kErrorWriteTemporaryJSONRuleset = 4,
+  kErrorWriteTemporaryIndexedRuleset = 5,
+  kErrorInvalidRules = 6,
+  kErrorCreateDynamicRulesDirectory = 7,
+  kErrorReplaceIndexedFile = 8,
+  kErrorReplaceJSONFile = 9,
+  kErrorCreateMatcher_InvalidPath = 10,
+  kErrorCreateMatcher_FileReadError = 11,
+  kErrorCreateMatcher_ChecksumMismatch = 12,
+  kErrorCreateMatcher_VersionMismatch = 13,
+
+  // Magic constant used by histograms code. Should be equal to the largest enum
+  // value.
+  kMaxValue = kErrorCreateMatcher_VersionMismatch,
+};
+
 // Whether dynamic rules are to be added or removed.
 enum class DynamicRuleUpdateAction {
   kAdd,
@@ -67,6 +91,7 @@ extern const char kDynamicRuleCountExceeded[];
 // Histogram names.
 extern const char kIndexAndPersistRulesTimeHistogram[];
 extern const char kManifestRulesCountHistogram[];
+extern const char kUpdateDynamicRulesStatusHistogram[];
 
 }  // namespace declarative_net_request
 }  // namespace extensions
