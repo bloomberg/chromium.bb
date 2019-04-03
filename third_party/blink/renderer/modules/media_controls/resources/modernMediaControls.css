@@ -986,7 +986,7 @@ video::-internal-media-controls-text-track-list-header,
 audio::-internal-media-controls-text-track-list-item,
 video::-internal-media-controls-text-track-list-item {
   padding-left: 58px;
-  display: block;
+  justify-content: space-between;
 }
 
 audio::-internal-media-controls-text-track-list-header,
