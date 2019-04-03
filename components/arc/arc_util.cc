@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/arc/arc_features.h"
 #include "components/user_manager/user_manager.h"
@@ -178,14 +179,16 @@ bool IsArcAppWindow(const aura::Window* window) {
 }
 
 void SetArcCpuRestriction(bool do_restrict) {
-  if (!chromeos::SessionManagerClient::Get()) {
+  chromeos::SessionManagerClient* session_manager_client =
+      chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
+  if (!session_manager_client) {
     LOG(WARNING) << "SessionManagerClient is not available";
     return;
   }
   const login_manager::ContainerCpuRestrictionState state =
       do_restrict ? login_manager::CONTAINER_CPU_RESTRICTION_BACKGROUND
                   : login_manager::CONTAINER_CPU_RESTRICTION_FOREGROUND;
-  chromeos::SessionManagerClient::Get()->SetArcCpuRestriction(
+  session_manager_client->SetArcCpuRestriction(
       state, base::BindOnce(SetArcCpuRestrictionCallback, state));
 }
 

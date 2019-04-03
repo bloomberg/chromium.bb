@@ -23,6 +23,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/dbus/biod/fake_biod_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -60,11 +61,15 @@ class ScreenLockerTest : public InProcessBrowserTest {
   ~ScreenLockerTest() override = default;
 
   FakeSessionManagerClient* session_manager_client() {
-    return FakeSessionManagerClient::Get();
+    return fake_session_manager_client_;
   }
 
   // InProcessBrowserTest:
   void SetUpInProcessBrowserTestFixture() override {
+    fake_session_manager_client_ = new FakeSessionManagerClient;
+    DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+        std::unique_ptr<SessionManagerClient>(fake_session_manager_client_));
+
     zero_duration_mode_ =
         std::make_unique<ui::ScopedAnimationDurationScaleMode>(
             ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
@@ -96,6 +101,8 @@ class ScreenLockerTest : public InProcessBrowserTest {
 
  private:
   void OnStartSession(const dbus::ObjectPath& path) {}
+
+  FakeSessionManagerClient* fake_session_manager_client_ = nullptr;
 
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
 

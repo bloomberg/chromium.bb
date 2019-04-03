@@ -290,6 +290,7 @@ class AutoLaunchedKioskTest : public extensions::ExtensionApiTest {
       : install_attributes_(
             chromeos::StubInstallAttributes::CreateCloudManaged("domain.com",
                                                                 "device_id")),
+        fake_session_manager_(new PersistentSessionManagerClient()),
         fake_cws_(new FakeCWS) {
     set_chromeos_user_ = false;
   }
@@ -302,9 +303,6 @@ class AutoLaunchedKioskTest : public extensions::ExtensionApiTest {
   }
 
   void SetUp() override {
-    // Will be destroyed in ChromeBrowserMain.
-    fake_session_manager_ = new PersistentSessionManagerClient();
-
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
     AppLaunchController::SkipSplashWaitForTesting();
 
@@ -352,6 +350,8 @@ class AutoLaunchedKioskTest : public extensions::ExtensionApiTest {
 
     // Arbitrary non-empty state keys.
     fake_session_manager_->set_server_backed_state_keys({"1"});
+    DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+        std::move(fake_session_manager_));
 
     extensions::ExtensionApiTest::SetUpInProcessBrowserTestFixture();
   }
@@ -496,8 +496,7 @@ class AutoLaunchedKioskTest : public extensions::ExtensionApiTest {
   chromeos::ScopedStubInstallAttributes install_attributes_;
   policy::UserPolicyBuilder device_local_account_policy_;
   policy::DevicePolicyCrosTestHelper device_policy_helper_;
-  // Owned by SessionManagerClient global instance.
-  PersistentSessionManagerClient* fake_session_manager_;
+  std::unique_ptr<PersistentSessionManagerClient> fake_session_manager_;
   std::unique_ptr<FakeCWS> fake_cws_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoLaunchedKioskTest);

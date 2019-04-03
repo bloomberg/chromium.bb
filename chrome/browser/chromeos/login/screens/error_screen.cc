@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/browser_resources.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/network/network_connection_handler.h"
@@ -309,7 +310,9 @@ void ErrorScreen::OnLaunchOobeGuestSession() {
 }
 
 void ErrorScreen::OnLocalStateErrorPowerwashButtonClicked() {
-  SessionManagerClient::Get()->StartDeviceWipe();
+  chromeos::DBusThreadManager::Get()
+      ->GetSessionManagerClient()
+      ->StartDeviceWipe();
 }
 
 void ErrorScreen::OnRebootButtonClicked() {

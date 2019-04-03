@@ -26,6 +26,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_shill_manager_client.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -58,7 +59,7 @@ class DeviceDisablingTest
     : public OobeBaseTest,
       public NetworkStateInformer::NetworkStateInformerObserver {
  public:
-  DeviceDisablingTest() = default;
+  DeviceDisablingTest();
 
   // Sets up a device state blob that indicates the device is disabled.
   void SetDeviceDisabledPolicy();
@@ -81,18 +82,23 @@ class DeviceDisablingTest
   NetworkPortalDetectorMixin network_portal_detector_{&mixin_host_};
 
  private:
+  FakeSessionManagerClient* fake_session_manager_client_;
   policy::DevicePolicyCrosTestHelper test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceDisablingTest);
 };
 
 
+DeviceDisablingTest::DeviceDisablingTest()
+    : fake_session_manager_client_(new FakeSessionManagerClient) {
+}
+
 void DeviceDisablingTest::SetDeviceDisabledPolicy() {
   // Prepare a policy fetch response that indicates the device is disabled.
   test_helper_.device_policy()->policy_data().mutable_device_state()->
       set_device_mode(enterprise_management::DeviceState::DEVICE_MODE_DISABLED);
   test_helper_.device_policy()->Build();
-  FakeSessionManagerClient::Get()->set_device_policy(
+  fake_session_manager_client_->set_device_policy(
       test_helper_.device_policy()->GetBlob());
 }
 
@@ -104,7 +110,7 @@ void DeviceDisablingTest::MarkDisabledAndWaitForPolicyFetch() {
                                                run_loop.QuitClosure());
   SetDeviceDisabledPolicy();
   // Trigger a policy fetch.
-  FakeSessionManagerClient::Get()->OnPropertyChangeComplete(true);
+  fake_session_manager_client_->OnPropertyChangeComplete(true);
   // Wait for the policy fetch to complete and the disabled setting to change.
   run_loop.Run();
 }
@@ -122,10 +128,10 @@ std::string DeviceDisablingTest::GetCurrentScreenName(
 }
 
 void DeviceDisablingTest::SetUpInProcessBrowserTestFixture() {
-  // Override FakeSessionManagerClient. This will be shut down by the browser.
-  chromeos::SessionManagerClient::InitializeFakeInMemory();
-
   OobeBaseTest::SetUpInProcessBrowserTestFixture();
+
+  DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+      std::unique_ptr<SessionManagerClient>(fake_session_manager_client_));
 
   test_helper_.InstallOwnerKey();
   test_helper_.MarkAsEnterpriseOwned();

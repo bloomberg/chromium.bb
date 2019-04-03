@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
@@ -38,7 +39,8 @@ class ArcBootPhaseMonitorBridgeTest : public testing::Test {
         testing_profile_(std::make_unique<TestingProfile>()),
         disable_cpu_restriction_counter_(0),
         record_uma_counter_(0) {
-    chromeos::SessionManagerClient::InitializeFakeInMemory();
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+        std::make_unique<chromeos::FakeSessionManagerClient>());
 
     SetArcAvailableCommandLineForTesting(
         base::CommandLine::ForCurrentProcess());
@@ -57,7 +59,7 @@ class ArcBootPhaseMonitorBridgeTest : public testing::Test {
 
   ~ArcBootPhaseMonitorBridgeTest() override {
     boot_phase_monitor_bridge_->Shutdown();
-    chromeos::SessionManagerClient::Shutdown();
+    chromeos::DBusThreadManager::Shutdown();
   }
 
  protected:

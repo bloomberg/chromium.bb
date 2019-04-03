@@ -24,13 +24,16 @@ namespace policy {
 class TPMAutoUpdateModePolicyHandlerTest : public testing::Test {
  public:
   TPMAutoUpdateModePolicyHandlerTest() : weak_factory_(this) {}
-
   // testing::Test:
   void SetUp() override {
-    chromeos::SessionManagerClient::InitializeFakeInMemory();
+    testing::Test::SetUp();
+    fake_session_manager_client_ = new chromeos::FakeSessionManagerClient();
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+        std::unique_ptr<chromeos::SessionManagerClient>(
+            fake_session_manager_client_));
   }
 
-  void TearDown() override { chromeos::SessionManagerClient::Shutdown(); }
+  void TearDown() override { chromeos::DBusThreadManager::Shutdown(); }
 
   void SetAutoUpdateMode(AutoUpdateMode auto_update_mode) {
     base::DictionaryValue dict;
@@ -55,6 +58,8 @@ class TPMAutoUpdateModePolicyHandlerTest : public testing::Test {
                                                           "fake-id")};
   chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
 
+  chromeos::FakeSessionManagerClient* fake_session_manager_client_ = nullptr;
+
   base::WeakPtrFactory<TPMAutoUpdateModePolicyHandlerTest> weak_factory_;
 };
 
@@ -69,31 +74,29 @@ TEST_F(TPMAutoUpdateModePolicyHandlerTest, PolicyUpdatesTriggered) {
 
   update_available_ = true;
 
-  auto* fake_session_manager_client = chromeos::FakeSessionManagerClient::Get();
-
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(
-      0, fake_session_manager_client->start_tpm_firmware_update_call_count());
+      0, fake_session_manager_client_->start_tpm_firmware_update_call_count());
 
   SetAutoUpdateMode(AutoUpdateMode::kWithoutAcknowledgment);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(
-      1, fake_session_manager_client->start_tpm_firmware_update_call_count());
+      1, fake_session_manager_client_->start_tpm_firmware_update_call_count());
 
   SetAutoUpdateMode(AutoUpdateMode::kNever);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(
-      1, fake_session_manager_client->start_tpm_firmware_update_call_count());
+      1, fake_session_manager_client_->start_tpm_firmware_update_call_count());
 
   SetAutoUpdateMode(AutoUpdateMode::kWithoutAcknowledgment);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(
-      2, fake_session_manager_client->start_tpm_firmware_update_call_count());
+      2, fake_session_manager_client_->start_tpm_firmware_update_call_count());
 
   SetAutoUpdateMode(AutoUpdateMode::kEnrollment);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(
-      2, fake_session_manager_client->start_tpm_firmware_update_call_count());
+      2, fake_session_manager_client_->start_tpm_firmware_update_call_count());
 }
 
 // Verify that the DBus call to start TPM firmware update is not triggered if
@@ -109,8 +112,8 @@ TEST_F(TPMAutoUpdateModePolicyHandlerTest, NoUpdatesAvailable) {
 
   SetAutoUpdateMode(AutoUpdateMode::kWithoutAcknowledgment);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0, chromeos::FakeSessionManagerClient::Get()
-                   ->start_tpm_firmware_update_call_count());
+  EXPECT_EQ(
+      0, fake_session_manager_client_->start_tpm_firmware_update_call_count());
 }
 
 }  // namespace policy

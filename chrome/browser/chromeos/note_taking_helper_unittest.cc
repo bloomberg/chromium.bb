@@ -29,6 +29,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
@@ -203,8 +204,14 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
   ~NoteTakingHelperTest() override = default;
 
   void SetUp() override {
-    chromeos::SessionManagerClient::InitializeFakeInMemory();
-    chromeos::FakeSessionManagerClient::Get()->set_arc_available(true);
+    // This is needed to avoid log spam due to ArcSessionManager's
+    // RemoveArcData() calls failing.
+    if (DBusThreadManager::IsInitialized())
+      DBusThreadManager::Shutdown();
+    session_manager_client_ = new FakeSessionManagerClient();
+    session_manager_client_->set_arc_available(true);
+    DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+        std::unique_ptr<SessionManagerClient>(session_manager_client_));
 
     BrowserWithTestWindowTest::SetUp();
     InitExtensionService(profile());
@@ -222,7 +229,7 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
     }
     extensions::ExtensionSystem::Get(profile())->Shutdown();
     BrowserWithTestWindowTest::TearDown();
-    chromeos::SessionManagerClient::Shutdown();
+    DBusThreadManager::Shutdown();
   }
 
  protected:
@@ -492,6 +499,7 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
   // Has Init() been called?
   bool initialized_ = false;
 
+  FakeSessionManagerClient* session_manager_client_ = nullptr;  // Not owned.
   ArcAppTest arc_test_;
   std::unique_ptr<arc::ArcIntentHelperBridge> intent_helper_bridge_;
   service_manager::TestConnectorFactory connector_factory_;

@@ -781,9 +781,11 @@ void AutoEnrollmentController::OnFirmwareManagementParametersRemoved(
 
   // D-Bus services may not be available yet, so we call
   // WaitForServiceToBeAvailable. See https://crbug.com/841627.
-  SessionManagerClient::Get()->WaitForServiceToBeAvailable(
-      base::BindOnce(&AutoEnrollmentController::StartClearForcedReEnrollmentVpd,
-                     weak_ptr_factory_.GetWeakPtr()));
+  DBusThreadManager::Get()
+      ->GetSessionManagerClient()
+      ->WaitForServiceToBeAvailable(base::BindOnce(
+          &AutoEnrollmentController::StartClearForcedReEnrollmentVpd,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AutoEnrollmentController::StartClearForcedReEnrollmentVpd(
@@ -796,9 +798,11 @@ void AutoEnrollmentController::StartClearForcedReEnrollmentVpd(
     return;
   }
 
-  SessionManagerClient::Get()->ClearForcedReEnrollmentVpd(
-      base::BindOnce(&AutoEnrollmentController::OnForcedReEnrollmentVpdCleared,
-                     weak_ptr_factory_.GetWeakPtr()));
+  DBusThreadManager::Get()
+      ->GetSessionManagerClient()
+      ->ClearForcedReEnrollmentVpd(base::BindOnce(
+          &AutoEnrollmentController::OnForcedReEnrollmentVpdCleared,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AutoEnrollmentController::OnForcedReEnrollmentVpdCleared(bool reply) {

@@ -53,7 +53,6 @@
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_handler.h"
@@ -130,7 +129,7 @@ BrowserPolicyConnectorChromeOS::BrowserPolicyConnectorChromeOS()
               device_active_directory_policy_manager_));
     } else {
       state_keys_broker_ = std::make_unique<ServerBackedStateKeysBroker>(
-          chromeos::SessionManagerClient::Get());
+          chromeos::DBusThreadManager::Get()->GetSessionManagerClient());
 
       base::FilePath device_policy_external_data_path;
       CHECK(base::PathService::Get(chromeos::DIR_DEVICE_POLICY_EXTERNAL_DATA,
@@ -182,7 +181,7 @@ void BrowserPolicyConnectorChromeOS::Init(
   if (!chromeos::InstallAttributes::Get()->IsActiveDirectoryManaged()) {
     device_local_account_policy_service_ =
         std::make_unique<DeviceLocalAccountPolicyService>(
-            chromeos::SessionManagerClient::Get(),
+            chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
             chromeos::DeviceSettingsService::Get(),
             chromeos::CrosSettings::Get(),
             affiliated_invalidation_service_provider_.get(),

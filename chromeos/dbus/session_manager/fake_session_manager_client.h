@@ -32,20 +32,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSessionManagerClient
     kInMemory,  // Store policy in memory only. Usually used for tests.
   };
 
-  // Constructs a FakeSessionManagerClient with PolicyStorageType == kInMemory.
-  // NOTE: This is different from SessionManagerClient::InitializeFake which
-  // constructs an instance with PolicyStorageType == kOnDisk. Use
-  // SessionManagerClient::InitializeFakeInMemory when replacing this.
   FakeSessionManagerClient();
-
   explicit FakeSessionManagerClient(PolicyStorageType policy_storage);
-
   ~FakeSessionManagerClient() override;
 
-  // Returns the fake global instance if initialized. May return null.
-  static FakeSessionManagerClient* Get();
-
   // SessionManagerClient overrides
+  void Init(dbus::Bus* bus) override;
   void SetStubDelegate(StubDelegate* delegate) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;

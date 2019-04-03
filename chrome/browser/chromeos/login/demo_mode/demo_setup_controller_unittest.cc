@@ -25,7 +25,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
@@ -101,7 +100,6 @@ class DemoSetupControllerTest : public testing::Test {
   void SetUp() override {
     SystemSaltGetter::Initialize();
     DBusThreadManager::Initialize();
-    SessionManagerClient::InitializeFake();
     DeviceSettingsService::Initialize();
     TestingBrowserProcess::GetGlobal()
         ->platform_part()
@@ -114,7 +112,6 @@ class DemoSetupControllerTest : public testing::Test {
 
   void TearDown() override {
     EnterpriseEnrollmentHelper::SetEnrollmentHelperMock(nullptr);
-    SessionManagerClient::Shutdown();
     DBusThreadManager::Shutdown();
     SystemSaltGetter::Shutdown();
     DeviceSettingsService::Shutdown();

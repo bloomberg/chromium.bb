@@ -14,16 +14,13 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
+#include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "third_party/cros_system_api/dbus/login_manager/dbus-constants.h"
 
 namespace cryptohome {
 class AccountIdentifier;
-}
-
-namespace dbus {
-class Bus;
 }
 
 namespace login_manager {
@@ -35,7 +32,7 @@ class UpgradeArcContainerRequest;
 namespace chromeos {
 
 // SessionManagerClient is used to communicate with the session manager.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) SessionManagerClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) SessionManagerClient : public DBusClient {
  public:
   // The result type received from session manager on request to retrieve the
   // policy. Used to define the buckets for an enumerated UMA histogram.
@@ -94,21 +91,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) SessionManagerClient {
     // short-circuited and the screen is locked immediately.
     virtual void LockScreenForStub() = 0;
   };
-
-  // Creates and initializes the global instance. |bus| must not be null.
-  static void Initialize(dbus::Bus* bus);
-
-  // Creates and initializes a fake global instance if not already created.
-  static void InitializeFake();
-
-  // Creates and initializes an InMemory fake global instance for testing.
-  static void InitializeFakeInMemory();
-
-  // Destroys the global instance which must have been initialized.
-  static void Shutdown();
-
-  // Returns the global instance if initialized. May return null.
-  static SessionManagerClient* Get();
 
   // Sets the delegate used by the stub implementation. Ownership of |delegate|
   // remains with the caller.
@@ -380,10 +362,14 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) SessionManagerClient {
   virtual void GetArcStartTime(
       DBusMethodCallback<base::TimeTicks> callback) = 0;
 
+  // Creates the instance.
+  static SessionManagerClient* Create(DBusClientImplementationType type);
+
+  ~SessionManagerClient() override;
+
  protected:
-  // Use Initialize/Shutdown instead.
+  // Create() should be used instead.
   SessionManagerClient();
-  virtual ~SessionManagerClient();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionManagerClient);

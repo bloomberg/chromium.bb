@@ -468,6 +468,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, SamlUI) {
   base::ReplaceSubstringsAfterOffset(&js, 0, "$Host", kIdPHost);
   test::OobeJS().ExpectTrue(js);
 
+
   content::DOMMessageQueue message_queue;  // Observe before 'cancel'.
   SetupAuthFlowChangeListener();
   // Click on 'cancel'.
@@ -904,8 +905,13 @@ class SAMLPolicyTest : public SamlTest {
 
  protected:
   policy::DevicePolicyCrosTestHelper test_helper_;
+
+  // FakeDBusThreadManager uses FakeSessionManagerClient.
+  FakeSessionManagerClient* fake_session_manager_client_;
   policy::DevicePolicyBuilder* device_policy_;
+
   policy::MockConfigurationPolicyProvider provider_;
+
   net::CookieList cookie_list_;
 
  private:
@@ -913,12 +919,14 @@ class SAMLPolicyTest : public SamlTest {
 };
 
 SAMLPolicyTest::SAMLPolicyTest()
-    : device_policy_(test_helper_.device_policy()) {}
+    : fake_session_manager_client_(new FakeSessionManagerClient),
+      device_policy_(test_helper_.device_policy()) {}
 
 SAMLPolicyTest::~SAMLPolicyTest() {}
 
 void SAMLPolicyTest::SetUpInProcessBrowserTestFixture() {
-  SessionManagerClient::InitializeFakeInMemory();
+  DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+      std::unique_ptr<SessionManagerClient>(fake_session_manager_client_));
 
   SamlTest::SetUpInProcessBrowserTestFixture();
 
@@ -926,7 +934,7 @@ void SAMLPolicyTest::SetUpInProcessBrowserTestFixture() {
   std::set<std::string> device_affiliation_ids;
   device_affiliation_ids.insert(kAffiliationID);
   auto affiliation_helper = policy::AffiliationTestHelper::CreateForCloud(
-      FakeSessionManagerClient::Get());
+      fake_session_manager_client_);
   ASSERT_NO_FATAL_FAILURE((affiliation_helper.SetDeviceAffiliationIDs(
       &test_helper_, device_affiliation_ids)));
 
@@ -995,8 +1003,8 @@ void SAMLPolicyTest::EnableTransferSAMLCookiesPolicy() {
                                                run_loop.QuitClosure());
   device_policy_->SetDefaultSigningKey();
   device_policy_->Build();
-  FakeSessionManagerClient::Get()->set_device_policy(device_policy_->GetBlob());
-  FakeSessionManagerClient::Get()->OnPropertyChangeComplete(true);
+  fake_session_manager_client_->set_device_policy(device_policy_->GetBlob());
+  fake_session_manager_client_->OnPropertyChangeComplete(true);
   run_loop.Run();
 }
 
@@ -1012,8 +1020,8 @@ void SAMLPolicyTest::SetLoginBehaviorPolicyToSAMLInterstitial() {
                                                run_loop.QuitClosure());
   device_policy_->SetDefaultSigningKey();
   device_policy_->Build();
-  FakeSessionManagerClient::Get()->set_device_policy(device_policy_->GetBlob());
-  FakeSessionManagerClient::Get()->OnPropertyChangeComplete(true);
+  fake_session_manager_client_->set_device_policy(device_policy_->GetBlob());
+  fake_session_manager_client_->OnPropertyChangeComplete(true);
   run_loop.Run();
 }
 
@@ -1029,8 +1037,8 @@ void SAMLPolicyTest::SetLoginVideoCaptureAllowedUrls(
                                                run_loop.QuitClosure());
   device_policy_->SetDefaultSigningKey();
   device_policy_->Build();
-  FakeSessionManagerClient::Get()->set_device_policy(device_policy_->GetBlob());
-  FakeSessionManagerClient::Get()->OnPropertyChangeComplete(true);
+  fake_session_manager_client_->set_device_policy(device_policy_->GetBlob());
+  fake_session_manager_client_->OnPropertyChangeComplete(true);
   run_loop.Run();
 }
 

@@ -41,6 +41,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
@@ -81,7 +82,7 @@ void StartKioskSession() {
 
   // Login screen is skipped but 'login-prompt-visible' signal is still needed.
   VLOG(1) << "Kiosk app auto launch >> login-prompt-visible";
-  SessionManagerClient::Get()->EmitLoginPromptVisible();
+  DBusThreadManager::Get()->GetSessionManagerClient()->EmitLoginPromptVisible();
 }
 
 // Starts the login/oobe screen.

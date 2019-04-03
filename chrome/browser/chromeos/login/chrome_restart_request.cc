@@ -298,7 +298,7 @@ void ChromeRestartRequest::RestartJob() {
   // Ownership of local_auth_fd is passed to the callback that is to be
   // called on completion of this method call. This keeps the browser end
   // of the socket-pair alive for the duration of the RPC.
-  SessionManagerClient::Get()->RestartJob(
+  DBusThreadManager::Get()->GetSessionManagerClient()->RestartJob(
       remote_auth_fd.get(), argv_,
       base::Bind(&ChromeRestartRequest::OnRestartJob, AsWeakPtr(),
                  base::Passed(&local_auth_fd)));

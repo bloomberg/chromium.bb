@@ -70,10 +70,6 @@ class CrosSettingsTest : public testing::Test {
     thread_bundle_.RunUntilIdle();
   }
 
-  void TearDown() override {
-    DeviceSettingsService::Get()->UnsetSessionManager();
-  }
-
   // Some tests below use an OwnerSettingsService so they can change settings
   // partway through the test - this sets one up for those tests that need it.
   // Other tests below cannot use an OwnerSettingsService, since they change

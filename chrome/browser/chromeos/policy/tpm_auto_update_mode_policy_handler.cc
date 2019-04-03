@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
@@ -114,8 +115,9 @@ void TPMAutoUpdateModePolicyHandler::OnUpdateAvailableCheckResult(
   if (!update_available)
     return;
 
-  chromeos::SessionManagerClient::Get()->StartTPMFirmwareUpdate(
-      "preserve_stateful");
+  chromeos::DBusThreadManager::Get()
+      ->GetSessionManagerClient()
+      ->StartTPMFirmwareUpdate("preserve_stateful");
 }
 
 void TPMAutoUpdateModePolicyHandler::SetUpdateCheckerCallbackForTesting(

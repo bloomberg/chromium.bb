@@ -14,7 +14,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_session_runner.h"
 #include "components/arc/test/fake_arc_session.h"
@@ -60,7 +61,9 @@ class ArcSessionRunnerTest : public testing::Test,
             base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
-    chromeos::SessionManagerClient::InitializeFakeInMemory();
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+        std::make_unique<chromeos::FakeSessionManagerClient>());
+    chromeos::DBusThreadManager::Initialize();
 
     stop_reason_ = ArcStopReason::SHUTDOWN;
     restarting_ = false;
@@ -77,7 +80,7 @@ class ArcSessionRunnerTest : public testing::Test,
     arc_session_runner_->RemoveObserver(this);
     arc_session_runner_.reset();
 
-    chromeos::SessionManagerClient::Shutdown();
+    chromeos::DBusThreadManager::Shutdown();
   }
 
   ArcSessionRunner* arc_session_runner() { return arc_session_runner_.get(); }
