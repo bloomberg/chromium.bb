@@ -15,7 +15,7 @@ HTTP_SERVER_PID=$!
 # Extract preview thumbnails from the raw test images.
 rm -f tests.hash
 node tests.js ${HTTP}/tests.html $* | tee -a tests.log | \
-  grep --text hash > tests.hash
+  grep --text "^test: images/" > tests.hash
 kill ${HTTP_SERVER_PID} > /dev/null 2>&1
 
 # Compare their hash to the golden hash values.
