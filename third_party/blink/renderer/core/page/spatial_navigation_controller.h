@@ -24,8 +24,7 @@ class Page;
 class CORE_EXPORT SpatialNavigationController
     : public GarbageCollected<SpatialNavigationController> {
  public:
-  static SpatialNavigationController* Create(Page& page);
-  SpatialNavigationController(Page& page);
+  explicit SpatialNavigationController(Page& page);
 
   bool HandleArrowKeyboardEvent(KeyboardEvent* event);
   bool HandleEnterKeyboardEvent(KeyboardEvent* event);

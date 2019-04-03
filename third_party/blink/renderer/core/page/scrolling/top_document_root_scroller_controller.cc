@@ -36,12 +36,6 @@ ScrollableArea* GetScrollableArea(Node* node) {
 
 }  // namespace
 
-// static
-TopDocumentRootScrollerController* TopDocumentRootScrollerController::Create(
-    Page& page) {
-  return MakeGarbageCollected<TopDocumentRootScrollerController>(page);
-}
-
 TopDocumentRootScrollerController::TopDocumentRootScrollerController(Page& page)
     : page_(&page) {}
 
@@ -243,7 +237,7 @@ void TopDocumentRootScrollerController::InitializeViewportScrollCallback(
     RootFrameViewport& root_frame_viewport,
     Document& main_document) {
   DCHECK(page_);
-  viewport_apply_scroll_ = ViewportScrollCallback::Create(
+  viewport_apply_scroll_ = MakeGarbageCollected<ViewportScrollCallback>(
       &page_->GetBrowserControls(), &page_->GetOverscrollController(),
       root_frame_viewport);
 

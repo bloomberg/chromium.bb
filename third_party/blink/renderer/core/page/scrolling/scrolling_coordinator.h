@@ -76,8 +76,6 @@ class CORE_EXPORT ScrollingCoordinator final
     cc::ScrollbarLayerInterface* scrollbar_layer = nullptr;
   };
 
-  static ScrollingCoordinator* Create(Page*);
-
   explicit ScrollingCoordinator(Page*);
   ~ScrollingCoordinator();
   void Trace(blink::Visitor*);

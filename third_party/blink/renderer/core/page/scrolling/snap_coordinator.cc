@@ -25,10 +25,6 @@ SnapCoordinator::SnapCoordinator() : snap_container_map_() {}
 
 SnapCoordinator::~SnapCoordinator() = default;
 
-SnapCoordinator* SnapCoordinator::Create() {
-  return MakeGarbageCollected<SnapCoordinator>();
-}
-
 // Returns the scroll container that can be affected by this snap area.
 static LayoutBox* FindSnapContainer(const LayoutBox& snap_area) {
   // According to the new spec

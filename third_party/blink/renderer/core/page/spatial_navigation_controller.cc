@@ -132,11 +132,6 @@ static void ConsiderForBestCandidate(SpatialNavigationDirection direction,
 
 }  // namespace
 
-// static
-SpatialNavigationController* SpatialNavigationController::Create(Page& page) {
-  return MakeGarbageCollected<SpatialNavigationController>(page);
-}
-
 SpatialNavigationController::SpatialNavigationController(Page& page)
     : page_(&page) {}
 

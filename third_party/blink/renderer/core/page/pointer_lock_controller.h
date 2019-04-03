@@ -45,8 +45,6 @@ class WebMouseEvent;
 class CORE_EXPORT PointerLockController final
     : public GarbageCollected<PointerLockController> {
  public:
-  static PointerLockController* Create(Page*);
-
   explicit PointerLockController(Page*);
 
   void RequestPointerLock(Element* target);

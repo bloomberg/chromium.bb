@@ -32,8 +32,6 @@ class LayoutBox;
 class CORE_EXPORT SnapCoordinator final
     : public GarbageCollectedFinalized<SnapCoordinator> {
  public:
-  static SnapCoordinator* Create();
-
   explicit SnapCoordinator();
   ~SnapCoordinator();
   void Trace(blink::Visitor* visitor) {}

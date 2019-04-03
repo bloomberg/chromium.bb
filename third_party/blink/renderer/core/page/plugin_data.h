@@ -95,8 +95,6 @@ class CORE_EXPORT PluginData final
  public:
   void Trace(blink::Visitor*);
 
-  static PluginData* Create() { return MakeGarbageCollected<PluginData>(); }
-
   PluginData() = default;
 
   const HeapVector<Member<PluginInfo>>& Plugins() const { return plugins_; }

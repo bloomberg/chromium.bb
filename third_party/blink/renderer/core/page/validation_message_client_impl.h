@@ -47,9 +47,7 @@ class ValidationMessageClientImpl final
   USING_GARBAGE_COLLECTED_MIXIN(ValidationMessageClientImpl);
 
  public:
-  static ValidationMessageClientImpl* Create(Page&);
-
-  ValidationMessageClientImpl(Page&);
+  explicit ValidationMessageClientImpl(Page&);
   ~ValidationMessageClientImpl() override;
 
   void Trace(blink::Visitor*) override;

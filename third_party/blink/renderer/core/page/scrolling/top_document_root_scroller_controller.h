@@ -31,9 +31,7 @@ class ViewportScrollCallback;
 class CORE_EXPORT TopDocumentRootScrollerController
     : public GarbageCollected<TopDocumentRootScrollerController> {
  public:
-  static TopDocumentRootScrollerController* Create(Page&);
-
-  TopDocumentRootScrollerController(Page&);
+  explicit TopDocumentRootScrollerController(Page&);
 
   void Trace(blink::Visitor*);
 
