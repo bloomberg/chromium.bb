@@ -273,8 +273,7 @@ accessed on multiple threads.  If one thread updates it based on expensive
 computation or through disk access, then that slow work should be done without
 holding on to the lock.  Only when the result is available should the lock be
 used to swap in the new data.  An example of this is in PluginList::LoadPlugins
-([`content/common/plugin_list.cc`](https://cs.chromium.org/chromium/src/content/
-common/plugin_list.cc). If you must use locks,
+([`content/browser/plugin_list.cc`](https://cs.chromium.org/chromium/src/content/browser/plugin_list.cc)). If you must use locks,
 [here](https://www.chromium.org/developers/lock-and-condition-variable) are some
 best practices and pitfalls to avoid.
 
