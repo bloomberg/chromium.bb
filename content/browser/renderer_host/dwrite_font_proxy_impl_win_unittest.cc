@@ -13,6 +13,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -217,23 +218,33 @@ TEST_F(DWriteFontProxyImplUnitTest, TestCustomFontFiles) {
   }
 }
 
-TEST_F(DWriteFontProxyUniqueNameMatchingTest, TestFindUniqueFont) {
-  base::ReadOnlySharedMemoryRegion font_table_memory;
-  dwrite_font_proxy().GetUniqueNameLookupTable(&font_table_memory);
+namespace {
+void TestWhenLookupTableReady(
+    bool* did_test_fonts,
+    base::ReadOnlySharedMemoryRegion font_table_memory) {
   blink::FontTableMatcher font_table_matcher(font_table_memory.Map());
-
   for (auto& test_font_name_index : kExpectedTestFonts) {
     base::Optional<blink::FontTableMatcher::MatchResult> match_result =
         font_table_matcher.MatchName(test_font_name_index.font_name);
-    CHECK(match_result) << "No font matched for font name: "
-                        << test_font_name_index.font_name;
+    ASSERT_TRUE(match_result)
+        << "No font matched for font name: " << test_font_name_index.font_name;
     base::File unique_font_file(
         base::FilePath::FromUTF8Unsafe(match_result->font_path),
         base::File::FLAG_OPEN | base::File::FLAG_READ);
-    CHECK(unique_font_file.IsValid());
-    CHECK_GT(unique_font_file.GetLength(), 0);
-    CHECK_EQ(test_font_name_index.ttc_index, match_result->ttc_index);
+    ASSERT_TRUE(unique_font_file.IsValid());
+    ASSERT_GT(unique_font_file.GetLength(), 0);
+    ASSERT_EQ(test_font_name_index.ttc_index, match_result->ttc_index);
+    *did_test_fonts = true;
   }
+}
+}  // namespace
+
+TEST_F(DWriteFontProxyUniqueNameMatchingTest, TestFindUniqueFont) {
+  bool lookup_table_results_were_tested = false;
+  dwrite_font_proxy().GetUniqueNameLookupTable(base::BindOnce(
+      &TestWhenLookupTableReady, &lookup_table_results_were_tested));
+  scoped_task_environment_.RunUntilIdle();
+  ASSERT_TRUE(lookup_table_results_were_tested);
 }
 
 }  // namespace

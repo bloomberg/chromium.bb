@@ -307,6 +307,10 @@ bool DWriteFontLookupTableBuilder::EnsureFontUniqueNameTable() {
   return IsFontUniqueNameTableValid();
 }
 
+bool DWriteFontLookupTableBuilder::FontUniqueNameTableReady() {
+  return font_table_built_.IsSignaled() && IsFontUniqueNameTableValid();
+}
+
 void DWriteFontLookupTableBuilder::SchedulePrepareFontUniqueNameTable() {
   DCHECK(base::FeatureList::IsEnabled(features::kFontSrcLocalMatching));
 
