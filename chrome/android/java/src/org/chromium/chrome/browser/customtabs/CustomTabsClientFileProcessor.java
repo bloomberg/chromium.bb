@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.support.annotation.WorkerThread;
+import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.CustomTabsSessionToken;
 
 import org.chromium.base.Log;
@@ -34,9 +35,6 @@ import dagger.Lazy;
 public class CustomTabsClientFileProcessor {
 
     private static final String TAG = "CustomTabFiles";
-
-    //TODO(pshmakov): remove when client-side change lands
-    private static final int FILE_PURPOSE_TWA_SPLASH_IMAGE = 1;
 
     private final Context mContext;
     private final Lazy<SplashImageHolder> mTwaSplashImageHolder;
@@ -61,7 +59,7 @@ public class CustomTabsClientFileProcessor {
             return false;
         }
         switch (purpose) {
-            case FILE_PURPOSE_TWA_SPLASH_IMAGE:
+            case CustomTabsService.FILE_PURPOSE_TWA_SPLASH_IMAGE:
                 return receiveTwaSplashImage(session, uri);
         }
         Log.w(TAG, "Unknown FilePurpose " + purpose);

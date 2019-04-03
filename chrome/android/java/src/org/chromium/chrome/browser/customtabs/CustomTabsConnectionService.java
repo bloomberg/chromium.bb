@@ -105,6 +105,7 @@ public class CustomTabsConnectionService extends CustomTabsService {
     }
 
 
+    @Override
     protected boolean receiveFile(@NonNull CustomTabsSessionToken sessionToken, @NonNull Uri uri,
             int purpose, @Nullable Bundle extras) {
         return mConnection.receiveFile(sessionToken, uri, purpose, extras);
