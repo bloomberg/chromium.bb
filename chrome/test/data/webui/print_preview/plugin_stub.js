@@ -69,6 +69,8 @@ cr.define('print_preview', function() {
     /** @param {!KeyEvent} e Keyboard event to forward to the plugin. */
     sendKeyEvent(e) {}
 
+    hideToolbars() {}
+
     /**
      * @param {boolean} eventsOn Whether pointer events should be captured by
      *     the plugin.

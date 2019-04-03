@@ -159,6 +159,46 @@ var tests = [
   },
 
   /**
+   * Tests that the zoom toolbar becomes visible when it is focused, and is made
+   * invisible by calling resetKeyboardNavigationAndHideToolbars().
+   * Simulates focusing and then un-focusing the zoom toolbar buttons from Print
+   * Preview.
+   */
+  function testToolbarManagerResetKeyboardNavigation() {
+    var mockWindow = new MockWindow(1920, 1080);
+
+    var zoomToolbar = document.createElement('viewer-zoom-toolbar');
+    document.body.appendChild(zoomToolbar);
+    var toolbarManager = new ToolbarManager(mockWindow, null, zoomToolbar);
+    toolbarManager.getCurrentTimestamp_ = mockGetCurrentTimestamp;
+
+    // Move the mouse and wait for a timeout to ensure toolbar is invisible.
+    getMouseMoveEvents(200, 200, 800, 800, 5).forEach(function(e) {
+      toolbarManager.handleMouseMove(e);
+    });
+    mockWindow.runTimeout();
+    chrome.test.assertFalse(zoomToolbar.isVisible());
+
+    // Simulate focusing the fit to page button.
+    zoomToolbar.$$('#fit-button').dispatchEvent(
+        new CustomEvent('focus', {bubbles: true, composed: true}));
+    chrome.test.assertTrue(zoomToolbar.isVisible());
+
+    // Hit tab key.
+    toolbarManager.showToolbarsForKeyboardNavigation();
+
+    // Call resetKeyboardNavigationAndHideToolbars(). This happens when focus
+    // leaves the PDF viewer in Print Preview, and returns to the main Print
+    // Preview sidebar UI.
+    toolbarManager.resetKeyboardNavigationAndHideToolbars();
+    chrome.test.assertTrue(zoomToolbar.isVisible());
+    mockWindow.runTimeout();
+    chrome.test.assertFalse(zoomToolbar.isVisible());
+
+    chrome.test.succeed();
+  },
+
+  /*
    * Test that the toolbars can be shown or hidden by tapping with a touch
    * device.
    */

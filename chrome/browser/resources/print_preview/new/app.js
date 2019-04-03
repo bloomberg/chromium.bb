@@ -125,6 +125,11 @@ Polymer({
     this.whenReady_ = null;
   },
 
+  /** @private */
+  onSidebarFocus_: function() {
+    this.$.previewArea.hideToolbars();
+  },
+
   /**
    * Consume escape and enter key presses and ctrl + shift + p. Delegate
    * everything else to the preview area.

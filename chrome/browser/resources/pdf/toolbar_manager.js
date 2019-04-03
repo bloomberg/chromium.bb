@@ -236,6 +236,14 @@ ToolbarManager.prototype = {
   },
 
   /**
+   * Clears the keyboard navigation state and hides the toolbars after a delay.
+   */
+  resetKeyboardNavigationAndHideToolbars: function() {
+    this.keyboardNavigationActive = false;
+    this.hideToolbarsAfterTimeout();
+  },
+
+  /**
    * Hide the top toolbar and keep it hidden until both:
    * - The mouse is moved away from the right side of the screen
    * - 1 second has passed.

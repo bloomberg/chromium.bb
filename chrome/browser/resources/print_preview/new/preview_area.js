@@ -428,6 +428,17 @@ Polymer({
   },
 
   /**
+   * Sends a message to the plugin to hide the toolbars after a delay.
+   */
+  hideToolbars: function() {
+    if (!this.pluginProxy_.pluginReady()) {
+      return;
+    }
+
+    this.pluginProxy_.hideToolbars();
+  },
+
+  /**
    * Set a callback that gets called when a key event is received that
    * originates in the plugin.
    * @param {function(KeyboardEvent)} callback The callback to be called with
