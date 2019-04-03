@@ -130,6 +130,9 @@ int main(int argc, char** argv) {
     display::Screen::SetScreenInstance(desktop_screen.get());
 #endif
 
+    // This app isn't a test and shouldn't timeout.
+    base::RunLoop::ScopedDisableRunTimeoutForTest disable_timeout;
+
     base::RunLoop run_loop;
     views::examples::ShowExamplesWindow(run_loop.QuitClosure());
 
