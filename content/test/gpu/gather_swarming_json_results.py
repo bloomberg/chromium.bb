@@ -18,33 +18,57 @@ import sys
 import urllib2
 
 
-def GetJsonForBuildSteps(bot, build):
+def GetBuildData(method, request):
   # Explorable via RPC explorer:
   # https://cr-buildbucket.appspot.com/rpcexplorer/services/
-  #   buildbucket.v2.Builds/GetBuild
+  #   buildbucket.v2.Builds/{GetBuild|SearchBuilds}
+  assert method in ['GetBuild', 'SearchBuilds']
 
   # The Python docs are wrong. It's fine for this payload to be just
   # a JSON string.
-  call_arg = json.dumps({ 'builder': { 'project': 'chromium',
-                                       'bucket': 'ci',
-                                       'builder': bot },
-                          'buildNumber': build,
-                          'fields': 'steps.*.name,steps.*.logs' })
   headers = {
     'content-type': 'application/json',
     'accept': 'application/json'
   }
-  request = urllib2.Request(
-    'https://cr-buildbucket.appspot.com/prpc/buildbucket.v2.Builds/GetBuild',
-    call_arg,
+  url = urllib2.Request(
+    'https://cr-buildbucket.appspot.com/prpc/buildbucket.v2.Builds/' + method,
+    request,
     headers)
-  conn = urllib2.urlopen(request)
+  conn = urllib2.urlopen(url)
   result = conn.read()
   conn.close()
-
   # Result is a multi-line string the first line of which is
   # deliberate garbage and the rest of which is a JSON payload.
   return json.loads(''.join(result.splitlines()[1:]))
+
+
+def GetJsonForBuildSteps(bot, build):
+  request = json.dumps({ 'builder': { 'project': 'chromium',
+                                      'bucket': 'ci',
+                                      'builder': bot },
+                         'buildNumber': build,
+                         'fields': 'steps.*.name,steps.*.logs' })
+  return GetBuildData('GetBuild', request)
+
+
+def GetJsonForLatestGreenBuildSteps(bot):
+  fields = [
+    'builds.*.number',
+    'builds.*.steps.*.name',
+    'builds.*.steps.*.logs',
+  ]
+  request = json.dumps({ 'predicate': { 'builder': { 'project': 'chromium',
+                                                     'bucket': 'ci',
+                                                     'builder': bot },
+                                        'status': 'SUCCESS' },
+                         'fields': ','.join(fields),
+                         'pageSize': 1 })
+  builds_json = GetBuildData('SearchBuilds', request)
+  if 'builds' not in builds_json:
+    raise ValueError('Returned json data does not have "builds"')
+  builds = builds_json['builds']
+  assert len(builds) == 1
+  return builds[0]
 
 
 def JsonLoadStrippingUnicode(url):
@@ -109,7 +133,8 @@ def main():
   parser.add_argument('--bot', default='Linux FYI Release (NVIDIA)',
                       help='Which bot to examine')
   parser.add_argument('--build', type=int,
-                      help='Which build to fetch (must be specified)')
+                      help='Which build to fetch. If not specified, use '
+                      'the latest successful build.')
   parser.add_argument('--step', default='webgl2_conformance_tests',
                       help='Which step to fetch (treated as a prefix)')
   parser.add_argument('--output', metavar='FILE', default='output.json',
@@ -121,23 +146,23 @@ def main():
   if options.verbose:
     logging.basicConfig(level=logging.DEBUG)
 
-  if options.build is None:
-    logging.error('Build number must be specified; check the bot\'s page')
-    return 1
+  build = options.build
+  if build is None:
+    build_json = GetJsonForLatestGreenBuildSteps(options.bot)
+    build = build_json.get('number')
+  else:
+    build_json = GetJsonForBuildSteps(options.bot, build)
 
-  build_json = GetJsonForBuildSteps(options.bot, options.build)
+  logging.debug('Fetched information from bot %s, build %s',
+                options.bot, build)
+
   if 'steps' not in build_json:
-    logging.error('Returned Json data does not have "steps"')
-    return 1
-
-  logging.debug('Fetching information from bot %s, build %s',
-                options.bot, options.build)
+    raise ValueError('Returned Json data do not have "steps"')
 
   json_output = FindStepLogURL(build_json['steps'], options.step, 'json.output')
   if not json_output:
-    logging.error('Unable to find json.output from step starting with %s',
-                  options.step)
-    return 1
+    raise ValueError('Unable to find json.output from step starting with %s' %
+                     options.step)
   logging.debug('json.output for step starting with %s: %s',
                 options.step, json_output)
 
