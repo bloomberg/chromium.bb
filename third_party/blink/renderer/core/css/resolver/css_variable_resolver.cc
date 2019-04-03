@@ -330,6 +330,9 @@ bool CSSVariableResolver::ResolveVariableReference(CSSParserTokenRange range,
            Fallback::kSuccess;
   }
 
+  if (variable_data->Tokens().size() > kMaxSubstitutionTokens)
+    return false;
+
   result.tokens.AppendVector(variable_data->Tokens());
   // TODO(alancutter): Avoid adding backing strings multiple times in a row.
   result.backing_strings.AppendVector(variable_data->BackingStrings());
