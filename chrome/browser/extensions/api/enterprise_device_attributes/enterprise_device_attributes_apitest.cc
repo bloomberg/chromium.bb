@@ -138,10 +138,15 @@ class EnterpriseDeviceAttributesTest
   void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 
-    chromeos::SessionManagerClient::InitializeFakeInMemory();
+    chromeos::FakeSessionManagerClient* fake_session_manager_client =
+        new chromeos::FakeSessionManagerClient;
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+        std::unique_ptr<chromeos::SessionManagerClient>(
+            fake_session_manager_client));
+
     policy::AffiliationTestHelper affiliation_helper =
         policy::AffiliationTestHelper::CreateForCloud(
-            chromeos::FakeSessionManagerClient::Get());
+            fake_session_manager_client);
 
     std::set<std::string> device_affiliation_ids;
     device_affiliation_ids.insert(kAffiliationID);
@@ -167,9 +172,8 @@ class EnterpriseDeviceAttributesTest
     device_policy->policy_data().set_annotated_location(kAnnotatedLocation);
     device_policy->Build();
 
-    chromeos::FakeSessionManagerClient::Get()->set_device_policy(
-        device_policy->GetBlob());
-    chromeos::FakeSessionManagerClient::Get()->OnPropertyChangeComplete(true);
+    fake_session_manager_client->set_device_policy(device_policy->GetBlob());
+    fake_session_manager_client->OnPropertyChangeComplete(true);
 
     // Init the user policy provider.
     EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))

@@ -383,7 +383,7 @@ class DBusServices {
     UpgradeDetectorChromeos::GetInstance()->Init();
 
     DeviceSettingsService::Get()->SetSessionManager(
-        SessionManagerClient::Get(),
+        DBusThreadManager::Get()->GetSessionManagerClient(),
         OwnerSettingsServiceChromeOSFactory::GetInstance()->GetOwnerKeyUtil());
   }
 

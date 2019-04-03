@@ -16,6 +16,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/session/arc_session_impl.h"
@@ -167,6 +168,10 @@ struct ArcSessionDeleter {
 class ArcSessionImplTest : public testing::Test {
  public:
   ArcSessionImplTest() {
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+        std::make_unique<chromeos::FakeSessionManagerClient>());
+    GetSessionManagerClient()->set_arc_available(true);
+
     // Create a user and set it as the primary user.
     const AccountId account_id =
         AccountId::FromUserEmailGaiaId(kFakeGmail, kFakeGmailGaiaId);
@@ -179,14 +184,13 @@ class ArcSessionImplTest : public testing::Test {
   ~ArcSessionImplTest() override {
     GetUserManager()->RemoveUserFromList(
         AccountId::FromUserEmailGaiaId(kFakeGmail, kFakeGmailGaiaId));
+    chromeos::DBusThreadManager::Shutdown();
   }
 
-  void SetUp() override {
-    chromeos::SessionManagerClient::InitializeFakeInMemory();
-    chromeos::FakeSessionManagerClient::Get()->set_arc_available(true);
+  chromeos::FakeSessionManagerClient* GetSessionManagerClient() {
+    return static_cast<chromeos::FakeSessionManagerClient*>(
+        chromeos::DBusThreadManager::Get()->GetSessionManagerClient());
   }
-
-  void TearDown() override { chromeos::SessionManagerClient::Shutdown(); }
 
   user_manager::FakeUserManager* GetUserManager() {
     return static_cast<user_manager::FakeUserManager*>(
@@ -194,7 +198,7 @@ class ArcSessionImplTest : public testing::Test {
   }
 
   void EmulateDBusFailure() {
-    chromeos::FakeSessionManagerClient::Get()->set_arc_available(false);
+    GetSessionManagerClient()->set_arc_available(false);
   }
 
   std::unique_ptr<ArcSessionImpl, ArcSessionDeleter> CreateArcSession(
@@ -257,7 +261,7 @@ TEST_F(ArcSessionImplTest, MiniInstance_DBusFail) {
 // causing the container upgrade to fail to start container with reason
 // LOW_DISK_SPACE.
 TEST_F(ArcSessionImplTest, Upgrade_LowDisk) {
-  chromeos::FakeSessionManagerClient::Get()->set_low_disk(true);
+  GetSessionManagerClient()->set_low_disk(true);
   // Set up. Start mini-container. The mini-container doesn't use the disk, so
   // there being low disk space won't cause it to start.
   auto arc_session = CreateArcSession();
@@ -547,9 +551,10 @@ TEST_F(ArcSessionImplTest, ArcStopInstance) {
             arc_session->GetStateForTesting());
 
   // Deliver the ArcInstanceStopped D-Bus signal.
-  chromeos::FakeSessionManagerClient::Get()->NotifyArcInstanceStopped(
+  auto* session_manager_client = GetSessionManagerClient();
+  session_manager_client->NotifyArcInstanceStopped(
       login_manager::ArcContainerStopReason::CRASH,
-      chromeos::FakeSessionManagerClient::Get()->container_instance_id());
+      session_manager_client->container_instance_id());
 
   EXPECT_EQ(ArcSessionImpl::State::STOPPED, arc_session->GetStateForTesting());
   ASSERT_TRUE(observer.on_session_stopped_args().has_value());
@@ -570,7 +575,8 @@ TEST_F(ArcSessionImplTest, ArcStopInstance_WrongContainerInstanceId) {
             arc_session->GetStateForTesting());
 
   // Deliver the ArcInstanceStopped D-Bus signal.
-  chromeos::FakeSessionManagerClient::Get()->NotifyArcInstanceStopped(
+  auto* session_manager_client = GetSessionManagerClient();
+  session_manager_client->NotifyArcInstanceStopped(
       login_manager::ArcContainerStopReason::CRASH, "dummy instance id");
 
   // The signal should be ignored.
@@ -621,10 +627,9 @@ TEST_P(ArcSessionImplPackagesCacheModeTest, PackagesCacheModes) {
   if (state.full_container)
     arc_session->RequestUpgrade(DefaultUpgradeParams());
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(state.expected_packages_cache_mode,
-            chromeos::FakeSessionManagerClient::Get()
-                ->last_upgrade_arc_request()
-                .packages_cache_mode());
+  EXPECT_EQ(state.expected_packages_cache_mode, GetSessionManagerClient()
+                                                    ->last_upgrade_arc_request()
+                                                    .packages_cache_mode());
 }
 
 INSTANTIATE_TEST_SUITE_P(,
@@ -644,10 +649,9 @@ TEST_F(ArcSessionImplTest, DemoSession) {
   arc_session->RequestUpgrade(std::move(params));
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(chromeos::FakeSessionManagerClient::Get()
-                  ->last_upgrade_arc_request()
-                  .is_demo_session());
-  EXPECT_EQ(demo_apps_path, chromeos::FakeSessionManagerClient::Get()
+  EXPECT_TRUE(
+      GetSessionManagerClient()->last_upgrade_arc_request().is_demo_session());
+  EXPECT_EQ(demo_apps_path, GetSessionManagerClient()
                                 ->last_upgrade_arc_request()
                                 .demo_session_apps_path());
 }
@@ -662,10 +666,9 @@ TEST_F(ArcSessionImplTest, DemoSessionWithoutOfflineDemoApps) {
   arc_session->RequestUpgrade(std::move(params));
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(chromeos::FakeSessionManagerClient::Get()
-                  ->last_upgrade_arc_request()
-                  .is_demo_session());
-  EXPECT_EQ(std::string(), chromeos::FakeSessionManagerClient::Get()
+  EXPECT_TRUE(
+      GetSessionManagerClient()->last_upgrade_arc_request().is_demo_session());
+  EXPECT_EQ(std::string(), GetSessionManagerClient()
                                ->last_upgrade_arc_request()
                                .demo_session_apps_path());
 }
@@ -683,10 +686,10 @@ TEST_F(ArcSessionImplTest, SupervisionTransitionShouldGraduate) {
   EXPECT_EQ(
       login_manager::
           UpgradeArcContainerRequest_SupervisionTransition_CHILD_TO_REGULAR,
-      chromeos::FakeSessionManagerClient::Get()
+      GetSessionManagerClient()
           ->last_upgrade_arc_request()
           .supervision_transition());
-  EXPECT_EQ(160, chromeos::FakeSessionManagerClient::Get()
+  EXPECT_EQ(160, GetSessionManagerClient()
                      ->last_start_arc_mini_container_request()
                      .lcd_density());
 }
@@ -698,7 +701,7 @@ TEST_F(ArcSessionImplTest, StartArcMiniContainerWithDensity) {
 
   EXPECT_EQ(ArcSessionImpl::State::RUNNING_MINI_INSTANCE,
             arc_session->GetStateForTesting());
-  EXPECT_EQ(240, chromeos::FakeSessionManagerClient::Get()
+  EXPECT_EQ(240, GetSessionManagerClient()
                      ->last_start_arc_mini_container_request()
                      .lcd_density());
 }
@@ -715,7 +718,7 @@ TEST_F(ArcSessionImplTest, StartArcMiniContainerWithDensityAsync) {
             arc_session->GetStateForTesting());
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(240, chromeos::FakeSessionManagerClient::Get()
+  EXPECT_EQ(240, GetSessionManagerClient()
                      ->last_start_arc_mini_container_request()
                      .lcd_density());
 }

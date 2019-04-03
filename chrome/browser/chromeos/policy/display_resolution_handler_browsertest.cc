@@ -20,6 +20,9 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -383,21 +386,25 @@ class DisplayResolutionBootTest
     : public InProcessBrowserTest,
       public testing::WithParamInterface<PolicyValue> {
  protected:
-  DisplayResolutionBootTest() = default;
-  ~DisplayResolutionBootTest() override = default;
+  DisplayResolutionBootTest()
+      : fake_session_manager_client_(new chromeos::FakeSessionManagerClient) {}
+  ~DisplayResolutionBootTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kUseFirstDisplayAsInternal);
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    // Override FakeSessionManagerClient. This will be shut down by the browser.
-    chromeos::SessionManagerClient::InitializeFakeInMemory();
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+        std::unique_ptr<chromeos::SessionManagerClient>(
+            fake_session_manager_client_));
+
     test_helper_.InstallOwnerKey();
     test_helper_.MarkAsEnterpriseOwned();
     ash::DisplayConfigurationController::DisableAnimatorForTest();
   }
 
+  chromeos::FakeSessionManagerClient* fake_session_manager_client_;
   policy::DevicePolicyCrosTestHelper test_helper_;
 };
 
@@ -415,9 +422,8 @@ IN_PROC_BROWSER_TEST_P(DisplayResolutionBootTest, PRE_Reboot) {
           chromeos::kDeviceDisplayResolution, run_loop.QuitClosure());
   device_policy->SetDefaultSigningKey();
   device_policy->Build();
-  chromeos::FakeSessionManagerClient::Get()->set_device_policy(
-      device_policy->GetBlob());
-  chromeos::FakeSessionManagerClient::Get()->OnPropertyChangeComplete(true);
+  fake_session_manager_client_->set_device_policy(device_policy->GetBlob());
+  fake_session_manager_client_->OnPropertyChangeComplete(true);
   run_loop.Run();
   // Allow tasks posted by CrosSettings observers to complete:
   base::RunLoop().RunUntilIdle();

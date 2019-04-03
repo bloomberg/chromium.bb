@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/test/scoped_task_environment.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
 #include "components/policy/core/common/policy_test_utils.h"
@@ -13,6 +15,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace em = enterprise_management;
+
+namespace chromeos {
+class FakeSessionManagerClient;
+}
 
 namespace {
 constexpr char kExtensionId[] = "abcdefghabcdefghabcdefghabcdefgh";
@@ -30,13 +36,13 @@ using ResponseType = ComponentActiveDirectoryPolicyRetriever::ResponseType;
 
 class ComponentActiveDirectoryPolicyRetrieverTest : public testing::Test {
  protected:
-  ComponentActiveDirectoryPolicyRetrieverTest() = default;
-
-  void SetUp() override {
-    chromeos::SessionManagerClient::InitializeFakeInMemory();
+  ComponentActiveDirectoryPolicyRetrieverTest() {
+    auto session_manager_client =
+        std::make_unique<chromeos::FakeSessionManagerClient>();
+    session_manager_client_ = session_manager_client.get();
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+        std::move(session_manager_client));
   }
-
-  void TearDown() override { chromeos::SessionManagerClient::Shutdown(); }
 
   RetrieveCallback CreateRetrieveCallback() {
     return base::BindOnce(
@@ -61,6 +67,7 @@ class ComponentActiveDirectoryPolicyRetrieverTest : public testing::Test {
   std::vector<RetrieveResult> results_;
   bool policy_stored_ = false;
   bool callback_called_ = false;
+  chromeos::FakeSessionManagerClient* session_manager_client_;  // Not owned.
 };
 
 TEST_F(ComponentActiveDirectoryPolicyRetrieverTest, RetrieveNoPolicy) {
@@ -101,8 +108,8 @@ TEST_F(ComponentActiveDirectoryPolicyRetrieverTest, RetrievePolicies) {
   descriptor.set_account_type(login_manager::ACCOUNT_TYPE_DEVICE);
   descriptor.set_domain(login_manager::POLICY_DOMAIN_EXTENSIONS);
   descriptor.set_component_id(kExtensionId);
-  chromeos::SessionManagerClient::Get()->StorePolicy(descriptor, policy_blob,
-                                                     CreateStoredCallback());
+  session_manager_client_->StorePolicy(descriptor, policy_blob,
+                                       CreateStoredCallback());
   scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(policy_stored_);
 

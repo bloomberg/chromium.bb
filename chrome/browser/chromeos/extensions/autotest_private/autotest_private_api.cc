@@ -319,7 +319,9 @@ AutotestPrivateLockScreenFunction::~AutotestPrivateLockScreenFunction() =
 ExtensionFunction::ResponseAction AutotestPrivateLockScreenFunction::Run() {
   DVLOG(1) << "AutotestPrivateLockScreenFunction";
 
-  chromeos::SessionManagerClient::Get()->RequestLockScreen();
+  chromeos::DBusThreadManager::Get()
+      ->GetSessionManagerClient()
+      ->RequestLockScreen();
   return RespondNow(NoArguments());
 }
 

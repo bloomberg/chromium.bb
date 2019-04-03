@@ -49,6 +49,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/audio/chromeos_sounds.h"
 #include "chromeos/dbus/biod/constants.pb.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/login/auth/authenticator.h"
 #include "chromeos/login/auth/extended_authenticator.h"
@@ -95,13 +96,15 @@ class ScreenLockObserver : public SessionManagerClient::StubDelegate,
  public:
   ScreenLockObserver() : session_started_(false) {
     session_manager::SessionManager::Get()->AddObserver(this);
-    SessionManagerClient::Get()->SetStubDelegate(this);
+    DBusThreadManager::Get()->GetSessionManagerClient()->SetStubDelegate(this);
   }
 
   ~ScreenLockObserver() override {
     session_manager::SessionManager::Get()->RemoveObserver(this);
-    if (SessionManagerClient::Get())
-      SessionManagerClient::Get()->SetStubDelegate(nullptr);
+    if (DBusThreadManager::IsInitialized()) {
+      DBusThreadManager::Get()->GetSessionManagerClient()->SetStubDelegate(
+          nullptr);
+    }
   }
 
   bool session_started() const { return session_started_; }
@@ -523,7 +526,7 @@ void ScreenLocker::HandleShowLockScreenRequest() {
     // screen while remaining secure in the case the user walks away during
     // the sign-in steps. See crbug.com/112225 and crbug.com/110933.
     VLOG(1) << "Calling session manager's StopSession D-Bus method";
-    SessionManagerClient::Get()->StopSession();
+    DBusThreadManager::Get()->GetSessionManagerClient()->StopSession();
   }
 }
 
@@ -549,7 +552,9 @@ void ScreenLocker::Show() {
   } else {
     VLOG(1) << "ScreenLocker " << screen_locker_ << " already exists; "
             << " calling session manager's HandleLockScreenShown D-Bus method";
-    SessionManagerClient::Get()->NotifyLockScreenShown();
+    DBusThreadManager::Get()
+        ->GetSessionManagerClient()
+        ->NotifyLockScreenShown();
   }
 }
 
@@ -636,7 +641,9 @@ ScreenLocker::~ScreenLocker() {
       content::Source<ScreenLocker>(this), content::Details<bool>(&state));
 
   VLOG(1) << "Calling session manager's HandleLockScreenDismissed D-Bus method";
-  SessionManagerClient::Get()->NotifyLockScreenDismissed();
+  DBusThreadManager::Get()
+      ->GetSessionManagerClient()
+      ->NotifyLockScreenDismissed();
 
   if (saved_ime_state_.get()) {
     input_method::InputMethodManager::Get()->SetState(saved_ime_state_);
@@ -656,7 +663,7 @@ void ScreenLocker::ScreenLockReady() {
       chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
       content::Source<ScreenLocker>(this), content::Details<bool>(&state));
   VLOG(1) << "Calling session manager's HandleLockScreenShown D-Bus method";
-  SessionManagerClient::Get()->NotifyLockScreenShown();
+  DBusThreadManager::Get()->GetSessionManagerClient()->NotifyLockScreenShown();
 
   session_manager::SessionManager::Get()->SetSessionState(
       session_manager::SessionState::LOCKED);

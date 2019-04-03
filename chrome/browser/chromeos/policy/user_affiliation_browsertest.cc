@@ -157,11 +157,15 @@ class UserAffiliationBrowserTest
     InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
     // Some DBus services rely on paths, so override it here.
     chromeos::active_directory_test_helper::OverridePaths();
+    chromeos::FakeSessionManagerClient* fake_session_manager_client =
+        new chromeos::FakeSessionManagerClient;
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+        base::WrapUnique<chromeos::SessionManagerClient>(
+            fake_session_manager_client));
 
     // Initialize clients here so they are available during setup. They will be
     // shutdown in ChromeBrowserMain.
     chromeos::CryptohomeClient::InitializeFake();
-    chromeos::SessionManagerClient::InitializeFakeInMemory();
     chromeos::UpstartClient::InitializeFake();
     chromeos::FakeAuthPolicyClient* fake_auth_policy_client = nullptr;
     if (GetParam().active_directory) {
@@ -176,12 +180,12 @@ class UserAffiliationBrowserTest
     const std::set<std::string> user_affiliation_ids = {
         GetParam().affiliated ? kAffiliationID : kAnotherAffiliationID};
 
-    auto* session_manager_client = chromeos::FakeSessionManagerClient::Get();
     AffiliationTestHelper affiliation_helper =
         GetParam().active_directory
             ? AffiliationTestHelper::CreateForActiveDirectory(
-                  session_manager_client, fake_auth_policy_client)
-            : AffiliationTestHelper::CreateForCloud(session_manager_client);
+                  fake_session_manager_client, fake_auth_policy_client)
+            : AffiliationTestHelper::CreateForCloud(
+                  fake_session_manager_client);
 
     ASSERT_NO_FATAL_FAILURE(affiliation_helper.SetDeviceAffiliationIDs(
         &test_helper, device_affiliation_ids));

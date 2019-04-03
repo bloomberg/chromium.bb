@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "chrome/browser/chromeos/login/screens/demo_setup_screen_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 
 namespace {
@@ -50,7 +51,9 @@ void DemoSetupScreen::OnUserAction(const std::string& action_id) {
   } else if (action_id == kUserActionClose) {
     exit_callback_.Run(Result::CANCELED);
   } else if (action_id == kUserActionPowerwash) {
-    SessionManagerClient::Get()->StartDeviceWipe();
+    chromeos::DBusThreadManager::Get()
+        ->GetSessionManagerClient()
+        ->StartDeviceWipe();
   } else {
     BaseScreen::OnUserAction(action_id);
   }

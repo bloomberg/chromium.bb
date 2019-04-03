@@ -126,7 +126,7 @@ class DeviceCloudPolicyManagerChromeOSTest
       public chromeos::SessionManagerClient::Observer {
  protected:
   DeviceCloudPolicyManagerChromeOSTest()
-      : state_keys_broker_(&session_manager_client_), store_(nullptr) {
+      : state_keys_broker_(&fake_session_manager_client_), store_(nullptr) {
     fake_statistics_provider_.SetMachineStatistic(
         chromeos::system::kSerialNumberKeyForTest, "test_sn");
     fake_statistics_provider_.SetMachineStatistic(
@@ -135,7 +135,7 @@ class DeviceCloudPolicyManagerChromeOSTest
     state_keys.push_back("1");
     state_keys.push_back("2");
     state_keys.push_back("3");
-    session_manager_client_.set_server_backed_state_keys(state_keys);
+    fake_session_manager_client_.set_server_backed_state_keys(state_keys);
     session_manager_client_.AddObserver(this);
   }
 
@@ -289,6 +289,7 @@ class DeviceCloudPolicyManagerChromeOSTest
   TestingPrefServiceSimple local_state_;
   MockDeviceManagementService device_management_service_;
   chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
+  chromeos::FakeSessionManagerClient fake_session_manager_client_;
   bool set_empty_system_salt_ = false;
   ServerBackedStateKeysBroker state_keys_broker_;
   StrictMock<chromeos::attestation::MockAttestationFlow>* mock_;

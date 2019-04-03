@@ -27,6 +27,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/session_manager/core/session_manager.h"
@@ -62,11 +63,14 @@ class CrashRestoreSimpleTest : public InProcessBrowserTest {
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    // Override FakeSessionManagerClient. This will be shut down by the browser.
-    SessionManagerClient::InitializeFakeInMemory();
-    FakeSessionManagerClient::Get()->StartSession(cryptohome_id1_);
+    // Redirect session_manager DBus calls to FakeSessionManagerClient.
+    session_manager_client_ = new FakeSessionManagerClient;
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+        std::unique_ptr<SessionManagerClient>(session_manager_client_));
+    session_manager_client_->StartSession(cryptohome_id1_);
   }
 
+  FakeSessionManagerClient* session_manager_client_;
   const AccountId account_id1_ = AccountId::FromUserEmail(kUserId1);
   const AccountId account_id2_ = AccountId::FromUserEmail(kUserId2);
   const AccountId account_id3_ = AccountId::FromUserEmail(kUserId3);
@@ -148,8 +152,8 @@ class CrashRestoreComplexTest : public CrashRestoreSimpleTest {
 
   void SetUpInProcessBrowserTestFixture() override {
     CrashRestoreSimpleTest::SetUpInProcessBrowserTestFixture();
-    FakeSessionManagerClient::Get()->StartSession(cryptohome_id2_);
-    FakeSessionManagerClient::Get()->StartSession(cryptohome_id3_);
+    session_manager_client_->StartSession(cryptohome_id2_);
+    session_manager_client_->StartSession(cryptohome_id3_);
   }
 
   // Register test users so that UserManager knows them and make kUserId3 as the

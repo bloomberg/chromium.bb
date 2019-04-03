@@ -72,7 +72,8 @@ void StartTPMFirmwareUpdate(
     return;
   }
 
-  SessionManagerClient::Get()->StartTPMFirmwareUpdate(mode_string);
+  DBusThreadManager::Get()->GetSessionManagerClient()->StartTPMFirmwareUpdate(
+      mode_string);
 }
 
 }  // namespace
@@ -265,7 +266,7 @@ void ResetScreen::OnPowerwash() {
         base::TimeDelta::FromSeconds(10));
   } else {
     VLOG(1) << "Starting Powerwash";
-    SessionManagerClient::Get()->StartDeviceWipe();
+    DBusThreadManager::Get()->GetSessionManagerClient()->StartDeviceWipe();
   }
 }
 

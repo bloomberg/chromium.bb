@@ -21,6 +21,7 @@
 #include "chromeos/dbus/fake_sms_client.h"
 #include "chromeos/dbus/gsm_sms_client.h"
 #include "chromeos/dbus/modem_messaging_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_ipconfig_client.h"
 #include "chromeos/dbus/shill_manager_client.h"
@@ -32,6 +33,10 @@
 namespace chromeos {
 
 DBusClientsCommon::DBusClientsCommon(bool use_real_clients) {
+  const DBusClientImplementationType client_impl_type =
+      use_real_clients ? REAL_DBUS_CLIENT_IMPLEMENTATION
+                       : FAKE_DBUS_CLIENT_IMPLEMENTATION;
+
   if (use_real_clients)
     cras_audio_client_.reset(CrasAudioClient::Create());
   else
@@ -70,6 +75,8 @@ DBusClientsCommon::DBusClientsCommon(bool use_real_clients) {
   else
     modem_messaging_client_.reset(new FakeModemMessagingClient);
 
+  session_manager_client_.reset(SessionManagerClient::Create(client_impl_type));
+
   if (use_real_clients)
     sms_client_.reset(SMSClient::Create());
   else
@@ -84,6 +91,7 @@ void DBusClientsCommon::Initialize(dbus::Bus* system_bus) {
   cras_audio_client_->Init(system_bus);
   gsm_sms_client_->Init(system_bus);
   modem_messaging_client_->Init(system_bus);
+  session_manager_client_->Init(system_bus);
   shill_device_client_->Init(system_bus);
   shill_ipconfig_client_->Init(system_bus);
   shill_manager_client_->Init(system_bus);

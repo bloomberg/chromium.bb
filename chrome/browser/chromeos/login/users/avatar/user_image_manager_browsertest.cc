@@ -50,6 +50,7 @@
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/tpm/stub_install_attributes.h"
@@ -611,7 +612,8 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
                                    public policy::CloudPolicyStore::Observer {
  protected:
   UserImageManagerPolicyTest()
-      : owner_key_util_(new ownership::MockOwnerKeyUtil()) {}
+      : owner_key_util_(new ownership::MockOwnerKeyUtil()),
+        fake_session_manager_client_(new chromeos::FakeSessionManagerClient) {}
 
   // UserImageManagerTest overrides:
   void SetUpInProcessBrowserTestFixture() override {
@@ -620,10 +622,9 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
         ->SetOwnerKeyUtilForTesting(owner_key_util_);
     owner_key_util_->SetPublicKeyFromPrivateKey(
         *device_policy_.GetSigningKey());
-    // Override FakeSessionManagerClient. This will be shut down by the browser.
-    SessionManagerClient::InitializeFakeInMemory();
-    FakeSessionManagerClient::Get()->set_device_policy(
-        device_policy_.GetBlob());
+    fake_session_manager_client_->set_device_policy(device_policy_.GetBlob());
+    DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+        std::unique_ptr<SessionManagerClient>(fake_session_manager_client_));
 
     UserImageManagerTest::SetUpInProcessBrowserTestFixture();
   }
@@ -689,6 +690,7 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
   policy::UserPolicyBuilder user_policy_;
   policy::DevicePolicyBuilder device_policy_;
   scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util_;
+  FakeSessionManagerClient* fake_session_manager_client_;
 
   std::unique_ptr<gfx::ImageSkia> policy_image_;
 
@@ -721,8 +723,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, DISABLED_SetAndClear) {
   user_policy_.payload().mutable_useravatarimage()->set_value(
       ConstructPolicy(test::kUserAvatarImage2RelativePath));
   user_policy_.Build();
-  FakeSessionManagerClient::Get()->set_user_policy(cryptohome_id_,
-                                                   user_policy_.GetBlob());
+  fake_session_manager_client_->set_user_policy(cryptohome_id_,
+                                                user_policy_.GetBlob());
   run_loop_.reset(new base::RunLoop);
   store->Load();
   run_loop_->Run();
@@ -746,8 +748,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, DISABLED_SetAndClear) {
   // image.
   user_policy_.payload().Clear();
   user_policy_.Build();
-  FakeSessionManagerClient::Get()->set_user_policy(cryptohome_id_,
-                                                   user_policy_.GetBlob());
+  fake_session_manager_client_->set_user_policy(cryptohome_id_,
+                                                user_policy_.GetBlob());
   run_loop_.reset(new base::RunLoop);
   store->AddObserver(this);
   store->Load();
@@ -828,8 +830,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PolicyOverridesUser) {
   user_policy_.payload().mutable_useravatarimage()->set_value(
       ConstructPolicy(test::kUserAvatarImage2RelativePath));
   user_policy_.Build();
-  FakeSessionManagerClient::Get()->set_user_policy(cryptohome_id_,
-                                                   user_policy_.GetBlob());
+  fake_session_manager_client_->set_user_policy(cryptohome_id_,
+                                                user_policy_.GetBlob());
   run_loop_.reset(new base::RunLoop);
   store->Load();
   run_loop_->Run();
@@ -875,8 +877,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, UserDoesNotOverridePolicy) {
   user_policy_.payload().mutable_useravatarimage()->set_value(
       ConstructPolicy(test::kUserAvatarImage2RelativePath));
   user_policy_.Build();
-  FakeSessionManagerClient::Get()->set_user_policy(cryptohome_id_,
-                                                   user_policy_.GetBlob());
+  fake_session_manager_client_->set_user_policy(cryptohome_id_,
+                                                user_policy_.GetBlob());
   run_loop_.reset(new base::RunLoop);
   store->Load();
   run_loop_->Run();
