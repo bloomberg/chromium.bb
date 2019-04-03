@@ -2180,7 +2180,10 @@ TEST_P(WebStateObserverTest, ImmediatelyStopNavigation) {
 
 // Tests stopping a navigation after allowing the navigation from
 // WebStatePolicyDecider. DidStartNavigation and DidFinishNavigation callbacks
-// are still called.
+// are still called on simulator. On iOS 12.2 device the navigation never
+// starts, which is ok, but the behavior can not be tested so the test is
+// simulator-only.
+#if TARGET_IPHONE_SIMULATOR
 TEST_P(WebStateObserverTest, StopNavigationAfterPolicyDeciderCallback) {
   GURL url(test_server_->GetURL("/hung"));
   NavigationContext* context = nullptr;
@@ -2209,6 +2212,7 @@ TEST_P(WebStateObserverTest, StopNavigationAfterPolicyDeciderCallback) {
     return page_loaded_observer_ptr->did_finish_navigation_info();
   }));
 }
+#endif  // TARGET_IPHONE_SIMULATOR
 
 // Tests stopping a finished navigation. PageLoaded is never called.
 TEST_P(WebStateObserverTest, StopFinishedNavigation) {
