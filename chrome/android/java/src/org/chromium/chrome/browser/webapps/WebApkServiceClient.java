@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import android.annotation.TargetApi;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
@@ -133,6 +134,27 @@ public class WebApkServiceClient {
             }
         };
 
+        mConnectionManager.connect(
+                ContextUtils.getApplicationContext(), webApkPackage, connectionCallback);
+    }
+
+    /** Finishes and removes the WebAPK's task. */
+    @TargetApi(Build.VERSION_CODES.M)
+    public void finishAndRemoveTaskSdk23(final WebApkActivity webApkActivity) {
+        final ApiUseCallback connectionCallback = new ApiUseCallback() {
+            @Override
+            public void useApi(IWebApkApi api) throws RemoteException {
+                if (webApkActivity.isActivityFinishingOrDestroyed()) return;
+
+                if (!api.finishAndRemoveTaskSdk23()) {
+                    // If |webApkActivity| is not the root of the task, hopefully the activities
+                    // below this one will close themselves.
+                    webApkActivity.finish();
+                }
+            }
+        };
+
+        String webApkPackage = webApkActivity.getWebApkPackageName();
         mConnectionManager.connect(
                 ContextUtils.getApplicationContext(), webApkPackage, connectionCallback);
     }
