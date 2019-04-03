@@ -777,6 +777,9 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, HistoryUntouchedByPrefetch) {
 
 // Checks that prefetch requests have net::IDLE priority.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, IssuesIdlePriorityRequests) {
+  // TODO(pasko): Figure out how to test that while a prefetched URL is in IDLE
+  // priority state, a high-priority request with the same URL from a foreground
+  // navigation hits the server.
   GURL script_url = src_server()->GetURL(kPrefetchScript);
   content::URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
       [=](content::URLLoaderInterceptor::RequestParams* params) {
