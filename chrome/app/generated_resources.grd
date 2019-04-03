@@ -6676,6 +6676,10 @@ the Bookmarks menu.">
                  desc="Text for the context menu item that creates an app shortcut. (In sentence case.)">
           Create shortcuts...
         </message>
+        <message name="IDS_NEW_TAB_APP_INSTALL_LOCALLY"
+                 desc="Text for the context menu item that locally installs an app or shortcut. (In sentence case.)">
+          Install on this device
+        </message>
         <message name="IDS_APP_CONTEXT_MENU_SHOW_INFO"
                  desc="Text for the context menu item that shows the application information. (In sentence case.)">
           App info
@@ -6737,6 +6741,10 @@ the Bookmarks menu.">
             Create Shortcuts...
           </message>
         </if>
+        <message name="IDS_NEW_TAB_APP_INSTALL_LOCALLY"
+                 desc="Text for the context menu item that locally installs an app or shortcut. (In title case.)">
+          Install on this Device
+        </message>
         <message name="IDS_APP_CONTEXT_MENU_SHOW_INFO"
                  desc="Text for the context menu item that shows the application information. (In title case.)">
           App Info
