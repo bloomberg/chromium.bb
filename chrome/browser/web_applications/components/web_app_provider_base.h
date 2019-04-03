@@ -16,6 +16,7 @@ namespace web_app {
 class PendingAppManager;
 class InstallManager;
 class AppRegistrar;
+class WebAppPolicyManager;
 
 class WebAppProviderBase : public KeyedService {
  public:
@@ -31,6 +32,11 @@ class WebAppProviderBase : public KeyedService {
   // Clients can use PendingAppManager to install, uninstall, and update
   // Web Apps.
   virtual PendingAppManager& pending_app_manager() = 0;
+  // Clients can use WebAppPolicyManager to request updates of policy installed
+  // Web Apps.
+  // TODO(crbug.com/916381): Make a reference once WebAppPolicyManager is always
+  // present. It's currently only present for Bookmark Apps.
+  virtual WebAppPolicyManager* policy_manager() = 0;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppProviderBase);
 };

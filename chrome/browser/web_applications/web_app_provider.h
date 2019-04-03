@@ -67,6 +67,7 @@ class WebAppProvider : public WebAppProviderBase,
   AppRegistrar& registrar() override;
   InstallManager& install_manager() override;
   PendingAppManager& pending_app_manager() override;
+  WebAppPolicyManager* policy_manager() override;
 
   const SystemWebAppManager& system_web_app_manager() {
     return *system_web_app_manager_;
