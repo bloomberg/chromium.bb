@@ -855,13 +855,17 @@ void LocalNtpSource::StartDataRequest(
     // Currently Vasco search suggestions are only available for en-US
     // users. If this restriction is expanded or removed in the future this
     // check must be changed.
-    if (one_google_bar_service_->language_code() == kEnUSLanguageCode) {
-      MaybeServeSearchSuggestions(callback);
-
-      search_suggest_requests_.emplace_back(base::TimeTicks::Now());
-      search_suggest_service_->Refresh();
+    if (one_google_bar_service_->language_code() != kEnUSLanguageCode) {
+      std::string no_suggestions =
+          "var search_suggestions = {suggestionsHtml: ''}";
+      callback.Run(base::RefCountedString::TakeString(&no_suggestions));
+      return;
     }
 
+    MaybeServeSearchSuggestions(callback);
+
+    search_suggest_requests_.emplace_back(base::TimeTicks::Now());
+    search_suggest_service_->Refresh();
     return;
   }
 
