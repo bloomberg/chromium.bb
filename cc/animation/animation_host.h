@@ -231,6 +231,10 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
 
   MutatorHostClient* mutator_host_client_;
 
+  // Exactly one of scroll_offset_animations_ and scroll_offset_animations_impl_
+  // will be non-null for a given AnimationHost instance (the former if
+  // thread_instance_ == ThreadInstance::MAIN, the latter if thread_instance_ ==
+  // ThreadInstance::IMPL).
   std::unique_ptr<ScrollOffsetAnimations> scroll_offset_animations_;
   std::unique_ptr<ScrollOffsetAnimationsImpl> scroll_offset_animations_impl_;
 
