@@ -11,9 +11,9 @@ import com.google.android.libraries.feed.host.logging.ActionType;
 import com.google.android.libraries.feed.host.logging.BasicLoggingApi;
 import com.google.android.libraries.feed.host.logging.ContentLoggingData;
 import com.google.android.libraries.feed.host.logging.ElementLoggingData;
-import com.google.android.libraries.feed.host.logging.ElementType;
 import com.google.android.libraries.feed.host.logging.InternalFeedError;
 import com.google.android.libraries.feed.host.logging.RequestReason;
+import com.google.android.libraries.feed.host.logging.ScrollType;
 import com.google.android.libraries.feed.host.logging.SessionEvent;
 import com.google.android.libraries.feed.host.logging.SpinnerType;
 import com.google.android.libraries.feed.host.logging.ZeroStateShowReason;
@@ -217,12 +217,12 @@ public class FeedLoggingBridge implements BasicLoggingApi {
     }
 
     @Override
-    public void onVisualElementClicked(ElementLoggingData data, @ElementType int elementType) {
+    public void onVisualElementClicked(ElementLoggingData data, int elementType) {
         // TODO(https://crbug.com/924739): Implementation.
     }
 
     @Override
-    public void onVisualElementViewed(ElementLoggingData data, @ElementType int elementType) {
+    public void onVisualElementViewed(ElementLoggingData data, int elementType) {
         // TODO(https://crbug.com/924739): Implementation.
     }
 
@@ -265,6 +265,11 @@ public class FeedLoggingBridge implements BasicLoggingApi {
     @Override
     public void onInitialSessionEvent(
             @SessionEvent int sessionEvent, int timeFromRegisteringMs, int sessionCount) {
+        // TODO(https://crbug.com/924739): Implementation.
+    }
+
+    @Override
+    public void onScroll(@ScrollType int scrollType, int distanceScrolled) {
         // TODO(https://crbug.com/924739): Implementation.
     }
 
