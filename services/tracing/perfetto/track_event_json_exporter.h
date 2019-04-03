@@ -25,6 +25,7 @@ namespace tracing {
 class TrackEventJSONExporter : public JSONTraceExporter {
  public:
   TrackEventJSONExporter(ArgumentFilterPredicate argument_filter_predicate,
+                         MetadataFilterPredicate metadata_filter_predicate,
                          OnTraceEventJSONCallback callback);
 
   ~TrackEventJSONExporter() override;

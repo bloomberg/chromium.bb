@@ -79,6 +79,7 @@ class TrackEventJsonExporterTest : public testing::Test {
       const std::vector<perfetto::protos::TracePacket>& trace_packet_protos) {
     json_trace_exporter_.reset(new TrackEventJSONExporter(
         JSONTraceExporter::ArgumentFilterPredicate(),
+        JSONTraceExporter::MetadataFilterPredicate(),
         base::BindRepeating(&TrackEventJsonExporterTest::OnTraceEventJson,
                             base::Unretained(this))));
 

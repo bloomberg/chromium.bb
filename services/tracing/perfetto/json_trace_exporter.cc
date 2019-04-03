@@ -23,6 +23,8 @@ using TraceEvent = ::base::trace_event::TraceEvent;
 
 constexpr size_t kTraceEventBufferSizeInBytes = 100 * 1024;
 
+const char kStrippedArgument[] = "__stripped__";
+
 template <typename Nested>
 void AppendProtoArrayAsJSON(std::string* out, const Nested& array);
 
@@ -185,10 +187,12 @@ void OutputJSONFromArgumentProto(const perfetto::protos::DebugAnnotation& arg,
 
 JSONTraceExporter::JSONTraceExporter(
     ArgumentFilterPredicate argument_filter_predicate,
+    MetadataFilterPredicate metadata_filter_predicate,
     OnTraceEventJSONCallback callback)
     : out_(callback),
       metadata_(std::make_unique<base::DictionaryValue>()),
-      argument_filter_predicate_(std::move(argument_filter_predicate)) {}
+      argument_filter_predicate_(std::move(argument_filter_predicate)),
+      metadata_filter_predicate_(std::move(metadata_filter_predicate)) {}
 
 JSONTraceExporter::~JSONTraceExporter() = default;
 
@@ -291,6 +295,12 @@ void JSONTraceExporter::AddLegacyFtrace(
 
 void JSONTraceExporter::AddChromeMetadata(
     const perfetto::protos::ChromeMetadata& metadata) {
+  if (!metadata_filter_predicate_.is_null() &&
+      !metadata_filter_predicate_.Run(metadata.name())) {
+    metadata_->SetString(metadata.name(), kStrippedArgument);
+    return;
+  }
+
   if (metadata.has_string_value()) {
     metadata_->SetString(metadata.name(), metadata.string_value());
   } else if (metadata.has_int_value()) {
@@ -308,6 +318,12 @@ void JSONTraceExporter::AddChromeMetadata(
 
 void JSONTraceExporter::SetTraceStatsMetadata(
     const perfetto::protos::TraceStats& trace_stats) {
+  if (!metadata_filter_predicate_.is_null() &&
+      !metadata_filter_predicate_.Run("perfetto_trace_stats")) {
+    metadata_->SetString("perfetto_trace_stats", kStrippedArgument);
+    return;
+  }
+
   auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetInteger("producers_connected", trace_stats.producers_connected());
   dict->SetInteger("producers_seen", trace_stats.producers_seen());
@@ -500,7 +516,7 @@ bool JSONTraceExporter::ArgumentBuilder::SkipBecauseStripped(
     return true;
   }
   if (ArgumentNameIsStripped(name)) {
-    AddArg()->AppendF("\"%s\":\"__stripped__\"", name.c_str());
+    AddArg()->AppendF("\"%s\":\"%s\"", name.c_str(), kStrippedArgument);
     return true;
   }
   return false;
