@@ -50,7 +50,6 @@ jumbo_component("wtf") {
     "casting.h",
     "conditional_destructor.h",
     "container_annotations.h",
-    "cpu.h",
     "date_math.cc",
     "date_math.h",
     "decimal.cc",

@@ -30,6 +30,7 @@
 #include <cmath>
 #include <cstdlib>
 
+#include "base/compiler_specific.h"
 #include "third_party/blink/renderer/platform/geometry/float_box.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
@@ -39,7 +40,6 @@
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 #include "third_party/blink/renderer/platform/transforms/rotation.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/cpu.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "ui/gfx/transform.h"
@@ -48,7 +48,7 @@
 #include <emmintrin.h>
 #endif
 
-#if HAVE_MIPS_MSA_INTRINSICS
+#if defined(HAVE_MIPS_MSA_INTRINSICS)
 #include "third_party/blink/renderer/platform/cpu/mips/common_macros_msa.h"
 #endif
 
@@ -340,7 +340,7 @@ static bool Inverse(const TransformationMatrix::Matrix4& matrix,
       : "memory", "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v16", "v17",
         "v18", "v19", "v20", "v21", "v22", "v23", "24", "25", "v26", "v27",
         "v28", "v29", "v30");
-#elif HAVE_MIPS_MSA_INTRINSICS
+#elif defined(HAVE_MIPS_MSA_INTRINSICS)
   const double rDet = 1 / det;
   const double* mat = &(matrix[0][0]);
   v2f64 mat0, mat1, mat2, mat3, mat4, mat5, mat6, mat7;
@@ -1345,7 +1345,7 @@ TransformationMatrix& TransformationMatrix::Multiply(
       : "memory", "x9", "v16", "v17", "v18", "v19", "v20", "v21", "v22", "v23",
         "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v0", "v1",
         "v2", "v3", "v4", "v5", "v6", "v7");
-#elif HAVE_MIPS_MSA_INTRINSICS
+#elif defined(HAVE_MIPS_MSA_INTRINSICS)
   v2f64 v_right_m0, v_right_m1, v_right_m2, v_right_m3, v_right_m4, v_right_m5,
       v_right_m6, v_right_m7;
   v2f64 v_left_m0, v_left_m1, v_left_m2, v_left_m3, v_left_m4, v_left_m5,
