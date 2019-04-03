@@ -1455,17 +1455,13 @@ TEST_F(NavigationControllerTest, ResetEntryValuesAfterCommit) {
   // The value of "should replace entry" will be tested, but it's an error to
   // specify it when there are no entries. Create a simple entry to be replaced.
   const GURL url0("http://foo/0");
-  controller.LoadURL(
-      url0, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  int entry_id = controller.GetPendingEntry()->GetUniqueID();
-  main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigate(entry_id, true, url0);
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url0);
 
   // Set up the pending entry.
   const GURL url1("http://foo/1");
-  controller.LoadURL(
-      url1, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  entry_id = controller.GetPendingEntry()->GetUniqueID();
+  auto navigation =
+      NavigationSimulatorImpl::CreateBrowserInitiated(url1, contents());
+  navigation->Start();
 
   // Set up some sample values.
   const char* raw_data = "post\n\n\0data";
@@ -1484,8 +1480,7 @@ TEST_F(NavigationControllerTest, ResetEntryValuesAfterCommit) {
   EXPECT_TRUE(pending_entry->should_clear_history_list());
 
   // Fake a commit response.
-  main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigateWithReplacement(entry_id, true, url1);
+  navigation->set_should_replace_current_entry(true);
 
   // Certain values that are only used for pending entries get reset after
   // commit.
@@ -3084,8 +3079,9 @@ TEST_F(NavigationControllerTest, RendererInitiatedPendingEntries) {
 
   // We create pending entries for renderer-initiated navigations so that we
   // can show them in new tabs when it is safe.
-  main_test_rfh()->SendRendererInitiatedNavigationRequest(url1, false);
-  main_test_rfh()->PrepareForCommit();
+  auto navigation1 =
+      NavigationSimulator::CreateRendererInitiated(url1, main_test_rfh());
+  navigation1->ReadyToCommit();
 
   // Simulate what happens if a BrowserURLHandler rewrites the URL, causing
   // the virtual URL to differ from the URL.
@@ -3097,22 +3093,23 @@ TEST_F(NavigationControllerTest, RendererInitiatedPendingEntries) {
   EXPECT_TRUE(controller.GetPendingEntry()->is_renderer_initiated());
 
   // If the user clicks another link, we should replace the pending entry.
-  main_test_rfh()->SendRendererInitiatedNavigationRequest(url2, false);
-  TestRenderFrameHost* navigating_rfh = GetNavigatingRenderFrameHost();
-  navigating_rfh->PrepareForCommit();
+  auto navigation2 =
+      NavigationSimulator::CreateRendererInitiated(url2, main_test_rfh());
+  navigation2->ReadyToCommit();
   EXPECT_EQ(url2, controller.GetPendingEntry()->GetURL());
   EXPECT_EQ(url2, controller.GetPendingEntry()->GetVirtualURL());
 
   // Once it commits, the URL and virtual URL should reflect the actual page.
-  navigating_rfh->SendNavigate(0, true, url2);
+  navigation2->Commit();
   EXPECT_EQ(url2, controller.GetLastCommittedEntry()->GetURL());
   EXPECT_EQ(url2, controller.GetLastCommittedEntry()->GetVirtualURL());
 
   // We should remember if the pending entry will replace the current one.
   // http://crbug.com/308444.
-  main_test_rfh()->SendRendererInitiatedNavigationRequest(url2, false);
-  main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigateWithReplacement(0, false, url2);
+  auto navigation3 =
+      NavigationSimulatorImpl::CreateRendererInitiated(url2, main_test_rfh());
+  navigation3->set_should_replace_current_entry(true);
+  navigation3->Commit();
   EXPECT_EQ(url2, controller.GetLastCommittedEntry()->GetURL());
 }
 
