@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/ime/input_method_win_tsf.h"
+#include "ui/base/ime/win/input_method_win_tsf.h"
 
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/win/tsf_bridge.h"

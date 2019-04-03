@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/ime/input_method_factory.h"
+#include "ui/base/ime/init/input_method_factory.h"
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
@@ -12,16 +12,16 @@
 #include "ui/gfx/switches.h"
 
 #if defined(OS_CHROMEOS)
-#include "ui/base/ime/input_method_chromeos.h"
+#include "ui/base/ime/chromeos/input_method_chromeos.h"
 #elif defined(OS_WIN)
-#include "ui/base/ime/input_method_win_imm32.h"
-#include "ui/base/ime/input_method_win_tsf.h"
+#include "ui/base/ime/win/input_method_win_imm32.h"
+#include "ui/base/ime/win/input_method_win_tsf.h"
 #elif defined(OS_MACOSX)
-#include "ui/base/ime/input_method_mac.h"
+#include "ui/base/ime/mac/input_method_mac.h"
 #elif defined(OS_FUCHSIA)
-#include "ui/base/ime/input_method_fuchsia.h"
+#include "ui/base/ime/fuchsia/input_method_fuchsia.h"
 #elif defined(USE_AURA) && (defined(USE_X11) || defined(USE_OZONE))
-#include "ui/base/ime/input_method_auralinux.h"
+#include "ui/base/ime/linux/input_method_auralinux.h"
 #else
 #include "ui/base/ime/input_method_minimal.h"
 #endif

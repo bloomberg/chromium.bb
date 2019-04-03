@@ -10,7 +10,7 @@
 
 namespace chromeos {
 
-class COMPONENT_EXPORT(UI_BASE_IME) MockComponentExtensionIMEManager
+class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) MockComponentExtensionIMEManager
     : public ComponentExtensionIMEManager {
  public:
   input_method::InputMethodDescriptors GetXkbIMEAsInputMethodDescriptor()

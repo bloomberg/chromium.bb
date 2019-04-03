@@ -13,7 +13,7 @@
 #include "ui/base/ime/ime_input_context_handler_interface.h"
 
 #if defined(OS_CHROMEOS)
-#include "ui/base/ime/chromeos/ime_candidate_window_handler_interface.h"
+#include "ui/base/ime/ime_candidate_window_handler_interface.h"
 
 namespace chromeos {
 class IMECandidateWindowHandlerInterface;

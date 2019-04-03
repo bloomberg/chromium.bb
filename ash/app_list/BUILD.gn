@@ -131,6 +131,7 @@ component("app_list") {
     "//ui/aura",
     "//ui/base",
     "//ui/base/ime",
+    "//ui/base/ime/chromeos",
     "//ui/chromeos/search_box",
     "//ui/compositor",
     "//ui/display",

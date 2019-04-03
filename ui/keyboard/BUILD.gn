@@ -175,7 +175,7 @@ test("keyboard_unittests") {
     "//ui/aura:test_support",
     "//ui/base",
     "//ui/base:test_support",
-    "//ui/base/ime",
+    "//ui/base/ime/init",
     "//ui/compositor:test_support",
     "//ui/events:test_support",
     "//ui/gfx",

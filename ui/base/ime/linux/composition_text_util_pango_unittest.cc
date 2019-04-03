@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/ime/composition_text_util_pango.h"
+#include "ui/base/ime/linux/composition_text_util_pango.h"
 
 #include <pango/pango-attributes.h>
 #include <stddef.h>

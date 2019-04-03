@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/ime/input_method_initializer.h"
+#include "ui/base/ime/init/input_method_initializer.h"
 
 #include "build/build_config.h"
 
@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "ui/base/ime/linux/fake_input_method_context_factory.h"
 #elif defined(OS_WIN)
-#include "ui/base/ime/input_method_factory.h"
+#include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/win/tsf_bridge.h"
 #endif
 

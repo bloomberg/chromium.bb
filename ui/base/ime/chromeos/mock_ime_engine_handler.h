@@ -15,7 +15,7 @@
 
 namespace chromeos {
 
-class COMPONENT_EXPORT(UI_BASE_IME) MockIMEEngineHandler
+class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) MockIMEEngineHandler
     : public ui::IMEEngineHandlerInterface {
  public:
   MockIMEEngineHandler();

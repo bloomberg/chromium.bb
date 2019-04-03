@@ -26,7 +26,7 @@ class TextInputClient;
 // of text inputting and current focused TextInputClient.
 //
 // All methods in this class must be used in UI thread.
-class COMPONENT_EXPORT(UI_BASE_IME) TSFBridge {
+class COMPONENT_EXPORT(UI_BASE_IME_WIN) TSFBridge {
  public:
   virtual ~TSFBridge();
 

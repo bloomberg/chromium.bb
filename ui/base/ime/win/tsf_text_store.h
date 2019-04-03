@@ -99,7 +99,7 @@ class TextInputClient;
 //
 // More information about TSF can be found here:
 //   http://msdn.microsoft.com/en-us/library/ms629032
-class COMPONENT_EXPORT(UI_BASE_IME) TSFTextStore
+class COMPONENT_EXPORT(UI_BASE_IME_WIN) TSFTextStore
     : public ITextStoreACP,
       public ITfContextOwnerCompositionSink,
       public ITfKeyTraceEventSink,

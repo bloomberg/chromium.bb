@@ -39,7 +39,7 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/class_property.h"
-#include "ui/base/ime/input_method_factory.h"
+#include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches_util.h"

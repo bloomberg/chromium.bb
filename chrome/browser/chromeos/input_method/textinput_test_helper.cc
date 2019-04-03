@@ -19,7 +19,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/base/ime/input_method_factory.h"
+#include "ui/base/ime/init/input_method_factory.h"
 
 namespace chromeos {
 

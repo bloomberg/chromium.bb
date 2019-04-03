@@ -145,6 +145,7 @@ source_set("test_support") {
     "//testing/gtest",
     "//ui/aura",
     "//ui/aura:test_support",
+    "//ui/base/ime/init",
     "//ui/compositor",
     "//ui/compositor:test_support",
     "//ui/display/manager",

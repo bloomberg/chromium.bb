@@ -9,7 +9,7 @@ sources = [
   "//services/ws/public/mojom/ime/ime_struct_traits.cc",
 ]
 public_deps = [
-  "//ui/base/ime:ime_types",
+  "//ui/base/ime",
 ]
 
 type_mappings = [

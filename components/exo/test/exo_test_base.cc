@@ -10,7 +10,7 @@
 #include "components/exo/wm_helper.h"
 #include "components/exo/wm_helper_chromeos.h"
 #include "ui/aura/env.h"
-#include "ui/base/ime/input_method_factory.h"
+#include "ui/base/ime/init/input_method_factory.h"
 #include "ui/wm/core/wm_core_switches.h"
 
 namespace exo {

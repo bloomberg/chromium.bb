@@ -22,7 +22,7 @@ source_set("events") {
     "//base",
     "//chromeos",
     "//device/udev_linux",
-    "//ui/base/ime",
+    "//ui/base/ime/chromeos",
     "//ui/events",
     "//ui/events:dom_keycode_converter",
     "//ui/events/devices",

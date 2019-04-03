@@ -18,7 +18,7 @@ namespace ui {
 // Intentionally keep sync with blink::WebImeTextSpan defined in:
 // third_party/WebKit/public/web/WebImeTextSpan.h
 
-struct COMPONENT_EXPORT(UI_BASE_IME_TYPES) ImeTextSpan {
+struct COMPONENT_EXPORT(UI_BASE_IME) ImeTextSpan {
   enum class Type {
     // Creates a composition marker.
     kComposition,

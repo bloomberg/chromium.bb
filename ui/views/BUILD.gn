@@ -531,7 +531,7 @@ jumbo_component("views") {
     "//ui/accessibility:ax_enums_mojo",
     "//ui/base",
     "//ui/base/clipboard",
-    "//ui/base/ime",
+    "//ui/base/ime/init",
     "//ui/compositor",
     "//ui/display",
     "//ui/events",
@@ -549,7 +549,10 @@ jumbo_component("views") {
 
   if (is_linux && !is_chromeos) {
     sources -= [ "window/window_button_order_provider.cc" ]
-    deps += [ "//ui/shell_dialogs" ]
+    deps += [
+      "//ui/base/ime/linux",
+      "//ui/shell_dialogs",
+    ]
   } else {
     public -= [
       "linux_ui/linux_ui.h",
@@ -908,7 +911,7 @@ jumbo_source_set("test_support") {
     "//ui/base",
     "//ui/base:test_support",
     "//ui/base/clipboard:clipboard_test_support",
-    "//ui/base/ime",
+    "//ui/base/ime/init",
     "//ui/compositor",
     "//ui/compositor:test_support",
     "//ui/events",
@@ -1113,7 +1116,7 @@ test("views_unittests") {
     "//ui/base",
     "//ui/base:test_support",
     "//ui/base/clipboard",
-    "//ui/base/ime",
+    "//ui/base/ime/init",
     "//ui/compositor:test_support",
     "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",
@@ -1174,6 +1177,10 @@ test("views_unittests") {
       "accessibility/view_ax_platform_node_delegate_win_unittest.cc",
       "win/pen_event_processor_unittest.cc",
     ]
+  }
+
+  if (is_linux && !is_chromeos) {
+    deps += [ "//ui/base/ime/linux" ]
   }
 
   if (has_native_accessibility) {
@@ -1274,6 +1281,7 @@ source_set("views_interactive_ui_tests") {
     "//skia",
     "//testing/gtest",
     "//ui/base:test_support",
+    "//ui/base/ime",
     "//ui/compositor",
     "//ui/events:test_support",
     "//ui/gl:test_support",

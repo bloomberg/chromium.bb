@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_IME_INPUT_METHOD_WIN_IMM32_H_
-#define UI_BASE_IME_INPUT_METHOD_WIN_IMM32_H_
+#ifndef UI_BASE_IME_WIN_INPUT_METHOD_WIN_IMM32_H_
+#define UI_BASE_IME_WIN_INPUT_METHOD_WIN_IMM32_H_
 
 #include <windows.h>
 
@@ -12,13 +12,13 @@
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "ui/base/ime/input_method_win_base.h"
 #include "ui/base/ime/win/imm32_manager.h"
+#include "ui/base/ime/win/input_method_win_base.h"
 
 namespace ui {
 
 // A common InputMethod implementation based on IMM32.
-class COMPONENT_EXPORT(UI_BASE_IME) InputMethodWinImm32
+class COMPONENT_EXPORT(UI_BASE_IME_WIN) InputMethodWinImm32
     : public InputMethodWinBase {
  public:
   InputMethodWinImm32(internal::InputMethodDelegate* delegate,
@@ -100,4 +100,4 @@ class COMPONENT_EXPORT(UI_BASE_IME) InputMethodWinImm32
 
 }  // namespace ui
 
-#endif  // UI_BASE_IME_INPUT_METHOD_WIN_IMM32_H_
+#endif  // UI_BASE_IME_WIN_INPUT_METHOD_WIN_IMM32_H_

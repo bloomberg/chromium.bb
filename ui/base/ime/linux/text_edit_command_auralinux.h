@@ -15,7 +15,7 @@ enum class TextEditCommand;
 
 // Represents a command that performs a specific operation on text.
 // Copy and assignment are explicitly allowed; these objects live in vectors.
-class COMPONENT_EXPORT(UI_BASE_IME) TextEditCommandAuraLinux {
+class COMPONENT_EXPORT(UI_BASE_IME_LINUX) TextEditCommandAuraLinux {
  public:
   TextEditCommandAuraLinux(TextEditCommand command, const std::string& argument)
       : command_(command), argument_(argument) {}

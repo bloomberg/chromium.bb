@@ -339,7 +339,7 @@ jumbo_static_library("content_shell_lib") {
     "//third_party/icu",
     "//ui/base",
     "//ui/base/clipboard",
-    "//ui/base/ime",
+    "//ui/base/ime/init",
     "//ui/display",
     "//ui/events:events_base",
     "//ui/gfx",

@@ -21,7 +21,8 @@ class OnScreenKeyboardDetector;
 // This class provides an implementation of the InputMethodKeyboardController
 // that uses heuristics and the TabTip.exe to display the on screen keyboard.
 // Used on Windows > 7 and Windows < 10.0.10240.0
-class COMPONENT_EXPORT(UI_BASE_IME) OnScreenKeyboardDisplayManagerTabTip final
+class COMPONENT_EXPORT(UI_BASE_IME_WIN)
+    OnScreenKeyboardDisplayManagerTabTip final
     : public InputMethodKeyboardController {
  public:
   OnScreenKeyboardDisplayManagerTabTip(HWND hwnd);

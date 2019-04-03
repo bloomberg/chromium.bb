@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/ime/input_method_chromeos.h"
+#include "ui/base/ime/chromeos/input_method_chromeos.h"
 
 #include <stddef.h>
 #include <stdint.h>

@@ -44,7 +44,7 @@ class TSFEventRouterObserver {
 
 // This class monitors TSF related events and forwards them to given
 // |observer|.
-class COMPONENT_EXPORT(UI_BASE_IME) TSFEventRouter {
+class COMPONENT_EXPORT(UI_BASE_IME_WIN) TSFEventRouter {
  public:
   // Do not pass NULL to |observer|.
   explicit TSFEventRouter(TSFEventRouterObserver* observer);

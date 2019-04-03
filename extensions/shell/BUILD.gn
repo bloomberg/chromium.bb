@@ -70,7 +70,7 @@ source_set("app_shell_lib") {
     "//google_apis",
     "//third_party/blink/public:blink",
     "//ui/base",
-    "//ui/base/ime",
+    "//ui/base/ime/init",
   ]
 
   # TODO(michaelpg): remove Mac support and always use aura.
@@ -346,6 +346,7 @@ test("app_shell_unittests") {
     deps += [
       "//ui/aura:test_support",
       "//ui/base:test_support",
+      "//ui/base/ime/init",
       "//ui/compositor:test_support",
     ]
   }

@@ -16,7 +16,7 @@
 namespace chromeos {
 namespace input_method {
 
-class COMPONENT_EXPORT(UI_BASE_IME) FakeInputMethodDelegate
+class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) FakeInputMethodDelegate
     : public InputMethodDelegate {
  public:
   typedef base::RepeatingCallback<base::string16(
