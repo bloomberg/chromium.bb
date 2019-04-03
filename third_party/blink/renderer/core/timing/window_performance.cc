@@ -149,14 +149,14 @@ ExecutionContext* WindowPerformance::GetExecutionContext() const {
 
 PerformanceTiming* WindowPerformance::timing() const {
   if (!timing_)
-    timing_ = PerformanceTiming::Create(GetFrame());
+    timing_ = MakeGarbageCollected<PerformanceTiming>(GetFrame());
 
   return timing_.Get();
 }
 
 PerformanceNavigation* WindowPerformance::navigation() const {
   if (!navigation_)
-    navigation_ = PerformanceNavigation::Create(GetFrame());
+    navigation_ = MakeGarbageCollected<PerformanceNavigation>(GetFrame());
 
   return navigation_.Get();
 }
@@ -167,9 +167,10 @@ MemoryInfo* WindowPerformance::memory() const {
   // course over time about what changes would be implemented) can be found at
   // https://groups.google.com/a/chromium.org/forum/#!topic/blink-dev/no00RdMnGio,
   // and the relevant bug is https://crbug.com/807651.
-  return MemoryInfo::Create(Platform::Current()->IsLockedToSite()
-                                ? MemoryInfo::Precision::Precise
-                                : MemoryInfo::Precision::Bucketized);
+  return MakeGarbageCollected<MemoryInfo>(
+      Platform::Current()->IsLockedToSite()
+          ? MemoryInfo::Precision::Precise
+          : MemoryInfo::Precision::Bucketized);
 }
 
 PerformanceNavigationTiming*
@@ -436,7 +437,7 @@ void WindowPerformance::DispatchFirstInputTiming(
 
 void WindowPerformance::AddLayoutJankFraction(double jank_fraction) {
   DCHECK(origin_trials::LayoutJankAPIEnabled(GetExecutionContext()));
-  PerformanceLayoutJank* entry = PerformanceLayoutJank::Create(jank_fraction);
+  auto* entry = MakeGarbageCollected<PerformanceLayoutJank>(jank_fraction);
   if (HasObserverFor(PerformanceEntry::kLayoutJank))
     NotifyObserversOfEntry(*entry);
   if (ShouldBufferEntries())

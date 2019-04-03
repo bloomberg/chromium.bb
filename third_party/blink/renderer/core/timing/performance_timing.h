@@ -60,10 +60,6 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   USING_GARBAGE_COLLECTED_MIXIN(PerformanceTiming);
 
  public:
-  static PerformanceTiming* Create(LocalFrame* frame) {
-    return MakeGarbageCollected<PerformanceTiming>(frame);
-  }
-
   explicit PerformanceTiming(LocalFrame*);
 
   uint64_t navigationStart() const;

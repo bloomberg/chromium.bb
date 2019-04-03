@@ -58,9 +58,6 @@ class CORE_EXPORT MemoryInfo final : public ScriptWrappable {
   // time (50 ms). A Bucketized value means that the numbers will be bucketized
   // and cached for a long period of time (20 minutes).
   enum class Precision { Precise, Bucketized };
-  static MemoryInfo* Create(Precision precision) {
-    return MakeGarbageCollected<MemoryInfo>(precision);
-  }
 
   explicit MemoryInfo(Precision precision);
 

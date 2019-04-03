@@ -563,8 +563,8 @@ WebResourceTimingInfo Performance::GenerateResourceTiming(
 
 void Performance::AddResourceTiming(const WebResourceTimingInfo& info,
                                     const AtomicString& initiator_type) {
-  PerformanceEntry* entry =
-      PerformanceResourceTiming::Create(info, time_origin_, initiator_type);
+  auto* entry = MakeGarbageCollected<PerformanceResourceTiming>(
+      info, time_origin_, initiator_type);
   NotifyObserversOfEntry(*entry);
   // https://w3c.github.io/resource-timing/#dfn-add-a-performanceresourcetiming-entry
   if (CanAddResourceTimingEntry() &&
@@ -717,7 +717,7 @@ void Performance::AddLongTaskTiming(
     it->setHighResDuration(
         ConvertTimeDeltaToDOMHighResTimeStamp(it->duration()));
   }
-  PerformanceEntry* entry = PerformanceLongTaskTiming::Create(
+  auto* entry = MakeGarbageCollected<PerformanceLongTaskTiming>(
       MonotonicTimeToDOMHighResTimeStamp(start_time),
       MonotonicTimeToDOMHighResTimeStamp(end_time), name, frame_src, frame_id,
       frame_name, sub_task_attributions);
@@ -735,7 +735,7 @@ PerformanceMark* Performance::mark(ScriptState* script_state,
                                    PerformanceMarkOptions* mark_options,
                                    ExceptionState& exception_state) {
   if (!user_timing_)
-    user_timing_ = UserTiming::Create(*this);
+    user_timing_ = MakeGarbageCollected<UserTiming>(*this);
   PerformanceMark* performance_mark = user_timing_->Mark(
       script_state, mark_name, mark_options, exception_state);
   if (performance_mark)
@@ -747,7 +747,7 @@ PerformanceMark* Performance::mark(ScriptState* script_state,
 
 void Performance::clearMarks(const AtomicString& mark_name) {
   if (!user_timing_)
-    user_timing_ = UserTiming::Create(*this);
+    user_timing_ = MakeGarbageCollected<UserTiming>(*this);
   user_timing_->ClearMarks(mark_name);
 }
 
@@ -876,7 +876,7 @@ PerformanceMeasure* Performance::MeasureWithDetail(
   StringOrDouble original_end = end;
 
   if (!user_timing_)
-    user_timing_ = UserTiming::Create(*this);
+    user_timing_ = MakeGarbageCollected<UserTiming>(*this);
   PerformanceMeasure* performance_measure =
       user_timing_->Measure(script_state, measure_name, original_start,
                             original_end, detail, exception_state);
@@ -887,7 +887,7 @@ PerformanceMeasure* Performance::MeasureWithDetail(
 
 void Performance::clearMeasures(const AtomicString& measure_name) {
   if (!user_timing_)
-    user_timing_ = UserTiming::Create(*this);
+    user_timing_ = MakeGarbageCollected<UserTiming>(*this);
   user_timing_->ClearMeasures(measure_name);
 }
 

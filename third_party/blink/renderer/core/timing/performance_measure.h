@@ -38,15 +38,6 @@ class PerformanceMeasure final : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PerformanceMeasure* Create(ScriptState* script_state,
-                                    const AtomicString& name,
-                                    double start_time,
-                                    double end_time,
-                                    const ScriptValue& detail) {
-    return MakeGarbageCollected<PerformanceMeasure>(
-        script_state, name, start_time, end_time, detail);
-  }
-
   PerformanceMeasure(ScriptState*,
                      const AtomicString& name,
                      double start_time,
