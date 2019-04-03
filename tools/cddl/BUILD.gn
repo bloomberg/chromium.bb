@@ -6,6 +6,8 @@ executable("cddl") {
   sources = [
     "codegen.cc",
     "codegen.h",
+    "logging.cc",
+    "logging.h",
     "main.cc",
     "parse.cc",
     "parse.h",

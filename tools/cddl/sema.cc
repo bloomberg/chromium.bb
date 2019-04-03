@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "tools/cddl/logging.h"
 #include "tools/cddl/sema.h"
 
 #include <string.h>
@@ -428,86 +429,6 @@ bool AnalyzeGroupEntry(CddlSymbolTable* table,
   return true;
 }
 
-void DumpType(CddlType* type, int indent_level = 0);
-void DumpGroup(CddlGroup* group, int indent_level = 0);
-
-void DumpType(CddlType* type, int indent_level) {
-  for (int i = 0; i <= indent_level; ++i)
-    printf("--");
-  switch (type->which) {
-    case CddlType::Which::kDirectChoice:
-      printf("kDirectChoice:\n");
-      for (auto& option : type->direct_choice)
-        DumpType(option, indent_level + 1);
-      break;
-    case CddlType::Which::kValue:
-      printf("kValue: %s\n", type->value.c_str());
-      break;
-    case CddlType::Which::kId:
-      printf("kId: %s\n", type->id.c_str());
-      break;
-    case CddlType::Which::kMap:
-      printf("kMap:\n");
-      DumpGroup(type->map, indent_level + 1);
-      break;
-    case CddlType::Which::kArray:
-      printf("kArray:\n");
-      DumpGroup(type->array, indent_level + 1);
-      break;
-    case CddlType::Which::kGroupChoice:
-      printf("kGroupChoice:\n");
-      DumpGroup(type->group_choice, indent_level + 1);
-      break;
-    case CddlType::Which::kGroupnameChoice:
-      printf("kGroupnameChoice:\n");
-      break;
-    case CddlType::Which::kTaggedType:
-      printf("kTaggedType: %" PRIu64 "\n", type->tagged_type.tag_value);
-      DumpType(type->tagged_type.type, indent_level + 1);
-      break;
-  }
-}
-
-void DumpGroup(CddlGroup* group, int indent_level) {
-  for (auto& entry : group->entries) {
-    for (int i = 0; i <= indent_level; ++i)
-      printf("--");
-    switch (entry->which) {
-      case CddlGroup::Entry::Which::kUninitialized:
-        break;
-      case CddlGroup::Entry::Which::kType:
-        printf("kType:");
-        if (entry->HasOccurrenceOperator())
-          printf("minOccurance: %d maxOccurance: %d", entry->opt_occurrence_min,
-                 entry->opt_occurrence_max);
-        if (!entry->type.opt_key.empty())
-          printf(" %s =>", entry->type.opt_key.c_str());
-        printf("\n");
-        DumpType(entry->type.value, indent_level + 1);
-        break;
-      case CddlGroup::Entry::Which::kGroup:
-        if (entry->HasOccurrenceOperator())
-          printf("minOccurance: %d maxOccurance: %d", entry->opt_occurrence_min,
-                 entry->opt_occurrence_max);
-        DumpGroup(entry->group, indent_level + 1);
-        break;
-    }
-  }
-}
-
-void DumpSymbolTable(CddlSymbolTable* table) {
-  for (auto& entry : table->type_map) {
-    printf("%s\n", entry.first.c_str());
-    DumpType(entry.second);
-    printf("\n");
-  }
-  for (auto& entry : table->group_map) {
-    printf("%s\n", entry.first.c_str());
-    DumpGroup(entry.second);
-    printf("\n");
-  }
-}
-
 std::pair<bool, CddlSymbolTable> BuildSymbolTable(const AstNode& rules) {
   std::pair<bool, CddlSymbolTable> result;
   result.first = false;
@@ -521,6 +442,8 @@ std::pair<bool, CddlSymbolTable> BuildSymbolTable(const AstNode& rules) {
     // Ensure that the node is either a type or group definition.
     if (node->type != AstNode::Type::kTypename &&
         node->type != AstNode::Type::kGroupname) {
+      Logger::Error("Error parsing node with text '%s'. Unexpected node type.",
+                    node->text);
       return result;
     }
     bool is_type = node->type == AstNode::Type::kTypename;
@@ -528,15 +451,20 @@ std::pair<bool, CddlSymbolTable> BuildSymbolTable(const AstNode& rules) {
 
     // Ensure that the node is assignment.
     node = node->sibling;
-    if (node->type != AstNode::Type::kAssign)
+    if (node->type != AstNode::Type::kAssign) {
+      Logger::Error("Error parsing node with text '%s'. Node type != kAssign.",
+                    node->text);
       return result;
+    }
 
     // Process the definition.
     node = node->sibling;
     if (is_type) {
       CddlType* type = AnalyzeType(&table, *node);
-      if (!type)
-        return result;
+      if (!type) {
+        Logger::Error("Error parsing node with text '%s'."
+                      "Failed to analyze node type.", node->text);
+      }
       table.type_map.emplace(std::string(name), type);
     } else {
       table.groups.emplace_back(new CddlGroup);
@@ -546,6 +474,8 @@ std::pair<bool, CddlSymbolTable> BuildSymbolTable(const AstNode& rules) {
       table.group_map.emplace(std::string(name), group);
     }
   }
+
+  DumpSymbolTable(&result.second);
 
   result.first = true;
   return result;
@@ -834,4 +764,96 @@ bool ValidateCppTypes(const CppSymbolTable& cpp_symbols) {
   return absl::c_all_of(
       cpp_symbols.cpp_types,
       [](const std::unique_ptr<CppType>& ptr) { return HasUniqueKeys(*ptr); });
+}
+
+void DumpType(CddlType* type, int indent_level) {
+  std::string output = "";
+  for (int i = 0; i <= indent_level; ++i)
+    output += "--";
+  switch (type->which) {
+    case CddlType::Which::kDirectChoice:
+      output ="kDirectChoice:";
+      Logger::Log(output);
+      for (auto& option : type->direct_choice)
+        DumpType(option, indent_level + 1);
+      break;
+    case CddlType::Which::kValue:
+      output += "kValue: " + type->value;
+      Logger::Log(output);
+      break;
+    case CddlType::Which::kId:
+      output += "kId: " + type->id;
+      Logger::Log(output);
+      break;
+    case CddlType::Which::kMap:
+      output += "kMap:";
+      Logger::Log(output);
+      DumpGroup(type->map, indent_level + 1);
+      break;
+    case CddlType::Which::kArray:
+      output += "kArray:";
+      Logger::Log(output);
+      DumpGroup(type->array, indent_level + 1);
+      break;
+    case CddlType::Which::kGroupChoice:
+      output += "kGroupChoice:";
+      Logger::Log(output);
+      DumpGroup(type->group_choice, indent_level + 1);
+      break;
+    case CddlType::Which::kGroupnameChoice:
+      output += "kGroupnameChoice:";
+      Logger::Log(output);
+      break;
+    case CddlType::Which::kTaggedType:
+      output += "kTaggedType: " + std::to_string(type->tagged_type.tag_value);
+      Logger::Log(output);
+      DumpType(type->tagged_type.type, indent_level + 1);
+      break;
+  }
+}
+
+void DumpGroup(CddlGroup* group, int indent_level) {
+  for (auto& entry : group->entries) {
+    std::string output = "";
+    for (int i = 0; i <= indent_level; ++i)
+      output += "--";
+    switch (entry->which) {
+      case CddlGroup::Entry::Which::kUninitialized:
+        break;
+      case CddlGroup::Entry::Which::kType:
+        output += "kType:";
+        if (entry->HasOccurrenceOperator()) {
+          output += "minOccurance: " +
+                    std::to_string(entry->opt_occurrence_min) +
+                    " maxOccurance: " +
+                    std::to_string(entry->opt_occurrence_max);
+        }
+        if (!entry->type.opt_key.empty()) {
+          output += " " + entry->type.opt_key + "=>";
+        }
+        Logger::Log(output);
+        DumpType(entry->type.value, indent_level + 1);
+        break;
+      case CddlGroup::Entry::Which::kGroup:
+        if (entry->HasOccurrenceOperator())
+          output += "minOccurance: " +
+                    std::to_string(entry->opt_occurrence_min) +
+                    " maxOccurance: " +
+                    std::to_string(entry->opt_occurrence_max);
+        Logger::Log(output);
+        DumpGroup(entry->group, indent_level + 1);
+        break;
+    }
+  }
+}
+
+void DumpSymbolTable(CddlSymbolTable* table) {
+  for (auto& entry : table->type_map) {
+    Logger::Log(entry.first);
+    DumpType(entry.second);
+  }
+  for (auto& entry : table->group_map) {
+    Logger::Log(entry.first);
+    DumpGroup(entry.second);
+  }
 }

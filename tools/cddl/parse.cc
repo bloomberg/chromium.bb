@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "tools/cddl/logging.h"
 #include "tools/cddl/parse.h"
 
 #include <unistd.h>
@@ -875,6 +876,7 @@ AstNode* ParseRule(Parser* p) {
   // Use the parser to extract the id and data.
   AstNode* id = ParseId(p);
   if (!id) {
+    Logger::Error("No id found!");
     return nullptr;
   }
   if (p->data[0] == '<') {
@@ -889,6 +891,7 @@ AstNode* ParseRule(Parser* p) {
   const char* assign_start = p->data;
   AssignType assign_type = ParseAssignmentType(p);
   if (assign_type != AssignType::kAssign) {
+    Logger::Error("No assignment opperator found!");
     return nullptr;
   }
   AstNode* assign_node = AddNode(
@@ -909,6 +912,7 @@ AstNode* ParseRule(Parser* p) {
     id->type = AstNode::Type::kGroupname;
   }
   if (!type) {  // if it's not a type or a group, exit as failure.
+    Logger::Error("No node type found!");
     return nullptr;
   }
   assign_node->sibling = type;
@@ -932,8 +936,10 @@ ParseResult ParseCddl(absl::string_view data) {
   do {
     AstNode* next = ParseRule(&p);
     if (!next) {
+      Logger::Error("Failed to parse next node. Failed starting at: '%s'", p.data);
       return {nullptr, {}};
     }
+
     if (!root) {
       root = next;
     }
@@ -944,105 +950,113 @@ ParseResult ParseCddl(absl::string_view data) {
 
     SkipWhitespace(&p);
   } while (p.data[0]);
+
+  DumpAst(root);
   return {root, std::move(p.nodes)};
 }
 
-void PrintCollapsed(int size, absl::string_view text) {
-  for (int i = 0; i < size; ++i) {
-    if (text[i] == ' ' || text[i] == '\n') {
-      printf(" ");
-      while (i < size && (text[i] == ' ' || text[i] == '\n')) {
-        ++i;
-      }
-    }
-    if (i < size) {
-      printf("%c", text[i]);
-    }
-  }
-  printf("\n");
-}
-
+// Recursively print out the AstNode graph.
 void DumpAst(AstNode* node, int indent_level) {
   while (node) {
+    // Prefix with '-'s so the levels of the graph are clear.
+    std::string node_text = "";
     for (int i = 0; i <= indent_level; ++i) {
-      printf("--");
+      node_text += "--";
     }
+
+    // Print the type.
     switch (node->type) {
       case AstNode::Type::kRule:
-        printf("kRule: ");
+        node_text += "kRule: ";
         break;
       case AstNode::Type::kTypename:
-        printf("kTypename: ");
+        node_text += "kTypename: ";
         break;
       case AstNode::Type::kGroupname:
-        printf("kGroupname: ");
+        node_text += "kGroupname: ";
         break;
       case AstNode::Type::kAssign:
-        printf("kAssign: ");
+        node_text += "kAssign: ";
         break;
       case AstNode::Type::kAssignT:
-        printf("kAssignT: ");
+        node_text += "kAssignT: ";
         break;
       case AstNode::Type::kAssignG:
-        printf("kAssignG: ");
+        node_text += "kAssignG: ";
         break;
       case AstNode::Type::kType:
-        printf("kType: ");
+        node_text += "kType: ";
         break;
       case AstNode::Type::kGrpent:
-        printf("kGrpent: ");
+        node_text += "kGrpent: ";
         break;
       case AstNode::Type::kType1:
-        printf("kType1: ");
+        node_text += "kType1: ";
         break;
       case AstNode::Type::kType2:
-        printf("kType2: ");
+        node_text += "kType2: ";
         break;
       case AstNode::Type::kValue:
-        printf("kValue: ");
+        node_text += "kValue: ";
         break;
       case AstNode::Type::kGroup:
-        printf("kGroup: ");
+        node_text += "kGroup: ";
         break;
       case AstNode::Type::kUint:
-        printf("kUint: ");
+        node_text += "kUint: ";
         break;
       case AstNode::Type::kDigit:
-        printf("kDigit: ");
+        node_text += "kDigit: ";
         break;
       case AstNode::Type::kRangeop:
-        printf("kRangeop: ");
+        node_text += "kRangeop: ";
         break;
       case AstNode::Type::kCtlop:
-        printf("kCtlop: ");
+        node_text += "kCtlop: ";
         break;
       case AstNode::Type::kGrpchoice:
-        printf("kGrpchoice: ");
+        node_text += "kGrpchoice: ";
         break;
       case AstNode::Type::kOccur:
-        printf("kOccur: ");
+        node_text += "kOccur: ";
         break;
       case AstNode::Type::kMemberKey:
-        printf("kMemberKey: ");
+        node_text += "kMemberKey: ";
         break;
       case AstNode::Type::kId:
-        printf("kId: ");
+        node_text += "kId: ";
         break;
       case AstNode::Type::kNumber:
-        printf("kNumber: ");
+        node_text += "kNumber: ";
         break;
       case AstNode::Type::kText:
-        printf("kText: ");
+        node_text += "kText: ";
         break;
       case AstNode::Type::kBytes:
-        printf("kBytes: ");
+        node_text += "kBytes: ";
         break;
       case AstNode::Type::kOther:
-        printf("kOther: ");
+        node_text += "kOther: ";
         break;
     }
-    fflush(stdout);
-    PrintCollapsed(static_cast<int>(node->text.size()), node->text.data());
+
+    // Print the contents.
+    int size = static_cast<int>(node->text.size());
+    absl::string_view text = node->text.data();
+    for (int i = 0; i < size; ++i) {
+      if (text[i] == ' ' || text[i] == '\n') {
+        node_text += " ";
+        while (i < size - 1 && (text[i + 1] == ' ' || text[i + 1] == '\n')) {
+          ++i;
+        }
+        continue;
+      } else {
+        node_text += text[i];
+      }
+    }
+    Logger::Log(node_text);
+
+    // Recursively print children then iteratively print siblings.
     DumpAst(node->children, indent_level + 1);
     node = node->sibling;
   }

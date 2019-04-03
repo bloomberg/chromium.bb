@@ -25,10 +25,19 @@ def main():
   assert validateCddlInput(args.file), \
          "Error: '%s' is not a valid CDDL file" % args.file
 
+  if args.log:
+    logPath = os.path.join(args.gen_dir, args.log)
+    log = open(logPath, "w")
+    log.write("OUTPUT FOR CDDL CODE GENERATION TOOL:\n\n")
+    log = open(logPath, "a")
+    print("Logging to %s" % logPath)
+  else:
+    log = None
+
   # Execute command line commands with these variables.
   print('Creating C++ files from provided CDDL file...')
   echoAndRunCommand(['./cddl', "--header", args.header, "--cc", args.cc,
-                     "--gen-dir", args.gen_dir, args.file], False)
+                     "--gen-dir", args.gen_dir, args.file], False, log)
 
   clangFormatLocation = findClangFormat()
   if clangFormatLocation == None:
@@ -48,6 +57,8 @@ def parseInput():
      source file")
   parser.add_argument("--gen-dir", help="Specify the directory prefix that \
      should be added to the output header and source file.")
+  parser.add_argument("--log", help="Specify the file to which stdout shoud \
+     be redirected.")
   parser.add_argument("file", help="the input file which contains the spec")
   return parser.parse_args()
 
@@ -63,14 +74,20 @@ def validatePathInput(dirPath):
 def validateCddlInput(cddlFile):
   return cddlFile and os.path.isfile(cddlFile)
 
-def echoAndRunCommand(commandArray, allowFailure):
+def echoAndRunCommand(commandArray, allowFailure, logfile = None):
   print("\tExecuting Command: '%s'" % " ".join(commandArray))
-  process = subprocess.Popen(commandArray)
-  process.wait()
+  if logfile != None:
+    process = subprocess.Popen(commandArray, stdout=logfile)
+    process.wait()
+    logfile.flush()
+  else:
+    process = subprocess.Popen(commandArray)
+    process.wait()
   returncode = process.returncode
-  if returncode != 0:
+  if returncode != None and returncode != 0:
     if not allowFailure:
       sys.exit("\t\tERROR: Command failed with error code: '%i'!" % returncode)
+      
     else:
       print("\t\tWARNING: Command failed with error code: '%i'!" % returncode)
 
