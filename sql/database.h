@@ -42,18 +42,9 @@ namespace sql {
 class DatabaseMemoryDumpProvider;
 class Statement;
 
-// To allow some test classes to be friended.
 namespace test {
-class ScopedCommitHook;
 class ScopedErrorExpecter;
-class ScopedScalarFunction;
-class ScopedMockTimeSource;
 }  // namespace test
-
-// Exposes private Database functionality to unit tests.
-//
-// This class is only defined in test targets.
-class DatabaseTestPeer;
 
 // Handle to an open SQLite database.
 //
@@ -511,12 +502,6 @@ class COMPONENT_EXPORT(SQL) Database {
   // Statement accesses StatementRef which we don't want to expose to everybody
   // (they should go through Statement).
   friend class Statement;
-
-  friend class DatabaseTestPeer;
-
-  friend class test::ScopedCommitHook;
-  friend class test::ScopedScalarFunction;
-  friend class test::ScopedMockTimeSource;
 
   FRIEND_TEST_ALL_PREFIXES(SQLDatabaseTest, CachedStatement);
   FRIEND_TEST_ALL_PREFIXES(SQLDatabaseTest, CollectDiagnosticInfo);
