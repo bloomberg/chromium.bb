@@ -166,6 +166,7 @@ bool LibYUVImageProcessor::IsFormatSupported(VideoPixelFormat input_format,
     VideoPixelFormat output;
   } kSupportFormatConversionArray[] = {
       {PIXEL_FORMAT_I420, PIXEL_FORMAT_NV12},
+      {PIXEL_FORMAT_YV12, PIXEL_FORMAT_NV12},
   };
 
   for (auto* conv = std::cbegin(kSupportFormatConversionArray);
@@ -188,6 +189,11 @@ int LibYUVImageProcessor::DoConversion(const VideoFrame* const input,
       fr->data(VideoFrame::kUPlane), fr->stride(VideoFrame::kUPlane), \
       fr->data(VideoFrame::kVPlane), fr->stride(VideoFrame::kVPlane)
 
+#define Y_V_U_DATA(fr)                                                \
+  fr->data(VideoFrame::kYPlane), fr->stride(VideoFrame::kYPlane),     \
+      fr->data(VideoFrame::kVPlane), fr->stride(VideoFrame::kVPlane), \
+      fr->data(VideoFrame::kUPlane), fr->stride(VideoFrame::kUPlane)
+
 #define Y_UV_DATA(fr)                                             \
   fr->data(VideoFrame::kYPlane), fr->stride(VideoFrame::kYPlane), \
       fr->data(VideoFrame::kUVPlane), fr->stride(VideoFrame::kUVPlane)
@@ -200,6 +206,8 @@ int LibYUVImageProcessor::DoConversion(const VideoFrame* const input,
     switch (input->format()) {
       case PIXEL_FORMAT_I420:
         return LIBYUV_FUNC(I420ToNV12, Y_U_V_DATA(input), Y_UV_DATA(output));
+      case PIXEL_FORMAT_YV12:
+        return LIBYUV_FUNC(I420ToNV12, Y_V_U_DATA(input), Y_UV_DATA(output));
       default:
         VLOGF(1) << "Unexpected input format: " << input->format();
         return -1;
