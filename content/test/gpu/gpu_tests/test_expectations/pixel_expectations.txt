@@ -184,36 +184,3 @@ crbug.com/927901 [ chromeos ] Pixel_Video_VP9_DXVA [ Skip ]
 
 # Complex overlays test is flaky on Nvidia probably due to its small size.
 crbug.com/929425 [ win nvidia ] Pixel_DirectComposition_ComplexOverlays [ RetryOnFailure ]
-
-# Mark as fail all pixel tests on Android WebView before refimgs are
-# generated
-crbug.com/907935 [ android-webview-instrumentation ] Pixel_Canvas2DUntagged [ Failure ]
-crbug.com/907935 [ android-webview-instrumentation ] Pixel_GpuRasterization_BlueBox [ Failure ]
-crbug.com/907935 [ android-webview-instrumentation ] Pixel_GpuRasterization_ConcavePaths [ Failure ]
-crbug.com/907935 [ android-webview-instrumentation ] Pixel_OffscreenCanvasTransferToImageBitmap [ Failure ]
-crbug.com/907935 [ android-webview-instrumentation ] Pixel_OffscreenCanvasTransferToImageBitmapWorker [ Failure ]
-crbug.com/907935 [ android-webview-instrumentation ] Pixel_RepeatedWebGLTo2D [ Failure ]
-crbug.com/907935 [ android-webview-instrumentation ] Pixel_WebGL_PremultipliedAlpha_False [ Failure ]
-crbug.com/907935 [ android-webview-instrumentation ] Pixel_2DCanvasWebGL [ Failure ]
-
-# Uncomment this when crbug.com/927107 is fixed and conflicting expectation
-# above is removed.
-# crbug.com/907935 [ android-webview-instrumentation ] Pixel_CSS3DBlueBox [ Failure ]
-
-crbug.com/907935 [ android-webview-instrumentation ] Pixel_Canvas2DRedBox [ Failure ]
-
-# crbug.com/907935 [ android-webview-instrumentation ] Pixel_CanvasDisplayLinearRGBAccelerated2D [ Failure ]
-
-crbug.com/907935 [ android-webview-instrumentation ] Pixel_CanvasLowLatency2D [ Failure ]
-
-# crbug.com/907935 [ android-webview-instrumentation ] Pixel_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing [ Failure ]
-
-crbug.com/907935 [ android-webview-instrumentation ] Pixel_WebGLGreenTriangle_AA_Alpha [ Failure ]
-crbug.com/907935 [ android-webview-instrumentation ] Pixel_WebGLGreenTriangle_AA_NoAlpha [ Failure ]
-
-crbug.com/907935 [ android-webview-instrumentation ] Pixel_WebGLGreenTriangle_NoAA_Alpha [ Failure ]
-crbug.com/907935 [ android-webview-instrumentation ] Pixel_WebGLGreenTriangle_NoAA_NoAlpha [ Failure ]
-
-crbug.com/907935 [ android-webview-instrumentation ] Pixel_WebGLTransparentGreenTriangle_NoAlpha_ImplicitClear [ Failure ]
-
-crbug.com/907935 [ android-webview-instrumentation ] Pixel_BackgroundImage [ Failure ]
