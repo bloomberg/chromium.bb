@@ -28,7 +28,7 @@ export class WebXRView extends RenderView {
   constructor(view, pose, layer) {
     super(
       view ? view.projectionMatrix : null,
-      view ? view.transform.inverse().matrix : null,
+      view ? view.transform.inverse.matrix : null,
       (layer && view) ? layer.getViewport(view) : null,
       view ? view.eye : 'left'
     );
