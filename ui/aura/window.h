@@ -665,6 +665,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Whether layer is initialized as non-opaque. Defaults to false.
   bool transparent_;
 
+  // Whether it's in a process of CleanupGestureState() or not.
+  bool cleaning_up_gesture_state_ = false;
+
   std::unique_ptr<LayoutManager> layout_manager_;
   std::unique_ptr<WindowTargeter> targeter_;
 
