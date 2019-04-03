@@ -202,7 +202,7 @@ void ModuleMapTest::SetUp() {
   GetDocument().SetSecurityOrigin(SecurityOrigin::Create(GetDocument().Url()));
   modulator_ = MakeGarbageCollected<ModuleMapTestModulator>(
       ToScriptStateForMainWorld(&GetFrame()));
-  map_ = ModuleMap::Create(modulator_);
+  map_ = MakeGarbageCollected<ModuleMap>(modulator_);
 }
 
 TEST_F(ModuleMapTest, sequentialRequests) {

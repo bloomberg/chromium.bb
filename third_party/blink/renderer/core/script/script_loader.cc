@@ -672,11 +672,12 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         // script, given settings object and the destination "script". When this
         // asynchronously completes, set the script's script to the result. At
         // that time, the script is ready.</spec>
-        auto* module_tree_client = ModulePendingScriptTreeClient::Create();
+        auto* module_tree_client =
+            MakeGarbageCollected<ModulePendingScriptTreeClient>();
         modulator->FetchDescendantsForInlineScript(
             module_script, fetch_client_settings_object_fetcher,
             mojom::RequestContextType::SCRIPT, module_tree_client);
-        prepared_pending_script_ = ModulePendingScript::Create(
+        prepared_pending_script_ = MakeGarbageCollected<ModulePendingScript>(
             element_, module_tree_client, is_external_script_);
         break;
       }
@@ -862,11 +863,12 @@ void ScriptLoader::FetchModuleScriptTree(
   //
   // Fetch a module script graph given url, settings object, "script", and
   // options.</spec>
-  auto* module_tree_client = ModulePendingScriptTreeClient::Create();
+  auto* module_tree_client =
+      MakeGarbageCollected<ModulePendingScriptTreeClient>();
   modulator->FetchTree(url, fetch_client_settings_object_fetcher,
                        mojom::RequestContextType::SCRIPT, options,
                        ModuleScriptCustomFetchType::kNone, module_tree_client);
-  prepared_pending_script_ = ModulePendingScript::Create(
+  prepared_pending_script_ = MakeGarbageCollected<ModulePendingScript>(
       element_, module_tree_client, is_external_script_);
 }
 

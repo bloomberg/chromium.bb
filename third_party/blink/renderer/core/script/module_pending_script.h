@@ -22,10 +22,6 @@ class ModulePendingScript;
 // SetPendingScript() and is notified of module tree load finish.
 class ModulePendingScriptTreeClient final : public ModuleTreeClient {
  public:
-  static ModulePendingScriptTreeClient* Create() {
-    return MakeGarbageCollected<ModulePendingScriptTreeClient>();
-  }
-
   ModulePendingScriptTreeClient();
   ~ModulePendingScriptTreeClient() override = default;
 
@@ -48,13 +44,6 @@ class ModulePendingScriptTreeClient final : public ModuleTreeClient {
 // https://html.spec.whatwg.org/C/#module-script.
 class CORE_EXPORT ModulePendingScript : public PendingScript {
  public:
-  static ModulePendingScript* Create(ScriptElementBase* element,
-                                     ModulePendingScriptTreeClient* client,
-                                     bool is_external) {
-    return MakeGarbageCollected<ModulePendingScript>(element, client,
-                                                     is_external);
-  }
-
   ModulePendingScript(ScriptElementBase*,
                       ModulePendingScriptTreeClient*,
                       bool is_external);

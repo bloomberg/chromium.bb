@@ -331,9 +331,9 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url) const {
     ScriptSourceCode source_code(source_text_for_inline_script_,
                                  source_location_type_, cache_handler,
                                  document_url, StartingPosition());
-    return ClassicScript::Create(source_code, base_url_for_inline_script_,
-                                 options_,
-                                 SanitizeScriptErrors::kDoNotSanitize);
+    return MakeGarbageCollected<ClassicScript>(
+        source_code, base_url_for_inline_script_, options_,
+        SanitizeScriptErrors::kDoNotSanitize);
   }
 
   DCHECK(GetResource()->IsLoaded());
@@ -381,10 +381,11 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url) const {
   // <spec href="https://html.spec.whatwg.org/C/#concept-script-base-url">
   // ... the URL from which the script was obtained, ...</spec>
   const KURL& base_url = source_code.Url();
-  return ClassicScript::Create(source_code, base_url, options_,
-                               resource->GetResponse().IsCorsSameOrigin()
-                                   ? SanitizeScriptErrors::kDoNotSanitize
-                                   : SanitizeScriptErrors::kSanitize);
+  return MakeGarbageCollected<ClassicScript>(
+      source_code, base_url, options_,
+      resource->GetResponse().IsCorsSameOrigin()
+          ? SanitizeScriptErrors::kDoNotSanitize
+          : SanitizeScriptErrors::kSanitize);
 }
 
 bool ClassicPendingScript::IsReady() const {

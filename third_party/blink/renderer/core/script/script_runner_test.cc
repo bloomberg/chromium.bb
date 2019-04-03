@@ -83,7 +83,7 @@ class ScriptRunnerTest : public testing::Test {
     // need Platform::current()->currentThread()->scheduler()->
     // loadingTaskRunner() to be initialized before creating ScriptRunner to
     // save it in constructor.
-    script_runner_ = ScriptRunner::Create(document_.Get());
+    script_runner_ = MakeGarbageCollected<ScriptRunner>(document_.Get());
     RuntimeCallStats::SetRuntimeCallStatsForTesting();
   }
   void TearDown() override {

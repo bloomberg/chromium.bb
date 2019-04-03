@@ -54,13 +54,6 @@ class CORE_EXPORT ScriptLoader final
   USING_GARBAGE_COLLECTED_MIXIN(ScriptLoader);
 
  public:
-  static ScriptLoader* Create(ScriptElementBase* element,
-                              bool created_by_parser,
-                              bool is_evaluated) {
-    return MakeGarbageCollected<ScriptLoader>(element, created_by_parser,
-                                              is_evaluated);
-  }
-
   ScriptLoader(ScriptElementBase*, bool created_by_parser, bool is_evaluated);
   ~ScriptLoader() override;
   void Trace(blink::Visitor*) override;

@@ -24,10 +24,6 @@ class XMLParserScriptRunner final
   USING_GARBAGE_COLLECTED_MIXIN(XMLParserScriptRunner);
 
  public:
-  static XMLParserScriptRunner* Create(XMLParserScriptRunnerHost* host) {
-    return MakeGarbageCollected<XMLParserScriptRunner>(host);
-  }
-
   explicit XMLParserScriptRunner(XMLParserScriptRunnerHost*);
   ~XMLParserScriptRunner() override;
 

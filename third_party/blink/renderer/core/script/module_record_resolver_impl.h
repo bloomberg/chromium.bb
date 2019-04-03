@@ -26,12 +26,6 @@ class CORE_EXPORT ModuleRecordResolverImpl final
     : public ModuleRecordResolver,
       public ContextLifecycleObserver {
  public:
-  static ModuleRecordResolverImpl* Create(Modulator* modulator,
-                                          ExecutionContext* execution_context) {
-    return MakeGarbageCollected<ModuleRecordResolverImpl>(modulator,
-                                                          execution_context);
-  }
-
   explicit ModuleRecordResolverImpl(Modulator* modulator,
                                     ExecutionContext* execution_context)
       : ContextLifecycleObserver(execution_context), modulator_(modulator) {}

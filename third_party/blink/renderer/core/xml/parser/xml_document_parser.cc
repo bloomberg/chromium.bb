@@ -737,9 +737,10 @@ XMLDocumentParser::XMLDocumentParser(Document& document,
       requesting_script_(false),
       finish_called_(false),
       xml_errors_(&document),
-      script_runner_(frame_view ? XMLParserScriptRunner::Create(this)
-                                : nullptr),  // Don't execute scripts for
-                                             // documents without frames.
+      script_runner_(frame_view
+                         ? MakeGarbageCollected<XMLParserScriptRunner>(this)
+                         : nullptr),  // Don't execute scripts for
+                                      // documents without frames.
       script_start_position_(TextPosition::BelowRangePosition()),
       parsing_fragment_(false) {
   // This is XML being used as a document resource.
