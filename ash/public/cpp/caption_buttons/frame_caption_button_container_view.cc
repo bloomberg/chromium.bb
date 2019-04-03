@@ -14,6 +14,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -489,6 +490,12 @@ void FrameCaptionButtonContainerView::SetHoveredAndPressedButtons(
       new_state = views::Button::STATE_PRESSED;
     button->SetState(new_state);
   }
+}
+
+aura::Window* FrameCaptionButtonContainerView::GetFrameWindow() {
+  aura::Window* window = frame_->GetNativeWindow();
+  return window->env()->mode() == aura::Env::Mode::MUS ? window->GetRootWindow()
+                                                       : window;
 }
 
 bool FrameCaptionButtonContainerView::CanSnap() {
