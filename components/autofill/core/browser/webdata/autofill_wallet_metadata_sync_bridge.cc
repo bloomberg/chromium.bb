@@ -162,22 +162,22 @@ bool HasLocalBillingAddress(const AutofillMetadata& metadata) {
   return metadata.billing_address_id.size() == kLocalGuidSize;
 }
 
-bool IsRemoteBillingAddressEqualOrBetter(const AutofillMetadata& local,
-                                         const AutofillMetadata& remote) {
-  // If local is empty, remote is better (or equal). Otherwise, if remote is
-  // empty, local is better.
-  if (local.billing_address_id.empty()) {
+bool IsNewerBillingAddressEqualOrBetter(const AutofillMetadata& older,
+                                        const AutofillMetadata& newer) {
+  // If older is empty, newer is better (or equal). Otherwise, if newer is
+  // empty, older is better.
+  if (older.billing_address_id.empty()) {
     return true;
-  } else if (remote.billing_address_id.empty()) {
+  } else if (newer.billing_address_id.empty()) {
     return false;
   }
   // Now we need to decide between non-empty profiles. Prefer id's pointing to
   // local profiles over ids of non-local profiles.
-  if (HasLocalBillingAddress(local) != HasLocalBillingAddress(remote)) {
-    return HasLocalBillingAddress(remote);
+  if (HasLocalBillingAddress(older) != HasLocalBillingAddress(newer)) {
+    return HasLocalBillingAddress(newer);
   }
-  // For both local / both remote, we prefer the more recently used.
-  return remote.use_date >= local.use_date;
+  // For both older / both newer, we prefer the more recently used.
+  return newer.use_date >= older.use_date;
 }
 
 AutofillMetadata MergeMetadata(WalletMetadataSpecifics::Type type,
@@ -192,7 +192,8 @@ AutofillMetadata MergeMetadata(WalletMetadataSpecifics::Type type,
       merged.has_converted = local.has_converted || remote.has_converted;
       break;
     case WalletMetadataSpecifics::CARD:
-      if (IsRemoteBillingAddressEqualOrBetter(local, remote)) {
+      if (IsNewerBillingAddressEqualOrBetter(/*older=*/local,
+                                             /*newer=*/remote)) {
         merged.billing_address_id = remote.billing_address_id;
       } else {
         merged.billing_address_id = local.billing_address_id;
@@ -237,7 +238,9 @@ bool IsMetadataWorthUpdating(AutofillMetadata existing_entry,
   if (!existing_entry.has_converted && new_entry.has_converted) {
     return true;
   }
-  if (existing_entry.billing_address_id != new_entry.billing_address_id) {
+  if (existing_entry.billing_address_id != new_entry.billing_address_id &&
+      IsNewerBillingAddressEqualOrBetter(/*older=*/existing_entry,
+                                         /*newer=*/new_entry)) {
     return true;
   }
   return false;
