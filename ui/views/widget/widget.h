@@ -20,6 +20,7 @@
 #include "ui/events/event_source.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/native_theme_observer.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/native_widget_delegate.h"
@@ -42,7 +43,6 @@ class DefaultThemeProvider;
 class GestureRecognizer;
 class InputMethod;
 class Layer;
-class NativeTheme;
 class OSExchangeData;
 class ThemeProvider;
 }  // namespace ui
