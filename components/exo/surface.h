@@ -260,6 +260,9 @@ class Surface final : public ui::PropertyHandler {
   // Triggers sending an occlusion update to observers.
   void OnWindowOcclusionChanged();
 
+  // True if the window for this surface has its occlusion tracked.
+  bool is_tracking_occlusion() const { return is_tracking_occlusion_; }
+
  private:
   struct State {
     State();

@@ -7,14 +7,23 @@
 #include <aura-shell-server-protocol.h>
 #include <wayland-server-core.h>
 #include <wayland-server-protocol-core.h>
+#include <algorithm>
+#include <limits>
+#include <memory>
+#include <utility>
+#include <vector>
 
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "components/exo/surface_observer.h"
 #include "components/exo/wayland/server_util.h"
 #include "components/exo/wayland/wayland_display_observer.h"
 #include "components/exo/wayland/wl_output.h"
+#include "ui/aura/window_occlusion_tracker.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/display_util.h"
+#include "ui/views/widget/widget.h"
+#include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace exo {
 namespace wayland {
@@ -25,110 +34,28 @@ namespace {
 // associated with surface object.
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSurfaceHasAuraSurfaceKey, false)
 
-////////////////////////////////////////////////////////////////////////////////
-// aura_surface_interface:
+bool TransformRelativeToScreenIsAxisAligned(aura::Window* window) {
+  gfx::Transform transform_relative_to_screen;
+  DCHECK(window->layer()->GetTargetTransformRelativeTo(
+      window->GetRootWindow()->layer(), &transform_relative_to_screen));
+  transform_relative_to_screen.ConcatTransform(
+      window->GetRootWindow()->layer()->GetTargetTransform());
+  return transform_relative_to_screen.Preserves2dAxisAlignment();
+}
 
-class AuraSurface : public SurfaceObserver {
- public:
-  AuraSurface(Surface* surface, wl_resource* resource)
-      : surface_(surface), resource_(resource) {
-    surface_->AddSurfaceObserver(this);
-    surface_->SetProperty(kSurfaceHasAuraSurfaceKey, true);
-  }
-  ~AuraSurface() override {
-    if (surface_) {
-      surface_->RemoveSurfaceObserver(this);
-      surface_->SetProperty(kSurfaceHasAuraSurfaceKey, false);
-    }
-  }
-
-  void SetFrame(SurfaceFrameType type) {
-    if (surface_)
-      surface_->SetFrame(type);
-  }
-
-  void SetFrameColors(SkColor active_frame_color,
-                      SkColor inactive_frame_color) {
-    if (surface_)
-      surface_->SetFrameColors(active_frame_color, inactive_frame_color);
-  }
-
-  void SetParent(AuraSurface* parent, const gfx::Point& position) {
-    if (surface_)
-      surface_->SetParent(parent ? parent->surface_ : nullptr, position);
-  }
-
-  void SetStartupId(const char* startup_id) {
-    if (surface_)
-      surface_->SetStartupId(startup_id);
-  }
-
-  void SetApplicationId(const char* application_id) {
-    if (surface_)
-      surface_->SetApplicationId(application_id);
-  }
-
-  void SetClientSurfaceId(int client_surface_id) {
-    if (surface_)
-      surface_->SetClientSurfaceId(client_surface_id);
-  }
-
-  void SetOcclusionTracking(bool tracking) {
-    if (surface_)
-      surface_->SetOcclusionTracking(tracking);
-  }
-
-  // Overridden from SurfaceObserver:
-  void OnSurfaceDestroying(Surface* surface) override {
-    surface->RemoveSurfaceObserver(this);
-    surface_ = nullptr;
-  }
-
-  void OnWindowOcclusionChanged(Surface* surface) override {
-    if (wl_resource_get_version(resource_) < 8)
-      return;
-
-    auto* window = surface->window();
-    const gfx::Rect bounds_in_screen = window->GetBoundsInScreen();
-    const int tracked_area =
-        bounds_in_screen.width() * bounds_in_screen.height();
-    int occluded_area = 0;
-    switch (window->occlusion_state()) {
-      case aura::Window::OcclusionState::VISIBLE: {
-        SkRegion tracked_and_occluded_region = window->occluded_region();
-        tracked_and_occluded_region.op(gfx::RectToSkIRect(bounds_in_screen),
-                                       SkRegion::Op::kIntersect_Op);
-        for (SkRegion::Iterator i(tracked_and_occluded_region); !i.done();
-             i.next()) {
-          occluded_area += i.rect().width() * i.rect().height();
-        }
-        break;
-      }
-      case aura::Window::OcclusionState::OCCLUDED:
-      case aura::Window::OcclusionState::HIDDEN:
-        occluded_area = tracked_area;
-        break;
-      case aura::Window::OcclusionState::UNKNOWN:
-        return;  // Window is not tracked.
-    }
-
-    const float fraction_occluded =
-        static_cast<float>(occluded_area) / static_cast<float>(tracked_area);
-
-    // TODO(edcourtney): For now, we are treating every occlusion change as
-    // from a user action.
-    zaura_surface_send_occlusion_changed(
-        resource_, wl_fixed_from_double(fraction_occluded),
-        ZAURA_SURFACE_OCCLUSION_CHANGE_REASON_USER_ACTION);
-    wl_client_flush(wl_resource_get_client(resource_));
-  }
-
- private:
-  Surface* surface_;
-  wl_resource* const resource_;
-
-  DISALLOW_COPY_AND_ASSIGN(AuraSurface);
-};
+// This does not handle non-axis aligned rotations, but we don't have any
+// slightly (e.g. 45 degree) windows so it is okay.
+gfx::Rect GetTransformedBoundsInScreen(aura::Window* window) {
+  DCHECK(TransformRelativeToScreenIsAxisAligned(window));
+  // This assumes that opposite points on the window bounds rectangle will
+  // be mapped to opposite points on the output rectangle.
+  gfx::Point a = window->bounds().origin();
+  gfx::Point b = window->bounds().bottom_right();
+  ::wm::ConvertPointToScreen(window->parent(), &a);
+  ::wm::ConvertPointToScreen(window->parent(), &b);
+  return gfx::Rect(std::min(a.x(), b.x()), std::min(a.y(), b.y()),
+                   std::abs(a.x() - b.x()), std::abs(a.y() - b.y()));
+}
 
 SurfaceFrameType AuraSurfaceFrameType(uint32_t frame_type) {
   switch (frame_type) {
@@ -205,6 +132,173 @@ const struct zaura_surface_interface aura_surface_implementation = {
     aura_surface_set_client_surface_id,
     aura_surface_set_occlusion_tracking,
     aura_surface_unset_occlusion_tracking};
+
+}  // namespace
+
+////////////////////////////////////////////////////////////////////////////////
+// aura_surface_interface:
+
+AuraSurface::AuraSurface(Surface* surface, wl_resource* resource)
+    : surface_(surface), resource_(resource) {
+  surface_->AddSurfaceObserver(this);
+  surface_->SetProperty(kSurfaceHasAuraSurfaceKey, true);
+  ash::Shell::Get()->activation_client()->AddObserver(this);
+}
+
+AuraSurface::~AuraSurface() {
+  ash::Shell::Get()->activation_client()->RemoveObserver(this);
+  if (surface_) {
+    surface_->RemoveSurfaceObserver(this);
+    surface_->SetProperty(kSurfaceHasAuraSurfaceKey, false);
+  }
+}
+
+void AuraSurface::SetFrame(SurfaceFrameType type) {
+  if (surface_)
+    surface_->SetFrame(type);
+}
+
+void AuraSurface::SetFrameColors(SkColor active_frame_color,
+                                 SkColor inactive_frame_color) {
+  if (surface_)
+    surface_->SetFrameColors(active_frame_color, inactive_frame_color);
+}
+
+void AuraSurface::SetParent(AuraSurface* parent, const gfx::Point& position) {
+  if (surface_)
+    surface_->SetParent(parent ? parent->surface_ : nullptr, position);
+}
+
+void AuraSurface::SetStartupId(const char* startup_id) {
+  if (surface_)
+    surface_->SetStartupId(startup_id);
+}
+
+void AuraSurface::SetApplicationId(const char* application_id) {
+  if (surface_)
+    surface_->SetApplicationId(application_id);
+}
+
+void AuraSurface::SetClientSurfaceId(int client_surface_id) {
+  if (surface_)
+    surface_->SetClientSurfaceId(client_surface_id);
+}
+
+void AuraSurface::SetOcclusionTracking(bool tracking) {
+  if (surface_)
+    surface_->SetOcclusionTracking(tracking);
+}
+
+// Overridden from SurfaceObserver:
+void AuraSurface::OnSurfaceDestroying(Surface* surface) {
+  surface->RemoveSurfaceObserver(this);
+  surface_ = nullptr;
+}
+
+void AuraSurface::OnWindowOcclusionChanged(Surface* surface) {
+  if (!surface_)
+    return;
+  auto* window = surface_->window();
+  ComputeAndSendOcclusionFraction(window->occlusion_state(),
+                                  window->occluded_region());
+}
+
+void AuraSurface::OnWindowActivating(ActivationReason reason,
+                                     aura::Window* gaining_active,
+                                     aura::Window* losing_active) {
+  if (!surface_ || !losing_active)
+    return;
+
+  auto* window = surface_->window();
+  // Check if this surface is a child of a window that is losing focus.
+  auto* widget = views::Widget::GetTopLevelWidgetForNativeView(window);
+  if (!widget || losing_active != widget->GetNativeWindow() ||
+      !surface_->is_tracking_occlusion())
+    return;
+
+  // Result may be changed by animated windows, so compute it explicitly.
+  // We need to send occlusion updates before activation changes because
+  // we can only trigger onUserLeaveHint (which triggers Android PIP) upon
+  // losing activation. Windows that have animations applied to them are
+  // normally ignored by the occlusion tracker, but in this case we want
+  // to send the occlusion state after animations finish before activation
+  // changes. This lets us support showing a new window triggering PIP,
+  // which normally would not work due to the window show animation delaying
+  // any occlusion update.
+  // This happens before any window stacking changes occur, which means that
+  // calling the occlusion tracker here for activation changes which change
+  // the window stacking order may not produce correct results. But,
+  // showing a new window will have it stacked on top already, so this will not
+  // be a problem.
+  // TODO(edcourtney): Currently, this does not work for activating via the
+  //   overview, because starting the overview activates some overview specific
+  //   window. To support overview, we would need to have it keep the original
+  //   window activated and also do this inside OnWindowStackingChanged.
+  //   See crbug.com/948492.
+  auto* occlusion_tracker = window->env()->GetWindowOcclusionTracker();
+  if (occlusion_tracker->HasIgnoredAnimatingWindows()) {
+    const auto& occlusion_data =
+        occlusion_tracker->ComputeTargetOcclusionForWindow(window);
+    ComputeAndSendOcclusionFraction(occlusion_data.occlusion_state,
+                                    occlusion_data.occluded_region);
+  }
+}
+
+void AuraSurface::SendOcclusionFraction(float occlusion_fraction) {
+  if (wl_resource_get_version(resource_) < 8)
+    return;
+  // TODO(edcourtney): For now, we are treating every occlusion change as
+  // from a user action.
+  zaura_surface_send_occlusion_changed(
+      resource_, wl_fixed_from_double(occlusion_fraction),
+      ZAURA_SURFACE_OCCLUSION_CHANGE_REASON_USER_ACTION);
+  wl_client_flush(wl_resource_get_client(resource_));
+}
+
+void AuraSurface::ComputeAndSendOcclusionFraction(
+    const aura::Window::OcclusionState occlusion_state,
+    const SkRegion& occluded_region) {
+  // Should re-write in locked case - we don't want to trigger PIP upon
+  // locking the screen.
+  // TODO(afakhry): We may also want to have special behaviour here for virtual
+  // desktops.
+  if (ash::Shell::Get()->session_controller()->IsScreenLocked()) {
+    SendOcclusionFraction(0.0f);
+    return;
+  }
+
+  auto* window = surface_->window();
+  float fraction_occluded = 0.0f;
+  switch (occlusion_state) {
+    case aura::Window::OcclusionState::VISIBLE: {
+      const gfx::Rect bounds_in_screen = GetTransformedBoundsInScreen(window);
+      const int tracked_area =
+          bounds_in_screen.width() * bounds_in_screen.height();
+      int occluded_area = 0;
+      SkRegion tracked_and_occluded_region = occluded_region;
+      tracked_and_occluded_region.op(gfx::RectToSkIRect(bounds_in_screen),
+                                     SkRegion::Op::kIntersect_Op);
+      for (SkRegion::Iterator i(tracked_and_occluded_region); !i.done();
+           i.next()) {
+        occluded_area += i.rect().width() * i.rect().height();
+      }
+      fraction_occluded =
+          static_cast<float>(occluded_area) / static_cast<float>(tracked_area);
+      break;
+    }
+    case aura::Window::OcclusionState::OCCLUDED:
+    case aura::Window::OcclusionState::HIDDEN:
+      // Consider the OCCLUDED and HIDDEN cases as 100% occlusion.
+      fraction_occluded = 1.0f;
+      break;
+    case aura::Window::OcclusionState::UNKNOWN:
+      return;  // Window is not tracked.
+  }
+
+  SendOcclusionFraction(fraction_occluded);
+}
+
+namespace {
 
 ////////////////////////////////////////////////////////////////////////////////
 // aura_output_interface:

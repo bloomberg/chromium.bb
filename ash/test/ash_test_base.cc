@@ -252,7 +252,8 @@ aura::Window* AshTestBase::CurrentContext() {
 std::unique_ptr<views::Widget> AshTestBase::CreateTestWidget(
     views::WidgetDelegate* delegate,
     int container_id,
-    const gfx::Rect& bounds) {
+    const gfx::Rect& bounds,
+    bool show) {
   std::unique_ptr<views::Widget> widget(new views::Widget);
   views::Widget::InitParams params;
   params.delegate = delegate;
@@ -260,7 +261,8 @@ std::unique_ptr<views::Widget> AshTestBase::CreateTestWidget(
   params.bounds = bounds;
   params.parent = Shell::GetPrimaryRootWindow()->GetChildById(container_id);
   widget->Init(params);
-  widget->Show();
+  if (show)
+    widget->Show();
   return widget;
 }
 

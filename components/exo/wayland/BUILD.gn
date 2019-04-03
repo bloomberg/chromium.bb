@@ -202,8 +202,16 @@ source_set("unit_tests") {
   ]
 
   if (is_chromeos) {
-    sources += [ "server_util_unittest.cc" ]
+    sources += [
+      "server_util_unittest.cc",
+      "zaura_shell_unittest.cc",
+    ]
     deps += [
+      "//ash",
+      "//ash:test_support",
+      "//ash/public/cpp",
+      "//ui/compositor",
+      "//ui/compositor:test_support",
       "//ui/display",
       "//ui/gfx",
     ]
