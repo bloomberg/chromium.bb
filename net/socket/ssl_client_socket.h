@@ -12,7 +12,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/strings/string_piece.h"
-#include "net/base/completion_callback.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
