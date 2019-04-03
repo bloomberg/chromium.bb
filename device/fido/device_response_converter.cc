@@ -157,24 +157,34 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
   const auto& response_map = decoded_response->GetMap();
 
   auto it = response_map.find(CBOR(1));
-  if (it == response_map.end() || !it->second.is_array() ||
-      it->second.GetArray().size() > 2) {
+  if (it == response_map.end() || !it->second.is_array()) {
     return base::nullopt;
   }
 
   base::flat_set<ProtocolVersion> protocol_versions;
+  base::flat_set<base::StringPiece> advertised_protocols;
   for (const auto& version : it->second.GetArray()) {
     if (!version.is_string())
       return base::nullopt;
+    const std::string& version_string = version.GetString();
 
-    auto protocol = ConvertStringToProtocolVersion(version.GetString());
+    if (!advertised_protocols.insert(version_string).second) {
+      // Duplicate versions are not allowed.
+      return base::nullopt;
+    }
+
+    auto protocol = ConvertStringToProtocolVersion(version_string);
     if (protocol == ProtocolVersion::kUnknown) {
       VLOG(2) << "Unexpected protocol version received.";
       continue;
     }
 
-    if (!protocol_versions.insert(protocol).second)
+    if (!protocol_versions.insert(protocol).second) {
+      // A duplicate value will have already caused an error therefore hitting
+      // this suggests that |ConvertStringToProtocolVersion| is non-injective.
+      NOTREACHED();
       return base::nullopt;
+    }
   }
 
   if (protocol_versions.empty())
