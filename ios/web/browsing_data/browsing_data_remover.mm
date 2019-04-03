@@ -83,11 +83,19 @@ void BrowsingDataRemover::ClearBrowsingData(ClearBrowsingDataMask types,
     return;
   }
 
+  for (id<BrowsingDataRemoverObserver> observer in observers_list_) {
+    [observer willRemoveBrowsingData:this];
+  }
+
   base::WeakPtr<BrowsingDataRemover> weak_ptr = weak_ptr_factory_.GetWeakPtr();
   ProceduralBlock completion_block = ^{
     if (BrowsingDataRemover* strong_ptr = weak_ptr.get()) {
       [strong_ptr->dummy_web_view_ removeFromSuperview];
       strong_ptr->dummy_web_view_ = nil;
+      for (id<BrowsingDataRemoverObserver> observer in strong_ptr
+               ->observers_list_) {
+        [observer didRemoveBrowsingData:this];
+      }
     }
     std::move(block_closure).Run();
   };
