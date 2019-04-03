@@ -46,6 +46,9 @@ class AutomationAXTreeWrapper : public ui::AXTreeObserver {
   // document.activeElement (within the DOM).
   bool IsInFocusChain(int32_t node_id);
 
+  static std::map<ui::AXTreeID, AutomationAXTreeWrapper*>&
+  GetChildTreeIDReverseMap();
+
  private:
   // AXTreeObserver overrides.
   void OnNodeDataWillChange(ui::AXTree* tree,

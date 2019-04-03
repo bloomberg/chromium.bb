@@ -193,9 +193,25 @@ class AutomationWebContentsObserver
   void RenderFrameDeleted(
       content::RenderFrameHost* render_frame_host) override {
     ui::AXTreeID tree_id = render_frame_host->GetAXTreeID();
+    if (tree_id == ui::AXTreeIDUnknown())
+      return;
+
     AutomationEventRouter::GetInstance()->DispatchTreeDestroyedEvent(
         tree_id,
         browser_context_);
+  }
+
+  void RenderFrameHostChanged(content::RenderFrameHost* old_host,
+                              content::RenderFrameHost* new_host) override {
+    if (!old_host)
+      return;
+
+    ui::AXTreeID tree_id = old_host->GetAXTreeID();
+    if (tree_id == ui::AXTreeIDUnknown())
+      return;
+
+    AutomationEventRouter::GetInstance()->DispatchTreeDestroyedEvent(
+        tree_id, browser_context_);
   }
 
   void MediaStartedPlaying(const MediaPlayerInfo& video_type,
@@ -258,8 +274,9 @@ AutomationInternalEnableTabFunction::Run() {
   std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   content::WebContents* contents = NULL;
+  int tab_id = -1;
   if (params->args.tab_id.get()) {
-    int tab_id = *params->args.tab_id;
+    tab_id = *params->args.tab_id;
     if (!ExtensionTabUtil::GetTabById(
             tab_id, browser_context(), include_incognito_information(),
             NULL, /* browser out param*/
@@ -275,6 +292,8 @@ AutomationInternalEnableTabFunction::Run() {
                    ->GetActiveWebContents();
     if (!contents)
       return RespondNow(Error("No active tab"));
+
+    tab_id = ExtensionTabUtil::GetTabId(contents);
   }
 
   content::RenderFrameHost* rfh = contents->GetMainFrame();
@@ -298,7 +317,7 @@ AutomationInternalEnableTabFunction::Run() {
 
   return RespondNow(
       ArgumentList(api::automation_internal::EnableTab::Results::Create(
-          ax_tree_id.ToString())));
+          ax_tree_id.ToString(), tab_id)));
 }
 
 ExtensionFunction::ResponseAction AutomationInternalEnableFrameFunction::Run() {

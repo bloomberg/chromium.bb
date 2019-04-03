@@ -12,12 +12,6 @@ namespace extensions {
 
 namespace {
 
-std::map<ui::AXTreeID, AutomationAXTreeWrapper*>& GetChildTreeIDReverseMap() {
-  static base::NoDestructor<std::map<ui::AXTreeID, AutomationAXTreeWrapper*>>
-      child_tree_id_reverse_map;
-  return *child_tree_id_reverse_map;
-}
-
 // Convert from ax::mojom::Event to api::automation::EventType.
 api::automation::EventType ToAutomationEvent(ax::mojom::Event event_type) {
   switch (event_type) {
@@ -253,10 +247,15 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
     bool is_active_profile) {
   std::map<ui::AXTreeID, AutomationAXTreeWrapper*>& child_tree_id_reverse_map =
       GetChildTreeIDReverseMap();
-  for (const ui::AXTreeID& tree_id : tree_.GetAllChildTreeIds()) {
-    DCHECK_EQ(child_tree_id_reverse_map[tree_id], this);
-    child_tree_id_reverse_map.erase(tree_id);
-  }
+  const auto& child_tree_ids = tree_.GetAllChildTreeIds();
+
+  // Invalidate any reverse child tree id mappings. Note that it is possible
+  // there are no entries in this map for a given child tree to |this|, if this
+  // is the first event from |this| tree or if |this| was destroyed and (and
+  // then reset).
+  base::EraseIf(child_tree_id_reverse_map, [child_tree_ids](auto& pair) {
+    return child_tree_ids.count(pair.first);
+  });
 
   for (const auto& update : event_bundle.updates) {
     event_generator_.set_event_from(update.event_from);
@@ -370,6 +369,14 @@ bool AutomationAXTreeWrapper::IsInFocusChain(int32_t node_id) {
     child_of_ancestor = ancestor;
   }
   return false;
+}
+
+// static
+std::map<ui::AXTreeID, AutomationAXTreeWrapper*>&
+AutomationAXTreeWrapper::GetChildTreeIDReverseMap() {
+  static base::NoDestructor<std::map<ui::AXTreeID, AutomationAXTreeWrapper*>>
+      child_tree_id_reverse_map;
+  return *child_tree_id_reverse_map;
 }
 
 void AutomationAXTreeWrapper::OnNodeDataWillChange(

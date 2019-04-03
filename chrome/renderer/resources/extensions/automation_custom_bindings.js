@@ -99,6 +99,7 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   // TODO(aboxhall, dtseng): Make this return the speced AutomationRootNode obj.
+automationUtil.tabIDToAutomationNode = {};
   apiFunctions.setHandleRequest('getTree', function getTree(tabID, callback) {
     StartCachingAccessibilityTrees();
 
@@ -109,14 +110,22 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
     // the tree is available (either due to having been cached earlier, or after
     // an accessibility event occurs which causes the tree to be populated), the
     // callback can be called.
+    if (tabID && automationUtil.tabIDToAutomationNode[tabID]) {
+      callback(automationUtil.tabIDToAutomationNode[tabID]);
+      return;
+    }
+
     var params = { tabID: tabID };
     automationInternal.enableTab(params,
-        function onEnable(id) {
+                                 function onEnable(treeID, resultTabID) {
           if (bindingUtil.hasLastError()) {
             callback();
             return;
           }
-          automationUtil.storeTreeCallback(id, callback);
+          automationUtil.storeTreeCallback(treeID, function(root) {
+            automationUtil.tabIDToAutomationNode[resultTabID] = root;
+            callback(root);
+          });
         });
   });
 
@@ -322,6 +331,11 @@ automationInternal.onAccessibilityTreeDestroyed.addListener(function(id) {
   if (targetTree) {
     privates(targetTree).impl.destroy();
     AutomationRootNode.destroy(id);
+    for (var tabID in automationUtil.tabIDToAutomationNode) {
+      if (automationUtil.tabIDToAutomationNode[tabID] == targetTree) {
+        delete automationUtil.tabIDToAutomationNode[tabID];
+      }
+    }
   } else {
     logging.WARNING('no targetTree to destroy');
   }
