@@ -61,8 +61,8 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
     private final int mDefaultLevel;
     private final int mIncognitoLevel;
     private final ColorStateList mDarkIconColor;
-    private final ColorStateList mDarkCloseIconColor;
-    private final ColorStateList mLightCloseIconColor;
+    private final ColorStateList mDefaultCloseIconColor;
+    private final ColorStateList mIncognitoCloseIconColor;
 
     // Keeps track of how a tab was closed
     //  < 0 : swiped to the left.
@@ -217,8 +217,9 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
         mDefaultHeight =
                 context.getResources().getDimensionPixelOffset(R.dimen.accessibility_tab_height);
         mDarkIconColor = ColorUtils.getIconTint(context, false);
-        mDarkCloseIconColor = AppCompatResources.getColorStateList(context, R.color.black_alpha_38);
-        mLightCloseIconColor =
+        mDefaultCloseIconColor =
+                AppCompatResources.getColorStateList(context, R.color.light_icon_color);
+        mIncognitoCloseIconColor =
                 AppCompatResources.getColorStateList(context, R.color.white_alpha_70);
         mDefaultLevel = getResources().getInteger(R.integer.list_item_level_default);
         mIncognitoLevel = getResources().getInteger(R.integer.list_item_level_incognito);
@@ -314,14 +315,14 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
             ApiCompatibilityUtils.setTextAppearance(mTitleView, R.style.TextAppearance_WhiteTitle1);
             ApiCompatibilityUtils.setTextAppearance(
                     mDescriptionView, R.style.TextAppearance_WhiteBody);
-            ApiCompatibilityUtils.setImageTintList(mCloseButton, mLightCloseIconColor);
+            ApiCompatibilityUtils.setImageTintList(mCloseButton, mIncognitoCloseIconColor);
         } else {
             setBackgroundResource(R.color.modern_primary_color);
             mFaviconView.getBackground().setLevel(mDefaultLevel);
             ApiCompatibilityUtils.setTextAppearance(mTitleView, R.style.TextAppearance_BlackTitle1);
             ApiCompatibilityUtils.setTextAppearance(
                     mDescriptionView, R.style.TextAppearance_BlackBody);
-            ApiCompatibilityUtils.setImageTintList(mCloseButton, mDarkCloseIconColor);
+            ApiCompatibilityUtils.setImageTintList(mCloseButton, mDefaultCloseIconColor);
         }
 
         if (TextUtils.isEmpty(url)) {
