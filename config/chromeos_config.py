@@ -233,6 +233,7 @@ def GeneralTemplates(site_config):
       'incremental',
       display_label=config_lib.DISPLAY_LABEL_INCREMENATAL,
       build_type=constants.INCREMENTAL_TYPE,
+      luci_builder=config_lib.LUCI_BUILDER_INCREMENTAL,
       chroot_replace=False,
       uprev=False,
       overlays=constants.PUBLIC_OVERLAYS,
