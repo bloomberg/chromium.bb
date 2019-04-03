@@ -3391,6 +3391,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(app_list_features::kEnableAppGridGhost)},
 #endif  // OS_CHROMEOS
 
+    {"enable-accessibility-image-descriptions",
+     flag_descriptions::kEnableAccessibilityImageDescriptionsName,
+     flag_descriptions::kEnableAccessibilityImageDescriptionsDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kExperimentalAccessibilityLabels)},
+
     {"enable-accessibility-object-model",
      flag_descriptions::kEnableAccessibilityObjectModelName,
      flag_descriptions::kEnableAccessibilityObjectModelDescription, kOsAll,

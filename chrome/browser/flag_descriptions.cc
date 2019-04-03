@@ -369,6 +369,12 @@ const char kEmbeddedExtensionOptionsDescription[] =
     "Display extension options as an embedded element in chrome://extensions "
     "rather than opening a new tab.";
 
+const char kEnableAccessibilityImageDescriptionsName[] =
+    "Accessibility Image Descriptions";
+const char kEnableAccessibilityImageDescriptionsDescription[] =
+    "Enables screen reader users to request computer-generated descriptions "
+    "of unlabeled images using the page context menu.";
+
 const char kEnableAccessibilityObjectModelName[] = "Accessibility Object Model";
 const char kEnableAccessibilityObjectModelDescription[] =
     "Enables experimental support for Accessibility Object Model APIs "

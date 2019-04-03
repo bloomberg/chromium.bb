@@ -695,6 +695,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "enable-accessibility-image-descriptions",
+    "owners": [ "//ui/accessibility/OWNERS" ],
+    "expiry_milestone": 77
+  },
+  {
     "name": "enable-accessibility-object-model",
     "owners": [ "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 76
