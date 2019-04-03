@@ -140,15 +140,19 @@ CtapDeviceResponseCode CheckUserVerification(
   // Step 4.
   bool uv = false;
   if (can_do_uv) {
-    if (options.user_verification_availability ==
-            AuthenticatorSupportedOptions::UserVerificationAvailability::
-                kSupportedAndConfigured &&
-        user_verification == UserVerificationRequirement::kRequired) {
-      // Internal UV is assumed to always succeed.
-      if (simulate_press_callback) {
-        simulate_press_callback.Run();
+    if (user_verification == UserVerificationRequirement::kRequired) {
+      if (options.user_verification_availability ==
+          AuthenticatorSupportedOptions::UserVerificationAvailability::
+              kSupportedAndConfigured) {
+        // Internal UV is assumed to always succeed.
+        if (simulate_press_callback) {
+          simulate_press_callback.Run();
+        }
+        uv = true;
+      } else {
+        // UV was requested, but either not supported or not configured.
+        return CtapDeviceResponseCode::kCtap2ErrPinAuthInvalid;
       }
-      uv = true;
     }
 
     if (pin_auth && options.client_pin_availability ==
