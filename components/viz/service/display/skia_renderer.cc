@@ -818,7 +818,7 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
     default:
       // If we've reached here, the quad's type hasn't been updated to be
       // batch aware yet.
-      DoSingleDrawQuad(quad, draw_region);
+      DoSingleDrawQuad(quad, draw_region, params);
       break;
   }
 }
@@ -1329,7 +1329,8 @@ void SkiaRenderer::DrawUnsupportedQuad(const DrawQuad* quad,
 }
 
 void SkiaRenderer::DoSingleDrawQuad(const DrawQuad* quad,
-                                    const gfx::QuadF* draw_region) {
+                                    const gfx::QuadF* draw_region,
+                                    const DrawQuadParams& params) {
   base::Optional<SkAutoCanvasRestore> auto_canvas_restore;
   const gfx::Rect* scissor_rect =
       is_scissor_enabled_ ? &scissor_rect_ : nullptr;
@@ -1341,23 +1342,7 @@ void SkiaRenderer::DoSingleDrawQuad(const DrawQuad* quad,
                             draw_region, scissor_rect, rounded_corner_bounds,
                             &auto_canvas_restore);
 
-  SkPaint paint;
-  if (settings_->force_antialiasing ||
-      !IsScaleAndIntegerTranslate(current_canvas_->getTotalMatrix())) {
-    // TODO(danakj): Until we can enable AA only on exterior edges of the
-    // layer, disable AA if any interior edges are present. crbug.com/248175
-    bool all_four_edges_are_exterior =
-        quad->IsTopEdge() && quad->IsLeftEdge() && quad->IsBottomEdge() &&
-        quad->IsRightEdge();
-    if (settings_->allow_antialiasing &&
-        (settings_->force_antialiasing || all_four_edges_are_exterior))
-      paint.setAntiAlias(true);
-    paint.setFilterQuality(kLow_SkFilterQuality);
-  }
-
-  paint.setAlpha(quad->shared_quad_state->opacity * 255);
-  paint.setBlendMode(
-      static_cast<SkBlendMode>(quad->shared_quad_state->blend_mode));
+  SkPaint paint = params.paint();
 
   switch (quad->material) {
     case DrawQuad::DEBUG_BORDER:
@@ -1557,14 +1542,6 @@ const TileDrawQuad* SkiaRenderer::CanPassBeDrawnDirectly(
 void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
                                       SkPaint* paint) {
   DCHECK(paint);
-  // The flag |force_anti_aliasing_off| is also expected to disable alpha
-  // blending, so switch from kSrcOver blending to kSrc.
-  if (quad->force_anti_aliasing_off) {
-    paint->setAntiAlias(false);
-    if (paint->isSrcOver()) {
-      paint->setBlendMode(SkBlendMode::kSrc);
-    }
-  }
   auto bypass = render_pass_bypass_quads_.find(quad->render_pass_id);
   // When Render Pass has a single quad inside we would draw that directly.
   if (bypass != render_pass_bypass_quads_.end()) {

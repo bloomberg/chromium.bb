@@ -103,7 +103,9 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   // old implementation of DoDrawQuad and types will be migrated individually
   // to the new system and handled directly in the new DoDrawQuad definition,
   // after which this function can be removed.
-  void DoSingleDrawQuad(const DrawQuad* quad, const gfx::QuadF* draw_region);
+  void DoSingleDrawQuad(const DrawQuad* quad,
+                        const gfx::QuadF* draw_region,
+                        const DrawQuadParams& params);
 
   void PrepareCanvasForDrawQuads(
       gfx::Transform quad_to_target_transform,
