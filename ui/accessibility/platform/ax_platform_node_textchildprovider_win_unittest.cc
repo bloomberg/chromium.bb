@@ -5,9 +5,9 @@
 #include "ui/accessibility/platform/ax_platform_node_win_unittest.h"
 
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
-#include "ui/accessibility/platform/ax_platform_node_textchildprovider_win.cc"
-#include "ui/accessibility/platform/ax_platform_node_textprovider_win.cc"
-#include "ui/accessibility/platform/ax_platform_node_textrangeprovider_win.cc"
+#include "ui/accessibility/platform/ax_platform_node_textchildprovider_win.h"
+#include "ui/accessibility/platform/ax_platform_node_textprovider_win.h"
+#include "ui/accessibility/platform/ax_platform_node_textrangeprovider_win.h"
 
 using Microsoft::WRL::ComPtr;
 
