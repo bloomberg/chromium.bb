@@ -80,11 +80,11 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
         IdentityManagerFactory::GetForProfileIfExists(profile);
 
     if (identity_manager) {
-      const std::string hosted_domain =
-          identity_manager->GetPrimaryAccountInfoDeprecated().hosted_domain;
-      // |kNoHostedDomainFound| means it's gmail.com accounts.
-      if (hosted_domain == kNoHostedDomainFound ||
-          hosted_domain == "google.com") {
+      const std::string email = identity_manager->GetPrimaryAccountInfo().email;
+      if (base::EndsWith(email, "@gmail.com",
+                         base::CompareCase::INSENSITIVE_ASCII) ||
+          base::EndsWith(email, "@google.com",
+                         base::CompareCase::INSENSITIVE_ASCII)) {
         account_supported = true;
       }
     }
