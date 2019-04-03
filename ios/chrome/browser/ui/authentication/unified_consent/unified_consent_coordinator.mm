@@ -28,19 +28,10 @@
 // Identity chooser coordinator.
 @property(nonatomic, strong)
     IdentityChooserCoordinator* identityChooserCoordinator;
-// YES if the user choose an identity (or accept the default identity selected).
-@property(nonatomic, assign) BOOL identitySelectedByUser;
 
 @end
 
 @implementation UnifiedConsentCoordinator
-
-@synthesize delegate = _delegate;
-@synthesize unifiedConsentMediator = _unifiedConsentMediator;
-@synthesize unifiedConsentViewController = _unifiedConsentViewController;
-@synthesize settingsLinkWasTapped = _settingsLinkWasTapped;
-@synthesize identityChooserCoordinator = _identityChooserCoordinator;
-@synthesize identitySelectedByUser = _identitySelectedByUser;
 
 - (instancetype)init {
   self = [super init];
@@ -62,7 +53,6 @@
 }
 
 - (void)setSelectedIdentity:(ChromeIdentity*)selectedIdentity {
-  self.identitySelectedByUser = YES;
   self.unifiedConsentMediator.selectedIdentity = selectedIdentity;
 }
 
@@ -102,10 +92,9 @@
 
 - (void)unifiedConsentViewControllerViewDidAppear:
     (UnifiedConsentViewController*)controller {
-  // Only opens automatically the identity chooser dialog if the user didn't
-  // select an identity.
-  if (self.identitySelectedByUser)
+  if (!self.autoOpenIdentityPicker)
     return;
+
   CGFloat midX = CGRectGetMidX(self.unifiedConsentViewController.view.bounds);
   CGFloat midY = CGRectGetMidY(self.unifiedConsentViewController.view.bounds);
   CGPoint point = CGPointMake(midX, midY);

@@ -706,6 +706,8 @@ enum AuthenticationState {
       _unifiedConsentCoordinator.delegate = self;
       if (_selectedIdentity)
         _unifiedConsentCoordinator.selectedIdentity = _selectedIdentity;
+      _unifiedConsentCoordinator.autoOpenIdentityPicker =
+          _promoAction == signin_metrics::PromoAction::PROMO_ACTION_NOT_DEFAULT;
       [_unifiedConsentCoordinator start];
       [self
           showEmbeddedViewController:_unifiedConsentCoordinator.viewController];
