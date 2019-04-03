@@ -51,7 +51,6 @@ class CORE_EXPORT SnapCoordinator final
   // Called by LocalFrameView::PerformPostLayoutTasks(), so that the snap data
   // are updated whenever a layout happens.
   void UpdateAllSnapContainerData();
-  void UpdateSnapContainerData(const LayoutBox&);
 
   // SnapAtCurrentPosition(), SnapForEndPosition(), SnapForDirection(), and
   // SnapForEndAndDirection() return true if snapping was performed, and false
@@ -85,7 +84,9 @@ class CORE_EXPORT SnapCoordinator final
   bool PerformSnapping(const LayoutBox& snap_container,
                        const cc::SnapSelectionStrategy& strategy) const;
 
-  HashMap<const LayoutBox*, cc::SnapContainerData> snap_container_map_;
+  void UpdateSnapContainerData(LayoutBox&);
+
+  HashMap<LayoutBox*, cc::SnapContainerData> snap_container_map_;
   DISALLOW_COPY_AND_ASSIGN(SnapCoordinator);
 };
 
