@@ -13,6 +13,10 @@ source_set("components") {
     "install_options.h",
     "pending_app_manager.cc",
     "pending_app_manager.h",
+    "policy/web_app_policy_constants.cc",
+    "policy/web_app_policy_constants.h",
+    "policy/web_app_policy_manager.cc",
+    "policy/web_app_policy_manager.h",
     "web_app_audio_focus_id_map.cc",
     "web_app_audio_focus_id_map.h",
     "web_app_constants.h",
@@ -68,6 +72,7 @@ source_set("components") {
     "//components/crx_file",
     "//components/favicon/content",
     "//components/keyed_service/content",
+    "//components/pref_registry",
     "//content/public/browser",
     "//skia",
   ]
