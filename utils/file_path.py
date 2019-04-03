@@ -9,6 +9,7 @@ is running and thus it caches results of functions that depend on FS state.
 """
 
 import ctypes
+import errno
 import getpass
 import logging
 import os
@@ -1029,7 +1030,12 @@ def atomic_replace(path, body):
 def ensure_tree(path, perm=0777):
   """Ensures a directory exists."""
   if not fs.isdir(path):
-    fs.makedirs(path, perm)
+    try:
+      fs.makedirs(path, perm)
+    except OSError as e:
+      # Do not raise if directory exists.
+      if e.errno != errno.EEXIST or not fs.isdir(path):
+        raise
 
 
 def make_tree_read_only(root):

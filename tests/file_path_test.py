@@ -173,6 +173,15 @@ class FilePathTest(auto_stub.TestCase):
     # must be reset to be read-only after deleting one of the hard link
     # directory entry.
 
+  def test_ensure_tree(self):
+    dir_foo = os.path.join(self.tempdir, 'foo')
+    file_path.ensure_tree(dir_foo, 0777)
+
+    self.assertTrue(os.path.isdir(dir_foo))
+
+    # Do not raise OSError with errno.EEXIST
+    file_path.ensure_tree(dir_foo, 0777)
+
   def test_rmtree_unicode(self):
     subdir = os.path.join(self.tempdir, 'hi')
     fs.mkdir(subdir)
