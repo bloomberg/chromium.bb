@@ -614,7 +614,7 @@ bool SplitViewController::IsWindowInSplitView(
 void SplitViewController::OnWindowDragStarted(aura::Window* dragged_window) {
   DCHECK(dragged_window);
   if (IsWindowInSplitView(dragged_window))
-    OnSnappedWindowDetached(dragged_window);
+    OnSnappedWindowDetached(dragged_window, /*window_drag=*/true);
 
   // OnSnappedWindowDetached() may end split view mode.
   if (IsSplitViewModeActive())
@@ -662,7 +662,7 @@ void SplitViewController::OnWindowDestroyed(aura::Window* window) {
   auto iter = snapping_window_transformed_bounds_map_.find(window);
   if (iter != snapping_window_transformed_bounds_map_.end())
     snapping_window_transformed_bounds_map_.erase(iter);
-  OnSnappedWindowDetached(window);
+  OnSnappedWindowDetached(window, /*window_drag=*/false);
 }
 
 void SplitViewController::OnWindowPropertyChanged(aura::Window* window,
@@ -690,7 +690,7 @@ void SplitViewController::OnPostWindowStateTypeChange(
     EndSplitView();
     EndOverview();
   } else if (window_state->IsMinimized()) {
-    OnSnappedWindowDetached(window_state->window());
+    OnSnappedWindowDetached(window_state->window(), /*window_drag=*/false);
     // Insert the minimized window back to overview if split view mode is ended
     // because of the minimization of the window, but overview mode is still
     // active at the moment.
@@ -1290,7 +1290,8 @@ void SplitViewController::OnWindowSnapped(aura::Window* window) {
   ActivateAndStackSnappedWindow(window);
 }
 
-void SplitViewController::OnSnappedWindowDetached(aura::Window* window) {
+void SplitViewController::OnSnappedWindowDetached(aura::Window* window,
+                                                  bool window_drag) {
   DCHECK(IsWindowInSplitView(window));
   if (left_window_ == window) {
     StopObserving(LEFT);
@@ -1313,7 +1314,7 @@ void SplitViewController::OnSnappedWindowDetached(aura::Window* window) {
     // window, update its snap state and open overview window grid.
     default_snap_position_ = left_window_ ? LEFT : RIGHT;
     UpdateSplitViewStateAndNotifyObservers();
-    StartOverview();
+    StartOverview(window_drag);
   }
 }
 
@@ -1616,9 +1617,12 @@ void SplitViewController::InsertWindowToOverview(aura::Window* window) {
   GetOverviewSession()->AddItem(window, /*reposition=*/true, /*animate=*/true);
 }
 
-void SplitViewController::StartOverview() {
-  if (!Shell::Get()->overview_controller()->IsSelecting())
-    Shell::Get()->overview_controller()->ToggleOverview();
+void SplitViewController::StartOverview(bool window_drag) {
+  if (!Shell::Get()->overview_controller()->IsSelecting()) {
+    Shell::Get()->overview_controller()->ToggleOverview(
+        window_drag ? OverviewSession::EnterExitOverviewType::kWindowDragged
+                    : OverviewSession::EnterExitOverviewType::kNormal);
+  }
 }
 
 void SplitViewController::EndOverview() {

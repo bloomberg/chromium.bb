@@ -14,6 +14,7 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/drag_drop/drag_drop_controller.h"
+#include "ash/public/cpp/fps_counter.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
@@ -43,6 +44,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
@@ -128,6 +130,7 @@ class OverviewSessionTest : public AshTestBase {
   OverviewSessionTest() = default;
   ~OverviewSessionTest() override = default;
 
+  // AshTestBase:
   void SetUp() override {
     AshTestBase::SetUp();
     Shell::Get()->aura_env()->set_throttle_input_on_resize_for_testing(false);
@@ -136,6 +139,12 @@ class OverviewSessionTest : public AshTestBase {
     shelf_view_test_api_->SetAnimationDuration(1);
     ScopedOverviewTransformWindow::SetImmediateCloseForTests();
     OverviewController::SetDoNotChangeWallpaperBlurForTests();
+    FpsCounter::SetFoceReportZeroAnimationForTest(true);
+  }
+  void TearDown() override {
+    FpsCounter::SetFoceReportZeroAnimationForTest(false);
+    trace_names_.clear();
+    AshTestBase::TearDown();
   }
 
   // Enters tablet mode. Needed by tests that test dragging and or splitview,
@@ -327,13 +336,46 @@ class OverviewSessionTest : public AshTestBase {
     return !!item->transform_window_.mask_;
   }
 
+  void CheckOverviewEnterExitHistogram(const char* trace,
+                                       std::vector<int>&& enter_counts,
+                                       std::vector<int>&& exit_counts) {
+    DCHECK(!base::ContainsValue(trace_names_, trace)) << trace;
+    trace_names_.push_back(trace);
+    {
+      SCOPED_TRACE(trace + std::string(".Enter"));
+      CheckOverviewHistogram("Ash.Overview.AnimationSmoothness.Enter",
+                             std::move(enter_counts));
+    }
+    {
+      SCOPED_TRACE(trace + std::string(".Exit"));
+      CheckOverviewHistogram("Ash.Overview.AnimationSmoothness.Exit",
+                             std::move(exit_counts));
+    }
+  }
+
   static void StubForTest(ExitWarningHandler* ewh) {
     ewh->stub_timer_for_test_ = true;
   }
   static bool is_ui_shown(ExitWarningHandler* ewh) { return !!ewh->widget_; }
 
  private:
+  void CheckOverviewHistogram(const char* histogram,
+                              std::vector<int>&& counts) {
+    ASSERT_EQ(3u, counts.size());
+    // There should be no histogram for split view.
+    histograms_.ExpectTotalCount(histogram + std::string(".SplitView"), 0);
+
+    histograms_.ExpectTotalCount(histogram + std::string(".ClamshellMode"),
+                                 counts[0]);
+    histograms_.ExpectTotalCount(
+        histogram + std::string(".SingleClamshellMode"), counts[1]);
+    histograms_.ExpectTotalCount(histogram + std::string(".TabletMode"),
+                                 counts[2]);
+  }
+
   std::unique_ptr<ShelfViewTestAPI> shelf_view_test_api_;
+  std::vector<std::string> trace_names_;
+  base::HistogramTester histograms_;
 
   DISALLOW_COPY_AND_ASSIGN(OverviewSessionTest);
 };
@@ -387,12 +429,14 @@ TEST_F(OverviewSessionTest, Basic) {
   // Hide the cursor before entering overview to test that it will be shown.
   aura::client::GetCursorClient(root_window)->HideCursor();
 
+  CheckOverviewEnterExitHistogram("Init", {0, 0, 0}, {0, 0, 0});
   // In overview mode the windows should no longer overlap and the overview
   // focus window should be focused.
   ToggleOverview();
   EXPECT_EQ(overview_session()->GetOverviewFocusWindow(),
             wm::GetFocusedWindow());
   EXPECT_FALSE(WindowsOverlapping(window1.get(), window2.get()));
+  CheckOverviewEnterExitHistogram("Enter", {1, 0, 0}, {0, 0, 0});
 
   // Clicking window 1 should activate it.
   ClickWindow(window1.get());
@@ -402,6 +446,8 @@ TEST_F(OverviewSessionTest, Basic) {
 
   // Cursor should have been unlocked.
   EXPECT_FALSE(aura::client::GetCursorClient(root_window)->IsCursorLocked());
+
+  CheckOverviewEnterExitHistogram("Exit", {1, 0, 0}, {1, 0, 0});
 }
 
 // Tests activating minimized window.
@@ -756,14 +802,48 @@ TEST_F(OverviewSessionTest, FullscreenWindow) {
 
   // Enter overview and select the fullscreen window.
   ToggleOverview();
+  CheckOverviewEnterExitHistogram("FullscreenWindowEnter1", {0, 1, 0},
+                                  {0, 0, 0});
   ClickWindow(window1.get());
   EXPECT_TRUE(wm::GetWindowState(window1.get())->IsFullscreen());
+  CheckOverviewEnterExitHistogram("FullscreenWindowExit1", {0, 1, 0},
+                                  {0, 1, 0});
 
   // Entering overview and selecting another window, the previous window remains
   // fullscreen.
   ToggleOverview();
+  CheckOverviewEnterExitHistogram("FullscreenWindowEnter2", {0, 2, 0},
+                                  {0, 1, 0});
   ClickWindow(window2.get());
   EXPECT_TRUE(wm::GetWindowState(window1.get())->IsFullscreen());
+  CheckOverviewEnterExitHistogram("FullscreenWindowExit2", {0, 2, 0},
+                                  {1, 1, 0});
+}
+
+// Tests entering overview mode with maximized window.
+TEST_F(OverviewSessionTest, MaximizedWindow) {
+  std::unique_ptr<aura::Window> window1(CreateTestWindow());
+  std::unique_ptr<aura::Window> window2(CreateTestWindow());
+  ::wm::ActivateWindow(window1.get());
+
+  const wm::WMEvent maximize_event(wm::WM_EVENT_MAXIMIZE);
+  wm::GetWindowState(window1.get())->OnWMEvent(&maximize_event);
+  EXPECT_TRUE(wm::GetWindowState(window1.get())->IsMaximized());
+
+  // Enter overview and select the fullscreen window.
+  ToggleOverview();
+  CheckOverviewEnterExitHistogram("MaximizedWindowEnter1", {0, 1, 0},
+                                  {0, 0, 0});
+  ClickWindow(window1.get());
+  EXPECT_TRUE(wm::GetWindowState(window1.get())->IsMaximized());
+  CheckOverviewEnterExitHistogram("MaximizedWindowExit1", {0, 1, 0}, {0, 1, 0});
+
+  ToggleOverview();
+  CheckOverviewEnterExitHistogram("MaximizedWindowEnter2", {0, 2, 0},
+                                  {0, 1, 0});
+  ClickWindow(window2.get());
+  EXPECT_TRUE(wm::GetWindowState(window1.get())->IsMaximized());
+  CheckOverviewEnterExitHistogram("MaximizedWindowExit2", {0, 2, 0}, {1, 1, 0});
 }
 
 // Tests that entering overview when a fullscreen window is active in maximized
@@ -791,10 +871,11 @@ TEST_F(OverviewSessionTest, FullscreenWindowTabletMode) {
   display::Screen* screen = display::Screen::GetScreen();
   EXPECT_EQ(gfx::Rect(800, 600),
             screen->GetDisplayNearestWindow(window1.get()).work_area());
-
   ToggleOverview();
   EXPECT_EQ(fullscreen,
             screen->GetDisplayNearestWindow(window1.get()).work_area());
+  CheckOverviewEnterExitHistogram("FullscreenWindowTabletEnter1", {0, 0, 1},
+                                  {0, 0, 0});
 
   // Window 2 would normally resize to normal window bounds on showing the shelf
   // for overview but this is deferred until overview is exited.
@@ -806,17 +887,26 @@ TEST_F(OverviewSessionTest, FullscreenWindowTabletMode) {
   // Since the fullscreen window is still active, window2 will still have the
   // larger bounds.
   EXPECT_EQ(fullscreen_window_bounds, window2->GetTargetBounds());
+  CheckOverviewEnterExitHistogram("FullscreenWindowTabletExit1", {0, 0, 1},
+                                  {0, 0, 1});
 
   // Enter overview again and select window 2. Selecting window 2 should show
   // the shelf bringing window2 back to the normal bounds.
   ToggleOverview();
+  CheckOverviewEnterExitHistogram("FullscreenWindowTabletEnter2", {0, 0, 2},
+                                  {0, 0, 1});
+
   ClickWindow(window2.get());
   // Selecting non fullscreen window should set the work area back to normal.
   EXPECT_EQ(normal_work_area,
             screen->GetDisplayNearestWindow(window1.get()).work_area());
   EXPECT_EQ(normal_window_bounds, window2->GetTargetBounds());
+  CheckOverviewEnterExitHistogram("FullscreenWindowTabletExit2", {0, 0, 2},
+                                  {0, 0, 2});
 
   ToggleOverview();
+  CheckOverviewEnterExitHistogram("FullscreenWindowTabletEnter3", {0, 0, 3},
+                                  {0, 0, 2});
   EXPECT_EQ(normal_work_area,
             screen->GetDisplayNearestWindow(window1.get()).work_area());
   ClickWindow(window1.get());
@@ -824,6 +914,8 @@ TEST_F(OverviewSessionTest, FullscreenWindowTabletMode) {
   // well.
   EXPECT_EQ(fullscreen,
             screen->GetDisplayNearestWindow(window1.get()).work_area());
+  CheckOverviewEnterExitHistogram("FullscreenWindowTabletExit3", {0, 0, 3},
+                                  {0, 0, 3});
 }
 
 TEST_F(OverviewSessionTest, SkipOverviewWindow) {

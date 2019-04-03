@@ -8,7 +8,9 @@
 #include <functional>
 #include <utility>
 
+#include "ash/metrics/histogram_macros.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/fps_counter.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/wallpaper_types.h"
@@ -98,6 +100,26 @@ constexpr SkColor kNoItemsIndicatorBackgroundColor = SK_ColorBLACK;
 constexpr SkColor kNoItemsIndicatorTextColor = SK_ColorWHITE;
 constexpr float kNoItemsIndicatorBackgroundOpacity = 0.8f;
 
+// Histogram names for overview enter/exit smoothness in clamshell,
+// tablet mode and splitview.
+constexpr char kOverviewEnterClamshellHistogram[] =
+    "Ash.Overview.AnimationSmoothness.Enter.ClamshellMode";
+constexpr char kOverviewEnterSingleClamshellHistogram[] =
+    "Ash.Overview.AnimationSmoothness.Enter.SingleClamshellMode";
+constexpr char kOverviewEnterTabletHistogram[] =
+    "Ash.Overview.AnimationSmoothness.Enter.TabletMode";
+constexpr char kOverviewEnterSplitViewHistogram[] =
+    "Ash.Overview.AnimationSmoothness.Enter.SplitView";
+
+constexpr char kOverviewExitClamshellHistogram[] =
+    "Ash.Overview.AnimationSmoothness.Exit.ClamshellMode";
+constexpr char kOverviewExitSingleClamshellHistogram[] =
+    "Ash.Overview.AnimationSmoothness.Exit.SingleClamshellMode";
+constexpr char kOverviewExitTabletHistogram[] =
+    "Ash.Overview.AnimationSmoothness.Exit.TabletMode";
+constexpr char kOverviewExitSplitViewHistogram[] =
+    "Ash.Overview.AnimationSmoothness.Exit.SplitView";
+
 // Returns the vector for the fade in animation.
 gfx::Vector2d GetSlideVectorForFadeIn(OverviewSession::Direction direction,
                                       const gfx::Rect& bounds) {
@@ -114,6 +136,68 @@ gfx::Vector2d GetSlideVectorForFadeIn(OverviewSession::Direction direction,
   }
   return vector;
 }
+
+template <const char* clamshell_single_name,
+          const char* clamshell_multi_name,
+          const char* tablet_name,
+          const char* splitview_name>
+class OverviewFpsCounter : public FpsCounter {
+ public:
+  OverviewFpsCounter(ui::Compositor* compositor,
+                     bool single_animation_in_clamshell)
+      : FpsCounter(compositor),
+        single_animation_in_clamshell_(single_animation_in_clamshell) {}
+  ~OverviewFpsCounter() override {
+    int smoothness = ComputeSmoothness();
+    if (smoothness < 0)
+      return;
+    if (single_animation_in_clamshell_)
+      UMA_HISTOGRAM_PERCENTAGE_IN_CLAMSHELL(clamshell_single_name, smoothness);
+    else
+      UMA_HISTOGRAM_PERCENTAGE_IN_CLAMSHELL(clamshell_multi_name, smoothness);
+    UMA_HISTOGRAM_PERCENTAGE_IN_TABLET_NON_SPLITVIEW(tablet_name, smoothness);
+    UMA_HISTOGRAM_PERCENTAGE_IN_SPLITVIEW(splitview_name, smoothness);
+  }
+
+ private:
+  // True if only top window animates upon enter/exit overview in clamshell.
+  bool single_animation_in_clamshell_;
+
+  DISALLOW_COPY_AND_ASSIGN(OverviewFpsCounter);
+};
+
+using OverviewEnterFpsCounter =
+    OverviewFpsCounter<kOverviewEnterSingleClamshellHistogram,
+                       kOverviewEnterClamshellHistogram,
+                       kOverviewEnterTabletHistogram,
+                       kOverviewEnterSplitViewHistogram>;
+using OverviewExitFpsCounter =
+    OverviewFpsCounter<kOverviewExitSingleClamshellHistogram,
+                       kOverviewExitClamshellHistogram,
+                       kOverviewExitTabletHistogram,
+                       kOverviewExitSplitViewHistogram>;
+
+class ShutdownAnimationFpsCounterObserver : public OverviewObserver {
+ public:
+  ShutdownAnimationFpsCounterObserver(ui::Compositor* compositor,
+                                      bool single_animation)
+      : fps_counter_(compositor, single_animation) {
+    Shell::Get()->overview_controller()->AddObserver(this);
+  }
+  ~ShutdownAnimationFpsCounterObserver() override {
+    Shell::Get()->overview_controller()->RemoveObserver(this);
+  }
+
+  // OverviewObserver:
+  void OnOverviewModeEndingAnimationComplete(bool canceled) override {
+    delete this;
+  }
+
+ private:
+  OverviewExitFpsCounter fps_counter_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShutdownAnimationFpsCounterObserver);
+};
 
 // Creates |drop_target_widget_|. It's created when a window (not from overview)
 // is dragged around and destroyed when the drag ends. If |animate| is true, do
@@ -453,8 +537,30 @@ SkColor OverviewGrid::GetShieldColor() {
 void OverviewGrid::Shutdown() {
   ScreenRotationAnimator::GetForRootWindow(root_window_)->RemoveObserver(this);
 
-  for (const auto& window : window_list_)
+  bool has_non_cover_animating = false;
+  int animate_count = 0;
+
+  for (const auto& window : window_list_) {
+    if (window->should_animate_when_exiting() && !has_non_cover_animating) {
+      has_non_cover_animating |=
+          !CanCoverAvailableWorkspace(window->GetWindow());
+      animate_count++;
+    }
     window->Shutdown();
+  }
+  bool single_animation_in_clamshell =
+      (animate_count == 1 && !has_non_cover_animating) &&
+      !Shell::Get()
+           ->tablet_mode_controller()
+           ->IsTabletModeWindowManagerEnabled();
+
+  // OverviewGrid in splitscreen does not include the window to be activated.
+  if (!window_list_.empty() ||
+      Shell::Get()->split_view_controller()->IsSplitViewModeActive()) {
+    // The following instance self-destructs when shutdown animation ends.
+    new ShutdownAnimationFpsCounterObserver(
+        root_window_->layer()->GetCompositor(), single_animation_in_clamshell);
+  }
 
   // Shutdown() implies |overview_session_| is about to be deleted, so reset it.
   auto exit_overview_session_type =
@@ -522,10 +628,16 @@ void OverviewGrid::PositionWindows(
       transition == OverviewSession::OverviewTransition::kEnter
           ? OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_ON_ENTER
           : OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW;
+
+  int animate_count = 0;
+  bool has_non_cover_animating = false;
+  OverviewAnimationType animation_types[rects.size()];
+
   for (size_t i = 0; i < window_list_.size(); ++i) {
     OverviewItem* window_item = window_list_[i].get();
     if (window_item->animating_to_close() ||
         (ignored_item != nullptr && window_item == ignored_item)) {
+      rects[i].SetRect(0, 0, 0, 0);
       continue;
     }
 
@@ -539,10 +651,37 @@ void OverviewGrid::PositionWindows(
     // animation by ourselves.
     if (IsDropTargetWindow(window_item->GetWindow()))
       should_animate_item = false;
+    if (animate && transition == OverviewSession::OverviewTransition::kEnter) {
+      if (window_item->should_animate_when_entering() &&
+          !has_non_cover_animating) {
+        has_non_cover_animating |=
+            !CanCoverAvailableWorkspace(window_item->GetWindow());
+        animate_count++;
+      }
+    }
+    animation_types[i] =
+        should_animate_item ? animation_type : OVERVIEW_ANIMATION_NONE;
+  }
 
-    window_item->SetBounds(rects[i], should_animate_item
-                                         ? animation_type
-                                         : OVERVIEW_ANIMATION_NONE);
+  if (animate && transition == OverviewSession::OverviewTransition::kEnter &&
+      !window_list_.empty()) {
+    bool single_animation_in_clamshell =
+        animate_count == 1 && !has_non_cover_animating &&
+        !Shell::Get()
+             ->tablet_mode_controller()
+             ->IsTabletModeWindowManagerEnabled();
+    fps_counter_ = std::make_unique<OverviewEnterFpsCounter>(
+        window_list_[0]->GetWindow()->layer()->GetCompositor(),
+        single_animation_in_clamshell);
+  }
+
+  // Apply the animation after creating fps_counter_ so that unit test
+  // can correctly count the measure requests.
+  for (size_t i = 0; i < window_list_.size(); ++i) {
+    if (rects[i].IsEmpty())
+      continue;
+    OverviewItem* window_item = window_list_[i].get();
+    window_item->SetBounds(rects[i], animation_types[i]);
   }
 
   // If the selection widget is active, reposition it without any animation.
@@ -991,7 +1130,11 @@ void OverviewGrid::OnScreenRotationAnimationFinished(
   Shell::Get()->overview_controller()->DelayedUpdateMaskAndShadow();
 }
 
-void OverviewGrid::OnStartingAnimationComplete() {
+void OverviewGrid::OnStartingAnimationComplete(bool canceled) {
+  fps_counter_.reset();
+  if (canceled)
+    return;
+
   if (!shield_widget_) {
     InitShieldWidget(/*animate=*/true);
     ShowNoRecentsWindowMessage(window_list_.empty());

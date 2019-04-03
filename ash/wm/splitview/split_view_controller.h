@@ -33,7 +33,6 @@ class Layer;
 }  // namespace ui
 
 namespace ash {
-class OverviewSession;
 class SplitViewControllerTest;
 class SplitViewDivider;
 class SplitViewOverviewSessionTest;
@@ -288,8 +287,9 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // window side of the screen. If there is only one snapped windows, closing/
   // minimizing/tab-dragging the sanpped window will end split view mode and
   // adjust the overview window grid bounds if the overview mode is active at
-  // that moment.
-  void OnSnappedWindowDetached(aura::Window* window);
+  // that moment. |window_drag| is true if the window was detached as a result
+  // of dragging.
+  void OnSnappedWindowDetached(aura::Window* window, bool window_drag);
 
   // If the desired bounds of the snapped windows bounds |left_or_top_rect| and
   // |right_or_bottom_rect| are smaller than the minimum bounds of the snapped
@@ -355,7 +355,7 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   void InsertWindowToOverview(aura::Window* window);
 
   // Starts/Ends overview mode if the overview mode is inactive/active.
-  void StartOverview();
+  void StartOverview(bool window_drag = false);
   void EndOverview();
 
   // Finalizes and cleans up after stopping dragging the divider bar to resize

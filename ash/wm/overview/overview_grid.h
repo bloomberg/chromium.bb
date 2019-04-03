@@ -31,6 +31,7 @@ class Widget;
 namespace ash {
 
 class DesksBarView;
+class FpsCounter;
 class OverviewItem;
 
 // Represents a grid of windows in the Overview Mode in a particular root
@@ -161,7 +162,7 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
                                          bool canceled) override;
 
   // Called when overview starting animation completes.
-  void OnStartingAnimationComplete();
+  void OnStartingAnimationComplete(bool canceled);
 
   // Checks if the grid needs to have the wallpaper animated. Returns false if
   // one of the grids windows covers the the entire workspace, true otherwise.
@@ -389,6 +390,9 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // Collection of the items which should be nudged. This should only be
   // non-empty if a nudge is in progress.
   std::vector<NudgeData> nudge_data_;
+
+  // Measures the animation smoothness of overview animation.
+  std::unique_ptr<FpsCounter> fps_counter_;
 
   // True to skip |PositionWindows()|. Used to avoid O(n^2) layout
   // when reposition windows in tablet overview mode.

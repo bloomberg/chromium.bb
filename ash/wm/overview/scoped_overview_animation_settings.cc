@@ -97,10 +97,6 @@ class OverviewEnterMetricsReporter : public ui::AnimationMetricsReporter {
   void Report(int value) override {
     UMA_HISTOGRAM_PERCENTAGE("Ash.WindowSelector.AnimationSmoothness.Enter",
                              value);
-    UMA_HISTOGRAM_PERCENTAGE_IN_CLAMSHELL(
-        "Ash.Overview.AnimationSmoothness.Enter.Clamshell", value);
-    UMA_HISTOGRAM_PERCENTAGE_IN_TABLET(
-        "Ash.Overview.AnimationSmoothness.Enter.Tablet", value);
   }
 
  private:
@@ -115,10 +111,6 @@ class OverviewExitMetricsReporter : public ui::AnimationMetricsReporter {
   void Report(int value) override {
     UMA_HISTOGRAM_PERCENTAGE("Ash.WindowSelector.AnimationSmoothness.Exit",
                              value);
-    UMA_HISTOGRAM_PERCENTAGE_IN_CLAMSHELL(
-        "Ash.Overview.AnimationSmoothness.Exit.Clamshell", value);
-    UMA_HISTOGRAM_PERCENTAGE_IN_TABLET(
-        "Ash.Overview.AnimationSmoothness.Exit.Table", value);
   }
 
  private:
