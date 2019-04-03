@@ -3887,14 +3887,6 @@ _FUNCTION_INFO = {
     'extension': 'CHROMIUM_lose_context',
     'trace_level': 1,
   },
-  'InsertFenceSyncCHROMIUM': {
-    'type': 'Custom',
-    'internal': True,
-    'impl_func': False,
-    'cmd_args': 'GLuint64 release_count',
-    'extension': "CHROMIUM_sync_point",
-    'trace_level': 1,
-  },
   'GenSyncTokenCHROMIUM': {
     'type': 'NoCommand',
     'extension': "CHROMIUM_sync_point",

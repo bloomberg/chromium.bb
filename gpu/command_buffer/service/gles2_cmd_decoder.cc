@@ -563,9 +563,10 @@ uint32_t GLES2Decoder::GetAndClearBackbufferClearBitsForTest() {
   return 0;
 }
 
-GLES2Decoder::GLES2Decoder(CommandBufferServiceBase* command_buffer_service,
+GLES2Decoder::GLES2Decoder(DecoderClient* client,
+                           CommandBufferServiceBase* command_buffer_service,
                            Outputter* outputter)
-    : CommonDecoder(command_buffer_service), outputter_(outputter) {
+    : CommonDecoder(client, command_buffer_service), outputter_(outputter) {
   DCHECK(outputter_);
 }
 
@@ -2422,7 +2423,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   // Set remaining commands to process to 0 to force DoCommands to return
   // and allow context preemption and GPU watchdog checks in CommandExecutor().
-  void ExitCommandProcessingEarly() { commands_to_process_ = 0; }
+  void ExitCommandProcessingEarly() override;
 
   void ProcessPendingReadPixels(bool did_finish);
   void FinishReadPixels(GLsizei width,
@@ -2523,8 +2524,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   GLES2_COMMAND_LIST(GLES2_CMD_OP)
 
   #undef GLES2_CMD_OP
-
-  DecoderClient* client_;
 
   // The GL context this decoder renders to on behalf of the client.
   scoped_refptr<gl::GLSurface> surface_;
@@ -3425,12 +3424,11 @@ GLES2DecoderImpl::GLES2DecoderImpl(
     CommandBufferServiceBase* command_buffer_service,
     Outputter* outputter,
     ContextGroup* group)
-    : GLES2Decoder(command_buffer_service, outputter),
-      client_(client),
+    : GLES2Decoder(client, command_buffer_service, outputter),
       group_(group),
       logger_(&debug_marker_manager_,
               base::BindRepeating(&DecoderClient::OnConsoleMessage,
-                                  base::Unretained(client_),
+                                  base::Unretained(client),
                                   0),
               group->gpu_preferences().disable_gl_error_limit),
       error_state_(ErrorState::Create(this, &logger_)),
@@ -5989,6 +5987,10 @@ error::Error GLES2DecoderImpl::DoCommands(unsigned int num_commands,
     return DoCommandsImpl<false>(
         num_commands, buffer, num_entries, entries_processed);
   }
+}
+
+void GLES2DecoderImpl::ExitCommandProcessingEarly() {
+  commands_to_process_ = 0;
 }
 
 void GLES2DecoderImpl::DoFinish() {
@@ -9692,7 +9694,7 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program_id) {
                     workarounds().count_all_in_varyings_packing
                         ? Program::kCountAll
                         : Program::kCountOnlyStaticallyUsed,
-                    client_)) {
+                    client())) {
     if (program == state_.current_program.get()) {
       if (workarounds().clear_uniforms_before_first_program_use)
         program_manager()->ClearUniforms(program);
@@ -13332,7 +13334,7 @@ void GLES2DecoderImpl::DoSwapBuffersWithBoundsCHROMIUM(
     bounds[i] = gfx::Rect(rects[i * 4 + 0], rects[i * 4 + 1], rects[i * 4 + 2],
                           rects[i * 4 + 3]);
   }
-  client_->OnSwapBuffers(swap_id, flags);
+  client()->OnSwapBuffers(swap_id, flags);
   FinishSwapBuffers(surface_->SwapBuffersWithBounds(bounds, base::DoNothing()));
 }
 
@@ -13364,14 +13366,14 @@ error::Error GLES2DecoderImpl::HandlePostSubBufferCHROMIUM(
   if (supports_async_swap_) {
     TRACE_EVENT_ASYNC_BEGIN0("gpu", "AsyncSwapBuffers", c.swap_id());
 
-    client_->OnSwapBuffers(c.swap_id(), c.flags);
+    client()->OnSwapBuffers(c.swap_id(), c.flags);
     surface_->PostSubBufferAsync(
         c.x, c.y, c.width, c.height,
         base::BindOnce(&GLES2DecoderImpl::FinishAsyncSwapBuffers,
                        weak_ptr_factory_.GetWeakPtr(), c.swap_id()),
         base::DoNothing());
   } else {
-    client_->OnSwapBuffers(c.swap_id(), c.flags);
+    client()->OnSwapBuffers(c.swap_id(), c.flags);
     FinishSwapBuffers(surface_->PostSubBuffer(c.x, c.y, c.width, c.height,
                                               base::DoNothing()));
   }
@@ -16585,13 +16587,13 @@ void GLES2DecoderImpl::DoSwapBuffers(uint64_t swap_id, GLbitfield flags) {
   } else if (supports_async_swap_) {
     TRACE_EVENT_ASYNC_BEGIN0("gpu", "AsyncSwapBuffers", swap_id);
 
-    client_->OnSwapBuffers(swap_id, flags);
+    client()->OnSwapBuffers(swap_id, flags);
     surface_->SwapBuffersAsync(
         base::BindOnce(&GLES2DecoderImpl::FinishAsyncSwapBuffers,
                        weak_ptr_factory_.GetWeakPtr(), swap_id),
         base::DoNothing());
   } else {
-    client_->OnSwapBuffers(swap_id, flags);
+    client()->OnSwapBuffers(swap_id, flags);
     FinishSwapBuffers(surface_->SwapBuffers(base::DoNothing()));
   }
 
@@ -16638,13 +16640,13 @@ void GLES2DecoderImpl::DoCommitOverlayPlanes(uint64_t swap_id,
   }
   ClearScheduleCALayerState();
   if (supports_async_swap_) {
-    client_->OnSwapBuffers(swap_id, flags);
+    client()->OnSwapBuffers(swap_id, flags);
     surface_->CommitOverlayPlanesAsync(
         base::BindOnce(&GLES2DecoderImpl::FinishAsyncSwapBuffers,
                        weak_ptr_factory_.GetWeakPtr(), swap_id),
         base::DoNothing());
   } else {
-    client_->OnSwapBuffers(swap_id, flags);
+    client()->OnSwapBuffers(swap_id, flags);
     FinishSwapBuffers(surface_->CommitOverlayPlanes(base::DoNothing()));
   }
 }
@@ -17031,23 +17033,8 @@ error::Error GLES2DecoderImpl::HandleDescheduleUntilFinishedCHROMIUM(
 
   TRACE_EVENT_ASYNC_BEGIN0("cc", "GLES2DecoderImpl::DescheduleUntilFinished",
                            this);
-  client_->OnDescheduleUntilFinished();
+  client()->OnDescheduleUntilFinished();
   return error::kDeferLaterCommands;
-}
-
-error::Error GLES2DecoderImpl::HandleInsertFenceSyncCHROMIUM(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  const volatile gles2::cmds::InsertFenceSyncCHROMIUM& c =
-      *static_cast<const volatile gles2::cmds::InsertFenceSyncCHROMIUM*>(
-          cmd_data);
-
-  const uint64_t release_count = c.release_count();
-  client_->OnFenceSyncRelease(release_count);
-  // Exit inner command processing loop so that we check the scheduling state
-  // and yield if necessary as we may have unblocked a higher priority context.
-  ExitCommandProcessingEarly();
-  return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleDiscardBackbufferCHROMIUM(
@@ -17143,7 +17130,7 @@ void GLES2DecoderImpl::ProcessDescheduleUntilFinished() {
                          this);
   deschedule_until_finished_fences_.erase(
       deschedule_until_finished_fences_.begin());
-  client_->OnRescheduleAfterFinished();
+  client()->OnRescheduleAfterFinished();
 }
 
 bool GLES2DecoderImpl::HasMoreIdleWork() const {
@@ -20921,7 +20908,7 @@ error::Error GLES2DecoderImpl::HandleSetActiveURLCHROMIUM(
     return error::kInvalidArguments;
 
   GURL url(base::StringPiece(url_str, size));
-  client_->SetActiveURL(std::move(url));
+  client()->SetActiveURL(std::move(url));
   return error::kNoError;
 }
 

@@ -29,7 +29,7 @@ WebGPUDecoder* WebGPUDecoder::Create(
 WebGPUDecoder::WebGPUDecoder(DecoderClient* client,
                              CommandBufferServiceBase* command_buffer_service,
                              gles2::Outputter* outputter)
-    : CommonDecoder(command_buffer_service) {}
+    : CommonDecoder(client, command_buffer_service) {}
 
 WebGPUDecoder::~WebGPUDecoder() {}
 

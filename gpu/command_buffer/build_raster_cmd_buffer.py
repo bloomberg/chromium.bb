@@ -271,13 +271,6 @@ _FUNCTION_INFO = {
     'client_test': False,
     'cmd_args': 'GLuint url_bucket_id',
   },
-  'InsertFenceSyncCHROMIUM': {
-    'type': 'Custom',
-    'internal': True,
-    'impl_func': False,
-    'cmd_args': 'GLuint64 release_count',
-    'trace_level': 1,
-  },
   'LoseContextCHROMIUM': {
     'decoder_func': 'DoLoseContextCHROMIUM',
     'unit_test': False,

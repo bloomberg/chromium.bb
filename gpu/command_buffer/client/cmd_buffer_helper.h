@@ -250,6 +250,13 @@ class GPU_EXPORT CommandBufferHelper {
     }
   }
 
+  void InsertFenceSync(uint64_t release_count) {
+    cmd::InsertFenceSync* c = GetCmdSpace<cmd::InsertFenceSync>();
+    if (c) {
+      c->Init(release_count);
+    }
+  }
+
   CommandBuffer* command_buffer() const { return command_buffer_; }
 
   scoped_refptr<Buffer> get_ring_buffer() const { return ring_buffer_; }

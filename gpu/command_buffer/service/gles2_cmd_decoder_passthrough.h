@@ -464,7 +464,7 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
     return feature_info_->feature_flags();
   }
 
-  void ExitCommandProcessingEarly() { commands_to_process_ = 0; }
+  void ExitCommandProcessingEarly() override;
 
   error::Error CheckSwapBuffersResult(gfx::SwapResult result,
                                       const char* function_name);
@@ -510,8 +510,6 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
       }
     }
   }
-
-  DecoderClient* client_ = nullptr;
 
   // A set of raw pointers to currently living PassthroughAbstractTextures
   // which allow us to properly signal to them when we are destroyed.

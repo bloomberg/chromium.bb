@@ -543,13 +543,12 @@ GLES2DecoderPassthroughImpl::GLES2DecoderPassthroughImpl(
     CommandBufferServiceBase* command_buffer_service,
     Outputter* outputter,
     ContextGroup* group)
-    : GLES2Decoder(command_buffer_service, outputter),
-      client_(client),
+    : GLES2Decoder(client, command_buffer_service, outputter),
       commands_to_process_(0),
       debug_marker_manager_(),
       logger_(&debug_marker_manager_,
               base::BindRepeating(&DecoderClient::OnConsoleMessage,
-                                  base::Unretained(client_),
+                                  base::Unretained(client),
                                   0),
               group->gpu_preferences().disable_gl_error_limit),
       surface_(),
@@ -681,6 +680,10 @@ GLES2Decoder::Error GLES2DecoderPassthroughImpl::DoCommandsImpl(
     *entries_processed = process_pos;
 
   return result;
+}
+
+void GLES2DecoderPassthroughImpl::ExitCommandProcessingEarly() {
+  commands_to_process_ = 0;
 }
 
 base::WeakPtr<DecoderContext> GLES2DecoderPassthroughImpl::AsWeakPtr() {
@@ -2314,7 +2317,7 @@ void GLES2DecoderPassthroughImpl::ProcessDescheduleUntilFinished() {
       "cc", "GLES2DecoderPassthroughImpl::DescheduleUntilFinished", this);
   deschedule_until_finished_fences_.erase(
       deschedule_until_finished_fences_.begin());
-  client_->OnRescheduleAfterFinished();
+  client()->OnRescheduleAfterFinished();
 }
 
 void GLES2DecoderPassthroughImpl::UpdateTextureBinding(
@@ -2423,7 +2426,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleSetActiveURLCHROMIUM(
     return error::kInvalidArguments;
 
   GURL url(base::StringPiece(url_str, size));
-  client_->SetActiveURL(std::move(url));
+  client()->SetActiveURL(std::move(url));
   return error::kNoError;
 }
 

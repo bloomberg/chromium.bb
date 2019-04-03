@@ -913,7 +913,7 @@ void RasterImplementation::GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) {
   }
 
   uint64_t fence_sync = gpu_control_->GenerateFenceSyncRelease();
-  helper_->InsertFenceSyncCHROMIUM(fence_sync);
+  helper_->InsertFenceSync(fence_sync);
   helper_->CommandBufferHelper::OrderingBarrier();
 
   // Copy the data over after setting the data to ensure alignment.
