@@ -57,7 +57,6 @@ class MixedRealityRenderLoop : public XRCompositorCommon {
   // Helpers to implement XRDeviceAbstraction.
   bool EnsureSpatialInteractionManager();
   void InitializeOrigin();
-  void InitializeStageOrigin();
   void InitializeSpace();
   void StartPresenting();
   void UpdateWMRDataForNextFrame();
@@ -66,6 +65,11 @@ class MixedRealityRenderLoop : public XRCompositorCommon {
   bool UpdateDisplayInfo();
   // Returns true if stage parameters have changed.
   bool UpdateStageParameters();
+
+  void InitializeStageOrigin();
+  bool EnsureStageStatics();
+  void ClearStageStatics();
+  void OnCurrentStageChanged();
 
   std::unique_ptr<base::win::ScopedWinrtInitializer> initializer_;
 
@@ -112,8 +116,14 @@ class MixedRealityRenderLoop : public XRCompositorCommon {
       ABI::Windows::Graphics::Holographic::IHolographicCamera>
       camera_;
 
-  // Input Data
   std::unique_ptr<MixedRealityInputHelper> input_helper_;
+
+  Microsoft::WRL::ComPtr<
+      ABI::Windows::Perception::Spatial::ISpatialStageFrameOfReferenceStatics>
+      stage_statics_;
+  EventRegistrationToken stage_changed_token_;
+
+  base::WeakPtrFactory<MixedRealityRenderLoop> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MixedRealityRenderLoop);
 };
