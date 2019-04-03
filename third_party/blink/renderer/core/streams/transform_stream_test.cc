@@ -15,7 +15,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_iterator_result_value.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_operations.h"
-#include "third_party/blink/renderer/core/streams/transform_stream_default_controller_interface.h"
+#include "third_party/blink/renderer/core/streams/transform_stream_default_controller.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_transformer.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
@@ -113,12 +113,12 @@ class TransformStreamTest : public ::testing::Test {
 class IdentityTransformer final : public TransformStreamTransformer {
  public:
   void Transform(v8::Local<v8::Value> chunk,
-                 TransformStreamDefaultControllerInterface* controller,
+                 TransformStreamDefaultController* controller,
                  ExceptionState& exception_state) override {
     controller->Enqueue(chunk, exception_state);
   }
 
-  void Flush(TransformStreamDefaultControllerInterface* controller,
+  void Flush(TransformStreamDefaultController* controller,
              ExceptionState& exception_state) override {}
 };
 
@@ -126,11 +126,9 @@ class MockTransformStreamTransformer : public TransformStreamTransformer {
  public:
   MOCK_METHOD3(Transform,
                void(v8::Local<v8::Value> chunk,
-                    TransformStreamDefaultControllerInterface*,
+                    TransformStreamDefaultController*,
                     ExceptionState&));
-  MOCK_METHOD2(Flush,
-               void(TransformStreamDefaultControllerInterface*,
-                    ExceptionState&));
+  MOCK_METHOD2(Flush, void(TransformStreamDefaultController*, ExceptionState&));
 };
 
 // If this doesn't work then nothing else will.
@@ -330,9 +328,9 @@ TEST_F(TransformStreamTest, EnqueueFromFlush) {
         : global_(global), isolate_(isolate) {}
 
     void Transform(v8::Local<v8::Value>,
-                   TransformStreamDefaultControllerInterface*,
+                   TransformStreamDefaultController*,
                    ExceptionState&) override {}
-    void Flush(TransformStreamDefaultControllerInterface* controller,
+    void Flush(TransformStreamDefaultController* controller,
                ExceptionState& exception_state) override {
       controller->Enqueue(ToV8("a", global_, isolate_), exception_state);
     }
@@ -368,12 +366,11 @@ TEST_F(TransformStreamTest, ThrowFromTransform) {
   class ThrowFromTransformTransformer : public TransformStreamTransformer {
    public:
     void Transform(v8::Local<v8::Value>,
-                   TransformStreamDefaultControllerInterface*,
+                   TransformStreamDefaultController*,
                    ExceptionState& exception_state) override {
       exception_state.ThrowTypeError(kMessage);
     }
-    void Flush(TransformStreamDefaultControllerInterface*,
-               ExceptionState&) override {}
+    void Flush(TransformStreamDefaultController*, ExceptionState&) override {}
   };
   V8TestingScope scope;
   auto* script_state = scope.GetScriptState();
@@ -409,9 +406,9 @@ TEST_F(TransformStreamTest, ThrowFromFlush) {
   class ThrowFromFlushTransformer : public TransformStreamTransformer {
    public:
     void Transform(v8::Local<v8::Value>,
-                   TransformStreamDefaultControllerInterface*,
+                   TransformStreamDefaultController*,
                    ExceptionState&) override {}
-    void Flush(TransformStreamDefaultControllerInterface*,
+    void Flush(TransformStreamDefaultController*,
                ExceptionState& exception_state) override {
       exception_state.ThrowTypeError(kMessage);
     }
