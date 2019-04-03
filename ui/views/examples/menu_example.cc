@@ -64,7 +64,7 @@ class ExampleMenuButton : public MenuButton, public MenuButtonListener {
 
  private:
   // MenuButtonListener:
-  void OnMenuButtonClicked(MenuButton* source,
+  void OnMenuButtonClicked(Button* source,
                            const gfx::Point& point,
                            const ui::Event* event) override;
 
@@ -174,7 +174,7 @@ ExampleMenuButton::ExampleMenuButton(const base::string16& test)
 
 ExampleMenuButton::~ExampleMenuButton() = default;
 
-void ExampleMenuButton::OnMenuButtonClicked(MenuButton* source,
+void ExampleMenuButton::OnMenuButtonClicked(Button* source,
                                             const gfx::Point& point,
                                             const ui::Event* event) {
   menu_runner_ =

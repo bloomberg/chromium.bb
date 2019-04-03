@@ -188,7 +188,7 @@ class MenuModelAdapterTest : public ViewEventTestBase,
   }
 
   // views::MenuButtonListener implementation.
-  void OnMenuButtonClicked(views::MenuButton* source,
+  void OnMenuButtonClicked(views::Button* source,
                            const gfx::Point& point,
                            const ui::Event* event) override {
     gfx::Point screen_location;

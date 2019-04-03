@@ -156,7 +156,7 @@ class TestMenuButtonListener : public MenuButtonListener {
   TestMenuButtonListener() = default;
   ~TestMenuButtonListener() override = default;
 
-  void OnMenuButtonClicked(MenuButton* source,
+  void OnMenuButtonClicked(Button* source,
                            const gfx::Point& point,
                            const ui::Event* event) override {
     last_source_ = source;
@@ -186,7 +186,7 @@ class PressStateMenuButtonListener : public MenuButtonListener {
 
   void set_menu_button(MenuButton* menu_button) { menu_button_ = menu_button; }
 
-  void OnMenuButtonClicked(MenuButton* source,
+  void OnMenuButtonClicked(Button* source,
                            const gfx::Point& point,
                            const ui::Event* event) override {
     pressed_lock_ = menu_button_->button_controller()->TakeLock();
@@ -316,13 +316,13 @@ class TestShowSiblingButtonListener : public MenuButtonListener {
   TestShowSiblingButtonListener() = default;
   ~TestShowSiblingButtonListener() override = default;
 
-  void OnMenuButtonClicked(MenuButton* source,
+  void OnMenuButtonClicked(Button* source,
                            const gfx::Point& point,
                            const ui::Event* event) override {
     // The MenuButton itself doesn't set the PRESSED state during Activate() or
     // OnMenuButtonClicked(). That should be handled by the MenuController or,
     // if no menu is shown, the listener.
-    EXPECT_EQ(Button::STATE_HOVERED, static_cast<MenuButton*>(source)->state());
+    EXPECT_EQ(Button::STATE_HOVERED, source->state());
   }
 
  private:
@@ -683,7 +683,7 @@ class DestroyButtonInGestureListener : public MenuButtonListener {
 
  private:
   // MenuButtonListener:
-  void OnMenuButtonClicked(MenuButton* source,
+  void OnMenuButtonClicked(Button* source,
                            const gfx::Point& point,
                            const ui::Event* event) override {
     menu_button_.reset();

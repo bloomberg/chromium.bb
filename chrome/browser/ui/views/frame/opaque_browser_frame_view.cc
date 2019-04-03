@@ -349,7 +349,7 @@ void OpaqueBrowserFrameView::ButtonPressed(views::Button* sender,
   }
 }
 
-void OpaqueBrowserFrameView::OnMenuButtonClicked(views::MenuButton* source,
+void OpaqueBrowserFrameView::OnMenuButtonClicked(views::Button* source,
                                                  const gfx::Point& point,
                                                  const ui::Event* event) {
 #if defined(OS_LINUX)

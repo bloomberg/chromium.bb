@@ -95,7 +95,7 @@ class HoverButton : public views::MenuButton, public views::MenuButtonListener {
 
  protected:
   // views::MenuButtonListener:
-  void OnMenuButtonClicked(MenuButton* source,
+  void OnMenuButtonClicked(Button* source,
                            const gfx::Point& point,
                            const ui::Event* event) override;
 

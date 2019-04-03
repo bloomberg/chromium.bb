@@ -175,7 +175,7 @@ void ToolbarActionView::UpdateState() {
   SchedulePaint();
 }
 
-void ToolbarActionView::OnMenuButtonClicked(views::MenuButton* sender,
+void ToolbarActionView::OnMenuButtonClicked(views::Button* sender,
                                             const gfx::Point& point,
                                             const ui::Event* event) {
   if (!view_controller_->IsEnabled(GetCurrentWebContents())) {

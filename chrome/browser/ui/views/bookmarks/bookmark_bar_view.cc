@@ -1328,7 +1328,7 @@ bool BookmarkBarView::CanStartDragForView(views::View* sender,
   return true;
 }
 
-void BookmarkBarView::OnMenuButtonClicked(views::MenuButton* view,
+void BookmarkBarView::OnMenuButtonClicked(views::Button* view,
                                           const gfx::Point& point,
                                           const ui::Event* event) {
   const BookmarkNode* node;
