@@ -35,3 +35,6 @@ infra/tools/prpc/${platform} git_revision:edd5644be66d37cdf82978efb0e5d6504d0d55
 
 # LUCI authentication command line tool
 infra/tools/luci-auth/${platform} git_revision:edd5644be66d37cdf82978efb0e5d6504d0d552f
+
+# LUCI Buildbucket CLI
+infra/tools/bb/${platform} git_revision:60f4789e3c66c65c26b4429b299fe16480df0d1b
