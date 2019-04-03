@@ -284,52 +284,29 @@ void ThreadableLoader::Start(const ResourceRequest& request) {
   if (should_bypass_service_worker)
     new_request.SetSkipServiceWorker(true);
 
-  // In S13nServiceWorker, if the controller service worker has no fetch event
-  // handler, it's skipped entirely, so we should treat that case the same as
-  // having no controller. In non-S13nServiceWorker, we can't do that since we
-  // don't know which service worker will handle the request since it's
-  // determined on the browser process and skipWaiting() can happen in the
-  // meantime.
-  //
-  // TODO(crbug.com/715640): When non-S13nServiceWorker is removed,
-  // is_controlled_by_service_worker is the same as
-  // ControllerServiceWorkerMode::kControlled, so this code can be simplified.
-  bool is_controlled_by_service_worker = false;
-  switch (resource_fetcher_->IsControlledByServiceWorker()) {
-    case blink::mojom::ControllerServiceWorkerMode::kControlled:
-      is_controlled_by_service_worker = true;
-      break;
-    case blink::mojom::ControllerServiceWorkerMode::kNoFetchEventHandler:
-      if (ServiceWorkerUtils::IsServicificationEnabled())
-        is_controlled_by_service_worker = false;
-      else
-        is_controlled_by_service_worker = true;
-      break;
-    case blink::mojom::ControllerServiceWorkerMode::kNoController:
-      is_controlled_by_service_worker = false;
-      break;
-  }
-
   // Process the CORS protocol inside the ThreadableLoader for the
   // following cases:
   //
   // - When the request is sync or the protocol is unsupported since we can
   //   assume that any service worker (SW) is skipped for such requests by
   //   content/ code.
-  // - When |skip_service_worker| is true, any SW will be skipped.
+  // - When |GetSkipServiceWorker()| is true, any SW will be skipped.
   // - If we're not yet controlled by a SW, then we're sure that this
   //   request won't be intercepted by a SW. In case we end up with
   //   sending a CORS preflight request, the actual request to be sent later
   //   may be intercepted. This is taken care of in LoadPreflightRequest() by
-  //   setting |skip_service_worker| to true.
+  //   setting |GetSkipServiceWorker()| to true.
   //
   // From the above analysis, you can see that the request can never be
   // intercepted by a SW inside this if-block. It's because:
-  // - |skip_service_worker| needs to be false, and
+  // - |GetSkipServiceWorker()| needs to be false, and
   // - we're controlled by a SW at this point
   // to allow a SW to intercept the request. Even when the request gets issued
   // asynchronously after performing the CORS preflight, it doesn't get
   // intercepted since LoadPreflightRequest() sets the flag to kNone in advance.
+  const bool is_controlled_by_service_worker =
+      resource_fetcher_->IsControlledByServiceWorker() ==
+      blink::mojom::ControllerServiceWorkerMode::kControlled;
   if (!async_ || new_request.GetSkipServiceWorker() ||
       !SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
           new_request.Url().Protocol()) ||

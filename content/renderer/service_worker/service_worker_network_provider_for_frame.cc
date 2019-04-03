@@ -15,7 +15,6 @@
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "third_party/blink/public/common/service_worker/service_worker_types.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
 namespace content {
@@ -127,11 +126,6 @@ ServiceWorkerNetworkProviderForFrame::CreateURLLoader(
         task_runner_handle) {
   // RenderThreadImpl is nullptr in some tests.
   if (!RenderThreadImpl::current())
-    return nullptr;
-
-  // S13nServiceWorker:
-  // We only install our own URLLoader if Servicification is enabled.
-  if (!blink::ServiceWorkerUtils::IsServicificationEnabled())
     return nullptr;
 
   // We need SubresourceLoaderFactory populated in order to create our own

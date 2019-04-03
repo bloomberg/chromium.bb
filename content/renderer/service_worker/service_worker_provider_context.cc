@@ -26,7 +26,6 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
@@ -104,9 +103,6 @@ ServiceWorkerProviderContext::IsControlledByServiceWorker() const {
 
 network::mojom::URLLoaderFactory*
 ServiceWorkerProviderContext::GetSubresourceLoaderFactory() {
-  if (!blink::ServiceWorkerUtils::IsServicificationEnabled())
-    return nullptr;
-
   DCHECK(state_for_client_);
   auto* state = state_for_client_.get();
   if (!state->controller_endpoint && !state->controller_connector) {
@@ -196,7 +192,6 @@ void ServiceWorkerProviderContext::CloneWorkerClientRegistry(
 
 blink::mojom::ServiceWorkerContainerHostPtrInfo
 ServiceWorkerProviderContext::CloneContainerHostPtrInfo() {
-  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(state_for_client_);
   if (!container_host_)
@@ -223,11 +218,6 @@ void ServiceWorkerProviderContext::DispatchNetworkQuiet() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   ServiceWorkerProviderStateForClient* state = state_for_client_.get();
   DCHECK(state);
-
-  // In non-S13nSW, this hint isn't needed because the browser process
-  // sees all requests and schedules update at a convenient time.
-  if (!blink::ServiceWorkerUtils::IsServicificationEnabled())
-    return;
 
   if (state->controller_mode ==
       blink::mojom::ControllerServiceWorkerMode::kNoController) {
@@ -314,11 +304,8 @@ void ServiceWorkerProviderContext::SetController(
   for (blink::mojom::WebFeature feature : controller_info->used_features)
     state->used_features.insert(feature);
 
-  // S13nServiceWorker:
   // Reset connector state for subresource loader factory if necessary.
   if (CanCreateSubresourceLoaderFactory()) {
-    DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
-
     // There could be four patterns:
     //  (A) Had a controller, and got a new controller.
     //  (B) Had a controller, and lost the controller.
@@ -384,9 +371,8 @@ void ServiceWorkerProviderContext::CountFeature(
 bool ServiceWorkerProviderContext::CanCreateSubresourceLoaderFactory() const {
   // Expected that it is called only for clients.
   DCHECK(state_for_client_);
-  // |state_for_client_->fallback_loader_factory| could be null in unit tests.
-  return (blink::ServiceWorkerUtils::IsServicificationEnabled() &&
-          state_for_client_->fallback_loader_factory);
+  // |fallback_loader_factory| could be null in unit tests.
+  return state_for_client_->fallback_loader_factory != nullptr;
 }
 
 void ServiceWorkerProviderContext::DestructOnMainThread() const {

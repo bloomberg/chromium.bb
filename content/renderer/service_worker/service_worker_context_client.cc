@@ -438,15 +438,13 @@ void ServiceWorkerContextClient::WorkerContextStarted(
   context_->service_worker_binding.Bind(
       std::move(pending_service_worker_request_), worker_task_runner_);
 
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    auto weak_ptr = GetWeakPtr();
-    // Intentionally dereferences the weak ptr in order to
-    // ensure the WeakPtrFactory is bound to this thread (the worker thread).
-    weak_ptr = weak_ptr->GetWeakPtr();
-    context_->controller_impl = std::make_unique<ControllerServiceWorkerImpl>(
-        std::move(pending_controller_request_), std::move(weak_ptr),
-        worker_task_runner_);
-  }
+  auto weak_ptr = GetWeakPtr();
+  // Intentionally dereferences the weak ptr in order to
+  // ensure the WeakPtrFactory is bound to this thread (the worker thread).
+  weak_ptr = weak_ptr->GetWeakPtr();
+  context_->controller_impl = std::make_unique<ControllerServiceWorkerImpl>(
+      std::move(pending_controller_request_), std::move(weak_ptr),
+      worker_task_runner_);
 
   // Create the idle timer. At this point the timer is not started. It will be
   // started after the WorkerStarted message is sent.
@@ -1029,17 +1027,15 @@ ServiceWorkerContextClient::CreateServiceWorkerFetchContextOnMainThread(
   }
   DCHECK(url_loader_factory_bundle);
 
+  // TODO(crbug.com/796425): Temporarily wrap the raw
+  // mojom::URLLoaderFactory pointer into SharedURLLoaderFactory.
   std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-      script_loader_factory_info;
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    // TODO(crbug.com/796425): Temporarily wrap the raw
-    // mojom::URLLoaderFactory pointer into SharedURLLoaderFactory.
-    script_loader_factory_info =
-        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-            static_cast<ServiceWorkerNetworkProviderForServiceWorker*>(provider)
-                ->script_loader_factory())
-            ->Clone();
-  }
+      script_loader_factory_info =
+          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+              static_cast<ServiceWorkerNetworkProviderForServiceWorker*>(
+                  provider)
+                  ->script_loader_factory())
+              ->Clone();
 
   return base::MakeRefCounted<ServiceWorkerFetchContextImpl>(
       *renderer_preferences_, script_url_, url_loader_factory_bundle->Clone(),

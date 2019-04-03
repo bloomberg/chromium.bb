@@ -68,7 +68,6 @@
 #include "net/url_request/url_request_filter.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 #if !BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "components/signin/core/browser/signin_header_helper.h"
@@ -215,30 +214,6 @@ class ChromeResourceDispatcherHostDelegateBrowserTest :
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeResourceDispatcherHostDelegateBrowserTest);
 };
-
-IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateBrowserTest,
-                       NavigationDataProcessed) {
-  // The network service code path doesn't go through ResourceDispatcherHost.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-  // Servicified service worker doesn't set NavigationData.
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
-    return;
-
-  ui_test_utils::NavigateToURL(browser(), embedded_test_server()->base_url());
-  {
-    DidFinishNavigationObserver nav_observer(
-        browser()->tab_strip_model()->GetActiveWebContents(), false);
-    ui_test_utils::NavigateToURL(
-        browser(), embedded_test_server()->GetURL("/google/google.html"));
-  }
-  SetShouldAddDataReductionProxyData(true);
-  {
-    DidFinishNavigationObserver nav_observer(
-        browser()->tab_strip_model()->GetActiveWebContents(), true);
-    ui_test_utils::NavigateToURL(browser(), embedded_test_server()->base_url());
-  }
-}
 
 // Mirror is not supported on Dice platforms.
 #if !BUILDFLAG(ENABLE_DICE_SUPPORT)
