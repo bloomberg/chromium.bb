@@ -84,26 +84,25 @@ cr.define('system_dialog_browsertest', function() {
       const scalingSettings = sidebar.$$('print-preview-scaling-settings');
       assertFalse(scalingSettings.hidden);
       nativeLayer.resetResolver('getPreview');
+      let previewCalls = 0;
 
       // Set scaling settings to custom.
-      scalingSettings.$$('.md-select').value =
-          scalingSettings.ScalingValue.CUSTOM;
-      scalingSettings.$$('.md-select').dispatchEvent(new CustomEvent('change'));
+      return print_preview_test_utils
+          .selectOption(
+              scalingSettings, scalingSettings.ScalingValue.CUSTOM.toString())
+          .then(() => {
+            previewCalls = nativeLayer.getCallCount('getPreview');
 
-      // Set an invalid input.
-      const scalingSettingsInput =
-          scalingSettings.$$('print-preview-number-settings-section')
-              .$.userValue.inputElement;
-      scalingSettingsInput.value = '0';
-      scalingSettingsInput.dispatchEvent(
-          new CustomEvent('input', {composed: true, bubbles: true}));
+            // Set an invalid input.
+            const scalingSettingsInput =
+                scalingSettings.$$('print-preview-number-settings-section')
+                    .$.userValue.inputElement;
+            scalingSettingsInput.value = '0';
+            scalingSettingsInput.dispatchEvent(
+                new CustomEvent('input', {composed: true, bubbles: true}));
 
-      // No new preview
-      nativeLayer.whenCalled('getPreview').then(function() {
-        assertTrue(false);
-      });
-
-      return test_util.eventToPromise('input-change', scalingSettings)
+            return test_util.eventToPromise('input-change', scalingSettings);
+          })
           .then(() => {
             // Expect disabled print button
             const header = sidebar.$$('print-preview-header');
@@ -112,6 +111,9 @@ cr.define('system_dialog_browsertest', function() {
             assertTrue(linkContainer.disabled);
             assertFalse(link.hidden);
             assertTrue(link.querySelector('button').disabled);
+
+            // No new preview
+            assertEquals(previewCalls, nativeLayer.getCallCount('getPreview'));
           });
     });
   });
