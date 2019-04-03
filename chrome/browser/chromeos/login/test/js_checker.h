@@ -154,11 +154,6 @@ void ExecuteOobeJSAsync(const std::string& script);
 std::string GetOobeElementPath(
     std::initializer_list<base::StringPiece> element_ids);
 
-// Helper method to create waiter over js condition that would also be satisfied
-// if oobe UI is destroyed.
-std::unique_ptr<TestConditionWaiter> CreatePredicateOrOobeDestroyedWaiter(
-    const std::string& js_expression);
-
 // Creates a waiter that allows to wait until screen with |oobe_screen_id| is
 // shown in webui.
 std::unique_ptr<TestConditionWaiter> CreateOobeScreenWaiter(

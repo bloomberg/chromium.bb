@@ -540,7 +540,10 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
       &OobeUI::BindPrivilegedHostDeviceSetter, base::Unretained(this)));
 }
 
-OobeUI::~OobeUI() {}
+OobeUI::~OobeUI() {
+  for (Observer& observer : observer_list_)
+    observer.OnDestroyingOobeUI();
+}
 
 CoreOobeView* OobeUI::GetCoreOobeView() {
   return core_handler_;
@@ -733,7 +736,6 @@ void OobeUI::InitializeHandlers() {
   for (BaseScreenHandler* handler : screen_handlers_) {
     if (handler->async_assets_load_id().empty()) {
       handler->InitializeBase();
-      ScreenInitialized(handler->oobe_screen());
     }
   }
 }
@@ -744,11 +746,6 @@ void OobeUI::CurrentScreenChanged(OobeScreen new_screen) {
   current_screen_ = new_screen;
   for (Observer& observer : observer_list_)
     observer.OnCurrentScreenChanged(current_screen_, new_screen);
-}
-
-void OobeUI::ScreenInitialized(OobeScreen screen) {
-  for (Observer& observer : observer_list_)
-    observer.OnScreenInitialized(screen);
 }
 
 bool OobeUI::IsScreenInitialized(OobeScreen screen) {
@@ -771,7 +768,6 @@ void OobeUI::OnScreenAssetsLoaded(const std::string& async_assets_load_id) {
   for (BaseScreenHandler* handler : screen_handlers_) {
     if (handler->async_assets_load_id() == async_assets_load_id) {
       handler->InitializeBase();
-      ScreenInitialized(handler->oobe_screen());
     }
   }
 }

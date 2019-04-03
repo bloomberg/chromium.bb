@@ -66,7 +66,13 @@ void OobeScreenWaiter::OnCurrentScreenChanged(OobeScreen current_screen,
     EndWait();
 }
 
-void OobeScreenWaiter::OnScreenInitialized(OobeScreen screen) {}
+void OobeScreenWaiter::OnDestroyingOobeUI() {
+  oobe_ui_observer_.RemoveAll();
+
+  EXPECT_EQ(State::DONE, state_);
+
+  EndWait();
+}
 
 OobeUI* OobeScreenWaiter::GetOobeUI() {
   OobeUI* oobe_ui = LoginDisplayHost::default_host()->GetOobeUI();
