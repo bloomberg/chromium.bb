@@ -474,21 +474,25 @@ void AutofillWalletMetadataSyncBridge::LoadDataCacheAndMetadata() {
   for (const auto& it : addresses_metadata) {
     cache_[GetStorageKeyForWalletMetadataTypeAndId(
         WalletMetadataSpecifics::ADDRESS, it.first)] = it.second;
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        "Autofill.WalletUseDate.Address",
-        /*sample=*/AutofillClock::Now() - it.second.use_date,
-        /*min=*/base::TimeDelta::FromMilliseconds(1),
-        /*max=*/base::TimeDelta::FromDays(365),
+    // TODO(crbug.com/949034): Consider adding standard functions for recording
+    // large times in seconds/minutes.
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Autofill.WalletUseDateInMinutes.Address",
+        /*sample=*/(AutofillClock::Now() - it.second.use_date).InMinutes(),
+        /*min=*/base::TimeDelta::FromMinutes(1).InMinutes(),
+        /*max=*/base::TimeDelta::FromDays(365).InMinutes(),
         /*bucket_count=*/50);
   }
   for (const auto& it : cards_metadata) {
     cache_[GetStorageKeyForWalletMetadataTypeAndId(
         WalletMetadataSpecifics::CARD, it.first)] = it.second;
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        "Autofill.WalletUseDate.Card",
-        /*sample=*/AutofillClock::Now() - it.second.use_date,
-        /*min=*/base::TimeDelta::FromMilliseconds(1),
-        /*max=*/base::TimeDelta::FromDays(365),
+    // TODO(crbug.com/949034): Consider adding standard functions for recording
+    // large times in seconds/minutes.
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Autofill.WalletUseDateInMinutes.Card",
+        /*sample=*/(AutofillClock::Now() - it.second.use_date).InMinutes(),
+        /*min=*/base::TimeDelta::FromMinutes(1).InMinutes(),
+        /*max=*/base::TimeDelta::FromDays(365).InMinutes(),
         /*bucket_count=*/50);
   }
 
