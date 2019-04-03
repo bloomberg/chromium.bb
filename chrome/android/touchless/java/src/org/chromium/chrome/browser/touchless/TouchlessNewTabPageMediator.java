@@ -15,12 +15,14 @@ import org.chromium.ui.modelutil.PropertyModel;
 
 class TouchlessNewTabPageMediator extends EmptyTabObserver {
     private static final String NAVIGATION_ENTRY_SCROLL_POSITION_KEY = "TouchlessScrollPosition";
+    private static final String NAVIGATION_ENTRY_FOCUS_KEY = "TouchlessFocus";
 
     private final PropertyModel mModel;
     private final Tab mTab;
     private long mLastShownTimeNs;
 
     private ScrollPositionInfo mScrollPosition;
+    private TouchlessNewTabPageFocusInfo mFocus;
 
     public TouchlessNewTabPageMediator(Tab tab) {
         mTab = tab;
@@ -28,8 +30,13 @@ class TouchlessNewTabPageMediator extends EmptyTabObserver {
 
         ScrollPositionInfo initialScrollPosition = ScrollPositionInfo.deserialize(
                 NewTabPage.getStringFromNavigationEntry(tab, NAVIGATION_ENTRY_SCROLL_POSITION_KEY));
+        TouchlessNewTabPageFocusInfo initialFocus = TouchlessNewTabPageFocusInfo.deserialize(
+                NewTabPage.getStringFromNavigationEntry(tab, NAVIGATION_ENTRY_FOCUS_KEY));
 
         mModel = new PropertyModel.Builder(TouchlessNewTabPageProperties.ALL_KEYS)
+                         .with(TouchlessNewTabPageProperties.FOCUS_CHANGE_CALLBACK,
+                                 (newFocus) -> mFocus = newFocus)
+                         .with(TouchlessNewTabPageProperties.INITIAL_FOCUS, initialFocus)
                          .with(TouchlessNewTabPageProperties.INITIAL_SCROLL_POSITION,
                                  initialScrollPosition)
                          .with(TouchlessNewTabPageProperties.SCROLL_POSITION_CALLBACK,
@@ -51,9 +58,14 @@ class TouchlessNewTabPageMediator extends EmptyTabObserver {
 
     @Override
     public void onPageLoadStarted(Tab tab, String url) {
-        if (mScrollPosition == null) return;
-        NewTabPage.saveStringToNavigationEntry(
-                tab, NAVIGATION_ENTRY_SCROLL_POSITION_KEY, mScrollPosition.serialize());
+        if (mScrollPosition != null) {
+            NewTabPage.saveStringToNavigationEntry(
+                    tab, NAVIGATION_ENTRY_SCROLL_POSITION_KEY, mScrollPosition.serialize());
+        }
+        if (mFocus != null) {
+            NewTabPage.saveStringToNavigationEntry(
+                    tab, NAVIGATION_ENTRY_FOCUS_KEY, mFocus.serialize());
+        }
     }
 
     public PropertyModel getModel() {

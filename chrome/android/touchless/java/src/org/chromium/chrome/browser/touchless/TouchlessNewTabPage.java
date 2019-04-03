@@ -132,10 +132,10 @@ public class TouchlessNewTabPage extends BasicNativePage {
         mSiteSuggestionsCoordinator = new SiteSuggestionsCoordinator(mRecyclerTopmostView, profile,
                 navigationDelegate, mContextMenuManager, suggestionsUiDelegate.getImageFetcher());
 
-        NewTabPageAdapter newTabPageAdapter =
-                new NewTabPageAdapter(suggestionsUiDelegate, mRecyclerTopmostView, uiConfig,
-                        SuggestionsDependencyFactory.getInstance().getOfflinePageBridge(profile),
-                        mContextMenuManager);
+        NewTabPageAdapter newTabPageAdapter = new TouchlessNewTabPageAdapter(suggestionsUiDelegate,
+                mRecyclerTopmostView, uiConfig,
+                SuggestionsDependencyFactory.getInstance().getOfflinePageBridge(profile),
+                mContextMenuManager, mMediator.getModel());
 
         PropertyModelChangeProcessor.create(
                 mMediator.getModel(), mRecyclerView, ContentSuggestionsViewBinder::bind);

@@ -21,6 +21,8 @@ touchless_java_sources = [
   "touchless/java/src/org/chromium/chrome/browser/touchless/SiteSuggestionsViewHolderFactory.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessDelegate.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPage.java",
+  "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPageAdapter.java",
+  "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPageFocusInfo.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPageMediator.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPageProperties.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPageTopLayout.java",
@@ -44,7 +46,10 @@ touchless_java_sources = [
 
 touchless_test_java_sources = [ "touchless/javatests/src/org/chromium/chrome/browser/touchless/NoTouchActivityTest.java" ]
 
-touchless_junit_test_java_sources = [ "touchless/junit/src/org/chromium/chrome/browser/touchless/ScrollPositionInfoTest.java" ]
+touchless_junit_test_java_sources = [
+  "touchless/junit/src/org/chromium/chrome/browser/touchless/ScrollPositionInfoTest.java",
+  "touchless/junit/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPageFocusInfoTest.java",
+]
 
 touchess_fallback_java_sources = [
   "touchless/fallback/java/src/org/chromium/chrome/browser/touchless/TouchlessDelegate.java",

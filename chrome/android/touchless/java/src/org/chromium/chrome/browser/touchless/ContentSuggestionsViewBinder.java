@@ -30,6 +30,10 @@ final class ContentSuggestionsViewBinder {
                     callback.onResult(new ScrollPositionInfo(index, offset));
                 }
             });
+        } else if (TouchlessNewTabPageProperties.FOCUS_CHANGE_CALLBACK == propertyKey) {
+            // Ignored.
+        } else if (TouchlessNewTabPageProperties.INITIAL_FOCUS == propertyKey) {
+            // Ignored.
         } else if (TouchlessNewTabPageProperties.INITIAL_SCROLL_POSITION == propertyKey) {
             ScrollPositionInfo position =
                     model.get(TouchlessNewTabPageProperties.INITIAL_SCROLL_POSITION);
