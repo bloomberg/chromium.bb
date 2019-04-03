@@ -761,6 +761,10 @@ void RenderWidgetHostViewBase::Destroy() {
   }
 }
 
+bool RenderWidgetHostViewBase::CanSynchronizeVisualProperties() {
+  return true;
+}
+
 void RenderWidgetHostViewBase::TextInputStateChanged(
     const TextInputState& text_input_state) {
   if (GetTextInputManager())

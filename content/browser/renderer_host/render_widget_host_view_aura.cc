@@ -1596,13 +1596,20 @@ void RenderWidgetHostViewAura::SetCompositionFromExistingText(
 void RenderWidgetHostViewAura::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t metrics) {
-  // The screen info should be updated regardless of the metric change.
   display::Screen* screen = display::Screen::GetScreen();
-  if (display.id() == screen->GetDisplayNearestWindow(window_).id()) {
-    UpdateScreenInfo(window_);
-    current_cursor_.SetDisplayInfo(display);
-    UpdateCursorIfOverSelf();
+  if (display.id() != screen->GetDisplayNearestWindow(window_).id())
+    return;
+
+  if (window_->GetHost() && window_->GetHost()->device_scale_factor() !=
+                                display.device_scale_factor()) {
+    // The DisplayMetrics changed, but the Compositor hasn't been updated yet.
+    // Delay updating until the Compositor is updated as well, otherwise we
+    // are likely to hit surface invariants (LocalSurfaceId generated with a
+    // size/scale-factor that differs from scale-factor used by Compositor).
+    needs_to_update_display_metrics_ = true;
+    return;
   }
+  ProcessDisplayMetricsChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1664,6 +1671,9 @@ void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
     float new_device_scale_factor) {
   if (!window_->GetRootWindow())
     return;
+
+  if (needs_to_update_display_metrics_)
+    ProcessDisplayMetricsChanged();
 
   SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
                               window_->GetLocalSurfaceIdAllocation());
@@ -2683,8 +2693,20 @@ void RenderWidgetHostViewAura::TakeFallbackContentFrom(
   host()->GetContentRenderingTimeoutFrom(view_aura->host());
 }
 
+bool RenderWidgetHostViewAura::CanSynchronizeVisualProperties() {
+  return !needs_to_update_display_metrics_;
+}
+
 void RenderWidgetHostViewAura::InvalidateLocalSurfaceIdOnEviction() {
   window_->InvalidateLocalSurfaceId();
+}
+
+void RenderWidgetHostViewAura::ProcessDisplayMetricsChanged() {
+  needs_to_update_display_metrics_ = false;
+  UpdateScreenInfo(window_);
+  current_cursor_.SetDisplayInfo(
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window_));
+  UpdateCursorIfOverSelf();
 }
 
 }  // namespace content
