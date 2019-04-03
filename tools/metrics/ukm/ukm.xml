@@ -3565,6 +3565,14 @@ be describing additional metrics about the same event.
     <summary>
       Measure of total private memory consumed by process.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.ProcessType"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="PrivateSwapFootprint">
     <summary>
@@ -3578,6 +3586,13 @@ be describing additional metrics about the same event.
       services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom)
       of associated metrics.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration export="False"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="Resident">
     <summary>

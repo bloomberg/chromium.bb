@@ -269,9 +269,10 @@ class ObjectNodeType(NodeType):
       if node.hasAttribute(attr):
         obj[attr] = attr_type(node.getAttribute(attr))
       if attr_re is not None:
-        if not re.match(attr_re, obj[attr]):
+        attr_val = obj.get(attr, '')
+        if not re.match(attr_re, attr_val):
           raise ValueError('%s "%s" does not match regex "%s"' %
-                           (attr, obj[attr], attr_re))
+                           (attr, attr_val, attr_re))
 
     if self.text_attribute and node.firstChild:
       obj[self.text_attribute] = node.firstChild.nodeValue

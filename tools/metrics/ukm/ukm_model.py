@@ -18,13 +18,16 @@ _LOWERCASE_NAME_FN = lambda n: n.attributes['name'].value.lower()
 
 _ENUMERATION_TYPE = models.ObjectNodeType(
     'enumeration',
-    attributes=[],
+    attributes=[
+      ('export', unicode, r'^(?i)(|true|false)$'),
+    ],
     single_line=True)
 
 _QUANTILES_TYPE = models.ObjectNodeType(
     'quantiles',
     attributes=[
       ('type', unicode, None),
+      ('export', unicode, r'^(?i)(|true|false)$'),
     ],
     single_line=True)
 
@@ -76,7 +79,8 @@ _EVENT_TYPE =  models.ObjectNodeType(
     alphabetization=[('metric', _LOWERCASE_NAME_FN)],
     attributes=[
       ('name', unicode, r'^[A-Za-z0-9.]+$'),
-      ('singular', bool, None)],
+      ('singular', unicode, r'^(?i)(|true|false)$'),
+    ],
     extra_newlines=(1, 1, 1),
     children=[
         models.ChildType('obsolete', _OBSOLETE_TYPE, multiple=False),
