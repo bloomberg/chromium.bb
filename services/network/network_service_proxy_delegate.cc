@@ -111,8 +111,7 @@ NetworkServiceProxyDelegate::NetworkServiceProxyDelegate(
     mojom::CustomProxyConfigPtr initial_config,
     mojom::CustomProxyConfigClientRequest config_client_request)
     : proxy_config_(std::move(initial_config)),
-      binding_(this, std::move(config_client_request)),
-      should_use_alternate_proxy_list_cache_(kMaxCacheSize) {
+      binding_(this, std::move(config_client_request)) {
   // Make sure there is always a valid proxy config so we don't need to null
   // check it.
   if (!proxy_config_)
@@ -137,15 +136,10 @@ void NetworkServiceProxyDelegate::OnBeforeStartTransaction(
   // For other schemes, the headers can be added to the CONNECT request when
   // establishing the secure tunnel instead, see OnBeforeHttp1TunnelRequest().
   const bool scheme_is_http = request->url().SchemeIs(url::kHttpScheme);
-  if (scheme_is_http)
+  if (scheme_is_http) {
     MergeRequestHeaders(headers, proxy_config_->pre_cache_headers);
-
-  auto* url_loader = URLLoader::ForRequest(*request);
-  if (url_loader) {
-    if (url_loader->custom_proxy_use_alternate_proxy_list()) {
-      should_use_alternate_proxy_list_cache_.Put(request->url().spec(), true);
-    }
-    if (scheme_is_http) {
+    auto* url_loader = URLLoader::ForRequest(*request);
+    if (url_loader) {
       MergeRequestHeaders(headers,
                           url_loader->custom_proxy_pre_cache_headers());
     }
@@ -201,8 +195,8 @@ void NetworkServiceProxyDelegate::OnResolveProxy(
     return;
 
   net::ProxyInfo proxy_info;
-  if (ApplyProxyConfigToProxyInfo(GetProxyRulesForURL(url), proxy_retry_info,
-                                  url, &proxy_info)) {
+  if (ApplyProxyConfigToProxyInfo(proxy_config_->rules, proxy_retry_info, url,
+                                  &proxy_info)) {
     DCHECK(!proxy_info.is_empty() && !proxy_info.is_direct());
     result->OverrideProxyList(proxy_info.proxy_list());
     GetAlternativeProxy(proxy_retry_info, result);
@@ -310,14 +304,6 @@ bool NetworkServiceProxyDelegate::EligibleForProxy(
   }
 
   return true;
-}
-
-net::ProxyConfig::ProxyRules NetworkServiceProxyDelegate::GetProxyRulesForURL(
-    const GURL& url) const {
-  const auto iter = should_use_alternate_proxy_list_cache_.Peek(url.spec());
-  return iter != should_use_alternate_proxy_list_cache_.end()
-             ? proxy_config_->alternate_rules
-             : proxy_config_->rules;
 }
 
 void NetworkServiceProxyDelegate::GetAlternativeProxy(

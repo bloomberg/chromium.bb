@@ -5270,10 +5270,7 @@ TEST_F(NetworkContextMockHostTest,
             ConvertToProxyServer(proxy_test_server));
 }
 
-TEST_F(NetworkContextMockHostTest, CustomProxyUsesAlternateProxyList) {
-  net::EmbeddedTestServer invalid_server;
-  ASSERT_TRUE(invalid_server.Start());
-
+TEST_F(NetworkContextMockHostTest, CustomProxyUsesSpecifiedProxyList) {
   net::EmbeddedTestServer proxy_test_server;
   net::test_server::RegisterDefaultHandlers(&proxy_test_server);
   ASSERT_TRUE(proxy_test_server.Start());
@@ -5286,16 +5283,13 @@ TEST_F(NetworkContextMockHostTest, CustomProxyUsesAlternateProxyList) {
       CreateContextWithParams(std::move(context_params));
 
   auto config = mojom::CustomProxyConfig::New();
-  config->rules.ParseFromString("http=" +
-                                ConvertToProxyServer(invalid_server).ToURI());
-  config->alternate_rules.ParseFromString(
+  config->rules.ParseFromString(
       "http=" + ConvertToProxyServer(proxy_test_server).ToURI());
   proxy_config_client->OnCustomProxyConfigUpdated(std::move(config));
   scoped_task_environment_.RunUntilIdle();
 
   ResourceRequest request;
   request.url = GURL("http://does.not.resolve/echo");
-  request.custom_proxy_use_alternate_proxy_list = true;
   std::unique_ptr<TestURLLoaderClient> client =
       FetchRequest(request, network_context.get());
   std::string response;

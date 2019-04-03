@@ -210,8 +210,6 @@ bool StructTraits<
   out->initiated_in_secure_context = data.initiated_in_secure_context();
   out->upgrade_if_insecure = data.upgrade_if_insecure();
   out->is_revalidating = data.is_revalidating();
-  out->custom_proxy_use_alternate_proxy_list =
-      data.custom_proxy_use_alternate_proxy_list();
   return true;
 }
 

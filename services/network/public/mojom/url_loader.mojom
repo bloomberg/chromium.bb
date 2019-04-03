@@ -290,9 +290,6 @@ struct URLRequest {
   HttpRequestHeaders custom_proxy_pre_cache_headers;
   HttpRequestHeaders custom_proxy_post_cache_headers;
 
-  // Whether to use the alternate proxies set in the custom proxy config.
-  bool custom_proxy_use_alternate_proxy_list;
-
   // See https://fetch.spec.whatwg.org/#concept-request-window
   //
   // This is an opaque id of the original requestor of the resource, which might
