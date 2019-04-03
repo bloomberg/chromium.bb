@@ -59,7 +59,7 @@ public class ChromeApplication extends Application {
     private static ChromeApplication sInstance;
 
     @Nullable
-    private static ChromeAppComponent sComponent;
+    private static volatile ChromeAppComponent sComponent;
 
     @Override
     public void onCreate() {
@@ -240,7 +240,11 @@ public class ChromeApplication extends Application {
     /** Returns the application-scoped component. */
     public static ChromeAppComponent getComponent() {
         if (sComponent == null) {
-            sComponent = createComponent();
+            synchronized (sInstance) {
+                if (sComponent == null) {
+                    sComponent = createComponent();
+                }
+            }
         }
         return sComponent;
     }
