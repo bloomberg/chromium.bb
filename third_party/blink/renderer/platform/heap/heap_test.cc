@@ -4055,6 +4055,10 @@ TEST(HeapTest, CheckAndMarkPointer) {
     TestGCScope scope(BlinkGC::kHeapPointersOnStack);
     MarkingVisitor visitor(ThreadState::Current(),
                            MarkingVisitor::kGlobalMarking);
+    // Record marking speed as counter generation requires valid marking timings
+    // for heaps >1MB.
+    ThreadHeapStatsCollector::Scope stats_scope(
+        heap.stats_collector(), ThreadHeapStatsCollector::kAtomicPhaseMarking);
     heap.address_cache()->EnableLookup();
     heap.address_cache()->Flush();
 
@@ -4083,6 +4087,10 @@ TEST(HeapTest, CheckAndMarkPointer) {
     TestGCScope scope(BlinkGC::kHeapPointersOnStack);
     MarkingVisitor visitor(ThreadState::Current(),
                            MarkingVisitor::kGlobalMarking);
+    // Record marking speed as counter generation requires valid marking timings
+    // for heaps >1MB.
+    ThreadHeapStatsCollector::Scope stats_scope(
+        heap.stats_collector(), ThreadHeapStatsCollector::kAtomicPhaseMarking);
     heap.address_cache()->EnableLookup();
     heap.address_cache()->Flush();
 
