@@ -187,11 +187,12 @@ int WrapDladdr(void* address, Dl_info* info) {
   // First, perform search in crazy libraries.
   {
     ScopedLockedGlobals globals;
-    LibraryView* wrap = globals->libraries()->FindLibraryForAddress(address);
+    const LibraryView* wrap =
+        globals->libraries()->FindLibraryForAddress(address);
     if (wrap && wrap->IsCrazy()) {
       size_t sym_size = 0;
 
-      SharedLibrary* lib = wrap->GetCrazy();
+      const SharedLibrary* lib = wrap->GetCrazy();
       ::memset(info, 0, sizeof(*info));
       info->dli_fname = lib->base_name();
       info->dli_fbase = reinterpret_cast<void*>(lib->load_address());
