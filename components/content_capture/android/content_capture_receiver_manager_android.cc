@@ -19,16 +19,22 @@ using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 using base::android::ToJavaLongArray;
 
-void JNI_ContentCaptureReceiverManager_Init(
+static ScopedJavaLocalRef<jobject>
+JNI_ContentCaptureReceiverManager_CreateOrGet(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller,
-    const base::android::JavaParamRef<jobject>& jweb_contents) {
-  auto* web_contents = content::WebContents::FromJavaWebContents(jweb_contents);
+    const base::android::JavaParamRef<jobject>& jwebContents) {
+  auto* web_contents = content::WebContents::FromJavaWebContents(jwebContents);
   DCHECK(web_contents);
-  DCHECK(!content_capture::ContentCaptureReceiverManager::FromWebContents(
-      web_contents));
-  content_capture::ContentCaptureReceiverManagerAndroid::Create(web_contents,
-                                                                jcaller);
+  auto* manager =
+      content_capture::ContentCaptureReceiverManager::FromWebContents(
+          web_contents);
+  if (!manager) {
+    manager = content_capture::ContentCaptureReceiverManagerAndroid::Create(
+        env, web_contents);
+  }
+  return static_cast<content_capture::ContentCaptureReceiverManagerAndroid*>(
+             manager)
+      ->GetJavaObject();
 }
 
 namespace content_capture {
@@ -73,19 +79,22 @@ ScopedJavaLocalRef<jobjectArray> ToJavaArrayOfContentCaptureData(
 }  // namespace
 
 ContentCaptureReceiverManagerAndroid::ContentCaptureReceiverManagerAndroid(
-    content::WebContents* web_contents,
-    const JavaRef<jobject>& jcaller)
-    : ContentCaptureReceiverManager(web_contents), java_ref_(jcaller) {}
+    JNIEnv* env,
+    content::WebContents* web_contents)
+    : ContentCaptureReceiverManager(web_contents),
+      java_ref_(Java_ContentCaptureReceiverManager_Constructor(env)) {}
 
 ContentCaptureReceiverManagerAndroid::~ContentCaptureReceiverManagerAndroid() =
     default;
 
-void ContentCaptureReceiverManagerAndroid::Create(
-    content::WebContents* web_contents,
-    const JavaRef<jobject>& jcaller) {
-  if (FromWebContents(web_contents))
-    return;
-  new ContentCaptureReceiverManagerAndroid(web_contents, jcaller);
+ContentCaptureReceiverManagerAndroid*
+ContentCaptureReceiverManagerAndroid::Create(
+    JNIEnv* env,
+    content::WebContents* web_contents) {
+  auto* manager = FromWebContents(web_contents);
+  if (manager)
+    return static_cast<ContentCaptureReceiverManagerAndroid*>(manager);
+  return new ContentCaptureReceiverManagerAndroid(env, web_contents);
 }
 
 void ContentCaptureReceiverManagerAndroid::DidCaptureContent(
@@ -119,6 +128,11 @@ void ContentCaptureReceiverManagerAndroid::DidRemoveSession(
   DCHECK(java_ref_.obj());
   Java_ContentCaptureReceiverManager_didRemoveSession(
       env, java_ref_, ToJavaArrayOfContentCaptureData(env, session));
+}
+
+ScopedJavaLocalRef<jobject>
+ContentCaptureReceiverManagerAndroid::GetJavaObject() {
+  return ScopedJavaLocalRef<jobject>(java_ref_);
 }
 
 }  // namespace content_capture

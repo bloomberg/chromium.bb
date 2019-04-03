@@ -67,8 +67,6 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.components.content_capture.ContentCaptureConsumer;
-import org.chromium.components.content_capture.ContentCaptureFeatures;
-import org.chromium.components.content_capture.ContentCaptureReceiverManager;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content_public.browser.ChildProcessImportance;
@@ -483,7 +481,7 @@ public class AwContents implements SmartClipProvider {
 
     private JavascriptInjector mJavascriptInjector;
 
-    private ContentCaptureReceiverManager mContentCaptureReceiverManager;
+    private ContentCaptureConsumer mContentCaptureConsumer;
 
     private static class WebContentsInternalsHolder implements WebContents.InternalsHolder {
         private final WeakReference<AwContents> mAwContentsRef;
@@ -936,10 +934,6 @@ public class AwContents implements SmartClipProvider {
             setOverScrollMode(mContainerView.getOverScrollMode());
             setScrollBarStyle(mInternalAccessAdapter.super_getScrollBarStyle());
 
-            if (ContentCaptureFeatures.isEnabled()) {
-                mContentCaptureReceiverManager = new ContentCaptureReceiverManager();
-            }
-
             setNewAwContents(nativeInit(mBrowserContext));
 
             onContainerViewChanged();
@@ -1120,9 +1114,6 @@ public class AwContents implements SmartClipProvider {
         awViewMethodsImpl.onWindowFocusChanged(mContainerView.hasWindowFocus());
         awViewMethodsImpl.onFocusChanged(mContainerView.hasFocus(), 0, null);
         mContainerView.requestLayout();
-        if (mContentCaptureReceiverManager != null) {
-            mContentCaptureReceiverManager.onContainerViewChanged(mContainerView);
-        }
         if (mAutofillProvider != null) mAutofillProvider.onContainerViewChanged(mContainerView);
     }
 
@@ -1225,6 +1216,9 @@ public class AwContents implements SmartClipProvider {
             setNewAwContentsPreO(newAwContentsPtr);
             if (textClassifier != null) setTextClassifier(textClassifier);
         }
+        if (mContentCaptureConsumer != null) {
+            mContentCaptureConsumer.onWebContentsChanged(mWebContents);
+        }
     }
 
     // Helper for setNewAwContents containing everything which applies to pre-O.
@@ -1255,8 +1249,7 @@ public class AwContents implements SmartClipProvider {
         initWebContents(mViewAndroidDelegate, mInternalAccessAdapter, mWebContents,
                 mWindowAndroid.getWindowAndroid(), mWebContentsInternalsHolder);
         nativeSetJavaPeers(mNativeAwContents, this, mWebContentsDelegate, mContentsClientBridge,
-                mIoThreadClient, mInterceptNavigationDelegate, mAutofillProvider,
-                mContentCaptureReceiverManager);
+                mIoThreadClient, mInterceptNavigationDelegate, mAutofillProvider);
         GestureListenerManager.fromWebContents(mWebContents)
                 .addListener(new AwGestureStateListener());
 
@@ -1417,6 +1410,11 @@ public class AwContents implements SmartClipProvider {
         if (TRACE) Log.i(TAG, "%s destroy", this);
         if (isDestroyed(NO_WARN)) return;
 
+        if (mContentCaptureConsumer != null) {
+            mContentCaptureConsumer.destroy();
+            mContentCaptureConsumer = null;
+        }
+
         // Remove pending messages
         mContentsClient.getCallbackHelper().removeCallbacksAndMessages();
 
@@ -1565,8 +1563,7 @@ public class AwContents implements SmartClipProvider {
     }
 
     public void setContentCaptureConsumer(ContentCaptureConsumer consumer) {
-        if (mContentCaptureReceiverManager != null)
-            mContentCaptureReceiverManager.setContentCaptureConsumer(consumer);
+        mContentCaptureConsumer = consumer;
     }
 
     //--------------------------------------------------------------------------------------------
@@ -3867,8 +3864,7 @@ public class AwContents implements SmartClipProvider {
             AwWebContentsDelegate webViewWebContentsDelegate,
             AwContentsClientBridge contentsClientBridge, AwContentsIoThreadClient ioThreadClient,
             InterceptNavigationDelegate navigationInterceptionDelegate,
-            AutofillProvider autofillProvider,
-            ContentCaptureReceiverManager contentCaptureReceiverManager);
+            AutofillProvider autofillProvider);
     private native WebContents nativeGetWebContents(long nativeAwContents);
     private native void nativeSetCompositorFrameConsumer(
             long nativeAwContents, long nativeCompositorFrameConsumer);

@@ -63,7 +63,6 @@
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
-#include "components/content_capture/android/content_capture_receiver_manager_android.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "content/public/browser/android/child_process_importance.h"
 #include "content/public/browser/android/synchronous_compositor.h"
@@ -281,8 +280,7 @@ void AwContents::SetJavaPeers(
     const JavaParamRef<jobject>& contents_client_bridge,
     const JavaParamRef<jobject>& io_thread_client,
     const JavaParamRef<jobject>& intercept_navigation_delegate,
-    const JavaParamRef<jobject>& autofill_provider,
-    const JavaParamRef<jobject>& content_capture_receiver_manager) {
+    const JavaParamRef<jobject>& autofill_provider) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // The |aw_content| param is technically spurious as it duplicates |obj| but
   // is passed over anyway to make the binding more explicit.
@@ -302,10 +300,7 @@ void AwContents::SetJavaPeers(
   InterceptNavigationDelegate::Associate(
       web_contents_.get(), std::make_unique<InterceptNavigationDelegate>(
                                env, intercept_navigation_delegate));
-  if (content_capture_receiver_manager) {
-    content_capture::ContentCaptureReceiverManagerAndroid::Create(
-        web_contents_.get(), content_capture_receiver_manager);
-  }
+
   if (!autofill_provider.is_null()) {
     autofill_provider_ = std::make_unique<autofill::AutofillProviderAndroid>(
         autofill_provider, web_contents_.get());
