@@ -35,43 +35,29 @@ typedef StoreUpdateResult<OfflinePageItem> OfflinePagesUpdateResult;
 // OfflinePageMetadataStore keeps metadata for the offline pages in an SQLite
 // database.
 //
-// This store has a history of schema updates in pretty much every release.
-// Original schema was delivered in M52. Since then, the following changes
-// happened:
-// * In M53 expiration_time was added,
-// * In M54 title was added,
-// * In M55 we dropped the following fields (never used): version, status,
-//   offline_url, user_initiated.
-// * In M56 original_url was added.
-// * In M57 expiration_time was dropped. Existing expired pages would be
-//   removed when metadata consistency check happens.
-// * In M58-M60 there were no changes.
-// * In M61 request_origin was added.
-// * In M62 system_download_id, file_missing_time, upgrade_attempt and digest
-//   were added to support P2P sharing feature.
+// When updating the schema, be sure to do the following:
+// * Increment the version number kCurrentVersion (let's call its new value N).
+// * Write a function "UpgradeFromVersion<N-1>ToVersion<N>". This function
+//   should upgrade an existing database of the (previously) latest version and
+//   should call meta_table->SetVersionNumber(N). Add a case for version N-1 to
+//   the loop in CreateSchema.
+// * Update CreateLatestSchema() as necessary: this function creates a new empty
+//   DB. If there were changes to existing tables, their original "CREATE"
+//   queries should be copied into the new "UpgradeFromVersion..." function.
+// * Update `kCompatibleVersion` when a new schema becomes incompatible with
+//   old code (for instance, if a column is removed). Change it to the earliest
+//   version that is compatible with the new schema; that is very likely to be
+//   the version that broke compatibility.
+// * Add a test for upgrading to the latest database version to
+//   offline_page_metadata_store_unittest.cc. Good luck.
 //
-// Here is a procedure to update the schema for this store:
-// * Decide how to detect that the store is on a particular version, which
-//   typically means that a certain field exists or is missing. This happens in
-//   Upgrade section of |CreateSchema|
-// * Work out appropriate change and apply it to all existing upgrade paths. In
-//   the interest of performing a single update of the store, it upgrades from a
-//   detected version to the current one. This means that when making a change,
-//   more than a single query may have to be updated (in case of fields being
-//   removed or needed to be initialized to a specific, non-default value).
-//   Such approach is preferred to doing N updates for every changed version on
-//   a startup after browser update.
-// * New upgrade method should specify which version it is upgrading from, e.g.
-//   |UpgradeFrom54|.
-// * Upgrade should use |UpgradeWithQuery| and simply specify SQL command to
-//   move data from old table (prefixed by temp_) to the new one.
 class OfflinePageMetadataStore : public SqlStoreBase {
  public:
   // This is the first version saved in the meta table, which was introduced in
   // the store in M65. It is set once a legacy upgrade is run successfully for
   // the last time in |UpgradeFromLegacyVersion|.
   static const int kFirstPostLegacyVersion = 1;
-  static const int kCurrentVersion = 3;
+  static const int kCurrentVersion = 4;
   static const int kCompatibleVersion = kFirstPostLegacyVersion;
 
   // TODO(fgorski): Move to private and expose ForTest factory.

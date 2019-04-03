@@ -51,6 +51,8 @@ const char kTestRequestOrigin[] = "request.origin";
 int64_t kTestSystemDownloadId = 42LL;
 const char kTestDigest[] = "test-digest";
 const base::Time kThumbnailExpiration = store_utils::FromDatabaseTime(42);
+const std::string kTestSnippet = "test snippet";
+const std::string kTestAttribution = "test attribution";
 
 // Build a store with outdated schema to simulate the upgrading process.
 void BuildTestStoreWithSchemaFromM52(const base::FilePath& file) {
@@ -470,8 +472,18 @@ void BuildTestStoreWithSchemaVersion2(const base::FilePath& file) {
   sql::Database db;
   ASSERT_TRUE(db.Open(file.Append(FILE_PATH_LITERAL("OfflinePages.db"))));
   sql::MetaTable meta_table;
-  ASSERT_TRUE(meta_table.Init(&db, OfflinePageMetadataStore::kCurrentVersion,
-                              OfflinePageMetadataStore::kCompatibleVersion));
+  ASSERT_TRUE(
+      meta_table.Init(&db, 2, OfflinePageMetadataStore::kCompatibleVersion));
+}
+
+void BuildTestStoreWithSchemaVersion3(const base::FilePath& file) {
+  BuildTestStoreWithSchemaVersion2(file);
+  sql::Database db;
+  ASSERT_TRUE(db.Open(file.Append(FILE_PATH_LITERAL("OfflinePages.db"))));
+  sql::MetaTable meta_table;
+  ASSERT_TRUE(
+      meta_table.Init(&db, 3, OfflinePageMetadataStore::kCompatibleVersion));
+
   static const char kSql[] =
       "CREATE TABLE page_thumbnails"
       " (offline_id INTEGER PRIMARY KEY NOT NULL,"
@@ -503,6 +515,8 @@ OfflinePageItem MakeOfflinePageItem(sql::Statement* statement) {
   GURL original_url(statement->ColumnString(13));
   std::string request_origin = statement->ColumnString(14);
   std::string digest = statement->ColumnString(15);
+  std::string snippet = statement->ColumnString(16);
+  std::string attribution = statement->ColumnString(17);
 
   OfflinePageItem item(url, id, client_id, path, file_size, creation_time);
   item.last_access_time = last_access_time;
@@ -513,6 +527,8 @@ OfflinePageItem MakeOfflinePageItem(sql::Statement* statement) {
   item.system_download_id = system_download_id;
   item.file_missing_time = file_missing_time;
   item.digest = digest;
+  item.snippet = snippet;
+  item.attribution = attribution;
   return item;
 }
 
@@ -578,6 +594,8 @@ class OfflinePageMetadataStoreTest : public testing::Test {
     offline_page.original_url_if_different = GURL(kOriginalTestURL);
     offline_page.system_download_id = kTestSystemDownloadId;
     offline_page.digest = kTestDigest;
+    offline_page.snippet = kTestSnippet;
+    offline_page.attribution = kTestAttribution;
 
     EXPECT_EQ(ItemActionStatus::SUCCESS,
               AddOfflinePage(store.get(), offline_page));
@@ -689,9 +707,9 @@ class OfflinePageMetadataStoreTest : public testing::Test {
           "file_path,"
           "file_size,creation_time,last_access_time,access_count,"
           "title,original_url,request_origin,system_download_id,"
-          "file_missing_time,digest)"
+          "file_missing_time,digest,snippet,attribution)"
           " VALUES "
-          "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+          "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
       sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
       statement.BindInt64(0, item.offline_id);
@@ -711,6 +729,8 @@ class OfflinePageMetadataStoreTest : public testing::Test {
       statement.BindInt64(13,
                           store_utils::ToDatabaseTime(item.file_missing_time));
       statement.BindString(14, item.digest);
+      statement.BindString(15, item.snippet);
+      statement.BindString(16, item.attribution);
 
       if (!statement.Run())
         return ItemActionStatus::STORE_ERROR;
@@ -751,12 +771,13 @@ class OfflinePageMetadataStoreTest : public testing::Test {
     auto run_callback = base::BindLambdaForTesting([&](sql::Database* db) {
       static const char kSql[] =
           "INSERT INTO page_thumbnails"
-          " (offline_id, expiration, thumbnail) VALUES (?, ?, ?)";
+          " (offline_id, expiration, thumbnail, favicon) VALUES (?, ?, ?, ?)";
       sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
 
       statement.BindInt64(0, thumbnail.offline_id);
       statement.BindInt64(1, store_utils::ToDatabaseTime(thumbnail.expiration));
       statement.BindString(2, thumbnail.thumbnail);
+      statement.BindString(3, std::string());
       EXPECT_TRUE(statement.Run());
       return thumbnails;
     });
@@ -849,6 +870,11 @@ TEST_F(OfflinePageMetadataStoreTest, LoadStoreWithMetaVersion1) {
 
 TEST_F(OfflinePageMetadataStoreTest, LoadStoreWithMetaVersion2) {
   BuildTestStoreWithSchemaVersion2(TempPath());
+  LoadAndCheckStoreFromMetaVersion1AndUp();
+}
+
+TEST_F(OfflinePageMetadataStoreTest, LoadStoreWithMetaVersion3) {
+  BuildTestStoreWithSchemaVersion3(TempPath());
   LoadAndCheckStoreFromMetaVersion1AndUp();
 }
 
