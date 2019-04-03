@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://github.com/gpuweb/gpuweb/blob/master/design/sketch.webidl
+#include "third_party/blink/renderer/modules/webgpu/gpu_canvas_context.h"
 
-dictionary GPULimits {
-    unsigned long maxBindGroups = 4;
-};
+namespace blink {}  // namespace blink

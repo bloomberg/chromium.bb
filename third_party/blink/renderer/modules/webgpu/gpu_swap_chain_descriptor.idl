@@ -4,6 +4,8 @@
 
 // https://github.com/gpuweb/gpuweb/blob/master/design/sketch.webidl
 
-dictionary GPULimits {
-    unsigned long maxBindGroups = 4;
+dictionary GPUSwapChainDescriptor {
+    required GPUCanvasContext context;
+    required GPUTextureFormat format;
+    GPUTextureUsageFlags usage = 16;  // GPUTextureUsage.OUTPUT_ATTACHMENT
 };

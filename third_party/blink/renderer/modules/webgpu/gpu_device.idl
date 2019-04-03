@@ -11,3 +11,5 @@
 
     GPUQueue getQueue();
 };
+
+typedef (GPUOutOfMemoryError or GPUValidationError) GPUError;

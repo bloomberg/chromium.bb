@@ -4,6 +4,6 @@
 
 // https://github.com/gpuweb/gpuweb/blob/master/design/sketch.webidl
 
-dictionary GPULimits {
-    unsigned long maxBindGroups = 4;
+dictionary GPUUncapturedErrorEventInit : EventInit {
+    required GPUError error;
 };
