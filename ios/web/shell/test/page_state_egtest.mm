@@ -108,11 +108,9 @@ void ScrollLongPageToTop(const GURL& url) {
   WaitForOffset(kOffset2);
 }
 
-// TODO(crbug.com/946461): Fix and re-enable. This test is failing on devices
-// and official. Tests that the content offset of the webview scroll view is {0,
-// 0} after a load.
+// Tests that the content offset of the webview scroll view is {0, 0} after a
+// load.
 - (void)testZeroContentOffsetAfterLoad {
-  EARL_GREY_TEST_DISABLED(@"Test disabled.");
   // Set up the file-based server to load the tall page.
   const GURL baseURL = _server.GetURL(kLongPage1);
   bool success = [ShellEarlGrey loadURL:baseURL];
