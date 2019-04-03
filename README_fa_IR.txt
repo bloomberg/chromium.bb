@@ -1,6 +1,6 @@
 Source
 ======
-https://github.com/m-o-s-t-a-f-a/lilak
+https://github.com/b00f/lilak
 
 License
 =======
@@ -23,6 +23,6 @@ limitations under the License.
 README
 ======
 Lilak is an open source project for generating Persian dictionary for hunspell
-spell checker based on Persian Morphology. 
+ spell checker based on Persian Morphology.
 This dictionary is free and the source is available under Apache License
-Version 2.0.
+ Version 2.0.
