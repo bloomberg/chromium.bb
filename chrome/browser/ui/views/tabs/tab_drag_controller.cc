@@ -119,7 +119,7 @@ bool IsSnapped(const TabStrip* tab_strip) {
 gfx::Rect GetDraggedBrowserBoundsInTabletMode(aura::Window* window) {
   const gfx::Rect work_area =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window).work_area();
-  gfx::Rect bounds(window->bounds());
+  gfx::Rect bounds(window->GetBoundsInScreen());
   bounds.set_width(work_area.width() / 2);
   bounds.set_height(work_area.height() / 2);
   return bounds;
