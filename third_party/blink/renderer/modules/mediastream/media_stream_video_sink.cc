@@ -34,7 +34,10 @@ void MediaStreamVideoSink::OnFrameDropped(
     media::VideoCaptureFrameDropReason reason) {
   if (connected_track_.IsNull())
     return;
-  OnFrameDroppedAtMediaStreamSink(connected_track_, reason);
+
+  if (auto* const video_track =
+          MediaStreamVideoTrack::GetVideoTrack(connected_track_))
+    video_track->OnFrameDropped(reason);
 }
 
 }  // namespace blink
