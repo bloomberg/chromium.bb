@@ -2181,7 +2181,8 @@ const CSSValue* Content::ParseSingleValue(CSSParserTokenRange& range,
     return css_property_parser_helpers::ConsumeIdent(range);
 
   CSSValueList* values = CSSValueList::CreateSpaceSeparated();
-
+  CSSValueList* outer_list = CSSValueList::CreateSlashSeparated();
+  bool alt_text_present = false;
   do {
     CSSValue* parsed_value =
         css_property_parser_helpers::ConsumeImage(range, &context);
@@ -2204,13 +2205,27 @@ const CSSValue* Content::ParseSingleValue(CSSParserTokenRange& range,
         parsed_value = ConsumeCounterContent(
             css_property_parser_helpers::ConsumeFunction(range), context, true);
       }
-      if (!parsed_value)
-        return nullptr;
     }
-    values->Append(*parsed_value);
-  } while (!range.AtEnd());
-
-  return values;
+    if (!parsed_value) {
+      if (RuntimeEnabledFeatures::CSSAltTextEnabled() &&
+          css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range)) {
+        alt_text_present = true;
+      } else {
+        return nullptr;
+      }
+    } else {
+      values->Append(*parsed_value);
+    }
+  } while (!range.AtEnd() && !alt_text_present);
+  outer_list->Append(*values);
+  if (alt_text_present) {
+    CSSStringValue* alt_text =
+        css_property_parser_helpers::ConsumeString(range);
+    if (!alt_text)
+      return nullptr;
+    outer_list->Append(*alt_text);
+  }
+  return outer_list;
 }
 
 const CSSValue* Content::CSSValueFromComputedStyleInternal(
@@ -2239,10 +2254,10 @@ void Content::ApplyValue(StyleResolverState& state,
     state.Style()->SetContent(nullptr);
     return;
   }
-
+  const CSSValueList& outer_list = To<CSSValueList>(value);
   ContentData* first_content = nullptr;
   ContentData* prev_content = nullptr;
-  for (auto& item : To<CSSValueList>(value)) {
+  for (auto& item : To<CSSValueList>(outer_list.Item(0))) {
     ContentData* next_content = nullptr;
     if (item->IsImageGeneratorValue() || item->IsImageSetValue() ||
         item->IsImageValue()) {
@@ -2308,6 +2323,13 @@ void Content::ApplyValue(StyleResolverState& state,
       prev_content->SetNext(next_content);
 
     prev_content = next_content;
+  }
+  // If alt text was provided, it will be present as the final element of the
+  // outer list.
+  if (outer_list.length() > 1) {
+    String string = To<CSSStringValue>(outer_list.Item(1)).Value();
+    ContentData* alt_content = ContentData::CreateAltText(string);
+    prev_content->SetNext(alt_content);
   }
   DCHECK(first_content);
   state.Style()->SetContent(first_content);

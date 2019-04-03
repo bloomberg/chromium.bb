@@ -1,0 +1,6 @@
+rootWebArea
+++genericContainer
+++++image name='alternative text'
+++++staticText name='DOM text'
+++++++inlineTextBox name='DOM text'
+++++image

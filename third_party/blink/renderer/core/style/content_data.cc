@@ -50,6 +50,10 @@ ContentData* ContentData::Create(QuoteType quote) {
   return MakeGarbageCollected<QuoteContentData>(quote);
 }
 
+ContentData* ContentData::CreateAltText(const String& text) {
+  return MakeGarbageCollected<AltTextContentData>(text);
+}
+
 ContentData* ContentData::Clone() const {
   ContentData* result = CloneInternal();
 
@@ -94,6 +98,16 @@ LayoutObject* TextContentData::CreateLayoutObject(PseudoElement& pseudo,
       LayoutTextFragment::CreateAnonymous(pseudo, text_.Impl(), legacy);
   layout_object->SetPseudoStyle(&pseudo_style);
   return layout_object;
+}
+
+LayoutObject* AltTextContentData::CreateLayoutObject(
+    PseudoElement& pseudo,
+    ComputedStyle& pseudo_style,
+    LegacyLayout) const {
+  // Does not require a layout object. Calling site should first check
+  // IsAltContentData() before calling this method.
+  NOTREACHED();
+  return nullptr;
 }
 
 LayoutObject* CounterContentData::CreateLayoutObject(

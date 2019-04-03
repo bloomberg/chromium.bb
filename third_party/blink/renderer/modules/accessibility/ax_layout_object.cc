@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
@@ -188,6 +189,21 @@ static bool IsImageOrAltText(LayoutBoxModelObject* box, Node* node) {
   return false;
 }
 
+// |layout_object| and |node| correspond to an AXLayoutObject. |alt_text| is an
+// output parameter that will be populated if the AXLayoutObject is for a pseudo
+// element and contained the alternative text
+base::Optional<String> GetPseudoElementAltText(Node* node) {
+  if (node && node->IsPseudoElement()) {
+    const ComputedStyle* style = node->GetComputedStyle();
+    for (const ContentData* content_data = style->GetContentData();
+         content_data; content_data = content_data->Next()) {
+      if (content_data->IsAltText())
+        return To<AltTextContentData>(content_data)->GetText();
+    }
+  }
+  return base::nullopt;
+}
+
 ax::mojom::Role AXLayoutObject::NativeRoleIgnoringAria() const {
   Node* node = layout_object_->GetNode();
   LayoutBoxModelObject* css_box = GetLayoutBoxModelObject();
@@ -248,7 +264,18 @@ ax::mojom::Role AXLayoutObject::NativeRoleIgnoringAria() const {
 ax::mojom::Role AXLayoutObject::DetermineAccessibilityRole() {
   if (!layout_object_)
     return ax::mojom::Role::kUnknown;
+  if (GetPseudoElementAltText(GetNode())) {
+    const ComputedStyle* style = GetNode()->GetComputedStyle();
+    ContentData* content_data = style->GetContentData();
 
+    // We just check the first item of the content list to determine the
+    // appropriate role, should only ever be image or text.
+    ax::mojom::Role role = ax::mojom::Role::kStaticText;
+    if (content_data->IsImage())
+      role = ax::mojom::Role::kImage;
+
+    return role;
+  }
   native_role_ = NativeRoleIgnoringAria();
 
   if ((aria_role_ = DetermineAriaRoleAttribute()) != ax::mojom::Role::kUnknown)
@@ -834,6 +861,10 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
       !GetAttribute(kTitleAttr).IsEmpty())
     return false;
 
+  base::Optional<String> alt_text = GetPseudoElementAltText(GetNode());
+  if (alt_text)
+    return alt_text->IsEmpty();
+
   // <span> tags are inline tags and not meant to convey information if they
   // have no other ARIA information on them. If we don't ignore them, they may
   // emit signals expected to come from their parent.
@@ -875,7 +906,6 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
       ignored_reasons->push_back(IgnoredReason(kAXUninteresting));
     return true;
   }
-
   // By default, objects should be ignored so that the AX hierarchy is not
   // filled with unnecessary items.
   if (ignored_reasons)
@@ -1533,9 +1563,17 @@ String AXLayoutObject::TextAlternative(bool recursive,
                                        AXRelatedObjectVector* related_objects,
                                        NameSources* name_sources) const {
   if (layout_object_) {
-    String text_alternative;
+    base::Optional<String> text_alternative =
+        GetPseudoElementAltText(GetNode());
     bool found_text_alternative = false;
-
+    if (text_alternative) {
+      if (name_sources) {
+        name_sources->push_back(NameSource(false));
+        name_sources->back().type = ax::mojom::NameFrom::kAttribute;
+        name_sources->back().text = text_alternative.value();
+      }
+      return text_alternative.value();
+    }
     if (layout_object_->IsBR()) {
       text_alternative = String("\n");
       found_text_alternative = true;
@@ -1574,9 +1612,9 @@ String AXLayoutObject::TextAlternative(bool recursive,
       if (name_sources) {
         name_sources->push_back(NameSource(false));
         name_sources->back().type = name_from;
-        name_sources->back().text = text_alternative;
+        name_sources->back().text = text_alternative.value();
       }
-      return text_alternative;
+      return text_alternative.value();
     }
   }
 
@@ -2109,7 +2147,8 @@ void AXLayoutObject::AddChildren() {
 bool AXLayoutObject::CanHaveChildren() const {
   if (!layout_object_)
     return false;
-
+  if (GetPseudoElementAltText(GetNode()))
+    return false;
   return AXNodeObject::CanHaveChildren();
 }
 
