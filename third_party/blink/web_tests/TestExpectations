@@ -5912,11 +5912,6 @@ crbug.com/927769 fast/webgl/OffscreenCanvas-webgl-preserveDrawingBuffer.html [ S
 # Sheriff 2019-02-06
 crbug.com/929435 [ Mac ] external/wpt/webaudio/the-audio-api/the-audiobuffersourcenode-interface/sub-sample-buffer-stitching.html [ Pass Failure ]
 
-# Sheriff 2019-02-11
-### external/wpt/html/semantics/links/links-created-by-a-and-area-elements/
-crbug.com/626703 external/wpt/html/semantics/links/links-created-by-a-and-area-elements/target_blank_implicit_noopener.html [ Failure Timeout Pass ]
-crbug.com/930873 external/wpt/html/semantics/links/links-created-by-a-and-area-elements/target_blank_implicit_noopener_base.html [ Timeout Pass ]
-
 # Sheriff 2019-02-12
 crbug.com/931349 [ Mac ] fast/events/popup-blocking-timers5.html [ Failure Timeout Pass ]
 crbug.com/931349 [ Mac ] media/video-played-ranges-1.html [ Failure Timeout Pass ]
