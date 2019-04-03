@@ -17,7 +17,6 @@
 #include "build/build_config.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/search_engines/template_url_service_observer.h"
-#include "components/security_state/core/security_state.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
@@ -175,9 +174,6 @@ class OmniboxViewViews : public OmniboxView,
   // Handle keyword hint tab-to-search and tabbing through dropdown results.
   bool HandleEarlyTabActions(const ui::KeyEvent& event);
 
-  // Updates |security_level_| based on the location bar model's current value.
-  void UpdateSecurityLevel();
-
   void ClearAccessibilityLabel();
 
   void SetAccessibilityLabel(const base::string16& display_text,
@@ -296,8 +292,6 @@ class OmniboxViewViews : public OmniboxView,
 
   // Animation used to fade out the path under some elision settings.
   std::unique_ptr<PathFadeAnimation> path_fade_animation_;
-
-  security_state::SecurityLevel security_level_;
 
   // Selection persisted across temporary text changes, like popup suggestions.
   gfx::Range saved_temporary_selection_;
