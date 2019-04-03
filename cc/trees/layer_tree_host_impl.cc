@@ -2092,6 +2092,12 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
         debug_state_);
   }
 
+  TRACE_EVENT_INSTANT2("cc", "Scroll Delta This Frame",
+                       TRACE_EVENT_SCOPE_THREAD, "x",
+                       scroll_accumulated_this_frame_.x(), "y",
+                       scroll_accumulated_this_frame_.y());
+  scroll_accumulated_this_frame_ = gfx::ScrollOffset();
+
   bool is_new_trace;
   TRACE_EVENT_IS_NEW_TRACE(&is_new_trace);
   if (is_new_trace) {
@@ -3931,6 +3937,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
   ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
   ScrollNode* scroll_node = scroll_tree.CurrentlyScrollingNode();
 
+  scroll_accumulated_this_frame_ += gfx::ScrollOffset(scroll_delta);
+
   if (scroll_node) {
     // Flash the overlay scrollbar even if the scroll dalta is 0.
     if (settings_.scrollbar_flash_after_any_scroll_update) {
@@ -4413,6 +4421,9 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
 
   TRACE_EVENT0("cc", "LayerTreeHostImpl::ScrollBy");
   auto& scroll_tree = active_tree_->property_trees()->scroll_tree;
+
+  scroll_accumulated_this_frame_ +=
+      gfx::ScrollOffset(scroll_state->delta_x(), scroll_state->delta_y());
 
   ElementId provided_element =
       scroll_state->data()->current_native_scrolling_element();

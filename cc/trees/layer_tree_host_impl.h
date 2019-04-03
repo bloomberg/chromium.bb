@@ -971,6 +971,11 @@ class CC_EXPORT LayerTreeHostImpl
   ElementId scroll_element_id_mouse_currently_over_;
   ElementId scroll_element_id_mouse_currently_captured_;
 
+  // Tracks, for debugging purposes, the amount of scroll received (not
+  // necessarily applied) in this compositor frame. This will be reset each
+  // time a CompositorFrame is generated.
+  gfx::ScrollOffset scroll_accumulated_this_frame_;
+
   std::vector<std::unique_ptr<SwapPromise>>
       swap_promises_for_main_thread_scroll_update_;
 
