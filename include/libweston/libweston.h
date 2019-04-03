@@ -1630,6 +1630,7 @@ struct content_protection {
 	struct wl_listener destroy_listener;
 	struct weston_log_scope *debug;
 	struct wl_list protected_list;
+	struct wl_event_source *surface_protection_update;
 };
 
 

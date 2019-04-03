@@ -1032,6 +1032,47 @@ weston_surface_send_enter_leave(struct weston_surface *surface,
 	}
 }
 
+static void
+weston_surface_compute_protection(struct protected_surface *psurface)
+{
+	enum weston_hdcp_protection min_protection;
+	bool min_protection_valid = false;
+	struct weston_surface *surface = psurface->surface;
+	struct weston_output *output;
+
+	wl_list_for_each(output, &surface->compositor->output_list, link)
+		if (surface->output_mask & (1u << output->id)) {
+			if (!min_protection_valid) {
+				min_protection = output->current_protection;
+				min_protection_valid = true;
+			}
+			if (output->current_protection < min_protection)
+				min_protection = output->current_protection;
+		}
+	if (!min_protection_valid)
+		min_protection = WESTON_HDCP_DISABLE;
+
+	surface->current_protection = min_protection;
+	weston_protected_surface_send_event(psurface,
+					    surface->current_protection);
+}
+
+static void
+notify_surface_protection_change(void *data)
+{
+	struct weston_compositor *compositor = data;
+	struct content_protection *cp;
+	struct protected_surface *psurface;
+
+	cp = compositor->content_protection;
+	cp->surface_protection_update = NULL;
+
+	/* Notify the clients, whose surfaces are changed */
+	wl_list_for_each(psurface, &cp->protected_list, link)
+		if (psurface && psurface->surface)
+			weston_surface_compute_protection(psurface);
+}
+
 /**
  * \param es    The surface
  * \param mask  The new set of outputs for the surface
@@ -1050,6 +1091,8 @@ weston_surface_update_output_mask(struct weston_surface *es, uint32_t mask)
 	uint32_t output_bit;
 	struct weston_output *output;
 	struct weston_head *head;
+	struct content_protection *cp;
+	struct wl_event_loop *loop;
 
 	es->output_mask = mask;
 	if (es->resource == NULL)
@@ -1068,6 +1111,17 @@ weston_surface_update_output_mask(struct weston_surface *es, uint32_t mask)
 							output_bit & left);
 		}
 	}
+	/*
+	 * Change in surfaces' output mask might trigger a change in its
+	 * protection.
+	 */
+	loop = wl_display_get_event_loop(es->compositor->wl_display);
+	cp = es->compositor->content_protection;
+	if (!cp || cp->surface_protection_update)
+		return;
+	cp->surface_protection_update = wl_event_loop_add_idle(loop,
+					       notify_surface_protection_change,
+					       es->compositor);
 }
 
 static void
@@ -5338,6 +5392,11 @@ weston_output_compute_protection(struct weston_output *output)
 	struct weston_head *head;
 	enum weston_hdcp_protection op_protection;
 	bool op_protection_valid = false;
+	struct weston_compositor *wc = output->compositor;
+	struct content_protection *cp = wc->content_protection;
+
+	if (!cp)
+		return;
 
 	wl_list_for_each(head, &output->head_list, output_link) {
 		if (!op_protection_valid) {
@@ -5351,8 +5410,18 @@ weston_output_compute_protection(struct weston_output *output)
 	if (!op_protection_valid)
 		op_protection = WESTON_HDCP_DISABLE;
 
-	if (output->current_protection != op_protection)
+	if (output->current_protection != op_protection) {
+		struct wl_event_loop *loop;
+
 		output->current_protection = op_protection;
+		weston_output_damage(output);
+		if (cp->surface_protection_update)
+			return;
+		loop = wl_display_get_event_loop(wc->wl_display);
+		cp->surface_protection_update = wl_event_loop_add_idle(loop,
+					       notify_surface_protection_change,
+					       wc);
+	}
 }
 
 WL_EXPORT void
