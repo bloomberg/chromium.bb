@@ -211,3 +211,39 @@ TEST_F(
       this.runMochaTest(number_settings_section_interactive_test.TestNames
                             .BlurResetsEmptyInput);
     });
+
+PrintPreviewScalingSettingsInteractiveTest =
+    class extends PrintPreviewInteractiveUITest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/scaling_settings.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      ROOT_PATH + 'ui/webui/resources/js/util.js',
+      '../settings/test_util.js',
+      'print_preview_test_utils.js',
+      'scaling_settings_interactive_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return scaling_settings_interactive_test.suiteName;
+  }
+};
+
+// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
+GEN('#if defined(OS_WIN)');
+GEN('#define MAYBE_AutoFocusInput DISABLED_InputAutoFocus');
+GEN('#else');
+GEN('#define MAYBE_AutoFocusInput InputAutoFocus');
+GEN('#endif');
+TEST_F(
+    'PrintPreviewScalingSettingsInteractiveTest', 'MAYBE_AutoFocusInput',
+    function() {
+      this.runMochaTest(
+          scaling_settings_interactive_test.TestNames.AutoFocusInput);
+    });

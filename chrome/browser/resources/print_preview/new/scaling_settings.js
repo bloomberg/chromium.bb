@@ -39,7 +39,8 @@ Polymer({
     /** @private {boolean} */
     customSelected_: {
       type: Boolean,
-      computed: 'computeCustomSelected_(selectedValue)',
+      computed: 'computeCustomSelected_(settings.customScaling.*, ' +
+          'settings.fitToPage.*)',
     },
 
     /** @private {boolean} */
@@ -186,7 +187,9 @@ Polymer({
    * @private
    */
   computeCustomSelected_: function() {
-    return this.selectedValue === ScalingValue.CUSTOM.toString();
+    return /** @type {boolean} */ (this.getSettingValue('customScaling')) &&
+        (!this.getSetting('fitToPage').available ||
+         !(/** @type {boolean} */ (this.getSettingValue('fitToPage'))));
   },
 
   /** @private */
