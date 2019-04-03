@@ -73,16 +73,21 @@
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/interfaces/shell_test_api.test-mojom-test-utils.h"
 #include "ash/public/interfaces/shell_test_api.test-mojom.h"
+#include "ash/shell.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 #include "content/public/common/service_manager_connection.h"
+#include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/screen_position_client.h"
+#include "ui/aura/mus/window_mus.h"
 #include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ui_base_features.h"
@@ -1768,6 +1773,32 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   test::SetAndWaitForTabletMode(true);
 
   DragWindowAndVerifyOffset(this, GetTabStripForBrowser(browser()), 1);
+  ASSERT_FALSE(TabDragController::IsActive());
+}
+
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       OffsetForDraggingRightSnappedWindowInTabletMode) {
+  test::SetAndWaitForTabletMode(true);
+
+  // Right snap the browser window.
+  aura::Window* window = browser()->window()->GetNativeWindow();
+  if (features::IsUsingWindowService()) {
+    ash::mojom::ShellTestApiPtr shell_test_api;
+    content::ServiceManagerConnection::GetForProcess()
+        ->GetConnector()
+        ->BindInterface(ash::mojom::kServiceName, &shell_test_api);
+    ash::mojom::ShellTestApiAsyncWaiter shell_waiter(shell_test_api.get());
+    shell_waiter.SnapWindowInSplitView(
+        content::mojom::kBrowserServiceName,
+        aura::WindowMus::Get(window->GetRootWindow())->server_id(), false);
+  } else {
+    ash::Shell* shell = ash::Shell::Get();
+    shell->split_view_controller()->SnapWindow(window,
+                                               ash::SplitViewController::RIGHT);
+  }
+  EXPECT_NE(gfx::Point(), window->GetBoundsInScreen().origin());
+
+  DragWindowAndVerifyOffset(this, GetTabStripForBrowser(browser()), 0);
   ASSERT_FALSE(TabDragController::IsActive());
 }
 
