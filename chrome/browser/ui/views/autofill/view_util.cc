@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/autofill/view_util.h"
 
-#include <memory>
+#include <utility>
 
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -120,11 +120,11 @@ views::Textfield* CreateCvcTextfield() {
   return textfield;
 }
 
-views::Label* CreateLabelWithColorReadabilityDisabled(
+std::unique_ptr<views::Label> CreateLabelWithColorReadabilityDisabled(
     const base::string16& text,
     int text_context,
     int text_style) {
-  views::Label* label = new views::Label(text, text_context, text_style);
+  auto label = std::make_unique<views::Label>(text, text_context, text_style);
   label->SetAutoColorReadabilityEnabled(false);
   // Forces the color for the required context and style to be applied. It may
   // have been overridden by the default theme's color before auto-color

@@ -116,27 +116,25 @@ void InvertBubbleView::Init() {
   SetBorder(views::CreateEmptyBorder(
       provider->GetInsetsMetric(views::INSETS_DIALOG)));
 
-  views::Label* header =
-      new views::Label(l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_HEADER),
-                       CONTEXT_BODY_TEXT_LARGE);
+  auto high_contrast = std::make_unique<views::Link>(
+      l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_EXT),
+      CONTEXT_BODY_TEXT_LARGE);
+  high_contrast->set_listener(this);
 
-  high_contrast_ =
-      new views::Link(l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_EXT),
-                      CONTEXT_BODY_TEXT_LARGE);
-  high_contrast_->set_listener(this);
-
-  dark_theme_ = new views::Link(l10n_util::GetStringUTF16(IDS_DARK_THEME),
-                                CONTEXT_BODY_TEXT_LARGE);
-  dark_theme_->set_listener(this);
+  auto dark_theme = std::make_unique<views::Link>(
+      l10n_util::GetStringUTF16(IDS_DARK_THEME), CONTEXT_BODY_TEXT_LARGE);
+  dark_theme->set_listener(this);
 
   views::BoxLayout* layout = SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
 
-  AddChildView(header);
-  AddChildView(high_contrast_);
-  AddChildView(dark_theme_);
+  AddChildView(std::make_unique<views::Label>(
+      l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_HEADER),
+      CONTEXT_BODY_TEXT_LARGE));
+  high_contrast_ = AddChildView(std::move(high_contrast));
+  dark_theme_ = AddChildView(std::move(dark_theme));
 
   // Switching to high-contrast mode has a nasty habit of causing Chrome
   // top-level windows to lose focus, so closing the bubble on deactivate
