@@ -286,9 +286,6 @@ struct PrefetchArchiveInfo {
   base::string16 title;
   base::FilePath file_path;
   int64_t file_size = 0;
-  GURL favicon_url;
-  std::string snippet;
-  std::string attribution;
 };
 
 // These operators are implemented for testing only, see test_util.cc.
