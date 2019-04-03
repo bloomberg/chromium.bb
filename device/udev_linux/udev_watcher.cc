@@ -10,6 +10,25 @@
 
 namespace device {
 
+UdevWatcher::Filter::Filter(base::StringPiece subsystem_in,
+                            base::StringPiece devtype_in) {
+  if (subsystem_in.data())
+    subsystem_ = subsystem_in.as_string();
+  if (devtype_in.data())
+    devtype_ = devtype_in.as_string();
+}
+
+UdevWatcher::Filter::Filter(const Filter&) = default;
+UdevWatcher::Filter::~Filter() = default;
+
+const char* UdevWatcher::Filter::devtype() const {
+  return devtype_ ? devtype_.value().c_str() : nullptr;
+}
+
+const char* UdevWatcher::Filter::subsystem() const {
+  return subsystem_ ? subsystem_.value().c_str() : nullptr;
+}
+
 UdevWatcher::Observer::~Observer() = default;
 
 void UdevWatcher::Observer::OnDeviceAdded(ScopedUdevDevicePtr device) {}
@@ -36,7 +55,7 @@ std::unique_ptr<UdevWatcher> UdevWatcher::StartWatching(
 
   for (const Filter& filter : filters) {
     const int ret = udev_monitor_filter_add_match_subsystem_devtype(
-        udev_monitor.get(), filter.subsystem.c_str(), filter.devtype.c_str());
+        udev_monitor.get(), filter.subsystem(), filter.devtype());
     CHECK_EQ(0, ret);
   }
 
@@ -70,8 +89,8 @@ void UdevWatcher::EnumerateExistingDevices() {
   }
 
   for (const Filter& filter : udev_filters_) {
-    const int ret = udev_enumerate_add_match_subsystem(
-        enumerate.get(), filter.subsystem.c_str());
+    const int ret =
+        udev_enumerate_add_match_subsystem(enumerate.get(), filter.subsystem());
     CHECK_EQ(0, ret);
   }
 

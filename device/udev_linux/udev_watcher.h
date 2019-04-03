@@ -10,6 +10,7 @@
 
 #include "base/files/file_descriptor_watcher_posix.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_piece.h"
 #include "device/udev_linux/scoped_udev.h"
@@ -31,11 +32,18 @@ class UdevWatcher {
 
   // subsystem and devtype parameter for
   // udev_monitor_filter_add_match_subsystem_devtype().
-  struct Filter {
-    Filter(base::StringPiece subsystem_in, base::StringPiece devtype_in)
-        : subsystem(subsystem_in), devtype(devtype_in) {}
-    const std::string subsystem;
-    const std::string devtype;
+  class Filter {
+   public:
+    Filter(base::StringPiece subsystem_in, base::StringPiece devtype_in);
+    Filter(const Filter&);
+    ~Filter();
+
+    const char* devtype() const;
+    const char* subsystem() const;
+
+   private:
+    base::Optional<std::string> subsystem_;
+    base::Optional<std::string> devtype_;
   };
 
   static std::unique_ptr<UdevWatcher> StartWatching(
