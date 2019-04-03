@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_test_utils.h"
 
+#import <EarlGrey/EarlGrey.h>
+
 #include <string>
 
 #include "base/callback.h"
