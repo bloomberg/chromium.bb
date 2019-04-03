@@ -27,8 +27,29 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AM_PROG_AR
 
+# Check if the user wants to enable yaml tests
+AC_ARG_WITH([yaml],
+  [AS_HELP_STRING([--with-yaml], [enable YAML-based tests @<:@default=yes@:>@])],
+  [with_yaml=$withval],
+  [])
+
 # Checks for libraries.
-AC_CHECK_LIB([yaml], [yaml_parser_initialize])
+if test "x$with_yaml" == xno; then
+  AC_DEFINE([WITHOUT_YAML],[1],[Disable YAML tests])
+else
+  AC_CHECK_LIB([yaml], [yaml_parser_initialize])
+fi
+
+AM_CONDITIONAL([WITH_YAML], [test "x$ac_cv_lib_yaml_yaml_parser_initialize" == xyes -a "x$with_yaml" != xno])
+
+# If libyaml is missing warn or die depending on --with-yaml
+if test x$ac_cv_lib_yaml_yaml_parser_initialize != xyes; then
+  case "$with_yaml" in
+  yes) AC_MSG_ERROR([--with-yaml was given, but libyaml was not found]);;
+  no) ;;
+  *) AC_MSG_WARN([libyaml was not found. YAML tests will be skipped]);;
+  esac
+fi
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -133,27 +154,6 @@ else
   AC_MSG_WARN([Missing program 'makeinfo', Documentation will not be built. Please install you you want documentation or refer to online resources.])
 fi
 AM_CONDITIONAL([HAVE_MAKEINFO_5], [test x$have_makeinfo_5 = xtrue])
-
-# Check if the user wants to enable yaml tests
-AC_ARG_WITH([yaml],
-  [AS_HELP_STRING([--with-yaml], [enable YAML-based tests @<:@default=yes@:>@])],
-  [with_yaml=$withval],
-  [])
-
-if test "x$with_yaml" == xno; then
-  AC_DEFINE([WITHOUT_YAML],[1],[Disable YAML tests])
-fi
-
-# if libyaml is missing warn or die depending on --with-yaml
-if test x$ac_cv_lib_yaml_yaml_parser_initialize != xyes; then
-  case "$with_yaml" in
-  yes) AC_MSG_ERROR([--with-yaml was given, but libyaml was not found]);;
-  no) ;;
-  *) AC_MSG_WARN([libyaml was not found. YAML tests will be skipped]);;
-  esac
-fi
-
-AM_CONDITIONAL([WITH_YAML], [test "x$ac_cv_lib_yaml_yaml_parser_initialize" == xyes -a "x$with_yaml" != xno])
 
 AC_PATH_PROG(PKG_CONFIG, pkg-config)
 
