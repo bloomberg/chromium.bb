@@ -292,8 +292,8 @@ void TextControlElement::setRangeText(const String& replacement,
   if (OpenShadowRoot())
     return;
 
-  String text = InnerEditorValue();
-  unsigned text_length = text.length();
+  String original_text = InnerEditorValue();
+  unsigned text_length = original_text.length();
   unsigned replacement_length = replacement.length();
   unsigned new_selection_start = selectionStart();
   unsigned new_selection_end = selectionEnd();
@@ -301,12 +301,12 @@ void TextControlElement::setRangeText(const String& replacement,
   start = std::min(start, text_length);
   end = std::min(end, text_length);
 
-  if (start < end)
-    text.replace(start, end - start, replacement);
-  else
-    text.insert(replacement, start);
+  StringBuilder text;
+  text.Append(StringView(original_text, 0, start));
+  text.Append(replacement);
+  text.Append(StringView(original_text, end));
 
-  setValue(text, TextFieldEventBehavior::kDispatchNoEvent,
+  setValue(text.ToString(), TextFieldEventBehavior::kDispatchNoEvent,
            TextControlSetValueSelection::kDoNotSet);
 
   if (selection_mode == "select") {

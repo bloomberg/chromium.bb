@@ -1198,14 +1198,15 @@ static std::vector<PNGSample> GetPNGSamplesInfo(bool include_8bit_pngs) {
 
       for (String interlace : interlace_status) {
         PNGSample high_bit_depth_sample(png_sample);
-        high_bit_depth_sample.filename.insert(interlace, 0);
-        high_bit_depth_sample.filename.insert("2x2_16bit", 0);
+        high_bit_depth_sample.filename =
+            "2x2_16bit" + interlace + high_bit_depth_sample.filename;
         high_bit_depth_sample.is_high_bit_depth = true;
         png_samples.push_back(high_bit_depth_sample);
       }
       if (include_8bit_pngs) {
         PNGSample regular_bit_depth_sample(png_sample);
-        regular_bit_depth_sample.filename.insert("2x2_8bit", 0);
+        regular_bit_depth_sample.filename =
+            "2x2_8bit" + regular_bit_depth_sample.filename;
         regular_bit_depth_sample.is_high_bit_depth = false;
         png_samples.push_back(regular_bit_depth_sample);
       }

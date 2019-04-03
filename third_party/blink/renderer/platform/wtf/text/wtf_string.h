@@ -269,8 +269,6 @@ class WTF_EXPORT String {
     return impl_ ? impl_->EndsWith(character) : false;
   }
 
-  void insert(const StringView&, unsigned pos);
-
   // TODO(esprehn): replace strangely both modifies this String *and* return a
   // value. It should only do one of those.
   String& Replace(UChar pattern, UChar replacement) {
@@ -537,8 +535,6 @@ class WTF_EXPORT String {
 
  private:
   friend struct HashTraits<String>;
-
-  void append(const StringView&);
 
   scoped_refptr<StringImpl> impl_;
 };

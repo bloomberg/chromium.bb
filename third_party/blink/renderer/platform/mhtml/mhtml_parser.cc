@@ -192,13 +192,12 @@ MIMEHeader* MIMEHeader::ParseHeader(SharedBufferChunkReader* buffer) {
     } else {
       mime_header->multipart_type_ =
           parsed_content_type.ParameterValueForName("type");
-      mime_header->end_of_part_boundary_ =
-          parsed_content_type.ParameterValueForName("boundary");
-      if (mime_header->end_of_part_boundary_.IsNull()) {
+      String boundary = parsed_content_type.ParameterValueForName("boundary");
+      if (boundary.IsNull()) {
         DVLOG(1) << "No boundary found in multipart MIME header.";
         return nullptr;
       }
-      mime_header->end_of_part_boundary_.insert("--", 0);
+      mime_header->end_of_part_boundary_ = "--" + boundary;
       mime_header->end_of_document_boundary_ =
           mime_header->end_of_part_boundary_;
       mime_header->end_of_document_boundary_ =
