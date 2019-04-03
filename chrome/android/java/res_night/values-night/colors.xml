@@ -13,4 +13,10 @@
 
     <color name="bottom_system_nav_color">@android:color/black</color>
     <color name="bottom_system_nav_divider_color">@android:color/black</color>
+
+    <!-- Account Signin Colors -->
+    <color name="signin_header_animation_background">#28282B</color>
+    <color name="signin_header_animation_line_light">@color/modern_grey_700</color>
+    <color name="signin_header_animation_line_dark">@color/modern_grey_700</color>
+    <color name="signin_header_animation_laptop_screen">@color/modern_grey_900</color>
 </resources>

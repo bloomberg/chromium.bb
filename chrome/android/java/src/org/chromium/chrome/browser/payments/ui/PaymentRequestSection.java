@@ -608,7 +608,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                     LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
             mUpdatedView.setTextAlignment(TEXT_ALIGNMENT_TEXT_END);
             mUpdatedView.setTextColor(ApiCompatibilityUtils.getColor(
-                    context.getResources(), R.color.google_green_700));
+                    context.getResources(), R.color.google_green_600));
             MarginLayoutParamsCompat.setMarginStart(updatedLayoutParams,
                     context.getResources().getDimensionPixelSize(
                             R.dimen.editor_dialog_section_small_spacing));
