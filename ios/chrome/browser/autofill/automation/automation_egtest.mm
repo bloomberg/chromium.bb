@@ -194,6 +194,7 @@ static const int kRecipeRetryLimit = 5;
   autofill::PersonalDataManager* personal_data_manager =
       autofill_manager->client()->GetPersonalDataManager();
 
+  personal_data_manager->ClearAllLocalData();
   personal_data_manager->AddCreditCard(credit_card);
   personal_data_manager->SaveImportedProfile(profile);
 }
