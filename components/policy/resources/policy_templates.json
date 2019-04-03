@@ -14129,7 +14129,7 @@
       'tags': [],
       'desc': '''Specifies a list of websites that are installed silently, without user interaction, and which cannot be uninstalled nor disabled by the user.
 
-      Each list item of the policy is an object with a mandatory member: "url" and two optional members: "default_launch_container" and "create_desktop_shortcut". "url" should be the URL of the web app to install, "launch_container" should be either "window" or "tab" to indicate how the Web App will be opened once installed, and "create_desktop_shortcut" should be true if a desktop shortcut should be created on Linux and Windows. If "default_launch_container" is omitted, the app will open in a tab by default. Regardless of the value of "default_launch_container", users are able to change which container the app will open in. If "create_desktop_shortcuts" is ommitted, no desktop shortcuts will be created.''',
+      Each list item of the policy is an object with a mandatory member: "url" and two optional members: "default_launch_container" and "create_desktop_shortcut". "url" should be the URL of the web app to install, "launch_container" should be either "window" or "tab" to indicate how the Web App will be opened once installed, and "create_desktop_shortcut" should be true if a desktop shortcut should be created on Linux and Windows. If "default_launch_container" is omitted, the app will open in a tab by default. Regardless of the value of "default_launch_container", users are able to change which container the app will open in. If "create_desktop_shortcuts" is omitted, no desktop shortcuts will be created.''',
       'label': '''URLs for Web Apps to be silently installed.''',
     },
     {
