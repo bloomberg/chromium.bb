@@ -150,10 +150,6 @@ DragController::DragController(Page* page)
       drag_destination_action_(kDragDestinationActionNone),
       did_initiate_drag_(false) {}
 
-DragController* DragController::Create(Page* page) {
-  return MakeGarbageCollected<DragController>(page);
-}
-
 static DocumentFragment* DocumentFragmentFromDragData(
     DragData* drag_data,
     LocalFrame* frame,

@@ -77,10 +77,6 @@ static const Cursor& MiddleClickAutoscrollCursor(const FloatSize& velocity) {
   return MiddlePanningCursor();
 }
 
-AutoscrollController* AutoscrollController::Create(Page& page) {
-  return MakeGarbageCollected<AutoscrollController>(page);
-}
-
 AutoscrollController::AutoscrollController(Page& page) : page_(&page) {}
 
 void AutoscrollController::Trace(blink::Visitor* visitor) {

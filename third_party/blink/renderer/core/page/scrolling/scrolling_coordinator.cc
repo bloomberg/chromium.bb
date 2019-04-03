@@ -78,10 +78,6 @@ cc::Layer* GraphicsLayerToCcLayer(blink::GraphicsLayer* layer) {
 
 namespace blink {
 
-ScrollingCoordinator* ScrollingCoordinator::Create(Page* page) {
-  return MakeGarbageCollected<ScrollingCoordinator>(page);
-}
-
 ScrollingCoordinator::ScrollingCoordinator(Page* page) : page_(page) {}
 
 ScrollingCoordinator::~ScrollingCoordinator() {

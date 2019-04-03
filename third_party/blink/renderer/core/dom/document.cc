@@ -728,7 +728,8 @@ Document::Document(const DocumentInit& initializer,
   }
   DCHECK(fetcher_);
 
-  root_scroller_controller_ = RootScrollerController::Create(*this);
+  root_scroller_controller_ =
+      MakeGarbageCollected<RootScrollerController>(*this);
 
   // We depend on the url getting immediately set in subframes, but we
   // also depend on the url NOT getting immediately set in opened windows.
@@ -7014,7 +7015,7 @@ bool Document::ThreadedParsingEnabledForTesting() {
 
 SnapCoordinator* Document::GetSnapCoordinator() {
   if (!snap_coordinator_)
-    snap_coordinator_ = SnapCoordinator::Create();
+    snap_coordinator_ = MakeGarbageCollected<SnapCoordinator>();
 
   return snap_coordinator_.Get();
 }

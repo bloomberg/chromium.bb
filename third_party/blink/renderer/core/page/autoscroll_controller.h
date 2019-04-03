@@ -66,8 +66,6 @@ enum MiddleClickMode {
 class CORE_EXPORT AutoscrollController final
     : public GarbageCollected<AutoscrollController> {
  public:
-  static AutoscrollController* Create(Page&);
-
   explicit AutoscrollController(Page&);
 
   void Trace(blink::Visitor*);

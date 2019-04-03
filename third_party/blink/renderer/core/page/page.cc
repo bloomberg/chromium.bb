@@ -158,27 +158,31 @@ Page* Page::CreateOrdinary(PageClients& page_clients, Page* opener) {
 Page::Page(PageClients& page_clients)
     : SettingsDelegate(std::make_unique<Settings>()),
       main_frame_(nullptr),
-      animator_(PageAnimator::Create(*this)),
-      autoscroll_controller_(AutoscrollController::Create(*this)),
+      animator_(MakeGarbageCollected<PageAnimator>(*this)),
+      autoscroll_controller_(MakeGarbageCollected<AutoscrollController>(*this)),
       chrome_client_(page_clients.chrome_client),
       drag_caret_(MakeGarbageCollected<DragCaret>()),
-      drag_controller_(DragController::Create(this)),
-      focus_controller_(FocusController::Create(this)),
-      context_menu_controller_(ContextMenuController::Create(this)),
+      drag_controller_(MakeGarbageCollected<DragController>(this)),
+      focus_controller_(MakeGarbageCollected<FocusController>(this)),
+      context_menu_controller_(
+          MakeGarbageCollected<ContextMenuController>(this)),
       page_scale_constraints_set_(
           MakeGarbageCollected<PageScaleConstraintsSet>(this)),
-      pointer_lock_controller_(PointerLockController::Create(this)),
+      pointer_lock_controller_(
+          MakeGarbageCollected<PointerLockController>(this)),
       browser_controls_(MakeGarbageCollected<BrowserControls>(*this)),
       console_message_storage_(MakeGarbageCollected<ConsoleMessageStorage>()),
       global_root_scroller_controller_(
-          TopDocumentRootScrollerController::Create(*this)),
+          MakeGarbageCollected<TopDocumentRootScrollerController>(*this)),
       visual_viewport_(MakeGarbageCollected<VisualViewport>(*this)),
       overscroll_controller_(
-          OverscrollController::Create(GetVisualViewport(), GetChromeClient())),
+          MakeGarbageCollected<OverscrollController>(GetVisualViewport(),
+                                                     GetChromeClient())),
       link_highlights_(MakeGarbageCollected<LinkHighlights>(*this)),
       plugin_data_(nullptr),
       // TODO(pdr): Initialize |validation_message_client_| lazily.
-      validation_message_client_(ValidationMessageClientImpl::Create(*this)),
+      validation_message_client_(
+          MakeGarbageCollected<ValidationMessageClientImpl>(*this)),
       opened_by_dom_(false),
       tab_key_cycles_through_elements_(true),
       paused_(false),
@@ -223,7 +227,7 @@ ViewportDescription Page::GetViewportDescription() const {
 
 ScrollingCoordinator* Page::GetScrollingCoordinator() {
   if (!scrolling_coordinator_ && settings_->GetAcceleratedCompositingEnabled())
-    scrolling_coordinator_ = ScrollingCoordinator::Create(this);
+    scrolling_coordinator_ = MakeGarbageCollected<ScrollingCoordinator>(this);
 
   return scrolling_coordinator_.Get();
 }
@@ -309,8 +313,10 @@ void Page::SetOpenedByDOM() {
 
 SpatialNavigationController& Page::GetSpatialNavigationController() {
   DCHECK(GetSettings().GetSpatialNavigationEnabled());
-  if (!spatial_navigation_controller_)
-    spatial_navigation_controller_ = SpatialNavigationController::Create(*this);
+  if (!spatial_navigation_controller_) {
+    spatial_navigation_controller_ =
+        MakeGarbageCollected<SpatialNavigationController>(*this);
+  }
   return *spatial_navigation_controller_;
 }
 
@@ -335,7 +341,7 @@ void Page::InitialStyleChanged() {
 
 PluginData* Page::GetPluginData(const SecurityOrigin* main_frame_origin) {
   if (!plugin_data_)
-    plugin_data_ = PluginData::Create();
+    plugin_data_ = MakeGarbageCollected<PluginData>();
 
   if (!plugin_data_->Origin() ||
       !main_frame_origin->IsSameSchemeHostPort(plugin_data_->Origin()))

@@ -290,7 +290,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
                          bool does_composite,
                          WebViewImpl* opener)
     : as_view_(client),
-      chrome_client_(ChromeClientImpl::Create(this)),
+      chrome_client_(MakeGarbageCollected<ChromeClientImpl>(this)),
       minimum_zoom_level_(ZoomFactorToZoomLevel(kMinTextSizeMultiplier)),
       maximum_zoom_level_(ZoomFactorToZoomLevel(kMaxTextSizeMultiplier)),
       does_composite_(does_composite),

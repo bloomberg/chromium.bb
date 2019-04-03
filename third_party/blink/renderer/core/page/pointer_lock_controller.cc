@@ -39,10 +39,6 @@ namespace blink {
 PointerLockController::PointerLockController(Page* page)
     : page_(page), lock_pending_(false) {}
 
-PointerLockController* PointerLockController::Create(Page* page) {
-  return MakeGarbageCollected<PointerLockController>(page);
-}
-
 void PointerLockController::RequestPointerLock(Element* target) {
   if (!target || !target->isConnected() ||
       document_of_removed_element_while_waiting_for_unlock_) {

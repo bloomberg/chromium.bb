@@ -766,10 +766,6 @@ FocusController::FocusController(Page* page)
       is_changing_focused_frame_(false),
       is_emulating_focus_(false) {}
 
-FocusController* FocusController::Create(Page* page) {
-  return MakeGarbageCollected<FocusController>(page);
-}
-
 void FocusController::SetFocusedFrame(Frame* frame, bool notify_embedder) {
   DCHECK(!frame || frame->GetPage() == page_);
   if (focused_frame_ == frame || (is_changing_focused_frame_ && frame))
