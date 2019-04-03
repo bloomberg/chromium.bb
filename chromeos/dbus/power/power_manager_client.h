@@ -276,7 +276,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) PowerManagerClient {
 
   // Returns a callback that can be called by an observer to report readiness
   // for suspend. See Observer::SuspendImminent().
-  virtual base::Closure GetSuspendReadinessCallback(
+  virtual base::OnceClosure GetSuspendReadinessCallback(
       const base::Location& from_where) = 0;
 
   // Creates timers corresponding to clocks present in |arc_timer_requests|.

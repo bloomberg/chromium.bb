@@ -92,8 +92,8 @@ class TestObserver : public PowerManagerClient::Observer {
   int num_suspend_imminent() const { return num_suspend_imminent_; }
   int num_suspend_done() const { return num_suspend_done_; }
   int num_dark_suspend_imminent() const { return num_dark_suspend_imminent_; }
-  base::Closure suspend_readiness_callback() const {
-    return suspend_readiness_callback_;
+  base::OnceClosure suspend_readiness_callback() {
+    return std::move(suspend_readiness_callback_);
   }
 
   void set_take_suspend_readiness_callback(bool take_callback) {
@@ -108,9 +108,7 @@ class TestObserver : public PowerManagerClient::Observer {
     if (suspend_readiness_callback_.is_null())
       return false;
 
-    auto cb = suspend_readiness_callback_;
-    suspend_readiness_callback_.Reset();
-    cb.Run();
+    std::move(suspend_readiness_callback_).Run();
     return true;
   }
 
@@ -156,7 +154,7 @@ class TestObserver : public PowerManagerClient::Observer {
   bool run_suspend_readiness_callback_immediately_ = false;
 
   // Callback returned by |client_|'s GetSuspendReadinessCallback() method.
-  base::Closure suspend_readiness_callback_;
+  base::OnceClosure suspend_readiness_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
@@ -531,20 +529,20 @@ TEST_F(PowerManagerClientTest, DarkSuspendImminentWhileCallbackPending) {
   const int kSuspendId = 1;
   EmitSuspendImminentSignal(kSuspendImminent, kSuspendId);
   EXPECT_EQ(1, observer.num_suspend_imminent());
-  base::Closure regular_callback = observer.suspend_readiness_callback();
+  base::OnceClosure regular_callback = observer.suspend_readiness_callback();
 
   // Before readiness is reported, announce that dark suspend is imminent.
   const int kDarkSuspendId = 1;
   EmitSuspendImminentSignal(kDarkSuspendImminent, kDarkSuspendId);
   EXPECT_EQ(1, observer.num_dark_suspend_imminent());
-  base::Closure dark_callback = observer.suspend_readiness_callback();
+  base::OnceClosure dark_callback = observer.suspend_readiness_callback();
 
   // Complete the suspend attempt and run both of the earlier callbacks. Neither
   // should result in readiness being reported.
   EmitSuspendDoneSignal(kSuspendId);
   EXPECT_EQ(1, observer.num_suspend_done());
-  regular_callback.Run();
-  dark_callback.Run();
+  std::move(regular_callback).Run();
+  std::move(dark_callback).Run();
 }
 
 // Tests that PowerManagerClient handles a single observer that requests a

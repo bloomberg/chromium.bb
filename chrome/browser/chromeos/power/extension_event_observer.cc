@@ -99,8 +99,7 @@ void ExtensionEventObserver::SetShouldDelaySuspend(bool should_delay) {
     // There is a suspend attempt pending but this class should no longer be
     // delaying it.  Immediately report readiness.
     suspend_is_pending_ = false;
-    power_manager_callback_.Run();
-    power_manager_callback_.Reset();
+    std::move(power_manager_callback_).Run();
     suspend_readiness_callback_.Cancel();
   }
 }
@@ -269,8 +268,7 @@ void ExtensionEventObserver::MaybeReportSuspendReadiness() {
     return;
 
   suspend_is_pending_ = false;
-  power_manager_callback_.Run();
-  power_manager_callback_.Reset();
+  std::move(power_manager_callback_).Run();
 }
 
 }  // namespace chromeos

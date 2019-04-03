@@ -254,11 +254,11 @@ void FakePowerManagerClient::GetInactivityDelays(
       FROM_HERE, base::BindOnce(std::move(callback), inactivity_delays_));
 }
 
-base::Closure FakePowerManagerClient::GetSuspendReadinessCallback(
+base::OnceClosure FakePowerManagerClient::GetSuspendReadinessCallback(
     const base::Location& from_where) {
   ++num_pending_suspend_readiness_callbacks_;
-  return base::Bind(&FakePowerManagerClient::HandleSuspendReadiness,
-                    base::Unretained(this));
+  return base::BindOnce(&FakePowerManagerClient::HandleSuspendReadiness,
+                        base::Unretained(this));
 }
 
 void FakePowerManagerClient::CreateArcTimers(

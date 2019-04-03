@@ -40,7 +40,7 @@ class COMPONENT_EXPORT(CHROMEOS_DISKS) SuspendUnmountManager
   // The paths that the manager currently tries to unmount for suspend.
   std::set<std::string> unmounting_paths_;
 
-  base::Closure suspend_readiness_callback_;
+  base::OnceClosure suspend_readiness_callback_;
 
   base::WeakPtrFactory<SuspendUnmountManager> weak_ptr_factory_;
 
