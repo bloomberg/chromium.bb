@@ -1353,6 +1353,15 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/uniforms/' +
         'incompatible-texture-type-for-sampler.html',
         ['android'], bug=947236)
+    # Video tests are flaky. Sometimes the video is black.
+    self.Flaky('conformance/textures/video/*',
+        ['android'], bug=948894)
+    self.Flaky('conformance/textures/image_bitmap_from_video/*',
+        ['android'], bug=948894)
+    self.Flaky('conformance2/textures/video/*',
+        ['android'], bug=948894)
+    self.Flaky('conformance2/textures/image_bitmap_from_video/*',
+        ['android'], bug=948894)
     # Video uploads to some texture formats new in WebGL 2.0 are
     # failing.
     self.Fail('conformance2/textures/video/' +
