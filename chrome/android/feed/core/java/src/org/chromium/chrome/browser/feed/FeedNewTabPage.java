@@ -376,6 +376,8 @@ public class FeedNewTabPage extends NewTabPage {
                                         chromeActivity.getResources(), mUiConfig),
                                 new BasicSnackbarApi(mNewTabPageManager.getSnackbarManager()),
                                 offlineIndicator, tooltipApi)
+                        .setIsBackgroundDark(
+                                chromeActivity.getNightModeStateProvider().isInNightMode())
                         .build();
 
         mStream = streamScope.getStream();
