@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/arc/tracing/arc_cpu_model.h"
 
 namespace arc {
 
@@ -153,6 +154,9 @@ class ArcTracingGraphicsModel {
 
   const EventsContainer& chrome_top_level() const { return chrome_top_level_; }
 
+  ArcCpuModel& cpu_model() { return cpu_model_; }
+  const ArcCpuModel& cpu_model() const { return cpu_model_; }
+
  private:
   // Normalizes timestamp for all events by subtracting the timestamp of the
   // earliest event.
@@ -173,6 +177,8 @@ class ArcTracingGraphicsModel {
   uint32_t duration_ = 0;
   // Map Chrome buffer id to task id.
   std::map<std::string, int> chrome_buffer_id_to_task_id_;
+  // CPU event model.
+  ArcCpuModel cpu_model_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcTracingGraphicsModel);
 };
