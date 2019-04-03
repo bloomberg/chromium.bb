@@ -15,6 +15,7 @@
     <!-- Text color for clickable text. -->
     <color name="default_text_color_link">@color/modern_blue_600</color>
     <color name="disabled_text_color">@color/black_alpha_38</color>
+    <color name="disabled_text_color_link">@color/modern_grey_800_alpha_38</color>
     <color name="error_text_color">@color/default_red</color>
 
     <!-- Common icon colors for drawables. -->
