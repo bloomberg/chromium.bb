@@ -551,8 +551,22 @@ void input_method_surface_destroy(wl_client* client, wl_resource* resource) {
   wl_resource_destroy(resource);
 }
 
+void input_method_surface_set_bounds(wl_client* client,
+                                     wl_resource* resource,
+                                     uint32_t display_id_hi,
+                                     uint32_t display_id_lo,
+                                     int32_t x,
+                                     int32_t y,
+                                     int32_t width,
+                                     int32_t height) {
+  GetUserDataAs<InputMethodSurface>(resource)->SetBounds(
+      static_cast<int64_t>(display_id_hi) << 32 | display_id_lo,
+      gfx::Rect(x, y, width, height));
+}
+
 const struct zcr_input_method_surface_v1_interface
-    input_method_surface_implementation = {input_method_surface_destroy};
+    input_method_surface_implementation = {input_method_surface_destroy,
+                                           input_method_surface_set_bounds};
 
 ////////////////////////////////////////////////////////////////////////////////
 // remote_shell_interface:
