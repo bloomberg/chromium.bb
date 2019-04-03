@@ -248,6 +248,13 @@ VizProcessTransportFactory::SharedMainThreadContextProvider() {
   return main_context_provider_;
 }
 
+scoped_refptr<viz::RasterContextProvider>
+VizProcessTransportFactory::SharedMainThreadRasterContextProvider() {
+  SharedMainThreadContextProvider();
+  DCHECK(!main_context_provider_ || main_context_provider_->RasterInterface());
+  return main_context_provider_;
+}
+
 void VizProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
   context_factory_private_.UnconfigureCompositor(compositor);
 }
@@ -448,7 +455,7 @@ VizProcessTransportFactory::TryCreateContextsForGpuCompositing(
   if (!main_context_provider_) {
     constexpr bool kCompositorContextSupportsLocking = false;
     constexpr bool kCompositorContextSupportsGLES2 = true;
-    constexpr bool kCompositorContextSupportsRaster = false;
+    constexpr bool kCompositorContextSupportsRaster = true;
     constexpr bool kCompositorContextSupportsGrContext = false;
     constexpr bool kCompositorContextSupportsOOPR = false;
 

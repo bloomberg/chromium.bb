@@ -14,9 +14,8 @@
 #include "components/exo/test/exo_test_helper.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/single_release_callback.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/client/raster_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/khronos/GLES2/gl2.h"
 #include "ui/aura/env.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/test/in_process_context_factory.h"
@@ -39,11 +38,12 @@ void VerifySyncTokensInCompositorFrame(viz::CompositorFrame* frame) {
   std::vector<GLbyte*> sync_tokens;
   for (auto& resource : frame->resource_list)
     sync_tokens.push_back(resource.mailbox_holder.sync_token.GetData());
-  gpu::gles2::GLES2Interface* gles2 = GetAuraEnv()
-                                          ->context_factory()
-                                          ->SharedMainThreadContextProvider()
-                                          ->ContextGL();
-  gles2->VerifySyncTokensCHROMIUM(sync_tokens.data(), sync_tokens.size());
+  gpu::raster::RasterInterface* ri =
+      GetAuraEnv()
+          ->context_factory()
+          ->SharedMainThreadRasterContextProvider()
+          ->RasterInterface();
+  ri->VerifySyncTokensCHROMIUM(sync_tokens.data(), sync_tokens.size());
 }
 
 TEST_F(BufferTest, ReleaseCallback) {
@@ -102,12 +102,12 @@ TEST_F(BufferTest, IsLost) {
       frame_sink_holder->resource_manager(), false, &resource);
   ASSERT_TRUE(rv);
 
-  scoped_refptr<viz::ContextProvider> context_provider =
-      GetAuraEnv()->context_factory()->SharedMainThreadContextProvider();
+  scoped_refptr<viz::RasterContextProvider> context_provider =
+      GetAuraEnv()->context_factory()->SharedMainThreadRasterContextProvider();
   if (context_provider) {
-    gpu::gles2::GLES2Interface* gles2 = context_provider->ContextGL();
-    gles2->LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
-                               GL_INNOCENT_CONTEXT_RESET_ARB);
+    gpu::raster::RasterInterface* ri = context_provider->RasterInterface();
+    ri->LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
+                            GL_INNOCENT_CONTEXT_RESET_ARB);
   }
 
   // Release buffer.

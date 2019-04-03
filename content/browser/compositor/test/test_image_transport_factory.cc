@@ -95,6 +95,12 @@ TestImageTransportFactory::SharedMainThreadContextProvider() {
   return shared_main_context_provider_;
 }
 
+scoped_refptr<viz::RasterContextProvider>
+TestImageTransportFactory::SharedMainThreadRasterContextProvider() {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 gpu::GpuMemoryBufferManager*
 TestImageTransportFactory::GetGpuMemoryBufferManager() {
   return &gpu_memory_buffer_manager_;

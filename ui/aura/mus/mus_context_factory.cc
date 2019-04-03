@@ -12,8 +12,6 @@
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/ws/public/cpp/gpu/command_buffer_metrics.h"
 #include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
-#include "services/ws/public/cpp/gpu/gpu.h"
-#include "services/ws/public/cpp/gpu/shared_worker_context_provider_factory.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/window_tree_host.h"
 
@@ -178,6 +176,14 @@ MusContextFactory::SharedMainThreadContextProvider() {
       OnFatalContextCreationError();
   }
   return main_context_provider_;
+}
+
+scoped_refptr<viz::RasterContextProvider>
+MusContextFactory::SharedMainThreadRasterContextProvider() {
+  // Exo is currently the only client requesting this context provider.
+  // Exo does not request this context in MUS.
+  NOTREACHED();
+  return nullptr;
 }
 
 void MusContextFactory::RemoveCompositor(ui::Compositor* compositor) {
