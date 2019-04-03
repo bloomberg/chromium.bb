@@ -108,7 +108,6 @@ source_set("wayland") {
     "//ui/base",
     "//ui/base:buildflags",
     "//ui/base/ime/linux",
-    "//ui/display/manager",
     "//ui/events",
     "//ui/events:dom_keycode_converter",
     "//ui/events/keycodes:xkb",
