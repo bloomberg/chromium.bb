@@ -169,6 +169,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_ENABLE_LEGACY_TEXT_COLOR
 #endif
 
+#ifndef SK_SUPPORT_LEGACY_TILEMODE_ENUM
+#define SK_SUPPORT_LEGACY_TILEMODE_ENUM
+#endif
+
 // We're turning this off indefinitely,
 // until we can figure out some fundamental problems with its approach.
 //
