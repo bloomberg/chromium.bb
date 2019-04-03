@@ -38,6 +38,7 @@
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/web_contents.h"
@@ -198,7 +199,6 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
                                    const gfx::FontList& font_list)
     : OmniboxView(controller, std::move(client)),
       popup_window_mode_(popup_window_mode),
-      security_level_(security_state::NONE),
       saved_selection_for_focus_change_(gfx::Range::InvalidRange()),
       ime_composing_before_change_(false),
       location_bar_view_(location_bar),
@@ -283,7 +283,6 @@ void OmniboxViewViews::SaveStateToTab(content::WebContents* tab) {
 }
 
 void OmniboxViewViews::OnTabChanged(const content::WebContents* web_contents) {
-  UpdateSecurityLevel();
   const OmniboxState* state = static_cast<OmniboxState*>(
       web_contents->GetUserData(&OmniboxState::kKey));
   model()->RestoreState(state ? &state->model_state : nullptr);
@@ -364,9 +363,6 @@ void OmniboxViewViews::EmphasizeURLComponents() {
 }
 
 void OmniboxViewViews::Update() {
-  const security_state::SecurityLevel old_security_level = security_level_;
-  UpdateSecurityLevel();
-
   if (model()->ResetDisplayTexts()) {
     RevertAll();
 
@@ -377,7 +373,9 @@ void OmniboxViewViews::Update() {
       // URL updates result from a user gesture or navigation.
       SelectAllForUserGesture();
     }
-  } else if (old_security_level != security_level_) {
+  } else {
+    // If the text is unchanged, we still need to re-emphasize the text, as the
+    // security state may be different from before the Update.
     EmphasizeURLComponents();
   }
 }
@@ -639,11 +637,6 @@ bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
   }
 
   return true;
-}
-
-void OmniboxViewViews::UpdateSecurityLevel() {
-  security_level_ =
-      controller()->GetLocationBarModel()->GetSecurityLevel(false);
 }
 
 // The following 2 methods implement the following table, which attempts to
@@ -962,15 +955,21 @@ void OmniboxViewViews::SetEmphasis(bool emphasize, const gfx::Range& range) {
 
 void OmniboxViewViews::UpdateSchemeStyle(const gfx::Range& range) {
   DCHECK(range.IsValid());
+  DCHECK(!model()->user_input_in_progress());
+
+  security_state::SecurityLevel security_level =
+      controller()->GetLocationBarModel()->GetSecurityLevel(
+          true /* ignore_editing */);
+
   // Only SECURE and DANGEROUS levels (pages served over HTTPS or flagged by
   // SafeBrowsing) get a special scheme color treatment. If the security level
   // is NONE or HTTP_SHOW_WARNING, we do not override the text style previously
   // applied to the scheme text range by SetEmphasis().
-  if (security_level_ == security_state::NONE ||
-      security_level_ == security_state::HTTP_SHOW_WARNING)
+  if (security_level == security_state::NONE ||
+      security_level == security_state::HTTP_SHOW_WARNING)
     return;
-  ApplyColor(location_bar_view_->GetSecurityChipColor(security_level_), range);
-  if (security_level_ == security_state::DANGEROUS)
+  ApplyColor(location_bar_view_->GetSecurityChipColor(security_level), range);
+  if (security_level == security_state::DANGEROUS)
     ApplyStyle(gfx::TEXT_STYLE_STRIKE, true, range);
 }
 
