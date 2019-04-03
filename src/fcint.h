@@ -1250,6 +1250,9 @@ FcPrivate void
 FcStrSetSort (FcStrSet * set);
 
 FcPrivate FcBool
+FcStrSetMemberAB (FcStrSet *set, const FcChar8 *a, FcChar8 *b, FcChar8 **ret);
+
+FcPrivate FcBool
 FcStrSetAddTriple (FcStrSet *set, const FcChar8 *a, const FcChar8 *b, const FcChar8 *c);
 
 FcPrivate const FcChar8 *

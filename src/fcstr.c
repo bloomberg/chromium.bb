@@ -1233,6 +1233,58 @@ FcStrSetMember (FcStrSet *set, const FcChar8 *s)
     return FcFalse;
 }
 
+static int
+fc_strcmp_r (const FcChar8 *s1, const FcChar8 *s2, const FcChar8 **ret)
+{
+    FcChar8 c1, c2;
+
+    if (s1 == s2)
+    {
+	if (ret)
+	    *ret = NULL;
+	return 0;
+    }
+    for (;;)
+    {
+	if (s1)
+	    c1 = *s1++;
+	else
+	    c1 = 0;
+	if (s2)
+	    c2 = *s2++;
+	else
+	    c2 = 0;
+	if (!c1 || c1 != c2)
+	    break;
+    }
+    if (ret)
+	*ret = s1;
+    return (int) c1  - (int) c2;
+}
+
+FcBool
+FcStrSetMemberAB (FcStrSet *set, const FcChar8 *a, FcChar8 *b, FcChar8 **ret)
+{
+    int i;
+    const FcChar8 *s = NULL;
+
+    for (i = 0; i < set->num; i++)
+    {
+	if (!fc_strcmp_r (set->strs[i], a, &s) && s)
+	{
+	    if (!fc_strcmp_r (s, b, NULL))
+	    {
+		if (ret)
+		    *ret = set->strs[i];
+		return FcTrue;
+	    }
+	}
+    }
+    if (ret)
+	*ret = NULL;
+    return FcFalse;
+}
+
 FcBool
 FcStrSetEqual (FcStrSet *sa, FcStrSet *sb)
 {
@@ -1313,6 +1365,7 @@ FcStrSetAddFilenamePairWithSalt (FcStrSet *set, const FcChar8 *a, const FcChar8 
 {
     FcChar8 *new_a = NULL;
     FcChar8 *new_b = NULL;
+    FcChar8 *rs = NULL;
     FcBool  ret;
 
     if (a)
@@ -1330,6 +1383,11 @@ FcStrSetAddFilenamePairWithSalt (FcStrSet *set, const FcChar8 *a, const FcChar8 
 		FcStrFree(new_a);
 	    return FcFalse;
 	}
+    }
+    /* Override maps with new one if exists */
+    if (FcStrSetMemberAB (set, new_a, new_b, &rs))
+    {
+	FcStrSetDel (set, rs);
     }
     ret = FcStrSetAddTriple (set, new_a, new_b, salt);
     if (new_a)
