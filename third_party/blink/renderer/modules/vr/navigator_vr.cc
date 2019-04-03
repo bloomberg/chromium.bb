@@ -104,7 +104,7 @@ XR* NavigatorVR::xr() {
       return nullptr;
     }
 
-    xr_ = XR::Create(*frame, ukm_source_id_);
+    xr_ = XR::Create(*frame, GetSourceId());
   }
   return xr_;
 }
@@ -131,7 +131,7 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state) {
   if (!did_log_getVRDisplays_ && GetDocument()->IsInMainFrame()) {
     did_log_getVRDisplays_ = true;
 
-    ukm::builders::XR_WebXR(GetDocument()->UkmSourceID())
+    ukm::builders::XR_WebXR(GetSourceId())
         .SetDidRequestAvailableDevices(1)
         .Record(GetDocument()->UkmRecorder());
   }
@@ -201,18 +201,9 @@ void NavigatorVR::Trace(blink::Visitor* visitor) {
 NavigatorVR::NavigatorVR(Navigator& navigator)
     : Supplement<Navigator>(navigator),
       FocusChangedObserver(navigator.GetFrame()->GetPage()),
-      ukm_source_id_(ukm::UkmRecorder::GetNewSourceID()) {
+      ukm_source_id_(GetDocument()->UkmSourceID()) {
   navigator.GetFrame()->DomWindow()->RegisterEventListenerObserver(this);
   FocusedFrameChanged();
-
-  if (navigator.GetFrame() && WebFrame::FromFrame(navigator.GetFrame())) {
-    WebFrame* main_frame = WebFrame::FromFrame(navigator.GetFrame())->Top();
-    if (main_frame) {
-      url::Origin main_frame_origin = main_frame->GetSecurityOrigin();
-      GetDocument()->UkmRecorder()->UpdateSourceURL(ukm_source_id_,
-                                                    main_frame_origin.GetURL());
-    }
-  }
 }
 
 int64_t NavigatorVR::GetSourceId() const {
