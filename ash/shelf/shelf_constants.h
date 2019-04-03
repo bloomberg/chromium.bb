@@ -81,6 +81,12 @@ constexpr int kShelfOpaqueColorDarkenAlpha = 178;
 // The distance between the edge of the shelf and the status indicators.
 constexpr int kStatusIndicatorOffsetFromShelfEdge = 1;
 
+// Dimensions for hover previews.
+constexpr int kShelfTooltipPreviewHeight = 128;
+constexpr int kShelfTooltipPreviewMaxWidth = 192;
+constexpr float kShelfTooltipPreviewMaxRatio = 1.5;    // = 3/2
+constexpr float kShelfTooltipPreviewMinRatio = 0.666;  // = 2/3
+
 class ShelfConstants {
  public:
   // Size of the shelf when visible (height when the shelf is horizontal and
