@@ -26,6 +26,9 @@ const base::Feature kLockScreenHideSensitiveNotificationsSupport{
     "LockScreenHideSensitiveNotificationsSupport",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kHideArcMediaNotifications{
+    "HideArcMediaNotifications", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kMediaSessionNotification{
     "MediaSessionNotification", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -68,6 +71,11 @@ const base::Feature kUseShaderRoundedCorner{"UseShaderRoundedCorner",
 
 const base::Feature kNotificationStackingBarRedesign{
     "NotificationStackingBarRedesign", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsHideArcMediaNotificationsEnabled() {
+  return base::FeatureList::IsEnabled(kMediaSessionNotification) &&
+         base::FeatureList::IsEnabled(kHideArcMediaNotifications);
+}
 
 bool IsLockScreenNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kLockScreenNotifications);
