@@ -13,10 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 
-// TODO(gab): Removing this include causes IWYU failures in other headers,
-// remove it in a follow- up CL.
-#include "base/threading/thread_checker.h"
-
 namespace base {
 
 // This is a helper for classes that want to allow users to stash random data by
@@ -65,19 +61,21 @@ class BASE_EXPORT SupportsUserData {
 // Adapter class that releases a refcounted object when the
 // SupportsUserData::Data object is deleted.
 template <typename T>
-class UserDataAdapter : public base::SupportsUserData::Data {
+class UserDataAdapter : public SupportsUserData::Data {
  public:
   static T* Get(const SupportsUserData* supports_user_data, const void* key) {
     UserDataAdapter* data =
       static_cast<UserDataAdapter*>(supports_user_data->GetUserData(key));
-    return data ? static_cast<T*>(data->object_.get()) : NULL;
+    return data ? static_cast<T*>(data->object_.get()) : nullptr;
   }
 
-  UserDataAdapter(T* object) : object_(object) {}
+  explicit UserDataAdapter(T* object) : object_(object) {}
+  ~UserDataAdapter() override = default;
+
   T* release() { return object_.release(); }
 
  private:
-  scoped_refptr<T> object_;
+  scoped_refptr<T> const object_;
 
   DISALLOW_COPY_AND_ASSIGN(UserDataAdapter);
 };
