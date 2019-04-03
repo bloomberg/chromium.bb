@@ -345,6 +345,7 @@ class LocationBarView : public LocationBar,
   // PageActionIconView::Delegate:
   SkColor GetPageActionInkDropColor() const override;
   content::WebContents* GetWebContentsForPageActionIconView() override;
+  bool IsLocationBarUserInputInProgress() const override;
 
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;

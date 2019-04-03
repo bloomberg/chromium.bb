@@ -233,7 +233,6 @@ void LocationBarView::Init() {
   params.browser = browser_;
   params.command_updater = command_updater();
   params.page_action_icon_delegate = this;
-  params.location_bar_delegate = delegate_;
   page_action_icon_container_view_ = new PageActionIconContainerView(params);
   AddChildView(page_action_icon_container_view_);
 
@@ -717,6 +716,10 @@ SkColor LocationBarView::GetPageActionInkDropColor() const {
 
 WebContents* LocationBarView::GetWebContentsForPageActionIconView() {
   return GetWebContents();
+}
+
+bool LocationBarView::IsLocationBarUserInputInProgress() const {
+  return omnibox_view() && omnibox_view()->model()->user_input_in_progress();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

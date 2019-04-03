@@ -32,6 +32,10 @@ bool ActivateButtonOnSpaceDown() {
 
 }  // namespace
 
+bool PageActionIconView::Delegate::IsLocationBarUserInputInProgress() const {
+  return false;
+}
+
 PageActionIconView::PageActionIconView(CommandUpdater* command_updater,
                                        int command_id,
                                        PageActionIconView::Delegate* delegate,
@@ -40,6 +44,8 @@ PageActionIconView::PageActionIconView(CommandUpdater* command_updater,
       command_updater_(command_updater),
       delegate_(delegate),
       command_id_(command_id) {
+  DCHECK(delegate_);
+
   image()->EnableCanvasFlippingForRTLUI(true);
   SetInkDropMode(InkDropMode::ON);
   set_ink_drop_visible_opacity(

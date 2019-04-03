@@ -55,8 +55,7 @@ PageActionIconContainerView::PageActionIconContainerView(const Params& params)
         page_action_icons_.push_back(translate_icon_);
         break;
       case PageActionIconType::kZoom:
-        zoom_view_ = new ZoomView(params.location_bar_delegate,
-                                  params.page_action_icon_delegate);
+        zoom_view_ = new ZoomView(params.page_action_icon_delegate);
         page_action_icons_.push_back(zoom_view_);
         break;
       case PageActionIconType::kLocalCardMigration:

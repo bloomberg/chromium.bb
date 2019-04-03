@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/page_action/page_action_icon_container.h"
-#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "components/zoom/zoom_event_manager.h"
 #include "components/zoom/zoom_event_manager_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -38,7 +38,6 @@ class PageActionIconContainerView : public views::View,
     Browser* browser = nullptr;
     CommandUpdater* command_updater = nullptr;
     PageActionIconView::Delegate* page_action_icon_delegate = nullptr;
-    LocationBarView::Delegate* location_bar_delegate = nullptr;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Params);
