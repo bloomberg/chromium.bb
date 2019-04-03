@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
+
+#include "build/build_config.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 
 namespace {
@@ -163,3 +165,11 @@ void FakeOAuth2TokenServiceDelegate::UpdateAuthError(
   it->second->error = error;
   FireAuthErrorChanged(account_id, error);
 }
+
+#if defined(OS_IOS)
+void FakeOAuth2TokenServiceDelegate::ReloadAccountsFromSystem(
+    const std::string& primary_account_id) {
+  UpdateCredentials(primary_account_id,
+                    "refresh_token_for_" + primary_account_id);
+}
+#endif
