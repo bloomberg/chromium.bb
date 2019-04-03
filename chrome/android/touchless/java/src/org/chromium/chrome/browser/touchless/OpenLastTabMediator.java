@@ -29,6 +29,7 @@ import java.util.List;
 /**
  * Mediator used to look for history events and update the model accordingly.
  */
+// TODO(crbug.com/948858): Add unit tests for this behavior.
 class OpenLastTabMediator implements HistoryProvider.BrowsingHistoryObserver {
     private final Context mContext;
     private final Profile mProfile;
