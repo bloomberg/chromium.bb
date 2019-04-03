@@ -313,8 +313,8 @@ void DeclarativeNetRequestGetDynamicRulesFunction::OnDynamicRulesFetched(
     declarative_net_request::ReadJSONRulesResult read_json_result) {
   using Status = declarative_net_request::ReadJSONRulesResult::Status;
 
-  DCHECK_EQ(read_json_result.rules.empty(),
-            read_json_result.status != Status::kSuccess);
+  DCHECK(read_json_result.status == Status::kSuccess ||
+         read_json_result.rules.empty());
 
   // Unlike errors such as kJSONParseError, which normally denote corruption, a
   // read error is probably a transient error.  Hence raise an error instead of

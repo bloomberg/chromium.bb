@@ -35,12 +35,20 @@ var verifyCurrentRulesCallback = function() {
     chrome.test.succeed();
   });
 };
-
-var currentRules =
-    [createRuleWithID(1), createRuleWithID(2), createRuleWithID(3)];
+var currentRules = [];
 
 chrome.test.runTests([
+  function getRulesEmpty() {
+    verifyCurrentRulesCallback();
+  },
+
+  function addRulesEmpty() {
+    addDynamicRules(currentRules, verifyCurrentRulesCallback);
+  },
+
   function addRules() {
+    currentRules =
+        [createRuleWithID(1), createRuleWithID(2), createRuleWithID(3)];
     addDynamicRules(currentRules, verifyCurrentRulesCallback);
   },
 
