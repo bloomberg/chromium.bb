@@ -23,7 +23,7 @@ const base::Feature kSyncResetPollIntervalOnStart{
 // via scrypt when we receive a remote Nigori node that specifies it as the key
 // derivation method.
 const base::Feature kSyncUseScryptForNewCustomPassphrases{
-    "SyncUseScryptForNewCustomPassphrases", base::FEATURE_ENABLED_BY_DEFAULT};
+    "SyncUseScryptForNewCustomPassphrases", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable USS implementation of Nigori datatype.
 const base::Feature kSyncUSSNigori{"SyncUSSNigori",
