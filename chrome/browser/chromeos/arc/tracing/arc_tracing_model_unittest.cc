@@ -53,27 +53,10 @@ constexpr char kPhaseP = 'P';
 constexpr char kSurfaceAttach[] = "Surface::Attach";
 constexpr char kSurfaceAttachBad[] = "_Surface::Attach";
 
-// Validates that events have increasing timestamp, and all events have allowed
-// transitions from the previous state.
-bool ValidateCpuEvents(const CpuEvents& cpu_events) {
-  if (cpu_events.empty())
-    return false;
-
-  CpuEvents cpu_events_reconstructed;
-  for (const auto& cpu_event : cpu_events) {
-    if (!AddCpuEvent(&cpu_events_reconstructed, cpu_event.timestamp,
-                     cpu_event.type, cpu_event.tid)) {
-      return false;
-    }
-  }
-
-  return cpu_events_reconstructed == cpu_events;
-}
-
 // Validates that events have increasing timestamp, have only allowed types and
 // each type is found at least once.
-bool ValidateGrahpicsEvents(const GraphicsEvents& events,
-                            const std::set<GraphicsEventType>& allowed_types) {
+bool ValidateGrahpicsEvent(const GraphicsEvents& events,
+                           const std::set<GraphicsEventType>& allowed_types) {
   if (events.empty())
     return false;
   int64_t previous_timestamp = 0;
@@ -143,11 +126,6 @@ TEST_F(ArcTracingModelTest, TopLevel) {
   ArcTracingModel model;
   ASSERT_TRUE(model.Build(tracing_data));
 
-  // 4 CPU cores.
-  EXPECT_EQ(4U, model.cpu_model().all_cpu_events().size());
-  for (const auto& cpu_events : model.cpu_model().all_cpu_events())
-    EXPECT_TRUE(ValidateCpuEvents(cpu_events));
-
   // Perform several well-known queries.
   EXPECT_FALSE(model.Select(kAcquireBufferQuery).empty());
   EXPECT_FALSE(model.Select(kAttachSurfaceQueury).empty());
@@ -162,20 +140,20 @@ TEST_F(ArcTracingModelTest, TopLevel) {
   ASSERT_TRUE(graphics_model.Build(model));
 
   ASSERT_EQ(1U, graphics_model.android_top_level().buffer_events().size());
-  EXPECT_TRUE(ValidateGrahpicsEvents(
+  EXPECT_TRUE(ValidateGrahpicsEvent(
       graphics_model.android_top_level().buffer_events()[0],
       {GraphicsEventType::kSurfaceFlingerInvalidationStart,
        GraphicsEventType::kSurfaceFlingerInvalidationDone,
        GraphicsEventType::kSurfaceFlingerCompositionStart,
        GraphicsEventType::kSurfaceFlingerCompositionDone}));
-  EXPECT_TRUE(ValidateGrahpicsEvents(
+  EXPECT_TRUE(ValidateGrahpicsEvent(
       graphics_model.android_top_level().global_events(),
       {GraphicsEventType::kVsync,
        GraphicsEventType::kSurfaceFlingerCompositionJank}));
   EXPECT_EQ(2U, graphics_model.chrome_top_level().buffer_events().size());
   for (const auto& chrome_top_level_band :
        graphics_model.chrome_top_level().buffer_events()) {
-    EXPECT_TRUE(ValidateGrahpicsEvents(
+    EXPECT_TRUE(ValidateGrahpicsEvent(
         chrome_top_level_band, {
                                    GraphicsEventType::kChromeOSDraw,
                                    GraphicsEventType::kChromeOSSwap,
@@ -191,7 +169,7 @@ TEST_F(ArcTracingModelTest, TopLevel) {
     EXPECT_NE(std::string(), view.first.activity);
     EXPECT_FALSE(view.second.buffer_events().empty());
     for (const auto& buffer : view.second.buffer_events()) {
-      EXPECT_TRUE(ValidateGrahpicsEvents(
+      EXPECT_TRUE(ValidateGrahpicsEvent(
           buffer, {
                       GraphicsEventType::kBufferQueueDequeueStart,
                       GraphicsEventType::kBufferQueueDequeueDone,
@@ -209,19 +187,6 @@ TEST_F(ArcTracingModelTest, TopLevel) {
                   }));
     }
   }
-
-  // Note, CPU events in |graphics_model| are normalized by timestamp. So they
-  // are not equal and we cannot do direct comparison.
-  ASSERT_EQ(graphics_model.cpu_model().all_cpu_events().size(),
-            model.cpu_model().all_cpu_events().size());
-  EXPECT_EQ(graphics_model.cpu_model().thread_map(),
-            model.cpu_model().thread_map());
-  for (size_t i = 0; i < graphics_model.cpu_model().all_cpu_events().size();
-       ++i) {
-    EXPECT_EQ(graphics_model.cpu_model().all_cpu_events()[i].size(),
-              model.cpu_model().all_cpu_events()[i].size());
-  }
-
   EXPECT_GT(graphics_model.duration(), 0U);
 
   // Serialize and restore;
@@ -238,7 +203,6 @@ TEST_F(ArcTracingModelTest, TopLevel) {
             graphics_model_loaded.chrome_top_level());
   EXPECT_EQ(graphics_model.view_buffers(),
             graphics_model_loaded.view_buffers());
-  EXPECT_EQ(graphics_model.cpu_model(), graphics_model_loaded.cpu_model());
   EXPECT_EQ(graphics_model.duration(), graphics_model_loaded.duration());
 }
 
