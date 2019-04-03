@@ -129,10 +129,6 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
         features::kDataReductionProxyEnabledWithNetworkService);
-    param_feature_list_.InitAndEnableFeatureWithParameters(
-        features::kDataReductionProxyRobustConnection,
-        {{params::GetMissingViaBypassParamName(), "true"},
-         {"warmup_fetch_callback_enabled", "true"}});
     InProcessBrowserTest::SetUp();
   }
 

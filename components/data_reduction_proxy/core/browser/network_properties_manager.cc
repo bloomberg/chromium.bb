@@ -237,9 +237,6 @@ void NetworkPropertiesManager::OnChangeInNetworkID(
   if (it != network_properties_container_.end()) {
     network_properties_ = it->second;
     cached_entry_found = true;
-    if (params::ShouldDiscardCanaryCheckResult())
-      network_properties_.set_secure_proxy_disallowed_by_carrier(false);
-
   } else {
     // Reset to default state.
     network_properties_.Clear();
@@ -289,9 +286,6 @@ NetworkPropertiesManager::ConvertDictionaryValueToParsedPrefs(
         GetParsedNetworkProperty(it.second);
     if (!network_properties)
       continue;
-    if (params::ShouldDiscardCanaryCheckResult())
-      network_properties->set_secure_proxy_disallowed_by_carrier(false);
-
     read_prefs.emplace(std::make_pair(it.first, network_properties.value()));
   }
 
