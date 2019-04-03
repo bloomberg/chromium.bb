@@ -48,6 +48,9 @@ class ASH_PUBLIC_EXPORT FrameSizeButtonDelegate {
       const views::FrameCaptionButton* to_hover,
       const views::FrameCaptionButton* to_press) = 0;
 
+  // Returns the top level aura::Window that the buttons act on.
+  virtual aura::Window* GetFrameWindow() = 0;
+
   // Thunks to methods of the same name in FrameCaptionDelegate.
   virtual bool CanSnap() = 0;
   virtual void ShowSnapPreview(mojom::SnapDirection snap) = 0;
