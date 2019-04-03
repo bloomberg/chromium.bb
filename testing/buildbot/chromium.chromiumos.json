@@ -154,6 +154,23 @@
         "test": "google_apis_unittests"
       },
       {
+        "args": [
+          "--dbus-stub",
+          "--gtest_filter=SplitViewTest.SplitViewResize"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-14.04",
+              "pool": "Chrome-CrOS-VM"
+            }
+          ]
+        },
+        "test": "interactive_ui_tests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
