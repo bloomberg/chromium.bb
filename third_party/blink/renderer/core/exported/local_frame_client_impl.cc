@@ -746,12 +746,6 @@ void LocalFrameClientImpl::DidObserveLayoutJank(double jank_fraction) {
     client->DidObserveLayoutJank(jank_fraction);
 }
 
-void LocalFrameClientImpl::DidObserveLazyLoadBehavior(
-    WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) {
-  if (WebLocalFrameClient* client = web_frame_->Client())
-    client->DidObserveLazyLoadBehavior(lazy_load_behavior);
-}
-
 bool LocalFrameClientImpl::ShouldTrackUseCounter(const KURL& url) {
   if (web_frame_->Client())
     return web_frame_->Client()->ShouldTrackUseCounter(url);

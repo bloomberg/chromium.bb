@@ -38,19 +38,16 @@ class MojoPageTimingSender : public PageTimingSender {
         &page_load_metrics_);
   }
   ~MojoPageTimingSender() override {}
-  void SendTiming(
-      const mojom::PageLoadTimingPtr& timing,
-      const mojom::PageLoadMetadataPtr& metadata,
-      mojom::PageLoadFeaturesPtr new_features,
-      std::vector<mojom::ResourceDataUpdatePtr> resources,
-      const mojom::FrameRenderDataUpdate& render_data,
-      const mojom::CpuTimingPtr& cpu_timing,
-      mojom::DeferredResourceCountsPtr new_deferred_resource_data) override {
+  void SendTiming(const mojom::PageLoadTimingPtr& timing,
+                  const mojom::PageLoadMetadataPtr& metadata,
+                  mojom::PageLoadFeaturesPtr new_features,
+                  std::vector<mojom::ResourceDataUpdatePtr> resources,
+                  const mojom::FrameRenderDataUpdate& render_data,
+                  const mojom::CpuTimingPtr& cpu_timing) override {
     DCHECK(page_load_metrics_);
     page_load_metrics_->UpdateTiming(
         timing->Clone(), metadata->Clone(), std::move(new_features),
-        std::move(resources), render_data.Clone(), cpu_timing->Clone(),
-        std::move(new_deferred_resource_data));
+        std::move(resources), render_data.Clone(), cpu_timing->Clone());
   }
 
  private:
@@ -104,11 +101,6 @@ void MetricsRenderFrameObserver::DidObserveNewCssPropertyUsage(
 void MetricsRenderFrameObserver::DidObserveLayoutJank(double jank_fraction) {
   if (page_timing_metrics_sender_)
     page_timing_metrics_sender_->DidObserveLayoutJank(jank_fraction);
-}
-
-void MetricsRenderFrameObserver::DidObserveLazyLoadBehavior(
-    blink::WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) {
-  page_timing_metrics_sender_->DidObserveLazyLoadBehavior(lazy_load_behavior);
 }
 
 void MetricsRenderFrameObserver::DidStartResponse(

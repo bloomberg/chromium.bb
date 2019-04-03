@@ -17,7 +17,6 @@
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
-#include "third_party/blink/public/web/web_local_frame_client.h"
 
 class GURL;
 
@@ -49,9 +48,6 @@ class PageTimingMetricsSender {
   void DidObserveNewFeatureUsage(blink::mojom::WebFeature feature);
   void DidObserveNewCssPropertyUsage(int css_property, bool is_animated);
   void DidObserveLayoutJank(double jank_fraction);
-  void DidObserveLazyLoadBehavior(
-      blink::WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior);
-
   void DidStartResponse(const GURL& response_url,
                         int resource_id,
                         const network::ResourceResponseHead& response_head,
@@ -93,7 +89,6 @@ class PageTimingMetricsSender {
   // browser.
   mojom::PageLoadFeaturesPtr new_features_;
   mojom::FrameRenderDataUpdate render_data_;
-  mojom::DeferredResourceCountsPtr new_deferred_resource_data_;
 
   std::bitset<static_cast<size_t>(blink::mojom::WebFeature::kNumberOfFeatures)>
       features_sent_;
