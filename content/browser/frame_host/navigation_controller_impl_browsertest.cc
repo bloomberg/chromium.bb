@@ -8340,15 +8340,6 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 }
 
-class NavigationControllerControllableResponseBrowserTest
-    : public ContentBrowserTest {
- protected:
-  void SetUpOnMainThread() override {
-    host_resolver()->AddRule("*", "127.0.0.1");
-    content::SetupCrossSiteRedirector(embedded_test_server());
-  }
-};
-
 // Data URLs can have a reference fragment like any other URLs. In this test,
 // there are two navigations with the same data URL, but with a different
 // reference. The second navigation must be classified as "same-document".
