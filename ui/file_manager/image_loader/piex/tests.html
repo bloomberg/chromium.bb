@@ -93,18 +93,9 @@ piex wasm raw image preview / thumbnail test page
   }
 
   function renderJPG(name, image) {
-    // Large image.data here: save it then undefine it so we don't JSON.stringify it
-    // into the image logging. The hash is sufficient to uniquely id the image.data.
-    const hash = hashUint8Array(image.data);
     const data = image.data;
-    image.data = undefined;
 
-    console.log('test:', name, image.type, 'hash', hash);
-    console.log('test:', JSON.stringify(image));
-
-    // Render the JPEG image.
     let renderer = new Image();
-
     renderer.onerror = renderer.onload = (event) => {
       if (renderer.width > (window.screen.availWidth / 2))
         renderer.classList.add('zoom');
@@ -119,13 +110,7 @@ piex wasm raw image preview / thumbnail test page
   }
 
   function renderRGB(name, image) {
-    // Large image.data here: save it then undefine it (for the reasons noted above).
-    const hash = hashUint8Array(image.data);
     const data = image.data;
-    image.data = undefined;
-
-    console.log('test:', name, image.type, 'hash', hash);
-    console.log('test:', JSON.stringify(image));
 
     let canvas = document.createElement('canvas');
     canvas.width = image.width;
@@ -149,10 +134,20 @@ piex wasm raw image preview / thumbnail test page
   }
 
   function renderResult(name, image) {
-    if (image && image.format == 0)
-      renderJPG(name, image);
-    if (image && image.format == 1)
-      renderRGB(name, image);
+    if (!image)
+      return;
+
+    const hash = hashUint8Array(image.data);
+    const data = image.data;
+    image.data = undefined;
+    const result = JSON.stringify(image);
+    console.log('test:', name, image.type, 'hash', hash, result);
+    image.data = data;
+
+    if (image.format == 0)
+      return renderJPG(name, image);
+    if (image.format == 1)
+      return renderRGB(name, image);
   }
 
   self.Module = {
