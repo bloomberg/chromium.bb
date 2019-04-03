@@ -31,6 +31,7 @@
 #include "ui/base/ime/chromeos/input_method_util.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/input_method_observer.h"
+#include "ui/keyboard/public/keyboard_switches.h"
 
 namespace arc {
 
@@ -709,9 +710,14 @@ void ArcInputMethodManagerService::UpdateArcIMEAllowed() {
 }
 
 bool ArcInputMethodManagerService::ShouldArcIMEAllowed() const {
-  return !profile_->GetPrefs()->GetBoolean(
-             ash::prefs::kAccessibilityVirtualKeyboardEnabled) &&
-         TabletModeClient::Get()->tablet_mode_enabled();
+  const bool is_command_line_flag_enabled =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          keyboard::switches::kEnableVirtualKeyboard);
+  const bool is_normal_vk_enabled =
+      !profile_->GetPrefs()->GetBoolean(
+          ash::prefs::kAccessibilityVirtualKeyboardEnabled) &&
+      TabletModeClient::Get()->tablet_mode_enabled();
+  return is_command_line_flag_enabled || is_normal_vk_enabled;
 }
 
 void ArcInputMethodManagerService::NotifyInputMethodManagerObservers(
