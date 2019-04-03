@@ -53,10 +53,20 @@ bool DarkModeImageClassifier::ShouldApplyDarkModeFilterToImage(
     result = DarkModeClassification::kApplyDarkModeFilter;
   } else {
     std::vector<float> features;
-    if (!ComputeImageFeatures(image, src_rect, &features, &sampled_pixels))
-      result = DarkModeClassification::kDoNotApplyDarkModeFilter;
-    else
+    if (!ComputeImageFeatures(image, src_rect, &features, &sampled_pixels)) {
+      // TODO(v.paturi): Implement an SVG classifier which can decide if a
+      // filter should be applied based on the image's content and it's
+      // visibility on a dark background.
+      // Force this function to return true for any SVG image so that the
+      // filter will be set in the PaintFlags in GraphicsContext::DrawImage.
+      if (image.IsSVGImage() || image.IsSVGImageForContainer()) {
+        result = DarkModeClassification::kApplyDarkModeFilter;
+      } else {
+        result = DarkModeClassification::kDoNotApplyDarkModeFilter;
+      }
+    } else {
       result = ClassifyImage(features);
+    }
   }
 
   // Store the classification result in the image object using src_rect's

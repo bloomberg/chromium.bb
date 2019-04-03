@@ -429,6 +429,11 @@ static bool DrawNeedsLayer(const PaintFlags& flags) {
   if (SkColorGetA(flags.getColor()) < 255)
     return true;
 
+  // This is needed to preserve the dark mode filter that
+  // has been set in GraphicsContext.
+  if (flags.getColorFilter())
+    return true;
+
   return flags.getBlendMode() != SkBlendMode::kSrcOver;
 }
 

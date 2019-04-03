@@ -88,6 +88,8 @@ class SVGImageForContainer final : public Image {
 
   PaintImage PaintImageForCurrentFrame() override;
 
+  bool IsSVGImageForContainer() const override { return true; }
+
  protected:
   void DrawPattern(GraphicsContext&,
                    const FloatRect&,
