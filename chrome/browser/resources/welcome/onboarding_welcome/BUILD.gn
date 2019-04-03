@@ -67,7 +67,6 @@ js_library("welcome_app") {
     "./shared:bookmark_proxy",
     "./shared:nux_types",
     "//ui/webui/resources/cr_elements/cr_view_manager:cr_view_manager",
-    "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:promise_resolver",
   ]
 }
