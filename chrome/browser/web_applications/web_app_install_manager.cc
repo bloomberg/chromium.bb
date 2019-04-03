@@ -23,11 +23,10 @@
 
 namespace web_app {
 
-WebAppInstallManager::WebAppInstallManager(
-    Profile* profile,
-    std::unique_ptr<InstallFinalizer> install_finalizer)
+WebAppInstallManager::WebAppInstallManager(Profile* profile,
+                                           InstallFinalizer* install_finalizer)
     : data_retriever_(std::make_unique<WebAppDataRetriever>()),
-      install_finalizer_(std::move(install_finalizer)),
+      install_finalizer_(install_finalizer),
       profile_(profile) {}
 
 WebAppInstallManager::~WebAppInstallManager() = default;
@@ -101,8 +100,8 @@ void WebAppInstallManager::SetDataRetrieverForTesting(
 }
 
 void WebAppInstallManager::SetInstallFinalizerForTesting(
-    std::unique_ptr<InstallFinalizer> install_finalizer) {
-  install_finalizer_ = std::move(install_finalizer);
+    InstallFinalizer* install_finalizer) {
+  install_finalizer_ = install_finalizer;
 }
 
 void WebAppInstallManager::CallInstallCallback(const AppId& app_id,

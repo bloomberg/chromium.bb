@@ -33,6 +33,7 @@ namespace web_app {
 // Forward declarations of generalized interfaces.
 class PendingAppManager;
 class InstallManager;
+class InstallFinalizer;
 class WebAppAudioFocusIdMap;
 class WebAppTabHelperBase;
 class SystemWebAppManager;
@@ -111,6 +112,7 @@ class WebAppProvider : public WebAppProviderBase,
 
   // New generalized subsystems:
   std::unique_ptr<AppRegistrar> registrar_;
+  std::unique_ptr<InstallFinalizer> install_finalizer_;
   std::unique_ptr<InstallManager> install_manager_;
   std::unique_ptr<PendingAppManager> pending_app_manager_;
   std::unique_ptr<SystemWebAppManager> system_web_app_manager_;

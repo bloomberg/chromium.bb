@@ -33,8 +33,7 @@ class WebAppDataRetriever;
 class WebAppInstallManager final : public InstallManager,
                                    content::WebContentsObserver {
  public:
-  WebAppInstallManager(Profile* profile,
-                       std::unique_ptr<InstallFinalizer> install_finalizer);
+  WebAppInstallManager(Profile* profile, InstallFinalizer* install_finalizer);
   ~WebAppInstallManager() override;
 
   // InstallManager:
@@ -62,8 +61,7 @@ class WebAppInstallManager final : public InstallManager,
 
   void SetDataRetrieverForTesting(
       std::unique_ptr<WebAppDataRetriever> data_retriever);
-  void SetInstallFinalizerForTesting(
-      std::unique_ptr<InstallFinalizer> install_finalizer);
+  void SetInstallFinalizerForTesting(InstallFinalizer* install_finalizer);
 
  private:
   void CallInstallCallback(const AppId& app_id, InstallResultCode code);
@@ -105,7 +103,7 @@ class WebAppInstallManager final : public InstallManager,
   WebappInstallSource install_source_ = kNoInstallSource;
 
   std::unique_ptr<WebAppDataRetriever> data_retriever_;
-  std::unique_ptr<InstallFinalizer> install_finalizer_;
+  InstallFinalizer* install_finalizer_;
   Profile* profile_;
 
   base::WeakPtrFactory<WebAppInstallManager> weak_ptr_factory_{this};

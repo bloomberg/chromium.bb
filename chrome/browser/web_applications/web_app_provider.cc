@@ -17,6 +17,7 @@
 #include "chrome/browser/web_applications/components/web_app_audio_focus_id_map.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_install_finalizer.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_tab_helper.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
@@ -105,10 +106,10 @@ void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
   icon_manager_ = std::make_unique<WebAppIconManager>(
       profile, std::make_unique<FileUtilsWrapper>());
 
-  auto install_finalizer = std::make_unique<WebAppInstallFinalizer>(
+  install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
       web_app_registrar.get(), icon_manager_.get());
-  install_manager_ = std::make_unique<WebAppInstallManager>(
-      profile, std::move(install_finalizer));
+  install_manager_ =
+      std::make_unique<WebAppInstallManager>(profile, install_finalizer_.get());
 
   registrar_ = std::move(web_app_registrar);
 }
@@ -117,12 +118,14 @@ void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
   auto bookmark_app_registrar =
       std::make_unique<extensions::BookmarkAppRegistrar>(profile);
 
+  install_finalizer_ =
+      std::make_unique<extensions::BookmarkAppInstallFinalizer>(profile_);
   install_manager_ =
       std::make_unique<extensions::BookmarkAppInstallManager>(profile);
 
   pending_app_manager_ =
       std::make_unique<extensions::PendingBookmarkAppManager>(
-          profile, bookmark_app_registrar.get());
+          profile, bookmark_app_registrar.get(), install_finalizer_.get());
 
   web_app_policy_manager_ = std::make_unique<WebAppPolicyManager>(
       profile, pending_app_manager_.get());
@@ -225,6 +228,7 @@ void WebAppProvider::Reset() {
   pending_app_manager_.reset();
 
   install_manager_.reset();
+  install_finalizer_.reset();
   icon_manager_.reset();
   registrar_.reset();
   database_.reset();
