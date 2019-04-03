@@ -652,7 +652,7 @@ void AppListFolderView::UpdateBackgroundMask(int corner_radius,
       views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK, corner_radius,
                                                   insets));
   background_mask_->layer()->SetFillsBoundsOpaquely(false);
-  background_mask_->layer()->SetBounds(background_view_->GetContentsBounds());
+  background_mask_->layer()->SetBounds(background_view_->GetLocalBounds());
   background_view_->layer()->SetMaskLayer(background_mask_->layer());
 }
 
