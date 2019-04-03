@@ -73,6 +73,29 @@ static gfx::Transform window_matrix(int x, int y, int width, int height) {
 // been produced.
 constexpr int kNumberOfFramesBeforeDisablingDCLayers = 60;
 
+// Returns the bounding box that contains the specified rounded corner.
+gfx::RectF ComputeRoundedCornerBoundingBox(const gfx::RRectF& rrect,
+                                           const gfx::RRectF::Corner corner) {
+  auto radii = rrect.GetCornerRadii(corner);
+  gfx::RectF bounding_box(radii.x(), radii.y());
+  switch (corner) {
+    case gfx::RRectF::Corner::kUpperLeft:
+      bounding_box.Offset(rrect.rect().x(), rrect.rect().bottom() - radii.y());
+      break;
+    case gfx::RRectF::Corner::kUpperRight:
+      bounding_box.Offset(rrect.rect().right() - radii.x(),
+                          rrect.rect().bottom() - radii.y());
+      break;
+    case gfx::RRectF::Corner::kLowerRight:
+      bounding_box.Offset(rrect.rect().right() - radii.x(), rrect.rect().y());
+      break;
+    case gfx::RRectF::Corner::kLowerLeft:
+      bounding_box.Offset(rrect.rect().x(), rrect.rect().y());
+      break;
+  }
+  return bounding_box;
+}
+
 }  // namespace
 
 namespace viz {
@@ -804,21 +827,16 @@ bool DirectRenderer::ShouldApplyRoundedCorner(const DrawQuad* quad) const {
   const gfx::RectF target_quad = cc::MathUtil::MapClippedRect(
       sqs->quad_to_target_transform, gfx::RectF(quad->visible_rect));
 
-  // If the rounded corner rect intersects with the quad, then we should run the
-  // fragment shader.
-  if (rounded_corner_bounds.rect().Intersects(target_quad))
-    return true;
-
-  // If the quad is not within the rounded corner bounds, neither does it
-  // intersect, we do not have to apply any rounded corner on it.
-  if (!rounded_corner_bounds.rect().Contains(target_quad))
-    return false;
-
-  // If the rounded corner bounding rect contains the quad but the rounded
-  // corner rrect does not, it means there is an intersection. Apply rounded
-  // corner on the quad.
-  SkRRect rrect = static_cast<SkRRect>(rounded_corner_bounds);
-  return !rrect.contains(gfx::RectFToSkRect(target_quad));
+  const gfx::RRectF::Corner corners[] = {
+      gfx::RRectF::Corner::kUpperLeft, gfx::RRectF::Corner::kUpperRight,
+      gfx::RRectF::Corner::kLowerRight, gfx::RRectF::Corner::kLowerLeft};
+  for (auto c : corners) {
+    if (ComputeRoundedCornerBoundingBox(rounded_corner_bounds, c)
+            .Intersects(target_quad)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace viz
