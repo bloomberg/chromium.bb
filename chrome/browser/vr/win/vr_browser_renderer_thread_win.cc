@@ -331,12 +331,69 @@ void VRBrowserRendererThreadWin::OnWebXRSubmitted() {
   StopWebXrTimeout();
 }
 
+device::mojom::XRFrameDataPtr ValidateFrameData(
+    device::mojom::XRFrameDataPtr& data) {
+  device::mojom::XRFrameDataPtr ret = device::mojom::XRFrameData::New();
+  ret->pose = device::mojom::VRPose::New();
+
+  if (data->pose) {
+    if (data->pose->orientation && data->pose->orientation->size() == 4) {
+      float length = 0;
+      for (int i = 0; i < 4; ++i) {
+        length += (*data->pose->orientation)[i] * (*data->pose->orientation)[i];
+      }
+
+      float kEpsilson = 0.1f;
+      if (abs(length - 1) < kEpsilson) {
+        ret->pose->orientation = std::vector<float>{0, 0, 0, 1};
+        for (int i = 0; i < 4; ++i) {
+          (*ret->pose->orientation)[i] = (*data->pose->orientation)[i] / length;
+        }
+      }
+    }
+
+    if (data->pose->position && data->pose->position->size() == 3) {
+      ret->pose->position = data->pose->position;
+      // We'll never give position values outside this range.
+      float kMaxPosition = 1000000;
+      float kMinPosition = -kMaxPosition;
+      for (int i = 0; i < 3; ++i) {
+        if (!((*ret->pose->position)[i] < kMaxPosition) ||
+            !((*ret->pose->position)[i] > kMinPosition)) {
+          ret->pose->position = base::nullopt;
+          // If testing with unexpectedly high values, catch on debug builds
+          // rather than silently change data.  On release builds its better to
+          // be safe and validate.
+          DCHECK(false);
+          break;
+        }
+      }
+    }
+
+    if (!ret->pose->orientation) {
+      ret->pose->orientation = std::vector<float>{0, 0, 0, 1};
+    }
+
+    if (!ret->pose->position) {
+      ret->pose->position = std::vector<float>{0, 0, 0};
+    }
+
+    ret->frame_id = data->frame_id;
+
+    // Frame data has several other fields that we are ignoring.  If they are
+    // used, validate them before use.
+  }
+
+  return ret;
+}
+
 void VRBrowserRendererThreadWin::OnPose(int request_id,
                                         device::mojom::XRFrameDataPtr data) {
   if (request_id != current_request_id_) {
     // Old request. Do nothing.
     return;
   }
+
   if (!draw_state_.ShouldDrawUI()) {
     // We shouldn't be showing UI.
     overlay_->SetOverlayAndWebXRVisibility(draw_state_.ShouldDrawUI(),
@@ -346,13 +403,15 @@ void VRBrowserRendererThreadWin::OnPose(int request_id,
     return;
   }
 
+  data = ValidateFrameData(data);
+
   // Deliver pose to input and scheduler.
-  std::vector<float> quat = {0, 0, 0, 1};
-  if (data && data->pose && data->pose->orientation)
-    quat = *data->pose->orientation;
-  std::vector<float> pos = {0, 0, 0};
-  if (data && data->pose && data->pose->position)
-    pos = *data->pose->position;
+  DCHECK(data);
+  DCHECK(data->pose);
+  DCHECK(data->pose->orientation);
+  DCHECK(data->pose->position);
+  const std::vector<float>& quat = *data->pose->orientation;
+  const std::vector<float>& pos = *data->pose->position;
 
   // The incoming pose represents where the headset is in "world space".  So
   // we'll need to invert to get the view transform.
