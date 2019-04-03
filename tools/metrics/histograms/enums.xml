@@ -9142,7 +9142,7 @@ Called by update_net_error_codes.py.-->
   <int value="24" label="Add to contacts"/>
   <int value="25" label="Spellcheck suggestion"/>
   <int value="26" label="Add to dictionary"/>
-  <int value="27" label="Context spelling toggle (Ask Google for suggestions)"/>
+  <int value="27" label="Context spelling toggle (Use enhanced spell check)"/>
   <int value="28" label="Cut text"/>
   <int value="29" label="Paste text"/>
   <int value="30" label="Call"/>
@@ -12132,7 +12132,7 @@ Called by update_net_error_codes.py.-->
   <int value="7" label="Profile Signin Confirmation (Link Chrome Data)"/>
   <int value="8" label="Hung Renderer"/>
   <int value="9" label="Session Crashed"/>
-  <int value="10" label="Confirm Bubble (Ask Google for Suggestions)"/>
+  <int value="10" label="Confirm Bubble (Use enhanced spell check)"/>
   <int value="11" label="Update Recommended"/>
   <int value="12" label="Crypto Password"/>
   <int value="13" label="Safe Browsing Download Feedback"/>

@@ -550,7 +550,7 @@ are declared in tools/grit/grit_rule.gni.
             No thanks
           </message>
           <message name="IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE" desc="The context-menu item that asks whether to integrate the spelling service of Google to Chrome. This text is also used as the title of a bubble which confirms it.">
-            Ask Google for suggestions
+            Use enhanced spell check
           </message>
           <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_ENABLE" desc="The button text that allows integrating the spelling service of Google.">
             Enable
@@ -783,7 +783,7 @@ are declared in tools/grit/grit_rule.gni.
             No Thanks
           </message>
           <message name="IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE" desc="In Title Case: The context-menu item that asks whether to integrate the spelling service of Google to Chrome. This text is also used as the title of a bubble which confirms it.">
-            Ask Google for Suggestions
+            Use Enhanced Spell Check
           </message>
           <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_ENABLE" desc="In Title Case: The button text that allows integrating the spelling service of Google.">
             Enable
@@ -852,8 +852,8 @@ are declared in tools/grit/grit_rule.gni.
         <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MULTI_LINGUAL" desc="The name of the menu item that enables spellcheck in all of the languages that the user has selected in settings">
           &amp;All your languages
         </message>
-        <message name="IDS_CONTENT_CONTEXT_CHECK_SPELLING_WHILE_TYPING" desc="The name of the menu item that toggles spellcheck on or off">
-          &amp;Check the spelling of text fields
+        <message name="IDS_CONTENT_CONTEXT_CHECK_SPELLING_WHILE_TYPING" desc="The name of the menu item that toggles the local built-in spellcheck on or off and specifically disables using Google's spelling service.">
+          &amp;Use basic spell check
         </message>
       </if>
 

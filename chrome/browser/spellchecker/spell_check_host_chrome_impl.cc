@@ -77,7 +77,7 @@ void SpellCheckHostChromeImpl::CallSpellingService(
   }
 
   // Checks the user profile and sends a JSON-RPC request to the Spelling
-  // service if a user enables the "Ask Google for suggestions" option. When
+  // service if a user enables the "Use enhanced spell check" option. When
   // a response is received (including an error) from the remote Spelling
   // service, calls CallSpellingServiceDone.
   content::BrowserContext* context =

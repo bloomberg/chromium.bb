@@ -69,4 +69,10 @@ void SpellingBubbleModel::SetPref(bool enabled) {
   PrefService* pref = profile_->GetPrefs();
   DCHECK(pref);
   pref->SetBoolean(spellcheck::prefs::kSpellCheckUseSpellingService, enabled);
+
+  // If the user has explicitly opted in to using the spelling service,
+  // spellcheck should be enabled so that the spelling service can run.
+  if (enabled) {
+    pref->SetBoolean(spellcheck::prefs::kSpellCheckEnable, true);
+  }
 }
