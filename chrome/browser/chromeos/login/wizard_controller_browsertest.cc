@@ -2256,7 +2256,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerEnableDebuggingTest,
   // and click it.
   ASSERT_TRUE(
       JSExecute("(function() {"
-                "  var root = ['oobe-welcome-md', 'welcomeScreen'].reduce("
+                "  var root = ['connect', 'welcomeScreen'].reduce("
                 "    (root, id) => root.getElementById(id).shadowRoot,"
                 "    document);"
                 "  root.getElementById('enableDebuggingLink').click();"

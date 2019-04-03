@@ -138,21 +138,20 @@ class OobeInteractiveUITest
 #else
     constexpr int kNumberOfVideosPlaying = 0;
 #endif
-    test::OobeJS().ExpectVisiblePath({"oobe-welcome-md", "welcomeScreen"});
-    test::OobeJS().ExpectHiddenPath({"oobe-welcome-md", "accessibilityScreen"});
-    test::OobeJS().ExpectHiddenPath({"oobe-welcome-md", "languageScreen"});
-    test::OobeJS().ExpectHiddenPath({"oobe-welcome-md", "timezoneScreen"});
+    test::OobeJS().ExpectVisiblePath({"connect", "welcomeScreen"});
+    test::OobeJS().ExpectHiddenPath({"connect", "accessibilityScreen"});
+    test::OobeJS().ExpectHiddenPath({"connect", "languageScreen"});
+    test::OobeJS().ExpectHiddenPath({"connect", "timezoneScreen"});
 
     test::OobeJS().ExpectEQ(
         "(() => {let cnt = 0; for (let v of "
-        "$('oobe-welcome-md').$.welcomeScreen.root.querySelectorAll('video')) "
+        "$('connect').$.welcomeScreen.root.querySelectorAll('video')) "
         "{  cnt += v.paused ? 0 : 1; }; return cnt; })()",
         kNumberOfVideosPlaying);
   }
 
   void TapWelcomeNext() {
-    test::OobeJS().TapOnPath(
-        {"oobe-welcome-md", "welcomeScreen", "welcomeNextButton"});
+    test::OobeJS().TapOnPath({"connect", "welcomeScreen", "welcomeNextButton"});
   }
 
   void WaitForNetworkSelectionScreen() {

@@ -275,6 +275,7 @@ cr.define('login', function() {
         Oobe.getInstance().registerScreen(screen);
       };
 
+      // See also c/b/r/chromeos/login/login_screen_behavior.js
       cr.define('login', function() {
         var result = {};
         result[name] = api;
