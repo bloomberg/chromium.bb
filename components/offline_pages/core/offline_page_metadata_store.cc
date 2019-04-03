@@ -41,7 +41,7 @@ void ReportStoreEvent(OfflinePagesStoreEvent event) {
 }
 
 bool CreateOfflinePagesTable(sql::Database* db) {
-  static const char kCreateLatestOfflinePagesTableSql[] =
+  static const char kSql[] =
       "CREATE TABLE IF NOT EXISTS " OFFLINE_PAGES_TABLE_NAME
       "(offline_id INTEGER PRIMARY KEY NOT NULL,"
       " creation_time INTEGER NOT NULL,"
@@ -60,11 +60,9 @@ bool CreateOfflinePagesTable(sql::Database* db) {
       " title VARCHAR NOT NULL DEFAULT '',"
       " original_url VARCHAR NOT NULL DEFAULT '',"
       " request_origin VARCHAR NOT NULL DEFAULT '',"
-      " digest VARCHAR NOT NULL DEFAULT '',"
-      " snippet VARCHAR NOT NULL DEFAULT '',"
-      " attribution VARCHAR NOT NULL DEFAULT ''"
+      " digest VARCHAR NOT NULL DEFAULT ''"
       ")";
-  return db->Execute(kCreateLatestOfflinePagesTableSql);
+  return db->Execute(kSql);
 }
 
 bool UpgradeWithQuery(sql::Database* db, const char* upgrade_sql) {
@@ -72,26 +70,7 @@ bool UpgradeWithQuery(sql::Database* db, const char* upgrade_sql) {
                    " RENAME TO temp_" OFFLINE_PAGES_TABLE_NAME)) {
     return false;
   }
-  static const char kCreateOfflinePagesTableVersion1Sql[] =
-      "CREATE TABLE IF NOT EXISTS " OFFLINE_PAGES_TABLE_NAME
-      "(offline_id INTEGER PRIMARY KEY NOT NULL,"
-      " creation_time INTEGER NOT NULL,"
-      " file_size INTEGER NOT NULL,"
-      " last_access_time INTEGER NOT NULL,"
-      " access_count INTEGER NOT NULL,"
-      " system_download_id INTEGER NOT NULL DEFAULT 0,"
-      " file_missing_time INTEGER NOT NULL DEFAULT 0,"
-      " upgrade_attempt INTEGER NOT NULL DEFAULT 0,"
-      " client_namespace VARCHAR NOT NULL,"
-      " client_id VARCHAR NOT NULL,"
-      " online_url VARCHAR NOT NULL,"
-      " file_path VARCHAR NOT NULL,"
-      " title VARCHAR NOT NULL DEFAULT '',"
-      " original_url VARCHAR NOT NULL DEFAULT '',"
-      " request_origin VARCHAR NOT NULL DEFAULT '',"
-      " digest VARCHAR NOT NULL DEFAULT ''"
-      ")";
-  if (!db->Execute(kCreateOfflinePagesTableVersion1Sql))
+  if (!CreateOfflinePagesTable(db))
     return false;
   if (!db->Execute(upgrade_sql))
     return false;
@@ -203,8 +182,7 @@ bool CreatePageThumbnailsTable(sql::Database* db) {
       "CREATE TABLE IF NOT EXISTS page_thumbnails"
       " (offline_id INTEGER PRIMARY KEY NOT NULL,"
       " expiration INTEGER NOT NULL,"
-      " thumbnail BLOB NOT NULL,"
-      " favicon BLOB NOT NULL"
+      " thumbnail BLOB NOT NULL"
       ")";
   return db->Execute(kSql);
 }
@@ -281,52 +259,10 @@ bool UpgradeFromVersion2ToVersion3(sql::Database* db,
   if (!transaction.Begin())
     return false;
 
-  static const char kCreatePageThumbnailsSql[] =
-      "CREATE TABLE IF NOT EXISTS page_thumbnails"
-      " (offline_id INTEGER PRIMARY KEY NOT NULL,"
-      "expiration INTEGER NOT NULL,"
-      "thumbnail BLOB NOT NULL"
-      ")";
-  if (!db->Execute(kCreatePageThumbnailsSql))
-    return false;
-
-  meta_table->SetVersionNumber(3);
-  return transaction.Commit();
-}
-
-bool UpgradeFromVersion3ToVersion4(sql::Database* db,
-                                   sql::MetaTable* meta_table) {
-  sql::Transaction transaction(db);
-  if (!transaction.Begin())
-    return false;
-
-  const char kSql[] = "ALTER TABLE " OFFLINE_PAGES_TABLE_NAME
-                      " ADD COLUMN snippet VARCHAR NOT NULL DEFAULT ''; "
-                      "ALTER TABLE " OFFLINE_PAGES_TABLE_NAME
-                      " ADD COLUMN attribution VARCHAR NOT NULL DEFAULT '';";
-  if (!db->Execute(kSql))
-    return false;
-
-  // Upgrade page_thumbnails (rows must be copied into a new table since a
-  // column can't be modified in-place).
-  if (!db->Execute("ALTER TABLE page_thumbnails"
-                   " RENAME TO temp_page_thumbnails")) {
+  if (!CreatePageThumbnailsTable(db)) {
     return false;
   }
-  // Note: when the page_thumbnails schema changes, the old table creation query
-  // should be moved here.
-  if (!CreatePageThumbnailsTable(db))
-    return false;
-  static const char kUpgradeThumbnailsTableSql[] =
-      "INSERT INTO page_thumbnails"
-      " (offline_id,expiration,thumbnail)"
-      " SELECT offline_id,expiration,thumbnail FROM temp_page_thumbnails";
-  if (!db->Execute(kUpgradeThumbnailsTableSql))
-    return false;
-  if (!db->Execute("DROP TABLE IF EXISTS temp_page_thumbnails"))
-    return false;
-
-  meta_table->SetVersionNumber(4);
+  meta_table->SetVersionNumber(3);
   return transaction.Commit();
 }
 
@@ -354,10 +290,6 @@ bool CreateSchema(sql::Database* db) {
         break;
       case 2:
         if (!UpgradeFromVersion2ToVersion3(db, &meta_table))
-          return false;
-        break;
-      case 3:
-        if (!UpgradeFromVersion3ToVersion4(db, &meta_table))
           return false;
         break;
       case OfflinePageMetadataStore::kCurrentVersion:
