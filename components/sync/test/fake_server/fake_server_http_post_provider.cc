@@ -12,8 +12,6 @@
 #include "components/sync/test/fake_server/fake_server.h"
 #include "net/base/net_errors.h"
 
-using syncer::HttpPostProviderInterface;
-
 namespace fake_server {
 
 // static
@@ -31,7 +29,7 @@ void FakeServerHttpPostProviderFactory::Init(
     const std::string& user_agent,
     const syncer::BindToTrackerCallback& bind_to_tracker_callback) {}
 
-HttpPostProviderInterface* FakeServerHttpPostProviderFactory::Create() {
+syncer::HttpPostProviderInterface* FakeServerHttpPostProviderFactory::Create() {
   FakeServerHttpPostProvider* http =
       new FakeServerHttpPostProvider(fake_server_, fake_server_task_runner_);
   http->AddRef();
@@ -39,7 +37,7 @@ HttpPostProviderInterface* FakeServerHttpPostProviderFactory::Create() {
 }
 
 void FakeServerHttpPostProviderFactory::Destroy(
-    HttpPostProviderInterface* http) {
+    syncer::HttpPostProviderInterface* http) {
   static_cast<FakeServerHttpPostProvider*>(http)->Release();
 }
 
@@ -56,11 +54,15 @@ FakeServerHttpPostProvider::FakeServerHttpPostProvider(
 FakeServerHttpPostProvider::~FakeServerHttpPostProvider() {}
 
 void FakeServerHttpPostProvider::SetExtraRequestHeaders(const char* headers) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // TODO(pvalenzuela): Add assertions on this value.
   extra_request_headers_.assign(headers);
 }
 
 void FakeServerHttpPostProvider::SetURL(const char* url, int port) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // TODO(pvalenzuela): Add assertions on these values.
   request_url_.assign(url);
   request_port_ = port;
@@ -69,12 +71,16 @@ void FakeServerHttpPostProvider::SetURL(const char* url, int port) {
 void FakeServerHttpPostProvider::SetPostPayload(const char* content_type,
                                                 int content_length,
                                                 const char* content) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   request_content_type_.assign(content_type);
   request_content_.assign(content, content_length);
 }
 
 bool FakeServerHttpPostProvider::MakeSynchronousPost(int* net_error_code,
                                                      int* http_status_code) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!network_enabled_) {
     response_.clear();
     *net_error_code = net::ERR_INTERNET_DISCONNECTED;
@@ -119,19 +125,23 @@ bool FakeServerHttpPostProvider::MakeSynchronousPost(int* net_error_code,
 }
 
 int FakeServerHttpPostProvider::GetResponseContentLength() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return response_.length();
 }
 
 const char* FakeServerHttpPostProvider::GetResponseContent() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return response_.c_str();
 }
 
 const std::string FakeServerHttpPostProvider::GetResponseHeaderValue(
     const std::string& name) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return std::string();
 }
 
 void FakeServerHttpPostProvider::Abort() {
+  // Note: This may be called on any thread, so no |sequence_checker_| here.
   // The sync thread could be blocked in MakeSynchronousPost(), waiting
   // for HandleCommandOnFakeServerThread() to be processed and completed.
   // This causes an immediate unblocking which will be returned as
@@ -141,10 +151,17 @@ void FakeServerHttpPostProvider::Abort() {
 }
 
 void FakeServerHttpPostProvider::DisableNetwork() {
+  // TODO(crbug.com/947691,crbug.com/947692): This causes flakiness on TSan
+  // because this variable is set on the main thread (a.k.a.
+  // |fake_server_task_runner_|), but read on the Sync thread (corresponding to
+  // |sequence_checker_|).
   network_enabled_ = false;
 }
 
 void FakeServerHttpPostProvider::EnableNetwork() {
+  // TODO(crbug.com/947691,crbug.com/947692): This causes flakiness on TSan
+  // because this variable is set on the main thread, but read on the Sync
+  // thread.
   network_enabled_ = true;
 }
 
