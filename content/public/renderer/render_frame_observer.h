@@ -22,6 +22,7 @@
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_meaningful_layout.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
 #include "ui/base/page_transition_types.h"
@@ -170,6 +171,13 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // fraction for that frame.  The cumulative jank score can be inferred by
   // summing the jank fractions.
   virtual void DidObserveLayoutJank(double jank_fraction) {}
+
+  // Reports lazy loaded behavior when the frame or image is fully deferred or
+  // if the frame or image is loaded after being deferred by lazy load.
+  // Called every time the behavior occurs. This does not apply to image
+  // requests for placeholder images.
+  virtual void DidObserveLazyLoadBehavior(
+      blink::WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) {}
 
   // Notification when the renderer a response started, completed or canceled.
   // Complete or Cancel is guaranteed to be called for a response that started.

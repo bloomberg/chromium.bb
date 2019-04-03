@@ -5490,6 +5490,12 @@ void RenderFrameImpl::DidObserveLayoutJank(double jank_fraction) {
     observer.DidObserveLayoutJank(jank_fraction);
 }
 
+void RenderFrameImpl::DidObserveLazyLoadBehavior(
+    WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) {
+  for (auto& observer : observers_)
+    observer.DidObserveLazyLoadBehavior(lazy_load_behavior);
+}
+
 bool RenderFrameImpl::ShouldTrackUseCounter(const blink::WebURL& url) {
   return GetContentClient()->renderer()->ShouldTrackUseCounter(url);
 }

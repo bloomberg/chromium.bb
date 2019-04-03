@@ -8,6 +8,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
@@ -167,6 +168,8 @@ void LazyLoadFrameObserver::LoadImmediately() {
             .GetFrame()
             ->Client()
             ->GetEffectiveConnectionType());
+    element_->GetDocument().GetFrame()->Client()->DidObserveLazyLoadBehavior(
+        WebLocalFrameClient::LazyLoadBehavior::kLazyLoadedFrame);
   }
 
   std::unique_ptr<LazyLoadRequestInfo> scoped_request_info =
@@ -388,8 +391,11 @@ void LazyLoadFrameObserver::RecordInitialDeferralAction(
       break;
   }
 
-  if (action == FrameInitialDeferralAction::kDeferred)
+  if (action == FrameInitialDeferralAction::kDeferred) {
+    element_->GetDocument().GetFrame()->Client()->DidObserveLazyLoadBehavior(
+        WebLocalFrameClient::LazyLoadBehavior::kDeferredFrame);
     was_recorded_as_deferred_ = true;
+  }
 }
 
 void LazyLoadFrameObserver::Trace(Visitor* visitor) {
