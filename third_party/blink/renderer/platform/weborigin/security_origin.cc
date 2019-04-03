@@ -225,8 +225,14 @@ scoped_refptr<SecurityOrigin> SecurityOrigin::CreateFromUrlOrigin(
 
   scoped_refptr<SecurityOrigin> tuple_origin;
   if (!tuple.IsInvalid()) {
-    tuple_origin = Create(String::FromUTF8(tuple.scheme().c_str()),
-                          String::FromUTF8(tuple.host().c_str()), tuple.port());
+    String scheme = String::FromUTF8(tuple.scheme().c_str());
+    String host = String::FromUTF8(tuple.host().c_str());
+    uint16_t port = tuple.port();
+
+    // url::Origin is percent encoded and SecurityOrigin is percent decoded.
+    host = DecodeURLEscapeSequences(host, DecodeURLMode::kUTF8OrIsomorphic);
+
+    tuple_origin = Create(scheme, host, port);
   }
   base::Optional<base::UnguessableToken> nonce_if_opaque =
       origin.GetNonceForSerialization();
