@@ -755,17 +755,16 @@ def _DepsFromPaths(dep_paths, target_type, filter_root_targets=True):
   return Deps([c['path'] for c in configs])
 
 
-def _ExtractSharedLibsFromRuntimeDeps(runtime_deps_files):
+def _ExtractSharedLibsFromRuntimeDeps(runtime_deps_file):
   ret = []
-  for path in runtime_deps_files:
-    with open(path) as f:
-      for line in f:
-        line = line.rstrip()
-        if not line.endswith('.so'):
-          continue
-        # Only unstripped .so files are listed in runtime deps.
-        # Convert to the stripped .so by going up one directory.
-        ret.append(os.path.normpath(line.replace('lib.unstripped/', '')))
+  with open(runtime_deps_file) as f:
+    for line in f:
+      line = line.rstrip()
+      if not line.endswith('.so'):
+        continue
+      # Only unstripped .so files are listed in runtime deps.
+      # Convert to the stripped .so by going up one directory.
+      ret.append(os.path.normpath(line.replace('lib.unstripped/', '')))
   ret.reverse()
   return ret
 
@@ -1569,20 +1568,20 @@ def main(argv):
 
     library_paths = []
     java_libraries_list = None
-    runtime_deps_files = build_utils.ParseGnList(
-        options.shared_libraries_runtime_deps or '[]')
-    if runtime_deps_files:
-      library_paths = _ExtractSharedLibsFromRuntimeDeps(runtime_deps_files)
+    if options.shared_libraries_runtime_deps:
+      library_paths = _ExtractSharedLibsFromRuntimeDeps(
+          options.shared_libraries_runtime_deps)
       java_libraries_list = _CreateJavaLibrariesList(library_paths)
+      all_inputs.append(options.shared_libraries_runtime_deps)
 
     secondary_abi_library_paths = []
-    secondary_abi_runtime_deps_files = build_utils.ParseGnList(
-        options.secondary_abi_shared_libraries_runtime_deps or '[]')
-    if secondary_abi_runtime_deps_files:
+    if options.secondary_abi_shared_libraries_runtime_deps:
       secondary_abi_library_paths = _ExtractSharedLibsFromRuntimeDeps(
-          secondary_abi_runtime_deps_files)
-    for gn_list in options.secondary_native_libs:
-      secondary_abi_library_paths.extend(build_utils.ParseGnList(gn_list))
+          options.secondary_abi_shared_libraries_runtime_deps)
+      all_inputs.append(options.secondary_abi_shared_libraries_runtime_deps)
+
+    secondary_abi_library_paths.extend(
+        build_utils.ParseGnList(options.secondary_native_libs))
 
     native_library_placeholder_paths = build_utils.ParseGnList(
         options.native_lib_placeholders)
@@ -1590,11 +1589,8 @@ def main(argv):
     secondary_native_library_placeholder_paths = build_utils.ParseGnList(
         options.secondary_native_lib_placeholders)
 
-    extra_shared_libraries = []
-    for gn_list in options.native_libs:
-      extra_shared_libraries.extend(build_utils.ParseGnList(gn_list))
+    extra_shared_libraries = build_utils.ParseGnList(options.native_libs)
 
-    all_inputs.extend(runtime_deps_files)
     config['native'] = {
         'libraries':
         library_paths,
