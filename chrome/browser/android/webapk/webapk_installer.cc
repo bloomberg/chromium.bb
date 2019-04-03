@@ -109,13 +109,6 @@ GURL GetServerUrl() {
                                      : GURL(kDefaultServerUrl);
 }
 
-// Returns the scope from |info| if it is specified. Otherwise, returns the
-// default scope.
-GURL GetScope(const ShortcutInfo& info) {
-  return (info.scope.is_valid()) ? info.scope
-                                 : ShortcutHelper::GetScopeFromURL(info.url);
-}
-
 webapk::WebApk_UpdateReason ConvertUpdateReasonToProtoEnum(
     WebApkUpdateReason update_reason) {
   switch (update_reason) {
@@ -212,7 +205,7 @@ std::unique_ptr<std::string> BuildProtoInBackground(
       OptionalSkColorToString(shortcut_info.theme_color));
 
   std::string* scope = web_app_manifest->add_scopes();
-  scope->assign(GetScope(shortcut_info).spec());
+  scope->assign(shortcut_info.scope.spec());
 
   if (shortcut_info.share_target) {
     webapk::ShareTarget* share_target = web_app_manifest->add_share_targets();

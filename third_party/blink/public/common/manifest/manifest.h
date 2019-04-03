@@ -195,7 +195,9 @@ struct BLINK_COMMON_EXPORT Manifest {
   // Null if parsing failed or the field was not present.
   base::NullableString16 gcm_sender_id;
 
-  // Empty if the parsing failed or the field was not present.
+  // Empty if the parsing failed. Otherwise defaults to the start URL (or
+  // document URL if start URL isn't present) with filename, query, and fragment
+  // removed.
   GURL scope;
 };
 

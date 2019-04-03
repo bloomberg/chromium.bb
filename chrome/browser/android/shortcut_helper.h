@@ -100,10 +100,6 @@ class ShortcutHelper {
                                 const GURL& start_url,
                                 const GURL& manifest_url);
 
-  // Generates a scope URL based on the passed in |url|. It should be used
-  // when the Web Manifest does not specify a scope URL.
-  static GURL GetScopeFromURL(const GURL& url);
-
   // Fetches information on all the WebAPKs installed on the device and returns
   // the info to the |callback|.
   static void RetrieveWebApks(const WebApkInfoCallback& callback);

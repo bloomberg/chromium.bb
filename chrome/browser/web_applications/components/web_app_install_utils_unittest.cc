@@ -74,6 +74,7 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifestInstallableSite) {
   {
     blink::Manifest manifest;
     manifest.start_url = GURL(kAppUrl);
+    manifest.scope = GURL(kAppUrl).GetWithoutFilename();
     WebApplicationInfo web_app_info;
     UpdateWebAppInfoFromManifest(manifest, &web_app_info,
                                  ForInstallableSite::kUnknown);
@@ -83,6 +84,7 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifestInstallableSite) {
   {
     blink::Manifest manifest;
     manifest.start_url = GURL(kAppUrl);
+    manifest.scope = GURL(kAppUrl).GetWithoutFilename();
     WebApplicationInfo web_app_info;
     UpdateWebAppInfoFromManifest(manifest, &web_app_info,
                                  ForInstallableSite::kNo);
@@ -92,6 +94,7 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifestInstallableSite) {
   {
     blink::Manifest manifest;
     manifest.start_url = GURL(kAppUrl);
+    manifest.scope = GURL(kAppUrl).GetWithoutFilename();
     WebApplicationInfo web_app_info;
     UpdateWebAppInfoFromManifest(manifest, &web_app_info,
                                  ForInstallableSite::kYes);
