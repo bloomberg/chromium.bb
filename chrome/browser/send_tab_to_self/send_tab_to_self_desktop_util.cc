@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/send_tab_to_self/desktop_notification_handler.h"
@@ -59,6 +60,12 @@ gfx::ImageSkia* GetImageSkia() {
   int resource_id = is_dark ? IDR_SEND_TAB_TO_SELF_ICON_DARK
                             : IDR_SEND_TAB_TO_SELF_ICON_LIGHT;
   return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
+}
+
+void RecordSendTabToSelfClickResult(std::string context_menu,
+                                    SendTabToSelfClickResult state) {
+  base::UmaHistogramEnumeration(
+      "SendTabToSelf." + context_menu + ".ClickResult", state);
 }
 
 }  // namespace send_tab_to_self

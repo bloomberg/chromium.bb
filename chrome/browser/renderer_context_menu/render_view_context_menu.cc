@@ -1357,8 +1357,8 @@ void RenderViewContextMenu::AppendPageItems() {
       send_tab_to_self::ShouldOfferFeature(
           GetBrowser()->profile(),
           GetBrowser()->tab_strip_model()->GetActiveWebContents())) {
-    base::RecordAction(
-        UserMetricsAction("ViewContextMenu_SendTabToSelf_Shown"));
+    send_tab_to_self::RecordSendTabToSelfClickResult(
+        send_tab_to_self::kContentMenu, SendTabToSelfClickResult::kShowItem);
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
     menu_model_.AddItemWithStringIdAndIcon(IDC_SEND_TAB_TO_SELF,
                                            IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
@@ -2034,8 +2034,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_SEND_TAB_TO_SELF:
-      base::RecordAction(
-          UserMetricsAction("ViewContextMenu_SendTabToSelf_Clicked"));
+      send_tab_to_self::RecordSendTabToSelfClickResult(
+          send_tab_to_self::kContentMenu, SendTabToSelfClickResult::kClickItem);
       send_tab_to_self::CreateNewEntry(embedder_web_contents_, GetProfile());
       break;
 

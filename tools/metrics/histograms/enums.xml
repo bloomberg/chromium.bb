@@ -49339,15 +49339,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="Sent, no form id"/>
 </enum>
 
-<enum name="SendTabToSelf">
-  <int value="0" label="SendTabToSelf menu item is shown."/>
-  <int value="1" label="SendTabToSelf menu item is clicked."/>
-</enum>
-
 <enum name="SendTabToSelfAddEntryStatus">
   <int value="0" label="Success"/>
   <int value="1" label="Failure"/>
   <int value="2" label="Duplicate"/>
+</enum>
+
+<enum name="SendTabToSelfClickResult">
+  <int value="0" label="SendTabToSelf menu item is shown."/>
+  <int value="1" label="SendTabToSelf menu item is clicked."/>
 </enum>
 
 <enum name="ServiceProcessEventType">

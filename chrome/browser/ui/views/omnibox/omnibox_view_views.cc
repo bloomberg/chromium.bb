@@ -94,15 +94,6 @@ namespace {
 constexpr base::Feature kOmniboxCanCopyHyperlinksToClipboard{
     "OmniboxCanCopyHyperlinksToClipboard", base::FEATURE_ENABLED_BY_DEFAULT};
 
-enum class UmaEnumOmniboxSendTabToSelf {
-  kShowItem = 0,
-  kClickItem = 1,
-  kMaxValue = kClickItem,
-};
-
-void RecordSendTabToSelf(UmaEnumOmniboxSendTabToSelf state) {
-  UMA_HISTOGRAM_ENUMERATION("OmniboxViewViews.SendTabToSelf", state);
-}
 // OmniboxState ---------------------------------------------------------------
 
 // Stores omnibox state for each tab.
@@ -489,7 +480,8 @@ void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
       location_bar_view_->command_updater()->ExecuteCommand(command_id);
       return;
     case IDC_SEND_TAB_TO_SELF:
-      RecordSendTabToSelf(UmaEnumOmniboxSendTabToSelf::kClickItem);
+      send_tab_to_self::RecordSendTabToSelfClickResult(
+          send_tab_to_self::kOmniboxMenu, SendTabToSelfClickResult::kClickItem);
       send_tab_to_self::CreateNewEntry(location_bar_view_->GetWebContents(),
                                        location_bar_view_->profile());
       return;
@@ -1717,7 +1709,8 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
   if (send_tab_to_self::ShouldOfferFeature(
           location_bar_view_->profile(),
           location_bar_view_->GetWebContents())) {
-    RecordSendTabToSelf(UmaEnumOmniboxSendTabToSelf::kShowItem);
+    send_tab_to_self::RecordSendTabToSelfClickResult(
+        send_tab_to_self::kOmniboxMenu, SendTabToSelfClickResult::kShowItem);
     int index = menu_contents->GetIndexOfCommandId(IDS_APP_UNDO);
     // Add a separator if this is not the first item.
     if (index)
