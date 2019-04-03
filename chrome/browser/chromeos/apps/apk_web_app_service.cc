@@ -113,9 +113,41 @@ void ApkWebAppService::Shutdown() {
 
 void ApkWebAppService::OnPackageInstalled(
     const arc::mojom::ArcPackageInfo& package_info) {
-  if (package_info.web_app_info.is_null())
+  // This method is called when a) new packages are installed, and b) existing
+  // packages are updated. In (b), there are two cases to handle: the package
+  // could previously have been an Android app and has now become a web app, and
+  // vice-versa.
+  DictionaryPrefUpdate web_apps_to_apks(profile_->GetPrefs(),
+                                        kWebAppToApkDictPref);
+
+  // Search the pref dict for any |web_app_id| that has a value matching the
+  // provided package name.
+  std::string web_app_id;
+  for (const auto& it : web_apps_to_apks->DictItems()) {
+    const base::Value* v =
+        it.second.FindKeyOfType(kPackageNameKey, base::Value::Type::STRING);
+
+    if (v && (v->GetString() == package_info.package_name)) {
+      web_app_id = it.first;
+      break;
+    }
+  }
+
+  bool was_previously_web_app = !web_app_id.empty();
+  bool is_now_web_app = !package_info.web_app_info.is_null();
+
+  // The previous and current states match. Nothing to do.
+  if (is_now_web_app == was_previously_web_app)
     return;
 
+  if (was_previously_web_app) {
+    // The package was a web app, but now isn't. Remove the web app.
+    OnPackageRemoved(package_info.package_name, true /* uninstalled */);
+    return;
+  }
+
+  // The package is a web app but we don't have a corresponding browser-side
+  // artifact. Install it.
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_app_list_prefs_->app_connection_holder(), RequestPackageIcon);
   if (!instance)
