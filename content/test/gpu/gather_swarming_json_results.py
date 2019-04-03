@@ -13,30 +13,9 @@ distribution.
 
 import argparse
 import json
-import os
-import subprocess
+import logging
 import sys
 import urllib2
-
-SWARMING_SERVICE = 'https://chromium-swarm.appspot.com'
-
-THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-SRC_DIR = os.path.dirname(os.path.dirname(os.path.dirname(THIS_DIR)))
-SWARMING_CLIENT_DIR = os.path.join(SRC_DIR, 'tools', 'swarming_client')
-
-
-def CheckSwarmingAuth():
-  output = subprocess.check_output([
-    'python',
-    os.path.join(SWARMING_CLIENT_DIR, 'auth.py'),
-    'check',
-    '--service',
-    SWARMING_SERVICE])
-  if not output.startswith('user:'):
-    print 'Must run:'
-    print '  tools/swarming_client/auth.py login --service ' + SWARMING_SERVICE
-    print 'and authenticate with @google.com credentials.'
-    sys.exit(1)
 
 
 def GetJsonForBuildSteps(bot, build):
@@ -93,7 +72,7 @@ def JsonLoadStrippingUnicode(url):
   return StripUnicode(json.loads(result))
 
 
-def FindStepJsonOutput(steps, step_name):
+def FindStepLogURL(steps, step_name, log_name):
   # The format of this JSON-encoded protobuf is defined here:
   # https://chromium.googlesource.com/infra/luci/luci-go/+/master/
   #   buildbucket/proto/step.proto
@@ -104,7 +83,7 @@ def FindStepJsonOutput(steps, step_name):
       continue
     if step['name'].startswith(step_name):
       for log in step['logs']:
-        if log.get('name') == 'json.output':
+        if log.get('name') == log_name:
           return log.get('viewUrl')
   return None
 
@@ -125,58 +104,54 @@ def main():
   parser = argparse.ArgumentParser(
     description='Gather JSON results from a run of a Swarming test.',
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-  parser.add_argument('-v', '--verbose', action='count', default=0,
-                      help='Enable verbose output (specify multiple times '
-                      'for more output)')
-  parser.add_argument('--bot', type=str, default='Linux FYI Release (NVIDIA)',
+  parser.add_argument('-v', '--verbose', action='store_true', default=False,
+                      help='Enable verbose output')
+  parser.add_argument('--bot', default='Linux FYI Release (NVIDIA)',
                       help='Which bot to examine')
-  parser.add_argument('--build', default=-1, type=int,
+  parser.add_argument('--build', type=int,
                       help='Which build to fetch (must be specified)')
-  parser.add_argument('--step', type=str, default='webgl2_conformance_tests',
+  parser.add_argument('--step', default='webgl2_conformance_tests',
                       help='Which step to fetch (treated as a prefix)')
-  parser.add_argument('--output', type=str, default='output.json',
+  parser.add_argument('--output', metavar='FILE', default='output.json',
                       help='Name of output file; contains only test run times')
-  parser.add_argument('--full-output', type=str, default='',
+  parser.add_argument('--full-output', metavar='FILE',
                       help='Name of complete output file if desired')
 
   options = parser.parse_args(rest_args)
+  if options.verbose:
+    logging.basicConfig(level=logging.DEBUG)
 
-  CheckSwarmingAuth()
-
-  build = options.build
-  if build < 0:
-    print 'Build number must be specified; check the bot\'s page'
+  if options.build is None:
+    logging.error('Build number must be specified; check the bot\'s page')
     return 1
 
-  build_json = GetJsonForBuildSteps(options.bot, build)
+  build_json = GetJsonForBuildSteps(options.bot, options.build)
   if 'steps' not in build_json:
-    print 'Returned Json data does not have "steps"'
+    logging.error('Returned Json data does not have "steps"')
     return 1
 
-  if options.verbose:
-    print 'Fetching information from bot %s, build %s' % (options.bot, build)
+  logging.debug('Fetching information from bot %s, build %s',
+                options.bot, options.build)
 
-  json_output = FindStepJsonOutput(build_json['steps'], options.step)
+  json_output = FindStepLogURL(build_json['steps'], options.step, 'json.output')
   if not json_output:
-    print 'Unable to find json.output from step starting with ' + options.step
+    logging.error('Unable to find json.output from step starting with %s',
+                  options.step)
     return 1
-  if options.verbose:
-    print 'json.output for step starting with %s: %s' % (options.step,
-                                                         json_output)
+  logging.debug('json.output for step starting with %s: %s',
+                options.step, json_output)
 
   merged_json = JsonLoadStrippingUnicode(json_output)
   extracted_times = {'times':{}}
   ExtractTestTimes(merged_json, '', extracted_times['times'])
 
-  if options.verbose:
-    print 'Saving output to %s' % options.output
+  logging.debug('Saving output to %s', options.output)
   with open(options.output, 'w') as f:
     json.dump(extracted_times, f, sort_keys=True, indent=2,
               separators=(',', ': '))
 
-  if options.full_output:
-    if options.verbose:
-      print 'Saving full output to %s' % options.full_output
+  if options.full_output is not None:
+    logging.debug('Saving full output to %s', options.full_output)
     with open(options.full_output, 'w') as f:
       json.dump(merged_json, f, sort_keys=True, indent=2,
                 separators=(',', ': '))
