@@ -1334,6 +1334,7 @@ TEST_F(IdentityManagerTest, DeprecatedLoadCredentialsForSupervisedUser) {
 }
 #endif
 
+#if defined(OS_IOS)
 TEST_F(IdentityManagerTest, LegacySeedAccountInfo) {
   ASSERT_FALSE(
       identity_manager()
@@ -1357,7 +1358,6 @@ TEST_F(IdentityManagerTest, LegacySeedAccountInfo) {
   EXPECT_EQ(account_info.gaia, kTestGaiaId2);
 }
 
-#if defined(OS_IOS)
 TEST_F(IdentityManagerTest, ForceTriggerOnCookieChange) {
   base::RunLoop run_loop;
   identity_manager_observer()->SetOnAccountsInCookieUpdatedCallback(

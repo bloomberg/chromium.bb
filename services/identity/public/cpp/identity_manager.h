@@ -403,14 +403,6 @@ class IdentityManager : public SigninManagerBase::Observer,
   // state of IdentityManager.
   DiagnosticsProvider* GetDiagnosticsProvider();
 
-  // Seeds the account whose account_id is given by
-  // AccountTrackerService::PickAccountIdForAccount() with its corresponding
-  // account information. Returns the same value PickAccountIdForAccount()
-  // when given the same arguments.
-  // NOTE: In normal usage, this method SHOULD NOT be called for getting the
-  // account id. It's only for replacement of production code.
-  std::string LegacySeedAccountInfo(const AccountInfo& info);
-
 #if defined(OS_CHROMEOS)
   // Sets the primary account info with IdentityManager.
   // TODO(https://crbug.com/814787): Eliminate this method.
@@ -426,6 +418,15 @@ class IdentityManager : public SigninManagerBase::Observer,
   // TODO(https://crbug.com/930582) : Remove the need to expose this method
   // or move it to the network::CookieManager.
   void ForceTriggerOnCookieChange();
+
+  // Seeds the account whose account_id is given by
+  // AccountTrackerService::PickAccountIdForAccount() with its corresponding
+  // account information. Returns the same value PickAccountIdForAccount()
+  // when given the same arguments.
+  // NOTE: In normal usage, this method SHOULD NOT be called for getting the
+  // account id. It's only for replacement of production code.
+  // TODO(https://crbug.com/926940): Eliminate the need to expose this.
+  std::string LegacySeedAccountInfo(const AccountInfo& info);
 
   // Adds a given account to the token service from a system account. This
   // API calls OAuth2TokenServiceDelegate::AddAccountFromSystem and it
