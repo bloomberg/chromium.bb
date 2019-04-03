@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/base_paths.h"
+#include "base/base_paths_fuchsia.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "content/public/common/content_switches.h"
@@ -25,8 +26,8 @@ void InitLoggingFromCommandLine(const base::CommandLine& command_line) {
   base::FilePath log_filename;
   std::string filename = command_line.GetSwitchValueASCII(switches::kLogFile);
   if (filename.empty()) {
-    base::PathService::Get(base::DIR_EXE, &log_filename);
-    log_filename = log_filename.AppendASCII("webrunner.log");
+    base::PathService::Get(base::DIR_APP_DATA, &log_filename);
+    log_filename = log_filename.AppendASCII("web_engine.log");
   } else {
     log_filename = base::FilePath::FromUTF8Unsafe(filename);
   }
