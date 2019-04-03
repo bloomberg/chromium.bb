@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
-#include "chromeos/dbus/authpolicy/active_directory_info.pb.h"
+#include "chromeos/dbus/auth_policy/active_directory_info.pb.h"
 #include "dbus/object_proxy.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -20,7 +20,7 @@ namespace chromeos {
 // AuthPolicyClient is used to communicate with the org.chromium.AuthPolicy
 // sevice. All method should be called from the origin thread (UI thread) which
 // initializes the DBusThreadManager instance.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) AuthPolicyClient {
+class COMPONENT_EXPORT(AUTH_POLICY) AuthPolicyClient {
  public:
   using AuthCallback = base::OnceCallback<void(
       authpolicy::ErrorType error,
