@@ -145,7 +145,7 @@ void AutofillAction::CheckRequiredFields(ActionDelegate* delegate,
   }
 
   DCHECK(!batch_element_checker_);
-  batch_element_checker_ = delegate->CreateBatchElementChecker();
+  batch_element_checker_ = std::make_unique<BatchElementChecker>();
   for (int i = 0; i < proto_.use_address().required_fields_size(); i++) {
     auto& required_address_field = proto_.use_address().required_fields(i);
     DCHECK_GT(required_address_field.element().selectors_size(), 0);
@@ -154,10 +154,8 @@ void AutofillAction::CheckRequiredFields(ActionDelegate* delegate,
         base::BindOnce(&AutofillAction::OnGetRequiredFieldValue,
                        weak_ptr_factory_.GetWeakPtr(), i));
   }
-  batch_element_checker_->Run(
-      base::TimeDelta::FromSeconds(0),
-      /* try_done= */ base::DoNothing(),
-      /* all_done= */
+  delegate->RunElementChecks(
+      batch_element_checker_.get(),
       base::BindOnce(&AutofillAction::OnCheckRequiredFieldsDone,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
                      allow_fallback));

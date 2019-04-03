@@ -46,9 +46,9 @@ class ActionDelegate {
   // the action.
   virtual std::string GetStatusMessage() = 0;
 
-  // Create a helper for checking for multiple element existence or field
-  // values.
-  virtual std::unique_ptr<BatchElementChecker> CreateBatchElementChecker() = 0;
+  // Checks one or more elements.
+  virtual void RunElementChecks(BatchElementChecker* checker,
+                                base::OnceCallback<void()> all_done) = 0;
 
   // Wait for a short time for a given selector to appear.
   //

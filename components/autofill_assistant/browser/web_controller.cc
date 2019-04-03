@@ -295,6 +295,7 @@ void WebController::ElementPositionGetter::Start(
   object_id_ = element_object_id;
   callback_ = std::move(callback);
   remaining_rounds_ = kPeriodicCheckRounds;
+  // TODO(crbug/806868): Consider using autofill_assistant::RetryTimer
 
   // Wait for a roundtrips through the renderer and compositor pipeline,
   // otherwise touch event may be dropped because of missing handler.
@@ -1555,11 +1556,6 @@ void WebController::GetOuterHtml(
       /* strict_mode= */ true,
       base::BindOnce(&WebController::OnFindElementForGetOuterHtml,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
-std::unique_ptr<BatchElementChecker>
-WebController::CreateBatchElementChecker() {
-  return std::make_unique<BatchElementChecker>(this);
 }
 
 void WebController::GetElementPosition(
