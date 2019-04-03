@@ -443,4 +443,76 @@ TEST_F(PowerPolicyControllerTest, PolicyAutoScreenLockDelay) {
       base::TimeDelta::FromMilliseconds(prefs.battery_screen_lock_delay_ms),
       policy_controller_->Get()->GetMaxPolicyAutoScreenLockDelay());
 }
+
+TEST_F(PowerPolicyControllerTest, FastSuspendWhenBacklightsForcedOff) {
+  const int kAcDimMs = 600000;            // 10m
+  const int kAcOffMs = 620000;            // 10m20s
+  const int kAcLockMs = 610000;           // 10m10s
+  const int kAcIdleWarnMs = 650000;       // 10m50s
+  const int kAcIdleMs = 660000;           // 11m
+  const int kBatteryDimMs = 300000;       // 5m
+  const int kBatteryOffMs = 310000;       // 5m10s
+  const int kBatteryLockMs = 320000;      // 5m20s
+  const int kBatteryIdleWarnMs = 355000;  // 5m55s
+  const int kBatteryIdleMs = 360000;      // 6m
+
+  PowerPolicyController::PrefValues prefs;
+  prefs.ac_screen_dim_delay_ms = kAcDimMs;
+  prefs.ac_screen_off_delay_ms = kAcOffMs;
+  prefs.ac_screen_lock_delay_ms = kAcLockMs;
+  prefs.ac_idle_warning_delay_ms = kAcIdleWarnMs;
+  prefs.ac_idle_delay_ms = kAcIdleMs;
+  prefs.battery_screen_dim_delay_ms = kBatteryDimMs;
+  prefs.battery_screen_off_delay_ms = kBatteryOffMs;
+  prefs.battery_screen_lock_delay_ms = kBatteryLockMs;
+  prefs.battery_idle_warning_delay_ms = kBatteryIdleWarnMs;
+  prefs.battery_idle_delay_ms = kBatteryIdleMs;
+  prefs.ac_idle_action = PowerPolicyController::ACTION_SUSPEND;
+  prefs.battery_idle_action = PowerPolicyController::ACTION_SUSPEND;
+  prefs.fast_suspend_when_backlights_forced_off = true;
+  policy_controller_->ApplyPrefs(prefs);
+
+  // We should start out with the delays specified by the prefs.
+  power_manager::PowerManagementPolicy policy = power_manager()->policy();
+  EXPECT_EQ(kAcDimMs, policy.ac_delays().screen_dim_ms());
+  EXPECT_EQ(kAcOffMs, policy.ac_delays().screen_off_ms());
+  EXPECT_EQ(kAcLockMs, policy.ac_delays().screen_lock_ms());
+  EXPECT_EQ(kAcIdleWarnMs, policy.ac_delays().idle_warning_ms());
+  EXPECT_EQ(kAcIdleMs, policy.ac_delays().idle_ms());
+  EXPECT_EQ(kBatteryDimMs, policy.battery_delays().screen_dim_ms());
+  EXPECT_EQ(kBatteryOffMs, policy.battery_delays().screen_off_ms());
+  EXPECT_EQ(kBatteryLockMs, policy.battery_delays().screen_lock_ms());
+  EXPECT_EQ(kBatteryIdleWarnMs, policy.battery_delays().idle_warning_ms());
+  EXPECT_EQ(kBatteryIdleMs, policy.battery_delays().idle_ms());
+
+  // After reporting that the backlights were forced off for a power button
+  // press, the idle and idle-warning delays should be shortened and other
+  // delays should be cleared.
+  policy_controller_->HandleBacklightsForcedOffForPowerButton(true);
+  policy = power_manager()->policy();
+  EXPECT_EQ(0, policy.ac_delays().screen_dim_ms());
+  EXPECT_EQ(0, policy.ac_delays().screen_off_ms());
+  EXPECT_EQ(0, policy.ac_delays().screen_lock_ms());
+  EXPECT_EQ(kAcIdleWarnMs - kAcOffMs, policy.ac_delays().idle_warning_ms());
+  EXPECT_EQ(kAcIdleMs - kAcOffMs, policy.ac_delays().idle_ms());
+  EXPECT_EQ(0, policy.battery_delays().screen_dim_ms());
+  EXPECT_EQ(0, policy.battery_delays().screen_off_ms());
+  EXPECT_EQ(0, policy.battery_delays().screen_lock_ms());
+  EXPECT_EQ(kBatteryIdleWarnMs - kBatteryOffMs,
+            policy.battery_delays().idle_warning_ms());
+  EXPECT_EQ(kBatteryIdleMs - kBatteryOffMs, policy.battery_delays().idle_ms());
+
+  // If the screen-off delay is equal to the idle delay and longer than the
+  // idle-warning delay, both the idle and idle-warning delays should be set to
+  // 1 (the minimum delay allowed by powerd).
+  prefs.ac_screen_off_delay_ms = kAcIdleMs;
+  policy_controller_->ApplyPrefs(prefs);
+  policy = power_manager()->policy();
+  EXPECT_EQ(0, policy.ac_delays().screen_dim_ms());
+  EXPECT_EQ(0, policy.ac_delays().screen_off_ms());
+  EXPECT_EQ(0, policy.ac_delays().screen_lock_ms());
+  EXPECT_EQ(1, policy.ac_delays().idle_warning_ms());
+  EXPECT_EQ(1, policy.ac_delays().idle_ms());
+}
+
 }  // namespace chromeos

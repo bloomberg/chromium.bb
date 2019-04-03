@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -80,6 +81,32 @@ bool IsWakeLockReasonHonored(PowerPolicyController::WakeLockReason reason,
   return true;
 }
 
+// Adjusts |delays| appropriately for backlights having been forced off by
+// tapping the power button. The idle delay is shortened to (idle - screen off),
+// and the idle warning delay (if set) is shortened to (idle warning - screen
+// off). All other delays are cleared, as the display should already be off.
+void AdjustDelaysForBacklightsForcedOff(
+    power_manager::PowerManagementPolicy::Delays* delays) {
+  if (delays->screen_off_ms() <= 0 || delays->idle_ms() <= 0)
+    return;
+
+  // The screen-off delay should always be shorter than or equal to the idle
+  // delay, but we clamp the value just in case the prefs don't adhere to this.
+  // powerd only honors delays that are greater than 0, so use 1 ms as the min.
+  const int64_t idle_ms = std::max(delays->idle_ms() - delays->screen_off_ms(),
+                                   static_cast<int64_t>(1));
+  const int64_t warn_ms =
+      delays->idle_warning_ms() > 0
+          ? std::max(delays->idle_warning_ms() - delays->screen_off_ms(),
+                     static_cast<int64_t>(1))
+          : -1;
+
+  delays->Clear();
+  delays->set_idle_ms(idle_ms);
+  if (warn_ms > 0)
+    delays->set_idle_warning_ms(warn_ms);
+}
+
 power_manager::PowerManagementPolicy::PeakShiftDayConfig::WeekDay
 GetProtoWeekDay(PowerPolicyController::WeekDay week_day) {
   switch (week_day) {
@@ -113,43 +140,11 @@ GetProtoDayTime(const PowerPolicyController::DayTime& day_time) {
 
 }  // namespace
 
+PowerPolicyController::PrefValues::PrefValues() = default;
+PowerPolicyController::PrefValues::~PrefValues() = default;
+
 const int PowerPolicyController::kScreenLockAfterOffDelayMs = 10000;  // 10 sec.
 const char PowerPolicyController::kPrefsReason[] = "Prefs";
-
-// -1 is interpreted as "unset" by powerd, resulting in powerd's default
-// delays being used instead.  There are no similarly-interpreted values
-// for the other fields, unfortunately (but the constructor-assigned values
-// will only reach powerd if Chrome messes up and forgets to override them
-// with the pref-assigned values).
-PowerPolicyController::PrefValues::PrefValues()
-    : ac_screen_dim_delay_ms(-1),
-      ac_screen_off_delay_ms(-1),
-      ac_screen_lock_delay_ms(-1),
-      ac_idle_warning_delay_ms(-1),
-      ac_idle_delay_ms(-1),
-      battery_screen_dim_delay_ms(-1),
-      battery_screen_off_delay_ms(-1),
-      battery_screen_lock_delay_ms(-1),
-      battery_idle_warning_delay_ms(-1),
-      battery_idle_delay_ms(-1),
-      ac_idle_action(ACTION_SUSPEND),
-      battery_idle_action(ACTION_SUSPEND),
-      lid_closed_action(ACTION_SUSPEND),
-      use_audio_activity(true),
-      use_video_activity(true),
-      ac_brightness_percent(-1.0),
-      battery_brightness_percent(-1.0),
-      allow_wake_locks(true),
-      allow_screen_wake_locks(true),
-      enable_auto_screen_lock(false),
-      presentation_screen_dim_delay_factor(1.0),
-      user_activity_screen_dim_delay_factor(1.0),
-      wait_for_initial_user_activity(false),
-      force_nonzero_brightness_for_user_activity(true),
-      peak_shift_enabled(false),
-      peak_shift_battery_threshold(-1) {}
-
-PowerPolicyController::PrefValues::~PrefValues() = default;
 
 // static
 std::string PowerPolicyController::GetPolicyDebugString(
@@ -321,6 +316,9 @@ void PowerPolicyController::ApplyPrefs(const PrefValues& values) {
   honor_screen_wake_locks_ =
       honor_wake_locks_ && values.allow_screen_wake_locks;
 
+  fast_suspend_when_backlights_forced_off_ =
+      values.fast_suspend_when_backlights_forced_off;
+
   if (values.peak_shift_enabled) {
     prefs_policy_.set_peak_shift_battery_percent_threshold(
         values.peak_shift_battery_threshold);
@@ -395,6 +393,14 @@ void PowerPolicyController::NotifyChromeIsExiting() {
   SendCurrentPolicy();
 }
 
+void PowerPolicyController::HandleBacklightsForcedOffForPowerButton(
+    bool forced_off) {
+  if (forced_off == backlights_forced_off_for_power_button_)
+    return;
+  backlights_forced_off_for_power_button_ = forced_off;
+  SendCurrentPolicy();
+}
+
 void PowerPolicyController::SetEncryptionMigrationActive(bool active) {
   if (encryption_migration_active_ == active)
     return;
@@ -435,6 +441,19 @@ void PowerPolicyController::SendCurrentPolicy() {
   power_manager::PowerManagementPolicy policy = prefs_policy_;
   if (prefs_were_set_)
     causes = kPrefsReason;
+
+  // Shorten suspend delays if the backlight is forced off via the power button.
+  if (backlights_forced_off_for_power_button_ &&
+      fast_suspend_when_backlights_forced_off_) {
+    if (policy.ac_idle_action() ==
+        power_manager::PowerManagementPolicy_Action_SUSPEND) {
+      AdjustDelaysForBacklightsForcedOff(policy.mutable_ac_delays());
+    }
+    if (policy.battery_idle_action() ==
+        power_manager::PowerManagementPolicy_Action_SUSPEND) {
+      AdjustDelaysForBacklightsForcedOff(policy.mutable_battery_delays());
+    }
+  }
 
   if (honor_wake_locks_) {
     bool have_screen_wake_locks = false;

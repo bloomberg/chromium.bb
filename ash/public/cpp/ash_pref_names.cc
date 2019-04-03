@@ -284,6 +284,12 @@ const char kPowerWaitForInitialUserActivity[] =
 const char kPowerForceNonzeroBrightnessForUserActivity[] =
     "power.force_nonzero_brightness_for_user_activity";
 
+// Boolean controlling whether a shorter suspend delay should be used after the
+// user forces the display off by pressing the power button. Provided to allow
+// policy to control this behavior.
+const char kPowerFastSuspendWhenBacklightsForcedOff[] =
+    "power.fast_suspend_when_backlights_forced_off";
+
 // Boolean controlling whether smart dim model is enabled.
 const char kPowerSmartDimEnabled[] = "power.smart_dim_enabled";
 

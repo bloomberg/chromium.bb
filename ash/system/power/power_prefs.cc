@@ -115,6 +115,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   registry->RegisterBooleanPref(
       prefs::kPowerForceNonzeroBrightnessForUserActivity, true,
       PrefRegistry::PUBLIC);
+  registry->RegisterBooleanPref(prefs::kPowerFastSuspendWhenBacklightsForcedOff,
+                                true, PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(prefs::kPowerSmartDimEnabled, true,
                                 PrefRegistry::PUBLIC);
 
@@ -391,6 +393,8 @@ void PowerPrefs::UpdatePowerPolicyFromPrefs() {
       prefs->GetBoolean(prefs::kPowerWaitForInitialUserActivity);
   values.force_nonzero_brightness_for_user_activity =
       prefs->GetBoolean(prefs::kPowerForceNonzeroBrightnessForUserActivity);
+  values.fast_suspend_when_backlights_forced_off =
+      prefs->GetBoolean(prefs::kPowerFastSuspendWhenBacklightsForcedOff);
 
   if (local_state_->GetBoolean(prefs::kDevicePowerPeakShiftEnabled) &&
       local_state_->IsManagedPreference(prefs::kDevicePowerPeakShiftEnabled) &&
@@ -461,6 +465,8 @@ void PowerPrefs::ObservePrefs(PrefService* prefs) {
                           update_callback);
   profile_registrar_->Add(prefs::kAllowScreenLock, update_callback);
   profile_registrar_->Add(prefs::kPowerSmartDimEnabled, update_callback);
+  profile_registrar_->Add(prefs::kPowerFastSuspendWhenBacklightsForcedOff,
+                          update_callback);
 
   UpdatePowerPolicyFromPrefs();
 }
