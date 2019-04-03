@@ -34,25 +34,23 @@ class ASH_EXPORT ShelfTooltipPreviewBubble : public ShelfBubble,
   void RemovePreview(WindowPreview* preview);
 
   // BubbleDialogDelegateView overrides:
-  gfx::Size CalculatePreferredSize() const override;
+  gfx::Rect GetBubbleBounds() override;
 
   // ShelfBubble:
   bool ShouldCloseOnPressDown() override;
   bool ShouldCloseOnMouseExit() override;
 
   // WindowPreview::Delegate:
+  float GetMaxPreviewRatio() const override;
   void OnPreviewDismissed(WindowPreview* preview) override;
   void OnPreviewActivated(WindowPreview* preview) override;
 
-  // views::View:
-  void Layout() override;
-
   std::vector<WindowPreview*> previews_;
 
-  // Computed dimensions for the tooltip.
-  int width_ = 0;
-  int height_ = 0;
+  // Preferred size for the tooltip.
   ShelfTooltipManager* manager_;
+
+  const ShelfAlignment shelf_alignment_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfTooltipPreviewBubble);
 };
