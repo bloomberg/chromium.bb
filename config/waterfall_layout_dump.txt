@@ -376,6 +376,7 @@
 
 == informational ==
   amd64-generic-asan
+  amd64-generic-coverage-fuzzer
   amd64-generic-fuzzer
   amd64-generic-msan-fuzzer
   amd64-generic-tot-asan-informational
@@ -749,6 +750,7 @@
   amd64-generic-cheets-unittest-stress
   amd64-generic-chromium-pfq-tryjob
   amd64-generic-compile-only-pre-cq
+  amd64-generic-coverage-fuzzer-tryjob
   amd64-generic-full-tryjob
   amd64-generic-fuzzer-tryjob
   amd64-generic-goma-canary-chromium-pfq-informational-tryjob

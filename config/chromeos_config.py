@@ -2845,6 +2845,19 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
   )
 
   site_config.Add(
+      'amd64-generic-coverage-fuzzer',
+      site_config.templates.fuzzer,
+      boards=['amd64-generic'],
+      profile='coverage-fuzzer',
+      description='Build for fuzzing coverage testing',
+      gs_path='gs://chromeos-fuzzing-artifacts/libfuzzer-coverage',
+      disk_layout='4gb-rootfs',
+      # Every 3 hours.
+      schedule='0 */3 * * *',
+      board_replace=True,
+  )
+
+  site_config.Add(
       'amd64-generic-msan-fuzzer',
       site_config.templates.fuzzer,
       boards=['amd64-generic'],
