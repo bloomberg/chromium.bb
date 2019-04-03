@@ -202,6 +202,8 @@ viz_component("common") {
     "traced_value.cc",
     "traced_value.h",
     "viz_common_export.h",
+    "viz_utils.cc",
+    "viz_utils.h",
   ]
 
   deps = [
