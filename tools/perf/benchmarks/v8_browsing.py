@@ -85,6 +85,8 @@ def AugmentOptionsForV8BrowsingMetrics(options, enable_runtime_call_stats=True):
   memory_dump_config.AddTrigger('light', 1000)
   options.config.chrome_trace_config.SetMemoryDumpConfig(memory_dump_config)
 
+  options.config.chrome_trace_config.SetTraceBufferSizeInKb(400 * 1024)
+
   metrics = [
     'blinkGcMetric',
     'consoleErrorMetric',
