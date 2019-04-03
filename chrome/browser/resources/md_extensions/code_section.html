@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/load_time_data.html">
@@ -10,34 +11,46 @@
   <template>
     <style include="cr-hidden-style">
       :host {
+        --container-bg: white;
+        --line-bg: var(--paper-grey-300);
+        --main-color: var(--paper-grey-800);
         display: block;
       }
 
+      :host-context([dark]) {
+        --container-bg: rgba(0, 0, 0, .4);
+        --line-bg: var(--google-grey-800);
+        --main-color: var(--cr-primary-text-color);
+      }
+
       #scroll-container {
-        /* TODO(crbug.com/937159): all of the code themed for "light mode" and
-         * needs to be updated to co-exist with "dark mode" when specs are
-         * available. */
-        background: white;
-        border: 1px solid var(--paper-grey-500);
+        background: var(--container-bg);
         height: 100%;
         overflow: auto;
         position: relative;
       }
 
+      :host-context(html:not([dark])) #scroll-container {
+        border: 1px solid var(--paper-grey-500);
+      }
+
       #main {
-        color: var(--paper-grey-800);
+        color: var(--main-color);
         display: flex;
         font-family: monospace;
         min-height: 100%;
       }
 
       #line-numbers {
-        background: var(--paper-grey-300);
-        border-inline-end: 1px solid var(--paper-grey-500);
+        background: var(--line-bg);
         display: flex;
         flex-direction: column;
         padding: 0 8px;
         text-align: end;
+      }
+
+      :host-context(html:not([dark])) #line-numbers {
+        border-inline-end: 1px solid var(--paper-grey-500);
       }
 
       #source {
@@ -59,13 +72,18 @@
         color: var(--paper-grey-800);
       }
 
-      .more-code {
+      :host-context(html:not([dark])) .more-code {
         color: var(--paper-grey-500);
       }
 
       #highlight-description {
         height: 0;
         overflow: hidden;
+      }
+
+      :host-context([dark]) mark {
+        background-color: var(--google-yellow-refresh-300);
+        color: var(--google-grey-900);
       }
     </style>
     <div id="scroll-container" hidden="[[!highlighted_]]" dir="ltr">
