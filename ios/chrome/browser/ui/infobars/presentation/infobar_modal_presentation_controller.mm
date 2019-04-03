@@ -15,10 +15,8 @@ namespace {
 const CGFloat kPresentedViewHeight = 267.0;
 // The presented view outer horizontal margins.
 const CGFloat kPresentedViewHorizontalMargin = 10.0;
-// The presented view origin on the X coordinate system of the parent view.
-const CGFloat kPresentedViewOriginX = 10.0;
-// The presented view origin on the Y coordinate system of the parent view.
-const CGFloat kPresentedViewOriginY = 277.0;
+// The presented view maximum width.
+const CGFloat kPresentedViewMaxWidth = 394.0;
 // The rounded corner radius for the container view.
 const CGFloat kContainerCornerRadius = 13.0;
 // The background colot for the container view.
@@ -29,24 +27,34 @@ const CGFloat kContainerBackgroundColorAlpha = 0.5;
 
 @implementation InfobarModalPresentationController
 
-// TODO(crbug.com/1372916): Placeholder size and position for the presented
-// view.
 - (void)containerViewWillLayoutSubviews {
-  CGRect safeAreaBounds = self.containerView.safeAreaLayoutGuide.layoutFrame;
-  CGFloat safeAreaWidth = CGRectGetWidth(safeAreaBounds);
-  CGFloat maxAvailableWidth =
-      safeAreaWidth - 2 * kPresentedViewHorizontalMargin;
-  self.presentedView.frame =
-      CGRectMake(kPresentedViewOriginX, kPresentedViewOriginY,
-                 maxAvailableWidth, kPresentedViewHeight);
+  self.presentedView.frame = [self frameForPresentedView];
 
+  // Style the presented and container views.
   self.presentedView.layer.cornerRadius = kContainerCornerRadius;
   self.presentedView.layer.masksToBounds = YES;
   self.presentedView.clipsToBounds = YES;
-
-  UIColor* backgroundColor = UIColorFromRGB(kContainerBackgroundColor);
   self.containerView.backgroundColor =
-      [backgroundColor colorWithAlphaComponent:kContainerBackgroundColorAlpha];
+      [UIColorFromRGB(kContainerBackgroundColor)
+          colorWithAlphaComponent:kContainerBackgroundColorAlpha];
+}
+
+- (CGRect)frameForPresentedView {
+  CGFloat containerWidth = CGRectGetWidth(self.containerView.bounds);
+  CGFloat containerHeight = CGRectGetHeight(self.containerView.bounds);
+
+  // Calculate the frame width.
+  CGFloat maxAvailableWidth =
+      containerWidth - 2 * kPresentedViewHorizontalMargin;
+  CGFloat frameWidth = fmin(maxAvailableWidth, kPresentedViewMaxWidth);
+
+  // Based on the container width calculate the values in order to center the
+  // frame in the X and Y axis.
+  CGFloat modalXPosition = (containerWidth / 2) - (frameWidth / 2);
+  CGFloat modalYPosition = (containerHeight / 2) - (kPresentedViewHeight / 2);
+
+  return CGRectMake(modalXPosition, modalYPosition, frameWidth,
+                    kPresentedViewHeight);
 }
 
 @end
