@@ -204,9 +204,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void OnSynchronizedDisplayPropertiesChanged() override;
   viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
       const cc::RenderFrameMetadata& metadata) override;
-
   void DidNavigate() override;
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
+  bool CanSynchronizeVisualProperties() override;
 
   // Overridden from ui::TextInputClient:
   void SetCompositionText(const ui::CompositionText& composition) override;
@@ -578,6 +578,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   void InvalidateLocalSurfaceIdOnEviction();
 
+  // Called to process a display metrics change.
+  void ProcessDisplayMetricsChanged();
+
   const bool is_mus_browser_plugin_guest_;
 
   // NOTE: this is null if |is_mus_browser_plugin_guest_| is true.
@@ -712,6 +715,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   bool is_first_navigation_ = true;
   viz::LocalSurfaceIdAllocation inset_surface_id_allocation_;
+
+  // See OnDisplayMetricsChanged() for details.
+  bool needs_to_update_display_metrics_ = false;
 
   base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_;
 

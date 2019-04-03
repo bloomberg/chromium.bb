@@ -1024,7 +1024,8 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
   // request, before subsequently merging ids to send.
   if (visual_properties_ack_pending_ || !process_->IsInitializedAndNotDead() ||
       !view_ || !view_->HasSize() || !renderer_initialized_ || !delegate_ ||
-      surface_id_allocation_suppressed_) {
+      surface_id_allocation_suppressed_ ||
+      !view_->CanSynchronizeVisualProperties()) {
     return false;
   }
 

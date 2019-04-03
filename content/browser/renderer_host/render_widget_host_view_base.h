@@ -450,6 +450,11 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // should be called before the WebContents is fully destroyed.
   virtual void OnInterstitialPageGoingAway() {}
 
+  // Returns true if the visual properties should be sent to the renderer at
+  // this time. This function is intended for subclasses to suppress
+  // synchronization, the default implementation returns true.
+  virtual bool CanSynchronizeVisualProperties();
+
   //----------------------------------------------------------------------------
   // The following methods are related to IME.
   // TODO(ekaramad): Most of the IME methods should not stay virtual after IME

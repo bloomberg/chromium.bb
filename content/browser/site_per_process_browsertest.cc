@@ -140,6 +140,8 @@
 
 #if defined(USE_AURA)
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -998,6 +1000,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       static_cast<aura::TestScreen*>(display::Screen::GetScreen());
   test_screen->CreateHostForPrimaryDisplay();
   test_screen->SetDeviceScaleFactor(expected_dip_scale);
+
+  // This forces |expected_dip_scale| to be applied to the aura::WindowTreeHost
+  // and aura::Window.
+  aura::WindowTreeHost* window_tree_host = shell()->window()->GetHost();
+  window_tree_host->SetBoundsInPixels(window_tree_host->GetBoundsInPixels());
 
   double device_scale_factor = 0;
   // Wait until dppx becomes 2 if the frame's dpr hasn't beeen updated
