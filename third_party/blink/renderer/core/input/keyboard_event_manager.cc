@@ -236,7 +236,7 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
   KeyboardEvent* keydown =
       KeyboardEvent::Create(key_down_event, frame_->GetDocument()->domWindow());
   if (matched_an_access_key)
-    keydown->SetDefaultPrevented(true);
+    keydown->preventDefault();
   keydown->SetTarget(node);
 
   keydown->SetStopPropagation(!should_send_key_events_to_js);
