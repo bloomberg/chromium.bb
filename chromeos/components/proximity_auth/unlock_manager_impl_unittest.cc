@@ -23,6 +23,7 @@
 #include "chromeos/components/proximity_auth/remote_device_life_cycle.h"
 #include "chromeos/components/proximity_auth/remote_status_update.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_client_channel.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"

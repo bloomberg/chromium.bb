@@ -5,14 +5,13 @@
 #ifndef CHROMEOS_DBUS_UPSTART_FAKE_UPSTART_CLIENT_H_
 #define CHROMEOS_DBUS_UPSTART_FAKE_UPSTART_CLIENT_H_
 
-#include "base/component_export.h"
 #include "base/macros.h"
+
 #include "chromeos/dbus/upstart/upstart_client.h"
 
 namespace chromeos {
 
-class COMPONENT_EXPORT(UPSTART_CLIENT) FakeUpstartClient
-    : public UpstartClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeUpstartClient : public UpstartClient {
  public:
   FakeUpstartClient();
   ~FakeUpstartClient() override;

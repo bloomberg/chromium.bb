@@ -9,10 +9,10 @@
 #include <string>
 #include <utility>
 
-#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+
 #include "chromeos/dbus/auth_policy/auth_policy_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
@@ -22,7 +22,7 @@ class AccountId;
 
 namespace chromeos {
 
-class COMPONENT_EXPORT(AUTH_POLICY) FakeAuthPolicyClient
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeAuthPolicyClient
     : public AuthPolicyClient {
  public:
   FakeAuthPolicyClient();

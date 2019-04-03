@@ -19,7 +19,7 @@ component("idle") {
   ]
 
   if (is_chromeos) {
-    deps += [ "//chromeos/dbus/session_manager" ]
+    deps += [ "//chromeos/dbus" ]
   }
 
   sources = [

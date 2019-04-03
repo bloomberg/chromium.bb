@@ -22,7 +22,7 @@ namespace chromeos {
 // UpstartClient is used to communicate with the com.ubuntu.Upstart
 // sevice. All methods should be called from the origin thread (UI thread) which
 // initializes the DBusThreadManager instance.
-class COMPONENT_EXPORT(UPSTART_CLIENT) UpstartClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) UpstartClient {
  public:
   virtual ~UpstartClient();
 
