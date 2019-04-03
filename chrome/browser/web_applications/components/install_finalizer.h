@@ -34,6 +34,10 @@ class InstallFinalizer {
   virtual void FinalizeInstall(const WebApplicationInfo& web_app_info,
                                InstallFinalizedCallback callback) = 0;
 
+  // TODO(ortuno): Merge with FinalizeInstall by taking an options argument.
+  virtual void FinalizePolicyInstall(const WebApplicationInfo& web_app_info,
+                                     InstallFinalizedCallback callback) = 0;
+
   virtual bool CanCreateOsShortcuts() const = 0;
   virtual void CreateOsShortcuts(const AppId& app_id,
                                  CreateOsShortcutsCallback callback) = 0;

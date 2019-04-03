@@ -20,8 +20,10 @@
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/common/extension_id.h"
+#include "extensions/common/manifest.h"
 
 namespace extensions {
 
@@ -200,6 +202,30 @@ TEST_F(BookmarkAppInstallFinalizerTest, ConcurrentInstallSucceeds) {
 
   EXPECT_TRUE(callback1_called);
   EXPECT_TRUE(callback2_called);
+}
+
+TEST_F(BookmarkAppInstallFinalizerTest, PolicyInstallSucceeds) {
+  BookmarkAppInstallFinalizer installer(profile());
+
+  auto info = std::make_unique<WebApplicationInfo>();
+  info->app_url = GURL(kWebAppUrl);
+  info->title = base::ASCIIToUTF16(kWebAppTitle);
+
+  base::RunLoop run_loop;
+  installer.FinalizePolicyInstall(
+      *info,
+      base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
+                                     web_app::InstallResultCode code) {
+        EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+
+        auto* extension =
+            ExtensionRegistry::Get(profile())->GetInstalledExtension(
+                installed_app_id);
+        EXPECT_TRUE(Manifest::IsPolicyLocation(extension->location()));
+
+        run_loop.Quit();
+      }));
+  run_loop.Run();
 }
 
 }  // namespace extensions

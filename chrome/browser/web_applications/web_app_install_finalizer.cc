@@ -80,6 +80,12 @@ void WebAppInstallFinalizer::FinalizeInstall(
                      std::move(web_app)));
 }
 
+void WebAppInstallFinalizer::FinalizePolicyInstall(
+    const WebApplicationInfo& web_app_info,
+    InstallFinalizedCallback callback) {
+  NOTIMPLEMENTED();
+}
+
 void WebAppInstallFinalizer::OnDataWritten(InstallFinalizedCallback callback,
                                            std::unique_ptr<WebApp> web_app,
                                            bool success) {
