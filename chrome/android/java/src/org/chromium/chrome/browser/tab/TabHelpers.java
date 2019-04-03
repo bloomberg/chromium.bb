@@ -11,8 +11,6 @@ import org.chromium.chrome.browser.crypto.CipherFactory;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.media.ui.MediaSessionTabHelper;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
-import org.chromium.components.content_capture.ContentCaptureFeatures;
-import org.chromium.components.content_capture.ContentCaptureReceiverManager;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
@@ -67,8 +65,5 @@ public final class TabHelpers {
         // For browser tabs, we want to set accessibility focus to the page when it loads. This
         // is not the default behavior for embedded web views.
         WebContentsAccessibility.fromWebContents(webContents).setShouldFocusOnPageLoad(true);
-
-        // The created object is held by native side.
-        if (ContentCaptureFeatures.isEnabled()) ContentCaptureReceiverManager.create(webContents);
     }
 }

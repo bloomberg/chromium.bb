@@ -56,6 +56,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.widget.ControlContainer;
+import org.chromium.components.content_capture.ContentCaptureConsumer;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.UiUtils;
@@ -131,6 +132,8 @@ public class CompositorViewHolder extends FrameLayout
     private boolean mHasDrawnOnce;
 
     private boolean mIsInVr;
+
+    protected ContentCaptureConsumer mContentCaptureConsumer;
 
     /**
      * This view is created on demand to display debugging information.
@@ -454,6 +457,10 @@ public class CompositorViewHolder extends FrameLayout
             mInsetObserverView.removeObserver(this);
             mInsetObserverView = null;
         }
+        if (mContentCaptureConsumer != null) {
+            mContentCaptureConsumer.destroy();
+            mContentCaptureConsumer = null;
+        }
     }
 
     /**
@@ -590,7 +597,7 @@ public class CompositorViewHolder extends FrameLayout
         return tab != null ? tab.getContentView() : null;
     }
 
-    private WebContents getWebContents() {
+    protected WebContents getWebContents() {
         Tab tab = getCurrentTab();
         return tab != null ? tab.getWebContents() : null;
     }
@@ -1063,6 +1070,10 @@ public class CompositorViewHolder extends FrameLayout
         updateContentOverlayVisibility(mContentOverlayVisiblity);
 
         if (mTabVisible != null) initializeTab(mTabVisible);
+
+        if (mContentCaptureConsumer != null) {
+            mContentCaptureConsumer.onWebContentsChanged(getWebContents());
+        }
     }
 
     /**
