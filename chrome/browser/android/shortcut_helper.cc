@@ -324,15 +324,6 @@ bool ShortcutHelper::IsWebApkInstalled(content::BrowserContext* browser_context,
              ->IsInstallInProgress(manifest_url);
 }
 
-GURL ShortcutHelper::GetScopeFromURL(const GURL& url) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> java_url =
-      base::android::ConvertUTF8ToJavaString(env, url.spec());
-  ScopedJavaLocalRef<jstring> java_scope_url =
-      Java_ShortcutHelper_getScopeFromUrl(env, java_url);
-  return GURL(base::android::ConvertJavaStringToUTF16(env, java_scope_url));
-}
-
 void ShortcutHelper::RetrieveWebApks(const WebApkInfoCallback& callback) {
   uintptr_t callback_pointer =
       reinterpret_cast<uintptr_t>(new WebApkInfoCallback(callback));

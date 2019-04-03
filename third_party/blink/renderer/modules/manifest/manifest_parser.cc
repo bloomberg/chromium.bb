@@ -224,20 +224,24 @@ GURL ManifestParser::ParseScope(const base::DictionaryValue& dictionary,
   GURL scope = ParseURL(dictionary, "scope", manifest_url_,
                         ParseURLOriginRestrictions::kSameOriginOnly);
 
-  if (!scope.is_empty()) {
-    // According to the spec, if the start_url cannot be parsed, the document
-    // URL should be used as the start URL. If the start_url could not be
-    // parsed, check that the document URL is within scope.
-    GURL check_in_scope = start_url.is_empty() ? document_url_ : start_url;
-    if (check_in_scope.GetOrigin() != scope.GetOrigin() ||
-        !base::StartsWith(check_in_scope.path(), scope.path(),
-                          base::CompareCase::SENSITIVE)) {
-      AddErrorInfo(
-          "property 'scope' ignored. Start url should be within scope "
-          "of scope URL.");
-      return GURL();
-    }
+  // This will change to remove the |document_url_| fallback in the future.
+  // See https://github.com/w3c/manifest/issues/668.
+  const GURL& default_value = start_url.is_empty() ? document_url_ : start_url;
+  DCHECK(default_value.is_valid());
+
+  if (scope.is_empty())
+    return default_value.GetWithoutFilename();
+
+  if (default_value.GetOrigin() != scope.GetOrigin() ||
+      !base::StartsWith(default_value.path(), scope.path(),
+                        base::CompareCase::SENSITIVE)) {
+    AddErrorInfo(
+        "property 'scope' ignored. Start url should be within scope "
+        "of scope URL.");
+    return default_value.GetWithoutFilename();
   }
+
+  DCHECK(scope.is_valid());
   return scope;
 }
 

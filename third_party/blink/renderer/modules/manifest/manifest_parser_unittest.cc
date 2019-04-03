@@ -102,8 +102,8 @@ TEST_F(ManifestParserTest, ValidNoContentParses) {
   // Empty Manifest is not a parsing error.
   EXPECT_EQ(0u, GetErrorCount());
 
-  // Check that all the fields are null in that case.
-  ASSERT_TRUE(manifest.IsEmpty());
+  // Check that the fields are null or set to their default values.
+  ASSERT_FALSE(manifest.IsEmpty());
   ASSERT_TRUE(manifest.name.is_null());
   ASSERT_TRUE(manifest.short_name.is_null());
   ASSERT_TRUE(manifest.start_url.is_empty());
@@ -113,7 +113,7 @@ TEST_F(ManifestParserTest, ValidNoContentParses) {
   ASSERT_FALSE(manifest.background_color.has_value());
   ASSERT_TRUE(manifest.splash_screen_url.is_empty());
   ASSERT_TRUE(manifest.gcm_sender_id.is_null());
-  ASSERT_TRUE(manifest.scope.is_empty());
+  ASSERT_EQ(default_document_url.GetWithoutFilename(), manifest.scope);
 }
 
 TEST_F(ManifestParserTest, MultipleErrorsReporting) {
@@ -307,18 +307,22 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
     EXPECT_EQ(0u, GetErrorCount());
   }
 
-  // Don't parse if property isn't a string.
+  // Return the default value if the property isn't a string.
   {
     Manifest manifest = ParseManifest("{ \"scope\": {} }");
-    ASSERT_TRUE(manifest.scope.is_empty());
+    ASSERT_EQ(manifest.scope.spec(),
+              default_document_url.GetWithoutFilename().spec());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'scope' ignored, type string expected.", errors()[0]);
   }
 
-  // Don't parse if property isn't a string.
+  // Return the default value if property isn't a string.
   {
-    Manifest manifest = ParseManifest("{ \"scope\": 42 }");
-    ASSERT_TRUE(manifest.scope.is_empty());
+    Manifest manifest = ParseManifest(
+        "{ \"scope\": 42, "
+        "\"start_url\": \"http://foo.com/land/landing.html\" }");
+    ASSERT_EQ(manifest.scope.spec(),
+              default_document_url.Resolve("land/").spec());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'scope' ignored, type string expected.", errors()[0]);
   }
@@ -341,7 +345,8 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
         "\"start_url\": \"http://foo.com/index.html\" }",
         GURL("http://foo.com/manifest.json"),
         GURL("http://foo.com/index.html"));
-    ASSERT_TRUE(manifest.scope.is_empty());
+    ASSERT_EQ(manifest.scope.spec(),
+              default_document_url.GetWithoutFilename().spec());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ(
         "property 'scope' ignored. Start url should be within scope "
@@ -356,7 +361,8 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
         "\"start_url\": \"http://bar.com/land/landing.html\" }",
         GURL("http://foo.com/manifest.json"),
         GURL("http://foo.com/index.html"));
-    ASSERT_TRUE(manifest.scope.is_empty());
+    ASSERT_EQ(manifest.scope.spec(),
+              default_document_url.GetWithoutFilename().spec());
     ASSERT_EQ(2u, GetErrorCount());
     EXPECT_EQ(
         "property 'start_url' ignored, should be same origin as document.",
@@ -369,12 +375,12 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
 
   // scope and start URL have diferent origin than document URL.
   {
+    GURL document_url("http://bar.com/index.html");
     Manifest manifest = ParseManifestWithURLs(
         "{ \"scope\": \"http://foo.com/land\", "
         "\"start_url\": \"http://foo.com/land/landing.html\" }",
-        GURL("http://foo.com/manifest.json"),
-        GURL("http://bar.com/index.html"));
-    ASSERT_TRUE(manifest.scope.is_empty());
+        GURL("http://foo.com/manifest.json"), document_url);
+    ASSERT_EQ(manifest.scope.spec(), document_url.GetWithoutFilename().spec());
     ASSERT_EQ(2u, GetErrorCount());
     EXPECT_EQ(
         "property 'start_url' ignored, should be same origin as document.",
@@ -395,10 +401,12 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
 
   // No start URL. Document is out of scope.
   {
+    GURL document_url("http://foo.com/index.html");
     Manifest manifest =
         ParseManifestWithURLs("{ \"scope\": \"http://foo.com/land\" }",
                               GURL("http://foo.com/manifest.json"),
                               GURL("http://foo.com/index.html"));
+    ASSERT_EQ(manifest.scope.spec(), document_url.GetWithoutFilename().spec());
     ASSERT_EQ(1u, GetErrorCount());
     EXPECT_EQ(
         "property 'scope' ignored. Start url should be within scope "
@@ -432,9 +440,33 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
     ASSERT_EQ(manifest.scope.spec(), "http://foo.com/");
     EXPECT_EQ(0u, GetErrorCount());
   }
+
+  // Scope defaults to start_url with the filename, query, and fragment removed.
+  {
+    blink::Manifest manifest =
+        ParseManifest("{ \"start_url\": \"land/landing.html\" }");
+    ASSERT_EQ(manifest.scope.spec(),
+              default_document_url.Resolve("land/").spec());
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  {
+    blink::Manifest manifest =
+        ParseManifest("{ \"start_url\": \"land/land/landing.html\" }");
+    ASSERT_EQ(manifest.scope.spec(),
+              default_document_url.Resolve("land/land/").spec());
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Scope defaults to document_url if start_url is not present.
+  {
+    blink::Manifest manifest = ParseManifest("{}");
+    ASSERT_EQ(manifest.scope.spec(), default_document_url.Resolve(".").spec());
+    EXPECT_EQ(0u, GetErrorCount());
+  }
 }
 
-TEST_F(ManifestParserTest, DisplayParserRules) {
+TEST_F(ManifestParserTest, DisplayParseRules) {
   // Smoke test.
   {
     Manifest manifest = ParseManifest("{ \"display\": \"browser\" }");
@@ -516,7 +548,7 @@ TEST_F(ManifestParserTest, DisplayParserRules) {
   }
 }
 
-TEST_F(ManifestParserTest, OrientationParserRules) {
+TEST_F(ManifestParserTest, OrientationParseRules) {
   // Smoke test.
   {
     Manifest manifest = ParseManifest("{ \"orientation\": \"natural\" }");
@@ -632,7 +664,6 @@ TEST_F(ManifestParserTest, IconsParseRules) {
   {
     Manifest manifest = ParseManifest("{ \"icons\": [] }");
     EXPECT_EQ(manifest.icons.size(), 0u);
-    EXPECT_TRUE(manifest.IsEmpty());
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -640,7 +671,6 @@ TEST_F(ManifestParserTest, IconsParseRules) {
   {
     Manifest manifest = ParseManifest("{ \"icons\": [ {} ] }");
     EXPECT_EQ(manifest.icons.size(), 0u);
-    EXPECT_TRUE(manifest.IsEmpty());
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -648,7 +678,6 @@ TEST_F(ManifestParserTest, IconsParseRules) {
   {
     Manifest manifest = ParseManifest("{ \"icons\": [ { \"icons\": [] } ] }");
     EXPECT_EQ(manifest.icons.size(), 0u);
-    EXPECT_TRUE(manifest.IsEmpty());
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -1013,7 +1042,6 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
   {
     Manifest manifest = ParseManifest("{ \"file_handler\": [] }");
     EXPECT_FALSE(manifest.file_handler.has_value());
-    EXPECT_TRUE(manifest.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("no file handlers were specified.", errors()[0]);
   }
@@ -1121,7 +1149,6 @@ TEST_F(ManifestParserTest, ShareTargetParseRules) {
   {
     Manifest manifest = ParseManifest("{ \"share_target\": {} }");
     EXPECT_FALSE(manifest.share_target.has_value());
-    EXPECT_TRUE(manifest.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'share_target' ignored. Property 'action' is invalid.",
               errors()[0]);
@@ -1132,7 +1159,6 @@ TEST_F(ManifestParserTest, ShareTargetParseRules) {
     Manifest manifest =
         ParseManifest("{ \"share_target\": { \"action\": \"\" } }");
     EXPECT_FALSE(manifest.share_target.has_value());
-    EXPECT_TRUE(manifest.IsEmpty());
     EXPECT_EQ(3u, GetErrorCount());
     EXPECT_EQ(
         "Method should be set to either GET or POST. It currently defaults to "
@@ -1154,7 +1180,6 @@ TEST_F(ManifestParserTest, ShareTargetParseRules) {
     Manifest manifest =
         ParseManifest("{ \"share_target\": { \"params\": {} } }");
     EXPECT_FALSE(manifest.share_target.has_value());
-    EXPECT_TRUE(manifest.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'share_target' ignored. Property 'action' is invalid.",
               errors()[0]);
@@ -1165,7 +1190,6 @@ TEST_F(ManifestParserTest, ShareTargetParseRules) {
     Manifest manifest = ParseManifest(
         "{ \"share_target\": {\"incorrect_key\": \"some_value\" } }");
     ASSERT_FALSE(manifest.share_target.has_value());
-    EXPECT_TRUE(manifest.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'share_target' ignored. Property 'action' is invalid.",
               errors()[0]);
@@ -1228,7 +1252,6 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
         "{ \"share_target\": { \"action\": {}, \"params\": {} } }",
         manifest_url, document_url);
     EXPECT_FALSE(manifest.share_target.has_value());
-    EXPECT_TRUE(manifest.IsEmpty());
     EXPECT_EQ(2u, GetErrorCount());
     EXPECT_EQ("property 'action' ignored, type string expected.", errors()[0]);
     EXPECT_EQ("property 'share_target' ignored. Property 'action' is invalid.",
@@ -1241,7 +1264,6 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
         "{ \"share_target\": { \"action\": 42, \"params\": {} } }",
         manifest_url, document_url);
     EXPECT_FALSE(manifest.share_target.has_value());
-    EXPECT_TRUE(manifest.IsEmpty());
     EXPECT_EQ(2u, GetErrorCount());
     EXPECT_EQ("property 'action' ignored, type string expected.", errors()[0]);
     EXPECT_EQ("property 'share_target' ignored. Property 'action' is invalid.",
@@ -1254,7 +1276,6 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
         "{ \"share_target\": { \"action\": \"\", \"params\": \"\" } }",
         manifest_url, document_url);
     EXPECT_FALSE(manifest.share_target.has_value());
-    EXPECT_TRUE(manifest.IsEmpty());
     EXPECT_EQ(3u, GetErrorCount());
     EXPECT_EQ(
         "Method should be set to either GET or POST. It currently defaults to "
@@ -1277,7 +1298,6 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
         "{ \"share_target\": { \"action\": \"\", \"params\": 42 } }",
         manifest_url, document_url);
     EXPECT_FALSE(manifest.share_target.has_value());
-    EXPECT_TRUE(manifest.IsEmpty());
     EXPECT_EQ(3u, GetErrorCount());
     EXPECT_EQ(
         "Method should be set to either GET or POST. It currently defaults to "
@@ -1377,7 +1397,6 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
         "{} } }",
         manifest_url, document_url);
     EXPECT_FALSE(manifest.share_target.has_value());
-    EXPECT_TRUE(manifest.IsEmpty());
     EXPECT_EQ(2u, GetErrorCount());
     EXPECT_EQ("property 'action' ignored, URL is invalid.", errors()[0]);
     EXPECT_EQ("property 'share_target' ignored. Property 'action' is invalid.",
@@ -1392,7 +1411,6 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
         "\"params\": {} }",
         manifest_url, document_url);
     EXPECT_FALSE(manifest.share_target.has_value());
-    EXPECT_TRUE(manifest.IsEmpty());
     EXPECT_EQ(2u, GetErrorCount());
     EXPECT_EQ("property 'action' ignored, should be same origin as document.",
               errors()[0]);
@@ -2041,7 +2059,6 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
   {
     Manifest manifest = ParseManifest("{ \"related_applications\": []}");
     EXPECT_EQ(manifest.related_applications.size(), 0u);
-    EXPECT_TRUE(manifest.IsEmpty());
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -2049,7 +2066,6 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
   {
     Manifest manifest = ParseManifest("{ \"related_applications\": [{}]}");
     EXPECT_EQ(manifest.related_applications.size(), 0u);
-    EXPECT_TRUE(manifest.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("'platform' is a required field, related application ignored.",
               errors()[0]);
@@ -2060,7 +2076,6 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
     Manifest manifest =
         ParseManifest("{ \"related_applications\": [{\"platform\": 123}]}");
     EXPECT_EQ(manifest.related_applications.size(), 0u);
-    EXPECT_TRUE(manifest.IsEmpty());
     EXPECT_EQ(2u, GetErrorCount());
     EXPECT_EQ("property 'platform' ignored, type string expected.",
               errors()[0]);
@@ -2075,7 +2090,6 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
     Manifest manifest =
         ParseManifest("{ \"related_applications\": [{\"id\": \"foo\"}]}");
     EXPECT_EQ(manifest.related_applications.size(), 0u);
-    EXPECT_TRUE(manifest.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("'platform' is a required field, related application ignored.",
               errors()[0]);
@@ -2086,7 +2100,6 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
     Manifest manifest = ParseManifest(
         "{ \"related_applications\": [{\"platform\": \"play\"}]}");
     EXPECT_EQ(manifest.related_applications.size(), 0u);
-    EXPECT_TRUE(manifest.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("one of 'url' or 'id' is required, related application ignored.",
               errors()[0]);
@@ -2111,7 +2124,6 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
     Manifest manifest = ParseManifest(
         "{ \"related_applications\": ["
         "{\"platform\": \"play\", \"url\": \"http://www.foo.com:co&uk\"}]}");
-    EXPECT_TRUE(manifest.IsEmpty());
     EXPECT_EQ(2u, GetErrorCount());
     EXPECT_EQ("property 'url' ignored, URL is invalid.", errors()[0]);
     EXPECT_EQ("one of 'url' or 'id' is required, related application ignored.",

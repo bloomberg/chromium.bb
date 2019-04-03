@@ -374,6 +374,7 @@ TEST_P(BookmarkAppHelperExtensionServiceInstallableSiteTest,
 
   blink::Manifest manifest;
   manifest.start_url = GURL(kAppUrl);
+  manifest.scope = GURL(kAppDefaultScope);
   manifest.name = base::NullableString16(base::UTF8ToUTF16(kAppTitle), false);
   helper.CompleteInstallableCheck(kManifestUrl, manifest, GetParam());
 
