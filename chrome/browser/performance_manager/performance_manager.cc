@@ -46,6 +46,9 @@ PerformanceManager::PerformanceManager()
 
 PerformanceManager::~PerformanceManager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  for (auto& observer : observers_)
+    graph_.UnregisterObserver(observer.get());
 }
 
 // static
@@ -101,6 +104,12 @@ void PerformanceManager::BatchDeleteNodes(
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&PerformanceManager::BatchDeleteNodesImpl,
                                 base::Unretained(this), std::move(nodes)));
+}
+
+void PerformanceManager::RegisterObserver(
+    std::unique_ptr<GraphObserver> observer) {
+  graph_.RegisterObserver(observer.get());
+  observers_.push_back(std::move(observer));
 }
 
 void PerformanceManager::PostBindInterface(
@@ -190,14 +199,14 @@ void PerformanceManager::OnStartImpl(
   interface_registry_.AddInterface(
       base::BindRepeating(&PageSignalGeneratorImpl::BindToInterface,
                           base::Unretained(page_signal_generator_impl.get())));
-  graph_.RegisterObserver(std::move(page_signal_generator_impl));
+  RegisterObserver(std::move(page_signal_generator_impl));
 
-  graph_.RegisterObserver(std::make_unique<MetricsCollector>());
-  graph_.RegisterObserver(std::make_unique<PageAlmostIdleDecorator>());
+  RegisterObserver(std::make_unique<MetricsCollector>());
+  RegisterObserver(std::make_unique<PageAlmostIdleDecorator>());
 
 #if defined(OS_WIN)
   if (base::FeatureList::IsEnabled(features::kEmptyWorkingSet))
-    graph_.RegisterObserver(std::make_unique<WorkingSetTrimmer>());
+    RegisterObserver(std::make_unique<WorkingSetTrimmer>());
 #endif
 
   interface_registry_.AddInterface(base::BindRepeating(

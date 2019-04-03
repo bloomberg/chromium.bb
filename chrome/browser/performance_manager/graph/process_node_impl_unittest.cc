@@ -21,7 +21,10 @@ class MockGraphObserver : public GraphObserver {
   MockGraphObserver() = default;
   virtual ~MockGraphObserver() = default;
 
-  bool ShouldObserve(const NodeBase* node) override { return true; }
+  bool ShouldObserve(const NodeBase* node) override {
+    return node->id().type ==
+           resource_coordinator::CoordinationUnitType::kProcess;
+  }
 
   MOCK_METHOD1(OnAllFramesInProcessFrozen, void(ProcessNodeImpl*));
 
@@ -38,10 +41,8 @@ TEST_F(ProcessNodeImplTest, MeasureCPUUsage) {
 }
 
 TEST_F(ProcessNodeImplTest, OnAllFramesInProcessFrozen) {
-  auto owned_observer =
-      std::make_unique<testing::StrictMock<MockGraphObserver>>();
-  auto* observer = owned_observer.get();
-  graph()->RegisterObserver(std::move(owned_observer));
+  testing::StrictMock<MockGraphObserver> observer;
+  graph()->RegisterObserver(&observer);
   MockMultiplePagesInSingleProcessGraph mock_graph(graph());
 
   // 1/2 frame in the process is frozen.
@@ -50,23 +51,25 @@ TEST_F(ProcessNodeImplTest, OnAllFramesInProcessFrozen) {
       resource_coordinator::mojom::LifecycleState::kFrozen);
 
   // 2/2 frames in the process are frozen.
-  EXPECT_CALL(*observer, OnAllFramesInProcessFrozen(mock_graph.process.get()));
+  EXPECT_CALL(observer, OnAllFramesInProcessFrozen(mock_graph.process.get()));
   mock_graph.other_frame->SetLifecycleState(
       resource_coordinator::mojom::LifecycleState::kFrozen);
-  testing::Mock::VerifyAndClear(observer);
+  testing::Mock::VerifyAndClear(&observer);
 
   // A frame is unfrozen and frozen.
   mock_graph.frame->SetLifecycleState(
       resource_coordinator::mojom::LifecycleState::kRunning);
-  EXPECT_CALL(*observer, OnAllFramesInProcessFrozen(mock_graph.process.get()));
+  EXPECT_CALL(observer, OnAllFramesInProcessFrozen(mock_graph.process.get()));
   mock_graph.frame->SetLifecycleState(
       resource_coordinator::mojom::LifecycleState::kFrozen);
-  testing::Mock::VerifyAndClear(observer);
+  testing::Mock::VerifyAndClear(&observer);
 
   // A frozen frame is frozen again.
   // No call to OnAllFramesInProcessFrozen() is expected.
   mock_graph.frame->SetLifecycleState(
       resource_coordinator::mojom::LifecycleState::kFrozen);
+
+  graph()->UnregisterObserver(&observer);
 }
 
 TEST_F(ProcessNodeImplTest, ProcessLifeCycle) {

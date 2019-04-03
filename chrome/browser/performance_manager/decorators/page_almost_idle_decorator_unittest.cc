@@ -57,11 +57,13 @@ class PageAlmostIdleDecoratorTest : public GraphTestHarness {
   ~PageAlmostIdleDecoratorTest() override = default;
 
   void SetUp() override {
-    auto paid = std::make_unique<PageAlmostIdleDecorator>();
-    paid_ = paid.get();
-    graph()->RegisterObserver(std::move(paid));
+    paid_ = std::make_unique<PageAlmostIdleDecorator>();
+    graph()->RegisterObserver(paid_.get());
   }
-  void TearDown() override { PerformanceManagerClock::ResetClockForTesting(); }
+  void TearDown() override {
+    PerformanceManagerClock::ResetClockForTesting();
+    graph()->UnregisterObserver(paid_.get());
+  }
 
   void TestPageAlmostIdleTransitions(bool timeout);
 
@@ -69,7 +71,7 @@ class PageAlmostIdleDecoratorTest : public GraphTestHarness {
     return PageAlmostIdleDecorator::IsIdling(page_node);
   }
 
-  PageAlmostIdleDecorator* paid_ = nullptr;
+  std::unique_ptr<PageAlmostIdleDecorator> paid_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PageAlmostIdleDecoratorTest);

@@ -89,26 +89,29 @@ using MockPageSignalReceiver =
 class PageSignalGeneratorImplTest : public GraphTestHarness {
  protected:
   void SetUp() override {
-    std::unique_ptr<MockPageSignalGeneratorImpl> psg(
-        std::make_unique<MockPageSignalGeneratorImpl>());
+    page_signal_generator_ = std::make_unique<MockPageSignalGeneratorImpl>();
 
-    page_signal_generator_ = psg.get();
+    graph()->RegisterObserver(page_signal_generator_.get());
 
-    // The graph takes ownership of the psg.
-    graph()->RegisterObserver(std::move(psg));
-
+    page_almost_idle_decorator_ = std::make_unique<PageAlmostIdleDecorator>();
     // Ensure the PageAlmostIdleDecorator is installed as we depend on state
     // transition driven by it.
-    graph()->RegisterObserver(std::make_unique<PageAlmostIdleDecorator>());
+    graph()->RegisterObserver(page_almost_idle_decorator_.get());
   }
-  void TearDown() override { PerformanceManagerClock::ResetClockForTesting(); }
+  void TearDown() override {
+    PerformanceManagerClock::ResetClockForTesting();
+    graph()->UnregisterObserver(page_almost_idle_decorator_.get());
+    graph()->UnregisterObserver(page_signal_generator_.get());
+  }
 
   MockPageSignalGeneratorImpl* page_signal_generator() {
-    return page_signal_generator_;
+    return page_signal_generator_.get();
   }
 
  private:
-  MockPageSignalGeneratorImpl* page_signal_generator_ = nullptr;
+  std::unique_ptr<MockPageSignalGeneratorImpl> page_signal_generator_;
+  std::unique_ptr<PageAlmostIdleDecorator> page_almost_idle_decorator_;
+
   std::unique_ptr<base::test::ScopedFeatureList> feature_list_;
 };
 

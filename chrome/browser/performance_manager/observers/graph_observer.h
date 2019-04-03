@@ -29,8 +29,9 @@ class SystemNodeImpl;
 //
 // To create and install a new observer:
 //   (1) Derive from this class.
-//   (2) Register by calling on |graph().RegisterObserver|
-//       inside of the ResourceCoordinatorService::Create.
+//   (2) Register by calling on |graph().RegisterObserver|.
+//   (3) Before destruction, unregister by calling on
+//       |graph().UnregisterObserver|.
 //
 // TODO: Clean up the observer API, and create a wrapper version that sees
 // const Node* rather then mutable NodeImpl* types for external consumers.
@@ -87,7 +88,7 @@ class GraphObserver {
 
   void set_node_graph(Graph* graph) { node_graph_ = graph; }
 
-  const Graph& graph() const { return *node_graph_; }
+  Graph* graph() const { return node_graph_; }
 
  private:
   Graph* node_graph_ = nullptr;
