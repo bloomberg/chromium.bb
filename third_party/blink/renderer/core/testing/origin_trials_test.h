@@ -22,10 +22,6 @@ class OriginTrialsTest : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static OriginTrialsTest* Create() {
-    return MakeGarbageCollected<OriginTrialsTest>();
-  }
-
   OriginTrialsTest() = default;
   ~OriginTrialsTest() override = default;
 

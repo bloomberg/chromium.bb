@@ -17,7 +17,8 @@ namespace blink {
 
 class PaintLayerTest : public PaintTestConfigurations, public RenderingTest {
  public:
-  PaintLayerTest() : RenderingTest(SingleChildLocalFrameClient::Create()) {}
+  PaintLayerTest()
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 
   void SetUp() override {
     RenderingTest::SetUp();

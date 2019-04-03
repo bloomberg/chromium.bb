@@ -90,10 +90,6 @@ class Internals final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Internals* Create(ExecutionContext* context) {
-    return MakeGarbageCollected<Internals>(context);
-  }
-
   static void ResetToConsistentState(Page*);
 
   explicit Internals(ExecutionContext*);

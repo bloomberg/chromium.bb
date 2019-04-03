@@ -17,7 +17,8 @@ namespace blink {
 class PaintPropertyTreePrinterTest : public PaintControllerPaintTest {
  public:
   PaintPropertyTreePrinterTest()
-      : PaintControllerPaintTest(SingleChildLocalFrameClient::Create()) {}
+      : PaintControllerPaintTest(
+            MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 
  private:
   void SetUp() override {

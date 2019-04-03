@@ -31,7 +31,7 @@ class MockChromeClient : public EmptyChromeClient {
 class TouchAdjustmentTest : public RenderingTest {
  protected:
   TouchAdjustmentTest()
-      : RenderingTest(SingleChildLocalFrameClient::Create()),
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()),
         chrome_client_(MakeGarbageCollected<MockChromeClient>()) {}
 
   LocalFrame& GetFrame() const { return *GetDocument().GetFrame(); }

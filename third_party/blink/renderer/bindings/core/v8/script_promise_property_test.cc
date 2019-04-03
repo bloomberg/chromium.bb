@@ -288,8 +288,8 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest,
   Persistent<GCObservation> observation;
   {
     ScriptState::Scope scope(MainScriptState());
-    observation =
-        GCObservation::Create(Promise(DOMWrapperWorld::MainWorld()).V8Value());
+    observation = MakeGarbageCollected<GCObservation>(
+        Promise(DOMWrapperWorld::MainWorld()).V8Value());
   }
 
   Gc();

@@ -18,7 +18,7 @@ class VisualRectMappingTest : public PaintTestConfigurations,
                               public RenderingTest {
  public:
   VisualRectMappingTest()
-      : RenderingTest(SingleChildLocalFrameClient::Create()) {}
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 
  protected:
   LayoutView& GetLayoutView() const { return *GetDocument().GetLayoutView(); }

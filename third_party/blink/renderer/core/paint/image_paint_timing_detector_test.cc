@@ -29,7 +29,7 @@ class ImagePaintTimingDetectorTest
 
  public:
   ImagePaintTimingDetectorTest()
-      : RenderingTest(SingleChildLocalFrameClient::Create()),
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()),
         ScopedFirstContentfulPaintPlusPlusForTest(true),
         base_url_("http://www.test.com/") {}
 

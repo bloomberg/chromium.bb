@@ -20,7 +20,8 @@ class LayoutPoint;
 class PaintPropertyTreeBuilderTest : public PaintControllerPaintTest {
  public:
   PaintPropertyTreeBuilderTest()
-      : PaintControllerPaintTest(SingleChildLocalFrameClient::Create()) {}
+      : PaintControllerPaintTest(
+            MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 
  protected:
   void LoadTestData(const char* file_name);

@@ -79,7 +79,7 @@ base::TimeDelta ToTimeDelta(double milliseconds) {
 class WorkletAnimationTest : public RenderingTest {
  public:
   WorkletAnimationTest()
-      : RenderingTest(SingleChildLocalFrameClient::Create()) {}
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 
   void SetUp() override {
     RenderingTest::SetUp();

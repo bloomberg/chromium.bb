@@ -18,7 +18,7 @@ namespace blink {
 class CompositingReasonFinderTest : public RenderingTest {
  public:
   CompositingReasonFinderTest()
-      : RenderingTest(SingleChildLocalFrameClient::Create()) {}
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 
  private:
   void SetUp() override {

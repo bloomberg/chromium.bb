@@ -54,7 +54,7 @@ namespace blink {
 class AnimationAnimationTest : public RenderingTest {
  public:
   AnimationAnimationTest()
-      : RenderingTest(SingleChildLocalFrameClient::Create()) {}
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 
   void SetUp() override {
     RenderingTest::SetUp();

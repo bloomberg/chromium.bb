@@ -44,7 +44,7 @@ class FallbackCursorChromeClient : public EmptyChromeClient {
 class FallbackCursorEventManagerTest : public RenderingTest {
  protected:
   FallbackCursorEventManagerTest()
-      : RenderingTest(SingleChildLocalFrameClient::Create()),
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()),
         chrome_client_(MakeGarbageCollected<FallbackCursorChromeClient>()) {
     RuntimeEnabledFeatures::SetFallbackCursorModeEnabled(true);
   }
