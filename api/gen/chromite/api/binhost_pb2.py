@@ -22,7 +22,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='chromite.api',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x1a\x63hromite/api/binhost.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x17\x63hromiumos/common.proto\"Z\n\x1cPrepareBinhostUploadsRequest\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x0b\n\x03uri\x18\x02 \x01(\t\"\xa4\x01\n\x1dPrepareBinhostUploadsResponse\x12\x13\n\x0buploads_dir\x18\x01 \x01(\t\x12P\n\x0eupload_targets\x18\x02 \x03(\x0b\x32\x38.chromite.api.PrepareBinhostUploadsResponse.UploadTarget\x1a\x1c\n\x0cUploadTarget\x12\x0c\n\x04path\x18\x01 \x01(\t\"\x87\x01\n\x11SetBinhostRequest\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x0f\n\x07private\x18\x02 \x01(\x08\x12%\n\x03key\x18\x03 \x01(\x0e\x32\x18.chromite.api.BinhostKey\x12\x0b\n\x03uri\x18\x04 \x01(\t\")\n\x12SetBinhostResponse\x12\x13\n\x0boutput_file\x18\x01 \x01(\t*^\n\nBinhostKey\x12\x16\n\x12POSTSUBMIT_BINHOST\x10\x00\x12!\n\x1dLATEST_RELEASE_CHROME_BINHOST\x10\x01\x12\x15\n\x11PREFLIGHT_BINHOST\x10\x02\x32\xe4\x01\n\x0e\x42inhostService\x12p\n\x15PrepareBinhostUploads\x12*.chromite.api.PrepareBinhostUploadsRequest\x1a+.chromite.api.PrepareBinhostUploadsResponse\x12O\n\nSetBinhost\x12\x1f.chromite.api.SetBinhostRequest\x1a .chromite.api.SetBinhostResponse\x1a\x0f\xc2\xed\x1a\x0b\n\x07\x62inhost\x10\x01\x62\x06proto3')
+  serialized_pb=_b('\n\x1a\x63hromite/api/binhost.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x17\x63hromiumos/common.proto\"Z\n\x1cPrepareBinhostUploadsRequest\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x0b\n\x03uri\x18\x02 \x01(\t\"\xa4\x01\n\x1dPrepareBinhostUploadsResponse\x12\x13\n\x0buploads_dir\x18\x01 \x01(\t\x12P\n\x0eupload_targets\x18\x02 \x03(\x0b\x32\x38.chromite.api.PrepareBinhostUploadsResponse.UploadTarget\x1a\x1c\n\x0cUploadTarget\x12\x0c\n\x04path\x18\x01 \x01(\t\"\x87\x01\n\x11SetBinhostRequest\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x0f\n\x07private\x18\x02 \x01(\x08\x12%\n\x03key\x18\x03 \x01(\x0e\x32\x18.chromite.api.BinhostKey\x12\x0b\n\x03uri\x18\x04 \x01(\t\")\n\x12SetBinhostResponse\x12\x13\n\x0boutput_file\x18\x01 \x01(\t*\x82\x01\n\nBinhostKey\x12\x0f\n\x0bUNSPECIFIED\x10\x00\x12\x11\n\rDUMMY_BINHOST\x10\x01\x12\x16\n\x12POSTSUBMIT_BINHOST\x10\x02\x12!\n\x1dLATEST_RELEASE_CHROME_BINHOST\x10\x03\x12\x15\n\x11PREFLIGHT_BINHOST\x10\x04\x32\xe4\x01\n\x0e\x42inhostService\x12p\n\x15PrepareBinhostUploads\x12*.chromite.api.PrepareBinhostUploadsRequest\x1a+.chromite.api.PrepareBinhostUploadsResponse\x12O\n\nSetBinhost\x12\x1f.chromite.api.SetBinhostRequest\x1a .chromite.api.SetBinhostResponse\x1a\x0f\xc2\xed\x1a\x0b\n\x07\x62inhost\x10\x02\x62\x06proto3')
   ,
   dependencies=[chromite_dot_api_dot_build__api__pb2.DESCRIPTOR,chromiumos_dot_common__pb2.DESCRIPTOR,])
 
@@ -33,29 +33,39 @@ _BINHOSTKEY = _descriptor.EnumDescriptor(
   file=DESCRIPTOR,
   values=[
     _descriptor.EnumValueDescriptor(
-      name='POSTSUBMIT_BINHOST', index=0, number=0,
+      name='UNSPECIFIED', index=0, number=0,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='LATEST_RELEASE_CHROME_BINHOST', index=1, number=1,
+      name='DUMMY_BINHOST', index=1, number=1,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='PREFLIGHT_BINHOST', index=2, number=2,
+      name='POSTSUBMIT_BINHOST', index=2, number=2,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='LATEST_RELEASE_CHROME_BINHOST', index=3, number=3,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='PREFLIGHT_BINHOST', index=4, number=4,
       serialized_options=None,
       type=None),
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=539,
-  serialized_end=633,
+  serialized_start=540,
+  serialized_end=670,
 )
 _sym_db.RegisterEnumDescriptor(_BINHOSTKEY)
 
 BinhostKey = enum_type_wrapper.EnumTypeWrapper(_BINHOSTKEY)
-POSTSUBMIT_BINHOST = 0
-LATEST_RELEASE_CHROME_BINHOST = 1
-PREFLIGHT_BINHOST = 2
+UNSPECIFIED = 0
+DUMMY_BINHOST = 1
+POSTSUBMIT_BINHOST = 2
+LATEST_RELEASE_CHROME_BINHOST = 3
+PREFLIGHT_BINHOST = 4
 
 
 
@@ -302,9 +312,9 @@ _BINHOSTSERVICE = _descriptor.ServiceDescriptor(
   full_name='chromite.api.BinhostService',
   file=DESCRIPTOR,
   index=0,
-  serialized_options=_b('\302\355\032\013\n\007binhost\020\001'),
-  serialized_start=636,
-  serialized_end=864,
+  serialized_options=_b('\302\355\032\013\n\007binhost\020\002'),
+  serialized_start=673,
+  serialized_end=901,
   methods=[
   _descriptor.MethodDescriptor(
     name='PrepareBinhostUploads',
