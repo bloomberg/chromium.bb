@@ -785,8 +785,8 @@ First frame of bear\_320x192\_40frames.nv12.yuv for image\_processor_test.
 #### bear\_320x192.nv12.yuv.json
 Metadata describing bear\_320x192.nv12.yuv.
 
-#### bear\_320x192.yv21.yuv
-First frame of bear\_320x192\_40frames.yv21.yuv for image\_processor_test.
+#### bear\_320x192.yv12.yuv
+First frame of bear\_320x192\_40frames.yv12.yuv for image\_processor_test.
 
 ###  VP9 parser test files:
 
