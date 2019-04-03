@@ -44,10 +44,6 @@ class ImageResourceObserver;
 // ComputedStyle after it has been returned from the style selector.
 class StylePendingImage final : public StyleImage {
  public:
-  static StylePendingImage* Create(const CSSValue& value) {
-    return MakeGarbageCollected<StylePendingImage>(value);
-  }
-
   explicit StylePendingImage(const CSSValue& value)
       : value_(const_cast<CSSValue*>(&value)) {
     is_pending_image_ = true;

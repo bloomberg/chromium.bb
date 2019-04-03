@@ -326,8 +326,9 @@ TEST(ComputedStyleTest, CursorList) {
   auto* gradient = MakeGarbageCollected<cssvalue::CSSLinearGradientValue>(
       nullptr, nullptr, nullptr, nullptr, nullptr, cssvalue::kRepeating);
 
-  StyleImage* image_value = StyleGeneratedImage::Create(*gradient);
-  StyleImage* other_image_value = StyleGeneratedImage::Create(*gradient);
+  auto* image_value = MakeGarbageCollected<StyleGeneratedImage>(*gradient);
+  auto* other_image_value =
+      MakeGarbageCollected<StyleGeneratedImage>(*gradient);
 
   EXPECT_TRUE(DataEquivalent(image_value, other_image_value));
 

@@ -126,11 +126,6 @@ class CORE_EXPORT FilterOperation
 
 class CORE_EXPORT ReferenceFilterOperation : public FilterOperation {
  public:
-  static ReferenceFilterOperation* Create(const AtomicString& url,
-                                          SVGResource* resource) {
-    return MakeGarbageCollected<ReferenceFilterOperation>(url, resource);
-  }
-
   ReferenceFilterOperation(const AtomicString& url, SVGResource*);
 
   bool AffectsOpacity() const override { return true; }
@@ -174,11 +169,6 @@ struct DowncastTraits<ReferenceFilterOperation> {
 // matrix effect.  For HUE_ROTATE, the angle of rotation is stored in m_amount.
 class CORE_EXPORT BasicColorMatrixFilterOperation : public FilterOperation {
  public:
-  static BasicColorMatrixFilterOperation* Create(double amount,
-                                                 OperationType type) {
-    return MakeGarbageCollected<BasicColorMatrixFilterOperation>(amount, type);
-  }
-
   BasicColorMatrixFilterOperation(double amount, OperationType type)
       : FilterOperation(type), amount_(amount) {}
 
@@ -218,12 +208,6 @@ struct DowncastTraits<BasicColorMatrixFilterOperation> {
 class CORE_EXPORT BasicComponentTransferFilterOperation
     : public FilterOperation {
  public:
-  static BasicComponentTransferFilterOperation* Create(double amount,
-                                                       OperationType type) {
-    return MakeGarbageCollected<BasicComponentTransferFilterOperation>(amount,
-                                                                       type);
-  }
-
   BasicComponentTransferFilterOperation(double amount, OperationType type)
       : FilterOperation(type), amount_(amount) {}
 
@@ -262,11 +246,7 @@ struct DowncastTraits<BasicComponentTransferFilterOperation> {
 
 class CORE_EXPORT BlurFilterOperation : public FilterOperation {
  public:
-  static BlurFilterOperation* Create(const Length& std_deviation) {
-    return MakeGarbageCollected<BlurFilterOperation>(std_deviation);
-  }
-
-  BlurFilterOperation(const Length& std_deviation)
+  explicit BlurFilterOperation(const Length& std_deviation)
       : FilterOperation(BLUR), std_deviation_(std_deviation) {}
 
   const Length& StdDeviation() const { return std_deviation_; }
@@ -334,11 +314,7 @@ struct DowncastTraits<DropShadowFilterOperation> {
 
 class CORE_EXPORT BoxReflectFilterOperation : public FilterOperation {
  public:
-  static BoxReflectFilterOperation* Create(const BoxReflection& reflection) {
-    return MakeGarbageCollected<BoxReflectFilterOperation>(reflection);
-  }
-
-  BoxReflectFilterOperation(const BoxReflection& reflection)
+  explicit BoxReflectFilterOperation(const BoxReflection& reflection)
       : FilterOperation(BOX_REFLECT), reflection_(reflection) {}
 
   const BoxReflection& Reflection() const { return reflection_; }

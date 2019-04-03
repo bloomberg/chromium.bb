@@ -174,8 +174,9 @@ FilterOperations FilterOperationResolver::CreateFilterOperations(
           state.GetElementStyleResources().GetSVGResourceFromValue(
               state.GetTreeScope(), *url_value,
               ElementStyleResources::kAllowExternalResource);
-      operations.Operations().push_back(ReferenceFilterOperation::Create(
-          url_value->ValueForSerialization(), resource));
+      operations.Operations().push_back(
+          MakeGarbageCollected<ReferenceFilterOperation>(
+              url_value->ValueForSerialization(), resource));
       continue;
     }
 
@@ -198,8 +199,8 @@ FilterOperations FilterOperationResolver::CreateFilterOperations(
       case CSSValueID::kSaturate:
       case CSSValueID::kHueRotate: {
         operations.Operations().push_back(
-            BasicColorMatrixFilterOperation::Create(first_number,
-                                                    operation_type));
+            MakeGarbageCollected<BasicColorMatrixFilterOperation>(
+                first_number, operation_type));
         break;
       }
       case CSSValueID::kInvert:
@@ -207,8 +208,8 @@ FilterOperations FilterOperationResolver::CreateFilterOperations(
       case CSSValueID::kContrast:
       case CSSValueID::kOpacity: {
         operations.Operations().push_back(
-            BasicComponentTransferFilterOperation::Create(first_number,
-                                                          operation_type));
+            MakeGarbageCollected<BasicComponentTransferFilterOperation>(
+                first_number, operation_type));
         break;
       }
       case CSSValueID::kBlur: {
@@ -217,7 +218,7 @@ FilterOperations FilterOperationResolver::CreateFilterOperations(
           std_deviation = first_value->ConvertToLength(conversion_data);
         }
         operations.Operations().push_back(
-            BlurFilterOperation::Create(std_deviation));
+            MakeGarbageCollected<BlurFilterOperation>(std_deviation));
         break;
       }
       case CSSValueID::kDropShadow: {
@@ -282,8 +283,8 @@ FilterOperations FilterOperationResolver::CreateOffscreenFilterOperations(
       case CSSValueID::kSaturate:
       case CSSValueID::kHueRotate: {
         operations.Operations().push_back(
-            BasicColorMatrixFilterOperation::Create(first_number,
-                                                    operation_type));
+            MakeGarbageCollected<BasicColorMatrixFilterOperation>(
+                first_number, operation_type));
         break;
       }
       case CSSValueID::kInvert:
@@ -291,8 +292,8 @@ FilterOperations FilterOperationResolver::CreateOffscreenFilterOperations(
       case CSSValueID::kContrast:
       case CSSValueID::kOpacity: {
         operations.Operations().push_back(
-            BasicComponentTransferFilterOperation::Create(first_number,
-                                                          operation_type));
+            MakeGarbageCollected<BasicComponentTransferFilterOperation>(
+                first_number, operation_type));
         break;
       }
       case CSSValueID::kBlur: {
@@ -301,7 +302,7 @@ FilterOperations FilterOperationResolver::CreateOffscreenFilterOperations(
           std_deviation = first_value->ConvertToLength(conversion_data);
         }
         operations.Operations().push_back(
-            BlurFilterOperation::Create(std_deviation));
+            MakeGarbageCollected<BlurFilterOperation>(std_deviation));
         break;
       }
       case CSSValueID::kDropShadow: {

@@ -47,14 +47,6 @@ class StyleFetchedImageSet final : public StyleImage,
   USING_PRE_FINALIZER(StyleFetchedImageSet, Dispose);
 
  public:
-  static StyleFetchedImageSet* Create(ImageResourceContent* image,
-                                      float image_scale_factor,
-                                      CSSImageSetValue* value,
-                                      const KURL& url) {
-    return MakeGarbageCollected<StyleFetchedImageSet>(image, image_scale_factor,
-                                                      value, url);
-  }
-
   StyleFetchedImageSet(ImageResourceContent*,
                        float image_scale_factor,
                        CSSImageSetValue*,

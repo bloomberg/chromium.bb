@@ -260,7 +260,7 @@ FilterOperation* filter_interpolation_functions::CreateFilter(
     case FilterOperation::SEPIA: {
       double value = ClampParameter(
           ToInterpolableNumber(interpolable_value).Value(), type);
-      return BasicColorMatrixFilterOperation::Create(value, type);
+      return MakeGarbageCollected<BasicColorMatrixFilterOperation>(value, type);
     }
 
     case FilterOperation::BRIGHTNESS:
@@ -269,14 +269,15 @@ FilterOperation* filter_interpolation_functions::CreateFilter(
     case FilterOperation::OPACITY: {
       double value = ClampParameter(
           ToInterpolableNumber(interpolable_value).Value(), type);
-      return BasicComponentTransferFilterOperation::Create(value, type);
+      return MakeGarbageCollected<BasicComponentTransferFilterOperation>(value,
+                                                                         type);
     }
 
     case FilterOperation::BLUR: {
       Length std_deviation = LengthInterpolationFunctions::CreateLength(
           interpolable_value, non_interpolable_value.TypeNonInterpolableValue(),
           state.CssToLengthConversionData(), kValueRangeNonNegative);
-      return BlurFilterOperation::Create(std_deviation);
+      return MakeGarbageCollected<BlurFilterOperation>(std_deviation);
     }
 
     case FilterOperation::DROP_SHADOW: {

@@ -83,7 +83,7 @@ class InheritedFilterListChecker
                              const FilterOperations& filter_operations)
       : property_(property),
         filter_operations_wrapper_(
-            FilterOperationsWrapper::Create(filter_operations)) {}
+            MakeGarbageCollected<FilterOperationsWrapper>(filter_operations)) {}
 
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue&) const final {

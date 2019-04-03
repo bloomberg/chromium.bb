@@ -3258,7 +3258,7 @@ FilterOperations PaintLayer::FilterOperationsIncludingReflection() const {
   if (GetLayoutObject().HasReflection() && GetLayoutObject().IsBox()) {
     BoxReflection reflection = BoxReflectionForPaintLayer(*this, style);
     filter_operations.Operations().push_back(
-        BoxReflectFilterOperation::Create(reflection));
+        MakeGarbageCollected<BoxReflectFilterOperation>(reflection));
   }
   return filter_operations;
 }

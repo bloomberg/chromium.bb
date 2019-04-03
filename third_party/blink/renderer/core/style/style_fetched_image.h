@@ -41,13 +41,6 @@ class StyleFetchedImage final : public StyleImage,
   USING_PRE_FINALIZER(StyleFetchedImage, Dispose);
 
  public:
-  static StyleFetchedImage* Create(const Document& document,
-                                   FetchParameters& params,
-                                   bool is_lazyload_deferred) {
-    return MakeGarbageCollected<StyleFetchedImage>(document, params,
-                                                   is_lazyload_deferred);
-  }
-
   StyleFetchedImage(const Document&,
                     FetchParameters&,
                     bool is_lazyload_deferred);
