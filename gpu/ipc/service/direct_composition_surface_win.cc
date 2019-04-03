@@ -483,6 +483,18 @@ class DCLayerTree::SwapChainPresenter {
     kMaxValue = kBindAndVideoProcessorBlit,
   };
 
+  // Mapped to DecodeSwapChainNotUsedReason UMA enum.  Do not remove or remap
+  // existing entries.
+  enum class DecodeSwapChainNotUsedReason {
+    kSoftwareFrame = 0,
+    kNv12NotSupported = 1,
+    kFailedToPresent = 2,
+    kNonDecoderTexture = 3,
+    kSharedTexture = 4,
+    kIncompatibleTransform = 5,
+    kMaxValue = kIncompatibleTransform,
+  };
+
   // Upload given YUV buffers to NV12 |staging_texture_|.  Returns true on
   // success.
   bool UploadVideoImages(gl::GLImageMemory* y_image_memory,
@@ -1154,54 +1166,72 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
   if (UpdateVisuals(params, swap_chain_size))
     *needs_commit = true;
 
-  bool use_decode_swap_chain =
-      base::FeatureList::IsEnabled(
-          features::kDirectCompositionUseNV12DecodeSwapChain) &&
-      g_overlay_format_used == OverlayFormat::kNV12 &&
-      !failed_to_present_decode_swapchain_;
-  // TODO(sunnyps): Try using decode swap chain for uploaded video images.
-  if (image_dxgi && use_decode_swap_chain) {
-    D3D11_TEXTURE2D_DESC texture_desc = {};
-    image_dxgi->texture()->GetDesc(&texture_desc);
+  if (base::FeatureList::IsEnabled(
+          features::kDirectCompositionUseNV12DecodeSwapChain)) {
+    auto not_used_reason = DecodeSwapChainNotUsedReason::kFailedToPresent;
 
-    bool is_decoder_texture = texture_desc.BindFlags & D3D11_BIND_DECODER;
+    bool nv12_supported = g_overlay_format_used == OverlayFormat::kNV12;
+    // TODO(sunnyps): Try using decode swap chain for uploaded video images.
+    if (image_dxgi && nv12_supported && !failed_to_present_decode_swapchain_) {
+      D3D11_TEXTURE2D_DESC texture_desc = {};
+      image_dxgi->texture()->GetDesc(&texture_desc);
 
-    // Decode swap chains do not support shared resources.
-    // TODO(sunnyps): Find a workaround for when the decoder moves to its own
-    // thread and D3D device.  See https://crbug.com/911847
-    bool is_shared_texture =
-        texture_desc.MiscFlags &
-        (D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX |
-         D3D11_RESOURCE_MISC_SHARED_NTHANDLE);
+      bool is_decoder_texture = texture_desc.BindFlags & D3D11_BIND_DECODER;
 
-    // Rotated videos are not promoted to overlays.  We plan to implement
-    // rotation using video processor instead of via direct composition.  Also
-    // check for skew and any downscaling specified to direct composition.
-    bool is_overlay_supported_transform =
-        visual_info_.transform.IsPositiveScaleOrTranslation();
+      // Decode swap chains do not support shared resources.
+      // TODO(sunnyps): Find a workaround for when the decoder moves to its own
+      // thread and D3D device.  See https://crbug.com/911847
+      bool is_shared_texture =
+          texture_desc.MiscFlags &
+          (D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX |
+           D3D11_RESOURCE_MISC_SHARED_NTHANDLE);
 
-    // Downscaled video isn't promoted to hardware overlays.  We prefer to blit
-    // into the smaller size so that it can be promoted to a hardware overlay.
-    float swap_chain_scale_x =
-        swap_chain_size.width() * 1.0f / params.content_rect.width();
-    float swap_chain_scale_y =
-        swap_chain_size.height() * 1.0f / params.content_rect.height();
+      // Rotated videos are not promoted to overlays.  We plan to implement
+      // rotation using video processor instead of via direct composition.  Also
+      // check for skew and any downscaling specified to direct composition.
+      bool is_overlay_supported_transform =
+          visual_info_.transform.IsPositiveScaleOrTranslation();
 
-    is_overlay_supported_transform = is_overlay_supported_transform &&
-                                     (swap_chain_scale_x >= 1.0f) &&
-                                     (swap_chain_scale_y >= 1.0f);
+      // Downscaled video isn't promoted to hardware overlays.  We prefer to
+      // blit into the smaller size so that it can be promoted to a hardware
+      // overlay.
+      float swap_chain_scale_x =
+          swap_chain_size.width() * 1.0f / params.content_rect.width();
+      float swap_chain_scale_y =
+          swap_chain_size.height() * 1.0f / params.content_rect.height();
 
-    if (is_decoder_texture && !is_shared_texture &&
-        is_overlay_supported_transform) {
-      if (PresentToDecodeSwapChain(image_dxgi, params.content_rect,
-                                   swap_chain_size, needs_commit)) {
-        return true;
+      is_overlay_supported_transform = is_overlay_supported_transform &&
+                                       (swap_chain_scale_x >= 1.0f) &&
+                                       (swap_chain_scale_y >= 1.0f);
+
+      if (is_decoder_texture && !is_shared_texture &&
+          is_overlay_supported_transform) {
+        if (PresentToDecodeSwapChain(image_dxgi, params.content_rect,
+                                     swap_chain_size, needs_commit)) {
+          return true;
+        }
+        ReleaseSwapChainResources();
+        failed_to_present_decode_swapchain_ = true;
+        not_used_reason = DecodeSwapChainNotUsedReason::kFailedToPresent;
+        DLOG(ERROR)
+            << "Present to decode swap chain failed - falling back to blit";
+      } else if (!is_decoder_texture) {
+        not_used_reason = DecodeSwapChainNotUsedReason::kNonDecoderTexture;
+      } else if (is_shared_texture) {
+        not_used_reason = DecodeSwapChainNotUsedReason::kSharedTexture;
+      } else if (!is_overlay_supported_transform) {
+        not_used_reason = DecodeSwapChainNotUsedReason::kIncompatibleTransform;
       }
-      ReleaseSwapChainResources();
-      failed_to_present_decode_swapchain_ = true;
-      DLOG(ERROR)
-          << "Present to decode swap chain failed - falling back to blit";
+    } else if (!image_dxgi) {
+      not_used_reason = DecodeSwapChainNotUsedReason::kSoftwareFrame;
+    } else if (!nv12_supported) {
+      not_used_reason = DecodeSwapChainNotUsedReason::kNv12NotSupported;
+    } else if (failed_to_present_decode_swapchain_) {
+      not_used_reason = DecodeSwapChainNotUsedReason::kFailedToPresent;
     }
+
+    UMA_HISTOGRAM_ENUMERATION(
+        "GPU.DirectComposition.DecodeSwapChainNotUsedReason", not_used_reason);
   }
 
   bool swap_chain_resized = swap_chain_size_ != swap_chain_size;

@@ -11723,6 +11723,15 @@ Called by update_net_error_codes.py.-->
   <int value="6" label="kImageBMP"/>
 </enum>
 
+<enum name="DecodeSwapChainNotUsedReason">
+  <int value="0" label="Software frame"/>
+  <int value="1" label="NV12 overlays not supported"/>
+  <int value="2" label="Failed to present decode swap chain"/>
+  <int value="3" label="Texture is not a decoder resource"/>
+  <int value="4" label="Texture is a shared resource"/>
+  <int value="5" label="Transform is incompatible with overlays"/>
+</enum>
+
 <enum name="DefaultBrowserAsyncAttemptResult">
   <obsolete>
     Deprecated 2015/11. Renamed to SetDefaultAttemptResult.
