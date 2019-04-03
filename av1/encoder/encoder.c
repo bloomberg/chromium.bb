@@ -330,15 +330,13 @@ static BLOCK_SIZE select_sb_size(const AV1_COMP *const cpi) {
 #endif
 
   // When superres / resize is on, 'cm->width / height' can change between
-  // calls, so we don't apply this heuristic there. Also, this heuristic gives
-  // compression gain for speed >= 2 only.
-  // Things break if superblock size changes per-frame which is why this
-  // heuristic is set based on configured speed rather than actual
-  // speed-features (which may change per-frame in future)
+  // calls, so we don't apply this heuristic there.
+  // Things break if superblock size changes between the first pass and second
+  // pass encoding, which is why this heuristic is not configured as a
+  // speed-feature.
   if (cpi->oxcf.superres_mode == SUPERRES_NONE &&
-      cpi->oxcf.resize_mode == RESIZE_NONE && cpi->oxcf.speed >= 2) {
-    return (cm->width >= 480 && cm->height >= 360) ? BLOCK_128X128
-                                                   : BLOCK_64X64;
+      cpi->oxcf.resize_mode == RESIZE_NONE && cpi->oxcf.speed >= 1) {
+    return AOMMIN(cm->width, cm->height) > 480 ? BLOCK_128X128 : BLOCK_64X64;
   }
 
   return BLOCK_128X128;
