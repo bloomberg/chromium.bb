@@ -8,7 +8,11 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.annotation.Nullable;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.chrome.browser.explore_sites.ExploreSitesBridge;
+import org.chromium.chrome.browser.explore_sites.ExploreSitesCategory;
+import org.chromium.chrome.browser.explore_sites.ExploreSitesEnums;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.ImageFetcher;
 import org.chromium.chrome.browser.suggestions.MostVisitedSites;
@@ -37,6 +41,7 @@ class SiteSuggestionsMediator
     private PropertyModel mModel;
     private ImageFetcher mImageFetcher;
     private MostVisitedSites mMostVisitedSites;
+    private Profile mProfile;
     private int mIconSize;
 
     SiteSuggestionsMediator(
@@ -44,10 +49,12 @@ class SiteSuggestionsMediator
         mModel = model;
         mImageFetcher = imageFetcher;
         mIconSize = minIconSize;
+        mProfile = profile;
         mMostVisitedSites =
-                SuggestionsDependencyFactory.getInstance().createMostVisitedSites(profile);
+                SuggestionsDependencyFactory.getInstance().createMostVisitedSites(mProfile);
         mMostVisitedSites.setObserver(this, NUM_FETCHED_SITES);
         mModel.get(SiteSuggestionsCoordinator.SUGGESTIONS_KEY).addObserver(this);
+        ExploreSitesBridge.getEspCatalog(mProfile, this::onGetEspCatalog);
     }
 
     @Override
@@ -137,5 +144,17 @@ class SiteSuggestionsMediator
                         suggestion.set(SiteSuggestionModel.ICON_KEY, icon);
                     }
                 });
+    }
+
+    private void onGetEspCatalog(List<ExploreSitesCategory> categoryList) {
+        boolean loadCatalogFromNetwork = categoryList == null || categoryList.isEmpty();
+        if (loadCatalogFromNetwork) {
+            ExploreSitesBridge.updateCatalogFromNetwork(mProfile, true, (success) -> {});
+            RecordHistogram.recordEnumeratedHistogram("ExploreSites.CatalogUpdateRequestSource",
+                    ExploreSitesEnums.CatalogUpdateRequestSource.NEW_TAB_PAGE,
+                    ExploreSitesEnums.CatalogUpdateRequestSource.NUM_ENTRIES);
+        }
+        RecordHistogram.recordBooleanHistogram(
+                "ExploreSites.NTPLoadingCatalogFromNetwork", loadCatalogFromNetwork);
     }
 }
