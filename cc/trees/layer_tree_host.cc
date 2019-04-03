@@ -1826,8 +1826,17 @@ void LayerTreeHost::ElementIsAnimatingChanged(
     const PropertyAnimationState& mask,
     const PropertyAnimationState& state) {
   DCHECK_EQ(ElementListType::ACTIVE, list_type);
-  property_trees()->ElementIsAnimatingChanged(mutator_host(), element_id_map,
-                                              list_type, mask, state, true);
+  property_trees()->ElementIsAnimatingChanged(element_id_map, mask, state,
+                                              true);
+}
+
+void LayerTreeHost::AnimationScalesChanged(ElementId element_id,
+                                           ElementListType list_type,
+                                           float maximum_scale,
+                                           float starting_scale) {
+  DCHECK_EQ(ElementListType::ACTIVE, list_type);
+  property_trees()->AnimationScalesChanged(element_id, maximum_scale,
+                                           starting_scale);
 }
 
 gfx::ScrollOffset LayerTreeHost::GetScrollOffsetForAnimation(

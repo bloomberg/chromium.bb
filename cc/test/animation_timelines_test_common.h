@@ -123,6 +123,10 @@ class TestHostClient : public MutatorHostClient {
                                  ElementListType list_type,
                                  const PropertyAnimationState& mask,
                                  const PropertyAnimationState& state) override;
+  void AnimationScalesChanged(ElementId element_id,
+                              ElementListType list_type,
+                              float maximum_scale,
+                              float starting_scale) override;
 
   void ScrollOffsetAnimationFinished() override {}
 

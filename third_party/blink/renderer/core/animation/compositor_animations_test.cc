@@ -1941,7 +1941,48 @@ TEST_P(AnimationCompositorAnimationsTest, CompositedTransformAnimation) {
     ASSERT_NE(nullptr, cc_transform);
     EXPECT_TRUE(cc_transform->has_potential_animation);
     EXPECT_TRUE(cc_transform->is_currently_animating);
+    EXPECT_EQ(cc::kNotScaled, cc_transform->starting_animation_scale);
+    EXPECT_EQ(cc::kNotScaled, cc_transform->maximum_animation_scale);
   }
+
+  // Make sure the animation is started on the compositor.
+  EXPECT_TRUE(CheckCanStartElementOnCompositor(*target));
+  EXPECT_EQ(document->Timeline().PendingAnimationsCount(), 1u);
+  cc::AnimationHost* host = document->View()->GetCompositorAnimationHost();
+  EXPECT_EQ(host->MainThreadAnimationsCount(), 0u);
+  EXPECT_EQ(host->CompositedAnimationsCount(), 1u);
+}
+
+TEST_P(AnimationCompositorAnimationsTest, CompositedScaleAnimation) {
+  // TODO(wangxianzhu): Fix this test for CompositeAfterPaint.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  LoadTestData("scale-animation.html");
+  Document* document = GetFrame()->GetDocument();
+  Element* target = document->getElementById("target");
+  const ObjectPaintProperties* properties =
+      target->GetLayoutObject()->FirstFragment().PaintProperties();
+  ASSERT_NE(nullptr, properties);
+  const auto* transform = properties->Transform();
+  ASSERT_NE(nullptr, transform);
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
+      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    EXPECT_TRUE(transform->HasDirectCompositingReasons());
+    EXPECT_TRUE(transform->HasActiveTransformAnimation());
+    // Make sure the animation state is initialized in paint properties.
+    auto* property_trees =
+        document->View()->RootCcLayer()->layer_tree_host()->property_trees();
+    auto* cc_transform = property_trees->transform_tree.Node(
+        property_trees->element_id_to_transform_node_index
+            [transform->GetCompositorElementId()]);
+    ASSERT_NE(nullptr, cc_transform);
+    EXPECT_TRUE(cc_transform->has_potential_animation);
+    EXPECT_TRUE(cc_transform->is_currently_animating);
+    EXPECT_EQ(2.f, cc_transform->starting_animation_scale);
+    EXPECT_EQ(5.f, cc_transform->maximum_animation_scale);
+  }
+
   // Make sure the animation is started on the compositor.
   EXPECT_TRUE(CheckCanStartElementOnCompositor(*target));
   EXPECT_EQ(document->Timeline().PendingAnimationsCount(), 1u);

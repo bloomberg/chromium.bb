@@ -6,6 +6,7 @@
 #include "base/trace_event/traced_value.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/layer.h"
+#include "cc/trees/mutator_host.h"
 #include "cc/trees/property_tree.h"
 #include "ui/gfx/geometry/point3_f.h"
 
@@ -24,7 +25,6 @@ TransformNode::TransformNode()
       has_potential_animation(false),
       is_currently_animating(false),
       to_screen_is_potentially_animated(false),
-      has_only_translation_animations(true),
       flattens_inherited_transform(false),
       node_and_ancestors_are_flat(true),
       node_and_ancestors_have_only_integer_translation(true),
@@ -36,7 +36,9 @@ TransformNode::TransformNode()
       moved_by_outer_viewport_bounds_delta_y(false),
       in_subtree_of_page_scale_layer(false),
       transform_changed(false),
-      post_local_scale_factor(1.0f) {}
+      post_local_scale_factor(1.0f),
+      maximum_animation_scale(kNotScaled),
+      starting_animation_scale(kNotScaled) {}
 
 TransformNode::TransformNode(const TransformNode&) = default;
 
@@ -56,8 +58,6 @@ bool TransformNode::operator==(const TransformNode& other) const {
          is_currently_animating == other.is_currently_animating &&
          to_screen_is_potentially_animated ==
              other.to_screen_is_potentially_animated &&
-         has_only_translation_animations ==
-             other.has_only_translation_animations &&
          flattens_inherited_transform == other.flattens_inherited_transform &&
          node_and_ancestors_are_flat == other.node_and_ancestors_are_flat &&
          node_and_ancestors_have_only_integer_translation ==
@@ -79,7 +79,9 @@ bool TransformNode::operator==(const TransformNode& other) const {
          scroll_offset == other.scroll_offset &&
          snap_amount == other.snap_amount &&
          source_offset == other.source_offset &&
-         source_to_parent == other.source_to_parent;
+         source_to_parent == other.source_to_parent &&
+         maximum_animation_scale == other.maximum_animation_scale &&
+         starting_animation_scale == other.starting_animation_scale;
 }
 
 void TransformNode::update_pre_local_transform(

@@ -111,15 +111,15 @@ class CC_ANIMATION_EXPORT ElementAnimations
 
   bool AnimationsPreserveAxisAlignment() const;
 
-  // Sets |start_scale| to the maximum of starting animation scale along any
-  // dimension at any destination in active animations. Returns false if the
-  // starting scale cannot be computed.
-  bool AnimationStartScale(ElementListType list_type, float* start_scale) const;
+  // Returns the maximum of starting animation scale along any dimension at any
+  // destination in active scale animations, or kNotScaled if there is no active
+  // scale animation or the starting scale cannot be computed.
+  float AnimationStartScale(ElementListType list_type) const;
 
-  // Sets |max_scale| to the maximum scale along any dimension at any
-  // destination in active animations. Returns false if the maximum scale cannot
-  // be computed.
-  bool MaximumTargetScale(ElementListType list_type, float* max_scale) const;
+  // Returns the maximum scale along any dimension at any destination in active
+  // scale animations, or kNotScaled if there is no active scale animation or
+  // the maximum scale cannot be computed.
+  float MaximumTargetScale(ElementListType list_type) const;
 
   bool ScrollOffsetAnimationWasInterrupted() const;
 
@@ -208,6 +208,10 @@ class CC_ANIMATION_EXPORT ElementAnimations
 
   PropertyAnimationState active_state_;
   PropertyAnimationState pending_state_;
+  float active_maximum_scale_;
+  float active_starting_scale_;
+  float pending_maximum_scale_;
+  float pending_starting_scale_;
 };
 
 }  // namespace cc

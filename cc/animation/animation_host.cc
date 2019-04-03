@@ -595,24 +595,18 @@ bool AnimationHost::AnimationsPreserveAxisAlignment(
              : true;
 }
 
-bool AnimationHost::MaximumTargetScale(ElementId element_id,
-                                       ElementListType list_type,
-                                       float* max_scale) const {
-  *max_scale = 0.f;
+float AnimationHost::MaximumTargetScale(ElementId element_id,
+                                        ElementListType list_type) const {
   auto element_animations = GetElementAnimationsForElementId(element_id);
-  return element_animations
-             ? element_animations->MaximumTargetScale(list_type, max_scale)
-             : true;
+  return element_animations ? element_animations->MaximumTargetScale(list_type)
+                            : kNotScaled;
 }
 
-bool AnimationHost::AnimationStartScale(ElementId element_id,
-                                        ElementListType list_type,
-                                        float* start_scale) const {
-  *start_scale = 0.f;
+float AnimationHost::AnimationStartScale(ElementId element_id,
+                                         ElementListType list_type) const {
   auto element_animations = GetElementAnimationsForElementId(element_id);
-  return element_animations
-             ? element_animations->AnimationStartScale(list_type, start_scale)
-             : true;
+  return element_animations ? element_animations->AnimationStartScale(list_type)
+                            : kNotScaled;
 }
 
 bool AnimationHost::IsElementAnimating(ElementId element_id) const {
