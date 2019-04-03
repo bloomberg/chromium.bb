@@ -6,6 +6,7 @@
 #define EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_FLAT_RULESET_INDEXER_H_
 
 #include <stddef.h>
+#include <memory>
 #include <vector>
 
 #include "base/containers/span.h"
@@ -48,9 +49,10 @@ class FlatRulesetIndexer {
 
   flatbuffers::FlatBufferBuilder builder_;
 
-  UrlPatternIndexBuilder blocking_index_builder_;
-  UrlPatternIndexBuilder allowing_index_builder_;
-  UrlPatternIndexBuilder redirect_index_builder_;
+  // This will consist of |flat::ActionIndex_count| builders. We use unique_ptr
+  // since UrlPatternIndexBuilder is a non-copyable and non-movable type.
+  std::vector<std::unique_ptr<UrlPatternIndexBuilder>> index_builders_;
+
   std::vector<flatbuffers::Offset<flat::UrlRuleMetadata>> metadata_;
 
   size_t indexed_rules_count_ = 0;  // Number of rules indexed till now.

@@ -24,10 +24,14 @@ table UrlRuleMetadata {
   id : uint (key);
   redirect_url : string;
 }
+enum ActionIndex : ubyte {
+  block = 0,
+  allow,
+  redirect,
+  count
+}
 table ExtensionIndexedRuleset {
-  blocking_index : url_pattern_index.flat.UrlPatternIndex;
-  allowing_index : url_pattern_index.flat.UrlPatternIndex;
-  redirect_index : url_pattern_index.flat.UrlPatternIndex;
+  index_list : [url_pattern_index.flat.UrlPatternIndex];
   extension_metadata : [UrlRuleMetadata];
 }
 root_type ExtensionIndexedRuleset;
@@ -96,7 +100,7 @@ TEST_F(IndexedRulesetFormatVersionTest, CheckVersionUpdated) {
   EXPECT_EQ(StripCommentsAndWhitespace(kFlatbufferSchemaExpected),
             StripCommentsAndWhitespace(flatbuffer_schema))
       << "Schema change detected; update this test and the schema version.";
-  EXPECT_EQ(5, GetIndexedRulesetFormatVersionForTesting())
+  EXPECT_EQ(6, GetIndexedRulesetFormatVersionForTesting())
       << "Update this test if you update the schema version.";
 }
 
