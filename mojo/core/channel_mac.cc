@@ -17,6 +17,8 @@
 #include "base/containers/buffer_iterator.h"
 #include "base/containers/circular_deque.h"
 #include "base/containers/span.h"
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/mac/mach_logging.h"
 #include "base/mac/scoped_mach_msg_destroy.h"
@@ -24,6 +26,7 @@
 #include "base/mac/scoped_mach_vm.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_for_io.h"
+#include "base/strings/stringprintf.h"
 
 extern "C" {
 kern_return_t fileport_makeport(int fd, mach_port_t*);
@@ -248,7 +251,7 @@ class ChannelMac : public Channel,
       MACH_LOG(ERROR, kr) << "mach_msg send handshake";
 
       base::AutoLock lock(write_lock_);
-      OnWriteErrorLocked(Error::kConnectionFailed);
+      OnWriteErrorLocked(Error::kConnectionFailed, kr);
       return;
     }
 
@@ -385,7 +388,7 @@ class ChannelMac : public Channel,
               fileport_makeport(handle.GetFD().get(), &descriptor->name);
           if (kr != KERN_SUCCESS) {
             MACH_LOG(ERROR, kr) << "fileport_makeport";
-            OnWriteErrorLocked(Error::kDisconnected);
+            OnWriteErrorLocked(Error::kDisconnected, kr);
             return false;
           }
           descriptor->disposition = MACH_MSG_TYPE_MOVE_SEND;
@@ -394,7 +397,7 @@ class ChannelMac : public Channel,
         default:
           NOTREACHED() << "Unsupported handle type "
                        << static_cast<int>(handle.type());
-          OnWriteErrorLocked(Error::kDisconnected);
+          OnWriteErrorLocked(Error::kDisconnected, 0xbad04adl);
       }
     }
 
@@ -438,7 +441,7 @@ class ChannelMac : public Channel,
         MACH_LOG_IF(ERROR, kr != MACH_SEND_INVALID_DEST, kr) << "mach_msg send";
         send_buffer_contains_message_ = false;
         mach_msg_destroy(header);
-        OnWriteErrorLocked(Error::kDisconnected);
+        OnWriteErrorLocked(Error::kDisconnected, kr);
       }
       return false;
     }
@@ -626,7 +629,15 @@ class ChannelMac : public Channel,
   }
 
   // Marks the channel as unaccepting of new messages and shuts it down.
-  void OnWriteErrorLocked(Error error) {
+  void OnWriteErrorLocked(Error error, uint32_t error_code) {
+    // TODO(https://crbug.com/946372): Remove when fixed.
+    static base::debug::CrashKeyString* error_crash_key =
+        base::debug::AllocateCrashKeyString("channel-mac-write-error",
+                                            base::debug::CrashKeySize::Size32);
+    base::debug::SetCrashKeyString(error_crash_key,
+                                   base::StringPrintf("0x%x", error_code));
+    base::debug::DumpWithoutCrashing();
+
     reject_writes_ = true;
     io_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&ChannelMac::OnError, this, error));
