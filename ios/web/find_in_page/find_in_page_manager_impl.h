@@ -58,6 +58,11 @@ class FindInPageManagerImpl : public FindInPageManager,
     // the previous match on the page. No-op if no known matches exist. Returns
     // true if selected a match, false otherwise.
     bool GoToPreviousMatch();
+    // Removes |web_frame| from |frame_order| and |frame_match_count|. Resets
+    // |selected_frame_id| and |selected_match_index_in_selected_frame| if
+    // |web_frame| contains currently selected match. |web_frame| must not be
+    // null.
+    void RemoveFrame(WebFrame* web_frame);
     // Unique identifier for each find used to check that it is the most recent
     // find. This ensures that an old find doesn't decrement
     // |pending_frame_calls_count| after it has been reset by the new find.
@@ -81,6 +86,11 @@ class FindInPageManagerImpl : public FindInPageManager,
     std::list<std::string>::iterator selected_frame_id = frame_order.end();
     // Index of the currently selected match or -1 if there is none.
     int selected_match_index_in_selected_frame = -1;
+
+   private:
+    // Returns true if |web_frame| contains the currently selected match, false
+    // otherwise. |web_frame| must not be null.
+    bool IsSelectedFrame(WebFrame* web_frame);
   };
 
   // Executes find logic for |FindInPageSearch| option.

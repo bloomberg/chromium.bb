@@ -19,11 +19,13 @@ class FindInPageManagerDelegate {
  public:
   FindInPageManagerDelegate() = default;
 
-  // Called when a search for |query| finished with |match_count| found after
-  // calling FindInPageManager::Find() with FindInPageSearch. Even if no matches
-  // are found, call will be made once a find has completed, assuming it has not
-  // been interrupted by another find. Client should check |query| to ensure
-  // that it is processing |match_count| for the correct find.
+  // Called when a search for |query| finished with |match_count| found and all
+  // matches were highlighted after calling FindInPageManager::Find() with
+  // FindInPageSearch. Even if no matches are found, call will be made once a
+  // find has completed, assuming it has not been interrupted by another find.
+  // Will also be called if the total match count in the current page changes.
+  // Client should check |query| to ensure that it is processing |match_count|
+  // for the correct find.
   virtual void DidCountMatches(WebState* web_state,
                                int match_count,
                                NSString* query) = 0;
