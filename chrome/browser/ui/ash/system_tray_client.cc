@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
@@ -195,7 +196,10 @@ void SystemTrayClient::SetLocaleList(
 // ash::mojom::SystemTrayClient:
 
 void SystemTrayClient::ShowSettings() {
-  ShowSettingsSubPageForActiveUser(std::string());
+  // TODO(jamescook): Use different metric for OS settings.
+  base::RecordAction(base::UserMetricsAction("ShowOptions"));
+  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+      ProfileManager::GetActiveUserProfile());
 }
 
 void SystemTrayClient::ShowBluetoothSettings() {

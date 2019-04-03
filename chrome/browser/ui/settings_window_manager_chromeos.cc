@@ -18,10 +18,13 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils_chromeos.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/common/webui_url_constants.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/ui_base_features.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 namespace chrome {
 
@@ -105,6 +108,15 @@ void SettingsWindowManager::ShowChromePageForProfile(Profile* profile,
 
   for (SettingsWindowManagerObserver& observer : observers_)
     observer.OnNewSettingsWindow(browser);
+}
+
+void SettingsWindowManager::ShowOSSettings(Profile* profile) {
+  if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)) {
+    // TODO(jamescook): Add an "os-settings" URL and host.
+    ShowChromePageForProfile(profile, GURL(url::kAboutBlankURL));
+    return;
+  }
+  ShowChromePageForProfile(profile, GURL(kChromeUISettingsURL));
 }
 
 Browser* SettingsWindowManager::FindBrowserForProfile(Profile* profile) {
