@@ -25,6 +25,7 @@
 #include "ui/views/controls/label.h"
 
 using content::WebContents;
+using security_state::SecurityLevel;
 
 LocationIconView::LocationIconView(const gfx::FontList& font_list,
                                    Delegate* delegate)
@@ -58,8 +59,11 @@ bool LocationIconView::OnMouseDragged(const ui::MouseEvent& event) {
 }
 
 SkColor LocationIconView::GetTextColor() const {
-  return delegate_->GetSecurityChipColor(
-      delegate_->GetLocationBarModel()->GetSecurityLevel(false));
+  SecurityLevel security_level = SecurityLevel::NONE;
+  if (!delegate_->IsEditingOrEmpty())
+    security_level = delegate_->GetLocationBarModel()->GetSecurityLevel(true);
+
+  return delegate_->GetSecurityChipColor(security_level);
 }
 
 bool LocationIconView::ShouldShowSeparator() const {
@@ -162,16 +166,18 @@ base::string16 LocationIconView::GetText() const {
 }
 
 bool LocationIconView::ShouldAnimateTextVisibilityChange() const {
-  using SecurityLevel = security_state::SecurityLevel;
-  SecurityLevel level =
-      delegate_->GetLocationBarModel()->GetSecurityLevel(false);
+  if (delegate_->IsEditingOrEmpty())
+    return false;
+
+  SecurityLevel security_level =
+      delegate_->GetLocationBarModel()->GetSecurityLevel(true);
   // Do not animate transitions from HTTP_SHOW_WARNING to DANGEROUS, since the
   // transition can look confusing/messy.
-  if (level == SecurityLevel::DANGEROUS &&
+  if (security_level == SecurityLevel::DANGEROUS &&
       last_update_security_level_ == SecurityLevel::HTTP_SHOW_WARNING)
     return false;
-  return (level == SecurityLevel::DANGEROUS ||
-          level == SecurityLevel::HTTP_SHOW_WARNING);
+  return (security_level == SecurityLevel::DANGEROUS ||
+          security_level == SecurityLevel::HTTP_SHOW_WARNING);
 }
 
 void LocationIconView::UpdateTextVisibility(bool suppress_animations) {
@@ -236,8 +242,11 @@ void LocationIconView::Update(bool suppress_animations) {
     }
   }
 
-  last_update_security_level_ =
-      delegate_->GetLocationBarModel()->GetSecurityLevel(false);
+  last_update_security_level_ = SecurityLevel::NONE;
+  if (!is_editing_or_empty) {
+    last_update_security_level_ =
+        delegate_->GetLocationBarModel()->GetSecurityLevel(true);
+  }
   was_editing_or_empty_ = is_editing_or_empty;
 }
 
