@@ -25,6 +25,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "third_party/icu/source/common/unicode/ubidi.h"
+#include "third_party/icu/source/common/unicode/uscript.h"
 #include "third_party/icu/source/common/unicode/utf16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkFontMetrics.h"
@@ -1817,7 +1818,8 @@ void RenderTextHarfBuzz::ShapeRuns(
   std::vector<Font> fallback_font_list;
   {
     SCOPED_UMA_HISTOGRAM_LONG_TIMER("RenderTextHarfBuzz.GetFallbackFontsTime");
-    TRACE_EVENT0("ui", "RenderTextHarfBuzz::GetFallbackFonts");
+    TRACE_EVENT1("ui", "RenderTextHarfBuzz::GetFallbackFonts", "script",
+                 TRACE_STR_COPY(uscript_getShortName(font_params.script)));
     fallback_font_list = GetFallbackFonts(primary_font);
 
 #if defined(OS_WIN)
