@@ -39,9 +39,9 @@ class FindInPageManager : public web::WebStateUserData<FindInPageManager> {
   // |query| is ignored if |options| is not |FindInPageSearch|. If new search is
   // started before previous search finishes, old request will be discarded.
   //
-  // FindInPageManagerDelegate::DidCountMatches() will be called to return the
-  // total matches found if FindInPageSearch is passed, assuming it hasn't been
-  // discarded. FindInPageManagerDelegate::DidHighlightMatch() will also be
+  // FindInPageManagerDelegate::DidHighlightMatches() will be called to return
+  // the total matches found if FindInPageSearch is passed, assuming it hasn't
+  // been discarded. FindInPageManagerDelegate::DidSelectMatch() will also be
   // called if matches were found to inform client of the new match that was
   // highlighted for all FindInPageOptions.
   virtual void Find(NSString* query, FindInPageOptions options) = 0;
