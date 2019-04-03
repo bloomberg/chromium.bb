@@ -514,7 +514,6 @@
     relm-postsubmit
     rikku-postsubmit
     romer-postsubmit
-    samus-kernelnext-postsubmit
     samus-postsubmit
     sand-postsubmit
     sarien-postsubmit
@@ -2825,7 +2824,6 @@
     relm-postsubmit-tryjob
     rikku-postsubmit-tryjob
     romer-postsubmit-tryjob
-    samus-kernelnext-postsubmit-tryjob
     samus-postsubmit-tryjob
     sand-postsubmit-tryjob
     sarien-postsubmit-tryjob
