@@ -137,7 +137,7 @@ java_annotation_processor("dagger_processor") {
 # === Generated Code Start ===
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("android_arch_lifecycle_common_java") {
-  jar_path = "libs/android_arch_lifecycle_common/common-1.0.0.jar"
+  jar_path = "libs/android_arch_lifecycle_common/common-1.1.1.jar"
   output_name = "android_arch_lifecycle_common"
   supports_android = true
   deps = [
@@ -146,8 +146,19 @@ java_prebuilt("android_arch_lifecycle_common_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+java_prebuilt("android_arch_lifecycle_common_java8_java") {
+  jar_path = "libs/android_arch_lifecycle_common_java8/common-java8-1.1.1.jar"
+  output_name = "android_arch_lifecycle_common_java8"
+  supports_android = true
+  deps = [
+    ":android_arch_lifecycle_common_java",
+    ":com_android_support_support_annotations_java",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("android_arch_lifecycle_runtime_java") {
-  aar_path = "libs/android_arch_lifecycle_runtime/runtime-1.0.0.aar"
+  aar_path = "libs/android_arch_lifecycle_runtime/runtime-1.1.1.aar"
   info_path =
       "libs/android_arch_lifecycle_runtime/android_arch_lifecycle_runtime.info"
   deps = [
@@ -642,7 +653,7 @@ java_prebuilt("javax_inject_javax_inject_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("android_arch_core_common_java") {
-  jar_path = "libs/android_arch_core_common/common-1.0.0.jar"
+  jar_path = "libs/android_arch_core_common/common-1.1.1.jar"
   output_name = "android_arch_core_common"
   supports_android = true
 

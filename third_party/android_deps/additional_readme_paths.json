@@ -1,6 +1,7 @@
 [
     "libs/android_arch_core_common",
     "libs/android_arch_lifecycle_common",
+    "libs/android_arch_lifecycle_common_java8",
     "libs/android_arch_lifecycle_runtime",
     "libs/androidx_annotation_annotation",
     "libs/androidx_lifecycle_lifecycle_common",
