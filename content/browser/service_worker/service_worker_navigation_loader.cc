@@ -43,16 +43,6 @@ std::string ComposeFetchEventResultString(
   return stream.str();
 }
 
-bool BodyHasNoDataPipeGetters(const network::ResourceRequestBody* body) {
-  if (!body)
-    return true;
-  for (const auto& elem : *body->elements()) {
-    if (elem.type() == network::mojom::DataElementType::kDataPipe)
-      return false;
-  }
-  return true;
-}
-
 }  // namespace
 
 // This class waits for completion of a stream response from the service worker.
@@ -207,16 +197,6 @@ void ServiceWorkerNavigationLoader::StartRequest(
     CommitCompleted(net::ERR_FAILED, "No active worker");
     return;
   }
-
-  // Passing the request body over Mojo moves out the DataPipeGetter elements,
-  // which would mean we should clone the body like
-  // ServiceWorkerSubresourceLoader does. But we don't expect DataPipeGetters
-  // here yet: they are only created by the renderer when converting from a
-  // Blob, which doesn't happen for navigations. In interest of speed, just
-  // don't clone until proven necessary.
-  DCHECK(BodyHasNoDataPipeGetters(resource_request_.request_body.get()))
-      << "We assumed there would be no data pipe getter elements here, but "
-         "there are. Add code here to clone the body before proceeding.";
 
   if (!provider_host_) {
     // We lost |provider_host_| (for the client) somehow before dispatching
