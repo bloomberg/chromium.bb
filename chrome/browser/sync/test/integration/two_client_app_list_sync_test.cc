@@ -284,14 +284,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, UpdateEnableDisableApp) {
   ASSERT_TRUE(IsAppEnabled(GetProfile(1), 0));
 }
 
-// TODO(crbug.com/721391) Flaky on CrOS.
-#if defined(OS_CHROMEOS)
-#define MAYBE_UpdateIncognitoEnableDisable DISABLED_UpdateIncognitoEnableDisable
-#else
-#define MAYBE_UpdateIncognitoEnableDisable UpdateIncognitoEnableDisable
-#endif
-IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest,
-                       MAYBE_UpdateIncognitoEnableDisable) {
+IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, UpdateIncognitoEnableDisable) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameAppList());
 
