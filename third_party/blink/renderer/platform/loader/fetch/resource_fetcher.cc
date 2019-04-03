@@ -950,7 +950,7 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
 
   if (!RuntimeEnabledFeatures::OutOfBlinkCorsEnabled() &&
       resource_request.RequestorOrigin()) {
-    resource_request.SetHTTPOriginIfNeeded(
+    resource_request.SetHttpOriginIfNeeded(
         resource_request.RequestorOrigin().get());
   }
 

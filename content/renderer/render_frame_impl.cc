@@ -5262,7 +5262,7 @@ void RenderFrameImpl::WillSendRequestInternal(blink::WebURLRequest& request,
 
   // Set an empty HTTP origin header for non GET methods if none is currently
   // present.
-  request.SetHTTPOriginIfNeeded(WebSecurityOrigin::CreateUnique());
+  request.SetHttpOriginIfNeeded(WebSecurityOrigin::CreateUnique());
 
   WebDocument frame_document = frame_->GetDocument();
   if (!request.GetExtraData())

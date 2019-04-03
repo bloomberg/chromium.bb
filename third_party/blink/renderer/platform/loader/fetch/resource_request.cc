@@ -241,7 +241,7 @@ void ResourceRequest::ClearHTTPOrigin() {
   http_header_fields_.Remove(http_names::kOrigin);
 }
 
-void ResourceRequest::SetHTTPOriginIfNeeded(const SecurityOrigin* origin) {
+void ResourceRequest::SetHttpOriginIfNeeded(const SecurityOrigin* origin) {
   if (NeedsHTTPOrigin())
     SetHTTPOrigin(origin);
 }
