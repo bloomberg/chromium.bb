@@ -20,6 +20,7 @@
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/cache_storage/cache_storage_handle.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/disk_cache/disk_cache.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
@@ -545,7 +546,7 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
       std::unique_ptr<QueryCacheResults> query_cache_results);
 
   // Calculate the size (but not padding) of the cache.
-  void CalculateCacheSize(const net::Int64CompletionCallback& callback);
+  void CalculateCacheSize(net::Int64CompletionOnceCallback callback);
 
   void InitBackend();
   void InitDidCreateBackend(base::OnceClosure callback,

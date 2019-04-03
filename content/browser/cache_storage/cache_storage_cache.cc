@@ -15,6 +15,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/guid.h"
@@ -1841,10 +1842,12 @@ void LegacyCacheStorageCache::PaddingDidQueryCache(
 }
 
 void LegacyCacheStorageCache::CalculateCacheSize(
-    const net::Int64CompletionRepeatingCallback& callback) {
-  int64_t rv = backend_->CalculateSizeOfAllEntries(callback);
+    net::Int64CompletionOnceCallback callback) {
+  net::Int64CompletionRepeatingCallback got_size_callback =
+      AdaptCallbackForRepeating(std::move(callback));
+  int64_t rv = backend_->CalculateSizeOfAllEntries(got_size_callback);
   if (rv != net::ERR_IO_PENDING)
-    callback.Run(rv);
+    got_size_callback.Run(rv);
 }
 
 void LegacyCacheStorageCache::UpdateCacheSize(base::OnceClosure callback) {
