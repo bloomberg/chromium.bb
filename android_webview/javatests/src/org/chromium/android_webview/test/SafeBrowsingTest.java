@@ -46,7 +46,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.InMemorySharedPreferences;
 import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
@@ -658,24 +657,6 @@ public class SafeBrowsingTest {
         final String responseUrl = mTestServer.getURL(MALWARE_HTML_PATH);
         Assert.assertEquals("Network error is for the malicious page", responseUrl,
                 errorHelper.getRequest().url);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"AndroidWebView"})
-    @DisabledTest(message = "crbug/737820")
-    public void testSafeBrowsingDontProceedCausesNetworkErrorForSubresource() throws Throwable {
-        loadPathAndWaitForInterstitial(IFRAME_HTML_PATH);
-        OnReceivedError2Helper errorHelper = mContentsClient.getOnReceivedError2Helper();
-        int errorCount = errorHelper.getCallCount();
-        waitForInterstitialDomToLoad();
-        clickBackToSafety();
-        errorHelper.waitForCallback(errorCount);
-        Assert.assertEquals(
-                ErrorCodeConversionHelper.ERROR_UNSAFE_RESOURCE, errorHelper.getError().errorCode);
-        final String subresourceUrl = mTestServer.getURL(MALWARE_HTML_PATH);
-        Assert.assertEquals(subresourceUrl, errorHelper.getRequest().url);
-        Assert.assertFalse(errorHelper.getRequest().isMainFrame);
     }
 
     @Test
