@@ -5,9 +5,7 @@
 var CHECK = requireNative('logging').CHECK;
 var idGeneratorNatives = requireNative('id_generator');
 var utils = require('utils');
-var webRequestInternal = getInternalApi ?
-    getInternalApi('webRequestInternal') :
-    require('binding').Binding.create('webRequestInternal').generate();
+var webRequestInternal = getInternalApi('webRequestInternal');
 
 function getUniqueSubEventName(eventName) {
   return eventName + '/' + idGeneratorNatives.GetNextId();

@@ -10,9 +10,7 @@ var ExtensionViewConstants =
 var ExtensionViewAttributes =
     require('extensionViewAttributes').ExtensionViewAttributes;
 var ExtensionViewEvents = require('extensionViewEvents').ExtensionViewEvents;
-var ExtensionViewInternal = getInternalApi ?
-    getInternalApi('extensionViewInternal') :
-    require('extensionViewInternal').ExtensionViewInternal;
+var ExtensionViewInternal = getInternalApi('extensionViewInternal');
 
 function ExtensionViewImpl(extensionviewElement) {
   $Function.call(

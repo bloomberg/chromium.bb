@@ -8,10 +8,7 @@ var AppViewGuestInternal;
 // appViewGuestInternal isn't available in lock screen contexts.
 if (requireNative('v8_context').GetAvailability('appViewGuestInternal').
         is_available) {
-  AppViewGuestInternal =
-      getInternalApi ?
-          getInternalApi('appViewGuestInternal') :
-          require('binding').Binding.create('appViewGuestInternal').generate();
+  AppViewGuestInternal = getInternalApi('appViewGuestInternal');
 }
 var fileSystemHelpers = requireNative('file_system_natives');
 var GetIsolatedFileSystem = fileSystemHelpers.GetIsolatedFileSystem;
