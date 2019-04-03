@@ -428,10 +428,10 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
 
   DCHECK(output_device_);
   gfx::SwapResponse response;
-  if (capabilities_.supports_post_sub_buffer) {
+  if (capabilities().supports_post_sub_buffer) {
     DCHECK(frame.sub_buffer_rect);
     DCHECK(!frame.sub_buffer_rect->IsEmpty());
-    if (!capabilities_.flipped_output_surface)
+    if (!capabilities().flipped_output_surface)
       frame.sub_buffer_rect->set_y(size_.height() - frame.sub_buffer_rect->y() -
                                    frame.sub_buffer_rect->height());
     response = output_device_->PostSubBuffer(*frame.sub_buffer_rect,
@@ -534,7 +534,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
 
     GLuint gl_id = 0;
     GLenum internal_format = supports_alpha_ ? GL_RGBA : GL_RGB;
-    bool flipped = from_fbo0 ? !capabilities_.flipped_output_surface : false;
+    bool flipped = from_fbo0 ? !capabilities().flipped_output_surface : false;
 
     base::Optional<ScopedSurfaceToTexture> texture_mapper;
     if (!from_fbo0 || surface_handle_ == gpu::kNullSurfaceHandle) {
@@ -744,10 +744,9 @@ void SkiaOutputSurfaceImplOnGpu::SetCapabilitiesForTesting(
     const OutputSurface::Capabilities& capabilities) {
   MakeCurrent(false /* need_fbo0 */);
   // Check that we're using an offscreen surface.
-  DCHECK(output_device_);
-  capabilities_ = capabilities;
+  DCHECK(!surface_handle_);
   output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
-      gr_context(), capabilities_.flipped_output_surface,
+      gr_context(), capabilities.flipped_output_surface,
       renderer_settings_.requires_alpha_channel,
       did_swap_buffer_complete_callback_);
 }
@@ -781,8 +780,6 @@ void SkiaOutputSurfaceImplOnGpu::InitializeForGLWithGpuService(
       return;
     }
     onscreen_device->Initialize(gr_context(), context);
-    capabilities_.flipped_output_surface = gl_surface_->FlipsVertically();
-    capabilities_.supports_stencil = onscreen_device->supports_stencil();
     supports_alpha_ = onscreen_device->supports_alpha();
     output_device_ = std::move(onscreen_device);
   } else {
@@ -790,19 +787,14 @@ void SkiaOutputSurfaceImplOnGpu::InitializeForGLWithGpuService(
         gr_context(), true /* flipped */,
         renderer_settings_.requires_alpha_channel,
         did_swap_buffer_complete_callback_);
-    capabilities_.flipped_output_surface = true;
-    capabilities_.supports_stencil = false;
     supports_alpha_ = renderer_settings_.requires_alpha_channel;
   }
-  capabilities_.supports_post_sub_buffer =
-      output_device_->SupportPostSubBuffer();
 }
 
 void SkiaOutputSurfaceImplOnGpu::InitializeForVulkan(
     GpuServiceImpl* gpu_service) {
   context_state_ = gpu_service->GetContextState();
   DCHECK(context_state_);
-  capabilities_.flipped_output_surface = true;
 #if BUILDFLAG(ENABLE_VULKAN)
   if (surface_handle_ == gpu::kNullSurfaceHandle) {
     output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
@@ -827,8 +819,6 @@ void SkiaOutputSurfaceImplOnGpu::InitializeForVulkan(
         did_swap_buffer_complete_callback_);
 #endif
   }
-  capabilities_.supports_post_sub_buffer =
-      output_device_->SupportPostSubBuffer();
 #endif
 }
 

@@ -43,31 +43,26 @@ void SkiaOutputDeviceGL::Initialize(GrContext* gr_context,
   gl::CurrentGL* current_gl = gl_context->GetCurrentGL();
   DCHECK(current_gl);
 
-  // Get alpha and stencil bits from the default frame buffer.
+  // Get alpha bits from the default frame buffer.
   glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
   gr_context_->resetContext(kRenderTarget_GrGLBackendState);
   const auto* version = current_gl->Version;
-  GLint stencil_bits = 0;
   GLint alpha_bits = 0;
   if (version->is_desktop_core_profile) {
-    glGetFramebufferAttachmentParameterivEXT(
-        GL_FRAMEBUFFER, GL_STENCIL, GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE,
-        &stencil_bits);
     glGetFramebufferAttachmentParameterivEXT(
         GL_FRAMEBUFFER, GL_BACK_LEFT, GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE,
         &alpha_bits);
   } else {
-    glGetIntegerv(GL_STENCIL_BITS, &stencil_bits);
     glGetIntegerv(GL_ALPHA_BITS, &alpha_bits);
   }
   CHECK_GL_ERROR();
-  supports_stencil_ = stencil_bits > 0;
   supports_alpha_ = alpha_bits > 0;
 
-  supports_post_sub_buffer_ = gl_surface_->SupportsPostSubBuffer();
+  capabilities_.flipped_output_surface = gl_surface_->FlipsVertically();
+  capabilities_.supports_post_sub_buffer = gl_surface_->SupportsPostSubBuffer();
   if (feature_info_->workarounds()
           .disable_post_sub_buffers_for_onscreen_surfaces)
-    supports_post_sub_buffer_ = false;
+    capabilities_.supports_post_sub_buffer = false;
 }
 
 SkiaOutputDeviceGL::~SkiaOutputDeviceGL() {}
@@ -113,10 +108,6 @@ gfx::SwapResponse SkiaOutputDeviceGL::SwapBuffers(
   // TODO(backer): Support SwapBuffersAsync
   StartSwapBuffers({});
   return FinishSwapBuffers(gl_surface_->SwapBuffers(std::move(feedback)));
-}
-
-bool SkiaOutputDeviceGL::SupportPostSubBuffer() {
-  return supports_post_sub_buffer_;
 }
 
 gfx::SwapResponse SkiaOutputDeviceGL::PostSubBuffer(

@@ -17,10 +17,6 @@ SkiaOutputDevice::SkiaOutputDevice(
 
 SkiaOutputDevice::~SkiaOutputDevice() = default;
 
-bool SkiaOutputDevice::SupportPostSubBuffer() {
-  return false;
-}
-
 gfx::SwapResponse SkiaOutputDevice::PostSubBuffer(
     const gfx::Rect& rect,
     BufferPresentedCallback feedback) {
