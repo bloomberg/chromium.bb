@@ -29,6 +29,7 @@
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_base.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -61,8 +62,9 @@ class DataSaverSiteBreakdownMetricsObserverBrowserTest
     scoped_feature_list_.InitWithFeatures(
         {data_reduction_proxy::features::
              kDataSaverSiteBreakdownUsingPageLoadMetrics,
-         previews::features::kClientLoFi},
+         previews::features::kClientLoFi, features::kLazyImageLoading},
         {});
+
     InProcessBrowserTest::SetUp();
   }
 
@@ -146,6 +148,56 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
         test.expected_max_page_size,
         GetDataUsage(test_url.HostNoBrackets()) - data_usage_before_navigation);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
+                       LazyImagesDataSavings) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL test_url(
+      embedded_test_server()->GetURL("/lazyload/css-background-image.html"));
+
+  uint64_t data_savings_before_navigation =
+      GetDataSavings(test_url.HostNoBrackets());
+
+  ui_test_utils::NavigateToURL(browser(), test_url);
+  base::RunLoop().RunUntilIdle();
+
+  // Navigate away to force the histogram recording.
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+  // Default image size value.
+  uint64_t image_size = 10000u;
+
+  // 2 deferred images.
+  EXPECT_EQ(image_size * 2u, GetDataSavings(test_url.HostNoBrackets()) -
+                                 data_savings_before_navigation);
+}
+
+IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
+                       LazyImagesDataSavingsScrollRemovesSavings) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL test_url(
+      embedded_test_server()->GetURL("/lazyload/css-background-image.html"));
+
+  uint64_t data_savings_before_navigation =
+      GetDataSavings(test_url.HostNoBrackets());
+
+  ui_test_utils::NavigateToURL(browser(), test_url);
+
+  // Scroll to remove data savings by loading the images.
+  ASSERT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "window.scrollTo(0, 10000);"));
+
+  base::RunLoop().RunUntilIdle();
+
+  // Navigate away to force the histogram recording.
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+  EXPECT_EQ(0u, GetDataSavings(test_url.HostNoBrackets()) -
+                    data_savings_before_navigation);
 }
 
 IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,

@@ -48,6 +48,7 @@
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_history_commit_type.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -240,6 +241,13 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   // Reports that visible elements in the frame shifted (bit.ly/lsm-explainer).
   virtual void DidObserveLayoutJank(double jank_fraction) {}
+
+  // Reports lazy loaded behavior when the frame or image is fully deferred or
+  // if the frame or image is loaded after being deferred. Called every time the
+  // behavior occurs. This does not apply to images that were loaded as
+  // placeholders.
+  virtual void DidObserveLazyLoadBehavior(
+      WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) {}
 
   // Will be called by a Page upon DidCommitLoad, deciding whether to track
   // UseCounter usage or not based on its url.
