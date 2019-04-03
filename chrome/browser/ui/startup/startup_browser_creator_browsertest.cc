@@ -92,6 +92,10 @@ using testing::Return;
 #include "base/win/windows_version.h"
 #endif
 
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#include "chrome/browser/ui/webui/welcome/nux_helper.h"
+#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+
 using testing::_;
 using extensions::Extension;
 
@@ -1251,8 +1255,13 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, WelcomePages) {
   TabStripModel* tab_strip = browser->tab_strip_model();
 
   // Windows 10 has its own Welcome page; the standard Welcome page does not
-  // appear until second run.
-  if (IsWindows10OrNewer()) {
+  // appear until second run.  However, if NuxOnboarding is enabled, the
+  // standard welcome URL should still be used.
+  bool is_navi_enabled = false;
+#if defined(GOOGLE_CHROME_BUILD)
+  is_navi_enabled = nux::IsNuxOnboardingEnabled(profile1);
+#endif
+  if (IsWindows10OrNewer() && !is_navi_enabled) {
     ASSERT_EQ(1, tab_strip->count());
     EXPECT_EQ("chrome://welcome-win10/",
               tab_strip->GetWebContentsAt(0)->GetURL().possibly_invalid_spec());
