@@ -25,15 +25,6 @@ blink_modules_sources("indexeddb") {
     "idb_factory.h",
     "idb_index.cc",
     "idb_index.h",
-    "idb_key.cc",
-    "idb_key.h",
-    "idb_key_path.cc",
-    "idb_key_path.h",
-    "idb_key_range.cc",
-    "idb_key_range.h",
-    "idb_metadata.cc",
-    "idb_metadata.h",
-    "idb_name_and_version.h",
     "idb_object_store.cc",
     "idb_object_store.h",
     "idb_observation.cc",
@@ -53,15 +44,11 @@ blink_modules_sources("indexeddb") {
     "idb_tracing.h",
     "idb_transaction.cc",
     "idb_transaction.h",
-    "idb_value.cc",
-    "idb_value.h",
     "idb_value_wrapping.cc",
     "idb_value_wrapping.h",
     "idb_version_change_event.cc",
     "idb_version_change_event.h",
     "indexed_db.h",
-    "indexed_db_blink_mojom_traits.cc",
-    "indexed_db_blink_mojom_traits.h",
     "indexed_db_client.cc",
     "indexed_db_client.h",
     "indexed_db_database_callbacks_impl.cc",
@@ -91,6 +78,34 @@ blink_modules_sources("indexeddb") {
   ]
 
   public_deps = [
+    ":mojo_wrapped_idb_types",
     "//third_party/blink/public/mojom:mojom_modules_blink",
+  ]
+}
+
+# Some of the code is in its own build target to that it can be used
+# from the mojo type IDBKeyRange without creating a dependency cycle
+# between indexeddb and the mojo bindings.
+blink_modules_sources("mojo_wrapped_idb_types") {
+  visibility = []
+  visibility = [
+    "//third_party/blink/public/mojom:mojom_modules_blink",
+    "//third_party/blink/renderer/modules/*",
+  ]
+
+  sources = [
+    "idb_key.cc",
+    "idb_key.h",
+    "idb_key_path.cc",
+    "idb_key_path.h",
+    "idb_key_range.cc",
+    "idb_key_range.h",
+    "idb_metadata.cc",
+    "idb_metadata.h",
+    "idb_name_and_version.h",
+    "idb_value.cc",
+    "idb_value.h",
+    "indexed_db_blink_mojom_traits.cc",
+    "indexed_db_blink_mojom_traits.h",
   ]
 }

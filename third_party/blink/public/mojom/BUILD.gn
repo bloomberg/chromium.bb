@@ -319,7 +319,10 @@ mojom("mojom_modules") {
     ":mojom_core",
     ":mojom_platform",
   ]
-  component_deps_blink = [ "//third_party/blink/renderer/core" ]
+  component_deps_blink = [
+    "//third_party/blink/renderer/core",
+    "//third_party/blink/renderer/modules:modules_export_header",
+  ]
 
   export_class_attribute = "BLINK_COMMON_EXPORT"
   export_define = "BLINK_COMMON_IMPLEMENTATION=1"

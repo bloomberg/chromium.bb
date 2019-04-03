@@ -55,7 +55,6 @@ target("jumbo_" + modules_target_type, "modules") {
     "event_modules.h",
     "event_modules_factory.h",
     "event_target_modules.h",
-    "modules_export.h",
     "modules_initializer.cc",
     "modules_initializer.h",
   ]
@@ -79,6 +78,10 @@ target("jumbo_" + modules_target_type, "modules") {
     "//third_party/blink/renderer:inside_blink",
     "//third_party/blink/renderer/core:blink_core_pch",
     "//tools/v8_context_snapshot:use_v8_context_snapshot",
+  ]
+
+  public_deps = [
+    ":modules_export_header",
   ]
 
   deps = [
@@ -189,6 +192,20 @@ target("jumbo_" + modules_target_type, "modules") {
   if (is_android && notouch_build) {
     configs += [ ":notouch_config" ]
   }
+}
+
+# modules_export.h is in its own build target to allow mojo types to use it
+# without depending on the whole of modules.
+source_set("modules_export_header") {
+  # Opening up for mojo types to use this header.
+  visibility = []
+  visibility = [
+    "//third_party/blink/public/mojom:mojom_modules_blink",
+    "//third_party/blink/renderer/*",
+  ]
+  sources = [
+    "modules_export.h",
+  ]
 }
 
 jumbo_source_set("modules_testing") {
