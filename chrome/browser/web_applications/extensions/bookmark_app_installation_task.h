@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_INSTALLATION_TASK_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_INSTALLATION_TASK_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -21,6 +23,7 @@ class WebContents;
 
 namespace web_app {
 enum class InstallResultCode;
+class InstallFinalizer;
 }
 
 namespace extensions {
@@ -52,24 +55,31 @@ class BookmarkAppInstallationTask {
   // for |profile|. |install_options| will be used to decide some of the
   // properties of the installed app e.g. open in a tab vs. window, installed by
   // policy, etc.
-  explicit BookmarkAppInstallationTask(Profile* profile,
-                                       web_app::InstallOptions install_options);
+  explicit BookmarkAppInstallationTask(
+      Profile* profile,
+      std::unique_ptr<web_app::InstallFinalizer> install_finalizer,
+      web_app::InstallOptions install_options);
 
   virtual ~BookmarkAppInstallationTask();
 
   virtual void Install(content::WebContents* web_contents,
                        ResultCallback result_callback);
 
+  virtual void InstallPlaceholder(ResultCallback result_callback);
+
   const web_app::InstallOptions& install_options() { return install_options_; }
 
  private:
-  void OnWebAppInstalled(ResultCallback result_callback,
+  void OnWebAppInstalled(bool is_placeholder,
+                         ResultCallback result_callback,
                          const web_app::AppId& app_id,
                          web_app::InstallResultCode code);
 
   Profile* profile_;
 
   web_app::ExtensionIdsMap extension_ids_map_;
+
+  std::unique_ptr<web_app::InstallFinalizer> install_finalizer_;
 
   const web_app::InstallOptions install_options_;
 

@@ -4,19 +4,22 @@
 
 #include "chrome/browser/web_applications/extensions/bookmark_app_installation_task.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/common/web_application_info.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/common/constants.h"
-#include "extensions/common/extension.h"
 
 namespace extensions {
 
@@ -41,9 +44,11 @@ void BookmarkAppInstallationTask::CreateTabHelpers(
 
 BookmarkAppInstallationTask::BookmarkAppInstallationTask(
     Profile* profile,
+    std::unique_ptr<web_app::InstallFinalizer> install_finalizer,
     web_app::InstallOptions install_options)
     : profile_(profile),
       extension_ids_map_(profile_->GetPrefs()),
+      install_finalizer_(std::move(install_finalizer)),
       install_options_(std::move(install_options)) {}
 
 BookmarkAppInstallationTask::~BookmarkAppInstallationTask() = default;
@@ -60,22 +65,46 @@ void BookmarkAppInstallationTask::Install(content::WebContents* web_contents,
   provider->install_manager().InstallWebAppWithOptions(
       web_contents, install_options_,
       base::BindOnce(&BookmarkAppInstallationTask::OnWebAppInstalled,
-                     weak_ptr_factory_.GetWeakPtr(),
+                     weak_ptr_factory_.GetWeakPtr(), false /* is_placeholder */,
                      std::move(result_callback)));
 }
 
+void BookmarkAppInstallationTask::InstallPlaceholder(ResultCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  WebApplicationInfo web_app_info;
+  web_app_info.title = base::UTF8ToUTF16(install_options_.url.spec());
+  web_app_info.app_url = install_options_.url;
+
+  switch (install_options_.launch_container) {
+    case web_app::LaunchContainer::kDefault:
+    case web_app::LaunchContainer::kTab:
+      web_app_info.open_as_window = false;
+      break;
+    case web_app::LaunchContainer::kWindow:
+      web_app_info.open_as_window = true;
+      break;
+  }
+
+  install_finalizer_->FinalizeInstall(
+      web_app_info,
+      base::BindOnce(&BookmarkAppInstallationTask::OnWebAppInstalled,
+                     weak_ptr_factory_.GetWeakPtr(), true /* is_placeholder */,
+                     std::move(callback)));
+}
+
 void BookmarkAppInstallationTask::OnWebAppInstalled(
+    bool is_placeholder,
     ResultCallback result_callback,
     const web_app::AppId& app_id,
     web_app::InstallResultCode code) {
-  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
-  const Extension* extension = registry->enabled_extensions().GetByID(app_id);
-
-  if (code == web_app::InstallResultCode::kSuccess && extension) {
-    extension_ids_map_.Insert(install_options_.url, extension->id(),
+  if (code == web_app::InstallResultCode::kSuccess) {
+    extension_ids_map_.Insert(install_options_.url, app_id,
                               install_options_.install_source);
+    extension_ids_map_.SetIsPlaceholder(install_options_.url, is_placeholder);
+
     std::move(result_callback)
-        .Run(Result(web_app::InstallResultCode::kSuccess, extension->id()));
+        .Run(Result(web_app::InstallResultCode::kSuccess, app_id));
   } else {
     std::move(result_callback).Run(Result(code, base::nullopt));
   }
