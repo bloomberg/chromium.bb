@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/supports_user_data.h"
+#include "base/threading/thread_checker.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service_observer.h"
 #include "components/sync/model/metadata_change_list.h"
