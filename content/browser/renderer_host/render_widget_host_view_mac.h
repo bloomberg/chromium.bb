@@ -393,8 +393,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void StopSpeaking() override;
   bool SyncIsSpeaking(bool* is_speaking) override;
   void SyncIsSpeaking(SyncIsSpeakingCallback callback) override;
-  void SyncGetRootAccessibilityElement(
-      SyncGetRootAccessibilityElementCallback callback) override;
   void SetRemoteAccessibilityWindowToken(
       const std::vector<uint8_t>& window_token) override;
 

@@ -230,12 +230,6 @@ interface RenderWidgetHostNSViewClient {
   [Sync]
   SyncIsSpeaking() => (bool is_speaking);
 
-  // Return in |element_token| the token for the root content AX node for this
-  // view and in |host_pid| the pid for the host process.
-  [Sync]
-  SyncGetRootAccessibilityElement() =>
-      (int64 host_pid, array<uint8> element_token);
-
   // Send the token for the NSWindow in which this NSView is being displayed.
   SetRemoteAccessibilityWindowToken(array<uint8> window_token);
 };

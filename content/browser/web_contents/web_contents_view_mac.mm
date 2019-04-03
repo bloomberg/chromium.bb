@@ -633,11 +633,7 @@ void WebContentsViewMac::ViewsHostableAttach(ViewsHostableView::Host* host) {
 
     factory_host->GetFactory()->CreateWebContentsNSViewBridge(
         ns_view_id_, client.PassInterface(), std::move(bridge_request));
-
-    // TODO(https://crbug.com/944698): There is no reason to send an
-    // accessibility token here anymore.
-    std::vector<uint8_t> token;
-    ns_view_bridge_remote_->SetParentNSView(views_host_->GetNSViewId(), token);
+    ns_view_bridge_remote_->SetParentNSView(views_host_->GetNSViewId());
 
     // Because this view is being displayed from a remote process, reset the
     // in-process NSView's client pointer, so that the in-process NSView will
@@ -651,7 +647,7 @@ void WebContentsViewMac::ViewsHostableAttach(ViewsHostableView::Host* host) {
   // will look up the parent NSView by its id, but this has been observed to
   // fail in the field, so assume that the caller handles updating the NSView
   // hierarchy.
-  // ns_view_bridge_local_->SetParentNSView(views_host_->GetNSViewId(), token);
+  // ns_view_bridge_local_->SetParentNSView(views_host_->GetNSViewId());
 
   for (auto* rwhv_mac : GetChildViews()) {
     rwhv_mac->MigrateNSViewBridge(factory_host, ns_view_id_);
