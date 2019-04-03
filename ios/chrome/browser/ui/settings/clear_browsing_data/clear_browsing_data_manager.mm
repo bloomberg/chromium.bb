@@ -77,6 +77,19 @@ const std::vector<BrowsingDataRemoveMask> _browsingDataRemoveFlags = {
 
 }  // namespace
 
+static NSDictionary* _imageNamesByItemTypes = @{
+  [NSNumber numberWithInteger:ItemTypeDataTypeBrowsingHistory] :
+      @"clear_browsing_data_history",
+  [NSNumber numberWithInteger:ItemTypeDataTypeCookiesSiteData] :
+      @"clear_browsing_data_cookies",
+  [NSNumber numberWithInteger:ItemTypeDataTypeCache] :
+      @"clear_browsing_data_cached_images",
+  [NSNumber numberWithInteger:ItemTypeDataTypeSavedPasswords] :
+      @"clear_browsing_data_passwords",
+  [NSNumber numberWithInteger:ItemTypeDataTypeAutofill] :
+      @"clear_browsing_data_autofill",
+};
+
 @interface ClearBrowsingDataManager () {
   // Access to the kDeleteTimePeriod preference.
   IntegerPrefMember _timeRangePref;
@@ -456,6 +469,8 @@ const std::vector<BrowsingDataRemoveMask> _browsingDataRemoveFlags = {
     tableViewClearDataItem.dataTypeMask = mask;
     tableViewClearDataItem.prefName = prefName;
     if (IsNewClearBrowsingDataUIEnabled()) {
+      tableViewClearDataItem.imageName = [_imageNamesByItemTypes
+          objectForKey:[NSNumber numberWithInteger:itemType]];
       if (itemType == ItemTypeDataTypeCookiesSiteData) {
         // Because there is no counter for cookies, an explanatory text is
         // displayed.
