@@ -12,6 +12,7 @@
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/app_list_view_state.h"
+#include "ash/public/cpp/presentation_time_recorder.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -445,6 +446,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   // 2. folder opening and closing.
   // 3. app dragging in AppsGridView.
   views::View* announcement_view_ = nullptr;  // Owned by AppListView.
+
+  // Records the presentation time for app launcher dragging.
+  std::unique_ptr<ash::PresentationTimeRecorder> presentation_time_recorder_;
 
   base::WeakPtrFactory<AppListView> weak_ptr_factory_;
 

@@ -266,6 +266,9 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
                                SplitViewController::State state) override;
   void OnSplitViewDividerPositionChanged() override;
 
+  // Returns true if all its window grids don't have any window item.
+  bool IsEmpty() const;
+
  private:
   friend class OverviewSessionTest;
 
@@ -282,9 +285,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   // Called when the display area for the overview window grids changed.
   void OnDisplayBoundsChanged();
-
-  // Returns true if all its window grids don't have any window item.
-  bool IsEmpty();
 
   // Tracks observed windows.
   base::flat_set<aura::Window*> observed_windows_;

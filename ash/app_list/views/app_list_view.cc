@@ -95,7 +95,15 @@ constexpr int kAppListHomeLaucherGesturesThreshold = 32;
 constexpr float kAppListBlurQuality = 0.33f;
 
 // Set animation durations to 0 for testing.
-static bool short_animations_for_testing;
+// TODO(oshima): Use ui::ScopedAnimationDurationScaleMode instead.
+bool short_animations_for_testing;
+
+// Histogram for the app list dragging. The suffix ClamshellMode is added
+// in case a similar UI is added to TabletMode in the future.
+constexpr char kAppListDragInClamshellHistogram[] =
+    "Apps.StateTransition.Drag.PresentationTime.ClamshellMode";
+constexpr char kAppListDragInClamshellMaxLatencyHistogram[] =
+    "Apps.StateTransition.Drag.PresentationTime.MaxLatency.ClamshellMode";
 
 // This view forwards the focus to the search box widget by providing it as a
 // FocusTraversable when a focus search is provided.
@@ -1460,6 +1468,9 @@ void AppListView::UpdateYPositionAndOpacity(int y_position_in_screen,
   }
 
   SetIsInDrag(true);
+
+  presentation_time_recorder_->RequestNext();
+
   background_opacity_in_drag_ = background_opacity;
   gfx::Rect new_widget_bounds = fullscreen_widget_->GetWindowBoundsInScreen();
   app_list_y_position_in_screen_ = std::min(
@@ -1491,11 +1502,24 @@ gfx::Rect AppListView::GetAppInfoDialogBounds() const {
 }
 
 void AppListView::SetIsInDrag(bool is_in_drag) {
+  if (!is_in_drag)
+    presentation_time_recorder_.reset();
+
   if (app_list_state_ == AppListViewState::CLOSED)
     return;
 
   if (is_in_drag == is_in_drag_)
     return;
+
+  if (is_in_drag) {
+    DCHECK(!presentation_time_recorder_);
+    if (!is_tablet_mode_) {
+      presentation_time_recorder_ =
+          std::make_unique<ash::PresentationTimeHistogramRecorder>(
+              GetWidget()->GetCompositor(), kAppListDragInClamshellHistogram,
+              kAppListDragInClamshellMaxLatencyHistogram);
+    }
+  }
 
   is_in_drag_ = is_in_drag;
   GetAppsContainerView()->UpdateControlVisibility(app_list_state_, is_in_drag_);

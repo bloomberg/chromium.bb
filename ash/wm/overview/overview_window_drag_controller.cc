@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/overview_constants.h"
@@ -18,6 +19,7 @@
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_positioning_utils.h"
+#include "ash/wm/window_util.h"
 #include "base/numerics/ranges.h"
 #include "ui/aura/window.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -46,6 +48,13 @@ constexpr float kMinimumDragDistanceAlreadyInSnapRegionDp = 48.f;
 constexpr float kFlingToCloseVelocityThreshold = 2000.f;
 constexpr float kItemMinOpacity = 0.4f;
 
+// The UMA histogram that records presentation time for window dragging
+// operation in overview mode.
+constexpr char kOverviewWindowDragHistogram[] =
+    "Ash.Overview.WindowDrag.PresentationTime.TabletMode";
+constexpr char kOverviewWindowDragMaxLatencyHistogram[] =
+    "Ash.Overview.WindowDrag.PresentationTime.MaxLatency.TabletMode";
+
 void UnpauseOcclusionTracker() {
   Shell::Get()->overview_controller()->UnpauseOcclusionTracker(
       kOcclusionPauseDurationForDragMs);
@@ -72,6 +81,12 @@ void OverviewWindowDragController::InitiateDrag(
   }
   current_drag_behavior_ = DragBehavior::kUndefined;
   Shell::Get()->overview_controller()->PauseOcclusionTracker();
+  DCHECK(!presentation_time_recorder_);
+
+  presentation_time_recorder_ =
+      std::make_unique<ash::PresentationTimeHistogramRecorder>(
+          item_->root_window()->layer()->GetCompositor(),
+          kOverviewWindowDragHistogram, kOverviewWindowDragMaxLatencyHistogram);
 }
 
 void OverviewWindowDragController::Drag(const gfx::PointF& location_in_screen) {
@@ -117,6 +132,9 @@ void OverviewWindowDragController::Drag(const gfx::PointF& location_in_screen) {
   // placed below the dragged window during dragging.
   if (ShouldAllowSplitView())
     split_view_controller_->OnWindowDragStarted(item_->GetWindow());
+
+  if (presentation_time_recorder_)
+    presentation_time_recorder_->RequestNext();
 
   // Update the dragged |item_|'s bounds accordingly. The distance from the new
   // location to the new centerpoint should be the same it was initially. Do not
@@ -180,6 +198,7 @@ void OverviewWindowDragController::CompleteDrag(
   item_ = nullptr;
   current_drag_behavior_ = DragBehavior::kNoDrag;
   UnpauseOcclusionTracker();
+  presentation_time_recorder_.reset();
 }
 
 void OverviewWindowDragController::StartSplitViewDragMode(

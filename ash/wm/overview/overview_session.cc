@@ -805,6 +805,14 @@ void OverviewSession::OnSplitViewDividerPositionChanged() {
   PositionWindows(/*animate=*/false);
 }
 
+bool OverviewSession::IsEmpty() const {
+  for (const auto& grid : grid_list_) {
+    if (!grid->empty())
+      return false;
+  }
+  return true;
+}
+
 void OverviewSession::ResetFocusRestoreWindow(bool focus) {
   if (!restore_focus_window_)
     return;
@@ -866,14 +874,6 @@ void OverviewSession::OnDisplayBoundsChanged() {
   PositionWindows(/*animate=*/false);
   if (split_view_drag_indicators_)
     split_view_drag_indicators_->OnDisplayBoundsChanged();
-}
-
-bool OverviewSession::IsEmpty() {
-  for (const auto& grid : grid_list_) {
-    if (!grid->empty())
-      return false;
-  }
-  return true;
 }
 
 }  // namespace ash

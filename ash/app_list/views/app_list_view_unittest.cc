@@ -38,12 +38,14 @@
 #include "ash/app_list/views/test/apps_grid_view_test_api.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/presentation_time_recorder.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/icu_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "services/content/public/cpp/test/fake_navigable_contents.h"
@@ -109,9 +111,13 @@ class AppListViewTest : public views::ViewsTestBase,
         base::i18n::SetICUDefaultLocale("he");
     }
     views::ViewsTestBase::SetUp();
+    ash::PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
+        true);
   }
 
   void TearDown() override {
+    ash::PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
+        false);
     view_->GetWidget()->Close();
     views::ViewsTestBase::TearDown();
     AppListView::SetShortAnimationForTesting(false);
@@ -1469,21 +1475,32 @@ TEST_F(AppListViewTest, EmptySearchTextStillPeeking) {
 }
 
 TEST_F(AppListViewTest, MouseWheelScrollTransitionsToFullscreen) {
+  base::HistogramTester histogram_tester;
+
   Initialize(0, false, false);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
 
   view_->HandleScroll(gfx::Vector2d(0, -30), ui::ET_MOUSEWHEEL);
   EXPECT_EQ(AppListViewState::FULLSCREEN_ALL_APPS, view_->app_list_state());
+  // This should use animation instead of drag.
+  // TODO(oshima): Test AnimationSmoothness.
+  histogram_tester.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.ClamshellMode", 0);
 }
 
 TEST_F(AppListViewTest, GestureScrollTransitionsToFullscreen) {
+  base::HistogramTester histogram_tester;
   Initialize(0, false, false);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
 
   view_->HandleScroll(gfx::Vector2d(0, -30), ui::ET_SCROLL);
   EXPECT_EQ(AppListViewState::FULLSCREEN_ALL_APPS, view_->app_list_state());
+  // This should use animation instead of drag.
+  // TODO(oshima): Test AnimationSmoothness.
+  histogram_tester.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.ClamshellMode", 0);
 }
 
 // Tests that typing text after opening transitions from peeking to half.
@@ -1776,11 +1793,14 @@ TEST_F(AppListViewTest, TapAndClickWithinAppsGridView) {
 
 // Tests that search box should not become a rectangle during drag.
 TEST_F(AppListViewTest, SearchBoxCornerRadiusDuringDragging) {
+  base::HistogramTester histogram_tester;
   Initialize(0, false, false);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
   view_->SetState(AppListViewState::FULLSCREEN_ALL_APPS);
   EXPECT_EQ(AppListViewState::FULLSCREEN_ALL_APPS, view_->app_list_state());
+  histogram_tester.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.ClamshellMode", 0);
 
   // Send SCROLL_START and SCROLL_UPDATE events, simulating dragging the
   // launcher.
@@ -1793,6 +1813,8 @@ TEST_F(AppListViewTest, SearchBoxCornerRadiusDuringDragging) {
       start.x(), start.y(), ui::EF_NONE, timestamp,
       ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, delta_y));
   view_->OnGestureEvent(&start_event);
+  histogram_tester.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.ClamshellMode", 0);
 
   // Drag down the launcher.
   timestamp += base::TimeDelta::FromMilliseconds(25);
@@ -1815,6 +1837,10 @@ TEST_F(AppListViewTest, SearchBoxCornerRadiusDuringDragging) {
   EXPECT_EQ(search_box::kSearchBoxBorderCornerRadius,
             search_box_view()->GetSearchBoxBorderCornerRadiusForState(
                 ash::AppListState::kStateSearchResults));
+  histogram_tester.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.ClamshellMode", 1);
+  histogram_tester.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.MaxLatency.ClamshellMode", 0);
 
   // Ends to drag the launcher.
   EXPECT_TRUE(SetAppListState(ash::AppListState::kStateApps));
@@ -1831,6 +1857,10 @@ TEST_F(AppListViewTest, SearchBoxCornerRadiusDuringDragging) {
   EXPECT_EQ(search_box::kSearchBoxBorderCornerRadius,
             search_box_view()->GetSearchBoxBorderCornerRadiusForState(
                 ash::AppListState::kStateApps));
+  histogram_tester.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.ClamshellMode", 1);
+  histogram_tester.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.MaxLatency.ClamshellMode", 1);
 }
 
 // Tests displaying the app list and performs a standard set of checks on its

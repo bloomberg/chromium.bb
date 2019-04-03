@@ -97,6 +97,18 @@ constexpr gfx::Tween::Type kFolderFadeInTweenType = gfx::Tween::EASE_IN_2;
 constexpr gfx::Tween::Type kFolderFadeOutTweenType =
     gfx::Tween::FAST_OUT_LINEAR_IN;
 
+// Presentation time histogram for apps grid scroll by dragging.
+constexpr char kPageDragScrollInClamshellHistogram[] =
+    "Apps.PaginationTransition.DragScroll.PresentationTime.ClamshellMode";
+constexpr char kPageDragScrollInClamshellMaxLatencyHistogram[] =
+    "Apps.PaginationTransition.DragScroll.PresentationTime.MaxLatency."
+    "ClamshellMode";
+constexpr char kPageDragScrollInTabletHistogram[] =
+    "Apps.PaginationTransition.DragScroll.PresentationTime.TabletMode";
+constexpr char kPageDragScrollInTabletMaxLatencyHistogram[] =
+    "Apps.PaginationTransition.DragScroll.PresentationTime.MaxLatency."
+    "TabletMode";
+
 // Returns the size of a tile view excluding its padding.
 gfx::Size GetTileViewSize() {
   return gfx::Size(AppListConfig::instance().grid_tile_width(),
@@ -881,6 +893,9 @@ void AppsGridView::Layout() {
 
   if (GetContentsBounds().IsEmpty())
     return;
+
+  if (presentation_time_recorder_)
+    presentation_time_recorder_->RequestNext();
 
   if (fadeout_layer_delegate_)
     fadeout_layer_delegate_->layer()->SetBounds(layer()->bounds());
@@ -2400,6 +2415,9 @@ void AppsGridView::SelectedPageChanged(int old_selected, int new_selected) {
 }
 
 void AppsGridView::TransitionStarted() {
+  // Drag ends and animation starts.
+  presentation_time_recorder_.reset();
+
   CancelContextMenusOnCurrentPage();
   pagination_animation_start_frame_number_ =
       GetCompositorActivatedFrameCount(layer()->GetCompositor());
@@ -2428,8 +2446,29 @@ void AppsGridView::TransitionEnded() {
       !duration.is_zero()) {
     RecordPaginationAnimationSmoothness(
         end_frame_number - pagination_animation_start_frame_number_,
-        duration.InMilliseconds(), compositor->refresh_rate());
+        duration.InMilliseconds(), compositor->refresh_rate(), IsTabletMode());
   }
+}
+
+void AppsGridView::ScrollStarted() {
+  DCHECK(!presentation_time_recorder_);
+
+  if (IsTabletMode()) {
+    presentation_time_recorder_ =
+        std::make_unique<ash::PresentationTimeHistogramRecorder>(
+            GetWidget()->GetCompositor(), kPageDragScrollInTabletHistogram,
+            kPageDragScrollInTabletMaxLatencyHistogram);
+  } else {
+    presentation_time_recorder_ =
+        std::make_unique<ash::PresentationTimeHistogramRecorder>(
+            GetWidget()->GetCompositor(), kPageDragScrollInClamshellHistogram,
+            kPageDragScrollInClamshellMaxLatencyHistogram);
+  }
+}
+
+void AppsGridView::ScrollEnded() {
+  // Scroll can end without triggering state animation.
+  presentation_time_recorder_.reset();
 }
 
 void AppsGridView::OnAppListModelStatusChanged() {

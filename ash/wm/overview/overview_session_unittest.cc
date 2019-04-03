@@ -140,8 +140,12 @@ class OverviewSessionTest : public AshTestBase {
     ScopedOverviewTransformWindow::SetImmediateCloseForTests();
     OverviewController::SetDoNotChangeWallpaperBlurForTests();
     FpsCounter::SetFoceReportZeroAnimationForTest(true);
+    ash::PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
+        true);
   }
   void TearDown() override {
+    ash::PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
+        false);
     FpsCounter::SetFoceReportZeroAnimationForTest(false);
     trace_names_.clear();
     AshTestBase::TearDown();
@@ -2099,6 +2103,7 @@ TEST_F(OverviewSessionTest, DISABLED_HandleAlwaysOnTopWindow) {
 // Verify that the selector item can animate after the item is dragged and
 // released.
 TEST_F(OverviewSessionTest, WindowItemCanAnimateOnDragRelease) {
+  base::HistogramTester histogram_tester;
   UpdateDisplay("400x400");
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
@@ -2116,17 +2121,27 @@ TEST_F(OverviewSessionTest, WindowItemCanAnimateOnDragRelease) {
   base::RunLoop().RunUntilIdle();
 
   generator->MoveMouseTo(gfx::Point(200, 200));
+  histogram_tester.ExpectTotalCount(
+      "Ash.Overview.WindowDrag.PresentationTime.TabletMode", 1);
+  histogram_tester.ExpectTotalCount(
+      "Ash.Overview.WindowDrag.PresentationTime.MaxLatency.TabletMode", 0);
+
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   generator->ReleaseLeftButton();
   EXPECT_TRUE(window2->layer()->GetAnimator()->IsAnimatingProperty(
       ui::LayerAnimationElement::AnimatableProperty::TRANSFORM));
   base::RunLoop().RunUntilIdle();
+  histogram_tester.ExpectTotalCount(
+      "Ash.Overview.WindowDrag.PresentationTime.TabletMode", 1);
+  histogram_tester.ExpectTotalCount(
+      "Ash.Overview.WindowDrag.PresentationTime.MaxLatency.TabletMode", 1);
 }
 
 // Verify that the overview items titlebar and close button change visibility
 // when a item is being dragged.
 TEST_F(OverviewSessionTest, WindowItemTitleCloseVisibilityOnDrag) {
+  base::HistogramTester histogram_tester;
   UpdateDisplay("400x400");
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
@@ -2153,16 +2168,26 @@ TEST_F(OverviewSessionTest, WindowItemTitleCloseVisibilityOnDrag) {
   // within a certain threshold count as clicks). Verify the close button and
   // titlebar is visible for all items.
   generator->MoveMouseTo(gfx::Point(200, 200));
+  histogram_tester.ExpectTotalCount(
+      "Ash.Overview.WindowDrag.PresentationTime.TabletMode", 1);
+  histogram_tester.ExpectTotalCount(
+      "Ash.Overview.WindowDrag.PresentationTime.MaxLatency.TabletMode", 0);
+
   generator->ReleaseLeftButton();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1.f, item1->GetTitlebarOpacityForTesting());
   EXPECT_EQ(1.f, item1->GetCloseButtonVisibilityForTesting());
   EXPECT_EQ(1.f, item2->GetTitlebarOpacityForTesting());
   EXPECT_EQ(1.f, item2->GetCloseButtonVisibilityForTesting());
+  histogram_tester.ExpectTotalCount(
+      "Ash.Overview.WindowDrag.PresentationTime.TabletMode", 1);
+  histogram_tester.ExpectTotalCount(
+      "Ash.Overview.WindowDrag.PresentationTime.MaxLatency.TabletMode", 1);
 }
 
 // Tests that overview widgets are stacked in the correct order.
 TEST_F(OverviewSessionTest, OverviewWidgetStackingOrder) {
+  base::HistogramTester histogram_tester;
   // Create three windows, including one minimized.
   std::unique_ptr<aura::Window> window(CreateTestWindow());
   std::unique_ptr<aura::Window> minimized(CreateTestWindow());
@@ -2229,11 +2254,21 @@ TEST_F(OverviewSessionTest, OverviewWidgetStackingOrder) {
             IndexOf(widget2->GetNativeWindow(), parent));
   EXPECT_GT(IndexOf(widget1->GetNativeWindow(), parent),
             IndexOf(widget3->GetNativeWindow(), parent));
+  histogram_tester.ExpectTotalCount(
+      "Ash.Overview.WindowDrag.PresentationTime.TabletMode", 0);
 
   // Drag to origin and then back to the start to avoid activating the window or
   // entering splitview.
   generator->MoveMouseTo(gfx::Point());
+  histogram_tester.ExpectTotalCount(
+      "Ash.Overview.WindowDrag.PresentationTime.TabletMode", 1);
+
   generator->MoveMouseTo(start_drag);
+  histogram_tester.ExpectTotalCount(
+      "Ash.Overview.WindowDrag.PresentationTime.TabletMode", 2);
+  histogram_tester.ExpectTotalCount(
+      "Ash.Overview.WindowDrag.PresentationTime.MaxLatency.TabletMode", 0);
+
   generator->ReleaseLeftButton();
 
   // Verify the stacking order is same as before dragging started.
@@ -2241,6 +2276,10 @@ TEST_F(OverviewSessionTest, OverviewWidgetStackingOrder) {
             IndexOf(widget1->GetNativeWindow(), parent));
   EXPECT_GT(IndexOf(widget1->GetNativeWindow(), parent),
             IndexOf(widget2->GetNativeWindow(), parent));
+  histogram_tester.ExpectTotalCount(
+      "Ash.Overview.WindowDrag.PresentationTime.TabletMode", 2);
+  histogram_tester.ExpectTotalCount(
+      "Ash.Overview.WindowDrag.PresentationTime.MaxLatency.TabletMode", 1);
 }
 
 // Verify that a windows which enter overview mode have a visible backdrop, if

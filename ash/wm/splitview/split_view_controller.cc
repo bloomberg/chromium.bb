@@ -9,6 +9,7 @@
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/display/screen_orientation_controller.h"
+#include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller.h"
@@ -76,6 +77,23 @@ constexpr int kDividerSnapDurationMs = 300;
 // Toast data.
 constexpr char kAppCannotSnapToastId[] = "split_view_app_cannot_snap";
 constexpr int kAppCannotSnapToastDurationMs = 2500;
+
+// Histogram names that record presentation time of resize operation with
+// following conditions, a) single snapped window, empty overview, b) two
+// snapped windows, c) single snapped window and non empty overview.
+constexpr char kSplitViewResizeSingleHistogram[] =
+    "Ash.SplitViewResize.PresentationTime.TabletMode.SingleWindow";
+constexpr char kSplitViewResizeMultiHistogram[] =
+    "Ash.SplitViewResize.PresentationTime.TabletMode.MultiWindow";
+constexpr char kSplitViewResizeWithOverviewHistogram[] =
+    "Ash.SplitViewResize.PresentationTime.TabletMode.WithOverview";
+
+constexpr char kSplitViewResizeSingleMaxLatencyHistogram[] =
+    "Ash.SplitViewResize.PresentationTime.MaxLatency.TabletMode.SingleWindow";
+constexpr char kSplitViewResizeMultiMaxLatencyHistogram[] =
+    "Ash.SplitViewResize.PresentationTime.MaxLatency.TabletMode.MultiWindow";
+constexpr char kSplitViewResizeWithOverviewMaxLatencyHistogram[] =
+    "Ash.SplitViewResize.PresentationTime.MaxLatency.TabletMode.WithOverview";
 
 gfx::Point GetBoundedPosition(const gfx::Point& location_in_screen,
                               const gfx::Rect& bounds_in_screen) {
@@ -499,6 +517,25 @@ void SplitViewController::StartResize(const gfx::Point& location_in_screen) {
   }
 
   base::RecordAction(base::UserMetricsAction("SplitView_ResizeWindows"));
+  if (state_ == BOTH_SNAPPED) {
+    presentation_time_recorder_ =
+        std::make_unique<PresentationTimeHistogramRecorder>(
+            split_view_divider_->divider_widget()->GetCompositor(),
+            kSplitViewResizeMultiHistogram,
+            kSplitViewResizeMultiMaxLatencyHistogram);
+  } else if (GetOverviewSession() && !GetOverviewSession()->IsEmpty()) {
+    presentation_time_recorder_ =
+        std::make_unique<PresentationTimeHistogramRecorder>(
+            split_view_divider_->divider_widget()->GetCompositor(),
+            kSplitViewResizeWithOverviewHistogram,
+            kSplitViewResizeWithOverviewMaxLatencyHistogram);
+  } else {
+    presentation_time_recorder_ =
+        std::make_unique<PresentationTimeHistogramRecorder>(
+            split_view_divider_->divider_widget()->GetCompositor(),
+            kSplitViewResizeSingleHistogram,
+            kSplitViewResizeSingleMaxLatencyHistogram);
+  }
 }
 
 void SplitViewController::Resize(const gfx::Point& location_in_screen) {
@@ -506,7 +543,7 @@ void SplitViewController::Resize(const gfx::Point& location_in_screen) {
 
   if (!is_resizing_)
     return;
-
+  presentation_time_recorder_->RequestNext();
   const gfx::Rect work_area_bounds =
       screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
           GetDefaultSnappedWindow());
@@ -530,6 +567,7 @@ void SplitViewController::Resize(const gfx::Point& location_in_screen) {
 }
 
 void SplitViewController::EndResize(const gfx::Point& location_in_screen) {
+  presentation_time_recorder_.reset();
   DCHECK(IsSplitViewModeActive());
   if (!is_resizing_)
     return;
@@ -1642,7 +1680,8 @@ void SplitViewController::FinishWindowResizing(aura::Window* window) {
 void SplitViewController::EndResizeImpl() {
   DCHECK(IsSplitViewModeActive());
   DCHECK(!is_resizing_);
-
+  // Resize may not end with |EndResize()|, so make sure to clear here too.
+  presentation_time_recorder_.reset();
   RestoreWindowsTransformAfterResizing();
   FinishWindowResizing(left_window_);
   FinishWindowResizing(right_window_);

@@ -87,6 +87,8 @@ component("cpp") {
     "notification_utils.h",
     "power_utils.cc",
     "power_utils.h",
+    "presentation_time_recorder.cc",
+    "presentation_time_recorder.h",
     "remote_shelf_item_delegate.cc",
     "remote_shelf_item_delegate.h",
     "rounded_corner_decorator.cc",

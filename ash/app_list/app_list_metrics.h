@@ -213,7 +213,8 @@ void RecordFolderShowHideAnimationSmoothness(int actual_frames,
 
 void RecordPaginationAnimationSmoothness(int actual_frames,
                                          int ideal_duration_ms,
-                                         float refresh_rate);
+                                         float refresh_rate,
+                                         bool is_tablet_mode);
 
 void RecordZeroStateSearchResultUserActionHistogram(
     ZeroStateSearchResultUserActionType action);

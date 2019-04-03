@@ -4,6 +4,7 @@
 
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 
+#include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -13,6 +14,7 @@
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -34,6 +36,13 @@ class SplitViewDragIndicatorsTest : public AshTestBase {
     base::RunLoop().RunUntilIdle();
     Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
     base::RunLoop().RunUntilIdle();
+    ash::PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
+        true);
+  }
+  void TearDown() override {
+    ash::PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
+        false);
+    AshTestBase::TearDown();
   }
 
   void ToggleOverview() {
@@ -101,6 +110,7 @@ class SplitViewDragIndicatorsTest : public AshTestBase {
 };
 
 TEST_F(SplitViewDragIndicatorsTest, Dragging) {
+  base::HistogramTester histogram_tester;
   Shell::Get()->aura_env()->set_throttle_input_on_resize_for_testing(false);
   UpdateDisplay("800x600");
   const int screen_width = 800;
@@ -139,9 +149,20 @@ TEST_F(SplitViewDragIndicatorsTest, Dragging) {
   const gfx::RectF left_original_bounds = left_item->target_bounds();
   generator->MoveMouseBy(drag_offset - 1, 0);
   EXPECT_EQ(left_original_bounds, left_item->target_bounds());
+  histogram_tester.ExpectTotalCount(
+      "Ash.Overview.WindowDrag.PresentationTime.TabletMode", 0);
   generator->MoveMouseBy(1, 0);
   EXPECT_NE(left_original_bounds, left_item->target_bounds());
+  histogram_tester.ExpectTotalCount(
+      "Ash.Overview.WindowDrag.PresentationTime.TabletMode", 1);
+  histogram_tester.ExpectTotalCount(
+      "ash.overview.windowdrag.presentationtime.maxlatency.tabletmode", 0);
+
   generator->ReleaseLeftButton();
+  histogram_tester.ExpectTotalCount(
+      "Ash.Overview.WindowDrag.PresentationTime.TabletMode", 1);
+  histogram_tester.ExpectTotalCount(
+      "Ash.Overview.WindowDrag.PresentationTime.MaxLatency.TabletMode", 1);
 
   // Verify if the drag is started in the left snap region, the drag needs to
   // move by |drag_offset_snap_region| towards the right side of the screen
@@ -150,17 +171,27 @@ TEST_F(SplitViewDragIndicatorsTest, Dragging) {
   generator->set_current_screen_location(
       gfx::Point(left_item->target_bounds().origin().x() + item_inset,
                  left_item->target_bounds().CenterPoint().y()));
+
   generator->PressLeftButton();
   generator->MoveMouseBy(-drag_offset, 0);
   EXPECT_FALSE(IsPreviewAreaShowing());
   generator->MoveMouseBy(drag_offset_snap_region, 0);
+  EXPECT_FALSE(IsPreviewAreaShowing());
   generator->MoveMouseBy(-minimum_drag_offset, 0);
   EXPECT_TRUE(IsPreviewAreaShowing());
+
   // Drag back to the middle before releasing so that we stay in overview mode
   // on release.
   generator->MoveMouseTo(
       gfx::ToRoundedPoint(left_original_bounds.CenterPoint()));
+  histogram_tester.ExpectTotalCount(
+      "Ash.Overview.WindowDrag.PresentationTime.TabletMode", 5);
+  histogram_tester.ExpectTotalCount(
+      "Ash.Overview.WindowDrag.PresentationTime.MaxLatency.TabletMode", 1);
+
   generator->ReleaseLeftButton();
+  histogram_tester.ExpectTotalCount(
+      "Ash.Overview.WindowDrag.PresentationTime.MaxLatency.TabletMode", 2);
 
   // Verify if the drag is started in the right snap region, the drag needs to
   // move by |drag_offset_snap_region| towards the left side of the screen
@@ -175,6 +206,16 @@ TEST_F(SplitViewDragIndicatorsTest, Dragging) {
   generator->MoveMouseBy(-drag_offset_snap_region, 0);
   generator->MoveMouseBy(minimum_drag_offset, 0);
   EXPECT_TRUE(IsPreviewAreaShowing());
+  histogram_tester.ExpectTotalCount(
+      "Ash.Overview.WindowDrag.PresentationTime.TabletMode", 8);
+  histogram_tester.ExpectTotalCount(
+      "Ash.Overview.WindowDrag.PresentationTime.MaxLatency.TabletMode", 2);
+
+  generator->ReleaseLeftButton();
+  histogram_tester.ExpectTotalCount(
+      "Ash.Overview.WindowDrag.PresentationTime.TabletMode", 8);
+  histogram_tester.ExpectTotalCount(
+      "Ash.Overview.WindowDrag.PresentationTime.MaxLatency.TabletMode", 3);
 }
 
 // Verify the split view preview area becomes visible when expected.

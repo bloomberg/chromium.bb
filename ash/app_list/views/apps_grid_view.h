@@ -450,6 +450,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void TransitionStarted() override;
   void TransitionChanged() override;
   void TransitionEnded() override;
+  void ScrollStarted() override;
+  void ScrollEnded() override;
 
   // Overridden from AppListModelObserver:
   void OnAppListModelStatusChanged() override;
@@ -734,6 +736,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   GhostImageView* current_ghost_view_ = nullptr;
   GhostImageView* last_ghost_view_ = nullptr;
+
+  // Records the presentation time for apps grid dragging.
+  std::unique_ptr<ash::PresentationTimeRecorder> presentation_time_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsGridView);
 };

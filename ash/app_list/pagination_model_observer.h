@@ -26,6 +26,12 @@ class APP_LIST_EXPORT PaginationModelObserver {
   // Invoked when a transition ends.
   virtual void TransitionEnded() = 0;
 
+  // Invoked when a grid scroll starts.
+  virtual void ScrollStarted() {}
+
+  // Invoked when a grid scroll ends.
+  virtual void ScrollEnded() {}
+
  protected:
   virtual ~PaginationModelObserver() {}
 };

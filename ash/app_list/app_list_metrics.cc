@@ -48,6 +48,10 @@ constexpr char kFolderShowHideAnimationSmoothness[] =
 // The UMA histogram that logs smoothness of pagination animation.
 constexpr char kPaginationTransitionAnimationSmoothness[] =
     "Apps.PaginationTransition.AnimationSmoothness";
+constexpr char kPaginationTransitionAnimationSmoothnessInTablet[] =
+    "Apps.PaginationTransition.AnimationSmoothness.TabletMode";
+constexpr char kPaginationTransitionAnimationSmoothnessInClamshell[] =
+    "Apps.PaginationTransition.AnimationSmoothness.ClamshellMode";
 
 // The UMA histogram that logs which state search results are opened from.
 constexpr char kAppListSearchResultOpenSourceHistogram[] =
@@ -83,11 +87,19 @@ void RecordFolderShowHideAnimationSmoothness(int actual_frames,
 
 void RecordPaginationAnimationSmoothness(int actual_frames,
                                          int ideal_duration_ms,
-                                         float refresh_rate) {
+                                         float refresh_rate,
+                                         bool is_tablet_mode) {
   const int smoothness = CalculateAnimationSmoothness(
       actual_frames, ideal_duration_ms, refresh_rate);
   UMA_HISTOGRAM_PERCENTAGE(kPaginationTransitionAnimationSmoothness,
                            smoothness);
+  if (is_tablet_mode) {
+    UMA_HISTOGRAM_PERCENTAGE(kPaginationTransitionAnimationSmoothnessInTablet,
+                             smoothness);
+  } else {
+    UMA_HISTOGRAM_PERCENTAGE(
+        kPaginationTransitionAnimationSmoothnessInClamshell, smoothness);
+  }
 }
 
 APP_LIST_EXPORT void RecordSearchResultOpenSource(

@@ -118,6 +118,8 @@ void PaginationModel::SetTransitionDurations(int duration_ms,
 }
 
 void PaginationModel::StartScroll() {
+  NotifyScrollStarted();
+
   // Cancels current transition animation (if any).
   transition_animation_.reset();
 }
@@ -153,6 +155,8 @@ void PaginationModel::UpdateScroll(double delta) {
 }
 
 void PaginationModel::EndScroll(bool cancel) {
+  NotifyScrollEnded();
+
   if (!has_transition())
     return;
 
@@ -208,6 +212,16 @@ void PaginationModel::NotifyTransitionChanged() {
 void PaginationModel::NotifyTransitionEnded() {
   for (auto& observer : observers_)
     observer.TransitionEnded();
+}
+
+void PaginationModel::NotifyScrollStarted() {
+  for (auto& observer : observers_)
+    observer.ScrollStarted();
+}
+
+void PaginationModel::NotifyScrollEnded() {
+  for (auto& observer : observers_)
+    observer.ScrollEnded();
 }
 
 int PaginationModel::CalculateTargetPage(int delta) const {

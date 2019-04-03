@@ -32,6 +32,7 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
+#include "ash/public/cpp/presentation_time_recorder.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -147,6 +148,8 @@ class AppsGridViewTest : public views::ViewsTestBase,
                          public testing::WithParamInterface<bool> {
  public:
   AppsGridViewTest() = default;
+  explicit AppsGridViewTest(bool create_as_tablet_mode)
+      : create_as_tablet_mode_(create_as_tablet_mode) {}
   ~AppsGridViewTest() override = default;
 
   // testing::Test overrides:
@@ -165,6 +168,7 @@ class AppsGridViewTest : public views::ViewsTestBase,
     app_list_view_ = new AppListView(delegate_.get());
     AppListView::InitParams params;
     params.parent = parent;
+    params.is_tablet_mode = create_as_tablet_mode_;
     app_list_view_->Initialize(params);
     contents_view_ = app_list_view_->app_list_main_view()->contents_view();
     apps_grid_view_ = contents_view_->GetAppsContainerView()->apps_grid_view();
@@ -185,8 +189,12 @@ class AppsGridViewTest : public views::ViewsTestBase,
     app_list_view_->Layout();
 
     test_api_ = std::make_unique<AppsGridViewTestApi>(apps_grid_view_);
+    ash::PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
+        true);
   }
   void TearDown() override {
+    ash::PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
+        false);
     app_list_view_->GetWidget()->Close();
     views::ViewsTestBase::TearDown();
     AppListView::SetShortAnimationForTesting(false);
@@ -285,6 +293,7 @@ class AppsGridViewTest : public views::ViewsTestBase,
   std::unique_ptr<AppsGridViewTestApi> test_api_;
   bool is_rtl_ = false;
   bool test_with_fullscreen_ = true;
+  bool create_as_tablet_mode_ = false;
 
  private:
   // Restores the locale to default when destructor is called.
@@ -444,6 +453,8 @@ TEST_F(AppsGridViewTest, ItemLabelNoShortName) {
 }
 
 TEST_P(AppsGridViewTest, ScrollSequenceHandledByAppListView) {
+  base::HistogramTester histogram_tester;
+
   model_->PopulateApps(GetTilesPerPage(0) + 1);
   EXPECT_EQ(2, GetPaginationModel()->total_pages());
 
@@ -457,6 +468,9 @@ TEST_P(AppsGridViewTest, ScrollSequenceHandledByAppListView) {
       apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
       base::TimeTicks(),
       ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 0, 10));
+  ui::GestureEvent scroll_end(apps_grid_view_origin.x(),
+                              apps_grid_view_origin.y(), 0, base::TimeTicks(),
+                              ui::GestureEventDetails(ui::ET_GESTURE_END));
 
   // Drag down on the app grid when on page 1, this should move the AppListView
   // and not move the AppsGridView.
@@ -466,6 +480,8 @@ TEST_P(AppsGridViewTest, ScrollSequenceHandledByAppListView) {
   // Simulate redirecting the event to app list view through views hierarchy.
   app_list_view_->OnGestureEvent(&scroll_begin);
   EXPECT_TRUE(scroll_begin.handled());
+  histogram_tester.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.ClamshellMode", 0);
 
   // The following scroll update events will be sent to the view that handled
   // the scroll begin event.
@@ -473,10 +489,24 @@ TEST_P(AppsGridViewTest, ScrollSequenceHandledByAppListView) {
   EXPECT_TRUE(scroll_update.handled());
   ASSERT_TRUE(app_list_view_->is_in_drag());
   ASSERT_EQ(0, GetPaginationModel()->transition().progress);
+  histogram_tester.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.ClamshellMode", 1);
+  histogram_tester.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.MaxLatency.ClamshellMode", 0);
+
+  app_list_view_->OnGestureEvent(&scroll_end);
+  EXPECT_TRUE(scroll_end.handled());
+
+  histogram_tester.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.ClamshellMode", 1);
+  histogram_tester.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.MaxLatency.ClamshellMode", 1);
 }
 
 TEST_F(AppsGridViewTest,
        OnGestureEventScrollSequenceHandleByPaginationController) {
+  base::HistogramTester histogram_tester;
+
   model_->PopulateApps(GetTilesPerPage(0) + 1);
   EXPECT_EQ(2, GetPaginationModel()->total_pages());
 
@@ -490,15 +520,34 @@ TEST_F(AppsGridViewTest,
       apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
       base::TimeTicks(),
       ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 0, -10));
+  ui::GestureEvent scroll_end(
+      apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
+      base::TimeTicks(), ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_END));
 
   // Drag up on the app grid when on page 1, this should move the AppsGridView
   // but not the AppListView.
   apps_grid_view_->OnGestureEvent(&scroll_begin);
   EXPECT_TRUE(scroll_begin.handled());
+  histogram_tester.ExpectTotalCount(
+      "Apps.PaginationTransition.DragScroll.PresentationTime.ClamshellMode", 0);
+
   apps_grid_view_->OnGestureEvent(&scroll_update);
   EXPECT_TRUE(scroll_update.handled());
   ASSERT_FALSE(app_list_view_->is_in_drag());
   ASSERT_NE(0, GetPaginationModel()->transition().progress);
+  histogram_tester.ExpectTotalCount(
+      "Apps.PaginationTransition.DragScroll.PresentationTime.ClamshellMode", 1);
+  histogram_tester.ExpectTotalCount(
+      "Apps.PaginationTransition.DragScroll.PresentationTime.MaxLatency."
+      "ClamshellMode",
+      0);
+
+  apps_grid_view_->OnGestureEvent(&scroll_end);
+
+  histogram_tester.ExpectTotalCount(
+      "Apps.PaginationTransition.DragScroll.PresentationTime.MaxLatency."
+      "ClamshellMode",
+      1);
 }
 
 TEST_F(AppsGridViewTest, CloseFolderByClickingBackground) {
@@ -1044,6 +1093,65 @@ TEST_F(AppsGridViewTest, FocusOfDraggedView) {
   EXPECT_FALSE(search_box->HasFocus());
   EXPECT_TRUE(item_view->HasFocus());
 }
+
+class AppsGridViewTabletTest : public AppsGridViewTest {
+ public:
+  AppsGridViewTabletTest() : AppsGridViewTest(/*is_in_tablet=*/true) {}
+  ~AppsGridViewTabletTest() override = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AppsGridViewTabletTest);
+};
+
+TEST_P(AppsGridViewTabletTest, Basic) {
+  base::HistogramTester histogram_tester;
+
+  model_->PopulateApps(GetTilesPerPage(0) + 1);
+  EXPECT_EQ(2, GetPaginationModel()->total_pages());
+
+  gfx::Point apps_grid_view_origin =
+      apps_grid_view_->GetBoundsInScreen().origin();
+  ui::GestureEvent scroll_begin(
+      apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
+      base::TimeTicks(),
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, -1));
+  ui::GestureEvent scroll_update(
+      apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
+      base::TimeTicks(),
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 0, -10));
+  ui::GestureEvent scroll_end(
+      apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
+      base::TimeTicks(), ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_END));
+
+  // Drag up on the app grid when on page 1, this should move the AppsGridView
+  // but not the AppListView.
+  apps_grid_view_->OnGestureEvent(&scroll_begin);
+  EXPECT_TRUE(scroll_begin.handled());
+  histogram_tester.ExpectTotalCount(
+      "Apps.PaginationTransition.DragScroll.PresentationTime.TabletMode", 0);
+
+  apps_grid_view_->OnGestureEvent(&scroll_update);
+  EXPECT_TRUE(scroll_update.handled());
+  ASSERT_FALSE(app_list_view_->is_in_drag());
+  ASSERT_NE(0, GetPaginationModel()->transition().progress);
+  histogram_tester.ExpectTotalCount(
+      "Apps.PaginationTransition.DragScroll.PresentationTime.TabletMode", 1);
+  histogram_tester.ExpectTotalCount(
+      "Apps.PaginationTransition.DragScroll.PresentationTime.MaxLatency."
+      "TabletMode",
+      0);
+
+  apps_grid_view_->OnGestureEvent(&scroll_end);
+
+  histogram_tester.ExpectTotalCount(
+      "Apps.PaginationTransition.DragScroll.PresentationTime.TabletMode", 1);
+  histogram_tester.ExpectTotalCount(
+      "Apps.PaginationTransition.DragScroll.PresentationTime.MaxLatency."
+      "TabletMode",
+      1);
+}
+
+INSTANTIATE_TEST_SUITE_P(, AppsGridViewTabletTest, testing::Bool());
 
 // Test various dragging behaviors only allowed when apps grid gap (part of
 // home launcher feature) is enabled.

@@ -10,6 +10,7 @@
 #include "ash/magnifier/docked_magnifier_controller.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/fps_counter.h"
+#include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -126,8 +127,12 @@ class SplitViewControllerTest : public AshTestBase {
     base::RunLoop().RunUntilIdle();
     Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
     FpsCounter::SetFoceReportZeroAnimationForTest(true);
+    ash::PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
+        true);
   }
   void TearDown() override {
+    ash::PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
+        false);
     FpsCounter::SetFoceReportZeroAnimationForTest(false);
     trace_names_.clear();
     AshTestBase::TearDown();
@@ -221,6 +226,8 @@ class SplitViewControllerTest : public AshTestBase {
                              std::move(exit_counts));
     }
   }
+
+  const base::HistogramTester& histograms() const { return histograms_; }
 
  private:
   void CheckOverviewHistogram(const char* histogram, std::vector<int> counts) {
@@ -1478,6 +1485,11 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
   split_view_controller()->StartResize(divider_bounds.CenterPoint());
   gfx::Point resize_point(display_bounds.width() * 0.33f, 0);
   split_view_controller()->Resize(resize_point);
+  histograms().ExpectTotalCount(
+      "Ash.SplitViewResize.PresentationTime.TabletMode.SingleWindow", 1);
+  histograms().ExpectTotalCount(
+      "Ash.SplitViewResize.PresentationTime.MaxLatency.TabletMode.SingleWindow",
+      0);
 
   gfx::Rect snapped_window_bounds =
       split_view_controller()->GetSnappedWindowBoundsInScreen(
@@ -1488,6 +1500,12 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
             window1->delegate()->GetMinimumSize().width());
   EXPECT_FALSE(window1->layer()->GetTargetTransform().IsIdentity());
   split_view_controller()->EndResize(resize_point);
+  histograms().ExpectTotalCount(
+      "Ash.SplitViewResize.PresentationTime.TabletMode.SingleWindow", 1);
+  histograms().ExpectTotalCount(
+      "Ash.SplitViewResize.PresentationTime.MaxLatency.TabletMode.SingleWindow",
+      1);
+
   SkipDividerSnapAnimation();
   EndSplitView();
 
@@ -2219,9 +2237,85 @@ TEST_F(SplitViewControllerTest, EndSplitViewWhileResizingBeyondMinimum) {
   split_view_controller()->StartResize(divider_bounds.CenterPoint());
   gfx::Point resize_point(display_bounds.width() * 0.33f, 0);
   split_view_controller()->Resize(resize_point);
+  histograms().ExpectTotalCount(
+      "Ash.SplitViewResize.PresentationTime.TabletMode.SingleWindow", 1);
+  histograms().ExpectTotalCount(
+      "Ash.SplitViewResize.PresentationTime.MaxLatency.TabletMode.SingleWindow",
+      0);
+
   ASSERT_FALSE(window->layer()->GetTargetTransform().IsIdentity());
   EndSplitView();
+  histograms().ExpectTotalCount(
+      "Ash.SplitViewResize.PresentationTime.TabletMode.SingleWindow", 1);
+  histograms().ExpectTotalCount(
+      "Ash.SplitViewResize.PresentationTime.MaxLatency.TabletMode.SingleWindow",
+      1);
+
   EXPECT_TRUE(window->layer()->GetTargetTransform().IsIdentity());
+}
+
+// Test if presentation time is recorded for multi window resizing
+// and resizing with overview.
+TEST_F(SplitViewControllerTest, ResizeTwoWindows) {
+  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager,
+                                                         display_id);
+  ScreenOrientationControllerTestApi test_api(
+      Shell::Get()->screen_orientation_controller());
+
+  const gfx::Rect bounds(0, 0, 300, 200);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+
+  gfx::Rect display_bounds =
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          window1.get());
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+
+  gfx::Rect divider_bounds =
+      split_view_divider()->GetDividerBoundsInScreen(false);
+  split_view_controller()->StartResize(divider_bounds.CenterPoint());
+  gfx::Point resize_point(display_bounds.width() * 0.33f, 0);
+  split_view_controller()->Resize(resize_point);
+  histograms().ExpectTotalCount(
+      "Ash.SplitViewResize.PresentationTime.TabletMode.MultiWindow", 1);
+  split_view_controller()->Resize(
+      gfx::Point(resize_point.x(), resize_point.y() + 1));
+  histograms().ExpectTotalCount(
+      "Ash.SplitViewResize.PresentationTime.TabletMode.MultiWindow", 2);
+  histograms().ExpectTotalCount(
+      "Ash.SplitViewResize.PresentationTime.MaxLatency.TabletMode.MultiWindow",
+      0);
+
+  split_view_controller()->EndResize(resize_point);
+  histograms().ExpectTotalCount(
+      "Ash.SplitViewResize.PresentationTime.TabletMode.MultiWindow", 2);
+  histograms().ExpectTotalCount(
+      "Ash.SplitViewResize.PresentationTime.MaxLatency.TabletMode.MultiWindow",
+      1);
+
+  ToggleOverview();
+
+  split_view_controller()->StartResize(divider_bounds.CenterPoint());
+  split_view_controller()->Resize(resize_point);
+  histograms().ExpectTotalCount(
+      "Ash.SplitViewResize.PresentationTime.TabletMode.WithOverview", 1);
+  split_view_controller()->Resize(
+      gfx::Point(resize_point.x(), resize_point.y() + 1));
+  histograms().ExpectTotalCount(
+      "Ash.SplitViewResize.PresentationTime.TabletMode.WithOverview", 2);
+  histograms().ExpectTotalCount(
+      "Ash.SplitViewResize.PresentationTime.MaxLatency.TabletMode.WithOverview",
+      0);
+  split_view_controller()->EndResize(resize_point);
+  histograms().ExpectTotalCount(
+      "Ash.SplitViewResize.PresentationTime.TabletMode.WithOverview", 2);
+  histograms().ExpectTotalCount(
+      "Ash.SplitViewResize.PresentationTime.MaxLatency.TabletMode.WithOverview",
+      1);
 }
 
 // Test that if split view ends during the divider snap animation while a
@@ -2319,15 +2413,31 @@ TEST_F(SplitViewControllerTest, EndSplitViewWhileDragging) {
   // Start resizing.
   gfx::Rect divider_bounds =
       split_view_divider()->GetDividerBoundsInScreen(false);
+
   split_view_controller()->StartResize(divider_bounds.CenterPoint());
 
   // Verify the setup.
   ASSERT_TRUE(split_view_controller()->IsSplitViewModeActive());
   ASSERT_TRUE(split_view_controller()->is_resizing());
 
+  gfx::Point resize_point(divider_bounds.CenterPoint());
+  resize_point.Offset(100, 0);
+
+  split_view_controller()->Resize(resize_point);
+  histograms().ExpectTotalCount(
+      "Ash.SplitViewResize.PresentationTime.TabletMode.SingleWindow", 1);
+  histograms().ExpectTotalCount(
+      "Ash.SplitViewResize.PresentationTime.MaxLatency.TabletMode.SingleWindow",
+      0);
+
   // End split view and check that resizing has ended properly.
   split_view_controller()->EndSplitView();
   EXPECT_FALSE(split_view_controller()->is_resizing());
+  histograms().ExpectTotalCount(
+      "Ash.SplitViewResize.PresentationTime.TabletMode.SingleWindow", 1);
+  histograms().ExpectTotalCount(
+      "Ash.SplitViewResize.PresentationTime.MaxLatency.TabletMode.SingleWindow",
+      1);
 }
 
 // Test the tab-dragging related functionalities in tablet mode. Tab(s) can be
