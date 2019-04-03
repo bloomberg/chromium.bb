@@ -405,6 +405,8 @@ void NTPResourceCache::CreateNewTabHTML() {
                            GetLocalizedString(IDS_APP_CONTEXT_MENU_SHOW_INFO));
   load_time_data.SetString("appcreateshortcut",
                            GetLocalizedString(IDS_NEW_TAB_APP_CREATE_SHORTCUT));
+  load_time_data.SetString("appinstalllocally",
+                           GetLocalizedString(IDS_NEW_TAB_APP_INSTALL_LOCALLY));
   load_time_data.SetString("appDefaultPageName",
                            GetLocalizedString(IDS_APP_DEFAULT_PAGE_NAME));
   load_time_data.SetString(

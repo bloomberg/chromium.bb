@@ -90,6 +90,12 @@ cr.define('ntp', function() {
       this.createShortcut_.addEventListener(
           'activate', this.onCreateShortcut_.bind(this));
 
+      this.installLocallySeparator_ =
+          menu.appendChild(cr.ui.MenuItem.createSeparator());
+      this.installLocally_ = this.appendMenuItem_('appinstalllocally');
+      this.installLocally_.addEventListener(
+          'activate', this.onInstallLocally_.bind(this));
+
       document.body.appendChild(menu);
     },
 
@@ -175,6 +181,9 @@ cr.define('ntp', function() {
 
       this.createShortcutSeparator_.hidden = this.createShortcut_.hidden =
           !app.appData.mayCreateShortcuts;
+
+      this.installLocallySeparator_.hidden = this.installLocally_.hidden =
+          app.appData.isLocallyInstalled;
     },
 
     /** @private */
@@ -227,6 +236,11 @@ cr.define('ntp', function() {
     /** @private */
     onCreateShortcut_: function() {
       chrome.send('createAppShortcut', [this.app_.appData.id]);
+    },
+
+    /** @private */
+    onInstallLocally_: function() {
+      chrome.send('installAppLocally', [this.app_.appData.id]);
     },
 
     /** @private */

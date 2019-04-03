@@ -22,6 +22,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/bookmark_app_extension_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
@@ -252,6 +253,10 @@ void AppLauncherHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "createAppShortcut",
       base::BindRepeating(&AppLauncherHandler::HandleCreateAppShortcut,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "installAppLocally",
+      base::BindRepeating(&AppLauncherHandler::HandleInstallAppLocally,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "showAppInfo", base::BindRepeating(&AppLauncherHandler::HandleShowAppInfo,
@@ -616,6 +621,29 @@ void AppLauncherHandler::HandleCreateAppShortcut(const base::ListValue* args) {
   chrome::ShowCreateChromeAppShortcutsDialog(
       browser->window()->GetNativeWindow(), browser->profile(), extension,
       base::Callback<void(bool)>());
+}
+
+void AppLauncherHandler::HandleInstallAppLocally(const base::ListValue* args) {
+  std::string extension_id;
+  CHECK(args->GetString(0, &extension_id));
+
+  const Extension* extension =
+      extension_service_->GetExtensionById(extension_id, true);
+  if (!extension)
+    return;
+
+  auto* profile = Profile::FromBrowserContext(
+      web_ui()->GetWebContents()->GetBrowserContext());
+  SetBookmarkAppIsLocallyInstalled(profile, extension, true);
+  if (extensions::CanBookmarkAppCreateOsShortcuts()) {
+    extensions::BookmarkAppCreateOsShortcuts(
+        profile, extension, true /* add_to_desktop */, base::DoNothing());
+  }
+
+  // Use the appAdded to update the app icon's color to no longer be greyscale.
+  std::unique_ptr<base::DictionaryValue> app_info(GetAppInfo(extension));
+  if (app_info)
+    web_ui()->CallJavascriptFunctionUnsafe("ntp.appAdded", *app_info);
 }
 
 void AppLauncherHandler::HandleShowAppInfo(const base::ListValue* args) {
