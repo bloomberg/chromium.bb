@@ -97,6 +97,7 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
+#include "chrome/browser/ui/views/profiles/profile_menu_view_base.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/tab_contents/chrome_web_contents_view_focus_helper.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
@@ -174,7 +175,6 @@
 #include "ui/base/ui_base_features.h"
 #else
 #include "chrome/browser/ui/signin_view_controller.h"
-#include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
 #endif  // !defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)
@@ -2957,7 +2957,6 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
     const signin::ManageAccountsParams& manage_accounts_params,
     signin_metrics::AccessPoint access_point,
     bool focus_first_profile_button) {
-#if !defined(OS_CHROMEOS)
   // Do not show avatar bubble if there is no avatar menu button.
   views::Button* avatar_button = toolbar_->avatar_button();
   if (!avatar_button)
@@ -2966,18 +2965,17 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
   profiles::BubbleViewMode bubble_view_mode;
   profiles::BubbleViewModeFromAvatarBubbleMode(mode, GetProfile(),
                                                &bubble_view_mode);
+#if !defined(OS_CHROMEOS)
   if (SigninViewController::ShouldShowSigninForMode(bubble_view_mode)) {
     browser_->signin_view_controller()->ShowSignin(
         bubble_view_mode, browser_.get(), access_point);
-  } else {
-    ProfileChooserView::ShowBubble(
-        bubble_view_mode, manage_accounts_params, access_point, avatar_button,
-        nullptr, gfx::Rect(), browser(), focus_first_profile_button);
-    ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
+    return;
   }
-#else
-  NOTREACHED();
 #endif
+  ProfileMenuViewBase::ShowBubble(
+      bubble_view_mode, manage_accounts_params, access_point, avatar_button,
+      nullptr, gfx::Rect(), browser(), focus_first_profile_button);
+  ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
 }
 
 void BrowserView::ExecuteExtensionCommand(
