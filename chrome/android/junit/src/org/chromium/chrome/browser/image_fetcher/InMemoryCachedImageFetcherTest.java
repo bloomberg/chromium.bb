@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.image_fetcher;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -55,7 +53,7 @@ public class InMemoryCachedImageFetcherTest {
     private DiscardableReferencePool mReferencePool;
 
     @Mock
-    private CachedImageFetcherImpl mCachedImageFetcherImpl;
+    private CachedImageFetcher mCachedImageFetcher;
     @Mock
     private Callback<Bitmap> mCallback;
 
@@ -72,7 +70,7 @@ public class InMemoryCachedImageFetcherTest {
         mReferencePool = new DiscardableReferencePool();
         mBitmapCache = new BitmapCache(mReferencePool, DEFAULT_CACHE_SIZE);
         mInMemoryCachedImageFetcher =
-                spy(new InMemoryCachedImageFetcher(mBitmapCache, mCachedImageFetcherImpl));
+                spy(new InMemoryCachedImageFetcher(mBitmapCache, mCachedImageFetcher));
     }
 
     public void answerFetch(Bitmap bitmap, CachedImageFetcher cachedImageFetcher,
@@ -88,20 +86,16 @@ public class InMemoryCachedImageFetcherTest {
 
             mCallbackCaptor.getValue().onResult(bitmap);
             return null;
-        }).when(mCachedImageFetcherImpl)
+        }).when(mCachedImageFetcher)
                 .fetchImage(eq(URL), eq(UMA_CLIENT_NAME), mWidthCaptor.capture(),
                         mHeightCaptor.capture(), mCallbackCaptor.capture());
         // clang-format on
-
-        doReturn(bitmap)
-                .when(mInMemoryCachedImageFetcher)
-                .tryToResizeImage(eq(bitmap), eq(WIDTH_PX), eq(HEIGHT_PX));
     }
 
     @Test
     @SmallTest
     public void testFetchImageCachesFirstCall() throws Exception {
-        answerFetch(mBitmap, mCachedImageFetcherImpl, false);
+        answerFetch(mBitmap, mCachedImageFetcher, false);
         mInMemoryCachedImageFetcher.fetchImage(
                 URL, UMA_CLIENT_NAME, WIDTH_PX, HEIGHT_PX, mCallback);
         verify(mCallback).onResult(eq(mBitmap));
@@ -111,11 +105,11 @@ public class InMemoryCachedImageFetcherTest {
                 URL, UMA_CLIENT_NAME, WIDTH_PX, HEIGHT_PX, mCallback);
         verify(mCallback).onResult(eq(mBitmap));
 
-        verify(mCachedImageFetcherImpl, /* Should only go to native the first time. */ times(1))
+        verify(mCachedImageFetcher, /* Should only go to native the first time. */ times(1))
                 .fetchImage(eq(URL), eq(UMA_CLIENT_NAME), eq(WIDTH_PX), eq(HEIGHT_PX), any());
 
         // Verify metrics are reported.
-        verify(mCachedImageFetcherImpl)
+        verify(mCachedImageFetcher)
                 .reportEvent(
                         eq(UMA_CLIENT_NAME), eq(CachedImageFetcherEvent.JAVA_IN_MEMORY_CACHE_HIT));
     }
@@ -132,49 +126,15 @@ public class InMemoryCachedImageFetcherTest {
                 URL, UMA_CLIENT_NAME, WIDTH_PX, HEIGHT_PX, mCallback);
         verify(mCallback).onResult(eq(null));
 
-        verify(mCachedImageFetcherImpl, /* Shouldn't make the call at all. */ times(0))
+        verify(mCachedImageFetcher, /* Shouldn't make the call at all. */ times(0))
                 .fetchImage(eq(URL), eq(UMA_CLIENT_NAME), eq(WIDTH_PX), eq(HEIGHT_PX), any());
-    }
-
-    @Test
-    @SmallTest
-    public void testResize() throws Exception {
-        Bitmap result =
-                mInMemoryCachedImageFetcher.tryToResizeImage(mBitmap, WIDTH_PX / 2, HEIGHT_PX / 2);
-        assertNotEquals(result, mBitmap);
-    }
-
-    @Test
-    @SmallTest
-    public void testResizeBailsOutIfSizeIsZeroOrLess() throws Exception {
-        doReturn(null)
-                .when(mInMemoryCachedImageFetcher)
-                .tryToResizeImage(any(), eq(WIDTH_PX), eq(HEIGHT_PX));
-
-        Bitmap result = mInMemoryCachedImageFetcher.tryToResizeImage(mBitmap, WIDTH_PX, HEIGHT_PX);
-        assertNotEquals(result, mBitmap);
-
-        result = mInMemoryCachedImageFetcher.tryToResizeImage(mBitmap, 0, HEIGHT_PX);
-        assertEquals(result, mBitmap);
-
-        result = mInMemoryCachedImageFetcher.tryToResizeImage(mBitmap, WIDTH_PX, 0);
-        assertEquals(result, mBitmap);
-
-        result = mInMemoryCachedImageFetcher.tryToResizeImage(mBitmap, 0, 0);
-        assertEquals(result, mBitmap);
-
-        result = mInMemoryCachedImageFetcher.tryToResizeImage(mBitmap, -1, HEIGHT_PX);
-        assertEquals(result, mBitmap);
-
-        result = mInMemoryCachedImageFetcher.tryToResizeImage(mBitmap, WIDTH_PX, -1);
-        assertEquals(result, mBitmap);
     }
 
     @Test
     @SmallTest
     public void testFetchImageDoesNotCacheAfterDestroy() {
         try {
-            answerFetch(mBitmap, mCachedImageFetcherImpl, true);
+            answerFetch(mBitmap, mCachedImageFetcher, true);
 
             // No exception should be thrown here when bitmap cache is null.
             mInMemoryCachedImageFetcher.fetchImage(

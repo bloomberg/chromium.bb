@@ -90,7 +90,9 @@ public class ImageFetcherBridge {
     public void fetchImage(@ImageFetcherConfig int config, String url, String clientName, int width,
             int height, Callback<Bitmap> callback) {
         assert mNativeImageFetcherBridge != 0;
-        nativeFetchImage(mNativeImageFetcherBridge, config, url, clientName, callback);
+        nativeFetchImage(mNativeImageFetcherBridge, config, url, clientName, (bitmap) -> {
+            callback.onResult(ImageFetcher.tryToResizeImage(bitmap, width, height));
+        });
     }
 
     /**

@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.image_fetcher;
 
 import android.graphics.Bitmap;
-import android.media.ThumbnailUtils;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.Callback;
@@ -17,23 +16,25 @@ import org.chromium.chrome.browser.util.ConversionUtils;
 import jp.tomorrowkey.android.gifplayer.BaseGifImage;
 
 /**
- * A wrapper around the CachedImageFetcher that also provides in-memory caching.
+ * ImageFetcher implementation with an in-memory cache. Can also be configured to use a disk cache.
  */
-public class InMemoryCachedImageFetcher implements CachedImageFetcher {
+public class InMemoryCachedImageFetcher extends ImageFetcher {
     private static final int DEFAULT_CACHE_SIZE = 20 * ConversionUtils.BYTES_PER_MEGABYTE; // 20mb
     private static final float PORTION_OF_AVAILABLE_MEMORY = 1.f / 8.f;
 
     // Will do the work if the image isn't cached in memory.
-    private CachedImageFetcher mCachedImageFetcher;
+    private ImageFetcher mImageFetcher;
     private BitmapCache mBitmapCache;
+    private @ImageFetcherConfig int mConfig;
 
     /**
      * Create an instance with the default max cache size.
      *
+     * @param imageFetcher The image fetcher to back this. Must be Cached/NetworkImageFetcher.
      * @param referencePool Pool used to discard references when under memory pressure.
      */
-    public InMemoryCachedImageFetcher(DiscardableReferencePool referencePool) {
-        this(referencePool, DEFAULT_CACHE_SIZE);
+    InMemoryCachedImageFetcher(ImageFetcher imageFetcher, DiscardableReferencePool referencePool) {
+        init(imageFetcher, new BitmapCache(referencePool, determineCacheSize(DEFAULT_CACHE_SIZE)));
     }
 
     /**
@@ -43,29 +44,54 @@ public class InMemoryCachedImageFetcher implements CachedImageFetcher {
      * @param cacheSize The cache size to use (in bytes), may be smaller depending on the device's
      *         memory.
      */
-    public InMemoryCachedImageFetcher(DiscardableReferencePool referencePool, int cacheSize) {
-        int actualCacheSize = determineCacheSize(cacheSize);
-        mBitmapCache = new BitmapCache(referencePool, actualCacheSize);
-        mCachedImageFetcher = CachedImageFetcher.getInstance();
+    InMemoryCachedImageFetcher(
+            ImageFetcher imageFetcher, DiscardableReferencePool referencePool, int cacheSize) {
+        init(imageFetcher, new BitmapCache(referencePool, determineCacheSize(cacheSize)));
     }
 
-    @Override
-    public void reportEvent(String clientName, @CachedImageFetcherEvent int eventId) {
-        mCachedImageFetcher.reportEvent(clientName, eventId);
+    /**
+     * @param referencePool Pool used to discard references when under memory pressure.
+     * @param bitmapCache The cached where bitmaps will be stored in memory.
+     *         memory.
+     */
+    private void init(ImageFetcher imageFetcher, BitmapCache bitmapCache) {
+        mBitmapCache = bitmapCache;
+        mImageFetcher = imageFetcher;
+
+        @ImageFetcherConfig
+        int underlyingConfig = mImageFetcher.getConfig();
+        assert (underlyingConfig == ImageFetcherConfig.NETWORK_ONLY
+                || underlyingConfig == ImageFetcherConfig.DISK_CACHE_ONLY)
+            : "Invalid underlying config for InMemoryCachedImageFetcher";
+
+        // Determine the config based on the composited image fetcher.
+        if (mImageFetcher.getConfig() == ImageFetcherConfig.NETWORK_ONLY) {
+            mConfig = ImageFetcherConfig.IN_MEMORY_ONLY;
+        } else if (mImageFetcher.getConfig() == ImageFetcherConfig.DISK_CACHE_ONLY) {
+            mConfig = ImageFetcherConfig.IN_MEMORY_WITH_DISK_CACHE;
+        } else {
+            // Report in memory only if none can be found.
+            mConfig = ImageFetcherConfig.IN_MEMORY_ONLY;
+        }
     }
 
     @Override
     public void destroy() {
-        mCachedImageFetcher.destroy();
-        mCachedImageFetcher = null;
+        mImageFetcher.destroy();
+        mImageFetcher = null;
 
         mBitmapCache.destroy();
         mBitmapCache = null;
     }
 
     @Override
+    public void reportEvent(String clientName, @CachedImageFetcherEvent int eventId) {
+        mImageFetcher.reportEvent(clientName, eventId);
+    }
+
+    @Override
     public void fetchGif(String url, String clientName, Callback<BaseGifImage> callback) {
-        mCachedImageFetcher.fetchGif(url, clientName, callback);
+        mImageFetcher.fetchGif(url, clientName, callback);
     }
 
     @Override
@@ -73,17 +99,16 @@ public class InMemoryCachedImageFetcher implements CachedImageFetcher {
             String url, String clientName, int width, int height, Callback<Bitmap> callback) {
         Bitmap cachedBitmap = tryToGetBitmap(url, width, height);
         if (cachedBitmap == null) {
-            if (mCachedImageFetcher == null) {
+            // This will be run if destroy() has been called.
+            if (mImageFetcher == null) {
                 callback.onResult(null);
                 return;
             }
 
-            mCachedImageFetcher.fetchImage(
-                    url, clientName, width, height, (@Nullable Bitmap bitmap) -> {
-                        bitmap = tryToResizeImage(bitmap, width, height);
-                        storeBitmap(bitmap, url, width, height);
-                        callback.onResult(bitmap);
-                    });
+            mImageFetcher.fetchImage(url, clientName, width, height, (@Nullable Bitmap bitmap) -> {
+                storeBitmap(bitmap, url, width, height);
+                callback.onResult(bitmap);
+            });
         } else {
             reportEvent(clientName, CachedImageFetcherEvent.JAVA_IN_MEMORY_CACHE_HIT);
             callback.onResult(cachedBitmap);
@@ -91,12 +116,12 @@ public class InMemoryCachedImageFetcher implements CachedImageFetcher {
     }
 
     @Override
-    public void fetchImage(String url, String clientName, Callback<Bitmap> callback) {
-        fetchImage(url, clientName, 0, 0, callback);
+    public @ImageFetcherConfig int getConfig() {
+        return mConfig;
     }
 
     /**
-     * Try to get a bitmap from the in-memory cache.
+     * Try to get a bitmap from the in-memory cache. Returns null if this object has been destroyed.
      *
      * @param url The url of the image.
      * @param width The width (in pixels) of the image.
@@ -159,36 +184,10 @@ public class InMemoryCachedImageFetcher implements CachedImageFetcher {
         return Math.min(maxCacheUsage, preferredCacheSize);
     }
 
-    /**
-     * Try to resize the given image if the conditions are met.
-     *
-     * @param bitmap The input bitmap, will be recycled if scaled.
-     * @param width The desired width of the output.
-     * @param height The desired height of the output.
-     *
-     * @return The resized image, or the original image if the  conditions aren't met.
-     */
-    @VisibleForTesting
-    Bitmap tryToResizeImage(@Nullable Bitmap bitmap, int width, int height) {
-        if (bitmap != null && width > 0 && height > 0 && bitmap.getWidth() != width
-                && bitmap.getHeight() != height) {
-            /* The resizing rules are the as follows:
-               (1) The image will be scaled up (if smaller) in a way that maximizes the area of the
-               source bitmap that's in the destination bitmap.
-               (2) A crop is made in the middle of the bitmap for the given size (width, height).
-               The x/y are placed appropriately (conceptually just think of it as a properly sized
-               chunk taken from the middle). */
-            return ThumbnailUtils.extractThumbnail(
-                    bitmap, width, height, ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
-        } else {
-            return bitmap;
-        }
-    }
-
     /** Test constructor. */
     @VisibleForTesting
-    InMemoryCachedImageFetcher(BitmapCache bitmapCache, CachedImageFetcher cachedImageFetcher) {
+    InMemoryCachedImageFetcher(BitmapCache bitmapCache, ImageFetcher imageFetcher) {
         mBitmapCache = bitmapCache;
-        mCachedImageFetcher = cachedImageFetcher;
+        mImageFetcher = imageFetcher;
     }
 }

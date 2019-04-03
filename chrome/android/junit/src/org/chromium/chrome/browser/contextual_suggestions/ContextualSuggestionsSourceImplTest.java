@@ -32,7 +32,7 @@ import org.chromium.chrome.browser.image_fetcher.CachedImageFetcher;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 
 /**
- * Unit tests for CachedImageFetcherImpl.
+ * Unit tests for ContextualSuggestionsSourceImplTest.
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE,
