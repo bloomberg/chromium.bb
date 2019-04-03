@@ -192,6 +192,36 @@ def _ReplaceVersionInFile(file_path, pattern, version, dry_run=False):
       temp_file.delete = False
 
 
+def GetCipdPackagePath(pkg_yaml_file):
+  """Find CIPD package path in .yaml file.
+
+  There should one line in .yaml file, e.g.:
+  "package: chrome_internal/third_party/android_sdk/internal/q/add-ons" or
+  "package: chromium/third_party/android_sdk/public/platforms"
+
+  Args:
+    pkg_yaml_file: The yaml file to find CIPD package path.
+
+  Returns:
+    The CIPD package path in yaml file.
+  """
+  cipd_package_path = ''
+  with open(pkg_yaml_file) as f:
+    pattern = re.compile(
+        # Match the argument with "package: "
+        r'(^\s*package:\s*)'
+        # The CIPD package path we want
+        r'([\w\/-]+)'
+        # End of string
+        r'(\s*?$)')
+    for line in f:
+      found = re.match(pattern, line)
+      if found:
+        cipd_package_path = found.group(2)
+        break
+  return cipd_package_path
+
+
 def UploadSdkPackage(sdk_root, dry_run, service_url, package, yaml_file,
                      verbose):
   """Build and upload a package instance file to CIPD.
@@ -213,12 +243,17 @@ def UploadSdkPackage(sdk_root, dry_run, service_url, package, yaml_file,
     New instance ID when CIPD package created.
 
   Raises:
-    IOError: cannot find .yaml file or instance ID for package.
+    IOError: cannot find .yaml file, CIPD package path or instance ID for
+    package.
     CalledProcessError: cipd command failed to create package.
   """
   pkg_yaml_file = yaml_file or os.path.join(sdk_root, 'cipd_%s.yaml' % package)
   if not os.path.exists(pkg_yaml_file):
     raise IOError('Cannot find .yaml file for package %s' % package)
+
+  cipd_package_path = GetCipdPackagePath(pkg_yaml_file)
+  if not cipd_package_path:
+    raise IOError('Cannot find CIPD package path in %s' % pkg_yaml_file)
 
   if dry_run:
     print('This `package` command (without -n/--dry-run) would create and ' +
@@ -236,10 +271,8 @@ def UploadSdkPackage(sdk_root, dry_run, service_url, package, yaml_file,
     # e.g.: chromium/third_party/android_sdk/public/platforms:\
     # Kg2t9p0YnQk8bldUv4VA3o156uPXLUfIFAmVZ-Gm5ewC
     pattern = re.compile(
-        # Match the argument with
-        # "Instance: chromium/third_party/android_sdk/public/%s:"
-        (r'(^\s*Instance:\schromium\/third_party\/android_sdk\/public\/%s:)' %
-         package) +
+        # Match the argument with "Instance: %s:" for cipd_package_path
+        (r'(^\s*Instance: %s:)' % cipd_package_path) +
         # instance ID e.g. DLK621q5_Bga5EsOr7cp6bHWWxFKx6UHLu_Ix_m3AckC.
         r'([-\w.]+)'
         # End of string
