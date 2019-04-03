@@ -332,3 +332,19 @@ function testTopMenuArrowUpDismissesSubMenu() {
   // Check that the sub-menu has been hidden.
   assertTrue(subMenu.hasAttribute('hidden'));
 }
+
+/**
+ * Tests that the top level menu is resized when the parent
+ * window is too small to fit in without clipping.
+ */
+function testShrinkWindowSizesTopMenu() {
+  menubutton.showMenu(true);
+  const menuPosition = topMenu.getBoundingClientRect();
+  // Reduce window innerHeight so the menu won't fit.
+  window.innerHeight = menuPosition.bottom - 10;
+  // Call showMenu() which will first hide it, then re-open
+  // it to force the resizing behavior.
+  menubutton.showMenu(true);
+  const shrunkPosition = topMenu.getBoundingClientRect();
+  assertTrue(shrunkPosition.bottom < window.innerHeight);
+}
