@@ -3472,6 +3472,13 @@ jumbo_split_static_library("browser") {
     ]
   }
 
+  if (is_chromeos || enable_extensions) {
+    sources += [
+      "metrics/cached_metrics_profile.cc",
+      "metrics/cached_metrics_profile.h",
+    ]
+  }
+
   if (is_win) {
     sources += [
       "badging/badge_manager_delegate_win.cc",

@@ -23,6 +23,7 @@ extern const base::Feature kUmaShortHWClass;
 }
 
 namespace metrics {
+class CachedMetricsProfile;
 class ChromeUserMetricsExtension;
 }
 
@@ -94,8 +95,15 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
   // Called from the ProvideCurrentSessionData(...) to record UserType.
   void UpdateUserTypeUMA();
 
+  // Writes info about the linked Android phone if there is one.
+  void WriteLinkedAndroidPhoneProto(
+      metrics::SystemProfileProto* system_profile_proto);
+
   // For collecting systemwide performance data via the UMA channel.
   std::unique_ptr<metrics::ProfileProvider> profile_provider_;
+
+  // Use the first signed-in profile for profile-dependent metrics.
+  std::unique_ptr<metrics::CachedMetricsProfile> cached_profile_;
 
   // Bluetooth Adapter instance for collecting information about paired devices.
   scoped_refptr<device::BluetoothAdapter> adapter_;
