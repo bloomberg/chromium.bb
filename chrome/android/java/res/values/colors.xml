@@ -43,8 +43,6 @@
     <color name="light_grey">#CCCCCC</color>
 
     <!-- TODO(https://crbug.com/919835): Clarify whether these colors can be reused. -->
-    <color name="google_green_600">#1E8E3E</color>
-    <color name="google_red_600">#D93025</color>
     <color name="google_yellow_600">#F9AB00</color>
 
     <!-- Infobar colors -->
@@ -103,6 +101,9 @@
     <color name="signin_head_background">@color/modern_primary_color</color>
     <color name="signin_body_background">@color/modern_primary_color</color>
     <color name="signin_header_animation_background">@color/modern_grey_50</color>
+    <color name="signin_header_animation_line_light">#E8E9EB</color>
+    <color name="signin_header_animation_line_dark">#BDC0C5</color>
+    <color name="signin_header_animation_laptop_screen">#F4F4F4</color>
 
     <!-- NTP and Home sheet colors. Also used on the bookmarks and recent tabs pages. -->
     <color name="ntp_bg_incognito">@color/incognito_modern_primary_color</color>

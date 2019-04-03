@@ -404,13 +404,13 @@ public class LocationBarModel implements ToolbarDataProvider {
         if (securityLevel == ConnectionSecurityLevel.DANGEROUS) {
             // For the default toolbar color, use a green or red icon.
             assert !shouldDisplaySearchTerms();
-            return R.color.google_red_700;
+            return R.color.google_red_600;
         }
 
         if (!shouldDisplaySearchTerms()
                 && (securityLevel == ConnectionSecurityLevel.SECURE
                         || securityLevel == ConnectionSecurityLevel.EV_SECURE)) {
-            return R.color.google_green_700;
+            return R.color.google_green_600;
         }
 
         return ColorUtils.getThemedToolbarIconTintRes(false);
