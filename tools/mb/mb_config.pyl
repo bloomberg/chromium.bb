@@ -1994,11 +1994,11 @@
 
     # Settings used by the codesearch builders to generate cross-references.
     'codesearch': {
-      'gn_args': 'clang_use_chrome_plugins=false',
+      'gn_args': 'clang_use_chrome_plugins=false enable_kythe_annotations=true',
       'mixins': ['goma', 'clang', 'shared', 'debug', 'minimal_symbols'],
     },
     'codesearch_release': {
-      'gn_args': 'clang_use_chrome_plugins=false',
+      'gn_args': 'clang_use_chrome_plugins=false enable_kythe_annotations=true',
       'mixins': ['release', 'static', 'goma'],
     },
 
