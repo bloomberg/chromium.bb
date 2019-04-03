@@ -1127,6 +1127,9 @@ class IDLParser(object):
     self.tokens = lexer.KnownTokens()
     self.yaccobj = yacc.yacc(module=self, tabmodule=None, debug=debug,
                              optimize=0, write_tables=0)
+    # TODO: Make our code compatible with defaulted_states. Currently disabled
+    #       for compatibility.
+    self.yaccobj.defaulted_states = {}
     self.parse_debug = debug
     self.verbose = verbose
     self.mute_error = mute_error
