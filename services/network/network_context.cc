@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_current.h"
@@ -1970,6 +1971,11 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
       base::CommandLine::ForCurrentProcess();
   builder->set_host_mapping_rules(
       command_line->GetSwitchValueASCII(switches::kHostResolverRules));
+
+  // Allow legacy context CopyFrom() functionality only if network service is
+  // disabled. The new service-enabled world should never do such copying.
+  if (!base::FeatureList::IsEnabled(features::kNetworkService))
+    builder->set_allow_copy();
 
   auto result =
       URLRequestContextOwner(std::move(pref_service), builder->Build());

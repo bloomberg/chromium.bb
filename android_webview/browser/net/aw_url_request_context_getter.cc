@@ -309,6 +309,9 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   builder.SetHttpAuthHandlerFactory(CreateAuthHandlerFactory());
   builder.set_host_mapping_rules(GetCmdlineOverridesForHostResolver());
 
+  // Context copy allowed because NetworkService is confirmed disabled.
+  builder.set_allow_copy();
+
   url_request_context_ = builder.Build();
 
   // For Android WebView, do not enforce policies that are not consistent with
