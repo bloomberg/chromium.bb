@@ -174,17 +174,32 @@ public class BottomSheetController {
         mBottomSheet.addObserver(new EmptyBottomSheetObserver() {
             @Override
             public void onSheetOpened(@StateChangeReason int reason) {
+                if (mBottomSheet.getCurrentSheetContent() != null
+                        && mBottomSheet.getCurrentSheetContent().hasCustomScrimLifecycle()) {
+                    return;
+                }
+
                 scrim.showScrim(mScrimParams);
                 scrim.setViewAlpha(0);
             }
 
             @Override
             public void onSheetClosed(@StateChangeReason int reason) {
+                if (mBottomSheet.getCurrentSheetContent() != null
+                        && mBottomSheet.getCurrentSheetContent().hasCustomScrimLifecycle()) {
+                    return;
+                }
+
                 scrim.hideScrim(false);
             }
 
             @Override
             public void onTransitionPeekToHalf(float transitionFraction) {
+                if (mBottomSheet.getCurrentSheetContent() != null
+                        && mBottomSheet.getCurrentSheetContent().hasCustomScrimLifecycle()) {
+                    return;
+                }
+
                 // TODO(mdjones): This event should not occur after the bottom sheet is closed.
                 if (scrim.getVisibility() == View.VISIBLE) {
                     scrim.setViewAlpha(transitionFraction);

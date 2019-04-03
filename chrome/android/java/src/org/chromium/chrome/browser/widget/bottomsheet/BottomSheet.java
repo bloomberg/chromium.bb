@@ -321,6 +321,14 @@ public class BottomSheet
         }
 
         /**
+         * @return Whether this content owns the scrim lifecycle. If false, a default scrim will
+         *         be displayed behind the sheet when this content is shown.
+         */
+        default boolean hasCustomScrimLifecycle() {
+            return false;
+        }
+
+        /**
          * @return The resource id of the content description for the bottom sheet. This is
          *         generally the name of the feature/content that is showing. 'Swipe down to close.'
          *         will be automatically appended after the content description.
