@@ -20,11 +20,6 @@ std::string WrapSend(const std::string& expression) {
   return "window.domAutomationController.send(" + expression + ")";
 }
 
-bool CheckConditionIfOobeExists(const std::string& js_condition) {
-  return !chromeos::LoginDisplayHost::default_host() ||
-         chromeos::test::OobeJS().GetBool(js_condition);
-}
-
 bool CheckOobeCondition(content::WebContents* web_contents,
                         const std::string& js_condition) {
   return chromeos::test::JSChecker(web_contents).GetBool(js_condition);
@@ -175,13 +170,6 @@ void JSChecker::GetStringImpl(const std::string& expression,
   CHECK(web_contents_);
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       web_contents_, WrapSend(expression), result));
-}
-
-std::unique_ptr<TestConditionWaiter> CreatePredicateOrOobeDestroyedWaiter(
-    const std::string& js_condition) {
-  TestPredicateWaiter::PredicateCheck predicate =
-      base::BindRepeating(&CheckConditionIfOobeExists, js_condition);
-  return std::make_unique<TestPredicateWaiter>(predicate);
 }
 
 void JSChecker::ExpectVisiblePath(

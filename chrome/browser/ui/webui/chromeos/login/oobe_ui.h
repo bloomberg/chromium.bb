@@ -94,7 +94,7 @@ class OobeUI : public ui::MojoWebUIController {
     virtual void OnCurrentScreenChanged(OobeScreen current_screen,
                                         OobeScreen new_screen) = 0;
 
-    virtual void OnScreenInitialized(OobeScreen screen) = 0;
+    virtual void OnDestroyingOobeUI() = 0;
 
    protected:
     virtual ~Observer() {}
@@ -147,9 +147,6 @@ class OobeUI : public ui::MojoWebUIController {
 
   // Called when the screen has changed.
   void CurrentScreenChanged(OobeScreen screen);
-
-  // Called when the screen was initialized.
-  void ScreenInitialized(OobeScreen screen);
 
   bool IsScreenInitialized(OobeScreen screen);
 

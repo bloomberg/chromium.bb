@@ -16,6 +16,8 @@
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
+#include "chrome/browser/chromeos/login/test/oobe_screen_exit_waiter.h"
+#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/test/test_predicate_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -129,7 +131,7 @@ class OobeInteractiveUITest
         chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
         content::NotificationService::AllSources());
     observer.Wait();
-    test::CreateOobeScreenWaiter("connect")->Wait();
+    OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
   }
 
   void RunWelcomeScreenChecks() {
@@ -155,7 +157,7 @@ class OobeInteractiveUITest
   }
 
   void WaitForNetworkSelectionScreen() {
-    test::CreateOobeScreenWaiter("network-selection")->Wait();
+    OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
     LOG(INFO)
         << "OobeInteractiveUITest: Switched to 'network-selection' screen.";
   }
@@ -173,7 +175,7 @@ class OobeInteractiveUITest
   }
 
   void WaitForEulaScreen() {
-    test::CreateOobeScreenWaiter("eula")->Wait();
+    OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
     LOG(INFO) << "OobeInteractiveUITest: Switched to 'eula' screen.";
   }
 
@@ -190,7 +192,7 @@ class OobeInteractiveUITest
   }
 
   void WaitForUpdateScreen() {
-    test::CreateOobeScreenWaiter("update")->Wait();
+    OobeScreenWaiter(OobeScreen::SCREEN_OOBE_UPDATE).Wait();
     test::OobeJS().CreateVisibilityWaiter(true, {"update"})->Wait();
 
     LOG(INFO) << "OobeInteractiveUITest: Switched to 'update' screen.";
@@ -206,7 +208,7 @@ class OobeInteractiveUITest
   }
 
   void WaitForGaiaSignInScreen() {
-    test::CreateOobeScreenWaiter("gaia-signin")->Wait();
+    OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
     LOG(INFO) << "OobeInteractiveUITest: Switched to 'gaia-signin' screen.";
   }
 
@@ -222,7 +224,7 @@ class OobeInteractiveUITest
 
   void WaitForSyncConsentScreen() {
     LOG(INFO) << "OobeInteractiveUITest: Waiting for 'sync-consent' screen.";
-    test::CreateOobeScreenWaiter("sync-consent")->Wait();
+    OobeScreenWaiter(OobeScreen::SCREEN_SYNC_CONSENT).Wait();
   }
 
   void ExitScreenSyncConsent() {
@@ -234,15 +236,13 @@ class OobeInteractiveUITest
     screen->OnStateChanged(nullptr);
     LOG(INFO) << "OobeInteractiveUITest: Waiting for 'sync-consent' screen "
                  "to close.";
-    test::CreatePredicateOrOobeDestroyedWaiter(
-        "Oobe.getInstance().currentScreen.id != 'sync-consent'")
-        ->Wait();
+    OobeScreenExitWaiter(OobeScreen::SCREEN_SYNC_CONSENT).Wait();
   }
 
   void WaitForFingerprintScreen() {
     LOG(INFO)
         << "OobeInteractiveUITest: Waiting for 'fingerprint-setup' screen.";
-    test::CreateOobeScreenWaiter("fingerprint-setup")->Wait();
+    OobeScreenWaiter(OobeScreen::SCREEN_FINGERPRINT_SETUP).Wait();
     LOG(INFO) << "OobeInteractiveUITest: Waiting for fingerprint setup screen "
                  "to show.";
     test::OobeJS().CreateVisibilityWaiter(true, {"fingerprint-setup"})->Wait();
@@ -284,14 +284,12 @@ class OobeInteractiveUITest
         "$('fingerprint-setup-impl').$.setupFingerprintLater.click()");
     LOG(INFO) << "OobeInteractiveUITest: Waiting for fingerprint setup screen "
                  "to close.";
-    test::CreatePredicateOrOobeDestroyedWaiter(
-        "Oobe.getInstance().currentScreen.id != 'fingerprint-setup'")
-        ->Wait();
+    OobeScreenExitWaiter(OobeScreen::SCREEN_FINGERPRINT_SETUP).Wait();
     LOG(INFO) << "OobeInteractiveUITest: 'fingerprint-setup' screen done.";
   }
 
   void WaitForDiscoverScreen() {
-    test::CreateOobeScreenWaiter("discover")->Wait();
+    OobeScreenWaiter(OobeScreen::SCREEN_DISCOVER).Wait();
     LOG(INFO) << "OobeInteractiveUITest: Switched to 'discover' screen.";
   }
 
@@ -316,9 +314,7 @@ class OobeInteractiveUITest
     test::OobeJS().ExecuteAsync(
         "$('discover-impl').root.querySelector('discover-pin-setup-module')."
         "$.setupSkipButton.click()");
-    test::CreatePredicateOrOobeDestroyedWaiter(
-        "Oobe.getInstance().currentScreen.id != 'discover'")
-        ->Wait();
+    OobeScreenExitWaiter(OobeScreen::SCREEN_DISCOVER).Wait();
     LOG(INFO) << "OobeInteractiveUITest: 'discover' screen done.";
   }
 

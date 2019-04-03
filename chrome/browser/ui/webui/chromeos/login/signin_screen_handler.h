@@ -224,7 +224,7 @@ class SigninScreenHandler
   // OobeUI::Observer implementation:
   void OnCurrentScreenChanged(OobeScreen current_screen,
                               OobeScreen new_screen) override;
-  void OnScreenInitialized(OobeScreen screen) override {}
+  void OnDestroyingOobeUI() override {}
 
   // ash::mojom::WallpaperObserver implementation:
   void OnWallpaperChanged(uint32_t image_id) override;

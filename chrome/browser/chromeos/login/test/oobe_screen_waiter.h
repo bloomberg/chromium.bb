@@ -32,7 +32,7 @@ class OobeScreenWaiter : public OobeUI::Observer,
   // OobeUI::Observer implementation:
   void OnCurrentScreenChanged(OobeScreen current_screen,
                               OobeScreen new_screen) override;
-  void OnScreenInitialized(OobeScreen screen) override;
+  void OnDestroyingOobeUI() override;
 
   // TestConditionWaiter;
   void Wait() override;
