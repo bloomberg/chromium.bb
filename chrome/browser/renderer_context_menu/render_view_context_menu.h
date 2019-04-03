@@ -243,7 +243,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   ProtocolHandlerRegistry* protocol_handler_registry_;
 
   // An observer that handles spelling suggestions, "Add to dictionary", and
-  // "Ask Google for suggestions" items.
+  // "Use enhanced spell check" items.
   std::unique_ptr<SpellingMenuObserver> spelling_suggestions_menu_observer_;
 
   // An observer that handles accessibility labels items.
