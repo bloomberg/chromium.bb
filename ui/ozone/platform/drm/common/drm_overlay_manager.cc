@@ -38,6 +38,7 @@ DrmOverlayManager::CreateOverlayCandidates(gfx::AcceleratedWidget widget) {
 }
 
 void DrmOverlayManager::ResetCache() {
+  TRACE_EVENT0("hwoverlays", "DrmOverlayManager::ResetCache");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   cache_.Clear();
 }

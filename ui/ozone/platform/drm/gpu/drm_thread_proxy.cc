@@ -15,9 +15,9 @@
 
 namespace ui {
 
-DrmThreadProxy::DrmThreadProxy() {}
+DrmThreadProxy::DrmThreadProxy() = default;
 
-DrmThreadProxy::~DrmThreadProxy() {}
+DrmThreadProxy::~DrmThreadProxy() = default;
 
 // Used only with the paramtraits implementation.
 void DrmThreadProxy::BindThreadIntoMessagingProxy(
@@ -25,7 +25,6 @@ void DrmThreadProxy::BindThreadIntoMessagingProxy(
   messaging_proxy->SetDrmThread(&drm_thread_);
 }
 
-// Used only for the mojo implementation.
 void DrmThreadProxy::StartDrmThread(base::OnceClosure binding_drainer) {
   drm_thread_.Start(std::move(binding_drainer));
 }
@@ -62,6 +61,17 @@ void DrmThreadProxy::CreateBufferFromHandle(
       base::BindOnce(&DrmThread::CreateBufferFromHandle,
                      base::Unretained(&drm_thread_), widget, size, format,
                      base::Passed(std::move(handle)), buffer, framebuffer));
+}
+
+void DrmThreadProxy::SetClearOverlayCacheCallback(
+    base::RepeatingClosure callback) {
+  DCHECK(drm_thread_.task_runner());
+
+  drm_thread_.task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&DrmThread::SetClearOverlayCacheCallback,
+                     base::Unretained(&drm_thread_),
+                     CreateSafeRepeatingCallback(std::move(callback))));
 }
 
 void DrmThreadProxy::CheckOverlayCapabilities(

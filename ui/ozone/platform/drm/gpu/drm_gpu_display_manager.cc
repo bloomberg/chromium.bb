@@ -74,6 +74,11 @@ DrmGpuDisplayManager::DrmGpuDisplayManager(ScreenManager* screen_manager,
 DrmGpuDisplayManager::~DrmGpuDisplayManager() {
 }
 
+void DrmGpuDisplayManager::SetClearOverlayCacheCallback(
+    base::RepeatingClosure callback) {
+  clear_overlay_cache_callback_ = std::move(callback);
+}
+
 MovableDisplaySnapshots DrmGpuDisplayManager::GetDisplays() {
   std::vector<std::unique_ptr<DrmDisplay>> old_displays;
   old_displays.swap(displays_);
@@ -157,6 +162,9 @@ bool DrmGpuDisplayManager::ConfigureDisplay(
     return false;
   }
 
+  if (clear_overlay_cache_callback_)
+    clear_overlay_cache_callback_.Run();
+
   return display->Configure(&mode, origin);
 }
 
@@ -166,6 +174,9 @@ bool DrmGpuDisplayManager::DisableDisplay(int64_t display_id) {
     LOG(ERROR) << "There is no display with ID " << display_id;
     return false;
   }
+
+  if (clear_overlay_cache_callback_)
+    clear_overlay_cache_callback_.Run();
 
   return display->Configure(nullptr, gfx::Point());
 }

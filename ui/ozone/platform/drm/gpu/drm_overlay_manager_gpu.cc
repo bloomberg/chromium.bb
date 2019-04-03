@@ -14,7 +14,7 @@
 namespace ui {
 
 DrmOverlayManagerGpu::DrmOverlayManagerGpu(DrmThreadProxy* drm_thread_proxy)
-    : drm_thread_proxy_(drm_thread_proxy), weak_ptr_factory_(this) {}
+    : drm_thread_proxy_(drm_thread_proxy) {}
 
 DrmOverlayManagerGpu::~DrmOverlayManagerGpu() = default;
 
@@ -23,6 +23,18 @@ void DrmOverlayManagerGpu::SendOverlayValidationRequest(
     gfx::AcceleratedWidget widget) {
   TRACE_EVENT_ASYNC_BEGIN0(
       "hwoverlays", "DrmOverlayManagerGpu::SendOverlayValidationRequest", this);
+
+  // Adds a callback for the DRM thread to let us know when display
+  // configuration has changed and to reset cache of valid overlay
+  // configurations. This happens in SendOverlayValidationRequest() because the
+  // DrmThread has been started by this point *and* we are on the thread the
+  // callback should run on. Those two conditions are not necessarily true in
+  // the constructor.
+  if (!has_set_clear_cache_callback_) {
+    has_set_clear_cache_callback_ = true;
+    drm_thread_proxy_->SetClearOverlayCacheCallback(base::BindRepeating(
+        &DrmOverlayManagerGpu::ResetCache, weak_ptr_factory_.GetWeakPtr()));
+  }
 
   drm_thread_proxy_->CheckOverlayCapabilities(
       widget, candidates,
