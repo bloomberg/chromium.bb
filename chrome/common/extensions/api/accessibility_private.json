@@ -356,6 +356,18 @@
         "description": "Toggles dictation between active and inactive states.",
         "parameters": [],
         "platforms": ["chromeos"]
+      },
+      {
+        "name": "setVirtualKeyboardVisible",
+        "type": "function",
+        "description": "Shows or hides the virtual keyboard.",
+        "parameters": [
+          {
+            "name": "isVisible",
+            "type": "boolean"
+          }
+        ],
+        "platforms": ["chromeos"]
       }
     ],
     "events": [
