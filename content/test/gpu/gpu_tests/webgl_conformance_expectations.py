@@ -507,6 +507,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/textures/' +
         'image_bitmap_from_canvas/tex-2d-rgb*.html',
         ['win', 'passthrough', 'vulkan', 'amd'], bug=931016)
+    self.Fail('conformance/glsl/bugs/assign-to-swizzled-twice-in-function.html',
+        ['win', 'passthrough', 'vulkan', 'amd'], bug=3343) # ANGLE bug ID
 
     # Mac failures
     self.Fail('conformance/glsl/misc/fragcolor-fragdata-invariant.html',
