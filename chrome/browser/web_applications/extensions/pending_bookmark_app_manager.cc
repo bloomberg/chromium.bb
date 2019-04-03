@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_install_finalizer.h"
 #include "content/public/browser/web_contents.h"
 
 namespace extensions {
@@ -24,7 +25,8 @@ std::unique_ptr<BookmarkAppInstallationTask> InstallationTaskCreateWrapper(
     Profile* profile,
     web_app::InstallOptions install_options) {
   return std::make_unique<BookmarkAppInstallationTask>(
-      profile, std::move(install_options));
+      profile, std::make_unique<BookmarkAppInstallFinalizer>(profile),
+      std::move(install_options));
 }
 
 }  // namespace
@@ -188,18 +190,27 @@ void PendingBookmarkAppManager::CreateWebContentsIfNecessary() {
 
 void PendingBookmarkAppManager::OnUrlLoaded(
     web_app::WebAppUrlLoader::Result result) {
-  if (result != web_app::WebAppUrlLoader::Result::kUrlLoaded) {
-    CurrentInstallationFinished(base::nullopt);
+  if (result == web_app::WebAppUrlLoader::Result::kUrlLoaded) {
+    current_task_and_callback_->task->Install(
+        web_contents_.get(),
+        base::BindOnce(&PendingBookmarkAppManager::OnInstalled,
+                       // Safe because the installation task will not run its
+                       // callback after being deleted and this class owns the
+                       // task.
+                       base::Unretained(this)));
     return;
   }
 
-  current_task_and_callback_->task->Install(
-      web_contents_.get(),
-      base::BindOnce(&PendingBookmarkAppManager::OnInstalled,
-                     // Safe because the installation task will not run its
-                     // callback after being deleted and this class owns the
-                     // task.
-                     base::Unretained(this)));
+  // TODO(ortuno): Move this into BookmarkAppInstallationTask::Install() once
+  // loading the URL is part of Install().
+  if (current_task_and_callback_->task->install_options().install_placeholder) {
+    current_task_and_callback_->task->InstallPlaceholder(
+        base::BindOnce(&PendingBookmarkAppManager::OnInstalled,
+                       weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+
+  CurrentInstallationFinished(base::nullopt);
 }
 
 void PendingBookmarkAppManager::OnInstalled(

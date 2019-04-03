@@ -50,6 +50,7 @@ class ExtensionIdsMap {
               const std::string& extension_id,
               InstallSource install_source);
   base::Optional<std::string> LookupExtensionId(const GURL& url) const;
+  void SetIsPlaceholder(const GURL& url, bool is_placeholder);
 
  private:
   PrefService* pref_service_;

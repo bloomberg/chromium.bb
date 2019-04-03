@@ -99,6 +99,8 @@ void WebAppPolicyManager::RefreshPolicyInstalledApps() {
     // Web Apps, but for now never pin them. See crbug.com/880125.
     install_options.add_to_quick_launch_bar = false;
 
+    install_options.install_placeholder = true;
+
     install_options_list.push_back(std::move(install_options));
   }
 

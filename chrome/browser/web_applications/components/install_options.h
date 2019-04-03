@@ -62,6 +62,13 @@ struct InstallOptions {
 
   // Whether the app should be reinstalled even if it is already installed.
   bool always_update = false;
+
+  // Whether a placeholder app should be installed if we fail to retrieve the
+  // metadata for the app. A placeholder app uses:
+  //  - The default Chrome App icon for the icon
+  //  - |url| as the start_url
+  //  - |url| as the app name
+  bool install_placeholder = false;
 };
 
 std::ostream& operator<<(std::ostream& out,
