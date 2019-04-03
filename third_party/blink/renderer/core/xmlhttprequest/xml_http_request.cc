@@ -1079,7 +1079,7 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   if (http_body) {
     DCHECK_NE(method_, http_names::kGET);
     DCHECK_NE(method_, http_names::kHEAD);
-    request.SetHTTPBody(std::move(http_body));
+    request.SetHttpBody(std::move(http_body));
   }
 
   if (request_headers_.size() > 0)

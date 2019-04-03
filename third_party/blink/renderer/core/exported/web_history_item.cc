@@ -183,7 +183,7 @@ WebHTTPBody WebHistoryItem::HttpBody() const {
   return WebHTTPBody(private_->FormData());
 }
 
-void WebHistoryItem::SetHTTPBody(const WebHTTPBody& http_body) {
+void WebHistoryItem::SetHttpBody(const WebHTTPBody& http_body) {
   private_->SetFormData(http_body);
 }
 

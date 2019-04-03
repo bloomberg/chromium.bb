@@ -222,7 +222,7 @@ bool CreateWebURLRequest(PP_Instance instance,
         http_body.AppendData(WebData(item.data));
       }
     }
-    dest->SetHTTPBody(http_body);
+    dest->SetHttpBody(http_body);
   }
 
   // Add the "Referer" header if there is a custom referrer. Such requests

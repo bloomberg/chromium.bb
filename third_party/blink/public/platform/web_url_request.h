@@ -219,7 +219,7 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT void VisitHTTPHeaderFields(WebHTTPHeaderVisitor*) const;
 
   BLINK_PLATFORM_EXPORT WebHTTPBody HttpBody() const;
-  BLINK_PLATFORM_EXPORT void SetHTTPBody(const WebHTTPBody&);
+  BLINK_PLATFORM_EXPORT void SetHttpBody(const WebHTTPBody&);
 
   BLINK_PLATFORM_EXPORT WebHTTPBody AttachedCredential() const;
   BLINK_PLATFORM_EXPORT void SetAttachedCredential(const WebHTTPBody&);

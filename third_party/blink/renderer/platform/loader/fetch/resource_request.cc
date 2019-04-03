@@ -120,7 +120,7 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
   request->SetPriority(Priority());
 
   if (request->HttpMethod() == HttpMethod())
-    request->SetHTTPBody(HttpBody());
+    request->SetHttpBody(HttpBody());
   request->SetCorsPreflightPolicy(CorsPreflightPolicy());
   if (IsAdResource())
     request->SetIsAdResource();
@@ -262,7 +262,7 @@ EncodedFormData* ResourceRequest::HttpBody() const {
   return http_body_.get();
 }
 
-void ResourceRequest::SetHTTPBody(scoped_refptr<EncodedFormData> http_body) {
+void ResourceRequest::SetHttpBody(scoped_refptr<EncodedFormData> http_body) {
   http_body_ = std::move(http_body);
 }
 
