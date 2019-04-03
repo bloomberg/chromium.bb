@@ -1995,6 +1995,11 @@
     "expiry_milestone": 75
   },
   {
+    "name": "updated_cellular_activation_ui",
+    "owners": [ "azeemarshad", "khorimoto" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "use_messages_google_com_domain",
     "owners": [ "azeemarshad", "khorimoto" ],
     "expiry_milestone": 76

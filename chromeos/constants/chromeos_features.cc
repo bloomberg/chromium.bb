@@ -84,6 +84,10 @@ const base::Feature kInstantTethering{"InstantTethering",
 const base::Feature kSplitSettings{"SplitSettings",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the updated cellular activation UI; see go/cros-cellular-design.
+const base::Feature kUpdatedCellularActivationUi{
+    "UpdatedCellularActivationUi", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use the messages.google.com domain as part of the "Messages" feature under
 // "Connected Devices" settings.
 const base::Feature kUseMessagesGoogleComDomain{

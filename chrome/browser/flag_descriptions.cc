@@ -44,6 +44,11 @@ const char kAllowStartingServiceManagerOnlyDescription[] =
     "Allows running a lightweight service-manager-only mode, in which services "
     "can run without the browser process.";
 
+const char kUpdatedCellularActivationUiName[] =
+    "Updated Cellular Activation UI";
+const char kUpdatedCellularActivationUiDescription[] =
+    "Enables the updated cellular activation UI.";
+
 const char kUseMessagesGoogleComDomainName[] = "Use messages.google.com domain";
 const char kUseMessagesGoogleComDomainDescription[] =
     "Use the messages.google.com domain as part of the \"Messages\" "

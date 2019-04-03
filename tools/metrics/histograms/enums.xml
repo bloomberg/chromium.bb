@@ -32637,6 +32637,7 @@ from previous Chrome versions.
   <int value="-1107103335" label="FsNosymfollow:enabled"/>
   <int value="-1103099187" label="NotificationStackingBarRedesign:disabled"/>
   <int value="-1102212525" label="enable-tcp-fastopen"/>
+  <int value="-1099618411" label="UpdatedCellularActivationUi:enabled"/>
   <int value="-1099142083" label="V8Ignition:disabled"/>
   <int value="-1099135056" label="AsyncDns:enabled"/>
   <int value="-1097977406"
@@ -34314,6 +34315,7 @@ from previous Chrome versions.
   <int value="1636721063"
       label="AutofillLocalCardMigrationShowFeedback:enabled"/>
   <int value="1636962093" label="disable-material-design-ntp"/>
+  <int value="1638582559" label="UpdatedCellularActivationUi:disabled"/>
   <int value="1638927687" label="AutofillRichMetadataQueries:disabled"/>
   <int value="1639190590" label="UseMessagesGoogleComDomain:enabled"/>
   <int value="1639314588" label="LookalikeUrlNavigationSuggestions:disabled"/>
