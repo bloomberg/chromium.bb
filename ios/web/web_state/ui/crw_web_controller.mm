@@ -41,6 +41,8 @@
 #include "base/values.h"
 #include "crypto/symmetric_key.h"
 #import "ios/net/http_response_headers_util.h"
+#import "ios/web/browsing_data/browsing_data_remover.h"
+#import "ios/web/browsing_data/browsing_data_remover_observer.h"
 #import "ios/web/common/crw_content_view.h"
 #import "ios/web/common/crw_web_view_content_view.h"
 #include "ios/web/common/url_util.h"
@@ -248,14 +250,15 @@ GURL URLEscapedForHistory(const GURL& url) {
 
 @end
 
-@interface CRWWebController ()<CRWContextMenuDelegate,
-                               CRWNativeContentDelegate,
-                               CRWSSLStatusUpdaterDataSource,
-                               CRWSSLStatusUpdaterDelegate,
-                               CRWWebControllerContainerViewDelegate,
-                               CRWWebViewScrollViewProxyObserver,
-                               WKNavigationDelegate,
-                               WKUIDelegate> {
+@interface CRWWebController () <BrowsingDataRemoverObserver,
+                                CRWContextMenuDelegate,
+                                CRWNativeContentDelegate,
+                                CRWSSLStatusUpdaterDataSource,
+                                CRWSSLStatusUpdaterDelegate,
+                                CRWWebControllerContainerViewDelegate,
+                                CRWWebViewScrollViewProxyObserver,
+                                WKNavigationDelegate,
+                                WKUIDelegate> {
   // The view used to display content.  Must outlive |_webViewProxy|. The
   // container view should be accessed through this property rather than
   // |self.view| from within this class, as |self.view| triggers creation while
@@ -643,6 +646,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
         initWithBrowserState:browserState];
     _certVerificationErrors =
         std::make_unique<CertVerificationErrorsCacheType>(kMaxCertErrorsCount);
+    web::BrowsingDataRemover::FromBrowserState(browserState)->AddObserver(self);
     _navigationStates = [[CRWWKNavigationStates alloc] init];
     web::WebFramesManagerImpl::CreateForWebState(_webStateImpl);
     web::FindInPageManagerImpl::CreateForWebState(_webStateImpl);
@@ -2414,6 +2418,16 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     case web::ErrorRetryCommand::kDoNothing:
       NOTREACHED();
   }
+}
+
+#pragma mark - BrowsingDataRemoverObserver
+
+- (void)willRemoveBrowsingData:(web::BrowsingDataRemover*)dataRemover {
+  self.webUsageEnabled = NO;
+}
+
+- (void)didRemoveBrowsingData:(web::BrowsingDataRemover*)dataRemover {
+  self.webUsageEnabled = YES;
 }
 
 #pragma mark - JavaScript history manipulation
