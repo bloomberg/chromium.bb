@@ -4182,12 +4182,8 @@ void RenderProcessHostImpl::ProcessDied(
     info.exit_code = shutdown_exit_code_;
 
   within_process_died_observer_ = true;
-  NotificationService::current()->Notify(
-      NOTIFICATION_RENDERER_PROCESS_CLOSED, Source<RenderProcessHost>(this),
-      Details<ChildProcessTerminationInfo>(&info));
   for (auto& observer : observers_)
     observer.RenderProcessExited(this, info);
-  within_process_died_observer_ = false;
 
   base::IDMap<IPC::Listener*>::iterator iter(&listeners_);
   while (!iter.IsAtEnd()) {
@@ -4195,6 +4191,11 @@ void RenderProcessHostImpl::ProcessDied(
         iter.GetCurrentKey(), static_cast<int>(info.status), info.exit_code));
     iter.Advance();
   }
+
+  NotificationService::current()->Notify(
+      NOTIFICATION_RENDERER_PROCESS_CLOSED, Source<RenderProcessHost>(this),
+      Details<ChildProcessTerminationInfo>(&info));
+  within_process_died_observer_ = false;
 
   RemoveUserData(kSessionStorageHolderKey);
 
