@@ -3023,6 +3023,7 @@ crbug.com/939181 external/wpt/html/browsers/origin/cross-origin-objects/cross-or
 crbug.com/939181 virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Failure Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/html/semantics/embedded-content/media-elements/src_object_blob.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/service-workers/service-worker/websocket.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/websockets/Secure-Close-4999-reason.any.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/websockets/Secure-Send-data.any.html [ Timeout ]
