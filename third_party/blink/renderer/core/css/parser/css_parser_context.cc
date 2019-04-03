@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/page.h"
 
 namespace blink {
@@ -251,6 +252,13 @@ void CSSParserContext::ReportLayoutAnimationsViolationIfNeeded(
       continue;
     LayoutAnimationsPolicy::ReportViolation(property, *document_);
   }
+}
+
+bool CSSParserContext::CustomElementsV0Enabled() const {
+  // Support features conservatively.
+  if (!document_)
+    return true;
+  return origin_trials::CustomElementsV0Enabled(document_);
 }
 
 void CSSParserContext::Trace(blink::Visitor* visitor) {

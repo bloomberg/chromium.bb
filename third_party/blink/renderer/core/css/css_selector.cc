@@ -33,7 +33,9 @@
 #include "third_party/blink/renderer/core/css/css_markup.h"
 #include "third_party/blink/renderer/core/css/css_selector_list.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -643,7 +645,6 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoStart:
     case kPseudoTarget:
     case kPseudoUnknown:
-    case kPseudoUnresolved:
     case kPseudoValid:
     case kPseudoVertical:
     case kPseudoVisited:
@@ -656,6 +657,10 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoLeftPage:
     case kPseudoRightPage:
       pseudo_type_ = kPseudoUnknown;
+      break;
+    case kPseudoUnresolved:
+      if (match_ != kPseudoClass || !context.CustomElementsV0Enabled())
+        pseudo_type_ = kPseudoUnknown;
       break;
   }
 }
