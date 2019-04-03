@@ -1123,6 +1123,18 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
       event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseMarking];
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForMarking", marking_duration);
 
+  constexpr size_t kMinObjectSizeForReportingThroughput = 1024 * 1024;
+  if (WTF::TimeTicks::IsHighResolution() &&
+      (event.object_size_in_bytes_before_sweeping >
+       kMinObjectSizeForReportingThroughput)) {
+    DCHECK_GT(marking_duration.InMillisecondsF(), 0.0);
+    const int main_thread_marking_throughput_mb_per_s = static_cast<int>(
+        static_cast<double>(event.object_size_in_bytes_before_sweeping) /
+        marking_duration.InMillisecondsF() * 1000 / 1024 / 1024);
+    UMA_HISTOGRAM_COUNTS_100000("BlinkGC.MainThreadMarkingThroughput",
+                                main_thread_marking_throughput_mb_per_s);
+  }
+
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForNestedInV8", event.gc_nested_in_v8_);
 
   UMA_HISTOGRAM_TIMES(
