@@ -9,12 +9,9 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "base/debug/alias.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
-#include "base/json/json_file_value_serializer.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
@@ -167,14 +164,6 @@ bool Database::IsExpectedSqliteError(int error) {
   if (!current_expecter_cb_)
     return false;
   return current_expecter_cb_->Run(error);
-}
-
-void Database::ReportDiagnosticInfo(int extended_error, Statement* stmt) {
-  std::string debug_info = GetDiagnosticInfo(extended_error, stmt);
-  if (!debug_info.empty() && RegisterIntentToUpload()) {
-    DEBUG_ALIAS_FOR_CSTR(debug_buf, debug_info.c_str(), 2000);
-    base::debug::DumpWithoutCrashing();
-  }
 }
 
 // static
@@ -491,109 +480,6 @@ base::FilePath Database::DbPath() const {
   NOTREACHED();
   return base::FilePath();
 #endif
-}
-
-// Data is persisted in a file shared between databases in the same directory.
-// The "sqlite-diag" file contains a dictionary with the version number, and an
-// array of histogram tags for databases which have been dumped.
-bool Database::RegisterIntentToUpload() const {
-  static const char* kVersionKey = "version";
-  static const char* kDiagnosticDumpsKey = "DiagnosticDumps";
-  static int kVersion = 1;
-
-  if (histogram_tag_.empty())
-    return false;
-
-  if (!is_open())
-    return false;
-
-  if (in_memory_)
-    return false;
-
-  const base::FilePath db_path = DbPath();
-  if (db_path.empty())
-    return false;
-
-  // Put the collection of diagnostic data next to the databases.  In most
-  // cases, this is the profile directory, but safe-browsing stores a Cookies
-  // file in the directory above the profile directory.
-  base::FilePath breadcrumb_path = db_path.DirName().AppendASCII("sqlite-diag");
-
-  // Lock against multiple updates to the diagnostics file.  This code should
-  // seldom be called in the first place, and when called it should seldom be
-  // called for multiple databases, and when called for multiple databases there
-  // is _probably_ something systemic wrong with the user's system.  So the lock
-  // should never be contended, but when it is the database experience is
-  // already bad.
-  static base::NoDestructor<base::Lock> lock;
-  base::AutoLock auto_lock(*lock);
-
-  std::unique_ptr<base::Value> root;
-  if (!base::PathExists(breadcrumb_path)) {
-    std::unique_ptr<base::DictionaryValue> root_dict(
-        new base::DictionaryValue());
-    root_dict->SetInteger(kVersionKey, kVersion);
-
-    std::unique_ptr<base::ListValue> dumps(new base::ListValue);
-    dumps->AppendString(histogram_tag_);
-    root_dict->Set(kDiagnosticDumpsKey, std::move(dumps));
-
-    root = std::move(root_dict);
-  } else {
-    // Failure to read a valid dictionary implies that something is going wrong
-    // on the system.
-    JSONFileValueDeserializer deserializer(breadcrumb_path);
-    std::unique_ptr<base::Value> read_root(
-        deserializer.Deserialize(nullptr, nullptr));
-    if (!read_root.get())
-      return false;
-    std::unique_ptr<base::DictionaryValue> root_dict =
-        base::DictionaryValue::From(std::move(read_root));
-    if (!root_dict)
-      return false;
-
-    // Don't upload if the version is missing or newer.
-    int version = 0;
-    if (!root_dict->GetInteger(kVersionKey, &version) || version > kVersion)
-      return false;
-
-    base::ListValue* dumps = nullptr;
-    if (!root_dict->GetList(kDiagnosticDumpsKey, &dumps))
-      return false;
-
-    const size_t size = dumps->GetSize();
-    for (size_t i = 0; i < size; ++i) {
-      std::string s;
-
-      // Don't upload if the value isn't a string, or indicates a prior upload.
-      if (!dumps->GetString(i, &s) || s == histogram_tag_)
-        return false;
-    }
-
-    // Record intention to proceed with upload.
-    dumps->AppendString(histogram_tag_);
-    root = std::move(root_dict);
-  }
-
-  const base::FilePath breadcrumb_new =
-      breadcrumb_path.AddExtension(FILE_PATH_LITERAL("new"));
-  base::DeleteFile(breadcrumb_new, false);
-
-  // No upload if the breadcrumb file cannot be updated.
-  // TODO(shess): Consider ImportantFileWriter::WriteFileAtomically() to land
-  // the data on disk.  For now, losing the data is not a big problem, so the
-  // sync overhead would probably not be worth it.
-  JSONFileValueSerializer serializer(breadcrumb_new);
-  if (!serializer.Serialize(*root))
-    return false;
-  if (!base::PathExists(breadcrumb_new))
-    return false;
-  if (!base::ReplaceFile(breadcrumb_new, breadcrumb_path, nullptr)) {
-    base::DeleteFile(breadcrumb_new, false);
-    return false;
-  }
-
-  return true;
 }
 
 std::string Database::CollectErrorInfo(int error, Statement* stmt) const {

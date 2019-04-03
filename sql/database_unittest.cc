@@ -1066,40 +1066,6 @@ TEST_F(SQLDatabaseTest, CollectDiagnosticInfo) {
   EXPECT_NE(std::string::npos, error_info.find("version: 4"));
 }
 
-TEST_F(SQLDatabaseTest, RegisterIntentToUpload) {
-  base::FilePath breadcrumb_path =
-      db_path().DirName().AppendASCII("sqlite-diag");
-
-  // No stale diagnostic store.
-  ASSERT_TRUE(!base::PathExists(breadcrumb_path));
-
-  // The histogram tag is required to enable diagnostic features.
-  EXPECT_FALSE(db().RegisterIntentToUpload());
-  EXPECT_TRUE(!base::PathExists(breadcrumb_path));
-
-  db().Close();
-  db().set_histogram_tag("Test");
-  ASSERT_TRUE(db().Open(db_path()));
-
-  // Should signal upload only once.
-  EXPECT_TRUE(db().RegisterIntentToUpload());
-  EXPECT_TRUE(base::PathExists(breadcrumb_path));
-  EXPECT_FALSE(db().RegisterIntentToUpload());
-
-  // Changing the histogram tag should allow new upload to succeed.
-  db().Close();
-  db().set_histogram_tag("NewTest");
-  ASSERT_TRUE(db().Open(db_path()));
-  EXPECT_TRUE(db().RegisterIntentToUpload());
-  EXPECT_FALSE(db().RegisterIntentToUpload());
-
-  // Old tag is still prevented.
-  db().Close();
-  db().set_histogram_tag("Test");
-  ASSERT_TRUE(db().Open(db_path()));
-  EXPECT_FALSE(db().RegisterIntentToUpload());
-}
-
 // Test that a fresh database has mmap enabled by default, if mmap'ed I/O is
 // enabled by SQLite.
 TEST_F(SQLDatabaseTest, MmapInitiallyEnabled) {
