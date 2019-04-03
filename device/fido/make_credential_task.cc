@@ -16,20 +16,20 @@ namespace device {
 
 namespace {
 
-// Checks whether the incoming MakeCredential request has ClientPin option that
-// is compatible with the Chrome's CTAP2 implementation. According to the CTAP
-// spec, CTAP2 authenticators that have client pin set will always error out on
-// MakeCredential request when "pinAuth" parameter in the request is not set. As
-// ClientPin is not supported on Chrome yet, this check allows Chrome to avoid
-// such failures if possible by defaulting to U2F request when user verification
-// is not required and the device supports U2F protocol.
-// TODO(hongjunchoi): Remove this once ClientPin command is implemented.
-// See: https://crbug.com/870892
+// CTAP 2.0 specifies[1] that once a PIN has been set on an authenticator, the
+// PIN is required in order to make a credential. In some cases we don't want to
+// prompt for a PIN and so use U2F to make the credential instead.
+//
+// [1]
+// https://fidoalliance.org/specs/fido-v2.0-ps-20190130/fido-client-to-authenticator-protocol-v2.0-ps-20190130.html#authenticatorMakeCredential,
+// step 6
 bool ShouldUseU2fBecauseCtapRequiresClientPin(
     const FidoDevice* device,
     const CtapMakeCredentialRequest& request) {
-  if (request.user_verification() == UserVerificationRequirement::kRequired)
+  if (request.user_verification() == UserVerificationRequirement::kRequired ||
+      (request.pin_auth() && !request.pin_auth()->empty())) {
     return false;
+  }
 
   DCHECK(device && device->device_info());
   bool client_pin_set =

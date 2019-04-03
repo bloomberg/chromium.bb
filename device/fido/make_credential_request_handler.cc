@@ -472,7 +472,9 @@ void MakeCredentialRequestHandler::OnHavePINToken(
   CtapMakeCredentialRequest request(request_);
   request.SetPinAuth(response->PinAuth(request.client_data_hash()));
   request.SetPinProtocol(pin::kProtocolVersion);
-  request.SetUserVerification(UserVerificationRequirement::kRequired);
+  // If doing a PIN operation then we don't ask the authenticator to also do
+  // internal UV.
+  request.SetUserVerification(UserVerificationRequirement::kDiscouraged);
 
   authenticator_->MakeCredential(
       std::move(request),
