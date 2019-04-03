@@ -2222,6 +2222,11 @@
     "expiry_milestone": 79
   },
   {
+    "name": "kids-management-url-classification",
+    "owners": [ "alanwink", "vtrmc", "unichromeos-eng" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "language-settings",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
