@@ -90,15 +90,10 @@ base::TimeDelta WarmupURLFetcher::GetFetchWaitTime() const {
   DCHECK_LT(0u, previous_attempt_counts_);
   DCHECK_GE(2u, previous_attempt_counts_);
 
-  if (previous_attempt_counts_ == 1) {
-    return base::TimeDelta::FromSeconds(GetFieldTrialParamByFeatureAsInt(
-        features::kDataReductionProxyRobustConnection,
-        "warmup_url_fetch_wait_timer_first_retry_seconds", 1));
-  }
+  if (previous_attempt_counts_ == 1)
+    return base::TimeDelta::FromSeconds(1);
 
-  return base::TimeDelta::FromSeconds(GetFieldTrialParamByFeatureAsInt(
-      features::kDataReductionProxyRobustConnection,
-      "warmup_url_fetch_wait_timer_second_retry_seconds", 30));
+  return base::TimeDelta::FromSeconds(30);
 }
 
 void WarmupURLFetcher::FetchWarmupURLNow(
@@ -288,23 +283,15 @@ base::TimeDelta WarmupURLFetcher::GetFetchTimeout() const {
 
   // The timeout value should always be between |min_timeout| and |max_timeout|
   // (both inclusive).
-  const base::TimeDelta min_timeout =
-      base::TimeDelta::FromSeconds(GetFieldTrialParamByFeatureAsInt(
-          features::kDataReductionProxyRobustConnection,
-          "warmup_url_fetch_min_timeout_seconds", 30));
-  const base::TimeDelta max_timeout =
-      base::TimeDelta::FromSeconds(GetFieldTrialParamByFeatureAsInt(
-          features::kDataReductionProxyRobustConnection,
-          "warmup_url_fetch_max_timeout_seconds", 60));
+  const base::TimeDelta min_timeout = base::TimeDelta::FromSeconds(30);
+  const base::TimeDelta max_timeout = base::TimeDelta::FromSeconds(60);
   DCHECK_LT(base::TimeDelta::FromSeconds(0), min_timeout);
   DCHECK_LT(base::TimeDelta::FromSeconds(0), max_timeout);
   DCHECK_LE(min_timeout, max_timeout);
 
   // Set the timeout based on how many times the fetching of the warmup URL
   // has been tried.
-  size_t http_rtt_multiplier = GetFieldTrialParamByFeatureAsInt(
-      features::kDataReductionProxyRobustConnection,
-      "warmup_url_fetch_init_http_rtt_multiplier", 12);
+  size_t http_rtt_multiplier = 12;
   if (previous_attempt_counts_ == 1) {
     http_rtt_multiplier *= 2;
   } else if (previous_attempt_counts_ == 2) {

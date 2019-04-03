@@ -435,10 +435,7 @@ DataReductionProxyBypassType GetDataReductionProxyBypassType(
   }
 
   bool disable_bypass_on_missing_via_header =
-      params::IsWarmupURLFetchCallbackEnabled() &&
-      GetFieldTrialParamByFeatureAsBool(
-          features::kDataReductionProxyRobustConnection,
-          params::GetMissingViaBypassParamName(), true);
+      params::IsWarmupURLFetchCallbackEnabled();
 
   if (!has_via_header && !disable_bypass_on_missing_via_header &&
       (headers.response_code() != net::HTTP_NOT_MODIFIED)) {

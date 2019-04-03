@@ -137,9 +137,6 @@ bool IsWarmupURL(const GURL& url);
 // unsuccessful.
 bool IsWhitelistedHttpResponseCodeForProbes(int http_response_code);
 
-// Returns the experiment parameter name to disable missing via header bypasses.
-const char* GetMissingViaBypassParamName();
-
 // Returns if site-breakdown metrics should be recorded using the page load
 // metrics harness.
 bool IsDataSaverSiteBreakdownUsingPLMEnabled();
@@ -151,10 +148,6 @@ bool IsEnabledWithNetworkService();
 // Returns the experiment parameter name to discard the cached result for canary
 // check probe.
 const char* GetDiscardCanaryCheckResultParam();
-
-// Returns true if canary check result should not be cached or reused across
-// network changes.
-bool ShouldDiscardCanaryCheckResult();
 
 // Helper function to locate |proxy_server| in |proxies| if it exists. This
 // function is exposed publicly so that DataReductionProxyParams can use it.

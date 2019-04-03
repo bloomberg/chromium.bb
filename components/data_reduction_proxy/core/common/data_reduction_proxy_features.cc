@@ -27,10 +27,6 @@ const base::Feature kDataReductionProxyLowMemoryDevicePromo{
     "DataReductionProxyLowMemoryDevicePromo",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables experiment that makes connection to the data saver proxy more robust.
-const base::Feature kDataReductionProxyRobustConnection{
-    "DataReductionProxyRobustConnection", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enabled for Chrome dogfooders.
 const base::Feature kDogfood{"DataReductionProxyDogfood",
                              base::FEATURE_DISABLED_BY_DEFAULT};
