@@ -58,6 +58,7 @@ CrExtensionsOptionsPageTest = class extends CrExtensionsInteractiveUITest {
   }
 };
 
+// Disabled due to flakiness, see https://crbug.com/945654
 TEST_F('CrExtensionsOptionsPageTest', 'DISABLED_All', function() {
   mocha.run();
 });
