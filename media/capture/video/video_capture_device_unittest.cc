@@ -63,12 +63,9 @@
   DISABLED_UsingRealWebcam_AllocateBadSize
 // We will always get YUYV from the Mac AVFoundation implementations.
 #define MAYBE_UsingRealWebcam_CaptureMjpeg DISABLED_UsingRealWebcam_CaptureMjpeg
-// TODO(crbug.com/923874).
-#define MAYBE_UsingRealWebcam_TakePhoto DISABLED_UsingRealWebcam_TakePhoto
-  // TODO(crbug.com/923874).
-#define MAYBE_UsingRealWebcam_GetPhotoState DISABLED_UsingRealWebcam_GetPhotoState
-  // TODO(crbug.com/923874).
-#define MAYBE_UsingRealWebcam_CaptureWithSize DISABLED_UsingRealWebcam_CaptureWithSize
+#define MAYBE_UsingRealWebcam_TakePhoto UsingRealWebcam_TakePhoto
+#define MAYBE_UsingRealWebcam_GetPhotoState UsingRealWebcam_GetPhotoState
+#define MAYBE_UsingRealWebcam_CaptureWithSize UsingRealWebcam_CaptureWithSize
 #define MAYBE_UsingRealWebcam_CheckPhotoCallbackRelease \
   UsingRealWebcam_CheckPhotoCallbackRelease
 #elif defined(OS_WIN)
