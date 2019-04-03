@@ -47,7 +47,8 @@ VP9Encoder::~VP9Encoder() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-bool VP9Encoder::Initialize(const VideoEncodeAccelerator::Config& config) {
+bool VP9Encoder::Initialize(const VideoEncodeAccelerator::Config& config,
+                            const AcceleratedVideoEncoder::Config& ave_config) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (VideoCodecProfileToVideoCodec(config.output_profile) != kCodecVP9) {
     DVLOGF(1) << "Invalid profile: " << GetProfileName(config.output_profile);

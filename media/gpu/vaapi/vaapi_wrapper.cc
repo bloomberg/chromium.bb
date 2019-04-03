@@ -1571,6 +1571,27 @@ bool VaapiWrapper::DownloadFromVABuffer(VABufferID buffer_id,
   return buffer_segment == nullptr;
 }
 
+bool VaapiWrapper::GetVAEncMaxNumOfRefFrames(VideoCodecProfile profile,
+                                             size_t* max_ref_frames) {
+  VAProfile va_profile =
+      ProfileToVAProfile(profile, VaapiWrapper::CodecMode::kEncode);
+  VAEntrypoint entrypoint =
+      GetVaEntryPoint(VaapiWrapper::CodecMode::kEncode, va_profile);
+  VAConfigAttrib attrib;
+  attrib.type = VAConfigAttribEncMaxRefFrames;
+
+  base::AutoLock auto_lock(*va_lock_);
+  VAStatus va_res =
+      vaGetConfigAttributes(va_display_, va_profile, entrypoint, &attrib, 1);
+  if (va_res) {
+    LOG_VA_ERROR_AND_REPORT(va_res, "vaGetConfigAttributes failed");
+    return false;
+  }
+
+  *max_ref_frames = attrib.value;
+  return true;
+}
+
 bool VaapiWrapper::DownloadAndDestroyVABuffer(VABufferID buffer_id,
                                               VASurfaceID sync_surface_id,
                                               uint8_t* target_ptr,

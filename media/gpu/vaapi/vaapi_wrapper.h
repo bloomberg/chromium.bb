@@ -250,6 +250,14 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Destroy all previously-allocated (and not yet destroyed) buffers.
   void DestroyVABuffers();
 
+  // Get the max number of reference frames for encoding supported by the
+  // driver.
+  // For H.264 encoding, the value represents the maximum number of reference
+  // frames for both the reference picture list 0 (bottom 16 bits) and the
+  // reference picture list 1 (top 16 bits).
+  bool GetVAEncMaxNumOfRefFrames(VideoCodecProfile profile,
+                                 size_t* max_ref_frames);
+
   // Blits a VASurface |va_surface_src| into another VASurface
   // |va_surface_dest| applying pixel format conversion and scaling
   // if needed.

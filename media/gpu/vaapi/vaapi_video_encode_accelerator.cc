@@ -353,7 +353,13 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
       return;
   }
 
-  if (!encoder_->Initialize(config)) {
+  AcceleratedVideoEncoder::Config ave_config;
+  if (!vaapi_wrapper_->GetVAEncMaxNumOfRefFrames(
+          config.output_profile, &ave_config.max_num_ref_frames))
+    return;
+  DCHECK_GT(ave_config.max_num_ref_frames, 0u);
+
+  if (!encoder_->Initialize(config, ave_config)) {
     NOTIFY_ERROR(kInvalidArgumentError, "Failed initializing encoder");
     return;
   }
