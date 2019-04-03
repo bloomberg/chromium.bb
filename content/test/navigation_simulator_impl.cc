@@ -1203,6 +1203,7 @@ NavigationSimulatorImpl::BuildDidCommitProvisionalLoadParams(
       has_user_gesture_ ? NavigationGestureUser : NavigationGestureAuto;
   params->history_list_was_cleared = history_list_was_cleared_;
   params->did_create_new_entry = DidCreateNewEntry();
+  params->should_replace_current_entry = should_replace_current_entry_;
 
   if (failed_navigation) {
     // Note: Error pages must commit in a unique origin. So it is left unset.

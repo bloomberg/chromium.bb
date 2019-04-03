@@ -110,9 +110,15 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   // Set DidCommit*Params history_list_was_cleared flag to |history_cleared|.
   void set_history_list_was_cleared(bool history_cleared);
 
-  // Manually force the value of did_create_new__entry flag in DidCommit*Params
+  // Manually force the value of did_create_new_entry flag in DidCommit*Params
   // to |did_create_new_entry|.
   void set_did_create_new_entry(bool did_create_new_entry);
+
+  // Manually force the value of should_replace_current_entry flag in
+  // DidCommit*Params to |should_replace_current_entry|.
+  void set_should_replace_current_entry(bool should_replace_current_entry) {
+    should_replace_current_entry_ = should_replace_current_entry;
+  }
 
   void set_http_connection_info(net::HttpResponseInfo::ConnectionInfo info) {
     http_connection_info_ = info;
@@ -259,6 +265,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
 
   bool history_list_was_cleared_ = false;
   base::Optional<bool> did_create_new_entry_;
+  bool should_replace_current_entry_ = false;
 
   // These are used to sanity check the content/public/ API calls emitted as
   // part of the navigation.

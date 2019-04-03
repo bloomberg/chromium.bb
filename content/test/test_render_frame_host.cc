@@ -230,8 +230,8 @@ const std::vector<std::string>& TestRenderFrameHost::GetConsoleMessages() {
 void TestRenderFrameHost::SendNavigate(int nav_entry_id,
                                        bool did_create_new_entry,
                                        const GURL& url) {
-  SendNavigateWithParameters(nav_entry_id, did_create_new_entry, false,
-                             url, ui::PAGE_TRANSITION_LINK, 200,
+  SendNavigateWithParameters(nav_entry_id, did_create_new_entry, url,
+                             ui::PAGE_TRANSITION_LINK, 200,
                              ModificationCallback());
 }
 
@@ -240,16 +240,8 @@ void TestRenderFrameHost::SendNavigateWithTransition(
     bool did_create_new_entry,
     const GURL& url,
     ui::PageTransition transition) {
-  SendNavigateWithParameters(nav_entry_id, did_create_new_entry, false,
-                             url, transition, 200, ModificationCallback());
-}
-
-void TestRenderFrameHost::SendNavigateWithReplacement(int nav_entry_id,
-                                                      bool did_create_new_entry,
-                                                      const GURL& url) {
-  SendNavigateWithParameters(nav_entry_id, did_create_new_entry, true,
-                             url, ui::PAGE_TRANSITION_LINK, 200,
-                             ModificationCallback());
+  SendNavigateWithParameters(nav_entry_id, did_create_new_entry, url,
+                             transition, 200, ModificationCallback());
 }
 
 void TestRenderFrameHost::SendNavigateWithModificationCallback(
@@ -257,14 +249,13 @@ void TestRenderFrameHost::SendNavigateWithModificationCallback(
     bool did_create_new_entry,
     const GURL& url,
     const ModificationCallback& callback) {
-  SendNavigateWithParameters(nav_entry_id, did_create_new_entry, false,
-                             url, ui::PAGE_TRANSITION_LINK, 200, callback);
+  SendNavigateWithParameters(nav_entry_id, did_create_new_entry, url,
+                             ui::PAGE_TRANSITION_LINK, 200, callback);
 }
 
 void TestRenderFrameHost::SendNavigateWithParameters(
     int nav_entry_id,
     bool did_create_new_entry,
-    bool should_replace_entry,
     const GURL& url,
     ui::PageTransition transition,
     int response_code,
@@ -281,9 +272,8 @@ void TestRenderFrameHost::SendNavigateWithParameters(
        url.ReplaceComponents(replacements) ==
            GetLastCommittedURL().ReplaceComponents(replacements));
 
-  auto params = BuildDidCommitParams(nav_entry_id, did_create_new_entry,
-                                     should_replace_entry, url, transition,
-                                     response_code);
+  auto params = BuildDidCommitParams(nav_entry_id, did_create_new_entry, url,
+                                     transition, response_code);
 
   if (!callback.is_null())
     callback.Run(params.get());
@@ -581,7 +571,6 @@ void TestRenderFrameHost::SendCommitFailedNavigation(
 std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
 TestRenderFrameHost::BuildDidCommitParams(int nav_entry_id,
                                           bool did_create_new_entry,
-                                          bool should_replace_entry,
                                           const GURL& url,
                                           ui::PageTransition transition,
                                           int response_code) {
@@ -592,7 +581,7 @@ TestRenderFrameHost::BuildDidCommitParams(int nav_entry_id,
   params->transition = transition;
   params->should_update_history = true;
   params->did_create_new_entry = did_create_new_entry;
-  params->should_replace_current_entry = should_replace_entry;
+  params->should_replace_current_entry = false;
   params->gesture = NavigationGestureUser;
   params->contents_mime_type = "text/html";
   params->method = "GET";
