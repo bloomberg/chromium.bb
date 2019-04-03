@@ -4,6 +4,7 @@
 
 #include "chrome/browser/page_load_metrics/observers/data_saver_site_breakdown_metrics_observer.h"
 
+#include "base/metrics/field_trial_params.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
@@ -12,6 +13,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "services/network/public/cpp/features.h"
 #include "url/gurl.h"
 
@@ -93,6 +95,56 @@ void DataSaverSiteBreakdownMetricsObserver::OnResourceDataUseObserved(
               data_use_measurement::DataUseUserData::OTHER, 0);
     }
   }
+}
+
+void DataSaverSiteBreakdownMetricsObserver::OnNewDeferredResourceCounts(
+    const page_load_metrics::mojom::DeferredResourceCounts&
+        new_deferred_resource_data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  data_reduction_proxy::DataReductionProxySettings*
+      data_reduction_proxy_settings =
+          DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+              browser_context_);
+  if (!data_reduction_proxy_settings ||
+      !data_reduction_proxy_settings->data_reduction_proxy_service()) {
+    return;
+  }
+  DCHECK(!committed_host_.empty());
+  int64_t previously_reported_savings_that_no_longer_apply = 0;
+  int64_t new_reported_savings = 0;
+
+  int typical_frame_savings = base::GetFieldTrialParamByFeatureAsInt(
+      features::kLazyFrameLoading, "typical_frame_size_in_bytes", 50000);
+
+  int typical_image_savings = base::GetFieldTrialParamByFeatureAsInt(
+      features::kLazyFrameLoading, "typical_image_size_in_bytes", 10000);
+
+  new_reported_savings +=
+      new_deferred_resource_data.deferred_frames * typical_frame_savings;
+  new_reported_savings +=
+      new_deferred_resource_data.deferred_images * typical_image_savings;
+
+  previously_reported_savings_that_no_longer_apply +=
+      new_deferred_resource_data.frames_loaded_after_deferral *
+      typical_frame_savings;
+  previously_reported_savings_that_no_longer_apply +=
+      new_deferred_resource_data.images_loaded_after_deferral *
+      typical_image_savings;
+
+  // This can be negative if we previously recorded savings that need to be
+  // undone.
+  int64_t savings_to_report =
+      new_reported_savings - previously_reported_savings_that_no_longer_apply;
+
+  data_reduction_proxy_settings->data_reduction_proxy_service()
+      ->UpdateDataUseForHost(0, savings_to_report, committed_host_);
+  data_reduction_proxy_settings->data_reduction_proxy_service()
+      ->UpdateContentLengths(
+          0, savings_to_report,
+          data_reduction_proxy_settings->IsDataReductionProxyEnabled(),
+          data_reduction_proxy::HTTPS, std::string() /* mime_type */,
+          true /*is_user_traffic*/,
+          data_use_measurement::DataUseUserData::OTHER, 0);
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
