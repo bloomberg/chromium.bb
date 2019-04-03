@@ -4,6 +4,9 @@
 
 // https://github.com/gpuweb/gpuweb/blob/master/design/sketch.webidl
 
-dictionary GPULimits {
-    unsigned long maxBindGroups = 4;
+[
+    Constructor(DOMString message),
+    RuntimeEnabled=WebGPU
+] interface GPUValidationError {
+    readonly attribute DOMString message;
 };

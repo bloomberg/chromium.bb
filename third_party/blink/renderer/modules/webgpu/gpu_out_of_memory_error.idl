@@ -4,6 +4,8 @@
 
 // https://github.com/gpuweb/gpuweb/blob/master/design/sketch.webidl
 
-dictionary GPULimits {
-    unsigned long maxBindGroups = 4;
+[
+    Constructor(),
+    RuntimeEnabled=WebGPU
+] interface GPUOutOfMemoryError {
 };

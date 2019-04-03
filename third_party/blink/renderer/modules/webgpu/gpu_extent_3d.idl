@@ -4,6 +4,8 @@
 
 // https://github.com/gpuweb/gpuweb/blob/master/design/sketch.webidl
 
-dictionary GPULimits {
-    unsigned long maxBindGroups = 4;
+dictionary GPUExtent3D {
+    required unsigned long width;
+    required unsigned long height;
+    required unsigned long depth;
 };

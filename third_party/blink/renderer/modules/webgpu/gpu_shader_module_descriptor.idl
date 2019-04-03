@@ -4,6 +4,10 @@
 
 // https://github.com/gpuweb/gpuweb/blob/master/design/sketch.webidl
 
-dictionary GPULimits {
-    unsigned long maxBindGroups = 4;
+dictionary GPUShaderModuleDescriptor {
+    DOMString label;
+    // TODO(kainino): should be:
+    //   [AllowShared, FlexibleArrayBufferView] required ArrayBufferView code;
+    // (or BufferSource?)
+    required Uint32Array code;
 };

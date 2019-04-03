@@ -4,6 +4,11 @@
 
 // https://github.com/gpuweb/gpuweb/blob/master/design/sketch.webidl
 
-dictionary GPULimits {
-    unsigned long maxBindGroups = 4;
+dictionary GPURenderPassColorAttachmentDescriptor {
+    required GPUTextureView attachment;
+    GPUTextureView? resolveTarget = null;
+
+    required GPULoadOp loadOp;
+    required GPUStoreOp storeOp;
+    required GPUColor clearColor;
 };

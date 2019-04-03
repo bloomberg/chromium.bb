@@ -4,6 +4,9 @@
 
 // https://github.com/gpuweb/gpuweb/blob/master/design/sketch.webidl
 
-dictionary GPULimits {
-    unsigned long maxBindGroups = 4;
+dictionary GPUTextureCopyView {
+    required GPUTexture texture;
+    unsigned long mipLevel = 0;
+    unsigned long arrayLayer = 0;
+    required GPUOrigin3D origin;
 };

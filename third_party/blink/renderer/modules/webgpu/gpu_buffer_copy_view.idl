@@ -4,6 +4,9 @@
 
 // https://github.com/gpuweb/gpuweb/blob/master/design/sketch.webidl
 
-dictionary GPULimits {
-    unsigned long maxBindGroups = 4;
+dictionary GPUBufferCopyView {
+    required GPUBuffer buffer;
+    unsigned long long offset = 0;
+    required unsigned long rowPitch;
+    required unsigned long imageHeight;
 };
