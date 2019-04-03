@@ -57,10 +57,10 @@ uintptr_t RewritePointerIfInOriginalStack(
 // NO HEAP ALLOCATIONS.
 //
 // static
+NO_SANITIZE("address")
 void CopyStackContentsAndRewritePointers(const uintptr_t* original_stack_bottom,
                                          const uintptr_t* original_stack_top,
-                                         uintptr_t* stack_copy_bottom)
-    NO_SANITIZE("address") {
+                                         uintptr_t* stack_copy_bottom) {
   const uintptr_t* src = original_stack_bottom;
   uintptr_t* dst = stack_copy_bottom;
   for (; src < original_stack_top; ++src, ++dst) {
