@@ -1009,6 +1009,12 @@ void RootWindowController::CreateContainers() {
   wm::SetSnapsChildrenToPhysicalPixelBoundary(menu_container);
   menu_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
 
+  aura::Window* autoclick_container = CreateContainer(
+      kShellWindowId_AutoclickContainer, "AutoclickBubbleContainer",
+      lock_screen_related_containers);
+  autoclick_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
+  wm::SetSnapsChildrenToPhysicalPixelBoundary(autoclick_container);
+
   aura::Window* drag_drop_container = CreateContainer(
       kShellWindowId_DragImageAndTooltipContainer,
       "DragImageAndTooltipContainer", lock_screen_related_containers);
