@@ -383,41 +383,6 @@ void VADisplayState::Deinitialize(VAStatus* status) {
   va_display_ = nullptr;
 }
 
-static std::vector<VAConfigAttrib> GetRequiredAttribs(
-    VaapiWrapper::CodecMode mode,
-    VAProfile profile) {
-  std::vector<VAConfigAttrib> required_attribs;
-
-  // No attribute for kVideoProcess.
-  if (mode == VaapiWrapper::kVideoProcess)
-    return required_attribs;
-
-  // VAConfigAttribRTFormat is common to both encode and decode |mode|s.
-  if (profile == VAProfileVP9Profile2 || profile == VAProfileVP9Profile3) {
-    required_attribs.push_back(
-        {VAConfigAttribRTFormat, VA_RT_FORMAT_YUV420_10BPP});
-  } else {
-    required_attribs.push_back({VAConfigAttribRTFormat, VA_RT_FORMAT_YUV420});
-  }
-
-  if (mode != VaapiWrapper::kEncode)
-    return required_attribs;
-
-  // All encoding use constant bit rate except for JPEG.
-  if (profile != VAProfileJPEGBaseline)
-    required_attribs.push_back({VAConfigAttribRateControl, VA_RC_CBR});
-
-  // VAConfigAttribEncPackedHeaders is H.264 specific.
-  if ((profile >= VAProfileH264Baseline && profile <= VAProfileH264High) ||
-      (profile == VAProfileH264ConstrainedBaseline)) {
-    required_attribs.push_back(
-        {VAConfigAttribEncPackedHeaders,
-         VA_ENC_PACKED_HEADER_SEQUENCE | VA_ENC_PACKED_HEADER_PICTURE});
-  }
-
-  return required_attribs;
-}
-
 static VAEntrypoint GetVaEntryPoint(VaapiWrapper::CodecMode mode,
                                     VAProfile profile) {
   switch (mode) {
@@ -434,6 +399,55 @@ static VAEntrypoint GetVaEntryPoint(VaapiWrapper::CodecMode mode,
       NOTREACHED();
       return VAEntrypointVLD;
   }
+}
+
+static bool GetRequiredAttribs(const base::Lock* va_lock,
+                               VADisplay va_display,
+                               VaapiWrapper::CodecMode mode,
+                               VAProfile profile,
+                               std::vector<VAConfigAttrib>* required_attribs) {
+  va_lock->AssertAcquired();
+  // No attribute for kVideoProcess.
+  if (mode == VaapiWrapper::kVideoProcess)
+    return true;
+
+  // VAConfigAttribRTFormat is common to both encode and decode |mode|s.
+  if (profile == VAProfileVP9Profile2 || profile == VAProfileVP9Profile3) {
+    required_attribs->push_back(
+        {VAConfigAttribRTFormat, VA_RT_FORMAT_YUV420_10BPP});
+  } else {
+    required_attribs->push_back({VAConfigAttribRTFormat, VA_RT_FORMAT_YUV420});
+  }
+
+  if (mode != VaapiWrapper::kEncode)
+    return true;
+
+  // All encoding use constant bit rate except for JPEG.
+  if (profile != VAProfileJPEGBaseline)
+    required_attribs->push_back({VAConfigAttribRateControl, VA_RC_CBR});
+
+  // VAConfigAttribEncPackedHeaders is H.264 specific.
+  if ((profile >= VAProfileH264Baseline && profile <= VAProfileH264High) ||
+      (profile == VAProfileH264ConstrainedBaseline)) {
+    // Encode with Packed header if a driver supports.
+    VAEntrypoint entrypoint =
+        GetVaEntryPoint(VaapiWrapper::CodecMode::kEncode, profile);
+    VAConfigAttrib attrib;
+    attrib.type = VAConfigAttribEncPackedHeaders;
+    VAStatus va_res =
+        vaGetConfigAttributes(va_display, profile, entrypoint, &attrib, 1);
+    if (va_res != VA_STATUS_SUCCESS) {
+      LOG(ERROR) << "GetConfigAttributes failed for va_profile " << profile;
+      return false;
+    }
+
+    if (attrib.value != VA_ENC_PACKED_HEADER_NONE) {
+      required_attribs->push_back(
+          {VAConfigAttribEncPackedHeaders,
+           VA_ENC_PACKED_HEADER_SEQUENCE | VA_ENC_PACKED_HEADER_PICTURE});
+    }
+  }
+  return true;
 }
 
 // This class encapsulates reading and giving access to the list of supported
@@ -579,8 +593,10 @@ VASupportedProfiles::GetSupportedProfileInfosForCodecModeInternal(
       VADisplayState::Get()->va_vendor_string();
   for (const auto& va_profile : va_profiles) {
     VAEntrypoint entrypoint = GetVaEntryPoint(mode, va_profile);
-    std::vector<VAConfigAttrib> required_attribs =
-        GetRequiredAttribs(mode, va_profile);
+    std::vector<VAConfigAttrib> required_attribs;
+    if (!GetRequiredAttribs(va_lock_, va_display_, mode, va_profile,
+                            &required_attribs))
+      continue;
     if (!IsEntrypointSupported_Locked(va_profile, entrypoint))
       continue;
     if (!AreAttribsSupported_Locked(va_profile, entrypoint, required_attribs))
@@ -1727,8 +1743,6 @@ bool VaapiWrapper::Initialize(CodecMode mode, VAProfile va_profile) {
     TryToSetVADisplayAttributeToLocalGPU();
 
   VAEntrypoint entrypoint = GetVaEntryPoint(mode, va_profile);
-  std::vector<VAConfigAttrib> required_attribs =
-      GetRequiredAttribs(mode, va_profile);
 
   if (mode == CodecMode::kEncode && IsLowPowerEncSupported(va_profile) &&
       base::FeatureList::IsEnabled(kVaapiLowPowerEncoder)) {
@@ -1737,6 +1751,10 @@ bool VaapiWrapper::Initialize(CodecMode mode, VAProfile va_profile) {
   }
 
   base::AutoLock auto_lock(*va_lock_);
+  std::vector<VAConfigAttrib> required_attribs;
+  if (!GetRequiredAttribs(va_lock_, va_display_, mode, va_profile,
+                          &required_attribs))
+    return false;
 
   VAStatus va_res =
       vaCreateConfig(va_display_, va_profile, entrypoint,
@@ -1857,10 +1875,11 @@ bool VaapiWrapper::IsLowPowerEncSupported(VAProfile va_profile) const {
     return false;
 
   constexpr VAEntrypoint kLowPowerEncEntryPoint = VAEntrypointEncSliceLP;
-  const std::vector<VAConfigAttrib> required_attribs =
-      GetRequiredAttribs(VaapiWrapper::CodecMode::kEncode, va_profile);
+  std::vector<VAConfigAttrib> required_attribs;
 
   base::AutoLock auto_lock(*va_lock_);
+  GetRequiredAttribs(va_lock_, va_display_, VaapiWrapper::CodecMode::kEncode,
+                     va_profile, &required_attribs);
   // Query the driver for required attributes.
   std::vector<VAConfigAttrib> attribs = required_attribs;
   for (size_t i = 0; i < required_attribs.size(); ++i)
