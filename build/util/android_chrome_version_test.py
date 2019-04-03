@@ -244,6 +244,42 @@ class _VersionTest(unittest.TestCase):
 
     self.assertLess(x86_chrome_version_code, x64_chrome_version_code)
 
+  def testGenerateVersionCodesAndroidWebviewChannelOrderBeta(self):
+    """Assert webview beta channel is higher than stable.
+
+    The channel-specific version codes for standalone webview needs to follow
+    the order stable < beta < dev.
+
+    This allows that if a user opts into beta track, they will always have the
+    beta apk, including any finch experiments targeted at beta users, even when
+    beta and stable channels are otherwise on the same version.
+    """
+    output = GenerateVersionCodes(
+        self.EXAMPLE_VERSION_VALUES, arch='arm', is_next_build=False)
+
+    webview_stable_version_code = output['WEBVIEW_STABLE_VERSION_CODE']
+    webview_beta_version_code = output['WEBVIEW_BETA_VERSION_CODE']
+
+    self.assertGreater(webview_beta_version_code, webview_stable_version_code)
+
+  def testGenerateVersionCodesAndroidWebviewChannelOrderDev(self):
+    """Assert webview dev channel is higher than beta.
+
+    The channel-specific version codes for standalone webview needs to follow
+    the order stable < beta < dev.
+
+    This allows that if a user opts into dev track, they will always have the
+    dev apk, including any finch experiments targeted at dev users, even when
+    dev and beta channels are otherwise on the same version.
+    """
+    output = GenerateVersionCodes(
+        self.EXAMPLE_VERSION_VALUES, arch='arm', is_next_build=False)
+
+    webview_beta_version_code = output['WEBVIEW_BETA_VERSION_CODE']
+    webview_dev_version_code = output['WEBVIEW_DEV_VERSION_CODE']
+
+    self.assertGreater(webview_dev_version_code, webview_beta_version_code)
+
 
 if __name__ == '__main__':
   unittest.main()
