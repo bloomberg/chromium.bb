@@ -124,7 +124,7 @@ class ExtensionEventObserver : public content::NotificationObserver,
   bool should_delay_suspend_;
   bool suspend_is_pending_;
   int suspend_keepalive_count_;
-  base::Closure power_manager_callback_;
+  base::OnceClosure power_manager_callback_;
   base::CancelableClosure suspend_readiness_callback_;
 
   content::NotificationRegistrar registrar_;

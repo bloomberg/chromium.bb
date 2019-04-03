@@ -113,7 +113,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakePowerManagerClient
   void GetInactivityDelays(
       DBusMethodCallback<power_manager::PowerManagementPolicy::Delays> callback)
       override;
-  base::Closure GetSuspendReadinessCallback(
+  base::OnceClosure GetSuspendReadinessCallback(
       const base::Location& from_where) override;
   void CreateArcTimers(
       const std::string& tag,

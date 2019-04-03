@@ -451,16 +451,17 @@ class PowerManagerClientImpl : public PowerManagerClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  base::Closure GetSuspendReadinessCallback(
+  base::OnceClosure GetSuspendReadinessCallback(
       const base::Location& from_where) override {
     DCHECK(OnOriginThread());
     DCHECK(suspend_is_pending_);
 
     const int callback_id = next_suspend_readiness_callback_id_++;
     pending_suspend_readiness_callbacks_[callback_id] = from_where;
-    return base::Bind(&PowerManagerClientImpl::HandleObserverSuspendReadiness,
-                      weak_ptr_factory_.GetWeakPtr(), pending_suspend_id_,
-                      suspending_from_dark_resume_, callback_id);
+    return base::BindOnce(
+        &PowerManagerClientImpl::HandleObserverSuspendReadiness,
+        weak_ptr_factory_.GetWeakPtr(), pending_suspend_id_,
+        suspending_from_dark_resume_, callback_id);
   }
 
   void CreateArcTimers(
