@@ -96,6 +96,21 @@ void BookmarkAppInstallFinalizer::FinalizeInstall(
   crx_installer->InstallWebApp(web_app_info);
 }
 
+void BookmarkAppInstallFinalizer::FinalizePolicyInstall(
+    const WebApplicationInfo& web_app_info,
+    InstallFinalizedCallback callback) {
+  scoped_refptr<CrxInstaller> crx_installer =
+      crx_installer_factory_.Run(profile_);
+
+  crx_installer->set_installer_callback(base::BindOnce(
+      OnExtensionInstalled, web_app_info.app_url, GetLaunchType(web_app_info),
+      std::move(callback), crx_installer));
+
+  crx_installer->set_install_source(Manifest::EXTERNAL_POLICY_DOWNLOAD);
+
+  crx_installer->InstallWebApp(web_app_info);
+}
+
 bool BookmarkAppInstallFinalizer::CanCreateOsShortcuts() const {
   return CanBookmarkAppCreateOsShortcuts();
 }

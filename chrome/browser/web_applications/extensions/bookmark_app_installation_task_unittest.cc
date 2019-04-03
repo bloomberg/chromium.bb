@@ -474,6 +474,7 @@ TEST_F(BookmarkAppInstallationTaskTest, InstallPlaceholder) {
 
         EXPECT_TRUE(IsPlaceholderApp(profile(), app_url()));
 
+        EXPECT_TRUE(finalizer_ptr->finalized_policy_install());
         std::unique_ptr<WebApplicationInfo> web_app_info =
             finalizer_ptr->web_app_info();
 

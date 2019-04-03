@@ -35,9 +35,17 @@ void TestInstallFinalizer::FinalizeInstall(
 
   // Store a copy for inspecting in tests.
   web_app_info_copy_ = std::make_unique<WebApplicationInfo>(web_app_info);
+  finalized_policy_install_ = false;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), app_id, code));
+}
+
+void TestInstallFinalizer::FinalizePolicyInstall(
+    const WebApplicationInfo& web_app_info,
+    InstallFinalizedCallback callback) {
+  FinalizeInstall(web_app_info, std::move(callback));
+  finalized_policy_install_ = true;
 }
 
 bool TestInstallFinalizer::CanCreateOsShortcuts() const {

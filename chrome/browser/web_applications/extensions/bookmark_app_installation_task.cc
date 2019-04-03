@@ -86,7 +86,7 @@ void BookmarkAppInstallationTask::InstallPlaceholder(ResultCallback callback) {
       break;
   }
 
-  install_finalizer_->FinalizeInstall(
+  install_finalizer_->FinalizePolicyInstall(
       web_app_info,
       base::BindOnce(&BookmarkAppInstallationTask::OnWebAppInstalled,
                      weak_ptr_factory_.GetWeakPtr(), true /* is_placeholder */,
