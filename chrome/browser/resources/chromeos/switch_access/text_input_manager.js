@@ -84,11 +84,16 @@ class TextInputManager {
    * @return {chrome.automation.AutomationNode}
    */
   getKeyboard(desktop) {
-    const treeWalker = new AutomationTreeWalker(
+    let treeWalker = new AutomationTreeWalker(
         desktop, constants.Dir.FORWARD,
         {visit: (node) => node.role === chrome.automation.RoleType.KEYBOARD});
-    treeWalker.next();
-    return treeWalker.node;
+    const keyboardContainer = treeWalker.next().node;
+    treeWalker =
+        new AutomationTreeWalker(keyboardContainer, constants.Dir.FORWARD, {
+          visit: (node) => SwitchAccessPredicate.isGroup(node, node),
+          root: (node) => node === keyboardContainer
+        });
+    return treeWalker.next().node;
   }
 
   /**
