@@ -520,7 +520,7 @@ void DevToolsURLLoaderFactoryProxy::CreateLoaderAndStart(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DevToolsURLLoaderInterceptor::Impl* interceptor = interceptor_.get();
-  if (!interceptor_) {
+  if (!interceptor_ || request.url.SchemeIs(url::kDataScheme)) {
     target_factory_->CreateLoaderAndStart(
         std::move(loader), routing_id, request_id, options, request,
         std::move(client), traffic_annotation);
