@@ -1,0 +1,10 @@
+This directory is the internal counterpart of external/wpt. All WPT features are
+enabled in this directory, including wptserve: this directory is mapped to
+wpt_staging/ on wptserve.
+
+Tests in this directory can use Blink internal testing APIs (`wpt lint` is NOT
+enforced in this directory), and they will not be exported to upstream. Please
+try to use external/wpt whenever possible.
+
+Note: tests have to go into subdirectories. Files in the root level of
+wpt_internal are not recognized as tests.

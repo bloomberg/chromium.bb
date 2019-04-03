@@ -54,6 +54,25 @@ class PortTest(LoggingTestCase):
             return TestPort(host, **kwargs)
         return Port(host, port_name or 'baseport', **kwargs)
 
+    def test_validate_wpt_dirs(self):
+        # Keys should not have trailing slashes.
+        for wpt_path in Port.WPT_DIRS.keys():
+            self.assertFalse(wpt_path.endswith('/'))
+        # Values should not be empty (except the last one).
+        for url_prefix in Port.WPT_DIRS.values()[:-1]:
+            self.assertNotEqual(url_prefix, '')
+        self.assertEqual(Port.WPT_DIRS.values()[-1], '')
+
+    def test_validate_wpt_regex(self):
+        self.assertEquals(Port.WPT_REGEX.match('external/wpt/foo/bar.html').groups(),
+                          ('external/wpt', 'foo/bar.html'))
+        self.assertEquals(Port.WPT_REGEX.match('virtual/test/external/wpt/foo/bar.html').groups(),
+                          ('external/wpt', 'foo/bar.html'))
+        self.assertEquals(Port.WPT_REGEX.match('wpt_internal/foo/bar.html').groups(),
+                          ('wpt_internal', 'foo/bar.html'))
+        self.assertEquals(Port.WPT_REGEX.match('virtual/test/wpt_internal/foo/bar.html').groups(),
+                          ('wpt_internal', 'foo/bar.html'))
+
     def test_setup_test_run(self):
         port = self.make_port()
         # This routine is a no-op. We just test it for coverage.
@@ -500,6 +519,16 @@ class PortTest(LoggingTestCase):
         filesystem.write_text_file(WEB_TEST_DIR + '/external/wpt/console/console-is-a-namespace.any.js', '')
         filesystem.write_text_file(WEB_TEST_DIR + '/external/wpt/common/blank.html', 'foo')
 
+        filesystem.write_text_file(WEB_TEST_DIR + '/wpt_internal/MANIFEST.json', json.dumps({
+            'items': {
+                'testharness': {
+                    'dom/bar.html': [
+                        ['/dom/bar.html', {}]
+                    ]
+                }
+            }}))
+        filesystem.write_text_file(WEB_TEST_DIR + '/wpt_internal/dom/bar.html', 'baz')
+
     def test_find_none_if_not_in_manifest(self):
         port = self.make_port(with_tests=True)
         PortTest._add_manifest_to_mock_file_system(port.host.filesystem)
@@ -552,6 +581,9 @@ class PortTest(LoggingTestCase):
         self.assertEqual(port.tests(['external/wpt/dom/ranges/Range-attributes.html']),
                          ['external/wpt/dom/ranges/Range-attributes.html'])
 
+        # wpt_internal should work the same.
+        self.assertEqual(port.tests(['wpt_internal']), ['wpt_internal/dom/bar.html'])
+
     def test_virtual_wpt_tests_paths(self):
         port = self.make_port(with_tests=True)
         PortTest._add_manifest_to_mock_file_system(port.host.filesystem)
@@ -580,6 +612,12 @@ class PortTest(LoggingTestCase):
         self.assertEqual(port.tests(['virtual/virtual_wpt_dom/external/wpt/dom/ranges/Range-attributes.html']),
                          ['virtual/virtual_wpt_dom/external/wpt/dom/ranges/Range-attributes.html'])
 
+        # wpt_internal should work the same.
+        self.assertEqual(port.tests(['virtual/virtual_wpt_dom/wpt_internal']),
+                         ['virtual/virtual_wpt_dom/wpt_internal/dom/bar.html'])
+        self.assertEqual(port.tests(['virtual/virtual_wpt_dom/']),
+                         dom_wpt + ['virtual/virtual_wpt_dom/wpt_internal/dom/bar.html'])
+
     def test_is_non_wpt_test_file(self):
         port = self.make_port(with_tests=True)
         self.assertTrue(port.is_non_wpt_test_file('', 'foo.html'))
@@ -604,6 +642,7 @@ class PortTest(LoggingTestCase):
         self.assertFalse(port.is_non_wpt_test_file(WEB_TEST_DIR + '/external/wpt/console', 'console-is-a-namespace.any.js'))
         self.assertFalse(port.is_non_wpt_test_file(WEB_TEST_DIR + '/external/wpt', 'testharness_runner.html'))
         self.assertTrue(port.is_non_wpt_test_file(WEB_TEST_DIR + '/external/wpt_automation', 'foo.html'))
+        self.assertFalse(port.is_non_wpt_test_file(WEB_TEST_DIR + '/wpt_internal/console', 'console-is-a-namespace.any.js'))
 
     def test_is_wpt_test(self):
         self.assertTrue(Port.is_wpt_test('external/wpt/dom/ranges/Range-attributes.html'))

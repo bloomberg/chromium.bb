@@ -77,6 +77,8 @@ class WPTManifest(object):
         """
         items = self.raw_dict['items']
         for test_type in self.test_types:
+            if test_type not in items:
+                continue
             if path_in_wpt in items[test_type]:
                 return items[test_type][path_in_wpt]
         return None
@@ -117,8 +119,11 @@ class WPTManifest(object):
         url_items = {}
         if 'items' not in self.raw_dict:
             return url_items
+        items = self.raw_dict['items']
         for test_type in self.test_types:
-            for records in self.raw_dict['items'][test_type].itervalues():
+            if test_type not in items:
+                continue
+            for records in items[test_type].itervalues():
                 for item in filter(self._is_not_jsshell, records):
                     url_items[self._get_url_from_item(item)] = item
         return url_items
@@ -164,11 +169,11 @@ class WPTManifest(object):
            [("==", "foo/bar/baz-match.html"),
             ("!=", "foo/bar/baz-mismatch.html")]
         """
-        all_items = self.raw_dict['items']
-        if path_in_wpt not in all_items['reftest']:
+        items = self.raw_dict['items']
+        if path_in_wpt not in items.get('reftest', {}):
             return []
         reftest_list = []
-        for item in all_items['reftest'][path_in_wpt]:
+        for item in items['reftest'][path_in_wpt]:
             for ref_path_in_wpt, expectation in item[1]:
                 reftest_list.append((expectation, ref_path_in_wpt))
         return reftest_list
@@ -210,7 +215,7 @@ class WPTManifest(object):
         """Generates MANIFEST.json on the specified directory."""
         finder = PathFinder(host.filesystem)
         wpt_exec_path = finder.path_from_blink_tools('blinkpy', 'third_party', 'wpt', 'wpt', 'wpt')
-        cmd = ['python', wpt_exec_path, 'manifest', '--work', '--tests-root', dest_path]
+        cmd = ['python', wpt_exec_path, 'manifest', '--work', '--no-download', '--tests-root', dest_path]
 
         # ScriptError will be raised if the command fails.
         host.executive.run_command(
