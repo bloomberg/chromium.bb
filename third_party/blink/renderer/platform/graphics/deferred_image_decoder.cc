@@ -34,12 +34,46 @@
 #include "third_party/blink/renderer/platform/graphics/image_decoding_store.h"
 #include "third_party/blink/renderer/platform/graphics/image_frame_generator.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
+#include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/skia/include/core/SkImage.h"
 
 namespace blink {
+
+namespace {
+
+// Do not rename entries or reuse numeric values to ensure the histogram is
+// consistent over time.
+enum IncrementalDecodePerImageType {
+  kJpegIncrementalNeeded = 0,
+  kJpegAllDataReceivedInitially = 1,
+  kWebPIncrementalNeeded = 2,
+  kWebPAllDataReceivedInitially = 3,
+  kBoundaryValue
+};
+
+void ReportIncrementalDecodeNeeded(bool all_data_received,
+                                   const String& image_type) {
+  DCHECK(IsMainThread());
+  DEFINE_STATIC_LOCAL(EnumerationHistogram, incremental_decode_needed_histogram,
+                      ("Blink.ImageDecoders.IncrementalDecodeNeeded",
+                       IncrementalDecodePerImageType::kBoundaryValue));
+  if (image_type == "jpg") {
+    incremental_decode_needed_histogram.Count(
+        all_data_received
+            ? IncrementalDecodePerImageType::kJpegAllDataReceivedInitially
+            : IncrementalDecodePerImageType::kJpegIncrementalNeeded);
+  } else if (image_type == "webp") {
+    incremental_decode_needed_histogram.Count(
+        all_data_received
+            ? IncrementalDecodePerImageType::kWebPAllDataReceivedInitially
+            : IncrementalDecodePerImageType::kWebPIncrementalNeeded);
+  }
+}
+
+}  // namespace
 
 struct DeferredFrameData {
   DISALLOW_NEW();
@@ -136,6 +170,13 @@ sk_sp<PaintImageGenerator> DeferredImageDecoder::CreateGenerator(size_t index) {
   for (size_t i = 0; i < frame_data_.size(); ++i) {
     frames[i].complete = frame_data_[i].is_received_;
     frames[i].duration = FrameDurationAtIndex(i);
+  }
+
+  // Report UMA about whether incremental decoding is done for JPEG/WebP images.
+  const String image_type = FilenameExtension();
+  if (!first_decoding_generator_created_ &&
+      (image_type == "jpg" || image_type == "webp")) {
+    ReportIncrementalDecodeNeeded(all_data_received_, image_type);
   }
 
   const bool is_eligible_for_accelerated_decoding =

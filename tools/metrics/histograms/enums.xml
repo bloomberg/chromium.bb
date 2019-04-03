@@ -28675,6 +28675,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="11" label="CountLow RangeChecksum BucketOrder"/>
 </enum>
 
+<enum name="IncrementalDecodeNeeded">
+  <int value="0" label="JPEGIncrementalDecodeNeeded"/>
+  <int value="1" label="JPEGAllDataReceivedInitially"/>
+  <int value="2" label="WebPIncrementalDecodeNeeded"/>
+  <int value="3" label="WebPAllDataReceivedInitially"/>
+</enum>
+
 <enum name="IndexedDatabaseMethods">
   <obsolete>
     Deprecated as of July 2018.
