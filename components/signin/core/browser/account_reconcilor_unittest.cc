@@ -238,8 +238,6 @@ class AccountReconcilorTest : public ::testing::Test {
 
   std::string PickAccountIdForAccount(const std::string& gaia_id,
                                       const std::string& username);
-  std::string SeedAccountInfo(const std::string& gaia_id,
-                              const std::string& username);
 
   void SimulateAddAccountToCookieCompleted(AccountReconcilor* reconcilor,
                                            const std::string& account_id,
@@ -364,16 +362,6 @@ std::string AccountReconcilorTest::PickAccountIdForAccount(
     const std::string& username) {
   return identity_test_env()->identity_manager()->PickAccountIdForAccount(
       gaia_id, username);
-}
-
-std::string AccountReconcilorTest::SeedAccountInfo(
-    const std::string& gaia_id,
-    const std::string& username) {
-  AccountInfo account_info;
-  account_info.gaia = gaia_id;
-  account_info.email = username;
-  return identity_test_env()->identity_manager()->LegacySeedAccountInfo(
-      account_info);
 }
 
 void AccountReconcilorTest::SimulateAddAccountToCookieCompleted(
@@ -1159,8 +1147,7 @@ TEST_P(AccountReconcilorDiceEndpointParamTest,
   ASSERT_TRUE(identity_manager->HasAccountWithRefreshToken(account_id_1));
   ASSERT_TRUE(identity_manager->HasAccountWithRefreshToken(account_id_2));
 
-  // Add accounts 2 and 3 to the Gaia cookie.
-  const std::string account_id_3 = SeedAccountInfo("9999", "foo@gmail.com");
+  // Add account 2 to the Gaia cookie.
   signin::SetListAccountsResponseTwoAccounts(
       account_info_2.email, account_info_2.gaia, "foo@gmail.com", "9999",
       &test_url_loader_factory_);
@@ -2401,7 +2388,10 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest,
   AccountInfo account_info2 =
       identity_test_env()->MakeAccountAvailable("other@gmail.com");
   const std::string account_id2 = account_info2.account_id;
-  const std::string account_id3 = SeedAccountInfo("34567", "third@gmail.com");
+
+  const std::string email3 = "third@gmail.com";
+  const std::string gaia_id3 = identity::GetTestGaiaIdForEmail(email3);
+  const std::string account_id3 = PickAccountIdForAccount(gaia_id3, email3);
 
   signin::SetListAccountsResponseOneAccount(
       account_info.email, account_info.gaia, &test_url_loader_factory_);
@@ -2448,7 +2438,7 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest,
   identity_test_env()->SetFreshnessOfAccountsInGaiaCookie(false);
 
   // This will cause the reconcilor to fire.
-  identity_test_env()->SetRefreshTokenForAccount(account_id3);
+  identity_test_env()->MakeAccountAvailable(email3);
   if (IsMultiloginEnabled()) {
     std::vector<std::string> accounts_to_send = {account_id, account_id2,
                                                  account_id3};

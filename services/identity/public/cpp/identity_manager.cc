@@ -321,10 +321,6 @@ DiagnosticsProvider* IdentityManager::GetDiagnosticsProvider() {
   return diagnostics_provider_.get();
 }
 
-std::string IdentityManager::LegacySeedAccountInfo(const AccountInfo& info) {
-  return account_tracker_service_->SeedAccountInfo(info);
-}
-
 #if defined(OS_CHROMEOS)
 void IdentityManager::LegacySetPrimaryAccount(
     const std::string& gaia_id,
@@ -340,6 +336,10 @@ void IdentityManager::LegacySetPrimaryAccount(
 #if defined(OS_IOS)
 void IdentityManager::ForceTriggerOnCookieChange() {
   gaia_cookie_manager_service_->ForceOnCookieChangeProcessing();
+}
+
+std::string IdentityManager::LegacySeedAccountInfo(const AccountInfo& info) {
+  return account_tracker_service_->SeedAccountInfo(info);
 }
 
 void IdentityManager::LegacyAddAccountFromSystem(
