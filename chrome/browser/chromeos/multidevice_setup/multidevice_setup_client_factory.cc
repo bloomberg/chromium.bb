@@ -83,7 +83,7 @@ KeyedService* MultiDeviceSetupClientFactory::BuildServiceInstanceFor(
 }
 
 bool MultiDeviceSetupClientFactory::ServiceIsNULLWhileTesting() const {
-  return true;
+  return service_is_null_while_testing_;
 }
 
 }  // namespace multidevice_setup
