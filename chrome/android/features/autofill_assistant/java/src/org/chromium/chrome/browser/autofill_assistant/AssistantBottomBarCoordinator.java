@@ -43,8 +43,8 @@ class AssistantBottomBarCoordinator {
     private final int mBottomBarWithoutIndicatorPaddingTop;
 
     // Child coordinators.
+    private AssistantInfoBoxCoordinator mInfoBoxCoordinator;
     private final AssistantHeaderCoordinator mHeaderCoordinator;
-    private final AssistantInfoBoxCoordinator mInfoBoxCoordinator;
     private final AssistantDetailsCoordinator mDetailsCoordinator;
     private final AssistantPaymentRequestCoordinator mPaymentRequestCoordinator;
     private final AssistantCarouselCoordinator mSuggestionsCoordinator;
@@ -100,6 +100,14 @@ class AssistantBottomBarCoordinator {
         setHorizontalMargins(mInfoBoxCoordinator.getView());
         setHorizontalMargins(mDetailsCoordinator.getView());
         setHorizontalMargins(mPaymentRequestCoordinator.getView());
+    }
+
+    /**
+     * Cleanup resources when this goes out of scope.
+     */
+    public void destroy() {
+        mInfoBoxCoordinator.destroy();
+        mInfoBoxCoordinator = null;
     }
 
     /**

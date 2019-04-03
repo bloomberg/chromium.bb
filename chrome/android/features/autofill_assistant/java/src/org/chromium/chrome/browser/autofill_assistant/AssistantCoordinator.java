@@ -39,7 +39,7 @@ class AssistantCoordinator {
     private final AssistantModel mModel;
     private final View mAssistantView;
 
-    private final AssistantBottomBarCoordinator mBottomBarCoordinator;
+    private AssistantBottomBarCoordinator mBottomBarCoordinator;
     private final AssistantKeyboardCoordinator mKeyboardCoordinator;
     private final AssistantOverlayCoordinator mOverlayCoordinator;
 
@@ -92,6 +92,8 @@ class AssistantCoordinator {
         setVisible(false);
         detachAssistantView();
         mOverlayCoordinator.destroy();
+        mBottomBarCoordinator.destroy();
+        mBottomBarCoordinator = null;
     }
 
     /**

@@ -43,7 +43,7 @@ import java.util.HashMap;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-public class ImageFetcherTest {
+public class SuggestionsImageFetcherTest {
     public static final int IMAGE_SIZE_PX = 100;
     public static final String URL_STRING = "http://www.test.com";
     @Rule

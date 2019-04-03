@@ -29,7 +29,9 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
-import org.chromium.chrome.browser.image_fetcher.CachedImageFetcher;
+import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
+import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
+import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
 import org.chromium.chrome.browser.modaldialog.AppModalPresenter;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -93,6 +95,7 @@ class AssistantDetailsViewBinder
     private final int mPulseAnimationEndColor;
 
     private ValueAnimator mPulseAnimation;
+    private ImageFetcher mImageFetcher;
 
     AssistantDetailsViewBinder(Context context) {
         mContext = context;
@@ -102,6 +105,15 @@ class AssistantDetailsViewBinder
                 R.dimen.autofill_assistant_details_image_size);
         mPulseAnimationStartColor = context.getResources().getColor(R.color.modern_grey_300);
         mPulseAnimationEndColor = context.getResources().getColor(R.color.modern_grey_200);
+        mImageFetcher = ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.DISK_CACHE_ONLY);
+    }
+
+    /**
+     * Cleanup resources when this goes out of scope.
+     */
+    void destroy() {
+        mImageFetcher.destroy();
+        mImageFetcher = null;
     }
 
     @Override
@@ -156,8 +168,8 @@ class AssistantDetailsViewBinder
             }
         } else {
             // Download image and then set it in the view.
-            CachedImageFetcher.getInstance().fetchImage(details.getImageUrl(),
-                    CachedImageFetcher.ASSISTANT_DETAILS_UMA_CLIENT_NAME, image -> {
+            mImageFetcher.fetchImage(details.getImageUrl(),
+                    ImageFetcher.ASSISTANT_DETAILS_UMA_CLIENT_NAME, image -> {
                         if (image != null) {
                             viewHolder.mImageView.setImageDrawable(getRoundedImage(image));
                             if (details.getAllowImageClickthrough()) {
