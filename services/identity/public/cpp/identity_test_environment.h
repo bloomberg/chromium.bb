@@ -352,6 +352,16 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   base::OnceClosure on_access_token_requested_callback_;
   std::vector<AccessTokenRequestState> requesters_;
 
+  // Create an IdentityManager instance for tests.
+  static std::unique_ptr<IdentityManager> BuildIdentityManagerForTests(
+      SigninClient* signin_client,
+      sync_preferences::TestingPrefServiceSyncable* test_pref_service,
+      FakeProfileOAuth2TokenService* token_service,
+      AccountTrackerService* account_tracker_service,
+      signin::AccountConsistencyMethod account_consistency =
+          signin::AccountConsistencyMethod::kDisabled,
+      network::TestURLLoaderFactory* test_url_loader_factory = nullptr);
+
   // Shared constructor initialization logic.
   void Initialize();
 
