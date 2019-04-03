@@ -62,10 +62,6 @@ struct CustomProxyConfig {
   // supported.
   ProxyRules rules;
 
-  // The proxy rules that will be used if
-  // ResourceRequest::custom_proxy_use_alternate_proxy_list is set.
-  ProxyRules alternate_rules;
-
   // Whether the custom proxy config should override other sources of proxy
   // configuration. If false, the custom config is ignored if a proxy is set in
   // the operating system, for example.

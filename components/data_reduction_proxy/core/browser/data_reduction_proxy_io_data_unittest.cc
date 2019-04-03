@@ -271,11 +271,6 @@ TEST_F(DataReductionProxyIODataTest, TestCustomProxyConfigClient) {
       client.config->post_cache_headers.HasHeader(chrome_proxy_header()));
   EXPECT_TRUE(
       client.config->pre_cache_headers.HasHeader(chrome_proxy_ect_header()));
-  // |alternate_rules| should be same as |rules| because all proxies are now
-  // categorized as core proxies.
-  EXPECT_FALSE(client.config->alternate_rules.empty());
-  EXPECT_EQ(client.config->alternate_rules.proxies_for_http.Get(),
-            proxy_server);
 }
 
 TEST_F(DataReductionProxyIODataTest, TestCustomProxyConfigUpdatedOnECTChange) {
@@ -406,7 +401,7 @@ TEST_F(DataReductionProxyIODataTest,
   expected_rules.proxies_for_http.AddProxyServer(core_proxy_server);
   expected_rules.proxies_for_http.AddProxyServer(second_proxy_server);
   expected_rules.proxies_for_http.AddProxyServer(net::ProxyServer::Direct());
-  EXPECT_TRUE(client.config->alternate_rules.Equals(expected_rules));
+  EXPECT_TRUE(client.config->rules.Equals(expected_rules));
 }
 
 TEST_F(DataReductionProxyIODataTest, TestCustomProxyConfigProperties) {

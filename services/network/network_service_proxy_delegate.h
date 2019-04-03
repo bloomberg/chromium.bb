@@ -8,7 +8,6 @@
 #include <deque>
 
 #include "base/component_export.h"
-#include "base/containers/mru_cache.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/proxy_delegate.h"
@@ -75,9 +74,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceProxyDelegate
   bool EligibleForProxy(const net::ProxyInfo& proxy_info,
                         const std::string& method) const;
 
-  // Get the proxy rules that apply to |url|.
-  net::ProxyConfig::ProxyRules GetProxyRulesForURL(const GURL& url) const;
-
   // Fills the alternative proxy config in |result| if applicable.
   void GetAlternativeProxy(const net::ProxyRetryInfoMap& proxy_retry_info,
                            net::ProxyInfo* result);
@@ -92,8 +88,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceProxyDelegate
 
   mojom::CustomProxyConfigPtr proxy_config_;
   mojo::Binding<mojom::CustomProxyConfigClient> binding_;
-
-  base::MRUCache<std::string, bool> should_use_alternate_proxy_list_cache_;
 
   // Cache of URLs for which the usage of custom proxy results
   // in redirect loops. A container is used here since it's possible that
