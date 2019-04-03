@@ -57,19 +57,6 @@ void UpdateOverviewSettings(ui::AnimationMetricsReporter* reporter,
   settings->SetAnimationMetricsReporter(reporter);
 }
 
-class StateAnimationMetricsReporter : public ui::AnimationMetricsReporter {
- public:
-  StateAnimationMetricsReporter() = default;
-  ~StateAnimationMetricsReporter() override = default;
-
-  void Report(int value) override {
-    UMA_HISTOGRAM_PERCENTAGE("Apps.StateTransition.AnimationSmoothness", value);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(StateAnimationMetricsReporter);
-};
-
 // Callback from the compositor when it presented a valid frame. Used to
 // record UMA of input latency.
 void DidPresentCompositorFrame(base::TimeTicks event_time_stamp,
@@ -90,11 +77,48 @@ void DidPresentCompositorFrame(base::TimeTicks event_time_stamp,
 
 }  // namespace
 
+class AppListPresenterImpl::OverviewAnimationMetricsReporter
+    : public ui::AnimationMetricsReporter {
+ public:
+  OverviewAnimationMetricsReporter() = default;
+  ~OverviewAnimationMetricsReporter() override = default;
+
+  void Start(bool enter) {
+    DCHECK(!started_);
+#if defined(DCHECK)
+    started_ = ui::ScopedAnimationDurationScaleMode::duration_scale_mode() !=
+               ui::ScopedAnimationDurationScaleMode::ZERO_DURATION;
+#endif
+    enter_ = enter;
+  }
+
+  void Report(int value) override {
+    if (enter_) {
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Apps.StateTransition.AnimationSmoothness.EnterOverview", value);
+    } else {
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Apps.StateTransition.AnimationSmoothness.ExitOverview", value);
+    }
+#if defined(DCHECK)
+    started_ = false;
+#endif
+  }
+
+ private:
+  bool enter_ = false;
+#if defined(DCHECK)
+  bool started_ = false;
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(OverviewAnimationMetricsReporter);
+};
+
 AppListPresenterImpl::AppListPresenterImpl(
     std::unique_ptr<AppListPresenterDelegate> delegate)
     : delegate_(std::move(delegate)),
-      state_animation_metrics_reporter_(
-          std::make_unique<StateAnimationMetricsReporter>()) {
+      overview_animation_metrics_reporter_(
+          std::make_unique<OverviewAnimationMetricsReporter>()) {
   DCHECK(delegate_);
   delegate_->SetPresenter(this);
 }
@@ -275,11 +299,13 @@ void AppListPresenterImpl::ScheduleOverviewModeAnimation(bool start,
     UpdateYPositionAndOpacityForHomeLauncher(
         start ? 0 : kOverviewAnimationYOffset, start ? 1.f : 0.f,
         base::NullCallback());
+
+    overview_animation_metrics_reporter_->Start(start);
   }
   UpdateYPositionAndOpacityForHomeLauncher(
       start ? kOverviewAnimationYOffset : 0, start ? 0.f : 1.f,
       animate ? base::BindRepeating(&UpdateOverviewSettings,
-                                    state_animation_metrics_reporter_.get())
+                                    overview_animation_metrics_reporter_.get())
               : base::NullCallback());
 }
 
@@ -361,7 +387,7 @@ void AppListPresenterImpl::ScheduleAnimation() {
     ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
     animation.SetTransitionDuration(animation_duration);
     animation.SetAnimationMetricsReporter(
-        state_animation_metrics_reporter_.get());
+        view_->GetStateTransitionMetricsReporter());
     animation.AddObserver(this);
 
     layer->SetTransform(gfx::Transform());
