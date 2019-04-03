@@ -12,7 +12,9 @@ import android.os.Build;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeVersionInfo;
+import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -93,6 +95,16 @@ public class ClientAppBroadcastReceiver extends BroadcastReceiver {
         int uid = intent.getIntExtra(Intent.EXTRA_UID, -1);
         if (uid == -1) return;
 
+        boolean uninstalled = Intent.ACTION_PACKAGE_FULLY_REMOVED.equals(intent.getAction());
+
+        if (uninstalled && intent.getData() != null) {
+            String packageName = intent.getData().getSchemeSpecificPart();
+            if (packageName != null
+                    && packageName.startsWith(WebApkConstants.WEBAPK_PACKAGE_PREFIX)) {
+                WebApkUma.recordWebApkUninstalled();
+            }
+        }
+
         try (BrowserServicesMetrics.TimingMetric unused =
                      BrowserServicesMetrics.getClientAppDataLoadTimingContext()) {
 
@@ -104,7 +116,6 @@ public class ClientAppBroadcastReceiver extends BroadcastReceiver {
             }
         }
 
-        boolean uninstalled = Intent.ACTION_PACKAGE_FULLY_REMOVED.equals(intent.getAction());
         mClearDataStrategy.execute(context, mRegister, uid, uninstalled);
         clearPreferences(uid, uninstalled);
     }
