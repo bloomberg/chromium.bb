@@ -73,7 +73,7 @@ class ScriptTrackerTest : public testing::Test, public ScriptTracker::Listener {
       ProtocolUtils::AddScript(*script_proto, &scripts);
     }
     tracker_.SetScripts(std::move(scripts));
-    tracker_.CheckScripts(base::TimeDelta::FromSeconds(0));
+    tracker_.CheckScripts();
   }
 
   SupportedScriptProto* AddScript() {
@@ -138,7 +138,7 @@ class ScriptTrackerTest : public testing::Test, public ScriptTracker::Listener {
 
 TEST_F(ScriptTrackerTest, NoScripts) {
   tracker_.SetScripts({});
-  tracker_.CheckScripts(base::TimeDelta::FromSeconds(0));
+  tracker_.CheckScripts();
   EXPECT_THAT(runnable_scripts(), IsEmpty());
   EXPECT_EQ(0, runnable_scripts_changed_);
   EXPECT_EQ(0, no_runnable_scripts_anymore_);
@@ -269,7 +269,7 @@ TEST_F(ScriptTrackerTest, CheckScriptsAgainAfterScriptEnd) {
               Run(Field(&ScriptExecutor::Result::success, true)));
 
   tracker_.ExecuteScript("script1", execute_callback.Get());
-  tracker_.CheckScripts(base::TimeDelta::FromSeconds(0));
+  tracker_.CheckScripts();
 
   // The 2nd time the scripts are checked, automatically after the script runs,
   // 'script1' isn't runnable anymore, because it's already been run.
@@ -294,7 +294,7 @@ TEST_F(ScriptTrackerTest, CheckScriptsAfterDOMChange) {
       mock_web_controller_,
       OnElementCheck(kExistenceCheck, Eq(Selector({"maybe_exists"})), _))
       .WillOnce(RunOnceCallback<2>(true));
-  tracker_.CheckScripts(base::TimeDelta::FromSeconds(0));
+  tracker_.CheckScripts();
 
   // The script can now run
   ASSERT_THAT(runnable_script_paths(), ElementsAre("script path"));
@@ -329,7 +329,7 @@ TEST_F(ScriptTrackerTest, UpdateScriptList) {
   EXPECT_CALL(execute_callback,
               Run(Field(&ScriptExecutor::Result::success, true)));
   tracker_.ExecuteScript("runnable name", execute_callback.Get());
-  tracker_.CheckScripts(base::TimeDelta::FromSeconds(0));
+  tracker_.CheckScripts();
 
   // 3. Verify that the runnable scripts have changed to the updated list.
   EXPECT_EQ(2, runnable_scripts_changed_);
@@ -371,7 +371,7 @@ TEST_F(ScriptTrackerTest, UpdateScriptListFromInterrupt) {
   EXPECT_CALL(execute_callback,
               Run(Field(&ScriptExecutor::Result::success, true)));
   tracker_.ExecuteScript("runnable name", execute_callback.Get());
-  tracker_.CheckScripts(base::TimeDelta::FromSeconds(0));
+  tracker_.CheckScripts();
 
   // 3. Verify that the runnable scripts have changed to the updated list.
   EXPECT_EQ(2, runnable_scripts_changed_);

@@ -66,15 +66,14 @@ void ScriptTracker::SetScripts(std::vector<std::unique_ptr<Script>> scripts) {
   SortScripts(&interrupts_);
 }
 
-void ScriptTracker::CheckScripts(const base::TimeDelta& max_duration) {
+void ScriptTracker::CheckScripts() {
   // In case checks are still running, terminate them.
   TerminatePendingChecks();
 
   DCHECK(pending_runnable_scripts_.empty());
 
   GURL url = delegate_->GetCurrentURL();
-  batch_element_checker_ =
-      delegate_->GetWebController()->CreateBatchElementChecker();
+  batch_element_checker_ = std::make_unique<BatchElementChecker>();
   for (const auto& entry : available_scripts_) {
     Script* script = entry.first;
     if (script->handle.name.empty() && !script->handle.autostart)
@@ -86,25 +85,20 @@ void ScriptTracker::CheckScripts(const base::TimeDelta& max_duration) {
         base::BindOnce(&ScriptTracker::OnPreconditionCheck,
                        weak_ptr_factory_.GetWeakPtr(), script));
   }
-  if (batch_element_checker_->all_found() &&
-      pending_runnable_scripts_.empty() && !available_scripts_.empty()) {
+  if (batch_element_checker_->empty() && pending_runnable_scripts_.empty() &&
+      !available_scripts_.empty()) {
     DVLOG(1) << __func__ << ": No runnable scripts for " << url << " out of "
              << available_scripts_.size() << " available.";
     // There are no runnable scripts, even though we haven't checked the DOM
     // yet. Report it all immediately.
     UpdateRunnableScriptsIfNecessary();
     listener_->OnNoRunnableScripts();
-    OnCheckDone();
+    TerminatePendingChecks();
     return;
   }
-  batch_element_checker_->Run(
-      max_duration,
-      /* try_done= */
-      base::BindRepeating(&ScriptTracker::UpdateRunnableScriptsIfNecessary,
-                          weak_ptr_factory_.GetWeakPtr()),
-      /* all_done= */
-      base::BindOnce(&ScriptTracker::OnCheckDone,
-                     weak_ptr_factory_.GetWeakPtr()));
+  batch_element_checker_->Run(delegate_->GetWebController(),
+                              base::BindOnce(&ScriptTracker::OnCheckDone,
+                                             weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ScriptTracker::ExecuteScript(const std::string& script_path,
@@ -196,6 +190,11 @@ void ScriptTracker::MaybeSwapInScripts() {
   }
 }
 
+void ScriptTracker::OnCheckDone() {
+  UpdateRunnableScriptsIfNecessary();
+  TerminatePendingChecks();
+}
+
 void ScriptTracker::UpdateRunnableScriptsIfNecessary() {
   if (!RunnablesHaveChanged())
     return;
@@ -207,10 +206,6 @@ void ScriptTracker::UpdateRunnableScriptsIfNecessary() {
   }
 
   listener_->OnRunnableScriptsChanged(runnable_scripts_);
-}
-
-void ScriptTracker::OnCheckDone() {
-  TerminatePendingChecks();
 }
 
 void ScriptTracker::TerminatePendingChecks() {

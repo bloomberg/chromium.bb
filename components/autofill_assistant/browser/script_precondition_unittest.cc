@@ -76,12 +76,10 @@ class ScriptPreconditionTest : public testing::Test {
       return false;
 
     DirectCallback callback;
-    BatchElementChecker batch_checks(&mock_web_controller_);
+    BatchElementChecker batch_checks;
     precondition->Check(url_, &batch_checks, parameters_, executed_scripts_,
                         callback.Get());
-    batch_checks.Run(base::TimeDelta::FromSeconds(0),
-                     /* try_done=*/base::DoNothing(),
-                     /* all_done=*/base::DoNothing());
+    batch_checks.Run(&mock_web_controller_, /* all_done=*/base::DoNothing());
     return callback.GetResultOrDie();
   }
 

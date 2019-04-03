@@ -19,6 +19,7 @@
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/details.h"
 #include "components/autofill_assistant/browser/info_box.h"
+#include "components/autofill_assistant/browser/retry_timer.h"
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
 #include "components/autofill_assistant/browser/service.pb.h"
@@ -101,7 +102,8 @@ class ScriptExecutor : public ActionDelegate {
   void Terminate();
 
   // Override ActionDelegate:
-  std::unique_ptr<BatchElementChecker> CreateBatchElementChecker() override;
+  void RunElementChecks(BatchElementChecker* checker,
+                        base::OnceCallback<void()> all_done) override;
   void ShortWaitForElement(ElementCheckType check_type,
                            const Selector& selector,
                            base::OnceCallback<void(bool)> callback) override;
@@ -208,14 +210,16 @@ class ScriptExecutor : public ActionDelegate {
     void OnScriptListChanged(
         std::vector<std::unique_ptr<Script>> scripts) override;
 
+    void RunChecks(base::OnceCallback<void(bool)> report_attempt_result);
     void OnPreconditionCheckDone(const Script* interrupt,
                                  bool precondition_match);
     void OnElementCheckDone(bool found);
-    void OnTryDone();
-    void OnAllDone();
+    void OnAllChecksDone(base::OnceCallback<void(bool)> report_attempt_result);
     void RunInterrupt(const Script* interrupt);
     void OnInterruptDone(const ScriptExecutor::Result& result);
-    void RunCallback(bool found, const ScriptExecutor::Result* result);
+    void RunCallback(bool found);
+    void RunCallbackWithResult(bool found,
+                               const ScriptExecutor::Result* result);
 
     // Saves the current state and sets save_pre_interrupt_state_.
     void SavePreInterruptState();
@@ -254,6 +258,8 @@ class ScriptExecutor : public ActionDelegate {
     // Paths of the interrupts that were run during the current action.
     std::set<std::string> ran_interrupts_;
 
+    RetryTimer retry_timer_;
+
     base::WeakPtrFactory<WaitWithInterrupts> weak_ptr_factory_;
 
     DISALLOW_COPY_AND_ASSIGN(WaitWithInterrupts);
@@ -275,7 +281,9 @@ class ScriptExecutor : public ActionDelegate {
                       ElementCheckType check_type,
                       const Selector& selectors,
                       base::OnceCallback<void(bool)> callback);
-  void OnWaitForElement(base::OnceCallback<void(bool)> callback);
+  void CheckForElement(ElementCheckType check_type,
+                       const Selector& selectors,
+                       base::OnceCallback<void(bool)> callback);
   void OnWaitForElementVisibleWithInterrupts(
       base::OnceCallback<void(ProcessedActionStatusProto)> callback,
       bool element_found,
@@ -325,6 +333,8 @@ class ScriptExecutor : public ActionDelegate {
   // Callback set by Prompt(). This is called when the prompt is terminated
   // without selecting any chips. nullptr unless showing a prompt.
   base::OnceCallback<void()> on_terminate_prompt_;
+
+  RetryTimer retry_timer_;
 
   base::WeakPtrFactory<ScriptExecutor> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(ScriptExecutor);

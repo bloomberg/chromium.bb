@@ -33,7 +33,7 @@ namespace {
 
 // Time between two periodic script checks.
 static constexpr base::TimeDelta kPeriodicScriptCheckInterval =
-    base::TimeDelta::FromSeconds(2);
+    base::TimeDelta::FromSeconds(1);
 
 // Number of script checks to run after a call to StartPeriodicScriptChecks.
 // This limit does not apply when in autostart mode.
@@ -290,7 +290,7 @@ void Controller::GetOrCheckScripts() {
         url, parameters_,
         base::BindOnce(&Controller::OnGetScripts, base::Unretained(this), url));
   } else {
-    script_tracker()->CheckScripts(kPeriodicScriptCheckInterval);
+    script_tracker()->CheckScripts();
     StartPeriodicScriptChecks();
   }
 }
@@ -334,7 +334,7 @@ void Controller::OnPeriodicScriptCheck() {
     return;
   }
 
-  script_tracker()->CheckScripts(kPeriodicScriptCheckInterval);
+  script_tracker()->CheckScripts();
   base::PostDelayedTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&Controller::OnPeriodicScriptCheck,
@@ -389,7 +389,7 @@ void Controller::OnGetScripts(const GURL& url,
   DVLOG(2) << __func__ << " from " << script_domain_ << " returned "
            << scripts.size() << " scripts";
   script_tracker()->SetScripts(std::move(scripts));
-  script_tracker()->CheckScripts(kPeriodicScriptCheckInterval);
+  script_tracker()->CheckScripts();
   StartPeriodicScriptChecks();
 }
 
@@ -604,7 +604,7 @@ void Controller::UpdateTouchableArea() {
 }
 
 void Controller::OnUserInteractionInsideTouchableArea() {
-  script_tracker()->CheckScripts(kPeriodicScriptCheckInterval);
+  script_tracker()->CheckScripts();
   StartPeriodicScriptChecks();
 }
 

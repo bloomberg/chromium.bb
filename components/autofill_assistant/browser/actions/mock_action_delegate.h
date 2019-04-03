@@ -22,8 +22,8 @@ class MockActionDelegate : public ActionDelegate {
   MockActionDelegate();
   ~MockActionDelegate() override;
 
-  MOCK_METHOD0(CreateBatchElementChecker,
-               std::unique_ptr<BatchElementChecker>());
+  MOCK_METHOD2(RunElementChecks,
+               void(BatchElementChecker*, base::OnceCallback<void()>));
 
   void ShortWaitForElement(ElementCheckType check_type,
                            const Selector& selector,

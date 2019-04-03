@@ -135,9 +135,6 @@ class WebController {
       base::OnceCallback<void(const ClientStatus&, const std::string&)>
           callback);
 
-  // Create a helper for checking element existence and field value.
-  virtual std::unique_ptr<BatchElementChecker> CreateBatchElementChecker();
-
   // Gets the position of the element identified by the selector.
   //
   // If unsuccessful, the callback gets (false, 0, 0, 0, 0).
@@ -156,9 +153,6 @@ class WebController {
   virtual void HasCookie(base::OnceCallback<void(bool)> callback);
   virtual void ClearCookie();
 
- protected:
-  friend class BatchElementChecker;
-
   // Checks an element for:
   //
   // kExistenceCheck: Checks whether at least one element given by |selector|
@@ -169,7 +163,7 @@ class WebController {
   //
   // If strict, there must be exactly one element.
   //
-  // Normally done through BatchElementChecker.
+  // To check multiple elements, use a BatchElementChecker.
   virtual void ElementCheck(ElementCheckType type,
                             const Selector& selector,
                             bool strict,
@@ -179,7 +173,7 @@ class WebController {
   // returned value might be false, if the element cannot be found, true and the
   // empty string in case of error or empty value.
   //
-  // Normally done through BatchElementChecker.
+  // To get the value of multiple elements, use a BatchElementChecker.
   virtual void GetFieldValue(
       const Selector& selector,
       base::OnceCallback<void(bool, const std::string&)> callback);

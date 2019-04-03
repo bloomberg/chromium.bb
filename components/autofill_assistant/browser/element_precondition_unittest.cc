@@ -50,11 +50,9 @@ class ElementPreconditionTest : public testing::Test {
   // Runs a precondition given |exists_| and |value_match_|.
   void Check(base::OnceCallback<void(bool)> callback) {
     ElementPrecondition precondition(exist_, value_match_);
-    BatchElementChecker batch_checks(&mock_web_controller_);
+    BatchElementChecker batch_checks;
     precondition.Check(&batch_checks, std::move(callback));
-    batch_checks.Run(base::TimeDelta::FromSeconds(0),
-                     /* try_done=*/base::DoNothing(),
-                     /* all_done=*/base::DoNothing());
+    batch_checks.Run(&mock_web_controller_, base::DoNothing());
   }
 
   MockWebController mock_web_controller_;
