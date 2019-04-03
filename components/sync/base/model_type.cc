@@ -322,10 +322,7 @@ ModelType GetModelTypeFromSpecificsFieldNumber(int field_number) {
 int GetSpecificsFieldNumberFromModelType(ModelType model_type) {
   DCHECK(ProtocolTypes().Has(model_type))
       << "Only protocol types have field values.";
-  if (ProtocolTypes().Has(model_type))
-    return kModelTypeInfoMap[model_type].specifics_field_number;
-  NOTREACHED() << "No known extension for model type.";
-  return 0;
+  return kModelTypeInfoMap[model_type].specifics_field_number;
 }
 
 FullModelTypeSet ToFullModelTypeSet(ModelTypeSet in) {
@@ -512,14 +509,12 @@ const char* ModelTypeToString(ModelType model_type) {
 }
 
 const char* ModelTypeToHistogramSuffix(ModelType model_type) {
-  if (model_type >= UNSPECIFIED && model_type < MODEL_TYPE_COUNT) {
-    // We use the same string that is used for notification types because they
-    // satisfy all we need (being stable and explanatory).
-    return kModelTypeInfoMap[model_type].notification_type;
-  }
-  NOTREACHED() << "No known suffix for model type "
-               << static_cast<int>(model_type) << ".";
-  return "Invalid";
+  DCHECK_GE(model_type, UNSPECIFIED);
+  DCHECK_LT(model_type, MODEL_TYPE_COUNT);
+
+  // We use the same string that is used for notification types because they
+  // satisfy all we need (being stable and explanatory).
+  return kModelTypeInfoMap[model_type].notification_type;
 }
 
 // The normal rules about histograms apply here.  Always append to the bottom of
@@ -529,13 +524,14 @@ const char* ModelTypeToHistogramSuffix(ModelType model_type) {
 // Don't forget to update the "SyncModelTypes" enum in enums.xml when you make
 // changes to this list.
 int ModelTypeToHistogramInt(ModelType model_type) {
-  if (model_type >= UNSPECIFIED && model_type < MODEL_TYPE_COUNT)
-    return kModelTypeInfoMap[model_type].model_type_histogram_val;
-  return 0;
+  DCHECK_GE(model_type, UNSPECIFIED);
+  DCHECK_LT(model_type, MODEL_TYPE_COUNT);
+  return kModelTypeInfoMap[model_type].model_type_histogram_val;
 }
 
 int ModelTypeToStableIdentifier(ModelType model_type) {
-  DCHECK(model_type >= UNSPECIFIED && model_type < MODEL_TYPE_COUNT);
+  DCHECK_GE(model_type, UNSPECIFIED);
+  DCHECK_LT(model_type, MODEL_TYPE_COUNT);
   // Make sure the value is stable and positive.
   return ModelTypeToHistogramInt(model_type) + 1;
 }
@@ -543,13 +539,12 @@ int ModelTypeToStableIdentifier(ModelType model_type) {
 std::unique_ptr<base::Value> ModelTypeToValue(ModelType model_type) {
   if (model_type >= FIRST_REAL_MODEL_TYPE) {
     return std::make_unique<base::Value>(ModelTypeToString(model_type));
-  } else if (model_type == TOP_LEVEL_FOLDER) {
-    return std::make_unique<base::Value>("Top-level folder");
-  } else if (model_type == UNSPECIFIED) {
-    return std::make_unique<base::Value>("Unspecified");
   }
-  NOTREACHED();
-  return std::make_unique<base::Value>(std::string());
+  if (model_type == TOP_LEVEL_FOLDER) {
+    return std::make_unique<base::Value>("Top-level folder");
+  }
+  DCHECK_EQ(model_type, UNSPECIFIED);
+  return std::make_unique<base::Value>("Unspecified");
 }
 
 ModelType ModelTypeFromString(const std::string& model_type_string) {
@@ -560,8 +555,6 @@ ModelType ModelTypeFromString(const std::string& model_type_string) {
         return kModelTypeInfoMap[i].model_type;
     }
   }
-  NOTREACHED() << "No known model type corresponding to " << model_type_string
-               << ".";
   return UNSPECIFIED;
 }
 
@@ -614,15 +607,11 @@ std::unique_ptr<base::ListValue> ModelTypeSetToValue(ModelTypeSet model_types) {
 
 // TODO(zea): remove all hardcoded tags in model associators and have them use
 // this instead.
-// NOTE: Proxy types should return empty strings (so that we don't NOTREACHED
-// in tests when we verify they have no root node).
 std::string ModelTypeToRootTag(ModelType type) {
   if (IsProxyType(type))
     return std::string();
-  if (IsRealDataType(type))
-    return "google_chrome_" + std::string(kModelTypeInfoMap[type].root_tag);
-  NOTREACHED() << "No known extension for model type.";
-  return "INVALID";
+  DCHECK(IsRealDataType(type));
+  return "google_chrome_" + std::string(kModelTypeInfoMap[type].root_tag);
 }
 
 const char* GetModelTypeRootTag(ModelType model_type) {
