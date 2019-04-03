@@ -2555,6 +2555,91 @@ TEST_F(ImplicitRootScrollerSimTest, PromotionChangesLayoutSize) {
       << "Once loaded, the iframe should be promoted.";
 }
 
+// Ensure that we're using the content box for an iframe. Promotion will cause
+// the content to use the layout size of the parent frame so having padding or
+// a border would cause us to relayout.
+TEST_F(ImplicitRootScrollerSimTest, IframeUsesContentBox) {
+  WebView().ResizeWithBrowserControls(IntSize(800, 600), 0, 0, false);
+  SimRequest main_request("https://example.com/test.html", "text/html");
+  SimRequest child_request("https://example.com/child.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  main_request.Complete(R"HTML(
+          <!DOCTYPE>
+          <style>
+            iframe {
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              border: none;
+              box-sizing: border-box;
+
+            }
+            body, html {
+              margin: 0;
+              width: 100%;
+              height: 100%;
+              overflow:hidden;
+            }
+
+          </style>
+          <iframe id="container" src="child.html">
+      )HTML");
+  child_request.Complete(R"HTML(
+        <!DOCTYPE html>
+        <style>
+          div {
+            border: 5px solid black;
+            background-color: red;
+            width: 99%;
+            height: 100px;
+          }
+          html {
+            height: 200%;
+          }
+        </style>
+        <div></div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  Element* iframe = GetDocument().getElementById("container");
+
+  ASSERT_EQ(iframe,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller())
+      << "The iframe should start off promoted.";
+
+  // Adding padding should cause the iframe to be demoted.
+  {
+    iframe->setAttribute(html_names::kStyleAttr, "padding-left: 20%");
+    Compositor().BeginFrame();
+
+    EXPECT_NE(iframe,
+              GetDocument().GetRootScrollerController().EffectiveRootScroller())
+        << "The iframe should be demoted once it has padding.";
+  }
+
+  // Replacing padding with a border should also ensure the iframe remains
+  // demoted.
+  {
+    iframe->setAttribute(html_names::kStyleAttr, "border: 5px solid black");
+    Compositor().BeginFrame();
+
+    EXPECT_NE(iframe,
+              GetDocument().GetRootScrollerController().EffectiveRootScroller())
+        << "The iframe should be demoted once it has border.";
+  }
+
+  // Removing the border should now cause the iframe to be promoted once again.
+  iframe->setAttribute(html_names::kStyleAttr, "");
+  Compositor().BeginFrame();
+
+  ASSERT_EQ(iframe,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller())
+      << "The iframe should once again be promoted when border is removed";
+}
+
 // Test that we don't promote any elements implicitly if the main document has
 // vertical scrolling.
 TEST_F(ImplicitRootScrollerSimTest, OverflowInMainDocumentRestrictsImplicit) {

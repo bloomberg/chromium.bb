@@ -36,15 +36,26 @@ bool FillsViewport(const Element& element) {
   if (!element.GetLayoutObject())
     return false;
 
-  LayoutObject* layout_object = element.GetLayoutObject();
+  DCHECK(element.GetLayoutObject()->IsBox());
+
+  LayoutBox* layout_box = ToLayoutBox(element.GetLayoutObject());
 
   // TODO(bokan): Broken for OOPIF. crbug.com/642378.
   Document& top_document = element.GetDocument().TopDocument();
   if (!top_document.GetLayoutView())
     return false;
 
-  FloatQuad quad = layout_object->LocalToAbsoluteQuad(
-      FloatRect(ToLayoutBox(layout_object)->PhysicalPaddingBoxRect()));
+  // We need to be more strict for iframes and use the content box since the
+  // iframe will use the parent's layout size. Using the padding box would mean
+  // the content would relayout on promotion/demotion. The layout size matching
+  // the parent is done to ensure consistent semantics with respect to how the
+  // mobile URL bar affects layout, which isn't a concern for non-iframe
+  // elements because those semantics will already be applied to the element.
+  LayoutRect rect = layout_box->IsLayoutIFrame()
+                        ? layout_box->PhysicalContentBoxRect()
+                        : layout_box->PhysicalPaddingBoxRect();
+
+  FloatQuad quad = layout_box->LocalToAbsoluteQuad(FloatRect(rect));
 
   if (!quad.IsRectilinear())
     return false;
