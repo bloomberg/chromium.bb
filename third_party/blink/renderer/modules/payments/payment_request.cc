@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/modules/payments/payment_shipping_option.h"
 #include "third_party/blink/renderer/modules/payments/payment_validation_errors.h"
 #include "third_party/blink/renderer/modules/payments/payments_validators.h"
+#include "third_party/blink/renderer/modules/payments/update_payment_details_function.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
@@ -209,10 +210,6 @@ struct TypeConverter<AddressErrorsPtr, blink::AddressErrors*> {
 
 namespace blink {
 namespace {
-
-// If the website does not call complete() 60 seconds after show() has been
-// resolved, then behave as if the website called complete("fail").
-constexpr TimeDelta kCompleteTimeout = TimeDelta::FromSeconds(60);
 
 // Validates ShippingOption or PaymentItem, which happen to have identical
 // fields, except for "id", which is present only in ShippingOption.
@@ -791,6 +788,11 @@ PaymentRequest* PaymentRequest::Create(
 PaymentRequest::~PaymentRequest() = default;
 
 ScriptPromise PaymentRequest::show(ScriptState* script_state) {
+  return show(script_state, ScriptPromise());
+}
+
+ScriptPromise PaymentRequest::show(ScriptState* script_state,
+                                   ScriptPromise details_promise) {
   if (!script_state->ContextIsValid() || !LocalDOMWindow::From(script_state) ||
       !LocalDOMWindow::From(script_state)->GetFrame()) {
     return ScriptPromise::RejectWithDOMException(
@@ -820,7 +822,22 @@ ScriptPromise PaymentRequest::show(ScriptState* script_state) {
                                            "Page popups are suppressed"));
   }
 
-  payment_provider_->Show(is_user_gesture);
+  is_waiting_for_show_promise_to_resolve_ = !details_promise.IsEmpty();
+  payment_provider_->Show(is_user_gesture,
+                          is_waiting_for_show_promise_to_resolve_);
+  if (is_waiting_for_show_promise_to_resolve_) {
+    // If the website does not calculate the final shopping cart contents within
+    // 10 seconds, abort payment.
+    update_payment_details_timer_.StartOneShot(TimeDelta::FromSeconds(10),
+                                               FROM_HERE);
+    details_promise.Then(
+        UpdatePaymentDetailsFunction::CreateFunction(
+            script_state, this,
+            UpdatePaymentDetailsFunction::ResolveType::kFulfill),
+        UpdatePaymentDetailsFunction::CreateFunction(
+            script_state, this,
+            UpdatePaymentDetailsFunction::ResolveType::kReject));
+  }
 
   accept_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   return accept_resolver_->Promise();
@@ -1038,8 +1055,13 @@ ScriptPromise PaymentRequest::Complete(ScriptState* script_state,
 
 void PaymentRequest::OnUpdatePaymentDetails(
     const ScriptValue& details_script_value) {
-  if (!GetPendingAcceptPromiseResolver() || !payment_provider_)
+  ScriptPromiseResolver* resolver = GetPendingAcceptPromiseResolver();
+  if (!resolver || !payment_provider_ ||
+      !update_payment_details_timer_.IsActive()) {
     return;
+  }
+
+  update_payment_details_timer_.Stop();
 
   PaymentDetailsUpdate* details = PaymentDetailsUpdate::Create();
   ExceptionState exception_state(v8::Isolate::GetCurrent(),
@@ -1048,7 +1070,6 @@ void PaymentRequest::OnUpdatePaymentDetails(
   V8PaymentDetailsUpdate::ToImpl(details_script_value.GetIsolate(),
                                  details_script_value.V8Value(), details,
                                  exception_state);
-  ScriptPromiseResolver* resolver = GetPendingAcceptPromiseResolver();
   if (exception_state.HadException()) {
     resolver->Reject(exception_state.GetException());
     ClearResolversAndCloseMojoConnection();
@@ -1069,10 +1090,36 @@ void PaymentRequest::OnUpdatePaymentDetails(
   if (!options_->requestShipping())
     validated_details->shipping_options = base::nullopt;
 
+  if (is_waiting_for_show_promise_to_resolve_) {
+    is_waiting_for_show_promise_to_resolve_ = false;
+
+    if (!validated_details->total) {
+      resolver->Reject(
+          DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                               "Must specify 'total' when resolving the "
+                               "promise passed into PaymentRequest.show()"));
+      ClearResolversAndCloseMojoConnection();
+      return;
+    }
+
+    if (!validated_details->error.IsEmpty()) {
+      resolver->Reject(
+          DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                               "Cannot specify 'error' when resolving the "
+                               "promise passed into PaymentRequest.show()"));
+      ClearResolversAndCloseMojoConnection();
+      return;
+    }
+  }
+
   payment_provider_->UpdateWith(std::move(validated_details));
 }
 
 void PaymentRequest::OnUpdatePaymentDetailsFailure(const String& error) {
+  if (!payment_provider_)
+    return;
+  if (update_payment_details_timer_.IsActive())
+    update_payment_details_timer_.Stop();
   ScriptPromiseResolver* resolver = GetPendingAcceptPromiseResolver();
   if (resolver) {
     resolver->Reject(
@@ -1108,6 +1155,11 @@ void PaymentRequest::OnCompleteTimeoutForTesting() {
   OnCompleteTimeout(nullptr);
 }
 
+void PaymentRequest::OnUpdatePaymentDetailsTimeoutForTesting() {
+  update_payment_details_timer_.Stop();
+  OnUpdatePaymentDetailsTimeout(nullptr);
+}
+
 PaymentRequest::PaymentRequest(
     ExecutionContext* execution_context,
     const HeapVector<Member<PaymentMethodData>>& method_data,
@@ -1120,7 +1172,12 @@ PaymentRequest::PaymentRequest(
       complete_timer_(
           execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI),
           this,
-          &PaymentRequest::OnCompleteTimeout) {
+          &PaymentRequest::OnCompleteTimeout),
+      update_payment_details_timer_(
+          execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI),
+          this,
+          &PaymentRequest::OnUpdatePaymentDetailsTimeout),
+      is_waiting_for_show_promise_to_resolve_(false) {
   DCHECK(GetExecutionContext()->IsSecureContext());
 
   if (!AllowedToUsePaymentRequest(execution_context)) {
@@ -1316,7 +1373,9 @@ void PaymentRequest::OnPaymentResponse(PaymentResponsePtr response) {
     return;
   }
 
-  complete_timer_.StartOneShot(kCompleteTimeout, FROM_HERE);
+  // If the website does not call complete() 60 seconds after show() has been
+  // resolved, then behave as if the website called complete("fail").
+  complete_timer_.StartOneShot(TimeDelta::FromSeconds(60), FROM_HERE);
 
   if (retry_resolver_) {
     DCHECK(payment_response_);
@@ -1524,6 +1583,14 @@ void PaymentRequest::OnCompleteTimeout(TimerBase*) {
   ClearResolversAndCloseMojoConnection();
 }
 
+void PaymentRequest::OnUpdatePaymentDetailsTimeout(TimerBase*) {
+  OnUpdatePaymentDetailsFailure(
+      is_waiting_for_show_promise_to_resolve_
+          ? "Timed out waiting for a PaymentRequest.show(promise) to resolve."
+          : "Timed out waiting for a "
+            "PaymentRequestUpdateEvent.updateWith(promise) to resolve.");
+}
+
 void PaymentRequest::ClearResolversAndCloseMojoConnection() {
   complete_timer_.Stop();
   complete_resolver_.Clear();
@@ -1545,15 +1612,21 @@ void PaymentRequest::DispatchPaymentRequestUpdateEvent(
     PaymentRequestUpdateEvent* event) {
   event->SetTarget(this);
   event->SetPaymentRequest(this);
+
+  // If the website does not calculate the updated shopping cart contents
+  // within 60 seconds, abort payment.
+  update_payment_details_timer_.StartOneShot(TimeDelta::FromSeconds(60),
+                                             FROM_HERE);
   DispatchEvent(*event);
+
   if (!event->is_waiting_for_update()) {
     // DispatchEvent runs synchronously. The method is_waiting_for_update()
-    // returns true if the merchant called event.updateWith() within the event
-    // handler. Calling this method is optional. If the method is not called,
-    // the renderer sends a message to the browser to re-enable UI interactions.
+    // returns false if the merchant did not call event.updateWith() within the
+    // event handler, which is optional, so the renderer sends a message to the
+    // browser to re-enable UI interactions.
     const String& message = String::Format(
-        "No updateWith() call in '%s' event handler. User "
-        "may see outdated line items and total.",
+        "No updateWith() call in '%s' event handler. User may see outdated "
+        "line items and total.",
         event->type().Ascii().data());
     GetExecutionContext()->AddConsoleMessage(
         ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
