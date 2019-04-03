@@ -91,9 +91,7 @@ OmniboxEventProto::Suggestion::ResultType AsOmniboxEventResultType(
 
 }  // namespace
 
-OmniboxMetricsProvider::OmniboxMetricsProvider(
-    const base::Callback<bool(void)>& is_off_the_record_callback)
-    : is_off_the_record_callback_(is_off_the_record_callback) {}
+OmniboxMetricsProvider::OmniboxMetricsProvider() {}
 
 OmniboxMetricsProvider::~OmniboxMetricsProvider() {
 }
@@ -115,10 +113,7 @@ void OmniboxMetricsProvider::ProvideCurrentSessionData(
 }
 
 void OmniboxMetricsProvider::OnURLOpenedFromOmnibox(OmniboxLog* log) {
-  // Do not log events to UMA if the embedder reports that the user is in an
-  // off-the-record context.
-  if (!is_off_the_record_callback_.Run())
-    RecordOmniboxOpenedURL(*log);
+  RecordOmniboxOpenedURL(*log);
 }
 
 void OmniboxMetricsProvider::RecordOmniboxOpenedURL(const OmniboxLog& log) {

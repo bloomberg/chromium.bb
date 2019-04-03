@@ -53,7 +53,6 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/tracing/background_tracing_metrics_provider.h"
 #include "chrome/browser/translate/translate_ranker_metrics_provider.h"
-#include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
@@ -590,12 +589,8 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
           content::CreateNetworkConnectionTrackerAsyncGetter(),
           std::make_unique<metrics::NetworkQualityEstimatorProviderImpl>()));
 
-  // Currently, we configure OmniboxMetricsProvider to not log events to UMA
-  // if there is a single incognito session visible. In the future, it may
-  // be worth revisiting this to still log events from non-incognito sessions.
   metrics_service_->RegisterMetricsProvider(
-      std::make_unique<OmniboxMetricsProvider>(
-          base::Bind(&chrome::IsIncognitoSessionActive)));
+      std::make_unique<OmniboxMetricsProvider>());
 
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<ChromeStabilityMetricsProvider>(local_state));

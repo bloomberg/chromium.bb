@@ -58,7 +58,6 @@
 #include "ios/chrome/browser/sync/device_info_sync_service_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/tab_parenting_global_observer.h"
-#import "ios/chrome/browser/tabs/tab_model_list.h"
 #include "ios/chrome/browser/translate/translate_ranker_metrics_provider.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/web_thread.h"
@@ -204,12 +203,8 @@ void IOSChromeMetricsServiceClient::Initialize() {
       std::make_unique<metrics::NetworkMetricsProvider>(
           base::BindRepeating(&GetNetworkConnectionTrackerAsync)));
 
-  // Currently, we configure OmniboxMetricsProvider to not log events to UMA
-  // if there is a single incognito session visible. In the future, it may
-  // be worth revisiting this to still log events from non-incognito sessions.
   metrics_service_->RegisterMetricsProvider(
-      std::make_unique<OmniboxMetricsProvider>(
-          base::Bind(&TabModelList::IsOffTheRecordSessionActive)));
+      std::make_unique<OmniboxMetricsProvider>());
 
   {
     auto stability_metrics_provider =
