@@ -265,6 +265,11 @@ def GeneralTemplates(site_config):
   )
 
   site_config.AddTemplate(
+      'infra_builder',
+      luci_builder=config_lib.LUCI_BUILDER_INFRA,
+  )
+
+  site_config.AddTemplate(
       'accelerator',
       sync_chrome=False,
       chrome_sdk=False,
@@ -3937,6 +3942,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.internal,
       site_config.templates.no_hwtest_builder,
       site_config.templates.no_vmtest_builder,
+      site_config.templates.infra_builder,
       display_label=config_lib.DISPLAY_LABEL_UTILITY,
       description=('Build Config Updater reads updated GE config files from'
                    ' GS, and commits them to chromite after running tests.'),
@@ -3952,6 +3958,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.internal,
       site_config.templates.no_hwtest_builder,
       site_config.templates.no_vmtest_builder,
+      site_config.templates.infra_builder,
       display_label=config_lib.DISPLAY_LABEL_UTILITY,
       description=('Deploy changes to luci_scheduler.cfg.'),
       build_type=constants.GENERIC_TYPE,
@@ -4078,6 +4085,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.no_hwtest_builder,
       site_config.templates.no_unittest_builder,
       site_config.templates.no_vmtest_builder,
+      site_config.templates.infra_builder,
       boards=[],
       display_label=config_lib.DISPLAY_LABEL_UTILITY,
       build_type=constants.GENERIC_TYPE,
