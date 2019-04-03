@@ -579,30 +579,7 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOMAfterNoMatches) {
             match_rects[0]);
 }
 
-class TextFinderFakeTimerTest : public TextFinderTest {
- protected:
-  void SetUp() override {
-    time_elapsed_ = 0.0;
-    original_time_function_ = SetTimeFunctionsForTesting(ReturnMockTime);
-  }
-
-  void TearDown() override {
-    SetTimeFunctionsForTesting(original_time_function_);
-  }
-
- private:
-  static double ReturnMockTime() {
-    time_elapsed_ += 1.0;
-    return time_elapsed_;
-  }
-
-  TimeFunction original_time_function_;
-  static double time_elapsed_;
-};
-
-double TextFinderFakeTimerTest::time_elapsed_;
-
-TEST_F(TextFinderFakeTimerTest, ScopeWithTimeouts) {
+TEST_F(TextFinderTest, ScopeWithTimeouts) {
   // Make a long string.
   String text(Vector<UChar>(100));
   text.Fill('a');
