@@ -180,7 +180,7 @@ void WebURLRequest::ClearHttpHeaderField(const WebString& name) {
   resource_request_->ClearHttpHeaderField(name);
 }
 
-void WebURLRequest::VisitHTTPHeaderFields(WebHTTPHeaderVisitor* visitor) const {
+void WebURLRequest::VisitHttpHeaderFields(WebHTTPHeaderVisitor* visitor) const {
   const HTTPHeaderMap& map = resource_request_->HttpHeaderFields();
   for (HTTPHeaderMap::const_iterator it = map.begin(); it != map.end(); ++it)
     visitor->VisitHeader(it->key, it->value);

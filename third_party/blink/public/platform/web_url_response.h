@@ -200,7 +200,7 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT void AddHttpHeaderField(const WebString& name,
                                                 const WebString& value);
   BLINK_PLATFORM_EXPORT void ClearHttpHeaderField(const WebString& name);
-  BLINK_PLATFORM_EXPORT void VisitHTTPHeaderFields(WebHTTPHeaderVisitor*) const;
+  BLINK_PLATFORM_EXPORT void VisitHttpHeaderFields(WebHTTPHeaderVisitor*) const;
 
   BLINK_PLATFORM_EXPORT int64_t AppCacheID() const;
   BLINK_PLATFORM_EXPORT void SetAppCacheID(int64_t);

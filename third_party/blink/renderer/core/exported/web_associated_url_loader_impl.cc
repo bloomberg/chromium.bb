@@ -365,7 +365,7 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
     if (allow_load) {
       new_request.SetHTTPMethod(FetchUtils::NormalizeMethod(method));
       HTTPRequestHeaderValidator validator;
-      new_request.VisitHTTPHeaderFields(&validator);
+      new_request.VisitHttpHeaderFields(&validator);
       allow_load = validator.IsSafe();
     }
   }

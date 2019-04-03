@@ -65,7 +65,7 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerRequest {
   // with a comma delimiter between them.
   void AppendHeader(const WebString& key, const WebString& value);
 
-  void VisitHTTPHeaderFields(WebHTTPHeaderVisitor*) const;
+  void VisitHttpHeaderFields(WebHTTPHeaderVisitor*) const;
 
   void SetBody(const WebHTTPBody&);
   WebHTTPBody Body() const;
