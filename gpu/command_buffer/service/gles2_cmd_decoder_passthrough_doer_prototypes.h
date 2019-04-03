@@ -877,7 +877,6 @@ error::Error DoDiscardFramebufferEXT(GLenum target,
                                      const volatile GLenum* attachments);
 error::Error DoLoseContextCHROMIUM(GLenum current, GLenum other);
 error::Error DoDescheduleUntilFinishedCHROMIUM();
-error::Error DoInsertFenceSyncCHROMIUM(GLuint64 release_count);
 error::Error DoWaitSyncTokenCHROMIUM(CommandBufferNamespace namespace_id,
                                      CommandBufferId command_buffer_id,
                                      GLuint64 release_count);

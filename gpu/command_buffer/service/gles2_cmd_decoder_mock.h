@@ -37,7 +37,8 @@ struct ContextState;
 
 class MockGLES2Decoder : public GLES2Decoder {
  public:
-  MockGLES2Decoder(CommandBufferServiceBase* command_buffer_service,
+  MockGLES2Decoder(DecoderClient* client,
+                   CommandBufferServiceBase* command_buffer_service,
                    Outputter* outputter);
   ~MockGLES2Decoder() override;
 

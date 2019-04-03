@@ -3851,7 +3851,7 @@ TEST_F(GLES2ImplementationTest, GenSyncTokenCHROMIUM) {
   EXPECT_EQ(GL_INVALID_VALUE, CheckError());
 
   const void* commands = GetPut();
-  cmds::InsertFenceSyncCHROMIUM insert_fence_sync;
+  cmd::InsertFenceSync insert_fence_sync;
   insert_fence_sync.Init(kFenceSync);
 
   EXPECT_CALL(*gpu_control_, GenerateFenceSyncRelease())
@@ -3884,7 +3884,7 @@ TEST_F(GLES2ImplementationTest, GenUnverifiedSyncTokenCHROMIUM) {
   EXPECT_EQ(GL_INVALID_VALUE, CheckError());
 
   const void* commands = GetPut();
-  cmds::InsertFenceSyncCHROMIUM insert_fence_sync;
+  cmd::InsertFenceSync insert_fence_sync;
   insert_fence_sync.Init(kFenceSync);
 
   EXPECT_CALL(*gpu_control_, GenerateFenceSyncRelease())
@@ -4034,7 +4034,7 @@ TEST_F(GLES2ImplementationTest, WaitSyncTokenCHROMIUM) {
   GLbyte* sync_token_data = sync_token.GetData();
 
   struct Cmds {
-    cmds::InsertFenceSyncCHROMIUM insert_fence_sync;
+    cmd::InsertFenceSync insert_fence_sync;
   };
   Cmds expected;
   expected.insert_fence_sync.Init(kFenceSync);

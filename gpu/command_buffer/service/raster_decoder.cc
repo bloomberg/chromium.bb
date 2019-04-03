@@ -398,7 +398,7 @@ class RasterDecoderImpl final : public RasterDecoder,
   // Set remaining commands to process to 0 to force DoCommands to return
   // and allow context preemption and GPU watchdog checks in
   // CommandExecutor().
-  void ExitCommandProcessingEarly() { commands_to_process_ = 0; }
+  void ExitCommandProcessingEarly() override;
 
   template <bool DebugImpl>
   error::Error DoCommandsImpl(unsigned int num_commands,
@@ -522,8 +522,6 @@ class RasterDecoderImpl final : public RasterDecoder,
 
   scoped_refptr<gl::GLContext> context_;
 
-  DecoderClient* client_;
-
   GpuPreferences gpu_preferences_;
 
   gles2::DebugMarkerManager debug_marker_manager_;
@@ -606,9 +604,10 @@ RasterDecoder* RasterDecoder::Create(
                                std::move(shared_context_state));
 }
 
-RasterDecoder::RasterDecoder(CommandBufferServiceBase* command_buffer_service,
+RasterDecoder::RasterDecoder(DecoderClient* client,
+                             CommandBufferServiceBase* command_buffer_service,
                              gles2::Outputter* outputter)
-    : CommonDecoder(command_buffer_service), outputter_(outputter) {}
+    : CommonDecoder(client, command_buffer_service), outputter_(outputter) {}
 
 RasterDecoder::~RasterDecoder() {}
 
@@ -655,18 +654,17 @@ RasterDecoderImpl::RasterDecoderImpl(
     MemoryTracker* memory_tracker,
     SharedImageManager* shared_image_manager,
     scoped_refptr<SharedContextState> shared_context_state)
-    : RasterDecoder(command_buffer_service, outputter),
+    : RasterDecoder(client, command_buffer_service, outputter),
       raster_decoder_id_(g_raster_decoder_id.GetNext() + 1),
       supports_gpu_raster_(
           gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] ==
           kGpuFeatureStatusEnabled),
       use_passthrough_(gles2::PassthroughCommandDecoderSupported() &&
                        gpu_preferences.use_passthrough_cmd_decoder),
-      client_(client),
       gpu_preferences_(gpu_preferences),
       logger_(&debug_marker_manager_,
               base::BindRepeating(&DecoderClient::OnConsoleMessage,
-                                  base::Unretained(client_),
+                                  base::Unretained(client),
                                   0),
               gpu_preferences_.disable_gl_error_limit),
       error_state_(gles2::ErrorState::Create(this, &logger_)),
@@ -1206,7 +1204,7 @@ error::Error RasterDecoderImpl::DoCommandsImpl(unsigned int num_commands,
   }
 
   if (supports_oop_raster_)
-    client_->ScheduleGrContextCleanup();
+    client()->ScheduleGrContextCleanup();
 
   return result;
 }
@@ -1222,6 +1220,10 @@ error::Error RasterDecoderImpl::DoCommands(unsigned int num_commands,
     return DoCommandsImpl<false>(num_commands, buffer, num_entries,
                                  entries_processed);
   }
+}
+
+void RasterDecoderImpl::ExitCommandProcessingEarly() {
+  commands_to_process_ = 0;
 }
 
 base::StringPiece RasterDecoderImpl::GetLogPrefix() {
@@ -1480,22 +1482,6 @@ error::Error RasterDecoderImpl::HandleEndQueryEXT(
   return error::kNoError;
 }
 
-error::Error RasterDecoderImpl::HandleInsertFenceSyncCHROMIUM(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  const volatile gles2::cmds::InsertFenceSyncCHROMIUM& c =
-      *static_cast<const volatile gles2::cmds::InsertFenceSyncCHROMIUM*>(
-          cmd_data);
-
-  const uint64_t release_count = c.release_count();
-  client_->OnFenceSyncRelease(release_count);
-  // Exit inner command processing loop so that we check the scheduling state
-  // and yield if necessary as we may have unblocked a higher priority
-  // context.
-  ExitCommandProcessingEarly();
-  return error::kNoError;
-}
-
 void RasterDecoderImpl::DoFinish() {
   if (!shared_context_state_->use_vulkan_gr_context())
     api()->glFinishFn();
@@ -1585,7 +1571,7 @@ error::Error RasterDecoderImpl::HandleSetActiveURLCHROMIUM(
     return error::kInvalidArguments;
 
   GURL url(base::StringPiece(url_str, size));
-  client_->SetActiveURL(std::move(url));
+  client()->SetActiveURL(std::move(url));
   return error::kNoError;
 }
 

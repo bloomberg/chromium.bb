@@ -313,49 +313,6 @@ static_assert(offsetof(LoseContextCHROMIUM, current) == 4,
 static_assert(offsetof(LoseContextCHROMIUM, other) == 8,
               "offset of LoseContextCHROMIUM other should be 8");
 
-struct InsertFenceSyncCHROMIUM {
-  typedef InsertFenceSyncCHROMIUM ValueType;
-  static const CommandId kCmdId = kInsertFenceSyncCHROMIUM;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
-
-  static uint32_t ComputeSize() {
-    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() { header.SetCmd<ValueType>(); }
-
-  void Init(GLuint64 _release_count) {
-    SetHeader();
-    gles2::GLES2Util::MapUint64ToTwoUint32(
-        static_cast<uint64_t>(_release_count), &release_count_0,
-        &release_count_1);
-  }
-
-  void* Set(void* cmd, GLuint64 _release_count) {
-    static_cast<ValueType*>(cmd)->Init(_release_count);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  GLuint64 release_count() const volatile {
-    return static_cast<GLuint64>(gles2::GLES2Util::MapTwoUint32ToUint64(
-        release_count_0, release_count_1));
-  }
-
-  gpu::CommandHeader header;
-  uint32_t release_count_0;
-  uint32_t release_count_1;
-};
-
-static_assert(sizeof(InsertFenceSyncCHROMIUM) == 12,
-              "size of InsertFenceSyncCHROMIUM should be 12");
-static_assert(offsetof(InsertFenceSyncCHROMIUM, header) == 0,
-              "offset of InsertFenceSyncCHROMIUM header should be 0");
-static_assert(offsetof(InsertFenceSyncCHROMIUM, release_count_0) == 4,
-              "offset of InsertFenceSyncCHROMIUM release_count_0 should be 4");
-static_assert(offsetof(InsertFenceSyncCHROMIUM, release_count_1) == 8,
-              "offset of InsertFenceSyncCHROMIUM release_count_1 should be 8");
-
 struct BeginRasterCHROMIUMImmediate {
   typedef BeginRasterCHROMIUMImmediate ValueType;
   static const CommandId kCmdId = kBeginRasterCHROMIUMImmediate;

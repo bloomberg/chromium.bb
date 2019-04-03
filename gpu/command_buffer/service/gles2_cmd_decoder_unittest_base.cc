@@ -247,7 +247,7 @@ void GLES2DecoderTestBase::InitDecoderWithWorkarounds(
   // will initialize itself.
   command_buffer_service_.reset(new FakeCommandBufferServiceBase());
   mock_decoder_.reset(
-      new MockGLES2Decoder(command_buffer_service_.get(), &outputter_));
+      new MockGLES2Decoder(this, command_buffer_service_.get(), &outputter_));
 
   EXPECT_EQ(group_->Initialize(mock_decoder_.get(), init.context_type,
                                DisallowedFeatures()),

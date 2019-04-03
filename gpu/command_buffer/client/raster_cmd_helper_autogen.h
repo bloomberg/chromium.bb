@@ -76,14 +76,6 @@ void LoseContextCHROMIUM(GLenum current, GLenum other) {
   }
 }
 
-void InsertFenceSyncCHROMIUM(GLuint64 release_count) {
-  raster::cmds::InsertFenceSyncCHROMIUM* c =
-      GetCmdSpace<raster::cmds::InsertFenceSyncCHROMIUM>();
-  if (c) {
-    c->Init(release_count);
-  }
-}
-
 void BeginRasterCHROMIUMImmediate(GLuint sk_color,
                                   GLuint msaa_sample_count,
                                   GLboolean can_use_lcd_text,
