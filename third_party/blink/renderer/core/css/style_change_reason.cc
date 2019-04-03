@@ -47,6 +47,7 @@ const char kSettings[] = "Settings";
 const char kShadow[] = "Shadow";
 const char kStyleInvalidator[] = "StyleInvalidator";
 const char kStyleSheetChange[] = "StyleSheetChange";
+const char kUseFallback[] = "UseFallback";
 const char kViewportUnits[] = "ViewportUnits";
 const char kVisitedLink[] = "VisitedLink";
 const char kVisuallyOrdered[] = "VisuallyOrdered";
