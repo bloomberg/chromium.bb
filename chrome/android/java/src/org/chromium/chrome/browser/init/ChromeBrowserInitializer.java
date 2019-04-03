@@ -281,14 +281,15 @@ public class ChromeBrowserInitializer {
         // launch its required components.
         if (!delegate.startServiceManagerOnly()
                 && !ProcessInitializationHandler.getInstance().postNativeInitializationComplete()) {
-            tasks.add(() -> ProcessInitializationHandler.getInstance().initializePostNative());
+            tasks.add(UiThreadTaskTraits.BOOTSTRAP,
+                    () -> ProcessInitializationHandler.getInstance().initializePostNative());
         }
 
         if (!mNetworkChangeNotifierInitializationComplete) {
-            tasks.add(this::initNetworkChangeNotifier);
+            tasks.add(UiThreadTaskTraits.BOOTSTRAP, this::initNetworkChangeNotifier);
         }
 
-        tasks.add(() -> {
+        tasks.add(UiThreadTaskTraits.BOOTSTRAP, () -> {
             // This is not broken down as a separate task, since this:
             // 1. Should happen as early as possible
             // 2. Only submits asynchronous work
@@ -301,19 +302,20 @@ public class ChromeBrowserInitializer {
             onStartNativeInitialization();
         });
 
-        tasks.add(() -> {
+        tasks.add(UiThreadTaskTraits.BOOTSTRAP, () -> {
             if (delegate.isActivityFinishingOrDestroyed()) return;
             delegate.initializeCompositor();
         });
 
-        tasks.add(() -> {
+        tasks.add(UiThreadTaskTraits.BOOTSTRAP, () -> {
             if (delegate.isActivityFinishingOrDestroyed()) return;
             delegate.initializeState();
         });
 
-        if (!mNativeInitializationComplete) tasks.add(this::onFinishNativeInitialization);
+        if (!mNativeInitializationComplete)
+            tasks.add(UiThreadTaskTraits.DEFAULT, this::onFinishNativeInitialization);
 
-        tasks.add(() -> {
+        tasks.add(UiThreadTaskTraits.DEFAULT, () -> {
             if (delegate.isActivityFinishingOrDestroyed()) return;
             delegate.finishNativeInitialization();
         });
