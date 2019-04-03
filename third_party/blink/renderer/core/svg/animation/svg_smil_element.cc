@@ -78,11 +78,6 @@ static const double kInvalidCachedTime = -1.;
 
 class ConditionEventListener final : public NativeEventListener {
  public:
-  static ConditionEventListener* Create(SVGSMILElement* animation,
-                                        SVGSMILElement::Condition* condition) {
-    return MakeGarbageCollected<ConditionEventListener>(animation, condition);
-  }
-
   ConditionEventListener(SVGSMILElement* animation,
                          SVGSMILElement::Condition* condition)
       : animation_(animation), condition_(condition) {}
@@ -193,7 +188,8 @@ void SVGSMILElement::Condition::ConnectEventBase(
   if (!target || !target->IsSVGElement())
     return;
   DCHECK(!event_listener_);
-  event_listener_ = ConditionEventListener::Create(&timed_element, this);
+  event_listener_ =
+      MakeGarbageCollected<ConditionEventListener>(&timed_element, this);
   base_element_ = ToSVGElement(target);
   base_element_->addEventListener(name_, event_listener_, false);
   timed_element.AddReferenceTo(base_element_);
@@ -473,9 +469,9 @@ bool SVGSMILElement::ParseCondition(const String& value,
     type = Condition::kEventBase;
   }
 
-  conditions_.push_back(
-      Condition::Create(type, begin_or_end, AtomicString(base_id),
-                        AtomicString(name_string), offset, repeat));
+  conditions_.push_back(MakeGarbageCollected<Condition>(
+      type, begin_or_end, AtomicString(base_id), AtomicString(name_string),
+      offset, repeat));
 
   if (type == Condition::kEventBase && begin_or_end == kEnd)
     has_end_event_conditions_ = true;
