@@ -93,7 +93,7 @@ typedef HistogramBase::Count Count;
 typedef HistogramBase::Sample Sample;
 
 // static
-const uint32_t Histogram::kBucketCount_MAX = 10002u;
+const uint32_t Histogram::kBucketCount_MAX = 1002u;
 
 class Histogram::Factory {
  public:
@@ -441,13 +441,7 @@ bool Histogram::InspectConstructionArguments(StringPiece name,
     DVLOG(1) << "Histogram: " << name << " has bad maximum: " << *maximum;
     *maximum = kSampleType_MAX - 1;
   }
-  if (*bucket_count >= kBucketCount_MAX) {
-    check_okay = false;
-    DVLOG(1) << "Histogram: " << name << " has bad bucket_count: "
-             << *bucket_count;
-    *bucket_count = kBucketCount_MAX - 1;
-  }
-  if (*bucket_count > 1002) {
+  if (*bucket_count > kBucketCount_MAX) {
     UmaHistogramSparse("Histogram.TooManyBuckets.1000",
                        static_cast<Sample>(HashMetricName(name)));
 
@@ -456,16 +450,16 @@ bool Histogram::InspectConstructionArguments(StringPiece name,
     // them here.
     // Blink.UseCounter legitimately has more than 1000 entries in its enum.
     // Arc.OOMKills: https://crbug.com/916757
-    // Autofill.FieldPredictionQuality.ByFieldType: https://crbug.com/916752
-    // Bluetooth.MacOS.Errors: https://crbug.com/916754
     // BlinkGC.CommittedSize: https://crbug.com/916761
     // PartitionAlloc.CommittedSize: https://crbug.com/916761
     if (!name.starts_with("Blink.UseCounter") &&
         !name.starts_with("Arc.OOMKills.") &&
-        !name.starts_with("Autofill.FieldPredictionQuality.ByFieldType.") &&
-        !name.starts_with("Bluetooth.MacOS.Errors.") &&
         name != "BlinkGC.CommittedSize" &&
         name != "PartitionAlloc.CommittedSize") {
+      DVLOG(1) << "Histogram: " << name
+               << " has bad bucket_count: " << *bucket_count << " (limit "
+               << kBucketCount_MAX << ")";
+
       // Assume it's a mistake and limit to 100 buckets, plus under and over.
       // If the DCHECK doesn't alert the user then hopefully the small number
       // will be obvious on the dashboard. If not, then it probably wasn't
