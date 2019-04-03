@@ -216,6 +216,8 @@ const char kHistogramPageLoadNetworkBytes[] =
 const char kHistogramPageLoadCacheBytes[] = "PageLoad.Experimental.Bytes.Cache";
 const char kHistogramPageLoadNetworkBytesIncludingHeaders[] =
     "PageLoad.Experimental.Bytes.NetworkIncludingHeaders";
+const char kHistogramPageLoadUnfinishedBytes[] =
+    "PageLoad.Experimental.Bytes.Unfinished";
 
 const char kHistogramLoadTypeTotalBytesForwardBack[] =
     "PageLoad.Experimental.Bytes.Total.LoadType.ForwardBackNavigation";
@@ -875,6 +877,13 @@ void CorePageLoadMetricsObserver::RecordByteAndResourceHistograms(
   PAGE_BYTES_HISTOGRAM(internal::kHistogramPageLoadTotalBytes, total_bytes);
   PAGE_BYTES_HISTOGRAM(internal::kHistogramPageLoadNetworkBytesIncludingHeaders,
                        network_bytes_including_headers_);
+
+  size_t unfinished_bytes = 0;
+  for (auto const& kv :
+       GetDelegate()->GetResourceTracker().unfinished_resources())
+    unfinished_bytes += kv.second->received_data_length;
+  PAGE_BYTES_HISTOGRAM(internal::kHistogramPageLoadUnfinishedBytes,
+                       unfinished_bytes);
 
   switch (GetPageLoadType(transition_)) {
     case LOAD_TYPE_RELOAD:

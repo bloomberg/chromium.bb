@@ -1440,3 +1440,21 @@ TEST_F(CorePageLoadMetricsObserverTest,
   histogram_tester().ExpectTotalCount(
       internal::kHistogramUserGestureNavigationToForwardBack, 1);
 }
+
+TEST_F(CorePageLoadMetricsObserverTest, UnfinishedBytesRecorded) {
+  NavigateAndCommit(GURL(kDefaultTestUrl));
+
+  std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr> resources;
+  // Incomplete resource.
+  resources.push_back(
+      CreateResource(false /* was_cached */, 10 * 1024 /* delta_bytes */,
+                     0 /* encoded_body_length */, false /* is_complete */));
+  SimulateResourceDataUseUpdate(resources);
+
+  // Navigate again to force histogram recording.
+  NavigateAndCommit(GURL(kDefaultTestUrl2));
+
+  // Verify that the unfinished resource bytes are recorded.
+  histogram_tester().ExpectUniqueSample(
+      internal::kHistogramPageLoadUnfinishedBytes, 10, 1);
+}

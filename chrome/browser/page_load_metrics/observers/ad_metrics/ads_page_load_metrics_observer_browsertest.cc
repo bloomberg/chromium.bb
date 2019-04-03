@@ -634,10 +634,6 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   // and one from the ad script in the main frame.
   histogram_tester.ExpectBucketCount(
       "PageLoad.Clients.Ads.Bytes.MainFrame.Total", 2, 1);
-
-  // 4 resources loaded, one unfinished.
-  histogram_tester.ExpectBucketCount(
-      "PageLoad.Clients.Ads.Resources.Bytes.Unfinished", 1, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
