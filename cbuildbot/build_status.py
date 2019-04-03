@@ -645,12 +645,11 @@ class SlaveStatus(object):
 
         # For every uncompleted build, the master build will insert an
         # ignored_reason message into the buildMessageTable.
-        for build in uncompleted_important_builds:
-          if build in self.all_cidb_status_dict:
-            self.buildstore.InsertBuildMessage(
-                self.master_build_id,
-                message_value=str(
-                    self.all_cidb_status_dict[build].buildbucket_id))
+        killed_child_builds = [self.all_cidb_status_dict[build].buildbucket_id
+                               for build in uncompleted_important_builds
+                               if build in self.all_cidb_status_dict]
+        self.buildstore.InsertBuildMessage(self.master_build_id,
+                                           message_value=killed_child_builds)
         builder_status_lib.CancelBuilds(uncompleted_build_buildbucket_ids,
                                         self.buildbucket_client,
                                         self.dry_run,

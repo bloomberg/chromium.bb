@@ -186,12 +186,15 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     bs.cidb_conn.InsertBuildMessage.assert_called_with(
         1234, message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
         message_subtype=constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION,
-        message_value=8921795536486453567, board=None)
+        message_value='8921795536486453567', board=None)
     buildbucket_v2.UpdateSelfCommonBuildProperties.assert_called_once_with(
         killed_child_builds=[8921795536486453568, 8921795536486453567])
+    # Test error conditions.
+    with self.assertRaises(AssertionError):
+      bs.InsertBuildMessage(1234, message_value=8921795536486453568)
     init.return_value = False
     with self.assertRaises(buildstore.BuildStoreException):
-      bs.InsertBuildMessage(1234, message_value=8921795536486453568)
+      bs.InsertBuildMessage(1234, message_value=[8921795536486453568])
 
   def testGetBuildHistory(self):
     """Tests the redirect for GetBuildHistory function."""

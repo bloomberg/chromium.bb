@@ -325,13 +325,14 @@ class BuildStore(object):
       message_value: Optional value of message.
       board: Optional str name of the board.
     """
+    assert isinstance(message_value, list)
     if not self.InitializeClients():
       raise BuildStoreException('BuildStore clients could not be initialized.')
     if self._write_to_cidb:
       for buildbucket_id in message_value:
         self.cidb_conn.InsertBuildMessage(
             build_id, message_type=message_type,
-            message_subtype=message_subtype, message_value=buildbucket_id,
+            message_subtype=message_subtype, message_value=str(buildbucket_id),
             board=board)
     if self._write_to_bb:
       buildbucket_v2.UpdateSelfCommonBuildProperties(
@@ -612,9 +613,11 @@ class FakeBuildStore(object):
       self, build_id, message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
       message_subtype=constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION,
       message_value=None, board=None):
-    return self.fake_cidb.InsertBuildMessage(
-        build_id, message_type=message_type, message_subtype=message_subtype,
-        message_value=message_value, board=board)
+    for buildbucket_id in message_value:
+      self.fake_cidb.InsertBuildMessage(
+          build_id, message_type=message_type,
+          message_subtype=message_subtype, message_value=str(buildbucket_id),
+          board=board)
 
   def FinishBuild(self, build_id, status=None, summary=None, metadata_url=None,
                   strict=True):
