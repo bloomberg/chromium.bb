@@ -347,8 +347,11 @@ gpu::SyncToken SkiaOutputSurfaceImplNonDDL::ReleasePromiseSkImages(
       sync_point_client_state_->command_buffer_id(), ++sync_fence_release_);
   sync_token.SetVerifyFlush();
   sync_point_client_state_->ReleaseFenceSync(sync_fence_release_);
-  DCHECK(mailbox_manager_->UsesSync());
-  mailbox_manager_->PushTextureUpdates(sync_token);
+  const bool is_using_vulkan = shared_context_state_->use_vulkan_gr_context();
+  if (!is_using_vulkan) {
+    DCHECK(mailbox_manager_->UsesSync());
+    mailbox_manager_->PushTextureUpdates(sync_token);
+  }
   sync_point_order_data_->FinishProcessingOrderNumber(order_num_);
   order_num_ = 0u;
   return sync_token;
@@ -497,9 +500,17 @@ sk_sp<SkImage> SkiaOutputSurfaceImplNonDDL::MakeSkImageFromSharedImage(
                    "with display usage.";
     return nullptr;
   }
-  // TODO(penghuang): make SharedImageBacking be aware the target context.
-  auto promise_texture =
-      representation->BeginReadAccess(nullptr /* read_surface */);
+  if (!sk_surface_) {
+    // Create a dummy sk surface to make SharedImage happy.
+    // TODO(penghuang): remove the dummy sk surface when BeginReadAccess()
+    // doesn't need pass in a sk surface.
+    auto image_info =
+        SkImageInfo::Make(1, 1, kRGBA_8888_SkColorType, kPremul_SkAlphaType);
+    sk_surface_ = SkSurface::MakeRenderTarget(
+        gr_context(), SkBudgeted::kNo, image_info, 0 /* sampleCount */,
+        kBottomLeft_GrSurfaceOrigin, nullptr /* surfaceProps */);
+  }
+  auto promise_texture = representation->BeginReadAccess(sk_surface_.get());
   if (!promise_texture) {
     DLOG(ERROR)
         << "Failed to begin read access for SharedImageRepresentationSkia";
