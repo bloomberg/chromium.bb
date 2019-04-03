@@ -194,7 +194,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterTimeDeltaPref(kEngagementTimeTotal, base::TimeDelta());
   registry->RegisterBooleanPref(kVoiceInteractionContextEnabled, false);
   registry->RegisterBooleanPref(kVoiceInteractionEnabled, false);
-  registry->RegisterBooleanPref(kVoiceInteractionHotwordAlwaysOn, true);
+  registry->RegisterBooleanPref(kVoiceInteractionHotwordAlwaysOn, false);
   registry->RegisterBooleanPref(kVoiceInteractionHotwordEnabled, false);
   registry->RegisterBooleanPref(kVoiceInteractionNotificationEnabled, true);
   registry->RegisterBooleanPref(kVoiceInteractionLaunchWithMicOpen, false);
