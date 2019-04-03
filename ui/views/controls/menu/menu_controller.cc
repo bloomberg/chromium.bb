@@ -1325,6 +1325,14 @@ void MenuController::SetSelection(MenuItemView* menu_item,
                     (menu_item->GetType() == MenuItemView::ACTIONABLE_SUBMENU &&
                      (selection_types & SELECTION_OPEN_SUBMENU) == 0))) {
     menu_item->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+    // Notify an accessibility selected children changed event on the parent
+    // submenu.
+    if (menu_item->GetParentMenuItem() &&
+        menu_item->GetParentMenuItem()->GetSubmenu()) {
+      menu_item->GetParentMenuItem()->GetSubmenu()->NotifyAccessibilityEvent(
+          ax::mojom::Event::kSelectedChildrenChanged,
+          true /* send_native_event */);
+    }
   }
 }
 
