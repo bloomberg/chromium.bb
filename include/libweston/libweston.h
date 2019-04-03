@@ -215,6 +215,9 @@ struct weston_head {
 	char *name;			/**< head name, e.g. connector name */
 	bool connected;			/**< is physically connected */
 	bool non_desktop;		/**< non-desktop display, e.g. HMD */
+
+	/** Current content protection status */
+	enum weston_hdcp_protection current_protection;
 };
 
 /** Represents an output
@@ -292,6 +295,7 @@ struct weston_output {
 	struct wl_list head_list; /**< List of driven weston_heads */
 
 	enum weston_hdcp_protection desired_protection;
+	enum weston_hdcp_protection current_protection;
 
 	void (*start_repaint_loop)(struct weston_output *output);
 	int (*repaint)(struct weston_output *output,
@@ -2354,6 +2358,10 @@ weston_head_add_destroy_listener(struct weston_head *head,
 struct wl_listener *
 weston_head_get_destroy_listener(struct weston_head *head,
 				 wl_notify_func_t notify);
+
+void
+weston_head_set_content_protection_status(struct weston_head *head,
+					  enum weston_hdcp_protection status);
 
 struct weston_head *
 weston_compositor_iterate_heads(struct weston_compositor *compositor,

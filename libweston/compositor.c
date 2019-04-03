@@ -4769,6 +4769,7 @@ weston_head_init(struct weston_head *head, const char *name)
 	wl_list_init(&head->resource_list);
 	wl_list_init(&head->xdg_output_resource_list);
 	head->name = strdup(name);
+	head->current_protection = WESTON_HDCP_DISABLE;
 }
 
 /** Send output heads changed signal
@@ -5269,6 +5270,38 @@ weston_head_set_connection_status(struct weston_head *head, bool connected)
 	head->connected = connected;
 
 	weston_head_set_device_changed(head);
+}
+
+static void
+weston_output_compute_protection(struct weston_output *output)
+{
+	struct weston_head *head;
+	enum weston_hdcp_protection op_protection;
+	bool op_protection_valid = false;
+
+	wl_list_for_each(head, &output->head_list, output_link) {
+		if (!op_protection_valid) {
+			op_protection = head->current_protection;
+			op_protection_valid = true;
+		}
+		if (head->current_protection < op_protection)
+			op_protection = head->current_protection;
+	}
+
+	if (!op_protection_valid)
+		op_protection = WESTON_HDCP_DISABLE;
+
+	if (output->current_protection != op_protection)
+		output->current_protection = op_protection;
+}
+
+WL_EXPORT void
+weston_head_set_content_protection_status(struct weston_head *head,
+					  enum weston_hdcp_protection status)
+{
+	head->current_protection = status;
+	if (head->output)
+		weston_output_compute_protection(head->output);
 }
 
 /** Is the head currently connected?
