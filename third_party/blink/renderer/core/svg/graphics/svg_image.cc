@@ -749,7 +749,7 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
 
   Page::PageClients page_clients;
   FillWithEmptyClients(page_clients);
-  chrome_client_ = SVGImageChromeClient::Create(this);
+  chrome_client_ = MakeGarbageCollected<SVGImageChromeClient>(this);
   page_clients.chrome_client = chrome_client_.Get();
 
   // FIXME: If this SVG ends up loading itself, we might leak the world.

@@ -84,7 +84,7 @@ inline SVGSVGElement::SVGSVGElement(Document& doc)
                                         SVGLengthMode::kHeight,
                                         SVGLength::Initial::kPercent100,
                                         CSSPropertyID::kHeight)),
-      time_container_(SMILTimeContainer::Create(*this)),
+      time_container_(MakeGarbageCollected<SMILTimeContainer>(*this)),
       translation_(SVGPoint::Create()),
       current_scale_(1) {
   AddToPropertyMap(x_);
