@@ -76,9 +76,9 @@ StyleImage* ElementStyleResources::GeneratedOrPendingFromValue(
     const CSSImageGeneratorValue& value) {
   if (value.IsPending()) {
     pending_image_properties_.insert(property);
-    return StylePendingImage::Create(value);
+    return MakeGarbageCollected<StylePendingImage>(value);
   }
-  return StyleGeneratedImage::Create(value);
+  return MakeGarbageCollected<StyleGeneratedImage>(value);
 }
 
 StyleImage* ElementStyleResources::SetOrPendingFromValue(
@@ -86,7 +86,7 @@ StyleImage* ElementStyleResources::SetOrPendingFromValue(
     const CSSImageSetValue& value) {
   if (value.IsCachePending(device_scale_factor_)) {
     pending_image_properties_.insert(property);
-    return StylePendingImage::Create(value);
+    return MakeGarbageCollected<StylePendingImage>(value);
   }
   return value.CachedImage(device_scale_factor_);
 }
@@ -96,7 +96,7 @@ StyleImage* ElementStyleResources::CachedOrPendingFromValue(
     const CSSImageValue& value) {
   if (value.IsCachePending()) {
     pending_image_properties_.insert(property);
-    return StylePendingImage::Create(value);
+    return MakeGarbageCollected<StylePendingImage>(value);
   }
   value.RestoreCachedResourceIfNeeded(element_->GetDocument());
   return value.CachedImage();
@@ -155,7 +155,7 @@ StyleImage* ElementStyleResources::LoadPendingImage(
   }
 
   if (CSSPaintValue* paint_value = pending_image->CssPaintValue()) {
-    StyleGeneratedImage* image = StyleGeneratedImage::Create(*paint_value);
+    auto* image = MakeGarbageCollected<StyleGeneratedImage>(*paint_value);
     style->AddPaintImage(image);
     return image;
   }
@@ -163,7 +163,7 @@ StyleImage* ElementStyleResources::LoadPendingImage(
   if (CSSImageGeneratorValue* image_generator_value =
           pending_image->CssImageGeneratorValue()) {
     image_generator_value->LoadSubimages(element_->GetDocument());
-    return StyleGeneratedImage::Create(*image_generator_value);
+    return MakeGarbageCollected<StyleGeneratedImage>(*image_generator_value);
   }
 
   if (CSSImageSetValue* image_set_value = pending_image->CssImageSetValue()) {

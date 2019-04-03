@@ -85,8 +85,8 @@ StyleImage* CSSImageValue::CacheImage(
     if (is_lazily_loaded)
       params.SetLazyImageDeferred();
 
-    cached_image_ =
-        StyleFetchedImage::Create(document, params, is_lazily_loaded);
+    cached_image_ = MakeGarbageCollected<StyleFetchedImage>(document, params,
+                                                            is_lazily_loaded);
   }
   return cached_image_.Get();
 }

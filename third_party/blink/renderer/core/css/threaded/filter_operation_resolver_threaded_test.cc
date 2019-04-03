@@ -26,7 +26,7 @@ TSAN_TEST(FilterOperationResolverThreadedTest, SimpleMatrixFilter) {
     FilterOperations fo =
         FilterOperationResolver::CreateOffscreenFilterOperations(*value, font);
     ASSERT_EQ(fo.size(), 1ul);
-    EXPECT_EQ(*fo.at(0), *BasicColorMatrixFilterOperation::Create(
+    EXPECT_EQ(*fo.at(0), *MakeGarbageCollected<BasicColorMatrixFilterOperation>(
                              0.5, FilterOperation::SEPIA));
   });
 }
@@ -43,8 +43,9 @@ TSAN_TEST(FilterOperationResolverThreadedTest, SimpleTransferFilter) {
     FilterOperations fo =
         FilterOperationResolver::CreateOffscreenFilterOperations(*value, font);
     ASSERT_EQ(fo.size(), 1ul);
-    EXPECT_EQ(*fo.at(0), *BasicComponentTransferFilterOperation::Create(
-                             0.5, FilterOperation::BRIGHTNESS));
+    EXPECT_EQ(*fo.at(0),
+              *MakeGarbageCollected<BasicComponentTransferFilterOperation>(
+                  0.5, FilterOperation::BRIGHTNESS));
   });
 }
 
@@ -60,7 +61,8 @@ TSAN_TEST(FilterOperationResolverThreadedTest, SimpleBlurFilter) {
     FilterOperations fo =
         FilterOperationResolver::CreateOffscreenFilterOperations(*value, font);
     ASSERT_EQ(fo.size(), 1ul);
-    EXPECT_EQ(*fo.at(0), *BlurFilterOperation::Create(Length::Fixed(10)));
+    EXPECT_EQ(*fo.at(0),
+              *MakeGarbageCollected<BlurFilterOperation>(Length::Fixed(10)));
   });
 }
 
@@ -95,10 +97,11 @@ TSAN_TEST(FilterOperationResolverThreadedTest, CompoundFilter) {
         FilterOperationResolver::CreateOffscreenFilterOperations(*value, font);
     EXPECT_FALSE(fo.IsEmpty());
     ASSERT_EQ(fo.size(), 2ul);
-    EXPECT_EQ(*fo.at(0), *BasicColorMatrixFilterOperation::Create(
+    EXPECT_EQ(*fo.at(0), *MakeGarbageCollected<BasicColorMatrixFilterOperation>(
                              0.5, FilterOperation::SEPIA));
-    EXPECT_EQ(*fo.at(1), *BasicComponentTransferFilterOperation::Create(
-                             0.5, FilterOperation::BRIGHTNESS));
+    EXPECT_EQ(*fo.at(1),
+              *MakeGarbageCollected<BasicComponentTransferFilterOperation>(
+                  0.5, FilterOperation::BRIGHTNESS));
   });
 }
 

@@ -39,11 +39,7 @@ class ImageResourceObserver;
 // paint(...) function.
 class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
  public:
-  static StyleGeneratedImage* Create(const CSSImageGeneratorValue& value) {
-    return MakeGarbageCollected<StyleGeneratedImage>(value);
-  }
-
-  StyleGeneratedImage(const CSSImageGeneratorValue&);
+  explicit StyleGeneratedImage(const CSSImageGeneratorValue&);
 
   WrappedImagePtr Data() const override { return image_generator_value_.Get(); }
 

@@ -45,7 +45,8 @@ class AnimatableFilterOperations final : public AnimatableValue {
   }
 
   AnimatableFilterOperations(const FilterOperations& operations)
-      : operation_wrapper_(FilterOperationsWrapper::Create(operations)) {}
+      : operation_wrapper_(
+            MakeGarbageCollected<FilterOperationsWrapper>(operations)) {}
   ~AnimatableFilterOperations() override = default;
 
   const FilterOperations& Operations() const {

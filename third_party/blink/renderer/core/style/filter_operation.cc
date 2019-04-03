@@ -115,7 +115,7 @@ FilterOperation* BasicColorMatrixFilterOperation::Blend(
     default:
       NOTREACHED();
   }
-  return BasicColorMatrixFilterOperation::Create(result, type_);
+  return MakeGarbageCollected<BasicColorMatrixFilterOperation>(result, type_);
 }
 
 FilterOperation* BasicComponentTransferFilterOperation::Blend(
@@ -154,7 +154,8 @@ FilterOperation* BasicComponentTransferFilterOperation::Blend(
     default:
       NOTREACHED();
   }
-  return BasicComponentTransferFilterOperation::Create(result, type_);
+  return MakeGarbageCollected<BasicComponentTransferFilterOperation>(result,
+                                                                     type_);
 }
 
 FloatRect BlurFilterOperation::MapRect(const FloatRect& rect) const {
@@ -167,11 +168,11 @@ FilterOperation* BlurFilterOperation::Blend(const FilterOperation* from,
                                             double progress) const {
   Length::Type length_type = std_deviation_.GetType();
   if (!from)
-    return BlurFilterOperation::Create(std_deviation_.Blend(
+    return MakeGarbageCollected<BlurFilterOperation>(std_deviation_.Blend(
         Length(length_type), progress, kValueRangeNonNegative));
 
   const auto* from_op = To<BlurFilterOperation>(from);
-  return BlurFilterOperation::Create(std_deviation_.Blend(
+  return MakeGarbageCollected<BlurFilterOperation>(std_deviation_.Blend(
       from_op->std_deviation_, progress, kValueRangeNonNegative));
 }
 

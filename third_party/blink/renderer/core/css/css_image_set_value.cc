@@ -132,7 +132,7 @@ StyleImage* CSSImageSetValue::CacheImage(
       params.SetClientLoFiPlaceholder();
     }
 
-    cached_image_ = StyleFetchedImageSet::Create(
+    cached_image_ = MakeGarbageCollected<StyleFetchedImageSet>(
         ImageResourceContent::Fetch(params, document.Fetcher()),
         image.scale_factor, this, params.Url());
     cached_scale_factor_ = device_scale_factor;
