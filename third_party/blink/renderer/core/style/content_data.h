@@ -45,6 +45,7 @@ class ContentData : public GarbageCollectedFinalized<ContentData> {
   static ContentData* Create(StyleImage*);
   static ContentData* Create(const String&);
   static ContentData* Create(std::unique_ptr<CounterContent>);
+  static ContentData* CreateAltText(const String&);
   static ContentData* Create(QuoteType);
 
   virtual ~ContentData() = default;
@@ -53,6 +54,7 @@ class ContentData : public GarbageCollectedFinalized<ContentData> {
   virtual bool IsImage() const { return false; }
   virtual bool IsQuote() const { return false; }
   virtual bool IsText() const { return false; }
+  virtual bool IsAltText() const { return false; }
 
   virtual LayoutObject* CreateLayoutObject(PseudoElement&,
                                            ComputedStyle&,
@@ -145,6 +147,38 @@ class TextContentData final : public ContentData {
 template <>
 struct DowncastTraits<TextContentData> {
   static bool AllowFrom(const ContentData& content) { return content.IsText(); }
+};
+
+class AltTextContentData final : public ContentData {
+  friend class ContentData;
+
+ public:
+  AltTextContentData(const String& text) : text_(text) {}
+
+  String GetText() const { return text_; }
+  void SetText(const String& text) { text_ = text; }
+
+  bool IsAltText() const override { return true; }
+  LayoutObject* CreateLayoutObject(PseudoElement&,
+                                   ComputedStyle&,
+                                   LegacyLayout) const override;
+
+  bool Equals(const ContentData& data) const override {
+    if (!data.IsAltText())
+      return false;
+    return static_cast<const AltTextContentData&>(data).GetText() == GetText();
+  }
+
+ private:
+  ContentData* CloneInternal() const override { return Create(GetText()); }
+  String text_;
+};
+
+template <>
+struct DowncastTraits<AltTextContentData> {
+  static bool AllowFrom(const ContentData& content) {
+    return content.IsAltText();
+  }
 };
 
 class CounterContentData final : public ContentData {

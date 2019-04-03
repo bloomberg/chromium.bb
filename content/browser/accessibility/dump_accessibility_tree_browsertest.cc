@@ -244,6 +244,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityCSSLanguage) {
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityCSSPseudoElements) {
+  RunCSSTest(FILE_PATH_LITERAL("pseudo-element-alternative-text.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityCSSTableIncomplete) {
   RunCSSTest(FILE_PATH_LITERAL("table-incomplete.html"));
 }

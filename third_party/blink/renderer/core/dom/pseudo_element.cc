@@ -182,13 +182,15 @@ void PseudoElement::AttachLayoutTree(AttachContext& context) {
        content = content->Next()) {
     LegacyLayout legacy = context.force_legacy_layout ? LegacyLayout::kForce
                                                       : LegacyLayout::kAuto;
-    LayoutObject* child = content->CreateLayoutObject(*this, style, legacy);
-    if (layout_object->IsChildAllowed(child, style)) {
-      layout_object->AddChild(child);
-      if (child->IsQuote())
-        ToLayoutQuote(child)->AttachQuote();
-    } else {
-      child->Destroy();
+    if (!content->IsAltText()) {
+      LayoutObject* child = content->CreateLayoutObject(*this, style, legacy);
+      if (layout_object->IsChildAllowed(child, style)) {
+        layout_object->AddChild(child);
+        if (child->IsQuote())
+          ToLayoutQuote(child)->AttachQuote();
+      } else {
+        child->Destroy();
+      }
     }
   }
 }

@@ -1731,7 +1731,12 @@ CSSValueID ValueForQuoteType(const QuoteType quote_type) {
 }
 
 CSSValue* ComputedStyleUtils::ValueForContentData(const ComputedStyle& style) {
+  CSSValueList* outer_list = CSSValueList::CreateSlashSeparated();
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+
+  // Alternative text optionally specified after a forward slash appearing after
+  // the last content list item.
+  CSSStringValue* alt_text = nullptr;
   for (const ContentData* content_data = style.GetContentData(); content_data;
        content_data = content_data->Next()) {
     if (content_data->IsCounter()) {
@@ -1763,6 +1768,9 @@ CSSValue* ComputedStyleUtils::ValueForContentData(const ComputedStyle& style) {
     } else if (content_data->IsQuote()) {
       const QuoteType quote_type = To<QuoteContentData>(content_data)->Quote();
       list->Append(*CSSIdentifierValue::Create(ValueForQuoteType(quote_type)));
+    } else if (content_data->IsAltText()) {
+      alt_text = MakeGarbageCollected<CSSStringValue>(
+          To<AltTextContentData>(content_data)->GetText());
     } else {
       NOTREACHED();
     }
@@ -1773,7 +1781,11 @@ CSSValue* ComputedStyleUtils::ValueForContentData(const ComputedStyle& style) {
       return CSSIdentifierValue::Create(CSSValueID::kNone);
     return CSSIdentifierValue::Create(CSSValueID::kNormal);
   }
-  return list;
+
+  outer_list->Append(*list);
+  if (alt_text)
+    outer_list->Append(*alt_text);
+  return outer_list;
 }
 
 CSSValue* ComputedStyleUtils::ValueForCounterDirectives(
