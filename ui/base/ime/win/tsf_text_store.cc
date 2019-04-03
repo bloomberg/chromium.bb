@@ -300,42 +300,48 @@ STDMETHODIMP TSFTextStore::GetTextExt(TsViewCookie view_cookie,
   const uint32_t end_pos = acp_end - composition_start_;
 
   if (start_pos == end_pos) {
-    // According to MSDN document, if |acp_start| and |acp_end| are equal it is
-    // OK to just return E_INVALIDARG.
-    // http://msdn.microsoft.com/en-us/library/ms538435
-    // But when using Pinin IME of Windows 8, this method is called with the
-    // equal values of |acp_start| and |acp_end|. So we handle this condition.
-    if (start_pos == 0) {
-      if (text_input_client_->GetCompositionCharacterBounds(0, &tmp_rect)) {
+    if (text_input_client_->HasCompositionText()) {
+      // According to MSDN document, if |acp_start| and |acp_end| are equal it
+      // is OK to just return E_INVALIDARG.
+      // http://msdn.microsoft.com/en-us/library/ms538435
+      // But when using Pinin IME of Windows 8, this method is called with the
+      // equal values of |acp_start| and |acp_end|. So we handle this condition.
+      if (start_pos == 0) {
+        if (text_input_client_->GetCompositionCharacterBounds(0, &tmp_rect)) {
+          tmp_rect.set_width(0);
+          result_rect = gfx::Rect(tmp_rect);
+        } else {
+          return TS_E_NOLAYOUT;
+        }
+      } else if (text_input_client_->GetCompositionCharacterBounds(
+                     start_pos - 1, &tmp_rect)) {
+        tmp_rect.set_x(tmp_rect.right());
         tmp_rect.set_width(0);
         result_rect = gfx::Rect(tmp_rect);
-      } else if (string_buffer_document_.size() == composition_start_) {
-        result_rect = gfx::Rect(text_input_client_->GetCaretBounds());
+
       } else {
         return TS_E_NOLAYOUT;
       }
-    } else if (text_input_client_->GetCompositionCharacterBounds(start_pos - 1,
-                                                                 &tmp_rect)) {
-      tmp_rect.set_x(tmp_rect.right());
-      tmp_rect.set_width(0);
-      result_rect = gfx::Rect(tmp_rect);
-
     } else {
-      return TS_E_NOLAYOUT;
+      result_rect = gfx::Rect(text_input_client_->GetCaretBounds());
     }
   } else {
-    if (text_input_client_->GetCompositionCharacterBounds(start_pos,
-                                                          &tmp_rect)) {
-      result_rect = gfx::Rect(tmp_rect);
-      if (text_input_client_->GetCompositionCharacterBounds(end_pos - 1,
+    if (text_input_client_->HasCompositionText()) {
+      if (text_input_client_->GetCompositionCharacterBounds(start_pos,
                                                             &tmp_rect)) {
-        result_rect.set_width(tmp_rect.x() - result_rect.x() +
-                              tmp_rect.width());
-        result_rect.set_height(tmp_rect.y() - result_rect.y() +
-                               tmp_rect.height());
+        result_rect = gfx::Rect(tmp_rect);
+        if (text_input_client_->GetCompositionCharacterBounds(end_pos - 1,
+                                                              &tmp_rect)) {
+          result_rect.set_width(tmp_rect.x() - result_rect.x() +
+                                tmp_rect.width());
+          result_rect.set_height(tmp_rect.y() - result_rect.y() +
+                                 tmp_rect.height());
+        } else {
+          // We may not be able to get the last character bounds, so we use the
+          // first character bounds instead of returning TS_E_NOLAYOUT.
+        }
       } else {
-        // We may not be able to get the last character bounds, so we use the
-        // first character bounds instead of returning TS_E_NOLAYOUT.
+        return TS_E_NOLAYOUT;
       }
     } else {
       // Hack for PPAPI flash. PPAPI flash does not support GetCaretBounds, so
@@ -583,8 +589,12 @@ STDMETHODIMP TSFTextStore::RequestLock(DWORD lock_flags, HRESULT* result) {
   // TextInputClient::InsertText to complete the current composition. When there
   // are some committed text, it is not necessarily true that composition_string
   // is empty. We need to complete current composition with committed text and
-  // start new composition with composition_string.
-  if ((new_composition_start > last_composition_start) && text_input_client_) {
+  // start new composition with composition_string. Another scenario would be if
+  // the replacement text is coming from on-screen keyboard, we should replace
+  // current selection with new text.
+  if (((new_composition_start > last_composition_start) ||
+       (wparam_keydown_fired_ == 0 && !has_composition_range_)) &&
+      text_input_client_) {
     CommitTextAndEndCompositionIfAny(last_composition_start,
                                      new_composition_start);
   }
@@ -1003,10 +1013,16 @@ void TSFTextStore::CalculateTextandSelectionDiffAndNotifyIfNeeded() {
       return;
     }
 
+    bool notify_text_change =
+        (text_store_acp_sink_mask_ & TS_AS_TEXT_CHANGE) != 0;
+    bool notify_selection_change =
+        (text_store_acp_sink_mask_ & TS_AS_SEL_CHANGE) != 0;
+
+    bool text_changed = false;
+    bool selection_changed = false;
+    TS_TEXTCHANGE text_change = {};
+
     if (latest_buffer_from_client.compare(string_buffer_document_)) {
-      TS_TEXTCHANGE text_change = {};
-      bool notify_text_change =
-          (text_store_acp_sink_mask_ & TS_AS_TEXT_CHANGE) != 0;
 
       // Execute diffing algorithm only if we need to send notification.
       if (notify_text_change) {
@@ -1024,18 +1040,22 @@ void TSFTextStore::CalculateTextandSelectionDiffAndNotifyIfNeeded() {
           }
         }
 
-        // if two strings have same length, find last difference.
-        if (latest_buffer_from_client.size() ==
-            string_buffer_document_.size()) {
-          for (acp_new_end = latest_buffer_from_client.size() - 1;
-               acp_new_end > acp_start; acp_new_end--) {
+        // Compare two strings to find last difference.
+        while (acp_old_end > 0 && acp_new_end > 0) {
+          acp_old_end--;
+          acp_new_end--;
+          if (acp_old_end >= acp_start && acp_new_end >= acp_start) {
             if (latest_buffer_from_client.at(acp_new_end) !=
-                string_buffer_document_.at(acp_new_end)) {
+                string_buffer_document_.at(acp_old_end)) {
+              acp_old_end++;
+              acp_new_end++;
               break;
             }
+          } else {
+            acp_old_end++;
+            acp_new_end++;
+            break;
           }
-          acp_new_end = acp_new_end + 1;
-          acp_old_end = acp_new_end;
         }
 
         text_change.acpStart = acp_start;
@@ -1044,19 +1064,25 @@ void TSFTextStore::CalculateTextandSelectionDiffAndNotifyIfNeeded() {
       }
 
       string_buffer_document_ = latest_buffer_from_client;
-
-      if (notify_text_change) {
-        text_store_acp_sink_->OnTextChange(0, &text_change);
-      }
+      text_changed = true;
     }
 
     if (!selection_.EqualsIgnoringDirection(latest_selection_from_client)) {
       selection_.set_start(latest_selection_from_client.GetMin());
       selection_.set_end(latest_selection_from_client.GetMax());
 
-      if (text_store_acp_sink_mask_ & TS_AS_SEL_CHANGE) {
-        text_store_acp_sink_->OnSelectionChange();
-      }
+      selection_changed = true;
+    }
+
+    // We should notify input service about text/selection change only after
+    // the cache has already been updated because input service may call back
+    // into us during notification.
+    if (notify_text_change && text_changed) {
+      text_store_acp_sink_->OnTextChange(0, &text_change);
+    }
+
+    if (notify_selection_change && selection_changed) {
+      text_store_acp_sink_->OnSelectionChange();
     }
   }
 }
