@@ -20322,6 +20322,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TabContextMenu_SendTabToSelf_Clicked">
+  <obsolete>Deprecated because of using histogram.</obsolete>
   <owner>jeffreycohen@chromium.org</owner>
   <owner>sebsg@chromium.org</owner>
   <description>
@@ -20331,6 +20332,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TabContextMenu_SendTabToSelf_Shown">
+  <obsolete>Deprecated because of using histogram.</obsolete>
   <owner>jeffreycohen@chromium.org</owner>
   <owner>sebsg@chromium.org</owner>
   <description>Self share option shows in the tab context menu.</description>
@@ -21081,6 +21083,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ViewContextMenu_SendTabToSelf_Clicked">
+  <obsolete>Deprecated because of using histogram.</obsolete>
   <owner>jeffreycohen@chromium.org</owner>
   <owner>sebsg@chromium.org</owner>
   <description>
@@ -21090,6 +21093,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ViewContextMenu_SendTabToSelf_Shown">
+  <obsolete>Deprecated because of using histogram.</obsolete>
   <owner>jeffreycohen@chromium.org</owner>
   <owner>sebsg@chromium.org</owner>
   <description>Self share option shows in the view context menu.</description>
