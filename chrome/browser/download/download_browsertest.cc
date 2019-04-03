@@ -2015,9 +2015,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryDangerCheck) {
 
   // Validate the download and wait for it to finish.
   std::vector<DownloadItem*> downloads;
+  dangerous_observer->WaitForFinished();
   DownloadManagerForBrowser(browser())->GetAllDownloads(&downloads);
   ASSERT_EQ(1u, downloads.size());
-  dangerous_observer->WaitForFinished();
   downloads[0]->ValidateDangerousDownload();
   completion_observer->WaitForFinished();
   EXPECT_EQ(1u, completion_observer->NumDangerousDownloadsSeen());
