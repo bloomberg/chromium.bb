@@ -24,7 +24,6 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.autofill.CardUnmaskPrompt;
 import org.chromium.chrome.browser.autofill.CardUnmaskPrompt.CardUnmaskObserverForTest;
 import org.chromium.chrome.browser.payments.PaymentRequestImpl.PaymentRequestServiceObserverForTest;
@@ -34,7 +33,7 @@ import org.chromium.chrome.browser.payments.ui.PaymentRequestUI;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.PaymentRequestObserverForTest;
 import org.chromium.chrome.browser.widget.prefeditor.EditorObserverForTest;
 import org.chromium.chrome.browser.widget.prefeditor.EditorTextField;
-import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -61,7 +60,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Custom ActivityTestRule for integration test for payments.
  */
-public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedActivity>
+public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
         implements PaymentRequestObserverForTest, PaymentRequestServiceObserverForTest,
                    CardUnmaskObserverForTest, EditorObserverForTest {
     /** Flag for installing a payment app without instruments. */
@@ -129,7 +128,7 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     private final MainActivityStartCallback mCallback;
 
     public PaymentRequestTestRule(String testFileName, MainActivityStartCallback callback) {
-        super(ChromeTabbedActivity.class);
+        super();
         mReadyForInput = new PaymentsCallbackHelper<>();
         mReadyToPay = new PaymentsCallbackHelper<>();
         mSelectionChecked = new PaymentsCallbackHelper<>();

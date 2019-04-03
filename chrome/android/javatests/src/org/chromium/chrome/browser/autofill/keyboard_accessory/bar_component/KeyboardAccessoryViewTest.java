@@ -42,14 +42,13 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.KeyboardAccessoryProperties.AutofillBarItem;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.KeyboardAccessoryProperties.BarItem;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.KeyboardAccessoryProperties.TabLayoutBarItem;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.tab_layout_component.KeyboardAccessoryTabLayoutCoordinator;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -74,8 +73,7 @@ public class KeyboardAccessoryViewTest {
     private BlockingQueue<KeyboardAccessoryView> mKeyboardAccessoryView;
 
     @Rule
-    public ChromeActivityTestRule<ChromeTabbedActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeTabbedActivity.class);
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     @Before
     public void setUp() throws InterruptedException {
