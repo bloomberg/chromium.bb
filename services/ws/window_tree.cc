@@ -1663,8 +1663,14 @@ void WindowTree::AllocateLocalSurfaceId(Id transport_window_id) {
   aura::Window* window = GetWindowByClientId(window_id);
   DVLOG(3) << "AllocateLocalSurfaceId client window_id="
            << window_id.ToString();
-  if (!window || !IsTopLevel(window)) {
+  if (!window) {
     DVLOG(1) << "AllocateLocalSurfaceId failed (invalid window id)";
+    return;
+  }
+  if (!IsTopLevel(window) &&
+      (!IsClientRootWindow(window) ||
+       ProxyWindow::GetMayBeNull(window)->owning_window_tree() != nullptr)) {
+    DVLOG(1) << "AllocateLocalSurfaceId failed (must be root or top-level)";
     return;
   }
   ClientRoot* client_root = GetClientRootForWindow(window);
