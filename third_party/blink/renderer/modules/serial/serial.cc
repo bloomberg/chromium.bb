@@ -50,6 +50,11 @@ const AtomicString& Serial::InterfaceName() const {
   return event_target_names::kSerial;
 }
 
+void Serial::ContextDestroyed(ExecutionContext*) {
+  for (auto& entry : port_cache_)
+    entry.value->ContextDestroyed();
+}
+
 ScriptPromise Serial::getPorts(ScriptState* script_state) {
   auto* context = GetExecutionContext();
   if (!context) {
@@ -112,6 +117,12 @@ ScriptPromise Serial::requestPort(ScriptState* script_state,
   return resolver->Promise();
 }
 
+void Serial::GetPort(const base::UnguessableToken& token,
+                     device::mojom::blink::SerialPortRequest request) {
+  EnsureServiceConnection();
+  service_->GetPort(token, std::move(request));
+}
+
 void Serial::Trace(Visitor* visitor) {
   visitor->Trace(get_ports_promises_);
   visitor->Trace(request_port_promises_);
@@ -155,8 +166,8 @@ void Serial::OnServiceConnectionError() {
 SerialPort* Serial::GetOrCreatePort(mojom::blink::SerialPortInfoPtr info) {
   SerialPort* port = port_cache_.at(TokenToString(info->token));
   if (!port) {
-    port = MakeGarbageCollected<SerialPort>(std::move(info));
-    port_cache_.insert(TokenToString(port->Token()), port);
+    port = MakeGarbageCollected<SerialPort>(this, std::move(info));
+    port_cache_.insert(TokenToString(port->token()), port);
   }
   return port;
 }

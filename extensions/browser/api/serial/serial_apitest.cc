@@ -285,7 +285,9 @@ class FakeSerialPortManager : public device::mojom::SerialPortManager {
   }
 
   void GetPort(const base::UnguessableToken& token,
-               device::mojom::SerialPortRequest request) override {
+               device::mojom::SerialPortRequest request,
+               device::mojom::SerialPortConnectionWatcherPtr watcher) override {
+    DCHECK(!watcher);
     auto it = token_path_map_.find(token);
     DCHECK(it != token_path_map_.end());
     mojo::MakeStrongBinding(std::make_unique<FakeSerialPort>(it->second),

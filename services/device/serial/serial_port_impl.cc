@@ -20,10 +20,13 @@ namespace device {
 void SerialPortImpl::Create(
     const base::FilePath& path,
     mojom::SerialPortRequest request,
+    mojom::SerialPortConnectionWatcherPtrInfo watcher,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-  mojo::MakeStrongBinding(
-      std::make_unique<SerialPortImpl>(path, ui_task_runner),
-      std::move(request));
+  auto impl = std::make_unique<SerialPortImpl>(path, std::move(ui_task_runner));
+  auto* impl_ptr = impl.get();
+  auto binding = mojo::MakeStrongBinding(std::move(impl), std::move(request));
+  if (watcher)
+    impl_ptr->SetWatcher(std::move(binding), std::move(watcher));
 }
 
 SerialPortImpl::SerialPortImpl(
@@ -35,6 +38,17 @@ SerialPortImpl::SerialPortImpl(
       weak_factory_(this) {}
 
 SerialPortImpl::~SerialPortImpl() = default;
+
+void SerialPortImpl::SetWatcher(
+    mojo::StrongBindingPtr<mojom::SerialPort> owning_binding,
+    mojom::SerialPortConnectionWatcherPtrInfo watcher) {
+  watcher_.Bind(std::move(watcher));
+  watcher_.set_connection_error_handler(base::BindOnce(
+      [](mojo::StrongBindingPtr<mojom::SerialPort> owning_binding) {
+        owning_binding->Close();
+      },
+      std::move(owning_binding)));
+}
 
 void SerialPortImpl::Open(mojom::SerialConnectionOptionsPtr options,
                           mojo::ScopedDataPipeConsumerHandle in_stream,
