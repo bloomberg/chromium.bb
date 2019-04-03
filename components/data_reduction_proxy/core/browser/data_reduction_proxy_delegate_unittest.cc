@@ -33,6 +33,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_bypass_protocol.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
@@ -104,26 +105,18 @@ class TestDataReductionProxyDelegate : public DataReductionProxyDelegate {
     if (expect_alternative_proxy_server && !broken) {
       histogram_tester.ExpectUniqueSample(
           "DataReductionProxy.Quic.ProxyStatus",
-          TestDataReductionProxyDelegate::QuicProxyStatus::
-              QUIC_PROXY_STATUS_AVAILABLE,
-          1);
+          QuicProxyStatus::QUIC_PROXY_STATUS_AVAILABLE, 1);
     } else if (!supports_quic && !broken) {
       histogram_tester.ExpectUniqueSample(
           "DataReductionProxy.Quic.ProxyStatus",
-          TestDataReductionProxyDelegate::QuicProxyStatus::
-              QUIC_PROXY_NOT_SUPPORTED,
-          1);
+          QuicProxyStatus::QUIC_PROXY_NOT_SUPPORTED, 1);
     } else {
       ASSERT_TRUE(broken);
       histogram_tester.ExpectUniqueSample(
           "DataReductionProxy.Quic.ProxyStatus",
-          TestDataReductionProxyDelegate::QuicProxyStatus::
-              QUIC_PROXY_STATUS_MARKED_AS_BROKEN,
-          1);
+          QuicProxyStatus::QUIC_PROXY_STATUS_MARKED_AS_BROKEN, 1);
     }
   }
-
-  using DataReductionProxyDelegate::QuicProxyStatus;
 
  private:
   const bool proxy_supports_quic_;
