@@ -142,3 +142,9 @@ std::unique_ptr<webrtc::TaskQueueFactory> CreateWebRtcTaskQueueFactory(
     const base::TaskTraits& traits) {
   return std::make_unique<WebrtcTaskQueueFactory>(traits);
 }
+
+std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter>
+CreateWebRtcTaskQueue(webrtc::TaskQueueFactory::Priority priority) {
+  return std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter>(
+      new WebrtcTaskQueue(TaskQueuePriority2Traits(priority)));
+}

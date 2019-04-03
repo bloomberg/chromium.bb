@@ -38,6 +38,7 @@
 #include "third_party/webrtc/api/audio/echo_canceller3_factory.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing_statistics.h"
 #include "third_party/webrtc/modules/audio_processing/typing_detection.h"
+#include "third_party/webrtc_overrides/task_queue_factory.h"
 
 namespace content {
 
@@ -404,8 +405,8 @@ void MediaStreamAudioProcessor::OnAecDumpFile(
 
   if (audio_processing_) {
     if (!worker_queue_) {
-      worker_queue_.reset(new rtc::TaskQueue("aecdump-worker-queue",
-                                             rtc::TaskQueue::Priority::LOW));
+      worker_queue_ = std::make_unique<rtc::TaskQueue>(
+          CreateWebRtcTaskQueue(rtc::TaskQueue::Priority::LOW));
     }
     // Here tasks will be posted on the |worker_queue_|. It must be
     // kept alive until StopEchoCancellationDump is called or the
