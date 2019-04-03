@@ -1109,6 +1109,7 @@ FcDirChecksum (struct stat *statb)
     source_date_epoch = getenv("SOURCE_DATE_EPOCH");
     if (source_date_epoch)
     {
+	errno = 0;
 	epoch = strtoull(source_date_epoch, &endptr, 10);
 
 	if (endptr == source_date_epoch)
