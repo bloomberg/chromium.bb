@@ -108,36 +108,50 @@ bool HasProfileBeenActiveSince(const ProfileAttributesEntry* entry,
 
 }  // namespace
 
+// This enum is used for histograms. Do not change existing values. Append new
+// values at the end.
 enum ProfileAvatar {
-  AVATAR_GENERIC = 0,       // The names for avatar icons
-  AVATAR_GENERIC_AQUA,
-  AVATAR_GENERIC_BLUE,
-  AVATAR_GENERIC_GREEN,
-  AVATAR_GENERIC_ORANGE,
-  AVATAR_GENERIC_PURPLE,
-  AVATAR_GENERIC_RED,
-  AVATAR_GENERIC_YELLOW,
-  AVATAR_SECRET_AGENT,
-  AVATAR_SUPERHERO,
-  AVATAR_VOLLEYBALL,        // 10
-  AVATAR_BUSINESSMAN,
-  AVATAR_NINJA,
-  AVATAR_ALIEN,
-  AVATAR_AWESOME,
-  AVATAR_FLOWER,
-  AVATAR_PIZZA,
-  AVATAR_SOCCER,
-  AVATAR_BURGER,
-  AVATAR_CAT,
-  AVATAR_CUPCAKE,           // 20
-  AVATAR_DOG,
-  AVATAR_HORSE,
-  AVATAR_MARGARITA,
-  AVATAR_NOTE,
-  AVATAR_SUN_CLOUD,
-  AVATAR_PLACEHOLDER,
-  AVATAR_UNKNOWN,           // 27
-  AVATAR_GAIA,              // 28
+  AVATAR_GENERIC = 0,  // The names for avatar icons
+  AVATAR_GENERIC_AQUA = 1,
+  AVATAR_GENERIC_BLUE = 2,
+  AVATAR_GENERIC_GREEN = 3,
+  AVATAR_GENERIC_ORANGE = 4,
+  AVATAR_GENERIC_PURPLE = 5,
+  AVATAR_GENERIC_RED = 6,
+  AVATAR_GENERIC_YELLOW = 7,
+  AVATAR_SECRET_AGENT = 8,
+  AVATAR_SUPERHERO = 9,
+  AVATAR_VOLLEYBALL = 10,
+  AVATAR_BUSINESSMAN = 11,
+  AVATAR_NINJA = 12,
+  AVATAR_ALIEN = 13,
+  AVATAR_AWESOME = 14,
+  AVATAR_FLOWER = 15,
+  AVATAR_PIZZA = 16,
+  AVATAR_SOCCER = 17,
+  AVATAR_BURGER = 18,
+  AVATAR_CAT = 19,
+  AVATAR_CUPCAKE = 20,
+  AVATAR_DOG = 21,
+  AVATAR_HORSE = 22,
+  AVATAR_MARGARITA = 23,
+  AVATAR_NOTE = 24,
+  AVATAR_SUN_CLOUD = 25,
+  AVATAR_PLACEHOLDER = 26,
+  AVATAR_UNKNOWN = 27,
+  AVATAR_GAIA = 28,
+  // Modern avatars:
+  AVATAR_ORIGAMI_CAT = 29,
+  AVATAR_ORIGAMI_CORGI = 30,
+  AVATAR_ORIGAMI_DRAGON = 31,
+  AVATAR_ORIGAMI_ELEPHANT = 32,
+  AVATAR_ORIGAMI_FOX = 33,
+  AVATAR_ORIGAMI_MONKEY = 34,
+  AVATAR_ORIGAMI_PANDA = 35,
+  AVATAR_ORIGAMI_PENGUIN = 36,
+  AVATAR_ORIGAMI_PINKBUTTERFLY = 37,
+  AVATAR_ORIGAMI_RABBIT = 38,
+  AVATAR_ORIGAMI_UNICORN = 39,
   NUM_PROFILE_AVATAR_METRICS
 };
 
@@ -286,13 +300,45 @@ void ProfileMetrics::LogProfileAvatarSelection(size_t icon_index) {
     case 26:
       icon_name = AVATAR_PLACEHOLDER;
       break;
+    // Modern avatars:
+    case 27:
+      icon_name = AVATAR_ORIGAMI_CAT;
+      break;
+    case 28:
+      icon_name = AVATAR_ORIGAMI_CORGI;
+      break;
+    case 29:
+      icon_name = AVATAR_ORIGAMI_DRAGON;
+      break;
+    case 30:
+      icon_name = AVATAR_ORIGAMI_ELEPHANT;
+      break;
+    case 31:
+      icon_name = AVATAR_ORIGAMI_FOX;
+      break;
+    case 32:
+      icon_name = AVATAR_ORIGAMI_MONKEY;
+      break;
+    case 33:
+      icon_name = AVATAR_ORIGAMI_PANDA;
+      break;
+    case 34:
+      icon_name = AVATAR_ORIGAMI_PENGUIN;
+      break;
+    case 35:
+      icon_name = AVATAR_ORIGAMI_PINKBUTTERFLY;
+      break;
+    case 36:
+      icon_name = AVATAR_ORIGAMI_RABBIT;
+      break;
+    case 37:
+      icon_name = AVATAR_ORIGAMI_UNICORN;
+      break;
     case SIZE_MAX:
       icon_name = AVATAR_GAIA;
       break;
     default:
-      DCHECK(profiles::IsModernAvatarIconIndex(icon_index));
-      // TODO(crbug.com/937834): Log modern avatar selection.
-      break;
+      NOTREACHED();
   }
   UMA_HISTOGRAM_ENUMERATION("Profile.Avatar", icon_name,
                             NUM_PROFILE_AVATAR_METRICS);
