@@ -195,6 +195,11 @@ class WebLocalFrame : public WebFrame {
   // kind of lookup what |window.open(..., name)| would in Javascript.
   virtual WebFrame* FindFrameByName(const WebString& name) = 0;
 
+  // Starts scrolling to a specific offset in a frame. Returns false on failure.
+  virtual bool ScrollTo(const gfx::Point& scrollPosition,
+                        bool animate,
+                        base::OnceClosure on_finish) = 0;
+
   // Navigation Ping --------------------------------------------------------
 
   virtual void SendPings(const WebURL& destination_url) = 0;

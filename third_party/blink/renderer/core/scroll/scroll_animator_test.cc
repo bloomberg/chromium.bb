@@ -112,13 +112,14 @@ class MockScrollableAreaForAnimatorTest
     return ScrollableArea::GetScrollOffset();
   }
 
-  void SetScrollOffset(
-      const ScrollOffset& offset,
-      ScrollType type,
-      ScrollBehavior behavior = kScrollBehaviorInstant) override {
+  void SetScrollOffset(const ScrollOffset& offset,
+                       ScrollType type,
+                       ScrollBehavior behavior = kScrollBehaviorInstant,
+                       ScrollCallback on_finish = ScrollCallback()) override {
     if (animator)
       animator->SetCurrentOffset(offset);
-    ScrollableArea::SetScrollOffset(offset, type, behavior);
+    ScrollableArea::SetScrollOffset(offset, type, behavior,
+                                    std::move(on_finish));
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner() const final {

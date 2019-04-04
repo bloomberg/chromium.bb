@@ -2018,6 +2018,21 @@ WebFrame* WebLocalFrameImpl::FindFrameByName(const WebString& name) {
   return WebFrame::FromFrame(result);
 }
 
+bool WebLocalFrameImpl::ScrollTo(const gfx::Point& scrollPosition,
+                                 bool animate,
+                                 base::OnceClosure on_finish) {
+  if (!GetFrame())
+    return false;
+  ScrollableArea* area = GetFrame()->View()->GetScrollableArea();
+  ScrollOffset offset = area->ScrollPositionToOffset(
+      FloatPoint(scrollPosition.x(), scrollPosition.y()));
+  area->SetScrollOffset(
+      offset, kProgrammaticScroll,
+      animate ? kScrollBehaviorSmooth : kScrollBehaviorInstant,
+      ScrollableArea::ScrollCallback(std::move(on_finish)));
+  return true;
+}
+
 void WebLocalFrameImpl::SendPings(const WebURL& destination_url) {
   DCHECK(GetFrame());
   if (Node* node = ContextMenuNodeInner()) {

@@ -190,7 +190,8 @@ class CORE_EXPORT VisualViewport final
   ChromeClient* GetChromeClient() const override;
   void SetScrollOffset(const ScrollOffset&,
                        ScrollType,
-                       ScrollBehavior = kScrollBehaviorInstant) override;
+                       ScrollBehavior,
+                       ScrollCallback on_finish) override;
   bool IsThrottled() const override {
     // VisualViewport is always in the main frame, so the frame does not get
     // throttled.

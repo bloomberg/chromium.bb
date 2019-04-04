@@ -1819,7 +1819,9 @@ TEST_P(VisualViewportTest, visualViewportIsInert) {
   EXPECT_EQ(200, html->clientWidth());
   EXPECT_EQ(300, html->clientHeight());
 
-  visual_viewport.SetScrollOffset(ScrollOffset(10, 15), kProgrammaticScroll);
+  visual_viewport.SetScrollOffset(ScrollOffset(10, 15), kProgrammaticScroll,
+                                  kScrollBehaviorInstant,
+                                  ScrollableArea::ScrollCallback());
 
   ASSERT_EQ(10, visual_viewport.GetScrollOffset().Width());
   ASSERT_EQ(15, visual_viewport.GetScrollOffset().Height());
@@ -2091,7 +2093,9 @@ TEST_P(VisualViewportTest, ResizeAnchoringWithRootScroller) {
                                                   kProgrammaticScroll);
 
   VisualViewport& visual_viewport = WebView()->GetPage()->GetVisualViewport();
-  visual_viewport.SetScrollOffset(ScrollOffset(0, 400), kProgrammaticScroll);
+  visual_viewport.SetScrollOffset(ScrollOffset(0, 400), kProgrammaticScroll,
+                                  kScrollBehaviorInstant,
+                                  ScrollableArea::ScrollCallback());
 
   WebView()->MainFrameWidget()->Resize(IntSize(800, 500));
 

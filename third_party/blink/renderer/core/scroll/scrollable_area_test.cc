@@ -301,4 +301,65 @@ TEST_F(ScrollableAreaTest, PopupOverlayScrollbarShouldNotFadeOut) {
   ThreadState::Current()->CollectAllGarbage();
 }
 
+TEST_F(ScrollableAreaTest, ScrollAnimatorCallbackFiresOnAnimationCancel) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+
+  MockScrollableArea* scrollable_area =
+      MockScrollableArea::Create(ScrollOffset(0, 100));
+  EXPECT_CALL(*scrollable_area, ScheduleAnimation())
+      .WillRepeatedly(Return(true));
+  bool finished = false;
+  scrollable_area->SetScrollOffset(
+      ScrollOffset(0, 10000), kProgrammaticScroll, kScrollBehaviorSmooth,
+      ScrollableArea::ScrollCallback(
+          base::BindOnce([](bool* finished) { *finished = true; }, &finished)));
+  EXPECT_EQ(0.0, scrollable_area->GetScrollAnimator().CurrentOffset().Height());
+  EXPECT_FALSE(finished);
+  scrollable_area->CancelProgrammaticScrollAnimation();
+  EXPECT_EQ(0.0, scrollable_area->GetScrollAnimator().CurrentOffset().Height());
+  EXPECT_TRUE(finished);
+}
+
+TEST_F(ScrollableAreaTest, ScrollAnimatorCallbackFiresOnInstantScroll) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+
+  MockScrollableArea* scrollable_area =
+      MockScrollableArea::Create(ScrollOffset(0, 100));
+  EXPECT_CALL(*scrollable_area, ScheduleAnimation())
+      .WillRepeatedly(Return(true));
+  bool finished = false;
+  scrollable_area->SetScrollOffset(
+      ScrollOffset(0, 10000), kProgrammaticScroll, kScrollBehaviorInstant,
+      ScrollableArea::ScrollCallback(
+          base::BindOnce([](bool* finished) { *finished = true; }, &finished)));
+  EXPECT_EQ(100, scrollable_area->GetScrollAnimator().CurrentOffset().Height());
+  EXPECT_TRUE(finished);
+}
+
+TEST_F(ScrollableAreaTest, ScrollAnimatorCallbackFiresOnAnimationFinish) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+
+  MockScrollableArea* scrollable_area =
+      MockScrollableArea::Create(ScrollOffset(0, 100));
+  EXPECT_CALL(*scrollable_area, ScheduleAnimation())
+      .WillRepeatedly(Return(true));
+  bool finished = false;
+  scrollable_area->SetScrollOffset(
+      ScrollOffset(0, 9), kProgrammaticScroll, kScrollBehaviorSmooth,
+      ScrollableArea::ScrollCallback(
+          base::BindOnce([](bool* finished) { *finished = true; }, &finished)));
+  EXPECT_EQ(0.0, scrollable_area->GetScrollAnimator().CurrentOffset().Height());
+  EXPECT_FALSE(finished);
+  scrollable_area->UpdateCompositorScrollAnimations();
+  scrollable_area->ServiceScrollAnimations(1);
+  EXPECT_EQ(0.0, scrollable_area->GetScrollAnimator().CurrentOffset().Height());
+  EXPECT_FALSE(finished);
+  scrollable_area->ServiceScrollAnimations(1000000);
+  EXPECT_EQ(9.0, scrollable_area->GetScrollAnimator().CurrentOffset().Height());
+  EXPECT_TRUE(finished);
+}
+
 }  // namespace blink
