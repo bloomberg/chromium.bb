@@ -1727,12 +1727,20 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppNoUpdate) {
   EXPECT_EQ(extensions::Manifest::EXTERNAL_PREF, GetInstalledAppLocation());
 }
 
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_LaunchOfflineEnabledAppHasUpdate) {
+// TODO(crbug.com/949490): LaunchOfflineEnabledAppHasUpdate is flaky ChromeOS rel (timeout).
+#if defined(OS_CHROMEOS) && defined(NDEBUG)
+#define MAYBE_PRE_LaunchOfflineEnabledAppHasUpdate DISABLED_PRE_LaunchOfflineEnabledAppHasUpdate
+#define MAYBE_LaunchOfflineEnabledAppHasUpdate DISABLED_LaunchOfflineEnabledAppHasUpdate
+#else
+#define MAYBE_PRE_LaunchOfflineEnabledAppHasUpdate PRE_LaunchOfflineEnabledAppHasUpdate
+#define MAYBE_LaunchOfflineEnabledAppHasUpdate LaunchOfflineEnabledAppHasUpdate
+#endif
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, MAYBE_PRE_LaunchOfflineEnabledAppHasUpdate) {
   PreCacheAndLaunchApp(kTestOfflineEnabledKioskApp, "1.0.0",
                        std::string(kTestOfflineEnabledKioskApp) + "_v1.crx");
 }
 
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppHasUpdate) {
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, MAYBE_LaunchOfflineEnabledAppHasUpdate) {
   set_test_app_id(kTestOfflineEnabledKioskApp);
   fake_cws()->SetUpdateCrx(test_app_id(),
                            "iiigpodgfihagabpagjehoocpakbnclp.crx", "2.0.0");
