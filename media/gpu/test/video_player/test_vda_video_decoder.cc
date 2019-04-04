@@ -50,7 +50,9 @@ void TestVDAVideoDecoder::Destroy() {
   weak_this_factory_.InvalidateWeakPtrs();
 
   // Delete all video frames and related textures.
+  frame_renderer_->AcquireGLContext();
   video_frames_.clear();
+  frame_renderer_->ReleaseGLContext();
 }
 
 void TestVDAVideoDecoder::Initialize(const VideoDecoderConfig& config,
@@ -63,6 +65,7 @@ void TestVDAVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   // Create decoder factory.
   std::unique_ptr<GpuVideoDecodeAcceleratorFactory> decoder_factory;
+  frame_renderer_->AcquireGLContext();
   bool hasGLContext = frame_renderer_->GetGLContext() != nullptr;
   if (hasGLContext) {
     decoder_factory = GpuVideoDecodeAcceleratorFactory::Create(
@@ -75,6 +78,7 @@ void TestVDAVideoDecoder::Initialize(const VideoDecoderConfig& config,
   } else {
     decoder_factory = GpuVideoDecodeAcceleratorFactory::CreateWithNoGL();
   }
+  frame_renderer_->ReleaseGLContext();
 
   if (!decoder_factory) {
     LOG_ASSERT(decoder_) << "Failed to create VideoDecodeAccelerator factory";
