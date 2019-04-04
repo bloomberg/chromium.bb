@@ -64,7 +64,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
-#include "chromeos/dbus/shill_manager_client.h"
+#include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/account_id/account_id.h"

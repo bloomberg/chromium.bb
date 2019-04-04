@@ -9,7 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_manager_client.h"
+#include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/network/geolocation_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"

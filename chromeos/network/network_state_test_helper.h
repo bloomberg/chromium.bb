@@ -9,10 +9,10 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
-#include "chromeos/dbus/shill_device_client.h"
-#include "chromeos/dbus/shill_manager_client.h"
-#include "chromeos/dbus/shill_profile_client.h"
-#include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/dbus/shill/shill_device_client.h"
+#include "chromeos/dbus/shill/shill_manager_client.h"
+#include "chromeos/dbus/shill/shill_profile_client.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/network_state_handler.h"
 
 namespace chromeos {

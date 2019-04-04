@@ -13,7 +13,7 @@
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/client_cert_util.h"
 #include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_state.h"

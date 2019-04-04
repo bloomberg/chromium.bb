@@ -7,7 +7,7 @@
 #include "base/message_loop/message_loop.h"
 #include "chromeos/constants/chromeos_pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_manager_client.h"
+#include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/network/fast_transition_observer.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/prefs/pref_registry_simple.h"

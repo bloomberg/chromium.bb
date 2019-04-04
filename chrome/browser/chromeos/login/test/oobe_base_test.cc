@@ -26,7 +26,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/fake_shill_manager_client.h"
+#include "chromeos/dbus/shill/fake_shill_manager_client.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "content/public/browser/notification_observer.h"

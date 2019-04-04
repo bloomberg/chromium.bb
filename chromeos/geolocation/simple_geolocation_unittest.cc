@@ -11,7 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_manager_client.h"
+#include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/geolocation/simple_geolocation_provider.h"
 #include "chromeos/geolocation/simple_geolocation_request_test_monitor.h"
 #include "chromeos/network/geolocation_handler.h"

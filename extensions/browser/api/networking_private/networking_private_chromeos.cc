@@ -11,8 +11,6 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
@@ -45,7 +43,6 @@ using chromeos::NetworkCertificateHandler;
 using chromeos::NetworkHandler;
 using chromeos::NetworkStateHandler;
 using chromeos::NetworkTypePattern;
-using chromeos::ShillManagerClient;
 using extensions::NetworkingPrivateDelegate;
 
 namespace private_api = extensions::api::networking_private;
