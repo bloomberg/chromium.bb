@@ -2559,11 +2559,11 @@
   <message name="IDS_SETTINGS_SAFEBROWSING_ENABLE_REPORTING_DESC" desc="Description for extended safe browsing">
     Sends some system information and page content to Google
   </message>
-  <message name="IDS_SETTINGS_SPELLING_PREF" desc="The documentation string of the 'Use Spelling' preference">
-    Use a web service to help resolve spelling errors
+  <message name="IDS_SETTINGS_SPELLING_PREF" desc="Label for a setting that enhances spell check by sending the text that users type to Google for spelling suggestions.">
+    Use enhanced spell check
   </message>
   <message name="IDS_SETTINGS_SPELLING_DESCRIPTION" desc="Description of using a web serviced to help resolve spelling errors. It is important to convey that what the user types will be sent to Google.">
-    Smarter spell-checking by sending what you type in the browser to Google
+    Chrome sends the text you type in the browser to Google
   </message>
   <message name="IDS_SETTINGS_SPELLING_PREF_UNIFIED_CONSENT" desc="The documentation string of the 'Use Spelling' preference">
     Enhanced spell check

@@ -6,6 +6,7 @@
 <link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="../lifetime_browser_proxy.html">
 <link rel="import" href="../people_page/sync_browser_proxy.html">
+<link rel="import" href="../prefs/prefs_behavior.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="privacy_page_browser_proxy.html">
@@ -78,6 +79,7 @@
 <if expr="_google_chrome">
     <settings-toggle-button id="spellCheckControl"
         pref="{{prefs.spellcheck.use_spelling_service}}"
+        on-settings-boolean-control-change="onUseSpellingServiceToggle_"
         label="$i18n{spellingPref}"
         sub-label="$i18n{spellingDescription}"
         hidden="[[!showSpellCheckControl_(prefs.spellcheck.dictionaries)]]">
