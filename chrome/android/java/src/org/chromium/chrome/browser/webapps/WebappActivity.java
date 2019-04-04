@@ -15,7 +15,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.os.SystemClock;
-import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
@@ -64,8 +63,6 @@ import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
 
 import java.io.File;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -75,15 +72,6 @@ import java.util.HashMap;
  */
 public class WebappActivity extends SingleTabActivity {
     public static final String WEBAPP_SCHEME = "webapp";
-
-    // The activity type of WebappActivity.
-    @IntDef({ActivityType.WEBAPP, ActivityType.WEBAPK})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface ActivityType {
-        int OTHER = -1;
-        int WEBAPP = 0;
-        int WEBAPK = 1;
-    }
 
     private static final String TAG = "WebappActivity";
     private static final String HISTOGRAM_NAVIGATION_STATUS = "Webapp.NavigationStatus";
