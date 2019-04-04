@@ -1025,7 +1025,7 @@ CastContentBrowserClient::CreateNetworkContext(
 }
 
 bool CastContentBrowserClient::DoesSiteRequireDedicatedProcess(
-    content::BrowserContext* browser_context,
+    content::BrowserOrResourceContext browser_or_resource_context,
     const GURL& effective_site_url) {
   // Always isolate extensions. This prevents site isolation from messing up
   // URLs.

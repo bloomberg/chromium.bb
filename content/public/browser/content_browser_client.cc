@@ -115,9 +115,9 @@ bool ContentBrowserClient::ShouldUseSpareRenderProcessHost(
 }
 
 bool ContentBrowserClient::DoesSiteRequireDedicatedProcess(
-    BrowserContext* browser_context,
+    BrowserOrResourceContext browser_or_resource_context,
     const GURL& effective_site_url) {
-  DCHECK(browser_context);
+  DCHECK(browser_or_resource_context);
   return false;
 }
 
