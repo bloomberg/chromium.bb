@@ -153,7 +153,7 @@ ku{
         MF{"MF"}
         MG{"Madagaskar"}
         MH{"Giravên Marşal"}
-        MK{"MK"}
+        MK{"Makedonya"}
         ML{"Malî"}
         MM{"Myanmar (Birmanya)"}
         MN{"Mongolya"}
@@ -261,7 +261,8 @@ ku{
         CD{"Kongo (KDK)"}
         CG{"Kongo (Komar)"}
         CZ{"Komara Çekî"}
+        MK{"MK"}
         TL{"Tîmora Rojhilat"}
     }
-    Version{"2.1.44.82"}
+    Version{"2.1.47.83"}
 }

@@ -8,9 +8,7 @@
 #
 # ICU Word Break Rules
 #      See Unicode Standard Annex #29.
-#      These rules are based on UAX #29 Revision 29 for Unicode Version 9.0
-#      with additions for Emoji Sequences from https://goo.gl/cluFCn
-#      Plus additional characters introduces with Emoji 5, http://www.unicode.org/reports/tr51/proposed.html
+#      These rules are based on UAX #29 Revision 34 for Unicode Version 12.0
 #
 # Note:  Updates to word.txt will usually need to be merged into
 #        word_POSIX.txt also.
@@ -47,10 +45,10 @@ $Double_Quote       = [\p{Word_Break = Double_Quote}];
 # $MidNumLet is used in rules 6/7 (rules of our interest) and rules 11/12.
 # Because it's OR'd with $MidNum in rules 11/12, rules 11/12 are not affected
 # while rules 6/7 are reverted to the old behavior we want.
-$MidNumLet    = [[\p{Word_Break = MidNumLet}] - [\u002E \uFF0E]];
+$MidNumLet          = [[\p{Word_Break = MidNumLet}] - [\u002E \uFF0E]];
 $MidLetter          = [\p{Word_Break = MidLetter}];
-$MidNum       = [\p{Word_Break = MidNum}[\u002E \uFF0E]];
-$Numeric      = [\p{Word_Break = Numeric}[\uff10-\uff19]]; #includes fullwidth digits
+$MidNum             = [\p{Word_Break = MidNum}[\u002E \uFF0E]];
+$Numeric            = [[\p{Word_Break = Numeric}] [\uFF10-\uff19]];  # Patch for ICU-12079
 $ExtendNumLet       = [\p{Word_Break = ExtendNumLet}];
 $WSegSpace          = [\p{Word_Break = WSegSpace}];
 $Extended_Pict      = [:ExtPict:];
@@ -64,7 +62,7 @@ $Hiragana           = [:Hiragana:];
 #   5.0 or later as the definition of Complex_Context was corrected to include all
 #   characters requiring dictionary break.
 
-$Control        = [\p{Grapheme_Cluster_Break = Control}]; 
+$Control        = [\p{Grapheme_Cluster_Break = Control}];
 $HangulSyllable = [\uac00-\ud7a3];
 $ComplexContext = [:LineBreak = Complex_Context:];
 $KanaKanji      = [$Han $Hiragana $Katakana];
@@ -76,7 +74,7 @@ $ALetterPlus  = [$ALetter-$dictionaryCJK [$ComplexContext-$Extend-$Control]];
 
 
 #
-#  Rules 4    Ignore Format and Extend characters, 
+#  Rules 4    Ignore Format and Extend characters,
 #             except when they appear at the beginning of a region of text.
 #
 # TODO: check if handling of katakana in dictionary makes rules incorrect/void
@@ -154,7 +152,7 @@ $NumericEx $NumericEx {100};
 
 $NumericEx ($ALetterEx | $Hebrew_LetterEx) {200};
 
-# rule 11 and 12 
+# rule 11 and 12
 
 $NumericEx ($MidNumEx | $MidNumLetEx | $Single_QuoteEx) $NumericEx {100};
 
@@ -186,7 +184,7 @@ $ExtendNumLetEx  $KatakanaEx     {400};    #  (13b)
 
 # special handling for CJK characters: chain for later dictionary segmentation
 $HangulSyllable $HangulSyllable {200};
-$KanaKanji $KanaKanji {400}; # different rule status if both kana and kanji found 
+$KanaKanji $KanaKanji {400}; # different rule status if both kana and kanji found
 
 # Rule 999
 #     Match a single code point if no other rule applies.

@@ -124,14 +124,13 @@ static void U_CALLCONV _deleteEngine(void *obj) {
 U_CDECL_END
 U_NAMESPACE_BEGIN
 
-static UMutex gBreakEngineMutex = U_MUTEX_INITIALIZER;
-
 const LanguageBreakEngine *
 ICULanguageBreakFactory::getEngineFor(UChar32 c) {
     const LanguageBreakEngine *lbe = NULL;
     UErrorCode  status = U_ZERO_ERROR;
 
-    Mutex m(&gBreakEngineMutex);
+    static UMutex *gBreakEngineMutex = new UMutex();
+    Mutex m(gBreakEngineMutex);
 
     if (fEngines == NULL) {
         UStack  *engines = new UStack(_deleteEngine, NULL, status);

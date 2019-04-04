@@ -183,7 +183,7 @@ tk{
         MF{"Sen-Marten"}
         MG{"Madagaskar"}
         MH{"Marşall adalary"}
-        MK{"Makedoniýa (ÖÝR)"}
+        MK{"Makedoniýa"}
         ML{"Mali"}
         MM{"Mýanma (Burma)"}
         MN{"Mongoliýa"}
@@ -287,6 +287,8 @@ tk{
         VU{"Wanuatu"}
         WF{"Uollis we Futuna"}
         WS{"Samoa"}
+        XA{"psewdo-şiweler"}
+        XB{"psewdo-bidi"}
         XK{"Kosowo"}
         YE{"Ýemen"}
         YT{"Maýotta"}
@@ -304,7 +306,8 @@ tk{
         CG{"Kongo (Respublika)"}
         CI{"Şirmaýy kenar"}
         CZ{"Çeh Respublikasy"}
+        MK{"Makedoniýa (ÖÝR)"}
         TL{"Gündogar Timor"}
     }
-    Version{"2.1.43.65"}
+    Version{"2.1.48.86"}
 }

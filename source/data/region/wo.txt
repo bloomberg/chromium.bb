@@ -140,7 +140,7 @@ wo{
         MF{"Saŋ Marteŋ"}
         MG{"Madagaskaar"}
         MH{"Duni Marsaal"}
-        MK{"Maseduwaan (Réewum yugoslawi gu yàgg ga)"}
+        MK{"Maseduwaan"}
         ML{"Mali"}
         MM{"Miyanmaar"}
         MN{"Mongoli"}
@@ -251,6 +251,7 @@ wo{
     Countries%variant{
         CD{"Kongo (R K D)"}
         CG{"Réewum Kongo"}
+        MK{"Maseduwaan (Réewum yugoslawi gu yàgg ga)"}
     }
-    Version{"2.1.43.94"}
+    Version{"2.1.47.84"}
 }

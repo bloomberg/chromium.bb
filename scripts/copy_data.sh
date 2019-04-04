@@ -52,11 +52,11 @@ function copy_android_ios {
 function copy_cast {
   echo "Copying icudtl.dat for $1"
 
-  cp "data/out/tmp/icudt${VERSION}l.dat" "${TOPSRC}/$2/icudt${VERSION}l.dat"
-
   LD_LIBRARY_PATH=lib/ bin/icupkg -r \
     "${TOPSRC}/$2/cast-removed-resources.txt" \
-    "${TOPSRC}/$2/icudt${VERSION}l.dat"
+    "data/out/tmp/icudt${VERSION}l.dat"
+
+  cp "data/out/tmp/icudt${VERSION}l.dat" "${TOPSRC}/$2/icudt${VERSION}l.dat"
 
   mv "${TOPSRC}/$2/icudt${VERSION}l.dat" "${TOPSRC}/$2/icudtl.dat"
 
@@ -66,35 +66,49 @@ function copy_cast {
 function copy_flutter {
   echo "Copying icudtl.dat for Flutter"
 
-  cp "data/out/tmp/icudt${VERSION}l.dat" "${TOPSRC}/flutter/icudt${VERSION}l.dat"
 
   echo "Removing unused resources from icudtl.dat for Flutter"
-
   LD_LIBRARY_PATH=lib/ bin/icupkg -r \
     "${TOPSRC}/flutter/flutter-removed-resources.txt" \
-    "${TOPSRC}/flutter/icudt${VERSION}l.dat"
+    "data/out/tmp/icudt${VERSION}l.dat"
+
+  cp "data/out/tmp/icudt${VERSION}l.dat" "${TOPSRC}/flutter/icudt${VERSION}l.dat"
+
   mv "${TOPSRC}/flutter/icudt${VERSION}l.dat" "${TOPSRC}/flutter/icudtl.dat"
 
   echo "Done with copying pre-built ICU data file for Flutter."
 }
 
+BACKUP_DIR="dataout/$1"
+function backup_outdir {
+  rm -rf "${BACKUP_DIR}"
+  mkdir "${BACKUP_DIR}"
+  find "data/out" | cpio -pdmv "${BACKUP_DIR}"
+}
+
 case "$1" in
   "chromeos")
     copy_chromeos
+    backup_outdir $1
     ;;
   "common")
     copy_common
+    backup_outdir $1
     ;;
   "android")
     copy_android_ios Android android
+    backup_outdir $1
     ;;
   "ios")
     copy_android_ios iOS ios
+    backup_outdir $1
     ;;
   "cast")
     copy_cast Cast cast
+    backup_outdir $1
     ;;
   "flutter")
     copy_flutter
+    backup_outdir $1
     ;;
 esac
