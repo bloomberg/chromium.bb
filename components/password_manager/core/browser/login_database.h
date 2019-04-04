@@ -182,10 +182,12 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
       const sync_pb::ModelTypeState& model_type_state) override;
   bool ClearModelTypeState(syncer::ModelType model_type) override;
 
-  // Callers that requires transaction support should call there methods to
-  // begin and commit transactions. They delegate to the transaction support of
-  // the underlying database. Only one transaction may exist at a time.
+  // Callers that requires transaction support should call these methods to
+  // begin, rollback and commit transactions. They delegate to the transaction
+  // support of the underlying database. Only one transaction may exist at a
+  // time.
   bool BeginTransaction();
+  void RollbackTransaction();
   bool CommitTransaction();
 
   StatisticsTable& stats_table() { return stats_table_; }

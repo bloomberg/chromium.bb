@@ -1656,6 +1656,10 @@ bool LoginDatabase::BeginTransaction() {
   return db_.BeginTransaction();
 }
 
+void LoginDatabase::RollbackTransaction() {
+  db_.RollbackTransaction();
+}
+
 bool LoginDatabase::CommitTransaction() {
   return db_.CommitTransaction();
 }

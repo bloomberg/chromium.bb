@@ -206,6 +206,7 @@ class MockPasswordStoreSync : public PasswordStoreSync {
   MOCK_METHOD1(NotifyLoginsChanged, void(const PasswordStoreChangeList&));
   MOCK_METHOD0(BeginTransaction, bool());
   MOCK_METHOD0(CommitTransaction, bool());
+  MOCK_METHOD0(RollbackTransaction, void());
   MOCK_METHOD0(GetMetadataStore, PasswordStoreSync::MetadataStore*());
 };
 
@@ -644,6 +645,7 @@ TEST_F(PasswordSyncBridgeTest,
   ON_CALL(*mock_password_store_sync(), AddLoginSync(_))
       .WillByDefault(testing::Return(PasswordStoreChangeList()));
 
+  EXPECT_CALL(*mock_password_store_sync(), RollbackTransaction());
   base::Optional<syncer::ModelError> error = bridge()->MergeSyncData(
       bridge()->CreateMetadataChangeList(),
       {syncer::EntityChange::CreateAdd(
@@ -668,6 +670,7 @@ TEST_F(
       bridge()->CreateMetadataChangeList();
   metadata_changes->UpdateModelTypeState(model_type_state);
 
+  EXPECT_CALL(*mock_password_store_sync(), RollbackTransaction());
   base::Optional<syncer::ModelError> error =
       bridge()->MergeSyncData(std::move(metadata_changes), {});
   EXPECT_TRUE(error);

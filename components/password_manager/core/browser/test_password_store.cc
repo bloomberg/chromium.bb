@@ -206,6 +206,8 @@ bool TestPasswordStore::BeginTransaction() {
   return true;
 }
 
+void TestPasswordStore::RollbackTransaction() {}
+
 bool TestPasswordStore::CommitTransaction() {
   return true;
 }

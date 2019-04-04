@@ -84,6 +84,7 @@ class PasswordStoreDefault : public PasswordStore {
 
   // Implements PasswordStoreSync interface.
   bool BeginTransaction() override;
+  void RollbackTransaction() override;
   bool CommitTransaction() override;
   FormRetrievalResult ReadAllLogins(
       PrimaryKeyToFormMap* key_to_form_map) override;

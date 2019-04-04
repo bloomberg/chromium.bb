@@ -83,6 +83,7 @@ class MockPasswordStore : public PasswordStore {
   MOCK_METHOD0(ClearAllEnterprisePasswordHash, void());
 #endif
   MOCK_METHOD0(BeginTransaction, bool());
+  MOCK_METHOD0(RollbackTransaction, void());
   MOCK_METHOD0(CommitTransaction, bool());
   MOCK_METHOD1(ReadAllLogins, FormRetrievalResult(PrimaryKeyToFormMap*));
   MOCK_METHOD1(RemoveLoginByPrimaryKeySync, PasswordStoreChangeList(int));

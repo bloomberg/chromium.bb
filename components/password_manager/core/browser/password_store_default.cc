@@ -223,6 +223,11 @@ bool PasswordStoreDefault::BeginTransaction() {
   return false;
 }
 
+void PasswordStoreDefault::RollbackTransaction() {
+  if (login_db_)
+    login_db_->RollbackTransaction();
+}
+
 bool PasswordStoreDefault::CommitTransaction() {
   if (login_db_)
     return login_db_->CommitTransaction();
