@@ -30,7 +30,7 @@
 
 #include <libweston/libweston.h>
 #include "ivi-layout-export.h"
-#include "libweston-desktop/libweston-desktop.h"
+#include <libweston-desktop/libweston-desktop.h>
 
 struct ivi_layout_view {
 	struct wl_list link;	/* ivi_layout::view_list */

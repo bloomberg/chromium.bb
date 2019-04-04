@@ -25,8 +25,6 @@ dep_lib_desktop = declare_dependency(
 	dependencies: dep_libweston
 )
 
-install_headers('libweston-desktop.h', subdir: dir_include_libweston)
-
 pkgconfig.generate(
 	lib_desktop,
 	filebase: 'libweston-desktop-@0@'.format(libweston_major),

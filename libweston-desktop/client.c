@@ -28,7 +28,7 @@
 #include <libweston/libweston.h>
 #include <libweston/zalloc.h>
 
-#include "libweston-desktop.h"
+#include <libweston-desktop/libweston-desktop.h>
 #include "internal.h"
 
 struct weston_desktop_client {

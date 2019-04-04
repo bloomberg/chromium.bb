@@ -30,7 +30,7 @@
 #include <stdint.h>
 
 #include <libweston/libweston.h>
-#include "libweston-desktop/libweston-desktop.h"
+#include <libweston-desktop/libweston-desktop.h>
 
 struct ivi_shell
 {

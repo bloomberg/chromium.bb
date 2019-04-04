@@ -39,7 +39,7 @@
 #include "compositor/weston.h"
 #include <libweston/config-parser.h>
 #include "shared/helpers.h"
-#include "libweston-desktop/libweston-desktop.h"
+#include <libweston-desktop/libweston-desktop.h>
 
 struct desktest_shell {
 	struct wl_listener compositor_destroy_listener;

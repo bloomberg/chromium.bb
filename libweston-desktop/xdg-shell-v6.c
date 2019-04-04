@@ -35,7 +35,7 @@
 #include <libweston/zalloc.h>
 #include "xdg-shell-unstable-v6-server-protocol.h"
 
-#include "libweston-desktop.h"
+#include <libweston-desktop/libweston-desktop.h>
 #include "internal.h"
 
 #define WD_XDG_SHELL_PROTOCOL_VERSION 1
