@@ -28,9 +28,9 @@ static const SEG_LVL_FEATURES seg_lvl_lf_lut[MAX_MB_PLANE][2] = {
   { SEG_LVL_ALT_LF_V, SEG_LVL_ALT_LF_V }
 };
 
-static const int delta_lf_id_lut[MAX_MB_PLANE][2] = {
-  { 0, 1 }, { 2, 2 }, { 3, 3 }
-};
+static const int delta_lf_id_lut[MAX_MB_PLANE][2] = { { 0, 1 },
+                                                      { 2, 2 },
+                                                      { 3, 3 } };
 
 enum { VERT_EDGE = 0, HORZ_EDGE = 1, NUM_EDGE_DIRS } UENUM1BYTE(EDGE_DIR);
 

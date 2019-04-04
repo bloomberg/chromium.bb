@@ -1751,9 +1751,9 @@ static void decode_partition(AV1Decoder *const pbi, ThreadData *const td,
   // 01 - do parse only
   // 10 - do decode only
   // 11 - do parse and decode
-  static const block_visitor_fn_t block_visit[4] = {
-    NULL, parse_decode_block, decode_block, parse_decode_block
-  };
+  static const block_visitor_fn_t block_visit[4] = { NULL, parse_decode_block,
+                                                     decode_block,
+                                                     parse_decode_block };
 
   if (parse_decode_flag & 1) {
     const int num_planes = av1_num_planes(cm);

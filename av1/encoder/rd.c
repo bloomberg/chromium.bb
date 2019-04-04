@@ -52,20 +52,20 @@ static const uint8_t rd_thresh_block_size_factor[BLOCK_SIZES_ALL] = {
   2, 3, 3, 4, 6, 6, 8, 12, 12, 16, 24, 24, 32, 48, 48, 64, 4, 4, 8, 8, 16, 16
 };
 
-static const int use_intra_ext_tx_for_txsize[EXT_TX_SETS_INTRA][EXT_TX_SIZES] =
-    {
-      { 1, 1, 1, 1 },  // unused
-      { 1, 1, 0, 0 },
-      { 0, 0, 1, 0 },
-    };
+static const int use_intra_ext_tx_for_txsize[EXT_TX_SETS_INTRA]
+                                            [EXT_TX_SIZES] = {
+                                              { 1, 1, 1, 1 },  // unused
+                                              { 1, 1, 0, 0 },
+                                              { 0, 0, 1, 0 },
+                                            };
 
-static const int use_inter_ext_tx_for_txsize[EXT_TX_SETS_INTER][EXT_TX_SIZES] =
-    {
-      { 1, 1, 1, 1 },  // unused
-      { 1, 1, 0, 0 },
-      { 0, 0, 1, 0 },
-      { 0, 0, 0, 1 },
-    };
+static const int use_inter_ext_tx_for_txsize[EXT_TX_SETS_INTER]
+                                            [EXT_TX_SIZES] = {
+                                              { 1, 1, 1, 1 },  // unused
+                                              { 1, 1, 0, 0 },
+                                              { 0, 0, 1, 0 },
+                                              { 0, 0, 0, 1 },
+                                            };
 
 static const int av1_ext_tx_set_idx_to_type[2][AOMMAX(EXT_TX_SETS_INTRA,
                                                       EXT_TX_SETS_INTER)] = {
@@ -343,9 +343,9 @@ void av1_init_me_luts(void) {
 
 static const int rd_boost_factor[16] = { 64, 32, 32, 32, 24, 16, 12, 12,
                                          8,  8,  4,  4,  2,  2,  1,  0 };
-static const int rd_frame_type_factor[FRAME_UPDATE_TYPES] = {
-  128, 144, 128, 128, 144, 144, 128
-};
+static const int rd_frame_type_factor[FRAME_UPDATE_TYPES] = { 128, 144, 128,
+                                                              128, 144, 144,
+                                                              128 };
 
 int av1_compute_rd_mult_based_on_qindex(const AV1_COMP *cpi, int qindex) {
   const int q = av1_dc_quant_Q3(qindex, 0, cpi->common.seq_params.bit_depth);
@@ -795,9 +795,9 @@ static const double surffit_rate_params[9][4] = {
   },
 };
 
-static const double surffit_dist_params[7] = {
-  1.475844, 4.328362, -5.680233, -0.500994, 0.554585, 4.839478, -0.695837
-};
+static const double surffit_dist_params[7] = { 1.475844,  4.328362, -5.680233,
+                                               -0.500994, 0.554585, 4.839478,
+                                               -0.695837 };
 
 static void rate_surffit_model_params_lookup(BLOCK_SIZE bsize, double xm,
                                              double *rpar) {

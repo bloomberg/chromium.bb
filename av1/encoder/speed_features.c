@@ -29,9 +29,9 @@ static MESH_PATTERN
       { { 64, 16 }, { 24, 8 }, { 12, 4 }, { 7, 1 } },
       { { 64, 16 }, { 24, 8 }, { 12, 4 }, { 7, 1 } },
     };
-static unsigned char good_quality_max_mesh_pct[MAX_MESH_SPEED + 1] = {
-  50, 50, 25, 15, 5, 1
-};
+static unsigned char good_quality_max_mesh_pct[MAX_MESH_SPEED + 1] = { 50, 50,
+                                                                       25, 15,
+                                                                       5,  1 };
 
 // TODO(huisu@google.com): These settings are pretty relaxed, tune them for
 // each speed setting

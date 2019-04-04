@@ -21,9 +21,9 @@
 #include "aom_ports/mem.h"
 #include "av1/encoder/corner_match.h"
 
-DECLARE_ALIGNED(16, static const uint8_t, byte_mask[16]) = {
-  255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0
-};
+DECLARE_ALIGNED(16, static const uint8_t,
+                byte_mask[16]) = { 255, 255, 255, 255, 255, 255, 255, 255,
+                                   255, 255, 255, 255, 255, 0,   0,   0 };
 #if MATCH_SZ != 13
 #error "Need to change byte_mask in corner_match_sse4.c if MATCH_SZ != 13"
 #endif

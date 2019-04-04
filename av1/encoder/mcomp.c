@@ -2017,8 +2017,8 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
   MV *best_mv = &x->best_mv.as_mv;
   unsigned int best_sad = INT_MAX;
   int i, j;
-  uint8_t do_refine_search_grid[SEARCH_GRID_STRIDE_8P * SEARCH_GRID_STRIDE_8P] =
-      { 0 };
+  uint8_t do_refine_search_grid[SEARCH_GRID_STRIDE_8P *
+                                SEARCH_GRID_STRIDE_8P] = { 0 };
   int grid_center = SEARCH_GRID_CENTER_8P;
   int grid_coord = grid_center;
 

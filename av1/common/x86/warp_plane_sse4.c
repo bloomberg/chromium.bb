@@ -221,9 +221,9 @@ static const uint8_t shuffle_gamma0_mask1[16] = { 4, 5, 6, 7, 4, 5, 6, 7,
                                                   4, 5, 6, 7, 4, 5, 6, 7 };
 static const uint8_t shuffle_gamma0_mask2[16] = { 8, 9, 10, 11, 8, 9, 10, 11,
                                                   8, 9, 10, 11, 8, 9, 10, 11 };
-static const uint8_t shuffle_gamma0_mask3[16] = {
-  12, 13, 14, 15, 12, 13, 14, 15, 12, 13, 14, 15, 12, 13, 14, 15
-};
+static const uint8_t shuffle_gamma0_mask3[16] = { 12, 13, 14, 15, 12, 13,
+                                                  14, 15, 12, 13, 14, 15,
+                                                  12, 13, 14, 15 };
 
 static INLINE void filter_src_pixels(__m128i src, __m128i *tmp, __m128i *coeff,
                                      const int offset_bits_horiz,

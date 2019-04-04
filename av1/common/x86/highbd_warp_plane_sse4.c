@@ -15,9 +15,9 @@
 
 #include "av1/common/warped_motion.h"
 
-static const uint8_t warp_highbd_arrange_bytes[16] = {
-  0, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15
-};
+static const uint8_t warp_highbd_arrange_bytes[16] = { 0,  2,  4,  6, 8, 10,
+                                                       12, 14, 1,  3, 5, 7,
+                                                       9,  11, 13, 15 };
 
 static const uint8_t highbd_shuffle_alpha0_mask0[16] = {
   0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3
@@ -25,12 +25,12 @@ static const uint8_t highbd_shuffle_alpha0_mask0[16] = {
 static const uint8_t highbd_shuffle_alpha0_mask1[16] = {
   4, 5, 6, 7, 4, 5, 6, 7, 4, 5, 6, 7, 4, 5, 6, 7
 };
-static const uint8_t highbd_shuffle_alpha0_mask2[16] = {
-  8, 9, 10, 11, 8, 9, 10, 11, 8, 9, 10, 11, 8, 9, 10, 11
-};
-static const uint8_t highbd_shuffle_alpha0_mask3[16] = {
-  12, 13, 14, 15, 12, 13, 14, 15, 12, 13, 14, 15, 12, 13, 14, 15
-};
+static const uint8_t highbd_shuffle_alpha0_mask2[16] = { 8,  9,  10, 11, 8,  9,
+                                                         10, 11, 8,  9,  10, 11,
+                                                         8,  9,  10, 11 };
+static const uint8_t highbd_shuffle_alpha0_mask3[16] = { 12, 13, 14, 15, 12, 13,
+                                                         14, 15, 12, 13, 14, 15,
+                                                         12, 13, 14, 15 };
 
 static INLINE void highbd_prepare_horizontal_filter_coeff(int alpha, int sx,
                                                           __m128i *coeff) {

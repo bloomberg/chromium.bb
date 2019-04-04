@@ -37,9 +37,9 @@
 #define EDGE_THRESHOLD 50
 #define SQRT_PI_BY_2 1.25331413732
 
-static unsigned int index_mult[14] = {
-  0, 0, 0, 0, 49152, 39322, 32768, 28087, 24576, 21846, 19661, 17874, 0, 15124
-};
+static unsigned int index_mult[14] = { 0,     0,     0,     0,     49152,
+                                       39322, 32768, 28087, 24576, 21846,
+                                       19661, 17874, 0,     15124 };
 
 static int64_t highbd_index_mult[14] = { 0U,          0U,          0U,
                                          0U,          3221225472U, 2576980378U,
