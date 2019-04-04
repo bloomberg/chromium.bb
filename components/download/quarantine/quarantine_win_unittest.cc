@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_file_util.h"
+#include "base/test/test_reg_util_win.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "components/download/quarantine/quarantine.h"
@@ -49,19 +50,76 @@ bool CreateFile(const base::FilePath& file_path) {
          static_cast<int>(base::size(kTestData));
 }
 
+base::FilePath GetZoneIdentifierStreamPath(const base::FilePath& file_path) {
+  const base::FilePath::CharType kMotwStreamSuffix[] =
+      FILE_PATH_LITERAL(":Zone.Identifier");
+
+  return base::FilePath(file_path.value() + kMotwStreamSuffix);
+}
+
 // Reads the Zone.Identifier alternate data stream from |file_path| into
 // |contents|.
 bool GetZoneIdentifierStreamContents(const base::FilePath& file_path,
                                      std::string* contents) {
   DCHECK(contents);
+  return base::ReadFileToString(GetZoneIdentifierStreamPath(file_path),
+                                contents);
+}
 
-  const base::FilePath::CharType kMotwStreamSuffix[] =
-      FILE_PATH_LITERAL(":Zone.Identifier");
+// Maps a domain and protocol to a zone.
+class ScopedZoneForSite {
+ public:
+  enum ZoneIdentifierType : DWORD {
+    kMyComputer = 0,
+    kLocalIntranetZone = 1,
+    kTrustedSitesZone = 2,
+    kInternetZone = 3,
+    kRestrictedSitesZone = 4,
+  };
 
-  base::FilePath zone_identifier_stream_path(file_path.value() +
-                                             kMotwStreamSuffix);
+  ScopedZoneForSite(const base::string16& domain,
+                    const base::string16& protocol,
+                    ZoneIdentifierType zone_identifier_type);
+  ~ScopedZoneForSite();
 
-  return base::ReadFileToString(zone_identifier_stream_path, contents);
+ private:
+  base::string16 domain_;
+  base::string16 protocol_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedZoneForSite);
+};
+
+ScopedZoneForSite::ScopedZoneForSite(const base::string16& domain,
+                                     const base::string16& protocol,
+                                     ZoneIdentifierType zone_identifier_type)
+    : domain_(domain), protocol_(protocol) {
+  base::string16 registry_path = base::StringPrintf(
+      L"Software\\Microsoft\\Windows\\CurrentVersion\\Internet "
+      L"Settings\\ZoneMap\\Domains\\%ls",
+      domain_.c_str());
+  base::win::RegKey registry_key(HKEY_CURRENT_USER, registry_path.c_str(),
+                                 KEY_SET_VALUE);
+
+  EXPECT_EQ(registry_key.WriteValue(protocol_.c_str(), zone_identifier_type),
+            ERROR_SUCCESS);
+}
+
+ScopedZoneForSite::~ScopedZoneForSite() {
+  base::string16 registry_path = base::StringPrintf(
+      L"Software\\Microsoft\\Windows\\CurrentVersion\\Internet "
+      L"Settings\\ZoneMap\\Domains\\%ls",
+      domain_.c_str());
+  base::win::RegKey registry_key(HKEY_CURRENT_USER, registry_path.c_str(),
+                                 KEY_SET_VALUE);
+  registry_key.DeleteValue(protocol_.c_str());
+}
+
+// Sets the internet Zone.Identifier alternate data stream for |file_path|.
+bool AddInternetZoneIdentifierDirectly(const base::FilePath& file_path) {
+  return base::WriteFile(GetZoneIdentifierStreamPath(file_path),
+                         kMotwForInternetZone,
+                         base::size(kMotwForInternetZone)) ==
+         static_cast<int>(base::size(kMotwForInternetZone));
 }
 
 }  // namespace
@@ -71,12 +129,34 @@ class QuarantineWinTest : public ::testing::Test {
   QuarantineWinTest() = default;
   ~QuarantineWinTest() override = default;
 
-  void SetUp() override { ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir()); }
+  void SetUp() override {
+    ASSERT_NO_FATAL_FAILURE(
+        registry_override_.OverrideRegistry(HKEY_CURRENT_USER));
+    ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
+
+    scoped_zone_for_trusted_site_ = std::make_unique<ScopedZoneForSite>(
+        GetTrustedSite(), L"https",
+        ScopedZoneForSite::ZoneIdentifierType::kTrustedSitesZone);
+    scoped_zone_for_restricted_site_ = std::make_unique<ScopedZoneForSite>(
+        GetRestrictedSite(), L"https",
+        ScopedZoneForSite::ZoneIdentifierType::kRestrictedSitesZone);
+  }
 
   base::FilePath GetTempDir() { return scoped_temp_dir_.GetPath(); }
 
+  const wchar_t* GetTrustedSite() { return L"thisisatrustedsite.com"; }
+
+  const wchar_t* GetRestrictedSite() { return L"thisisarestrictedsite.com"; }
+
  private:
+  registry_util::RegistryOverrideManager registry_override_;
+
   base::ScopedTempDir scoped_temp_dir_;
+
+  // Due to caching, these sites zone must be set for all tests, so that the
+  // order the tests are run does not matter.
+  std::unique_ptr<ScopedZoneForSite> scoped_zone_for_trusted_site_;
+  std::unique_ptr<ScopedZoneForSite> scoped_zone_for_restricted_site_;
 
   DISALLOW_COPY_AND_ASSIGN(QuarantineWinTest);
 };
@@ -381,6 +461,74 @@ TEST_F(QuarantineWinTest, AugmentedZoneIdentifierNoSource) {
                                      kDummyReferrerUrl, "about:internet"));
 
   EXPECT_EQ(zone_identifier, expected);
+}
+
+TEST_F(QuarantineWinTest, TrustedSite) {
+  // Test file path and source URL.
+  base::FilePath test_file = GetTempDir().AppendASCII("good.exe");
+  GURL source_url = GURL(
+      base::StringPrintf(L"https://%ls/folder/good.exe", GetTrustedSite()));
+
+  ASSERT_TRUE(CreateFile(test_file));
+  EXPECT_EQ(QuarantineFileResult::OK,
+            QuarantineFile(test_file, source_url, GURL(), kDummyClientGuid));
+
+  // No zone identifier.
+  std::string zone_identifier;
+  EXPECT_FALSE(GetZoneIdentifierStreamContents(test_file, &zone_identifier));
+}
+
+TEST_F(QuarantineWinTest, RestrictedSite) {
+  // Test file path and source URL.
+  base::FilePath test_file = GetTempDir().AppendASCII("bad.exe");
+  GURL source_url = GURL(
+      base::StringPrintf(L"https://%ls/folder/bad.exe", GetRestrictedSite()));
+
+  ASSERT_TRUE(CreateFile(test_file));
+
+  // Files from a restricted site are deleted.
+  EXPECT_EQ(QuarantineFileResult::BLOCKED_BY_POLICY,
+            QuarantineFile(test_file, source_url, GURL(), kDummyClientGuid));
+
+  std::string zone_identifier;
+  EXPECT_FALSE(GetZoneIdentifierStreamContents(test_file, &zone_identifier));
+}
+
+TEST_F(QuarantineWinTest, TrustedSite_AlreadyQuarantined) {
+  // Test file path and source URL.
+  base::FilePath test_file = GetTempDir().AppendASCII("good.exe");
+  GURL source_url = GURL(
+      base::StringPrintf(L"https://%ls/folder/good.exe", GetTrustedSite()));
+
+  ASSERT_TRUE(CreateFile(test_file));
+  // Ensure the file already contains a zone identifier.
+  ASSERT_TRUE(AddInternetZoneIdentifierDirectly(test_file));
+  EXPECT_EQ(QuarantineFileResult::OK,
+            QuarantineFile(test_file, source_url, GURL(), kDummyClientGuid));
+
+  // The existing zone identifier was not removed.
+  std::string zone_identifier;
+  EXPECT_TRUE(GetZoneIdentifierStreamContents(test_file, &zone_identifier));
+
+  EXPECT_FALSE(zone_identifier.empty());
+}
+
+TEST_F(QuarantineWinTest, RestrictedSite_AlreadyQuarantined) {
+  // Test file path and source URL.
+  base::FilePath test_file = GetTempDir().AppendASCII("bad.exe");
+  GURL source_url = GURL(
+      base::StringPrintf(L"https://%ls/folder/bad.exe", GetRestrictedSite()));
+
+  ASSERT_TRUE(CreateFile(test_file));
+  // Ensure the file already contains a zone identifier.
+  ASSERT_TRUE(AddInternetZoneIdentifierDirectly(test_file));
+
+  // Files from a restricted site are deleted.
+  EXPECT_EQ(QuarantineFileResult::BLOCKED_BY_POLICY,
+            QuarantineFile(test_file, source_url, GURL(), kDummyClientGuid));
+
+  std::string zone_identifier;
+  EXPECT_FALSE(GetZoneIdentifierStreamContents(test_file, &zone_identifier));
 }
 
 }  // namespace download
