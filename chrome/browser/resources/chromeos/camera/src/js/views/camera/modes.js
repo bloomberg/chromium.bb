@@ -108,15 +108,35 @@ cca.views.camera.Modes = function(doSwitchMode, doSavePicture) {
 
   // End of properties, seal the object.
   Object.seal(this);
-
-  [['#switch-recordvideo', 'video-mode'], ['#switch-takephoto', 'photo-mode']]
-      .forEach(
-          ([selector, mode]) =>
-              document.querySelector(selector).addEventListener(
-                  'click', this.switchMode_.bind(this, mode)));
+  document.querySelectorAll('.mode-item>input').forEach((element) => {
+    element.addEventListener('click', (event) => {
+      if (!cca.state.get('streaming') || cca.state.get('taking')) {
+        event.preventDefault();
+      }
+    });
+    element.addEventListener('change', (event) => {
+      if (element.checked) {
+        var mode = element.dataset.mode;
+        this.updateModeUI_(mode);
+        cca.state.set('mode-switching', true);
+        this.doSwitchMode_().then(() => cca.state.set('mode-switching', false));
+      }
+    });
+  });
 
   // Set default mode when app started.
-  cca.state.set('photo-mode', true);
+  this.updateModeUI_('photo-mode');
+};
+
+/**
+ * Updates state of mode related UI to the target mode.
+ * @param {string} mode Mode to be toggled.
+ */
+cca.views.camera.Modes.prototype.updateModeUI_ = function(mode) {
+  Object.keys(this.allModes).forEach((m) => cca.state.set(m, m == mode));
+  const element = document.querySelector(`.mode-item>input[data-mode=${mode}]`);
+  element.checked = true;
+  element.focus();
 };
 
 /**
@@ -184,19 +204,19 @@ cca.views.camera.Modes.prototype.switchMode_ = function(mode) {
   if (!cca.state.get('streaming') || cca.state.get('taking')) {
     return;
   }
-  Object.keys(this.allModes).forEach((m) => cca.state.set(m, m == mode));
+  this.updateModeUI_(mode);
   cca.state.set('mode-switching', true);
   this.doSwitchMode_().then(() => cca.state.set('mode-switching', false));
 };
 
 /**
- * Gets all the supported modes and all their constraints pairs for given
+ * Gets all the supported modes and their constraints-candidates pairs for given
  * deviceId.
  * @async
  * @param {?string} deviceId Id of updated video device.
- * @return {Array<[string, Object]>} Array of supported mode name and
- *     constraints pairs for given deviceId. Mode values in array start with
- *     current mode and follow predefined retry order.
+ * @return {Array<[string, Array<Object>]>} Array of supported mode name and
+ *     constraints-candidates pairs for given deviceId. Mode values in array
+ *     start with current mode and follow predefined retry order.
  */
 cca.views.camera.Modes.prototype.getConstraitsForModes =
     async function(deviceId) {
@@ -207,12 +227,25 @@ cca.views.camera.Modes.prototype.getConstraitsForModes =
     const m = this.allModes[mode];
     tried[mode] = true;
     if (await m.isSupported(deviceId)) {
-      results.push(...m.deviceConstraints(deviceId).map(
-          (constraints) => [mode, constraints]));
+      results.push([mode, m.deviceConstraints(deviceId)]);
     }
     mode = m.nextMode;
   }
   return results;
+};
+
+/**
+ * Updates mode selection UI according to input supported modes.
+ * @param {Array<string>} supportedModes Supported mode names to be updated
+ *     with.
+ */
+cca.views.camera.Modes.prototype.updateModeSelectionUI = function(
+    supportedModes) {
+  document.querySelectorAll('.mode-item').forEach((element) => {
+    const radio = element.querySelector('input[type=radio]');
+    element.style.display =
+        supportedModes.includes(radio.dataset.mode) ? '' : 'none';
+  });
 };
 
 /**
@@ -225,7 +258,7 @@ cca.views.camera.Modes.prototype.updateMode = async function(mode, stream) {
   if (this.current != null) {
     await this.current.stopCapture();
   }
-  Object.keys(this.allModes).forEach((m) => cca.state.set(m, m == mode));
+  this.updateModeUI_(mode);
   this.stream_ = stream;
   this.current = this.allModes[mode].captureFactory();
 };

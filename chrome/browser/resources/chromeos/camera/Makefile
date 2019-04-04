@@ -92,6 +92,8 @@ RESOURCES = \
 	src/images/camera_button_timer_on_3s.svg \
 	src/images/camera_focus_aim.svg \
 	src/images/camera_mode_photo.svg \
+	src/images/camera_mode_portrait.svg \
+	src/images/camera_mode_square.svg \
 	src/images/camera_mode_video.svg \
 	src/images/camera_shutter_photo_start.svg \
 	src/images/camera_shutter_photo_start_active.svg \

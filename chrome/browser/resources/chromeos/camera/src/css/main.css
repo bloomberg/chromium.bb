@@ -166,50 +166,22 @@ input:focus::after {
   transform: translateY(-50%);
 }
 
-body.shift-top-stripe .top-stripe {
-  top: 0;  /* Calculate at runtime. */
-}
-
-.bottom-stripe,
-body:not(.tablet-landscape) .actions-group {
+.bottom-stripe {
   bottom: 56px;
   position: absolute;
   transform: translateY(50%);
 }
 
-body.tablet-landscape .bottom-stripe {
-  bottom: 48px;
-}
-
-body.shift-bottom-stripe .bottom-stripe,
-body.shift-bottom-stripe:not(.tablet-landscape) .actions-group {
-  bottom: 0;  /* Calculate at runtime. */
-}
-
 .left-stripe {
-  left: 48px;
+  left: 40px;
   position: absolute;
   transform: translateX(-50%);
 }
 
-body.shift-left-stripe .left-stripe {
-  left: 0;  /* Calculate at runtime. */
-}
-
-.right-stripe,
-body.tablet-landscape .actions-group {
+.right-stripe {
   position: absolute;
   right: 56px;
   transform: translateX(50%);
-}
-
-body:not(.tablet-landscape) .right-stripe {
-  right: 48px;
-}
-
-body.shift-right-stripe .right-stripe,
-body.shift-right-stripe.tablet-landscape .actions-group {
-  right: 0;  /* Calculate at runtime. */
 }
 
 .top-stripe.right-stripe {
@@ -228,16 +200,50 @@ body.shift-right-stripe.tablet-landscape .actions-group {
   transform: translate(-50%, 50%);
 }
 
-.actions-group button {
-  margin: 0 8px;
+#shutters-group {
+  bottom: calc((var(--modes-bottom) + var(--modes-height)) + 16px);
 }
 
 body.tablet-landscape .actions-group {
   flex-direction: column-reverse;
 }
 
-body.tablet-landscape .actions-group button {
-  margin: 8px 0;
+#modes-group {
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,1) 10% 90%, rgba(0,0,0,0) 100%);
+  bottom: var(--modes-bottom);
+  flex-direction: column;
+  height: var(--modes-height);
+  justify-content: flex-start;
+  overflow: scroll;
+  pointer-events: auto;
+}
+
+.mode-item {
+  margin: 5px 0;
+  position: relative;
+}
+
+label.mode-item>span {
+  border-radius: 16px / 50%;
+  color: white;
+  display: inline-block;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  padding: 10px 15px;
+  text-shadow: 2px 3px 3px rgba(32, 33, 36, 0.5);
+}
+
+.mode-item>input {
+  height: 100%;
+  position: absolute;
+  width: 100%;
+}
+
+.mode-item>input:checked + span {
+  background: rgb(238, 238, 238);
+  color: black;
+  text-shadow: none;
 }
 
 button.shutter {
@@ -291,40 +297,6 @@ body.taking.timer:not(.video-mode) #stop-takephoto {
   background-image: url(../images/camera_shutter_video_stop_hover.svg);
 }
 
-#switch-recordvideo,
-#switch-takephoto {
-  height: 56px;
-  width: 56px;
-}
-
-#switch-recordvideo {
-  background-image: url(../images/camera_button_switch_video.svg);
-  transition: transform 50ms;
-}
-
-#switch-takephoto {
-  background-image: url(../images/camera_button_switch_photo.svg);
-  transition: transform 50ms;
-}
-
-body.video-mode #switch-recordvideo {
-  transform: translateX(-160px);
-}
-
-body.tablet-landscape.video-mode #switch-recordvideo {
-  transform: translateY(160px);
-}
-
-body:not(.video-mode) #switch-takephoto {
-  transform: translateX(160px);
-}
-
-body.tablet-landscape:not(.video-mode) #switch-takephoto {
-  transform: translateY(-160px);
-}
-
-body.video-mode #switch-recordvideo,
-body:not(.video-mode) #switch-takephoto,
 body:not(.video-mode) #toggle-mic,
 body:not(.multi-camera) #switch-device {
   visibility: hidden;
@@ -339,6 +311,14 @@ body:not(.multi-camera) #switch-device {
 
 body.video-mode #camera-mode {
   background-image: url(../images/camera_mode_video.svg);
+}
+
+body.square-mode #camera-mode {
+  background-image: url(../images/camera_mode_square.svg);
+}
+
+body.portrait-mode #camera-mode {
+  background-image: url(../images/camera_mode_portrait.svg);
 }
 
 body.mode-switching:not(.streaming) #camera-mode {
@@ -361,8 +341,8 @@ body.mode-switching:not(.streaming) #camera-mode {
 
 #switch-device {
   background-image: url(../images/camera_button_switch_device.svg);
-  height: 48px;
-  width: 48px;
+  height: var(--big-icon);
+  width: var(--big-icon);
 }
 
 #switch-device.animate {
@@ -381,9 +361,9 @@ body.mode-switching:not(.streaming) #camera-mode {
 #gallery-enter {
   background-color: rgba(24, 24, 24, 1);
   background-size: cover;
-  height: 48px;
+  height: var(--big-icon);
   position: relative;
-  width: 48px;
+  width: var(--big-icon);
 }
 
 .centered-overlay {
@@ -393,11 +373,16 @@ body.mode-switching:not(.streaming) #camera-mode {
   transform: translate(-50%, -50%);
 }
 
-.options-group {
+#options-group {
+  bottom: calc((var(--bottom-line) + (var(--big-icon)/2)) + 30px);
   flex-direction: column;
 }
 
-.options-group input {
+body:not(.multi-camera) #options-group {
+  bottom: calc((var(--bottom-line) - 18px) - (var(--small-icon)/2));
+}
+
+#options-group input {
   margin: 18px 0;
 }
 
@@ -493,14 +478,34 @@ body.timersettings #settings {
   overflow: hidden;
 }
 
-body.shift-preview-top #preview-wrapper {
-  position: absolute;
-  top: 0;
+#camera {
+  --big-icon: 48px;
+  --bottom-line: 56px;
+  --modes-height: 120px;
+  --modes-bottom: calc((var(--bottom-line) + (var(--big-icon)/2)) + 24px);
+  --small-icon: 40px;
 }
 
-body.shift-preview-left #preview-wrapper {
-  left: 0;
-  position: absolute;
+body.w-letterbox.w-letterbox-s #camera {
+  justify-content: flex-end;
+}
+
+body.w-letterbox.w-letterbox-m #camera,
+body.w-letterbox.w-letterbox-l #camera {
+  justify-content: flex-start;
+}
+
+body.w-letterbox.w-letterbox-xl #camera {
+  justify-content: center;
+}
+
+body:not(.w-letterbox) #camera {
+  flex-direction: column;
+  justify-content: center;
+}
+
+body:not(.w-letterbox).preview-vertical-dock #camera {
+  justify-content: flex-end;
 }
 
 #preview-wrapper,
@@ -508,6 +513,25 @@ body.shift-preview-left #preview-wrapper {
   flex-shrink: 0;
   pointer-events: none;
   position: relative;
+}
+
+body:.w-letterbox.w-letterbox-l #preview-wrapper {
+  left: 72px;
+}
+
+body:not(.w-letterbox).preview-vertical-dock #preview-wrapper {
+  bottom: calc((var(--bottom-line) + (var(--big-icon)/2)) + 12px);
+}
+
+body:not(.mode-switching).square-mode #preview-wrapper {
+  height: 0; /* Calculate at runtime. */
+  width: 0; /* Calculate at runtime. */
+}
+
+body:not(.mode-switching).square-mode #preview-video {
+  left: 0; /* Calculate at runtime. */
+  position: absolute;
+  top: 0; /* Calculate at runtime. */
 }
 
 body.streaming #preview-video {
@@ -542,17 +566,6 @@ body.mirror:not(.streaming) #preview-video {
   transform: scale(-1.03, 1.03);
 }
 
-body:not(.mode-switching).square-mode #preview-wrapper {
-  height: 0; /* Calculate at runtime. */
-  width: 0; /* Calculate at runtime. */
-}
-
-body:not(.mode-switching).square-mode #preview-video {
-  left: 0; /* Calculate at runtime. */
-  position: absolute;
-  top: 0; /* Calculate at runtime. */
-}
-
 #preview-grid {
   bottom: 0;
   left: 0;
@@ -566,7 +579,7 @@ body:not(.streaming) #preview-grid,
 body:not(.streaming) #preview-focus,
 body:not(.streaming) #open-settings,
 body:not(.streaming) #toggle-mic,
-body:not(.streaming) .options-group {
+body:not(.streaming) #options-group {
   visibility: hidden;
 }
 

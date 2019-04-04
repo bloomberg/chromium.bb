@@ -55,9 +55,37 @@
                   tabindex="-1" hidden></object>
         </div>
       </div>
-      <div class="actions-group buttons circle">
-        <button id="switch-takephoto" tabindex="0"
-                i18n-label="switch_take_photo_button"></button>
+      <div id="modes-group" class="buttons right-stripe">
+        <label class="mode-item" tabindex="-1">
+          <input type="radio" name="mode"
+               data-mode="video-mode" tabindex="0"
+               i18n-aria="switch_record_video_button">
+          <span i18n-content="label_switch_record_video_button"
+                tabindex="-1"></span>
+        </label>
+        <label class="mode-item" tabindex="-1">
+          <input type="radio" name="mode"
+               data-mode="photo-mode" tabindex="0"
+               i18n-aria="switch_take_photo_button">
+          <span i18n-content="label_switch_take_photo_button"
+                tabindex="-1"></span>
+        </label>
+        <label class="mode-item" tabindex="-1">
+          <input type="radio" name="mode"
+               data-mode="square-mode" tabindex="0"
+               i18n-aria="switch_take_square_photo_button">
+          <span i18n-content="label_switch_take_square_photo_button"
+                tabindex="-1"></span>
+        </label>
+        <label class="mode-item" tabindex="-1">
+          <input type="radio" name="mode"
+               data-mode="portrait-mode" tabindex="0"
+               i18n-aria="switch_take_portrait_photo_button">
+          <span i18n-content="label_switch_take_portrait_photo_button"
+                tabindex="-1"></span>
+        </label>
+      </div>
+      <div id="shutters-group" class="buttons right-stripe circle">
         <button id="start-recordvideo" class="shutter" tabindex="0"
                 i18n-label="record_video_start_button"></button>
         <button id="stop-recordvideo" class="shutter" tabindex="0"
@@ -66,8 +94,6 @@
                 i18n-label="take_photo_button"></button>
         <button id="stop-takephoto" class="shutter" tabindex="0"
                 i18n-label="take_photo_cancel_button"></button>
-        <button id="switch-recordvideo" tabindex="0"
-                i18n-label="switch_record_video_button"></button>
       </div>
       <div class="top-stripe right-stripe buttons">
         <input type="checkbox" id="toggle-mic" tabindex="0"
@@ -78,7 +104,7 @@
         <button id="open-settings" tabindex="0"
                 i18n-label="settings_button" aria-haspopup="true"></button>
       </div>
-      <div class="left-stripe options-group buttons">
+      <div id="options-group" class="left-stripe buttons">
         <input type="checkbox" id="toggle-mirror" tabindex="0"
                i18n-label="toggle_mirror_button" data-state="mirror" checked>
         <input type="checkbox" id="toggle-grid" tabindex="0"

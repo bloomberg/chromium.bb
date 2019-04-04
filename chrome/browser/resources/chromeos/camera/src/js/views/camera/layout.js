@@ -25,40 +25,6 @@ cca.views.camera = cca.views.camera || {};
  */
 cca.views.camera.Layout = function() {
   /**
-   * CSS sylte of the shifted right-stripe.
-   * @type {CSSStyleDeclaration}
-   * @private
-   */
-  this.rightStripe_ = cca.views.camera.Layout.cssStyle_(
-      'body.shift-right-stripe .right-stripe, ' +
-      'body.shift-right-stripe.tablet-landscape .actions-group');
-
-  /**
-   * CSS sylte of the shifted bottom-stripe.
-   * @type {CSSStyleDeclaration}
-   * @private
-   */
-  this.bottomStripe_ = cca.views.camera.Layout.cssStyle_(
-      'body.shift-bottom-stripe .bottom-stripe, ' +
-      'body.shift-bottom-stripe:not(.tablet-landscape) .actions-group');
-
-  /**
-   * CSS sylte of the shifted left-stripe.
-   * @type {CSSStyleDeclaration}
-   * @private
-   */
-  this.leftStripe_ = cca.views.camera.Layout.cssStyle_(
-      'body.shift-left-stripe .left-stripe');
-
-  /**
-   * CSS sylte of the shifted top-stripe.
-   * @type {CSSStyleDeclaration}
-   * @private
-   */
-  this.topStripe_ = cca.views.camera.Layout.cssStyle_(
-      'body.shift-top-stripe .top-stripe');
-
-  /**
    * CSS style of the viewport in square mode.
    * @type {CSSStyleDeclaration}
    * @private
@@ -131,72 +97,32 @@ cca.views.camera.Layout.prototype.updatePreviewSize_ = function(fullWindow) {
  * Updates the layout for video-size or window-size changes.
  */
 cca.views.camera.Layout.prototype.update = function() {
-  // TODO(yuli): Replace tablet-landscape with max-wnd/tall.
   var fullWindow = cca.util.isWindowFullSize();
-  var tall = window.innerHeight > window.innerWidth;
-  var tabletLandscape = fullWindow && !tall;
-  cca.state.set('tablet-landscape', tabletLandscape);
-  cca.state.set('max-wnd', fullWindow);
-  cca.state.set('tall', tall);
-
-  var dimens = (shutter) => {
-    // These following constants need kept in sync with relevant values in css.
-    // preset: button-size + preset-margin + min-margin
-    // least: button-size + 2 * min-margin
-    // gap: preset-margin - min-margin
-    // baseline: preset-baseline
-    return shutter ? [100, 88, 12, 56] : [76, 56, 20, 48];
-  };
 
   var [letterboxW, letterboxH] = this.updatePreviewSize_(fullWindow);
-  var [halfW, halfH] = [letterboxW / 2, letterboxH / 2];
+  var isLetterboxW = letterboxH < letterboxW;
 
-  // Shift preview to accommodate the shutter in letterbox if applicable.
-  var accommodate = (measure) => {
-    var [, leastShutter] = dimens(true);
-    return (measure > leastShutter) && (measure < leastShutter * 2);
-  };
-  var cond = fullWindow && tabletLandscape && accommodate(letterboxW);
-  var [rightBox, leftBox] = cond ? [letterboxW, 0] : [halfW, halfW];
-  cca.state.set('shift-preview-left', cond);
-
-  cond = fullWindow && !tabletLandscape && accommodate(letterboxH);
-  var [bottomBox, topBox] = cond ? [letterboxH, 0] : [halfH, halfH];
-  cca.state.set('shift-preview-top', cond);
-
-  // Shift buttons' stripes if necessary. Buttons are either fully on letterbox
-  // or preview while the shutter/options keep minimum margin to either edges.
-  var calc = (measure, least) => {
-    return (measure >= least) ?
-        Math.round(measure / 2) : // Centered in letterbox.
-        Math.round(measure + least / 2); // Inset in preview.
-  };
-  var shift = (stripe, name, measure, shutter) => {
-    var [preset, least, gap, baseline] = dimens(shutter);
-    cond = measure > gap && measure < preset;
-    if (cond) {
-      baseline = calc(measure, least);
-      stripe.setProperty(name, baseline + 'px');
-    }
-    cca.state.set('shift-' + name + '-stripe', cond);
-    // Return shutter's baseline in letterbox if applicable.
-    return (shutter && baseline < measure) ? baseline : 0;
-  };
-  var symm = (stripe, name, measure, shutterBaseline) => {
-    if (measure && shutterBaseline) {
-      cca.state.set('shift-' + name + '-stripe', true);
-      stripe.setProperty(name, shutterBaseline + 'px');
-      return true;
-    }
-    return false;
-  };
-  // Make both letterbox look symmetric if shutter is in either letterbox.
-  if (!symm(this.leftStripe_, 'left', leftBox,
-      shift(this.rightStripe_, 'right', rightBox, tabletLandscape))) {
-    shift(this.leftStripe_, 'left', leftBox, false);
-  }
-  if (!symm(this.topStripe_, 'top', topBox,
-      shift(this.bottomStripe_, 'bottom', bottomBox, !tabletLandscape))) {
-    shift(this.topStripe_, 'top', topBox, false);
+  cca.state.set('w-letterbox', isLetterboxW);
+  if (isLetterboxW) {
+    var modeWidth =
+        document.querySelector('#modes-group').getBoundingClientRect().width;
+    var layoutToggled = false;
+    [[modeWidth + 40, 'w-letterbox-s'],
+     [modeWidth + 40 + 72, 'w-letterbox-m'],
+     [(modeWidth + 40) * 2, 'w-letterbox-l'],
+     [Infinity, 'w-letterbox-xl'],
+    ]
+        .forEach(
+            ([wSize, classname]) => cca.state.set(
+                classname,
+                /* Enable only state which the letterboxW size falls in range
+                 * of its wSize and previous wSize. And disable all other
+                 * states. */
+                !layoutToggled && (layoutToggled = letterboxW <= wSize)));
+  } else {
+    // preview-vertical-dock: Dock bottom line of preview between gallery and
+    //                        mode selector.
+    // otherwise: Vertically center the preview.
+    cca.state.set('preview-vertical-dock', letterboxH / 2 >= 112);
   }
 };

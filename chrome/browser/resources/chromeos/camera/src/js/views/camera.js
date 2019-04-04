@@ -223,20 +223,26 @@ cca.views.Camera.prototype.start_ = function() {
       (async () => {
         if (!suspend) {
           for (const id of await this.options_.videoDeviceIds()) {
-            for (const [mode, constraints] of await this.modes_
-                     .getConstraitsForModes(id)) {
-              try {
-                const stream =
-                    await navigator.mediaDevices.getUserMedia(constraints);
-                await this.preview_.start(stream);
-                this.facingMode_ =
-                    this.options_.updateValues(constraints, stream);
-                await this.modes_.updateMode(mode, stream);
-                cca.nav.close('warning', 'no-camera');
-                return;
-              } catch (e) {
-                this.preview_.stop();
-                console.error(e);
+            const modesAndConstraints =
+                await this.modes_.getConstraitsForModes(id);
+            this.modes_.updateModeSelectionUI(modesAndConstraints.map(([
+                                                                        m,
+                                                                      ]) => m));
+            for (const [mode, candidates] of modesAndConstraints) {
+              for (const constraints of candidates) {
+                try {
+                  const stream =
+                      await navigator.mediaDevices.getUserMedia(constraints);
+                  await this.preview_.start(stream);
+                  this.facingMode_ =
+                      this.options_.updateValues(constraints, stream);
+                  await this.modes_.updateMode(mode, stream);
+                  cca.nav.close('warning', 'no-camera');
+                  return;
+                } catch (e) {
+                  this.preview_.stop();
+                  console.error(e);
+                }
               }
             }
           }
