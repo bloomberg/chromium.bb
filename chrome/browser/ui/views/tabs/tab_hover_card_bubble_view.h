@@ -37,6 +37,8 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
 
   void FadeOutToHide();
 
+  bool IsFadingOut() const;
+
   // BubbleDialogDelegateView:
   int GetDialogButtons() const override;
 

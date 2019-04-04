@@ -267,6 +267,10 @@ void TabHoverCardBubbleView::FadeOutToHide() {
   }
 }
 
+bool TabHoverCardBubbleView::IsFadingOut() const {
+  return fade_animation_delegate_->IsFadingOut();
+}
+
 int TabHoverCardBubbleView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
