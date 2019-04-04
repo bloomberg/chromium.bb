@@ -230,11 +230,6 @@ class XMLHttpRequest::BlobLoader final
     : public GarbageCollectedFinalized<XMLHttpRequest::BlobLoader>,
       public FileReaderLoaderClient {
  public:
-  static BlobLoader* Create(XMLHttpRequest* xhr,
-                            scoped_refptr<BlobDataHandle> handle) {
-    return MakeGarbageCollected<BlobLoader>(xhr, std::move(handle));
-  }
-
   BlobLoader(XMLHttpRequest* xhr, scoped_refptr<BlobDataHandle> handle)
       : xhr_(xhr),
         loader_(std::make_unique<FileReaderLoader>(
@@ -289,7 +284,7 @@ XMLHttpRequest::XMLHttpRequest(
     scoped_refptr<SecurityOrigin> isolated_world_security_origin)
     : ContextLifecycleObserver(context),
       progress_event_throttle_(
-          XMLHttpRequestProgressEventThrottle::Create(this)),
+          MakeGarbageCollected<XMLHttpRequestProgressEventThrottle>(this)),
       isolate_(isolate),
       is_isolated_world_(is_isolated_world),
       isolated_world_security_origin_(
@@ -552,7 +547,7 @@ String XMLHttpRequest::responseURL() {
 
 XMLHttpRequestUpload* XMLHttpRequest::upload() {
   if (!upload_)
-    upload_ = XMLHttpRequestUpload::Create(this);
+    upload_ = MakeGarbageCollected<XMLHttpRequestUpload>(this);
   return upload_;
 }
 
@@ -1689,8 +1684,8 @@ void XMLHttpRequest::DidFinishLoading(uint64_t identifier) {
     // In this case, we have sent the request with DownloadToBlob true,
     // but the user changed the response type after that. Hence we need to
     // read the response data and provide it to this object.
-    blob_loader_ =
-        BlobLoader::Create(this, response_blob_->GetBlobDataHandle());
+    blob_loader_ = MakeGarbageCollected<BlobLoader>(
+        this, response_blob_->GetBlobDataHandle());
   } else {
     DidFinishLoadingInternal();
   }
