@@ -18,6 +18,7 @@ cr.define('cr.ArcGraphicsTracing', function() {
       }, false);
       chrome.send('ready');
       chrome.send('setStopOnJank', [stopOnJank.checked]);
+      initializeUi();
     },
 
     setStatus: function(statusText) {
