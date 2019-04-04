@@ -103,27 +103,6 @@ bool AttachedBackgroundImagesAllLoaded(const LayoutObject& object) {
   }
   return true;
 }
-
-bool IsLoaded(const LayoutObject& object) {
-  if (object.IsLayoutImage()) {
-    const ImageResourceContent* cached_image =
-        ToLayoutImage(&object)->CachedImage();
-    return cached_image ? cached_image->IsLoaded() : false;
-  }
-  if (object.IsVideo()) {
-    const ImageResourceContent* cached_image =
-        ToLayoutVideo(&object)->CachedImage();
-    return cached_image ? cached_image->IsLoaded() : false;
-  }
-  if (object.IsSVGImage()) {
-    const LayoutImageResource* image_resource =
-        ToLayoutSVGImage(&object)->ImageResource();
-    const ImageResourceContent* cached_image = image_resource->CachedImage();
-    return cached_image ? cached_image->IsLoaded() : false;
-  }
-  DCHECK(ImagePaintTimingDetector::HasBackgroundImage(object));
-  return AttachedBackgroundImagesAllLoaded(object);
-}
 }  // namespace
 
 // Set a big enough limit for the number of nodes to ensure memory usage is
@@ -142,7 +121,7 @@ static bool LargeImageFirst(const base::WeakPtr<ImageRecord>& a,
 }
 
 ImagePaintTimingDetector::ImagePaintTimingDetector(LocalFrameView* frame_view)
-    : size_ordered_set_(&LargeImageFirst), frame_view_(frame_view) {}
+    : frame_view_(frame_view) {}
 
 void ImagePaintTimingDetector::PopulateTraceValue(
     TracedValue& value,
@@ -167,8 +146,7 @@ void ImagePaintTimingDetector::OnLargestImagePaintDetected(
   DCHECK(!largest_image_record->paint_time.is_null());
   largest_image_paint_ = largest_image_record;
   auto value = std::make_unique<TracedValue>();
-  PopulateTraceValue(*value, *largest_image_record,
-                     ++largest_image_candidate_index_max_);
+  PopulateTraceValue(*value, *largest_image_record, ++count_candidates_);
   TRACE_EVENT_INSTANT_WITH_TIMESTAMP1(
       "loading", "LargestImagePaint::Candidate", TRACE_EVENT_SCOPE_THREAD,
       largest_image_record->paint_time, "data", std::move(value));
@@ -181,7 +159,8 @@ void ImagePaintTimingDetector::Analyze() {
   //   for timing. We discard the candidate and wait for the next analysis.
   // 3. new candidate equals to old candidate: we don't need to update the
   //   result unless it's a new candidate.
-  ImageRecord* largest_image_record = FindLargestPaintCandidate();
+  ImageRecord* largest_image_record =
+      records_manager_.FindLargestPaintCandidate();
   if (largest_image_record && !largest_image_record->paint_time.is_null() &&
       largest_image_record != largest_image_paint_) {
     OnLargestImagePaintDetected(largest_image_record);
@@ -191,57 +170,44 @@ void ImagePaintTimingDetector::Analyze() {
 
 void ImagePaintTimingDetector::OnPaintFinished() {
   frame_index_++;
-  if (images_queued_for_paint_time_.empty())
-    return;
-  // If the last frame index of queue has changed, it means there are new
-  // records pending timing.
-  base::WeakPtr<ImageRecord>& record = images_queued_for_paint_time_.back();
-  // As we never remove nodes from |visible_node_map_|, all of
-  // |visible_node_map_| must exist.
-  DCHECK(visible_node_map_.Contains(record->node_id));
-  unsigned new_frame_index = record->frame_index;
-  DCHECK(last_queued_frame_index_ <= new_frame_index);
-  if (last_queued_frame_index_ == new_frame_index)
+  if (!records_manager_.NeedMeausuringPaintTime())
     return;
 
-  last_queued_frame_index_ = new_frame_index;
-  // Records with frame index up to |last_queued_frame_index_| will be
-  // queued for swap time.
+  if (!records_manager_.HasUnregisteredRecordsInQueued(
+          last_registered_frame_index_))
+    return;
+
+  last_registered_frame_index_ = records_manager_.LastQueuedFrameIndex();
   RegisterNotifySwapTime();
 }
 
 void ImagePaintTimingDetector::NotifyNodeRemoved(DOMNodeId node_id) {
   if (!is_recording_)
     return;
-  if (visible_node_map_.Contains(node_id)) {
-    // We assume that the removed node's id wouldn't be recycled, so we don't
-    // bother to remove these records from |size_ordered_set_| to reduce
-    // computation.
-    detached_ids_.insert(node_id);
+  if (!records_manager_.IsRecordedVisibleNode(node_id))
+    return;
+  records_manager_.SetNodeDetached(node_id);
+  if (!records_manager_.AreAllVisibleNodesDetached())
+    return;
 
-    if (visible_node_map_.size() - detached_ids_.size() == 0) {
-      // If |largest_image_paint_| will change to nullptr, update
-      // performance timing.
-      if (!largest_image_paint_)
-        return;
-      largest_image_paint_ = nullptr;
-      frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
-    }
-  }
+  if (!largest_image_paint_)
+    return;
+  largest_image_paint_ = nullptr;
+  // This will dispatch the updated |largest_image_paint_| to the browser.
+  frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
 }
 
 void ImagePaintTimingDetector::RegisterNotifySwapTime() {
   WebLayerTreeView::ReportTimeCallback callback =
       WTF::Bind(&ImagePaintTimingDetector::ReportSwapTime,
-                WrapWeakPersistent(this), last_queued_frame_index_);
+                WrapWeakPersistent(this), last_registered_frame_index_);
   if (notify_swap_time_override_for_testing_) {
     // Run is not to run the |callback|, but to queue it.
     notify_swap_time_override_for_testing_.Run(std::move(callback));
     return;
   }
-  // |ReportSwapTime| on |layerTreeView| will queue a swap-promise, the callback
-  // is called when the swap for current render frame completes or fails to
-  // happen.
+  // ReportSwapTime on layerTreeView will queue a swap-promise, the callback is
+  // called when the swap for current render frame completes or fails to happen.
   LocalFrame& frame = frame_view_->GetFrame();
   if (!frame.GetPage())
     return;
@@ -258,6 +224,14 @@ void ImagePaintTimingDetector::ReportSwapTime(
     base::TimeTicks timestamp) {
   // The callback is safe from race-condition only when running on main-thread.
   DCHECK(ThreadState::Current()->IsMainThread());
+  records_manager_.AssignPaintTimeToRegisteredQueuedNodes(
+      timestamp, last_queued_frame_index);
+  Analyze();
+}
+
+void ImageRecordsManager::AssignPaintTimeToRegisteredQueuedNodes(
+    const base::TimeTicks& timestamp,
+    unsigned last_queued_frame_index) {
   DCHECK(!images_queued_for_paint_time_.empty());
   while (!images_queued_for_paint_time_.empty()) {
     base::WeakPtr<ImageRecord>& record = images_queued_for_paint_time_.front();
@@ -267,7 +241,6 @@ void ImagePaintTimingDetector::ReportSwapTime(
     record->paint_time = timestamp;
     images_queued_for_paint_time_.pop();
   }
-  Analyze();
 }
 
 // static
@@ -291,74 +264,148 @@ bool ImagePaintTimingDetector::HasBackgroundImage(const LayoutObject& object) {
 
 void ImagePaintTimingDetector::RecordImage(
     const LayoutObject& object,
-    Image* image,
+    const IntSize& intrinsic_size,
+    bool is_loaded,
     const PropertyTreeState& current_paint_chunk_properties) {
   // TODO(crbug.com/933479): Use LayoutObject::GeneratingNode() to include
   // anonymous objects' rect.
   Node* node = object.GetNode();
   if (!node)
     return;
+
   DOMNodeId node_id = DOMNodeIds::IdForNode(node);
   DCHECK_NE(node_id, kInvalidDOMNodeId);
-  if (invisible_node_ids_.Contains(node_id))
+  if (records_manager_.IsRecordedInvisibleNode(node_id))
     return;
-  // The node is reattached.
-  if (visible_node_map_.Contains(node_id) && detached_ids_.Contains(node_id))
-    detached_ids_.erase(node_id);
 
-  if (!visible_node_map_.Contains(node_id) && is_recording_) {
-    LayoutRect visual_rect = object.FragmentsVisualRectBoundingBox();
-    // Before the image resource is loaded, <img> has size 0, so we do not
-    // record the first size until the invalidated rect's size becomes
-    // non-empty.
-    if (visual_rect.IsEmpty())
-      return;
-    uint64_t rect_size =
-        frame_view_->GetPaintTimingDetector().CalculateVisualSize(
-            visual_rect, current_paint_chunk_properties);
-    rect_size = DownScaleIfIntrinsicSizeIsSmaller(
-        rect_size, image->Size().Area(),
-        (visual_rect.Width() * visual_rect.Height()).ToUnsigned());
+  records_manager_.SetNodeReattachedIfNeeded(node_id);
 
-    DVLOG(2) << "Node id (" << node_id << "): size=" << rect_size
-             << ", type=" << object.DebugName();
-    if (rect_size == 0) {
-      // When rect_size == 0, it either means the image is size 0 or the image
-      // is out of viewport. Either way, we don't track this image anymore, to
-      // reduce computation.
-      invisible_node_ids_.insert(node_id);
+  if (records_manager_.IsRecordedVisibleNode(node_id) &&
+      !records_manager_.WasVisibleNodeLoaded(node_id) && is_loaded) {
+    // TODO(crbug/936149): This can be simplified after we track each background
+    // image individually.
+    bool has_background_image = HasBackgroundImage(object);
+    if ((!has_background_image && is_loaded) ||
+        (has_background_image && AttachedBackgroundImagesAllLoaded(object))) {
+      records_manager_.OnImageLoaded(node_id, frame_index_);
       return;
     }
-    // Non-trivial image is found.
-    std::unique_ptr<ImageRecord> record = std::make_unique<ImageRecord>();
-    record->node_id = node_id;
+  }
+
+  if (records_manager_.IsRecordedVisibleNode(node_id) || !is_recording_)
+    return;
+  LayoutRect visual_rect = object.FragmentsVisualRectBoundingBox();
+  // Before the image resource starts loading, <img> has no size info. We wait
+  // until the size is known.
+  if (visual_rect.IsEmpty())
+    return;
+  uint64_t rect_size =
+      frame_view_->GetPaintTimingDetector().CalculateVisualSize(
+          visual_rect, current_paint_chunk_properties);
+  rect_size = DownScaleIfIntrinsicSizeIsSmaller(
+      rect_size, intrinsic_size.Area(),
+      (visual_rect.Width() * visual_rect.Height()).ToUnsigned());
+  DVLOG(2) << "Node id (" << node_id << "): size=" << rect_size
+           << ", type=" << object.DebugName();
+  if (rect_size == 0) {
+    records_manager_.RecordInvisibleNode(node_id);
+  } else {
+    records_manager_.RecordVisibleNode(node_id, rect_size, object);
+    if (is_loaded)
+      records_manager_.OnImageLoaded(node_id, frame_index_);
+  }
+
+  if (records_manager_.RecordedTooManyNodes())
+    HandleTooManyNodes();
+}
+
+void ImagePaintTimingDetector::HandleTooManyNodes() {
+  TRACE_EVENT_INSTANT0("loading", "ImagePaintTimingDetector::OverNodeLimit",
+                       TRACE_EVENT_SCOPE_THREAD);
+  StopRecordEntries();
+}
+
+ImageRecordsManager::ImageRecordsManager()
+    : size_ordered_set_(&LargeImageFirst) {}
+
+void ImageRecordsManager::SetNodeReattachedIfNeeded(
+    const DOMNodeId& visible_node_id) {
+  if (!visible_node_map_.Contains(visible_node_id))
+    return;
+  if (!detached_ids_.Contains(visible_node_id))
+    return;
+  detached_ids_.erase(visible_node_id);
+}
+
+base::WeakPtr<ImageRecord> ImageRecordsManager::FindVisibleRecord(
+    const DOMNodeId& node_id) const {
+  DCHECK(visible_node_map_.Contains(node_id));
+  return visible_node_map_.find(node_id)->value->AsWeakPtr();
+}
+
+void ImageRecordsManager::OnImageLoaded(const DOMNodeId& node_id,
+                                        unsigned current_frame_index) {
+  base::WeakPtr<ImageRecord> record = FindVisibleRecord(node_id);
+  SetLoaded(record);
+  QueueToMeasurePaintTime(record, current_frame_index);
+}
+
+void ImageRecordsManager::SetLoaded(base::WeakPtr<ImageRecord>& record) {
+  record->loaded = true;
+}
+
+bool ImageRecordsManager::RecordedTooManyNodes() const {
+  return visible_node_map_.size() + invisible_node_ids_.size() >
+         kImageNodeNumberLimit;
+}
+
+void ImageRecordsManager::SetNodeDetached(const DOMNodeId& visible_node_id) {
+  DCHECK(visible_node_map_.Contains(visible_node_id));
+  detached_ids_.insert(visible_node_id);
+}
+
+bool ImageRecordsManager::HasUnregisteredRecordsInQueued(
+    unsigned last_registered_frame_index) {
+  DCHECK(last_registered_frame_index <= LastQueuedFrameIndex());
+  return last_registered_frame_index < LastQueuedFrameIndex();
+}
+
+bool ImageRecordsManager::AreAllVisibleNodesDetached() const {
+  return visible_node_map_.size() - detached_ids_.size() == 0;
+}
+
+bool ImageRecordsManager::WasVisibleNodeLoaded(const DOMNodeId& node_id) const {
+  DCHECK(visible_node_map_.Contains(node_id));
+  return visible_node_map_.at(node_id)->loaded;
+}
+
+void ImageRecordsManager::QueueToMeasurePaintTime(
+    base::WeakPtr<ImageRecord>& record,
+    unsigned current_frame_index) {
+  images_queued_for_paint_time_.push(record);
+  record->frame_index = current_frame_index;
+}
+
+void ImageRecordsManager::RecordInvisibleNode(const DOMNodeId& node_id) {
+  DCHECK(!RecordedTooManyNodes());
+  invisible_node_ids_.insert(node_id);
+}
+
+void ImageRecordsManager::RecordVisibleNode(const DOMNodeId& node_id,
+                                            const uint64_t& visual_size,
+                                            const LayoutObject& object) {
+  DCHECK(!RecordedTooManyNodes());
+  DCHECK_GT(visual_size, 0u);
+  std::unique_ptr<ImageRecord> record = std::make_unique<ImageRecord>();
+  record->node_id = node_id;
 #ifndef NDEBUG
-    record->image_url = GetImageUrl(object);
+  record->image_url = GetImageUrl(object);
 #endif
-    // Mind that first_size has to be assigned at the push of
-    // |size_ordered_set_| since it's the sorting key.
-    record->first_size = rect_size;
-    size_ordered_set_.emplace(record->AsWeakPtr());
-    visible_node_map_.insert(node_id, std::move(record));
-    if (visible_node_map_.size() + invisible_node_ids_.size() >
-        kImageNodeNumberLimit) {
-      TRACE_EVENT_INSTANT2("loading", "ImagePaintTimingDetector::OverNodeLimit",
-                           TRACE_EVENT_SCOPE_THREAD, "recorded_node_count",
-                           visible_node_map_.size(), "size_zero_node_count",
-                           invisible_node_ids_.size());
-      StopRecordEntries();
-    }
-  }
-  if (visible_node_map_.Contains(node_id) &&
-      !visible_node_map_.at(node_id)->loaded && IsLoaded(object)) {
-    // The image is just loaded.
-    DCHECK(visible_node_map_.Contains(node_id));
-    std::unique_ptr<ImageRecord>& record =
-        visible_node_map_.find(node_id)->value;
-    images_queued_for_paint_time_.emplace(record->AsWeakPtr());
-    record->frame_index = frame_index_;
-    record->loaded = true;
-  }
+  // Mind that first_size has to be assigned at the push of
+  // |size_ordered_set_| since it's the sorting key.
+  record->first_size = visual_size;
+  size_ordered_set_.insert(record->AsWeakPtr());
+  visible_node_map_.insert(node_id, std::move(record));
 }
 
 // In the context of FCP++, we define contentful background image as one that
@@ -389,7 +436,7 @@ void ImagePaintTimingDetector::StopRecordEntries() {
   is_recording_ = false;
 }
 
-ImageRecord* ImagePaintTimingDetector::FindLargestPaintCandidate() {
+ImageRecord* ImageRecordsManager::FindLargestPaintCandidate() {
   DCHECK_EQ(visible_node_map_.size(), size_ordered_set_.size());
   for (auto it = size_ordered_set_.begin(); it != size_ordered_set_.end();
        ++it) {

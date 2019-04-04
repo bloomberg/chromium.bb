@@ -71,25 +71,32 @@ class ImagePaintTimingDetectorTest
   ImageRecord* FindLargestPaintCandidate() {
     return GetPaintTimingDetector()
         .GetImagePaintTimingDetector()
-        .FindLargestPaintCandidate();
+        .records_manager_.FindLargestPaintCandidate();
+  }
+
+  ImageRecord* FindChildFrameLargestPaintCandidate() {
+    return GetChildFrameView()
+        .GetPaintTimingDetector()
+        .GetImagePaintTimingDetector()
+        .records_manager_.FindLargestPaintCandidate();
   }
 
   unsigned CountRecords() {
     return GetPaintTimingDetector()
         .GetImagePaintTimingDetector()
-        .visible_node_map_.size();
+        .records_manager_.visible_node_map_.size();
   }
 
   unsigned CountChildFrameRecords() {
     return GetChildPaintTimingDetector()
         .GetImagePaintTimingDetector()
-        .visible_node_map_.size();
+        .records_manager_.visible_node_map_.size();
   }
 
   size_t CountRankingSetRecords() {
     return GetPaintTimingDetector()
         .GetImagePaintTimingDetector()
-        .size_ordered_set_.size();
+        .records_manager_.size_ordered_set_.size();
   }
 
   void Analyze() {
@@ -287,7 +294,7 @@ TEST_F(ImagePaintTimingDetectorTest,
     <div id="parent">
     </div>
   )HTML");
-  auto* image = MakeGarbageCollected<HTMLImageElement>(GetDocument());
+  HTMLImageElement* image = HTMLImageElement::Create(GetDocument());
   image->setAttribute("id", "target");
   GetDocument().getElementById("parent")->AppendChild(image);
   SetImageAndPaint("target", 5, 5);
@@ -526,10 +533,7 @@ TEST_F(ImagePaintTimingDetectorTest, Iframe) {
   EXPECT_EQ(CountRecords(), 0u);
   EXPECT_EQ(CountChildFrameRecords(), 1u);
   InvokeCallback();
-  ImageRecord* image = GetChildFrameView()
-                           .GetPaintTimingDetector()
-                           .GetImagePaintTimingDetector()
-                           .FindLargestPaintCandidate();
+  ImageRecord* image = FindChildFrameLargestPaintCandidate();
   EXPECT_TRUE(image);
   // Ensure the image size is not clipped (5*5).
   EXPECT_EQ(image->first_size, 25ul);
@@ -571,10 +575,7 @@ TEST_F(ImagePaintTimingDetectorTest, Iframe_HalfClippedByMainFrameViewport) {
   EXPECT_EQ(CountRecords(), 0u);
   EXPECT_EQ(CountChildFrameRecords(), 1u);
   InvokeCallback();
-  ImageRecord* image = GetChildFrameView()
-                           .GetPaintTimingDetector()
-                           .GetImagePaintTimingDetector()
-                           .FindLargestPaintCandidate();
+  ImageRecord* image = FindChildFrameLargestPaintCandidate();
   EXPECT_TRUE(image);
   EXPECT_LT(image->first_size, 100ul);
 }
