@@ -1613,20 +1613,13 @@ void UiSceneCreator::CreateExternalPromptNotifcationOverlay() {
                                  (model->web_vr.external_prompt_notification !=
                                   ExternalPromptNotificationType::kPromptNone));
 
-  scaler->AddBinding(std::make_unique<
-                     Binding<std::tuple<ExternalPromptNotificationType, GURL>>>(
+  scaler->AddBinding(std::make_unique<Binding<ExternalPromptNotificationType>>(
       VR_BIND_LAMBDA(
-          [](Model* m) {
-            return std::tuple<ExternalPromptNotificationType, GURL>(
-                m->web_vr.external_prompt_notification,
-                m->location_bar_state.gurl);
-          },
+          [](Model* m) { return m->web_vr.external_prompt_notification; },
           base::Unretained(model_)),
       VR_BIND_LAMBDA(
           [](Text* text_element, VectorIcon* icon_element,
-             const std::tuple<ExternalPromptNotificationType, GURL>&
-                 prompt_data) {
-            ExternalPromptNotificationType prompt = std::get<0>(prompt_data);
+             const ExternalPromptNotificationType& prompt) {
             if (prompt == ExternalPromptNotificationType::kPromptNone)
               return;
 
@@ -1641,14 +1634,7 @@ void UiSceneCreator::CreateExternalPromptNotifcationOverlay() {
                 NOTREACHED();
             }
 
-            const GURL& gurl = std::get<1>(prompt_data);
-            base::string16 url_text =
-                url_formatter::FormatUrlForSecurityDisplay(
-                    gurl.GetOrigin(),
-                    url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
-
-            text_element->SetText(
-                l10n_util::GetStringFUTF16(message_id, url_text));
+            text_element->SetText(l10n_util::GetStringUTF16(message_id));
             icon_element->SetIcon(icon);
           },
           base::Unretained(line1_text), base::Unretained(vector_icon))));

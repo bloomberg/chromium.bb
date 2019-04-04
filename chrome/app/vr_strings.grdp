@@ -60,7 +60,7 @@
       Remove headset to block or allow.
     </message>
     <message name="IDS_VR_DESKTOP_GENERIC_PERMISSION_PROMPT" desc="Text displayed in a dialog in VR headset to notify the user that the current webpage is requesting a new permission, but we don't know which one specifically.">
-      <ph name="URL_HOST">$1<ex>google.com</ex></ph> has requested additional permissions.
+      The site has requested additional permissions.
     </message>
   </if>
 
