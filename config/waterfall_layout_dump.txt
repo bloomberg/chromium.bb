@@ -239,6 +239,8 @@
     reef-factory-reef-8811.B-factorybranch
     sand-factory-reef-8811.B-factorybranch
     snappy-factory-reef-8811.B-factorybranch
+  factory-sarien-12033.B-buildspec
+    sarien-factory-sarien-12033.B-factorybranch
   factory-scarlet-10211.B-buildspec
     scarlet-factory-scarlet-10211.B-factorybranch
   factory-soraka-10323.39.B-buildspec
@@ -1733,6 +1735,8 @@
     reef-factory-reef-8811.B-factorybranch-tryjob
     sand-factory-reef-8811.B-factorybranch-tryjob
     snappy-factory-reef-8811.B-factorybranch-tryjob
+  factory-sarien-12033.B-buildspec-tryjob
+    sarien-factory-sarien-12033.B-factorybranch-tryjob
   factory-scarlet-10211.B-buildspec-tryjob
     scarlet-factory-scarlet-10211.B-factorybranch-tryjob
   factory-soraka-10323.39.B-buildspec-tryjob
@@ -2538,6 +2542,7 @@
     eve-master-factorybranch-tryjob
     octopus-master-factorybranch-tryjob
     rammus-master-factorybranch-tryjob
+    sarien-master-factorybranch-tryjob
   master-chromium-pfq-tryjob
     amd64-generic-chromium-pfq-tryjob
     arm-generic-chromium-pfq-tryjob
@@ -3621,9 +3626,11 @@
   sarien-chrome-pfq-tryjob
   sarien-chromium-pfq-tryjob
   sarien-compile-only-pre-cq
+  sarien-factory-sarien-12033.B-factorybranch-tryjob
   sarien-full-tryjob
   sarien-llvm-next-toolchain-tryjob
   sarien-llvm-toolchain-tryjob
+  sarien-master-factorybranch-tryjob
   sarien-no-vmtest-pre-cq
   sarien-paladin-tryjob
   sarien-payloads-tryjob
