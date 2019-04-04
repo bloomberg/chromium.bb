@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_REFERRER_UTIL_H_
-#define IOS_WEB_PUBLIC_REFERRER_UTIL_H_
+#ifndef IOS_WEB_COMMON_REFERRER_UTIL_H_
+#define IOS_WEB_COMMON_REFERRER_UTIL_H_
 
 #include <string>
 
@@ -17,9 +17,8 @@ namespace web {
 // Returns the string that should be sent as the Referer header value for
 // navigating to |destination| from the given referrer, taking the referrer
 // policy into account. Returns an empty string if no Referer should be sent.
-std::string ReferrerHeaderValueForNavigation(
-    const GURL& destination,
-    const web::Referrer& referrer);
+std::string ReferrerHeaderValueForNavigation(const GURL& destination,
+                                             const web::Referrer& referrer);
 
 // Returns the policy that should be used to process subsequent forwards, if
 // any.
@@ -36,4 +35,4 @@ ReferrerPolicy ReferrerPolicyFromString(const std::string& policy);
 
 }  // namespace web
 
-#endif  // IOS_WEB_PUBLIC_REFERRER_UTIL_H_
+#endif  // IOS_WEB_COMMON_REFERRER_UTIL_H_

@@ -153,6 +153,7 @@ source_set("context_menu") {
   deps = [
     "//base",
     "//components/url_formatter",
+    "//ios/web/common",
     "//ios/web/public",
   ]
 

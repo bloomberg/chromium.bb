@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/referrer_util.h"
+#include "ios/web/common/referrer_util.h"
 
 #include "base/stl_util.h"
 #include "ios/web/public/referrer.h"

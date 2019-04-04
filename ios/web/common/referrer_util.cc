@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/referrer_util.h"
+#include "ios/web/common/referrer_util.h"
 
 #include "base/logging.h"
 #include "ios/web/public/referrer.h"
@@ -10,9 +10,8 @@
 
 namespace web {
 
-std::string ReferrerHeaderValueForNavigation(
-    const GURL& destination,
-    const web::Referrer& referrer) {
+std::string ReferrerHeaderValueForNavigation(const GURL& destination,
+                                             const web::Referrer& referrer) {
   bool is_downgrade = referrer.url.SchemeIsCryptographic() &&
                       !destination.SchemeIsCryptographic();
   switch (referrer.policy) {

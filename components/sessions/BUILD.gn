@@ -59,6 +59,7 @@ if (!is_ios) {
 
     deps = [
       "//base",
+      "//ios/web/common",
     ]
   }
 }
