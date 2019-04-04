@@ -6184,4 +6184,4 @@ crbug.com/949443 [ Mac10.13 Debug ] fast/block/inline-children-root-linebox-cras
 crbug.com/949444 [ Mac10.13 Debug ] fast/events/sequential-focus-navigation-starting-point.html [ Pass Crash ]
 crbug.com/949444 [ Mac10.13 Debug ] virtual/mouseevent_fractional/fast/events/sequential-focus-navigation-starting-point.html [ Pass Crash ]
 crbug.com/949444 [ Mac10.13 Debug ] virtual/user-activation-v2/fast/events/sequential-focus-navigation-starting-point.html [ Pass Crash ]
-crbug.com/949445 [ Mac10.13 Debug ] fast/forms/text/input-text-scroll-left-on-blur.html [ Pass Failure ]
+crbug.com/949445 [ Mac ] fast/forms/text/input-text-scroll-left-on-blur.html [ Failure ]
