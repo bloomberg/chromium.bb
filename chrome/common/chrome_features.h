@@ -60,11 +60,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAutoFetchOnNetErrorPage;
 #endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kAutomaticTabDiscarding;
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
-
 #if defined(OS_WIN) || defined(OS_LINUX)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kBackgroundModeAllowRestart;

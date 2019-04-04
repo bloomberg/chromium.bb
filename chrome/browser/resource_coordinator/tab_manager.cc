@@ -209,14 +209,6 @@ TabManager::~TabManager() {
 void TabManager::Start() {
   background_tab_loading_mode_ = BackgroundTabLoadingMode::kStaggered;
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  // Note that discarding is now enabled by default. This check is kept as a
-  // kill switch.
-  // TODO(georgesak): remote this when deemed not needed anymore.
-  if (!base::FeatureList::IsEnabled(features::kAutomaticTabDiscarding))
-    return;
-#endif
-
 #if defined(OS_CHROMEOS)
   delegate_->StartPeriodicOOMScoreUpdate();
 #endif

@@ -3465,17 +3465,6 @@ const char kWebGL2ComputeContextDescription[] =
 
 #endif  // defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-
-const char kAutomaticTabDiscardingName[] = "Automatic tab discarding";
-const char kAutomaticTabDiscardingDescription[] =
-    "If enabled, tabs get automatically discarded from memory when the system "
-    "memory is low. Discarded tabs are still visible on the tab strip and get "
-    "reloaded when clicked on. Info about discarded tabs can be found at "
-    "chrome://discards.";
-
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
-
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
 const char kDirectManipulationStylusName[] = "Direct Manipulation Stylus";

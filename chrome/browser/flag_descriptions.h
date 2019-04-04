@@ -2104,13 +2104,6 @@ extern const char kWebGL2ComputeContextDescription[];
 extern const char kExperimentalUiName[];
 extern const char kExperimentalUiDescription[];
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-
-extern const char kAutomaticTabDiscardingName[];
-extern const char kAutomaticTabDiscardingDescription[];
-
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
-
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
 extern const char kDirectManipulationStylusName[];
