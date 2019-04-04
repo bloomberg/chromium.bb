@@ -28,23 +28,17 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_CREATE_WINDOW_H_
 
 #include "third_party/blink/public/web/web_window_features.h"
-#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
-// To avoid conflicts with the CreateWindow macro from the Windows SDK...
-#undef CreateWindow
-
 namespace blink {
+class Frame;
 class LocalFrame;
 struct FrameLoadRequest;
 
-DOMWindow* CreateWindow(const KURL& completed_url,
-                        const AtomicString& frame_name,
-                        const WebWindowFeatures&,
-                        LocalDOMWindow& incumbent_window,
-                        LocalFrame& opener_frame);
-
-void CreateWindowForRequest(const FrameLoadRequest&, LocalFrame& opener_frame);
+Frame* CreateNewWindow(LocalFrame& opener_frame,
+                       FrameLoadRequest&,
+                       bool& created);
 
 CORE_EXPORT WebWindowFeatures GetWindowFeaturesFromString(const String&);
 
