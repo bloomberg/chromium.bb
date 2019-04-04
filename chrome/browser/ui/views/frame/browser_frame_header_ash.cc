@@ -69,8 +69,7 @@ void PaintThemedFrame(gfx::Canvas* canvas,
   if (!frame_image.isNull()) {
     canvas->TileImageInt(frame_image, image_inset_x, image_inset_y, 0, 0,
                          bounds.width(), bounds.height(), 1.0f,
-                         SkShader::kRepeat_TileMode,
-                         SkShader::kMirror_TileMode);
+                         SkTileMode::kRepeat, SkTileMode::kMirror);
   }
   if (!frame_overlay_image.isNull())
     canvas->DrawImageInt(frame_overlay_image, 0, 0);

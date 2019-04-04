@@ -412,8 +412,7 @@ void ScrollableUsersListView::OnPaintBackground(gfx::Canvas* canvas) {
                            gradient_params_.color_from};
 
       flags.setShader(cc::PaintShader::MakeLinearGradient(
-          in_view_coordinates, colors, color_positions, 4,
-          SkShader::kClamp_TileMode));
+          in_view_coordinates, colors, color_positions, 4, SkTileMode::kClamp));
     } else {
       flags.setColor(gradient_params_.color_to);
     }

@@ -145,16 +145,16 @@ sk_sp<PaintShader> Gradient::CreateShaderInternal(
   DCHECK_GE(colors.size(), 2ul);
   DCHECK_EQ(pos.size(), colors.size());
 
-  SkShader::TileMode tile = SkShader::kClamp_TileMode;
+  SkTileMode tile = SkTileMode::kClamp;
   switch (spread_method_) {
     case kSpreadMethodReflect:
-      tile = SkShader::kMirror_TileMode;
+      tile = SkTileMode::kMirror;
       break;
     case kSpreadMethodRepeat:
-      tile = SkShader::kRepeat_TileMode;
+      tile = SkTileMode::kRepeat;
       break;
     case kSpreadMethodPad:
-      tile = SkShader::kClamp_TileMode;
+      tile = SkTileMode::kClamp;
       break;
   }
 
@@ -201,7 +201,7 @@ class LinearGradient final : public Gradient {
  protected:
   sk_sp<PaintShader> CreateShader(const ColorBuffer& colors,
                                   const OffsetBuffer& pos,
-                                  SkShader::TileMode tile_mode,
+                                  SkTileMode tile_mode,
                                   uint32_t flags,
                                   const SkMatrix& local_matrix,
                                   SkColor fallback_color) const override {
@@ -244,7 +244,7 @@ class RadialGradient final : public Gradient {
  protected:
   sk_sp<PaintShader> CreateShader(const ColorBuffer& colors,
                                   const OffsetBuffer& pos,
-                                  SkShader::TileMode tile_mode,
+                                  SkTileMode tile_mode,
                                   uint32_t flags,
                                   const SkMatrix& local_matrix,
                                   SkColor fallback_color) const override {
@@ -304,7 +304,7 @@ class ConicGradient final : public Gradient {
  protected:
   sk_sp<PaintShader> CreateShader(const ColorBuffer& colors,
                                   const OffsetBuffer& pos,
-                                  SkShader::TileMode tile_mode,
+                                  SkTileMode tile_mode,
                                   uint32_t flags,
                                   const SkMatrix& local_matrix,
                                   SkColor fallback_color) const override {

@@ -372,9 +372,9 @@ void SVGImage::DrawPatternForContainer(GraphicsContext& context,
                                  phase.Y() + spaced_tile.Y());
 
   PaintFlags flags;
-  flags.setShader(PaintShader::MakePaintRecord(
-      record, spaced_tile, SkShader::kRepeat_TileMode,
-      SkShader::kRepeat_TileMode, &pattern_transform));
+  flags.setShader(
+      PaintShader::MakePaintRecord(record, spaced_tile, SkTileMode::kRepeat,
+                                   SkTileMode::kRepeat, &pattern_transform));
   // If the shader could not be instantiated (e.g. non-invertible matrix),
   // draw transparent.
   // Note: we can't simply bail, because of arbitrary blend mode.
@@ -447,8 +447,8 @@ bool SVGImage::ApplyShaderInternal(PaintFlags& flags,
   IntRect bounds(IntPoint(), size);
 
   flags.setShader(PaintShader::MakePaintRecord(
-      PaintRecordForCurrentFrame(url), bounds, SkShader::kRepeat_TileMode,
-      SkShader::kRepeat_TileMode, &local_matrix));
+      PaintRecordForCurrentFrame(url), bounds, SkTileMode::kRepeat,
+      SkTileMode::kRepeat, &local_matrix));
 
   // Animation is normally refreshed in draw() impls, which we don't reach when
   // painting via shaders.

@@ -1232,7 +1232,7 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
       SkColor gradient_colors[2] = {SkColor4f({a1, a1, a1, a1}).toSkColor(),
                                     SkColor4f({a2, a2, a2, a2}).toSkColor()};
       sk_sp<SkShader> gradient = SkGradientShader::MakeLinear(
-          gradient_pts, gradient_colors, nullptr, 2, SkShader::kClamp_TileMode);
+          gradient_pts, gradient_colors, nullptr, 2, SkTileMode::kClamp);
       paint.setMaskFilter(SkShaderMaskFilter::Make(std::move(gradient)));
       // shared quad opacity was folded into the gradient, so this will shorten
       // any color filter chain needed for background blending

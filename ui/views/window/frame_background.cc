@@ -125,8 +125,7 @@ void FrameBackground::PaintMaximized(gfx::Canvas* canvas,
   if (!theme_image_.isNull()) {
     canvas->TileImageInt(theme_image_, 0, theme_image_y_inset_, 0, 0,
                          view->width(), top_area_height_, 1.0f,
-                         SkShader::kRepeat_TileMode,
-                         SkShader::kMirror_TileMode);
+                         SkTileMode::kRepeat, SkTileMode::kMirror);
   }
   if (!theme_overlay_image_.isNull())
     canvas->DrawImageInt(theme_overlay_image_, 0, -maximized_top_inset_);

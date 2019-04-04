@@ -33,16 +33,15 @@ bool IsValidPaintShaderType(PaintShader::Type type) {
          static_cast<uint8_t>(PaintShader::Type::kShaderCount);
 }
 
-// SkShader::TileMode has no defined backing type, so read/write int32_t's.
+// SkTileMode has no defined backing type, so read/write int32_t's.
 // If read_mode is a valid tile mode, this returns true and updates mode to the
 // equivalent enum value. Otherwise false is returned and mode is not modified.
-bool ValidateAndGetSkShaderTileMode(int32_t read_mode,
-                                    SkShader::TileMode* mode) {
-  if (read_mode < 0 || read_mode >= SkShader::kTileModeCount) {
+bool ValidateAndGetSkShaderTileMode(int32_t read_mode, SkTileMode* mode) {
+  if (read_mode < 0 || read_mode >= kSkTileModeCount) {
     return false;
   }
 
-  *mode = static_cast<SkShader::TileMode>(read_mode);
+  *mode = static_cast<SkTileMode>(read_mode);
   return true;
 }
 

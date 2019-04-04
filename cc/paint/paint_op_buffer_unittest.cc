@@ -58,8 +58,8 @@ class PaintOpSerializationTestUtils {
     shader->flags_ = 12345;
     shader->end_radius_ = 12.3f;
     shader->start_radius_ = 13.4f;
-    shader->tx_ = SkShader::kRepeat_TileMode;
-    shader->ty_ = SkShader::kMirror_TileMode;
+    shader->tx_ = SkTileMode::kRepeat;
+    shader->ty_ = SkTileMode::kMirror;
     shader->fallback_color_ = SkColorSetARGB(254, 252, 250, 248);
     shader->scaling_behavior_ = PaintShader::ScalingBehavior::kRasterAtScale;
     if (use_matrix) {
@@ -452,9 +452,8 @@ TEST(PaintOpBufferTest, DiscardableImagesTracking_OpWithFlags) {
   PaintOpBuffer buffer;
   PaintFlags flags;
   auto image = CreateDiscardablePaintImage(gfx::Size(100, 100));
-  flags.setShader(PaintShader::MakeImage(std::move(image),
-                                         SkShader::kClamp_TileMode,
-                                         SkShader::kClamp_TileMode, nullptr));
+  flags.setShader(PaintShader::MakeImage(std::move(image), SkTileMode::kClamp,
+                                         SkTileMode::kClamp, nullptr));
   buffer.push<DrawRectOp>(SkRect::MakeWH(100, 100), flags);
   EXPECT_TRUE(buffer.HasDiscardableImages());
 }
@@ -1122,8 +1121,8 @@ std::vector<PaintFlags> test_flags = {
                            SkColorSetARGB(4, 3, 2, 1),
                            SkColorSetARGB(0, 10, 20, 30)};
       SkScalar positions[3] = {0.f, 0.3f, 1.f};
-      flags.setShader(PaintShader::MakeLinearGradient(
-          points, colors, positions, 3, SkShader::kMirror_TileMode));
+      flags.setShader(PaintShader::MakeLinearGradient(points, colors, positions,
+                                                      3, SkTileMode::kMirror));
 
       return flags;
     }(),
@@ -1133,7 +1132,7 @@ std::vector<PaintFlags> test_flags = {
                            SkColorSetARGB(4, 3, 2, 1),
                            SkColorSetARGB(0, 10, 20, 30)};
       flags.setShader(PaintShader::MakeSweepGradient(
-          0.2f, -0.8f, colors, nullptr, 3, SkShader::kMirror_TileMode, 10, 20));
+          0.2f, -0.8f, colors, nullptr, 3, SkTileMode::kMirror, 10, 20));
       return flags;
     }(),
     PaintFlags(),
@@ -2768,9 +2767,8 @@ TEST(PaintOpBufferTest, SkipsOpsOutsideClip) {
   PaintImage paint_image = CreateDiscardablePaintImage(gfx::Size(10, 10));
   buffer.push<DrawImageOp>(paint_image, 105.0f, 105.0f, &flags);
   PaintFlags image_flags;
-  image_flags.setShader(
-      PaintShader::MakeImage(paint_image, SkShader::TileMode::kRepeat_TileMode,
-                             SkShader::TileMode::kRepeat_TileMode, nullptr));
+  image_flags.setShader(PaintShader::MakeImage(paint_image, SkTileMode::kRepeat,
+                                               SkTileMode::kRepeat, nullptr));
   buffer.push<DrawRectOp>(SkRect::MakeXYWH(110, 110, 100, 100), image_flags);
 
   SkRect rect = SkRect::MakeXYWH(0, 0, 100, 100);
@@ -2794,9 +2792,8 @@ TEST(PaintOpBufferTest, SkipsOpsWithFailedDecodes) {
   PaintImage paint_image = CreateDiscardablePaintImage(gfx::Size(10, 10));
   buffer.push<DrawImageOp>(paint_image, 105.0f, 105.0f, &flags);
   PaintFlags image_flags;
-  image_flags.setShader(
-      PaintShader::MakeImage(paint_image, SkShader::TileMode::kRepeat_TileMode,
-                             SkShader::TileMode::kRepeat_TileMode, nullptr));
+  image_flags.setShader(PaintShader::MakeImage(paint_image, SkTileMode::kRepeat,
+                                               SkTileMode::kRepeat, nullptr));
   buffer.push<DrawRectOp>(SkRect::MakeXYWH(110, 110, 100, 100), image_flags);
   buffer.push<DrawColorOp>(SK_ColorRED, SkBlendMode::kSrcOver);
 
@@ -2831,7 +2828,7 @@ MATCHER_P(MatchesQuality, quality, "") {
 
 MATCHER_P2(MatchesShader, flags, scale, "") {
   SkMatrix matrix;
-  SkShader::TileMode xy[2];
+  SkTileMode xy[2];
   SkImage* image = arg.getShader()->isAImage(&matrix, xy);
 
   EXPECT_FALSE(image->isLazyGenerated());
@@ -2939,9 +2936,8 @@ TEST(PaintOpBufferTest, ReplacesImagesFromProvider) {
   buffer.push<DrawImageRectOp>(
       paint_image, rect, rect, &flags,
       PaintCanvas::SrcRectConstraint::kFast_SrcRectConstraint);
-  flags.setShader(
-      PaintShader::MakeImage(paint_image, SkShader::TileMode::kRepeat_TileMode,
-                             SkShader::TileMode::kRepeat_TileMode, nullptr));
+  flags.setShader(PaintShader::MakeImage(paint_image, SkTileMode::kRepeat,
+                                         SkTileMode::kRepeat, nullptr));
   buffer.push<DrawOvalOp>(SkRect::MakeWH(10, 10), flags);
 
   testing::StrictMock<MockCanvas> canvas;
@@ -2983,9 +2979,8 @@ TEST(PaintOpBufferTest, ReplacesImagesFromProviderOOP) {
   buffer.push<DrawImageRectOp>(
       paint_image, rect, rect, &flags,
       PaintCanvas::SrcRectConstraint::kFast_SrcRectConstraint);
-  flags.setShader(
-      PaintShader::MakeImage(paint_image, SkShader::TileMode::kRepeat_TileMode,
-                             SkShader::TileMode::kRepeat_TileMode, nullptr));
+  flags.setShader(PaintShader::MakeImage(paint_image, SkTileMode::kRepeat,
+                                         SkTileMode::kRepeat, nullptr));
   buffer.push<DrawOvalOp>(SkRect::MakeWH(10, 10), flags);
 
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
@@ -3133,8 +3128,8 @@ TEST(PaintOpBufferTest, PaintRecordShaderSerialization) {
   TestOptionsProvider options_provider;
   PaintFlags flags;
   flags.setShader(PaintShader::MakePaintRecord(
-      record_buffer, SkRect::MakeWH(10, 10), SkShader::kClamp_TileMode,
-      SkShader::kRepeat_TileMode, nullptr));
+      record_buffer, SkRect::MakeWH(10, 10), SkTileMode::kClamp,
+      SkTileMode::kRepeat, nullptr));
   PaintOpBuffer buffer;
   buffer.push<DrawRectOp>(SkRect::MakeXYWH(1, 2, 3, 4), flags);
 
@@ -3280,9 +3275,8 @@ TEST(PaintOpBufferTest, RecordShadersSerializeScaledImages) {
       CreateDiscardablePaintImage(gfx::Size(10, 10)), 0.f, 0.f, nullptr);
 
   auto shader = PaintShader::MakePaintRecord(
-      record_buffer, SkRect::MakeWH(10.f, 10.f),
-      SkShader::TileMode::kRepeat_TileMode,
-      SkShader::TileMode::kRepeat_TileMode, nullptr);
+      record_buffer, SkRect::MakeWH(10.f, 10.f), SkTileMode::kRepeat,
+      SkTileMode::kRepeat, nullptr);
   shader->set_has_animated_images(true);
   auto buffer = sk_make_sp<PaintOpBuffer>();
   buffer->push<ScaleOp>(0.5f, 0.8f);
@@ -3316,9 +3310,8 @@ TEST(PaintOpBufferTest, RecordShadersCached) {
   record_buffer->push<DrawImageOp>(
       CreateDiscardablePaintImage(gfx::Size(10, 10)), 0.f, 0.f, nullptr);
   auto shader = PaintShader::MakePaintRecord(
-      record_buffer, SkRect::MakeWH(10.f, 10.f),
-      SkShader::TileMode::kRepeat_TileMode,
-      SkShader::TileMode::kRepeat_TileMode, nullptr);
+      record_buffer, SkRect::MakeWH(10.f, 10.f), SkTileMode::kRepeat,
+      SkTileMode::kRepeat, nullptr);
   shader->set_has_animated_images(false);
   auto shader_id = shader->paint_record_shader_id();
   TestOptionsProvider options_provider;
@@ -3437,9 +3430,8 @@ TEST(PaintOpBufferTest, RecordShadersCachedSize) {
   auto image = CreateBitmapImage(gfx::Size(30, 30));
   record_buffer->push<DrawImageOp>(image, 0.f, 0.f, nullptr);
   auto shader = PaintShader::MakePaintRecord(
-      record_buffer, SkRect::MakeWH(10.f, 10.f),
-      SkShader::TileMode::kRepeat_TileMode,
-      SkShader::TileMode::kRepeat_TileMode, nullptr);
+      record_buffer, SkRect::MakeWH(10.f, 10.f), SkTileMode::kRepeat,
+      SkTileMode::kRepeat, nullptr);
   shader->set_has_animated_images(false);
   auto shader_id = shader->paint_record_shader_id();
   TestOptionsProvider options_provider;

@@ -619,8 +619,7 @@ void GlassBrowserFrameView::PaintTitlebar(gfx::Canvas* canvas) const {
                              GetTopInset(false) + titlebar_rect.y(),
                          titlebar_rect.x(), titlebar_rect.y(),
                          titlebar_rect.width(), titlebar_rect.height(), scale,
-                         SkShader::kRepeat_TileMode,
-                         SkShader::kMirror_TileMode);
+                         SkTileMode::kRepeat, SkTileMode::kMirror);
   }
   const gfx::ImageSkia frame_overlay_image = GetFrameOverlayImage();
   if (!frame_overlay_image.isNull()) {

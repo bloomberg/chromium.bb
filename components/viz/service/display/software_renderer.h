@@ -91,9 +91,8 @@ class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
       const cc::FilterOperations* backdrop_filters,
       gfx::Rect* unclipped_rect) const;
   SkBitmap GetBackdropBitmap(const gfx::Rect& bounding_rect) const;
-  sk_sp<SkShader> GetBackdropFilterShader(
-      const RenderPassDrawQuad* quad,
-      SkShader::TileMode content_tile_mode) const;
+  sk_sp<SkShader> GetBackdropFilterShader(const RenderPassDrawQuad* quad,
+                                          SkTileMode content_tile_mode) const;
 
   // A map from RenderPass id to the bitmap used to draw the RenderPass from.
   base::flat_map<RenderPassId, SkBitmap> render_pass_bitmaps_;

@@ -42,7 +42,6 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkMatrix;
-class SkShader;
 
 namespace blink {
 
@@ -116,7 +115,7 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
   using OffsetBuffer = Vector<SkScalar, 8>;
   virtual sk_sp<PaintShader> CreateShader(const ColorBuffer&,
                                           const OffsetBuffer&,
-                                          SkShader::TileMode,
+                                          SkTileMode,
                                           uint32_t flags,
                                           const SkMatrix&,
                                           SkColor) const = 0;

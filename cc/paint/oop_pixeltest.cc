@@ -564,9 +564,8 @@ TEST_P(OopImagePixelTest, DrawImageShaderScaled) {
   auto builder = PaintImageBuilder::WithDefault().set_image(image, 0).set_id(
       PaintImage::GetNextId());
   auto paint_image = builder.TakePaintImage();
-  auto paint_image_shader =
-      PaintShader::MakeImage(paint_image, SkShader::kRepeat_TileMode,
-                             SkShader::kRepeat_TileMode, nullptr);
+  auto paint_image_shader = PaintShader::MakeImage(
+      paint_image, SkTileMode::kRepeat, SkTileMode::kRepeat, nullptr);
 
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
   display_item_list->StartPaint();
@@ -610,8 +609,8 @@ TEST_P(OopImagePixelTest, DrawRecordShaderWithImageScaled) {
   flags.setFilterQuality(FilterQuality());
   paint_record->push<DrawImageOp>(paint_image, 0.f, 0.f, &flags);
   auto paint_record_shader = PaintShader::MakePaintRecord(
-      paint_record, gfx::RectToSkRect(rect), SkShader::kRepeat_TileMode,
-      SkShader::kRepeat_TileMode, nullptr);
+      paint_record, gfx::RectToSkRect(rect), SkTileMode::kRepeat,
+      SkTileMode::kRepeat, nullptr);
 
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
   display_item_list->StartPaint();
@@ -654,9 +653,8 @@ TEST_F(OopImagePixelTest, DrawRecordShaderTranslatedTileRect) {
 
   SkRect tile_rect = SkRect::MakeXYWH(x_offset, y_offset, 2, 3);
   sk_sp<PaintShader> paint_record_shader = PaintShader::MakePaintRecord(
-      shader_buffer, tile_rect, SkShader::kRepeat_TileMode,
-      SkShader::kRepeat_TileMode, nullptr,
-      PaintShader::ScalingBehavior::kRasterAtScale);
+      shader_buffer, tile_rect, SkTileMode::kRepeat, SkTileMode::kRepeat,
+      nullptr, PaintShader::ScalingBehavior::kRasterAtScale);
 
   gfx::Size output_size(10, 10);
 
@@ -1467,8 +1465,8 @@ class OopRecordShaderPixelTest : public OopPixelTest,
     paint_record->push<DrawTextBlobOp>(
         BuildTextBlob(SkTypeface::MakeDefault(), UseLcdText()), 0u, 0u, flags);
     auto paint_record_shader = PaintShader::MakePaintRecord(
-        paint_record, SkRect::MakeWH(25, 25), SkShader::kRepeat_TileMode,
-        SkShader::kRepeat_TileMode, nullptr);
+        paint_record, SkRect::MakeWH(25, 25), SkTileMode::kRepeat,
+        SkTileMode::kRepeat, nullptr);
 
     auto display_item_list = base::MakeRefCounted<DisplayItemList>();
     display_item_list->StartPaint();

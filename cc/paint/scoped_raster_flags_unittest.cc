@@ -52,8 +52,8 @@ TEST(ScopedRasterFlagsTest, KeepsDecodesAlive) {
   record->push<DrawImageOp>(CreateDiscardablePaintImage(gfx::Size(10, 10)), 0.f,
                             0.f, nullptr);
   auto record_shader = PaintShader::MakePaintRecord(
-      record, SkRect::MakeWH(100, 100), SkShader::TileMode::kClamp_TileMode,
-      SkShader::TileMode::kClamp_TileMode, &SkMatrix::I());
+      record, SkRect::MakeWH(100, 100), SkTileMode::kClamp, SkTileMode::kClamp,
+      &SkMatrix::I());
   record_shader->set_has_animated_images(true);
 
   MockImageProvider provider;
@@ -74,9 +74,8 @@ TEST(ScopedRasterFlagsTest, NoImageProvider) {
   PaintFlags flags;
   flags.setAlpha(255);
   flags.setShader(PaintShader::MakeImage(
-      CreateDiscardablePaintImage(gfx::Size(10, 10)),
-      SkShader::TileMode::kClamp_TileMode, SkShader::TileMode::kClamp_TileMode,
-      &SkMatrix::I()));
+      CreateDiscardablePaintImage(gfx::Size(10, 10)), SkTileMode::kClamp,
+      SkTileMode::kClamp, &SkMatrix::I()));
   ScopedRasterFlags scoped_flags(&flags, nullptr, SkMatrix::I(), 10);
   EXPECT_NE(scoped_flags.flags(), &flags);
   EXPECT_EQ(scoped_flags.flags()->getAlpha(), SkMulDiv255Round(255, 10));
