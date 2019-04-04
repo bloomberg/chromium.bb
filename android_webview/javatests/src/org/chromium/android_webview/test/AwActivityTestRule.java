@@ -569,17 +569,17 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
         TestAwContentsClient popupContentsClient = info.popupContentsClient;
         AwTestContainerView popupContainerView = info.popupContainerView;
         final AwContents popupContents = info.popupContents;
+        OnPageFinishedHelper onPageFinishedHelper = popupContentsClient.getOnPageFinishedHelper();
+        int finishCallCount = onPageFinishedHelper.getCallCount();
 
         if (onCreateWindowHandler != null) onCreateWindowHandler.onCreateWindow(popupContents);
 
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> parentAwContents.supplyContentsForPopup(popupContents));
-
-        OnPageFinishedHelper onPageFinishedHelper = popupContentsClient.getOnPageFinishedHelper();
-        int finishCallCount = onPageFinishedHelper.getCallCount();
         TestAwContentsClient.OnReceivedTitleHelper onReceivedTitleHelper =
                 popupContentsClient.getOnReceivedTitleHelper();
         int titleCallCount = onReceivedTitleHelper.getCallCount();
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> parentAwContents.supplyContentsForPopup(popupContents));
 
         onPageFinishedHelper.waitForCallback(
                 finishCallCount, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);

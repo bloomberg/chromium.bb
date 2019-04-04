@@ -8,6 +8,9 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.WebContents;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -44,14 +47,19 @@ public class TestCallbackHelperContainer {
      * CallbackHelper for OnPageFinished.
      */
     public static class OnPageFinishedHelper extends CallbackHelper {
+        private List<String> mUrlList = Collections.synchronizedList(new ArrayList<>());
         private String mUrl;
         public void notifyCalled(String url) {
             mUrl = url;
+            mUrlList.add(url);
             notifyCalled();
         }
         public String getUrl() {
             assert getCallCount() > 0;
             return mUrl;
+        }
+        public List<String> getUrlList() {
+            return mUrlList;
         }
     }
 
