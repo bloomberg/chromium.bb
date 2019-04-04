@@ -1591,6 +1591,36 @@ scoped_refptr<ShapeResult> ShapeResult::CreateForTabulationCharacters(
   return result;
 }
 
+scoped_refptr<ShapeResult> ShapeResult::CreateForSpaces(const Font* font,
+                                                        TextDirection direction,
+                                                        unsigned start_index,
+                                                        unsigned length,
+                                                        float width) {
+  DCHECK_GT(length, 0u);
+  const SimpleFontData* font_data = font->PrimaryFont();
+  scoped_refptr<ShapeResult> result =
+      ShapeResult::Create(font, length, direction);
+  result->num_glyphs_ = length;
+  DCHECK_EQ(result->num_glyphs_, length);  // no overflow
+  result->has_vertical_offsets_ =
+      font_data->PlatformData().IsVerticalAnyUpright();
+  hb_direction_t hb_direction =
+      IsLtr(direction) ? HB_DIRECTION_LTR : HB_DIRECTION_RTL;
+  scoped_refptr<ShapeResult::RunInfo> run = RunInfo::Create(
+      font_data, hb_direction, CanvasRotationInVertical::kRegular,
+      HB_SCRIPT_COMMON, start_index, length, length);
+  result->width_ = run->width_ = width;
+  for (unsigned i = 0; i < length; i++) {
+    HarfBuzzRunGlyphData& glyph_data = run->glyph_data_[i];
+    glyph_data.SetGlyphAndPositions(font_data->SpaceGlyph(), i, width,
+                                    FloatSize(), true);
+    width = 0;
+  }
+  result->runs_.push_back(std::move(run));
+  result->UpdateStartIndex();
+  return result;
+}
+
 void ShapeResult::ToString(StringBuilder* output) const {
   output->Append("#chars=");
   output->AppendNumber(num_characters_);
