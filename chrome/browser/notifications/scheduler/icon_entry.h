@@ -20,11 +20,17 @@ namespace notifications {
 struct IconEntry {
   using IconData = std::string;
 
+  IconEntry();
+  IconEntry(IconEntry&& other);
+
   // Unique identifier for the icon database entry.
   std::string uuid;
 
   // Raw data of the icon.
   IconData data;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(IconEntry);
 };
 
 }  // namespace notifications

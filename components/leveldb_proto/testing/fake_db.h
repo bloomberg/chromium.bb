@@ -27,7 +27,7 @@ class FakeDB : public ProtoDatabaseImpl<P, T> {
   using Callback = base::OnceCallback<void(bool)>;
 
  public:
-  using EntryMap = std::map<std::string, T>;
+  using EntryMap = std::map<std::string, P>;
 
   explicit FakeDB(EntryMap* db);
 
@@ -133,6 +133,42 @@ class FakeDB : public ProtoDatabaseImpl<P, T> {
   Callback destroy_callback_;
 };
 
+namespace {
+
+template <typename P,
+          typename T,
+          std::enable_if_t<std::is_base_of<google::protobuf::MessageLite,
+                                           T>::value>* = nullptr>
+void DataToProtoWrap(const T& data, P* proto) {
+  *proto = data;
+}
+
+template <typename P,
+          typename T,
+          std::enable_if_t<!std::is_base_of<google::protobuf::MessageLite,
+                                            T>::value>* = nullptr>
+void DataToProtoWrap(const T& data, P* proto) {
+  DataToProto(data, proto);
+}
+
+template <typename P,
+          typename T,
+          std::enable_if_t<std::is_base_of<google::protobuf::MessageLite,
+                                           T>::value>* = nullptr>
+void ProtoToDataWrap(const P& proto, T* copy) {
+  *copy = proto;
+}
+
+template <typename P,
+          typename T,
+          std::enable_if_t<!std::is_base_of<google::protobuf::MessageLite,
+                                            T>::value>* = nullptr>
+void ProtoToDataWrap(const P& proto, T* copy) {
+  ProtoToData(proto, copy);
+}
+
+}  // namespace
+
 template <typename P, typename T>
 FakeDB<P, T>::FakeDB(EntryMap* db)
     : ProtoDatabaseImpl<P, T>(
@@ -172,8 +208,8 @@ void FakeDB<P, T>::UpdateEntries(
     std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
     std::unique_ptr<std::vector<std::string>> keys_to_remove,
     Callbacks::UpdateCallback callback) {
-  for (auto& pair : *entries_to_save)
-    (*db_)[pair.first] = std::move(pair.second);
+  for (const auto& pair : *entries_to_save)
+    DataToProtoWrap(pair.second, &(*db_)[pair.first]);
 
   for (const auto& key : *keys_to_remove)
     db_->erase(key);
@@ -186,8 +222,8 @@ void FakeDB<P, T>::UpdateEntriesWithRemoveFilter(
     std::unique_ptr<typename Util::Internal<T>::KeyEntryVector> entries_to_save,
     const KeyFilter& delete_key_filter,
     Callbacks::UpdateCallback callback) {
-  for (const auto& pair : *entries_to_save)
-    (*db_)[pair.first] = pair.second;
+  for (auto& pair : *entries_to_save)
+    DataToProtoWrap(pair.second, &(*db_)[pair.first]);
 
   auto it = db_->begin();
   while (it != db_->end()) {
@@ -223,8 +259,10 @@ void FakeDB<P, T>::LoadEntriesWithFilter(
   std::unique_ptr<std::vector<T>> entries(new std::vector<T>());
   for (const auto& pair : *db_) {
     if (key_filter.is_null() || key_filter.Run(pair.first)) {
-      if (pair.first.compare(0, target_prefix.length(), target_prefix) == 0)
-        entries->push_back(pair.second);
+      if (pair.first.compare(0, target_prefix.length(), target_prefix) == 0) {
+        entries->emplace_back(T());
+        ProtoToDataWrap<P, T>(pair.second, &entries->back());
+      }
     }
   }
 
@@ -256,7 +294,7 @@ void FakeDB<P, T>::LoadKeysAndEntriesWithFilter(
   for (const auto& pair : *db_) {
     if (key_filter.is_null() || key_filter.Run(pair.first)) {
       if (pair.first.compare(0, target_prefix.length(), target_prefix) == 0)
-        keys_entries->insert(pair);
+        ProtoToDataWrap<P, T>(pair.second, &(*keys_entries)[pair.first]);
     }
   }
 
@@ -271,9 +309,8 @@ void FakeDB<P, T>::LoadKeysAndEntriesInRange(
     typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) {
   auto keys_entries = std::make_unique<std::map<std::string, T>>();
   for (const auto& pair : *db_) {
-    std::string key = pair.first;
-    if (start <= key && key <= end)
-      keys_entries->insert(pair);
+    if (pair.first >= start && pair.first <= end)
+      ProtoToDataWrap<P, T>(pair.second, &(*keys_entries)[pair.first]);
   }
 
   load_callback_ = base::BindOnce(RunLoadKeysAndEntriesCallback,
@@ -297,8 +334,10 @@ void FakeDB<P, T>::GetEntry(
     typename Callbacks::Internal<T>::GetCallback callback) {
   std::unique_ptr<T> entry;
   auto it = db_->find(key);
-  if (it != db_->end())
-    entry.reset(new T(it->second));
+  if (it != db_->end()) {
+    entry.reset(new T());
+    ProtoToDataWrap<P, T>(it->second, entry.get());
+  }
 
   get_callback_ =
       base::BindOnce(RunGetCallback, std::move(callback), std::move(entry));
