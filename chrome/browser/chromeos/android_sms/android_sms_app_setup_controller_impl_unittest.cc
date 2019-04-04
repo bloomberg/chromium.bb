@@ -135,13 +135,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
         : fake_cookie_manager_(fake_cookie_manager) {}
     ~TestPwaDelegate() override = default;
 
-    void SetHasPwa(const GURL& url, bool has_pwa) {
-      // If no PWA should exist, erase any existing entry and return.
-      if (!has_pwa) {
-        url_to_pwa_map_.erase(url);
-        return;
-      }
-
+    void SetHasPwa(const GURL& url) {
       // If a PWA already exists for this URL, there is nothing to do.
       if (base::ContainsKey(url_to_pwa_map_, url))
         return;
@@ -166,6 +160,19 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
     network::mojom::CookieManager* GetCookieManager(const GURL& app_url,
                                                     Profile* profile) override {
       return fake_cookie_manager_;
+    }
+
+    bool RemovePwa(const extensions::ExtensionId& extension_id,
+                   base::string16* error,
+                   Profile* profile) override {
+      for (const auto& url_pwa_pair : url_to_pwa_map_) {
+        if (url_pwa_pair.second->id() == extension_id) {
+          url_to_pwa_map_.erase(url_pwa_pair.first);
+          return true;
+        }
+      }
+
+      return false;
     }
 
    private:
@@ -271,13 +278,11 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
                      const GURL& install_url,
                      const GURL& migrated_to_app_url,
                      size_t num_expected_app_uninstalls) {
-    const auto& uninstall_requests =
-        test_pending_app_manager_->uninstall_requests();
-    size_t num_uninstall_requests_before_call = uninstall_requests.size();
-
     base::RunLoop run_loop;
     base::HistogramTester histogram_tester;
 
+    bool was_installed =
+        test_pwa_delegate_->GetPwaForUrl(install_url, &profile_) != nullptr;
     setup_controller_->RemoveApp(
         app_url, install_url, migrated_to_app_url,
         base::BindOnce(&AndroidSmsAppSetupControllerImplTest::OnRemoveAppResult,
@@ -285,10 +290,8 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
 
     // If the PWA was already installed at the URL, RemoveApp() should uninstall
     // the it.
-    if (test_pwa_delegate_->GetPwaForUrl(install_url, &profile_)) {
-      EXPECT_EQ(num_uninstall_requests_before_call + 1u,
-                uninstall_requests.size());
-      EXPECT_EQ(install_url, uninstall_requests.back());
+    if (was_installed) {
+      EXPECT_FALSE(test_pwa_delegate()->GetPwaForUrl(install_url, &profile_));
 
       fake_cookie_manager_->InvokePendingSetCanonicalCookieCallback(
           "cros_migrated_to" /* expected_cookie_name */,
@@ -368,14 +371,14 @@ TEST_F(AndroidSmsAppSetupControllerImplTest, SetUpApp_NoPreviousApp) {
 
 TEST_F(AndroidSmsAppSetupControllerImplTest, SetUpApp_AppAlreadyInstalled) {
   // Start with a PWA already installed at the URL.
-  test_pwa_delegate()->SetHasPwa(GURL(kTestInstallUrl1), true);
+  test_pwa_delegate()->SetHasPwa(GURL(kTestInstallUrl1));
   CallSetUpApp(GURL(kTestUrl1), GURL(kTestInstallUrl1),
                0u /* num_expected_app_installs */);
 }
 
 TEST_F(AndroidSmsAppSetupControllerImplTest, SetUpApp_OtherPwaInstalled) {
   // Start with a PWA already installed at a different URL.
-  test_pwa_delegate()->SetHasPwa(GURL(kTestUrl2), true);
+  test_pwa_delegate()->SetHasPwa(GURL(kTestUrl2));
   CallSetUpApp(GURL(kTestUrl1), GURL(kTestInstallUrl1),
                1u /* num_expected_app_installs */);
 }
@@ -390,20 +393,18 @@ TEST_F(AndroidSmsAppSetupControllerImplTest, SetUpAppThenRemove) {
   // Install and remove.
   CallSetUpApp(GURL(kTestUrl1), GURL(kTestInstallUrl1),
                1u /* num_expected_app_installs */);
-  test_pwa_delegate()->SetHasPwa(GURL(kTestInstallUrl1), true);
+  test_pwa_delegate()->SetHasPwa(GURL(kTestInstallUrl1));
   CallRemoveApp(GURL(kTestUrl1), GURL(kTestInstallUrl1),
                 GURL(kTestUrl2) /* migrated_to_app_url */,
                 1u /* num_expected_app_uninstalls */);
-  test_pwa_delegate()->SetHasPwa(GURL(kTestInstallUrl1), false);
 
   // Repeat once more.
   CallSetUpApp(GURL(kTestUrl1), GURL(kTestInstallUrl1),
                1u /* num_expected_app_installs */);
-  test_pwa_delegate()->SetHasPwa(GURL(kTestInstallUrl1), true);
+  test_pwa_delegate()->SetHasPwa(GURL(kTestInstallUrl1));
   CallRemoveApp(GURL(kTestUrl1), GURL(kTestInstallUrl1),
                 GURL(kTestUrl2) /* migrated_to_app_url */,
                 1u /* num_expected_app_uninstalls */);
-  test_pwa_delegate()->SetHasPwa(GURL(kTestInstallUrl1), false);
 }
 
 TEST_F(AndroidSmsAppSetupControllerImplTest, RemoveApp_NoInstalledApp) {
