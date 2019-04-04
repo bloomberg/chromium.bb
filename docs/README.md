@@ -331,6 +331,7 @@ used when committed.
 *   [Documentation Guidelines](documentation_guidelines.md)
 *   [Chromium Browser vs Google Chrome](chromium_browser_vs_google_chrome.md) -
     What's the difference between _Chromium Browser_ and _Google Chrome_?
+*   [Google Chrome branded builds](google_chrome_branded_builds.md)
 *   [Proxy Auto Config using WPAD](proxy_auto_config.md) - How WPAD servers are
     used to automatically set proxy settings.
 *   [Installing Chromium OS on VMWare](installation_at_vmware.md) - How to
