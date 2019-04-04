@@ -26,15 +26,6 @@ class WritableStream;
 
 // Creates and wraps a (readable, writable) pair in a TransformStream object.
 // The transformation may be defined in C++ or JavaScript.
-//
-// On-heap references to this class must always be via a Member, and
-// must always have an ancestor in the V8 heap, or the internal JavaScript
-// objects owned by |readable_| and |writable_| will be lost.
-//
-// To ensure that the JS TransformStream is always referenced, this class uses
-// two-stage construction. After calling the constructor, store the reference
-// in a Member before calling Init(). Init() must always be called
-// before using the instance.
 class CORE_EXPORT TransformStream final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
