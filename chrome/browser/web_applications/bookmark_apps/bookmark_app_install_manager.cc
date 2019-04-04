@@ -10,8 +10,10 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/scoped_observer.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
@@ -23,6 +25,7 @@
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 
 namespace extensions {
@@ -366,6 +369,50 @@ void BookmarkAppInstallManager::InstallWebAppWithOptions(
       web_contents,
       base::BindOnce(OnGetWebApplicationInfo, base::Unretained(this),
                      std::move(install_task), install_options));
+}
+
+void BookmarkAppInstallManager::InstallOrUpdateWebAppFromSync(
+    const web_app::AppId& app_id,
+    std::unique_ptr<WebApplicationInfo> web_application_info,
+    OnceInstallCallback callback) {
+  // |callback| is ignored here: the legacy system doesn't report completion.
+  ExtensionService* extension_service =
+      ExtensionSystem::Get(profile_)->extension_service();
+  DCHECK(extension_service);
+
+  const Extension* extension = extension_service->GetInstalledExtension(app_id);
+
+  // Return if there are no bookmark app details that need updating.
+  const std::string extension_sync_data_name =
+      base::UTF16ToUTF8(web_application_info->title);
+  const std::string bookmark_app_description =
+      base::UTF16ToUTF8(web_application_info->description);
+  if (extension &&
+      extension->non_localized_name() == extension_sync_data_name &&
+      extension->description() == bookmark_app_description) {
+    return;
+  }
+
+#if defined(OS_CHROMEOS)
+  const bool is_locally_installed = true;
+#else
+  const bool is_locally_installed = extension != nullptr;
+#endif
+
+  CreateOrUpdateBookmarkApp(extension_service, web_application_info.get(),
+                            is_locally_installed);
+}
+
+void BookmarkAppInstallManager::InstallWebAppForTesting(
+    std::unique_ptr<WebApplicationInfo> web_application_info,
+    OnceInstallCallback callback) {
+  // |callback| is ignored here: the legacy system doesn't report completion.
+  ExtensionService* extension_service =
+      ExtensionSystem::Get(profile_)->extension_service();
+  DCHECK(extension_service);
+
+  CreateOrUpdateBookmarkApp(extension_service, web_application_info.get(),
+                            true /*is_locally_installed*/);
 }
 
 void BookmarkAppInstallManager::SetBookmarkAppHelperFactoryForTesting(

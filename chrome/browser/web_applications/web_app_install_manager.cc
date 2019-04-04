@@ -90,6 +90,21 @@ void WebAppInstallManager::InstallWebAppWithOptions(
   NOTIMPLEMENTED();
 }
 
+void WebAppInstallManager::InstallOrUpdateWebAppFromSync(
+    const AppId& app_id,
+    std::unique_ptr<WebApplicationInfo> web_application_info,
+    OnceInstallCallback callback) {
+  // TODO(loyso): Implement it.
+  NOTIMPLEMENTED();
+}
+
+void WebAppInstallManager::InstallWebAppForTesting(
+    std::unique_ptr<WebApplicationInfo> web_application_info,
+    OnceInstallCallback callback) {
+  // TODO(loyso): Implement it.
+  NOTIMPLEMENTED();
+}
+
 void WebAppInstallManager::WebContentsDestroyed() {
   ReturnError(InstallResultCode::kWebContentsDestroyed);
 }

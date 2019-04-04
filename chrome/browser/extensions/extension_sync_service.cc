@@ -4,12 +4,13 @@
 
 #include "chrome/browser/extensions/extension_sync_service.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/bind_helpers.h"
 #include "base/one_shot_event.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_sync_service_factory.h"
@@ -17,6 +18,8 @@
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
+#include "chrome/browser/web_applications/components/install_manager.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/sync_helper.h"
@@ -530,44 +533,31 @@ void ExtensionSyncService::ApplyBookmarkAppSyncData(
     return;
   }
 
-  const Extension* extension =
-      extension_service()->GetInstalledExtension(extension_sync_data.id());
-
-  // Return if there are no bookmark app details that need updating.
-  if (extension &&
-      extension->non_localized_name() == extension_sync_data.name() &&
-      extension->description() ==
-          extension_sync_data.bookmark_app_description()) {
-    return;
-  }
-
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = bookmark_app_url;
-  web_app_info.title = base::UTF8ToUTF16(extension_sync_data.name());
-  web_app_info.description =
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->app_url = bookmark_app_url;
+  web_app_info->title = base::UTF8ToUTF16(extension_sync_data.name());
+  web_app_info->description =
       base::UTF8ToUTF16(extension_sync_data.bookmark_app_description());
-  web_app_info.scope = GURL(extension_sync_data.bookmark_app_scope());
-  web_app_info.theme_color = extension_sync_data.bookmark_app_theme_color();
+  web_app_info->scope = GURL(extension_sync_data.bookmark_app_scope());
+  web_app_info->theme_color = extension_sync_data.bookmark_app_theme_color();
   if (!extension_sync_data.bookmark_app_icon_color().empty()) {
     extensions::image_util::ParseHexColorString(
         extension_sync_data.bookmark_app_icon_color(),
-        &web_app_info.generated_icon_color);
+        &web_app_info->generated_icon_color);
   }
   for (const auto& icon : extension_sync_data.linked_icons()) {
     WebApplicationInfo::IconInfo icon_info;
     icon_info.url = icon.url;
     icon_info.width = icon.size;
     icon_info.height = icon.size;
-    web_app_info.icons.push_back(icon_info);
+    web_app_info->icons.push_back(icon_info);
   }
 
-#if defined(OS_CHROMEOS)
-  bool is_locally_installed = true;
-#else
-  bool is_locally_installed = extension != nullptr;
-#endif
-  CreateOrUpdateBookmarkApp(extension_service(), &web_app_info,
-                            is_locally_installed);
+  auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile_);
+  DCHECK(provider);
+
+  provider->install_manager().InstallOrUpdateWebAppFromSync(
+      extension_sync_data.id(), std::move(web_app_info), base::DoNothing());
 }
 
 void ExtensionSyncService::SetSyncStartFlareForTesting(
