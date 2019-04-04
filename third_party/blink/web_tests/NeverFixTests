@@ -1717,6 +1717,10 @@ crbug.com/870172 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitel
 crbug.com/870172 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-subdomains.html [ WontFix ]
 crbug.com/870172 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ WontFix ]
 
+# Tests that passes iff outofblink-cors feature is enabled.
+# TODO(toyoshim): Remove this if Out-Of-Blink CORS is enabled
+http/tests/security/img-redirect-to-crossorigin-credentials.html [ WontFix ]
+
 # Tests that only work when the mixed content autoupgrade experiment is enabled
 http/tests/mixed-autoupgrade [ WontFix ]
 

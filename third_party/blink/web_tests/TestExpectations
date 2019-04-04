@@ -1855,7 +1855,6 @@ crbug.com/538697 [ Win ] printing/webgl-oversized-printing.html [ Failure Crash 
 # Timeout tests in dictionary order.
 
 # Failing tests in dictionary order.
-crbug.com/870173 virtual/outofblink-cors/http/tests/security/img-redirect-to-crossorigin-credentials.html [ Failure ]
 crbug.com/870173 virtual/outofblink-cors/http/tests/security/script-crossorigin-redirect-credentials.html [ Failure ]
 crbug.com/870173 virtual/outofblink-cors/http/tests/security/isolatedWorld/cross-origin-xhr.html [ Failure ]
 
