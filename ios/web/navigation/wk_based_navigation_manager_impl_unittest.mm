@@ -14,6 +14,7 @@
 #import "ios/web/navigation/navigation_manager_delegate.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/navigation/wk_navigation_util.h"
+#include "ios/web/public/features.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/reload_type.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
@@ -640,9 +641,15 @@ TEST_F(WKBasedNavigationManagerTest, RestoreSessionWithHistory) {
   EXPECT_EQ(url.spec(), pending_item->GetVirtualURL());
   EXPECT_EQ("Test Website 0", base::UTF16ToUTF8(pending_item->GetTitle()));
 
+  std::string testwebui_url = web::features::WebUISchemeHandlingEnabled()
+                                  ? "testwebui://test/"
+                                  : "about:blank?for=testwebui%3A%2F%2Ftest%2F";
+
   EXPECT_EQ("{\"offset\":0,\"titles\":[\"Test Website 0\",\"\"],"
-            "\"urls\":[\"about:blank?for=testwebui%3A%2F%2Ftest%2F\","
-            "\"http://www.1.com/\"]}",
+            "\"urls\":[\"" +
+                testwebui_url +
+                "\","
+                "\"http://www.1.com/\"]}",
             ExtractRestoredSession(pending_url));
 
   // Check that cached visible item is returned.

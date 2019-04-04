@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
+#include "ios/web/public/features.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/web_client.h"
 #include "net/base/escape.h"
@@ -136,7 +137,8 @@ void CreateRestoreSessionUrl(
     NavigationItem* item = (*it).get();
     GURL original_url = item->GetURL();
     GURL restored_url = original_url;
-    if (web::GetWebClient()->IsAppSpecificURL(original_url)) {
+    if (!web::features::WebUISchemeHandlingEnabled() &&
+        web::GetWebClient()->IsAppSpecificURL(original_url)) {
       restored_url = CreatePlaceholderUrlForUrl(original_url);
     }
     restored_urls.GetList().push_back(base::Value(restored_url.spec()));
