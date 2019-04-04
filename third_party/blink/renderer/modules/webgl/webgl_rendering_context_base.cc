@@ -4529,9 +4529,9 @@ void WebGLRenderingContextBase::shaderSource(WebGLShader* shader,
     return;
   shader->SetSource(string);
   WTF::StringUTF8Adaptor adaptor(string_without_comments);
-  const GLchar* shader_data = adaptor.Data();
+  const GLchar* shader_data = adaptor.data();
   // TODO(danakj): Use base::saturated_cast<GLint>.
-  const GLint shader_length = adaptor.length();
+  const GLint shader_length = adaptor.size();
   ContextGL()->ShaderSource(ObjectOrZero(shader), 1, &shader_data,
                             &shader_length);
 }

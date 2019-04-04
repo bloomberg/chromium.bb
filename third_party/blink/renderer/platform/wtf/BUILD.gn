@@ -148,6 +148,7 @@ jumbo_component("wtf") {
     "text/string_statics.h",
     "text/string_to_number.cc",
     "text/string_to_number.h",
+    "text/string_utf8_adaptor.cc",
     "text/string_utf8_adaptor.h",
     "text/string_view.cc",
     "text/string_view.h",
