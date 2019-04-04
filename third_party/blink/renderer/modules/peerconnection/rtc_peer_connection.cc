@@ -2250,12 +2250,46 @@ RTCDataChannel* RTCPeerConnection::createDataChannel(
   init.negotiated = data_channel_dict->negotiated();
   if (data_channel_dict->hasId())
     init.id = data_channel_dict->id();
+  // Checks from WebRTC specification section 6.1
+  // If [[DataChannelLabel]] is longer than 65535 bytes, throw a
+  // TypeError.
+  if (label.Utf8().length() > 65535) {
+    exception_state.ThrowTypeError("RTCDataChannel label too long");
+    return nullptr;
+  }
+  // If [[DataChannelProtocol]] is longer than 65535 bytes long, throw a
+  // TypeError.
+  if (init.protocol.Utf8().length() > 65535) {
+    exception_state.ThrowTypeError("RTCDataChannel protocol too long");
+    return nullptr;
+  }
+  // If [[Negotiated]] is true and [[DataChannelId]] is null, throw a TypeError.
+  if (init.negotiated && init.id == -1) {
+    exception_state.ThrowTypeError(
+        "RTCDataChannel must have id set if negotiated is true");
+    return nullptr;
+  }
+  // If both [[MaxPacketLifeTime]] and [[MaxRetransmits]] attributes are set
+  // (not null), throw a TypeError.
+  if (init.max_retransmit_time >= 0 && init.max_retransmits >= 0) {
+    exception_state.ThrowTypeError(
+        "RTCDataChannel cannot have both max retransmits and max lifetime");
+    return nullptr;
+  }
+  // If [[DataChannelId]] is equal to 65535, which is greater than the maximum
+  // allowed ID of 65534 but still qualifies as an unsigned short, throw a
+  // TypeError.
+  if (init.id >= 65535) {
+    exception_state.ThrowTypeError("RTCDataChannel cannot have id > 65534");
+    return nullptr;
+  }
+  // Further checks of DataChannelId are done in the webrtc layer.
 
   scoped_refptr<webrtc::DataChannelInterface> webrtc_channel =
       peer_handler_->CreateDataChannel(label, init);
   if (!webrtc_channel) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
-                                      "RTCDataChannel is not supported");
+    exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
+                                      "RTCDataChannel creation failed");
     return nullptr;
   }
   RTCDataChannel* channel = RTCDataChannel::Create(
