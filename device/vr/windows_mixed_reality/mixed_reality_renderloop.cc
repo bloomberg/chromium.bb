@@ -11,6 +11,7 @@
 #include <windows.perception.spatial.h>
 
 #include <algorithm>
+#include <limits>
 #include <utility>
 #include <vector>
 
@@ -19,6 +20,7 @@
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/win/com_init_util.h"
 #include "base/win/core_winrt_util.h"
+#include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_hstring.h"
 #include "device/vr/windows/d3d11_texture_helper.h"
 #include "device/vr/windows_mixed_reality/mixed_reality_input_helper.h"
@@ -274,10 +276,10 @@ void MixedRealityRenderLoop::StopRuntime() {
     ShowWindow(window_->hwnd(), SW_HIDE);
   holographic_space_ = nullptr;
   origin_ = nullptr;
-  stage_origin_ = nullptr;
-  ClearStageStatics();
   last_origin_from_attached_ = base::nullopt;
   attached_ = nullptr;
+  ClearStageStatics();
+  ClearStageOrigin();
 
   holographic_frame_ = nullptr;
   timestamp_ = nullptr;
@@ -338,6 +340,14 @@ void MixedRealityRenderLoop::InitializeOrigin() {
     return;
 }
 
+void MixedRealityRenderLoop::ClearStageOrigin() {
+  stage_origin_ = nullptr;
+  spatial_stage_ = nullptr;
+  bounds_.clear();
+  bounds_updated_ = true;
+  stage_transform_needs_updating_ = true;
+}
+
 void MixedRealityRenderLoop::InitializeStageOrigin() {
   TRACE_EVENT0("xr", "InitializeStageOrigin");
   if (!EnsureStageStatics())
@@ -346,14 +356,17 @@ void MixedRealityRenderLoop::InitializeStageOrigin() {
 
   // Try to get a SpatialStageFrameOfReference.  We'll use this to calculate
   // the transform between the poses we're handing out and where the floor is.
-  ComPtr<ISpatialStageFrameOfReference> spatial_stage;
-  HRESULT hr = stage_statics_->get_Current(&spatial_stage);
-  if (FAILED(hr) || !spatial_stage) {
+  HRESULT hr = stage_statics_->get_Current(&spatial_stage_);
+  if (FAILED(hr) || !spatial_stage_) {
     TraceError(ErrorLocation::kAcquireCurrentStage, hr);
     return;
   }
 
-  spatial_stage->get_CoordinateSystem(&stage_origin_);
+  hr = spatial_stage_->get_CoordinateSystem(&stage_origin_);
+  if (FAILED(hr))
+    return;
+
+  EnsureStageBounds();
 }
 
 bool MixedRealityRenderLoop::EnsureStageStatics() {
@@ -407,6 +420,42 @@ void MixedRealityRenderLoop::OnCurrentStageChanged() {
   InitializeStageOrigin();
 }
 
+void MixedRealityRenderLoop::EnsureStageBounds() {
+  if (!spatial_stage_)
+    return;
+
+  SpatialMovementRange movement_range;
+  HRESULT hr = spatial_stage_->get_MovementRange(&movement_range);
+  DCHECK(SUCCEEDED(hr));
+  if (movement_range != SpatialMovementRange::SpatialMovementRange_Bounded)
+    return;
+
+  if (bounds_.size() != 0)
+    return;
+
+  if (!stage_origin_)
+    return;
+
+  uint32_t size;
+  base::win::ScopedCoMem<WFN::Vector3> bounds;
+  hr =
+      spatial_stage_->TryGetMovementBounds(stage_origin_.Get(), &size, &bounds);
+  if (FAILED(hr))
+    return;
+
+  if (size == 0)
+    return;
+
+  // TryGetMovementBounds gives us the points in clockwise order, so we don't
+  // need to reverse their order here.
+  for (uint32_t i = 0; i < size; i++) {
+    WFN::Vector3 val = bounds[i];
+    bounds_.emplace_back(val.X, val.Y, val.Z);
+  }
+
+  bounds_updated_ = true;
+}
+
 void MixedRealityRenderLoop::OnSessionStart() {
   // Each session should start with new origins.
   origin_ = nullptr;
@@ -414,7 +463,7 @@ void MixedRealityRenderLoop::OnSessionStart() {
   last_origin_from_attached_ = base::nullopt;
   InitializeOrigin();
 
-  stage_origin_ = nullptr;
+  ClearStageOrigin();
   InitializeStageOrigin();
 
   StartPresenting();
@@ -743,8 +792,8 @@ bool MixedRealityRenderLoop::UpdateStageParameters() {
         TraceError(ErrorLocation::kGetTransformBetweenOrigins, hr);
 
         // We failed to get a transform between the two, so force a
-        // recalculation of the stage origin.
-        stage_origin_ = nullptr;
+        // recalculation of the stage origin and leave the stageParameters null.
+        ClearStageOrigin();
         return changed;
       }
 
@@ -761,7 +810,12 @@ bool MixedRealityRenderLoop::UpdateStageParameters() {
     stage_transform_needs_updating_ = false;
   }
 
-  // TODO(https://crbug.com/945420): Calculate and Expose Boundary Sizes
+  EnsureStageBounds();
+  if (bounds_updated_ && current_display_info_->stageParameters) {
+    current_display_info_->stageParameters->bounds = bounds_;
+    changed = true;
+    bounds_updated_ = false;
+  }
   return changed;
 }
 

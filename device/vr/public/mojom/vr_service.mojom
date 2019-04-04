@@ -184,6 +184,13 @@ struct VRStageParameters {
   array<float, 16> standingTransform;
   float sizeX;
   float sizeZ;
+
+  // If present, indicates that the device supports a bounded reference space.
+  // The points are expected to be in the "standing" space (i.e. there should be
+  // no need to transform them by the accompanying standing transform) and
+  // in a clockwise winding order.
+  // This should supersede sizeX/sizeZ if they are set.
+  array<gfx.mojom.Point3F>? bounds;
 };
 
 struct VRDisplayInfo {

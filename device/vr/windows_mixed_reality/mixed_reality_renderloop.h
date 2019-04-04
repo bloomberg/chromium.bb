@@ -55,7 +55,6 @@ class MixedRealityRenderLoop : public XRCompositorCommon {
   bool SubmitCompositedFrame() override;
 
   // Helpers to implement XRDeviceAbstraction.
-  bool EnsureSpatialInteractionManager();
   void InitializeOrigin();
   void InitializeSpace();
   void StartPresenting();
@@ -66,15 +65,26 @@ class MixedRealityRenderLoop : public XRCompositorCommon {
   // Returns true if stage parameters have changed.
   bool UpdateStageParameters();
 
+  // Helper methods for the stage.
+  void ClearStageOrigin();
   void InitializeStageOrigin();
   bool EnsureStageStatics();
   void ClearStageStatics();
   void OnCurrentStageChanged();
 
+  // Will try to update the stage bounds if the following are true:
+  // 1) We have a spatial_stage.
+  // 2) That spatial stage supports bounded movement.
+  // 3) The current bounds array is empty.
+  void EnsureStageBounds();
+
   std::unique_ptr<base::win::ScopedWinrtInitializer> initializer_;
 
   Microsoft::WRL::ComPtr<ABI::Windows::Graphics::Holographic::IHolographicSpace>
       holographic_space_;
+  Microsoft::WRL::ComPtr<
+      ABI::Windows::Perception::Spatial::ISpatialStageFrameOfReference>
+      spatial_stage_;
   Microsoft::WRL::ComPtr<
       ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem>
       origin_;
@@ -123,6 +133,10 @@ class MixedRealityRenderLoop : public XRCompositorCommon {
       stage_statics_;
   EventRegistrationToken stage_changed_token_;
 
+  std::vector<gfx::Point3F> bounds_;
+  bool bounds_updated_ = false;
+
+  // This must be the last member
   base::WeakPtrFactory<MixedRealityRenderLoop> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MixedRealityRenderLoop);
