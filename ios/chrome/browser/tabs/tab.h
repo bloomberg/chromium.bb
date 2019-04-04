@@ -21,7 +21,6 @@ class GURL;
 @class PasswordController;
 @class SnapshotManager;
 @class FormSuggestionController;
-@protocol TabDialogDelegate;
 @class Tab;
 
 namespace web {
@@ -49,9 +48,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 
 // The Webstate associated with this Tab.
 @property(nonatomic, readonly) web::WebState* webState;
-
-// Delegate used to show HTTP Authentication dialogs.
-@property(nonatomic, weak) id<TabDialogDelegate> dialogDelegate;
 
 // Creates a new Tab with the given WebState.
 - (instancetype)initWithWebState:(web::WebState*)webState;
