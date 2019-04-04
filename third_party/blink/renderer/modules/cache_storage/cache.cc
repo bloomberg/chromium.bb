@@ -571,14 +571,6 @@ class Cache::CodeCacheHandleCallbackForPut final
   mojom::blink::FetchAPIResponsePtr fetch_api_response_;
 };
 
-Cache* Cache::Create(
-    GlobalFetch::ScopedFetcher* fetcher,
-    mojom::blink::CacheStorageCacheAssociatedPtrInfo cache_ptr_info,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  return MakeGarbageCollected<Cache>(fetcher, std::move(cache_ptr_info),
-                                     std::move(task_runner));
-}
-
 ScriptPromise Cache::match(ScriptState* script_state,
                            const RequestInfo& request,
                            const CacheQueryOptions* options,

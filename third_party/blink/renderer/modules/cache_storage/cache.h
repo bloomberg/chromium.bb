@@ -49,10 +49,6 @@ class MODULES_EXPORT Cache final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Cache* Create(GlobalFetch::ScopedFetcher*,
-                       mojom::blink::CacheStorageCacheAssociatedPtrInfo,
-                       scoped_refptr<base::SingleThreadTaskRunner>);
-
   Cache(GlobalFetch::ScopedFetcher*,
         mojom::blink::CacheStorageCacheAssociatedPtrInfo,
         scoped_refptr<base::SingleThreadTaskRunner>);

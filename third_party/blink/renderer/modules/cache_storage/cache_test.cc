@@ -55,10 +55,6 @@ class ScopedFetcherForTests final
   USING_GARBAGE_COLLECTED_MIXIN(ScopedFetcherForTests);
 
  public:
-  static ScopedFetcherForTests* Create() {
-    return MakeGarbageCollected<ScopedFetcherForTests>();
-  }
-
   ScopedFetcherForTests() : fetch_count_(0), expected_url_(nullptr) {}
 
   ScriptPromise Fetch(ScriptState* script_state,
@@ -281,7 +277,7 @@ class CacheStorageTest : public PageTestBase {
     binding_ = std::make_unique<
         mojo::AssociatedBinding<mojom::blink::CacheStorageCache>>(
         cache_.get(), std::move(request));
-    return Cache::Create(
+    return MakeGarbageCollected<Cache>(
         fetcher, cache_ptr.PassInterface(),
         blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   }
@@ -402,7 +398,7 @@ RequestInfo RequestToRequestInfo(Request* value) {
 TEST_F(CacheStorageTest, Basics) {
   ScriptState::Scope scope(GetScriptState());
   NonThrowableExceptionState exception_state;
-  ScopedFetcherForTests* fetcher = ScopedFetcherForTests::Create();
+  auto* fetcher = MakeGarbageCollected<ScopedFetcherForTests>();
   Cache* cache =
       CreateCache(fetcher, std::make_unique<NotImplementedErrorCache>());
   DCHECK(cache);
@@ -434,7 +430,7 @@ TEST_F(CacheStorageTest, Basics) {
 TEST_F(CacheStorageTest, BasicArguments) {
   ScriptState::Scope scope(GetScriptState());
   NonThrowableExceptionState exception_state;
-  ScopedFetcherForTests* fetcher = ScopedFetcherForTests::Create();
+  auto* fetcher = MakeGarbageCollected<ScopedFetcherForTests>();
   Cache* cache =
       CreateCache(fetcher, std::make_unique<NotImplementedErrorCache>());
   DCHECK(cache);
@@ -513,7 +509,7 @@ TEST_F(CacheStorageTest, BasicArguments) {
 TEST_F(CacheStorageTest, BatchOperationArguments) {
   ScriptState::Scope scope(GetScriptState());
   NonThrowableExceptionState exception_state;
-  ScopedFetcherForTests* fetcher = ScopedFetcherForTests::Create();
+  auto* fetcher = MakeGarbageCollected<ScopedFetcherForTests>();
   Cache* cache =
       CreateCache(fetcher, std::make_unique<NotImplementedErrorCache>());
   DCHECK(cache);
@@ -607,7 +603,7 @@ class MatchTestCache : public NotImplementedErrorCache {
 TEST_F(CacheStorageTest, MatchResponseTest) {
   ScriptState::Scope scope(GetScriptState());
   NonThrowableExceptionState exception_state;
-  ScopedFetcherForTests* fetcher = ScopedFetcherForTests::Create();
+  auto* fetcher = MakeGarbageCollected<ScopedFetcherForTests>();
   const String request_url = "http://request.url/";
   const String response_url = "http://match.response.test/";
 
@@ -654,7 +650,7 @@ class KeysTestCache : public NotImplementedErrorCache {
 TEST_F(CacheStorageTest, KeysResponseTest) {
   ScriptState::Scope scope(GetScriptState());
   NonThrowableExceptionState exception_state;
-  ScopedFetcherForTests* fetcher = ScopedFetcherForTests::Create();
+  auto* fetcher = MakeGarbageCollected<ScopedFetcherForTests>();
   const String url1 = "http://first.request/";
   const String url2 = "http://second.request/";
 
@@ -717,7 +713,7 @@ class MatchAllAndBatchTestCache : public NotImplementedErrorCache {
 TEST_F(CacheStorageTest, MatchAllAndBatchResponseTest) {
   ScriptState::Scope scope(GetScriptState());
   NonThrowableExceptionState exception_state;
-  ScopedFetcherForTests* fetcher = ScopedFetcherForTests::Create();
+  auto* fetcher = MakeGarbageCollected<ScopedFetcherForTests>();
   const String url1 = "http://first.response/";
   const String url2 = "http://second.response/";
 
@@ -770,7 +766,7 @@ TEST_F(CacheStorageTest, MatchAllAndBatchResponseTest) {
 TEST_F(CacheStorageTest, Add) {
   ScriptState::Scope scope(GetScriptState());
   NonThrowableExceptionState exception_state;
-  ScopedFetcherForTests* fetcher = ScopedFetcherForTests::Create();
+  auto* fetcher = MakeGarbageCollected<ScopedFetcherForTests>();
   const String url = "http://www.cacheadd.test/";
   const String content_type = "text/plain";
   const String content = "hello cache";

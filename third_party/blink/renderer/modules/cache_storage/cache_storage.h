@@ -30,8 +30,6 @@ class CacheStorage final : public ScriptWrappable,
   USING_GARBAGE_COLLECTED_MIXIN(CacheStorage);
 
  public:
-  static CacheStorage* Create(ExecutionContext*, GlobalFetch::ScopedFetcher*);
-
   CacheStorage(ExecutionContext*, GlobalFetch::ScopedFetcher*);
   ~CacheStorage() override;
 
