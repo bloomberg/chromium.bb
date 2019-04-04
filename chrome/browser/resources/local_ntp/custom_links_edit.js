@@ -179,7 +179,7 @@ function closeDialog() {
   // Small delay to allow the dialog to close before cleaning up.
   window.setTimeout(() => {
     $(IDS.FORM).reset();
-    $(IDS.TITLE_FIELD).dir = null;
+    $(IDS.TITLE_FIELD).dir = '';
     $(IDS.URL_FIELD_CONTAINER).classList.remove('invalid');
     $(IDS.DELETE).disabled = false;
     $(IDS.DONE).disabled = false;
@@ -210,7 +210,7 @@ function focusBackOnCancel(event) {
 
 /**
  * Handler for the 'updateTheme' message from the host page.
- * @param {object} info Data received in the message.
+ * @param {!Object} info Data received in the message.
  */
 function updateTheme(info) {
   document.documentElement.setAttribute('darkmode', info.isDarkMode);

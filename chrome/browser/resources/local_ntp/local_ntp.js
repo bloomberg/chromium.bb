@@ -53,8 +53,8 @@ function disableIframesAndVoiceSearchForTesting() {
  *
  * @type {{
  *   numTitleLines: number,
- *   titleColor: string,
- *   titleColorAgainstDark: string,
+ *   titleColor: Array<number>,
+ *   titleColorAgainstDark: Array<number>,
  * }}
  */
 var NTP_DESIGN = {
@@ -359,7 +359,6 @@ function getThemeBackgroundInfo() {
  * when considering darkness. Therefore, dark mode should only be checked if
  * this is the default NTP. Dark mode is considered a dark theme if enabled.
  *
- * @param {ThemeBackgroundInfo|undefined} info Theme background information.
  * @return {boolean} Whether the theme is dark.
  * @private
  */
@@ -384,7 +383,7 @@ function getIsThemeDark() {
  * is the case when dark mode is enabled and a background image (from a custom
  * background or user theme) is not set.
  *
- * @param {ThemeBackgroundInfo|undefined} info Theme background information.
+ * @param {!Object} info Theme background information.
  * @return {boolean} Whether the chips should be dark.
  * @private
  */
@@ -588,9 +587,9 @@ function onThemeChange() {
  * @private
  */
 function setCustomThemeStyle(themeInfo) {
-  var textColor = null;
-  var textColorLight = null;
-  var mvxFilter = null;
+  var textColor = '';
+  var textColorLight = '';
+  var mvxFilter = '';
   if (!themeInfo.usingDefaultTheme) {
     textColor = convertToRGBAColor(themeInfo.textColorRgba);
     textColorLight = convertToRGBAColor(themeInfo.textColorLightRgba);
@@ -703,7 +702,8 @@ function onAddCustomLinkDone(success) {
   if (success) {
     showNotification(configData.translatedStrings.linkAddedMsg);
   } else {
-    showErrorNotification(configData.translatedStrings.linkCantCreate);
+    showErrorNotification(
+        configData.translatedStrings.linkCantCreate, null, null);
   }
   ntpApiHandle.logEvent(LOG_TYPE.NTP_CUSTOMIZE_SHORTCUT_DONE);
 }
@@ -719,7 +719,8 @@ function onUpdateCustomLinkDone(success) {
   if (success) {
     showNotification(configData.translatedStrings.linkEditedMsg);
   } else {
-    showErrorNotification(configData.translatedStrings.linkCantEdit);
+    showErrorNotification(
+        configData.translatedStrings.linkCantEdit, null, null);
   }
 }
 
@@ -734,7 +735,8 @@ function onDeleteCustomLinkDone(success) {
   if (success) {
     showNotification(configData.translatedStrings.linkRemovedMsg);
   } else {
-    showErrorNotification(configData.translatedStrings.linkCantRemove);
+    showErrorNotification(
+        configData.translatedStrings.linkCantRemove, null, null);
   }
 }
 
@@ -788,10 +790,15 @@ function showErrorNotification(msg, linkName, linkOnClick) {
  * Animates the specified notification to float up. Automatically hides any
  * pre-existing notification and sets a delayed timer to hide the new
  * notification.
- * @param {!Element} notification The notification element.
- * @param {!Element} notificationContainer The notification container element.
+ * @param {?Element} notification The notification element.
+ * @param {?Element} notificationContainer The notification container element.
  */
 function floatUpNotification(notification, notificationContainer) {
+  if (!notification || !notificationContainer) {
+    return;
+  }
+
+  // Hide any pre-existing notification.
   if (delayedHideNotification) {
     // Hide the current notification if it's a different type (i.e. error vs
     // success). Otherwise, simply clear the notification timeout and reset it
@@ -838,11 +845,15 @@ function floatUpNotification(notification, notificationContainer) {
 /**
  * Animates the pop-up notification to float down, and clears the timeout to
  * hide the notification.
- * @param {!Element} notification The notification element.
- * @param {!Element} notificationContainer The notification container element.
+ * @param {?Element} notification The notification element.
+ * @param {?Element} notificationContainer The notification container element.
  * @param {boolean} showPromo Do show the promo if present.
  */
 function floatDownNotification(notification, notificationContainer, showPromo) {
+  if (!notification || !notificationContainer) {
+    return;
+  }
+
   if (!notificationContainer.classList.contains(CLASSES.FLOAT_UP)) {
     return;
   }
@@ -874,7 +885,7 @@ function floatDownNotification(notification, notificationContainer, showPromo) {
     $(IDS.UNDO_LINK).blur();
     $(IDS.RESTORE_ALL_LINK).blur();
     if (notification.classList.contains(CLASSES.HAS_LINK)) {
-      notification.classlist.remove(CLASSES.HAS_LINK);
+      notification.classList.remove(CLASSES.HAS_LINK);
       $(IDS.ERROR_NOTIFICATION_LINK).blur();
     }
     // Hide the notification
@@ -968,8 +979,9 @@ function isFakeboxFocused() {
  * @return {boolean} True if the click occurred in an enabled fakebox.
  */
 function isFakeboxClick(event) {
-  return $(IDS.FAKEBOX).contains(event.target) &&
-      !$(IDS.FAKEBOX_MICROPHONE).contains(event.target);
+  return $(IDS.FAKEBOX).contains(/** @type HTMLElement */ (event.target)) &&
+      !$(IDS.FAKEBOX_MICROPHONE)
+           .contains(/** @type HTMLElement */ (event.target));
 }
 
 
@@ -1079,7 +1091,7 @@ function showSearchSuggestions() {
     ssScript.async = false;
     document.body.appendChild(ssScript);
     ssScript.onload = function() {
-      injectSearchSuggestions(search_suggestions);
+      injectSearchSuggestions(searchSuggestions);
     };
   }
 }
@@ -1098,7 +1110,7 @@ function init() {
 
   // Hide notifications after fade out, so we can't focus on links via keyboard.
   $(IDS.NOTIFICATION).addEventListener('transitionend', (event) => {
-    if (event.properyName === 'opacity') {
+    if (event.propertyName === 'opacity') {
       hideNotification();
     }
   });
