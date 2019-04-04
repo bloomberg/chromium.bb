@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <memory>
-
 #include "base/profiler/stack_sampler.h"
+
+#include "base/profiler/native_unwinder_mac.h"
 #include "base/profiler/stack_sampler_impl.h"
 #include "base/profiler/thread_delegate_mac.h"
 
@@ -16,8 +16,9 @@ std::unique_ptr<StackSampler> StackSampler::Create(
     ModuleCache* module_cache,
     StackSamplerTestDelegate* test_delegate) {
   return std::make_unique<StackSamplerImpl>(
-      std::make_unique<ThreadDelegateMac>(thread_id, module_cache),
-      module_cache, test_delegate);
+      std::make_unique<ThreadDelegateMac>(thread_id),
+      std::make_unique<NativeUnwinderMac>(module_cache), module_cache,
+      test_delegate);
 }
 
 // static

@@ -58,12 +58,10 @@ bool ThreadDelegateMac::ScopedSuspendThread::WasSuccessful() const {
 
 // ThreadDelegateMac ----------------------------------------------------------
 
-ThreadDelegateMac::ThreadDelegateMac(mach_port_t thread_port,
-                                     ModuleCache* module_cache)
+ThreadDelegateMac::ThreadDelegateMac(mach_port_t thread_port)
     : thread_port_(thread_port),
       thread_stack_base_address_(reinterpret_cast<uintptr_t>(
-          pthread_get_stackaddr_np(pthread_from_mach_thread_np(thread_port)))),
-      native_unwinder_(module_cache) {
+          pthread_get_stackaddr_np(pthread_from_mach_thread_np(thread_port)))) {
   // This class suspends threads, and those threads might be suspended in dyld.
   // Therefore, for all the system functions that might be linked in dynamically
   // that are used while threads are suspended, make calls to them to make sure
@@ -101,15 +99,6 @@ std::vector<uintptr_t*> ThreadDelegateMac::GetRegistersToRewrite(
       &AsUintPtr(&thread_context->__rsp), &AsUintPtr(&thread_context->__r12),
       &AsUintPtr(&thread_context->__r13), &AsUintPtr(&thread_context->__r14),
       &AsUintPtr(&thread_context->__r15)};
-}
-
-UnwindResult ThreadDelegateMac::WalkNativeFrames(
-    x86_thread_state64_t* thread_context,
-    uintptr_t stack_top,
-    ModuleCache* module_cache,
-    std::vector<Frame>* stack) {
-  return native_unwinder_.TryUnwind(thread_context, stack_top, module_cache,
-                                    stack);
 }
 
 }  // namespace base

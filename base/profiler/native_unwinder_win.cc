@@ -4,6 +4,7 @@
 
 #include "base/profiler/native_unwinder_win.h"
 
+#include "base/profiler/native_unwinder.h"
 #include "base/profiler/win32_stack_frame_unwinder.h"
 
 namespace base {
@@ -19,7 +20,7 @@ UnwindResult NativeUnwinderWin::TryUnwind(RegisterContext* thread_context,
                                           uintptr_t stack_top,
                                           ModuleCache* module_cache,
                                           std::vector<Frame>* stack) const {
-  // We expect the frame corresponding to the |thread_context| register state to
+  // We expect the frame correponding to the |thread_context| register state to
   // exist within |stack|.
   DCHECK_GT(stack->size(), 0u);
 
@@ -62,6 +63,10 @@ UnwindResult NativeUnwinderWin::TryUnwind(RegisterContext* thread_context,
 
   NOTREACHED();
   return UnwindResult::COMPLETED;
+}
+
+std::unique_ptr<Unwinder> CreateNativeUnwinder(ModuleCache* module_cache) {
+  return std::make_unique<NativeUnwinderWin>();
 }
 
 }  // namespace base

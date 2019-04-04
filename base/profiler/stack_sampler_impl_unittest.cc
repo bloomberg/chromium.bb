@@ -8,6 +8,7 @@
 #include "base/profiler/profile_builder.h"
 #include "base/profiler/stack_sampler_impl.h"
 #include "base/profiler/thread_delegate.h"
+#include "base/profiler/unwinder.h"
 #include "base/sampling_heap_profiler/module_cache.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -52,19 +53,10 @@ class TestThreadDelegate : public ThreadDelegate {
   };
 
   TestThreadDelegate(const std::vector<uintptr_t>& fake_stack,
-                     // Vector to fill in with the copied stack.
-                     std::vector<uintptr_t>* stack_copy = nullptr,
-                     // Variable to fill in with the bottom address of the
-                     // copied stack. This will be different than
-                     // &(*stack_copy)[0] because |stack_copy| is a copy of the
-                     // copy so does not share memory with the actual copy.
-                     uintptr_t* stack_copy_bottom = nullptr,
                      // The register context will be initialized to
                      // *|thread_context| if non-null.
                      RegisterContext* thread_context = nullptr)
       : fake_stack_(fake_stack),
-        stack_copy_(stack_copy),
-        stack_copy_bottom_(stack_copy_bottom),
         thread_context_(thread_context) {}
 
   TestThreadDelegate(const TestThreadDelegate&) = delete;
@@ -96,14 +88,37 @@ class TestThreadDelegate : public ThreadDelegate {
     return {&RegisterContextFramePointer(thread_context)};
   }
 
-  UnwindResult WalkNativeFrames(RegisterContext* thread_context,
-                                uintptr_t stack_top,
-                                ModuleCache* module_cache,
-                                std::vector<Frame>* stack) override {
+ private:
+  // Must be a reference to retain the underlying allocation from the vector
+  // passed to the constructor.
+  const std::vector<uintptr_t>& fake_stack_;
+  RegisterContext* thread_context_;
+};
+
+// Trivial unwinder implementation for testing.
+class TestUnwinder : public Unwinder {
+ public:
+  TestUnwinder(size_t stack_size = 0,
+               std::vector<uintptr_t>* stack_copy = nullptr,
+               // Variable to fill in with the bottom address of the
+               // copied stack. This will be different than
+               // &(*stack_copy)[0] because |stack_copy| is a copy of the
+               // copy so does not share memory with the actual copy.
+               uintptr_t* stack_copy_bottom = nullptr)
+      : stack_size_(stack_size),
+        stack_copy_(stack_copy),
+        stack_copy_bottom_(stack_copy_bottom) {}
+
+  bool CanUnwindFrom(const Frame* current_frame) const override { return true; }
+
+  UnwindResult TryUnwind(RegisterContext* thread_context,
+                         uintptr_t stack_top,
+                         ModuleCache* module_cache,
+                         std::vector<Frame>* stack) const override {
     if (stack_copy_) {
       auto* bottom = reinterpret_cast<uintptr_t*>(
           RegisterContextStackPointer(thread_context));
-      auto* top = bottom + fake_stack_.size();
+      auto* top = bottom + stack_size_;
       *stack_copy_ = std::vector<uintptr_t>(bottom, top);
     }
     if (stack_copy_bottom_)
@@ -112,12 +127,9 @@ class TestThreadDelegate : public ThreadDelegate {
   }
 
  private:
-  // Must be a reference to retain the underlying allocation from the vector
-  // passed to the constructor.
-  const std::vector<uintptr_t>& fake_stack_;
+  size_t stack_size_;
   std::vector<uintptr_t>* stack_copy_;
   uintptr_t* stack_copy_bottom_;
-  RegisterContext* thread_context_;
 };
 
 class TestModule : public ModuleCache::Module {
@@ -153,7 +165,8 @@ TEST(StackSamplerImplTest, CopyStack) {
   InjectModuleForContextInstructionPointer(stack, &module_cache);
   std::vector<uintptr_t> stack_copy;
   StackSamplerImpl stack_sampler_impl(
-      std::make_unique<TestThreadDelegate>(stack, &stack_copy), &module_cache);
+      std::make_unique<TestThreadDelegate>(stack),
+      std::make_unique<TestUnwinder>(stack.size(), &stack_copy), &module_cache);
 
   std::unique_ptr<StackSampler::StackBuffer> stack_buffer =
       std::make_unique<StackSampler::StackBuffer>(stack.size() *
@@ -170,7 +183,8 @@ TEST(StackSamplerImplTest, CopyStackBufferTooSmall) {
   InjectModuleForContextInstructionPointer(stack, &module_cache);
   std::vector<uintptr_t> stack_copy;
   StackSamplerImpl stack_sampler_impl(
-      std::make_unique<TestThreadDelegate>(stack, &stack_copy), &module_cache);
+      std::make_unique<TestThreadDelegate>(stack),
+      std::make_unique<TestUnwinder>(stack.size(), &stack_copy), &module_cache);
 
   std::unique_ptr<StackSampler::StackBuffer> stack_buffer =
       std::make_unique<StackSampler::StackBuffer>((stack.size() - 1) *
@@ -196,8 +210,9 @@ TEST(StackSamplerImplTest, CopyStackAndRewritePointers) {
   std::vector<uintptr_t> stack_copy;
   uintptr_t stack_copy_bottom;
   StackSamplerImpl stack_sampler_impl(
-      std::make_unique<TestThreadDelegate>(stack, &stack_copy,
-                                           &stack_copy_bottom),
+      std::make_unique<TestThreadDelegate>(stack),
+      std::make_unique<TestUnwinder>(stack.size(), &stack_copy,
+                                     &stack_copy_bottom),
       &module_cache);
 
   std::unique_ptr<StackSampler::StackBuffer> stack_buffer =
@@ -220,8 +235,8 @@ TEST(StackSamplerImplTest, RewriteRegisters) {
   RegisterContextFramePointer(&thread_context) =
       reinterpret_cast<uintptr_t>(&stack[1]);
   StackSamplerImpl stack_sampler_impl(
-      std::make_unique<TestThreadDelegate>(stack, nullptr, &stack_copy_bottom,
-                                           &thread_context),
+      std::make_unique<TestThreadDelegate>(stack, &thread_context),
+      std::make_unique<TestUnwinder>(stack.size(), nullptr, &stack_copy_bottom),
       &module_cache);
 
   std::unique_ptr<StackSampler::StackBuffer> stack_buffer =

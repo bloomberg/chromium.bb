@@ -33,7 +33,7 @@ class BASE_EXPORT ThreadDelegateMac : public ThreadDelegate {
     mach_port_t thread_port_;
   };
 
-  ThreadDelegateMac(mach_port_t thread_port, ModuleCache* module_cache);
+  ThreadDelegateMac(mach_port_t thread_port);
   ~ThreadDelegateMac() override;
 
   ThreadDelegateMac(const ThreadDelegateMac&) = delete;
@@ -48,20 +48,12 @@ class BASE_EXPORT ThreadDelegateMac : public ThreadDelegate {
   std::vector<uintptr_t*> GetRegistersToRewrite(
       x86_thread_state64_t* thread_context) override;
 
-  UnwindResult WalkNativeFrames(x86_thread_state64_t* thread_context,
-                                uintptr_t stack_top,
-                                ModuleCache* module_cache,
-                                std::vector<Frame>* stack) override;
-
  private:
   // Weak reference: Mach port for thread being profiled.
   mach_port_t thread_port_;
 
   // The stack base address corresponding to |thread_port_|.
   const uintptr_t thread_stack_base_address_;
-
-  // The unwinder for native stack frames.
-  NativeUnwinderMac native_unwinder_;
 };
 
 }  // namespace base
