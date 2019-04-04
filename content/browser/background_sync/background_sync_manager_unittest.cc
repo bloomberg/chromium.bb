@@ -216,6 +216,11 @@ class BackgroundSyncManagerTest
     callback_status_ = status;
   }
 
+  base::TimeDelta GetSoonestWakeupDelta(
+      blink::mojom::BackgroundSyncType sync_type) {
+    return test_background_sync_manager_->GetSoonestWakeupDelta(sync_type);
+  }
+
  protected:
   MOCK_METHOD1(OnEventReceived,
                void(const devtools::proto::BackgroundServiceEvent&));
@@ -895,7 +900,7 @@ TEST_F(BackgroundSyncManagerTest, PeriodicSyncDoesNotFireOnRegistration) {
 
   EXPECT_TRUE(Register(sync_options_2_));
   EXPECT_EQ(1, sync_events_called_);  // no increase.
-  EXPECT_FALSE(GetRegistration(sync_options_2_));
+  EXPECT_TRUE(GetRegistration(sync_options_2_));
 }
 
 TEST_F(BackgroundSyncManagerTest, ReregisterMidSyncFirstAttemptFails) {
@@ -1219,6 +1224,7 @@ TEST_F(BackgroundSyncManagerTest, NotifyBackgroundSyncRegistered) {
 }
 
 TEST_F(BackgroundSyncManagerTest, WakeBrowserCalled) {
+  SetupBackgroundSyncManager();
   InitDelayedSyncEventTest();
 
   // The BackgroundSyncManager should declare in initialization
@@ -1238,7 +1244,7 @@ TEST_F(BackgroundSyncManagerTest, WakeBrowserCalled) {
   // InitDelayedSyncEventTest() above.
   SetNetwork(network::mojom::ConnectionType::CONNECTION_WIFI);
   EXPECT_TRUE(test_background_sync_manager_->IsBrowserWakeupScheduled());
-  EXPECT_TRUE(test_background_sync_manager_->EqualsSoonestWakeupDelta(
+  EXPECT_TRUE(test_background_sync_manager_->EqualsSoonestOneShotWakeupDelta(
       test_background_sync_manager_->background_sync_parameters()
           ->min_sync_recovery_time));
 
@@ -1247,6 +1253,49 @@ TEST_F(BackgroundSyncManagerTest, WakeBrowserCalled) {
   std::move(sync_fired_callback_).Run(blink::ServiceWorkerStatusCode::kOk);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(test_background_sync_manager_->IsBrowserWakeupScheduled());
+}
+
+TEST_F(BackgroundSyncManagerTest, GetSoonestWakeupDeltaConsidersSyncType) {
+  // Register a one-shot sync.
+  EXPECT_TRUE(Register(sync_options_1_));
+  EXPECT_TRUE(GetRegistration(sync_options_1_));
+
+  // Also register a Periodic sync.
+  sync_options_2_.min_interval = 13 * 60 * 60 * 1000;
+  EXPECT_TRUE(Register(sync_options_2_));
+  EXPECT_TRUE(GetRegistration(sync_options_2_));
+
+  EXPECT_EQ(GetSoonestWakeupDelta(blink::mojom::BackgroundSyncType::ONE_SHOT),
+            base::TimeDelta());
+  EXPECT_EQ(GetSoonestWakeupDelta(blink::mojom::BackgroundSyncType::PERIODIC),
+            base::TimeDelta::FromMilliseconds(sync_options_2_.min_interval));
+}
+
+TEST_F(BackgroundSyncManagerTest, SoonestWakeupDeltaDecreasesWithTime) {
+  // Register a periodic sync.
+  int thirteen_hours_ms = 13 * 60 * 60 * 1000;
+  sync_options_2_.min_interval = thirteen_hours_ms * 4;
+  EXPECT_TRUE(Register(sync_options_2_));
+  EXPECT_TRUE(GetRegistration(sync_options_2_));
+
+  base::TimeDelta soonest_wakeup_delta_1 =
+      GetSoonestWakeupDelta(blink::mojom::BackgroundSyncType::PERIODIC);
+
+  test_clock_.Advance(base::TimeDelta::FromMilliseconds(thirteen_hours_ms));
+  base::TimeDelta soonest_wakeup_delta_2 =
+      GetSoonestWakeupDelta(blink::mojom::BackgroundSyncType::PERIODIC);
+
+  test_clock_.Advance(base::TimeDelta::FromMilliseconds(thirteen_hours_ms));
+  base::TimeDelta soonest_wakeup_delta_3 =
+      GetSoonestWakeupDelta(blink::mojom::BackgroundSyncType::PERIODIC);
+
+  test_clock_.Advance(base::TimeDelta::FromMilliseconds(thirteen_hours_ms));
+  base::TimeDelta soonest_wakeup_delta_4 =
+      GetSoonestWakeupDelta(blink::mojom::BackgroundSyncType::PERIODIC);
+
+  EXPECT_GT(soonest_wakeup_delta_1, soonest_wakeup_delta_2);
+  EXPECT_GT(soonest_wakeup_delta_2, soonest_wakeup_delta_3);
+  EXPECT_GT(soonest_wakeup_delta_3, soonest_wakeup_delta_4);
 }
 
 TEST_F(BackgroundSyncManagerTest, OneAttempt) {

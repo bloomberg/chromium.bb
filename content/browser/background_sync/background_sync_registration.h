@@ -50,6 +50,13 @@ class CONTENT_EXPORT BackgroundSyncRegistration {
   bool resolved() const { return resolved_; }
   void set_resolved() { resolved_ = true; }
 
+  // Whether the registration is periodic or one-shot.
+  blink::mojom::BackgroundSyncType sync_type() const {
+    return options_.min_interval >= 0
+               ? blink::mojom::BackgroundSyncType::PERIODIC
+               : blink::mojom::BackgroundSyncType::ONE_SHOT;
+  }
+
  private:
   blink::mojom::SyncRegistrationOptions options_;
   blink::mojom::BackgroundSyncState sync_state_ =

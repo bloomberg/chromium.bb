@@ -87,11 +87,16 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
   }
 
   bool IsBrowserWakeupScheduled() const {
-    return !soonest_wakeup_delta_.is_max();
+    return !soonest_one_shot_wakeup_delta_.is_max();
   }
-  bool EqualsSoonestWakeupDelta(base::TimeDelta compare_to) const {
-    return soonest_wakeup_delta_ == compare_to;
+
+  bool EqualsSoonestOneShotWakeupDelta(base::TimeDelta compare_to) const {
+    return soonest_one_shot_wakeup_delta_ == compare_to;
   }
+
+  // Override to allow the test to cache the result.
+  base::TimeDelta GetSoonestWakeupDelta(
+      blink::mojom::BackgroundSyncType sync_type) override;
 
  protected:
   // Override to allow delays to be injected by tests.
@@ -126,8 +131,6 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
   void HasMainFrameProviderHost(const url::Origin& origin,
                                 BoolCallback callback) override;
 
-  base::TimeDelta GetSoonestWakeupDelta() override;
-
  private:
   // Callback to resume the StoreDataInBackend operation, after explicit
   // delays injected by tests.
@@ -152,7 +155,7 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
   DispatchSyncCallback dispatch_sync_callback_;
   base::OnceClosure delayed_task_;
   base::TimeDelta delayed_task_delta_;
-  base::TimeDelta soonest_wakeup_delta_;
+  base::TimeDelta soonest_one_shot_wakeup_delta_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBackgroundSyncManager);
 };

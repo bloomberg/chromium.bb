@@ -28,6 +28,11 @@ class MockBackgroundSyncController : public BackgroundSyncController {
   void RunInBackground() override;
   void GetParameterOverrides(
       BackgroundSyncParameters* parameters) const override;
+  base::TimeDelta GetNextEventDelay(
+      int64_t min_interval,
+      int num_attempts,
+      blink::mojom::BackgroundSyncType sync_type,
+      BackgroundSyncParameters* parameters) const override;
 
   int registration_count() const { return registration_count_; }
   const url::Origin& registration_origin() const {

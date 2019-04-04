@@ -25,6 +25,11 @@ using content::BackgroundSyncController;
 
 const char kFieldTrialGroup[] = "GroupA";
 
+// Default min time gap between two periodic sync events for a given
+// Periodic Background Sync registration.
+constexpr base::TimeDelta kMinGapBetweenPeriodicSyncEvents =
+    base::TimeDelta::FromHours(12);
+
 class TestBackgroundSyncControllerImpl : public BackgroundSyncControllerImpl {
  public:
   TestBackgroundSyncControllerImpl(
@@ -92,8 +97,8 @@ TEST_F(BackgroundSyncControllerImplTest, RapporTest) {
 
 TEST_F(BackgroundSyncControllerImplTest, NoRapporWhenOffTheRecord) {
   url::Origin origin = url::Origin::Create(GURL("http://www.example.com/foo/"));
-  controller_.reset(new TestBackgroundSyncControllerImpl(
-      profile_.GetOffTheRecordProfile(), &rappor_service_));
+  controller_ = std::make_unique<TestBackgroundSyncControllerImpl>(
+      profile_.GetOffTheRecordProfile(), &rappor_service_);
 
   controller_->NotifyBackgroundSyncRegistered(origin);
   EXPECT_EQ(0, rappor_service_.GetReportsCount());
@@ -161,6 +166,47 @@ TEST_F(BackgroundSyncControllerImplTest, AllParamsSet) {
             sync_parameters.min_sync_recovery_time);
   EXPECT_EQ(base::TimeDelta::FromSeconds(500),
             sync_parameters.max_sync_event_duration);
+}
+
+TEST_F(BackgroundSyncControllerImplTest, GetNextEventDelay) {
+  controller_ = std::make_unique<TestBackgroundSyncControllerImpl>(
+      profile_.GetOffTheRecordProfile(), &rappor_service_);
+  content::BackgroundSyncParameters sync_parameters;
+
+  // Periodic Sync: zero attempts.
+  // min_interval < kMinGapBetweenPeriodicSyncEvents.
+  base::TimeDelta delay = controller_->GetNextEventDelay(
+      /* min_interval= */ 11 * 60 * 60 * 1000,
+      /* num_attempts= */ 0, blink::mojom::BackgroundSyncType::PERIODIC,
+      &sync_parameters);
+  EXPECT_EQ(delay, kMinGapBetweenPeriodicSyncEvents);
+
+  // Periodic Sync: zero attempts.
+  // |min_interval| > kMinGapBetweenPeriodicSyncEvents.
+  delay = controller_->GetNextEventDelay(
+      /* min_interval= */ 13 * 60 * 60 * 1000,
+      /* num_attempts= */ 0, blink::mojom::BackgroundSyncType::PERIODIC,
+      &sync_parameters);
+  EXPECT_EQ(delay, base::TimeDelta::FromMilliseconds(13 * 60 * 60 * 1000));
+
+  // One-shot Sync.
+  delay = controller_->GetNextEventDelay(
+      /* min_interval= */ -1,
+      /* num_attempts= */ 0, blink::mojom::BackgroundSyncType::ONE_SHOT,
+      &sync_parameters);
+  EXPECT_EQ(delay, base::TimeDelta());
+
+  base::TimeDelta delay_after_attempt1 = controller_->GetNextEventDelay(
+      /* min_interval= */ -1,
+      /* num_attempts= */ 1, blink::mojom::BackgroundSyncType::ONE_SHOT,
+      &sync_parameters);
+  EXPECT_EQ(delay_after_attempt1, sync_parameters.initial_retry_delay);
+
+  base::TimeDelta delay_after_attempt2 = controller_->GetNextEventDelay(
+      /* min_interval= */ -1,
+      /* num_attempts= */ 2, blink::mojom::BackgroundSyncType::ONE_SHOT,
+      &sync_parameters);
+  EXPECT_LT(delay_after_attempt1, delay_after_attempt2);
 }
 
 }  // namespace
