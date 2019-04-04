@@ -961,8 +961,8 @@ TEST_P(PaintAndRasterInvalidationTest, PaintPropertyChange) {
   EXPECT_FALSE(layer->NeedsRepaint());
   const auto* transform =
       object->FirstFragment().PaintProperties()->Transform();
-  EXPECT_TRUE(transform->Changed(PaintPropertyChangeType::kChangedOnlyValues,
-                                 *transform->Parent()));
+  EXPECT_TRUE(transform->Changed(
+      PaintPropertyChangeType::kChangedOnlySimpleValues, *transform->Parent()));
 
   UpdateAllLifecyclePhasesForTest();
   EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),

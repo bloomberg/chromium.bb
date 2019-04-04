@@ -136,15 +136,33 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
       }
       bool transform_changed =
           !transform_and_origin.TransformEquals(other.transform_and_origin);
-      if (!animation_state.is_running_animation_on_compositor &&
-          transform_changed) {
+      bool transform_change_is_simple =
+          transform_changed &&
+          !animation_state.is_running_animation_on_compositor &&
+          transform_and_origin.IsIdentityOr2DTranslation() &&
+          other.transform_and_origin.IsIdentityOr2DTranslation();
+      // If the transform changed, and it's not simple then we need to report
+      // values change.
+      if (transform_changed && !transform_change_is_simple &&
+          !animation_state.is_running_animation_on_compositor) {
         return PaintPropertyChangeType::kChangedOnlyValues;
       }
-      if (direct_compositing_reasons != other.direct_compositing_reasons) {
+
+      bool non_reraster_values_changed =
+          direct_compositing_reasons != other.direct_compositing_reasons;
+      // Both simple value change and non-reraster change is upgraded to value
+      // change.
+      if (non_reraster_values_changed && transform_change_is_simple)
+        return PaintPropertyChangeType::kChangedOnlyValues;
+      if (non_reraster_values_changed)
         return PaintPropertyChangeType::kChangedOnlyNonRerasterValues;
-      }
-      if (animation_state.is_running_animation_on_compositor &&
-          transform_changed) {
+      if (transform_change_is_simple)
+        return PaintPropertyChangeType::kChangedOnlySimpleValues;
+      // At this point, our transform change isn't simple, and the above checks
+      // didn't return a values change, so it must mean that we're running a
+      // compositor animation here.
+      if (transform_changed) {
+        DCHECK(animation_state.is_running_animation_on_compositor);
         return PaintPropertyChangeType::kChangedOnlyCompositedValues;
       }
       return PaintPropertyChangeType::kUnchanged;

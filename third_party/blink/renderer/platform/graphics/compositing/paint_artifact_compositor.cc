@@ -986,21 +986,38 @@ void PaintArtifactCompositor::Update(
 #endif
 }
 
-bool PaintArtifactCompositor::DirectlyUpdateCompositedOpacityValue(
-    const EffectPaintPropertyNode& effect) {
-  // Don't bother updating the effect if we need to rebuild the tree anyway.
+cc::PropertyTrees* PaintArtifactCompositor::GetPropertyTreesForDirectUpdate() {
+  // Don't try to retrieve property trees if we need an update. The full update
+  // will update all of the nodes, so a direct update doesn't need to do
+  // anything.
   if (needs_update_)
-    return false;
+    return nullptr;
 
   if (!root_layer_)
-    return false;
+    return nullptr;
 
   auto* host = root_layer_->layer_tree_host();
   if (!host)
-    return false;
+    return nullptr;
+  return host->property_trees();
+}
 
-  return property_tree_manager_.DirectlyUpdateCompositedOpacityValue(
-      host->property_trees(), effect);
+bool PaintArtifactCompositor::DirectlyUpdateCompositedOpacityValue(
+    const EffectPaintPropertyNode& effect) {
+  if (auto* property_trees = GetPropertyTreesForDirectUpdate()) {
+    return property_tree_manager_.DirectlyUpdateCompositedOpacityValue(
+        property_trees, effect);
+  }
+  return false;
+}
+
+bool PaintArtifactCompositor::DirectlyUpdateScrollOffsetTransform(
+    const TransformPaintPropertyNode& transform) {
+  if (auto* property_trees = GetPropertyTreesForDirectUpdate()) {
+    return property_tree_manager_.DirectlyUpdateScrollOffsetTransform(
+        property_trees, transform);
+  }
+  return false;
 }
 
 static bool IsRenderSurfaceCandidate(

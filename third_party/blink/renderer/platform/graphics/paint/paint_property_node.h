@@ -121,7 +121,10 @@ class PaintPropertyNode : public RefCounted<NodeType> {
     return *node;
   }
 
-  void SetChangeType(PaintPropertyChangeType type) const { changed_ = type; }
+  void CompositorSimpleValuesUpdated() const {
+    if (changed_ == PaintPropertyChangeType::kChangedOnlySimpleValues)
+      changed_ = PaintPropertyChangeType::kChangedOnlyCompositedValues;
+  }
 
   String ToString() const {
     auto s = static_cast<const NodeType*>(this)->ToJSON()->ToJSONString();
