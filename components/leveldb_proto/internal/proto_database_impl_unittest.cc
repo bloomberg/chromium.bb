@@ -37,10 +37,8 @@ struct ClientStruct {
   // The methods below are convenience methods to have a similar API as protocol
   // buffers for the test framework. This is NOT required for uses of client
   // structs.
-  const std::string& id() const { return id_; }
-  void set_id(const std::string& id) { id_ = id; }
-  const std::string& data() const { return data_; }
-  void set_data(const std::string& data) { data_ = data; }
+  std::string id() const { return id_; }
+  std::string data() const { return data_; }
 
   std::string id_;
   std::string data_;
@@ -61,18 +59,18 @@ void CreateData(const std::string& key,
                 const std::string& data,
                 ClientStruct* as_struct) {
   // Ensure the DB key, the id-field and data-field are all unique values.
-  as_struct->set_id(key + key);
-  as_struct->set_data(key + key + key);
+  as_struct->id_ = key + key;
+  as_struct->data_ = key + key + key;
 }
 
-void DataToProto(const ClientStruct& data, TestProto* proto) {
-  proto->set_id(data.id());
-  proto->set_data(data.data());
+void DataToProto(ClientStruct* data, TestProto* proto) {
+  proto->mutable_id()->swap(data->id_);
+  proto->mutable_data()->swap(data->data_);
 }
 
-void ProtoToData(const TestProto& proto, ClientStruct* data) {
-  data->set_id(proto.id());
-  data->set_data(proto.data());
+void ProtoToData(TestProto* proto, ClientStruct* data) {
+  proto->mutable_id()->swap(data->id_);
+  proto->mutable_data()->swap(data->data_);
 }
 
 }  // namespace

@@ -139,15 +139,15 @@ template <typename P,
           typename T,
           std::enable_if_t<std::is_base_of<google::protobuf::MessageLite,
                                            T>::value>* = nullptr>
-void DataToProtoWrap(const T& data, P* proto) {
-  *proto = data;
+void DataToProtoWrap(T* data, P* proto) {
+  proto->Swap(data);
 }
 
 template <typename P,
           typename T,
           std::enable_if_t<!std::is_base_of<google::protobuf::MessageLite,
                                             T>::value>* = nullptr>
-void DataToProtoWrap(const T& data, P* proto) {
+void DataToProtoWrap(T* data, P* proto) {
   DataToProto(data, proto);
 }
 
@@ -155,16 +155,17 @@ template <typename P,
           typename T,
           std::enable_if_t<std::is_base_of<google::protobuf::MessageLite,
                                            T>::value>* = nullptr>
-void ProtoToDataWrap(const P& proto, T* copy) {
-  *copy = proto;
+void ProtoToDataWrap(const P& proto, T* data) {
+  *data = proto;
 }
 
 template <typename P,
           typename T,
           std::enable_if_t<!std::is_base_of<google::protobuf::MessageLite,
                                             T>::value>* = nullptr>
-void ProtoToDataWrap(const P& proto, T* copy) {
-  ProtoToData(proto, copy);
+void ProtoToDataWrap(const P& proto, T* data) {
+  P copy = proto;
+  ProtoToData(&copy, data);
 }
 
 }  // namespace
@@ -208,8 +209,8 @@ void FakeDB<P, T>::UpdateEntries(
     std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
     std::unique_ptr<std::vector<std::string>> keys_to_remove,
     Callbacks::UpdateCallback callback) {
-  for (const auto& pair : *entries_to_save)
-    DataToProtoWrap(pair.second, &(*db_)[pair.first]);
+  for (auto& pair : *entries_to_save)
+    DataToProtoWrap(&pair.second, &(*db_)[pair.first]);
 
   for (const auto& key : *keys_to_remove)
     db_->erase(key);
@@ -223,7 +224,7 @@ void FakeDB<P, T>::UpdateEntriesWithRemoveFilter(
     const KeyFilter& delete_key_filter,
     Callbacks::UpdateCallback callback) {
   for (auto& pair : *entries_to_save)
-    DataToProtoWrap(pair.second, &(*db_)[pair.first]);
+    DataToProtoWrap(&pair.second, &(*db_)[pair.first]);
 
   auto it = db_->begin();
   while (it != db_->end()) {

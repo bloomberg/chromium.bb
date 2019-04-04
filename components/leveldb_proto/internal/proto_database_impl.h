@@ -180,15 +180,15 @@ template <typename P,
           typename T,
           std::enable_if_t<std::is_base_of<google::protobuf::MessageLite,
                                            T>::value>* = nullptr>
-std::string SerializeAsString(const T& entry) {
-  return entry.SerializeAsString();
+std::string SerializeAsString(T* entry) {
+  return entry->SerializeAsString();
 }
 
 template <typename P,
           typename T,
           std::enable_if_t<!std::is_base_of<google::protobuf::MessageLite,
                                             T>::value>* = nullptr>
-std::string SerializeAsString(const T& entry) {
+std::string SerializeAsString(T* entry) {
   P proto;
   DataToProto(entry, &proto);
   return proto.SerializeAsString();
@@ -221,7 +221,7 @@ bool ParseToClientType(const std::string& serialized_entry, T* entry) {
   if (!ParseToProto<P>(serialized_entry, &proto))
     return false;
 
-  ProtoToData(proto, entry);
+  ProtoToData(&proto, entry);
   return true;
 }
 
@@ -237,8 +237,8 @@ void UpdateEntriesFromTaskRunner(
     Callbacks::UpdateCallback callback) {
   // Serialize the values from Proto to string before passing on to database.
   auto pairs_to_save = std::make_unique<KeyValueVector>();
-  for (const auto& pair : *entries_to_save) {
-    auto serialized = SerializeAsString<P, T>(pair.second);
+  for (auto& pair : *entries_to_save) {
+    auto serialized = SerializeAsString<P, T>(&pair.second);
     pairs_to_save->push_back(std::make_pair(pair.first, serialized));
   }
 
@@ -258,8 +258,8 @@ void UpdateEntriesWithRemoveFilterFromTaskRunner(
     Callbacks::UpdateCallback callback) {
   // Serialize the values from Proto to string before passing on to database.
   auto pairs_to_save = std::make_unique<KeyValueVector>();
-  for (const auto& pair : *entries_to_save) {
-    auto serialized = SerializeAsString<P, T>(pair.second);
+  for (auto& pair : *entries_to_save) {
+    auto serialized = SerializeAsString<P, T>(&pair.second);
     pairs_to_save->push_back(std::make_pair(pair.first, serialized));
   }
 

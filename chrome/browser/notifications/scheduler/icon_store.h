@@ -17,10 +17,10 @@
 
 // Forward declaration for proto conversion.
 namespace leveldb_proto {
-void DataToProto(const notifications::IconEntry& icon_entry,
+void DataToProto(notifications::IconEntry* icon_entry,
                  notifications::proto::Icon* proto);
 
-void ProtoToData(const notifications::proto::Icon& proto,
+void ProtoToData(notifications::proto::Icon* proto,
                  notifications::IconEntry* icon_entry);
 }  // namespace leveldb_proto
 
