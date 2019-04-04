@@ -9,10 +9,8 @@ if (is_android) {
 }
 
 group("scheduler") {
-  # TODO(xingliu): Change this to a source set when we have code to be used by
-  # NotificationScheduleServiceFactory.
   deps = [
-    ":lib",
+    ":factory",
   ]
 
   public_deps = [
@@ -39,9 +37,25 @@ source_set("public") {
   ]
 }
 
+# The embedder can depend on this target to get the internal library.
+source_set("factory") {
+  sources = [
+    "schedule_service_factory_helper.cc",
+    "schedule_service_factory_helper.h",
+  ]
+
+  deps = [
+    ":lib",
+    ":public",
+    "//base",
+    "//components/keyed_service/core",
+  ]
+}
+
 # Internal library that embedders should not directly depend on.
 source_set("lib") {
   visibility = [
+    ":factory",
     ":scheduler",
     ":unit_tests",
     "//chrome/browser/notifications/scheduler/test:test_lib",
@@ -66,6 +80,8 @@ source_set("lib") {
     "notification_entry.h",
     "notification_schedule_service_impl.cc",
     "notification_schedule_service_impl.h",
+    "notification_scheduler.cc",
+    "notification_scheduler.h",
     "notification_scheduler_context.cc",
     "notification_scheduler_context.h",
     "proto_conversion.cc",

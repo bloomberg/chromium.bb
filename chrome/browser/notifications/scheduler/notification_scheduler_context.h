@@ -12,6 +12,7 @@
 namespace notifications {
 
 class NotificationBackgroundTaskScheduler;
+struct SchedulerConfig;
 
 // Context that contains necessary components needed by the notification
 // scheduler to perform tasks.
@@ -20,14 +21,22 @@ class NotificationBackgroundTaskScheduler;
 class NotificationSchedulerContext {
  public:
   NotificationSchedulerContext(
-      std::unique_ptr<NotificationBackgroundTaskScheduler> scheduler);
+      std::unique_ptr<NotificationBackgroundTaskScheduler> scheduler,
+      std::unique_ptr<SchedulerConfig> config);
   ~NotificationSchedulerContext();
 
-  NotificationBackgroundTaskScheduler* GetBackgroundTaskScheduler();
+  // Gets the background task scheduler.
+  NotificationBackgroundTaskScheduler* background_task_scheduler() {
+    return background_task_scheduler_.get();
+  }
+
+  // Gets system configuration.
+  const SchedulerConfig* config() const { return config_.get(); }
 
  private:
   std::unique_ptr<NotificationBackgroundTaskScheduler>
       background_task_scheduler_;
+  std::unique_ptr<SchedulerConfig> config_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationSchedulerContext);
 };
