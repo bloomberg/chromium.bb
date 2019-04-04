@@ -37,7 +37,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   // Internal state machine states.
   enum class State {
     kInit,
-    kConnected,
     kBusy,
     kReady,
     // kMsgError occurs when the the device responds with an error indicating an

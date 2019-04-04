@@ -90,7 +90,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
   void Connect(ConnectCallback callback);
   void OnConnect(device::mojom::HidConnectionPtr connection);
   // Ask device to allocate a unique channel id for this connection.
-  void AllocateChannel();
   void OnAllocateChannel(std::vector<uint8_t> nonce,
                          base::Optional<FidoHidMessage> message);
   void Transition();

@@ -80,11 +80,6 @@ void FidoHidDevice::Transition() {
       Connect(base::BindOnce(&FidoHidDevice::OnConnect,
                              weak_factory_.GetWeakPtr()));
       break;
-    case State::kConnected:
-      state_ = State::kBusy;
-      ArmTimeout();
-      AllocateChannel();
-      break;
     case State::kReady: {
       state_ = State::kBusy;
       DCHECK(!pending_transactions_.empty());
@@ -136,19 +131,19 @@ void FidoHidDevice::OnConnect(device::mojom::HidConnectionPtr connection) {
     return;
   timeout_callback_.Cancel();
 
-  if (connection) {
-    connection_ = std::move(connection);
-    state_ = State::kConnected;
-  } else {
+  if (!connection) {
     state_ = State::kDeviceError;
+    Transition();
+    return;
   }
-  Transition();
-}
 
-void FidoHidDevice::AllocateChannel() {
+  connection_ = std::move(connection);
   // Send random nonce to device to verify received message.
   std::vector<uint8_t> nonce(8);
   crypto::RandBytes(nonce.data(), nonce.size());
+
+  state_ = State::kBusy;
+  ArmTimeout();
   WriteMessage(FidoHidMessage::Create(channel_id_, FidoHidDeviceCommand::kInit,
                                       output_report_size_, nonce),
                true,
