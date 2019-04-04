@@ -192,8 +192,7 @@ ScriptPromise DisplayLockContext::acquire(ScriptState* script_state,
     acquire_resolver_ =
         MakeGarbageCollected<ScriptPromiseResolver>(script_state);
     if (auto* layout_object = element_->GetLayoutObject()) {
-      layout_object->SetNeedsLayout(
-          layout_invalidation_reason::kDisplayLockCommitting);
+      layout_object->SetNeedsLayout(layout_invalidation_reason::kDisplayLock);
     }
     MarkPaintLayerNeedsRepaint();
     ScheduleAnimation();
@@ -540,8 +539,7 @@ void DisplayLockContext::StartCommit() {
   // for just the box itself. Note that we use the non-display locked version to
   // ensure all the hooks are property invoked.
   ToLayoutBox(layout_object)->SetFrameRect(pending_frame_rect_);
-  layout_object->SetNeedsLayout(
-      layout_invalidation_reason::kDisplayLockCommitting);
+  layout_object->SetNeedsLayout(layout_invalidation_reason::kDisplayLock);
 }
 
 void DisplayLockContext::StartUpdateIfNeeded() {
@@ -781,7 +779,7 @@ void DisplayLockContext::NotifyWillDisconnect() {
   // the parent so that it's up to date. This property is updated during
   // layout.
   if (auto* parent = element_->GetLayoutObject()->Parent()) {
-    parent->SetNeedsLayout(layout_invalidation_reason::kDisplayLockCommitting);
+    parent->SetNeedsLayout(layout_invalidation_reason::kDisplayLock);
   }
 }
 
