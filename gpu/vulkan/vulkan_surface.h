@@ -32,7 +32,7 @@ class VULKAN_EXPORT VulkanSurface {
 
   VulkanSurface(VkInstance vk_instance, VkSurfaceKHR surface);
 
-  ~VulkanSurface();
+  virtual ~VulkanSurface();
 
   bool Initialize(VulkanDeviceQueue* device_queue,
                   VulkanSurface::Format format);
@@ -44,7 +44,8 @@ class VULKAN_EXPORT VulkanSurface {
 
   void Finish();
 
-  bool SetSize(const gfx::Size& size);
+  virtual bool SetSize(const gfx::Size& size);
+
   const gfx::Size& size() const { return size_; }
   VkSurfaceFormatKHR surface_format() const { return surface_format_; }
 

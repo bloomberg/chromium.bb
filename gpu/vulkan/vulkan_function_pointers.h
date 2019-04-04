@@ -25,6 +25,11 @@
 #include "gpu/vulkan/fuchsia/vulkan_fuchsia_ext.h"
 #endif
 
+#if defined(USE_VULKAN_XLIB)
+#include <X11/Xlib.h>
+#include <vulkan/vulkan_xlib.h>
+#endif
+
 namespace gpu {
 
 struct VulkanFunctionPointers;
@@ -61,7 +66,9 @@ struct VulkanFunctionPointers {
   PFN_vkEnumeratePhysicalDevices vkEnumeratePhysicalDevicesFn = nullptr;
   PFN_vkGetDeviceProcAddr vkGetDeviceProcAddrFn = nullptr;
   PFN_vkDestroySurfaceKHR vkDestroySurfaceKHRFn = nullptr;
-
+#if defined(USE_VULKAN_XLIB)
+  PFN_vkCreateXlibSurfaceKHR vkCreateXlibSurfaceKHRFn = nullptr;
+#endif
   // Physical Device functions
   PFN_vkCreateDevice vkCreateDeviceFn = nullptr;
   PFN_vkEnumerateDeviceLayerProperties vkEnumerateDeviceLayerPropertiesFn =
@@ -74,7 +81,10 @@ struct VulkanFunctionPointers {
       vkGetPhysicalDeviceSurfaceFormatsKHRFn = nullptr;
   PFN_vkGetPhysicalDeviceSurfaceSupportKHR
       vkGetPhysicalDeviceSurfaceSupportKHRFn = nullptr;
-
+#if defined(USE_VULKAN_XLIB)
+  PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR
+      vkGetPhysicalDeviceXlibPresentationSupportKHRFn = nullptr;
+#endif
   // Device functions
   PFN_vkAllocateCommandBuffers vkAllocateCommandBuffersFn = nullptr;
   PFN_vkAllocateDescriptorSets vkAllocateDescriptorSetsFn = nullptr;
@@ -180,6 +190,10 @@ struct VulkanFunctionPointers {
   gpu::GetVulkanFunctionPointers()->vkGetDeviceProcAddrFn
 #define vkDestroySurfaceKHR \
   gpu::GetVulkanFunctionPointers()->vkDestroySurfaceKHRFn
+#if defined(USE_VULKAN_XLIB)
+#define vkCreateXlibSurfaceKHR \
+  gpu::GetVulkanFunctionPointers()->vkCreateXlibSurfaceKHRFn
+#endif
 
 // Physical Device functions
 #define vkCreateDevice gpu::GetVulkanFunctionPointers()->vkCreateDeviceFn
@@ -193,6 +207,11 @@ struct VulkanFunctionPointers {
   gpu::GetVulkanFunctionPointers()->vkGetPhysicalDeviceSurfaceFormatsKHRFn
 #define vkGetPhysicalDeviceSurfaceSupportKHR \
   gpu::GetVulkanFunctionPointers()->vkGetPhysicalDeviceSurfaceSupportKHRFn
+#if defined(USE_VULKAN_XLIB)
+#define vkGetPhysicalDeviceXlibPresentationSupportKHR \
+  gpu::GetVulkanFunctionPointers()                    \
+      ->vkGetPhysicalDeviceXlibPresentationSupportKHRFn
+#endif
 
 // Device functions
 #define vkAllocateCommandBuffers \
