@@ -16,6 +16,7 @@
 #include "ui/aura/mus/window_tree_host_mus_delegate.h"
 #include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host_observer.h"
@@ -45,6 +46,33 @@ DEFINE_UI_CLASS_PROPERTY_KEY(WindowTreeHostMus*, kWindowTreeHostMusKey, nullptr)
 // and increases).
 uint32_t next_accelerated_widget_id = std::numeric_limits<uint32_t>::max();
 
+// This class handles the gesture events occurring on the root window and sends
+// them to the content window during the window move. Typically gesture events
+// will stop arriving once PerformWindowMove is invoked, but sometimes events
+// are already queued and arrive to the root window. They should be handled
+// by the content window. See https://crbug.com/943316.
+class RemainingGestureEventHandler : public ui::EventHandler {
+ public:
+  RemainingGestureEventHandler(Window* content_window, Window* root)
+      : content_window_(content_window), root_(root) {
+    root_->AddPostTargetHandler(this);
+  }
+  ~RemainingGestureEventHandler() override {
+    root_->RemovePostTargetHandler(this);
+  }
+
+ private:
+  // ui::EventHandler:
+  void OnGestureEvent(ui::GestureEvent* event) override {
+    content_window_->delegate()->OnGestureEvent(event);
+  }
+
+  Window* content_window_;
+  Window* root_;
+
+  DISALLOW_COPY_AND_ASSIGN(RemainingGestureEventHandler);
+};
+
 // ScopedTouchTransferController controls the transfer of touch events for
 // window move loop. It transfers touches before the window move starts, and
 // then transfers them back to the original window when the window move ends.
@@ -55,6 +83,7 @@ class ScopedTouchTransferController : public ui::GestureRecognizerObserver {
  public:
   ScopedTouchTransferController(Window* source, Window* dest)
       : tracker_({source, dest}),
+        remaining_gesture_event_handler_(source, dest),
         gesture_recognizer_(source->env()->gesture_recognizer()) {
     gesture_recognizer_->TransferEventsTo(
         source, dest, ui::TransferTouchesBehavior::kDontCancel);
@@ -87,7 +116,7 @@ class ScopedTouchTransferController : public ui::GestureRecognizerObserver {
   void OnActiveTouchesCanceled(ui::GestureConsumer* consumer) override {}
 
   WindowTracker tracker_;
-
+  RemainingGestureEventHandler remaining_gesture_event_handler_;
   ui::GestureRecognizer* gesture_recognizer_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedTouchTransferController);
