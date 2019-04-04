@@ -478,4 +478,63 @@ TEST_F(PolicyMapTest, BlockedEntry) {
   }
   EXPECT_TRUE(iterated_values == expected_size);
 }
+
+TEST_F(PolicyMapTest, MergedListResult) {
+  std::unique_ptr<base::ListValue> list1 = std::make_unique<base::ListValue>();
+  list1->Append(std::make_unique<base::Value>("google.com"));
+  std::unique_ptr<base::ListValue> list2 = std::make_unique<base::ListValue>();
+  list2->Append(std::make_unique<base::Value>("example.com"));
+  std::unique_ptr<base::ListValue> list3 = std::make_unique<base::ListValue>();
+  list3->Append(std::make_unique<base::Value>("acme.com"));
+  std::unique_ptr<base::ListValue> list4 = std::make_unique<base::ListValue>();
+  list4->Append(std::make_unique<base::Value>("fake.com"));
+  std::unique_ptr<base::ListValue> list5 = std::make_unique<base::ListValue>();
+  list5->Append(std::make_unique<base::Value>("bad.com"));
+  std::unique_ptr<base::ListValue> list6 = std::make_unique<base::ListValue>();
+  list6->Append(std::make_unique<base::Value>("good.com"));
+  std::unique_ptr<base::ListValue> list7 = std::make_unique<base::ListValue>();
+  list7->Append(std::make_unique<base::Value>("verybad.com"));
+
+  // TestPolicy1 - merge from all sources should ignore user cloud policy.
+  // TestPolicy2 - merge of blocked and recommended values should be ignored.
+  PolicyMap a;
+  a.Set(kTestPolicyName1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_PLATFORM, std::move(list1), nullptr);
+  a.Set(kTestPolicyName2, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_ACTIVE_DIRECTORY, std::move(list5), nullptr);
+  a.GetMutable(kTestPolicyName2)->SetBlocked();
+
+  PolicyMap b;
+  b.Set(kTestPolicyName1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_CLOUD, std::move(list2), nullptr);
+  b.Set(kTestPolicyName2, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_CLOUD, std::move(list6), nullptr);
+
+  PolicyMap c;
+  c.Set(kTestPolicyName1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+        POLICY_SOURCE_PLATFORM, std::move(list3), nullptr);
+  c.Set(kTestPolicyName2, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_PLATFORM, std::move(list4), nullptr);
+
+  PolicyMap d;
+  d.Set(kTestPolicyName1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+        POLICY_SOURCE_CLOUD, std::move(list7), nullptr);
+
+  a.MergeFrom(b);
+  a.MergeFrom(c);
+  a.MergeFrom(d);
+
+  a.MergeListValues(kTestPolicyName1);
+  a.MergeListValues(kTestPolicyName2);
+
+  auto& merged_value1 = a.GetValue(kTestPolicyName1)->GetList();
+  EXPECT_EQ(3u, merged_value1.size());
+  EXPECT_EQ("google.com", merged_value1[0].GetString());
+  EXPECT_EQ("example.com", merged_value1[1].GetString());
+  EXPECT_EQ("acme.com", merged_value1[2].GetString());
+  auto& merged_value2 = a.GetValue(kTestPolicyName2)->GetList();
+  EXPECT_EQ(1u, merged_value2.size());
+  EXPECT_EQ("good.com", merged_value2[0].GetString());
+}
+
 }  // namespace policy

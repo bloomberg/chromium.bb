@@ -138,7 +138,10 @@ Value GetPolicyValue(
                                    known_policy_schema, is_pretty_print));
   value.SetKey(
       "scope",
-      Value((policy.scope == policy::POLICY_SCOPE_USER) ? "user" : "machine"));
+      Value((policy.scope == policy::POLICY_SCOPE_USER)
+                ? "user"
+                : ((policy.scope == policy::POLICY_SCOPE_MACHINE) ? "machine"
+                                                                  : "merged")));
   value.SetKey("level", Value((policy.level == policy::POLICY_LEVEL_RECOMMENDED)
                                   ? "recommended"
                                   : "mandatory"));
@@ -354,6 +357,7 @@ const PolicyStringMap kPolicySources[policy::POLICY_SOURCE_COUNT] = {
     {"sourcePublicSessionOverride", IDS_POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE},
     {"sourcePlatform", IDS_POLICY_SOURCE_PLATFORM},
     {"sourcePriorityCloud", IDS_POLICY_SOURCE_CLOUD},
+    {"sourceMerged", IDS_POLICY_SOURCE_MERGED},
 };
 
 Value GetAllPolicyValuesAsArray(content::BrowserContext* context,

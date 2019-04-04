@@ -417,6 +417,7 @@
         'ExtensionAllowedTypes',
         'ExtensionAllowInsecureUpdates',
         'ExtensionSettings',
+        'ExtensionInstallListsMergeEnabled',
       ],
     },
     {
@@ -3755,6 +3756,25 @@
 
           For a full description of possible settings and structure of this policy please visit https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           ''',
+    },
+    {
+      'name': 'ExtensionInstallListsMergeEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*: 75-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 544,
+      'caption': '''Merge extension install list policies from multiple sources''',
+      'tags': [],
+      'desc': '''Enables merging of the extension install list policies <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME">ExtensionInstallBlacklist</ph>, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME">ExtensionInstallWhitelist</ph> and <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME">ExtensionInstallForcelist</ph>.
+
+      If you enable this setting, the values from machine platform policy, machine cloud policy and user platfrom policy are merged into a single list and used as a whole instead of only using the values from the single source with highest priority.
+
+      If you disable this setting or leave it unset, only list entries from the highest priority source are taken and all other sources are shown as conflicts but ingoner.''',
     },
     {
       'name': 'ShowHomeButton',
@@ -15474,5 +15494,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  543
+  'highest_id_currently_used':  544
 }
