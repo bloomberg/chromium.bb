@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window_state.h"
+#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_root_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -170,16 +171,18 @@ void BrowserFrame::OnBrowserViewInitViewsComplete() {
 }
 
 bool BrowserFrame::ShouldUseTheme() const {
-  // Main browser windows are always themed.
-  if (browser_view_->IsBrowserTypeNormal())
+  // Browser windows are always themed (including popups).
+  if (!extensions::HostedAppBrowserController::
+          IsForExperimentalHostedAppBrowser(browser_view_->browser())) {
     return true;
+  }
 
   // The system GTK theme should always be respected if the user has opted to
   // use it.
   if (IsUsingGtkTheme(browser_view_->browser()->profile()))
     return true;
 
-  // Other window types (popups, hosted apps) on non-GTK use the default theme.
+  // Hosted apps on non-GTK use default colors.
   return false;
 }
 
