@@ -132,7 +132,7 @@ foreach t : simple_clients
 
 		executable(
 			t_name, t.get('sources'),
-			include_directories: include_directories('..'),
+			include_directories: [ include_directories('..'), public_inc ],
 			dependencies: t_deps,
 			install: true
 		)
@@ -215,7 +215,7 @@ foreach t : tools_list
 		executable(
 			'weston-@0@'.format(t.get('name')),
 			t.get('sources'),
-			include_directories: include_directories('..', '../shared'),
+			include_directories: [ include_directories('..', '../shared'), public_inc ],
 			dependencies: t.get('deps', []),
 			install: true
 		)
@@ -328,7 +328,7 @@ if simple_dmabuf_drm_deps.length() > 0
 		fullscreen_shell_unstable_v1_protocol_c,
 		linux_dmabuf_unstable_v1_client_protocol_h,
 		linux_dmabuf_unstable_v1_protocol_c,
-		include_directories: include_directories('..'),
+		include_directories: [ include_directories('..'), public_inc ],
 		dependencies: [
 			dep_wayland_client,
 			dep_libdrm,

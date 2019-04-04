@@ -37,7 +37,7 @@
 #include "zuc_event_listener.h"
 #include "zuc_types.h"
 
-#include "shared/zalloc.h"
+#include <libweston/zalloc.h>
 
 /* a few sequences for rudimentary ANSI graphics. */
 #define CSI_GRN "\x1b[0;32m"

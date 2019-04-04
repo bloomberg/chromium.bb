@@ -32,7 +32,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "shared/zalloc.h"
+#include <libweston/zalloc.h>
 #include "zuc_event_listener.h"
 #include "zunitc/zunitc_impl.h"
 

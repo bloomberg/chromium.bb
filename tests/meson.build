@@ -221,7 +221,7 @@ if get_option('shell-ivi')
 		weston_test_protocol_c,
 		ivi_application_client_protocol_h,
 		ivi_application_protocol_c,
-		include_directories: include_directories('..', '../shared'),
+		include_directories: [ include_directories('..', '../shared'), public_inc ],
 		dependencies: dep_test_client,
 		install: false
 	)
@@ -261,7 +261,7 @@ foreach t : tests_standalone
 		srcs_t,
 		c_args: [ '-DUNIT_TEST' ],
 		build_by_default: true,
-		include_directories: include_directories('..', '../shared', '../libweston'),
+		include_directories: [ include_directories('..', '../shared', '../libweston'), public_inc ],
 		dependencies: deps_t,
 		install: false,
 	)
@@ -325,8 +325,10 @@ foreach t : tests_weston
 		'test-@0@'.format(t.get(0)),
 		srcs_t,
 		c_args: [ '-DUNIT_TEST' ],
-		include_directories:
+		include_directories: [
 			include_directories('..', '../shared'),
+			public_inc,
+		],
 		dependencies: deps_t,
 		install: false,
 	)

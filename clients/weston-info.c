@@ -38,7 +38,7 @@
 #include "shared/helpers.h"
 #include "shared/os-compatibility.h"
 #include "shared/xalloc.h"
-#include "shared/zalloc.h"
+#include <libweston/zalloc.h>
 #include "presentation-time-client-protocol.h"
 #include "linux-dmabuf-unstable-v1-client-protocol.h"
 #include "tablet-unstable-v2-client-protocol.h"

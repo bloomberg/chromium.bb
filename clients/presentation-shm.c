@@ -38,7 +38,7 @@
 
 #include <wayland-client.h>
 #include "shared/helpers.h"
-#include "shared/zalloc.h"
+#include <libweston/zalloc.h>
 #include "shared/timespec-util.h"
 #include "shared/os-compatibility.h"
 #include "presentation-time-client-protocol.h"

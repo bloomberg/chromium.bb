@@ -56,11 +56,6 @@ srcs_libweston = [
 	weston_debug_server_protocol_h,
 ]
 
-install_headers(
-	'../shared/zalloc.h',
-	subdir: dir_include_libweston
-)
-
 if get_option('renderer-gl')
 	dep_egl = dependency('egl', required: false)
 	if not dep_egl.found()

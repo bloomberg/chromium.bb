@@ -32,7 +32,7 @@
 #include <wayland-server.h>
 
 #include <libweston/libweston.h>
-#include "zalloc.h"
+#include <libweston/zalloc.h>
 #include "xdg-shell-server-protocol.h"
 
 #include "libweston-desktop.h"

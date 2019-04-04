@@ -46,7 +46,7 @@
 #include <libweston/config-parser.h>
 #include "shared/helpers.h"
 #include "shared/xalloc.h"
-#include "shared/zalloc.h"
+#include <libweston/zalloc.h>
 #include "shared/file-util.h"
 
 #include "weston-desktop-shell-client-protocol.h"

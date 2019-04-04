@@ -42,7 +42,7 @@
 #include <wayland-client.h>
 #include "shared/os-compatibility.h"
 #include "shared/xalloc.h"
-#include "shared/zalloc.h"
+#include <libweston/zalloc.h>
 
 struct device {
 	enum { KEYBOARD, POINTER } type;

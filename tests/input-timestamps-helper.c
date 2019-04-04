@@ -33,7 +33,7 @@
 #include "input-timestamps-helper.h"
 #include "input-timestamps-unstable-v1-client-protocol.h"
 #include "shared/timespec-util.h"
-#include "shared/zalloc.h"
+#include <libweston/zalloc.h>
 #include "weston-test-client-helper.h"
 
 struct input_timestamps {

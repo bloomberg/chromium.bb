@@ -31,7 +31,7 @@
 
 #include "shared/helpers.h"
 #include "shared/string-helpers.h"
-#include "shared/zalloc.h"
+#include <libweston/zalloc.h>
 #include "shared/timespec-util.h"
 #include <libweston/libweston.h>
 

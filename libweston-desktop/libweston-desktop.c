@@ -29,7 +29,7 @@
 #include <assert.h>
 
 #include <libweston/libweston.h>
-#include "zalloc.h"
+#include <libweston/zalloc.h>
 #include "helpers.h"
 
 #include "libweston-desktop.h"
