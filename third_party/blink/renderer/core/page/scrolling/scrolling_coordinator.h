@@ -129,9 +129,8 @@ class CORE_EXPORT ScrollingCoordinator final
   // and if successful, returns true. Otherwise returns false.
   bool UpdateCompositedScrollOffset(ScrollableArea* scrollable_area);
 
-  // Updates composited layers after changes to scrollable area  properties
-  // like content and container sizes, scrollbar existence, scrollability, etc.
-  // Scroll offset changes are updated by UpdateCompositedScrollOffset.
+  // Updates the compositor layers and returns true if the scrolling coordinator
+  // handled this change.
   // TODO(pdr): Factor the container bounds change out of this function. The
   // compositor tracks scroll container bounds on the scroll layer whereas
   // blink uses a separate layer. To ensure the compositor scroll layer has the
