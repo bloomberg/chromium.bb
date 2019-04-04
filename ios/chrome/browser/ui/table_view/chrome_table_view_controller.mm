@@ -56,6 +56,44 @@ const CGFloat kTableViewSeparatorInsetWithIcon = 56;
                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
 }
 
+#pragma mark - UIViewController
+
+- (void)viewDidLoad {
+  [super viewDidLoad];
+
+  [self.tableView setBackgroundColor:self.styler.tableViewBackgroundColor];
+  [self.tableView setSeparatorColor:self.styler.cellSeparatorColor];
+  [self.tableView
+      setSeparatorInset:UIEdgeInsetsMake(0, kTableViewSeparatorInsetWithIcon, 0,
+                                         0)];
+
+  // Configure the app bar if needed.
+  if (_appBarViewController) {
+    ConfigureAppBarViewControllerWithCardStyle(self.appBarViewController);
+    self.appBarViewController.headerView.trackingScrollView = self.tableView;
+    // Add the AppBar's views after all other views have been registered.
+    [self addChildViewController:_appBarViewController];
+    CGRect frame = self.appBarViewController.view.frame;
+    frame.origin.x = 0;
+    frame.size.width =
+        self.appBarViewController.parentViewController.view.bounds.size.width;
+    self.appBarViewController.view.frame = frame;
+    [self.view addSubview:self.appBarViewController.view];
+    [self.appBarViewController didMoveToParentViewController:self];
+  }
+}
+
+#pragma mark - UITableViewDelegate
+
+- (NSIndexPath*)tableView:(UITableView*)tableView
+    willSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  if (self.editing && ![self tableView:tableView
+                          canEditRowAtIndexPath:indexPath]) {
+    return nil;
+  }
+  return indexPath;
+}
+
 #pragma mark - Accessors
 
 - (void)setStyler:(ChromeTableViewStyler*)styler {
@@ -84,31 +122,6 @@ const CGFloat kTableViewSeparatorInsetWithIcon = 56;
   // The safe area insets aren't propagated to the inner scroll view. Manually
   // set the content insets.
   self.emptyView.scrollViewContentInsets = self.view.safeAreaInsets;
-}
-
-- (void)viewDidLoad {
-  [super viewDidLoad];
-
-  [self.tableView setBackgroundColor:self.styler.tableViewBackgroundColor];
-  [self.tableView setSeparatorColor:self.styler.cellSeparatorColor];
-  [self.tableView
-      setSeparatorInset:UIEdgeInsetsMake(0, kTableViewSeparatorInsetWithIcon, 0,
-                                         0)];
-
-  // Configure the app bar if needed.
-  if (_appBarViewController) {
-    ConfigureAppBarViewControllerWithCardStyle(self.appBarViewController);
-    self.appBarViewController.headerView.trackingScrollView = self.tableView;
-    // Add the AppBar's views after all other views have been registered.
-    [self addChildViewController:_appBarViewController];
-    CGRect frame = self.appBarViewController.view.frame;
-    frame.origin.x = 0;
-    frame.size.width =
-        self.appBarViewController.parentViewController.view.bounds.size.width;
-    self.appBarViewController.view.frame = frame;
-    [self.view addSubview:self.appBarViewController.view];
-    [self.appBarViewController didMoveToParentViewController:self];
-  }
 }
 
 - (void)startLoadingIndicatorWithLoadingMessage:(NSString*)loadingMessage {
