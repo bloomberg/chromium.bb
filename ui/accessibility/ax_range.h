@@ -104,6 +104,11 @@ class AXRange {
       return base::string16();
 
     text = text.substr(start_offset, base::string16::npos);
+
+    // If the loop above traversed the entire range, don't trim
+    if (*start == *end && !start->IsNullPosition())
+      return text;
+
     size_t text_length = text.length() - end->GetInnerText().length() +
                          static_cast<size_t>(end_offset);
     return text.substr(0, text_length);
