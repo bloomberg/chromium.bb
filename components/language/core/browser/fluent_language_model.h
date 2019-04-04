@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_LANGUAGE_CORE_BROWSER_FLUENT_LANGUAGE_MODEL_H_
 #define COMPONENTS_LANGUAGE_CORE_BROWSER_FLUENT_LANGUAGE_MODEL_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
