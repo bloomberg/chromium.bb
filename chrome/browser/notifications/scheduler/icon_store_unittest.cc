@@ -36,7 +36,7 @@ class IconStoreTest : public testing::Test {
     entry.uuid = kEntryId;
     entry.data = kEntryData;
     proto::Icon proto;
-    leveldb_proto::DataToProto(entry, &proto);
+    leveldb_proto::DataToProto(&entry, &proto);
     db_entries_.emplace(kEntryKey, proto);
 
     auto db =

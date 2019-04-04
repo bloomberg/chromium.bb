@@ -11,12 +11,12 @@
 
 namespace leveldb_proto {
 
-void DataToProto(const notifications::IconEntry& icon_entry,
+void DataToProto(notifications::IconEntry* icon_entry,
                  notifications::proto::Icon* proto) {
   IconEntryToProto(icon_entry, proto);
 }
 
-void ProtoToData(const notifications::proto::Icon& proto,
+void ProtoToData(notifications::proto::Icon* proto,
                  notifications::IconEntry* icon_entry) {
   IconProtoToEntry(proto, icon_entry);
 }

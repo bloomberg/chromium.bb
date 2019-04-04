@@ -21,7 +21,7 @@ TEST(ProtoConversionTest, IconProtoToEntry) {
   proto.set_icon(kData);
   IconEntry entry;
 
-  IconProtoToEntry(proto, &entry);
+  IconProtoToEntry(&proto, &entry);
 
   // Verify entry data.
   EXPECT_EQ(entry.uuid, kUuid);
@@ -34,7 +34,7 @@ TEST(ProtoConversionTest, IconEntryToProto) {
   entry.uuid = kUuid;
   IconProto proto;
 
-  IconEntryToProto(entry, &proto);
+  IconEntryToProto(&entry, &proto);
 
   // Verify proto data.
   EXPECT_EQ(proto.icon(), kData);

@@ -14,12 +14,10 @@
 namespace notifications {
 
 // Converts an icon entry to icon proto.
-void IconEntryToProto(const IconEntry& entry,
-                      notifications::proto::Icon* proto);
+void IconEntryToProto(IconEntry* entry, notifications::proto::Icon* proto);
 
 // Converts an icon proto to icon entry.
-void IconProtoToEntry(const proto::Icon& proto,
-                      notifications::IconEntry* entry);
+void IconProtoToEntry(proto::Icon* proto, notifications::IconEntry* entry);
 
 }  // namespace notifications
 

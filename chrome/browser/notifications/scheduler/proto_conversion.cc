@@ -11,20 +11,16 @@
 
 namespace notifications {
 
-void IconEntryToProto(const IconEntry& entry,
-                      notifications::proto::Icon* proto) {
-  proto->set_uuid(entry.uuid);
-
-  // Copy large chunk of data to proto.
-  proto->set_icon(entry.data);
+void IconEntryToProto(IconEntry* entry, notifications::proto::Icon* proto) {
+  proto->mutable_uuid()->swap(entry->uuid);
+  proto->mutable_icon()->swap(entry->data);
 }
 
-void IconProtoToEntry(const proto::Icon& proto,
-                      notifications::IconEntry* entry) {
-  DCHECK(proto.has_uuid());
-  DCHECK(proto.has_icon());
-  entry->data = proto.icon();
-  entry->uuid = proto.uuid();
+void IconProtoToEntry(proto::Icon* proto, notifications::IconEntry* entry) {
+  DCHECK(proto->has_uuid());
+  DCHECK(proto->has_icon());
+  entry->data.swap(*proto->mutable_icon());
+  entry->uuid.swap(*proto->mutable_uuid());
 }
 
 }  // namespace notifications
