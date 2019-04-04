@@ -26,6 +26,10 @@ const LANGUAGE_SETTING_IS_SHOWN_UMA_NAME = 'Translate.LanguageSettingsIsShown';
 Polymer({
   is: 'settings-languages-page',
 
+  behaviors: [
+    PrefsBehavior,
+  ],
+
   properties: {
     /**
      * Preferences state.
@@ -543,6 +547,17 @@ Polymer({
     if (this.prefs == undefined) {
       return;
     }
+
+    // <if expr="_google_chrome">
+    // When spell check is disabled, automatically disable using the spelling
+    // service. This resets the spell check option to 'Use basic spell check'
+    // when spell check is turned off. This check is in an observer so that it
+    // can also correct any users who land on the Settings page and happen
+    // to have spelling service enabled but spell check disabled.
+    if (!this.getPref('browser.enable_spellchecking').value) {
+      this.setPrefValue('spellcheck.use_spelling_service', false);
+    }
+    // </if>
   },
 
   /**

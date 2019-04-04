@@ -696,6 +696,15 @@ cr.define('languages_page_tests', function() {
             previousValue,
             languagesPage.prefs.spellcheck.use_spelling_service.value);
       });
+
+      test('disabling spell check turns off spelling service', () => {
+        languageHelper.setPrefValue('browser.enable_spellchecking', true);
+        languageHelper.setPrefValue('spellcheck.use_spelling_service', true);
+        languagesPage.$.enableSpellcheckingToggle.click();
+        Polymer.dom.flush();
+        assertFalse(
+            languageHelper.getPref('spellcheck.use_spelling_service').value);
+      });
     });
   });
 

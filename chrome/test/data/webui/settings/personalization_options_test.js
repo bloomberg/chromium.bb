@@ -77,6 +77,17 @@ cr.define('settings_personalization_options', function() {
       testElement.prefs = {spellcheck: {dictionaries: {value: []}}};
       Polymer.dom.flush();
       assertTrue(testElement.$.spellCheckControl.hidden);
+
+      testElement.prefs = {
+        browser: {enable_spellchecking: {value: false}},
+        spellcheck: {
+          dictionaries: {value: ['en-US']},
+          use_spelling_service: {value: false}
+        }
+      };
+      Polymer.dom.flush();
+      testElement.$.spellCheckControl.click();
+      assertTrue(testElement.prefs.spellcheck.use_spelling_service.value);
     });
 
     test('NoUnifiedConsent spellcheck toggle', function() {
@@ -88,6 +99,14 @@ cr.define('settings_personalization_options', function() {
       testElement.prefs = {spellcheck: {dictionaries: {value: []}}};
       Polymer.dom.flush();
       assertFalse(testElement.$.spellCheckControl.hidden);
+
+      testElement.prefs = {
+        browser: {enable_spellchecking: {value: false}},
+        spellcheck: {use_spelling_service: {value: false}}
+      };
+      Polymer.dom.flush();
+      testElement.$.spellCheckControl.click();
+      assertTrue(testElement.prefs.spellcheck.use_spelling_service.value);
     });
   });
 });
