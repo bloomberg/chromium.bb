@@ -422,7 +422,6 @@ class WorkspaceInitSDKStageTest(WorkspaceStageBase):
             '--cache-dir', '/cache',
         ],
         extra_env={
-            'IGNORE_PREFLIGHT_BINHOST': '1',
             'USE': '-cros-debug chrome_internal chromeless_tty',
             'FEATURES': 'separatedebug',
         },
@@ -447,7 +446,6 @@ class WorkspaceInitSDKStageTest(WorkspaceStageBase):
             '--chrome_root', '/chrome',
         ],
         extra_env={
-            'IGNORE_PREFLIGHT_BINHOST': '1',
             'USE': '-cros-debug chrome_internal chromeless_tty',
             'FEATURES': 'separatedebug',
             'CHROME_ORIGIN': 'LOCAL_SOURCE',
@@ -478,7 +476,6 @@ class WorkspaceUpdateSDKStageTest(WorkspaceStageBase):
         enter_chroot=True,
         chroot_args=['--cache-dir', '/cache'],
         extra_env={
-            'IGNORE_PREFLIGHT_BINHOST': '1',
             'USE': '-cros-debug chrome_internal chromeless_tty',
             'FEATURES': 'separatedebug -separatedebug splitdebug',
         },
@@ -500,7 +497,6 @@ class WorkspaceUpdateSDKStageTest(WorkspaceStageBase):
         enter_chroot=True,
         chroot_args=['--cache-dir', '/cache'],
         extra_env={
-            'IGNORE_PREFLIGHT_BINHOST': '1',
             'CHROME_ORIGIN': 'LOCAL_SOURCE',
             'FEATURES': 'separatedebug -separatedebug splitdebug',
             'USE': '-cros-debug chrome_internal chromeless_tty',
@@ -541,12 +537,10 @@ class WorkspaceSetupBoardStageTest(WorkspaceStageBase):
             '--accept_licenses=@CHROMEOS',
             '--nousepkg',
             '--reuse_pkgs_from_local_boards',
-            '--force',
         ],
         enter_chroot=True,
         chroot_args=['--cache-dir', '/cache'],
         extra_env={
-            'IGNORE_PREFLIGHT_BINHOST': '1',
             'USE': '-cros-debug chrome_internal chromeless_tty',
             'FEATURES': 'separatedebug',
         },
@@ -571,12 +565,10 @@ class WorkspaceSetupBoardStageTest(WorkspaceStageBase):
             '--accept-licenses=@CHROMEOS',
             '--nousepkg',
             '--reuse_pkgs_from_local_boards',
-            '--force',
         ],
         enter_chroot=True,
         chroot_args=['--cache-dir', '/cache'],
         extra_env={
-            'IGNORE_PREFLIGHT_BINHOST': '1',
             'USE': '-cros-debug chrome_internal chromeless_tty',
             'FEATURES': 'separatedebug',
         },
@@ -601,12 +593,10 @@ class WorkspaceSetupBoardStageTest(WorkspaceStageBase):
             '--accept_licenses=@CHROMEOS',
             '--nousepkg',
             '--reuse_pkgs_from_local_boards',
-            '--force',
         ],
         enter_chroot=True,
         chroot_args=['--cache-dir', '/cache', '--chrome_root', '/chrome'],
         extra_env={
-            'IGNORE_PREFLIGHT_BINHOST': '1',
             'USE': '-cros-debug chrome_internal chromeless_tty',
             'FEATURES': 'separatedebug',
             'CHROME_ORIGIN': 'LOCAL_SOURCE',
@@ -632,12 +622,10 @@ class WorkspaceSetupBoardStageTest(WorkspaceStageBase):
             '--accept-licenses=@CHROMEOS',
             '--nousepkg',
             '--reuse_pkgs_from_local_boards',
-            '--force',
         ],
         enter_chroot=True,
         chroot_args=['--cache-dir', '/cache', '--chrome_root', '/chrome'],
         extra_env={
-            'IGNORE_PREFLIGHT_BINHOST': '1',
             'USE': '-cros-debug chrome_internal chromeless_tty',
             'FEATURES': 'separatedebug',
             'CHROME_ORIGIN': 'LOCAL_SOURCE',
@@ -676,7 +664,6 @@ class WorkspaceBuildPackagesStageTest(WorkspaceStageBase):
         enter_chroot=True,
         chroot_args=['--cache-dir', '/cache'],
         extra_env={
-            'IGNORE_PREFLIGHT_BINHOST': '1',
             'USE': u'-cros-debug chrome_internal chromeless_tty',
             'FEATURES': 'separatedebug',
         },
@@ -709,7 +696,6 @@ class WorkspaceBuildPackagesStageTest(WorkspaceStageBase):
         enter_chroot=True,
         chroot_args=['--cache-dir', '/cache'],
         extra_env={
-            'IGNORE_PREFLIGHT_BINHOST': '1',
             'USE': u'-cros-debug chrome_internal chromeless_tty',
             'FEATURES': 'separatedebug',
         },
@@ -744,7 +730,6 @@ class WorkspaceBuildPackagesStageTest(WorkspaceStageBase):
         enter_chroot=True,
         chroot_args=['--cache-dir', '/cache', '--chrome_root', '/chrome'],
         extra_env={
-            'IGNORE_PREFLIGHT_BINHOST': '1',
             'USE': u'-cros-debug chrome_internal',
             'FEATURES': 'separatedebug',
             'CHROME_ORIGIN': 'LOCAL_SOURCE',
@@ -827,7 +812,6 @@ class WorkspaceBuildImageStageTest(WorkspaceStageBase):
         enter_chroot=True,
         chroot_args=['--cache-dir', '/cache'],
         extra_env={
-            'IGNORE_PREFLIGHT_BINHOST': '1',
             'USE': '-cros-debug chrome_internal',
             'FEATURES': 'separatedebug',
         },
@@ -858,7 +842,6 @@ class WorkspaceBuildImageStageTest(WorkspaceStageBase):
         enter_chroot=True,
         chroot_args=['--cache-dir', '/cache'],
         extra_env={
-            'IGNORE_PREFLIGHT_BINHOST': '1',
             'USE': '-cros-debug chrome_internal',
             'FEATURES': 'separatedebug',
         },
@@ -905,7 +888,6 @@ class WorkspaceDebugSymbolsStageTest(WorkspaceStageBase):
         enter_chroot=True,
         chroot_args=['--cache-dir', '/cache'],
         extra_env={
-            'IGNORE_PREFLIGHT_BINHOST': '1',
             'USE': '-cros-debug chrome_internal',
             'FEATURES': 'separatedebug',
         },

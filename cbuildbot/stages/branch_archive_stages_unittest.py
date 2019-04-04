@@ -248,7 +248,6 @@ class FactoryArchiveStageTest(BranchArchiveStageTestBase):
             self.workspace,
             'board',
             extra_env={
-                'IGNORE_PREFLIGHT_BINHOST': '1',
                 'FEATURES': 'separatedebug',
                 'USE': '-cros-debug chrome_internal',
             }),
@@ -363,7 +362,6 @@ class FactoryArchiveStageTest(BranchArchiveStageTestBase):
             self.workspace,
             'board',
             extra_env={
-                'IGNORE_PREFLIGHT_BINHOST': '1',
                 'FEATURES': 'separatedebug',
                 'USE': '-cros-debug chrome_internal',
             }),
