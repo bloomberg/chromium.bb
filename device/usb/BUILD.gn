@@ -121,7 +121,7 @@ static_library("usb") {
 
   if (is_chromeos) {
     deps += [
-      "//chromeos/dbus",
+      "//chromeos/dbus/permission_broker",
       "//dbus",
     ]
   }

@@ -27,7 +27,7 @@ namespace chromeos {
 // which the user the browser runs under normally wouldn't have access to. For
 // more details on the permission broker see:
 // http://git.chromium.org/gitweb/?p=chromiumos/platform/permission_broker.git
-class COMPONENT_EXPORT(CHROMEOS_DBUS) PermissionBrokerClient {
+class COMPONENT_EXPORT(PERMISSION_BROKER) PermissionBrokerClient {
  public:
   // The ResultCallback is used for both the RequestPathAccess and
   // RequestUsbAccess methods. Its boolean parameter represents the result of
