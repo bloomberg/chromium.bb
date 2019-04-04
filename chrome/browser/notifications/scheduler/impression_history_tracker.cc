@@ -36,7 +36,7 @@ void ImpressionHistoryTrackerImpl::AnalyzeImpressionHistory(
 
   for (auto it = client_state->impressions.begin();
        it != client_state->impressions.end();) {
-    auto* impression = &it->second;
+    auto* impression = &*it;
 
     // Prune out expired impression.
     if (now - impression->create_time > config_.impression_expiration) {

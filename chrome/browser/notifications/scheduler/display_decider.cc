@@ -75,9 +75,7 @@ class DecisionHelper {
       // TODO(xingliu): Ensure deprecated clients will not have data in storage.
       DCHECK(std::find(clients_.begin(), clients_.end(), client_state->type) !=
              clients_.end());
-      for (const auto& impression_it : client_state->impressions) {
-        const auto& impression = impression_it.second;
-
+      for (const auto& impression : client_state->impressions) {
         // Tracks last notification shown to the user.
         if (impression.create_time > last_shown_time) {
           last_shown_time = impression.create_time;

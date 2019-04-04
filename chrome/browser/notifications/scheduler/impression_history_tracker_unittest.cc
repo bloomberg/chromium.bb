@@ -35,8 +35,10 @@ void VerifyClientStates(
     DCHECK(output_it != output.end());
     EXPECT_EQ(*expected.second, *output_it->second)
         << "Unmatch client states: \n"
-        << "Expected:" << expected.second->DebugPrint() << " \n"
-        << "Acutual: " << output_it->second->DebugPrint();
+        << "Expected: \n"
+        << expected.second->DebugPrint() << " \n"
+        << "Acutual: \n"
+        << output_it->second->DebugPrint();
   }
 }
 
@@ -87,16 +89,24 @@ TEST_F(ImpressionHistoryTrackerTest, DeleteExpiredImpression) {
   TestCase test_case;
   auto expired_create_time = base::Time::Now() - base::TimeDelta::FromDays(1) -
                              config().impression_expiration;
+  auto not_expired_time = base::Time::Now() + base::TimeDelta::FromDays(1) -
+                          config().impression_expiration;
+  Impression expired{expired_create_time, UserFeedback::kUnknown,
+                     ImpressionResult::kUnknown, false /* integrated */};
+  Impression not_expired{not_expired_time, UserFeedback::kUnknown,
+                         ImpressionResult::kUnknown, false /* integrated */};
+
   test_case.input = {{SchedulerClientType::kTest1,
                       2 /* current_max_daily_show */,
-                      {{expired_create_time, UserFeedback::kUnknown,
-                        ImpressionResult::kUnknown, false /* integrated */}},
+                      {expired, expired, not_expired},
                       base::nullopt /* suppression_info */}};
 
   // Expired impression created in |expired_create_time| should be deleted.
+  // No change expected on the next impression, which is not expired and no user
+  // feedback .
   test_case.expected = {{SchedulerClientType::kTest1,
                          2 /* current_max_daily_show */,
-                         {},
+                         {not_expired},
                          base::nullopt /* suppression_info */}};
 
   RunTestCase(std::move(test_case));
