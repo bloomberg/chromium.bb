@@ -10,7 +10,6 @@
 #include "base/base_export.h"
 #include "base/profiler/frame.h"
 #include "base/profiler/register_context.h"
-#include "base/profiler/unwind_result.h"
 
 namespace base {
 
