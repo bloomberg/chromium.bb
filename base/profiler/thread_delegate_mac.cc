@@ -230,7 +230,7 @@ UnwindResult ThreadDelegateMac::WalkNativeFrames(
     x86_thread_state64_t* thread_context,
     uintptr_t stack_top,
     ModuleCache* module_cache,
-    std::vector<ProfileBuilder::Frame>* stack) {
+    std::vector<Frame>* stack) {
   // We expect the frame corresponding to the |thread_context| register state to
   // exist within |stack|.
   DCHECK_GT(stack->size(), 0u);

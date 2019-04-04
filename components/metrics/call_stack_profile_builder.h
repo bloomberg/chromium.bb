@@ -75,8 +75,7 @@ class CallStackProfileBuilder : public base::ProfileBuilder {
   // base::ProfileBuilder:
   base::ModuleCache* GetModuleCache() override;
   void RecordMetadata() override;
-  void OnSampleCompleted(
-      std::vector<base::ProfileBuilder::Frame> frames) override;
+  void OnSampleCompleted(std::vector<base::Frame> frames) override;
   void OnProfileCompleted(base::TimeDelta profile_duration,
                           base::TimeDelta sampling_period) override;
 

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/base_export.h"
+#include "base/profiler/frame.h"
 #include "base/sampling_heap_profiler/module_cache.h"
 #include "base/time/time.h"
 
@@ -18,19 +19,6 @@ namespace base {
 // on its own thread so must not block or perform expensive operations.
 class BASE_EXPORT ProfileBuilder {
  public:
-  // Frame represents an individual sampled stack frame with full module
-  // information.
-  struct BASE_EXPORT Frame {
-    Frame(uintptr_t instruction_pointer, const ModuleCache::Module* module);
-    ~Frame();
-
-    // The sampled instruction pointer within the function.
-    uintptr_t instruction_pointer;
-
-    // The module information.
-    const ModuleCache::Module* module;
-  };
-
   ProfileBuilder() = default;
   virtual ~ProfileBuilder() = default;
 

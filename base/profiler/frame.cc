@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/profiler/profile_builder.h"
+#include "base/profiler/frame.h"
 
 namespace base {
 
-ProfileBuilder::Frame::Frame(uintptr_t instruction_pointer,
-                             const ModuleCache::Module* module)
+Frame::Frame(uintptr_t instruction_pointer, const ModuleCache::Module* module)
     : instruction_pointer(instruction_pointer), module(module) {}
 
-ProfileBuilder::Frame::~Frame() = default;
+Frame::~Frame() = default;
 
 }  // namespace base

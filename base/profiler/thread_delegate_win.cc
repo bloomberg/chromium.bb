@@ -200,11 +200,10 @@ std::vector<uintptr_t*> ThreadDelegateWin::GetRegistersToRewrite(
   };
 }
 
-UnwindResult ThreadDelegateWin::WalkNativeFrames(
-    CONTEXT* thread_context,
-    uintptr_t stack_top,
-    ModuleCache* module_cache,
-    std::vector<ProfileBuilder::Frame>* stack) {
+UnwindResult ThreadDelegateWin::WalkNativeFrames(CONTEXT* thread_context,
+                                                 uintptr_t stack_top,
+                                                 ModuleCache* module_cache,
+                                                 std::vector<Frame>* stack) {
   // We expect the frame corresponding to the |thread_context| register state to
   // exist within |stack|.
   DCHECK_GT(stack->size(), 0u);

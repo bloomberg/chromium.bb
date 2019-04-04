@@ -50,7 +50,7 @@ TracingSamplerProfiler::TracingProfileBuilder::GetModuleCache() {
 }
 
 void TracingSamplerProfiler::TracingProfileBuilder::OnSampleCompleted(
-    std::vector<base::ProfileBuilder::Frame> frames) {
+    std::vector<base::Frame> frames) {
   int process_priority = base::Process::Current().GetPriority();
   TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
                        "ProcessPriority", TRACE_EVENT_SCOPE_THREAD, "priority",

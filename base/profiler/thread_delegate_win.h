@@ -47,11 +47,10 @@ class BASE_EXPORT ThreadDelegateWin : public ThreadDelegate {
   std::vector<uintptr_t*> GetRegistersToRewrite(
       CONTEXT* thread_context) override;
 
-  UnwindResult WalkNativeFrames(
-      CONTEXT* thread_context,
-      uintptr_t stack_top,
-      ModuleCache* module_cache,
-      std::vector<ProfileBuilder::Frame>* stack) override;
+  UnwindResult WalkNativeFrames(CONTEXT* thread_context,
+                                uintptr_t stack_top,
+                                ModuleCache* module_cache,
+                                std::vector<Frame>* stack) override;
 
  private:
   win::ScopedHandle thread_handle_;

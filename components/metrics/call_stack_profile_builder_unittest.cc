@@ -20,8 +20,6 @@ namespace metrics {
 
 namespace {
 
-using Frame = base::ProfileBuilder::Frame;
-
 // Stub module for testing.
 class TestModule : public base::ModuleCache::Module {
  public:
@@ -107,18 +105,18 @@ TEST(CallStackProfileBuilderTest, ProfilingCompleted) {
 
   const uintptr_t module_base_address1 = 0x1000;
   TestModule module1(module_base_address1, "1", module_path);
-  Frame frame1 = {module_base_address1 + 0x10, &module1};
+  base::Frame frame1 = {module_base_address1 + 0x10, &module1};
 
   const uintptr_t module_base_address2 = 0x1100;
   TestModule module2(module_base_address2, "2", module_path);
-  Frame frame2 = {module_base_address2 + 0x10, &module2};
+  base::Frame frame2 = {module_base_address2 + 0x10, &module2};
 
   const uintptr_t module_base_address3 = 0x1010;
   TestModule module3(module_base_address3, "3", module_path);
-  Frame frame3 = {module_base_address3 + 0x10, &module3};
+  base::Frame frame3 = {module_base_address3 + 0x10, &module3};
 
-  std::vector<Frame> frames1 = {frame1, frame2};
-  std::vector<Frame> frames2 = {frame3};
+  std::vector<base::Frame> frames1 = {frame1, frame2};
+  std::vector<base::Frame> frames2 = {frame3};
 
   profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(frames1);
@@ -180,12 +178,12 @@ TEST(CallStackProfileBuilderTest, StacksDeduped) {
       std::make_unique<TestingCallStackProfileBuilder>(kProfileParams);
 
   TestModule module1;
-  Frame frame1 = {0x10, &module1};
+  base::Frame frame1 = {0x10, &module1};
 
   TestModule module2;
-  Frame frame2 = {0x20, &module2};
+  base::Frame frame2 = {0x20, &module2};
 
-  std::vector<Frame> frames = {frame1, frame2};
+  std::vector<base::Frame> frames = {frame1, frame2};
 
   // Two stacks are completed with the same frames therefore they are deduped
   // to one.
@@ -218,13 +216,13 @@ TEST(CallStackProfileBuilderTest, StacksNotDeduped) {
       std::make_unique<TestingCallStackProfileBuilder>(kProfileParams);
 
   TestModule module1;
-  Frame frame1 = {0x10, &module1};
+  base::Frame frame1 = {0x10, &module1};
 
   TestModule module2;
-  Frame frame2 = {0x20, &module2};
+  base::Frame frame2 = {0x20, &module2};
 
-  std::vector<Frame> frames1 = {frame1};
-  std::vector<Frame> frames2 = {frame2};
+  std::vector<base::Frame> frames1 = {frame1};
+  std::vector<base::Frame> frames2 = {frame2};
 
   // Two stacks are completed with the different frames therefore not deduped.
   profile_builder->RecordMetadata();
@@ -256,7 +254,7 @@ TEST(CallStackProfileBuilderTest, Modules) {
       std::make_unique<TestingCallStackProfileBuilder>(kProfileParams);
 
   // A frame with no module.
-  Frame frame1 = {0x1010, nullptr};
+  base::Frame frame1 = {0x1010, nullptr};
 
   const uintptr_t module_base_address2 = 0x1100;
 #if defined(OS_WIN)
@@ -267,9 +265,9 @@ TEST(CallStackProfileBuilderTest, Modules) {
   base::FilePath module_path("/some/path/to/chrome");
 #endif
   TestModule module2(module_base_address2, "2", module_path);
-  Frame frame2 = {module_base_address2 + 0x10, &module2};
+  base::Frame frame2 = {module_base_address2 + 0x10, &module2};
 
-  std::vector<Frame> frames = {frame1, frame2};
+  std::vector<base::Frame> frames = {frame1, frame2};
 
   profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(frames);
@@ -316,10 +314,10 @@ TEST(CallStackProfileBuilderTest, DedupModules) {
 #endif
 
   TestModule module(module_base_address, "1", module_path);
-  Frame frame1 = {module_base_address + 0x10, &module};
-  Frame frame2 = {module_base_address + 0x20, &module};
+  base::Frame frame1 = {module_base_address + 0x10, &module};
+  base::Frame frame2 = {module_base_address + 0x20, &module};
 
-  std::vector<Frame> frames = {frame1, frame2};
+  std::vector<base::Frame> frames = {frame1, frame2};
 
   profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(frames);
@@ -368,7 +366,7 @@ TEST(CallStackProfileBuilderTest, WorkIds) {
       kProfileParams, &work_id_recorder);
 
   TestModule module;
-  Frame frame = {0x10, &module};
+  base::Frame frame = {0x10, &module};
 
   // Id 0 means the message loop hasn't been started yet, so the sample should
   // not have continued_work set.
@@ -419,7 +417,7 @@ TEST(CallStackProfileBuilderTest, MetadataRecorder) {
       kProfileParams, nullptr, &metadata_recorder);
 
   TestModule module;
-  Frame frame = {0x10, &module};
+  base::Frame frame = {0x10, &module};
 
   metadata_recorder.current_value = 5;
   profile_builder->OnSampleCompleted({frame});

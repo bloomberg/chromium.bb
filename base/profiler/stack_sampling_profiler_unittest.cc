@@ -63,7 +63,6 @@ namespace base {
 #endif
 
 using SamplingParams = StackSamplingProfiler::SamplingParams;
-using Frame = ProfileBuilder::Frame;
 using Frames = std::vector<Frame>;
 using FrameSets = std::vector<std::vector<Frame>>;
 

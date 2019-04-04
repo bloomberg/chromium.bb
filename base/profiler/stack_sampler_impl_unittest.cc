@@ -96,11 +96,10 @@ class TestThreadDelegate : public ThreadDelegate {
     return {&RegisterContextFramePointer(thread_context)};
   }
 
-  UnwindResult WalkNativeFrames(
-      RegisterContext* thread_context,
-      uintptr_t stack_top,
-      ModuleCache* module_cache,
-      std::vector<ProfileBuilder::Frame>* stack) override {
+  UnwindResult WalkNativeFrames(RegisterContext* thread_context,
+                                uintptr_t stack_top,
+                                ModuleCache* module_cache,
+                                std::vector<Frame>* stack) override {
     if (stack_copy_) {
       auto* bottom = reinterpret_cast<uintptr_t*>(
           RegisterContextStackPointer(thread_context));

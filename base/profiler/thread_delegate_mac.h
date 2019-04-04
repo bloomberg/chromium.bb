@@ -47,11 +47,10 @@ class BASE_EXPORT ThreadDelegateMac : public ThreadDelegate {
   std::vector<uintptr_t*> GetRegistersToRewrite(
       x86_thread_state64_t* thread_context) override;
 
-  UnwindResult WalkNativeFrames(
-      x86_thread_state64_t* thread_context,
-      uintptr_t stack_top,
-      ModuleCache* module_cache,
-      std::vector<ProfileBuilder::Frame>* stack) override;
+  UnwindResult WalkNativeFrames(x86_thread_state64_t* thread_context,
+                                uintptr_t stack_top,
+                                ModuleCache* module_cache,
+                                std::vector<Frame>* stack) override;
 
  private:
   // Weak reference: Mach port for thread being profiled.

@@ -192,15 +192,13 @@ TEST(TracingProfileBuilderTest, ValidModule) {
   TestModule module;
   TracingSamplerProfiler::TracingProfileBuilder profile_builder(
       (base::PlatformThreadId()));
-  profile_builder.OnSampleCompleted(
-      {base::ProfileBuilder::Frame(0x1010, &module)});
+  profile_builder.OnSampleCompleted({base::Frame(0x1010, &module)});
 }
 
 TEST(TracingProfileBuilderTest, InvalidModule) {
   TracingSamplerProfiler::TracingProfileBuilder profile_builder(
       (base::PlatformThreadId()));
-  profile_builder.OnSampleCompleted(
-      {base::ProfileBuilder::Frame(0x1010, nullptr)});
+  profile_builder.OnSampleCompleted({base::Frame(0x1010, nullptr)});
 }
 
 }  // namespace tracing
