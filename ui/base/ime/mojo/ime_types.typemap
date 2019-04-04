@@ -18,7 +18,6 @@ public_deps = [
   "//ui/base/ime",
 ]
 deps = [
-  "//ui/base/ime",
   "//ui/gfx/range",
 ]
 
