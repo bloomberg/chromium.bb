@@ -134,9 +134,6 @@ class NET_EXPORT CertVerifyProc
                              const CertificateList& additional_trust_anchors,
                              CertVerifyResult* verify_result) = 0;
 
-  // Returns true if |cert| is explicitly blacklisted.
-  static bool IsBlacklisted(X509Certificate* cert);
-
   // HasNameConstraintsViolation returns true iff one of |public_key_hashes|
   // (which are hashes of SubjectPublicKeyInfo structures) has name constraints
   // imposed on it and the names in |dns_names| are not permitted.
