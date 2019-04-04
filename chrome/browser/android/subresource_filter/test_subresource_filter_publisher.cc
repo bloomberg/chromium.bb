@@ -19,6 +19,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "components/subresource_filter/content/browser/ruleset_service.h"
 #include "components/subresource_filter/core/common/unindexed_ruleset.h"
@@ -70,6 +71,9 @@ void JNI_TestSubresourceFilterPublisher_CreateAndPublishRulesetDisallowingSuffix
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::android::ScopedJavaGlobalRef<jobject> publisher;
   publisher.Reset(env, publisher_param);
+
+  // Set the startup as complete, so tasks execute immediately.
+  AfterStartupTaskUtils::SetBrowserStartupIsCompleteForTesting();
 
   // Create the ruleset contents.
   std::string ruleset_contents_str;
