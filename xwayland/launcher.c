@@ -40,7 +40,6 @@
 #include <libweston/xwayland-api.h>
 #include "shared/helpers.h"
 #include "shared/string-helpers.h"
-#include "compositor/weston.h"
 
 static int
 weston_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
