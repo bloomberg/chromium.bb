@@ -810,6 +810,16 @@ TEST_P(PaintPropertyTreeBuilderTest, WillChangeContents) {
                           GetDocument().View()->GetLayoutView());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, NoEffectAndFilterForNonStackingContext) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="target" style="will-change: right; backface-visibility: hidden">
+    </div>
+  )HTML");
+  EXPECT_NE(nullptr, PaintPropertiesForElement("target")->Transform());
+  EXPECT_EQ(nullptr, PaintPropertiesForElement("target")->Effect());
+  EXPECT_EQ(nullptr, PaintPropertiesForElement("target")->Filter());
+}
+
 TEST_P(PaintPropertyTreeBuilderTest, RelativePositionInline) {
   LoadTestData("relative-position-inline.html");
 
@@ -4711,7 +4721,7 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformOriginWithAndWithoutTransform) {
         transform-origin: 75% 75% 0;
       }
       #willChange {
-        will-change: opacity;
+        will-change: transform;
         transform-origin: 75% 75% 0;
       }
     </style>
@@ -4750,7 +4760,7 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformOriginWithAndWithoutMotionPath) {
         transform-origin: 50% 50% 0;
       }
       #willChange {
-        will-change: opacity;
+        will-change: transform;
         transform-origin: 50% 50% 0;
       }
     </style>
