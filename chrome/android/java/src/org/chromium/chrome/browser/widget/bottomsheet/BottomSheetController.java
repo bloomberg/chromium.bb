@@ -242,7 +242,7 @@ public class BottomSheetController {
      * the browser (i.e. the tab switcher may be showing).
      */
     private void unsuppressSheet() {
-        if (!mIsSuppressed || mTabProvider.getActivityTab() == null || !mWasShownForCurrentTab
+        if (!mIsSuppressed || mTabProvider.get() == null || !mWasShownForCurrentTab
                 || isOtherUIObscuring() || VrModuleProvider.getDelegate().isInVr()) {
             return;
         }
@@ -296,7 +296,7 @@ public class BottomSheetController {
      */
     private boolean loadInternal(BottomSheetContent content) {
         if (content == mBottomSheet.getCurrentSheetContent()) return true;
-        if (mTabProvider.getActivityTab() == null) return false;
+        if (mTabProvider.get() == null) return false;
 
         BottomSheetContent shownContent = mBottomSheet.getCurrentSheetContent();
         boolean shouldSuppressExistingContent = shownContent != null

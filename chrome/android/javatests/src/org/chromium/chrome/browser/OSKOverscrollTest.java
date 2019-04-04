@@ -151,7 +151,7 @@ public class OSKOverscrollTest {
                 int viewportHeightAfterCss = getViewportHeight(webContentsRef.get());
                 int keyboardHeight = mActivityTestRule.getActivity()
                                              .getActivityTabProvider()
-                                             .getActivityTab()
+                                             .get()
                                              .getWebContents()
                                              .getViewAndroidDelegate()
                                              .getSystemWindowInsetBottom();

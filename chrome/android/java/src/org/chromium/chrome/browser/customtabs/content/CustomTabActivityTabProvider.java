@@ -50,7 +50,7 @@ public class CustomTabActivityTabProvider {
     /**
      * Returns tab currently managed by the Custom Tab activity.
      *
-     * The difference from {@link ActivityTabProvider#getActivityTab()} is that we may have acquired
+     * The difference from {@link ActivityTabProvider#get()} is that we may have acquired
      * a hidden tab (see {@link CustomTabsConnection#takeHiddenTab}), which is not yet added to a
      * {@link TabModel}. In that case this method returns the hidden tab, and ActivityTabProvider
      * returns null.

@@ -72,7 +72,7 @@ public class CustomTabBrowserControlsVisibilityDelegate
     }
 
     private void updateActiveTabFullscreenEnabledState() {
-        Tab activeTab = mTabProvider.getActivityTab();
+        Tab activeTab = mTabProvider.get();
         if (activeTab != null) {
             activeTab.updateFullscreenEnabledState();
         }

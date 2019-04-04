@@ -162,7 +162,7 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
     }
 
     public void changeTab(Tab newTab) {
-        when(activityTabProvider.getActivityTab()).thenReturn(newTab);
+        when(activityTabProvider.get()).thenReturn(newTab);
         for (ActivityTabObserver observer : activityTabObserverCaptor.getAllValues()) {
             observer.onActivityTabChanged(newTab, false);
         }
