@@ -1432,7 +1432,7 @@ if (!android_64bit_target_cpu ||
     is_bundle = true
   }
 
-  if (android_64bit_target_cpu && enable_64_bit_browser) {
+  if (android_64bit_target_cpu) {
     group("monochrome_64_secondary_abi_lib") {
       public_deps = [
         ":monochrome_64($android_secondary_abi_toolchain)",
@@ -1446,13 +1446,11 @@ if (!android_64bit_target_cpu ||
   }
 } else {
   # 64-bit browser library targets (APK and bundle).
-  if (enable_64_bit_browser) {
-    libmonochrome_apk_or_bundle_tmpl("monochrome_64") {
-      is_bundle = false
-    }
-    libmonochrome_apk_or_bundle_tmpl("monochrome_64_base") {
-      is_bundle = true
-    }
+  libmonochrome_apk_or_bundle_tmpl("monochrome_64") {
+    is_bundle = false
+  }
+  libmonochrome_apk_or_bundle_tmpl("monochrome_64_base") {
+    is_bundle = true
   }
 
   # 32-bit browser library alias targets, pulled in by 64-bit WebView builds.
@@ -2187,7 +2185,7 @@ if (is_official_build) {
   }
 }
 
-if (android_64bit_target_cpu && enable_64_bit_browser) {
+if (android_64bit_target_cpu) {
   monochrome_public_bundle_tmpl("monochrome_64_public_bundle") {
     bundle_suffix = "64"
     is_64_bit_browser = true
