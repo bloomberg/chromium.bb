@@ -16,6 +16,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_handle.h"
@@ -1053,6 +1054,21 @@ bool DCLayerTree::SwapChainPresenter::PresentToDecodeSwapChain(
       D3D11_TEXTURE2D_DESC texture_desc = {};
       base::debug::Alias(&texture_desc);
       image_dxgi->texture()->GetDesc(&texture_desc);
+      static crash_reporter::CrashKeyString<32> texture_size_key(
+          "texture-size");
+      texture_size_key.Set(
+          gfx::Size(texture_desc.Width, texture_desc.Height).ToString());
+      static crash_reporter::CrashKeyString<16> texture_array_size_key(
+          "texture-array-size");
+      texture_array_size_key.Set(
+          base::StringPrintf("%d", texture_desc.ArraySize));
+      static crash_reporter::CrashKeyString<16> texture_bind_flags_key(
+          "texture-bind-flags");
+      texture_bind_flags_key.Set(
+          base::StringPrintf("%#x", texture_desc.BindFlags));
+      static crash_reporter::CrashKeyString<16> texture_usage_key(
+          "texture-usage-key");
+      texture_usage_key.Set(base::StringPrintf("%#x", texture_desc.Usage));
       base::debug::DumpWithoutCrashing();
       return false;
     }
