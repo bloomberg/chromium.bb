@@ -26,12 +26,6 @@ const base::Feature kWKHTTPSystemCookieStore{"WKHTTPSystemCookieStore",
 const base::Feature kCrashOnUnexpectedURLChange{
     "CrashOnUnexpectedURLChange", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kBrowserContainerFullscreen{
-    "BrowserContainerFullscreen", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kOutOfWebFullscreen{"OutOfWebFullscreen",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kHistoryClobberWorkaround{
     "WKWebViewHistoryClobberWorkaround", base::FEATURE_ENABLED_BY_DEFAULT};
 

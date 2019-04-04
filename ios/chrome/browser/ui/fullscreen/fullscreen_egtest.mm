@@ -114,14 +114,10 @@ void AssertURLIs(const GURL& expectedURL) {
       yOffset = -56.0;
     }
   }
-  if (base::FeatureList::IsEnabled(
-          web::features::kBrowserContainerFullscreen) &&
-      base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen) &&
-      base::ios::IsRunningOnIOS12OrLater()) {
-    // In the fullscreen browser implementation, the safe area is included in
-    // the top inset as well as the toolbar heights.  Due to crbug.com/903635,
-    // however, this only occurs on iOS 12; pdf rendering does not correctly
-    // account for the safe area on iOS 11.
+  if (@available(iOS 12, *)) {
+    // The safe area is included in the top inset as well as the toolbar
+    // heights.  Due to crbug.com/903635, however, this only occurs on iOS 12;
+    // pdf rendering does not correctly account for the safe area on iOS 11.
     yOffset -=
         chrome_test_util::GetCurrentWebState()->GetView().safeAreaInsets.top;
   }
