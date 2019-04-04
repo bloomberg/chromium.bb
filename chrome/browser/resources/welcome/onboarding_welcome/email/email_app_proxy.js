@@ -5,16 +5,6 @@
 cr.define('nux', function() {
   /** @implements {nux.AppProxy} */
   class EmailAppProxyImpl {
-    constructor() {
-      /** @private {number} */
-      this.savedProvider_;
-    }
-
-    /** @return {number} */
-    getSavedProvider() {
-      return this.savedProvider_;
-    }
-
     /** @override */
     cacheBookmarkIcon(emailProviderId) {
       chrome.send('cacheEmailIcon', [emailProviderId]);
@@ -27,7 +17,6 @@ cr.define('nux', function() {
 
     /** @override */
     recordProviderSelected(providerId) {
-      this.savedProvider_ = providerId;
       chrome.metricsPrivate.recordEnumerationValue(
           'FirstRun.NewUserExperience.EmailProvidersSelection', providerId,
           loadTimeData.getInteger('email_providers_enum_count'));
