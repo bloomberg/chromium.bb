@@ -69,7 +69,6 @@
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
-#import "ios/chrome/browser/tabs/tab_dialog_delegate.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
@@ -379,7 +378,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                      PreloadControllerDelegate,
                                      SideSwipeControllerDelegate,
                                      SnapshotGeneratorDelegate,
-                                     TabDialogDelegate,
                                      TabModelObserver,
                                      TabStripPresentation,
                                      ToolbarHeightProviderForFullscreen,
@@ -2727,7 +2725,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     passwordTabHelper->SetPasswordControllerDelegate(self);
   }
 
-  tab.dialogDelegate = self;
   if (!IsIPadIdiom()) {
     OverscrollActionsTabHelper::FromWebState(tab.webState)->SetDelegate(self);
   }
@@ -2782,7 +2779,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     passwordTabHelper->SetDispatcher(nil);
   }
 
-  tab.dialogDelegate = nil;
   if (!IsIPadIdiom()) {
     OverscrollActionsTabHelper::FromWebState(tab.webState)->SetDelegate(nil);
   }
@@ -4714,12 +4710,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
           didFinishWithResult:(MFMailComposeResult)result
                         error:(NSError*)error {
   [self dismissViewControllerAnimated:YES completion:nil];
-}
-
-#pragma mark - TabDialogDelegate methods
-
-- (void)cancelDialogForTab:(Tab*)tab {
-  [self.dialogPresenter cancelDialogForWebState:tab.webState];
 }
 
 #pragma mark - LogoAnimationControllerOwnerOwner (Public)

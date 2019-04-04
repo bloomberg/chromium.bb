@@ -56,7 +56,6 @@
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
-#import "ios/chrome/browser/tabs/tab_dialog_delegate.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
 #include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
@@ -133,8 +132,6 @@ NSString* const kTabUrlKey = @"url";
 
 @implementation Tab
 
-@synthesize dialogDelegate = dialogDelegate_;
-
 #pragma mark - Initializers
 
 - (instancetype)initWithWebState:(web::WebState*)webState {
@@ -193,16 +190,7 @@ NSString* const kTabUrlKey = @"url";
 
 - (void)webState:(web::WebState*)webState
     didStartNavigation:(web::NavigationContext*)navigation {
-
-  [self.dialogDelegate cancelDialogForTab:self];
   [_openInController disable];
-}
-
-- (void)webState:(web::WebState*)webState
-    didFinishNavigation:(web::NavigationContext*)navigation {
-  if (navigation->HasCommitted() && !navigation->IsSameDocument()) {
-    [self.dialogDelegate cancelDialogForTab:self];
-  }
 }
 
 - (void)webState:(web::WebState*)webState
@@ -214,19 +202,11 @@ NSString* const kTabUrlKey = @"url";
   }
 }
 
-- (void)renderProcessGoneForWebState:(web::WebState*)webState {
-  DCHECK(webState == _webStateImpl);
-  [self.dialogDelegate cancelDialogForTab:self];
-}
-
 - (void)webStateDestroyed:(web::WebState*)webState {
   DCHECK_EQ(_webStateImpl, webState);
 
   [_openInController detachFromWebState];
   _openInController = nil;
-
-  // Cancel any queued dialogs.
-  [self.dialogDelegate cancelDialogForTab:self];
 
   _webStateImpl->RemoveObserver(_webStateObserver.get());
   _webStateObserver.reset();
