@@ -62,6 +62,7 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
+#include "ui/display/display_observer.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -271,23 +272,25 @@ class ShelfDragCallback {
   DISALLOW_COPY_AND_ASSIGN(ShelfDragCallback);
 };
 
-class ShelfLayoutObserverTest : public ShelfLayoutManagerObserver {
+class TestDisplayObserver : public display::DisplayObserver {
  public:
-  ShelfLayoutObserverTest() : changed_auto_hide_state_(false) {}
+  TestDisplayObserver() { display::Screen::GetScreen()->AddObserver(this); }
+  ~TestDisplayObserver() override {
+    display::Screen::GetScreen()->RemoveObserver(this);
+  }
 
-  ~ShelfLayoutObserverTest() override = default;
-
-  bool changed_auto_hide_state() const { return changed_auto_hide_state_; }
+  int metrics_change_count() const { return metrics_change_count_; }
 
  private:
   // ShelfLayoutManagerObserver:
-  void OnAutoHideStateChanged(ShelfAutoHideState new_state) override {
-    changed_auto_hide_state_ = true;
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t changed_metrics) override {
+    metrics_change_count_++;
   }
 
-  bool changed_auto_hide_state_;
+  int metrics_change_count_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(ShelfLayoutObserverTest);
+  DISALLOW_COPY_AND_ASSIGN(TestDisplayObserver);
 };
 
 class WallpaperShownWaiter : public WallpaperControllerObserver {
@@ -2970,6 +2973,72 @@ TEST_F(ShelfLayoutManagerKeyboardTest, ShelfShouldChangeWorkAreaInStickyMode) {
   // Work area should be reset to its original value.
   EXPECT_EQ(orig_work_area,
             display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
+}
+
+namespace {
+
+class OverviewAnimationWaiter : public OverviewObserver {
+ public:
+  OverviewAnimationWaiter() {
+    Shell::Get()->overview_controller()->AddObserver(this);
+  }
+
+  ~OverviewAnimationWaiter() override {
+    Shell::Get()->overview_controller()->RemoveObserver(this);
+  }
+
+  // Note this could only be called once because RunLoop would not run after
+  // Quit is called. Create a new instance if there's need to wait again.
+  void Wait() { run_loop_.Run(); }
+
+  // OverviewObserver:
+  void OnOverviewModeStartingAnimationComplete(bool cancel) override {
+    run_loop_.Quit();
+  }
+  void OnOverviewModeEndingAnimationComplete(bool cancel) override {
+    run_loop_.Quit();
+  }
+
+ private:
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(OverviewAnimationWaiter);
+};
+
+}  // namespace
+
+// Make sure we don't update the work area during overview animation
+// (crbug.com/947343).
+TEST_F(ShelfLayoutManagerTest, NoShelfUpdateDuringOverviewAnimation) {
+  // Finish lid detection task.
+  base::RunLoop().RunUntilIdle();
+  TabletModeControllerTestApi().EnterTabletMode();
+  // Run overview animations.
+  ui::ScopedAnimationDurationScaleMode regular_animations(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  std::unique_ptr<aura::Window> window1(AshTestBase::CreateTestWindow());
+  std::unique_ptr<aura::Window> fullscreen(AshTestBase::CreateTestWindow());
+  fullscreen->SetProperty(aura::client::kShowStateKey,
+                          ui::SHOW_STATE_FULLSCREEN);
+  wm::ActivateWindow(fullscreen.get());
+
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  TestDisplayObserver observer;
+  {
+    OverviewAnimationWaiter waiter;
+    overview_controller->ToggleOverview();
+    waiter.Wait();
+  }
+  ASSERT_TRUE(TabletModeControllerTestApi().IsTabletModeStarted());
+  EXPECT_EQ(0, observer.metrics_change_count());
+  {
+    OverviewAnimationWaiter waiter;
+    overview_controller->ToggleOverview();
+    waiter.Wait();
+  }
+  ASSERT_TRUE(TabletModeControllerTestApi().IsTabletModeStarted());
+  EXPECT_EQ(0, observer.metrics_change_count());
 }
 
 }  // namespace ash
