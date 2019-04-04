@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/streams/retain_wrapper_during_construction.h"
-#include "third_party/blink/renderer/core/streams/transform_stream_default_controller.h"
+#include "third_party/blink/renderer/core/streams/transform_stream_default_controller_interface.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_transformer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/modules/encoding/encoding.h"
@@ -40,7 +40,7 @@ class TextDecoderStream::Transformer final : public TransformStreamTransformer {
   // Implements the type conversion part of the "decode and enqueue a chunk"
   // algorithm.
   void Transform(v8::Local<v8::Value> chunk,
-                 TransformStreamDefaultController* controller,
+                 TransformStreamDefaultControllerInterface* controller,
                  ExceptionState& exception_state) override {
     ArrayBufferOrArrayBufferView bufferSource;
     V8ArrayBufferOrArrayBufferView::ToImpl(
@@ -68,7 +68,7 @@ class TextDecoderStream::Transformer final : public TransformStreamTransformer {
   }
 
   // Implements the "encode and flush" algorithm.
-  void Flush(TransformStreamDefaultController* controller,
+  void Flush(TransformStreamDefaultControllerInterface* controller,
              ExceptionState& exception_state) override {
     DecodeAndEnqueue(nullptr, 0u, WTF::FlushBehavior::kDataEOF, controller,
                      exception_state);
@@ -85,7 +85,7 @@ class TextDecoderStream::Transformer final : public TransformStreamTransformer {
   void DecodeAndEnqueue(const char* start,
                         uint32_t length,
                         WTF::FlushBehavior flush,
-                        TransformStreamDefaultController* controller,
+                        TransformStreamDefaultControllerInterface* controller,
                         ExceptionState& exception_state) {
     const UChar kBOM = 0xFEFF;
 
