@@ -5,11 +5,12 @@
 #ifndef IOS_CHROME_TEST_EARL_GREY_CHROME_ACTIONS_H_
 #define IOS_CHROME_TEST_EARL_GREY_CHROME_ACTIONS_H_
 
+#import <Foundation/Foundation.h>
+
 #include <string>
 
-#import <EarlGrey/EarlGrey.h>
-
-#include "ios/web/public/test/element_selector.h"
+@class ElementSelector;
+@protocol GREYAction;
 
 namespace chrome_test_util {
 
