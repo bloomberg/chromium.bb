@@ -45884,6 +45884,17 @@ Called by update_net_trust_anchors.py.-->
   <int value="26" label="Placeholder"/>
   <int value="27" label="Unknown"/>
   <int value="28" label="GAIA"/>
+  <int value="29" label="Origami Cat"/>
+  <int value="30" label="Origami Corgi"/>
+  <int value="31" label="Origami Dragon"/>
+  <int value="32" label="Origami Elephant"/>
+  <int value="33" label="Origami Fox"/>
+  <int value="34" label="Origami Monkey"/>
+  <int value="35" label="Origami Panda"/>
+  <int value="36" label="Origami Penguin"/>
+  <int value="37" label="Origami Pink Butterfly"/>
+  <int value="38" label="Origami Rabbit"/>
+  <int value="39" label="Origami Unicorn"/>
 </enum>
 
 <enum name="ProfileAvatarLoadStatus">
