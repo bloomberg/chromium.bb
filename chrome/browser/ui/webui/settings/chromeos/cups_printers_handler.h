@@ -103,10 +103,15 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
 
   void HandleAddCupsPrinter(const base::ListValue* args);
 
+  void HandleReconfigureCupsPrinter(const base::ListValue* args);
+
+  void AddOrReconfigurePrinter(const base::ListValue* args,
+                               bool is_printer_edit);
+
   // Handles the result of adding a printer which the user specified the
   // location of (i.e. a printer that was not 'discovered' automatically).
   void OnAddedOrEditedSpecifiedPrinter(const Printer& printer,
-                                       bool is_existing_printer,
+                                       bool is_printer_edit,
                                        PrinterSetupResult result);
 
   // Handles the result of failure to add a printer. |result_code| is used to
