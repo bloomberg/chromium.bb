@@ -81,11 +81,6 @@ bool IsCacheStorageAllowed(ScriptState* script_state) {
 
 }  // namespace
 
-CacheStorage* CacheStorage::Create(ExecutionContext* context,
-                                   GlobalFetch::ScopedFetcher* fetcher) {
-  return MakeGarbageCollected<CacheStorage>(context, fetcher);
-}
-
 ScriptPromise CacheStorage::open(ScriptState* script_state,
                                  const String& cache_name) {
   int64_t trace_id = blink::cache_storage::CreateTraceId();
@@ -139,10 +134,10 @@ ScriptPromise CacheStorage::open(ScriptState* script_state,
                   TRACE_ID_GLOBAL(trace_id), TRACE_EVENT_FLAG_FLOW_IN, "status",
                   "success");
               // See https://bit.ly/2S0zRAS for task types.
-              resolver->Resolve(
-                  Cache::Create(fetcher, std::move(result->get_cache()),
-                                resolver->GetExecutionContext()->GetTaskRunner(
-                                    blink::TaskType::kMiscPlatformAPI)));
+              resolver->Resolve(MakeGarbageCollected<Cache>(
+                  fetcher, std::move(result->get_cache()),
+                  resolver->GetExecutionContext()->GetTaskRunner(
+                      blink::TaskType::kMiscPlatformAPI)));
             }
           },
           WrapPersistent(resolver), WrapPersistent(scoped_fetcher_.Get()),
