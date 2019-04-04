@@ -71,9 +71,8 @@ scoped_refptr<const NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
   container_builder_.SetBorders(ComputeBorders(ConstraintSpace(), Node()));
   container_builder_.SetPadding(ComputePadding(ConstraintSpace(), Style()));
 
-  NGOutOfFlowLayoutPart(&container_builder_, Node().IsAbsoluteContainer(),
-                        Node().IsFixedContainer(), borders + scrollbars,
-                        ConstraintSpace(), Style())
+  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), borders + scrollbars,
+                        &container_builder_)
       .Run();
 
   // TODO(mstensho): Propagate baselines.

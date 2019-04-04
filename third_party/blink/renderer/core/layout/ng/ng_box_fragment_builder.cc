@@ -20,6 +20,8 @@
 
 namespace blink {
 
+namespace {
+
 using LineBoxPair = std::pair<const NGPhysicalLineBoxFragment*,
                               const NGPhysicalLineBoxFragment*>;
 void GatherInlineContainerFragmentsFromLinebox(
@@ -31,7 +33,7 @@ void GatherInlineContainerFragmentsFromLinebox(
     if (!descendant.fragment->IsBox())
       continue;
     LayoutObject* key = descendant.fragment->GetLayoutObject();
-    // Key for inline is continuation root if it exists.
+    // Key for inline is the continuation root if it exists.
     if (key->IsLayoutInline() && key->GetNode())
       key = key->GetNode()->GetLayoutObject();
     auto it = inline_containing_block_map->find(key);
@@ -69,6 +71,8 @@ void GatherInlineContainerFragmentsFromLinebox(
     }
   }
 }
+
+}  // namespace
 
 void NGBoxFragmentBuilder::RemoveChildren() {
   child_break_tokens_.resize(0);
@@ -258,12 +262,12 @@ scoped_refptr<const NGLayoutResult> NGBoxFragmentBuilder::Abort(
   return base::AdoptRef(new NGLayoutResult(status, this));
 }
 
-// Finds InlineContainingBlockGeometry that define inline containing blocks.
-// |inline_containing_block_map| is a map whose keys specify which
-// inline containing blocks are required.
+// Computes the geometry required for any inline containing blocks.
+// |inline_containing_block_map| is a map whose keys specify which inline
+// containing block geometry is required.
 void NGBoxFragmentBuilder::ComputeInlineContainerFragments(
     InlineContainingBlockMap* inline_containing_block_map) {
-  if (!inline_containing_block_map->size())
+  if (inline_containing_block_map->IsEmpty())
     return;
 
   // This function has detailed knowledge of inline fragment tree structure,
@@ -271,8 +275,8 @@ void NGBoxFragmentBuilder::ComputeInlineContainerFragments(
   DCHECK_GE(InlineSize(), LayoutUnit());
   DCHECK_GE(BlockSize(), LayoutUnit());
 
-  // std::pair.first points to start linebox fragment.
-  // std::pair.second points to ending linebox fragment.
+  // std::pair.first points to the start linebox fragment.
+  // std::pair.second points to the end linebox fragment.
   using LineBoxPair = std::pair<const NGPhysicalLineBoxFragment*,
                                 const NGPhysicalLineBoxFragment*>;
   HashMap<const LayoutObject*, LineBoxPair> containing_linebox_map;
@@ -297,9 +301,8 @@ void NGBoxFragmentBuilder::ComputeInlineContainerFragments(
       // split inlines. The inline container fragments might be inside
       // anonymous boxes. To find inline container fragments, traverse
       // lineboxes inside anonymous box.
-      // For more on this special case, see "css container is an inline,
-      // with inline splitting" comment in
-      // NGOutOfFlowLayoutPart::LayoutDescendant.
+      // For more on this special case, see "css container is an inline, with
+      // inline splitting" comment in NGOutOfFlowLayoutPart::LayoutDescendant.
       const NGPhysicalOffset box_offset = offsets_[i].ConvertToPhysical(
           GetWritingMode(), Direction(),
           ToNGPhysicalSize(Size(), GetWritingMode()), box_fragment->Size());

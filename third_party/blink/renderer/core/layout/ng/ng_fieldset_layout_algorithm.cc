@@ -131,9 +131,8 @@ scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
   container_builder_.SetBorders(borders);
   container_builder_.SetPadding(padding);
 
-  NGOutOfFlowLayoutPart(&container_builder_, Node().IsAbsoluteContainer(),
-                        Node().IsFixedContainer(), borders_with_legend,
-                        ConstraintSpace(), Style())
+  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), borders_with_legend,
+                        &container_builder_)
       .Run();
 
   return container_builder_.ToBoxFragment();

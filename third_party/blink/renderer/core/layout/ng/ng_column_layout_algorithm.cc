@@ -180,9 +180,8 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
     break;
   } while (true);
 
-  NGOutOfFlowLayoutPart(&container_builder_, Node().IsAbsoluteContainer(),
-                        Node().IsFixedContainer(), borders + scrollbars,
-                        ConstraintSpace(), Style())
+  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), borders + scrollbars,
+                        &container_builder_)
       .Run();
 
   // TODO(mstensho): Propagate baselines.

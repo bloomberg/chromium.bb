@@ -274,10 +274,9 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
 
   GiveLinesAndItemsFinalPositionAndSize();
 
-  NGOutOfFlowLayoutPart(&container_builder_, Node().IsAbsoluteContainer(),
-                        Node().IsFixedContainer(),
+  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(),
                         borders_ + Node().GetScrollbarSizes(),
-                        ConstraintSpace(), Style())
+                        &container_builder_)
       .Run();
 
   return container_builder_.ToBoxFragment();
