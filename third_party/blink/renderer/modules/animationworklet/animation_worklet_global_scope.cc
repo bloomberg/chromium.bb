@@ -37,13 +37,6 @@ void UpdateAnimation(v8::Isolate* isolate,
 
 }  // namespace
 
-AnimationWorkletGlobalScope* AnimationWorkletGlobalScope::Create(
-    std::unique_ptr<GlobalScopeCreationParams> creation_params,
-    WorkerThread* thread) {
-  return MakeGarbageCollected<AnimationWorkletGlobalScope>(
-      std::move(creation_params), thread);
-}
-
 AnimationWorkletGlobalScope::AnimationWorkletGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     WorkerThread* thread)

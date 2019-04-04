@@ -6,14 +6,6 @@
 
 namespace blink {
 
-BluetoothLEScan* BluetoothLEScan::Create(
-    mojo::BindingId id,
-    Bluetooth* bluetooth,
-    mojom::blink::WebBluetoothRequestLEScanOptionsPtr options) {
-  return MakeGarbageCollected<BluetoothLEScan>(id, bluetooth,
-                                               std::move(options));
-}
-
 BluetoothLEScan::BluetoothLEScan(
     mojo::BindingId id,
     Bluetooth* bluetooth,
