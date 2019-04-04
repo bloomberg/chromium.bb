@@ -11595,16 +11595,17 @@ TEST_F(WebFrameSimTest, FindInPageSelectNextMatch) {
   frame->EnsureTextFinder().SelectNearestFindMatch(result_rect.Center(),
                                                    nullptr);
 
-  VisualViewport& visual_viewport = local_frame->GetPage()->GetVisualViewport();
-  EXPECT_TRUE(visual_viewport.VisibleRectInDocument().Contains(box1_rect));
-
+  EXPECT_TRUE(frame_view->GetScrollableArea()->VisibleContentRect().Contains(
+      box1_rect));
   result_rect = static_cast<FloatRect>(web_match_rects[1]);
   frame->EnsureTextFinder().SelectNearestFindMatch(result_rect.Center(),
                                                    nullptr);
 
-  EXPECT_TRUE(visual_viewport.VisibleRectInDocument().Contains(box2_rect))
+  EXPECT_TRUE(
+      frame_view->GetScrollableArea()->VisibleContentRect().Contains(box2_rect))
       << "Box [" << box2_rect.ToString() << "] is not visible in viewport ["
-      << visual_viewport.VisibleRectInDocument().ToString() << "]";
+      << frame_view->GetScrollableArea()->VisibleContentRect().ToString()
+      << "]";
 }
 
 // Test bubbling a document (End key) scroll from an inner iframe. This test
@@ -11710,13 +11711,13 @@ TEST_F(WebFrameSimTest, TestScrollFocusedEditableElementIntoView) {
 
   auto* frame = To<LocalFrame>(WebView().GetPage()->MainFrame());
   LocalFrameView* frame_view = frame->View();
-  VisualViewport& visual_viewport = frame->GetPage()->GetVisualViewport();
-  FloatRect inputRect(200, 600, 100, 20);
+  IntRect inputRect(200, 600, 100, 20);
 
   frame_view->GetScrollableArea()->SetScrollOffset(ScrollOffset(0, 0),
                                                    kProgrammaticScroll);
 
-  ASSERT_EQ(FloatPoint(), visual_viewport.VisibleRectInDocument().Location());
+  ASSERT_EQ(FloatPoint(),
+            frame_view->GetScrollableArea()->VisibleContentRect().Location());
 
   WebView()
       .MainFrameImpl()
@@ -11730,7 +11731,8 @@ TEST_F(WebFrameSimTest, TestScrollFocusedEditableElementIntoView) {
           WebView().FakePageScaleAnimationTargetPositionForTesting())),
       kProgrammaticScroll);
 
-  EXPECT_TRUE(visual_viewport.VisibleRectInDocument().Contains(inputRect));
+  EXPECT_TRUE(frame_view->GetScrollableArea()->VisibleContentRect().Contains(
+      inputRect));
 
   // Reset the testing getters.
   WebView().EnableFakePageScaleAnimationForTesting(true);
@@ -11748,7 +11750,8 @@ TEST_F(WebFrameSimTest, TestScrollFocusedEditableElementIntoView) {
   // Now resize the visual viewport so that the input box is no longer in view
   // (e.g. a keyboard is overlayed).
   WebView().MainFrameWidget()->ResizeVisualViewport(IntSize(200, 100));
-  ASSERT_FALSE(visual_viewport.VisibleRectInDocument().Contains(inputRect));
+  ASSERT_FALSE(frame_view->GetScrollableArea()->VisibleContentRect().Contains(
+      inputRect));
 
   WebView()
       .MainFrameImpl()
@@ -11759,7 +11762,8 @@ TEST_F(WebFrameSimTest, TestScrollFocusedEditableElementIntoView) {
           WebView().FakePageScaleAnimationTargetPositionForTesting())),
       kProgrammaticScroll);
 
-  EXPECT_TRUE(visual_viewport.VisibleRectInDocument().Contains(inputRect));
+  EXPECT_TRUE(frame_view->GetScrollableArea()->VisibleContentRect().Contains(
+      inputRect));
   EXPECT_EQ(1, WebView().FakePageScaleAnimationPageScaleForTesting());
 }
 
@@ -11823,11 +11827,13 @@ TEST_F(WebFrameSimTest, TestScrollFocusedEditableInRootScroller) {
   rs_controller.RootScrollerArea()->SetScrollOffset(ScrollOffset(0, 300),
                                                     kProgrammaticScroll);
 
-  FloatRect inputRect(200, 700, 100, 20);
+  LocalFrameView* frame_view = frame->View();
+  IntRect inputRect(200, 700, 100, 20);
   ASSERT_EQ(1, visual_viewport.Scale());
   ASSERT_EQ(FloatPoint(0, 300),
-            visual_viewport.VisibleRectInDocument().Location());
-  ASSERT_FALSE(visual_viewport.VisibleRectInDocument().Contains(inputRect));
+            frame_view->GetScrollableArea()->VisibleContentRect().Location());
+  ASSERT_FALSE(frame_view->GetScrollableArea()->VisibleContentRect().Contains(
+      inputRect));
 
   WebView()
       .MainFrameImpl()
@@ -11842,7 +11848,8 @@ TEST_F(WebFrameSimTest, TestScrollFocusedEditableInRootScroller) {
   rs_controller.RootScrollerArea()->SetScrollOffset(target_offset,
                                                     kProgrammaticScroll);
 
-  EXPECT_TRUE(visual_viewport.VisibleRectInDocument().Contains(inputRect));
+  EXPECT_TRUE(frame_view->GetScrollableArea()->VisibleContentRect().Contains(
+      inputRect));
 }
 
 TEST_F(WebFrameSimTest, ScrollFocusedIntoViewClipped) {
@@ -11905,7 +11912,8 @@ TEST_F(WebFrameSimTest, ScrollFocusedIntoViewClipped) {
   LocalFrameView* frame_view = frame->View();
   VisualViewport& visual_viewport = frame->GetPage()->GetVisualViewport();
 
-  ASSERT_EQ(FloatPoint(), visual_viewport.VisibleRectInDocument().Location());
+  ASSERT_EQ(FloatPoint(),
+            frame_view->GetScrollableArea()->VisibleContentRect().Location());
 
   // Simulate the keyboard being shown and resizing the widget. Cause a scroll
   // into view after.
@@ -11982,7 +11990,7 @@ TEST_F(WebFrameSimTest, DoubleTapZoomWhileScrolled) {
   auto* frame = To<LocalFrame>(WebView().GetPage()->MainFrame());
   LocalFrameView* frame_view = frame->View();
   VisualViewport& visual_viewport = frame->GetPage()->GetVisualViewport();
-  FloatRect target_rect_in_document(2000, 3000, 100, 100);
+  IntRect target_rect_in_document(2000, 3000, 100, 100);
 
   ASSERT_EQ(0.5f, visual_viewport.Scale());
 
@@ -12009,7 +12017,7 @@ TEST_F(WebFrameSimTest, DoubleTapZoomWhileScrolled) {
                                                      kProgrammaticScroll);
 
     EXPECT_FLOAT_EQ(1, visual_viewport.Scale());
-    EXPECT_TRUE(visual_viewport.VisibleRectInDocument().Contains(
+    EXPECT_TRUE(frame_view->GetScrollableArea()->VisibleContentRect().Contains(
         target_rect_in_document));
   }
 
@@ -12023,7 +12031,7 @@ TEST_F(WebFrameSimTest, DoubleTapZoomWhileScrolled) {
     WebRect block_bounds = ComputeBlockBoundHelper(&WebView(), point, false);
     WebView().AnimateDoubleTapZoom(IntPoint(point), block_bounds);
     EXPECT_TRUE(WebView().FakeDoubleTapAnimationPendingForTesting());
-    FloatPoint target_offset(
+    IntPoint target_offset(
         WebView().FakePageScaleAnimationTargetPositionForTesting());
     float new_scale = WebView().FakePageScaleAnimationPageScaleForTesting();
 
