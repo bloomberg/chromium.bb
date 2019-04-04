@@ -12,8 +12,8 @@
 #include "chrome/browser/sync/test/integration/secondary_account_helper.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 
 namespace {

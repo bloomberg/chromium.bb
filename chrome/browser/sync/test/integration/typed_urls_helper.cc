@@ -21,7 +21,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_backend_observer.h"
 #include "components/history/core/browser/history_database.h"

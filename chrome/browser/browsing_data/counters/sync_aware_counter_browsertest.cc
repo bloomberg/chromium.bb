@@ -15,7 +15,6 @@
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/browsing_data/core/counters/autofill_counter.h"
 #include "components/browsing_data/core/counters/history_counter.h"
@@ -24,6 +23,7 @@
 #include "components/history/core/browser/web_history_service.h"
 #include "components/history/core/test/fake_web_history_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "content/public/browser/browser_thread.h"
 
 using browsing_data::BrowsingDataCounter;

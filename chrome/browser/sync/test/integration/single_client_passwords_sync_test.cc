@@ -10,8 +10,8 @@
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 
 using passwords_helper::AddLogin;

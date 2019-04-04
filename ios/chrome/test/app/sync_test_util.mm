@@ -14,12 +14,12 @@
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/sync/device_info/device_info.h"
 #include "components/sync/device_info/device_info_sync_service.h"
 #include "components/sync/device_info/local_device_info_provider.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/engine/net/http_bridge_network_resources.h"
 #include "components/sync/test/fake_server/entity_builder_factory.h"
@@ -54,7 +54,7 @@ void OverrideSyncNetworkResources(
   ios::ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   DCHECK(browser_state);
-  browser_sync::ProfileSyncService* service =
+  syncer::ProfileSyncService* service =
       ProfileSyncServiceFactory::GetAsProfileSyncServiceForBrowserState(
           browser_state);
   service->OverrideNetworkResourcesForTest(std::move(resources));
