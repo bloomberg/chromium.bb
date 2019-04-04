@@ -42,7 +42,7 @@
                 android:id="@+id/bottom_sheet_toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/bottom_sheet_peek_height"
-                android:background="@color/modern_primary_color" />
+                android:background="@color/sheet_bg_color" />
         </view>
 
     </FrameLayout>
