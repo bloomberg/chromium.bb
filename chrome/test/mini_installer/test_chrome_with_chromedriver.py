@@ -136,6 +136,11 @@ def CreateChromedriver(args):
 
 
 def main():
+  # DISABLING
+  # https://crbug.com/949727
+  # DISABLING
+  return 0
+
   """Main entry point."""
   parser = parser = argparse.ArgumentParser(
     description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
