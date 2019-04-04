@@ -205,6 +205,12 @@ inline NGInlineItemResult* NGLineBreaker::AddItem(const NGInlineItem& item,
   return AddItem(item, item.EndOffset(), line_info);
 }
 
+void NGLineBreaker::SetMaxSizeCache(MaxSizeCache* max_size_cache) {
+  DCHECK_NE(mode_, NGLineBreakerMode::kContent);
+  DCHECK(max_size_cache);
+  max_size_cache_ = max_size_cache;
+}
+
 void NGLineBreaker::SetLineEndFragment(
     scoped_refptr<const NGPhysicalTextFragment> fragment,
     NGLineInfo* line_info) {
@@ -1063,6 +1069,8 @@ void NGLineBreaker::HandleAtomicInline(
     LayoutUnit percentage_resolution_block_size_for_min_max,
     NGLineInfo* line_info) {
   DCHECK_EQ(item.Type(), NGInlineItem::kAtomicInline);
+  DCHECK(item.Style());
+  const ComputedStyle& style = *item.Style();
 
   NGInlineItemResult* item_result = AddItem(item, line_info);
   item_result->should_create_line_box = true;
@@ -1078,28 +1086,35 @@ void NGLineBreaker::HandleAtomicInline(
                                 line_info->LineStyle().GetFontBaseline(),
                                 line_info->UseFirstLineStyle());
     DCHECK(item_result->layout_result->PhysicalFragment());
-
     item_result->inline_size =
         NGFragment(constraint_space_.GetWritingMode(),
                    *item_result->layout_result->PhysicalFragment())
             .InlineSize();
+    item_result->margins =
+        ComputeLineMarginsForVisualContainer(constraint_space_, style);
+    item_result->inline_size += item_result->margins.InlineSum();
+  } else if (mode_ == NGLineBreakerMode::kMaxContent && max_size_cache_) {
+    unsigned item_index = &item - Items().begin();
+    item_result->inline_size = (*max_size_cache_)[item_index];
   } else {
     NGBlockNode child(ToLayoutBox(item.GetLayoutObject()));
     MinMaxSizeInput input(percentage_resolution_block_size_for_min_max);
     MinMaxSize sizes =
         ComputeMinAndMaxContentContribution(node_.Style(), child, input);
-    item_result->inline_size = mode_ == NGLineBreakerMode::kMinContent
-                                   ? sizes.min_size
-                                   : sizes.max_size;
-  }
-
-  // For the inline layout purpose, only inline-margins are needed, computed for
-  // the line's writing-mode.
-  if (item.Style()) {
-    const ComputedStyle& style = *item.Style();
-    item_result->margins =
-        ComputeLineMarginsForVisualContainer(constraint_space_, style);
-    item_result->inline_size += item_result->margins.InlineSum();
+    LayoutUnit inline_margins =
+        ComputeLineMarginsForVisualContainer(constraint_space_, style)
+            .InlineSum();
+    if (mode_ == NGLineBreakerMode::kMinContent) {
+      item_result->inline_size = sizes.min_size + inline_margins;
+      if (max_size_cache_) {
+        if (max_size_cache_->IsEmpty())
+          max_size_cache_->resize(Items().size());
+        unsigned item_index = &item - Items().begin();
+        (*max_size_cache_)[item_index] = sizes.max_size + inline_margins;
+      }
+    } else {
+      item_result->inline_size = sizes.max_size + inline_margins;
+    }
   }
 
   trailing_whitespace_ = WhitespaceState::kNone;
