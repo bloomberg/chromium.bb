@@ -537,7 +537,7 @@ public class BottomSheet
                 (TouchRestrictingFrameLayout) findViewById(R.id.bottom_sheet_content);
         mBottomSheetContentContainer.setBottomSheet(this);
         mBottomSheetContentContainer.setBackgroundColor(
-                ApiCompatibilityUtils.getColor(getResources(), R.color.modern_primary_color));
+                ApiCompatibilityUtils.getColor(getResources(), R.color.sheet_bg_color));
 
         mDpToPx = mActivity.getResources().getDisplayMetrics().density;
 
@@ -814,7 +814,7 @@ public class BottomSheet
 
         // Temporarily make the background of the toolbar holder a solid color so the transition
         // doesn't appear to show a hole in the toolbar.
-        int colorId = R.color.modern_primary_color;
+        int colorId = R.color.sheet_bg_color;
         if (!mIsSheetOpen) {
             // If the sheet is closed, the bottom sheet content container is invisible, so
             // background color is needed on the toolbar holder to prevent a blank rectangle from
