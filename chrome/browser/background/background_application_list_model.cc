@@ -159,8 +159,8 @@ BackgroundApplicationListModel::BackgroundApplicationListModel(Profile* profile)
                  content::Source<Profile>(profile));
   extensions::ExtensionSystem::Get(profile_)->ready().Post(
       FROM_HERE,
-      base::Bind(&BackgroundApplicationListModel::OnExtensionSystemReady,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&BackgroundApplicationListModel::OnExtensionSystemReady,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BackgroundApplicationListModel::AddObserver(Observer* observer) {

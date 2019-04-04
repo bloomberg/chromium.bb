@@ -581,9 +581,8 @@ ActivityLog::ActivityLog(content::BrowserContext* context)
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   CheckActive(true);  // use cached
   extension_system_->ready().Post(
-      FROM_HERE,
-      base::Bind(&ActivityLog::OnExtensionSystemReady,
-                 weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&ActivityLog::OnExtensionSystemReady,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void ActivityLog::SetDatabasePolicy(

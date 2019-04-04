@@ -217,8 +217,8 @@ ExtensionUserScriptLoader::ExtensionUserScriptLoader(
     ExtensionSystem::Get(browser_context)
         ->ready()
         .Post(FROM_HERE,
-              base::Bind(&ExtensionUserScriptLoader::OnExtensionSystemReady,
-                         weak_factory_.GetWeakPtr()));
+              base::BindOnce(&ExtensionUserScriptLoader::OnExtensionSystemReady,
+                             weak_factory_.GetWeakPtr()));
   } else {
     SetReady(true);
   }

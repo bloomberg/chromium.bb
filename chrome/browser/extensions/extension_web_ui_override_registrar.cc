@@ -23,9 +23,8 @@ ExtensionWebUIOverrideRegistrar::ExtensionWebUIOverrideRegistrar(
   extension_registry_observer_.Add(ExtensionRegistry::Get(context));
   ExtensionSystem::Get(context)->ready().Post(
       FROM_HERE,
-      base::Bind(&ExtensionWebUIOverrideRegistrar::OnExtensionSystemReady,
-                 weak_factory_.GetWeakPtr(),
-                 context));
+      base::BindOnce(&ExtensionWebUIOverrideRegistrar::OnExtensionSystemReady,
+                     weak_factory_.GetWeakPtr(), context));
 }
 
 ExtensionWebUIOverrideRegistrar::~ExtensionWebUIOverrideRegistrar() {

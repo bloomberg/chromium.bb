@@ -69,9 +69,10 @@ void LockScreenProfileCreatorImpl::InitializeImpl() {
   // before testing for lock screen enabled app existence.
   extensions::ExtensionSystem::Get(primary_profile_)
       ->ready()
-      .Post(FROM_HERE,
-            base::Bind(&LockScreenProfileCreatorImpl::OnExtensionSystemReady,
-                       weak_ptr_factory_.GetWeakPtr()));
+      .Post(
+          FROM_HERE,
+          base::BindOnce(&LockScreenProfileCreatorImpl::OnExtensionSystemReady,
+                         weak_ptr_factory_.GetWeakPtr()));
 }
 
 void LockScreenProfileCreatorImpl::OnExtensionSystemReady() {

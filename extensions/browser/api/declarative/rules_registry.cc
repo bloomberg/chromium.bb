@@ -368,9 +368,8 @@ void RulesRegistry::MaybeProcessChangedRules(const std::string& extension_id) {
 
   process_changed_rules_requested_[extension_id] = SCHEDULED_FOR_PROCESSING;
   ready_.Post(FROM_HERE,
-              base::Bind(&RulesRegistry::ProcessChangedRules,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         extension_id));
+              base::BindOnce(&RulesRegistry::ProcessChangedRules,
+                             weak_ptr_factory_.GetWeakPtr(), extension_id));
 }
 
 bool RulesRegistry::IsUniqueId(const std::string& extension_id,
