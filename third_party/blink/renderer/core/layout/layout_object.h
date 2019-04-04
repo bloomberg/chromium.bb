@@ -1770,6 +1770,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void ImageChanged(ImageResourceContent*, CanDeferInvalidation) final;
   void ImageChanged(WrappedImagePtr, CanDeferInvalidation) override {}
   void ImageNotifyFinished(ImageResourceContent*) override;
+  void NotifyImageFullyRemoved(ImageResourceContent*) override;
   bool WillRenderImage() final;
   bool GetImageAnimationPolicy(ImageAnimationPolicy&) final;
 

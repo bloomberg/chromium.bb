@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/style/style_image.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
@@ -47,34 +48,44 @@ void ImageElementTiming::NotifyImagePainted(
     const LayoutObject* layout_object,
     const ImageResourceContent* cached_image,
     const PropertyTreeState& current_paint_chunk_properties) {
+  DCHECK(layout_object);
   auto result = images_notified_.insert(layout_object);
-  if (!result.is_new_entry || !cached_image)
-    return;
+  if (result.is_new_entry && cached_image) {
+    NotifyImagePaintedInternal(layout_object->GetNode(), *layout_object,
+                               *cached_image, current_paint_chunk_properties);
+  }
+}
 
+void ImageElementTiming::NotifyImagePaintedInternal(
+    const Node* node,
+    const LayoutObject& layout_object,
+    const ImageResourceContent& cached_image,
+    const PropertyTreeState& current_paint_chunk_properties) {
   LocalFrame* frame = GetSupplementable()->GetFrame();
-  DCHECK(frame == layout_object->GetDocument().GetFrame());
-  if (!frame)
+  DCHECK(frame == layout_object.GetDocument().GetFrame());
+  DCHECK(node);
+  // Background images could cause |node| to not be an element. For example,
+  // style applied to body causes this node to be a Document Node. Therefore,
+  // bail out if that is the case.
+  if (!frame || !node->IsElementNode())
     return;
 
   FloatRect intersection_rect = ComputeIntersectionRect(
       frame, layout_object, current_paint_chunk_properties);
-  const Element* element = ToElement(layout_object->GetNode());
+  const Element* element = ToElement(node);
   const AtomicString attr =
       element->FastGetAttribute(html_names::kElementtimingAttr);
   if (!ShouldReportElement(frame, attr, intersection_rect))
     return;
 
-  const Node* node = layout_object->GetNode();
-  DCHECK(node);
-  DCHECK(node->IsElementNode());
-  const AtomicString& id = ToElement(node)->GetIdAttribute();
+  const AtomicString& id = element->GetIdAttribute();
 
-  DCHECK(GetSupplementable()->document() == &layout_object->GetDocument());
-  DCHECK(layout_object->GetDocument().GetSecurityOrigin());
+  DCHECK(GetSupplementable()->document() == &layout_object.GetDocument());
+  DCHECK(layout_object.GetDocument().GetSecurityOrigin());
   if (!Performance::PassesTimingAllowCheck(
-          cached_image->GetResponse(),
-          *layout_object->GetDocument().GetSecurityOrigin(),
-          &layout_object->GetDocument())) {
+          cached_image.GetResponse(),
+          *layout_object.GetDocument().GetSecurityOrigin(),
+          &layout_object.GetDocument())) {
     WindowPerformance* performance =
         DOMWindowPerformance::performance(*GetSupplementable());
     if (performance &&
@@ -82,9 +93,9 @@ void ImageElementTiming::NotifyImagePainted(
          performance->ShouldBufferEntries())) {
       // Create an entry with a |startTime| of 0.
       performance->AddElementTiming(
-          AtomicString(cached_image->Url().GetString()), intersection_rect,
-          TimeTicks(), cached_image->LoadResponseEnd(), attr,
-          cached_image->IntrinsicSize(kDoNotRespectImageOrientation), id);
+          AtomicString(cached_image.Url().GetString()), intersection_rect,
+          TimeTicks(), cached_image.LoadResponseEnd(), attr,
+          cached_image.IntrinsicSize(kDoNotRespectImageOrientation), id);
     }
     return;
   }
@@ -95,9 +106,9 @@ void ImageElementTiming::NotifyImagePainted(
     return;
 
   element_timings_.emplace_back(
-      AtomicString(cached_image->Url().GetString()), intersection_rect,
-      cached_image->LoadResponseEnd(), attr,
-      cached_image->IntrinsicSize(kDoNotRespectImageOrientation), id);
+      AtomicString(cached_image.Url().GetString()), intersection_rect,
+      cached_image.LoadResponseEnd(), attr,
+      cached_image.IntrinsicSize(kDoNotRespectImageOrientation), id);
   // Only queue a swap promise when |element_timings_| was empty. All of the
   // records in |element_timings_| will be processed when the promise succeeds
   // or fails, and at that time the vector is cleared.
@@ -108,12 +119,34 @@ void ImageElementTiming::NotifyImagePainted(
   }
 }
 
+void ImageElementTiming::NotifyBackgroundImagePainted(
+    const Node* node,
+    const StyleImage* background_image,
+    const PropertyTreeState& current_paint_chunk_properties) {
+  DCHECK(node);
+  DCHECK(background_image);
+  const LayoutObject* layout_object = node->GetLayoutObject();
+  if (!layout_object)
+    return;
+
+  const ImageResourceContent* cached_image = background_image->CachedImage();
+  if (!cached_image || !cached_image->IsLoaded())
+    return;
+
+  auto result = background_images_notified_.insert(
+      std::make_pair(layout_object, cached_image));
+  if (result.is_new_entry) {
+    NotifyImagePaintedInternal(node, *layout_object, *cached_image,
+                               current_paint_chunk_properties);
+  }
+}
+
 FloatRect ImageElementTiming::ComputeIntersectionRect(
     const LocalFrame* frame,
-    const LayoutObject* layout_object,
+    const LayoutObject& layout_object,
     const PropertyTreeState& current_paint_chunk_properties) {
   // Compute the visible part of the image rect.
-  LayoutRect image_visual_rect = layout_object->FirstFragment().VisualRect();
+  LayoutRect image_visual_rect = layout_object.FirstFragment().VisualRect();
 
   FloatClipRect visual_rect = FloatClipRect(FloatRect(image_visual_rect));
   GeometryMapper::LocalToAncestorVisualRect(current_paint_chunk_properties,
@@ -158,6 +191,12 @@ void ImageElementTiming::ReportImagePaintSwapTime(WebLayerTreeView::SwapResult,
 
 void ImageElementTiming::NotifyWillBeDestroyed(const LayoutObject* image) {
   images_notified_.erase(image);
+}
+
+void ImageElementTiming::NotifyBackgroundImageRemoved(
+    const LayoutObject* layout_object,
+    const ImageResourceContent* image) {
+  background_images_notified_.erase(std::make_pair(layout_object, image));
 }
 
 void ImageElementTiming::Trace(blink::Visitor* visitor) {

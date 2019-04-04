@@ -89,8 +89,10 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_clipper.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/autoscroll_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/image_element_timing.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -3788,6 +3790,16 @@ Element* LayoutObject::OffsetParent(const Element* base) const {
   }
 
   return node && node->IsElementNode() ? ToElement(node) : nullptr;
+}
+
+void LayoutObject::NotifyImageFullyRemoved(ImageResourceContent* image) {
+  if (origin_trials::ElementTimingEnabled(&GetDocument())) {
+    LocalDOMWindow* window = GetDocument().domWindow();
+    if (window) {
+      ImageElementTiming::From(*window).NotifyBackgroundImageRemoved(this,
+                                                                     image);
+    }
+  }
 }
 
 PositionWithAffinity LayoutObject::CreatePositionWithAffinity(
