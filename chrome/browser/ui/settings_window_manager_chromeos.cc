@@ -24,7 +24,6 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/ui_base_features.h"
 #include "url/gurl.h"
-#include "url/url_constants.h"
 
 namespace chrome {
 
@@ -112,8 +111,7 @@ void SettingsWindowManager::ShowChromePageForProfile(Profile* profile,
 
 void SettingsWindowManager::ShowOSSettings(Profile* profile) {
   if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)) {
-    // TODO(jamescook): Add an "os-settings" URL and host.
-    ShowChromePageForProfile(profile, GURL(url::kAboutBlankURL));
+    ShowChromePageForProfile(profile, GURL(kChromeUIOSSettingsURL));
     return;
   }
   ShowChromePageForProfile(profile, GURL(kChromeUISettingsURL));
