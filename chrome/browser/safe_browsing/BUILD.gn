@@ -312,7 +312,6 @@ source_set("test_support") {
       "//chrome/common/safe_browsing:proto",
       "//components/safe_browsing/db:database_manager",
       "//components/safe_browsing/db:test_database_manager",
-      "//components/safe_browsing/db:v4_feature_list",
       "//components/safe_browsing/db:v4_protocol_manager_util",
       "//content/public/browser:browser",
     ]
