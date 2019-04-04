@@ -4,6 +4,8 @@
 
 #import "ios/web/shell/test/earl_grey/shell_actions.h"
 
+#import <EarlGrey/EarlGrey.h>
+
 #import "ios/web/public/test/earl_grey/web_view_actions.h"
 #include "ios/web/public/test/element_selector.h"
 #import "ios/web/shell/test/app/web_shell_test_util.h"

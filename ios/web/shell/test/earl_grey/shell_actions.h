@@ -7,9 +7,10 @@
 
 #include <string>
 
-#import <EarlGrey/EarlGrey.h>
+#import <Foundation/Foundation.h>
 
-#include "ios/web/public/test/element_selector.h"
+@class ElementSelector;
+@protocol GREYAction;
 
 namespace web {
 
