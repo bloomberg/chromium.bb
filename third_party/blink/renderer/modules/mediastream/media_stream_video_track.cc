@@ -450,9 +450,9 @@ void MediaStreamVideoTrack::GetSettings(
                                        : WebMediaStreamTrack::kResizeModeNone));
   if (source_->device().display_media_info.has_value()) {
     const auto& info = source_->device().display_media_info.value();
-    settings.display_surface = ToWebDisplaySurface(info->display_surface);
+    settings.display_surface = info->display_surface;
     settings.logical_surface = info->logical_surface;
-    settings.cursor = ToWebCursorCaptureType(info->cursor);
+    settings.cursor = info->cursor;
   }
 }
 

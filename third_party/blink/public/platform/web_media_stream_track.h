@@ -28,6 +28,7 @@
 #include <memory>
 
 #include "base/optional.h"
+#include "media/mojo/interfaces/display_media_information.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -45,13 +46,6 @@ class WebString;
 class WebMediaStreamTrack {
  public:
   enum class FacingMode { kNone, kUser, kEnvironment, kLeft, kRight };
-  enum class DisplayCaptureSurfaceType {
-    kMonitor,
-    kWindow,
-    kApplication,
-    kBrowser
-  };
-  enum class CursorCaptureType { kNever, kAlways, kMotion };
 
   BLINK_PLATFORM_EXPORT static const char kResizeModeNone[];
   BLINK_PLATFORM_EXPORT static const char kResizeModeRescale[];
@@ -92,9 +86,9 @@ class WebMediaStreamTrack {
     WebString video_kind;
 
     // Screen Capture extensions
-    base::Optional<DisplayCaptureSurfaceType> display_surface;
+    base::Optional<media::mojom::DisplayCaptureSurfaceType> display_surface;
     base::Optional<bool> logical_surface;
-    base::Optional<CursorCaptureType> cursor;
+    base::Optional<media::mojom::CursorCaptureType> cursor;
   };
 
   enum class ContentHintType {

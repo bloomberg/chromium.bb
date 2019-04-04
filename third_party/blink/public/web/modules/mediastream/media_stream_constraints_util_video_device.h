@@ -28,12 +28,6 @@ GetVideoKindForFormat(const media::VideoCaptureFormat& format);
 BLINK_EXPORT WebMediaStreamTrack::FacingMode ToWebFacingMode(
     media::VideoFacingMode video_facing);
 
-BLINK_EXPORT WebMediaStreamTrack::DisplayCaptureSurfaceType ToWebDisplaySurface(
-    media::mojom::DisplayCaptureSurfaceType display_surface);
-
-BLINK_EXPORT WebMediaStreamTrack::CursorCaptureType ToWebCursorCaptureType(
-    media::mojom::CursorCaptureType cursor);
-
 // This is a temporary struct to bridge blink and content mojo types.
 // TODO(crbug.com/704136): Replace references to this type with the blink mojo
 // type once all dependent types are migrated to Blink.

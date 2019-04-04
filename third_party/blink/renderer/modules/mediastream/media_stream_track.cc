@@ -532,16 +532,16 @@ MediaTrackSettings* MediaStreamTrack::getSettings() const {
   if (platform_settings.display_surface) {
     WTF::String value;
     switch (platform_settings.display_surface.value()) {
-      case WebMediaStreamTrack::DisplayCaptureSurfaceType::kMonitor:
+      case media::mojom::DisplayCaptureSurfaceType::MONITOR:
         value = "monitor";
         break;
-      case WebMediaStreamTrack::DisplayCaptureSurfaceType::kWindow:
+      case media::mojom::DisplayCaptureSurfaceType::WINDOW:
         value = "window";
         break;
-      case WebMediaStreamTrack::DisplayCaptureSurfaceType::kApplication:
+      case media::mojom::DisplayCaptureSurfaceType::APPLICATION:
         value = "application";
         break;
-      case WebMediaStreamTrack::DisplayCaptureSurfaceType::kBrowser:
+      case media::mojom::DisplayCaptureSurfaceType::BROWSER:
         value = "browser";
         break;
     }
@@ -552,13 +552,13 @@ MediaTrackSettings* MediaStreamTrack::getSettings() const {
   if (platform_settings.cursor) {
     WTF::String value;
     switch (platform_settings.cursor.value()) {
-      case WebMediaStreamTrack::CursorCaptureType::kNever:
+      case media::mojom::CursorCaptureType::NEVER:
         value = "never";
         break;
-      case WebMediaStreamTrack::CursorCaptureType::kAlways:
+      case media::mojom::CursorCaptureType::ALWAYS:
         value = "always";
         break;
-      case WebMediaStreamTrack::CursorCaptureType::kMotion:
+      case media::mojom::CursorCaptureType::MOTION:
         value = "motion";
         break;
     }
