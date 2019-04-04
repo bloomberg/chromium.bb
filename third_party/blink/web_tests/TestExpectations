@@ -2269,6 +2269,8 @@ crbug.com/492664 external/wpt/css/css-writing-modes/ortho-htb-alongside-vrl-floa
 crbug.com/492664 external/wpt/css/css-writing-modes/ortho-htb-alongside-vrl-floats-014.xht [ Failure ]
 crbug.com/492664 external/wpt/css/css-writing-modes/two-levels-of-orthogonal-flows-percentage.html [ Failure ]
 
+crbug.com/637055 fast/css/outline-offset-large.html [ Skip ]
+
 # Either "combo" or split should run: http://testthewebforward.org/docs/css-naming.html
 crbug.com/410320 external/wpt/css/css-writing-modes/orthogonal-parent-shrink-to-fit-001.html [ Skip ]
 crbug.com/492664 external/wpt/css/css-writing-modes/text-orientation-script-001.html [ Skip ]
