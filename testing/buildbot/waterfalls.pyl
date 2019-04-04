@@ -405,6 +405,16 @@
         'test_suites': {
           'gtest_tests': 'cronet_gtests',
         },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'KTU84P',
+              'device_type': 'hammerhead',
+              'os': 'Android',
+            },
+          ],
+        },
+        'os_type': 'android',
       },
       'android-cronet-kitkat-arm-rel': {
         'test_suites': {
