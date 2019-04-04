@@ -26,9 +26,11 @@ class FtlMessagingClient final {
  public:
   using MessageCallback =
       base::RepeatingCallback<void(const std::string& sender_id,
+                                   const std::string& sender_registration_id,
                                    const std::string& message)>;
   using MessageCallbackSubscription =
       base::CallbackList<void(const std::string&,
+                              const std::string&,
                               const std::string&)>::Subscription;
   using DoneCallback = base::OnceCallback<void(const grpc::Status& status)>;
 
@@ -100,7 +102,8 @@ class FtlMessagingClient final {
   RegistrationManager* registration_manager_;
   std::unique_ptr<Messaging::Stub> messaging_stub_;
   std::unique_ptr<MessageReceptionChannel> reception_channel_;
-  base::CallbackList<void(const std::string&, const std::string&)>
+  base::CallbackList<
+      void(const std::string&, const std::string&, const std::string&)>
       callback_list_;
 
   DISALLOW_COPY_AND_ASSIGN(FtlMessagingClient);

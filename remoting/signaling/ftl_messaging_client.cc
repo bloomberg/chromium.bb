@@ -212,7 +212,9 @@ void FtlMessagingClient::RunMessageCallbacks(const ftl::InboxMessage& message) {
 
   ftl::ChromotingMessage chromoting_message;
   chromoting_message.ParseFromString(message.message());
-  callback_list_.Notify(message.sender_id().id(), chromoting_message.message());
+  callback_list_.Notify(message.sender_id().id(),
+                        message.sender_registration_id(),
+                        chromoting_message.message());
 }
 
 void FtlMessagingClient::OnMessageReceived(const ftl::InboxMessage& message) {

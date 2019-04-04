@@ -65,6 +65,7 @@ class FtlServicesPlayground {
   void StartReceivingMessages(base::OnceClosure on_done);
   void StopReceivingMessages(base::OnceClosure on_done);
   void OnMessageReceived(const std::string& sender_id,
+                         const std::string& sender_registration_id,
                          const std::string& message);
   void OnStartReceivingMessagesDone(base::OnceClosure on_done,
                                     const grpc::Status& status);

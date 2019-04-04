@@ -282,13 +282,16 @@ void FtlServicesPlayground::StopReceivingMessages(base::OnceClosure on_done) {
   std::move(on_done).Run();
 }
 
-void FtlServicesPlayground::OnMessageReceived(const std::string& sender_id,
-                                              const std::string& message) {
+void FtlServicesPlayground::OnMessageReceived(
+    const std::string& sender_id,
+    const std::string& sender_registration_id,
+    const std::string& message) {
   printf(
       "Received message:\n"
       "  Sender ID=%s\n"
+      "  Sender Registration ID=%s\n"
       "  Message=%s\n",
-      sender_id.c_str(), message.c_str());
+      sender_id.c_str(), sender_registration_id.c_str(), message.c_str());
 }
 
 void FtlServicesPlayground::OnStartReceivingMessagesDone(

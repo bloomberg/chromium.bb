@@ -140,6 +140,7 @@ message InboxMessage {
   MessageType message_type = 2;
   MessageClass message_class = 5;
   Id sender_id = 8;
+  bytes sender_registration_id = 17;
   Id receiver_id = 9;
   bytes message = 12;
 }
