@@ -251,8 +251,6 @@ class WebUIInfoSingleton {
     return log_messages_;
   }
 
-  void AddListenerForTesting() { has_test_listener_ = true; }
-
  private:
   WebUIInfoSingleton();
   ~WebUIInfoSingleton();
@@ -302,9 +300,6 @@ class WebUIInfoSingleton {
 
   // The current referrer chain provider, if any. Can be nullptr.
   ReferrerChainProvider* referrer_chain_provider_ = nullptr;
-
-  // Whether there is a test listener.
-  bool has_test_listener_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIInfoSingleton);
 };

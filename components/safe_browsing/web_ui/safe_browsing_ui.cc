@@ -59,13 +59,12 @@ WebUIInfoSingleton* WebUIInfoSingleton::GetInstance() {
 
 // static
 bool WebUIInfoSingleton::HasListener() {
-  return GetInstance()->has_test_listener_ ||
-         !GetInstance()->webui_instances_.empty();
+  return !GetInstance()->webui_instances_.empty();
 }
 
 void WebUIInfoSingleton::AddToClientDownloadRequestsSent(
     std::unique_ptr<ClientDownloadRequest> client_download_request) {
-  if (!HasListener())
+  if (webui_instances_.empty())
     return;
 
   for (auto* webui_listener : webui_instances_)
@@ -81,7 +80,7 @@ void WebUIInfoSingleton::ClearClientDownloadRequestsSent() {
 
 void WebUIInfoSingleton::AddToClientDownloadResponsesReceived(
     std::unique_ptr<ClientDownloadResponse> client_download_response) {
-  if (!HasListener())
+  if (webui_instances_.empty())
     return;
 
   for (auto* webui_listener : webui_instances_)
@@ -98,7 +97,7 @@ void WebUIInfoSingleton::ClearClientDownloadResponsesReceived() {
 
 void WebUIInfoSingleton::AddToCSBRRsSent(
     std::unique_ptr<ClientSafeBrowsingReportRequest> csbrr) {
-  if (!HasListener())
+  if (webui_instances_.empty())
     return;
 
   for (auto* webui_listener : webui_instances_)
@@ -113,7 +112,7 @@ void WebUIInfoSingleton::ClearCSBRRsSent() {
 
 void WebUIInfoSingleton::AddToPGEvents(
     const sync_pb::UserEventSpecifics& event) {
-  if (!HasListener())
+  if (webui_instances_.empty())
     return;
 
   for (auto* webui_listener : webui_instances_)
@@ -128,7 +127,7 @@ void WebUIInfoSingleton::ClearPGEvents() {
 
 int WebUIInfoSingleton::AddToPGPings(
     const LoginReputationClientRequest& request) {
-  if (!HasListener())
+  if (webui_instances_.empty())
     return -1;
 
   for (auto* webui_listener : webui_instances_)
@@ -142,7 +141,7 @@ int WebUIInfoSingleton::AddToPGPings(
 void WebUIInfoSingleton::AddToPGResponses(
     int token,
     const LoginReputationClientResponse& response) {
-  if (!HasListener())
+  if (webui_instances_.empty())
     return;
 
   for (auto* webui_listener : webui_instances_)
@@ -157,7 +156,7 @@ void WebUIInfoSingleton::ClearPGPings() {
 }
 
 void WebUIInfoSingleton::LogMessage(const std::string& message) {
-  if (!HasListener())
+  if (webui_instances_.empty())
     return;
 
   base::Time timestamp = base::Time::Now();
@@ -177,7 +176,7 @@ void WebUIInfoSingleton::RegisterWebUIInstance(SafeBrowsingUIHandler* webui) {
 
 void WebUIInfoSingleton::UnregisterWebUIInstance(SafeBrowsingUIHandler* webui) {
   base::Erase(webui_instances_, webui);
-  if (!HasListener()) {
+  if (webui_instances_.empty()) {
     ClearCSBRRsSent();
     ClearClientDownloadRequestsSent();
     ClearClientDownloadResponsesReceived();
