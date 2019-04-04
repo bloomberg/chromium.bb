@@ -538,7 +538,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void ResumeBlockedRequests() override;
   void CancelBlockedRequests() override;
   void ForwardMessageToPortalHost(
-      const std::string& message,
+      blink::TransferableMessage message,
       const url::Origin& source_origin,
       const base::Optional<url::Origin>& target_origin) override;
   void SetLifecycleState(blink::mojom::FrameLifecycleState state) override;

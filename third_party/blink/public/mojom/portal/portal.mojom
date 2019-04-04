@@ -19,5 +19,5 @@ interface Portal {
 
   // Sends message to the browser process, where it can be forwarded to the
   // portal's main frame.
-  PostMessage(string message, url.mojom.Origin? target_origin);
+  PostMessage(TransferableMessage message, url.mojom.Origin? target_origin);
 };

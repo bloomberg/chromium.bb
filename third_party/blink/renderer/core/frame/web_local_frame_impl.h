@@ -307,7 +307,7 @@ class CORE_EXPORT WebLocalFrameImpl final
                          mojo::ScopedInterfaceEndpointHandle portal_pipe,
                          TransferableMessage data) override;
   void ForwardMessageToPortalHost(
-      const WebString& message,
+      TransferableMessage message,
       const WebSecurityOrigin& source_origin,
       const base::Optional<WebSecurityOrigin>& target_origin) override;
 

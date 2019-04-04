@@ -2637,11 +2637,11 @@ void RenderFrameImpl::OnPortalActivated(
 }
 
 void RenderFrameImpl::ForwardMessageToPortalHost(
-    const std::string& message,
+    blink::TransferableMessage message,
     const url::Origin& source_origin,
     const base::Optional<url::Origin>& target_origin) {
-  frame_->ForwardMessageToPortalHost(WebString::FromUTF8(message),
-                                     source_origin, target_origin);
+  frame_->ForwardMessageToPortalHost(std::move(message), source_origin,
+                                     target_origin);
 }
 
 void RenderFrameImpl::SetLifecycleState(

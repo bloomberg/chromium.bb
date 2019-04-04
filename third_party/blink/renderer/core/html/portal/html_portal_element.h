@@ -41,11 +41,13 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
 
   // idl implementation.
   ScriptPromise activate(ScriptState*, PortalActivateOptions*);
-  void postMessage(const String& message,
+  void postMessage(ScriptState* script_state,
+                   const ScriptValue& message,
                    const String& target_origin,
                    const Vector<ScriptValue>& transfer,
                    ExceptionState& exception_state);
-  void postMessage(const String& message,
+  void postMessage(ScriptState* script_state,
+                   const ScriptValue& message,
                    const WindowPostMessageOptions* options,
                    ExceptionState& exception_state);
 

@@ -8,7 +8,7 @@
 interface HTMLPortalElement : HTMLElement {
   [CEReactions, Reflect, URL, RaisesException=Setter] attribute URLString src;
   [CallWith=ScriptState] Promise<void> activate(optional PortalActivateOptions options);
-  [RaisesException] void postMessage(DOMString message, DOMString targetOrigin,
+  [CallWith=ScriptState, RaisesException] void postMessage(any message, DOMString targetOrigin,
                                      optional sequence<object> transfer = []);
-  [RaisesException] void postMessage(DOMString message, optional WindowPostMessageOptions options);
+  [CallWith=ScriptState, RaisesException] void postMessage(any message, optional WindowPostMessageOptions options);
 };

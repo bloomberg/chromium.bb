@@ -2562,7 +2562,7 @@ void WebLocalFrameImpl::OnPortalActivated(
 }
 
 void WebLocalFrameImpl::ForwardMessageToPortalHost(
-    const WebString& message,
+    TransferableMessage message,
     const WebSecurityOrigin& source_origin,
     const base::Optional<WebSecurityOrigin>& target_origin) {
   scoped_refptr<const SecurityOrigin> target;
@@ -2570,7 +2570,8 @@ void WebLocalFrameImpl::ForwardMessageToPortalHost(
     target = target_origin.value();
 
   PortalHost::From(*(GetFrame()->DomWindow()))
-      .ReceiveMessage(message, source_origin, target);
+      .ReceiveMessage(ToBlinkTransferableMessage(std::move(message)),
+                      source_origin, target);
 }
 
 void WebLocalFrameImpl::SetTextCheckClient(

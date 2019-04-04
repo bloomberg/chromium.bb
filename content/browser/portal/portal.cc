@@ -160,10 +160,10 @@ void Portal::Activate(blink::TransferableMessage data,
   std::move(callback).Run();
 }
 
-void Portal::PostMessage(const std::string& message,
+void Portal::PostMessage(blink::TransferableMessage message,
                          const base::Optional<url::Origin>& target_origin) {
   portal_contents_impl_->GetMainFrame()->ForwardMessageToPortalHost(
-      message, owner_render_frame_host_->GetLastCommittedOrigin(),
+      std::move(message), owner_render_frame_host_->GetLastCommittedOrigin(),
       target_origin);
 }
 

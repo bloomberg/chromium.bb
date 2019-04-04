@@ -1059,7 +1059,7 @@ void RenderFrameHostImpl::OnPortalActivated(
 }
 
 void RenderFrameHostImpl::ForwardMessageToPortalHost(
-    const std::string& message,
+    blink::TransferableMessage message,
     const url::Origin& source_origin,
     const base::Optional<url::Origin>& target_origin) {
   // The target origin check needs to be done here in case the frame has
@@ -1070,8 +1070,8 @@ void RenderFrameHostImpl::ForwardMessageToPortalHost(
     if (target_origin != GetLastCommittedOrigin())
       return;
   }
-  GetNavigationControl()->ForwardMessageToPortalHost(message, source_origin,
-                                                     target_origin);
+  GetNavigationControl()->ForwardMessageToPortalHost(
+      std::move(message), source_origin, target_origin);
 }
 
 SiteInstanceImpl* RenderFrameHostImpl::GetSiteInstance() {
