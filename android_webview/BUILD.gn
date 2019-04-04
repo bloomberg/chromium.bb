@@ -454,14 +454,12 @@ if (defined(android_secondary_abi_toolchain)) {
   # differentiate only by ABI. Each library has an app-bundle ("_base")
   # variant.
   if (current_toolchain == android_secondary_abi_toolchain) {
-    if (enable_64_bit_browser) {
-      # These targets are the 32-bit WebView libraries that pair with a 64-bit
-      # browser. They are suffixed with _64 because their names must mach the
-      # 64-bit browser library.
-      webview_library("monochrome_64") {
-      }
-      webview_library("monochrome_64_base") {
-      }
+    # These targets are the 32-bit WebView libraries that pair with a 64-bit
+    # browser. They are suffixed with _64 because their names must mach the
+    # 64-bit browser library.
+    webview_library("monochrome_64") {
+    }
+    webview_library("monochrome_64_base") {
     }
   } else {
     # Inverse of the others above, for the original 32-bit case.
