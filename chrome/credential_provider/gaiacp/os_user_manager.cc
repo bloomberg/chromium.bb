@@ -366,6 +366,36 @@ HRESULT OSUserManager::ChangeUserPassword(const wchar_t* domain,
   return HRESULT_FROM_WIN32(changepassword_nsts);
 }
 
+HRESULT OSUserManager::SetUserPassword(const wchar_t* domain,
+                                       const wchar_t* username,
+                                       const wchar_t* password) {
+  LPBYTE domain_server_buffer = nullptr;
+  HRESULT hr =
+      GetDomainControllerServerForDomain(domain, &domain_server_buffer);
+  if (FAILED(hr))
+    return hr;
+
+  std::unique_ptr<wchar_t, void (*)(wchar_t*)> domain_to_query(
+      reinterpret_cast<wchar_t*>(domain_server_buffer), [](wchar_t* p) {
+        if (p)
+          ::NetApiBufferFree(p);
+      });
+
+  DWORD error = 0;
+  USER_INFO_1003 info1003;
+  NET_API_STATUS nsts;
+  memset(&info1003, 0, sizeof(info1003));
+  info1003.usri1003_password = const_cast<wchar_t*>(password);
+  nsts = ::NetUserSetInfo(domain_to_query.get(), username, 1003,
+                          reinterpret_cast<LPBYTE>(&info1003), &error);
+  if (nsts != NERR_Success) {
+    LOGFN(ERROR) << "Unable to change password for '" << username
+                 << "' nsts=" << nsts;
+  }
+
+  return HRESULT_FROM_WIN32(nsts);
+}
+
 HRESULT OSUserManager::IsWindowsPasswordValid(const wchar_t* domain,
                                               const wchar_t* username,
                                               const wchar_t* password) {

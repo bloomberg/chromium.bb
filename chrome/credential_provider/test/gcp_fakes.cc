@@ -192,6 +192,21 @@ HRESULT FakeOSUserManager::ChangeUserPassword(const wchar_t* domain,
   return HRESULT_FROM_WIN32(NERR_UserNotFound);
 }
 
+HRESULT FakeOSUserManager::SetUserPassword(const wchar_t* domain,
+                                           const wchar_t* username,
+                                           const wchar_t* new_password) {
+  DCHECK(domain);
+  DCHECK(username);
+  DCHECK(new_password);
+
+  if (username_to_info_.count(username) > 0) {
+    username_to_info_[username].password = new_password;
+    return S_OK;
+  }
+
+  return HRESULT_FROM_WIN32(NERR_UserNotFound);
+}
+
 HRESULT FakeOSUserManager::IsWindowsPasswordValid(const wchar_t* domain,
                                                   const wchar_t* username,
                                                   const wchar_t* password) {

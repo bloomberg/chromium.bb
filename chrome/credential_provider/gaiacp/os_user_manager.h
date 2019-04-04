@@ -43,6 +43,11 @@ class [[clang::lto_visibility_public]] OSUserManager {
       const wchar_t* domain, const wchar_t* username,
       const wchar_t* old_password, const wchar_t* new_password);
 
+  // Force changes the password of the given OS user. This will cause them to
+  // lose all encrypted data.
+  virtual HRESULT SetUserPassword(
+      const wchar_t* domain, const wchar_t* username, const wchar_t* password);
+
   // Checks if the given user's password matches |password|. Returns S_OK if it
   // matches, S_FALSE if not. Otherwise will return the windows error code.
   virtual HRESULT IsWindowsPasswordValid(

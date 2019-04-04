@@ -125,7 +125,7 @@ TEST_F(GcpCredentialProviderTest, CpusLogon) {
   // Get fields.
   DWORD field_count;
   ASSERT_EQ(S_OK, provider->GetFieldDescriptorCount(&field_count));
-  EXPECT_EQ(5u, field_count);
+  EXPECT_EQ(FIELD_COUNT, field_count);
 
   // Deactivate the CP.
   ASSERT_EQ(S_OK, provider->UnAdvise());
@@ -165,7 +165,7 @@ TEST_F(GcpCredentialProviderTest, CpusUnlock) {
   // Get fields.
   DWORD field_count;
   ASSERT_EQ(S_OK, provider->GetFieldDescriptorCount(&field_count));
-  EXPECT_EQ(5u, field_count);
+  EXPECT_EQ(FIELD_COUNT, field_count);
 
   // Deactivate the CP.
   ASSERT_EQ(S_OK, provider->UnAdvise());
