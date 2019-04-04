@@ -220,7 +220,7 @@ cca.views.camera.Preview.prototype.onWindowResize_ = function(aspectRatio) {
     var inner = chrome.app.window.current().innerBounds;
     var innerW = inner.minWidth;
     var innerH = cca.state.get('square-mode') ?
-        Math.round(innerW / (4 / 3)) :
+        innerW :
         Math.round(innerW / this.aspectRatio_);
 
     // Limit window resizing capability by setting min-height. Don't limit
@@ -252,9 +252,9 @@ cca.views.camera.Preview.prototype.onFocusClicked_ = function(event) {
   this.cancelFocus_();
 
   // Normalize to square space coordinates by W3C spec.
-  var px = (event.offsetX - this.video_.offsetLeft) / this.video_.width;
-  var py = (event.offsetY - this.video_.offsetTop) / this.video_.height;
-  var constraints = {advanced: [{pointsOfInterest: [{px, py}]}]};
+  var x = event.offsetX / this.video_.width;
+  var y = event.offsetY / this.video_.height;
+  var constraints = {advanced: [{pointsOfInterest: [{x, y}]}]};
   var track = this.video_.srcObject.getVideoTracks()[0];
   var focus = track.applyConstraints(constraints).then(() => {
     if (focus != this.focus_) {
@@ -262,8 +262,8 @@ cca.views.camera.Preview.prototype.onFocusClicked_ = function(event) {
     }
     var aim = document.querySelector('#preview-focus-aim');
     var clone = aim.cloneNode(true);
-    clone.style.left = `${event.offsetX}px`;
-    clone.style.top = `${event.offsetY}px`;
+    clone.style.left = `${event.offsetX + this.video_.offsetLeft}px`;
+    clone.style.top = `${event.offsetY + this.video_.offsetTop}px`;
     clone.hidden = false;
     aim.parentElement.replaceChild(clone, aim);
   }).catch(console.error);
