@@ -1406,10 +1406,13 @@ void WebMediaPlayerImpl::OnEncryptedMediaInitData(
     media_metrics_provider_->SetIsEME();
     if (watch_time_reporter_)
       CreateWatchTimeReporter();
-  }
 
-  // For now MediaCapabilities only handles clear content.
-  video_decode_stats_reporter_.reset();
+    // |was_encrypted| = false means we didn't have a CDM prior to observing
+    // encrypted media init data. Reset the reporter until the CDM arrives. See
+    // SetCdmInternal().
+    DCHECK(!cdm_config_);
+    video_decode_stats_reporter_.reset();
+  }
 
   encrypted_client_->Encrypted(
       ConvertToWebInitDataType(init_data_type), init_data.data(),
@@ -1464,16 +1467,23 @@ void WebMediaPlayerImpl::SetCdmInternal(
       CreateWatchTimeReporter();
   }
 
-  // For now MediaCapabilities only handles clear content.
-  video_decode_stats_reporter_.reset();
-
-  auto cdm_context_ref =
-      ToWebContentDecryptionModuleImpl(cdm)->GetCdmContextRef();
+  WebContentDecryptionModuleImpl* web_cdm =
+      ToWebContentDecryptionModuleImpl(cdm);
+  auto cdm_context_ref = web_cdm->GetCdmContextRef();
   if (!cdm_context_ref) {
     NOTREACHED();
     OnCdmAttached(false);
     return;
   }
+
+  // Arrival of |cdm_config_| and |key_system_| unblocks recording of encrypted
+  // stats. Attempt to create the stats reporter. Note, we do NOT guard this
+  // within !was_encypted above because often the CDM arrives after the call to
+  // OnEncryptedMediaInitData().
+  cdm_config_ = web_cdm->GetCdmConfig();
+  key_system_ = web_cdm->GetKeySystem();
+  DCHECK(!key_system_.empty());
+  CreateVideoDecodeStatsReporter();
 
   CdmContext* cdm_context = cdm_context_ref->GetCdmContext();
   DCHECK(cdm_context);
@@ -1895,15 +1905,18 @@ void WebMediaPlayerImpl::CreateVideoDecodeStatsReporter() {
   if (!pipeline_metadata_.video_decoder_config.IsValidConfig())
     return;
 
+  // Profile must be known for use as index to save the reported stats.
   if (pipeline_metadata_.video_decoder_config.profile() ==
       VIDEO_CODEC_PROFILE_UNKNOWN) {
     return;
   }
 
-  // For now MediaCapabilities only handles clear content.
-  // TODO(chcunningham): Report encrypted stats.
-  if (is_encrypted_)
+  // CdmConfig must be provided for use as index to save encrypted stats.
+  if (is_encrypted_ && !cdm_config_) {
     return;
+  } else if (cdm_config_) {
+    DCHECK(!key_system_.empty());
+  }
 
   mojom::VideoDecodeStatsRecorderPtr recorder;
   media_metrics_provider_->AcquireVideoDecodeStatsRecorder(
@@ -1915,7 +1928,7 @@ void WebMediaPlayerImpl::CreateVideoDecodeStatsReporter() {
       base::Bind(&WebMediaPlayerImpl::GetPipelineStatistics,
                  base::Unretained(this)),
       pipeline_metadata_.video_decoder_config.profile(),
-      pipeline_metadata_.natural_size,
+      pipeline_metadata_.natural_size, key_system_, cdm_config_,
       frame_->GetTaskRunner(blink::TaskType::kInternalMedia)));
 
   if (delegate_->IsFrameHidden())

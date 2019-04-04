@@ -26,6 +26,7 @@
 #include "build/build_config.h"
 #include "cc/layers/surface_layer.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "media/base/cdm_config.h"
 #include "media/base/media_observer.h"
 #include "media/base/media_tracks.h"
 #include "media/base/overlay_info.h"
@@ -738,6 +739,18 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // the pipeline.
   std::unique_ptr<CdmContextRef> pending_cdm_context_ref_;
 
+  // True when encryption is detected, either by demuxer or by presence of a
+  // ContentDecyprtionModule (CDM).
+  bool is_encrypted_ = false;
+
+  // Captured once the cdm is provided to SetCdmInternal(). Used in creation of
+  // |video_decode_stats_reporter_|.
+  base::Optional<CdmConfig> cdm_config_;
+
+  // String identifying the KeySystem described by |cdm_config_|. Empty until a
+  // CDM has been attached. Used in creation |video_decode_stats_reporter_|.
+  std::string key_system_;
+
   // Tracks if we are currently flinging a video (e.g. in a RemotePlayback
   // session). Used to prevent videos from being paused when hidden.
   // TODO(https://crbug.com/839651): remove or rename this flag, when removing
@@ -818,7 +831,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Monitors the watch time of the played content.
   std::unique_ptr<WatchTimeReporter> watch_time_reporter_;
-  bool is_encrypted_ = false;
   std::string audio_decoder_name_;
   std::string video_decoder_name_;
 

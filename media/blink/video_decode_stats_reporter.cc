@@ -20,6 +20,8 @@ VideoDecodeStatsReporter::VideoDecodeStatsReporter(
     GetPipelineStatsCB get_pipeline_stats_cb,
     VideoCodecProfile codec_profile,
     const gfx::Size& natural_size,
+    std::string key_system,
+    base::Optional<CdmConfig> cdm_config,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const base::TickClock* tick_clock)
     : kRecordingInterval(
@@ -30,11 +32,15 @@ VideoDecodeStatsReporter::VideoDecodeStatsReporter(
       get_pipeline_stats_cb_(std::move(get_pipeline_stats_cb)),
       codec_profile_(codec_profile),
       natural_size_(GetSizeBucket(natural_size)),
+      key_system_(key_system),
+      use_hw_secure_codecs_(cdm_config ? cdm_config->use_hw_secure_codecs
+                                       : false),
       tick_clock_(tick_clock),
       stats_cb_timer_(tick_clock_) {
   DCHECK(recorder_ptr_.is_bound());
   DCHECK(get_pipeline_stats_cb_);
   DCHECK_NE(VIDEO_CODEC_PROFILE_UNKNOWN, codec_profile_);
+  DCHECK(!cdm_config || !key_system_.empty());
 
   recorder_ptr_.set_connection_error_handler(base::BindRepeating(
       &VideoDecodeStatsReporter::OnIpcConnectionError, base::Unretained(this)));
@@ -128,7 +134,8 @@ void VideoDecodeStatsReporter::StartNewRecord(
   DVLOG(2) << __func__ << " "
            << " profile:" << codec_profile_
            << " size:" << natural_size_.ToString()
-           << " fps:" << last_observed_fps_;
+           << " fps:" << last_observed_fps_ << " key_system:" << key_system_
+           << " use_hw_secure_codecs:" << use_hw_secure_codecs_;
 
   // Size and frame rate should always be bucketed.
   DCHECK(natural_size_ == GetSizeBucket(natural_size_));
@@ -145,13 +152,9 @@ void VideoDecodeStatsReporter::StartNewRecord(
   frames_decoded_power_efficient_offset_ =
       frames_decoded_power_efficient_offset;
 
-  // TODO(chcunningham): Implement saving of EME stats. Hard-coding values
-  // for non-EME stats below.
-  const std::string key_system = "";
-  const bool use_hw_secure_codecs = false;
-
+  bool use_hw_secure_codecs = use_hw_secure_codecs_;
   mojom::PredictionFeaturesPtr features = mojom::PredictionFeatures::New(
-      codec_profile_, natural_size_, last_observed_fps_, key_system,
+      codec_profile_, natural_size_, last_observed_fps_, key_system_,
       use_hw_secure_codecs);
 
   recorder_ptr_->StartNewRecord(std::move(features));
