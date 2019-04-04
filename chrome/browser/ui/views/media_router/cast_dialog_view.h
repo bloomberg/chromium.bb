@@ -53,6 +53,13 @@ class CastDialogView : public views::BubbleDialogDelegateView,
                                           Browser* browser,
                                           const base::Time& start_time);
 
+  // Shows the singleton dialog anchored to the top-center of the browser
+  // window.
+  static void ShowDialogCenteredForBrowserWindow(
+      CastDialogController* controller,
+      Browser* browser,
+      const base::Time& start_time);
+
   // Shows the singleton dialog anchored to the bottom of |bounds|, horizontally
   // centered.
   static void ShowDialogCentered(const gfx::Rect& bounds,
