@@ -16,6 +16,7 @@
 
 #include "absl/algorithm/container.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
 #include "tools/render/layout_constants.h"
 
 namespace quic_trace {
@@ -232,6 +233,37 @@ const char* EncryptionLevelToString(EncryptionLevel level) {
       return "???";
   }
 }
+
+constexpr int kMaxAckBlocksShown = 3;
+std::string AckSummary(const AckInfo& ack) {
+  if (ack.acked_packets_size() == 0) {
+    return "";
+  }
+
+  bool overflow = false;
+  int blocks_to_show = ack.acked_packets_size();
+  if (blocks_to_show > kMaxAckBlocksShown) {
+    blocks_to_show = kMaxAckBlocksShown;
+    overflow = true;
+  }
+
+  std::vector<std::string> ack_ranges;
+  for (int i = 0; i < blocks_to_show; i++) {
+    const AckBlock& block = ack.acked_packets(i);
+    if (block.first_packet() == block.last_packet()) {
+      ack_ranges.push_back(absl::StrCat(block.first_packet()));
+    } else {
+      ack_ranges.push_back(
+          absl::StrCat(block.first_packet(), ":", block.last_packet()));
+    }
+  }
+
+  std::string result = absl::StrJoin(ack_ranges, ", ");
+  if (overflow) {
+    absl::StrAppend(&result, "...");
+  }
+  return result;
+}
 }  // namespace
 
 void ProcessedTrace::FillTableForPacket(Table* table,
@@ -276,7 +308,7 @@ void ProcessedTrace::FillTableForPacket(Table* table,
               absl::StrCat("#", frame.stream_frame_info().stream_id(), ": ",
                            frame.stream_frame_info().offset(), "-",
                            frame.stream_frame_info().offset() +
-                           frame.stream_frame_info().length(),
+                               frame.stream_frame_info().length(),
                            " (", frame.stream_frame_info().length(), ")"));
           break;
         case RESET_STREAM:
@@ -298,6 +330,9 @@ void ProcessedTrace::FillTableForPacket(Table* table,
         case STREAM_BLOCKED:
           table->AddRow("Stream blocked",
                         absl::StrCat(frame.flow_control_info().stream_id()));
+          break;
+        case ACK:
+          table->AddRow("Ack", AckSummary(frame.ack_info()));
           break;
         default:
           table->AddRow("Unknown", "");
