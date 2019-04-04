@@ -25,7 +25,7 @@ class TestBookmarkProxy extends TestBrowserProxy {
   isBookmarkBarShown() {
     this.methodCalled('isBookmarkBarShown');
 
-    // TODO(scottchen): make changable to test both true/false cases.
+    // TODO(hcarmona): make changeable to test both true/false cases.
     return Promise.resolve(true);
   }
 

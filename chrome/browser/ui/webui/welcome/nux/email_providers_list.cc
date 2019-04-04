@@ -39,10 +39,11 @@ std::vector<BookmarkItem> GetCurrentCountryEmailProviders() {
       };
     }
 
-      // TODO(scottchen): define all supported countries here.
+      // TODO(hcarmona/johntlee): define all supported countries here.
 
     default: {
-      // TODO(scottchen): examine if we want these US providers as default.
+      // TODO(hcarmona/johntlee): examine if we want these US providers as
+      // default.
       return {
           {static_cast<int>(EmailProviders::kGmail), "Gmail", "gmail",
            "https://accounts.google.com/b/0/AddMailService",
