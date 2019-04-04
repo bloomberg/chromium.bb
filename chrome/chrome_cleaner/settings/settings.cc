@@ -4,6 +4,7 @@
 
 #include "chrome/chrome_cleaner/settings/settings.h"
 
+#include <algorithm>
 #include <set>
 
 #include "base/command_line.h"
@@ -125,8 +126,18 @@ std::string GetCleanerRunId(const base::CommandLine& command_line) {
 // Populates |result| with locations that should be scanned. Returns true if no
 // invalid location values were provided on the command line.
 bool GetLocationsToScan(const base::CommandLine& command_line,
+                        TargetBinary target_binary,
                         std::vector<UwS::TraceLocation>* result) {
+  // Do not scan Program Files in the reporter.
   std::vector<UwS::TraceLocation> valid_locations = GetValidTraceLocations();
+  if (target_binary == TargetBinary::kReporter) {
+    auto program_files_loc =
+        std::find(valid_locations.begin(), valid_locations.end(),
+                  UwS::FOUND_IN_PROGRAMFILES);
+    if (program_files_loc != valid_locations.end())
+      valid_locations.erase(program_files_loc);
+  }
+
   if (!command_line.HasSwitch(kScanLocationsSwitch)) {
     result->swap(valid_locations);
     return true;
@@ -368,7 +379,7 @@ void Settings::Initialize(const base::CommandLine& command_line,
   user_response_timeout_overridden_ = GetTimeoutOverride(
       command_line, kUserResponseTimeoutMinutesSwitch, &user_response_timeout_);
   scan_switches_correct_ =
-      GetLocationsToScan(command_line, &locations_to_scan_);
+      GetLocationsToScan(command_line, target_binary, &locations_to_scan_);
   open_file_size_limit_ = GetOpenFileSizeLimit(command_line, target_binary);
 }
 

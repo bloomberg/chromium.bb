@@ -18,7 +18,6 @@ extern const char kFileSizeLimitSwitch[];
 extern const char kForceLogsUploadFailureSwitch[];
 extern const char kForceRecoveryComponentSwitch[];
 extern const char kForceSelfDeleteSwitch[];
-extern const char kForceUwsDetectionSwitch[];
 extern const char kInitDoneNotifierSwitch[];
 extern const char kIntegrationTestTimeoutMinutesSwitch[];
 extern const char kLoadEmptyDLLSwitch[];
