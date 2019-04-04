@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time_to_iso8601.h"
 #include "chrome/browser/android/ntp/android_content_suggestions_notifier.h"
-#include "chrome/browser/ntp_snippets/dependent_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/features.h"

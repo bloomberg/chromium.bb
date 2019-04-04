@@ -8,11 +8,23 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/stl_util.h"
 #include "base/time/clock.h"
+#include "build/build_config.h"
 #include "components/ntp_snippets/category_rankers/click_based_category_ranker.h"
 #include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
 #include "components/variations/variations_associated_data.h"
 
 namespace ntp_snippets {
+
+namespace {
+// All platforms proxy for whether the simplified NTP is enabled.
+bool IsSimplifiedNtpEnabled() {
+#if defined(OS_ANDROID)
+  return true;
+#else
+  return false;
+#endif  // OS_ANDROID
+}
+}  // namespace
 
 // Holds an experiment ID. So long as the feature is set through a server-side
 // variations config, this feature should exist on the client. This ensures that
@@ -41,9 +53,8 @@ const base::Feature kRemoteSuggestionsEmulateM58FetchingSchedule{
 
 std::unique_ptr<CategoryRanker> BuildSelectedCategoryRanker(
     PrefService* pref_service,
-    base::Clock* clock,
-    bool is_chrome_home_enabled) {
-  if (is_chrome_home_enabled) {
+    base::Clock* clock) {
+  if (IsSimplifiedNtpEnabled()) {
     return std::make_unique<ConstantCategoryRanker>();
   }
   return std::make_unique<ClickBasedCategoryRanker>(pref_service, clock);

@@ -43,8 +43,7 @@ extern const base::Feature kRemoteSuggestionsEmulateM58FetchingSchedule;
 
 std::unique_ptr<CategoryRanker> BuildSelectedCategoryRanker(
     PrefService* pref_service,
-    base::Clock* clock,
-    bool is_chrome_home_enabled);
+    base::Clock* clock);
 
 // Enables and configures notifications for content suggestions on Android.
 extern const base::Feature kNotificationsFeature;
