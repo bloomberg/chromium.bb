@@ -9,6 +9,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/logical_values.h"
@@ -644,10 +645,23 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
       continue;
     }
 
-    const Font& font = start_item.Style()->GetFont();
+    const ComputedStyle& start_style = *start_item.Style();
+    const Font& font = start_style.GetFont();
     TextDirection direction = start_item.Direction();
     unsigned end_index = index + 1;
     unsigned end_offset = start_item.EndOffset();
+
+    // Symbol marker is painted as graphics. Create a ShapeResult of space
+    // glyphs with the desired size to make it less special for line breaker.
+    if (UNLIKELY(start_item.IsSymbolMarker())) {
+      LayoutUnit symbol_width = LayoutListMarker::WidthOfSymbol(start_style);
+      DCHECK_GT(symbol_width, 0);
+      start_item.shape_result_ = ShapeResult::CreateForSpaces(
+          &font, direction, start_item.StartOffset(), start_item.Length(),
+          symbol_width);
+      index++;
+      continue;
+    }
 
     // Scan forward until an item is encountered that should trigger a shaping
     // break. This ensures that adjacent text items are shaped together whenever
