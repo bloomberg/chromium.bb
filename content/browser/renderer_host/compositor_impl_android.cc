@@ -49,6 +49,7 @@
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
+#include "components/viz/common/viz_utils.h"
 #include "components/viz/host/host_display_client.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display/display.h"
@@ -367,7 +368,7 @@ gpu::ContextCreationAttribs GetCompositorContextAttributes(
 
   if (requires_alpha_channel) {
     attributes.alpha_size = 8;
-  } else if (base::SysInfo::AmountOfPhysicalMemoryMB() <= 512) {
+  } else if (viz::PreferRGB565ResourcesForDisplay()) {
     // In this case we prefer to use RGB565 format instead of RGBA8888 if
     // possible.
     // TODO(danakj): CommandBufferStub constructor checks for alpha == 0

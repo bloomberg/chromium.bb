@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "components/viz/common/features.h"
+#include "components/viz/common/viz_utils.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/common/content_features.h"
@@ -56,6 +57,8 @@ bool ShouldEnableAndroidSurfaceControl(const base::CommandLine& cmd_line) {
 #if !defined(OS_ANDROID)
   return false;
 #else
+  if (viz::PreferRGB565ResourcesForDisplay())
+    return false;
   return features::IsAndroidSurfaceControlEnabled();
 #endif
 }
