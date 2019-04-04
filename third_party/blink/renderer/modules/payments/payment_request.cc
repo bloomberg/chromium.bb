@@ -1218,7 +1218,7 @@ void PaymentRequest::OnPaymentMethodChange(const String& method_name,
 
   PaymentRequestUpdateEvent* event = PaymentMethodChangeEvent::Create(
       script_state, event_type_names::kPaymentmethodchange, init);
-  DispatchPaymentRequestUpdateEvent(event);
+  DispatchPaymentRequestUpdateEvent(this, event);
 }
 
 void PaymentRequest::OnShippingAddressChange(PaymentAddressPtr address) {
@@ -1237,7 +1237,7 @@ void PaymentRequest::OnShippingAddressChange(PaymentAddressPtr address) {
 
   PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::Create(
       GetExecutionContext(), event_type_names::kShippingaddresschange);
-  DispatchPaymentRequestUpdateEvent(event);
+  DispatchPaymentRequestUpdateEvent(this, event);
 }
 
 void PaymentRequest::OnShippingOptionChange(const String& shipping_option_id) {
@@ -1247,7 +1247,7 @@ void PaymentRequest::OnShippingOptionChange(const String& shipping_option_id) {
 
   PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::Create(
       GetExecutionContext(), event_type_names::kShippingoptionchange);
-  DispatchPaymentRequestUpdateEvent(event);
+  DispatchPaymentRequestUpdateEvent(this, event);
 }
 
 void PaymentRequest::OnPayerDetailChange(
@@ -1257,19 +1257,10 @@ void PaymentRequest::OnPayerDetailChange(
   DCHECK(GetPendingAcceptPromiseResolver());
   DCHECK(!complete_resolver_);
 
+  payment_response_->UpdatePayerDetail(std::move(detail));
   PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::Create(
       GetExecutionContext(), event_type_names::kPayerdetailchange);
-  event->SetTarget(payment_response_);
-  event->SetPaymentRequest(this);
-  payment_response_->UpdatePayerDetail(std::move(detail));
-  payment_response_->DispatchEvent(*event);
-  if (!event->is_waiting_for_update()) {
-    // DispatchEvent runs synchronously. The method is_waiting_for_update()
-    // returns true if the merchant called event.updateWith() within the event
-    // handler. Calling this method is optional. If the method is not called,
-    // the renderer sends a message to the browser to re-enable UI interactions.
-    payment_provider_->NoUpdatedPaymentDetails();
-  }
+  DispatchPaymentRequestUpdateEvent(payment_response_, event);
 }
 
 void PaymentRequest::OnPaymentResponse(PaymentResponsePtr response) {
@@ -1542,10 +1533,11 @@ ScriptPromiseResolver* PaymentRequest::GetPendingAcceptPromiseResolver() const {
 }
 
 void PaymentRequest::DispatchPaymentRequestUpdateEvent(
+    EventTarget* event_target,
     PaymentRequestUpdateEvent* event) {
-  event->SetTarget(this);
+  event->SetTarget(event_target);
   event->SetPaymentRequest(this);
-  DispatchEvent(*event);
+  event_target->DispatchEvent(*event);
   if (!event->is_waiting_for_update()) {
     // DispatchEvent runs synchronously. The method is_waiting_for_update()
     // returns true if the merchant called event.updateWith() within the event
