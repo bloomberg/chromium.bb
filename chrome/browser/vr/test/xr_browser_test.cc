@@ -40,6 +40,11 @@ constexpr char XrBrowserTestBase::kVrConfigPathVal[];
 constexpr char XrBrowserTestBase::kVrLogPathEnvVar[];
 constexpr char XrBrowserTestBase::kVrLogPathVal[];
 constexpr char XrBrowserTestBase::kTestFileDir[];
+const std::vector<std::string> XrBrowserTestBase::kRequiredTestSwitches{
+    "enable-gpu", "enable-pixel-output-in-tests"};
+const std::vector<std::pair<std::string, std::string>>
+    XrBrowserTestBase::kRequiredTestSwitchesWithValues{
+        std::pair<std::string, std::string>("test-launcher-jobs", "1")};
 
 XrBrowserTestBase::XrBrowserTestBase() : env_(base::Environment::Create()) {}
 
@@ -79,6 +84,24 @@ std::string MakeExecutableRelative(const char* path) {
 }
 
 void XrBrowserTestBase::SetUp() {
+  // Check whether the required flags were passed to the test - without these,
+  // we can fail in ways that are non-obvious, so fail more explicitly here if
+  // they aren't present.
+  auto* cmd_line = base::CommandLine::ForCurrentProcess();
+  for (auto req_switch : kRequiredTestSwitches) {
+    ASSERT_TRUE(cmd_line->HasSwitch(req_switch))
+        << "Missing switch " << req_switch << " required to run tests properly";
+  }
+  for (auto req_switch_pair : kRequiredTestSwitchesWithValues) {
+    ASSERT_TRUE(cmd_line->HasSwitch(req_switch_pair.first))
+        << "Missing switch " << req_switch_pair.first
+        << " required to run tests properly";
+    ASSERT_TRUE(cmd_line->GetSwitchValueASCII(req_switch_pair.first) ==
+                req_switch_pair.second)
+        << "Have required switch " << req_switch_pair.first
+        << ", but not required value " << req_switch_pair.second;
+  }
+
   // Set the environment variable to use the mock OpenVR client.
   EXPECT_TRUE(
       env_->SetVar(kVrOverrideEnvVar, MakeExecutableRelative(kVrOverrideVal)))
@@ -93,7 +116,7 @@ void XrBrowserTestBase::SetUp() {
   // Set any command line flags that subclasses have set, e.g. enabling WebVR
   // and OpenVR support.
   for (const auto& switch_string : append_switches_) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(switch_string);
+    cmd_line->AppendSwitch(switch_string);
   }
   scoped_feature_list_.InitWithFeatures(enable_features_, disable_features_);
 

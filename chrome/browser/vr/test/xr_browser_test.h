@@ -48,6 +48,9 @@ class XrBrowserTestBase : public InProcessBrowserTest {
   static constexpr char kVrLogPathVal[] = "./";
   static constexpr char kTestFileDir[] =
       "chrome/test/data/xr/e2e_test_files/html/";
+  static const std::vector<std::string> kRequiredTestSwitches;
+  static const std::vector<std::pair<std::string, std::string>>
+      kRequiredTestSwitchesWithValues;
   enum class TestStatus {
     STATUS_RUNNING = 0,
     STATUS_PASSED = 1,
