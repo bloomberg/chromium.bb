@@ -5476,7 +5476,7 @@ TEST(HeapTest, AllocationInSuperConstructorArgument) {
   AllocInSuperConstructorArgument* object =
       MakeGarbageCollected<AllocInSuperConstructorArgument>();
   EXPECT_TRUE(object);
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
 }
 
 class NonNodeAllocatingNodeInDestructor

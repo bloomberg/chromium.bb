@@ -1765,7 +1765,7 @@ TEST_P(AnimationCompositorAnimationsTest,
   element->SetLayoutObject(nullptr);
   LayoutObjectProxy::Dispose(layout_object);
 
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_TRUE(element->GetElementAnimations()->Animations().IsEmpty());
 }
 

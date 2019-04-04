@@ -133,7 +133,7 @@ TEST_F(IDBTransactionTest, ContextDestroyedEarlyDeath) {
   ;
   live_transactions->insert(transaction_);
 
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(1u, live_transactions->size());
 
   Persistent<IDBRequest> request =
@@ -143,7 +143,7 @@ TEST_F(IDBTransactionTest, ContextDestroyedEarlyDeath) {
   DeactivateNewTransactions(scope.GetIsolate());
 
   request.Clear();  // The transaction is holding onto the request.
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(1u, live_transactions->size());
 
   // This will generate an Abort() call to the back end which is dropped by the
@@ -154,7 +154,7 @@ TEST_F(IDBTransactionTest, ContextDestroyedEarlyDeath) {
   transaction_.Clear();
   store_.Clear();
 
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(0U, live_transactions->size());
 }
 
@@ -174,7 +174,7 @@ TEST_F(IDBTransactionTest, ContextDestroyedAfterDone) {
   ;
   live_transactions->insert(transaction_);
 
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(1U, live_transactions->size());
 
   Persistent<IDBRequest> request =
@@ -186,7 +186,7 @@ TEST_F(IDBTransactionTest, ContextDestroyedAfterDone) {
   request->HandleResponse(CreateIDBValueForTesting(scope.GetIsolate(), false));
 
   request.Clear();  // The transaction is holding onto the request.
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(1U, live_transactions->size());
 
   // This will generate an Abort() call to the back end which is dropped by the
@@ -201,7 +201,7 @@ TEST_F(IDBTransactionTest, ContextDestroyedAfterDone) {
   // event, so that the transaction can go away.
   EXPECT_EQ(1U, live_transactions->size());
 
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(0U, live_transactions->size());
 }
 
@@ -221,7 +221,7 @@ TEST_F(IDBTransactionTest, ContextDestroyedWithQueuedResult) {
   ;
   live_transactions->insert(transaction_);
 
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(1U, live_transactions->size());
 
   Persistent<IDBRequest> request =
@@ -232,7 +232,7 @@ TEST_F(IDBTransactionTest, ContextDestroyedWithQueuedResult) {
   request->HandleResponse(CreateIDBValueForTesting(scope.GetIsolate(), true));
 
   request.Clear();  // The transaction is holding onto the request.
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(1U, live_transactions->size());
 
   // This will generate an Abort() call to the back end which is dropped by the
@@ -245,7 +245,7 @@ TEST_F(IDBTransactionTest, ContextDestroyedWithQueuedResult) {
 
   url_loader_mock_factory_->ServeAsynchronousRequests();
 
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(0U, live_transactions->size());
 }
 
@@ -265,7 +265,7 @@ TEST_F(IDBTransactionTest, ContextDestroyedWithTwoQueuedResults) {
   ;
   live_transactions->insert(transaction_);
 
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(1U, live_transactions->size());
 
   Persistent<IDBRequest> request1 =
@@ -281,7 +281,7 @@ TEST_F(IDBTransactionTest, ContextDestroyedWithTwoQueuedResults) {
 
   request1.Clear();  // The transaction is holding onto the requests.
   request2.Clear();
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(1U, live_transactions->size());
 
   // This will generate an Abort() call to the back end which is dropped by the
@@ -294,7 +294,7 @@ TEST_F(IDBTransactionTest, ContextDestroyedWithTwoQueuedResults) {
 
   url_loader_mock_factory_->ServeAsynchronousRequests();
 
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(0U, live_transactions->size());
 }
 
@@ -316,7 +316,7 @@ TEST_F(IDBTransactionTest, DocumentShutdownWithQueuedAndBlockedResults) {
   ;
   live_transactions->insert(transaction_);
 
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(1U, live_transactions->size());
 
   Persistent<IDBRequest> request1 =
@@ -332,7 +332,7 @@ TEST_F(IDBTransactionTest, DocumentShutdownWithQueuedAndBlockedResults) {
 
   request1.Clear();  // The transaction is holding onto the requests.
   request2.Clear();
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(1U, live_transactions->size());
 
   // This will generate an Abort() call to the back end which is dropped by the
@@ -345,7 +345,7 @@ TEST_F(IDBTransactionTest, DocumentShutdownWithQueuedAndBlockedResults) {
 
   url_loader_mock_factory_->ServeAsynchronousRequests();
 
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(0U, live_transactions->size());
 }
 
@@ -366,18 +366,18 @@ TEST_F(IDBTransactionTest, TransactionFinish) {
   ;
   live_transactions->insert(transaction_);
 
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(1U, live_transactions->size());
 
   DeactivateNewTransactions(scope.GetIsolate());
 
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(1U, live_transactions->size());
 
   transaction_.Clear();
   store_.Clear();
 
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(1U, live_transactions->size());
 
   // Stop the context, so events don't get queued (which would keep the
@@ -390,7 +390,7 @@ TEST_F(IDBTransactionTest, TransactionFinish) {
                DOMException::Create(DOMExceptionCode::kAbortError, "Aborted"));
 
   // OnAbort() should have cleared the transaction's reference to the database.
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(0U, live_transactions->size());
 }
 

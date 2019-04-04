@@ -1049,7 +1049,7 @@ TEST_F(MediaControlsImplTest,
 
   test::RunPendingTasks();
 
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
 
   // It has been GC'd.
   EXPECT_EQ(nullptr, weak_persistent_video);

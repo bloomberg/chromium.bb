@@ -69,7 +69,9 @@ namespace blink {
 
 class DocumentTest : public PageTestBase {
  protected:
-  void TearDown() override { ThreadState::Current()->CollectAllGarbage(); }
+  void TearDown() override {
+    ThreadState::Current()->CollectAllGarbageForTesting();
+  }
 
   void SetHtmlInnerHTML(const char*);
 };

@@ -88,7 +88,7 @@ TEST_F(DocumentMarkerControllerTest, DidMoveToNewDocument) {
   another_document->adoptNode(parent, ASSERT_NO_EXCEPTION);
 
   // No more reference to marked node.
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(0u, MarkerController().Markers().size());
   EXPECT_EQ(0u, another_document->Markers().Markers().size());
 }
@@ -105,7 +105,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByNormalize) {
     UpdateAllLifecyclePhasesForTest();
   }
   // No more reference to marked node.
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(1u, MarkerController().Markers().size());
 }
 
@@ -117,7 +117,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByRemoveChildren) {
   parent->RemoveChildren();
   UpdateAllLifecyclePhasesForTest();
   // No more reference to marked node.
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(0u, MarkerController().Markers().size());
 }
 
@@ -132,7 +132,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedByRemoveMarked) {
     UpdateAllLifecyclePhasesForTest();
   }
   // No more reference to marked node.
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(0u, MarkerController().Markers().size());
 }
 
@@ -147,7 +147,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByRemoveAncestor) {
     UpdateAllLifecyclePhasesForTest();
   }
   // No more reference to marked node.
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(0u, MarkerController().Markers().size());
 }
 
@@ -162,7 +162,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByRemoveParent) {
     UpdateAllLifecyclePhasesForTest();
   }
   // No more reference to marked node.
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(0u, MarkerController().Markers().size());
 }
 
@@ -177,7 +177,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByReplaceChild) {
     UpdateAllLifecyclePhasesForTest();
   }
   // No more reference to marked node.
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(0u, MarkerController().Markers().size());
 }
 
@@ -192,7 +192,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedBySetInnerHTML) {
     UpdateAllLifecyclePhasesForTest();
   }
   // No more reference to marked node.
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(0u, MarkerController().Markers().size());
 }
 
@@ -211,7 +211,7 @@ TEST_F(DocumentMarkerControllerTest, SynchronousMutationNotificationAfterGC) {
   }
 
   // GC the marked node, so it disappears from WeakMember collections.
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(0u, MarkerController().Markers().size());
 
   // Trigger SynchronousMutationNotifier::NotifyUpdateCharacterData().

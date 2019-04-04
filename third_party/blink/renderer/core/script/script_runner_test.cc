@@ -401,7 +401,7 @@ TEST_F(ScriptRunnerTest, TasksWithDeadScriptRunner) {
 
   script_runner_.Release();
 
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
 
   // m_scriptRunner is gone. We need to make sure that ScriptRunner::Task do not
   // access dead object.

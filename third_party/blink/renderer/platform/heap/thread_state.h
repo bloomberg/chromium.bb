@@ -151,7 +151,7 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
     kIncrementalMarkingStepScheduled,
     kIncrementalMarkingFinalizeScheduled,
     kPreciseGCScheduled,
-    kFullGCScheduled,
+    kForcedGCForTestingScheduled,
     kPageNavigationGCScheduled,
     kIncrementalGCScheduled,
   };
@@ -229,7 +229,7 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   void ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType);
   void SchedulePageNavigationGCIfNeeded(float estimated_removal_ratio);
   void SchedulePageNavigationGC();
-  void ScheduleFullGC();
+  void ScheduleForcedGCForTesting();
   void ScheduleGCIfNeeded();
   void PostIdleGCTask();
   void WillStartV8GC(BlinkGC::V8GCType);
@@ -382,7 +382,7 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
                       BlinkGC::MarkingType,
                       BlinkGC::SweepingType,
                       BlinkGC::GCReason);
-  void CollectAllGarbage();
+  void CollectAllGarbageForTesting();
 
   // Register the pre-finalizer for the |self| object. The class T must have
   // USING_PRE_FINALIZER().

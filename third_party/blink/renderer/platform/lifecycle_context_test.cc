@@ -103,7 +103,7 @@ TEST(LifecycleContextTest, ShouldObserveContextDestroyed) {
   EXPECT_FALSE(observer->ContextDestroyedCalled());
   context->NotifyContextDestroyed();
   context = nullptr;
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(observer->LifecycleContext(), static_cast<DummyContext*>(nullptr));
   EXPECT_TRUE(observer->ContextDestroyedCalled());
 }
@@ -114,7 +114,7 @@ TEST(LifecycleContextTest, ShouldNotObserveContextDestroyedIfUnobserve) {
   observer->Unobserve();
   context->NotifyContextDestroyed();
   context = nullptr;
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(observer->LifecycleContext(), static_cast<DummyContext*>(nullptr));
   EXPECT_FALSE(observer->ContextDestroyedCalled());
 }
@@ -135,7 +135,7 @@ TEST(LifecycleContextTest, ObserverRemovedDuringNotifyDestroyed) {
   context->NotifyContextDestroyed();
   EXPECT_EQ(observer->InnerObserver(), nullptr);
   context = nullptr;
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(observer->LifecycleContext(), static_cast<DummyContext*>(nullptr));
   EXPECT_TRUE(observer->ContextDestroyedCalled());
 }
@@ -178,7 +178,7 @@ TEST(LifecycleContextTest, ForEachObserver) {
 
   seen_observers.clear();
   observer.Clear();
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
 
   context->ForEachObserver(
       [&](TestingObserver* observer) { seen_observers.push_back(observer); });

@@ -87,7 +87,7 @@ TEST_F(ScrollableAreaTest, ScrollbarTrackAndThumbRepaint) {
   EXPECT_TRUE(scrollbar->ThumbNeedsRepaint());
 
   // Forced GC in order to finalize objects depending on the mock object.
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
 }
 
 TEST_F(ScrollableAreaTest, ScrollbarGraphicsLayerInvalidation) {
@@ -113,7 +113,7 @@ TEST_F(ScrollableAreaTest, ScrollbarGraphicsLayerInvalidation) {
   EXPECT_TRUE(graphics_layer.HasTrackedRasterInvalidations());
 
   // Forced GC in order to finalize objects depending on the mock object.
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
 }
 
 TEST_F(ScrollableAreaTest, InvalidatesNonCompositedScrollbarsWhenThumbMoves) {
@@ -156,7 +156,7 @@ TEST_F(ScrollableAreaTest, InvalidatesNonCompositedScrollbarsWhenThumbMoves) {
   scrollable_area->ClearNeedsPaintInvalidationForScrollControls();
 
   // Forced GC in order to finalize objects depending on the mock object.
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
 }
 
 TEST_F(ScrollableAreaTest, InvalidatesCompositedScrollbarsIfPartsNeedRepaint) {
@@ -237,7 +237,7 @@ TEST_F(ScrollableAreaTest, InvalidatesCompositedScrollbarsIfPartsNeedRepaint) {
   EXPECT_FALSE(vertical_scrollbar->ThumbNeedsRepaint());
 
   // Forced GC in order to finalize objects depending on the mock object.
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
 }
 
 TEST_F(ScrollableAreaTest, RecalculatesScrollbarOverlayIfBackgroundChanges) {
@@ -298,7 +298,7 @@ TEST_F(ScrollableAreaTest, PopupOverlayScrollbarShouldNotFadeOut) {
   EXPECT_FALSE(scrollable_area->fade_overlay_scrollbars_timer_);
 
   // Forced GC in order to finalize objects depending on the mock object.
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
 }
 
 TEST_F(ScrollableAreaTest, ScrollAnimatorCallbackFiresOnAnimationCancel) {

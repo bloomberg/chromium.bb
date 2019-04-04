@@ -76,7 +76,9 @@ class WindowToViewportScalingChromeClient : public EmptyChromeClient {
 
 class ImageDocumentTest : public testing::Test {
  protected:
-  void TearDown() override { ThreadState::Current()->CollectAllGarbage(); }
+  void TearDown() override {
+    ThreadState::Current()->CollectAllGarbageForTesting();
+  }
 
   void CreateDocumentWithoutLoadingImage(int view_width, int view_height);
   void CreateDocument(int view_width, int view_height);

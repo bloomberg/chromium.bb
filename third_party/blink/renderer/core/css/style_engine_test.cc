@@ -687,7 +687,7 @@ TEST_F(StyleEngineTest, TextToSheetCache) {
 
   // Garbage collection should clear the weak reference in the
   // StyleSheetContents cache.
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
 
   element = HTMLStyleElement::Create(GetDocument(), CreateElementFlags());
   sheet1 = GetStyleEngine().CreateSheet(*element, sheet_text, min_pos, context);

@@ -161,21 +161,6 @@ void UpdateCollectedPhantomHandles(v8::Isolate* isolate) {
   stats_collector->IncreaseCollectedWrapperCount(count);
 }
 
-void ScheduleFollowupGCs(ThreadState* thread_state, v8::GCCallbackFlags flags) {
-  DCHECK(!thread_state->IsGCForbidden());
-  // Schedules followup garbage collections. Such garbage collections may be
-  // needed when:
-  // 1. GC is not precise because it has to scan on-stack pointers.
-  // 2. GC needs to reclaim chains persistent handles.
-
-  // v8::kGCCallbackFlagForced is used for testing GCs that need to verify
-  // that objects indeed died.
-  if (flags & v8::kGCCallbackFlagForced) {
-    // Forces a precise GC at the end of the current event loop.
-    thread_state->ScheduleFullGC();
-  }
-}
-
 }  // namespace
 
 void V8GCController::GcEpilogue(v8::Isolate* isolate,
@@ -224,7 +209,12 @@ void V8GCController::GcEpilogue(v8::Isolate* isolate,
 
   ThreadState* current_thread_state = ThreadState::Current();
   if (current_thread_state && !current_thread_state->IsGCForbidden()) {
-    ScheduleFollowupGCs(ThreadState::Current(), flags);
+    if (flags & v8::kGCCallbackFlagForced) {
+      // Forces a precise GC at the end of the current event loop.
+      // This is required for testing code that cannot use GC internals but
+      // rather has to rely on window.gc().
+      current_thread_state->ScheduleForcedGCForTesting();
+    }
   }
 
   TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),

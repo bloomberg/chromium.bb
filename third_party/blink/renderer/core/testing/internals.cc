@@ -3249,8 +3249,8 @@ void Internals::setScrollChain(ScrollState* scroll_state,
   scroll_state->SetScrollChain(scroll_chain);
 }
 
-void Internals::forceBlinkGCWithoutV8GC() {
-  ThreadState::Current()->ScheduleFullGC();
+void Internals::scheduleBlinkGC() {
+  ThreadState::Current()->ScheduleForcedGCForTesting();
 }
 
 String Internals::selectedHTMLForClipboard() {

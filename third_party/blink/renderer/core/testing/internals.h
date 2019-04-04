@@ -506,7 +506,7 @@ class Internals final : public ScriptWrappable {
   // Note: This is designed to be only used from PerformanceTests/BlinkGC to
   //       explicitly measure only Blink GC time.  Normal web tests should use
   //       gc() instead as it would trigger both Blink GC and V8 GC.
-  void forceBlinkGCWithoutV8GC();
+  void scheduleBlinkGC();
 
   String selectedHTMLForClipboard();
   String selectedTextForClipboard();

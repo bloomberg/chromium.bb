@@ -293,8 +293,9 @@ void ModulesInitializer::ForceNextWebGLContextCreationToFail() const {
   WebGLRenderingContext::ForceNextWebGLContextCreationToFail();
 }
 
-void ModulesInitializer::CollectAllGarbageForAnimationAndPaintWorklet() const {
-  AnimationAndPaintWorkletThread::CollectAllGarbage();
+void ModulesInitializer::
+    CollectAllGarbageForAnimationAndPaintWorkletForTesting() const {
+  AnimationAndPaintWorkletThread::CollectAllGarbageForTesting();
 }
 
 void ModulesInitializer::CloneSessionStorage(

@@ -42,7 +42,7 @@ void WebHeap::CollectGarbageForTesting() {
 }
 
 void WebHeap::CollectAllGarbageForTesting() {
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
 }
 
 void WebHeap::SetAllocationHook(AllocationHook alloc_hook) {

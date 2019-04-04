@@ -141,7 +141,7 @@ TEST_F(CSSLazyParsingTest, ChangeDocuments) {
     dummy_holder.reset();
   }
   // Ensure no stack references to oilpan objects.
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
 
   auto dummy_holder2 = std::make_unique<DummyPageHolder>(IntSize(500, 500));
   Page::InsertOrdinaryPageForTesting(&dummy_holder2->GetPage());
