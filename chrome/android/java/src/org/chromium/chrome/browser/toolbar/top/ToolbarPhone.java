@@ -1628,6 +1628,9 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             ApiCompatibilityUtils.setImageTintList(mExperimentalButton, tint);
         }
 
+        // TODO(amaralp): Have the LocationBar listen to tint changes.
+        if (mLocationBar != null) mLocationBar.updateVisualsForState();
+
         if (mLayoutUpdateHost != null) mLayoutUpdateHost.requestUpdate();
     }
 
@@ -2350,8 +2353,6 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         }
 
         if (mVisualState == VisualState.BRAND_COLOR && !visualStateChanged) {
-            boolean useLightToolbarDrawables =
-                    ColorUtils.shouldUseLightForegroundOnBackground(currentPrimaryColor);
             boolean unfocusedLocationBarUsesTransparentBg =
                     !ColorUtils.shouldUseOpaqueTextboxBackground(currentPrimaryColor);
             if (unfocusedLocationBarUsesTransparentBg != mUnfocusedLocationBarUsesTransparentBg) {
