@@ -184,6 +184,9 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
 
   # These are defined by an android internal gn_isolate_map.pyl file.
   'chrome_apk',
+
+  # These are used by https://www.chromium.org/developers/cluster-telemetry.
+  'ct_telemetry_perf_tests_without_chrome',
 }
 
 
