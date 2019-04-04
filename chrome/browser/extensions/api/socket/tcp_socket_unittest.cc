@@ -13,7 +13,6 @@
 #include "content/public/test/test_storage_partition.h"
 #include "extensions/browser/api/socket/tcp_socket.h"
 #include "net/base/address_list.h"
-#include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
