@@ -1755,7 +1755,6 @@ crbug.com/891427 virtual/android/rootscroller/rootscroller-during-fullscreen.htm
 crbug.com/891427 external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 fast/canvas/canvas-drawImage-live-video.html [ Pass Failure Timeout Crash ]
 # Next 1 here: https://ci.chromium.org/buildbot/tryserver.blink/win7-blink-rel/1180
-crbug.com/891427 editing/pasteboard/drop-text-without-selection.html [ Pass Failure Timeout Crash ]
 # Next 2 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel/1541
 crbug.com/891427 virtual/android/rootscroller/gesture-scroll-document-not-root-scroller.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.js [ Pass Failure Timeout Crash ]
@@ -5346,7 +5345,6 @@ crbug.com/824539 [ Android ] device_orientation/motion/add-listener-from-callbac
 crbug.com/824539 [ Android ] editing/execCommand/5190926.html [ Failure Timeout ]
 crbug.com/824539 [ Android ] editing/inserting/5156401-2.html [ Failure ]
 ### See crbug.com/891427 comment near the top of this file:
-###crbug.com/824539 [ Android ] editing/pasteboard/drop-text-without-selection.html [ Failure ]
 crbug.com/824539 [ Android ] editing/pasteboard/paste-line-endings-001.html [ Failure Timeout ]
 crbug.com/824539 [ Android ] editing/pasteboard/paste-line-endings-002.html [ Failure Timeout ]
 crbug.com/824539 [ Android ] editing/pasteboard/paste-line-endings-003.html [ Failure Timeout ]
