@@ -38,7 +38,8 @@ class IsolatedModule : public ModuleCache::Module {
   std::unique_ptr<char[]> memory_region_;
 };
 
-#if defined(OS_MACOSX) && !defined(OS_IOS) || defined(OS_WIN)
+#if defined(OS_POSIX) && !defined(OS_IOS) || defined(OS_WIN) || \
+    defined(OS_FUCHSIA)
 #define MAYBE_TEST(TestSuite, TestName) TEST(TestSuite, TestName)
 #else
 #define MAYBE_TEST(TestSuite, TestName) TEST(TestSuite, DISABLED_##TestName)
