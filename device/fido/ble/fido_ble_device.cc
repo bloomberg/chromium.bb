@@ -53,11 +53,6 @@ std::string FidoBleDevice::GetId(base::StringPiece address) {
   return std::string("ble:").append(address.begin(), address.end());
 }
 
-void FidoBleDevice::TryWink(WinkCallback callback) {
-  // U2F over BLE does not support winking.
-  std::move(callback).Run();
-}
-
 void FidoBleDevice::Cancel() {
   if (state_ != State::kReady && state_ != State::kBusy)
     return;

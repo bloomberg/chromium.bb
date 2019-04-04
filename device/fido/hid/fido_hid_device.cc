@@ -348,26 +348,6 @@ void FidoHidDevice::MessageReceived(base::Optional<FidoHidMessage> message) {
   }
 }
 
-void FidoHidDevice::TryWink(WinkCallback callback) {
-  // Only try to wink if device claims support.
-  if (!(capabilities_ & kWinkCapability) || state_ != State::kReady) {
-    std::move(callback).Run();
-    return;
-  }
-
-  WriteMessage(
-      FidoHidMessage::Create(channel_id_, FidoHidDeviceCommand::kWink,
-                             output_report_size_, std::vector<uint8_t>()),
-      true,
-      base::BindOnce(&FidoHidDevice::OnWink, weak_factory_.GetWeakPtr(),
-                     std::move(callback)));
-}
-
-void FidoHidDevice::OnWink(WinkCallback callback,
-                           base::Optional<FidoHidMessage> response) {
-  std::move(callback).Run();
-}
-
 void FidoHidDevice::ArmTimeout() {
   DCHECK(timeout_callback_.IsCancelled());
   timeout_callback_.Reset(

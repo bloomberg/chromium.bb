@@ -30,7 +30,6 @@ namespace device {
 // |FidoDeviceDiscovery| are not fully initialized.
 class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
  public:
-  using WinkCallback = base::OnceClosure;
   using DeviceCallback =
       base::OnceCallback<void(base::Optional<std::vector<uint8_t>>)>;
 
@@ -56,7 +55,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   // call (i.e. hairpin) |callback|.
   virtual void DeviceTransact(std::vector<uint8_t> command,
                               DeviceCallback callback) = 0;
-  virtual void TryWink(WinkCallback callback) = 0;
   virtual void Cancel() = 0;
   virtual std::string GetId() const = 0;
   virtual base::string16 GetDisplayName() const;

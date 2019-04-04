@@ -82,10 +82,6 @@ MockFidoDevice::MockFidoDevice(
 }
 MockFidoDevice::~MockFidoDevice() = default;
 
-void MockFidoDevice::TryWink(WinkCallback cb) {
-  TryWinkRef(cb);
-}
-
 void MockFidoDevice::DeviceTransact(std::vector<uint8_t> command,
                                     DeviceCallback cb) {
   DeviceTransactPtr(command, cb);
@@ -97,10 +93,6 @@ FidoTransportProtocol MockFidoDevice::DeviceTransport() const {
 
 base::WeakPtr<FidoDevice> MockFidoDevice::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
-}
-
-void MockFidoDevice::ExpectWinkedAtLeastOnce() {
-  EXPECT_CALL(*this, TryWinkRef(::testing::_)).Times(::testing::AtLeast(1));
 }
 
 void MockFidoDevice::StubGetId() {
