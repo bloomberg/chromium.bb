@@ -29,7 +29,7 @@ void StackSamplerAndroid::RecordStackFrames(
   }
   const void* pcs[kMaxFrameDepth];
   size_t depth = unwinder_.TraceStack(tid_, stack_buffer, pcs, kMaxFrameDepth);
-  std::vector<base::ProfileBuilder::Frame> frames;
+  std::vector<base::Frame> frames;
   frames.reserve(depth);
   for (size_t i = 0; i < depth; ++i) {
     // TODO(ssid): Add support for obtaining modules here.

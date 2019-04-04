@@ -106,7 +106,7 @@ void HeapProfilerController::RetrieveAndSendSnapshot() {
                                                    &metadata_recorder);
 
   for (const base::SamplingHeapProfiler::Sample& sample : samples) {
-    std::vector<base::ProfileBuilder::Frame> frames;
+    std::vector<base::Frame> frames;
     frames.reserve(sample.stack.size());
     for (const void* frame : sample.stack) {
       uintptr_t address = reinterpret_cast<uintptr_t>(frame);

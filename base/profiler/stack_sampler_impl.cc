@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/profiler/profile_builder.h"
 #include "base/profiler/thread_delegate.h"
 
 // IMPORTANT NOTE: Some functions within this implementation are invoked while
@@ -154,10 +155,9 @@ bool StackSamplerImpl::CopyStack(StackBuffer* stack_buffer,
 
 // Walks the stack represented by |thread_context|, recording and returning the
 // frames.
-std::vector<ProfileBuilder::Frame> StackSamplerImpl::WalkStack(
-    RegisterContext* thread_context,
-    uintptr_t stack_top) {
-  std::vector<ProfileBuilder::Frame> stack;
+std::vector<Frame> StackSamplerImpl::WalkStack(RegisterContext* thread_context,
+                                               uintptr_t stack_top) {
+  std::vector<Frame> stack;
   // Reserve enough memory for most stacks, to avoid repeated
   // allocations. Approximately 99.9% of recorded stacks are 128 frames or
   // fewer.

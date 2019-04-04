@@ -83,7 +83,7 @@ void CallStackProfileBuilder::RecordMetadata() {
 }
 
 void CallStackProfileBuilder::OnSampleCompleted(
-    std::vector<base::ProfileBuilder::Frame> frames) {
+    std::vector<base::Frame> frames) {
   // Write CallStackProfile::Stack protobuf message.
   CallStackProfile::Stack stack;
 

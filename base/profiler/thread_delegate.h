@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/base_export.h"
-#include "base/profiler/profile_builder.h"
+#include "base/profiler/frame.h"
 #include "base/profiler/register_context.h"
 #include "base/profiler/unwind_result.h"
 
@@ -72,11 +72,10 @@ class BASE_EXPORT ThreadDelegate {
   // stack->back() contains the frame corresponding to the state in
   // |thread_context|.
   // TODO(wittman): Move the unwinding support into a separate UnwindDelegate.
-  virtual UnwindResult WalkNativeFrames(
-      RegisterContext* thread_context,
-      uintptr_t stack_top,
-      ModuleCache* module_cache,
-      std::vector<ProfileBuilder::Frame>* stack) = 0;
+  virtual UnwindResult WalkNativeFrames(RegisterContext* thread_context,
+                                        uintptr_t stack_top,
+                                        ModuleCache* module_cache,
+                                        std::vector<Frame>* stack) = 0;
 };
 
 }  // namespace base
