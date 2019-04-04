@@ -281,6 +281,8 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
   }
   if (read_result == FormRetrievalResult::kEncrytionServiceFailure) {
     if (!ShouldRecoverPasswordsDuringMerge()) {
+      metrics_util::LogPasswordSyncState(
+          metrics_util::NOT_SYNCING_FAILED_DECRYPTION);
       return syncer::ModelError(FROM_HERE,
                                 "Failed to load entries from password store. "
                                 "Encryption service failure.");
@@ -288,6 +290,8 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
     base::Optional<syncer::ModelError> cleanup_result_error =
         CleanupPasswordStore();
     if (cleanup_result_error) {
+      metrics_util::LogPasswordSyncState(
+          metrics_util::NOT_SYNCING_FAILED_CLEANUP);
       return cleanup_result_error;
     }
     // Clean up done successfully, try to read again.
@@ -378,6 +382,8 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
                 remote_entity_change, /*sync_time=*/time_now));
         DCHECK_LE(changes.size(), 1U);
         if (changes.empty()) {
+          metrics_util::LogPasswordSyncState(
+              metrics_util::NOT_SYNCING_FAILED_UPDATE);
           return syncer::ModelError(
               FROM_HERE, "Failed to update an entry in the password store.");
         }
@@ -416,6 +422,8 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
       // DCHECK_LE(changes.size(), 1U);
       DCHECK_LE(changes.size(), 2U);
       if (changes.empty()) {
+        metrics_util::LogPasswordSyncState(
+            metrics_util::NOT_SYNCING_FAILED_ADD);
         return syncer::ModelError(
             FROM_HERE, "Failed to add an entry in the password store.");
       }
@@ -446,6 +454,10 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
     // CreateMetadataChangeList() so downcasting is safe.
     static_cast<syncer::InMemoryMetadataChangeList*>(metadata_change_list.get())
         ->TransferChangesTo(&sync_metadata_store_change_list);
+    // Even if metadata persistence failed, the transaction will be committed,
+    // and the underlying PasswordStore will be updated. Therefore, we need to
+    // notify password store observers even if metadata persistence fails, and
+    // we cannot simply return.
     error = sync_metadata_store_change_list.TakeError();
   }  // End of scoped transaction.
 
@@ -456,8 +468,12 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
     // interested in changes to sync metadata.
     password_store_sync_->NotifyLoginsChanged(password_store_changes);
   }
-
-  metrics_util::LogPasswordSyncState(metrics_util::SYNCING_OK);
+  if (error) {
+    metrics_util::LogPasswordSyncState(
+        metrics_util::NOT_SYNCING_FAILED_METADATA_PERSISTENCE);
+  } else {
+    metrics_util::LogPasswordSyncState(metrics_util::SYNCING_OK);
+  }
   return error;
 }
 
