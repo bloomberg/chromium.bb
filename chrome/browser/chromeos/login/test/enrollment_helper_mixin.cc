@@ -74,16 +74,46 @@ void EnrollmentHelperMixin::ExpectEnrollmentModeRepeated(
   EXPECT_CALL(*mock_, Setup(_, ConfigModeMatches(mode), _)).Times(AtLeast(1));
 }
 
+void EnrollmentHelperMixin::ExpectSuccessfulOAuthEnrollment() {
+  EXPECT_CALL(*mock_, EnrollUsingAuthCode(kTestAuthCode, _))
+      .WillOnce(InvokeWithoutArgs(
+          [this]() { mock_->status_consumer()->OnDeviceEnrolled(); }));
+}
+
+void EnrollmentHelperMixin::ExpectAvailableLicenseCount(int perpetual,
+                                                        int annual,
+                                                        int kiosk) {
+  std::map<policy::LicenseType, int> license_map;
+  if (perpetual >= 0)
+    license_map[policy::LicenseType::PERPETUAL] = perpetual;
+  if (annual >= 0)
+    license_map[policy::LicenseType::ANNUAL] = annual;
+  if (kiosk >= 0)
+    license_map[policy::LicenseType::KIOSK] = kiosk;
+  CHECK(license_map.size() > 1);
+  EXPECT_CALL(*mock_, EnrollUsingAuthCode(kTestAuthCode, _))
+      .WillOnce(InvokeWithoutArgs([this, license_map]() {
+        mock_->status_consumer()->OnMultipleLicensesAvailable(license_map);
+      }));
+}
+
+void EnrollmentHelperMixin::ExpectSuccessfulEnrollmentWithLicense(
+    policy::LicenseType license_type) {
+  EXPECT_CALL(*mock_, UseLicenseType(license_type))
+      .WillOnce(InvokeWithoutArgs(
+          [this]() { mock_->status_consumer()->OnDeviceEnrolled(); }));
+}
+
 void EnrollmentHelperMixin::ExpectAttestationEnrollmentSuccess() {
   EXPECT_CALL(*mock_, EnrollUsingAttestation())
-      .WillOnce(testing::Invoke(
+      .WillOnce(InvokeWithoutArgs(
           [this]() { mock_->status_consumer()->OnDeviceEnrolled(); }));
 }
 
 void EnrollmentHelperMixin::ExpectAttestationEnrollmentError(
     policy::EnrollmentStatus status) {
   EXPECT_CALL(*mock_, EnrollUsingAttestation())
-      .WillOnce(testing::Invoke([this, status]() {
+      .WillOnce(InvokeWithoutArgs([this, status]() {
         mock_->status_consumer()->OnEnrollmentError(status);
       }));
 }
@@ -92,7 +122,7 @@ void EnrollmentHelperMixin::ExpectAttestationEnrollmentErrorRepeated(
     policy::EnrollmentStatus status) {
   EXPECT_CALL(*mock_, EnrollUsingAttestation())
       .Times(AtLeast(1))
-      .WillRepeatedly(testing::Invoke([this, status]() {
+      .WillRepeatedly(InvokeWithoutArgs([this, status]() {
         mock_->status_consumer()->OnEnrollmentError(status);
       }));
 }
@@ -101,7 +131,7 @@ void EnrollmentHelperMixin::ExpectOfflineEnrollmentSuccess() {
   ExpectEnrollmentMode(policy::EnrollmentConfig::MODE_OFFLINE_DEMO);
 
   EXPECT_CALL(*mock_, EnrollForOfflineDemo())
-      .WillOnce(testing::Invoke(
+      .WillOnce(testing::InvokeWithoutArgs(
           [this]() { mock_->status_consumer()->OnDeviceEnrolled(); }));
 }
 
@@ -109,7 +139,7 @@ void EnrollmentHelperMixin::ExpectOfflineEnrollmentError(
     policy::EnrollmentStatus status) {
   ExpectEnrollmentMode(policy::EnrollmentConfig::MODE_OFFLINE_DEMO);
   EXPECT_CALL(*mock_, EnrollForOfflineDemo())
-      .WillOnce(testing::Invoke([this, status]() {
+      .WillOnce(testing::InvokeWithoutArgs([this, status]() {
         mock_->status_consumer()->OnEnrollmentError(status);
       }));
 }
@@ -141,7 +171,10 @@ void EnrollmentHelperMixin::ExpectAttributePromptUpdate(
       }));
 
   // Ensures we receive the updates attributes.
-  EXPECT_CALL(*mock_, UpdateDeviceAttributes(asset_id, location));
+  EXPECT_CALL(*mock_, UpdateDeviceAttributes(asset_id, location))
+      .WillOnce(InvokeWithoutArgs([this]() {
+        mock_->status_consumer()->OnDeviceAttributeUploadCompleted(true);
+      }));
 }
 
 void EnrollmentHelperMixin::SetupActiveDirectoryJoin(

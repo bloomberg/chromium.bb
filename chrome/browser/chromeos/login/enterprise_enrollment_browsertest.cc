@@ -144,6 +144,7 @@ class EnterpriseEnrollmentTestBase : public LoginManagerTest {
   void SubmitEnrollmentCredentials() {
     enrollment_screen()->OnLoginDone(
         "testuser@test.com", test::EnrollmentHelperMixin::kTestAuthCode);
+    ExecutePendingJavaScript();
   }
 
   // Fills out the UI with device attribute information and submits it.
@@ -176,6 +177,14 @@ class EnterpriseEnrollmentTestBase : public LoginManagerTest {
         "').length";
     int count = test::OobeJS().GetInt(js);
     return count > 0;
+  }
+
+  // Waits until specific enrollment step is displayed.
+  void WaitForStep(const std::string& step) {
+    const std::string js =
+        "document.getElementsByClassName('oauth-enroll-state-" + step +
+        "').length > 0";
+    test::OobeJS().CreateWaiter(js)->Wait();
   }
 
   // Setup the enrollment screen.
@@ -470,8 +479,8 @@ TEST_DISABLED_ON_MSAN(EnterpriseEnrollmentTest,
   enrollment_helper_.ExpectEnrollmentMode(
       policy::EnrollmentConfig::MODE_MANUAL);
   enrollment_helper_.DisableAttributePromptUpdate();
+  enrollment_helper_.ExpectSuccessfulOAuthEnrollment();
   SubmitEnrollmentCredentials();
-  CompleteEnrollment();
 
   // Verify that the success page is displayed.
   EXPECT_TRUE(IsStepDisplayed("success"));
@@ -489,8 +498,8 @@ TEST_DISABLED_ON_MSAN(EnterpriseEnrollmentTest,
   enrollment_helper_.ExpectEnrollmentMode(
       policy::EnrollmentConfig::MODE_MANUAL);
   enrollment_helper_.ExpectAttributePromptUpdate("asset_id", "location");
+  enrollment_helper_.ExpectSuccessfulOAuthEnrollment();
   SubmitEnrollmentCredentials();
-  CompleteEnrollment();
 
   // Make sure the attribute-prompt view is open.
   EXPECT_TRUE(IsStepDisplayed("attribute-prompt"));
@@ -498,6 +507,35 @@ TEST_DISABLED_ON_MSAN(EnterpriseEnrollmentTest,
   EXPECT_FALSE(IsStepDisplayed("error"));
 
   SubmitAttributePromptUpdate();
+}
+
+// Shows the enrollment screen and mocks the enrollment helper to show license
+// selection step. Selects an option with non-zero license count, and uses that
+// license for enrollment.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest, TestLicenseSelection) {
+  ShowEnrollmentScreen();
+  enrollment_helper_.ExpectEnrollmentMode(
+      policy::EnrollmentConfig::MODE_MANUAL);
+
+  enrollment_helper_.DisableAttributePromptUpdate();
+  enrollment_helper_.ExpectAvailableLicenseCount(1 /* perpetual */,
+                                                 0 /* annual */, 3 /* kiosk */);
+  enrollment_helper_.ExpectSuccessfulEnrollmentWithLicense(
+      policy::LicenseType::KIOSK);
+
+  SubmitEnrollmentCredentials();
+
+  // Make sure the license selection screen is open.
+  WaitForStep("license");
+  // Click on third option.
+  test::OobeJS().SelectRadioPath(
+      {"oauth-enroll-license-ui", "license-option-kiosk"});
+  // Click on second option. As there is 0 annual licenses, it should not be
+  // selected.
+  test::OobeJS().SelectRadioPath(
+      {"oauth-enroll-license-ui", "license-option-annual"});
+  test::OobeJS().TapOnPath({"oauth-enroll-license-ui", "next"});
+  WaitForStep("success");
 }
 
 // Shows the enrollment screen and mocks the enrollment helper to show Active
