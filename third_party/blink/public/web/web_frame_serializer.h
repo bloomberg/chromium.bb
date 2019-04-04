@@ -121,7 +121,8 @@ class WebFrameSerializer {
   // the target frame didn't have a valid url).
   BLINK_EXPORT static bool Serialize(WebLocalFrame*,
                                      WebFrameSerializerClient*,
-                                     LinkRewritingDelegate*);
+                                     LinkRewritingDelegate*,
+                                     bool);
 
   // FIXME: The following are here for unit testing purposes. Consider
   // changing the unit tests instead.
