@@ -11,6 +11,7 @@
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_control_client_holder.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_adapter.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_request_adapter_options.h"
@@ -65,6 +66,14 @@ ScriptPromise GPU::requestAdapter(ScriptState* script_state,
                                   const GPURequestAdapterOptions* options) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
+
+  if (options->powerPreference()) {
+    ExecutionContext::From(script_state)
+        ->AddConsoleMessage(ConsoleMessage::Create(
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kWarning,
+            "The powerPreference option is not implemented yet."));
+  }
 
   // TODO(enga): Request the adapter from the WebGPUInterface.
   GPUAdapter* adapter = GPUAdapter::Create("Default", dawn_control_client_);
