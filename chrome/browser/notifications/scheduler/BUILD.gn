@@ -53,6 +53,7 @@ source_set("lib") {
     "display_decider.h",
     "distribution_policy.cc",
     "distribution_policy.h",
+    "icon_entry.cc",
     "icon_entry.h",
     "icon_store.cc",
     "icon_store.h",

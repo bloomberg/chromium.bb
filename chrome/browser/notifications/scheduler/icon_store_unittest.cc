@@ -32,8 +32,12 @@ class IconStoreTest : public testing::Test {
   ~IconStoreTest() override = default;
 
   void SetUp() override {
-    IconEntry entry{kEntryId, kEntryData};
-    db_entries_.emplace(kEntryKey, std::move(entry));
+    IconEntry entry;
+    entry.uuid = kEntryId;
+    entry.data = kEntryData;
+    proto::Icon proto;
+    leveldb_proto::DataToProto(entry, &proto);
+    db_entries_.emplace(kEntryKey, proto);
 
     auto db =
         std::make_unique<leveldb_proto::test::FakeDB<proto::Icon, IconEntry>>(
@@ -72,7 +76,7 @@ class IconStoreTest : public testing::Test {
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<IconStore> store_;
-  std::map<std::string, IconEntry> db_entries_;
+  std::map<std::string, proto::Icon> db_entries_;
   std::unique_ptr<IconEntry> loaded_entry_;
   bool load_result_;
   leveldb_proto::test::FakeDB<proto::Icon, IconEntry>* db_;
