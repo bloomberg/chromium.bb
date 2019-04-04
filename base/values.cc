@@ -67,12 +67,12 @@ std::unique_ptr<Value> CopyListWithoutEmptyChildren(const Value& list) {
 std::unique_ptr<DictionaryValue> CopyDictionaryWithoutEmptyChildren(
     const DictionaryValue& dict) {
   std::unique_ptr<DictionaryValue> copy;
-  for (DictionaryValue::Iterator it(dict); !it.IsAtEnd(); it.Advance()) {
-    std::unique_ptr<Value> child_copy = CopyWithoutEmptyChildren(it.value());
+  for (const auto& it : dict.DictItems()) {
+    std::unique_ptr<Value> child_copy = CopyWithoutEmptyChildren(it.second);
     if (child_copy) {
       if (!copy)
         copy = std::make_unique<DictionaryValue>();
-      copy->SetWithoutPathExpansion(it.key(), std::move(child_copy));
+      copy->SetKey(it.first, std::move(*child_copy));
     }
   }
   return copy;
@@ -91,6 +91,43 @@ std::unique_ptr<Value> CopyWithoutEmptyChildren(const Value& node) {
       return std::make_unique<Value>(node.Clone());
   }
 }
+
+// Helper class to enumerate the path components from a StringPiece
+// without performing heap allocations. Components are simply separated
+// by single dots (e.g. "foo.bar.baz"  -> ["foo", "bar", "baz"]).
+//
+// Usage example:
+//    PathSplitter splitter(some_path);
+//    while (splitter.HasNext()) {
+//       StringPiece component = splitter.Next();
+//       ...
+//    }
+//
+class PathSplitter {
+ public:
+  explicit PathSplitter(StringPiece path) : path_(path) {}
+
+  bool HasNext() const { return pos_ < path_.size(); }
+
+  StringPiece Next() {
+    DCHECK(HasNext());
+    size_t start = pos_;
+    size_t pos = path_.find('.', start);
+    size_t end;
+    if (pos == path_.npos) {
+      end = path_.size();
+      pos_ = end;
+    } else {
+      end = pos;
+      pos_ = pos + 1;
+    }
+    return path_.substr(start, end - start);
+  }
+
+ private:
+  StringPiece path_;
+  size_t pos_ = 0;
+};
 
 }  // namespace
 
@@ -376,19 +413,6 @@ bool Value::RemoveKey(StringPiece key) {
   return dict_.erase(key) != 0;
 }
 
-Value* Value::SetKeyInternal(StringPiece key,
-                             std::unique_ptr<Value>&& val_ptr) {
-  CHECK(is_dict());
-  // NOTE: We can't use |insert_or_assign| here, as only |try_emplace| does
-  // an explicit conversion from StringPiece to std::string if necessary.
-  auto result = dict_.try_emplace(key, std::move(val_ptr));
-  if (!result.second) {
-    // val_ptr is guaranteed to be still intact at this point.
-    result.first->second = std::move(val_ptr);
-  }
-  return result.first->second.get();
-}
-
 Value* Value::SetBoolKey(StringPiece key, bool value) {
   return SetKeyInternal(key, std::make_unique<Value>(value));
 }
@@ -433,6 +457,143 @@ Value* Value::SetKey(const char* key, Value&& value) {
   return SetKeyInternal(key, std::make_unique<Value>(std::move(value)));
 }
 
+Value* Value::FindPath(StringPiece path) {
+  return const_cast<Value*>(const_cast<const Value*>(this)->FindPath(path));
+}
+
+const Value* Value::FindPath(StringPiece path) const {
+  CHECK(is_dict());
+  const Value* cur = this;
+  PathSplitter splitter(path);
+  while (splitter.HasNext()) {
+    if (!cur->is_dict() || (cur = cur->FindKey(splitter.Next())) == nullptr)
+      return nullptr;
+  }
+  return cur;
+}
+
+Value* Value::FindPathOfType(StringPiece path, Type type) {
+  return const_cast<Value*>(
+      const_cast<const Value*>(this)->FindPathOfType(path, type));
+}
+
+const Value* Value::FindPathOfType(StringPiece path, Type type) const {
+  const Value* cur = FindPath(path);
+  if (!cur || cur->type() != type)
+    return nullptr;
+  return cur;
+}
+
+base::Optional<bool> Value::FindBoolPath(StringPiece path) const {
+  const Value* cur = FindPath(path);
+  if (!cur || !cur->is_bool())
+    return base::nullopt;
+  return cur->bool_value_;
+}
+
+base::Optional<int> Value::FindIntPath(StringPiece path) const {
+  const Value* cur = FindPath(path);
+  if (!cur || !cur->is_int())
+    return base::nullopt;
+  return cur->int_value_;
+}
+
+base::Optional<double> Value::FindDoublePath(StringPiece path) const {
+  const Value* cur = FindPath(path);
+  if (cur) {
+    if (cur->is_int())
+      return static_cast<double>(cur->int_value_);
+    if (cur->is_double())
+      return cur->AsDoubleInternal();
+  }
+  return base::nullopt;
+}
+
+const std::string* Value::FindStringPath(StringPiece path) const {
+  const Value* cur = FindPath(path);
+  if (!cur || !cur->is_string())
+    return nullptr;
+  return &cur->string_value_;
+}
+
+const Value::BlobStorage* Value::FindBlobPath(StringPiece path) const {
+  const Value* cur = FindPath(path);
+  if (!cur || !cur->is_blob())
+    return nullptr;
+  return &cur->binary_value_;
+}
+
+const Value* Value::FindDictPath(StringPiece path) const {
+  return FindPathOfType(path, Type::DICTIONARY);
+}
+
+Value* Value::FindDictPath(StringPiece path) {
+  return FindPathOfType(path, Type::DICTIONARY);
+}
+
+const Value* Value::FindListPath(StringPiece path) const {
+  return FindPathOfType(path, Type::LIST);
+}
+
+Value* Value::FindListPath(StringPiece path) {
+  return FindPathOfType(path, Type::LIST);
+}
+
+Value* Value::SetPath(StringPiece path, Value&& value) {
+  return SetPathInternal(path, std::make_unique<Value>(std::move(value)));
+}
+
+Value* Value::SetBoolPath(StringPiece path, bool value) {
+  return SetPathInternal(path, std::make_unique<Value>(value));
+}
+
+Value* Value::SetIntPath(StringPiece path, int value) {
+  return SetPathInternal(path, std::make_unique<Value>(value));
+}
+
+Value* Value::SetDoublePath(StringPiece path, double value) {
+  return SetPathInternal(path, std::make_unique<Value>(value));
+}
+
+Value* Value::SetStringPath(StringPiece path, StringPiece value) {
+  return SetPathInternal(path, std::make_unique<Value>(value));
+}
+
+Value* Value::SetStringPath(StringPiece path, std::string&& value) {
+  return SetPathInternal(path, std::make_unique<Value>(std::move(value)));
+}
+
+Value* Value::SetStringPath(StringPiece path, const char* value) {
+  return SetPathInternal(path, std::make_unique<Value>(value));
+}
+
+Value* Value::SetStringPath(StringPiece path, StringPiece16 value) {
+  return SetPathInternal(path, std::make_unique<Value>(value));
+}
+
+bool Value::RemovePath(StringPiece path) {
+  if (!is_dict() || path.empty())
+    return false;
+
+  // NOTE: PathSplitter is not being used here because recursion is used to
+  // ensure that dictionaries that become empty due to this operation are
+  // removed automatically.
+  size_t pos = path.find('.');
+  if (pos == path.npos)
+    return RemoveKey(path);
+
+  auto found = dict_.find(path.substr(0, pos));
+  if (found == dict_.end() || !found->second->is_dict())
+    return false;
+
+  bool removed = found->second->RemovePath(path.substr(pos + 1));
+  if (removed && found->second->dict_.empty())
+    dict_.erase(found);
+
+  return removed;
+}
+
+// DEPRECATED METHODS
 Value* Value::FindPath(std::initializer_list<StringPiece> path) {
   return const_cast<Value*>(const_cast<const Value*>(this)->FindPath(path));
 }
@@ -864,6 +1025,50 @@ void Value::InternalCleanup() {
   CHECK(false);
 }
 
+Value* Value::SetKeyInternal(StringPiece key,
+                             std::unique_ptr<Value>&& val_ptr) {
+  CHECK(is_dict());
+  // NOTE: We can't use |insert_or_assign| here, as only |try_emplace| does
+  // an explicit conversion from StringPiece to std::string if necessary.
+  auto result = dict_.try_emplace(key, std::move(val_ptr));
+  if (!result.second) {
+    // val_ptr is guaranteed to be still intact at this point.
+    result.first->second = std::move(val_ptr);
+  }
+  return result.first->second.get();
+}
+
+Value* Value::SetPathInternal(StringPiece path,
+                              std::unique_ptr<Value>&& value_ptr) {
+  PathSplitter splitter(path);
+  DCHECK(splitter.HasNext()) << "Cannot call SetPath() with empty path";
+  // Walk/construct intermediate dictionaries. The last element requires
+  // special handling so skip it in this loop.
+  Value* cur = this;
+  StringPiece path_component = splitter.Next();
+  while (splitter.HasNext()) {
+    if (!cur->is_dict())
+      return nullptr;
+
+    // Use lower_bound to avoid doing the search twice for missing keys.
+    auto found = cur->dict_.lower_bound(path_component);
+    if (found == cur->dict_.end() || found->first != path_component) {
+      // No key found, insert one.
+      auto inserted = cur->dict_.try_emplace(
+          found, path_component, std::make_unique<Value>(Type::DICTIONARY));
+      cur = inserted->second.get();
+    } else {
+      cur = found->second.get();
+    }
+    path_component = splitter.Next();
+  }
+
+  // "cur" will now contain the last dictionary to insert or replace into.
+  if (!cur->is_dict())
+    return nullptr;
+  return cur->SetKeyInternal(path_component, std::move(value_ptr));
+}
+
 ///////////////////// DictionaryValue ////////////////////
 
 // static
@@ -897,6 +1102,10 @@ Value* DictionaryValue::Set(StringPiece path, std::unique_ptr<Value> in_value) {
   DCHECK(IsStringUTF8(path));
   DCHECK(in_value);
 
+  // IMPORTANT NOTE: Do not replace with SetPathInternal() yet, because the
+  // latter fails when over-writing a non-dict intermediate node, while this
+  // method just replaces it with one. This difference makes some tests actually
+  // fail (http://crbug.com/949461).
   StringPiece current_path(path);
   Value* current_dictionary = this;
   for (size_t delimiter_position = current_path.find('.');
@@ -966,22 +1175,12 @@ Value* DictionaryValue::SetWithoutPathExpansion(
 bool DictionaryValue::Get(StringPiece path,
                           const Value** out_value) const {
   DCHECK(IsStringUTF8(path));
-  StringPiece current_path(path);
-  const DictionaryValue* current_dictionary = this;
-  for (size_t delimiter_position = current_path.find('.');
-       delimiter_position != std::string::npos;
-       delimiter_position = current_path.find('.')) {
-    const DictionaryValue* child_dictionary = nullptr;
-    if (!current_dictionary->GetDictionaryWithoutPathExpansion(
-            current_path.substr(0, delimiter_position), &child_dictionary)) {
-      return false;
-    }
-
-    current_dictionary = child_dictionary;
-    current_path = current_path.substr(delimiter_position + 1);
-  }
-
-  return current_dictionary->GetWithoutPathExpansion(current_path, out_value);
+  const Value* value = FindPath(path);
+  if (!value)
+    return false;
+  if (out_value)
+    *out_value = value;
+  return true;
 }
 
 bool DictionaryValue::Get(StringPiece path, Value** out_value)  {
