@@ -25,7 +25,10 @@ Polymer({
      * If the printer needs to be re-configured.
      * @private {boolean}
      */
-    needsReconfigured_: Boolean,
+    needsReconfigured_: {
+      type: Boolean,
+      value: false,
+    },
 
     /**
      * The current PPD in use by the printer.
@@ -73,7 +76,7 @@ Polymer({
   },
 
   observers: [
-    'onPrinterInfoChange_(activePrinter.*)',
+    'printerPathChanged_(activePrinter.*)',
     'selectedEditManufacturerChanged_(activePrinter.ppdManufacturer)',
   ],
 
