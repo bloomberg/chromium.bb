@@ -427,7 +427,8 @@ void PPBNaClPrivate::LaunchSelLdr(
   InstanceInfo instance_info;
   instance_info.url = GURL(alleged_url);
 
-  uint32_t perm_bits = ppapi::PERMISSION_NONE;
+  // Keep backwards-compatible, but no other permissions.
+  uint32_t perm_bits = ppapi::PERMISSION_DEFAULT;
   instance_info.permissions =
       ppapi::PpapiPermissions::GetForCommandLine(perm_bits);
 

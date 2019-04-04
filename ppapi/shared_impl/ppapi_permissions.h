@@ -42,6 +42,11 @@ enum Permission {
 
   // NOTE: If you add stuff be sure to update PERMISSION_ALL_BITS.
 
+  // Meta permission for for initializing plugins with permissions that have
+  // historically been part of public APIs but will be covered by finer-grained
+  // permissions in the future.
+  PERMISSION_DEFAULT = PERMISSION_NONE,
+
   // Meta permission for initializing plugins registered on the command line
   // that get all permissions.
   PERMISSION_ALL_BITS = PERMISSION_DEV | PERMISSION_PRIVATE |
