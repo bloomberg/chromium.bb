@@ -1367,12 +1367,12 @@ TEST_F(LayerTreeHostImplTest, ScrolledOverlappingDrawnScrollbarLayer) {
   EXPECT_EQ(MainThreadScrollingReason::kFailedHitTest,
             status.main_thread_scrolling_reasons);
 
-  // The point hits the drawn scrollbar layer completely and should not scroll
-  // on the impl thread.
+  // The point hits the drawn scrollbar layer completely and should scroll on
+  // the impl thread.
   status = host_impl_->ScrollBegin(BeginState(gfx::Point(350, 500)).get(),
                                    InputHandler::WHEEL);
-  EXPECT_EQ(InputHandler::SCROLL_UNKNOWN, status.thread);
-  EXPECT_EQ(MainThreadScrollingReason::kFailedHitTest,
+  EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
+  EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
             status.main_thread_scrolling_reasons);
 }
 
@@ -4132,12 +4132,12 @@ TEST_F(LayerTreeHostImplTestMultiScrollable, ScrollHitTestOnScrollbar) {
               status.main_thread_scrolling_reasons);
   }
 
-  // Wheel scroll on scrollbar should fallback to main thread.
+  // Wheel scroll on scrollbar should process on impl thread.
   {
     InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
         BeginState(gfx::Point(51, 51)).get(), InputHandler::WHEEL);
-    EXPECT_EQ(InputHandler::SCROLL_UNKNOWN, status.thread);
-    EXPECT_EQ(MainThreadScrollingReason::kFailedHitTest,
+    EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
+    EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
               status.main_thread_scrolling_reasons);
   }
 

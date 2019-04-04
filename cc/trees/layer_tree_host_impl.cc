@@ -3558,7 +3558,19 @@ ScrollNode* LayerTreeHostImpl::FindScrollNodeForDeviceViewportPoint(
   ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
   ScrollNode* impl_scroll_node = nullptr;
   if (layer_impl) {
-    ScrollNode* scroll_node = scroll_tree.Node(layer_impl->scroll_tree_index());
+    // If this is a scrollbar layer, we can't directly use the associated
+    // scroll_node (because the scroll_node associated with this layer will be
+    // the owning scroller's parent). Instead, we first retrieve the scrollable
+    // layer corresponding to the scrollbars owner and then use its
+    // scroll_tree_index instead.
+    int scroll_tree_index = layer_impl->scroll_tree_index();
+    if (layer_impl->ToScrollbarLayer()) {
+      LayerImpl* owner_scroll_layer = active_tree_->ScrollableLayerByElementId(
+          layer_impl->ToScrollbarLayer()->scroll_element_id());
+      scroll_tree_index = owner_scroll_layer->scroll_tree_index();
+    }
+
+    ScrollNode* scroll_node = scroll_tree.Node(scroll_tree_index);
     for (; scroll_tree.parent(scroll_node);
          scroll_node = scroll_tree.parent(scroll_node)) {
       // The content layer can also block attempts to scroll outside the main
@@ -3787,6 +3799,13 @@ bool LayerTreeHostImpl::IsInitialScrollHitTestReliable(
     LayerImpl* first_scrolling_layer_or_scrollbar) {
   if (!first_scrolling_layer_or_scrollbar)
     return true;
+
+  // Hit tests directly on a composited scrollbar are always reliable.
+  if (layer_impl->ToScrollbarLayer()) {
+    DCHECK(layer_impl == first_scrolling_layer_or_scrollbar);
+    return true;
+  }
+
   ScrollNode* closest_scroll_node = nullptr;
   auto& scroll_tree = active_tree_->property_trees()->scroll_tree;
   ScrollNode* scroll_node = scroll_tree.Node(layer_impl->scroll_tree_index());
@@ -3810,13 +3829,7 @@ bool LayerTreeHostImpl::IsInitialScrollHitTestReliable(
   }
 
   // If |first_scrolling_layer_or_scrollbar| is not scrollable, it must be a
-  // scrollbar. It may hit the squashing layer at the same time.  These hit
-  // tests require falling back to main-thread scrolling.
-  // TODO(bokan): This causes us to fallback to main anytime we hit a
-  // scrollbar. If |layer_impl == first_scrolling_layer_or_scrollbar| then we
-  // truly hit a scrollbar and the hit test is reliable. Only if they're
-  // different we might have a squashing layer above the scrollbar.
-  // https://crbug.com/939195.
+  // scrollbar. It may hit the squashing layer at the same time.
   DCHECK(first_scrolling_layer_or_scrollbar->is_scrollbar());
   return false;
 }
