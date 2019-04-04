@@ -39,7 +39,7 @@ LayoutWorkletGlobalScopeProxy::LayoutWorkletGlobalScopeProxy(
   String global_scope_name =
       StringView("LayoutWorklet #") + String::Number(global_scope_number);
 
-  WorkerClients* worker_clients = WorkerClients::Create();
+  auto* worker_clients = MakeGarbageCollected<WorkerClients>();
   ProvideContentSettingsClientToWorker(
       worker_clients, frame->Client()->CreateWorkerContentSettingsClient());
 

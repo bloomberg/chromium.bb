@@ -46,7 +46,7 @@ WorkletGlobalScopeProxy* AnimationWorklet::CreateGlobalScope() {
         AnimationWorkletProxyClient::FromDocument(document, worklet_id_);
   }
 
-  WorkerClients* worker_clients = WorkerClients::Create();
+  auto* worker_clients = MakeGarbageCollected<WorkerClients>();
   ProvideAnimationWorkletProxyClientTo(worker_clients, proxy_client_);
 
   AnimationWorkletMessagingProxy* proxy =

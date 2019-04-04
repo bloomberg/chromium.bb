@@ -52,7 +52,7 @@ CreateThreadAndProvidePaintWorkletProxyClient(
     PaintWorkletProxyClient* proxy_client) {
   if (!proxy_client)
     proxy_client = MakeGarbageCollected<PaintWorkletProxyClient>(1, nullptr);
-  WorkerClients* clients = WorkerClients::Create();
+  WorkerClients* clients = MakeGarbageCollected<WorkerClients>();
   ProvidePaintWorkletProxyClientTo(clients, proxy_client);
 
   std::unique_ptr<AnimationAndPaintWorkletThread> thread =
@@ -74,7 +74,7 @@ CreateThreadAndProvideAnimationWorkletProxyClient(
         nullptr     /* mutator_runner */
     );
   }
-  WorkerClients* clients = WorkerClients::Create();
+  WorkerClients* clients = MakeGarbageCollected<WorkerClients>();
   ProvideAnimationWorkletProxyClientTo(clients, proxy_client);
 
   std::unique_ptr<AnimationAndPaintWorkletThread> thread =

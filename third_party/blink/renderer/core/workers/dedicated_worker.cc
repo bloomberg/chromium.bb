@@ -327,7 +327,7 @@ void DedicatedWorker::DispatchErrorEventForScriptFetchFailure() {
 }
 
 WorkerClients* DedicatedWorker::CreateWorkerClients() {
-  WorkerClients* worker_clients = WorkerClients::Create();
+  auto* worker_clients = MakeGarbageCollected<WorkerClients>();
   CoreInitializer::GetInstance().ProvideLocalFileSystemToWorker(
       *worker_clients);
   CoreInitializer::GetInstance().ProvideIndexedDBClientToWorker(

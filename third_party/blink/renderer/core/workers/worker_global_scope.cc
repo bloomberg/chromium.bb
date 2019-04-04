@@ -139,13 +139,15 @@ void WorkerGlobalScope::ExceptionUnhandled(int exception_id) {
 
 WorkerLocation* WorkerGlobalScope::location() const {
   if (!location_)
-    location_ = WorkerLocation::Create(Url());
+    location_ = MakeGarbageCollected<WorkerLocation>(Url());
   return location_.Get();
 }
 
 WorkerNavigator* WorkerGlobalScope::navigator() const {
-  if (!navigator_)
-    navigator_ = WorkerNavigator::Create(user_agent_, GetExecutionContext());
+  if (!navigator_) {
+    navigator_ = MakeGarbageCollected<WorkerNavigator>(user_agent_,
+                                                       GetExecutionContext());
+  }
   return navigator_.Get();
 }
 
@@ -434,9 +436,10 @@ WorkerGlobalScope::WorkerGlobalScope(
       timers_(GetTaskRunner(TaskType::kJavascriptTimer)),
       time_origin_(time_origin),
       font_selector_(MakeGarbageCollected<OffscreenFontSelector>(this)),
-      animation_frame_provider_(WorkerAnimationFrameProvider::Create(
-          this,
-          creation_params->begin_frame_provider_params)),
+      animation_frame_provider_(
+          MakeGarbageCollected<WorkerAnimationFrameProvider>(
+              this,
+              creation_params->begin_frame_provider_params)),
       agent_cluster_id_(creation_params->agent_cluster_id.is_empty()
                             ? base::UnguessableToken::Create()
                             : creation_params->agent_cluster_id),

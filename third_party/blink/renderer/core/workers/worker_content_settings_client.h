@@ -51,9 +51,6 @@ class CORE_EXPORT WorkerContentSettingsClient final
  public:
   static const char kSupplementName[];
 
-  static WorkerContentSettingsClient* Create(
-      std::unique_ptr<WebContentSettingsClient>);
-
   explicit WorkerContentSettingsClient(
       std::unique_ptr<WebContentSettingsClient>);
   virtual ~WorkerContentSettingsClient();

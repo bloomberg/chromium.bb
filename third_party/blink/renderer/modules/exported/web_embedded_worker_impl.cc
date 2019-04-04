@@ -382,7 +382,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   bool starter_secure_context = document->IsSecureContext();
   const HttpsState starter_https_state = document->GetHttpsState();
 
-  WorkerClients* worker_clients = WorkerClients::Create();
+  auto* worker_clients = MakeGarbageCollected<WorkerClients>();
   ProvideIndexedDBClientToWorker(worker_clients,
                                  IndexedDBClient::Create(*worker_clients));
 
