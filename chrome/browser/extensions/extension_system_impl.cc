@@ -411,7 +411,7 @@ scoped_refptr<ValueStoreFactory> ExtensionSystemImpl::store_factory() {
 
 InfoMap* ExtensionSystemImpl::info_map() { return shared_->info_map(); }
 
-const OneShotEvent& ExtensionSystemImpl::ready() const {
+const base::OneShotEvent& ExtensionSystemImpl::ready() const {
   return shared_->ready();
 }
 

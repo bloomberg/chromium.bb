@@ -6,11 +6,11 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/one_shot_event.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/profiles/profile.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/common/one_shot_event.h"
 
 namespace extensions {
 

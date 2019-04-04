@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_COMMON_ONE_SHOT_EVENT_H_
-#define EXTENSIONS_COMMON_ONE_SHOT_EVENT_H_
+#ifndef BASE_ONE_SHOT_EVENT_H_
+#define BASE_ONE_SHOT_EVENT_H_
 
 #include <vector>
 
@@ -14,23 +14,21 @@
 #include "base/threading/thread_checker.h"
 
 namespace base {
+
 class Location;
 class SingleThreadTaskRunner;
 class TimeDelta;
-}
-
-namespace extensions {
 
 // This class represents an event that's expected to happen once.  It
 // allows clients to guarantee that code is run after the OneShotEvent
 // is signaled.  If the OneShotEvent is destroyed before it's
-// signaled, the delayed closures are destroyed without being run.
+// signaled, the Onceclosure are destroyed without being run.
 //
 // This class is similar to a WaitableEvent combined with several
 // WaitableEventWatchers, but using it is simpler.
 //
 // This class is not thread-safe, and must be used from a single thread.
-class OneShotEvent {
+class BASE_EXPORT OneShotEvent {
  public:
   OneShotEvent();
   // Use the following constructor to create an already signaled event. This is
@@ -73,23 +71,23 @@ class OneShotEvent {
   //
   // Const because Post() doesn't modify the logical state of this
   // object (which is just the is_signaled() bit).
-  void Post(const base::Location& from_here, base::OnceClosure task) const;
-  void Post(const base::Location& from_here,
-            base::OnceClosure task,
-            const scoped_refptr<base::SingleThreadTaskRunner>& runner) const;
-  void PostDelayed(const base::Location& from_here,
-                   base::OnceClosure task,
-                   const base::TimeDelta& delay) const;
+  void Post(const Location& from_here, OnceClosure task) const;
+  void Post(const Location& from_here,
+            OnceClosure task,
+            const scoped_refptr<SingleThreadTaskRunner>& runner) const;
+  void PostDelayed(const Location& from_here,
+                   OnceClosure task,
+                   const TimeDelta& delay) const;
 
  private:
   struct TaskInfo;
 
-  void PostImpl(const base::Location& from_here,
-                base::OnceClosure task,
-                const scoped_refptr<base::SingleThreadTaskRunner>& runner,
-                const base::TimeDelta& delay) const;
+  void PostImpl(const Location& from_here,
+                OnceClosure task,
+                const scoped_refptr<SingleThreadTaskRunner>& runner,
+                const TimeDelta& delay) const;
 
-  base::ThreadChecker thread_checker_;
+  ThreadChecker thread_checker_;
 
   bool signaled_;
 
@@ -105,6 +103,6 @@ class OneShotEvent {
   mutable std::vector<TaskInfo> tasks_;
 };
 
-}  // namespace extensions
+}  // namespace base
 
-#endif  // EXTENSIONS_COMMON_ONE_SHOT_EVENT_H_
+#endif  // BASE_ONE_SHOT_EVENT_H_

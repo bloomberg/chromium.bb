@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/common/one_shot_event.h"
+#include "base/one_shot_event.h"
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
@@ -11,11 +11,11 @@
 #include "base/test/test_simple_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace extensions {
+namespace base {
 
-namespace {
-
-void Increment(int* i) { ++*i; }
+void Increment(int* i) {
+  ++*i;
+}
 
 // |*did_delete_instance| will be set to true upon its destruction.
 class RefCountedClass : public base::RefCounted<RefCountedClass> {
@@ -171,5 +171,4 @@ TEST(OneShotEventTest, DropsCallbackRefUponSignalled) {
   EXPECT_TRUE(did_delete_instance);
 }
 
-}  // namespace
-}  // namespace extensions
+}  // namespace base

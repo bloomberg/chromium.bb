@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/one_shot_event.h"
 #include "base/strings/stringprintf.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -22,7 +23,6 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/manifest_url_handlers.h"
-#include "extensions/common/one_shot_event.h"
 
 using std::string;
 

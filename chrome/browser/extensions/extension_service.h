@@ -51,6 +51,7 @@ class Profile;
 
 namespace base {
 class CommandLine;
+class OneShotEvent;
 }
 
 FORWARD_DECLARE_TEST(BlacklistedExtensionSyncServiceTest,
@@ -66,7 +67,6 @@ class ExtensionRegistry;
 class ExtensionSystem;
 class ExtensionUpdater;
 class ExternalInstallManager;
-class OneShotEvent;
 class SharedModuleService;
 class UpdateObserver;
 
@@ -191,7 +191,7 @@ class ExtensionService : public ExtensionServiceInterface,
                    Blacklist* blacklist,
                    bool autoupdate_enabled,
                    bool extensions_enabled,
-                   OneShotEvent* ready);
+                   base::OneShotEvent* ready);
 
   ~ExtensionService() override;
 
@@ -619,7 +619,7 @@ class ExtensionService : public ExtensionServiceInterface,
   bool extensions_enabled_ = true;
 
   // Signaled when all extensions are loaded.
-  OneShotEvent* const ready_;
+  base::OneShotEvent* const ready_;
 
   // Our extension updater, if updates are turned on.
   std::unique_ptr<ExtensionUpdater> updater_;
