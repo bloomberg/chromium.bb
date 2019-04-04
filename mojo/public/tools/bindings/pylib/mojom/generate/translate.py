@@ -14,7 +14,7 @@ import itertools
 import os
 import re
 
-import module as mojom
+import mojom.generate.module as mojom
 from mojom.parse import ast
 
 def _DuplicateName(values):
@@ -129,7 +129,7 @@ def _LookupKind(kinds, spec, scope):
   to the location where the type is referenced."""
   if spec.startswith('x:'):
     mojom_name = spec[2:]
-    for i in xrange(len(scope), -1, -1):
+    for i in range(len(scope), -1, -1):
       test_spec = 'x:'
       if i > 0:
         test_spec += '.'.join(scope[:i]) + '.'
@@ -148,7 +148,7 @@ def _LookupValue(values, mojom_name, scope, kind):
   # enum name.
   if isinstance(kind, mojom.Enum) and '.' not in mojom_name:
     mojom_name = '%s.%s' % (kind.spec.split(':', 1)[1], mojom_name)
-  for i in reversed(xrange(len(scope) + 1)):
+  for i in reversed(range(len(scope) + 1)):
     test_spec = '.'.join(scope[:i])
     if test_spec:
       test_spec += '.'
