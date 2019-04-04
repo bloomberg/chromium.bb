@@ -10,7 +10,7 @@
 
 /**
  * @see https://drafts.fxtf.org/geometry-1/#domrectreadonly
- * TODO(scottchen): Remove this once it is added to Closure Compiler itself.
+ * TODO(dpapad): Remove this once it is added to Closure Compiler itself.
  */
 class DOMRectReadOnly {
   /**
@@ -77,13 +77,13 @@ class DOMMatrix {
  * @see https://wicg.github.io/ResizeObserver/#resizeobserverentry
  * @typedef {{contentRect: DOMRectReadOnly,
  *            target: Element}}
- * TODO(scottchen): Remove this once it is added to Closure Compiler itself.
+ * TODO(dpapad): Remove this once it is added to Closure Compiler itself.
  */
 let ResizeObserverEntry;
 
 /**
  * @see https://wicg.github.io/ResizeObserver/#api
- * TODO(scottchen): Remove this once it is added to Closure Compiler itself.
+ * TODO(dpapad): Remove this once it is added to Closure Compiler itself.
  */
 class ResizeObserver {
   /**
