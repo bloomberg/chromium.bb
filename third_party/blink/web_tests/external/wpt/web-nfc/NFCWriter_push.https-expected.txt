@@ -1,8 +1,9 @@
 This is a testharness.js-based test.
 FAIL Test that promise is rejected with TypeError if NDEFMessageSource is invalid. NFCWriter is not defined
 FAIL 'Test that promise is rejected with SyntaxError if NDEFMessageSource contains invalid records. NFCWriter is not defined
-FAIL NFCWriter.push should fail if the instance has already initiated NFC data transfer. NFCWriter is not defined
+FAIL NFCWriter.push should fail if abort push request before push happends. promise_test: Unhandled rejection with value: object "ReferenceError: NFCWriter is not defined"
 FAIL NFCWriter.push should fail if signal's aborted flag is set. NFCWriter is not defined
+FAIL NFCWriter.push should fail if signal is not an AbortSignal. NFCWriter is not defined
 FAIL NFCWriter.push should fail with TypeError when invalid timeout is provided. NFCWriter is not defined
 FAIL NFCWriter.push should fail with TypeError when invalid negative timeout value is provided. NFCWriter is not defined
 FAIL NFCWriter.push should fail with TimeoutError when timer expires. NFCWriter is not defined
