@@ -38,27 +38,6 @@ namespace content {
 // accessibility support.
 const int kIdScreenReaderHoneyPot = 1;
 
-namespace {
-
-bool LoggingEnabled() {
-  static bool logging_enabled =
-      base::FeatureList::IsEnabled(features::kPrecisionTouchpadLogging);
-
-  return logging_enabled;
-}
-
-// TODO(crbug.com/914914) This is added for help us getting debug log on
-// machine with scrolling issue on Windows Precision Touchpad. We will remove it
-// after Windows Precision Touchpad scrolling issue fixed.
-void DebugLogging(const std::string& s) {
-  if (!LoggingEnabled())
-    return;
-
-  LOG(ERROR) << "Windows PTP: " << s;
-}
-
-}  // namespace
-
 // DirectManipulation needs to poll for new events every frame while finger
 // gesturing on touchpad.
 class CompositorAnimationObserverForDirectManipulation

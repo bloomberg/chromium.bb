@@ -18,8 +18,6 @@
 
 namespace content {
 
-namespace {
-
 bool LoggingEnabled() {
   static bool logging_enabled =
       base::FeatureList::IsEnabled(features::kPrecisionTouchpadLogging);
@@ -36,8 +34,6 @@ void DebugLogging(const std::string& s, HRESULT hr) {
 
   LOG(ERROR) << "Windows PTP: " << s << " " << hr;
 }
-
-}  // namespace
 
 // static
 std::unique_ptr<DirectManipulationHelper>
