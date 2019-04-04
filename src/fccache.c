@@ -150,7 +150,7 @@ static const char bin2hex[] = { '0', '1', '2', '3',
 static FcChar8 *
 FcDirCacheBasenameMD5 (FcConfig *config, const FcChar8 *dir, FcChar8 cache_base[CACHEBASE_LEN])
 {
-    FcChar8		*new_dir = NULL;
+    FcChar8		*mapped_dir = NULL;
     unsigned char 	hash[16];
     FcChar8		*hex_hash, *key = NULL;
     int			cnt;
@@ -158,11 +158,17 @@ FcDirCacheBasenameMD5 (FcConfig *config, const FcChar8 *dir, FcChar8 cache_base[
     const FcChar8	*salt, *orig_dir = NULL;
 
     salt = FcConfigMapSalt (config, dir);
-    new_dir = FcConfigMapFontPath(config, dir);
-    if (new_dir)
+    /* Obtain a path where "dir" is mapped to.
+     * In case:
+     * <remap-dir as-path="/usr/share/fonts">/run/host/fonts</remap-dir>
+     *
+     * FcConfigMapFontPath (config, "/run/host/fonts") will returns "/usr/share/fonts".
+     */
+    mapped_dir = FcConfigMapFontPath(config, dir);
+    if (mapped_dir)
     {
 	orig_dir = dir;
-	dir = new_dir;
+	dir = mapped_dir;
     }
     if (salt)
     {
@@ -196,11 +202,11 @@ FcDirCacheBasenameMD5 (FcConfig *config, const FcChar8 *dir, FcChar8 cache_base[
     strcat ((char *) cache_base, "-" FC_ARCHITECTURE FC_CACHE_SUFFIX);
     if (FcDebug() & FC_DBG_CACHE)
     {
-	printf ("cache: %s (dir: %s%s%s%s%s%s)\n", cache_base, orig_dir ? orig_dir : dir, new_dir ? " (mapped to " : "", new_dir ? (char *)new_dir : "", new_dir ? ")" : "", salt ? ", salt: " : "", salt ? (char *)salt : "");
+	printf ("cache: %s (dir: %s%s%s%s%s%s)\n", cache_base, orig_dir ? orig_dir : dir, mapped_dir ? " (mapped to " : "", mapped_dir ? (char *)mapped_dir : "", mapped_dir ? ")" : "", salt ? ", salt: " : "", salt ? (char *)salt : "");
     }
 
-    if (new_dir)
-	FcStrFree(new_dir);
+    if (mapped_dir)
+	FcStrFree(mapped_dir);
 
     return cache_base;
 }
@@ -209,19 +215,13 @@ FcDirCacheBasenameMD5 (FcConfig *config, const FcChar8 *dir, FcChar8 cache_base[
 static FcChar8 *
 FcDirCacheBasenameUUID (FcConfig *config, const FcChar8 *dir, FcChar8 cache_base[CACHEBASE_LEN])
 {
-    FcChar8 *new_dir = NULL;
     FcChar8 *target, *fuuid;
     const FcChar8 *sysroot = FcConfigGetSysRoot (config);
-    const FcChar8 *salt, *orig_dir = NULL;
     int fd;
 
-    salt = FcConfigMapSalt (config, dir);
-    new_dir = FcConfigMapFontPath (config, dir);
-    if (new_dir)
-    {
-	orig_dir = dir;
-	dir = new_dir;
-    }
+    /* We don't need to apply remapping here. because .uuid was created at that very directory
+     * to determine the cache name no matter where it was mapped to.
+     */
     cache_base[0] = 0;
     if (sysroot)
 	target = FcStrBuildFilename (sysroot, dir, NULL);
@@ -244,12 +244,10 @@ FcDirCacheBasenameUUID (FcConfig *config, const FcChar8 *dir, FcChar8 cache_base
 	strcat ((char *) cache_base, "-" FC_ARCHITECTURE FC_CACHE_SUFFIX);
 	if (FcDebug () & FC_DBG_CACHE)
 	{
-	    printf ("cache fallbacks to: %s (dir: %s%s%s%s%s)\n", cache_base, orig_dir ? orig_dir : dir, new_dir ? " (mapped to " : "", new_dir ? (char *)new_dir : "", new_dir ? ")" : "", salt ? ", salt was ignored" : "");
+	    printf ("cache fallbacks to: %s (dir: %s)\n", cache_base, dir);
 	}
     }
 bail:
-    if (new_dir)
-	FcStrFree (new_dir);
     FcStrFree (fuuid);
     FcStrFree (target);
 
