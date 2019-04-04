@@ -94,7 +94,8 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
             mNewTabButton.setOnClickListener(this);
         }
 
-        if ((usingHorizontalTabSwitcher() || FeatureUtilities.isGridTabSwitcherEnabled())
+        if ((usingHorizontalTabSwitcher() || FeatureUtilities.isGridTabSwitcherEnabled()
+                    || FeatureUtilities.isTabGroupsAndroidEnabled())
                 && PrefServiceBridge.getInstance().isIncognitoModeEnabled()) {
             updateTabSwitchingElements(true);
         }
@@ -306,7 +307,8 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
     private int getToolbarColorForCurrentState() {
         // TODO(huayinz): Split tab switcher background color from primary background color.
         if (DeviceClassManager.enableAccessibilityLayout()
-                || FeatureUtilities.isGridTabSwitcherEnabled()) {
+                || FeatureUtilities.isGridTabSwitcherEnabled()
+                || FeatureUtilities.isTabGroupsAndroidEnabled()) {
             return ColorUtils.getPrimaryBackgroundColor(getResources(), mIsIncognito);
         }
 
