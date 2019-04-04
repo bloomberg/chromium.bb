@@ -196,6 +196,10 @@ std::string PowerPolicyController::GetPolicyDebugString(
 
   str += GetPeakShiftPolicyDebugString(policy);
 
+  if (policy.has_boot_on_ac()) {
+    StringAppendF(&str, "boot_on_ac=%d ", policy.boot_on_ac());
+  }
+
   if (policy.has_reason())
     StringAppendF(&str, "reason=\"%s\" ", policy.reason().c_str());
   base::TrimWhitespaceASCII(str, base::TRIM_TRAILING, &str);
@@ -222,7 +226,7 @@ std::string PowerPolicyController::GetPeakShiftPolicyDebugString(
                     config.charge_start_time().hour(),
                     config.charge_start_time().minute());
     }
-    StringAppendF(&str, "]");
+    StringAppendF(&str, "] ");
   }
   return str;
 }
@@ -335,6 +339,8 @@ void PowerPolicyController::ApplyPrefs(const PrefValues& values) {
           GetProtoDayTime(values_config.charge_start_time).release());
     }
   }
+
+  prefs_policy_.set_boot_on_ac(values.boot_on_ac);
 
   prefs_were_set_ = true;
   SendCurrentPolicy();

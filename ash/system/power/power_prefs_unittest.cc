@@ -113,6 +113,7 @@ std::string GetExpectedPowerPolicyForPrefs(PrefService* prefs,
       prefs->GetBoolean(prefs::kPowerWaitForInitialUserActivity));
   expected_policy.set_force_nonzero_brightness_for_user_activity(
       prefs->GetBoolean(prefs::kPowerForceNonzeroBrightnessForUserActivity));
+  expected_policy.set_boot_on_ac(false);
   expected_policy.set_reason("Prefs");
   return chromeos::PowerPolicyController::GetPolicyDebugString(expected_policy);
 }
@@ -408,8 +409,16 @@ TEST_F(PowerPrefsTest, PeakShift) {
       "peak_shift_battery_threshold=50 "
       "peak_shift_day_configuration=["
       "{day=0 start_time=7:30 end_time=10:15 charge_start_time=20:00} "
-      "{day=4 start_time=4:00 end_time=9:45 charge_start_time=22:30} ]";
+      "{day=4 start_time=4:00 end_time=9:45 charge_start_time=22:30} ] ";
   EXPECT_EQ(GetCurrentPowerPeakShiftPolicy(), kExpectedPeakShiftPolicy);
+}
+
+TEST_F(PowerPrefsTest, BootOnAc) {
+  managed_pref_store_->SetBoolean(prefs::kDeviceBootOnAcEnabled, true);
+  EXPECT_TRUE(power_manager_client()->policy().boot_on_ac());
+
+  managed_pref_store_->SetBoolean(prefs::kDeviceBootOnAcEnabled, false);
+  EXPECT_FALSE(power_manager_client()->policy().boot_on_ac());
 }
 
 }  // namespace ash
