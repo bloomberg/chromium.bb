@@ -52,7 +52,7 @@
 #include "../shared/helpers.h"
 #include "../shared/string-helpers.h"
 #include "git-version.h"
-#include "version.h"
+#include <libweston/version.h>
 #include "weston.h"
 
 #include <libweston/backend-drm.h>

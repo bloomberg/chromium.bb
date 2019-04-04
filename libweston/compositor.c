@@ -68,7 +68,7 @@
 #include "shared/string-helpers.h"
 #include "shared/timespec-util.h"
 #include "git-version.h"
-#include "version.h"
+#include <libweston/version.h>
 #include <libweston/plugin-registry.h>
 #include "pixel-formats.h"
 
