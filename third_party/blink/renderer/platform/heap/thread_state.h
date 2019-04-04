@@ -146,7 +146,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   // See setGCState() for possible state transitions.
   enum GCState {
     kNoGCScheduled,
-    kIdleGCScheduled,
     kIncrementalMarkingStepPaused,
     kIncrementalMarkingStepScheduled,
     kIncrementalMarkingFinalizeScheduled,
@@ -219,10 +218,8 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   // in the dangling pointer situation.
   void RunTerminationGC();
 
-  void PerformIdleGC(TimeTicks deadline);
   void PerformIdleLazySweep(TimeTicks deadline);
 
-  void ScheduleIdleGC();
   void ScheduleIdleLazySweep();
   void SchedulePreciseGC();
   void ScheduleIncrementalGC(BlinkGC::GCReason);
@@ -474,15 +471,14 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
 
   bool ShouldVerifyMarking() const;
 
-  // shouldScheduleIdleGC and shouldForceConservativeGC
-  // implement the heuristics that are used to determine when to collect
+  // ShouldForceConservativeGC
+  // implements the heuristics that are used to determine when to collect
   // garbage.
   // If shouldForceConservativeGC returns true, we force the garbage
   // collection immediately. Otherwise, if should*GC returns true, we
   // record that we should garbage collect the next time we return
   // to the event loop. If both return false, we don't need to
   // collect garbage at this point.
-  bool ShouldScheduleIdleGC();
   bool ShouldForceConservativeGC();
   bool ShouldScheduleIncrementalMarking();
   // V8 minor or major GC is likely to drop a lot of references to objects
@@ -493,8 +489,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   // estimatedRemovalRatio is the estimated ratio of objects that will be no
   // longer necessary due to the navigation.
   bool ShouldSchedulePageNavigationGC(float estimated_removal_ratio);
-
-  void RescheduleIdleGC();
 
   // Internal helpers to handle memory pressure conditions.
 
