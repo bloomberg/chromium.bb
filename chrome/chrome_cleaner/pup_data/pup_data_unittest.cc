@@ -21,6 +21,7 @@
 #include "chrome/chrome_cleaner/test/test_file_util.h"
 #include "chrome/chrome_cleaner/test/test_pup_data.h"
 #include "chrome/chrome_cleaner/test/test_registry_util.h"
+#include "chrome/chrome_cleaner/test/test_uws_catalog.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -625,7 +626,6 @@ TEST_F(PUPDataTest, GetAllPUPs) {
                      nullptr,
                      PUPData::kMaxFilesToRemoveSmallUwS);
 
-  PUPData::InitializePUPData({});
   const PUPData::PUPDataMap* pup_map = test_data().GetAllPUPs();
   EXPECT_EQ(pup_map->size(), 2UL);
 
@@ -652,7 +652,6 @@ TEST_F(PUPDataTest, GetUwSIds) {
                      nullptr,
                      PUPData::kMaxFilesToRemoveSmallUwS);
 
-  PUPData::InitializePUPData({});
   const std::vector<UwSId>* pup_ids = PUPData::GetUwSIds();
   EXPECT_EQ(pup_ids->size(), 2UL);
   EXPECT_TRUE(base::ContainsValue(*pup_ids, k24ID));
@@ -685,13 +684,9 @@ TEST_F(PUPDataTest, InitializeTest) {
   PUPData::InitializePUPData({});
   EXPECT_EQ(PUPData::GetUwSIds()->size(), 0UL);
 
-  test_data().AddPUP(k24ID,
-                     PUPData::FLAGS_ACTION_REMOVE,
-                     nullptr,
-                     PUPData::kMaxFilesToRemoveSmallUwS);
-
-  PUPData::InitializePUPData({});
-  EXPECT_EQ(PUPData::GetUwSIds()->size(), 1UL);
+  PUPData::InitializePUPData({&TestUwSCatalog::GetInstance()});
+  EXPECT_EQ(PUPData::GetUwSIds()->size(),
+            TestUwSCatalog::GetInstance().GetUwSIds().size());
 }
 
 }  // namespace chrome_cleaner

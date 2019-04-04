@@ -6,7 +6,6 @@ import("//third_party/protobuf/proto_library.gni")
 
 source_set("pup_data_base") {
   sources = [
-    "dummy_signatures.cc",
     "pup_data.cc",
     "pup_data.h",
     "pup_disk_util.cc",
@@ -93,6 +92,7 @@ source_set("unittest_sources") {
     "//chrome/chrome_cleaner/strings",
     "//chrome/chrome_cleaner/test:test_pup_data",
     "//chrome/chrome_cleaner/test:test_util",
+    "//chrome/chrome_cleaner/test:test_uws_catalog",
     "//testing/gmock",
     "//testing/gtest",
   ]
