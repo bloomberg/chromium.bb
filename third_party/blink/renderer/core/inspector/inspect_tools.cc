@@ -9,6 +9,8 @@
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/public/platform/web_keyboard_event.h"
 #include "third_party/blink/public/platform/web_pointer_event.h"
+#include "third_party/blink/renderer/core/css/css_color_value.h"
+#include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
@@ -316,6 +318,95 @@ void NodeHighlightTool::DrawMatchingSelector() {
 void NodeHighlightTool::Trace(blink::Visitor* visitor) {
   InspectTool::Trace(visitor);
   visitor->Trace(node_);
+}
+
+// NearbyDistanceTool ----------------------------------------------------------
+
+CString NearbyDistanceTool::GetDataResourceName() {
+  return "inspect_tool_distances.html";
+}
+
+bool NearbyDistanceTool::HandleMouseDown(const WebMouseEvent& event,
+                                         bool* swallow_next_mouse_up) {
+  return true;
+}
+
+bool NearbyDistanceTool::HandleMouseMove(const WebMouseEvent& event) {
+  Node* node = HoveredNodeForEvent(overlay_->GetFrame(), event, true);
+
+  // Do not highlight within user agent shadow root
+  ShadowRoot* shadow_root = InspectorDOMAgent::UserAgentShadowRoot(node);
+  if (shadow_root)
+    node = &shadow_root->host();
+
+  // Shadow roots don't have boxes - use host element instead.
+  if (node && node->IsShadowRoot())
+    node = node->ParentOrShadowHostNode();
+
+  if (!node)
+    return true;
+
+  if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(node)) {
+    if (!IsA<LocalFrame>(frame_owner->ContentFrame())) {
+      // Do not consume event so that remote frame can handle it.
+      overlay_->hideHighlight();
+      hovered_node_.Clear();
+      return false;
+    }
+  }
+
+  // Store values for the highlight.
+  hovered_node_ = node;
+  return true;
+}
+
+bool NearbyDistanceTool::HandleMouseUp(const WebMouseEvent& event) {
+  return true;
+}
+
+void NearbyDistanceTool::Draw(float scale) {
+  Node* node = hovered_node_.Get();
+  if (!node)
+    return;
+  node->GetDocument().EnsurePaintLocationDataValidForNode(node);
+  LayoutObject* layout_object = node->GetLayoutObject();
+  if (!layout_object)
+    return;
+
+  CSSStyleDeclaration* style =
+      MakeGarbageCollected<CSSComputedStyleDeclaration>(node, true);
+  std::unique_ptr<protocol::DictionaryValue> computed_style =
+      protocol::DictionaryValue::create();
+  for (size_t i = 0; i < style->length(); ++i) {
+    AtomicString name(style->item(i));
+    const CSSValue* value = style->GetPropertyCSSValueInternal(name);
+    if (!value)
+      continue;
+    if (value->IsColorValue()) {
+      Color color = static_cast<const cssvalue::CSSColorValue*>(value)->Value();
+      String hex_color =
+          String::Format("#%02X%02X%02X%02X", color.Red(), color.Green(),
+                         color.Blue(), color.Alpha());
+      computed_style->setString(name, hex_color);
+    } else {
+      computed_style->setString(name, value->CssText());
+    }
+  }
+
+  std::unique_ptr<protocol::DOM::BoxModel> model;
+  InspectorHighlight::GetBoxModel(node, &model);
+  std::unique_ptr<protocol::DictionaryValue> object =
+      protocol::DictionaryValue::create();
+  object->setArray("content", model->getContent()->toValue());
+  object->setArray("padding", model->getPadding()->toValue());
+  object->setArray("border", model->getBorder()->toValue());
+  object->setObject("style", std::move(computed_style));
+  overlay_->EvaluateInOverlay("drawDistances", std::move(object));
+}
+
+void NearbyDistanceTool::Trace(blink::Visitor* visitor) {
+  InspectTool::Trace(visitor);
+  visitor->Trace(hovered_node_);
 }
 
 // ShowViewSizeTool ------------------------------------------------------------

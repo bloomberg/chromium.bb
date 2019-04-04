@@ -88,6 +88,25 @@ class NodeHighlightTool : public InspectTool {
 
 // -----------------------------------------------------------------------------
 
+class NearbyDistanceTool : public InspectTool {
+ public:
+  NearbyDistanceTool() = default;
+
+ private:
+  CString GetDataResourceName() override;
+  bool HandleMouseDown(const WebMouseEvent& event,
+                       bool* swallow_next_mouse_up) override;
+  bool HandleMouseMove(const WebMouseEvent& event) override;
+  bool HandleMouseUp(const WebMouseEvent& event) override;
+  void Draw(float scale) override;
+  void Trace(blink::Visitor* visitor) override;
+
+  Member<Node> hovered_node_;
+  DISALLOW_COPY_AND_ASSIGN(NearbyDistanceTool);
+};
+
+// -----------------------------------------------------------------------------
+
 class ShowViewSizeTool : public InspectTool {
  public:
   ShowViewSizeTool() = default;

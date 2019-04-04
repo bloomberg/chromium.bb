@@ -658,7 +658,9 @@ WebInputEventResult InspectorOverlayAgent::HandleInputEvent(
     }
   }
 
-  if (!inspect_tool_)
+  LocalFrame* frame = GetFrame();
+  if (!frame || !frame->View() || !frame->ContentLayoutObject() ||
+      !inspect_tool_)
     return WebInputEventResult::kNotHandled;
 
   bool handled = inspect_tool_->HandleInputEvent(
@@ -1052,7 +1054,8 @@ Response InspectorOverlayAgent::setInspectMode(
   if (mode != protocol::Overlay::InspectModeEnum::None &&
       mode != protocol::Overlay::InspectModeEnum::SearchForNode &&
       mode != protocol::Overlay::InspectModeEnum::SearchForUAShadowDOM &&
-      mode != protocol::Overlay::InspectModeEnum::CaptureAreaScreenshot) {
+      mode != protocol::Overlay::InspectModeEnum::CaptureAreaScreenshot &&
+      mode != protocol::Overlay::InspectModeEnum::ShowDistances) {
     return Response::Error(
         String("Unknown mode \"" + mode + "\" was provided."));
   }
@@ -1088,6 +1091,9 @@ void InspectorOverlayAgent::PickTheRightTool() {
   } else if (inspect_mode ==
              protocol::Overlay::InspectModeEnum::CaptureAreaScreenshot) {
     inspect_tool = MakeGarbageCollected<ScreenshotTool>();
+  } else if (inspect_mode ==
+             protocol::Overlay::InspectModeEnum::ShowDistances) {
+    inspect_tool = MakeGarbageCollected<NearbyDistanceTool>();
   } else if (!paused_in_debugger_message_.Get().IsNull()) {
     inspect_tool = MakeGarbageCollected<PausedInDebuggerTool>(
         paused_in_debugger_message_.Get());
