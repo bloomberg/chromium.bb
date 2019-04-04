@@ -5,19 +5,22 @@
 #ifndef MEDIA_BLINK_VIDEO_DECODE_STATS_REPORTER_H_
 #define MEDIA_BLINK_VIDEO_DECODE_STATS_REPORTER_H_
 
+#include <memory>
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "media/base/cdm_config.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/video_codecs.h"
 #include "media/blink/media_blink_export.h"
 #include "media/mojo/interfaces/video_decode_stats_recorder.mojom.h"
-
-#include <memory>
 
 namespace media {
 
@@ -34,6 +37,8 @@ class MEDIA_BLINK_EXPORT VideoDecodeStatsReporter {
       GetPipelineStatsCB get_pipeline_stats_cb,
       VideoCodecProfile codec_profile,
       const gfx::Size& natural_size,
+      std::string key_system,
+      base::Optional<CdmConfig> cdm_config,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       const base::TickClock* tick_clock =
           base::DefaultTickClock::GetInstance());
@@ -153,6 +158,12 @@ class MEDIA_BLINK_EXPORT VideoDecodeStatsReporter {
   // will always be rounded to the nearest size bucket. If the original size is
   // very small, the bucketed size will simply be empty. See GetSizeBucket().
   const gfx::Size natural_size_;
+
+  // The name of the current key system. Empty for unencrypted playback.
+  const std::string key_system_;
+
+  // From CdmConfig in constructor.
+  const bool use_hw_secure_codecs_;
 
   // Clock for |stats_cb_timer_| and getting current tick count (NowTicks()).
   // Tests may supply a mock clock via the constructor.
