@@ -61,6 +61,8 @@ void WebUIGraphDumpImpl::GetCurrentGraph(GetCurrentGraphCallback callback) {
       auto* process = frame->process_node();
       frame_info->process_id = process ? process->id().id : 0;
 
+      frame_info->url = frame->url().spec();
+
       graph->frames.push_back(std::move(frame_info));
     }
   }

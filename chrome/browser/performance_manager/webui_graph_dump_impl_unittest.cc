@@ -26,6 +26,9 @@ TEST_F(WebUIGraphDumpImplTest, Create) {
   mock_graph.page->OnMainFrameNavigationCommitted(now, 1, kExampleUrl);
   mock_graph.other_page->OnMainFrameNavigationCommitted(now, 2, kExampleUrl);
 
+  auto* main_frame = mock_graph.page->GetMainFrameNode();
+  main_frame->set_url(kExampleUrl);
+
   WebUIGraphDumpImpl impl(&graph);
 
   resource_coordinator::mojom::WebUIGraphPtr returned_graph;
@@ -49,8 +52,13 @@ TEST_F(WebUIGraphDumpImplTest, Create) {
   // Count the top-level frames as we go.
   size_t top_level_frames = 0;
   for (const auto& frame : returned_graph->frames) {
-    if (frame->parent_frame_id == 0)
+    if (frame->parent_frame_id == 0) {
       ++top_level_frames;
+
+      // The page's main frame should have an URL.
+      if (frame->id == static_cast<int64_t>(main_frame->id().id))
+        EXPECT_EQ(kExampleUrl, frame->url);
+    }
     EXPECT_NE(0u, frame->id);
     EXPECT_NE(0u, frame->process_id);
   }

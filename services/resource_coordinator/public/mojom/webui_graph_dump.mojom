@@ -25,6 +25,11 @@ struct WebUIPageInfo {
 struct WebUIFrameInfo {
   int64 id;
 
+  // TODO(chrisha): This should use url.mojom.Url, but that currently creates a
+  // cyclic dependency on blink/renderer/platform, which contains the KURL impl.
+  // Either break this cycle ourselves, or wait for KURL to be moved.
+  // crbug.com/768298
+  string url;
   int64 parent_frame_id;
   int64 process_id;
 };

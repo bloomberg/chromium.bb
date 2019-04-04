@@ -84,7 +84,7 @@ class PageNode extends GraphNode {
 
   /** override */
   get title() {
-    return this.page.mainFrameUrl;
+    return this.page.mainFrameUrl.length > 0 ? this.page.mainFrameUrl : 'Page';
   }
 
   /** override */
@@ -122,7 +122,7 @@ class FrameNode extends GraphNode {
 
   /** override */
   get title() {
-    return 'Frame';
+    return this.frame.url.length > 0 ? this.frame.url : 'Frame';
   }
 
   /** override */
