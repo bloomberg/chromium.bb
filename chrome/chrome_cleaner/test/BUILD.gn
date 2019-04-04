@@ -100,7 +100,6 @@ source_set("test_pup_data") {
   ]
 
   deps = [
-    ":test_uws_catalog",
     "//base:base",
     "//chrome/chrome_cleaner/proto:shared_pup_enums_proto",
     "//chrome/chrome_cleaner/pup_data:pup_data_base",
