@@ -35,6 +35,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/notifications/notification_constants.h"
 #include "third_party/blink/public/common/notifications/notification_resources.h"
 #include "third_party/blink/public/mojom/notifications/notification_service.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
@@ -52,6 +53,8 @@ const char kTestServiceWorkerUrl[] = "https://example.com/sw.js";
 const char kBadMessageImproperNotificationImage[] =
     "Received an unexpected message with image while notification images are "
     "disabled.";
+const char kBadMessageInvalidNotificationTriggerTimestamp[] =
+    "Received an invalid notification trigger timestamp.";
 
 SkBitmap CreateBitmap(int width, int height, SkColor color) {
   SkBitmap bitmap;
@@ -889,6 +892,32 @@ TEST_F(BlinkNotificationServiceImplTest, NotCallingDisplayForTriggered) {
   RunAllTasksUntilIdle();
 
   EXPECT_EQ(0u, GetDisplayedNotifications().size());
+}
+
+TEST_F(BlinkNotificationServiceImplTest, RejectsTriggerTimestampOverAYear) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kNotificationTriggers);
+
+  ASSERT_TRUE(bad_messages_.empty());
+
+  SetPermissionStatus(blink::mojom::PermissionStatus::GRANTED);
+
+  scoped_refptr<ServiceWorkerRegistration> registration;
+  RegisterServiceWorker(&registration);
+
+  base::Time timestamp = base::Time::Now() +
+                         blink::kMaxNotificationShowTriggerDelay +
+                         base::TimeDelta::FromDays(1);
+
+  blink::PlatformNotificationData scheduled_notification_data;
+  scheduled_notification_data.show_trigger_timestamp = timestamp;
+  blink::NotificationResources resources;
+
+  DisplayPersistentNotificationSync(registration->id(),
+                                    scheduled_notification_data, resources);
+
+  EXPECT_EQ(1u, bad_messages_.size());
+  EXPECT_EQ(kBadMessageInvalidNotificationTriggerTimestamp, bad_messages_[0]);
 }
 
 }  // namespace content
