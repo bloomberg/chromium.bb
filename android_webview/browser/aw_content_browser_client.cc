@@ -72,12 +72,14 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/client_certificate_delegate.h"
+#include "content/public/browser/file_url_loader.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_descriptors.h"
@@ -942,6 +944,23 @@ void AwContentBrowserClient::RegisterOutOfProcessServices(
     OutOfProcessServiceMap* services) {
   (*services)[heap_profiling::mojom::kServiceName] =
       base::BindRepeating(&base::ASCIIToUTF16, "Heap Profiling Service");
+}
+
+void AwContentBrowserClient::RegisterNonNetworkSubresourceURLLoaderFactories(
+    int render_process_id,
+    int render_frame_id,
+    NonNetworkURLLoaderFactoryMap* factories) {
+  AwSettings* aw_settings =
+      AwSettings::FromWebContents(content::WebContents::FromRenderFrameHost(
+          content::RenderFrameHost::FromID(render_process_id,
+                                           render_frame_id)));
+
+  if (aw_settings && aw_settings->GetAllowFileAccess()) {
+    auto file_factory = CreateFileURLLoaderFactory(
+        AwBrowserContext::GetDefault()->GetPath(),
+        AwBrowserContext::GetDefault()->GetSharedCorsOriginAccessList());
+    factories->emplace(url::kFileScheme, std::move(file_factory));
+  }
 }
 
 bool AwContentBrowserClient::ShouldIsolateErrorPage(bool in_main_frame) {
