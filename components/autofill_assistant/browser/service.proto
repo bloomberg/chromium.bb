@@ -348,6 +348,8 @@ message ProcessedActionProto {
     string html_source = 12;
     // Should be set as a result of GetPaymentInformationAction.
     PaymentDetails payment_details = 15;
+    // Should be set as a result of SetFormFieldValueAction.
+    SetFormFieldValueProto.Result set_form_field_value_result = 17;
   }
 }
 
@@ -789,6 +791,7 @@ message ShowDetailsProto {
 
 // Set the value of an form element.
 message SetFormFieldValueProto {
+  message Result { optional bool fallback_to_simulate_key_presses = 1; }
   message KeyPress {
     oneof keypress {
       // Text to insert as-is into a form field.

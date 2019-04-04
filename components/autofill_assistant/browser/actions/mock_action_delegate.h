@@ -104,6 +104,17 @@ class MockActionDelegate : public ActionDelegate {
 
   MOCK_METHOD1(GetFullCard, void(GetFullCardCallback callback));
 
+  void GetFieldValue(
+      const Selector& selector,
+      base::OnceCallback<void(bool, const std::string&)> callback) {
+    OnGetFieldValue(selector, callback);
+  }
+
+  MOCK_METHOD2(
+      OnGetFieldValue,
+      void(const Selector& selector,
+           base::OnceCallback<void(bool, const std::string&)>& callback));
+
   void SetFieldValue(const Selector& selector,
                      const std::string& value,
                      bool ignored_simulate_key_presses,

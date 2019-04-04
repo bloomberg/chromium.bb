@@ -144,6 +144,9 @@ class ScriptExecutor : public ActionDelegate {
       base::OnceCallback<void(const ClientStatus&)> callback) override;
   void SetTouchableElementArea(
       const ElementAreaProto& touchable_element_area) override;
+  void GetFieldValue(
+      const Selector& selector,
+      base::OnceCallback<void(bool, const std::string&)> callback) override;
   void SetFieldValue(
       const Selector& selector,
       const std::string& value,
