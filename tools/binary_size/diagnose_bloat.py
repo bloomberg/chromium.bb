@@ -953,9 +953,9 @@ def main():
                            help='Allow downstream targets to be built.')
   build_group.add_argument('--target',
                            help='GN target to build. Linux default: chrome. '
-                                'Android default: monochrome_public_apk or '
-                                'monochrome_apk (depending on '
-                                '--enable-chrome-android-internal).')
+                           'Android default: monochrome_public_minimal_apks or '
+                           'monochrome_minimal_apks (depending on '
+                           '--enable-chrome-android-internal).')
   if len(sys.argv) == 1:
     parser.print_help()
     return 1
