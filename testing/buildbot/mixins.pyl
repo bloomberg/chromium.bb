@@ -485,13 +485,6 @@
       },
     }
   },
-  'oreo': {
-    'swarming': {
-      'dimensions': {
-        'device_os': 'O',
-      },
-    },
-  },
   'pie': {
     'swarming': {
       'dimensions': {
