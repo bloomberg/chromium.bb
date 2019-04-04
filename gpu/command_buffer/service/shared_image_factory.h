@@ -75,6 +75,7 @@ class GPU_GLES2_EXPORT SharedImageFactory {
                     base::trace_event::ProcessMemoryDump* pmd,
                     int client_id,
                     uint64_t client_tracing_id);
+  MemoryTypeTracker* memory_tracker() const { return memory_tracker_.get(); }
 
  private:
   bool IsSharedBetweenThreads(uint32_t usage);

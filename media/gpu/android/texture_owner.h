@@ -25,6 +25,7 @@ class ScopedHardwareBufferFenceSync;
 
 namespace gpu {
 class SharedContextState;
+class TextureBase;
 namespace gles2 {
 class AbstractTexture;
 }  // namespace gles2
@@ -66,6 +67,7 @@ class MEDIA_GPU_EXPORT TextureOwner
 
   // Returns the GL texture id that the TextureOwner is attached to.
   GLuint GetTextureId() const;
+  gpu::TextureBase* GetTextureBase() const;
   virtual gl::GLContext* GetContext() const = 0;
   virtual gl::GLSurface* GetSurface() const = 0;
 

@@ -12,6 +12,7 @@
 #include "gpu/command_buffer/service/abstract_texture.h"
 #include "gpu/command_buffer/service/abstract_texture_impl_shared_context_state.h"
 #include "gpu/command_buffer/service/decoder_context.h"
+#include "gpu/command_buffer/service/texture_base.h"
 #include "media/gpu/android/image_reader_gl_owner.h"
 #include "media/gpu/android/surface_texture_gl_owner.h"
 #include "ui/gl/scoped_binders.h"
@@ -74,6 +75,10 @@ std::unique_ptr<gpu::gles2::AbstractTexture> TextureOwner::CreateTexture(
 
 GLuint TextureOwner::GetTextureId() const {
   return texture_->service_id();
+}
+
+gpu::TextureBase* TextureOwner::GetTextureBase() const {
+  return texture_->GetTextureBase();
 }
 
 void TextureOwner::ClearAbstractTexture() {
