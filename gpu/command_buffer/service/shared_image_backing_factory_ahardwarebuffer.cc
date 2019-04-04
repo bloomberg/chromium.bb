@@ -45,6 +45,7 @@
 #include "ui/gl/gl_fence_android_native_fence_sync.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_image_ahardwarebuffer.h"
+#include "ui/gl/gl_utils.h"
 #include "ui/gl/gl_version_info.h"
 
 namespace gpu {
@@ -56,25 +57,22 @@ enum class RepresentationAccessMode {
   kWrite,
 };
 
-void DestroyAllSemaphores(VkDevice vk_device,
-                          VkQueue vk_queue,
-                          std::vector<VkSemaphore> semaphores,
-                          bool wait_for_idle) {
+void DestroySemaphore(VkDevice vk_device,
+                      VkQueue vk_queue,
+                      VkSemaphore semaphore) {
+  if (semaphore == VK_NULL_HANDLE)
+    return;
+
   // TODO(vikassoni): Need to do better semaphore cleanup management. Waiting
   // on device to be idle to delete the semaphore is costly. Instead use a
   // fence to get signal when semaphore submission is done.
-  if (!semaphores.empty() && wait_for_idle) {
-    VkResult result = vkQueueWaitIdle(vk_queue);
-    if (result != VK_SUCCESS) {
-      LOG(ERROR) << "vkQueueWaitIdle failed: " << result;
-      return;
-    }
+  VkResult result = vkQueueWaitIdle(vk_queue);
+  if (result != VK_SUCCESS) {
+    LOG(ERROR) << "vkQueueWaitIdle failed: " << result;
+    return;
   }
 
-  for (VkSemaphore& semaphore : semaphores) {
-    if (semaphore != VK_NULL_HANDLE)
-      vkDestroySemaphore(vk_device, semaphore, nullptr);
-  }
+  vkDestroySemaphore(vk_device, semaphore, nullptr);
 }
 
 sk_sp<SkPromiseImageTexture> BeginVulkanAccess(
@@ -85,7 +83,7 @@ sk_sp<SkPromiseImageTexture> BeginVulkanAccess(
     base::android::ScopedHardwareBufferHandle ahb_handle,
     gfx::Size size,
     viz::ResourceFormat format,
-    std::vector<VkSemaphore> semaphores_to_clean) {
+    VkSemaphore semaphore_to_clean) {
   // Create a VkImage and import AHB.
   VkImage vk_image;
   VkImageCreateInfo vk_image_info;
@@ -115,8 +113,7 @@ sk_sp<SkPromiseImageTexture> BeginVulkanAccess(
     return nullptr;
   }
 
-  DestroyAllSemaphores(vk_device, vk_queue, semaphores_to_clean,
-                       true /* wait_for_idle*/);
+  DestroySemaphore(vk_device, vk_queue, semaphore_to_clean);
 
   return promise_texture;
 }
@@ -203,7 +200,7 @@ class SharedImageBackingAHB : public SharedImageBacking {
   void Destroy() override;
   base::android::ScopedHardwareBufferHandle GetAhbHandle() const;
 
-  bool BeginWrite(std::vector<base::ScopedFD>* fds_to_wait_on);
+  bool BeginWrite(base::ScopedFD* fd_to_wait_on);
   void EndWrite(base::ScopedFD end_write_fd);
   bool BeginRead(const SharedImageRepresentation* reader,
                  base::ScopedFD* fd_to_wait_on);
@@ -233,7 +230,7 @@ class SharedImageBackingAHB : public SharedImageBacking {
   bool is_writing_ = false;
 
   // All writes must wait for existing reads to complete.
-  std::vector<base::ScopedFD> read_sync_fds_;
+  base::ScopedFD read_sync_fd_;
   base::flat_set<const SharedImageRepresentation*> active_readers_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedImageBackingAHB);
@@ -267,14 +264,12 @@ class SharedImageRepresentationGLTextureAHB
       if (!InsertEglFenceAndWait(std::move(write_sync_fd)))
         return false;
     } else if (mode == GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM) {
-      std::vector<base::ScopedFD> sync_fds;
-      if (!ahb_backing()->BeginWrite(&sync_fds))
+      base::ScopedFD sync_fd;
+      if (!ahb_backing()->BeginWrite(&sync_fd))
         return false;
 
-      for (auto& sync_fd : sync_fds) {
-        if (!InsertEglFenceAndWait(std::move(sync_fd)))
-          return false;
-      }
+      if (!InsertEglFenceAndWait(std::move(sync_fd)))
+        return false;
     }
 
     if (mode == GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM) {
@@ -356,14 +351,12 @@ class SharedImageRepresentationSkiaGLAHB
     if (surface_)
       return nullptr;
 
-    std::vector<base::ScopedFD> sync_fds;
-    if (!ahb_backing()->BeginWrite(&sync_fds))
+    base::ScopedFD sync_fd;
+    if (!ahb_backing()->BeginWrite(&sync_fd))
       return nullptr;
 
-    for (auto& sync_fd : sync_fds) {
-      if (!InsertEglFenceAndWait(std::move(sync_fd)))
-        return nullptr;
-    }
+    if (!InsertEglFenceAndWait(std::move(sync_fd)))
+      return nullptr;
 
     if (!promise_texture_) {
       return nullptr;
@@ -483,49 +476,29 @@ class SharedImageRepresentationSkiaVkAHB
     if (surface_)
       return nullptr;
 
-    std::vector<base::ScopedFD> sync_fds;
-    if (!ahb_backing()->BeginWrite(&sync_fds))
+    base::ScopedFD sync_fd;
+    if (!ahb_backing()->BeginWrite(&sync_fd))
       return nullptr;
+    DCHECK(sync_fd.is_valid());
 
-    bool failed_to_insert_semaphores = false;
-    std::vector<VkSemaphore> semaphores(sync_fds.size(), VK_NULL_HANDLE);
-    for (size_t i = 0; i < sync_fds.size(); ++i) {
-      DCHECK(sync_fds[i].is_valid());
-
-      semaphores[i] = vk_implementation()->ImportSemaphoreHandle(
-          vk_device(),
-          SemaphoreHandle(VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT,
-                          std::move(sync_fds[i])));
-      if (semaphores[i] == VK_NULL_HANDLE) {
-        failed_to_insert_semaphores = true;
-        break;
-      }
-    }
-
-    if (failed_to_insert_semaphores) {
-      DestroyAllSemaphores(vk_device(), vk_queue(), std::move(semaphores),
-                           false /* wait_for_idle */);
+    VkSemaphore semaphore = vk_implementation()->ImportSemaphoreHandle(
+        vk_device(),
+        SemaphoreHandle(VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT,
+                        std::move(sync_fd)));
+    if (semaphore == VK_NULL_HANDLE) {
       return nullptr;
     }
 
-    for (size_t i = 0; i < sync_fds.size(); ++i) {
-      // Submit wait semaphore to the queue. Note that Skia uses the same queue
-      // exposed by vk_queue(), so this will work due to Vulkan queue ordering.
-      if (!SubmitWaitVkSemaphore(vk_queue(), semaphores[i])) {
-        failed_to_insert_semaphores = true;
-        break;
-      }
-    }
-
-    if (failed_to_insert_semaphores) {
-      DestroyAllSemaphores(vk_device(), vk_queue(), std::move(semaphores),
-                           true /* wait_for_idle */);
+    // Submit wait semaphore to the queue. Note that Skia uses the same queue
+    // exposed by vk_queue(), so this will work due to Vulkan queue ordering.
+    if (!SubmitWaitVkSemaphore(vk_queue(), semaphore)) {
+      DestroySemaphore(vk_device(), vk_queue(), semaphore);
       return nullptr;
     }
 
     promise_texture_ = BeginVulkanAccess(
         vk_implementation(), vk_device(), vk_phy_device(), vk_queue(),
-        ahb_backing()->GetAhbHandle(), size(), format(), std::move(semaphores));
+        ahb_backing()->GetAhbHandle(), size(), format(), semaphore);
     if (!promise_texture_)
       return nullptr;
 
@@ -582,13 +555,9 @@ class SharedImageRepresentationSkiaVkAHB
       }
     }
 
-    std::vector<VkSemaphore> semaphores_to_clean(1);
-    semaphores_to_clean.emplace_back(std::move(semaphore));
-
-    auto promise_texture =
-        BeginVulkanAccess(vk_implementation(), vk_device(), vk_phy_device(),
-                          vk_queue(), ahb_backing()->GetAhbHandle(), size(),
-                          format(), std::move(semaphores_to_clean));
+    auto promise_texture = BeginVulkanAccess(
+        vk_implementation(), vk_device(), vk_phy_device(), vk_queue(),
+        ahb_backing()->GetAhbHandle(), size(), format(), std::move(semaphore));
 
     // Cache the sk surface in the representation so that it can be used in the
     // EndReadAccess. Also make sure previous surface_ have been consumed by
@@ -775,8 +744,7 @@ SharedImageBackingAHB::ProduceSkia(
       manager, this, promise_texture, tracker, std::move(texture));
 }
 
-bool SharedImageBackingAHB::BeginWrite(
-    std::vector<base::ScopedFD>* fds_to_wait_on) {
+bool SharedImageBackingAHB::BeginWrite(base::ScopedFD* fd_to_wait_on) {
   AutoLock auto_lock(this);
 
   if (is_writing_ || !active_readers_.empty()) {
@@ -786,13 +754,8 @@ bool SharedImageBackingAHB::BeginWrite(
   }
 
   is_writing_ = true;
-
-  (*fds_to_wait_on) = std::move(read_sync_fds_);
-  // Assign a known state back to the moved-from read_sync_fds
-  read_sync_fds_ = std::vector<base::ScopedFD>{};
-  // For the first BeginWrite access, the |write_sync_fd_| is invalid.
-  if (write_sync_fd_.is_valid())
-    fds_to_wait_on->emplace_back(std::move(write_sync_fd_));
+  (*fd_to_wait_on) =
+      gl::MergeFDs(std::move(read_sync_fd_), std::move(write_sync_fd_));
 
   return true;
 }
@@ -848,8 +811,8 @@ void SharedImageBackingAHB::EndRead(const SharedImageRepresentation* reader,
 
   active_readers_.erase(reader);
 
-  if (end_read_fd.is_valid())
-    read_sync_fds_.emplace_back(std::move(end_read_fd));
+  read_sync_fd_ =
+      gl::MergeFDs(std::move(read_sync_fd_), std::move(end_read_fd));
 }
 
 gles2::Texture* SharedImageBackingAHB::GenGLTexture() {
