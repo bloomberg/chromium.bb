@@ -95,7 +95,7 @@ void XrBrowserTestBase::SetUp() {
   for (const auto& switch_string : append_switches_) {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(switch_string);
   }
-  scoped_feature_list_.InitWithFeatures(enable_features_, {});
+  scoped_feature_list_.InitWithFeatures(enable_features_, disable_features_);
 
   InProcessBrowserTest::SetUp();
 }
