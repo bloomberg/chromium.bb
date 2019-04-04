@@ -117,6 +117,11 @@ class ChannelMac : public Channel,
                               size_t extra_header_size,
                               std::vector<PlatformHandle>* handles,
                               bool* deferred) override {
+    // TODO(https://crbug.com/946372): Remove when fixed.
+    static base::debug::CrashKeyString* error_crash_key =
+        base::debug::AllocateCrashKeyString("channel-mac-handles-error",
+                                            base::debug::CrashKeySize::Size64);
+
     // Validate the incoming handles. If validation fails, ensure they are
     // destroyed.
     std::vector<PlatformHandle> incoming_handles;
@@ -125,12 +130,14 @@ class ChannelMac : public Channel,
     if (extra_header_size <
         sizeof(Message::MachPortsExtraHeader) +
             (incoming_handles.size() * sizeof(Message::MachPortsEntry))) {
+      base::debug::SetCrashKeyString(error_crash_key, "extra_header_size");
       return false;
     }
 
     const auto* mach_ports_header =
         reinterpret_cast<const Message::MachPortsExtraHeader*>(extra_header);
     if (mach_ports_header->num_ports != incoming_handles.size()) {
+      base::debug::SetCrashKeyString(error_crash_key, "num_ports mismatch");
       return false;
     }
 
@@ -138,19 +145,29 @@ class ChannelMac : public Channel,
       auto type = static_cast<PlatformHandle::Type>(
           mach_ports_header->entries[i].mach_entry.type);
       if (type == PlatformHandle::Type::kNone) {
+        base::debug::SetCrashKeyString(
+            error_crash_key, base::StringPrintf("kNone handle #%d", i));
         return false;
       } else if (type == PlatformHandle::Type::kFd &&
                  incoming_handles[i].is_mach_send()) {
         int fd = fileport_makefd(incoming_handles[i].GetMachSendRight().get());
         if (fd < 0) {
+          base::debug::SetCrashKeyString(
+              error_crash_key,
+              base::StringPrintf("fileport_makefd %d -%d #%d", fd, errno, i));
           return false;
         }
         incoming_handles[i] = PlatformHandle(base::ScopedFD(fd));
       } else if (type != incoming_handles[i].type()) {
+        base::debug::SetCrashKeyString(
+            error_crash_key,
+            base::StringPrintf("handle mismatch %d != -%d #%d", type,
+                               incoming_handles[i].type(), i));
         return false;
       }
     }
 
+    base::debug::ClearCrashKeyString(error_crash_key);
     *handles = std::move(incoming_handles);
     return true;
   }
@@ -251,7 +268,7 @@ class ChannelMac : public Channel,
       MACH_LOG(ERROR, kr) << "mach_msg send handshake";
 
       base::AutoLock lock(write_lock_);
-      OnWriteErrorLocked(Error::kConnectionFailed, kr);
+      OnWriteErrorLocked(Error::kConnectionFailed);
       return;
     }
 
@@ -388,7 +405,7 @@ class ChannelMac : public Channel,
               fileport_makeport(handle.GetFD().get(), &descriptor->name);
           if (kr != KERN_SUCCESS) {
             MACH_LOG(ERROR, kr) << "fileport_makeport";
-            OnWriteErrorLocked(Error::kDisconnected, kr);
+            OnWriteErrorLocked(Error::kDisconnected);
             return false;
           }
           descriptor->disposition = MACH_MSG_TYPE_MOVE_SEND;
@@ -397,7 +414,7 @@ class ChannelMac : public Channel,
         default:
           NOTREACHED() << "Unsupported handle type "
                        << static_cast<int>(handle.type());
-          OnWriteErrorLocked(Error::kDisconnected, 0xbad04adl);
+          OnWriteErrorLocked(Error::kDisconnected);
       }
     }
 
@@ -441,7 +458,7 @@ class ChannelMac : public Channel,
         MACH_LOG_IF(ERROR, kr != MACH_SEND_INVALID_DEST, kr) << "mach_msg send";
         send_buffer_contains_message_ = false;
         mach_msg_destroy(header);
-        OnWriteErrorLocked(Error::kDisconnected, kr);
+        OnWriteErrorLocked(Error::kDisconnected);
       }
       return false;
     }
@@ -623,21 +640,19 @@ class ChannelMac : public Channel,
     size_t ignored;
     DispatchResult result = TryDispatchMessage(payload, &ignored);
     if (result != DispatchResult::kOK) {
+      // TODO(https://crbug.com/946372): Remove when fixed.
+      static auto* error_crash_key = base::debug::AllocateCrashKeyString(
+          "channel-mac-try-dispatch", base::debug::CrashKeySize::Size32);
+      base::debug::SetCrashKeyString(error_crash_key,
+                                     base::StringPrintf("%d", result));
+      base::debug::DumpWithoutCrashing();
       OnError(Error::kReceivedMalformedData);
       return;
     }
   }
 
   // Marks the channel as unaccepting of new messages and shuts it down.
-  void OnWriteErrorLocked(Error error, uint32_t error_code) {
-    // TODO(https://crbug.com/946372): Remove when fixed.
-    static base::debug::CrashKeyString* error_crash_key =
-        base::debug::AllocateCrashKeyString("channel-mac-write-error",
-                                            base::debug::CrashKeySize::Size32);
-    base::debug::SetCrashKeyString(error_crash_key,
-                                   base::StringPrintf("0x%x", error_code));
-    base::debug::DumpWithoutCrashing();
-
+  void OnWriteErrorLocked(Error error) {
     reject_writes_ = true;
     io_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&ChannelMac::OnError, this, error));
