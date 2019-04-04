@@ -7,9 +7,11 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.view.View;
 
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
@@ -25,6 +27,8 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
+import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
+import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -38,6 +42,8 @@ import java.util.List;
  * TODO(yusufo): Move some of the logic here to a parent component to make the above true.
  */
 class TabListMediator {
+    private boolean mShownIPH;
+
     /**
      * An interface to get the thumbnails to be shown inside the tab grid cards.
      */
@@ -67,6 +73,28 @@ class TabListMediator {
             mThumbnailProvider.getTabThumbnailWithCallback(mTab, callback);
         }
     }
+
+    /**
+     * An interface to show IPH for a tab.
+     */
+    public interface IphProvider { void showIPH(View anchor); }
+
+    private final IphProvider mIphProvider = new IphProvider() {
+        private static final int IPH_DELAY_MS = 1000;
+
+        @Override
+        public void showIPH(View anchor) {
+            if (mShownIPH) return;
+            mShownIPH = true;
+
+            new Handler().postDelayed(
+                    ()
+                            -> TabGroupUtils.maybeShowIPH(
+                                    FeatureConstants.TAB_GROUPS_YOUR_TABS_ARE_TOGETHER_FEATURE,
+                                    anchor),
+                    IPH_DELAY_MS);
+        }
+    };
 
     /**
      * An interface to get the onClickListener for "Create group" button.
@@ -353,6 +381,10 @@ class TabListMediator {
             createGroupButtonOnClickListener =
                     mCreateGroupButtonProvider.getCreateGroupButtonOnClickListener(tab);
         }
+        boolean showIPH = false;
+        if (mCloseAllRelatedTabs && !mShownIPH) {
+            showIPH = getRelatedTabsForId(tab.getId()).size() > 1;
+        }
 
         PropertyModel tabInfo =
                 new PropertyModel.Builder(TabProperties.ALL_KEYS_TAB_GRID)
@@ -361,6 +393,7 @@ class TabListMediator {
                         .with(TabProperties.FAVICON,
                                 mTabListFaviconProvider.getDefaultFaviconDrawable())
                         .with(TabProperties.IS_SELECTED, isSelected)
+                        .with(TabProperties.IPH_PROVIDER, showIPH ? mIphProvider : null)
                         .with(TabProperties.TAB_SELECTED_LISTENER, mTabSelectedListener)
                         .with(TabProperties.TAB_CLOSED_LISTENER, mTabClosedListener)
                         .with(TabProperties.CREATE_GROUP_LISTENER, createGroupButtonOnClickListener)
