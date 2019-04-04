@@ -19,7 +19,7 @@
 namespace notifications {
 
 class DistributionPolicy;
-struct TypeState;
+struct ClientState;
 struct NotificationEntry;
 struct SchedulerConfig;
 
@@ -31,7 +31,7 @@ class DisplayDecider {
  public:
   using Notifications =
       std::map<SchedulerClientType, std::vector<const NotificationEntry*>>;
-  using TypeStates = std::map<SchedulerClientType, const TypeState*>;
+  using ClientStates = std::map<SchedulerClientType, const ClientState*>;
   using Results = std::set<std::string>;
 
   // Creates the decider to determine notifications to show.
@@ -47,7 +47,7 @@ class DisplayDecider {
       std::unique_ptr<DistributionPolicy> distribution_policy,
       SchedulerTaskTime task_start_time,
       Notifications notifications,
-      TypeStates type_states,
+      ClientStates client_states,
       Results* results) = 0;
 
  private:

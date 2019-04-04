@@ -67,14 +67,14 @@ struct SuppressionInfo {
 
 // Stores the global states about how often the notification can be shown
 // to the user and the history of user interactions to a particular notification
-// type.
-struct TypeState {
+// client.
+struct ClientState {
   using Impressions = std::map<base::Time, Impression>;
-  explicit TypeState(SchedulerClientType type);
-  explicit TypeState(const TypeState& other);
-  ~TypeState();
+  explicit ClientState(SchedulerClientType type);
+  explicit ClientState(const ClientState& other);
+  ~ClientState();
 
-  bool operator==(const TypeState& other) const;
+  bool operator==(const ClientState& other) const;
 
   // Dumps data for debugging.
   std::string DebugPrint() const;

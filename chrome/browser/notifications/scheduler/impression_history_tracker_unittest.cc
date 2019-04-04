@@ -23,18 +23,18 @@ struct TestCase {
 };
 
 // Verifies the |output|.
-void VerifyTypeStates(
+void VerifyClientStates(
     const std::vector<test::ImpressionTestData>& expected_test_data,
-    const ImpressionHistoryTracker::TypeStates& output) {
-  ImpressionHistoryTracker::TypeStates expected_type_states;
-  test::AddImpressionTestData(expected_test_data, &expected_type_states);
+    const ImpressionHistoryTracker::ClientStates& output) {
+  ImpressionHistoryTracker::ClientStates expected_client_states;
+  test::AddImpressionTestData(expected_test_data, &expected_client_states);
 
-  DCHECK_EQ(expected_type_states.size(), output.size());
-  for (const auto& expected : expected_type_states) {
+  DCHECK_EQ(expected_client_states.size(), output.size());
+  for (const auto& expected : expected_client_states) {
     auto output_it = output.find(expected.first);
     DCHECK(output_it != output.end());
     EXPECT_EQ(*expected.second, *output_it->second)
-        << "Unmatch type states: \n"
+        << "Unmatch client states: \n"
         << "Expected:" << expected.second->DebugPrint() << " \n"
         << "Acutual: " << output_it->second->DebugPrint();
   }
@@ -54,7 +54,7 @@ class ImpressionHistoryTrackerTest : public testing::Test {
  protected:
   void RunTestCase(TestCase test_case) {
     // Prepare test input data.
-    ImpressionHistoryTracker::TypeStates input_states;
+    ImpressionHistoryTracker::ClientStates input_states;
     test::AddImpressionTestData(test_case.input, &input_states);
 
     // Do stuff.
@@ -62,11 +62,11 @@ class ImpressionHistoryTrackerTest : public testing::Test {
     tracker()->AnalyzeImpressionHistory();
 
     // Verify output data.
-    VerifyTypeStates(test_case.expected, tracker()->GetTypeStates());
+    VerifyClientStates(test_case.expected, tracker()->GetClientStates());
   }
 
   // Create the test target and push in data.
-  void CreateTracker(ImpressionHistoryTracker::TypeStates states) {
+  void CreateTracker(ImpressionHistoryTracker::ClientStates states) {
     impression_trakcer_ = std::make_unique<ImpressionHistoryTrackerImpl>(
         config_, std::move(states));
   }

@@ -20,14 +20,15 @@ namespace notifications {
 // maximum daily notification shown to the user.
 class ImpressionHistoryTracker {
  public:
-  using TypeStates = std::map<SchedulerClientType, std::unique_ptr<TypeState>>;
+  using ClientStates =
+      std::map<SchedulerClientType, std::unique_ptr<ClientState>>;
 
-  // Analyzes the impression history for all notification types, and adjusts
-  // the |current_max_daily_show| in TypeState.
+  // Analyzes the impression history for all notification clients, and adjusts
+  // the |current_max_daily_show|.
   virtual void AnalyzeImpressionHistory() = 0;
 
-  // Queries the type states.
-  virtual const TypeStates& GetTypeStates() const = 0;
+  // Queries the client states.
+  virtual const ClientStates& GetClientStates() const = 0;
 
   virtual ~ImpressionHistoryTracker() = default;
 
@@ -39,44 +40,47 @@ class ImpressionHistoryTracker {
 };
 
 // An implementation of ImpressionHistoryTracker backed by a database.
-// TODO(xingliu): Pass in the store interface and retrieve |type_states_| from
+// TODO(xingliu): Pass in the store interface and retrieve |client_states_| from
 // the database.
 class ImpressionHistoryTrackerImpl : public ImpressionHistoryTracker {
  public:
   explicit ImpressionHistoryTrackerImpl(const SchedulerConfig& config,
-                                        TypeStates type_states);
+                                        ClientStates client_states);
   ~ImpressionHistoryTrackerImpl() override;
 
  private:
   // ImpressionHistoryTracker implementation.
   void AnalyzeImpressionHistory() override;
-  const ImpressionHistoryTracker::TypeStates& GetTypeStates() const override;
+  const ClientStates& GetClientStates() const override;
 
   // Helper method to prune impressions created before |start_time|. Assumes
   // |impressions| are sorted by creation time.
   static void PruneImpression(std::deque<Impression*>* impressions,
                               const base::Time& start_time);
 
-  // Analyzes the impression history for |type|.
-  void AnalyzeImpressionHistory(TypeState* type_state);
+  // Analyzes the impression history for a particular client.
+  void AnalyzeImpressionHistory(ClientState* client_state);
 
   // Applies a positive impression result to this notification type.
-  void ApplyPositiveImpression(TypeState* type_state, Impression* impression);
+  void ApplyPositiveImpression(ClientState* client_state,
+                               Impression* impression);
 
   // Applies negative impression on this notification type when |num_actions|
   // consecutive negative impression result are generated.
-  void ApplyNegativeImpressions(TypeState* type_state,
+  void ApplyNegativeImpressions(ClientState* client_state,
                                 std::deque<Impression*>* impressions,
                                 size_t num_actions);
 
   // Applies one negative impression.
-  void ApplyNegativeImpression(TypeState* type_state, Impression* impression);
+  void ApplyNegativeImpression(ClientState* client_state,
+                               Impression* impression);
 
   // Recovers from suppression caused by negative impressions.
-  void SuppressionRecovery(TypeState* type_state);
+  void SuppressionRecovery(ClientState* client_state);
 
-  // Impression history and global states for all notification types.
-  TypeStates type_states_;
+  // Impression history and global states for all notification scheduler
+  // clients.
+  ClientStates client_states_;
 
   // System configuration.
   const SchedulerConfig& config_;

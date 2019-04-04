@@ -84,7 +84,8 @@ class DisplayDeciderTest : public testing::Test {
   // Initializes a test case with input data.
   void RunTestCase(const TestData& test_data) {
     test_data_ = test_data;
-    test::AddImpressionTestData(test_data_.impression_test_data, &type_states_);
+    test::AddImpressionTestData(test_data_.impression_test_data,
+                                &client_states_);
 
     DisplayDecider::Notifications notifications;
     for (const auto& entry : test_data_.notification_entries) {
@@ -92,9 +93,9 @@ class DisplayDeciderTest : public testing::Test {
     }
     std::vector<SchedulerClientType> clients;
 
-    std::map<SchedulerClientType, const TypeState*> type_states;
-    for (const auto& type : type_states_) {
-      type_states.emplace(type.first, type.second.get());
+    std::map<SchedulerClientType, const ClientState*> client_states;
+    for (const auto& type : client_states_) {
+      client_states.emplace(type.first, type.second.get());
       clients.emplace_back(type.first);
     }
 
@@ -103,7 +104,7 @@ class DisplayDeciderTest : public testing::Test {
     decider_->FindNotificationsToShow(
         &config_, std::move(clients), DistributionPolicy::Create(),
         test_data_.task_start_time, std::move(notifications),
-        std::move(type_states), &results_);
+        std::move(client_states), &results_);
 
     // Verify output.
     EXPECT_EQ(results_, test_data_.expected)
@@ -118,7 +119,7 @@ class DisplayDeciderTest : public testing::Test {
   TestData test_data_;
   SchedulerConfig config_;
 
-  std::map<SchedulerClientType, std::unique_ptr<TypeState>> type_states_;
+  std::map<SchedulerClientType, std::unique_ptr<ClientState>> client_states_;
 
   // Test target class and output.
   std::unique_ptr<DisplayDecider> decider_;
