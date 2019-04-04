@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.snackbar.undo.UndoBarController;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabModelSelectorMetadata;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabPersistentStoreObserver;
@@ -111,11 +112,12 @@ public class TabPersistentStoreTest {
 
         @Override
         public Tab createFrozenTab(TabState state, int id, int index) {
-            Tab tab = TabBuilder.createFromFrozenState(state)
+            Tab tab = TabBuilder.createFromFrozenState()
                               .setId(id)
                               .setParentId(state.parentId)
                               .setIncognito(state.isIncognito())
                               .build();
+            TabTestUtils.restoreFieldsFromState(tab, state);
             mSelector.getModel(mIsIncognito).addTab(tab, index, TabLaunchType.FROM_RESTORE);
             storeTabInfo(state, id);
             return tab;

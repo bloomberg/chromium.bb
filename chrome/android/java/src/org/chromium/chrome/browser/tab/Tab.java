@@ -295,14 +295,12 @@ public class Tab
      * @param window        An instance of a {@link WindowAndroid}.
      * @param launchType    Type indicating how this tab was launched.
      * @param creationState State in which the tab is created.
-     * @param frozenState   State containing information about this Tab, if it was persisted.
      * @param loadUrlParams Parameters used for a lazily loaded Tab.
      */
     @SuppressLint("HandlerLeak")
     Tab(int id, int parentId, boolean incognito, WindowAndroid window,
             @Nullable @TabLaunchType Integer launchType,
-            @Nullable @TabCreationState Integer creationState, TabState frozenState,
-            LoadUrlParams loadUrlParams) {
+            @Nullable @TabCreationState Integer creationState, LoadUrlParams loadUrlParams) {
         mId = TabIdManager.getInstance().generateValidId(id);
         mParentId = parentId;
         mIncognito = incognito;
@@ -331,16 +329,11 @@ public class Tab
 
         TabHelpers.initTabHelpers(this, creationState);
 
-        // Restore data from the TabState, if it existed.
-        if (frozenState != null) {
-            restoreFieldsFromState(frozenState);
+        if (mParentId == INVALID_TAB_ID || getTabModelSelector() == null
+                || getTabModelSelector().getTabById(mParentId) == null) {
+            mRootId = mId;
         } else {
-            if (mParentId == INVALID_TAB_ID || getTabModelSelector() == null
-                    || getTabModelSelector().getTabById(mParentId) == null) {
-                mRootId = mId;
-            } else {
-                mRootId = getTabModelSelector().getTabById(mParentId).getRootId();
-            }
+            mRootId = getTabModelSelector().getTabById(mParentId).getRootId();
         }
 
         mAttachStateChangeListener = new OnAttachStateChangeListener() {
@@ -362,9 +355,8 @@ public class Tab
      * Restores member fields from the given TabState.
      * @param state TabState containing information about this Tab.
      */
-    private void restoreFieldsFromState(TabState state) {
+    void restoreFieldsFromState(TabState state) {
         assert state != null;
-        state.restoreFields(this);
         mFrozenContentsState = state.contentsState;
         mTimestampMillis = state.timestampMillis;
         mUrl = state.getVirtualUrlFromState();
@@ -903,13 +895,16 @@ public class Tab
      * @param initiallyHidden   Only used if {@code webContents} is {@code null}.  Determines
      *                          whether or not the newly created {@link WebContents} will be hidden
      *                          or not.
+     * @param tabState          State containing information about this Tab, if it was persisted.
      * @param unfreeze          Whether there should be an attempt to restore state at the end of
      *                          the initialization.
      */
-    public void initialize(WebContents webContents, TabDelegateFactory delegateFactory,
-            boolean initiallyHidden, boolean unfreeze) {
+    public void initialize(WebContents webContents, @Nullable TabDelegateFactory delegateFactory,
+            boolean initiallyHidden, TabState tabState, boolean unfreeze) {
         try {
             TraceEvent.begin("Tab.initialize");
+
+            if (tabState != null) restoreFieldsFromState(tabState);
 
             mDelegateFactory = delegateFactory;
             initializeNative();
@@ -946,7 +941,7 @@ public class Tab
             if (mTimestampMillis == INVALID_TIMESTAMP) {
                 mTimestampMillis = System.currentTimeMillis();
             }
-
+            for (TabObserver observer : mObservers) observer.onInitialized(this, tabState);
             TraceEvent.end("Tab.initialize");
         }
     }

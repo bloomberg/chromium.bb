@@ -119,7 +119,7 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
                 activityTabObserverCaptor.capture());
         doNothing()
                 .when(tabFromFactory)
-                .initialize(webContentsCaptor.capture(), any(), anyBoolean(), anyBoolean());
+                .initialize(webContentsCaptor.capture(), any(), anyBoolean(), any(), anyBoolean());
     }
 
     @Override

@@ -74,7 +74,7 @@ public class TabUmaTest {
                                     .setWindow(mActivityTestRule.getActivity().getWindowAndroid())
                                     .setLaunchType(TabLaunchType.FROM_LONGPRESS_BACKGROUND)
                                     .build();
-                bgTab.initialize(null, new TabDelegateFactory(), true, false);
+                bgTab.initialize(null, new TabDelegateFactory(), true, null, false);
                 return bgTab;
             }
         });
@@ -119,7 +119,7 @@ public class TabUmaTest {
                                     .setWindow(mActivityTestRule.getActivity().getWindowAndroid())
                                     .setLaunchType(TabLaunchType.FROM_LONGPRESS_BACKGROUND)
                                     .build();
-                bgTab.initialize(null, new TabDelegateFactory(), true, false);
+                bgTab.initialize(null, new TabDelegateFactory(), true, null, false);
                 bgTab.loadUrl(new LoadUrlParams(mTestUrl));
                 bgTab.show(TabSelectionType.FROM_USER);
                 return bgTab;
@@ -137,7 +137,7 @@ public class TabUmaTest {
                                     .setWindow(mActivityTestRule.getActivity().getWindowAndroid())
                                     .setLaunchType(TabLaunchType.FROM_LONGPRESS_BACKGROUND)
                                     .build();
-                bgTab.initialize(null, new TabDelegateFactory(), true, false);
+                bgTab.initialize(null, new TabDelegateFactory(), true, null, false);
                 bgTab.loadUrl(new LoadUrlParams(mTestUrl));
                 // Simulate the renderer being killed by the OS.
                 ChromeTabUtils.simulateRendererKilledForTesting(bgTab, false);
@@ -157,7 +157,7 @@ public class TabUmaTest {
                                     .setWindow(mActivityTestRule.getActivity().getWindowAndroid())
                                     .setLaunchType(TabLaunchType.FROM_LONGPRESS_BACKGROUND)
                                     .build();
-                bgTab.initialize(null, new TabDelegateFactory(), true, false);
+                bgTab.initialize(null, new TabDelegateFactory(), true, null, false);
                 bgTab.show(TabSelectionType.FROM_USER);
                 return bgTab;
             }

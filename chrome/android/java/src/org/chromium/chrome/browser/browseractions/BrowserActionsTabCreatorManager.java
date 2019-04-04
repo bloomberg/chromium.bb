@@ -52,7 +52,7 @@ public class BrowserActionsTabCreatorManager implements TabCreatorManager {
                               .setWindow(windowAndroid)
                               .setLaunchType(type)
                               .build();
-            tab.initialize(null, new TabDelegateFactory(), true, false);
+            tab.initialize(null, new TabDelegateFactory(), true, null, false);
             mTabModel.addTab(tab, -1, type);
             return tab;
         }
@@ -61,11 +61,8 @@ public class BrowserActionsTabCreatorManager implements TabCreatorManager {
         public Tab createFrozenTab(TabState state, int id, int index) {
             Context context = ContextUtils.getApplicationContext();
             WindowAndroid windowAndroid = new WindowAndroid(context);
-            Tab tab = TabBuilder.createFromFrozenState(state)
-                              .setId(id)
-                              .setWindow(windowAndroid)
-                              .build();
-            tab.initialize(null, new TabDelegateFactory(), true, false);
+            Tab tab = TabBuilder.createFromFrozenState().setId(id).setWindow(windowAndroid).build();
+            tab.initialize(null, new TabDelegateFactory(), true, state, false);
             mTabModel.addTab(tab, index, TabLaunchType.FROM_RESTORE);
             return tab;
         }

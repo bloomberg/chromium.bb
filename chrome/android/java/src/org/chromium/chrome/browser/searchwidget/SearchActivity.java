@@ -172,7 +172,7 @@ public class SearchActivity extends AsyncInitializationActivity
                        .setLaunchType(TabLaunchType.FROM_EXTERNAL_APP)
                        .build();
         mTab.initialize(WebContentsFactory.createWebContents(false, false),
-                new TabDelegateFactory(), false, false);
+                new TabDelegateFactory(), false, null, false);
         mTab.loadUrl(new LoadUrlParams(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL));
 
         mSearchBoxDataProvider.onNativeLibraryReady(mTab);

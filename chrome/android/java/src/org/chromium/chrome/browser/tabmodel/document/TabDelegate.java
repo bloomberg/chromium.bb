@@ -54,7 +54,7 @@ public class TabDelegate extends TabCreator {
      */
     @Override
     public Tab createFrozenTab(TabState state, int id, int index) {
-        return TabBuilder.createFromFrozenState(state)
+        return TabBuilder.createFromFrozenState()
                 .setId(id)
                 .setIncognito(state.isIncognito())
                 .build();
