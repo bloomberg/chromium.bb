@@ -655,7 +655,7 @@ bool ThumbnailDatabase::GetFaviconLastUpdatedTime(
     return false;
 
   // Return false also if there there is no bitmap with |icon_id|.
-  if (statement.ColumnType(0) == sql::COLUMN_TYPE_NULL)
+  if (statement.ColumnType(0) == sql::ColumnType::kNull)
     return false;
 
   if (last_updated) {
