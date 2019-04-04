@@ -508,15 +508,17 @@ class _DiffArchiveManager(object):
         for s, before, after in stats:
           _WriteToFile(f, '{:>+10} {} {} for range: {}..{}',
                                s.value, s.units, s.name, before, after)
+
     # Print cached file if all builds were cached.
-    if os.path.exists(path):
+    num_archives = len(self.build_archives)
+    if os.path.exists(path) and num_archives > 1:
       _PrintFile(path)
-    if self.build_archives and len(self.build_archives) <= 2:
+    if num_archives <= 2:
       if not all(a.Exists() for a in self.build_archives):
         return
       supersize_path = os.path.join(_BINARY_SIZE_DIR, 'supersize')
       size2 = ''
-      if len(self.build_archives) == 2:
+      if num_archives == 2:
         size2 = os.path.relpath(self.build_archives[-1].archived_size_path)
       logging.info('Enter supersize console via: %s console %s %s',
           os.path.relpath(supersize_path),
