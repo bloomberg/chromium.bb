@@ -92,8 +92,6 @@ void FetchContext::RecordLoadingActivity(
     ResourceType,
     const AtomicString& fetch_initiator_name) {}
 
-void FetchContext::DidObserveLoadingBehavior(WebLoadingBehaviorFlag) {}
-
 void FetchContext::AddResourceTiming(const ResourceTimingInfo&) {}
 
 void FetchContext::PopulateResourceRequest(
