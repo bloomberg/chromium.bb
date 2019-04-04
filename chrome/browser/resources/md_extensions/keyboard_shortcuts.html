@@ -85,10 +85,7 @@
         <div class="shortcut-card">
           <div class="card-title">
             <img class="icon" src="[[item.iconUrl]]"
-                alt$="[[appOrExtension(
-                    item.type,
-                    '$i18nPolymer{appIcon}',
-                    '$i18nPolymer{extensionIcon}')]]">
+                alt$="[[appOrExtensionIconLabel(item.type)]]">
             <span>[[item.name]]</span>
           </div>
           <div class="card-controls">
