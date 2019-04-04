@@ -92,7 +92,7 @@ void SVGImagePainter::PaintForeground(const PaintInfo& paint_info) {
 
   if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
     PaintTimingDetector::NotifyImagePaint(
-        layout_svg_image_, image.get(),
+        layout_svg_image_, image->Size(), image_resource->CachedImage(),
         paint_info.context.GetPaintController().CurrentPaintChunkProperties());
   }
 }

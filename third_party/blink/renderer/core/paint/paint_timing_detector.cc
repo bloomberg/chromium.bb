@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/paint/image_paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/text_paint_timing_detector.h"
@@ -36,7 +37,8 @@ void PaintTimingDetector::NotifyPaintFinished() {
 // static
 void PaintTimingDetector::NotifyBackgroundImagePaint(
     const Node* node,
-    Image* image,
+    const Image* image,
+    const StyleImage* cached_image,
     const PropertyTreeState& current_paint_chunk_properties) {
   DCHECK(image);
   if (!node)
@@ -55,22 +57,29 @@ void PaintTimingDetector::NotifyBackgroundImagePaint(
   LocalFrameView* frame_view = object->GetFrameView();
   if (!frame_view)
     return;
+  if (!cached_image)
+    return;
   PaintTimingDetector& detector = frame_view->GetPaintTimingDetector();
   detector.GetImagePaintTimingDetector().RecordImage(
-      *object, image, current_paint_chunk_properties);
+      *object, image->Size(), cached_image->IsLoaded(),
+      current_paint_chunk_properties);
 }
 
 // static
 void PaintTimingDetector::NotifyImagePaint(
     const LayoutObject& object,
-    Image* image,
+    const IntSize& intrinsic_size,
+    const ImageResourceContent* cached_image,
     const PropertyTreeState& current_paint_chunk_properties) {
   LocalFrameView* frame_view = object.GetFrameView();
   if (!frame_view)
     return;
+  if (!cached_image)
+    return;
   PaintTimingDetector& detector = frame_view->GetPaintTimingDetector();
   detector.GetImagePaintTimingDetector().RecordImage(
-      object, image, current_paint_chunk_properties);
+      object, intrinsic_size, cached_image->IsLoaded(),
+      current_paint_chunk_properties);
 }
 
 // static

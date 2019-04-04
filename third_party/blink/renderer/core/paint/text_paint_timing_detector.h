@@ -141,7 +141,7 @@ class CORE_EXPORT TextPaintTimingDetector final
 
   // Make sure that at most one swap promise is ongoing.
   bool awaiting_swap_promise_ = false;
-  unsigned largest_text_candidate_index_max_ = 0;
+  unsigned count_candidates_ = 0;
   bool is_recording_ = true;
 
   bool has_records_changed_ = true;

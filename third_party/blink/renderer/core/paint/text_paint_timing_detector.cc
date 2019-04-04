@@ -66,8 +66,7 @@ void TextPaintTimingDetector::OnLargestTextDetected(
   largest_text_paint_ = largest_text_record.paint_time;
   largest_text_paint_size_ = largest_text_record.first_size;
   auto value = std::make_unique<TracedValue>();
-  PopulateTraceValue(*value, largest_text_record,
-                     largest_text_candidate_index_max_++);
+  PopulateTraceValue(*value, largest_text_record, count_candidates_++);
   TRACE_EVENT_INSTANT_WITH_TIMESTAMP1(
       "loading", "LargestTextPaint::Candidate", TRACE_EVENT_SCOPE_THREAD,
       largest_text_paint_, "data", std::move(value));
@@ -156,24 +155,24 @@ void TextPaintTimingDetector::RecordText(
   if (records_manager_.HasRecorded(node_id))
     return;
 
+  uint64_t visual_size = 0;
   // Compared to object.FirstFragment().VisualRect(), this will include other
   // fragments of the object.
   LayoutRect visual_rect = object.FragmentsVisualRectBoundingBox();
-  if (visual_rect.IsEmpty())
-    return;
-
-  uint64_t visual_size =
-      frame_view_->GetPaintTimingDetector().CalculateVisualSize(
-          visual_rect, current_paint_chunk_properties);
+  if (!visual_rect.IsEmpty()) {
+    visual_size = frame_view_->GetPaintTimingDetector().CalculateVisualSize(
+        visual_rect, current_paint_chunk_properties);
+  }
   DVLOG(2) << "Node id (" << node_id << "): size=" << visual_size
            << ", type=" << object.DebugName();
 
   // When visual_size == 0, it either means the text size is 0 or the text is
   // out of viewport. In either case, we don't record their time for efficiency.
-  if (visual_size == 0)
+  if (visual_size == 0) {
     records_manager_.RecordInvisibleNode(node_id);
-  else
+  } else {
     records_manager_.RecordVisibleNode(node_id, visual_size, object);
+  }
 
   if (records_manager_.HasTooManyNodes()) {
     TRACE_EVENT_INSTANT2("loading", "TextPaintTimingDetector::OverNodeLimit",
@@ -233,7 +232,8 @@ void TextRecordsManager::AssignPaintTimeToQueuedNodes(
 void TextRecordsManager::MarkNodeReattachedIfNeeded(const DOMNodeId& node_id) {
   if (!detached_ids_.Contains(node_id))
     return;
-  DCHECK(visible_node_map_.Contains(node_id));
+  DCHECK(visible_node_map_.Contains(node_id) ||
+         invisible_node_ids_.Contains(node_id));
   detached_ids_.erase(node_id);
   is_result_invalidated_ = true;
 }
@@ -283,9 +283,6 @@ bool TextRecordsManager::HasTooManyNodes() const {
 }
 
 TextRecord* TextRecordsManager::FindLargestPaintCandidate() {
-  // TODO(crbug/944248): An identified bug here is that the records with the
-  // same size will be silently ignored by |size_ordered_set_|. This is what
-  // causes these two sizes to be different.
   DCHECK_EQ(visible_node_map_.size(), size_ordered_set_.size());
   if (!is_result_invalidated_)
     return cached_largest_paint_candidate_;

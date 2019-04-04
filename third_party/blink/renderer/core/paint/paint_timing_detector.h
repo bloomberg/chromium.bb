@@ -19,6 +19,8 @@ class TextPaintTimingDetector;
 class ImagePaintTimingDetector;
 class PropertyTreeState;
 class Image;
+class StyleImage;
+class ImageResourceContent;
 
 // PaintTimingDetector contains some of paint metric detectors,
 // providing common infrastructure for these detectors.
@@ -36,17 +38,19 @@ class CORE_EXPORT PaintTimingDetector
   // images in each layer.
   // Notify the paint of background image.
   static void NotifyBackgroundImagePaint(
-      const Node* node,
-      Image* image,
+      const Node*,
+      const Image*,
+      const StyleImage* cached_image,
       const PropertyTreeState& current_paint_chunk_properties);
   static void NotifyImagePaint(
-      const LayoutObject& object,
-      Image* image,
+      const LayoutObject&,
+      const IntSize& intrinsic_size,
+      const ImageResourceContent* cached_image,
       const PropertyTreeState& current_paint_chunk_properties);
 
   static void NotifyTextPaint(const LayoutObject& object,
                               const PropertyTreeState&);
-  void NotifyNodeRemoved(const LayoutObject& object);
+  void NotifyNodeRemoved(const LayoutObject&);
   void NotifyPaintFinished();
   void NotifyInputEvent(WebInputEvent::Type);
   bool NeedToNotifyInputOrScroll();
