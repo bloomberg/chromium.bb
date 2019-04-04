@@ -375,12 +375,8 @@ LayoutObject* HTMLPlugInElement::CreateLayoutObject(const ComputedStyle& style,
 
 void HTMLPlugInElement::FinishParsingChildren() {
   HTMLFrameOwnerElement::FinishParsingChildren();
-  if (UseFallbackContent())
-    return;
-
-  SetNeedsPluginUpdate(true);
-  if (isConnected())
-    LazyReattachIfNeeded();
+  if (!UseFallbackContent())
+    SetNeedsPluginUpdate(true);
 }
 
 void HTMLPlugInElement::ResetInstance() {
