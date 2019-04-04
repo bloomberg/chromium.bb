@@ -636,7 +636,7 @@ bool operator>(const T& a, const EvalJsResult& b) {
   return b.error.empty() && (JsLiteralHelper<T>::Convert(a) > b.value);
 }
 
-inline bool operator==(nullptr_t a, const EvalJsResult& b) {
+inline bool operator==(std::nullptr_t a, const EvalJsResult& b) {
   return b.error.empty() && (base::Value() == b.value);
 }
 
