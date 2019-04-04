@@ -82,6 +82,17 @@ Service* Controller::GetService() {
 }
 
 UiController* Controller::GetUiController() {
+  if (will_shutdown_) {
+    // Never call the UI controller after having announced a shutdown, no matter
+    // what happens; this is part of the contract of UIDelegate.
+    //
+    // TODO(crbug/925947): Once UIController has become observer, clear list of
+    // observers instead.
+    if (!noop_ui_controller_) {
+      noop_ui_controller_ = std::make_unique<UiController>();
+    }
+    return noop_ui_controller_.get();
+  }
   return client_->GetUiController();
 }
 
@@ -249,11 +260,11 @@ void Controller::StopAndShutdown(Metrics::DropOutReason reason) {
 }
 
 void Controller::EnterState(AutofillAssistantState state) {
-  if (state_ == state)
+  if (state_ == state || state_ == AutofillAssistantState::STOPPED)
     return;
+  // TODO(b/128300038): Forbid transition out of stopped again instead of
+  // ignoring it once shutdown sequence is less complex.
 
-  DCHECK_NE(state_, AutofillAssistantState::STOPPED)
-      << "Unexpected transition from " << state_ << " to " << state;
   DVLOG(2) << __func__ << ": " << state_ << " -> " << state;
 
   state_ = state;
@@ -574,8 +585,9 @@ AutofillAssistantState Controller::GetState() {
 bool Controller::Terminate(Metrics::DropOutReason reason) {
   StopPeriodicScriptChecks();
   if (!will_shutdown_) {
+    UiController* ui_controller = GetUiController();
     will_shutdown_ = true;
-    GetUiController()->WillShutdown(reason);
+    ui_controller->WillShutdown(reason);
   }
   if (script_tracker_ && !script_tracker_->Terminate()) {
     terminate_reason_ = reason;

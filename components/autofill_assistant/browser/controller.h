@@ -195,6 +195,8 @@ class Controller : public ScriptExecutorDelegate,
   Client* const client_;
   const base::TickClock* const tick_clock_;
 
+  std::unique_ptr<UiController> noop_ui_controller_;
+
   // Lazily instantiate in GetWebController().
   std::unique_ptr<WebController> web_controller_;
 
