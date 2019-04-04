@@ -186,8 +186,6 @@ bool ChildAccountService::SetActive(bool active) {
     signin_util::SetUserSignoutAllowedForProfile(profile_, false);
 #endif
 
-    // TODO(treib): Maybe store the last update time in a pref, so we don't
-    // have to re-fetch on every start.
     StartFetchingFamilyInfo();
 
     SupervisedUserService* service =

@@ -114,8 +114,8 @@ void UserCloudPolicyManager::GetChromePolicy(PolicyMap* policy_map) {
   // If the store has a verified policy blob received from the server then apply
   // the defaults for policies that haven't been configured by the administrator
   // given that this is an enterprise user.
-  // TODO(treib,atwilson): We should just call SetEnterpriseUsersDefaults here,
-  // see crbug.com/640950.
+  // TODO(crbug.com/640950): We should just call SetEnterpriseUsersDefaults
+  // here.
 #if defined(OS_ANDROID)
   if (store()->has_policy() &&
       !policy_map->Get(key::kNTPContentSuggestionsEnabled)) {

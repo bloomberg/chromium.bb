@@ -239,9 +239,9 @@ class ProfileSyncService : public SyncService,
   bool IsEncryptionPendingForTest() const;
 
   // Overrides the NetworkResources used for Sync connections.
-  // TODO(treib): Inject this in the ctor instead. As it is, it's possible that
-  // the real NetworkResources were already used before the test had a chance
-  // to call this.
+  // TODO(crbug.com/949504): Inject this in the ctor instead. As it is, it's
+  // possible that the real NetworkResources were already used before the test
+  // had a chance to call this.
   void OverrideNetworkResourcesForTest(
       std::unique_ptr<NetworkResources> network_resources);
 

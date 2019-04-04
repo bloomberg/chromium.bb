@@ -61,8 +61,8 @@ bool IsCorrectSyncType(const Extension& extension, syncer::ModelType type) {
 }
 
 // Predicate for PendingExtensionManager.
-// TODO(treib,devlin): The !is_theme check shouldn't be necessary anymore after
-// all the bad data from crbug.com/558299 has been cleaned up, after M52 or so.
+// TODO(crbug.com/862665): The !is_theme check should be unnecessary after all
+// the bad data from crbug.com/558299 has been cleaned up.
 bool ShouldAllowInstall(const Extension* extension) {
   return !extension->is_theme() &&
          extensions::sync_helper::IsSyncable(extension);
@@ -384,7 +384,7 @@ void ExtensionSyncService::ApplySyncData(
   // not-yet-approved remote installs. It's redundant now that disable reasons
   // are synced (DISABLE_REMOTE_INSTALL should be among them already), but some
   // old sync data may still be around, and it doesn't hurt to add the reason.
-  // TODO(treib,devlin): Deprecate and eventually remove |remote_install|?
+  // TODO(crbug.com/587804): Deprecate and eventually remove |remote_install|.
   if (extension_sync_data.remote_install())
     disable_reasons |= extensions::disable_reason::DISABLE_REMOTE_INSTALL;
 
@@ -668,8 +668,8 @@ std::vector<ExtensionSyncData> ExtensionSyncService::GetLocalSyncDataList(
   // Collect the local state.
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
   std::vector<ExtensionSyncData> data;
-  // TODO(treib, kalman): Should we be including blacklisted/blocked extensions
-  // here? I.e. just calling registry->GeneratedInstalledExtensionsSet()?
+  // Note: Maybe we should include blacklisted/blocked extensions here, i.e.
+  // just call registry->GeneratedInstalledExtensionsSet().
   // It would be more consistent, but the danger is that the black/blocklist
   // hasn't been updated on all clients by the time sync has kicked in -
   // so it's safest not to. Take care to add any other extension lists here

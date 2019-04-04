@@ -265,7 +265,7 @@ bool IsNTPURL(const GURL& url, Profile* profile) {
   if (!IsInstantExtendedAPIEnabled())
     return url == chrome::kChromeUINewTabURL;
 
-  // TODO(treib,sfiera): Tolerate query params when detecting local NTPs.
+  // TODO(crbug.com/624410): Tolerate query params when detecting local NTPs.
   return profile && (IsNTPOrServiceWorkerURL(url, profile) ||
                      url == chrome::kChromeSearchLocalNtpUrl);
 }
@@ -300,7 +300,7 @@ bool IsInstantNTPURL(const GURL& url, Profile* profile) {
   if (!IsInstantExtendedAPIEnabled())
     return false;
 
-  // TODO(treib,sfiera): Tolerate query params when detecting local NTPs.
+  // TODO(crbug.com/624410): Tolerate query params when detecting local NTPs.
   if (url == chrome::kChromeSearchLocalNtpUrl)
     return true;
 
