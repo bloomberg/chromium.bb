@@ -577,13 +577,13 @@ void AppBannerManager::DidFinishLoad(
 }
 
 void AppBannerManager::MediaStartedPlaying(const MediaPlayerInfo& media_info,
-                                           const MediaPlayerId& id) {
+                                           const content::MediaPlayerId& id) {
   active_media_players_.push_back(id);
 }
 
 void AppBannerManager::MediaStoppedPlaying(
     const MediaPlayerInfo& media_info,
-    const MediaPlayerId& id,
+    const content::MediaPlayerId& id,
     WebContentsObserver::MediaStoppedReason reason) {
   base::Erase(active_media_players_, id);
 }

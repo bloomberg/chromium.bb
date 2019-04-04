@@ -108,7 +108,7 @@ class MetricsWebContentsObserver
   void FrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void MediaStartedPlaying(
       const content::WebContentsObserver::MediaPlayerInfo& video_type,
-      const content::WebContentsObserver::MediaPlayerId& id) override;
+      const content::MediaPlayerId& id) override;
   void WebContentsDestroyed() override;
   void ResourceLoadComplete(
       content::RenderFrameHost* render_frame_host,

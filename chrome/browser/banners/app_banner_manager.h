@@ -19,6 +19,7 @@
 #include "chrome/browser/installable/installable_logging.h"
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "content/public/browser/media_player_id.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
@@ -292,10 +293,10 @@ class AppBannerManager : public content::WebContentsObserver,
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
   void MediaStartedPlaying(const MediaPlayerInfo& media_info,
-                           const MediaPlayerId& id) override;
+                           const content::MediaPlayerId& id) override;
   void MediaStoppedPlaying(
       const MediaPlayerInfo& media_info,
-      const MediaPlayerId& id,
+      const content::MediaPlayerId& id,
       WebContentsObserver::MediaStoppedReason reason) override;
   void WebContentsDestroyed() override;
 
@@ -378,7 +379,7 @@ class AppBannerManager : public content::WebContentsObserver,
   // We do not want to trigger a banner when the manager is attached to
   // a WebContents that is playing video. Banners triggering on a site in the
   // background will appear when the tab is reactivated.
-  std::vector<MediaPlayerId> active_media_players_;
+  std::vector<content::MediaPlayerId> active_media_players_;
 
   // Mojo bindings and interface pointers.
   mojo::Binding<blink::mojom::AppBannerService> binding_;

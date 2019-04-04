@@ -874,8 +874,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // No interstitial page should already be attached.
   void AttachInterstitialPage(InterstitialPageImpl* interstitial_page) override;
 
-  void MediaMutedStatusChanged(const WebContentsObserver::MediaPlayerId& id,
-                               bool muted);
+  void MediaMutedStatusChanged(const MediaPlayerId& id, bool muted);
 
   // Unsets the currently showing interstitial.
   void DetachInterstitialPage(bool has_focus) override;
@@ -903,15 +902,14 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // WebContentsObserver function stubs for more details.
   void MediaStartedPlaying(
       const WebContentsObserver::MediaPlayerInfo& media_info,
-      const WebContentsObserver::MediaPlayerId& id);
+      const MediaPlayerId& id);
   void MediaStoppedPlaying(
       const WebContentsObserver::MediaPlayerInfo& media_info,
-      const WebContentsObserver::MediaPlayerId& id,
+      const MediaPlayerId& id,
       WebContentsObserver::MediaStoppedReason reason);
   // This will be called before playback is started, check
   // GetCurrentlyPlayingVideoCount if you need this when playback starts.
-  void MediaResized(const gfx::Size& size,
-                    const WebContentsObserver::MediaPlayerId& id);
+  void MediaResized(const gfx::Size& size, const MediaPlayerId& id);
   void MediaEffectivelyFullscreenChanged(bool is_fullscreen);
 
   int GetCurrentlyPlayingVideoCount() override;
@@ -1816,8 +1814,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool showing_context_menu_;
 
   int currently_playing_video_count_ = 0;
-  base::flat_map<WebContentsObserver::MediaPlayerId, gfx::Size>
-      cached_video_sizes_;
+  base::flat_map<MediaPlayerId, gfx::Size> cached_video_sizes_;
 
   bool has_persistent_video_ = false;
 

@@ -28,6 +28,7 @@
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
+#include "content/public/browser/media_player_id.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -215,7 +216,7 @@ class AutomationWebContentsObserver
   }
 
   void MediaStartedPlaying(const MediaPlayerInfo& video_type,
-                           const MediaPlayerId& id) override {
+                           const content::MediaPlayerId& id) override {
     content::AXEventNotificationDetails content_event_bundle;
     content_event_bundle.ax_tree_id = id.render_frame_host->GetAXTreeID();
     content_event_bundle.events.resize(1);
@@ -226,7 +227,7 @@ class AutomationWebContentsObserver
 
   void MediaStoppedPlaying(
       const MediaPlayerInfo& video_type,
-      const MediaPlayerId& id,
+      const content::MediaPlayerId& id,
       WebContentsObserver::MediaStoppedReason reason) override {
     content::AXEventNotificationDetails content_event_bundle;
     content_event_bundle.ax_tree_id = id.render_frame_host->GetAXTreeID();

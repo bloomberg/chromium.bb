@@ -51,6 +51,7 @@ struct AXLocationChangeNotificationDetails;
 struct EntryChangedDetails;
 struct FaviconURL;
 struct LoadCommittedDetails;
+struct MediaPlayerId;
 struct PrunedDetails;
 struct Referrer;
 
@@ -487,23 +488,6 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
         : has_video(has_video), has_audio(has_audio) {}
     bool has_video;
     bool has_audio;
-  };
-
-  struct CONTENT_EXPORT MediaPlayerId {
-   public:
-    static MediaPlayerId createMediaPlayerIdForTests();
-
-    MediaPlayerId(RenderFrameHost* render_frame_host, int delegate_id);
-
-    bool operator==(const MediaPlayerId& other) const;
-    bool operator!=(const MediaPlayerId& other) const;
-    bool operator<(const MediaPlayerId& other) const;
-
-    RenderFrameHost* render_frame_host = nullptr;
-    int delegate_id = 0;
-
-   private:
-    MediaPlayerId() = default;
   };
 
   virtual void MediaStartedPlaying(const MediaPlayerInfo& video_type,

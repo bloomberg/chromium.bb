@@ -15,6 +15,7 @@
 #include "chromecast/browser/cast_web_contents_manager.h"
 #include "chromecast/chromecast_buildflags.h"
 #include "content/public/browser/media_capture_devices.h"
+#include "content/public/browser/media_player_id.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -308,13 +309,13 @@ void CastWebViewDefault::DidStartNavigation(
 }
 
 void CastWebViewDefault::MediaStartedPlaying(const MediaPlayerInfo& media_info,
-                                             const MediaPlayerId& id) {
+                                             const content::MediaPlayerId& id) {
   metrics::CastMetricsHelper::GetInstance()->LogMediaPlay();
 }
 
 void CastWebViewDefault::MediaStoppedPlaying(
     const MediaPlayerInfo& media_info,
-    const MediaPlayerId& id,
+    const content::MediaPlayerId& id,
     WebContentsObserver::MediaStoppedReason reason) {
   metrics::CastMetricsHelper::GetInstance()->LogMediaPause();
 }
