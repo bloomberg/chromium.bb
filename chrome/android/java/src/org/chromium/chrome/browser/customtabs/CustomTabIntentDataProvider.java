@@ -121,7 +121,7 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     /**
      * Indicates the source where the Custom Tab is launched. This is only used for
      * WebApp/WebAPK/TrustedWebActivity. The value is defined as
-     * {@link WebappActivity.ActivityType#WebappActivity}.
+     * {@link LaunchSourceType}.
      */
     public static final String EXTRA_BROWSER_LAUNCH_SOURCE =
             "org.chromium.chrome.browser.customtabs.EXTRA_BROWSER_LAUNCH_SOURCE";
