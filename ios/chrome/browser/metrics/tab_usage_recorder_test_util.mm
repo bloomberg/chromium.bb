@@ -4,7 +4,6 @@
 
 #include "ios/chrome/browser/metrics/tab_usage_recorder_test_util.h"
 
-#import <EarlGrey/EarlGrey.h>
 #import <Foundation/Foundation.h>
 
 #import "base/ios/block_types.h"
