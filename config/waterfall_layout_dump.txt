@@ -639,6 +639,7 @@
     lars-release
     lasilla-ground-release
     leon-release
+    littlejoe-release
     lulu-release
     macchiato-ground-release
     mccloud-release
@@ -2937,6 +2938,7 @@
     lars-release-tryjob
     lasilla-ground-release-tryjob
     leon-release-tryjob
+    littlejoe-release-tryjob
     lulu-release-tryjob
     macchiato-ground-release-tryjob
     mccloud-release-tryjob
