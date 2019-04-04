@@ -68,10 +68,7 @@
                 on-click="onCloseButtonTap_"></button>
           </paper-icon-button-light>
           <img id="icon" src="[[extensionInfo.iconUrl]]"
-              alt$="[[appOrExtension(
-                  extensionInfo.type,
-                  '$i18nPolymer{appIcon}',
-                  '$i18nPolymer{extensionIcon}')]]">
+              alt$="[[appOrExtensionIconLabel(extensionInfo.type)]]">
           <div id="activity-log-heading">
             [[i18n('activityLogPageHeading', extensionInfo.name)]]
           </div>

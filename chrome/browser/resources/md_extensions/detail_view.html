@@ -172,10 +172,7 @@
                 on-click="onCloseButtonTap_"></button>
           </paper-icon-button-light>
           <img id="icon" src="[[data.iconUrl]]"
-              alt$="[[appOrExtension(
-                  data.type,
-                  '$i18nPolymer{appIcon}',
-                  '$i18nPolymer{extensionIcon}')]]">
+              alt$="[[appOrExtensionIconLabel(data.type)]]">
           <span id="name">[[data.name]]</span>
         </div>
         <div class="section continuation control-line" id="enable-section">
