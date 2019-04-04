@@ -27,6 +27,9 @@ class AutoclickMenuBubbleController : public TrayBubbleView::Delegate {
 
   void CloseBubble();
 
+  // Performs the mouse events on the bubble. at the given location in DIPs.
+  void ClickOnBubble(gfx::Point location_in_dips, int mouse_event_flags);
+
   // Whether the tray button or the bubble, if the bubble exists, contain
   // the given screen point.
   bool ContainsPointInScreen(const gfx::Point& point);
