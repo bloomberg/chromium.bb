@@ -30,6 +30,7 @@
 #include <poll.h>
 #include <stddef.h>
 #include <sys/ioctl.h>
+#include <wayland-server-core.h>
 
 #ifdef HAVE_LINUX_SYNC_FILE_H
 #include <linux/sync_file.h>
@@ -62,8 +63,8 @@ linux_sync_file_is_valid(int fd)
  * \param ts[out] the timespec struct to fill with the timestamp
  * \return 0 if a timestamp was read, -1 on error
  */
-int
-linux_sync_file_read_timestamp(int fd, struct timespec *ts)
+WL_EXPORT int
+weston_linux_sync_file_read_timestamp(int fd, struct timespec *ts)
 {
 	struct sync_file_info file_info = { { 0 } };
 	struct sync_fence_info fence_info = { { 0 } };

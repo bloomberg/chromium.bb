@@ -339,7 +339,8 @@ timeline_render_point_handler(int fd, uint32_t mask, void *data)
 	if (mask & WL_EVENT_READABLE) {
 		struct timespec tspec = { 0 };
 
-		if (linux_sync_file_read_timestamp(trp->fd, &tspec) == 0) {
+		if (weston_linux_sync_file_read_timestamp(trp->fd,
+							  &tspec) == 0) {
 			TL_POINT(tp_name, TLP_GPU(&tspec),
 				 TLP_OUTPUT(trp->output), TLP_END);
 		}

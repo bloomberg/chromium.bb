@@ -33,6 +33,6 @@ bool
 linux_sync_file_is_valid(int fd);
 
 int
-linux_sync_file_read_timestamp(int fd, struct timespec *ts);
+weston_linux_sync_file_read_timestamp(int fd, struct timespec *ts);
 
 #endif /* WESTON_LINUX_SYNC_FILE_H */
