@@ -37,7 +37,6 @@ TestConfigurator::TestConfigurator()
       ondemand_time_(0),
       enabled_cup_signing_(false),
       enabled_component_updates_(true),
-      use_JSON_(false),
       connector_(connector_factory_.CreateConnector()),
       unzip_service_(
           connector_factory_.RegisterInstance(unzip::mojom::kServiceName)),
@@ -183,10 +182,6 @@ void TestConfigurator::SetAppGuid(const std::string& app_guid) {
   app_guid_ = app_guid;
 }
 
-void TestConfigurator::SetUseJSON(bool use_JSON) {
-  use_JSON_ = use_JSON;
-}
-
 PrefService* TestConfigurator::GetPrefService() const {
   return nullptr;
 }
@@ -209,9 +204,7 @@ std::string TestConfigurator::GetAppGuid() const {
 
 std::unique_ptr<ProtocolHandlerFactory>
 TestConfigurator::GetProtocolHandlerFactory() const {
-  if (use_JSON_)
-    return std::make_unique<ProtocolHandlerFactoryJSON>();
-  return std::make_unique<ProtocolHandlerFactoryXml>();
+  return std::make_unique<ProtocolHandlerFactoryJSON>();
 }
 
 RecoveryCRXElevator TestConfigurator::GetRecoveryCRXElevator() const {
