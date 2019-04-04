@@ -47,7 +47,7 @@ class LayoutProviderTest : public testing::Test {
     // later, since it's known to have flaky results on Windows 7. See
     // http://crbug.com/759870.
     if (base::win::GetVersion() >= base::win::VERSION_WIN10)
-      gfx::win::MaybeInitializeDirectWrite();
+      gfx::win::InitializeDirectWrite();
   }
 #endif
 

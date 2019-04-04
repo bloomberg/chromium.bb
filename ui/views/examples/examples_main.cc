@@ -108,7 +108,7 @@ int main(int argc, char** argv) {
       base::WrapUnique(new base::PowerMonitorDeviceSource));
 
 #if defined(OS_WIN)
-  gfx::win::MaybeInitializeDirectWrite();
+  gfx::win::InitializeDirectWrite();
 #endif
 
 #if defined(USE_AURA)

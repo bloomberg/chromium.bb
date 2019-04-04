@@ -6,17 +6,13 @@
 
 #include <wrl/client.h>
 
-#include "base/command_line.h"
 #include "base/debug/alias.h"
-#include "base/metrics/field_trial.h"
 #include "base/trace_event/trace_event.h"
-#include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "skia/ext/fontmgr_default.h"
 #include "third_party/skia/include/core/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
 #include "ui/gfx/platform_font_win.h"
-#include "ui/gfx/switches.h"
 
 namespace gfx {
 namespace win {
@@ -34,34 +30,26 @@ void CreateDWriteFactory(IDWriteFactory** factory) {
   factory_unknown.CopyTo(factory);
 }
 
-void MaybeInitializeDirectWrite() {
+void InitializeDirectWrite() {
   static bool tried_dwrite_initialize = false;
-  if (tried_dwrite_initialize)
-    return;
+  DCHECK(!tried_dwrite_initialize);
   tried_dwrite_initialize = true;
 
-  TRACE_EVENT0("fonts", "gfx::MaybeInitializeDirectWrite");
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableDirectWriteForUI)) {
-    return;
-  }
+  TRACE_EVENT0("fonts", "gfx::InitializeDirectWrite");
 
   Microsoft::WRL::ComPtr<IDWriteFactory> factory;
   CreateDWriteFactory(factory.GetAddressOf());
-
-  if (!factory)
-    return;
+  CHECK(!!factory);
 
   // The skia call to create a new DirectWrite font manager instance can fail
   // if we are unable to get the system font collection from the DirectWrite
   // factory. The GetSystemFontCollection method in the IDWriteFactory
   // interface fails with E_INVALIDARG on certain Windows 7 gold versions
-  // (6.1.7600.*). We should just use GDI in these cases.
+  // (6.1.7600.*).
   sk_sp<SkFontMgr> direct_write_font_mgr =
       SkFontMgr_New_DirectWrite(factory.Get());
-  if (!direct_write_font_mgr)
-    return;
+  CHECK(!!direct_write_font_mgr);
+
   skia::OverrideDefaultSkFontMgr(std::move(direct_write_font_mgr));
   gfx::PlatformFontWin::SetDirectWriteFactory(factory.Get());
 }
