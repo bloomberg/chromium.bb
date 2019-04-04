@@ -60,11 +60,10 @@ class BackgroundFetchTestBase : public ::testing::Test {
       const GURL& url,
       std::unique_ptr<TestResponse> response);
 
-  // Creates a blink::mojom::BackgroundFetchRegistrationPtr object.
-  blink::mojom::BackgroundFetchRegistrationPtr
-  CreateBackgroundFetchRegistration(
+  // Creates a blink::mojom::BackgroundFetchRegistrationDataPtr object.
+  blink::mojom::BackgroundFetchRegistrationDataPtr
+  CreateBackgroundFetchRegistrationData(
       const std::string& developer_id,
-      const std::string& unique_id,
       blink::mojom::BackgroundFetchResult result,
       blink::mojom::BackgroundFetchFailureReason failure_reason);
 

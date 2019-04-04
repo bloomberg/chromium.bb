@@ -337,9 +337,10 @@ class FillFromMetadataTask : public InitializationSubTask {
             metadata.registration().developer_id(),
             metadata.registration().unique_id());
 
-    // Fill BackgroundFetchRegistration.
-    auto& registration = sub_task_init().initialization_data->registration;
-    ToBackgroundFetchRegistration(metadata, registration.get());
+    // Fill BackgroundFetchRegistrationData.
+    auto& registration_data =
+        sub_task_init().initialization_data->registration_data;
+    ToBackgroundFetchRegistration(metadata, registration_data.get());
 
     // Total number of requests.
     sub_task_init().initialization_data->num_requests = metadata.num_fetches();

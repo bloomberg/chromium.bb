@@ -114,22 +114,22 @@ class MockWebServiceWorkerContextProxy
   void DispatchActivateEvent(int event_id) override { NOTREACHED(); }
   void DispatchBackgroundFetchAbortEvent(
       int event_id,
-      const blink::WebBackgroundFetchRegistration& registration) override {
+      blink::WebBackgroundFetchRegistration registration) override {
     NOTREACHED();
   }
   void DispatchBackgroundFetchClickEvent(
       int event_id,
-      const blink::WebBackgroundFetchRegistration& registration) override {
+      blink::WebBackgroundFetchRegistration registration) override {
     NOTREACHED();
   }
   void DispatchBackgroundFetchFailEvent(
       int event_id,
-      const blink::WebBackgroundFetchRegistration& registration) override {
+      blink::WebBackgroundFetchRegistration registration) override {
     NOTREACHED();
   }
   void DispatchBackgroundFetchSuccessEvent(
       int event_id,
-      const blink::WebBackgroundFetchRegistration& registration) override {
+      blink::WebBackgroundFetchRegistration registration) override {
     NOTREACHED();
   }
   void DispatchCookieChangeEvent(

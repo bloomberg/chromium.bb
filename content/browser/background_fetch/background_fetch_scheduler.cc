@@ -14,6 +14,7 @@
 #include "content/browser/background_fetch/background_fetch_delegate_proxy.h"
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
 #include "content/browser/background_fetch/background_fetch_registration_notifier.h"
+#include "content/browser/background_fetch/background_fetch_registration_service_impl.h"
 #include "content/browser/devtools/devtools_background_services_context.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -58,6 +59,7 @@ enum class BackgroundFetchScheduler::Event {
 };
 
 BackgroundFetchScheduler::BackgroundFetchScheduler(
+    BackgroundFetchContext* background_fetch_context,
     BackgroundFetchDataManager* data_manager,
     BackgroundFetchRegistrationNotifier* registration_notifier,
     BackgroundFetchDelegateProxy* delegate_proxy,
@@ -67,7 +69,9 @@ BackgroundFetchScheduler::BackgroundFetchScheduler(
       registration_notifier_(registration_notifier),
       delegate_proxy_(delegate_proxy),
       devtools_context_(devtools_context),
-      event_dispatcher_(std::move(service_worker_context), devtools_context),
+      event_dispatcher_(background_fetch_context,
+                        std::move(service_worker_context),
+                        devtools_context),
       weak_ptr_factory_(this) {
   DCHECK(delegate_proxy_);
   DCHECK(devtools_context_);
@@ -145,7 +149,7 @@ bool BackgroundFetchScheduler::ScheduleDownload() {
 void BackgroundFetchScheduler::Abort(
     const BackgroundFetchRegistrationId& registration_id,
     BackgroundFetchFailureReason failure_reason,
-    blink::mojom::BackgroundFetchService::AbortCallback callback) {
+    blink::mojom::BackgroundFetchRegistrationService::AbortCallback callback) {
   DCHECK_EQ(failure_reason,
             BackgroundFetchFailureReason::CANCELLED_BY_DEVELOPER);
 
@@ -205,7 +209,7 @@ void BackgroundFetchScheduler::FinishJob(
   auto it = job_controllers_.find(registration_id.unique_id());
   if (it != job_controllers_.end()) {
     completed_fetches_[it->first] = {registration_id,
-                                     it->second->NewRegistration()};
+                                     it->second->NewRegistrationData()};
 
     // Reset scheduler params.
     num_running_downloads_ -= it->second->pending_downloads();
@@ -238,28 +242,29 @@ void BackgroundFetchScheduler::DidMarkForDeletion(
   auto it = completed_fetches_.find(registration_id.unique_id());
   DCHECK(it != completed_fetches_.end());
 
-  blink::mojom::BackgroundFetchRegistrationPtr& registration =
+  blink::mojom::BackgroundFetchRegistrationDataPtr& registration_data =
       it->second.second;
   // Include any other failure reasons the marking for deletion may have found.
-  if (registration->failure_reason == BackgroundFetchFailureReason::NONE)
-    registration->failure_reason = failure_reason;
+  if (registration_data->failure_reason == BackgroundFetchFailureReason::NONE)
+    registration_data->failure_reason = failure_reason;
 
-  registration->result =
-      registration->failure_reason == BackgroundFetchFailureReason::NONE
+  registration_data->result =
+      registration_data->failure_reason == BackgroundFetchFailureReason::NONE
           ? blink::mojom::BackgroundFetchResult::SUCCESS
           : blink::mojom::BackgroundFetchResult::FAILURE;
 
-  registration_notifier_->Notify(*registration);
+  registration_notifier_->Notify(registration_id.unique_id(),
+                                 *registration_data);
 
   event_dispatcher_.DispatchBackgroundFetchCompletionEvent(
-      registration_id, registration.Clone(),
+      registration_id, registration_data.Clone(),
       base::BindOnce(&BackgroundFetchScheduler::CleanupRegistration,
                      weak_ptr_factory_.GetWeakPtr(), registration_id));
 
   if (!job_started ||
-      registration->failure_reason ==
+      registration_data->failure_reason ==
           BackgroundFetchFailureReason::CANCELLED_FROM_UI ||
-      registration->failure_reason ==
+      registration_data->failure_reason ==
           BackgroundFetchFailureReason::CANCELLED_BY_DEVELOPER) {
     // No need to keep the controller around since there won't be dispatch
     // events.
@@ -291,7 +296,7 @@ void BackgroundFetchScheduler::DispatchClickEvent(
   if (active_controller) {
     event_dispatcher_.DispatchBackgroundFetchClickEvent(
         active_controller->registration_id(),
-        active_controller->NewRegistration(), base::DoNothing());
+        active_controller->NewRegistrationData(), base::DoNothing());
     return;
   }
 
@@ -308,7 +313,7 @@ void BackgroundFetchScheduler::DispatchClickEvent(
 std::unique_ptr<BackgroundFetchJobController>
 BackgroundFetchScheduler::CreateInitializedController(
     const BackgroundFetchRegistrationId& registration_id,
-    const blink::mojom::BackgroundFetchRegistration& registration,
+    const blink::mojom::BackgroundFetchRegistrationData& registration_data,
     blink::mojom::BackgroundFetchOptionsPtr options,
     const SkBitmap& icon,
     int num_completed_requests,
@@ -319,7 +324,8 @@ BackgroundFetchScheduler::CreateInitializedController(
   // TODO(rayankans): Only create a controller when the fetch starts.
   auto controller = std::make_unique<BackgroundFetchJobController>(
       data_manager_, delegate_proxy_, registration_id, std::move(options), icon,
-      registration.downloaded, registration.uploaded, registration.upload_total,
+      registration_data.downloaded, registration_data.uploaded,
+      registration_data.upload_total,
       // Safe because JobControllers are destroyed before RegistrationNotifier.
       base::BindRepeating(&BackgroundFetchRegistrationNotifier::Notify,
                           base::Unretained(registration_notifier_)),
@@ -335,7 +341,7 @@ BackgroundFetchScheduler::CreateInitializedController(
 
 void BackgroundFetchScheduler::OnRegistrationCreated(
     const BackgroundFetchRegistrationId& registration_id,
-    const blink::mojom::BackgroundFetchRegistration& registration,
+    const blink::mojom::BackgroundFetchRegistrationData& registration_data,
     blink::mojom::BackgroundFetchOptionsPtr options,
     const SkBitmap& icon,
     int num_requests,
@@ -352,7 +358,7 @@ void BackgroundFetchScheduler::OnRegistrationCreated(
                                             num_requests);
 
   auto controller = CreateInitializedController(
-      registration_id, registration, std::move(options), icon,
+      registration_id, registration_data, std::move(options), icon,
       /* completed_requests= */ 0, num_requests,
       /* active_fetch_requests= */ {}, start_paused);
 
@@ -369,7 +375,7 @@ void BackgroundFetchScheduler::OnRegistrationCreated(
 
 void BackgroundFetchScheduler::OnRegistrationLoadedAtStartup(
     const BackgroundFetchRegistrationId& registration_id,
-    const blink::mojom::BackgroundFetchRegistration& registration,
+    const blink::mojom::BackgroundFetchRegistrationData& registration_data,
     blink::mojom::BackgroundFetchOptionsPtr options,
     const SkBitmap& icon,
     int num_completed_requests,
@@ -386,7 +392,7 @@ void BackgroundFetchScheduler::OnRegistrationLoadedAtStartup(
         base::NumberToString(active_fetch_requests.size())}});
 
   auto controller = CreateInitializedController(
-      registration_id, registration, std::move(options), icon,
+      registration_id, registration_data, std::move(options), icon,
       num_completed_requests, num_requests, active_fetch_requests,
       /* start_paused= */ false);
 
@@ -451,18 +457,19 @@ void BackgroundFetchScheduler::AbortFetches(
 }
 
 void BackgroundFetchScheduler::OnRegistrationQueried(
-    blink::mojom::BackgroundFetchRegistration* registration) {
-  DCHECK(registration);
+    const BackgroundFetchRegistrationId& registration_id,
+    blink::mojom::BackgroundFetchRegistrationData* registration_data) {
+  DCHECK(registration_data);
 
-  auto* controller = GetActiveController(registration->unique_id);
+  auto* controller = GetActiveController(registration_id.unique_id());
   if (!controller)
     return;
 
   // The data manager only has the number of bytes from completed downloads, so
   // augment this with the number of downloaded/uploaded bytes from in-progress
   // jobs.
-  registration->downloaded += controller->GetInProgressDownloadedBytes();
-  registration->uploaded += controller->GetInProgressUploadedBytes();
+  registration_data->downloaded += controller->GetInProgressDownloadedBytes();
+  registration_data->uploaded += controller->GetInProgressUploadedBytes();
 }
 
 void BackgroundFetchScheduler::OnServiceWorkerDatabaseCorrupted(

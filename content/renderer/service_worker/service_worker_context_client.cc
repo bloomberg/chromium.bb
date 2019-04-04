@@ -52,7 +52,6 @@
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
-#include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
@@ -136,11 +135,16 @@ blink::WebServiceWorkerClientInfo ToWebServiceWorkerClientInfo(
 blink::WebBackgroundFetchRegistration ToWebBackgroundFetchRegistration(
     blink::mojom::BackgroundFetchRegistrationPtr registration) {
   return blink::WebBackgroundFetchRegistration(
-      blink::WebString::FromUTF8(registration->developer_id),
-      blink::WebString::FromUTF8(registration->unique_id),
-      registration->upload_total, registration->uploaded,
-      registration->download_total, registration->downloaded,
-      registration->result, registration->failure_reason);
+      blink::WebString::FromUTF8(registration->registration_data->developer_id),
+      registration->registration_data->upload_total,
+      registration->registration_data->uploaded,
+      registration->registration_data->download_total,
+      registration->registration_data->downloaded,
+      registration->registration_data->result,
+      registration->registration_data->failure_reason,
+      mojo::ScopedMessagePipeHandle(
+          registration->registration_interface.PassHandle()),
+      registration->registration_interface.version());
 }
 
 // This is complementary to ConvertWebKitPriorityToNetPriority, defined in

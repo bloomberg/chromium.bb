@@ -23,19 +23,15 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 
 namespace content {
 
 namespace {
-
 // Maximum length of a developer-provided |developer_id| for a Background Fetch.
 constexpr size_t kMaxDeveloperIdLength = 1024 * 1024;
-
-// Maximum length of a developer-provided title for a Background Fetch.
-constexpr size_t kMaxTitleLength = 1024 * 1024;
-
 }  // namespace
 
 // static
@@ -156,69 +152,6 @@ void BackgroundFetchServiceImpl::GetIconDisplaySize(
   background_fetch_context_->GetIconDisplaySize(std::move(callback));
 }
 
-void BackgroundFetchServiceImpl::MatchRequests(
-    int64_t service_worker_registration_id,
-    const std::string& developer_id,
-    const std::string& unique_id,
-    blink::mojom::FetchAPIRequestPtr request_to_match,
-    blink::mojom::CacheQueryOptionsPtr cache_query_options,
-    bool match_all,
-    MatchRequestsCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BackgroundFetchRegistrationId registration_id(
-      service_worker_registration_id, origin_, developer_id, unique_id);
-
-  // Create BackgroundFetchMatchRequestMatchParams.
-  auto match_params = std::make_unique<BackgroundFetchRequestMatchParams>(
-      std::move(request_to_match), std::move(cache_query_options), match_all);
-
-  background_fetch_context_->MatchRequests(
-      registration_id, std::move(match_params), std::move(callback));
-}
-
-void BackgroundFetchServiceImpl::UpdateUI(
-    int64_t service_worker_registration_id,
-    const std::string& developer_id,
-    const std::string& unique_id,
-    const base::Optional<std::string>& title,
-    const SkBitmap& icon,
-    UpdateUICallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (!ValidateUniqueId(unique_id) || (title && !ValidateTitle(*title))) {
-    std::move(callback).Run(
-        blink::mojom::BackgroundFetchError::INVALID_ARGUMENT);
-    return;
-  }
-
-  BackgroundFetchRegistrationId registration_id(
-      service_worker_registration_id, origin_, developer_id, unique_id);
-
-  // Wrap the icon in an optional for clarity.
-  auto optional_icon =
-      icon.isNull() ? base::nullopt : base::Optional<SkBitmap>(icon);
-
-  background_fetch_context_->UpdateUI(registration_id, title, optional_icon,
-                                      std::move(callback));
-}
-
-void BackgroundFetchServiceImpl::Abort(int64_t service_worker_registration_id,
-                                       const std::string& developer_id,
-                                       const std::string& unique_id,
-                                       AbortCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!ValidateDeveloperId(developer_id) || !ValidateUniqueId(unique_id)) {
-    std::move(callback).Run(
-        blink::mojom::BackgroundFetchError::INVALID_ARGUMENT);
-    return;
-  }
-
-  background_fetch_context_->Abort(
-      BackgroundFetchRegistrationId(service_worker_registration_id, origin_,
-                                    developer_id, unique_id),
-      std::move(callback));
-}
-
 void BackgroundFetchServiceImpl::GetRegistration(
     int64_t service_worker_registration_id,
     const std::string& developer_id,
@@ -242,17 +175,6 @@ void BackgroundFetchServiceImpl::GetDeveloperIds(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   background_fetch_context_->GetDeveloperIdsForServiceWorker(
       service_worker_registration_id, origin_, std::move(callback));
-}
-
-void BackgroundFetchServiceImpl::AddRegistrationObserver(
-    const std::string& unique_id,
-    blink::mojom::BackgroundFetchRegistrationObserverPtr observer) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!ValidateUniqueId(unique_id))
-    return;
-
-  background_fetch_context_->AddRegistrationObserver(unique_id,
-                                                     std::move(observer));
 }
 
 bool BackgroundFetchServiceImpl::ValidateDeveloperId(
@@ -279,15 +201,6 @@ bool BackgroundFetchServiceImpl::ValidateRequests(
     const std::vector<blink::mojom::FetchAPIRequestPtr>& requests) {
   if (requests.empty()) {
     mojo::ReportBadMessage("Invalid requests");
-    return false;
-  }
-
-  return true;
-}
-
-bool BackgroundFetchServiceImpl::ValidateTitle(const std::string& title) {
-  if (title.empty() || title.size() > kMaxTitleLength) {
-    mojo::ReportBadMessage("Invalid title");
     return false;
   }
 

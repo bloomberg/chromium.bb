@@ -23,9 +23,9 @@ namespace background_fetch {
 // Fetch metadata in the SW database with corresponding entries in the cache.
 class CreateMetadataTask : public DatabaseTask {
  public:
-  using CreateMetadataCallback =
-      base::OnceCallback<void(blink::mojom::BackgroundFetchError,
-                              blink::mojom::BackgroundFetchRegistrationPtr)>;
+  using CreateMetadataCallback = base::OnceCallback<void(
+      blink::mojom::BackgroundFetchError,
+      blink::mojom::BackgroundFetchRegistrationDataPtr)>;
 
   CreateMetadataTask(DatabaseTaskHost* host,
                      const BackgroundFetchRegistrationId& registration_id,

@@ -38,6 +38,7 @@ class CONTENT_EXPORT BackgroundFetchScheduler
       public ServiceWorkerContextCoreObserver {
  public:
   BackgroundFetchScheduler(
+      BackgroundFetchContext* background_fetch_context,
       BackgroundFetchDataManager* data_manager,
       BackgroundFetchRegistrationNotifier* registration_notifier,
       BackgroundFetchDelegateProxy* delegate_proxy,
@@ -48,21 +49,22 @@ class CONTENT_EXPORT BackgroundFetchScheduler
   // Aborts the background fetch identified by |registration_id|.
   // Must only be used for background fetches aborted by the developer,
   // other cases are handled elsewhere.
-  void Abort(const BackgroundFetchRegistrationId& registration_id,
-             blink::mojom::BackgroundFetchFailureReason failure_reason,
-             blink::mojom::BackgroundFetchService::AbortCallback callback);
+  void Abort(
+      const BackgroundFetchRegistrationId& registration_id,
+      blink::mojom::BackgroundFetchFailureReason failure_reason,
+      blink::mojom::BackgroundFetchRegistrationService::AbortCallback callback);
 
   // BackgroundFetchDataManagerObserver implementation.
   void OnRegistrationCreated(
       const BackgroundFetchRegistrationId& registration_id,
-      const blink::mojom::BackgroundFetchRegistration& registration,
+      const blink::mojom::BackgroundFetchRegistrationData& registration_data,
       blink::mojom::BackgroundFetchOptionsPtr options,
       const SkBitmap& icon,
       int num_requests,
       bool start_paused) override;
   void OnRegistrationLoadedAtStartup(
       const BackgroundFetchRegistrationId& registration_id,
-      const blink::mojom::BackgroundFetchRegistration& registration,
+      const blink::mojom::BackgroundFetchRegistrationData& registration_data,
       blink::mojom::BackgroundFetchOptionsPtr options,
       const SkBitmap& icon,
       int num_completed_requests,
@@ -72,7 +74,9 @@ class CONTENT_EXPORT BackgroundFetchScheduler
   void OnServiceWorkerDatabaseCorrupted(
       int64_t service_worker_registration_id) override;
   void OnRegistrationQueried(
-      blink::mojom::BackgroundFetchRegistration* registration) override;
+      const BackgroundFetchRegistrationId& registration_id,
+      blink::mojom::BackgroundFetchRegistrationData* registration_data)
+      override;
   void OnRequestCompleted(const std::string& unique_id,
                           blink::mojom::FetchAPIRequestPtr request,
                           blink::mojom::FetchAPIResponsePtr response) override;
@@ -104,7 +108,7 @@ class CONTENT_EXPORT BackgroundFetchScheduler
 
   std::unique_ptr<BackgroundFetchJobController> CreateInitializedController(
       const BackgroundFetchRegistrationId& registration_id,
-      const blink::mojom::BackgroundFetchRegistration& registration,
+      const blink::mojom::BackgroundFetchRegistrationData& registration_data,
       blink::mojom::BackgroundFetchOptionsPtr options,
       const SkBitmap& icon,
       int num_completed_requests,
@@ -172,7 +176,7 @@ class CONTENT_EXPORT BackgroundFetchScheduler
   // TODO(crbug.com/857122): Clean this up when the UI is no longer showing.
   std::map<std::string,
            std::pair<BackgroundFetchRegistrationId,
-                     blink::mojom::BackgroundFetchRegistrationPtr>>
+                     blink::mojom::BackgroundFetchRegistrationDataPtr>>
       completed_fetches_;
 
   // Scheduling params - Finch configurable.

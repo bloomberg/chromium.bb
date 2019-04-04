@@ -444,6 +444,8 @@ jumbo_source_set("browser") {
     "background_fetch/background_fetch_registration_id.h",
     "background_fetch/background_fetch_registration_notifier.cc",
     "background_fetch/background_fetch_registration_notifier.h",
+    "background_fetch/background_fetch_registration_service_impl.cc",
+    "background_fetch/background_fetch_registration_service_impl.h",
     "background_fetch/background_fetch_request_info.cc",
     "background_fetch/background_fetch_request_info.h",
     "background_fetch/background_fetch_request_match_params.cc",

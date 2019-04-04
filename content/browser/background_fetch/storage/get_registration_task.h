@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "content/browser/background_fetch/background_fetch.pb.h"
+#include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/background_fetch/storage/database_task.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "url/origin.h"
@@ -20,9 +21,10 @@ namespace background_fetch {
 // Gets an active Background Fetch metadata entry from the database.
 class GetRegistrationTask : public DatabaseTask {
  public:
-  using GetRegistrationCallback =
-      base::OnceCallback<void(blink::mojom::BackgroundFetchError,
-                              blink::mojom::BackgroundFetchRegistrationPtr)>;
+  using GetRegistrationCallback = base::OnceCallback<void(
+      blink::mojom::BackgroundFetchError,
+      BackgroundFetchRegistrationId,
+      blink::mojom::BackgroundFetchRegistrationDataPtr)>;
 
   GetRegistrationTask(DatabaseTaskHost* host,
                       int64_t service_worker_registration_id,

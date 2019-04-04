@@ -117,14 +117,14 @@ class BackgroundFetchServiceTest
   };
 
   // Synchronous wrapper for BackgroundFetchServiceImpl::Fetch().
-  BackgroundFetchRegistrationId Fetch(
+  blink::mojom::BackgroundFetchRegistrationServicePtr Fetch(
       int64_t service_worker_registration_id,
       const std::string& developer_id,
       std::vector<blink::mojom::FetchAPIRequestPtr> requests,
       blink::mojom::BackgroundFetchOptionsPtr options,
       const SkBitmap& icon,
       blink::mojom::BackgroundFetchError* out_error,
-      blink::mojom::BackgroundFetchRegistration* out_registration) {
+      blink::mojom::BackgroundFetchRegistrationPtr* out_registration) {
     DCHECK(out_error);
     DCHECK(out_registration);
 
@@ -139,12 +139,14 @@ class BackgroundFetchServiceTest
 
     run_loop.Run();
 
-    if (*out_error != blink::mojom::BackgroundFetchError::NONE)
-      return BackgroundFetchRegistrationId();
+    if (*out_error != blink::mojom::BackgroundFetchError::NONE) {
+      DCHECK(!(*out_registration)->registration_interface);
+      return nullptr;
+    }
 
-    return BackgroundFetchRegistrationId(service_worker_registration_id,
-                                         origin(), developer_id,
-                                         out_registration->unique_id);
+    DCHECK((*out_registration)->registration_interface);
+    return blink::mojom::BackgroundFetchRegistrationServicePtr(
+        std::move((*out_registration)->registration_interface));
   }
 
   // Starts the Fetch without completing it. Only creates a registration.
@@ -176,7 +178,7 @@ class BackgroundFetchServiceTest
       blink::mojom::BackgroundFetchOptionsPtr options,
       const SkBitmap& icon,
       blink::mojom::BackgroundFetchError* out_error,
-      blink::mojom::BackgroundFetchRegistration* out_registration) {
+      blink::mojom::BackgroundFetchRegistrationPtr* out_registration) {
     DCHECK(out_error);
     DCHECK(out_registration);
 
@@ -192,17 +194,15 @@ class BackgroundFetchServiceTest
     run_loop.Run();
   }
 
-  // Calls BackgroundFetchServiceImpl::MatchRequests() to retrieve all settled
-  // fetches.
+  // Synchronous wrapper for BackgroundFetchServiceImpl::MatchRequests.
   void MatchAllRequests(
-      int64_t service_worker_registration_id,
-      const std::string& developer_id,
-      const std::string& unique_id,
+      const blink::mojom::BackgroundFetchRegistrationServicePtr&
+          registration_service,
       std::vector<blink::mojom::BackgroundFetchSettledFetchPtr>* out_fetches) {
+    DCHECK(registration_service);
     DCHECK(out_fetches);
     base::RunLoop run_loop;
-    service_->MatchRequests(
-        service_worker_registration_id, developer_id, unique_id,
+    registration_service->MatchRequests(
         /* request_to_match= */ nullptr,
         /* cache_query_options= */ nullptr, /* match_all= */ true,
         base::BindOnce(&BackgroundFetchServiceTest::DidMatchAllRequests,
@@ -212,34 +212,33 @@ class BackgroundFetchServiceTest
   }
 
   // Synchronous wrapper for BackgroundFetchServiceImpl::UpdateUI().
-  void UpdateUI(int64_t service_worker_registration_id,
-                const std::string& developer_id,
-                const std::string& unique_id,
+  void UpdateUI(const blink::mojom::BackgroundFetchRegistrationServicePtr&
+                    registration_service,
                 const std::string& title,
                 blink::mojom::BackgroundFetchError* out_error) {
+    DCHECK(registration_service);
     DCHECK(out_error);
 
     base::RunLoop run_loop;
-    service_->UpdateUI(service_worker_registration_id, developer_id, unique_id,
-                       title, SkBitmap(),
-                       base::BindOnce(&BackgroundFetchServiceTest::DidGetError,
-                                      base::Unretained(this),
-                                      run_loop.QuitClosure(), out_error));
+    registration_service->UpdateUI(
+        title, SkBitmap(),
+        base::BindOnce(&BackgroundFetchServiceTest::DidGetError,
+                       base::Unretained(this), run_loop.QuitClosure(),
+                       out_error));
     run_loop.Run();
   }
 
   // Synchronous wrapper for BackgroundFetchServiceImpl::Abort().
-  void Abort(int64_t service_worker_registration_id,
-             const std::string& developer_id,
-             const std::string& unique_id,
+  void Abort(const blink::mojom::BackgroundFetchRegistrationServicePtr&
+                 registration_service,
              blink::mojom::BackgroundFetchError* out_error) {
+    DCHECK(registration_service);
     DCHECK(out_error);
 
     base::RunLoop run_loop;
-    service_->Abort(service_worker_registration_id, developer_id, unique_id,
-                    base::BindOnce(&BackgroundFetchServiceTest::DidGetError,
-                                   base::Unretained(this),
-                                   run_loop.QuitClosure(), out_error));
+    registration_service->Abort(base::BindOnce(
+        &BackgroundFetchServiceTest::DidGetError, base::Unretained(this),
+        run_loop.QuitClosure(), out_error));
 
     run_loop.Run();
   }
@@ -249,7 +248,7 @@ class BackgroundFetchServiceTest
       int64_t service_worker_registration_id,
       const std::string& developer_id,
       blink::mojom::BackgroundFetchError* out_error,
-      blink::mojom::BackgroundFetchRegistration* out_registration) {
+      blink::mojom::BackgroundFetchRegistrationPtr* out_registration) {
     DCHECK(out_error);
     DCHECK(out_registration);
 
@@ -319,26 +318,28 @@ class BackgroundFetchServiceTest
   }
 
   // BackgroundFetchDataManagerObserver implementation & mocks:
-  MOCK_METHOD6(
-      OnRegistrationCreated,
+  MOCK_METHOD6(OnRegistrationCreated,
+               void(const BackgroundFetchRegistrationId& registration_id,
+                    const blink::mojom::BackgroundFetchRegistrationData&
+                        registration_data,
+                    blink::mojom::BackgroundFetchOptionsPtr options,
+                    const SkBitmap& icon,
+                    int num_requests,
+                    bool start_paused));
+  MOCK_METHOD7(OnRegistrationLoadedAtStartup,
+               void(const BackgroundFetchRegistrationId& registration_id,
+                    const blink::mojom::BackgroundFetchRegistrationData&
+                        registration_data,
+                    blink::mojom::BackgroundFetchOptionsPtr options,
+                    const SkBitmap& icon,
+                    int num_completed_requests,
+                    int num_requests,
+                    std::vector<scoped_refptr<BackgroundFetchRequestInfo>>
+                        active_fetch_requests));
+  MOCK_METHOD2(
+      OnRegistrationQueried,
       void(const BackgroundFetchRegistrationId& registration_id,
-           const blink::mojom::BackgroundFetchRegistration& registration,
-           blink::mojom::BackgroundFetchOptionsPtr options,
-           const SkBitmap& icon,
-           int num_requests,
-           bool start_paused));
-  MOCK_METHOD7(
-      OnRegistrationLoadedAtStartup,
-      void(const BackgroundFetchRegistrationId& registration_id,
-           const blink::mojom::BackgroundFetchRegistration& registration,
-           blink::mojom::BackgroundFetchOptionsPtr options,
-           const SkBitmap& icon,
-           int num_completed_requests,
-           int num_requests,
-           std::vector<scoped_refptr<BackgroundFetchRequestInfo>>
-               active_fetch_requests));
-  MOCK_METHOD1(OnRegistrationQueried,
-               void(blink::mojom::BackgroundFetchRegistration* registration));
+           blink::mojom::BackgroundFetchRegistrationData* registration_data));
   MOCK_METHOD1(OnServiceWorkerDatabaseCorrupted,
                void(int64_t service_worker_registration_id));
   MOCK_METHOD3(OnRequestCompleted,
@@ -370,13 +371,13 @@ class BackgroundFetchServiceTest
   void DidGetRegistration(
       base::OnceClosure quit_closure,
       blink::mojom::BackgroundFetchError* out_error,
-      blink::mojom::BackgroundFetchRegistration* out_registration,
+      blink::mojom::BackgroundFetchRegistrationPtr* out_registration,
       blink::mojom::BackgroundFetchError error,
       blink::mojom::BackgroundFetchRegistrationPtr registration) {
     *out_error = error;
     *out_registration = registration
-                            ? *registration
-                            : blink::mojom::BackgroundFetchRegistration();
+                            ? std::move(registration)
+                            : blink::mojom::BackgroundFetchRegistration::New();
 
     std::move(quit_closure).Run();
   }
@@ -384,7 +385,7 @@ class BackgroundFetchServiceTest
   void DidStartFetch(
       base::OnceClosure quit_closure,
       blink::mojom::BackgroundFetchError error,
-      blink::mojom::BackgroundFetchRegistrationPtr registration) {
+      blink::mojom::BackgroundFetchRegistrationDataPtr registration_data) {
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
     std::move(quit_closure).Run();
   }
@@ -442,7 +443,7 @@ TEST_F(BackgroundFetchServiceTest, FetchInvalidArguments) {
     requests.push_back(CreateDefaultRequest());
 
     blink::mojom::BackgroundFetchError error;
-    blink::mojom::BackgroundFetchRegistration registration;
+    blink::mojom::BackgroundFetchRegistrationPtr registration;
 
     Fetch(/* service_worker_registration_id= */ 42, /* developer_id= */ "",
           std::move(requests), options.Clone(), SkBitmap(), &error,
@@ -459,7 +460,7 @@ TEST_F(BackgroundFetchServiceTest, FetchInvalidArguments) {
     // |requests| has deliberately been left empty.
 
     blink::mojom::BackgroundFetchError error;
-    blink::mojom::BackgroundFetchRegistration registration;
+    blink::mojom::BackgroundFetchRegistrationPtr registration;
 
     Fetch(/* service_worker_registration_id= */ 42, kExampleDeveloperId,
           std::move(requests), std::move(options), SkBitmap(), &error,
@@ -491,7 +492,7 @@ TEST_F(BackgroundFetchServiceTest, FetchRegistrationProperties) {
   options->download_total = 9001;
 
   blink::mojom::BackgroundFetchError error;
-  blink::mojom::BackgroundFetchRegistration registration;
+  blink::mojom::BackgroundFetchRegistrationPtr registration;
 
   Fetch(service_worker_registration_id, kExampleDeveloperId,
         std::move(requests), options.Clone(), SkBitmap(), &error,
@@ -499,21 +500,24 @@ TEST_F(BackgroundFetchServiceTest, FetchRegistrationProperties) {
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   // The |registration| should reflect the options given in |options|.
-  EXPECT_EQ(registration.developer_id, kExampleDeveloperId);
+  EXPECT_EQ(registration->registration_data->developer_id, kExampleDeveloperId);
 
-  EXPECT_EQ(registration.download_total, options->download_total);
+  EXPECT_EQ(registration->registration_data->download_total,
+            options->download_total);
 
   blink::mojom::BackgroundFetchError second_error;
-  blink::mojom::BackgroundFetchRegistration second_registration;
+  blink::mojom::BackgroundFetchRegistrationPtr second_registration;
 
   GetRegistration(service_worker_registration_id, kExampleDeveloperId,
                   &second_error, &second_registration);
   ASSERT_EQ(second_error, blink::mojom::BackgroundFetchError::NONE);
 
   // The |second_registration| should reflect the options given in |options|.
-  EXPECT_EQ(second_registration.developer_id, kExampleDeveloperId);
+  EXPECT_EQ(second_registration->registration_data->developer_id,
+            kExampleDeveloperId);
 
-  EXPECT_EQ(second_registration.download_total, options->download_total);
+  EXPECT_EQ(second_registration->registration_data->download_total,
+            options->download_total);
 }
 
 TEST_F(BackgroundFetchServiceTest, FetchDuplicatedRegistrationFailure) {
@@ -531,7 +535,7 @@ TEST_F(BackgroundFetchServiceTest, FetchDuplicatedRegistrationFailure) {
   auto options = blink::mojom::BackgroundFetchOptions::New();
 
   blink::mojom::BackgroundFetchError error;
-  blink::mojom::BackgroundFetchRegistration registration;
+  blink::mojom::BackgroundFetchRegistrationPtr registration;
 
   // Create the first registration. This must succeed.
   Fetch(service_worker_registration_id, kExampleDeveloperId,
@@ -540,7 +544,7 @@ TEST_F(BackgroundFetchServiceTest, FetchDuplicatedRegistrationFailure) {
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   blink::mojom::BackgroundFetchError second_error;
-  blink::mojom::BackgroundFetchRegistration second_registration;
+  blink::mojom::BackgroundFetchRegistrationPtr second_registration;
 
   // Create the second registration with the same data. This must fail.
   Fetch(service_worker_registration_id, kExampleDeveloperId,
@@ -568,6 +572,10 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
   // test times out, it means that the event could not be dispatched.
   base::RunLoop event_dispatched_loop;
   worker->set_fetched_event_closure(event_dispatched_loop.QuitClosure());
+
+  // Don't dispatch the event so the background fetch's response cache is not
+  // deleted.
+  worker->delay_dispatch();
 
   std::vector<blink::mojom::FetchAPIRequestPtr> requests;
 
@@ -601,28 +609,27 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
           .Build()));
 
   // Create the registration with the given |requests|.
-  blink::mojom::BackgroundFetchRegistration registration;
-  {
-    auto options = blink::mojom::BackgroundFetchOptions::New();
-    blink::mojom::BackgroundFetchError error;
+  blink::mojom::BackgroundFetchRegistrationPtr registration;
+  blink::mojom::BackgroundFetchRegistrationServicePtr registration_service;
+  auto options = blink::mojom::BackgroundFetchOptions::New();
+  blink::mojom::BackgroundFetchError error;
 
-    // Create the first registration. This must succeed.
-    Fetch(service_worker_registration_id, kExampleDeveloperId,
-          CloneRequestVector(requests), std::move(options), SkBitmap(), &error,
-          &registration);
-    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
-  }
+  // Create the first registration. This must succeed.
+  registration_service =
+      Fetch(service_worker_registration_id, kExampleDeveloperId,
+            CloneRequestVector(requests), std::move(options), SkBitmap(),
+            &error, &registration);
+  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   // Spin the |event_dispatched_loop| to wait for the dispatched event.
   event_dispatched_loop.Run();
 
   ASSERT_TRUE(worker->last_registration());
-  EXPECT_EQ(kExampleDeveloperId, registration.developer_id);
+  EXPECT_EQ(kExampleDeveloperId, registration->registration_data->developer_id);
 
   // Get all the settled fetches and test properties.
   std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> fetches;
-  MatchAllRequests(service_worker_registration_id, registration.developer_id,
-                   registration.unique_id, &fetches);
+  MatchAllRequests(registration_service, &fetches);
   ASSERT_EQ(fetches.size(), requests.size());
   for (size_t i = 0; i < fetches.size(); ++i) {
     ASSERT_EQ(fetches[i]->request->url, requests[i]->url);
@@ -668,10 +675,6 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
     ASSERT_FALSE(fetches[i]->response->blob->uuid.empty());
     ASSERT_GT(fetches[i]->response->blob->size, 0u);
   }
-
-  auto* delegate = static_cast<MockBackgroundFetchDelegate*>(
-      browser_context()->GetBackgroundFetchDelegate());
-  EXPECT_TRUE(delegate->completed_jobs().count(registration.unique_id));
 }
 
 TEST_F(BackgroundFetchServiceTest, FetchFailEventDispatch) {
@@ -691,6 +694,10 @@ TEST_F(BackgroundFetchServiceTest, FetchFailEventDispatch) {
   base::RunLoop event_dispatched_loop;
   worker->set_fetch_fail_event_closure(event_dispatched_loop.QuitClosure());
 
+  // Don't dispatch the event so the background fetch's response cache is not
+  // deleted.
+  worker->delay_dispatch();
+
   std::vector<blink::mojom::FetchAPIRequestPtr> requests;
 
   constexpr int kFirstResponseCode = 404;
@@ -709,7 +716,8 @@ TEST_F(BackgroundFetchServiceTest, FetchFailEventDispatch) {
           .Build()));
 
   // Create the registration with the given |requests|.
-  blink::mojom::BackgroundFetchRegistration registration;
+  blink::mojom::BackgroundFetchRegistrationPtr registration;
+  blink::mojom::BackgroundFetchRegistrationServicePtr registration_service;
 
   {
     auto options = blink::mojom::BackgroundFetchOptions::New();
@@ -717,9 +725,10 @@ TEST_F(BackgroundFetchServiceTest, FetchFailEventDispatch) {
     blink::mojom::BackgroundFetchError error;
 
     // Create the first registration. This must succeed.
-    Fetch(service_worker_registration_id, kExampleDeveloperId,
-          CloneRequestVector(requests), std::move(options), SkBitmap(), &error,
-          &registration);
+    registration_service =
+        Fetch(service_worker_registration_id, kExampleDeveloperId,
+              CloneRequestVector(requests), std::move(options), SkBitmap(),
+              &error, &registration);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   }
 
@@ -727,12 +736,11 @@ TEST_F(BackgroundFetchServiceTest, FetchFailEventDispatch) {
   event_dispatched_loop.Run();
 
   ASSERT_TRUE(worker->last_registration());
-  EXPECT_EQ(kExampleDeveloperId, registration.developer_id);
+  EXPECT_EQ(kExampleDeveloperId, registration->registration_data->developer_id);
 
   // Get all the settled fetches and test properties.
   std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> fetches;
-  MatchAllRequests(service_worker_registration_id, registration.developer_id,
-                   registration.unique_id, &fetches);
+  MatchAllRequests(registration_service, &fetches);
   ASSERT_EQ(fetches.size(), 2u);
 
   // Make sure the 404 request is first, which has a response.
@@ -766,10 +774,6 @@ TEST_F(BackgroundFetchServiceTest, FetchFailEventDispatch) {
               blink::mojom::ServiceWorkerResponseError::kUnknown);
     EXPECT_TRUE(fetches[i]->response->cors_exposed_header_names.empty());
   }
-
-  auto* delegate = static_cast<MockBackgroundFetchDelegate*>(
-      browser_context()->GetBackgroundFetchDelegate());
-  EXPECT_TRUE(delegate->completed_jobs().count(registration.unique_id));
 }
 
 TEST_F(BackgroundFetchServiceTest, UpdateUI) {
@@ -788,10 +792,10 @@ TEST_F(BackgroundFetchServiceTest, UpdateUI) {
   options->title = "1st title";
 
   blink::mojom::BackgroundFetchError error;
-  blink::mojom::BackgroundFetchRegistration registration;
+  blink::mojom::BackgroundFetchRegistrationPtr registration;
 
   // Create the registration.
-  BackgroundFetchRegistrationId registration_id = Fetch(
+  auto registration_service = Fetch(
       service_worker_registration_id, kExampleDeveloperId, std::move(requests),
       std::move(options), SkBitmap(), &error, &registration);
   ASSERT_EQ(blink::mojom::BackgroundFetchError::NONE, error);
@@ -799,12 +803,10 @@ TEST_F(BackgroundFetchServiceTest, UpdateUI) {
   std::string second_title = "2nd title";
 
   // Immediately update the title. This should succeed.
-  UpdateUI(registration_id.service_worker_registration_id(),
-           registration_id.developer_id(), registration_id.unique_id(),
-           second_title, &error);
+  UpdateUI(registration_service, second_title, &error);
   EXPECT_EQ(blink::mojom::BackgroundFetchError::NONE, error);
 
-  blink::mojom::BackgroundFetchRegistration second_registration;
+  blink::mojom::BackgroundFetchRegistrationPtr second_registration;
 
   // GetRegistration should now resolve with the updated title.
   GetRegistration(service_worker_registration_id, kExampleDeveloperId, &error,
@@ -826,10 +828,10 @@ TEST_F(BackgroundFetchServiceTest, Abort) {
   auto options = blink::mojom::BackgroundFetchOptions::New();
 
   blink::mojom::BackgroundFetchError error;
-  blink::mojom::BackgroundFetchRegistration registration;
+  blink::mojom::BackgroundFetchRegistrationPtr registration;
 
   // Create the registration. This must succeed.
-  BackgroundFetchRegistrationId registration_id = Fetch(
+  auto registration_service = Fetch(
       service_worker_registration_id, kExampleDeveloperId, std::move(requests),
       std::move(options), SkBitmap(), &error, &registration);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -837,15 +839,14 @@ TEST_F(BackgroundFetchServiceTest, Abort) {
   blink::mojom::BackgroundFetchError abort_error;
 
   // Immediately abort the registration. This also is expected to succeed.
-  Abort(service_worker_registration_id, kExampleDeveloperId,
-        registration_id.unique_id(), &abort_error);
+  Abort(registration_service, &abort_error);
   ASSERT_EQ(abort_error, blink::mojom::BackgroundFetchError::NONE);
   // Wait for the response of the Mojo IPC to dispatch
   // BackgroundFetchAbortEvent.
   base::RunLoop().RunUntilIdle();
 
   blink::mojom::BackgroundFetchError second_error;
-  blink::mojom::BackgroundFetchRegistration second_registration;
+  blink::mojom::BackgroundFetchRegistrationPtr second_registration;
 
   // Now try to get the created registration, which is expected to fail.
   GetRegistration(service_worker_registration_id, kExampleDeveloperId,
@@ -854,45 +855,7 @@ TEST_F(BackgroundFetchServiceTest, Abort) {
 
   auto* delegate = static_cast<MockBackgroundFetchDelegate*>(
       browser_context()->GetBackgroundFetchDelegate());
-  EXPECT_TRUE(delegate->completed_jobs().count(registration_id.unique_id()));
-}
-
-TEST_F(BackgroundFetchServiceTest, AbortInvalidDeveloperIdArgument) {
-  // This test verifies that the Abort() function will kill the renderer and
-  // return INVALID_ARGUMENT when an invalid |developer_id| is sent over the
-  // Mojo channel.
-
-  FakeMojoMessageDispatchContext fake_dispatch_context;
-  mojo::test::BadMessageObserver bad_message_observer;
-  blink::mojom::BackgroundFetchError error;
-  Abort(/* service_worker_registration_id= */ 42, /* developer_id= */ "",
-        kExampleUniqueId, &error);
-  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::INVALID_ARGUMENT);
-  EXPECT_EQ("Invalid developer_id", bad_message_observer.WaitForBadMessage());
-}
-
-TEST_F(BackgroundFetchServiceTest, AbortInvalidUniqueIdArgument) {
-  // This test verifies that the Abort() function will kill the renderer and
-  // return INVALID_ARGUMENT when an invalid |unique_id| is sent over the Mojo
-  // channel.
-
-  FakeMojoMessageDispatchContext fake_dispatch_context;
-  mojo::test::BadMessageObserver bad_message_observer;
-  blink::mojom::BackgroundFetchError error;
-  Abort(/* service_worker_registration_id= */ 42, kExampleDeveloperId,
-        /* unique_id= */ "not a GUID", &error);
-  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::INVALID_ARGUMENT);
-  EXPECT_EQ("Invalid unique_id", bad_message_observer.WaitForBadMessage());
-}
-
-TEST_F(BackgroundFetchServiceTest, AbortUnknownUniqueId) {
-  // This test verifies that aborting a Background Fetch registration with a
-  // |unique_id| that does not correspond to an active fetch kindly tells us so.
-
-  blink::mojom::BackgroundFetchError error;
-  Abort(/* service_worker_registration_id= */ 42, kExampleDeveloperId,
-        kExampleUniqueId, &error);
-  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::INVALID_ID);
+  EXPECT_FALSE(delegate->completed_jobs().empty());
 }
 
 TEST_F(BackgroundFetchServiceTest, AbortEventDispatch) {
@@ -922,17 +885,18 @@ TEST_F(BackgroundFetchServiceTest, AbortEventDispatch) {
           .Build()));
 
   // Create the registration with the given |requests|.
-  BackgroundFetchRegistrationId registration_id;
+  blink::mojom::BackgroundFetchRegistrationServicePtr registration_service;
   {
     auto options = blink::mojom::BackgroundFetchOptions::New();
 
     blink::mojom::BackgroundFetchError error;
-    blink::mojom::BackgroundFetchRegistration registration;
+    blink::mojom::BackgroundFetchRegistrationPtr registration;
 
     // Create the registration. This must succeed.
-    registration_id = Fetch(service_worker_registration_id, kExampleDeveloperId,
-                            std::move(requests), std::move(options), SkBitmap(),
-                            &error, &registration);
+    registration_service =
+        Fetch(service_worker_registration_id, kExampleDeveloperId,
+              std::move(requests), std::move(options), SkBitmap(), &error,
+              &registration);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   }
 
@@ -941,8 +905,7 @@ TEST_F(BackgroundFetchServiceTest, AbortEventDispatch) {
   {
     blink::mojom::BackgroundFetchError error;
 
-    Abort(service_worker_registration_id, kExampleDeveloperId,
-          registration_id.unique_id(), &error);
+    Abort(registration_service, &error);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   }
 
@@ -973,8 +936,9 @@ TEST_F(BackgroundFetchServiceTest, UniqueId) {
   // Create the first registration, that we will soon abort.
   auto aborted_options = blink::mojom::BackgroundFetchOptions::New();
   aborted_options->title = "Aborted";
-  blink::mojom::BackgroundFetchRegistration aborted_registration;
-  BackgroundFetchRegistrationId aborted_registration_id =
+
+  blink::mojom::BackgroundFetchRegistrationPtr aborted_registration;
+  auto registration_service =
       Fetch(service_worker_registration_id, kExampleDeveloperId,
             CloneRequestVector(requests), std::move(aborted_options),
             SkBitmap(), &error, &aborted_registration);
@@ -983,8 +947,7 @@ TEST_F(BackgroundFetchServiceTest, UniqueId) {
   // Immediately abort the registration so it is no longer active (everything
   // that follows should behave the same if the registration had completed
   // instead of being aborted).
-  Abort(service_worker_registration_id, kExampleDeveloperId,
-        aborted_registration_id.unique_id(), &error);
+  Abort(registration_service, &error);
   ASSERT_EQ(blink::mojom::BackgroundFetchError::NONE, error);
   // Wait for response of the Mojo IPC to dispatch BackgroundFetchAbortEvent.
   base::RunLoop().RunUntilIdle();
@@ -993,27 +956,24 @@ TEST_F(BackgroundFetchServiceTest, UniqueId) {
   // succeed.
   auto second_options = blink::mojom::BackgroundFetchOptions::New();
   second_options->title = "Second";
-  blink::mojom::BackgroundFetchRegistration second_registration;
-  BackgroundFetchRegistrationId second_registration_id = Fetch(
+  blink::mojom::BackgroundFetchRegistrationPtr second_registration;
+  auto second_registration_service = Fetch(
       service_worker_registration_id, kExampleDeveloperId, std::move(requests),
       std::move(second_options), SkBitmap(), &error, &second_registration);
   EXPECT_EQ(blink::mojom::BackgroundFetchError::NONE, error);
 
   // Now try to get the registration using its |developer_id|. This should
   // return the second registration since that is the active one.
-  blink::mojom::BackgroundFetchRegistration gotten_registration;
+  blink::mojom::BackgroundFetchRegistrationPtr gotten_registration;
   GetRegistration(service_worker_registration_id, kExampleDeveloperId, &error,
                   &gotten_registration);
   EXPECT_EQ(blink::mojom::BackgroundFetchError::NONE, error);
-  EXPECT_EQ(second_registration.unique_id, gotten_registration.unique_id);
 
   // Calling UpdateUI for the second registration should succeed, and update the
   // title of the second registration only.
   std::string updated_second_registration_title = "Foo";
-  UpdateUI(second_registration_id.service_worker_registration_id(),
-           second_registration_id.developer_id(),
-           second_registration_id.unique_id(),
-           updated_second_registration_title, &error);
+  UpdateUI(second_registration_service, updated_second_registration_title,
+           &error);
   EXPECT_EQ(blink::mojom::BackgroundFetchError::NONE, error);
 
   // Verify that the second registration's title was indeed updated, and that it
@@ -1022,12 +982,10 @@ TEST_F(BackgroundFetchServiceTest, UniqueId) {
   GetRegistration(service_worker_registration_id, kExampleDeveloperId, &error,
                   &gotten_registration);
   EXPECT_EQ(blink::mojom::BackgroundFetchError::NONE, error);
-  EXPECT_EQ(second_registration.unique_id, gotten_registration.unique_id);
 
   // Aborting the previously aborted registration should fail with INVALID_ID
   // since it is no longer active.
-  Abort(service_worker_registration_id, kExampleDeveloperId,
-        aborted_registration_id.unique_id(), &error);
+  Abort(registration_service, &error);
   EXPECT_EQ(blink::mojom::BackgroundFetchError::INVALID_ID, error);
   // Wait for response of the Mojo IPC to dispatch BackgroundFetchAbortEvent.
   // (MockBackgroundFetchDelegate won't complete/fail second_registration in the
@@ -1038,11 +996,9 @@ TEST_F(BackgroundFetchServiceTest, UniqueId) {
   GetRegistration(service_worker_registration_id, kExampleDeveloperId, &error,
                   &gotten_registration);
   EXPECT_EQ(blink::mojom::BackgroundFetchError::NONE, error);
-  EXPECT_EQ(second_registration.unique_id, gotten_registration.unique_id);
 
   // Aborting the second registration should succeed.
-  Abort(service_worker_registration_id, kExampleDeveloperId,
-        second_registration_id.unique_id(), &error);
+  Abort(second_registration_service, &error);
   EXPECT_EQ(blink::mojom::BackgroundFetchError::NONE, error);
   // Wait for response of the Mojo IPC to dispatch BackgroundFetchAbortEvent.
   // (MockBackgroundFetchDelegate won't complete/fail second_registration in the
@@ -1083,7 +1039,7 @@ TEST_F(BackgroundFetchServiceTest, GetDeveloperIds) {
   // Start the Background Fetch for the |registration_id|.
   {
     blink::mojom::BackgroundFetchError error;
-    blink::mojom::BackgroundFetchRegistration registration;
+    blink::mojom::BackgroundFetchRegistrationPtr registration;
 
     Fetch(service_worker_registration_id, kExampleDeveloperId,
           CloneRequestVector(requests), options.Clone(), SkBitmap(), &error,
@@ -1106,7 +1062,7 @@ TEST_F(BackgroundFetchServiceTest, GetDeveloperIds) {
   // Start the Background Fetch for the |second_registration_id|.
   {
     blink::mojom::BackgroundFetchError error;
-    blink::mojom::BackgroundFetchRegistration registration;
+    blink::mojom::BackgroundFetchRegistrationPtr registration;
 
     Fetch(service_worker_registration_id, kAlternativeDeveloperId,
           std::move(requests), std::move(options), SkBitmap(), &error,
@@ -1186,7 +1142,7 @@ TEST_F(BackgroundFetchServiceTest, UnregisterServiceWorker) {
   options->download_total = 9001;
 
   blink::mojom::BackgroundFetchError error;
-  blink::mojom::BackgroundFetchRegistration registration;
+  blink::mojom::BackgroundFetchRegistrationPtr registration;
 
   {
     using blink::mojom::BackgroundFetchError;
@@ -1213,16 +1169,15 @@ TEST_F(BackgroundFetchServiceTest, JobsInitializedOnBrowserRestart) {
   requests.push_back(CreateDefaultRequest());
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
-  blink::mojom::BackgroundFetchRegistration registration;
+  blink::mojom::BackgroundFetchRegistrationPtr registration;
 
   // Start the fetch. The request is indefinitley pending so this will never
   // finish.
-  BackgroundFetchRegistrationId registration_id;
   {
     EXPECT_CALL(*this, OnRegistrationCreated(_, _, _, _, _, _));
-    registration_id = Fetch(service_worker_registration_id, kExampleDeveloperId,
-                            std::move(requests), std::move(options), SkBitmap(),
-                            &error, &registration);
+    Fetch(service_worker_registration_id, kExampleDeveloperId,
+          std::move(requests), std::move(options), SkBitmap(), &error,
+          &registration);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   }
 
@@ -1235,8 +1190,9 @@ TEST_F(BackgroundFetchServiceTest, JobsInitializedOnBrowserRestart) {
     EXPECT_EQ(developer_ids[0], kExampleDeveloperId);
   }
 
-  auto context = context_->service_worker_context_;
   // Simulate browser restart by re-creating |context_| and |service_|.
+  context_->Shutdown();
+  thread_bundle_.RunUntilIdle();
   TearDown();
   SetUp();
 
@@ -1248,9 +1204,7 @@ TEST_F(BackgroundFetchServiceTest, JobsInitializedOnBrowserRestart) {
           .Build());
 
   {
-    // The same BackgroundFetchRegistrationId is loaded.
-    EXPECT_CALL(*this, OnRegistrationLoadedAtStartup(registration_id, _, _, _,
-                                                     _, _, _));
+    EXPECT_CALL(*this, OnRegistrationLoadedAtStartup(_, _, _, _, _, _, _));
     // Allow restart process to go through.
     thread_bundle_.RunUntilIdle();
   }
@@ -1306,7 +1260,7 @@ TEST_F(BackgroundFetchServiceTest,
   EXPECT_CALL(*this, OnEventReceived(_)).Times(7);
 
   // Create the registration with the given |requests|.
-  blink::mojom::BackgroundFetchRegistration registration;
+  blink::mojom::BackgroundFetchRegistrationPtr registration;
   {
     auto options = blink::mojom::BackgroundFetchOptions::New();
     blink::mojom::BackgroundFetchError error;

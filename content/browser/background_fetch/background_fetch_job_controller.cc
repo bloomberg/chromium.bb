@@ -199,10 +199,10 @@ void BackgroundFetchJobController::DidUpdateRequest(const std::string& guid,
   in_progress_bytes.downloaded = bytes_downloaded;
   in_progress_bytes.uploaded = bytes_uploaded;
 
-  auto registration = NewRegistration();
-  registration->downloaded += GetInProgressDownloadedBytes();
-  registration->uploaded += GetInProgressUploadedBytes();
-  progress_callback_.Run(*registration);
+  auto registration_data = NewRegistrationData();
+  registration_data->downloaded += GetInProgressDownloadedBytes();
+  registration_data->uploaded += GetInProgressUploadedBytes();
+  progress_callback_.Run(registration_id_.unique_id(), *registration_data);
 }
 
 void BackgroundFetchJobController::DidCompleteRequest(
@@ -225,12 +225,12 @@ void BackgroundFetchJobController::DidCompleteRequest(
   active_request_map_.erase(guid);
 }
 
-blink::mojom::BackgroundFetchRegistrationPtr
-BackgroundFetchJobController::NewRegistration() const {
-  return blink::mojom::BackgroundFetchRegistration::New(
-      registration_id().developer_id(), registration_id().unique_id(),
-      upload_total_, complete_requests_uploaded_bytes_cache_,
-      options_->download_total, complete_requests_downloaded_bytes_cache_,
+blink::mojom::BackgroundFetchRegistrationDataPtr
+BackgroundFetchJobController::NewRegistrationData() const {
+  return blink::mojom::BackgroundFetchRegistrationData::New(
+      registration_id().developer_id(), upload_total_,
+      complete_requests_uploaded_bytes_cache_, options_->download_total,
+      complete_requests_downloaded_bytes_cache_,
       blink::mojom::BackgroundFetchResult::UNSET, failure_reason_);
 }
 

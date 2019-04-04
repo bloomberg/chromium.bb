@@ -89,16 +89,16 @@ class ServiceWorkerGlobalScopeProxy final
   void DispatchActivateEvent(int) override;
   void DispatchBackgroundFetchAbortEvent(
       int event_id,
-      const WebBackgroundFetchRegistration& registration) override;
+      WebBackgroundFetchRegistration registration) override;
   void DispatchBackgroundFetchClickEvent(
       int event_id,
-      const WebBackgroundFetchRegistration& registration) override;
+      WebBackgroundFetchRegistration registration) override;
   void DispatchBackgroundFetchFailEvent(
       int event_id,
-      const WebBackgroundFetchRegistration& registration) override;
+      WebBackgroundFetchRegistration registration) override;
   void DispatchBackgroundFetchSuccessEvent(
       int event_id,
-      const WebBackgroundFetchRegistration& registration) override;
+      WebBackgroundFetchRegistration registration) override;
   void DispatchCookieChangeEvent(
       int event_id,
       const WebCanonicalCookie& cookie,

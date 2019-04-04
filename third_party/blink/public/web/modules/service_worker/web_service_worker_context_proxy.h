@@ -72,16 +72,16 @@ class WebServiceWorkerContextProxy {
 
   virtual void DispatchBackgroundFetchAbortEvent(
       int event_id,
-      const WebBackgroundFetchRegistration& registration) = 0;
+      WebBackgroundFetchRegistration registration) = 0;
   virtual void DispatchBackgroundFetchClickEvent(
       int event_id,
-      const WebBackgroundFetchRegistration& registration) = 0;
+      WebBackgroundFetchRegistration registration) = 0;
   virtual void DispatchBackgroundFetchFailEvent(
       int event_id,
-      const WebBackgroundFetchRegistration& registration) = 0;
+      WebBackgroundFetchRegistration registration) = 0;
   virtual void DispatchBackgroundFetchSuccessEvent(
       int event_id,
-      const WebBackgroundFetchRegistration& registration) = 0;
+      WebBackgroundFetchRegistration registration) = 0;
   virtual void DispatchCookieChangeEvent(
       int event_id,
       const WebCanonicalCookie& cookie,

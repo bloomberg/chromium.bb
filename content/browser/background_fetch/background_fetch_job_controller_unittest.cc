@@ -220,7 +220,8 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
 
  private:
   void DidUpdateProgress(
-      const blink::mojom::BackgroundFetchRegistration& registration) {
+      const std::string& unique_id,
+      const blink::mojom::BackgroundFetchRegistrationData& registration) {
     last_downloaded_ = registration.downloaded;
 
     if (job_progress_closure_)

@@ -181,14 +181,13 @@ BackgroundFetchTestBase::CreateRequestWithProvidedResponse(
   return request;
 }
 
-blink::mojom::BackgroundFetchRegistrationPtr
-BackgroundFetchTestBase::CreateBackgroundFetchRegistration(
+blink::mojom::BackgroundFetchRegistrationDataPtr
+BackgroundFetchTestBase::CreateBackgroundFetchRegistrationData(
     const std::string& developer_id,
-    const std::string& unique_id,
     blink::mojom::BackgroundFetchResult result,
     blink::mojom::BackgroundFetchFailureReason failure_reason) {
-  return blink::mojom::BackgroundFetchRegistration::New(
-      developer_id, unique_id, /* upload_total= */ 0, /* uploaded= */ 0,
+  return blink::mojom::BackgroundFetchRegistrationData::New(
+      developer_id, /* upload_total= */ 0, /* uploaded= */ 0,
       /* download_total= */ 0, /* downloaded= */ 0, result, failure_reason);
 }
 

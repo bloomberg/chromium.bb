@@ -96,13 +96,15 @@ class CONTENT_EXPORT BackgroundFetchContext
   void MatchRequests(
       const BackgroundFetchRegistrationId& registration_id,
       std::unique_ptr<BackgroundFetchRequestMatchParams> match_params,
-      blink::mojom::BackgroundFetchService::MatchRequestsCallback callback);
+      blink::mojom::BackgroundFetchRegistrationService::MatchRequestsCallback
+          callback);
 
   // Aborts the Background Fetch for the |registration_id|. The callback will be
   // invoked with INVALID_ID if the registration has already completed or
   // aborted, STORAGE_ERROR if an I/O error occurs, or NONE for success.
-  void Abort(const BackgroundFetchRegistrationId& registration_id,
-             blink::mojom::BackgroundFetchService::AbortCallback callback);
+  void Abort(
+      const BackgroundFetchRegistrationId& registration_id,
+      blink::mojom::BackgroundFetchRegistrationService::AbortCallback callback);
 
   // Registers the |observer| to be notified of progress events for the
   // registration identified by |unique_id| whenever they happen. The observer
@@ -120,7 +122,8 @@ class CONTENT_EXPORT BackgroundFetchContext
       const BackgroundFetchRegistrationId& registration_id,
       const base::Optional<std::string>& title,
       const base::Optional<SkBitmap>& icon,
-      blink::mojom::BackgroundFetchService::UpdateUICallback callback);
+      blink::mojom::BackgroundFetchRegistrationService::UpdateUICallback
+          callback);
 
   BackgroundFetchRegistrationNotifier* registration_notifier() const {
     return registration_notifier_.get();
@@ -148,20 +151,22 @@ class CONTENT_EXPORT BackgroundFetchContext
   void DidGetRegistration(
       blink::mojom::BackgroundFetchService::GetRegistrationCallback callback,
       blink::mojom::BackgroundFetchError error,
-      blink::mojom::BackgroundFetchRegistrationPtr registration);
+      BackgroundFetchRegistrationId registration_id,
+      blink::mojom::BackgroundFetchRegistrationDataPtr registration_data);
 
   // Called when a new registration has been created by the data manager.
   void DidCreateRegistration(
       const BackgroundFetchRegistrationId& registration_id,
       blink::mojom::BackgroundFetchError error,
-      blink::mojom::BackgroundFetchRegistrationPtr registration);
+      blink::mojom::BackgroundFetchRegistrationDataPtr registration_data);
 
   // Called when the sequence of matching settled fetches have been received
   // from storage, and |callback| can be invoked to pass these on to the
   // renderer.
   void DidGetMatchingRequests(
       const std::string& unique_id,
-      blink::mojom::BackgroundFetchService::MatchRequestsCallback callback,
+      blink::mojom::BackgroundFetchRegistrationService::MatchRequestsCallback
+          callback,
       blink::mojom::BackgroundFetchError error,
       std::vector<blink::mojom::BackgroundFetchSettledFetchPtr>
           settled_fetches);
