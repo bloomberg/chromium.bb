@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #import "ios/web/navigation/navigation_item_impl.h"
+#include "ios/web/public/features.h"
 #include "ios/web/test/test_url_constants.h"
 #include "net/base/escape.h"
 #import "net/base/mac/url_conversions.h"
@@ -88,11 +89,17 @@ TEST_F(WKNavigationUtilTest, CreateRestoreSessionUrl) {
       net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS;
   std::string session_json =
       net::UnescapeURLComponent(restore_session_url.ref(), unescape_rules);
-  EXPECT_EQ(
-      "session={\"offset\":-2,\"titles\":[\"Test Website 0\",\"\",\"\"],"
-      "\"urls\":[\"http://www.0.com/\",\"http://www.1.com/\","
-      "\"about:blank?for=testwebui%3A%2F%2Fwebui%2F\"]}",
-      session_json);
+
+  std::string testwebui_url =
+      web::features::WebUISchemeHandlingEnabled()
+          ? "testwebui://webui/"
+          : "about:blank?for=testwebui%3A%2F%2Fwebui%2F";
+
+  EXPECT_EQ("session={\"offset\":-2,\"titles\":[\"Test Website 0\",\"\",\"\"],"
+            "\"urls\":[\"http://www.0.com/\",\"http://www.1.com/\","
+            "\"" +
+                testwebui_url + "\"]}",
+            session_json);
 }
 
 // Verifies that large session can be stored in NSURL. GURL is converted to

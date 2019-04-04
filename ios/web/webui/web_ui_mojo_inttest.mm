@@ -134,7 +134,7 @@ class TestWebUIControllerFactory : public WebUIIOSControllerFactory {
   NSInteger GetErrorCodeForWebUIURL(const GURL& url) const override {
     if (url.SchemeIs(kTestWebUIScheme))
       return 0;
-    return NSURLErrorUnknown;
+    return NSURLErrorUnsupportedURL;
   }
 
  private:

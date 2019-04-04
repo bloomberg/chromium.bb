@@ -4173,6 +4173,10 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   if (web::GetWebClient()->IsAppSpecificURL(requestURL)) {
     allowLoad = [self shouldAllowAppSpecificURLNavigationAction:action
                                                      transition:transition];
+    if (web::features::WebUISchemeHandlingEnabled() && allowLoad &&
+        !self.webStateImpl->HasWebUI()) {
+      [self createWebUIForURL:requestURL];
+    }
   }
 
   BOOL webControllerCanShow =
@@ -4449,10 +4453,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     return;
   }
 
-  // This is renderer-initiated navigation which was not seen before and should
-  // be registered.
-
-  [self clearWebUI];
+  // This is renderer-initiated navigation which was not seen before and
+  // should be registered.
 
   // When using WKBasedNavigationManager, renderer-initiated app-specific loads
   // should be allowed in two specific cases:
@@ -4467,7 +4469,16 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
         net::GURLWithNSURL(webView.backForwardList.currentItem.URL);
     bool isBackForward =
         _pendingNavigationInfo.navigationType == WKNavigationTypeBackForward;
-    exemptedAppSpecificLoad = currentItemIsPlaceholder || isBackForward;
+    bool isRestoringSession =
+        web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+        IsRestoreSessionUrl(_documentURL);
+    exemptedAppSpecificLoad =
+        currentItemIsPlaceholder || isBackForward || isRestoringSession;
+  }
+
+  if (!web::GetWebClient()->IsAppSpecificURL(webViewURL) ||
+      !exemptedAppSpecificLoad) {
+    [self clearWebUI];
   }
 
   if (web::GetWebClient()->IsAppSpecificURL(webViewURL) &&
@@ -5177,6 +5188,12 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
   if (ui::PageTransitionTypeIncludingQualifiersIs(
           pageTransition, ui::PAGE_TRANSITION_AUTO_BOOKMARK)) {
+    return YES;
+  }
+
+  // If the session is being restored, allow the navigation.
+  if (web::features::WebUISchemeHandlingEnabled() &&
+      IsRestoreSessionUrl(_documentURL)) {
     return YES;
   }
 
