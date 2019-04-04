@@ -840,6 +840,10 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     const TargetBounds& target_bounds,
     bool animate,
     ui::ImplicitAnimationObserver* observer) {
+  // Do not update the work area during overview animation.
+  if (suspend_visibility_update_)
+    return;
+
   StatusAreaWidget* status_widget = shelf_widget_->status_area_widget();
   base::AutoReset<bool> auto_reset_updating_bounds(&updating_bounds_, true);
   {
