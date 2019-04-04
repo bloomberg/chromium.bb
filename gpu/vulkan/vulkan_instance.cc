@@ -205,6 +205,19 @@ bool VulkanInstance::Initialize(
     if (!vkDestroySurfaceKHR)
       return false;
 
+#if defined(USE_X11)
+    vkCreateXlibSurfaceKHR = reinterpret_cast<PFN_vkCreateXlibSurfaceKHR>(
+        vkGetInstanceProcAddr(vk_instance_, "vkCreateXlibSurfaceKHR"));
+    if (!vkCreateXlibSurfaceKHR)
+      return false;
+    vkGetPhysicalDeviceXlibPresentationSupportKHR =
+        reinterpret_cast<PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR>(
+            vkGetInstanceProcAddr(
+                vk_instance_, "vkGetPhysicalDeviceXlibPresentationSupportKHR"));
+    if (!vkGetPhysicalDeviceXlibPresentationSupportKHR)
+      return false;
+#endif
+
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR =
         reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR>(
             vkGetInstanceProcAddr(vk_instance_,

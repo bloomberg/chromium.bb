@@ -18,7 +18,6 @@ class COMPONENT_EXPORT(VULKAN_X11) VulkanImplementationX11
     : public VulkanImplementation {
  public:
   VulkanImplementationX11();
-  explicit VulkanImplementationX11(XDisplay* x_display);
   ~VulkanImplementationX11() override;
 
   // VulkanImplementation:
@@ -42,13 +41,8 @@ class COMPONENT_EXPORT(VULKAN_X11) VulkanImplementationX11
                                      VkSemaphore vk_semaphore) override;
 
  private:
-  XDisplay* const x_display_;
   bool using_surface_ = true;
   VulkanInstance vulkan_instance_;
-
-  PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR
-      vkGetPhysicalDeviceXlibPresentationSupportKHR_ = nullptr;
-  PFN_vkCreateXlibSurfaceKHR vkCreateXlibSurfaceKHR_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(VulkanImplementationX11);
 };

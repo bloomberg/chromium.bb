@@ -35,6 +35,7 @@ VULKAN_PHYSICAL_DEVICE_FUNCTIONS = [
 # vkGetPhysicalDeviceSurfaceCapabilitiesKHR
 # vkGetPhysicalDeviceSurfaceFormatsKHR
 # vkGetPhysicalDeviceSurfaceSupportKHR
+# vkGetPhysicalDeviceXlibPresentationSupportKHR
 ]
 
 VULKAN_DEVICE_FUNCTIONS = [
@@ -174,6 +175,11 @@ def GenerateHeaderFile(file, unassociated_functions, instance_functions,
 #include "gpu/vulkan/fuchsia/vulkan_fuchsia_ext.h"
 #endif
 
+#if defined(USE_VULKAN_XLIB)
+#include <X11/Xlib.h>
+#include <vulkan/vulkan_xlib.h>
+#endif
+
 namespace gpu {
 
 struct VulkanFunctionPointers;
@@ -212,7 +218,9 @@ struct VulkanFunctionPointers {
 
   file.write("""\
   PFN_vkDestroySurfaceKHR vkDestroySurfaceKHRFn = nullptr;
-
+#if defined(USE_VULKAN_XLIB)
+  PFN_vkCreateXlibSurfaceKHR vkCreateXlibSurfaceKHRFn = nullptr;
+#endif
   // Physical Device functions
 """)
 
@@ -225,7 +233,10 @@ struct VulkanFunctionPointers {
       vkGetPhysicalDeviceSurfaceFormatsKHRFn = nullptr;
   PFN_vkGetPhysicalDeviceSurfaceSupportKHR
       vkGetPhysicalDeviceSurfaceSupportKHRFn = nullptr;
-
+#if defined(USE_VULKAN_XLIB)
+  PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR
+      vkGetPhysicalDeviceXlibPresentationSupportKHRFn = nullptr;
+#endif
   // Device functions
 """)
 
@@ -319,6 +330,10 @@ struct VulkanFunctionPointers {
   WriteMacros(file, instance_functions)
   WriteMacros(file, [ { 'name': 'vkDestroySurfaceKHR' } ])
 
+  file.write("#if defined(USE_VULKAN_XLIB)\n")
+  WriteMacros(file, [ { 'name': 'vkCreateXlibSurfaceKHR' } ])
+  file.write("#endif\n")
+
   file.write("""\
 
 // Physical Device functions
@@ -330,6 +345,12 @@ struct VulkanFunctionPointers {
       { 'name': 'vkGetPhysicalDeviceSurfaceFormatsKHR' },
       { 'name': 'vkGetPhysicalDeviceSurfaceSupportKHR' },
   ])
+  file.write("#if defined(USE_VULKAN_XLIB)\n")
+  WriteMacros(file, [
+      { 'name': 'vkGetPhysicalDeviceXlibPresentationSupportKHR' },
+  ])
+  file.write("#endif\n")
+
 
   file.write("""\
 

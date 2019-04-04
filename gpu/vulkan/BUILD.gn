@@ -7,6 +7,7 @@ import("//build/config/dcheck_always_on.gni")
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
+import("//ui/ozone/ozone.gni")
 import("features.gni")
 
 # Generate a buildflag header for compile-time checking of Vulkan support.
@@ -16,6 +17,13 @@ buildflag_header("buildflags") {
 }
 
 if (enable_vulkan) {
+  use_vulkan_xlib = use_x11 || ozone_platform_x11
+  config("vulkan_config") {
+    if (use_vulkan_xlib) {
+      defines = [ "USE_VULKAN_XLIB" ]
+    }
+  }
+
   jumbo_component("vulkan") {
     output_name = "vulkan_wrapper"
 
@@ -43,6 +51,7 @@ if (enable_vulkan) {
     ]
 
     configs += [ "//build/config:precompiled_headers" ]
+    public_configs = [ ":vulkan_config" ]
 
     defines = [ "VULKAN_IMPLEMENTATION" ]
     if (is_android) {
