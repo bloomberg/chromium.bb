@@ -148,7 +148,7 @@ WorkletGlobalScopeProxy* PaintWorklet::CreateGlobalScope() {
 
   PaintWorkletProxyClient* proxy_client = PaintWorkletProxyClient::Create(
       To<Document>(GetExecutionContext()), worklet_id_);
-  WorkerClients* worker_clients = WorkerClients::Create();
+  auto* worker_clients = MakeGarbageCollected<WorkerClients>();
   ProvidePaintWorkletProxyClientTo(worker_clients, proxy_client);
 
   PaintWorkletMessagingProxy* proxy =

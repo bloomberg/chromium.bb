@@ -39,7 +39,7 @@ PaintWorkletGlobalScopeProxy::PaintWorkletGlobalScopeProxy(
   String global_scope_name =
       StringView("PaintWorklet #") + String::Number(global_scope_number);
 
-  WorkerClients* worker_clients = WorkerClients::Create();
+  auto* worker_clients = MakeGarbageCollected<WorkerClients>();
   ProvideContentSettingsClientToWorker(
       worker_clients, frame->Client()->CreateWorkerContentSettingsClient());
 
