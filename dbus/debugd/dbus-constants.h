@@ -33,6 +33,7 @@ const char kGetAllLogs[] = "GetAllLogs";
 const char kGetUserLogFiles[] = "GetUserLogFiles";
 const char kGetFeedbackLogs[] = "GetFeedbackLogs";
 const char kGetBigFeedbackLogs[] = "GetBigFeedbackLogs";
+const char kGetJournalLog[] = "GetJournalLog";
 const char kTestICMP[] = "TestICMP";
 const char kTestICMPWithOptions[] = "TestICMPWithOptions";
 const char kLogKernelTaskStates[] = "LogKernelTaskStates";
