@@ -2454,6 +2454,16 @@
     "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
   },
+  # This isolate is used by
+  # https://www.chromium.org/developers/cluster-telemetry
+  "ct_telemetry_perf_tests_without_chrome": {
+    "args": [
+      "../../tools/perf/run_benchmark",
+    ],
+    "label": "//chrome/test:ct_telemetry_perf_tests_without_chrome",
+    "script": "//testing/scripts/run_performance_tests.py",
+    "type": "script",
+  },
   "telemetry_perf_unittests": {
     "args": [
       "../../tools/perf/run_tests",

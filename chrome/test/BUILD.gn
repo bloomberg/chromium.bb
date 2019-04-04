@@ -2425,6 +2425,17 @@ group("telemetry_perf_tests_without_chrome") {
   ]
 }
 
+group("ct_telemetry_perf_tests_without_chrome") {
+  testonly = true
+  deps = [
+    ":telemetry_perf_tests_without_chrome",
+  ]
+
+  data = [
+    "//tools/perf/contrib/cluster_telemetry/",
+  ]
+}
+
 # New target that will replace telemetry_perf_tests when testing
 # is done.
 group("performance_test_suite") {
