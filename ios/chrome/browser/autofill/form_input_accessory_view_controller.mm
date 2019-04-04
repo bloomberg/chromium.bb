@@ -161,7 +161,21 @@ CGFloat const kInputAccessoryHeight = 44.0f;
 - (void)prepareToShowSuggestions {
   // Hides the Manual Fallback icons when there is no proper keyboard to present
   // those views. And shows them if there is a keyboard present.
-  self.manualFillAccessoryViewController.view.hidden = ![self canPresentView];
+  // Hidding |manualFillAccessoryViewController|'s view was causing an issue
+  // with the Stack Views and Auto Layout in iOS 11, hidding each icon avoids
+  // it.
+  if ([self canPresentView]) {
+    self.manualFillAccessoryViewController.passwordButtonHidden =
+        self.passwordButtonHidden;
+    self.manualFillAccessoryViewController.addressButtonHidden =
+        self.addressButtonHidden;
+    self.manualFillAccessoryViewController.creditCardButtonHidden =
+        self.creditCardButtonHidden;
+  } else {
+    self.manualFillAccessoryViewController.passwordButtonHidden = YES;
+    self.manualFillAccessoryViewController.addressButtonHidden = YES;
+    self.manualFillAccessoryViewController.creditCardButtonHidden = YES;
+  }
 }
 
 - (void)showAccessorySuggestions:(NSArray<FormSuggestion*>*)suggestions
