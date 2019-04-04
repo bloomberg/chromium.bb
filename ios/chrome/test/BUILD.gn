@@ -33,7 +33,6 @@ source_set("test_support") {
     "root_view_controller_test.mm",
     "scoped_block_popups_pref.h",
     "scoped_block_popups_pref.mm",
-    "scoped_eg_synchronization_disabler.h",
     "scoped_key_window.h",
     "testing_application_context.h",
     "testing_application_context.mm",
@@ -66,6 +65,20 @@ source_set("test_support") {
     "//testing/gtest",
     "//ui/base",
     "//url",
+  ]
+}
+
+source_set("eg_test_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "scoped_eg_synchronization_disabler.h",
+    "scoped_eg_synchronization_disabler.mm",
+  ]
+  deps = [
+    ":test_support",
+    "//base",
+    "//ios/third_party/earl_grey:earl_grey+link",
   ]
 }
 
