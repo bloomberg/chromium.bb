@@ -51,11 +51,13 @@ class WaylandBufferManager {
   // Assigns a wl_buffer with |buffer_id| to a window with the same |widget|. On
   // error, false is returned and |error_message_| is set. A |damage_region|
   // identifies which part of the buffer is updated. If an empty region is
-  // provided, the whole buffer is updated.
+  // provided, the whole buffer is updated. Once a frame callback or
+  // presentation callback is received, WaylandConnection::OnSubmission and
+  // WaylandConnection::OnPresentation are called. Though, it is guaranteed
+  // OnPresentation won't be called earlier than OnSubmission.
   bool ScheduleBufferSwap(gfx::AcceleratedWidget widget,
                           uint32_t buffer_id,
-                          const gfx::Rect& damage_region,
-                          wl::BufferSwapCallback callback);
+                          const gfx::Rect& damage_region);
 
   // Destroys a buffer with |buffer_id| in |buffers_|. On error, false is
   // returned and |error_message_| is set.
@@ -75,12 +77,15 @@ class WaylandBufferManager {
   // to, its buffer id for simplier buffer management and other members specific
   // to this Buffer object on run-time.
   struct Buffer {
-    Buffer();
-    explicit Buffer(const gfx::Size& buffer_size);
+    Buffer() = delete;
+    Buffer(const gfx::Size& buffer_size, uint32_t buffer_id);
     ~Buffer();
 
     // Actual buffer size.
     const gfx::Size size;
+
+    // The id of the buffer.
+    const uint32_t buffer_id;
 
     // Widget to attached/being attach WaylandWindow.
     gfx::AcceleratedWidget widget = gfx::kNullAcceleratedWidget;
@@ -90,9 +95,6 @@ class WaylandBufferManager {
     // repainted.
     gfx::Rect damage_region;
 
-    // A buffer swap result once the buffer is committed.
-    gfx::SwapResult swap_result;
-
     // A feedback, which is received if a presentation feedback protocol is
     // supported.
     gfx::PresentationFeedback feedback;
@@ -100,9 +102,9 @@ class WaylandBufferManager {
     // A wl_buffer backed by a dmabuf created on the GPU side.
     wl::Object<struct wl_buffer> wl_buffer;
 
-    // A callback, which is called once the |wl_frame_callback| from the server
-    // is received.
-    wl::BufferSwapCallback buffer_swap_callback;
+    // Provide the status of this buffer. Reset on each new swap.
+    bool swapped = false;
+    bool presented = false;
 
     // A Wayland callback, which is triggered once wl_buffer has been committed
     // and it is right time to notify the GPU that it can start a new drawing
@@ -137,7 +139,9 @@ class WaylandBufferManager {
   void OnCreateBufferComplete(uint32_t buffer_id,
                               wl::Object<struct wl_buffer> new_buffer);
 
-  void OnBufferSwapped(Buffer* buffer);
+  void OnSubmission(Buffer* buffer, const gfx::SwapResult& swap_result);
+  void OnPresentation(Buffer* buffer,
+                      const gfx::PresentationFeedback& feedback);
 
   // wl_callback_listener
   static void FrameCallbackDone(void* data,

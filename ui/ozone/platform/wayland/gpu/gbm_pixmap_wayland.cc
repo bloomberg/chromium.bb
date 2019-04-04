@@ -28,12 +28,15 @@
 namespace ui {
 
 GbmPixmapWayland::GbmPixmapWayland(WaylandSurfaceFactory* surface_manager,
-                                   WaylandConnectionProxy* connection)
-    : surface_manager_(surface_manager), connection_(connection) {}
+                                   WaylandConnectionProxy* connection,
+                                   gfx::AcceleratedWidget widget)
+    : surface_manager_(surface_manager),
+      connection_(connection),
+      widget_(widget) {}
 
 GbmPixmapWayland::~GbmPixmapWayland() {
   if (gbm_bo_)
-    connection_->DestroyZwpLinuxDmabuf(GetUniqueId());
+    connection_->DestroyZwpLinuxDmabuf(widget_, GetUniqueId());
 }
 
 bool GbmPixmapWayland::InitializeBuffer(gfx::Size size,

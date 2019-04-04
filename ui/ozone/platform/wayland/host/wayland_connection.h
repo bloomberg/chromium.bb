@@ -52,6 +52,8 @@ class WaylandConnection : public PlatformEventSource,
   //
   // These overridden methods below are invoked by the GPU when hardware
   // accelerated rendering is used.
+  void SetWaylandConnectionClient(
+      ozone::mojom::WaylandConnectionClientAssociatedPtrInfo client) override;
   //
   // Called by the GPU and asks to import a wl_buffer based on a gbm file
   // descriptor.
@@ -68,13 +70,14 @@ class WaylandConnection : public PlatformEventSource,
   void DestroyZwpLinuxDmabuf(uint32_t buffer_id) override;
   // Called by the GPU and asks to attach a wl_buffer with a |buffer_id| to a
   // WaylandWindow with the specified |widget|.
+  // Calls OnSubmission and OnPresentation on successful swap and pixels
+  // presented.
   void ScheduleBufferSwap(gfx::AcceleratedWidget widget,
                           uint32_t buffer_id,
-                          const gfx::Rect& damage_region,
-                          ScheduleBufferSwapCallback callback) override;
+                          const gfx::Rect& damage_region) override;
   // These overridden methods below are invoked by the GPU when hardware
   // accelerated rendering is not used. Check comments in the
-  // ui/ozone/public/interfaces/wayland/host/wayland_connection.mojom.
+  // ui/ozone/public/interfaces/wayland/wayland_connection.mojom.
   void CreateShmBufferForWidget(gfx::AcceleratedWidget widget,
                                 base::File file,
                                 uint64_t length,
@@ -82,6 +85,20 @@ class WaylandConnection : public PlatformEventSource,
   void PresentShmBufferForWidget(gfx::AcceleratedWidget widget,
                                  const gfx::Rect& damage) override;
   void DestroyShmBuffer(gfx::AcceleratedWidget widget) override;
+
+  // These methods are exclusively used by the WaylandBufferManager to notify
+  // the |client_associated_ptr_| about buffer swaps' results.
+  // TODO(msisov): move these and the above mojo methods into the
+  // WaylandBufferManager and establish end-to-end communication with
+  // WaylandBufferManagerGpu and WaylandBufferManagerHost instead (basically, to
+  // avoid having the WaylandConnection as proxy in between).
+  // https://crbug.com/947411
+  void OnSubmission(gfx::AcceleratedWidget widget,
+                    uint32_t buffer_id,
+                    const gfx::SwapResult& swap_result);
+  void OnPresentation(gfx::AcceleratedWidget widget,
+                      uint32_t buffer_id,
+                      const gfx::PresentationFeedback& feedback);
 
   // Schedules a flush of the Wayland connection.
   void ScheduleFlush();
@@ -278,6 +295,7 @@ class WaylandConnection : public PlatformEventSource,
   // Stores the callback to be invoked upon data reading from clipboard.
   RequestDataClosure read_clipboard_closure_;
 
+  ozone::mojom::WaylandConnectionClientAssociatedPtr client_associated_ptr_;
   mojo::Binding<ozone::mojom::WaylandConnection> binding_;
 
   // A callback, which is used to terminate a GPU process in case of invalid

@@ -15,10 +15,6 @@
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
-namespace gfx {
-class Rect;
-}  // namespace gfx
-
 namespace ui {
 
 class GbmSurfacelessWayland;
@@ -26,14 +22,12 @@ class WaylandConnectionProxy;
 
 class WaylandSurfaceFactory : public SurfaceFactoryOzone {
  public:
-  explicit WaylandSurfaceFactory(WaylandConnectionProxy* connection);
+  WaylandSurfaceFactory();
   ~WaylandSurfaceFactory() override;
 
+  void SetProxy(WaylandConnectionProxy* proxy);
+
   // These methods are used, when a dmabuf based approach is used.
-  void ScheduleBufferSwap(gfx::AcceleratedWidget widget,
-                          uint32_t buffer_id,
-                          const gfx::Rect& damage_region_,
-                          wl::BufferSwapCallback callback);
   void RegisterSurface(gfx::AcceleratedWidget widget,
                        GbmSurfacelessWayland* surface);
   void UnregisterSurface(gfx::AcceleratedWidget widget);
