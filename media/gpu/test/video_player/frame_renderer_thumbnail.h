@@ -84,7 +84,7 @@ class FrameRendererThumbnail : public FrameRenderer {
   const std::vector<uint8_t> ConvertThumbnailToRGBA()
       EXCLUSIVE_LOCKS_REQUIRED(renderer_lock_);
 
-  // Destroy the texture associated with the specified |mailbox|.
+  // Destroy the texture associated with the |mailbox| on the renderer thread.
   void DeleteTexture(const gpu::Mailbox& mailbox, const gpu::SyncToken&);
 
   // The number of frames rendered so far.

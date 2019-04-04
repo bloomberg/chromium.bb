@@ -202,7 +202,7 @@ TEST_F(VideoDecoderTest, ResetAfterFirstConfigInfo) {
 // decoder, without waiting for the result of the previous decode requests.
 TEST_F(VideoDecoderTest, FlushAtEndOfStream_MultipleOutstandingDecodes) {
   VideoDecoderClientConfig config;
-  config.max_outstanding_decode_requests = 5;
+  config.max_outstanding_decode_requests = 4;
   auto tvp = CreateVideoPlayer(g_env->video_, config);
 
   tvp->Play();
