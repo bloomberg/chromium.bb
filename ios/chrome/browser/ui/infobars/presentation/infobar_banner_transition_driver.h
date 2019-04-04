@@ -7,9 +7,14 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol InfobarBannerPositioner;
+
 // The transition delegate used to present an InfobarBanner.
 @interface InfobarBannerTransitionDriver
     : NSObject <UIViewControllerTransitioningDelegate>
+
+// Delegate used to position the InfobarBanner.
+@property(nonatomic, assign) id<InfobarBannerPositioner> bannerPositioner;
 
 @end
 

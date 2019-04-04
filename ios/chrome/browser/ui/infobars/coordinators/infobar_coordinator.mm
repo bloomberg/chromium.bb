@@ -8,14 +8,22 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator_implementation.h"
 #import "ios/chrome/browser/ui/infobars/infobar_badge_ui_delegate.h"
+#import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_positioner.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_transition_driver.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_modal_transition_driver.h"
+#import "ios/chrome/browser/ui/util/named_guide.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface InfobarCoordinator () <InfobarCoordinatorImplementation> {
+namespace {
+// Banner View constants.
+const CGFloat kBannerOverlapWithOmnibox = 5.0;
+}  // namespace
+
+@interface InfobarCoordinator () <InfobarCoordinatorImplementation,
+                                  InfobarBannerPositioner> {
   // The AnimatedFullscreenDisable disables fullscreen by displaying the
   // Toolbar/s when an Infobar banner is presented.
   std::unique_ptr<AnimatedScopedFullscreenDisabler> animatedFullscreenDisabler_;
@@ -72,6 +80,7 @@
   [self.bannerViewController
       setModalPresentationStyle:UIModalPresentationCustom];
   self.bannerTransitionDriver = [[InfobarBannerTransitionDriver alloc] init];
+  self.bannerTransitionDriver.bannerPositioner = self;
   self.bannerViewController.transitioningDelegate = self.bannerTransitionDriver;
   [self.baseViewController presentViewController:self.bannerViewController
                                         animated:animated
@@ -156,6 +165,17 @@
     if (completion)
       completion();
   }
+}
+
+#pragma mark InfobarBannerPositioner
+
+- (CGFloat)bannerYPosition {
+  NamedGuide* topLayout =
+      [NamedGuide guideWithName:kOmniboxGuide
+                           view:self.baseViewController.view];
+  return topLayout.constrainedView.frame.origin.y +
+         topLayout.constrainedView.frame.size.height -
+         kBannerOverlapWithOmnibox;
 }
 
 #pragma mark InfobarModalDelegate

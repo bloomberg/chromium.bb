@@ -25,6 +25,7 @@
       [[InfobarBannerPresentationController alloc]
           initWithPresentedViewController:presented
                  presentingViewController:presenting];
+  presentationController.bannerPositioner = self.bannerPositioner;
   return presentationController;
 }
 

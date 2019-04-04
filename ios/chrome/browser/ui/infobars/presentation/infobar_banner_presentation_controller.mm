@@ -4,48 +4,54 @@
 
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_presentation_controller.h"
 
+#import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_positioner.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 namespace {
-// Presented frame size and position.
-const CGFloat kContainerHeight = 70;
+// The presented view height.
+const CGFloat kDefaultContainerHeight = 70;
+// The presented view outer horizontal margins.
 const CGFloat kContainerHorizontalPadding = 8;
-const CGFloat kContainerTopPadding = 85;
+// The presented view maximum width.
+const CGFloat kContainerWidthMaxSize = 398;
+// The presented view default Y axis value.
+const CGFloat kDefaultBannerYPosition = 85;
 }
-
-@interface InfobarBannerPresentationController ()
-
-// UIView that contains information about the position and size of the container
-// and presented views.
-@property(nonatomic, strong) UIView* viewForPresentedView;
-
-@end
 
 @implementation InfobarBannerPresentationController
 
 - (void)presentationTransitionWillBegin {
-  self.containerView.frame = self.viewForPresentedView.frame;
+  self.containerView.frame = [self viewForPresentedView].frame;
 }
 
 - (void)containerViewWillLayoutSubviews {
-  self.containerView.frame = self.viewForPresentedView.frame;
-  self.presentedView.frame = self.viewForPresentedView.bounds;
+  self.containerView.frame = [self viewForPresentedView].frame;
+  self.presentedView.frame = [self viewForPresentedView].bounds;
 }
 
-// TODO(crbug.com/911864): PLACEHOLDER position and size for the banner
-// presented view.
 - (UIView*)viewForPresentedView {
   UIWindow* window = UIApplication.sharedApplication.keyWindow;
+
+  // Calculate the Banner container width.
   CGFloat safeAreaWidth = CGRectGetWidth(window.bounds);
   CGFloat maxAvailableWidth = safeAreaWidth - 2 * kContainerHorizontalPadding;
-  _viewForPresentedView = [[UIView alloc]
-      initWithFrame:CGRectMake(kContainerHorizontalPadding,
-                               kContainerTopPadding, maxAvailableWidth,
-                               kContainerHeight)];
+  CGFloat frameWidth = fmin(maxAvailableWidth, kContainerWidthMaxSize);
 
-  return _viewForPresentedView;
+  // Based on the container width, calculate the value in order to center the
+  // Banner in the X axis.
+  CGFloat bannerXPosition = (safeAreaWidth / 2) - (frameWidth / 2);
+
+  CGFloat bannerYPosition = [self.bannerPositioner bannerYPosition];
+  if (!bannerYPosition) {
+    bannerYPosition = kDefaultBannerYPosition;
+  }
+
+  return [[UIView alloc]
+      initWithFrame:CGRectMake(bannerXPosition, bannerYPosition, frameWidth,
+                               kDefaultContainerHeight)];
 }
 
 @end
