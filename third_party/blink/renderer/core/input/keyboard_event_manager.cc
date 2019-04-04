@@ -309,11 +309,6 @@ void KeyboardEventManager::DefaultKeyboardEventHandler(
     if (event->keyCode() == kVKeyProcessKey)
       return;
 
-    if (event->keyCode() == kVKeySpatNavBack &&
-        DefaultSpatNavBackEventHandler(event)) {
-      return;
-    }
-
     if (event->key() == "Tab") {
       DefaultTabEventHandler(event);
     } else if (event->key() == "Escape") {
@@ -332,8 +327,13 @@ void KeyboardEventManager::DefaultKeyboardEventHandler(
     if (event->charCode() == ' ')
       DefaultSpaceEventHandler(event, possible_focused_node);
   } else if (event->type() == event_type_names::kKeyup) {
-    if (event->key() == "Enter")
+    if (event->key() == "Enter") {
       DefaultEnterEventHandler(event);
+      return;
+    }
+
+    if (event->keyCode() == kVKeySpatNavBack)
+      DefaultSpatNavBackEventHandler(event);
   }
 }
 
