@@ -47,7 +47,7 @@ XPathExpression* XPathEvaluator::createExpression(
 }
 
 XPathNSResolver* XPathEvaluator::createNSResolver(Node* node_resolver) {
-  return NativeXPathNSResolver::Create(node_resolver);
+  return MakeGarbageCollected<NativeXPathNSResolver>(node_resolver);
 }
 
 XPathResult* XPathEvaluator::evaluate(const String& expression,

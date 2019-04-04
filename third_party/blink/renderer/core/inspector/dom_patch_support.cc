@@ -76,7 +76,8 @@ void DOMPatchSupport::PatchDocument(const String& markup) {
   DCHECK(new_document);
   new_document->SetContextFeatures(GetDocument().GetContextFeatures());
   if (!GetDocument().IsHTMLDocument()) {
-    DocumentParser* parser = XMLDocumentParser::Create(*new_document, nullptr);
+    DocumentParser* parser =
+        MakeGarbageCollected<XMLDocumentParser>(*new_document, nullptr);
     parser->Append(markup);
     parser->Finish();
     parser->Detach();

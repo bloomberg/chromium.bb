@@ -73,16 +73,6 @@ class XMLDocumentParser final : public ScriptableDocumentParser,
   USING_GARBAGE_COLLECTED_MIXIN(XMLDocumentParser);
 
  public:
-  static XMLDocumentParser* Create(Document& document, LocalFrameView* view) {
-    return MakeGarbageCollected<XMLDocumentParser>(document, view);
-  }
-  static XMLDocumentParser* Create(DocumentFragment* fragment,
-                                   Element* element,
-                                   ParserContentPolicy parser_content_policy) {
-    return MakeGarbageCollected<XMLDocumentParser>(fragment, element,
-                                                   parser_content_policy);
-  }
-
   explicit XMLDocumentParser(Document&, LocalFrameView* = nullptr);
   XMLDocumentParser(DocumentFragment*, Element*, ParserContentPolicy);
   ~XMLDocumentParser() override;
