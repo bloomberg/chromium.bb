@@ -84,7 +84,7 @@ class WebAppProvider : public WebAppProviderBase,
                const content::NotificationDetails& details) override;
 
   // Fires when app registry becomes ready.
-  // Consider to use base::ObserverList or extensions::OneShotEvent if many
+  // Consider to use base::ObserverList or base::OneShotEvent if many
   // subscribers needed.
   void SetRegistryReadyCallback(base::OnceClosure callback);
 
