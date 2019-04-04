@@ -43,8 +43,7 @@ class InfoBarDelegate;
                                    browser:(Browser*)browser NS_UNAVAILABLE;
 
 // Present the InfobarBanner using |self.baseViewController|.
-- (void)presentInfobarBannerAnimated:(BOOL)animated
-                          completion:(ProceduralBlock)completion;
+- (void)presentInfobarBanner;
 
 // Present the InfobarModal using |self.baseViewController|.
 - (void)presentInfobarModal;

@@ -170,7 +170,7 @@ const double kBannerPresentationDurationInSeconds = 6.0;
   infobarCoordinator.badgeDelegate = self.mediator;
   infobarCoordinator.browserState = self.browserState;
   infobarCoordinator.baseViewController = self.baseViewController;
-  [infobarCoordinator presentInfobarBannerAnimated:YES completion:nil];
+  [infobarCoordinator presentInfobarBanner];
   self.infobarViewController = infobarCoordinator.bannerViewController;
   [self.childCoordinators addObject:infobarCoordinator];
 
