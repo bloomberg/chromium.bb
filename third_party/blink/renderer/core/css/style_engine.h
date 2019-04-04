@@ -539,7 +539,8 @@ class CORE_EXPORT StyleEngine final
   // The preferred color scheme is set in settings, but may be overridden by the
   // ForceDarkMode setting where the preferred_color_scheme_ will be set no
   // kNoPreference to avoid dark styling to be applied before auto darkening.
-  PreferredColorScheme preferred_color_scheme_;
+  PreferredColorScheme preferred_color_scheme_ =
+      PreferredColorScheme::kNoPreference;
 
   // The resolved color scheme to use based on the supported color schemes, the
   // preferred color scheme, and the ForceDarkMode setting.
