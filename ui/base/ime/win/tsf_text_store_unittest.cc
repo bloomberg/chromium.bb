@@ -2247,5 +2247,336 @@ TEST_F(TSFTextStoreTest, DiffingAlgorithmTest) {
   EXPECT_EQ(S_OK, result);
 }
 
+// regression tests for crbug.com/944452.
+// This test covers several corner cases:
+// 1. User may commit existing composition and start new composition in the same
+//    edit session with same composition text.
+// 2. some third-party IMEs use SetText() API instead of InsertTextAtSelection()
+//    API to insert new composition text. We should allow IMEs to use both
+//    APIs to insert new text.
+// 3. Some Japanese IMEs such as CorvusSKK can start and end composition with
+//    single key stroke. We should still fire keydown/keyup event for such case.
+class RegressionTestCallback : public TSFTextStoreTestCallback {
+ public:
+  explicit RegressionTestCallback(TSFTextStore* text_store)
+      : TSFTextStoreTestCallback(text_store) {}
+
+  HRESULT LockGranted1(DWORD flags) {
+    SetTextTest(0, 0, L"a", S_OK);
+    GetTextTest(0, -1, L"a", 1);
+    SetSelectionTest(0, 1, S_OK);
+
+    text_spans()->clear();
+    ImeTextSpan text_span;
+    text_span.start_offset = 0;
+    text_span.end_offset = 1;
+    text_span.underline_color = SK_ColorBLACK;
+    text_span.thickness = ImeTextSpan::Thickness::kThin;
+    text_span.background_color = SK_ColorTRANSPARENT;
+    text_spans()->push_back(text_span);
+    *edit_flag() = true;
+    *composition_start() = 0;
+    composition_range()->set_start(0);
+    composition_range()->set_end(1);
+    text_store_->OnKeyTraceDown(65u, 1966081u);
+    *has_composition_range() = true;
+
+    return S_OK;
+  }
+
+  ui::EventDispatchDetails DispatchKeyEventPostIME1(
+      KeyEvent* key,
+      base::OnceCallback<void(bool, bool)> ack_callback) {
+    EXPECT_EQ(ui::ET_KEY_PRESSED, key->type());
+    EXPECT_EQ(VKEY_PROCESSKEY, key->key_code());
+    return ui::EventDispatchDetails();
+  }
+
+  void SetCompositionText1(const ui::CompositionText& composition) {
+    EXPECT_EQ(L"a", composition.text);
+    EXPECT_EQ(0u, composition.selection.start());
+    EXPECT_EQ(1u, composition.selection.end());
+    ASSERT_EQ(1u, composition.ime_text_spans.size());
+    EXPECT_EQ(SK_ColorBLACK, composition.ime_text_spans[0].underline_color);
+    EXPECT_EQ(SK_ColorTRANSPARENT,
+              composition.ime_text_spans[0].background_color);
+    EXPECT_EQ(0u, composition.ime_text_spans[0].start_offset);
+    EXPECT_EQ(1u, composition.ime_text_spans[0].end_offset);
+    EXPECT_EQ(ImeTextSpan::Thickness::kThin,
+              composition.ime_text_spans[0].thickness);
+    SetHasCompositionText(true);
+  }
+
+  // commit existing composition from [0,1] and start new composition at [1,2]
+  HRESULT LockGranted2(DWORD flags) {
+    SetSelectionTest(1, 1, S_OK);
+    InsertTextAtSelectionTest(L"a", 1, 1, 2, 1, 1, 2);
+    GetTextTest(0, -1, L"aa", 2);
+
+    text_spans()->clear();
+    ImeTextSpan text_span;
+    text_span.start_offset = 1;
+    text_span.end_offset = 2;
+    text_span.underline_color = SK_ColorBLACK;
+    text_span.thickness = ImeTextSpan::Thickness::kThick;
+    text_spans()->push_back(text_span);
+
+    *edit_flag() = true;
+    *composition_start() = 1;
+    composition_range()->set_start(1);
+    composition_range()->set_end(2);
+
+    text_store_->OnKeyTraceUp(65u, 1966081u);
+    text_store_->OnKeyTraceDown(65u, 1966081u);
+    return S_OK;
+  }
+
+  ui::EventDispatchDetails DispatchKeyEventPostIME2a(
+      KeyEvent* key,
+      base::OnceCallback<void(bool, bool)> ack_callback) {
+    EXPECT_EQ(ui::ET_KEY_RELEASED, key->type());
+    EXPECT_EQ(VKEY_PROCESSKEY, key->key_code());
+    return ui::EventDispatchDetails();
+  }
+
+  ui::EventDispatchDetails DispatchKeyEventPostIME2b(
+      KeyEvent* key,
+      base::OnceCallback<void(bool, bool)> ack_callback) {
+    EXPECT_EQ(ui::ET_KEY_PRESSED, key->type());
+    EXPECT_EQ(VKEY_PROCESSKEY, key->key_code());
+    return ui::EventDispatchDetails();
+  }
+
+  void InsertText2(const base::string16& text) {
+    EXPECT_EQ(L"a", text);
+    SetHasCompositionText(false);
+  }
+
+  void SetCompositionText2(const ui::CompositionText& composition) {
+    EXPECT_EQ(L"a", composition.text);
+    EXPECT_EQ(0u, composition.selection.start());
+    EXPECT_EQ(1u, composition.selection.end());
+    ASSERT_EQ(1u, composition.ime_text_spans.size());
+    EXPECT_EQ(SK_ColorBLACK, composition.ime_text_spans[0].underline_color);
+    EXPECT_EQ(0u, composition.ime_text_spans[0].start_offset);
+    EXPECT_EQ(1u, composition.ime_text_spans[0].end_offset);
+    EXPECT_EQ(ImeTextSpan::Thickness::kThick,
+              composition.ime_text_spans[0].thickness);
+    SetHasCompositionText(true);
+  }
+
+  HRESULT LockGranted3(DWORD flags) {
+    GetTextTest(0, -1, L"aa", 2);
+
+    text_spans()->clear();
+    *edit_flag() = true;
+    *composition_start() = 2;
+    composition_range()->set_start(0);
+    composition_range()->set_end(0);
+
+    *has_composition_range() = false;
+    text_store_->OnKeyTraceUp(65u, 1966081u);
+    return S_OK;
+  }
+
+  ui::EventDispatchDetails DispatchKeyEventPostIME3(
+      KeyEvent* key,
+      base::OnceCallback<void(bool, bool)> ack_callback) {
+    EXPECT_EQ(ui::ET_KEY_RELEASED, key->type());
+    EXPECT_EQ(VKEY_PROCESSKEY, key->key_code());
+    return ui::EventDispatchDetails();
+  }
+
+  void InsertText3(const base::string16& text) {
+    EXPECT_EQ(L"a", text);
+    SetHasCompositionText(false);
+  }
+
+  void SetCompositionText3(const ui::CompositionText& composition) {
+    EXPECT_EQ(L"", composition.text);
+    EXPECT_EQ(0u, composition.selection.start());
+    EXPECT_EQ(0u, composition.selection.end());
+    EXPECT_EQ(0u, composition.ime_text_spans.size());
+  }
+
+  // Insert new composition text using SetText().
+  // We also fire key events here.
+  HRESULT LockGranted4(DWORD flags) {
+    SetTextTest(2, 2, L"b", S_OK);
+    GetTextTest(0, -1, L"aab", 3);
+    SetTextTest(2, 3, L"c", S_OK);
+    SetSelectionTest(3, 3, S_OK);
+
+    *edit_flag() = true;
+    *composition_start() = 3;
+
+    text_store_->OnStartComposition(nullptr, nullptr);
+    text_store_->OnKeyTraceDown(67u, 1966081u);
+    return S_OK;
+  }
+
+  ui::EventDispatchDetails DispatchKeyEventPostIME4(
+      KeyEvent* key,
+      base::OnceCallback<void(bool, bool)> ack_callback) {
+    EXPECT_EQ(ui::ET_KEY_PRESSED, key->type());
+    EXPECT_EQ(VKEY_PROCESSKEY, key->key_code());
+    return ui::EventDispatchDetails();
+  }
+
+  void InsertText4(const base::string16& text) { EXPECT_EQ(L"c", text); }
+
+  HRESULT LockGranted5(DWORD flags) {
+    GetTextTest(0, -1, L"aac", 3);
+    SetTextTest(3, 3, L"d", S_OK);
+    GetTextTest(0, -1, L"aacd", 4);
+    SetSelectionTest(3, 4, S_OK);
+
+    text_spans()->clear();
+    ImeTextSpan text_span;
+    text_span.start_offset = 3;
+    text_span.end_offset = 4;
+    text_span.underline_color = SK_ColorBLACK;
+    text_span.thickness = ImeTextSpan::Thickness::kThin;
+    text_span.background_color = SK_ColorTRANSPARENT;
+    text_spans()->push_back(text_span);
+    *edit_flag() = true;
+    *composition_start() = 3;
+    composition_range()->set_start(3);
+    composition_range()->set_end(4);
+
+    text_store_->OnKeyTraceUp(67u, 1966081u);
+    text_store_->OnKeyTraceDown(65u, 1966081u);
+
+    *has_composition_range() = true;
+
+    return S_OK;
+  }
+
+  ui::EventDispatchDetails DispatchKeyEventPostIME5a(
+      KeyEvent* key,
+      base::OnceCallback<void(bool, bool)> ack_callback) {
+    EXPECT_EQ(ui::ET_KEY_RELEASED, key->type());
+    EXPECT_EQ(VKEY_PROCESSKEY, key->key_code());
+    return ui::EventDispatchDetails();
+  }
+
+  ui::EventDispatchDetails DispatchKeyEventPostIME5b(
+      KeyEvent* key,
+      base::OnceCallback<void(bool, bool)> ack_callback) {
+    EXPECT_EQ(ui::ET_KEY_PRESSED, key->type());
+    EXPECT_EQ(VKEY_PROCESSKEY, key->key_code());
+    return ui::EventDispatchDetails();
+  }
+
+  void SetCompositionText5(const ui::CompositionText& composition) {
+    EXPECT_EQ(L"d", composition.text);
+    EXPECT_EQ(0u, composition.selection.start());
+    EXPECT_EQ(1u, composition.selection.end());
+    ASSERT_EQ(1u, composition.ime_text_spans.size());
+    EXPECT_EQ(SK_ColorBLACK, composition.ime_text_spans[0].underline_color);
+    EXPECT_EQ(SK_ColorTRANSPARENT,
+              composition.ime_text_spans[0].background_color);
+    EXPECT_EQ(0u, composition.ime_text_spans[0].start_offset);
+    EXPECT_EQ(1u, composition.ime_text_spans[0].end_offset);
+    EXPECT_EQ(ImeTextSpan::Thickness::kThin,
+              composition.ime_text_spans[0].thickness);
+    SetHasCompositionText(true);
+  }
+
+  // change existing composition text using SetText().
+  HRESULT LockGranted6(DWORD flags) {
+    SetTextTest(3, 4, L"e", S_OK);
+    SetSelectionTest(4, 4, S_OK);
+
+    text_spans()->clear();
+    *edit_flag() = true;
+    *composition_start() = 4;
+    composition_range()->set_start(0);
+    composition_range()->set_end(0);
+
+    *has_composition_range() = false;
+    return S_OK;
+  }
+
+  void InsertText6(const base::string16& text) {
+    EXPECT_EQ(L"e", text);
+    SetHasCompositionText(false);
+  }
+
+  void SetCompositionText6(const ui::CompositionText& composition) {
+    EXPECT_EQ(L"", composition.text);
+    EXPECT_EQ(0u, composition.selection.start());
+    EXPECT_EQ(0u, composition.selection.end());
+    EXPECT_EQ(0u, composition.ime_text_spans.size());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RegressionTestCallback);
+};
+
+TEST_F(TSFTextStoreTest, RegressionTest) {
+  RegressionTestCallback callback(text_store_.get());
+  EXPECT_CALL(text_input_client_, SetCompositionText(_))
+      .WillOnce(Invoke(&callback, &RegressionTestCallback::SetCompositionText1))
+      .WillOnce(Invoke(&callback, &RegressionTestCallback::SetCompositionText2))
+      .WillOnce(Invoke(&callback, &RegressionTestCallback::SetCompositionText3))
+      .WillOnce(Invoke(&callback, &RegressionTestCallback::SetCompositionText5))
+      .WillOnce(
+          Invoke(&callback, &RegressionTestCallback::SetCompositionText6));
+
+  EXPECT_CALL(input_method_delegate_, DispatchKeyEventPostIME(_, _))
+      .WillOnce(
+          Invoke(&callback, &RegressionTestCallback::DispatchKeyEventPostIME1))
+      .WillOnce(
+          Invoke(&callback, &RegressionTestCallback::DispatchKeyEventPostIME2a))
+      .WillOnce(
+          Invoke(&callback, &RegressionTestCallback::DispatchKeyEventPostIME2b))
+      .WillOnce(
+          Invoke(&callback, &RegressionTestCallback::DispatchKeyEventPostIME3))
+      .WillOnce(
+          Invoke(&callback, &RegressionTestCallback::DispatchKeyEventPostIME4))
+      .WillOnce(
+          Invoke(&callback, &RegressionTestCallback::DispatchKeyEventPostIME5a))
+      .WillOnce(Invoke(&callback,
+                       &RegressionTestCallback::DispatchKeyEventPostIME5b));
+
+  EXPECT_CALL(text_input_client_, InsertText(_))
+      .WillOnce(Invoke(&callback, &RegressionTestCallback::InsertText2))
+      .WillOnce(Invoke(&callback, &RegressionTestCallback::InsertText3))
+      .WillOnce(Invoke(&callback, &RegressionTestCallback::InsertText4))
+      .WillOnce(Invoke(&callback, &RegressionTestCallback::InsertText6));
+
+  EXPECT_CALL(*sink_, OnLockGranted(_))
+      .WillOnce(Invoke(&callback, &RegressionTestCallback::LockGranted1))
+      .WillOnce(Invoke(&callback, &RegressionTestCallback::LockGranted2))
+      .WillOnce(Invoke(&callback, &RegressionTestCallback::LockGranted3))
+      .WillOnce(Invoke(&callback, &RegressionTestCallback::LockGranted4))
+      .WillOnce(Invoke(&callback, &RegressionTestCallback::LockGranted5))
+      .WillOnce(Invoke(&callback, &RegressionTestCallback::LockGranted6));
+
+  ON_CALL(text_input_client_, HasCompositionText())
+      .WillByDefault(
+          Invoke(&callback, &TSFTextStoreTestCallback::HasCompositionText));
+
+  HRESULT result = kInvalidResult;
+  EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+  EXPECT_EQ(S_OK, result);
+  result = kInvalidResult;
+  EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+  EXPECT_EQ(S_OK, result);
+  result = kInvalidResult;
+  EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+  EXPECT_EQ(S_OK, result);
+  result = kInvalidResult;
+  EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+  EXPECT_EQ(S_OK, result);
+  result = kInvalidResult;
+  EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+  EXPECT_EQ(S_OK, result);
+  result = kInvalidResult;
+  EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+  EXPECT_EQ(S_OK, result);
+}
+
 }  // namespace
 }  // namespace ui
