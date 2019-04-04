@@ -22,6 +22,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "content/public/browser/browser_or_resource_context.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/generated_code_cache_settings.h"
 #include "content/public/browser/global_request_id.h"
@@ -308,8 +309,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   // enforced by the content layer. Will only be called if the content layer
   // didn't decide to isolate |effective_site_url| according to its internal
   // policy (e.g. because of --site-per-process).
-  virtual bool DoesSiteRequireDedicatedProcess(BrowserContext* browser_context,
-                                               const GURL& effective_site_url);
+  virtual bool DoesSiteRequireDedicatedProcess(
+      BrowserOrResourceContext browser_or_resource_context,
+      const GURL& effective_site_url);
 
   // Returns true unless the effective URL is part of a site that cannot live in
   // a process restricted to just that site.  This is only called if site

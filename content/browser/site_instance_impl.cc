@@ -635,10 +635,9 @@ bool SiteInstanceImpl::HasEffectiveURL(BrowserContext* browser_context,
 bool SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
     const IsolationContext& isolation_context,
     const GURL& url) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserContext* browser_context =
-      isolation_context.browser_or_resource_context().ToBrowserContext();
-  DCHECK(browser_context);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO) ||
+         BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(isolation_context.browser_or_resource_context());
 
   // If --site-per-process is enabled, site isolation is enabled everywhere.
   if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites())
@@ -667,7 +666,7 @@ bool SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
   // canonical site url for this check, so that schemes with nested origins
   // (blob and filesystem) work properly.
   if (GetContentClient()->browser()->DoesSiteRequireDedicatedProcess(
-          browser_context, site_url)) {
+          isolation_context.browser_or_resource_context(), site_url)) {
     return true;
   }
 
