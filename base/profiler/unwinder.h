@@ -10,10 +10,22 @@
 #include "base/macros.h"
 #include "base/profiler/frame.h"
 #include "base/profiler/register_context.h"
-#include "base/profiler/unwind_result.h"
 #include "base/sampling_heap_profiler/module_cache.h"
 
 namespace base {
+
+// The result of attempting to unwind stack frames.
+enum class UnwindResult {
+  // The end of the stack was reached successfully.
+  COMPLETED,
+
+  // The walk reached a frame that it doesn't know how to unwind, but might be
+  // unwindable by the other native/aux unwinder.
+  UNRECOGNIZED_FRAME,
+
+  // The walk was aborted and is not resumable.
+  ABORTED,
+};
 
 // Unwinder provides an interface for stack frame unwinder implementations for
 // use with the StackSamplingProfiler. The profiler is expected to call
