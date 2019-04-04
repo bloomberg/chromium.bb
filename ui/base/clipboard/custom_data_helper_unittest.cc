@@ -23,9 +23,9 @@ void PrepareEmptyTestData(base::Pickle* pickle) {
 
 void PrepareTestData(base::Pickle* pickle) {
   std::unordered_map<base::string16, base::string16> data;
-  data.insert(std::make_pair(ASCIIToUTF16("abc"), base::string16()));
-  data.insert(std::make_pair(ASCIIToUTF16("de"), ASCIIToUTF16("1")));
-  data.insert(std::make_pair(ASCIIToUTF16("f"), ASCIIToUTF16("23")));
+  data.insert({ASCIIToUTF16("abc"), base::string16()});
+  data.insert({ASCIIToUTF16("de"), ASCIIToUTF16("1")});
+  data.insert({ASCIIToUTF16("f"), ASCIIToUTF16("23")});
   WriteCustomDataToPickle(data, pickle);
 }
 
@@ -109,9 +109,9 @@ TEST(CustomDataHelperTest, ReadMap) {
   ReadCustomDataIntoMap(pickle.data(), pickle.size(), &result);
 
   std::unordered_map<base::string16, base::string16> expected;
-  expected.insert(std::make_pair(ASCIIToUTF16("abc"), base::string16()));
-  expected.insert(std::make_pair(ASCIIToUTF16("de"), ASCIIToUTF16("1")));
-  expected.insert(std::make_pair(ASCIIToUTF16("f"), ASCIIToUTF16("23")));
+  expected.insert({ASCIIToUTF16("abc"), base::string16()});
+  expected.insert({ASCIIToUTF16("de"), ASCIIToUTF16("1")});
+  expected.insert({ASCIIToUTF16("f"), ASCIIToUTF16("23")});
   EXPECT_EQ(expected, result);
 }
 
