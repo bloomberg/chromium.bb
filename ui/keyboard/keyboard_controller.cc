@@ -489,10 +489,7 @@ void KeyboardController::SetEnableFlag(mojom::KeyboardEnableFlag flag) {
   for (KeyboardControllerObserver& observer : observer_list_)
     observer.OnKeyboardEnableFlagsChanged(keyboard_enable_flags_);
 
-  if (IsKeyboardEnableRequested() && !IsEnabled())
-    EnableKeyboard();
-  else if (!IsKeyboardEnableRequested() && IsEnabled())
-    DisableKeyboard();
+  UpdateKeyboardAsRequestedBy(flag);
 }
 
 void KeyboardController::ClearEnableFlag(mojom::KeyboardEnableFlag flag) {
@@ -503,10 +500,7 @@ void KeyboardController::ClearEnableFlag(mojom::KeyboardEnableFlag flag) {
   for (KeyboardControllerObserver& observer : observer_list_)
     observer.OnKeyboardEnableFlagsChanged(keyboard_enable_flags_);
 
-  if (IsKeyboardEnableRequested() && !IsEnabled())
-    EnableKeyboard();
-  else if (!IsKeyboardEnableRequested() && IsEnabled())
-    DisableKeyboard();
+  UpdateKeyboardAsRequestedBy(flag);
 }
 
 bool KeyboardController::IsEnableFlagSet(mojom::KeyboardEnableFlag flag) const {
@@ -539,6 +533,25 @@ bool KeyboardController::IsKeyboardEnableRequested() const {
 
   return IsEnableFlagSet(KeyboardEnableFlag::kExtensionEnabled) ||
          IsEnableFlagSet(KeyboardEnableFlag::kTouchEnabled);
+}
+
+void KeyboardController::UpdateKeyboardAsRequestedBy(
+    mojom::KeyboardEnableFlag flag) {
+  if (IsKeyboardEnableRequested()) {
+    // Note that there are two versions of the on-screen keyboard. A full layout
+    // is provided for accessibility, which includes sticky modifier keys to
+    // enable typing of hotkeys. A compact version is used in tablet mode to
+    // provide a layout with larger keys to facilitate touch typing. In the
+    // event that the a11y keyboard is being disabled, an on-screen keyboard
+    // might still be enabled and a forced reset is required to pick up the
+    // layout change.
+    if (IsEnabled() && flag == mojom::KeyboardEnableFlag::kAccessibilityEnabled)
+      RebuildKeyboardIfEnabled();
+    else
+      EnableKeyboard();
+  } else {
+    DisableKeyboard();
+  }
 }
 
 bool KeyboardController::IsKeyboardOverscrollEnabled() const {
