@@ -50,13 +50,14 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     private TabListMediator.ThumbnailFetcher mMockThumbnailProvider =
             new TabListMediator.ThumbnailFetcher(new TabListMediator.ThumbnailProvider() {
                 @Override
-                public void getTabThumbnailWithCallback(Tab tab, Callback<Bitmap> callback) {
+                public void getTabThumbnailWithCallback(
+                        Tab tab, Callback<Bitmap> callback, boolean forceUpdate) {
                     Bitmap bitmap = mShouldReturnBitmap
                             ? Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
                             : null;
                     callback.onResult(bitmap);
                 }
-            }, null);
+            }, null, false);
 
     private TabListMediator.TabActionListener mMockCloseListener =
             new TabListMediator.TabActionListener() {
