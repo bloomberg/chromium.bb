@@ -48,7 +48,7 @@ class TabListMediator {
      * An interface to get the thumbnails to be shown inside the tab grid cards.
      */
     public interface ThumbnailProvider {
-        void getTabThumbnailWithCallback(Tab tab, Callback<Bitmap> callback);
+        void getTabThumbnailWithCallback(Tab tab, Callback<Bitmap> callback, boolean forceUpdate);
     }
 
     /**
@@ -63,14 +63,16 @@ class TabListMediator {
     static class ThumbnailFetcher {
         private ThumbnailProvider mThumbnailProvider;
         private Tab mTab;
+        private boolean mForceUpdate;
 
-        ThumbnailFetcher(ThumbnailProvider provider, Tab tab) {
+        ThumbnailFetcher(ThumbnailProvider provider, Tab tab, boolean forceUpdate) {
             mThumbnailProvider = provider;
             mTab = tab;
+            mForceUpdate = forceUpdate;
         }
 
         void fetch(Callback<Bitmap> callback) {
-            mThumbnailProvider.getTabThumbnailWithCallback(mTab, callback);
+            mThumbnailProvider.getTabThumbnailWithCallback(mTab, callback, mForceUpdate);
         }
     }
 
@@ -416,7 +418,7 @@ class TabListMediator {
                 tab.getUrl(), tab.isIncognito(), faviconCallback);
 
         if (mThumbnailProvider != null) {
-            ThumbnailFetcher callback = new ThumbnailFetcher(mThumbnailProvider, tab);
+            ThumbnailFetcher callback = new ThumbnailFetcher(mThumbnailProvider, tab, isSelected);
             tabInfo.set(TabProperties.THUMBNAIL_FETCHER, callback);
         }
         tab.addObserver(mTabObserver);

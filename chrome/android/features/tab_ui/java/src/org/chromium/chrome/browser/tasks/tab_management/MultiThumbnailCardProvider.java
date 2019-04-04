@@ -107,7 +107,7 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
                                 PostTask.postTask(UiThreadTaskTraits.USER_VISIBLE,
                                         () -> mFinalCallback.onResult(mMultiThumbnailBitmap));
                             }
-                        });
+                        }, false);
                     } else {
                         drawBitmapOnCanvasWithFrame(null, i, mEmptyThumbnailPaint);
                         if (mThumbnailsToFetch.decrementAndGet() == 0) {
@@ -201,13 +201,14 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
     }
 
     @Override
-    public void getTabThumbnailWithCallback(Tab tab, Callback<Bitmap> finalCallback) {
+    public void getTabThumbnailWithCallback(
+            Tab tab, Callback<Bitmap> finalCallback, boolean forceUpdate) {
         if (mTabModelSelector.getTabModelFilterProvider()
                         .getCurrentTabModelFilter()
                         .getRelatedTabList(tab.getId())
                         .size()
                 == 1) {
-            mTabContentManager.getTabThumbnailWithCallback(tab, finalCallback);
+            mTabContentManager.getTabThumbnailWithCallback(tab, finalCallback, forceUpdate);
             return;
         }
 
