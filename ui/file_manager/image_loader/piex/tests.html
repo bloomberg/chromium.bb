@@ -38,7 +38,7 @@ piex wasm raw image preview / thumbnail test page
         this.result = result;
         Module.removeFunction(callback);
         Module._free(memory);
-        resolve(this);
+        resolve(this.result);
       }, 'vi');
 
       // Process the image: blocks until |callback| is called.
@@ -151,13 +151,10 @@ piex wasm raw image preview / thumbnail test page
   }
 
   self.Module = {
-    onRuntimeInitialized: () => {
-      piexModuleReady instanceof Function ? piexModuleReady() : undefined;
-    }
+    onRuntimeInitialized: piexModuleReady,
   };
 
-  window.onload = () => {
-    // Load the wasm module, now the piexModuleReady handler is installed.
+  window.onload = function piexModuleLoad() {
     let script = document.createElement('script');
     document.head.appendChild(script);
     script.src = '/a.out.js';
@@ -188,20 +185,18 @@ piex wasm raw image preview / thumbnail test page
     if (!buffer)
       return;
 
-    // Log the fetch time.
+    let imageBuffer = new ImageBuffer(buffer);
     const elapsed = performance.now() - time;
     console.log('test: fetch time', elapsed.toFixed(3));
 
     // Extract the preview|thumbnail images, render them.
     new Promise((resolve, reject) => {
-      new ImageBuffer(buffer).process(resolve, reject);
-    }).then((imageBuffer) => {
+      imageBuffer.process(resolve, reject);
+    }).then((result) => {
       let preview = imageBuffer.preview();
       let thumb = imageBuffer.thumbnail();
       time = performance.now() - time;
-      const maker = imageBuffer.result.maker || '';
-      const model = imageBuffer.result.model || '';
-      console.log('test:', image, maker, model);
+      console.log('test:', image, result.maker, result.model);
       window.images_ = 0;
       renderResult(image, preview);
       renderResult(image, thumb);
