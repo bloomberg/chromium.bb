@@ -9,7 +9,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
-#include "third_party/blink/renderer/core/streams/retain_wrapper_during_construction.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_default_controller_interface.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_transformer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
@@ -176,11 +175,6 @@ TextDecoderStream::TextDecoderStream(ScriptState* script_state,
       encoding_(encoding),
       fatal_(options->fatal()),
       ignore_bom_(options->ignoreBOM()) {
-  if (!RetainWrapperDuringConstruction(this, script_state)) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "Cannot queue task to retain wrapper");
-    return;
-  }
   transform_->Init(MakeGarbageCollected<Transformer>(script_state, encoding,
                                                      fatal_, ignore_bom_),
                    script_state, exception_state);

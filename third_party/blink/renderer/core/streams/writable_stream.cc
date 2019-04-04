@@ -7,7 +7,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_writable_stream.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
-#include "third_party/blink/renderer/core/streams/retain_wrapper_during_construction.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_native.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"

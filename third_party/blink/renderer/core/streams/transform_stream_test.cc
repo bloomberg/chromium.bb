@@ -18,8 +18,6 @@
 #include "third_party/blink/renderer/core/streams/transform_stream_default_controller_interface.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_transformer.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
-#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
-#include "third_party/blink/renderer/core/testing/garbage_collected_script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -36,19 +34,14 @@ using ::testing::Mock;
 
 class TransformStreamTest : public ::testing::Test {
  public:
-  void TearDown() override {
-    if (holder_)
-      ClearHolder();
-  }
+  TransformStream* Stream() const { return stream_; }
 
   void Init(TransformStreamTransformer* transformer,
             ScriptState* script_state,
             ExceptionState& exception_state) {
-    holder_ = MakeGarbageCollected<Holder>(script_state);
-    holder_->Stream()->Init(transformer, script_state, exception_state);
+    stream_ = MakeGarbageCollected<TransformStream>();
+    stream_->Init(transformer, script_state, exception_state);
   }
-
-  TransformStream* Stream() const { return holder_->Stream(); }
 
   // This takes the |readable| and |writable| properties of the TransformStream
   // and copies them onto the global object so they can be accessed by Eval().
@@ -69,45 +62,8 @@ class TransformStreamTest : public ::testing::Test {
                     .IsJust());
   }
 
-  void ClearHolder() {
-    holder_->Destroy();
-    holder_ = nullptr;
-  }
-
  private:
-  // In normal use, TransformStream will be referenced by a ScriptWrappable and
-  // so will be visible to the V8 garbage collector via wrapper tracing. For
-  // testing purposes we need a dummy ScriptWrappable object to do the same
-  // thing.
-  // TODO(ricea): Remove this once unified GC has replaced wrapper tracing.
-  class Holder : public GarbageCollectedScriptWrappable {
-   public:
-    explicit Holder(ScriptState* script_state)
-        : GarbageCollectedScriptWrappable("Holder"),
-          this_as_v8_value_(
-              ScriptValue(script_state, ToV8(this, script_state))),
-          stream_(MakeGarbageCollected<TransformStream>()) {}
-
-    // Destroy() must be called to break the reference cycle.
-    void Destroy() {
-      this_as_v8_value_.Clear();
-      stream_ = nullptr;
-    }
-
-    TransformStream* Stream() const { return stream_.Get(); }
-
-    void Trace(Visitor* visitor) override {
-      visitor->Trace(stream_);
-      GarbageCollectedScriptWrappable::Trace(visitor);
-    }
-
-   private:
-    // Self-reference to keep this object referenced from V8.
-    ScriptValue this_as_v8_value_;
-    Member<TransformStream> stream_;
-  };
-
-  Persistent<Holder> holder_;
+  Persistent<TransformStream> stream_;
 };
 
 class IdentityTransformer final : public TransformStreamTransformer {

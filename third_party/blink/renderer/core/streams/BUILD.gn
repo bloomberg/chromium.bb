@@ -24,8 +24,6 @@ blink_core_sources("streams") {
     "readable_stream_operations.h",
     "readable_stream_wrapper.cc",
     "readable_stream_wrapper.h",
-    "retain_wrapper_during_construction.cc",
-    "retain_wrapper_during_construction.h",
     "stream_algorithms.h",
     "stream_promise_resolver.cc",
     "stream_promise_resolver.h",

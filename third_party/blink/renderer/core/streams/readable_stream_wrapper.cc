@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_writable_stream.h"
 #include "third_party/blink/renderer/core/streams/miscellaneous_operations.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_operations.h"
-#include "third_party/blink/renderer/core/streams/retain_wrapper_during_construction.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
@@ -85,13 +84,6 @@ void ReadableStreamWrapper::InitWithInternalStream(
           .IsNothing()) {
     exception_state.RethrowV8Exception(block.Exception());
     return;
-  }
-
-  // This is needed because sometimes a ReadableStream can be detached from
-  // the owner object such as Response.
-  if (!RetainWrapperDuringConstruction(this, script_state)) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "Cannot queue task to retain wrapper");
   }
 }
 
