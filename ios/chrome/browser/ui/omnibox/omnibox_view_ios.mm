@@ -161,9 +161,11 @@ OmniboxViewIOS::OmniboxViewIOS(OmniboxTextFieldIOS* field,
                                id<OmniboxLeftImageConsumer> left_image_consumer,
                                ios::ChromeBrowserState* browser_state,
                                id<OmniboxFocuser> omnibox_focuser)
-    : OmniboxView(
-          controller,
-          std::make_unique<ChromeOmniboxClientIOS>(controller, browser_state)),
+    : OmniboxView(controller,
+                  controller
+                      ? std::make_unique<ChromeOmniboxClientIOS>(controller,
+                                                                 browser_state)
+                      : nullptr),
       browser_state_(browser_state),
       field_(field),
       controller_(controller),
@@ -232,7 +234,7 @@ void OmniboxViewIOS::SetWindowTextAndCaretPos(const base::string16& text,
   if (update_popup)
     UpdatePopup();
 
-  if (notify_text_changed)
+  if (notify_text_changed && model())
     model()->OnChanged();
 
   SetCaretPos(caret_pos);
@@ -254,9 +256,10 @@ void OmniboxViewIOS::RevertAll() {
 }
 
 void OmniboxViewIOS::UpdatePopup() {
-  model()->SetInputInProgress(true);
+  if (model())
+    model()->SetInputInProgress(true);
 
-  if (!model()->has_focus())
+  if (model() && !model()->has_focus())
     return;
 
   // Prevent inline-autocomplete if the IME is currently composing or if the
@@ -264,8 +267,9 @@ void OmniboxViewIOS::UpdatePopup() {
   bool prevent_inline_autocomplete =
       IsImeComposing() ||
       NSMaxRange(current_selection_) != [[field_ text] length];
-  model()->StartAutocomplete(current_selection_.length != 0,
-                             prevent_inline_autocomplete);
+  if (model())
+    model()->StartAutocomplete(current_selection_.length != 0,
+                               prevent_inline_autocomplete);
   DCHECK(popup_provider_);
   popup_provider_->SetTextAlignment([field_ bestTextAlignment]);
 }
@@ -276,7 +280,8 @@ void OmniboxViewIOS::OnTemporaryTextMaybeChanged(
     bool save_original_selection,
     bool notify_text_changed) {
   SetWindowTextAndCaretPos(display_text, display_text.size(), false, false);
-  model()->OnChanged();
+  if (model())
+    model()->OnChanged();
 }
 
 bool OmniboxViewIOS::OnInlineAutocompleteTextMaybeChanged(
@@ -287,7 +292,8 @@ bool OmniboxViewIOS::OnInlineAutocompleteTextMaybeChanged(
 
   NSAttributedString* as = ApplyTextAttributes(display_text);
   [field_ setText:as userTextLength:user_text_length];
-  model()->OnChanged();
+  if (model())
+    model()->OnChanged();
   return true;
 }
 
@@ -308,9 +314,11 @@ bool OmniboxViewIOS::OnAfterPossibleChange(bool allow_keyword_ui_change) {
 
   // iOS does not supports KeywordProvider, so never allow keyword UI changes.
   const bool something_changed =
+      model() &&
       model()->OnAfterPossibleChange(state_changes, allow_keyword_ui_change);
 
-  model()->OnChanged();
+  if (model())
+    model()->OnChanged();
 
   // TODO(justincohen): Find a different place to call this. Give the omnibox
   // a chance to update the alignment for a text direction change.
@@ -363,15 +371,20 @@ void OmniboxViewIOS::OnDidBeginEditing() {
   // strip them out by calling setText (as opposed to setAttributedText).
   [field_ setText:[field_ text]];
   OnBeforePossibleChange();
-  // In the case where the user taps the fakebox on the Google landing page,
-  // or from the secondary toolbar search button, the focus source is already
-  // set to FAKEBOX or SEARCH_BUTTON respectively. Otherwise, set it to OMNIBOX.
-  if (model()->focus_source() != OmniboxEditModel::FocusSource::FAKEBOX &&
-      model()->focus_source() != OmniboxEditModel::FocusSource::SEARCH_BUTTON) {
-    model()->set_focus_source(OmniboxEditModel::FocusSource::OMNIBOX);
-  }
 
-  model()->OnSetFocus(false);
+  if (model()) {
+    // In the case where the user taps the fakebox on the Google landing page,
+    // or from the secondary toolbar search button, the focus source is already
+    // set to FAKEBOX or SEARCH_BUTTON respectively. Otherwise, set it to
+    // OMNIBOX.
+    if (model()->focus_source() != OmniboxEditModel::FocusSource::FAKEBOX &&
+        model()->focus_source() !=
+            OmniboxEditModel::FocusSource::SEARCH_BUTTON) {
+      model()->set_focus_source(OmniboxEditModel::FocusSource::OMNIBOX);
+    }
+
+    model()->OnSetFocus(false);
+  }
 
   // If the omnibox is displaying a URL and the popup is not showing, set the
   // field into pre-editing state.  If the omnibox is displaying search terms,
@@ -488,7 +501,7 @@ void OmniboxViewIOS::OnDidChange(bool processing_user_event) {
   omnibox_interacted_while_focused_ = YES;
 
   // Sanitize pasted text.
-  if (model()->is_pasting()) {
+  if (model() && model()->is_pasting()) {
     base::string16 pastedText = base::SysNSStringToUTF16([field_ text]);
     base::string16 newText = OmniboxView::SanitizeTextForPaste(pastedText);
     if (pastedText != newText) {
@@ -550,7 +563,9 @@ void OmniboxViewIOS::OnAccept() {
   base::RecordAction(UserMetricsAction("MobileOmniboxUse"));
 
   WindowOpenDisposition disposition = WindowOpenDisposition::CURRENT_TAB;
-  model()->AcceptInput(disposition, false);
+  if (model()) {
+    model()->AcceptInput(disposition, false);
+  }
   RevertAll();
 }
 
@@ -583,7 +598,9 @@ bool OmniboxViewIOS::OnCopy() {
 
   GURL url;
   bool write_url = false;
-  model()->AdjustTextForCopy(start_location, &text, &url, &write_url);
+  // Model can be nullptr in tests.
+  if (model())
+    model()->AdjustTextForCopy(start_location, &text, &url, &write_url);
 
   // Create the pasteboard item manually because the pasteboard expects a single
   // item with multiple representations.  This is expressed as a single
@@ -600,7 +617,8 @@ bool OmniboxViewIOS::OnCopy() {
 }
 
 void OmniboxViewIOS::WillPaste() {
-  model()->OnPaste();
+  if (model())
+    model()->OnPaste();
 }
 
 // static
@@ -628,18 +646,19 @@ NSAttributedString* OmniboxViewIOS::ApplyTextAttributes(
   DCHECK(attributing_display_string_ == nil);
   base::AutoReset<NSMutableAttributedString*> resetter(
       &attributing_display_string_, as);
-  UpdateTextStyle(text, model()->CurrentTextIsURL(),
-                  AutocompleteSchemeClassifierImpl());
+  if (model())
+    UpdateTextStyle(text, model()->CurrentTextIsURL(),
+                    AutocompleteSchemeClassifierImpl());
   return as;
 }
 
 void OmniboxViewIOS::UpdateAppearance() {
   // If Siri is thinking, treat that as user input being in progress.  It is
   // unsafe to modify the text field while voice entry is pending.
-  if (model()->ResetDisplayTexts()) {
+  if (model() && model()->ResetDisplayTexts()) {
     // Revert everything to the baseline look.
     RevertAll();
-  } else if (!model()->has_focus() &&
+  } else if (model() && !model()->has_focus() &&
              !ShouldIgnoreUserInputDueToPendingVoiceSearch()) {
     // Even if the change wasn't "user visible" to the model, it still may be
     // necessary to re-color to the URL string.  Only do this if the omnibox is
@@ -666,7 +685,8 @@ void OmniboxViewIOS::OnDeleteBackward() {
       // set to the empty string by OnWillChange so when OnAfterPossibleChange
       // checks if the text has changed it does not see any difference so it
       // never sets the input-in-progress flag.
-      model()->SetInputInProgress(YES);
+      if (model())
+        model()->SetInputInProgress(YES);
     } else {
       RemoveQueryRefinementChip();
     }
@@ -714,7 +734,7 @@ bool OmniboxViewIOS::ShouldIgnoreUserInputDueToPendingVoiceSearch() {
 }
 
 void OmniboxViewIOS::EndEditing() {
-  if (model()->has_focus()) {
+  if (model() && model()->has_focus()) {
     CloseOmniboxPopup();
 
     model()->OnWillKillFocus();
