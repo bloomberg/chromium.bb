@@ -4369,8 +4369,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   [self updatePendingNavigationInfoFromNavigationResponse:WKResponse];
 
   BOOL shouldRenderResponse = [self shouldRenderResponse:WKResponse];
-  if (!WKResponse.canShowMIMEType) {
-    DCHECK(!shouldRenderResponse);
+  if (!shouldRenderResponse) {
     if (web::UrlHasWebScheme(responseURL)) {
       [self createDownloadTaskForResponse:WKResponse HTTPHeaders:headers.get()];
     } else {
@@ -4385,7 +4384,13 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       // stored in NavigationContext.
       self.webStateImpl->SetIsLoading(false);
     }
-  } else if (!shouldRenderResponse && WKResponse.forMainFrame) {
+  } else {
+    shouldRenderResponse = self.webStateImpl->ShouldAllowResponse(
+        WKResponse.response, WKResponse.forMainFrame);
+  }
+
+  if (!shouldRenderResponse && WKResponse.canShowMIMEType &&
+      WKResponse.forMainFrame) {
     [_pendingNavigationInfo setCancelled:YES];
   }
 
@@ -5337,13 +5342,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     return NO;
   }
 
-  BOOL mainFrame = WKResponse.forMainFrame;
-  if (!self.webStateImpl->ShouldAllowResponse(WKResponse.response, mainFrame)) {
-    return NO;
-  }
-
   GURL responseURL = net::GURLWithNSURL(WKResponse.response.URL);
-  if (responseURL.SchemeIs(url::kDataScheme) && mainFrame) {
+  if (responseURL.SchemeIs(url::kDataScheme) && WKResponse.forMainFrame) {
     // Block rendering data URLs for renderer-initiated navigations in main
     // frame to prevent abusive behavior (crbug.com/890558).
     web::NavigationContext* context =
