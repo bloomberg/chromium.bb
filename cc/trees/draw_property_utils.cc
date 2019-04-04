@@ -708,14 +708,12 @@ static std::pair<gfx::RRectF, bool> GetRoundedCornerRRect(
 
   DCHECK(to_target.Preserves2dAxisAlignment());
 
-  const gfx::Vector2dF& translate = to_target.To2dTranslation();
-  const gfx::Vector2dF& scale = to_target.Scale2d();
-
-  gfx::RRectF bounds = node->rounded_corner_bounds;
-  bounds.Scale(scale.x(), scale.y());
-  bounds.Offset(translate);
-
-  return std::make_pair(bounds, node->is_fast_rounded_corner);
+  SkRRect result;
+  if (!SkRRect(node->rounded_corner_bounds)
+           .transform(to_target.matrix(), &result)) {
+    return kEmptyRoundedCornerInfo;
+  }
+  return std::make_pair(gfx::RRectF(result), node->is_fast_rounded_corner);
 }
 
 static void UpdateRenderTarget(EffectTree* effect_tree) {
