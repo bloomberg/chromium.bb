@@ -457,8 +457,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void EnableNavigation() { --navigation_disable_count_; }
   void DisableNavigation() { ++navigation_disable_count_; }
 
-  bool CanNavigateWithoutFramebusting(const Frame&, String& error_reason);
-
   void SetIsAdSubframeIfNecessary();
 
   void PropagateInertToChildFrames();
