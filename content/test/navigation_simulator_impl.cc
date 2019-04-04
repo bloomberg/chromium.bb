@@ -504,9 +504,15 @@ void NavigationSimulatorImpl::ReadyToCommit() {
          "navigation has finished";
 
   if (state_ < STARTED) {
-    Start();
-    if (state_ == FAILED)
-      return;
+    if (block_on_before_unload_ack_ && state_ == WAITING_BEFORE_UNLOAD) {
+      // The user should have simulated the BeforeUnloadACK by themselves.
+      // Finish the initialization and skip the Start simulation.
+      InitializeFromStartedRequest(request_);
+    } else {
+      Start();
+      if (state_ == FAILED)
+        return;
+    }
   }
 
   PrepareCompleteCallbackOnHandle(request_->navigation_handle());
@@ -977,6 +983,13 @@ bool NavigationSimulatorImpl::SimulateBrowserInitiatedStart() {
   NavigationRequest* request = frame_tree_node_->navigation_request();
   if (request &&
       request->state() == NavigationRequest::WAITING_FOR_RENDERER_RESPONSE) {
+    if (block_on_before_unload_ack_) {
+      // Since we do not simulate the BeforeUnloadACK, DidStartNavigation will
+      // not have been called, and |request_| will not be properly set. Do it
+      // manually.
+      request_ = request;
+      return false;
+    }
     render_frame_host_->SendBeforeUnloadACK(true /*proceed */);
   }
 

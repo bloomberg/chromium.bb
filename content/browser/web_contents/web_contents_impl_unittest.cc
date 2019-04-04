@@ -1212,31 +1212,29 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationNotPreemptedByFrame) {
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
 }
 
-namespace {
-void SetAsNonUserGesture(FrameHostMsg_DidCommitProvisionalLoad_Params* params) {
-  params->gesture = NavigationGestureAuto;
-}
-}  // namespace
-
 // Test that a cross-site navigation is not preempted if the previous
 // renderer sends a FrameNavigate message just before being told to stop.
 // We should only preempt the cross-site navigation if the previous renderer
-// has started a new navigation.  See http://crbug.com/79176.
+// has started a new navigation. See http://crbug.com/79176.
 TEST_F(WebContentsImplTest, CrossSiteNotPreemptedDuringBeforeUnload) {
-  // Navigate to WebUI URL.
-  const GURL url("chrome://gpu");
-  controller().LoadURL(
-      url, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  int entry1_id = controller().GetPendingEntry()->GetUniqueID();
+  const GURL kUrl("http://foo");
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kUrl);
+
+  // First, make a non-user initiated same-site navigation.
+  const GURL kSameSiteUrl("http://foo/1");
   TestRenderFrameHost* orig_rfh = main_test_rfh();
-  orig_rfh->PrepareForCommit();
+  auto same_site_navigation = NavigationSimulator::CreateRendererInitiated(
+      kSameSiteUrl, main_test_rfh());
+  same_site_navigation->SetHasUserGesture(false);
+  same_site_navigation->ReadyToCommit();
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
 
-  // Navigate to new site, with the beforeunload request in flight.
-  const GURL url2("http://www.yahoo.com");
-  controller().LoadURL(
-      url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  int entry2_id = controller().GetPendingEntry()->GetUniqueID();
+  // Navigate to a new site, with the beforeunload request in flight.
+  const GURL kCrossSiteUrl("http://www.yahoo.com");
+  auto cross_site_navigation = NavigationSimulatorImpl::CreateBrowserInitiated(
+      kCrossSiteUrl, contents());
+  cross_site_navigation->set_block_on_before_unload_ack(true);
+  cross_site_navigation->Start();
   TestRenderFrameHost* pending_rfh = contents()->GetPendingMainFrame();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_TRUE(orig_rfh->is_waiting_for_beforeunload_ack());
@@ -1245,21 +1243,19 @@ TEST_F(WebContentsImplTest, CrossSiteNotPreemptedDuringBeforeUnload) {
   // Suppose the first navigation tries to commit now, with a
   // FrameMsg_Stop in flight.  This should not cancel the pending navigation,
   // but it should act as if the beforeunload ack arrived.
-  orig_rfh->SendNavigateWithModificationCallback(
-      entry1_id, true, url, base::Bind(SetAsNonUserGesture));
+  same_site_navigation->Commit();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(orig_rfh, main_test_rfh());
   EXPECT_FALSE(orig_rfh->is_waiting_for_beforeunload_ack());
   // It should commit.
-  ASSERT_EQ(1, controller().GetEntryCount());
-  EXPECT_EQ(url, controller().GetLastCommittedEntry()->GetURL());
+  ASSERT_EQ(2, controller().GetEntryCount());
+  EXPECT_EQ(kSameSiteUrl, controller().GetLastCommittedEntry()->GetURL());
 
   // The pending navigation should be able to commit successfully.
-  contents()->TestDidNavigate(pending_rfh, entry2_id, true, url2,
-                              ui::PAGE_TRANSITION_TYPED);
+  cross_site_navigation->Commit();
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(pending_rfh, main_test_rfh());
-  EXPECT_EQ(2, controller().GetEntryCount());
+  EXPECT_EQ(3, controller().GetEntryCount());
 }
 
 // Test that NavigationEntries have the correct page state after going
