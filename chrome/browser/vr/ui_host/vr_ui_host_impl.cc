@@ -64,14 +64,8 @@ VRUiHostImpl::~VRUiHostImpl() {
   // We don't call BrowserXRRuntime::RemoveObserver, because if we are being
   // destroyed, it means the corresponding device has been removed from
   // XRRuntimeManager, and the BrowserXRRuntime has been destroyed.
-  if (ui_rendering_thread_)
-    ui_rendering_thread_->SetWebXrPresenting(false);
-  StopUiRendering();
-
-  // Clean up permission observer.
-  if (permission_request_manager_) {
-    permission_request_manager_->RemoveObserver(this);
-  }
+  if (web_contents_)
+    SetWebXRWebContents(nullptr);
 }
 
 // static
