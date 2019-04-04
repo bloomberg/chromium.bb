@@ -87,9 +87,7 @@ class TestOverlayWindow : public OverlayWindow {
 
 }  // namespace
 
-WebTestContentBrowserClient::WebTestContentBrowserClient()
-    : mock_platform_notification_service_(
-          std::make_unique<MockPlatformNotificationService>()) {
+WebTestContentBrowserClient::WebTestContentBrowserClient() {
   DCHECK(!g_web_test_browser_client);
 
   g_web_test_browser_client = this;
@@ -279,7 +277,13 @@ WebTestContentBrowserClient::GetOriginsRequiringDedicatedProcess() {
 }
 
 PlatformNotificationService*
-WebTestContentBrowserClient::GetPlatformNotificationService() {
+WebTestContentBrowserClient::GetPlatformNotificationService(
+    content::BrowserContext* browser_context) {
+  if (!mock_platform_notification_service_) {
+    mock_platform_notification_service_.reset(
+        new MockPlatformNotificationService(browser_context));
+  }
+
   return mock_platform_notification_service_.get();
 }
 

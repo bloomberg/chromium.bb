@@ -32,11 +32,13 @@ const int64_t kFakeServiceWorkerRegistrationId = 42;
 
 class NotificationBrowserClient : public TestContentBrowserClient {
  public:
-  NotificationBrowserClient()
+  explicit NotificationBrowserClient(BrowserContext* browser_context)
       : platform_notification_service_(
-            std::make_unique<MockPlatformNotificationService>()) {}
+            std::make_unique<MockPlatformNotificationService>(
+                browser_context)) {}
 
-  PlatformNotificationService* GetPlatformNotificationService() override {
+  PlatformNotificationService* GetPlatformNotificationService(
+      BrowserContext* browser_context) override {
     return platform_notification_service_.get();
   }
 
@@ -122,7 +124,6 @@ class PlatformNotificationContextTest : public ::testing::Test {
     std::set<std::string> displayed_notification_ids;
     base::RunLoop run_loop;
     service->GetDisplayedNotifications(
-        browser_context(),
         base::BindLambdaForTesting(
             [&](std::set<std::string> notification_ids, bool supports_sync) {
               displayed_notification_ids = std::move(notification_ids);
@@ -534,7 +535,7 @@ TEST_F(PlatformNotificationContextTest, ReadAllServiceWorkerDataFilled) {
 }
 
 TEST_F(PlatformNotificationContextTest, SynchronizeNotifications) {
-  NotificationBrowserClient notification_browser_client;
+  NotificationBrowserClient notification_browser_client(browser_context());
   SetBrowserClientForTesting(&notification_browser_client);
 
   scoped_refptr<PlatformNotificationContextImpl> context =
@@ -560,10 +561,11 @@ TEST_F(PlatformNotificationContextTest, SynchronizeNotifications) {
   EXPECT_FALSE(notification_id().empty());
 
   PlatformNotificationService* service =
-      notification_browser_client.GetPlatformNotificationService();
+      notification_browser_client.GetPlatformNotificationService(
+          browser_context());
 
-  service->DisplayPersistentNotification(browser_context(), notification_id(),
-                                         origin, origin, notification_data,
+  service->DisplayPersistentNotification(notification_id(), origin, origin,
+                                         notification_data,
                                          notification_resources);
 
   std::vector<NotificationDatabaseData> notification_database_datas;
@@ -579,7 +581,7 @@ TEST_F(PlatformNotificationContextTest, SynchronizeNotifications) {
 
   // Delete the notification from the display service without removing it from
   // the database. It should automatically synchronize on the next read.
-  service->ClosePersistentNotification(browser_context(), notification_id());
+  service->ClosePersistentNotification(notification_id());
   context->ReadAllNotificationDataForServiceWorkerRegistration(
       origin, kFakeServiceWorkerRegistrationId,
       base::Bind(&PlatformNotificationContextTest::DidReadAllNotificationDatas,
@@ -603,7 +605,7 @@ TEST_F(PlatformNotificationContextTest, SynchronizeNotifications) {
 }
 
 TEST_F(PlatformNotificationContextTest, WriteDisplaysNotification) {
-  NotificationBrowserClient notification_browser_client;
+  NotificationBrowserClient notification_browser_client(browser_context());
   SetBrowserClientForTesting(&notification_browser_client);
 
   scoped_refptr<PlatformNotificationContextImpl> context =
@@ -627,7 +629,8 @@ TEST_F(PlatformNotificationContextTest, WriteDisplaysNotification) {
   // The written notification should be shown now.
   std::set<std::string> displayed_notification_ids =
       GetDisplayedNotificationsSync(
-          notification_browser_client.GetPlatformNotificationService());
+          notification_browser_client.GetPlatformNotificationService(
+              browser_context()));
 
   ASSERT_EQ(1u, displayed_notification_ids.size());
   EXPECT_EQ(notification_id(), *displayed_notification_ids.begin());

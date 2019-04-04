@@ -13,6 +13,7 @@
 #include "chrome/browser/notifications/metrics/notification_metrics_logger_factory.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
+#include "chrome/browser/notifications/platform_notification_service_factory.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -45,8 +46,8 @@ void PersistentNotificationHandler::OnClose(
   // NotificationEventDispatcher?
 
   // If we programatically closed this notification, don't dispatch any event.
-  if (PlatformNotificationServiceImpl::GetInstance()->WasClosedProgrammatically(
-          notification_id)) {
+  if (PlatformNotificationServiceFactory::GetForProfile(profile)
+          ->WasClosedProgrammatically(notification_id)) {
     std::move(completed_closure).Run();
     return;
   }
@@ -150,8 +151,8 @@ void PersistentNotificationHandler::OnClickCompleted(
     case content::PersistentNotificationStatus::kPermissionMissing:
       // There was a failure that's out of the developer's control. The user now
       // observes a stuck notification, so let's close it for them.
-      PlatformNotificationServiceImpl::GetInstance()
-          ->ClosePersistentNotification(profile, notification_id);
+      PlatformNotificationServiceFactory::GetForProfile(profile)
+          ->ClosePersistentNotification(notification_id);
       break;
   }
 

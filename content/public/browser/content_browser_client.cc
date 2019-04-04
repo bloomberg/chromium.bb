@@ -502,7 +502,8 @@ MediaObserver* ContentBrowserClient::GetMediaObserver() {
 }
 
 PlatformNotificationService*
-ContentBrowserClient::GetPlatformNotificationService() {
+ContentBrowserClient::GetPlatformNotificationService(
+    BrowserContext* browser_context) {
   return nullptr;
 }
 

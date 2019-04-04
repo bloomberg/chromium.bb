@@ -14,6 +14,7 @@
 #include "content/public/browser/notification_event_dispatcher.h"
 
 #if !defined(OS_ANDROID)
+#include "chrome/browser/notifications/platform_notification_service_factory.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -82,8 +83,8 @@ void NonPersistentNotificationHandler::DidDispatchClickEvent(
     Navigate(&params);
 
     // Close the |notification_id| as the user has explicitly acknowledged it.
-    PlatformNotificationServiceImpl::GetInstance()->CloseNotification(
-        profile, notification_id);
+    PlatformNotificationServiceFactory::GetForProfile(profile)
+        ->CloseNotification(notification_id);
   }
 #endif  // !defined(OS_ANDROID)
 
