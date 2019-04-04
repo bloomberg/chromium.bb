@@ -90,6 +90,7 @@ class AssistantCoordinator {
 
     /** Detaches and destroys the view. */
     public void destroy() {
+        setVisible(false);
         detachAssistantView();
         mOverlayCoordinator.destroy();
     }
