@@ -317,27 +317,6 @@ TEST_F(NavigationEntryTest, NavigationEntryTimestamps) {
   EXPECT_EQ(now, entry1_->GetTimestamp());
 }
 
-// Test extra data stored in the navigation entry.
-TEST_F(NavigationEntryTest, NavigationEntryExtraData) {
-  base::string16 test_data = ASCIIToUTF16("my search terms");
-  base::string16 output;
-  entry1_->SetExtraData("search_terms", test_data);
-
-  EXPECT_FALSE(entry1_->GetExtraData("non_existent_key", &output));
-  EXPECT_EQ(ASCIIToUTF16(""), output);
-  EXPECT_TRUE(entry1_->GetExtraData("search_terms", &output));
-  EXPECT_EQ(test_data, output);
-  // Data is cleared.
-  entry1_->ClearExtraData("search_terms");
-  // Content in |output| is not modified if data is not present at the key.
-  EXPECT_FALSE(entry1_->GetExtraData("search_terms", &output));
-  EXPECT_EQ(test_data, output);
-  // Using an empty string shows that the data is not present in the map.
-  base::string16 output2;
-  EXPECT_FALSE(entry1_->GetExtraData("search_terms", &output2));
-  EXPECT_EQ(ASCIIToUTF16(""), output2);
-}
-
 #if defined(OS_ANDROID)
 // Test that content URIs correctly show the file display name as the title.
 TEST_F(NavigationEntryTest, NavigationEntryContentUri) {

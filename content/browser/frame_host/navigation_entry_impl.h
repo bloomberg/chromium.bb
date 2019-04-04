@@ -139,10 +139,6 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   base::Time GetTimestamp() override;
   void SetCanLoadLocalResources(bool allow) override;
   bool GetCanLoadLocalResources() override;
-  void SetExtraData(const std::string& key,
-                    const base::string16& data) override;
-  bool GetExtraData(const std::string& key, base::string16* data) override;
-  void ClearExtraData(const std::string& key) override;
   void SetHttpStatusCode(int http_status_code) override;
   int GetHttpStatusCode() override;
   void SetRedirectChain(const std::vector<GURL>& redirects) override;
@@ -531,11 +527,6 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
 
   // Determine if the navigation was started within a context menu.
   bool started_from_context_menu_;
-
-  // Used to store extra data to support browser features. This member is not
-  // persisted, unless specific data is taken out/put back in at save/restore
-  // time (see TabNavigation for an example of this).
-  std::map<std::string, base::string16> extra_data_;
 
   // Set to true if the navigation controller gets notified about a SSL error
   // for a pending navigation. Defaults to false.
