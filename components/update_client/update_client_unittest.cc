@@ -31,7 +31,7 @@
 #include "components/update_client/network.h"
 #include "components/update_client/persisted_data.h"
 #include "components/update_client/ping_manager.h"
-#include "components/update_client/protocol_parser.h"
+#include "components/update_client/protocol_handler.h"
 #include "components/update_client/test_configurator.h"
 #include "components/update_client/test_installer.h"
 #include "components/update_client/update_checker.h"
@@ -3453,19 +3453,21 @@ TEST_F(UpdateClientTest, OneCrxErrorUnknownApp) {
       EXPECT_EQ(4u, ids_to_check.size());
 
       const std::string update_response =
-          R"(<?xml version="1.0" encoding="UTF-8"?>)"
-          R"(<response protocol="3.1">)"
-          R"(<app appid="jebgalgnebhfojomionfpkfelancnnkf")"
-          R"( status="error-unknownApplication"/>)"
-          R"(<app appid="abagagagagagagagagagagagagagagag")"
-          R"( status="restricted"/>)"
-          R"(<app appid="ihfokbkgjpifnbbojhneepfflplebdkc")"
-          R"( status="error-invalidAppId"/>)"
-          R"(<app appid="gjpmebpgbhcamgdgjcmnjfhggjpgcimm")"
-          R"( status="error-foobarApp"/>)"
-          R"(</response>)";
+          ")]}'"
+          R"({"response": {)"
+          R"( "protocol": "3.1",)"
+          R"( "app": [)"
+          R"({"appid": "jebgalgnebhfojomionfpkfelancnnkf",)"
+          R"( "status": "error-unknownApplication"},)"
+          R"({"appid": "abagagagagagagagagagagagagagagag",)"
+          R"( "status": "restricted"},)"
+          R"({"appid": "ihfokbkgjpifnbbojhneepfflplebdkc",)"
+          R"( "status": "error-invalidAppId"},)"
+          R"({"appid": "gjpmebpgbhcamgdgjcmnjfhggjpgcimm",)"
+          R"( "status": "error-foobarApp"})"
+          R"(]}})";
 
-      const auto parser = ProtocolParser::Create();
+      const auto parser = ProtocolHandlerFactoryJSON().CreateParser();
       EXPECT_TRUE(parser->Parse(update_response));
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(

@@ -8,10 +8,8 @@ include_rules = [
   "+components/version_info",
   "+courgette",
   "+crypto",
-  "+libxml",
   "+mojo",
   "+services/service_manager/public",
-  "+third_party/libxml",
   "+third_party/re2",
   "+third_party/zlib",
 ]
