@@ -55,10 +55,6 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_WIN)
-#include "base/win/com_init_util.h"
-#endif  // defined(OS_WIN)
-
 namespace base {
 namespace internal {
 namespace {
@@ -110,7 +106,7 @@ class TaskSchedulerWorkerPoolImplTestBase
         SchedulerWorkerPoolParams(max_tasks, suggested_reclaim_time),
         max_best_effort_tasks ? max_best_effort_tasks.value() : max_tasks,
         service_thread_.task_runner(), worker_observer,
-        SchedulerWorkerPoolImpl::WorkerEnvironment::NONE, may_block_threshold);
+        SchedulerWorkerPool::WorkerEnvironment::NONE, may_block_threshold);
   }
 
   void CreateAndStartWorkerPool(
@@ -301,90 +297,12 @@ TEST_P(TaskSchedulerWorkerPoolImplTestParam, Saturate) {
   worker_pool_->WaitForAllWorkersIdleForTesting();
 }
 
-#if defined(OS_WIN)
-TEST_P(TaskSchedulerWorkerPoolImplTestParam, NoEnvironment) {
-  // Verify that COM is not initialized in a SchedulerWorkerPoolImpl initialized
-  // with SchedulerWorkerPoolImpl::WorkerEnvironment::NONE.
-  scoped_refptr<TaskRunner> task_runner = CreateTaskRunnerWithExecutionMode(
-      GetParam(), &mock_scheduler_task_runner_delegate_);
-
-  WaitableEvent task_running;
-  task_runner->PostTask(
-      FROM_HERE, BindOnce(
-                     [](WaitableEvent* task_running) {
-                       win::AssertComApartmentType(win::ComApartmentType::NONE);
-                       task_running->Signal();
-                     },
-                     &task_running));
-
-  task_running.Wait();
-
-  worker_pool_->WaitForAllWorkersIdleForTesting();
-}
-#endif  // defined(OS_WIN)
-
 INSTANTIATE_TEST_SUITE_P(Parallel,
                          TaskSchedulerWorkerPoolImplTestParam,
                          ::testing::Values(test::ExecutionMode::PARALLEL));
 INSTANTIATE_TEST_SUITE_P(Sequenced,
                          TaskSchedulerWorkerPoolImplTestParam,
                          ::testing::Values(test::ExecutionMode::SEQUENCED));
-
-#if defined(OS_WIN)
-
-namespace {
-
-class TaskSchedulerWorkerPoolImplTestCOMMTAParam
-    : public TaskSchedulerWorkerPoolImplTestBase,
-      public testing::TestWithParam<test::ExecutionMode> {
- protected:
-  TaskSchedulerWorkerPoolImplTestCOMMTAParam() = default;
-
-  void SetUp() override {
-    CreateWorkerPool();
-    ASSERT_TRUE(worker_pool_);
-    worker_pool_->Start(SchedulerWorkerPoolParams(kMaxTasks, TimeDelta::Max()),
-                        kMaxTasks, service_thread_.task_runner(), nullptr,
-                        SchedulerWorkerPoolImpl::WorkerEnvironment::COM_MTA);
-  }
-
-  void TearDown() override {
-    TaskSchedulerWorkerPoolImplTestBase::CommonTearDown();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TaskSchedulerWorkerPoolImplTestCOMMTAParam);
-};
-
-}  // namespace
-
-TEST_P(TaskSchedulerWorkerPoolImplTestCOMMTAParam, COMMTAInitialized) {
-  // Verify that SchedulerWorkerPoolImpl workers have a COM MTA available.
-  scoped_refptr<TaskRunner> task_runner = CreateTaskRunnerWithExecutionMode(
-      GetParam(), &mock_scheduler_task_runner_delegate_);
-
-  WaitableEvent task_running;
-  task_runner->PostTask(
-      FROM_HERE, BindOnce(
-                     [](WaitableEvent* task_running) {
-                       win::AssertComApartmentType(win::ComApartmentType::MTA);
-                       task_running->Signal();
-                     },
-                     &task_running));
-
-  task_running.Wait();
-
-  worker_pool_->WaitForAllWorkersIdleForTesting();
-}
-
-INSTANTIATE_TEST_SUITE_P(Parallel,
-                         TaskSchedulerWorkerPoolImplTestCOMMTAParam,
-                         ::testing::Values(test::ExecutionMode::PARALLEL));
-INSTANTIATE_TEST_SUITE_P(Sequenced,
-                         TaskSchedulerWorkerPoolImplTestCOMMTAParam,
-                         ::testing::Values(test::ExecutionMode::SEQUENCED));
-
-#endif  // defined(OS_WIN)
 
 namespace {
 
@@ -1751,7 +1669,7 @@ class TaskSchedulerWorkerPoolBlockingCallAndMaxBestEffortTasksTest
     worker_pool_->Start(
         SchedulerWorkerPoolParams(kMaxTasks, base::TimeDelta::Max()),
         kMaxBestEffortTasks, service_thread_.task_runner(), nullptr,
-        SchedulerWorkerPoolImpl::WorkerEnvironment::NONE);
+        SchedulerWorkerPool::WorkerEnvironment::NONE);
   }
 
   void TearDown() override {
@@ -1841,7 +1759,7 @@ TEST_F(TaskSchedulerWorkerPoolImplStartInBodyTest, RacyCleanup) {
   worker_pool_->Start(
       SchedulerWorkerPoolParams(kLocalMaxTasks, kReclaimTimeForRacyCleanupTest),
       kLocalMaxTasks, service_thread_.task_runner(), nullptr,
-      SchedulerWorkerPoolImpl::WorkerEnvironment::NONE);
+      SchedulerWorkerPool::WorkerEnvironment::NONE);
 
   scoped_refptr<TaskRunner> task_runner = test::CreateTaskRunnerWithTraits(
       {WithBaseSyncPrimitives()}, &mock_scheduler_task_runner_delegate_);

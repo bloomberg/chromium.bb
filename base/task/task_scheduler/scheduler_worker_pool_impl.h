@@ -31,7 +31,6 @@
 #include "base/task/task_scheduler/tracked_ref.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
 
 namespace base {
 
@@ -51,15 +50,6 @@ class TaskTracker;
 // This class is thread-safe.
 class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
  public:
-  enum class WorkerEnvironment {
-    // No special worker environment required.
-    NONE,
-#if defined(OS_WIN)
-    // Initialize a COM MTA on the worker.
-    COM_MTA,
-#endif  // defined(OS_WIN)
-  };
-
   // Constructs a pool without workers.
   //
   // |histogram_label| is used to label the pool's histograms ("TaskScheduler."

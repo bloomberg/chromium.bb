@@ -32,6 +32,7 @@
 
 #if defined(OS_WIN)
 #include "base/task/task_scheduler/platform_native_worker_pool_win.h"
+#include "base/win/com_init_util.h"
 #elif defined(OS_MACOSX)
 #include "base/task/task_scheduler/platform_native_worker_pool_mac.h"
 #endif
@@ -140,7 +141,9 @@ class TaskSchedulerWorkerPoolTest
     mock_scheduler_task_runner_delegate_.SetWorkerPool(worker_pool_.get());
   }
 
-  void StartWorkerPool() {
+  void StartWorkerPool(
+      SchedulerWorkerPool::WorkerEnvironment worker_environment =
+          SchedulerWorkerPool::WorkerEnvironment::NONE) {
     ASSERT_TRUE(worker_pool_);
     switch (GetParam().pool_type) {
       case test::PoolType::GENERIC: {
@@ -149,14 +152,14 @@ class TaskSchedulerWorkerPoolTest
         scheduler_worker_pool_impl->Start(
             SchedulerWorkerPoolParams(kMaxTasks, TimeDelta::Max()),
             kMaxBestEffortTasks, service_thread_.task_runner(), nullptr,
-            SchedulerWorkerPoolImpl::WorkerEnvironment::NONE);
+            worker_environment);
         break;
       }
 #if defined(OS_WIN) || defined(OS_MACOSX)
       case test::PoolType::NATIVE: {
         PlatformNativeWorkerPoolType* scheduler_worker_pool_native_impl =
             static_cast<PlatformNativeWorkerPoolType*>(worker_pool_.get());
-        scheduler_worker_pool_native_impl->Start();
+        scheduler_worker_pool_native_impl->Start(worker_environment);
         break;
       }
 #endif
@@ -403,6 +406,40 @@ TEST_P(TaskSchedulerWorkerPoolTest, UpdatePriorityBestEffortToUserBlocking) {
 
   task_tracker_.FlushForTesting();
 }
+
+#if defined(OS_WIN)
+TEST_P(TaskSchedulerWorkerPoolTest, COMMTAWorkerEnvironment) {
+  StartWorkerPool(SchedulerWorkerPool::WorkerEnvironment::COM_MTA);
+  auto task_runner = test::CreateTaskRunnerWithExecutionMode(
+      GetParam().execution_mode, &mock_scheduler_task_runner_delegate_);
+
+  WaitableEvent task_ran;
+  task_runner->PostTask(
+      FROM_HERE, BindOnce(
+                     [](WaitableEvent* task_ran) {
+                       win::AssertComApartmentType(win::ComApartmentType::MTA);
+                       task_ran->Signal();
+                     },
+                     Unretained(&task_ran)));
+  task_ran.Wait();
+}
+
+TEST_P(TaskSchedulerWorkerPoolTest, NoWorkerEnvironment) {
+  StartWorkerPool(SchedulerWorkerPool::WorkerEnvironment::NONE);
+  auto task_runner = test::CreateTaskRunnerWithExecutionMode(
+      GetParam().execution_mode, &mock_scheduler_task_runner_delegate_);
+
+  WaitableEvent task_ran;
+  task_runner->PostTask(
+      FROM_HERE, BindOnce(
+                     [](WaitableEvent* task_ran) {
+                       win::AssertComApartmentType(win::ComApartmentType::NONE);
+                       task_ran->Signal();
+                     },
+                     Unretained(&task_ran)));
+  task_ran.Wait();
+}
+#endif
 
 INSTANTIATE_TEST_SUITE_P(GenericParallel,
                          TaskSchedulerWorkerPoolTest,

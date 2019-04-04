@@ -134,19 +134,19 @@ void TaskSchedulerImpl::Start(
 
   single_thread_task_runner_manager_.Start(scheduler_worker_observer);
 
-  const SchedulerWorkerPoolImpl::WorkerEnvironment worker_environment =
+  const SchedulerWorkerPool::WorkerEnvironment worker_environment =
 #if defined(OS_WIN)
       init_params.shared_worker_pool_environment ==
               InitParams::SharedWorkerPoolEnvironment::COM_MTA
-          ? SchedulerWorkerPoolImpl::WorkerEnvironment::COM_MTA
-          : SchedulerWorkerPoolImpl::WorkerEnvironment::NONE;
+          ? SchedulerWorkerPool::WorkerEnvironment::COM_MTA
+          : SchedulerWorkerPool::WorkerEnvironment::NONE;
 #else
-      SchedulerWorkerPoolImpl::WorkerEnvironment::NONE;
+      SchedulerWorkerPool::WorkerEnvironment::NONE;
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   if (native_foreground_pool_) {
-    native_foreground_pool_->Start();
+    native_foreground_pool_->Start(worker_environment);
   } else
 #endif
   {

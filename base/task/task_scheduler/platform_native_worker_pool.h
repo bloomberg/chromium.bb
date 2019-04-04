@@ -20,7 +20,7 @@ class BASE_EXPORT PlatformNativeWorkerPool : public SchedulerWorkerPool {
   ~PlatformNativeWorkerPool() override;
 
   // Starts the worker pool and allows tasks to begin running.
-  void Start();
+  void Start(WorkerEnvironment worker_environment = WorkerEnvironment::NONE);
 
   // SchedulerWorkerPool:
   void JoinForTesting() override;
@@ -39,6 +39,9 @@ class BASE_EXPORT PlatformNativeWorkerPool : public SchedulerWorkerPool {
   virtual void JoinImpl() = 0;
   virtual void StartImpl() = 0;
   virtual void SubmitWork() = 0;
+
+  // Used to control the worker environment. Supports COM MTA on Windows.
+  WorkerEnvironment worker_environment_ = WorkerEnvironment::NONE;
 
  private:
   class ScopedWorkersExecutor;

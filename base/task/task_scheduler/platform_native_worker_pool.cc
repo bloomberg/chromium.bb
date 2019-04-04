@@ -54,7 +54,9 @@ PlatformNativeWorkerPool::~PlatformNativeWorkerPool() {
 #endif
 }
 
-void PlatformNativeWorkerPool::Start() {
+void PlatformNativeWorkerPool::Start(WorkerEnvironment worker_environment) {
+  worker_environment_ = worker_environment;
+
   StartImpl();
 
   ScopedWorkersExecutor executor(this);
