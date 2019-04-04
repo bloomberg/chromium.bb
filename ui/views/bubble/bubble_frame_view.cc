@@ -181,19 +181,6 @@ int BubbleFrameView::NonClientHitTest(const gfx::Point& point) {
   if (close_->visible() && close_->GetMirroredBounds().Contains(point))
     return HTCLOSE;
 
-  // Allow dialogs to show the system menu and be dragged.
-  if (GetWidget()->widget_delegate()->AsDialogDelegate() &&
-      !GetWidget()->widget_delegate()->AsBubbleDialogDelegate()) {
-    gfx::Rect bounds(GetContentsBounds());
-    bounds.Inset(title_margins_);
-    gfx::Rect sys_rect(0, 0, bounds.x(), bounds.y());
-    sys_rect.set_origin(gfx::Point(GetMirroredXForRect(sys_rect), 0));
-    if (sys_rect.Contains(point))
-      return HTSYSMENU;
-    if (point.y() < title()->bounds().bottom())
-      return HTCAPTION;
-  }
-
   // Convert to RRectF to accurately represent the rounded corners of the
   // dialog and allow events to pass through the shadows.
   gfx::RRectF round_contents_bounds(gfx::RectF(GetContentsBounds()),
@@ -203,6 +190,16 @@ int BubbleFrameView::NonClientHitTest(const gfx::Point& point) {
   gfx::RectF rectf_point(point.x(), point.y(), 1, 1);
   if (!round_contents_bounds.Contains(rectf_point))
     return HTTRANSPARENT;
+
+  if (HasTitle() && point.y() < title()->bounds().bottom()) {
+    auto* dialog_delegate = GetWidget()->widget_delegate()->AsDialogDelegate();
+    // Allow the dialog to be dragged if it is not modal. This can happen if the
+    // dialog has no parent browser window.
+    if (dialog_delegate &&
+        dialog_delegate->GetModalType() == ui::MODAL_TYPE_NONE) {
+      return HTCAPTION;
+    }
+  }
 
   return GetWidget()->client_view()->NonClientHitTest(point);
 }
