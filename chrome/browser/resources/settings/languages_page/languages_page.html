@@ -359,7 +359,7 @@
             </template>
           </div>
           <div class="settings-box continuation" on-click="onEditDictionaryTap_"
-              actionable>
+              actionable id="spellCheckSubpageTrigger">
             <div class="start settings-box-text" id="customSpelling">
               $i18n{manageSpellCheck}
             </div>
@@ -440,10 +440,12 @@
       </template>
 </if>
 <if expr="not is_macosx">
-      <template is="dom-if" route-path="/editDictionary">
+      <template is="dom-if" route-path="/editDictionary"
+           no-search="[[!prefs.browser.enable_spellchecking.value]]">
         <settings-subpage
             associated-control="[[$$('#spellCheckSubpageTrigger')]]"
-            page-title="$i18n{editDictionaryPageTitle}">
+            page-title="$i18n{editDictionaryPageTitle}"
+            no-search$="[[!prefs.browser.enable_spellchecking.value]]">
           <settings-edit-dictionary-page></settings-edit-dictionary-page>
         </settings-subpage>
       </template>
