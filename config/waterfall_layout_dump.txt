@@ -5,6 +5,7 @@
   caroline-tot-chrome-pfq-informational
   daisy-tot-chromium-pfq-informational
   eve-tot-chrome-pfq-informational
+  kevin-arcnext-tot-chrome-pfq-informational
   peach_pit-tot-chrome-pfq-informational
   tricky-tot-chrome-pfq-informational
   veyron_minnie-tot-chrome-pfq-informational
@@ -29,7 +30,6 @@
     eve-chrome-pfq
     grunt-chrome-pfq
     hana-chrome-pfq
-    kevin-arcnext-chrome-pfq
     kevin64-chrome-pfq
     nocturne-chrome-pfq
     nyan_big-chrome-pfq
@@ -2556,7 +2556,6 @@
     eve-chrome-pfq-tryjob
     grunt-chrome-pfq-tryjob
     hana-chrome-pfq-tryjob
-    kevin-arcnext-chrome-pfq-tryjob
     kevin64-chrome-pfq-tryjob
     nocturne-chrome-pfq-tryjob
     nyan_big-chrome-pfq-tryjob

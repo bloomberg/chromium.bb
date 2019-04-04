@@ -2930,7 +2930,14 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
 
   site_config.ApplyForBoards(
       'tot-chrome-pfq-informational',
-      ['caroline', 'eve', 'peach_pit', 'tricky', 'veyron_minnie',],
+      [
+          'caroline',
+          'eve',
+          'peach_pit',
+          'tricky',
+          'veyron_minnie',
+          'kevin-arcnext',
+      ],
       schedule='with 30m interval',
   )
 
@@ -3046,7 +3053,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'eve-arcnext',
       'grunt',
       'hana',
-      'kevin-arcnext',
       'kevin64',
       'nocturne',
       'nyan_big',
