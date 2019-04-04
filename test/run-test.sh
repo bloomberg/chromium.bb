@@ -156,6 +156,10 @@ ls -l $CACHEDIR > out2
 if cmp out1 out2 > /dev/null ; then : ; else
   echo "*** Test failed: $TEST"
   echo "cache was created/updated."
+  echo "Before:"
+  cat out1
+  echo "After:"
+  cat out2
   exit 1
 fi
 if [ x`cat xxx` != "x$TESTTMPDIR/fonts/4x6.pcf" ]; then
@@ -220,7 +224,35 @@ if cmp flist1 flist2 > /dev/null ; then
 fi
 rm -rf $TESTTMPDIR $TESTTMP2DIR out1 out2 xxx flist1 flist2 stat1 stat2 bind-fonts.conf
 
+dotest "Check consistency of MD5 in cache name"
+prep
+mkdir -p $FONTDIR/sub
+cp $FONT1 $FONTDIR/sub
+$FCCACHE $FONTDIR
+sleep 1
+(cd $CACHEDIR; ls -1 --color=no *cache*) > out1
+TESTTMPDIR=`mktemp -d /tmp/fontconfig.XXXXXXXX`
+mkdir -p $TESTTMPDIR/cache.dir
+sed "s!@FONTDIR@!$TESTTMPDIR/fonts!
+s!@REMAPDIR@!<remap-dir as-path="'"'"$FONTDIR"'"'">$TESTTMPDIR/fonts</remap-dir>!
+s!@CACHEDIR@!$TESTTMPDIR/cache.dir!" < $TESTDIR/fonts.conf.in > bind-fonts.conf
+cat bind-fonts.conf
+$BWRAP --bind / / --bind $FONTDIR $TESTTMPDIR/fonts --bind .. $TESTTMPDIR/build --dev-bind /dev /dev --setenv FONTCONFIG_FILE $TESTTMPDIR/build/test/bind-fonts.conf $TESTTMPDIR/build/fc-cache/fc-cache$EXEEXT $TESTTMPDIR/fonts
+(cd $TESTTMPDIR/cache.dir; ls -1 --color=no *cache*) > out2
+if cmp out1 out2 > /dev/null ; then : ; else
+    echo "*** Test failed: $TEST"
+    echo "cache was created unexpectedly."
+    echo "Before:"
+    cat out1
+    echo "After:"
+    cat out2
+    exit 1
 fi
+rm -rf $TESTTMPDIR out1 out2 bind-fonts.conf
+
+else
+    echo "No bubblewrap installed. skipping..."
+fi # if [ x"$BWRAP" != "x" -a "x$EXEEXT" = "x" ]
 
 if [ "x$EXEEXT" = "x" ]; then
 dotest "sysroot option"

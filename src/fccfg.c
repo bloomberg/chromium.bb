@@ -612,7 +612,7 @@ FcConfigMapFontPath(FcConfig		*config,
 {
     FcStrList	*list;
     FcChar8	*dir;
-    const FcChar8 *map;
+    const FcChar8 *map, *rpath;
     FcChar8     *retval;
 
     list = FcConfigGetFontDirs(config);
@@ -627,15 +627,17 @@ FcConfigMapFontPath(FcConfig		*config,
     map = FcStrTripleSecond(dir);
     if (!map)
 	return 0;
-    retval = FcStrBuildFilename(map, path + strlen((char *) dir), NULL);
+    rpath = path + strlen ((char *) dir);
+    while (*rpath == '/')
+	rpath++;
+    retval = FcStrBuildFilename(map, rpath, NULL);
     if (retval)
     {
 	size_t len = strlen ((const char *) retval);
-	if (retval[len-1] == '/')
-	{
-	    /* trim the last slash */
-	    retval[len-1] = 0;
-	}
+	while (len > 0 && retval[len-1] == '/')
+	    len--;
+	/* trim the last slash */
+	retval[len] = 0;
     }
     return retval;
 }
