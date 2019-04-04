@@ -46,8 +46,7 @@ std::string ClientState::DebugPrint() const {
       "impressions.size(): %zu \n",
       static_cast<int>(type), current_max_daily_show, impressions.size());
 
-  for (const auto& it : impressions) {
-    const auto& impression = it.second;
+  for (const auto& impression : impressions) {
     std::ostringstream stream;
     stream << "Impression, create_time:" << impression.create_time << " \n"
            << "feedback: " << static_cast<int>(impression.feedback) << " \n"

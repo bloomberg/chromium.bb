@@ -29,10 +29,10 @@ void AddImpressionTestData(
   for (const auto& test_data : test_data) {
     auto client_state = std::make_unique<ClientState>(test_data.type);
     client_state->current_max_daily_show = test_data.current_max_daily_show;
-    for (const auto& impression : test_data.impressions)
-      client_state->impressions.emplace(impression.create_time, impression);
+    for (const auto& impression : test_data.impressions) {
+      client_state->impressions.emplace_back(impression);
+    }
     client_state->suppression_info = test_data.suppression_info;
-
     client_states->emplace(test_data.type, std::move(client_state));
   }
 }
