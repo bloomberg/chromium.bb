@@ -49,6 +49,7 @@
 #include "net/http/http_cache.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/prerender/prerender_rel_type.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
@@ -131,7 +132,7 @@ int DummyPrerenderContents::g_next_route_id_ = 0;
 
 const gfx::Size kSize(640, 480);
 
-const uint32_t kDefaultRelTypes = PrerenderRelTypePrerender;
+const uint32_t kDefaultRelTypes = blink::kPrerenderRelTypePrerender;
 
 }  // namespace
 

@@ -7,13 +7,6 @@
 
 namespace prerender {
 
-// PrerenderRelType is a bitfield since multiple rel attributes can be set
-// on the same link. Must be the same as blink::WebPrerenderRelType.
-enum PrerenderRelType {
-  PrerenderRelTypePrerender = 0x1,
-  PrerenderRelTypeNext = 0x2,
-};
-
 enum PrerenderMode {
   // Neither prefetch nor prerender.
   NO_PRERENDER = 0,

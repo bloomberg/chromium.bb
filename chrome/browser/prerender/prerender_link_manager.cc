@@ -25,6 +25,7 @@
 #include "content/public/common/referrer.h"
 #include "extensions/buildflags/buildflags.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/prerender/prerender_rel_type.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
@@ -41,12 +42,8 @@ namespace prerender {
 
 namespace {
 
-static_assert(PrerenderRelTypePrerender == 0x1,
-              "RelTypeHistogrameEnum must match PrerenderRelType");
-static_assert(PrerenderRelTypeNext == 0x2,
-              "RelTypeHistogramEnum must match PrerenderRelType");
 constexpr int kRelTypeHistogramEnumMax =
-    (PrerenderRelTypePrerender | PrerenderRelTypeNext) + 1;
+    (blink::kPrerenderRelTypePrerender | blink::kPrerenderRelTypeNext) + 1;
 
 void RecordLinkManagerAdded(const uint32_t rel_types) {
   UMA_HISTOGRAM_ENUMERATION("Prerender.RelTypesLinkAdded",
@@ -350,7 +347,7 @@ void PrerenderLinkManager::StartPrerenders() {
       abandoned_prerenders.pop_front();
     }
 
-    if (!(PrerenderRelTypePrerender & it->rel_types)) {
+    if (!(blink::kPrerenderRelTypePrerender & it->rel_types)) {
       prerenders_.erase(it);
       continue;
     }
