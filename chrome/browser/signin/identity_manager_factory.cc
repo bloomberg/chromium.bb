@@ -95,7 +95,7 @@ std::unique_ptr<ConcreteSigninManager> BuildSigninManager(
 
 std::unique_ptr<AccountFetcherService> BuildAccountFetcherService(
     SigninClient* signin_client,
-    OAuth2TokenService* token_service,
+    ProfileOAuth2TokenService* token_service,
     AccountTrackerService* account_tracker_service) {
   auto account_fetcher_service = std::make_unique<AccountFetcherService>();
   account_fetcher_service->Initialize(
