@@ -39,6 +39,7 @@ class COMPONENT_EXPORT(VULKAN_X11) VulkanImplementationX11
                                     SemaphoreHandle handle) override;
   SemaphoreHandle GetSemaphoreHandle(VkDevice vk_device,
                                      VkSemaphore vk_semaphore) override;
+  VkExternalMemoryHandleTypeFlagBits GetExternalImageHandleType() override;
 
  private:
   bool using_surface_ = true;

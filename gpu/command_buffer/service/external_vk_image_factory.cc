@@ -74,7 +74,9 @@ std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
   VkExportMemoryAllocateInfoKHR external_info;
   external_info.sType = VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO_KHR;
   external_info.pNext = nullptr;
-  external_info.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR;
+  external_info.handleTypes = context_state_->vk_context_provider()
+                                  ->GetVulkanImplementation()
+                                  ->GetExternalImageHandleType();
 
   VkMemoryAllocateInfo mem_alloc_info;
   mem_alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -221,8 +223,8 @@ std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     uint32_t usage) {
-  // GpuMemoryBuffers are not supported on Linux.
-  NOTREACHED();
+  // GpuMemoryBuffers supported is not implemented yet.
+  NOTIMPLEMENTED();
   return nullptr;
 }
 
@@ -236,7 +238,9 @@ VkResult ExternalVkImageFactory::CreateExternalVkImage(VkFormat format,
   VkExternalMemoryImageCreateInfoKHR external_info;
   external_info.sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_KHR;
   external_info.pNext = nullptr;
-  external_info.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR;
+  external_info.handleTypes = context_state_->vk_context_provider()
+                                  ->GetVulkanImplementation()
+                                  ->GetExternalImageHandleType();
 
   VkImageCreateInfo create_info;
   create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;

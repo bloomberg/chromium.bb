@@ -38,6 +38,7 @@ class COMPONENT_EXPORT(VULKAN_WIN32) VulkanImplementationWin32
                                     SemaphoreHandle handle) override;
   SemaphoreHandle GetSemaphoreHandle(VkDevice vk_device,
                                      VkSemaphore vk_semaphore) override;
+  VkExternalMemoryHandleTypeFlagBits GetExternalImageHandleType() override;
 
  private:
   VulkanInstance vulkan_instance_;

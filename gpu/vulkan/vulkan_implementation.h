@@ -81,6 +81,10 @@ class VULKAN_EXPORT VulkanImplementation {
   virtual SemaphoreHandle GetSemaphoreHandle(VkDevice vk_device,
                                              VkSemaphore vk_semaphore) = 0;
 
+  // Returns VkExternalMemoryHandleTypeFlagBits that should be set when creating
+  // external images and memory.
+  virtual VkExternalMemoryHandleTypeFlagBits GetExternalImageHandleType() = 0;
+
 #if defined(OS_ANDROID)
   // Create a VkImage, import Android AHardwareBuffer object created outside of
   // the Vulkan device into Vulkan memory object and bind it to the VkImage.

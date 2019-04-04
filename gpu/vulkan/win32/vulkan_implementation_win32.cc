@@ -124,4 +124,9 @@ SemaphoreHandle VulkanImplementationWin32::GetSemaphoreHandle(
   return SemaphoreHandle();
 }
 
+VkExternalMemoryHandleTypeFlagBits
+VulkanImplementationWin32::GetExternalImageHandleType() {
+  return VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_BIT;
+}
+
 }  // namespace gpu

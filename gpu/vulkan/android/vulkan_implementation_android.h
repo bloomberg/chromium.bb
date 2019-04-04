@@ -40,6 +40,7 @@ class COMPONENT_EXPORT(VULKAN_ANDROID) VulkanImplementationAndroid
                                     SemaphoreHandle handle) override;
   SemaphoreHandle GetSemaphoreHandle(VkDevice vk_device,
                                      VkSemaphore vk_semaphore) override;
+  VkExternalMemoryHandleTypeFlagBits GetExternalImageHandleType() override;
   bool CreateVkImageAndImportAHB(
       const VkDevice& vk_device,
       const VkPhysicalDevice& vk_physical_device,

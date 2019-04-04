@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/posix/eintr_wrapper.h"
+#include "build/build_config.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 
@@ -126,6 +127,10 @@ GLuint ExternalVkImageGlRepresentation::ImportVkSemaphoreIntoGL(
     SemaphoreHandle handle) {
   if (!handle.is_valid())
     return 0;
+#if defined(OS_FUCHSIA)
+  NOTIMPLEMENTED_LOG_ONCE();
+  return 0;
+#elif defined(OS_LINUX)
   if (handle.vk_handle_type() !=
       VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT) {
     DLOG(ERROR) << "Importing semaphore handle of unexpected type:"
@@ -140,6 +145,9 @@ GLuint ExternalVkImageGlRepresentation::ImportVkSemaphoreIntoGL(
                                 fd.release());
 
   return gl_semaphore;
+#else  // !defined(OS_FUCHSIA) && !defined(OS_LINUX)
+#error Unsupported OS
+#endif
 }
 
 }  // namespace gpu

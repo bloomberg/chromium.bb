@@ -129,6 +129,11 @@ SemaphoreHandle VulkanImplementationAndroid::GetSemaphoreHandle(
       vk_device, vk_semaphore, VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT);
 }
 
+VkExternalMemoryHandleTypeFlagBits
+VulkanImplementationAndroid::GetExternalImageHandleType() {
+  return VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID;
+}
+
 bool VulkanImplementationAndroid::CreateVkImageAndImportAHB(
     const VkDevice& vk_device,
     const VkPhysicalDevice& vk_physical_device,
