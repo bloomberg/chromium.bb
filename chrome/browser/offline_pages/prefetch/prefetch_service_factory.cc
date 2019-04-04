@@ -58,10 +58,8 @@ PrefetchServiceFactory::PrefetchServiceFactory()
           "OfflinePagePrefetchService",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(DownloadServiceFactory::GetInstance());
-  // TODO(crbug.com/933358): add
-  // DependsOn(OfflinePageModelFactory::GetInstance());
-  // DependsOn(image_fetcher::CachedImageFetcherServiceFactory::GetInstance());
-  // when the PrefetchServiceFactory becomes a SimpleKeyedServiceFactory.
+  DependsOn(OfflinePageModelFactory::GetInstance());
+  DependsOn(image_fetcher::ImageFetcherServiceFactory::GetInstance());
 }
 
 // static
