@@ -129,7 +129,7 @@ device::mojom::VRDisplayInfoPtr ValidateVRDisplayInfo(
       IsValidStandingTransform(info->stageParameters->standingTransform)) {
     ret->stageParameters = device::mojom::VRStageParameters::New(
         info->stageParameters->standingTransform, info->stageParameters->sizeX,
-        info->stageParameters->sizeZ);
+        info->stageParameters->sizeZ, info->stageParameters->bounds);
   }
 
   ret->leftEye = ValidateEyeParameters(info->leftEye);
