@@ -29,6 +29,7 @@
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
+#include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
@@ -146,6 +147,15 @@ struct CORE_EXPORT FrameLoadRequest {
 
   base::TimeTicks GetInputStartTime() const { return input_start_time_; }
 
+  const WebWindowFeatures& GetWindowFeatures() const {
+    return window_features_;
+  }
+  void SetFeaturesForWindowOpen(const WebWindowFeatures& features) {
+    window_features_ = features;
+    is_window_open_ = true;
+  }
+  bool IsWindowOpen() const { return is_window_open_; }
+
  private:
   Member<Document> origin_document_;
   ResourceRequest resource_request_;
@@ -165,6 +175,8 @@ struct CORE_EXPORT FrameLoadRequest {
   base::TimeTicks input_start_time_;
   network::mojom::RequestContextFrameType frame_type_ =
       network::mojom::RequestContextFrameType::kNone;
+  WebWindowFeatures window_features_;
+  bool is_window_open_ = false;
 };
 
 }  // namespace blink
