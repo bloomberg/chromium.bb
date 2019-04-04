@@ -42,7 +42,7 @@ extern "C" {
 #include <wayland-server.h>
 
 #include <libweston/matrix.h>
-#include "config-parser.h"
+#include <libweston/config-parser.h>
 #include "zalloc.h"
 #include <libweston/timeline-object.h>
 

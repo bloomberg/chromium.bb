@@ -37,7 +37,7 @@
 #include <sys/types.h>
 
 #include "compositor/weston.h"
-#include "shared/config-parser.h"
+#include <libweston/config-parser.h>
 #include "shared/helpers.h"
 #include "libweston-desktop/libweston-desktop.h"
 

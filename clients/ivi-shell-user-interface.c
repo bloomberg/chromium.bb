@@ -38,7 +38,7 @@
 #include <wayland-cursor.h>
 #include <wayland-client-protocol.h>
 #include "shared/cairo-util.h"
-#include "shared/config-parser.h"
+#include <libweston/config-parser.h>
 #include "shared/helpers.h"
 #include "shared/os-compatibility.h"
 #include "shared/xalloc.h"

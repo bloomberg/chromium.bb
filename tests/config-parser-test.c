@@ -33,7 +33,7 @@
 #include <errno.h>
 #include <unistd.h>
 
-#include "config-parser.h"
+#include <libweston/config-parser.h>
 
 #include "shared/helpers.h"
 #include "zunitc/zunitc.h"

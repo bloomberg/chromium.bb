@@ -37,7 +37,7 @@
 
 #include "shared/helpers.h"
 #include "image-loader.h"
-#include "config-parser.h"
+#include <libweston/config-parser.h>
 
 #ifdef HAVE_PANGO
 #include <pango/pangocairo.h>
@@ -543,7 +543,7 @@ theme_render_frame(struct theme *t,
 		text_height = logical.height;
 		if (text_width < logical.width)
 		  pango_layout_set_width (title_layout, text_width * PANGO_SCALE);
-		
+
 #else
 		cairo_text_extents_t extents;
 		cairo_font_extents_t font_extents;

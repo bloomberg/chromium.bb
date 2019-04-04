@@ -38,7 +38,7 @@
 
 #include <pango/pangocairo.h>
 
-#include "shared/config-parser.h"
+#include <libweston/config-parser.h>
 #include "shared/helpers.h"
 #include "shared/xalloc.h"
 #include "window.h"

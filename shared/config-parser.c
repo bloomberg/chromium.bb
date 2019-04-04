@@ -39,7 +39,7 @@
 #include <errno.h>
 
 #include <wayland-util.h>
-#include "config-parser.h"
+#include <libweston/config-parser.h>
 #include "helpers.h"
 #include "string-helpers.h"
 

@@ -1,4 +1,5 @@
 install_headers(
+	'config-parser.h',
 	'libweston.h',
 	'matrix.h',
 	'plugin-registry.h',

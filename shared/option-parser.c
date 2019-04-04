@@ -33,7 +33,7 @@
 #include <assert.h>
 #include <errno.h>
 
-#include "config-parser.h"
+#include <libweston/config-parser.h>
 #include "string-helpers.h"
 
 static bool

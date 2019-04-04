@@ -39,7 +39,7 @@
 #include "shell.h"
 #include "compositor/weston.h"
 #include "weston-desktop-shell-server-protocol.h"
-#include "shared/config-parser.h"
+#include <libweston/config-parser.h>
 #include "shared/helpers.h"
 #include "shared/timespec-util.h"
 #include "libweston-desktop/libweston-desktop.h"

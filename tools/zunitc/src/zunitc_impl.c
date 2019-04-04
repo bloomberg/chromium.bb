@@ -46,7 +46,7 @@
 #include "zuc_event_listener.h"
 #include "zuc_junit_reporter.h"
 
-#include "shared/config-parser.h"
+#include <libweston/config-parser.h>
 #include "shared/helpers.h"
 #include "shared/zalloc.h"
 

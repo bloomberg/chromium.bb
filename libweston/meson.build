@@ -57,7 +57,6 @@ srcs_libweston = [
 ]
 
 install_headers(
-	'../shared/config-parser.h',
 	'../shared/zalloc.h',
 	subdir: dir_include_libweston
 )
