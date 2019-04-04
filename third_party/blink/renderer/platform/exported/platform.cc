@@ -187,12 +187,9 @@ void Platform::InitializeCommon(Platform* platform,
 
   ProcessHeap::Init();
   MemoryPressureListenerRegistry::Initialize();
-  if (base::ThreadTaskRunnerHandle::IsSet()) {
-    base::trace_event::MemoryDumpProvider::Options options;
-    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        BlinkGCMemoryDumpProvider::Instance(), "BlinkGC",
-        base::ThreadTaskRunnerHandle::Get(), options);
-  }
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      BlinkGCMemoryDumpProvider::Instance(), "BlinkGC",
+      base::ThreadTaskRunnerHandle::Get());
 
   ThreadState::AttachMainThread();
 
