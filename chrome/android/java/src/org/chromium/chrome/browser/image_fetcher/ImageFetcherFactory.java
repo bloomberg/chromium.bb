@@ -12,6 +12,7 @@ import org.chromium.base.DiscardableReferencePool;
 public class ImageFetcherFactory {
     // Store static references to singleton image fetchers.
     private static CachedImageFetcher sCachedImageFetcher;
+    private static NetworkImageFetcher sNetworkImageFetcher;
 
     /**
      * Alias for createImageFetcher below.
@@ -51,16 +52,21 @@ public class ImageFetcherFactory {
         // TODO(crbug.com/947191):Allow server-side configuration image fetcher clients.
         switch (config) {
             case ImageFetcherConfig.NETWORK_ONLY:
-                // TODO(crbug.com/944517): Implement a network image fetcher.
-                return null;
+                if (sNetworkImageFetcher == null) {
+                    sNetworkImageFetcher = new NetworkImageFetcher(imageFetcherBridge);
+                }
+                return sNetworkImageFetcher;
             case ImageFetcherConfig.DISK_CACHE_ONLY:
                 if (sCachedImageFetcher == null) {
                     sCachedImageFetcher = new CachedImageFetcher(imageFetcherBridge);
                 }
                 return sCachedImageFetcher;
             case ImageFetcherConfig.IN_MEMORY_ONLY:
-                // TODO(crbug.com/944517): Return this once NetworkImageFetcher is available.
-                return null;
+                assert discardableReferencePool != null;
+                return new InMemoryCachedImageFetcher(
+                        createImageFetcher(
+                                ImageFetcherConfig.NETWORK_ONLY, null, imageFetcherBridge),
+                        discardableReferencePool);
             case ImageFetcherConfig.IN_MEMORY_WITH_DISK_CACHE:
                 assert discardableReferencePool != null;
                 return new InMemoryCachedImageFetcher(
