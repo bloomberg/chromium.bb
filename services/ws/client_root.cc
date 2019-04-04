@@ -398,14 +398,12 @@ void ClientRoot::OnWindowBoundsChanged(aura::Window* window,
                                        ui::PropertyChangeReason reason) {
   if (setting_bounds_from_client_)
     return;
-  if (!is_top_level_) {
-    HandleBoundsOrScaleFactorChange();
+
+  // Early out when a top level is in middle of moving to a new display.
+  // Bounds change will be sent after it is added to the new root window.
+  if (is_top_level_ && is_moving_across_displays_)
     return;
-  }
-  if (is_moving_across_displays_) {
-    display_move_changed_bounds_ = true;
-    return;
-  }
+
   HandleBoundsOrScaleFactorChange();
 }
 
@@ -413,12 +411,13 @@ void ClientRoot::OnWindowAddedToRootWindow(aura::Window* window) {
   DCHECK_EQ(window, window_);
   DCHECK(window->GetHost());
   window->GetHost()->AddObserver(this);
+
+  is_moving_across_displays_ = false;
   NotifyClientOfDisplayIdChange();
 
-  // When the addition to a new root window isn't the result of moving across
-  // displays (e.g. destruction of the current display), the window bounds in
-  // screen change even though its bounds in the root window remain the same.
-  if (is_top_level_ && !is_moving_across_displays_)
+  // When added to a new root window, the window bounds in screen may have
+  // changed even though its bounds in the root window remain the same.
+  if (is_top_level_)
     HandleBoundsOrScaleFactorChange();
   else
     CheckForScaleFactorChange();
@@ -431,22 +430,11 @@ void ClientRoot::OnWindowRemovingFromRootWindow(aura::Window* window,
   DCHECK_EQ(window, window_);
   DCHECK(window->GetHost());
   window->GetHost()->RemoveObserver(this);
-  if (!new_root)
+  if (new_root) {
+    DCHECK(!is_moving_across_displays_);
+    is_moving_across_displays_ = true;
+  } else {
     NotifyClientOfVisibilityChange(false);
-}
-
-void ClientRoot::OnWillMoveWindowToDisplay(aura::Window* window,
-                                           int64_t new_display_id) {
-  DCHECK(!is_moving_across_displays_);
-  is_moving_across_displays_ = true;
-}
-
-void ClientRoot::OnDidMoveWindowToDisplay(aura::Window* window) {
-  DCHECK(is_moving_across_displays_);
-  is_moving_across_displays_ = false;
-  if (display_move_changed_bounds_) {
-    HandleBoundsOrScaleFactorChange();
-    display_move_changed_bounds_ = false;
   }
 }
 
