@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/tab_android.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/banners/app_banner_ui_delegate_android.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/common/chrome_features.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "content/public/browser/manifest_icon_downloader.h"
@@ -384,6 +386,9 @@ base::string16 AppBannerManagerAndroid::GetAppName() const {
 }
 
 void AppBannerManagerAndroid::MaybeShowAmbientBadge() {
+  if (!base::FeatureList::IsEnabled(features::kInstallableAmbientBadgeInfoBar))
+    return;
+
   // Do not show the ambient badge if it was recently dismissed.
   if (AppBannerSettingsHelper::WasBannerRecentlyBlocked(
           web_contents(), validated_url_, GetAppIdentifier(),
