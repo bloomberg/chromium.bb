@@ -162,6 +162,7 @@
     {
       name: "BlinkGenPropertyTrees",
       status: "stable",
+      implied_by: ["CompositeAfterPaint"],
     },
     {
       name: "BlinkRuntimeCallStats",

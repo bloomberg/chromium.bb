@@ -2420,7 +2420,9 @@ TEST_P(VisualViewportTest, EnsureOverscrollElasticityTransformNode) {
 
 // Ensure we create effect node for scrollbar properly.
 TEST_P(VisualViewportTest, EnsureEffectNodeForScrollbars) {
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
+      // TODO(wangxianzhu): Should this work for CompositeAfterPaint?
+      RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   InitializeWithAndroidSettings();

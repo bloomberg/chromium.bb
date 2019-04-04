@@ -5526,13 +5526,11 @@ TEST_P(PaintPropertyTreeBuilderTest,
   opacity_element->setAttribute(html_names::kStyleAttr, "opacity: 0.5");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
 
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    // TODO(crbug.com/900241): In BlinkGenPropertyTrees/CompositeAfterPaint we
-    // create effect and filter nodes when the transform node needs compositing,
-    // for crbug.com/942681.
-    // TODO(crbug.com/943671): CompositeAfterPaint also does this but the layer
-    // is marked needing repaint because of paint invalidation. Figure out if
-    // this is an over invalidation.
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
+      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    // TODO(crbug.com/900241): In BlinkGenPropertyTrees (but not
+    // CompoisteAfterPaint) we create effect and filter nodes when the transform
+    // node needs compositing for will-change:transform, for crbug.com/942681.
     EXPECT_FALSE(ToLayoutBoxModelObject(target)->Layer()->NeedsRepaint());
   } else {
     // All paint chunks contained by the new opacity effect node need to be
@@ -6426,9 +6424,10 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootCompositedClipPath) {
 
 TEST_P(PaintPropertyTreeBuilderTest, SimpleOpacityChangeDoesNotCausePacUpdate) {
   // This is a BGPT test only.
-  // TODO(vmpstr): For CAP, we don't seem to get a cc_effect, which we need to
-  // investigate.
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
+      // TODO(vmpstr): For CompositeAfterPaint, we don't seem to get a
+      // cc_effect, which we need to investigate.
+      RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   SetHtmlInnerHTML(R"HTML(
