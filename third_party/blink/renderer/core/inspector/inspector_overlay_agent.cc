@@ -239,13 +239,12 @@ class InspectorOverlayAgent::InspectorPageOverlayDelegate final
       return;
     DrawingRecorder recorder(graphics_context, frame_overlay,
                              DisplayItem::kFrameOverlay);
-    LocalFrameView* view = overlay_->OverlayMainFrame()->View();
     // The overlay frame is has a standalone paint property tree. Paint it in
     // its root space into a paint record, then draw the record into the proper
     // target space in the overlaid frame.
     PaintRecordBuilder paint_record_builder(nullptr, &graphics_context);
-    view->PaintOutsideOfLifecycle(paint_record_builder.Context(),
-                                  kGlobalPaintNormalPhase);
+    overlay_->OverlayMainFrame()->View()->PaintOutsideOfLifecycle(
+        paint_record_builder.Context(), kGlobalPaintNormalPhase);
     graphics_context.DrawRecord(paint_record_builder.EndRecording());
   }
 
@@ -317,12 +316,11 @@ InspectorOverlayAgent::InspectorOverlayAgent(
     : frame_impl_(frame_impl),
       inspected_frames_(inspected_frames),
       resize_timer_active_(false),
-      timer_(
+      resize_timer_(
           frame_impl->GetFrame()->GetTaskRunner(TaskType::kInternalInspector),
           this,
-          &InspectorOverlayAgent::OnTimer),
+          &InspectorOverlayAgent::OnResizeTimer),
       disposed_(false),
-      needs_update_(false),
       v8_session_(v8_session),
       dom_agent_(dom_agent),
       swallow_next_mouse_up_(false),
@@ -405,7 +403,8 @@ Response InspectorOverlayAgent::disable() {
     overlay_host_->ClearListener();
     overlay_host_.Clear();
   }
-  timer_.Stop();
+  resize_timer_.Stop();
+  resize_timer_active_ = false;
   frame_overlay_.reset();
   frame_resource_name_ = CString();
   PickTheRightTool();
@@ -610,27 +609,9 @@ Response InspectorOverlayAgent::getHighlightObjectForTest(
   return Response::OK();
 }
 
-void InspectorOverlayAgent::UpdateOverlayPage() {
-  if (!inspect_tool_)
-    return;
-
-  if (needs_update_) {
-    needs_update_ = false;
-    RebuildOverlayPage();
-  }
-  OverlayMainFrame()->View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kOther);
-}
-
 void InspectorOverlayAgent::UpdatePrePaint() {
-  if (!inspect_tool_)
-    return;
-
-  if (!frame_overlay_) {
-    frame_overlay_ = std::make_unique<FrameOverlay>(
-        GetFrame(), std::make_unique<InspectorPageOverlayDelegate>(*this));
-  }
-  frame_overlay_->UpdatePrePaint();
+  if (frame_overlay_)
+    frame_overlay_->UpdatePrePaint();
 }
 
 void InspectorOverlayAgent::PaintOverlay(GraphicsContext& context) {
@@ -763,34 +744,28 @@ WebInputEventResult InspectorOverlayAgent::HandleInputEventInOverlay(
 }
 
 void InspectorOverlayAgent::ScheduleUpdate() {
-  auto& client = GetFrame()->GetPage()->GetChromeClient();
-  if (!inspect_tool_) {
-    if (frame_overlay_) {
-      frame_overlay_.reset();
-      client.SetCursorOverridden(false);
-      client.SetCursor(PointerCursor(), GetFrame());
-      if (auto* frame_view = frame_impl_->GetFrameView())
-        frame_view->SetPaintArtifactCompositorNeedsUpdate();
-    }
-    return;
-  }
-  needs_update_ = true;
-  client.ScheduleAnimation(GetFrame()->View());
+  GetFrame()->GetPage()->GetChromeClient().ScheduleAnimation(
+      GetFrame()->View());
 }
 
-void InspectorOverlayAgent::RebuildOverlayPage() {
+bool InspectorOverlayAgent::UpdateOverlayPageSize() {
   LocalFrameView* view = frame_impl_->GetFrameView();
   LocalFrame* frame = GetFrame();
   if (!view || !frame)
-    return;
+    return false;
 
   IntSize viewport_size = frame->GetPage()->GetVisualViewport().Size();
   OverlayPage()->GetVisualViewport().SetSize(viewport_size);
-  UpdateFrameForTool();
+  return true;
+}
 
-  Reset(viewport_size);
+void InspectorOverlayAgent::UpdateOverlayPage() {
+  if (!UpdateOverlayPageSize())
+    return;
   if (inspect_tool_)
     inspect_tool_->Draw(WindowToViewportScale());
+  OverlayMainFrame()->View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kOther);
 }
 
 static std::unique_ptr<protocol::DictionaryValue> BuildObjectForSize(
@@ -866,8 +841,9 @@ void InspectorOverlayAgent::UpdateFrameForTool() {
   if (resource_name == frame_resource_name_) {
     if (overlay_page_) {
       OverlayMainFrame()->SetPageZoomFactor(WindowToViewportScale());
-      OverlayMainFrame()->View()->Resize(
-          OverlayPage()->GetVisualViewport().Size());
+      IntSize viewport_size = OverlayPage()->GetVisualViewport().Size();
+      OverlayMainFrame()->View()->Resize(viewport_size);
+      Reset(viewport_size);
     }
     return;
   }
@@ -888,7 +864,8 @@ void InspectorOverlayAgent::UpdateFrameForTool() {
   frame->View()->SetBaseBackgroundColor(Color::kTransparent);
 
   frame->SetPageZoomFactor(WindowToViewportScale());
-  frame->View()->Resize(OverlayPage()->GetVisualViewport().Size());
+  IntSize viewport_size = OverlayPage()->GetVisualViewport().Size();
+  frame->View()->Resize(viewport_size);
 
   scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
   data->Append("<style>", static_cast<size_t>(7));
@@ -921,6 +898,7 @@ void InspectorOverlayAgent::UpdateFrameForTool() {
 #elif defined(OS_POSIX)
   EvaluateInOverlay("setPlatform", "linux");
 #endif
+  Reset(viewport_size);
 }
 
 LocalFrame* InspectorOverlayAgent::OverlayMainFrame() {
@@ -997,9 +975,18 @@ String InspectorOverlayAgent::EvaluateInOverlayForTest(const String& script) {
   return ToCoreStringWithUndefinedOrNullCheck(string);
 }
 
-void InspectorOverlayAgent::OnTimer(TimerBase*) {
-  resize_timer_active_ = false;
-  PickTheRightTool();
+void InspectorOverlayAgent::OnResizeTimer(TimerBase*) {
+  if (resize_timer_active_) {
+    // Restore the original tool.
+    PickTheRightTool();
+    return;
+  }
+
+  // Show the resize tool.
+  SetInspectTool(MakeGarbageCollected<ShowViewSizeTool>());
+  resize_timer_active_ = true;
+  resize_timer_.Stop();
+  resize_timer_.StartOneShot(TimeDelta::FromSeconds(1), FROM_HERE);
 }
 
 void InspectorOverlayAgent::OverlayResumed() {
@@ -1014,9 +1001,12 @@ void InspectorOverlayAgent::OverlaySteppedOver() {
 
 void InspectorOverlayAgent::PageLayoutInvalidated(bool resized) {
   if (resized && show_size_on_resize_.Get()) {
-    resize_timer_active_ = true;
-    timer_.StartOneShot(TimeDelta::FromSeconds(1), FROM_HERE);
-    SetInspectTool(MakeGarbageCollected<ShowViewSizeTool>());
+    resize_timer_active_ = false;
+    // Handle the resize in the next cycle to decouple overlay page rebuild from
+    // the main page layout to avoid document lifecycle issues caused by
+    // Microtask::PerformCheckpoint() called when we rebuild the overlay page.
+    resize_timer_.Stop();
+    resize_timer_.StartOneShot(TimeDelta::FromSeconds(0), FROM_HERE);
     return;
   }
   ScheduleUpdate();
@@ -1109,8 +1099,23 @@ void InspectorOverlayAgent::SetInspectTool(InspectTool* inspect_tool) {
   if (inspect_tool_)
     inspect_tool_->Dispose();
   inspect_tool_ = inspect_tool;
-  if (inspect_tool_)
+  if (inspect_tool_) {
     inspect_tool_->Init(this, GetFrontend());
+    if (UpdateOverlayPageSize()) {
+      if (!frame_overlay_) {
+        frame_overlay_ = std::make_unique<FrameOverlay>(
+            GetFrame(), std::make_unique<InspectorPageOverlayDelegate>(*this));
+      }
+      UpdateFrameForTool();
+    }
+  } else if (frame_overlay_) {
+    frame_overlay_.reset();
+    auto& client = GetFrame()->GetPage()->GetChromeClient();
+    client.SetCursorOverridden(false);
+    client.SetCursor(PointerCursor(), GetFrame());
+    if (auto* frame_view = frame_impl_->GetFrameView())
+      frame_view->SetPaintArtifactCompositorNeedsUpdate();
+  }
   ScheduleUpdate();
 }
 

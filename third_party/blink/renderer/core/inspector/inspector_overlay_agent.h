@@ -196,9 +196,9 @@ class CORE_EXPORT InspectorOverlayAgent final
   Page* OverlayPage();
   LocalFrame* OverlayMainFrame();
   void Reset(const IntSize& viewport_size);
-  void OnTimer(TimerBase*);
+  void OnResizeTimer(TimerBase*);
+  bool UpdateOverlayPageSize();
   void UpdateOverlayPage();
-  void RebuildOverlayPage();
 
   protocol::Response CompositingEnabled();
 
@@ -220,9 +220,8 @@ class CORE_EXPORT InspectorOverlayAgent final
   Member<InspectorOverlayChromeClient> overlay_chrome_client_;
   Member<InspectorOverlayHost> overlay_host_;
   bool resize_timer_active_;
-  TaskRunnerTimer<InspectorOverlayAgent> timer_;
+  TaskRunnerTimer<InspectorOverlayAgent> resize_timer_;
   bool disposed_;
-  bool needs_update_;
   v8_inspector::V8InspectorSession* v8_session_;
   Member<InspectorDOMAgent> dom_agent_;
   std::unique_ptr<FrameOverlay> frame_overlay_;
