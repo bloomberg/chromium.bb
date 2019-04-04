@@ -293,7 +293,7 @@ create_fbo_for_buffer(struct display *display, struct buffer *buffer)
 						      EGL_NO_CONTEXT,
 						      EGL_LINUX_DMA_BUF_EXT,
 						      NULL, attribs);
-	if (buffer->egl_image == EGL_NO_IMAGE) {
+	if (buffer->egl_image == EGL_NO_IMAGE_KHR) {
 		fprintf(stderr, "EGLImageKHR creation failed\n");
 		return false;
 	}
