@@ -5401,6 +5401,7 @@ crbug.com/824539 [ Android ] fast/css/compare-content-style.html [ Failure Timeo
 crbug.com/824539 [ Android ] fast/css/first-letter-hover.html [ Failure Timeout ]
 crbug.com/824539 [ Android ] fast/css/first-letter-visibility.html [ Failure Timeout ]
 crbug.com/824539 [ Android ] fast/css/focus-ring-multiline.html [ Failure Timeout ]
+crbug.com/824539 [ Android ] fast/css/font-face-default-font.html [ Timeout ]
 crbug.com/824539 [ Android ] fast/css/invalid-percentage-property.html [ Failure Timeout ]
 crbug.com/824539 [ Android ] fast/css/line-height-font-order.html [ Failure Timeout ]
 crbug.com/824539 [ Android ] fast/css/line-thickness-underline-strikethrough-overline.html [ Failure Timeout ]
