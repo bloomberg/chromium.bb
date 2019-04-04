@@ -59,8 +59,8 @@ ToolbarActionsModel::ToolbarActionsModel(
       load_error_reporter_observer_(this),
       weak_ptr_factory_(this) {
   extensions::ExtensionSystem::Get(profile_)->ready().Post(
-      FROM_HERE, base::Bind(&ToolbarActionsModel::OnReady,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&ToolbarActionsModel::OnReady,
+                                weak_ptr_factory_.GetWeakPtr()));
   visible_icon_count_ =
       prefs_->GetInteger(extensions::pref_names::kToolbarSize);
 

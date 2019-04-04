@@ -246,9 +246,8 @@ void InstallVerifier::Init() {
   }
 
   ExtensionSystem::Get(context_)->ready().Post(
-      FROM_HERE,
-      base::Bind(&InstallVerifier::MaybeBootstrapSelf,
-                 weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&InstallVerifier::MaybeBootstrapSelf,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void InstallVerifier::VerifyAllExtensions() {

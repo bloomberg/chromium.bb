@@ -292,8 +292,8 @@ AppListSyncableService::AppListSyncableService(
     BuildModel();
   } else {
     extension_system_->ready().Post(
-        FROM_HERE, base::Bind(&AppListSyncableService::BuildModel,
-                              weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&AppListSyncableService::BuildModel,
+                                  weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

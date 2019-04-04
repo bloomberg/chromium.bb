@@ -124,8 +124,8 @@ ArcBootPhaseMonitorBridge::ArcBootPhaseMonitorBridge(
   auto* extension_system = extensions::ExtensionSystem::Get(profile);
   DCHECK(extension_system);
   extension_system->ready().Post(
-      FROM_HERE, base::Bind(&ArcBootPhaseMonitorBridge::OnExtensionsReady,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&ArcBootPhaseMonitorBridge::OnExtensionsReady,
+                                weak_ptr_factory_.GetWeakPtr()));
 
   // Initialize |enabled_by_policy_| now.
   OnArcPlayStoreEnabledChanged(IsArcPlayStoreEnabledForProfile(profile));

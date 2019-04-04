@@ -376,9 +376,8 @@ void BackgroundModeManager::RegisterProfile(Profile* profile) {
   // loaded, to handle the case where an extension has been manually removed
   // while Chrome was not running.
   extensions::ExtensionSystem::Get(profile)->ready().Post(
-      FROM_HERE,
-      base::Bind(&BackgroundModeManager::OnExtensionsReady,
-        weak_factory_.GetWeakPtr(), profile));
+      FROM_HERE, base::BindOnce(&BackgroundModeManager::OnExtensionsReady,
+                                weak_factory_.GetWeakPtr(), profile));
 
   bmd_ptr->applications()->AddObserver(this);
 

@@ -142,8 +142,9 @@ class FirstRunDelayedTasks : public content::NotificationObserver {
         content::BrowserContext* context =
             content::Source<Profile>(source).ptr();
         extensions::ExtensionSystem::Get(context)->ready().Post(
-            FROM_HERE, base::Bind(&FirstRunDelayedTasks::OnExtensionSystemReady,
-                                  weak_ptr_factory_.GetWeakPtr(), context));
+            FROM_HERE,
+            base::BindOnce(&FirstRunDelayedTasks::OnExtensionSystemReady,
+                           weak_ptr_factory_.GetWeakPtr(), context));
         break;
       }
       case chrome::NOTIFICATION_BROWSER_CLOSED: {

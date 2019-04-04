@@ -84,8 +84,8 @@ AppShortcutManager::AppShortcutManager(Profile* profile)
   // UpdateShortcutsForAllAppsIfNeeded.
   extensions::ExtensionSystem::Get(profile)->ready().Post(
       FROM_HERE,
-      base::Bind(&AppShortcutManager::UpdateShortcutsForAllAppsIfNeeded,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&AppShortcutManager::UpdateShortcutsForAllAppsIfNeeded,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   // profile_manager might be NULL in testing environments.

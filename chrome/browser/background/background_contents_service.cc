@@ -304,8 +304,9 @@ BackgroundContentsService::GetBackgroundContents() const {
 void BackgroundContentsService::StartObserving(Profile* profile) {
   // On startup, load our background pages after extension-apps have loaded.
   extensions::ExtensionSystem::Get(profile)->ready().Post(
-      FROM_HERE, base::Bind(&BackgroundContentsService::OnExtensionSystemReady,
-                            weak_ptr_factory_.GetWeakPtr(), profile));
+      FROM_HERE,
+      base::BindOnce(&BackgroundContentsService::OnExtensionSystemReady,
+                     weak_ptr_factory_.GetWeakPtr(), profile));
 
   // Track the lifecycle of all BackgroundContents in the system to allow us
   // to store an up-to-date list of the urls. Start tracking contents when they

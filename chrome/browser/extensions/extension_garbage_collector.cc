@@ -118,13 +118,13 @@ ExtensionGarbageCollector::ExtensionGarbageCollector(
 
   extension_system->ready().PostDelayed(
       FROM_HERE,
-      base::Bind(&ExtensionGarbageCollector::GarbageCollectExtensions,
-                 weak_factory_.GetWeakPtr()),
+      base::BindOnce(&ExtensionGarbageCollector::GarbageCollectExtensions,
+                     weak_factory_.GetWeakPtr()),
       kGarbageCollectStartupDelay);
 
   extension_system->ready().Post(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &ExtensionGarbageCollector::GarbageCollectIsolatedStorageIfNeeded,
           weak_factory_.GetWeakPtr()));
 
