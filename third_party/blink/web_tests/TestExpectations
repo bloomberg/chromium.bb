@@ -6174,7 +6174,7 @@ crbug.com/948785 [ Debug ] virtual/user-activation-v2/fast/events/pointerevents/
 crbug.com/947951 [ Win7 ] external/wpt/pointerevents/pointerevent_touch-action-inherit_child-auto-child-none_touch.html [ Pass Failure ]
 crbug.com/949167 external/wpt/html/semantics/links/links-created-by-a-and-area-elements/target_blank_implicit_noopener.html [ Pass Timeout ]
 crbug.com/949207 external/wpt/html/semantics/links/links-created-by-a-and-area-elements/target_blank_implicit_noopener_base.html [ Pass Timeout ]
-crbug.com/949403 virtual/display-lock/display-lock/lock-after-append/acquire-on-composited-layer.html [ Pass Failure ]
+crbug.com/949403 virtual/display-lock/display-lock/lock-after-append/acquire-on-composited-layer.html [ Pass Crash ]
 crbug.com/949440 [ Mac10.13 Debug ] http/tests/devtools/layers/layers-panel-mouse-events.js [ Pass Crash ]
 crbug.com/949440 [ Mac10.13 Debug ] http/tests/devtools/layers/layers-3d-view-hit-testing.js [ Pass Crash ]
 crbug.com/949440 [ Mac10.13 Debug ] virtual/nobinary-for-devtools/http/tests/devtools/layers/layers-3d-view-hit-testing.js [ Pass Crash ]
