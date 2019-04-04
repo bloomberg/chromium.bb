@@ -312,16 +312,14 @@ Polymer({
       return '';
     }
 
-    let msg = this.i18n('securityKeysPINIncorrect');
     // Warn the user if the number of retries is getting low.
     if (1 < retries && retries <= 3) {
-      msg += ' ' +
-          this.i18n(
-              'securityKeysCurrentPINRetriesPl', this.retries_.toString());
-    } else if (retries == 1) {
-      msg += ' ' + this.i18n('securityKeysCurrentPINRetriesSin');
+      return this.i18n('securityKeysPINIncorrectRetriesPl', retries.toString());
     }
-    return msg;
+    if (retries == 1) {
+      return this.i18n('securityKeysPINIncorrectRetriesSin');
+    }
+    return this.i18n('securityKeysPINIncorrect');
   },
 
   /**
