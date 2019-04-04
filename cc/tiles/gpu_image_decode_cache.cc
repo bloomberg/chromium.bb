@@ -1513,6 +1513,15 @@ void GpuImageDecodeCache::OwnershipChanged(const DrawImage& draw_image,
       RemoveFromPersistentCache(found_persistent);
   }
 
+  // Don't keep discardable cpu memory for GPU backed images. The cache hit rate
+  // of the cpu fallback (in case we don't find this image in gpu memory) is
+  // too low to cache this data.
+  if (image_data->decode.ref_count == 0 &&
+      image_data->mode != DecodedDataMode::kCpu &&
+      image_data->HasUploadedData()) {
+    image_data->decode.ResetData();
+  }
+
   // If we have no refs on an uploaded image, it should be unlocked. Do this
   // before any attempts to delete the image.
   if (image_data->IsGpuOrTransferCache() && image_data->upload.ref_count == 0 &&
