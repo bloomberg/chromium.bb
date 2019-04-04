@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "base/supports_user_data.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
@@ -34,9 +35,9 @@ struct SSLStatus;
 // required to recreate a browsing state. This includes some opaque binary
 // state as provided by the WebContents as well as some clear text title and
 // URL which is used for our user interface.
-class NavigationEntry {
+class NavigationEntry : public base::SupportsUserData {
  public:
-  virtual ~NavigationEntry() {}
+  ~NavigationEntry() override {}
 
   CONTENT_EXPORT static std::unique_ptr<NavigationEntry> Create();
 
@@ -192,15 +193,6 @@ class NavigationEntry {
   // resources.
   virtual void SetCanLoadLocalResources(bool allow) = 0;
   virtual bool GetCanLoadLocalResources() = 0;
-
-  // Set extra data on this NavigationEntry according to the specified |key|.
-  // This data is not persisted by default.
-  virtual void SetExtraData(const std::string& key,
-                            const base::string16& data) = 0;
-  // If present, fills the |data| present at the specified |key|.
-  virtual bool GetExtraData(const std::string& key, base::string16* data) = 0;
-  // Removes the data at the specified |key|.
-  virtual void ClearExtraData(const std::string& key) = 0;
 
   // The status code of the last known successful navigation.  If
   // GetHttpStatusCode() returns 0 that means that either:
