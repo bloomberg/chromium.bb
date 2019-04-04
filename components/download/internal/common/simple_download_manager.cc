@@ -8,7 +8,10 @@ namespace download {
 
 SimpleDownloadManager::SimpleDownloadManager() {}
 
-SimpleDownloadManager::~SimpleDownloadManager() = default;
+SimpleDownloadManager::~SimpleDownloadManager() {
+  for (auto& observer : simple_download_manager_observers_)
+    observer.OnManagerGoingDown();
+}
 
 void SimpleDownloadManager::AddObserver(Observer* observer) {
   simple_download_manager_observers_.AddObserver(observer);
@@ -32,6 +35,11 @@ void SimpleDownloadManager::NotifyWhenInitialized(
     return;
   }
   on_initialized_callbacks_.emplace_back(std::move(on_initialized_cb));
+}
+
+void SimpleDownloadManager::OnNewDownloadCreated(DownloadItem* download) {
+  for (auto& observer : simple_download_manager_observers_)
+    observer.OnDownloadCreated(download);
 }
 
 }  // namespace download
