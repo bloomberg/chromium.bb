@@ -64,8 +64,7 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
 
 #pragma mark - Public Methods.
 
-- (void)presentInfobarBannerAnimated:(BOOL)animated
-                          completion:(ProceduralBlock)completion {
+- (void)presentInfobarBanner {
   DCHECK(self.browserState);
   DCHECK(self.baseViewController);
   DCHECK(self.bannerViewController);
@@ -83,26 +82,23 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
   self.bannerTransitionDriver.bannerPositioner = self;
   self.bannerViewController.transitioningDelegate = self.bannerTransitionDriver;
   [self.baseViewController presentViewController:self.bannerViewController
-                                        animated:animated
-                                      completion:completion];
+                                        animated:YES
+                                      completion:nil];
 }
 
 - (void)presentInfobarModal {
-  ProceduralBlock modalPresentation = ^{
-    DCHECK(!self.bannerViewController);
-    DCHECK(self.baseViewController);
-    self.modalTransitionDriver = [[InfobarModalTransitionDriver alloc]
-        initWithTransitionMode:InfobarModalTransitionBase];
-    [self presentInfobarModalFrom:self.baseViewController
-                           driver:self.modalTransitionDriver];
-  };
-
-  // Dismiss InfobarBanner first if being presented.
+  // Dismiss if we're already presenting a ViewController e.g. The
+  // BannerViewController could be presented at this time.
   if (self.baseViewController.presentedViewController) {
-    [self dismissInfobarBanner:self animated:NO completion:modalPresentation];
-  } else {
-    modalPresentation();
+    [self.baseViewController dismissViewControllerAnimated:NO completion:nil];
   }
+
+  DCHECK(!self.bannerViewController);
+  DCHECK(self.baseViewController);
+  self.modalTransitionDriver = [[InfobarModalTransitionDriver alloc]
+      initWithTransitionMode:InfobarModalTransitionBase];
+  [self presentInfobarModalFrom:self.baseViewController
+                         driver:self.modalTransitionDriver];
 }
 
 - (void)dismissInfobarBannerAfterInteraction {
