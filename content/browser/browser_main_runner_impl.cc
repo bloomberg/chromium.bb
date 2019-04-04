@@ -106,8 +106,7 @@ int BrowserMainRunnerImpl::Initialize(const MainFunctionParams& parameters) {
     // (Text Services Framework) module can interact with the message pump
     // on Windows 8 Metro mode.
     ole_initializer_.reset(new ui::ScopedOleInitializer);
-    // Enable DirectWrite font rendering if needed.
-    gfx::win::MaybeInitializeDirectWrite();
+    gfx::win::InitializeDirectWrite();
 #endif  // OS_WIN
 
     main_loop_.reset(

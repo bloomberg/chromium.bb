@@ -12,7 +12,7 @@
 namespace gfx {
 namespace win {
 
-GFX_EXPORT void MaybeInitializeDirectWrite();
+GFX_EXPORT void InitializeDirectWrite();
 
 // Creates a DirectWrite factory.
 GFX_EXPORT void CreateDWriteFactory(IDWriteFactory** factory);

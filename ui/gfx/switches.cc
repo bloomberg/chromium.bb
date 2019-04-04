@@ -7,11 +7,6 @@
 
 namespace switches {
 
-#if defined(OS_WIN)
-// Disables DirectWrite font rendering for general UI elements.
-const char kDisableDirectWriteForUI[] = "disable-directwrite-for-ui";
-#endif
-
 // Force disables font subpixel positioning. This affects the character glyph
 // sharpness, kerning, hinting and layout.
 const char kDisableFontSubpixelPositioning[] =
