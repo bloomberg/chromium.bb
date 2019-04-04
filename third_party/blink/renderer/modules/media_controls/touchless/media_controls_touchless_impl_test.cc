@@ -8,14 +8,17 @@
 
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/media/html_media_test_helper.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/core/html/time_ranges.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
@@ -30,7 +33,9 @@ class MockWebMediaPlayerForTouchlessImpl : public EmptyWebMediaPlayer {
  public:
   WebTimeRanges Seekable() const override { return seekable_; }
   bool HasVideo() const override { return true; }
+  WebTimeRanges Buffered() const override { return buffered_; }
 
+  WebTimeRanges buffered_;
   WebTimeRanges seekable_;
 };
 
@@ -66,11 +71,11 @@ class MediaControlsTouchlessImplTest : public PageTestBase {
         &clients, MakeGarbageCollected<test::MediaStubLocalFrameClient>(
                       std::make_unique<MockWebMediaPlayerForTouchlessImpl>()));
 
-    GetDocument().write("<video>");
+    GetDocument().write("<video controls>");
     HTMLMediaElement& video =
         ToHTMLVideoElement(*GetDocument().QuerySelector("video"));
-    media_controls_ = MediaControlsTouchlessImpl::Create(
-        video, video.EnsureUserAgentShadowRoot());
+    media_controls_ =
+        static_cast<MediaControlsTouchlessImpl*>(video.GetMediaControls());
   }
 
   MediaControlsTouchlessImpl& MediaControls() { return *media_controls_; }
@@ -96,6 +101,11 @@ class MediaControlsTouchlessImplTest : public PageTestBase {
     WebTimeRange time_range(0.0, duration);
     WebMediaPlayer()->seekable_.Assign(&time_range, 1);
     MediaElement().DurationChanged(duration, false /* requestSeek */);
+  }
+
+  void SetBufferedRange(double end) {
+    WebTimeRange time_range(0.0, end);
+    WebMediaPlayer()->buffered_.Assign(&time_range, 1);
   }
 
   bool IsControlsVisible() {
@@ -230,6 +240,39 @@ TEST_F(MediaControlsTouchlessImplTest, PlayPauseIcon) {
   test::RunPendingTasks();
   ASSERT_TRUE(play_button->classList().contains("paused"));
   ASSERT_FALSE(play_button->classList().contains("playing"));
+}
+
+TEST_F(MediaControlsTouchlessImplTest, ProgressBar) {
+  const double duration = 100.0;
+  const double buffered = 60.0;
+  const double current_time = 15.0;
+
+  LoadMediaWithDuration(duration);
+  SetBufferedRange(buffered);
+  MediaElement().setCurrentTime(current_time);
+  test::RunPendingTasks();
+
+  MediaElement().DispatchEvent(*Event::Create(event_type_names::kTimeupdate));
+
+  Element* timeline =
+      GetControlByShadowPseudoId("-internal-media-controls-touchless-timeline");
+  Element* progress_bar = GetControlByShadowPseudoId(
+      "-internal-media-controls-touchless-timeline-progress");
+  Element* loaded_bar = GetControlByShadowPseudoId(
+      "-internal-media-controls-touchless-timeline-loaded");
+
+  ASSERT_NE(nullptr, timeline);
+  ASSERT_NE(nullptr, progress_bar);
+  ASSERT_NE(nullptr, loaded_bar);
+
+  double timeline_width = timeline->getBoundingClientRect()->width();
+  double progress_bar_width = progress_bar->getBoundingClientRect()->width();
+  double loaded_bar_width = loaded_bar->getBoundingClientRect()->width();
+  ASSERT_GT(timeline_width, 0);
+
+  EXPECT_DOUBLE_EQ(buffered / duration, loaded_bar_width / timeline_width);
+  EXPECT_DOUBLE_EQ(current_time / buffered,
+                   progress_bar_width / loaded_bar_width);
 }
 
 TEST_F(MediaControlsTouchlessImplTestWithMockScheduler, ControlsShowAndHide) {

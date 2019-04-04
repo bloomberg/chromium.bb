@@ -15,6 +15,10 @@ MediaControlsTouchlessElement::MediaControlsTouchlessElement(
   media_controls_->MediaEventListener().AddObserver(this);
 }
 
+HTMLMediaElement& MediaControlsTouchlessElement::MediaElement() const {
+  return media_controls_->MediaElement();
+}
+
 void MediaControlsTouchlessElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(media_controls_);
 }
