@@ -56,7 +56,8 @@
 
 #pragma mark - Public Methods.
 
-- (void)presentInfobarBanner {
+- (void)presentInfobarBannerAnimated:(BOOL)animated
+                          completion:(ProceduralBlock)completion {
   DCHECK(self.browserState);
   DCHECK(self.baseViewController);
   DCHECK(self.bannerViewController);
@@ -73,23 +74,26 @@
   self.bannerTransitionDriver = [[InfobarBannerTransitionDriver alloc] init];
   self.bannerViewController.transitioningDelegate = self.bannerTransitionDriver;
   [self.baseViewController presentViewController:self.bannerViewController
-                                        animated:YES
-                                      completion:nil];
+                                        animated:animated
+                                      completion:completion];
 }
 
 - (void)presentInfobarModal {
-  // Dismiss if we're already presenting a ViewController e.g. The
-  // BannerViewController could be presented at this time.
-  if (self.baseViewController.presentedViewController) {
-    [self.baseViewController dismissViewControllerAnimated:NO completion:nil];
-  }
+  ProceduralBlock modalPresentation = ^{
+    DCHECK(!self.bannerViewController);
+    DCHECK(self.baseViewController);
+    self.modalTransitionDriver = [[InfobarModalTransitionDriver alloc]
+        initWithTransitionMode:InfobarModalTransitionBase];
+    [self presentInfobarModalFrom:self.baseViewController
+                           driver:self.modalTransitionDriver];
+  };
 
-  DCHECK(!self.bannerViewController);
-  DCHECK(self.baseViewController);
-  self.modalTransitionDriver = [[InfobarModalTransitionDriver alloc]
-      initWithTransitionMode:InfobarModalTransitionBase];
-  [self presentInfobarModalFrom:self.baseViewController
-                         driver:self.modalTransitionDriver];
+  // Dismiss InfobarBanner first if being presented.
+  if (self.baseViewController.presentedViewController) {
+    [self dismissInfobarBanner:self animated:NO completion:modalPresentation];
+  } else {
+    modalPresentation();
+  }
 }
 
 - (void)dismissInfobarBannerAfterInteraction {
