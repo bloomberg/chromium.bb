@@ -12,6 +12,7 @@
 #include "ui/keyboard/keyboard_ui.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/keyboard/test/keyboard_test_util.h"
+#include "ui/keyboard/test/test_keyboard_controller_observer.h"
 #include "ui/keyboard/test/test_keyboard_layout_delegate.h"
 #include "ui/keyboard/test/test_keyboard_ui_factory.h"
 
@@ -197,6 +198,27 @@ TEST_F(KeyboardUtilTest, IsOverscrollEnabled) {
   keyboard_controller_.set_keyboard_locked(true);
   EXPECT_TRUE(keyboard_controller_.keyboard_locked());
   EXPECT_FALSE(keyboard_controller_.IsKeyboardOverscrollEnabled());
+}
+
+// See https://crbug.com/946358.
+TEST_F(KeyboardUtilTest, RebuildsWhenChangingAccessibilityFlag) {
+  // Virtual keyboard enabled with compact layout.
+  keyboard::SetTouchKeyboardEnabled(true);
+
+  keyboard::TestKeyboardControllerObserver observer;
+  keyboard_controller_.AddObserver(&observer);
+
+  // Virtual keyboard should rebuild to switch to a11y layout.
+  keyboard::SetAccessibilityKeyboardEnabled(true);
+  EXPECT_EQ(1, observer.disabled_count);
+  EXPECT_EQ(1, observer.enabled_count);
+
+  // Virtual keyboard should rebuild to switch back to compact layout.
+  keyboard::SetAccessibilityKeyboardEnabled(false);
+  EXPECT_EQ(2, observer.disabled_count);
+  EXPECT_EQ(2, observer.enabled_count);
+
+  keyboard_controller_.RemoveObserver(&observer);
 }
 
 }  // namespace keyboard

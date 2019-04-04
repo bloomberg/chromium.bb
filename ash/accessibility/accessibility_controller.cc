@@ -42,7 +42,6 @@
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor_type.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
@@ -1257,23 +1256,7 @@ void AccessibilityController::UpdateVirtualKeyboardFromPref() {
 
   NotifyAccessibilityStatusChanged();
 
-  const bool was_enabled = keyboard::IsKeyboardEnabled();
   keyboard::SetAccessibilityKeyboardEnabled(enabled);
-
-  if (::features::IsMultiProcessMash()) {
-    // TODO(mash): Support on-screen keyboard. See https://crbug.com/646565.
-    NOTIMPLEMENTED();
-    return;
-  }
-
-  // Note that there are two versions of the on-screen keyboard. A full layout
-  // is provided for accessibility, which includes sticky modifier keys to
-  // enable typing of hotkeys. A compact version is used in tablet mode to
-  // provide a layout with larger keys to facilitate touch typing. In the event
-  // that the a11y keyboard is being disabled, an on-screen keyboard might still
-  // be enabled and a forced reset is required to pick up the layout change.
-  if (was_enabled)
-    Shell::Get()->ash_keyboard_controller()->RebuildKeyboardIfEnabled();
 }
 
 void AccessibilityController::GetBatteryDescription(

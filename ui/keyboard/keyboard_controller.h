@@ -321,6 +321,10 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // of Set/ClearEnableFlag should cause the keyboard to be enabled.
   bool IsKeyboardEnableRequested() const;
 
+  // Enables or disables the keyboard based on |IsKeyboardEnableRequested|,
+  // as requested by |flag|.
+  void UpdateKeyboardAsRequestedBy(mojom::KeyboardEnableFlag flag);
+
   // Attach the keyboard window as a child of the given parent window.
   // Can only be called when the keyboard is not activated. |parent| must not
   // have any children.
