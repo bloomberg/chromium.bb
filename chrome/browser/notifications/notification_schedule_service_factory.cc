@@ -4,7 +4,10 @@
 
 #include "chrome/browser/notifications/notification_schedule_service_factory.h"
 
-#include "chrome/browser/notifications/scheduler/notification_schedule_service_impl.h"
+#include "chrome/browser/notifications/notification_background_task_scheduler_impl.h"
+#include "chrome/browser/notifications/scheduler/notification_schedule_service.h"
+#include "chrome/browser/notifications/scheduler/notification_scheduler_context.h"
+#include "chrome/browser/notifications/scheduler/schedule_service_factory_helper.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
@@ -33,9 +36,12 @@ NotificationScheduleServiceFactory::~NotificationScheduleServiceFactory() =
 
 KeyedService* NotificationScheduleServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  // TODO(xingliu): Build the actual instance here.
-  return static_cast<KeyedService*>(
-      new notifications::NotificationScheduleServiceImpl());
+  // Pass all dependencies to notification scheduler and build the service
+  // instance.
+  auto background_task_scheduler =
+      std::make_unique<NotificationBackgroundTaskSchedulerImpl>();
+  return notifications::CreateNotificationScheduleService(
+      std::move(background_task_scheduler));
 }
 
 content::BrowserContext*
