@@ -83,6 +83,7 @@ source_set("chromeos") {
     "//chromeos/components/drivefs/mojom",
     "//chromeos/components/multidevice",
     "//chromeos/components/multidevice/logging",
+    "//chromeos/components/power",
     "//chromeos/components/proximity_auth",
     "//chromeos/components/tether",
     "//chromeos/cryptohome",
