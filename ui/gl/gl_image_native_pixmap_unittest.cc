@@ -101,7 +101,8 @@ using GLImageTestTypes = testing::Types<
     GLImageNativePixmapTestDelegate<gfx::BufferFormat::RGBX_8888>,
     GLImageNativePixmapTestDelegate<gfx::BufferFormat::RGBA_8888>,
     GLImageNativePixmapTestDelegate<gfx::BufferFormat::BGRX_8888>,
-    GLImageNativePixmapTestDelegate<gfx::BufferFormat::BGRA_8888>>;
+    GLImageNativePixmapTestDelegate<gfx::BufferFormat::BGRA_8888>,
+    GLImageNativePixmapTestDelegate<gfx::BufferFormat::RGBX_1010102>>;
 
 #if !defined(MEMORY_SANITIZER)
 // Fails under MSAN: crbug.com/886995
