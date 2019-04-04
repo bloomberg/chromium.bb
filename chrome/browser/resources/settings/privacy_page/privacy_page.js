@@ -186,7 +186,7 @@ Polymer({
     /**
      * This flag is used to conditionally show a set of sync UIs to the
      * profiles that have been migrated to have a unified consent flow.
-     * TODO(scottchen): In the future when all profiles are completely migrated,
+     * TODO(tangltom): In the future when all profiles are completely migrated,
      * this should be removed, and UIs hidden behind it should become default.
      * @private
      */

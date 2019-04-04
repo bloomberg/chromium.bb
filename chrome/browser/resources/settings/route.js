@@ -687,11 +687,11 @@ cr.define('settings', function() {
         new URLSearchParams(window.location.search), true);
   });
 
-  // TODO(scottchen): Change to 'get routes() {}' in export when we fix a bug in
+  // TODO(dpapad): Change to 'get routes() {}' in export when we fix a bug in
   // ChromePass that limits the syntax of what can be returned from cr.define().
   const routes = routerInstance.getRoutes();
 
-  // TODO(scottchen): Stop exposing all those methods directly on settings.*,
+  // TODO(dpapad): Stop exposing all those methods directly on settings.*,
   // and instead update all clients to use the singleton instance directly
   const getCurrentRoute = routerInstance.getCurrentRoute.bind(routerInstance);
   const getRouteForPath = routerInstance.getRouteForPath.bind(routerInstance);

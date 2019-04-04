@@ -286,8 +286,6 @@ Polymer({
    * @private
    */
   onMouseover_: function(e) {
-    // TODO(scottchen): Using "focus" to determine selected item might mess
-    // with screen readers in some edge cases.
     let i = 0;
     let target;
     do {
