@@ -33,13 +33,22 @@ enum MhtmlSaveStatus {
 
   // A render process needed for the serialization of one of the page's frame is
   // no more. Determined by the browser.
-  kRenderProcessExited
+  kRenderProcessExited,
+
+  // There is a problem reading or writing serialized data to the Data Pipe.
+  // Determined by either browser or renderer.
+  kStreamingError
+};
+
+union MhtmlOutputHandle {
+  // Destination file handle.
+  mojo_base.mojom.File file_handle;
+
+  // Data pipe producer handle for on-the-fly hashing.
+  handle<data_pipe_producer> producer_handle;
 };
 
 struct SerializeAsMHTMLParams {
-  // Destination file handle.
-  mojo_base.mojom.File destination_file;
-
   // MHTML boundary marker / MIME multipart boundary maker. The same
   // |mhtml_boundary_marker| should be used for serialization of each frame.
   string mhtml_boundary_marker;
@@ -67,10 +76,13 @@ struct SerializeAsMHTMLParams {
 
   // Salt used for |digests_of_uris_to_skip|.
   string salt;
+
+  // Destination handle to write MHTML data to.
+  MhtmlOutputHandle output_handle;
 };
 
 // Serialize target frame and its resources into MHTML and write it into the
-// provided destination file handle.  Note that when serializing multiple
+// provided output handle.  Note that when serializing multiple
 // frames, one needs to serialize the *main* frame first (the main frame
 // needs to go first according to RFC2557 + the main frame will trigger
 // generation of the MHTML header).
