@@ -62,6 +62,12 @@ class CORE_EXPORT NGLineBreaker {
   // Create an NGInlineBreakToken for the last line returned by NextLine().
   scoped_refptr<NGInlineBreakToken> CreateBreakToken(const NGLineInfo&) const;
 
+  // Computing |NGLineBreakerMode::kMinContent| with |MaxSizeCache| caches
+  // information that can help computing |kMaxContent|. It is recommended to set
+  // this when computing both |kMinContent| and |kMaxContent|.
+  using MaxSizeCache = Vector<LayoutUnit, 64>;
+  void SetMaxSizeCache(MaxSizeCache* max_size_cache);
+
   // Compute NGInlineItemResult for an open tag item.
   // Returns true if this item has edge and may have non-zero inline size.
   static bool ComputeOpenTagResult(const NGInlineItem&,
@@ -256,6 +262,9 @@ class CORE_EXPORT NGLineBreaker {
   const NGPositionedFloatVector& leading_floats_;
   unsigned leading_floats_index_ = 0u;
   unsigned handled_leading_floats_index_;
+
+  // Cache for computing |MinMaxSize|. See |MaxSizeCache|.
+  MaxSizeCache* max_size_cache_ = nullptr;
 
   // Keep the last item |HandleTextForFastMinContent()| has handled. This is
   // used to fallback the last word to |HandleText()|.

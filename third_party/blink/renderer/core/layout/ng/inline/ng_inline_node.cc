@@ -1002,7 +1002,7 @@ static LayoutUnit ComputeContentSize(
     WritingMode container_writing_mode,
     const MinMaxSizeInput& input,
     NGLineBreakerMode mode,
-    const NGConstraintSpace* constraint_space) {
+    NGLineBreaker::MaxSizeCache* max_size_cache) {
   const ComputedStyle& style = node.Style();
   WritingMode writing_mode = style.GetWritingMode();
   LayoutUnit available_inline_size =
@@ -1030,6 +1030,7 @@ static LayoutUnit ComputeContentSize(
                              empty_leading_floats,
                              /* handled_leading_floats_index */ 0u,
                              /* break_token */ nullptr, &empty_exclusion_space);
+  line_breaker.SetMaxSizeCache(max_size_cache);
 
   Vector<LayoutObject*> floats_for_min_max;
   do {
@@ -1113,10 +1114,11 @@ MinMaxSize NGInlineNode::ComputeMinMaxSize(
   // Compute the max of inline sizes of all line boxes with 0 available inline
   // size. This gives the min-content, the width where lines wrap at every
   // break opportunity.
+  NGLineBreaker::MaxSizeCache max_size_cache;
   MinMaxSize sizes;
   sizes.min_size =
       ComputeContentSize(*this, container_writing_mode, input,
-                         NGLineBreakerMode::kMinContent, constraint_space);
+                         NGLineBreakerMode::kMinContent, &max_size_cache);
 
   // Compute the sum of inline sizes of all inline boxes with no line breaks.
   // TODO(kojii): NGConstraintSpaceBuilder does not allow NGSizeIndefinite
@@ -1124,7 +1126,7 @@ MinMaxSize NGInlineNode::ComputeMinMaxSize(
   // without using NGLineBreaker.
   sizes.max_size =
       ComputeContentSize(*this, container_writing_mode, input,
-                         NGLineBreakerMode::kMaxContent, constraint_space);
+                         NGLineBreakerMode::kMaxContent, &max_size_cache);
 
   // Negative text-indent can make min > max. Ensure min is the minimum size.
   sizes.min_size = std::min(sizes.min_size, sizes.max_size);
