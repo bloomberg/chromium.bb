@@ -556,11 +556,11 @@ FcConfigAddFontDir (FcConfig	    *config,
     {
 	if (m)
 	{
-	    printf ("%s -> %s (salt: %s)\n", d, m, salt);
+	    printf ("%s -> %s%s%s%s\n", d, m, salt ? " (salt: " : "", salt ? (const char *)salt : "", salt ? ")" : "");
 	}
 	else if (salt)
 	{
-	    printf ("%s (salt: %s)\n", d, salt);
+	    printf ("%s%s%s%s\n", d, salt ? " (salt: " : "", salt ? (const char *)salt : "", salt ? ")" : "");
 	}
     }
     return FcStrSetAddFilenamePairWithSalt (config->fontDirs, d, m, salt);
