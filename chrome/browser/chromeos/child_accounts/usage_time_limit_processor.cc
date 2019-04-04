@@ -40,7 +40,7 @@ bool ContainsTime(base::Time start, base::Time end, base::Time now) {
   return now >= start && now < end;
 }
 
-// Returns true when a < b. When b is null, this returns false.
+// Returns true when a < b. When b is null, this returns true.
 bool IsBefore(base::Time a, base::Time b) {
   return b.is_null() || a < b;
 }
@@ -784,13 +784,12 @@ base::Time UsageTimeLimitProcessor::GetNextUnlockTime() {
   // When a lock override will become inactive.
   if (ShouldBeLockedByOverride()) {
     // The lock override ends either on the next reset time or when a bedtime
-    // ends. Also, if the duration of the unlock override has finished, the
-    // device will remain locked until the next reset time or when the next
-    // bedtime ends, if the bedtime should be active at the current time.
-    base::Time lock_override_ends = GetLockOverrideEndTime();
+    // ends.
+    base::Time lock_override_ends;
     if (time_window_limit_ && !IsOverrideDurationFinished()) {
-      // Check yesterdays, todays or tomorrows window limit, since these can end
-      // before the reset time.
+      // Search a time window limit that could start before the lock override
+      // ends and retrieve its end time. It could be yesterday's, today's or
+      // tomorrow's time window limit.
       for (int i = -1; i <= 1; i++) {
         internal::Weekday weekday = WeekdayShift(current_weekday_, i);
         base::Optional<TimeWindowLimitEntry> window_limit =
@@ -798,15 +797,30 @@ base::Time UsageTimeLimitProcessor::GetNextUnlockTime() {
         if (window_limit) {
           base::Time window_limit_start =
               ConvertPolicyTime(window_limit->starts_at, i);
+
+          // Window limit starts after the end of override.
+          if (window_limit_start > GetLockOverrideEndTime())
+            continue;
+
           base::Time window_limit_end =
               window_limit_start +
               GetConsecutiveTimeWindowLimitDuration(weekday);
 
-          if (window_limit_end > time_limit_override_->created_at()) {
-            lock_override_ends = std::min(lock_override_ends, window_limit_end);
+          if (window_limit_end > time_limit_override_->created_at() &&
+              IsBefore(window_limit_end, lock_override_ends)) {
+            lock_override_ends = window_limit_end;
           }
         }
       }
+    }
+    // Set override end to default reset time when:
+    // 1. No window limit starts before the reset time;
+    // 2. Window limit starts and ends before reset time and there is an unlock
+    // with duration active. Unlock with duration must lock device at least
+    // until the reset time.
+    if (lock_override_ends.is_null() || IsOverrideDurationFinished()) {
+      lock_override_ends =
+          std::max(lock_override_ends, GetLockOverrideEndTime());
     }
     unlock_time = std::max(unlock_time, lock_override_ends);
   }
