@@ -27,7 +27,7 @@ ExternalVkImageGlRepresentation::ExternalVkImageGlRepresentation(
       texture_service_id_(texture_service_id) {}
 
 ExternalVkImageGlRepresentation::~ExternalVkImageGlRepresentation() {
-  texture_->RemoveLightweightRef(backing_impl()->have_context());
+  texture_->RemoveLightweightRef(has_context());
 }
 
 gles2::Texture* ExternalVkImageGlRepresentation::GetTexture() {
