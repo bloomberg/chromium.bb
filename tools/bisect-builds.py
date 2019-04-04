@@ -641,6 +641,8 @@ def RunRevision(context, revision, zip_file, profile, num_runs, command, args):
 # pylint: disable=W0613
 def AskIsGoodBuild(rev, exit_status, stdout, stderr):
   """Asks the user whether build |rev| is good or bad."""
+  if exit_status:
+    print 'Chrome exit_status: %d. Use s to see output' % exit_status
   # Loop until we get a response that we can parse.
   while True:
     response = raw_input('Revision %s is '
