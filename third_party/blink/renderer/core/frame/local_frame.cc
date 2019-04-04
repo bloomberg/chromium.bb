@@ -1032,85 +1032,6 @@ void LocalFrame::ScheduleVisualUpdateUnlessThrottled() {
   GetPage()->Animator().ScheduleVisualUpdate(this);
 }
 
-bool LocalFrame::CanNavigate(const Frame& target_frame,
-                             const KURL& destination_url) {
-  String error_reason;
-  const bool is_allowed_navigation =
-      CanNavigateWithoutFramebusting(target_frame, error_reason);
-  const bool sandboxed =
-      GetSecurityContext()->GetSandboxFlags() != kSandboxNone;
-  const bool has_user_gesture = HasBeenActivated();
-
-  // Top navigation in sandbox with or w/o 'allow-top-navigation'.
-  if (target_frame != this && sandboxed && target_frame == Tree().Top()) {
-    UseCounter::Count(GetDocument(), WebFeature::kTopNavInSandbox);
-    if (!has_user_gesture) {
-      UseCounter::Count(GetDocument(),
-                        WebFeature::kTopNavInSandboxWithoutGesture);
-    }
-  }
-
-  // Top navigation w/o sandbox or in sandbox with 'allow-top-navigation'.
-  if (target_frame != this &&
-      !GetSecurityContext()->IsSandboxed(kSandboxTopNavigation) &&
-      target_frame == Tree().Top()) {
-    UseCounter::Count(GetDocument(), WebFeature::kTopNavigationFromSubFrame);
-    if (sandboxed) {  // Sandboxed with 'allow-top-navigation'.
-      UseCounter::Count(GetDocument(), WebFeature::kTopNavInSandboxWithPerm);
-      if (!has_user_gesture) {
-        UseCounter::Count(GetDocument(),
-                          WebFeature::kTopNavInSandboxWithPermButNoGesture);
-      }
-    }
-
-    if (has_user_gesture || is_allowed_navigation ||
-        target_frame.GetSecurityContext()->GetSecurityOrigin()->CanAccess(
-            SecurityOrigin::Create(destination_url).get())) {
-      return true;
-    }
-
-    String target_domain = network_utils::GetDomainAndRegistry(
-        target_frame.GetSecurityContext()->GetSecurityOrigin()->Domain(),
-        network_utils::kIncludePrivateRegistries);
-    String destination_domain = network_utils::GetDomainAndRegistry(
-        destination_url.Host(), network_utils::kIncludePrivateRegistries);
-    if (!target_domain.IsEmpty() && !destination_domain.IsEmpty() &&
-        target_domain == destination_domain) {
-      return true;
-    }
-
-    // Frame-busting used to be generally allowed in most situations, but may
-    // now blocked if the document initiating the navigation has never received
-    // a user gesture and the navigation isn't same-origin with the target.
-    if (auto* settings_client = Client()->GetContentSettingsClient()) {
-      if (settings_client->AllowPopupsAndRedirects(false /* default_value*/))
-        return true;
-    }
-    error_reason =
-        "The frame attempting navigation is targeting its top-level window, "
-        "but is neither same-origin with its target nor has it received a "
-        "user gesture. See "
-        "https://www.chromestatus.com/features/5851021045661696.";
-    PrintNavigationErrorMessage(target_frame, error_reason.Latin1().data());
-    Client()->DidBlockFramebust(destination_url);
-    return false;
-  }
-
-  // Navigating window.opener cross origin, without user activation. See
-  // crbug.com/813643.
-  if (Client()->Opener() == target_frame &&
-      !HasTransientUserActivation(this, false /* check_if_main_thread */) &&
-      !target_frame.GetSecurityContext()->GetSecurityOrigin()->CanAccess(
-          SecurityOrigin::Create(destination_url).get())) {
-    UseCounter::Count(GetDocument(),
-                      WebFeature::kOpenerNavigationWithoutGesture);
-  }
-
-  if (!is_allowed_navigation && !error_reason.IsNull())
-    PrintNavigationErrorMessage(target_frame, error_reason.Latin1().data());
-  return is_allowed_navigation;
-}
-
 static bool CanAccessAncestor(const SecurityOrigin& active_security_origin,
                               const Frame* target_frame) {
   // targetFrame can be 0 when we're trying to navigate a top-level frame
@@ -1137,17 +1058,28 @@ static bool CanAccessAncestor(const SecurityOrigin& active_security_origin,
   return false;
 }
 
-bool LocalFrame::CanNavigateWithoutFramebusting(const Frame& target_frame,
-                                                String& reason) {
+bool LocalFrame::CanNavigate(const Frame& target_frame,
+                             const KURL& destination_url) {
   if (&target_frame == this)
     return true;
+
+  // Navigating window.opener cross origin, without user activation. See
+  // crbug.com/813643.
+  if (Client()->Opener() == target_frame &&
+      !HasTransientUserActivation(this, false /* check_if_main_thread */) &&
+      !target_frame.GetSecurityContext()->GetSecurityOrigin()->CanAccess(
+          SecurityOrigin::Create(destination_url).get())) {
+    UseCounter::Count(GetDocument(),
+                      WebFeature::kOpenerNavigationWithoutGesture);
+  }
 
   if (GetSecurityContext()->IsSandboxed(kSandboxNavigation)) {
     if (!target_frame.Tree().IsDescendantOf(this) &&
         !target_frame.IsMainFrame()) {
-      reason =
+      PrintNavigationErrorMessage(
+          target_frame,
           "The frame attempting navigation is sandboxed, and is therefore "
-          "disallowed from navigating its ancestors.";
+          "disallowed from navigating its ancestors.");
       return false;
     }
 
@@ -1159,10 +1091,11 @@ bool LocalFrame::CanNavigateWithoutFramebusting(const Frame& target_frame,
             kSandboxPropagatesToAuxiliaryBrowsingContexts) &&
         (GetSecurityContext()->IsSandboxed(kSandboxPopups) ||
          target_frame.Client()->Opener() != this)) {
-      reason =
+      PrintNavigationErrorMessage(
+          target_frame,
           "The frame attempting navigation is sandboxed and is trying "
           "to navigate a popup, but is not the popup's opener and is not "
-          "set to propagate sandboxing to popups.";
+          "set to propagate sandboxing to popups.");
       return false;
     }
 
@@ -1172,23 +1105,26 @@ bool LocalFrame::CanNavigateWithoutFramebusting(const Frame& target_frame,
       if (GetSecurityContext()->IsSandboxed(kSandboxTopNavigation) &&
           GetSecurityContext()->IsSandboxed(
               kSandboxTopNavigationByUserActivation)) {
-        reason =
+        PrintNavigationErrorMessage(
+            target_frame,
             "The frame attempting navigation of the top-level window is "
             "sandboxed, but the flag of 'allow-top-navigation' or "
-            "'allow-top-navigation-by-user-activation' is not set.";
+            "'allow-top-navigation-by-user-activation' is not set.");
         return false;
       }
+
       if (GetSecurityContext()->IsSandboxed(kSandboxTopNavigation) &&
           !GetSecurityContext()->IsSandboxed(
               kSandboxTopNavigationByUserActivation) &&
           !LocalFrame::HasTransientUserActivation(this)) {
         // With only 'allow-top-navigation-by-user-activation' (but not
         // 'allow-top-navigation'), top navigation requires a user gesture.
-        reason =
+        PrintNavigationErrorMessage(
+            target_frame,
             "The frame attempting navigation of the top-level window is "
             "sandboxed with the 'allow-top-navigation-by-user-activation' "
             "flag, but has no user activation (aka gesture). See "
-            "https://www.chromestatus.com/feature/5629582019395584.";
+            "https://www.chromestatus.com/feature/5629582019395584.");
         return false;
       }
       return true;
@@ -1226,9 +1162,42 @@ bool LocalFrame::CanNavigateWithoutFramebusting(const Frame& target_frame,
       return true;
   }
 
-  reason =
-      "The frame attempting navigation is neither same-origin with the target, "
-      "nor is it the target's parent or opener.";
+  if (target_frame == Tree().Top()) {
+    // A frame navigating its top may blocked if the document initiating
+    // the navigation has never received a user gesture and the navigation
+    // isn't same-origin with the target.
+    if (HasBeenActivated() ||
+        target_frame.GetSecurityContext()->GetSecurityOrigin()->CanAccess(
+            SecurityOrigin::Create(destination_url).get())) {
+      return true;
+    }
+
+    String target_domain = network_utils::GetDomainAndRegistry(
+        target_frame.GetSecurityContext()->GetSecurityOrigin()->Domain(),
+        network_utils::kIncludePrivateRegistries);
+    String destination_domain = network_utils::GetDomainAndRegistry(
+        destination_url.Host(), network_utils::kIncludePrivateRegistries);
+    if (!target_domain.IsEmpty() && !destination_domain.IsEmpty() &&
+        target_domain == destination_domain) {
+      return true;
+    }
+    if (auto* settings_client = Client()->GetContentSettingsClient()) {
+      if (settings_client->AllowPopupsAndRedirects(false /* default_value*/))
+        return true;
+    }
+    PrintNavigationErrorMessage(
+        target_frame,
+        "The frame attempting navigation is targeting its top-level window, "
+        "but is neither same-origin with its target nor has it received a "
+        "user gesture. See "
+        "https://www.chromestatus.com/features/5851021045661696.");
+    Client()->DidBlockFramebust(destination_url);
+  } else {
+    PrintNavigationErrorMessage(target_frame,
+                                "The frame attempting navigation is neither "
+                                "same-origin with the target, "
+                                "nor is it the target's parent or opener.");
+  }
   return false;
 }
 
