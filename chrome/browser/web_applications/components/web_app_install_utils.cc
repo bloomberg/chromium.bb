@@ -83,6 +83,9 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
   // we picked up from the web_app stuff.
   if (!web_app_icons.empty())
     web_app_info->icons = std::move(web_app_icons);
+
+  // Copy across the file handler info.
+  web_app_info->file_handler = manifest.file_handler;
 }
 
 std::set<int> SizesToGenerate() {

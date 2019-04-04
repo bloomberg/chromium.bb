@@ -11,6 +11,7 @@
 
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"
@@ -66,6 +67,9 @@ struct WebApplicationInfo {
   // Whether the app should be opened in a window. If false, the app will be
   // opened in a tab.
   bool open_as_window;
+
+  // The extensions and mime types the app can handle.
+  base::Optional<blink::Manifest::FileHandler> file_handler;
 };
 
 #endif  // CHROME_COMMON_WEB_APPLICATION_INFO_H_
