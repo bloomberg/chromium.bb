@@ -67,6 +67,10 @@ std::vector<PrefetchItemStats> FetchUrlsSync(sql::Database* db) {
 
   std::vector<PrefetchItemStats> urls;
   while (statement.Step()) {
+    PrefetchItemErrorCode error_code =
+        ToPrefetchItemErrorCode(statement.ColumnInt(6))
+            .value_or(PrefetchItemErrorCode::INVALID_ITEM);
+
     urls.emplace_back(statement.ColumnInt64(0),  // offline_id
                       statement.ColumnInt(1),    // generate_bundle_attempts
                       statement.ColumnInt(2),    // get_operation_attempts
@@ -74,9 +78,8 @@ std::vector<PrefetchItemStats> FetchUrlsSync(sql::Database* db) {
                       statement.ColumnInt64(4),  // archive_body_length
                       store_utils::FromDatabaseTime(
                           statement.ColumnInt64(5)),  // creation_time
-                      static_cast<PrefetchItemErrorCode>(
-                          statement.ColumnInt(6)),  // error_code
-                      statement.ColumnInt64(7));    // file_size
+                      error_code,                     // error_code
+                      statement.ColumnInt64(7));      // file_size
   }
 
   return urls;

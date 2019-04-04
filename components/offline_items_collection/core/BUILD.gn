@@ -9,6 +9,7 @@ if (is_android) {
 
 static_library("core") {
   sources = [
+    "fail_state.cc",
     "fail_state.h",
     "filtered_offline_item_observer.cc",
     "filtered_offline_item_observer.h",

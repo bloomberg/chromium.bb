@@ -159,7 +159,7 @@ base::Optional<PrefetchItemState> ToPrefetchItemState(int value);
 // Changes to this enum must be reflected in the respective metrics enum named
 // OflinePrefetchItemErrorCode in enums.xml. Use the exact same integer value
 // for each mirrored entry.
-enum class PrefetchItemErrorCode {
+enum class PrefetchItemErrorCode : int {
   // The entry had gone through the pipeline and successfully completed
   // prefetching. Explicitly setting to 0 as that is the default value for the
   // respective SQLite column.
@@ -192,6 +192,8 @@ enum class PrefetchItemErrorCode {
   // The item was terminated because it remained in the pipeline for more than
   // 7 days.
   STUCK = 1150,
+  // The item had some invalid data, probably due to database corruption.
+  INVALID_ITEM = 1175,
   // Exceeded maximum retries for get operation request.
   GET_OPERATION_MAX_ATTEMPTS_REACHED = 1200,
   // Exceeded maximum retries limit for generate page bundle request.
@@ -209,6 +211,8 @@ enum class PrefetchItemErrorCode {
   // Note: Must always have the same value as the last actual entry.
   kMaxValue = SUGGESTION_INVALIDATED
 };
+
+base::Optional<PrefetchItemErrorCode> ToPrefetchItemErrorCode(int value);
 
 // Callback invoked upon completion of a prefetch request.
 using PrefetchRequestFinishedCallback =

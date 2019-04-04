@@ -41246,6 +41246,9 @@ Called by update_net_trust_anchors.py.-->
     The item was terminated because it remained in the pipeline for more than 7
     days.
   </int>
+  <int value="1175" label="INVALID_ITEM">
+    The item had some invalid data, probably due to database corruption.
+  </int>
   <int value="1200" label="GET_OPERATION_MAX_ATTEMPTS_REACHED">
     Exceeding maximum retries for get operation request.
   </int>
