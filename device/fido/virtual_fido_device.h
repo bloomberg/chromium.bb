@@ -184,7 +184,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
       base::span<const uint8_t, kRpIdHashLength> application_parameter);
 
   // FidoDevice:
-  void TryWink(WinkCallback cb) override;
   std::string GetId() const override;
   FidoTransportProtocol DeviceTransport() const override;
 

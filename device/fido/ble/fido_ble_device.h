@@ -40,7 +40,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDevice : public FidoDevice {
   static std::string GetId(base::StringPiece address);
 
   // FidoDevice:
-  void TryWink(WinkCallback callback) override;
   void Cancel() override;
   std::string GetId() const override;
   base::string16 GetDisplayName() const override;

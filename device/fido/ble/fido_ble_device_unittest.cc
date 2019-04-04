@@ -211,12 +211,6 @@ TEST_F(FidoBleDeviceTest, StaticGetIdTest) {
   EXPECT_EQ("ble:" + address, FidoBleDevice::GetId(address));
 }
 
-TEST_F(FidoBleDeviceTest, TryWinkTest) {
-  test::TestCallbackReceiver<> closure_receiver;
-  device()->TryWink(closure_receiver.callback());
-  closure_receiver.WaitForCallback();
-}
-
 TEST_F(FidoBleDeviceTest, GetIdTest) {
   EXPECT_EQ(std::string("ble:") + BluetoothTestBase::kTestDeviceAddress1,
             device()->GetId());

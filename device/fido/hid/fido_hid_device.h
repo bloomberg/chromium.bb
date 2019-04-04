@@ -51,8 +51,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
                       DeviceCallback callback) final;
 
   // FidoDevice:
-  // Send a wink command if supported.
-  void TryWink(WinkCallback callback) final;
   // Send command to cancel any outstanding requests on this device.
   void Cancel() final;
   // Use a string identifier to compare to other devices.
@@ -78,7 +76,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
     DeviceCallback callback;
   };
 
-  static constexpr uint8_t kWinkCapability = 0x01;
   static constexpr uint8_t kLockCapability = 0x02;
   static constexpr uint32_t kBroadcastChannel = 0xffffffff;
 
@@ -113,7 +110,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
                           bool success,
                           uint8_t report_id,
                           const base::Optional<std::vector<uint8_t>>& buf);
-  void OnWink(WinkCallback callback, base::Optional<FidoHidMessage> response);
   void ArmTimeout();
   void OnTimeout();
   void ProcessHidError(FidoHidDeviceCommand cmd,
