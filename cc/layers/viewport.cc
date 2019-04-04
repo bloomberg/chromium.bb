@@ -49,21 +49,20 @@ Viewport::ScrollResult Viewport::ScrollBy(const gfx::Vector2dF& delta,
 
   gfx::Vector2dF pending_content_delta = content_delta;
 
-  ScrollNode* inner_node = InnerScrollNode();
+  // Attempt to scroll inner viewport first.
   pending_content_delta -= host_impl_->ScrollSingleNode(
-      inner_node, pending_content_delta, viewport_point, is_direct_manipulation,
-      &scroll_tree());
+      InnerScrollNode(), pending_content_delta, viewport_point,
+      is_direct_manipulation, &scroll_tree());
 
-  ScrollResult result;
-
+  // Now attempt to scroll the outer viewport.
   if (scroll_outer_viewport) {
     pending_content_delta -= host_impl_->ScrollSingleNode(
         OuterScrollNode(), pending_content_delta, viewport_point,
         is_direct_manipulation, &scroll_tree());
   }
 
+  ScrollResult result;
   result.consumed_delta = delta - AdjustOverscroll(pending_content_delta);
-
   result.content_scrolled_delta = content_delta - pending_content_delta;
   return result;
 }

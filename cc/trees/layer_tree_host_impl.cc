@@ -4578,7 +4578,15 @@ void LayerTreeHostImpl::SetSynchronousInputHandlerRootScrollOffset(
   TRACE_EVENT2("cc",
                "LayerTreeHostImpl::SetSynchronousInputHandlerRootScrollOffset",
                "offset_x", root_offset.x(), "offset_y", root_offset.y());
-  bool changed = active_tree_->DistributeRootScrollOffset(root_offset);
+
+  gfx::Vector2dF delta = root_offset.DeltaFrom(viewport()->TotalScrollOffset());
+  bool changed = !viewport()
+                      ->ScrollBy(delta,
+                                 /*viewport_point=*/gfx::Point(),
+                                 /*is_wheel_scroll=*/false,
+                                 /*affect_browser_controls=*/false,
+                                 /*scroll_outer_viewport=*/true)
+                      .consumed_delta.IsZero();
   if (!changed)
     return;
 
@@ -4965,7 +4973,7 @@ bool LayerTreeHostImpl::AnimateBrowserControls(base::TimeTicks time) {
   if (!browser_controls_offset_manager_->has_animation())
     return false;
 
-  gfx::Vector2dF scroll = browser_controls_offset_manager_->Animate(time);
+  gfx::Vector2dF scroll_delta = browser_controls_offset_manager_->Animate(time);
 
   if (browser_controls_offset_manager_->has_animation())
     SetNeedsOneBeginImplFrame();
@@ -4973,11 +4981,15 @@ bool LayerTreeHostImpl::AnimateBrowserControls(base::TimeTicks time) {
   if (active_tree_->TotalScrollOffset().y() == 0.f)
     return false;
 
-  if (scroll.IsZero())
+  if (scroll_delta.IsZero())
     return false;
 
   DCHECK(viewport());
-  viewport()->ScrollBy(scroll, gfx::Point(), false, false, true);
+  viewport()->ScrollBy(scroll_delta,
+                       /*viewport_point=*/gfx::Point(),
+                       /*is_wheel_scroll=*/false,
+                       /*affect_browser_controls=*/false,
+                       /*scroll_outer_viewport=*/true);
   client_->SetNeedsCommitOnImplThread();
   client_->RenewTreePriority();
   return true;

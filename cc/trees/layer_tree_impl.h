@@ -491,10 +491,6 @@ class CC_EXPORT LayerTreeImpl {
   // Used for accessing the task runner and debug assertions.
   TaskRunnerProvider* task_runner_provider() const;
 
-  // Distribute the root scroll between outer and inner viewport scroll layer.
-  // The outer viewport scroll layer scrolls first.
-  bool DistributeRootScrollOffset(const gfx::ScrollOffset& root_offset);
-
   void ApplyScroll(ScrollNode* scroll_node, ScrollState* scroll_state) {
     host_impl_->ApplyScroll(scroll_node, scroll_state);
   }

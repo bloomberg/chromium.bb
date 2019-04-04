@@ -7703,42 +7703,121 @@ TEST_F(LayerTreeHostImplTest,
                         gfx::ScrollOffsetToVector2dF(scroll_offset));
 }
 
-TEST_F(LayerTreeHostImplTest,
-       ExternalRootLayerScrollOffsetPreventedByUserNotScrollable) {
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(10, 20));
-  LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 100));
-  LayerImpl* clip_layer =
-      scroll_layer->test_properties()->parent->test_properties()->parent;
-  clip_layer->SetBounds(gfx::Size(10, 20));
-  scroll_layer->SetScrollable(gfx::Size(10, 20));
-  scroll_layer->SetDrawsContent(true);
-  host_impl_->active_tree()
-      ->InnerViewportScrollLayer()
-      ->test_properties()
-      ->user_scrollable_vertical = false;
-  host_impl_->active_tree()
-      ->InnerViewportScrollLayer()
-      ->test_properties()
-      ->user_scrollable_horizontal = false;
-  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+// Ensure that the SetSynchronousInputHandlerRootScrollOffset method used by
+// the WebView API correctly respects the user_scrollable bits on both of the
+// inner and outer viewport scroll nodes.
+TEST_F(LayerTreeHostImplTest, SetRootScrollOffsetUserScrollable) {
+  gfx::Size viewport_size(100, 100);
+  gfx::Size content_size(200, 200);
+  CreateBasicVirtualViewportLayers(viewport_size, content_size);
 
-  // Draw first frame to clear any pending draws and check scroll.
+  auto* outer_scroll = host_impl_->active_tree()->OuterViewportScrollLayer();
+  auto* inner_scroll = host_impl_->active_tree()->InnerViewportScrollLayer();
+
+  ScrollTree& scroll_tree =
+      host_impl_->active_tree()->property_trees()->scroll_tree;
+  ElementId inner_element_id = inner_scroll->element_id();
+  ElementId outer_element_id = outer_scroll->element_id();
+
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
   DrawFrame();
-  CheckLayerScrollDelta(scroll_layer, gfx::Vector2dF(0.f, 0.f));
-  EXPECT_FALSE(host_impl_->active_tree()->needs_update_draw_properties());
 
-  // Set external scroll delta on delegate and notify LayerTreeHost.
-  gfx::ScrollOffset scroll_offset(10.f, 10.f);
-  host_impl_->SetSynchronousInputHandlerRootScrollOffset(scroll_offset);
-  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+  float page_scale_factor = 2.f;
+  host_impl_->active_tree()->PushPageScaleFromMainThread(
+      page_scale_factor, page_scale_factor, page_scale_factor);
 
-  TestFrameData frame;
-  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
-  host_impl_->DrawLayers(&frame);
-  host_impl_->DidDrawAllLayers(frame);
-  EXPECT_TRUE(frame.has_no_damage);
-  CheckLayerScrollDelta(scroll_layer,
-                        gfx::ScrollOffsetToVector2dF(gfx::ScrollOffset()));
+  // Disable scrolling the inner viewport. Only the outer should scroll.
+  {
+    ASSERT_FALSE(did_request_redraw_);
+    inner_scroll->test_properties()->user_scrollable_vertical = false;
+    inner_scroll->test_properties()->user_scrollable_horizontal = false;
+    host_impl_->active_tree()->BuildPropertyTreesForTesting();
+
+    gfx::ScrollOffset scroll_offset(25.f, 30.f);
+    host_impl_->SetSynchronousInputHandlerRootScrollOffset(scroll_offset);
+    EXPECT_VECTOR_EQ(gfx::ScrollOffset(),
+                     scroll_tree.current_scroll_offset(inner_element_id));
+    scroll_offset.Scale(1.f / page_scale_factor);
+    EXPECT_VECTOR_EQ(scroll_offset,
+                     scroll_tree.current_scroll_offset(outer_element_id));
+    EXPECT_TRUE(did_request_redraw_);
+
+    // Reset
+    did_request_redraw_ = false;
+    inner_scroll->test_properties()->user_scrollable_vertical = true;
+    inner_scroll->test_properties()->user_scrollable_horizontal = true;
+    outer_scroll->SetCurrentScrollOffset(gfx::ScrollOffset(0, 0));
+  }
+
+  // Disable scrolling the outer viewport. The inner should scroll to its
+  // extent but there should be no bubbling over to the outer viewport.
+  {
+    ASSERT_FALSE(did_request_redraw_);
+    outer_scroll->test_properties()->user_scrollable_vertical = false;
+    outer_scroll->test_properties()->user_scrollable_horizontal = false;
+    host_impl_->active_tree()->BuildPropertyTreesForTesting();
+
+    gfx::ScrollOffset scroll_offset(120.f, 140.f);
+    host_impl_->SetSynchronousInputHandlerRootScrollOffset(scroll_offset);
+    EXPECT_VECTOR_EQ(gfx::ScrollOffset(50.f, 50.f),
+                     scroll_tree.current_scroll_offset(inner_element_id));
+    EXPECT_VECTOR_EQ(gfx::ScrollOffset(),
+                     scroll_tree.current_scroll_offset(outer_element_id));
+    EXPECT_TRUE(did_request_redraw_);
+
+    // Reset
+    did_request_redraw_ = false;
+    inner_scroll->test_properties()->user_scrollable_vertical = true;
+    inner_scroll->test_properties()->user_scrollable_horizontal = true;
+    inner_scroll->SetCurrentScrollOffset(gfx::ScrollOffset(0, 0));
+  }
+
+  // Disable both viewports. No scrolling should take place, no redraw should
+  // be requested.
+  {
+    ASSERT_FALSE(did_request_redraw_);
+    outer_scroll->test_properties()->user_scrollable_vertical = false;
+    outer_scroll->test_properties()->user_scrollable_horizontal = false;
+    inner_scroll->test_properties()->user_scrollable_vertical = false;
+    inner_scroll->test_properties()->user_scrollable_horizontal = false;
+    host_impl_->active_tree()->BuildPropertyTreesForTesting();
+
+    gfx::ScrollOffset scroll_offset(60.f, 70.f);
+    host_impl_->SetSynchronousInputHandlerRootScrollOffset(scroll_offset);
+    EXPECT_VECTOR_EQ(gfx::ScrollOffset(),
+                     scroll_tree.current_scroll_offset(inner_element_id));
+    EXPECT_VECTOR_EQ(gfx::ScrollOffset(),
+                     scroll_tree.current_scroll_offset(outer_element_id));
+    EXPECT_FALSE(did_request_redraw_);
+
+    // Reset
+    inner_scroll->test_properties()->user_scrollable_vertical = true;
+    inner_scroll->test_properties()->user_scrollable_horizontal = true;
+    outer_scroll->test_properties()->user_scrollable_vertical = true;
+    outer_scroll->test_properties()->user_scrollable_horizontal = true;
+  }
+
+  // If the inner is at its extent but the outer cannot scroll, we shouldn't
+  // request a redraw.
+  {
+    ASSERT_FALSE(did_request_redraw_);
+    outer_scroll->test_properties()->user_scrollable_vertical = false;
+    outer_scroll->test_properties()->user_scrollable_horizontal = false;
+    inner_scroll->SetCurrentScrollOffset(gfx::ScrollOffset(50.f, 50.f));
+    host_impl_->active_tree()->BuildPropertyTreesForTesting();
+
+    gfx::ScrollOffset scroll_offset(60.f, 70.f);
+    host_impl_->SetSynchronousInputHandlerRootScrollOffset(scroll_offset);
+    EXPECT_VECTOR_EQ(gfx::ScrollOffset(50.f, 50.f),
+                     scroll_tree.current_scroll_offset(inner_element_id));
+    EXPECT_VECTOR_EQ(gfx::ScrollOffset(),
+                     scroll_tree.current_scroll_offset(outer_element_id));
+    EXPECT_FALSE(did_request_redraw_);
+
+    // Reset
+    outer_scroll->test_properties()->user_scrollable_vertical = true;
+    outer_scroll->test_properties()->user_scrollable_horizontal = true;
+  }
 }
 
 TEST_F(LayerTreeHostImplTest, OverscrollRoot) {
@@ -11246,7 +11325,7 @@ class LayerTreeHostImplVirtualViewportTest : public LayerTreeHostImplTest {
   }
 };
 
-TEST_F(LayerTreeHostImplVirtualViewportTest, ScrollBothInnerAndOuterLayer) {
+TEST_F(LayerTreeHostImplVirtualViewportTest, RootScrollBothInnerAndOuterLayer) {
   gfx::Size content_size = gfx::Size(100, 160);
   gfx::Size outer_viewport = gfx::Size(50, 80);
   gfx::Size inner_viewport = gfx::Size(25, 40);
@@ -11269,11 +11348,11 @@ TEST_F(LayerTreeHostImplVirtualViewportTest, ScrollBothInnerAndOuterLayer) {
     EXPECT_EQ(gfx::ScrollOffset(25.f, 40.f), inner_scroll->MaxScrollOffset());
     EXPECT_EQ(gfx::ScrollOffset(50.f, 80.f), outer_scroll->MaxScrollOffset());
 
-    // Outer viewport scrolls first. Then the rest is applied to the inner
+    // Inner viewport scrolls first. Then the rest is applied to the outer
     // viewport.
-    EXPECT_EQ(gfx::ScrollOffset(20.f, 20.f),
+    EXPECT_EQ(gfx::ScrollOffset(25.f, 40.f),
               inner_scroll->CurrentScrollOffset());
-    EXPECT_EQ(gfx::ScrollOffset(50.f, 80.f),
+    EXPECT_EQ(gfx::ScrollOffset(45.f, 60.f),
               outer_scroll->CurrentScrollOffset());
   }
 }
