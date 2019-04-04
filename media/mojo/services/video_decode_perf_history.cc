@@ -12,6 +12,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/stringprintf.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/key_systems.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_codecs.h"
 #include "media/capabilities/learning_helper.h"
@@ -324,7 +325,11 @@ void VideoDecodePerfHistory::ReportUkmMetrics(
   builder.SetVideo_FramesPerSecond(video_key.frame_rate);
   builder.SetVideo_NaturalHeight(video_key.size.height());
   builder.SetVideo_NaturalWidth(video_key.size.width());
-  // TODO(chcunningham): Report key_system and use_hw_secure_codecs to UKM.
+
+  if (!video_key.key_system.empty()) {
+    builder.SetVideo_EME_KeySystem(GetKeySystemIntForUKM(video_key.key_system));
+    builder.SetVideo_EME_UseHwSecureCodecs(video_key.use_hw_secure_codecs);
+  }
 
   bool past_is_smooth = false;
   bool past_is_efficient = false;
