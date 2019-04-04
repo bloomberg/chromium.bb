@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/ui/file_locations.h"
+#include "ios/chrome/browser/ui/util/terms_util.h"
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
