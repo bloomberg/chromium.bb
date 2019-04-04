@@ -55,9 +55,7 @@ class CC_EXPORT Viewport {
 
   bool CanScroll(const ScrollState& scroll_state) const;
 
-  // Scrolls the viewport. Unlike the above method, scrolls the inner before
-  // the outer viewport. Doesn't affect browser controls or return a result
-  // since callers don't need it.
+  // TODO(bokan): Callers can now be replaced by ScrollBy.
   void ScrollByInnerFirst(const gfx::Vector2dF& delta);
 
   // Scrolls the viewport, bubbling the delta between the inner and outer
