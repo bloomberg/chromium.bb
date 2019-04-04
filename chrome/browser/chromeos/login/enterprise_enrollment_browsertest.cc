@@ -456,9 +456,8 @@ TEST_DISABLED_ON_MSAN(EnterpriseEnrollmentTest,
 
 // Shows the enrollment screen and simulates an enrollment failure. Verifies
 // that the error screen is displayed.
-// TODO(crbug.com/690634): Disabled due to timeout flakiness.
 IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
-                       DISABLED_TestProperPageGetsLoadedOnEnrollmentFailure) {
+                       TestProperPageGetsLoadedOnEnrollmentFailure) {
   ShowEnrollmentScreen();
 
   enrollment_screen()->OnEnrollmentError(policy::EnrollmentStatus::ForStatus(
@@ -466,7 +465,7 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
   ExecutePendingJavaScript();
 
   // Verify that the error page is displayed.
-  EXPECT_TRUE(IsStepDisplayed("error"));
+  WaitForStep("error");
   EXPECT_FALSE(IsStepDisplayed("success"));
 }
 
