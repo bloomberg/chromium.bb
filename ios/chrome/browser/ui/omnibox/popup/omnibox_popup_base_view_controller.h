@@ -34,7 +34,7 @@
 @property(nonatomic, assign) BOOL shortcutsEnabled;
 // The view controller to display when no suggestions is available. See also:
 // |shortcutsEnabled|.
-@property(nonatomic, weak) UIViewController* shortcutsViewController;
+@property(nonatomic, weak) UICollectionViewController* shortcutsViewController;
 
 @property(nonatomic, assign) BOOL incognito;
 @property(nonatomic, weak) id<AutocompleteResultConsumerDelegate> delegate;

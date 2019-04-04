@@ -27,11 +27,8 @@ namespace {
 const CGFloat kTopInset = 10;
 }  // namespace
 
-@interface ShortcutsViewController ()<UICollectionViewDelegate,
-                                      UICollectionViewDataSource>
+@interface ShortcutsViewController ()
 
-@property(nonatomic, strong) UICollectionViewFlowLayout* layout;
-@property(nonatomic, strong) UICollectionView* collectionView;
 // Latest most visited items. Updated directly from the consumer calls.
 @property(nonatomic, strong)
     NSArray<ShortcutsMostVisitedItem*>* latestMostVisitedItems;
@@ -46,14 +43,24 @@ const CGFloat kTopInset = 10;
 
 @implementation ShortcutsViewController
 
-#pragma mark - UIViewController
+#pragma mark - initializers
 
-- (void)viewDidLoad {
-  [super viewDidLoad];
-  [self.view addSubview:self.collectionView];
-  self.collectionView.translatesAutoresizingMaskIntoConstraints = NO;
-  AddSameConstraints(self.view, self.collectionView);
+- (instancetype)init {
+  self = [super
+      initWithCollectionViewLayout:[[UICollectionViewFlowLayout alloc] init]];
+  if (self) {
+    self.collectionView.backgroundColor = [UIColor clearColor];
+    [self.collectionView registerClass:[MostVisitedShortcutCell class]
+            forCellWithReuseIdentifier:NSStringFromClass(
+                                           [MostVisitedShortcutCell class])];
+    [self.collectionView registerClass:[CollectionShortcutCell class]
+            forCellWithReuseIdentifier:NSStringFromClass(
+                                           [CollectionShortcutCell class])];
+  }
+  return self;
 }
+
+#pragma mark - UIViewController
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
@@ -63,40 +70,18 @@ const CGFloat kTopInset = 10;
   self.displayedMostVisitedItems = self.latestMostVisitedItems;
   [self.collectionView reloadData];
 
-  [self configureLayout:self.layout];
+  [self configureLayout:base::mac::ObjCCastStrict<UICollectionViewFlowLayout>(
+                            self.collectionViewLayout)
+             targetSize:self.view.bounds.size];
 }
 
-#pragma mark - properties
-
-- (UICollectionView*)collectionView {
-  if (_collectionView) {
-    return _collectionView;
-  }
-
-  _collectionView = [[UICollectionView alloc] initWithFrame:self.view.frame
-                                       collectionViewLayout:self.layout];
-  _collectionView.delegate = self;
-  _collectionView.dataSource = self;
-  _collectionView.backgroundColor = [UIColor clearColor];
-  [_collectionView registerClass:[MostVisitedShortcutCell class]
-      forCellWithReuseIdentifier:NSStringFromClass(
-                                     [MostVisitedShortcutCell class])];
-  [_collectionView registerClass:[CollectionShortcutCell class]
-      forCellWithReuseIdentifier:NSStringFromClass(
-                                     [CollectionShortcutCell class])];
-
-  return _collectionView;
-}
-
-- (UICollectionViewFlowLayout*)layout {
-  if (_layout) {
-    return _layout;
-  }
-
-  _layout = [[UICollectionViewFlowLayout alloc] init];
-  [self configureLayout:_layout];
-
-  return _layout;
+- (void)viewWillTransitionToSize:(CGSize)size
+       withTransitionCoordinator:
+           (id<UIViewControllerTransitionCoordinator>)coordinator {
+  [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+  [self configureLayout:base::mac::ObjCCastStrict<UICollectionViewFlowLayout>(
+                            self.collectionViewLayout)
+             targetSize:size];
 }
 
 #pragma mark - ShortcutsConsumer
@@ -263,10 +248,11 @@ const CGFloat kTopInset = 10;
 
 #pragma mark - Private
 
-- (void)configureLayout:(UICollectionViewFlowLayout*)layout {
+- (void)configureLayout:(UICollectionViewFlowLayout*)layout
+             targetSize:(CGSize)size {
   // Calculate insets to center the items in the view.
-  CGFloat widthInsets = CenteredTilesMarginForWidth(
-      self.traitCollection, self.view.bounds.size.width);
+  CGFloat widthInsets =
+      CenteredTilesMarginForWidth(self.traitCollection, size.width);
 
   layout.minimumLineSpacing = kNtpTilesVerticalSpacing;
   layout.minimumInteritemSpacing =
