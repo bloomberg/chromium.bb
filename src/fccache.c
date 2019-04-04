@@ -196,7 +196,7 @@ FcDirCacheBasenameMD5 (FcConfig *config, const FcChar8 *dir, FcChar8 cache_base[
     strcat ((char *) cache_base, "-" FC_ARCHITECTURE FC_CACHE_SUFFIX);
     if (FcDebug() & FC_DBG_CACHE)
     {
-	printf ("cache: %s (dir: %s%s%s%s, salt: %s)\n", cache_base, orig_dir ? orig_dir : dir, new_dir ? " (mapped to " : "", new_dir ? (char *)new_dir : "", new_dir ? ")" : "", salt);
+	printf ("cache: %s (dir: %s%s%s%s%s%s)\n", cache_base, orig_dir ? orig_dir : dir, new_dir ? " (mapped to " : "", new_dir ? (char *)new_dir : "", new_dir ? ")" : "", salt ? ", salt: " : "", salt ? (char *)salt : "");
     }
 
     if (new_dir)
@@ -205,16 +205,74 @@ FcDirCacheBasenameMD5 (FcConfig *config, const FcChar8 *dir, FcChar8 cache_base[
     return cache_base;
 }
 
+#ifndef _WIN32
+static FcChar8 *
+FcDirCacheBasenameUUID (FcConfig *config, const FcChar8 *dir, FcChar8 cache_base[CACHEBASE_LEN])
+{
+    FcChar8 *new_dir = NULL;
+    FcChar8 *target, *fuuid;
+    const FcChar8 *sysroot = FcConfigGetSysRoot (config);
+    const FcChar8 *salt, *orig_dir = NULL;
+    int fd;
+
+    salt = FcConfigMapSalt (config, dir);
+    new_dir = FcConfigMapFontPath (config, dir);
+    if (new_dir)
+    {
+	orig_dir = dir;
+	dir = new_dir;
+    }
+    cache_base[0] = 0;
+    if (sysroot)
+	target = FcStrBuildFilename (sysroot, dir, NULL);
+    else
+	target = FcStrdup (dir);
+    fuuid = FcStrBuildFilename (target, ".uuid", NULL);
+    if ((fd = FcOpen ((char *) fuuid, O_RDONLY)) != -1)
+    {
+	char suuid[37];
+	ssize_t len;
+
+	memset (suuid, 0, sizeof (suuid));
+	len = read (fd, suuid, 36);
+	suuid[36] = 0;
+	close (fd);
+	if (len < 0)
+	    goto bail;
+	cache_base[0] = '/';
+	strcpy ((char *)&cache_base[1], suuid);
+	strcat ((char *) cache_base, "-" FC_ARCHITECTURE FC_CACHE_SUFFIX);
+	if (FcDebug () & FC_DBG_CACHE)
+	{
+	    printf ("cache fallbacks to: %s (dir: %s%s%s%s%s)\n", cache_base, orig_dir ? orig_dir : dir, new_dir ? " (mapped to " : "", new_dir ? (char *)new_dir : "", new_dir ? ")" : "", salt ? ", salt was ignored" : "");
+	}
+    }
+bail:
+    if (new_dir)
+	FcStrFree (new_dir);
+    FcStrFree (fuuid);
+    FcStrFree (target);
+
+    return cache_base;
+}
+#endif
+
 FcBool
 FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config)
 {
     FcChar8	*cache_hashed = NULL;
     FcChar8	cache_base[CACHEBASE_LEN];
+#ifndef _WIN32
+    FcChar8     uuid_cache_base[CACHEBASE_LEN];
+#endif
     FcStrList	*list;
     FcChar8	*cache_dir;
     const FcChar8 *sysroot = FcConfigGetSysRoot (config);
 
     FcDirCacheBasenameMD5 (config, dir, cache_base);
+#ifndef _WIN32
+    FcDirCacheBasenameUUID (config, dir, uuid_cache_base);
+#endif
 
     list = FcStrListCreate (config->cacheDirs);
     if (!list)
@@ -229,10 +287,23 @@ FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config)
         if (!cache_hashed)
 	    break;
 	(void) unlink ((char *) cache_hashed);
-	FcDirCacheDeleteUUID (dir, config);
 	FcStrFree (cache_hashed);
+#ifndef _WIN32
+	if (uuid_cache_base[0] != 0)
+	{
+	    if (sysroot)
+		cache_hashed = FcStrBuildFilename (sysroot, cache_dir, uuid_cache_base, NULL);
+	    else
+		cache_hashed = FcStrBuildFilename (cache_dir, uuid_cache_base, NULL);
+	    if (!cache_hashed)
+		break;
+	    (void) unlink ((char *) cache_hashed);
+	    FcStrFree (cache_hashed);
+	}
+#endif
     }
     FcStrListDone (list);
+    FcDirCacheDeleteUUID (dir, config);
     /* return FcFalse if something went wrong */
     if (cache_dir)
 	return FcFalse;
@@ -300,7 +371,11 @@ FcDirCacheProcess (FcConfig *config, const FcChar8 *dir,
     while ((cache_dir = FcStrListNext (list)))
     {
         FcChar8	*cache_hashed;
+#ifndef _WIN32
+	FcBool retried = FcFalse;
 
+    retry:
+#endif
 	if (sysroot)
 	    cache_hashed = FcStrBuildFilename (sysroot, cache_dir, cache_base, NULL);
 	else
@@ -320,6 +395,18 @@ FcDirCacheProcess (FcConfig *config, const FcChar8 *dir,
 		break;
 	    }
 	}
+#ifndef _WIN32
+	else if (!retried)
+	{
+	    retried = FcTrue;
+	    FcDirCacheBasenameUUID (config, dir, cache_base);
+	    if (cache_base[0] != 0)
+	    {
+		FcStrFree (cache_hashed);
+		goto retry;
+	    }
+	}
+#endif
     	FcStrFree (cache_hashed);
     }
     FcStrListDone (list);
