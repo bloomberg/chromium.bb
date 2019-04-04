@@ -14,6 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "url/gurl.h"
 
 struct SpellCheckResult;
 
@@ -105,6 +106,9 @@ class SpellingServiceClient {
   void SetURLLoaderFactoryForTesting(
       scoped_refptr<network::SharedURLLoaderFactory>
           url_loader_factory_for_testing);
+
+  // Builds the endpoint URL to use for the service request.
+  GURL BuildEndpointUrl(int type);
 
  protected:
   // Parses a JSON-RPC response from the Spelling service.
