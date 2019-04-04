@@ -108,7 +108,8 @@ void MetricsRenderFrameObserver::DidObserveLayoutJank(double jank_fraction) {
 
 void MetricsRenderFrameObserver::DidObserveLazyLoadBehavior(
     blink::WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) {
-  page_timing_metrics_sender_->DidObserveLazyLoadBehavior(lazy_load_behavior);
+  if (page_timing_metrics_sender_)
+    page_timing_metrics_sender_->DidObserveLazyLoadBehavior(lazy_load_behavior);
 }
 
 void MetricsRenderFrameObserver::DidStartResponse(
