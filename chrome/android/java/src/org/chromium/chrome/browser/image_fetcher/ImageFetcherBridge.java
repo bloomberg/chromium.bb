@@ -65,6 +65,7 @@ public class ImageFetcherBridge {
      * @param callback The callback to call when the gif is ready. The callback will be invoked on
      *      the same thread it was called on.
      */
+    // TODO(crbug.com/949331): Support ImageFetcherConfig for this call.
     public void fetchGif(String url, String clientName, Callback<BaseGifImage> callback) {
         assert mNativeImageFetcherBridge != 0;
         nativeFetchImageData(mNativeImageFetcherBridge, url, clientName, (byte[] data) -> {

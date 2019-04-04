@@ -36,19 +36,22 @@ public class ImageFetcherFactoryTest {
 
     @Test
     @SmallTest
-    public void testcreateImageFetcher() {
-        // TODO(crbug.com/944517): Update these tests once NetworkImageFetcher is added.
-        assertEquals(null,
-                ImageFetcherFactory.createImageFetcher(
-                        ImageFetcherConfig.NETWORK_ONLY, mReferencePool, mImageFetcherBridge));
+    public void testGetImageFetcher() {
+        assertEquals(ImageFetcherConfig.NETWORK_ONLY,
+                ImageFetcherFactory
+                        .createImageFetcher(ImageFetcherConfig.NETWORK_ONLY, mReferencePool,
+                                mImageFetcherBridge)
+                        .getConfig());
         assertEquals(ImageFetcherConfig.DISK_CACHE_ONLY,
                 ImageFetcherFactory
                         .createImageFetcher(ImageFetcherConfig.DISK_CACHE_ONLY, mReferencePool,
                                 mImageFetcherBridge)
                         .getConfig());
-        assertEquals(null,
-                ImageFetcherFactory.createImageFetcher(
-                        ImageFetcherConfig.IN_MEMORY_ONLY, mReferencePool, mImageFetcherBridge));
+        assertEquals(ImageFetcherConfig.IN_MEMORY_ONLY,
+                ImageFetcherFactory
+                        .createImageFetcher(ImageFetcherConfig.IN_MEMORY_ONLY, mReferencePool,
+                                mImageFetcherBridge)
+                        .getConfig());
         assertEquals(ImageFetcherConfig.IN_MEMORY_WITH_DISK_CACHE,
                 ImageFetcherFactory
                         .createImageFetcher(ImageFetcherConfig.IN_MEMORY_WITH_DISK_CACHE,

@@ -786,6 +786,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/image_fetcher/ImageFetcherFactory.java",
   "java/src/org/chromium/chrome/browser/image_fetcher/ImageFetcher.java",
   "java/src/org/chromium/chrome/browser/image_fetcher/InMemoryCachedImageFetcher.java",
+  "java/src/org/chromium/chrome/browser/image_fetcher/NetworkImageFetcher.java",
   "java/src/org/chromium/chrome/browser/incognito/IncognitoDisclosureActivity.java",
   "java/src/org/chromium/chrome/browser/incognito/IncognitoNotificationManager.java",
   "java/src/org/chromium/chrome/browser/incognito/IncognitoNotificationService.java",
