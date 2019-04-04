@@ -885,10 +885,10 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
           other.HasCurrentBackdropFilterAnimation() ||
       SubtreeWillChangeContents() != other.SubtreeWillChangeContents() ||
       BackfaceVisibility() != other.BackfaceVisibility() ||
-      HasWillChangeCompositingHint() != other.HasWillChangeCompositingHint() ||
       UsedTransformStyle3D() != other.UsedTransformStyle3D() ||
       ContainsPaint() != other.ContainsPaint() ||
-      IsOverflowVisible() != other.IsOverflowVisible()) {
+      IsOverflowVisible() != other.IsOverflowVisible() ||
+      WillChangeProperties() != other.WillChangeProperties()) {
     diff.SetCompositingReasonsChanged();
   }
 }
@@ -999,44 +999,49 @@ void ComputedStyle::SetContent(ContentData* content_data) {
   SetContentInternal(content_data);
 }
 
-bool ComputedStyle::HasWillChangeCompositingHint() const {
-  for (const auto& property : WillChangeProperties()) {
-    switch (property) {
-      case CSSPropertyID::kOpacity:
-      case CSSPropertyID::kTransform:
-      case CSSPropertyID::kAliasWebkitTransform:
-      case CSSPropertyID::kTranslate:
-      case CSSPropertyID::kScale:
-      case CSSPropertyID::kRotate:
-      case CSSPropertyID::kTop:
-      case CSSPropertyID::kLeft:
-      case CSSPropertyID::kBottom:
-      case CSSPropertyID::kRight:
-        return true;
-      default:
-        break;
-    }
+static bool IsWillChangeTransformHintProperty(CSSPropertyID property) {
+  switch (property) {
+    case CSSPropertyID::kTransform:
+    case CSSPropertyID::kAliasWebkitTransform:
+    case CSSPropertyID::kPerspective:
+    case CSSPropertyID::kTranslate:
+    case CSSPropertyID::kScale:
+    case CSSPropertyID::kRotate:
+    case CSSPropertyID::kOffsetPath:
+    case CSSPropertyID::kOffsetPosition:
+      return true;
+    default:
+      break;
   }
   return false;
 }
 
-bool ComputedStyle::HasWillChangeTransformHint() const {
-  for (const auto& property : WillChangeProperties()) {
-    switch (property) {
-      case CSSPropertyID::kTransform:
-      case CSSPropertyID::kAliasWebkitTransform:
-      case CSSPropertyID::kPerspective:
-      case CSSPropertyID::kTranslate:
-      case CSSPropertyID::kScale:
-      case CSSPropertyID::kRotate:
-      case CSSPropertyID::kOffsetPath:
-      case CSSPropertyID::kOffsetPosition:
-        return true;
-      default:
-        break;
-    }
+static bool IsWillChangeCompositingHintProperty(CSSPropertyID property) {
+  if (IsWillChangeTransformHintProperty(property))
+    return true;
+  switch (property) {
+    case CSSPropertyID::kOpacity:
+    case CSSPropertyID::kTop:
+    case CSSPropertyID::kLeft:
+    case CSSPropertyID::kBottom:
+    case CSSPropertyID::kRight:
+      return true;
+    default:
+      break;
   }
   return false;
+}
+
+bool ComputedStyle::HasWillChangeCompositingHint() const {
+  const auto& properties = WillChangeProperties();
+  return std::any_of(properties.begin(), properties.end(),
+                     IsWillChangeCompositingHintProperty);
+}
+
+bool ComputedStyle::HasWillChangeTransformHint() const {
+  const auto& properties = WillChangeProperties();
+  return std::any_of(properties.begin(), properties.end(),
+                     IsWillChangeTransformHintProperty);
 }
 
 bool ComputedStyle::RequireTransformOrigin(

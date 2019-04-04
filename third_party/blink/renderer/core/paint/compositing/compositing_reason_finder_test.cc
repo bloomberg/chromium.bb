@@ -144,32 +144,6 @@ TEST_F(CompositingReasonFinderTest, OnlyScrollingStickyPositionPromoted) {
           ->GetCompositingState());
 }
 
-TEST_F(CompositingReasonFinderTest, RequiresCompositingForTransformAnimation) {
-  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
-  style->SetSubtreeWillChangeContents(false);
-
-  style->SetHasCurrentTransformAnimation(false);
-  EXPECT_FALSE(
-      CompositingReasonFinder::RequiresCompositingForTransformAnimation(
-          *style));
-
-  style->SetHasCurrentTransformAnimation(true);
-  EXPECT_TRUE(CompositingReasonFinder::RequiresCompositingForTransformAnimation(
-      *style));
-
-  style->SetSubtreeWillChangeContents(true);
-
-  style->SetHasCurrentTransformAnimation(false);
-  EXPECT_FALSE(
-      CompositingReasonFinder::RequiresCompositingForTransformAnimation(
-          *style));
-
-  style->SetHasCurrentTransformAnimation(true);
-  EXPECT_FALSE(
-      CompositingReasonFinder::RequiresCompositingForTransformAnimation(
-          *style));
-}
-
 TEST_F(CompositingReasonFinderTest, CompositingReasonsForAnimation) {
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
 

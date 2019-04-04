@@ -61,17 +61,14 @@ CompositingReasonFinder::PotentialCompositingReasonsFromStyle(
 
   const ComputedStyle& style = layout_object.StyleRef();
 
-  if (RequiresCompositingForTransform(layout_object))
+  if (RequiresCompositingFor3DTransform(layout_object))
     reasons |= CompositingReason::k3DTransform;
 
   if (style.BackfaceVisibility() == EBackfaceVisibility::kHidden)
     reasons |= CompositingReason::kBackfaceVisibilityHidden;
 
   reasons |= CompositingReasonsForAnimation(style);
-
-  if (style.HasWillChangeCompositingHint() &&
-      !style.SubtreeWillChangeContents())
-    reasons |= CompositingReason::kWillChangeCompositingHint;
+  reasons |= CompositingReasonsForWillChange(style);
 
   if (style.UsedTransformStyle3D() == ETransformStyle3D::kPreserve3d)
     reasons |= CompositingReason::kPreserve3DWith3DDescendants;
@@ -122,14 +119,11 @@ CompositingReasons CompositingReasonFinder::DirectReasonsForPaintProperties(
     return CompositingReason::kNone;
 
   const ComputedStyle& style = object.StyleRef();
-  auto reasons = CompositingReasonsForAnimation(style);
+  auto reasons = CompositingReasonsForAnimation(style) |
+                 CompositingReasonsForWillChange(style);
 
-  if (RequiresCompositingForTransform(object))
+  if (RequiresCompositingFor3DTransform(object))
     reasons |= CompositingReason::k3DTransform;
-
-  if (style.HasWillChangeCompositingHint() &&
-      !style.SubtreeWillChangeContents())
-    reasons |= CompositingReason::kWillChangeCompositingHint;
 
   auto* layer = ToLayoutBoxModelObject(object).Layer();
   if (layer->Has3DTransformedDescendant()) {
@@ -148,7 +142,7 @@ CompositingReasons CompositingReasonFinder::DirectReasonsForPaintProperties(
   return reasons;
 }
 
-bool CompositingReasonFinder::RequiresCompositingForTransform(
+bool CompositingReasonFinder::RequiresCompositingFor3DTransform(
     const LayoutObject& layout_object) {
   // Note that we ask the layoutObject if it has a transform, because the style
   // may have transforms, but the layoutObject may be an inline that doesn't
@@ -213,39 +207,38 @@ CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
 CompositingReasons CompositingReasonFinder::CompositingReasonsForAnimation(
     const ComputedStyle& style) {
   CompositingReasons reasons = CompositingReason::kNone;
-  if (RequiresCompositingForTransformAnimation(style))
+  if (style.SubtreeWillChangeContents())
+    return reasons;
+
+  if (style.HasCurrentTransformAnimation())
     reasons |= CompositingReason::kActiveTransformAnimation;
-  if (RequiresCompositingForOpacityAnimation(style))
+  if (style.HasCurrentOpacityAnimation())
     reasons |= CompositingReason::kActiveOpacityAnimation;
-  if (RequiresCompositingForFilterAnimation(style))
+  if (style.HasCurrentFilterAnimation())
     reasons |= CompositingReason::kActiveFilterAnimation;
-  if (RequiresCompositingForBackdropFilterAnimation(style))
+  if (style.HasCurrentBackdropFilterAnimation())
     reasons |= CompositingReason::kActiveBackdropFilterAnimation;
   return reasons;
 }
 
-bool CompositingReasonFinder::RequiresCompositingForOpacityAnimation(
+CompositingReasons CompositingReasonFinder::CompositingReasonsForWillChange(
     const ComputedStyle& style) {
-  return style.HasCurrentOpacityAnimation() &&
-         !style.SubtreeWillChangeContents();
-}
+  CompositingReasons reasons = CompositingReason::kNone;
+  if (style.SubtreeWillChangeContents())
+    return reasons;
 
-bool CompositingReasonFinder::RequiresCompositingForFilterAnimation(
-    const ComputedStyle& style) {
-  return style.HasCurrentFilterAnimation() &&
-         !style.SubtreeWillChangeContents();
-}
+  if (style.HasWillChangeTransformHint())
+    reasons |= CompositingReason::kWillChangeTransform;
+  if (style.HasWillChangeOpacityHint())
+    reasons |= CompositingReason::kWillChangeOpacity;
 
-bool CompositingReasonFinder::RequiresCompositingForBackdropFilterAnimation(
-    const ComputedStyle& style) {
-  return style.HasCurrentBackdropFilterAnimation() &&
-         !style.SubtreeWillChangeContents();
-}
+  // kWillChangeOther is needed only when neither kWillChangeTransform nor
+  // kWillChangeOpacity is set.
+  if (reasons == CompositingReason::kNone &&
+      style.HasWillChangeCompositingHint())
+    reasons |= CompositingReason::kWillChangeOther;
 
-bool CompositingReasonFinder::RequiresCompositingForTransformAnimation(
-    const ComputedStyle& style) {
-  return style.HasCurrentTransformAnimation() &&
-         !style.SubtreeWillChangeContents();
+  return reasons;
 }
 
 bool CompositingReasonFinder::RequiresCompositingForRootScroller(

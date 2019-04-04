@@ -616,6 +616,24 @@ static FloatPoint3D TransformOrigin(const LayoutBox& box) {
       style.TransformOriginZ());
 }
 
+// TODO(crbug.com/900241): Remove this function and let the caller use
+// CompositingReason::kDirectReasonForTransformProperty directly.
+static CompositingReasons CompositingReasonsForTransformProperty() {
+  CompositingReasons reasons =
+      CompositingReason::kDirectReasonsForTransformProperty;
+  // TODO(crbug.com/900241): Check for nodes for each KeyframeModel target
+  // property instead of creating all nodes and only create a transform/
+  // effect/filter node if needed.
+  reasons |= CompositingReason::kComboActiveAnimation;
+  // We also need to create transform node if the opacity node is created for
+  // will-change:opacity to avoid raster invalidation (caused by otherwise a
+  // created/deleted effect node) when we start/stop an opacity animation.
+  // https://crbug.com/942681
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    reasons |= CompositingReason::kWillChangeOpacity;
+  return reasons;
+}
+
 static bool NeedsTransform(const LayoutObject& object,
                            CompositingReasons direct_compositing_reasons) {
   if (object.IsText())
@@ -626,12 +644,7 @@ static bool NeedsTransform(const LayoutObject& object,
       object.StyleRef().BackfaceVisibility() == EBackfaceVisibility::kHidden)
     return true;
 
-  // TODO(crbug.com/900241): Currently kDirectReasonsForTransformProperty
-  // includes all will-change compositing hints including opacity. This is
-  // needed to avoid creating/deleting transform nodes on start/end of an
-  // opacity animation. https://crbug.com/942681
-  if (direct_compositing_reasons &
-      CompositingReason::kDirectReasonsForTransformProperty)
+  if (direct_compositing_reasons & CompositingReasonsForTransformProperty())
     return true;
 
   if (!object.IsBox())
@@ -694,7 +707,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
           }
           state.direct_compositing_reasons =
               full_context_.direct_compositing_reasons &
-              CompositingReason::kDirectReasonsForTransformProperty;
+              CompositingReasonsForTransformProperty();
         }
       }
 
@@ -748,21 +761,24 @@ static bool NeedsClipPathClip(const LayoutObject& object) {
   return false;
 }
 
+// TODO(crbug.com/900241): Remove this function and let the caller use
+// CompositingReason::kDirectReasonForEffectProperty directly.
 static CompositingReasons CompositingReasonsForEffectProperty() {
-  // TODO(crbug.com/900241): See the comment in compositing_reasons.h about
-  // the bug for the reason of this.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    return CompositingReason::kDirectReasonsForEffectProperty;
-  }
-  // We also need to create effect node if the transform node is created for
-  // will-change to avoid raster invalidation (caused by otherwise a created/
-  // deleted effect node) when we start/stop a transform animation.
-  // https://crbug.com/942681
+  CompositingReasons reasons =
+      CompositingReason::kDirectReasonsForEffectProperty;
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    return CompositingReason::kDirectReasonsForEffectProperty |
-           CompositingReason::kWillChangeCompositingHint;
+    // TODO(crbug.com/900241): Check for nodes for each KeyframeModel target
+    // property instead of creating all nodes and only create a transform/
+    // effect/filter node if needed.
+    reasons |= CompositingReason::kComboActiveAnimation;
+    // We also need to create effect node if the transform node is created for
+    // will-change:transform to avoid raster invalidation (caused by otherwise a
+    // created/deleted effect node) when we start/stop a transform animation.
+    // https://crbug.com/942681
+    if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+      reasons |= CompositingReason::kWillChangeTransform;
   }
-  return CompositingReason::kActiveOpacityAnimation;
+  return reasons;
 }
 
 static bool NeedsEffect(const LayoutObject& object,
@@ -827,7 +843,7 @@ static bool NeedsEffect(const LayoutObject& object,
   if (!style.BackdropFilter().IsEmpty())
     return true;
 
-  if (style.Opacity() != 1.0f || style.HasWillChangeOpacityHint())
+  if (style.Opacity() != 1.0f)
     return true;
 
   if (direct_compositing_reasons & CompositingReasonsForEffectProperty())
@@ -969,12 +985,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
         //
         // Currently, we use the existence of this id to check if effect nodes
         // have been created for animations on this element.
-        // TODO(flackr): Check for nodes for each KeyframeModel target
-        // property instead of creating all nodes and create each type of
-        // node as needed, https://crbug.com/900241
         state.direct_compositing_reasons =
             full_context_.direct_compositing_reasons &
-            CompositingReason::kDirectReasonsForEffectProperty;
+            CompositingReasonsForEffectProperty();
         if (state.direct_compositing_reasons) {
           state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
               object_.UniqueId(), CompositorElementIdNamespace::kPrimaryEffect);
@@ -1081,21 +1094,26 @@ static bool NeedsLinkHighlightEffect(const LayoutObject& object) {
   return page->GetLinkHighlights().NeedsHighlightEffect(object);
 }
 
+// TODO(crbug.com/900241): Remove this function and let the caller use
+// CompositingReason::kDirectReasonForFilterProperty directly.
 static CompositingReasons CompositingReasonsForFilterProperty() {
-  // TODO(crbug.com/900241): See the comment in compositing_reasons.h about
-  // the bug for the reason of this.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    return CompositingReason::kDirectReasonsForFilterProperty;
-  }
-  // We also need to create filter node if the transform node is created for
-  // will-change to avoid raster invalidation (caused by otherwise a created/
-  // deleted filter node) when we start/stop a transform/opacity animation.
-  // https://crbug.com/942681
+  CompositingReasons reasons =
+      CompositingReason::kDirectReasonsForFilterProperty;
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    return CompositingReason::kDirectReasonsForFilterProperty |
-           CompositingReason::kWillChangeCompositingHint;
+    // TODO(crbug.com/900241): Check for nodes for each KeyframeModel target
+    // property instead of creating all nodes and only create a transform/
+    // effect/filter node if needed.
+    reasons |= CompositingReason::kComboActiveAnimation;
+    // We also need to create filter node if the transform/effect node is
+    // created for will-change:transform/opacity to avoid raster invalidation
+    // (caused by otherwise a created/deleted filter node) when we start/stop a
+    // transform/opacity animation. https://crbug.com/942681
+    if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+      reasons |= CompositingReason::kWillChangeTransform |
+                 CompositingReason::kWillChangeOpacity;
+    }
   }
-  return CompositingReason::kActiveFilterAnimation;
+  return reasons;
 }
 
 static bool NeedsFilter(const LayoutObject& object,
@@ -1170,7 +1188,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
         // current.
         state.direct_compositing_reasons =
             full_context_.direct_compositing_reasons &
-            CompositingReason::kDirectReasonsForFilterProperty;
+            CompositingReasonsForFilterProperty();
         state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
             object_.UniqueId(), CompositorElementIdNamespace::kEffectFilter);
 

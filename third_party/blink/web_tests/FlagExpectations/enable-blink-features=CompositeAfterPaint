@@ -459,6 +459,11 @@ Bug(none) virtual/nobinary-for-devtools/http/tests/devtools/layers/layer-scroll-
 # Other:
 crbug.com/935728 fast/frames/transparent-scrollbar.html [ Failure ]
 
+# Wrong contentsOpaque for will-change: opacity layers
+Bug(none) compositing/will-change/composited-layers.html [ Failure ]
+# Crash on non-contiguous effect on multiple columns
+Bug(none) fast/multicol/composited-layer-will-change.html [ Crash ]
+
 Bug(none) external/wpt/css/css-masking/clip-path-svg-content/clip-path-recursion-001.svg [ Failure ]
 Bug(none) external/wpt/css/css-masking/clip-path-svg-content/mask-nested-clip-path-001.svg [ Failure ]
 Bug(none) external/wpt/css/css-masking/clip-path-svg-content/mask-nested-clip-path-002.svg [ Failure ]
