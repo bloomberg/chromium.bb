@@ -8,6 +8,7 @@
 #include <mach/mach.h>
 
 #include "base/base_export.h"
+#include "base/profiler/native_unwinder_mac.h"
 #include "base/profiler/thread_delegate.h"
 #include "base/sampling_heap_profiler/module_cache.h"
 #include "base/threading/platform_thread.h"
@@ -59,12 +60,8 @@ class BASE_EXPORT ThreadDelegateMac : public ThreadDelegate {
   // The stack base address corresponding to |thread_port_|.
   const uintptr_t thread_stack_base_address_;
 
-  // Cached pointer to the libsystem_kernel module.
-  const ModuleCache::Module* const libsystem_kernel_module_;
-
-  // The address range of |_sigtramp|, the signal trampoline function.
-  uintptr_t sigtramp_start_;
-  uintptr_t sigtramp_end_;
+  // The unwinder for native stack frames.
+  NativeUnwinderMac native_unwinder_;
 };
 
 }  // namespace base

@@ -7,7 +7,7 @@
 #include <windows.h>
 #include <winternl.h>
 
-#include "base/profiler/win32_stack_frame_unwinder.h"
+#include "base/profiler/native_unwinder_win.h"
 #include "build/build_config.h"
 
 // IMPORTANT NOTE: Some functions within this implementation are invoked while
@@ -204,49 +204,8 @@ UnwindResult ThreadDelegateWin::WalkNativeFrames(CONTEXT* thread_context,
                                                  uintptr_t stack_top,
                                                  ModuleCache* module_cache,
                                                  std::vector<Frame>* stack) {
-  // We expect the frame corresponding to the |thread_context| register state to
-  // exist within |stack|.
-  DCHECK_GT(stack->size(), 0u);
-
-  Win32StackFrameUnwinder frame_unwinder;
-  for (;;) {
-    if (!stack->back().module) {
-      // There's no loaded module corresponding to the current frame. This can
-      // be due to executing code that is not in a module (e.g. V8 generated
-      // code or runtime-generated code associated with third-party injected
-      // DLLs). It can also be due to the the module having been unloaded since
-      // we recorded the stack.  In the latter case the function unwind
-      // information was part of the unloaded module, so it's not possible to
-      // unwind further.
-      //
-      // If a module was found, it's still theoretically possible for the
-      // detected module module to be different than the one that was loaded
-      // when the stack was copied (i.e. if the module was unloaded and a
-      // different module loaded in overlapping memory). This likely would cause
-      // a crash, but has not been observed in practice.
-      //
-      // We return UNRECOGNIZED_FRAME on the optimistic assumption that this may
-      // be a frame the AuxUnwinder knows how to handle (e.g. a frame in V8
-      // generated code).
-      return UnwindResult::UNRECOGNIZED_FRAME;
-    }
-
-    if (!frame_unwinder.TryUnwind(stack->size() == 1u, thread_context,
-                                  stack->back().module)) {
-      return UnwindResult::ABORTED;
-    }
-
-    if (ContextPC(thread_context) == 0)
-      return UnwindResult::COMPLETED;
-
-    // Record the frame to which we just unwound.
-    stack->emplace_back(
-        ContextPC(thread_context),
-        module_cache->GetModuleForAddress(ContextPC(thread_context)));
-  }
-
-  NOTREACHED();
-  return UnwindResult::COMPLETED;
+  NativeUnwinderWin unwinder;
+  return unwinder.TryUnwind(thread_context, stack_top, module_cache, stack);
 }
 
 }  // namespace base
