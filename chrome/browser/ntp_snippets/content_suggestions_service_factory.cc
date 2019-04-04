@@ -20,7 +20,6 @@
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/language/url_language_histogram_factory.h"
-#include "chrome/browser/ntp_snippets/dependent_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -103,7 +102,6 @@ using suggestions::ImageDecoderImpl;
 using ntp_snippets::BreakingNewsGCMAppHandler;
 using ntp_snippets::GetPushUpdatesSubscriptionEndpoint;
 using ntp_snippets::GetPushUpdatesUnsubscriptionEndpoint;
-using ntp_snippets::IsSimplifiedNtpEnabled;
 using ntp_snippets::SubscriptionManagerImpl;
 #endif  // OS_ANDROID
 
@@ -371,8 +369,7 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       LargeIconServiceFactory::GetForBrowserContext(profile);
   std::unique_ptr<CategoryRanker> category_ranker =
       ntp_snippets::BuildSelectedCategoryRanker(
-          pref_service, base::DefaultClock::GetInstance(),
-          IsSimplifiedNtpEnabled());
+          pref_service, base::DefaultClock::GetInstance());
 
   auto* service = new ContentSuggestionsService(
       State::ENABLED, identity_manager, history_service, large_icon_service,
