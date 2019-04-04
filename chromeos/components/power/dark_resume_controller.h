@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_SYSTEM_DARK_RESUME_CONTROLLER_H_
-#define CHROMEOS_SYSTEM_DARK_RESUME_CONTROLLER_H_
+#ifndef CHROMEOS_COMPONENTS_POWER_DARK_RESUME_CONTROLLER_H_
+#define CHROMEOS_COMPONENTS_POWER_DARK_RESUME_CONTROLLER_H_
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
@@ -43,7 +43,7 @@ namespace system {
 //
 // 5. If the system transitions to a full resume all dark resume related state
 // and timers are cleared as the system wakes up.
-class CHROMEOS_EXPORT DarkResumeController
+class COMPONENT_EXPORT(CHROMEOS_POWER) DarkResumeController
     : public chromeos::PowerManagerClient::Observer,
       public device::mojom::WakeLockObserver {
  public:
@@ -129,4 +129,4 @@ class CHROMEOS_EXPORT DarkResumeController
 }  // namespace system
 }  // namespace chromeos
 
-#endif  // CHROMEOS_SYSTEM_DARK_RESUME_CONTROLLER_H_
+#endif  // CHROMEOS_COMPONENTS_POWER_DARK_RESUME_CONTROLLER_H_
