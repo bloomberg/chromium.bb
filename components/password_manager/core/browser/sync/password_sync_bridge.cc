@@ -153,17 +153,32 @@ bool ShouldRecoverPasswordsDuringMerge() {
          !base::FeatureList::IsEnabled(features::kDeleteCorruptedPasswords);
 }
 
-// A simple class for scoping a password store sync transaction. This does not
-// support rollback since the password store sync doesn't either.
+// A simple class for scoping a password store sync transaction. If the
+// transaction hasn't been committed, it will be rolled back when it goes out of
+// scope.
 class ScopedStoreTransaction {
  public:
   explicit ScopedStoreTransaction(PasswordStoreSync* store) : store_(store) {
     store_->BeginTransaction();
+    committed_ = false;
   }
-  ~ScopedStoreTransaction() { store_->CommitTransaction(); }
+
+  void Commit() {
+    if (!committed_) {
+      store_->CommitTransaction();
+      committed_ = true;
+    }
+  }
+
+  ~ScopedStoreTransaction() {
+    if (!committed_) {
+      store_->RollbackTransaction();
+    }
+  }
 
  private:
   PasswordStoreSync* store_;
+  bool committed_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedStoreTransaction);
 };
@@ -317,7 +332,6 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
   // This is used to keep track of all the changes applied to the password
   // store to notify other observers of the password store.
   PasswordStoreChangeList password_store_changes;
-  base::Optional<syncer::ModelError> error;
   {
     ScopedStoreTransaction transaction(password_store_sync_);
     const base::Time time_now = base::Time::Now();
@@ -454,11 +468,14 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
     // CreateMetadataChangeList() so downcasting is safe.
     static_cast<syncer::InMemoryMetadataChangeList*>(metadata_change_list.get())
         ->TransferChangesTo(&sync_metadata_store_change_list);
-    // Even if metadata persistence failed, the transaction will be committed,
-    // and the underlying PasswordStore will be updated. Therefore, we need to
-    // notify password store observers even if metadata persistence fails, and
-    // we cannot simply return.
-    error = sync_metadata_store_change_list.TakeError();
+    base::Optional<syncer::ModelError> error =
+        sync_metadata_store_change_list.TakeError();
+    if (error) {
+      metrics_util::LogPasswordSyncState(
+          metrics_util::NOT_SYNCING_FAILED_METADATA_PERSISTENCE);
+      return error;
+    }
+    transaction.Commit();
   }  // End of scoped transaction.
 
   if (!password_store_changes.empty()) {
@@ -468,13 +485,9 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
     // interested in changes to sync metadata.
     password_store_sync_->NotifyLoginsChanged(password_store_changes);
   }
-  if (error) {
-    metrics_util::LogPasswordSyncState(
-        metrics_util::NOT_SYNCING_FAILED_METADATA_PERSISTENCE);
-  } else {
-    metrics_util::LogPasswordSyncState(metrics_util::SYNCING_OK);
-  }
-  return error;
+
+  metrics_util::LogPasswordSyncState(metrics_util::SYNCING_OK);
+  return base::nullopt;
 }
 
 base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
@@ -488,7 +501,6 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
   // This is used to keep track of all the changes applied to the password store
   // to notify other observers of the password store.
   PasswordStoreChangeList password_store_changes;
-  base::Optional<syncer::ModelError> error;
   {
     ScopedStoreTransaction transaction(password_store_sync_);
 
@@ -564,7 +576,12 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
     // CreateMetadataChangeList() so downcasting is safe.
     static_cast<syncer::InMemoryMetadataChangeList*>(metadata_change_list.get())
         ->TransferChangesTo(&sync_metadata_store_change_list);
-    error = sync_metadata_store_change_list.TakeError();
+    base::Optional<syncer::ModelError> error =
+        sync_metadata_store_change_list.TakeError();
+    if (error) {
+      return error;
+    }
+    transaction.Commit();
   }  // End of scoped transaction.
 
   if (!password_store_changes.empty()) {
@@ -573,7 +590,7 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
     // observers since they aren't interested in changes to sync metadata.
     password_store_sync_->NotifyLoginsChanged(password_store_changes);
   }
-  return error;
+  return base::nullopt;
 }
 
 void PasswordSyncBridge::GetData(StorageKeyList storage_keys,
