@@ -996,8 +996,7 @@ void SkiaRenderer::FlushBatchedQuads() {
   paint.setBlendMode(batched_quad_state_.blend_mode);
   current_canvas_->experimental_DrawEdgeAAImageSet(
       &batched_quads_.front(), batched_quads_.size(),
-      &batched_draw_regions_.front(), &batched_cdt_matrices_.front(), &paint,
-      SkCanvas::kFast_SrcRectConstraint);
+      &batched_draw_regions_.front(), &batched_cdt_matrices_.front(), &paint);
 
   batched_quads_.clear();
   batched_draw_regions_.clear();
@@ -1181,9 +1180,6 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
 
   if (!blend_background && !vertex_alpha) {
     // This is a simple texture draw and can go into the batching system
-    // TODO(michaelludwig) - Batched quads always use the fast rect constraint,
-    // which maybe isn't appropriate for texture quads and we need to track
-    // the constraint needed for a batch?
     DCHECK(!MustFlushBatchedQuads(quad, params));
     AddQuadToBatch(params, image, visible_uv_rect);
     return;
