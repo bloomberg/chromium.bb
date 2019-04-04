@@ -452,8 +452,8 @@ void ContentSecurityPolicy::FillInCSPHashValues(
     DigestValue digest;
     if (algorithm_map.csp_hash_algorithm & hash_algorithms_used) {
       bool digest_success =
-          ComputeDigest(algorithm_map.algorithm, utf8_source.Data(),
-                        utf8_source.length(), digest);
+          ComputeDigest(algorithm_map.algorithm, utf8_source.data(),
+                        utf8_source.size(), digest);
       if (digest_success) {
         csp_hash_values->push_back(
             CSPHashValue(algorithm_map.csp_hash_algorithm, digest));

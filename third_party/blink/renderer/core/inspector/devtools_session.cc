@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/inspector/devtools_session.h"
 
+#include "base/containers/span.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
@@ -50,8 +51,8 @@ mojom::blink::DevToolsMessagePtr WrapMessage(
     result->data = std::move(message.binary);
   } else {
     WTF::StringUTF8Adaptor adaptor(message.json);
-    result->data = mojo_base::BigBuffer(base::make_span(
-        reinterpret_cast<const uint8_t*>(adaptor.Data()), adaptor.length()));
+    result->data =
+        mojo_base::BigBuffer(base::as_bytes(base::make_span(adaptor)));
   }
   return result;
 }

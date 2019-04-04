@@ -34,8 +34,8 @@ namespace {
 String GetSha256String(const String& content) {
   DigestValue digest;
   StringUTF8Adaptor utf8_content(content);
-  bool digest_success = ComputeDigest(kHashAlgorithmSha256, utf8_content.Data(),
-                                      utf8_content.length(), digest);
+  bool digest_success = ComputeDigest(kHashAlgorithmSha256, utf8_content.data(),
+                                      utf8_content.size(), digest);
   if (!digest_success) {
     return "sha256-...";
   }

@@ -195,8 +195,8 @@ void V8ScriptValueSerializer::WriteUTF8String(const String& string) {
   // TODO(jbroman): Ideally this method would take a WTF::StringView, but the
   // StringUTF8Adaptor trick doesn't yet work with StringView.
   StringUTF8Adaptor utf8(string);
-  WriteUint32(utf8.length());
-  WriteRawBytes(utf8.Data(), utf8.length());
+  WriteUint32(utf8.size());
+  WriteRawBytes(utf8.data(), utf8.size());
 }
 
 bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
