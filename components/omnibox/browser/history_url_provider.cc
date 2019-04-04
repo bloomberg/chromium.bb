@@ -27,6 +27,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/autocomplete_match_classification.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/autocomplete_result.h"
@@ -726,10 +727,11 @@ int HistoryURLProvider::CalculateRelevance(MatchType match_type,
 ACMatchClassifications HistoryURLProvider::ClassifyDescription(
     const base::string16& input_text,
     const base::string16& description) {
-  base::string16 clean_description =
-      bookmarks::CleanUpTitleForMatching(description);
-  TermMatches matches = TermMatchesInString(input_text, clean_description);
-  return SpansFromTermMatch(matches, clean_description.length(), false);
+  TermMatches term_matches =
+      FindTermMatches(input_text, description, true, false);
+  return ClassifyTermMatches(term_matches, description.size(),
+                             ACMatchClassification::MATCH,
+                             ACMatchClassification::NONE);
 }
 
 void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,

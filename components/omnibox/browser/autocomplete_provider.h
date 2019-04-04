@@ -233,13 +233,6 @@ class AutocompleteProvider
 
   typedef std::multimap<base::char16, base::string16> WordMap;
 
-  // Splits |input_text| into terms, looks for those terms in |clean_text|, and
-  // returns the matched terms sorted, deduped, and filtered-by-word-boundary.
-  // TODO (manukh) replace this with the near identical FindTermMatches in
-  // components/omnibox/browser/autocomplete_match_classification.
-  static TermMatches TermMatchesInString(const base::string16& input_text,
-                                         const base::string16& clean_text);
-
   // Finds the matches for |find_text| in |text|, classifies those matches,
   // merges those classifications with |original_class|, and returns the merged
   // classifications.

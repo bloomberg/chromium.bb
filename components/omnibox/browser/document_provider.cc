@@ -30,6 +30,7 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/autocomplete_match_classification.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
@@ -529,10 +530,10 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
 ACMatchClassifications DocumentProvider::Classify(
     const base::string16& text,
     const base::string16& input_text) {
-  base::string16 clean_text = bookmarks::CleanUpTitleForMatching(text);
-  TermMatches matches = TermMatchesInString(input_text, clean_text);
-  return HistoryProvider::SpansFromTermMatch(matches, clean_text.length(),
-                                             false);
+  TermMatches term_matches = FindTermMatches(input_text, text, true, false);
+  return ClassifyTermMatches(term_matches, text.size(),
+                             ACMatchClassification::MATCH,
+                             ACMatchClassification::NONE);
 }
 
 // static
