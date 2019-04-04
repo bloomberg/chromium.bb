@@ -92,7 +92,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   void RecordLoadingActivity(const ResourceRequest&,
                              ResourceType,
                              const AtomicString& fetch_initiator_name) override;
-  void DidObserveLoadingBehavior(WebLoadingBehaviorFlag) override;
 
   void AddResourceTiming(const ResourceTimingInfo&) override;
   bool AllowImage(bool images_enabled, const KURL&) const override;
