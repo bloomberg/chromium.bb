@@ -23,7 +23,7 @@ namespace data_reduction_proxy {
 
 namespace {
 void RecordQuicProxyStatus(const net::ProxyServer& proxy_server) {
-  if (proxy_server.is_https() || proxy_server.is_quic()) {
+  if (proxy_server.is_https()) {
     RecordQuicProxyStatus(IsQuicProxy(proxy_server)
                               ? QUIC_PROXY_STATUS_AVAILABLE
                               : QUIC_PROXY_NOT_SUPPORTED);
