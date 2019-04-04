@@ -25,10 +25,6 @@ class CORE_EXPORT TrustedTypePolicyFactory final : public ScriptWrappable,
   USING_GARBAGE_COLLECTED_MIXIN(TrustedTypePolicyFactory);
 
  public:
-  static TrustedTypePolicyFactory* Create(ExecutionContext* context) {
-    return MakeGarbageCollected<TrustedTypePolicyFactory>(context);
-  }
-
   explicit TrustedTypePolicyFactory(ExecutionContext*);
 
   // TrustedTypePolicyFactory.idl

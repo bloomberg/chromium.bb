@@ -23,10 +23,6 @@ class CORE_EXPORT TrustedTypePolicy final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static TrustedTypePolicy* Create(const String& policy_name,
-                                   TrustedTypePolicyOptions*,
-                                   bool exposed);
-
   TrustedTypePolicy(const String& policy_name,
                     TrustedTypePolicyOptions*,
                     bool exposed);

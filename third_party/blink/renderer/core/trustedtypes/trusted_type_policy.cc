@@ -21,14 +21,6 @@ TrustedTypePolicy::TrustedTypePolicy(const String& policy_name,
   policy_options_->setExposed(exposed);
 }
 
-TrustedTypePolicy* TrustedTypePolicy::Create(
-    const String& policy_name,
-    TrustedTypePolicyOptions* policy_options,
-    bool exposed) {
-  return MakeGarbageCollected<TrustedTypePolicy>(policy_name, policy_options,
-                                                 exposed);
-}
-
 TrustedHTML* TrustedTypePolicy::createHTML(ScriptState* script_state,
                                            const String& input,
                                            ExceptionState& exception_state) {
@@ -71,7 +63,7 @@ TrustedHTML* TrustedTypePolicy::CreateHTML(v8::Isolate* isolate,
     exception_state.RethrowV8Exception(try_catch.Exception());
     return nullptr;
   }
-  return TrustedHTML::Create(html);
+  return MakeGarbageCollected<TrustedHTML>(html);
 }
 
 TrustedScript* TrustedTypePolicy::CreateScript(
@@ -91,7 +83,7 @@ TrustedScript* TrustedTypePolicy::CreateScript(
     exception_state.RethrowV8Exception(try_catch.Exception());
     return nullptr;
   }
-  return TrustedScript::Create(script);
+  return MakeGarbageCollected<TrustedScript>(script);
 }
 
 TrustedScriptURL* TrustedTypePolicy::CreateScriptURL(
@@ -113,7 +105,7 @@ TrustedScriptURL* TrustedTypePolicy::CreateScriptURL(
     exception_state.RethrowV8Exception(try_catch.Exception());
     return nullptr;
   }
-  return TrustedScriptURL::Create(script_url);
+  return MakeGarbageCollected<TrustedScriptURL>(script_url);
 }
 
 TrustedURL* TrustedTypePolicy::CreateURL(v8::Isolate* isolate,
@@ -132,7 +124,7 @@ TrustedURL* TrustedTypePolicy::CreateURL(v8::Isolate* isolate,
     exception_state.RethrowV8Exception(try_catch.Exception());
     return nullptr;
   }
-  return TrustedURL::Create(url);
+  return MakeGarbageCollected<TrustedURL>(url);
 }
 
 String TrustedTypePolicy::name() const {

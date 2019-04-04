@@ -51,7 +51,7 @@ TrustedTypePolicy* TrustedTypePolicyFactory::createPolicy(
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kTrustedTypesDefaultPolicyUsed);
   }
-  TrustedTypePolicy* policy = TrustedTypePolicy::Create(
+  auto* policy = MakeGarbageCollected<TrustedTypePolicy>(
       policy_name, const_cast<TrustedTypePolicyOptions*>(policy_options),
       exposed);
   policy_map_.insert(policy_name, policy);
