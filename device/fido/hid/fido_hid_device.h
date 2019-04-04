@@ -5,6 +5,7 @@
 #ifndef DEVICE_FIDO_HID_FIDO_HID_DEVICE_H_
 #define DEVICE_FIDO_HID_FIDO_HID_DEVICE_H_
 
+#include <list>
 #include <string>
 #include <utility>
 #include <vector>
@@ -69,6 +70,14 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
   FRIEND_TEST_ALL_PREFIXES(FidoHidDeviceTest, TestRetryChannelAllocation);
   FRIEND_TEST_ALL_PREFIXES(FidoHidDeviceTest, TestCancel);
 
+  struct COMPONENT_EXPORT(DEVICE_FIDO) PendingTransaction {
+    PendingTransaction(std::vector<uint8_t> command, DeviceCallback callback);
+    ~PendingTransaction();
+
+    std::vector<uint8_t> command;
+    DeviceCallback callback;
+  };
+
   static constexpr uint8_t kWinkCapability = 0x01;
   static constexpr uint8_t kLockCapability = 0x02;
   static constexpr uint32_t kBroadcastChannel = 0xffffffff;
@@ -79,16 +88,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
 
   // Open a connection to this device.
   void Connect(ConnectCallback callback);
-  void OnConnect(std::vector<uint8_t> command,
-                 DeviceCallback callback,
-                 device::mojom::HidConnectionPtr connection);
+  void OnConnect(device::mojom::HidConnectionPtr connection);
   // Ask device to allocate a unique channel id for this connection.
-  void AllocateChannel(std::vector<uint8_t> command, DeviceCallback callback);
+  void AllocateChannel();
   void OnAllocateChannel(std::vector<uint8_t> nonce,
-                         std::vector<uint8_t> command,
-                         DeviceCallback callback,
                          base::Optional<FidoHidMessage> message);
-  void Transition(std::vector<uint8_t> command, DeviceCallback callback);
+  void Transition();
   // Write all message packets to device, and read response if expected.
   void WriteMessage(base::Optional<FidoHidMessage> message,
                     bool response_expected,
@@ -99,8 +104,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
                      bool success);
   // Read all response message packets from device.
   void ReadMessage(HidMessageCallback callback);
-  void MessageReceived(DeviceCallback callback,
-                       base::Optional<FidoHidMessage> message);
+  void MessageReceived(base::Optional<FidoHidMessage> message);
   void OnRead(HidMessageCallback callback,
               bool success,
               uint8_t report_id,
@@ -110,10 +114,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
                           bool success,
                           uint8_t report_id,
                           const base::Optional<std::vector<uint8_t>>& buf);
-  void OnKeepAlive(DeviceCallback callback);
   void OnWink(WinkCallback callback, base::Optional<FidoHidMessage> response);
-  void ArmTimeout(DeviceCallback callback);
-  void OnTimeout(DeviceCallback callback);
+  void ArmTimeout();
+  void OnTimeout();
   void ProcessHidError(FidoHidDeviceCommand cmd,
                        base::span<const uint8_t> payload);
 
@@ -126,8 +129,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
   const uint8_t output_report_size_;
 
   base::CancelableOnceClosure timeout_callback_;
-  base::queue<std::pair<std::vector<uint8_t>, DeviceCallback>>
-      pending_transactions_;
+  // pending_transactions_ includes both the current transaction, and
+  // transactions that have not yet been sent.
+  std::list<PendingTransaction> pending_transactions_;
 
   // All the FidoHidDevice instances are owned by U2fRequest. So it is safe to
   // let the FidoHidDevice share the device::mojo::HidManager raw pointer from

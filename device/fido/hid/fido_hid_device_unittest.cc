@@ -209,11 +209,11 @@ TEST_F(FidoHidDeviceTest, TestConnectionFailure) {
 
   // Add pending transactions manually and ensure they are processed.
   TestDeviceCallbackReceiver receiver_1;
-  device->pending_transactions_.emplace(GetMockDeviceRequest(),
-                                        receiver_1.callback());
+  device->pending_transactions_.emplace_back(GetMockDeviceRequest(),
+                                             receiver_1.callback());
   TestDeviceCallbackReceiver receiver_2;
-  device->pending_transactions_.emplace(GetMockDeviceRequest(),
-                                        receiver_2.callback());
+  device->pending_transactions_.emplace_back(GetMockDeviceRequest(),
+                                             receiver_2.callback());
   TestDeviceCallbackReceiver receiver_3;
   device->DeviceTransact(GetMockDeviceRequest(), receiver_3.callback());
 
@@ -250,11 +250,11 @@ TEST_F(FidoHidDeviceTest, TestDeviceError) {
 
   // Add pending transactions manually and ensure they are processed.
   TestDeviceCallbackReceiver receiver_1;
-  device->pending_transactions_.emplace(GetMockDeviceRequest(),
-                                        receiver_1.callback());
+  device->pending_transactions_.emplace_back(GetMockDeviceRequest(),
+                                             receiver_1.callback());
   TestDeviceCallbackReceiver receiver_2;
-  device->pending_transactions_.emplace(GetMockDeviceRequest(),
-                                        receiver_2.callback());
+  device->pending_transactions_.emplace_back(GetMockDeviceRequest(),
+                                             receiver_2.callback());
   TestDeviceCallbackReceiver receiver_3;
   device->DeviceTransact(GetMockDeviceRequest(), receiver_3.callback());
   FakeHidConnection::mock_connection_error_ = false;

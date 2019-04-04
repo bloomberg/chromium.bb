@@ -352,11 +352,6 @@ COMPONENT_EXPORT(DEVICE_FIDO) extern const base::TimeDelta kDeviceTimeout;
 // device times out waiting for user presence.
 COMPONENT_EXPORT(DEVICE_FIDO) extern const base::TimeDelta kU2fRetryDelay;
 
-// Interval wait time before retrying reading on HID connection when
-// CTAPHID_KEEPALIVE message has been received.
-// https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#ctaphid_keepalive-0x3b
-COMPONENT_EXPORT(DEVICE_FIDO) extern const base::TimeDelta kHidKeepAliveDelay;
-
 // String key values for attestation object as a response to MakeCredential
 // request.
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kFormatKey[];
