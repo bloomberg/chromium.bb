@@ -295,7 +295,7 @@ const base::Feature kOpenVR{"OpenVR", base::FEATURE_DISABLED_BY_DEFAULT};
 #if BUILDFLAG(ENABLE_WINDOWS_MR)
 // Controls Windows Mixed Reality support.
 const base::Feature kWindowsMixedReality{"WindowsMixedReality",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // ENABLE_WINDOWS_MR
 
 #endif  // BUILDFLAG(ENABLE_VR)

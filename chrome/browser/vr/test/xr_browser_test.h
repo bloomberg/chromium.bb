@@ -188,6 +188,7 @@ class XrBrowserTestBase : public InProcessBrowserTest {
  protected:
   std::unique_ptr<base::Environment> env_;
   std::vector<base::Feature> enable_features_;
+  std::vector<base::Feature> disable_features_;
   std::vector<std::string> append_switches_;
 
  private:
