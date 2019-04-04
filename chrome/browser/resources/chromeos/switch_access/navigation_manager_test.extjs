@@ -29,22 +29,8 @@ function navigateToWebpage(desktop) {
   switchAccess.moveForward();
 }
 
-function navigateToFirstTab(desktop) {
-  assertTrue(desktop != null);
-  const node = new AutomationTreeWalker(desktop, constants.Dir.FORWARD,
-      { visit: (node) => node.role === chrome.automation.RoleType.TAB }
-  ).next().node;
-
-  assertTrue(node != null);
-  switchAccess.navigationManager_.node_ = node;
-}
-
 function currentNode() {
   return switchAccess.navigationManager_.node_;
-}
-
-function backButton() {
-  return switchAccess.navigationManager_.backButtonManager_.buttonNode();
 }
 
 TEST_F('SwitchAccessNavigationManagerTest', 'SelectButton', function() {
@@ -100,10 +86,10 @@ TEST_F('SwitchAccessNavigationManagerTest', 'MoveForward', function() {
     const button3 = currentNode();
     assertEquals('button3', button3.name);
 
-    // Moving forwards should take us to the back button.
-    // TODO(anastasi): Determine why the back button doesn't show up here.
-    //switchAccess.moveForward();
-    //assertEquals(backButton(), currentNode());
+    switchAccess.moveForward();
+
+    // check that the initialScope is the final element.
+    assertEquals(currentNode(), initialScope);
 
     switchAccess.moveForward();
 
@@ -131,12 +117,12 @@ TEST_F('SwitchAccessNavigationManagerTest', 'MoveBackward', function() {
 
     switchAccess.moveBackward();
 
-    // Moving backwards from the first button should take us to the back button.
-    // TODO(anastasi): Determine why the back button doesn't show up here.
-    //switchAccess.moveBackward();
-    //assertEquals(backButton(), currentNode());
+    // Moving backwards from the first button should take us to the initialScope.
+    assertEquals(currentNode(), initialScope);
 
-    // Moving backwards from the back button should take us to the third button.
+    switchAccess.moveBackward();
+
+    // Moving backwards from the initialScope should take us to the last button.
     const button3 = currentNode();
     assertEquals('button3', button3.name);
 
@@ -168,62 +154,28 @@ TEST_F('SwitchAccessNavigationManagerTest', 'MoveBackAndForth', function() {
     const button1 = currentNode();
     assertEquals('button1', button1.name);
 
-    // Moving backwards from the first button should take us to the back button.
-    // TODO(anastasi): Determine why the back button doesn't show up here.
-    //switchAccess.moveBackward();
-    //assertEquals(backButton(), currentNode());
+    switchAccess.moveBackward();
+
+    // Moving backwards from the first button should take us to the initialScope.
+    assertEquals(currentNode(), initialScope);
 
     switchAccess.moveBackward();
 
-    // Moving backwards from the back button should take us to the last button.
+    // Moving backwards from the initialScope should take us to the last button.
     const button3 = currentNode();
     assertEquals('button3', button3.name);
 
-    // Moving forwards from the last button should take us to the back button.
-    // TODO(anastasi): Determine why the back button doesn't show up here.
-    //switchAccess.moveForward();
-    //assertEquals(backButton(), currentNode());
+    switchAccess.moveForward();
+
+    assertEquals(currentNode(), initialScope);
 
     switchAccess.moveForward();
+
     assertEquals(currentNode(), button1);
 
     switchAccess.moveForward();
+
     const button2 = currentNode();
     assertEquals('button2', button2.name);
-  });
-});
-
-TEST_F('SwitchAccessNavigationManagerTest', 'TabNavigation',
-    function() {
-  const website = `data:text/html;charset=utf-8,
-                    <button>button1</button>`;
-
-  this.runWithLoadedTree(website, function(desktop) {
-    navigateToFirstTab(desktop);
-    const tabNode = currentNode();
-
-    // Selecting the tab should enter it, placing our focus on the close button.
-    switchAccess.selectCurrentNode();
-
-    const closeButton = currentNode();
-    assertEquals('Close', closeButton.name);
-    assertEquals(chrome.automation.RoleType.BUTTON, closeButton.role);
-
-    switchAccess.moveForward();
-    assertEquals(tabNode, currentNode());
-
-
-    // Moving forwards from the tab node should take us to the back button.
-    // TODO(anastasi): Determine why the back button doesn't show up here.
-    //switchAccess.moveForward();
-    //assertEquals(backButton(), currentNode());
-
-    switchAccess.moveForward();
-    assertEquals(closeButton, currentNode());
-
-    // Moving backwards from the close button should take us to the back button.
-    // TODO(anastasi): Determine why the back button doesn't show up here.
-    //switchAccess.moveBackward();
-    //assertEquals(backButton, currentNode());
   });
 });
