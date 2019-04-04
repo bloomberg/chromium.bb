@@ -6,6 +6,9 @@
 
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/trees/effect_node.h"
+#include "cc/trees/scroll_node.h"
+#include "cc/trees/transform_node.h"
+#include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
@@ -6481,6 +6484,87 @@ TEST_P(PaintPropertyTreeBuilderTest, SimpleOpacityChangeDoesNotCausePacUpdate) {
   EXPECT_TRUE(layer_tree->layer_tree_host()
                   ->property_trees()
                   ->effect_tree.needs_update());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, SimpleScrollChangeDoesNotCausePacUpdate) {
+  // This is a BGPT test only.
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    return;
+
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      #element {
+        width: 100px;
+        height: 100px;
+        overflow: scroll;
+        will-change: transform;
+      }
+      #spacer {
+        width: 100px;
+        height: 1000px;
+      }
+    </style>
+    <div id="element"><div id="spacer"></div></div>
+  )HTML");
+
+  auto* pac = GetDocument().View()->GetPaintArtifactCompositor();
+  ASSERT_TRUE(pac);
+
+  cc::FakeLayerTreeHostClient layer_tree_host_client;
+  auto layer_tree =
+      std::make_unique<LayerTreeHostEmbedder>(&layer_tree_host_client,
+                                              /*single_thread_client=*/nullptr);
+  layer_tree_host_client.SetLayerTreeHost(layer_tree->layer_tree_host());
+  layer_tree->layer_tree_host()->SetRootLayer(pac->RootLayer());
+
+  UpdateAllLifecyclePhasesForTest();
+
+  const auto* properties = PaintPropertiesForElement("element");
+  ASSERT_TRUE(properties);
+  ASSERT_TRUE(properties->ScrollTranslation());
+  ASSERT_TRUE(properties->ScrollTranslation()->ScrollNode());
+  EXPECT_FLOAT_SIZE_EQ(FloatSize(0, 0),
+                       properties->ScrollTranslation()->Translation2D());
+  EXPECT_FALSE(pac->NeedsUpdate());
+
+  auto* property_trees = layer_tree->layer_tree_host()->property_trees();
+  auto* cc_scroll_node = property_trees->scroll_tree.FindNodeFromElementId(
+      properties->ScrollTranslation()->ScrollNode()->GetCompositorElementId());
+  ASSERT_TRUE(cc_scroll_node);
+
+  auto* cc_transform_node =
+      property_trees->transform_tree.Node(cc_scroll_node->transform_id);
+  ASSERT_TRUE(cc_transform_node);
+
+  EXPECT_TRUE(cc_transform_node->local.IsIdentity());
+  EXPECT_FLOAT_EQ(cc_transform_node->scroll_offset.x(), 0);
+  EXPECT_FLOAT_EQ(cc_transform_node->scroll_offset.y(), 0);
+  auto current_scroll_offset =
+      property_trees->scroll_tree.current_scroll_offset(
+          properties->ScrollTranslation()
+              ->ScrollNode()
+              ->GetCompositorElementId());
+  EXPECT_FLOAT_EQ(current_scroll_offset.x(), 0);
+  EXPECT_FLOAT_EQ(current_scroll_offset.y(), 0);
+
+  GetDocument().getElementById("element")->setScrollTop(10.);
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+
+  EXPECT_FLOAT_SIZE_EQ(FloatSize(0, -10),
+                       properties->ScrollTranslation()->Translation2D());
+  EXPECT_FALSE(pac->NeedsUpdate());
+  EXPECT_TRUE(cc_transform_node->local.IsIdentity());
+  EXPECT_FLOAT_EQ(cc_transform_node->scroll_offset.x(), 0);
+  EXPECT_FLOAT_EQ(cc_transform_node->scroll_offset.y(), 10);
+  current_scroll_offset = property_trees->scroll_tree.current_scroll_offset(
+      properties->ScrollTranslation()->ScrollNode()->GetCompositorElementId());
+  EXPECT_FLOAT_EQ(current_scroll_offset.x(), 0);
+  EXPECT_FLOAT_EQ(current_scroll_offset.y(), 10);
+  EXPECT_TRUE(property_trees->scroll_tree.needs_update());
+  EXPECT_TRUE(property_trees->transform_tree.needs_update());
+  EXPECT_TRUE(cc_transform_node->transform_changed);
+
+  UpdateAllLifecyclePhasesForTest();
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,

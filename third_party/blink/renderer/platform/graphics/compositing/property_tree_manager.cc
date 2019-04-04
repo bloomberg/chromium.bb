@@ -94,6 +94,38 @@ bool PropertyTreeManager::DirectlyUpdateCompositedOpacityValue(
   return true;
 }
 
+bool PropertyTreeManager::DirectlyUpdateScrollOffsetTransform(
+    cc::PropertyTrees* property_trees,
+    const TransformPaintPropertyNode& transform) {
+  auto* scroll_node = transform.ScrollNode();
+  // Only handle scroll adjustments.
+  if (!scroll_node)
+    return false;
+
+  auto scroll_it = scroll_node_map_.find(scroll_node);
+  if (scroll_it == scroll_node_map_.end())
+    return false;
+  auto* cc_scroll_node = property_trees->scroll_tree.Node(scroll_it->value);
+
+  auto transform_it = transform_node_map_.find(&transform);
+  if (transform_it == transform_node_map_.end())
+    return false;
+  auto* cc_transform = property_trees->transform_tree.Node(transform_it->value);
+
+  if (!cc_scroll_node || !cc_transform)
+    return false;
+
+  UpdateCcTransformLocalMatrix(*cc_transform, transform);
+  SetCcTransformNodeScrollToTransformTranslation(*cc_transform, transform);
+  property_trees->scroll_tree.SetScrollOffset(
+      scroll_node->GetCompositorElementId(), cc_transform->scroll_offset);
+
+  cc_transform->transform_changed = true;
+  property_trees->transform_tree.set_needs_update(true);
+  property_trees->scroll_tree.set_needs_update(true);
+  return true;
+}
+
 cc::TransformTree& PropertyTreeManager::GetTransformTree() {
   return property_trees_->transform_tree;
 }
@@ -253,20 +285,7 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   cc::TransformNode& compositor_node = *GetTransformTree().Node(id);
   compositor_node.source_node_id = parent_id;
 
-  FloatPoint3D origin = transform_node.Origin();
-  compositor_node.pre_local.matrix().setTranslate(-origin.X(), -origin.Y(),
-                                                  -origin.Z());
-  // The sticky offset on the blink transform node is pre-computed and stored
-  // to the local matrix. Cc applies sticky offset dynamically on top of the
-  // local matrix. We should not set the local matrix on cc node if it is a
-  // sticky node because the sticky offset would be applied twice otherwise.
-  if (!transform_node.GetStickyConstraint()) {
-    compositor_node.local.matrix() =
-        TransformationMatrix::ToSkMatrix44(transform_node.SlowMatrix());
-  }
-  compositor_node.post_local.matrix().setTranslate(origin.X(), origin.Y(),
-                                                   origin.Z());
-  compositor_node.needs_local_transform_update = true;
+  UpdateCcTransformLocalMatrix(compositor_node, transform_node);
   compositor_node.transform_changed = true;
   compositor_node.flattens_inherited_transform =
       transform_node.FlattensInheritedTransform();
@@ -321,15 +340,8 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
     // transform node has a special scroll offset field. To handle this we
     // adjust cc's transform node to remove the 2d scroll translation and
     // instead set the scroll_offset field.
-    auto scroll_offset_size = transform_node.Translation2D();
-    auto scroll_offset = gfx::ScrollOffset(-scroll_offset_size.Width(),
-                                           -scroll_offset_size.Height());
-    DCHECK(compositor_node.local.IsIdentityOr2DTranslation());
-    compositor_node.scroll_offset = scroll_offset;
-    compositor_node.local.MakeIdentity();
-    compositor_node.scrolls = true;
-    compositor_node.should_be_snapped = true;
-
+    SetCcTransformNodeScrollToTransformTranslation(compositor_node,
+                                                   transform_node);
     CreateCompositorScrollNode(*scroll_node, compositor_node);
   }
 
@@ -350,6 +362,38 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   GetTransformTree().set_needs_update(true);
 
   return id;
+}
+
+void PropertyTreeManager::UpdateCcTransformLocalMatrix(
+    cc::TransformNode& compositor_node,
+    const TransformPaintPropertyNode& transform_node) {
+  FloatPoint3D origin = transform_node.Origin();
+  compositor_node.pre_local.matrix().setTranslate(-origin.X(), -origin.Y(),
+                                                  -origin.Z());
+  // The sticky offset on the blink transform node is pre-computed and stored
+  // to the local matrix. Cc applies sticky offset dynamically on top of the
+  // local matrix. We should not set the local matrix on cc node if it is a
+  // sticky node because the sticky offset would be applied twice otherwise.
+  if (!transform_node.GetStickyConstraint()) {
+    compositor_node.local.matrix() =
+        TransformationMatrix::ToSkMatrix44(transform_node.SlowMatrix());
+  }
+  compositor_node.post_local.matrix().setTranslate(origin.X(), origin.Y(),
+                                                   origin.Z());
+  compositor_node.needs_local_transform_update = true;
+}
+
+void PropertyTreeManager::SetCcTransformNodeScrollToTransformTranslation(
+    cc::TransformNode& cc_transform,
+    const TransformPaintPropertyNode& transform) {
+  auto scroll_offset_size = transform.Translation2D();
+  auto scroll_offset = gfx::ScrollOffset(-scroll_offset_size.Width(),
+                                         -scroll_offset_size.Height());
+  DCHECK(cc_transform.local.IsIdentityOr2DTranslation());
+  cc_transform.scroll_offset = scroll_offset;
+  cc_transform.local.MakeIdentity();
+  cc_transform.scrolls = true;
+  cc_transform.should_be_snapped = true;
 }
 
 int PropertyTreeManager::EnsureCompositorPageScaleTransformNode(

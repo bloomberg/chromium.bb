@@ -1014,7 +1014,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
           if (updated) {
             effective_change_type =
                 PaintPropertyChangeType::kChangedOnlyCompositedValues;
-            properties_->Effect()->SetChangeType(effective_change_type);
+            properties_->Effect()->CompositorSimpleValuesUpdated();
           }
         }
       }
@@ -1854,8 +1854,23 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
         state.rendering_context_id = context_.current.rendering_context_id;
       }
       state.scroll = properties_->Scroll();
-      OnUpdate(properties_->UpdateScrollTranslation(*context_.current.transform,
-                                                    std::move(state)));
+      auto effective_change_type = properties_->UpdateScrollTranslation(
+          *context_.current.transform, std::move(state));
+      if (effective_change_type ==
+          PaintPropertyChangeType::kChangedOnlySimpleValues) {
+        if (auto* paint_artifact_compositor =
+                object_.GetFrameView()->GetPaintArtifactCompositor()) {
+          bool updated =
+              paint_artifact_compositor->DirectlyUpdateScrollOffsetTransform(
+                  *properties_->ScrollTranslation());
+          if (updated) {
+            effective_change_type =
+                PaintPropertyChangeType::kChangedOnlyCompositedValues;
+            properties_->ScrollTranslation()->CompositorSimpleValuesUpdated();
+          }
+        }
+      }
+      OnUpdate(effective_change_type);
     } else {
       OnClear(properties_->ClearScrollTranslation());
     }

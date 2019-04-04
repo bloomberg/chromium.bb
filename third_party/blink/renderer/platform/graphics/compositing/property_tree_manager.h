@@ -120,6 +120,8 @@ class PropertyTreeManager {
 
   bool DirectlyUpdateCompositedOpacityValue(cc::PropertyTrees*,
                                             const EffectPaintPropertyNode&);
+  bool DirectlyUpdateScrollOffsetTransform(cc::PropertyTrees*,
+                                           const TransformPaintPropertyNode&);
 
  private:
   void SetupRootTransformNode();
@@ -142,6 +144,12 @@ class PropertyTreeManager {
                             const EffectPaintPropertyNode&,
                             int output_clip_id,
                             SkBlendMode);
+
+  void UpdateCcTransformLocalMatrix(cc::TransformNode&,
+                                    const TransformPaintPropertyNode&);
+  void SetCcTransformNodeScrollToTransformTranslation(
+      cc::TransformNode&,
+      const TransformPaintPropertyNode&);
 
   bool IsCurrentCcEffectSynthetic() const {
     return current_.effect_type != CcEffectType::kEffect;

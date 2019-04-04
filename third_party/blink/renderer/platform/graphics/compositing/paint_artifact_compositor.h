@@ -86,6 +86,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
               const Settings& settings);
 
   bool DirectlyUpdateCompositedOpacityValue(const EffectPaintPropertyNode&);
+  bool DirectlyUpdateScrollOffsetTransform(const TransformPaintPropertyNode&);
 
   // The root layer of the tree managed by this object.
   cc::Layer* RootLayer() const { return root_layer_.get(); }
@@ -235,6 +236,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
       cc::EffectTree&,
       const cc::LayerList&,
       const Vector<const EffectPaintPropertyNode*>&);
+
+  cc::PropertyTrees* GetPropertyTreesForDirectUpdate();
 
   // Provides a callback for notifying blink of composited scrolling.
   base::RepeatingCallback<void(const gfx::ScrollOffset&, const cc::ElementId&)>
