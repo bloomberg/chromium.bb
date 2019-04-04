@@ -337,7 +337,7 @@ class CastActivityManager : public cast_channel::CastMessageHandler::Observer,
         const url::Origin& origin,
         int tab_id,
         mojom::MediaRouteProvider::CreateRouteCallback callback);
-    DoLaunchSessionParams(DoLaunchSessionParams&& other) noexcept;
+    DoLaunchSessionParams(DoLaunchSessionParams&& other);
     ~DoLaunchSessionParams();
     DoLaunchSessionParams& operator=(DoLaunchSessionParams&&) = delete;
 
