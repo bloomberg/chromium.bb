@@ -1572,6 +1572,10 @@ std::unique_ptr<syncer::MetadataBatch> LoginDatabase::GetAllSyncMetadata() {
   return metadata_batch;
 }
 
+void LoginDatabase::DeleteAllSyncMetadata() {
+  ClearAllSyncMetadata(&db_);
+}
+
 bool LoginDatabase::UpdateSyncMetadata(
     syncer::ModelType model_type,
     const std::string& storage_key,

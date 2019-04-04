@@ -1781,6 +1781,38 @@ TEST_F(LoginDatabaseTest, GetAllSyncMetadata) {
   EXPECT_FALSE(metadata_batch->GetModelTypeState().initial_sync_done());
 }
 
+TEST_F(LoginDatabaseTest, DeleteAllSyncMetadata) {
+  sync_pb::EntityMetadata metadata;
+  // Storage keys must be integers.
+  const std::string kStorageKey1 = "1";
+  const std::string kStorageKey2 = "2";
+  metadata.set_sequence_number(1);
+
+  EXPECT_TRUE(
+      db().UpdateSyncMetadata(syncer::PASSWORDS, kStorageKey1, metadata));
+
+  sync_pb::ModelTypeState model_type_state;
+  model_type_state.set_initial_sync_done(true);
+
+  EXPECT_TRUE(db().UpdateModelTypeState(syncer::PASSWORDS, model_type_state));
+
+  metadata.set_sequence_number(2);
+  EXPECT_TRUE(
+      db().UpdateSyncMetadata(syncer::PASSWORDS, kStorageKey2, metadata));
+
+  std::unique_ptr<syncer::MetadataBatch> metadata_batch =
+      db().GetAllSyncMetadata();
+  ASSERT_THAT(metadata_batch, testing::NotNull());
+  ASSERT_EQ(metadata_batch->TakeAllMetadata().size(), 2u);
+
+  db().DeleteAllSyncMetadata();
+
+  std::unique_ptr<syncer::MetadataBatch> empty_metadata_batch =
+      db().GetAllSyncMetadata();
+  ASSERT_THAT(empty_metadata_batch, testing::NotNull());
+  EXPECT_EQ(empty_metadata_batch->TakeAllMetadata().size(), 0u);
+}
+
 TEST_F(LoginDatabaseTest, WriteThenDeleteSyncMetadata) {
   sync_pb::EntityMetadata metadata;
   const std::string kStorageKey = "1";

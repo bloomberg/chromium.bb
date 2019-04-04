@@ -174,6 +174,7 @@ class MockSyncMetadataStore : public PasswordStoreSync::MetadataStore {
   ~MockSyncMetadataStore() = default;
 
   MOCK_METHOD0(GetAllSyncMetadata, std::unique_ptr<syncer::MetadataBatch>());
+  MOCK_METHOD0(DeleteAllSyncMetadata, void());
   MOCK_METHOD3(UpdateSyncMetadata,
                bool(syncer::ModelType,
                     const std::string&,
@@ -734,6 +735,12 @@ TEST_F(PasswordSyncBridgeTest, ShouldDeleteUndecryptableLoginsDuringMerge) {
   base::Optional<syncer::ModelError> error =
       bridge()->MergeSyncData(bridge()->CreateMetadataChangeList(), {});
   EXPECT_FALSE(error);
+}
+
+TEST_F(PasswordSyncBridgeTest,
+       ShouldDeleteSyncMetadataWhenApplyStopSyncChanges) {
+  EXPECT_CALL(*mock_sync_metadata_store_sync(), DeleteAllSyncMetadata());
+  bridge()->ApplyStopSyncChanges(bridge()->CreateMetadataChangeList());
 }
 
 }  // namespace password_manager
