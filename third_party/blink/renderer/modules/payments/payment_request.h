@@ -144,7 +144,8 @@ class MODULES_EXPORT PaymentRequest final
 
   // Implements the PaymentRequest updated algorithm.
   // https://w3c.github.io/payment-request/#paymentrequest-updated-algorithm
-  void DispatchPaymentRequestUpdateEvent(PaymentRequestUpdateEvent* event);
+  void DispatchPaymentRequestUpdateEvent(EventTarget* event_target,
+                                         PaymentRequestUpdateEvent* event);
 
   Member<const PaymentOptions> options_;
   Member<PaymentAddress> shipping_address_;
