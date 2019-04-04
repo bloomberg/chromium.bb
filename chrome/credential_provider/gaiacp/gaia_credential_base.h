@@ -30,6 +30,7 @@ enum FIELDID {
   FID_DESCRIPTION,
   FID_CURRENT_PASSWORD_FIELD,
   FID_SUBMIT,
+  FID_FORGOT_PASSWORD_LINK,
   FID_PROVIDER_LOGO,
   FID_PROVIDER_LABEL,
   FIELD_COUNT  // Must be last.
@@ -281,6 +282,7 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   // the user must be enter the former.  For example this is used to properly
   // handle the password change case.
   bool needs_windows_password_ = false;
+  bool request_force_password_change_ = false;
 
   // The password entered into the FID_CURRENT_PASSWORD_FIELD to update the
   // Windows password with the gaia password.

@@ -594,6 +594,12 @@ HRESULT CGaiaCredentialBase::GetStringValueImpl(DWORD field_id,
                        value);
       break;
     }
+    case FID_FORGOT_PASSWORD_LINK: {
+      base::string16 forgot_password(
+          GetStringResource(IDS_FORGOT_PASSWORD_LINK_BASE));
+      hr = ::SHStrDupW(forgot_password.c_str(), value);
+      break;
+    }
     default:
       break;
   }
@@ -630,6 +636,7 @@ void CGaiaCredentialBase::ResetInternalState() {
 
   SecurelyClearDictionaryValue(&authentication_results_);
   needs_windows_password_ = false;
+  request_force_password_change_ = false;
   result_status_ = STATUS_SUCCESS;
 
   TerminateLogonProcess();
@@ -638,6 +645,7 @@ void CGaiaCredentialBase::ResetInternalState() {
     wchar_t* default_status_text = nullptr;
     GetStringValue(FID_DESCRIPTION, &default_status_text);
     events_->SetFieldString(this, FID_DESCRIPTION, default_status_text);
+    events_->SetFieldState(this, FID_FORGOT_PASSWORD_LINK, CPFS_HIDDEN);
     events_->SetFieldState(this, FID_CURRENT_PASSWORD_FIELD, CPFS_HIDDEN);
     events_->SetFieldString(this, FID_CURRENT_PASSWORD_FIELD,
                             current_windows_password_);
@@ -759,33 +767,49 @@ HRESULT CGaiaCredentialBase::HandleAutologon(
   // using the old password. If it isn't, return S_FALSE to state that the
   // login is not complete.
   if (needs_windows_password_) {
-    HRESULT hr = IsWindowsPasswordValidForStoredUser(current_windows_password_);
-    if (hr == S_OK) {
-      OSUserManager* manager = OSUserManager::Get();
-      hr = manager->ChangeUserPassword(domain_, username_,
-                                       current_windows_password_, password_);
+    OSUserManager* manager = OSUserManager::Get();
+    if (request_force_password_change_) {
+      HRESULT hr = manager->SetUserPassword(domain_, username_, password_);
       if (FAILED(hr)) {
-        if (hr != HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED)) {
-          LOGFN(ERROR) << "ChangeUserPassword hr=" << putHR(hr);
-          return hr;
+        LOGFN(ERROR) << "SetUserPassword hr=" << putHR(hr);
+        if (events_) {
+          events_->SetFieldString(
+              this, FID_DESCRIPTION,
+              GetStringResource(IDS_FORCED_PASSWORD_CHANGE_FAILURE_BASE)
+                  .c_str());
         }
-        LOGFN(ERROR) << "Access was denied to ChangeUserPassword.";
-        password_ = current_windows_password_;
+        return S_FALSE;
       }
     } else {
-      if (current_windows_password_.Length() && events_) {
-        UINT pasword_message_id = IDS_INVALID_PASSWORD_BASE;
-        if (hr == HRESULT_FROM_WIN32(ERROR_ACCOUNT_LOCKED_OUT)) {
-          pasword_message_id = IDS_ACCOUNT_LOCKED_BASE;
-          LOGFN(ERROR) << "Account is locked.";
+      HRESULT hr =
+          IsWindowsPasswordValidForStoredUser(current_windows_password_);
+      if (hr == S_OK) {
+        hr = manager->ChangeUserPassword(domain_, username_,
+                                         current_windows_password_, password_);
+        if (FAILED(hr)) {
+          if (hr != HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED)) {
+            LOGFN(ERROR) << "ChangeUserPassword hr=" << putHR(hr);
+            return hr;
+          }
+          LOGFN(ERROR) << "Access was denied to ChangeUserPassword.";
+          password_ = current_windows_password_;
         }
+      } else {
+        if (current_windows_password_.Length() && events_) {
+          UINT pasword_message_id = IDS_INVALID_PASSWORD_BASE;
+          if (hr == HRESULT_FROM_WIN32(ERROR_ACCOUNT_LOCKED_OUT)) {
+            pasword_message_id = IDS_ACCOUNT_LOCKED_BASE;
+            LOGFN(ERROR) << "Account is locked.";
+          }
 
-        events_->SetFieldString(this, FID_DESCRIPTION,
-                                GetStringResource(pasword_message_id).c_str());
-        events_->SetFieldInteractiveState(this, FID_CURRENT_PASSWORD_FIELD,
-                                          CPFIS_FOCUSED);
+          events_->SetFieldString(
+              this, FID_DESCRIPTION,
+              GetStringResource(pasword_message_id).c_str());
+          events_->SetFieldInteractiveState(this, FID_CURRENT_PASSWORD_FIELD,
+                                            CPFIS_FOCUSED);
+        }
+        return S_FALSE;
       }
-      return S_FALSE;
     }
   }
 
@@ -923,6 +947,11 @@ HRESULT CGaiaCredentialBase::GetFieldState(
       *pcpfis = CPFIS_NONE;
       hr = S_OK;
       break;
+    case FID_FORGOT_PASSWORD_LINK:
+      *pcpfs = CPFS_HIDDEN;
+      *pcpfis = CPFIS_NONE;
+      hr = S_OK;
+      break;
     default:
       break;
   }
@@ -1004,8 +1033,14 @@ HRESULT CGaiaCredentialBase::SetComboBoxSelectedValue(DWORD field_id,
 }
 
 HRESULT CGaiaCredentialBase::CommandLinkClicked(DWORD dwFieldID) {
-  // No links.
-  return E_NOTIMPL;
+  if (dwFieldID == FID_FORGOT_PASSWORD_LINK && needs_windows_password_) {
+    request_force_password_change_ = !request_force_password_change_;
+    DisplayPasswordField(IDS_PASSWORD_UPDATE_NEEDED_BASE);
+    UpdateSubmitButtonInteractiveState();
+    return S_OK;
+  }
+
+  return E_INVALIDARG;
 }
 
 HRESULT CGaiaCredentialBase::GetSerialization(
@@ -1538,12 +1573,11 @@ void CGaiaCredentialBase::TerminateLogonProcess() {
   }
 }
 
-HRESULT CGaiaCredentialBase::ValidateOrCreateUser(
-    const base::Value* result,
-    BSTR* domain,
-    BSTR* username,
-    BSTR* sid,
-    BSTR* error_text) {
+HRESULT CGaiaCredentialBase::ValidateOrCreateUser(const base::Value* result,
+                                                  BSTR* domain,
+                                                  BSTR* username,
+                                                  BSTR* sid,
+                                                  BSTR* error_text) {
   LOGFN(INFO);
   DCHECK(domain);
   DCHECK(username);
@@ -1748,7 +1782,8 @@ void CGaiaCredentialBase::UpdateSubmitButtonInteractiveState() {
   if (events_) {
     bool should_enable =
         logon_ui_process_ == INVALID_HANDLE_VALUE &&
-        (!needs_windows_password_ || current_windows_password_.Length());
+        ((!needs_windows_password_ || current_windows_password_.Length()) ||
+         (needs_windows_password_ && request_force_password_change_));
     events_->SetFieldInteractiveState(
         this, FID_SUBMIT, should_enable ? CPFIS_NONE : CPFIS_DISABLED);
   }
@@ -1757,13 +1792,30 @@ void CGaiaCredentialBase::UpdateSubmitButtonInteractiveState() {
 void CGaiaCredentialBase::DisplayPasswordField(int password_message) {
   needs_windows_password_ = true;
   if (events_) {
-    events_->SetFieldString(this, FID_DESCRIPTION,
-                            GetStringResource(password_message).c_str());
-    events_->SetFieldState(this, FID_CURRENT_PASSWORD_FIELD,
-                           CPFS_DISPLAY_IN_SELECTED_TILE);
-    events_->SetFieldInteractiveState(this, FID_CURRENT_PASSWORD_FIELD,
-                                      CPFIS_FOCUSED);
-    events_->SetFieldSubmitButton(this, FID_SUBMIT, FID_CURRENT_PASSWORD_FIELD);
+    if (request_force_password_change_) {
+      events_->SetFieldState(this, FID_CURRENT_PASSWORD_FIELD, CPFS_HIDDEN);
+      events_->SetFieldString(
+          this, FID_DESCRIPTION,
+          GetStringResource(IDS_CONFIRM_FORCED_PASSWORD_CHANGE_BASE).c_str());
+      events_->SetFieldString(
+          this, FID_FORGOT_PASSWORD_LINK,
+          GetStringResource(IDS_ENTER_PASSWORD_LINK_BASE).c_str());
+      events_->SetFieldSubmitButton(this, FID_SUBMIT, FID_DESCRIPTION);
+    } else {
+      events_->SetFieldString(this, FID_DESCRIPTION,
+                              GetStringResource(password_message).c_str());
+      events_->SetFieldState(this, FID_CURRENT_PASSWORD_FIELD,
+                             CPFS_DISPLAY_IN_SELECTED_TILE);
+      events_->SetFieldState(this, FID_FORGOT_PASSWORD_LINK,
+                             CPFS_DISPLAY_IN_SELECTED_TILE);
+      events_->SetFieldString(
+          this, FID_FORGOT_PASSWORD_LINK,
+          GetStringResource(IDS_FORGOT_PASSWORD_LINK_BASE).c_str());
+      events_->SetFieldInteractiveState(this, FID_CURRENT_PASSWORD_FIELD,
+                                        CPFIS_FOCUSED);
+      events_->SetFieldSubmitButton(this, FID_SUBMIT,
+                                    FID_CURRENT_PASSWORD_FIELD);
+    }
   }
 }
 

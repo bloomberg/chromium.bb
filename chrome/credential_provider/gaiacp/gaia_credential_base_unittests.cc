@@ -371,6 +371,160 @@ TEST_F(GcpGaiaCredentialBaseTest,
   EXPECT_EQ(S_OK, gaia_cred->Terminate());
 }
 
+TEST_F(GcpGaiaCredentialBaseTest,
+       GetSerialization_ForgotPasswordForAssociatedUser) {
+  USES_CONVERSION;
+  FakeGaiaCredentialProvider provider;
+
+  // Create a fake user for which the windows password does not match the gaia
+  // password supplied by the test gls process.
+  CComBSTR sid;
+  CComBSTR windows_password = L"password2";
+  ASSERT_EQ(S_OK,
+            fake_os_user_manager()->CreateTestOSUser(
+                L"foo", (BSTR)windows_password, L"Full Name", L"comment",
+                base::UTF8ToUTF16(kDefaultGaiaId), base::string16(), &sid));
+
+  // Start logon.
+  CComPtr<IGaiaCredential> gaia_cred;
+  CComPtr<ICredentialProviderCredential> cred;
+  ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
+
+  CComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+
+  ASSERT_EQ(S_OK, run_helper()->StartLogonProcessAndWait(cred));
+
+  EXPECT_TRUE(test->CanAttemptWindowsLogon());
+  EXPECT_EQ(S_OK, test->IsWindowsPasswordValidForStoredUser());
+
+  // Check that the process has not finished yet.
+  CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE cpgsr;
+  CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION cpcs;
+  wchar_t* status_text;
+  CREDENTIAL_PROVIDER_STATUS_ICON status_icon;
+  ASSERT_EQ(S_OK,
+            cred->GetSerialization(&cpgsr, &cpcs, &status_text, &status_icon));
+  EXPECT_EQ(nullptr, status_text);
+  EXPECT_EQ(CPGSR_NO_CREDENTIAL_NOT_FINISHED, cpgsr);
+
+  // Credentials should still be available.
+  EXPECT_TRUE(test->CanAttemptWindowsLogon());
+  EXPECT_EQ(S_OK, test->IsWindowsPasswordValidForStoredUser());
+
+  // Simulate a click on the "Forgot Password" link.
+  cred->CommandLinkClicked(FID_FORGOT_PASSWORD_LINK);
+
+  // Serialization should complete without any errors.
+  ASSERT_EQ(S_OK,
+            cred->GetSerialization(&cpgsr, &cpcs, &status_text, &status_icon));
+  EXPECT_EQ(nullptr, status_text);
+  EXPECT_EQ(CPSI_SUCCESS, status_icon);
+  EXPECT_EQ(CPGSR_RETURN_CREDENTIAL_FINISHED, cpgsr);
+  EXPECT_LT(0u, cpcs.cbSerialization);
+  EXPECT_NE(nullptr, cpcs.rgbSerialization);
+
+  // State was not reset.
+  EXPECT_TRUE(test->AreCredentialsValid());
+  wchar_t* report_status_text = nullptr;
+  CREDENTIAL_PROVIDER_STATUS_ICON report_icon;
+  EXPECT_EQ(S_OK, cred->ReportResult(0, 0, &report_status_text, &report_icon));
+  // State was reset.
+  EXPECT_FALSE(test->AreCredentialsValid());
+
+  // User password should be force changed to the one from gaia.
+  EXPECT_EQ(S_OK,
+            fake_os_user_manager()->IsWindowsPasswordValid(
+                OSUserManager::GetLocalDomain().c_str(), L"foo", L"password"));
+
+  EXPECT_EQ(S_OK, gaia_cred->Terminate());
+}
+
+TEST_F(GcpGaiaCredentialBaseTest,
+       GetSerialization_AlternateForgotPasswordAssociatedUser) {
+  USES_CONVERSION;
+  FakeGaiaCredentialProvider provider;
+
+  // Create a fake user for which the windows password does not match the gaia
+  // password supplied by the test gls process.
+  CComBSTR sid;
+  CComBSTR windows_password = L"password2";
+  ASSERT_EQ(S_OK,
+            fake_os_user_manager()->CreateTestOSUser(
+                L"foo", (BSTR)windows_password, L"Full Name", L"comment",
+                base::UTF8ToUTF16(kDefaultGaiaId), base::string16(), &sid));
+
+  // Start logon.
+  CComPtr<IGaiaCredential> gaia_cred;
+  CComPtr<ICredentialProviderCredential> cred;
+  ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
+
+  CComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+
+  ASSERT_EQ(S_OK, run_helper()->StartLogonProcessAndWait(cred));
+
+  EXPECT_TRUE(test->CanAttemptWindowsLogon());
+  EXPECT_EQ(S_OK, test->IsWindowsPasswordValidForStoredUser());
+
+  // Check that the process has not finished yet.
+  CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE cpgsr;
+  CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION cpcs;
+  wchar_t* status_text;
+  CREDENTIAL_PROVIDER_STATUS_ICON status_icon;
+  ASSERT_EQ(S_OK,
+            cred->GetSerialization(&cpgsr, &cpcs, &status_text, &status_icon));
+  EXPECT_EQ(nullptr, status_text);
+  EXPECT_EQ(CPGSR_NO_CREDENTIAL_NOT_FINISHED, cpgsr);
+
+  // Credentials should still be available.
+  EXPECT_TRUE(test->CanAttemptWindowsLogon());
+  EXPECT_EQ(S_OK, test->IsWindowsPasswordValidForStoredUser());
+
+  // Simulate a click on the "Forgot Password" link.
+  cred->CommandLinkClicked(FID_FORGOT_PASSWORD_LINK);
+
+  // Go back to windows password entry.
+  cred->CommandLinkClicked(FID_FORGOT_PASSWORD_LINK);
+
+  // Set an invalid password and try to get serialization again. Credentials
+  // should still be valid but serialization is not complete.
+  CComBSTR invalid_windows_password = L"a";
+  test->SetWindowsPassword(invalid_windows_password);
+  EXPECT_EQ(nullptr, status_text);
+  ASSERT_EQ(S_OK,
+            cred->GetSerialization(&cpgsr, &cpcs, &status_text, &status_icon));
+  EXPECT_EQ(CPGSR_NO_CREDENTIAL_NOT_FINISHED, cpgsr);
+
+  // Update the Windows password to be the real password created for the user.
+  test->SetWindowsPassword(windows_password);
+  // Sign in information should still be available.
+  EXPECT_TRUE(test->GetFinalEmail().length());
+
+  // Both Windows and Gaia credentials should be valid now
+  EXPECT_TRUE(test->CanAttemptWindowsLogon());
+  EXPECT_EQ(S_FALSE, test->IsWindowsPasswordValidForStoredUser());
+
+  // Serialization should complete without any errors.
+  ASSERT_EQ(S_OK,
+            cred->GetSerialization(&cpgsr, &cpcs, &status_text, &status_icon));
+  EXPECT_EQ(nullptr, status_text);
+  EXPECT_EQ(CPSI_SUCCESS, status_icon);
+  EXPECT_EQ(CPGSR_RETURN_CREDENTIAL_FINISHED, cpgsr);
+  EXPECT_LT(0u, cpcs.cbSerialization);
+  EXPECT_NE(nullptr, cpcs.rgbSerialization);
+
+  // State was not reset.
+  EXPECT_TRUE(test->AreCredentialsValid());
+  wchar_t* report_status_text = nullptr;
+  CREDENTIAL_PROVIDER_STATUS_ICON report_icon;
+  EXPECT_EQ(S_OK, cred->ReportResult(0, 0, &report_status_text, &report_icon));
+  // State was reset.
+  EXPECT_FALSE(test->AreCredentialsValid());
+
+  EXPECT_EQ(S_OK, gaia_cred->Terminate());
+}
+
 TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Cancel) {
   FakeGaiaCredentialProvider provider;
 
