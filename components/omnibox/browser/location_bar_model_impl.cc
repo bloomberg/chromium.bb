@@ -96,10 +96,9 @@ GURL LocationBarModelImpl::GetURL() const {
   return delegate_->GetURL(&url) ? url : GURL(url::kAboutBlankURL);
 }
 
-security_state::SecurityLevel LocationBarModelImpl::GetSecurityLevel(
-    bool ignore_editing) const {
-  // When editing or empty, assume no security style.
-  if ((input_in_progress() && !ignore_editing) || !ShouldDisplayURL())
+security_state::SecurityLevel LocationBarModelImpl::GetSecurityLevel() const {
+  // When empty, assume no security style.
+  if (!ShouldDisplayURL())
     return security_state::NONE;
 
   return delegate_->GetSecurityLevel();
@@ -140,7 +139,7 @@ const gfx::VectorIcon& LocationBarModelImpl::GetVectorIcon() const {
   if (IsOfflinePage())
     return omnibox::kOfflinePinIcon;
 
-  switch (GetSecurityLevel(true /* ignore_editing */)) {
+  switch (GetSecurityLevel()) {
     case security_state::NONE:
     case security_state::HTTP_SHOW_WARNING:
       return omnibox::kHttpIcon;
@@ -180,7 +179,7 @@ LocationBarModelImpl::SecureChipText LocationBarModelImpl::GetSecureChipText()
   if (IsOfflinePage())
     return SecureChipText(l10n_util::GetStringUTF16(IDS_OFFLINE_VERBOSE_STATE));
 
-  switch (GetSecurityLevel(true)) {
+  switch (GetSecurityLevel()) {
     case security_state::HTTP_SHOW_WARNING:
       return SecureChipText(
           l10n_util::GetStringUTF16(IDS_NOT_SECURE_VERBOSE_STATE));

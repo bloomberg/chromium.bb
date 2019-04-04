@@ -1231,7 +1231,7 @@ void LocationBarView::OnTouchUiChanged() {
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, LocationBarIconView::Delegate implementation:
 
-bool LocationBarView::IsEditingOrEmpty() {
+bool LocationBarView::IsEditingOrEmpty() const {
   return omnibox_view() && omnibox_view()->IsEditingOrEmpty();
 }
 
@@ -1286,14 +1286,15 @@ bool LocationBarView::ShowPageInfoDialog() {
 
 gfx::ImageSkia LocationBarView::GetLocationIcon(
     LocationIconView::Delegate::IconFetchedCallback on_icon_fetched) const {
-  return omnibox_view()
-             ? omnibox_view()->GetIcon(
-                   GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
-                   GetSecurityChipColor(
-                       GetLocationBarModel()->GetSecurityLevel(false)),
-                   GetColor(OmniboxPart::RESULTS_TEXT_URL),
-                   std::move(on_icon_fetched))
-             : gfx::ImageSkia();
+  security_state::SecurityLevel level = security_state::SecurityLevel::NONE;
+  if (!IsEditingOrEmpty())
+    level = GetLocationBarModel()->GetSecurityLevel();
+  return omnibox_view() ? omnibox_view()->GetIcon(
+                              GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
+                              GetSecurityChipColor(level),
+                              GetColor(OmniboxPart::RESULTS_TEXT_URL),
+                              std::move(on_icon_fetched))
+                        : gfx::ImageSkia();
 }
 
 SkColor LocationBarView::GetLocationIconInkDropColor() const {

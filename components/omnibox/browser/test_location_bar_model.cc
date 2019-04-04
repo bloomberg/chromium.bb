@@ -38,8 +38,7 @@ GURL TestLocationBarModel::GetURL() const {
   return url_;
 }
 
-security_state::SecurityLevel TestLocationBarModel::GetSecurityLevel(
-    bool ignore_editing) const {
+security_state::SecurityLevel TestLocationBarModel::GetSecurityLevel() const {
   return security_level_;
 }
 

@@ -281,7 +281,7 @@
   }
 
   return GetLocationBarSecurityIconForSecurityState(
-      self.locationBarModel->GetSecurityLevel(true));
+      self.locationBarModel->GetSecurityLevel());
 }
 
 // Returns a location icon for offline pages.

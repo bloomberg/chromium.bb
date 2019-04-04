@@ -61,7 +61,7 @@ bool LocationIconView::OnMouseDragged(const ui::MouseEvent& event) {
 SkColor LocationIconView::GetTextColor() const {
   SecurityLevel security_level = SecurityLevel::NONE;
   if (!delegate_->IsEditingOrEmpty())
-    security_level = delegate_->GetLocationBarModel()->GetSecurityLevel(true);
+    security_level = delegate_->GetLocationBarModel()->GetSecurityLevel();
 
   return delegate_->GetSecurityChipColor(security_level);
 }
@@ -169,15 +169,14 @@ bool LocationIconView::ShouldAnimateTextVisibilityChange() const {
   if (delegate_->IsEditingOrEmpty())
     return false;
 
-  SecurityLevel security_level =
-      delegate_->GetLocationBarModel()->GetSecurityLevel(true);
+  SecurityLevel level = delegate_->GetLocationBarModel()->GetSecurityLevel();
   // Do not animate transitions from HTTP_SHOW_WARNING to DANGEROUS, since the
   // transition can look confusing/messy.
-  if (security_level == SecurityLevel::DANGEROUS &&
+  if (level == SecurityLevel::DANGEROUS &&
       last_update_security_level_ == SecurityLevel::HTTP_SHOW_WARNING)
     return false;
-  return (security_level == SecurityLevel::DANGEROUS ||
-          security_level == SecurityLevel::HTTP_SHOW_WARNING);
+  return (level == SecurityLevel::DANGEROUS ||
+          level == SecurityLevel::HTTP_SHOW_WARNING);
 }
 
 void LocationIconView::UpdateTextVisibility(bool suppress_animations) {
@@ -245,7 +244,7 @@ void LocationIconView::Update(bool suppress_animations) {
   last_update_security_level_ = SecurityLevel::NONE;
   if (!is_editing_or_empty) {
     last_update_security_level_ =
-        delegate_->GetLocationBarModel()->GetSecurityLevel(true);
+        delegate_->GetLocationBarModel()->GetSecurityLevel();
   }
   was_editing_or_empty_ = is_editing_or_empty;
 }
