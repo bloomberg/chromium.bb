@@ -950,8 +950,7 @@ void OmniboxViewViews::UpdateSchemeStyle(const gfx::Range& range) {
   DCHECK(!model()->user_input_in_progress());
 
   security_state::SecurityLevel security_level =
-      controller()->GetLocationBarModel()->GetSecurityLevel(
-          true /* ignore_editing */);
+      controller()->GetLocationBarModel()->GetSecurityLevel();
 
   // Only SECURE and DANGEROUS levels (pages served over HTTPS or flagged by
   // SafeBrowsing) get a special scheme color treatment. If the security level

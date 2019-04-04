@@ -292,7 +292,7 @@ content::WebContents* CustomTabBarView::GetWebContents() {
   return delegate_->GetWebContents();
 }
 
-bool CustomTabBarView::IsEditingOrEmpty() {
+bool CustomTabBarView::IsEditingOrEmpty() const {
   return false;
 }
 
@@ -315,7 +315,7 @@ gfx::ImageSkia CustomTabBarView::GetLocationIcon(
   return gfx::CreateVectorIcon(
       delegate_->GetLocationBarModel()->GetVectorIcon(),
       GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
-      GetSecurityChipColor(GetLocationBarModel()->GetSecurityLevel(true)));
+      GetSecurityChipColor(GetLocationBarModel()->GetSecurityLevel()));
 }
 
 SkColor CustomTabBarView::GetLocationIconInkDropColor() const {

@@ -776,7 +776,7 @@ int OmniboxViewIOS::GetIcon(bool offlinePage) const {
       return IDR_IOS_OMNIBOX_OFFLINE;
     }
     return GetIconForSecurityState(
-        controller()->GetLocationBarModel()->GetSecurityLevel(true));
+        controller()->GetLocationBarModel()->GetSecurityLevel());
   }
   return GetIconForAutocompleteMatchType(
       model() ? model()->CurrentMatch(nullptr).type

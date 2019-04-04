@@ -41,12 +41,10 @@ class LocationBarModel {
   // Returns the URL of the current navigation entry.
   virtual GURL GetURL() const = 0;
 
-  // Returns the security level that the toolbar should display.  If
-  // |ignore_editing| is true, the result reflects the underlying state of the
-  // page without regard to any user edits that may be in progress in the
-  // omnibox.
-  virtual security_state::SecurityLevel GetSecurityLevel(
-      bool ignore_editing) const = 0;
+  // Returns the security level that the toolbar should display.  This reflects
+  // the underlying state of the page without regard to any user edits that may
+  // be in progress in the omnibox.
+  virtual security_state::SecurityLevel GetSecurityLevel() const = 0;
 
   // Returns true if the toolbar should display the search terms. When this
   // method returns true, the extracted search terms will be filled into

@@ -32,7 +32,7 @@ class LocationIconView : public IconLabelBubbleView {
     virtual content::WebContents* GetWebContents() = 0;
 
     // Determines whether the omnibox (if any) is editing or empty.
-    virtual bool IsEditingOrEmpty() = 0;
+    virtual bool IsEditingOrEmpty() const = 0;
 
     // Called when the location icon is pressed, with the event.
     virtual void OnLocationIconPressed(const ui::MouseEvent& event) {}
