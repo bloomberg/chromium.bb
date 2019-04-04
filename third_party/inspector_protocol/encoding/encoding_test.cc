@@ -921,8 +921,8 @@ TEST(ParseCBORTest, StackLimitExceededError) {
     EXPECT_EQ(Status::npos(), status.pos);
     EXPECT_EQ("{\"key\":{\"key\":{\"key\":\"innermost_value\"}}}", out);
   }
-  {  // Depth 200: no stack limit exceeded.
-    std::vector<uint8_t> bytes = MakeNestedCBOR(200);
+  {  // Depth 300: no stack limit exceeded.
+    std::vector<uint8_t> bytes = MakeNestedCBOR(300);
     std::string out;
     Status status;
     std::unique_ptr<StreamingParserHandler> json_writer =
@@ -941,25 +941,25 @@ TEST(ParseCBORTest, StackLimitExceededError) {
          small_example[opening_segment_size] != 0xd8)
     opening_segment_size++;
 
-  {  // Depth 201: limit exceeded.
-    std::vector<uint8_t> bytes = MakeNestedCBOR(201);
+  {  // Depth 301: limit exceeded.
+    std::vector<uint8_t> bytes = MakeNestedCBOR(301);
     std::string out;
     Status status;
     std::unique_ptr<StreamingParserHandler> json_writer =
         NewJSONEncoder(GetTestPlatform(), &out, &status);
     ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
     EXPECT_EQ(Error::CBOR_STACK_LIMIT_EXCEEDED, status.error);
-    EXPECT_EQ(opening_segment_size * 201, status.pos);
+    EXPECT_EQ(opening_segment_size * 301, status.pos);
   }
-  {  // Depth 220: still limit exceeded, and at the same pos as for 1001
-    std::vector<uint8_t> bytes = MakeNestedCBOR(220);
+  {  // Depth 320: still limit exceeded, and at the same pos as for 1001
+    std::vector<uint8_t> bytes = MakeNestedCBOR(320);
     std::string out;
     Status status;
     std::unique_ptr<StreamingParserHandler> json_writer =
         NewJSONEncoder(GetTestPlatform(), &out, &status);
     ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
     EXPECT_EQ(Error::CBOR_STACK_LIMIT_EXCEEDED, status.error);
-    EXPECT_EQ(opening_segment_size * 201, status.pos);
+    EXPECT_EQ(opening_segment_size * 301, status.pos);
   }
 }
 
@@ -1494,9 +1494,9 @@ TEST_F(JsonParserTest, StackLimitExceededError) {
       "map end\n",
       log_.str());
 
-  // Now with kStackLimit (200).
+  // Now with kStackLimit (300).
   log_ = Log();
-  std::string json_limit = MakeNestedJson(200);
+  std::string json_limit = MakeNestedJson(300);
   ParseJSON(GetTestPlatform(),
             span<uint8_t>(reinterpret_cast<const uint8_t*>(json_limit.data()),
                           json_limit.size()),
@@ -1507,14 +1507,14 @@ TEST_F(JsonParserTest, StackLimitExceededError) {
   std::string exceeded = MakeNestedJson(1001);
   ParseJSON(GetTestPlatform(), SpanFromStdString(exceeded), &log_);
   EXPECT_EQ(Error::JSON_PARSER_STACK_LIMIT_EXCEEDED, log_.status().error);
-  EXPECT_EQ(static_cast<std::ptrdiff_t>(strlen("{\"foo\":") * 201),
+  EXPECT_EQ(static_cast<std::ptrdiff_t>(strlen("{\"foo\":") * 301),
             log_.status().pos);
-  // Now way past the limit. Still, the point of exceeding is 201.
+  // Now way past the limit. Still, the point of exceeding is 301.
   log_ = Log();
-  std::string far_out = MakeNestedJson(220);
+  std::string far_out = MakeNestedJson(320);
   ParseJSON(GetTestPlatform(), SpanFromStdString(far_out), &log_);
   EXPECT_EQ(Error::JSON_PARSER_STACK_LIMIT_EXCEEDED, log_.status().error);
-  EXPECT_EQ(static_cast<std::ptrdiff_t>(strlen("{\"foo\":") * 201),
+  EXPECT_EQ(static_cast<std::ptrdiff_t>(strlen("{\"foo\":") * 301),
             log_.status().pos);
 }
 
