@@ -1277,6 +1277,9 @@ IFACEMETHODIMP AXPlatformNodeWin::get_localizedExtendedRole(
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
   base::string16 role_description = GetRoleDescription();
+  if (base::ContainsOnlyChars(role_description, base::kWhitespaceUTF16))
+    return S_FALSE;
+
   *localized_extended_role = SysAllocString(role_description.c_str());
   return S_OK;
 }
