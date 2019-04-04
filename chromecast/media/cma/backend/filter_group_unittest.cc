@@ -65,10 +65,10 @@ class MockPostProcessingPipeline : public PostProcessingPipeline {
     sample_rate_ = sample_rate;
     return true;
   }
-  int GetInputSampleRate() { return sample_rate_; }
+  int GetInputSampleRate() const override { return sample_rate_; }
   bool IsRinging() override { return false; }
   float* GetOutputBuffer() override { return output_buffer_; }
-  int NumOutputChannels() override { return num_output_channels_; }
+  int NumOutputChannels() const override { return num_output_channels_; }
   int delay() { return 0; }
   std::string name() const { return "mock"; }
   double StorePtr(float* data,
@@ -125,7 +125,7 @@ class InvertChannelPostProcessor : public MockPostProcessingPipeline {
     sample_rate_ = sample_rate;
     return true;
   }
-  int GetInputSampleRate() override { return sample_rate_; }
+  int GetInputSampleRate() const override { return sample_rate_; }
 
   bool IsRinging() override { return false; }
   int delay() { return 0; }
@@ -170,9 +170,7 @@ std::unique_ptr<::media::AudioBus> GetTestData() {
 class FilterGroupTest : public testing::Test {
  protected:
   using RenderingDelay = MixerInput::RenderingDelay;
-  FilterGroupTest()
-      : source_(kInputSampleRate),
-        input_(&source_, kInputSampleRate, 0, RenderingDelay(), nullptr) {
+  FilterGroupTest() : source_(kInputSampleRate) {
     source_.SetData(GetTestData());
   }
 
@@ -185,8 +183,9 @@ class FilterGroupTest : public testing::Test {
     EXPECT_CALL(*post_processor_, UpdatePlayoutChannel(kDefaultPlayoutChannel));
     filter_group_ = std::make_unique<FilterGroup>(
         kNumInputChannels, "test_filter", std::move(post_processor));
-    filter_group_->Initialize(kInputSampleRate);
-    filter_group_->AddInput(&input_);
+    input_ = std::make_unique<MixerInput>(&source_, filter_group_.get());
+    filter_group_->Initialize(kInputSampleRate, kInputFrames);
+    filter_group_->AddInput(input_.get());
     filter_group_->UpdatePlayoutChannel(kChannelAll);
   }
 
@@ -211,8 +210,8 @@ class FilterGroupTest : public testing::Test {
   float RightInput(int frame) { return Input(1, frame); }
 
   NiceMock<MockMixerSource> source_;
-  MixerInput input_;
   std::unique_ptr<FilterGroup> filter_group_;
+  std::unique_ptr<MixerInput> input_;
   MockPostProcessingPipeline* post_processor_ = nullptr;
 
  private:
@@ -254,13 +253,11 @@ TEST_F(FilterGroupTest, ChecksContentType) {
 
   NiceMock<MockMixerSource> tts_source(kInputSampleRate);
   tts_source.set_content_type(AudioContentType::kCommunication);
-  MixerInput tts_input(&tts_source, kInputSampleRate, 0, RenderingDelay(),
-                       nullptr);
+  MixerInput tts_input(&tts_source, filter_group_.get());
 
   NiceMock<MockMixerSource> alarm_source(kInputSampleRate);
   alarm_source.set_content_type(AudioContentType::kAlarm);
-  MixerInput alarm_input(&alarm_source, kInputSampleRate, 0, RenderingDelay(),
-                         nullptr);
+  MixerInput alarm_input(&alarm_source, filter_group_.get());
 
   // Media input stream + tts input stream -> tts content type.
   filter_group_->AddInput(&tts_input);

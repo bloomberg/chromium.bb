@@ -27,10 +27,10 @@ class PostProcessingPipeline {
                                float current_multiplier,
                                bool is_silence) = 0;
   virtual float* GetOutputBuffer() = 0;
-  virtual int NumOutputChannels() = 0;
+  virtual int NumOutputChannels() const = 0;
 
   virtual bool SetOutputSampleRate(int sample_rate) = 0;
-  virtual int GetInputSampleRate() = 0;
+  virtual int GetInputSampleRate() const = 0;
   virtual bool IsRinging() = 0;
   virtual void SetPostProcessorConfig(const std::string& name,
                                       const std::string& config) = 0;

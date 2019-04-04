@@ -20,7 +20,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
-#include "base/numerics/range.h"
+#include "base/numerics/ranges.h"
 #include "chromecast/media/cma/backend/cast_audio_json.h"
 #include "chromecast/media/cma/backend/cplay/wav_header.h"
 #include "chromecast/media/cma/backend/mixer_input.h"
@@ -29,7 +29,7 @@
 #include "chromecast/media/cma/backend/post_processing_pipeline_parser.h"
 #include "chromecast/media/cma/backend/volume_map.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
-#include "media/audio/sounds/wav_audio_handler.h"
+#include "media/audio/wav_audio_handler.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_sample_types.h"
 
@@ -50,7 +50,7 @@ float VolumeControl::DbFSToVolume(float db) {
 
 namespace {
 
-const int kReadSize = 256;
+const int kReadSize = 1024;
 
 void PrintHelp(const std::string& command) {
   LOG(INFO) << "Usage: " << command;
@@ -298,15 +298,14 @@ int CplayMain(int argc, char* argv[]) {
   auto factory = std::make_unique<PostProcessingPipelineFactoryImpl>();
   auto pipeline = MixerPipeline::CreateMixerPipeline(&parser, factory.get());
   CHECK(pipeline);
-  pipeline->Initialize(params.output_samples_per_second);
+  pipeline->Initialize(params.output_samples_per_second, kReadSize);
   LOG(INFO) << "Initialized Cast Audio Pipeline at "
             << params.output_samples_per_second << " samples per second";
 
   // Add |input_source| to |pipeline|
   FilterGroup* input_group = pipeline->GetInputGroup(params.device_id);
   CHECK(input_group);
-  MixerInput mixer_input(&input_source, params.output_samples_per_second,
-                         kReadSize, MixerInput::RenderingDelay(), input_group);
+  MixerInput mixer_input(&input_source, input_group);
 
   // Set volume.
   std::string contents;

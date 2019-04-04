@@ -38,10 +38,10 @@ class PostProcessingPipelineImpl : public PostProcessingPipeline {
                        bool is_silence) override;
 
   float* GetOutputBuffer() override;
-  int NumOutputChannels() override;
+  int NumOutputChannels() const override;
 
   bool SetOutputSampleRate(int sample_rate) override;
-  int GetInputSampleRate() override;
+  int GetInputSampleRate() const override;
   bool IsRinging() override;
 
   // Send string |config| to post processor |name|.
@@ -55,6 +55,7 @@ class PostProcessingPipelineImpl : public PostProcessingPipeline {
   // structs.
   typedef struct {
     std::unique_ptr<AudioPostProcessor2> ptr;
+    double output_frames_per_input_frame;
     std::string name;
   } PostProcessorInfo;
 

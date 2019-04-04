@@ -238,7 +238,7 @@ class StreamMixer {
 
   int num_output_channels_;
   const int low_sample_rate_cutoff_;
-  const int fixed_sample_rate_;
+  const int fixed_output_sample_rate_;
   const base::TimeDelta no_input_close_timeout_;
   // Force data to be filtered in multiples of |filter_frame_alignment_| frames.
   // Must be a multiple of 4 for some NEON implementations. Some
