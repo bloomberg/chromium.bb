@@ -12,6 +12,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/windows_version.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/base/win/window_event_target.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -78,7 +79,7 @@ DirectManipulationHelper::CreateInstanceForTesting(
       base::WrapUnique(new DirectManipulationHelper());
 
   instance->event_handler_ =
-      Microsoft::WRL::Make<DirectManipulationHandler>(instance.get());
+      Microsoft::WRL::Make<DirectManipulationEventHandler>(instance.get());
   instance->event_handler_->SetWindowEventTarget(event_target);
 
   instance->viewport_ = viewport;
@@ -144,7 +145,7 @@ bool DirectManipulationHelper::Initialize(ui::WindowEventTarget* event_target) {
     return false;
   }
 
-  event_handler_ = Microsoft::WRL::Make<DirectManipulationHandler>(this);
+  event_handler_ = Microsoft::WRL::Make<DirectManipulationEventHandler>(this);
   event_handler_->SetWindowEventTarget(event_target);
 
   // We got Direct Manipulation transform from
@@ -262,7 +263,7 @@ bool DirectManipulationHelper::OnPointerHitTest(
   return need_poll_events_;
 }
 
-HRESULT DirectManipulationHelper::ResetViewport(bool need_poll_events) {
+HRESULT DirectManipulationHelper::Reset(bool need_poll_events) {
   // By zooming the primary content to a rect that match the viewport rect, we
   // reset the content's transform to identity.
   HRESULT hr =
@@ -288,297 +289,6 @@ bool DirectManipulationHelper::PollForNextEvent() {
 
 void DirectManipulationHelper::SetDeviceScaleFactorForTesting(float factor) {
   event_handler_->SetDeviceScaleFactor(factor);
-}
-
-// DirectManipulationHandler
-DirectManipulationHandler::DirectManipulationHandler() {
-  NOTREACHED();
-}
-
-DirectManipulationHandler::DirectManipulationHandler(
-    DirectManipulationHelper* helper)
-    : helper_(helper) {}
-
-DirectManipulationHandler::~DirectManipulationHandler() {}
-
-void DirectManipulationHandler::TransitionToState(Gesture new_gesture_state) {
-  if (gesture_state_ == new_gesture_state)
-    return;
-
-  if (LoggingEnabled()) {
-    std::string s = "TransitionToState " +
-                    std::to_string(static_cast<int>(gesture_state_)) + " -> " +
-                    std::to_string(static_cast<int>(new_gesture_state));
-    DebugLogging(s, S_OK);
-  }
-
-  Gesture previous_gesture_state = gesture_state_;
-  gesture_state_ = new_gesture_state;
-
-  // End the previous sequence.
-  switch (previous_gesture_state) {
-    case Gesture::kScroll: {
-      // kScroll -> kNone, kPinch, ScrollEnd.
-      // kScroll -> kFling, we don't want to end the current scroll sequence.
-      if (new_gesture_state != Gesture::kFling)
-        event_target_->ApplyPanGestureScrollEnd();
-      break;
-    }
-    case Gesture::kFling: {
-      // kFling -> *, FlingEnd.
-      event_target_->ApplyPanGestureFlingEnd();
-      break;
-    }
-    case Gesture::kPinch: {
-      DCHECK_EQ(new_gesture_state, Gesture::kNone);
-      // kPinch -> kNone, PinchEnd. kPinch should only transition to kNone.
-      event_target_->ApplyPinchZoomEnd();
-      break;
-    }
-    case Gesture::kNone: {
-      // kNone -> *, no cleanup is needed.
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
-
-  // Start the new sequence.
-  switch (new_gesture_state) {
-    case Gesture::kScroll: {
-      // kFling, kNone -> kScroll, ScrollBegin.
-      // ScrollBegin is different phase event with others. It must send within
-      // the first scroll event.
-      should_send_scroll_begin_ = true;
-      break;
-    }
-    case Gesture::kFling: {
-      // Only kScroll can transition to kFling.
-      DCHECK_EQ(previous_gesture_state, Gesture::kScroll);
-      event_target_->ApplyPanGestureFlingBegin();
-      break;
-    }
-    case Gesture::kPinch: {
-      // * -> kPinch, PinchBegin.
-      // Pinch gesture may begin with some scroll events.
-      event_target_->ApplyPinchZoomBegin();
-      break;
-    }
-    case Gesture::kNone: {
-      // * -> kNone, only cleanup is needed.
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
-}
-
-HRESULT DirectManipulationHandler::OnViewportStatusChanged(
-    IDirectManipulationViewport* viewport,
-    DIRECTMANIPULATION_STATUS current,
-    DIRECTMANIPULATION_STATUS previous) {
-  // MSDN never mention |viewport| are nullable and we never saw it is null when
-  // testing.
-  DCHECK(viewport);
-
-  if (LoggingEnabled()) {
-    std::string s = "ViewportStatusChanged " + std::to_string(previous) +
-                    " -> " + std::to_string(current);
-    DebugLogging(s, S_OK);
-  }
-
-  // The state of our viewport has changed! We'l be in one of three states:
-  // - ENABLED: initial state
-  // - READY: the previous gesture has been completed
-  // - RUNNING: gesture updating
-  // - INERTIA: finger leave touchpad content still updating by inertia
-  HRESULT hr = S_OK;
-
-  // Windows should not call this when event_target_ is null since we do not
-  // pass the DM_POINTERHITTEST to DirectManipulation.
-  if (!event_target_)
-    return hr;
-
-  if (current == previous)
-    return hr;
-
-  if (current == DIRECTMANIPULATION_INERTIA) {
-    // Fling must lead by Scroll. We can actually hit here when user pinch then
-    // quickly pan gesture and leave touchpad. In this case, we don't want to
-    // start a new sequence until the gesture end. The rest events in sequence
-    // will be ignore since sequence still in pinch and only scale factor
-    // changes will be applied.
-    if (previous != DIRECTMANIPULATION_RUNNING ||
-        gesture_state_ != Gesture::kScroll) {
-      return hr;
-    }
-
-    TransitionToState(Gesture::kFling);
-  }
-
-  if (current == DIRECTMANIPULATION_RUNNING) {
-    // INERTIA -> RUNNING, should start a new sequence.
-    if (previous == DIRECTMANIPULATION_INERTIA)
-      TransitionToState(Gesture::kNone);
-  }
-
-  // Reset the viewport when we're idle, so the content transforms always start
-  // at identity.
-  if (current == DIRECTMANIPULATION_READY) {
-    // Every animation will receive 2 ready message, we should stop request
-    // compositor animation at the second ready.
-    first_ready_ = !first_ready_;
-    hr = helper_->ResetViewport(first_ready_);
-    last_scale_ = 1.0f;
-    last_x_offset_ = 0.0f;
-    last_y_offset_ = 0.0f;
-
-    TransitionToState(Gesture::kNone);
-  }
-
-  return hr;
-}
-
-HRESULT DirectManipulationHandler::OnViewportUpdated(
-    IDirectManipulationViewport* viewport) {
-  if (LoggingEnabled())
-    DebugLogging("OnViewportUpdated", S_OK);
-  // Nothing to do here.
-  return S_OK;
-}
-
-namespace {
-
-bool FloatEquals(float f1, float f2) {
-  // The idea behind this is to use this fraction of the larger of the
-  // two numbers as the limit of the difference.  This breaks down near
-  // zero, so we reuse this as the minimum absolute size we will use
-  // for the base of the scale too.
-  static const float epsilon_scale = 0.00001f;
-  return fabs(f1 - f2) <
-         epsilon_scale *
-             std::fmax(std::fmax(std::fabs(f1), std::fabs(f2)), epsilon_scale);
-}
-
-bool DifferentLessThanOne(int f1, int f2) {
-  return abs(f1 - f2) < 1;
-}
-
-}  // namespace
-
-HRESULT DirectManipulationHandler::OnContentUpdated(
-    IDirectManipulationViewport* viewport,
-    IDirectManipulationContent* content) {
-  // MSDN never mention these params are nullable and we never saw they are null
-  // when testing.
-  DCHECK(viewport);
-  DCHECK(content);
-
-  if (LoggingEnabled())
-    DebugLogging("OnContentUpdated", S_OK);
-
-  // Windows should not call this when event_target_ is null since we do not
-  // pass the DM_POINTERHITTEST to DirectManipulation.
-  if (!event_target_) {
-    DebugLogging("OnContentUpdated event_target_ is null.", S_OK);
-    return S_OK;
-  }
-
-  float xform[6];
-  HRESULT hr = content->GetContentTransform(xform, ARRAYSIZE(xform));
-  if (!SUCCEEDED(hr)) {
-    DebugLogging("DirectManipulationContent get transform failed.", hr);
-    return hr;
-  }
-
-  float scale = xform[0];
-  int x_offset = xform[4] / device_scale_factor_;
-  int y_offset = xform[5] / device_scale_factor_;
-
-  // Ignore if Windows pass scale=0 to us.
-  if (scale == 0.0f) {
-    LOG(ERROR) << "Windows DirectManipulation API pass scale = 0.";
-    return hr;
-  }
-
-  // Ignore the scale factor change less than float point rounding error and
-  // scroll offset change less than 1.
-  // TODO(456622) Because we don't fully support fractional scroll, pass float
-  // scroll offset feels steppy. eg.
-  // first x_offset is 0.1 ignored, but last_x_offset_ set to 0.1
-  // second x_offset is 1 but x_offset - last_x_offset_ is 0.9 ignored.
-  if (FloatEquals(scale, last_scale_) &&
-      DifferentLessThanOne(x_offset, last_x_offset_) &&
-      DifferentLessThanOne(y_offset, last_y_offset_)) {
-    if (LoggingEnabled()) {
-      std::string s =
-          "OnContentUpdated ignored. scale=" + std::to_string(scale) +
-          ", last_scale=" + std::to_string(last_scale_) +
-          ", x_offset=" + std::to_string(x_offset) +
-          ", last_x_offset=" + std::to_string(last_x_offset_) +
-          ", y_offset=" + std::to_string(y_offset) +
-          ", last_y_offset=" + std::to_string(last_y_offset_);
-      DebugLogging(s, S_OK);
-    }
-    return hr;
-  }
-
-  DCHECK_NE(last_scale_, 0.0f);
-
-  // DirectManipulation will send xy transform move to down-right which is noise
-  // when pinch zoom. We should consider the gesture either Scroll or Pinch at
-  // one sequence. But Pinch gesture may begin with some scroll transform since
-  // DirectManipulation recognition maybe wrong at start if the user pinch with
-  // slow motion. So we allow kScroll -> kPinch.
-
-  // Consider this is a Scroll when scale factor equals 1.0.
-  if (FloatEquals(scale, 1.0f)) {
-    if (gesture_state_ == Gesture::kNone)
-      TransitionToState(Gesture::kScroll);
-  } else {
-    // Pinch gesture may begin with some scroll events.
-    TransitionToState(Gesture::kPinch);
-  }
-
-  if (gesture_state_ == Gesture::kScroll) {
-    if (should_send_scroll_begin_) {
-      event_target_->ApplyPanGestureScrollBegin(x_offset - last_x_offset_,
-                                                y_offset - last_y_offset_);
-      should_send_scroll_begin_ = false;
-    } else {
-      event_target_->ApplyPanGestureScroll(x_offset - last_x_offset_,
-                                           y_offset - last_y_offset_);
-    }
-  } else if (gesture_state_ == Gesture::kFling) {
-    event_target_->ApplyPanGestureFling(x_offset - last_x_offset_,
-                                        y_offset - last_y_offset_);
-  } else {
-    event_target_->ApplyPinchZoomScale(scale / last_scale_);
-  }
-
-  last_scale_ = scale;
-  last_x_offset_ = x_offset;
-  last_y_offset_ = y_offset;
-
-  return hr;
-}
-
-void DirectManipulationHandler::SetWindowEventTarget(
-    ui::WindowEventTarget* event_target) {
-  if (!event_target && LoggingEnabled()) {
-    DebugLogging("Event target is null.", S_OK);
-    if (event_target_) {
-      DebugLogging("Previous event target is not null", S_OK);
-    } else {
-      DebugLogging("Previous event target is null", S_OK);
-    }
-  }
-  event_target_ = event_target;
-}
-
-void DirectManipulationHandler::SetDeviceScaleFactor(
-    float device_scale_factor) {
-  device_scale_factor_ = device_scale_factor;
 }
 
 }  // namespace content
