@@ -74,6 +74,7 @@ class AwSettings : public content::WebContentsObserver {
       const base::android::JavaParamRef<jobject>& obj);
 
   void PopulateWebPreferences(content::WebPreferences* web_prefs);
+  bool GetAllowFileAccess();
 
  private:
   AwRenderViewHostExt* GetAwRenderViewHostExt();

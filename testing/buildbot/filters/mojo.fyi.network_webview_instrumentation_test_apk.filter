@@ -11,9 +11,6 @@
 # https://crbug.com/893575
 -org.chromium.android_webview.test.CookieManagerStartupTest.testStartup
 
-# https://crbug.com/893580
--org.chromium.android_webview.test.LoadDataWithBaseUrlTest.testLoadDataWithBaseUrlAccessingFile
-
 # Flaky tests on android_mojo and android_mojo_rel bots
 # https://crbug.com/936757, https://crbug.com/939355
 -org.chromium.android_webview.test.AwContentsClientFullScreenTest.testOnShowCustomViewAndPlayWithHtmlControl_videoInsideDiv

@@ -522,6 +522,16 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
   }
 }
 
+bool AwSettings::GetAllowFileAccess() {
+  // TODO(timvolodine): cache this lazily on update, crbug.com/949590
+  JNIEnv* env = base::android::AttachCurrentThread();
+  CHECK(env);
+  ScopedJavaLocalRef<jobject> scoped_obj = aw_settings_.get(env);
+  if (scoped_obj.is_null())
+    return true;
+  return Java_AwSettings_getAllowFileAccess(env, scoped_obj);
+}
+
 static jlong JNI_AwSettings_Init(JNIEnv* env,
                                  const JavaParamRef<jobject>& obj,
                                  const JavaParamRef<jobject>& web_contents) {

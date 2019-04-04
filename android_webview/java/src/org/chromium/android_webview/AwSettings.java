@@ -419,6 +419,7 @@ public class AwSettings {
     /**
      * See {@link android.webkit.WebSettings#getAllowFileAccess}.
      */
+    @CalledByNative
     public boolean getAllowFileAccess() {
         synchronized (mAwSettingsLock) {
             return mAllowFileUrlAccess;
