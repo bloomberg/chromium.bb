@@ -59,6 +59,7 @@ class PreflightTimingInfo;
 class Resource;
 class ResourceError;
 class ResourceFetcherProperties;
+class ResourceLoadObserver;
 class ResourceTimingInfo;
 class WebURLLoader;
 struct ResourceFetcherInit;
@@ -112,6 +113,21 @@ class PLATFORM_EXPORT ResourceFetcher
   // - This function should be used rather than the properties given
   //   to the ResourceFetcher constructor.
   const ResourceFetcherProperties& GetProperties() const;
+
+  // Returns whether this fetcher is detached from the associated context.
+  bool IsDetached() const;
+
+  // Returns the observer object associated with this fetcher.
+  ResourceLoadObserver* GetResourceLoadObserver() {
+    // When detached, we must have a null observer.
+    DCHECK(!IsDetached() || !resource_load_observer_);
+    return resource_load_observer_;
+  }
+  // This must be called right after construction.
+  void SetResourceLoadObserver(ResourceLoadObserver* observer) {
+    DCHECK(!IsDetached());
+    resource_load_observer_ = observer;
+  }
 
   // Triggers a fetch based on the given FetchParameters (if there isn't a
   // suitable Resource already cached) and registers the given ResourceClient
@@ -343,6 +359,7 @@ class PLATFORM_EXPORT ResourceFetcher
   void RevalidateStaleResource(Resource* stale_resource);
 
   Member<DetachableProperties> properties_;
+  Member<ResourceLoadObserver> resource_load_observer_;
   Member<FetchContext> context_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   const Member<DetachableConsoleLogger> console_logger_;

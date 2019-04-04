@@ -79,8 +79,7 @@
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
 #include "third_party/blink/renderer/core/loader/loader_factory_for_frame.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
-#include "third_party/blink/renderer/core/loader/ping_loader.h"
-#include "third_party/blink/renderer/core/loader/progress_tracker.h"
+#include "third_party/blink/renderer/core/loader/resource_load_observer_for_frame.h"
 #include "third_party/blink/renderer/core/loader/subresource_filter.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
@@ -233,6 +232,9 @@ ResourceFetcher* FrameFetchContext::CreateFetcherForCommittedDocument(
   init.frame_scheduler = frame.GetFrameScheduler();
   init.archive = loader.Archive();
   ResourceFetcher* fetcher = MakeGarbageCollected<ResourceFetcher>(init);
+  fetcher->SetResourceLoadObserver(
+      MakeGarbageCollected<ResourceLoadObserverForFrame>(
+          *frame_or_imported_document, fetcher->GetProperties()));
   fetcher->SetImagesEnabled(frame.GetSettings()->GetImagesEnabled());
   fetcher->SetAutoLoadImages(
       frame.GetSettings()->GetLoadsImagesAutomatically());
@@ -255,7 +257,11 @@ ResourceFetcher* FrameFetchContext::CreateFetcherForImportedDocument(
       MakeGarbageCollected<LoaderFactoryForFrame>(frame_or_imported_document),
       *document);
   init.frame_scheduler = frame.GetFrameScheduler();
-  return MakeGarbageCollected<ResourceFetcher>(init);
+  auto* fetcher = MakeGarbageCollected<ResourceFetcher>(init);
+  fetcher->SetResourceLoadObserver(
+      MakeGarbageCollected<ResourceLoadObserverForFrame>(
+          frame_or_imported_document, fetcher->GetProperties()));
+  return fetcher;
 }
 
 FrameFetchContext::FrameFetchContext(
@@ -433,182 +439,6 @@ void FrameFetchContext::PrepareRequest(
       request.Url().IsValid()) {
     GetDocumentLoader()->GetApplicationCacheHost()->WillStartLoading(request);
   }
-}
-
-void FrameFetchContext::DispatchWillSendRequest(
-    uint64_t identifier,
-    const ResourceRequest& request,
-    const ResourceResponse& redirect_response,
-    ResourceType resource_type,
-    const FetchInitiatorInfo& initiator_info) {
-  if (GetResourceFetcherProperties().IsDetached())
-    return;
-
-  if (redirect_response.IsNull()) {
-    // Progress doesn't care about redirects, only notify it when an
-    // initial request is sent.
-    GetFrame()->Loader().Progress().WillStartLoading(identifier,
-                                                     request.Priority());
-  }
-  probe::WillSendRequest(Probe(), identifier, MasterDocumentLoader(), Url(),
-                         request, redirect_response, initiator_info,
-                         resource_type);
-  Document& document = frame_or_imported_document_->GetDocument();
-  if (auto* idleness_detector = GetFrame()->GetIdlenessDetector())
-    idleness_detector->OnWillSendRequest(document.Fetcher());
-  if (auto* interactive_detector = InteractiveDetector::From(document))
-    interactive_detector->OnResourceLoadBegin(base::nullopt);
-}
-
-void FrameFetchContext::DispatchDidReceiveResponse(
-    uint64_t identifier,
-    const ResourceRequest& request,
-    const ResourceResponse& response,
-    Resource* resource,
-    ResourceResponseType response_type) {
-  if (GetResourceFetcherProperties().IsDetached())
-    return;
-
-  if (GetSubresourceFilter() && resource->GetResourceRequest().IsAdResource())
-    GetSubresourceFilter()->ReportAdRequestId(response.RequestId());
-
-  if (response.GetCTPolicyCompliance() ==
-      ResourceResponse::kCTPolicyDoesNotComply) {
-    CountUsage(
-        GetFrame()->IsMainFrame()
-            ? WebFeature::
-                  kCertificateTransparencyNonCompliantSubresourceInMainFrame
-            : WebFeature::
-                  kCertificateTransparencyNonCompliantResourceInSubframe);
-  }
-
-  if (response_type == ResourceResponseType::kFromMemoryCache) {
-    GetLocalFrameClient()->DispatchDidLoadResourceFromMemoryCache(
-        resource->GetResourceRequest(), response);
-
-    // Note: probe::WillSendRequest needs to precede before this probe method.
-    probe::MarkResourceAsCached(GetFrame(), MasterDocumentLoader(), identifier);
-    if (response.IsNull())
-      return;
-  }
-
-  MixedContentChecker::CheckMixedPrivatePublic(GetFrame(),
-                                               response.RemoteIPAddress());
-
-  PreloadHelper::CanLoadResources resource_loading_policy =
-      response_type == ResourceResponseType::kFromMemoryCache
-          ? PreloadHelper::kDoNotLoadResources
-          : PreloadHelper::kLoadResourcesAndPreconnect;
-  PreloadHelper::LoadLinksFromHeader(
-      response.HttpHeaderField(http_names::kLink), response.CurrentRequestUrl(),
-      *GetFrame(), &frame_or_imported_document_->GetDocument(),
-      resource_loading_policy, PreloadHelper::kLoadAll, nullptr);
-
-  if (response.HasMajorCertificateErrors()) {
-    MixedContentChecker::HandleCertificateError(GetFrame(), response,
-                                                request.GetRequestContext());
-  }
-
-  if (response.IsLegacyTLSVersion()) {
-    UseCounter::Count(&frame_or_imported_document_->GetDocument(),
-                      WebFeature::kLegacyTLSVersionInSubresource);
-    GetLocalFrameClient()->ReportLegacyTLSVersion(response.CurrentRequestUrl());
-  }
-
-  GetFrame()->Loader().Progress().IncrementProgress(identifier, response);
-  GetLocalFrameClient()->DispatchDidReceiveResponse(response);
-  DocumentLoader* document_loader = MasterDocumentLoader();
-  probe::DidReceiveResourceResponse(Probe(), identifier, document_loader,
-                                    response, resource);
-  // It is essential that inspector gets resource response BEFORE console.
-  GetFrame()->Console().ReportResourceResponseReceived(document_loader,
-                                                       identifier, response);
-}
-
-void FrameFetchContext::DispatchDidReceiveData(uint64_t identifier,
-                                               const char* data,
-                                               uint64_t data_length) {
-  if (GetResourceFetcherProperties().IsDetached())
-    return;
-
-  GetFrame()->Loader().Progress().IncrementProgress(identifier, data_length);
-  probe::DidReceiveData(Probe(), identifier, MasterDocumentLoader(), data,
-                        data_length);
-}
-
-void FrameFetchContext::DispatchDidReceiveEncodedData(
-    uint64_t identifier,
-    size_t encoded_data_length) {
-  if (GetResourceFetcherProperties().IsDetached())
-    return;
-  probe::DidReceiveEncodedDataLength(Probe(), MasterDocumentLoader(),
-                                     identifier, encoded_data_length);
-}
-
-void FrameFetchContext::DispatchDidDownloadToBlob(uint64_t identifier,
-                                                  BlobDataHandle* blob) {
-  if (GetResourceFetcherProperties().IsDetached() || !blob)
-    return;
-
-  probe::DidReceiveBlob(Probe(), identifier, MasterDocumentLoader(), blob);
-}
-
-void FrameFetchContext::DispatchDidFinishLoading(
-    uint64_t identifier,
-    TimeTicks finish_time,
-    int64_t encoded_data_length,
-    int64_t decoded_body_length,
-    bool should_report_corb_blocking,
-    ResourceResponseType response_type) {
-  if (GetResourceFetcherProperties().IsDetached())
-    return;
-
-  GetFrame()->Loader().Progress().CompleteProgress(identifier);
-  probe::DidFinishLoading(Probe(), identifier, MasterDocumentLoader(),
-                          finish_time, encoded_data_length, decoded_body_length,
-                          should_report_corb_blocking);
-
-  Document& document = frame_or_imported_document_->GetDocument();
-  if (auto* interactive_detector = InteractiveDetector::From(document))
-    interactive_detector->OnResourceLoadEnd(finish_time);
-
-  if (LocalFrame* frame = document.GetFrame()) {
-    if (IdlenessDetector* idleness_detector = frame->GetIdlenessDetector())
-      idleness_detector->OnDidLoadResource();
-  }
-
-  if (response_type == ResourceResponseType::kNotFromMemoryCache)
-    document.CheckCompleted();
-}
-
-void FrameFetchContext::DispatchDidFail(const KURL& url,
-                                        uint64_t identifier,
-                                        const ResourceError& error,
-                                        int64_t encoded_data_length,
-                                        bool is_internal_request) {
-  if (GetResourceFetcherProperties().IsDetached())
-    return;
-
-  GetFrame()->Loader().Progress().CompleteProgress(identifier);
-  probe::DidFailLoading(Probe(), identifier, MasterDocumentLoader(), error);
-
-  // Notification to FrameConsole should come AFTER InspectorInstrumentation
-  // call, DevTools front-end relies on this.
-  if (!is_internal_request) {
-    GetFrame()->Console().DidFailLoading(MasterDocumentLoader(), identifier,
-                                         error);
-  }
-  Document& document = frame_or_imported_document_->GetDocument();
-  if (auto* interactive_detector = InteractiveDetector::From(document)) {
-    // We have not yet recorded load_finish_time. Pass nullopt here; we will
-    // call CurrentTimeTicksInSeconds lazily when we need it.
-    interactive_detector->OnResourceLoadEnd(base::nullopt);
-  }
-  if (LocalFrame* frame = document.GetFrame()) {
-    if (IdlenessDetector* idleness_detector = frame->GetIdlenessDetector())
-      idleness_detector->OnDidLoadResource();
-  }
-  document.CheckCompleted();
 }
 
 void FrameFetchContext::RecordLoadingActivity(

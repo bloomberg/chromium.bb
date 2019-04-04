@@ -69,6 +69,7 @@ blink_platform_sources("loader") {
     "fetch/resource_fetcher_properties.h",
     "fetch/resource_finish_observer.h",
     "fetch/resource_load_info.h",
+    "fetch/resource_load_observer.h",
     "fetch/resource_load_priority.h",
     "fetch/resource_load_scheduler.cc",
     "fetch/resource_load_scheduler.h",

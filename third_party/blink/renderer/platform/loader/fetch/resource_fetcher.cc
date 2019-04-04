@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_observer.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
@@ -545,6 +546,10 @@ const ResourceFetcherProperties& ResourceFetcher::GetProperties() const {
   return *properties_;
 }
 
+bool ResourceFetcher::IsDetached() const {
+  return properties_->IsDetached();
+}
+
 Resource* ResourceFetcher::CachedResource(const KURL& resource_url) const {
   if (resource_url.IsEmpty())
     return nullptr;
@@ -619,24 +624,24 @@ void ResourceFetcher::RequestLoadStarted(uint64_t identifier,
 void ResourceFetcher::DidLoadResourceFromMemoryCache(
     uint64_t identifier,
     Resource* resource,
-    const ResourceRequest& original_request) {
-  ResourceRequest request = original_request;
+    const ResourceRequest& request) {
+  if (IsDetached() || !resource_load_observer_)
+    return;
 
-  Context().DispatchWillSendRequest(
+  resource_load_observer_->WillSendRequest(
       identifier, request, ResourceResponse() /* redirects */,
       resource->GetType(), resource->Options().initiator_info);
-  Context().DispatchDidReceiveResponse(
+  resource_load_observer_->DidReceiveResponse(
       identifier, request, resource->GetResponse(), resource,
-      FetchContext::ResourceResponseType::kFromMemoryCache);
-
+      ResourceLoadObserver::ResponseSource::kFromMemoryCache);
   if (resource->EncodedSize() > 0) {
-    Context().DispatchDidReceiveData(identifier, nullptr,
-                                     resource->EncodedSize());
+    resource_load_observer_->DidReceiveData(
+        identifier, base::span<const char>(nullptr, resource->EncodedSize()));
   }
 
-  Context().DispatchDidFinishLoading(
+  resource_load_observer_->DidFinishLoading(
       identifier, TimeTicks(), 0, resource->GetResponse().DecodedBodyLength(),
-      false, FetchContext::ResourceResponseType::kFromMemoryCache);
+      false, ResourceLoadObserver::ResponseSource::kFromMemoryCache);
 }
 
 Resource* ResourceFetcher::ResourceForStaticData(
@@ -1638,6 +1643,7 @@ void ResourceFetcher::ClearContext() {
     properties_->Detach();
   }
 
+  resource_load_observer_ = nullptr;
   console_logger_->Detach();
   loader_factory_ = nullptr;
 
@@ -1825,10 +1831,14 @@ void ResourceFetcher::HandleLoaderFinish(
       context_->DidObserveLoadingBehavior(behavior);
     }
   }
-  Context().DispatchDidFinishLoading(
-      resource->InspectorId(), response_end, encoded_data_length,
-      resource->GetResponse().DecodedBodyLength(), should_report_corb_blocking,
-      FetchContext::ResourceResponseType::kNotFromMemoryCache);
+  if (resource_load_observer_) {
+    DCHECK(!IsDetached());
+    resource_load_observer_->DidFinishLoading(
+        resource->InspectorId(), response_end, encoded_data_length,
+        resource->GetResponse().DecodedBodyLength(),
+        should_report_corb_blocking,
+        ResourceLoadObserver::ResponseSource::kNotFromMemoryCache);
+  }
   resource->ReloadIfLoFiOrPlaceholderImage(this, Resource::kReloadIfNeeded);
 }
 
@@ -1853,11 +1863,14 @@ void ResourceFetcher::HandleLoaderError(Resource* resource,
         mojom::WebFeature::kCertificateTransparencyRequiredErrorOnResourceLoad);
   }
   resource->FinishAsError(error, task_runner_.get());
-  const bool is_internal_request = resource->Options().initiator_info.name ==
-                                   fetch_initiator_type_names::kInternal;
-  Context().DispatchDidFail(
-      resource->LastResourceRequest().Url(), resource->InspectorId(), error,
-      resource->GetResponse().EncodedDataLength(), is_internal_request);
+  if (resource_load_observer_) {
+    DCHECK(!IsDetached());
+    const bool is_internal_request = resource->Options().initiator_info.name ==
+                                     fetch_initiator_type_names::kInternal;
+    resource_load_observer_->DidFailLoading(
+        resource->LastResourceRequest().Url(), resource->InspectorId(), error,
+        resource->GetResponse().EncodedDataLength(), is_internal_request);
+  }
   resource->ReloadIfLoFiOrPlaceholderImage(this, Resource::kReloadIfNeeded);
 }
 
@@ -1895,10 +1908,12 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
                                             resource->Options().initiator_info);
 
     resource->VirtualTimePauser().PauseVirtualTime();
-    Context().DispatchWillSendRequest(resource->InspectorId(), request,
-                                      response, resource->GetType(),
-                                      resource->Options().initiator_info);
-
+    if (resource_load_observer_) {
+      DCHECK(!IsDetached());
+      resource_load_observer_->WillSendRequest(
+          resource->InspectorId(), request, response, resource->GetType(),
+          resource->Options().initiator_info);
+    }
     // TODO(shaochuan): Saving modified ResourceRequest back to |resource|,
     // remove once dispatchWillSendRequest() takes const ResourceRequest.
     // crbug.com/632580
@@ -2106,6 +2121,7 @@ mojom::blink::BlobRegistry* ResourceFetcher::GetBlobRegistry() {
 void ResourceFetcher::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_);
   visitor->Trace(properties_);
+  visitor->Trace(resource_load_observer_);
   visitor->Trace(console_logger_);
   visitor->Trace(loader_factory_);
   visitor->Trace(scheduler_);

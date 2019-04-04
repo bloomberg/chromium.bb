@@ -83,38 +83,6 @@ void FetchContext::PrepareRequest(ResourceRequest&,
                                   WebScopedVirtualTimePauser&,
                                   ResourceType) {}
 
-void FetchContext::DispatchWillSendRequest(uint64_t,
-                                           const ResourceRequest&,
-                                           const ResourceResponse&,
-                                           ResourceType,
-                                           const FetchInitiatorInfo&) {}
-
-void FetchContext::DispatchDidReceiveResponse(uint64_t,
-                                              const ResourceRequest&,
-                                              const ResourceResponse&,
-                                              Resource*,
-                                              ResourceResponseType) {}
-
-void FetchContext::DispatchDidReceiveData(uint64_t, const char*, uint64_t) {}
-
-void FetchContext::DispatchDidReceiveEncodedData(uint64_t, size_t) {}
-
-void FetchContext::DispatchDidDownloadToBlob(uint64_t identifier,
-                                             BlobDataHandle*) {}
-
-void FetchContext::DispatchDidFinishLoading(uint64_t,
-                                            TimeTicks,
-                                            int64_t,
-                                            int64_t,
-                                            bool,
-                                            ResourceResponseType) {}
-
-void FetchContext::DispatchDidFail(const KURL&,
-                                   uint64_t,
-                                   const ResourceError&,
-                                   int64_t,
-                                   bool) {}
-
 bool FetchContext::ShouldLoadNewResource(ResourceType type) const {
   return !GetResourceFetcherProperties().ShouldBlockLoadingSubResource();
 }

@@ -61,9 +61,7 @@ enum class ResourceType : uint8_t;
 class ClientHintsPreferences;
 class KURL;
 class PlatformProbeSink;
-class ResourceError;
 class ResourceFetcherProperties;
-class ResourceResponse;
 class ResourceTimingInfo;
 class WebScopedVirtualTimePauser;
 
@@ -123,42 +121,6 @@ class PLATFORM_EXPORT FetchContext
                               const FetchInitiatorInfo&,
                               WebScopedVirtualTimePauser& virtual_time_pauser,
                               ResourceType);
-
-  // The last callback before a request is actually sent to the browser process.
-  // This is called on initial and every redirect request.
-  virtual void DispatchWillSendRequest(
-      uint64_t identifier,
-      const ResourceRequest&,
-      const ResourceResponse& redirect_response,
-      ResourceType,
-      const FetchInitiatorInfo& = FetchInitiatorInfo());
-  enum class ResourceResponseType { kNotFromMemoryCache, kFromMemoryCache };
-  // |request| and |resource| are provided separately because when it's from
-  // the memory cache |request| and |resource->GetResourceRequest()| don't
-  // match. |response| may not yet be set to |resource| when this function is
-  // called.
-  virtual void DispatchDidReceiveResponse(uint64_t identifier,
-                                          const ResourceRequest& request,
-                                          const ResourceResponse& response,
-                                          Resource* resource,
-                                          ResourceResponseType);
-  virtual void DispatchDidReceiveData(uint64_t identifier,
-                                      const char* data,
-                                      uint64_t data_length);
-  virtual void DispatchDidReceiveEncodedData(uint64_t identifier,
-                                             size_t encoded_data_length);
-  virtual void DispatchDidDownloadToBlob(uint64_t identifier, BlobDataHandle*);
-  virtual void DispatchDidFinishLoading(uint64_t identifier,
-                                        TimeTicks finish_time,
-                                        int64_t encoded_data_length,
-                                        int64_t decoded_body_length,
-                                        bool should_report_corb_blocking,
-                                        ResourceResponseType);
-  virtual void DispatchDidFail(const KURL&,
-                               uint64_t identifier,
-                               const ResourceError&,
-                               int64_t encoded_data_length,
-                               bool is_internal_request);
 
   bool ShouldLoadNewResource(ResourceType) const;
 

@@ -2119,6 +2119,7 @@ jumbo_source_set("unit_tests") {
     "loader/resource/mock_image_resource_observer.cc",
     "loader/resource/mock_image_resource_observer.h",
     "loader/resource/multipart_image_resource_parser_test.cc",
+    "loader/resource_load_observer_for_frame_test.cc",
     "loader/text_resource_decoder_builder_test.cc",
     "loader/threadable_loader_test.cc",
     "messaging/blink_transferable_message_struct_traits_test.cc",
