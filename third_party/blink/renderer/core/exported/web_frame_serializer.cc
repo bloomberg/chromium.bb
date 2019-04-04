@@ -471,8 +471,10 @@ WebThreadSafeData WebFrameSerializer::GenerateMHTMLParts(
 bool WebFrameSerializer::Serialize(
     WebLocalFrame* frame,
     WebFrameSerializerClient* client,
-    WebFrameSerializer::LinkRewritingDelegate* delegate) {
-  WebFrameSerializerImpl serializer_impl(frame, client, delegate);
+    WebFrameSerializer::LinkRewritingDelegate* delegate,
+    bool save_with_empty_url) {
+  WebFrameSerializerImpl serializer_impl(frame, client, delegate,
+                                         save_with_empty_url);
   return serializer_impl.Serialize();
 }
 

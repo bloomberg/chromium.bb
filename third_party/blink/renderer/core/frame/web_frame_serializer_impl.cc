@@ -452,9 +452,11 @@ void WebFrameSerializerImpl::BuildContentForNode(Node* node,
 WebFrameSerializerImpl::WebFrameSerializerImpl(
     WebLocalFrame* frame,
     WebFrameSerializerClient* client,
-    WebFrameSerializer::LinkRewritingDelegate* delegate)
+    WebFrameSerializer::LinkRewritingDelegate* delegate,
+    bool save_with_empty_url)
     : client_(client),
       delegate_(delegate),
+      save_with_empty_url_(save_with_empty_url),
       html_entities_(false),
       xml_entities_(true) {
   // Must specify available webframe.
@@ -472,7 +474,8 @@ bool WebFrameSerializerImpl::Serialize() {
 
   Document* document =
       specified_web_local_frame_impl_->GetFrame()->GetDocument();
-  const KURL& url = document->Url();
+  const KURL& url =
+      save_with_empty_url_ ? KURL("about:internet") : document->Url();
 
   if (url.IsValid()) {
     did_serialization = true;

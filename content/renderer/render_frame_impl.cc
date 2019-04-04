@@ -6532,7 +6532,8 @@ void RenderFrameImpl::OnGetSavableResourceLinks() {
 
 void RenderFrameImpl::OnGetSerializedHtmlWithLocalLinks(
     const std::map<GURL, base::FilePath>& url_to_local_path,
-    const std::map<int, base::FilePath>& frame_routing_id_to_local_path) {
+    const std::map<int, base::FilePath>& frame_routing_id_to_local_path,
+    bool save_with_empty_url) {
   // Convert input to the canonical way of passing a map into a Blink API.
   LinkRewritingDelegate delegate(url_to_local_path,
                                  frame_routing_id_to_local_path);
@@ -6540,7 +6541,7 @@ void RenderFrameImpl::OnGetSerializedHtmlWithLocalLinks(
   // Serialize the frame (without recursing into subframes).
   WebFrameSerializer::Serialize(GetWebFrame(),
                                 this,  // WebFrameSerializerClient.
-                                &delegate);
+                                &delegate, save_with_empty_url);
 }
 
 // mojom::MhtmlFileWriter implementation
