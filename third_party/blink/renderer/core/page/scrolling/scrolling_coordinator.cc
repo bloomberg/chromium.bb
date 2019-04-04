@@ -803,11 +803,11 @@ bool ScrollingCoordinator::CoordinatesScrollingForFrameView(
 
 namespace {
 
-bool ScrollsWithFrame(const LocalFrame& frame, LayoutBox* object) {
+bool ScrollsWithFrame(const LocalFrame& frame, LayoutObject* object) {
   DCHECK(object);
-  DCHECK(object->Layer()->GetLayoutBox() == object);
+  DCHECK(object->EnclosingLayer());
 
-  if (object->Layer()->AncestorScrollingLayer() ==
+  if (object->EnclosingLayer()->AncestorScrollingLayer() ==
       frame.ContentLayoutObject()->Layer())
     return true;
 
@@ -885,10 +885,9 @@ void ScrollingCoordinator::ComputeShouldHandleScrollGestureOnMainThreadRegion(
     if (!element->GetLayoutObject())
       continue;
 
-    Region* region =
-        ScrollsWithFrame(*frame, ToLayoutBox(element->GetLayoutObject()))
-            ? scrolling_region
-            : fixed_region;
+    Region* region = ScrollsWithFrame(*frame, element->GetLayoutObject())
+                         ? scrolling_region
+                         : fixed_region;
 
     if (plugin->WantsWheelEvents()) {
       IntRect box = frame_view->ConvertToRootFrame(plugin->FrameRect());

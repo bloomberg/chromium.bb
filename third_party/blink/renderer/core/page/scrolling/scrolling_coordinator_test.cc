@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/style_sheet_list.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
+#include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -46,6 +47,7 @@
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
+#include "third_party/blink/renderer/core/html/html_object_element.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -1019,6 +1021,85 @@ TEST_P(ScrollingCoordinatorTest, WindowTouchEventHandlerInvalidation) {
   region = cc_layer->touch_action_region().GetRegionForTouchAction(
       TouchAction::kTouchActionNone);
   EXPECT_TRUE(region.IsEmpty());
+}
+
+// Ensure we don't crash when a plugin becomes a LayoutInline
+TEST_P(ScrollingCoordinatorTest, PluginBecomesLayoutInline) {
+  HistogramTester histogram_tester;
+  LoadHTML(R"HTML(
+    <style>
+      body {
+        margin: 0;
+        height: 3000px;
+      }
+    </style>
+    <object id="plugin" type="appilcation/x-webkit-test-plugin"></object>
+    <script>
+      document.getElementById("plugin")
+              .appendChild(document.createElement("label"))
+    </script>
+  )HTML");
+
+  // This test passes if it doesn't crash. We're trying to make sure
+  // ScrollingCoordinator can deal with LayoutInline plugins when generating
+  // NonFastScrollableRegions.
+  HTMLObjectElement* plugin =
+      ToHTMLObjectElement(GetFrame()->GetDocument()->getElementById("plugin"));
+  ASSERT_TRUE(plugin->GetLayoutObject()->IsLayoutInline());
+  ForceFullCompositingUpdate();
+}
+
+// Ensure NonFastScrollableRegions are correctly generated for both fixed and
+// in-flow plugins that need them.
+TEST_P(ScrollingCoordinatorTest, NonFastScrollableRegionsForPlugins) {
+  HistogramTester histogram_tester;
+  LoadHTML(R"HTML(
+    <style>
+      body {
+        margin: 0;
+        height: 3000px;
+      }
+      #plugin {
+        width: 300px;
+        height: 300px;
+      }
+      #pluginfixed {
+        width: 200px;
+        height: 200px;
+      }
+      #fixed {
+        position: fixed;
+        top: 500px;
+      }
+    </style>
+    <div id="fixed">
+      <object id="pluginfixed" type="application/x-webkit-test-plugin"></object>
+    </div>
+    <object id="plugin" type="application/x-webkit-test-plugin"></object>
+  )HTML");
+
+  HTMLObjectElement* plugin =
+      ToHTMLObjectElement(GetFrame()->GetDocument()->getElementById("plugin"));
+  HTMLObjectElement* plugin_fixed = ToHTMLObjectElement(
+      GetFrame()->GetDocument()->getElementById("pluginfixed"));
+  // NonFastScrollableRegions are generated for plugins that require wheel
+  // events.
+  plugin->OwnedPlugin()->SetWantsWheelEvents(true);
+  plugin_fixed->OwnedPlugin()->SetWantsWheelEvents(true);
+
+  ForceFullCompositingUpdate();
+
+  Region scrolling;
+  Region fixed;
+  Page* page = GetFrame()->GetPage();
+  page->GetScrollingCoordinator()
+      ->ComputeShouldHandleScrollGestureOnMainThreadRegion(
+          To<LocalFrame>(page->MainFrame()), &scrolling, &fixed);
+
+  EXPECT_TRUE(scrolling.IsRect());
+  EXPECT_TRUE(fixed.IsRect());
+  EXPECT_EQ(scrolling.Rects().at(0), IntRect(0, 0, 300, 300));
+  EXPECT_EQ(fixed.Rects().at(0), IntRect(0, 500, 200, 200));
 }
 
 TEST_P(ScrollingCoordinatorTest, overflowScrolling) {
