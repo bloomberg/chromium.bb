@@ -958,6 +958,7 @@ class BBJSONGenerator(object):
       'mac-dummy-rel',
       # Defined in internal configs.
       'chromeos-amd64-generic-google-rel',
+      'chromeos-betty-google-rel',
     ]
 
   def check_input_file_consistency(self, verbose=False):
