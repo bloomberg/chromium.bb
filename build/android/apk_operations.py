@@ -263,6 +263,24 @@ def _UninstallApk(devices, install_dict, package_name):
   device_utils.DeviceUtils.parallel(devices).pMap(uninstall)
 
 
+def _IsWebViewProvider(apk_helper_instance):
+  meta_data = apk_helper_instance.GetAllMetadata()
+  meta_data_keys = [pair[0] for pair in meta_data]
+  return 'com.android.webview.WebViewLibrary' in meta_data_keys
+
+
+def _SetWebViewProvider(devices, package_name):
+
+  def switch_provider(device):
+    if device.build_version_sdk < version_codes.NOUGAT:
+      logging.error('No need to switch provider on pre-Nougat devices (%s)',
+                    device.serial)
+    else:
+      device.SetWebViewImplementation(package_name)
+
+  device_utils.DeviceUtils.parallel(devices).pMap(switch_provider)
+
+
 def _NormalizeProcessName(debug_process_name, package_name):
   if not debug_process_name:
     debug_process_name = package_name
@@ -1155,6 +1173,24 @@ class _UninstallCommand(_Command):
     _UninstallApk(self.devices, self.install_dict, self.args.package_name)
 
 
+class _SetWebViewProviderCommand(_Command):
+  name = 'set-webview-provider'
+  description = ("Sets the device's WebView provider to this APK's "
+                 "package name.")
+  needs_package_name = True
+
+  def Run(self):
+    if self.is_bundle:
+      # TODO(ntfschr): Support this by figuring out how to construct
+      # self.apk_helper for bundles.
+      raise Exception(
+          'Switching WebView providers not supported for bundles yet!')
+    if not _IsWebViewProvider(self.apk_helper):
+      raise Exception('This package does not have a WebViewLibrary meta-data '
+                      'tag. Are you sure it contains a WebView implementation?')
+    _SetWebViewProvider(self.devices, self.args.package_name)
+
+
 class _LaunchCommand(_Command):
   name = 'launch'
   description = ('Sends a launch intent for the APK or bundle after first '
@@ -1496,6 +1532,7 @@ _COMMANDS = [
     _DevicesCommand,
     _InstallCommand,
     _UninstallCommand,
+    _SetWebViewProviderCommand,
     _LaunchCommand,
     _StopCommand,
     _ClearDataCommand,
