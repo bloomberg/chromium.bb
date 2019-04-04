@@ -122,6 +122,31 @@ class ErrorCapture {
   std::string first_failure_reason_;
 };  // class
 
+void RemovePersistedPathFromPrefs(base::DictionaryValue* shared_paths,
+                                  const std::string& vm_name,
+                                  const base::FilePath& path) {
+  // |shared_paths| format is {'path': ['vm1', vm2']}.
+  // If |path| exists, remove |vm_name| from list of VMs.
+  base::Value* found = shared_paths->FindKey(path.value());
+  if (!found) {
+    LOG(WARNING) << "Path not in prefs to ushare path " << path.value()
+                 << " for VM " << vm_name;
+    return;
+  }
+  auto& vms = found->GetList();
+  auto it = std::find(vms.begin(), vms.end(), base::Value(vm_name));
+  if (it == vms.end()) {
+    LOG(WARNING) << "VM not in prefs to ushare path " << path.value()
+                 << " for VM " << vm_name;
+    return;
+  }
+  vms.erase(it);
+  // If VM list is now empty, remove |path| from |shared_paths|.
+  if (vms.size() == 0) {
+    shared_paths->RemoveKey(path.value());
+  }
+}
+
 }  // namespace
 
 namespace crostini {
@@ -205,7 +230,7 @@ void CrostiniSharePath::CallSeneschalSharePath(const std::string& vm_name,
       request.set_storage_location(
           vm_tools::seneschal::SharePathRequest::DOWNLOADS);
     }
-    request.set_owner_id(crostini::CryptohomeIdForProfile(profile_));
+    request.set_owner_id(CryptohomeIdForProfile(profile_));
   } else if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs) &&
              integration_service &&
              (drivefs_mount_point_path =
@@ -275,7 +300,7 @@ void CrostiniSharePath::CallSeneschalSharePath(const std::string& vm_name,
 
   // Even if VM is not running, save to prefs now.
   if (persist) {
-    RegisterPersistedPath(path);
+    RegisterPersistedPath(vm_name, path);
   }
   RegisterSharedPath(vm_name, path);
 
@@ -383,11 +408,10 @@ void CrostiniSharePath::UnsharePath(
 
   if (unpersist) {
     PrefService* pref_service = profile_->GetPrefs();
-    ListPrefUpdate update(pref_service, crostini::prefs::kCrostiniSharedPaths);
-    base::ListValue* shared_paths = update.Get();
-    if (!shared_paths->Remove(base::Value(path.value()), nullptr)) {
-      LOG(WARNING) << "Unshared path not in prefs: " << path.value();
-    }
+    DictionaryPrefUpdate update(pref_service,
+                                crostini::prefs::kGuestOSPathsSharedToVms);
+    base::DictionaryValue* shared_paths = update.Get();
+    RemovePersistedPathFromPrefs(shared_paths, vm_name, path);
   }
 
   CallSeneschalUnsharePath(vm_name, path, std::move(callback));
@@ -402,63 +426,88 @@ bool CrostiniSharePath::GetAndSetFirstForSession() {
   return result;
 }
 
-std::vector<base::FilePath> CrostiniSharePath::GetPersistedSharedPaths() {
+std::vector<base::FilePath> CrostiniSharePath::GetPersistedSharedPaths(
+    const std::string& vm_name) {
   std::vector<base::FilePath> result;
-  PrefService* pref_service = profile_->GetPrefs();
-  const base::ListValue* shared_paths =
-      pref_service->GetList(prefs::kCrostiniSharedPaths);
-  // Paths in <cryptohome>/Downloads need to be migrated to
-  // <cryptohome>/MyFiles/Downloads.
-  bool swap_for_migrate_required = false;
-  base::ListValue migrated_paths;
-  for (const auto& shared_path : *shared_paths) {
-    base::FilePath path(shared_path.GetString());
-    base::FilePath migrated;
-    if (file_manager::util::MigrateFromDownloadsToMyFiles(profile_, path,
-                                                          &migrated)) {
-      swap_for_migrate_required = true;
-      path = migrated;
+  // |shared_paths| format is {'path': ['vm1', vm2']}.
+  const base::DictionaryValue* shared_paths =
+      profile_->GetPrefs()->GetDictionary(prefs::kGuestOSPathsSharedToVms);
+  for (const auto& it : shared_paths->DictItems()) {
+    base::FilePath path(it.first);
+    auto& vms = it.second.GetList();
+    for (const auto& vm : vms) {
+      // Register all shared paths for all VMs since we want FilePathWatchers
+      // to start immediately.
+      RegisterSharedPath(vm.GetString(), path);
+      // Only add to result if path is shared with specified |vm_name|.
+      if (vm.GetString() == vm_name) {
+        result.emplace_back(path);
+      }
     }
-    migrated_paths.AppendString(path.value());
-    result.emplace_back(path);
-    RegisterSharedPath(kCrostiniDefaultVmName, path);
   }
-
-  // If any paths were modified during migration, update prefs.
-  if (swap_for_migrate_required) {
-    ListPrefUpdate update(pref_service, crostini::prefs::kCrostiniSharedPaths);
-    base::ListValue* shared_paths = update.Get();
-    shared_paths->Swap(&migrated_paths);
-  }
-
   return result;
 }
 
 void CrostiniSharePath::SharePersistedPaths(
+    const std::string& vm_name,
     base::OnceCallback<void(bool, std::string)> callback) {
-  SharePaths(kCrostiniDefaultVmName, GetPersistedSharedPaths(),
-             false /* persist */, std::move(callback));
+  SharePaths(vm_name, GetPersistedSharedPaths(vm_name),
+             /*persist=*/false, std::move(callback));
 }
 
-void CrostiniSharePath::RegisterPersistedPath(const base::FilePath& path) {
+void CrostiniSharePath::RegisterPersistedPath(const std::string& vm_name,
+                                              const base::FilePath& path) {
   PrefService* pref_service = profile_->GetPrefs();
-  ListPrefUpdate update(pref_service, crostini::prefs::kCrostiniSharedPaths);
-  base::ListValue* shared_paths = update.Get();
-  // Check if path exists, remove paths that are children of new path.
-  bool exists = false;
-  auto it = shared_paths->begin();
-  while (it != shared_paths->end()) {
-    base::FilePath existing(it->GetString());
-    if (path == existing) {
-      exists = true;
-    } else if (path.IsParent(existing)) {
-      it = shared_paths->Erase(it, nullptr);
-      continue;
+  DictionaryPrefUpdate update(pref_service,
+                              crostini::prefs::kGuestOSPathsSharedToVms);
+  base::DictionaryValue* shared_paths = update.Get();
+  // Check if path is already shared so we know whether we need to add it.
+  bool already_shared = false;
+  // Remove any paths that are children of this path.
+  // E.g. if path /foo/bar is already shared, and then we share /foo, we
+  // remove /foo/bar from the list since it will be shared as part of /foo.
+  std::vector<base::FilePath> children;
+  for (const auto& it : shared_paths->DictItems()) {
+    base::FilePath shared(it.first);
+    auto& vms = it.second.GetList();
+    auto vm_matches =
+        std::find(vms.begin(), vms.end(), base::Value(vm_name)) != vms.end();
+    if (path == shared) {
+      already_shared = true;
+      if (!vm_matches) {
+        vms.emplace_back(vm_name);
+      }
+    } else if (path.IsParent(shared) && vm_matches) {
+      children.emplace_back(shared);
     }
-    ++it;
   }
-  if (!exists)
-    shared_paths->Append(std::make_unique<base::Value>(path.value()));
+  for (const auto& child : children) {
+    RemovePersistedPathFromPrefs(shared_paths, vm_name, child);
+  }
+  if (!already_shared) {
+    base::Value vms(base::Value::Type::LIST);
+    vms.GetList().emplace_back(base::Value(vm_name));
+    shared_paths->SetKey(path.value(), std::move(vms));
+  }
+}
+
+void CrostiniSharePath::MigratePersistedPathsToMultiVM(
+    PrefService* profile_prefs) {
+  const base::ListValue* shared_paths =
+      profile_prefs->GetList(prefs::kCrostiniSharedPaths);
+  if (shared_paths->GetSize() == 0) {
+    return;
+  }
+  // Convert ['foo', 'bar'] to {'foo':['termina'], 'bar':['termina']}.
+  base::Value dict(base::Value::Type::DICTIONARY);
+  for (const auto& shared_path : *shared_paths) {
+    base::Value termina(base::Value::Type::LIST);
+    termina.GetList().emplace_back(base::Value(kCrostiniDefaultVmName));
+    dict.SetKey(shared_path.GetString(), std::move(termina));
+  }
+  profile_prefs->Set(prefs::kGuestOSPathsSharedToVms, std::move(dict));
+
+  profile_prefs->ClearPref(prefs::kCrostiniSharedPaths);
 }
 
 void CrostiniSharePath::OnVolumeMounted(chromeos::MountError error_code,
@@ -467,18 +516,24 @@ void CrostiniSharePath::OnVolumeMounted(chromeos::MountError error_code,
     return;
   }
 
-  // Fetch list of shared paths even if VM is not running so that
-  // FilePathWatchers will be added.
-  auto paths = GetPersistedSharedPaths();
-  if (!crostini::CrostiniManager::GetForProfile(profile_)->IsVmRunning(
-          kCrostiniDefaultVmName)) {
-    return;
-  }
-  for (const auto& path : paths) {
-    if (path == volume.mount_path() || volume.mount_path().IsParent(path)) {
-      CallSeneschalSharePath(kCrostiniDefaultVmName, path, false,
-                             base::BindOnce(mount_event_seneschal_callback_,
-                                            "share-on-mount", path));
+  // Check if any persisted paths match volume.mount_path() or are children
+  // of it then share them with any running VMs.
+  const base::DictionaryValue* shared_paths =
+      profile_->GetPrefs()->GetDictionary(prefs::kGuestOSPathsSharedToVms);
+  for (const auto& it : shared_paths->DictItems()) {
+    base::FilePath path(it.first);
+    if (path != volume.mount_path() && !volume.mount_path().IsParent(path)) {
+      continue;
+    }
+    const auto& vms = it.second.GetList();
+    for (const auto& vm : vms) {
+      RegisterSharedPath(vm.GetString(), path);
+      if (CrostiniManager::GetForProfile(profile_)->IsVmRunning(
+              vm.GetString())) {
+        CallSeneschalSharePath(vm.GetString(), path, false,
+                               base::BindOnce(mount_event_seneschal_callback_,
+                                              "share-on-mount", path));
+      }
     }
   }
 }

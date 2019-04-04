@@ -156,6 +156,7 @@
 #include "extensions/browser/api/runtime/runtime_api.h"
 #include "extensions/browser/extension_prefs.h"
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/crostini/crostini_share_path.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
 #include "chrome/browser/component_updater/metadata_table_chromeos.h"
@@ -985,6 +986,8 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   }
 #endif
 
+  // Added 4/2019
+  crostini::CrostiniSharePath::MigratePersistedPathsToMultiVM(profile_prefs);
 #endif
 
   // Added 1/2019.

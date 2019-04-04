@@ -746,7 +746,8 @@ FileManagerPrivateInternalGetCrostiniSharedPathsFunction::Run() {
       crostini::CrostiniSharePath::GetForProfile(profile);
   bool first_for_session = params->observe_first_for_session &&
                            crostini_share_path->GetAndSetFirstForSession();
-  auto shared_paths = crostini_share_path->GetPersistedSharedPaths();
+  auto shared_paths = crostini_share_path->GetPersistedSharedPaths(
+      crostini::kCrostiniDefaultVmName);
   auto entries = std::make_unique<base::ListValue>();
   for (const base::FilePath& path : shared_paths) {
     std::string mount_name;

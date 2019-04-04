@@ -45,8 +45,11 @@ cr.define('settings', function() {
      */
     setCrostiniUsbDeviceShared(guid, shared) {}
 
-    /** @param {string} path Path to stop sharing. */
-    removeCrostiniSharedPath(path) {}
+    /**
+     * @param {string} vmName VM to stop sharing path with.
+     * @param {string} path Path to stop sharing.
+     */
+    removeCrostiniSharedPath(vmName, path) {}
 
     /* Request chrome send a crostini-installer-status-changed event with the
     current installer status */
@@ -87,8 +90,8 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    removeCrostiniSharedPath(path) {
-      chrome.send('removeCrostiniSharedPath', [path]);
+    removeCrostiniSharedPath(vmName, path) {
+      chrome.send('removeCrostiniSharedPath', [vmName, path]);
     }
 
     /** @override */

@@ -1837,11 +1837,9 @@ void CrostiniManager::OnStartTerminaVm(
                               weak_ptr_factory_.GetWeakPtr(), vm_name,
                               std::move(callback), CrostiniResult::SUCCESS));
 
-  // Share folders from Downloads, etc with default VM.
-  if (vm_name == kCrostiniDefaultVmName) {
-    CrostiniSharePath::GetForProfile(profile_)->SharePersistedPaths(
-        base::DoNothing());
-  }
+  // Share folders from Downloads, etc with VM.
+  CrostiniSharePath::GetForProfile(profile_)->SharePersistedPaths(
+      vm_name, base::DoNothing());
 }
 
 void CrostiniManager::OnStartTremplin(std::string vm_name,
