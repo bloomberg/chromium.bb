@@ -27,7 +27,6 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogPresenter;
@@ -45,7 +44,6 @@ import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
  * An Activity used to display WebContents on devices that don't support touch.
  */
 public class NoTouchActivity extends SingleTabActivity {
-    private static final String BUNDLE_TAB_ID = "tabId";
     public static final String DINOSAUR_GAME_INTENT =
             "org.chromium.chrome.browser.touchless.DinoActivity";
 
@@ -243,18 +241,8 @@ public class NoTouchActivity extends SingleTabActivity {
     }
 
     @Override
-    protected Tab restoreTab(Bundle savedInstanceState) {
-        int tabId = getSavedInstanceState().getInt(BUNDLE_TAB_ID, Tab.INVALID_TAB_ID);
-
-        if (tabId == Tab.INVALID_TAB_ID) return null;
-
-        TabState tabState = TabState.restoreTabState(savedInstanceState);
-        assert tabState != null;
-
-        return TabBuilder.createFromFrozenState(tabState)
-                .setId(tabId)
-                .setWindow(getWindowAndroid())
-                .build();
+    protected TabState restoreTabState(Bundle savedInstanceState, int tabId) {
+        return TabState.restoreTabState(savedInstanceState);
     }
 
     @Override

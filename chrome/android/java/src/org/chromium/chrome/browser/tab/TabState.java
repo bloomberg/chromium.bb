@@ -371,16 +371,6 @@ public class TabState {
         return tabState;
     }
 
-    /**
-     * Restores fields of a Tab from this TabState.
-     * @param tab Tab to restore.
-     */
-    public void restoreFields(Tab tab) {
-        // TODO(jinsukkim): Handle this with a new TabObserver method.
-        TabAssociatedApp.from(tab).setAppId(openerAppId);
-        TabThemeColorHelper.get(tab).updateFromTabState(this);
-    }
-
     /** Returns an object representing the state of the Tab's WebContents. */
     private static WebContentsState getWebContentsState(Tab tab) {
         if (tab.getFrozenContentsState() != null) return tab.getFrozenContentsState();

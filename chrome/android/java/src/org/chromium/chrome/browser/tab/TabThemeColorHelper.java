@@ -67,12 +67,6 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
                 mTab.getContext().getResources(), mTab.isIncognito());
     }
 
-    void updateFromTabState(TabState state) {
-        mIsDefaultColorUsed = !state.hasThemeColor();
-        mColor = mIsDefaultColorUsed ? getDefaultColor() : state.getThemeColor();
-        updateIfNeeded(false);
-    }
-
     /**
      * Calculate the theme color based on if the page is native, the theme color changed, etc.
      * @param didWebContentsThemeColorChange If the theme color of the web contents is known to have
@@ -150,6 +144,16 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
     }
 
     // TabObserver
+
+    @Override
+    public void onInitialized(Tab tab, TabState tabState) {
+        if (tabState == null) return;
+
+        // Update from TabState.
+        mIsDefaultColorUsed = !tabState.hasThemeColor();
+        mColor = mIsDefaultColorUsed ? getDefaultColor() : tabState.getThemeColor();
+        updateIfNeeded(false);
+    }
 
     @Override
     public void onSSLStateUpdated(Tab tab) {

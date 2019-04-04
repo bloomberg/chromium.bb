@@ -48,7 +48,6 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabState;
@@ -89,8 +88,6 @@ public class WebappActivity extends SingleTabActivity {
     private static final String TAG = "WebappActivity";
     private static final String HISTOGRAM_NAVIGATION_STATUS = "Webapp.NavigationStatus";
     private static final long MS_BEFORE_NAVIGATING_BACK_FROM_INTERSTITIAL = 1000;
-
-    private static final String BUNDLE_TAB_ID = "tabId";
 
     private static final int ENTER_IMMERSIVE_MODE_DELAY_MILLIS = 300;
     private static final int RESTORE_IMMERSIVE_MODE_DELAY_MILLIS = 3000;
@@ -389,18 +386,8 @@ public class WebappActivity extends SingleTabActivity {
     }
 
     @Override
-    protected Tab restoreTab(Bundle savedInstanceState) {
-        int tabId = getSavedInstanceState().getInt(BUNDLE_TAB_ID, Tab.INVALID_TAB_ID);
-
-        if (tabId == Tab.INVALID_TAB_ID) return null;
-
-        TabState tabState = TabState.restoreTabState(getActivityDirectory(), tabId);
-        if (tabState == null) return null;
-
-        return TabBuilder.createFromFrozenState(tabState)
-                .setId(tabId)
-                .setWindow(getWindowAndroid())
-                .build();
+    protected TabState restoreTabState(Bundle savedInstanceState, int tabId) {
+        return TabState.restoreTabState(getActivityDirectory(), tabId);
     }
 
     @Override

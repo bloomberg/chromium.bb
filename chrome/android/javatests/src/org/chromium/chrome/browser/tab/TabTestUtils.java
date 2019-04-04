@@ -89,4 +89,13 @@ public class TabTestUtils {
         RewindableIterator<TabObserver> observers = tab.getTabObservers();
         while (observers.hasNext()) observers.next().onDidChangeThemeColor(tab, color);
     }
+
+    /**
+     * Restore tab's internal states from a given {@link TabState}.
+     * @param tab {@link Tab} to restore.
+     * @param state {@link TabState} containing the state info to restore the tab with.
+     */
+    public static void restoreFieldsFromState(Tab tab, TabState state) {
+        tab.restoreFieldsFromState(state);
+    }
 }

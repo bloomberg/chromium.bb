@@ -38,6 +38,11 @@ public final class TabAssociatedApp extends TabWebContentsUserData implements Im
         super(tab);
         tab.addObserver(new EmptyTabObserver() {
             @Override
+            public void onInitialized(Tab tab, TabState tabState) {
+                if (tabState != null) setAppId(tabState.openerAppId);
+            }
+
+            @Override
             public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) {
                 // Clear the app association if the user navigated to a different page from the
                 // omnibox.

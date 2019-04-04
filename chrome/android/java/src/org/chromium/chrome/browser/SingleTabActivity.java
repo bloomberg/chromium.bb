@@ -18,6 +18,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
+import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -34,6 +35,8 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
  */
 public abstract class SingleTabActivity extends ChromeActivity {
     private static final int PREWARM_RENDERER_DELAY_MS = 500;
+
+    protected static final String BUNDLE_TAB_ID = "tabId";
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -89,21 +92,28 @@ public abstract class SingleTabActivity extends ChromeActivity {
      */
     protected Tab createTab() {
         Tab tab = null;
-        boolean unfreeze = false;
-
-        if (getSavedInstanceState() != null) {
-            tab = restoreTab(getSavedInstanceState());
-            if (tab != null) unfreeze = true;
+        TabState tabState = null;
+        int tabId = Tab.INVALID_TAB_ID;
+        Bundle savedInstanceState = getSavedInstanceState();
+        if (savedInstanceState != null) {
+            tabId = savedInstanceState.getInt(BUNDLE_TAB_ID, Tab.INVALID_TAB_ID);
+            if (tabId != Tab.INVALID_TAB_ID) {
+                tabState = restoreTabState(savedInstanceState, tabId);
+            }
         }
-
-        if (tab == null) {
+        boolean unfreeze = tabId != Tab.INVALID_TAB_ID && tabState != null;
+        if (unfreeze) {
+            tab = TabBuilder.createFromFrozenState()
+                          .setId(tabId)
+                          .setWindow(getWindowAndroid())
+                          .build();
+        } else {
             tab = new TabBuilder()
                           .setWindow(getWindowAndroid())
                           .setLaunchType(TabLaunchType.FROM_CHROME_UI)
                           .build();
         }
-
-        tab.initialize(null, createTabDelegateFactory(), false, unfreeze);
+        tab.initialize(null, createTabDelegateFactory(), false, tabState, unfreeze);
         return tab;
     }
 
@@ -114,7 +124,12 @@ public abstract class SingleTabActivity extends ChromeActivity {
         return new TabDelegateFactory();
     }
 
-    protected abstract Tab restoreTab(Bundle savedInstanceState);
+    /**
+     * Restore {@link TabState} from a given {@link Bundle} and tabId.
+     * @param saveInstanceState The saved bundle for the last recorded state.
+     * @param tabId ID of the tab restored from.
+     */
+    protected abstract TabState restoreTabState(Bundle savedInstanceState, int tabId);
 
     private boolean supportsAppSwitcher() {
         return getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN)

@@ -315,7 +315,7 @@ public class CustomTabActivityTabController implements InflationObserver, Native
         }
 
         tab.initialize(webContents, mCustomTabDelegateFactory.get(), false /*initiallyHidden*/,
-                false /*unfreeze*/);
+                null, false /*unfreeze*/);
 
         if (mIntentDataProvider.shouldEnableEmbeddedMediaExperience()) {
             tab.enableEmbeddedMediaExperience(true);
