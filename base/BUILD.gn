@@ -1578,6 +1578,7 @@ jumbo_component("base") {
       "process/process_metrics.cc",
       "process/process_metrics_posix.cc",
       "process/process_posix.cc",
+      "sampling_heap_profiler/module_cache_posix.cc",
       "scoped_native_library.cc",
       "sync_socket_posix.cc",
       "system/sys_info.cc",
@@ -1716,7 +1717,6 @@ jumbo_component("base") {
     sources -= [
       "process/launch_posix.cc",
       "profiler/stack_sampler_posix.cc",
-      "sampling_heap_profiler/module_cache_posix.cc",
     ]
     sources += [
       "files/file_path_watcher_fsevents.cc",
@@ -1751,6 +1751,7 @@ jumbo_component("base") {
   if (is_mac || is_ios) {
     sources -= [
       "native_library_posix.cc",
+      "sampling_heap_profiler/module_cache_posix.cc",
       "strings/sys_string_conversions_posix.cc",
       "synchronization/waitable_event_posix.cc",
       "synchronization/waitable_event_watcher_posix.cc",
@@ -1858,6 +1859,7 @@ jumbo_component("base") {
       "message_loop/message_pump_mac.mm",
       "power_monitor/power_monitor_device_source_ios.mm",
       "process/memory_stubs.cc",
+      "sampling_heap_profiler/module_cache_stub.cc",
       "strings/sys_string_conversions_mac.mm",
       "synchronization/waitable_event_mac.cc",
       "system/sys_info_ios.mm",
