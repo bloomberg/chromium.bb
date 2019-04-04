@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
 #include "third_party/blink/renderer/platform/graphics/filters/source_graphic.h"
 #include "third_party/blink/renderer/platform/graphics/interpolation_space.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
@@ -134,7 +135,7 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
     bool input_tainted) const {
   // Create a parent filter for shorthand filters. These have already been
   // scaled by the CSS code for page zoom, so scale is 1.0 here.
-  Filter* parent_filter = Filter::Create(1.0f);
+  auto* parent_filter = MakeGarbageCollected<Filter>(1.0f);
   FilterEffect* previous_effect = parent_filter->GetSourceGraphic();
   if (input_tainted)
     previous_effect->SetOriginTainted();
@@ -160,22 +161,22 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
       case FilterOperation::GRAYSCALE: {
         Vector<float> input_parameters = GrayscaleMatrix(
             To<BasicColorMatrixFilterOperation>(filter_operation)->Amount());
-        effect = FEColorMatrix::Create(parent_filter, FECOLORMATRIX_TYPE_MATRIX,
-                                       input_parameters);
+        effect = MakeGarbageCollected<FEColorMatrix>(
+            parent_filter, FECOLORMATRIX_TYPE_MATRIX, input_parameters);
         break;
       }
       case FilterOperation::SEPIA: {
         Vector<float> input_parameters = SepiaMatrix(
             To<BasicColorMatrixFilterOperation>(filter_operation)->Amount());
-        effect = FEColorMatrix::Create(parent_filter, FECOLORMATRIX_TYPE_MATRIX,
-                                       input_parameters);
+        effect = MakeGarbageCollected<FEColorMatrix>(
+            parent_filter, FECOLORMATRIX_TYPE_MATRIX, input_parameters);
         break;
       }
       case FilterOperation::SATURATE: {
         Vector<float> input_parameters;
         input_parameters.push_back(clampTo<float>(
             To<BasicColorMatrixFilterOperation>(filter_operation)->Amount()));
-        effect = FEColorMatrix::Create(
+        effect = MakeGarbageCollected<FEColorMatrix>(
             parent_filter, FECOLORMATRIX_TYPE_SATURATE, input_parameters);
         break;
       }
@@ -183,7 +184,7 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
         Vector<float> input_parameters;
         input_parameters.push_back(clampTo<float>(
             To<BasicColorMatrixFilterOperation>(filter_operation)->Amount()));
-        effect = FEColorMatrix::Create(
+        effect = MakeGarbageCollected<FEColorMatrix>(
             parent_filter, FECOLORMATRIX_TYPE_HUEROTATE, input_parameters);
         break;
       }
@@ -200,9 +201,9 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
         transfer_function.table_values = transfer_parameters;
 
         ComponentTransferFunction null_function;
-        effect = FEComponentTransfer::Create(parent_filter, transfer_function,
-                                             transfer_function,
-                                             transfer_function, null_function);
+        effect = MakeGarbageCollected<FEComponentTransfer>(
+            parent_filter, transfer_function, transfer_function,
+            transfer_function, null_function);
         break;
       }
       case FilterOperation::OPACITY: {
@@ -216,9 +217,9 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
         transfer_function.table_values = transfer_parameters;
 
         ComponentTransferFunction null_function;
-        effect = FEComponentTransfer::Create(parent_filter, null_function,
-                                             null_function, null_function,
-                                             transfer_function);
+        effect = MakeGarbageCollected<FEComponentTransfer>(
+            parent_filter, null_function, null_function, null_function,
+            transfer_function);
         break;
       }
       case FilterOperation::BRIGHTNESS: {
@@ -230,9 +231,9 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
         transfer_function.intercept = 0;
 
         ComponentTransferFunction null_function;
-        effect = FEComponentTransfer::Create(parent_filter, transfer_function,
-                                             transfer_function,
-                                             transfer_function, null_function);
+        effect = MakeGarbageCollected<FEComponentTransfer>(
+            parent_filter, transfer_function, transfer_function,
+            transfer_function, null_function);
         break;
       }
       case FilterOperation::CONTRAST: {
@@ -245,31 +246,31 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
         transfer_function.intercept = -0.5 * amount + 0.5;
 
         ComponentTransferFunction null_function;
-        effect = FEComponentTransfer::Create(parent_filter, transfer_function,
-                                             transfer_function,
-                                             transfer_function, null_function);
+        effect = MakeGarbageCollected<FEComponentTransfer>(
+            parent_filter, transfer_function, transfer_function,
+            transfer_function, null_function);
         break;
       }
       case FilterOperation::BLUR: {
         float std_deviation = FloatValueForLength(
             To<BlurFilterOperation>(filter_operation)->StdDeviation(), 0);
-        effect =
-            FEGaussianBlur::Create(parent_filter, std_deviation, std_deviation);
+        effect = MakeGarbageCollected<FEGaussianBlur>(
+            parent_filter, std_deviation, std_deviation);
         break;
       }
       case FilterOperation::DROP_SHADOW: {
         const ShadowData& shadow =
             To<DropShadowFilterOperation>(*filter_operation).Shadow();
-        effect = FEDropShadow::Create(parent_filter, shadow.Blur(),
-                                      shadow.Blur(), shadow.X(), shadow.Y(),
-                                      shadow.GetColor().GetColor(), 1);
+        effect = MakeGarbageCollected<FEDropShadow>(
+            parent_filter, shadow.Blur(), shadow.Blur(), shadow.X(), shadow.Y(),
+            shadow.GetColor().GetColor(), 1);
         break;
       }
       case FilterOperation::BOX_REFLECT: {
         BoxReflectFilterOperation* box_reflect_operation =
             To<BoxReflectFilterOperation>(filter_operation);
-        effect = FEBoxReflect::Create(parent_filter,
-                                      box_reflect_operation->Reflection());
+        effect = MakeGarbageCollected<FEBoxReflect>(
+            parent_filter, box_reflect_operation->Reflection());
         break;
       }
       default:
@@ -436,8 +437,8 @@ Filter* FilterEffectBuilder::BuildReferenceFilter(
       SVGUnitTypes::kSvgUnitTypeObjectboundingbox;
   Filter::UnitScaling unit_scaling =
       primitive_bounding_box_mode ? Filter::kBoundingBox : Filter::kUserSpace;
-  Filter* result =
-      Filter::Create(reference_box_, filter_region, zoom_, unit_scaling);
+  auto* result = MakeGarbageCollected<Filter>(reference_box_, filter_region,
+                                              zoom_, unit_scaling);
   if (!previous_effect)
     previous_effect = result->GetSourceGraphic();
   SVGFilterBuilder builder(previous_effect, node_map, fill_flags_,

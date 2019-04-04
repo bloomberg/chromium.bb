@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
 #include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -124,7 +125,7 @@ FilterEffect* SVGFECompositeElement::Build(SVGFilterBuilder* filter_builder,
   DCHECK(input1);
   DCHECK(input2);
 
-  FilterEffect* effect = FEComposite::Create(
+  auto* effect = MakeGarbageCollected<FEComposite>(
       filter, svg_operator_->CurrentValue()->EnumValue(),
       k1_->CurrentValue()->Value(), k2_->CurrentValue()->Value(),
       k3_->CurrentValue()->Value(), k4_->CurrentValue()->Value());

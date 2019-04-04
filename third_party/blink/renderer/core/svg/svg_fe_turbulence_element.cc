@@ -22,6 +22,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -121,7 +122,7 @@ void SVGFETurbulenceElement::SvgAttributeChanged(
 }
 
 FilterEffect* SVGFETurbulenceElement::Build(SVGFilterBuilder*, Filter* filter) {
-  return FETurbulence::Create(
+  return MakeGarbageCollected<FETurbulence>(
       filter, type_->CurrentValue()->EnumValue(),
       baseFrequencyX()->CurrentValue()->Value(),
       baseFrequencyY()->CurrentValue()->Value(),

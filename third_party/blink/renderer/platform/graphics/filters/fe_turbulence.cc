@@ -47,18 +47,6 @@ FETurbulence::FETurbulence(Filter* filter,
       seed_(seed),
       stitch_tiles_(stitch_tiles) {}
 
-FETurbulence* FETurbulence::Create(Filter* filter,
-                                   TurbulenceType type,
-                                   float base_frequency_x,
-                                   float base_frequency_y,
-                                   int num_octaves,
-                                   float seed,
-                                   bool stitch_tiles) {
-  return MakeGarbageCollected<FETurbulence>(filter, type, base_frequency_x,
-                                            base_frequency_y, num_octaves, seed,
-                                            stitch_tiles);
-}
-
 TurbulenceType FETurbulence::GetType() const {
   return type_;
 }

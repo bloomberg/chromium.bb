@@ -40,15 +40,6 @@ FEDisplacementMap::FEDisplacementMap(Filter* filter,
       y_channel_selector_(y_channel_selector),
       scale_(scale) {}
 
-FEDisplacementMap* FEDisplacementMap::Create(
-    Filter* filter,
-    ChannelSelectorType x_channel_selector,
-    ChannelSelectorType y_channel_selector,
-    float scale) {
-  return MakeGarbageCollected<FEDisplacementMap>(filter, x_channel_selector,
-                                                 y_channel_selector, scale);
-}
-
 FloatRect FEDisplacementMap::MapEffect(const FloatRect& rect) const {
   FloatRect result = rect;
   result.InflateX(GetFilter()->ApplyHorizontalScale(std::abs(scale_) / 2));

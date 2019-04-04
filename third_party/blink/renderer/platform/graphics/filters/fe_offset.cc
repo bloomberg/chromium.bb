@@ -34,10 +34,6 @@ namespace blink {
 FEOffset::FEOffset(Filter* filter, float dx, float dy)
     : FilterEffect(filter), dx_(dx), dy_(dy) {}
 
-FEOffset* FEOffset::Create(Filter* filter, float dx, float dy) {
-  return MakeGarbageCollected<FEOffset>(filter, dx, dy);
-}
-
 float FEOffset::Dx() const {
   return dx_;
 }

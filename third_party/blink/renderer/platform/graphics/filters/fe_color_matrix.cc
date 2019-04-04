@@ -37,12 +37,6 @@ FEColorMatrix::FEColorMatrix(Filter* filter,
                              const Vector<float>& values)
     : FilterEffect(filter), type_(type), values_(values) {}
 
-FEColorMatrix* FEColorMatrix::Create(Filter* filter,
-                                     ColorMatrixType type,
-                                     const Vector<float>& values) {
-  return MakeGarbageCollected<FEColorMatrix>(filter, type, values);
-}
-
 ColorMatrixType FEColorMatrix::GetType() const {
   return type_;
 }
