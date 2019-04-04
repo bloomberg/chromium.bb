@@ -460,7 +460,7 @@ bool XMLDocumentParser::ParseDocumentFragment(
     return true;
   }
 
-  XMLDocumentParser* parser = XMLDocumentParser::Create(
+  auto* parser = MakeGarbageCollected<XMLDocumentParser>(
       fragment, context_element, parser_content_policy);
   bool well_formed = parser->AppendFragmentSource(chunk);
 

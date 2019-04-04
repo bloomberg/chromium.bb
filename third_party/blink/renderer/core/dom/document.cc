@@ -2959,7 +2959,7 @@ DocumentParser* Document::CreateParser() {
     return HTMLDocumentParser::Create(ToHTMLDocument(*this),
                                       parser_sync_policy_);
   // FIXME: this should probably pass the frame instead
-  return XMLDocumentParser::Create(*this, View());
+  return MakeGarbageCollected<XMLDocumentParser>(*this, View());
 }
 
 bool Document::IsFrameSet() const {

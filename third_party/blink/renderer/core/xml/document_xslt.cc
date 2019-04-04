@@ -26,11 +26,7 @@ class DOMContentLoadedListener final
   USING_GARBAGE_COLLECTED_MIXIN(DOMContentLoadedListener);
 
  public:
-  static DOMContentLoadedListener* Create(ProcessingInstruction* pi) {
-    return MakeGarbageCollected<DOMContentLoadedListener>(pi);
-  }
-
-  DOMContentLoadedListener(ProcessingInstruction* pi)
+  explicit DOMContentLoadedListener(ProcessingInstruction* pi)
       : processing_instruction_(pi) {}
 
   void Invoke(ExecutionContext* execution_context, Event* event) override {
@@ -118,7 +114,7 @@ bool DocumentXSLT::ProcessingInstructionInsertedIntoDocument(
   if (!RuntimeEnabledFeatures::XSLTEnabled() || !document.GetFrame())
     return true;
 
-  DOMContentLoadedListener* listener = DOMContentLoadedListener::Create(pi);
+  auto* listener = MakeGarbageCollected<DOMContentLoadedListener>(pi);
   document.addEventListener(event_type_names::kDOMContentLoaded, listener,
                             false);
   DCHECK(!pi->EventListenerForXSLT());
