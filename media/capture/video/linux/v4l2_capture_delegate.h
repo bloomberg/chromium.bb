@@ -51,7 +51,8 @@ class CAPTURE_EXPORT V4L2CaptureDelegate final {
       V4L2CaptureDevice* v4l2,
       const VideoCaptureDeviceDescriptor& device_descriptor,
       const scoped_refptr<base::SingleThreadTaskRunner>& v4l2_task_runner,
-      int power_line_frequency);
+      int power_line_frequency,
+      int rotation);
   ~V4L2CaptureDelegate();
 
   // Forward-to versions of VideoCaptureDevice virtual methods.

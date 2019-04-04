@@ -234,7 +234,8 @@ V4L2CaptureDelegate::V4L2CaptureDelegate(
     V4L2CaptureDevice* v4l2,
     const VideoCaptureDeviceDescriptor& device_descriptor,
     const scoped_refptr<base::SingleThreadTaskRunner>& v4l2_task_runner,
-    int power_line_frequency)
+    int power_line_frequency,
+    int rotation)
     : v4l2_(v4l2),
       v4l2_task_runner_(v4l2_task_runner),
       device_descriptor_(device_descriptor),
@@ -242,7 +243,7 @@ V4L2CaptureDelegate::V4L2CaptureDelegate(
       device_fd_(v4l2),
       is_capturing_(false),
       timeout_count_(0),
-      rotation_(0),
+      rotation_(rotation),
       weak_factory_(this) {}
 
 void V4L2CaptureDelegate::AllocateAndStart(
