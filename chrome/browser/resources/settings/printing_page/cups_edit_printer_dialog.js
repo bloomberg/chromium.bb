@@ -38,6 +38,18 @@ Polymer({
 
 
     /**
+     * Tracks whether the dialog is fully initialized. This is required because
+     * the dialog isn't fully initialized until Model and Manufacturer are set.
+     * Allows us to ignore changes made to these fields until initialization is
+     * complete.
+     * @private
+     */
+    arePrinterFieldsInitialized_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * If the printer info has changed since loading this dialog. This will
      * only track the freeform input fields, since the other fields contain
      * input selected from dropdown menus.
@@ -78,6 +90,7 @@ Polymer({
   observers: [
     'printerPathChanged_(activePrinter.*)',
     'selectedEditManufacturerChanged_(activePrinter.ppdManufacturer)',
+    'onModelChanged_(activePrinter.ppdModel)',
   ],
 
   /** @override */
@@ -110,6 +123,7 @@ Polymer({
    */
   onProtocolChange_: function(event) {
     this.set('activePrinter.printerProtocol', event.target.value);
+    this.onPrinterInfoChange_();
   },
 
   /** @private */
@@ -190,7 +204,7 @@ Polymer({
    * @private
    */
   canSavePrinter_: function() {
-    return !this.printerInfoChanged_ ||
+    return this.printerInfoChanged_ &&
         (settings.printing.isNameAndAddressValid(this.activePrinter) &&
          settings.printing.isPPDInfoValid(
              this.activePrinter.ppdManufacturer, this.activePrinter.ppdModel,
@@ -210,6 +224,16 @@ Polymer({
       settings.CupsPrintersBrowserProxyImpl.getInstance()
           .getCupsPrinterModelsList(manufacturer)
           .then(this.modelListChanged_.bind(this));
+    }
+  },
+
+  /**
+   * Sets printerInfoChanged_ to true to show that the model has changed.
+   * @private
+   */
+  onModelChanged_: function() {
+    if (this.arePrinterFieldsInitialized_) {
+      this.printerInfoChanged_ = true;
     }
   },
 
@@ -243,6 +267,8 @@ Polymer({
   modelListChanged_: function(modelsInfo) {
     if (modelsInfo.success) {
       this.modelList = modelsInfo.models;
+      // ModelListChanged_ is the final step of initializing activePrinter.
+      this.arePrinterFieldsInitialized_ = true;
     }
   },
 
@@ -253,6 +279,10 @@ Polymer({
   printerPPDPathChanged_: function(path) {
     this.set('activePrinter.printerPPDPath', path);
     this.invalidPPD_ = !path;
+    if (!this.invalidPPD_) {
+      // A new valid PPD file should be treated as a saveable change.
+      this.onPrinterInfoChange_();
+    }
     this.userPPD_ = settings.printing.getBaseName(path);
   },
 });
