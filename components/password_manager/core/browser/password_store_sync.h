@@ -55,9 +55,11 @@ class PasswordStoreSync {
  public:
   class MetadataStore : public syncer::SyncMetadataStore {
    public:
-    // Read all the stored metadata for passwords and fill |metadata_batch|
-    // with it.
+    // Reads and returns all the stored sync metadata for passwords.
     virtual std::unique_ptr<syncer::MetadataBatch> GetAllSyncMetadata() = 0;
+
+    // Deletes all the stored sync metadata for passwords.
+    virtual void DeleteAllSyncMetadata() = 0;
   };
 
   PasswordStoreSync();
