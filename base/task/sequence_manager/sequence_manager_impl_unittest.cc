@@ -4592,14 +4592,14 @@ TEST_P(SequenceManagerTest, CrashKeys) {
       "0x%zX 0x0",
       reinterpret_cast<uintptr_t>(parent_location.program_counter()));
   EXPECT_CALL(*mock_impl, Allocate(_, _)).WillRepeatedly(Return(&dummy_key));
-  EXPECT_CALL(*mock_impl, Set(_, testing::StrEq(expected_stack1)));
+  EXPECT_CALL(*mock_impl, Set(_, testing::Eq(expected_stack1)));
 
   // Child task.
   auto location = FROM_HERE;
   auto expected_stack2 = StringPrintf(
       "0x%zX 0x%zX", reinterpret_cast<uintptr_t>(location.program_counter()),
       reinterpret_cast<uintptr_t>(parent_location.program_counter()));
-  EXPECT_CALL(*mock_impl, Set(_, testing::StrEq(expected_stack2)));
+  EXPECT_CALL(*mock_impl, Set(_, testing::Eq(expected_stack2)));
 
   sequence_manager()->EnableCrashKeys("test-async-stack");
 
