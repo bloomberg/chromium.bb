@@ -13,6 +13,7 @@
 #include "base/task/task_scheduler/sequence.h"
 #include "base/task/task_scheduler/task.h"
 #include "base/task/task_scheduler/tracked_ref.h"
+#include "build/build_config.h"
 
 namespace base {
 namespace internal {
@@ -32,6 +33,15 @@ class BASE_EXPORT SchedulerWorkerPool : public CanScheduleSequenceObserver {
     // must return the pool in which the Sequence should be reenqueued.
     virtual SchedulerWorkerPool* GetWorkerPoolForTraits(
         const TaskTraits& traits) = 0;
+  };
+
+  enum class WorkerEnvironment {
+    // No special worker environment required.
+    NONE,
+#if defined(OS_WIN)
+    // Initialize a COM MTA on the worker.
+    COM_MTA,
+#endif  // defined(OS_WIN)
   };
 
   ~SchedulerWorkerPool() override;
