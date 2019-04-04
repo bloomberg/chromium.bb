@@ -99,12 +99,7 @@ tests_standalone = [
 	['config-parser', [], [ dep_zucmain ]],
 	['matrix', [ '../shared/matrix.c' ], [ dep_libm, dep_libshared.partial_dependency(includes: true) ]],
 	['string'],
-	[
-		'vertex-clip',
-		[
-			'../libweston/vertex-clipping.c'
-		]
-	],
+	[ 'vertex-clip', [], [ dep_test_client, dep_vertex_clipping ]],
 	['timespec', [], [ dep_zucmain ]],
 	['zuc',
 		[

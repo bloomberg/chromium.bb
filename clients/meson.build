@@ -226,7 +226,7 @@ demo_clients = [
 	{ 'basename': 'clickdot' },
 	{
 		'basename': 'cliptest',
-		'add_sources': [ '../libweston/vertex-clipping.c' ]
+		'dep_objs': dep_vertex_clipping
 	},
 	{ 'basename': 'confine' },
 	{ 'basename': 'dnd' },
@@ -277,7 +277,7 @@ if get_option('demo-clients')
 	foreach t : demo_clients
 		t_name = 'weston-' + t.get('basename')
 		t_srcs = [ t.get('basename') + '.c' ] + t.get('add_sources', [])
-		t_deps = [ dep_toytoolkit ]
+		t_deps = [ dep_toytoolkit, t.get('dep_objs', []) ]
 		foreach depname : t.get('deps', [])
 			dep = dependency(depname, required: false)
 			if not dep.found()

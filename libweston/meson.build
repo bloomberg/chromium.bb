@@ -433,6 +433,10 @@ if get_option('backend-fbdev')
 	install_headers(backend_fbdev_h, subdir: dir_include_libweston_install)
 endif
 
+dep_vertex_clipping = declare_dependency(
+	sources: 'vertex-clipping.c',
+	include_directories: include_directories('.')
+)
 
 if get_option('renderer-gl')
 	config_h.set('ENABLE_EGL', '1')
@@ -440,7 +444,6 @@ if get_option('renderer-gl')
 	srcs_renderer_gl = [
 		'gl-renderer.c',
 		'linux-sync-file.c',
-		'vertex-clipping.c',
 		'../shared/matrix.c',
 		linux_dmabuf_unstable_v1_protocol_c,
 		linux_dmabuf_unstable_v1_server_protocol_h,
@@ -450,6 +453,7 @@ if get_option('renderer-gl')
 		dep_pixman,
 		dep_libweston,
 		dep_libdrm_headers,
+		dep_vertex_clipping
 	]
 
 	foreach name : [ 'egl', 'glesv2' ]
