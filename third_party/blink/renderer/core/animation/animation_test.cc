@@ -787,7 +787,7 @@ TEST_F(AnimationAnimationTest, AttachedAnimations) {
   EXPECT_EQ(
       1U, element->GetElementAnimations()->Animations().find(animation)->value);
 
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_TRUE(element->GetElementAnimations()->Animations().IsEmpty());
 }
 

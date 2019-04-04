@@ -182,7 +182,7 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
   Persistent<ActiveInterpolationsMap> interpolations;
 
   UpdateTimeline(TimeDelta::FromSeconds(11));
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   interpolations = MakeGarbageCollected<ActiveInterpolationsMap>(
       EffectStack::ActiveInterpolations(
           &element->GetElementAnimations()->GetEffectStack(), nullptr, nullptr,
@@ -192,7 +192,7 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
   EXPECT_EQ(3u, SampledEffectCount());
 
   UpdateTimeline(TimeDelta::FromSeconds(13));
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   interpolations = MakeGarbageCollected<ActiveInterpolationsMap>(
       EffectStack::ActiveInterpolations(
           &element->GetElementAnimations()->GetEffectStack(), nullptr, nullptr,
@@ -202,7 +202,7 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
   EXPECT_EQ(3u, SampledEffectCount());
 
   UpdateTimeline(TimeDelta::FromSeconds(15));
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   interpolations = MakeGarbageCollected<ActiveInterpolationsMap>(
       EffectStack::ActiveInterpolations(
           &element->GetElementAnimations()->GetEffectStack(), nullptr, nullptr,
@@ -212,7 +212,7 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
   EXPECT_EQ(2u, SampledEffectCount());
 
   UpdateTimeline(TimeDelta::FromSeconds(17));
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   interpolations = MakeGarbageCollected<ActiveInterpolationsMap>(
       EffectStack::ActiveInterpolations(
           &element->GetElementAnimations()->GetEffectStack(), nullptr, nullptr,

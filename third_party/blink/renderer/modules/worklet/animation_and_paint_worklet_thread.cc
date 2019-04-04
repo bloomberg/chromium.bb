@@ -65,12 +65,13 @@ WorkerBackingThread& AnimationAndPaintWorkletThread::GetWorkerBackingThread() {
               ->GetThread();
 }
 
-static void CollectAllGarbageOnThread(base::WaitableEvent* done_event) {
-  blink::ThreadState::Current()->CollectAllGarbage();
+static void CollectAllGarbageOnThreadForTesting(
+    base::WaitableEvent* done_event) {
+  blink::ThreadState::Current()->CollectAllGarbageForTesting();
   done_event->Signal();
 }
 
-void AnimationAndPaintWorkletThread::CollectAllGarbage() {
+void AnimationAndPaintWorkletThread::CollectAllGarbageForTesting() {
   DCHECK(IsMainThread());
   base::WaitableEvent done_event;
   auto* holder =
@@ -78,7 +79,7 @@ void AnimationAndPaintWorkletThread::CollectAllGarbage() {
   if (!holder)
     return;
   holder->GetThread()->BackingThread().PostTask(
-      FROM_HERE, CrossThreadBind(&CollectAllGarbageOnThread,
+      FROM_HERE, CrossThreadBind(&CollectAllGarbageOnThreadForTesting,
                                  CrossThreadUnretained(&done_event)));
   done_event.Wait();
 }

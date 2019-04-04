@@ -41,7 +41,7 @@ TEST_F(WebIDBTransactionImplTest, ValueSizeTest) {
   StrictMock<MockWebIDBCallbacks> callbacks;
 
   ASSERT_GT(value_data->size() + key->SizeEstimate(), kMaxValueSizeForTesting);
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_CALL(callbacks, Error(_, _)).Times(1);
 
   WebIDBTransactionImpl transaction_impl(
@@ -83,7 +83,7 @@ TEST_F(WebIDBTransactionImplTest, KeyAndValueSizeTest) {
   DCHECK_GT(key->SizeEstimate() - kKeySize, static_cast<size_t>(0));
   DCHECK_GT(value_data->size() + key->SizeEstimate(), kMaxValueSizeForTesting);
 
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_CALL(callbacks, Error(_, _)).Times(1);
 
   WebIDBTransactionImpl transaction_impl(

@@ -45,7 +45,7 @@ class MODULES_EXPORT ModulesInitializer : public CoreInitializer {
   void ProvideModulesToPage(Page&, WebViewClient*) const override;
   void ForceNextWebGLContextCreationToFail() const override;
 
-  void CollectAllGarbageForAnimationAndPaintWorklet() const override;
+  void CollectAllGarbageForAnimationAndPaintWorkletForTesting() const override;
 
   void CloneSessionStorage(
       Page* clone_from_page,

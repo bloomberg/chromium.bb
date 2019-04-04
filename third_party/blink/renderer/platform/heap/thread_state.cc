@@ -592,10 +592,10 @@ void ThreadState::SchedulePageNavigationGC() {
   SetGCState(kPageNavigationGCScheduled);
 }
 
-void ThreadState::ScheduleFullGC() {
+void ThreadState::ScheduleForcedGCForTesting() {
   DCHECK(CheckThread());
   CompleteSweep();
-  SetGCState(kFullGCScheduled);
+  SetGCState(kForcedGCForTestingScheduled);
 }
 
 void ThreadState::ScheduleGCIfNeeded() {
@@ -789,7 +789,7 @@ void UnexpectedGCState(ThreadState::GCState gc_state) {
     UNEXPECTED_GCSTATE(kNoGCScheduled);
     UNEXPECTED_GCSTATE(kIdleGCScheduled);
     UNEXPECTED_GCSTATE(kPreciseGCScheduled);
-    UNEXPECTED_GCSTATE(kFullGCScheduled);
+    UNEXPECTED_GCSTATE(kForcedGCForTestingScheduled);
     UNEXPECTED_GCSTATE(kIncrementalMarkingStepPaused);
     UNEXPECTED_GCSTATE(kIncrementalMarkingStepScheduled);
     UNEXPECTED_GCSTATE(kIncrementalMarkingFinalizeScheduled);
@@ -812,7 +812,8 @@ void ThreadState::SetGCState(GCState gc_state) {
       DCHECK(CheckThread());
       VERIFY_STATE_TRANSITION(
           gc_state_ == kNoGCScheduled || gc_state_ == kIdleGCScheduled ||
-          gc_state_ == kPreciseGCScheduled || gc_state_ == kFullGCScheduled ||
+          gc_state_ == kPreciseGCScheduled ||
+          gc_state_ == kForcedGCForTestingScheduled ||
           gc_state_ == kPageNavigationGCScheduled ||
           gc_state_ == kIncrementalMarkingStepPaused ||
           gc_state_ == kIncrementalMarkingStepScheduled ||
@@ -830,7 +831,7 @@ void ThreadState::SetGCState(GCState gc_state) {
       DCHECK(CheckThread());
       VERIFY_STATE_TRANSITION(gc_state_ == kIncrementalMarkingStepScheduled);
       break;
-    case kFullGCScheduled:
+    case kForcedGCForTestingScheduled:
     case kPageNavigationGCScheduled:
     case kPreciseGCScheduled:
       DCHECK(CheckThread());
@@ -840,7 +841,8 @@ void ThreadState::SetGCState(GCState gc_state) {
           gc_state_ == kIncrementalMarkingStepPaused ||
           gc_state_ == kIncrementalMarkingStepScheduled ||
           gc_state_ == kIncrementalMarkingFinalizeScheduled ||
-          gc_state_ == kPreciseGCScheduled || gc_state_ == kFullGCScheduled ||
+          gc_state_ == kPreciseGCScheduled ||
+          gc_state_ == kForcedGCForTestingScheduled ||
           gc_state_ == kPageNavigationGCScheduled ||
           gc_state_ == kIncrementalGCScheduled);
       break;
@@ -900,8 +902,8 @@ void ThreadState::RunScheduledGC(BlinkGC::StackState stack_state) {
     return;
 
   switch (GetGCState()) {
-    case kFullGCScheduled:
-      CollectAllGarbage();
+    case kForcedGCForTestingScheduled:
+      CollectAllGarbageForTesting();
       break;
     case kPreciseGCScheduled:
       CollectGarbage(BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
@@ -1812,7 +1814,7 @@ void ThreadState::VerifyMarking(BlinkGC::MarkingType marking_type) {
   Heap().VerifyMarking();
 }
 
-void ThreadState::CollectAllGarbage() {
+void ThreadState::CollectAllGarbageForTesting() {
   // We need to run multiple GCs to collect a chain of persistent handles.
   size_t previous_live_objects = 0;
   for (int i = 0; i < 5; ++i) {

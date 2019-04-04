@@ -163,7 +163,7 @@ TEST(CredentialsContainerTest, PendingGetRequest_NoGCCycles) {
   V8GCController::CollectAllGarbageForTesting(
       v8::Isolate::GetCurrent(),
       v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
 
   ASSERT_TRUE(document_observer.WasCollected());
 

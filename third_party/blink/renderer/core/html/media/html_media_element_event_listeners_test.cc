@@ -149,7 +149,7 @@ TEST_F(HTMLMediaElementEventListenersTest, RemovingFromDocumentCollectsAll) {
 
   test::RunPendingTasks();
 
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
 
   // They have been GC'd.
   EXPECT_EQ(weak_persistent_video, nullptr);
@@ -179,7 +179,7 @@ TEST_F(HTMLMediaElementEventListenersTest,
 
   test::RunPendingTasks();
 
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
 
   EXPECT_NE(Video(), nullptr);
   EXPECT_NE(Controls(), nullptr);

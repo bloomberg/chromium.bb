@@ -73,7 +73,7 @@ class AnimationAnimationInputHelpersTest : public PageTestBase {
 
   void TearDown() override {
     document.Release();
-    ThreadState::Current()->CollectAllGarbage();
+    ThreadState::Current()->CollectAllGarbageForTesting();
   }
 
   Persistent<Document> document;

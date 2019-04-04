@@ -242,7 +242,7 @@ class ThreadableLoaderTest : public testing::Test {
     helper_->OnTearDown();
     client_ = nullptr;
     // We need GC here to avoid gmock flakiness.
-    ThreadState::Current()->CollectAllGarbage();
+    ThreadState::Current()->CollectAllGarbageForTesting();
   }
   Persistent<MockThreadableLoaderClient> client_;
   std::unique_ptr<ThreadableLoaderTestHelper> helper_;

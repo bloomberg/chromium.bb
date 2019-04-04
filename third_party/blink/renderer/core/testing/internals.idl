@@ -334,7 +334,7 @@
     UnionTypesTest unionTypesTest();
     CallbackFunctionTest callbackFunctionTest();
     [RaisesException] void setScrollChain(ScrollState scrollState, sequence<Element> elements);
-    void forceBlinkGCWithoutV8GC();
+    void scheduleBlinkGC();
 
     DOMString selectedHTMLForClipboard();
     DOMString selectedTextForClipboard();

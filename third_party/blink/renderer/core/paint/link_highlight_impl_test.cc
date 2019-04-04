@@ -90,7 +90,7 @@ class LinkHighlightImplTest : public testing::Test,
     // garbage collection would occur after ScopedBlinkGenPropertyTreesForTest
     // is out of scope, so the settings would not apply in some destructors.
     web_view_helper_.Reset();
-    ThreadState::Current()->CollectAllGarbage();
+    ThreadState::Current()->CollectAllGarbageForTesting();
   }
 
   size_t ContentLayerCount() {

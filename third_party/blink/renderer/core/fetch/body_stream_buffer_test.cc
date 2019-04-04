@@ -533,7 +533,7 @@ TEST_F(BodyStreamBufferTest, LoaderShouldBeKeptAliveByBodyStreamBuffer) {
   buffer->StartLoading(FetchDataLoader::CreateLoaderAsString(), client,
                        ASSERT_NO_EXCEPTION);
 
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   checkpoint.Call(1);
   test::RunPendingTasks();
   checkpoint.Call(2);

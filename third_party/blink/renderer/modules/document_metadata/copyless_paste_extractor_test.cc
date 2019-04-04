@@ -32,7 +32,9 @@ class CopylessPasteExtractorTest : public PageTestBase {
   CopylessPasteExtractorTest() = default;
 
  protected:
-  void TearDown() override { ThreadState::Current()->CollectAllGarbage(); }
+  void TearDown() override {
+    ThreadState::Current()->CollectAllGarbageForTesting();
+  }
 
   WebPagePtr Extract() {
     return CopylessPasteExtractor::extract(GetDocument());
