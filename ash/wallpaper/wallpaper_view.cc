@@ -216,8 +216,7 @@ void WallpaperView::OnPaint(gfx::Canvas* canvas) {
     }
     case WALLPAPER_LAYOUT_TILE: {
       canvas->TileImageInt(wallpaper, 0, 0, 0, 0, width(), height(), 1.0f,
-                           SkShader::kRepeat_TileMode,
-                           SkShader::kRepeat_TileMode, &flags);
+                           SkTileMode::kRepeat, SkTileMode::kRepeat, &flags);
       break;
     }
     case WALLPAPER_LAYOUT_STRETCH: {

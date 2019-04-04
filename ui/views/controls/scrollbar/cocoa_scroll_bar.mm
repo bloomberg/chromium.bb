@@ -264,7 +264,7 @@ void CocoaScrollBar::OnPaint(gfx::Canvas* canvas) {
   cc::PaintFlags gradient;
   gradient.setShader(cc::PaintShader::MakeLinearGradient(
       gradient_bounds, kScrollerTrackGradientColors, nullptr,
-      base::size(kScrollerTrackGradientColors), SkShader::kClamp_TileMode));
+      base::size(kScrollerTrackGradientColors), SkTileMode::kClamp));
   canvas->DrawRect(track_rect, gradient);
 
   // Draw the inner border: top if horizontal, left if vertical.

@@ -538,8 +538,8 @@ class TabBackgroundImageSource: public gfx::CanvasImageSource {
       gfx::ImageSkia bg_tint = gfx::ImageSkiaOperations::CreateHSLShiftedImage(
           image_to_tint_, hsl_shift_);
       canvas->TileImageInt(bg_tint, 0, vertical_offset_, 0, 0, size().width(),
-                           size().height(), 1.0f, SkShader::kRepeat_TileMode,
-                           SkShader::kMirror_TileMode);
+                           size().height(), 1.0f, SkTileMode::kRepeat,
+                           SkTileMode::kMirror);
     }
 
     // If the theme has a custom tab background image, overlay it.  Vertical
@@ -547,8 +547,8 @@ class TabBackgroundImageSource: public gfx::CanvasImageSource {
     // stay in sync with how tabs are drawn.
     if (!overlay_.isNull()) {
       canvas->TileImageInt(overlay_, 0, 0, 0, 0, size().width(),
-                           size().height(), 1.0f, SkShader::kRepeat_TileMode,
-                           SkShader::kMirror_TileMode);
+                           size().height(), 1.0f, SkTileMode::kRepeat,
+                           SkTileMode::kMirror);
     }
   }
 

@@ -33,9 +33,8 @@ void ApplyUrlFading(SkCanvas* canvas,
   SkColor fade_colors[2] = {SK_ColorTRANSPARENT, SK_ColorBLACK};
 
   SkPaint overlay;
-  overlay.setShader(
-      SkGradientShader::MakeLinear(fade_points, fade_colors, nullptr, 2,
-                                   SkShader::kClamp_TileMode, 0, nullptr));
+  overlay.setShader(SkGradientShader::MakeLinear(
+      fade_points, fade_colors, nullptr, 2, SkTileMode::kClamp, 0, nullptr));
   if (fade_left) {
     canvas->save();
     canvas->translate(text_bounds.x(), 0);

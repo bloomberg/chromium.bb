@@ -145,7 +145,7 @@ sk_sp<cc::PaintShader> CreateFadeShader(const FontList& font_list,
                               PointToSkPoint(text_rect.top_right()) };
   return cc::PaintShader::MakeLinearGradient(
       &points[0], &colors[0], &positions[0], static_cast<int>(colors.size()),
-      SkShader::kClamp_TileMode);
+      SkTileMode::kClamp);
 }
 
 // Converts a FontRenderParams::Hinting value to the corresponding

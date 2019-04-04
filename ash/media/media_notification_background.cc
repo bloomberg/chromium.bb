@@ -151,8 +151,8 @@ void MediaNotificationBackground::Paint(gfx::Canvas* canvas,
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
     flags.setStyle(cc::PaintFlags::kFill_Style);
-    flags.setShader(cc::PaintShader::MakeLinearGradient(
-        points, colors, nullptr, 2, SkShader::kClamp_TileMode));
+    flags.setShader(cc::PaintShader::MakeLinearGradient(points, colors, nullptr,
+                                                        2, SkTileMode::kClamp));
 
     canvas->DrawRect(draw_bounds, flags);
   }

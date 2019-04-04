@@ -55,7 +55,7 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
       const SkColor* colors,
       const SkScalar* pos,
       int count,
-      SkShader::TileMode mode,
+      SkTileMode mode,
       uint32_t flags = 0,
       const SkMatrix* local_matrix = nullptr,
       SkColor fallback_color = SK_ColorTRANSPARENT);
@@ -66,7 +66,7 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
       const SkColor colors[],
       const SkScalar pos[],
       int color_count,
-      SkShader::TileMode mode,
+      SkTileMode mode,
       uint32_t flags = 0,
       const SkMatrix* local_matrix = nullptr,
       SkColor fallback_color = SK_ColorTRANSPARENT);
@@ -79,7 +79,7 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
       const SkColor colors[],
       const SkScalar pos[],
       int color_count,
-      SkShader::TileMode mode,
+      SkTileMode mode,
       uint32_t flags = 0,
       const SkMatrix* local_matrix = nullptr,
       SkColor fallback_color = SK_ColorTRANSPARENT);
@@ -90,7 +90,7 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
       const SkColor colors[],
       const SkScalar pos[],
       int color_count,
-      SkShader::TileMode mode,
+      SkTileMode mode,
       SkScalar start_degrees,
       SkScalar end_degrees,
       uint32_t flags = 0,
@@ -98,15 +98,15 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
       SkColor fallback_color = SK_ColorTRANSPARENT);
 
   static sk_sp<PaintShader> MakeImage(const PaintImage& image,
-                                      SkShader::TileMode tx,
-                                      SkShader::TileMode ty,
+                                      SkTileMode tx,
+                                      SkTileMode ty,
                                       const SkMatrix* local_matrix);
 
   static sk_sp<PaintShader> MakePaintRecord(
       sk_sp<PaintRecord> record,
       const SkRect& tile,
-      SkShader::TileMode tx,
-      SkShader::TileMode ty,
+      SkTileMode tx,
+      SkTileMode ty,
       const SkMatrix* local_matrix,
       ScalingBehavior scaling_behavior = ScalingBehavior::kRasterAtScale);
 
@@ -143,8 +143,8 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
   const sk_sp<PaintRecord>& paint_record() const { return record_; }
   bool GetRasterizationTileRect(const SkMatrix& ctm, SkRect* tile_rect) const;
 
-  SkShader::TileMode tx() const { return tx_; }
-  SkShader::TileMode ty() const { return ty_; }
+  SkTileMode tx() const { return tx_; }
+  SkTileMode ty() const { return ty_; }
   SkRect tile() const { return tile_; }
 
   bool IsOpaque() const;
@@ -205,9 +205,7 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
   void SetColorsAndPositions(const SkColor* colors,
                              const SkScalar* positions,
                              int count);
-  void SetMatrixAndTiling(const SkMatrix* matrix,
-                          SkShader::TileMode tx,
-                          SkShader::TileMode ty);
+  void SetMatrixAndTiling(const SkMatrix* matrix, SkTileMode tx, SkTileMode ty);
   void SetFlagsAndFallback(uint32_t flags, SkColor fallback_color);
 
   Type shader_type_ = Type::kShaderCount;
@@ -215,8 +213,8 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
   uint32_t flags_ = 0;
   SkScalar end_radius_ = 0;
   SkScalar start_radius_ = 0;
-  SkShader::TileMode tx_ = SkShader::kClamp_TileMode;
-  SkShader::TileMode ty_ = SkShader::kClamp_TileMode;
+  SkTileMode tx_ = SkTileMode::kClamp;
+  SkTileMode ty_ = SkTileMode::kClamp;
   SkColor fallback_color_ = SK_ColorTRANSPARENT;
   ScalingBehavior scaling_behavior_ = ScalingBehavior::kRasterAtScale;
 

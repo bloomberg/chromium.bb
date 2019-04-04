@@ -512,12 +512,11 @@ void SoftwareRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
 
   sk_sp<SkShader> shader;
   if (!filter_image) {
-    shader =
-        SkShader::MakeBitmapShader(source_bitmap, SkShader::kClamp_TileMode,
-                                   SkShader::kClamp_TileMode, &content_mat);
+    shader = SkShader::MakeBitmapShader(source_bitmap, SkTileMode::kClamp,
+                                        SkTileMode::kClamp, &content_mat);
   } else {
-    shader = filter_image->makeShader(SkShader::kClamp_TileMode,
-                                      SkShader::kClamp_TileMode, &content_mat);
+    shader = filter_image->makeShader(SkTileMode::kClamp, SkTileMode::kClamp,
+                                      &content_mat);
   }
 
   if (quad->mask_resource_id()) {
@@ -536,12 +535,12 @@ void SoftwareRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
 
     current_paint_.setMaskFilter(
         SkShaderMaskFilter::Make(mask_lock.sk_image()->makeShader(
-            SkShader::kClamp_TileMode, SkShader::kClamp_TileMode, &mask_mat)));
+            SkTileMode::kClamp, SkTileMode::kClamp, &mask_mat)));
   }
 
   // If we have a backdrop filter shader, render its results first.
   sk_sp<SkShader> backdrop_filter_shader =
-      GetBackdropFilterShader(quad, SkShader::kClamp_TileMode);
+      GetBackdropFilterShader(quad, SkTileMode::kClamp);
   if (backdrop_filter_shader) {
     SkPaint paint;
     paint.setShader(std::move(backdrop_filter_shader));
@@ -732,7 +731,7 @@ gfx::Rect SoftwareRenderer::GetBackdropBoundingBoxForRenderPassQuad(
 
 sk_sp<SkShader> SoftwareRenderer::GetBackdropFilterShader(
     const RenderPassDrawQuad* quad,
-    SkShader::TileMode content_tile_mode) const {
+    SkTileMode content_tile_mode) const {
   const cc::FilterOperations* backdrop_filters =
       BackdropFiltersForPass(quad->render_pass_id);
   if (!ShouldApplyBackdropFilters(backdrop_filters))

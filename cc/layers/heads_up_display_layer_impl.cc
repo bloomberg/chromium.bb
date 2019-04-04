@@ -839,8 +839,8 @@ SkRect HeadsUpDisplayLayerImpl::DrawMemoryDisplay(PaintCanvas* canvas,
   const SkScalar pos[] = {SkFloatToScalar(0.2f), SkFloatToScalar(0.4f),
                           SkFloatToScalar(0.6f), SkFloatToScalar(0.8f),
                           SkFloatToScalar(1.0f)};
-  flags.setShader(PaintShader::MakeSweepGradient(
-      cx, cy, colors, pos, 5, SkShader::kClamp_TileMode, 0, 360));
+  flags.setShader(PaintShader::MakeSweepGradient(cx, cy, colors, pos, 5,
+                                                 SkTileMode::kClamp, 0, 360));
   flags.setAntiAlias(true);
 
   // Draw current status.

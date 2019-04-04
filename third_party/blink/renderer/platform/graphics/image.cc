@@ -200,8 +200,8 @@ sk_sp<PaintShader> CreatePatternShader(const PaintImage& image,
                                        SkFilterQuality quality_to_use,
                                        bool should_antialias,
                                        const FloatSize& spacing,
-                                       SkShader::TileMode tmx,
-                                       SkShader::TileMode tmy) {
+                                       SkTileMode tmx,
+                                       SkTileMode tmy) {
   if (spacing.IsZero()) {
     return PaintShader::MakeImage(image, tmx, tmy, &shader_matrix);
   }
@@ -222,13 +222,9 @@ sk_sp<PaintShader> CreatePatternShader(const PaintImage& image,
                                       tile_rect, tmx, tmy, &shader_matrix);
 }
 
-SkShader::TileMode ComputeTileMode(float left,
-                                   float right,
-                                   float min,
-                                   float max) {
+SkTileMode ComputeTileMode(float left, float right, float min, float max) {
   DCHECK(left < right);
-  return left >= min && right <= max ? SkShader::kClamp_TileMode
-                                     : SkShader::kRepeat_TileMode;
+  return left >= min && right <= max ? SkTileMode::kClamp : SkTileMode::kRepeat;
 }
 
 }  // anonymous namespace
@@ -337,9 +333,8 @@ bool Image::ApplyShader(PaintFlags& flags, const SkMatrix& local_matrix) {
   if (!image)
     return false;
 
-  flags.setShader(PaintShader::MakeImage(image, SkShader::kRepeat_TileMode,
-                                         SkShader::kRepeat_TileMode,
-                                         &local_matrix));
+  flags.setShader(PaintShader::MakeImage(image, SkTileMode::kRepeat,
+                                         SkTileMode::kRepeat, &local_matrix));
   if (!flags.HasShader())
     return false;
 
