@@ -42,8 +42,10 @@ void StatsCollectionController::Install(blink::WebLocalFrame* frame) {
   if (controller.IsEmpty())
     return;
   v8::Local<v8::Object> global = context->Global();
-  global->Set(gin::StringToV8(isolate, "statsCollectionController"),
-              controller.ToV8());
+  global
+      ->Set(context, gin::StringToV8(isolate, "statsCollectionController"),
+            controller.ToV8())
+      .Check();
 }
 
 StatsCollectionController::StatsCollectionController() {}
