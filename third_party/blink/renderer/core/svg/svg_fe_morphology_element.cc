@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
 #include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -112,7 +113,7 @@ FilterEffect* SVGFEMorphologyElement::Build(SVGFilterBuilder* filter_builder,
   // (This is handled by FEMorphology)
   float x_radius = radiusX()->CurrentValue()->Value();
   float y_radius = radiusY()->CurrentValue()->Value();
-  FilterEffect* effect = FEMorphology::Create(
+  auto* effect = MakeGarbageCollected<FEMorphology>(
       filter, svg_operator_->CurrentValue()->EnumValue(), x_radius, y_radius);
   effect->InputEffects().push_back(input1);
   return effect;

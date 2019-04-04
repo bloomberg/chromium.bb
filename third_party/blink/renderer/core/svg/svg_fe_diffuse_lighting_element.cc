@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
 #include "third_party/blink/renderer/platform/graphics/filters/fe_diffuse_lighting.h"
 #include "third_party/blink/renderer/platform/graphics/filters/filter.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -154,7 +155,7 @@ FilterEffect* SVGFEDiffuseLightingElement::Build(
   scoped_refptr<LightSource> light_source =
       light_node ? light_node->GetLightSource(filter) : nullptr;
 
-  FilterEffect* effect = FEDiffuseLighting::Create(
+  auto* effect = MakeGarbageCollected<FEDiffuseLighting>(
       filter, color, surface_scale_->CurrentValue()->Value(),
       diffuse_constant_->CurrentValue()->Value(), std::move(light_source));
   effect->InputEffects().push_back(input1);

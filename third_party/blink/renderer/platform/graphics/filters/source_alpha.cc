@@ -29,10 +29,6 @@
 
 namespace blink {
 
-SourceAlpha* SourceAlpha::Create(FilterEffect* source_effect) {
-  return MakeGarbageCollected<SourceAlpha>(source_effect);
-}
-
 SourceAlpha::SourceAlpha(FilterEffect* source_effect)
     : FilterEffect(source_effect->GetFilter()) {
   SetOperatingInterpolationSpace(source_effect->OperatingInterpolationSpace());

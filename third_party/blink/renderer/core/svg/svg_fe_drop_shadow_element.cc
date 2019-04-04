@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/graphics/filters/fe_drop_shadow.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -108,7 +109,7 @@ FilterEffect* SVGFEDropShadowElement::Build(SVGFilterBuilder* filter_builder,
   // Clamp std.dev. to non-negative. (See SVGFEGaussianBlurElement::build)
   float std_dev_x = std::max(0.0f, stdDeviationX()->CurrentValue()->Value());
   float std_dev_y = std::max(0.0f, stdDeviationY()->CurrentValue()->Value());
-  FilterEffect* effect = FEDropShadow::Create(
+  auto* effect = MakeGarbageCollected<FEDropShadow>(
       filter, std_dev_x, std_dev_y, dx_->CurrentValue()->Value(),
       dy_->CurrentValue()->Value(), color, opacity);
   effect->InputEffects().push_back(input1);

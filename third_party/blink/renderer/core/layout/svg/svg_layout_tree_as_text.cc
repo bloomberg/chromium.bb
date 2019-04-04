@@ -72,9 +72,7 @@
 #include "third_party/blink/renderer/platform/graphics/filters/filter.h"
 #include "third_party/blink/renderer/platform/graphics/filters/source_graphic.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
-
-#include <math.h>
-#include <memory>
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -567,8 +565,8 @@ void WriteSVGResourceContainer(WTF::TextStream& ts,
     ts << "\n";
     // Creating a placeholder filter which is passed to the builder.
     FloatRect dummy_rect;
-    Filter* dummy_filter =
-        Filter::Create(dummy_rect, dummy_rect, 1, Filter::kBoundingBox);
+    auto* dummy_filter = MakeGarbageCollected<Filter>(dummy_rect, dummy_rect, 1,
+                                                      Filter::kBoundingBox);
     SVGFilterBuilder builder(dummy_filter->GetSourceGraphic());
     builder.BuildGraph(dummy_filter, ToSVGFilterElement(*filter->GetElement()),
                        dummy_rect);

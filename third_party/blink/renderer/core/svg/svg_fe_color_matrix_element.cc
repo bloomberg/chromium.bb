@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
 #include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -100,8 +101,8 @@ FilterEffect* SVGFEColorMatrixElement::Build(SVGFilterBuilder* filter_builder,
 
   ColorMatrixType filter_type = type_->CurrentValue()->EnumValue();
   Vector<float> filter_values = values_->CurrentValue()->ToFloatVector();
-  FilterEffect* effect =
-      FEColorMatrix::Create(filter, filter_type, filter_values);
+  auto* effect =
+      MakeGarbageCollected<FEColorMatrix>(filter, filter_type, filter_values);
   effect->InputEffects().push_back(input1);
   return effect;
 }

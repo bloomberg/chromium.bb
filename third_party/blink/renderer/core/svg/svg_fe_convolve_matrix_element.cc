@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/geometry/int_point.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -206,7 +207,7 @@ FilterEffect* SVGFEConvolveMatrixElement::Build(
       AtomicString(in1_->CurrentValue()->Value()));
   DCHECK(input1);
 
-  FilterEffect* effect = FEConvolveMatrix::Create(
+  auto* effect = MakeGarbageCollected<FEConvolveMatrix>(
       filter, MatrixOrder(), ComputeDivisor(), bias_->CurrentValue()->Value(),
       TargetPoint(), edge_mode_->CurrentValue()->EnumValue(),
       preserve_alpha_->CurrentValue()->Value(),

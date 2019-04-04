@@ -40,13 +40,6 @@ FEMorphology::FEMorphology(Filter* filter,
       radius_x_(std::max(0.0f, radius_x)),
       radius_y_(std::max(0.0f, radius_y)) {}
 
-FEMorphology* FEMorphology::Create(Filter* filter,
-                                   MorphologyOperatorType type,
-                                   float radius_x,
-                                   float radius_y) {
-  return MakeGarbageCollected<FEMorphology>(filter, type, radius_x, radius_y);
-}
-
 MorphologyOperatorType FEMorphology::MorphologyOperator() const {
   return type_;
 }

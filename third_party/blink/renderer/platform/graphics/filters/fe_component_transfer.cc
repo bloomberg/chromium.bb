@@ -49,16 +49,6 @@ FEComponentTransfer::FEComponentTransfer(
       blue_func_(blue_func),
       alpha_func_(alpha_func) {}
 
-FEComponentTransfer* FEComponentTransfer::Create(
-    Filter* filter,
-    const ComponentTransferFunction& red_func,
-    const ComponentTransferFunction& green_func,
-    const ComponentTransferFunction& blue_func,
-    const ComponentTransferFunction& alpha_func) {
-  return MakeGarbageCollected<FEComponentTransfer>(filter, red_func, green_func,
-                                                   blue_func, alpha_func);
-}
-
 static void Identity(unsigned char*, const ComponentTransferFunction&) {}
 
 static void Table(unsigned char* values,

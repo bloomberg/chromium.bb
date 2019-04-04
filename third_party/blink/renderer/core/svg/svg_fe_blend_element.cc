@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/graphics/filters/fe_blend.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -138,8 +139,8 @@ FilterEffect* SVGFEBlendElement::Build(SVGFilterBuilder* filter_builder,
   DCHECK(input1);
   DCHECK(input2);
 
-  FilterEffect* effect =
-      FEBlend::Create(filter, ToBlendMode(mode_->CurrentValue()->EnumValue()));
+  auto* effect = MakeGarbageCollected<FEBlend>(
+      filter, ToBlendMode(mode_->CurrentValue()->EnumValue()));
   FilterEffectVector& input_effects = effect->InputEffects();
   input_effects.ReserveCapacity(2);
   input_effects.push_back(input1);
