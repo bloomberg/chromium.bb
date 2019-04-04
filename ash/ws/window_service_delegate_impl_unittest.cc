@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/display/display_move_window_util.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/resize_shadow.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/toplevel_window_event_handler.h"
+#include "ash/wm/window_state.h"
 #include "ash/ws/window_service_owner.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -473,6 +475,38 @@ TEST_F(WindowServiceDelegateImplTest, MoveAcrossDisplays) {
       ContainsChange(*GetWindowTreeClientChanges(),
                      std::string("DisplayChanged window_id=0,1 display_id=") +
                          base::NumberToString(display2.id())));
+}
+
+TEST_F(WindowServiceDelegateImplTest, MoveActiveWindowBetweenDisplays) {
+  UpdateDisplay("600x400*2,300+0-400x300");
+
+  // This triggers a SetBounds call in middle of switching displays.
+  wm::GetWindowState(top_level_.get())
+      ->SetPreAutoManageWindowBounds(gfx::Rect(0, 0, 200, 250));
+
+  top_level_->SetBounds(gfx::Rect(0, 0, 100, 150));
+  ASSERT_TRUE(top_level_->CanFocus());
+  top_level_->Focus();
+
+  GetWindowTreeClientChanges()->clear();
+  display_move_window_util::HandleMoveActiveWindowBetweenDisplays();
+
+  ASSERT_TRUE(
+      ContainsChange(*GetWindowTreeClientChanges(),
+                     std::string("DisplayChanged window_id=0,1 display_id=*")));
+  ASSERT_TRUE(ContainsChange(*GetWindowTreeClientChanges(),
+                             std::string("BoundsChanged window=0,1 bounds=*")));
+
+  // Verifies no "BoundsChanged" before "DisplayChanged".
+  bool found_bounds_change = false;
+  for (const auto& change : *GetWindowTreeClientChanges()) {
+    if (change.type == ws::CHANGE_TYPE_NODE_BOUNDS_CHANGED) {
+      found_bounds_change = true;
+    } else if (change.type == ws::CHANGE_TYPE_DISPLAY_CHANGED) {
+      EXPECT_FALSE(found_bounds_change);
+      break;
+    }
+  }
 }
 
 TEST_F(WindowServiceDelegateImplTest, RemoveDisplay) {
