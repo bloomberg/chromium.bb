@@ -503,15 +503,18 @@ id<NSAccessibility> ToNSAccessibility(id object) {
                : l10n_util::GetStringFUTF16(IDS_TOUCH_BAR_SEARCH,
                                             defaultProvider->short_name());
 
-  NSImage* image;
+  NSImage* image = nil;
+#if defined(GOOGLE_CHROME_BUILD)
   if (isGoogle) {
     image = NSImageFromImageSkiaWithColorSpace(
         gfx::CreateVectorIcon(kGoogleGLogoIcon, kTouchBarIconSize,
                               gfx::kPlaceholderColor),
         base::mac::GetSRGBColorSpace());
-  } else {
     image = CreateNSImageFromIcon(vector_icons::kSearchIcon);
   }
+#endif
+  if (!image)
+    image = CreateNSImageFromIcon(vector_icons::kSearchIcon);
 
   NSButton* searchButton =
       [NSButton buttonWithTitle:base::SysUTF16ToNSString(title)

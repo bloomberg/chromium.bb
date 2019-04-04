@@ -235,8 +235,12 @@ gfx::ImageSkia AutofillPopupLayoutModel::GetIconImage(size_t index) const {
   if (icon_str == "globeIcon")
     return gfx::CreateVectorIcon(kGlobeIcon, kIconSize, gfx::kChromeIconGrey);
   if (icon_str == "google") {
+#if defined(GOOGLE_CHROME_BUILD)
     return gfx::CreateVectorIcon(kGoogleGLogoIcon, kIconSize,
                                  gfx::kPlaceholderColor);
+#else
+    return gfx::ImageSkia();
+#endif
   }
 
   // For other suggestion entries, get icon from PNG files.

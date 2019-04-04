@@ -33,7 +33,9 @@ namespace autofill {
 namespace {
 
 // Dimensions of the Google Pay logo.
+#if defined(GOOGLE_CHROME_BUILD)
 constexpr int kGooglePayLogoWidth = 40;
+#endif
 constexpr int kGooglePayLogoHeight = 16;
 
 constexpr int kGooglePayLogoSeparatorHeight = 12;
@@ -60,6 +62,8 @@ TitleWithIconAndSeparatorView::TitleWithIconAndSeparatorView(
 
   layout->StartRow(views::GridLayout::kFixedSize, 0);
 
+  auto* icon_view = new views::ImageView();
+#if defined(GOOGLE_CHROME_BUILD)
   // kGooglePayLogoIcon is square, and CreateTiledImage() will clip it whereas
   // setting the icon size would rescale it incorrectly.
   gfx::ImageSkia image = gfx::ImageSkiaOperations::CreateTiledImage(
@@ -68,8 +72,13 @@ TitleWithIconAndSeparatorView::TitleWithIconAndSeparatorView(
                                 ? gfx::kGoogleGrey200
                                 : gfx::kGoogleGrey700),
       /*x=*/0, /*y=*/0, kGooglePayLogoWidth, kGooglePayLogoHeight);
-  auto* icon_view = new views::ImageView();
-  icon_view->SetImage(&image);
+#else
+  gfx::ImageSkia image =
+      gfx::CreateVectorIcon(kCreditCardIcon, kGooglePayLogoHeight,
+                            GetNativeTheme()->GetSystemColor(
+                                ui::NativeTheme::kColorId_DefaultIconColor));
+#endif
+  icon_view->SetImage(image);
   layout->AddView(icon_view);
 
   auto* separator = new views::Separator();
