@@ -16,11 +16,6 @@ class BluetoothLEScan final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static BluetoothLEScan* Create(
-      mojo::BindingId,
-      Bluetooth*,
-      mojom::blink::WebBluetoothRequestLEScanOptionsPtr);
-
   BluetoothLEScan(mojo::BindingId,
                   Bluetooth*,
                   mojom::blink::WebBluetoothRequestLEScanOptionsPtr);

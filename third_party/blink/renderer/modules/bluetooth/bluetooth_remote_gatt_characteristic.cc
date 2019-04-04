@@ -34,17 +34,8 @@ BluetoothRemoteGATTCharacteristic::BluetoothRemoteGATTCharacteristic(
       characteristic_(std::move(characteristic)),
       service_(service),
       device_(device) {
-  properties_ =
-      BluetoothCharacteristicProperties::Create(characteristic_->properties);
-}
-
-BluetoothRemoteGATTCharacteristic* BluetoothRemoteGATTCharacteristic::Create(
-    ExecutionContext* context,
-    mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr characteristic,
-    BluetoothRemoteGATTService* service,
-    BluetoothDevice* device) {
-  return MakeGarbageCollected<BluetoothRemoteGATTCharacteristic>(
-      context, std::move(characteristic), service, device);
+  properties_ = MakeGarbageCollected<BluetoothCharacteristicProperties>(
+      characteristic_->properties);
 }
 
 void BluetoothRemoteGATTCharacteristic::SetValue(DOMDataView* dom_data_view) {

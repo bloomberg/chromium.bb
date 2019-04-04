@@ -272,8 +272,8 @@ void Bluetooth::RequestScanningCallback(
     return;
   }
 
-  auto* scan =
-      BluetoothLEScan::Create(id, this, std::move(result->get_options()));
+  auto* scan = MakeGarbageCollected<BluetoothLEScan>(
+      id, this, std::move(result->get_options()));
   resolver->Resolve(scan);
 }
 
@@ -377,7 +377,7 @@ void Bluetooth::ScanEvent(mojom::blink::WebBluetoothScanResultPtr result) {
   if (result->appearance_is_set)
     appearance = result->appearance;
 
-  auto* event = BluetoothAdvertisingEvent::Create(
+  auto* event = MakeGarbageCollected<BluetoothAdvertisingEvent>(
       event_type_names::kAdvertisementreceived, bluetooth_device, result->name,
       uuids, appearance, tx_power, rssi, manufacturer_data, service_data);
   DispatchEvent(*event);

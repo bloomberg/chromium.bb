@@ -90,8 +90,8 @@ AnimationAndPaintWorkletThread::CreateWorkerGlobalScope(
     case WorkletType::ANIMATION_WORKLET: {
       TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("animation-worklet"),
                    "AnimationAndPaintWorkletThread::CreateWorkerGlobalScope");
-      return AnimationWorkletGlobalScope::Create(std::move(creation_params),
-                                                 this);
+      return MakeGarbageCollected<AnimationWorkletGlobalScope>(
+          std::move(creation_params), this);
     }
     case WorkletType::PAINT_WORKLET:
       TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("paint-worklet"),

@@ -33,10 +33,6 @@ class MODULES_EXPORT AnimationWorkletGlobalScope : public WorkletGlobalScope {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static AnimationWorkletGlobalScope* Create(
-      std::unique_ptr<GlobalScopeCreationParams>,
-      WorkerThread*);
-
   AnimationWorkletGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
                               WorkerThread*);
   ~AnimationWorkletGlobalScope() override;

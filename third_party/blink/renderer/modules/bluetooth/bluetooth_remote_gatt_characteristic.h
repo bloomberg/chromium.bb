@@ -50,12 +50,6 @@ class BluetoothRemoteGATTCharacteristic final
       BluetoothRemoteGATTService*,
       BluetoothDevice*);
 
-  static BluetoothRemoteGATTCharacteristic* Create(
-      ExecutionContext*,
-      mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr,
-      BluetoothRemoteGATTService*,
-      BluetoothDevice*);
-
   // Save value.
   void SetValue(DOMDataView*);
 
