@@ -276,6 +276,7 @@ static NSTimeInterval MFAnimationDuration = 0.2;
 }
 
 - (void)accountButtonPressed:(UIButton*)sender {
+  base::RecordAction(base::UserMetricsAction("ManualFallback_OpenProfile"));
   [self animateKeyboardButtonHidden:NO];
   [self resetTintColors];
   [self.accountButton setTintColor:UIColor.cr_manualFillTintColor];
