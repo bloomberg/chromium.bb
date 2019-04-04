@@ -749,7 +749,11 @@
       'linux_chromium_msan_rel_ng': 'msan_release_bot',
 
       'linux_chromium_tsan_rel_ng': 'tsan_disable_nacl_release_trybot',
-      'linux_chromium_ubsan_rel_ng': 'ubsan_vptr_release_trybot',
+
+      # This is intentionally a release_bot and not a release_trybot to match
+      # the CI configuration, where no debug builder exists.
+      'linux_chromium_ubsan_rel_ng': 'ubsan_vptr_release_bot',
+
       'linux_layout_tests_composite_after_paint': 'release_trybot',
       'linux_layout_tests_layout_ng': 'release_trybot',
       'linux_mojo': 'release_trybot',
@@ -1834,10 +1838,6 @@
 
     'ubsan_vptr_release_bot': [
       'ubsan_vptr', 'ubsan_no_recover_hack', 'release_bot',
-    ],
-
-    'ubsan_vptr_release_trybot': [
-      'ubsan_vptr', 'ubsan_no_recover_hack', 'release_trybot',
     ],
 
     'v8_future_debug_bot': [
