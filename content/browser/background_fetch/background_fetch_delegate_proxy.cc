@@ -388,7 +388,8 @@ void BackgroundFetchDelegateProxy::UpdateUI(
     const std::string& job_unique_id,
     const base::Optional<std::string>& title,
     const base::Optional<SkBitmap>& icon,
-    blink::mojom::BackgroundFetchService::UpdateUICallback update_ui_callback) {
+    blink::mojom::BackgroundFetchRegistrationService::UpdateUICallback
+        update_ui_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   DCHECK(!update_ui_callback_map_.count(job_unique_id));

@@ -13,6 +13,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/browser/background_fetch/background_fetch_registration_service_impl.h"
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -125,8 +126,9 @@ class BackgroundFetchRegistrationNotifierTest : public ::testing::Test {
 
   // Notifies all observers for the |unique_id| of the made progress, and waits
   // until the task runner managing the Mojo connection has finished.
-  void Notify(blink::mojom::BackgroundFetchRegistrationPtr registration) {
-    notifier_->Notify(*registration);
+  void Notify(const std::string& unique_id,
+              blink::mojom::BackgroundFetchRegistrationDataPtr registration) {
+    notifier_->Notify(unique_id, *registration);
     scoped_task_environment_.RunUntilIdle();
   }
 
@@ -163,10 +165,11 @@ TEST_F(BackgroundFetchRegistrationNotifierTest, NotifySingleObserver) {
   notifier_->AddObserver(kPrimaryUniqueId, observer->GetPtr());
   ASSERT_EQ(observer->progress_updates().size(), 0u);
 
-  Notify(blink::mojom::BackgroundFetchRegistration::New(
-      kDeveloperId, kPrimaryUniqueId, kUploadTotal, kUploaded, kDownloadTotal,
-      kDownloaded, blink::mojom::BackgroundFetchResult::UNSET,
-      blink::mojom::BackgroundFetchFailureReason::NONE));
+  Notify(kPrimaryUniqueId,
+         blink::mojom::BackgroundFetchRegistrationData::New(
+             kDeveloperId, kUploadTotal, kUploaded, kDownloadTotal, kDownloaded,
+             blink::mojom::BackgroundFetchResult::UNSET,
+             blink::mojom::BackgroundFetchFailureReason::NONE));
 
   ASSERT_EQ(observer->progress_updates().size(), 1u);
 
@@ -197,10 +200,11 @@ TEST_F(BackgroundFetchRegistrationNotifierTest, NotifyMultipleObservers) {
   ASSERT_EQ(secondary_observer->progress_updates().size(), 0u);
 
   // Notify the |kPrimaryUniqueId|.
-  Notify(blink::mojom::BackgroundFetchRegistration::New(
-      kDeveloperId, kPrimaryUniqueId, kUploadTotal, kUploaded, kDownloadTotal,
-      kDownloaded, blink::mojom::BackgroundFetchResult::UNSET,
-      blink::mojom::BackgroundFetchFailureReason::NONE));
+  Notify(kPrimaryUniqueId,
+         blink::mojom::BackgroundFetchRegistrationData::New(
+             kDeveloperId, kUploadTotal, kUploaded, kDownloadTotal, kDownloaded,
+             blink::mojom::BackgroundFetchResult::UNSET,
+             blink::mojom::BackgroundFetchFailureReason::NONE));
 
   for (auto& observer : primary_observers) {
     ASSERT_EQ(observer->progress_updates().size(), 1u);
@@ -226,20 +230,22 @@ TEST_F(BackgroundFetchRegistrationNotifierTest,
   notifier_->AddObserver(kPrimaryUniqueId, observer->GetPtr());
   ASSERT_EQ(observer->progress_updates().size(), 0u);
 
-  Notify(blink::mojom::BackgroundFetchRegistration::New(
-      kDeveloperId, kPrimaryUniqueId, kUploadTotal, kUploaded, kDownloadTotal,
-      kDownloaded, blink::mojom::BackgroundFetchResult::UNSET,
-      blink::mojom::BackgroundFetchFailureReason::NONE));
+  Notify(kPrimaryUniqueId,
+         blink::mojom::BackgroundFetchRegistrationData::New(
+             kDeveloperId, kUploadTotal, kUploaded, kDownloadTotal, kDownloaded,
+             blink::mojom::BackgroundFetchResult::UNSET,
+             blink::mojom::BackgroundFetchFailureReason::NONE));
 
   ASSERT_EQ(observer->progress_updates().size(), 1u);
 
   // Closes the binding as would be done from the renderer process.
   observer->Close();
 
-  Notify(blink::mojom::BackgroundFetchRegistration::New(
-      kDeveloperId, kPrimaryUniqueId, kUploadTotal, kUploaded, kDownloadTotal,
-      kDownloaded, blink::mojom::BackgroundFetchResult::UNSET,
-      blink::mojom::BackgroundFetchFailureReason::NONE));
+  Notify(kPrimaryUniqueId,
+         blink::mojom::BackgroundFetchRegistrationData::New(
+             kDeveloperId, kUploadTotal, kUploaded, kDownloadTotal, kDownloaded,
+             blink::mojom::BackgroundFetchResult::UNSET,
+             blink::mojom::BackgroundFetchFailureReason::NONE));
 
   // The observers for |kPrimaryUniqueId| were removed, so no second update
   // should have been received by the |observer|.
@@ -252,11 +258,12 @@ TEST_F(BackgroundFetchRegistrationNotifierTest, NotifyWithoutObservers) {
   notifier_->AddObserver(kPrimaryUniqueId, observer->GetPtr());
   ASSERT_EQ(observer->progress_updates().size(), 0u);
 
-  Notify(blink::mojom::BackgroundFetchRegistration::New(
-      kDeveloperId, kSecondaryUniqueId,
-      /* upload_total*/ 0, /* uploaded*/ 0, kDownloadTotal, kDownloaded,
-      blink::mojom::BackgroundFetchResult::UNSET,
-      blink::mojom::BackgroundFetchFailureReason::NONE));
+  Notify(kSecondaryUniqueId,
+         blink::mojom::BackgroundFetchRegistrationData::New(
+             kDeveloperId,
+             /* upload_total*/ 0, /* uploaded*/ 0, kDownloadTotal, kDownloaded,
+             blink::mojom::BackgroundFetchResult::UNSET,
+             blink::mojom::BackgroundFetchFailureReason::NONE));
 
   // Because the notification was for |kSecondaryUniqueId|, no progress updates
   // should be received by the |observer|.

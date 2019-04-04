@@ -51,31 +51,11 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
              blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
              FetchCallback callback) override;
   void GetIconDisplaySize(GetIconDisplaySizeCallback callback) override;
-  void MatchRequests(int64_t service_worker_registration_id,
-                     const std::string& developer_id,
-                     const std::string& unique_id,
-                     blink::mojom::FetchAPIRequestPtr request_to_match,
-                     blink::mojom::CacheQueryOptionsPtr cache_query_options,
-                     bool match_all,
-                     MatchRequestsCallback callback) override;
-  void UpdateUI(int64_t service_worker_registration_id,
-                const std::string& developer_id,
-                const std::string& unique_id,
-                const base::Optional<std::string>& title,
-                const SkBitmap& icon,
-                UpdateUICallback callback) override;
-  void Abort(int64_t service_worker_registration_id,
-             const std::string& developer_id,
-             const std::string& unique_id,
-             AbortCallback callback) override;
   void GetRegistration(int64_t service_worker_registration_id,
                        const std::string& developer_id,
                        GetRegistrationCallback callback) override;
   void GetDeveloperIds(int64_t service_worker_registration_id,
                        GetDeveloperIdsCallback callback) override;
-  void AddRegistrationObserver(
-      const std::string& unique_id,
-      blink::mojom::BackgroundFetchRegistrationObserverPtr observer) override;
 
  private:
   static void CreateOnIoThread(
@@ -92,7 +72,6 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
   bool ValidateUniqueId(const std::string& unique_id) WARN_UNUSED_RESULT;
   bool ValidateRequests(const std::vector<blink::mojom::FetchAPIRequestPtr>&
                             requests) WARN_UNUSED_RESULT;
-  bool ValidateTitle(const std::string& title) WARN_UNUSED_RESULT;
 
   // The Background Fetch context on which operations will be dispatched.
   scoped_refptr<BackgroundFetchContext> background_fetch_context_;

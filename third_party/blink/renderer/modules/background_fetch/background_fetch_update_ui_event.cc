@@ -68,7 +68,6 @@ ScriptPromise BackgroundFetchUpdateUIEvent::updateUI(
     // vs reacting eagerly.
     return ScriptPromise();
   }
-  DCHECK(!registration_->unique_id().IsEmpty());
 
   if (!ui_options->hasTitle() && ui_options->icons().IsEmpty()) {
     // Nothing to update, just return a resolved promise.
@@ -100,10 +99,10 @@ void BackgroundFetchUpdateUIEvent::DidGetIcon(
     const String& title,
     const SkBitmap& icon,
     int64_t ideal_to_chosen_icon_size) {
-  BackgroundFetchBridge::From(service_worker_registration_)
-      ->UpdateUI(registration_->id(), registration_->unique_id(), title, icon,
-                 WTF::Bind(&BackgroundFetchUpdateUIEvent::DidUpdateUI,
-                           WrapPersistent(this), WrapPersistent(resolver)));
+  registration()->GetRegistrationService()->UpdateUI(
+      title, icon,
+      WTF::Bind(&BackgroundFetchUpdateUIEvent::DidUpdateUI,
+                WrapPersistent(this), WrapPersistent(resolver)));
 }
 
 void BackgroundFetchUpdateUIEvent::DidUpdateUI(

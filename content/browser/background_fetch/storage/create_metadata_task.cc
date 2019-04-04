@@ -430,13 +430,13 @@ void CreateMetadataTask::DidStoreRequests(
 
 void CreateMetadataTask::FinishWithError(
     blink::mojom::BackgroundFetchError error) {
-  auto registration = blink::mojom::BackgroundFetchRegistration::New();
+  auto registration_data = blink::mojom::BackgroundFetchRegistrationData::New();
 
   if (error == blink::mojom::BackgroundFetchError::NONE) {
     DCHECK(metadata_proto_);
 
-    bool converted =
-        ToBackgroundFetchRegistration(*metadata_proto_, registration.get());
+    bool converted = ToBackgroundFetchRegistration(*metadata_proto_,
+                                                   registration_data.get());
     if (!converted) {
       // Database corrupted.
       SetStorageErrorAndFinish(
@@ -445,7 +445,7 @@ void CreateMetadataTask::FinishWithError(
     }
 
     for (auto& observer : data_manager()->observers()) {
-      observer.OnRegistrationCreated(registration_id_, *registration,
+      observer.OnRegistrationCreated(registration_id_, *registration_data,
                                      options_.Clone(), icon_, requests_.size(),
                                      start_paused_);
     }
@@ -453,7 +453,7 @@ void CreateMetadataTask::FinishWithError(
 
   ReportStorageError();
 
-  std::move(callback_).Run(error, std::move(registration));
+  std::move(callback_).Run(error, std::move(registration_data));
   Finished();  // Destroys |this|.
 }
 

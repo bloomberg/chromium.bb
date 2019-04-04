@@ -38,7 +38,6 @@ class BackgroundFetchRegistration final
  public:
   BackgroundFetchRegistration(
       const String& developer_id,
-      const String& unique_id,
       uint64_t upload_total,
       uint64_t uploaded,
       uint64_t download_total,
@@ -46,16 +45,17 @@ class BackgroundFetchRegistration final
       mojom::BackgroundFetchResult result,
       mojom::BackgroundFetchFailureReason failure_reason);
 
-  BackgroundFetchRegistration(
-      ServiceWorkerRegistration* registration,
-      const WebBackgroundFetchRegistration& web_registration);
+  BackgroundFetchRegistration(ServiceWorkerRegistration* registration,
+                              WebBackgroundFetchRegistration web_registration);
 
   ~BackgroundFetchRegistration() override;
 
   // Initializes the BackgroundFetchRegistration to be associated with the given
   // ServiceWorkerRegistration. It will register itself as an observer for
   // progress events, powering the `progress` JavaScript event.
-  void Initialize(ServiceWorkerRegistration* registration);
+  void Initialize(
+      ServiceWorkerRegistration* registration,
+      mojom::blink::BackgroundFetchRegistrationServicePtr registration_service);
 
   // BackgroundFetchRegistrationObserver implementation.
   void OnProgress(uint64_t upload_total,
@@ -93,8 +93,6 @@ class BackgroundFetchRegistration final
   const String result() const;
   const String failureReason() const;
 
-  const String& unique_id() const { return unique_id_; }
-
   DEFINE_ATTRIBUTE_EVENT_LISTENER(progress, kProgress)
 
   ScriptPromise abort(ScriptState* script_state);
@@ -109,6 +107,11 @@ class BackgroundFetchRegistration final
 
   // Keeps the object alive until there are non-zero number of |observers_|.
   bool HasPendingActivity() const final;
+
+  const mojom::blink::BackgroundFetchRegistrationServicePtr&
+  GetRegistrationService() const {
+    return registration_service_;
+  }
 
  private:
   void DidAbort(ScriptPromiseResolver* resolver,
@@ -137,11 +140,6 @@ class BackgroundFetchRegistration final
   // have the same |developer_id_| as one or more inactive registrations.
   String developer_id_;
 
-  // Globally unique ID for the registration, generated in content/. Used to
-  // distinguish registrations in case a developer re-uses |developer_id_|s. Not
-  // exposed to JavaScript.
-  String unique_id_;
-
   uint64_t upload_total_;
   uint64_t uploaded_;
   uint64_t download_total_;
@@ -150,6 +148,8 @@ class BackgroundFetchRegistration final
   mojom::BackgroundFetchResult result_;
   mojom::BackgroundFetchFailureReason failure_reason_;
   HeapVector<Member<BackgroundFetchRecord>> observers_;
+
+  mojom::blink::BackgroundFetchRegistrationServicePtr registration_service_;
 
   mojo::Binding<blink::mojom::blink::BackgroundFetchRegistrationObserver>
       observer_binding_;

@@ -64,7 +64,7 @@ DatabaseStatus ToDatabaseStatus(blink::ServiceWorkerStatusCode status);
 // Converts the |metadata_proto| to a BackgroundFetchRegistration object.
 bool ToBackgroundFetchRegistration(
     const proto::BackgroundFetchMetadata& metadata_proto,
-    blink::mojom::BackgroundFetchRegistration* registration);
+    blink::mojom::BackgroundFetchRegistrationData* registration_data);
 
 bool MojoFailureReasonFromRegistrationProto(
     proto::BackgroundFetchRegistration_BackgroundFetchFailureReason

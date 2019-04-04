@@ -47,7 +47,8 @@ class CONTENT_EXPORT BackgroundFetchJobController
                               blink::mojom::BackgroundFetchFailureReason,
                               ErrorCallback)>;
   using ProgressCallback = base::RepeatingCallback<void(
-      const blink::mojom::BackgroundFetchRegistration&)>;
+      const std::string& unique_id,
+      const blink::mojom::BackgroundFetchRegistrationData&)>;
   using RequestStartedCallback =
       base::OnceCallback<void(const BackgroundFetchRegistrationId&,
                               const BackgroundFetchRequestInfo*)>;
@@ -83,9 +84,9 @@ class CONTENT_EXPORT BackgroundFetchJobController
   uint64_t GetInProgressDownloadedBytes();
   uint64_t GetInProgressUploadedBytes();
 
-  // Returns a blink::mojom::BackgroundFetchRegistrationPtr object
+  // Returns a blink::mojom::BackgroundFetchRegistrationDataPtr object
   // created with member fields.
-  blink::mojom::BackgroundFetchRegistrationPtr NewRegistration() const;
+  blink::mojom::BackgroundFetchRegistrationDataPtr NewRegistrationData() const;
 
   const BackgroundFetchRegistrationId& registration_id() const {
     return registration_id_;
