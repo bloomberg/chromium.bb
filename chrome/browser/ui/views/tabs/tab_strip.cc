@@ -2715,7 +2715,7 @@ bool TabStrip::HoverCardIsShowingForTab(Tab* tab) {
     return false;
 
   return hover_card_ && hover_card_->GetWidget()->IsVisible() &&
-         hover_card_->GetAnchorView() == tab;
+         !hover_card_->IsFadingOut() && hover_card_->GetAnchorView() == tab;
 }
 
 void TabStrip::ButtonPressed(views::Button* sender, const ui::Event& event) {
