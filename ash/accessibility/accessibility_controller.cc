@@ -1253,11 +1253,11 @@ void AccessibilityController::UpdateVirtualKeyboardFromPref() {
   if (virtual_keyboard_enabled_ == enabled)
     return;
 
-  const bool was_enabled = virtual_keyboard_enabled_;
   virtual_keyboard_enabled_ = enabled;
 
   NotifyAccessibilityStatusChanged();
 
+  const bool was_enabled = keyboard::IsKeyboardEnabled();
   keyboard::SetAccessibilityKeyboardEnabled(enabled);
 
   if (::features::IsMultiProcessMash()) {

@@ -21,7 +21,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "components/prefs/pref_service.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
+#include "ui/keyboard/test/test_keyboard_controller_observer.h"
 #include "ui/message_center/message_center.h"
 
 using message_center::MessageCenter;
@@ -291,6 +293,29 @@ TEST_F(AccessibilityControllerTest, SetVirtualKeyboardEnabled) {
   EXPECT_EQ(2, observer.status_changed_count_);
 
   controller->RemoveObserver(&observer);
+}
+
+// See https://crbug.com/946358.
+TEST_F(AccessibilityControllerTest, RebuildsVirtualKeyboardWhenPrefChanges) {
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  EXPECT_FALSE(controller->virtual_keyboard_enabled());
+
+  // Virtual keyboard enabled with compact layout.
+  keyboard::SetTouchKeyboardEnabled(true);
+
+  keyboard::TestKeyboardControllerObserver observer;
+  keyboard::KeyboardController::Get()->AddObserver(&observer);
+
+  // Virtual keyboard should rebuild to switch to a11y layout.
+  controller->SetVirtualKeyboardEnabled(true);
+  EXPECT_EQ(1, observer.enabled_count);
+
+  // Virtual keyboard should rebuild to switch back to compact layout.
+  controller->SetVirtualKeyboardEnabled(false);
+  EXPECT_EQ(2, observer.enabled_count);
+
+  keyboard::KeyboardController::Get()->RemoveObserver(&observer);
 }
 
 // Tests that ash's controller gets shutdown sound duration properly from
