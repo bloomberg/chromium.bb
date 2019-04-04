@@ -26,7 +26,7 @@ namespace {
 class MockMediaSessionController : public MediaSessionController {
  public:
   MockMediaSessionController(
-      const WebContentsObserver::MediaPlayerId& id,
+      const MediaPlayerId& id,
       MediaWebContentsObserver* media_web_contents_observer)
       : MediaSessionController(id, media_web_contents_observer) {}
 
@@ -71,8 +71,7 @@ class MediaSessionControllersManagerTest
 
     service_manager_context_ = std::make_unique<TestServiceManagerContext>();
 
-    media_player_id_ = MediaSessionControllersManager::MediaPlayerId(
-        contents()->GetMainFrame(), 1);
+    media_player_id_ = MediaPlayerId(contents()->GetMainFrame(), 1);
     mock_media_session_controller_ =
         std::make_unique<StrictMock<MockMediaSessionController>>(
             media_player_id_, contents()->media_web_contents_observer());
@@ -104,9 +103,7 @@ class MediaSessionControllersManagerTest
   }
 
  protected:
-  MediaSessionControllersManager::MediaPlayerId media_player_id_ =
-      MediaSessionControllersManager::MediaPlayerId::
-          createMediaPlayerIdForTests();
+  MediaPlayerId media_player_id_ = MediaPlayerId::CreateMediaPlayerIdForTests();
   std::unique_ptr<StrictMock<MockMediaSessionController>>
       mock_media_session_controller_;
   StrictMock<MockMediaSessionController>* mock_media_session_controller_ptr_ =
@@ -128,8 +125,7 @@ TEST_P(MediaSessionControllersManagerTest, RequestPlayAddsSessionsToMap) {
   } else {
     EXPECT_EQ(1U, GetControllersMap()->size());
     EXPECT_TRUE(
-        manager_->RequestPlay(MediaSessionControllersManager::MediaPlayerId(
-                                  contents()->GetMainFrame(), 2),
+        manager_->RequestPlay(MediaPlayerId(contents()->GetMainFrame(), 2),
                               true, false, media::MediaContentType::Transient));
     EXPECT_EQ(2U, GetControllersMap()->size());
   }
@@ -192,9 +188,7 @@ TEST_P(MediaSessionControllersManagerTest, OnPauseIdNotFound) {
   GetControllersMap()->insert(std::make_pair(
       media_player_id_, std::move(mock_media_session_controller_)));
 
-  MediaSessionControllersManager::MediaPlayerId id2 =
-      MediaSessionControllersManager::MediaPlayerId(contents()->GetMainFrame(),
-                                                    2);
+  MediaPlayerId id2 = MediaPlayerId(contents()->GetMainFrame(), 2);
   manager_->OnPause(id2);
 }
 

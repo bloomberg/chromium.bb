@@ -189,7 +189,8 @@ MediaEngagementContentsObserver::PlayerState::PlayerState(PlayerState&&) =
     default;
 
 MediaEngagementContentsObserver::PlayerState&
-MediaEngagementContentsObserver::GetPlayerState(const MediaPlayerId& id) {
+MediaEngagementContentsObserver::GetPlayerState(
+    const content::MediaPlayerId& id) {
   auto state = player_states_.find(id);
   if (state != player_states_.end())
     return state->second;
@@ -201,7 +202,7 @@ MediaEngagementContentsObserver::GetPlayerState(const MediaPlayerId& id) {
 
 void MediaEngagementContentsObserver::MediaStartedPlaying(
     const MediaPlayerInfo& media_player_info,
-    const MediaPlayerId& media_player_id) {
+    const content::MediaPlayerId& media_player_id) {
   PlayerState& state = GetPlayerState(media_player_id);
   state.playing = true;
   state.has_audio = media_player_info.has_audio;
@@ -220,7 +221,8 @@ void MediaEngagementContentsObserver::MediaStartedPlaying(
 }
 
 void MediaEngagementContentsObserver::
-    RecordEngagementScoreToHistogramAtPlayback(const MediaPlayerId& id) {
+    RecordEngagementScoreToHistogramAtPlayback(
+        const content::MediaPlayerId& id) {
   if (!session_)
     return;
 
@@ -240,7 +242,7 @@ void MediaEngagementContentsObserver::
 }
 
 void MediaEngagementContentsObserver::MediaMutedStatusChanged(
-    const MediaPlayerId& id,
+    const content::MediaPlayerId& id,
     bool muted) {
   GetPlayerState(id).muted = muted;
   MaybeInsertRemoveSignificantPlayer(id);
@@ -248,8 +250,9 @@ void MediaEngagementContentsObserver::MediaMutedStatusChanged(
   RecordEngagementScoreToHistogramAtPlayback(id);
 }
 
-void MediaEngagementContentsObserver::MediaResized(const gfx::Size& size,
-                                                   const MediaPlayerId& id) {
+void MediaEngagementContentsObserver::MediaResized(
+    const gfx::Size& size,
+    const content::MediaPlayerId& id) {
   GetPlayerState(id).significant_size =
       (size.width() >= kSignificantSize.width() &&
        size.height() >= kSignificantSize.height());
@@ -259,7 +262,7 @@ void MediaEngagementContentsObserver::MediaResized(const gfx::Size& size,
 
 void MediaEngagementContentsObserver::MediaStoppedPlaying(
     const MediaPlayerInfo& media_player_info,
-    const MediaPlayerId& media_player_id,
+    const content::MediaPlayerId& media_player_id,
     WebContentsObserver::MediaStoppedReason reason) {
   PlayerState& state = GetPlayerState(media_player_id);
   state.playing = false;
@@ -329,7 +332,7 @@ bool MediaEngagementContentsObserver::IsPlayerStateComplete(
 }
 
 void MediaEngagementContentsObserver::OnSignificantMediaPlaybackTimeForPlayer(
-    const MediaPlayerId& id) {
+    const content::MediaPlayerId& id) {
   // Clear the timer.
   auto audible_row = audible_players_.find(id);
   audible_row->second.second = nullptr;
@@ -417,7 +420,7 @@ void MediaEngagementContentsObserver::RecordInsignificantReasons(
 }
 
 void MediaEngagementContentsObserver::MaybeInsertRemoveSignificantPlayer(
-    const MediaPlayerId& id) {
+    const content::MediaPlayerId& id) {
   // If we have not received the whole player state yet then we can't be
   // significant and therefore we don't want to make a decision yet.
   PlayerState& state = GetPlayerState(id);
@@ -467,7 +470,7 @@ void MediaEngagementContentsObserver::MaybeInsertRemoveSignificantPlayer(
 }
 
 void MediaEngagementContentsObserver::UpdatePlayerTimer(
-    const MediaPlayerId& id) {
+    const content::MediaPlayerId& id) {
   UpdatePageTimer();
 
   // The player should be considered audible.

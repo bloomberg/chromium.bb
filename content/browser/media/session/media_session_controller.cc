@@ -14,7 +14,7 @@
 namespace content {
 
 MediaSessionController::MediaSessionController(
-    const WebContentsObserver::MediaPlayerId& id,
+    const MediaPlayerId& id,
     MediaWebContentsObserver* media_web_contents_observer)
     : id_(id),
       media_web_contents_observer_(media_web_contents_observer),

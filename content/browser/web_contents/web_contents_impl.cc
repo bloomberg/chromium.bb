@@ -6806,7 +6806,7 @@ ForwardingAudioStreamFactory* WebContentsImpl::GetAudioStreamFactory() {
 
 void WebContentsImpl::MediaStartedPlaying(
     const WebContentsObserver::MediaPlayerInfo& media_info,
-    const WebContentsObserver::MediaPlayerId& id) {
+    const MediaPlayerId& id) {
   if (media_info.has_video)
     currently_playing_video_count_++;
 
@@ -6816,7 +6816,7 @@ void WebContentsImpl::MediaStartedPlaying(
 
 void WebContentsImpl::MediaStoppedPlaying(
     const WebContentsObserver::MediaPlayerInfo& media_info,
-    const WebContentsObserver::MediaPlayerId& id,
+    const MediaPlayerId& id,
     WebContentsObserver::MediaStoppedReason reason) {
   if (media_info.has_video)
     currently_playing_video_count_--;
@@ -6825,9 +6825,8 @@ void WebContentsImpl::MediaStoppedPlaying(
     observer.MediaStoppedPlaying(media_info, id, reason);
 }
 
-void WebContentsImpl::MediaResized(
-    const gfx::Size& size,
-    const WebContentsObserver::MediaPlayerId& id) {
+void WebContentsImpl::MediaResized(const gfx::Size& size,
+                                   const MediaPlayerId& id) {
   cached_video_sizes_[id] = size;
 
   for (auto& observer : observers_)
@@ -6840,7 +6839,7 @@ void WebContentsImpl::MediaEffectivelyFullscreenChanged(bool is_fullscreen) {
 }
 
 base::Optional<gfx::Size> WebContentsImpl::GetFullscreenVideoSize() {
-  base::Optional<WebContentsObserver::MediaPlayerId> id =
+  base::Optional<MediaPlayerId> id =
       media_web_contents_observer_->GetFullscreenVideoMediaPlayerId();
   if (id && base::ContainsKey(cached_video_sizes_, id.value()))
     return base::Optional<gfx::Size>(cached_video_sizes_[id.value()]);
@@ -6999,9 +6998,8 @@ void WebContentsImpl::SetOpenerForNewContents(FrameTreeNode* opener,
   }
 }
 
-void WebContentsImpl::MediaMutedStatusChanged(
-    const WebContentsObserver::MediaPlayerId& id,
-    bool muted) {
+void WebContentsImpl::MediaMutedStatusChanged(const MediaPlayerId& id,
+                                              bool muted) {
   for (auto& observer : observers_)
     observer.MediaMutedStatusChanged(id, muted);
 }

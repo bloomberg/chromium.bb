@@ -23,7 +23,7 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
     test_service_manager_context_ =
         std::make_unique<content::TestServiceManagerContext>();
 
-    id_ = WebContentsObserver::MediaPlayerId(contents()->GetMainFrame(), 0);
+    id_ = MediaPlayerId(contents()->GetMainFrame(), 0);
     controller_ = CreateController();
   }
 
@@ -124,8 +124,7 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
     return expected_multiplier == std::get<1>(result);
   }
 
-  WebContentsObserver::MediaPlayerId id_ =
-      WebContentsObserver::MediaPlayerId::createMediaPlayerIdForTests();
+  MediaPlayerId id_ = MediaPlayerId::CreateMediaPlayerIdForTests();
   std::unique_ptr<MediaSessionController> controller_;
 
  private:

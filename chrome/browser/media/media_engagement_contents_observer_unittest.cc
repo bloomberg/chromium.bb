@@ -83,8 +83,7 @@ class MediaEngagementContentsObserverTest
   }
 
   bool IsTimerRunningForPlayer(int id) const {
-    content::WebContentsObserver::MediaPlayerId player_id(
-        nullptr /* RenderFrameHost */, id);
+    content::MediaPlayerId player_id(nullptr /* RenderFrameHost */, id);
     auto audible_row = contents_observer_->audible_players_.find(player_id);
     return audible_row != contents_observer_->audible_players_.end() &&
            audible_row->second.second;
@@ -124,8 +123,7 @@ class MediaEngagementContentsObserverTest
   }
 
   void SimulateResizeEvent(int id, gfx::Size size) {
-    content::WebContentsObserver::MediaPlayerId player_id(
-        nullptr /* RenderFrameHost */, id);
+    content::MediaPlayerId player_id(nullptr /* RenderFrameHost */, id);
     contents_observer_->MediaResized(size, player_id);
   }
 
@@ -141,8 +139,7 @@ class MediaEngagementContentsObserverTest
       content::WebContentsObserver::MediaPlayerInfo player_info,
       int id,
       bool muted_state) {
-    content::WebContentsObserver::MediaPlayerId player_id(
-        nullptr /* RenderFrameHost */, id);
+    content::MediaPlayerId player_id(nullptr /* RenderFrameHost */, id);
     contents_observer_->MediaStartedPlaying(player_info, player_id);
     SimulateMutedStateChange(id, muted_state);
   }
@@ -153,8 +150,7 @@ class MediaEngagementContentsObserverTest
     test_clock_.Advance(elapsed);
 
     content::WebContentsObserver::MediaPlayerInfo player_info(true, true);
-    content::WebContentsObserver::MediaPlayerId player_id(
-        nullptr /* RenderFrameHost */, id);
+    content::MediaPlayerId player_id(nullptr /* RenderFrameHost */, id);
     contents_observer_->MediaStoppedPlaying(
         player_info, player_id,
         finished
@@ -168,8 +164,7 @@ class MediaEngagementContentsObserverTest
   }
 
   void SimulateMutedStateChange(int id, bool muted) {
-    content::WebContentsObserver::MediaPlayerId player_id(
-        nullptr /* RenderFrameHost */, id);
+    content::MediaPlayerId player_id(nullptr /* RenderFrameHost */, id);
     contents_observer_->MediaMutedStatusChanged(player_id, muted);
   }
 
@@ -215,8 +210,7 @@ class MediaEngagementContentsObserverTest
 
   void SimulateSignificantPlaybackTimeForPlayer(int id) {
     SimulateLongMediaPlayback(id);
-    content::WebContentsObserver::MediaPlayerId player_id(
-        nullptr /* RenderFrameHost */, id);
+    content::MediaPlayerId player_id(nullptr /* RenderFrameHost */, id);
     contents_observer_->OnSignificantMediaPlaybackTimeForPlayer(player_id);
   }
 
@@ -378,8 +372,7 @@ class MediaEngagementContentsObserverTest
   }
 
   void ForceUpdateTimer(int id) {
-    content::WebContentsObserver::MediaPlayerId player_id(
-        nullptr /* RenderFrameHost */, id);
+    content::MediaPlayerId player_id(nullptr /* RenderFrameHost */, id);
     contents_observer_->UpdatePlayerTimer(player_id);
   }
 
@@ -410,8 +403,7 @@ class MediaEngagementContentsObserverTest
   }
 
   void ExpectPlaybackTime(int id, base::TimeDelta expected_time) {
-    content::WebContentsObserver::MediaPlayerId player_id(
-        nullptr /* RenderFrameHost */, id);
+    content::MediaPlayerId player_id(nullptr /* RenderFrameHost */, id);
     EXPECT_EQ(expected_time, contents_observer_->GetPlayerState(player_id)
                                  .playback_timer->Elapsed());
   }
