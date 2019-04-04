@@ -17,6 +17,7 @@ class TestCupsPrintersBrowserProxy extends TestBrowserProxy {
       'stopDiscoveringPrinters',
       'cancelPrinterSetUp',
       'updateCupsPrinter',
+      'reconfigureCupsPrinter',
     ]);
 
     this.printerList = [];
@@ -84,6 +85,11 @@ class TestCupsPrintersBrowserProxy extends TestBrowserProxy {
   getPrinterPpdManufacturerAndModel(printerId) {
     this.methodCalled('getPrinterPpdManufacturerAndModel', printerId);
     return Promise.resolve(this.printerPpdMakeModel);
+  }
+
+  /** @override */
+  reconfigureCupsPrinter(printer) {
+    this.methodCalled('reconfigureCupsPrinter', printer);
   }
 }
 
@@ -716,7 +722,7 @@ suite('EditPrinterDialog', function() {
     const saveButton = dialog.$$('.action-button');
     saveButton.click();
 
-    return cupsPrintersBrowserProxy.whenCalled('addCupsPrinter')
+    return cupsPrintersBrowserProxy.whenCalled('reconfigureCupsPrinter')
         .then(function() {
           assertEquals(expectedAddress, dialog.activePrinter.printerAddress);
           assertEquals(expectedQueue, dialog.activePrinter.printerQueue);

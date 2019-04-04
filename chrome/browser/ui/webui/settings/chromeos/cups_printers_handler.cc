@@ -309,6 +309,10 @@ void CupsPrintersHandler::RegisterMessages() {
       base::BindRepeating(&CupsPrintersHandler::HandleAddCupsPrinter,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "reconfigureCupsPrinter",
+      base::BindRepeating(&CupsPrintersHandler::HandleReconfigureCupsPrinter,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "getPrinterInfo",
       base::BindRepeating(&CupsPrintersHandler::HandleGetPrinterInfo,
                           base::Unretained(this)));
@@ -387,7 +391,7 @@ void CupsPrintersHandler::HandleUpdateCupsPrinter(const base::ListValue* args) {
   printer.set_display_name(printer_name);
 
   if (!profile_->GetPrefs()->GetBoolean(prefs::kUserNativePrintersAllowed)) {
-    PRINTER_LOG(DEBUG) << "HandleAddCupsPrinter() called when "
+    PRINTER_LOG(DEBUG) << "HandleUpdateCupsPrinter() called when "
                           "kUserNativePrintersAllowed is set to false";
     // Used to log UMA metrics.
     OnAddedOrEditedPrinterCommon(
@@ -586,7 +590,17 @@ void CupsPrintersHandler::OnPpdResolved(const std::string& callback_id,
 
 void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
   AllowJavascript();
+  AddOrReconfigurePrinter(args, false /* is_printer_edit */);
+}
 
+void CupsPrintersHandler::HandleReconfigureCupsPrinter(
+    const base::ListValue* args) {
+  AllowJavascript();
+  AddOrReconfigurePrinter(args, true /* is_printer_edit */);
+}
+
+void CupsPrintersHandler::AddOrReconfigurePrinter(const base::ListValue* args,
+                                                  bool is_printer_edit) {
   const base::DictionaryValue* printer_dict = nullptr;
   CHECK(args->GetDictionary(0, &printer_dict));
 
@@ -598,7 +612,7 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
   }
 
   if (!profile_->GetPrefs()->GetBoolean(prefs::kUserNativePrintersAllowed)) {
-    PRINTER_LOG(DEBUG) << "HandleAddCupsPrinter() called when "
+    PRINTER_LOG(DEBUG) << "AddOrReconfigurePrinter() called when "
                           "kUserNativePrintersAllowed is set to false";
     // Used to log UMA metrics.
     OnAddedOrEditedPrinterCommon(
@@ -616,18 +630,22 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
     return;
   }
 
-  // If the provided printer already exists, grab the existing printer object
-  // and check that we are not making any changes that will make the
-  // printerexisting_printer unusable.
-  const bool is_existing_printer = !printer->id().empty();
-  if (is_existing_printer) {
-    std::unique_ptr<Printer> existing_printer =
-        printers_manager_->GetPrinter(printer->id());
-    if (existing_printer) {
-      if (!IsValidUriChange(*existing_printer, *printer)) {
-        OnAddOrEditPrinterError(PrinterSetupResult::kInvalidPrinterUpdate);
-        return;
-      }
+  // Grab the existing printer object and check that we are not making any
+  // changes that will make |existing_printer_object| unusable.
+  if (printer->id().empty()) {
+    // If the printer object has not already been created, error out since this
+    // is not a valid case.
+    PRINTER_LOG(ERROR) << "Failed to parse printer ID";
+    OnAddOrEditPrinterError(PrinterSetupResult::kFatalError);
+    return;
+  }
+
+  std::unique_ptr<Printer> existing_printer_object =
+      printers_manager_->GetPrinter(printer->id());
+  if (existing_printer_object) {
+    if (!IsValidUriChange(*existing_printer_object, *printer)) {
+      OnAddOrEditPrinterError(PrinterSetupResult::kInvalidPrinterUpdate);
+      return;
     }
   }
 
@@ -691,9 +709,9 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
   }
 
   printer_configurer_->SetUpPrinter(
-      *printer, base::BindOnce(
-                    &CupsPrintersHandler::OnAddedOrEditedSpecifiedPrinter,
-                    weak_factory_.GetWeakPtr(), *printer, is_existing_printer));
+      *printer,
+      base::BindOnce(&CupsPrintersHandler::OnAddedOrEditedSpecifiedPrinter,
+                     weak_factory_.GetWeakPtr(), *printer, is_printer_edit));
 }
 
 void CupsPrintersHandler::OnAddedOrEditedPrinterCommon(

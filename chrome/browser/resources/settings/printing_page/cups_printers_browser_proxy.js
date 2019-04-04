@@ -139,6 +139,11 @@ cr.define('settings', function() {
      */
     addCupsPrinter(newPrinter) {}
 
+    /**
+     * @param {!CupsPrinterInfo} printer
+     */
+    reconfigureCupsPrinter(printer) {}
+
     startDiscoveringPrinters() {}
     stopDiscoveringPrinters() {}
 
@@ -199,6 +204,11 @@ cr.define('settings', function() {
     /** @override */
     addCupsPrinter(newPrinter) {
       chrome.send('addCupsPrinter', [newPrinter]);
+    }
+
+    /** @override */
+    reconfigureCupsPrinter(printer) {
+      chrome.send('reconfigureCupsPrinter', [printer]);
     }
 
     /** @override */
