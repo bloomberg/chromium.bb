@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_info.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
@@ -51,6 +52,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/null_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_observer.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -99,6 +101,46 @@ class ResourceFetcherTest : public testing::Test {
   ResourceFetcherTest() = default;
   ~ResourceFetcherTest() override { GetMemoryCache()->EvictResources(); }
 
+  class TestResourceLoadObserver final : public ResourceLoadObserver {
+   public:
+    // ResourceLoadObserver implementation.
+    void WillSendRequest(uint64_t identifier,
+                         const ResourceRequest& request,
+                         const ResourceResponse& redirect_response,
+                         ResourceType,
+                         const FetchInitiatorInfo&) override {
+      request_ = request;
+    }
+    void DidReceiveResponse(uint64_t identifier,
+                            const ResourceRequest& request,
+                            const ResourceResponse& response,
+                            Resource* resource,
+                            ResponseSource source) override {}
+    void DidReceiveData(uint64_t identifier,
+                        base::span<const char> chunk) override {}
+    void DidReceiveTransferSizeUpdate(uint64_t identifier,
+                                      int transfer_size_diff) override {}
+    void DidDownloadToBlob(uint64_t identifier, BlobDataHandle*) override {}
+    void DidFinishLoading(uint64_t identifier,
+                          TimeTicks finish_time,
+                          int64_t encoded_data_length,
+                          int64_t decoded_body_length,
+                          bool should_report_corb_blocking,
+                          ResponseSource) override {}
+    void DidFailLoading(const KURL&,
+                        uint64_t identifier,
+                        const ResourceError&,
+                        int64_t encoded_data_length,
+                        bool is_internal_request) override {}
+
+    const base::Optional<ResourceRequest>& GetLastRequest() const {
+      return request_;
+    }
+
+   private:
+    base::Optional<ResourceRequest> request_;
+  };
+
  protected:
   scoped_refptr<scheduler::FakeTaskRunner> CreateTaskRunner() {
     return base::MakeRefCounted<scheduler::FakeTaskRunner>();
@@ -107,7 +149,8 @@ class ResourceFetcherTest : public testing::Test {
                                  FetchContext* context) {
     return MakeGarbageCollected<ResourceFetcher>(
         ResourceFetcherInit(properties, context, CreateTaskRunner(),
-                            MakeGarbageCollected<TestLoaderFactory>()));
+                            MakeGarbageCollected<TestLoaderFactory>(),
+                            *MakeGarbageCollected<NullConsoleLogger>()));
   }
   ResourceFetcher* CreateFetcher(const ResourceFetcherProperties& properties) {
     return CreateFetcher(properties, MakeGarbageCollected<MockFetchContext>());
@@ -187,9 +230,11 @@ TEST_F(ResourceFetcherTest, WillSendRequestAdBit) {
   resource->ResponseReceived(response);
   resource->FinishForTest();
 
+  auto* observer = MakeGarbageCollected<TestResourceLoadObserver>();
   // Fetch the cached resource. The request to DispatchWillSendRequest should
   // preserve the ad bit.
   auto* fetcher = CreateFetcher(*properties, context);
+  fetcher->SetResourceLoadObserver(observer);
   ResourceRequest resource_request(url);
   resource_request.SetIsAdResource();
   resource_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
@@ -198,8 +243,7 @@ TEST_F(ResourceFetcherTest, WillSendRequestAdBit) {
   Resource* new_resource = RawResource::Fetch(fetch_params, fetcher, nullptr);
 
   EXPECT_EQ(resource, new_resource);
-  base::Optional<ResourceRequest> new_request =
-      context->RequestFromWillSendRequest();
+  base::Optional<ResourceRequest> new_request = observer->GetLastRequest();
   EXPECT_TRUE(new_request.has_value());
   EXPECT_TRUE(new_request.value().IsAdResource());
 }
@@ -861,10 +905,12 @@ TEST_F(ResourceFetcherTest, ContentIdURL) {
 TEST_F(ResourceFetcherTest, StaleWhileRevalidate) {
   scoped_refptr<const SecurityOrigin> source_origin =
       SecurityOrigin::CreateUniqueOpaque();
+  auto* observer = MakeGarbageCollected<TestResourceLoadObserver>();
   MockFetchContext* context = MakeGarbageCollected<MockFetchContext>();
   auto* fetcher = CreateFetcher(
       *MakeGarbageCollected<TestResourceFetcherProperties>(source_origin),
       context);
+  fetcher->SetResourceLoadObserver(observer);
 
   KURL url("http://127.0.0.1:8000/foo.html");
   FetchParameters fetch_params{ResourceRequest(url)};
@@ -903,8 +949,7 @@ TEST_F(ResourceFetcherTest, StaleWhileRevalidate) {
   EXPECT_TRUE(GetMemoryCache()->Contains(resource));
   static_cast<scheduler::FakeTaskRunner*>(fetcher->GetTaskRunner().get())
       ->RunUntilIdle();
-  base::Optional<ResourceRequest> swr_request =
-      context->RequestFromWillSendRequest();
+  base::Optional<ResourceRequest> swr_request = observer->GetLastRequest();
   ASSERT_TRUE(swr_request.has_value());
   EXPECT_EQ(ResourceLoadPriority::kVeryLow, swr_request->Priority());
   platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();

@@ -60,6 +60,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_observer.h"
 #include "third_party/blink/renderer/platform/loader/fetch/response_body_loader.h"
 #include "third_party/blink/renderer/platform/loader/fetch/shared_buffer_bytes_consumer.h"
 #include "third_party/blink/renderer/platform/loader/mixed_content_autoupgrade_status.h"
@@ -791,9 +792,11 @@ bool ResourceLoader::WillFollowRedirect(
   Context().PrepareRequest(*new_request, resource_->Options().initiator_info,
                            unused_virtual_time_pauser,
                            resource_->GetType());
-  Context().DispatchWillSendRequest(
-      resource_->InspectorId(), *new_request, redirect_response_to_pass,
-      resource_->GetType(), options.initiator_info);
+  if (auto* observer = fetcher_->GetResourceLoadObserver()) {
+    observer->WillSendRequest(resource_->InspectorId(), *new_request,
+                              redirect_response_to_pass, resource_->GetType(),
+                              options.initiator_info);
+  }
 
   // First-party cookie logic moved from DocumentLoader in Blink to
   // net::URLRequest in the browser. Assert that Blink didn't try to change it
@@ -1008,9 +1011,11 @@ void ResourceLoader::DidReceiveResponseInternal(
       response_with_type ? *response_with_type : response;
 
   // FrameType never changes during the lifetime of a request.
-  Context().DispatchDidReceiveResponse(
-      resource_->InspectorId(), initial_request, response_to_pass, resource_,
-      FetchContext::ResourceResponseType::kNotFromMemoryCache);
+  if (auto* observer = fetcher_->GetResourceLoadObserver()) {
+    observer->DidReceiveResponse(
+        resource_->InspectorId(), initial_request, response_to_pass, resource_,
+        ResourceLoadObserver::ResponseSource::kNotFromMemoryCache);
+  }
 
   // When streaming, unpause virtual time early to prevent deadlocking
   // against stream consumer in case stream has backpressure enabled.
@@ -1082,14 +1087,18 @@ void ResourceLoader::DidStartLoadingResponseBody(
 void ResourceLoader::DidReceiveData(const char* data, int length) {
   CHECK_GE(length, 0);
 
-  Context().DispatchDidReceiveData(resource_->InspectorId(), data, length);
+  if (auto* observer = fetcher_->GetResourceLoadObserver()) {
+    observer->DidReceiveData(resource_->InspectorId(),
+                             base::make_span(data, length));
+  }
   resource_->AppendData(data, length);
 }
 
 void ResourceLoader::DidReceiveTransferSizeUpdate(int transfer_size_diff) {
-  DCHECK_GT(transfer_size_diff, 0);
-  Context().DispatchDidReceiveEncodedData(resource_->InspectorId(),
-                                          transfer_size_diff);
+  if (auto* observer = fetcher_->GetResourceLoadObserver()) {
+    observer->DidReceiveTransferSizeUpdate(resource_->InspectorId(),
+                                           transfer_size_diff);
+  }
 }
 
 void ResourceLoader::DidFinishLoadingFirstPartInMultipart() {
@@ -1367,7 +1376,11 @@ void ResourceLoader::OnProgress(uint64_t delta) {
   if (scheduler_client_id_ == ResourceLoadScheduler::kInvalidClientId)
     return;
 
-  Context().DispatchDidReceiveData(resource_->InspectorId(), nullptr, delta);
+  if (auto* observer = fetcher_->GetResourceLoadObserver()) {
+    observer->DidReceiveData(
+        resource_->InspectorId(),
+        base::span<const char>(nullptr, static_cast<size_t>(delta)));
+  }
   resource_->DidDownloadData(delta);
 }
 
@@ -1378,7 +1391,9 @@ void ResourceLoader::FinishedCreatingBlob(
   if (scheduler_client_id_ == ResourceLoadScheduler::kInvalidClientId)
     return;
 
-  Context().DispatchDidDownloadToBlob(resource_->InspectorId(), blob.get());
+  if (auto* observer = fetcher_->GetResourceLoadObserver()) {
+    observer->DidDownloadToBlob(resource_->InspectorId(), blob.get());
+  }
   resource_->DidDownloadToBlob(blob);
 
   blob_finished_ = true;

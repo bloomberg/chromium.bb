@@ -234,16 +234,6 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
     return reason;
   }
 
-  bool DispatchWillSendRequestAndVerifyIsAd(const KURL& url) {
-    ResourceRequest request(url);
-    ResourceResponse response;
-    FetchInitiatorInfo initiator_info;
-
-    GetFetchContext()->DispatchWillSendRequest(
-        1, request, response, ResourceType::kImage, initiator_info);
-    return request.IsAdResource();
-  }
-
   void AppendExecutingScriptToAdTracker(const String& url) {
     AdTracker* ad_tracker = document->GetFrame()->GetAdTracker();
     ad_tracker->WillExecuteScript(document, url);
@@ -1099,42 +1089,6 @@ TEST_F(FrameFetchContextTest, ChangeDataSaverConfig) {
   EXPECT_EQ(String(), resource_request.HttpHeaderField("Save-Data"));
 }
 
-// Tests that the embedder gets correct notification when a resource is loaded
-// from the memory cache.
-TEST_F(FrameFetchContextMockedLocalFrameClientTest,
-       LoadResourceFromMemoryCache) {
-  ResourceRequest resource_request(url);
-  resource_request.SetRequestContext(mojom::RequestContextType::IMAGE);
-  Resource* resource = MockResource::Create(resource_request);
-  EXPECT_CALL(
-      *client,
-      DispatchDidLoadResourceFromMemoryCache(
-          testing::AllOf(
-              testing::Property(&ResourceRequest::Url, url),
-              testing::Property(&ResourceRequest::GetRequestContext,
-                                mojom::RequestContextType::IMAGE)),
-          testing::Property(&ResourceResponse::IsNull, true)));
-  GetFetchContext()->DispatchDidReceiveResponse(
-      CreateUniqueIdentifier(), resource_request, resource->GetResponse(),
-      resource, FetchContext::ResourceResponseType::kFromMemoryCache);
-}
-
-// Tests that when a resource with certificate errors is loaded from the memory
-// cache, the embedder is notified.
-TEST_F(FrameFetchContextMockedLocalFrameClientTest,
-       MemoryCacheCertificateError) {
-  ResourceRequest resource_request(url);
-  resource_request.SetRequestContext(mojom::RequestContextType::IMAGE);
-  ResourceResponse response(url);
-  response.SetHasMajorCertificateErrors(true);
-  Resource* resource = MockResource::Create(resource_request);
-  resource->SetResponse(response);
-  EXPECT_CALL(*client, DidDisplayContentWithCertificateErrors());
-  GetFetchContext()->DispatchDidReceiveResponse(
-      CreateUniqueIdentifier(), resource_request, resource->GetResponse(),
-      resource, FetchContext::ResourceResponseType::kFromMemoryCache);
-}
-
 TEST_F(FrameFetchContextSubresourceFilterTest, Filter) {
   SetFilterPolicy(WebDocumentSubresourceFilter::kDisallow);
 
@@ -1242,62 +1196,6 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
                                     virtual_time_pauser, ResourceType::kRaw);
 
   EXPECT_EQ("hi", request.HttpHeaderField(http_names::kUserAgent));
-}
-
-TEST_F(FrameFetchContextTest, DispatchWillSendRequestWhenDetached) {
-  ResourceRequest request(KURL("https://www.example.com/"));
-  ResourceResponse response;
-  FetchInitiatorInfo initiator_info;
-
-  dummy_page_holder = nullptr;
-
-  GetFetchContext()->DispatchWillSendRequest(
-      1, request, response, ResourceType::kRaw, initiator_info);
-  // Should not crash.
-}
-
-TEST_F(FrameFetchContextTest, DispatchDidReceiveResponseWhenDetached) {
-  ResourceRequest request(KURL("https://www.example.com/"));
-  Resource* resource = MockResource::Create(request);
-  ResourceResponse response;
-
-  dummy_page_holder = nullptr;
-
-  GetFetchContext()->DispatchDidReceiveResponse(
-      3, request, response, resource,
-      FetchContext::ResourceResponseType::kNotFromMemoryCache);
-  // Should not crash.
-}
-
-TEST_F(FrameFetchContextTest, DispatchDidReceiveDataWhenDetached) {
-  dummy_page_holder = nullptr;
-
-  GetFetchContext()->DispatchDidReceiveData(3, "abcd", 4);
-  // Should not crash.
-}
-
-TEST_F(FrameFetchContextTest, DispatchDidReceiveEncodedDataWhenDetached) {
-  dummy_page_holder = nullptr;
-
-  GetFetchContext()->DispatchDidReceiveEncodedData(8, 9);
-  // Should not crash.
-}
-
-TEST_F(FrameFetchContextTest, DispatchDidFinishLoadingWhenDetached) {
-  dummy_page_holder = nullptr;
-
-  GetFetchContext()->DispatchDidFinishLoading(
-      4, base::TimeTicks() + base::TimeDelta::FromSecondsD(0.3), 8, 10, false,
-      FetchContext::ResourceResponseType::kNotFromMemoryCache);
-  // Should not crash.
-}
-
-TEST_F(FrameFetchContextTest, DispatchDidFailWhenDetached) {
-  dummy_page_holder = nullptr;
-
-  GetFetchContext()->DispatchDidFail(
-      KURL(), 8, ResourceError::Failure(NullURL()), 5, false);
-  // Should not crash.
 }
 
 TEST_F(FrameFetchContextTest, ShouldLoadNewResourceWhenDetached) {
