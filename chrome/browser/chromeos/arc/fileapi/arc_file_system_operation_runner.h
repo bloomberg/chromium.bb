@@ -71,6 +71,8 @@ class ArcFileSystemOperationRunner
   using GetMimeTypeCallback = mojom::FileSystemInstance::GetMimeTypeCallback;
   using OpenFileToReadCallback =
       mojom::FileSystemInstance::OpenFileToReadCallback;
+  using OpenFileToWriteCallback =
+      mojom::FileSystemInstance::OpenFileToWriteCallback;
   using GetDocumentCallback = mojom::FileSystemInstance::GetDocumentCallback;
   using GetChildDocumentsCallback =
       mojom::FileSystemInstance::GetChildDocumentsCallback;
@@ -130,6 +132,7 @@ class ArcFileSystemOperationRunner
   void GetFileSize(const GURL& url, GetFileSizeCallback callback);
   void GetMimeType(const GURL& url, GetMimeTypeCallback callback);
   void OpenFileToRead(const GURL& url, OpenFileToReadCallback callback);
+  void OpenFileToWrite(const GURL& url, OpenFileToWriteCallback callback);
   void GetDocument(const std::string& authority,
                    const std::string& document_id,
                    GetDocumentCallback callback);

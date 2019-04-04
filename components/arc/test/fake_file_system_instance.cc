@@ -7,6 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <limits>
 #include <sstream>
 #include <utility>
 
@@ -25,30 +26,6 @@
 namespace arc {
 
 namespace {
-
-base::ScopedFD CreateRegularFileDescriptor(const std::string& content,
-                                           const base::FilePath& temp_dir) {
-  base::FilePath path;
-  bool create_success = base::CreateTemporaryFileInDir(temp_dir, &path);
-  DCHECK(create_success);
-  int written_size = base::WriteFile(path, content.data(), content.size());
-  DCHECK_EQ(static_cast<int>(content.size()), written_size);
-  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
-  DCHECK(file.IsValid());
-  return base::ScopedFD(file.TakePlatformFile());
-}
-
-base::ScopedFD CreateStreamFileDescriptor(const std::string& content) {
-  int fds[2];
-  int ret = pipe(fds);
-  DCHECK_EQ(0, ret);
-  base::ScopedFD fd_read(fds[0]);
-  base::ScopedFD fd_write(fds[1]);
-  bool write_success =
-      base::WriteFileDescriptor(fd_write.get(), content.data(), content.size());
-  DCHECK(write_success);
-  return fd_read;
-}
 
 mojom::DocumentPtr MakeDocument(const FakeFileSystemInstance::Document& doc) {
   mojom::DocumentPtr document = mojom::Document::New();
@@ -76,6 +53,9 @@ std::string GenerateDocumentId() {
   ss << "doc_" << count++;
   return ss.str();
 }
+
+// Maximum size in bytes to read FD from PIPE.
+constexpr size_t kMaxBytesToReadFromPipe = 8 * 1024;  // 8KB;
 
 }  // namespace
 
@@ -223,6 +203,39 @@ FakeFileSystemInstance::Document FakeFileSystemInstance::GetDocument(
   return GetDocument(authority, document_id);
 }
 
+std::string FakeFileSystemInstance::GetFileContent(const std::string& url) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return GetFileContent(url, std::numeric_limits<size_t>::max());
+}
+
+std::string FakeFileSystemInstance::GetFileContent(const std::string& url,
+                                                   size_t bytes) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  auto regular_file_paths_it = regular_file_paths_.find(url);
+  if (regular_file_paths_it != regular_file_paths_.end()) {
+    base::FilePath path = regular_file_paths_it->second;
+    std::string content;
+    if (base::ReadFileToStringWithMaxSize(path, &content, bytes))
+      return content;
+  } else {
+    auto pipe_read_ends_it = pipe_read_ends_.find(url);
+    if (pipe_read_ends_it != pipe_read_ends_.end()) {
+      if (bytes > kMaxBytesToReadFromPipe) {
+        LOG(ERROR) << "Trying to read too many bytes from pipe. " << url;
+        return std::string();
+      }
+      std::string result;
+      result.resize(bytes);
+      bool success =
+          base::ReadFromFD(pipe_read_ends_it->second.get(), &result[0], bytes);
+      DCHECK(success);
+      return result;
+    }
+  }
+  LOG(ERROR) << "A file to read content not found. " << url;
+  return std::string();
+}
+
 void FakeFileSystemInstance::AddWatcher(const std::string& authority,
                                         const std::string& document_id,
                                         AddWatcherCallback callback) {
@@ -281,8 +294,32 @@ void FakeFileSystemInstance::OpenFileToRead(const std::string& url,
   const File& file = iter->second;
   base::ScopedFD fd =
       file.seekable == File::Seekable::YES
-          ? CreateRegularFileDescriptor(file.content, temp_dir_.GetPath())
-          : CreateStreamFileDescriptor(file.content);
+          ? CreateRegularFileDescriptor(file, base::File::Flags::FLAG_OPEN |
+                                                  base::File::Flags::FLAG_READ)
+          : CreateStreamFileDescriptorToRead(file.content);
+  mojo::ScopedHandle wrapped_handle =
+      mojo::WrapPlatformHandle(mojo::PlatformHandle(std::move(fd)));
+  DCHECK(wrapped_handle.is_valid());
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), std::move(wrapped_handle)));
+}
+
+void FakeFileSystemInstance::OpenFileToWrite(const std::string& url,
+                                             OpenFileToWriteCallback callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  auto iter = files_.find(url);
+  if (iter == files_.end()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), mojo::ScopedHandle()));
+    return;
+  }
+  const File& file = iter->second;
+  base::ScopedFD fd =
+      file.seekable == File::Seekable::YES
+          ? CreateRegularFileDescriptor(file, base::File::Flags::FLAG_OPEN |
+                                                  base::File::Flags::FLAG_WRITE)
+          : CreateStreamFileDescriptorToWrite(file.url);
   mojo::ScopedHandle wrapped_handle =
       mojo::WrapPlatformHandle(mojo::PlatformHandle(std::move(fd)));
   DCHECK(wrapped_handle.is_valid());
@@ -513,6 +550,48 @@ std::string FakeFileSystemInstance::FindChildDocumentId(
     }
   }
   return std::string();
+}
+
+base::ScopedFD FakeFileSystemInstance::CreateRegularFileDescriptor(
+    const File& file,
+    uint32_t flags) {
+  if (regular_file_paths_.find(file.url) == regular_file_paths_.end()) {
+    base::FilePath path;
+    bool create_success =
+        base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &path);
+    DCHECK(create_success);
+    int written_size =
+        base::WriteFile(path, file.content.data(), file.content.size());
+    DCHECK_EQ(static_cast<int>(file.content.size()), written_size);
+    regular_file_paths_[file.url] = path;
+  }
+  base::File regular_file(regular_file_paths_[file.url], flags);
+  DCHECK(regular_file.IsValid());
+  return base::ScopedFD(regular_file.TakePlatformFile());
+}
+
+base::ScopedFD FakeFileSystemInstance::CreateStreamFileDescriptorToRead(
+    const std::string& content) {
+  int fds[2];
+  int ret = pipe(fds);
+  DCHECK_EQ(0, ret);
+  base::ScopedFD fd_read(fds[0]);
+  base::ScopedFD fd_write(fds[1]);
+  bool write_success =
+      base::WriteFileDescriptor(fd_write.get(), content.data(), content.size());
+  DCHECK(write_success);
+  return fd_read;
+}
+
+base::ScopedFD FakeFileSystemInstance::CreateStreamFileDescriptorToWrite(
+    const std::string& url) {
+  int fds[2];
+  int ret = pipe(fds);
+  DCHECK_EQ(0, ret);
+  base::ScopedFD fd_read(fds[0]);
+  base::ScopedFD fd_write(fds[1]);
+  pipe_read_ends_.emplace(url, std::move(fd_read));
+  return fd_write;
 }
 
 }  // namespace arc
