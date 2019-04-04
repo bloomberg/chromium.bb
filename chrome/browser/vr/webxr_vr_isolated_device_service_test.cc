@@ -24,6 +24,11 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
   MockXRDeviceHookBase device_hook;
   device_hook.TerminateDeviceServiceProcessForTesting();
 
+  // Ensure that we've actually exited the session.
+  PollJavaScriptBooleanOrFail(
+      "sessionInfos[sessionTypes.IMMERSIVE].currentSession === null",
+      kPollTimeoutLong);
+
   // We expect one change indicating the device was disconnected, and then
   // one more indicating that the device was re-connected.
   PollJavaScriptBooleanOrFail("deviceChanges === 3", kPollTimeoutMedium);
