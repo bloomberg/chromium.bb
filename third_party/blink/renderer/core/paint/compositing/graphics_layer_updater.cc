@@ -52,6 +52,15 @@ class GraphicsLayerUpdater::UpdateContext {
       compositing_ancestor_ = &layer;
       if (layer.GetLayoutObject().StyleRef().IsStackingContext())
         compositing_stacking_context_ = &layer;
+
+      // Any composited content under SVG must be a descendant of (but not
+      // equal to, see PaintLayerCompositor::CanBeComposited)
+      // a <foreignObject> element. The SVG root element amounts to a
+      // compositing stacking ancestor to such an element, if the SVG
+      // root is composited, because <foreignObject> is a replaced normal-flow
+      // stacking element (see PaintLayer::IsReplacedNormalFlowStacking).
+      if (layer.GetLayoutObject().IsSVGRoot())
+        compositing_stacking_context_ = &layer;
     }
   }
 
