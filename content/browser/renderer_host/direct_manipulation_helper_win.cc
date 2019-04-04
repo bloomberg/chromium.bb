@@ -158,8 +158,8 @@ bool DirectManipulationHelper::Initialize(ui::WindowEventTarget* event_target) {
   }
 
   // Set default rect for viewport before activate.
-  viewport_size_ = {1000, 1000};
-  RECT rect = gfx::Rect(viewport_size_).ToRECT();
+  viewport_size_in_pixels_ = {1000, 1000};
+  RECT rect = gfx::Rect(viewport_size_in_pixels_).ToRECT();
   hr = viewport_->SetViewportRect(&rect);
   if (!SUCCEEDED(hr)) {
     DebugLogging("Viewport set rect failed.", hr);
@@ -212,8 +212,9 @@ void DirectManipulationHelper::Deactivate() {
     DebugLogging("DirectManipulationManager deactivate failed.", hr);
 }
 
-void DirectManipulationHelper::SetSize(const gfx::Size& size) {
-  if (viewport_size_ == size)
+void DirectManipulationHelper::SetSizeInPixels(
+    const gfx::Size& size_in_pixels) {
+  if (viewport_size_in_pixels_ == size_in_pixels)
     return;
 
   HRESULT hr = viewport_->Stop();
@@ -222,8 +223,8 @@ void DirectManipulationHelper::SetSize(const gfx::Size& size) {
     return;
   }
 
-  viewport_size_ = size;
-  RECT rect = gfx::Rect(viewport_size_).ToRECT();
+  viewport_size_in_pixels_ = size_in_pixels;
+  RECT rect = gfx::Rect(viewport_size_in_pixels_).ToRECT();
   hr = viewport_->SetViewportRect(&rect);
   if (!SUCCEEDED(hr))
     DebugLogging("Viewport set rect failed.", hr);
@@ -266,10 +267,10 @@ bool DirectManipulationHelper::OnPointerHitTest(
 HRESULT DirectManipulationHelper::Reset(bool need_poll_events) {
   // By zooming the primary content to a rect that match the viewport rect, we
   // reset the content's transform to identity.
-  HRESULT hr =
-      viewport_->ZoomToRect(static_cast<float>(0), static_cast<float>(0),
-                            static_cast<float>(viewport_size_.width()),
-                            static_cast<float>(viewport_size_.height()), FALSE);
+  HRESULT hr = viewport_->ZoomToRect(
+      static_cast<float>(0), static_cast<float>(0),
+      static_cast<float>(viewport_size_in_pixels_.width()),
+      static_cast<float>(viewport_size_in_pixels_.height()), FALSE);
   if (!SUCCEEDED(hr)) {
     DebugLogging("Viewport zoom to rect failed.", hr);
     return hr;
