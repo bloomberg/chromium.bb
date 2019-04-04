@@ -80,19 +80,31 @@
         </div>
       </div>
 
-      <div id="appcache-info-template" jsselect="$this.items">
-        <span>
-          <a href="#" class="appcache-info-template-file-url"
-                      jscontent="fileUrl" jsvalues=".responseId:responseId">
-          </a>
-        </span>
-        <span jscontent="totalSize"></span>
-        =
-        <span jscontent="responseSize"></span> (response)
-        +
-        <span jscontent="paddingSize"></span> (padding)
-        <span jscontent="properties"></span>
-      </div>
+      <table id="appcache-info-template">
+        <thead>
+          <tr>
+            <th>File URL</th>
+            <th>Total Size</th>
+            <th>Response</th>
+            <th>Padding</th>
+            <th>Properties</th>
+          </tr>
+        </thead>
+        <tbody class="appcache-details"
+               jsvalues=".manifestURL:$manifestURL;.groupId:$groupId;">
+          <tr jsselect="items">
+            <td>
+              <a href="#" class="appcache-info-template-file-url"
+                          jscontent="fileUrl" jsvalues=".responseId:responseId">
+              </a>
+            </td>
+            <td jscontent="totalSize"></td>
+            <td jscontent="responseSize"></td>
+            <td jscontent="paddingSize"></td>
+            <td jscontent="properties"></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
     <h1>Application Cache</h1>
     <div class="content">
