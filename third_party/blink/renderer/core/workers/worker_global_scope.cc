@@ -549,7 +549,7 @@ void WorkerGlobalScope::SetWorkerSettings(
 
 TrustedTypePolicyFactory* WorkerGlobalScope::trustedTypes() {
   if (!trusted_types_) {
-    trusted_types_ = TrustedTypePolicyFactory::Create(this);
+    trusted_types_ = MakeGarbageCollected<TrustedTypePolicyFactory>(this);
   }
   return trusted_types_.Get();
 }
