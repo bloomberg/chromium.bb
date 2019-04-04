@@ -249,6 +249,38 @@ if cmp out1 out2 > /dev/null ; then : ; else
 fi
 rm -rf $TESTTMPDIR out1 out2 bind-fonts.conf
 
+dotest "Fallback to uuid"
+prep
+cp $FONT1 $FONTDIR
+touch -d @`stat -c %Y $FONTDIR` $FONTDIR
+$FCCACHE $FONTDIR
+sleep 1
+_cache=`ls -1 --color=no $CACHEDIR/*cache*`
+_mtime=`stat -c %Y $FONTDIR`
+_uuid=`uuidgen`
+_newcache=`echo $_cache | sed "s/\([0-9a-f]*\)\(\-.*\)/$_uuid\2/"`
+mv $_cache $_newcache
+echo $_uuid > $FONTDIR/.uuid
+touch -d @$_mtime $FONTDIR
+(cd $CACHEDIR; ls -1 --color=no *cache*) > out1
+TESTTMPDIR=`mktemp -d /tmp/fontconfig.XXXXXXXX`
+mkdir -p $TESTTMPDIR/cache.dir
+sed "s!@FONTDIR@!$TESTTMPDIR/fonts!
+s!@REMAPDIR@!<remap-dir as-path="'"'"$FONTDIR"'"'">$TESTTMPDIR/fonts</remap-dir>!
+s!@CACHEDIR@!$TESTTMPDIR/cache.dir!" < $TESTDIR/fonts.conf.in > bind-fonts.conf
+$BWRAP --bind / / --bind $CACHEDIR $TESTTMPDIR/cache.dir --bind $FONTDIR $TESTTMPDIR/fonts --bind .. $TESTTMPDIR/build --dev-bind /dev /dev --setenv FONTCONFIG_FILE $TESTTMPDIR/build/test/bind-fonts.conf $TESTTMPDIR/build/fc-match/fc-match$EXEEXT -f ""
+(cd $CACHEDIR; ls -1 --color=no *cache*) > out2
+if cmp out1 out2 > /dev/null ; then : ; else
+    echo "*** Test failed: $TEST"
+    echo "cache was created unexpectedly."
+    echo "Before:"
+    cat out1
+    echo "After:"
+    cat out2
+    exit 1
+fi
+rm -rf $TESTTMPDIR out1 out2 bind-fonts.conf
+
 else
     echo "No bubblewrap installed. skipping..."
 fi # if [ x"$BWRAP" != "x" -a "x$EXEEXT" = "x" ]
@@ -275,30 +307,6 @@ if [ $? != 0 ]; then
 fi
 
 rm -rf $MyPWD/sysroot
-
-dotest "Fallback to uuid"
-prep
-cp $FONT1 $FONTDIR
-touch -d @`stat -c %Y $FONTDIR` $FONTDIR
-$FCCACHE $FONTDIR
-_cache=`ls -1 --color=no $CACHEDIR/*cache*`
-_mtime=`stat -c %Y $FONTDIR`
-_uuid=`uuidgen`
-_newcache=`echo $_cache | sed "s/\([0-9a-f]*\)\(\-.*\)/$_uuid\2/"`
-mv $_cache $_newcache
-echo $_uuid > $FONTDIR/.uuid
-touch -d @$_mtime $FONTDIR
-$FCCACHE $FONTDIR
-_cache2=`ls -1 --color=no $CACHEDIR/*cache*`
-if [ "x$_cache2" != "x$_newcache" ]; then
-  echo "*** Test failed: $TEST"
-  echo "Cache wasn't fallen back."
-  echo "Expected result:"
-  echo $_newcache
-  echo "Actual result:"
-  echo $_cache2
-  exit 1
-fi
 
 fi # if [ "x$EXEEXT" = "x" ]
 
