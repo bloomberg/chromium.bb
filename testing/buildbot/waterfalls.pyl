@@ -605,23 +605,6 @@
           'isolated_scripts': 'memory_infra_isolated_scripts',
         },
       },
-      'Nougat Phone Tester': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'NRD91N',
-              'device_type': 'bullhead',
-              'os': 'Android',
-            },
-          ],
-          'expiration': 10800,
-          'hard_timeout': 960,
-        },
-        'os_type': 'android',
-        'test_suites': {
-          'gtest_tests': 'chromium_android_gtests',
-        },
-      },
     },
   },
   {
