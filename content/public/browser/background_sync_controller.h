@@ -7,7 +7,9 @@
 
 #include <stdint.h>
 
+#include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "third_party/blink/public/mojom/background_sync/background_sync.mojom-shared.h"
 
 namespace url {
 class Origin;
@@ -36,6 +38,14 @@ class CONTENT_EXPORT BackgroundSyncController {
   // Calculates the soonest wakeup delta across all storage partitions and
   // schedules a background task to wake up the browser.
   virtual void RunInBackground() {}
+
+  // Calculates the delay after which the next sync event should be fired
+  // for a BackgroundSync registration. The delay is based on the |sync_type|.
+  virtual base::TimeDelta GetNextEventDelay(
+      int64_t min_interval,
+      int num_attempts,
+      blink::mojom::BackgroundSyncType sync_type,
+      BackgroundSyncParameters* parameters) const = 0;
 };
 
 }  // namespace content

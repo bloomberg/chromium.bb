@@ -17,6 +17,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
 
 namespace content {
 
@@ -129,7 +130,9 @@ base::TimeDelta BackgroundSyncContextImpl::GetSoonestWakeupDeltaOnIOThread() {
   if (!background_sync_manager_)
     return base::TimeDelta::Max();
 
-  return background_sync_manager_->GetSoonestWakeupDelta();
+  // TODO(crbug.com/925297): Add a wakeup task for PERIODIC_SYNC registrations.
+  return background_sync_manager_->GetSoonestWakeupDelta(
+      blink::mojom::BackgroundSyncType::ONE_SHOT);
 }
 
 void BackgroundSyncContextImpl::DidGetSoonestWakeupDelta(

@@ -118,9 +118,13 @@ void TestBackgroundSyncManager::GetDataFromBackendContinue(
   BackgroundSyncManager::GetDataFromBackend(key, std::move(callback));
 }
 
-base::TimeDelta TestBackgroundSyncManager::GetSoonestWakeupDelta() {
-  soonest_wakeup_delta_ = BackgroundSyncManager::GetSoonestWakeupDelta();
-  return soonest_wakeup_delta_;
+base::TimeDelta TestBackgroundSyncManager::GetSoonestWakeupDelta(
+    blink::mojom::BackgroundSyncType sync_type) {
+  base::TimeDelta soonest_wakeup_delta =
+      BackgroundSyncManager::GetSoonestWakeupDelta(sync_type);
+  if (sync_type == blink::mojom::BackgroundSyncType::ONE_SHOT)
+    soonest_one_shot_wakeup_delta_ = soonest_wakeup_delta;
+  return soonest_wakeup_delta;
 }
 
 }  // namespace content

@@ -10,8 +10,10 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
 
 namespace content {
 struct BackgroundSyncParameters;
@@ -46,6 +48,11 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
       content::BackgroundSyncParameters* parameters) const override;
   void NotifyBackgroundSyncRegistered(const url::Origin& origin) override;
   void RunInBackground() override;
+  base::TimeDelta GetNextEventDelay(
+      int64_t min_interval,
+      int num_attempts,
+      blink::mojom::BackgroundSyncType sync_type,
+      content::BackgroundSyncParameters* parameters) const override;
 
  protected:
   // Virtual for testing.

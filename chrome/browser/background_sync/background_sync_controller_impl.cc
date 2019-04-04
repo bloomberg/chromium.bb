@@ -18,6 +18,15 @@
 #include "chrome/browser/android/background_sync_launcher_android.h"
 #endif
 
+namespace {
+
+// Default min time gap between two periodic sync events for a given
+// Periodic Background Sync registration.
+constexpr base::TimeDelta kMinGapBetweenPeriodicSyncEvents =
+    base::TimeDelta::FromHours(12);
+
+}  // namespace
+
 // static
 const char BackgroundSyncControllerImpl::kFieldTrialName[] = "BackgroundSync";
 const char BackgroundSyncControllerImpl::kDisabledParameterName[] = "disabled";
@@ -122,6 +131,36 @@ void BackgroundSyncControllerImpl::RunInBackground() {
 #if defined(OS_ANDROID)
   BackgroundSyncLauncherAndroid::LaunchBrowserIfStopped();
 #endif
+}
+
+base::TimeDelta BackgroundSyncControllerImpl::GetNextEventDelay(
+    int64_t min_interval,
+    int num_attempts,
+    blink::mojom::BackgroundSyncType sync_type,
+    content::BackgroundSyncParameters* parameters) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(parameters);
+
+  if (!num_attempts) {
+    // First attempt.
+    switch (sync_type) {
+      case blink::mojom::BackgroundSyncType::ONE_SHOT:
+        return base::TimeDelta();
+      case blink::mojom::BackgroundSyncType::PERIODIC:
+        // TODO(crbug.com/925297): Integrate with site engagement data.
+        int site_engagement_factor = 1;
+        int64_t effective_gap_ms =
+            site_engagement_factor *
+            kMinGapBetweenPeriodicSyncEvents.InMilliseconds();
+        return base::TimeDelta::FromMilliseconds(
+            std::max(min_interval, effective_gap_ms));
+    }
+  }
+
+  // After a sync event has been fired.
+  DCHECK_LT(num_attempts, parameters->max_sync_attempts);
+  return parameters->initial_retry_delay *
+         pow(parameters->retry_delay_factor, num_attempts - 1);
 }
 
 rappor::RapporServiceImpl*

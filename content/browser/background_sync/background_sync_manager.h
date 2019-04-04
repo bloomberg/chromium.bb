@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/clock.h"
+#include "base/time/time.h"
 #include "content/browser/background_sync/background_sync.pb.h"
 #include "content/browser/background_sync/background_sync_registration.h"
 #include "content/browser/background_sync/background_sync_status.h"
@@ -125,8 +126,9 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   // Gets the soonest delta after which the browser should be woken up to send
   // a Background Sync event. If set to max, the browser won't be woken up.
-  // This is virtual so that tests can override it.
-  virtual base::TimeDelta GetSoonestWakeupDelta();
+  // Only registrations of type |sync_type| are considered.
+  virtual base::TimeDelta GetSoonestWakeupDelta(
+      blink::mojom::BackgroundSyncType sync_type);
 
  protected:
   BackgroundSyncManager(
@@ -233,6 +235,10 @@ class CONTENT_EXPORT BackgroundSyncManager
       blink::mojom::SyncRegistrationOptions options,
       StatusAndRegistrationCallback callback,
       blink::mojom::PermissionStatus permission_status);
+  void RegisterDidGetDelay(int64_t sw_registration_id,
+                           BackgroundSyncRegistration new_registration,
+                           StatusAndRegistrationCallback callback,
+                           base::TimeDelta delay);
   void RegisterDidStore(int64_t sw_registration_id,
                         const BackgroundSyncRegistration& new_registration,
                         StatusAndRegistrationCallback callback,
@@ -277,7 +283,14 @@ class CONTENT_EXPORT BackgroundSyncManager
   void EventCompleteImpl(
       blink::mojom::BackgroundSyncRegistrationInfoPtr registration_info,
       blink::ServiceWorkerStatusCode status_code,
+      const url::Origin& origin,
       base::OnceClosure callback);
+  void EventCompleteDidGetDelay(
+      blink::mojom::BackgroundSyncRegistrationInfoPtr registration_info,
+      bool succeeded,
+      const url::Origin& origin,
+      base::OnceClosure callback,
+      base::TimeDelta delay);
   void EventCompleteDidStore(int64_t service_worker_id,
                              base::OnceClosure callback,
                              blink::ServiceWorkerStatusCode status_code);
