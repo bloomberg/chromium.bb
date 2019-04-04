@@ -151,7 +151,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
 
             resetList();
 
-            int chooserDataType = mCategory.getChooserDataType();
+            int chooserDataType = mCategory.getObjectChooserDataType();
             boolean hasEntries =
                     chooserDataType == -1 ? addWebsites(sites) : addChosenObjects(sites);
 

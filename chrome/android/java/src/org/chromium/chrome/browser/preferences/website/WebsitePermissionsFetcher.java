@@ -319,7 +319,7 @@ public class WebsitePermissionsFetcher {
         final @ContentSettingsType int mChooserDataType;
 
         public ChooserExceptionInfoFetcher(@ContentSettingsType int type) {
-            mChooserDataType = SiteSettingsCategory.chooserDataTypeFrom(type);
+            mChooserDataType = SiteSettingsCategory.objectChooserDataTypeFromGuard(type);
         }
 
         @Override
