@@ -319,11 +319,7 @@ std::unique_ptr<JSONArray> ArrayForSkMatrix(const SkMatrix& matrix) {
 }
 
 std::unique_ptr<JSONObject> ObjectForSkShader(const SkShader& shader) {
-  auto shader_item = std::make_unique<JSONObject>();
-  const SkMatrix local_matrix = shader.getLocalMatrix();
-  if (!local_matrix.isIdentity())
-    shader_item->SetArray("localMatrix", ArrayForSkMatrix(local_matrix));
-  return shader_item;
+  return std::make_unique<JSONObject>();
 }
 
 String StringForSkColor(const SkColor& color) {
