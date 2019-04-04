@@ -81,7 +81,7 @@ class SSLClientAuthDelegate : public SSLClientAuthHandler::Delegate {
           callback,
       ResourceRequestInfo::WebContentsGetter web_contents_getter,
       scoped_refptr<net::SSLCertRequestInfo> cert_info)
-      : callback_(std::move(callback)), cert_info_(cert_info) {
+      : callback_(std::move(callback)), cert_info_(std::move(cert_info)) {
     content::WebContents* web_contents = web_contents_getter.Run();
     content::BrowserContext* browser_context =
         web_contents->GetBrowserContext();
