@@ -15,7 +15,7 @@
 namespace base {
 namespace {
 
-bool g_load_succeeded = false;
+bool g_winrt_string_loaded = false;
 
 decltype(&::WindowsCreateStringReference) GetWindowsCreateStringReference() {
   static auto const create_string_reference_func =
@@ -36,12 +36,12 @@ namespace win {
 
 // static
 bool HStringReference::ResolveCoreWinRTStringDelayload() {
-  g_load_succeeded = GetWindowsCreateStringReference() != nullptr;
-  return g_load_succeeded;
+  g_winrt_string_loaded = GetWindowsCreateStringReference() != nullptr;
+  return g_winrt_string_loaded;
 }
 
 HStringReference::HStringReference(const wchar_t* str, size_t length) {
-  DCHECK(g_load_succeeded);
+  DCHECK(g_winrt_string_loaded);
   // String must be null terminated for WindowsCreateStringReference.
   // nullptr str is OK so long as the length is 0.
   DCHECK(str ? str[length] == L'\0' : length == 0);
