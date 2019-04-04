@@ -53,6 +53,13 @@ class BookmarkAppInstallManager final : public web_app::InstallManager {
   void InstallWebAppWithOptions(content::WebContents* web_contents,
                                 const web_app::InstallOptions& install_options,
                                 OnceInstallCallback callback) override;
+  void InstallOrUpdateWebAppFromSync(
+      const web_app::AppId& app_id,
+      std::unique_ptr<WebApplicationInfo> web_application_info,
+      OnceInstallCallback callback) override;
+  void InstallWebAppForTesting(
+      std::unique_ptr<WebApplicationInfo> web_application_info,
+      OnceInstallCallback callback) override;
 
   using BookmarkAppHelperFactory =
       base::RepeatingCallback<std::unique_ptr<BookmarkAppHelper>(

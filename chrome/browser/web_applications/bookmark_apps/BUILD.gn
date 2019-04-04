@@ -20,6 +20,7 @@ source_set("bookmark_apps") {
     "//chrome/common",
     "//components/favicon/content",
     "//components/pref_registry",
+    "//extensions/browser",
     "//skia",
   ]
 }

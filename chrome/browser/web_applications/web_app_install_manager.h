@@ -55,6 +55,13 @@ class WebAppInstallManager final : public InstallManager,
   void InstallWebAppWithOptions(content::WebContents* web_contents,
                                 const InstallOptions& install_options,
                                 OnceInstallCallback callback) override;
+  void InstallOrUpdateWebAppFromSync(
+      const AppId& app_id,
+      std::unique_ptr<WebApplicationInfo> web_application_info,
+      OnceInstallCallback callback) override;
+  void InstallWebAppForTesting(
+      std::unique_ptr<WebApplicationInfo> web_application_info,
+      OnceInstallCallback callback) override;
 
   // WebContentsObserver:
   void WebContentsDestroyed() override;
