@@ -72,6 +72,7 @@
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/net_benchmarking.h"
+#include "chrome/browser/notifications/platform_notification_service_factory.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/page_load_metrics/metrics_navigation_throttle.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
@@ -2920,8 +2921,11 @@ content::MediaObserver* ChromeContentBrowserClient::GetMediaObserver() {
 }
 
 content::PlatformNotificationService*
-ChromeContentBrowserClient::GetPlatformNotificationService() {
-  return PlatformNotificationServiceImpl::GetInstance();
+ChromeContentBrowserClient::GetPlatformNotificationService(
+    content::BrowserContext* browser_context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  return PlatformNotificationServiceFactory::GetForProfile(profile);
 }
 
 bool ChromeContentBrowserClient::CanCreateWindow(

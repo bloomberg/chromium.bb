@@ -25,6 +25,7 @@
 #include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
 #include "chrome/browser/notifications/notification_test_util.h"
+#include "chrome/browser/notifications/platform_notification_service_factory.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
@@ -97,7 +98,8 @@ class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
  protected:
   // Returns the Platform Notification Service these unit tests are for.
   PlatformNotificationServiceImpl* service() const {
-    return PlatformNotificationServiceImpl::GetInstance();
+    return PlatformNotificationServiceFactory::GetForProfile(
+        browser()->profile());
   }
 
   // Returns a vector with the Notification objects that are being displayed

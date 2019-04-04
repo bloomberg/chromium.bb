@@ -13,7 +13,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/singleton.h"
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/notifications/notification_common.h"
@@ -29,21 +28,20 @@ class GURL;
 class Profile;
 
 namespace content {
-class BrowserContext;
 struct NotificationResources;
 }  // namespace content
 
-// The platform notification service is the profile-agnostic entry point through
+// The platform notification service is the profile-specific entry point through
 // which Web Notifications can be controlled.
 class PlatformNotificationServiceImpl
-    : public content::PlatformNotificationService {
+    : public content::PlatformNotificationService,
+      public KeyedService {
  public:
+  explicit PlatformNotificationServiceImpl(Profile* profile);
+  ~PlatformNotificationServiceImpl() override;
+
   // Register profile-specific prefs.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-
-  // Returns the active instance of the service in the browser process. Safe to
-  // be called from any thread.
-  static PlatformNotificationServiceImpl* GetInstance();
 
   // Returns whether the notification identified by |notification_id| was
   // closed programmatically through ClosePersistentNotification().
@@ -51,34 +49,24 @@ class PlatformNotificationServiceImpl
 
   // content::PlatformNotificationService implementation.
   void DisplayNotification(
-      content::BrowserContext* browser_context,
       const std::string& notification_id,
       const GURL& origin,
       const blink::PlatformNotificationData& notification_data,
       const blink::NotificationResources& notification_resources) override;
   void DisplayPersistentNotification(
-      content::BrowserContext* browser_context,
       const std::string& notification_id,
       const GURL& service_worker_scope,
       const GURL& origin,
       const blink::PlatformNotificationData& notification_data,
       const blink::NotificationResources& notification_resources) override;
-  void CloseNotification(content::BrowserContext* browser_context,
-                         const std::string& notification_id) override;
-  void ClosePersistentNotification(content::BrowserContext* browser_context,
-                                   const std::string& notification_id) override;
+  void CloseNotification(const std::string& notification_id) override;
+  void ClosePersistentNotification(const std::string& notification_id) override;
   void GetDisplayedNotifications(
-      content::BrowserContext* browser_context,
       DisplayedNotificationsCallback callback) override;
-  void ScheduleTrigger(content::BrowserContext* browser_context,
-                       base::Time timestamp) override;
-  base::Time ReadNextTriggerTimestamp(
-      content::BrowserContext* browser_context) override;
-
-  int64_t ReadNextPersistentNotificationId(
-      content::BrowserContext* browser_context) override;
+  void ScheduleTrigger(base::Time timestamp) override;
+  base::Time ReadNextTriggerTimestamp() override;
+  int64_t ReadNextPersistentNotificationId() override;
   void RecordNotificationUkmEvent(
-      content::BrowserContext* browser_context,
       const content::NotificationDatabaseData& data) override;
 
   void set_history_query_complete_closure_for_testing(
@@ -89,7 +77,6 @@ class PlatformNotificationServiceImpl
   NotificationTriggerScheduler* GetNotificationTriggerScheduler();
 
  private:
-  friend struct base::DefaultSingletonTraits<PlatformNotificationServiceImpl>;
   friend class NotificationTriggerSchedulerTest;
   friend class PersistentNotificationHandlerTest;
   friend class PlatformNotificationServiceBrowserTest;
@@ -102,29 +89,33 @@ class PlatformNotificationServiceImpl
   FRIEND_TEST_ALL_PREFIXES(PlatformNotificationServiceTest,
                            RecordNotificationUkmEvent);
 
-  PlatformNotificationServiceImpl();
-  ~PlatformNotificationServiceImpl() override;
+  // KeyedService implementation.
+  void Shutdown() override;
 
-  void OnUrlHistoryQueryComplete(const content::NotificationDatabaseData& data,
-                                 bool found_url,
-                                 const history::URLRow& url_row,
-                                 const history::VisitVector& visits);
+  static void OnUrlHistoryQueryComplete(
+      base::OnceClosure callback,
+      const content::NotificationDatabaseData& data,
+      bool found_url,
+      const history::URLRow& url_row,
+      const history::VisitVector& visits);
 
   // Creates a new Web Notification-based Notification object. Should only be
   // called when the notification is first shown.
   message_center::Notification CreateNotificationFromData(
-      Profile* profile,
       const GURL& origin,
       const std::string& notification_id,
       const blink::PlatformNotificationData& notification_data,
       const blink::NotificationResources& notification_resources) const;
 
   // Returns a display name for an origin, to be used in the context message
-  base::string16 DisplayNameForContextMessage(Profile* profile,
-                                              const GURL& origin) const;
+  base::string16 DisplayNameForContextMessage(const GURL& origin) const;
 
   // Clears |closed_notifications_|. Should only be used for testing purposes.
   void ClearClosedNotificationsForTesting() { closed_notifications_.clear(); }
+
+  // The profile for this instance or NULL if the initial profile has been
+  // shutdown already.
+  Profile* profile_;
 
   // Tracks the id of persistent notifications that have been closed
   // programmatically to avoid dispatching close events for them.

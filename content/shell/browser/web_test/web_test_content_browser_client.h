@@ -55,7 +55,8 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
   std::unique_ptr<OverlayWindow> CreateWindowForPictureInPicture(
       PictureInPictureWindowController* controller) override;
 
-  PlatformNotificationService* GetPlatformNotificationService() override;
+  PlatformNotificationService* GetPlatformNotificationService(
+      content::BrowserContext* browser_context) override;
 
   bool CanCreateWindow(content::RenderFrameHost* opener,
                        const GURL& opener_url,

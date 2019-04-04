@@ -71,7 +71,8 @@ void PlatformNotificationContextImpl::Initialize() {
       service_worker_context_, browser_context_);
 
   PlatformNotificationService* service =
-      GetContentClient()->browser()->GetPlatformNotificationService();
+      GetContentClient()->browser()->GetPlatformNotificationService(
+          browser_context_);
   if (!service) {
     std::set<std::string> displayed_notifications;
     DidGetNotifications(std::move(displayed_notifications), false);
@@ -79,11 +80,10 @@ void PlatformNotificationContextImpl::Initialize() {
   }
 
   ukm_callback_ = base::BindRepeating(
-      &PlatformNotificationService::RecordNotificationUkmEvent,
-      base::Unretained(service), browser_context_);
+      &PlatformNotificationServiceProxy::RecordNotificationUkmEvent,
+      service_proxy_->AsWeakPtr());
 
   service->GetDisplayedNotifications(
-      browser_context_,
       base::BindOnce(&PlatformNotificationContextImpl::DidGetNotifications,
                      this));
 }
@@ -366,7 +366,8 @@ void PlatformNotificationContextImpl::
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   PlatformNotificationService* service =
-      GetContentClient()->browser()->GetPlatformNotificationService();
+      GetContentClient()->browser()->GetPlatformNotificationService(
+          browser_context_);
 
   if (!service) {
     // Rely on the database only
@@ -378,7 +379,6 @@ void PlatformNotificationContextImpl::
   }
 
   service->GetDisplayedNotifications(
-      browser_context_,
       base::BindOnce(
           &PlatformNotificationContextImpl::
               SynchronizeDisplayedNotificationsForServiceWorkerRegistration,

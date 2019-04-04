@@ -41,7 +41,6 @@ class NotificationTriggerScheduler {
 
  private:
   base::OneShotTimer trigger_timer_;
-  base::WeakPtrFactory<NotificationTriggerScheduler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationTriggerScheduler);
 };

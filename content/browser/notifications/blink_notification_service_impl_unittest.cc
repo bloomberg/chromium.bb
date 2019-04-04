@@ -88,8 +88,6 @@ class MockNonPersistentNotificationListener
   mojo::Binding<blink::mojom::NonPersistentNotificationListener> binding_;
 };
 
-}  // anonymous namespace
-
 // This is for overriding the Platform Notification Service with a mock one.
 class NotificationBrowserClient : public TestContentBrowserClient {
  public:
@@ -97,13 +95,16 @@ class NotificationBrowserClient : public TestContentBrowserClient {
       MockPlatformNotificationService* mock_platform_service)
       : platform_notification_service_(mock_platform_service) {}
 
-  PlatformNotificationService* GetPlatformNotificationService() override {
+  PlatformNotificationService* GetPlatformNotificationService(
+      BrowserContext* browser_context) override {
     return platform_notification_service_;
   }
 
  private:
   MockPlatformNotificationService* platform_notification_service_;
 };
+
+}  // anonymous namespace
 
 class BlinkNotificationServiceImplTest : public ::testing::Test {
  public:
@@ -113,6 +114,7 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         embedded_worker_helper_(
             std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath())),
+        mock_platform_service_(&browser_context_),
         notification_browser_client_(&mock_platform_service_) {
     SetBrowserClientForTesting(&notification_browser_client_);
   }
@@ -379,7 +381,6 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
   std::set<std::string> GetDisplayedNotifications() {
     base::RunLoop run_loop;
     mock_platform_service_.GetDisplayedNotifications(
-        &browser_context_,
         base::BindOnce(
             &BlinkNotificationServiceImplTest::DidGetDisplayedNotifications,
             base::Unretained(this), run_loop.QuitClosure()));

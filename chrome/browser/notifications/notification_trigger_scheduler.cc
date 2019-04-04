@@ -8,6 +8,7 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/notifications/platform_notification_service_factory.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -26,14 +27,14 @@ using content::BrowserThread;
 namespace {
 
 void TriggerNotificationsForProfile(Profile* profile) {
-  auto* service = PlatformNotificationServiceImpl::GetInstance();
-  base::Time next_trigger = service->ReadNextTriggerTimestamp(profile);
+  auto* service = PlatformNotificationServiceFactory::GetForProfile(profile);
+  base::Time next_trigger = service->ReadNextTriggerTimestamp();
 
   // Skip this profile if there are no pending notifications.
   if (next_trigger > base::Time::Now()) {
     // Reschedule in case there are some in the future.
     if (next_trigger < base::Time::Max())
-      service->ScheduleTrigger(profile, next_trigger);
+      service->ScheduleTrigger(next_trigger);
     return;
   }
 
@@ -42,8 +43,8 @@ void TriggerNotificationsForProfile(Profile* profile) {
   profile->GetPrefs()->SetTime(prefs::kNotificationNextTriggerTime,
                                base::Time::Max());
 
-  // Unretained is safe here as PlatformNotificationServiceImpl is a singleton
-  // and owns its |trigger_scheduler_| until process exit.
+  // Unretained is safe here because BrowserContext::ForEachStoragePartition is
+  // synchronous and the profile just got fetched via GetLoadedProfiles.
   BrowserContext::ForEachStoragePartition(
       profile,
       base::BindRepeating(
@@ -80,8 +81,7 @@ void NotificationTriggerScheduler::TriggerNotifications() {
   }
 }
 
-NotificationTriggerScheduler::NotificationTriggerScheduler()
-    : weak_ptr_factory_(this) {}
+NotificationTriggerScheduler::NotificationTriggerScheduler() = default;
 
 NotificationTriggerScheduler::~NotificationTriggerScheduler() = default;
 

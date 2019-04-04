@@ -16,6 +16,7 @@
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/notifications/platform_notification_service_factory.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/push_messaging/push_messaging_constants.h"
@@ -167,9 +168,9 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
           kPushMessagingForcedNotificationTag)
         continue;
 
-      PlatformNotificationServiceImpl::GetInstance()
+      PlatformNotificationServiceFactory::GetForProfile(profile_)
           ->ClosePersistentNotification(
-              profile_, notification_database_data.notification_id);
+              notification_database_data.notification_id);
       break;
     }
   }
@@ -262,8 +263,8 @@ void PushMessagingNotificationManager::ProcessSilentPush(
   scoped_refptr<PlatformNotificationContext> notification_context =
       GetStoragePartition(profile_, origin)->GetPlatformNotificationContext();
   int64_t next_persistent_notification_id =
-      PlatformNotificationServiceImpl::GetInstance()
-          ->ReadNextPersistentNotificationId(profile_);
+      PlatformNotificationServiceFactory::GetForProfile(profile_)
+          ->ReadNextPersistentNotificationId();
 
   notification_context->WriteNotificationData(
       next_persistent_notification_id, service_worker_registration_id, origin,

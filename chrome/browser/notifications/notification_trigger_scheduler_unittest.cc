@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
 #include <memory>
 
 #include "chrome/browser/notifications/notification_trigger_scheduler.h"
+#include "chrome/browser/notifications/platform_notification_service_factory.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -26,10 +28,6 @@ std::unique_ptr<TestingProfileManager> CreateTestingProfileManager() {
   return profile_manager;
 }
 
-PlatformNotificationServiceImpl* GetNotificationService() {
-  return PlatformNotificationServiceImpl::GetInstance();
-}
-
 class MockNotificationTriggerScheduler : public NotificationTriggerScheduler {
  public:
   ~MockNotificationTriggerScheduler() override = default;
@@ -48,40 +46,61 @@ class NotificationTriggerSchedulerTest : public testing::Test {
                 MAIN_THREAD_MOCK_TIME) {}
 
   void SetUp() override {
-    scheduler_ = new MockNotificationTriggerScheduler();
-    GetNotificationService()->trigger_scheduler_ = base::WrapUnique(scheduler_);
-
     // Advance time a little bit so TimeTicks::Now().is_null() becomes false.
     thread_bundle_.FastForwardBy(kTimeAdvance);
   }
 
-  MockNotificationTriggerScheduler* scheduler_;
+  class ProfileTestData {
+   public:
+    ProfileTestData(TestingProfileManager* profile_manager,
+                    const std::string& profile_name)
+        : profile_(profile_manager->CreateTestingProfile(profile_name)),
+          service_(PlatformNotificationServiceFactory::GetForProfile(profile_)),
+          scheduler_(new MockNotificationTriggerScheduler()) {
+      service_->trigger_scheduler_ = base::WrapUnique(scheduler_);
+    }
+
+    // Owned by TestingProfileManager.
+    Profile* profile_;
+    // Owned by PlatformNotificationServiceFactory.
+    PlatformNotificationServiceImpl* service_;
+    // Owned by |service_|.
+    MockNotificationTriggerScheduler* scheduler_;
+  };
+
   content::TestBrowserThreadBundle thread_bundle_;
 };
 
 TEST_F(NotificationTriggerSchedulerTest,
        TriggerNotificationsCallsAllStoragePartitions) {
-  EXPECT_CALL(*scheduler_, TriggerNotificationsForStoragePartition(_)).Times(0);
-
   std::unique_ptr<TestingProfileManager> profile_manager =
       CreateTestingProfileManager();
-  Profile* profile1 = profile_manager->CreateTestingProfile("profile1");
-  Profile* profile2 = profile_manager->CreateTestingProfile("profile2");
+  ProfileTestData data1(profile_manager.get(), "profile1");
+  ProfileTestData data2(profile_manager.get(), "profile2");
+
+  EXPECT_CALL(*data1.scheduler_, TriggerNotificationsForStoragePartition(_))
+      .Times(0);
+  EXPECT_CALL(*data2.scheduler_, TriggerNotificationsForStoragePartition(_))
+      .Times(0);
 
   auto* partition1 = content::BrowserContext::GetStoragePartitionForSite(
-      profile1, GURL("http://example.com"));
+      data1.profile_, GURL("http://example.com"));
   auto* partition2 = content::BrowserContext::GetStoragePartitionForSite(
-      profile2, GURL("http://example.com"));
+      data2.profile_, GURL("http://example.com"));
 
   auto now = base::Time::Now();
   auto delta = base::TimeDelta::FromSeconds(3);
-  GetNotificationService()->ScheduleTrigger(profile1, now + delta);
-  GetNotificationService()->ScheduleTrigger(profile2, now + delta);
+  data1.service_->ScheduleTrigger(now + delta);
+  data2.service_->ScheduleTrigger(now + delta);
   base::RunLoop().RunUntilIdle();
 
-  testing::Mock::VerifyAndClearExpectations(scheduler_);
-  EXPECT_CALL(*scheduler_, TriggerNotificationsForStoragePartition(partition1));
-  EXPECT_CALL(*scheduler_, TriggerNotificationsForStoragePartition(partition2));
+  testing::Mock::VerifyAndClearExpectations(data1.scheduler_);
+  testing::Mock::VerifyAndClearExpectations(data2.scheduler_);
+
+  EXPECT_CALL(*data1.scheduler_,
+              TriggerNotificationsForStoragePartition(partition1));
+  EXPECT_CALL(*data2.scheduler_,
+              TriggerNotificationsForStoragePartition(partition2));
 
   thread_bundle_.FastForwardBy(delta);
   base::RunLoop().RunUntilIdle();

@@ -32,6 +32,14 @@
 
 namespace content {
 
+static MockPlatformNotificationService* GetMockPlatformNotificationService() {
+  auto* client = WebTestContentBrowserClient::Get();
+  auto* context = client->GetWebTestBrowserContext();
+  auto* service = client->GetPlatformNotificationService(context);
+
+  return static_cast<MockPlatformNotificationService*>(service);
+}
+
 WebTestMessageFilter::WebTestMessageFilter(
     int render_process_id,
     storage::DatabaseTracker* database_tracker,
@@ -146,22 +154,15 @@ void WebTestMessageFilter::OnSimulateWebNotificationClick(
     const base::Optional<int>& action_index,
     const base::Optional<base::string16>& reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  MockPlatformNotificationService* platform_notification_service =
-      static_cast<MockPlatformNotificationService*>(
-          WebTestContentBrowserClient::Get()->GetPlatformNotificationService());
-
-  platform_notification_service->SimulateClick(title, action_index, reply);
+  GetMockPlatformNotificationService()->SimulateClick(title, action_index,
+                                                      reply);
 }
 
 void WebTestMessageFilter::OnSimulateWebNotificationClose(
     const std::string& title,
     bool by_user) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  MockPlatformNotificationService* platform_notification_service =
-      static_cast<MockPlatformNotificationService*>(
-          WebTestContentBrowserClient::Get()->GetPlatformNotificationService());
-
-  platform_notification_service->SimulateClose(title, by_user);
+  GetMockPlatformNotificationService()->SimulateClose(title, by_user);
 }
 
 void WebTestMessageFilter::OnDeleteAllCookies() {
