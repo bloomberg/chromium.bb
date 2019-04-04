@@ -21,6 +21,7 @@ class MockSwapPromiseMonitor : public SwapPromiseMonitor {
 
   MOCK_METHOD0(OnSetNeedsCommitOnMain, void());
   void OnSetNeedsRedrawOnImpl() override {}
+  void OnForwardScrollUpdateToMainThreadOnImpl() override {}
 };
 
 class MockSwapPromise : public SwapPromise {

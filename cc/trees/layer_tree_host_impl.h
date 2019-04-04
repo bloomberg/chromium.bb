@@ -862,6 +862,7 @@ class CC_EXPORT LayerTreeHostImpl
                             bool lost);
 
   void NotifySwapPromiseMonitorsOfSetNeedsRedraw();
+  void NotifySwapPromiseMonitorsOfForwardingToMainThread();
 
   void UpdateRootLayerStateForSynchronousInputHandler();
 

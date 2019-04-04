@@ -10555,13 +10555,15 @@ class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
   SimpleSwapPromiseMonitor(LayerTreeHost* layer_tree_host,
                            LayerTreeHostImpl* layer_tree_host_impl,
                            int* set_needs_commit_count,
-                           int* set_needs_redraw_count)
+                           int* set_needs_redraw_count,
+                           int* forward_to_main_count)
       : SwapPromiseMonitor(
             (layer_tree_host ? layer_tree_host->GetSwapPromiseManager()
                              : nullptr),
             layer_tree_host_impl),
         set_needs_commit_count_(set_needs_commit_count),
-        set_needs_redraw_count_(set_needs_redraw_count) {}
+        set_needs_redraw_count_(set_needs_redraw_count),
+        forward_to_main_count_(forward_to_main_count) {}
 
   ~SimpleSwapPromiseMonitor() override = default;
 
@@ -10569,23 +10571,30 @@ class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
 
   void OnSetNeedsRedrawOnImpl() override { (*set_needs_redraw_count_)++; }
 
+  void OnForwardScrollUpdateToMainThreadOnImpl() override {
+    (*forward_to_main_count_)++;
+  }
+
  private:
   int* set_needs_commit_count_;
   int* set_needs_redraw_count_;
+  int* forward_to_main_count_;
 };
 
 TEST_F(LayerTreeHostImplTest, SimpleSwapPromiseMonitor) {
   int set_needs_commit_count = 0;
   int set_needs_redraw_count = 0;
+  int forward_to_main_count = 0;
 
   {
     std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
-        new SimpleSwapPromiseMonitor(nullptr, host_impl_.get(),
-                                     &set_needs_commit_count,
-                                     &set_needs_redraw_count));
+        new SimpleSwapPromiseMonitor(
+            nullptr, host_impl_.get(), &set_needs_commit_count,
+            &set_needs_redraw_count, &forward_to_main_count));
     host_impl_->SetNeedsRedraw();
     EXPECT_EQ(0, set_needs_commit_count);
     EXPECT_EQ(1, set_needs_redraw_count);
+    EXPECT_EQ(0, forward_to_main_count);
   }
 
   // Now the monitor is destroyed, SetNeedsRedraw() is no longer being
@@ -10593,38 +10602,42 @@ TEST_F(LayerTreeHostImplTest, SimpleSwapPromiseMonitor) {
   host_impl_->SetNeedsRedraw();
   EXPECT_EQ(0, set_needs_commit_count);
   EXPECT_EQ(1, set_needs_redraw_count);
+  EXPECT_EQ(0, forward_to_main_count);
 
   {
     std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
-        new SimpleSwapPromiseMonitor(nullptr, host_impl_.get(),
-                                     &set_needs_commit_count,
-                                     &set_needs_redraw_count));
+        new SimpleSwapPromiseMonitor(
+            nullptr, host_impl_.get(), &set_needs_commit_count,
+            &set_needs_redraw_count, &forward_to_main_count));
     // Redraw with damage.
     host_impl_->SetFullViewportDamage();
     host_impl_->SetNeedsRedraw();
     EXPECT_EQ(0, set_needs_commit_count);
     EXPECT_EQ(2, set_needs_redraw_count);
+    EXPECT_EQ(0, forward_to_main_count);
   }
 
   {
     std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
-        new SimpleSwapPromiseMonitor(nullptr, host_impl_.get(),
-                                     &set_needs_commit_count,
-                                     &set_needs_redraw_count));
+        new SimpleSwapPromiseMonitor(
+            nullptr, host_impl_.get(), &set_needs_commit_count,
+            &set_needs_redraw_count, &forward_to_main_count));
     // Redraw without damage.
     host_impl_->SetNeedsRedraw();
     EXPECT_EQ(0, set_needs_commit_count);
     EXPECT_EQ(3, set_needs_redraw_count);
+    EXPECT_EQ(0, forward_to_main_count);
   }
 
   set_needs_commit_count = 0;
   set_needs_redraw_count = 0;
+  forward_to_main_count = 0;
 
   {
     std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
-        new SimpleSwapPromiseMonitor(nullptr, host_impl_.get(),
-                                     &set_needs_commit_count,
-                                     &set_needs_redraw_count));
+        new SimpleSwapPromiseMonitor(
+            nullptr, host_impl_.get(), &set_needs_commit_count,
+            &set_needs_redraw_count, &forward_to_main_count));
     SetupScrollAndContentsLayers(gfx::Size(100, 100));
 
     // Scrolling normally should not trigger any forwarding.
@@ -10641,6 +10654,7 @@ TEST_F(LayerTreeHostImplTest, SimpleSwapPromiseMonitor) {
 
     EXPECT_EQ(0, set_needs_commit_count);
     EXPECT_EQ(1, set_needs_redraw_count);
+    EXPECT_EQ(0, forward_to_main_count);
 
     // Scrolling with a scroll handler should defer the swap to the main
     // thread.
@@ -10658,6 +10672,7 @@ TEST_F(LayerTreeHostImplTest, SimpleSwapPromiseMonitor) {
 
     EXPECT_EQ(0, set_needs_commit_count);
     EXPECT_EQ(2, set_needs_redraw_count);
+    EXPECT_EQ(1, forward_to_main_count);
   }
 }
 
@@ -11790,16 +11805,18 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
     // for LatencyInfo's to be propagated along with the CompositorFrame
     int set_needs_commit_count = 0;
     int set_needs_redraw_count = 0;
+    int forward_to_main_count = 0;
     std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
-        new SimpleSwapPromiseMonitor(nullptr, host_impl_.get(),
-                                     &set_needs_commit_count,
-                                     &set_needs_redraw_count));
+        new SimpleSwapPromiseMonitor(
+            nullptr, host_impl_.get(), &set_needs_commit_count,
+            &set_needs_redraw_count, &forward_to_main_count));
     EXPECT_EQ(
         InputHandler::SCROLL_ON_IMPL_THREAD,
         host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(0, 50)).thread);
 
     EXPECT_EQ(0, set_needs_commit_count);
     EXPECT_EQ(1, set_needs_redraw_count);
+    EXPECT_EQ(0, forward_to_main_count);
   }
 
   LayerImpl* scrolling_layer = host_impl_->OuterViewportScrollLayer();
@@ -11830,10 +11847,11 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
     // for LatencyInfo's to be propagated along with the CompositorFrame
     int set_needs_commit_count = 0;
     int set_needs_redraw_count = 0;
+    int forward_to_main_count = 0;
     std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
-        new SimpleSwapPromiseMonitor(nullptr, host_impl_.get(),
-                                     &set_needs_commit_count,
-                                     &set_needs_redraw_count));
+        new SimpleSwapPromiseMonitor(
+            nullptr, host_impl_.get(), &set_needs_commit_count,
+            &set_needs_redraw_count, &forward_to_main_count));
     // Update target.
     EXPECT_EQ(
         InputHandler::SCROLL_ON_IMPL_THREAD,
@@ -11841,6 +11859,7 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
 
     EXPECT_EQ(0, set_needs_commit_count);
     EXPECT_EQ(1, set_needs_redraw_count);
+    EXPECT_EQ(0, forward_to_main_count);
   }
 
   host_impl_->DidFinishImplFrame();
