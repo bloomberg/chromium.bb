@@ -1064,4 +1064,17 @@ const char kLibvdaServicePath[] = "/org/chromium/LibvdaService";
 const char kProvideMojoConnectionMethod[] = "ProvideMojoConnection";
 }  // namespace libvda
 
+namespace printing {
+constexpr char kCupsProxyDaemonName[] = "org.chromium.CupsProxyDaemon";
+constexpr char kCupsProxyDaemonPath[] = "/org/chromium/CupsProxyDaemon";
+constexpr char kCupsProxyDaemonInterface[] = "org.chromium.CupsProxyDaemon";
+
+// Method names.
+constexpr char kBootstrapMojoConnectionMethod[] = "BootstrapMojoConnection";
+
+// Token identifying the primordial Mojo pipe passed to BootstrapMojoConnection.
+constexpr char kBootstrapMojoConnectionChannelToken[] =
+    "cups-proxy-service-bootstrap";
+}  // namespace printing
+
 #endif  // SYSTEM_API_DBUS_SERVICE_CONSTANTS_H_
