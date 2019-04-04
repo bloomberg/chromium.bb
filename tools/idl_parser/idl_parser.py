@@ -369,8 +369,12 @@ class IDLParser(object):
     """MixinMember : Const
                    | Operation
                    | Stringifier
-                   | ReadonlyMember"""
-    p[0] = p[1]
+                   | ReadOnly AttributeRest"""
+    if len(p) == 2:
+      p[0] = p[1]
+    else:
+      p[2].AddChildren(p[1])
+      p[0] = p[2]
 
   def p_Dictionary(self, p):
     """Dictionary : DICTIONARY identifier Inheritance '{' DictionaryMembers '}' ';'"""
