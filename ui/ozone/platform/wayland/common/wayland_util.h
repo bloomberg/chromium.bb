@@ -20,15 +20,9 @@ class WaylandShmBuffer;
 
 namespace gfx {
 class Size;
-enum class SwapResult;
-struct PresentationFeedback;
 }  // namespace gfx
 
 namespace wl {
-
-// Corresponds to mojom::WaylandConnection::ScheduleBufferSwapCallback.
-using BufferSwapCallback =
-    base::OnceCallback<void(gfx::SwapResult, const gfx::PresentationFeedback&)>;
 
 using RequestSizeCallback = base::OnceCallback<void(const gfx::Size&)>;
 

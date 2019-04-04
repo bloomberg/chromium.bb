@@ -89,7 +89,9 @@ class FakeGbmDevice : public GbmDevice {
 
 class WaylandSurfaceFactoryTest : public WaylandTest {
  public:
-  WaylandSurfaceFactoryTest() : surface_factory_(connection_proxy_.get()) {}
+  WaylandSurfaceFactoryTest() {
+    surface_factory_.SetProxy(connection_proxy_.get());
+  }
 
   ~WaylandSurfaceFactoryTest() override {}
 

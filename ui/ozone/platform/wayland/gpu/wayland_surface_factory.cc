@@ -84,7 +84,8 @@ scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateSurfacelessViewGLSurface(
   // If there is a gbm device available, use surfaceless gl surface.
   if (!connection_->gbm_device())
     return nullptr;
-  return gl::InitializeGLSurface(new GbmSurfacelessWayland(factory_, window));
+  return gl::InitializeGLSurface(
+      new GbmSurfacelessWayland(factory_, connection_, window));
 #else
   return nullptr;
 #endif
@@ -113,14 +114,16 @@ bool GLOzoneEGLWayland::LoadGLES2Bindings(gl::GLImplementation impl) {
 
 }  // namespace
 
-WaylandSurfaceFactory::WaylandSurfaceFactory(WaylandConnectionProxy* connection)
-    : connection_(connection) {
-  if (connection_)
-    egl_implementation_ =
-        std::make_unique<GLOzoneEGLWayland>(connection_, this);
-}
+WaylandSurfaceFactory::WaylandSurfaceFactory() {}
 
 WaylandSurfaceFactory::~WaylandSurfaceFactory() {}
+
+void WaylandSurfaceFactory::SetProxy(WaylandConnectionProxy* proxy) {
+  DCHECK(!connection_ && proxy);
+  connection_ = proxy;
+
+  egl_implementation_ = std::make_unique<GLOzoneEGLWayland>(connection_, this);
+}
 
 void WaylandSurfaceFactory::RegisterSurface(gfx::AcceleratedWidget widget,
                                             GbmSurfacelessWayland* surface) {
@@ -133,19 +136,13 @@ void WaylandSurfaceFactory::UnregisterSurface(gfx::AcceleratedWidget widget) {
 
 GbmSurfacelessWayland* WaylandSurfaceFactory::GetSurface(
     gfx::AcceleratedWidget widget) const {
+  GbmSurfacelessWayland* surface = nullptr;
   auto it = widget_to_surface_map_.find(widget);
-  DCHECK(it != widget_to_surface_map_.end());
-  return it->second;
+  if (it != widget_to_surface_map_.end())
+    surface = it->second;
+  return surface;
 }
 
-void WaylandSurfaceFactory::ScheduleBufferSwap(
-    gfx::AcceleratedWidget widget,
-    uint32_t buffer_id,
-    const gfx::Rect& damage_region,
-    wl::BufferSwapCallback callback) {
-  connection_->ScheduleBufferSwap(widget, buffer_id, damage_region,
-                                  std::move(callback));
-}
 
 std::unique_ptr<SurfaceOzoneCanvas>
 WaylandSurfaceFactory::CreateCanvasForWidget(gfx::AcceleratedWidget widget) {
@@ -180,7 +177,7 @@ scoped_refptr<gfx::NativePixmap> WaylandSurfaceFactory::CreateNativePixmap(
     gfx::BufferUsage usage) {
 #if defined(WAYLAND_GBM)
   scoped_refptr<GbmPixmapWayland> pixmap =
-      base::MakeRefCounted<GbmPixmapWayland>(this, connection_);
+      base::MakeRefCounted<GbmPixmapWayland>(this, connection_, widget);
   if (!pixmap->InitializeBuffer(size, format, usage))
     return nullptr;
   return pixmap;

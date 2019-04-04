@@ -183,6 +183,11 @@ int WaylandConnection::GetKeyboardModifiers() const {
   return modifiers;
 }
 
+void WaylandConnection::SetWaylandConnectionClient(
+    ozone::mojom::WaylandConnectionClientAssociatedPtrInfo client) {
+  client_associated_ptr_.Bind(std::move(client));
+}
+
 void WaylandConnection::CreateZwpLinuxDmabuf(
     base::File file,
     uint32_t width,
@@ -212,18 +217,14 @@ void WaylandConnection::DestroyZwpLinuxDmabuf(uint32_t buffer_id) {
   }
 }
 
-void WaylandConnection::ScheduleBufferSwap(
-    gfx::AcceleratedWidget widget,
-    uint32_t buffer_id,
-    const gfx::Rect& damage_region,
-    ScheduleBufferSwapCallback callback) {
+void WaylandConnection::ScheduleBufferSwap(gfx::AcceleratedWidget widget,
+                                           uint32_t buffer_id,
+                                           const gfx::Rect& damage_region) {
   DCHECK(base::MessageLoopCurrentForUI::IsSet());
 
   CHECK(buffer_manager_);
-  if (!buffer_manager_->ScheduleBufferSwap(widget, buffer_id, damage_region,
-                                           std::move(callback))) {
+  if (!buffer_manager_->ScheduleBufferSwap(widget, buffer_id, damage_region))
     TerminateGpuProcess(buffer_manager_->error_message());
-  }
 }
 
 void WaylandConnection::CreateShmBufferForWidget(gfx::AcceleratedWidget widget,
@@ -247,6 +248,21 @@ void WaylandConnection::DestroyShmBuffer(gfx::AcceleratedWidget widget) {
   DCHECK(shm_buffer_manager_);
   if (!shm_buffer_manager_->DestroyBuffer(widget))
     TerminateGpuProcess("Failed to destroy SHM buffer.");
+}
+
+void WaylandConnection::OnSubmission(gfx::AcceleratedWidget widget,
+                                     uint32_t buffer_id,
+                                     const gfx::SwapResult& swap_result) {
+  DCHECK(client_associated_ptr_);
+  client_associated_ptr_->OnSubmission(widget, buffer_id, swap_result);
+}
+
+void WaylandConnection::OnPresentation(
+    gfx::AcceleratedWidget widget,
+    uint32_t buffer_id,
+    const gfx::PresentationFeedback& feedback) {
+  DCHECK(client_associated_ptr_);
+  client_associated_ptr_->OnPresentation(widget, buffer_id, feedback);
 }
 
 PlatformClipboard* WaylandConnection::GetPlatformClipboard() {
@@ -295,7 +311,8 @@ ozone::mojom::WaylandConnectionPtr WaylandConnection::BindInterface() {
 }
 
 void WaylandConnection::OnChannelDestroyed() {
-  binding_.Unbind();
+  client_associated_ptr_.reset();
+  binding_.Close();
   if (buffer_manager_)
     buffer_manager_->ClearState();
 }

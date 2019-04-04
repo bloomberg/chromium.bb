@@ -42,9 +42,9 @@ base::TimeTicks GetPresentationFeedbackTimeStamp(uint32_t tv_sec_hi,
 
 }  // namespace
 
-WaylandBufferManager::Buffer::Buffer() = default;
-WaylandBufferManager::Buffer::Buffer(const gfx::Size& buffer_size)
-    : size(buffer_size) {}
+WaylandBufferManager::Buffer::Buffer(const gfx::Size& buffer_size,
+                                     uint32_t buffer_id)
+    : size(buffer_size), buffer_id(buffer_id) {}
 WaylandBufferManager::Buffer::~Buffer() = default;
 
 WaylandBufferManager::WaylandBufferManager(WaylandConnection* connection)
@@ -75,7 +75,7 @@ bool WaylandBufferManager::CreateBuffer(base::File file,
   }
 
   std::unique_ptr<Buffer> buffer =
-      std::make_unique<Buffer>(gfx::Size(width, height));
+      std::make_unique<Buffer>(gfx::Size(width, height), buffer_id);
   buffers_.insert(std::make_pair(buffer_id, std::move(buffer)));
 
   auto callback = base::BindOnce(&WaylandBufferManager::OnCreateBufferComplete,
@@ -86,12 +86,10 @@ bool WaylandBufferManager::CreateBuffer(base::File file,
   return true;
 }
 
-// TODO(msisov): handle buffer swap failure or success.
 bool WaylandBufferManager::ScheduleBufferSwap(gfx::AcceleratedWidget widget,
                                               uint32_t buffer_id,
-                                              const gfx::Rect& damage_region,
-                                              wl::BufferSwapCallback callback) {
-  TRACE_EVENT1("wayland", "WaylandBufferManager::ScheduleBufferSwap",
+                                              const gfx::Rect& damage_region) {
+  TRACE_EVENT1("wayland", "WaylandBufferManager::ScheduleSwapBuffer",
                "Buffer id", buffer_id);
 
   if (!ValidateDataFromGpu(widget, buffer_id))
@@ -106,11 +104,11 @@ bool WaylandBufferManager::ScheduleBufferSwap(gfx::AcceleratedWidget widget,
 
   Buffer* buffer = it->second.get();
   DCHECK(buffer);
+  DCHECK(!buffer->swapped && !buffer->presented);
 
   // Assign a widget to this buffer, which is used to find a corresponding
   // WaylandWindow.
   buffer->widget = widget;
-  buffer->buffer_swap_callback = std::move(callback);
   buffer->damage_region = damage_region;
 
   if (buffer->wl_buffer) {
@@ -130,15 +128,7 @@ bool WaylandBufferManager::DestroyBuffer(uint32_t buffer_id) {
     error_message_ = "Trying to destroy non-existing buffer";
     return false;
   }
-  // It can happen that a buffer is destroyed before a frame callback comes.
-  // Thus, just mark this as a successful swap, which is ok to do.
-  Buffer* buffer = it->second.get();
-  if (!buffer->buffer_swap_callback.is_null()) {
-    std::move(buffer->buffer_swap_callback)
-        .Run(gfx::SwapResult::SWAP_ACK,
-             gfx::PresentationFeedback(base::TimeTicks::Now(),
-                                       base::TimeDelta(), 0));
-  }
+
   buffers_.erase(it);
 
   connection_->ScheduleFlush();
@@ -283,10 +273,47 @@ void WaylandBufferManager::OnCreateBufferComplete(
     SwapBuffer(buffer);
 }
 
-void WaylandBufferManager::OnBufferSwapped(Buffer* buffer) {
-  DCHECK(!buffer->buffer_swap_callback.is_null());
-  std::move(buffer->buffer_swap_callback)
-      .Run(buffer->swap_result, std::move(buffer->feedback));
+void WaylandBufferManager::OnSubmission(Buffer* buffer,
+                                        const gfx::SwapResult& swap_result) {
+  DCHECK(!buffer->swapped);
+
+  buffer->wl_frame_callback.reset();
+  buffer->swapped = true;
+  connection_->OnSubmission(buffer->widget, buffer->buffer_id,
+                            gfx::SwapResult::SWAP_ACK);
+
+  // If presentation feedback is not supported, use a fake feedback.
+  if (!connection_->presentation()) {
+    DCHECK(!buffer->wp_presentation_feedback && !buffer->presented);
+    OnPresentation(buffer, gfx::PresentationFeedback(base::TimeTicks::Now(),
+                                                     base::TimeDelta(), 0));
+  } else if (buffer->presented) {
+    DCHECK(!buffer->wp_presentation_feedback);
+    // If the buffer has been presented before the frame callback aka
+    // completion callback (in the future, release callback is going to be
+    // used), present the feedback to the GPU.
+    OnPresentation(buffer, buffer->feedback);
+  } else {
+    DCHECK(buffer->wp_presentation_feedback);
+  }
+}
+
+void WaylandBufferManager::OnPresentation(
+    Buffer* buffer,
+    const gfx::PresentationFeedback& feedback) {
+  buffer->presented = true;
+  buffer->feedback = feedback;
+
+  // If buffer has already been swapped, we can safely notify about the
+  // presentation as well.
+  if (buffer->swapped) {
+    connection_->OnPresentation(buffer->widget, buffer->buffer_id,
+                                buffer->feedback);
+
+    // Reset the status so that DCHECK passes in ::ScheduleBufferSwap call.
+    buffer->presented = false;
+    buffer->swapped = false;
+  }
 }
 
 // static
@@ -295,27 +322,15 @@ void WaylandBufferManager::FrameCallbackDone(void* data,
                                              uint32_t time) {
   WaylandBufferManager* self = static_cast<WaylandBufferManager*>(data);
   DCHECK(self);
+
   for (auto& item : self->buffers_) {
     Buffer* buffer = item.second.get();
     if (buffer->wl_frame_callback.get() == callback) {
-      buffer->swap_result = gfx::SwapResult::SWAP_ACK;
       buffer->wl_frame_callback.reset();
-
-      // If presentation feedback is not supported, use a fake feedback
-      if (!self->connection_->presentation()) {
-        buffer->feedback = gfx::PresentationFeedback(base::TimeTicks::Now(),
-                                                     base::TimeDelta(), 0);
-      }
-      // If presentation feedback event either has already been fired or
-      // has not been set, trigger swap callback.
-      if (!buffer->wp_presentation_feedback)
-        self->OnBufferSwapped(buffer);
-
+      self->OnSubmission(buffer, gfx::SwapResult::SWAP_ACK);
       return;
     }
   }
-
-  NOTREACHED();
 }
 
 // static
@@ -339,29 +354,20 @@ void WaylandBufferManager::FeedbackPresented(
     uint32_t flags) {
   WaylandBufferManager* self = static_cast<WaylandBufferManager*>(data);
   DCHECK(self);
-
   for (auto& item : self->buffers_) {
     Buffer* buffer = item.second.get();
     if (buffer->wp_presentation_feedback.get() == wp_presentation_feedback) {
-      buffer->feedback = gfx::PresentationFeedback(
-          GetPresentationFeedbackTimeStamp(tv_sec_hi, tv_sec_lo, tv_nsec),
-          base::TimeDelta::FromNanoseconds(refresh),
-          GetPresentationKindFlags(flags));
+      DCHECK(!buffer->presented);
       buffer->wp_presentation_feedback.reset();
-
-      // Some compositors not always fire PresentationFeedback and Frame
-      // events in the same order (i.e, frame callbacks coming always before
-      // feedback presented/discaded ones). So, check FrameCallbackDone has
-      // already been called at this point, if yes, trigger the swap callback.
-      // otherwise it will be triggered in the upcoming frame callback.
-      if (!buffer->wl_frame_callback)
-        self->OnBufferSwapped(buffer);
-
+      self->OnPresentation(
+          buffer,
+          gfx::PresentationFeedback(
+              GetPresentationFeedbackTimeStamp(tv_sec_hi, tv_sec_lo, tv_nsec),
+              base::TimeDelta::FromNanoseconds(refresh),
+              GetPresentationKindFlags(flags)));
       return;
     }
   }
-
-  NOTREACHED();
 }
 
 // static
@@ -370,27 +376,15 @@ void WaylandBufferManager::FeedbackDiscarded(
     struct wp_presentation_feedback* wp_presentation_feedback) {
   WaylandBufferManager* self = static_cast<WaylandBufferManager*>(data);
   DCHECK(self);
-
   for (auto& item : self->buffers_) {
     Buffer* buffer = item.second.get();
     if (buffer->wp_presentation_feedback.get() == wp_presentation_feedback) {
-      // Frame callback must come before a feedback is presented.
-      buffer->feedback = gfx::PresentationFeedback::Failure();
+      DCHECK(!buffer->presented);
       buffer->wp_presentation_feedback.reset();
-
-      // Some compositors not always fire PresentationFeedback and Frame
-      // events in the same order (i.e, frame callbacks coming always before
-      // feedback presented/discaded ones). So, check FrameCallbackDone has
-      // already been called at this point, if yes, trigger the swap callback.
-      // Otherwise it will be triggered in the upcoming frame callback.
-      if (!buffer->wl_frame_callback)
-        self->OnBufferSwapped(buffer);
-
+      self->OnPresentation(buffer, gfx::PresentationFeedback::Failure());
       return;
     }
   }
-
-  NOTREACHED();
 }
 
 }  // namespace ui
