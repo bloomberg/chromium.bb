@@ -1899,67 +1899,6 @@ TEST_F(InputHandlerProxyEventQueueTest, ScrollPredictorTest) {
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 }
 
-TEST_F(InputHandlerProxyEventQueueTest, LatencyInfoScrollUpdateDelta) {
-  // Scroll on compositor.
-  cc::InputHandlerScrollResult scroll_result_did_scroll_;
-  scroll_result_did_scroll_.did_scroll = true;
-
-  EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
-      .WillOnce(testing::Return(kImplThreadScrollState));
-  EXPECT_CALL(mock_input_handler_, SetNeedsAnimateInput()).Times(1);
-  EXPECT_CALL(
-      mock_input_handler_,
-      ScrollBy(testing::Property(&cc::ScrollState::delta_y, testing::Gt(0))))
-      .WillOnce(testing::Return(scroll_result_did_scroll_));
-  EXPECT_CALL(mock_input_handler_, ScrollEnd(_, true));
-
-  HandleGestureEvent(WebInputEvent::kGestureScrollBegin);
-  HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -20);
-  HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -40);
-  HandleGestureEvent(WebInputEvent::kGestureScrollEnd);
-  input_handler_proxy_.DeliverInputForBeginFrame();
-
-  EXPECT_EQ(0ul, event_queue().size());
-  // Should run callbacks for every original events.
-  EXPECT_EQ(4ul, event_disposition_recorder_.size());
-  EXPECT_EQ(4ul, latency_info_recorder_.size());
-  EXPECT_EQ(false, latency_info_recorder_[1].coalesced());
-  EXPECT_EQ(-60, latency_info_recorder_[1].scroll_update_delta());
-
-  EXPECT_EQ(true, latency_info_recorder_[2].coalesced());
-  EXPECT_EQ(-60, latency_info_recorder_[2].scroll_update_delta());
-
-  testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
-
-  latency_info_recorder_.clear();
-
-  // Scroll on main thread.
-  cc::InputHandlerScrollResult scroll_result_did_not_scroll_;
-  scroll_result_did_not_scroll_.did_scroll = false;
-  EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
-      .WillOnce(testing::Return(kMainThreadScrollState));
-  EXPECT_CALL(mock_input_handler_, ScrollEnd(_, true));
-
-  HandleGestureEvent(WebInputEvent::kGestureScrollBegin);
-  HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -20);
-  HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -40);
-  HandleGestureEvent(WebInputEvent::kGestureScrollEnd);
-  input_handler_proxy_.DeliverInputForBeginFrame();
-
-  EXPECT_EQ(0ul, event_queue().size());
-  // Should run callbacks for every original events.
-  EXPECT_EQ(8ul, event_disposition_recorder_.size());
-  EXPECT_EQ(4ul, latency_info_recorder_.size());
-
-  EXPECT_EQ(false, latency_info_recorder_[1].coalesced());
-  EXPECT_EQ(-20, latency_info_recorder_[1].scroll_update_delta());
-
-  EXPECT_EQ(false, latency_info_recorder_[2].coalesced());
-  EXPECT_EQ(-40, latency_info_recorder_[2].scroll_update_delta());
-
-  testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
-}
-
 class InputHandlerProxyMainThreadScrollingReasonTest
     : public InputHandlerProxyTest {
  public:
