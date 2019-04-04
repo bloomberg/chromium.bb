@@ -1721,8 +1721,6 @@ jumbo_source_set("browser") {
     "service_worker/service_worker_provider_host.h",
     "service_worker/service_worker_quota_client.cc",
     "service_worker/service_worker_quota_client.h",
-    "service_worker/service_worker_read_from_cache_job.cc",
-    "service_worker/service_worker_read_from_cache_job.h",
     "service_worker/service_worker_register_job.cc",
     "service_worker/service_worker_register_job.h",
     "service_worker/service_worker_register_job_base.h",
