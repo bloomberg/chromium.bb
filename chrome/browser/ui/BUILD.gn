@@ -1762,6 +1762,8 @@ jumbo_split_static_library("ui") {
       "webui/settings/chromeos/internet_handler.h",
       "webui/settings/chromeos/multidevice_handler.cc",
       "webui/settings/chromeos/multidevice_handler.h",
+      "webui/settings/chromeos/os_settings_ui.cc",
+      "webui/settings/chromeos/os_settings_ui.h",
       "webui/settings/tts_handler.cc",
       "webui/settings/tts_handler.h",
       "webui/signin/inline_login_handler_chromeos.cc",

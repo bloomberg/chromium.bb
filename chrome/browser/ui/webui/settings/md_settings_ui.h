@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_MD_SETTINGS_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_MD_SETTINGS_UI_H_
 
-#include <unordered_set>
-
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "content/public/browser/web_contents_observer.h"

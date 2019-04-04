@@ -650,6 +650,9 @@
         <include name="IDR_DEVICE_EMULATOR_PAGES_HTML" file="resources\chromeos\emulator\device_emulator_pages.html" type="BINDATA" />
         <include name="IDR_DEVICE_EMULATOR_PAGES_JS" file="resources\chromeos\emulator\device_emulator_pages.js" type="BINDATA" />
         <include name="IDR_DEVICE_EMULATOR_SHARED_STYLES_HTML" file="resources\chromeos\emulator\shared_styles.html" type="BINDATA" />
+        <!-- TODO(jamescook): Create separate files os_settings.grd and
+             os_settings_vulcanized.grd and move this placeholder. -->
+        <include name="IDR_OS_SETTINGS_HTML" file="resources\chromeos\os_settings.html" type="BINDATA" compress="gzip" />
       </if>
       <if expr="chromeos">
         <include name="IDR_SET_TIME_HTML" file="resources\chromeos\md_set_time\set_time.html" type="BINDATA" compress="gzip" />
