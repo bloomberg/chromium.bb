@@ -21,6 +21,8 @@
 #include <GL/glew.h>
 #include <SDL.h>
 
+#include <memory>
+
 #include <glog/logging.h>
 #include <glog/stl_logging.h>
 #include "absl/memory/memory.h"
@@ -39,25 +41,22 @@ class ScopedSDL {
 };
 
 // A helper class to automatically delete SDL objects once they go out of scope.
-template <typename T, void (*D)(T)>
+template <typename T, void (*D)(T*)>
 class ScopedSdlType {
  public:
-  ScopedSdlType(T value) : value_(value) {}
-  ~ScopedSdlType() { D(value_); }
+  ScopedSdlType() : value_(nullptr, D) {}
+  ScopedSdlType(T* value) : value_(value, D) {}
 
-  ScopedSdlType(const ScopedSdlType&) = delete;
-  ScopedSdlType& operator=(const ScopedSdlType&) = delete;
-
-  T get() const { return value_; }
-  T operator*() const { return value_; }
-  T operator->() const { return value_; }
+  T* get() const { return value_.get(); }
+  T* operator*() const { return value_.get(); }
+  T* operator->() const { return value_.get(); }
 
  private:
-  T value_;
+  std::unique_ptr<T, void (*)(T*)> value_;
 };
 
-using ScopedSdlWindow = ScopedSdlType<SDL_Window*, SDL_DestroyWindow>;
-using ScopedSdlSurface = ScopedSdlType<SDL_Surface*, SDL_FreeSurface>;
+using ScopedSdlWindow = ScopedSdlType<SDL_Window, SDL_DestroyWindow>;
+using ScopedSdlSurface = ScopedSdlType<SDL_Surface, SDL_FreeSurface>;
 
 class OpenGlContext {
  public:

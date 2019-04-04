@@ -119,14 +119,24 @@ std::shared_ptr<const Text> TextRenderer::RenderTextInner(
     return cache_it->second.text;
   }
 
-  // Render the text.
   if (TTF_GetFontStyle(font_) != style) {
     TTF_SetFontStyle(font_, style);
   }
-  ScopedSdlSurface surface(
-      TTF_RenderUTF8_Blended(font_, text.c_str(), SDL_Color{0, 0, 0}));
+
+  // Render the text.
+  ScopedSdlSurface surface;
+  if (text.empty()) {
+    // SDL2_ttf returns error when asked to render an empty string.  Return a
+    // 1x1 white square instead.
+    surface = ScopedSdlSurface(
+        SDL_CreateRGBSurfaceWithFormat(0, 1, 1, 32, SDL_PIXELFORMAT_RGBA32));
+    CHECK(!SDL_MUSTLOCK(*surface));
+    memset(surface->pixels, 0xff, surface->h * surface->pitch);
+  } else {
+    surface = TTF_RenderUTF8_Blended(font_, text.c_str(), SDL_Color{0, 0, 0});
+  }
   if (*surface == nullptr) {
-    LOG(FATAL) << "Failed to render text: " << text;
+    LOG(FATAL) << "Failed to render text: \"" << text.size() << "\"";
   }
 
   std::unique_ptr<Text> result(new Text(this));
