@@ -35,7 +35,9 @@
 namespace autofill {
 
 namespace {
+#if defined(GOOGLE_CHROME_BUILD)
 const int kMigrationBubbleGooglePayLogoWidth = 40;
+#endif
 const int kMigrationBubbleGooglePayLogoHeight = 16;
 }  // namespace
 
@@ -105,6 +107,9 @@ void LocalCardMigrationBubbleViews::AddedToWidget() {
       views::BoxLayout::kVertical, gfx::Insets(),
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           DISTANCE_RELATED_CONTROL_VERTICAL_SMALL)));
+#if defined(GOOGLE_CHROME_BUILD)
+  // kGooglePayLogoIcon is square, and CreateTiledImage() will clip it whereas
+  // setting the icon size would rescale it incorrectly.
   gfx::ImageSkia image = gfx::ImageSkiaOperations::CreateTiledImage(
       gfx::CreateVectorIcon(kGooglePayLogoIcon,
                             GetNativeTheme()->SystemDarkModeEnabled()
@@ -112,8 +117,14 @@ void LocalCardMigrationBubbleViews::AddedToWidget() {
                                 : gfx::kGoogleGrey700),
       /*x=*/0, /*y=*/0, kMigrationBubbleGooglePayLogoWidth,
       kMigrationBubbleGooglePayLogoHeight);
+#else
+  gfx::ImageSkia image = gfx::CreateVectorIcon(
+      kCreditCardIcon, kMigrationBubbleGooglePayLogoHeight,
+      GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_DefaultIconColor));
+#endif
   views::ImageView* icon_view = new views::ImageView();
-  icon_view->SetImage(&image);
+  icon_view->SetImage(image);
   icon_view->SetHorizontalAlignment(views::ImageView::LEADING);
   icon_view->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_GOOGLE_PAY_LOGO_ACCESSIBLE_NAME));
