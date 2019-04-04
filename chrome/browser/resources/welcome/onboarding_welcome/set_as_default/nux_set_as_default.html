@@ -31,11 +31,13 @@
       }
 
       .illustration {
-        content: -webkit-image-set(
-          url(../images/set_as_default_illustration_1x.png) 1x,
-          url(../images/set_as_default_illustration_2x.png) 2x);
+        content: url(../images/set_default_light.svg);
         margin: auto;
         width: 454px;
+      }
+
+      :host-context([dark]) .illustration {
+        content: url(../images/set_default_dark.svg);
       }
 
       h1 {
