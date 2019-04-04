@@ -1701,21 +1701,14 @@ void CompositedLayerMapping::UpdateScrollingLayerGeometry(
   // Ensure scrolling contents are at least as large as the scroll clip
   scroll_size = scroll_size.ExpandedTo(overflow_clip_rect.Size());
 
-  FloatPoint scroll_position =
-      owning_layer_.GetScrollableArea()->ScrollPosition();
-  DoubleSize scrolling_contents_offset(
-      overflow_clip_rect.Location().X() - scroll_position.X(),
-      overflow_clip_rect.Location().Y() - scroll_position.Y());
-  // The scroll offset change is compared using floating point so that
-  // fractional scroll offset change can be propagated to compositor.
-  if (scrolling_contents_offset != scrolling_contents_offset_ ||
-      gfx::Size(scroll_size) != scrolling_contents_layer_->Size() ||
+  auto* scrolling_coordinator = owning_layer_.GetScrollingCoordinator();
+  scrolling_coordinator->UpdateCompositedScrollOffset(scrollable_area);
+
+  if (gfx::Size(scroll_size) != scrolling_contents_layer_->Size() ||
       scroll_container_size_changed) {
-    auto* scrolling_coordinator = owning_layer_.GetScrollingCoordinator();
     scrolling_coordinator->ScrollableAreaScrollLayerDidChange(scrollable_area);
     scrolling_contents_layer_->SetPosition(FloatPoint());
   }
-  scrolling_contents_offset_ = scrolling_contents_offset;
 
   scrolling_contents_layer_->SetSize(gfx::Size(scroll_size));
 
