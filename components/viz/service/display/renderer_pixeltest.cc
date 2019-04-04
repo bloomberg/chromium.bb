@@ -847,6 +847,35 @@ void CreateTestY16TextureDrawQuad_TwoColor(
       child_resource_provider, child_context_provider);
 }
 
+// Create two quads of specified colors on half-pixel boundaries.
+void CreateTestAxisAlignedQuads(const gfx::Rect& rect,
+                                SkColor front_color,
+                                SkColor back_color,
+                                bool needs_blending,
+                                bool force_aa_off,
+                                RenderPass* pass) {
+  gfx::Transform front_quad_to_target_transform;
+  front_quad_to_target_transform.Translate(50, 50);
+  front_quad_to_target_transform.Scale(0.5f + 1.0f / (rect.width() * 2.0f),
+                                       0.5f + 1.0f / (rect.height() * 2.0f));
+  SharedQuadState* front_shared_state = CreateTestSharedQuadState(
+      front_quad_to_target_transform, rect, pass, gfx::RRectF());
+
+  auto* front = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  front->SetAll(front_shared_state, rect, rect, needs_blending, front_color,
+                force_aa_off);
+
+  gfx::Transform back_quad_to_target_transform;
+  back_quad_to_target_transform.Translate(25.5f, 25.5f);
+  back_quad_to_target_transform.Scale(0.5f, 0.5f);
+  SharedQuadState* back_shared_state = CreateTestSharedQuadState(
+      back_quad_to_target_transform, rect, pass, gfx::RRectF());
+
+  auto* back = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  back->SetAll(back_shared_state, rect, rect, needs_blending, back_color,
+               force_aa_off);
+}
+
 using RendererTypes =
     ::testing::Types<GLRenderer,
                      SoftwareRenderer,
@@ -3146,8 +3175,8 @@ TEST_F(SkiaRendererAAPixelTest, DISABLED_AntiAliasingPerspective) {
 }
 
 // This test tests that anti-aliasing works for axis aligned quads.
-// Anti-aliasing is only supported in the gl renderer.
-TYPED_TEST(GLOnlyRendererPixelTest, AxisAligned) {
+// Anti-aliasing is only supported in the gl and skia renderers.
+TYPED_TEST(GLCapableRendererPixelTest, AxisAligned) {
   gfx::Rect rect(this->device_viewport_size_);
 
   int id = 1;
@@ -3155,24 +3184,8 @@ TYPED_TEST(GLOnlyRendererPixelTest, AxisAligned) {
   std::unique_ptr<RenderPass> pass =
       CreateTestRenderPass(id, rect, transform_to_root);
 
-  gfx::Transform red_quad_to_target_transform;
-  red_quad_to_target_transform.Translate(50, 50);
-  red_quad_to_target_transform.Scale(0.5f + 1.0f / (rect.width() * 2.0f),
-                                     0.5f + 1.0f / (rect.height() * 2.0f));
-  SharedQuadState* red_shared_state = CreateTestSharedQuadState(
-      red_quad_to_target_transform, rect, pass.get(), gfx::RRectF());
-
-  auto* red = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-  red->SetNew(red_shared_state, rect, rect, SK_ColorRED, false);
-
-  gfx::Transform yellow_quad_to_target_transform;
-  yellow_quad_to_target_transform.Translate(25.5f, 25.5f);
-  yellow_quad_to_target_transform.Scale(0.5f, 0.5f);
-  SharedQuadState* yellow_shared_state = CreateTestSharedQuadState(
-      yellow_quad_to_target_transform, rect, pass.get(), gfx::RRectF());
-
-  auto* yellow = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-  yellow->SetNew(yellow_shared_state, rect, rect, SK_ColorYELLOW, false);
+  CreateTestAxisAlignedQuads(rect, SK_ColorRED, SK_ColorYELLOW, false, false,
+                             pass.get());
 
   gfx::Transform blue_quad_to_target_transform;
   SharedQuadState* blue_shared_state = CreateTestSharedQuadState(
@@ -3349,6 +3362,29 @@ TYPED_TEST(GLCapableRendererPixelTest, TileDrawQuadForceAntiAliasingOff) {
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
       base::FilePath(FILE_PATH_LITERAL("force_anti_aliasing_off.png")),
+      cc::ExactPixelComparator(false)));
+}
+
+// This test tests that forcing anti-aliasing off works as expected while
+// blending is still enabled.
+// Anti-aliasing is only supported in the gl and skia renderers.
+TYPED_TEST(GLCapableRendererPixelTest, BlendingWithoutAntiAliasing) {
+  gfx::Rect rect(this->device_viewport_size_);
+
+  int id = 1;
+  gfx::Transform transform_to_root;
+  std::unique_ptr<RenderPass> pass =
+      CreateTestRenderPass(id, rect, transform_to_root);
+
+  CreateTestAxisAlignedQuads(rect, 0x800000FF, 0x8000FF00, true, true,
+                             pass.get());
+
+  RenderPassList pass_list;
+  pass_list.push_back(std::move(pass));
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      base::FilePath(FILE_PATH_LITERAL("translucent_quads_no_aa.png")),
       cc::ExactPixelComparator(false)));
 }
 
@@ -4558,25 +4594,8 @@ TYPED_TEST(RendererPixelTestWithOverdrawFeedback, TranslucentRectangles) {
   std::unique_ptr<RenderPass> pass =
       CreateTestRenderPass(id, rect, transform_to_root);
 
-  gfx::Transform dark_gray_quad_to_target_transform;
-  dark_gray_quad_to_target_transform.Translate(50, 50);
-  dark_gray_quad_to_target_transform.Scale(
-      0.5f + 1.0f / (rect.width() * 2.0f),
-      0.5f + 1.0f / (rect.height() * 2.0f));
-  SharedQuadState* dark_gray_shared_state = CreateTestSharedQuadState(
-      dark_gray_quad_to_target_transform, rect, pass.get(), gfx::RRectF());
-
-  auto* dark_gray = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-  dark_gray->SetNew(dark_gray_shared_state, rect, rect, 0x10444444, false);
-
-  gfx::Transform light_gray_quad_to_target_transform;
-  light_gray_quad_to_target_transform.Translate(25.5f, 25.5f);
-  light_gray_quad_to_target_transform.Scale(0.5f, 0.5f);
-  SharedQuadState* light_gray_shared_state = CreateTestSharedQuadState(
-      light_gray_quad_to_target_transform, rect, pass.get(), gfx::RRectF());
-
-  auto* light_gray = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-  light_gray->SetNew(light_gray_shared_state, rect, rect, 0x10CCCCCC, false);
+  CreateTestAxisAlignedQuads(rect, 0x10444444, 0x10CCCCCC, true, false,
+                             pass.get());
 
   gfx::Transform bg_quad_to_target_transform;
   SharedQuadState* bg_shared_state = CreateTestSharedQuadState(
@@ -4616,25 +4635,8 @@ TEST_F(SkiaRendererPixelTestWithOverdrawFeedback, TranslucentRectangles) {
   std::unique_ptr<RenderPass> pass =
       CreateTestRenderPass(id, rect, transform_to_root);
 
-  gfx::Transform dark_gray_quad_to_target_transform;
-  dark_gray_quad_to_target_transform.Translate(50, 50);
-  dark_gray_quad_to_target_transform.Scale(
-      0.5f + 1.0f / (rect.width() * 2.0f),
-      0.5f + 1.0f / (rect.height() * 2.0f));
-  SharedQuadState* dark_gray_shared_state = CreateTestSharedQuadState(
-      dark_gray_quad_to_target_transform, rect, pass.get(), gfx::RRectF());
-
-  auto* dark_gray = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-  dark_gray->SetNew(dark_gray_shared_state, rect, rect, 0x10444444, false);
-
-  gfx::Transform light_gray_quad_to_target_transform;
-  light_gray_quad_to_target_transform.Translate(25.5f, 25.5f);
-  light_gray_quad_to_target_transform.Scale(0.5f, 0.5f);
-  SharedQuadState* light_gray_shared_state = CreateTestSharedQuadState(
-      light_gray_quad_to_target_transform, rect, pass.get(), gfx::RRectF());
-
-  auto* light_gray = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-  light_gray->SetNew(light_gray_shared_state, rect, rect, 0x10CCCCCC, false);
+  CreateTestAxisAlignedQuads(rect, 0x10444444, 0x10CCCCCC, true, false,
+                             pass.get());
 
   gfx::Transform bg_quad_to_target_transform;
   SharedQuadState* bg_shared_state = CreateTestSharedQuadState(
