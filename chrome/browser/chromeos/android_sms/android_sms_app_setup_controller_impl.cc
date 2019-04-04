@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/install_options.h"
@@ -23,6 +24,8 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "net/base/url_util.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "url/gurl.h"
@@ -60,6 +63,17 @@ AndroidSmsAppSetupControllerImpl::PwaDelegate::GetCookieManager(
     Profile* profile) {
   return content::BrowserContext::GetStoragePartitionForSite(profile, app_url)
       ->GetCookieManagerForBrowserProcess();
+}
+
+bool AndroidSmsAppSetupControllerImpl::PwaDelegate::RemovePwa(
+    const extensions::ExtensionId& extension_id,
+    base::string16* error,
+    Profile* profile) {
+  return extensions::ExtensionSystem::Get(profile)
+      ->extension_service()
+      ->UninstallExtension(
+          extension_id,
+          extensions::UNINSTALL_REASON_ORPHANED_EXTERNAL_EXTENSION, error);
 }
 
 AndroidSmsAppSetupControllerImpl::AndroidSmsAppSetupControllerImpl(
@@ -129,30 +143,37 @@ void AndroidSmsAppSetupControllerImpl::RemoveApp(
     const GURL& install_url,
     const GURL& migrated_to_app_url,
     SuccessCallback callback) {
+  const extensions::Extension* extension =
+      pwa_delegate_->GetPwaForUrl(install_url, profile_);
+
   // If there is no app installed at |url|, there is nothing more to do.
-  if (!pwa_delegate_->GetPwaForUrl(install_url, profile_)) {
+  if (!extension) {
     PA_LOG(VERBOSE) << "AndroidSmsAppSetupControllerImpl::RemoveApp(): No app "
                     << "is installed at " << install_url
-                    << "; skipping removal "
-                    << "process.";
+                    << "; skipping removal process.";
     std::move(callback).Run(true /* success */);
     return;
   }
 
   PA_LOG(INFO) << "AndroidSmsAppSetupControllerImpl::RemoveApp(): "
                << "Uninstalling app at " << install_url << ".";
-  // UninstallApps() takes a base::RepeatedCallback, but |callback| is a
-  // base::OnceCallback; thus, |callback| cannot be included in the closure
-  // because it has move-only semantics. Assign this uninstall attempt an ID
-  // associated with |callback| so that it can be retrieved in
-  // OnAppUninstallResult().
-  auto id = base::UnguessableToken::Create();
-  uninstall_id_to_callback_map_.emplace(id, std::move(callback));
-  pending_app_manager_->UninstallApps(
-      std::vector<GURL>{install_url},
-      base::BindRepeating(
-          &AndroidSmsAppSetupControllerImpl::OnAppUninstallResult,
-          weak_ptr_factory_.GetWeakPtr(), id, app_url, migrated_to_app_url));
+
+  const extensions::ExtensionId& extension_id = extension->id();
+  base::string16 error;
+  bool uninstalled_successfully =
+      pwa_delegate_->RemovePwa(extension_id, &error, profile_);
+  UMA_HISTOGRAM_BOOLEAN("AndroidSms.PWAUninstallationResult",
+                        uninstalled_successfully);
+
+  if (!uninstalled_successfully) {
+    PA_LOG(ERROR) << "AndroidSmsAppSetupControllerImpl::RemoveApp(): "
+                  << "PWA for " << install_url << " failed to uninstall. "
+                  << error;
+    std::move(callback).Run(false /* success */);
+    return;
+  }
+
+  SetMigrationCookie(app_url, migrated_to_app_url, std::move(callback));
 }
 
 void AndroidSmsAppSetupControllerImpl::OnSetRememberDeviceByDefaultCookieResult(
@@ -244,28 +265,10 @@ void AndroidSmsAppSetupControllerImpl::OnAppInstallResult(
   std::move(callback).Run(true /* success */);
 }
 
-void AndroidSmsAppSetupControllerImpl::OnAppUninstallResult(
-    const base::UnguessableToken& id,
+void AndroidSmsAppSetupControllerImpl::SetMigrationCookie(
     const GURL& app_url,
     const GURL& migrated_to_app_url,
-    const GURL& install_url,
-    bool succeeded) {
-  UMA_HISTOGRAM_BOOLEAN("AndroidSms.PWAUninstallationResult", succeeded);
-
-  // OnAppUninstallResult() should only be called once per ID, so the uninstall
-  // callback is always expected to exist in the map.
-  SuccessCallback callback = std::move(uninstall_id_to_callback_map_[id]);
-  CHECK(callback);
-  uninstall_id_to_callback_map_.erase(id);
-
-  if (!succeeded) {
-    PA_LOG(ERROR)
-        << "AndroidSmsAppSetupControllerImpl::OnAppUninstallResult(): "
-        << "PWA for " << install_url << " failed to uninstall.";
-    std::move(callback).Run(false /* success */);
-    return;
-  }
-
+    SuccessCallback callback) {
   // Set migration cookie on the client for which the PWA was just uninstalled.
   // The client checks for this cookie to redirect users to the new domain. This
   // prevents unwanted connection stealing between old and new clients should
