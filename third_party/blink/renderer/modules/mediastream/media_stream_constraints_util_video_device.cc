@@ -555,32 +555,6 @@ WebMediaStreamTrack::FacingMode ToWebFacingMode(
   }
 }
 
-WebMediaStreamTrack::DisplayCaptureSurfaceType ToWebDisplaySurface(
-    media::mojom::DisplayCaptureSurfaceType display_surface) {
-  switch (display_surface) {
-    case media::mojom::DisplayCaptureSurfaceType::MONITOR:
-      return WebMediaStreamTrack::DisplayCaptureSurfaceType::kMonitor;
-    case media::mojom::DisplayCaptureSurfaceType::WINDOW:
-      return WebMediaStreamTrack::DisplayCaptureSurfaceType::kWindow;
-    case media::mojom::DisplayCaptureSurfaceType::APPLICATION:
-      return WebMediaStreamTrack::DisplayCaptureSurfaceType::kApplication;
-    case media::mojom::DisplayCaptureSurfaceType::BROWSER:
-      return WebMediaStreamTrack::DisplayCaptureSurfaceType::kBrowser;
-  }
-}
-
-WebMediaStreamTrack::CursorCaptureType ToWebCursorCaptureType(
-    media::mojom::CursorCaptureType cursor) {
-  switch (cursor) {
-    case media::mojom::CursorCaptureType::NEVER:
-      return WebMediaStreamTrack::CursorCaptureType::kNever;
-    case media::mojom::CursorCaptureType::ALWAYS:
-      return WebMediaStreamTrack::CursorCaptureType::kAlways;
-    case media::mojom::CursorCaptureType::MOTION:
-      return WebMediaStreamTrack::CursorCaptureType::kMotion;
-  }
-}
-
 VideoDeviceCaptureCapabilities::VideoDeviceCaptureCapabilities() = default;
 VideoDeviceCaptureCapabilities::VideoDeviceCaptureCapabilities(
     VideoDeviceCaptureCapabilities&& other) = default;
