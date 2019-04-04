@@ -102,6 +102,7 @@ source_set("chromeos") {
     "//chromeos/dbus/machine_learning",
     "//chromeos/dbus/media_analytics",
     "//chromeos/dbus/media_analytics:media_perception_proto",
+    "//chromeos/dbus/permission_broker",
     "//chromeos/dbus/services:services",
     "//chromeos/dbus/session_manager",
     "//chromeos/dbus/session_manager:login_manager_proto",
