@@ -10,6 +10,7 @@
 #include <directmanipulation.h>
 #include <wrl.h>
 #include <memory>
+#include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -27,6 +28,12 @@ namespace content {
 
 class DirectManipulationBrowserTest;
 class DirectManipulationUnitTest;
+
+// TODO(crbug.com/914914) This is added for help us getting debug log on
+// machine with scrolling issue on Windows Precision Touchpad. We will remove it
+// after Windows Precision Touchpad scrolling issue fixed.
+void DebugLogging(const std::string& s, HRESULT hr = 0);
+bool LoggingEnabled();
 
 // Windows 10 provides a new API called Direct Manipulation which generates
 // smooth scroll and scale factor via IDirectManipulationViewportEventHandler
