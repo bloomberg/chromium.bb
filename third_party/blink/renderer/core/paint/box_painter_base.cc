@@ -8,8 +8,10 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/paint/background_image_geometry.h"
 #include "third_party/blink/renderer/core/paint/box_border_painter.h"
+#include "third_party/blink/renderer/core/paint/image_element_timing.h"
 #include "third_party/blink/renderer/core/paint/nine_piece_image_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -552,6 +554,14 @@ inline bool PaintFastBottomLayer(Node* node,
               .CurrentPaintChunkProperties());
     }
   }
+  if (node && origin_trials::ElementTimingEnabled(&node->GetDocument()) &&
+      info.image && info.image->IsImageResource()) {
+    LocalDOMWindow* window = node->GetDocument().domWindow();
+    DCHECK(window);
+    ImageElementTiming::From(*window).NotifyBackgroundImagePainted(
+        node, info.image,
+        context.GetPaintController().CurrentPaintChunkProperties());
+  }
   return true;
 }
 
@@ -674,6 +684,14 @@ void PaintFillLayerBackground(GraphicsContext& context,
             node, image,
             context.GetPaintController().CurrentPaintChunkProperties());
       }
+    }
+    if (node && origin_trials::ElementTimingEnabled(&node->GetDocument()) &&
+        info.image && info.image->IsImageResource()) {
+      LocalDOMWindow* window = node->GetDocument().domWindow();
+      DCHECK(window);
+      ImageElementTiming::From(*window).NotifyBackgroundImagePainted(
+          node, info.image,
+          context.GetPaintController().CurrentPaintChunkProperties());
     }
   }
 }

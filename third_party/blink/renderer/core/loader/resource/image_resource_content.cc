@@ -180,14 +180,17 @@ void ImageResourceContent::RemoveObserver(ImageResourceObserver* observer) {
   ProhibitAddRemoveObserverInScope prohibit_add_remove_observer_in_scope(this);
 
   auto it = observers_.find(observer);
+  bool fully_erased;
   if (it != observers_.end()) {
-    observers_.erase(it);
+    fully_erased = observers_.erase(it);
   } else {
     it = finished_observers_.find(observer);
     DCHECK(it != finished_observers_.end());
-    finished_observers_.erase(it);
+    fully_erased = finished_observers_.erase(it);
   }
   info_->DidRemoveClientOrObserver();
+  if (fully_erased)
+    observer->NotifyImageFullyRemoved(this);
 }
 
 static void PriorityFromObserver(const ImageResourceObserver* observer,

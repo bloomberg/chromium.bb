@@ -18,6 +18,7 @@ namespace blink {
 class ImageResourceContent;
 class LayoutImage;
 class PropertyTreeState;
+class StyleImage;
 
 // ImageElementTiming is responsible for tracking the paint timings for <img>
 // elements for a given window.
@@ -41,16 +42,31 @@ class CORE_EXPORT ImageElementTiming final
       const ImageResourceContent* cached_image,
       const PropertyTreeState& current_paint_chunk_properties);
 
+  void NotifyBackgroundImagePainted(
+      const Node*,
+      const StyleImage* background_image,
+      const PropertyTreeState& current_paint_chunk_properties);
+
   // Called when the LayoutImage will be destroyed.
   void NotifyWillBeDestroyed(const LayoutObject*);
+
+  void NotifyBackgroundImageRemoved(const LayoutObject*,
+                                    const ImageResourceContent* image);
 
   void Trace(blink::Visitor*) override;
 
  private:
   friend class ImageElementTimingTest;
+
+  void NotifyImagePaintedInternal(
+      const Node*,
+      const LayoutObject&,
+      const ImageResourceContent& cached_image,
+      const PropertyTreeState& current_paint_chunk_properties);
+
   // Computes the intersection rect.
   FloatRect ComputeIntersectionRect(const LocalFrame*,
-                                    const LayoutObject*,
+                                    const LayoutObject&,
                                     const PropertyTreeState&);
   // Checks if the element must be reported, given its elementtiming attribute
   // and its intersection rect.
@@ -89,6 +105,10 @@ class CORE_EXPORT ImageElementTiming final
   WTF::Vector<ElementTimingInfo> element_timings_;
   // Hashmap of LayoutObjects for which paint has already been notified.
   WTF::HashSet<const LayoutObject*> images_notified_;
+  // Hashmap of pairs of elements, background images whose paint has been
+  // observed.
+  WTF::HashSet<std::pair<const LayoutObject*, const ImageResourceContent*>>
+      background_images_notified_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageElementTiming);
 };
