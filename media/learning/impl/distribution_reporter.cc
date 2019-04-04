@@ -32,8 +32,8 @@ class RegressionReporter : public DistributionReporter {
  public:
   RegressionReporter(const LearningTask& task) : DistributionReporter(task) {}
 
-  void OnPrediction(TargetDistribution observed,
-                    TargetDistribution predicted) override {
+  void OnPrediction(TargetHistogram observed,
+                    TargetHistogram predicted) override {
     DCHECK_EQ(task().target_description.ordering,
               LearningTask::Ordering::kNumeric);
     DCHECK(!task().uma_hacky_confusion_matrix.empty());
@@ -97,7 +97,7 @@ DistributionReporter::DistributionReporter(const LearningTask& task)
 DistributionReporter::~DistributionReporter() = default;
 
 Model::PredictionCB DistributionReporter::GetPredictionCallback(
-    TargetDistribution observed) {
+    TargetHistogram observed) {
   return base::BindOnce(&DistributionReporter::OnPrediction,
                         weak_factory_.GetWeakPtr(), observed);
 }

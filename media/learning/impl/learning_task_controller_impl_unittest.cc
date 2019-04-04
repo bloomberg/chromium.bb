@@ -28,8 +28,8 @@ class LearningTaskControllerImplTest : public testing::Test {
     }
 
    protected:
-    void OnPrediction(TargetDistribution observed,
-                      TargetDistribution predicted) override {
+    void OnPrediction(TargetHistogram observed,
+                      TargetHistogram predicted) override {
       num_reported_++;
       if (observed == predicted)
         num_correct_++;
@@ -46,9 +46,9 @@ class LearningTaskControllerImplTest : public testing::Test {
     FakeModel(TargetValue target) : target_(target) {}
 
     // Model
-    TargetDistribution PredictDistribution(
+    TargetHistogram PredictDistribution(
         const FeatureVector& features) override {
-      TargetDistribution dist;
+      TargetHistogram dist;
       dist += target_;
       return dist;
     }
