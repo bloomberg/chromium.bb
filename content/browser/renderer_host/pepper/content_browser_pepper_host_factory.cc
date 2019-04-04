@@ -110,25 +110,29 @@ ContentBrowserPepperHostFactory::CreateResourceHost(
       return std::unique_ptr<ppapi::host::ResourceHost>(new PepperFileRefHost(
           host_, instance, resource, file_system, internal_path));
     }
-    case PpapiHostMsg_TCPSocket_Create::ID: {
-      ppapi::TCPSocketVersion version;
-      if (!ppapi::UnpackMessage<PpapiHostMsg_TCPSocket_Create>(message,
-                                                               &version) ||
-          version == ppapi::TCP_SOCKET_VERSION_PRIVATE) {
-        return std::unique_ptr<ppapi::host::ResourceHost>();
-      }
+  }
 
-      return CreateNewTCPSocket(instance, resource, version);
-    }
-    case PpapiHostMsg_UDPSocket_Create::ID: {
-      if (CanCreateSocket()) {
+  // Socket interfaces.
+  if (GetPermissions().HasPermission(ppapi::PERMISSION_SOCKET)) {
+    switch (message.type()) {
+      case PpapiHostMsg_TCPSocket_Create::ID: {
+        ppapi::TCPSocketVersion version;
+        if (!ppapi::UnpackMessage<PpapiHostMsg_TCPSocket_Create>(message,
+                                                                 &version) ||
+            version == ppapi::TCP_SOCKET_VERSION_PRIVATE) {
+          return nullptr;
+        }
+        if (!CanCreateSocket())
+          return nullptr;
+        return CreateNewTCPSocket(instance, resource, version);
+      }
+      case PpapiHostMsg_UDPSocket_Create::ID: {
+        if (!CanCreateSocket())
+          return nullptr;
         scoped_refptr<ppapi::host::ResourceMessageFilter> udp_socket(
             new PepperUDPSocketMessageFilter(host_, instance, false));
-        return std::unique_ptr<ppapi::host::ResourceHost>(
-            new ppapi::host::MessageFilterHost(host_->GetPpapiHost(), instance,
-                                               resource, udp_socket));
-      } else {
-        return std::unique_ptr<ppapi::host::ResourceHost>();
+        return std::make_unique<ppapi::host::MessageFilterHost>(
+            host_->GetPpapiHost(), instance, resource, udp_socket);
       }
     }
   }
