@@ -37,7 +37,7 @@
 #include <wayland-server.h>
 #endif
 
-#include "matrix.h"
+#include <libweston/matrix.h>
 
 
 /*

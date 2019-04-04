@@ -40,7 +40,7 @@
 
 #include "clients/window.h"
 #include "shared/helpers.h"
-#include "shared/matrix.h"
+#include <libweston/matrix.h>
 
 #include "weston-touch-calibration-client-protocol.h"
 

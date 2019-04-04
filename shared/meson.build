@@ -17,6 +17,7 @@ lib_libshared = static_library(
 )
 dep_libshared = declare_dependency(
 	link_with: lib_libshared,
+	include_directories: public_inc,
 	dependencies: deps_libshared
 )
 

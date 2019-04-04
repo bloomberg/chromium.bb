@@ -38,7 +38,7 @@
 
 #include "window.h"
 #include "shared/helpers.h"
-#include "shared/matrix.h"
+#include <libweston/matrix.h>
 
 /* Our points for the calibration must be not be on a line */
 static const struct {
@@ -286,7 +286,7 @@ main(int argc, char *argv[])
 			break;
 		}
 	}
-	
+
 	display = display_create(&argc, argv);
 
 	if (display == NULL) {

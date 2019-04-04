@@ -97,7 +97,7 @@ dep_zucmain = declare_dependency(
 
 tests_standalone = [
 	['config-parser', [], [ dep_zucmain ]],
-	['matrix', [ '../shared/matrix.c' ], [ dep_libm ]],
+	['matrix', [ '../shared/matrix.c' ], [ dep_libm, dep_libshared.partial_dependency(includes: true) ]],
 	['string'],
 	[
 		'vertex-clip',

@@ -41,7 +41,7 @@ extern "C" {
 #define WL_HIDE_DEPRECATED
 #include <wayland-server.h>
 
-#include "matrix.h"
+#include <libweston/matrix.h>
 #include "config-parser.h"
 #include "zalloc.h"
 #include <libweston/timeline-object.h>
