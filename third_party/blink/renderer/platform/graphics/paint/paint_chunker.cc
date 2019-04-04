@@ -49,11 +49,9 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
   // If this DCHECKs are hit we are missing a call to update the properties.
   // See: ScopedPaintChunkProperties.
   DCHECK(!IsInInitialState());
+  // At this point we should have all of the properties given to us.
+  DCHECK(current_properties_.IsInitialized());
 #endif
-  // TODO(crbug.com/923729): This CHECK is a temporary to determine the cause of
-  // the referenced bug. At this point we should have all of the properties
-  // given to us.
-  CHECK(current_properties_.IsInitialized());
 
   bool item_forces_new_chunk = item.IsForeignLayer() || item.IsScrollHitTest();
   if (item_forces_new_chunk)
