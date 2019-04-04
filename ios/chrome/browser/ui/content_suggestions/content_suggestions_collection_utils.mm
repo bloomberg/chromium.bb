@@ -76,12 +76,8 @@ CGFloat doodleHeight(BOOL logoIsShowing) {
 CGFloat doodleTopMargin(BOOL toolbarPresent, CGFloat topInset) {
   if (!IsCompactWidth() && !IsCompactHeight())
     return kDoodleTopMarginRegularXRegular;
-  if (base::FeatureList::IsEnabled(
-          web::features::kBrowserContainerFullscreen) &&
-      base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen) &&
-      !base::FeatureList::IsEnabled(kBrowserContainerContainsNTP)) {
+  if (!base::FeatureList::IsEnabled(kBrowserContainerContainsNTP))
     topInset = StatusBarHeight();
-  }
   return topInset + kDoodleTopMarginOther +
          AlignValueToPixel(kDoodleScaledTopMarginOther *
                            SystemSuggestedFontSizeMultiplier());

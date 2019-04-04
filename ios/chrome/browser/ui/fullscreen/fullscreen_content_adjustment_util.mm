@@ -19,13 +19,4 @@ void MoveContentBelowHeader(id<CRWWebViewProxy> proxy, FullscreenModel* model) {
   DCHECK(model);
   CGFloat topPadding = model->current_toolbar_insets().top;
   proxy.scrollViewProxy.contentOffset = CGPointMake(0, -topPadding);
-  if (!base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen)) {
-    // With the fullscreen implementation living outside of web, this is no
-    // longer needed.
-    CGFloat bottomPadding = model->progress() * model->GetBottomToolbarHeight();
-    UIEdgeInsets contentInset = proxy.contentInset;
-    contentInset.top = topPadding;
-    contentInset.bottom = bottomPadding;
-    proxy.contentInset = contentInset;
-  }
 }

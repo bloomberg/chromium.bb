@@ -615,8 +615,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // The webState of the active tab.
 @property(nonatomic, readonly) web::WebState* currentWebState;
 
-// Whether the browser container should be the full bounds of self.view.
-@property(nonatomic, readonly) BOOL usesFullscreenContainer;
 // Whether the safe area insets should be used to adjust the viewport.
 @property(nonatomic, readonly) BOOL usesSafeInsetsForViewportAdjustments;
 
@@ -1078,20 +1076,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 
   CGFloat statusBarOffset = 0;
-  if (!self.usesFullscreenContainer) {
-    statusBarOffset = StatusBarHeight();
-  }
   return height - statusBarOffset;
 }
 
 - (web::WebState*)currentWebState {
   return self.tabModel.currentTab.webState;
-}
-
-- (BOOL)usesFullscreenContainer {
-  return base::FeatureList::IsEnabled(
-             web::features::kBrowserContainerFullscreen) ||
-         self.usesSafeInsetsForViewportAdjustments;
 }
 
 - (BOOL)usesSafeInsetsForViewportAdjustments {
@@ -1506,10 +1495,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (void)viewDidLoad {
   CGRect initialViewsRect = self.view.bounds;
-  if (!self.usesFullscreenContainer) {
-    initialViewsRect.origin.y += StatusBarHeight();
-    initialViewsRect.size.height -= StatusBarHeight();
-  }
   UIViewAutoresizing initialViewAutoresizing =
       UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 
@@ -2391,11 +2376,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Adjust the content area to be under the toolbar, for fullscreen or below
   // the toolbar is not fullscreen.
   CGRect contentFrame = self.contentArea.frame;
-  if (!self.usesFullscreenContainer) {
-    CGFloat marginWithHeader = StatusBarHeight();
-    contentFrame.size.height = CGRectGetMaxY(contentFrame) - marginWithHeader;
-    contentFrame.origin.y = marginWithHeader;
-  }
   self.contentArea.frame = contentFrame;
 
   // Attach the typing shield to the content area but have it hidden.
@@ -2420,10 +2400,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     // Make new content visible, resizing it first as the orientation may
     // have changed from the last time it was displayed.
     [self viewForTab:tab].frame = self.contentArea.bounds;
-    if (base::FeatureList::IsEnabled(
-            web::features::kBrowserContainerFullscreen)) {
-      [_toolbarUIUpdater updateState];
-    }
+    [_toolbarUIUpdater updateState];
     NewTabPageTabHelper* NTPHelper =
         NewTabPageTabHelper::FromWebState(tab.webState);
     if (NTPHelper && NTPHelper->IsActive()) {
@@ -2566,9 +2543,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
   if (!NTPHelper || !NTPHelper->IsActive())
     return CGRectZero;
-  if (base::FeatureList::IsEnabled(
-          web::features::kBrowserContainerFullscreen) &&
-      !IsRegularXRegularSizeClass())
+  if (!IsRegularXRegularSizeClass())
     return self.contentArea.bounds;
   // NTP expects to be laid out behind the bottom toolbar.  It uses
   // |contentInset| to push content above the toolbar.
@@ -2952,8 +2927,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // WebState view's superview is used as the base snapshot view.  The content
   // area is |headerHeight| from the top of its superview, so snapshots should
   // be inset from this amount.
-  bool outOfWeb =
-      base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen);
   bool usesContentInset = ios::GetChromeBrowserProvider()
                               ->GetFullscreenProvider()
                               ->IsInitialized() ||
@@ -2963,7 +2936,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if ([self canShowTabStrip] && isNTPActive) {
     return UIEdgeInsetsZero;
   }
-  if (isNTPActive || (outOfWeb && !usesContentInset)) {
+  if (isNTPActive || !usesContentInset) {
     return UIEdgeInsetsMake(self.headerHeight, 0.0, self.bottomToolbarHeight,
                             0.0);
   }
@@ -3017,14 +2990,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
   if (NTPHelper && NTPHelper->IsActive()) {
     return _ntpCoordinatorsForWebStates[webState].viewController.view;
-  } else if (base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen)) {
-    // The webstate view is getting resized because of fullscreen. Using its
-    // superview ensure that we have a view with a with a consistent size.
-    if (webState->GetView().superview)
-      return webState->GetView().superview;
   }
-  DCHECK(webState->GetView());
-  return webState->GetView();
+  UIView* webStateView = webState->GetView();
+  DCHECK(webStateView);
+  // |webStateView| is resized because of fullscreen. Using its superview when
+  // possible ensures that the snapshot has a consistent size.
+  return webStateView.superview ?: webStateView;
 }
 
 #pragma mark - SnapshotGeneratorDelegate helpers
@@ -3638,8 +3609,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (CGFloat)overscrollHeaderHeight {
-  return self.headerHeight +
-         (self.usesFullscreenContainer ? 0 : StatusBarHeight());
+  return self.headerHeight;
 }
 
 #pragma mark - CRWNativeContentProvider methods
@@ -3756,33 +3726,25 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 #pragma mark - ToolbarHeightProviderForFullscreen
 
 - (CGFloat)collapsedTopToolbarHeight {
-  if (base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen) &&
-      IsVisibleURLNewTabPage(self.currentWebState) && ![self canShowTabStrip]) {
+  if (IsVisibleURLNewTabPage(self.currentWebState) && ![self canShowTabStrip]) {
     // When the NTP is displayed in a horizontally compact environment, the top
     // toolbars are hidden.
     return 0;
   }
-  CGFloat collapsedToolbarHeight =
-      ToolbarCollapsedHeight(self.traitCollection.preferredContentSizeCategory);
-  // |collapsedToolbarHeight| describes the distance past the top safe area.  If
-  // the browser container view is laid out using the full screen, it extends
-  // past the status bar, so that additional overlap is added here.
-  if (self.usesFullscreenContainer) {
-    collapsedToolbarHeight += self.view.safeAreaInsets.top;
-  }
-  return collapsedToolbarHeight;
+  return self.view.safeAreaInsets.top +
+         ToolbarCollapsedHeight(
+             self.traitCollection.preferredContentSizeCategory);
 }
 
 - (CGFloat)expandedTopToolbarHeight {
-  if (base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen) &&
-      IsVisibleURLNewTabPage(self.currentWebState) && ![self canShowTabStrip]) {
+  if (IsVisibleURLNewTabPage(self.currentWebState) && ![self canShowTabStrip]) {
     // When the NTP is displayed in a horizontally compact environment, the top
     // toolbars are hidden.
     return 0;
   }
   return [self primaryToolbarHeightWithInset] +
          ([self canShowTabStrip] ? self.tabStripView.frame.size.height : 0.0) +
-         (self.usesFullscreenContainer ? self.headerOffset : 0.0);
+         self.headerOffset;
 }
 
 - (CGFloat)bottomToolbarHeight {
@@ -4543,17 +4505,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     [self.contentArea addSubview:toolbarSnapshot];
     newPage = [self viewForTab:tab];
     newPage.userInteractionEnabled = NO;
-    if (base::FeatureList::IsEnabled(
-            web::features::kBrowserContainerFullscreen)) {
-      newPage.frame = self.view.bounds;
-    } else {
-      // Compute a frame for the new page by removing the status bar height
-      // from the bounds of |self.view|.
-      CGRect viewBounds, remainder;
-      CGRectDivide(self.view.bounds, &remainder, &viewBounds, StatusBarHeight(),
-                   CGRectMinYEdge);
-      newPage.frame = viewBounds;
-    }
+    newPage.frame = self.view.bounds;
   } else {
     [self viewForTab:tab].frame = self.contentArea.bounds;
     // Setting the frame here doesn't trigger a layout pass. Trigger it manually
@@ -4590,15 +4542,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   CGPoint origin = [self lastTapPoint];
 
-  // The animation will have the same frame as |self|, minus the status bar,
-  // so shift it down and reduce its height accordingly.
-  CGRect frame = self.view.bounds;
-  if (!self.usesFullscreenContainer ||
-      !base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen)) {
-    frame.origin.y += StatusBarHeight();
-    frame.size.height -= StatusBarHeight();
-  }
-  frame = [self.contentArea convertRect:frame fromView:self.view];
+  CGRect frame = [self.contentArea convertRect:self.view.bounds
+                                      fromView:self.view];
   ForegroundTabAnimationView* animatedView =
       [[ForegroundTabAnimationView alloc] initWithFrame:frame];
   animatedView.contentView = newPage;

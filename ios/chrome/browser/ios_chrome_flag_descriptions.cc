@@ -201,11 +201,6 @@ const char kAutofillRichMetadataQueriesDescription[] =
     "Transmit rich form/field metadata when querying the autofill server. "
     "This feature only works on the Canary and Dev channels.";
 
-const char kBrowserContainerFullscreenName[] = "Browser Container Fullscreen";
-const char kBrowserContainerFullscreenDescription[] =
-    "When enabled, the BrowserContainer is fullscreen. No UI change should be "
-    "visible.";
-
 const char kBrowserContainerContainsNTPName[] = "Browser Container NTP";
 const char kBrowserContainerContainsNTPDescription[] =
     "When enabled, the BrowserContainer contains the NTP directly, rather than"
@@ -355,11 +350,6 @@ const char kOnlyNewPasswordFormParsingName[] =
     "Use only new password form parsing";
 const char kOnlyNewPasswordFormParsingDescription[] =
     "The old password form parsing is disabled";
-
-const char kOutOfWebFullscreenName[] = "Fullscreen implementation out of web";
-const char kOutOfWebFullscreenDescription[] =
-    "Use the fullscreen implementation living outside of web. Disable the one "
-    "in web.";
 
 const char kPasswordGenerationName[] = "Password generation suggestion";
 const char kPasswordGenerationDescription[] =

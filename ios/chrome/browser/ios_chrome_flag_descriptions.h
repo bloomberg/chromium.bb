@@ -152,10 +152,6 @@ extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[];
 extern const char kAutofillRichMetadataQueriesName[];
 extern const char kAutofillRichMetadataQueriesDescription[];
 
-// Title and description for the flag to make browser container fullscreen.
-extern const char kBrowserContainerFullscreenName[];
-extern const char kBrowserContainerFullscreenDescription[];
-
 // Title and description for the flag to make browser container contain the NTP
 // directly.
 extern const char kBrowserContainerContainsNTPName[];
@@ -286,11 +282,6 @@ extern const char kOmniboxUIElideSuggestionUrlAfterHostDescription[];
 // parsing.
 extern const char kOnlyNewPasswordFormParsingName[];
 extern const char kOnlyNewPasswordFormParsingDescription[];
-
-// Title and description for the flag to control the out of web implementation
-// of fullscreen.
-extern const char kOutOfWebFullscreenName[];
-extern const char kOutOfWebFullscreenDescription[];
 
 // Title and description for the flag to enable password generation.
 extern const char kPasswordGenerationName[];

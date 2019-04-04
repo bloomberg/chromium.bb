@@ -61,11 +61,6 @@
     _toolbarTopConstraint = [[_topToolbarSnapshot topAnchor]
         constraintEqualToAnchor:self.topAnchor];
 
-    if (!base::FeatureList::IsEnabled(
-            web::features::kBrowserContainerFullscreen)) {
-      _toolbarTopConstraint.constant = -StatusBarHeight();
-    }
-
     _imageTopConstraint =
         [_imageView.topAnchor constraintEqualToAnchor:self.topAnchor
                                              constant:topMargin];
@@ -112,11 +107,6 @@
 
 - (void)setTopToolbarImage:(UIImage*)image {
   [self.topToolbarSnapshot setImage:image];
-  if (!base::FeatureList::IsEnabled(
-          web::features::kBrowserContainerFullscreen)) {
-    // Update constraints as StatusBarHeight changes depending on orientation.
-    self.toolbarTopConstraint.constant = -StatusBarHeight();
-  }
   [self.topToolbarSnapshot setNeedsLayout];
 }
 

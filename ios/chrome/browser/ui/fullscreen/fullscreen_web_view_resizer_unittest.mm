@@ -27,9 +27,6 @@ const CGFloat kViewHeight = 700;
 class FullscreenWebViewResizerTest : public PlatformTest {
  public:
   FullscreenWebViewResizerTest() {
-    // Make sure the features is enabled.
-    _features.InitAndEnableFeature(web::features::kOutOfWebFullscreen);
-
     // FullscreenModel setup.
     _model.SetExpandedToolbarHeight(kTopToolbarExpandedHeight);
     _model.SetCollapsedToolbarHeight(kTopToolbarCollapsedHeight);

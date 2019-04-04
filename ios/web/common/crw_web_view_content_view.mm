@@ -79,17 +79,6 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
 
 #pragma mark Layout
 
-- (void)layoutSubviews {
-  [super layoutSubviews];
-
-  if (!base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen)) {
-    CGRect frame = self.bounds;
-    frame = UIEdgeInsetsInsetRect(frame, _contentInset);
-    frame = CGRectOffset(frame, _contentOffset.x, _contentOffset.y);
-    self.webView.frame = frame;
-  }
-}
-
 - (void)setContentOffset:(CGPoint)contentOffset {
   if (CGPointEqualToPoint(_contentOffset, contentOffset))
     return;
@@ -113,8 +102,6 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
   _contentInset = contentInset;
   if (self.shouldUseViewContentInset) {
     [_scrollView setContentInset:contentInset];
-  } else {
-    [self resizeViewportForContentInsetChangeFromInsets:oldInsets];
   }
 }
 
@@ -124,32 +111,6 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
     self.contentInset = UIEdgeInsetsZero;
     _shouldUseViewContentInset = shouldUseViewContentInset;
     self.contentInset = oldContentInset;
-  }
-}
-
-#pragma mark Private methods
-
-// Updates the viewport by updating the web view frame after self.contentInset
-// is changed to a new value from |oldInsets|.
-- (void)resizeViewportForContentInsetChangeFromInsets:(UIEdgeInsets)oldInsets {
-  if (base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen))
-    return;
-
-  // Update the content offset of the scroll view to match the padding
-  // that will be included in the frame.
-  CGFloat topPaddingChange = self.contentInset.top - oldInsets.top;
-  CGPoint contentOffset = [_scrollView contentOffset];
-  contentOffset.y += topPaddingChange;
-  [_scrollView setContentOffset:contentOffset];
-  // Update web view frame immediately to make |contentInset| animatable.
-  [self setNeedsLayout];
-  [self layoutIfNeeded];
-  // Setting WKWebView frame can mistakenly reset contentOffset. Change it
-  // back to the initial value if necessary.
-  // TODO(crbug.com/645857): Remove this workaround once WebKit bug is
-  // fixed.
-  if ([_scrollView contentOffset].y != contentOffset.y) {
-    [_scrollView setContentOffset:contentOffset];
   }
 }
 

@@ -392,10 +392,8 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   CGFloat contentOffsetFromExpandedHeader =
       contentOffsetFromTheTop + self.initialHeaderInset;
   CGFloat topMargin = 0;
-  if (!_webViewProxy && base::FeatureList::IsEnabled(
-                            web::features::kBrowserContainerFullscreen)) {
+  if (!_webViewProxy)
     topMargin = self.scrollView.safeAreaInsets.top;
-  }
   if (contentOffsetFromExpandedHeader >= 0) {
     // Record initial content offset and dispatch delegate on state change.
     self.overscrollState = OverscrollState::NO_PULL_STARTED;

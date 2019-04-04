@@ -29,10 +29,6 @@
 @synthesize webState = _webState;
 
 - (instancetype)initWithModel:(FullscreenModel*)model {
-  // This can only be instantiated when the feature is enabled.
-  if (!base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen))
-    return nil;
-
   self = [super init];
   if (self) {
     _model = model;
