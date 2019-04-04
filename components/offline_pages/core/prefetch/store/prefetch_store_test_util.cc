@@ -115,7 +115,11 @@ base::Optional<PrefetchItem> ReadPrefetchItem(const sql::Statement& statement) {
   item.archive_body_length = statement.ColumnInt64(5);
   item.creation_time = store_utils::FromDatabaseTime(statement.ColumnInt64(6));
   item.freshness_time = store_utils::FromDatabaseTime(statement.ColumnInt64(7));
-  item.error_code = static_cast<PrefetchItemErrorCode>(statement.ColumnInt(8));
+  base::Optional<PrefetchItemErrorCode> error_code =
+      ToPrefetchItemErrorCode(statement.ColumnInt(8));
+  if (!error_code)
+    return base::nullopt;
+  item.error_code = error_code.value();
   item.guid = statement.ColumnString(9);
   item.client_id.name_space = statement.ColumnString(10);
   item.client_id.id = statement.ColumnString(11);

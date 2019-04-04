@@ -115,6 +115,8 @@ std::string PrefetchEnumToString(PrefetchItemErrorCode value) {
       return "STALE_AT_UNKNOWN";
     case PrefetchItemErrorCode::STUCK:
       return "STUCK";
+    case PrefetchItemErrorCode::INVALID_ITEM:
+      return "INVALID_ITEM";
     case PrefetchItemErrorCode::GET_OPERATION_MAX_ATTEMPTS_REACHED:
       return "GET_OPERATION_MAX_ATTEMPTS_REACHED";
     case PrefetchItemErrorCode::
@@ -211,6 +213,35 @@ base::Optional<PrefetchItemState> ToPrefetchItemState(int value) {
     case PrefetchItemState::FINISHED:
     case PrefetchItemState::ZOMBIE:
       return static_cast<PrefetchItemState>(value);
+  }
+  return base::nullopt;
+}
+
+base::Optional<PrefetchItemErrorCode> ToPrefetchItemErrorCode(int value) {
+  switch (static_cast<PrefetchItemErrorCode>(value)) {
+    case PrefetchItemErrorCode::SUCCESS:
+    case PrefetchItemErrorCode::TOO_MANY_NEW_URLS:
+    case PrefetchItemErrorCode::DOWNLOAD_ERROR:
+    case PrefetchItemErrorCode::IMPORT_ERROR:
+    case PrefetchItemErrorCode::ARCHIVING_FAILED:
+    case PrefetchItemErrorCode::ARCHIVING_LIMIT_EXCEEDED:
+    case PrefetchItemErrorCode::STALE_AT_NEW_REQUEST:
+    case PrefetchItemErrorCode::STALE_AT_AWAITING_GCM:
+    case PrefetchItemErrorCode::STALE_AT_RECEIVED_GCM:
+    case PrefetchItemErrorCode::STALE_AT_RECEIVED_BUNDLE:
+    case PrefetchItemErrorCode::STALE_AT_DOWNLOADING:
+    case PrefetchItemErrorCode::STALE_AT_IMPORTING:
+    case PrefetchItemErrorCode::STALE_AT_UNKNOWN:
+    case PrefetchItemErrorCode::STUCK:
+    case PrefetchItemErrorCode::INVALID_ITEM:
+    case PrefetchItemErrorCode::GET_OPERATION_MAX_ATTEMPTS_REACHED:
+    case PrefetchItemErrorCode::
+        GENERATE_PAGE_BUNDLE_REQUEST_MAX_ATTEMPTS_REACHED:
+    case PrefetchItemErrorCode::DOWNLOAD_MAX_ATTEMPTS_REACHED:
+    case PrefetchItemErrorCode::MAXIMUM_CLOCK_BACKWARD_SKEW_EXCEEDED:
+    case PrefetchItemErrorCode::IMPORT_LOST:
+    case PrefetchItemErrorCode::SUGGESTION_INVALIDATED:
+      return static_cast<PrefetchItemErrorCode>(value);
   }
   return base::nullopt;
 }
