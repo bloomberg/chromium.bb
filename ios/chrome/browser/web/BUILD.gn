@@ -48,6 +48,7 @@ source_set("web") {
     "//ios/chrome/browser/ui/util:util",
     "//ios/net",
     "//ios/web",
+    "//ios/web/common",
     "//ui/base",
     "//url",
   ]

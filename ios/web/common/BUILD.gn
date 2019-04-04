@@ -9,6 +9,8 @@ source_set("common") {
     "crw_content_view.h",
     "crw_web_view_content_view.h",
     "crw_web_view_content_view.mm",
+    "referrer_util.cc",
+    "referrer_util.h",
     "url_util.cc",
     "url_util.h",
   ]
@@ -16,6 +18,8 @@ source_set("common") {
   deps = [
     "//base",
     "//ios/web/public:features",
+    "//ios/web/public:referrer",
+    "//net",
     "//url",
   ]
 
@@ -29,10 +33,15 @@ source_set("unittests") {
   testonly = true
   deps = [
     ":common",
+    "//base",
+    "//ios/web/public:referrer",
+    "//net",
     "//testing/gtest",
+    "//url",
   ]
 
   sources = [
+    "referrer_util_unittest.cc",
     "url_util_unittest.cc",
   ]
 }
