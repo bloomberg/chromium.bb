@@ -12,10 +12,8 @@
 #include "third_party/webrtc/api/task_queue/task_queue_factory.h"
 
 // Creates factory for webrtc::TaskQueueBase backed by base::SequencedTaskRunner
-// |traits| can override traits that base::SequencedTaskRunner constructed with.
 // Tested by /content/renderer/media/webrtc/task_queue_factory_unittest.cc
-std::unique_ptr<webrtc::TaskQueueFactory> CreateWebRtcTaskQueueFactory(
-    const base::TaskTraits& traits = {});
+std::unique_ptr<webrtc::TaskQueueFactory> CreateWebRtcTaskQueueFactory();
 
 std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter>
 CreateWebRtcTaskQueue(webrtc::TaskQueueFactory::Priority priority);
