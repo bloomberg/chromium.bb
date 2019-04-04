@@ -42,7 +42,6 @@ class ExternalVkImageBacking : public SharedImageBacking {
         ->GetDeviceQueue()
         ->GetVulkanDevice();
   }
-  using SharedImageBacking::have_context;
 
   // Notifies the backing that an access will start. Return false if there is
   // currently any other conflict access in progress. Otherwise, returns true
