@@ -379,8 +379,7 @@ bool HeapCompact::ShouldCompact(ThreadHeap* heap,
     return force_compaction_gc_;
   }
 
-  if (reason != BlinkGC::GCReason::kIdleGC &&
-      reason != BlinkGC::GCReason::kPreciseGC &&
+  if (reason != BlinkGC::GCReason::kPreciseGC &&
       reason != BlinkGC::GCReason::kForcedGC)
     return false;
 
