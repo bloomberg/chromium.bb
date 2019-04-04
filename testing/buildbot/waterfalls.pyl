@@ -623,6 +623,11 @@
           'chrome',
         ],
       },
+      'chromeos-betty-google-rel': {
+        'additional_compile_targets': [
+          'chrome',
+        ],
+      },
       'linux-chromeos-google-rel': {
         'additional_compile_targets': [
           'chrome',
