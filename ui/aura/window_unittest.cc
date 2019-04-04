@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
@@ -3314,6 +3315,94 @@ TEST_P(WindowTest, LocalSurfaceIdChanges) {
   EXPECT_NE(local_surface_id3, local_surface_id6);
   EXPECT_NE(local_surface_id4, local_surface_id6);
   EXPECT_NE(local_surface_id5, local_surface_id6);
+}
+
+// This delegate moves its parent window to the specified one when the gesture
+// ends.
+class HandleGestureEndDelegate : public TestWindowDelegate {
+ public:
+  explicit HandleGestureEndDelegate(
+      base::OnceCallback<void(Window*)> on_gesture_end)
+      : on_gesture_end_(std::move(on_gesture_end)) {}
+  ~HandleGestureEndDelegate() override = default;
+
+ private:
+  // WindowDelegate:
+  void OnGestureEvent(ui::GestureEvent* event) override {
+    switch (event->type()) {
+      case ui::ET_GESTURE_SCROLL_END:
+      case ui::ET_GESTURE_END:
+      case ui::ET_GESTURE_PINCH_END: {
+        if (on_gesture_end_)
+          std::move(on_gesture_end_).Run(static_cast<Window*>(event->target()));
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  base::OnceCallback<void(Window*)> on_gesture_end_;
+  DISALLOW_COPY_AND_ASSIGN(HandleGestureEndDelegate);
+};
+
+TEST_P(WindowTest, CleanupGestureStateChangesWindowHierarchy) {
+  Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  root_window()->AddChild(&window);
+  window.SetBounds(gfx::Rect(0, 0, 100, 100));
+  window.Show();
+  Window window2(nullptr);
+  window2.Init(ui::LAYER_NOT_DRAWN);
+  root_window()->AddChild(&window2);
+  root_window()->StackChildAtBottom(&window2);
+  window2.Show();
+  HandleGestureEndDelegate delegate(base::BindLambdaForTesting(
+      [&](Window* target_window) { window2.AddChild(target_window); }));
+  std::unique_ptr<Window> child = std::make_unique<Window>(&delegate);
+  child->Init(ui::LAYER_NOT_DRAWN);
+  window.AddChild(child.get());
+  child->SetBounds(gfx::Rect(0, 0, 100, 100));
+  child->Show();
+  EXPECT_EQ(1u, window.children().size());
+  EXPECT_EQ(0u, window2.children().size());
+
+  ui::test::EventGenerator event_generator(root_window(), child.get());
+  event_generator.PressTouch();
+  window.CleanupGestureState();
+  EXPECT_EQ(0u, window.children().size());
+  EXPECT_EQ(1u, window2.children().size());
+  child.reset();
+}
+
+TEST_P(WindowTest, CleanupGestureStateDeleteOtherWindows) {
+  Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  root_window()->AddChild(&window);
+  window.SetBounds(gfx::Rect(0, 0, 200, 200));
+  window.Show();
+  std::unique_ptr<Window> child1 = std::make_unique<Window>(nullptr);
+  child1->Init(ui::LAYER_NOT_DRAWN);
+  child1->SetBounds(gfx::Rect(100, 100, 100, 100));
+  window.AddChild(child1.get());
+  child1->Show();
+  HandleGestureEndDelegate delegate(base::BindLambdaForTesting(
+      [&](Window* target_window) { child1.reset(); }));
+  std::unique_ptr<Window> child2 = std::make_unique<Window>(&delegate);
+  child2->Init(ui::LAYER_NOT_DRAWN);
+  window.AddChild(child2.get());
+  child2->SetBounds(gfx::Rect(0, 0, 100, 100));
+  child2->Show();
+  window.StackChildAtBottom(child2.get());
+  EXPECT_EQ(2u, window.children().size());
+  EXPECT_EQ(child2.get(), window.children().front());
+
+  ui::test::EventGenerator event_generator(root_window(), child2.get());
+  event_generator.PressTouch();
+  window.CleanupGestureState();
+  EXPECT_EQ(1u, window.children().size());
+  EXPECT_FALSE(child1);
+  child2.reset();
 }
 
 INSTANTIATE_TEST_SUITE_P(/* no prefix */,
