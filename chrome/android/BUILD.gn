@@ -2254,6 +2254,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/bookmarks/BookmarkBridge.java",
     "java/src/org/chromium/chrome/browser/browserservices/OriginVerifier.java",
     "java/src/org/chromium/chrome/browser/browserservices/UkmRecorder.java",
+    "java/src/org/chromium/chrome/browser/browserservices/permissiondelegation/InstalledWebappBridge.java",
     "java/src/org/chromium/chrome/browser/browsing_data/UrlFilterBridge.java",
     "java/src/org/chromium/chrome/browser/childaccounts/ChildAccountFeedbackReporter.java",
     "java/src/org/chromium/chrome/browser/childaccounts/ChildAccountService.java",
