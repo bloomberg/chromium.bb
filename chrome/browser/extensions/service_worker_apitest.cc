@@ -337,11 +337,25 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, TabsExecuteScript) {
       << message_;
 }
 
-// Tests chrome.storage APIs.
+// Tests chrome.webRequest APIs.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, WebRequest) {
   ASSERT_TRUE(
       RunExtensionTest("service_worker/worker_based_background/web_request"))
       << message_;
+}
+
+// Tests chrome.webRequest APIs in blocking mode.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, WebRequestBlocking) {
+  // Try to load the page before installing the extension, which should work.
+  const GURL url = embedded_test_server()->GetURL("/extensions/test_file.html");
+  EXPECT_EQ(content::PAGE_TYPE_NORMAL, NavigateAndGetPageType(url));
+
+  // Install the extension and navigate again to the page.
+  ExtensionTestMessageListener ready_listener("ready", false);
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
+      "service_worker/worker_based_background/web_request_blocking")));
+  ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
+  EXPECT_EQ(content::PAGE_TYPE_ERROR, NavigateAndGetPageType(url));
 }
 
 // Listens for |message| from extension Service Worker early so that tests can
