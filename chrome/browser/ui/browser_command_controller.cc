@@ -1210,7 +1210,8 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_DEVELOPER_MENU, show_main_ui);
 #if defined(GOOGLE_CHROME_BUILD)
-  command_updater_.UpdateCommandEnabled(IDC_FEEDBACK, show_main_ui);
+  command_updater_.UpdateCommandEnabled(
+      IDC_FEEDBACK, show_main_ui || browser_->is_devtools());
 #endif
   UpdateShowSyncState(show_main_ui);
 
