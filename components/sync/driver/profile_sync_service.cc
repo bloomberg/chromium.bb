@@ -489,6 +489,15 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
   // The first time we start up the engine we want to ensure we have a clean
   // directory, so delete any old one that might be there.
   params.delete_sync_data_folder = !user_settings_->IsFirstSetupComplete();
+  if (params.delete_sync_data_folder) {
+    // This looks questionable here but it mimics the old behavior of deleting
+    // the directory via Directory::DeleteDirectoryFiles(). One consecuence is
+    // that, for sync the transport users (without sync-the-feature enabled),
+    // the cache GUID and other fields are reset on every restart.
+    // TODO(crbug.com/923285): Reconsider the lifetime of the cache GUID and
+    // its persistence depending on StorageOption.
+    sync_prefs_.ClearDirectoryConsistencyPreferences();
+  }
   params.enable_local_sync_backend = sync_prefs_.IsLocalSyncEnabled();
   params.local_sync_backend_folder = sync_client_->GetLocalSyncBackendFolder();
   params.restored_key_for_bootstrapping =
