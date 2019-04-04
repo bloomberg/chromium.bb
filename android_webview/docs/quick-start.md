@@ -68,13 +68,8 @@ $ autoninja -C out/Default system_webview_apk
 # Install the APK
 $ out/Default/bin/system_webview_apk install
 
-# If you don't have `adb` in your path, you can source this file to use
-# the copy from chromium's Android SDK.
-$ source build/android/envsetup.sh
-
-# Tell Android platform to load a WebView implementation from this APK.
-# Use the package name from GN args.
-$ adb shell cmd webviewupdate set-webview-implementation com.google.android.apps.chrome
+# Tell Android platform to load a WebView implementation from this APK
+$ out/Default/bin/system_webview_apk set-webview-provider
 ```
 
 ## Start running an app
