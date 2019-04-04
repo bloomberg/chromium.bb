@@ -13,34 +13,34 @@ namespace notifications {
 
 ImpressionHistoryTrackerImpl::ImpressionHistoryTrackerImpl(
     const SchedulerConfig& config,
-    TypeStates type_states)
-    : type_states_(std::move(type_states)), config_(config) {}
+    ClientStates client_states)
+    : client_states_(std::move(client_states)), config_(config) {}
 
 ImpressionHistoryTrackerImpl::~ImpressionHistoryTrackerImpl() = default;
 
 void ImpressionHistoryTrackerImpl::AnalyzeImpressionHistory() {
-  for (auto& type_state : type_states_)
-    AnalyzeImpressionHistory(type_state.second.get());
+  for (auto& client_state : client_states_)
+    AnalyzeImpressionHistory(client_state.second.get());
 }
 
-const ImpressionHistoryTracker::TypeStates&
-ImpressionHistoryTrackerImpl::GetTypeStates() const {
-  return type_states_;
+const ImpressionHistoryTracker::ClientStates&
+ImpressionHistoryTrackerImpl::GetClientStates() const {
+  return client_states_;
 }
 
 void ImpressionHistoryTrackerImpl::AnalyzeImpressionHistory(
-    TypeState* type_state) {
-  DCHECK(type_state);
+    ClientState* client_state) {
+  DCHECK(client_state);
   std::deque<Impression*> dismisses;
   base::Time now = base::Time::Now();
 
-  for (auto it = type_state->impressions.begin();
-       it != type_state->impressions.end();) {
+  for (auto it = client_state->impressions.begin();
+       it != client_state->impressions.end();) {
     auto* impression = &it->second;
 
     // Prune out expired impression.
     if (now - impression->create_time > config_.impression_expiration) {
-      type_state->impressions.erase(it++);
+      client_state->impressions.erase(it++);
       continue;
     } else {
       ++it;
@@ -51,7 +51,7 @@ void ImpressionHistoryTrackerImpl::AnalyzeImpressionHistory(
     switch (impression->feedback) {
       case UserFeedback::kNotHelpful:
         // One unhelpful clicks results in suppression.
-        ApplyNegativeImpression(type_state, impression);
+        ApplyNegativeImpression(client_state, impression);
         break;
       case UserFeedback::kDismiss:
         dismisses.emplace_back(impression);
@@ -59,13 +59,14 @@ void ImpressionHistoryTrackerImpl::AnalyzeImpressionHistory(
                         impression->create_time - config_.dismiss_duration);
 
         // Three consecutive dismisses will result in suppression.
-        ApplyNegativeImpressions(type_state, &dismisses, config_.dismiss_count);
+        ApplyNegativeImpressions(client_state, &dismisses,
+                                 config_.dismiss_count);
         break;
       case UserFeedback::kClick:
       case UserFeedback::kHelpful:
         // Any body click or helpful button click will increase maximum
         // notification deliver.
-        ApplyPositiveImpression(type_state, impression);
+        ApplyPositiveImpression(client_state, impression);
         break;
       case UserFeedback::kIgnore:
         break;
@@ -79,7 +80,7 @@ void ImpressionHistoryTrackerImpl::AnalyzeImpressionHistory(
   }
 
   // Perform suppression recovery.
-  SuppressionRecovery(type_state);
+  SuppressionRecovery(client_state);
 }
 
 // static
@@ -98,7 +99,7 @@ void ImpressionHistoryTrackerImpl::PruneImpression(
 }
 
 void ImpressionHistoryTrackerImpl::ApplyPositiveImpression(
-    TypeState* type_state,
+    ClientState* client_state,
     Impression* impression) {
   DCHECK(impression);
   if (impression->integrated)
@@ -108,13 +109,13 @@ void ImpressionHistoryTrackerImpl::ApplyPositiveImpression(
   impression->impression = ImpressionResult::kPositive;
 
   // Increase |current_max_daily_show| by 1.
-  type_state->current_max_daily_show =
-      base::ClampToRange(++type_state->current_max_daily_show, 0,
+  client_state->current_max_daily_show =
+      base::ClampToRange(++client_state->current_max_daily_show, 0,
                          config_.max_daily_shown_per_type);
 }
 
 void ImpressionHistoryTrackerImpl::ApplyNegativeImpressions(
-    TypeState* type_state,
+    ClientState* client_state,
     std::deque<Impression*>* impressions,
     size_t num_actions) {
   if (impressions->size() < num_actions)
@@ -131,12 +132,12 @@ void ImpressionHistoryTrackerImpl::ApplyNegativeImpressions(
     // Each user feedback after |num_action| will apply a new negative
     // impression.
     if (i + 1 >= num_actions)
-      ApplyNegativeImpression(type_state, (*impressions)[i]);
+      ApplyNegativeImpression(client_state, (*impressions)[i]);
   }
 }
 
 void ImpressionHistoryTrackerImpl::ApplyNegativeImpression(
-    TypeState* type_state,
+    ClientState* client_state,
     Impression* impression) {
   if (impression->integrated)
     return;
@@ -148,17 +149,18 @@ void ImpressionHistoryTrackerImpl::ApplyNegativeImpression(
   // for a while.
   SuppressionInfo supression_info(base::Time::Now(),
                                   config_.suppression_duration);
-  type_state->suppression_info = std::move(supression_info);
-  type_state->current_max_daily_show = 0;
+  client_state->suppression_info = std::move(supression_info);
+  client_state->current_max_daily_show = 0;
 }
 
 // Recovers from suppression caused by negative impressions.
-void ImpressionHistoryTrackerImpl::SuppressionRecovery(TypeState* type_state) {
+void ImpressionHistoryTrackerImpl::SuppressionRecovery(
+    ClientState* client_state) {
   // No suppression to recover from.
-  if (!type_state->suppression_info.has_value())
+  if (!client_state->suppression_info.has_value())
     return;
 
-  SuppressionInfo& suppression = type_state->suppression_info.value();
+  SuppressionInfo& suppression = client_state->suppression_info.value();
   base::Time now = base::Time::Now();
 
   // Still in the suppression time window.
@@ -166,11 +168,11 @@ void ImpressionHistoryTrackerImpl::SuppressionRecovery(TypeState* type_state) {
     return;
 
   // Recover from suppression and increase |current_max_daily_show|.
-  DCHECK_EQ(type_state->current_max_daily_show, 0);
-  type_state->current_max_daily_show = suppression.recover_goal;
+  DCHECK_EQ(client_state->current_max_daily_show, 0);
+  client_state->current_max_daily_show = suppression.recover_goal;
 
   // Clear suppression if fully recovered.
-  type_state->suppression_info.reset();
+  client_state->suppression_info.reset();
 }
 
 }  // namespace notifications

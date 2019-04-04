@@ -14,7 +14,7 @@
 
 using Notifications = notifications::DisplayDecider::Notifications;
 using Results = notifications::DisplayDecider::Results;
-using TypeStates = notifications::DisplayDecider::TypeStates;
+using ClientStates = notifications::DisplayDecider::ClientStates;
 
 namespace notifications {
 namespace {
@@ -28,10 +28,10 @@ class DecisionHelper {
                  std::unique_ptr<DistributionPolicy> distribution_policy,
                  SchedulerTaskTime task_start_time,
                  Notifications notifications,
-                 TypeStates type_states)
+                 ClientStates client_states)
       : notifications_(std::move(notifications)),
         current_task_start_time_(task_start_time),
-        type_states_(std::move(type_states)),
+        client_states_(std::move(client_states)),
         config_(config),
         clients_(clients),
         policy_(std::move(distribution_policy)),
@@ -70,23 +70,23 @@ class DecisionHelper {
     bool success = ToLocalHour(0, now, 0, &beginning_of_today);
     DCHECK(success);
 
-    for (const auto& state : type_states_) {
-      const auto* type_state = state.second;
+    for (const auto& state : client_states_) {
+      const auto* client_state = state.second;
       // TODO(xingliu): Ensure deprecated clients will not have data in storage.
-      DCHECK(std::find(clients_.begin(), clients_.end(), type_state->type) !=
+      DCHECK(std::find(clients_.begin(), clients_.end(), client_state->type) !=
              clients_.end());
-      for (const auto& impression_it : type_state->impressions) {
+      for (const auto& impression_it : client_state->impressions) {
         const auto& impression = impression_it.second;
 
         // Tracks last notification shown to the user.
         if (impression.create_time > last_shown_time) {
           last_shown_time = impression.create_time;
-          last_shown_type_ = type_state->type;
+          last_shown_type_ = client_state->type;
         }
 
         // Count notification shown today.
         if (impression.create_time >= beginning_of_today) {
-          shown_per_type_[type_state->type]++;
+          shown_per_type_[client_state->type]++;
           ++shown_;
         }
       }
@@ -144,9 +144,9 @@ class DecisionHelper {
   }
 
   bool NoMoreNotificationToShow(SchedulerClientType type) {
-    auto it = type_states_.find(type);
+    auto it = client_states_.find(type);
     int max_daily_show =
-        it == type_states_.end() ? 0 : it->second->current_max_daily_show;
+        it == client_states_.end() ? 0 : it->second->current_max_daily_show;
 
     return notifications_[type].empty() ||
            shown_per_type_[type] >= config_->max_daily_shown_per_type ||
@@ -161,7 +161,7 @@ class DecisionHelper {
   Notifications notifications_;
 
   const SchedulerTaskTime current_task_start_time_;
-  const TypeStates type_states_;
+  const ClientStates client_states_;
   const SchedulerConfig* config_;
   const std::vector<SchedulerClientType> clients_;
   std::unique_ptr<DistributionPolicy> policy_;
@@ -187,11 +187,11 @@ class DisplayDeciderImpl : public DisplayDecider {
       std::unique_ptr<DistributionPolicy> distribution_policy,
       SchedulerTaskTime task_start_time,
       Notifications notifications,
-      TypeStates type_states,
+      ClientStates client_states,
       Results* results) override {
     auto helper = std::make_unique<DecisionHelper>(
         config, std::move(clients), std::move(distribution_policy),
-        task_start_time, std::move(notifications), std::move(type_states));
+        task_start_time, std::move(notifications), std::move(client_states));
     helper->DecideNotificationToShow(results);
   }
 

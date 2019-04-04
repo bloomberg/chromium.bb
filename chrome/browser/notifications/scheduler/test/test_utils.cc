@@ -22,17 +22,18 @@ ImpressionTestData::ImpressionTestData(const ImpressionTestData& other) =
 
 ImpressionTestData::~ImpressionTestData() = default;
 
-void AddImpressionTestData(const std::vector<ImpressionTestData>& test_data,
-                           ImpressionHistoryTracker::TypeStates* type_states) {
-  DCHECK(type_states);
+void AddImpressionTestData(
+    const std::vector<ImpressionTestData>& test_data,
+    ImpressionHistoryTracker::ClientStates* client_states) {
+  DCHECK(client_states);
   for (const auto& test_data : test_data) {
-    auto type_state = std::make_unique<TypeState>(test_data.type);
-    type_state->current_max_daily_show = test_data.current_max_daily_show;
+    auto client_state = std::make_unique<ClientState>(test_data.type);
+    client_state->current_max_daily_show = test_data.current_max_daily_show;
     for (const auto& impression : test_data.impressions)
-      type_state->impressions.emplace(impression.create_time, impression);
-    type_state->suppression_info = test_data.suppression_info;
+      client_state->impressions.emplace(impression.create_time, impression);
+    client_state->suppression_info = test_data.suppression_info;
 
-    type_states->emplace(test_data.type, std::move(type_state));
+    client_states->emplace(test_data.type, std::move(client_state));
   }
 }
 

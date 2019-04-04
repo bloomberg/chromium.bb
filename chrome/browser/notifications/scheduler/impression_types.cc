@@ -27,21 +27,21 @@ bool SuppressionInfo::operator==(const SuppressionInfo& other) const {
          duration == other.duration && recover_goal == other.recover_goal;
 }
 
-TypeState::TypeState(SchedulerClientType type)
+ClientState::ClientState(SchedulerClientType type)
     : type(type), current_max_daily_show(0) {}
 
-TypeState::~TypeState() = default;
+ClientState::~ClientState() = default;
 
-bool TypeState::operator==(const TypeState& other) const {
+bool ClientState::operator==(const ClientState& other) const {
   return type == other.type &&
          current_max_daily_show == other.current_max_daily_show &&
          impressions == other.impressions &&
          suppression_info == other.suppression_info;
 }
 
-std::string TypeState::DebugPrint() const {
+std::string ClientState::DebugPrint() const {
   std::string log = base::StringPrintf(
-      "Type state: type: %d \n"
+      "Client state: type: %d \n"
       "current_max_daily_show: %d \n"
       "impressions.size(): %zu \n",
       static_cast<int>(type), current_max_daily_show, impressions.size());
