@@ -65,6 +65,16 @@ void CastDialogView::ShowDialogWithToolbarAction(
 }
 
 // static
+void CastDialogView::ShowDialogCenteredForBrowserWindow(
+    CastDialogController* controller,
+    Browser* browser,
+    const base::Time& start_time) {
+  ShowDialog(BrowserView::GetBrowserViewForBrowser(browser)->top_container(),
+             views::BubbleBorder::TOP_CENTER, controller, browser->profile(),
+             start_time);
+}
+
+// static
 void CastDialogView::ShowDialogCentered(const gfx::Rect& bounds,
                                         CastDialogController* controller,
                                         Profile* profile,

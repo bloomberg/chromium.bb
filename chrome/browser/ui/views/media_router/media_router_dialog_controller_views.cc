@@ -72,10 +72,8 @@ void MediaRouterDialogControllerViews::CreateMediaRouterDialog() {
       CastDialogView::ShowDialogWithToolbarAction(ui_.get(), browser,
                                                   dialog_creation_time);
     } else {
-      const gfx::Rect& anchor_bounds =
-          browser_view->top_container()->GetBoundsInScreen();
-      CastDialogView::ShowDialogCentered(anchor_bounds, ui_.get(), profile,
-                                         dialog_creation_time);
+      CastDialogView::ShowDialogCenteredForBrowserWindow(ui_.get(), browser,
+                                                         dialog_creation_time);
     }
   } else {
     gfx::Rect anchor_bounds = initiator()->GetContainerBounds();
