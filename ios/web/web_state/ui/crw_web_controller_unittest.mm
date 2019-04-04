@@ -622,9 +622,9 @@ TEST_P(CRWWebControllerResponseTest,
 
 // Tests that webView:decidePolicyForNavigationResponse:decisionHandler: blocks
 // rendering data URLs for renderer-initiated navigations in main frame to
-// prevent abusive behavior (crbug.com/890558).
+// prevent abusive behavior (crbug.com/890558) and presents the download option.
 TEST_P(CRWWebControllerResponseTest,
-       BlockRendererInitiatedDataUrlResponseInMainFrame) {
+       DownloadRendererInitiatedDataUrlResponseInMainFrame) {
   // Simulate data:// url response with text/html MIME type.
   SetWebViewURL(@(kTestDataURL));
   NSURLResponse* response = [[NSHTTPURLResponse alloc]
@@ -637,8 +637,19 @@ TEST_P(CRWWebControllerResponseTest,
       response, /*for_main_frame=*/YES, /*can_show_mime_type=*/YES, &policy));
   EXPECT_EQ(WKNavigationResponsePolicyCancel, policy);
 
-  // Verify that download task was not created for html response.
-  ASSERT_TRUE(download_delegate_.alive_download_tasks().empty());
+  // Verify that download task was created (see crbug.com/949114).
+  ASSERT_EQ(1U, download_delegate_.alive_download_tasks().size());
+  DownloadTask* task =
+      download_delegate_.alive_download_tasks()[0].second.get();
+  ASSERT_TRUE(task);
+  EXPECT_TRUE(task->GetIndentifier());
+  EXPECT_EQ(kTestDataURL, task->GetOriginalUrl());
+  EXPECT_EQ(-1, task->GetTotalBytes());
+  EXPECT_TRUE(task->GetContentDisposition().empty());
+  EXPECT_TRUE(task->GetMimeType().empty());
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      task->GetTransitionType(),
+      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT));
 }
 
 // Tests that webView:decidePolicyForNavigationResponse:decisionHandler: allows
