@@ -55,7 +55,7 @@ TEST_P(RandomTreeTest, EmptyTrainingDataWorks) {
   TrainingData empty;
   std::unique_ptr<Model> model = Train(task_, empty);
   EXPECT_NE(model.get(), nullptr);
-  EXPECT_EQ(model->PredictDistribution(FeatureVector()), TargetDistribution());
+  EXPECT_EQ(model->PredictDistribution(FeatureVector()), TargetHistogram());
 }
 
 TEST_P(RandomTreeTest, UniformTrainingDataWorks) {
@@ -69,11 +69,10 @@ TEST_P(RandomTreeTest, UniformTrainingDataWorks) {
   std::unique_ptr<Model> model = Train(task_, training_data);
 
   // The tree should produce a distribution for one value (our target), which
-  // has |n_examples| counts.
-  TargetDistribution distribution =
-      model->PredictDistribution(example.features);
+  // has one count.
+  TargetHistogram distribution = model->PredictDistribution(example.features);
   EXPECT_EQ(distribution.size(), 1u);
-  EXPECT_EQ(distribution[example.target_value], n_examples);
+  EXPECT_EQ(distribution[example.target_value], 1.0);
 }
 
 TEST_P(RandomTreeTest, SimpleSeparableTrainingData) {
@@ -86,8 +85,7 @@ TEST_P(RandomTreeTest, SimpleSeparableTrainingData) {
   std::unique_ptr<Model> model = Train(task_, training_data);
 
   // Each value should have a distribution with one target value with one count.
-  TargetDistribution distribution =
-      model->PredictDistribution(example_1.features);
+  TargetHistogram distribution = model->PredictDistribution(example_1.features);
   EXPECT_NE(model.get(), nullptr);
   EXPECT_EQ(distribution.size(), 1u);
   EXPECT_EQ(distribution[example_1.target_value], 1u);
@@ -129,8 +127,7 @@ TEST_P(RandomTreeTest, ComplexSeparableTrainingData) {
 
   // Each example should have a distribution that selects the right value.
   for (const LabelledExample& example : training_data) {
-    TargetDistribution distribution =
-        model->PredictDistribution(example.features);
+    TargetHistogram distribution = model->PredictDistribution(example.features);
     TargetValue singular_max;
     EXPECT_TRUE(distribution.FindSingularMax(&singular_max));
     EXPECT_EQ(singular_max, example.target_value);
@@ -147,17 +144,16 @@ TEST_P(RandomTreeTest, UnseparableTrainingData) {
   std::unique_ptr<Model> model = Train(task_, training_data);
   EXPECT_NE(model.get(), nullptr);
 
-  // Each value should have a distribution with two targets with one count each.
-  TargetDistribution distribution =
-      model->PredictDistribution(example_1.features);
+  // Each value should have a distribution with two targets with equal counts.
+  TargetHistogram distribution = model->PredictDistribution(example_1.features);
   EXPECT_EQ(distribution.size(), 2u);
-  EXPECT_EQ(distribution[example_1.target_value], 1u);
-  EXPECT_EQ(distribution[example_2.target_value], 1u);
+  EXPECT_EQ(distribution[example_1.target_value], 0.5);
+  EXPECT_EQ(distribution[example_2.target_value], 0.5);
 
   distribution = model->PredictDistribution(example_2.features);
   EXPECT_EQ(distribution.size(), 2u);
-  EXPECT_EQ(distribution[example_1.target_value], 1u);
-  EXPECT_EQ(distribution[example_2.target_value], 1u);
+  EXPECT_EQ(distribution[example_1.target_value], 0.5);
+  EXPECT_EQ(distribution[example_2.target_value], 0.5);
 }
 
 TEST_P(RandomTreeTest, UnknownFeatureValueHandling) {
@@ -202,7 +198,7 @@ TEST_P(RandomTreeTest, NumericFeaturesSplitMultipleTimes) {
   std::unique_ptr<Model> model = Train(task_, training_data);
   for (size_t i = 0; i < 4; i++) {
     // Get a prediction for the |i|-th feature value.
-    TargetDistribution distribution = model->PredictDistribution(
+    TargetHistogram distribution = model->PredictDistribution(
         FeatureVector({FeatureValue(i * feature_mult)}));
     // The distribution should have one count that should be correct.  If
     // the feature isn't split four times, then some feature value will have too

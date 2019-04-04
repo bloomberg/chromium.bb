@@ -14,7 +14,7 @@
 #include "base/optional.h"
 #include "media/learning/common/learning_task.h"
 #include "media/learning/impl/model.h"
-#include "media/learning/impl/target_distribution.h"
+#include "media/learning/impl/target_histogram.h"
 
 namespace media {
 namespace learning {
@@ -31,8 +31,7 @@ class COMPONENT_EXPORT(LEARNING_IMPL) DistributionReporter {
 
   // Returns a prediction CB that will be compared to |observed|.  |observed| is
   // the total number of counts that we observed.
-  virtual Model::PredictionCB GetPredictionCallback(
-      TargetDistribution observed);
+  virtual Model::PredictionCB GetPredictionCallback(TargetHistogram observed);
 
   // Set the subset of features that is being used to train the model.  This is
   // used for feature importance measuremnts.
@@ -49,8 +48,8 @@ class COMPONENT_EXPORT(LEARNING_IMPL) DistributionReporter {
   const LearningTask& task() const { return task_; }
 
   // Implemented by subclasses to report a prediction.
-  virtual void OnPrediction(TargetDistribution observed,
-                            TargetDistribution predicted) = 0;
+  virtual void OnPrediction(TargetHistogram observed,
+                            TargetHistogram predicted) = 0;
 
   const base::Optional<std::set<int>>& feature_indices() const {
     return feature_indices_;

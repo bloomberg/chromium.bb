@@ -85,10 +85,9 @@ void LearningTaskControllerImpl::AddFinishedExample(LabelledExample example) {
 
   // Once we have a model, see if we'd get |example| correct.
   if (model_ && reporter_) {
-    TargetDistribution predicted =
-        model_->PredictDistribution(example.features);
+    TargetHistogram predicted = model_->PredictDistribution(example.features);
 
-    TargetDistribution observed;
+    TargetHistogram observed;
     observed += example.target_value;
     reporter_->GetPredictionCallback(observed).Run(predicted);
   }

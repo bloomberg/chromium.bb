@@ -2,51 +2,48 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/learning/impl/target_distribution.h"
+#include "media/learning/impl/target_histogram.h"
 
 #include <sstream>
 
 namespace media {
 namespace learning {
 
-TargetDistribution::TargetDistribution() = default;
+TargetHistogram::TargetHistogram() = default;
 
-TargetDistribution::TargetDistribution(const TargetDistribution& rhs) = default;
+TargetHistogram::TargetHistogram(const TargetHistogram& rhs) = default;
 
-TargetDistribution::TargetDistribution(TargetDistribution&& rhs) = default;
+TargetHistogram::TargetHistogram(TargetHistogram&& rhs) = default;
 
-TargetDistribution::~TargetDistribution() = default;
+TargetHistogram::~TargetHistogram() = default;
 
-TargetDistribution& TargetDistribution::operator=(
-    const TargetDistribution& rhs) = default;
-
-TargetDistribution& TargetDistribution::operator=(TargetDistribution&& rhs) =
+TargetHistogram& TargetHistogram::operator=(const TargetHistogram& rhs) =
     default;
 
-bool TargetDistribution::operator==(const TargetDistribution& rhs) const {
+TargetHistogram& TargetHistogram::operator=(TargetHistogram&& rhs) = default;
+
+bool TargetHistogram::operator==(const TargetHistogram& rhs) const {
   return rhs.total_counts() == total_counts() && rhs.counts_ == counts_;
 }
 
-TargetDistribution& TargetDistribution::operator+=(
-    const TargetDistribution& rhs) {
+TargetHistogram& TargetHistogram::operator+=(const TargetHistogram& rhs) {
   for (auto& rhs_pair : rhs.counts())
     counts_[rhs_pair.first] += rhs_pair.second;
 
   return *this;
 }
 
-TargetDistribution& TargetDistribution::operator+=(const TargetValue& rhs) {
+TargetHistogram& TargetHistogram::operator+=(const TargetValue& rhs) {
   counts_[rhs]++;
   return *this;
 }
 
-TargetDistribution& TargetDistribution::operator+=(
-    const LabelledExample& example) {
+TargetHistogram& TargetHistogram::operator+=(const LabelledExample& example) {
   counts_[example.target_value] += example.weight;
   return *this;
 }
 
-size_t TargetDistribution::operator[](const TargetValue& value) const {
+double TargetHistogram::operator[](const TargetValue& value) const {
   auto iter = counts_.find(value);
   if (iter == counts_.end())
     return 0;
@@ -54,16 +51,16 @@ size_t TargetDistribution::operator[](const TargetValue& value) const {
   return iter->second;
 }
 
-size_t& TargetDistribution::operator[](const TargetValue& value) {
+double& TargetHistogram::operator[](const TargetValue& value) {
   return counts_[value];
 }
 
-bool TargetDistribution::FindSingularMax(TargetValue* value_out,
-                                         size_t* counts_out) const {
+bool TargetHistogram::FindSingularMax(TargetValue* value_out,
+                                      double* counts_out) const {
   if (!counts_.size())
     return false;
 
-  size_t unused_counts;
+  double unused_counts;
   if (!counts_out)
     counts_out = &unused_counts;
 
@@ -85,9 +82,9 @@ bool TargetDistribution::FindSingularMax(TargetValue* value_out,
   return singular_max;
 }
 
-double TargetDistribution::Average() const {
+double TargetHistogram::Average() const {
   double total_value = 0.;
-  size_t total_counts = 0;
+  double total_counts = 0;
   for (auto& iter : counts_) {
     total_value += iter.first.value() * iter.second;
     total_counts += iter.second;
@@ -99,7 +96,13 @@ double TargetDistribution::Average() const {
   return total_value / total_counts;
 }
 
-std::string TargetDistribution::ToString() const {
+void TargetHistogram::Normalize() {
+  double total = total_counts();
+  for (auto& iter : counts_)
+    iter.second /= total;
+}
+
+std::string TargetHistogram::ToString() const {
   std::ostringstream ss;
   ss << "[";
   for (auto& entry : counts_)
@@ -110,7 +113,7 @@ std::string TargetDistribution::ToString() const {
 }
 
 std::ostream& operator<<(std::ostream& out,
-                         const media::learning::TargetDistribution& dist) {
+                         const media::learning::TargetHistogram& dist) {
   return out << dist.ToString();
 }
 

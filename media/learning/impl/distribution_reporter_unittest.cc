@@ -33,13 +33,13 @@ TEST_F(DistributionReporterTest, DistributionReporterDoesNotCrash) {
   const TargetValue Zero(0);
   const TargetValue One(1);
 
-  TargetDistribution observed;
+  TargetHistogram observed;
   // Observe an average of 2 / 3.
   observed[Zero] = 100;
   observed[One] = 200;
   auto cb = reporter_->GetPredictionCallback(observed);
 
-  TargetDistribution predicted;
+  TargetHistogram predicted;
   // Predict an average of 5 / 9.
   predicted[Zero] = 40;
   predicted[One] = 50;
