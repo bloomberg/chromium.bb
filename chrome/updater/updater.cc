@@ -13,6 +13,7 @@
 #include "base/at_exit.h"
 #include "base/callback_forward.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_loop.h"
@@ -34,6 +35,7 @@
 #include "chrome/updater/updater_version.h"
 #include "chrome/updater/util.h"
 #include "components/crash/core/common/crash_key.h"
+#include "components/prefs/pref_service.h"
 #include "components/services/patch/public/cpp/manifest.h"
 #include "components/services/patch/public/interfaces/constants.mojom.h"
 #include "components/services/unzip/public/cpp/manifest.h"
@@ -142,7 +144,7 @@ class Observer : public update_client::UpdateClient::Observer {
 void InitLogging(const base::CommandLine& command_line) {
   logging::LoggingSettings settings;
   base::FilePath log_dir;
-  GetProductDirectory(&log_dir);
+  GetProductDataDirectory(&log_dir);
   const auto log_file = log_dir.Append(FILE_PATH_LITERAL("updater.log"));
   settings.log_file = log_file.value().c_str();
   settings.logging_dest = logging::LOG_TO_ALL;
@@ -167,8 +169,6 @@ void InitializeUpdaterMain() {
     VLOG(1) << "Crash reporting is not available.";
   }
   StartCrashReporter(UPDATER_VERSION_STRING);
-
-  base::DisallowBlocking();
 
   mojo::core::Init();
   TaskSchedulerStart();
@@ -209,37 +209,50 @@ int UpdaterMain(int argc, const char* const* argv) {
   auto embedder_service = CreateEmbedderService();
   auto config =
       base::MakeRefCounted<Configurator>(embedder_service->Connector());
-  auto update_client = update_client::UpdateClientFactory(config);
 
-  Observer observer(update_client);
-  update_client->AddObserver(&observer);
+  {
+    base::ScopedDisallowBlocking no_blocking_allowed;
 
-  const std::vector<std::string> ids = {"mimojjlkmoijpicakmndhoigimigcmbb"};
-  update_client->Update(
-      ids,
-      base::BindOnce(
-          [](const std::vector<std::string>& ids)
-              -> std::vector<base::Optional<update_client::CrxComponent>> {
-            update_client::CrxComponent component;
-            component.name = "mimo";
-            component.pk_hash.assign(std::begin(mimo_hash),
-                                     std::end(mimo_hash));
-            component.version = base::Version("0.0");
-            component.requires_network_encryption = false;
-            return {component};
-          }),
-      true,
-      base::BindOnce(
-          [](base::OnceClosure closure, update_client::Error error) {
-            base::ThreadTaskRunnerHandle::Get()->PostTask(
-                FROM_HERE, base::BindOnce(&QuitLoop, std::move(closure)));
-          },
-          runloop.QuitWhenIdleClosure()));
+    auto update_client = update_client::UpdateClientFactory(config);
 
-  runloop.Run();
+    Observer observer(update_client);
+    update_client->AddObserver(&observer);
 
-  update_client->RemoveObserver(&observer);
-  update_client = nullptr;
+    const std::vector<std::string> ids = {"mimojjlkmoijpicakmndhoigimigcmbb"};
+    update_client->Update(
+        ids,
+        base::BindOnce(
+            [](const std::vector<std::string>& ids)
+                -> std::vector<base::Optional<update_client::CrxComponent>> {
+              update_client::CrxComponent component;
+              component.name = "mimo";
+              component.pk_hash.assign(std::begin(mimo_hash),
+                                       std::end(mimo_hash));
+              component.version = base::Version("0.0");
+              component.requires_network_encryption = false;
+              return {component};
+            }),
+        true,
+        base::BindOnce(
+            [](base::OnceClosure closure, update_client::Error error) {
+              base::ThreadTaskRunnerHandle::Get()->PostTask(
+                  FROM_HERE, base::BindOnce(&QuitLoop, std::move(closure)));
+            },
+            runloop.QuitWhenIdleClosure()));
+
+    runloop.Run();
+
+    update_client->RemoveObserver(&observer);
+    update_client = nullptr;
+  }
+
+  {
+    base::RunLoop runloop;
+    config->GetPrefService()->CommitPendingWrite(base::BindOnce(
+        [](base::OnceClosure quit_closure) { std::move(quit_closure).Run(); },
+        runloop.QuitWhenIdleClosure()));
+    runloop.Run();
+  }
 
   TerminateUpdaterMain();
   return 0;

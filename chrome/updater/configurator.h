@@ -76,6 +76,8 @@ class Configurator : public update_client::Configurator {
   friend class base::RefCountedThreadSafe<Configurator>;
   ~Configurator() override;
 
+  std::unique_ptr<PrefService> pref_service_;
+
   // connector_prototype__ is a connector to the updater's service_manager,
   // through which mojo calls can be made. Connectors have thread-affinity, so
   // this connector serves as a template that can be cloned for specific uses.

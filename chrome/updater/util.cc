@@ -14,7 +14,7 @@
 
 namespace updater {
 
-bool GetProductDirectory(base::FilePath* path) {
+bool GetProductDataDirectory(base::FilePath* path) {
   constexpr int kPathKey =
 #if defined(OS_WIN)
       base::DIR_LOCAL_APP_DATA;
@@ -22,19 +22,20 @@ bool GetProductDirectory(base::FilePath* path) {
       base::DIR_APP_DATA;
 #endif
 
-  base::FilePath product_dir;
-  if (!base::PathService::Get(kPathKey, &product_dir)) {
+  base::FilePath app_data_dir;
+  if (!base::PathService::Get(kPathKey, &app_data_dir)) {
     LOG(ERROR) << "Can't retrieve local app data directory.";
     return false;
   }
 
-  product_dir = product_dir.AppendASCII(PRODUCT_FULLNAME_STRING);
-  if (!base::CreateDirectory(product_dir)) {
+  const auto product_data_dir =
+      app_data_dir.AppendASCII(PRODUCT_FULLNAME_STRING);
+  if (!base::CreateDirectory(product_data_dir)) {
     LOG(ERROR) << "Can't create product directory.";
     return false;
   }
 
-  *path = product_dir;
+  *path = product_data_dir;
   return true;
 }
 
