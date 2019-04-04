@@ -142,6 +142,13 @@ class AutoclickTest : public AshTestBase {
         ->menu_view_;
   }
 
+  views::View* GetMenuButton(AutoclickMenuView::ButtonId view_id) {
+    AutoclickMenuView* menu_view = GetAutoclickMenuView();
+    if (!menu_view)
+      return nullptr;
+    return menu_view->GetViewByID(static_cast<int>(view_id));
+  }
+
   void ClearMouseEvents() { mouse_event_capturer_.Reset(); }
 
   const std::vector<ui::MouseEvent>& GetMouseEvents() {
@@ -600,57 +607,100 @@ TEST_F(AutoclickTest, WaitsToDrawAnimationAfterDwellBegins) {
   EXPECT_EQ(gfx::Point(105, 105), events[0].location());
 }
 
-TEST_F(AutoclickTest, LeftClicksOnBubbleWhenInDifferentModes) {
+TEST_F(AutoclickTest, DoesActionOnBubbleWhenInDifferentModes) {
+  AccessibilityController* accessibility_controller =
+      Shell::Get()->accessibility_controller();
   // Enable autoclick from the accessibility controller so that the bubble is
   // constructed too.
-  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
+  accessibility_controller->SetAutoclickEnabled(true);
   GetAutoclickController()->set_revert_to_left_click(false);
-  GetAutoclickController()->SetAutoclickEventType(
-      mojom::AutoclickEventType::kRightClick);
-  Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
-      mojom::AutoclickMenuPosition::kBottomRight);
   std::vector<ui::MouseEvent> events;
 
-  AutoclickMenuView* menu = GetAutoclickMenuView();
-  ASSERT_TRUE(menu);
+  // Test at different screen sizes and densities because the fake click on
+  // the button involves coordinating between dips and pixels. Try two different
+  // positions to ensure offsets are calculated correctly.
+  const struct {
+    const std::string display_spec;
+    float scale;
+    mojom::AutoclickMenuPosition position;
+  } kTestCases[] = {
+      {"800x600", 1.0f, mojom::AutoclickMenuPosition::kBottomRight},
+      {"1024x800*2.0", 2.0f, mojom::AutoclickMenuPosition::kBottomRight},
+      {"800x600", 1.0f, mojom::AutoclickMenuPosition::kTopLeft},
+      {"1024x800*2.0", 2.0f, mojom::AutoclickMenuPosition::kTopLeft},
+  };
+  for (const auto& test : kTestCases) {
+    UpdateDisplay(test.display_spec);
+    accessibility_controller->SetAutoclickMenuPosition(test.position);
+    accessibility_controller->SetAutoclickEventType(
+        mojom::AutoclickEventType::kRightClick);
 
-  // Outside of the bubble, a right-click still occurs.
-  GetEventGenerator()->MoveMouseTo(30, 30);
-  events = WaitForMouseEvents();
-  ASSERT_EQ(2u, events.size());
-  EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & events[0].flags());
-  EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & events[1].flags());
+    AutoclickMenuView* menu = GetAutoclickMenuView();
+    ASSERT_TRUE(menu);
 
-  // But over the bubble, we get a left click.
-  GetEventGenerator()->MoveMouseTo(menu->GetBoundsInScreen().origin());
-  events = WaitForMouseEvents();
-  ASSERT_EQ(2u, events.size());
-  EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & events[0].flags());
-  EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & events[1].flags());
+    // Outside of the bubble, a right-click still occurs.
+    // Move to a central position which will not have any menu but will still be
+    // on-screen.
+    GetEventGenerator()->MoveMouseTo(200 * test.scale, 200 * test.scale);
+    events = WaitForMouseEvents();
+    ASSERT_EQ(2u, events.size());
+    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & events[0].flags());
+    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & events[1].flags());
 
-  // Change to a pause action type.
-  GetAutoclickController()->SetAutoclickEventType(
-      mojom::AutoclickEventType::kNoAction);
+    // Over the bubble, we get no real click, although the autoclick event
+    // type does get changed properly over a button.
+    gfx::Point button_location = gfx::ScaleToRoundedPoint(
+        GetMenuButton(AutoclickMenuView::ButtonId::kDoubleClick)
+            ->GetBoundsInScreen()
+            .CenterPoint(),
+        test.scale);
+    GetEventGenerator()->MoveMouseTo(button_location);
+    events = WaitForMouseEvents();
+    EXPECT_EQ(0u, events.size());
+    // But the event type did change with a the hover on the button.
+    EXPECT_EQ(mojom::AutoclickEventType::kDoubleClick,
+              accessibility_controller->GetAutoclickEventType());
 
-  // Outside the bubble, no action occurs.
-  GetEventGenerator()->MoveMouseTo(30, 30);
-  events = WaitForMouseEvents();
-  EXPECT_EQ(0u, events.size());
+    // Change to a pause action type.
+    accessibility_controller->SetAutoclickEventType(
+        mojom::AutoclickEventType::kNoAction);
 
-  // If we move over the bubble than a click occurs.
-  GetEventGenerator()->MoveMouseTo(menu->GetBoundsInScreen().origin());
-  events = WaitForMouseEvents();
-  ASSERT_EQ(2u, events.size());
-  EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & events[0].flags());
-  EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & events[1].flags());
+    // Outside the bubble, no action occurs.
+    GetEventGenerator()->MoveMouseTo(200 * test.scale, 200 * test.scale);
+    events = WaitForMouseEvents();
+    EXPECT_EQ(0u, events.size());
 
-  // But leaving the bubble we are still paused.
-  GetEventGenerator()->MoveMouseTo(60, 60);
-  events = WaitForMouseEvents();
-  EXPECT_EQ(0u, events.size());
+    // If we move over the bubble but not over any button than no real click
+    // occurs.
+    button_location = gfx::ScaleToRoundedPoint(
+        GetAutoclickMenuView()->GetBoundsInScreen().CenterPoint(), test.scale);
+    GetEventGenerator()->MoveMouseTo(button_location);
+    events = WaitForMouseEvents();
+    EXPECT_EQ(0u, events.size());
+    // The event type did not change because we were not over any button.
+    EXPECT_EQ(mojom::AutoclickEventType::kNoAction,
+              accessibility_controller->GetAutoclickEventType());
+
+    // Leaving the bubble we are still paused.
+    GetEventGenerator()->MoveMouseTo(200 * test.scale, 200 * test.scale);
+    events = WaitForMouseEvents();
+    EXPECT_EQ(0u, events.size());
+
+    // Moving over another button takes an action.
+    button_location = gfx::ScaleToRoundedPoint(
+        GetMenuButton(AutoclickMenuView::ButtonId::kLeftClick)
+            ->GetBoundsInScreen()
+            .CenterPoint(),
+        test.scale);
+    GetEventGenerator()->MoveMouseTo(button_location);
+    events = WaitForMouseEvents();
+    EXPECT_EQ(0u, events.size());
+    EXPECT_EQ(mojom::AutoclickEventType::kLeftClick,
+              accessibility_controller->GetAutoclickEventType());
+  }
 
   // Reset state.
-  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(false);
+  accessibility_controller->SetAutoclickEnabled(false);
 }
 
 TEST_F(AutoclickTest,

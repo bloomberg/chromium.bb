@@ -186,25 +186,28 @@ void AutoclickController::DoAutoclickAction() {
   aura::Window* root_window = wm::GetRootWindowAt(anchor_location_);
   DCHECK(root_window) << "Root window not found while attempting autoclick.";
 
-  gfx::Point location_in_pixels(anchor_location_);
-  ::wm::ConvertPointFromScreen(root_window, &location_in_pixels);
-  aura::WindowTreeHost* host = root_window->GetHost();
-  host->ConvertDIPToPixels(&location_in_pixels);
+  // But if the thing that would be acted upon is an autoclick menu button, do a
+  // fake click instead of whatever other action type we would have done. This
+  // ensures that no matter the autoclick setting, users can always change to
+  // another autoclick setting. By using a fake click we avoid closing dialogs
+  // and menus, allowing autoclick users to interact with those items.
+  if (!DragInProgress() && AutoclickMenuContainsPoint(anchor_location_)) {
+    menu_bubble_controller_->ClickOnBubble(anchor_location_,
+                                           mouse_event_flags_);
+    // Reset UI.
+    CancelAutoclickAction();
+    return;
+  }
 
   // Set the in-progress event type locally so that if the event type is updated
   // in the middle of this event being executed it doesn't change execution.
   mojom::AutoclickEventType in_progress_event_type = event_type_;
-
-  // But if the thing that would be acted upon is an autoclick menu button, do a
-  // left click instead of whatever other action type we would have done. This
-  // ensures that no matter the autoclick setting, users can always change to
-  // another autoclick setting.
-  if (event_type_ != mojom::AutoclickEventType::kLeftClick &&
-      !DragInProgress() && AutoclickMenuContainsPoint(anchor_location_)) {
-    // TODO: Check if the keyboard is up too, so we know if it's blocked.
-    in_progress_event_type = mojom::AutoclickEventType::kLeftClick;
-  }
   RecordUserAction(in_progress_event_type);
+
+  gfx::Point location_in_pixels(anchor_location_);
+  ::wm::ConvertPointFromScreen(root_window, &location_in_pixels);
+  aura::WindowTreeHost* host = root_window->GetHost();
+  host->ConvertDIPToPixels(&location_in_pixels);
 
   bool drag_start =
       in_progress_event_type == mojom::AutoclickEventType::kDragAndDrop &&

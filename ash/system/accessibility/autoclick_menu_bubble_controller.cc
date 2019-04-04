@@ -11,6 +11,8 @@
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray_view.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/events/event_utils.h"
 
 namespace ash {
 
@@ -114,6 +116,29 @@ void AutoclickMenuBubbleController::CloseBubble() {
   if (!bubble_widget_ || bubble_widget_->IsClosed())
     return;
   bubble_widget_->Close();
+}
+
+void AutoclickMenuBubbleController::ClickOnBubble(gfx::Point location_in_dips,
+                                                  int mouse_event_flags) {
+  if (!bubble_widget_)
+    return;
+
+  // Change the event location bounds to be relative to the menu bubble.
+  location_in_dips -= bubble_view_->GetBoundsInScreen().OffsetFromOrigin();
+
+  // Generate synthesized mouse events for the click.
+  const ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, location_in_dips,
+                                   location_in_dips, ui::EventTimeForNow(),
+                                   mouse_event_flags | ui::EF_LEFT_MOUSE_BUTTON,
+                                   ui::EF_LEFT_MOUSE_BUTTON);
+  const ui::MouseEvent release_event(
+      ui::ET_MOUSE_RELEASED, location_in_dips, location_in_dips,
+      ui::EventTimeForNow(), mouse_event_flags | ui::EF_LEFT_MOUSE_BUTTON,
+      ui::EF_LEFT_MOUSE_BUTTON);
+
+  // Send the press/release events to the widget's root view for processing.
+  bubble_widget_->GetRootView()->OnMousePressed(press_event);
+  bubble_widget_->GetRootView()->OnMouseReleased(release_event);
 }
 
 bool AutoclickMenuBubbleController::ContainsPointInScreen(
