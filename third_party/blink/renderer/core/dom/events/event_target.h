@@ -61,6 +61,7 @@ class Node;
 class ScriptState;
 class ServiceWorker;
 class V8EventListener;
+class PortalHost;
 
 struct FiringEventIterator {
   DISALLOW_NEW();
@@ -130,6 +131,7 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
   virtual LocalDOMWindow* ToLocalDOMWindow();
   virtual MessagePort* ToMessagePort();
   virtual ServiceWorker* ToServiceWorker();
+  virtual PortalHost* ToPortalHost();
 
   static EventTarget* Create(ScriptState*);
 

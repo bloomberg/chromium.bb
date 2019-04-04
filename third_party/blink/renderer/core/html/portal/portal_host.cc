@@ -8,6 +8,8 @@
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/user_activation.h"
+#include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
@@ -43,8 +45,12 @@ ExecutionContext* PortalHost::GetExecutionContext() const {
   return GetSupplementable()->document();
 }
 
+PortalHost* PortalHost::ToPortalHost() {
+  return this;
+}
+
 void PortalHost::ReceiveMessage(
-    const String& message,
+    BlinkTransferableMessage message,
     scoped_refptr<const SecurityOrigin> source_origin,
     scoped_refptr<const SecurityOrigin> target_origin) {
   DCHECK(GetSupplementable()->document()->GetPage()->InsidePortal());
@@ -53,9 +59,24 @@ void PortalHost::ReceiveMessage(
     return;
   }
 
-  MessageEvent* event =
-      MessageEvent::Create(message, source_origin->ToString());
+  UserActivation* user_activation = nullptr;
+  if (message.user_activation) {
+    user_activation = MakeGarbageCollected<UserActivation>(
+        message.user_activation->has_been_active,
+        message.user_activation->was_active);
+  }
+
+  MessageEvent* event = MessageEvent::Create(message.ports, message.message,
+                                             source_origin->ToString(),
+                                             String(), this, user_activation);
+  event->EntangleMessagePorts(GetExecutionContext());
+
+  ThreadDebugger* debugger = MainThreadDebugger::Instance();
+  if (debugger)
+    debugger->ExternalAsyncTaskStarted(message.sender_stack_trace_id);
   DispatchEvent(*event);
+  if (debugger)
+    debugger->ExternalAsyncTaskFinished(message.sender_stack_trace_id);
 }
 
 }  // namespace blink

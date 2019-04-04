@@ -217,7 +217,7 @@ interface FrameNavigationControl {
                    blink.mojom.TransferableMessage message);
 
   // Forwards message to the portal's main frame.
-  ForwardMessageToPortalHost(string message,
+  ForwardMessageToPortalHost(blink.mojom.TransferableMessage message,
                              url.mojom.Origin source_origin,
                              url.mojom.Origin? target_origin);
 

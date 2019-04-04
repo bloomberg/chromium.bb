@@ -877,7 +877,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Called on the main frame of a page embedded in a Portal to forward a
   // message to the PortalHost object in the frame.
   void ForwardMessageToPortalHost(
-      const std::string& message,
+      blink::TransferableMessage message,
       const url::Origin& source_origin,
       const base::Optional<url::Origin>& target_origin);
 

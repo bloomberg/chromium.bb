@@ -39,7 +39,7 @@ namespace blink {
 
 static inline bool IsValidSource(EventTarget* source) {
   return !source || source->ToLocalDOMWindow() || source->ToMessagePort() ||
-         source->ToServiceWorker();
+         source->ToServiceWorker() || source->ToPortalHost();
 }
 
 MessageEvent::V8GCAwareString::V8GCAwareString(const String& value)

@@ -8,6 +8,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/post_message_helper.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -123,6 +124,42 @@ BlinkTransferableMessage ActivateDataAsMessage(
   return msg;
 }
 
+BlinkTransferableMessage CreateMessageForPostMessage(
+    ScriptState* script_state,
+    const ScriptValue& message,
+    const WindowPostMessageOptions* options,
+    ExceptionState& exception_state) {
+  BlinkTransferableMessage transferable_message;
+  Transferables transferables;
+  scoped_refptr<SerializedScriptValue> serialized_message =
+      PostMessageHelper::SerializeMessageByMove(script_state->GetIsolate(),
+                                                message, options, transferables,
+                                                exception_state);
+  if (exception_state.HadException())
+    return {};
+  DCHECK(serialized_message);
+  transferable_message.message = serialized_message;
+
+  // Disentangle the port in preparation for sending it to the remote context.
+  auto* execution_context = ExecutionContext::From(script_state);
+  transferable_message.ports = MessagePort::DisentanglePorts(
+      execution_context, transferables.message_ports, exception_state);
+  if (exception_state.HadException())
+    return {};
+
+  if (ThreadDebugger* debugger =
+          ThreadDebugger::From(script_state->GetIsolate())) {
+    transferable_message.sender_stack_trace_id =
+        debugger->StoreCurrentStackTrace("postMessage");
+  }
+
+  transferable_message.user_activation =
+      PostMessageHelper::CreateUserActivationSnapshot(execution_context,
+                                                      options);
+
+  return transferable_message;
+}
+
 }  // namespace
 
 ScriptPromise HTMLPortalElement::activate(ScriptState* script_state,
@@ -191,7 +228,8 @@ ScriptPromise HTMLPortalElement::activate(ScriptState* script_state,
   return promise;
 }
 
-void HTMLPortalElement::postMessage(const String& message,
+void HTMLPortalElement::postMessage(ScriptState* script_state,
+                                    const ScriptValue& message,
                                     const String& target_origin,
                                     const Vector<ScriptValue>& transfer,
                                     ExceptionState& exception_state) {
@@ -199,10 +237,11 @@ void HTMLPortalElement::postMessage(const String& message,
   options->setTargetOrigin(target_origin);
   if (!transfer.IsEmpty())
     options->setTransfer(transfer);
-  postMessage(message, options, exception_state);
+  postMessage(script_state, message, options, exception_state);
 }
 
-void HTMLPortalElement::postMessage(const String& message,
+void HTMLPortalElement::postMessage(ScriptState* script_state,
+                                    const ScriptValue& message,
                                     const WindowPostMessageOptions* options,
                                     ExceptionState& exception_state) {
   if (!portal_ptr_ || is_activating_) {
@@ -218,7 +257,12 @@ void HTMLPortalElement::postMessage(const String& message,
   else if (options->targetOrigin() != "*")
     target_origin = SecurityOrigin::CreateFromString(options->targetOrigin());
 
-  portal_ptr_->PostMessage(message, target_origin);
+  BlinkTransferableMessage transferable_message = CreateMessageForPostMessage(
+      script_state, message, options, exception_state);
+  if (exception_state.HadException())
+    return;
+
+  portal_ptr_->PostMessage(std::move(transferable_message), target_origin);
 }
 
 HTMLPortalElement::InsertionNotificationRequest HTMLPortalElement::InsertedInto(

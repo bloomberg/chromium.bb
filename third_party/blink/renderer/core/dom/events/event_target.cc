@@ -195,6 +195,10 @@ ServiceWorker* EventTarget::ToServiceWorker() {
   return nullptr;
 }
 
+PortalHost* EventTarget::ToPortalHost() {
+  return nullptr;
+}
+
 // An instance of EventTargetImpl is returned because EventTarget
 // is an abstract class, and making it non-abstract is unfavorable
 // because it will increase the size of EventTarget and all of its

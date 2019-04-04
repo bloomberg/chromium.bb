@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-shared.h"
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom-shared.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
@@ -630,7 +631,7 @@ class WebLocalFrame : public WebFrame {
 
   // Forwards message to the PortalHost associated with frame.
   virtual void ForwardMessageToPortalHost(
-      const WebString& message,
+      TransferableMessage message,
       const WebSecurityOrigin& source_origin,
       const base::Optional<WebSecurityOrigin>& target_origin) = 0;
 
