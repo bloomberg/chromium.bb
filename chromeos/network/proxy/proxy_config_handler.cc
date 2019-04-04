@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_profile.h"
 #include "chromeos/network/network_profile_handler.h"

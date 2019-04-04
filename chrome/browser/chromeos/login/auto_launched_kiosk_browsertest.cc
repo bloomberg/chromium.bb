@@ -34,7 +34,7 @@
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
-#include "chromeos/dbus/shill_manager_client.h"
+#include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

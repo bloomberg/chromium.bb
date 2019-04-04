@@ -14,7 +14,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_manager_client.h"
+#include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "components/onc/onc_pref_names.h"

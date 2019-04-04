@@ -6,7 +6,7 @@
 
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
-#include "chromeos/dbus/fake_shill_manager_client.h"
+#include "chromeos/dbus/shill/fake_shill_manager_client.h"
 
 namespace chromeos {
 

@@ -10,7 +10,7 @@
 #include "base/values.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_manager_client.h"
+#include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/network/network_handler.h"
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/testing_pref_service.h"

@@ -21,7 +21,7 @@
 #include "base/task/post_task.h"
 #include "base/time/clock.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/certificate_helper.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_event_log.h"

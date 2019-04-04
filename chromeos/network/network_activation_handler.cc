@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_handler.h"
 #include "dbus/object_proxy.h"

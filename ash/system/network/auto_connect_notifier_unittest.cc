@@ -14,7 +14,7 @@
 #include "base/run_loop.h"
 #include "base/timer/mock_timer.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/auto_connect_handler.h"
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_handler.h"
