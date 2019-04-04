@@ -4,8 +4,6 @@
 
 #import "ios/chrome/browser/ui/payments/payment_request_egtest_base.h"
 
-#import <EarlGrey/EarlGrey.h>
-
 #include <algorithm>
 #include <memory>
 
