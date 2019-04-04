@@ -7,7 +7,9 @@
 #include <utility>
 #include "base/version.h"
 #include "build/build_config.h"
+#include "chrome/updater/prefs.h"
 #include "chrome/updater/updater_constants.h"
+#include "components/prefs/pref_service.h"
 #include "components/update_client/network.h"
 #include "components/update_client/protocol_handler.h"
 #include "components/version_info/version_info.h"
@@ -30,7 +32,8 @@ namespace updater {
 
 Configurator::Configurator(
     std::unique_ptr<service_manager::Connector> connector_prototype)
-    : connector_prototype_(std::move(connector_prototype)) {}
+    : pref_service_(CreatePrefService()),
+      connector_prototype_(std::move(connector_prototype)) {}
 Configurator::~Configurator() = default;
 
 int Configurator::InitialDelay() const {
@@ -124,7 +127,7 @@ bool Configurator::EnabledCupSigning() const {
 }
 
 PrefService* Configurator::GetPrefService() const {
-  return nullptr;
+  return pref_service_.get();
 }
 
 update_client::ActivityDataService* Configurator::GetActivityDataService()
