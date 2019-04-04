@@ -63,6 +63,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_observer.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/events/test/test_event_handler.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/rect.h"
@@ -1467,6 +1468,35 @@ TEST_F(WindowTreeClientTest, OnWindowInputEventWithObserver) {
   EXPECT_EQ(ui::ET_TOUCH_PRESSED, test_event_observer.last_event()->type());
   top_level->env()->RemoveEventObserver(&test_event_observer);
 }
+
+#if defined(OS_CHROMEOS)
+// The handling of gesture recognition behavior makes sense only in ChromeOS.
+TEST_F(WindowTreeClientTest, CleanupGestureState) {
+  auto top_level = CreateTopLevel();
+  test::EventCountDelegate delegate;
+  Window window(&delegate);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  top_level->host->window()->AddChild(&window);
+  window.SetBounds(gfx::Rect(0, 0, 100, 100));
+  window.Show();
+
+  ui::TouchEvent event(
+      ui::ET_TOUCH_PRESSED, window.bounds().CenterPoint(),
+      ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
+  window_tree_client()->OnWindowInputEvent(1, server_id(&window), 0,
+                                           ui::Event::Clone(event), false);
+  EXPECT_LT(0, delegate.GetGestureCountAndReset());
+  ui::GestureRecognizer* gesture_recognizer =
+      window.env()->gesture_recognizer();
+  EXPECT_EQ(&window, gesture_recognizer->GetTouchLockedTarget(event));
+
+  window_tree_client()->CleanupGestureState(
+      server_id(top_level->host->window()));
+  EXPECT_EQ(0, delegate.GetGestureCountAndReset());
+  EXPECT_FALSE(gesture_recognizer->GetTouchLockedTarget(event));
+}
+#endif
 
 // Verifies focus is reverted if the server replied that the change failed.
 TEST_F(WindowTreeClientTest, SetFocusFailed) {

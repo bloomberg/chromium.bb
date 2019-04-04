@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <stack>
 #include <string>
 #include <utility>
 #include <vector>
@@ -1643,7 +1644,19 @@ void WindowTreeClient::CleanupGestureState(ws::Id window_id) {
   WindowMus* window = GetWindowByServerId(window_id);
   if (!window)
     return;
-  window->GetWindow()->CleanupGestureState();
+  // Do not call Window::CleanupGestureState(); it creates extra
+  // ET_TOUCH_CANCELLED events unexpectedly and causes some troubles. Instead,
+  // here the code simply cleans up the state within the gesture recognizer. See
+  // https://crbug.com/948420.
+  std::stack<Window*> ws;
+  ws.push(window->GetWindow());
+  while (!ws.empty()) {
+    Window* w = ws.top();
+    ws.pop();
+    w->env()->gesture_recognizer()->CleanupStateForConsumer(w);
+    for (auto* c : w->children())
+      ws.push(c);
+  }
 }
 
 void WindowTreeClient::OnWindowResizeLoopStarted(ws::Id window_id) {
