@@ -556,7 +556,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Crostini) {
       storage::ExternalMountPoints::GetSystemInstance()->GetRegisteredPath(
           file_manager::util::GetDownloadsMountPointName(browser()->profile()),
           &downloads));
-  // Setup prefs crostini.shared_paths.
+  // Setup prefs guest_os.paths_shared_to_vms.
   base::FilePath shared1 = downloads.AppendASCII("shared1");
   base::FilePath shared2 = downloads.AppendASCII("shared2");
   {
@@ -565,11 +565,12 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Crostini) {
     ASSERT_TRUE(base::CreateDirectory(shared1));
     ASSERT_TRUE(base::CreateDirectory(shared2));
   }
-  base::ListValue shared_paths;
-  shared_paths.AppendString(shared1.value());
-  shared_paths.AppendString(shared2.value());
-  browser()->profile()->GetPrefs()->Set(crostini::prefs::kCrostiniSharedPaths,
-                                        shared_paths);
+  crostini::CrostiniSharePath* crostini_share_path =
+      crostini::CrostiniSharePath::GetForProfile(browser()->profile());
+  crostini_share_path->RegisterPersistedPath(crostini::kCrostiniDefaultVmName,
+                                             shared1);
+  crostini_share_path->RegisterPersistedPath(crostini::kCrostiniDefaultVmName,
+                                             shared2);
 
   ASSERT_TRUE(RunComponentExtensionTest("file_browser/crostini_test"));
 }

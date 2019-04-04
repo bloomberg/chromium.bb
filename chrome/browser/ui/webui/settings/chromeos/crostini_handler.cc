@@ -120,12 +120,14 @@ void CrostiniHandler::HandleGetCrostiniSharedPathsDisplayText(
 
 void CrostiniHandler::HandleRemoveCrostiniSharedPath(
     const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(2U, args->GetSize());
+  std::string vm_name;
+  CHECK(args->GetString(0, &vm_name));
   std::string path;
-  CHECK(args->GetString(0, &path));
+  CHECK(args->GetString(1, &path));
 
   crostini::CrostiniSharePath::GetForProfile(profile_)->UnsharePath(
-      crostini::kCrostiniDefaultVmName, base::FilePath(path),
+      vm_name, base::FilePath(path),
       /*unpersist=*/true,
       base::BindOnce(
           [](const std::string& path, bool result, std::string failure_reason) {

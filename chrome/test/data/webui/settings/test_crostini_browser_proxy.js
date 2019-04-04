@@ -15,21 +15,17 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
       'exportCrostiniContainer',
       'importCrostiniContainer',
     ]);
-    this.enabled = false;
-    this.sharedPaths = ['path1', 'path2'];
     this.sharedUsbDevices = [];
   }
 
   /** @override */
   requestCrostiniInstallerView() {
     this.methodCalled('requestCrostiniInstallerView');
-    this.enabled = true;
   }
 
   /** override */
   requestRemoveCrostini() {
     this.methodCalled('requestRemoveCrostini');
-    this.enabled = false;
   }
 
   /** override */
@@ -50,9 +46,10 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
   }
 
   /** override */
-  removeCrostiniSharedPath(path) {
-    this.sharedPaths = this.sharedPaths.filter(p => p !== path);
+  removeCrostiniSharedPath(vmName, path) {
+    this.methodCalled('removeCrostiniSharedPath', [vmName, path]);
   }
+
   /** @override */
   requestCrostiniInstallerStatus() {
     cr.webUIListenerCallback('crostini-installer-status-changed', false);

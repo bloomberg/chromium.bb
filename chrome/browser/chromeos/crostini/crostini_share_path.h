@@ -54,6 +54,12 @@ class CrostiniSharePath : public KeyedService,
                            const base::FilePath& path) = 0;
   };
 
+  // Migrates from crostini.shared_paths to crostini.paths_shared_to_vms which
+  // supports multi VM sharing.
+  // TODO(crbug.com/946273): Remove crostini.shared_paths and migration code
+  // after M77.
+  static void MigratePersistedPathsToMultiVM(PrefService* profile_prefs);
+
   static CrostiniSharePath* GetForProfile(Profile* profile);
   explicit CrostiniSharePath(Profile* profile);
   ~CrostiniSharePath() override;
@@ -88,16 +94,19 @@ class CrostiniSharePath : public KeyedService,
   // Returns true the first time it is called on this service.
   bool GetAndSetFirstForSession();
 
-  // Get list of all shared paths for the default crostini container.
-  std::vector<base::FilePath> GetPersistedSharedPaths();
+  // Get list of all shared paths for the specified VM.
+  std::vector<base::FilePath> GetPersistedSharedPaths(
+      const std::string& vm_name);
 
-  // Share all paths configured in prefs for the default crostini container.
+  // Share all paths configured in prefs for the specified VM.
   // Called at container startup.  Callback is invoked once complete.
   void SharePersistedPaths(
+      const std::string& vm_name,
       base::OnceCallback<void(bool, std::string)> callback);
 
-  // Save |path| into prefs.
-  void RegisterPersistedPath(const base::FilePath& path);
+  // Save |path| into prefs for |vm_name|.
+  void RegisterPersistedPath(const std::string& vm_name,
+                             const base::FilePath& path);
 
   // file_manager::VolumeManagerObserver
   void OnVolumeMounted(chromeos::MountError error_code,

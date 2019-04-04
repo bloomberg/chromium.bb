@@ -371,8 +371,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   // Crostini
   (*s_whitelist)[crostini::prefs::kCrostiniEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[crostini::prefs::kCrostiniSharedPaths] =
-      settings_api::PrefType::PREF_TYPE_LIST;
+  (*s_whitelist)[crostini::prefs::kGuestOSPathsSharedToVms] =
+      settings_api::PrefType::PREF_TYPE_DICTIONARY;
   (*s_whitelist)[crostini::prefs::kCrostiniSharedUsbDevices] =
       settings_api::PrefType::PREF_TYPE_LIST;
   (*s_whitelist)[crostini::prefs::kCrostiniContainers] =
