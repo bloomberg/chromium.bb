@@ -58,6 +58,14 @@ declare_args() {
   enable_mutex_priority_inheritance = false
 }
 
+# Mutex priority inheritance is disabled by default due to security
+# vulnerabilities in older versions of Linux kernel and glibc. However,
+# Chromecast builds have full control over the platform and ensure that
+# the kernel and glibc versions used have patched the vulnerabilities,
+# so it is safe to use mutex priority inheritance on Chromecast platform.
+assert(!enable_mutex_priority_inheritance || is_chromecast,
+       "Do not enable PI mutexes without consulting the security team")
+
 # Determines whether libevent should be dep.
 dep_libevent = !is_fuchsia && !is_win && !(is_nacl && !is_nacl_nonsfi)
 
