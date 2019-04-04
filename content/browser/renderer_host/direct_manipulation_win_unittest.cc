@@ -11,6 +11,7 @@
 #include "base/win/windows_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/base/win/window_event_target.h"
 
 namespace content {
 
