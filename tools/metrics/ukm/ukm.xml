@@ -3363,6 +3363,19 @@ be describing additional metrics about the same event.
       we don't know the audio codec.
     </summary>
   </metric>
+  <metric name="Video.EME.KeySystem">
+    <summary>
+      Name of the KeySystem used during for an encrypted (EME) playback. Will be
+      unset when EME is not used.
+    </summary>
+  </metric>
+  <metric name="Video.EME.UseHwSecureCodecs">
+    <summary>
+      Boolean indicating whether content decryption module (CDM) was configured
+      to use hardware secure decoding. May be true or false for EME playbacks.
+      Will be unset for non-EME playbacks.
+    </summary>
+  </metric>
   <metric name="Video.FramesPerSecond">
     <summary>
       Integer representing video frames per second. This is the cadence of video
