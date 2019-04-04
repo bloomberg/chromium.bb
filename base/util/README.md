@@ -78,12 +78,15 @@ after some of the more obviously "utility-esque" classes are moved.
 
 
 ## How does this differ from //components
-First, //base/util is a layer lower than //components so some code just cannot fit
-in components.
+Both //components and //base/util contain subdirectories that are (a) intended
+for reuse. In addition, //components imposes no global layering in Chromium, so
+a subdirectory placed in //components can be used from most-to-all layers in the
+codebase, subject to the dependencies that that subdirectory itself holds.
 
-Second, //components contains things are closer to full features or subsystems
-(eg autofill, heap profiler, cloud devices, visited link tracker) that are not
-really intended for large scale reuse.
+In spite of these similarities, there are *conceptual* differences: //components
+contains things are closer to full features or subsystems (eg autofill, heap
+profiler, cloud devices, visited link tracker) that are not really intended for
+large scale reuse.
 
 There is some overlap and at some point it will become a judgment call, but
 in general, //components are a better fit if the code in question is a feature,
