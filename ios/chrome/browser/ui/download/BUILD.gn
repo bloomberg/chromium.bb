@@ -123,6 +123,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser/download:test_support",
     "//ios/chrome/browser/ui/browser_view",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/test:eg_test_support",
     "//ios/chrome/test:test_support",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
