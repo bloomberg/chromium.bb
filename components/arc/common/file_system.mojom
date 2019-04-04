@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 13
+// Next MinVersion: 14
 
 module arc.mojom;
 
@@ -257,7 +257,7 @@ interface FileSystemHost {
       (FileSelectorElements elements);
 };
 
-// Next method ID: 18
+// Next method ID: 19
 interface FileSystemInstance {
   // Notes about Android Documents Provider:
   //
@@ -369,6 +369,10 @@ interface FileSystemInstance {
   // Asks the ContentResolver to get a FD to read the file specified by the
   // URL.
   [MinVersion=1] OpenFileToRead@2(string url) => (handle? fd);
+
+  // Asks the ContentResolver to get a FD to write the file specified by the
+  // URL.
+  [MinVersion=13] OpenFileToWrite@18(string url) => (handle? fd);
 
   // Uninstalls a document watcher.
   //
