@@ -53,15 +53,14 @@ class CONTENT_EXPORT DirectManipulationHelper {
 
   ~DirectManipulationHelper();
 
-  // Registers and activates the passed in |window| as a Direct Manipulation
-  // consumer.
+  // Actives Direct Manipulation, call when window show.
   void Activate();
 
-  // Deactivates Direct Manipulation processing on the passed in |window|.
+  // Deactivates Direct Manipulation, call when window show.
   void Deactivate();
 
   // Updates viewport size. Call it when window bounds updated.
-  void SetSize(const gfx::Size& size_in_pixels);
+  void SetSizeInPixels(const gfx::Size& size_in_pixels);
 
   // Reset for gesture end.
   HRESULT Reset(bool need_animtation);
@@ -94,7 +93,7 @@ class CONTENT_EXPORT DirectManipulationHelper {
   HWND window_;
   DWORD view_port_handler_cookie_;
   bool need_poll_events_ = false;
-  gfx::Size viewport_size_;
+  gfx::Size viewport_size_in_pixels_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectManipulationHelper);
 };

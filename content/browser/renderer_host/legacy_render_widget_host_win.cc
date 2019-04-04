@@ -163,7 +163,7 @@ void LegacyRenderWidgetHostHWND::SetBounds(const gfx::Rect& bounds) {
                  bounds_in_pixel.width(), bounds_in_pixel.height(),
                  SWP_NOREDRAW);
   if (direct_manipulation_helper_)
-    direct_manipulation_helper_->SetSize(bounds_in_pixel.size());
+    direct_manipulation_helper_->SetSizeInPixels(bounds_in_pixel.size());
 }
 
 void LegacyRenderWidgetHostHWND::OnFinalMessage(HWND hwnd) {
