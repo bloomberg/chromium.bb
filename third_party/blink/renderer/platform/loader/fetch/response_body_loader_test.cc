@@ -800,11 +800,14 @@ TEST_F(ResponseBodyLoaderDrainedBytesConsumerNotificationOutOfOnStateChangeTest,
 
   EXPECT_TRUE(consumer.DrainAsDataPipe());
 
+  task_runner->RunUntilIdle();
+
   EXPECT_FALSE(client->LoadingIsCancelled());
   EXPECT_FALSE(client->LoadingIsFinished());
   EXPECT_FALSE(client->LoadingIsFailed());
 
-  task_runner->RunUntilIdle();
+  completion_notifier->SignalComplete();
+
   EXPECT_FALSE(client->LoadingIsCancelled());
   EXPECT_TRUE(client->LoadingIsFinished());
   EXPECT_FALSE(client->LoadingIsFailed());
