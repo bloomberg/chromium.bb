@@ -105,6 +105,10 @@ class POLICY_EXPORT PolicyMap {
   const base::Value* GetValue(const std::string& policy) const;
   base::Value* GetMutableValue(const std::string& policy);
 
+  // Merges the values coming from different sources and clears the conflict
+  // state.
+  void MergeListValues(const std::string& policy);
+
   // Overwrites any existing information stored in the map for the key |policy|.
   // Resets the error for that policy to the empty string.
   void Set(const std::string& policy,

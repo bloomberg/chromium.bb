@@ -1163,6 +1163,10 @@
     ]
   },
 
+  "ExtensionInstallListsMergeEnabled": {
+    "note": "This policy has no pref as it is only directly read by the policy system."
+  },
+
   "ShowHomeButton": {
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,

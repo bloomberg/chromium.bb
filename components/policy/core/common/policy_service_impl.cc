@@ -70,6 +70,18 @@ void RemapProxyPolicies(PolicyMap* policies) {
   }
 }
 
+// If the policy to merge extension policies is set it causes a merge of the
+// Extension list policies. This is a temporary solution until the generic
+// merging logic is finished
+void MergeExtensionPolicies(PolicyMap* policies) {
+  auto* value = policies->GetValue(key::kExtensionInstallListsMergeEnabled);
+  if (value && value->GetBool()) {
+    policies->MergeListValues(key::kExtensionInstallForcelist);
+    policies->MergeListValues(key::kExtensionInstallBlacklist);
+    policies->MergeListValues(key::kExtensionInstallWhitelist);
+  }
+}
+
 }  // namespace
 
 PolicyServiceImpl::PolicyServiceImpl(Providers providers)
@@ -192,6 +204,7 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
     provided_bundle.CopyFrom(provider->policies());
     RemapProxyPolicies(&provided_bundle.Get(chrome_namespace));
     bundle.MergeFrom(provided_bundle);
+    MergeExtensionPolicies(&bundle.Get(chrome_namespace));
   }
 
   // Swap first, so that observers that call GetPolicies() see the current
