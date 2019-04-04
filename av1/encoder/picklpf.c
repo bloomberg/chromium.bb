@@ -57,7 +57,7 @@ static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
   if (plane == 0 && dir == 0) filter_level[1] = cm->lf.filter_level[1];
   if (plane == 0 && dir == 1) filter_level[0] = cm->lf.filter_level[0];
 
-  // set base filters for use of get_filter_level when in DELTA_Q_LF mode
+  // set base filters for use of get_filter_level when in DELTA_LF mode
   switch (plane) {
     case 0:
       cm->lf.filter_level[0] = filter_level[0];

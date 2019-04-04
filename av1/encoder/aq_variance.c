@@ -185,7 +185,7 @@ int av1_compute_deltaq_from_energy_level(const AV1_COMP *const cpi,
   int rate_level;
   const AV1_COMMON *const cm = &cpi->common;
 
-  if (DELTAQ_MODULATION == 1) {
+  if (DELTA_Q_PERCEPTUAL_MODULATION == 1) {
     ENERGY_IN_BOUNDS(block_var_level);
     rate_level = SEGMENT_ID(block_var_level);
   } else {

@@ -1690,15 +1690,15 @@ int av1_optimize_txb_new(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
   const LV_MAP_EOB_COST *txb_eob_costs =
       &x->eob_costs[eob_multi_size][plane_type];
 
-  const int rshift =
-      (sharpness +
-       (cpi->oxcf.aq_mode == VARIANCE_AQ && mbmi->segment_id < 4
-            ? 7 - mbmi->segment_id
-            : 2) +
-       (cpi->oxcf.aq_mode != VARIANCE_AQ &&
-                cpi->oxcf.deltaq_mode > NO_DELTA_Q && x->sb_energy_level < 0
-            ? (3 - x->sb_energy_level)
-            : 0));
+  const int rshift = (sharpness +
+                      (cpi->oxcf.aq_mode == VARIANCE_AQ && mbmi->segment_id < 4
+                           ? 7 - mbmi->segment_id
+                           : 2) +
+                      (cpi->oxcf.aq_mode != VARIANCE_AQ &&
+                               cpi->oxcf.deltaq_mode == DELTA_Q_PERCEPTUAL &&
+                               x->sb_energy_level < 0
+                           ? (3 - x->sb_energy_level)
+                           : 0));
   const int64_t rdmult =
       (((int64_t)x->rdmult *
         (plane_rd_mult[is_inter][plane_type] << (2 * (xd->bd - 8)))) +

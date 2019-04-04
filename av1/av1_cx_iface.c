@@ -72,6 +72,7 @@ struct av1_extracfg {
   int enable_dual_filter;
   AQ_MODE aq_mode;
   DELTAQ_MODE deltaq_mode;
+  int deltalf_mode;
   unsigned int frame_periodic_boost;
   aom_bit_depth_t bit_depth;
   aom_tune_content content;
@@ -186,6 +187,7 @@ static struct av1_extracfg default_extra_cfg = {
   1,                            // enable dual filter
   NO_AQ,                        // aq_mode
   NO_DELTA_Q,                   // deltaq_mode
+  0,                            // delta lf mode
   0,                            // frame_periodic_delta_q
   AOM_BITS_8,                   // Bit depth
   AOM_CONTENT_DEFAULT,          // content
@@ -324,7 +326,8 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   RANGE_CHECK_HI(cfg, rc_min_quantizer, cfg->rc_max_quantizer);
   RANGE_CHECK_BOOL(extra_cfg, lossless);
   RANGE_CHECK_HI(extra_cfg, aq_mode, AQ_MODE_COUNT - 1);
-  RANGE_CHECK_HI(extra_cfg, deltaq_mode, DELTAQ_MODE_COUNT - 1);
+  RANGE_CHECK_HI(extra_cfg, deltaq_mode, DELTA_Q_MODE_COUNT - 1);
+  RANGE_CHECK_HI(extra_cfg, deltalf_mode, 1);
   RANGE_CHECK_HI(extra_cfg, frame_periodic_boost, 1);
   RANGE_CHECK_HI(cfg, g_usage, 1);
   RANGE_CHECK_HI(cfg, g_threads, MAX_NUM_THREADS);
@@ -683,9 +686,6 @@ static aom_codec_err_t set_encoder_config(
     }
   }
 
-  oxcf->enable_tpl_model =
-      extra_cfg->enable_tpl_model && (oxcf->superres_mode == SUPERRES_NONE);
-
   oxcf->maximum_buffer_size_ms = is_vbr ? 240000 : cfg->rc_buf_sz;
   oxcf->starting_buffer_level_ms = is_vbr ? 60000 : cfg->rc_buf_initial_sz;
   oxcf->optimal_buffer_level_ms = is_vbr ? 60000 : cfg->rc_buf_optimal_sz;
@@ -833,8 +833,23 @@ static aom_codec_err_t set_encoder_config(
     oxcf->timing_info_present = 0;
   }
 
+  oxcf->enable_tpl_model =
+      extra_cfg->enable_tpl_model && (oxcf->superres_mode == SUPERRES_NONE);
+
   oxcf->aq_mode = extra_cfg->aq_mode;
   oxcf->deltaq_mode = extra_cfg->deltaq_mode;
+  // Turn on tpl model for deltaq_mode == DELTA_Q_OBJECTIVE and no
+  // superres. If superres is being used on the other hand, turn
+  // delta_q off.
+  if (oxcf->deltaq_mode == DELTA_Q_OBJECTIVE) {
+    if (oxcf->superres_mode == SUPERRES_NONE)
+      oxcf->enable_tpl_model = 1;
+    else
+      oxcf->deltaq_mode = NO_DELTA_Q;
+  }
+
+  oxcf->deltalf_mode =
+      (oxcf->deltaq_mode != NO_DELTA_Q) && extra_cfg->deltalf_mode;
 
   oxcf->save_as_annexb = cfg->save_as_annexb;
 
@@ -1504,6 +1519,13 @@ static aom_codec_err_t ctrl_set_deltaq_mode(aom_codec_alg_priv_t *ctx,
                                             va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.deltaq_mode = CAST(AV1E_SET_DELTAQ_MODE, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_deltalf_mode(aom_codec_alg_priv_t *ctx,
+                                             va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.deltalf_mode = CAST(AV1E_SET_DELTALF_MODE, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -2231,6 +2253,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_COEFF_COST_UPD_FREQ, ctrl_set_coeff_cost_upd_freq },
   { AV1E_SET_MODE_COST_UPD_FREQ, ctrl_set_mode_cost_upd_freq },
   { AV1E_SET_DELTAQ_MODE, ctrl_set_deltaq_mode },
+  { AV1E_SET_DELTALF_MODE, ctrl_set_deltalf_mode },
   { AV1E_SET_FRAME_PERIODIC_BOOST, ctrl_set_frame_periodic_boost },
   { AV1E_SET_TUNE_CONTENT, ctrl_set_tune_content },
   { AV1E_SET_CDF_UPDATE_MODE, ctrl_set_cdf_update_mode },

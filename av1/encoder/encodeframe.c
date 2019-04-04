@@ -634,7 +634,7 @@ static void pick_sb_modes(AV1_COMP *const cpi, TileDataEnc *tile_data,
     x->rdmult = x->cb_rdmult;
   }
 
-  if (deltaq_mode > 0) x->rdmult = set_deltaq_rdmult(cpi, xd);
+  if (deltaq_mode != NO_DELTA_Q) x->rdmult = set_deltaq_rdmult(cpi, xd);
 
   // Find best coding mode & reconstruct the MB so it is available
   // as a predictor for MBs that follow in the SB
@@ -1486,7 +1486,7 @@ static void encode_b(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   mbmi->partition = partition;
   update_state(cpi, tile_data, td, ctx, mi_row, mi_col, bsize, dry_run);
   if (cpi->oxcf.enable_tpl_model && cpi->oxcf.aq_mode == NO_AQ &&
-      cpi->oxcf.deltaq_mode == 0) {
+      cpi->oxcf.deltaq_mode == NO_DELTA_Q) {
     x->rdmult = x->cb_rdmult;
   }
 
@@ -4250,7 +4250,7 @@ static void setup_delta_q(AV1_COMP *const cpi, MACROBLOCK *const x,
   av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes, sb_size);
 
   int offset_qindex;
-  if (DELTAQ_MODULATION == 1) {
+  if (DELTA_Q_PERCEPTUAL_MODULATION == 1) {
     const int block_wavelet_energy_level =
         av1_block_wavelet_energy_level(cpi, x, sb_size);
     x->sb_energy_level = block_wavelet_energy_level;
@@ -4275,7 +4275,7 @@ static void setup_delta_q(AV1_COMP *const cpi, MACROBLOCK *const x,
   set_offsets(cpi, tile_info, x, mi_row, mi_col, sb_size);
   xd->mi[0]->current_qindex = current_qindex;
   av1_init_plane_quantizers(cpi, x, xd->mi[0]->segment_id);
-  if (cpi->oxcf.deltaq_mode == DELTA_Q_LF) {
+  if (cpi->oxcf.deltaq_mode != NO_DELTA_Q && cpi->oxcf.deltalf_mode) {
     const int lfmask = ~(delta_q_info->delta_lf_res - 1);
     const int delta_lf_from_base =
         ((offset_qindex / 2 + delta_q_info->delta_lf_res / 2) & lfmask);
@@ -4707,7 +4707,7 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
       const int orig_rdmult = cpi->rd.RDMULT;
       x->cb_rdmult = orig_rdmult;
       if (cpi->twopass.gf_group.index > 0 && cpi->oxcf.enable_tpl_model &&
-          cpi->oxcf.aq_mode == NO_AQ && cpi->oxcf.deltaq_mode == 0) {
+          cpi->oxcf.aq_mode == NO_AQ && cpi->oxcf.deltaq_mode == NO_DELTA_Q) {
         const int dr =
             get_rdmult_delta(cpi, BLOCK_128X128, mi_row, mi_col, orig_rdmult);
 
@@ -5332,7 +5332,8 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   // Set delta_q_present_flag before it is used for the first time
   cm->delta_q_info.delta_lf_res = DEFAULT_DELTA_LF_RES;
   cm->delta_q_info.delta_q_present_flag = cpi->oxcf.deltaq_mode != NO_DELTA_Q;
-  cm->delta_q_info.delta_lf_present_flag = cpi->oxcf.deltaq_mode == DELTA_Q_LF;
+  cm->delta_q_info.delta_lf_present_flag =
+      cpi->oxcf.deltaq_mode != NO_DELTA_Q && cpi->oxcf.deltalf_mode;
   cm->delta_q_info.delta_lf_multi = DEFAULT_DELTA_LF_MULTI;
   // update delta_q_present_flag and delta_lf_present_flag based on
   // base_qindex

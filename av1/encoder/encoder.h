@@ -110,9 +110,9 @@ enum {
 } UENUM1BYTE(AQ_MODE);
 enum {
   NO_DELTA_Q = 0,
-  DELTA_Q_ONLY = 1,
-  DELTA_Q_LF = 2,
-  DELTAQ_MODE_COUNT  // This should always be the last member of the enum
+  DELTA_Q_OBJECTIVE = 1,   // Modulation to improve objective quality
+  DELTA_Q_PERCEPTUAL = 2,  // Modulation to improve perceptual quality
+  DELTA_Q_MODE_COUNT       // This should always be the last member of the enum
 } UENUM1BYTE(DELTAQ_MODE);
 
 enum {
@@ -237,6 +237,7 @@ typedef struct AV1EncoderConfig {
   int cq_level;
   AQ_MODE aq_mode;  // Adaptive Quantization mode
   DELTAQ_MODE deltaq_mode;
+  int deltalf_mode;
   int enable_cdef;
   int enable_restoration;
   int enable_obmc;

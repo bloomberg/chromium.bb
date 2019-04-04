@@ -629,9 +629,12 @@ static const arg_def_t aq_mode = ARG_DEF(
     NULL, "aq-mode", 1,
     "Adaptive quantization mode (0: off (default), 1: variance 2: complexity, "
     "3: cyclic refresh)");
-static const arg_def_t deltaq_mode = ARG_DEF(
-    NULL, "deltaq-mode", 1,
-    "Delta qindex mode (0: off (default), 1: deltaq 2: deltaq + deltalf)");
+static const arg_def_t deltaq_mode =
+    ARG_DEF(NULL, "deltaq-mode", 1,
+            "Delta qindex mode (0: off (default), 1: deltaq pred efficiency, "
+            "2: deltaq perceptual)");
+static const arg_def_t deltalf_mode = ARG_DEF(
+    NULL, "delta-lf-mode", 1, "Enable delta-lf-mode (0: off (default), 1: on)");
 static const arg_def_t frame_periodic_boost =
     ARG_DEF(NULL, "frame-boost", 1,
             "Enable frame periodic boost (0: off (default), 1: on)");
@@ -840,6 +843,7 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &error_resilient_mode,
                                        &aq_mode,
                                        &deltaq_mode,
+                                       &deltalf_mode,
                                        &frame_periodic_boost,
                                        &noise_sens,
                                        &tune_content,
@@ -939,6 +943,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_ERROR_RESILIENT_MODE,
                                         AV1E_SET_AQ_MODE,
                                         AV1E_SET_DELTAQ_MODE,
+                                        AV1E_SET_DELTALF_MODE,
                                         AV1E_SET_FRAME_PERIODIC_BOOST,
                                         AV1E_SET_NOISE_SENSITIVITY,
                                         AV1E_SET_TUNE_CONTENT,
