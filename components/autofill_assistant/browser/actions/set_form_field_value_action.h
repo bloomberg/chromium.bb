@@ -27,10 +27,22 @@ class SetFormFieldValueAction : public Action {
   void OnWaitForElement(ActionDelegate* delegate,
                         ProcessActionCallback callback,
                         bool element_found);
+
+  void OnGetFieldValue(ActionDelegate* delegate,
+                       ProcessActionCallback callback,
+                       int next,
+                       bool status,
+                       const std::string& value);
+
   void OnSetFieldValue(ActionDelegate* delegate,
                        ProcessActionCallback callback,
                        int next,
                        const ClientStatus& status);
+
+  void OnSetFieldValueAndCheckFallback(ActionDelegate* delegate,
+                                       ProcessActionCallback callback,
+                                       int next,
+                                       const ClientStatus& status);
 
   base::WeakPtrFactory<SetFormFieldValueAction> weak_ptr_factory_;
 

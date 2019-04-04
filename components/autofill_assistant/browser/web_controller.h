@@ -104,6 +104,15 @@ class WebController {
       const Selector& selector,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
+  // Get the value of |selector| and return the result through |callback|. The
+  // returned value might be false, if the element cannot be found, true and the
+  // empty string in case of error or empty value.
+  //
+  // Normally done through BatchElementChecker.
+  virtual void GetFieldValue(
+      const Selector& selector,
+      base::OnceCallback<void(bool, const std::string&)> callback);
+
   // Set the |value| of field |selector| and return the result through
   // |callback|. If |simulate_key_presses| is true, the value will be set by
   // clicking the field and then simulating key presses, otherwise the `value`
@@ -168,15 +177,6 @@ class WebController {
                             const Selector& selector,
                             bool strict,
                             base::OnceCallback<void(bool)> callback);
-
-  // Get the value of |selector| and return the result through |callback|. The
-  // returned value might be false, if the element cannot be found, true and the
-  // empty string in case of error or empty value.
-  //
-  // To get the value of multiple elements, use a BatchElementChecker.
-  virtual void GetFieldValue(
-      const Selector& selector,
-      base::OnceCallback<void(bool, const std::string&)> callback);
 
  private:
   friend class WebControllerBrowserTest;

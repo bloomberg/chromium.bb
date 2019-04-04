@@ -148,6 +148,13 @@ class ActionDelegate {
       const Selector& selector,
       base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
+  // Get the value of |selector| and return the result through |callback|. The
+  // returned value might be false, if the element cannot be found, true and the
+  // empty string in case of error or empty value.
+  virtual void GetFieldValue(
+      const Selector& selector,
+      base::OnceCallback<void(bool, const std::string&)> callback) = 0;
+
   // Set the |value| of field |selector| and return the result through
   // |callback|. If |simulate_key_presses| is true, the value will be set by
   // clicking the field and then simulating key presses, otherwise the `value`

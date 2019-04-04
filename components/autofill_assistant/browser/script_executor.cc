@@ -306,6 +306,12 @@ void ScriptExecutor::SetProgressVisible(bool visible) {
   delegate_->SetProgressVisible(visible);
 }
 
+void ScriptExecutor::GetFieldValue(
+    const Selector& selector,
+    base::OnceCallback<void(bool, const std::string&)> callback) {
+  delegate_->GetWebController()->GetFieldValue(selector, std::move(callback));
+}
+
 void ScriptExecutor::SetFieldValue(
     const Selector& selector,
     const std::string& value,
