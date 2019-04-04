@@ -67,6 +67,7 @@
 #include "extensions/common/constants.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_request_headers.h"
+#include "third_party/blink/public/common/prerender/prerender_rel_type.h"
 #include "ui/gfx/geometry/rect.h"
 
 using chrome_browser_net::NetworkPredictionStatus;
@@ -220,9 +221,9 @@ PrerenderManager::AddPrerenderFromLinkRelPrerender(
     const uint32_t rel_types,
     const content::Referrer& referrer,
     const gfx::Size& size) {
-  Origin origin = rel_types & PrerenderRelTypePrerender ?
-                      ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN :
-                      ORIGIN_LINK_REL_NEXT;
+  Origin origin = rel_types & blink::kPrerenderRelTypePrerender
+                      ? ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN
+                      : ORIGIN_LINK_REL_NEXT;
   SessionStorageNamespace* session_storage_namespace = nullptr;
   // Unit tests pass in a process_id == -1.
   if (process_id != -1) {

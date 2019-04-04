@@ -91,6 +91,7 @@ source_set("headers") {
     "origin_trials/trial_token.h",
     "origin_trials/trial_token_validator.h",
     "page/launching_process_state.h",
+    "prerender/prerender_rel_type.h",
     "privacy_preferences.h",
     "screen_orientation/web_screen_orientation_lock_type.h",
     "screen_orientation/web_screen_orientation_type.h",
