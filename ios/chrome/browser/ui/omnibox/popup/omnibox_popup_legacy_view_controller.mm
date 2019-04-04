@@ -356,8 +356,8 @@ const CGFloat kAnswerRowHeight = 64.0;
     heightForRowAtIndexPath:(NSIndexPath*)indexPath {
   if (self.shortcutsEnabled && indexPath.row == 0 &&
       self.currentResult.count == 0) {
-    UIView* collectionView = self.shortcutsViewController.view;
-    return collectionView.frame.size.height;
+    return self.shortcutsViewController.collectionView.collectionViewLayout
+        .collectionViewContentSize.height;
   }
 
   DCHECK_EQ(0U, (NSUInteger)indexPath.section);

@@ -36,7 +36,8 @@ TEST_F(OmniboxPopupViewControllerTest, HasCellsWhenShortcutsEnabled) {
   UITableView* table_view = [[UITableView alloc] init];
 
   // A stub view controller.
-  UIViewController* shortcutsViewController = [[UIViewController alloc] init];
+  UICollectionViewController* shortcutsViewController =
+      [[UICollectionViewController alloc] init];
 
   // Shortcuts are not enabled by default.
   EXPECT_FALSE(popup_view_controller_.shortcutsEnabled);
