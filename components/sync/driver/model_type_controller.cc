@@ -292,7 +292,7 @@ void ModelTypeController::RecordStartFailure() const {
   // defines quite a different order from the type() enum.
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures2",
                             ModelTypeToHistogramInt(type()),
-                            static_cast<int>(MODEL_TYPE_COUNT));
+                            static_cast<int>(ModelType::NUM_ENTRIES));
 }
 
 void ModelTypeController::RecordRunFailure() const {
@@ -302,7 +302,7 @@ void ModelTypeController::RecordRunFailure() const {
   // defines quite a different order from the type() enum.
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures2",
                             ModelTypeToHistogramInt(type()),
-                            static_cast<int>(MODEL_TYPE_COUNT));
+                            static_cast<int>(ModelType::NUM_ENTRIES));
 }
 
 void ModelTypeController::OnDelegateStarted(

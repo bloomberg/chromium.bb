@@ -398,7 +398,7 @@ void ClientTagBasedModelTypeProcessor::Put(
     // Ignore changes that don't actually change anything.
     UMA_HISTOGRAM_ENUMERATION("Sync.ModelTypeRedundantPut",
                               ModelTypeToHistogramInt(type_),
-                              static_cast<int>(MODEL_TYPE_COUNT));
+                              static_cast<int>(ModelType::NUM_ENTRIES));
     return;
   }
 
@@ -1137,7 +1137,7 @@ void ClientTagBasedModelTypeProcessor::ConsumeDataBatch(
     storage_keys_to_untrack.push_back(storage_key);
     UMA_HISTOGRAM_ENUMERATION("Sync.ModelTypeOrphanMetadata",
                               ModelTypeToHistogramInt(type_),
-                              static_cast<int>(MODEL_TYPE_COUNT));
+                              static_cast<int>(ModelType::NUM_ENTRIES));
   }
 
   if (storage_keys_to_untrack.empty()) {

@@ -828,7 +828,7 @@ void Directory::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
       base::StringPrintf("sync/0x%" PRIXPTR, reinterpret_cast<uintptr_t>(this));
 
   size_t kernel_memory_usage;
-  size_t model_type_entry_count[MODEL_TYPE_COUNT] = {0};
+  size_t model_type_entry_count[ModelType::NUM_ENTRIES] = {0};
   {
     using base::trace_event::EstimateMemoryUsage;
 
@@ -860,7 +860,7 @@ void Directory::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
   }
 
   // Similar to UploadModelTypeEntryCount()
-  for (size_t i = FIRST_REAL_MODEL_TYPE; i != MODEL_TYPE_COUNT; ++i) {
+  for (size_t i = FIRST_REAL_MODEL_TYPE; i != ModelType::NUM_ENTRIES; ++i) {
     ModelType model_type = static_cast<ModelType>(i);
     std::string notification_type;
     if (RealModelTypeToNotificationType(model_type, &notification_type)) {
@@ -1114,7 +1114,7 @@ void Directory::GetUnappliedUpdateMetaHandles(BaseTransaction* trans,
                                               std::vector<int64_t>* result) {
   result->clear();
   ScopedKernelLock lock(this);
-  for (int i = UNSPECIFIED; i < MODEL_TYPE_COUNT; ++i) {
+  for (int i = UNSPECIFIED; i < ModelType::NUM_ENTRIES; ++i) {
     const ModelType type = ModelTypeFromInt(i);
     if (server_types.Has(type)) {
       std::copy(kernel_->unapplied_update_metahandles[type].begin(),

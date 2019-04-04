@@ -156,7 +156,7 @@ enum ModelType {
   DEPRECATED_EXPERIMENTS,
   LAST_REAL_MODEL_TYPE = DEPRECATED_EXPERIMENTS,
 
-  MODEL_TYPE_COUNT,
+  NUM_ENTRIES,
 };
 
 using ModelTypeSet =
@@ -166,7 +166,7 @@ using ModelTypeNameMap = std::map<ModelType, const char*>;
 
 inline ModelType ModelTypeFromInt(int i) {
   DCHECK_GE(i, 0);
-  DCHECK_LT(i, MODEL_TYPE_COUNT);
+  DCHECK_LT(i, ModelType::NUM_ENTRIES);
   return static_cast<ModelType>(i);
 }
 

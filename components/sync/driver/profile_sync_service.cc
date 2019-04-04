@@ -1397,7 +1397,7 @@ void ProfileSyncService::ConfigureDataTypeManager(ConfigureReason reason) {
       for (ModelType type : chosen_types) {
         UMA_HISTOGRAM_ENUMERATION("Sync.CustomSync2",
                                   ModelTypeToHistogramInt(type),
-                                  static_cast<int>(MODEL_TYPE_COUNT));
+                                  static_cast<int>(ModelType::NUM_ENTRIES));
       }
     }
   }

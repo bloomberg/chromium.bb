@@ -33,8 +33,8 @@ SyncCycleSnapshot::SyncCycleSnapshot()
       num_server_conflicts_(0),
       notifications_enabled_(false),
       num_entries_(0),
-      num_entries_by_type_(MODEL_TYPE_COUNT, 0),
-      num_to_delete_entries_by_type_(MODEL_TYPE_COUNT, 0),
+      num_entries_by_type_(ModelType::NUM_ENTRIES, 0),
+      num_to_delete_entries_by_type_(ModelType::NUM_ENTRIES, 0),
       has_remaining_local_changes_(false),
       is_initialized_(false) {}
 
@@ -106,7 +106,7 @@ std::unique_ptr<base::DictionaryValue> SyncCycleSnapshot::ToValue() const {
 
   std::unique_ptr<base::DictionaryValue> counter_entries(
       new base::DictionaryValue());
-  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; i++) {
+  for (int i = FIRST_REAL_MODEL_TYPE; i < ModelType::NUM_ENTRIES; i++) {
     std::unique_ptr<base::DictionaryValue> type_entries(
         new base::DictionaryValue());
     type_entries->SetInteger("numEntries", num_entries_by_type_[i]);

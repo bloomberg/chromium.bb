@@ -148,7 +148,7 @@ SyncManagerImpl::SyncManagerImpl(
       observing_network_connectivity_changes_(false),
       weak_ptr_factory_(this) {
   // Pre-fill |notification_info_map_|.
-  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
+  for (int i = FIRST_REAL_MODEL_TYPE; i < ModelType::NUM_ENTRIES; ++i) {
     notification_info_map_.insert(
         std::make_pair(ModelTypeFromInt(i), NotificationInfo()));
   }
@@ -783,7 +783,7 @@ void SyncManagerImpl::HandleCalculateChangesChangeEventFromSyncer(
   LOG_IF(WARNING, !change_records_.empty())
       << "CALCULATE_CHANGES called with unapplied old changes.";
 
-  ChangeReorderBuffer change_buffers[MODEL_TYPE_COUNT];
+  ChangeReorderBuffer change_buffers[ModelType::NUM_ENTRIES];
 
   Cryptographer* crypto = directory()->GetCryptographer(trans);
   const syncable::ImmutableEntryKernelMutationMap& mutations =
@@ -812,7 +812,7 @@ void SyncManagerImpl::HandleCalculateChangesChangeEventFromSyncer(
   }
 
   ReadTransaction read_trans(GetUserShare(), trans);
-  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
+  for (int i = FIRST_REAL_MODEL_TYPE; i < ModelType::NUM_ENTRIES; ++i) {
     if (!change_buffers[i].IsEmpty()) {
       if (change_buffers[i].GetAllChangesInTreeOrder(&read_trans,
                                                      &(change_records_[i]))) {
