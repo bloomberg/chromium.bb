@@ -55,12 +55,22 @@ bool WasHandled(InputEventAckState state) {
   }
 }
 
-ui::WebScopedInputEvent ScaleEvent(const WebInputEvent& event, double scale) {
+std::unique_ptr<InputEvent> ScaleEvent(const WebInputEvent& event,
+                                       double scale,
+                                       const ui::LatencyInfo latency_info) {
   std::unique_ptr<blink::WebInputEvent> event_in_viewport =
       ui::ScaleWebInputEvent(event, scale);
-  if (event_in_viewport)
-    return ui::WebScopedInputEvent(event_in_viewport.release());
-  return ui::WebInputEventTraits::Clone(event);
+  if (event_in_viewport) {
+    ui::LatencyInfo scaled_latency_info(latency_info);
+    scaled_latency_info.set_scroll_update_delta(
+        latency_info.scroll_update_delta() * scale);
+    return std::make_unique<InputEvent>(
+        ui::WebScopedInputEvent(event_in_viewport.release()),
+        scaled_latency_info);
+  }
+
+  return std::make_unique<InputEvent>(ui::WebInputEventTraits::Clone(event),
+                                      latency_info);
 }
 
 }  // namespace
@@ -520,8 +530,8 @@ void InputRouterImpl::FilterAndSendWebInputEvent(
     return;
   }
 
-  std::unique_ptr<InputEvent> event = std::make_unique<InputEvent>(
-      ScaleEvent(input_event, device_scale_factor_), latency_info);
+  std::unique_ptr<InputEvent> event =
+      ScaleEvent(input_event, device_scale_factor_, latency_info);
   if (WebInputEventTraits::ShouldBlockEventStream(input_event)) {
     TRACE_EVENT_INSTANT0("input", "InputEventSentBlocking",
                          TRACE_EVENT_SCOPE_THREAD);
