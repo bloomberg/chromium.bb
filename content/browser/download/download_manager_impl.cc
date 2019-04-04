@@ -640,6 +640,8 @@ void DownloadManagerImpl::CreateNewDownloadItemToStart(
   // setters (e.g. Cancel) work.
   for (auto& observer : observers_)
     observer.OnDownloadCreated(this, download);
+  OnNewDownloadCreated(download);
+
   OnDownloadStarted(download, on_started);
 }
 
@@ -1043,6 +1045,7 @@ void DownloadManagerImpl::OnDownloadCreated(
   downloads_by_guid_[item->GetGuid()] = item;
   for (auto& observer : observers_)
     observer.OnDownloadCreated(this, item);
+  OnNewDownloadCreated(item);
   DVLOG(20) << __func__ << "() download = " << item->DebugString(true);
 }
 

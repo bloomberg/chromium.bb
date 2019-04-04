@@ -375,8 +375,10 @@ void InProgressDownloadManager::StartDownload(
   } else {
     std::string guid = info->guid;
     if (info->is_new_download) {
-      in_progress_downloads_.push_back(std::make_unique<DownloadItemImpl>(
-          this, DownloadItem::kInvalidId, *info));
+      auto download = std::make_unique<DownloadItemImpl>(
+          this, DownloadItem::kInvalidId, *info);
+      OnNewDownloadCreated(download.get());
+      in_progress_downloads_.push_back(std::move(download));
     }
     StartDownloadWithItem(
         std::move(stream), std::move(url_loader_factory_getter),
@@ -501,6 +503,7 @@ void InProgressDownloadManager::OnDownloadNamesRetrieved(
       }
 #endif
       item->AddObserver(download_db_cache_.get());
+      OnNewDownloadCreated(item.get());
       in_progress_downloads_.emplace_back(std::move(item));
       download_ids.insert(download_id);
     }

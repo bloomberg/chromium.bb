@@ -59,6 +59,9 @@ class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManager {
   // Called when the manager is initailized.
   void OnInitialized();
 
+  // Called when a new download is created.
+  void OnNewDownloadCreated(DownloadItem* download);
+
   // Whether this object is initialized.
   bool initialized_ = false;
 
