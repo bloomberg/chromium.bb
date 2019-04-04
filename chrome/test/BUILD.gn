@@ -562,7 +562,6 @@ test("browser_tests") {
       "//services/service_manager/public/cpp",
       "//services/ws/public/cpp/input_devices:test_support",
       "//ui/keyboard:test_support",
-      "//ui/login:resources",
       "//url",
     ]
   }
@@ -1859,7 +1858,6 @@ test("browser_tests") {
         "../browser/chromeos/login/proxy_auth_dialog_browsertest.cc",
         "../browser/chromeos/login/quick_unlock/pin_migration_browsertest.cc",
         "../browser/chromeos/login/reset_browsertest.cc",
-        "../browser/chromeos/login/resource_loader_browsertest.cc",
         "../browser/chromeos/login/saml/saml_browsertest.cc",
         "../browser/chromeos/login/screens/app_downloading_screen_browsertest.cc",
         "../browser/chromeos/login/screens/hid_detection_screen_browsertest.cc",

@@ -150,10 +150,6 @@ class OobeUI : public ui::MojoWebUIController {
 
   bool IsScreenInitialized(OobeScreen screen);
 
-  // Invoked after the async assets load. The screen handler that has the same
-  // async assets load id will be initialized.
-  void OnScreenAssetsLoaded(const std::string& async_assets_load_id);
-
   bool IsJSReady(const base::Closure& display_is_ready_callback);
 
   // Shows or hides OOBE UI elements.

@@ -129,8 +129,6 @@ constexpr char kArcPlaystoreLogoPath[] = "playstore.svg";
 constexpr char kArcSupervisionIconPath[] = "supervision_icon.png";
 constexpr char kCustomElementsHTMLPath[] = "custom_elements.html";
 constexpr char kCustomElementsJSPath[] = "custom_elements.js";
-constexpr char kCustomElementsUserPodHTMLPath[] =
-    "custom_elements_user_pod.html";
 constexpr char kDiscoverJSPath[] = "discover_app.js";
 constexpr char kKeyboardUtilsJSPath[] = "keyboard_utils.js";
 constexpr char kLoginJSPath[] = "login.js";
@@ -145,11 +143,6 @@ constexpr char kLogo24PX1XSvgPath[] = "logo_24px-1x.svg";
 constexpr char kLogo24PX2XSvgPath[] = "logo_24px-2x.svg";
 constexpr char kSyncConsentIcons[] = "sync-consent-icons.html";
 #endif
-
-// Paths for deferred resource loading.
-constexpr char kEnrollmentCSSPath[] = "enrollment.css";
-constexpr char kEnrollmentHTMLPath[] = "enrollment.html";
-constexpr char kEnrollmentJSPath[] = "enrollment.js";
 
 // Adds various product logo resources.
 void AddProductLogoResources(content::WebUIDataSource* source) {
@@ -187,14 +180,6 @@ void AddArcScreensResources(content::WebUIDataSource* source) {
                           IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_JS);
   source->AddResourcePath(kRecommendAppListViewHTMLPath,
                           IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_HTML);
-}
-
-// Adds Enterprise Enrollment resources.
-void AddEnterpriseEnrollmentResources(content::WebUIDataSource* source) {
-  // Deferred resources.
-  source->AddResourcePath(kEnrollmentHTMLPath, IDR_OOBE_ENROLLMENT_HTML);
-  source->AddResourcePath(kEnrollmentCSSPath, IDR_OOBE_ENROLLMENT_CSS);
-  source->AddResourcePath(kEnrollmentJSPath, IDR_OOBE_ENROLLMENT_JS);
 }
 
 void AddFingerprintResources(content::WebUIDataSource* source) {
@@ -265,12 +250,6 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   AddFingerprintResources(source);
   AddSyncConsentResources(source);
   AddArcScreensResources(source);
-  AddEnterpriseEnrollmentResources(source);
-
-  if (display_type == OobeUI::kLoginDisplay) {
-    source->AddResourcePath(kCustomElementsUserPodHTMLPath,
-                            IDR_CUSTOM_ELEMENTS_USER_POD_HTML);
-  }
 
   source->AddResourcePath(kKeyboardUtilsJSPath, IDR_KEYBOARD_UTILS_JS);
   source->OverrideContentSecurityPolicyChildSrc(base::StringPrintf(
@@ -727,17 +706,11 @@ void OobeUI::InitializeHandlers() {
     ready_callbacks_[i].Run();
   ready_callbacks_.clear();
 
-  // Notify 'initialize' for synchronously loaded screens.
-  for (BaseWebUIHandler* handler : webui_only_handlers_) {
-    if (handler->async_assets_load_id().empty()) {
-      handler->InitializeBase();
-    }
-  }
-  for (BaseScreenHandler* handler : screen_handlers_) {
-    if (handler->async_assets_load_id().empty()) {
-      handler->InitializeBase();
-    }
-  }
+  for (BaseWebUIHandler* handler : webui_only_handlers_)
+    handler->InitializeBase();
+
+  for (BaseScreenHandler* handler : screen_handlers_)
+    handler->InitializeBase();
 }
 
 void OobeUI::CurrentScreenChanged(OobeScreen new_screen) {
@@ -755,21 +728,6 @@ bool OobeUI::IsScreenInitialized(OobeScreen screen) {
     }
   }
   return false;
-}
-
-void OobeUI::OnScreenAssetsLoaded(const std::string& async_assets_load_id) {
-  DCHECK(!async_assets_load_id.empty());
-
-  for (BaseWebUIHandler* handler : webui_only_handlers_) {
-    if (handler->async_assets_load_id() == async_assets_load_id) {
-      handler->InitializeBase();
-    }
-  }
-  for (BaseScreenHandler* handler : screen_handlers_) {
-    if (handler->async_assets_load_id() == async_assets_load_id) {
-      handler->InitializeBase();
-    }
-  }
 }
 
 bool OobeUI::IsJSReady(const base::Closure& display_is_ready_callback) {

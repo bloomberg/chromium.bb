@@ -870,18 +870,6 @@ cr.define('login', function() {
         this.setAttribute('is-active-directory', '');
 
       this.userClickAuthAllowed_ = false;
-
-      // Lazy load the assets needed for the polymer submit button.
-      var isLockScreen = (Oobe.getInstance().displayType == DISPLAY_TYPE.LOCK);
-      if (cr.isChromeOS && isLockScreen &&
-          !cr.ui.login.ResourceLoader.alreadyLoadedAssets(
-              'custom-elements-user-pod')) {
-        cr.ui.login.ResourceLoader.registerAssets({
-            id: 'custom-elements-user-pod',
-            html: [{ url: 'custom_elements_user_pod.html' }]
-         });
-        cr.ui.login.ResourceLoader.loadAssetsOnIdle('custom-elements-user-pod');
-      }
     },
 
     /**

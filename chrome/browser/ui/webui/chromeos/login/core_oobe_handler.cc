@@ -205,7 +205,6 @@ void CoreOobeHandler::RegisterMessages() {
               &CoreOobeHandler::HandleEnableDockedMagnifier);
   AddCallback("setDeviceRequisition",
               &CoreOobeHandler::HandleSetDeviceRequisition);
-  AddCallback("screenAssetsLoaded", &CoreOobeHandler::HandleScreenAssetsLoaded);
   AddRawCallback("skipToLoginForTesting",
                  &CoreOobeHandler::HandleSkipToLoginForTesting);
   AddCallback("skipToUpdateForTesting",
@@ -392,11 +391,6 @@ void CoreOobeHandler::HandleSetDeviceRequisition(
       connector->GetDeviceCloudPolicyManager()->GetDeviceRequisition()) {
     chrome::AttemptRestart();
   }
-}
-
-void CoreOobeHandler::HandleScreenAssetsLoaded(
-    const std::string& screen_async_load_id) {
-  GetOobeUI()->OnScreenAssetsLoaded(screen_async_load_id);
 }
 
 void CoreOobeHandler::HandleSkipToLoginForTesting(const base::ListValue* args) {
