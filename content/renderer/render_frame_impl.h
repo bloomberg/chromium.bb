@@ -1170,8 +1170,8 @@ class CONTENT_EXPORT RenderFrameImpl
 #endif
 
   // Callback scheduled from SerializeAsMHTML for when writing serialized
-  // MHTML to file has been completed in the file thread.
-  void OnWriteMHTMLToDiskComplete(
+  // MHTML to the handle has been completed in the file thread.
+  void OnWriteMHTMLComplete(
       SerializeAsMHTMLCallback callback,
       std::unordered_set<std::string> serialized_resources_uri_digests,
       base::TimeDelta main_thread_use_time,

@@ -128,6 +128,7 @@
 #include "content/renderer/media/stream/media_stream_device_observer.h"
 #include "content/renderer/media/stream/user_media_client_impl.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
+#include "content/renderer/mhtml_handle_writer.h"
 #include "content/renderer/mojo/blink_interface_registry_impl.h"
 #include "content/renderer/navigation_client.h"
 #include "content/renderer/navigation_state.h"
@@ -694,29 +695,52 @@ bool IsHttpPost(const blink::WebURLRequest& request) {
   return request.HttpMethod().Utf8() == "POST";
 }
 
-// Writes to file the serialized and encoded MHTML data from WebThreadSafeData
-// instances.
-mojom::MhtmlSaveStatus WriteMHTMLToDisk(
-    std::vector<WebThreadSafeData> mhtml_contents,
-    base::File file) {
-  TRACE_EVENT0("page-serialization", "WriteMHTMLToDisk (RenderFrameImpl)");
-  SCOPED_UMA_HISTOGRAM_TIMER(
-      "PageSerialization.MhtmlGeneration.WriteToDiskTime.SingleFrame");
-  DCHECK(!RenderThread::IsMainThread())
-      << "Should not run in the main renderer thread";
-  mojom::MhtmlSaveStatus save_status = mojom::MhtmlSaveStatus::kSuccess;
-  for (const WebThreadSafeData& data : mhtml_contents) {
-    if (!data.IsEmpty() &&
-        file.WriteAtCurrentPos(data.Data(), data.size()) < 0) {
-      save_status = mojom::MhtmlSaveStatus::kFileWritingError;
-      break;
+// Delegate responsible for determining the handle writing implementation by
+// instantiating an MHTMLHandleWriter on the heap respective to the passed in
+// MHTMLSerializationParams. This transfers ownership of the handle to the
+// new MHTMLHandleWriter.
+class MHTMLHandleWriterDelegate {
+ public:
+  MHTMLHandleWriterDelegate(
+      mojom::SerializeAsMHTMLParams& params,
+      MHTMLHandleWriter::MHTMLWriteCompleteCallback callback,
+      scoped_refptr<base::TaskRunner> main_thread_task_runner) {
+    // Handle must be instantiated.
+    DCHECK(params.output_handle);
+
+    if (params.output_handle->is_file_handle()) {
+      handle_ = new MHTMLFileHandleWriter(
+          std::move(main_thread_task_runner), std::move(callback),
+          std::move(params.output_handle->get_file_handle()));
+    } else {
+      handle_ = new MHTMLProducerHandleWriter(
+          std::move(main_thread_task_runner), std::move(callback),
+          std::move(params.output_handle->get_producer_handle()));
     }
   }
-  // Explicitly close |file| here to make sure to include any flush operations
-  // in the UMA metric.
-  file.Close();
-  return save_status;
-}
+
+  void WriteContents(std::vector<WebThreadSafeData> mhtml_contents) {
+    // Using base::Unretained is safe, as calls to WriteContents() always
+    // deletes |handle| upon Finish().
+    base::PostTaskWithTraits(
+        FROM_HERE, {base::MayBlock()},
+        base::BindOnce(&MHTMLHandleWriter::WriteContents,
+                       base::Unretained(handle_), std::move(mhtml_contents)));
+  }
+
+  // Within the context of the delegate, only for premature write finish.
+  void Finish(mojom::MhtmlSaveStatus save_status) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {base::MayBlock()},
+        base::BindOnce(&MHTMLHandleWriter::Finish, base::Unretained(handle_),
+                       save_status));
+  }
+
+ private:
+  MHTMLHandleWriter* handle_;
+
+  DISALLOW_COPY_AND_ASSIGN(MHTMLHandleWriterDelegate);
+};
 
 FaviconURL::IconType ToFaviconType(blink::WebIconURL::Type type) {
   switch (type) {
@@ -6594,7 +6618,7 @@ void RenderFrameImpl::SerializeAsMHTML(mojom::SerializeAsMHTMLParamsPtr params,
   // Note: the MHTML footer is written by the browser process, after the last
   // frame is serialized by a renderer process.
 
-  // Note: we assume RenderFrameImpl::OnWriteMHTMLToDiskComplete and the rest of
+  // Note: we assume RenderFrameImpl::OnWriteMHTMLComplete and the rest of
   // this function will be fast enough to not need to be accounted for in this
   // metric.
   base::TimeDelta main_thread_use_time = base::TimeTicks::Now() - start_time;
@@ -6602,30 +6626,27 @@ void RenderFrameImpl::SerializeAsMHTML(mojom::SerializeAsMHTMLParamsPtr params,
       "PageSerialization.MhtmlGeneration.RendererMainThreadTime.SingleFrame",
       main_thread_use_time);
 
+  MHTMLHandleWriterDelegate handle_delegate(
+      *params,
+      base::BindOnce(&RenderFrameImpl::OnWriteMHTMLComplete,
+                     weak_factory_.GetWeakPtr(), std::move(callback),
+                     std::move(serialized_resources_uri_digests),
+                     main_thread_use_time),
+      GetTaskRunner(blink::TaskType::kInternalDefault));
+
   if (save_status == mojom::MhtmlSaveStatus::kSuccess && has_some_data) {
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock()},
-        base::BindOnce(&WriteMHTMLToDisk, std::move(mhtml_contents),
-                       std::move(params->destination_file)),
-        base::BindOnce(&RenderFrameImpl::OnWriteMHTMLToDiskComplete,
-                       weak_factory_.GetWeakPtr(), std::move(callback),
-                       std::move(serialized_resources_uri_digests),
-                       main_thread_use_time));
+    handle_delegate.WriteContents(mhtml_contents);
   } else {
-    params->destination_file.Close();
-    OnWriteMHTMLToDiskComplete(std::move(callback),
-                               std::move(serialized_resources_uri_digests),
-                               main_thread_use_time, save_status);
+    handle_delegate.Finish(save_status);
   }
 }
 
-void RenderFrameImpl::OnWriteMHTMLToDiskComplete(
+void RenderFrameImpl::OnWriteMHTMLComplete(
     SerializeAsMHTMLCallback callback,
     std::unordered_set<std::string> serialized_resources_uri_digests,
     base::TimeDelta main_thread_use_time,
     mojom::MhtmlSaveStatus save_status) {
-  TRACE_EVENT1("page-serialization",
-               "RenderFrameImpl::OnWriteMHTMLToDiskComplete",
+  TRACE_EVENT1("page-serialization", "RenderFrameImpl::OnWriteMHTMLComplete",
                "frame save status", save_status);
   DCHECK(RenderThread::IsMainThread())
       << "Must run in the main renderer thread";

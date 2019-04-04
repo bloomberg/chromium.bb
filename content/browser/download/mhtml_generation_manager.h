@@ -10,15 +10,10 @@
 #include <set>
 #include <string>
 
-#include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/process/process.h"
 #include "content/public/common/mhtml_generation_params.h"
-
-namespace base {
-class FilePath;
-}
 
 namespace content {
 
@@ -44,9 +39,6 @@ class MHTMLGenerationManager {
   void SaveMHTML(WebContents* web_contents,
                  const MHTMLGenerationParams& params,
                  GenerateMHTMLCallback callback);
-
-  // Called on the file thread to create a new file for MHTML serialization.
-  static base::File CreateFile(const base::FilePath& file_path);
 
  private:
   friend struct base::DefaultSingletonTraits<MHTMLGenerationManager>;
