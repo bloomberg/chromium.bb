@@ -417,6 +417,10 @@ void PowerPrefs::UpdatePowerPolicyFromPrefs() {
     }
   }
 
+  if (local_state_->IsManagedPreference(prefs::kDeviceBootOnAcEnabled)) {
+    values.boot_on_ac = local_state_->GetBoolean(prefs::kDeviceBootOnAcEnabled);
+  }
+
   power_policy_controller_->ApplyPrefs(values);
 }
 
@@ -484,6 +488,8 @@ void PowerPrefs::ObserveLocalStatePrefs(PrefService* prefs) {
                               update_callback);
   local_state_registrar_->Add(prefs::kDevicePowerPeakShiftDayConfig,
                               update_callback);
+
+  local_state_registrar_->Add(prefs::kDeviceBootOnAcEnabled, update_callback);
 
   UpdatePowerPolicyFromPrefs();
 }

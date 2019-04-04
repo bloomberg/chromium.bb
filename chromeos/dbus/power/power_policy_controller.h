@@ -112,6 +112,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) PowerPolicyController
     bool peak_shift_enabled = false;
     int peak_shift_battery_threshold = -1;
     std::vector<PeakShiftDayConfiguration> peak_shift_day_configurations;
+    bool boot_on_ac = false;
   };
 
   // Returns a string describing |policy|.  Useful for tests.
