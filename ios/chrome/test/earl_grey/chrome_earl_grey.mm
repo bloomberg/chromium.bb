@@ -4,6 +4,7 @@
 
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 
+#import <EarlGrey/EarlGrey.h>
 #import <Foundation/Foundation.h>
 #import <WebKit/WebKit.h>
 
@@ -19,7 +20,6 @@
 #include "ios/chrome/test/app/navigation_test_util.h"
 #import "ios/chrome/test/app/static_html_view_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
-#import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/web/public/test/earl_grey/js_test_util.h"
 #include "ios/web/public/test/element_selector.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
