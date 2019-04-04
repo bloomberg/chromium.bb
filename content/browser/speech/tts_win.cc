@@ -70,6 +70,7 @@ class TtsPlatformImplWin : public TtsPlatformImpl {
   int prefix_len_;
   ULONG stream_number_;
   int char_position_;
+  int char_length_;
   bool paused_;
   std::string last_voice_name_;
 
@@ -124,6 +125,7 @@ bool TtsPlatformImplWin::Speak(int utterance_id,
   utterance_ = base::UTF8ToWide(src_utterance);
   utterance_id_ = utterance_id;
   char_position_ = 0;
+  char_length_ = 0;
   std::wstring merged_utterance = prefix + utterance_ + suffix;
   prefix_len_ = prefix.size();
 
@@ -253,9 +255,9 @@ void TtsPlatformImplWin::OnSpeechEvent() {
         break;
       case SPEI_WORD_BOUNDARY:
         char_position_ = static_cast<ULONG>(event.lParam) - prefix_len_;
-        // TODO: Get length of win word from win specific tts things.
+        char_length_ = static_cast<ULONG>(event.wParam);
         controller->OnTtsEvent(utterance_id_, TTS_EVENT_WORD, char_position_,
-                               -1, std::string());
+                               char_length_, std::string());
         break;
       case SPEI_SENTENCE_BOUNDARY:
         char_position_ = static_cast<ULONG>(event.lParam) - prefix_len_;
