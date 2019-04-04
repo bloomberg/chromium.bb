@@ -14,7 +14,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
-#include "content/browser/renderer_host/direct_manipulation_win.h"
+#include "content/browser/renderer_host/direct_manipulation_helper_win.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/public/common/content_switches.h"
