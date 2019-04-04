@@ -15,12 +15,14 @@
 namespace base {
 
 class ThreadDelegate;
+class Unwinder;
 
 // Cross-platform stack sampler implementation. Delegates to ThreadDelegate for
 // platform-specific implementation.
 class BASE_EXPORT StackSamplerImpl : public StackSampler {
  public:
   StackSamplerImpl(std::unique_ptr<ThreadDelegate> delegate,
+                   std::unique_ptr<Unwinder> native_unwinder,
                    ModuleCache* module_cache,
                    StackSamplerTestDelegate* test_delegate = nullptr);
   ~StackSamplerImpl() override;
@@ -42,6 +44,7 @@ class BASE_EXPORT StackSamplerImpl : public StackSampler {
                                uintptr_t stack_top);
 
   const std::unique_ptr<ThreadDelegate> thread_delegate_;
+  const std::unique_ptr<Unwinder> native_unwinder_;
   ModuleCache* const module_cache_;
   StackSamplerTestDelegate* const test_delegate_;
 };

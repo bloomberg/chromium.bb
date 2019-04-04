@@ -4,6 +4,7 @@
 
 #include "base/profiler/stack_sampler.h"
 
+#include "base/profiler/native_unwinder_win.h"
 #include "base/profiler/stack_sampler_impl.h"
 #include "base/profiler/thread_delegate_win.h"
 #include "build/build_config.h"
@@ -17,8 +18,8 @@ std::unique_ptr<StackSampler> StackSampler::Create(
     StackSamplerTestDelegate* test_delegate) {
 #if defined(ARCH_CPU_X86_64)
   return std::make_unique<StackSamplerImpl>(
-      std::make_unique<ThreadDelegateWin>(thread_id), module_cache,
-      test_delegate);
+      std::make_unique<ThreadDelegateWin>(thread_id),
+      std::make_unique<NativeUnwinderWin>(), module_cache, test_delegate);
 #else
   return nullptr;
 #endif

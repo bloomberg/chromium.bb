@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/profiler/frame.h"
 #include "base/profiler/register_context.h"
 #include "base/profiler/unwind_result.h"
@@ -18,9 +19,8 @@ namespace base {
 // use with the StackSamplingProfiler. The profiler is expected to call
 // CanUnwind() to determine if the Unwinder thinks it can unwind from the frame
 // represented by the context values, then TryUnwind() to attempt the
-// unwind. Implementations of CanUnwindFrom() and TryUnwind() should be
-// stateless because stack samples for all target threads use the same Unwinder
-// instance.
+// unwind. Note that the stack samples for multiple collection scenarios are
+// interleaved on a single Unwinder instance.
 class Unwinder {
  public:
   virtual ~Unwinder() = default;
@@ -33,9 +33,11 @@ class Unwinder {
   // doesn't have unwind information.
   virtual bool CanUnwindFrom(const Frame* current_frame) const = 0;
 
-  // Attempts to unwind the frame represented by the context values. If
-  // successful appends frames onto the stack and returns true. Otherwise
-  // returns false.
+  // Attempts to unwind the frame represented by the context values.
+  // Walks the native frames on the stack pointed to by the stack pointer in
+  // |thread_context|, appending the frames to |stack|. When invoked
+  // stack->back() contains the frame corresponding to the state in
+  // |thread_context|.
   virtual UnwindResult TryUnwind(RegisterContext* thread_context,
                                  uintptr_t stack_top,
                                  ModuleCache* module_cache,

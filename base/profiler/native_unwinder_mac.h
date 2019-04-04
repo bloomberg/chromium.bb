@@ -29,7 +29,7 @@ class NativeUnwinderMac : public Unwinder {
   // Cached pointer to the libsystem_kernel module.
   const ModuleCache::Module* const libsystem_kernel_module_;
 
-  // The address range of _sigtramp(), the signal trampoline function.
+  // The address range of |_sigtramp|, the signal trampoline function.
   uintptr_t sigtramp_start_;
   uintptr_t sigtramp_end_;
 };

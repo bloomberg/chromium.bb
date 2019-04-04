@@ -200,12 +200,4 @@ std::vector<uintptr_t*> ThreadDelegateWin::GetRegistersToRewrite(
   };
 }
 
-UnwindResult ThreadDelegateWin::WalkNativeFrames(CONTEXT* thread_context,
-                                                 uintptr_t stack_top,
-                                                 ModuleCache* module_cache,
-                                                 std::vector<Frame>* stack) {
-  NativeUnwinderWin unwinder;
-  return unwinder.TryUnwind(thread_context, stack_top, module_cache, stack);
-}
-
 }  // namespace base

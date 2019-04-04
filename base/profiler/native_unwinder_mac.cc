@@ -11,6 +11,7 @@
 #include <sys/ptrace.h>
 
 #include "base/logging.h"
+#include "base/profiler/native_unwinder.h"
 #include "base/profiler/profile_builder.h"
 #include "base/sampling_heap_profiler/module_cache.h"
 
@@ -138,7 +139,7 @@ UnwindResult NativeUnwinderMac::TryUnwind(x86_thread_state64_t* thread_context,
                                           uintptr_t stack_top,
                                           ModuleCache* module_cache,
                                           std::vector<Frame>* stack) const {
-  // We expect the frame corresponding to the |thread_context| register state to
+  // We expect the frame correponding to the |thread_context| register state to
   // exist within |stack|.
   DCHECK_GT(stack->size(), 0u);
 
@@ -268,6 +269,10 @@ UnwindResult NativeUnwinderMac::TryUnwind(x86_thread_state64_t* thread_context,
 
   NOTREACHED();
   return UnwindResult::COMPLETED;
+}
+
+std::unique_ptr<Unwinder> CreateNativeUnwinder(ModuleCache* module_cache) {
+  return std::make_unique<NativeUnwinderMac>(module_cache);
 }
 
 }  // namespace base

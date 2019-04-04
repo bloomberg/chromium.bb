@@ -66,16 +66,6 @@ class BASE_EXPORT ThreadDelegate {
   // May heap allocate.
   virtual std::vector<uintptr_t*> GetRegistersToRewrite(
       RegisterContext* thread_context) = 0;
-
-  // Walks the native frames on the stack pointed to by the stack pointer in
-  // |thread_context|, appending the frames to |stack|. When invoked
-  // stack->back() contains the frame corresponding to the state in
-  // |thread_context|.
-  // TODO(wittman): Move the unwinding support into a separate UnwindDelegate.
-  virtual UnwindResult WalkNativeFrames(RegisterContext* thread_context,
-                                        uintptr_t stack_top,
-                                        ModuleCache* module_cache,
-                                        std::vector<Frame>* stack) = 0;
 };
 
 }  // namespace base

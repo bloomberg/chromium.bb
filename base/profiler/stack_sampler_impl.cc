@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/profiler/profile_builder.h"
 #include "base/profiler/thread_delegate.h"
+#include "base/profiler/unwinder.h"
 
 // IMPORTANT NOTE: Some functions within this implementation are invoked while
 // the target thread is suspended so it must not do any allocation from the
@@ -74,9 +75,11 @@ void CopyStackContentsAndRewritePointers(const uintptr_t* original_stack_bottom,
 
 StackSamplerImpl::StackSamplerImpl(
     std::unique_ptr<ThreadDelegate> thread_delegate,
+    std::unique_ptr<Unwinder> native_unwinder,
     ModuleCache* module_cache,
     StackSamplerTestDelegate* test_delegate)
     : thread_delegate_(std::move(thread_delegate)),
+      native_unwinder_(std::move(native_unwinder)),
       module_cache_(module_cache),
       test_delegate_(test_delegate) {}
 
@@ -168,8 +171,7 @@ std::vector<Frame> StackSamplerImpl::WalkStack(RegisterContext* thread_context,
                      module_cache_->GetModuleForAddress(
                          RegisterContextInstructionPointer(thread_context)));
 
-  thread_delegate_->WalkNativeFrames(thread_context, stack_top, module_cache_,
-                                     &stack);
+  native_unwinder_->TryUnwind(thread_context, stack_top, module_cache_, &stack);
 
   return stack;
 }
