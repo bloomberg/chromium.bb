@@ -1001,8 +1001,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreWebUI) {
             new_tab->GetMainFrame()->GetEnabledBindings());
 }
 
-// http://crbug.com/803510 : Flaky on Win7 Tests (dbg)
-#if defined(OS_WIN) && !defined(NDEBUG)
+// http://crbug.com/803510 : Flaky on dbg and ASan bots.
+#if defined(ADDRESS_SANITIZER) || !defined(NDEBUG)
 #define MAYBE_RestoreWebUISettings DISABLED_RestoreWebUISettings
 #else
 #define MAYBE_RestoreWebUISettings RestoreWebUISettings
