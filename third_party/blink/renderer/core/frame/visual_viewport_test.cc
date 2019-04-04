@@ -582,32 +582,6 @@ TEST_P(VisualViewportTest, TestVisibleRect) {
   EXPECT_FLOAT_RECT_EQ(expected_rect, visual_viewport.VisibleRect());
 }
 
-// Make sure that the visibleRectInDocument method acurately reflects the scale
-// and scroll location of the viewport relative to the document.
-TEST_P(VisualViewportTest, TestVisibleRectInDocument) {
-  InitializeWithDesktopSettings();
-  WebView()->MainFrameWidget()->Resize(IntSize(100, 400));
-
-  RegisterMockedHttpURLLoad("200-by-800-viewport.html");
-  NavigateTo(base_url_ + "200-by-800-viewport.html");
-
-  VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
-
-  // Scale the viewport to 2X and move it.
-  visual_viewport.SetScale(2);
-  visual_viewport.SetLocation(FloatPoint(10, 15));
-  EXPECT_FLOAT_RECT_EQ(FloatRect(10, 15, 50, 200),
-                       visual_viewport.VisibleRectInDocument());
-
-  // Scroll the layout viewport. Ensure its offset is reflected in
-  // visibleRectInDocument().
-  LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
-  frame_view.LayoutViewport()->SetScrollOffset(ScrollOffset(40, 100),
-                                               kProgrammaticScroll);
-  EXPECT_FLOAT_RECT_EQ(FloatRect(50, 115, 50, 200),
-                       visual_viewport.VisibleRectInDocument());
-}
-
 TEST_P(VisualViewportTest, TestFractionalScrollOffsetIsNotOverwritten) {
   ScopedFractionalScrollOffsetsForTest fractional_scroll_offsets(true);
   InitializeWithAndroidSettings();

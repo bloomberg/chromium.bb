@@ -132,11 +132,6 @@ class CORE_EXPORT VisualViewport final
   // +/- zooming).
   FloatRect VisibleRect(IncludeScrollbarsInRect = kExcludeScrollbars) const;
 
-  // Similar to VisibleRect but this returns the rect relative to the main
-  // document's top-left corner.
-  FloatRect VisibleRectInDocument(
-      IncludeScrollbarsInRect = kExcludeScrollbars) const;
-
   // Resets the viewport to initial state.
   void Reset();
 

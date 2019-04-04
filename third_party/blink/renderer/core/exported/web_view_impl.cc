@@ -2250,9 +2250,11 @@ void WebViewImpl::ComputeScaleAndScrollForEditableElementRects(
   else
     new_scale = PageScaleFactor();
 
+  ScrollableArea* root_viewport =
+      MainFrameImpl()->GetFrame()->View()->GetScrollableArea();
+
   // If the caret is offscreen, then animate.
-  if (!visual_viewport.VisibleRectInDocument().Contains(
-          caret_bounds_in_content))
+  if (!root_viewport->VisibleContentRect().Contains(caret_bounds_in_content))
     need_animation = true;
 
   // If the box is partially offscreen and it's possible to bring it fully
@@ -2261,8 +2263,7 @@ void WebViewImpl::ComputeScaleAndScrollForEditableElementRects(
           element_bounds_in_content.Width() &&
       visual_viewport.VisibleRect().Height() >=
           element_bounds_in_content.Height() &&
-      !visual_viewport.VisibleRectInDocument().Contains(
-          element_bounds_in_content))
+      !root_viewport->VisibleContentRect().Contains(element_bounds_in_content))
     need_animation = true;
 
   if (!need_animation)

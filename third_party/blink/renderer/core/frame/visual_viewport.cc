@@ -370,16 +370,6 @@ FloatRect VisualViewport::VisibleRect(
   return FloatRect(FloatPoint(GetScrollOffset()), visible_size);
 }
 
-FloatRect VisualViewport::VisibleRectInDocument(
-    IncludeScrollbarsInRect scrollbar_inclusion) const {
-  if (!MainFrame() || !MainFrame()->View())
-    return FloatRect();
-
-  FloatPoint view_location =
-      FloatPoint(MainFrame()->View()->GetScrollableArea()->GetScrollOffset());
-  return FloatRect(view_location, VisibleRect(scrollbar_inclusion).Size());
-}
-
 FloatPoint VisualViewport::ViewportCSSPixelsToRootFrame(
     const FloatPoint& point) const {
   // Note, this is in CSS Pixels so we don't apply scale.
