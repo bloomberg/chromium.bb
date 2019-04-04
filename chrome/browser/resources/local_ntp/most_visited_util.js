@@ -15,11 +15,11 @@
  * The origin of this request.
  * @const {string}
  */
-var DOMAIN_ORIGIN = '{{ORIGIN}}';
+const MV_DOMAIN_ORIGIN = '{{ORIGIN}}';
 
 /**
  * Parses query parameters from Location.
- * @param {string} location The URL to generate the CSS url for.
+ * @param {!Location} location The URL to generate the CSS url for.
  * @return {Object} Dictionary containing name value pairs for URL.
  */
 function parseQueryParams(location) {
@@ -49,7 +49,7 @@ function parseQueryParams(location) {
  * @param {string} title The title for the link.
  * @param {string|undefined} text The text for the link or none.
  * @param {string|undefined} direction The text direction.
- * @return {HTMLAnchorElement} A new link element.
+ * @return {!Element} A new link element.
  */
 function createMostVisitedLink(params, href, title, text, direction) {
   var styles = getMostVisitedStyles(params, !!text);
@@ -87,17 +87,18 @@ function createMostVisitedLink(params, href, title, text, direction) {
     link.appendChild(spanWrap);
   }
   link.addEventListener('focus', function() {
-    window.parent.postMessage('linkFocused', DOMAIN_ORIGIN);
+    window.parent.postMessage('linkFocused', MV_DOMAIN_ORIGIN);
   });
   link.addEventListener('blur', function() {
-    window.parent.postMessage('linkBlurred', DOMAIN_ORIGIN);
+    window.parent.postMessage('linkBlurred', MV_DOMAIN_ORIGIN);
   });
 
   link.addEventListener('keydown', function(event) {
     if (event.keyCode == 46 /* DELETE */ ||
         event.keyCode == 8 /* BACKSPACE */) {
       event.preventDefault();
-      window.parent.postMessage('tileBlacklisted,' + params.pos, DOMAIN_ORIGIN);
+      window.parent.postMessage(
+          'tileBlacklisted,' + params['pos'], MV_DOMAIN_ORIGIN);
     } else if (
         event.keyCode == 13 /* ENTER */ || event.keyCode == 32 /* SPACE */) {
       // Event target is the <a> tag. Send a click event on it, which will
@@ -197,7 +198,7 @@ var isSchemeAllowed = function(url) {
 
 
 /**
- * @param {string} location A location containing URL parameters.
+ * @param {!Location} location A location containing URL parameters.
  * @param {function(Object, Object)} fill A function called with styles and
  *     data to fill.
  */

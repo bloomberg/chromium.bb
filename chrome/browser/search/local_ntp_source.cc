@@ -222,6 +222,8 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
               IDS_NTP_CUSTOM_BG_CUSTOMIZE_NTP_LABEL);
     AddString(translated_strings.get(), "backLabel",
               IDS_NTP_CUSTOM_BG_BACK_LABEL);
+    AddString(translated_strings.get(), "selectedLabel",
+              IDS_NTP_CUSTOM_BG_IMAGE_SELECTED);
 
     // Custom Links
     AddString(translated_strings.get(), "addLinkTitle",
@@ -855,7 +857,7 @@ void LocalNtpSource::StartDataRequest(
     // check must be changed.
     if (one_google_bar_service_->language_code() != kEnUSLanguageCode) {
       std::string no_suggestions =
-          "var search_suggestions = {suggestionsHtml: ''}";
+          "var searchSuggestions = {suggestionsHtml: ''}";
       callback.Run(base::RefCountedString::TakeString(&no_suggestions));
       return;
     }
@@ -1051,7 +1053,7 @@ void LocalNtpSource::OnCollectionInfoAvailable() {
     return;
 
   std::string js_errors =
-      "var coll_errors = " +
+      "var collErrors = " +
       GetErrorDict(ntp_background_service_->collection_error_info());
 
   scoped_refptr<base::RefCountedString> result;
@@ -1089,7 +1091,7 @@ void LocalNtpSource::OnCollectionImagesAvailable() {
     return;
 
   std::string js_errors =
-      "var coll_img_errors = " +
+      "var collImgErrors = " +
       GetErrorDict(ntp_background_service_->collection_images_error_info());
 
   scoped_refptr<base::RefCountedString> result;
@@ -1097,7 +1099,7 @@ void LocalNtpSource::OnCollectionImagesAvailable() {
   base::JSONWriter::Write(ConvertCollectionImageToDict(
                               ntp_background_service_->collection_images()),
                           &js);
-  js = "var coll_img = " + js + "; " + js_errors;
+  js = "var collImg = " + js + "; " + js_errors;
   result = base::RefCountedString::TakeString(&js);
 
   base::TimeTicks now = base::TimeTicks::Now();
@@ -1204,7 +1206,7 @@ void LocalNtpSource::MaybeServeSearchSuggestions(
   scoped_refptr<base::RefCountedString> result;
   std::string js;
   base::JSONWriter::Write(*ConvertSearchSuggestDataToDict(data), &js);
-  js = "var search_suggestions  = " + js + ";";
+  js = "var searchSuggestions  = " + js + ";";
   result = base::RefCountedString::TakeString(&js);
   callback.Run(result);
 }

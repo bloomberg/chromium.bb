@@ -20,6 +20,7 @@ if (closure_compile) {
         "discards:closure_compile",
         "downloads:closure_compile",
         "history:closure_compile",
+        "local_ntp:closure_compile",
         "local_state:closure_compile",
         "management:closure_compile",
         "md_user_manager:closure_compile",

@@ -17,7 +17,7 @@ const CLASSES = {
 /**
  * Alias for document.getElementById.
  * @param {string} id The ID of the element to find.
- * @return {HTMLElement} The found element or null if not found.
+ * @return {Element} The found element or null if not found.
  */
 function $(id) {
   // eslint-disable-next-line no-restricted-properties
