@@ -52,12 +52,6 @@ const char kForceRecoveryComponentSwitch[] = "force-recovery-component";
 // Force self-deletion even on non-official builds.
 const char kForceSelfDeleteSwitch[] = "force-self-delete";
 
-// Log all removable UwS that were not detected, but the scanner found some
-// UwS-related footprints.
-// WARNING: this switch is used by internal test systems. Be careful when making
-// changes.
-const char kForceUwsDetectionSwitch[] = "force-uws-detection";
-
 // The handle of an event to signal when the initialization of the main process
 // is complete (including loading all DLL's). This is used by the integration
 // test to check that forbidden modules aren't loaded outside the sandbox. If

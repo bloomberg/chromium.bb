@@ -850,9 +850,8 @@ TEST_F(CleanerInterfaceRegistryTest, NtChangeRegistryValue_AllowNormalization) {
   ShouldNormalizeRegistryValue normalize_all_values =
       base::BindRepeating([](const String16EmbeddedNulls&,
                              const String16EmbeddedNulls&) { return true; });
-  EXPECT_TRUE(SandboxNtChangeRegistryValue(full_key_path_, value_name_,
-                                           normalized_value,
-                                           std::move(normalize_all_values)));
+  EXPECT_TRUE(SandboxNtChangeRegistryValue(
+      full_key_path_, value_name_, normalized_value, normalize_all_values));
 
   EXPECT_TRUE(SandboxNtChangeRegistryValue(full_key_path_, value_name_,
                                            normalized_shortened_value,

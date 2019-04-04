@@ -4,6 +4,9 @@
 
 #include "chrome/chrome_cleaner/settings/settings.h"
 
+#include <algorithm>
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
@@ -202,6 +205,25 @@ TEST_F(SettingsTest, NoLocationsToScanSpecified) {
   // contents and size. It's bigger than 1 location for sure.
   EXPECT_LT(1u, settings->locations_to_scan().size());
   EXPECT_TRUE(settings->scan_switches_correct());
+}
+
+TEST_F(SettingsTest, NoProgramFilesScanningOnReporter) {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  Settings* cleaner_settings =
+      ReinitializeSettings(command_line, TargetBinary::kCleaner);
+  std::vector<UwS::TraceLocation> cleaner_locations =
+      cleaner_settings->locations_to_scan();
+  EXPECT_NE(std::find(cleaner_locations.begin(), cleaner_locations.end(),
+                      UwS::FOUND_IN_PROGRAMFILES),
+            cleaner_locations.end());
+
+  Settings* reporter_settings =
+      ReinitializeSettings(command_line, TargetBinary::kReporter);
+  std::vector<UwS::TraceLocation> reporter_locations =
+      reporter_settings->locations_to_scan();
+  EXPECT_EQ(std::find(reporter_locations.begin(), reporter_locations.end(),
+                      UwS::FOUND_IN_PROGRAMFILES),
+            reporter_locations.end());
 }
 
 TEST_F(SettingsTest, LimitsToSpecifiedLocations) {
