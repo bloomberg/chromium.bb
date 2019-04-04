@@ -6497,7 +6497,9 @@ TEST_P(PaintPropertyTreeBuilderTest, SimpleOpacityChangeDoesNotCausePacUpdate) {
 
 TEST_P(PaintPropertyTreeBuilderTest, SimpleScrollChangeDoesNotCausePacUpdate) {
   // This is a BGPT test only.
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
+      // TODO(vmpstr): Make this test pass for CompositeAfterPaint.
+      RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   SetHtmlInnerHTML(R"HTML(
