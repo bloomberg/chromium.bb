@@ -1245,6 +1245,7 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
       toggle_protected_video) {
     if (!ReallocateSwapChain(swap_chain_size, use_yuv_swap_chain,
                              params.protected_video_type)) {
+      ReleaseSwapChainResources();
       return false;
     }
     content_visual_->SetContent(swap_chain_.Get());
