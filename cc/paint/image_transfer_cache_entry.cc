@@ -108,6 +108,8 @@ uint32_t ClientImageTransferCacheEntry::Id() const {
 
 bool ClientImageTransferCacheEntry::Serialize(base::span<uint8_t> data) const {
   DCHECK_GE(data.size(), SerializedSize());
+  DCHECK_GT(pixmap_->width(), 0);
+  DCHECK_GT(pixmap_->height(), 0);
 
   // We don't need to populate the SerializeOptions here since the writer is
   // only used for serializing primitives.
@@ -216,6 +218,9 @@ bool ServiceImageTransferCacheEntry::Deserialize(
     return false;
 
   DCHECK(SkIsAlign4(reinterpret_cast<uintptr_t>(pixel_data)));
+
+  if (width == 0 || height == 0)
+    return false;
 
   // Match GrTexture::onGpuMemorySize so that memory traces agree.
   auto gr_mips = has_mips_ ? GrMipMapped::kYes : GrMipMapped::kNo;
