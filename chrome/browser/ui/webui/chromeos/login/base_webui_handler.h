@@ -51,13 +51,6 @@ class BaseWebUIHandler : public content::WebUIMessageHandler {
   // via virtual Initialize() method (see below).
   void InitializeBase();
 
-  void set_async_assets_load_id(const std::string& async_assets_load_id) {
-    async_assets_load_id_ = async_assets_load_id;
-  }
-  const std::string& async_assets_load_id() const {
-    return async_assets_load_id_;
-  }
-
  protected:
   // All subclasses should implement this method to provide localized values.
   virtual void DeclareLocalizedValues(
@@ -178,11 +171,6 @@ class BaseWebUIHandler : public content::WebUIMessageHandler {
 
   // Keeps whether page is ready.
   bool page_is_ready_ = false;
-
-  // The string id used in the async asset load in JS. If it is set to a
-  // non empty value, the Initialize will be deferred until the underlying load
-  // is finished.
-  std::string async_assets_load_id_;
 
   JSCallsContainer* js_calls_container_ = nullptr;  // non-owning pointers.
 

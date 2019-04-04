@@ -19,7 +19,6 @@
 // <include src="../../../../../ui/login/login_ui_tools.js">
 // <include
 // src="../../../../../ui/login/account_picker/chromeos_user_pod_row.js">
-// <include src="../../../../../ui/login/resource_loader.js">
 // <include src="cr_ui.js">
 // <include src="oobe_screen_reset.js">
 // <include src="oobe_screen_autolaunch.js">
@@ -53,28 +52,6 @@
 // <include src="screen_multidevice_setup.js">
 
 // <include src="../../gaia_auth_host/authenticator.js">
-
-// Register assets for async loading.
-[{
-  id: SCREEN_OOBE_ENROLLMENT,
-  html: [{url: 'chrome://oobe/enrollment.html', targetID: 'inner-container'}],
-  css: ['chrome://oobe/enrollment.css'],
-  js: ['chrome://oobe/enrollment.js']
-}].forEach(cr.ui.login.ResourceLoader.registerAssets);
-
-(function() {
-'use strict';
-
-document.addEventListener('DOMContentLoaded', function() {
-  // Immediately load async assets.
-  cr.ui.login.ResourceLoader.loadAssets(SCREEN_OOBE_ENROLLMENT, function() {
-    // This screen is async-loaded so we manually trigger i18n processing.
-    i18nTemplate.process($('oauth-enrollment'), loadTimeData);
-    // Delayed binding since this isn't defined yet.
-    login.OAuthEnrollmentScreen.register();
-  });
-});
-})();
 // <include src="oobe_screen_auto_enrollment_check.js">
 // <include src="oobe_screen_demo_setup.js">
 // <include src="oobe_screen_demo_preferences.js">
@@ -82,6 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // <include src="oobe_screen_eula.js">
 // <include src="oobe_screen_hid_detection.js">
 // <include src="oobe_screen_network.js">
+// <include src="oobe_screen_oauth_enrollment.js">
 // <include src="oobe_screen_update.js">
 // <include src="multi_tap_detector.js">
 // <include src="web_view_helper.js">
@@ -106,6 +84,7 @@ cr.define('cr.ui.Oobe', function() {
       login.KioskEnableScreen.register();
       login.AccountPickerScreen.register();
       login.GaiaSigninScreen.register();
+      login.OAuthEnrollmentScreen.register();
       login.ErrorMessageScreen.register();
       login.TPMErrorMessageScreen.register();
       login.PasswordChangedScreen.register();
