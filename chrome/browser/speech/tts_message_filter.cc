@@ -165,14 +165,10 @@ void TtsMessageFilter::OnTtsEvent(content::TtsUtterance* utterance,
       Send(new TtsMsg_DidFinishSpeaking(utterance->GetSrcId()));
       break;
     case content::TTS_EVENT_WORD:
-      // We do not send the length here because the IPC message
-      // does not expect it. A SpeechSynthesisEvent does not currently
-      // take a length parameter in the TTS event.
-      // TODO(crbug.com/923556) Support length in the SpeechSynthesis API.
-      Send(new TtsMsg_WordBoundary(utterance->GetSrcId(), char_index));
+      Send(new TtsMsg_WordBoundary(utterance->GetSrcId(), char_index, length));
       break;
     case content::TTS_EVENT_SENTENCE:
-      Send(new TtsMsg_SentenceBoundary(utterance->GetSrcId(), char_index));
+      Send(new TtsMsg_SentenceBoundary(utterance->GetSrcId(), char_index, 0));
       break;
     case content::TTS_EVENT_MARKER:
       Send(new TtsMsg_MarkerEvent(utterance->GetSrcId(), char_index));

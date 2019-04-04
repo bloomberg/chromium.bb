@@ -141,26 +141,38 @@ void TtsDispatcher::OnDidResumeSpeaking(int utterance_id) {
   synthesizer_client_->DidResumeSpeaking(utterance);
 }
 
-void TtsDispatcher::OnWordBoundary(int utterance_id, int char_index) {
+void TtsDispatcher::OnWordBoundary(int utterance_id,
+                                   int char_index,
+                                   int char_length) {
   CHECK(char_index >= 0);
 
   WebSpeechSynthesisUtterance utterance = FindUtterance(utterance_id);
   if (utterance.IsNull())
     return;
 
+  // charLength is unsigned in the web speech API, so -1 cannot be used as a
+  // sentinel value. Use 0 instead to match web standards.
+  char_length = (char_length < 0) ? 0 : char_length;
   synthesizer_client_->WordBoundaryEventOccurred(
-      utterance, static_cast<unsigned>(char_index));
+      utterance, static_cast<unsigned>(char_index),
+      static_cast<unsigned>(char_length));
 }
 
-void TtsDispatcher::OnSentenceBoundary(int utterance_id, int char_index) {
+void TtsDispatcher::OnSentenceBoundary(int utterance_id,
+                                       int char_index,
+                                       int char_length) {
   CHECK(char_index >= 0);
 
   WebSpeechSynthesisUtterance utterance = FindUtterance(utterance_id);
   if (utterance.IsNull())
     return;
 
+  // charLength is unsigned in the web speech API, so -1 cannot be used as a
+  // sentinel value. Use 0 instead to match web standards.
+  char_length = (char_length < 0) ? 0 : char_length;
   synthesizer_client_->SentenceBoundaryEventOccurred(
-      utterance, static_cast<unsigned>(char_index));
+      utterance, static_cast<unsigned>(char_index),
+      static_cast<unsigned>(char_length));
 }
 
 void TtsDispatcher::OnMarkerEvent(int utterance_id, int char_index) {
