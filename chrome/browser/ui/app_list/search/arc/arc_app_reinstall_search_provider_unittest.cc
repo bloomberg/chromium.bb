@@ -10,8 +10,8 @@
 
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/command_line.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/timer/mock_timer.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
@@ -89,6 +89,15 @@ class ArcAppReinstallSearchProviderTest : public AppListTestBase {
     }
 
     package_item->SetKey(key, base::Value(int64_str));
+  }
+
+  void SetStateTime(Profile* profile,
+                    const std::string& package_name,
+                    const std::string& key,
+                    const base::Time tstamp) {
+    const int64_t timestamp =
+        tstamp.ToDeltaSinceWindowsEpoch().InMilliseconds();
+    SetStateInt64(profile, package_name, key, timestamp);
   }
 
   bool GetStateInt64(Profile* profile,
@@ -253,36 +262,43 @@ TEST_F(ArcAppReinstallSearchProviderTest, TestResultsWithAppsChanged) {
 
   // Check that impression counts are read and written appropriately.
   const std::string fake_package2 = "com.package.fakepackage2";
-  const std::string impression_count = "impression_count";
-  const std::string impression_time = "impression_time";
 
   // should update to 1.
   app_provider_->OnVisibilityChanged(fake_package2, true);
   int64_t loaded_impression_count = 0;
-  EXPECT_TRUE(GetStateInt64(profile_.get(), fake_package2, impression_count,
-                            &loaded_impression_count));
+  EXPECT_TRUE(
+      GetStateInt64(profile_.get(), fake_package2,
+                    app_list::ArcAppReinstallSearchProvider::kImpressionCount,
+                    &loaded_impression_count));
   EXPECT_EQ(1, loaded_impression_count);
   // An immediate re-show does nothing.
   app_provider_->OnVisibilityChanged(fake_package2, true);
   loaded_impression_count = 0;
-  EXPECT_TRUE(GetStateInt64(profile_.get(), fake_package2, impression_count,
-                            &loaded_impression_count));
+  EXPECT_TRUE(
+      GetStateInt64(profile_.get(), fake_package2,
+                    app_list::ArcAppReinstallSearchProvider::kImpressionCount,
+                    &loaded_impression_count));
   EXPECT_EQ(1, loaded_impression_count);
 
   // But, setting impression time back does.
   for (int i = 0; i < 4; ++i) {
-    SetStateInt64(profile_.get(), fake_package2, impression_time, 0);
+    SetStateInt64(profile_.get(), fake_package2,
+                  app_list::ArcAppReinstallSearchProvider::kImpressionTime, 0);
     app_provider_->OnVisibilityChanged(fake_package2, true);
   }
   loaded_impression_count = 0;
-  EXPECT_TRUE(GetStateInt64(profile_.get(), fake_package2, impression_count,
-                            &loaded_impression_count));
+  EXPECT_TRUE(
+      GetStateInt64(profile_.get(), fake_package2,
+                    app_list::ArcAppReinstallSearchProvider::kImpressionCount,
+                    &loaded_impression_count));
   EXPECT_EQ(5, loaded_impression_count);
 
-  SetStateInt64(profile_.get(), fake_package2, impression_count, 50);
+  SetStateInt64(profile_.get(), fake_package2,
+                app_list::ArcAppReinstallSearchProvider::kImpressionCount, 50);
   app_provider_->UpdateResults();
   EXPECT_EQ(0u, app_provider_->results().size());
-  SetStateInt64(profile_.get(), fake_package2, impression_count, 0);
+  SetStateInt64(profile_.get(), fake_package2,
+                app_list::ArcAppReinstallSearchProvider::kImpressionCount, 0);
   app_provider_->UpdateResults();
   app_provider_->OnIconLoaded("http://icon.com/icon1");
   EXPECT_EQ(1u, app_provider_->results().size());
@@ -293,6 +309,68 @@ TEST_F(ArcAppReinstallSearchProviderTest, TestResultsWithAppsChanged) {
                 base::Time::Now().ToDeltaSinceWindowsEpoch().InMilliseconds());
   app_provider_->UpdateResults();
   EXPECT_EQ(0u, app_provider_->results().size());
+}
+
+TEST_F(ArcAppReinstallSearchProviderTest, TestShouldShowAnything) {
+  EXPECT_TRUE(app_provider_->ShouldShowAnything());
+  std::map<std::string, std::string> feature_params;
+  feature_params["interaction_grace_hours"] = "72";
+  feature_params["impression_count_limit"] = "5";
+  const std::string fake_package2 = "com.package.fakepackage2";
+  const std::string fake_package3 = "com.package.fakepackage3";
+  const std::string fake_package4 = "com.package.fakepackage4";
+
+  base::test::ScopedFeatureList list;
+  list.InitWithFeaturesAndParameters(
+      {{app_list_features::kEnableAppReinstallZeroState, feature_params}}, {});
+  EXPECT_TRUE(app_provider_->ShouldShowAnything());
+  SetStateTime(profile_.get(), fake_package2,
+               app_list::ArcAppReinstallSearchProvider::kInstallTime,
+               base::Time::Now() - base::TimeDelta::FromSeconds(30));
+  // Expect this to now say we shouldn't show, since a package was installed
+  // well within an install grace.
+  EXPECT_FALSE(app_provider_->ShouldShowAnything());
+  SetStateTime(profile_.get(), fake_package2,
+               app_list::ArcAppReinstallSearchProvider::kInstallTime,
+               base::Time::Now() - base::TimeDelta::FromDays(30));
+  EXPECT_TRUE(app_provider_->ShouldShowAnything());
+
+  // Testing for opens: if an a recommendation is opened within the grace
+  // period, we won't show anything. That's 72 hours (per configuration here).
+  SetStateTime(profile_.get(), fake_package3,
+               app_list::ArcAppReinstallSearchProvider::kOpenTime,
+               base::Time::Now() - base::TimeDelta::FromSeconds(30));
+  EXPECT_FALSE(app_provider_->ShouldShowAnything());
+  SetStateTime(profile_.get(), fake_package3,
+               app_list::ArcAppReinstallSearchProvider::kOpenTime,
+               base::Time::Now() - base::TimeDelta::FromDays(30));
+  EXPECT_TRUE(app_provider_->ShouldShowAnything());
+
+  // Testing for impression counts: If we've shown a result more than the
+  // feature param "impression_count_limit", and the latest time we've shown it
+  // is within the grace period, do not show anything.
+  SetStateInt64(profile_.get(), fake_package4,
+                app_list::ArcAppReinstallSearchProvider::kImpressionCount, 10);
+  // no impression time is set, show.
+  EXPECT_TRUE(app_provider_->ShouldShowAnything());
+  // shown recently.
+  SetStateTime(profile_.get(), fake_package4,
+               app_list::ArcAppReinstallSearchProvider::kImpressionTime,
+               base::Time::Now() - base::TimeDelta::FromSeconds(30));
+  EXPECT_FALSE(app_provider_->ShouldShowAnything());
+  // shown long ago.
+  SetStateTime(profile_.get(), fake_package4,
+               app_list::ArcAppReinstallSearchProvider::kImpressionTime,
+               base::Time::Now() - base::TimeDelta::FromDays(30));
+  EXPECT_TRUE(app_provider_->ShouldShowAnything());
+
+  // Shown recently, but not frequently.
+  SetStateInt64(profile_.get(), fake_package4,
+                app_list::ArcAppReinstallSearchProvider::kImpressionCount, 3);
+  SetStateTime(profile_.get(), fake_package4,
+               app_list::ArcAppReinstallSearchProvider::kImpressionTime,
+               base::Time::Now() - base::TimeDelta::FromSeconds(30));
+  EXPECT_TRUE(app_provider_->ShouldShowAnything());
 }
 
 TEST_F(ArcAppReinstallSearchProviderTest, TestResultListComparison) {
