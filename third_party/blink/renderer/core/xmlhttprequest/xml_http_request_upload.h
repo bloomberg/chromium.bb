@@ -41,10 +41,6 @@ class XMLHttpRequestUpload final : public XMLHttpRequestEventTarget {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static XMLHttpRequestUpload* Create(XMLHttpRequest* xml_http_request) {
-    return MakeGarbageCollected<XMLHttpRequestUpload>(xml_http_request);
-  }
-
   explicit XMLHttpRequestUpload(XMLHttpRequest*);
 
   XMLHttpRequest* XmlHttpRequest() const { return xml_http_request_; }

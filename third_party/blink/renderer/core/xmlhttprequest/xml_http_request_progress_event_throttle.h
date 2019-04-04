@@ -53,12 +53,6 @@ class XMLHttpRequestProgressEventThrottle final
     : public GarbageCollectedFinalized<XMLHttpRequestProgressEventThrottle>,
       public TimerBase {
  public:
-  static XMLHttpRequestProgressEventThrottle* Create(
-      XMLHttpRequest* event_target) {
-    return MakeGarbageCollected<XMLHttpRequestProgressEventThrottle>(
-        event_target);
-  }
-
   explicit XMLHttpRequestProgressEventThrottle(XMLHttpRequest*);
   ~XMLHttpRequestProgressEventThrottle() override;
 
