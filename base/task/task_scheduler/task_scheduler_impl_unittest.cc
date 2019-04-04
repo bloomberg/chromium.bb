@@ -437,17 +437,18 @@ TEST_P(TaskSchedulerImplTest, PostTaskViaTaskRunnerBeforeStart) {
 // USER_BLOCKING environment when the AllTasksUserBlocking variation param of
 // the BrowserScheduler experiment is true.
 TEST_P(TaskSchedulerImplTest, AllTasksAreUserBlockingTaskRunner) {
+  TaskTraits user_blocking_traits = GetParam().traits;
+  user_blocking_traits.UpdatePriority(TaskPriority::USER_BLOCKING);
+
   EnableAllTasksUserBlocking();
   StartTaskScheduler();
 
   WaitableEvent task_running;
   CreateTaskRunnerWithTraitsAndExecutionMode(&scheduler_, GetParam().traits,
                                              GetParam().execution_mode)
-      ->PostTask(FROM_HERE,
-                 BindOnce(&VerifyTaskEnvironmentAndSignalEvent,
-                          TaskTraits::Override(GetParam().traits,
-                                               {TaskPriority::USER_BLOCKING}),
-                          GetParam().pool_type, Unretained(&task_running)));
+      ->PostTask(FROM_HERE, BindOnce(&VerifyTaskEnvironmentAndSignalEvent,
+                                     user_blocking_traits, GetParam().pool_type,
+                                     Unretained(&task_running)));
   task_running.Wait();
 }
 
@@ -455,6 +456,9 @@ TEST_P(TaskSchedulerImplTest, AllTasksAreUserBlockingTaskRunner) {
 // run in a USER_BLOCKING environment when the AllTasksUserBlocking variation
 // param of the BrowserScheduler experiment is true.
 TEST_P(TaskSchedulerImplTest, AllTasksAreUserBlocking) {
+  TaskTraits user_blocking_traits = GetParam().traits;
+  user_blocking_traits.UpdatePriority(TaskPriority::USER_BLOCKING);
+
   EnableAllTasksUserBlocking();
   StartTaskScheduler();
 
@@ -462,9 +466,7 @@ TEST_P(TaskSchedulerImplTest, AllTasksAreUserBlocking) {
   // Ignore |params.execution_mode| in this test.
   scheduler_.PostDelayedTaskWithTraits(
       FROM_HERE, GetParam().traits,
-      BindOnce(&VerifyTaskEnvironmentAndSignalEvent,
-               TaskTraits::Override(GetParam().traits,
-                                    {TaskPriority::USER_BLOCKING}),
+      BindOnce(&VerifyTaskEnvironmentAndSignalEvent, user_blocking_traits,
                GetParam().pool_type, Unretained(&task_running)),
       TimeDelta());
   task_running.Wait();
@@ -477,11 +479,10 @@ TEST_P(TaskSchedulerImplTest, FlushAsyncForTestingSimple) {
 
   WaitableEvent unblock_task;
   CreateTaskRunnerWithTraitsAndExecutionMode(
-      &scheduler_,
-      TaskTraits::Override(GetParam().traits, {WithBaseSyncPrimitives()}),
-      GetParam().execution_mode, SingleThreadTaskRunnerThreadMode::DEDICATED)
-      ->PostTask(FROM_HERE,
-                 BindOnce(&WaitableEvent::Wait, Unretained(&unblock_task)));
+      &scheduler_, GetParam().traits, GetParam().execution_mode,
+      SingleThreadTaskRunnerThreadMode::DEDICATED)
+      ->PostTask(FROM_HERE, BindOnce(&test::WaitWithoutBlockingObserver,
+                                     Unretained(&unblock_task)));
 
   WaitableEvent flush_event;
   scheduler_.FlushAsyncForTesting(

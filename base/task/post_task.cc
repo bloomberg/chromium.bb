@@ -34,11 +34,10 @@ class PostTaskAndReplyWithTraitsTaskRunner
 // Returns TaskTraits based on |traits|. If TaskPriority hasn't been set
 // explicitly in |traits|, the returned TaskTraits have the current
 // TaskPriority.
-TaskTraits GetTaskTraitsWithExplicitPriority(const TaskTraits& traits) {
-  if (traits.priority_set_explicitly())
-    return traits;
-  return TaskTraits::Override(traits,
-                              {internal::GetTaskPriorityForCurrentThread()});
+TaskTraits GetTaskTraitsWithExplicitPriority(TaskTraits traits) {
+  if (!traits.priority_set_explicitly())
+    traits.UpdatePriority(internal::GetTaskPriorityForCurrentThread());
+  return traits;
 }
 
 TaskExecutor* GetTaskExecutorForTraits(const TaskTraits& traits) {

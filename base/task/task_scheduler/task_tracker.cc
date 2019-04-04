@@ -554,9 +554,11 @@ void TaskTracker::RecordHeartbeatLatencyAndTasksRunWhileQueuingHistograms(
     bool may_block,
     TimeTicks posted_time,
     int num_tasks_run_when_posted) const {
-  TaskTraits task_traits = {task_priority};
+  TaskTraits task_traits;
   if (may_block)
-    task_traits = TaskTraits::Override(task_traits, {MayBlock()});
+    task_traits = TaskTraits(task_priority, MayBlock());
+  else
+    task_traits = TaskTraits(task_priority);
   RecordLatencyHistogram(LatencyHistogramType::HEARTBEAT_LATENCY, task_traits,
                          posted_time);
   GetHistogramForTaskTraits(task_traits,

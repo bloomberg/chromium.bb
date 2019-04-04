@@ -104,7 +104,7 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler,
  private:
   // Returns |traits|, with priority set to TaskPriority::USER_BLOCKING if
   // |all_tasks_user_blocking_| is set.
-  TaskTraits SetUserBlockingPriorityIfNeeded(const TaskTraits& traits) const;
+  TaskTraits SetUserBlockingPriorityIfNeeded(TaskTraits traits) const;
 
   void ReportHeartbeatMetrics() const;
 

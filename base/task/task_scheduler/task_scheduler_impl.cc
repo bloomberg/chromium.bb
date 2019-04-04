@@ -369,10 +369,10 @@ SchedulerWorkerPool* TaskSchedulerImpl::GetForegroundWorkerPool() {
 }
 
 TaskTraits TaskSchedulerImpl::SetUserBlockingPriorityIfNeeded(
-    const TaskTraits& traits) const {
-  return all_tasks_user_blocking_.IsSet()
-             ? TaskTraits::Override(traits, {TaskPriority::USER_BLOCKING})
-             : traits;
+    TaskTraits traits) const {
+  if (all_tasks_user_blocking_.IsSet())
+    traits.UpdatePriority(TaskPriority::USER_BLOCKING);
+  return traits;
 }
 
 void TaskSchedulerImpl::ReportHeartbeatMetrics() const {

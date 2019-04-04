@@ -193,16 +193,6 @@ class BASE_EXPORT TaskTraits {
            with_base_sync_primitives_ == other.with_base_sync_primitives_;
   }
 
-  // Returns TaskTraits constructed by combining |left| and |right|. If a trait
-  // is specified in both |left| and |right|, the returned TaskTraits will have
-  // the value from |right|. Note that extension traits are not merged: any
-  // extension traits in |left| are discarded if extension traits are present in
-  // |right|.
-  static constexpr TaskTraits Override(const TaskTraits& left,
-                                       const TaskTraits& right) {
-    return TaskTraits(left, right);
-  }
-
   // Sets the priority of tasks with these traits to |priority|.
   void UpdatePriority(TaskPriority priority) {
     priority_ = priority;
@@ -265,25 +255,6 @@ class BASE_EXPORT TaskTraits {
         with_base_sync_primitives_(with_base_sync_primitives) {
     static_assert(sizeof(TaskTraits) == 24, "Keep this constructor up to date");
   }
-
-  constexpr TaskTraits(const TaskTraits& left, const TaskTraits& right)
-      : extension_(right.extension_.extension_id !=
-                           TaskTraitsExtensionStorage::kInvalidExtensionId
-                       ? right.extension_
-                       : left.extension_),
-        priority_(right.priority_set_explicitly_ ? right.priority_
-                                                 : left.priority_),
-        shutdown_behavior_(right.shutdown_behavior_set_explicitly_
-                               ? right.shutdown_behavior_
-                               : left.shutdown_behavior_),
-        priority_set_explicitly_(left.priority_set_explicitly_ ||
-                                 right.priority_set_explicitly_),
-        shutdown_behavior_set_explicitly_(
-            left.shutdown_behavior_set_explicitly_ ||
-            right.shutdown_behavior_set_explicitly_),
-        may_block_(left.may_block_ || right.may_block_),
-        with_base_sync_primitives_(left.with_base_sync_primitives_ ||
-                                   right.with_base_sync_primitives_) {}
 
   // Ordered for packing.
   TaskTraitsExtensionStorage extension_;
