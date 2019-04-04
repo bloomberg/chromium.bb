@@ -196,6 +196,8 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   void DoCheckSoon();
 
   // Implementation of ExtensionDownloaderDelegate.
+  void OnExtensionDownloadStageChanged(const std::string& id,
+                                       Stage stage) override;
   void OnExtensionDownloadFailed(const std::string& id,
                                  Error error,
                                  const PingResult& ping,

@@ -7,7 +7,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/timer/mock_timer.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/forced_extensions/installation_failures.h"
+#include "chrome/browser/extensions/forced_extensions/installation_reporter.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -98,18 +98,19 @@ TEST_F(ForcedExtensionsInstallationTrackerTest,
   histogram_tester_.ExpectUniqueSample(kTimedOutNotInstalledStats, 1, 1);
   histogram_tester_.ExpectTotalCount(kFailureReasons, 1);
   histogram_tester_.ExpectUniqueSample(
-      kFailureReasons, InstallationFailures::Reason::UNKNOWN, 1);
+      kFailureReasons, InstallationReporter::FailureReason::UNKNOWN, 1);
   histogram_tester_.ExpectTotalCount(kFailureCrxInstallErrorStats, 0);
 }
 
 TEST_F(ForcedExtensionsInstallationTrackerTest,
        ExtensionsInstallationTimedOutDifferentReasons) {
   SetupForceList();
-  InstallationFailures::ReportFailure(&profile_, kExtensionId1,
-                                      InstallationFailures::Reason::INVALID_ID);
-  InstallationFailures::ReportCrxInstallError(
+  InstallationReporter::ReportFailure(
+      &profile_, kExtensionId1,
+      InstallationReporter::FailureReason::INVALID_ID);
+  InstallationReporter::ReportCrxInstallError(
       &profile_, kExtensionId2,
-      InstallationFailures::Reason::CRX_INSTALL_ERROR_OTHER,
+      InstallationReporter::FailureReason::CRX_INSTALL_ERROR_OTHER,
       CrxInstallErrorDetail::UNEXPECTED_ID);
   EXPECT_TRUE(fake_timer_->IsRunning());
   fake_timer_->Fire();
@@ -118,10 +119,10 @@ TEST_F(ForcedExtensionsInstallationTrackerTest,
   histogram_tester_.ExpectUniqueSample(kTimedOutNotInstalledStats, 2, 1);
   histogram_tester_.ExpectTotalCount(kFailureReasons, 2);
   histogram_tester_.ExpectBucketCount(
-      kFailureReasons, InstallationFailures::Reason::INVALID_ID, 1);
+      kFailureReasons, InstallationReporter::FailureReason::INVALID_ID, 1);
   histogram_tester_.ExpectBucketCount(
-      kFailureReasons, InstallationFailures::Reason::CRX_INSTALL_ERROR_OTHER,
-      1);
+      kFailureReasons,
+      InstallationReporter::FailureReason::CRX_INSTALL_ERROR_OTHER, 1);
   histogram_tester_.ExpectUniqueSample(kFailureCrxInstallErrorStats,
                                        CrxInstallErrorDetail::UNEXPECTED_ID, 1);
 }
