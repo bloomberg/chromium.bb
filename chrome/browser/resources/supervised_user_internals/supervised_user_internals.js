@@ -44,8 +44,6 @@ cr.define('chrome.supervised_user_internals', function() {
     jstProcess(new JsEvalContext(info), $('basic-info'));
 
     // Hack: Schedule another refresh after a while.
-    // TODO(treib): Get rid of this once we're properly notified of all
-    // relevant changes.
     setTimeout(function() {
       chrome.send('getBasicInfo');
     }, 5000);

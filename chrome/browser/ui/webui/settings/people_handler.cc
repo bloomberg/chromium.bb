@@ -1070,8 +1070,6 @@ void PeopleHandler::PushSyncPrefs() {
     args.SetBoolean(key_name + "Registered", registered_types.Has(sync_type));
     args.SetBoolean(key_name + "Synced", preferred_types.Has(sync_type));
     args.SetBoolean(key_name + "Enforced", enforced_types.Has(sync_type));
-    // TODO(treib): How do we want to handle pref groups, i.e. when only some of
-    // the sync types behind a checkbox are force-enabled? crbug.com/403326
   }
   args.SetBoolean("syncAllDataTypes",
                   service->GetUserSettings()->IsSyncEverythingEnabled());

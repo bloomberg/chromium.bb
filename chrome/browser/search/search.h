@@ -32,8 +32,9 @@ bool DefaultSearchProviderIsGoogle(
     const TemplateURLService* template_url_service);
 
 // Returns true if |url| corresponds to a New Tab page.
-// TODO(treib): This is confusingly named, as it includes URLs that are related
-// to an NTP, but aren't an NTP themselves (such as the NTP's service worker).
+// TODO(crbug.com/624410): This is confusingly named, as it includes URLs that
+// are related to an NTP, but aren't an NTP themselves (such as the NTP's
+// service worker).
 bool IsNTPURL(const GURL& url, Profile* profile);
 
 // Returns true if the active navigation entry of |contents| is a New Tab page
