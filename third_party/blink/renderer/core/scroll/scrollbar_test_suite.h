@@ -71,6 +71,7 @@ class MockScrollableArea : public GarbageCollectedFinalized<MockScrollableArea>,
   MOCK_CONST_METHOD0(HorizontalScrollbar, Scrollbar*());
   MOCK_CONST_METHOD0(VerticalScrollbar, Scrollbar*());
   MOCK_CONST_METHOD0(ScrollbarsHiddenIfOverlay, bool());
+  MOCK_METHOD0(ScheduleAnimation, bool());
 
   bool UserInputScrollable(ScrollbarOrientation) const override { return true; }
   bool ScrollbarsCanBeActive() const override { return true; }

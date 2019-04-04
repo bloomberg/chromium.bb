@@ -746,7 +746,8 @@ ChromeClient* VisualViewport::GetChromeClient() const {
 
 void VisualViewport::SetScrollOffset(const ScrollOffset& offset,
                                      ScrollType scroll_type,
-                                     ScrollBehavior scroll_behavior) {
+                                     ScrollBehavior scroll_behavior,
+                                     ScrollCallback on_finish) {
   // We clamp the offset here, because the ScrollAnimator may otherwise be
   // set to a non-clamped offset by ScrollableArea::setScrollOffset,
   // which may lead to incorrect scrolling behavior in RootFrameViewport down
@@ -757,7 +758,7 @@ void VisualViewport::SetScrollOffset(const ScrollOffset& offset,
   // crbug.com/626315.
   ScrollOffset new_scroll_offset = ClampScrollOffset(offset);
   ScrollableArea::SetScrollOffset(new_scroll_offset, scroll_type,
-                                  scroll_behavior);
+                                  scroll_behavior, std::move(on_finish));
 }
 
 int VisualViewport::ScrollSize(ScrollbarOrientation orientation) const {

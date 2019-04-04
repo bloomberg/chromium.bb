@@ -259,6 +259,9 @@ class CORE_EXPORT WebLocalFrameImpl final
   bool IsProvisional() const override;
   WebLocalFrameImpl* LocalRoot() override;
   WebFrame* FindFrameByName(const WebString& name) override;
+  bool ScrollTo(const gfx::Point& scrollPosition,
+                bool animate,
+                base::OnceClosure on_finish) override;
   void SendPings(const WebURL& destination_url) override;
   void ReportContentSecurityPolicyViolation(
       const blink::WebContentSecurityPolicyViolation&) override;

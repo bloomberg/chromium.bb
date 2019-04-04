@@ -59,7 +59,8 @@ class CORE_EXPORT RootFrameViewport final
   bool IsRootFrameViewport() const override { return true; }
   void SetScrollOffset(const ScrollOffset&,
                        ScrollType,
-                       ScrollBehavior = kScrollBehaviorInstant) override;
+                       ScrollBehavior,
+                       ScrollCallback on_finish) override;
   LayoutRect ScrollIntoView(const LayoutRect&,
                             const WebScrollIntoViewParams&) override;
   IntRect VisibleContentRect(
@@ -121,14 +122,18 @@ class CORE_EXPORT RootFrameViewport final
   ScrollbarTheme& GetPageScrollbarTheme() const override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(RootFrameViewportTest, DistributeScrollOrder);
+
   enum ViewportToScrollFirst { kVisualViewport, kLayoutViewport };
 
   ScrollOffset ScrollOffsetFromScrollAnimators() const;
 
-  void DistributeScrollBetweenViewports(const ScrollOffset&,
-                                        ScrollType,
-                                        ScrollBehavior,
-                                        ViewportToScrollFirst);
+  void DistributeScrollBetweenViewports(
+      const ScrollOffset&,
+      ScrollType,
+      ScrollBehavior,
+      ViewportToScrollFirst,
+      ScrollCallback on_finish = ScrollCallback());
 
   // If either of the layout or visual viewports are scrolled explicitly (i.e.
   // not through this class), their updated offset will not be reflected in this

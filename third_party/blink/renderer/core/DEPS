@@ -1,5 +1,6 @@
 include_rules = [
     "+base/atomic_sequence_num.h",
+    "+base/barrier_closure.h",
     "+base/files/file.h",
     "+base/mac/foundation_util.h",
     "+base/mac/scoped_cftyperef.h",
