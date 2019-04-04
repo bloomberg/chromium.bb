@@ -73,6 +73,13 @@ class CONTENT_EXPORT BlinkNotificationServiceImpl
   bool ValidateNotificationResources(
       const blink::NotificationResources& notification_resources);
 
+  // Validate |notification_data| received in a Mojo IPC message.
+  // If the validation failed, we'd close the Mojo connection |binding_| and
+  // destroy |this| by calling OnConnectionError() directly, then return false.
+  // So, please do not touch |this| again after you got a false return value.
+  bool ValidateNotificationData(
+      const blink::PlatformNotificationData& notification_data);
+
   void DidWriteNotificationData(DisplayPersistentNotificationCallback callback,
                                 bool success,
                                 const std::string& notification_id);

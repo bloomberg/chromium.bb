@@ -81,6 +81,7 @@ source_set("headers") {
     "messaging/transferable_message.h",
     "messaging/transferable_message_struct_traits.h",
     "mime_util/mime_util.h",
+    "notifications/notification_constants.h",
     "notifications/notification_resources.h",
     "notifications/notification_struct_traits.h",
     "notifications/platform_notification_data.h",

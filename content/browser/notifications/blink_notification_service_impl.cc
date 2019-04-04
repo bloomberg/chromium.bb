@@ -24,6 +24,7 @@
 #include "content/public/browser/platform_notification_service.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
+#include "third_party/blink/public/common/notifications/notification_constants.h"
 #include "third_party/blink/public/common/notifications/notification_resources.h"
 #include "third_party/blink/public/common/notifications/platform_notification_data.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
@@ -36,6 +37,8 @@ namespace {
 const char kBadMessageImproperNotificationImage[] =
     "Received an unexpected message with image while notification images are "
     "disabled.";
+const char kBadMessageInvalidNotificationTriggerTimestamp[] =
+    "Received an invalid notification trigger timestamp.";
 
 // Returns the implementation of the PlatformNotificationService. May be NULL.
 PlatformNotificationService* GetNotificationService() {
@@ -61,6 +64,18 @@ bool FilterByTriggered(bool include_triggered,
     return true;
   // Otherwise it has to be triggered already.
   return database_data.has_triggered;
+}
+
+// Checks if this notification has a valid trigger.
+bool CheckNotificationTriggerRange(
+    const blink::PlatformNotificationData& data) {
+  if (!data.show_trigger_timestamp)
+    return true;
+
+  base::TimeDelta show_trigger_delay =
+      data.show_trigger_timestamp.value() - base::Time::Now();
+
+  return show_trigger_delay <= blink::kMaxNotificationShowTriggerDelay;
 }
 
 }  // namespace
@@ -180,6 +195,18 @@ bool BlinkNotificationServiceImpl::ValidateNotificationResources(
   return false;
 }
 
+// Checks if this notification has a valid trigger.
+bool BlinkNotificationServiceImpl::ValidateNotificationData(
+    const blink::PlatformNotificationData& notification_data) {
+  if (!CheckNotificationTriggerRange(notification_data)) {
+    binding_.ReportBadMessage(kBadMessageInvalidNotificationTriggerTimestamp);
+    OnConnectionError();
+    return false;
+  }
+
+  return true;
+}
+
 void BlinkNotificationServiceImpl::DisplayPersistentNotification(
     int64_t service_worker_registration_id,
     const blink::PlatformNotificationData& platform_notification_data,
@@ -187,6 +214,9 @@ void BlinkNotificationServiceImpl::DisplayPersistentNotification(
     DisplayPersistentNotificationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!ValidateNotificationResources(notification_resources))
+    return;
+
+  if (!ValidateNotificationData(platform_notification_data))
     return;
 
   if (!GetNotificationService()) {
