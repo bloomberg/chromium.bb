@@ -99,14 +99,14 @@ class Directory {
     size_t EstimateMemoryUsage() const;
 
     // Last sync timestamp fetched from the server.
-    sync_pb::DataTypeProgressMarker download_progress[MODEL_TYPE_COUNT];
+    sync_pb::DataTypeProgressMarker download_progress[ModelType::NUM_ENTRIES];
     // Sync-side transaction version per data type. Monotonically incremented
     // when updating native model. A copy is also saved in native model.
     // Later out-of-sync models can be detected and fixed by comparing
     // transaction versions of sync model and native model.
     // TODO(hatiaol): implement detection and fixing of out-of-sync models.
     //                Bug 154858.
-    int64_t transaction_version[MODEL_TYPE_COUNT];
+    int64_t transaction_version[ModelType::NUM_ENTRIES];
     // The store birthday we were given by the server. Contents are opaque to
     // the client.
     std::string store_birthday;
@@ -115,7 +115,7 @@ class Directory {
     // ChipBag defined in sync.proto. It can contains null characters.
     std::string bag_of_chips;
     // The per-datatype context.
-    sync_pb::DataTypeContext datatype_context[MODEL_TYPE_COUNT];
+    sync_pb::DataTypeContext datatype_context[ModelType::NUM_ENTRIES];
   };
 
   // What the Directory needs on initialization to create itself and its Kernel.
@@ -197,7 +197,7 @@ class Directory {
 
     // 3 in-memory indices on bits used extremely frequently by the syncer.
     // |unapplied_update_metahandles| is keyed by the server model type.
-    MetahandleSet unapplied_update_metahandles[MODEL_TYPE_COUNT];
+    MetahandleSet unapplied_update_metahandles[ModelType::NUM_ENTRIES];
     MetahandleSet unsynced_metahandles;
     // Contains metahandles that are most likely dirty (though not
     // necessarily).  Dirtyness is confirmed in TakeSnapshotForSaveChanges().

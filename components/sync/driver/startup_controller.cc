@@ -166,7 +166,7 @@ void StartupController::OnDataTypeRequestsSyncStartup(ModelType type) {
   // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
   UMA_HISTOGRAM_ENUMERATION("Sync.Startup.TypeTriggeringInit",
                             ModelTypeToHistogramInt(type),
-                            static_cast<int>(MODEL_TYPE_COUNT));
+                            static_cast<int>(ModelType::NUM_ENTRIES));
   if (!start_up_time_.is_null()) {
     RecordTimeDeferred();
     UMA_HISTOGRAM_ENUMERATION("Sync.Startup.DeferredInitTrigger",

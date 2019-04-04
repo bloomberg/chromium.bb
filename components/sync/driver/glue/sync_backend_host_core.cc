@@ -59,13 +59,13 @@ void BindFetcherToDataTracker(net::URLFetcher* fetcher) {
 
 void RecordPerModelTypeInvalidation(int model_type, bool is_grouped) {
   UMA_HISTOGRAM_ENUMERATION("Sync.InvalidationPerModelType", model_type,
-                            static_cast<int>(syncer::MODEL_TYPE_COUNT));
+                            static_cast<int>(syncer::ModelType::NUM_ENTRIES));
   if (!is_grouped) {
     // When recording metrics it's important to distinguish between
     // many/one case, since "many" aka grouped case is only common in
     // the deprecated implementation.
     UMA_HISTOGRAM_ENUMERATION("Sync.NonGroupedInvalidation", model_type,
-                              static_cast<int>(syncer::MODEL_TYPE_COUNT));
+                              static_cast<int>(syncer::ModelType::NUM_ENTRIES));
   }
 }
 
@@ -267,10 +267,10 @@ bool SyncBackendHostCore::ShouldIgnoreRedundantInvalidation(
              << last_invalidation->second;
     redundant_invalidation = true;
     UMA_HISTOGRAM_ENUMERATION("Sync.RedundantInvalidationPerModelType", type,
-                              static_cast<int>(syncer::MODEL_TYPE_COUNT));
+                              static_cast<int>(syncer::ModelType::NUM_ENTRIES));
   } else {
     UMA_HISTOGRAM_ENUMERATION("Sync.NonRedundantInvalidationPerModelType", type,
-                              static_cast<int>(syncer::MODEL_TYPE_COUNT));
+                              static_cast<int>(syncer::ModelType::NUM_ENTRIES));
   }
 
   return !fcm_invalidation && redundant_invalidation;
@@ -299,7 +299,7 @@ void SyncBackendHostCore::DoOnIncomingInvalidation(
         if (!is_grouped && !invalidation.is_unknown_version()) {
           UMA_HISTOGRAM_ENUMERATION("Sync.NonGroupedInvalidationKnownVersion",
                                     ModelTypeToHistogramInt(type),
-                                    static_cast<int>(MODEL_TYPE_COUNT));
+                                    static_cast<int>(ModelType::NUM_ENTRIES));
         }
         std::unique_ptr<InvalidationInterface> inv_adapter(
             new InvalidationAdapter(invalidation));

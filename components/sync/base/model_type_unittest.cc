@@ -18,7 +18,7 @@ namespace {
 class ModelTypeTest : public testing::Test {};
 
 TEST_F(ModelTypeTest, ModelTypeToValue) {
-  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
+  for (int i = FIRST_REAL_MODEL_TYPE; i < ModelType::NUM_ENTRIES; ++i) {
     ModelType model_type = ModelTypeFromInt(i);
     base::ExpectStringValue(ModelTypeToString(model_type),
                             *ModelTypeToValue(model_type));
@@ -42,7 +42,7 @@ TEST_F(ModelTypeTest, ModelTypeSetToValue) {
 
 TEST_F(ModelTypeTest, IsRealDataType) {
   EXPECT_FALSE(IsRealDataType(UNSPECIFIED));
-  EXPECT_FALSE(IsRealDataType(MODEL_TYPE_COUNT));
+  EXPECT_FALSE(IsRealDataType(ModelType::NUM_ENTRIES));
   EXPECT_FALSE(IsRealDataType(TOP_LEVEL_FOLDER));
   EXPECT_TRUE(IsRealDataType(FIRST_REAL_MODEL_TYPE));
   EXPECT_TRUE(IsRealDataType(BOOKMARKS));
@@ -54,7 +54,7 @@ TEST_F(ModelTypeTest, IsRealDataType) {
 
 TEST_F(ModelTypeTest, IsProxyType) {
   EXPECT_FALSE(IsProxyType(BOOKMARKS));
-  EXPECT_FALSE(IsProxyType(MODEL_TYPE_COUNT));
+  EXPECT_FALSE(IsProxyType(ModelType::NUM_ENTRIES));
   EXPECT_TRUE(IsProxyType(PROXY_TABS));
 }
 
@@ -83,10 +83,10 @@ TEST_F(ModelTypeTest, ModelTypeHistogramMapping) {
         << "Expected histogram values to be unique";
 
     // This is not necessary for the mapping to be valid, but most instances of
-    // UMA_HISTOGRAM that use this mapping specify MODEL_TYPE_COUNT as the
+    // UMA_HISTOGRAM that use this mapping specify ModelType::NUM_ENTRIES as the
     // maximum possible value.  If you break this assumption, you should update
     // those histograms.
-    EXPECT_LT(histogram_value, MODEL_TYPE_COUNT);
+    EXPECT_LT(histogram_value, ModelType::NUM_ENTRIES);
   }
 }
 

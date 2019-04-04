@@ -62,7 +62,7 @@ class SyncBackendRegistrarTest : public testing::Test {
   }
 
   void ExpectHasProcessorsForTypes(ModelTypeSet types) {
-    for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
+    for (int i = FIRST_REAL_MODEL_TYPE; i < ModelType::NUM_ENTRIES; ++i) {
       ModelType model_type = ModelTypeFromInt(i);
       EXPECT_EQ(types.Has(model_type),
                 registrar_->IsTypeActivatedForTest(model_type));

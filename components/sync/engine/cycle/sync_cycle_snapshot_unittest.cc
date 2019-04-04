@@ -47,14 +47,15 @@ TEST_F(SyncCycleSnapshotTest, SyncCycleSnapshotToValue) {
   const int kNumEncryptionConflicts = 1054;
   const int kNumHierarchyConflicts = 1055;
   const int kNumServerConflicts = 1057;
-  SyncCycleSnapshot snapshot(
-      model_neutral, download_progress_markers, kIsSilenced,
-      kNumEncryptionConflicts, kNumHierarchyConflicts, kNumServerConflicts,
-      false, 0, base::Time::Now(), base::Time::Now(),
-      std::vector<int>(MODEL_TYPE_COUNT, 0),
-      std::vector<int>(MODEL_TYPE_COUNT, 0), sync_pb::SyncEnums::UNKNOWN_ORIGIN,
-      /*poll_interval=*/base::TimeDelta::FromMinutes(30),
-      /*has_remaining_local_changes=*/false);
+  SyncCycleSnapshot snapshot(model_neutral, download_progress_markers,
+                             kIsSilenced, kNumEncryptionConflicts,
+                             kNumHierarchyConflicts, kNumServerConflicts, false,
+                             0, base::Time::Now(), base::Time::Now(),
+                             std::vector<int>(ModelType::NUM_ENTRIES, 0),
+                             std::vector<int>(ModelType::NUM_ENTRIES, 0),
+                             sync_pb::SyncEnums::UNKNOWN_ORIGIN,
+                             /*poll_interval=*/base::TimeDelta::FromMinutes(30),
+                             /*has_remaining_local_changes=*/false);
   std::unique_ptr<base::DictionaryValue> value(snapshot.ToValue());
   EXPECT_EQ(19u, value->size());
   ExpectDictIntegerValue(model_neutral.num_successful_commits, *value,

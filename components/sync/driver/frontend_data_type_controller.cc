@@ -238,7 +238,7 @@ void FrontendDataTypeController::RecordStartFailure(ConfigureResult result) {
   // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures2",
                             ModelTypeToHistogramInt(type()),
-                            static_cast<int>(MODEL_TYPE_COUNT));
+                            static_cast<int>(ModelType::NUM_ENTRIES));
 #define PER_DATA_TYPE_MACRO(type_str)                                    \
   UMA_HISTOGRAM_ENUMERATION("Sync." type_str "ConfigureFailure", result, \
                             MAX_CONFIGURE_RESULT);

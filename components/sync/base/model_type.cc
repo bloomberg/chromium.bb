@@ -161,14 +161,14 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
      sync_pb::EntitySpecifics::kExperimentsFieldNumber, 19},
 };
 
-static_assert(base::size(kModelTypeInfoMap) == MODEL_TYPE_COUNT,
-              "kModelTypeInfoMap should have MODEL_TYPE_COUNT elements");
+static_assert(base::size(kModelTypeInfoMap) == ModelType::NUM_ENTRIES,
+              "kModelTypeInfoMap should have ModelType::NUM_ENTRIES elements");
 
-static_assert(44 == syncer::MODEL_TYPE_COUNT,
+static_assert(44 == syncer::ModelType::NUM_ENTRIES,
               "When adding a new type, update enum SyncModelTypes in enums.xml "
               "and suffix SyncModelType in histograms.xml.");
 
-static_assert(44 == syncer::MODEL_TYPE_COUNT,
+static_assert(44 == syncer::ModelType::NUM_ENTRIES,
               "When adding a new type, update kAllocatorDumpNameWhitelist in "
               "base/trace_event/memory_infra_background_whitelist.cc.");
 
@@ -304,7 +304,7 @@ void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
     case DEPRECATED_EXPERIMENTS:
       specifics->mutable_experiments();
       break;
-    case MODEL_TYPE_COUNT:
+    case ModelType::NUM_ENTRIES:
       NOTREACHED() << "No default field value for " << ModelTypeToString(type);
       break;
   }
@@ -354,7 +354,7 @@ ModelType GetModelType(const sync_pb::SyncEntity& sync_entity) {
 }
 
 ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
-  static_assert(44 == MODEL_TYPE_COUNT,
+  static_assert(44 == ModelType::NUM_ENTRIES,
                 "When adding new protocol types, the following type lookup "
                 "logic must be updated.");
   if (specifics.has_bookmark())
@@ -457,7 +457,7 @@ ModelTypeNameMap GetUserSelectableTypeNameMap() {
 }
 
 ModelTypeSet EncryptableUserTypes() {
-  static_assert(44 == MODEL_TYPE_COUNT,
+  static_assert(44 == ModelType::NUM_ENTRIES,
                 "If adding an unencryptable type, remove from "
                 "encryptable_user_types below.");
   ModelTypeSet encryptable_user_types = UserTypes();
@@ -502,7 +502,7 @@ const char* ModelTypeToString(ModelType model_type) {
   // This is used in serialization routines as well as for displaying debug
   // information.  Do not attempt to change these string values unless you know
   // what you're doing.
-  if (model_type >= UNSPECIFIED && model_type < MODEL_TYPE_COUNT)
+  if (model_type >= UNSPECIFIED && model_type < ModelType::NUM_ENTRIES)
     return kModelTypeInfoMap[model_type].model_type_string;
   NOTREACHED() << "No known extension for model type.";
   return "Invalid";
@@ -510,7 +510,7 @@ const char* ModelTypeToString(ModelType model_type) {
 
 const char* ModelTypeToHistogramSuffix(ModelType model_type) {
   DCHECK_GE(model_type, UNSPECIFIED);
-  DCHECK_LT(model_type, MODEL_TYPE_COUNT);
+  DCHECK_LT(model_type, ModelType::NUM_ENTRIES);
 
   // We use the same string that is used for notification types because they
   // satisfy all we need (being stable and explanatory).
@@ -525,13 +525,13 @@ const char* ModelTypeToHistogramSuffix(ModelType model_type) {
 // changes to this list.
 int ModelTypeToHistogramInt(ModelType model_type) {
   DCHECK_GE(model_type, UNSPECIFIED);
-  DCHECK_LT(model_type, MODEL_TYPE_COUNT);
+  DCHECK_LT(model_type, ModelType::NUM_ENTRIES);
   return kModelTypeInfoMap[model_type].model_type_histogram_val;
 }
 
 int ModelTypeToStableIdentifier(ModelType model_type) {
   DCHECK_GE(model_type, UNSPECIFIED);
-  DCHECK_LT(model_type, MODEL_TYPE_COUNT);
+  DCHECK_LT(model_type, ModelType::NUM_ENTRIES);
   // Make sure the value is stable and positive.
   return ModelTypeToHistogramInt(model_type) + 1;
 }
@@ -645,7 +645,8 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
 }
 
 bool IsRealDataType(ModelType model_type) {
-  return model_type >= FIRST_REAL_MODEL_TYPE && model_type < MODEL_TYPE_COUNT;
+  return model_type >= FIRST_REAL_MODEL_TYPE &&
+         model_type < ModelType::NUM_ENTRIES;
 }
 
 bool IsProxyType(ModelType model_type) {

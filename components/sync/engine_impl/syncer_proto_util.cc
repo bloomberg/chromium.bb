@@ -368,7 +368,7 @@ bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
           "Sync.PostedDataTypeGetUpdatesRequest",
           ModelTypeToHistogramInt(GetModelTypeFromSpecificsFieldNumber(
               progress_marker.data_type_id())),
-          static_cast<int>(MODEL_TYPE_COUNT));
+          static_cast<int>(ModelType::NUM_ENTRIES));
     }
   }
 

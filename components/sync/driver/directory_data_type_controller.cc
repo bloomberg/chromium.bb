@@ -75,8 +75,9 @@ void DirectoryDataTypeController::GetAllNodes(AllNodesCallback callback) {
 
 void DirectoryDataTypeController::GetStatusCounters(
     StatusCountersCallback callback) {
-  std::vector<int> num_entries_by_type(syncer::MODEL_TYPE_COUNT, 0);
-  std::vector<int> num_to_delete_entries_by_type(syncer::MODEL_TYPE_COUNT, 0);
+  std::vector<int> num_entries_by_type(syncer::ModelType::NUM_ENTRIES, 0);
+  std::vector<int> num_to_delete_entries_by_type(syncer::ModelType::NUM_ENTRIES,
+                                                 0);
   sync_service_->GetUserShare()->directory->CollectMetaHandleCounts(
       &num_entries_by_type, &num_to_delete_entries_by_type);
   syncer::StatusCounters counters;
