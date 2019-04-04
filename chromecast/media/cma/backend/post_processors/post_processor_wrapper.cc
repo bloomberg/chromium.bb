@@ -29,7 +29,7 @@ AudioPostProcessorWrapper::~AudioPostProcessorWrapper() = default;
 
 bool AudioPostProcessorWrapper::SetConfig(
     const AudioPostProcessor2::Config& config) {
-  if (!pp_->SetSampleRate(status_.input_sample_rate)) {
+  if (!pp_->SetSampleRate(config.output_sample_rate)) {
     return false;
   }
   status_.input_sample_rate = config.output_sample_rate;

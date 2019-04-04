@@ -120,7 +120,7 @@ void PostTaskShim(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
   task_runner->PostTask(FROM_HERE, std::move(task));
 }
 
-int GetFixedSampleRate() {
+int GetFixedOutputSampleRate() {
   int fixed_sample_rate = GetSwitchValueNonNegativeInt(
       switches::kAudioOutputSampleRate, MixerOutputStream::kInvalidSampleRate);
 
@@ -186,7 +186,7 @@ StreamMixer::StreamMixer(
           GetSwitchValueBoolean(switches::kAlsaEnableUpsampling, false)
               ? kLowSampleRateCutoff
               : MixerOutputStream::kInvalidSampleRate),
-      fixed_sample_rate_(GetFixedSampleRate()),
+      fixed_output_sample_rate_(GetFixedOutputSampleRate()),
       no_input_close_timeout_(GetNoInputCloseTimeout()),
       filter_frame_alignment_(kDefaultFilterFrameAlignment),
       state_(kStateStopped),
@@ -226,8 +226,8 @@ StreamMixer::StreamMixer(
     input_task_runner_ = mixer_task_runner_;
   }
 
-  if (fixed_sample_rate_ != MixerOutputStream::kInvalidSampleRate) {
-    LOG(INFO) << "Setting fixed sample rate to " << fixed_sample_rate_;
+  if (fixed_output_sample_rate_ != MixerOutputStream::kInvalidSampleRate) {
+    LOG(INFO) << "Setting fixed sample rate to " << fixed_output_sample_rate_;
   }
 
   CreatePostProcessors([](bool, const std::string&) {},
@@ -314,7 +314,7 @@ void StreamMixer::CreatePostProcessors(CastMediaShlib::ResultCallback callback,
   CHECK(PostProcessorsHaveCorrectNumOutputs());
 
   if (state_ == kStateRunning) {
-    mixer_pipeline_->Initialize(output_samples_per_second_);
+    mixer_pipeline_->Initialize(output_samples_per_second_, frames_per_write_);
   }
 
   if (callback) {
@@ -383,8 +383,8 @@ void StreamMixer::Start() {
   DCHECK(output_);
 
   int requested_sample_rate;
-  if (fixed_sample_rate_ != MixerOutputStream::kInvalidSampleRate) {
-    requested_sample_rate = fixed_sample_rate_;
+  if (fixed_output_sample_rate_ != MixerOutputStream::kInvalidSampleRate) {
+    requested_sample_rate = fixed_output_sample_rate_;
   } else if (low_sample_rate_cutoff_ != MixerOutputStream::kInvalidSampleRate &&
              requested_output_samples_per_second_ < low_sample_rate_cutoff_) {
     requested_sample_rate =
@@ -407,7 +407,7 @@ void StreamMixer::Start() {
   CHECK_GT(frames_per_write_, 0);
 
   // Initialize filters.
-  mixer_pipeline_->Initialize(output_samples_per_second_);
+  mixer_pipeline_->Initialize(output_samples_per_second_, frames_per_write_);
 
   for (auto& redirector : audio_output_redirectors_) {
     redirector.second->Start(output_samples_per_second_);
@@ -491,7 +491,7 @@ void StreamMixer::AddInputOnThread(MixerInput::Source* input_source) {
   // may need to change the output sample rate to match the input sample rate.
   // We only change the output rate if it is not set to a fixed value.
   if ((input_source->primary() || inputs_.empty()) &&
-      fixed_sample_rate_ == MixerOutputStream::kInvalidSampleRate) {
+      fixed_output_sample_rate_ == MixerOutputStream::kInvalidSampleRate) {
     CheckChangeOutputRate(input_source->input_samples_per_second());
   }
 
@@ -506,11 +506,11 @@ void StreamMixer::AddInputOnThread(MixerInput::Source* input_source) {
   DCHECK(input_group) << "Could not find a processor for "
                       << input_source->device_id();
 
-  LOG(INFO) << "Add input " << input_source << " to " << input_group->name();
+  LOG(INFO) << "Add input " << input_source << " to " << input_group->name()
+            << " @ " << input_group->GetInputSampleRate()
+            << " samples per second.";
 
-  auto input = std::make_unique<MixerInput>(
-      input_source, output_samples_per_second_, frames_per_write_,
-      GetTotalRenderingDelay(input_group), input_group);
+  auto input = std::make_unique<MixerInput>(input_source, input_group);
   if (state_ != kStateRunning) {
     // Mixer error occurred, signal error.
     MixerInput* input_ptr = input.get();

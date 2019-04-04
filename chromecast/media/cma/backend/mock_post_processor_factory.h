@@ -38,12 +38,12 @@ class MockPostProcessor : public PostProcessingPipeline {
     sample_rate_ = sample_rate;
     return true;
   }
-  int GetInputSampleRate() override { return sample_rate_; }
+  int GetInputSampleRate() const override { return sample_rate_; }
   bool IsRinging() override { return ringing_; }
   int delay() { return rendering_delay_frames_; }
   std::string name() const { return name_; }
   float* GetOutputBuffer() override { return output_buffer_; }
-  int NumOutputChannels() override { return num_output_channels_; }
+  int NumOutputChannels() const override { return num_output_channels_; }
 
   MOCK_METHOD2(SetPostProcessorConfig,
                void(const std::string& name, const std::string& config));

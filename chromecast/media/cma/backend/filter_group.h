@@ -50,8 +50,16 @@ class FilterGroup {
   // than one FilterGroup will result in incorrect behavior.
   void AddMixedInput(FilterGroup* input);
 
-  // Sets the sample rate of the post-processors.
-  void Initialize(int output_samples_per_second);
+  // Recursively sets the sample rate of the post-processors and FilterGroups.
+  // This should only be called externally on the output node of the FilterGroup
+  // tree.
+  // The output rate of this group will be |output_samples_per_second|.
+  // The output block size, i.e. the number of frames written in each call to
+  // MixAndFilter() of this group will be |output_frames_per_write|.
+  // Groups that feed this group may receive different values due to resampling.
+  // After calling Initialize(), input_samples_per_second() and
+  // input_frames_per_write() may be called to determine the input rate/size.
+  void Initialize(int output_samples_per_second, int output_frames_per_write);
 
   // Adds/removes |input| from |active_inputs_|.
   void AddInput(MixerInput* input);
@@ -85,7 +93,10 @@ class FilterGroup {
   std::string name() const { return name_; }
 
   // Returns number of audio output channels from the filter group.
-  int GetOutputChannelCount();
+  int GetOutputChannelCount() const;
+
+  // Returns the expected sample rate for inputs to this group.
+  int GetInputSampleRate() const { return input_samples_per_second_; }
 
   // Sends configuration string |config| to all post processors with the given
   // |name|.
@@ -101,19 +112,28 @@ class FilterGroup {
   // Recursively print the layout of the pipeline.
   void PrintTopology() const;
 
+  // Add |stream_type| to the list of streams this processor handles.
+  void AddStreamType(const std::string& stream_type);
+
+  int input_frames_per_write() const { return input_frames_per_write_; }
+  int input_samples_per_second() const { return input_samples_per_second_; }
+
  private:
-  // Resizes temp_ and mixed_ if they are too small to hold |num_frames| frames.
-  // Returns |true| if |num_frames| is larger than all previous |num_frames|.
-  bool ResizeBuffersIfNecessary(int num_frames);
+  // Resizes temp_buffers_ and mixed_.
+  void ResizeBuffers();
   void AddTempBuffer(int num_channels, int num_frames);
 
   const int num_channels_;
   const std::string name_;
   std::vector<FilterGroup*> mixed_inputs_;
+  std::vector<std::string> stream_types_;
   base::flat_set<MixerInput*> active_inputs_;
 
   int playout_channel_selection_ = kChannelAll;
   int output_samples_per_second_ = 0;
+  int input_samples_per_second_ = 0;
+  int output_frames_per_write_ = 0;
+  int input_frames_per_write_ = 0;
   int frames_zeroed_ = 0;
   float last_volume_ = 0.0;
   double delay_seconds_ = 0;

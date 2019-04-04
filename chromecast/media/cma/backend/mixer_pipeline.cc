@@ -126,8 +126,6 @@ bool MixerPipeline::BuildPipeline(PostProcessingPipelineParser* config,
         loopback_output_group_;
   }
 
-  output_group_->PrintTopology();
-
   return true;
 }
 
@@ -155,14 +153,17 @@ bool MixerPipeline::SetGroupDeviceIds(const base::Value* ids,
       return false;
     }
     stream_sinks_[stream_type] = filter_group;
+    filter_group->AddStreamType(stream_type);
   }
   return true;
 }
 
-void MixerPipeline::Initialize(int output_samples_per_second_) {
-  for (auto&& filter_group : filter_groups_) {
-    filter_group->Initialize(output_samples_per_second_);
-  }
+void MixerPipeline::Initialize(int output_samples_per_second,
+                               int frames_per_write) {
+  // The output group will recursively set the sample rate of all other
+  // FilterGroups.
+  output_group_->Initialize(output_samples_per_second, frames_per_write);
+  output_group_->PrintTopology();
 }
 
 FilterGroup* MixerPipeline::GetInputGroup(const std::string& device_id) {
