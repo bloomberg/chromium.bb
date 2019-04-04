@@ -235,6 +235,13 @@ void JSChecker::TapOnPath(
   }
 }
 
+void JSChecker::SelectRadioPath(
+    std::initializer_list<base::StringPiece> element_ids) {
+  ExpectVisiblePath(element_ids);
+  // Polymer radio buttons only support click events.
+  Evaluate(GetOobeElementPath(element_ids) + ".fire('click')");
+}
+
 void JSChecker::TapOn(const std::string& element_id) {
   TapOnPath({element_id});
 }

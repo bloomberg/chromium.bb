@@ -111,6 +111,9 @@ class JSChecker {
   void TapOnPath(std::initializer_list<base::StringPiece> element_ids);
   void TapOn(const std::string& element_id);
 
+  // Select particular radio button.
+  void SelectRadioPath(std::initializer_list<base::StringPiece> element_ids);
+
   // Types text into indicated input field. There is no single-element version
   // of method to avoid confusion.
   void TypeIntoPath(const std::string& value,
