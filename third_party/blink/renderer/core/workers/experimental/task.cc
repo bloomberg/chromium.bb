@@ -342,7 +342,12 @@ void TaskBase::RunTaskOnWorkerThread() {
   v8::MaybeLocal<v8::Value> ret =
       script_function->Call(context, receiver, params.size(), params.data());
   if (block.HasCaught()) {
-    TaskCompletedOnWorkerThread(block.Exception()->ToString(isolate),
+    // ToString can fail in some cases. For example, if the executed javascript
+    // creates an exception that overrides toString and the toString method
+    // throws an exception. We currently don't handle such cases here.
+    TaskCompletedOnWorkerThread(block.Exception()
+                                    ->ToString(isolate->GetCurrentContext())
+                                    .ToLocalChecked(),
                                 State::kFailed);
     return;
   }
