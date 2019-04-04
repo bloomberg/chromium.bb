@@ -938,15 +938,15 @@ TEST(ValuesTest, FindPath) {
   root.SetKey("foo", std::move(foo));
 
   // No key (stupid but well-defined and takes work to prevent).
-  Value* found = root.FindPath(std::vector<StringPiece>{});
+  Value* found = root.FindPath("");
   EXPECT_EQ(&root, found);
 
   // Double key, second not found.
-  found = root.FindPath(std::vector<StringPiece>{"foo", "notfound"});
+  found = root.FindPath("foo.notfound");
   EXPECT_FALSE(found);
 
   // Double key, found.
-  found = root.FindPath(std::vector<StringPiece>{"foo", "bar"});
+  found = root.FindPath("foo.bar");
   EXPECT_TRUE(found);
   EXPECT_TRUE(found->is_int());
   EXPECT_EQ(123, found->GetInt());
@@ -955,29 +955,111 @@ TEST(ValuesTest, FindPath) {
 TEST(ValuesTest, SetPath) {
   Value root(Value::Type::DICTIONARY);
 
-  Value* inserted = root.SetPath({"one", "two"}, Value(123));
-  Value* found = root.FindPathOfType({"one", "two"}, Value::Type::INTEGER);
+  Value* inserted = root.SetPath("one.two", Value(123));
+  Value* found = root.FindPathOfType("one.two", Value::Type::INTEGER);
   ASSERT_TRUE(found);
   EXPECT_EQ(inserted, found);
   EXPECT_EQ(123, found->GetInt());
 
-  inserted = root.SetPath(std::vector<StringPiece>{"foo", "bar"}, Value(123));
-  found = root.FindPathOfType({"foo", "bar"}, Value::Type::INTEGER);
+  inserted = root.SetPath("foo.bar", Value(123));
+  found = root.FindPathOfType("foo.bar", Value::Type::INTEGER);
   ASSERT_TRUE(found);
   EXPECT_EQ(inserted, found);
   EXPECT_EQ(123, found->GetInt());
 
   // Overwrite with a different value.
-  root.SetPath({"foo", "bar"}, Value("hello"));
-  found = root.FindPathOfType(std::vector<StringPiece>{"foo", "bar"},
-                              Value::Type::STRING);
+  root.SetPath("foo.bar", Value("hello"));
+  found = root.FindPathOfType("foo.bar", Value::Type::STRING);
   ASSERT_TRUE(found);
   EXPECT_EQ("hello", found->GetString());
 
   // Can't change existing non-dictionary keys to dictionaries.
-  found =
-      root.SetPath(std::vector<StringPiece>{"foo", "bar", "baz"}, Value(123));
+  found = root.SetPath("foo.bar.baz", Value(123));
   EXPECT_FALSE(found);
+}
+
+TEST(ValuesTest, SetBoolPath) {
+  DictionaryValue root;
+  Value* inserted = root.SetBoolPath("foo.bar", true);
+  Value* found = root.FindPath("foo.bar");
+  ASSERT_TRUE(found);
+  EXPECT_EQ(inserted, found);
+  ASSERT_TRUE(found->is_bool());
+  EXPECT_TRUE(found->GetBool());
+
+  // Overwrite with a different value.
+  root.SetBoolPath("foo.bar", false);
+  found = root.FindPath("foo.bar");
+  ASSERT_TRUE(found);
+  ASSERT_TRUE(found->is_bool());
+  EXPECT_FALSE(found->GetBool());
+
+  // Can't change existing non-dictionary keys.
+  ASSERT_FALSE(root.SetBoolPath("foo.bar.zoo", true));
+}
+
+TEST(ValuesTest, SetIntPath) {
+  DictionaryValue root;
+  Value* inserted = root.SetIntPath("foo.bar", 123);
+  Value* found = root.FindPath("foo.bar");
+  ASSERT_TRUE(found);
+  EXPECT_EQ(inserted, found);
+  ASSERT_TRUE(found->is_int());
+  EXPECT_EQ(123, found->GetInt());
+
+  // Overwrite with a different value.
+  root.SetIntPath("foo.bar", 234);
+  found = root.FindPath("foo.bar");
+  ASSERT_TRUE(found);
+  ASSERT_TRUE(found->is_int());
+  EXPECT_EQ(234, found->GetInt());
+
+  // Can't change existing non-dictionary keys.
+  ASSERT_FALSE(root.SetIntPath("foo.bar.zoo", 567));
+}
+
+TEST(ValuesTest, SetDoublePath) {
+  DictionaryValue root;
+  Value* inserted = root.SetDoublePath("foo.bar", 1.23);
+  Value* found = root.FindPath("foo.bar");
+  ASSERT_TRUE(found);
+  EXPECT_EQ(inserted, found);
+  ASSERT_TRUE(found->is_double());
+  EXPECT_EQ(1.23, found->GetDouble());
+
+  // Overwrite with a different value.
+  root.SetDoublePath("foo.bar", 2.34);
+  found = root.FindPath("foo.bar");
+  ASSERT_TRUE(found);
+  ASSERT_TRUE(found->is_double());
+  EXPECT_EQ(2.34, found->GetDouble());
+
+  // Can't change existing non-dictionary keys.
+  ASSERT_FALSE(root.SetDoublePath("foo.bar.zoo", 5.67));
+}
+
+TEST(ValuesTest, SetStringPath) {
+  DictionaryValue root;
+  Value* inserted = root.SetStringPath("foo.bar", "hello world");
+  Value* found = root.FindPath("foo.bar");
+  ASSERT_TRUE(found);
+  EXPECT_EQ(inserted, found);
+  ASSERT_TRUE(found->is_string());
+  EXPECT_EQ("hello world", found->GetString());
+
+  // Overwrite with a different value.
+  root.SetStringPath("foo.bar", "bonjour monde");
+  found = root.FindPath("foo.bar");
+  ASSERT_TRUE(found);
+  ASSERT_TRUE(found->is_string());
+  EXPECT_EQ("bonjour monde", found->GetString());
+
+  ASSERT_TRUE(root.SetStringPath("foo.bar", StringPiece("rah rah")));
+  ASSERT_TRUE(root.SetStringPath("foo.bar", std::string("temp string")));
+  ASSERT_TRUE(root.SetStringPath("foo.bar", UTF8ToUTF16("temp string")));
+
+  // Can't change existing non-dictionary keys.
+  ASSERT_FALSE(root.SetStringPath("foo.bar.zoo", "ola mundo"));
 }
 
 TEST(ValuesTest, RemoveKey) {
@@ -996,71 +1078,71 @@ TEST(ValuesTest, RemoveKey) {
 
 TEST(ValuesTest, RemovePath) {
   Value root(Value::Type::DICTIONARY);
-  root.SetPath({"one", "two", "three"}, Value(123));
+  root.SetPath("one.two.three", Value(123));
 
   // Removal of missing key should fail.
-  EXPECT_FALSE(root.RemovePath({"one", "two", "four"}));
+  EXPECT_FALSE(root.RemovePath("one.two.four"));
 
   // Removal of existing key should succeed.
-  EXPECT_TRUE(root.RemovePath({"one", "two", "three"}));
+  EXPECT_TRUE(root.RemovePath("one.two.three"));
 
   // Second removal of previously existing key should fail.
-  EXPECT_FALSE(root.RemovePath({"one", "two", "three"}));
+  EXPECT_FALSE(root.RemovePath("one.two.three"));
 
   // Intermediate empty dictionaries should be cleared.
   EXPECT_FALSE(root.FindKey("one"));
 
-  root.SetPath({"one", "two", "three"}, Value(123));
-  root.SetPath({"one", "two", "four"}, Value(124));
+  root.SetPath("one.two.three", Value(123));
+  root.SetPath("one.two.four", Value(124));
 
-  EXPECT_TRUE(root.RemovePath(std::vector<StringPiece>{"one", "two", "three"}));
+  EXPECT_TRUE(root.RemovePath("one.two.three"));
   // Intermediate non-empty dictionaries should be kept.
   EXPECT_TRUE(root.FindKey("one"));
-  EXPECT_TRUE(root.FindPath({"one", "two"}));
-  EXPECT_TRUE(root.FindPath({"one", "two", "four"}));
+  EXPECT_TRUE(root.FindPath("one.two"));
+  EXPECT_TRUE(root.FindPath("one.two.four"));
 }
 
 TEST(ValuesTest, Basic) {
   // Test basic dictionary getting/setting
   DictionaryValue settings;
-  std::string homepage = "http://google.com";
-  ASSERT_FALSE(settings.GetString("global.homepage", &homepage));
-  ASSERT_EQ(std::string("http://google.com"), homepage);
+  ASSERT_FALSE(settings.FindPath("global.homepage"));
 
-  ASSERT_FALSE(settings.Get("global", nullptr));
-  settings.SetBoolKey("global", true);
-  ASSERT_TRUE(settings.Get("global", nullptr));
-  settings.SetString("global.homepage", "http://scurvy.com");
-  ASSERT_TRUE(settings.Get("global", nullptr));
-  homepage = "http://google.com";
-  ASSERT_TRUE(settings.GetString("global.homepage", &homepage));
-  ASSERT_EQ(std::string("http://scurvy.com"), homepage);
+  ASSERT_FALSE(settings.FindKey("global"));
+  settings.SetKey("global", Value(true));
+  ASSERT_TRUE(settings.FindKey("global"));
+  settings.RemoveKey("global");
+  settings.SetPath("global.homepage", Value("http://scurvy.com"));
+  ASSERT_TRUE(settings.FindKey("global"));
+  const std::string* homepage = settings.FindStringPath("global.homepage");
+  ASSERT_TRUE(homepage);
+  ASSERT_EQ(std::string("http://scurvy.com"), *homepage);
 
   // Test storing a dictionary in a list.
-  ListValue* toolbar_bookmarks;
-  ASSERT_FALSE(
-    settings.GetList("global.toolbar.bookmarks", &toolbar_bookmarks));
+  ASSERT_FALSE(settings.FindPath("global.toolbar.bookmarks"));
 
-  std::unique_ptr<ListValue> new_toolbar_bookmarks(new ListValue);
-  settings.Set("global.toolbar.bookmarks", std::move(new_toolbar_bookmarks));
-  ASSERT_TRUE(settings.GetList("global.toolbar.bookmarks", &toolbar_bookmarks));
+  ListValue new_toolbar_bookmarks;
+  settings.SetPath("global.toolbar.bookmarks",
+                   std::move(new_toolbar_bookmarks));
+  Value* toolbar_bookmarks = settings.FindListPath("global.toolbar.bookmarks");
+  ASSERT_TRUE(toolbar_bookmarks);
 
-  std::unique_ptr<DictionaryValue> new_bookmark(new DictionaryValue);
-  new_bookmark->SetStringKey("name", "Froogle");
-  new_bookmark->SetStringKey("url", "http://froogle.com");
-  toolbar_bookmarks->Append(std::move(new_bookmark));
+  DictionaryValue new_bookmark;
+  new_bookmark.SetKey("name", Value("Froogle"));
+  new_bookmark.SetKey("url", Value("http://froogle.com"));
+  toolbar_bookmarks->GetList().push_back(std::move(new_bookmark));
 
-  ListValue* bookmark_list;
-  ASSERT_TRUE(settings.GetList("global.toolbar.bookmarks", &bookmark_list));
-  DictionaryValue* bookmark;
-  ASSERT_EQ(1U, bookmark_list->GetSize());
-  ASSERT_TRUE(bookmark_list->GetDictionary(0, &bookmark));
-  std::string bookmark_name = "Unnamed";
-  ASSERT_TRUE(bookmark->GetString("name", &bookmark_name));
-  ASSERT_EQ(std::string("Froogle"), bookmark_name);
-  std::string bookmark_url;
-  ASSERT_TRUE(bookmark->GetString("url", &bookmark_url));
-  ASSERT_EQ(std::string("http://froogle.com"), bookmark_url);
+  Value* bookmark_list = settings.FindPath("global.toolbar.bookmarks");
+  ASSERT_TRUE(bookmark_list);
+  ASSERT_EQ(1U, bookmark_list->GetList().size());
+  Value* bookmark = &bookmark_list->GetList()[0];
+  ASSERT_TRUE(bookmark);
+  ASSERT_TRUE(bookmark->is_dict());
+  const std::string* bookmark_name = bookmark->FindStringKey("name");
+  ASSERT_TRUE(bookmark_name);
+  ASSERT_EQ(std::string("Froogle"), *bookmark_name);
+  const std::string* bookmark_url = bookmark->FindStringKey("url");
+  ASSERT_TRUE(bookmark_url);
+  ASSERT_EQ(std::string("http://froogle.com"), *bookmark_url);
 }
 
 TEST(ValuesTest, List) {

@@ -272,9 +272,19 @@ class BASE_EXPORT Value {
   // will actually be into another Value, so it can't be compared to iterators
   // from this one (in particular, the DictItems().end() iterator).
   //
+  // This version takes a StringPiece for the path, using dots as separators.
   // Example:
-  //   auto* found = FindPath({"foo", "bar"});
-  //
+  //    auto* found = FindPath("foo.bar");
+  Value* FindPath(StringPiece path);
+  const Value* FindPath(StringPiece path) const;
+
+  // There are also deprecated versions that take the path parameter
+  // as either a std::initializer_list<StringPiece> or a
+  // span<const StringPiece>. The latter is useful to use a
+  // std::vector<std::string> as a parameter but creates huge dynamic
+  // allocations and should be avoided! Note: If there is only one component in
+  // the path, use FindKey() instead.
+  // Example:
   //   std::vector<StringPiece> components = ...
   //   auto* found = FindPath(components);
   //
@@ -286,9 +296,27 @@ class BASE_EXPORT Value {
 
   // Like FindPath() but will only return the value if the leaf Value type
   // matches the given type. Will return nullptr otherwise.
+  // Note: Prefer Find<Type>Path() for simple values.
   //
   // Note: If there is only one component in the path, use FindKeyOfType()
-  // instead.
+  // instead for slightly better performance.
+  Value* FindPathOfType(StringPiece path, Type type);
+  const Value* FindPathOfType(StringPiece path, Type type) const;
+
+  // Convenience accessors used when the expected type of a value is known.
+  // Similar to Find<Type>Key() but accepts paths instead of keys.
+  base::Optional<bool> FindBoolPath(StringPiece path) const;
+  base::Optional<int> FindIntPath(StringPiece path) const;
+  base::Optional<double> FindDoublePath(StringPiece path) const;
+  const std::string* FindStringPath(StringPiece path) const;
+  const BlobStorage* FindBlobPath(StringPiece path) const;
+  Value* FindDictPath(StringPiece path);
+  const Value* FindDictPath(StringPiece path) const;
+  Value* FindListPath(StringPiece path);
+  const Value* FindListPath(StringPiece path) const;
+
+  // The following forms are deprecated too, use the ones that take the path
+  // as a single StringPiece instead.
   Value* FindPathOfType(std::initializer_list<StringPiece> path, Type type);
   Value* FindPathOfType(span<const StringPiece> path, Type type);
   const Value* FindPathOfType(std::initializer_list<StringPiece> path,
@@ -305,12 +333,23 @@ class BASE_EXPORT Value {
   // it doesn't.
   //
   // Example:
-  //   value.SetPath({"foo", "bar"}, std::move(myvalue));
-  //
-  //   std::vector<StringPiece> components = ...
-  //   value.SetPath(components, std::move(myvalue));
+  //   value.SetPath("foo.bar", std::move(myvalue));
   //
   // Note: If there is only one component in the path, use SetKey() instead.
+  // Note: Using Set<Type>Path() might be more convenient and efficient.
+  Value* SetPath(StringPiece path, Value&& value);
+
+  // These setters are more convenient and efficient than the corresponding
+  // SetPath(...) call.
+  Value* SetBoolPath(StringPiece path, bool value);
+  Value* SetIntPath(StringPiece path, int value);
+  Value* SetDoublePath(StringPiece path, double value);
+  Value* SetStringPath(StringPiece path, StringPiece value);
+  Value* SetStringPath(StringPiece path, const char* value);
+  Value* SetStringPath(StringPiece path, std::string&& value);
+  Value* SetStringPath(StringPiece path, StringPiece16 value);
+
+  // Deprecated: use the ones that take a StringPiece path parameter instead.
   Value* SetPath(std::initializer_list<StringPiece> path, Value&& value);
   Value* SetPath(span<const StringPiece> path, Value&& value);
 
@@ -322,12 +361,15 @@ class BASE_EXPORT Value {
   // path removal, they will be removed as well.
   //
   // Example:
-  //   bool success = value.RemovePath({"foo", "bar"});
+  //   bool success = value.RemovePath("foo.bar");
   //
   //   std::vector<StringPiece> components = ...
   //   bool success = value.RemovePath(components);
   //
   // Note: If there is only one component in the path, use RemoveKey() instead.
+  bool RemovePath(StringPiece path);
+
+  // Deprecated versions
   bool RemovePath(std::initializer_list<StringPiece> path);
   bool RemovePath(span<const StringPiece> path);
 
@@ -439,6 +481,7 @@ class BASE_EXPORT Value {
   // NOTE: Using a movable reference here is done for performance (it avoids
   // creating + moving + destroying a temporary unique ptr).
   Value* SetKeyInternal(StringPiece key, std::unique_ptr<Value>&& val_ptr);
+  Value* SetPathInternal(StringPiece path, std::unique_ptr<Value>&& value_ptr);
 
   DISALLOW_COPY_AND_ASSIGN(Value);
 };
@@ -484,20 +527,20 @@ class BASE_EXPORT DictionaryValue : public Value {
 
   // Convenience forms of Set().  These methods will replace any existing
   // value at that path, even if it has a different type.
-  // DEPRECATED, use Value::SetPath(path, Value(bool)) instead.
+  // DEPRECATED, use Value::SetBoolKey() or Value::SetBoolPath().
   Value* SetBoolean(StringPiece path, bool in_value);
-  // DEPRECATED, use Value::SetPath(path, Value(int)) instead.
+  // DEPRECATED, use Value::SetIntPath().
   Value* SetInteger(StringPiece path, int in_value);
-  // DEPRECATED, use Value::SetPath(path, Value(double)) instead.
+  // DEPRECATED, use Value::SetDoublePath().
   Value* SetDouble(StringPiece path, double in_value);
-  // DEPRECATED, use Value::SetPath(path, Value(StringPiece)) instead.
+  // DEPRECATED, use Value::SetStringPath().
   Value* SetString(StringPiece path, StringPiece in_value);
-  // DEPRECATED, use Value::SetPath(path, Value(const string& 16)) instead.
+  // DEPRECATED, use Value::SetStringPath().
   Value* SetString(StringPiece path, const string16& in_value);
-  // DEPRECATED, use Value::SetPath(path, Value(Type::DICTIONARY)) instead.
+  // DEPRECATED, use Value::SetPath() or Value::SetDictPath()
   DictionaryValue* SetDictionary(StringPiece path,
                                  std::unique_ptr<DictionaryValue> in_value);
-  // DEPRECATED, use Value::SetPath(path, Value(Type::LIST)) instead.
+  // DEPRECATED, use Value::SetPath() or Value::SetListPath()
   ListValue* SetList(StringPiece path, std::unique_ptr<ListValue> in_value);
 
   // Like Set(), but without special treatment of '.'.  This allows e.g. URLs to
@@ -523,23 +566,23 @@ class BASE_EXPORT DictionaryValue : public Value {
   // and the return value will be true if the path is valid and the value at
   // the end of the path can be returned in the form specified.
   // |out_value| is optional and will only be set if non-NULL.
-  // DEPRECATED, use Value::FindPath(path) and Value::GetBool() instead.
+  // DEPRECATED, use Value::FindBoolPath(path) instead.
   bool GetBoolean(StringPiece path, bool* out_value) const;
-  // DEPRECATED, use Value::FindPath(path) and Value::GetInt() instead.
+  // DEPRECATED, use Value::FindIntPath(path) isntead.
   bool GetInteger(StringPiece path, int* out_value) const;
   // Values of both type Type::INTEGER and Type::DOUBLE can be obtained as
   // doubles.
-  // DEPRECATED, use Value::FindPath(path) and Value::GetDouble() instead.
+  // DEPRECATED, use Value::FindDoublePath(path).
   bool GetDouble(StringPiece path, double* out_value) const;
-  // DEPRECATED, use Value::FindPath(path) and Value::GetString() instead.
+  // DEPRECATED, use Value::FindStringPath(path) instead.
   bool GetString(StringPiece path, std::string* out_value) const;
-  // DEPRECATED, use Value::FindPath(path) and Value::GetString() instead.
+  // DEPRECATED, use Value::FindStringPath(path) instead.
   bool GetString(StringPiece path, string16* out_value) const;
-  // DEPRECATED, use Value::FindPath(path) and Value::GetString() instead.
+  // DEPRECATED, use Value::FindString(path) and IsAsciiString() instead.
   bool GetStringASCII(StringPiece path, std::string* out_value) const;
-  // DEPRECATED, use Value::FindPath(path) and Value::GetBlob() instead.
+  // DEPRECATED, use Value::FindBlobPath(path) instead.
   bool GetBinary(StringPiece path, const Value** out_value) const;
-  // DEPRECATED, use Value::FindPath(path) and Value::GetBlob() instead.
+  // DEPRECATED, use Value::FindBlobPath(path) instead.
   bool GetBinary(StringPiece path, Value** out_value);
   // DEPRECATED, use Value::FindPath(path) and Value's Dictionary API instead.
   bool GetDictionary(StringPiece path,
@@ -569,17 +612,17 @@ class BASE_EXPORT DictionaryValue : public Value {
   // DEPRECATED, use Value::FindStringKey(key) and UTF8ToUTF16() instead.
   bool GetStringWithoutPathExpansion(StringPiece key,
                                      string16* out_value) const;
-  // DEPRECATED, use Value::FindKey(key) and Value's Dictionary API instead.
+  // DEPRECATED, use Value::FindDictKey(key) instead.
   bool GetDictionaryWithoutPathExpansion(
       StringPiece key,
       const DictionaryValue** out_value) const;
-  // DEPRECATED, use Value::FindKey(key) and Value's Dictionary API instead.
+  // DEPRECATED, use Value::FindDictKey(key) instead.
   bool GetDictionaryWithoutPathExpansion(StringPiece key,
                                          DictionaryValue** out_value);
-  // DEPRECATED, use Value::FindKey(key) and Value::GetList() instead.
+  // DEPRECATED, use Value::FindListKey(key) instead.
   bool GetListWithoutPathExpansion(StringPiece key,
                                    const ListValue** out_value) const;
-  // DEPRECATED, use Value::FindKey(key) and Value::GetList() instead.
+  // DEPRECATED, use Value::FindListKey(key) instead.
   bool GetListWithoutPathExpansion(StringPiece key, ListValue** out_value);
 
   // Removes the Value with the specified path from this dictionary (or one
