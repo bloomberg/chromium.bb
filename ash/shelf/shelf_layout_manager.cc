@@ -1375,8 +1375,8 @@ bool ShelfLayoutManager::IsShelfHiddenForFullscreen() const {
     return false;
   }
 
-  const aura::Window* fullscreen_window =
-      wm::GetWindowForFullscreenMode(shelf_widget_->GetNativeWindow());
+  const aura::Window* fullscreen_window = wm::GetWindowForFullscreenModeInRoot(
+      shelf_widget_->GetNativeWindow()->GetRootWindow());
   return fullscreen_window &&
          wm::GetWindowState(fullscreen_window)->GetHideShelfWhenFullscreen();
 }

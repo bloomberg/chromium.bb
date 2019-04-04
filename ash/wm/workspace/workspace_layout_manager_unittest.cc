@@ -844,7 +844,8 @@ TEST_F(WorkspaceLayoutManagerSoloTest, FullscreenSuspendsAlwaysOnTop) {
       always_on_top_window1->GetProperty(aura::client::kAlwaysOnTopKey));
   EXPECT_FALSE(
       always_on_top_window2->GetProperty(aura::client::kAlwaysOnTopKey));
-  EXPECT_NE(nullptr, wm::GetWindowForFullscreenMode(fullscreen_window.get()));
+  EXPECT_NE(nullptr,
+            wm::GetWindowForFullscreenModeForContext(fullscreen_window.get()));
 
   // Adding a new always-on-top window is not affected by fullscreen.
   std::unique_ptr<aura::Window> always_on_top_window3(
@@ -862,7 +863,8 @@ TEST_F(WorkspaceLayoutManagerSoloTest, FullscreenSuspendsAlwaysOnTop) {
       always_on_top_window2->GetProperty(aura::client::kAlwaysOnTopKey));
   EXPECT_TRUE(
       always_on_top_window3->GetProperty(aura::client::kAlwaysOnTopKey));
-  EXPECT_EQ(nullptr, wm::GetWindowForFullscreenMode(fullscreen_window.get()));
+  EXPECT_EQ(nullptr,
+            wm::GetWindowForFullscreenModeForContext(fullscreen_window.get()));
 }
 
 TEST_F(WorkspaceLayoutManagerSoloTest,
@@ -885,13 +887,15 @@ TEST_F(WorkspaceLayoutManagerSoloTest,
   fullscreen_window->SetProperty(aura::client::kShowStateKey,
                                  ui::SHOW_STATE_FULLSCREEN);
   EXPECT_TRUE(pip_window->GetProperty(aura::client::kAlwaysOnTopKey));
-  EXPECT_NE(nullptr, wm::GetWindowForFullscreenMode(fullscreen_window.get()));
+  EXPECT_NE(nullptr,
+            wm::GetWindowForFullscreenModeForContext(fullscreen_window.get()));
 
   // Making fullscreen window normal does not affect PIP.
   fullscreen_window->SetProperty(aura::client::kShowStateKey,
                                  ui::SHOW_STATE_NORMAL);
   EXPECT_TRUE(pip_window->GetProperty(aura::client::kAlwaysOnTopKey));
-  EXPECT_EQ(nullptr, wm::GetWindowForFullscreenMode(fullscreen_window.get()));
+  EXPECT_EQ(nullptr,
+            wm::GetWindowForFullscreenModeForContext(fullscreen_window.get()));
 }
 
 // Similary, pinned window causes always_on_top_ windows to stack below.
