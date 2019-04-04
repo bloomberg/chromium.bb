@@ -158,6 +158,10 @@ class GPU_IPC_SERVICE_EXPORT GpuChannel : public IPC::Listener,
   const CommandBufferStub* GetOneStub() const;
 #endif
 
+  SharedImageStub* shared_image_stub() const {
+    return shared_image_stub_.get();
+  }
+
  private:
   // Takes ownership of the renderer process handle.
   GpuChannel(GpuChannelManager* gpu_channel_manager,

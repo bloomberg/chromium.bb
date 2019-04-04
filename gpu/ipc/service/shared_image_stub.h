@@ -42,6 +42,7 @@ class SharedImageStub : public IPC::Listener,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
   SequenceId sequence() const { return sequence_; }
+  SharedImageFactory* factory() const { return factory_.get(); }
 
  private:
   SharedImageStub(GpuChannel* channel, int32_t route_id);
