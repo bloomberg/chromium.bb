@@ -430,7 +430,7 @@ class ManualFillingMediator extends EmptyTabObserver
      * @return The currently visible {@link Tab}, if any.
      */
     private @Nullable Tab getActiveBrowserTab() {
-        return mActivity.getActivityTabProvider().getActivityTab();
+        return mActivity.getActivityTabProvider().get();
     }
 
     /**

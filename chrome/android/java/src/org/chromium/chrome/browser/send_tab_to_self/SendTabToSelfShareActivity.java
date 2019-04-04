@@ -18,7 +18,7 @@ import org.chromium.ui.widget.Toast;
 public class SendTabToSelfShareActivity extends ShareActivity {
     @Override
     protected void handleShareAction(ChromeActivity triggeringActivity) {
-        Tab tab = triggeringActivity.getActivityTabProvider().getActivityTab();
+        Tab tab = triggeringActivity.getActivityTabProvider().get();
 
         NavigationHistory history =
                 tab.getWebContents().getNavigationController().getNavigationHistory();

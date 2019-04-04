@@ -89,7 +89,7 @@ public class SendTabToSelfShareActivityTest {
     public void testHandleShareAction() {
         // Setup the mocked object chain to get to the profile.
         when(mChromeActivity.getActivityTabProvider()).thenReturn(mActivityTabProvider);
-        when(mActivityTabProvider.getActivityTab()).thenReturn(mTab);
+        when(mActivityTabProvider.get()).thenReturn(mTab);
         when(mTab.getProfile()).thenReturn(mProfile);
 
         // Setup the mocked object chain to get to the url, title and timestamp.

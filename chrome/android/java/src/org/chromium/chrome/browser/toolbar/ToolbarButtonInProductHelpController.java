@@ -69,7 +69,7 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
 
             @Override
             public void onPageLoadStarted(Tab tab, String url) {
-                if (tab != activity.getActivityTabProvider().getActivityTab()) return;
+                if (tab != activity.getActivityTabProvider().get()) return;
                 mDataSavedOnStartPageLoad = DataReductionProxySettings.getInstance()
                                                     .getContentLengthSavedInHistorySummary();
                 mPageLoadTab = tab;
@@ -84,8 +84,7 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
                 Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
                 if (dataSaved > 0L) tracker.notifyEvent(EventConstants.DATA_SAVED_ON_PAGE_LOAD);
                 if (tab.isPreview()) tracker.notifyEvent(EventConstants.PREVIEWS_PAGE_LOADED);
-                if (tab == activity.getActivityTabProvider().getActivityTab()
-                        && tab.isUserInteractable()) {
+                if (tab == activity.getActivityTabProvider().get() && tab.isUserInteractable()) {
                     maybeShowDataSaverDetail(activity);
                     maybeShowDataSaverMilestonePromo(activity);
                     maybeShowPreviewVerboseStatus(activity);
@@ -137,7 +136,7 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
 
     // Attempts to show an IPH text bubble for page in preview mode.
     private static void maybeShowPreviewVerboseStatus(ChromeActivity activity) {
-        if (!activity.getActivityTabProvider().getActivityTab().isPreview()) return;
+        if (!activity.getActivityTabProvider().get().isPreview()) return;
 
         final View anchorView = activity.getToolbarManager().getSecurityIconView();
         if (anchorView == null) return;

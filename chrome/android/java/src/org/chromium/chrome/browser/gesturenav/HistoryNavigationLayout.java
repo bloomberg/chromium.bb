@@ -69,7 +69,7 @@ public class HistoryNavigationLayout extends FrameLayout {
         mSideSlideLayout.setEnabled(false);
         mSideSlideLayout.setOnNavigationListener((isForward) -> {
             if (mTabProvider == null) return;
-            Tab tab = mTabProvider.getActivityTab();
+            Tab tab = mTabProvider.get();
             if (isForward) {
                 tab.goForward();
             } else {
@@ -141,7 +141,7 @@ public class HistoryNavigationLayout extends FrameLayout {
 
     private boolean canNavigate(boolean forward) {
         if (mTabProvider == null) return false;
-        Tab tab = mTabProvider.getActivityTab();
+        Tab tab = mTabProvider.get();
         return forward ? tab.canGoForward() : tab.canGoBack();
     }
 

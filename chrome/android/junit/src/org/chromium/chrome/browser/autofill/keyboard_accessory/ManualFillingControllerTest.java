@@ -725,7 +725,7 @@ public class ManualFillingControllerTest {
         when(tab.getWebContents()).thenReturn(mLastMockWebContents);
         mCache.getStateFor(tab).getWebContentsObserverForTesting().wasShown();
         when(tab.getContentView()).thenReturn(mMockContentView);
-        when(mMockActivity.getActivityTabProvider().getActivityTab()).thenReturn(tab);
+        when(mMockActivity.getActivityTabProvider().get()).thenReturn(tab);
         when(mMockTabModelSelector.getCurrentTab()).thenReturn(tab);
         mediator.getTabModelObserverForTesting().didAddTab(tab, FROM_BROWSER_ACTIONS);
         mediator.getTabObserverForTesting().onShown(tab, FROM_NEW);

@@ -130,7 +130,7 @@ public class HomeButton extends ChromeImageButton
     private boolean isActiveTabNTP() {
         if (mActivityTabProvider == null) return false;
 
-        final Tab tab = mActivityTabProvider.getActivityTab();
+        final Tab tab = mActivityTabProvider.get();
         if (tab == null) return false;
 
         return NewTabPage.isNTPUrl(tab.getUrl());

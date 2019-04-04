@@ -51,7 +51,7 @@ public class ActivityTabProviderTest {
         public TestActivityTabTabObserver(ActivityTabProvider provider) {
             super(provider);
             mObserverMoveHelper = new CallbackHelper();
-            mObservedTab = provider.getActivityTab();
+            mObservedTab = provider.get();
         }
 
         @Override

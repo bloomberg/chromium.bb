@@ -213,7 +213,7 @@ public class EphemeralTabPanel extends OverlayPanel {
                 closePanel(StateChangeReason.TAB_PROMOTION, false);
                 mActivity.getCurrentTabCreator().createNewTab(
                         new LoadUrlParams(mUrl, PageTransition.LINK), TabLaunchType.FROM_LINK,
-                        mActivity.getActivityTabProvider().getActivityTab());
+                        mActivity.getActivityTabProvider().get());
             }
         }
     }
