@@ -56,7 +56,7 @@
 #include "shared/image-loader.h"
 #include "shared/timespec-util.h"
 #include "shared/file-util.h"
-#include "gl-renderer.h"
+#include "renderer-gl/gl-renderer.h"
 #include "weston-egl-ext.h"
 #include "pixman-renderer.h"
 #include "presentation-time-server-protocol.h"

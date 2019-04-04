@@ -55,7 +55,7 @@
 #include "weston-debug.h"
 #include "shared/helpers.h"
 #include "shared/timespec-util.h"
-#include "gl-renderer.h"
+#include "renderer-gl/gl-renderer.h"
 #include "weston-egl-ext.h"
 #include "pixman-renderer.h"
 #include "pixel-formats.h"
