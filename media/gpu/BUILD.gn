@@ -20,6 +20,17 @@ buildflag_header("buildflags") {
   ]
 }
 
+if (is_chromeos && use_v4lplugin) {
+  generate_stubs("libv4l2_stubs") {
+    extra_header = "v4l2/v4l2_stub_header.fragment"
+    sigs = [ "v4l2/v4l2.sig" ]
+    output_name = "v4l2/v4l2_stubs"
+    deps = [
+      "//base",
+    ]
+  }
+}
+
 component("gpu") {
   output_name = "media_gpu"
 
@@ -66,12 +77,17 @@ component("gpu") {
     "gpu_video_decode_accelerator_factory.h",
     "gpu_video_encode_accelerator_factory.cc",
     "gpu_video_encode_accelerator_factory.h",
+    "image_processor.cc",
+    "image_processor.h",
+    "image_processor_factory.cc",
+    "image_processor_factory.h",
+    "libyuv_image_processor.cc",
+    "libyuv_image_processor.h",
   ]
 
   public_deps = [
     ":buildflags",
     ":common",
-    ":image_processor",
     "//base",
     "//gpu",
     "//media",
@@ -171,8 +187,49 @@ component("gpu") {
     }
   }
 
+  if (use_v4lplugin) {
+    deps += [ ":libv4l2_stubs" ]
+  }
+
   if (use_v4l2_codec) {
-    public_deps += [ "//media/gpu/v4l2" ]
+    sources += [
+      "v4l2/generic_v4l2_device.cc",
+      "v4l2/generic_v4l2_device.h",
+      "v4l2/v4l2_decode_surface.cc",
+      "v4l2/v4l2_decode_surface.h",
+      "v4l2/v4l2_decode_surface_handler.h",
+      "v4l2/v4l2_device.cc",
+      "v4l2/v4l2_device.h",
+      "v4l2/v4l2_h264_accelerator.cc",
+      "v4l2/v4l2_h264_accelerator.h",
+      "v4l2/v4l2_image_processor.cc",
+      "v4l2/v4l2_image_processor.h",
+      "v4l2/v4l2_jpeg_encode_accelerator.cc",
+      "v4l2/v4l2_jpeg_encode_accelerator.h",
+      "v4l2/v4l2_mjpeg_decode_accelerator.cc",
+      "v4l2/v4l2_mjpeg_decode_accelerator.h",
+      "v4l2/v4l2_slice_video_decode_accelerator.cc",
+      "v4l2/v4l2_slice_video_decode_accelerator.h",
+      "v4l2/v4l2_video_decode_accelerator.cc",
+      "v4l2/v4l2_video_decode_accelerator.h",
+      "v4l2/v4l2_video_encode_accelerator.cc",
+      "v4l2/v4l2_video_encode_accelerator.h",
+      "v4l2/v4l2_vp8_accelerator.cc",
+      "v4l2/v4l2_vp8_accelerator.h",
+      "v4l2/v4l2_vp9_accelerator.cc",
+      "v4l2/v4l2_vp9_accelerator.h",
+    ]
+
+    libs = [
+      "EGL",
+      "GLESv2",
+    ]
+    if (current_cpu == "arm") {
+      sources += [
+        "v4l2/tegra_v4l2_device.cc",
+        "v4l2/tegra_v4l2_device.h",
+      ]
+    }
   }
 
   if (use_vaapi) {
@@ -286,45 +343,6 @@ source_set("common") {
     "//media",
     "//ui/gfx:buffer_types",
     "//ui/gfx:memory_buffer",
-    "//ui/gfx/geometry",
-  ]
-}
-
-source_set("image_processor") {
-  defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
-  sources = [
-    "image_processor_factory.cc",
-    "libyuv_image_processor.cc",
-    "libyuv_image_processor.h",
-  ]
-
-  public_deps = [
-    ":image_processor_common",
-  ]
-
-  deps = [
-    "//third_party/libyuv",
-    "//ui/gl",
-  ]
-
-  if (use_v4l2_codec) {
-    deps += [ "//media/gpu/v4l2" ]
-  }
-}
-
-source_set("image_processor_common") {
-  defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
-  sources = [
-    "image_processor.cc",
-    "image_processor.h",
-    "image_processor_factory.h",
-  ]
-
-  public_deps = [
-    ":buildflags",
-    ":common",
-    "//base",
-    "//media",
     "//ui/gfx/geometry",
   ]
 }
@@ -585,7 +603,7 @@ source_set("unit_tests") {
     deps += [ "//media/gpu/vaapi:unit_test" ]
   }
   if (use_v4l2_codec) {
-    deps += [ "//media/gpu/v4l2:unit_test" ]
+    sources += [ "v4l2/v4l2_device_unittest.cc" ]
   }
   if (use_v4l2_codec || use_vaapi) {
     sources += [ "vp8_decoder_unittest.cc" ]
