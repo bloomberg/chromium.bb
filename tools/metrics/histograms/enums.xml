@@ -28864,6 +28864,20 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="7" label="ARC"/>
 </enum>
 
+<enum name="InputMethodDecoderEvent">
+  <int value="3" label="WordCommitted"/>
+  <int value="4" label="SuggestionPickedManually"/>
+  <int value="5" label="TextDeleteBackspace"/>
+  <int value="6" label="WordDeleteBackspace"/>
+  <int value="7" label="RevertAutoCorrect"/>
+  <int value="11" label="WordAutoCorrection"/>
+  <int value="22" label="PredictionPicked"/>
+  <int value="25" label="WordDeleted"/>
+  <int value="26" label="WordEdited"/>
+  <int value="103" label="SpaceCommitted"/>
+  <int value="104" label="SpaceDeleted"/>
+</enum>
+
 <enum name="InputMethodID">
   <int value="109700" label="xkb:am:phonetic:arm">
     Armenian Phonetic keyboard
