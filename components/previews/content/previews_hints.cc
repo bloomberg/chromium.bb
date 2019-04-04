@@ -347,10 +347,11 @@ void PreviewsHints::ParseOptimizationFilters(
       }
       if (static_cast<int>(bloom_filter_proto.num_bits()) >
           previews::params::
-                  LitePageRedirectPreviewMaxServerBlacklistByteSize() /
+                  LitePageRedirectPreviewMaxServerBlacklistByteSize() *
               8) {
         DLOG(ERROR) << "Bloom filter data exceeds maximum size of "
-                    << previews::params::PreviewServerLoadshedMaxSeconds()
+                    << previews::params::
+                           LitePageRedirectPreviewMaxServerBlacklistByteSize()
                     << " bytes";
         RecordOptimizationFilterStatus(
             previews_type.value(),
