@@ -156,13 +156,6 @@ void FidoBleDevice::Transition() {
     case State::kInit:
       Connect();
       break;
-    case State::kConnected:
-      StartTimeout();
-      state_ = State::kBusy;
-      connection_->ReadControlPointLength(
-          base::BindOnce(&FidoBleDevice::OnReadControlPointLength,
-                         weak_factory_.GetWeakPtr()));
-      break;
     case State::kReady:
       if (!pending_frames_.empty()) {
         FidoBleFrame frame;
@@ -201,8 +194,16 @@ void FidoBleDevice::AddToPendingFrames(FidoBleDeviceCommand cmd,
 
 void FidoBleDevice::OnConnected(bool success) {
   StopTimeout();
-  state_ = success ? State::kConnected : State::kDeviceError;
-  Transition();
+  if (!success) {
+    state_ = State::kDeviceError;
+    Transition();
+    return;
+  }
+
+  state_ = State::kBusy;
+  StartTimeout();
+  connection_->ReadControlPointLength(base::BindOnce(
+      &FidoBleDevice::OnReadControlPointLength, weak_factory_.GetWeakPtr()));
 }
 
 void FidoBleDevice::OnReadControlPointLength(base::Optional<uint16_t> length) {
