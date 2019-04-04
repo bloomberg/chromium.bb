@@ -31,7 +31,7 @@
 
 #include <libweston/libweston.h>
 #include "compositor/weston.h"
-#include "xwayland/xwayland-api.h"
+#include <libweston/xwayland-api.h>
 #include "shared/helpers.h"
 
 struct wet_xwayland {

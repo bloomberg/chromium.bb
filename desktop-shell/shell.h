@@ -28,7 +28,7 @@
 #include <time.h>
 
 #include <libweston/libweston.h>
-#include "xwayland/xwayland-api.h"
+#include <libweston/xwayland-api.h>
 
 #include "weston-desktop-shell-server-protocol.h"
 

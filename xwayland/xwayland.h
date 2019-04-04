@@ -32,7 +32,7 @@
 
 #include <libweston/libweston.h>
 #include "compositor/weston.h"
-#include "xwayland-api.h"
+#include <libweston/xwayland-api.h>
 #include "weston-debug.h"
 
 #define SEND_EVENT_MASK (0x80)

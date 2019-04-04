@@ -37,7 +37,7 @@
 #include <signal.h>
 
 #include "xwayland.h"
-#include "xwayland-api.h"
+#include <libweston/xwayland-api.h>
 #include "shared/helpers.h"
 #include "shared/string-helpers.h"
 #include "compositor/weston.h"
