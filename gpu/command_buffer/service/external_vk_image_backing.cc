@@ -7,13 +7,20 @@
 #include <utility>
 
 #include "base/posix/eintr_wrapper.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/service/external_vk_image_gl_representation.h"
 #include "gpu/command_buffer/service/external_vk_image_skia_representation.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "ui/gl/gl_context.h"
 
+#if defined(OS_FUCHSIA)
+#include "gpu/vulkan/fuchsia/vulkan_fuchsia_ext.h"
+#endif
+
+#if defined(OS_LINUX)
 #define GL_HANDLE_TYPE_OPAQUE_FD_EXT 0x9586
+#endif
 
 namespace gpu {
 
@@ -127,6 +134,10 @@ bool ExternalVkImageBacking::ProduceLegacyMailbox(
 std::unique_ptr<SharedImageRepresentationGLTexture>
 ExternalVkImageBacking::ProduceGLTexture(SharedImageManager* manager,
                                          MemoryTypeTracker* tracker) {
+#if defined(OS_FUCHSIA)
+  NOTIMPLEMENTED_LOG_ONCE();
+  return nullptr;
+#elif defined(OS_LINUX)
   VkMemoryGetFdInfoKHR get_fd_info;
   get_fd_info.sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR;
   get_fd_info.pNext = nullptr;
@@ -185,6 +196,9 @@ ExternalVkImageBacking::ProduceGLTexture(SharedImageManager* manager,
 
   return std::make_unique<ExternalVkImageGlRepresentation>(
       manager, this, tracker, texture, texture_service_id);
+#else  // !defined(OS_LINUX) && !defined(OS_FUCHSIA)
+#error Unsupported OS
+#endif
 }
 
 std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>

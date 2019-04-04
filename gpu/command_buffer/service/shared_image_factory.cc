@@ -26,7 +26,7 @@
 #include "gpu/config/gpu_preferences.h"
 #include "ui/gl/trace_util.h"
 
-#if defined(USE_X11) && BUILDFLAG(ENABLE_VULKAN)
+#if (defined(USE_X11) || defined(OS_FUCHSIA)) && BUILDFLAG(ENABLE_VULKAN)
 #include "gpu/command_buffer/service/external_vk_image_factory.h"
 #elif defined(OS_ANDROID) && BUILDFLAG(ENABLE_VULKAN)
 #include "gpu/command_buffer/service/shared_image_backing_factory_ahardwarebuffer.h"
@@ -69,8 +69,8 @@ SharedImageFactory::SharedImageFactory(
       using_vulkan_(context_state && context_state->use_vulkan_gr_context()) {
   gl_backing_factory_ = std::make_unique<SharedImageBackingFactoryGLTexture>(
       gpu_preferences, workarounds, gpu_feature_info, image_factory);
-#if defined(USE_X11) && BUILDFLAG(ENABLE_VULKAN)
   // For X11
+#if (defined(USE_X11) || defined(OS_FUCHSIA)) && BUILDFLAG(ENABLE_VULKAN)
   if (using_vulkan_) {
     interop_backing_factory_ =
         std::make_unique<ExternalVkImageFactory>(context_state);

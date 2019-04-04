@@ -36,6 +36,7 @@ class VulkanImplementationGbm : public gpu::VulkanImplementation {
                                     gpu::SemaphoreHandle handle) override;
   gpu::SemaphoreHandle GetSemaphoreHandle(VkDevice vk_device,
                                           VkSemaphore vk_semaphore) override;
+  VkExternalMemoryHandleTypeFlagBits GetExternalImageHandleType() override;
 
  private:
   gpu::VulkanInstance vulkan_instance_;

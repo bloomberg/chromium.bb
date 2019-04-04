@@ -194,4 +194,9 @@ gpu::SemaphoreHandle VulkanImplementationScenic::GetSemaphoreHandle(
       zx::event(handle));
 }
 
+VkExternalMemoryHandleTypeFlagBits
+VulkanImplementationScenic::GetExternalImageHandleType() {
+  return VK_EXTERNAL_MEMORY_HANDLE_TYPE_TEMP_ZIRCON_VMO_BIT_FUCHSIA;
+}
+
 }  // namespace ui

@@ -149,4 +149,9 @@ gpu::SemaphoreHandle VulkanImplementationGbm::GetSemaphoreHandle(
       vk_device, vk_semaphore, VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT);
 }
 
+VkExternalMemoryHandleTypeFlagBits
+VulkanImplementationGbm::GetExternalImageHandleType() {
+  return VK_EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT;
+}
+
 }  // namespace ui

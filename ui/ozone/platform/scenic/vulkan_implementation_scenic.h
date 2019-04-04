@@ -40,6 +40,7 @@ class VulkanImplementationScenic : public gpu::VulkanImplementation {
                                     gpu::SemaphoreHandle handle) override;
   gpu::SemaphoreHandle GetSemaphoreHandle(VkDevice vk_device,
                                           VkSemaphore vk_semaphore) override;
+  VkExternalMemoryHandleTypeFlagBits GetExternalImageHandleType() override;
 
  private:
   ScenicSurfaceFactory* const scenic_surface_factory_;

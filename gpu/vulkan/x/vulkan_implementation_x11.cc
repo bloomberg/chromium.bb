@@ -130,4 +130,9 @@ SemaphoreHandle VulkanImplementationX11::GetSemaphoreHandle(
       vk_device, vk_semaphore, VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT);
 }
 
+VkExternalMemoryHandleTypeFlagBits
+VulkanImplementationX11::GetExternalImageHandleType() {
+  return VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
+}
+
 }  // namespace gpu
