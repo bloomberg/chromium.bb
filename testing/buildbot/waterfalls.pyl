@@ -1938,19 +1938,6 @@
         },
       },
       # END Fake builder used as mirror targets for ANGLE's GPU tryservers
-      'Android FYI 32 Vk Release (Nexus 5X)': {
-        'os_type': 'android',
-        'skip_merge_script': True,
-        'mixins': [
-          'bullhead',
-          'gpu_pool',
-          'oreo',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_angle_gtests',
-          'isolated_scripts': 'gpu_angle_perftests',
-        },
-      },
       'Android FYI 32 Vk Release (Pixel 2)': {
         'os_type': 'android',
         'skip_merge_script': True,
@@ -1977,18 +1964,6 @@
           'isolated_scripts': 'gpu_angle_perftests',
         },
       },
-      'Android FYI 32 dEQP Vk Release (Nexus 5X)': {
-        'os_type': 'android',
-        'skip_merge_script': True,
-        'mixins': [
-          'bullhead',
-          'gpu_pool',
-          'oreo',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_angle_deqp_gles2_vulkan_tests',
-        },
-      },
       'Android FYI 32 dEQP Vk Release (Pixel 2)': {
         'os_type': 'android',
         'skip_merge_script': True,
@@ -2011,19 +1986,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_deqp_gles2_vulkan_tests',
-        },
-      },
-      'Android FYI 64 Vk Release (Nexus 5X)': {
-        'os_type': 'android',
-        'skip_merge_script': True,
-        'mixins': [
-          'bullhead',
-          'gpu_pool',
-          'oreo',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_angle_gtests',
-          'isolated_scripts': 'gpu_angle_perftests',
         },
       },
       'Android FYI 64 Vk Release (Pixel 2)': {
@@ -2050,18 +2012,6 @@
         'test_suites': {
           'gtest_tests': 'gpu_angle_gtests',
           'isolated_scripts': 'gpu_angle_perftests',
-        },
-      },
-      'Android FYI 64 dEQP Vk Release (Nexus 5X)': {
-        'os_type': 'android',
-        'skip_merge_script': True,
-        'mixins': [
-          'bullhead',
-          'gpu_pool',
-          'oreo',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_angle_deqp_gles2_vulkan_tests',
         },
       },
       'Android FYI 64 dEQP Vk Release (Pixel 2)': {
