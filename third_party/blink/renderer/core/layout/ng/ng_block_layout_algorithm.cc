@@ -700,9 +700,8 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
   // Only layout absolute and fixed children if we aren't going to revisit this
   // layout.
   if (unpositioned_floats_.IsEmpty()) {
-    NGOutOfFlowLayoutPart(&container_builder_, Node().IsAbsoluteContainer(),
-                          Node().IsFixedContainer(), borders + scrollbars,
-                          ConstraintSpace(), Style())
+    NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), borders + scrollbars,
+                          &container_builder_)
         .Run();
   }
 

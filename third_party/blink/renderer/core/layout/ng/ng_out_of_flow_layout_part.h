@@ -33,26 +33,31 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   STACK_ALLOCATED();
 
  public:
-  // The container_builder, borders_and_scrollers, container_space and
-  // container_style parameters are all with respect to the containing block of
-  // the relevant out-of-flow positioned descendants. If the CSS "containing
-  // block" of such an out-of-flow positioned descendant isn't a true block (but
-  // e.g. a relatively positioned inline instead), the containing block here is
+  NGOutOfFlowLayoutPart(const NGBlockNode& container_node,
+                        const NGConstraintSpace& container_space,
+                        const NGBoxStrut& border_scrollbar,
+                        NGBoxFragmentBuilder* container_builder);
+
+  // The |container_builder|, |border_scrollbar|, |container_space|, and
+  // |container_style| parameters are all with respect to the containing block
+  // of the relevant out-of-flow positioned descendants. If the CSS "containing
+  // block" of such an out-of-flow positioned descendant isn't a true block
+  // (e.g. a relatively positioned inline instead), the containing block here is
   // the containing block of said non-block.
   NGOutOfFlowLayoutPart(
-      NGBoxFragmentBuilder* container_builder,
       bool contains_absolute,
       bool contains_fixed,
-      const NGBoxStrut& borders_and_scrollers,
-      const NGConstraintSpace& container_space,
       const ComputedStyle& container_style,
+      const NGConstraintSpace& container_space,
+      const NGBoxStrut& border_scrollbar,
+      NGBoxFragmentBuilder* container_builder,
       base::Optional<NGLogicalSize> initial_containing_block_fixed_size =
           base::nullopt);
 
-  // Normally this function lays out and positions all out-of-flow objects
-  // from the container_builder and additional ones it discovers through laying
-  // out those objects. However, if only_layout is specified, only that object
-  // will get laid out; any additional ones will be stored as out-of-flow
+  // Normally this function lays out and positions all out-of-flow objects from
+  // the container_builder and additional ones it discovers through laying out
+  // those objects. However, if only_layout is specified, only that object will
+  // get laid out; any additional ones will be stored as out-of-flow
   // descendants in the builder for use via
   // LayoutResult::OutOfFlowPositionedDescendants.
   void Run(const LayoutBox* only_layout = nullptr);
@@ -92,7 +97,7 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
 
   bool SweepLegacyDescendants(HashSet<const LayoutObject*>* placed_objects);
 
-  ContainingBlockInfo GetContainingBlockInfo(
+  const ContainingBlockInfo& GetContainingBlockInfo(
       const NGOutOfFlowPositionedDescendant&) const;
 
   void ComputeInlineContainingBlocks(
@@ -118,10 +123,10 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
       const NGAbsolutePhysicalPosition& node_position);
 
   NGBoxFragmentBuilder* container_builder_;
-  bool contains_absolute_;
-  bool contains_fixed_;
   ContainingBlockInfo default_containing_block_;
   HashMap<const LayoutObject*, ContainingBlockInfo> containing_blocks_map_;
+  bool contains_absolute_;
+  bool contains_fixed_;
 };
 
 }  // namespace blink
