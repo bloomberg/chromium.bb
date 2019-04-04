@@ -434,8 +434,7 @@ class BlinkPerfCanvas(_BlinkPerfBenchmark):
       page.skipped_gpus = []
     return story_set
 
-@benchmark.Info(emails=['hayato@chromium.org',
-                        'tkent@chromium.org'],
+@benchmark.Info(emails=['hayato@chromium.org'],
                 component='Blink>DOM',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfDOM(_BlinkPerfBenchmark):
