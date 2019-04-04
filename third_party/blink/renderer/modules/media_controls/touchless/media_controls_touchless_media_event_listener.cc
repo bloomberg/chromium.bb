@@ -35,6 +35,7 @@ void MediaControlsTouchlessMediaEventListener::Attach() {
   media_element_->addEventListener(event_type_names::kTimeupdate, this, false);
   media_element_->addEventListener(event_type_names::kDurationchange, this,
                                    false);
+  media_element_->addEventListener(event_type_names::kProgress, this, false);
 
   media_element_->addEventListener(event_type_names::kPlay, this, false);
   media_element_->addEventListener(event_type_names::kPause, this, false);
@@ -68,6 +69,11 @@ void MediaControlsTouchlessMediaEventListener::Invoke(
   if (event->type() == event_type_names::kDurationchange) {
     for (auto& observer : observers_)
       observer->OnDurationChange();
+    return;
+  }
+  if (event->type() == event_type_names::kProgress) {
+    for (auto& observer : observers_)
+      observer->OnLoadingProgress();
     return;
   }
   if (event->type() == event_type_names::kPlay) {

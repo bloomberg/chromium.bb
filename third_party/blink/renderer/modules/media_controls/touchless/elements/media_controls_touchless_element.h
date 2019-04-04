@@ -11,17 +11,21 @@
 
 namespace blink {
 
+class HTMLMediaElement;
 class MediaControlsTouchlessImpl;
 
 class MediaControlsTouchlessElement
     : public MediaControlsTouchlessMediaEventListenerObserver {
  public:
+  HTMLMediaElement& MediaElement() const;
+
   void Trace(blink::Visitor* visitor) override;
 
   // Non-touch media event listener observer implementation.
   void OnFocusIn() override {}
   void OnTimeUpdate() override {}
   void OnDurationChange() override {}
+  void OnLoadingProgress() override {}
   void OnPlay() override {}
   void OnPause() override {}
   void OnError() override {}

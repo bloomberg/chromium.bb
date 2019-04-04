@@ -92,6 +92,8 @@ blink_modules_sources("media_controls") {
     "media_controls_resource_loader.h",
     "media_controls_rotate_to_fullscreen_delegate.cc",
     "media_controls_rotate_to_fullscreen_delegate.h",
+    "media_controls_shared_helper.cc",
+    "media_controls_shared_helper.h",
     "media_controls_text_track_manager.cc",
     "media_controls_text_track_manager.h",
   ]
@@ -111,6 +113,8 @@ blink_modules_sources("media_controls") {
       "touchless/elements/media_controls_touchless_play_button_element.h",
       "touchless/elements/media_controls_touchless_seek_button_element.cc",
       "touchless/elements/media_controls_touchless_seek_button_element.h",
+      "touchless/elements/media_controls_touchless_timeline_element.cc",
+      "touchless/elements/media_controls_touchless_timeline_element.h",
       "touchless/elements/media_controls_touchless_volume_button_element.cc",
       "touchless/elements/media_controls_touchless_volume_button_element.h",
       "touchless/media_controls_touchless_impl.cc",
