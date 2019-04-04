@@ -65,7 +65,8 @@ wm::WorkspaceWindowState WorkspaceController::GetWindowState() const {
     return wm::WORKSPACE_WINDOW_STATE_DEFAULT;
   }
 
-  const aura::Window* fullscreen = wm::GetWindowForFullscreenMode(viewport_);
+  const aura::Window* fullscreen =
+      wm::GetWindowForFullscreenModeForContext(viewport_);
   if (fullscreen)
     return wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN;
 

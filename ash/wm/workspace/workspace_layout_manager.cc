@@ -15,6 +15,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/wm/always_on_top_controller.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_positioner.h"
@@ -97,7 +98,8 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(aura::Window* window)
       settings_bubble_window_observer_(this),
       work_area_in_parent_(
           screen_util::GetDisplayWorkAreaBoundsInParent(window_)),
-      is_fullscreen_(wm::GetWindowForFullscreenMode(window) != nullptr) {
+      is_fullscreen_(wm::GetWindowForFullscreenModeForContext(window) !=
+                     nullptr) {
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->activation_client()->AddObserver(this);
   root_window_->AddObserver(this);
@@ -403,7 +405,7 @@ void WorkspaceLayoutManager::OnFullscreenStateChanged(bool is_fullscreen,
   // Note that only the active desk's container broadcasts this event, but all
   // containers' workspaces (active desk's and inactive desks' as well the
   // always-on-top container) receive it.
-  // TODO(afakhry): dcheck that |container| is always the active desk container.
+  DCHECK(desks_util::IsActiveDeskContainer(container));
 
   // If |container| is the one associated with this workspace, then fullscreen
   // state must match.
@@ -426,10 +428,7 @@ void WorkspaceLayoutManager::OnFullscreenStateChanged(bool is_fullscreen,
   // containers, because inactive desks may have a previously demoted
   // always-on-top windows that we need to promote back to the always-on-top
   // container if there no longer fullscreen windows on this root window.
-
-  // TODO(afakhry): Use a function that gets the fullscreen window in the entire
-  // root window instead of GetWindowForFullscreenMode() below.
-  UpdateAlwaysOnTop(wm::GetWindowForFullscreenMode(window_));
+  UpdateAlwaysOnTop(wm::GetWindowForFullscreenModeInRoot(root_window_));
 }
 
 void WorkspaceLayoutManager::OnPinnedStateChanged(aura::Window* pinned_window) {
@@ -486,13 +485,11 @@ void WorkspaceLayoutManager::UpdateFullscreenState() {
   // Note that we don't allow always-on-top or PiP containers to have fullscreen
   // windows, and we only update the fullscreen state for the active desk
   // container.
-  // TODO(afakhry): Change this to check if this is the active desk container.
-  if (window_->id() != kShellWindowId_DefaultContainer)
+  if (!desks_util::IsActiveDeskContainer(window_))
     return;
 
-  // TODO(afakhry): Use a function that gets the fullscreen window in |window_|
-  // only instead of GetWindowForFullscreenMode() below.
-  const bool is_fullscreen = wm::GetWindowForFullscreenMode(window_) != nullptr;
+  const bool is_fullscreen =
+      wm::GetWindowForFullscreenModeForContext(window_) != nullptr;
   if (is_fullscreen == is_fullscreen_)
     return;
 

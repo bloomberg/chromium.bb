@@ -15,8 +15,17 @@ namespace ash {
 namespace wm {
 
 // Returns the topmost window or one of its transient parents, if any of them
-// are in fullscreen mode. This searches for a window in the root of |context|.
-ASH_EXPORT aura::Window* GetWindowForFullscreenMode(aura::Window* context);
+// are in fullscreen mode. This searches for a window in the switchable
+// container parent of |context|. This can be used to find if there's a
+// fullscreen window in the desk container of |context| or the always on top
+// container if |context| belongs to it.
+ASH_EXPORT aura::Window* GetWindowForFullscreenModeForContext(
+    aura::Window* context);
+
+// Returns the topmost window or one of its transient parents, if any of them
+// are in fullscreen mode. This searches for a window in |root|. This considers
+// only the always-on-top container or the active desk container.
+ASH_EXPORT aura::Window* GetWindowForFullscreenModeInRoot(aura::Window* root);
 
 }  // namespace wm
 }  // namespace ash

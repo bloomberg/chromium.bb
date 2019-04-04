@@ -621,7 +621,7 @@ void RootWindowController::InitTouchHuds() {
 }
 
 aura::Window* RootWindowController::GetWindowForFullscreenMode() {
-  return wm::GetWindowForFullscreenMode(GetRootWindow());
+  return wm::GetWindowForFullscreenModeInRoot(GetRootWindow());
 }
 
 void RootWindowController::SetTouchAccessibilityAnchorPoint(
