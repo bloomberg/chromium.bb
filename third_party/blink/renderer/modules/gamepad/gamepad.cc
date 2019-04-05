@@ -41,11 +41,6 @@ Gamepad::Gamepad(ExecutionContext* context)
 
 Gamepad::~Gamepad() = default;
 
-// static
-Gamepad* Gamepad::Create(ExecutionContext* context) {
-  return MakeGarbageCollected<Gamepad>(context);
-}
-
 const Gamepad::DoubleVector& Gamepad::axes() {
   is_axis_data_dirty_ = false;
   return axes_;
@@ -82,7 +77,7 @@ void Gamepad::SetButtons(unsigned count, const device::GamepadButton* data) {
   if (buttons_.size() != count) {
     buttons_.resize(count);
     for (unsigned i = 0; i < count; ++i)
-      buttons_[i] = GamepadButton::Create();
+      buttons_[i] = MakeGarbageCollected<GamepadButton>();
   }
   for (unsigned i = 0; i < count; ++i)
     buttons_[i]->UpdateValuesFrom(data[i]);
@@ -103,7 +98,7 @@ void Gamepad::SetPose(const device::GamepadPose& pose) {
   }
 
   if (!pose_)
-    pose_ = GamepadPose::Create();
+    pose_ = MakeGarbageCollected<GamepadPose>();
 
   pose_->SetPose(pose);
 }

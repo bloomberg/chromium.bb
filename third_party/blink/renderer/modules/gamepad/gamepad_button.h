@@ -16,8 +16,6 @@ class GamepadButton final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static GamepadButton* Create();
-
   GamepadButton();
 
   double value() const { return value_; }

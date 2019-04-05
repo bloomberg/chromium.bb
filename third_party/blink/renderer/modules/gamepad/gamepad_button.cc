@@ -6,10 +6,6 @@
 
 namespace blink {
 
-GamepadButton* GamepadButton::Create() {
-  return MakeGarbageCollected<GamepadButton>();
-}
-
 GamepadButton::GamepadButton() : value_(0.), pressed_(false), touched_(false) {}
 
 bool GamepadButton::IsEqual(const device::GamepadButton& device_button) const {

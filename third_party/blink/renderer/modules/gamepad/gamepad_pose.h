@@ -17,8 +17,6 @@ class GamepadPose final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static GamepadPose* Create() { return MakeGarbageCollected<GamepadPose>(); }
-
   GamepadPose();
 
   bool hasOrientation() const { return has_orientation_; }
