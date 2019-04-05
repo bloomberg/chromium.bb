@@ -934,6 +934,7 @@ test("browser_tests") {
       "../browser/tab_contents/view_source_browsertest.cc",
       "../browser/task_manager/mock_web_contents_task_manager.cc",
       "../browser/task_manager/mock_web_contents_task_manager.h",
+      "../browser/task_manager/providers/service_worker_task_provider_browsertest.cc",
       "../browser/task_manager/providers/web_contents/background_contents_tag_browsertest.cc",
       "../browser/task_manager/providers/web_contents/devtools_tag_browsertest.cc",
       "../browser/task_manager/providers/web_contents/extension_tag_browsertest.cc",

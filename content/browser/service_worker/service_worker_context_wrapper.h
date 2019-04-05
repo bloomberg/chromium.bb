@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
@@ -21,6 +22,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/service_worker_context.h"
+#include "content/public/browser/service_worker_running_info.h"
 
 namespace base {
 class FilePath;
@@ -109,6 +111,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void OnReportConsoleMessage(int64_t version_id,
                               const ConsoleMessage& message) override;
   void OnNoControllees(int64_t version_id, const GURL& scope) override;
+  void OnRunningStateChanged(int64_t version_id,
+                             EmbeddedWorkerStatus running_status) override;
   void OnVersionStateChanged(int64_t version_id,
                              const GURL& scope,
                              ServiceWorkerVersion::Status status) override;
@@ -151,6 +155,11 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       StartServiceWorkerForNavigationHintCallback callback) override;
   void StopAllServiceWorkersForOrigin(const GURL& origin) override;
   void StopAllServiceWorkers(base::OnceClosure callback) override;
+  void GetAllServiceWorkerRunningInfos(
+      GetAllServiceWorkerRunningInfosCallback callback) override;
+  void GetServiceWorkerRunningInfo(
+      int64_t version_id,
+      GetServiceWorkerRunningInfoCallback callback) override;
 
   // These methods must only be called from the IO thread.
   ServiceWorkerRegistration* GetLiveRegistration(int64_t registration_id);
@@ -407,6 +416,22 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // DeleteAndStartOver fails.
   ServiceWorkerContextCore* context();
 
+  void GetAllServiceWorkerRunningInfosOnIO(
+      GetAllServiceWorkerRunningInfosCallback callback,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_callback);
+
+  void GetServiceWorkerRunningInfoOnIO(
+      int64_t version_id,
+      GetServiceWorkerRunningInfoCallback callback,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_callback);
+
+  ServiceWorkerRunningInfo ExtractServiceWorkerRunningInfoFromVersionInfo(
+      const ServiceWorkerVersionInfo& version_info);
+
+  // RUNNING and STOPPING are considered "running". See the comments in
+  // OnRunningStateChange.
+  bool IsRunningStatus(EmbeddedWorkerStatus status);
+
   // Observers of |context_core_| which live within content's implementation
   // boundary. Shared with |context_core_|.
   using ServiceWorkerContextObserverList =
@@ -429,6 +454,10 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   // The ResourceContext associated with this context.
   ResourceContext* resource_context_ = nullptr;
+
+  // The set of workers that are considered "running". For dispatching
+  // OnVersionRunningStatusChanged events.
+  base::flat_set<int64_t /* version_id */> running_service_workers_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextWrapper);
 };

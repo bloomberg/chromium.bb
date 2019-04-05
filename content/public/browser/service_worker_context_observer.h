@@ -9,6 +9,7 @@
 
 namespace content {
 struct ConsoleMessage;
+class ServiceWorkerContext;
 
 class ServiceWorkerContextObserver {
  public:
@@ -27,6 +28,19 @@ class ServiceWorkerContextObserver {
   // redundant.
   virtual void OnVersionRedundant(int64_t version_id, const GURL& scope) {}
 
+  // Called when the service worker with id |version_id| starts or stops
+  // running.
+  //
+  // This function is currently only called after a worker finishes
+  // starting/stopping or the version is destroyed before finishing
+  // stopping. That is, a worker in the process of starting is not yet
+  // considered running, even if it's executing JavaScript. See TODO in
+  // ServiceWorkerContextWrapper::OnRunningStateChanged.
+  virtual void OnVersionRunningStatusChanged(
+      content::ServiceWorkerContext* context,
+      int64_t version_id,
+      bool is_running) {}
+
   // Called when there are no more controllees for the service worker with id
   // |version_id|.
   virtual void OnNoControllees(int64_t version_id, const GURL& scope) {}
@@ -35,6 +49,9 @@ class ServiceWorkerContextObserver {
   // |version_id|.
   virtual void OnReportConsoleMessage(int64_t version_id,
                                       const ConsoleMessage& message) {}
+
+  // Called when |context| is destroyed. Observers must no longer use |context|.
+  virtual void OnDestruct(content::ServiceWorkerContext* context) {}
 
  protected:
   virtual ~ServiceWorkerContextObserver() {}
