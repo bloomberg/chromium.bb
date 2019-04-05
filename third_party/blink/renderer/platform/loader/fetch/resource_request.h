@@ -387,6 +387,11 @@ class PLATFORM_EXPORT ResourceRequest final {
     devtools_token_ = devtools_token;
   }
 
+  const base::Optional<String>& GetDevToolsId() const { return devtools_id_; }
+  void SetDevToolsId(const base::Optional<String>& devtools_id) {
+    devtools_id_ = devtools_id;
+  }
+
   void SetRequestedWithHeader(const String& value) {
     requested_with_header_ = value;
   }
@@ -484,6 +489,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool is_automatic_upgrade_ = false;
 
   base::Optional<base::UnguessableToken> devtools_token_;
+  base::Optional<String> devtools_id_;
   String requested_with_header_;
   String client_data_header_;
 

@@ -308,6 +308,11 @@ struct URLRequest {
   // goes through a service worker, the id is
   // ServiceWorkerProviderHost::fetch_request_window_id.
   mojo_base.mojom.UnguessableToken? fetch_window_id;
+
+  // The ID that DevTools uses to track network requests. It is generated in the
+  // renderer process and is only present when DevTools is enabled in the
+  // renderer.
+  string? devtools_request_id;
 };
 
 // URLRequestBody represents body (i.e. upload data) of a HTTP request.

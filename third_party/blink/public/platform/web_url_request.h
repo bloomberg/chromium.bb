@@ -380,6 +380,8 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT const base::UnguessableToken& GetFetchWindowId() const;
   BLINK_PLATFORM_EXPORT void SetFetchWindowId(const base::UnguessableToken&);
 
+  BLINK_PLATFORM_EXPORT base::Optional<WebString> GetDevToolsId() const;
+
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT ResourceRequest& ToMutableResourceRequest();
   BLINK_PLATFORM_EXPORT const ResourceRequest& ToResourceRequest() const;
