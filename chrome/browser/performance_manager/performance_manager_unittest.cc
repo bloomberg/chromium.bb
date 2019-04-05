@@ -38,6 +38,8 @@ class PerformanceManagerTest : public testing::Test {
     task_environment_.RunUntilIdle();
   }
 
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
+
  protected:
   PerformanceManager* performance_manager() {
     return performance_manager_.get();
@@ -103,8 +105,21 @@ TEST_F(PerformanceManagerTest, BatchDeleteNodes) {
   performance_manager()->BatchDeleteNodes(std::move(nodes));
 }
 
+TEST_F(PerformanceManagerTest, CallOnGraph) {
+  // Create a page node for something to target.
+  std::unique_ptr<PageNodeImpl> page_node =
+      performance_manager()->CreatePageNode();
+
+  PerformanceManager::GraphCallback graph_callback = base::BindLambdaForTesting(
+      [&page_node](Graph* graph) { EXPECT_EQ(page_node->graph(), graph); });
+
+  performance_manager()->CallOnGraph(FROM_HERE, std::move(graph_callback));
+  RunUntilIdle();
+
+  performance_manager()->DeleteNode(std::move(page_node));
+}
+
 // TODO(siggi): More tests!
 // - Test the WebUI interface.
-// - Test the graph introspector interface.
 
 }  // namespace performance_manager
