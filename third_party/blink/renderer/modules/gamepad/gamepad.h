@@ -45,8 +45,6 @@ class MODULES_EXPORT Gamepad final : public ScriptWrappable,
   USING_GARBAGE_COLLECTED_MIXIN(Gamepad);
 
  public:
-  static Gamepad* Create(ExecutionContext* context);
-
   explicit Gamepad(ExecutionContext*);
   ~Gamepad() override;
 

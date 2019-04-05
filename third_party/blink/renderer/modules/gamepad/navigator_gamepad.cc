@@ -128,7 +128,7 @@ void SampleGamepads(GamepadDispatcher* gamepad_dispatcher,
     } else if (web_gamepad.connected) {
       Gamepad* gamepad = into->item(i);
       if (!gamepad)
-        gamepad = Gamepad::Create(context);
+        gamepad = MakeGarbageCollected<Gamepad>(context);
       SampleGamepad(i, *gamepad, web_gamepad, navigation_start, gamepads_start);
       into->Set(i, gamepad);
     } else {
@@ -183,7 +183,7 @@ GamepadList* NavigatorGamepad::Gamepads() {
 
   // Ensure |gamepads_| is not null.
   if (!gamepads_)
-    gamepads_ = GamepadList::Create();
+    gamepads_ = MakeGarbageCollected<GamepadList>();
 
   // Allow gamepad button presses to qualify as user activations if the page is
   // visible.
@@ -331,7 +331,7 @@ void NavigatorGamepad::SampleAndCompareGamepadState() {
     if (GetPage()->IsPageVisible()) {
       // Allocate a buffer to hold the new gamepad state, if needed.
       if (!gamepads_back_)
-        gamepads_back_ = GamepadList::Create();
+        gamepads_back_ = MakeGarbageCollected<GamepadList>();
 
       bool include_xr_gamepads = ShouldIncludeXrGamepads(GetFrame());
 
