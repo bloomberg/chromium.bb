@@ -45,6 +45,44 @@ PolicyValue GetFallbackValueForFeature(mojom::FeaturePolicyFeature feature) {
   return PolicyValue(false);
 }
 
+PolicyValue ParseValueForType(mojom::PolicyValueType feature_type,
+                              const String& value_string,
+                              bool* ok) {
+  *ok = false;
+  PolicyValue value;
+  switch (feature_type) {
+    case mojom::PolicyValueType::kBool:
+      // recognize true, false
+      if (value_string.LowerASCII() == "true") {
+        value = PolicyValue(true);
+        *ok = true;
+      } else if (value_string.LowerASCII() == "false") {
+        value = PolicyValue(false);
+        *ok = true;
+      }
+      break;
+    case mojom::PolicyValueType::kDecDouble: {
+      if (value_string.LowerASCII() == "inf") {
+        value = PolicyValue::CreateMaxPolicyValue(feature_type);
+        *ok = true;
+      } else {
+        double parsed_value = value_string.ToDouble(ok);
+        if (*ok && parsed_value >= 0.0f) {
+          value = PolicyValue(parsed_value);
+        } else {
+          *ok = false;
+        }
+      }
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
+  if (!*ok)
+    return PolicyValue();
+  return value;
+}
+
 }  // namespace
 
 ParsedFeaturePolicy ParseFeaturePolicyHeader(
@@ -160,43 +198,109 @@ ParsedFeaturePolicy ParseFeaturePolicy(
       }
 
       for (wtf_size_t i = 1; i < tokens.size(); i++) {
-        // TODO(loonybear): for each token, parse the policy value from the
-        // new syntax.
         if (!tokens[i].ContainsOnlyASCIIOrEmpty()) {
           messages->push_back("Non-ASCII characters in origin.");
           continue;
         }
-        if (EqualIgnoringASCIICase(tokens[i], "'self'")) {
-          values[self_origin->ToUrlOrigin()] = value;
-        } else if (src_origin && EqualIgnoringASCIICase(tokens[i], "'src'")) {
-          // Only the iframe allow attribute can define |src_origin|.
-          // When parsing feature policy header, 'src' is disallowed and
-          // |src_origin| = nullptr.
-          // If the iframe will have an opaque origin (for example, if it is
-          // sandboxed, or has a data: URL), then 'src' needs to refer to the
-          // opaque origin of the frame, which is not known yet. In this case,
-          // the |opaque_value| on the declaration is set, rather than adding
-          // an origin to the allowlist.
-          if (src_origin->IsOpaque()) {
-            allowlist.opaque_value = value;
-          } else {
-            values[src_origin->ToUrlOrigin()] = value;
+
+        // Break the token into an origin and a value. Either one may be
+        // omitted.
+        PolicyValue value = PolicyValue::CreateMaxPolicyValue(feature_type);
+        String origin_string = tokens[i];
+        String value_string;
+        wtf_size_t param_start = origin_string.find('(');
+        if (param_start != kNotFound) {
+          // There is a value attached to this origin
+          if (!origin_string.EndsWith(')')) {
+            // The declaration is malformed if the value is not the last part of
+            // the string.
+            if (messages)
+              messages->push_back("Unable to parse policy value.");
+            continue;
           }
-        } else if (EqualIgnoringASCIICase(tokens[i], "'none'")) {
+          value_string = origin_string.Substring(
+              param_start + 1, origin_string.length() - param_start - 2);
+          origin_string = origin_string.Substring(0, param_start);
+          bool ok = false;
+          value = ParseValueForType(feature_type, value_string, &ok);
+          if (!ok) {
+            if (messages)
+              messages->push_back("Unable to parse policy value.");
+            continue;
+          }
+        }
+
+        // Determine the target of the declaration. This may be a specific
+        // origin, either explicitly written, or one of the special keywords
+        // 'self' or 'src'. ('src' can only be used in the iframe allow
+        // attribute.)
+        url::Origin target_origin;
+
+        // If the iframe will have an opaque origin (for example, if it is
+        // sandboxed, or has a data: URL), then 'src' needs to refer to the
+        // opaque origin of the frame, which is not known yet. In this case,
+        // the |opaque_value| on the declaration is set, rather than adding
+        // an origin to the allowlist.
+        bool target_is_opaque = false;
+        bool target_is_all = false;
+
+        // 'self' origin is used if either the origin is omitted (and there is
+        // no 'src' origin available) or the origin is exactly 'self'.
+        if ((origin_string.length() == 0 && !src_origin) ||
+            EqualIgnoringASCIICase(origin_string, "'self'")) {
+          target_origin = self_origin->ToUrlOrigin();
+        }
+        // 'src' origin is used if |src_origin| is available and either the
+        // origin is omitted or is a match for 'src'. |src_origin| is only set
+        // when parsing an iframe allow attribute.
+        else if (src_origin &&
+                 (origin_string.length() == 0 ||
+                  EqualIgnoringASCIICase(origin_string, "'src'"))) {
+          if (!src_origin->IsOpaque()) {
+            target_origin = src_origin->ToUrlOrigin();
+          } else {
+            target_is_opaque = true;
+          }
+        } else if (EqualIgnoringASCIICase(origin_string, "'none'")) {
           continue;
-        } else if (tokens[i] == "*") {
+        } else if (origin_string == "*") {
+          target_is_all = true;
+        }
+        // Otherwise, parse the origin string and verify that the result is
+        // valid. Invalid strings will produce an opaque origin, which will
+        // result in an error message.
+        else {
+          scoped_refptr<SecurityOrigin> parsed_origin =
+              SecurityOrigin::CreateFromString(origin_string);
+          if (!parsed_origin->IsOpaque()) {
+            target_origin = parsed_origin->ToUrlOrigin();
+          } else if (messages) {
+            messages->push_back("Unrecognized origin: '" + origin_string +
+                                "'.");
+            continue;
+          }
+        }
+
+        // Assign the value to the target origin(s).
+        if (target_is_all) {
           allowlist.fallback_value = value;
           allowlist.opaque_value = value;
-          break;
+        } else if (target_is_opaque) {
+          allowlist.opaque_value = value;
         } else {
-          scoped_refptr<SecurityOrigin> target_origin =
-              SecurityOrigin::CreateFromString(tokens[i]);
-          if (!target_origin->IsOpaque())
-            values[target_origin->ToUrlOrigin()] = value;
-          else if (messages)
-            messages->push_back("Unrecognized origin: '" + tokens[i] + "'.");
+          DCHECK(!target_origin.opaque());
+          values[target_origin] = value;
         }
       }
+      // Size reduction: remove all items in the allowlist whose value is the
+      // same as the fallback.
+      for (auto it = values.begin(); it != values.end();) {
+        if (it->second == allowlist.fallback_value)
+          it = values.erase(it);
+        else
+          it++;
+      }
+
       allowlist.values = std::move(values);
       allowlists.push_back(allowlist);
     }
