@@ -167,13 +167,6 @@ component("core") {
     ":core_generated",
     "//skia",
     "//third_party/blink/public/mojom:mojom_broadcastchannel_bindings_blink",
-    "//third_party/blink/renderer/platform",
-    "//third_party/blink/renderer/platform/wtf",
-    "//url",
-    "//v8",
-  ]
-  deps = [
-    "//third_party/blink/public/common",
     "//third_party/blink/renderer/core/accessibility",
     "//third_party/blink/renderer/core/animation",
     "//third_party/blink/renderer/core/aom",
@@ -223,6 +216,13 @@ component("core") {
     "//third_party/blink/renderer/core/workers",
     "//third_party/blink/renderer/core/xml",
     "//third_party/blink/renderer/core/xmlhttprequest",
+    "//url",
+    "//v8",
+  ]
+  deps = [
+    "//third_party/blink/public/common",
+    "//third_party/blink/renderer/platform",
+    "//third_party/blink/renderer/platform/wtf",
   ]
 
   if (is_win && is_debug && is_component_build && current_cpu == "x64") {
