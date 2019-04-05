@@ -3224,6 +3224,33 @@ TEST_F(AXPlatformNodeWinTest, TestITableProviderGetRowOrColumnMajor) {
   EXPECT_EQ(row_or_column_major, RowOrColumnMajor_RowMajor);
 }
 
+TEST_F(AXPlatformNodeWinTest, TestIA2GetAttribute) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kButton;
+  root.AddStringAttribute(ax::mojom::StringAttribute::kRoleDescription,
+                          "Potato");
+  Init(root);
+
+  ComPtr<IAccessible> root_obj(GetRootIAccessible());
+  ComPtr<IAccessible2_2> iaccessible2 = ToIAccessible2_2(root_obj);
+
+  ScopedBstr roledescription(L"roledescription");
+  ScopedVariant result;
+  ASSERT_EQ(S_OK,
+            iaccessible2->get_attribute(roledescription, result.Receive()));
+  ScopedBstr expected_bstr(L"Potato");
+  ASSERT_EQ(VT_BSTR, result.type());
+  EXPECT_STREQ(expected_bstr, result.ptr()->bstrVal);
+
+  ScopedBstr smoothness(L"smoothness");
+  ScopedVariant result2;
+  EXPECT_EQ(S_FALSE,
+            iaccessible2->get_attribute(smoothness, result2.Receive()));
+
+  EXPECT_EQ(E_INVALIDARG, iaccessible2->get_attribute(nullptr, nullptr));
+}
+
 TEST_F(AXPlatformNodeWinTest, TestUIAGetPropertySimple) {
   AXNodeData root;
   root.SetName("fake name");
