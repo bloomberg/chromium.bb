@@ -2443,17 +2443,6 @@
     "script": "//testing/scripts/run_telemetry_as_googletest.py",
     "type": "script",
   },
-  # This isolate is solely used to run the One Builbot Step Tester
-  # trybot so that we don't use the full chrome build each time.  Instead
-  # this uses the reference build to run telemetry.
-  "telemetry_perf_tests_without_chrome": {
-    "args": [
-      "../../tools/perf/run_benchmark",
-    ],
-    "label": "//chrome/test:telemetry_perf_tests_without_chrome",
-    "script": "//testing/scripts/run_performance_tests.py",
-    "type": "script",
-  },
   # This isolate is used by
   # https://www.chromium.org/developers/cluster-telemetry
   "ct_telemetry_perf_tests_without_chrome": {

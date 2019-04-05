@@ -2414,24 +2414,14 @@ group("telemetry_perf_tests") {
   ]
 }
 
-group("telemetry_perf_tests_without_chrome") {
+group("ct_telemetry_perf_tests_without_chrome") {
   testonly = true
   deps = [
     "//tools/perf/:perf_without_chrome",
   ]
 
-  data_deps = [
-    "//testing:run_perf_test",
-  ]
-}
-
-group("ct_telemetry_perf_tests_without_chrome") {
-  testonly = true
-  deps = [
-    ":telemetry_perf_tests_without_chrome",
-  ]
-
   data = [
+    "//testing:run_perf_test",
     "//tools/perf/contrib/cluster_telemetry/",
   ]
 }
