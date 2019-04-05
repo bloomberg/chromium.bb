@@ -5,12 +5,10 @@
 #ifndef COMPONENTS_SYNC_PREFERENCES_PREF_MODEL_ASSOCIATOR_H_
 #define COMPONENTS_SYNC_PREFERENCES_PREF_MODEL_ASSOCIATOR_H_
 
-#include <map>
 #include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -119,10 +117,6 @@ class PrefModelAssociator : public syncer::SyncableService {
   // Returns the PrefModelAssociatorClient for this object.
   const PrefModelAssociatorClient* client() const { return client_; }
 
-  // Register callback method which will get called at the end of
-  // PrefModelAssociator::MergeDataAndStartSyncing().
-  void RegisterMergeDataFinishedCallback(const base::Closure& callback);
-
  private:
   friend class PrefServiceSyncableTest;
 
@@ -201,8 +195,6 @@ class PrefModelAssociator : public syncer::SyncableService {
       synced_pref_observers_;
 
   const PrefModelAssociatorClient* client_;  // Weak.
-
-  std::vector<base::Closure> callback_list_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

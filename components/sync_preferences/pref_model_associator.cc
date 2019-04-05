@@ -169,14 +169,6 @@ void PrefModelAssociator::InitPrefAndAssociate(
   // we'll send the new user controlled value to the syncer.
 }
 
-void PrefModelAssociator::RegisterMergeDataFinishedCallback(
-    const base::Closure& callback) {
-  if (!models_associated_)
-    callback_list_.push_back(callback);
-  else
-    callback.Run();
-}
-
 void PrefModelAssociator::WaitUntilReadyToSync(base::OnceClosure done) {
   // Prefs are loaded very early during profile initialization.
   DCHECK_NE(pref_service_->GetAllPrefStoresInitializationStatus(),
@@ -228,10 +220,6 @@ syncer::SyncMergeResult PrefModelAssociator::MergeDataAndStartSyncing(
       sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes));
   if (merge_result.error().IsSet())
     return merge_result;
-
-  for (const auto& callback : callback_list_)
-    callback.Run();
-  callback_list_.clear();
 
   models_associated_ = true;
   pref_service_->OnIsSyncingChanged();
