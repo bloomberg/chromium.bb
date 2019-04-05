@@ -108,8 +108,11 @@ std::vector<float> ArCoreImpl::TransformDisplayUvCoords(
   size_t num_elements = uvs.size();
   DCHECK(num_elements % 2 == 0);
   std::vector<float> uvs_out(num_elements);
-  ArFrame_transformDisplayUvCoords(arcore_session_.get(), arcore_frame_.get(),
-                                   num_elements, &uvs[0], &uvs_out[0]);
+
+  ArFrame_transformCoordinates2d(
+      arcore_session_.get(), arcore_frame_.get(),
+      AR_COORDINATES_2D_VIEW_NORMALIZED, num_elements / 2, &uvs[0],
+      AR_COORDINATES_2D_TEXTURE_NORMALIZED, &uvs_out[0]);
   return uvs_out;
 }
 
