@@ -155,7 +155,13 @@ class TabMetricsLoggerTest : public ChromeRenderViewHostTestHarness {
 };
 
 // Tests has_form_entry.
-TEST_F(TabMetricsLoggerTest, GetHasFormEntry) {
+// TODO(crbug.com/949288): The test is flaky on ChromeOS.
+#if defined(OS_CHROMEOS)
+#define MAYBE_GetHasFormEntry DISABLED_GetHasFormEntry
+#else
+#define MAYBE_GetHasFormEntry GetHasFormEntry
+#endif
+TEST_F(TabMetricsLoggerTest, MAYBE_GetHasFormEntry) {
   EXPECT_FALSE(CurrentTabFeatures().has_form_entry);
   content::PageImportanceSignals signal;
   signal.had_form_interaction = true;
