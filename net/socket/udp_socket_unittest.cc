@@ -682,7 +682,13 @@ TEST_F(UDPSocketTest, JoinMulticastGroup) {
 
 #if !defined(OS_FUCHSIA)
 // TODO(https://crbug.com/900709): SO_REUSEPORT doesn't work on Fuchsia.
-TEST_F(UDPSocketTest, SharedMulticastAddress) {
+#if defined(OS_IOS)
+// TODO(https://crbug.com/947115): failing on device on iOS 12.2.
+#define MAYBE_SharedMulticastAddress DISABLED_SharedMulticastAddress
+#else
+#define MAYBE_SharedMulticastAddress SharedMulticastAddress
+#endif
+TEST_F(UDPSocketTest, MAYBE_SharedMulticastAddress) {
   const char kGroup[] = "224.0.0.251";
 
   IPAddress group_ip;
