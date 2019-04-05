@@ -360,23 +360,11 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // For service worker execution contexts. Completes initialization of this
   // provider host. It is called once a renderer process has been found to host
-  // the worker. Returns the info needed for creating a provider on the renderer
-  // which will be connected to this provider host.
-  //
-  // |provider_info| should be the info returned by PreCreateForController(),
-  // which is partially filled out. This function returns it after
-  // filling it out completely.
-  //
-  // S13nServiceWorker:
-  // |loader_factory| is the factory to use for "network" requests for the
-  // service worker main script and import scripts. It is possibly not the
-  // simple direct network factory, since service worker scripts can have
-  // non-NetworkService schemes, e.g., chrome-extension:// URLs.
-  blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr
-  CompleteStartWorkerPreparation(
+  // the worker.
+  void CompleteStartWorkerPreparation(
       int process_id,
-      scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-      blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info);
+      service_manager::mojom::InterfaceProviderRequest
+          interface_provider_request);
 
   // Called when the shared worker main script resource has finished loading.
   // After this is called, is_response_committed() and is_execution_ready()

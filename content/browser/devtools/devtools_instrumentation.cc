@@ -268,9 +268,10 @@ bool WillCreateURLLoaderFactoryForServiceWorker(
   const base::UnguessableToken& worker_token =
       worker_agent_host->devtools_worker_token();
 
-  // TODO(caseq): support interception when enabled per-target,
-  // not just browser-wide.
-  bool had_interceptors = false;
+  bool had_interceptors =
+      MaybeCreateProxyForInterception<protocol::FetchHandler>(
+          worker_agent_host, rph, worker_token, false, false,
+          loader_factory_request);
 
   // TODO(caseq): assure deterministic order of browser agents (or sessions).
   for (auto* browser_agent_host : BrowserDevToolsAgentHost::Instances()) {

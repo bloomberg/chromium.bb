@@ -50,6 +50,9 @@ class FakeEmbeddedWorkerInstanceClient
   void BindDevToolsAgent(
       blink::mojom::DevToolsAgentHostAssociatedPtrInfo,
       blink::mojom::DevToolsAgentAssociatedRequest) override {}
+  void UpdateSubresourceLoaderFactories(
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+          subresource_loader_factories) override {}
 
   virtual void EvaluateScript();
 

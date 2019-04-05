@@ -100,6 +100,10 @@ class CONTENT_EXPORT ServiceWorkerContextClient
                           const blink::WebEmbeddedWorkerStartData& start_data);
   // Called on the main thread.
   blink::WebEmbeddedWorker& worker();
+  // Called on the main thread.
+  void UpdateSubresourceLoaderFactories(
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+          subresource_loader_factories);
 
   // WebServiceWorkerContextClient overrides.
   void WorkerReadyForInspectionOnMainThread() override;

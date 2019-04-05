@@ -276,12 +276,8 @@ CreateProviderHostForServiceWorkerContext(
           std::move(context), base::WrapRefCounted(hosted_version),
           &provider_info);
 
-  scoped_refptr<network::SharedURLLoaderFactory> loader_factory =
-      network::SharedURLLoaderFactory::Create(
-          std::make_unique<MockSharedURLLoaderFactoryInfo>());
-
-  provider_info = host->CompleteStartWorkerPreparation(
-      process_id, loader_factory, std::move(provider_info));
+  host->CompleteStartWorkerPreparation(
+      process_id, mojo::MakeRequest(&provider_info->interface_provider));
   output_endpoint->BindForServiceWorker(std::move(provider_info));
   return host;
 }
