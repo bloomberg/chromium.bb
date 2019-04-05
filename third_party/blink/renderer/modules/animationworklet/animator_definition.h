@@ -13,7 +13,7 @@ namespace blink {
 
 class V8AnimateCallback;
 class V8AnimatorConstructor;
-class V8Function;
+class V8StateCallback;
 
 // Represents a valid registered Javascript animator.  In particular it owns two
 // |v8::Function|s that are the "constructor" and "animate" functions of the
@@ -26,7 +26,7 @@ class MODULES_EXPORT AnimatorDefinition final
  public:
   explicit AnimatorDefinition(V8AnimatorConstructor* constructor,
                               V8AnimateCallback* animate,
-                              V8Function* state);
+                              V8StateCallback* state);
   ~AnimatorDefinition();
   virtual void Trace(blink::Visitor* visitor);
   const char* NameInHeapSnapshot() const override {
@@ -35,6 +35,7 @@ class MODULES_EXPORT AnimatorDefinition final
 
   V8AnimatorConstructor* ConstructorFunction() const { return constructor_; }
   V8AnimateCallback* AnimateFunction() const { return animate_; }
+  V8StateCallback* StateFunction() const { return state_; }
   bool IsStateful() const { return state_; }
 
  private:
@@ -42,7 +43,7 @@ class MODULES_EXPORT AnimatorDefinition final
   // alive. It participates in wrapper tracing as it holds onto V8 wrappers.
   Member<V8AnimatorConstructor> constructor_;
   Member<V8AnimateCallback> animate_;
-  Member<V8Function> state_;
+  Member<V8StateCallback> state_;
 };
 
 }  // namespace blink
