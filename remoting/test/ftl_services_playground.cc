@@ -274,9 +274,12 @@ void FtlServicesPlayground::OnSendMessageResponse(
 
 void FtlServicesPlayground::StartReceivingMessages(base::OnceClosure on_done) {
   VLOG(0) << "Running StartReceivingMessages...";
+  receive_messages_done_callback_ = std::move(on_done);
   messaging_client_->StartReceivingMessages(
-      base::BindOnce(&FtlServicesPlayground::OnStartReceivingMessagesDone,
-                     weak_factory_.GetWeakPtr(), std::move(on_done)));
+      base::BindOnce(&FtlServicesPlayground::OnReceiveMessagesStreamReady,
+                     weak_factory_.GetWeakPtr()),
+      base::BindOnce(&FtlServicesPlayground::OnReceiveMessagesStreamClosed,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void FtlServicesPlayground::StopReceivingMessages(base::OnceClosure on_done) {
@@ -297,23 +300,38 @@ void FtlServicesPlayground::OnMessageReceived(
       sender_id.c_str(), sender_registration_id.c_str(), message_text.c_str());
 }
 
-void FtlServicesPlayground::OnStartReceivingMessagesDone(
-    base::OnceClosure on_done,
+void FtlServicesPlayground::OnReceiveMessagesStreamReady() {
+  printf("Started receiving messages. Press enter to stop streaming...\n");
+  test::WaitForEnterKey(base::BindOnce(
+      &FtlServicesPlayground::StopReceivingMessages, weak_factory_.GetWeakPtr(),
+      std::move(receive_messages_done_callback_)));
+}
+
+void FtlServicesPlayground::OnReceiveMessagesStreamClosed(
     const grpc::Status& status) {
+  base::OnceClosure callback = std::move(receive_messages_done_callback_);
+  bool is_callback_null = callback.is_null();
+  if (is_callback_null) {
+    callback = base::DoNothing::Once();
+  }
   if (status.error_code() == grpc::StatusCode::CANCELLED) {
     printf("ReceiveMessages stream canceled by client.\n");
-    std::move(on_done).Run();
+    std::move(callback).Run();
     return;
   }
 
   if (!status.ok()) {
-    HandleGrpcStatusError(std::move(on_done), status);
-    return;
+    HandleGrpcStatusError(std::move(callback), status);
+  } else {
+    printf("Stream closed by server.\n");
+    std::move(callback).Run();
   }
-  printf("Started receiving messages. Press enter to stop streaming...\n");
-  test::WaitForEnterKey(
-      base::BindOnce(&FtlServicesPlayground::StopReceivingMessages,
-                     weak_factory_.GetWeakPtr(), std::move(on_done)));
+
+  if (is_callback_null) {
+    // Stream had been started and callback has been passed to wait for the
+    // enter key.
+    printf("Please press enter to continue...\n");
+  }
 }
 
 void FtlServicesPlayground::HandleGrpcStatusError(base::OnceClosure on_done,

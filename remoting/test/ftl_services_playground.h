@@ -67,8 +67,8 @@ class FtlServicesPlayground {
   void OnMessageReceived(const std::string& sender_id,
                          const std::string& sender_registration_id,
                          const ftl::ChromotingMessage& message);
-  void OnStartReceivingMessagesDone(base::OnceClosure on_done,
-                                    const grpc::Status& status);
+  void OnReceiveMessagesStreamReady();
+  void OnReceiveMessagesStreamClosed(const grpc::Status& status);
 
   void HandleGrpcStatusError(base::OnceClosure on_done,
                              const grpc::Status& status);
@@ -85,6 +85,8 @@ class FtlServicesPlayground {
       message_subscription_;
 
   std::unique_ptr<PeerToPeer::Stub> peer_to_peer_stub_;
+
+  base::OnceClosure receive_messages_done_callback_;
 
   base::WeakPtrFactory<FtlServicesPlayground> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(FtlServicesPlayground);

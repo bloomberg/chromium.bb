@@ -66,12 +66,15 @@ void FtlMessageReceptionChannel::Initialize(
   on_incoming_msg_ = on_incoming_msg;
 }
 
-void FtlMessageReceptionChannel::StartReceivingMessages(DoneCallback on_done) {
+void FtlMessageReceptionChannel::StartReceivingMessages(
+    base::OnceClosure on_ready,
+    DoneCallback on_closed) {
+  stream_closed_callbacks_.push_back(std::move(on_closed));
   if (state_ == State::STARTED) {
-    std::move(on_done).Run(grpc::Status::OK);
+    std::move(on_ready).Run();
     return;
   }
-  start_receiving_messages_callbacks_.push_back(std::move(on_done));
+  stream_ready_callbacks_.push_back(std::move(on_ready));
   if (state_ == State::STARTING) {
     return;
   }
@@ -83,7 +86,7 @@ void FtlMessageReceptionChannel::StopReceivingMessages() {
     return;
   }
   StopReceivingMessagesInternal();
-  RunStartReceivingMessagesCallbacks(grpc::Status::CANCELLED);
+  RunStreamClosedCallbacks(grpc::Status::CANCELLED);
 }
 
 const net::BackoffEntry&
@@ -106,7 +109,7 @@ void FtlMessageReceptionChannel::OnReceiveMessagesStreamClosed(
     return;
   }
   StopReceivingMessagesInternal();
-  RunStartReceivingMessagesCallbacks(status);
+  RunStreamClosedCallbacks(status);
 }
 
 void FtlMessageReceptionChannel::OnMessageReceived(
@@ -123,7 +126,7 @@ void FtlMessageReceptionChannel::OnMessageReceived(
       break;
     case ftl::ReceiveMessagesResponse::BodyCase::kStartOfBatch:
       state_ = State::STARTED;
-      RunStartReceivingMessagesCallbacks(grpc::Status::OK);
+      RunStreamReadyCallbacks();
       BeginStreamTimers();
       break;
     case ftl::ReceiveMessagesResponse::BodyCase::kEndOfBatch:
@@ -135,15 +138,25 @@ void FtlMessageReceptionChannel::OnMessageReceived(
   }
 }
 
-void FtlMessageReceptionChannel::RunStartReceivingMessagesCallbacks(
-    const grpc::Status& status) {
-  if (start_receiving_messages_callbacks_.empty()) {
+void FtlMessageReceptionChannel::RunStreamReadyCallbacks() {
+  if (stream_ready_callbacks_.empty()) {
     return;
   }
-  for (DoneCallback& callback : start_receiving_messages_callbacks_) {
+  for (base::OnceClosure& callback : stream_ready_callbacks_) {
+    std::move(callback).Run();
+  }
+  stream_ready_callbacks_.clear();
+}
+
+void FtlMessageReceptionChannel::RunStreamClosedCallbacks(
+    const grpc::Status& status) {
+  if (stream_closed_callbacks_.empty()) {
+    return;
+  }
+  for (DoneCallback& callback : stream_closed_callbacks_) {
     std::move(callback).Run(status);
   }
-  start_receiving_messages_callbacks_.clear();
+  stream_closed_callbacks_.clear();
 }
 
 void FtlMessageReceptionChannel::RetryStartReceivingMessagesWithBackoff() {

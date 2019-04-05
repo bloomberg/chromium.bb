@@ -116,8 +116,10 @@ void FtlMessagingClient::SendMessage(
   executor_->ExecuteRpc(std::move(grpc_request));
 }
 
-void FtlMessagingClient::StartReceivingMessages(DoneCallback on_done) {
-  reception_channel_->StartReceivingMessages(std::move(on_done));
+void FtlMessagingClient::StartReceivingMessages(base::OnceClosure on_ready,
+                                                DoneCallback on_closed) {
+  reception_channel_->StartReceivingMessages(std::move(on_ready),
+                                             std::move(on_closed));
 }
 
 void FtlMessagingClient::StopReceivingMessages() {
