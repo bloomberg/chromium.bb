@@ -67,6 +67,14 @@ void PossiblyWarnFeatureDeprecation(content::RenderFrameHost* rfh,
           "list. See https://www.chromestatus.com/feature/5706745674465280 for "
           "more details.");
       return;
+    case WebFeature::kDownloadInAdFrameWithoutUserGesture:
+      rfh->AddMessageToConsole(
+          blink::mojom::ConsoleMessageLevel::kWarning,
+          "[Deprecation] Download in ad frame without user activation is "
+          "deprecated and will be removed in M76, around July 2019. See "
+          "https://www.chromestatus.com/feature/6311883621531648 for more "
+          "details.");
+      return;
 
     default:
       return;
