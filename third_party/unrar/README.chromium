@@ -33,3 +33,6 @@ Notable changes from upstream:
 - Put all symbols into a namespace third_party_unrar to avoid polluting global
   namespace (add_namespaces.patch)
 - Remove unnecessary semicolons from header files (semicolons.patch)
+- Fix a bug with NOVOLUME implementation (https://crbug.com/949787). This
+  should be temporary, until the fix can be pulled from upstream.
+  (fix_novolume.patch)
