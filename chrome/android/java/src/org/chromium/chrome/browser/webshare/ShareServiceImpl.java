@@ -9,6 +9,7 @@ import android.content.ComponentName;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 
+import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
@@ -31,6 +32,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * Android implementation of the ShareService service defined in
@@ -58,6 +61,51 @@ public class ShareServiceImpl implements ShareService {
     // These protect us if the renderer is compromised.
     private static final int MAX_SHARED_FILE_COUNT = 10;
     private static final int MAX_SHARED_FILE_BYTES = 50 * 1024 * 1024;
+
+    // clang-format off
+    private static final Set<String> PERMITTED_EXTENSIONS =
+            Collections.unmodifiableSet(CollectionUtil.newHashSet(
+                    "bmp", // image/bmp
+                    "css", // text/css
+                    "csv", // text/csv
+                    "ehtml", // text/html
+                    "flac", // audio/flac
+                    "gif", // image/gif
+                    "htm", // text/html
+                    "html", // text/html
+                    "ico", // image/x-icon
+                    "jfif", // image/jpeg
+                    "jpeg", // image/jpeg
+                    "jpg", // image/jpeg
+                    "m4a", // audio/x-m4a
+                    "m4v", // video/mp4
+                    "mp3", // audio/mp3
+                    "mp4", // video/mp4
+                    "mpeg", // video/mpeg
+                    "mpg", // video/mpeg
+                    "oga", // audio/ogg
+                    "ogg", // audio/ogg
+                    "ogm", // video/ogg
+                    "ogv", // video/ogg
+                    "opus", // audio/ogg
+                    "pjp", // image/jpeg
+                    "pjpeg", // image/jpeg
+                    "png", // image/png
+                    "shtm", // text/html
+                    "shtml", // text/html
+                    "svg", // image/svg+xml
+                    "svgz", // image/svg+xml
+                    "text", // text/plain
+                    "tif", // image/tiff
+                    "tiff", // image/tiff
+                    "txt", // text/plain
+                    "wav", // audio/wav
+                    "weba", // audio/webm
+                    "webm", // video/webm
+                    "webp", // image/webp
+                    "xbm" // image/x-xbitmap
+            ));
+    // clang-format on
 
     private static final TaskRunner TASK_RUNNER =
             PostTask.createSequencedTaskRunner(TaskTraits.USER_BLOCKING);
@@ -171,10 +219,9 @@ public class ShareServiceImpl implements ShareService {
         }.executeOnTaskRunner(TASK_RUNNER);
     }
 
-    private static boolean isDangerousFilename(String name) {
-        String extension = FileUtils.getExtension(name);
+    static boolean isDangerousFilename(String name) {
         return name.indexOf('/') != -1 || name.indexOf('\\') != -1 || name.indexOf('.') <= 0
-                || extension.equals(".apk") || extension.equals(".dex");
+                || !PERMITTED_EXTENSIONS.contains(FileUtils.getExtension(name));
     }
 
     @Nullable
