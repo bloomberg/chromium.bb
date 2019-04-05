@@ -7,6 +7,17 @@
 
 #include "base/callback_forward.h"
 #include "base/component_export.h"
+#include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+
+namespace ime {
+namespace mojom {
+
+class ImeEngine;
+class ImeEngineClient;
+
+}  // namespace mojom
+}  // namespace ime
 
 namespace ui {
 
@@ -33,6 +44,10 @@ class COMPONENT_EXPORT(UI_BASE_IME) InputMethodDelegate {
   virtual EventDispatchDetails DispatchKeyEventPostIME(
       KeyEvent* key_event,
       DispatchKeyEventPostIMECallback callback) = 0;
+
+  virtual bool ConnectToImeEngine(
+      mojo::InterfaceRequest<::ime::mojom::ImeEngine> engine_request,
+      mojo::InterfacePtr<::ime::mojom::ImeEngineClient> client);
 
  protected:
   static void RunDispatchKeyEventPostIMECallback(
