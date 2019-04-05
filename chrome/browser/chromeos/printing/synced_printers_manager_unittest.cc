@@ -291,10 +291,6 @@ TEST_F(SyncedPrintersManagerTest, UpdatedPrinterConfiguration) {
   EXPECT_FALSE(manager_->IsConfigurationCurrent(updated));
 
   updated = printer;
-  updated.set_effective_uri("different value");
-  EXPECT_FALSE(manager_->IsConfigurationCurrent(updated));
-
-  updated = printer;
   updated.mutable_ppd_reference()->autoconf = true;
   EXPECT_FALSE(manager_->IsConfigurationCurrent(updated));
 

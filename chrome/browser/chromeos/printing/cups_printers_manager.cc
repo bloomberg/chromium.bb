@@ -256,7 +256,6 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
     printers_[kConfigured] = synced_printers_manager_->GetConfiguredPrinters();
     RebuildConfiguredPrintersIndex();
     RebuildDetectedLists();
-    UpdateConfiguredPrinterURIs();
     NotifyObservers({kConfigured});
   }
 
@@ -290,13 +289,6 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
         break;
     }
     RebuildDetectedLists();
-
-    // We may have new URI information for a configured printer in the changed
-    // detected list.  If we do, pass the updated information along to
-    // observers.
-    if (UpdateConfiguredPrinterURIs()) {
-      NotifyObservers({kConfigured});
-    }
   }
 
  private:
@@ -326,31 +318,6 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
     for (size_t i = 0; i < printers_[kConfigured].size(); ++i) {
       configured_printers_index_[printers_[kConfigured][i].id()] = i;
     }
-  }
-
-  // Cross reference the Configured printers with the raw detected printer
-  // lists.  Returns true if any entries in the configured printers list
-  // changed as a result of this cross referencing, false otherwise.
-  bool UpdateConfiguredPrinterURIs() {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
-    bool updated = false;
-    for (const auto* printer_list : {&usb_detections_, &zeroconf_detections_}) {
-      for (const auto& detected : *printer_list) {
-        auto configured =
-            configured_printers_index_.find(detected.printer.id());
-        if (configured != configured_printers_index_.end()) {
-          Printer* configured_printer =
-              &printers_[kConfigured][configured->second];
-          if (configured_printer->effective_uri() !=
-              detected.printer.effective_uri()) {
-            configured_printer->set_effective_uri(
-                detected.printer.effective_uri());
-            updated = true;
-          }
-        }
-      }
-    }
-    return updated;
   }
 
   // Look through all sources for the detected printer with the given id.

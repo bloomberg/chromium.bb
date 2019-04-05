@@ -71,9 +71,6 @@ PrinterDetector::DetectedPrinter MakeExpectedPrinter(const std::string& name,
   net::IPAddress ip_address = GetIPAddressFor(name);
   int port = GetPortFor(name);
   bool ssl = flags & kFlagSSL;
-  printer.set_effective_uri(
-      base::StringPrintf("ipp%s://%s:%d/%s_rp", ssl ? "s" : "",
-                         ip_address.ToString().c_str(), port, name.c_str()));
   printer.set_uri(base::StringPrintf("ipp%s://%s.local:%d/%s_rp",
                                      ssl ? "s" : "", name.c_str(), port,
                                      name.c_str()));
@@ -372,7 +369,6 @@ class ZeroconfPrinterDetectorTest : public testing::Test,
 
   void ExpectPrinterEq(const PrinterDetector::DetectedPrinter& expected,
                        const PrinterDetector::DetectedPrinter& actual) {
-    EXPECT_EQ(expected.printer.effective_uri(), actual.printer.effective_uri());
     EXPECT_EQ(expected.printer.uri(), actual.printer.uri());
     // We don't have a good way to directly check for an expected id.
     EXPECT_EQ(expected.printer.uuid(), actual.printer.uuid());

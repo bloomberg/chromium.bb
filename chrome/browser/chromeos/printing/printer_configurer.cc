@@ -119,11 +119,6 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
     DCHECK(!printer.uri().empty());
     PRINTER_LOG(USER) << printer.make_and_model() << " Printer setup requested";
 
-    if (!printer.RequiresIpResolution()) {
-      StartConfiguration(printer, std::move(callback));
-      return;
-    }
-
     // Ensure that |address| is non-empty before attempting to resolve it.
     // If the uri in |printer| does not contain both a hostname and a port
     // number then GetHostAndPort() will return an empty string.
@@ -167,7 +162,7 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
                        << " Attempting autoconf setup";
     auto* client = DBusThreadManager::Get()->GetDebugDaemonClient();
     client->CupsAddAutoConfiguredPrinter(
-        printer.id(), printer.UriForCups(),
+        printer.id(), printer.uri(),
         base::BindOnce(&PrinterConfigurerImpl::OnAddedPrinter,
                        weak_factory_.GetWeakPtr(), printer,
                        std::move(callback)));
@@ -193,9 +188,6 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
 
     PRINTER_LOG(EVENT) << printer->make_and_model()
                        << " IP Resolution succeeded";
-    std::string effective_uri = printer->ReplaceHostAndPort(endpoint);
-    printer->set_effective_uri(effective_uri);
-
     StartConfiguration(*printer, std::move(cb));
   }
 
@@ -222,7 +214,7 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
 
     PRINTER_LOG(EVENT) << printer.make_and_model() << " Manual printer setup";
     client->CupsAddManuallyConfiguredPrinter(
-        printer.id(), printer.UriForCups(), ppd_contents,
+        printer.id(), printer.uri(), ppd_contents,
         base::BindOnce(&PrinterConfigurerImpl::OnAddedPrinter,
                        weak_factory_.GetWeakPtr(), printer, std::move(cb)));
   }
@@ -316,7 +308,7 @@ std::string PrinterConfigurer::SetupFingerprint(const Printer& printer) {
   base::MD5Context ctx;
   base::MD5Init(&ctx);
   base::MD5Update(&ctx, printer.id());
-  base::MD5Update(&ctx, printer.UriForCups());
+  base::MD5Update(&ctx, printer.uri());
   base::MD5Update(&ctx, printer.ppd_reference().user_supplied_ppd_url);
   base::MD5Update(&ctx, printer.ppd_reference().effective_make_and_model);
   char autoconf = printer.ppd_reference().autoconf ? 1 : 0;
