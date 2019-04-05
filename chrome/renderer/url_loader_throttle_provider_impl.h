@@ -48,11 +48,6 @@ class URLLoaderThrottleProviderImpl
   // general use.
   URLLoaderThrottleProviderImpl(const URLLoaderThrottleProviderImpl& other);
 
-  // Reports whether the provider type is frame or not. When this is true, the
-  // member functions are called on the main thread. Otherwise, they are called
-  // on worker threads.
-  bool IsTypeFrame() const;
-
   std::unique_ptr<subresource_filter::AdDelayThrottle::Factory>
       ad_delay_factory_;
 
