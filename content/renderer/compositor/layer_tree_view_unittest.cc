@@ -423,7 +423,8 @@ class NotifySwapTimesLayerTreeViewTest : public ::testing::Test {
           std::move(callback).Run();
         },
         run_loop.QuitClosure(), &swap_time));
-    layer_tree_view_.SynchronouslyComposite(/*raster=*/true);
+    layer_tree_view_.layer_tree_host()->Composite(base::TimeTicks::Now(),
+                                                  /*raster=*/true);
     // The swap time notify comes as a posted task.
     run_loop.Run();
     return swap_time;

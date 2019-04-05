@@ -235,10 +235,6 @@ bool LayerTreeView::IsSurfaceSynchronizationEnabled() const {
   return layer_tree_host_->GetSettings().enable_surface_synchronization;
 }
 
-void LayerTreeView::SetNeedsForcedRedraw() {
-  layer_tree_host_->SetNeedsCommitWithForcedRedraw();
-}
-
 std::unique_ptr<cc::SwapPromiseMonitor>
 LayerTreeView::CreateLatencyInfoSwapPromiseMonitor(ui::LatencyInfo* latency) {
   return std::make_unique<cc::LatencyInfoSwapPromiseMonitor>(
@@ -333,14 +329,6 @@ bool LayerTreeView::HaveScrollEventHandlers() const {
   return layer_tree_host_->have_scroll_event_handlers();
 }
 
-bool LayerTreeView::CompositeIsSynchronous() const {
-  if (!compositor_thread_) {
-    DCHECK(!layer_tree_host_->GetSettings().single_thread_proxy_scheduler);
-    return true;
-  }
-  return false;
-}
-
 void LayerTreeView::SetLayerTreeFrameSink(
     std::unique_ptr<cc::LayerTreeFrameSink> layer_tree_frame_sink) {
   if (!layer_tree_frame_sink) {
@@ -348,26 +336,6 @@ void LayerTreeView::SetLayerTreeFrameSink(
     return;
   }
   layer_tree_host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
-}
-
-void LayerTreeView::SynchronouslyComposite(bool raster) {
-  DCHECK(CompositeIsSynchronous());
-  if (!layer_tree_host_->IsVisible())
-    return;
-
-  if (in_synchronous_compositor_update_) {
-    // Web tests can use a nested message loop to pump frames while inside a
-    // frame, but the compositor does not support this. In this case, we only
-    // run blink's lifecycle updates.
-    delegate_->BeginMainFrame(base::TimeTicks::Now());
-    delegate_->UpdateVisualState();
-    return;
-  }
-
-  DCHECK(!in_synchronous_compositor_update_);
-  base::AutoReset<bool> inside_composite(&in_synchronous_compositor_update_,
-                                         true);
-  layer_tree_host_->Composite(base::TimeTicks::Now(), raster);
 }
 
 std::unique_ptr<cc::ScopedDeferMainFrameUpdate>
@@ -402,40 +370,6 @@ void LayerTreeView::SetBrowserControlsHeight(float top_height,
 
 void LayerTreeView::SetBrowserControlsShownRatio(float ratio) {
   layer_tree_host_->SetBrowserControlsShownRatio(ratio);
-}
-
-void LayerTreeView::RequestDecode(const cc::PaintImage& image,
-                                  base::OnceCallback<void(bool)> callback) {
-  layer_tree_host_->QueueImageDecode(image, std::move(callback));
-
-  // If we're compositing synchronously, the SetNeedsCommit call which will be
-  // issued by |layer_tree_host_| is not going to cause a commit, due to the
-  // fact that this would make web tests slow and cause flakiness. However,
-  // in this case we actually need a commit to transfer the decode requests to
-  // the impl side. So, force a commit to happen.
-  if (CompositeIsSynchronous()) {
-    const bool raster = true;
-    layer_tree_host_->GetTaskRunnerProvider()->MainThreadTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(&LayerTreeView::SynchronouslyComposite,
-                                  weak_factory_.GetWeakPtr(), raster));
-  }
-}
-
-void LayerTreeView::RequestPresentationCallback(base::OnceClosure callback) {
-  layer_tree_host_->RequestPresentationTimeForNextFrame(base::BindOnce(
-      [](base::OnceClosure callback,
-         const gfx::PresentationFeedback& feedback) {
-        std::move(callback).Run();
-      },
-      std::move(callback)));
-  SetNeedsForcedRedraw();
-  if (CompositeIsSynchronous()) {
-    main_thread_->PostTask(
-        FROM_HERE, base::BindOnce(&LayerTreeView::SynchronouslyComposite,
-                                  weak_factory_.GetWeakPtr(), /*raster=*/true));
-  } else {
-    layer_tree_host_->SetNeedsCommit();
-  }
 }
 
 void LayerTreeView::SetOverscrollBehavior(
