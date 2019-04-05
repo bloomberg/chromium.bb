@@ -11,6 +11,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
@@ -27,6 +28,7 @@
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/browser/test_password_store.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -343,6 +345,13 @@ TEST_F(PasswordGenerationFrameHelperTest, DetectFormsEligibleForGeneration) {
       .WillRepeatedly(testing::Return(true));
   EXPECT_CALL(*client_, GetPasswordSyncState())
       .WillRepeatedly(testing::Return(SYNCING_NORMAL_ENCRYPTION));
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      /* enabled_features */ {},
+      /*  disabled_features*/ {features::kNewPasswordFormParsing,
+                               features::kNewPasswordFormParsingForSaving,
+                               features::kOnlyNewParser});
 
   autofill::FormData login_form;
   login_form.origin = GURL("http://www.yahoo.com/login/");

@@ -420,7 +420,6 @@ TEST_F(NewPasswordFormManagerTest, Autofill) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
 
   CreateFormManager(observed_form_);
-  EXPECT_CALL(driver_, AllowPasswordGenerationForForm(_));
   EXPECT_CALL(driver_, FormEligibleForGenerationFound(_)).Times(0);
   PasswordFormFillData fill_data;
   EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));
@@ -1269,7 +1268,6 @@ bool ParsingSuccessReported(const ukm::mojom::UkmEntry* entry,
 TEST_F(NewPasswordFormManagerTest, RecordReadonlyWhenFilling) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
-  EXPECT_CALL(driver_, AllowPasswordGenerationForForm(_));
   EXPECT_CALL(driver_, FillPasswordForm(_));
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
 

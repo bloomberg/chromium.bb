@@ -398,6 +398,11 @@ class PasswordFormManagerTest : public testing::Test {
     psl_saved_match_.action = GURL("http://m.accounts.google.com/a/Login");
     psl_saved_match_.signon_realm = "http://m.accounts.google.com";
 
+    scoped_feature_list_.InitWithFeatures(
+        /* enabled_features */ {},
+        /*  disabled_features*/ {features::kNewPasswordFormParsing,
+                                 features::kNewPasswordFormParsingForSaving,
+                                 features::kOnlyNewParser});
     password_manager_.reset(new PasswordManager(&client_));
     form_manager_.reset(new PasswordFormManager(
         password_manager_.get(), &client_, client_.driver(), observed_form_,
@@ -1018,6 +1023,7 @@ class PasswordFormManagerTest : public testing::Test {
   // needs to outlive the latter.
   FakeFormFetcher fake_form_fetcher_;
   std::unique_ptr<PasswordFormManager> form_manager_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 class PasswordFormManagerFillOnAccountSelectTest

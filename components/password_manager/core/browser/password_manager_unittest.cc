@@ -265,6 +265,12 @@ class PasswordManagerTest : public testing::Test {
         .WillByDefault(WithArg<0>(DeletePtr()));
     ON_CALL(client_, ShowManualFallbackForSavingPtr(_, _, _))
         .WillByDefault(WithArg<0>(DeletePtr()));
+
+    // When waiting for predictions is on, it makes tests more complicated.
+    // Disable waiting, since most tests have nothing to do with predictions.
+    // All tests that test working with prediction should explicitly turn
+    // predictions on.
+    NewPasswordFormManager::set_wait_for_server_predictions_for_filling(false);
   }
 
   void TearDown() override {
@@ -692,8 +698,10 @@ TEST_F(PasswordManagerTest, FormSubmitNoGoodMatch) {
   PasswordForm form(MakeSimpleForm());
   std::vector<PasswordForm> observed = {form};
   EXPECT_CALL(driver_, FillPasswordForm(_)).Times(2);
+  // TODO(https://crbug.com/949519): replace WillRepeatedly with WillOnce when
+  // the old parser is gone.
   EXPECT_CALL(*store_, GetLogins(PasswordStore::FormDigest(form), _))
-      .WillOnce(WithArg<1>(InvokeConsumer(existing_different)));
+      .WillRepeatedly(WithArg<1>(InvokeConsumer(existing_different)));
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
   EXPECT_CALL(client_, IsSavingAndFillingEnabled(form.origin))
@@ -833,8 +841,10 @@ TEST_F(PasswordManagerTest, DontSaveAlreadySavedCredential) {
   std::vector<PasswordForm> observed = {form};
   EXPECT_CALL(client_, IsSavingAndFillingEnabled(form.origin))
       .WillRepeatedly(Return(true));
+  // TODO(https://crbug.com/949519): replace WillRepeatedly with WillOnce when
+  // the old parser is gone.
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillOnce(WithArg<1>(InvokeConsumer(form)));
+      .WillRepeatedly(WithArg<1>(InvokeConsumer(form)));
   EXPECT_CALL(driver_, FillPasswordForm(_)).Times(2);
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
@@ -1161,8 +1171,11 @@ TEST_F(PasswordManagerTest, InitiallyInvisibleForm) {
   std::vector<PasswordForm> observed;
   observed.push_back(form);
   EXPECT_CALL(driver_, FillPasswordForm(_));
+  // TODO(https://crbug.com/949519): replace WillRepeatedly with WillOnce when
+  // the
+  // old parser is gone.
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillOnce(WithArg<1>(InvokeConsumer(form)));
+      .WillRepeatedly(WithArg<1>(InvokeConsumer(form)));
   manager()->OnPasswordFormsParsed(&driver_, observed);
   observed.clear();
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
@@ -1177,8 +1190,10 @@ TEST_F(PasswordManagerTest, FillPasswordsOnDisabledManager) {
   std::vector<PasswordForm> observed;
   observed.push_back(form);
   EXPECT_CALL(driver_, FillPasswordForm(_));
+  // TODO(https://crbug.com/949519): replace WillRepeatedly with WillOnce when
+  // the old parser is gone.
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillOnce(WithArg<1>(InvokeConsumer(form)));
+      .WillRepeatedly(WithArg<1>(InvokeConsumer(form)));
   manager()->OnPasswordFormsParsed(&driver_, observed);
 }
 
@@ -1526,8 +1541,10 @@ TEST_F(PasswordManagerTest, DoNotSaveWithEmptyNewPasswordAndNonemptyPassword) {
   form.new_password_element = ASCIIToUTF16("new_password_element");
   form.new_password_value.clear();
   observed.push_back(form);
+  // TODO(https://crbug.com/949519): replace WillRepeatedly with WillOnce when
+  // the old parser is gone.
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillOnce(WithArg<1>(InvokeEmptyConsumerWithForms()));
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
@@ -1560,8 +1577,10 @@ TEST_F(PasswordManagerTest, FormSubmitWithOnlyPasswordField) {
   // Loads passsword form without username input field.
   PasswordForm form(MakeSimpleFormWithOnlyPasswordField());
   observed.push_back(form);
+  // TODO(https://crbug.com/949519): replace WillRepeatedly with WillOnce when
+  // the old parser is gone.
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillOnce(WithArg<1>(InvokeEmptyConsumerWithForms()));
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
@@ -1600,10 +1619,8 @@ TEST_F(PasswordManagerTest, FormSubmitWithOnlyPasswordField) {
 TEST_F(PasswordManagerTest, FillPasswordOnManyFrames_SameId) {
   // Setting task runner is required since NewPasswordFormManager uses
   // PostDelayTask for making filling.
+  NewPasswordFormManager::set_wait_for_server_predictions_for_filling(true);
   TestMockTimeTaskRunner::ScopedContext scoped_context_(task_runner_.get());
-
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kNewPasswordFormParsing);
 
   // Two unrelated forms...
   FormData form_data;
@@ -1665,7 +1682,10 @@ TEST_F(PasswordManagerTest, FillPasswordOnManyFrames_SameId) {
 // similar, then it is important to ensure that the single governing
 // PasswordFormManager knows about both PasswordManagerDriver instances and
 // instructs them to fill.
+// TODO(https://crbug.com/949519): Remove this test when the old parser is gone.
 TEST_F(PasswordManagerTest, FillPasswordOnManyFrames_SameForm) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  TurnOnNewParsingForFilling(&scoped_feature_list, false);
   PasswordForm same_form = MakeSimpleForm();
 
   // Observe the form in the first frame.
@@ -1690,7 +1710,7 @@ TEST_F(PasswordManagerTest, SameDocumentNavigation) {
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillOnce(WithArg<1>(InvokeEmptyConsumerWithForms()));
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
@@ -1708,7 +1728,10 @@ TEST_F(PasswordManagerTest, SameDocumentNavigation) {
   EXPECT_CALL(*store_, AddLogin(FormMatches(form)));
   // The Save() call triggers updating for |pending_login_managers_|, hence the
   // further GetLogins call.
-  EXPECT_CALL(*store_, GetLogins(_, _));
+  // There are 2 calls to |store_| because both PasswordFormManager and
+  // NewPasswordFormManager call it. TODO(https://crbug.com/949519): remove
+  // Times(2) when the old parser is gone.
+  EXPECT_CALL(*store_, GetLogins(_, _)).Times(2);
   form_manager_to_save->Save();
 }
 
@@ -1722,8 +1745,10 @@ TEST_F(PasswordManagerTest, SameDocumentBlacklistedSite) {
   PasswordForm blacklisted_form(form);
   blacklisted_form.username_value = ASCIIToUTF16("");
   blacklisted_form.blacklisted_by_user = true;
+  // TODO(https://crbug.com/949519): replace WillRepeatedly with WillOnce when
+  // the old parser is gone.
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillOnce(WithArg<1>(InvokeConsumer(blacklisted_form)));
+      .WillRepeatedly(WithArg<1>(InvokeConsumer(blacklisted_form)));
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
@@ -1892,8 +1917,10 @@ TEST_F(PasswordManagerTest, FormSubmittedUnchangedNotifiesClient) {
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
   EXPECT_CALL(driver_, FillPasswordForm(_)).Times(2);
+  // TODO(https://crbug.com/949519): replace WillRepeatedly with WillOnce when
+  // the old parser is gone.
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillOnce(WithArg<1>(InvokeConsumer(form)));
+      .WillRepeatedly(WithArg<1>(InvokeConsumer(form)));
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
@@ -1927,7 +1954,10 @@ TEST_F(PasswordManagerTest, SaveFormFetchedAfterSubmit) {
 
   // GetLogins calls remain unanswered to emulate that PasswordStore did not
   // fetch a form in time before submission.
-  EXPECT_CALL(*store_, GetLogins(_, _));
+  // There are 2 calls to |store_| because both PasswordFormManager and
+  // NewPasswordFormManager call it. TODO(https://crbug.com/949519): remove
+  // Times(2) when the old parser is gone.
+  EXPECT_CALL(*store_, GetLogins(_, _)).Times(2);
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
   ASSERT_EQ(1u, manager()->pending_login_managers().size());
@@ -2365,8 +2395,10 @@ TEST_F(PasswordManagerTest, AutofillingOfAffiliatedCredentials) {
 
   autofill::PasswordFormFillData form_data;
   EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&form_data));
+  // TODO(https://crbug.com/949519): replace WillRepeatedly with WillOnce when
+  // the old parser is gone.
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillOnce(WithArg<1>(InvokeConsumer(android_form)));
+      .WillRepeatedly(WithArg<1>(InvokeConsumer(android_form)));
   manager()->OnPasswordFormsParsed(&driver_, observed_forms);
   observed_forms.clear();
   manager()->OnPasswordFormsRendered(&driver_, observed_forms, true);
@@ -2410,8 +2442,10 @@ TEST_F(PasswordManagerTest, UpdatePasswordOfAffiliatedCredential) {
   std::vector<PasswordForm> observed_forms = {observed_form};
 
   EXPECT_CALL(driver_, FillPasswordForm(_)).Times(2);
+  // TODO(https://crbug.com/949519): replace WillRepeatedly with WillOnce when
+  // the old parser is gone.
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillOnce(WithArg<1>(InvokeConsumer(android_form)));
+      .WillRepeatedly(WithArg<1>(InvokeConsumer(android_form)));
   manager()->OnPasswordFormsParsed(&driver_, observed_forms);
   manager()->OnPasswordFormsRendered(&driver_, observed_forms, true);
 
@@ -2453,7 +2487,9 @@ TEST_F(PasswordManagerTest, ClearedFieldsSuccessCriteria) {
   std::vector<PasswordForm> observed = {form};
 
   // Emulate page load.
-  EXPECT_CALL(*store_, GetLogins(PasswordStore::FormDigest(form), _));
+  // TODO(https://crbug.com/949519): remove Times(2) when the old parser is
+  // gone.
+  EXPECT_CALL(*store_, GetLogins(PasswordStore::FormDigest(form), _)).Times(2);
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
   ASSERT_EQ(1u, manager()->pending_login_managers().size());
@@ -2549,8 +2585,10 @@ TEST_F(PasswordManagerTest, ManualFallbackForSaving) {
   stored_form.password_value = ASCIIToUTF16("old_password");
   EXPECT_CALL(client_, IsSavingAndFillingEnabled(form.origin))
       .WillRepeatedly(Return(true));
+  // TODO(https://crbug.com/949519): replace WillRepeatedly with WillOnce when
+  // the old parser is gone.
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillOnce(WithArg<1>(InvokeConsumer(stored_form)));
+      .WillRepeatedly(WithArg<1>(InvokeConsumer(stored_form)));
   EXPECT_CALL(driver_, FillPasswordForm(_)).Times(2);
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
@@ -2599,7 +2637,10 @@ TEST_F(PasswordManagerTest, ManualFallbackForSaving_SlowBackend) {
   PasswordStoreConsumer* store_consumer = nullptr;
   EXPECT_CALL(client_, IsSavingAndFillingEnabled(form.origin))
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(*store_, GetLogins(_, _)).WillOnce(SaveArg<1>(&store_consumer));
+  // TODO(https://crbug.com/949519): replace WillRepeatedly with WillOnce when
+  // the old parser is gone.
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(SaveArg<1>(&store_consumer));
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
@@ -2623,8 +2664,10 @@ TEST_F(PasswordManagerTest, ManualFallbackForSaving_GeneratedPassword) {
   observed.push_back(form);
   EXPECT_CALL(client_, IsSavingAndFillingEnabled(form.origin))
       .WillRepeatedly(Return(true));
+  // TODO(https://crbug.com/949519): replace WillRepeatedly with WillOnce when
+  // the old parser is gone.
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillOnce(WithArg<1>(InvokeEmptyConsumerWithForms()));
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
@@ -2852,8 +2895,11 @@ TEST_F(PasswordManagerTest, CertErrorReported) {
   };
 
   const std::vector<PasswordForm> observed = {PasswordForm()};
-  // PasswordStore requested only once for the same form.
-  EXPECT_CALL(*store_, GetLogins(_, _));
+  // PasswordStore requested only once for the same form by both
+  // PasswordFormManager and NewPasswordFormManager.
+  // TODO(https://crbug.com/949519): remove Times(2) when the old parser is
+  // gone.
+  EXPECT_CALL(*store_, GetLogins(_, _)).Times(2);
 
   for (const auto& test_case : kCases) {
     SCOPED_TRACE(testing::Message("index of test_case = ")
@@ -3216,6 +3262,7 @@ TEST_F(PasswordManagerTest, NoSavePromptForNotPasswordForm) {
 // Check that when autofill predictions are received before a form is found then
 // server predictions are not ignored and used for filling.
 TEST_F(PasswordManagerTest, AutofillPredictionBeforeFormParsed) {
+  NewPasswordFormManager::set_wait_for_server_predictions_for_filling(true);
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kNewPasswordFormParsing);
