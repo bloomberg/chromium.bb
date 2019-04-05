@@ -233,5 +233,15 @@ void RemoveProfilesNotUsedSinceTimestamp(
       num_profiles_supressed);
 }
 
+void PrepareSuggestions(const std::vector<base::string16>& labels,
+                        std::vector<Suggestion>* suggestions) {
+  DCHECK_EQ(suggestions->size(), labels.size());
+
+  for (size_t i = 0; i < labels.size(); ++i) {
+    (*suggestions)[i].additional_label = base::string16(labels[i]);
+    (*suggestions)[i].label = base::string16(labels[i]);
+  }
+}
+
 }  // namespace suggestion_selection
 }  // namespace autofill

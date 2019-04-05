@@ -76,8 +76,7 @@ std::unique_ptr<LabelFormatter> LabelFormatter::Create(
 
   switch (groups) {
     case kName | kAddress | kEmail | kPhone:
-      return std::make_unique<AddressContactFormLabelFormatter>(
-          app_locale, focused_field_type, field_types);
+      return nullptr;
     case kName | kAddress | kPhone:
       return std::make_unique<AddressPhoneFormLabelFormatter>(
           app_locale, focused_field_type, field_types);

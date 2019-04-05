@@ -38,6 +38,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/label_formatter_test_utils.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/suggestion_selection.h"
 #include "components/autofill/core/browser/sync_utils.h"
@@ -2545,6 +2546,116 @@ TEST_F(PersonalDataManagerTest,
 
   // Expect no profile values or suggestions were added.
   EXPECT_EQ(0U, personal_data_->GetProfiles().size());
+}
+
+TEST_F(PersonalDataManagerTest,
+       GetProfileSuggestionsWithImprovedLabelDisambiguationForContactForm) {
+  AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
+                       "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
+                       "19786744120");
+  AddProfileToPersonalDataManager(profile);
+
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kAutofillUseImprovedLabelDisambiguation},
+      /*disabled_features=*/{});
+
+  EXPECT_THAT(
+      personal_data_->GetProfileSuggestions(
+          AutofillType(NAME_FIRST), base::string16(), false,
+          std::vector<ServerFieldType>{NAME_FIRST, NAME_LAST, EMAIL_ADDRESS,
+                                       PHONE_HOME_WHOLE_NUMBER}),
+      ElementsAre(AllOf(
+          testing::Field(
+              &Suggestion::label,
+              FormatExpectedLabel("(978) 674-4120", "hoa.pham@comcast.net")),
+          testing::Field(
+              &Suggestion::additional_label,
+              FormatExpectedLabel("(978) 674-4120", "hoa.pham@comcast.net")))));
+}
+
+TEST_F(PersonalDataManagerTest,
+       GetProfileSuggestionsWithImprovedLabelDisambiguationForAddressForm) {
+  AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
+                       "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
+                       "19786744120");
+  AddProfileToPersonalDataManager(profile);
+
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kAutofillUseImprovedLabelDisambiguation},
+      /*disabled_features=*/{});
+
+  EXPECT_THAT(personal_data_->GetProfileSuggestions(
+                  AutofillType(NAME_FULL), base::string16(), false,
+                  std::vector<ServerFieldType>{
+                      NAME_FULL, ADDRESS_HOME_STREET_ADDRESS, ADDRESS_HOME_CITY,
+                      ADDRESS_HOME_STATE, ADDRESS_HOME_ZIP}),
+              ElementsAre(AllOf(
+                  testing::Field(
+                      &Suggestion::label,
+                      base::ASCIIToUTF16("401 Merrimack St, Lowell, MA 01852")),
+                  testing::Field(&Suggestion::additional_label,
+                                 base::ASCIIToUTF16(
+                                     "401 Merrimack St, Lowell, MA 01852")))));
+}
+
+TEST_F(
+    PersonalDataManagerTest,
+    GetProfileSuggestionsWithImprovedLabelDisambiguationForAddressPhoneForm) {
+  AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
+                       "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
+                       "19786744120");
+  AddProfileToPersonalDataManager(profile);
+
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kAutofillUseImprovedLabelDisambiguation},
+      /*disabled_features=*/{});
+
+  EXPECT_THAT(
+      personal_data_->GetProfileSuggestions(
+          AutofillType(NAME_FULL), base::string16(), false,
+          std::vector<ServerFieldType>{NAME_FULL, ADDRESS_HOME_STREET_ADDRESS,
+                                       PHONE_HOME_WHOLE_NUMBER}),
+      ElementsAre(AllOf(
+          testing::Field(
+              &Suggestion::label,
+              FormatExpectedLabel("(978) 674-4120", "401 Merrimack St")),
+          testing::Field(
+              &Suggestion::additional_label,
+              FormatExpectedLabel("(978) 674-4120", "401 Merrimack St")))));
+}
+
+TEST_F(
+    PersonalDataManagerTest,
+    GetProfileSuggestionsWithImprovedLabelDisambiguationForAddressEmailForm) {
+  AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
+                       "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
+                       "19786744120");
+  AddProfileToPersonalDataManager(profile);
+
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kAutofillUseImprovedLabelDisambiguation},
+      /*disabled_features=*/{});
+
+  EXPECT_THAT(
+      personal_data_->GetProfileSuggestions(
+          AutofillType(NAME_FULL), base::string16(), false,
+          std::vector<ServerFieldType>{NAME_FULL, ADDRESS_HOME_STREET_ADDRESS,
+                                       EMAIL_ADDRESS}),
+      ElementsAre(AllOf(
+          testing::Field(
+              &Suggestion::label,
+              FormatExpectedLabel("401 Merrimack St", "hoa.pham@comcast.net")),
+          testing::Field(&Suggestion::additional_label,
+                         FormatExpectedLabel("401 Merrimack St",
+                                             "hoa.pham@comcast.net")))));
 }
 
 TEST_F(PersonalDataManagerTest, IsKnownCard_MatchesMaskedServerCard) {
