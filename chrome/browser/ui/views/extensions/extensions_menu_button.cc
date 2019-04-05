@@ -53,7 +53,7 @@ content::WebContents* ExtensionsMenuButton::GetCurrentWebContents() const {
 }
 
 void ExtensionsMenuButton::UpdateState() {
-  // TODO(pbos): Repopulate button.
+  SetText(controller_->GetActionName());
 }
 
 bool ExtensionsMenuButton::IsMenuRunning() const {
