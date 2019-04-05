@@ -183,6 +183,7 @@ source_set("test_util") {
     "//chrome/chrome_cleaner/constants:common_strings",
     "//chrome/chrome_cleaner/os:cleaner_os",
     "//chrome/chrome_cleaner/os:common_os",
+    "//chrome/chrome_cleaner/os:file_remover_api",
     "//chrome/chrome_cleaner/pup_data:pup_data_base",
     "//chrome/chrome_cleaner/scanner:matcher_util",
     "//chrome/chrome_cleaner/scanner:signature_matcher_api",
