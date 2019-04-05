@@ -18,8 +18,8 @@ AddressEmailFormLabelFormatter::AddressEmailFormLabelFormatter(
 AddressEmailFormLabelFormatter::~AddressEmailFormLabelFormatter() {}
 
 // Note that the order--name, address, and email--in which parts of the label
-// are added ensures that the label is formatted correctly for |group| and for
-// this kind of formatter.
+// are added ensures that the label is formatted correctly for |focused_group|
+// and for this kind of formatter.
 base::string16 AddressEmailFormLabelFormatter::GetLabelForProfile(
     const AutofillProfile& profile,
     FieldTypeGroup focused_group) const {

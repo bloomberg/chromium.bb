@@ -97,9 +97,9 @@ TEST(ContactFormLabelFormatterTest, GetLabelsForUSProfilesAndFocusedEmail) {
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2,
                                                          &profile3, &profile4}),
-      ElementsAre(FormatExpectedLabel("(617) 730-2000", "John F Kennedy"),
+      ElementsAre(FormatExpectedLabel("John F Kennedy", "(617) 730-2000"),
                   base::ASCIIToUTF16("Jackie Kennedy"),
-                  FormatExpectedLabel("(617) 523-2338", "Paul Revere"),
+                  FormatExpectedLabel("Paul Revere", "(617) 523-2338"),
                   base::string16()));
 }
 
@@ -181,8 +181,8 @@ TEST(ContactFormLabelFormatterTest, GetLabelsForBRProfilesAndFocusedEmail) {
 
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2}),
-      ElementsAre(FormatExpectedLabel("(11) 2648-0254", "Tarsila do Amaral"),
-                  FormatExpectedLabel("(21) 98765-0000", "Artur Avila")));
+      ElementsAre(FormatExpectedLabel("Tarsila do Amaral", "(11) 2648-0254"),
+                  FormatExpectedLabel("Artur Avila", "(21) 98765-0000")));
 }
 
 TEST(ContactFormLabelFormatterTest, GetLabelsForBRProfilesAndFocusedPhone) {

@@ -17,20 +17,19 @@ AddressPhoneFormLabelFormatter::AddressPhoneFormLabelFormatter(
 
 AddressPhoneFormLabelFormatter::~AddressPhoneFormLabelFormatter() {}
 
-// Note that the order--phone, name, and address--in which parts of the label
-// are added ensures that the label is formatted correctly for the focused
-// group.
+// Note that the order--name, phone, and address--in which parts of the label
+// are added ensures that the label is formatted correctly for |focused_group|
+// and for this kind of formatter.
 base::string16 AddressPhoneFormLabelFormatter::GetLabelForProfile(
     const AutofillProfile& profile,
     FieldTypeGroup focused_group) const {
   std::vector<base::string16> label_parts;
+  if (focused_group != NAME) {
+    AddLabelPartIfNotEmpty(GetLabelName(profile, app_locale()), &label_parts);
+  }
 
   if (focused_group != PHONE_HOME) {
     AddLabelPartIfNotEmpty(GetLabelPhone(profile, app_locale()), &label_parts);
-  }
-
-  if (focused_group != NAME) {
-    AddLabelPartIfNotEmpty(GetLabelName(profile, app_locale()), &label_parts);
   }
 
   if (focused_group != ADDRESS_HOME) {
