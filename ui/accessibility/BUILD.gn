@@ -132,12 +132,15 @@ jumbo_component("accessibility") {
 
   defines = [ "ACCESSIBILITY_IMPLEMENTATION" ]
 
+  deps = [
+    "//third_party/cld_3/src/src:cld_3",
+  ]
+
   public_deps = [
     ":ax_constants_mojo",
     ":ax_enums_mojo",
     "//base",
     "//base:i18n",
-    "//third_party/cld_3/src/src:cld_3",
     "//ui/base",
     "//ui/display",
     "//ui/gfx",

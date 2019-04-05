@@ -23,6 +23,5 @@ proto_library("cacheinvalidation_proto_cpp") {
     ]
   }
 
-  proto_out_dir = "$target_gen_dir/google/cacheinvalidation"
-  public_include_dirs = [ target_gen_dir ]
+  proto_out_dir = "google/cacheinvalidation"
 }
