@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 @protocol AutocompleteSuggestion;
+@protocol ImageRetriever;
 @class OmniboxPopupRowCell;
 
 namespace {
@@ -32,6 +33,8 @@ NSString* OmniboxPopupRowCellReuseIdentifier = @"OmniboxPopupRowCell";
                               incognito:(BOOL)incognito;
 
 @property(nonatomic, weak) id<OmniboxPopupRowCellDelegate> delegate;
+
+@property(nonatomic, weak) id<ImageRetriever> imageRetriever;
 
 @end
 

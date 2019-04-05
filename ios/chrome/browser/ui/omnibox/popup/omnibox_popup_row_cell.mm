@@ -7,13 +7,16 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "components/omnibox/common/omnibox_features.h"
+#import "ios/chrome/browser/ui/elements/extended_touch_target_button.h"
 #import "ios/chrome/browser/ui/omnibox/popup/autocomplete_suggestion.h"
+#import "ios/chrome/browser/ui/omnibox/popup/image_retriever.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_truncating_label.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -24,10 +27,9 @@ const CGFloat kLeadingMargin = 12;
 const CGFloat kLeadingMarginIpad = 183;
 const CGFloat kTextTopMargin = 6;
 const CGFloat kTextLeadingMargin = 10;
-const CGFloat kTextTrailingMargin = -12;
 const CGFloat kImageViewSize = 28;
 const CGFloat kImageViewCornerRadius = 7;
-const CGFloat kTrailingButtonSize = 48;
+const CGFloat kTrailingButtonSize = 24;
 const CGFloat kTrailingButtonTrailingMargin = 4;
 
 NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
@@ -53,8 +55,11 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
 @property(nonatomic, strong) UILabel* detailAnswerLabel;
 // Image view for the leading image (only appears on iPad).
 @property(nonatomic, strong) UIImageView* leadingImageView;
-// Trailing button for appending suggestion into omnibox.
-@property(nonatomic, strong) UIButton* trailingButton;
+// Trailing button for appending suggestion into omnibox or switching to open
+// tab.
+@property(nonatomic, strong) ExtendedTouchTargetButton* trailingButton;
+// Trailing image view for images from suggestions (e.g. weather).
+@property(nonatomic, strong) UIImageView* answerImageView;
 
 @end
 
@@ -88,15 +93,20 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
     _leadingImageView.contentMode = UIViewContentModeCenter;
     _leadingImageView.layer.cornerRadius = kImageViewCornerRadius;
 
-    _trailingButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    _trailingButton =
+        [ExtendedTouchTargetButton buttonWithType:UIButtonTypeCustom];
     _trailingButton.translatesAutoresizingMaskIntoConstraints = NO;
     [_trailingButton addTarget:self
                         action:@selector(trailingButtonTapped)
               forControlEvents:UIControlEventTouchUpInside];
-    [_trailingButton setContentMode:UIViewContentModeRight];
-    // The trailing button also shows answer images. In that case, the
-    // button will be disabled, but the image shouldn't be dimmed.
-    _trailingButton.adjustsImageWhenDisabled = NO;
+
+    _answerImageView = [[UIImageView alloc] initWithImage:nil];
+    _answerImageView.translatesAutoresizingMaskIntoConstraints = NO;
+    [_answerImageView
+        setContentHuggingPriority:UILayoutPriorityDefaultHigh
+                          forAxis:UILayoutConstraintAxisHorizontal];
+    [_answerImageView setContentHuggingPriority:UILayoutPriorityDefaultHigh
+                                        forAxis:UILayoutConstraintAxisVertical];
 
     _incognito = NO;
 
@@ -135,7 +145,7 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
         constraintEqualToAnchor:self.leadingImageView.trailingAnchor
                        constant:kTextLeadingMargin],
     // Use greater than or equal constraints because there may be a trailing
-    // button here.
+    // view here.
     [self.contentView.trailingAnchor
         constraintGreaterThanOrEqualToAnchor:self.textStackView.trailingAnchor],
     // Top space should be at least the given top margin, but can be more if
@@ -146,24 +156,42 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
     [self.textStackView.centerYAnchor
         constraintEqualToAnchor:self.contentView.centerYAnchor],
   ]];
+
+  // If optional views have internal constraints (height is constant, etc.),
+  // set those up here.
+  [NSLayoutConstraint activateConstraints:@[
+    [self.trailingButton.heightAnchor
+        constraintEqualToConstant:kTrailingButtonSize],
+    [self.trailingButton.widthAnchor
+        constraintEqualToAnchor:self.trailingButton.heightAnchor],
+  ]];
 }
 
 // Add the trailing button as a subview and setup its constraints.
 - (void)setupTrailingButtonLayout {
   [self.contentView addSubview:self.trailingButton];
   [NSLayoutConstraint activateConstraints:@[
-    [self.trailingButton.heightAnchor
-        constraintEqualToConstant:kTrailingButtonSize],
-    [self.trailingButton.widthAnchor
-        constraintEqualToConstant:kTrailingButtonSize],
     [self.trailingButton.centerYAnchor
         constraintEqualToAnchor:self.contentView.centerYAnchor],
     [self.contentView.trailingAnchor
         constraintEqualToAnchor:self.trailingButton.trailingAnchor
                        constant:kTrailingButtonTrailingMargin],
     [self.trailingButton.leadingAnchor
-        constraintEqualToAnchor:self.textStackView.trailingAnchor
-                       constant:kTextTrailingMargin],
+        constraintEqualToAnchor:self.textStackView.trailingAnchor],
+  ]];
+}
+
+// Add the answer image view as a subview and setup its constraints.
+- (void)setupAnswerImageViewLayout {
+  [self.contentView addSubview:self.answerImageView];
+  [NSLayoutConstraint activateConstraints:@[
+    [self.answerImageView.centerYAnchor
+        constraintEqualToAnchor:self.contentView.centerYAnchor],
+    [self.contentView.trailingAnchor
+        constraintEqualToAnchor:self.answerImageView.trailingAnchor
+                       constant:kTrailingButtonTrailingMargin],
+    [self.answerImageView.leadingAnchor
+        constraintEqualToAnchor:self.textStackView.trailingAnchor],
   ]];
 }
 
@@ -181,6 +209,8 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
   // Remove optional views.
   [self.trailingButton setImage:nil forState:UIControlStateNormal];
   [self.trailingButton removeFromSuperview];
+  self.answerImageView.image = nil;
+  [self.answerImageView removeFromSuperview];
   [self.detailTruncatingLabel removeFromSuperview];
   [self.detailAnswerLabel removeFromSuperview];
 
@@ -216,11 +246,17 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
     }
   }
 
-  if (self.suggestion.hasImage || self.suggestion.isAppendable ||
-      self.suggestion.isTabMatch) {
+  [self setupLeadingImageView];
+
+  if (self.suggestion.hasImage) {
+    [self setupAnswerImageView];
+  } else if (self.suggestion.isAppendable || self.suggestion.isTabMatch) {
     [self setupTrailingButton];
   }
+}
 
+// Populate the leading image view with the correct icon and color.
+- (void)setupLeadingImageView {
   self.leadingImageView.image = self.suggestion.suggestionTypeIcon;
   self.leadingImageView.backgroundColor =
       self.incognito ? [UIColor colorWithWhite:1 alpha:0.05]
@@ -230,15 +266,27 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
                                         : [UIColor colorWithWhite:0 alpha:0.33];
 }
 
+// Setup the answer image view. This includes both setting up its layout and
+// populating the image correctly.
+- (void)setupAnswerImageView {
+  [self setupAnswerImageViewLayout];
+  __weak OmniboxPopupRowCell* weakSelf = self;
+  GURL imageURL = self.suggestion.imageURL;
+  [self.imageRetriever fetchImage:imageURL
+                       completion:^(UIImage* image) {
+                         // Make sure cell is still displaying the same
+                         // suggestion.
+                         if (weakSelf.suggestion.imageURL != imageURL) {
+                           return;
+                         }
+                         weakSelf.answerImageView.image = image;
+                       }];
+}
+
+// Setup the trailing button. This includes both setting up the button's layout
+// and popuplating it with the correct image and color.
 - (void)setupTrailingButton {
   [self setupTrailingButtonLayout];
-
-  // If there's an image, put it in the button, but disable interaction.
-  if (self.suggestion.hasImage) {
-    self.trailingButton.enabled = NO;
-    [self.trailingButton setImage:nil forState:UIControlStateNormal];
-    return;
-  }
 
   // Show append button for search history/search suggestions or
   // switch-to-open-tab as the right control element (aka an accessory element
@@ -276,7 +324,6 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
   trailingButtonImage = [trailingButtonImage
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 
-  self.trailingButton.enabled = YES;
   [self.trailingButton setImage:trailingButtonImage
                        forState:UIControlStateNormal];
   if (base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions)) {

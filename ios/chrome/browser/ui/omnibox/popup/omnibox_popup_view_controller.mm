@@ -65,6 +65,7 @@
   [cell setupWithAutocompleteSuggestion:self.currentResult[indexPath.row]
                               incognito:self.incognito];
   cell.delegate = self;
+  cell.imageRetriever = self.imageRetriever;
 
   return cell;
 }
