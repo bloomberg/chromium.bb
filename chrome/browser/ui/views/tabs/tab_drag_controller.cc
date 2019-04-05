@@ -1333,16 +1333,7 @@ void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
       ui::TransferTouchesBehavior::kDontCancel);
 #endif
 
-#if defined(OS_CHROMEOS)
-  // On ChromeOS, Detach should release capture; |can_release_capture_| is
-  // false on ChromeOS because it can cancel touches, but for this cases
-  // the touches are already transferred, so releasing is fine. Without
-  // releasing, the capture remains and further touch events can be sent to a
-  // wrong target.
-  Detach(RELEASE_CAPTURE);
-#else
   Detach(can_release_capture_ ? RELEASE_CAPTURE : DONT_RELEASE_CAPTURE);
-#endif
 
   dragged_widget->SetCanAppearInExistingFullscreenSpaces(true);
   dragged_widget->SetVisibilityChangedAnimationsEnabled(false);
@@ -1379,16 +1370,6 @@ void TabDragController::RunMoveLoop(const gfx::Vector2d& drag_offset) {
     attached_tabstrip_->GetWidget()->ReleaseCapture();
     attached_tabstrip_->OwnDragController(this);
   }
-#if defined(OS_CHROMEOS)
-  // When the window service is used, there's some chance of having gesture
-  // events in the attached (moving) widget during the window move loop. Without
-  // setting the mouse handler, such gestures might arrive to a wrong view. See
-  // https://crbug.com/943316.
-  if (features::IsUsingWindowService()) {
-    attached_tabstrip_->GetWidget()->GetRootView()->SetMouseHandler(
-        attached_tabstrip_);
-  }
-#endif
   const views::Widget::MoveLoopSource move_loop_source =
       event_source_ == EVENT_SOURCE_MOUSE ?
       views::Widget::MOVE_LOOP_SOURCE_MOUSE :
