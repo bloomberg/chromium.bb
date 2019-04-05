@@ -1679,8 +1679,7 @@ void AppListView::OnScreenKeyboardShown(bool shown) {
   } else {
     // If the keyboard is closing or a folder isn't being shown, reset
     // the app list's position
-    const int work_area_offset = GetDisplayNearestView().work_area().y();
-    OffsetYPositionOfAppList(shown ? work_area_offset : -work_area_offset);
+    OffsetYPositionOfAppList(0);
   }
   app_list_main_view_->contents_view()->NotifySearchBoxBoundsUpdated();
 }

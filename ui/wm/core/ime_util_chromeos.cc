@@ -33,7 +33,11 @@ void MoveWindowToEnsureCaretNotInRect(aura::Window* window,
 
   // Calculate vertical window shift.
   const int top_y =
-      std::max(rect_in_screen.y() - original_window_bounds.height(), 0);
+      std::max(rect_in_screen.y() - original_window_bounds.height(),
+               display::Screen::GetScreen()
+                   ->GetDisplayNearestView(window)
+                   .work_area()
+                   .y());
 
   // No need to move the window up.
   if (top_y >= original_window_bounds.y())
