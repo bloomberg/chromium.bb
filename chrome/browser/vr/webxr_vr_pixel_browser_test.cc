@@ -66,7 +66,7 @@ void TestPresentationPixelsImpl(WebXrVrBrowserTestBase* t,
   t->EnterSessionWithUserGestureOrFail();
 
   // Wait for JavaScript to submit at least one frame.
-  EXPECT_TRUE(
+  ASSERT_TRUE(
       t->PollJavaScriptBoolean("hasPresentedFrame", t->kPollTimeoutMedium))
       << "No frame submitted";
 

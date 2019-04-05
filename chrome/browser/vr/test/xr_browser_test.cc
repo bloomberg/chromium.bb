@@ -103,13 +103,13 @@ void XrBrowserTestBase::SetUp() {
   }
 
   // Set the environment variable to use the mock OpenVR client.
-  EXPECT_TRUE(
+  ASSERT_TRUE(
       env_->SetVar(kVrOverrideEnvVar, MakeExecutableRelative(kVrOverrideVal)))
       << "Failed to set OpenVR mock client location environment variable";
-  EXPECT_TRUE(env_->SetVar(kVrConfigPathEnvVar,
+  ASSERT_TRUE(env_->SetVar(kVrConfigPathEnvVar,
                            MakeExecutableRelative(kVrConfigPathVal)))
       << "Failed to set OpenVR config location environment variable";
-  EXPECT_TRUE(
+  ASSERT_TRUE(
       env_->SetVar(kVrLogPathEnvVar, MakeExecutableRelative(kVrLogPathVal)))
       << "Failed to set OpenVR log location environment variable";
 
@@ -155,7 +155,7 @@ content::WebContents* XrBrowserTestBase::GetCurrentWebContents() {
 
 void XrBrowserTestBase::LoadUrlAndAwaitInitialization(const GURL& url) {
   ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_TRUE(PollJavaScriptBoolean("isInitializationComplete()",
+  ASSERT_TRUE(PollJavaScriptBoolean("isInitializationComplete()",
                                     kPollTimeoutMedium,
                                     GetCurrentWebContents()))
       << "Timed out waiting for JavaScript test initialization.";
@@ -164,7 +164,7 @@ void XrBrowserTestBase::LoadUrlAndAwaitInitialization(const GURL& url) {
 void XrBrowserTestBase::RunJavaScriptOrFail(
     const std::string& js_expression,
     content::WebContents* web_contents) {
-  EXPECT_TRUE(content::ExecuteScript(web_contents, js_expression))
+  ASSERT_TRUE(content::ExecuteScript(web_contents, js_expression))
       << "Failed to run given JavaScript: " << js_expression;
 }
 
@@ -215,7 +215,7 @@ void XrBrowserTestBase::PollJavaScriptBooleanOrFail(
     const std::string& bool_expression,
     const base::TimeDelta& timeout,
     content::WebContents* web_contents) {
-  EXPECT_TRUE(PollJavaScriptBoolean(bool_expression, timeout, web_contents))
+  ASSERT_TRUE(PollJavaScriptBoolean(bool_expression, timeout, web_contents))
       << "Timed out polling JavaScript boolean expression: " << bool_expression;
 }
 
@@ -267,7 +267,7 @@ void XrBrowserTestBase::WaitOnJavaScriptStep(
   // code to do so.
   bool code_available = RunJavaScriptAndExtractBoolOrFail(
       "typeof javascriptDone !== 'undefined'", web_contents);
-  EXPECT_TRUE(code_available) << "Attempted to wait on a JavaScript test step "
+  ASSERT_TRUE(code_available) << "Attempted to wait on a JavaScript test step "
                               << "without the code to do so. You either forgot "
                               << "to import webxr_e2e.js or "
                               << "are incorrectly using a C++ function.";
