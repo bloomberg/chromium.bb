@@ -18,7 +18,11 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/policy/test/local_policy_test_server.h"
+#include "chromeos/attestation/mock_attestation_flow.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/cryptohome/async_method_caller.h"
+#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/policy/core/common/policy_switches.h"
 
 namespace chromeos {
@@ -100,6 +104,17 @@ class AutoEnrollmentLocalPolicyServer : public EnrollmentLocalPolicyServerBase {
                                     "5");
   }
 
+  void SetFakeAttestationFlow() {
+    g_browser_process->platform_part()
+        ->browser_policy_connector_chromeos()
+        ->GetDeviceCloudPolicyInitializer()
+        ->SetAttestationFlowForTesting(
+            std::make_unique<chromeos::attestation::AttestationFlow>(
+                cryptohome::AsyncMethodCaller::GetInstance(),
+                chromeos::FakeCryptohomeClient::Get(),
+                std::make_unique<chromeos::attestation::FakeServerProxy>()));
+  }
+
   policy::ServerBackedStateKeysBroker* state_keys_broker() {
     return g_browser_process->platform_part()
         ->browser_policy_connector_chromeos()
@@ -119,11 +134,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase, ManualEnrollment) {
   enrollment_screen()->OnLoginDone(FakeGaiaMixin::kFakeUserEmail,
                                    FakeGaiaMixin::kFakeAuthCode);
 
-  test::OobeJS()
-      .CreateWaiter(
-          "document.getElementsByClassName('oauth-enroll-state-attribute-"
-          "prompt').length > 0")
-      ->Wait();
+  OobeBaseTest::WaitForEnrollmentSuccess();
   // TODO(rsorokin): Interact with attribute prompt step.
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
@@ -184,6 +195,18 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, DeviceDisabled) {
   OobeScreenWaiter(OobeScreen::SCREEN_DEVICE_DISABLED).Wait();
 }
 
-// TODO(rsorokin): Add test for RESTORE_MODE_REENROLLMENT_ZERO_TOUCH.
+// Attestation enrollment.
+IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, Attestation) {
+  SetFakeAttestationFlow();
+  EXPECT_TRUE(local_policy_mixin_.SetDeviceStateRetrievalResponse(
+      state_keys_broker(),
+      enterprise_management::DeviceStateRetrievalResponse::
+          RESTORE_MODE_REENROLLMENT_ZERO_TOUCH,
+      kTestDomain));
+
+  host()->StartWizard(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
+  OobeBaseTest::WaitForEnrollmentSuccess();
+  EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
+}
 
 }  // namespace chromeos
