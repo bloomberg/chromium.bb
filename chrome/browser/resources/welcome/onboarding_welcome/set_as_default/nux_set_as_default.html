@@ -21,13 +21,15 @@
       }
 
       .logo {
-        content: -webkit-image-set(
-          url(../images/set_as_default_1x.png) 1x,
-          url(../images/set_as_default_2x.png) 2x);
+        content: url(../images/module_icons/set_default_light.svg);
         display: inline-block;
         height: 38px;
         margin-bottom: 16px;
         width: 42px;
+      }
+
+      :host-context([dark]) .logo {
+        content: url(../images/module_icons/set_default_dark.svg);
       }
 
       .illustration {
