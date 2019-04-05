@@ -497,12 +497,8 @@ bool AwContentBrowserClient::AllowGetCookie(const GURL& url,
                                             content::ResourceContext* context,
                                             int render_process_id,
                                             int render_frame_id) {
-  return AwCookieAccessPolicy::GetInstance()->AllowGetCookie(url,
-                                                             first_party,
-                                                             cookie_list,
-                                                             context,
-                                                             render_process_id,
-                                                             render_frame_id);
+  return AwCookieAccessPolicy::GetInstance()->AllowCookies(
+      url, first_party, render_process_id, render_frame_id);
 }
 
 bool AwContentBrowserClient::AllowSetCookie(const GURL& url,
@@ -511,8 +507,8 @@ bool AwContentBrowserClient::AllowSetCookie(const GURL& url,
                                             content::ResourceContext* context,
                                             int render_process_id,
                                             int render_frame_id) {
-  return AwCookieAccessPolicy::GetInstance()->AllowSetCookie(
-      url, first_party, cookie, context, render_process_id, render_frame_id);
+  return AwCookieAccessPolicy::GetInstance()->AllowCookies(
+      url, first_party, render_process_id, render_frame_id);
 }
 
 void AwContentBrowserClient::AllowWorkerFileSystem(
