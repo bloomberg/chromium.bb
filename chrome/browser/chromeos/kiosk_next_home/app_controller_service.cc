@@ -98,10 +98,11 @@ void AppControllerService::GetArcAndroidId(
     mojom::AppController::GetArcAndroidIdCallback callback) {
   arc::GetAndroidId(base::BindOnce(
       [](mojom::AppController::GetArcAndroidIdCallback callback, bool success,
-         int64_t android_id) {
-        // We need the string version of the Android ID since the int64_t
-        // is too big for Javascript.
-        std::move(callback).Run(success, base::NumberToString(android_id));
+         int64_t raw_android_id) {
+        // The bridge expects the Android id as a hex string.
+        std::string android_id = base::NumberToString(raw_android_id);
+        std::move(callback).Run(
+            success, base::HexEncode(android_id.data(), android_id.size()));
       },
       std::move(callback)));
 }
