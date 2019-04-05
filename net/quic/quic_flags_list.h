@@ -303,3 +303,14 @@ QUIC_FLAG(
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_dont_fetch_quic_private_keys_from_leto,
           false)
+
+// If true, disable lumpy pacing for low bandwidth flows.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_no_lumpy_pacing_at_low_bw,
+          false)
+
+// If true, in BbrSender, always get a bandwidth sample when a packet is acked,
+// even if packet.bytes_acked is zero.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_always_get_bw_sample_when_acked,
+          true)
