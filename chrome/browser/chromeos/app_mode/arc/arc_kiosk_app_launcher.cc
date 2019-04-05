@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
+#include "ash/shell.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
@@ -23,7 +24,8 @@ ArcKioskAppLauncher::ArcKioskAppLauncher(content::BrowserContext* context,
                                          Delegate* delegate)
     : app_id_(app_id), prefs_(prefs), delegate_(delegate) {
   prefs_->AddObserver(this);
-  aura::Env::GetInstance()->AddObserver(this);
+  // crbug.com/887156
+  ash::Shell::Get()->aura_env()->AddObserver(this);
   // Launching the app by app id in landscape mode and in non-touch mode.
   arc::LaunchApp(context, app_id_, ui::EF_NONE,
                  arc::UserInteractionType::NOT_USER_INITIATED);
@@ -89,7 +91,7 @@ bool ArcKioskAppLauncher::CheckAndPinWindow(aura::Window* const window) {
 }
 
 void ArcKioskAppLauncher::StopObserving() {
-  aura::Env::GetInstance()->RemoveObserver(this);
+  ash::Shell::Get()->aura_env()->AddObserver(this);
   for (auto* window : windows_)
     window->RemoveObserver(this);
   windows_.clear();
