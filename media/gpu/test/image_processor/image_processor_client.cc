@@ -50,13 +50,13 @@ scoped_refptr<VideoFrame> CloneVideoFrameWithLayout(
   LOG_ASSERT(dst_layout.planes().size() == num_planes);
   LOG_ASSERT(src_frame->layout().planes().size() == num_planes);
   for (size_t i = 0; i < num_planes; ++i) {
+    // |width| in libyuv::CopyPlane() is in bytes, not pixels.
+    gfx::Size plane_size = VideoFrame::PlaneSize(dst_frame->format(), i,
+                                                 dst_frame->natural_size());
     libyuv::CopyPlane(
         src_frame->data(i), src_frame->layout().planes()[i].stride,
         dst_frame->data(i), dst_frame->layout().planes()[i].stride,
-        VideoFrame::Columns(i, dst_frame->format(),
-                            dst_frame->natural_size().width()),
-        VideoFrame::Rows(i, dst_frame->format(),
-                         dst_frame->natural_size().height()));
+        plane_size.width(), plane_size.height());
   }
 
   return dst_frame;
