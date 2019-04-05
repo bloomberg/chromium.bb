@@ -138,6 +138,7 @@ void XRCompositorCommon::CleanUp() {
   presentation_binding_.Close();
   frame_data_binding_.Close();
   gamepad_provider_.Close();
+  overlay_binding_.Close();
   StopRuntime();
 }
 
