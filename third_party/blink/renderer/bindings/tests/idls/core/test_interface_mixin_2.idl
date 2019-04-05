@@ -29,11 +29,11 @@
  */
 
 [
-    LegacyTreatAsPartialInterface, // Conflicts with default implements behavior
-    RuntimeEnabled=Implements2FeatureName // conflicts with [RuntimeEnabled] on member
+    LegacyTreatAsPartialInterface, // Conflicts with default mixin behavior
+    RuntimeEnabled=Mixin2FeatureName // conflicts with [RuntimeEnabled] on member
 ] interface mixin TestInterfaceMixin2 {
-    attribute DOMString implements2StringAttribute;
-    void implements2VoidMethod();
+    attribute DOMString mixin2StringAttribute;
+    void mixin2VoidMethod();
 };
 
 TestInterface implements TestInterfaceMixin2;
