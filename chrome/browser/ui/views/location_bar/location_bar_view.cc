@@ -698,8 +698,7 @@ SkColor LocationBarView::GetContentSettingInkDropColor() const {
 }
 
 content::WebContents* LocationBarView::GetContentSettingWebContents() {
-  return GetLocationBarModel()->input_in_progress() ? nullptr
-                                                    : GetWebContents();
+  return IsLocationBarUserInputInProgress() ? nullptr : GetWebContents();
 }
 
 ContentSettingBubbleModelDelegate*
@@ -1012,7 +1011,7 @@ void LocationBarView::UpdateBookmarkStarVisibility() {
   if (star_view_) {
     star_view_->SetVisible(browser_defaults::bookmarks_enabled &&
                            !is_popup_mode_ &&
-                           !GetLocationBarModel()->input_in_progress() &&
+                           !IsLocationBarUserInputInProgress() &&
                            edit_bookmarks_enabled_.GetValue() &&
                            !IsBookmarkStarHiddenByExtension());
   }
@@ -1149,7 +1148,7 @@ void LocationBarView::AnimationCanceled(const gfx::Animation* animation) {
 
 void LocationBarView::OnChanged() {
   location_icon_view_->Update(/*suppress_animations=*/false);
-  clear_all_button_->SetVisible(GetLocationBarModel()->input_in_progress() &&
+  clear_all_button_->SetVisible(IsLocationBarUserInputInProgress() &&
                                 !omnibox_view_->text().empty() &&
                                 IsVirtualKeyboardVisible(GetWidget()));
   Layout();
