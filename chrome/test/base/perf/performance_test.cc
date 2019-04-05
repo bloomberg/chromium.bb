@@ -14,6 +14,9 @@
 
 static const char kTraceDir[] = "trace-dir";
 
+////////////////////////////////////////////////////////////////////////////////
+// PerformanceTest
+
 PerformanceTest::PerformanceTest()
     : should_start_trace_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(kTraceDir)) {
@@ -67,4 +70,11 @@ void PerformanceTest::TearDownOnMainThread() {
     CHECK(result);
   }
   InProcessBrowserTest::TearDownOnMainThread();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// UIPerformanceTest
+
+const std::string UIPerformanceTest::GetTracingCategories() const {
+  return "benchmark,cc,viz,input,latency,gpu,rail,toplevel,ui,views,viz";
 }

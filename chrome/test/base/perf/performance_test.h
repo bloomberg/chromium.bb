@@ -19,9 +19,6 @@ class PerformanceTest : public InProcessBrowserTest {
   PerformanceTest();
   ~PerformanceTest() override;
 
-  PerformanceTest(const PerformanceTest&) = delete;
-  PerformanceTest& operator=(const PerformanceTest&) = delete;
-
   virtual std::vector<std::string> GetUMAHistogramNames() const;
   virtual const std::string GetTracingCategories() const;
 
@@ -31,6 +28,21 @@ class PerformanceTest : public InProcessBrowserTest {
 
  private:
   const bool should_start_trace_;
+
+  DISALLOW_COPY_AND_ASSIGN(PerformanceTest);
+};
+
+// UIPerformanceTest is specifically to be used for measuring ui-related
+// performance. It turns on the appropriate tracing categories for ui.
+class UIPerformanceTest : public PerformanceTest {
+ public:
+  UIPerformanceTest() = default;
+  ~UIPerformanceTest() override = default;
+
+  const std::string GetTracingCategories() const override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(UIPerformanceTest);
 };
 
 #endif  // CHROME_TEST_BASE_PERF_PERFORMANCE_TEST_H_
