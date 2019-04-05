@@ -23,7 +23,7 @@ class ClientConfig(IntegrationTest):
       self.assertEqual(2, len(responses))
       for response in responses:
         # Verify that the proxy server honored the session ID.
-        self.assertHasChromeProxyViaHeader(response)
+        self.assertHasProxyHeaders(response)
         self.assertEqual(200, response.status)
 
   # Ensure Chrome uses a direct connection when no valid client config is given.

@@ -37,7 +37,7 @@ class Fallback(IntegrationTest):
       responses = test_driver.GetHTTPResponses()
       self.assertNotEqual(0, len(responses))
       for response in responses:
-          self.assertHasChromeProxyViaHeader(response)
+          self.assertHasProxyHeaders(response)
           self.assertEqual(u'http/2+quic/43', response.protocol)
 
   # Verify that when Chrome receives a non-4xx response through a Data Reduction
@@ -61,7 +61,7 @@ class Fallback(IntegrationTest):
       responses = test_driver.GetHTTPResponses()
       self.assertNotEqual(0, len(responses))
       for response in responses:
-        self.assertHasChromeProxyViaHeader(response)
+        self.assertHasProxyHeaders(response)
         self.assertEqual(u'http/1.1', response.protocol)
 
       # Check that the BypassTypePrimary histogram has a single entry in the

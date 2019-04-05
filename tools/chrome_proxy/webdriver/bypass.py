@@ -21,7 +21,7 @@ class Bypass(IntegrationTest):
       self.assertEqual(2, len(responses))
       for response in responses:
         if response.url == "http://check.googlezip.net/image.png":
-          self.assertHasChromeProxyViaHeader(response)
+          self.assertHasProxyHeaders(response)
         else:
           self.assertNotHasChromeProxyViaHeader(response)
 
@@ -49,7 +49,7 @@ class Bypass(IntegrationTest):
       responses = t.GetHTTPResponses()
       self.assertEqual(2, len(responses))
       for response in responses:
-        self.assertHasChromeProxyViaHeader(response)
+        self.assertHasProxyHeaders(response)
 
       # Load HTTPS page and check that Data Saver is not used.
       t.LoadURL('https://check.googlezip.net/test.html')
@@ -75,7 +75,7 @@ class Bypass(IntegrationTest):
       for response in test_driver.GetHTTPResponses():
         # The origin header implies that |response| is a CORS request.
         if ('origin' not in response.request_headers):
-          self.assertHasChromeProxyViaHeader(response)
+          self.assertHasProxyHeaders(response)
           same_origin_requests = same_origin_requests + 1
         else:
           self.assertNotHasChromeProxyViaHeader(response)
@@ -102,7 +102,7 @@ class Bypass(IntegrationTest):
       responses = test_driver.GetHTTPResponses()
       self.assertNotEqual(0, len(responses))
       for response in responses:
-        self.assertHasChromeProxyViaHeader(response)
+        self.assertHasProxyHeaders(response)
 
   # Verify that Chrome does not bypass the proxy when a response gets a missing
   # via header.
@@ -199,7 +199,7 @@ class Bypass(IntegrationTest):
       responses = test_driver.GetHTTPResponses()
       self.assertNotEqual(0, len(responses))
       for response in responses:
-        self.assertHasChromeProxyViaHeader(response)
+        self.assertHasProxyHeaders(response)
 
       # Verify that loading the exp directive test page with
       # "exp=client_test_bypass" triggers a bypass.
@@ -218,7 +218,7 @@ class Bypass(IntegrationTest):
       responses = test_driver.GetHTTPResponses()
       self.assertNotEqual(0, len(responses))
       for response in responses:
-        self.assertHasChromeProxyViaHeader(response)
+        self.assertHasProxyHeaders(response)
 
   # Data Saver uses a HTTPS proxy by default, if that fails it will fall back to
   # a HTTP proxy.
@@ -245,7 +245,7 @@ class Bypass(IntegrationTest):
       responses = test_driver.GetHTTPResponses()
       self.assertNotEqual(0, len(responses))
       for response in responses:
-        self.assertHasChromeProxyViaHeader(response)
+        self.assertHasProxyHeaders(response)
         if 'chrome-proxy' in response.request_headers:
             chrome_proxy_header = response.request_headers['chrome-proxy']
             chrome_proxy_directives = chrome_proxy_header.split(',')
