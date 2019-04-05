@@ -6063,6 +6063,7 @@ crbug.com/937416 virtual/nobinary-for-devtools/http/tests/devtools/resource-tree
 crbug.com/937416 http/tests/devtools/resource-tree/resource-tree-frame-navigate.js [ Pass Failure ]
 crbug.com/937416 virtual/nobinary-for-devtools/http/tests/devtools/resource-tree/resource-tree-frame-navigate.js [ Pass Failure ]
 crbug.com/937546 [ Win7 ] http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Pass Timeout ]
+crbug.com/937546 [ Win7 ] virtual/outofblink-cors/http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Pass Timeout ]
 # Sheriff 2019-03-02
 crbug.com/937639 [ Linux Debug ] external/wpt/html/browsers/browsing-the-web/read-media/pageload-image-in-popup.html [ Pass Failure ]
 
