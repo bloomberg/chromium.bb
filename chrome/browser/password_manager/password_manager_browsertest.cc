@@ -1154,7 +1154,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, DeleteFrameBeforeSubmit) {
+// TODO(crbug.com/949908) The test is flaky (crashing) on all platforms.
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, DISABLED_DeleteFrameBeforeSubmit) {
   NavigateToFile("/password/multi_frames.html");
 
   NavigationObserver observer(WebContents());
