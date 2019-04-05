@@ -26,6 +26,7 @@ class ThumbnailTabHelper
   // ThumbnailWebContentsObserver:
   void TopLevelNavigationStarted(const GURL& url) override;
   void TopLevelNavigationEnded(const GURL& url) override;
+  void PagePainted() override;
   void PageLoadStarted() override;
   void PageLoadFinished() override;
   void VisibilityChanged(bool visible) override;
@@ -62,8 +63,7 @@ class ThumbnailTabHelper
   // VisibilityChanged() for more information.
   bool view_is_visible_;  // set in constructor
 
-  // When the page last became visible.
-  base::TimeTicks last_visible_start_time_;
+  bool page_painted_ = false;
 
   LoadingState loading_state_ = LoadingState::kNone;
   GURL current_url_;

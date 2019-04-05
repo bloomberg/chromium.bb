@@ -77,6 +77,11 @@ void ThumbnailPageEventAdapter::DocumentAvailableInMainFrame() {
     observer.PageLoadStarted();
 }
 
+void ThumbnailPageEventAdapter::DidFirstVisuallyNonEmptyPaint() {
+  for (auto& observer : observers_)
+    observer.PagePainted();
+}
+
 void ThumbnailPageEventAdapter::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
