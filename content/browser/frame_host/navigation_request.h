@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
+#include "content/browser/frame_host/navigation_throttle_runner.h"
 #include "content/browser/initiator_csp_context.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/common/content_export.h"
@@ -37,6 +38,7 @@ class NavigationHandleImpl;
 class NavigationURLLoader;
 class NavigationData;
 class NavigationUIData;
+class NavigatorDelegate;
 class SiteInstanceImpl;
 struct SubresourceLoaderParams;
 
@@ -45,7 +47,8 @@ struct SubresourceLoaderParams;
 // ResourceDispatcherHost (that lives on the IO thread).
 // TODO(clamy): Describe the interactions between the UI and IO thread during
 // the navigation following its refactoring.
-class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
+class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
+                                         NavigationThrottleRunner::Delegate {
  public:
   // Keeps track of the various stages of a NavigationRequest.
   enum NavigationState {
@@ -314,7 +317,39 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
 
   NavigationHandleState handle_state() { return handle_state_; }
 
+  NavigationUIData* navigation_ui_data() const {
+    return navigation_ui_data_.get();
+  }
+
+  // Resume and CancelDeferredNavigation must only be called by the
+  // NavigationThrottle that is currently deferring the navigation.
+  // |resuming_throttle| and |cancelling_throttle| are the throttles calling
+  // these methods.
+  void Resume(NavigationThrottle* resuming_throttle);
+  void CancelDeferredNavigation(NavigationThrottle* cancelling_throttle,
+                                NavigationThrottle::ThrottleCheckResult result);
+
+  // Simulates the navigation resuming. Most callers should just let the
+  // deferring NavigationThrottle do the resuming.
+  void CallResumeForTesting();
+
+  void RegisterThrottleForTesting(
+      std::unique_ptr<NavigationThrottle> navigation_throttle);
+
+  bool IsDeferredForTesting();
+
+  typedef base::OnceCallback<void(NavigationThrottle::ThrottleCheckResult)>
+      ThrottleChecksFinishedCallback;
+
+  NavigationThrottle* GetDeferringThrottleForTesting() const {
+    return throttle_runner_->GetDeferringThrottle();
+  }
+
  private:
+  // TODO(clamy): Transform NavigationHandleImplTest into NavigationRequestTest
+  // once NavigationHandleImpl has become a wrapper around NavigationRequest.
+  friend class NavigationHandleImplTest;
+
   NavigationRequest(FrameTreeNode* frame_tree_node,
                     const CommonNavigationParams& common_params,
                     mojom::BeginNavigationParamsPtr begin_params,
@@ -478,6 +513,64 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // filtered by download_policy.
   void RecordDownloadUseCountersPostPolicyCheck();
 
+  // NavigationThrottleRunner::Delegate:
+  void OnNavigationEventProcessed(
+      NavigationThrottleRunner::Event event,
+      NavigationThrottle::ThrottleCheckResult result) override;
+
+  void OnWillStartRequestProcessed(
+      NavigationThrottle::ThrottleCheckResult result);
+  void OnWillRedirectRequestProcessed(
+      NavigationThrottle::ThrottleCheckResult result);
+  void OnWillFailRequestProcessed(
+      NavigationThrottle::ThrottleCheckResult result);
+  void OnWillProcessResponseProcessed(
+      NavigationThrottle::ThrottleCheckResult result);
+
+  NavigatorDelegate* GetDelegate() const;
+
+  void CancelDeferredNavigationInternal(
+      NavigationThrottle::ThrottleCheckResult result);
+
+  // TODO(zetamoo): Remove the Will* methods and fold them into their callers.
+
+  // Called when the URLRequest will start in the network stack. |callback| will
+  // be called when all throttle checks have completed. This will allow the
+  // caller to cancel the navigation or let it proceed.
+  void WillStartRequest(ThrottleChecksFinishedCallback callback);
+
+  // Called when the URLRequest will be redirected in the network stack.
+  // |callback| will be called when all throttles check have completed. This
+  // will allow the caller to cancel the navigation or let it proceed.
+  // This will also inform the delegate that the request was redirected.
+  //
+  // |post_redirect_process| is the renderer process we expect to use to commit
+  // the navigation now that it has been redirected. It can be null if there is
+  // no live process that can be used. In that case, a suitable renderer process
+  // will be created at commit time.
+  void WillRedirectRequest(const GURL& new_referrer_url,
+                           RenderProcessHost* post_redirect_process,
+                           ThrottleChecksFinishedCallback callback);
+
+  // Called when the URLRequest will fail. |callback| will be called when all
+  // throttles check have completed. This will allow the caller to explicitly
+  // cancel the navigation (with a custom error code and/or custom error page
+  // HTML) or let the failure proceed as normal.
+  void WillFailRequest(ThrottleChecksFinishedCallback callback);
+
+  // Called when the URLRequest has delivered response headers and metadata.
+  // |callback| will be called when all throttle checks have completed,
+  // allowing the caller to cancel the navigation or let it proceed.
+  // NavigationHandle will not call |callback| with a result of DEFER.
+  // If the result is PROCEED, then 'ReadyToCommitNavigation' will be called
+  // just before calling |callback|.
+  void WillProcessResponse(ThrottleChecksFinishedCallback callback);
+
+  // Checks for attempts to navigate to a page that is already referenced more
+  // than once in the frame's ancestors.  This is a helper function used by
+  // WillStartRequest and WillRedirectRequest to prevent the navigation.
+  bool IsSelfReferentialURL();
+
   FrameTreeNode* frame_tree_node_;
 
   RenderFrameHostImpl* render_frame_host_ = nullptr;
@@ -605,6 +698,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
 
   // TODO(zetamoo): Merge |handle_state_| with |state_|.
   NavigationHandleState handle_state_ = NOT_CREATED;
+
+  // Owns the NavigationThrottles associated with this navigation, and is
+  // responsible for notifying them about the various navigation events.
+  std::unique_ptr<NavigationThrottleRunner> throttle_runner_;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_;
 

@@ -766,9 +766,8 @@ void NavigationRequest::BeginNavigation() {
     // the NavigationHandle where the callback will be stored.
     // TODO(clamy): pass the method to the NavigationHandle instead of a
     // boolean.
-    navigation_handle_->WillStartRequest(
-        base::Bind(&NavigationRequest::OnStartChecksComplete,
-                   base::Unretained(this)));
+    WillStartRequest(base::Bind(&NavigationRequest::OnStartChecksComplete,
+                                base::Unretained(this)));
     return;
   }
 
@@ -832,8 +831,7 @@ void NavigationRequest::CreateNavigationHandle(bool is_for_commit) {
   handle_state_ = NavigationRequest::INITIAL;
   std::unique_ptr<NavigationHandleImpl> navigation_handle =
       base::WrapUnique(new NavigationHandleImpl(
-          this, redirect_chain, nav_entry_id_, std::move(navigation_ui_data_),
-          std::move(headers),
+          this, redirect_chain, nav_entry_id_, std::move(headers),
           Referrer::SanitizeForRequest(common_params_.url,
                                        common_params_.referrer)));
 
@@ -844,6 +842,11 @@ void NavigationRequest::CreateNavigationHandle(bool is_for_commit) {
   }
 
   navigation_handle_ = std::move(navigation_handle);
+
+  throttle_runner_ = base::WrapUnique(
+      new NavigationThrottleRunner(this, navigation_handle_.get()));
+
+  GetDelegate()->DidStartNavigation(navigation_handle_.get());
 }
 
 void NavigationRequest::ResetForCrossDocumentRestart() {
@@ -1078,10 +1081,9 @@ void NavigationRequest::OnRequestRedirected(
 
   // It's safe to use base::Unretained because this NavigationRequest owns the
   // NavigationHandle where the callback will be stored.
-  navigation_handle_->WillRedirectRequest(
-      common_params_.referrer.url, expected_process,
-      base::Bind(&NavigationRequest::OnRedirectChecksComplete,
-                 base::Unretained(this)));
+  WillRedirectRequest(common_params_.referrer.url, expected_process,
+                      base::Bind(&NavigationRequest::OnRedirectChecksComplete,
+                                 base::Unretained(this)));
 }
 
 void NavigationRequest::OnResponseStarted(
@@ -1294,7 +1296,7 @@ void NavigationRequest::OnResponseStarted(
   }
 
   // Check if the navigation should be allowed to proceed.
-  navigation_handle_->WillProcessResponse(
+  WillProcessResponse(
       base::Bind(&NavigationRequest::OnWillProcessResponseChecksComplete,
                  base::Unretained(this)));
 }
@@ -1414,8 +1416,8 @@ void NavigationRequest::OnRequestFailedInternal(
     CommitErrorPage(error_page_content);
   } else {
     // Check if the navigation should be allowed to proceed.
-    navigation_handle_->WillFailRequest(base::BindOnce(
-        &NavigationRequest::OnFailureChecksComplete, base::Unretained(this)));
+    WillFailRequest(base::BindOnce(&NavigationRequest::OnFailureChecksComplete,
+                                   base::Unretained(this)));
   }
 }
 
@@ -2268,6 +2270,264 @@ void NavigationRequest::RecordDownloadUseCountersPostPolicyCheck() {
   content::RenderFrameHost* rfh = frame_tree_node_->current_frame_host();
   GetContentClient()->browser()->LogWebFeatureForCurrentPage(
       rfh, blink::mojom::WebFeature::kDownloadPostPolicyCheck);
+}
+
+void NavigationRequest::OnNavigationEventProcessed(
+    NavigationThrottleRunner::Event event,
+    NavigationThrottle::ThrottleCheckResult result) {
+  DCHECK_NE(NavigationThrottle::DEFER, result.action());
+  switch (event) {
+    case NavigationThrottleRunner::Event::WillStartRequest:
+      OnWillStartRequestProcessed(result);
+      return;
+    case NavigationThrottleRunner::Event::WillRedirectRequest:
+      OnWillRedirectRequestProcessed(result);
+      return;
+    case NavigationThrottleRunner::Event::WillFailRequest:
+      OnWillFailRequestProcessed(result);
+      return;
+    case NavigationThrottleRunner::Event::WillProcessResponse:
+      OnWillProcessResponseProcessed(result);
+      return;
+    default:
+      NOTREACHED();
+  }
+  NOTREACHED();
+}
+
+void NavigationRequest::OnWillStartRequestProcessed(
+    NavigationThrottle::ThrottleCheckResult result) {
+  DCHECK_EQ(PROCESSING_WILL_START_REQUEST, handle_state_);
+  DCHECK_NE(NavigationThrottle::BLOCK_RESPONSE, result.action());
+  if (result.action() == NavigationThrottle::PROCEED)
+    handle_state_ = WILL_START_REQUEST;
+  else
+    handle_state_ = CANCELING;
+
+  // TODO(zetamoo): Remove CompleteCallback from NavigationHandleImpl, and call
+  // the NavigationRequest methods directly.
+  navigation_handle_->RunCompleteCallback(result);
+}
+
+void NavigationRequest::OnWillRedirectRequestProcessed(
+    NavigationThrottle::ThrottleCheckResult result) {
+  DCHECK_EQ(PROCESSING_WILL_REDIRECT_REQUEST, handle_state_);
+  DCHECK_NE(NavigationThrottle::BLOCK_RESPONSE, result.action());
+  if (result.action() == NavigationThrottle::PROCEED) {
+    handle_state_ = WILL_REDIRECT_REQUEST;
+
+    // Notify the delegate that a redirect was encountered and will be followed.
+    if (GetDelegate())
+      GetDelegate()->DidRedirectNavigation(navigation_handle_.get());
+  } else {
+    handle_state_ = NavigationRequest::CANCELING;
+  }
+  navigation_handle_->RunCompleteCallback(result);
+}
+
+void NavigationRequest::OnWillFailRequestProcessed(
+    NavigationThrottle::ThrottleCheckResult result) {
+  DCHECK_EQ(NavigationRequest::PROCESSING_WILL_FAIL_REQUEST, handle_state_);
+  DCHECK_NE(NavigationThrottle::BLOCK_RESPONSE, result.action());
+  if (result.action() == NavigationThrottle::PROCEED) {
+    handle_state_ = WILL_FAIL_REQUEST;
+    result = NavigationThrottle::ThrottleCheckResult(
+        NavigationThrottle::PROCEED, navigation_handle_->GetNetErrorCode());
+  } else {
+    handle_state_ = CANCELING;
+  }
+  navigation_handle_->RunCompleteCallback(result);
+}
+
+void NavigationRequest::OnWillProcessResponseProcessed(
+    NavigationThrottle::ThrottleCheckResult result) {
+  DCHECK_EQ(NavigationRequest::PROCESSING_WILL_PROCESS_RESPONSE, handle_state_);
+  DCHECK_NE(NavigationThrottle::BLOCK_REQUEST, result.action());
+  DCHECK_NE(NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE, result.action());
+  if (result.action() == NavigationThrottle::PROCEED) {
+    handle_state_ = WILL_PROCESS_RESPONSE;
+    // If the navigation is done processing the response, then it's ready to
+    // commit. Inform observers that the navigation is now ready to commit,
+    // unless it is not set to commit (204/205s/downloads).
+    if (render_frame_host_)
+      navigation_handle_->ReadyToCommitNavigation(false);
+  } else {
+    handle_state_ = NavigationRequest::CANCELING;
+  }
+  navigation_handle_->RunCompleteCallback(result);
+}
+
+NavigatorDelegate* NavigationRequest::GetDelegate() const {
+  return frame_tree_node()->navigator()->GetDelegate();
+}
+
+void NavigationRequest::Resume(NavigationThrottle* resuming_throttle) {
+  DCHECK(resuming_throttle);
+  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
+                               "Resume");
+  throttle_runner_->ResumeProcessingNavigationEvent(resuming_throttle);
+  // DO NOT ADD CODE AFTER THIS, as the NavigationHandle might have been deleted
+  // by the previous call.
+}
+
+void NavigationRequest::CancelDeferredNavigation(
+    NavigationThrottle* cancelling_throttle,
+    NavigationThrottle::ThrottleCheckResult result) {
+  DCHECK(cancelling_throttle);
+  DCHECK_EQ(cancelling_throttle, throttle_runner_->GetDeferringThrottle());
+  CancelDeferredNavigationInternal(result);
+}
+
+void NavigationRequest::CallResumeForTesting() {
+  throttle_runner_->CallResumeForTesting();
+}
+
+void NavigationRequest::RegisterThrottleForTesting(
+    std::unique_ptr<NavigationThrottle> navigation_throttle) {
+  throttle_runner_->AddThrottle(std::move(navigation_throttle));
+}
+bool NavigationRequest::IsDeferredForTesting() {
+  return throttle_runner_->GetDeferringThrottle() != nullptr;
+}
+
+void NavigationRequest::CancelDeferredNavigationInternal(
+    NavigationThrottle::ThrottleCheckResult result) {
+  DCHECK(handle_state_ == PROCESSING_WILL_START_REQUEST ||
+         handle_state_ == PROCESSING_WILL_REDIRECT_REQUEST ||
+         handle_state_ == PROCESSING_WILL_FAIL_REQUEST ||
+         handle_state_ == PROCESSING_WILL_PROCESS_RESPONSE);
+  DCHECK(result.action() == NavigationThrottle::CANCEL_AND_IGNORE ||
+         result.action() == NavigationThrottle::CANCEL ||
+         result.action() == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE);
+  DCHECK(result.action() != NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE ||
+         handle_state_ == PROCESSING_WILL_START_REQUEST ||
+         handle_state_ == PROCESSING_WILL_REDIRECT_REQUEST);
+
+  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
+                               "CancelDeferredNavigation");
+  handle_state_ = NavigationRequest::CANCELING;
+  navigation_handle_->RunCompleteCallback(result);
+}
+
+void NavigationRequest::WillStartRequest(
+    ThrottleChecksFinishedCallback callback) {
+  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
+                               "WillStartRequest");
+  // WillStartRequest should only be called once.
+  if (handle_state_ != INITIAL) {
+    handle_state_ = CANCELING;
+    navigation_handle_->RunCompleteCallback(NavigationThrottle::CANCEL);
+    return;
+  }
+
+  handle_state_ = PROCESSING_WILL_START_REQUEST;
+  navigation_handle_->SetCompleteCallback(std::move(callback));
+
+  if (IsSelfReferentialURL()) {
+    handle_state_ = CANCELING;
+    navigation_handle_->RunCompleteCallback(NavigationThrottle::CANCEL);
+    return;
+  }
+
+  throttle_runner_->RegisterNavigationThrottles();
+
+  // If the content/ embedder did not pass the NavigationUIData at the beginning
+  // of the navigation, ask for it now.
+  if (!navigation_ui_data_) {
+    navigation_ui_data_ =
+        GetDelegate()->GetNavigationUIData(navigation_handle_.get());
+  }
+
+  // Notify each throttle of the request.
+  throttle_runner_->ProcessNavigationEvent(
+      NavigationThrottleRunner::Event::WillStartRequest);
+  // DO NOT ADD CODE AFTER THIS, as the NavigationHandle might have been deleted
+  // by the previous call.
+}
+
+void NavigationRequest::WillRedirectRequest(
+    const GURL& new_referrer_url,
+    RenderProcessHost* post_redirect_process,
+    ThrottleChecksFinishedCallback callback) {
+  TRACE_EVENT_ASYNC_STEP_INTO1("navigation", "NavigationRequest", this,
+                               "WillRedirectRequest", "url",
+                               common_params_.url.possibly_invalid_spec());
+  navigation_handle_->UpdateStateFollowingRedirect(new_referrer_url,
+                                                   std::move(callback));
+  UpdateSiteURL(post_redirect_process);
+
+  if (IsSelfReferentialURL()) {
+    handle_state_ = CANCELING;
+    navigation_handle_->RunCompleteCallback(NavigationThrottle::CANCEL);
+    return;
+  }
+
+  // Notify each throttle of the request.
+  throttle_runner_->ProcessNavigationEvent(
+      NavigationThrottleRunner::Event::WillRedirectRequest);
+  // DO NOT ADD CODE AFTER THIS, as the NavigationHandle might have been deleted
+  // by the previous call.
+}
+
+void NavigationRequest::WillFailRequest(
+    ThrottleChecksFinishedCallback callback) {
+  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
+                               "WillFailRequest");
+
+  navigation_handle_->SetCompleteCallback(std::move(callback));
+  handle_state_ = PROCESSING_WILL_FAIL_REQUEST;
+
+  // Notify each throttle of the request.
+  throttle_runner_->ProcessNavigationEvent(
+      NavigationThrottleRunner::Event::WillFailRequest);
+  // DO NOT ADD CODE AFTER THIS, as the NavigationHandle might have been deleted
+  // by the previous call.
+}
+
+void NavigationRequest::WillProcessResponse(
+    ThrottleChecksFinishedCallback callback) {
+  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
+                               "WillProcessResponse");
+
+  handle_state_ = PROCESSING_WILL_PROCESS_RESPONSE;
+  navigation_handle_->SetCompleteCallback(std::move(callback));
+
+  // Notify each throttle of the response.
+  throttle_runner_->ProcessNavigationEvent(
+      NavigationThrottleRunner::Event::WillProcessResponse);
+  // DO NOT ADD CODE AFTER THIS, as the NavigationHandle might have been deleted
+  // by the previous call.
+}
+
+bool NavigationRequest::IsSelfReferentialURL() {
+  // about: URLs should be exempted since they are reserved for other purposes
+  // and cannot be the source of infinite recursion.
+  // See https://crbug.com/341858 .
+  if (common_params_.url.SchemeIs(url::kAboutScheme))
+    return false;
+
+  // Browser-triggered navigations should be exempted.
+  if (browser_initiated())
+    return false;
+
+  // Some sites rely on constructing frame hierarchies where frames are loaded
+  // via POSTs with the same URLs, so exempt POST requests.
+  // See https://crbug.com/710008.
+  if (common_params_.method == "POST")
+    return false;
+
+  // We allow one level of self-reference because some sites depend on that,
+  // but we don't allow more than one.
+  bool found_self_reference = false;
+  for (const FrameTreeNode* node = frame_tree_node()->parent(); node;
+       node = node->parent()) {
+    if (node->current_url().EqualsIgnoringRef(common_params_.url)) {
+      if (found_self_reference)
+        return true;
+      found_self_reference = true;
+    }
+  }
+  return false;
 }
 
 }  // namespace content
