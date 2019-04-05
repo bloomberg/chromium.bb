@@ -84,4 +84,9 @@ interface NetworkServiceTest {
   [Sync]
   GetLatestMemoryPressureLevel()
       => (mojo_base.mojom.MemoryPressureLevel memory_pressure_level);
+
+  // Returns the value of an environment variable in the network service's
+  // process, or an empty string if it's not set.
+  [Sync]
+  GetEnvironmentVariableValue(string name) => (string value);
 };

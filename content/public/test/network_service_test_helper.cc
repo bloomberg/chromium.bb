@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/environment.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_current.h"
@@ -195,6 +196,14 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
   void GetLatestMemoryPressureLevel(
       GetLatestMemoryPressureLevelCallback callback) override {
     std::move(callback).Run(latest_memory_pressure_level_);
+  }
+
+  void GetEnvironmentVariableValue(
+      const std::string& name,
+      GetEnvironmentVariableValueCallback callback) override {
+    std::string value;
+    base::Environment::Create()->GetVar(name, &value);
+    std::move(callback).Run(value);
   }
 
   void BindRequest(network::mojom::NetworkServiceTestRequest request) {
