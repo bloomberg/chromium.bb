@@ -20,7 +20,6 @@
 #include "base/timer/timer.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/display/manager/display_manager_export.h"
-#include "ui/display/manager/query_content_protection_task.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/native_display_observer.h"
 #include "ui/display/util/display_util.h"
@@ -360,10 +359,11 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   // Content protection callbacks called by the tasks when they finish. These
   // are responsible for destroying the task, replying to the caller that made
   // the task and starting the a new content protection task if one is queued.
-  void OnContentProtectionQueried(
-      uint64_t client_id,
-      int64_t display_id,
-      QueryContentProtectionTask::Response response);
+  void OnContentProtectionQueried(uint64_t client_id,
+                                  int64_t display_id,
+                                  bool success,
+                                  uint32_t connection_mask,
+                                  uint32_t protection_mask);
   void OnContentProtectionApplied(uint64_t client_id,
                                   int64_t display_id,
                                   uint32_t protection_mask,
