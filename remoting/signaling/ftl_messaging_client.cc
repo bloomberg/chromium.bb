@@ -84,7 +84,7 @@ void FtlMessagingClient::PullMessages(DoneCallback on_done) {
 void FtlMessagingClient::SendMessage(
     const std::string& destination,
     const std::string& destination_registration_id,
-    const std::string& message_text,
+    const ftl::ChromotingMessage& message,
     DoneCallback on_done) {
   ftl::InboxSendRequest request;
   *request.mutable_header() = FtlGrpcContext::CreateRequestHeader(
@@ -93,10 +93,8 @@ void FtlMessagingClient::SendMessage(
   // TODO(yuweih): See if we need to set requester_id
   *request.mutable_dest_id() = FtlGrpcContext::CreateIdFromString(destination);
 
-  ftl::ChromotingMessage crd_message;
-  crd_message.set_message(message_text);
   std::string serialized_message;
-  bool succeeded = crd_message.SerializeToString(&serialized_message);
+  bool succeeded = message.SerializeToString(&serialized_message);
   DCHECK(succeeded);
 
   request.mutable_message()->set_message(serialized_message);
@@ -213,8 +211,7 @@ void FtlMessagingClient::RunMessageCallbacks(const ftl::InboxMessage& message) {
   ftl::ChromotingMessage chromoting_message;
   chromoting_message.ParseFromString(message.message());
   callback_list_.Notify(message.sender_id().id(),
-                        message.sender_registration_id(),
-                        chromoting_message.message());
+                        message.sender_registration_id(), chromoting_message);
 }
 
 void FtlMessagingClient::OnMessageReceived(const ftl::InboxMessage& message) {

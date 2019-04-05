@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "base/macros.h"
+#include "remoting/signaling/chromoting_message.pb.h"
 #include "remoting/signaling/ftl_services.grpc.pb.h"
 
 namespace remoting {
@@ -27,11 +28,12 @@ class FtlMessagingClient final {
   using MessageCallback =
       base::RepeatingCallback<void(const std::string& sender_id,
                                    const std::string& sender_registration_id,
-                                   const std::string& message)>;
-  using MessageCallbackSubscription =
+                                   const ftl::ChromotingMessage& message)>;
+  using MessageCallbackList =
       base::CallbackList<void(const std::string&,
                               const std::string&,
-                              const std::string&)>::Subscription;
+                              const ftl::ChromotingMessage&)>;
+  using MessageCallbackSubscription = MessageCallbackList::Subscription;
   using DoneCallback = base::OnceCallback<void(const grpc::Status& status)>;
 
   // |token_getter| and |registration_manager| must outlive |this|.
@@ -52,7 +54,7 @@ class FtlMessagingClient final {
   void PullMessages(DoneCallback on_done);
   void SendMessage(const std::string& destination,
                    const std::string& destination_registration_id,
-                   const std::string& message_text,
+                   const ftl::ChromotingMessage& message,
                    DoneCallback on_done);
 
   // Opens a stream to continuously receive new messages from the server and
@@ -102,9 +104,7 @@ class FtlMessagingClient final {
   RegistrationManager* registration_manager_;
   std::unique_ptr<Messaging::Stub> messaging_stub_;
   std::unique_ptr<MessageReceptionChannel> reception_channel_;
-  base::CallbackList<
-      void(const std::string&, const std::string&, const std::string&)>
-      callback_list_;
+  MessageCallbackList callback_list_;
 
   DISALLOW_COPY_AND_ASSIGN(FtlMessagingClient);
 };
