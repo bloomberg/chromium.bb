@@ -46,8 +46,6 @@ class Node;
 
 class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
  public:
-  static AXLayoutObject* Create(LayoutObject*, AXObjectCacheImpl&);
-
   AXLayoutObject(LayoutObject*, AXObjectCacheImpl&);
   ~AXLayoutObject() override;
 

@@ -360,7 +360,7 @@ AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
       (NodeHasRole(node, g_null_atom) &&
        (IsHTMLUListElement(node) || IsHTMLOListElement(node) ||
         IsHTMLDListElement(node))))
-    return AXList::Create(layout_object, *this);
+    return MakeGarbageCollected<AXList>(layout_object, *this);
 
   // media element
   if (node && node->IsMediaElement())
@@ -375,47 +375,51 @@ AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
   }
 
   if (IsHTMLOptionElement(node))
-    return AXListBoxOption::Create(layout_object, *this);
+    return MakeGarbageCollected<AXListBoxOption>(layout_object, *this);
 
   if (IsHTMLInputElement(node) &&
       ToHTMLInputElement(node)->type() == input_type_names::kRadio)
-    return AXRadioInput::Create(layout_object, *this);
+    return MakeGarbageCollected<AXRadioInput>(layout_object, *this);
 
   if (layout_object->IsSVGRoot())
-    return AXSVGRoot::Create(layout_object, *this);
+    return MakeGarbageCollected<AXSVGRoot>(layout_object, *this);
 
   if (layout_object->IsBoxModelObject()) {
     LayoutBoxModelObject* css_box = ToLayoutBoxModelObject(layout_object);
     if (css_box->IsListBox())
-      return AXListBox::Create(ToLayoutListBox(css_box), *this);
+      return MakeGarbageCollected<AXListBox>(ToLayoutListBox(css_box), *this);
     if (css_box->IsMenuList())
-      return AXMenuList::Create(ToLayoutMenuList(css_box), *this);
+      return MakeGarbageCollected<AXMenuList>(ToLayoutMenuList(css_box), *this);
 
     // progress bar
-    if (css_box->IsProgress())
-      return AXProgressIndicator::Create(ToLayoutProgress(css_box), *this);
+    if (css_box->IsProgress()) {
+      return MakeGarbageCollected<AXProgressIndicator>(
+          ToLayoutProgress(css_box), *this);
+    }
 
     // input type=range
     if (css_box->IsSlider())
-      return AXSlider::Create(ToLayoutSlider(css_box), *this);
+      return MakeGarbageCollected<AXSlider>(ToLayoutSlider(css_box), *this);
   }
 
-  return AXLayoutObject::Create(layout_object, *this);
+  return MakeGarbageCollected<AXLayoutObject>(layout_object, *this);
 }
 
 AXObject* AXObjectCacheImpl::CreateFromNode(Node* node) {
-  if (IsMenuListOption(node))
-    return AXMenuListOption::Create(ToHTMLOptionElement(node), *this);
+  if (IsMenuListOption(node)) {
+    return MakeGarbageCollected<AXMenuListOption>(ToHTMLOptionElement(node),
+                                                  *this);
+  }
 
   if (auto* area = ToHTMLAreaElementOrNull(node))
-    return AXImageMapLink::Create(area, *this);
+    return MakeGarbageCollected<AXImageMapLink>(area, *this);
 
-  return AXNodeObject::Create(node, *this);
+  return MakeGarbageCollected<AXNodeObject>(node, *this);
 }
 
 AXObject* AXObjectCacheImpl::CreateFromInlineTextBox(
     AbstractInlineTextBox* inline_text_box) {
-  return AXInlineTextBox::Create(inline_text_box, *this);
+  return MakeGarbageCollected<AXInlineTextBox>(inline_text_box, *this);
 }
 
 AXObject* AXObjectCacheImpl::GetOrCreate(AccessibleNode* accessible_node) {
@@ -530,10 +534,10 @@ AXObject* AXObjectCacheImpl::GetOrCreate(ax::mojom::Role role) {
 
   switch (role) {
     case ax::mojom::Role::kSliderThumb:
-      obj = AXSliderThumb::Create(*this);
+      obj = MakeGarbageCollected<AXSliderThumb>(*this);
       break;
     case ax::mojom::Role::kMenuListPopup:
-      obj = AXMenuListPopup::Create(*this);
+      obj = MakeGarbageCollected<AXMenuListPopup>(*this);
       break;
     default:
       obj = nullptr;
@@ -1305,7 +1309,7 @@ AXObject* AXObjectCacheImpl::GetOrCreateValidationMessageObject() {
     message_ax_object = ObjectFromAXID(validation_message_axid_);
   }
   if (!message_ax_object) {
-    message_ax_object = AXValidationMessage::Create(*this);
+    message_ax_object = MakeGarbageCollected<AXValidationMessage>(*this);
     DCHECK(message_ax_object);
     // Cache the validation message container for reuse.
     validation_message_axid_ = GetOrCreateAXID(message_ax_object);
