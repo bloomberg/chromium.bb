@@ -51,6 +51,21 @@ class VIZ_SERVICE_EXPORT SurfaceAllocationGroup {
   // allocation group.
   void UnregisterSurface(Surface* surface);
 
+  // Called by |surface| when it has a pending frame that is blocked on
+  // |activation_dependency| in this allocation group. The embedder will be
+  // notified when |activation_dependency| becomes available.
+  void RegisterBlockedEmbedder(Surface* surface,
+                               const SurfaceId& activation_dependency);
+
+  // Called by |surface| when its pending frame that still has an unresolved
+  // activation dependency in this allocation group either activates
+  // (|did_activate| == true) or gets dropped (|did_activate| == false).
+  void UnregisterBlockedEmbedder(Surface* surface, bool did_activate);
+
+  // Returns whether there is any embedder that is blocked on a surface in this
+  // allocation group.
+  bool HasBlockedEmbedder() const;
+
   // Called by |surface| when its newly activated frame references a surface in
   // this allocation group. The embedder will be notified whenever a surface in
   // this allocation group activates for the first time.
@@ -60,14 +75,23 @@ class VIZ_SERVICE_EXPORT SurfaceAllocationGroup {
   // surface in this allocation group.
   void UnregisterActiveEmbedder(Surface* surface);
 
-  // Called by an active embedder when its CompositorFrame references a surface
-  // in this allocation group. |surface_id| or the last surface prior to it will
-  // be forcefully activated due to deadline inheritance.
-  void UpdateLastReferencedSurfaceAndMaybeActivate(const SurfaceId& surface_id);
+  // Notifies that a surface exists whose active frame references |surface_id|
+  // in this allocation group. |surface_id| or the last surface prior to it may
+  // be activated due to deadline inheritance.
+  void UpdateLastActiveReferenceAndMaybeActivate(const SurfaceId& surface_id);
+
+  // Notifies that a surface exists whose pending frame references |surface_id|
+  // in this allocation group. |surface_id| or some surface prior to it might
+  // activate if it was blocked due to child throttling.
+  void UpdateLastPendingReferenceAndMaybeActivate(const SurfaceId& surface_id);
 
   // Returns the last SurfaceId in this allocation group that was ever
-  // referenced.
-  const SurfaceId& GetLastReferencedSurfaceId();
+  // referenced by the active frame of a surface.
+  const SurfaceId& GetLastActiveReference();
+
+  // Returns the last SurfaceId in this allocation group that was ever
+  // referenced by a pending or an active frame of a surface.
+  const SurfaceId& GetLastReference();
 
   // Returns the latest active surface in the given range that is a part of this
   // allocation group. The embed token of at least one end of the range must
@@ -83,6 +107,11 @@ class VIZ_SERVICE_EXPORT SurfaceAllocationGroup {
   // Called by the surfaces in this allocation when they activate for the first
   // time.
   void OnFirstSurfaceActivation(Surface* surface);
+
+  // Called when there will not be any calls to RegisterSurface in the future.
+  // All pending embedders that were blocked on surfaces that don't exist yet
+  // will have their dependency resolved.
+  void WillNotRegisterNewSurfaces();
 
   // Returns the last surface created in this allocation group.
   Surface* last_created_surface() const {
@@ -105,6 +134,10 @@ class VIZ_SERVICE_EXPORT SurfaceAllocationGroup {
   // (see IsReadyToDestroy() for the requirements).
   void MaybeMarkForDestruction();
 
+  // Updates the last reference. |surface_id| or a surface prior to it might
+  // activate if it was blocked due to child throttling.
+  void UpdateLastReferenceAndMaybeActivate(const SurfaceId& surface_id);
+
   // The ID of the FrameSink that is submitting to the surfaces in this
   // allocation group.
   const FrameSinkId submitter_;
@@ -119,6 +152,10 @@ class VIZ_SERVICE_EXPORT SurfaceAllocationGroup {
   // increasing.
   std::vector<Surface*> surfaces_;
 
+  // A map from the surfaces that have an unresolved activation dependency in
+  // this allocation group, to the said activation dependency.
+  base::flat_map<Surface*, SurfaceId> blocked_embedders_;
+
   // The set of surfaces that reference a surface in this allocation group by
   // their active frame.
   base::flat_set<Surface*> active_embedders_;
@@ -127,9 +164,13 @@ class VIZ_SERVICE_EXPORT SurfaceAllocationGroup {
   // ready to be destroyed.
   SurfaceManager* const surface_manager_;
 
-  // The last SurfaceId of this allocation group that was ever referenced by an
-  // active embedder.
-  SurfaceId last_referenced_surface_id_;
+  // The last SurfaceId of this allocation group that was ever referenced by the
+  // active frame of a surface.
+  SurfaceId last_active_reference_;
+
+  // The last SurfaceId of this allocation group that was ever referenced by the
+  // active or pending frame of a surface.
+  SurfaceId last_reference_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceAllocationGroup);
 };

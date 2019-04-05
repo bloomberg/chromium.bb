@@ -8,6 +8,7 @@
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_allocation_group.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/compositor_frame_helpers.h"
@@ -412,7 +413,7 @@ TEST_F(SurfaceSynchronizationTest, TwoBlockedOnOne) {
 
   parent_support().SubmitCompositorFrame(
       parent_id.local_surface_id(),
-      MakeCompositorFrame({child_id2}, empty_surface_ranges(),
+      MakeCompositorFrame({child_id2}, {SurfaceRange(base::nullopt, child_id2)},
                           std::vector<TransferableResource>()));
 
   // parent_support is blocked on |child_id2|.
@@ -425,7 +426,7 @@ TEST_F(SurfaceSynchronizationTest, TwoBlockedOnOne) {
   // child_support1 should now be blocked on |child_id2|.
   child_support1().SubmitCompositorFrame(
       child_id1.local_surface_id(),
-      MakeCompositorFrame({child_id2}, empty_surface_ranges(),
+      MakeCompositorFrame({child_id2}, {SurfaceRange(base::nullopt, child_id2)},
                           std::vector<TransferableResource>()));
 
   EXPECT_TRUE(child_surface1()->has_deadline());
@@ -3138,9 +3139,7 @@ TEST_F(SurfaceSynchronizationTest,
   EXPECT_TRUE(child_surface2->has_deadline());
 
   // |child_id3| Surface should activate immediately because it corresponds to a
-  // parent-initiated synchronization event. |child_surface3| activating
-  // triggers all predecessors to activate as well if they're blocked on a
-  // parent.
+  // parent-initiated synchronization event.
   child_support1().SubmitCompositorFrame(child_id3.local_surface_id(),
                                          MakeDefaultCompositorFrame());
   Surface* child_surface3 = GetSurfaceForId(child_id3);
@@ -3148,12 +3147,6 @@ TEST_F(SurfaceSynchronizationTest,
   EXPECT_FALSE(child_surface3->HasPendingFrame());
   EXPECT_TRUE(child_surface3->HasActiveFrame());
   EXPECT_FALSE(IsMarkedForDestruction(child_id3));
-
-  // |child_surface2| should have activated now (and should be a candidate for
-  // garbage collection).
-  EXPECT_FALSE(child_surface2->HasPendingFrame());
-  EXPECT_TRUE(child_surface2->HasActiveFrame());
-  EXPECT_TRUE(IsMarkedForDestruction(child_id2));
 }
 
 TEST_F(SurfaceSynchronizationTest, EvictSurface) {
@@ -3526,6 +3519,60 @@ TEST_F(SurfaceSynchronizationTest,
                                          std::move(frame));
   EXPECT_FALSE(surface_manager()->GetAllocationGroupForSurfaceId(child_id1));
   EXPECT_TRUE(surface_manager()->GetAllocationGroupForSurfaceId(child_id2));
+}
+
+// This test verifies that the child gets unthrottled when the parent embeds the
+// second last surface. https://crbug.com/898460
+TEST_F(SurfaceSynchronizationTest,
+       ChildUnthrottledWhenSecondLastSurfaceEmbedded) {
+  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1, 1);
+  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink1, 1, 2);
+  const SurfaceId child_id3 = MakeSurfaceId(kChildFrameSink1, 1, 3);
+
+  // |child_id1| Surface should immediately activate because one unembedded
+  // surface is allowed.
+  child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+  Surface* child_surface1 = GetSurfaceForId(child_id1);
+  ASSERT_NE(nullptr, child_surface1);
+  EXPECT_FALSE(child_surface1->HasPendingFrame());
+  EXPECT_TRUE(child_surface1->HasActiveFrame());
+
+  // |child_id2| Surface should not activate because now there are two surfaces
+  // not embedded by the parent makes child throttling kick in.
+  child_support1().SubmitCompositorFrame(
+      child_id2.local_surface_id(),
+      MakeCompositorFrame(empty_surface_ids(), empty_surface_ranges(),
+                          std::vector<TransferableResource>(),
+                          MakeDeadline(1u)));
+  Surface* child_surface2 = GetSurfaceForId(child_id2);
+  ASSERT_NE(nullptr, child_surface2);
+  EXPECT_TRUE(child_surface2->HasPendingFrame());
+  EXPECT_FALSE(child_surface2->HasActiveFrame());
+  EXPECT_TRUE(child_surface2->has_deadline());
+
+  // The parent embeds |child_id1| and blocks. Both |child_id2| should activate
+  // because now again there is only one surface not embedded by the parent.
+  parent_support().SubmitCompositorFrame(
+      parent_id.local_surface_id(),
+      MakeCompositorFrame({child_id1}, {SurfaceRange(base::nullopt, child_id1)},
+                          std::vector<TransferableResource>(),
+                          MakeDefaultDeadline()));
+  EXPECT_FALSE(child_surface2->HasPendingFrame());
+  EXPECT_TRUE(child_surface2->HasActiveFrame());
+
+  // The child submits to |child_id3|. Now again we have two unembedded surface
+  // so throttling should kick in.
+  child_support1().SubmitCompositorFrame(
+      child_id3.local_surface_id(),
+      MakeCompositorFrame(empty_surface_ids(), empty_surface_ranges(),
+                          std::vector<TransferableResource>(),
+                          MakeDeadline(1u)));
+  Surface* child_surface3 = GetSurfaceForId(child_id3);
+  ASSERT_NE(nullptr, child_surface3);
+  EXPECT_TRUE(child_surface3->HasPendingFrame());
+  EXPECT_FALSE(child_surface3->HasActiveFrame());
 }
 
 }  // namespace viz

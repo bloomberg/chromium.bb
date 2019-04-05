@@ -6,6 +6,7 @@
 
 #include "components/viz/common/hit_test/aggregated_hit_test_region.h"
 #include "components/viz/service/surfaces/latest_local_surface_id_lookup_delegate.h"
+#include "components/viz/service/surfaces/surface.h"
 
 namespace viz {
 
