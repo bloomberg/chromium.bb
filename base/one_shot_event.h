@@ -22,7 +22,7 @@ class TimeDelta;
 // This class represents an event that's expected to happen once.  It
 // allows clients to guarantee that code is run after the OneShotEvent
 // is signaled.  If the OneShotEvent is destroyed before it's
-// signaled, the Onceclosure are destroyed without being run.
+// signaled, the closures are destroyed without being run.
 //
 // This class is similar to a WaitableEvent combined with several
 // WaitableEventWatchers, but using it is simpler.
