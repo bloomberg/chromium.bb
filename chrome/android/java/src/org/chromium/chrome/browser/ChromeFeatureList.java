@@ -209,6 +209,8 @@ public abstract class ChromeFeatureList {
     public static final String CONTEXTUAL_SEARCH_SECOND_TAP = "ContextualSearchSecondTap";
     public static final String CONTEXTUAL_SEARCH_TAP_DISABLE_OVERRIDE =
             "ContextualSearchTapDisableOverride";
+    public static final String CONTEXTUAL_SEARCH_TRANSLATION_MODEL =
+            "ContextualSearchTranslationModel";
     public static final String CONTEXTUAL_SEARCH_UNITY_INTEGRATION =
             "ContextualSearchUnityIntegration";
     public static final String CONTEXTUAL_SUGGESTIONS_BUTTON = "ContextualSuggestionsButton";

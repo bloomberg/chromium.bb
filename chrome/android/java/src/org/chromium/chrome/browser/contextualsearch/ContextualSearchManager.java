@@ -136,7 +136,7 @@ public class ContextualSearchManager
     private ContextualSearchInternalStateController mInternalStateController;
 
     @VisibleForTesting
-    protected ContextualSearchTranslateController mTranslateController;
+    protected ContextualSearchTranslation mTranslateController;
 
     // The Overlay panel.
     private ContextualSearchPanel mSearchPanel;
@@ -238,7 +238,8 @@ public class ContextualSearchManager
         mSelectionController = new ContextualSearchSelectionController(activity, this);
         mNetworkCommunicator = this;
         mPolicy = new ContextualSearchPolicy(mSelectionController, mNetworkCommunicator);
-        mTranslateController = new ContextualSearchTranslateController(mPolicy, this);
+        mTranslateController =
+                ContextualSearchTranslateController.getContextualSearchTranslation(mPolicy, this);
         mInternalStateController = new ContextualSearchInternalStateController(
                 mPolicy, getContextualSearchInternalStateHandler());
         mInteractionRecorder = new ContextualSearchRankerLoggerImpl();
@@ -465,8 +466,7 @@ public class ContextualSearchManager
             mShouldLoadDelayedSearch = false;
         }
         if (isTap && mPolicy.shouldPreviousTapResolve()) {
-            // Cache the native translate data, so JNI calls won't be made when time-critical.
-            mTranslateController.cacheNativeTranslateData();
+            // For a resolving Tap we'll figure out translation need after the Resolve.
         } else if (!TextUtils.isEmpty(selection)) {
             boolean shouldPrefetch = mPolicy.shouldPrefetchSearchResult();
             mSearchRequest = new ContextualSearchRequest(selection, shouldPrefetch);

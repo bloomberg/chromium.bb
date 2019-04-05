@@ -44,6 +44,7 @@
 #include "url/gurl.h"
 
 using content::RenderFrameHost;
+using language::LanguageModel;
 using unified_consent::UrlKeyedDataCollectionConsentHelper;
 
 namespace {
@@ -422,10 +423,11 @@ bool ContextualSearchDelegate::CanSendPageURL(
 // Gets the target language from the translate service using the user's profile.
 std::string ContextualSearchDelegate::GetTargetLanguage() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  PrefService* pref_service = profile->GetPrefs();
-  language::LanguageModel* language_model =
+  LanguageModel* language_model =
       LanguageModelManagerFactory::GetForBrowserContext(profile)
           ->GetPrimaryModel();
+  DCHECK(language_model);
+  PrefService* pref_service = profile->GetPrefs();
   std::string result =
       TranslateService::GetTargetLanguage(pref_service, language_model);
   DCHECK(!result.empty());

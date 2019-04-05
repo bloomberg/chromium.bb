@@ -122,6 +122,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kContextualSearchSecondTap,
     &kContextualSearchSimplifiedServer,
     &kContextualSearchTapDisableOverride,
+    &kContextualSearchTranslationModel,
     &kContextualSearchUnityIntegration,
     &kCustomContextMenu,
     &kDelegateOverscrollSwipes,
@@ -341,6 +342,9 @@ const base::Feature kContextualSearchSimplifiedServer{
 
 const base::Feature kContextualSearchTapDisableOverride{
     "ContextualSearchTapDisableOverride", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kContextualSearchTranslationModel{
+    "ContextualSearchTranslationModel", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContextualSearchUnityIntegration{
     "ContextualSearchUnityIntegration", base::FEATURE_DISABLED_BY_DEFAULT};
