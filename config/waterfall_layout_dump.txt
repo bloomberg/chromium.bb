@@ -70,7 +70,6 @@
     daisy-paladin
     daisy_skate-paladin
     daisy_spring-paladin
-    dragonegg-paladin
     edgar-paladin
     elm-paladin
     eve-arcnext-paladin
@@ -445,7 +444,6 @@
     daisy-postsubmit
     daisy_skate-postsubmit
     daisy_spring-postsubmit
-    dragonegg-postsubmit
     edgar-postsubmit
     elm-postsubmit
     enguarde-postsubmit
@@ -1428,7 +1426,6 @@
   daisy_spring-tot-chrome-pfq-informational-tryjob
   daisy_spring-tot-chromium-pfq-informational-tryjob
   daisy_spring-unittest-stress
-  dragonegg-chrome-pfq-tryjob
   dragonegg-chromium-pfq-tryjob
   dragonegg-compile-only-pre-cq
   dragonegg-full-tryjob
@@ -1436,14 +1433,9 @@
   dragonegg-llvm-toolchain-tryjob
   dragonegg-no-vmtest-pre-cq
   dragonegg-paladin-tryjob
-  dragonegg-payloads-tryjob
   dragonegg-postsubmit-tryjob
   dragonegg-pre-cq
-  dragonegg-release-afdo-generate-tryjob
-  dragonegg-release-afdo-tryjob
-  dragonegg-release-afdo-use-tryjob
   dragonegg-release-tryjob
-  dragonegg-tot-chrome-pfq-informational-tryjob
   dragonegg-tot-chromium-pfq-informational-tryjob
   dragonegg-unittest-stress
   edgar-chrome-pfq-tryjob
@@ -2638,7 +2630,6 @@
     daisy-paladin-tryjob
     daisy_skate-paladin-tryjob
     daisy_spring-paladin-tryjob
-    dragonegg-paladin-tryjob
     edgar-paladin-tryjob
     elm-paladin-tryjob
     eve-arcnext-paladin-tryjob
@@ -2758,7 +2749,6 @@
     daisy-postsubmit-tryjob
     daisy_skate-postsubmit-tryjob
     daisy_spring-postsubmit-tryjob
-    dragonegg-postsubmit-tryjob
     edgar-postsubmit-tryjob
     elm-postsubmit-tryjob
     enguarde-postsubmit-tryjob

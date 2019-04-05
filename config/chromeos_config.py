@@ -1969,7 +1969,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'daisy',
       'daisy_skate',
       'daisy_spring',
-      'dragonegg',
       'edgar',
       'elm',
       'eve',
