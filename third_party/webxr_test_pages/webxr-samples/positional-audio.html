@@ -158,7 +158,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       function createBufferSource(source, buffer, analyser) {
         // Create a buffer source. This will need to be recreated every time
-        // we wish to start the audio, see 
+        // we wish to start the audio, see
         // https://developer.mozilla.org/en-US/docs/Web/API/AudioBufferSourceNode
         let bufferSource = audioContext.createBufferSource();
         bufferSource.loop = true;
@@ -362,6 +362,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         });
 
         session.requestReferenceSpace({ type: 'stationary', subtype: 'floor-level' }).then((refSpace) => {
+          return refSpace;
+        }, (e) => {
+          if (!session.mode.startsWith('immersive')) {
+            // If we're in inline mode, our underlying platform may not support
+            // the stationary reference space, but an identity space is guaranteed.
+            return session.requestReferenceSpace({ type: 'identity' });
+          } else {
+            throw e;
+          }
+        }).then((refSpace) => {
           if (session.mode.startsWith('immersive')) {
             xrImmersiveRefSpace = refSpace;
           } else {

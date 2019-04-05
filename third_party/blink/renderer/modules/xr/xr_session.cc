@@ -112,7 +112,8 @@ XRSession::XRSession(
     device::mojom::blink::XRSessionClientRequest client_request,
     XRSession::SessionMode mode,
     const String& mode_string,
-    EnvironmentBlendMode environment_blend_mode)
+    EnvironmentBlendMode environment_blend_mode,
+    bool sensorless_session)
     : xr_(xr),
       mode_(mode),
       mode_string_(mode_string),
@@ -121,7 +122,8 @@ XRSession::XRSession(
       client_binding_(this, std::move(client_request)),
       callback_collection_(
           MakeGarbageCollected<XRFrameRequestCallbackCollection>(
-              xr_->GetExecutionContext())) {
+              xr_->GetExecutionContext())),
+      sensorless_session_(sensorless_session) {
   render_state_ = MakeGarbageCollected<XRRenderState>();
   viewer_space_ = MakeGarbageCollected<XRViewerSpace>(this);
   blurred_ = !HasAppropriateFocus();
@@ -233,6 +235,12 @@ ScriptPromise XRSession::requestReferenceSpace(
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                            kSessionEnded));
+  }
+
+  if (sensorless_session_ && options->type() != "identity") {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                                           kReferenceSpaceNotSupported));
   }
 
   XRReferenceSpace* reference_space = nullptr;

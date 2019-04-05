@@ -65,7 +65,8 @@ class XRSession final : public EventTargetWithInlineData,
             device::mojom::blink::XRSessionClientRequest client_request,
             SessionMode mode,
             const String& mode_string,
-            EnvironmentBlendMode environment_blend_mode);
+            EnvironmentBlendMode environment_blend_mode,
+            bool sensorless_session);
   ~XRSession() override = default;
 
   XR* xr() const { return xr_; }
@@ -252,6 +253,10 @@ class XRSession final : public EventTargetWithInlineData,
   // Dimensions of the output canvas.
   int output_width_ = 1;
   int output_height_ = 1;
+
+  // Indicates that this is a sensorless session which should only support the
+  // identity reference space.
+  bool sensorless_session_ = false;
 };
 
 }  // namespace blink
