@@ -214,6 +214,15 @@ bool ThemePainterDefault::PaintTextField(const Node* node,
   if (style.HasBorderRadius() || style.HasBackgroundImage())
     return true;
 
+  // Don't use the theme painter if dark mode is enabled. It has a separate
+  // graphics pipeline that doesn't go through GraphicsContext and so does not
+  // currently know how to handle Dark Mode, causing elements to be rendered
+  // incorrectly (e.g. https://crbug.com/937872).
+  // TODO(gilmanmh): Implement a more permanent solution that allows use of
+  // native dark themes.
+  if (paint_info.context.dark_mode_settings().mode != DarkMode::kOff)
+    return true;
+
   ControlPart part = style.Appearance();
 
   WebThemeEngine::ExtraParams extra_params;
@@ -466,8 +475,7 @@ bool ThemePainterDefault::PaintSearchFieldCancelButton(
   // pixel off-center, it will be one pixel closer to the bottom of the field.
   // This tends to look better with the text.
   LayoutRect cancel_button_rect(
-      cancel_button_object.OffsetFromAncestor(&input_layout_box)
-          .Width(),
+      cancel_button_object.OffsetFromAncestor(&input_layout_box).Width(),
       input_content_box.Y() +
           (input_content_box.Height() - cancel_button_size + 1) / 2,
       cancel_button_size, cancel_button_size);
