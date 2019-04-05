@@ -4,6 +4,7 @@
 
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 
+#import <EarlGrey/EarlGrey.h>
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
 
