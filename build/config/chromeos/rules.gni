@@ -118,6 +118,12 @@ template("generate_runner_script") {
         _qemu_dir,
       ]
     }
+    if (is_tast) {
+      data += [
+        "${_cache_path_prefix}+chromeos-base/tast-cmd/",
+        "${_cache_path_prefix}+chromeos-base/tast-remote-tests-cros/",
+      ]
+    }
     if (defined(invoker.data)) {
       deps += invoker.data
     }
