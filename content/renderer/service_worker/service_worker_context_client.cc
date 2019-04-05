@@ -264,12 +264,10 @@ struct ServiceWorkerContextClient::WorkerContextData {
   // Inflight navigation preload requests.
   base::IDMap<std::unique_ptr<NavigationPreloadRequest>> preload_requests;
 
-  // S13nServiceWorker
   // Timer triggered when the service worker considers it should be stopped or
   // an event should be aborted.
   std::unique_ptr<ServiceWorkerTimeoutTimer> timeout_timer;
 
-  // S13nServiceWorker
   // |controller_impl| should be destroyed before |timeout_timer| since the
   // pipe needs to be disconnected before callbacks passed by
   // DispatchSomeEvent() get destructed, which may be stored in |timeout_timer|
@@ -1544,7 +1542,6 @@ void ServiceWorkerContextClient::
           .To<blink::WebServiceWorkerObjectInfo>());
 }
 
-// S13nServiceWorker
 void ServiceWorkerContextClient::DispatchFetchEvent(
     blink::mojom::DispatchFetchEventParamsPtr params,
     blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,

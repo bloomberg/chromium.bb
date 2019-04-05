@@ -22,7 +22,6 @@ class ServiceWorkerCacheWriter;
 class ServiceWorkerContextCore;
 class ServiceWorkerProviderHost;
 
-// S13nServiceWorker:
 // Created per one running service worker for loading its scripts. This is kept
 // alive while the WebServiceWorkerNetworkProvider in the renderer process is
 // alive.

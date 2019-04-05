@@ -126,8 +126,8 @@ class MockWebServiceWorkerProviderClientImpl
   std::set<blink::mojom::WebFeature> used_features_;
 };
 
-// S13nServiceWorker: a fake URLLoaderFactory implementation that basically
-// does nothing but records the requests.
+// A fake URLLoaderFactory implementation that basically does nothing but
+// records the requests.
 class FakeURLLoaderFactory final : public network::mojom::URLLoaderFactory {
  public:
   FakeURLLoaderFactory() = default;
@@ -173,8 +173,8 @@ class FakeURLLoaderFactory final : public network::mojom::URLLoaderFactory {
   DISALLOW_COPY_AND_ASSIGN(FakeURLLoaderFactory);
 };
 
-// S13nServiceWorker: a fake ControllerServiceWorker implementation that
-// basically does nothing but records DispatchFetchEvent calls.
+// A fake ControllerServiceWorker implementation that basically does nothing but
+// records DispatchFetchEvent calls.
 class FakeControllerServiceWorker
     : public blink::mojom::ControllerServiceWorker {
  public:
@@ -264,7 +264,7 @@ class ServiceWorkerProviderContextTest : public testing::Test {
  public:
   ServiceWorkerProviderContextTest() = default;
 
-  void EnableS13nServiceWorker() {
+  void EnableNetworkService() {
     scoped_feature_list_.InitAndEnableFeature(
         network::features::kNetworkService);
     network::mojom::URLLoaderFactoryPtr fake_loader_factory;
@@ -294,8 +294,6 @@ class ServiceWorkerProviderContextTest : public testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment task_environment;
-
-  // S13nServiceWorker:
   base::test::ScopedFeatureList scoped_feature_list_;
   FakeURLLoaderFactory fake_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
@@ -414,10 +412,10 @@ TEST_F(ServiceWorkerProviderContextTest, SetController_Null) {
   EXPECT_TRUE(client->was_set_controller_called());
 }
 
-// S13nServiceWorker: Test that SetController correctly sets (or resets)
-// the controller service worker for clients.
+// Test that SetController correctly sets (or resets) the controller service
+// worker for clients.
 TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
-  EnableS13nServiceWorker();
+  EnableNetworkService();
   const int kProviderId = 10;
 
   // Make the ServiceWorkerContainerHost implementation and
@@ -608,7 +606,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
 }
 
 TEST_F(ServiceWorkerProviderContextTest, ControllerWithoutFetchHandler) {
-  EnableS13nServiceWorker();
+  EnableNetworkService();
   const int kProviderId = 10;
   auto object_host =
       std::make_unique<MockServiceWorkerObjectHost>(200 /* version_id */);

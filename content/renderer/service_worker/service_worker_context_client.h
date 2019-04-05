@@ -427,7 +427,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // startup completes.
   blink::mojom::EmbeddedWorkerStartTimingPtr start_timing_;
 
-  // S13nServiceWorker:
   // A URLLoaderFactory instance used for subresource loading.
   scoped_refptr<HostChildURLLoaderFactoryBundle> loader_factories_;
 

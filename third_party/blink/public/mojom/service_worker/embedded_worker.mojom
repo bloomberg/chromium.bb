@@ -31,53 +31,71 @@ struct EmbeddedWorkerStartParams {
   // The id of the service worker being started. This remains fixed even if the
   // worker is stopped and restarted, or even if the browser restarts.
   int64 service_worker_version_id;
+
   // This service worker's registration's scope:
   // https://w3c.github.io/ServiceWorker/#service-worker-registration-scope
   url.mojom.Url scope;
+
   // This service worker's script url:
   // https://w3c.github.io/ServiceWorker/#dom-serviceworker-scripturl
   url.mojom.Url script_url;
+
   // This service worker's script type:
   // https://w3c.github.io/ServiceWorker/#dfn-type
   ScriptType script_type;
+
   // The string used for "user-agent" HTTP header.
   string user_agent;
+
   // The id to talk with the DevTools agent for the worker.
   int32 worker_devtools_agent_route_id;
+
   // Unique token identifying this worker for DevTools.
   mojo_base.mojom.UnguessableToken devtools_worker_token;
+
   // When true, worker script evaluation is blocked until
   // EmbeddedWorkerInstanceClient::ResumeAfterDownload() is called.
   // This isn't used when off-the-main-thread script fetch is enabled. The
   // browser process is responsible for delaying execution.
   bool pause_after_download;
+
   // True if starting the worker should wait until DevTools gets ready.
   bool wait_for_debugger;
+
   // True if this service worker has been installed.
   bool is_installed;
+
   // Determines how eagerly V8 creates the code cache.
   V8CacheOptions v8_cache_options;
+
   // Used to set up fetch requests.
   RendererPreferences renderer_preferences;
 
   // Used to talk to the service worker from the browser process.
   ServiceWorker& service_worker_request;
-  // S13nServiceWorker: cloned and passed to each controllee to directly
-  // dispatch events from the controllees.
+
+  // Cloned and passed to each controllee to directly dispatch events from the
+  // controllees.
   ControllerServiceWorker& controller_request;
+
   // Information to transfer installed scripts from the browser to the renderer.
   ServiceWorkerInstalledScriptsInfo? installed_scripts_info;
+
   // Interface for the renderer to send the status updates to the browser.
   associated EmbeddedWorkerInstanceHost instance_host;
+
   // Information for creating ServiceWorkerProviderContext on the renderer.
   ServiceWorkerProviderInfoForStartWorker provider_info;
+
   // Interface for the renderer to query the content settings in the browser.
   WorkerContentSettingsProxy content_settings_proxy;
+
   // Interface for keeping track of the renderer preferences.
   RendererPreferenceWatcher& preference_watcher_request;
-  // S13nServiceWorker: Used to load subresources in the service worker.
-  // This allows the service worker to load chrome-extension:// URLs which
-  // the renderer's default loader factory can't load.
+
+  // Used to load subresources in the service worker.  This allows the service
+  // worker to load chrome-extension:// URLs which the renderer's default
+  // loader factory can't load.
   URLLoaderFactoryBundle? subresource_loader_factories;
 };
 
@@ -130,7 +148,6 @@ interface EmbeddedWorkerInstanceClient {
 // EmbeddedWorkerInstanceClient, so it lives on the same message pipe as
 // EmbeddedWorkerInstanceClient.
 interface EmbeddedWorkerInstanceHost {
-  // S13nServiceWorker:
   // Called when the worker requests to be terminated. The worker will request
   // to be terminated when it realizes it has been idle for some time. The
   // browser doesn't terminate the worker when there are inflight events or

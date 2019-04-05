@@ -549,11 +549,11 @@ TEST_P(ServiceWorkerActivationTest, NoInflightRequest) {
 
   // Remove the controllee. Since there is an in-flight request,
   // activation should not yet happen.
-  // When S13nServiceWorker is on, the idle timer living in the renderer is
-  // requested to notify the browser the idle state ASAP.
   version_1->RemoveControllee(controllee()->client_uuid());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(version_1.get(), reg->active_version());
+  // The idle timer living in the renderer is requested to notify the idle state
+  // to the browser ASAP.
   EXPECT_TRUE(version_1_service_worker()->is_zero_idle_timer_delay());
 
   // Finish the request. Activation should happen.
@@ -582,10 +582,8 @@ TEST_P(ServiceWorkerActivationTest, SkipWaitingWithInflightRequest) {
   EXPECT_EQ(version_1.get(), reg->active_version());
   EXPECT_TRUE(version_1_service_worker()->is_zero_idle_timer_delay());
 
-  // Finish the request.
-  // non-S13nServiceWorker: The service worker becomes idle.
-  // S13nServiceWorker: FinishRequest() doesn't immediately make the worker
-  // "no work" state. It needs to be notfied the idle state by
+  // Finish the request. FinishRequest() doesn't immediately make the worker
+  // reach the "no work" state. It needs to be notfied of the idle state by
   // RequestTermination().
   version_1->FinishRequest(inflight_request_id(), true /* was_handled */);
 
@@ -612,10 +610,7 @@ TEST_P(ServiceWorkerActivationTest, SkipWaiting) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(version_1.get(), reg->active_version());
 
-  // Call skipWaiting.
-  // non-S13nServiceWorker: Activation should happen.
-  // S13nServiceWorker: Activation should happen after RequestTermination is
-  // triggered.
+  // Call skipWaiting. Activation happens after RequestTermination is triggered.
   base::Optional<bool> result;
   base::RunLoop skip_waiting_loop;
   SimulateSkipWaitingWithCallback(version_2.get(), &result,

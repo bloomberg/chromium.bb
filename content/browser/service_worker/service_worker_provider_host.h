@@ -144,7 +144,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr*
           out_provider_info);
 
-  // S13nServiceWorker:
   // Used for starting a shared worker. Returns a provider host for the shared
   // worker and fills |out_provider_info| with info to send to the renderer to
   // connect to the host. The host stays alive as long as this info stays alive
@@ -210,7 +209,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
     return running_hosted_version_.get();
   }
 
-  // S13nServiceWorker:
   // For service worker clients. Similar to EnsureControllerServiceWorker, but
   // this returns a bound Mojo ptr which is supposed to be sent to clients. The
   // controller ptr passed to the clients will be used to intercept requests
@@ -406,7 +404,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // cache.
   void NotifyControllerLost();
 
-  // S13nServiceWorker:
   // For service worker clients. Called when |version| is the active worker upon
   // the main resource request for this client. Remembers |version| as needing
   // a Soft Update. To avoid affecting page load performance, the update occurs
@@ -420,10 +417,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   //
   // This can be called multiple times due to redirects during a main resource
   // load. All service workers are updated.
-  //
-  // For non-S13nServiceWorker: The update logic is controlled entirely by
-  // ServiceWorkerControlleeRequestHandler, which sees all resource request
-  // activity and schedules an update at a convenient time.
   void AddServiceWorkerToUpdate(scoped_refptr<ServiceWorkerVersion> version);
 
   // For service worker clients. |callback| is called when this client becomes

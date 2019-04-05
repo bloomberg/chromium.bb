@@ -62,7 +62,6 @@ class WebServiceWorkerNetworkProvider {
   // request made.
   virtual void WillSendRequest(WebURLRequest&) = 0;
 
-  // S13nServiceWorker:
   // Returns a URLLoader for loading |request|. May return nullptr to fall back
   // to the default loading behavior.
   virtual std::unique_ptr<WebURLLoader> CreateURLLoader(

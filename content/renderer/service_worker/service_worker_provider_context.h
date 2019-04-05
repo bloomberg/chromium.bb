@@ -69,10 +69,9 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // the content::ServiceWorkerProviderHost that notifies of changes to the
   // registration's and workers' status. |request| is bound with |binding_|.
   //
-  // |controller_info| contains the endpoint (which is non-null only when
-  // S13nServiceWorker is enabled) and object info that is needed to set up the
-  // controller service worker for the context.
-  // For S13nServiceWorker:
+  // |controller_info| contains the endpoint and object info that is needed to
+  // set up the controller service worker for the context.
+  //
   // |fallback_loader_factory| is a default loader factory for fallback
   // requests, and is used when we create a subresource loader for controllees.
   // This is non-null only if the provider is created for controllees, and if
@@ -101,7 +100,6 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // any, otherwise returns nullptr.
   blink::mojom::ServiceWorkerObjectInfoPtr TakeController();
 
-  // S13nServiceWorker:
   // Returns URLLoaderFactory for loading subresources with the controller
   // ServiceWorker, or nullptr if no controller is attached.
   network::mojom::URLLoaderFactory* GetSubresourceLoaderFactory();
@@ -109,7 +107,6 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // Returns the feature usage of the controller service worker.
   const std::set<blink::mojom::WebFeature>& used_features() const;
 
-  // S13nServiceWorker:
   // The Client#id value of the client.
   const std::string& client_id() const;
 
@@ -131,7 +128,6 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   void CloneWorkerClientRegistry(
       blink::mojom::ServiceWorkerWorkerClientRegistryRequest request) override;
 
-  // S13nServiceWorker:
   // Returns a ServiceWorkerContainerHostPtrInfo to this context's container
   // host. This can return null after OnNetworkProviderDestroyed() is called
   // (in which case |this| will be destroyed soon).
@@ -194,7 +190,6 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
                            blink::TransferableMessage message) override;
   void CountFeature(blink::mojom::WebFeature feature) override;
 
-  // S13nServiceWorker:
   // A convenient utility method to tell if a subresource loader factory
   // can be created for this context.
   bool CanCreateSubresourceLoaderFactory() const;

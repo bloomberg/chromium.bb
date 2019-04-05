@@ -30,7 +30,6 @@ namespace content {
 class ServiceWorkerVersion;
 class ServiceWorkerProviderHost;
 
-// S13nServiceWorker:
 // ServiceWorkerNavigationLoader is the URLLoader used for main resource
 // requests (i.e., navigation and shared worker requests) that (potentially) go
 // through a service worker. This loader is only used for the main resource

@@ -602,10 +602,9 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
   if (expiration_time > max_request_expiration_time_)
     max_request_expiration_time_ = expiration_time;
 
-  // S13nServiceWorker:
   // Even if the worker is in the idle state, the new event which is about to
   // be dispatched will reset the idle status. That means the worker can receive
-  // events directly from any clients, so we cannot trigger OnNoWork after this
+  // events directly from any client, so we cannot trigger OnNoWork after this
   // point.
   worker_is_idle_on_renderer_ = false;
   return request_id;
@@ -1635,7 +1634,6 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   if (!pause_after_download())
     InitializeGlobalScope();
 
-  // S13nServiceWorker:
   if (!controller_request_.is_pending()) {
     DCHECK(!controller_ptr_.is_bound());
     controller_request_ = mojo::MakeRequest(&controller_ptr_);
