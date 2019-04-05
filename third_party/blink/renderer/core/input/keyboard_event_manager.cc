@@ -11,6 +11,7 @@
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -218,13 +219,37 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
                                    display_mode == kWebDisplayModeFullscreen;
   }
 
+  // We have 2 level of not exposing key event to js, not send and send but not
+  // cancellable.
+  bool send_key_event = true;
+  bool event_cancellable = true;
+
+  if (!should_send_key_events_to_js) {
+    // TODO(crbug.com/949766) Should cleanup these magic number.
+    const int kDomKeysDontSend[] = {0x00200309, 0x00200310};
+    const int kDomKeysNotCancellabelUnlessInEditor[] = {0x00400031, 0x00400032,
+                                                        0x00400033};
+
+    for (int dom_key : kDomKeysDontSend) {
+      if (initial_key_event.dom_key == dom_key)
+        send_key_event = false;
+    }
+
+    for (int dom_key : kDomKeysNotCancellabelUnlessInEditor) {
+      if (initial_key_event.dom_key == dom_key && !IsEditableElement(*node))
+        event_cancellable = false;
+    }
+  }
+
   // FIXME: it would be fair to let an input method handle KeyUp events before
   // DOM dispatch.
   if (initial_key_event.GetType() == WebInputEvent::kKeyUp ||
       initial_key_event.GetType() == WebInputEvent::kChar) {
     KeyboardEvent* dom_event = KeyboardEvent::Create(
-        initial_key_event, frame_->GetDocument()->domWindow());
-    dom_event->SetStopPropagation(!should_send_key_events_to_js);
+        initial_key_event, frame_->GetDocument()->domWindow(),
+        event_cancellable);
+
+    dom_event->SetStopPropagation(!send_key_event);
 
     return event_handling_util::ToWebInputEventResult(
         node->DispatchEvent(*dom_event));
@@ -233,13 +258,13 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
   WebKeyboardEvent key_down_event = initial_key_event;
   if (key_down_event.GetType() != WebInputEvent::kRawKeyDown)
     key_down_event.SetType(WebInputEvent::kRawKeyDown);
-  KeyboardEvent* keydown =
-      KeyboardEvent::Create(key_down_event, frame_->GetDocument()->domWindow());
+  KeyboardEvent* keydown = KeyboardEvent::Create(
+      key_down_event, frame_->GetDocument()->domWindow(), event_cancellable);
   if (matched_an_access_key)
     keydown->preventDefault();
   keydown->SetTarget(node);
 
-  keydown->SetStopPropagation(!should_send_key_events_to_js);
+  keydown->SetStopPropagation(!send_key_event);
 
   DispatchEventResult dispatch_result = node->DispatchEvent(*keydown);
   if (dispatch_result != DispatchEventResult::kNotCanceled)
@@ -279,9 +304,9 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
   if (key_press_event.text[0] == 0)
     return WebInputEventResult::kNotHandled;
   KeyboardEvent* keypress = KeyboardEvent::Create(
-      key_press_event, frame_->GetDocument()->domWindow());
+      key_press_event, frame_->GetDocument()->domWindow(), event_cancellable);
   keypress->SetTarget(node);
-  keypress->SetStopPropagation(!should_send_key_events_to_js);
+  keypress->SetStopPropagation(!send_key_event);
 
   return event_handling_util::ToWebInputEventResult(
       node->DispatchEvent(*keypress));
