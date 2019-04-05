@@ -12,6 +12,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_util.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/skia_helper.h"
 #include "components/viz/service/display/gl_renderer_copier.h"
 #include "components/viz/service/display/output_surface_frame.h"
@@ -284,6 +285,7 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
       context_lost_callback_(context_lost_callback),
       weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  fallback_promise_image_texture_.resize(kLastEnum_SkColorType + 1);
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
 }
 
@@ -646,6 +648,13 @@ void SkiaOutputSurfaceImplOnGpu::PerformDelayedWork() {
   }
 }
 
+sk_sp<SkPromiseImageTexture> SkiaOutputSurfaceImplOnGpu::FallbackPromiseImage(
+    ResourceFormat format) {
+  SkColorType color_type =
+      ResourceFormatToClosestSkColorType(true /* gpu_compositing */, format);
+  return fallback_promise_image_texture_[color_type];
+}
+
 sk_sp<SkPromiseImageTexture> SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
     const gpu::MailboxHolder& mailbox_holder,
     const gfx::Size& size,
@@ -660,12 +669,12 @@ sk_sp<SkPromiseImageTexture> SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
     if (!shared_image) {
       DLOG(ERROR) << "Failed to fulfill the promise texture - SharedImage "
                      "mailbox not found in SharedImageManager.";
-      return nullptr;
+      return FallbackPromiseImage(resource_format);
     }
     if (!(shared_image->usage() & gpu::SHARED_IMAGE_USAGE_DISPLAY)) {
       DLOG(ERROR) << "Failed to fulfill the promise texture - SharedImage "
                      "was not created with display usage.";
-      return nullptr;
+      return FallbackPromiseImage(resource_format);
     }
     *shared_image_out = std::move(shared_image);
   }
@@ -681,13 +690,13 @@ sk_sp<SkPromiseImageTexture> SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
     // Probably this texture is created with wrong inteface (GLES2Interface).
     DLOG(ERROR) << "Failed to fulfill the promise texture whose backend is not "
                    "compitable with vulkan.";
-    return nullptr;
+    return FallbackPromiseImage(resource_format);
   }
 
   auto* texture_base = mailbox_manager_->ConsumeTexture(mailbox_holder.mailbox);
   if (!texture_base) {
     DLOG(ERROR) << "Failed to fulfill the promise texture.";
-    return nullptr;
+    return FallbackPromiseImage(resource_format);
   }
   BindOrCopyTextureIfNecessary(texture_base);
   GrBackendTexture backend_texture;
@@ -696,7 +705,7 @@ sk_sp<SkPromiseImageTexture> SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
                            &backend_texture);
   if (!backend_texture.isValid()) {
     DLOG(ERROR) << "Failed to fulfill the promise texture.";
-    return nullptr;
+    return FallbackPromiseImage(resource_format);
   }
   return SkPromiseImageTexture::Make(backend_texture);
 }
@@ -738,6 +747,29 @@ void SkiaOutputSurfaceImplOnGpu::DestroySkImages(
   // and done callbacks are called.
   gr_context()->flush();
   ReleaseFenceSyncAndPushTextureUpdates(sync_fence_release);
+}
+
+void SkiaOutputSurfaceImplOnGpu::CreateFallbackPromiseImage(
+    SkColorType color_type) {
+  MakeCurrent(false /* need_fbo0 */);
+
+  auto image_info = SkImageInfo::Make(1 /* width */, 1 /* height */, color_type,
+                                      kOpaque_SkAlphaType);
+  auto surface = SkSurface::MakeRenderTarget(
+      gr_context(), SkBudgeted::kNo, image_info, 0 /* sampleCount */,
+      kTopLeft_GrSurfaceOrigin, nullptr /* surfaceProps */);
+  DCHECK(!!surface);
+  auto* canvas = surface->getCanvas();
+#if DCHECK_IS_ON()
+  canvas->clear(SK_ColorRED);
+#else
+  canvas->clear(SK_ColorWHITE);
+#endif
+  fallback_promise_images_.push_back(surface->makeImageSnapshot());
+  auto gr_texture = fallback_promise_images_.back()->getBackendTexture(
+      false /* flushPendingGrContextIO */);
+  fallback_promise_image_texture_[color_type] =
+      SkPromiseImageTexture::Make(gr_texture);
 }
 
 void SkiaOutputSurfaceImplOnGpu::SetCapabilitiesForTesting(

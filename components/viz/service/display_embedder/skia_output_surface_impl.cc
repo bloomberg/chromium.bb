@@ -123,6 +123,7 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
   sk_sp<SkImage> MakePromiseSkImage(SkiaOutputSurfaceImpl* impl) {
     SkColorType color_type = ResourceFormatToClosestSkColorType(
         true /* gpu_compositing */, resource_format_);
+    impl->CreateFallbackPromiseImage(color_type);
     GrBackendFormat backend_format = impl->GetGrBackendFormatForTexture(
         resource_format_,
         render_pass_id_ ? GL_TEXTURE_2D : mailbox_holder_.texture_target);
@@ -285,6 +286,7 @@ SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
       renderer_settings_(renderer_settings),
       weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  seen_resource_formats_.resize(kLastEnum_SkColorType + 1);
 }
 
 SkiaOutputSurfaceImpl::~SkiaOutputSurfaceImpl() {
@@ -769,6 +771,16 @@ GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
     return GrBackendFormat();
 #endif
   }
+}
+
+void SkiaOutputSurfaceImpl::CreateFallbackPromiseImage(SkColorType color_type) {
+  if (seen_resource_formats_[color_type])
+    return;
+  seen_resource_formats_[color_type] = true;
+  auto callback =
+      base::BindOnce(&SkiaOutputSurfaceImplOnGpu::CreateFallbackPromiseImage,
+                     base::Unretained(impl_on_gpu_.get()), color_type);
+  ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
 }
 
 }  // namespace viz
