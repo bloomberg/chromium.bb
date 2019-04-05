@@ -14,14 +14,15 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "v8/include/v8.h"
 
 namespace blink {
 
-class Image;
-class ImageResourceObserver;
 class ScriptState;
+class StylePropertyMapReadOnly;
 class V8NoArgumentConstructor;
 class V8PaintCallback;
 
@@ -50,9 +51,10 @@ class MODULES_EXPORT CSSPaintDefinition final
   // throws an error.
   //
   // The |container_size| is without subpixel snapping.
-  scoped_refptr<Image> Paint(const ImageResourceObserver&,
-                             const FloatSize& container_size,
-                             const CSSStyleValueVector*);
+  sk_sp<PaintRecord> Paint(const FloatSize& container_size,
+                           float zoom,
+                           StylePropertyMapReadOnly*,
+                           const CSSStyleValueVector*);
   const Vector<CSSPropertyID>& NativeInvalidationProperties() const {
     return native_invalidation_properties_;
   }

@@ -7,14 +7,17 @@
 #include "base/atomic_sequence_num.h"
 #include "base/rand_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/css/cssom/prepopulated_computed_style_property_map.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/node_rare_data.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/modules/csspaint/css_paint_definition.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_global_scope.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_messaging_proxy.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_proxy_client.h"
-#include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/graphics/paint_generated_image.h"
 
 namespace blink {
 
@@ -116,7 +119,21 @@ scoped_refptr<Image> PaintWorklet::Paint(const String& name,
   CSSPaintDefinition* paint_definition = proxy->FindDefinition(name);
   if (!paint_definition)
     return nullptr;
-  return paint_definition->Paint(observer, container_size, data);
+  // TODO(crbug.com/946515): Break dependency on LayoutObject.
+  const LayoutObject& layout_object =
+      static_cast<const LayoutObject&>(observer);
+  float zoom = layout_object.StyleRef().EffectiveZoom();
+  StylePropertyMapReadOnly* style_map =
+      MakeGarbageCollected<PrepopulatedComputedStylePropertyMap>(
+          layout_object.GetDocument(), layout_object.StyleRef(),
+          layout_object.GetNode(),
+          paint_definition->NativeInvalidationProperties(),
+          paint_definition->CustomInvalidationProperties());
+  sk_sp<PaintRecord> paint_record =
+      paint_definition->Paint(container_size, zoom, style_map, data);
+  if (!paint_record)
+    return nullptr;
+  return PaintGeneratedImage::Create(paint_record, container_size);
 }
 
 // static

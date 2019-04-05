@@ -48,11 +48,11 @@ class CORE_EXPORT PaintWorkletInput : public cc::PaintWorkletInput {
   gfx::SizeF GetSize() const override {
     return gfx::SizeF(container_size_.Width(), container_size_.Height());
   }
+  int WorkletId() const override { return worklet_id_; }
 
   // These accessors are safe on any thread.
   const FloatSize& ContainerSize() const { return container_size_; }
   float EffectiveZoom() const { return effective_zoom_; }
-  int WorkletId() const { return worklet_id_; }
 
   // These should only be accessed on the PaintWorklet thread.
   String NameCopy() const { return name_.IsolatedCopy(); }

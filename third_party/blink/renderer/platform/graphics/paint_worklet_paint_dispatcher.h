@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
 
@@ -50,6 +51,11 @@ class PLATFORM_EXPORT PaintWorkletPaintDispatcher
               scoped_refptr<base::SingleThreadTaskRunner>>;
 
   PaintWorkletPainterToTaskRunnerMap painter_map_;
+
+  // The (Un)registerPaintWorkletPainter comes from the worklet thread, and the
+  // Paint call is initiated from the raster threads, this mutex ensures that
+  // accessing / updating the |painter_map_| is thread safe.
+  Mutex painter_map_mutex_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintWorkletPaintDispatcher);
 };

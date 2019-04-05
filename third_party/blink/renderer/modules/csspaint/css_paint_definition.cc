@@ -53,16 +53,12 @@ CSSPaintDefinition::CSSPaintDefinition(
 
 CSSPaintDefinition::~CSSPaintDefinition() = default;
 
-scoped_refptr<Image> CSSPaintDefinition::Paint(
-    const ImageResourceObserver& client,
+sk_sp<PaintRecord> CSSPaintDefinition::Paint(
     const FloatSize& container_size,
+    float zoom,
+    StylePropertyMapReadOnly* style_map,
     const CSSStyleValueVector* paint_arguments) {
-  // TODO: Break dependency on LayoutObject. Passing the Node should work.
-  const LayoutObject& layout_object = static_cast<const LayoutObject&>(client);
-
-  float zoom = layout_object.StyleRef().EffectiveZoom();
   const FloatSize specified_size = GetSpecifiedSize(container_size, zoom);
-
   ScriptState::Scope scope(script_state_);
 
   MaybeCreatePaintInstance();
@@ -73,7 +69,6 @@ scoped_refptr<Image> CSSPaintDefinition::Paint(
 
   v8::Isolate* isolate = script_state_->GetIsolate();
 
-  DCHECK(layout_object.GetNode());
   CanvasColorParams color_params;
   if (!context_settings_->alpha()) {
     color_params.SetOpacityMode(kOpaque);
@@ -83,11 +78,6 @@ scoped_refptr<Image> CSSPaintDefinition::Paint(
   auto* rendering_context = MakeGarbageCollected<PaintRenderingContext2D>(
       RoundedIntSize(container_size), color_params, context_settings_, zoom);
   PaintSize* paint_size = MakeGarbageCollected<PaintSize>(specified_size);
-  StylePropertyMapReadOnly* style_map =
-      MakeGarbageCollected<PrepopulatedComputedStylePropertyMap>(
-          layout_object.GetDocument(), layout_object.StyleRef(),
-          layout_object.GetNode(), native_invalidation_properties_,
-          custom_invalidation_properties_);
 
   CSSStyleValueVector empty_paint_arguments;
   if (!paint_arguments)
@@ -105,8 +95,7 @@ scoped_refptr<Image> CSSPaintDefinition::Paint(
     return nullptr;
   }
 
-  return PaintGeneratedImage::Create(rendering_context->GetRecord(),
-                                     container_size);
+  return rendering_context->GetRecord();
 }
 
 void CSSPaintDefinition::MaybeCreatePaintInstance() {

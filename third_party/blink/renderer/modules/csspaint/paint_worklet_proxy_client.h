@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/graphics/paint_worklet_paint_dispatcher.h"
 #include "third_party/blink/renderer/platform/graphics/paint_worklet_painter.h"
+#include "third_party/blink/renderer/platform/graphics/platform_paint_worklet_layer_painter.h"
 
 namespace blink {
 
@@ -43,6 +44,10 @@ class MODULES_EXPORT PaintWorkletProxyClient
   ~PaintWorkletProxyClient() override = default;
 
   void Trace(blink::Visitor*) override;
+
+  // PaintWorkletPainter implementation
+  int GetWorkletId() const override { return worklet_id_; }
+  sk_sp<PaintRecord> Paint(CompositorPaintWorkletInput*) override;
 
   virtual void SetGlobalScope(WorkletGlobalScope*);
   void SetGlobalScopeForTesting(PaintWorkletGlobalScope*);
