@@ -49,6 +49,7 @@
 #include "content/public/browser/web_ui.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/filename_util.h"
+#include "net/base/ip_endpoint.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "printing/backend/print_backend.h"
 
@@ -1046,18 +1047,15 @@ void CupsPrintersHandler::HandleAddDiscoveredPrinter(
 
   // The mDNS record doesn't guarantee we can setup the printer.  Query it to
   // see if we want to try IPP.
-  const std::string printer_uri = printer->effective_uri();
-  if (IsIppUri(printer_uri)) {
-    PRINTER_LOG(EVENT) << "Query printer for IPP attributes";
-    QueryAutoconf(
-        printer_uri,
-        base::Bind(&CupsPrintersHandler::OnAutoconfQueriedDiscovered,
-                   weak_factory_.GetWeakPtr(), base::Passed(&printer)));
-  } else {
-    PRINTER_LOG(EVENT) << "Request make and model from user";
-    // If it's not an IPP printer, the user must choose a PPD.
-    FireManuallyAddDiscoveredPrinter(*printer);
+  auto address = printer->GetHostAndPort();
+  if (address.IsEmpty()) {
+    PRINTER_LOG(ERROR) << "Address is invalid";
+    OnAddedDiscoveredPrinter(*printer, PrinterSetupResult::kPrinterUnreachable);
+    return;
   }
+  endpoint_resolver_->Start(
+      address, base::BindOnce(&CupsPrintersHandler::OnIpResolved,
+                              weak_factory_.GetWeakPtr(), std::move(printer)));
 }
 
 void CupsPrintersHandler::HandleGetPrinterPpdManufacturerAndModel(
@@ -1100,6 +1098,34 @@ void CupsPrintersHandler::FireManuallyAddDiscoveredPrinter(
     const Printer& printer) {
   FireWebUIListener("on-manually-add-discovered-printer",
                     *GetCupsPrinterInfo(printer));
+}
+
+void CupsPrintersHandler::OnIpResolved(std::unique_ptr<Printer> printer,
+                                       const net::IPEndPoint& endpoint) {
+  bool address_resolved = endpoint.address().IsValid();
+  UMA_HISTOGRAM_BOOLEAN("Printing.CUPS.AddressResolutionResult",
+                        address_resolved);
+  if (!address_resolved) {
+    PRINTER_LOG(ERROR) << printer->make_and_model() << " IP Resolution failed";
+    OnAddedDiscoveredPrinter(*printer, PrinterSetupResult::kPrinterUnreachable);
+    return;
+  }
+
+  PRINTER_LOG(EVENT) << printer->make_and_model() << " IP Resolution succeeded";
+  std::string resolved_uri = printer->ReplaceHostAndPort(endpoint);
+
+  if (IsIppUri(resolved_uri)) {
+    PRINTER_LOG(EVENT) << "Query printer for IPP attributes";
+    QueryAutoconf(resolved_uri,
+                  base::BindRepeating(
+                      &CupsPrintersHandler::OnAutoconfQueriedDiscovered,
+                      weak_factory_.GetWeakPtr(), base::Passed(&printer)));
+    return;
+  }
+
+  PRINTER_LOG(EVENT) << "Request make and model from user";
+  // If it's not an IPP printer, the user must choose a PPD.
+  FireManuallyAddDiscoveredPrinter(*printer);
 }
 
 }  // namespace settings
