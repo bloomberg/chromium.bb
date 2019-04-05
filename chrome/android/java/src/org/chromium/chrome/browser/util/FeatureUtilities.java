@@ -560,6 +560,11 @@ public class FeatureUtilities {
         ChromePreferenceManager.getInstance().writeBoolean(
                 ChromePreferenceManager.GRID_TAB_SWITCHER_ENABLED_KEY,
                 !DeviceClassManager.enableAccessibilityLayout()
+                        && (ChromeFeatureList.isEnabled(
+                                    ChromeFeatureList.DOWNLOAD_TAB_MANAGEMENT_MODULE)
+                                || ChromeFeatureList.isEnabled(
+                                        ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID))
+                        && TabManagementModuleProvider.getTabManagementModule() != null
                         && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID));
     }
 
@@ -575,14 +580,18 @@ public class FeatureUtilities {
         }
         // TODO(yusufo): AccessibilityLayout check should not be here and the flow should support
         // changing that setting while Chrome is alive.
-        return sIsGridTabSwitcherEnabled
-                && TabManagementModuleProvider.getTabManagementModule() != null;
+        return sIsGridTabSwitcherEnabled;
     }
 
     private static void cacheTabGroupsAndroidEnabled() {
         ChromePreferenceManager.getInstance().writeBoolean(
                 ChromePreferenceManager.TAB_GROUPS_ANDROID_ENABLED_KEY,
                 !DeviceClassManager.enableAccessibilityLayout()
+                        && (ChromeFeatureList.isEnabled(
+                                    ChromeFeatureList.DOWNLOAD_TAB_MANAGEMENT_MODULE)
+                                || ChromeFeatureList.isEnabled(
+                                        ChromeFeatureList.TAB_GROUPS_ANDROID))
+                        && TabManagementModuleProvider.getTabManagementModule() != null
                         && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID));
     }
 
@@ -599,8 +608,7 @@ public class FeatureUtilities {
                     ChromePreferenceManager.TAB_GROUPS_ANDROID_ENABLED_KEY, false);
         }
 
-        return sIsTabGroupsAndroidEnabled
-                && TabManagementModuleProvider.getTabManagementModule() != null;
+        return sIsTabGroupsAndroidEnabled;
     }
 
     private static boolean isHighEndPhone() {
