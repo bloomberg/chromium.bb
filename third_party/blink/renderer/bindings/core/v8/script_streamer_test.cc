@@ -527,9 +527,8 @@ TEST_F(ScriptStreamingTest, DISABLED_GarbageCollectDuringStreaming) {
   EXPECT_FALSE(resource_client_->Finished());
 
   resource_ = nullptr;
-  ThreadState::Current()->CollectGarbage(
-      BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
+  ThreadState::Current()->CollectAllGarbageForTesting(
+      BlinkGC::kNoHeapPointersOnStack);
 }
 
 // TODO(crbug.com/939054): Tests are disabled due to flakiness caused by being

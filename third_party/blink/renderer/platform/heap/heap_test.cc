@@ -377,7 +377,7 @@ class TestGCScope : public TestGCCollectGarbageScope {
       : TestGCCollectGarbageScope(state),
         atomic_pause_scope_(ThreadState::Current()) {
     ThreadState::Current()->Heap().stats_collector()->NotifyMarkingStarted(
-        BlinkGC::GCReason::kTesting);
+        BlinkGC::GCReason::kForcedGCForTesting);
     ThreadState::Current()->AtomicPausePrologue(state, BlinkGC::kAtomicMarking,
                                                 BlinkGC::GCReason::kPreciseGC);
   }
@@ -1876,7 +1876,7 @@ TEST(HeapTest, LazySweepingPages) {
     MakeGarbageCollected<SimpleFinalizedObject>();
   ThreadState::Current()->CollectGarbage(
       BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kLazySweeping, BlinkGC::GCReason::kForcedGC);
+      BlinkGC::kLazySweeping, BlinkGC::GCReason::kForcedGCForTesting);
   EXPECT_EQ(0, SimpleFinalizedObject::destructor_calls_);
   for (int i = 0; i < 10000; i++)
     MakeGarbageCollected<SimpleFinalizedObject>();
@@ -1904,7 +1904,7 @@ TEST(HeapTest, LazySweepingLargeObjectPages) {
     MakeGarbageCollected<LargeHeapObject>();
   ThreadState::Current()->CollectGarbage(
       BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kLazySweeping, BlinkGC::GCReason::kForcedGC);
+      BlinkGC::kLazySweeping, BlinkGC::GCReason::kForcedGCForTesting);
   EXPECT_EQ(0, LargeHeapObject::destructor_calls_);
   for (int i = 0; i < 10; i++) {
     MakeGarbageCollected<LargeHeapObject>();
@@ -1915,7 +1915,7 @@ TEST(HeapTest, LazySweepingLargeObjectPages) {
   EXPECT_EQ(10, LargeHeapObject::destructor_calls_);
   ThreadState::Current()->CollectGarbage(
       BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kLazySweeping, BlinkGC::GCReason::kForcedGC);
+      BlinkGC::kLazySweeping, BlinkGC::GCReason::kForcedGCForTesting);
   EXPECT_EQ(10, LargeHeapObject::destructor_calls_);
   PreciselyCollectGarbage();
   EXPECT_EQ(22, LargeHeapObject::destructor_calls_);
@@ -1978,7 +1978,7 @@ TEST(HeapTest, EagerlySweepingPages) {
     MakeGarbageCollected<SimpleFinalizedObjectInstanceOfTemplate>();
   ThreadState::Current()->CollectGarbage(
       BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kLazySweeping, BlinkGC::GCReason::kForcedGC);
+      BlinkGC::kLazySweeping, BlinkGC::GCReason::kForcedGCForTesting);
   EXPECT_EQ(0, SimpleFinalizedObject::destructor_calls_);
   EXPECT_EQ(100, SimpleFinalizedEagerObject::destructor_calls_);
   EXPECT_EQ(100, SimpleFinalizedObjectInstanceOfTemplate::destructor_calls_);

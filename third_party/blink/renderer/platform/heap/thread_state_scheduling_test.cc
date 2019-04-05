@@ -28,7 +28,7 @@ class ThreadStateSchedulingTest : public testing::Test {
   void StartIncrementalMarking() {
     RuntimeEnabledFeatures::SetHeapIncrementalMarkingEnabled(true);
     EXPECT_EQ(ThreadState::kNoGCScheduled, state_->GetGCState());
-    state_->ScheduleIncrementalGC(BlinkGC::GCReason::kTesting);
+    state_->ScheduleIncrementalGC(BlinkGC::GCReason::kForcedGCForTesting);
     state_->RunScheduledGC(BlinkGC::kNoHeapPointersOnStack);
     EXPECT_EQ(ThreadState::kIncrementalMarkingStepScheduled,
               state_->GetGCState());

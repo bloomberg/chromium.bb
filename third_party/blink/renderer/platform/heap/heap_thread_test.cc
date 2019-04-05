@@ -254,7 +254,7 @@ class CrossThreadWeakPersistentTester : public AlternatingThreadTester {
     // Step 4: Run a GC.
     ThreadState::Current()->CollectGarbage(
         BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-        BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
+        BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGCForTesting);
     SwitchToMainThread();
   }
 

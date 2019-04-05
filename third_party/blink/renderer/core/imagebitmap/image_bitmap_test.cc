@@ -90,9 +90,8 @@ class ImageBitmapTest : public testing::Test {
     // Garbage collection is required prior to switching out the
     // test's memory cache; image resources are released, evicting
     // them from the cache.
-    ThreadState::Current()->CollectGarbage(
-        BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-        BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
+    ThreadState::Current()->CollectAllGarbageForTesting(
+        BlinkGC::kNoHeapPointersOnStack);
 
     ReplaceMemoryCacheForTesting(global_memory_cache_.Release());
     SharedGpuContext::ResetForTesting();

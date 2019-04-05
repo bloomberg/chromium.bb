@@ -1542,7 +1542,8 @@ class IncrementalMarkingTestDriver {
   }
 
   void Start() {
-    thread_state_->IncrementalMarkingStart(BlinkGC::GCReason::kTesting);
+    thread_state_->IncrementalMarkingStart(
+        BlinkGC::GCReason::kForcedGCForTesting);
   }
 
   bool SingleStep(BlinkGC::StackState stack_state =

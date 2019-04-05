@@ -105,16 +105,14 @@ const char* GcReasonString(BlinkGC::GCReason reason) {
       return "PreciseGC";
     case BlinkGC::GCReason::kConservativeGC:
       return "ConservativeGC";
-    case BlinkGC::GCReason::kForcedGC:
-      return "ForcedGC";
+    case BlinkGC::GCReason::kForcedGCForTesting:
+      return "ForcedGCForTesting";
     case BlinkGC::GCReason::kMemoryPressureGC:
       return "MemoryPressureGC";
     case BlinkGC::GCReason::kPageNavigationGC:
       return "PageNavigationGC";
     case BlinkGC::GCReason::kThreadTerminationGC:
       return "ThreadTerminationGC";
-    case BlinkGC::GCReason::kTesting:
-      return "TestingGC";
     case BlinkGC::GCReason::kIncrementalV8FollowupGC:
       return "IncrementalV8FollowupGC";
     case BlinkGC::GCReason::kUnifiedHeapGC:
@@ -171,7 +169,7 @@ ThreadState::ThreadState()
       end_of_stack_(reinterpret_cast<intptr_t*>(WTF::GetStackStart())),
       gc_state_(kNoGCScheduled),
       gc_phase_(GCPhase::kNone),
-      reason_for_scheduled_gc_(BlinkGC::GCReason::kMaxValue),
+      reason_for_scheduled_gc_(BlinkGC::GCReason::kForcedGCForTesting),
 #if defined(ADDRESS_SANITIZER)
       asan_fake_stack_(__asan_get_current_fake_stack()),
 #endif
@@ -638,7 +636,7 @@ void ThreadState::ScheduleGCIfNeeded() {
       RuntimeEnabledFeatures::HeapIncrementalMarkingStressEnabled()) {
     VLOG(2) << "[state:" << this << "] "
             << "ScheduleGCIfNeeded: Scheduled incremental marking for testing";
-    IncrementalMarkingStart(BlinkGC::GCReason::kTesting);
+    IncrementalMarkingStart(BlinkGC::GCReason::kForcedGCForTesting);
     return;
   }
 }
@@ -953,7 +951,8 @@ void ThreadState::CompleteSweep() {
     SweepForbiddenScope scope(this);
     ThreadHeapStatsCollector::EnabledScope stats_scope(
         Heap().stats_collector(), ThreadHeapStatsCollector::kCompleteSweep,
-        "forced", current_gc_data_.reason == BlinkGC::GCReason::kForcedGC);
+        "forced",
+        current_gc_data_.reason == BlinkGC::GCReason::kForcedGCForTesting);
     Heap().CompleteSweep();
     if (!was_in_atomic_pause)
       LeaveAtomicPause();
@@ -1156,11 +1155,10 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
     // COUNT_BY_GC_REASON(IdleGC)
     COUNT_BY_GC_REASON(PreciseGC)
     COUNT_BY_GC_REASON(ConservativeGC)
-    COUNT_BY_GC_REASON(ForcedGC)
+    COUNT_BY_GC_REASON(ForcedGCForTesting)
     COUNT_BY_GC_REASON(MemoryPressureGC)
     COUNT_BY_GC_REASON(PageNavigationGC)
     COUNT_BY_GC_REASON(ThreadTerminationGC)
-    COUNT_BY_GC_REASON(Testing)
     COUNT_BY_GC_REASON(IncrementalV8FollowupGC)
     COUNT_BY_GC_REASON(UnifiedHeapGC)
 
@@ -1464,7 +1462,8 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
   // mentioned below. In this case we will follow up with a regular full
   // garbage collection.
   const bool should_do_full_gc =
-      !was_incremental_marking || reason == BlinkGC::GCReason::kForcedGC ||
+      !was_incremental_marking ||
+      reason == BlinkGC::GCReason::kForcedGCForTesting ||
       reason == BlinkGC::GCReason::kMemoryPressureGC ||
       reason == BlinkGC::GCReason::kThreadTerminationGC;
   if (should_do_full_gc) {
@@ -1489,11 +1488,10 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
   switch (reason) {
     COUNT_BY_GC_REASON(PreciseGC)
     COUNT_BY_GC_REASON(ConservativeGC)
-    COUNT_BY_GC_REASON(ForcedGC)
+    COUNT_BY_GC_REASON(ForcedGCForTesting)
     COUNT_BY_GC_REASON(MemoryPressureGC)
     COUNT_BY_GC_REASON(PageNavigationGC)
     COUNT_BY_GC_REASON(ThreadTerminationGC)
-    COUNT_BY_GC_REASON(Testing)
     COUNT_BY_GC_REASON(IncrementalV8FollowupGC)
     COUNT_BY_GC_REASON(UnifiedHeapGC)
   }
@@ -1553,7 +1551,7 @@ void ThreadState::RunAtomicPause(BlinkGC::StackState stack_state,
   {
     ThreadHeapStatsCollector::DevToolsScope stats1(
         Heap().stats_collector(), ThreadHeapStatsCollector::kAtomicPhase,
-        "forced", reason == BlinkGC::GCReason::kForcedGC);
+        "forced", reason == BlinkGC::GCReason::kForcedGCForTesting);
     {
       AtomicPauseScope atomic_pause_scope(this);
       ThreadHeapStatsCollector::EnabledScope stats2(
@@ -1737,12 +1735,13 @@ void ThreadState::VerifyMarking(BlinkGC::MarkingType marking_type) {
   Heap().VerifyMarking();
 }
 
-void ThreadState::CollectAllGarbageForTesting() {
+void ThreadState::CollectAllGarbageForTesting(BlinkGC::StackState stack_state) {
   // We need to run multiple GCs to collect a chain of persistent handles.
   size_t previous_live_objects = 0;
   for (int i = 0; i < 5; ++i) {
-    CollectGarbage(BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-                   BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
+    CollectGarbage(stack_state, BlinkGC::kAtomicMarking,
+                   BlinkGC::kEagerSweeping,
+                   BlinkGC::GCReason::kForcedGCForTesting);
     const size_t live_objects =
         Heap().stats_collector()->previous().marked_bytes;
     if (live_objects == previous_live_objects)

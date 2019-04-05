@@ -52,9 +52,8 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Force a garbage collection.
   // Specify namespace explicitly. Otherwise it conflicts on Mac OS X with:
   // CoreServices.framework/Frameworks/CarbonCore.framework/Headers/Threads.h.
-  blink::ThreadState::Current()->CollectGarbage(
-      BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
+  ThreadState::Current()->CollectAllGarbageForTesting(
+      BlinkGC::kNoHeapPointersOnStack);
 
   return 0;
 }

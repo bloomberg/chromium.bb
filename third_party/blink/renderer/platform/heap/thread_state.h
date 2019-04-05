@@ -375,11 +375,16 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
 
   v8::Isolate* GetIsolate() const { return isolate_; }
 
+  // Use CollectAllGarbageForTesting below for testing!
   void CollectGarbage(BlinkGC::StackState,
                       BlinkGC::MarkingType,
                       BlinkGC::SweepingType,
                       BlinkGC::GCReason);
-  void CollectAllGarbageForTesting();
+
+  // Forced garbage collection for testing.
+  void CollectAllGarbageForTesting(
+      BlinkGC::StackState stack_state =
+          BlinkGC::StackState::kNoHeapPointersOnStack);
 
   // Register the pre-finalizer for the |self| object. The class T must have
   // USING_PRE_FINALIZER().

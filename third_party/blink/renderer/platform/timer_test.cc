@@ -636,9 +636,8 @@ TEST_F(TimerTest, DestructOnHeapTimer) {
   owner->StartOneShot(TimeDelta(), FROM_HERE);
 
   owner = nullptr;
-  ThreadState::Current()->CollectGarbage(
-      BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
+  ThreadState::Current()->CollectAllGarbageForTesting(
+      BlinkGC::kNoHeapPointersOnStack);
   EXPECT_TRUE(record->OwnerIsDestructed());
 
   EXPECT_FALSE(record->TimerHasFired());
@@ -656,9 +655,11 @@ TEST_F(TimerTest, MarkOnHeapTimerAsUnreachable) {
   owner->StartOneShot(TimeDelta(), FROM_HERE);
 
   owner = nullptr;
+  // Explicit regular GC call to allow lazy sweeping.
   ThreadState::Current()->CollectGarbage(
       BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kLazySweeping, BlinkGC::GCReason::kForcedGC);
+      BlinkGC::kLazySweeping, BlinkGC::GCReason::kForcedGCForTesting);
+  // Since the heap is laziy swept, owner is not yet destructed.
   EXPECT_FALSE(record->OwnerIsDestructed());
 
   {
