@@ -380,6 +380,7 @@ jumbo_source_set("unit_tests") {
     "webaudio/script_processor_node_test.cc",
     "webaudio/stereo_panner_node_test.cc",
     "webdatabase/quota_tracker_test.cc",
+    "webshare/navigator_share_test.cc",
     "websockets/dom_websocket_test.cc",
     "websockets/websocket_channel_impl_test.cc",
     "worklet/animation_and_paint_worklet_thread_test.cc",

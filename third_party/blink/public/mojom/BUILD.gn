@@ -24,11 +24,6 @@ mojom("mojom_platform") {
     "background_fetch/background_fetch.mojom",
     "background_sync/background_sync.mojom",
     "badging/badging.mojom",
-    "blob/blob.mojom",
-    "blob/blob_registry.mojom",
-    "blob/blob_url_store.mojom",
-    "blob/data_element.mojom",
-    "blob/serialized_blob.mojom",
     "cache_storage/cache_storage.mojom",
     "choosers/color_chooser.mojom",
     "choosers/file_chooser.mojom",
@@ -183,6 +178,11 @@ mojom("mojom_platform") {
 # for following mojom files.
 mojom("android_mojo_bindings") {
   sources = [
+    "blob/blob.mojom",
+    "blob/blob_registry.mojom",
+    "blob/blob_url_store.mojom",
+    "blob/data_element.mojom",
+    "blob/serialized_blob.mojom",
     "document_metadata/copyless_paste.mojom",
     "font_unique_name_lookup/font_unique_name_lookup.mojom",
     "input/input_host.mojom",
@@ -203,6 +203,7 @@ mojom("android_mojo_bindings") {
     "//components/payments/mojom",
     "//mojo/public/mojom/base",
     "//services/media_session/public/mojom",
+    "//services/network/public/mojom",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
   ]
@@ -269,6 +270,7 @@ mojom("mojom_core") {
   ]
 
   public_deps = [
+    ":android_mojo_bindings",
     ":mojom_platform",
     ":web_feature_mojo_bindings",
     "//components/payments/mojom",
@@ -281,6 +283,7 @@ mojom("mojom_core") {
   ]
 
   overridden_deps_blink = [
+    ":android_mojo_bindings",
     ":mojom_platform",
     "//services/network/public/mojom",
   ]
@@ -304,20 +307,14 @@ mojom("mojom_modules") {
   ]
 
   public_deps = [
+    ":android_mojo_bindings",
     ":mojom_core",
-
-    # TODO(https://crbug.com/822804): Remove when mojom bindings deps checks
-    # get fixed.
-    ":mojom_platform",
     "//mojo/public/mojom/base",
-    "//skia/public/interfaces",
-    "//url/mojom:url_mojom_gurl",
-    "//url/mojom:url_mojom_origin",
   ]
 
   overridden_deps_blink = [
+    ":android_mojo_bindings",
     ":mojom_core",
-    ":mojom_platform",
   ]
   component_deps_blink = [ "//third_party/blink/renderer/core" ]
 

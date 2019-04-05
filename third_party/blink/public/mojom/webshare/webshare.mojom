@@ -5,6 +5,7 @@
 [JavaPackage="org.chromium.webshare.mojom"]
 module blink.mojom;
 
+import "third_party/blink/public/mojom/blob/serialized_blob.mojom";
 import "url/mojom/url.mojom";
 
 enum ShareError {
@@ -12,11 +13,19 @@ enum ShareError {
   OK,
   // Something went wrong in the implementation.
   INTERNAL_ERROR,
+  // Potentially dangerous files.
+  PERMISSION_DENIED,
   // Share was canceled by user.
   CANCELED,
 };
 
+struct SharedFile {
+  string name;
+  SerializedBlob blob;
+};
+
 interface ShareService {
   // The web contents has requested to send a share text action.
-  Share(string title, string text, url.mojom.Url url) => (ShareError error);
+  Share(string title, string text, url.mojom.Url url, array<SharedFile> files)
+      => (ShareError error);
 };
