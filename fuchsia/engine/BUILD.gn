@@ -14,24 +14,6 @@ config("web_engine_implementation") {
   defines = [ "WEB_ENGINE_IMPLEMENTATION" ]
 }
 
-source_set("test_support") {
-  testonly = true
-  sources = [
-    "test/fake_context.cc",
-    "test/fake_context.h",
-  ]
-  deps = [
-    "//base",
-    "//base/test:test_config",
-    "//content/test:test_support",
-    "//fuchsia/base",
-  ]
-  public_deps = [
-    "//fuchsia:web_fidl",
-    "//skia/public/interfaces",
-  ]
-}
-
 mojom("mojom") {
   sources = [
     "on_load_script_injector.mojom",
@@ -222,7 +204,6 @@ test("web_engine_browsertests") {
   ]
   deps = [
     ":browsertest_core",
-    ":test_support",
     ":web_engine_core",
     "//base/test:test_support",
     "//content/public/browser",
@@ -239,9 +220,10 @@ test("web_engine_browsertests") {
 test("web_engine_unittests") {
   sources = [
     "context_provider_impl_unittest.cc",
+    "fake_context.cc",
+    "fake_context.h",
   ]
   deps = [
-    ":test_support",
     ":web_engine_core",
     "//base/test:run_all_unittests",
     "//base/test:test_support",

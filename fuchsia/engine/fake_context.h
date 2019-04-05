@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FUCHSIA_ENGINE_TEST_FAKE_CONTEXT_H_
-#define FUCHSIA_ENGINE_TEST_FAKE_CONTEXT_H_
+#ifndef FUCHSIA_ENGINE_FAKE_CONTEXT_H_
+#define FUCHSIA_ENGINE_FAKE_CONTEXT_H_
 
 #include <lib/fidl/cpp/binding.h>
 #include <lib/fidl/cpp/binding_set.h>
@@ -14,8 +14,6 @@
 #include "base/macros.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl_test_base.h"
-
-namespace cr_fuchsia {
 
 // A fake Frame implementation that manages its own lifetime.
 class FakeFrame : public chromium::web::testing::Frame_TestBase {
@@ -85,6 +83,4 @@ class FakeContext : public chromium::web::testing::Context_TestBase {
   DISALLOW_COPY_AND_ASSIGN(FakeContext);
 };
 
-}  // namespace cr_fuchsia
-
-#endif  // FUCHSIA_ENGINE_TEST_FAKE_CONTEXT_H_
+#endif  // FUCHSIA_ENGINE_FAKE_CONTEXT_H_

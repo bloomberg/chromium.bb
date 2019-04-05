@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fuchsia/engine/test/fake_context.h"
+#include "fuchsia/engine/fake_context.h"
 
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
-
-namespace cr_fuchsia {
 
 FakeFrame::FakeFrame(fidl::InterfaceRequest<chromium::web::Frame> request)
     : binding_(this, std::move(request)) {
@@ -53,5 +51,3 @@ void FakeContext::CreateFrame(
 void FakeContext::NotImplemented_(const std::string& name) {
   NOTREACHED() << name;
 }
-
-}  // namespace cr_fuchsia
