@@ -36,11 +36,6 @@ AXMenuList::AXMenuList(LayoutMenuList* layout_object,
                        AXObjectCacheImpl& ax_object_cache)
     : AXLayoutObject(layout_object, ax_object_cache) {}
 
-AXMenuList* AXMenuList::Create(LayoutMenuList* layout_object,
-                               AXObjectCacheImpl& ax_object_cache) {
-  return MakeGarbageCollected<AXMenuList>(layout_object, ax_object_cache);
-}
-
 ax::mojom::Role AXMenuList::DetermineAccessibilityRole() {
   if ((aria_role_ = DetermineAriaRoleAttribute()) != ax::mojom::Role::kUnknown)
     return aria_role_;

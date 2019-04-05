@@ -42,11 +42,6 @@ AXListBoxOption::AXListBoxOption(LayoutObject* layout_object,
 
 AXListBoxOption::~AXListBoxOption() = default;
 
-AXListBoxOption* AXListBoxOption::Create(LayoutObject* layout_object,
-                                         AXObjectCacheImpl& ax_object_cache) {
-  return MakeGarbageCollected<AXListBoxOption>(layout_object, ax_object_cache);
-}
-
 ax::mojom::Role AXListBoxOption::DetermineAccessibilityRole() {
   if ((aria_role_ = DetermineAriaRoleAttribute()) != ax::mojom::Role::kUnknown)
     return aria_role_;

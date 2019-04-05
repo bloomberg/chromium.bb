@@ -91,11 +91,6 @@ AXNodeObject::AXNodeObject(Node* node, AXObjectCacheImpl& ax_object_cache)
       native_role_(ax::mojom::Role::kUnknown),
       node_(node) {}
 
-AXNodeObject* AXNodeObject::Create(Node* node,
-                                   AXObjectCacheImpl& ax_object_cache) {
-  return MakeGarbageCollected<AXNodeObject>(node, ax_object_cache);
-}
-
 AXNodeObject::~AXNodeObject() {
   DCHECK(!node_);
 }

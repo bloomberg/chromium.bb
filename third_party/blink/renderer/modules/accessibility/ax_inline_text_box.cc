@@ -43,13 +43,6 @@ AXInlineTextBox::AXInlineTextBox(
     AXObjectCacheImpl& ax_object_cache)
     : AXObject(ax_object_cache), inline_text_box_(std::move(inline_text_box)) {}
 
-AXInlineTextBox* AXInlineTextBox::Create(
-    scoped_refptr<AbstractInlineTextBox> inline_text_box,
-    AXObjectCacheImpl& ax_object_cache) {
-  return MakeGarbageCollected<AXInlineTextBox>(std::move(inline_text_box),
-                                               ax_object_cache);
-}
-
 void AXInlineTextBox::Init() {}
 
 void AXInlineTextBox::Detach() {
