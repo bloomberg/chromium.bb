@@ -791,8 +791,8 @@ void DocumentMarkerController::RemoveSuggestionMarkerInRangeOnFinish(
       node_marker_pairs = MarkersIntersectingRange(
           range, DocumentMarker::MarkerTypes::Suggestion());
   for (const auto& node_marker_pair : node_marker_pairs) {
-    SuggestionMarker* suggestion_marker =
-        ToSuggestionMarker(node_marker_pair.second);
+    auto* suggestion_marker =
+        To<SuggestionMarker>(node_marker_pair.second.Get());
     if (suggestion_marker->NeedsRemovalOnFinishComposing()) {
       const Text& text = *node_marker_pair.first;
       DocumentMarkerList* const list =

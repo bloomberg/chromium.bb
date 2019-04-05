@@ -210,7 +210,7 @@ void PaintDocumentMarkers(GraphicsContext& context,
       case DocumentMarker::kComposition:
       case DocumentMarker::kActiveSuggestion:
       case DocumentMarker::kSuggestion: {
-        const StyleableMarker& styleable_marker = ToStyleableMarker(*marker);
+        const auto& styleable_marker = To<StyleableMarker>(*marker);
         if (marker_paint_phase == DocumentMarkerPaintPhase::kBackground) {
           PaintRect(
               context, NGPhysicalOffset(box_origin),

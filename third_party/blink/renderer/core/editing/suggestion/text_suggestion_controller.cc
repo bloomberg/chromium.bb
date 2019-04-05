@@ -144,13 +144,13 @@ SuggestionInfosWithNodeAndHighlightColor ComputeSuggestionInfos(
   // The highlight color comes from the shortest suggestion marker touching or
   // intersecting the tapped location. If there's no color set, we use the
   // default text selection color.
-  const SuggestionMarker& first_suggestion_marker = *ToSuggestionMarker(
-      node_suggestion_marker_pairs_sorted_by_length.front().second);
+  const auto* first_suggestion_marker = To<SuggestionMarker>(
+      node_suggestion_marker_pairs_sorted_by_length.front().second.Get());
 
   suggestion_infos_with_node_and_highlight_color.highlight_color =
-      (first_suggestion_marker.SuggestionHighlightColor() == 0)
+      (first_suggestion_marker->SuggestionHighlightColor() == 0)
           ? LayoutTheme::TapHighlightColor()
-          : first_suggestion_marker.SuggestionHighlightColor();
+          : first_suggestion_marker->SuggestionHighlightColor();
 
   Vector<TextSuggestionInfo>& suggestion_infos =
       suggestion_infos_with_node_and_highlight_color.suggestion_infos;
@@ -163,8 +163,7 @@ SuggestionInfosWithNodeAndHighlightColor ComputeSuggestionInfos(
     if (suggestion_infos.size() == max_number_of_suggestions)
       break;
 
-    const SuggestionMarker* marker =
-        ToSuggestionMarker(node_marker_pair.second);
+    const auto* marker = To<SuggestionMarker>(node_marker_pair.second);
     const Vector<String>& marker_suggestions = marker->Suggestions();
     for (wtf_size_t suggestion_index = 0;
          suggestion_index < marker_suggestions.size(); ++suggestion_index) {
@@ -232,8 +231,7 @@ void TextSuggestionController::HandlePotentialSuggestionTap(
   if (!node_and_marker.first)
     return;
 
-  const SuggestionMarker* marker =
-      ToSuggestionMarkerOrNull(node_and_marker.second);
+  const auto* marker = DynamicTo<SuggestionMarker>(node_and_marker.second);
   if (marker && marker->Suggestions().IsEmpty())
     return;
 
@@ -305,8 +303,8 @@ void TextSuggestionController::ApplyTextSuggestion(int32_t marker_tag,
   SuggestionMarker* marker = nullptr;
   for (const std::pair<Member<const Text>, Member<DocumentMarker>>&
            node_marker_pair : node_marker_pairs) {
-    SuggestionMarker* suggestion_marker =
-        ToSuggestionMarker(node_marker_pair.second);
+    auto* suggestion_marker =
+        To<SuggestionMarker>(node_marker_pair.second.Get());
     if (suggestion_marker->Tag() == marker_tag) {
       marker_text_node = node_marker_pair.first;
       marker = suggestion_marker;
@@ -411,8 +409,7 @@ void TextSuggestionController::SuggestionMenuTimeoutCallback(
 void TextSuggestionController::ShowSpellCheckMenu(
     const std::pair<const Text*, DocumentMarker*>& node_spelling_marker_pair) {
   const Text* const marker_text_node = node_spelling_marker_pair.first;
-  SpellCheckMarker* const marker =
-      ToSpellCheckMarker(node_spelling_marker_pair.second);
+  auto* const marker = To<SpellCheckMarker>(node_spelling_marker_pair.second);
 
   const EphemeralRange active_suggestion_range =
       EphemeralRange(Position(marker_text_node, marker->StartOffset()),

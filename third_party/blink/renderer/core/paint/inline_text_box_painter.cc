@@ -605,7 +605,7 @@ void InlineTextBoxPainter::PaintDocumentMarkers(
       case DocumentMarker::kComposition:
       case DocumentMarker::kActiveSuggestion:
       case DocumentMarker::kSuggestion: {
-        const StyleableMarker& styleable_marker = ToStyleableMarker(marker);
+        const auto& styleable_marker = To<StyleableMarker>(marker);
         if (marker_paint_phase == DocumentMarkerPaintPhase::kBackground) {
           const PaintOffsets marker_offsets =
               MarkerPaintStartAndEnd(styleable_marker);
