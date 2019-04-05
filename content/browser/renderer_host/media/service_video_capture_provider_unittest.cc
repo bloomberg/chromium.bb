@@ -320,13 +320,13 @@ TEST_F(ServiceVideoCaptureProviderTest,
   // Exercise part 2: Make a few GetDeviceInfosAsync requests
   base::RunLoop wait_for_get_device_infos_response_1;
   base::RunLoop wait_for_get_device_infos_response_2;
-  provider_->GetDeviceInfosAsync(base::BindOnce(
+  provider_->GetDeviceInfosAsync(base::BindRepeating(
       [](base::RunLoop* run_loop,
          const std::vector<media::VideoCaptureDeviceInfo>&) {
         run_loop->Quit();
       },
       &wait_for_get_device_infos_response_1));
-  provider_->GetDeviceInfosAsync(base::BindOnce(
+  provider_->GetDeviceInfosAsync(base::BindRepeating(
       [](base::RunLoop* run_loop,
          const std::vector<media::VideoCaptureDeviceInfo>&) {
         run_loop->Quit();
@@ -389,11 +389,11 @@ TEST_F(ServiceVideoCaptureProviderTest,
 
   // Make initial call to GetDeviceInfosAsync(). The service does not yet
   // respond.
-  provider_->GetDeviceInfosAsync(
-      base::BindOnce([](const std::vector<media::VideoCaptureDeviceInfo>&) {}));
+  provider_->GetDeviceInfosAsync(base::BindRepeating(
+      [](const std::vector<media::VideoCaptureDeviceInfo>&) {}));
   // Make an additional call to GetDeviceInfosAsync().
-  provider_->GetDeviceInfosAsync(
-      base::BindOnce([](const std::vector<media::VideoCaptureDeviceInfo>&) {}));
+  provider_->GetDeviceInfosAsync(base::BindRepeating(
+      [](const std::vector<media::VideoCaptureDeviceInfo>&) {}));
   {
     base::RunLoop give_mojo_chance_to_process;
     give_mojo_chance_to_process.RunUntilIdle();
