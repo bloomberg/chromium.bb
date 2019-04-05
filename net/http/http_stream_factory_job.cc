@@ -708,7 +708,7 @@ int HttpStreamFactory::Job::DoStart() {
 
   // Don't connect to restricted ports.
   if (!IsPortAllowedForScheme(destination_.port(),
-                              request_info_.url.scheme())) {
+                              request_info_.url.scheme_piece())) {
     return ERR_UNSAFE_PORT;
   }
 
