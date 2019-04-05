@@ -6,7 +6,10 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/bookmark_app_navigation_browsertest.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/intent_picker_bubble_view.h"
+#include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/common/chrome_features.h"
 #include "url/gurl.h"
 
@@ -29,6 +32,8 @@ class IntentPickerBubbleViewBrowserTest
 
 // Tests that clicking a link from a tabbed browser to within the scope of an
 // installed app shows the intent picker with the installed app details.
+// For chrome OS platform, the intent picker bubble will pop out while for
+// other platforms, only intent picker icon will be show in Omnibox.
 IN_PROC_BROWSER_TEST_P(IntentPickerBubbleViewBrowserTest,
                        NavigationToInScopeLinkShowsIntentPicker) {
   InstallTestBookmarkApp();
@@ -42,13 +47,23 @@ IN_PROC_BROWSER_TEST_P(IntentPickerBubbleViewBrowserTest,
       in_scope_url, base::BindOnce(&ClickLinkAndWait, web_contents,
                                    in_scope_url, LinkTarget::SELF, GetParam()));
 
+  IntentPickerView* intent_picker_view =
+      BrowserView::GetBrowserViewForBrowser(browser())
+          ->GetLocationBarView()
+          ->intent_picker_view();
+  EXPECT_TRUE(intent_picker_view->visible());
+
   IntentPickerBubbleView* intent_picker =
       IntentPickerBubbleView::intent_picker_bubble();
-  EXPECT_TRUE(intent_picker);
+#if defined(OS_CHROMEOS)
+  ASSERT_TRUE(intent_picker);
   EXPECT_EQ(web_contents, intent_picker->web_contents());
   EXPECT_EQ(1u, intent_picker->GetAppInfoForTesting().size());
   EXPECT_EQ(GetAppName(),
             intent_picker->GetAppInfoForTesting()[0].display_name);
+#else
+  EXPECT_FALSE(intent_picker);
+#endif
 }
 
 // Tests that clicking a link from a tabbed browser to outside the scope of an

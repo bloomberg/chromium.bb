@@ -94,12 +94,6 @@ class ChromeOsAppsNavigationThrottle : public apps::AppsNavigationThrottle {
 
   bool ShouldDeferNavigationForArc(content::NavigationHandle* handle) override;
 
-  void ShowIntentPickerBubbleForApps(
-      content::WebContents* web_contents,
-      IntentPickerAutoDisplayService* ui_auto_display_service,
-      const GURL& url,
-      std::vector<apps::IntentPickerAppInfo> apps) override;
-
   // Passed as a callback to allow ARC-specific code to asynchronously inform
   // this object of the apps which can handle this URL, and optionally request
   // that the navigation be completely cancelled (e.g. if a preferred app has
@@ -107,6 +101,13 @@ class ChromeOsAppsNavigationThrottle : public apps::AppsNavigationThrottle {
   void OnDeferredNavigationProcessed(
       apps::AppsNavigationAction action,
       std::vector<apps::IntentPickerAppInfo> apps) override;
+
+  PickerShowState GetPickerShowState() override;
+
+  IntentPickerResponse GetOnPickerClosedCallback(
+      content::WebContents* web_contents,
+      IntentPickerAutoDisplayService* ui_auto_display_service,
+      const GURL& url) override;
 
   void CloseTab();
 
