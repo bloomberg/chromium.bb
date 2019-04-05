@@ -557,8 +557,11 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         if (infoBarState == DownloadInfoBarState.DOWNLOADING) {
             info.icon = showAccelerating ? R.drawable.infobar_downloading_sweep_animation
                                          : R.drawable.infobar_downloading_fill_animation;
-            if (areAnimationsDisabled()) info.icon = R.drawable.infobar_downloading_fill_animation;
             info.hasVectorDrawable = true;
+            if (areAnimationsDisabled()) {
+                info.icon = R.drawable.infobar_downloading;
+                info.hasVectorDrawable = false;
+            }
         } else if (offlineItemState == OfflineItemState.COMPLETE) {
             stringRes = R.plurals.multiple_download_complete;
             info.icon = R.drawable.infobar_download_complete;
@@ -605,7 +608,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
                 }
             }
 
-            info.hasAnimation = true;
+            info.hasAnimation = !areAnimationsDisabled();
             info.link = showAccelerating ? null : getContext().getString(R.string.details_link);
         } else if (infoBarState == DownloadInfoBarState.SHOW_RESULT) {
             int itemCount = getDownloadCount().getCount(offlineItemState);
@@ -652,7 +655,6 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         setForceReparent(info);
         setAccessibilityMessage(
                 info, showAccelerating && infoBarState == DownloadInfoBarState.DOWNLOADING);
-        if (areAnimationsDisabled()) info.hasAnimation = false;
         showInfoBar(infoBarState, info);
     }
 
