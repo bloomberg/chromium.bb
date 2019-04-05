@@ -2234,7 +2234,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, IndexedDBIsolation) {
 // then launches the app window again. The process is repeated 3 times.
 // TODO(crbug.com/949923): The test is flaky (crash) on ChromeOS debug and ASan/LSan
 #if defined(OS_CHROMEOS) && (!defined(NDEBUG) || defined(ADDRESS_SANITIZER))
-#define MAYBE_CloseOnLoadcommit DEFINE_CloseOnLoadcommit
+#define MAYBE_CloseOnLoadcommit DISABLED_CloseOnLoadcommit
 #else
 #define MAYBE_CloseOnLoadcommit CloseOnLoadcommit
 #endif
