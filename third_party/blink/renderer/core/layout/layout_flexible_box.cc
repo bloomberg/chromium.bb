@@ -832,9 +832,6 @@ LayoutUnit LayoutFlexibleBox::ComputeInnerFlexBaseSizeForChild(
                                       main_axis_border_scrollbar_padding));
   }
 
-  if (child.ShouldApplySizeContainment())
-    return LayoutUnit();
-
   // The flex basis is indefinite (=auto), so we need to compute the actual
   // width of the child. For the logical width axis we just use the preferred
   // width; for the height we need to lay out the child.
@@ -844,6 +841,9 @@ LayoutUnit LayoutFlexibleBox::ComputeInnerFlexBaseSizeForChild(
     // width includes the scrollbar, even for overflow: auto.
     main_axis_extent = child.MaxPreferredLogicalWidth();
   } else {
+    if (child.ShouldApplySizeContainment())
+      return LayoutUnit();
+
     if (child_layout_type == kNeverLayout)
       return LayoutUnit();
 
