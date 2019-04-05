@@ -191,7 +191,6 @@ class WrappedSkImageRepresentation : public SharedImageRepresentationSkia {
   ~WrappedSkImageRepresentation() override { DCHECK(!write_surface_); }
 
   sk_sp<SkSurface> BeginWriteAccess(
-      GrContext* gr_context,
       int final_msaa_count,
       const SkSurfaceProps& surface_props) override {
     SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(

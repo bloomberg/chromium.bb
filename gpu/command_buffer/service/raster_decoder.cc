@@ -2029,8 +2029,8 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
       gr_context()->maxSurfaceSampleCountForColorType(sk_color_type))
     final_msaa_count = 0;
 
-  sk_surface_ = shared_image_->BeginWriteAccess(gr_context(), final_msaa_count,
-                                                surface_props);
+  sk_surface_ =
+      shared_image_->BeginWriteAccess(final_msaa_count, surface_props);
   if (!sk_surface_) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
                        "failed to create surface");

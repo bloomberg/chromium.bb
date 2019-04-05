@@ -130,7 +130,7 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Basic) {
       mailbox, context_state_);
   EXPECT_TRUE(skia_representation);
   auto surface = skia_representation->BeginWriteAccess(
-      gr_context(), 0, SkSurfaceProps(0, kUnknown_SkPixelGeometry));
+      0, SkSurfaceProps(0, kUnknown_SkPixelGeometry));
   EXPECT_TRUE(surface);
   EXPECT_EQ(size.width(), surface->width());
   EXPECT_EQ(size.height(), surface->height());

@@ -9,6 +9,7 @@
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
@@ -113,10 +114,12 @@ class SharedImageRepresentationSkiaIOSurface
   SharedImageRepresentationSkiaIOSurface(
       SharedImageManager* manager,
       SharedImageBacking* backing,
+      scoped_refptr<SharedContextState> context_state,
       sk_sp<SkPromiseImageTexture> promise_texture,
       MemoryTypeTracker* tracker,
       gles2::Texture* texture)
       : SharedImageRepresentationSkia(manager, backing, tracker),
+        context_state_(std::move(context_state)),
         promise_texture_(std::move(promise_texture)),
         texture_(texture) {
     DCHECK(texture_);
@@ -128,14 +131,13 @@ class SharedImageRepresentationSkiaIOSurface
   }
 
   sk_sp<SkSurface> BeginWriteAccess(
-      GrContext* gr_context,
       int final_msaa_count,
       const SkSurfaceProps& surface_props) override {
     SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
         /*gpu_compositing=*/true, format());
 
     return SkSurface::MakeFromBackendTextureAsRenderTarget(
-        gr_context, promise_texture_->backendTexture(),
+        context_state_->gr_context(), promise_texture_->backendTexture(),
         kTopLeft_GrSurfaceOrigin, final_msaa_count, sk_color_type,
         backing()->color_space().ToSkColorSpace(), &surface_props);
   }
@@ -155,6 +157,7 @@ class SharedImageRepresentationSkiaIOSurface
   void EndReadAccess() override { FlushIOSurfaceGLOperations(); }
 
  private:
+  scoped_refptr<SharedContextState> context_state_;
   sk_sp<SkPromiseImageTexture> promise_texture_;
   gles2::Texture* texture_;
 };
@@ -243,7 +246,8 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
     sk_sp<SkPromiseImageTexture> promise_texture =
         SkPromiseImageTexture::Make(backend_texture);
     return std::make_unique<SharedImageRepresentationSkiaIOSurface>(
-        manager, this, promise_texture, tracker, texture);
+        manager, this, std::move(context_state), promise_texture, tracker,
+        texture);
   }
 
  private:
