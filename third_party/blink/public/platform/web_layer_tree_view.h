@@ -41,10 +41,6 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
-namespace cc {
-class PaintImage;
-}
-
 namespace blink {
 
 class WebLayerTreeView {
@@ -139,14 +135,6 @@ class WebLayerTreeView {
   virtual void NotifySwapTime(ReportTimeCallback callback) {}
 
   virtual void RequestBeginMainFrameNotExpected(bool new_state) {}
-
-  virtual void RequestDecode(const cc::PaintImage& image,
-                             base::OnceCallback<void(bool)> callback) {}
-
-  // Runs |callback| after a new frame has been submitted to the display
-  // compositor, and the display-compositor has displayed it on screen. Forces a
-  // redraw so that a new frame is submitted.
-  virtual void RequestPresentationCallback(base::OnceClosure callback) {}
 };
 
 }  // namespace blink

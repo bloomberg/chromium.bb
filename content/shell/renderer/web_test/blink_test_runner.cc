@@ -461,6 +461,14 @@ void BlinkTestRunner::TestFinished() {
   // that this returns a value indicating if we should defer the pixel dump to
   // the browser instead. We want to switch all tests to use this for pixel
   // dumps.
+  // TODO(danakj): When not printing, this call doesn't do anything useful
+  // except cause the full viewport to be damaged and insert a presentation
+  // callback. Since we already get a callback from the browser side when the
+  // pixel capture is done, this callback seems redundant and probably this only
+  // really was needed for causing damage. Now WebWidgetTestProxy does that
+  // damage itself when a RequestPresentationForPixelDump() is performed so we
+  // could probably stop doing CaptureLocalLayoutDump() at all when not printing
+  // and not wait for the callback.
   bool browser_should_capture_pixels = CaptureLocalPixelsDump();
 
   // Add the current selection rect to the dump result, if requested.
@@ -526,9 +534,8 @@ bool BlinkTestRunner::CaptureLocalPixelsDump() {
   waiting_for_pixels_dump_result_ = true;
   bool browser_should_capture_pixels =
       interfaces->TestRunner()->DumpPixelsAsync(
-          render_view()->GetWebView()->MainFrame()->ToWebLocalFrame(),
-          base::BindOnce(&BlinkTestRunner::OnPixelsDumpCompleted,
-                         base::Unretained(this)));
+          render_view(), base::BindOnce(&BlinkTestRunner::OnPixelsDumpCompleted,
+                                        base::Unretained(this)));
 
   // If the browser should capture pixels, then we shouldn't be waiting for dump
   // results.
