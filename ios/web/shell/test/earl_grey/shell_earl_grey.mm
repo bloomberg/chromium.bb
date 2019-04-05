@@ -31,8 +31,11 @@ using base::test::ios::WaitUntilConditionOrTimeout;
   if (!web::test::WaitForPageToFinishLoading(webState))
     return false;
 
-  if (webState->ContentIsHTML())
-    web::WaitUntilWindowIdInjected(webState);
+  if (webState->ContentIsHTML()) {
+    if (!web::WaitUntilWindowIdInjected(webState)) {
+      return false;
+    }
+  }
 
   // Ensure any UI elements handled by EarlGrey become idle for any subsequent
   // EarlGrey steps.

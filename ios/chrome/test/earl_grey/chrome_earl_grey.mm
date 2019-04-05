@@ -111,8 +111,10 @@ id ExecuteJavaScript(NSString* javascript,
   [ChromeEarlGrey waitForPageToFinishLoading];
 
   web::WebState* webState = chrome_test_util::GetCurrentWebState();
-  if (webState->ContentIsHTML())
-    web::WaitUntilWindowIdInjected(webState);
+  if (webState->ContentIsHTML()) {
+    GREYAssert(web::WaitUntilWindowIdInjected(webState),
+               @"WindowID failed to inject");
+  }
 }
 
 + (void)reload {
