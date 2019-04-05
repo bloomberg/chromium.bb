@@ -16,7 +16,7 @@ include_rules = [
 
   "-components",
   # Content can depend on components that are:
-  #   1) related to the implementation of the web platform
+  #   1) related to the implementation of the web platform, or,
   #   2) shared code between third_party/blink and content
   # It should not depend on chrome features or implementation details, i.e. the
   # original components/ directories which was code split out from chrome/ to be
