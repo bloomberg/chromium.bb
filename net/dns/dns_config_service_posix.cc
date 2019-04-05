@@ -306,9 +306,6 @@ class DnsConfigServicePosix::ConfigReader : public SerialWorker {
  public:
   explicit ConfigReader(DnsConfigServicePosix* service)
       : service_(service), success_(false) {
-    // Allow execution on another thread; nothing thread-specific about
-    // constructor.
-    DETACH_FROM_SEQUENCE(sequence_checker_);
   }
 
   void DoWork() override {
@@ -361,11 +358,7 @@ class DnsConfigServicePosix::HostsReader : public SerialWorker {
   explicit HostsReader(DnsConfigServicePosix* service)
       : service_(service),
         file_path_hosts_(service->file_path_hosts_),
-        success_(false) {
-    // Allow execution on another thread; nothing thread-specific about
-    // constructor.
-    DETACH_FROM_SEQUENCE(sequence_checker_);
-  }
+        success_(false) {}
 
  private:
   ~HostsReader() override {}

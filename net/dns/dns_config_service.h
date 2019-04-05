@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/sequence_checker.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/net_export.h"
@@ -20,9 +20,7 @@
 namespace net {
 
 // Service for reading system DNS settings, on demand or when signalled by
-// internal watchers and NetworkChangeNotifier. This object is not thread-safe
-// and methods may perform blocking I/O so methods must be called on a sequence
-// that allows blocking (i.e. base::MayBlock).
+// internal watchers and NetworkChangeNotifier.
 class NET_EXPORT_PRIVATE DnsConfigService {
  public:
   // Callback interface for the client, called on the same thread as
@@ -72,7 +70,7 @@ class NET_EXPORT_PRIVATE DnsConfigService {
 
   void set_watch_failed(bool value) { watch_failed_ = value; }
 
-  SEQUENCE_CHECKER(sequence_checker_);
+  THREAD_CHECKER(thread_checker_);
 
  private:
   // The timer counts from the last Invalidate* until complete config is read.
