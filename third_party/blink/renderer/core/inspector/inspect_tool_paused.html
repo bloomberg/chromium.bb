@@ -82,15 +82,15 @@ function drawPausedInDebuggerMessage(message) {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("resume-button").addEventListener("click", () => InspectorOverlayHost.resume());
-  document.getElementById("step-over-button").addEventListener("click", () => InspectorOverlayHost.stepOver());
+  document.getElementById("resume-button").addEventListener("click", () => InspectorOverlayHost.send("resume"));
+  document.getElementById("step-over-button").addEventListener("click", () => InspectorOverlayHost.send("stepOver"));
 });
 
 document.addEventListener("keydown", event => {
   if (event.key == "F8" || eventHasCtrlOrMeta(event) && event.keyCode == 220 /* backslash */)
-    InspectorOverlayHost.resume();
+    InspectorOverlayHost.send("resume");
   else if (event.key == "F10" || eventHasCtrlOrMeta(event) && event.keyCode == 222 /* single quote */)
-    InspectorOverlayHost.stepOver();
+    InspectorOverlayHost.send("stepOver");
 });
 
 </script>
