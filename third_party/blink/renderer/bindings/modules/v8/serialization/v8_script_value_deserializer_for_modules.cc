@@ -350,7 +350,7 @@ CryptoKey* V8ScriptValueDeserializerForModules::ReadCryptoKey() {
           key))
     return nullptr;
 
-  return CryptoKey::Create(key);
+  return MakeGarbageCollected<CryptoKey>(key);
 }
 
 bool V8ScriptValueDeserializerForModules::ReadLandmark(Landmark* landmark) {

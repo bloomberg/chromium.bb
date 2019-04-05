@@ -290,7 +290,7 @@ class WebCryptoResultAdapter : public ScriptFunction {
 template <typename T>
 WebCryptoResult ToWebCryptoResult(ScriptState* script_state,
                                   base::RepeatingCallback<void(T)> function) {
-  CryptoResultImpl* result = CryptoResultImpl::Create(script_state);
+  auto* result = MakeGarbageCollected<CryptoResultImpl>(script_state);
   result->Promise().Then(
       (MakeGarbageCollected<WebCryptoResultAdapter<T>>(script_state,
                                                        std::move(function)))
