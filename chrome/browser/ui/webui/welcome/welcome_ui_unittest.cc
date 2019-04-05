@@ -19,7 +19,7 @@ TEST(WelcomeUITest, IsGzipped) {
   EXPECT_TRUE(TestWelcomeUI::IsGzipped("returning-user"));
 
   // Images are intentionally not gzipped.
-  EXPECT_FALSE(TestWelcomeUI::IsGzipped("images/set_as_default_1x.png"));
+  EXPECT_FALSE(TestWelcomeUI::IsGzipped("images/youtube_1x.png"));
 
   // This is a dynamic path that fetches from the network and should not be
   // considered gzipped.

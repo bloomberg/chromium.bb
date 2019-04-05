@@ -57,13 +57,15 @@
       }
 
       .ntp-background-logo {
-        content: -webkit-image-set(
-            url(chrome://welcome/images/ntp_background_1x.png) 1x,
-            url(chrome://welcome/images/ntp_background_2x.png) 2x);
+        content: url(../images/module_icons/wallpaper_light.svg);
         height: 39px;
         margin: auto;
         margin-bottom: 16px;
         width: 44px;
+      }
+
+      :host-context([dark]) .ntp-background-logo {
+        content: url(../images/module_icons/wallpaper_dark.svg);
       }
 
       h1 {
