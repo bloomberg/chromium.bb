@@ -111,7 +111,8 @@ class XR final : public EventTargetWithInlineData,
       XRSession::SessionMode mode,
       XRSession::EnvironmentBlendMode blend_mode,
       device::mojom::blink::XRSessionClientRequest client_request,
-      device::mojom::blink::VRDisplayInfoPtr display_info);
+      device::mojom::blink::VRDisplayInfoPtr display_info,
+      bool sensorless_session = false);
   XRSession* CreateSensorlessInlineSession();
 
   void Dispose();

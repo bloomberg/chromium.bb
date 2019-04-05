@@ -11,6 +11,7 @@
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
+#include "device/base/features.h"
 #include "device/vr/buildflags/buildflags.h"
 
 #if defined(OS_WIN)
@@ -52,6 +53,25 @@ class WebXrVrBrowserTestOpenVrDisabled : public WebXrVrBrowserTestBase {
 #endif
   }
 };
+
+// WebXrOrientationSensorDevice is only defined when the enable_vr flag is set.
+#if BUILDFLAG(ENABLE_VR)
+class WebXrVrBrowserTestSensorless : public WebXrVrBrowserTestBase {
+ public:
+  WebXrVrBrowserTestSensorless() {
+    enable_features_.push_back(features::kWebXr);
+    disable_features_.push_back(device::kWebXrOrientationSensorDevice);
+
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+    disable_features_.push_back(features::kWindowsMixedReality);
+#endif
+
+#if defined(OS_WIN)
+    disable_features_.push_back(service_manager::features::kXRSandbox);
+#endif
+  }
+};
+#endif
 
 // OpenVR feature only defined on Windows.
 #ifdef OS_WIN

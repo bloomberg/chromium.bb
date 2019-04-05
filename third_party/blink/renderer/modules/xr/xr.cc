@@ -505,10 +505,11 @@ XRSession* XR::CreateSession(
     XRSession::SessionMode mode,
     XRSession::EnvironmentBlendMode blend_mode,
     device::mojom::blink::XRSessionClientRequest client_request,
-    device::mojom::blink::VRDisplayInfoPtr display_info) {
+    device::mojom::blink::VRDisplayInfoPtr display_info,
+    bool sensorless_session) {
   XRSession* session = MakeGarbageCollected<XRSession>(
       this, client_request ? std::move(client_request) : nullptr, mode,
-      sessionModeToString(mode), blend_mode);
+      sessionModeToString(mode), blend_mode, sensorless_session);
   if (display_info)
     session->SetXRDisplayInfo(std::move(display_info));
   sessions_.insert(session);
@@ -519,8 +520,8 @@ XRSession* XR::CreateSensorlessInlineSession() {
   // TODO(https://crbug.com/944936): The blend mode could be "additive".
   XRSession::EnvironmentBlendMode blend_mode = XRSession::kBlendModeOpaque;
   return CreateSession(XRSession::kModeInline, blend_mode,
-                       nullptr /* client request */,
-                       nullptr /* display_info */);
+                       nullptr /* client request */, nullptr /* display_info */,
+                       true /* sensorless_session */);
 }
 
 void XR::Dispose() {
