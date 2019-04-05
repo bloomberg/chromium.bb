@@ -4,6 +4,8 @@
      found in the LICENSE file. -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/autofill_assistant_payment_request"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -17,30 +19,27 @@
         android:orientation="vertical" />
 
     <!-- 3rd party terms & conditions. -->
-    <RadioGroup
+    <Space android:layout_width="0dp" android:layout_height="8dp"/>
+    <org.chromium.chrome.browser.autofill_assistant.payment.AssistantChoiceList
+        android:id="@+id/third_party_terms_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <!-- Set paddingStart to add padding between radio-button and text. -->
-        <Space android:layout_width="0dp" android:layout_height="9dp"/>
-        <android.support.v7.widget.AppCompatRadioButton
+        app:column_spacing="8dp"
+        app:row_spacing="8dp">
+        <TextView
             android:id="@+id/terms_checkbox_agree"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingStart="9dp"
             android:text="@string/autofill_assistant_3rd_party_terms_accept"
             android:textAppearance="@style/TextAppearance.BlackCaption"/>
-        <Space android:layout_width="0dp" android:layout_height="5dp"/>
-        <android.support.v7.widget.AppCompatRadioButton
+        <TextView
             android:id="@+id/terms_checkbox_review"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingStart="9dp"
             android:text="@string/autofill_assistant_3rd_party_terms_review"
             android:textAppearance="@style/TextAppearance.BlackCaption"/>
-    </RadioGroup>
-    <Space android:layout_width="0dp" android:layout_height="12dp"/>
+    </org.chromium.chrome.browser.autofill_assistant.payment.AssistantChoiceList>
+    <Space android:layout_width="0dp" android:layout_height="10dp"/>
     <TextView
         android:id="@+id/payment_request_3rd_party_privacy_notice"
         android:layout_width="match_parent"
