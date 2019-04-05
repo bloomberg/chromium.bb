@@ -29,6 +29,9 @@ namespace blink {
 class PLATFORM_EXPORT PaintWorkletPainter : public GarbageCollectedMixin {
  public:
   virtual ~PaintWorkletPainter() = default;
+
+  virtual int GetWorkletId() const = 0;
+  virtual sk_sp<PaintRecord> Paint(cc::PaintWorkletInput*) = 0;
 };
 
 }  // namespace blink

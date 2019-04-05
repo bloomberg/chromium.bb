@@ -13,6 +13,8 @@
 
 namespace blink {
 
+using CompositorPaintWorkletInput = cc::PaintWorkletInput;
+
 class PaintWorkletPaintDispatcher;
 
 // This class serves as a bridge which connects the compositor and the paint

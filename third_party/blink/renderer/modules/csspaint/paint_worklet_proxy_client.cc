@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_proxy_client.h"
 
 #include "base/single_thread_task_runner.h"
+#include "third_party/blink/renderer/core/css/cssom/paint_worklet_input.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -83,6 +84,18 @@ void PaintWorkletProxyClient::Dispose() {
 
   DCHECK(state_ != RunState::kDisposed);
   state_ = RunState::kDisposed;
+}
+
+sk_sp<PaintRecord> PaintWorkletProxyClient::Paint(
+    CompositorPaintWorkletInput* compositor_input) {
+  if (!global_scope_)
+    return sk_make_sp<PaintRecord>();
+  PaintWorkletInput* input = static_cast<PaintWorkletInput*>(compositor_input);
+  CSSPaintDefinition* definition =
+      global_scope_->FindDefinition(input->NameCopy());
+
+  return definition->Paint(FloatSize(input->GetSize()), input->EffectiveZoom(),
+                           nullptr, nullptr);
 }
 
 // static
