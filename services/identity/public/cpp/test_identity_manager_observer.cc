@@ -39,16 +39,6 @@ TestIdentityManagerObserver::PrimaryAccountFromClearedCallback() {
   return primary_account_from_cleared_callback_;
 }
 
-void TestIdentityManagerObserver::SetOnPrimaryAccountSigninFailedCallback(
-    base::OnceClosure callback) {
-  on_primary_account_signin_failed_callback_ = std::move(callback);
-}
-
-const GoogleServiceAuthError&
-TestIdentityManagerObserver::ErrorFromSigninFailedCallback() const {
-  return google_signin_failed_error_;
-}
-
 void TestIdentityManagerObserver::SetOnRefreshTokenUpdatedCallback(
     base::OnceClosure callback) {
   on_refresh_token_updated_callback_ = std::move(callback);
@@ -144,13 +134,6 @@ void TestIdentityManagerObserver::OnPrimaryAccountCleared(
   primary_account_from_cleared_callback_ = previous_primary_account_info;
   if (on_primary_account_cleared_callback_)
     std::move(on_primary_account_cleared_callback_).Run();
-}
-
-void TestIdentityManagerObserver::OnPrimaryAccountSigninFailed(
-    const GoogleServiceAuthError& error) {
-  google_signin_failed_error_ = error;
-  if (on_primary_account_signin_failed_callback_)
-    std::move(on_primary_account_signin_failed_callback_).Run();
 }
 
 void TestIdentityManagerObserver::OnRefreshTokenUpdatedForAccount(

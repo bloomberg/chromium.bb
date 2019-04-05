@@ -41,12 +41,6 @@ using PrimaryAccountClearedCallback =
     base::RepeatingCallback<void(const CoreAccountInfo&)>;
 
 // This callback will be invoked every time the IdentityManager::Observer
-// method OnPrimaryAccountSigninFailed is invoked. The parameter will be
-// a reference to the authentication error.
-using PrimaryAccountSigninFailedCallback =
-    base::RepeatingCallback<void(const GoogleServiceAuthError&)>;
-
-// This callback will be invoked every time the IdentityManager::Observer
 // method OnRefreshTokenRemoved is invoked. The parameter will be a reference
 // to the account_id whose token was removed.
 using RefreshTokenRemovedCallback =
@@ -60,15 +54,11 @@ class ClearPrimaryAccountTestObserver
   ClearPrimaryAccountTestObserver(
       identity::IdentityManager* identity_manager,
       PrimaryAccountClearedCallback on_primary_account_cleared,
-      PrimaryAccountSigninFailedCallback on_primary_account_signin_failed,
       RefreshTokenRemovedCallback on_refresh_token_removed)
       : on_primary_account_cleared_(std::move(on_primary_account_cleared)),
-        on_primary_account_signin_failed_(
-            std::move(on_primary_account_signin_failed)),
         on_refresh_token_removed_(std::move(on_refresh_token_removed)),
         scoped_observer_(this) {
     DCHECK(on_primary_account_cleared_);
-    DCHECK(on_primary_account_signin_failed_);
     DCHECK(on_refresh_token_removed_);
     scoped_observer_.Add(identity_manager);
   }
@@ -78,18 +68,12 @@ class ClearPrimaryAccountTestObserver
     on_primary_account_cleared_.Run(account_info);
   }
 
-  void OnPrimaryAccountSigninFailed(
-      const GoogleServiceAuthError& error) override {
-    on_primary_account_signin_failed_.Run(error);
-  }
-
   void OnRefreshTokenRemovedForAccount(const std::string& account_id) override {
     on_refresh_token_removed_.Run(account_id);
   }
 
  private:
   PrimaryAccountClearedCallback on_primary_account_cleared_;
-  PrimaryAccountSigninFailedCallback on_primary_account_signin_failed_;
   RefreshTokenRemovedCallback on_refresh_token_removed_;
   ScopedObserver<identity::IdentityManager, identity::IdentityManager::Observer>
       scoped_observer_;
@@ -165,12 +149,6 @@ void RunClearPrimaryAccountTest(
                              const CoreAccountInfo&) { quit_closure.Run(); },
                           run_loop.QuitClosure());
 
-  // Authentication error should not occur.
-  PrimaryAccountSigninFailedCallback primary_account_signin_failed_callback =
-      base::BindRepeating([](const GoogleServiceAuthError&) {
-        FAIL() << "auth should not fail";
-      });
-
   // Track Observer token removal notification.
   base::flat_set<std::string> observed_removals;
   RefreshTokenRemovedCallback refresh_token_removed_callback =
@@ -183,7 +161,7 @@ void RunClearPrimaryAccountTest(
 
   ClearPrimaryAccountTestObserver scoped_observer(
       identity_manager, primary_account_cleared_callback,
-      primary_account_signin_failed_callback, refresh_token_removed_callback);
+      refresh_token_removed_callback);
 
   primary_account_mutator->ClearPrimaryAccount(
       account_action, signin_metrics::SIGNOUT_TEST,

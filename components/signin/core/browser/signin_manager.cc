@@ -41,12 +41,6 @@ SigninManager::~SigninManager() {
   local_state_pref_registrar_.RemoveAll();
 }
 
-void SigninManager::HandleAuthError(const GoogleServiceAuthError& error) {
-  if (observer_ != nullptr) {
-    observer_->GoogleSigninFailed(error);
-  }
-}
-
 void SigninManager::SignOut(
     signin_metrics::ProfileSignout signout_source_metric,
     signin_metrics::SignoutDelete signout_delete_metric) {

@@ -54,7 +54,7 @@ class SignInObserver : public identity::IdentityManager::Observer {
   }
 
   // Blocks and waits until the user signs in. Wait() does not block if a
-  // GoogleSigninSucceeded or a GoogleSigninFailed has already occurred.
+  // GoogleSigninSucceeded has already occurred.
   void Wait() {
     if (seen_)
       return;
@@ -63,12 +63,6 @@ class SignInObserver : public identity::IdentityManager::Observer {
     message_loop_runner_ = new MessageLoopRunner;
     message_loop_runner_->Run();
     EXPECT_TRUE(seen_);
-  }
-
-  void OnPrimaryAccountSigninFailed(
-      const GoogleServiceAuthError& error) override {
-    DVLOG(1) << "Google signin failed.";
-    QuitLoopRunner();
   }
 
   void OnPrimaryAccountSet(
