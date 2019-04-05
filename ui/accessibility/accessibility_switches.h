@@ -13,6 +13,7 @@ namespace switches {
 
 AX_EXPORT extern const char kEnableExperimentalAccessibilityFeatures[];
 AX_EXPORT extern const char kEnableExperimentalAccessibilityAutoclick[];
+AX_EXPORT extern const char kEnableExperimentalAccessibilityLabelsDebugging[];
 AX_EXPORT extern const char kEnableExperimentalAccessibilityLanguageDetection[];
 AX_EXPORT extern const char kEnableExperimentalAccessibilitySwitchAccess[];
 AX_EXPORT extern const char

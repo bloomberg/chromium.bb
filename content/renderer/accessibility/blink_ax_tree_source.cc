@@ -39,6 +39,7 @@
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -268,7 +269,11 @@ ScopedFreezeBlinkAXTreeSource::~ScopedFreezeBlinkAXTreeSource() {
 
 BlinkAXTreeSource::BlinkAXTreeSource(RenderFrameImpl* render_frame,
                                      ui::AXMode mode)
-    : render_frame_(render_frame), accessibility_mode_(mode), frozen_(false) {}
+    : render_frame_(render_frame), accessibility_mode_(mode), frozen_(false) {
+  image_annotation_debugging_ =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kEnableExperimentalAccessibilityLabelsDebugging);
+}
 
 BlinkAXTreeSource::~BlinkAXTreeSource() {
 }
@@ -1132,8 +1137,17 @@ void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject src,
   ax::mojom::NameFrom name_from;
   blink::WebVector<WebAXObject> name_objects;
   blink::WebString web_name = src.GetName(name_from, name_objects);
-  if (name_from == ax::mojom::NameFrom::kAttributeExplicitlyEmpty ||
-      !web_name.IsEmpty()) {
+
+  // When visual debugging is enabled, the "title" attribute is set to a
+  // string beginning with a "%". We need to ignore such strings when
+  // subsequently deciding whether an image should be annotated or not.
+  bool has_debug_title =
+      image_annotation_debugging_ &&
+      base::StartsWith(web_name.Utf8(), "%", base::CompareCase::SENSITIVE);
+
+  if ((name_from == ax::mojom::NameFrom::kAttributeExplicitlyEmpty ||
+       !web_name.IsEmpty()) &&
+      !has_debug_title) {
     dst->SetImageAnnotationStatus(
         ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation);
     return;
@@ -1143,7 +1157,8 @@ void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject src,
   // it if it already has text other than whitespace.
   if (!base::ContainsOnlyChars(
           dst->GetStringAttribute(ax::mojom::StringAttribute::kName),
-          base::kWhitespaceASCII)) {
+          base::kWhitespaceASCII) &&
+      !has_debug_title) {
     dst->SetImageAnnotationStatus(
         ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation);
     return;

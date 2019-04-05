@@ -34,6 +34,7 @@
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_user_gesture_indicator.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_node.h"
@@ -159,6 +160,10 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame,
     HandleAXEvent(WebAXObject::FromWebDocument(document),
                   ax::mojom::Event::kLayoutComplete);
   }
+
+  image_annotation_debugging_ =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kEnableExperimentalAccessibilityLabelsDebugging);
 }
 
 RenderAccessibilityImpl::~RenderAccessibilityImpl() = default;
@@ -172,6 +177,7 @@ void RenderAccessibilityImpl::DidCreateNewDocument() {
 void RenderAccessibilityImpl::DidCommitProvisionalLoad(
     bool is_same_document_navigation,
     ui::PageTransition transition) {
+  has_injected_stylesheet_ = false;
   // Remove the image annotator if the page is loading and it was added for
   // the one-shot image annotation (i.e. AXMode for image annotation is not
   // set).
@@ -455,7 +461,7 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
   TRACE_EVENT0("accessibility",
                "RenderAccessibilityImpl::SendPendingAccessibilityEvents");
 
-  const WebDocument& document = GetMainDocument();
+  WebDocument document = GetMainDocument();
   if (document.IsNull())
     return;
 
@@ -593,6 +599,12 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
 
   if (had_layout_complete_messages)
     SendLocationChanges();
+
+  if (had_load_complete_messages)
+    has_injected_stylesheet_ = false;
+
+  if (image_annotation_debugging_)
+    AddImageAnnotationDebuggingAttributes(bundle.updates);
 }
 
 void RenderAccessibilityImpl::SendLocationChanges() {
@@ -1085,6 +1097,76 @@ void RenderAccessibilityImpl::RecordImageMetrics(AXContentTreeUpdate* update) {
           "Accessibility.ScreenReader.Image.SizeRatio.Unlabeled", ratio);
       UMA_HISTOGRAM_COUNTS_10000(
           "Accessibility.ScreenReader.Image.MinSize.Unlabeled", min_size);
+    }
+  }
+}
+
+void RenderAccessibilityImpl::AddImageAnnotationDebuggingAttributes(
+    const std::vector<AXContentTreeUpdate>& updates) {
+  DCHECK(image_annotation_debugging_);
+
+  for (auto& update : updates) {
+    for (auto& node : update.nodes) {
+      if (!node.HasIntAttribute(
+              ax::mojom::IntAttribute::kImageAnnotationStatus))
+        continue;
+
+      ax::mojom::ImageAnnotationStatus status = node.GetImageAnnotationStatus();
+      bool should_set_attributes = false;
+      switch (status) {
+        case ax::mojom::ImageAnnotationStatus::kNone:
+        case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
+        case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:
+          break;
+        case ax::mojom::ImageAnnotationStatus::kAnnotationPending:
+        case ax::mojom::ImageAnnotationStatus::kAnnotationAdult:
+        case ax::mojom::ImageAnnotationStatus::kAnnotationEmpty:
+        case ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed:
+        case ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded:
+          should_set_attributes = true;
+          break;
+      }
+
+      if (!should_set_attributes)
+        continue;
+
+      WebDocument document = GetMainDocument();
+      if (document.IsNull())
+        continue;
+      WebAXObject obj = WebAXObject::FromWebDocumentByID(document, node.id);
+      if (obj.IsDetached())
+        continue;
+
+      if (!has_injected_stylesheet_) {
+        document.InsertStyleSheet(
+            "[imageannotation=annotationPending] { outline: 3px solid #9ff; } "
+            "[imageannotation=annotationSucceeded] { outline: 3px solid #3c3; "
+            "} "
+            "[imageannotation=annotationEmpty] { outline: 3px solid #ee6; } "
+            "[imageannotation=annotationAdult] { outline: 3px solid #f90; } "
+            "[imageannotation=annotationProcessFailed] { outline: 3px solid "
+            "#c00; } ");
+        has_injected_stylesheet_ = true;
+      }
+
+      WebNode web_node = obj.GetNode();
+      if (web_node.IsNull() || !web_node.IsElementNode())
+        continue;
+
+      WebElement element = web_node.To<WebElement>();
+      std::string status_str = ui::ToString(status);
+      if (element.GetAttribute("imageannotation").Utf8() != status_str)
+        element.SetAttribute("imageannotation",
+                             blink::WebString::FromUTF8(status_str));
+
+      std::string title = "%" + status_str;
+      std::string annotation =
+          node.GetStringAttribute(ax::mojom::StringAttribute::kImageAnnotation);
+      if (!annotation.empty())
+        title = title + ": " + annotation;
+      if (element.GetAttribute("title").Utf8() != title) {
+        element.SetAttribute("title", blink::WebString::FromUTF8(title));
+      }
     }
   }
 }
