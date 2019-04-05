@@ -248,6 +248,8 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->throttling_profile_id = request_info->devtools_frame_token;
   new_request->transition_type = request_info->common_params.transition;
   new_request->previews_state = request_info->common_params.previews_state;
+  new_request->devtools_request_id =
+      request_info->devtools_navigation_token.ToString();
   return new_request;
 }
 
