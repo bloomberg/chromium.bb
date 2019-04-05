@@ -17,7 +17,6 @@ namespace {
 // ContentSuggestionsService.
 constexpr KnownCategories kKnownCategoriesDefaultOrder[] = {
     KnownCategories::READING_LIST,
-    KnownCategories::DOWNLOADS,
     KnownCategories::ARTICLES,
 };
 }  // namespace

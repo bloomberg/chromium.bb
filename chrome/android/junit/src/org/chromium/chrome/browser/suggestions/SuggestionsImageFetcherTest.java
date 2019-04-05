@@ -31,7 +31,6 @@ import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.suggestions.ImageFetcher.DownloadThumbnailRequest;
 import org.chromium.chrome.browser.widget.ThumbnailProvider;
 import org.chromium.chrome.test.support.DisableHistogramsRule;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
@@ -92,8 +91,7 @@ public class SuggestionsImageFetcherTest {
         }
 
         @KnownCategories
-        int[] categoriesThatDontFetch =
-                new int[] {KnownCategories.DOWNLOADS, KnownCategories.READING_LIST};
+        int[] categoriesThatDontFetch = new int[] {KnownCategories.READING_LIST};
         for (@KnownCategories int category : categoriesThatDontFetch) {
             SnippetArticle suggestion = createDummySuggestion(category);
             imageFetcher.makeFaviconRequest(suggestion, mockCallback);
@@ -102,21 +100,6 @@ public class SuggestionsImageFetcherTest {
                     .fetchSuggestionFavicon(
                             eq(suggestion), anyInt(), anyInt(), any(Callback.class));
         }
-    }
-
-    @Test
-    public void testDownloadThumbnailFetch() {
-        ImageFetcher imageFetcher =
-                new ImageFetcher(mSuggestionsSource, mock(Profile.class), mReferencePool);
-
-        SnippetArticle suggestion = createDummySuggestion(KnownCategories.DOWNLOADS);
-
-        DownloadThumbnailRequest request =
-                imageFetcher.makeDownloadThumbnailRequest(suggestion, IMAGE_SIZE_PX);
-        verify(mThumbnailProvider).getThumbnail(eq(request));
-
-        request.cancel();
-        verify(mThumbnailProvider).cancelRetrieval(eq(request));
     }
 
     @SuppressWarnings("unchecked")

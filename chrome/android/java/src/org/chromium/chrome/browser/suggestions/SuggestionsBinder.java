@@ -26,7 +26,6 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
-import org.chromium.base.Promise;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
@@ -70,9 +69,6 @@ public class SuggestionsBinder {
     boolean mShowThumbnail;
     boolean mHasVideoBadge;
     boolean mHasOfflineBadge;
-
-    @Nullable
-    private ImageFetcher.DownloadThumbnailRequest mThumbnailRequest;
 
     private SnippetArticle mSuggestion;
 
@@ -209,20 +205,12 @@ public class SuggestionsBinder {
     }
 
     private void setThumbnail() {
-        // If there's still a pending thumbnail fetch, cancel it.
-        cancelThumbnailFetch();
-
         // mThumbnailView's visibility is modified in updateFieldsVisibility().
         if (mThumbnailView.getVisibility() != View.VISIBLE) return;
 
         Drawable thumbnail = mSuggestion.getThumbnail();
         if (thumbnail != null) {
             setThumbnail(thumbnail);
-            return;
-        }
-
-        if (mSuggestion.isDownload()) {
-            setDownloadThumbnail();
             return;
         }
 
@@ -244,42 +232,6 @@ public class SuggestionsBinder {
         // Fetch thumbnail for the current article.
         mImageFetcher.makeArticleThumbnailRequest(
                 mSuggestion, new FetchThumbnailCallback(mSuggestion, mThumbnailSize));
-    }
-
-    private void setDownloadThumbnail() {
-        assert mSuggestion.isDownload();
-        if (!mSuggestion.isAssetDownload()) {
-            setThumbnailFromFileType(DownloadFilter.Type.PAGE);
-            return;
-        }
-
-        @DownloadFilter.Type
-        int fileType = DownloadFilter.fromMimeType(mSuggestion.getAssetDownloadMimeType());
-        if (fileType == DownloadFilter.Type.IMAGE) {
-            // For image downloads, attempt to fetch a thumbnail.
-            ImageFetcher.DownloadThumbnailRequest thumbnailRequest =
-                    mImageFetcher.makeDownloadThumbnailRequest(mSuggestion, mThumbnailSize);
-
-            Promise<Bitmap> thumbnailReceivedPromise = thumbnailRequest.getPromise();
-
-            if (thumbnailReceivedPromise.isFulfilled()) {
-                // If the thumbnail was cached, then it will be retrieved synchronously, the promise
-                // will be fulfilled and we can set the thumbnail immediately.
-                verifyBitmap(thumbnailReceivedPromise.getResult());
-                setThumbnail(ThumbnailGradient.createDrawableWithGradientIfNeeded(
-                        thumbnailReceivedPromise.getResult(), mCardContainerView.getResources()));
-
-                return;
-            }
-
-            mThumbnailRequest = thumbnailRequest;
-
-            // Queue a callback to be called after the thumbnail is retrieved asynchronously.
-            thumbnailReceivedPromise.then(new FetchThumbnailCallback(mSuggestion, mThumbnailSize));
-        }
-
-        // Set a placeholder for the file type.
-        setThumbnailFromFileType(fileType);
     }
 
     private void setThumbnail(Drawable thumbnail) {
@@ -316,13 +268,6 @@ public class SuggestionsBinder {
         drawable.setBounds(0, 0, faviconSizePx, faviconSizePx);
         mPublisherTextView.setCompoundDrawablesRelative(drawable, null, null, null);
         mPublisherTextView.setVisibility(View.VISIBLE);
-    }
-
-    private void cancelThumbnailFetch() {
-        if (mThumbnailRequest != null) {
-            mThumbnailRequest.cancel();
-            mThumbnailRequest = null;
-        }
     }
 
     private void fadeThumbnailIn(Drawable thumbnail) {

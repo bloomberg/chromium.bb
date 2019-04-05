@@ -144,11 +144,6 @@ public class ActionItem extends OptionalLeaf {
         uiDelegate.getEventReporter().onMoreButtonClicked(this);
 
         switch (mCategoryInfo.getAdditionalAction()) {
-            case ContentSuggestionsAdditionalAction.VIEW_ALL:
-                // The action does not reach the backend, so we record it here.
-                SuggestionsMetrics.recordActionViewAll();
-                mCategoryInfo.performViewAllAction(uiDelegate.getNavigationDelegate());
-                return;
             case ContentSuggestionsAdditionalAction.FETCH:
                 mParentSection.fetchSuggestions(onFailure, onNoNewSuggestions);
                 return;

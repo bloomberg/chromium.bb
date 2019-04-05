@@ -239,46 +239,6 @@ public class ArticleSnippetsTest {
     @Test
     @MediumTest
     @Feature({"ArticleSnippets", "RenderTest"})
-    public void testDownloadSuggestion() throws IOException {
-        String downloadFilePath =
-                UrlUtils.getIsolatedTestFilePath("chrome/test/data/android/capybara.jpg");
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            SnippetArticle downloadSuggestion = new SnippetArticle(KnownCategories.DOWNLOADS, "id1",
-                    "test_image.jpg", "example.com", "http://example.com",
-                    mTimestamp, // Publish timestamp
-                    10f, // Score
-                    mTimestamp, // Fetch timestamp
-                    false, // Is video suggestion
-                    null); // Thumbnail dominant color
-            downloadSuggestion.setAssetDownloadData("asdf", downloadFilePath, "image/jpeg");
-            SuggestionsCategoryInfo downloadsCategory = new SuggestionsCategoryInfo(
-                    KnownCategories.DOWNLOADS, "Downloads", ContentSuggestionsCardLayout.FULL_CARD,
-                    ContentSuggestionsAdditionalAction.NONE,
-                    /* show_if_empty = */ true, "No suggestions");
-
-            mSuggestion.onBindViewHolder(downloadSuggestion, downloadsCategory);
-            mContentView.addView(mSuggestion.itemView);
-        });
-
-        mRenderTestRule.render(mSuggestion.itemView, "download_snippet_placeholder");
-
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        List<ThumbnailRequest> requests = mThumbnailProvider.getRequests();
-        Assert.assertEquals(1, requests.size());
-        ThumbnailRequest request = requests.get(0);
-        Assert.assertEquals(downloadFilePath, request.getFilePath());
-
-        Bitmap thumbnail = BitmapFactory.decodeFile(downloadFilePath);
-
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mThumbnailProvider.fulfillRequest(request, thumbnail); });
-
-        mRenderTestRule.render(mSuggestion.itemView, "download_snippet_thumbnail");
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"ArticleSnippets", "RenderTest"})
     public void testVideoSuggestion() throws IOException {
         SuggestionsCategoryInfo categoryInfo = new SuggestionsCategoryInfo(FULL_CATEGORY,
                 "Section Title", ContentSuggestionsCardLayout.FULL_CARD,

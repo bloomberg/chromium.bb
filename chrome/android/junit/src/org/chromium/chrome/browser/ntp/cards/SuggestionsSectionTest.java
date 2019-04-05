@@ -527,23 +527,6 @@ public class SuggestionsSectionTest {
 
     @Test
     @Feature({"Ntp"})
-    public void testViewAllAction() {
-        // When all the actions are enabled, ViewAll always has the priority and is shown.
-
-        // Spy so that VerifyAction can check methods being called.
-        SuggestionsCategoryInfo info =
-                spy(new CategoryInfoBuilder(TEST_CATEGORY_ID)
-                                .withAction(ContentSuggestionsAdditionalAction.VIEW_ALL)
-                                .showIfEmpty()
-                                .build());
-        SuggestionsSection section = createSection(info);
-
-        assertTrue(section.getActionItemForTesting().isVisible());
-        verifyAction(section, ContentSuggestionsAdditionalAction.VIEW_ALL);
-    }
-
-    @Test
-    @Feature({"Ntp"})
     public void testFetchAction() {
         // When only FetchMore is shown when enabled.
 
@@ -1091,10 +1074,6 @@ public class SuggestionsSectionTest {
         if (action != ContentSuggestionsAdditionalAction.NONE) {
             section.getActionItemForTesting().performAction(mUiDelegate, null, null);
         }
-
-        verify(section.getCategoryInfo(),
-                (action == ContentSuggestionsAdditionalAction.VIEW_ALL ? times(1) : never()))
-                .performViewAllAction(mUiDelegate.getNavigationDelegate());
 
         // noinspection unchecked -- See https://crbug.com/740162 for rationale.
         verify(mUiDelegate.getSuggestionsSource(),

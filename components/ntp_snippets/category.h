@@ -23,7 +23,7 @@ enum class KnownCategories {
   RECENT_TABS_DEPRECATED,
 
   // Pages downloaded by the user for offline consumption.
-  DOWNLOADS,
+  DOWNLOADS_DEPRECATED,
 
   // Recently used bookmarks.
   BOOKMARKS_DEPRECATED,

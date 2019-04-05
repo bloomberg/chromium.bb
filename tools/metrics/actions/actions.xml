@@ -11870,6 +11870,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileNTPSwitchToBookmarks">
+  <obsolete>
+    Removed with deprecation of Bookmark suggestions category.
+  </obsolete>
   <owner>ianwen@chromium.org</owner>
   <description>
     Action indicating the user has clicked the boomkark button on NTP to swith
@@ -11878,6 +11881,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileNTPSwitchToDownloadManager">
+  <obsolete>
+    Removed with deprecation of Download suggestions category.
+  </obsolete>
   <owner>bauerb@chromium.org</owner>
   <description>
     Android: User clicked on the &quot;More&quot; card at the end of the section
@@ -19980,6 +19986,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Suggestions.Category.ViewAll">
+  <obsolete>
+    Removed with deprecation of Download suggestions category.
+  </obsolete>
   <owner>finkm@chromium.org</owner>
   <owner>dgn@chromium.org</owner>
   <description>
