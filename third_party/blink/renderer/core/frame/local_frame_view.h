@@ -734,25 +734,8 @@ class CORE_EXPORT LocalFrameView final
     STACK_ALLOCATED();
 
    public:
-    DisallowLayoutInvalidationScope(LocalFrameView* view)
-        : local_frame_view_(view) {
-      local_frame_view_->allows_layout_invalidation_after_layout_clean_ = false;
-      local_frame_view_->ForAllChildLocalFrameViews(
-          [](LocalFrameView& frame_view) {
-            if (!frame_view.ShouldThrottleRendering())
-              frame_view.CheckDoesNotNeedLayout();
-            frame_view.allows_layout_invalidation_after_layout_clean_ = false;
-          });
-    }
-    ~DisallowLayoutInvalidationScope() {
-      local_frame_view_->allows_layout_invalidation_after_layout_clean_ = true;
-      local_frame_view_->ForAllChildLocalFrameViews(
-          [](LocalFrameView& frame_view) {
-            if (!frame_view.ShouldThrottleRendering())
-              frame_view.CheckDoesNotNeedLayout();
-            frame_view.allows_layout_invalidation_after_layout_clean_ = true;
-          });
-    }
+    explicit DisallowLayoutInvalidationScope(LocalFrameView* view);
+    ~DisallowLayoutInvalidationScope();
 
    private:
     UntracedMember<LocalFrameView> local_frame_view_;
