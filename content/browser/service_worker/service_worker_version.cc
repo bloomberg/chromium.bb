@@ -16,6 +16,7 @@
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -40,6 +41,7 @@
 #include "content/public/common/result_codes.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/common/service_worker/service_worker_type_converters.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
@@ -59,8 +61,8 @@ constexpr base::TimeDelta kStartInstalledWorkerTimeout =
 // Timeout for a request to be handled.
 constexpr base::TimeDelta kRequestTimeout = base::TimeDelta::FromMinutes(5);
 
-// Default delay for scheduled update.
-constexpr base::TimeDelta kUpdateDelay = base::TimeDelta::FromSeconds(1);
+const base::FeatureParam<int> kUpdateDelayParam{
+    &blink::features::kServiceWorkerUpdateDelay, "update_delay_in_ms", 1000};
 
 const char kClaimClientsStateErrorMesage[] =
     "Only the active worker can claim clients.";
@@ -194,6 +196,10 @@ void DidNavigateClient(
     error_msg.emplace("Cannot navigate to URL: " + url.spec());
   }
   std::move(callback).Run(success, std::move(client), error_msg);
+}
+
+base::TimeDelta GetUpdateDelay() {
+  return base::TimeDelta::FromMilliseconds(kUpdateDelayParam.Get());
 }
 
 }  // namespace
@@ -515,7 +521,8 @@ void ServiceWorkerVersion::ScheduleUpdate() {
   // Protect |this| until the timer fires, since we may be stopping
   // and soon no one might hold a reference to us.
   context_->ProtectVersion(base::WrapRefCounted(this));
-  update_timer_.Start(FROM_HERE, kUpdateDelay,
+
+  update_timer_.Start(FROM_HERE, GetUpdateDelay(),
                       base::BindOnce(&ServiceWorkerVersion::StartUpdate,
                                      weak_factory_.GetWeakPtr()));
 }

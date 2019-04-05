@@ -161,6 +161,11 @@ const base::Feature kServiceWorkerParallelSideDataReading{
 const base::Feature kServiceWorkerAggressiveCodeCache{
     "ServiceWorkerAggressiveCodeCache", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Experiment of the delay from navigation to starting an update of a service
+// worker's script.
+const base::Feature kServiceWorkerUpdateDelay{
+    "ServiceWorkerUpdateDelay", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Freeze scheduler task queues in background after allowed grace time.
 // "stop" is a legacy name.
 const base::Feature kStopInBackground {
