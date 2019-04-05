@@ -68,6 +68,8 @@ DownloadServiceFactory::~DownloadServiceFactory() = default;
 
 KeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
+  Profile* profile = Profile::FromBrowserContext(context);
+
   auto clients = std::make_unique<download::DownloadClientMap>();
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
@@ -86,10 +88,9 @@ KeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
 
 #if defined(CHROMEOS)
   if (!context->IsOffTheRecord()) {
-    clients->insert(
-        std::make_pair(download::DownloadClient::PLUGIN_VM_IMAGE,
-                       std::make_unique<plugin_vm::PluginVmImageDownloadClient>(
-                           Profile::FromBrowserContext(context))));
+    clients->insert(std::make_pair(
+        download::DownloadClient::PLUGIN_VM_IMAGE,
+        std::make_unique<plugin_vm::PluginVmImageDownloadClient>(profile)));
   }
 #endif
 
@@ -105,9 +106,9 @@ KeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
         SystemNetworkContextManager::GetInstance()->GetSharedURLLoaderFactory();
 
     return download::BuildInMemoryDownloadService(
-        context, std::move(clients), content::GetNetworkConnectionTracker(),
-        base::FilePath(), blob_context_getter, io_task_runner,
-        url_loader_factory);
+        profile->GetSimpleFactoryKey(), std::move(clients),
+        content::GetNetworkConnectionTracker(), base::FilePath(),
+        blob_context_getter, io_task_runner, url_loader_factory);
   } else {
     // Build download service for normal profile.
     base::FilePath storage_dir;
