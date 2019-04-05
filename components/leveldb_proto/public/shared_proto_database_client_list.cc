@@ -41,6 +41,8 @@ std::string SharedProtoDatabaseClientList::ProtoDbTypeToString(
       return "UsageStatsTokenMapping";
     case ProtoDbType::DOM_DISTILLER_STORE:
       return "DomDistillerStore";
+    case ProtoDbType::CACHED_IMAGE_METADATA_STORE:
+      return "CachedImageFetcherDatabase";
     case ProtoDbType::LAST:
       NOTREACHED();
       break;
