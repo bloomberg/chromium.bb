@@ -251,6 +251,8 @@ class PLATFORM_EXPORT ResourceFetcher
 
   mojom::blink::BlobRegistry* GetBlobRegistry();
 
+  FrameScheduler* GetFrameScheduler();
+
  private:
   friend class ResourceCacheValidationSuppressor;
   class DetachableConsoleLogger;
@@ -385,6 +387,9 @@ class PLATFORM_EXPORT ResourceFetcher
   HeapHashSet<Member<ResourceLoader>> non_blocking_loaders_;
 
   std::unique_ptr<HashSet<String>> preloaded_urls_for_test_;
+
+  // TODO(altimin): Move FrameScheduler to oilpan.
+  base::WeakPtr<FrameScheduler> frame_scheduler_;
 
   // Timeout timer for keepalive requests.
   TaskHandle keepalive_loaders_task_handle_;

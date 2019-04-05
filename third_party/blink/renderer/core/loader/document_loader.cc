@@ -1317,6 +1317,17 @@ void DocumentLoader::DidCommitNavigation(
       load_type_ == WebFrameLoadType::kReload
           ? FrameScheduler::NavigationType::kReload
           : FrameScheduler::NavigationType::kOther);
+  if (response_.CacheControlContainsNoCache()) {
+    GetFrame()->GetFrameScheduler()->RegisterStickyFeature(
+        SchedulingPolicy::Feature::kMainResourceHasCacheControlNoCache,
+        {SchedulingPolicy::DisableBackForwardCache()});
+  }
+  if (response_.CacheControlContainsNoStore()) {
+    GetFrame()->GetFrameScheduler()->RegisterStickyFeature(
+        SchedulingPolicy::Feature::kMainResourceHasCacheControlNoStore,
+        {SchedulingPolicy::DisableBackForwardCache()});
+  }
+
   // When a new navigation commits in the frame, subresource loading should be
   // resumed.
   frame_->ResumeSubresourceLoading();

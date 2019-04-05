@@ -495,6 +495,8 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
           task_runner_,
           this,
           &ResourceFetcher::ResourceTimingReportTimerFired),
+      frame_scheduler_(init.frame_scheduler ? init.frame_scheduler->GetWeakPtr()
+                                            : nullptr),
       auto_load_images_(true),
       images_enabled_(true),
       allow_stale_resources_(false),
@@ -2041,6 +2043,10 @@ mojom::blink::BlobRegistry* ResourceFetcher::GetBlobRegistry() {
         MakeRequest(&blob_registry_ptr_, task_runner_));
   }
   return blob_registry_ptr_.get();
+}
+
+FrameScheduler* ResourceFetcher::GetFrameScheduler() {
+  return frame_scheduler_.get();
 }
 
 void ResourceFetcher::Trace(blink::Visitor* visitor) {

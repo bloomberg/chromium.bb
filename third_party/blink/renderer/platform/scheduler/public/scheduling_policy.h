@@ -19,15 +19,16 @@ struct PLATFORM_EXPORT SchedulingPolicy {
     kWebSocket = 0,
     kWebRTC = 1,
 
-    // TODO(altimin): This is a temporary placeholder for testing the
-    // sticky behaviour. Delete when we add real ones.
-    kStickyFeatureForTesting = 2,
+    kMainResourceHasCacheControlNoCache = 2,
+    kMainResourceHasCacheControlNoStore = 3,
+    kSubresourceHasCacheControlNoCache = 4,
+    kSubresourceHasCacheControlNoStore = 5,
 
-    kCount = 3
+    kCount = 6
   };
 
   // Sticky features can't be unregistered and remain active for the rest
-  // of the lifetime of the document.
+  // of the lifetime of the page.
   static bool IsFeatureSticky(Feature feature);
 
   // List of opt-outs which form a policy.

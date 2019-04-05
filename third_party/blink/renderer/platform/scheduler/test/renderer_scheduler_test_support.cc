@@ -91,6 +91,7 @@ class SimpleFrameScheduler : public FrameScheduler {
                              const SchedulingPolicy& policy) override {}
   void OnStoppedUsingFeature(SchedulingPolicy::Feature feature,
                              const SchedulingPolicy& policy) override {}
+  base::WeakPtr<FrameScheduler> GetWeakPtr() override { return nullptr; }
 
  private:
   PageScheduler* page_scheduler_;

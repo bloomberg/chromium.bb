@@ -118,6 +118,8 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   void OnStoppedUsingFeature(SchedulingPolicy::Feature feature,
                              const SchedulingPolicy& policy) override;
 
+  base::WeakPtr<FrameScheduler> GetWeakPtr() override;
+
   scoped_refptr<base::SingleThreadTaskRunner> ControlTaskRunner();
 
   void UpdatePolicy();

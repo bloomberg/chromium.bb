@@ -136,6 +136,9 @@ class FrameScheduler : public FrameOrWorkerScheduler {
   // exists.
   virtual std::unique_ptr<blink::mojom::blink::PauseSubresourceLoadingHandle>
   GetPauseSubresourceLoadingHandle() = 0;
+
+  // TODO(altimin): Move FrameScheduler object to oilpan.
+  virtual base::WeakPtr<FrameScheduler> GetWeakPtr() = 0;
 };
 
 }  // namespace blink

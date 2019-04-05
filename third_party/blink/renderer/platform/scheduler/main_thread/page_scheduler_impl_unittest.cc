@@ -1662,21 +1662,23 @@ TEST_F(PageSchedulerImplTest, BackForwardCacheOptOut_FrameNavigated) {
       testing::UnorderedElementsAre(SchedulingPolicy::Feature::kWebSocket));
 
   frame_scheduler_->RegisterStickyFeature(
-      SchedulingPolicy::Feature::kStickyFeatureForTesting,
+      SchedulingPolicy::Feature::kMainResourceHasCacheControlNoStore,
       {SchedulingPolicy::DisableBackForwardCache()});
 
-  EXPECT_THAT(page_scheduler_->GetActiveFeaturesOptingOutFromBackForwardCache(),
-              testing::UnorderedElementsAre(
-                  SchedulingPolicy::Feature::kWebSocket,
-                  SchedulingPolicy::Feature::kStickyFeatureForTesting));
+  EXPECT_THAT(
+      page_scheduler_->GetActiveFeaturesOptingOutFromBackForwardCache(),
+      testing::UnorderedElementsAre(
+          SchedulingPolicy::Feature::kWebSocket,
+          SchedulingPolicy::Feature::kMainResourceHasCacheControlNoStore));
 
   // Same document navigations don't affect anything.
   frame_scheduler_->DidCommitProvisionalLoad(
       false, FrameScheduler::NavigationType::kSameDocument);
-  EXPECT_THAT(page_scheduler_->GetActiveFeaturesOptingOutFromBackForwardCache(),
-              testing::UnorderedElementsAre(
-                  SchedulingPolicy::Feature::kWebSocket,
-                  SchedulingPolicy::Feature::kStickyFeatureForTesting));
+  EXPECT_THAT(
+      page_scheduler_->GetActiveFeaturesOptingOutFromBackForwardCache(),
+      testing::UnorderedElementsAre(
+          SchedulingPolicy::Feature::kWebSocket,
+          SchedulingPolicy::Feature::kMainResourceHasCacheControlNoStore));
 
   // Regular navigations reset sticky features.
   frame_scheduler_->DidCommitProvisionalLoad(
