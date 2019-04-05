@@ -1348,17 +1348,6 @@ public class ContextualSearchUma {
     }
 
     /**
-     * Logs that the conditions are right to force the translation one-box, and whether it
-     * was actually forced or not.
-     * @param didForceTranslate Whether the translation onebox was forced.
-     */
-    public static void logTranslateOnebox(boolean didForceTranslate) {
-        int code = didForceTranslate ? ForceTranslate.DID_FORCE : ForceTranslate.WOULD_FORCE;
-        RecordHistogram.recordEnumeratedHistogram(
-                "Search.ContextualSearchShouldTranslate", code, ForceTranslate.NUM_ENTRIES);
-    }
-
-    /**
      * Logs that whether or not the conditions are met to perform a translation.
      * @param isConditionMet Whether the translation conditions were met.
      */

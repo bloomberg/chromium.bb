@@ -2300,6 +2300,12 @@ const char kContextualSearchSecondTapDescription[] =
     "Enables triggering on a second tap gesture even when Ranker would "
     "normally suppress that tap.";
 
+const char kContextualSearchTranslationModelName[] =
+    "Contextual Search translation using the Chrome translate model.";
+const char kContextualSearchTranslationModelDescription[] =
+    "Enables triggering translation in Contextual Search according to the "
+    "Chrome translation model semantics.";
+
 const char kContextualSearchUnityIntegrationName[] =
     "Contextual Search integration with Unified Consent";
 const char kContextualSearchUnityIntegrationDescription[] =
