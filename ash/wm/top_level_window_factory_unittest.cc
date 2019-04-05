@@ -108,8 +108,6 @@ TEST_F(TopLevelWindowFactoryTest, CreateTopLevelWindow) {
   ASSERT_TRUE(window->parent());
   EXPECT_EQ(kShellWindowId_DefaultContainer, window->parent()->id());
   EXPECT_EQ(bounds, window->bounds());
-  EXPECT_EQ(WidgetCreationType::FOR_CLIENT,
-            window->GetProperty(kWidgetCreationTypeKey));
   EXPECT_FALSE(window->IsVisible());
 }
 
