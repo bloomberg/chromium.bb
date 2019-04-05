@@ -768,7 +768,7 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
             model_arg = '--model=' + model
             key_id_list = commands.RunCrosConfigHost(
                 self._build_root, self._current_board,
-                [model_arg, 'get', '/firmware', 'key-id'])
+                [model_arg, 'get', '/firmware-signing', 'key-id'])
             key_id = None
             if len(key_id_list) == 1:
               key_id = key_id_list[0]
