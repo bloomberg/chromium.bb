@@ -679,8 +679,7 @@ sk_sp<SkPromiseImageTexture> SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
     *shared_image_out = std::move(shared_image);
   }
   if (*shared_image_out) {
-    auto promise_texture =
-        (*shared_image_out)->BeginReadAccess(output_sk_surface());
+    auto promise_texture = (*shared_image_out)->BeginReadAccess();
     DLOG_IF(ERROR, !promise_texture)
         << "Failed to begin read access for SharedImageRepresentationSkia";
     return promise_texture;

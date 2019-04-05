@@ -29,7 +29,7 @@ class ExternalVkImageSkiaRepresentation : public SharedImageRepresentationSkia {
       int final_msaa_count,
       const SkSurfaceProps& surface_props) override;
   void EndWriteAccess(sk_sp<SkSurface> surface) override;
-  sk_sp<SkPromiseImageTexture> BeginReadAccess(SkSurface* sk_surface) override;
+  sk_sp<SkPromiseImageTexture> BeginReadAccess() override;
   void EndReadAccess() override;
 
  private:
@@ -69,6 +69,12 @@ class ExternalVkImageSkiaRepresentation : public SharedImageRepresentationSkia {
 
   VkFence CreateFence();
 
+  enum AccessMode {
+    kNone = 0,
+    kRead = 1,
+    kWrite = 2,
+  };
+  AccessMode access_mode_ = kNone;
   sk_sp<SkSurface> surface_;
 
   std::vector<VkSemaphore> begin_access_semaphores_;

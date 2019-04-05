@@ -57,6 +57,21 @@ enum class RepresentationAccessMode {
   kWrite,
 };
 
+std::ostream& operator<<(std::ostream& os, RepresentationAccessMode mode) {
+  switch (mode) {
+    case RepresentationAccessMode::kNone:
+      os << "kNone";
+      break;
+    case RepresentationAccessMode::kRead:
+      os << "kRead";
+      break;
+    case RepresentationAccessMode::kWrite:
+      os << "kWrite";
+      break;
+  }
+  return os;
+}
+
 void DestroySemaphore(VkDevice vk_device,
                       VkQueue vk_queue,
                       VkSemaphore semaphore) {
@@ -121,7 +136,6 @@ sk_sp<SkPromiseImageTexture> BeginVulkanAccess(
 void EndVulkanAccess(gpu::VulkanImplementation* vk_implementation,
                      VkDevice vk_device,
                      VkQueue vk_queue,
-                     SkSurface** surface,
                      base::ScopedFD* sync_fd) {
   // Create a vk semaphore which can be exported.
   VkExportSemaphoreCreateInfo export_info;
@@ -138,23 +152,15 @@ void EndVulkanAccess(gpu::VulkanImplementation* vk_implementation,
       vkCreateSemaphore(vk_device, &sem_info, nullptr, &vk_semaphore);
   if (result != VK_SUCCESS) {
     LOG(ERROR) << "vkCreateSemaphore failed";
-    (*surface) = nullptr;
     return;
   }
-  GrBackendSemaphore gr_semaphore;
-  gr_semaphore.initVulkan(vk_semaphore);
 
-  // If GrSemaphoresSubmitted::kNo is returned, the GPU back-end did not
-  // create or add any semaphores to signal on the GPU; the caller should not
-  // instruct the GPU to wait on any of the semaphores.
-  if ((*surface)->flushAndSignalSemaphores(1, &gr_semaphore) ==
-      GrSemaphoresSubmitted::kNo) {
+  if (!SubmitSignalVkSemaphore(vk_queue, vk_semaphore,
+                               VK_NULL_HANDLE /* vk_fence */)) {
+    LOG(ERROR) << "Failed to wait on semaphore";
     vkDestroySemaphore(vk_device, vk_semaphore, nullptr);
-    (*surface) = nullptr;
     return;
   }
-  // TODO(ericrk): Keep the surface around for re-use.
-  (*surface) = nullptr;
 
   // Export a sync fd from the semaphore.
   SemaphoreHandle semaphore_handle =
@@ -345,11 +351,12 @@ class SharedImageRepresentationSkiaGLAHB
       GrContext* gr_context,
       int final_msaa_count,
       const SkSurfaceProps& surface_props) override {
+    DCHECK_EQ(mode_, RepresentationAccessMode::kNone);
     CheckContext();
+
     // if there is already a surface_, it means previous BeginWriteAccess
     // doesn't have a corresponding EndWriteAccess.
-    if (surface_)
-      return nullptr;
+    DCHECK(!surface_);
 
     base::ScopedFD sync_fd;
     if (!ahb_backing()->BeginWrite(&sync_fd))
@@ -374,6 +381,7 @@ class SharedImageRepresentationSkiaGLAHB
   }
 
   void EndWriteAccess(sk_sp<SkSurface> surface) override {
+    DCHECK_EQ(mode_, RepresentationAccessMode::kWrite);
     DCHECK(surface_);
     DCHECK_EQ(surface.get(), surface_);
     DCHECK(surface->unique());
@@ -383,8 +391,10 @@ class SharedImageRepresentationSkiaGLAHB
     EndWriteAccessInternal();
   }
 
-  sk_sp<SkPromiseImageTexture> BeginReadAccess(SkSurface* sk_surface) override {
+  sk_sp<SkPromiseImageTexture> BeginReadAccess() override {
+    DCHECK_EQ(mode_, RepresentationAccessMode::kNone);
     CheckContext();
+
     base::ScopedFD write_sync_fd;
     if (!ahb_backing()->BeginRead(this, &write_sync_fd))
       return nullptr;
@@ -397,6 +407,7 @@ class SharedImageRepresentationSkiaGLAHB
   }
 
   void EndReadAccess() override {
+    DCHECK_EQ(mode_, RepresentationAccessMode::kRead);
     CheckContext();
 
     base::ScopedFD sync_fd = CreateEglFenceAndExportFd();
@@ -459,12 +470,7 @@ class SharedImageRepresentationSkiaVkAHB
   }
 
   ~SharedImageRepresentationSkiaVkAHB() override {
-    if (mode_ == RepresentationAccessMode::kRead) {
-      EndReadAccess();
-    } else if (mode_ == RepresentationAccessMode::kWrite) {
-      EndWriteAccessInternal();
-    }
-
+    DCHECK_EQ(mode_, RepresentationAccessMode::kNone);
     DCHECK(!surface_);
   }
 
@@ -472,9 +478,9 @@ class SharedImageRepresentationSkiaVkAHB
       GrContext* gr_context,
       int final_msaa_count,
       const SkSurfaceProps& surface_props) override {
+    DCHECK_EQ(mode_, RepresentationAccessMode::kNone);
     // If previous access has not ended.
-    if (surface_)
-      return nullptr;
+    DCHECK(!surface_);
 
     base::ScopedFD sync_fd;
     if (!ahb_backing()->BeginWrite(&sync_fd))
@@ -520,16 +526,14 @@ class SharedImageRepresentationSkiaVkAHB
   }
 
   void EndWriteAccess(sk_sp<SkSurface> surface) override {
+    DCHECK_EQ(mode_, RepresentationAccessMode::kWrite);
     DCHECK_EQ(surface.get(), surface_);
     DCHECK(surface->unique());
     EndWriteAccessInternal();
   }
 
-  sk_sp<SkPromiseImageTexture> BeginReadAccess(SkSurface* sk_surface) override {
-    // If previous access has not ended.
-    if (surface_)
-      return nullptr;
-    DCHECK(sk_surface);
+  sk_sp<SkPromiseImageTexture> BeginReadAccess() override {
+    DCHECK_EQ(mode_, RepresentationAccessMode::kNone);
 
     // Synchronise the read access with the writes.
     base::ScopedFD sync_fd;
@@ -559,24 +563,17 @@ class SharedImageRepresentationSkiaVkAHB
         vk_implementation(), vk_device(), vk_phy_device(), vk_queue(),
         ahb_backing()->GetAhbHandle(), size(), format(), std::move(semaphore));
 
-    // Cache the sk surface in the representation so that it can be used in the
-    // EndReadAccess. Also make sure previous surface_ have been consumed by
-    // EndReadAccess() call.
-    surface_ = sk_surface;
-
     mode_ = RepresentationAccessMode::kRead;
 
     return promise_texture;
   }
 
   void EndReadAccess() override {
-    // There should be a surface_ from the BeginReadAccess().
-    DCHECK_EQ(RepresentationAccessMode::kRead, mode_);
-    DCHECK(surface_);
+    DCHECK_EQ(mode_, RepresentationAccessMode::kRead);
+    DCHECK(!surface_);
 
     base::ScopedFD sync_fd;
-    EndVulkanAccess(vk_implementation(), vk_device(), vk_queue(), &surface_,
-                    &sync_fd);
+    EndVulkanAccess(vk_implementation(), vk_device(), vk_queue(), &sync_fd);
     // pass this sync fd to the backing.
     ahb_backing()->EndRead(this, std::move(sync_fd));
 
@@ -616,8 +613,8 @@ class SharedImageRepresentationSkiaVkAHB
     DCHECK(surface_);
 
     base::ScopedFD sync_fd;
-    EndVulkanAccess(vk_implementation(), vk_device(), vk_queue(), &surface_,
-                    &sync_fd);
+    EndVulkanAccess(vk_implementation(), vk_device(), vk_queue(), &sync_fd);
+    surface_ = nullptr;
     ahb_backing()->EndWrite(std::move(sync_fd));
 
     mode_ = RepresentationAccessMode::kNone;

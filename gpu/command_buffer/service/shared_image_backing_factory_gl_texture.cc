@@ -312,7 +312,7 @@ class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
     write_surface_ = nullptr;
   }
 
-  sk_sp<SkPromiseImageTexture> BeginReadAccess(SkSurface* sk_surface) override {
+  sk_sp<SkPromiseImageTexture> BeginReadAccess() override {
     CheckContext();
     static_cast<SharedImageBackingWithReadAccess*>(backing())
         ->BeginReadAccess();
