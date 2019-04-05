@@ -920,11 +920,6 @@ class BBJSONGenerator(object):
     # are defined only to be mirrored into trybots, and don't actually
     # exist on any of the waterfalls or consoles.
     return [
-      'ANGLE GPU Linux Release (Intel HD 630)',
-      'ANGLE GPU Linux Release (NVIDIA)',
-      'ANGLE GPU Mac Release (Intel)',
-      'ANGLE GPU Mac Retina Release (AMD)',
-      'ANGLE GPU Mac Retina Release (NVIDIA)',
       'ANGLE GPU Win10 Release (Intel HD 630)',
       'ANGLE GPU Win10 Release (NVIDIA)',
       'Dawn GPU Linux Release (Intel HD 630)',
