@@ -128,6 +128,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   GrBackendFormat GetGrBackendFormatForTexture(ResourceFormat resource_format,
                                                uint32_t gl_texture_target);
 
+  void CreateFallbackPromiseImage(SkColorType color_type);
+
   uint64_t sync_fence_release_ = 0;
 
   GpuServiceImpl* const gpu_service_;
@@ -171,6 +173,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
 
   // Observers for context lost.
   base::ObserverList<ContextLostObserver>::Unchecked observers_;
+
+  std::vector<bool> seen_resource_formats_;
 
   THREAD_CHECKER(thread_checker_);
 
