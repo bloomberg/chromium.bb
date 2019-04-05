@@ -299,7 +299,7 @@ class TestPrerenderContentsFactory : public PrerenderContents::Factory {
     explicit ExpectedContents(bool ignore);
     ~ExpectedContents();
 
-    FinalStatus final_status = FINAL_STATUS_MAX;
+    FinalStatus final_status = FINAL_STATUS_UNKNOWN;
     bool ignore = false;
     base::WeakPtr<TestPrerender> handle = nullptr;
   };

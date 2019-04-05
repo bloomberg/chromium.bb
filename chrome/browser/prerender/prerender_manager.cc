@@ -166,7 +166,7 @@ struct PrerenderManager::NavigationRecord {
   GURL url;
   base::TimeTicks time;
   Origin origin;
-  FinalStatus final_status = FINAL_STATUS_MAX;
+  FinalStatus final_status = FINAL_STATUS_UNKNOWN;
 };
 
 PrerenderManager::PrerenderManager(Profile* profile)
@@ -1205,7 +1205,7 @@ void PrerenderManager::SkipPrerenderContentsAndMaybePreconnect(
   }
 
   static_assert(
-      FINAL_STATUS_MAX == FINAL_STATUS_GWS_HOLDBACK + 1,
+      FINAL_STATUS_MAX == FINAL_STATUS_UNKNOWN + 1,
       "Consider whether a failed prerender should fallback to preconnect");
 }
 

@@ -72,6 +72,7 @@ const char* kFinalStatusNames[] = {
     "Low-End Device",
     "BrowserSwitcher Switch",
     "GWS Holdback",
+    "Unknown",
     "Max",
 };
 static_assert(base::size(kFinalStatusNames) == FINAL_STATUS_MAX + 1,
