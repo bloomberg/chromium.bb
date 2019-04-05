@@ -295,8 +295,6 @@ NavigationSimulatorImpl::CreateFromPending(WebContents* contents) {
       static_cast<WebContentsImpl*>(contents), test_frame_host));
   simulator->frame_tree_node_ = frame_tree_node;
   simulator->InitializeFromStartedRequest(request);
-  simulator->set_did_create_new_entry(
-      contents->GetController().GetPendingEntryIndex() == -1);
   return simulator;
 }
 
@@ -1175,10 +1173,22 @@ bool NavigationSimulatorImpl::DidCreateNewEntry() {
   if (ui::PageTransitionCoreTypeIs(transition_,
                                    ui::PAGE_TRANSITION_AUTO_SUBFRAME))
     return false;
-  if (reload_type_ != ReloadType::NONE)
+  if (reload_type_ != ReloadType::NONE ||
+      (request_ && FrameMsg_Navigate_Type::IsReload(
+                       request_->common_params().navigation_type))) {
     return false;
-  if (session_history_offset_)
+  }
+  if (session_history_offset_ ||
+      (request_ && FrameMsg_Navigate_Type::IsHistory(
+                       request_->common_params().navigation_type))) {
     return false;
+  }
+  if (request_ && (request_->common_params().navigation_type ==
+                       FrameMsg_Navigate_Type::RESTORE ||
+                   request_->common_params().navigation_type ==
+                       FrameMsg_Navigate_Type::RESTORE_WITH_POST)) {
+    return false;
+  }
 
   return true;
 }
@@ -1217,6 +1227,9 @@ NavigationSimulatorImpl::BuildDidCommitProvisionalLoadParams(
   params->history_list_was_cleared = history_list_was_cleared_;
   params->did_create_new_entry = DidCreateNewEntry();
   params->should_replace_current_entry = should_replace_current_entry_;
+
+  if (intended_as_new_entry_.has_value())
+    params->intended_as_new_entry = intended_as_new_entry_.value();
 
   if (failed_navigation) {
     // Note: Error pages must commit in a unique origin. So it is left unset.

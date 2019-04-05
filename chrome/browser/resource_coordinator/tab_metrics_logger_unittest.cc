@@ -179,7 +179,7 @@ TEST_F(TabMetricsLoggerTest, GetPinState) {
 // Tests navigation_entry_count.
 TEST_F(TabMetricsLoggerTest, GetNavigationEntryCount) {
   EXPECT_EQ(CurrentTabFeatures().navigation_entry_count, 1);
-  tab_activity_simulator_.Navigate(web_contents_, GURL(kChromiumUrl),
+  tab_activity_simulator_.Navigate(web_contents_, GURL(kExampleUrl),
                                    pg_metrics_.page_transition);
   EXPECT_EQ(CurrentTabFeatures().navigation_entry_count, 2);
   tab_activity_simulator_.Navigate(web_contents_, GURL(kChromiumUrl),
