@@ -22,7 +22,10 @@ proto_library("chrome_settings_full_runtime") {
 
   use_protobuf_full = true
 
-  proto_deps = [ "//components/policy:full_runtime_code_generate" ]
+  deps = [
+    "//components/policy:full_runtime_code_generate",
+    "//third_party/protobuf:protobuf_full",
+  ]
 }
 
 proto_library("traffic_annotation") {
@@ -32,9 +35,9 @@ proto_library("traffic_annotation") {
 
   import_dirs = [ "$root_gen_dir" + "/components/policy/proto" ]
 
-  proto_deps = [ "//components/policy:full_runtime_code_generate" ]
-
-  link_deps = [ ":chrome_settings_full_runtime" ]
+  deps = [
+    ":chrome_settings_full_runtime",
+  ]
 
   use_protobuf_full = true
 }
