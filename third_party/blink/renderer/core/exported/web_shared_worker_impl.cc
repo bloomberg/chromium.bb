@@ -206,6 +206,8 @@ void WebSharedWorkerImpl::DidTerminateWorkerThread() {
 
 void WebSharedWorkerImpl::Connect(MessagePortChannel web_channel) {
   DCHECK(IsMainThread());
+  if (asked_to_terminate_)
+    return;
   // The HTML spec requires to queue a connect event using the DOM manipulation
   // task source.
   // https://html.spec.whatwg.org/C/#shared-workers-and-the-sharedworker-interface
