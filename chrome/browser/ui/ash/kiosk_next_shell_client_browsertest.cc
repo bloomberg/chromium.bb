@@ -17,10 +17,12 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/ui/ash/kiosk_next_shell_client.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -94,6 +96,19 @@ IN_PROC_BROWSER_TEST_F(KioskNextShellClientTest, KioskNextShellLaunch) {
           user_manager::UserManager::Get()->GetActiveUser())),
       extension_misc::kKioskNextHomeAppId);
   EXPECT_TRUE(waiter.WaitForShownWithTimeout(TestTimeouts::action_timeout()));
+}
+
+IN_PROC_BROWSER_TEST_F(KioskNextShellClientTest, PRE_BrowserNotLaunched) {
+  LoginAndEnableKioskNextShellPref();
+}
+
+// Ensures that browser is not launched when feature is enabled and prefs allow.
+IN_PROC_BROWSER_TEST_F(KioskNextShellClientTest, BrowserNotLaunched) {
+  extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
+  Login("username");
+  Profile* profile = ProfileHelper::Get()->GetProfileByUser(
+      user_manager::UserManager::Get()->GetActiveUser());
+  EXPECT_EQ(0u, chrome::GetBrowserCount(profile));
 }
 
 // Checks that the Kiosk Next Home window does not launch in sign-in when

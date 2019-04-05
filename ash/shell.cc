@@ -256,7 +256,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   BluetoothPowerController::RegisterProfilePrefs(registry);
   CapsLockNotificationController::RegisterProfilePrefs(registry, for_test);
   DockedMagnifierController::RegisterProfilePrefs(registry, for_test);
-  KioskNextShellController::RegisterProfilePrefs(registry);
+  KioskNextShellController::RegisterProfilePrefs(registry, for_test);
   LoginScreenController::RegisterProfilePrefs(registry, for_test);
   LogoutButtonTray::RegisterProfilePrefs(registry);
   MessageCenterController::RegisterProfilePrefs(registry);

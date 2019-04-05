@@ -58,29 +58,26 @@ class KioskNextShellControllerTest : public AshTestBase {
   }
 
  protected:
-  void LoginKioskNextUser() {
+  void LoginKioskNextUser() { LoginUser(true); }
+
+  void LoginUser(bool enable_kiosk_next_shell) {
     TestSessionControllerClient* session_controller_client =
         GetSessionControllerClient();
 
     // Create session for KioskNext user.
     session_controller_client->AddUserSession(
         kTestUserEmail, user_manager::USER_TYPE_REGULAR,
-        true /* enable_settings */, false /* provide_pref_service */);
+        true /* enable_settings */, true /* provide_pref_service */);
 
-    // Create a KioskNext User and register its preferences.
-    auto pref_service = std::make_unique<TestingPrefServiceSimple>();
+    ash::SessionController* controller = Shell::Get()->session_controller();
 
-    // Initialize the default preferences.
-    Shell::RegisterUserProfilePrefs(pref_service->registry(),
-                                    true /* for_test */);
+    PrefService* pref_service = controller->GetUserPrefServiceForUser(
+        AccountId::FromUserEmail(kTestUserEmail));
 
-    // Set the user's KioskNextShell preference.
-    pref_service->SetUserPref(prefs::kKioskNextShellEnabled,
-                              std::make_unique<base::Value>(true));
-
-    // Provide PrefService for test user.
-    Shell::Get()->session_controller()->ProvideUserPrefServiceForTest(
-        AccountId::FromUserEmail(kTestUserEmail), std::move(pref_service));
+    if (enable_kiosk_next_shell) {
+      // Set the user's KioskNextShell preference.
+      pref_service->Set(prefs::kKioskNextShellEnabled, base::Value(true));
+    }
 
     session_controller_client->SwitchActiveUser(
         AccountId::FromUserEmail(kTestUserEmail));
@@ -101,7 +98,7 @@ TEST_F(KioskNextShellControllerTest, TestKioskNextNotEnabled) {
   EXPECT_FALSE(GetKioskNextShellController()->IsEnabled());
 
   // Login a regular user whose KioskNext pref has not been enabled.
-  SimulateNewUserFirstLogin("primary_user@test.com");
+  LoginUser(false /* enable_kiosk_next_shell */);
 
   // KioskNextShell is not enabled for regular users by default.
   EXPECT_FALSE(GetKioskNextShellController()->IsEnabled());
