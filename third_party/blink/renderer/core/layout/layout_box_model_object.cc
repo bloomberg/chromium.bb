@@ -437,30 +437,30 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
     }
   }
 
-  if (old_style && HasLayer() && !Layer()->NeedsRepaint()) {
-    if (old_style->BackfaceVisibility() != StyleRef().BackfaceVisibility()) {
-      // We need to repaint the layer to update the backface visibility value of
-      // the paint chunk.
+  if (old_style &&
+      old_style->BackfaceVisibility() != StyleRef().BackfaceVisibility()) {
+    SetNeedsPaintPropertyUpdate();
+  }
+
+  if (old_style && HasLayer() && !Layer()->NeedsRepaint() &&
+      diff.TransformChanged() &&
+      (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
+       !Layer()->HasStyleDeterminedDirectCompositingReasons())) {
+    // PaintLayerPainter::PaintLayerWithAdjustedRoot skips painting of a layer
+    // whose transform is not invertible, so we need to repaint the layer when
+    // invertible status changes.
+    TransformationMatrix old_transform;
+    TransformationMatrix new_transform;
+    old_style->ApplyTransform(
+        old_transform, LayoutSize(), ComputedStyle::kExcludeTransformOrigin,
+        ComputedStyle::kExcludeMotionPath,
+        ComputedStyle::kIncludeIndependentTransformProperties);
+    StyleRef().ApplyTransform(
+        new_transform, LayoutSize(), ComputedStyle::kExcludeTransformOrigin,
+        ComputedStyle::kExcludeMotionPath,
+        ComputedStyle::kIncludeIndependentTransformProperties);
+    if (old_transform.IsInvertible() != new_transform.IsInvertible())
       Layer()->SetNeedsRepaint();
-    } else if (diff.TransformChanged() &&
-               (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-                !Layer()->HasStyleDeterminedDirectCompositingReasons())) {
-      // PaintLayerPainter::PaintLayerWithAdjustedRoot skips painting of a layer
-      // whose transform is not invertible, so we need to repaint the layer when
-      // invertible status changes.
-      TransformationMatrix old_transform;
-      TransformationMatrix new_transform;
-      old_style->ApplyTransform(
-          old_transform, LayoutSize(), ComputedStyle::kExcludeTransformOrigin,
-          ComputedStyle::kExcludeMotionPath,
-          ComputedStyle::kIncludeIndependentTransformProperties);
-      StyleRef().ApplyTransform(
-          new_transform, LayoutSize(), ComputedStyle::kExcludeTransformOrigin,
-          ComputedStyle::kExcludeMotionPath,
-          ComputedStyle::kIncludeIndependentTransformProperties);
-      if (old_transform.IsInvertible() != new_transform.IsInvertible())
-        Layer()->SetNeedsRepaint();
-    }
   }
 }
 
