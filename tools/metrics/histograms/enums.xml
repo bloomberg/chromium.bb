@@ -36634,6 +36634,17 @@ Called by update_use_counter_css.py.-->
   <int value="1" label="Remote"/>
 </enum>
 
+<enum name="MediaSessionAction">
+  <int value="0" label="Play"/>
+  <int value="1" label="Pause"/>
+  <int value="2" label="Previous Track"/>
+  <int value="3" label="Next Track"/>
+  <int value="4" label="Seek Backward"/>
+  <int value="5" label="Seek Forward"/>
+  <int value="6" label="Skip Ad"/>
+  <int value="7" label="Stop"/>
+</enum>
+
 <enum name="MediaSessionActionSource">
   <int value="0" label="Media Notification"/>
   <int value="1" label="MediaSession (Android)"/>

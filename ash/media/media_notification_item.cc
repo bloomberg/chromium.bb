@@ -8,6 +8,7 @@
 #include "ash/media/media_notification_view.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
@@ -31,6 +32,10 @@ constexpr base::TimeDelta kDefaultSeekTime =
     base::TimeDelta::FromSeconds(media_session::mojom::kDefaultSeekTimeSeconds);
 
 }  // namespace
+
+// static
+const char MediaNotificationItem::kUserActionHistogramName[] =
+    "Media.Notification.UserAction";
 
 MediaNotificationItem::MediaNotificationItem(
     const std::string& id,
@@ -186,7 +191,11 @@ void MediaNotificationItem::OnNotificationClicked(
   if (!button_id)
     return;
 
-  switch (static_cast<MediaSessionAction>(*button_id)) {
+  const MediaSessionAction action = static_cast<MediaSessionAction>(*button_id);
+
+  UMA_HISTOGRAM_ENUMERATION(kUserActionHistogramName, action);
+
+  switch (action) {
     case MediaSessionAction::kPreviousTrack:
       media_controller_ptr_->PreviousTrack();
       break;

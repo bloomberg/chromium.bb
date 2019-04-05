@@ -26,6 +26,9 @@ class ASH_EXPORT MediaNotificationItem
     : public media_session::mojom::MediaControllerObserver,
       public media_session::mojom::MediaControllerImageObserver {
  public:
+  // The name of the histogram used when recording user actions.
+  static const char kUserActionHistogramName[];
+
   MediaNotificationItem(const std::string& id,
                         media_session::mojom::MediaControllerPtr controller,
                         media_session::mojom::MediaSessionInfoPtr session_info);
