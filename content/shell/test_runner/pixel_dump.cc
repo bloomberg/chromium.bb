@@ -18,6 +18,8 @@
 #include "cc/paint/skia_paint_canvas.h"
 #include "content/shell/common/web_test/web_test_utils.h"
 #include "content/shell/test_runner/web_test_runtime_flags.h"
+#include "printing/metafile_skia.h"
+#include "printing/print_settings.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
@@ -47,20 +49,23 @@ void CapturePixelsForPrinting(
   blink::WebSize page_size_in_pixels = frame_widget->Size();
 
   int page_count = web_frame->PrintBegin(page_size_in_pixels);
-  int totalHeight = page_count * (page_size_in_pixels.height + 1) - 1;
+  int total_height = page_count * (page_size_in_pixels.height + 1) - 1;
 
   bool is_opaque = false;
 
   SkBitmap bitmap;
-  if (!bitmap.tryAllocN32Pixels(page_size_in_pixels.width, totalHeight,
+  if (!bitmap.tryAllocN32Pixels(page_size_in_pixels.width, total_height,
                                 is_opaque)) {
     LOG(ERROR) << "Failed to create bitmap width=" << page_size_in_pixels.width
-               << " height=" << totalHeight;
+               << " height=" << total_height;
     std::move(callback).Run(SkBitmap());
     return;
   }
 
+  printing::MetafileSkia metafile(printing::SkiaDocumentType::MSKP,
+                                  printing::PrintSettings::NewCookie());
   cc::SkiaPaintCanvas canvas(bitmap);
+  canvas.SetPrintingMetafile(&metafile);
   web_frame->PrintPagesForTesting(&canvas, page_size_in_pixels);
   web_frame->PrintEnd();
 
@@ -72,7 +77,7 @@ void CapturePixelsForPrinting(
 void PrintFrameAsync(blink::WebLocalFrame* web_frame,
                      base::OnceCallback<void(const SkBitmap&)> callback) {
   DCHECK(web_frame);
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
   web_frame->GetTaskRunner(blink::TaskType::kInternalTest)
       ->PostTask(FROM_HERE, base::BindOnce(&CapturePixelsForPrinting,
                                            base::Unretained(web_frame),
