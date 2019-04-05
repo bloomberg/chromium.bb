@@ -253,10 +253,8 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_characterExtents(
   } else if (coordinate_type == IA2_COORDTYPE_PARENT_RELATIVE) {
     character_bounds = owner()->GetPageBoundsForRange(offset, 1);
     if (owner()->PlatformGetParent()) {
-      character_bounds -= owner()
-                              ->PlatformGetParent()
-                              ->GetPageBoundsRect(nullptr, false)
-                              .OffsetFromOrigin();
+      character_bounds -=
+          owner()->PlatformGetParent()->GetPageBoundsRect().OffsetFromOrigin();
     }
   } else {
     return E_INVALIDARG;
@@ -533,9 +531,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::scrollSubstringToPoint(
   DCHECK_GE(length, 0);
 
   gfx::Rect string_bounds = owner()->GetPageBoundsForRange(start_index, length);
-
-  string_bounds -=
-      owner()->GetPageBoundsRect(nullptr, false).OffsetFromOrigin();
+  string_bounds -= owner()->GetPageBoundsRect().OffsetFromOrigin();
   x -= string_bounds.x();
   y -= string_bounds.y();
 
