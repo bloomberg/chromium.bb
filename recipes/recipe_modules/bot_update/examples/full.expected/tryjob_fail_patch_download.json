@@ -58,7 +58,7 @@
       "--patch_ref",
       "https://chromium.googlesource.com/chromium/src@refs/changes/56/123456/7",
       "--revision",
-      "src@HEAD",
+      "src@refs/heads/master",
       "--disable-syntax-validation"
     ],
     "env_prefixes": {
@@ -74,7 +74,7 @@
       "@@@STEP_LOG_LINE@json.output@  \"did_run\": true, @@@",
       "@@@STEP_LOG_LINE@json.output@  \"failed_patch_body\": \"Downloading patch...\\nApplying the patch...\\nPatch: foo/bar.py\\nIndex: foo/bar.py\\ndiff --git a/foo/bar.py b/foo/bar.py\\nindex HASH..HASH MODE\\n--- a/foo/bar.py\\n+++ b/foo/bar.py\\ncontext\\n+something\\n-something\\nmore context\", @@@",
       "@@@STEP_LOG_LINE@json.output@  \"fixed_revisions\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"src\": \"HEAD\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src\": \"refs/heads/master\"@@@",
       "@@@STEP_LOG_LINE@json.output@  }, @@@",
       "@@@STEP_LOG_LINE@json.output@  \"manifest\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"src\": {@@@",

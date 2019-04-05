@@ -58,7 +58,7 @@
       "--patch_ref",
       "https://chromium.googlesource.com/angle/angle@refs/changes/56/123456/7",
       "--revision",
-      "src@HEAD",
+      "src@refs/heads/master",
       "--revision",
       "src/third_party/angle@HEAD",
       "--disable-syntax-validation"
@@ -75,7 +75,7 @@
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"did_run\": true, @@@",
       "@@@STEP_LOG_LINE@json.output@  \"fixed_revisions\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"src\": \"HEAD\", @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src\": \"refs/heads/master\", @@@",
       "@@@STEP_LOG_LINE@json.output@    \"src/third_party/angle\": \"HEAD\"@@@",
       "@@@STEP_LOG_LINE@json.output@  }, @@@",
       "@@@STEP_LOG_LINE@json.output@  \"manifest\": {@@@",

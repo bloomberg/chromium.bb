@@ -58,7 +58,7 @@
       "--patch_ref",
       "https://chromium.googlesource.com/chromium/src@refs/changes/56/123456/7",
       "--revision",
-      "src@HEAD",
+      "src@refs/heads/master",
       "--disable-syntax-validation"
     ],
     "env_prefixes": {

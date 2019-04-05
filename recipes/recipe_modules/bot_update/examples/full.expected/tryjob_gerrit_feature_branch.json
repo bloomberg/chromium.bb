@@ -58,7 +58,9 @@
       "--patch_ref",
       "https://chromium.googlesource.com/chromium/src@refs/changes/56/123456/7",
       "--revision",
-      "src@experimental/feature",
+      "src@refs/heads/experimental/feature",
+      "--refs",
+      "refs/heads/experimental/feature",
       "--disable-syntax-validation"
     ],
     "env_prefixes": {
@@ -73,7 +75,7 @@
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"did_run\": true, @@@",
       "@@@STEP_LOG_LINE@json.output@  \"fixed_revisions\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"src\": \"HEAD\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src\": \"refs/heads/experimental/feature\"@@@",
       "@@@STEP_LOG_LINE@json.output@  }, @@@",
       "@@@STEP_LOG_LINE@json.output@  \"manifest\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"src\": {@@@",
