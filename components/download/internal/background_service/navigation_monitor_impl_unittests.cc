@@ -97,6 +97,15 @@ class NavigationMonitorImplTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(NavigationMonitorImplTest);
 };
 
+TEST_F(NavigationMonitorImplTest, NoObserver) {
+  SendNavigationEventAt(NavigationEvent::START_NAVIGATION, 5);
+
+  observer_->VerifyNavigationStateAt(false, 0);
+  observer_->VerifyNavigationStateAt(false, 10);
+  observer_->VerifyNavigationStateAt(false, 100);
+  WaitUntilDone();
+}
+
 TEST_F(NavigationMonitorImplTest, NavigationTimeout) {
   navigation_monitor_->SetObserver(observer_.get());
   SendNavigationEventAt(NavigationEvent::START_NAVIGATION, 5);
