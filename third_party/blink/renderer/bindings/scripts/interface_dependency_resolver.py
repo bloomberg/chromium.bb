@@ -221,8 +221,7 @@ def merge_interface_dependencies(definitions, component, target_interface, depen
             # However,
             # - An interface defined in core cannot include an interface mixin
             #   defined in modules.
-            if (not dependency_interface.is_mixin and
-                    'NoInterfaceObject' not in dependency_interface.extended_attributes):
+            if not dependency_interface.is_mixin:
                 raise Exception('The interface:%s cannot implement '
                                 'the non-mixin interface: %s.' % (
                                     target_interface.name,
