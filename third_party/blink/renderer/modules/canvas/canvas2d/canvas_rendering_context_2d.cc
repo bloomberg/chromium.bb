@@ -1072,13 +1072,13 @@ void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions* options,
   }
 
   if (!hit_region_manager_)
-    hit_region_manager_ = HitRegionManager::Create();
+    hit_region_manager_ = MakeGarbageCollected<HitRegionManager>();
 
   // Remove previous region (with id or control)
   hit_region_manager_->RemoveHitRegionById(options->id());
   hit_region_manager_->RemoveHitRegionByControl(options->control());
 
-  HitRegion* hit_region = HitRegion::Create(hit_region_path, options);
+  auto* hit_region = MakeGarbageCollected<HitRegion>(hit_region_path, options);
   Element* element = hit_region->Control();
   if (element && element->IsDescendantOf(canvas()))
     UpdateElementAccessibility(hit_region->GetPath(), hit_region->Control());

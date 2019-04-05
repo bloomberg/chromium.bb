@@ -16,10 +16,6 @@ namespace blink {
 
 class HitRegion final : public GarbageCollectedFinalized<HitRegion> {
  public:
-  static HitRegion* Create(const Path& path, const HitRegionOptions* options) {
-    return MakeGarbageCollected<HitRegion>(path, options);
-  }
-
   HitRegion(const Path&, const HitRegionOptions*);
   virtual ~HitRegion() = default;
 
@@ -42,10 +38,6 @@ class HitRegion final : public GarbageCollectedFinalized<HitRegion> {
 
 class HitRegionManager final : public GarbageCollected<HitRegionManager> {
  public:
-  static HitRegionManager* Create() {
-    return MakeGarbageCollected<HitRegionManager>();
-  }
-
   HitRegionManager() = default;
 
   void AddHitRegion(HitRegion*);
