@@ -5832,10 +5832,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Default",
-                    "enable_features": [
-                        "WebRTC-Aec3FilterAnalyzerIncrementalAnalysisKillSwitch"
-                    ]
+                    "name": "SwitchEnabled"
                 }
             ]
         }
