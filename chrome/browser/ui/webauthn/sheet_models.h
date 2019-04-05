@@ -328,6 +328,27 @@ class AuthenticatorTouchIdSheetModel : public AuthenticatorSheetModelBase {
   std::unique_ptr<OtherTransportsMenuModel> other_transports_menu_model_;
 };
 
+class AuthenticatorTouchIdIncognitoBumpSheetModel
+    : public AuthenticatorSheetModelBase {
+ public:
+  explicit AuthenticatorTouchIdIncognitoBumpSheetModel(
+      AuthenticatorRequestDialogModel* dialog_model);
+  ~AuthenticatorTouchIdIncognitoBumpSheetModel() override;
+
+ private:
+  // AuthenticatorSheetModelBase:
+  gfx::ImageSkia* GetStepIllustration() const override;
+  base::string16 GetStepTitle() const override;
+  base::string16 GetStepDescription() const override;
+  ui::MenuModel* GetOtherTransportsMenuModel() override;
+  bool IsAcceptButtonVisible() const override;
+  bool IsAcceptButtonEnabled() const override;
+  base::string16 GetAcceptButtonLabel() const override;
+  void OnAccept() override;
+
+  std::unique_ptr<OtherTransportsMenuModel> other_transports_menu_model_;
+};
+
 class AuthenticatorPaaskSheetModel : public AuthenticatorSheetModelBase {
  public:
   explicit AuthenticatorPaaskSheetModel(

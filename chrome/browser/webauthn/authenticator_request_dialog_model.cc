@@ -315,6 +315,17 @@ void AuthenticatorRequestDialogModel::StartTouchIdFlow() {
     return;
   }
 
+  if (transport_availability_.request_type ==
+          device::FidoRequestHandlerBase::RequestType::kMakeCredential &&
+      incognito_mode_) {
+    SetCurrentStep(Step::kTouchIdIncognitoSpeedBump);
+    return;
+  }
+
+  TryTouchId();
+}
+
+void AuthenticatorRequestDialogModel::TryTouchId() {
   SetCurrentStep(Step::kTouchId);
 
   auto& authenticators = saved_authenticators_.authenticator_list();
@@ -325,8 +336,9 @@ void AuthenticatorRequestDialogModel::StartTouchIdFlow() {
                             device::FidoTransportProtocol::kInternal;
                    });
 
-  if (touch_id_authenticator_it == authenticators.end())
+  if (touch_id_authenticator_it == authenticators.end()) {
     return;
+  }
 
   static base::TimeDelta kTouchIdDispatchDelay =
       base::TimeDelta::FromMilliseconds(1250);

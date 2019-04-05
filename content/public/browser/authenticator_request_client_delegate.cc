@@ -54,6 +54,10 @@ bool AuthenticatorRequestClientDelegate::IsFocused() {
   return true;
 }
 
+bool AuthenticatorRequestClientDelegate::ShouldDisablePlatformAuthenticators() {
+  return false;
+}
+
 #if defined(OS_MACOSX)
 base::Optional<AuthenticatorRequestClientDelegate::TouchIdAuthenticatorConfig>
 AuthenticatorRequestClientDelegate::GetTouchIdAuthenticatorConfig() const {

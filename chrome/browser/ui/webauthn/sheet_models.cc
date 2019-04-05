@@ -631,6 +631,74 @@ ui::MenuModel* AuthenticatorTouchIdSheetModel::GetOtherTransportsMenuModel() {
   return other_transports_menu_model_.get();
 }
 
+// AuthenticatorTouchIdIncognitoBumpSheetModel
+// -----------------------------------------
+
+AuthenticatorTouchIdIncognitoBumpSheetModel::
+    AuthenticatorTouchIdIncognitoBumpSheetModel(
+        AuthenticatorRequestDialogModel* dialog_model)
+    : AuthenticatorSheetModelBase(dialog_model),
+      other_transports_menu_model_(std::make_unique<OtherTransportsMenuModel>(
+          dialog_model,
+          AuthenticatorTransport::kInternal)) {}
+
+AuthenticatorTouchIdIncognitoBumpSheetModel::
+    ~AuthenticatorTouchIdIncognitoBumpSheetModel() = default;
+
+gfx::ImageSkia*
+AuthenticatorTouchIdIncognitoBumpSheetModel::GetStepIllustration() const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_PERMISSION);
+}
+
+base::string16 AuthenticatorTouchIdIncognitoBumpSheetModel::GetStepTitle()
+    const {
+#if defined(OS_MACOSX)
+  return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_TOUCH_ID_INCOGNITO_BUMP_TITLE,
+                                    GetRelyingPartyIdString());
+#else
+  return base::string16();
+#endif  // defined(OS_MACOSX)
+}
+
+base::string16 AuthenticatorTouchIdIncognitoBumpSheetModel::GetStepDescription()
+    const {
+#if defined(OS_MACOSX)
+  return l10n_util::GetStringUTF16(
+      IDS_WEBAUTHN_TOUCH_ID_INCOGNITO_BUMP_DESCRIPTION);
+#else
+  return base::string16();
+#endif  // defined(OS_MACOSX)
+}
+
+ui::MenuModel*
+AuthenticatorTouchIdIncognitoBumpSheetModel::GetOtherTransportsMenuModel() {
+  return other_transports_menu_model_.get();
+}
+
+bool AuthenticatorTouchIdIncognitoBumpSheetModel::IsAcceptButtonVisible()
+    const {
+  return true;
+}
+
+bool AuthenticatorTouchIdIncognitoBumpSheetModel::IsAcceptButtonEnabled()
+    const {
+  return true;
+}
+
+base::string16
+AuthenticatorTouchIdIncognitoBumpSheetModel::GetAcceptButtonLabel() const {
+#if defined(OS_MACOSX)
+  return l10n_util::GetStringUTF16(
+      IDS_WEBAUTHN_TOUCH_ID_INCOGNITO_BUMP_CONTINUE);
+#else
+  return base::string16();
+#endif  // defined(OS_MACOSX)
+}
+
+void AuthenticatorTouchIdIncognitoBumpSheetModel::OnAccept() {
+  dialog_model()->TryTouchId();
+}
+
 // AuthenticatorPaaskSheetModel -----------------------------------------
 
 AuthenticatorPaaskSheetModel::AuthenticatorPaaskSheetModel(
