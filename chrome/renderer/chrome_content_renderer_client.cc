@@ -1474,6 +1474,7 @@ void ChromeContentRendererClient::
 // that do not have a Web Share Mojo implementation.
 #if defined(OS_ANDROID)
   blink::WebRuntimeFeatures::EnableWebShare(true);
+  blink::WebRuntimeFeatures::EnableWebShareV2(true);
 #endif
 
   if (base::FeatureList::IsEnabled(subresource_filter::kAdTagging))
