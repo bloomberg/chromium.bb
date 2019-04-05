@@ -22700,6 +22700,9 @@ Called by update_net_error_codes.py.-->
   <int value="2841" label="ReadableStreamGetReader"/>
   <int value="2842" label="ReadableStreamPipeThrough"/>
   <int value="2843" label="ReadableStreamPipeTo"/>
+  <int value="2844" label="CSSStyleSheetReplace"/>
+  <int value="2845" label="CSSStyleSheetReplaceSync"/>
+  <int value="2846" label="AdoptedStyleSheets"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
