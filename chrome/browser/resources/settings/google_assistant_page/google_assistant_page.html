@@ -57,6 +57,7 @@
             pref="{{prefs.settings.voice_interaction.hotword.enabled}}"
             label="$i18n{googleAssistantEnableHotword}"
             sub-label="$i18n{googleAssistantEnableHotwordDescription}"
+            on-settings-boolean-control-change="onEnableHotwordChange_"
             hidden="[[!hotwordDspAvailable_]]">
         </settings-toggle-button>
         <div class="settings-box three-line"

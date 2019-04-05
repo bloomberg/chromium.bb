@@ -10,6 +10,7 @@ class TestGoogleAssistantBrowserProxy extends TestBrowserProxy {
     super([
       'showGoogleAssistantSettings',
       'retrainAssistantVoiceModel',
+      'syncVoiceModelStatus',
     ]);
   }
 
@@ -21,6 +22,11 @@ class TestGoogleAssistantBrowserProxy extends TestBrowserProxy {
   /** @override */
   retrainAssistantVoiceModel() {
     this.methodCalled('retrainAssistantVoiceModel');
+  }
+
+  /** @override */
+  syncVoiceModelStatus() {
+    this.methodCalled('syncVoiceModelStatus');
   }
 }
 
@@ -110,6 +116,7 @@ suite('GoogleAssistantHandler', function() {
     assertTrue(button.checked);
     assertTrue(
         page.getPref('settings.voice_interaction.hotword.enabled.value'), true);
+    return browserProxy.whenCalled('syncVoiceModelStatus');
   });
 
   test('tapOnRetrainVoiceModel', function() {

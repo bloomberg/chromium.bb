@@ -29,12 +29,11 @@ class GoogleAssistantHandler : public ::settings::SettingsPageUIHandler {
   void HandleShowGoogleAssistantSettings(const base::ListValue* args);
   // WebUI call to retrain Assistant voice model.
   void HandleRetrainVoiceModel(const base::ListValue* args);
+  // WebUI call to sync Assistant voice model status.
+  void HandleSyncVoiceModelStatus(const base::ListValue* args);
 
   // Bind to assistant settings manager.
   void BindAssistantSettingsManager();
-
-  // Callback for deleting voice model.
-  void DeleteVoiceModelCallback();
 
   Profile* const profile_;
 
