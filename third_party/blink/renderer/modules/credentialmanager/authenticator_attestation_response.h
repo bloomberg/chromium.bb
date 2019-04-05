@@ -20,11 +20,6 @@ class MODULES_EXPORT AuthenticatorAttestationResponse final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static AuthenticatorAttestationResponse* Create(
-      DOMArrayBuffer* client_data_json,
-      DOMArrayBuffer* attestation_object,
-      Vector<mojom::AuthenticatorTransport> transports);
-
   AuthenticatorAttestationResponse(
       DOMArrayBuffer* client_data_json,
       DOMArrayBuffer* attestation_object,
