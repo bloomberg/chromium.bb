@@ -15,6 +15,9 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/callback_list.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
@@ -118,6 +121,27 @@ struct VIEWS_EXPORT ViewHierarchyChangedDetails {
   View* move_view;
 };
 
+// Used to identify the CallbackList<> within the PropertyChangedVectors map.
+using PropertyKey = const void*;
+
+using PropertyChangedCallbacks = base::CallbackList<void()>;
+using PropertyChangedCallback = PropertyChangedCallbacks::CallbackType;
+using PropertyChangedSubscription =
+    std::unique_ptr<PropertyChangedCallbacks::Subscription>;
+
+// The elements in PropertyEffects represent bits which define what effect(s) a
+// changed Property has on the containing class. Additional elements should
+// use the next most significant bit.
+enum PropertyEffects {
+  kPropertyEffectsNone = 0,
+  // Any changes to the property should cause the container to invalidate the
+  // current layout state.
+  kPropertyEffectsLayout = 0x00000001,
+  // Changes to the property should cause the container to schedule a painting
+  // update.
+  kPropertyEffectsPaint = 0x00000002,
+};
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // View class
@@ -141,6 +165,69 @@ struct VIEWS_EXPORT ViewHierarchyChangedDetails {
 //
 //   Unless otherwise documented, views is not thread safe and should only be
 //   accessed from the main thread.
+//
+//   Properties ------------------
+//
+//   Properties which are intended to be dynamically visible through metadata to
+//   other subsystems, such as dev-tools must adhere to a naming convention,
+//   usage and implementation patterns.
+//
+//   Properties start with their base name, such as "Frobble" (note the
+//   capitalization). The method to set the property must be called SetXXXX and
+//   the method to retrieve the value is called GetXXXX. For the aforementioned
+//   Frobble property, this would be SetFrobble and GetFrobble.
+//
+//   void SetFrobble(bool is_frobble);
+//   bool GetFrobble() const;
+//
+//   In the SetXXXX method, after the value storage location has been updated,
+//   OnPropertyChanged() must be called using the address of the storage
+//   location as a key. Additionally, any combination of PropertyEffects are
+//   also passed in. This will ensure that any desired side effects are properly
+//   invoked.
+//
+//   void View::SetFrobble(bool is_frobble) {
+//     if (is_frobble == frobble_)
+//       return;
+//     frobble_ = is_frobble;
+//     OnPropertyChanged(&frobble_, kPropertyEffectsPaint);
+//   }
+//
+//   Each property should also have a way to "listen" to changes by registering
+//   a callback.
+//
+//   PropertyChangedSubscription AddFrobbleChangedCallback(
+//       PropertyChangedCallback callback) WARN_UNUSED_RETURN;
+//
+//   Each callback uses the the existing base::Bind mechanisms which allow for
+//   various kinds of callbacks; object methods, normal functions and lambdas.
+//
+//   Example:
+//
+//   class FrobbleView : public View {
+//    ...
+//    private:
+//     void OnFrobbleChanged();
+//     PropertyChangeSubscription frobble_changed_subscription_;
+//   }
+//
+//   ...
+//     frobble_changed_subscription_ = AddFrobbleChangedCallback(
+//         base::BindRepeating(&FrobbleView::OnFrobbleChanged,
+//         base::Unretained(this)));
+//
+//   Example:
+//
+//   void MyView::ValidateFrobbleChanged() {
+//     bool frobble_changed = false;
+//     PropertyChangedSubscription subscription =
+//       frobble_view_->AddFrobbleChangedCallback(
+//           base::BindRepeating([](bool* frobble_changed_ptr) {
+//             *frobble_changed_ptr = true;
+//           }, &frobble_changed));
+//     frobble_view_->SetFrobble(!frobble_view_->GetFrobble());
+//     LOG() << frobble_changed ? "Frobble changed" : "Frobble NOT changed!";
+//   }
 //
 /////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT View : public ui::LayerDelegate,
@@ -440,12 +527,23 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Returns true if this view is drawn on screen.
   virtual bool IsDrawn() const;
 
+  // The |Enabled| property. See comment above for instructions on declaring and
+  // implementing a property.
+  //
   // Set whether this view is enabled. A disabled view does not receive keyboard
   // or mouse inputs. If |enabled| differs from the current value, SchedulePaint
   // is invoked. Also, clears focus if the focused view is disabled.
-  void SetEnabled(bool enabled);
-
+  void SetEnabled(bool is_enabled);
   // Returns whether the view is enabled.
+  bool GetEnabled() const { return enabled_; }
+
+  // Adds a callback subscription associated with the above |Enabled| property.
+  // The callback will be invoked whenever the property changes.
+  PropertyChangedSubscription AddEnabledChangedCallback(
+      PropertyChangedCallback callback) WARN_UNUSED_RESULT;
+
+  // NOTE: Deprecated. Please use GetEnabled() which is the getter for the
+  // |Enabled| property.
   bool enabled() const { return enabled_; }
 
   // Returns the child views ordered in reverse z-order. That is, views later in
@@ -1424,6 +1522,14 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // hierarchy).
   virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) {}
 
+  // Property Support ----------------------------------------------------------
+
+  PropertyChangedSubscription AddPropertyChangedCallback(
+      PropertyKey property,
+      PropertyChangedCallback callback);
+  void OnPropertyChanged(PropertyKey property,
+                         PropertyEffects property_effects);
+
  private:
   friend class internal::PreEventDispatchHandler;
   friend class internal::PostEventDispatchHandler;
@@ -1437,6 +1543,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   FRIEND_TEST_ALL_PREFIXES(ViewTest, PaintWithMovedViewUsesCache);
   FRIEND_TEST_ALL_PREFIXES(ViewTest, PaintWithMovedViewUsesCacheInRTL);
   FRIEND_TEST_ALL_PREFIXES(ViewTest, PaintWithUnknownInvalidation);
+
+  using PropertyChangedVectors =
+      std::map<PropertyKey, std::unique_ptr<PropertyChangedCallbacks>>;
 
   // Painting  -----------------------------------------------------------------
 
@@ -1692,6 +1801,12 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
               const gfx::Point& press_pt,
               ui::DragDropTypes::DragEventSource source);
 
+  // Property support ----------------------------------------------------------
+
+  // Called from OnPropertyChanged with the given set of property effects. This
+  // function is NOT called if effects == kPropertyEffectsNone.
+  void HandlePropertyChangeEffects(PropertyEffects effects);
+
   //////////////////////////////////////////////////////////////////////////////
 
   // Creation and lifetime -----------------------------------------------------
@@ -1852,9 +1967,12 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Manages the accessibility interface for this View.
   std::unique_ptr<ViewAccessibility> view_accessibility_;
 
-  // Observers -------------------------------------------------------------
+  // Observers -----------------------------------------------------------------
 
   base::ObserverList<ViewObserver>::Unchecked observers_;
+
+  // Property Changed Callbacks ------------------------------------------------
+  PropertyChangedVectors property_changed_vectors_;
 
   DISALLOW_COPY_AND_ASSIGN(View);
 };

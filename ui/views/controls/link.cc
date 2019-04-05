@@ -166,11 +166,6 @@ void Link::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kLink;
 }
 
-void Link::OnEnabledChanged() {
-  RecalculateFont();
-  View::OnEnabledChanged();  // Jump over Label.
-}
-
 void Link::OnFocus() {
   Label::OnFocus();
   RecalculateFont();
@@ -222,6 +217,9 @@ void Link::Init() {
   pressed_ = false;
   underline_ = GetDefaultFocusStyle() != FocusStyle::UNDERLINE;
   RecalculateFont();
+
+  enabled_changed_subscription_ = AddEnabledChangedCallback(
+      base::BindRepeating(&Link::RecalculateFont, base::Unretained(this)));
 
   // Label::Init() calls SetText(), but if that's being called from Label(), our
   // SetText() override will not be reached (because the constructed class is

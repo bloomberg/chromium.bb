@@ -26,9 +26,6 @@ class VIEWS_EXPORT ViewObserver {
   // View::IsDrawn() for details on how visibility and drawn differ.
   virtual void OnViewVisibilityChanged(View* observed_view) {}
 
-  // Called when View::SetEnabled() is called with a new value.
-  virtual void OnViewEnabledChanged(View* observed_view) {}
-
   // Called from View::PreferredSizeChanged().
   virtual void OnViewPreferredSizeChanged(View* observed_view) {}
 

@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
@@ -4979,6 +4980,17 @@ TEST_F(ViewTest, AttachChildViewWithComplicatedLayers) {
   EXPECT_EQ(layers_after_attached[1], child_view1->layer());
 }
 
+TEST_F(ViewTest, TestEnabledChangedCallback) {
+  View test_view;
+  bool enabled_changed = false;
+  auto subscription = test_view.AddEnabledChangedCallback(base::BindRepeating(
+      [](bool* enabled_changed) { *enabled_changed = true; },
+      &enabled_changed));
+  test_view.SetEnabled(false);
+  EXPECT_TRUE(enabled_changed);
+  EXPECT_FALSE(test_view.enabled());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Observer tests.
 ////////////////////////////////////////////////////////////////////////////////
@@ -5005,10 +5017,6 @@ class ViewObserverTest : public ViewTest, public ViewObserver {
     view_visibility_changed_ = view;
   }
 
-  void OnViewEnabledChanged(View* view) override {
-    view_enabled_changed_ = view;
-  }
-
   void OnViewBoundsChanged(View* view) override { view_bounds_changed_ = view; }
 
   void OnChildViewReordered(View* parent, View* view) override {
@@ -5023,7 +5031,6 @@ class ViewObserverTest : public ViewTest, public ViewObserver {
     child_view_removed_ = nullptr;
     child_view_removed_parent_ = nullptr;
     view_visibility_changed_ = nullptr;
-    view_enabled_changed_ = nullptr;
     view_bounds_changed_ = nullptr;
     view_reordered_ = nullptr;
   }
@@ -5047,7 +5054,6 @@ class ViewObserverTest : public ViewTest, public ViewObserver {
   const View* view_visibility_changed() const {
     return view_visibility_changed_;
   }
-  const View* view_enabled_changed() const { return view_enabled_changed_; }
   const View* view_bounds_changed() const { return view_bounds_changed_; }
   const View* view_reordered() const { return view_reordered_; }
 
@@ -5060,7 +5066,6 @@ class ViewObserverTest : public ViewTest, public ViewObserver {
   View* child_view_removed_ = nullptr;
   View* child_view_removed_parent_ = nullptr;
   View* view_visibility_changed_ = nullptr;
-  View* view_enabled_changed_ = nullptr;
   View* view_bounds_changed_ = nullptr;
   View* view_reordered_ = nullptr;
 
@@ -5103,13 +5108,6 @@ TEST_F(ViewObserverTest, ViewVisibilityChanged) {
   view->SetVisible(false);
   EXPECT_EQ(view.get(), view_visibility_changed());
   EXPECT_FALSE(view->visible());
-}
-
-TEST_F(ViewObserverTest, ViewEnabledChanged) {
-  std::unique_ptr<View> view = NewView();
-  view->SetEnabled(false);
-  EXPECT_EQ(view.get(), view_enabled_changed());
-  EXPECT_FALSE(view->enabled());
 }
 
 TEST_F(ViewObserverTest, ViewBoundsChanged) {
