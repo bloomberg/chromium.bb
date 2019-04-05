@@ -46,6 +46,7 @@ source_set("main_controller") {
 
   deps = [
     ":engine_cleaner_lib",
+    ":facade_interface_header",
     "//base:base",
     "//chrome/chrome_cleaner/cleaner:cleaner_headers",
     "//chrome/chrome_cleaner/components:components",
@@ -89,6 +90,18 @@ source_set("scanner_controller") {
   ]
 }
 
+source_set("facade_interface_header") {
+  sources = [
+    "engine_facade_interface.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chrome/chrome_cleaner/cleaner:cleaner_headers",
+    "//chrome/chrome_cleaner/scanner:scanner_api",
+  ]
+}
+
 source_set("engine_cleaner_lib") {
   sources = [
     "elevating_facade.cc",
@@ -97,13 +110,13 @@ source_set("engine_cleaner_lib") {
     "engine_cleaner.h",
     "engine_facade.cc",
     "engine_facade.h",
-    "engine_facade_interface.h",
     "uwe_engine_cleaner_wrapper.cc",
     "uwe_engine_cleaner_wrapper.h",
   ]
 
   deps = [
     ":common",
+    ":facade_interface_header",
     "//base",
     "//chrome/chrome_cleaner/chrome_utils:extensions_util_lib",
     "//chrome/chrome_cleaner/chrome_utils:force_installed_extension",
@@ -172,6 +185,7 @@ source_set("unittest_sources") {
     "//chrome/chrome_cleaner/logging/proto:removal_status_proto",
     "//chrome/chrome_cleaner/os:cleaner_os",
     "//chrome/chrome_cleaner/os:common_os",
+    "//chrome/chrome_cleaner/os:file_remover_api",
     "//chrome/chrome_cleaner/parsers/broker:parser_sandbox_broker",
     "//chrome/chrome_cleaner/parsers/json_parser:json_parser",
     "//chrome/chrome_cleaner/parsers/shortcut_parser/broker:fake_shortcut_parser",
