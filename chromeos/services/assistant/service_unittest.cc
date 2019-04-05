@@ -147,6 +147,7 @@ class FakeDeviceActions : mojom::DeviceActions {
   void VerifyAndroidApp(
       std::vector<chromeos::assistant::mojom::AndroidAppInfoPtr> apps_info,
       VerifyAndroidAppCallback callback) override {}
+  void LaunchAndroidIntent(const std::string& intent) override {}
 
   mojo::Binding<mojom::DeviceActions> binding_;
 

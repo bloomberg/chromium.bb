@@ -88,6 +88,8 @@ class ASH_EXPORT AssistantController
   void SendAssistantFeedback(bool assistant_debug_info_allowed,
                              const std::string& feedback_description,
                              const std::string& screenshot_png) override;
+  void SetDeviceActions(
+      chromeos::assistant::mojom::DeviceActionsPtr device_actions) override;
 
   // AssistantControllerObserver:
   void OnDeepLinkReceived(
@@ -168,6 +170,7 @@ class ASH_EXPORT AssistantController
   chromeos::assistant::mojom::AssistantPtr assistant_;
 
   mojom::AssistantImageDownloaderPtr assistant_image_downloader_;
+  chromeos::assistant::mojom::DeviceActionsPtr device_actions_;
 
   // Assistant sub-controllers.
   AssistantAlarmTimerController assistant_alarm_timer_controller_;

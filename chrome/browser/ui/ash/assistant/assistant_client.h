@@ -44,8 +44,6 @@ class AssistantClient : chromeos::assistant::mojom::Client,
   void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
 
   mojo::Binding<chromeos::assistant::mojom::Client> client_binding_;
-  mojo::Binding<chromeos::assistant::mojom::DeviceActions>
-      device_actions_binding_;
   chromeos::assistant::mojom::AssistantPlatformPtr assistant_connection_;
 
   DeviceActions device_actions_;

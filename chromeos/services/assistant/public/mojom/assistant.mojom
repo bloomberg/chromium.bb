@@ -170,6 +170,10 @@ interface DeviceActions {
   // Verify the status of the Android apps.
   VerifyAndroidApp(array<AndroidAppInfo> apps_info) => (array<AndroidAppInfo>
                                                         apps_info);
+
+  // Launch Android intent. The intent is encoded as a URI string.
+  // See Intent.toUri().
+  LaunchAndroidIntent(string intent);
 };
 
 // Enumeration of possible completions for an Assistant interaction.
