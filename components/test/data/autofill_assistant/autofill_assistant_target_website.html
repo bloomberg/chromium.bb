@@ -60,6 +60,10 @@ found in the LICENSE file.
           content: "before";
       }
 
+      #with_inner_text span::before {
+          content: "before";
+      }
+
       #button::before {
           content: "before";
           display: none;
@@ -188,5 +192,11 @@ found in the LICENSE file.
         upperCaseInput.value = upperCaseInput.value.toUpperCase();
       });
     </script>
+
+    <div id="with_inner_text">
+      <span>hello</span>
+      <span>hello, world</span>
+      <span style="display: none">world</span>
+    </div>
   </body>
 </html>

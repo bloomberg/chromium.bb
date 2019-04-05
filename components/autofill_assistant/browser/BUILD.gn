@@ -170,6 +170,7 @@ source_set("unit_tests") {
     "script_executor_unittest.cc",
     "script_precondition_unittest.cc",
     "script_tracker_unittest.cc",
+    "selector_unittest.cc",
     "string_conversions_util_unittest.cc",
   ]
 
