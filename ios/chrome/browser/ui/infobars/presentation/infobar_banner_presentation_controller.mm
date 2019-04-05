@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_presentation_controller.h"
 
+#include "base/logging.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_positioner.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -11,14 +12,12 @@
 #endif
 
 namespace {
-// The presented view height.
-const CGFloat kDefaultContainerHeight = 70;
 // The presented view outer horizontal margins.
 const CGFloat kContainerHorizontalPadding = 8;
 // The presented view maximum width.
-const CGFloat kContainerWidthMaxSize = 398;
-// The presented view default Y axis value.
-const CGFloat kDefaultBannerYPosition = 85;
+const CGFloat kContainerMaxWidth = 398;
+// The presented view maximum height.
+const CGFloat kContainerMaxHeight = 200;
 }
 
 @implementation InfobarBannerPresentationController
@@ -33,25 +32,32 @@ const CGFloat kDefaultBannerYPosition = 85;
 }
 
 - (UIView*)viewForPresentedView {
+  DCHECK(self.bannerPositioner);
   UIWindow* window = UIApplication.sharedApplication.keyWindow;
 
   // Calculate the Banner container width.
   CGFloat safeAreaWidth = CGRectGetWidth(window.bounds);
   CGFloat maxAvailableWidth = safeAreaWidth - 2 * kContainerHorizontalPadding;
-  CGFloat frameWidth = fmin(maxAvailableWidth, kContainerWidthMaxSize);
+  CGFloat frameWidth = fmin(maxAvailableWidth, kContainerMaxWidth);
 
   // Based on the container width, calculate the value in order to center the
   // Banner in the X axis.
   CGFloat bannerXPosition = (safeAreaWidth / 2) - (frameWidth / 2);
-
   CGFloat bannerYPosition = [self.bannerPositioner bannerYPosition];
-  if (!bannerYPosition) {
-    bannerYPosition = kDefaultBannerYPosition;
-  }
 
-  return [[UIView alloc]
-      initWithFrame:CGRectMake(bannerXPosition, bannerYPosition, frameWidth,
-                               kDefaultContainerHeight)];
+  // Calculate the Banner height needed to fit its content with frameWidth.
+  UIView* bannerView = [self.bannerPositioner bannerView];
+  [bannerView setNeedsLayout];
+  [bannerView layoutIfNeeded];
+  CGSize frameThatFits =
+      [bannerView systemLayoutSizeFittingSize:CGSizeMake(frameWidth, 0)
+                withHorizontalFittingPriority:UILayoutPriorityRequired
+                      verticalFittingPriority:1];
+  CGFloat frameHeight = fmin(kContainerMaxHeight, frameThatFits.height);
+
+  return
+      [[UIView alloc] initWithFrame:CGRectMake(bannerXPosition, bannerYPosition,
+                                               frameWidth, frameHeight)];
 }
 
 @end

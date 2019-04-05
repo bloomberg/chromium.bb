@@ -37,6 +37,7 @@ const int kButtonSeparatorColor = 0xF1F3F4;
 
 // Container Stack constants.
 const CGFloat kContainerStackSpacing = 18.0;
+const CGFloat kContainerStackVerticalPadding = 18.0;
 
 // Icon constants.
 const CGFloat kIconWidth = 25.0;
@@ -126,10 +127,6 @@ const CGFloat kChangeInPositionForTransition = 100.0;
   UIStackView* labelsStackView = [[UIStackView alloc]
       initWithArrangedSubviews:@[ self.titleLabel, self.subTitleLabel ]];
   labelsStackView.axis = UILayoutConstraintAxisVertical;
-  labelsStackView.alignment = UIStackViewAlignmentLeading;
-  labelsStackView.distribution = UIStackViewDistributionEqualCentering;
-  [labelsStackView setContentHuggingPriority:UILayoutPriorityRequired
-                                     forAxis:UILayoutConstraintAxisVertical];
 
   // Button setup.
   self.infobarButton = [UIButton buttonWithType:UIButtonTypeSystem];
@@ -156,6 +153,9 @@ const CGFloat kChangeInPositionForTransition = 100.0;
   containerStack.distribution = UIStackViewDistributionFill;
   containerStack.alignment = UIStackViewAlignmentFill;
   containerStack.translatesAutoresizingMaskIntoConstraints = NO;
+  containerStack.layoutMarginsRelativeArrangement = YES;
+  containerStack.directionalLayoutMargins = NSDirectionalEdgeInsetsMake(
+      kContainerStackVerticalPadding, 0, kContainerStackVerticalPadding, 0);
   [self.view addSubview:containerStack];
 
   // Constraints setup.
@@ -166,8 +166,9 @@ const CGFloat kChangeInPositionForTransition = 100.0;
                        constant:kContainerStackSpacing],
     [containerStack.trailingAnchor
         constraintEqualToAnchor:self.view.trailingAnchor],
-    [containerStack.centerYAnchor
-        constraintEqualToAnchor:self.view.centerYAnchor],
+    [containerStack.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+    [containerStack.bottomAnchor
+        constraintEqualToAnchor:self.view.bottomAnchor],
     // Icon.
     [iconImageView.widthAnchor constraintEqualToConstant:kIconWidth],
     // Button.
