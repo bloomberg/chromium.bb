@@ -498,6 +498,34 @@ class _DiffArchiveManager(object):
     logging.info('See detailed diff results here: %s',
                  os.path.relpath(diff_path))
 
+  def GenerateHtmlReport(self, before_id, after_id):
+    """Generate HTML report given two build archives."""
+    before = self.build_archives[before_id]
+    after = self.build_archives[after_id]
+    diff_path = self._DiffDir(before, after)
+    if not self._CanDiff(before, after):
+      logging.info(
+          'Skipping HTML report for %s due to missing build archives.',
+          diff_path)
+      return
+
+    supersize_path = os.path.join(_BINARY_SIZE_DIR, 'supersize')
+
+    report_path = os.path.join(diff_path, 'diff.ndjson')
+
+    supersize_cmd = [supersize_path, 'html_report', '--diff-with',
+      before.archived_size_path,
+      after.archived_size_path,
+      report_path]
+
+    logging.info('Creating HTML report')
+
+    _RunCmd(supersize_cmd)
+
+    logging.info('View using a local server via: %s start_server %s',
+      os.path.relpath(supersize_path),
+      os.path.relpath(report_path))
+
   def Summarize(self):
     path = os.path.join(self.archive_dir, 'last_diff_summary.txt')
     if self._summary_stats:
@@ -1000,6 +1028,7 @@ def main():
                                     subrepo, args.include_slow_options,
                                     args.unstripped)
     consecutive_failures = 0
+    i = 0
     for i, archive in enumerate(diff_mngr.build_archives):
       if archive.Exists():
         step = 'download' if build.IsCloud() else 'build'
@@ -1029,6 +1058,7 @@ def main():
       if i != 0:
         diff_mngr.MaybeDiff(i - 1, i)
 
+    diff_mngr.GenerateHtmlReport(0, i)
     diff_mngr.Summarize()
 
 
