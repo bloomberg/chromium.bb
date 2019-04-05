@@ -76,6 +76,13 @@ class JSChecker {
       bool enabled,
       std::initializer_list<base::StringPiece> element_ids);
 
+  // Waiter that waits until the specified element's class list contains, or
+  // doesn't contain the specified class.
+  std::unique_ptr<TestConditionWaiter> CreateHasClassWaiter(
+      bool has_class,
+      const std::string& css_class,
+      std::initializer_list<base::StringPiece> element_ids);
+
   // Expects that indicated UI element is not hidden.
   // NOTE: This only checks hidden property - it might not work for elements
   // hidden by "display: none" style.

@@ -18,7 +18,7 @@ OobeScreenExitWaiter::~OobeScreenExitWaiter() = default;
 void OobeScreenExitWaiter::Wait() {
   DCHECK_EQ(State::IDLE, state_);
 
-  if (GetOobeUI()->current_screen() == target_screen_) {
+  if (GetOobeUI()->current_screen() != target_screen_) {
     state_ = State::DONE;
     return;
   }
@@ -40,7 +40,6 @@ void OobeScreenExitWaiter::Wait() {
 void OobeScreenExitWaiter::OnCurrentScreenChanged(OobeScreen current_screen,
                                                   OobeScreen new_screen) {
   DCHECK_NE(state_, State::IDLE);
-
   if (new_screen != target_screen_)
     EndWait();
 }

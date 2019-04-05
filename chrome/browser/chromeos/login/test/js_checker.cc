@@ -153,6 +153,17 @@ std::unique_ptr<TestConditionWaiter> JSChecker::CreateEnabledWaiter(
   return CreateWaiter(js_condition);
 }
 
+std::unique_ptr<TestConditionWaiter> JSChecker::CreateHasClassWaiter(
+    bool has_class,
+    const std::string& css_class,
+    std::initializer_list<base::StringPiece> element_ids) {
+  std::string js_condition = ElementHasClassCondition(css_class, element_ids);
+  if (!has_class) {
+    js_condition = "!(" + js_condition + ")";
+  }
+  return CreateWaiter(js_condition);
+}
+
 void JSChecker::GetBoolImpl(const std::string& expression, bool* result) {
   CHECK(web_contents_);
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
