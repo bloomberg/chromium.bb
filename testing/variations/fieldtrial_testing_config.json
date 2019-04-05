@@ -2549,6 +2549,21 @@
             ]
         }
     ],
+    "LazyLoad": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "LazyFrameLoading"
+                    ]
+                }
+            ]
+        }
+    ],
     "LegacySymantecPKI": [
         {
             "platforms": [
