@@ -24,19 +24,23 @@
 
 namespace ui {
 
-// A ui::InputMethod implementation based on IBus.
+// A ui::InputMethod implementation for ChromeOS.
 class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodChromeOS
-    : public InputMethodBase {
+    : public InputMethodBase,
+      public AsyncKeyDispatcher {
  public:
   explicit InputMethodChromeOS(internal::InputMethodDelegate* delegate);
   ~InputMethodChromeOS() override;
 
   using AckCallback = base::OnceCallback<void(bool)>;
-  ui::EventDispatchDetails DispatchKeyEvent(ui::KeyEvent* event,
-                                            AckCallback ack_callback);
+
+  // Overridden from AsyncKeyDispatcher:
+  void DispatchKeyEventAsync(ui::KeyEvent* event,
+                             AckCallback ack_callback) override;
 
   // Overridden from InputMethod:
   ui::EventDispatchDetails DispatchKeyEvent(ui::KeyEvent* event) override;
+  AsyncKeyDispatcher* GetAsyncKeyDispatcher() override;
   void OnTextInputTypeChanged(const TextInputClient* client) override;
   void OnCaretBoundsChanged(const TextInputClient* client) override;
   void CancelComposition(const TextInputClient* client) override;
@@ -68,6 +72,9 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodChromeOS
 
  private:
   class PendingKeyEvent;
+
+  ui::EventDispatchDetails DispatchKeyEventInternal(ui::KeyEvent* event,
+                                                    AckCallback ack_callback);
 
   // Asks the client to confirm current composition text.
   void ConfirmCompositionText();

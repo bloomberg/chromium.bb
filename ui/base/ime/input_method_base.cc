@@ -86,6 +86,10 @@ void InputMethodBase::SetOnScreenKeyboardBounds(const gfx::Rect& new_bounds) {
     text_input_client_->EnsureCaretNotInRect(keyboard_bounds_);
 }
 
+AsyncKeyDispatcher* InputMethodBase::GetAsyncKeyDispatcher() {
+  return nullptr;
+}
+
 void InputMethodBase::OnTextInputTypeChanged(const TextInputClient* client) {
   if (!IsTextInputClientFocused(client))
     return;

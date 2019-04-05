@@ -64,7 +64,8 @@ void InputMethodBridge::ProcessKeyEvent(std::unique_ptr<ui::Event> event,
   ui::KeyEvent* key_event = event->AsKeyEvent();
   if (IsActiveInputContextHandler(input_method_chromeos_.get()) &&
       !key_event->is_char()) {
-    input_method_chromeos_->DispatchKeyEvent(key_event, std::move(callback));
+    input_method_chromeos_->DispatchKeyEventAsync(key_event,
+                                                  std::move(callback));
   } else {
     const bool handled = false;
     std::move(callback).Run(handled);

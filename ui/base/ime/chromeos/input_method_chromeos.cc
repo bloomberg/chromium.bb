@@ -81,7 +81,12 @@ InputMethodChromeOS::~InputMethodChromeOS() {
   }
 }
 
-ui::EventDispatchDetails InputMethodChromeOS::DispatchKeyEvent(
+void InputMethodChromeOS::DispatchKeyEventAsync(ui::KeyEvent* event,
+                                                AckCallback ack_callback) {
+  ignore_result(DispatchKeyEventInternal(event, std::move(ack_callback)));
+}
+
+ui::EventDispatchDetails InputMethodChromeOS::DispatchKeyEventInternal(
     ui::KeyEvent* event,
     AckCallback ack_callback) {
   ResultCallback result_callback =
@@ -208,7 +213,11 @@ ui::EventDispatchDetails InputMethodChromeOS::ProcessKeyEventDone(
 
 ui::EventDispatchDetails InputMethodChromeOS::DispatchKeyEvent(
     ui::KeyEvent* event) {
-  return DispatchKeyEvent(event, AckCallback());
+  return DispatchKeyEventInternal(event, AckCallback());
+}
+
+AsyncKeyDispatcher* InputMethodChromeOS::GetAsyncKeyDispatcher() {
+  return this;
 }
 
 void InputMethodChromeOS::OnTextInputTypeChanged(

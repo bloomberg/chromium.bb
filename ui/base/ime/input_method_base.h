@@ -52,6 +52,7 @@ class COMPONENT_EXPORT(UI_BASE_IME) InputMethodBase
   void DetachTextInputClient(TextInputClient* client) override;
   TextInputClient* GetTextInputClient() const override;
   void SetOnScreenKeyboardBounds(const gfx::Rect& new_bounds) override;
+  AsyncKeyDispatcher* GetAsyncKeyDispatcher() override;
 
   // If a derived class overrides this method, it should call parent's
   // implementation.
