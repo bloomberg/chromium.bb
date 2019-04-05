@@ -105,7 +105,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
     assert oauth2_json is None, "oauth2_json is deprecated"
     assert not (ignore_input_commit and set_output_commit)
 
-    refs = list(refs or [])
+    refs = refs or []
     # We can re-use the gclient spec from the gclient module, since all the
     # data bot_update needs is already configured into the gclient spec.
     cfg = gclient_config or self.m.gclient.c
@@ -174,11 +174,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
     # TODO(machenbach): We should explicitly pass HEAD for ALL solutions
     # that don't specify anything else.
     first_sol = cfg.solutions[0].name
-    revisions[first_sol] = (
-        revisions.get(first_sol) or
-        self.m.tryserver.gerrit_change_target_ref or
-        'refs/heads/master'
-    )
+    revisions[first_sol] = revisions.get(first_sol) or 'HEAD'
 
     if cfg.revisions:
       # Only update with non-empty values. Some recipe might otherwise
@@ -199,10 +195,12 @@ class BotUpdateApi(recipe_api.RecipeApi):
       fixed_revision = self.m.gclient.resolve_revision(revision)
       if fixed_revision:
         fixed_revisions[name] = fixed_revision
+        if fixed_revision.upper() == 'HEAD':
+          # Sync to correct destination branch if HEAD was specified.
+          fixed_revision = self._destination_branch(cfg, name)
         # If we're syncing to a ref, we want to make sure it exists before
         # trying to check it out.
         if (fixed_revision.startswith('refs/') and
-            fixed_revision != 'refs/heads/master' and
             # TODO(crbug.com/874501): fetching additional refs is currently
             # only supported for the root solution. We should investigate
             # supporting it for other dependencies.
@@ -312,7 +310,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
             assert (
                 input_commit.ref and
                 # Revision was not overridden.
-                revisions[main_repo_path] == input_commit_rev), input_commit
+                revisions[main_repo_path] == input_commit_rev)
             output_commit.ref = input_commit.ref
           output_commit.host, output_commit.project = (
               self.m.gitiles.parse_repo_url(git_checkout['repo_url']))
@@ -353,6 +351,40 @@ class BotUpdateApi(recipe_api.RecipeApi):
           self.m.path['checkout'] = cwd.join(*co_root.split(self.m.path.sep))
 
     return step_result
+
+  def _destination_branch(self, cfg, path):
+    """Returns the destination branch of a CL for the matching project
+    if available or HEAD otherwise.
+
+    If there's no Gerrit CL associated with the run, returns 'HEAD'.
+    Otherwise this queries Gerrit for the correct destination branch, which
+    might differ from master.
+
+    Args:
+      cfg: The used gclient config.
+      path: The DEPS path of the project this prefix is for. E.g. 'src' or
+          'src/v8'. The query will only be made for the project that matches
+          the CL's project.
+    Returns:
+        A destination branch as understood by bot_update.py if available
+        and if different from master, returns 'HEAD' otherwise.
+    """
+    # Ignore project paths other than the one belonging to the current CL.
+    patch_path = self.m.gclient.get_gerrit_patch_root(gclient_config=cfg)
+    if not patch_path or path != patch_path:
+      return 'HEAD'
+
+    target_ref = self.m.tryserver.gerrit_change_target_ref
+    if target_ref == 'refs/heads/master':
+      return 'HEAD'
+
+    # TODO: Remove. Return ref, not branch.
+    ret = target_ref
+    prefix = 'refs/heads/'
+    if ret.startswith(prefix):
+      ret = ret[len(prefix):]
+
+    return ret
 
   def _resolve_fixed_revisions(self, bot_update_json):
     """Set all fixed revisions from the first sync to their respective
