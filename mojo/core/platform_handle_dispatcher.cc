@@ -40,9 +40,10 @@ void PlatformHandleDispatcher::StartSerialize(uint32_t* num_bytes,
   *num_handles = 1;
 }
 
-bool PlatformHandleDispatcher::EndSerialize(void* destination,
-                                            ports::PortName* ports,
-                                            PlatformHandle* handles) {
+bool PlatformHandleDispatcher::EndSerialize(
+    void* destination,
+    ports::UserMessageEvent::PortAttachment* ports,
+    PlatformHandle* handles) {
   base::AutoLock lock(lock_);
   if (is_closed_)
     return false;
@@ -73,7 +74,7 @@ void PlatformHandleDispatcher::CancelTransit() {
 scoped_refptr<PlatformHandleDispatcher> PlatformHandleDispatcher::Deserialize(
     const void* bytes,
     size_t num_bytes,
-    const ports::PortName* ports,
+    const ports::UserMessageEvent::PortAttachment* ports,
     size_t num_ports,
     PlatformHandle* handles,
     size_t num_handles) {

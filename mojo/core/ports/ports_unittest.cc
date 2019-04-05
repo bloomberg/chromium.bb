@@ -147,7 +147,7 @@ class TestNode : public NodeDelegate {
                                 const std::string& s,
                                 const PortName& sent_port_name) {
     auto event = NewUserMessageEvent(s, 1);
-    event->ports()[0] = sent_port_name;
+    event->ports()[0].name = sent_port_name;
     return node_.SendUserMessage(port, std::move(event));
   }
 
@@ -243,7 +243,7 @@ class TestNode : public NodeDelegate {
     UserMessageEvent* message_event = static_cast<UserMessageEvent*>(event);
     for (size_t i = 0; i < message_event->num_ports(); ++i) {
       PortRef port;
-      ASSERT_EQ(OK, node_.GetPort(message_event->ports()[i], &port));
+      ASSERT_EQ(OK, node_.GetPort(message_event->ports()[i].name, &port));
       EXPECT_EQ(OK, node_.ClosePort(port));
     }
   }
@@ -607,7 +607,7 @@ TEST_F(PortsTest, LostConnectionToNodeWithSecondaryProxy) {
   ASSERT_TRUE(node1.ReadMessage(B, &message));
   ASSERT_EQ(1u, message->num_ports());
 
-  EXPECT_EQ(OK, node1.node().GetPort(message->ports()[0], &F));
+  EXPECT_EQ(OK, node1.node().GetPort(message->ports()[0].name, &F));
 
   // Send F over C to node 2 and then simulate node 2 loss from node 1. Node 1
   // will trivially become aware of the loss, and this test verifies that the
@@ -674,7 +674,7 @@ TEST_F(PortsTest, LostConnectionToNodeWithLocalProxy) {
   ASSERT_TRUE(node1.ReadMessage(B, &message));
   ASSERT_EQ(1u, message->num_ports());
   PortRef E;
-  EXPECT_EQ(OK, node1.node().GetPort(message->ports()[0], &E));
+  EXPECT_EQ(OK, node1.node().GetPort(message->ports()[0].name, &E));
 
   RemoveNode(&node1);
 
@@ -790,7 +790,7 @@ TEST_F(PortsTest, Delegation1) {
   EXPECT_TRUE(MessageEquals(message, "a1"));
 
   // This is "a1" from the point of view of node1.
-  PortName a2_name = message->ports()[0];
+  PortName a2_name = message->ports()[0].name;
   EXPECT_EQ(OK, node1.SendStringMessageWithPort(x1, "a2", a2_name));
   EXPECT_EQ(OK, node0.SendStringMessage(a0, "hello"));
 
@@ -801,7 +801,7 @@ TEST_F(PortsTest, Delegation1) {
   EXPECT_TRUE(MessageEquals(message, "a2"));
 
   // This is "a2" from the point of view of node1.
-  PortName a3_name = message->ports()[0];
+  PortName a3_name = message->ports()[0].name;
 
   PortRef a3;
   EXPECT_EQ(OK, node0.node().GetPort(a3_name, &a3));
@@ -956,7 +956,7 @@ TEST_F(PortsTest, AllowShutdownWithLocalPortsOpen) {
   ASSERT_EQ(1u, message->num_ports());
   EXPECT_TRUE(MessageEquals(message, "foo"));
   PortRef E;
-  ASSERT_EQ(OK, node.node().GetPort(message->ports()[0], &E));
+  ASSERT_EQ(OK, node.node().GetPort(message->ports()[0].name, &E));
 
   EXPECT_TRUE(
       node.node().CanShutdownCleanly(Node::ShutdownPolicy::ALLOW_LOCAL_PORTS));
@@ -994,21 +994,21 @@ TEST_F(PortsTest, ProxyCollapse1) {
   ASSERT_TRUE(node.ReadMessage(Y, &message));
   ASSERT_EQ(1u, message->num_ports());
   PortRef C;
-  ASSERT_EQ(OK, node.node().GetPort(message->ports()[0], &C));
+  ASSERT_EQ(OK, node.node().GetPort(message->ports()[0].name, &C));
 
   // Send C and receive it as D.
   EXPECT_EQ(OK, node.SendStringMessageWithPort(X, "foo", C));
   ASSERT_TRUE(node.ReadMessage(Y, &message));
   ASSERT_EQ(1u, message->num_ports());
   PortRef D;
-  ASSERT_EQ(OK, node.node().GetPort(message->ports()[0], &D));
+  ASSERT_EQ(OK, node.node().GetPort(message->ports()[0].name, &D));
 
   // Send D and receive it as E.
   EXPECT_EQ(OK, node.SendStringMessageWithPort(X, "foo", D));
   ASSERT_TRUE(node.ReadMessage(Y, &message));
   ASSERT_EQ(1u, message->num_ports());
   PortRef E;
-  ASSERT_EQ(OK, node.node().GetPort(message->ports()[0], &E));
+  ASSERT_EQ(OK, node.node().GetPort(message->ports()[0].name, &E));
 
   EXPECT_EQ(OK, node.node().ClosePort(X));
   EXPECT_EQ(OK, node.node().ClosePort(Y));
@@ -1075,7 +1075,7 @@ TEST_F(PortsTest, SendWithClosedPeer) {
   ASSERT_TRUE(node.ReadMessage(Y, &message));
   ASSERT_EQ(1u, message->num_ports());
   PortRef C;
-  ASSERT_EQ(OK, node.node().GetPort(message->ports()[0], &C));
+  ASSERT_EQ(OK, node.node().GetPort(message->ports()[0].name, &C));
 
   EXPECT_EQ(OK, node.node().ClosePort(X));
   EXPECT_EQ(OK, node.node().ClosePort(Y));
@@ -1124,7 +1124,7 @@ TEST_F(PortsTest, SendWithClosedPeerSent) {
   ASSERT_TRUE(node.ReadMessage(Y, &message));
   ASSERT_EQ(1u, message->num_ports());
   PortRef C;
-  ASSERT_EQ(OK, node.node().GetPort(message->ports()[0], &C));
+  ASSERT_EQ(OK, node.node().GetPort(message->ports()[0].name, &C));
 
   // Send C as new port D.
   EXPECT_EQ(OK, node.SendStringMessageWithPort(X, "foo", C));
@@ -1132,7 +1132,7 @@ TEST_F(PortsTest, SendWithClosedPeerSent) {
   ASSERT_TRUE(node.ReadMessage(Y, &message));
   ASSERT_EQ(1u, message->num_ports());
   PortRef D;
-  ASSERT_EQ(OK, node.node().GetPort(message->ports()[0], &D));
+  ASSERT_EQ(OK, node.node().GetPort(message->ports()[0].name, &D));
 
   // Send a message to B through D, then close D.
   EXPECT_EQ(OK, node.SendStringMessage(D, "hey"));
@@ -1146,7 +1146,7 @@ TEST_F(PortsTest, SendWithClosedPeerSent) {
   ASSERT_TRUE(node.ReadMessage(Y, &message));
   ASSERT_EQ(1u, message->num_ports());
   PortRef E;
-  ASSERT_EQ(OK, node.node().GetPort(message->ports()[0], &E));
+  ASSERT_EQ(OK, node.node().GetPort(message->ports()[0].name, &E));
 
   EXPECT_EQ(OK, node.node().ClosePort(Y));
 
@@ -1353,7 +1353,7 @@ TEST_F(PortsTest, MergePortsWithMovedPeers) {
   ASSERT_TRUE(node0.ReadMessage(Y, &message));
   ASSERT_EQ(1u, message->num_ports());
   PortRef E;
-  ASSERT_EQ(OK, node0.node().GetPort(message->ports()[0], &E));
+  ASSERT_EQ(OK, node0.node().GetPort(message->ports()[0].name, &E));
 
   EXPECT_EQ(OK, node0.node().ClosePort(X));
   EXPECT_EQ(OK, node0.node().ClosePort(Y));
@@ -1426,7 +1426,7 @@ TEST_F(PortsTest, MergePortsFailsGracefully) {
   ASSERT_TRUE(node0.ReadMessage(X, &message));
   ASSERT_EQ(1u, message->num_ports());
   PortRef E;
-  ASSERT_EQ(OK, node0.node().GetPort(message->ports()[0], &E));
+  ASSERT_EQ(OK, node0.node().GetPort(message->ports()[0].name, &E));
 
   EXPECT_EQ(OK, node0.node().ClosePort(X));
   EXPECT_EQ(OK, node1.node().ClosePort(Y));
@@ -1488,11 +1488,11 @@ TEST_F(PortsTest, RemotePeerStatus) {
   ScopedMessage message;
   ASSERT_TRUE(node0.ReadMessage(x2, &message));
   ASSERT_EQ(1u, message->num_ports());
-  ASSERT_EQ(OK, node0.node().GetPort(message->ports()[0], &x1));
+  ASSERT_EQ(OK, node0.node().GetPort(message->ports()[0].name, &x1));
 
   ASSERT_TRUE(node1.ReadMessage(x3, &message));
   ASSERT_EQ(1u, message->num_ports());
-  ASSERT_EQ(OK, node1.node().GetPort(message->ports()[0], &b));
+  ASSERT_EQ(OK, node1.node().GetPort(message->ports()[0].name, &b));
 
   // Now x0-x1 should be local to node0 and a-b should span the nodes.
   ASSERT_EQ(OK, node0.node().GetStatus(x0, &status));
@@ -1511,11 +1511,11 @@ TEST_F(PortsTest, RemotePeerStatus) {
 
   ASSERT_TRUE(node0.ReadMessage(x2, &message));
   ASSERT_EQ(1u, message->num_ports());
-  ASSERT_EQ(OK, node0.node().GetPort(message->ports()[0], &b));
+  ASSERT_EQ(OK, node0.node().GetPort(message->ports()[0].name, &b));
 
   ASSERT_TRUE(node1.ReadMessage(x3, &message));
   ASSERT_EQ(1u, message->num_ports());
-  ASSERT_EQ(OK, node1.node().GetPort(message->ports()[0], &x1));
+  ASSERT_EQ(OK, node1.node().GetPort(message->ports()[0].name, &x1));
 
   ASSERT_EQ(OK, node0.node().GetStatus(x0, &status));
   EXPECT_TRUE(status.peer_remote);

@@ -17,7 +17,7 @@
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "mojo/core/handle_signals_state.h"
-#include "mojo/core/ports/name.h"
+#include "mojo/core/ports/event.h"
 #include "mojo/core/ports/port_ref.h"
 #include "mojo/core/system_impl_export.h"
 #include "mojo/core/watch.h"
@@ -255,7 +255,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   // called, the implementation should retain its PlatformHandles in working
   // condition.
   virtual bool EndSerialize(void* destination,
-                            ports::PortName* ports,
+                            ports::UserMessageEvent::PortAttachment* ports,
                             PlatformHandle* handles);
 
   // Does whatever is necessary to begin transit of the dispatcher.  This
@@ -273,13 +273,14 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   virtual void CancelTransit();
 
   // Deserializes a specific dispatcher type from an incoming message.
-  static scoped_refptr<Dispatcher> Deserialize(Type type,
-                                               const void* bytes,
-                                               size_t num_bytes,
-                                               const ports::PortName* ports,
-                                               size_t num_ports,
-                                               PlatformHandle* platform_handles,
-                                               size_t platform_handle_count);
+  static scoped_refptr<Dispatcher> Deserialize(
+      Type type,
+      const void* bytes,
+      size_t num_bytes,
+      const ports::UserMessageEvent::PortAttachment* ports,
+      size_t num_ports,
+      PlatformHandle* platform_handles,
+      size_t platform_handle_count);
 
  protected:
   friend class base::RefCountedThreadSafe<Dispatcher>;

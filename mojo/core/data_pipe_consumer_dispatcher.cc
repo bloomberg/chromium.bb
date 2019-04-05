@@ -298,7 +298,7 @@ void DataPipeConsumerDispatcher::StartSerialize(uint32_t* num_bytes,
 
 bool DataPipeConsumerDispatcher::EndSerialize(
     void* destination,
-    ports::PortName* ports,
+    ports::UserMessageEvent::PortAttachment* ports,
     PlatformHandle* platform_handles) {
   SerializedState* state = static_cast<SerializedState*>(destination);
   memcpy(&state->options, &options_, sizeof(MojoCreateDataPipeOptions));
@@ -318,7 +318,7 @@ bool DataPipeConsumerDispatcher::EndSerialize(
   state->buffer_guid_high = guid.GetHighForSerialization();
   state->buffer_guid_low = guid.GetLowForSerialization();
 
-  ports[0] = control_port_.name();
+  ports[0].name = control_port_.name();
 
   PlatformHandle handle;
   PlatformHandle ignored_handle;
@@ -358,12 +358,13 @@ void DataPipeConsumerDispatcher::CancelTransit() {
 
 // static
 scoped_refptr<DataPipeConsumerDispatcher>
-DataPipeConsumerDispatcher::Deserialize(const void* data,
-                                        size_t num_bytes,
-                                        const ports::PortName* ports,
-                                        size_t num_ports,
-                                        PlatformHandle* handles,
-                                        size_t num_handles) {
+DataPipeConsumerDispatcher::Deserialize(
+    const void* data,
+    size_t num_bytes,
+    const ports::UserMessageEvent::PortAttachment* ports,
+    size_t num_ports,
+    PlatformHandle* handles,
+    size_t num_handles) {
   if (num_ports != 1 || num_handles != 1 ||
       num_bytes != sizeof(SerializedState)) {
     return nullptr;
@@ -379,8 +380,10 @@ DataPipeConsumerDispatcher::Deserialize(const void* data,
 
   NodeController* node_controller = Core::Get()->GetNodeController();
   ports::PortRef port;
-  if (node_controller->node()->GetPort(ports[0], &port) != ports::OK)
+  if (node_controller->node()->GetPort(ports[0].name, &port) != ports::OK ||
+      ports[0].slot_id != ports::kDefaultSlotId) {
     return nullptr;
+  }
 
   auto region_handle = CreateSharedMemoryRegionHandleFromPlatformHandles(
       std::move(handles[0]), PlatformHandle());
