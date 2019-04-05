@@ -229,12 +229,16 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   // is already taken.
   bool is_latency_info_taken() { return is_latency_info_taken_; }
 
- private:
-  struct SequenceNumbers {
-    uint32_t parent_sequence_number = 0u;
-    uint32_t child_sequence_number = 0u;
-  };
+  // Called by a blocking SurfaceAllocationGroup when |activation_dependency|
+  // is resolved. |this| will be automatically unregistered from |group|, the
+  // SurfaceAllocationGroup corresponding to |activation_dependency|.
+  void OnActivationDependencyResolved(const SurfaceId& activation_dependency,
+                                      SurfaceAllocationGroup* group);
 
+  // Called when this surface's activation no longer has to block on the parent.
+  void ResetBlockActivationOnParent();
+
+ private:
   struct FrameData {
     FrameData(CompositorFrame&& frame,
               uint64_t frame_index,
@@ -292,9 +296,6 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   // dependencies will be added even if they're not yet available.
   void UpdateActivationDependencies(const CompositorFrame& current_frame);
 
-  void ComputeChangeInDependencies(
-      const base::flat_map<FrameSinkId, SequenceNumbers>& new_dependencies);
-
   void UnrefFrameResourcesAndRunCallbacks(base::Optional<FrameData> frame_data);
   void ClearCopyRequests();
 
@@ -318,18 +319,7 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   bool seen_first_surface_embedding_ = false;
   bool seen_first_surface_dependency_ = false;
   const bool needs_sync_tokens_;
-  const bool block_activation_on_parent_;
-
-  base::flat_set<SurfaceId> activation_dependencies_;
-
-  // A map from FrameSinkIds of SurfaceIds that this surface depends on for
-  // activation to the latest local_id associated with the given FrameSinkId
-  // that this surface is dependent on. This map is used to determine which
-  // FrameSinkIds this surface would like to observe activations for. Once
-  // the latest activated SurfaceId associated with the given FrameSinkId
-  // passes the local_id in the map, then this surface is no longer interested
-  // in observing activations for that FrameSinkId.
-  base::flat_map<FrameSinkId, SequenceNumbers> frame_sink_id_dependencies_;
+  bool block_activation_on_parent_ = false;
 
   // A set of all valid SurfaceIds contained |last_surface_id_for_range_| to
   // avoid recompution.
@@ -343,6 +333,16 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
 
   // Allocation groups that this surface references by its active frame.
   base::flat_set<SurfaceAllocationGroup*> referenced_allocation_groups_;
+
+  // The set of the SurfaceIds that are blocking the pending frame from being
+  // activated.
+  base::flat_set<SurfaceId> activation_dependencies_;
+
+  // The SurfaceAllocationGroups corresponding to the surfaces in
+  // |activation_dependencies_|. When an activation dependency is
+  // resolved, the corresponding SurfaceAllocationGroup will call back into this
+  // surface to let us know.
+  base::flat_set<SurfaceAllocationGroup*> blocking_allocation_groups_;
 
   bool is_latency_info_taken_ = false;
 

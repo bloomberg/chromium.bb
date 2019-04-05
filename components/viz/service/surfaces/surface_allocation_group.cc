@@ -17,10 +17,15 @@ SurfaceAllocationGroup::SurfaceAllocationGroup(
       embed_token_(embed_token),
       surface_manager_(surface_manager) {}
 
-SurfaceAllocationGroup::~SurfaceAllocationGroup() = default;
+SurfaceAllocationGroup::~SurfaceAllocationGroup() {
+  DCHECK(surfaces_.empty());
+  DCHECK(active_embedders_.empty());
+  DCHECK(blocked_embedders_.empty());
+}
 
 bool SurfaceAllocationGroup::IsReadyToDestroy() const {
-  return surfaces_.empty() && active_embedders_.empty();
+  return surfaces_.empty() && active_embedders_.empty() &&
+         blocked_embedders_.empty();
 }
 
 void SurfaceAllocationGroup::RegisterSurface(Surface* surface) {
@@ -39,6 +44,27 @@ void SurfaceAllocationGroup::UnregisterSurface(Surface* surface) {
   MaybeMarkForDestruction();
 }
 
+void SurfaceAllocationGroup::RegisterBlockedEmbedder(
+    Surface* surface,
+    const SurfaceId& activation_dependency) {
+  blocked_embedders_[surface] = activation_dependency;
+}
+
+void SurfaceAllocationGroup::UnregisterBlockedEmbedder(Surface* surface,
+                                                       bool did_activate) {
+  DCHECK(blocked_embedders_.count(surface));
+  blocked_embedders_.erase(surface);
+  // If the pending frame activated, don't notify SurfaceManager that this
+  // allocation group needs to be destroyed, because the embedder will soon
+  // call RegisterActiveEmbedder.
+  if (!did_activate)
+    MaybeMarkForDestruction();
+}
+
+bool SurfaceAllocationGroup::HasBlockedEmbedder() const {
+  return !blocked_embedders_.empty();
+}
+
 void SurfaceAllocationGroup::RegisterActiveEmbedder(Surface* surface) {
   DCHECK(!active_embedders_.count(surface));
   active_embedders_.insert(surface);
@@ -50,22 +76,32 @@ void SurfaceAllocationGroup::UnregisterActiveEmbedder(Surface* surface) {
   MaybeMarkForDestruction();
 }
 
-void SurfaceAllocationGroup::UpdateLastReferencedSurfaceAndMaybeActivate(
+void SurfaceAllocationGroup::UpdateLastActiveReferenceAndMaybeActivate(
     const SurfaceId& surface_id) {
   DCHECK_EQ(submitter_, surface_id.frame_sink_id());
   DCHECK_EQ(embed_token_, surface_id.local_surface_id().embed_token());
-  if (last_referenced_surface_id_.is_valid() &&
-      last_referenced_surface_id_.IsSameOrNewerThan(surface_id)) {
+  if (last_active_reference_.is_valid() &&
+      last_active_reference_.IsSameOrNewerThan(surface_id)) {
     return;
   }
-  last_referenced_surface_id_ = surface_id;
+  last_active_reference_ = surface_id;
   auto it = FindLatestSurfaceUpTo(surface_id);
   if (it != surfaces_.end() && !(*it)->HasActiveFrame())
     (*it)->ActivatePendingFrameForInheritedDeadline();
+  UpdateLastReferenceAndMaybeActivate(surface_id);
 }
 
-const SurfaceId& SurfaceAllocationGroup::GetLastReferencedSurfaceId() {
-  return last_referenced_surface_id_;
+void SurfaceAllocationGroup::UpdateLastPendingReferenceAndMaybeActivate(
+    const SurfaceId& surface_id) {
+  UpdateLastReferenceAndMaybeActivate(surface_id);
+}
+
+const SurfaceId& SurfaceAllocationGroup::GetLastActiveReference() {
+  return last_active_reference_;
+}
+
+const SurfaceId& SurfaceAllocationGroup::GetLastReference() {
+  return last_reference_;
 }
 
 Surface* SurfaceAllocationGroup::FindLatestActiveSurfaceInRange(
@@ -121,6 +157,23 @@ void SurfaceAllocationGroup::TakeAggregatedLatencyInfoUpTo(
 void SurfaceAllocationGroup::OnFirstSurfaceActivation(Surface* surface) {
   for (Surface* embedder : active_embedders_)
     embedder->OnChildActivatedForActiveFrame(surface->surface_id());
+  base::flat_map<Surface*, SurfaceId> embedders_to_notify;
+  for (const auto& entry : blocked_embedders_) {
+    if (!entry.second.IsNewerThan(surface->surface_id()))
+      embedders_to_notify[entry.first] = entry.second;
+  }
+  for (const auto& entry : embedders_to_notify)
+    blocked_embedders_.erase(entry.first);
+  for (const auto& entry : embedders_to_notify)
+    entry.first->OnActivationDependencyResolved(entry.second, this);
+}
+
+void SurfaceAllocationGroup::WillNotRegisterNewSurfaces() {
+  base::flat_map<Surface*, SurfaceId> embedders = std::move(blocked_embedders_);
+  blocked_embedders_.clear();
+  for (const auto& entry : embedders) {
+    entry.first->OnActivationDependencyResolved(entry.second, this);
+  }
 }
 
 std::vector<Surface*>::const_iterator
@@ -176,6 +229,23 @@ SurfaceAllocationGroup::FindLatestActiveSurfaceUpTo(
 void SurfaceAllocationGroup::MaybeMarkForDestruction() {
   if (IsReadyToDestroy())
     surface_manager_->SetAllocationGroupsNeedGarbageCollection();
+}
+
+void SurfaceAllocationGroup::UpdateLastReferenceAndMaybeActivate(
+    const SurfaceId& surface_id) {
+  if (last_reference_.IsSameOrNewerThan(surface_id))
+    return;
+  last_reference_ = surface_id;
+  if (surfaces_.empty())
+    return;
+  auto it = FindLatestSurfaceUpTo(surface_id);
+  if (it == surfaces_.end())
+    return;
+  (*it)->OnSurfaceDependencyAdded();
+  ++it;
+  if (it == surfaces_.end())
+    return;
+  (*it)->ResetBlockActivationOnParent();
 }
 
 }  // namespace viz

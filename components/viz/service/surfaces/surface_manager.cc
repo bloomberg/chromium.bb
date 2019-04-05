@@ -47,7 +47,6 @@ SurfaceManager::SurfaceManager(
     base::Optional<uint32_t> activation_deadline_in_frames)
     : delegate_(delegate),
       activation_deadline_in_frames_(activation_deadline_in_frames),
-      dependency_tracker_(this),
       root_surface_id_(FrameSinkId(0u, 0u),
                        LocalSurfaceId(1u, base::UnguessableToken::Create())),
       tick_clock_(base::DefaultTickClock::GetInstance()),
@@ -150,8 +149,12 @@ void SurfaceManager::MarkSurfaceForDestruction(const SurfaceId& surface_id) {
 }
 
 void SurfaceManager::InvalidateFrameSinkId(const FrameSinkId& frame_sink_id) {
-  dependency_tracker_.OnFrameSinkInvalidated(frame_sink_id);
-
+  auto it = frame_sink_id_to_allocation_groups_.find(frame_sink_id);
+  if (it != frame_sink_id_to_allocation_groups_.end()) {
+    for (SurfaceAllocationGroup* group : it->second) {
+      group->WillNotRegisterNewSurfaces();
+    }
+  }
   GarbageCollectSurfaces();
 }
 
@@ -487,26 +490,11 @@ void SurfaceManager::SurfaceActivated(
 
   for (auto& observer : observer_list_)
     observer.OnSurfaceActivated(surface->surface_id(), duration);
-
-  dependency_tracker_.OnSurfaceActivated(surface);
-}
-
-void SurfaceManager::SurfaceDependencyAdded(const SurfaceId& surface_id) {
-  dependency_tracker_.OnSurfaceDependencyAdded(surface_id);
-}
-
-void SurfaceManager::SurfaceDependenciesChanged(
-    Surface* surface,
-    const base::flat_set<FrameSinkId>& added_dependencies,
-    const base::flat_set<FrameSinkId>& removed_dependencies) {
-  dependency_tracker_.OnSurfaceDependenciesChanged(surface, added_dependencies,
-                                                   removed_dependencies);
 }
 
 void SurfaceManager::SurfaceDestroyed(Surface* surface) {
   for (auto& observer : observer_list_)
     observer.OnSurfaceDestroyed(surface->surface_id());
-  dependency_tracker_.OnSurfaceDiscarded(surface);
 }
 
 void SurfaceManager::SurfaceDamageExpected(const SurfaceId& surface_id,
@@ -591,6 +579,8 @@ SurfaceAllocationGroup* SurfaceManager::GetOrCreateAllocationGroupForSurfaceId(
     allocation_group = std::make_unique<SurfaceAllocationGroup>(
         this, surface_id.frame_sink_id(),
         surface_id.local_surface_id().embed_token());
+    frame_sink_id_to_allocation_groups_[surface_id.frame_sink_id()].push_back(
+        allocation_group.get());
   }
   return allocation_group.get();
 }
@@ -617,8 +607,30 @@ void SurfaceManager::MaybeGarbageCollectAllocationGroups() {
   if (!allocation_groups_need_garbage_collection_)
     return;
 
-  base::EraseIf(embed_token_to_allocation_group_,
-                [](auto& entry) { return entry.second->IsReadyToDestroy(); });
+  bool did_destroy = false;
+  for (auto it = embed_token_to_allocation_group_.begin();
+       it != embed_token_to_allocation_group_.end(); ++it) {
+    if (!it->second->IsReadyToDestroy())
+      continue;
+    // Before destroying the allocation group, remove it from
+    // |frame_sink_id_to_allocation_groups_|.
+    auto list_it = frame_sink_id_to_allocation_groups_.find(
+        it->second->submitter_frame_sink_id());
+    DCHECK(list_it != frame_sink_id_to_allocation_groups_.end());
+    base::Erase(list_it->second, it->second.get());
+    if (list_it->second.empty())
+      frame_sink_id_to_allocation_groups_.erase(list_it);
+    // Destroy the allocation group. Removing it from the map is done in a
+    // separate pass to avoid invalidating the iterator.
+    it->second.reset();
+    did_destroy = true;
+  }
+
+  // Remove the destroyed allocation groups from the map.
+  if (did_destroy) {
+    base::EraseIf(embed_token_to_allocation_group_,
+                  [](auto& entry) { return !entry.second; });
+  }
 
   allocation_groups_need_garbage_collection_ = false;
 }
