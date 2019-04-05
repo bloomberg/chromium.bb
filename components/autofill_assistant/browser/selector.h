@@ -21,6 +21,10 @@ struct Selector {
   // document.
   std::vector<std::string> selectors;
 
+  // If non-empty, this must be a regular expression that matches the inner text
+  // of the element(s) matching selectors.
+  std::string inner_text_pattern;
+
   // An optional pseudo type. This pseudo type is associated to the final
   // element matched by |selectors|, which means that we currently don't handle
   // matching an element inside a pseudo element.
@@ -46,6 +50,12 @@ struct Selector {
 
   // Checks whether this selector is empty.
   bool empty() const;
+
+  // Convenience function to set inner_text_pattern in a fluent style.
+  Selector& MatchingInnerText(const std::string& pattern) {
+    inner_text_pattern = pattern;
+    return *this;
+  }
 };
 }  // namespace autofill_assistant
 

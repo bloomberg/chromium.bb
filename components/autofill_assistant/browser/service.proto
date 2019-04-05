@@ -504,9 +504,17 @@ message ElementReferenceProto {
   // elements (i.e. resolve to more than one element on the page).
   repeated string selectors = 2;
 
+  // If non-empty, only take into accounts the elements matched by selector
+  // whose inner text matches the given JavaScript regex. This does a search,
+  // not a full match. Add ^ and $ as necessary.
+  //
+  // This is used to filter the elements matching the last selector, before
+  // trying to get the pseudo_type, if any was set.
+  optional string inner_text_pattern = 4;
+
   // An optional pseudo type. This pseudo type is associated to the final
-  // element matched by |selector|, which means that we currently don't handle
-  // matching an element inside a pseudo element.
+  // element matched, which means that we currently don't handle matching an
+  // element inside a pseudo element.
   optional PseudoType pseudo_type = 3;
 }
 

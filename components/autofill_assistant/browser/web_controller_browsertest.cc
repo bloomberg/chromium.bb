@@ -509,6 +509,45 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, MultipleVisibleElementCheck) {
                         false);
 }
 
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, InnerTextCondition) {
+  Selector selector({"#with_inner_text span"});
+  RunLaxElementCheck(kVisibilityCheck, selector, true);
+  RunStrictElementCheck(kVisibilityCheck, selector, false);
+
+  // No matches
+  selector.inner_text_pattern = "no match";
+  RunLaxElementCheck(kExistenceCheck, selector, false);
+  RunLaxElementCheck(kVisibilityCheck, selector, false);
+
+  // Matches exactly one visible element.
+  selector.inner_text_pattern = "hello, world";
+  RunLaxElementCheck(kExistenceCheck, selector, true);
+  RunStrictElementCheck(kExistenceCheck, selector, true);
+  RunLaxElementCheck(kVisibilityCheck, selector, true);
+  RunStrictElementCheck(kVisibilityCheck, selector, true);
+
+  // Matches two visible elements
+  selector.inner_text_pattern = "^hello";
+  RunLaxElementCheck(kExistenceCheck, selector, true);
+  RunStrictElementCheck(kExistenceCheck, selector, false);
+  RunLaxElementCheck(kVisibilityCheck, selector, true);
+  RunStrictElementCheck(kVisibilityCheck, selector, false);
+
+  // Matches one visible, one invisible element
+  selector.inner_text_pattern = "world$";
+  RunLaxElementCheck(kExistenceCheck, selector, true);
+  RunStrictElementCheck(kExistenceCheck, selector, false);
+  RunLaxElementCheck(kVisibilityCheck, selector, true);
+  RunStrictElementCheck(kVisibilityCheck, selector, true);
+
+  // Inner text conditions are applied before looking for the pseudo-type.
+  selector.pseudo_type = PseudoType::BEFORE;
+  selector.inner_text_pattern = "world";
+  RunLaxElementCheck(kExistenceCheck, selector, true);
+  selector.inner_text_pattern = "before";  // matches :before content
+  RunLaxElementCheck(kExistenceCheck, selector, false);
+}
+
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
                        ConcurrentElementsVisibilityCheck) {
   std::vector<Selector> selectors;

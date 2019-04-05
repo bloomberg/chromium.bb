@@ -157,12 +157,18 @@ const char* const kQuerySelector =
 
 // Javascript code to query a visible elements for a selector, either the first
 // (non-strict) or a single (strict) visible element.q
-const char* const kQuerySelectorVisible =
-    R"(function (selector, strict) {
+const char* const kQuerySelectorWithConditions =
+    R"(function (selector, strict, visible, inner_text_re) {
         var found = this.querySelectorAll(selector);
         var found_index = -1;
+        var re = inner_text_re ? RegExp(inner_text_re) : undefined;
+        var match = function(e) {
+          if (visible && e.getClientRects().length == 0) return false;
+          if (re && !re.test(e.innerText)) return false;
+          return true;
+        };
         for (let i = 0; i < found.length; i++) {
-          if (found[i].getClientRects().length > 0) {
+          if (match(found[i])) {
             if (found_index != -1) return undefined;
             found_index = i;
             if (!strict) break;
@@ -564,11 +570,24 @@ void WebController::ElementFinder::RecursiveFindElement(
       runtime::CallArgument::Builder()
           .SetValue(base::Value::ToUniquePtrValue(base::Value(strict_)))
           .Build());
-  const char* function = (index == (selector_.selectors.size() - 1) &&
-                          selector_.pseudo_type == PseudoType::UNDEFINED &&
-                          check_type_ == kVisibilityCheck)
-                             ? kQuerySelectorVisible
-                             : kQuerySelector;
+  std::string function;
+  if (index == (selector_.selectors.size() - 1)) {
+    bool visible = check_type_ == kVisibilityCheck;
+    if (visible || !selector_.inner_text_pattern.empty()) {
+      function.assign(kQuerySelectorWithConditions);
+      argument.emplace_back(
+          runtime::CallArgument::Builder()
+              .SetValue(base::Value::ToUniquePtrValue(base::Value(visible)))
+              .Build());
+      argument.emplace_back(runtime::CallArgument::Builder()
+                                .SetValue(base::Value::ToUniquePtrValue(
+                                    base::Value(selector_.inner_text_pattern)))
+                                .Build());
+    }
+  }
+  if (function.empty()) {
+    function.assign(kQuerySelector);
+  }
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
           .SetObjectId(object_id)
@@ -582,6 +601,12 @@ void WebController::ElementFinder::RecursiveFindElement(
 void WebController::ElementFinder::OnQuerySelectorAll(
     size_t index,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
+  if (!result || result->HasExceptionDetails()) {
+    DVLOG(1) << __func__ << "Failed to query selector " << index << " of "
+             << selector_;
+    SendResult(ClientStatus(OTHER_ACTION_STATUS));
+    return;
+  }
   if (!result || !result->GetResult() || !result->GetResult()->HasObjectId()) {
     SendResult(ClientStatus(ELEMENT_RESOLUTION_FAILED));
     return;
@@ -660,7 +685,6 @@ void WebController::ElementFinder::OnResolveNodeForPseudoElement(
   if (result && result->GetObject() && result->GetObject()->HasObjectId()) {
     element_result_->object_id = result->GetObject()->GetObjectId();
   }
-
   SendResult(OkClientStatus());
 }
 

@@ -14,6 +14,7 @@ Selector::Selector(const ElementReferenceProto& element) {
   for (const auto& selector : element.selectors()) {
     selectors.emplace_back(selector);
   }
+  inner_text_pattern = element.inner_text_pattern();
   pseudo_type = element.pseudo_type();
 }
 
@@ -29,13 +30,24 @@ Selector& Selector::operator=(const Selector& other) = default;
 Selector& Selector::operator=(Selector&& other) = default;
 
 bool Selector::operator<(const Selector& other) const {
-  return this->selectors < other.selectors ||
-         (this->selectors == other.selectors &&
-          this->pseudo_type < other.pseudo_type);
+  if (selectors < other.selectors)
+    return true;
+
+  if (selectors != other.selectors)
+    return false;
+
+  if (inner_text_pattern < other.inner_text_pattern)
+    return true;
+
+  if (inner_text_pattern != other.inner_text_pattern)
+    return false;
+
+  return pseudo_type < other.pseudo_type;
 }
 
 bool Selector::operator==(const Selector& other) const {
   return this->selectors == other.selectors &&
+         this->inner_text_pattern == other.inner_text_pattern &&
          this->pseudo_type == other.pseudo_type;
 }
 
@@ -109,6 +121,11 @@ std::ostream& operator<<(std::ostream& out, const Selector& selector) {
   return out;
 #else
   out << "elements=[" << base::JoinString(selector.selectors, ",") << "]";
+  if (!selector.inner_text_pattern.empty()) {
+    out << " innerText =~ /";
+    out << selector.inner_text_pattern;
+    out << "/";
+  }
   if (selector.pseudo_type != PseudoType::UNDEFINED) {
     out << "::" << selector.pseudo_type;
   }
