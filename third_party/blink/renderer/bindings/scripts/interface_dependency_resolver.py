@@ -214,28 +214,27 @@ def merge_interface_dependencies(definitions, component, target_interface, depen
             target_interface.partial_interfaces.append(dependency_interface)
             resolved_definitions[dependency_component] = dependency_definitions
         else:
-            # Case: target_interface implements dependency_interface.
+            # Case: |target_interface| includes |dependency_interface| mixin.
             # So,
-            # - An interface defined in modules can implement some interface
+            # - An interface defined in modules can include any interface mixin
             #   defined in core.
-            #   In this case, we need "NoInterfaceObject" extended attribute.
             # However,
-            # - An interface defined in core cannot implement any interface
+            # - An interface defined in core cannot include an interface mixin
             #   defined in modules.
-            if not is_valid_component_dependency(component, dependency_component):
-                raise Exception('The interface:%s in %s cannot implement '
-                                'the interface:%s in %s.' % (dependency_interface.name,
-                                                             dependency_component,
-                                                             target_interface.name,
-                                                             component))
+            if (not dependency_interface.is_mixin and
+                    'NoInterfaceObject' not in dependency_interface.extended_attributes):
+                raise Exception('The interface:%s cannot implement '
+                                'the non-mixin interface: %s.' % (
+                                    target_interface.name,
+                                    dependency_interface.name))
 
-            if component != dependency_component and 'NoInterfaceObject' not in dependency_interface.extended_attributes:
-                raise Exception('The interface:%s in %s cannot implement '
-                                'the interface:%s in %s because of '
-                                'missing NoInterfaceObject.' % (dependency_interface.name,
-                                                                dependency_component,
-                                                                target_interface.name,
-                                                                component))
+            if not is_valid_component_dependency(component, dependency_component):
+                raise Exception('The interface:%s in %s cannot include '
+                                'the interface mixin:%s in %s.' % (
+                                    target_interface.name,
+                                    component,
+                                    dependency_interface.name,
+                                    dependency_component))
 
             resolved_definitions[component].update(dependency_definitions)  # merges partial interfaces
             # Implemented interfaces (non-partial dependencies) are also merged

@@ -68,9 +68,9 @@ TBR=someone in third_party/blink/renderer/bindings/OWNERS or WATCHLISTS:bindings
 
 SOURCE_PATH = path_finder.get_source_dir()
 DEPENDENCY_IDL_FILES = frozenset([
-    'test_implements.idl',
-    'test_implements_2.idl',
-    'test_implements_3.idl',
+    'test_interface_mixin.idl',
+    'test_interface_mixin_2.idl',
+    'test_interface_mixin_3.idl',
     'test_interface_partial.idl',
     'test_interface_partial_2.idl',
     'test_interface_partial_3.idl',
