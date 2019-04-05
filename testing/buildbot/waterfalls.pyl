@@ -990,6 +990,137 @@
     },
   },
   {
+    'name': 'chromium.dawn',
+    'machines': {
+      'Dawn Linux x64 Builder' : {},
+      'Dawn Linux x64 DEPS Builder' : {},
+      'Dawn Linux x64 DEPS Release (Intel HD 630)': {
+        'os_type': 'linux',
+        'browser_config': 'release',
+        'mixins': [
+          'linux_intel_hd_630',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_dawn_end2end_tests',
+        },
+      },
+      'Dawn Linux x64 DEPS Release (NVIDIA)': {
+        'os_type': 'linux',
+        'browser_config': 'release',
+        'mixins': [
+          'linux_nvidia_quadro_p400',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_dawn_end2end_tests',
+        },
+      },
+      'Dawn Linux x64 Release (Intel HD 630)': {
+        'os_type': 'linux',
+        'browser_config': 'release',
+        'mixins': [
+          'linux_intel_hd_630',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_dawn_end2end_tests',
+        },
+      },
+      'Dawn Linux x64 Release (NVIDIA)': {
+        'os_type': 'linux',
+        'browser_config': 'release',
+        'mixins': [
+          'linux_nvidia_quadro_p400',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_dawn_end2end_tests',
+        },
+      },
+      'Dawn Win10 x64 Builder' : {},
+      'Dawn Win10 x64 DEPS Builder' : {},
+      'Dawn Win10 x64 DEPS Release (Intel HD 630)': {
+        'os_type': 'win',
+        'browser_config': 'release_x64',
+        'mixins': [
+          'win10_intel_hd_630_stable',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_dawn_end2end_tests',
+        },
+      },
+      'Dawn Win10 x64 DEPS Release (NVIDIA)': {
+        'os_type': 'win',
+        'browser_config': 'release_x64',
+        'mixins': [
+          'win10_nvidia_quadro_p400_stable',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_dawn_end2end_tests',
+        },
+      },
+      'Dawn Win10 x64 Release (Intel HD 630)': {
+        'os_type': 'win',
+        'browser_config': 'release_x64',
+        'mixins': [
+          'win10_intel_hd_630_stable',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_dawn_end2end_tests',
+        },
+      },
+      'Dawn Win10 x64 Release (NVIDIA)': {
+        'os_type': 'win',
+        'browser_config': 'release_x64',
+        'mixins': [
+          'win10_nvidia_quadro_p400_stable',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_dawn_end2end_tests',
+        },
+      },
+      'Dawn Win10 x86 Builder' : {},
+      'Dawn Win10 x86 DEPS Builder' : {},
+      'Dawn Win10 x86 DEPS Release (Intel HD 630)': {
+        'os_type': 'win',
+        'browser_config': 'release',
+        'mixins': [
+          'win10_intel_hd_630_stable',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_dawn_end2end_tests',
+        },
+      },
+      'Dawn Win10 x86 DEPS Release (NVIDIA)': {
+        'os_type': 'win',
+        'browser_config': 'release',
+        'mixins': [
+          'win10_nvidia_quadro_p400_stable',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_dawn_end2end_tests',
+        },
+      },
+      'Dawn Win10 x86 Release (Intel HD 630)': {
+        'os_type': 'win',
+        'browser_config': 'release',
+        'mixins': [
+          'win10_intel_hd_630_stable',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_dawn_end2end_tests',
+        },
+      },
+      'Dawn Win10 x86 Release (NVIDIA)': {
+        'os_type': 'win',
+        'browser_config': 'release',
+        'mixins': [
+          'win10_nvidia_quadro_p400_stable',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_dawn_end2end_tests',
+        },
+      },
+    }
+  },
+  {
     'name': 'chromium.fuzz',
     'machines': {
       'ASAN Debug': {
