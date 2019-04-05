@@ -285,8 +285,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   bool has_been_disposed_ = false;
 #endif
 
-  typedef HeapVector<std::pair<Member<AXObject>, ax::mojom::Event>>
-      NotificationVector;
+  typedef VectorOfPairs<AXObject, ax::mojom::Event> NotificationVector;
   NotificationVector notifications_to_post_;
   void PostNotificationsAfterLayout(Document*);
 
