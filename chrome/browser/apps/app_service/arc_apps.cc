@@ -15,6 +15,7 @@
 #include "chrome/browser/apps/app_service/dip_px_util.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_dialog.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_descriptor.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/grit/component_extension_resources.h"
@@ -298,21 +299,10 @@ void ArcApps::SetPermission(const std::string& app_id,
 }
 
 void ArcApps::Uninstall(const std::string& app_id) {
-  const std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-      prefs_->GetApp(app_id);
-  if (!app_info) {
-    LOG(ERROR) << "Uninstall failed, could not find app with id " << app_id;
+  if (!profile_) {
     return;
   }
-
-  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(prefs_->app_connection_holder(),
-                                               UninstallPackage);
-  if (!instance) {
-    LOG(ERROR) << "Uninstall failed, could not find instance";
-    return;
-  }
-
-  instance->UninstallPackage(app_info->package_name);
+  arc::ShowArcAppUninstallDialog(profile_, app_id);
 }
 
 void ArcApps::OpenNativeSettings(const std::string& app_id) {
