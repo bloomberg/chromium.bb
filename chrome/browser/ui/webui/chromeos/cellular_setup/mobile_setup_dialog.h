@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_MOBILE_SETUP_DIALOG_H_
-#define CHROME_BROWSER_UI_WEBUI_CHROMEOS_MOBILE_SETUP_DIALOG_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_CELLULAR_SETUP_MOBILE_SETUP_DIALOG_H_
+#define CHROME_BROWSER_UI_WEBUI_CHROMEOS_CELLULAR_SETUP_MOBILE_SETUP_DIALOG_H_
 
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
@@ -12,10 +12,12 @@ namespace chromeos {
 
 class NetworkState;
 
-class MobileSetupDialog : public SystemWebDialogDelegate {
- public:
-  static void ShowByNetworkId(const std::string& network_id);
+namespace cellular_setup {
 
+// Dialog used for cellular activation flow when the
+// kUpdatedCellularActivationUi flag is disabled.
+// DEPRECATED: Being replaced by new UI; see https://crbug.com/778021.
+class MobileSetupDialog : public SystemWebDialogDelegate {
  protected:
   explicit MobileSetupDialog(const NetworkState& network);
   ~MobileSetupDialog() override;
@@ -27,9 +29,15 @@ class MobileSetupDialog : public SystemWebDialogDelegate {
   void OnCloseContents(content::WebContents* source,
                        bool* out_close_dialog) override;
 
+ private:
+  friend void OpenCellularSetupDialog(const std::string& cellular_network_guid);
+  static void ShowByNetworkId(const std::string& network_id);
+
   DISALLOW_COPY_AND_ASSIGN(MobileSetupDialog);
 };
 
+}  // namespace cellular_setup
+
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_MOBILE_SETUP_DIALOG_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_CELLULAR_SETUP_MOBILE_SETUP_DIALOG_H_
