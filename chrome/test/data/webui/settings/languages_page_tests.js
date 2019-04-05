@@ -632,6 +632,16 @@ cr.define('languages_page_tests', function() {
         setEnableSpellcheckingViaPolicy(true);
         Polymer.dom.flush();
         assertFalse(!!triggerRow.querySelector('cr-policy-pref-indicator'));
+
+        const spellCheckLanguagesCount =
+            spellCheckCollapse.querySelectorAll('.list-item').length;
+        // Enabling a language without spellcheck support should not add it to
+        // the list
+        languageHelper.enableLanguage('tk');
+        Polymer.dom.flush();
+        assertEquals(
+            spellCheckCollapse.querySelectorAll('.list-item').length,
+            spellCheckLanguagesCount);
       });
 
       test('error handling', function() {
