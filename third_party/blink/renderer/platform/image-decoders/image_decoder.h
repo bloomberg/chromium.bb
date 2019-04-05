@@ -168,6 +168,9 @@ class PLATFORM_EXPORT ImageDecoder {
   // failure is due to insufficient or bad data.
   static bool HasSufficientDataToSniffImageType(const SharedBuffer&);
 
+  // Looks at the image data to determine and return the image MIME type.
+  static String SniffImageType(scoped_refptr<SharedBuffer> image_data);
+
   void SetData(scoped_refptr<SegmentReader> data, bool all_data_received) {
     if (failed_)
       return;
