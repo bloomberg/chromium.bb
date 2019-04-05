@@ -36,6 +36,8 @@
 #include "components/autofill/core/browser/country_data.h"
 #include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/label_formatter.h"
+#include "components/autofill/core/browser/label_formatter_utils.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/phone_number.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
@@ -1160,20 +1162,23 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
                                                  matched_profiles, suggestions,
                                                  &unique_matched_profiles);
 
+  std::unique_ptr<LabelFormatter> formatter =
+      base::FeatureList::IsEnabled(
+          autofill::features::kAutofillUseImprovedLabelDisambiguation)
+          ? LabelFormatter::Create(app_locale_, type.GetStorableType(),
+                                   field_types)
+          : nullptr;
+
   // Generate disambiguating labels based on the list of matches.
   std::vector<base::string16> labels;
-  AutofillProfile::CreateInferredLabels(unique_matched_profiles, &field_types,
-                                        type.GetStorableType(), 1, app_locale_,
-                                        &labels);
-  DCHECK_EQ(unique_suggestions.size(), labels.size());
-  for (size_t i = 0; i < labels.size(); i++) {
-    // A suggestion's label has one line of disambiguating information to show
-    // to the user. However, when the two-line suggestion display experiment is
-    // enabled on desktop, label is replaced by additional label.
-    unique_suggestions[i].label = labels[i];
-    unique_suggestions[i].additional_label = labels[i];
+  if (formatter) {
+    labels = formatter->GetLabels(unique_matched_profiles);
+  } else {
+    AutofillProfile::CreateInferredLabels(unique_matched_profiles, &field_types,
+                                          type.GetStorableType(), 1,
+                                          app_locale_, &labels);
   }
-
+  suggestion_selection::PrepareSuggestions(labels, &unique_suggestions);
   return unique_suggestions;
 }
 
