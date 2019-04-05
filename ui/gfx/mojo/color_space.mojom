@@ -82,5 +82,4 @@ struct ColorSpace {
   ColorSpaceRangeID range;
   array<float, 9> custom_primary_matrix;
   array<float, 7> custom_transfer_params;
-  uint64 icc_profile_id;
 };

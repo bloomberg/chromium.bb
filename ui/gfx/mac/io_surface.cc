@@ -229,7 +229,7 @@ void IOSurfaceSetColorSpace(IOSurfaceRef io_surface,
 
   // Generate an ICCProfile from the parametric color space.
   ICCProfile icc_profile =
-      ICCProfile::FromParametricColorSpace(color_space.GetAsFullRangeRGB());
+      ICCProfile::FromColorSpace(color_space.GetAsFullRangeRGB());
   if (!icc_profile.IsValid()) {
     DLOG(ERROR) << "Failed to set color space for IOSurface: no ICC profile: "
                 << color_space.ToString();

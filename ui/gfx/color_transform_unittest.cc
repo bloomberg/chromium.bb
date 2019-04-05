@@ -325,9 +325,6 @@ TEST(SimpleColorSpace, GetColorSpace) {
   ColorSpace sRGB = srgb_icc.GetColorSpace();
   ColorSpace sRGB2 = sRGB;
 
-  // Prevent sRGB2 from using a cached ICC profile.
-  sRGB2.icc_profile_id_ = 0;
-
   std::unique_ptr<ColorTransform> t(ColorTransform::NewColorTransform(
       sRGB, sRGB2, ColorTransform::Intent::INTENT_ABSOLUTE));
 
