@@ -2427,6 +2427,10 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillImportNonFocusableCreditCardForms)},
+    {"enable-autofill-import-dynamic-forms",
+     flag_descriptions::kEnableAutofillImportDynamicFormsName,
+     flag_descriptions::kEnableAutofillImportDynamicFormsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillImportDynamicForms)},
     {"enable-autofill-local-card-migration-show-feedback",
      flag_descriptions::kEnableAutofillLocalCardMigrationShowFeedbackName,
      flag_descriptions::

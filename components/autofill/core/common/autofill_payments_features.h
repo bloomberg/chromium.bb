@@ -25,6 +25,7 @@ extern const base::Feature kAutofillDoNotUploadSaveUnsupportedCards;
 extern const base::Feature kAutofillDownstreamUseGooglePayBrandingOniOS;
 extern const base::Feature kAutofillEnableLocalCardMigrationForNonSyncUser;
 extern const base::Feature kAutofillEnableToolbarStatusChip;
+extern const base::Feature kAutofillImportDynamicForms;
 extern const base::Feature kAutofillImportNonFocusableCreditCardForms;
 extern const base::Feature kAutofillLocalCardMigrationShowFeedback;
 extern const base::Feature kAutofillLocalCardMigrationUsesStrikeSystemV2;

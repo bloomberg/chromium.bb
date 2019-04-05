@@ -848,6 +848,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-autofill-import-dynamic-forms",
+    "owners": [ "hozhng@google.com", "jiahuiguo@google.com" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "enable-autofill-import-non-focusable-credit-card-forms",
     "owners": [ "hozhng@google.com", "jiahuiguo@google.com" ],
     "expiry_milestone": 76

@@ -86,8 +86,9 @@ using base::Bucket;
 using testing::ElementsAre;
 
 namespace {
-const char kCreditCardUploadForm[] =
+const char kCreditCardAndAddressUploadForm[] =
     "/credit_card_upload_form_address_and_cc.html";
+const char kCreditCardUploadForm[] = "/credit_card_upload_form_cc.html";
 const char kCreditCardAndShippingUploadForm[] =
     "/credit_card_upload_form_shipping_address.html";
 const char kURLGetUploadDetailsRequest[] =
@@ -112,6 +113,7 @@ namespace autofill {
 
 class SaveCardBubbleViewsFullFormBrowserTest
     : public SyncTest,
+      public AutofillHandler::ObserverForTest,
       public CreditCardSaveManager::ObserverForTest,
       public SaveCardBubbleControllerImpl::ObserverForTest {
  protected:
@@ -123,6 +125,7 @@ class SaveCardBubbleViewsFullFormBrowserTest
   enum DialogEvent : int {
     OFFERED_LOCAL_SAVE,
     REQUESTED_UPLOAD_SAVE,
+    DYNAMIC_FORM_PARSED,
     RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
     SENT_UPLOAD_CARD_REQUEST,
     RECEIVED_UPLOAD_CARD_RESPONSE,
@@ -185,10 +188,23 @@ class SaveCardBubbleViewsFullFormBrowserTest
             ->credit_card_save_manager_.get();
     credit_card_save_manager->SetEventObserverForTesting(this);
 
+    // Set up this class as the ObserverForTest implementation.
+    AutofillHandler* autofill_handler =
+        ContentAutofillDriver::GetForRenderFrameHost(
+            GetActiveWebContents()->GetMainFrame())
+            ->autofill_handler();
+    autofill_handler->SetEventObserverForTesting(this);
+
     // Set up the fake geolocation data.
     geolocation_overrider_ =
         std::make_unique<device::ScopedGeolocationOverrider>(
             kFakeGeolocationLatitude, kFakeGeolocationLongitude);
+  }
+
+  // AutofillHandler::ObserverForTest:
+  void OnFormParsed() override {
+    if (event_waiter_)
+      event_waiter_->OnEvent(DialogEvent::DYNAMIC_FORM_PARSED);
   }
 
   // CreditCardSaveManager::ObserverForTest:
@@ -285,7 +301,7 @@ class SaveCardBubbleViewsFullFormBrowserTest
     ResetEventWaiterForSequence(
         {DialogEvent::REQUESTED_UPLOAD_SAVE,
          DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-    NavigateTo(kCreditCardUploadForm);
+    NavigateTo(kCreditCardAndAddressUploadForm);
   }
 
   void NavigateTo(const std::string& file_path) {
@@ -327,6 +343,18 @@ class SaveCardBubbleViewsFullFormBrowserTest
         "(function() { document.getElementById('fill_form').click(); })();";
     ASSERT_TRUE(content::ExecuteScript(web_contents, click_fill_button_js));
     SubmitForm();
+  }
+
+  // Should be called for credit_card_upload_form_cc.html.
+  void FillAndChangeForm() {
+    const std::string click_fill_button_js =
+        "(function() { document.getElementById('fill_form').click(); })();";
+    const std::string click_add_fields_button_js =
+        "(function() { document.getElementById('add_fields').click(); })();";
+    ASSERT_TRUE(
+        content::ExecuteScript(GetActiveWebContents(), click_fill_button_js));
+    ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(),
+                                       click_add_fields_button_js));
   }
 
   void FillAndSubmitFormWithCardDetailsOnly() {
@@ -744,7 +772,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // Submitting the form without signed in user should show the local save
   // bubble.
   ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -783,7 +811,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // show the local save bubble.
   // (Must wait for response from Payments before accessing the controller.)
   ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -811,7 +839,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // Submitting the form without signed in user should show the local save
   // bubble.
   ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -863,7 +891,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
        DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -893,7 +921,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // Submitting the form without signed in user should show the local save
   // bubble.
   ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
 
@@ -928,7 +956,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // Submitting the form without signed in user should show the local save
   // bubble.
   ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
 
@@ -969,7 +997,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // Submitting the form without signed in user should show the local save
   // bubble.
   ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
 
@@ -1016,7 +1044,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // Submitting the form without signed in user should show the local save
   // bubble.
   ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
 
@@ -1077,7 +1105,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // Submitting the form without signed in user should show the local save
   // bubble.
   ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
 
@@ -1130,7 +1158,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // Submitting the form without signed in user should show the local save
   // bubble.
   ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
 
@@ -1173,7 +1201,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // Submitting the form without signed in user should show the local save
   // bubble.
   ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
 
@@ -1221,7 +1249,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // Submitting the form without signed in user should show the local save
   // bubble.
   ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -1240,7 +1268,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // Submitting the form without signed in user should show the local save
   // bubble.
   ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
 
@@ -1282,7 +1310,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -1324,7 +1352,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -1363,7 +1391,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -1391,7 +1419,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -1425,7 +1453,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -1461,7 +1489,7 @@ IN_PROC_BROWSER_TEST_F(
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitFormWithoutName();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -1533,7 +1561,7 @@ IN_PROC_BROWSER_TEST_F(
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitFormWithoutName();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -1582,7 +1610,7 @@ IN_PROC_BROWSER_TEST_F(
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitFormWithoutName();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -1637,7 +1665,7 @@ IN_PROC_BROWSER_TEST_F(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
   base::HistogramTester histogram_tester;
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitFormWithoutName();
   WaitForObservedEvent();
   EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
@@ -1685,7 +1713,7 @@ IN_PROC_BROWSER_TEST_F(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
   base::HistogramTester histogram_tester;
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitFormWithoutName();
   WaitForObservedEvent();
   EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
@@ -1729,7 +1757,7 @@ IN_PROC_BROWSER_TEST_F(
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitFormWithoutName();
   WaitForObservedEvent();
   EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
@@ -1771,7 +1799,7 @@ IN_PROC_BROWSER_TEST_F(
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitFormWithoutName();
   WaitForObservedEvent();
   EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
@@ -1819,7 +1847,7 @@ IN_PROC_BROWSER_TEST_F(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
   base::HistogramTester histogram_tester;
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitFormWithoutName();
   WaitForObservedEvent();
   EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
@@ -1860,7 +1888,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
        DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -1886,7 +1914,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
        DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -1913,12 +1941,39 @@ IN_PROC_BROWSER_TEST_F(
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitFormWithCardDetailsOnly();
   WaitForObservedEvent();
   EXPECT_TRUE(
       FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
   EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+}
+
+// Tests the upload save logic. Ensures that Chrome offers a upload save for
+// dynamic change form.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+                       Logic_CanOfferToSaveDynamicForm) {
+  scoped_feature_list_.InitWithFeatures(
+      {features::kAutofillUpstream, features::kAutofillImportDynamicForms}, {});
+
+  // Start sync.
+  harness_->SetupSync();
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsAccepts();
+
+  // Submitting the the dynamic change form, offer to save bubble should be
+  // shown.
+  ResetEventWaiterForSequence({DialogEvent::DYNAMIC_FORM_PARSED});
+  NavigateTo(kCreditCardUploadForm);
+  FillAndChangeForm();
+  WaitForObservedEvent();
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
+  SubmitForm();
+  WaitForObservedEvent();
+  EXPECT_TRUE(GetSaveCardBubbleViews());
 }
 
 // Tests the upload save logic. Ensures that Chrome delegates the offer-to-save
@@ -1942,7 +1997,7 @@ IN_PROC_BROWSER_TEST_F(
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitFormWithCardDetailsOnly();
   WaitForObservedEvent();
   EXPECT_FALSE(GetSaveCardBubbleViews());
@@ -1960,7 +2015,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // Submitting the form should still start the flow of asking Payments if
   // Chrome should offer to save the card to Google, even though CVC is missing.
   ResetEventWaiterForSequence({DialogEvent::REQUESTED_UPLOAD_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitFormWithoutCvc();
   WaitForObservedEvent();
 }
@@ -1978,7 +2033,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // Chrome should offer to save the card to Google, even though the provided
   // CVC is invalid.
   ResetEventWaiterForSequence({DialogEvent::REQUESTED_UPLOAD_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitFormWithInvalidCvc();
   WaitForObservedEvent();
 }
@@ -1997,7 +2052,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // Chrome should offer to save the card to Google, even though name is
   // missing.
   ResetEventWaiterForSequence({DialogEvent::REQUESTED_UPLOAD_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitFormWithoutName();
   WaitForObservedEvent();
 }
@@ -2037,7 +2092,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // Chrome should offer to save the card to Google, even though billing address
   // is missing.
   ResetEventWaiterForSequence({DialogEvent::REQUESTED_UPLOAD_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitFormWithoutAddress();
   WaitForObservedEvent();
 }
@@ -2083,7 +2138,7 @@ IN_PROC_BROWSER_TEST_F(
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -2136,7 +2191,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // The credit card will not be imported if the expiration date is expired and
   // experiment is off.
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitFormWithSpecificExpirationDate("08", "2000");
   EXPECT_FALSE(GetSaveCardBubbleViews());
 }
@@ -2155,7 +2210,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // The credit card will not be imported if there is no expiration date and
   // experiment is off.
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitFormWithoutExpirationDate();
   EXPECT_FALSE(GetSaveCardBubbleViews());
 }
@@ -2351,7 +2406,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // show the local save bubble.
   // (Must wait for response from Payments before accessing the controller.)
   ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -2390,7 +2445,7 @@ IN_PROC_BROWSER_TEST_F(
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -2423,7 +2478,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // show the local save bubble.
   // (Must wait for response from Payments before accessing the controller.)
   ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -2441,7 +2496,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // page.
   test_clock.Advance(kCardBubbleSurviveNavigationTime);
   ResetEventWaiterForSequence({DialogEvent::STRIKE_CHANGE_COMPLETE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   WaitForObservedEvent();
 
   // Ensure that a strike was added due to the bubble being ignored.
@@ -2475,7 +2530,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -2494,7 +2549,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // page.
   test_clock.Advance(kCardBubbleSurviveNavigationTime);
   ResetEventWaiterForSequence({DialogEvent::STRIKE_CHANGE_COMPLETE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   WaitForObservedEvent();
 
   // Ensure that a strike was added due to the bubble being ignored.
@@ -2519,7 +2574,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // show the local save bubble.
   // (Must wait for response from Payments before accessing the controller.)
   ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -2559,7 +2614,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(
@@ -2598,7 +2653,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
     // show the local save bubble.
     // (Must wait for response from Payments before accessing the controller.)
     ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-    NavigateTo(kCreditCardUploadForm);
+    NavigateTo(kCreditCardAndAddressUploadForm);
     FillAndSubmitForm();
     WaitForObservedEvent();
     EXPECT_TRUE(
@@ -2628,7 +2683,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // Submit the form a fourth time. Since the card now has maximum strikes (3),
   // the icon should be shown but the bubble should not.
   ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(GetSaveCardIconView()->visible());
@@ -2688,7 +2743,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
     ResetEventWaiterForSequence(
         {DialogEvent::REQUESTED_UPLOAD_SAVE,
          DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-    NavigateTo(kCreditCardUploadForm);
+    NavigateTo(kCreditCardAndAddressUploadForm);
     FillAndSubmitForm();
     WaitForObservedEvent();
     EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)
@@ -2721,7 +2776,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   ResetEventWaiterForSequence(
       {DialogEvent::REQUESTED_UPLOAD_SAVE,
        DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  NavigateTo(kCreditCardUploadForm);
+  NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(GetSaveCardIconView()->visible());
