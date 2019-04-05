@@ -189,6 +189,23 @@ static FloatPoint StickyPositionOffsetForLayer(PaintLayer& layer) {
   return FloatPoint(constraints.GetOffsetForStickyPosition(constraints_map));
 }
 
+static bool NeedsDecorationOutlineLayer(const PaintLayer& paint_layer,
+                                        const LayoutObject& layout_object) {
+  int min_border_width = std::min(
+      layout_object.StyleRef().BorderTopWidth(),
+      std::min(layout_object.StyleRef().BorderLeftWidth(),
+               std::min(layout_object.StyleRef().BorderRightWidth(),
+                        layout_object.StyleRef().BorderBottomWidth())));
+
+  bool could_obscure_decorations =
+      (paint_layer.GetScrollableArea() &&
+       paint_layer.GetScrollableArea()->UsesCompositedScrolling()) ||
+      layout_object.IsCanvas() || layout_object.IsVideo();
+
+  return could_obscure_decorations && layout_object.StyleRef().HasOutline() &&
+         layout_object.StyleRef().OutlineOffset() < -min_border_width;
+}
+
 CompositedLayerMapping::CompositedLayerMapping(PaintLayer& layer)
     : owning_layer_(layer),
       pending_update_scope_(kGraphicsLayerUpdateNone),
@@ -768,17 +785,10 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
     layer_config_changed = true;
 
   // If the outline needs to draw over the composited scrolling contents layer
-  // or scrollbar layers it needs to be drawn into a separate layer.
-  int min_border_width = std::min(
-      layout_object.StyleRef().BorderTopWidth(),
-      std::min(layout_object.StyleRef().BorderLeftWidth(),
-               std::min(layout_object.StyleRef().BorderRightWidth(),
-                        layout_object.StyleRef().BorderBottomWidth())));
+  // or scrollbar layers (or video or webgl) it needs to be drawn into a
+  // separate layer.
   bool needs_decoration_outline_layer =
-      owning_layer_.GetScrollableArea() &&
-      owning_layer_.GetScrollableArea()->UsesCompositedScrolling() &&
-      layout_object.StyleRef().HasOutline() &&
-      layout_object.StyleRef().OutlineOffset() < -min_border_width;
+      NeedsDecorationOutlineLayer(owning_layer_, layout_object);
 
   if (UpdateDecorationOutlineLayer(needs_decoration_outline_layer))
     layer_config_changed = true;
@@ -2955,6 +2965,13 @@ GraphicsLayer* CompositedLayerMapping::DetachLayerForOverflowControls() {
     host = overflow_controls_host_layer_.get();
   host->RemoveFromParent();
   return host;
+}
+
+GraphicsLayer* CompositedLayerMapping::DetachLayerForDecorationOutline() {
+  if (!decoration_outline_layer_.get())
+    return nullptr;
+  decoration_outline_layer_->RemoveFromParent();
+  return decoration_outline_layer_.get();
 }
 
 GraphicsLayer* CompositedLayerMapping::ParentForSublayers() const {

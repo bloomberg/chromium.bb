@@ -495,6 +495,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     bool should_paint_normal_flow_and_pos_z_order_lists =
         is_painting_composited_foreground;
     bool should_paint_overlay_scrollbars = is_painting_overlay_scrollbars;
+    bool is_video = paint_layer_.GetLayoutObject().IsVideo();
 
     base::Optional<ScopedPaintChunkProperties>
         subsequence_forced_chunk_properties;
@@ -536,7 +537,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
           !!subsequence_forced_chunk_properties, paint_flags);
     }
 
-    if (should_paint_self_outline) {
+    if (!is_video && should_paint_self_outline) {
       PaintSelfOutlineForFragments(layer_fragments, context,
                                    local_painting_info, paint_flags);
     }
@@ -555,6 +556,13 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     if (should_paint_overlay_scrollbars) {
       PaintOverflowControlsForFragments(layer_fragments, context,
                                         local_painting_info, paint_flags);
+    }
+
+    if (is_video && should_paint_self_outline) {
+      // We paint outlines for video later so that they aren't obscured by the
+      // video controls.
+      PaintSelfOutlineForFragments(layer_fragments, context,
+                                   local_painting_info, paint_flags);
     }
 
     if (!is_painting_overlay_scrollbars && paint_layer_.PaintsWithFilters() &&
