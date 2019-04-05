@@ -23,7 +23,6 @@ class CONTENT_EXPORT ServiceWorkerNetworkProviderForFrame final
  public:
   // Creates a network provider for |frame|.
   //
-  // For S13nServiceWorker:
   // |controller_info| contains the endpoint and object info that is needed to
   // set up the controller service worker for the client.
   // |fallback_loader_factory| is a default loader factory for fallback

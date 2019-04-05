@@ -21,7 +21,6 @@ class ServiceWorkerCacheWriter;
 class ServiceWorkerVersion;
 struct HttpResponseInfoIOBuffer;
 
-// S13nServiceWorker:
 // This is the URLLoader used for loading scripts for a new (installing) service
 // worker. It fetches the script (the main script or imported script) from
 // network, and returns the response to |client|, while also writing the

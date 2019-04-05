@@ -293,7 +293,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   bool is_incognito() const { return is_incognito_; }
 
-  // S13nServiceWorker:
   // Used for starting a shared worker. Returns a provider host for the shared
   // worker and fills |out_provider_info| with info to send to the renderer to
   // connect to the host. The host stays alive as long as this info stays alive

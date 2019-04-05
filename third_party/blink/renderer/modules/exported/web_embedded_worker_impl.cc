@@ -181,16 +181,9 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
     pause_after_download_state_ = kDoPauseAfterDownload;
 
   devtools_worker_token_ = data.devtools_worker_token;
-  // S13nServiceWorker: |loader_factory| is null since all loads for new scripts
-  // go through (internal WebServiceWorkerNetworkProvider class in
-  // service_worker_context_client.cc)::script_loader_factory() rather than the
-  // shadow page's loader. This is different to shared workers, which use
-  // script_loader_factory() for the main script only, and the shadow page
-  // loader for importScripts().
-  //
-  // Non-S13nServiceWorker: |loader_factory| is null since the main script load
-  // goes through the shadow page loader which uses the default loader that goes
-  // to ResourceDispatcherHost.
+  // |loader_factory| is null since all loads for new scripts go through
+  // ServiceWorkerNetworkProviderForServiceWorker::script_loader_factory()
+  // rather than the shadow page's loader.
   shadow_page_ = std::make_unique<WorkerShadowPage>(
       this, nullptr /* loader_factory */,
       std::move(worker_start_data_.privacy_preferences));

@@ -26,10 +26,6 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 
-namespace net {
-class URLRequest;
-}  // namespace net
-
 namespace content {
 
 class ServiceWorkerContextWrapper;
@@ -67,11 +63,7 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
   // If appropriate, starts the navigation preload request and creates
   // |preload_handle_|. Returns true if it started navigation preload.
   // |on_response| is invoked in OnReceiveResponse().
-  bool MaybeStartNavigationPreload(net::URLRequest* original_request,
-                                   base::OnceClosure on_response);
-  // S13nServiceWorker
-  // Same as above but for S13N.
-  bool MaybeStartNavigationPreloadWithURLLoader(
+  bool MaybeStartNavigationPreload(
       const network::ResourceRequest& original_request,
       URLLoaderFactoryGetter* url_loader_factory_getter,
       scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,

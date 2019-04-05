@@ -30,7 +30,6 @@ namespace content {
 
 class ControllerServiceWorkerConnector;
 
-// S13nServiceWorker:
 // A custom URLLoader implementation used by Service Worker controllees
 // for loading subresources via the controller Service Worker.
 // Currently an instance of this class is created and used only on
@@ -198,7 +197,6 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerSubresourceLoader);
 };
 
-// S13nServiceWorker:
 // A custom URLLoaderFactory implementation used by Service Worker controllees
 // for loading subresources via the controller Service Worker.
 // Self destroys when no more bindings exist.

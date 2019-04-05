@@ -6,12 +6,6 @@ module blink.mojom;
 
 // Describes whether a controller service worker exists and if it has a fetch
 // handler.
-//
-// BEWARE: In non-NetS13nServiceWorker, the renderer often does not know which
-// controller service worker a request will go to, as skipWaiting() may occur
-// in the browser process at the same time the renderer makes a request.
-// Therefore, non-NetS13nServiceWorker should usually treat
-// kNoFetchEventHandler and kControlled as the same.
 enum ControllerServiceWorkerMode {
   // No controller exists.
   kNoController,

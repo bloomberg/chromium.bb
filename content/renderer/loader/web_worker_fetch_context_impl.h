@@ -59,7 +59,6 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // security reasons like sandboxed iframes, insecure origins etc.
   // |loader_factory_info| is used for regular loading by the worker.
   //
-  // S13nServiceWorker:
   // If the worker is controlled by a service worker, this class makes another
   // loader factory which sends requests to the service worker, and passes
   // |fallback_factory_info| to that factory to use for network fallback.
@@ -171,7 +170,6 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
 
   bool Send(IPC::Message* message);
 
-  // S13nServiceWorker:
   // Resets the service worker url loader factory of a URLLoaderFactoryImpl
   // which was passed to Blink. The url loader factory is connected to the
   // controller service worker. Sets nullptr if the worker context is not
@@ -205,14 +203,12 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   blink::mojom::ControllerServiceWorkerMode is_controlled_by_service_worker_ =
       blink::mojom::ControllerServiceWorkerMode::kNoController;
 
-  // S13nServiceWorker:
   // Initialized on the worker thread when InitializeOnWorkerThread() is called.
   // This can be null if the |provider_context| passed to Create() was null or
   // already being destructed (see
   // ServiceWorkerProviderContext::OnNetworkProviderDestroyed()).
   blink::mojom::ServiceWorkerContainerHostPtr service_worker_container_host_;
 
-  // S13nServiceWorker:
   // The Client#id value of the shared worker or dedicated worker (since
   // dedicated workers are not yet service worker clients, it is the parent
   // document's id in that case). Passed to ControllerServiceWorkerConnector.
@@ -223,17 +219,15 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
 
   // Initialized on the worker thread when InitializeOnWorkerThread() is called.
   // |loader_factory_| is used for regular loading by the worker. In
-  // S13nServiceWorker, if the worker is controlled by a service worker, it
-  // creates a ServiceWorkerSubresourceLoaderFactory instead.
+  // If the worker is controlled by a service worker, it creates a
+  // ServiceWorkerSubresourceLoaderFactory instead.
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
 
   // Initialized on the worker thread when InitializeOnWorkerThread() is called.
-  // S13nServiceWorker: If the worker is controlled by a service worker, it
-  // passes this factory to ServiceWorkerSubresourceLoaderFactory to use for
-  // network fallback.
+  // If the worker is controlled by a service worker, it passes this factory to
+  // ServiceWorkerSubresourceLoaderFactory to use for network fallback.
   scoped_refptr<network::SharedURLLoaderFactory> fallback_factory_;
 
-  // S13nServiceWorker:
   // Initialized on the worker thread when InitializeOnWorkerThread() is called.
   scoped_refptr<base::RefCountedData<blink::mojom::BlobRegistryPtr>>
       blob_registry_;

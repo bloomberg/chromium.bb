@@ -214,9 +214,7 @@ interface ServiceWorker {
       => (ServiceWorkerEventStatus status);
   // Arguments are passed to the event handler as parameters of SyncEvent.
   // Ref: https://wicg.github.io/BackgroundSync/spec/#sync-event
-  // S13nServiceWorker: |timeout| is the amount of time to allow this event to
-  // finish.
-  // Non-S13nServiceWorker: |timeout| is just ignored.
+  // |timeout| is the amount of time to allow this event to finish.
   DispatchSyncEvent(string id,
                     bool last_chance,
                     mojo_base.mojom.TimeDelta timeout)
@@ -246,7 +244,6 @@ interface ServiceWorker {
   // worker.
   Ping() => ();
 
-  // S13nServiceWorker:
   // Lets the idle timer request termination immediately after all inflight
   // events are handled without delay.
   SetIdleTimerDelayToZero();
