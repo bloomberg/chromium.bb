@@ -354,6 +354,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'cronet_gtests',
+          'scripts': 'cronet_scripts',
         },
         'swarming': {
           'dimension_sets': [
@@ -370,6 +371,9 @@
         'additional_compile_targets': [
           'cronet_package',
         ],
+        'test_suites': {
+          'scripts': 'cronet_scripts',
+        },
       },
       'android-cronet-arm64-dbg': {
         'additional_compile_targets': [
@@ -383,6 +387,9 @@
           'cronet_unittests_android',
           'net_unittests',
         ],
+        'test_suites': {
+          'scripts': 'cronet_scripts',
+        },
       },
       'android-cronet-arm64-rel': {
         'additional_compile_targets': [
@@ -396,6 +403,9 @@
           'cronet_unittests_android',
           'net_unittests',
         ],
+        'test_suites': {
+          'scripts': 'cronet_scripts',
+        },
       },
       'android-cronet-asan-arm-rel': {
         'additional_compile_targets': [
@@ -459,6 +469,9 @@
           'cronet_unittests_android',
           'net_unittests',
         ],
+        'test_suites': {
+          'scripts': 'cronet_scripts',
+        },
       },
       'android-cronet-x86-rel': {
         'additional_compile_targets': [
@@ -472,6 +485,9 @@
           'cronet_unittests_android',
           'net_unittests',
         ],
+        'test_suites': {
+          'scripts': 'cronet_scripts',
+        },
       },
       'android-incremental-dbg': {
         'test_suites': {
