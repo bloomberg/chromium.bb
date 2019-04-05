@@ -115,7 +115,7 @@ class ParentAccessServiceTest : public testing::Test {
     EXPECT_EQ(failure_count, validation_results_.failure_count);
   }
 
-  // ParentAccessService depends on LoginScreenClient and the1refore requires
+  // ParentAccessService depends on LoginScreenClient and therefore requires
   // objects in the following block to be initialized early (order matters).
   content::TestBrowserThreadBundle thread_bundle_;
   content::TestServiceManagerContext context_;
