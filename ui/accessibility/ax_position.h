@@ -634,15 +634,18 @@ class AXPosition {
     if (text_position->IsNullPosition())
       return text_position;
 
+    const int max_position = text_position->MaxTextOffset();
+
     // Note that |BoundaryBehavior::StopIfAlreadyAtBoundary| doesn't make
     // sense for character boundaries.
     DCHECK_NE(boundary_behavior, AXBoundaryBehavior::StopIfAlreadyAtBoundary);
     if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary &&
-        (text_position->text_offset_ + 1) >= text_position->MaxTextOffset()) {
+        (text_position->text_offset_) >= max_position) {
       return Clone();
     }
 
-    if ((text_position->text_offset_ + 1) < text_position->MaxTextOffset()) {
+    if (!text_position->AtEndOfLine() &&
+        (text_position->text_offset_ + 1) <= max_position) {
       text_position->text_offset_ += 1;
       // Even if our affinity was upstream, moving to the next character should
       // inevitably reset it to downstream.
