@@ -324,6 +324,7 @@ TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderGetSelection) {
   EXPECT_EQ(0, wcscmp(text_content, L"some"));
   text_content.Reset();
   selections.Reset();
+  text_range_provider.Release();
 
   // Verify that start and end are appropriately swapped when sel_anchor_offset
   // is greater than sel_focus_offset
@@ -348,6 +349,7 @@ TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderGetSelection) {
   EXPECT_EQ(0, wcscmp(text_content, L"some"));
   text_content.Reset();
   selections.Reset();
+  text_range_provider.Release();
 
   // Verify that text ranges at an insertion point returns a degenerate (empty)
   // text range via textbox with sel_anchor_offset equal to sel_focus_offset
@@ -384,6 +386,7 @@ TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderGetSelection) {
   EXPECT_EQ(0U, SysStringLen(text_content));
   text_content.Reset();
   selections.Reset();
+  text_edit_range_provider.Release();
 
   // Now delete the tree (which will delete the associated elements) and verify
   // that UIA_E_ELEMENTNOTAVAILABLE is returned when calling GetSelection on

@@ -442,6 +442,8 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
     EXPECT_UIA_ELEMENTNOTAVAILABLE(text_range_provider->MoveEndpointByRange(
         TextPatternRangeEndpoint_Start, text_range_provider.Get(),
         TextPatternRangeEndpoint_Start));
+
+    EXPECT_UIA_ELEMENTNOTAVAILABLE(text_range_provider->Select());
   }
 
   // Test for when this provider is valid, but the other provider is not an
@@ -1285,6 +1287,192 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 
   EXPECT_UIA_TEXTATTRIBUTE_EQ(document_range_provider, UIA_IsHiddenAttributeId,
                               expected_mixed_variant);
+}
+
+TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderSelect) {
+  ui::AXNodeData text_data;
+  text_data.id = 2;
+  text_data.role = ax::mojom::Role::kStaticText;
+  text_data.SetName("some text");
+
+  ui::AXNodeData more_text_data;
+  more_text_data.id = 3;
+  more_text_data.role = ax::mojom::Role::kStaticText;
+  more_text_data.SetName("more text2");
+
+  ui::AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+  root_data.child_ids = {2, 3};
+
+  ui::AXTreeUpdate update;
+  ui::AXTreeData tree_data;
+  tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  update.tree_data = tree_data;
+  update.has_tree_data = true;
+  update.root_id = root_data.id;
+  update.nodes = {root_data, text_data, more_text_data};
+
+  Init(update);
+
+  AXNode* root_node = GetRootNode();
+  AXNodePosition::SetTreeForTesting(tree_.get());
+  AXNode* text_node = root_node->children()[0];
+  AXNode* more_text_node = root_node->children()[1];
+
+  // Text range for the document, which contains text "some textmore text2".
+  ComPtr<IRawElementProviderSimple> root_node_raw =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(root_node);
+  ComPtr<ITextProvider> document_provider;
+  ComPtr<ITextRangeProvider> document_text_range_provider;
+  ComPtr<AXPlatformNodeTextRangeProviderWin> document_text_range;
+  EXPECT_HRESULT_SUCCEEDED(
+      root_node_raw->GetPatternProvider(UIA_TextPatternId, &document_provider));
+  EXPECT_HRESULT_SUCCEEDED(
+      document_provider->get_DocumentRange(&document_text_range_provider));
+  document_text_range_provider->QueryInterface(
+      IID_PPV_ARGS(&document_text_range));
+
+  // Text range related to "some text".
+  ComPtr<IRawElementProviderSimple> text_node_raw =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(text_node);
+  ComPtr<ITextProvider> text_provider;
+  ComPtr<ITextRangeProvider> text_range_provider;
+  ComPtr<AXPlatformNodeTextRangeProviderWin> text_range;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_node_raw->GetPatternProvider(UIA_TextPatternId, &text_provider));
+  EXPECT_HRESULT_SUCCEEDED(
+      text_provider->get_DocumentRange(&text_range_provider));
+  text_range_provider->QueryInterface(IID_PPV_ARGS(&text_range));
+
+  // Text range related to "more text2".
+  ComPtr<IRawElementProviderSimple> more_text_node_raw =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(more_text_node);
+  ComPtr<ITextProvider> more_text_provider;
+  ComPtr<ITextRangeProvider> more_text_range_provider;
+  ComPtr<AXPlatformNodeTextRangeProviderWin> more_text_range;
+  EXPECT_HRESULT_SUCCEEDED(more_text_node_raw->GetPatternProvider(
+      UIA_TextPatternId, &more_text_provider));
+  EXPECT_HRESULT_SUCCEEDED(
+      more_text_provider->get_DocumentRange(&more_text_range_provider));
+  more_text_range_provider->QueryInterface(IID_PPV_ARGS(&more_text_range));
+
+  AXPlatformNodeDelegate* delegate =
+      GetOwner(document_text_range.Get())->GetDelegate();
+
+  CComPtr<ITextRangeProvider> selected_text_range_provider;
+  base::win::ScopedSafearray selection;
+  base::win::ScopedBstr selected_text_content;
+  long index = 0;
+  long ubound;
+  long lbound;
+
+  // Text range "some text" performs select.
+  {
+    text_range_provider->Select();
+
+    // Verify selection.
+    EXPECT_EQ(2, delegate->GetTreeData().sel_anchor_object_id);
+    EXPECT_EQ(2, delegate->GetTreeData().sel_focus_object_id);
+    EXPECT_EQ(0, delegate->GetTreeData().sel_anchor_offset);
+    EXPECT_EQ(9, delegate->GetTreeData().sel_focus_offset);
+
+    // Verify the content of the selection.
+    document_provider->GetSelection(selection.Receive());
+    ASSERT_NE(nullptr, selection.Get());
+
+    EXPECT_HRESULT_SUCCEEDED(SafeArrayGetUBound(selection.Get(), 1, &ubound));
+    EXPECT_EQ(0, ubound);
+    EXPECT_HRESULT_SUCCEEDED(SafeArrayGetLBound(selection.Get(), 1, &lbound));
+    EXPECT_EQ(0, lbound);
+    EXPECT_HRESULT_SUCCEEDED(SafeArrayGetElement(
+        selection.Get(), &index, &selected_text_range_provider));
+
+    EXPECT_HRESULT_SUCCEEDED(selected_text_range_provider->GetText(
+        -1, selected_text_content.Receive()));
+    EXPECT_EQ(0, wcscmp(selected_text_content, L"some text"));
+    selection.Reset();
+    selected_text_content.Reset();
+    selected_text_range_provider.Release();
+  }
+
+  // Text range "more text2" performs select.
+  {
+    more_text_range_provider->Select();
+
+    // Verify selection
+    EXPECT_EQ(3, delegate->GetTreeData().sel_anchor_object_id);
+    EXPECT_EQ(3, delegate->GetTreeData().sel_focus_object_id);
+    EXPECT_EQ(0, delegate->GetTreeData().sel_anchor_offset);
+    EXPECT_EQ(10, delegate->GetTreeData().sel_focus_offset);
+
+    // Verify the content of the selection.
+    document_provider->GetSelection(selection.Receive());
+    ASSERT_NE(nullptr, selection.Get());
+
+    EXPECT_HRESULT_SUCCEEDED(SafeArrayGetUBound(selection.Get(), 1, &ubound));
+    EXPECT_EQ(0, ubound);
+    EXPECT_HRESULT_SUCCEEDED(SafeArrayGetLBound(selection.Get(), 1, &lbound));
+    EXPECT_EQ(0, lbound);
+    EXPECT_HRESULT_SUCCEEDED(SafeArrayGetElement(
+        selection.Get(), &index, &selected_text_range_provider));
+
+    EXPECT_HRESULT_SUCCEEDED(selected_text_range_provider->GetText(
+        -1, selected_text_content.Receive()));
+    EXPECT_EQ(0, wcscmp(selected_text_content, L"more text2"));
+    selection.Reset();
+    selected_text_content.Reset();
+    selected_text_range_provider.Release();
+  }
+
+  // Document text range "some textmore text2" performs select.
+  {
+    document_text_range_provider->Select();
+
+    // Verify selection.
+    EXPECT_EQ(2, delegate->GetTreeData().sel_anchor_object_id);
+    EXPECT_EQ(3, delegate->GetTreeData().sel_focus_object_id);
+    EXPECT_EQ(0, delegate->GetTreeData().sel_anchor_offset);
+    EXPECT_EQ(10, delegate->GetTreeData().sel_focus_offset);
+
+    // When selection spans multiple nodes ITextProvider::GetSelection is not
+    // supported. But the text range is still selected.
+    document_provider->GetSelection(selection.Receive());
+    ASSERT_EQ(nullptr, selection.Get());
+  }
+
+  // A degenerate text range performs select.
+  {
+    // Move the endpoint of text range so it becomes degenerate, then select.
+    text_range_provider->MoveEndpointByRange(TextPatternRangeEndpoint_Start,
+                                             text_range_provider.Get(),
+                                             TextPatternRangeEndpoint_End);
+    text_range_provider->Select();
+
+    // Verify selection.
+    EXPECT_EQ(2, delegate->GetTreeData().sel_anchor_object_id);
+    EXPECT_EQ(2, delegate->GetTreeData().sel_focus_object_id);
+    EXPECT_EQ(9, delegate->GetTreeData().sel_anchor_offset);
+    EXPECT_EQ(9, delegate->GetTreeData().sel_focus_offset);
+
+    // Verify the content of the selection.
+    document_provider->GetSelection(selection.Receive());
+    ASSERT_NE(nullptr, selection.Get());
+
+    EXPECT_HRESULT_SUCCEEDED(SafeArrayGetUBound(selection.Get(), 1, &ubound));
+    EXPECT_EQ(0, ubound);
+    EXPECT_HRESULT_SUCCEEDED(SafeArrayGetLBound(selection.Get(), 1, &lbound));
+    EXPECT_EQ(0, lbound);
+    EXPECT_HRESULT_SUCCEEDED(SafeArrayGetElement(
+        selection.Get(), &index, &selected_text_range_provider));
+
+    EXPECT_HRESULT_SUCCEEDED(selected_text_range_provider->GetText(
+        -1, selected_text_content.Receive()));
+    EXPECT_EQ(0, wcscmp(selected_text_content, L""));
+    selection.Reset();
+    selected_text_content.Reset();
+    selected_text_range_provider.Release();
+  }
 }
 
 }  // namespace ui

@@ -278,6 +278,22 @@ void TestAXNodeWrapper::ReplaceStringAttribute(
   node_->SetData(new_data);
 }
 
+void TestAXNodeWrapper::ReplaceTreeDataTextSelection(int32_t anchor_node_id,
+                                                     int32_t anchor_offset,
+                                                     int32_t focus_node_id,
+                                                     int32_t focus_offset) {
+  if (!tree_)
+    return;
+
+  AXTreeData new_tree_data = GetTreeData();
+  new_tree_data.sel_anchor_object_id = anchor_node_id;
+  new_tree_data.sel_anchor_offset = anchor_offset;
+  new_tree_data.sel_focus_object_id = focus_node_id;
+  new_tree_data.sel_focus_offset = focus_offset;
+
+  tree_->UpdateData(new_tree_data);
+}
+
 bool TestAXNodeWrapper::IsTable() const {
   return node_->IsTable();
 }
@@ -434,14 +450,17 @@ bool TestAXNodeWrapper::AccessibilityPerformAction(
       }
       return true;
 
-    case ax::mojom::Action::kSetSelection:
+    case ax::mojom::Action::kSetSelection: {
       ReplaceIntAttribute(data.anchor_node_id,
                           ax::mojom::IntAttribute::kTextSelStart,
                           data.anchor_offset);
-      ReplaceIntAttribute(data.anchor_node_id,
+      ReplaceIntAttribute(data.focus_node_id,
                           ax::mojom::IntAttribute::kTextSelEnd,
                           data.focus_offset);
+      ReplaceTreeDataTextSelection(data.anchor_node_id, data.anchor_offset,
+                                   data.focus_node_id, data.focus_offset);
       return true;
+    }
 
     case ax::mojom::Action::kFocus:
       g_focused_node_in_tree[tree_] = node_;
