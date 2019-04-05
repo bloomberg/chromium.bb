@@ -1001,7 +1001,7 @@
           'linux_intel_hd_630',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_end2end_tests',
+          'gtest_tests': 'gpu_dawn_integration_gtests',
         },
       },
       'Dawn Linux x64 DEPS Release (NVIDIA)': {
@@ -1011,7 +1011,7 @@
           'linux_nvidia_quadro_p400',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_end2end_tests',
+          'gtest_tests': 'gpu_dawn_integration_gtests',
         },
       },
       'Dawn Linux x64 Release (Intel HD 630)': {
@@ -1021,7 +1021,7 @@
           'linux_intel_hd_630',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_end2end_tests',
+          'gtest_tests': 'gpu_dawn_gtests',
         },
       },
       'Dawn Linux x64 Release (NVIDIA)': {
@@ -1031,7 +1031,7 @@
           'linux_nvidia_quadro_p400',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_end2end_tests',
+          'gtest_tests': 'gpu_dawn_gtests',
         },
       },
       'Dawn Win10 x64 Builder' : {},
@@ -1043,7 +1043,7 @@
           'win10_intel_hd_630_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_end2end_tests',
+          'gtest_tests': 'gpu_dawn_integration_gtests',
         },
       },
       'Dawn Win10 x64 DEPS Release (NVIDIA)': {
@@ -1053,7 +1053,7 @@
           'win10_nvidia_quadro_p400_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_end2end_tests',
+          'gtest_tests': 'gpu_dawn_integration_gtests',
         },
       },
       'Dawn Win10 x64 Release (Intel HD 630)': {
@@ -1063,7 +1063,7 @@
           'win10_intel_hd_630_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_end2end_tests',
+          'gtest_tests': 'gpu_dawn_gtests',
         },
       },
       'Dawn Win10 x64 Release (NVIDIA)': {
@@ -1073,7 +1073,7 @@
           'win10_nvidia_quadro_p400_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_end2end_tests',
+          'gtest_tests': 'gpu_dawn_gtests',
         },
       },
       'Dawn Win10 x86 Builder' : {},
@@ -1085,7 +1085,7 @@
           'win10_intel_hd_630_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_end2end_tests',
+          'gtest_tests': 'gpu_dawn_integration_gtests',
         },
       },
       'Dawn Win10 x86 DEPS Release (NVIDIA)': {
@@ -1095,7 +1095,7 @@
           'win10_nvidia_quadro_p400_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_end2end_tests',
+          'gtest_tests': 'gpu_dawn_integration_gtests',
         },
       },
       'Dawn Win10 x86 Release (Intel HD 630)': {
@@ -1105,7 +1105,7 @@
           'win10_intel_hd_630_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_end2end_tests',
+          'gtest_tests': 'gpu_dawn_gtests',
         },
       },
       'Dawn Win10 x86 Release (NVIDIA)': {
@@ -1115,7 +1115,7 @@
           'win10_nvidia_quadro_p400_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_end2end_tests',
+          'gtest_tests': 'gpu_dawn_gtests',
         },
       },
     }
@@ -2363,7 +2363,7 @@
           'linux_intel_hd_630',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_end2end_tests',
+          'gtest_tests': 'gpu_dawn_gtests',
         },
       },
       'Dawn GPU Linux Release (NVIDIA)': {
@@ -2373,7 +2373,7 @@
           'linux_nvidia_quadro_p400',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_end2end_tests',
+          'gtest_tests': 'gpu_dawn_gtests',
         },
       },
       'Dawn GPU Mac Release (Intel)': {
@@ -2383,7 +2383,7 @@
           'mac_mini_intel_gpu',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_end2end_tests',
+          'gtest_tests': 'gpu_dawn_gtests',
         },
       },
       'Dawn GPU Mac Retina Release (AMD)': {
@@ -2393,7 +2393,7 @@
           'mac_retina_amd_gpu',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_end2end_tests',
+          'gtest_tests': 'gpu_dawn_gtests',
         },
       },
       'Dawn GPU Mac Retina Release (NVIDIA)': {
@@ -2403,7 +2403,7 @@
           'mac_retina_nvidia_gpu',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_end2end_tests',
+          'gtest_tests': 'gpu_dawn_gtests',
         },
       },
       'Dawn GPU Win10 Release (Intel HD 630)': {
@@ -2413,7 +2413,7 @@
           'win10_intel_hd_630_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_end2end_tests',
+          'gtest_tests': 'gpu_dawn_gtests',
         },
       },
       'Dawn GPU Win10 Release (NVIDIA)': {
@@ -2423,7 +2423,7 @@
           'win10_nvidia_quadro_p400_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_dawn_end2end_tests',
+          'gtest_tests': 'gpu_dawn_gtests',
         },
       },
       # END Fake builder used as mirror targets for Dawn's GPU tryservers
