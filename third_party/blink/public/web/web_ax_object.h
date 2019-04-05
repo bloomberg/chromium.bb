@@ -242,10 +242,8 @@ class WebAXObject {
 
   BLINK_EXPORT unsigned SelectionEndDeprecated() const;
   BLINK_EXPORT unsigned SelectionEnd() const;
-  BLINK_EXPORT unsigned SelectionEndLineNumber() const;
   BLINK_EXPORT unsigned SelectionStartDeprecated() const;
   BLINK_EXPORT unsigned SelectionStart() const;
-  BLINK_EXPORT unsigned SelectionStartLineNumber() const;
 
   // 1-based position in set & Size of set.
   BLINK_EXPORT int PosInSet() const;

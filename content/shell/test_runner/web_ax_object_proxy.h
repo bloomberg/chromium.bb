@@ -90,8 +90,6 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   // a textarea.
   int SelectionStart();
   int SelectionEnd();
-  int SelectionStartLineNumber();
-  int SelectionEndLineNumber();
 
   bool IsAtomic();
   bool IsAutofillAvailable();

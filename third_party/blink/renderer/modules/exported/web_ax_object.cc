@@ -977,31 +977,6 @@ unsigned WebAXObject::SelectionStartDeprecated() const {
   return ax_selection.anchor_offset;
 }
 
-unsigned WebAXObject::SelectionEndLineNumber() const {
-  if (IsDetached())
-    return 0;
-
-  VisiblePosition position = private_->VisiblePositionForIndex(SelectionEnd());
-  int line_number = private_->LineForPosition(position);
-  if (line_number < 0)
-    return 0;
-
-  return line_number;
-}
-
-unsigned WebAXObject::SelectionStartLineNumber() const {
-  if (IsDetached())
-    return 0;
-
-  VisiblePosition position =
-      private_->VisiblePositionForIndex(SelectionStart());
-  int line_number = private_->LineForPosition(position);
-  if (line_number < 0)
-    return 0;
-
-  return line_number;
-}
-
 bool WebAXObject::Focus() const {
   if (IsDetached())
     return false;
