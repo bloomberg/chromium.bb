@@ -102,6 +102,10 @@ UserFeedbackProvider* ChromeBrowserProvider::GetUserFeedbackProvider() const {
   return nullptr;
 }
 
+SpecialUserProvider* ChromeBrowserProvider::GetSpecialUserProvider() const {
+  return nullptr;
+}
+
 SpotlightProvider* ChromeBrowserProvider::GetSpotlightProvider() const {
   return nullptr;
 }

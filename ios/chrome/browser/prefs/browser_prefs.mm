@@ -59,6 +59,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #include "ios/chrome/browser/voice/voice_search_prefs_registration.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#include "ios/public/provider/chrome/browser/user/special_user_prefs.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -102,6 +103,8 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(metrics::prefs::kMetricsReportingEnabled,
                                 false);
   registry->RegisterBooleanPref(prefs::kLastSessionExitedCleanly, true);
+  registry->RegisterIntegerPref(prefs::kSpecialUserType,
+                                prefs::kSpecialUserTypeUnknown);
   if (!base::FeatureList::IsEnabled(kUmaCellular)) {
     registry->RegisterBooleanPref(prefs::kMetricsReportingWifiOnly, true);
   }
