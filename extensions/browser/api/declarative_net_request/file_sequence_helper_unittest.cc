@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/threading/thread_restrictions.h"
 #include "components/crx_file/id_util.h"
 #include "components/version_info/version_info.h"
 #include "content/public/test/test_service_manager_context.h"
@@ -77,7 +78,8 @@ class FileSequenceHelperTest : public ExtensionsTest {
   void TestAddDynamicRules(
       RulesetSource source,
       std::vector<api::declarative_net_request::Rule> rules_to_add,
-      UpdateDynamicRulesStatus expected_status,
+      ReadJSONRulesResult::Status expected_read_status,
+      UpdateDynamicRulesStatus expected_update_status,
       base::Optional<std::string> expected_error,
       bool expected_did_load_successfully) {
     base::RunLoop run_loop;
@@ -109,7 +111,9 @@ class FileSequenceHelperTest : public ExtensionsTest {
                                            std::move(add_rules_task));
     run_loop.Run();
     tester.ExpectUniqueSample(kUpdateDynamicRulesStatusHistogram,
-                              expected_status, 1 /* expected_count */);
+                              expected_update_status, 1 /* expected_count */);
+    tester.ExpectUniqueSample(kReadDynamicRulesJSONStatusHistogram,
+                              expected_read_status, 1 /* expected_count */);
   }
 
   void TestLoadRulesets(const std::vector<TestCase>& test_cases) {
@@ -252,6 +256,7 @@ TEST_F(FileSequenceHelperTest, UpdateDynamicRules) {
     SCOPED_TRACE("Test adding a valid rule");
     api_rules.push_back(GetAPIRule(CreateGenericRule()));
     TestAddDynamicRules(source.Clone(), std::move(api_rules),
+                        ReadJSONRulesResult::Status::kFileDoesNotExist,
                         UpdateDynamicRulesStatus::kSuccess,
                         base::nullopt /* expected_error */,
                         true /* expected_did_load_successfully*/);
@@ -268,11 +273,33 @@ TEST_F(FileSequenceHelperTest, UpdateDynamicRules) {
     api_rules.push_back(GetAPIRule(rule));
     TestAddDynamicRules(
         source.Clone(), std::move(api_rules),
+        ReadJSONRulesResult::Status::kSuccess,
         UpdateDynamicRulesStatus::kErrorInvalidRules,
         ParseInfo(ParseResult::ERROR_EMPTY_REDIRECT_RULE_PRIORITY,
                   kMinValidID + 1)
             .GetErrorDescription(),
         false /* expected_did_load_successfully */);
+  }
+
+  // Write invalid JSON to the JSON rules file. The update should still succeed.
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking_for_testing;
+    std::string data = "Invalid JSON";
+    ASSERT_EQ(data.size(), static_cast<size_t>(base::WriteFile(
+                               source.json_path(), data.c_str(), data.size())));
+  }
+
+  {
+    SCOPED_TRACE("Test corrupted JSON rules file");
+    TestRule rule = CreateGenericRule();
+    rule.id = kMinValidID + 2;
+    api_rules.clear();
+    api_rules.push_back(GetAPIRule(rule));
+    TestAddDynamicRules(source.Clone(), std::move(api_rules),
+                        ReadJSONRulesResult::Status::kJSONParseError,
+                        UpdateDynamicRulesStatus::kSuccess,
+                        base::nullopt /* expected_error */,
+                        true /* expected_did_load_successfully*/);
   }
 }
 

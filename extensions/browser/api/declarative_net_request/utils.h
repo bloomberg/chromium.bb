@@ -14,6 +14,7 @@
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 
 namespace base {
 class FilePath;
@@ -52,6 +53,9 @@ bool PersistIndexedRuleset(const base::FilePath& path,
 
 // Helper to clear each renderer's in-memory cache the next time it navigates.
 void ClearRendererCacheOnNavigation();
+
+// Helper to log the |kReadDynamicRulesJSONStatusHistogram| histogram.
+void LogReadDynamicRulesStatus(ReadJSONRulesResult::Status status);
 
 }  // namespace declarative_net_request
 }  // namespace extensions
