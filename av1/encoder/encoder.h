@@ -56,14 +56,12 @@
 extern "C" {
 #endif
 
-/*!\brief Rational Number with an int64 numerator
- *
- * This structure holds a fractional value.
- */
+// Rational number with an int64 numerator
+// This structure holds a fractional value
 typedef struct aom_rational64 {
-  int64_t num;      /**< fraction numerator */
-  int den;          /**< fraction denominator */
-} aom_rational64_t; /**< alias for struct aom_rational */
+  int64_t num;       // fraction numerator
+  int den;           // fraction denominator
+} aom_rational64_t;  // alias for struct aom_rational
 
 typedef struct {
   int nmv_vec_cost[MV_JOINTS];
