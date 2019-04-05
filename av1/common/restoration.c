@@ -1146,7 +1146,7 @@ void av1_loop_restoration_copy_planes(AV1LrStruct *loop_rest_ctxt,
   static const copy_fun copy_funs[3] = { aom_yv12_partial_coloc_copy_y,
                                          aom_yv12_partial_coloc_copy_u,
                                          aom_yv12_partial_coloc_copy_v };
-
+  assert(num_planes <= 3);
   for (int plane = 0; plane < num_planes; ++plane) {
     if (cm->rst_info[plane].frame_restoration_type == RESTORE_NONE) continue;
     AV1PixelRect tile_rect = loop_rest_ctxt->ctxt[plane].tile_rect;

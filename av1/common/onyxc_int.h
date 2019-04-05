@@ -1076,6 +1076,7 @@ static INLINE int partition_cdf_length(BLOCK_SIZE bsize) {
 
 static INLINE int max_block_wide(const MACROBLOCKD *xd, BLOCK_SIZE bsize,
                                  int plane) {
+  assert(bsize < BLOCK_SIZES_ALL);
   int max_blocks_wide = block_size_wide[bsize];
   const struct macroblockd_plane *const pd = &xd->plane[plane];
 

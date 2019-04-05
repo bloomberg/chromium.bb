@@ -5392,6 +5392,7 @@ static int64_t select_tx_size_and_type(const AV1_COMP *cpi, MACROBLOCK *x,
                                        TXB_RD_INFO_NODE *rd_info_tree) {
   MACROBLOCKD *const xd = &x->e_mbd;
   assert(is_inter_block(xd->mi[0]));
+  assert(bsize < BLOCK_SIZES_ALL);
 
   // TODO(debargha): enable this as a speed feature where the
   // select_inter_block_yrd() function above will use a simplified search
@@ -6027,6 +6028,7 @@ static void model_rd_for_sb_with_fullrdy(
   int64_t rate_sum = 0;
   int64_t dist_sum = 0;
   int64_t total_sse = 0;
+  assert(bsize < BLOCK_SIZES_ALL);
 
   for (int plane = plane_from; plane <= plane_to; ++plane) {
     struct macroblock_plane *const p = &x->plane[plane];
@@ -8418,6 +8420,7 @@ static INLINE void find_best_non_dual_interp_filter(
     pred_filter_search = is_pred_filter_search_allowed(cpi, bsize, mi_row,
                                                        mi_col, af, af, lf, lf);
     if (pred_filter_search) {
+      assert(af != SWITCHABLE);
       filter_idx = SWITCHABLE * (af & 0xf);
       // This assert tells that (filter_x == filter_y) for non-dual filter case
       assert((filter_sets[filter_idx] & 0xffff) ==

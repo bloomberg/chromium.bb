@@ -1373,6 +1373,7 @@ static void write_inter_txb_coeff(AV1_COMMON *const cm, MACROBLOCK *const x,
   MACROBLOCKD *const xd = &x->e_mbd;
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   const BLOCK_SIZE bsize = mbmi->sb_type;
+  assert(bsize < BLOCK_SIZES_ALL);
   const BLOCK_SIZE bsizec =
       scale_chroma_bsize(bsize, pd->subsampling_x, pd->subsampling_y);
 
