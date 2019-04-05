@@ -220,24 +220,25 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
   });
 
   apiFunctions.setHandleRequest(
-      'sharePathsWithCrostini', function(entries, persist, callback) {
+      'sharePathsWithCrostini', function(vmName, entries, persist, callback) {
         const urls = entries.map((entry) => {
           return getEntryURL(entry);
         });
         fileManagerPrivateInternal.sharePathsWithCrostini(
-            urls, persist, callback);
+            vmName, urls, persist, callback);
       });
 
   apiFunctions.setHandleRequest(
-      'unsharePathWithCrostini', function(entry, callback) {
+      'unsharePathWithCrostini', function(vmName, entry, callback) {
         fileManagerPrivateInternal.unsharePathWithCrostini(
-            getEntryURL(entry), callback);
+            vmName, getEntryURL(entry), callback);
       });
 
   apiFunctions.setHandleRequest(
-      'getCrostiniSharedPaths', function(observeFirstForSession, callback) {
+      'getCrostiniSharedPaths',
+      function(observeFirstForSession, vmName, callback) {
         fileManagerPrivateInternal.getCrostiniSharedPaths(
-            observeFirstForSession,
+            observeFirstForSession, vmName,
             function(entryDescriptions, firstForSession) {
               callback(entryDescriptions.map(function(description) {
                 return GetExternalFileEntry(description);

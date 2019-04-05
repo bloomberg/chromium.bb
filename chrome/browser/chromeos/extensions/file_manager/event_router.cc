@@ -1090,11 +1090,13 @@ void EventRouter::OnFileSystemMountFailed() {
 
 void EventRouter::PopulateCrostiniUnshareEvent(
     file_manager_private::CrostiniEvent& event,
+    const std::string& vm_name,
     const std::string& extension_id,
     const std::string& mount_name,
     const std::string& file_system_name,
     const std::string& full_path) {
   event.event_type = file_manager_private::CROSTINI_EVENT_TYPE_UNSHARE;
+  event.vm_name = vm_name;
   file_manager_private::CrostiniEvent::EntriesType entry;
   entry.additional_properties.SetString(
       "fileSystemRoot",
@@ -1109,9 +1111,6 @@ void EventRouter::PopulateCrostiniUnshareEvent(
 
 void EventRouter::OnUnshare(const std::string& vm_name,
                             const base::FilePath& path) {
-  if (vm_name != crostini::kCrostiniDefaultVmName) {
-    return;
-  }
   std::string mount_name;
   std::string file_system_name;
   std::string full_path;
@@ -1122,7 +1121,7 @@ void EventRouter::OnUnshare(const std::string& vm_name,
   for (const auto& extension_id : GetEventListenerExtensionIds(
            profile_, file_manager_private::OnCrostiniChanged::kEventName)) {
     file_manager_private::CrostiniEvent event;
-    PopulateCrostiniUnshareEvent(event, extension_id, mount_name,
+    PopulateCrostiniUnshareEvent(event, vm_name, extension_id, mount_name,
                                  file_system_name, full_path);
     DispatchEventToExtension(
         profile_, extension_id,

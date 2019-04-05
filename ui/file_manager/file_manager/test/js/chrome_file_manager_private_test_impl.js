@@ -80,7 +80,7 @@ chrome.fileManagerPrivate = {
     }
     setTimeout(callback, 0, results);
   },
-  getCrostiniSharedPaths: (observeFirstForSession, callback) => {
+  getCrostiniSharedPaths: (observeFirstForSession, vmName, callback) => {
     // Returns Entry[], firstForSession.
     setTimeout(callback, 0, [], observeFirstForSession);
   },
@@ -172,10 +172,10 @@ chrome.fileManagerPrivate = {
     // highlightedBaseName: string }
     setTimeout(callback, 0, []);
   },
-  sharePathsWithCrostini: (entries, persist, callback) => {
+  sharePathsWithCrostini: (vmName, entries, persist, callback) => {
     setTimeout(callback, 0);
   },
-  unsharePathWithCrostini: (entry, callback) => {
+  unsharePathWithCrostini: (vmName, entry, callback) => {
     setTimeout(callback, 0);
   },
   nextCopyId_: 0,

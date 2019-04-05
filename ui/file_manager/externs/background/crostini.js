@@ -33,28 +33,32 @@ Crostini.prototype.setEnabled = function(enabled) {};
 Crostini.prototype.isEnabled = function() {};
 
 /**
- * Registers an entry as a shared path.
+ * Registers an entry as a shared path for the specified VM.
+ * @param {string} vmName
  * @param {!Entry} entry
  */
-Crostini.prototype.registerSharedPath = function(entry) {};
+Crostini.prototype.registerSharedPath = function(vmName, entry) {};
 
 /**
- * Unregisters entry as a shared path.
+ * Unregisters entry as a shared path from the specified VM.
+ * @param {string} vmName
  * @param {!Entry} entry
  */
-Crostini.prototype.unregisterSharedPath = function(entry) {};
+Crostini.prototype.unregisterSharedPath = function(vmName, entry) {};
 
 /**
- * Returns true if entry is shared.
+ * Returns true if entry is shared with the specified VM.
+ * @param {string} vmName
  * @param {!Entry} entry
  * @return {boolean} True if path is shared either by a direct
  *   share or from one of its ancestor directories.
  */
-Crostini.prototype.isPathShared = function(entry) {};
+Crostini.prototype.isPathShared = function(vmName, entry) {};
 
 /**
- * Returns true if entry can be shared with Crostini.
+ * Returns true if entry can be shared with the specified VM.
+ * @param {string} vmName
  * @param {!Entry} entry
  * @param {boolean} persist If path is to be persisted.
  */
-Crostini.prototype.canSharePath = function(entry, persist) {};
+Crostini.prototype.canSharePath = function(vmName, entry, persist) {};

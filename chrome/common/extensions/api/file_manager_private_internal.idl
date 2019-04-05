@@ -103,11 +103,14 @@ namespace fileManagerPrivateInternal {
                                  GetDirectorySizeCallback callback);
     static void getRecentFiles(fileManagerPrivate.SourceRestriction restriction,
                                GetRecentFilesCallback callback);
-    static void sharePathsWithCrostini(DOMString[] urls, boolean persist,
-                                      SimpleCallback callback);
-    static void unsharePathWithCrostini(DOMString url, SimpleCallback callback);
+    static void sharePathsWithCrostini(DOMString vmName, DOMString[] urls,
+                                       boolean persist,
+                                       SimpleCallback callback);
+    static void unsharePathWithCrostini(DOMString vmName, DOMString url,
+                                        SimpleCallback callback);
     static void getCrostiniSharedPaths(boolean observeFirstForSession,
-        GetCrostiniSharedPathsCallback callback);
+                                       DOMString vmName,
+                                       GetCrostiniSharedPathsCallback callback);
     static void getLinuxPackageInfo(DOMString url,
                                     GetLinuxPackageInfoCallback callback);
     static void installLinuxPackage(DOMString url,

@@ -199,7 +199,9 @@ FileTasks.create =
           // run Crostini tasks with non-Crostini entries.
           if (entries.length !== 1 ||
               !(FileTasks.isCrostiniEntry(entries[0], volumeManager) ||
-                crostini.canSharePath(entries[0], false /* persist */))) {
+                crostini.canSharePath(
+                    constants.DEFAULT_CROSTINI_VM, entries[0],
+                    false /* persist */))) {
             taskItems = taskItems.filter(item => {
               const taskParts = item.taskId.split('|');
               const appId = taskParts[0];
@@ -655,10 +657,11 @@ FileTasks.prototype.maybeShareWithCrostiniOrShowDialog_ = function(
   for (let i = 0; i < this.entries_.length; i++) {
     const entry = this.entries_[i];
     if (FileTasks.isCrostiniEntry(entry, this.volumeManager_) ||
-        this.crostini_.isPathShared(entry)) {
+        this.crostini_.isPathShared(constants.DEFAULT_CROSTINI_VM, entry)) {
       continue;
     }
-    if (!this.crostini_.canSharePath(entry, false /* persist */)) {
+    if (!this.crostini_.canSharePath(
+            constants.DEFAULT_CROSTINI_VM, entry, false /* persist */)) {
       showUnableToOpen = true;
       break;
     }
@@ -687,7 +690,8 @@ FileTasks.prototype.maybeShareWithCrostiniOrShowDialog_ = function(
       FileTasks.CrostiniShareDialogType.ShareBeforeOpen);
   // Set persist to false when sharing paths to open with a crostini app.
   chrome.fileManagerPrivate.sharePathsWithCrostini(
-      entriesToShare, false /* persist */, () => {
+      constants.DEFAULT_CROSTINI_VM, entriesToShare, false /* persist */,
+      () => {
         // It is unexpected to get an error sharing any files since we have
         // already validated that all selected files can be shared.
         // But if it happens, log error, and do not execute callback.
