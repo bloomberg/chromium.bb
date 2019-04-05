@@ -36,15 +36,10 @@ PaintWorklet* PaintWorklet::From(LocalDOMWindow& window) {
   PaintWorklet* supplement =
       Supplement<LocalDOMWindow>::From<PaintWorklet>(window);
   if (!supplement && window.GetFrame()) {
-    supplement = Create(window.GetFrame());
+    supplement = MakeGarbageCollected<PaintWorklet>(window.GetFrame());
     ProvideTo(window, supplement);
   }
   return supplement;
-}
-
-// static
-PaintWorklet* PaintWorklet::Create(LocalFrame* frame) {
-  return MakeGarbageCollected<PaintWorklet>(frame);
 }
 
 PaintWorklet::PaintWorklet(LocalFrame* frame)

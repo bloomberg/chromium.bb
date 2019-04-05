@@ -31,7 +31,6 @@ class MODULES_EXPORT PaintWorklet : public Worklet,
   // At this moment, paint worklet allows at most two global scopes at any time.
   static const wtf_size_t kNumGlobalScopes;
   static PaintWorklet* From(LocalDOMWindow&);
-  static PaintWorklet* Create(LocalFrame*);
 
   explicit PaintWorklet(LocalFrame*);
   ~PaintWorklet() override;

@@ -32,15 +32,6 @@ class MODULES_EXPORT CSSPaintDefinition final
     : public GarbageCollectedFinalized<CSSPaintDefinition>,
       public NameClient {
  public:
-  static CSSPaintDefinition* Create(
-      ScriptState*,
-      V8NoArgumentConstructor* constructor,
-      V8PaintCallback* paint,
-      const Vector<CSSPropertyID>&,
-      const Vector<AtomicString>& custom_invalidation_properties,
-      const Vector<CSSSyntaxDescriptor>& input_argument_types,
-      const PaintRenderingContext2DSettings*);
-
   CSSPaintDefinition(
       ScriptState*,
       V8NoArgumentConstructor* constructor,

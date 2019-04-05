@@ -214,7 +214,7 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
     return;
   V8PaintCallback* paint = V8PaintCallback::Create(v8_paint);
 
-  CSSPaintDefinition* definition = CSSPaintDefinition::Create(
+  auto* definition = MakeGarbageCollected<CSSPaintDefinition>(
       ScriptController()->GetScriptState(), paint_ctor, paint,
       native_invalidation_properties, custom_invalidation_properties,
       input_argument_types, context_settings);
