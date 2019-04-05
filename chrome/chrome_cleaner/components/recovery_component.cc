@@ -45,7 +45,8 @@ const uint8_t kSha2Hash[] = {0xdf, 0x39, 0x9a, 0x9b, 0x28, 0x3a, 0x9b, 0x0c,
                              0x19, 0x7a, 0x71, 0x4b, 0x0a, 0x7c, 0x80, 0x1c,
                              0xf6, 0x29, 0x7c, 0x0a, 0x5f, 0xea, 0x67, 0xb7};
 
-// Name of the executable file as well as the command line arg to use for Foil.
+// Name of the executable file as well as the command line arg to use when run
+// from the Chrome Cleanup tool.
 const wchar_t kChromeRecoveryExe[] = L"ChromeRecovery.exe";
 const char kChromeRecoveryArg[] = "/installsource swreporter";
 
