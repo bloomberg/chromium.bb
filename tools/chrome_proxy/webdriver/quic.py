@@ -31,7 +31,7 @@ class Quic(IntegrationTest):
       responses = t.GetHTTPResponses()
       self.assertEqual(2, len(responses))
       for response in responses:
-        self.assertHasChromeProxyViaHeader(response)
+        self.assertHasProxyHeaders(response)
 
   # Ensure Chrome uses QUIC DataSaver proxy when QUIC is enabled. This test
   # may fail if QUIC is disabled on the server side.
@@ -52,7 +52,7 @@ class Quic(IntegrationTest):
       responses = t.GetHTTPResponses()
       self.assertEqual(2, len(responses))
       for response in responses:
-        self.assertHasChromeProxyViaHeader(response)
+        self.assertHasProxyHeaders(response)
 
       # Verify that histogram DataReductionProxy.Quic.ProxyStatus has at least 1
       # sample. This sample must be in bucket 0 (QUIC_PROXY_STATUS_AVAILABLE).

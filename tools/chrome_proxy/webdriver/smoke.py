@@ -93,7 +93,7 @@ class Smoke(IntegrationTest):
       self.assertNotEqual(0, len(responses))
       num_chrome_proxy_request_headers = 0
       for response in responses:
-        self.assertHasChromeProxyViaHeader(response)
+        self.assertHasProxyHeaders(response)
         if ('chrome-proxy' in response.request_headers):
           num_chrome_proxy_request_headers += 1
       t.SleepUntilHistogramHasEntry('PageLoad.Clients.DataReductionProxy.'
@@ -161,7 +161,7 @@ class Smoke(IntegrationTest):
         for response in responses:
           if not response.request_headers:
             continue
-          self.assertHasChromeProxyViaHeader(response)
+          self.assertHasProxyHeaders(response)
           self.assertEqual(200, response.status)
           chrome_proxy_header = response.request_headers['chrome-proxy']
           chrome_proxy_directives = chrome_proxy_header.split(',')
@@ -194,7 +194,7 @@ class Smoke(IntegrationTest):
       responses = t.GetHTTPResponses()
       self.assertNotEqual(0, len(responses))
       for response in responses:
-        self.assertHasChromeProxyViaHeader(response)
+        self.assertHasProxyHeaders(response)
 
 if __name__ == '__main__':
   IntegrationTest.RunAllTests()

@@ -31,7 +31,7 @@ class Video(IntegrationTest):
       responses = t.GetHTTPResponses()
       self.assertEquals(2, len(responses))
       for response in responses:
-        self.assertHasChromeProxyViaHeader(response)
+        self.assertHasProxyHeaders(response)
 
   # Videos fetched via an XHR request should not be proxied.
   def testNoCompressionOnXHR(self):
@@ -52,7 +52,7 @@ class Video(IntegrationTest):
           self.assertNotHasChromeProxyViaHeader(response)
           saw_video_response = True
         else:
-          self.assertHasChromeProxyViaHeader(response)
+          self.assertHasProxyHeaders(response)
       self.assertTrue(saw_video_response, 'No video request seen in test!')
 
   @ChromeVersionEqualOrAfterM(64)
@@ -70,7 +70,7 @@ class Video(IntegrationTest):
       )
       saw_range_response = False
       for response in t.GetHTTPResponses():
-        self.assertHasChromeProxyViaHeader(response)
+        self.assertHasProxyHeaders(response)
         if response.response_headers['status']=='206':
           saw_range_response = True
           content_range = response.response_headers['content-range']
@@ -105,7 +105,7 @@ class Video(IntegrationTest):
       responses = t.GetHTTPResponses()
       saw_range_response = False
       for response in responses:
-        self.assertHasChromeProxyViaHeader(response)
+        self.assertHasProxyHeaders(response)
         if response.response_headers['status']=='206':
           saw_range_response = True
           content_range = response.response_headers['content-range']
@@ -131,7 +131,7 @@ class Video(IntegrationTest):
           'http://check.googlezip.net/cacheable/video/buck_bunny_tiny.html')
       # Check request was proxied and we got a compressed video back.
       for response in t.GetHTTPResponses():
-        self.assertHasChromeProxyViaHeader(response)
+        self.assertHasProxyHeaders(response)
         if ('content-type' in response.response_headers
             and 'video' in response.response_headers['content-type']):
           self.assertEqual('video/webm',
@@ -193,7 +193,7 @@ class Video(IntegrationTest):
       video_etag = None
       num_partial_requests = 0
       for response in t.GetHTTPResponses():
-        self.assertHasChromeProxyViaHeader(response)
+        self.assertHasProxyHeaders(response)
         rh = response.response_headers
         if ('content-type' in rh and 'video' in rh['content-type']):
           self.assertTrue('etag' in rh),
@@ -254,7 +254,7 @@ class Video(IntegrationTest):
           if ('content-type' in resp.response_headers
               and resp.response_headers['content-type'] == 'video/webm'):
             loaded_compressed_video = True
-            self.assertHasChromeProxyViaHeader(resp)
+            self.assertHasProxyHeaders(resp)
           else:
             # Take a breath before requesting again.
             time.sleep(1)
@@ -292,7 +292,7 @@ class Video(IntegrationTest):
         'window.playerState == YT.PlayerState.PLAYING', 30)
       for response in t.GetHTTPResponses():
         if not response.url.startswith('https'):
-          self.assertHasChromeProxyViaHeader(response)
+          self.assertHasProxyHeaders(response)
 
 if __name__ == '__main__':
   IntegrationTest.RunAllTests()

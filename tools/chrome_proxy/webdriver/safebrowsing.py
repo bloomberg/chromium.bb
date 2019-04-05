@@ -54,7 +54,7 @@ class SafeBrowsing(IntegrationTest):
       responses = t.GetHTTPResponses()
       self.assertEqual(1, len(responses))
       for response in responses:
-        self.assertHasChromeProxyViaHeader(response)
+        self.assertHasProxyHeaders(response)
 
 if __name__ == '__main__':
   IntegrationTest.RunAllTests()

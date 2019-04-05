@@ -300,7 +300,7 @@ class LoFi(IntegrationTest):
         if not response.request_headers:
           continue
         responses = responses + 1
-        self.assertHasChromeProxyViaHeader(response)
+        self.assertHasProxyHeaders(response)
         self.checkLoFiResponse(response, False)
 
       # Verify that responses were seen.
@@ -388,7 +388,7 @@ class LoFi(IntegrationTest):
         if not response.request_headers:
           continue
         responses = responses + 1
-        self.assertHasChromeProxyViaHeader(response)
+        self.assertHasProxyHeaders(response)
         self.checkLoFiResponse(response, False)
 
       # Verify that responses were seen.
@@ -493,7 +493,7 @@ class LoFi(IntegrationTest):
       image_response_count = 0
       for response in test_driver.GetHTTPResponses():
         if response.url.endswith('.png'):
-          self.assertHasChromeProxyViaHeader(response)
+          self.assertHasProxyHeaders(response)
           self.assertIn('range', response.request_headers)
           self.assertIn('content-range', response.response_headers)
           self.assertTrue(response.response_headers['content-range'].startswith(
