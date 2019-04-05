@@ -165,13 +165,6 @@ bool ConvertToPrinter(const std::string& service_type,
       "%s://%s/%s", uri_protocol,
       service_description.address.ToString().c_str(), metadata.rp.c_str()));
 
-  // Use an effective URI with a pre-resolved ip address and port, since CUPS
-  // can't resolve these addresses in ChromeOS (crbug/626377).
-  printer.set_effective_uri(base::StringPrintf(
-      "%s://%s:%d/%s", uri_protocol,
-      service_description.ip_address.ToString().c_str(),
-      service_description.address.port(), metadata.rp.c_str()));
-
   // Per the IPP Everywhere Standard 5100.14-2013, section 4.2.1, IPP
   // everywhere-capable printers advertise services prefixed with "_print"
   // (possibly in addition to prefix-free versions).  If we get a printer from a
