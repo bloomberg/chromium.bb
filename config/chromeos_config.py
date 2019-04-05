@@ -1561,7 +1561,9 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   _mst_hwtest_boards = frozenset([
       'eve-arcnext',
   ])
-  _mst_hwtest_skylab_boards = frozenset([])
+  _mst_hwtest_skylab_boards = frozenset([
+      'eve-arcnext',
+  ])
   _mst_no_hwtest_boards = frozenset([])
   _mst_no_hwtest_experimental_boards = frozenset([])
   _mst_vmtest_boards = frozenset([])
@@ -1585,6 +1587,8 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   _pi_hwtest_experimental_boards = frozenset([])
   _pi_hwtest_skylab_boards = frozenset([
       'caroline-arcnext',
+      'eve',
+      'grunt',
       'kevin',
   ])
   _pi_vmtest_boards = frozenset([
@@ -1622,7 +1626,10 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       'samus',
       'veyron_minnie',
   ])
-  _nyc_hwtest_skylab_boards = frozenset([])
+  _nyc_hwtest_skylab_boards = frozenset([
+      'samus',
+      'veyron_minnie',
+  ])
   _nyc_no_hwtest_boards = frozenset([
       'bob',
       'caroline',
@@ -3094,10 +3101,12 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'caroline-arcnext',
       'kevin-arcnext',
       'kevin64',
+      'grunt',
       'peach_pit',
       'peppy',
       'reef',
       'tricky',
+      'veyron_minnie',
   ])
 
   _chrome_pfq_tryjob_boards = (
