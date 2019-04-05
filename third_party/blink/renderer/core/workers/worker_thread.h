@@ -222,6 +222,7 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   // and underlying thread. After the global scope is destroyed, queued tasks
   // are discarded and PostTask on the returned task runner just fails. This
   // function can be called on both the main thread and the worker thread.
+  // You must not call this after Terminate() is called.
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType type) {
     return worker_scheduler_->GetTaskRunner(type);
   }
