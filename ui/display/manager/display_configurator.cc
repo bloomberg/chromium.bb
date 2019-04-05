@@ -21,6 +21,7 @@
 #include "ui/display/manager/display_layout_manager.h"
 #include "ui/display/manager/display_util.h"
 #include "ui/display/manager/managed_display_info.h"
+#include "ui/display/manager/query_content_protection_task.h"
 #include "ui/display/manager/update_display_configuration_task.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
@@ -837,13 +838,11 @@ void DisplayConfigurator::QueryContentProtection(
     content_protection_tasks_.front().Run();
 }
 
-void DisplayConfigurator::OnContentProtectionQueried(
-    uint64_t client_id,
-    int64_t display_id,
-    QueryContentProtectionTask::Response response) {
-  bool success = response.success;
-  uint32_t connection_mask = response.link_mask;
-  uint32_t protection_mask = response.enabled & ~response.unfulfilled;
+void DisplayConfigurator::OnContentProtectionQueried(uint64_t client_id,
+                                                     int64_t display_id,
+                                                     bool success,
+                                                     uint32_t connection_mask,
+                                                     uint32_t protection_mask) {
   uint32_t client_mask = CONTENT_PROTECTION_METHOD_NONE;
 
   // Don't reveal protections requested by other clients.

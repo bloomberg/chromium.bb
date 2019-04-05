@@ -36,6 +36,11 @@ GetDisplayPower(const std::vector<DisplaySnapshot*>& displays,
 // All other types return true.
 bool IsPhysicalDisplayType(DisplayConnectionType type);
 
+// Sets bits in |protection_mask| for each ContentProtectionMethod supported by
+// the display |type|. Returns false for unknown display types.
+bool GetContentProtectionMethods(DisplayConnectionType type,
+                                 uint32_t* protection_mask);
+
 // Returns a list of display zooms supported by the given |mode|.
 std::vector<float> DISPLAY_MANAGER_EXPORT
 GetDisplayZoomFactors(const ManagedDisplayMode& mode);

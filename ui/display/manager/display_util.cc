@@ -120,6 +120,27 @@ bool IsPhysicalDisplayType(DisplayConnectionType type) {
   return !(type & DISPLAY_CONNECTION_TYPE_NETWORK);
 }
 
+bool GetContentProtectionMethods(DisplayConnectionType type,
+                                 uint32_t* protection_mask) {
+  switch (type) {
+    case DISPLAY_CONNECTION_TYPE_NONE:
+    case DISPLAY_CONNECTION_TYPE_UNKNOWN:
+      return false;
+
+    case DISPLAY_CONNECTION_TYPE_INTERNAL:
+    case DISPLAY_CONNECTION_TYPE_VGA:
+    case DISPLAY_CONNECTION_TYPE_NETWORK:
+      *protection_mask = CONTENT_PROTECTION_METHOD_NONE;
+      return true;
+
+    case DISPLAY_CONNECTION_TYPE_DISPLAYPORT:
+    case DISPLAY_CONNECTION_TYPE_DVI:
+    case DISPLAY_CONNECTION_TYPE_HDMI:
+      *protection_mask = CONTENT_PROTECTION_METHOD_HDCP;
+      return true;
+  }
+}
+
 std::vector<float> GetDisplayZoomFactors(const ManagedDisplayMode& mode) {
   // Internal displays have an internal device scale factor greater than 1
   // associated with them. This means that if we use the usual logic, we would
