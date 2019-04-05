@@ -5,7 +5,6 @@
 #include "components/data_reduction_proxy/content/common/data_reduction_proxy_url_loader_throttle.h"
 
 #include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
 #include "components/data_reduction_proxy/content/common/header_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_bypass_protocol.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
@@ -20,17 +19,6 @@ class HttpRequestHeaders;
 }
 
 namespace data_reduction_proxy {
-
-namespace {
-void RecordQuicProxyStatus(const net::ProxyServer& proxy_server) {
-  if (proxy_server.is_https()) {
-    RecordQuicProxyStatus(IsQuicProxy(proxy_server)
-                              ? QUIC_PROXY_STATUS_AVAILABLE
-                              : QUIC_PROXY_NOT_SUPPORTED);
-  }
-}
-
-}  // namespace
 
 DataReductionProxyURLLoaderThrottle::DataReductionProxyURLLoaderThrottle(
     const net::HttpRequestHeaders& post_cache_headers,
@@ -90,7 +78,6 @@ void DataReductionProxyURLLoaderThrottle::BeforeWillProcessResponse(
 
   before_will_process_response_received_ = true;
   MaybeRetry(proxy_server, response_head.headers.get(), net::OK, defer);
-  RecordQuicProxyStatus(proxy_server);
 }
 
 void DataReductionProxyURLLoaderThrottle::MaybeRetry(
