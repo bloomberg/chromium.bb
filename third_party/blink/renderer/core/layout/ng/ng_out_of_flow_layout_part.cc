@@ -119,8 +119,7 @@ void NGOutOfFlowLayoutPart::Run(const LayoutBox* only_layout) {
       &descendant_candidates, current_container);
 
   if (descendant_candidates.IsEmpty() &&
-      !ToLayoutBlock(container_builder_->GetLayoutObject())
-           ->HasPositionedObjects())
+      !ToLayoutBlock(current_container)->HasPositionedObjects())
     return;
 
   // Special case: containing block is a split inline.
@@ -531,10 +530,17 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
     layout_result =
         GenerateFragment(node, container_info, block_estimate, node_position);
   }
+
   if (node.GetLayoutBox()->IsLayoutNGObject()) {
     ToLayoutBlock(node.GetLayoutBox())
         ->SetIsLegacyInitiatedOutOfFlowLayout(false);
   }
+  // Legacy grid and flexbox handle OOF-positioned margins on their own, and
+  // break if we set them here.
+  if (!container_builder_->GetLayoutObject()
+           ->Style()
+           ->IsDisplayFlexibleOrGridBox())
+    node.GetLayoutBox()->SetMargin(node_position.margins);
 
   NGBoxStrut inset = node_position.inset.ConvertToLogical(
       container_writing_mode, default_containing_block_.style->Direction());
@@ -665,17 +671,7 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
     builder.SetIsFixedSizeBlock(true);
   NGConstraintSpace space = builder.ToConstraintSpace();
 
-  scoped_refptr<const NGLayoutResult> result = descendant.Layout(space);
-
-  // Legacy Grid and Flexbox seem to handle oof margins correctly
-  // on their own, and break if we set them here.
-  if (!descendant.GetLayoutBox()
-           ->ContainingBlock()
-           ->Style()
-           ->IsDisplayFlexibleOrGridBox())
-    descendant.GetLayoutBox()->SetMargin(node_position.margins);
-
-  return result;
+  return descendant.Layout(space);
 }
 
 }  // namespace blink
