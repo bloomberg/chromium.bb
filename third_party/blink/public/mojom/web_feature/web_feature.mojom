@@ -2252,6 +2252,9 @@ enum WebFeature {
   kCSSStyleSheetReplace = 2844,
   kCSSStyleSheetReplaceSync = 2845,
   kAdoptedStyleSheets = 2846,
+  kHTMLImportsOnReverseOriginTrials = 2847,
+  kElementCreateShadowRootOnReverseOriginTrials = 2848,
+  kDocumentRegisterElementOnReverseOriginTrials = 2849,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
