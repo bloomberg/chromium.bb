@@ -3046,35 +3046,6 @@ void AXObject::SelectionChanged() {
     parent->SelectionChanged();
 }
 
-int AXObject::LineForPosition(const VisiblePosition& position) const {
-  if (position.IsNull() || !GetNode())
-    return -1;
-
-  // If the position is not in the same editable region as this AX object,
-  // return -1.
-  Node* container_node = position.DeepEquivalent().ComputeContainerNode();
-  if (!container_node->IsShadowIncludingInclusiveAncestorOf(GetNode()) &&
-      !GetNode()->IsShadowIncludingInclusiveAncestorOf(container_node))
-    return -1;
-
-  int line_count = -1;
-  VisiblePosition current_position = position;
-  VisiblePosition previous_position;
-
-  // Move up until we get to the top.
-  // FIXME: This only takes us to the top of the rootEditableElement, not the
-  // top of the top document.
-  do {
-    previous_position = current_position;
-    current_position = PreviousLinePosition(current_position, LayoutUnit(),
-                                            kHasEditableAXRole);
-    ++line_count;
-  } while (current_position.IsNotNull() &&
-           !InSameLine(current_position, previous_position));
-
-  return line_count;
-}
-
 // static
 bool AXObject::IsARIAControl(ax::mojom::Role aria_role) {
   return IsARIAInput(aria_role) || aria_role == ax::mojom::Role::kButton ||
