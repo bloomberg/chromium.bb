@@ -1362,6 +1362,54 @@ TEST_P(ScrollingCoordinatorTest, FrameIsScrollableDidChange) {
   EXPECT_FALSE(GetFrame()->View()->FrameIsScrollableDidChange());
 }
 
+TEST_P(ScrollingCoordinatorTest, ScrollOffsetClobberedBeforeCompositingUpdate) {
+  // This test fails without BGPT enabled. https://crbug.com/930636.
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    return;
+  LoadHTML(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            #container {
+              width: 300px;
+              height: 300px;
+              overflow: auto;
+              will-change: transform;
+            }
+            #spacer {
+              height: 1000px;
+            }
+          </style>
+          <div id="container">
+            <div id="spacer"></div>
+          </div>
+      )HTML");
+  ForceFullCompositingUpdate();
+
+  Element* container = GetFrame()->GetDocument()->getElementById("container");
+  ScrollableArea* scroller =
+      ToLayoutBox(container->GetLayoutObject())->GetScrollableArea();
+  cc::Layer* cc_layer = scroller->LayerForScrolling()->CcLayer();
+
+  ASSERT_EQ(0, scroller->GetScrollOffset().Height());
+
+  // Simulate 100px of scroll coming from the compositor thread during a commit.
+  gfx::ScrollOffset compositor_delta(0, 100.f);
+  cc_layer->SetNeedsCommit();
+  cc_layer->SetScrollOffsetFromImplSide(compositor_delta);
+  EXPECT_EQ(compositor_delta.y(), scroller->GetScrollOffset().Height());
+  EXPECT_EQ(compositor_delta, cc_layer->CurrentScrollOffset());
+
+  // Before updating compositing or the lifecycle, set the scroll offset back
+  // to what it was before the commit from the main thread.
+  scroller->SetScrollOffset(ScrollOffset(0, 0), kProgrammaticScroll);
+
+  // Ensure the offset is up-to-date on the cc::Layer even though, as far as
+  // the main thread is concerned, it was unchanged since the last time we
+  // pushed the scroll offset.
+  ForceFullCompositingUpdate();
+  EXPECT_EQ(gfx::ScrollOffset(), cc_layer->CurrentScrollOffset());
+}
+
 TEST_P(ScrollingCoordinatorTest, UpdateUMAMetricUpdated) {
   HistogramTester histogram_tester;
   LoadHTML(R"HTML(
