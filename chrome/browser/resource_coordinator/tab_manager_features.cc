@@ -54,13 +54,6 @@ const base::Feature kStaggeredBackgroundTabOpeningExperiment{
 // on last focused time.
 const base::Feature kTabRanker{"TabRanker", base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if defined(OS_CHROMEOS)
-// On ChromeOS, enables using new ProcessType enums that combine apps and tabs
-// in the same categories.
-const base::Feature kNewProcessTypes{
-  "NewProcessTypes", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif // defined(OS_CHROMEOS)
-
 }  // namespace features
 
 namespace resource_coordinator {
