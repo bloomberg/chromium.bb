@@ -598,7 +598,6 @@
     cyan-release
     daisy-release
     daisy_skate-release
-    dragonegg-release
     edgar-release
     elm-release
     enguarde-release
@@ -2900,7 +2899,6 @@
     cyan-release-tryjob
     daisy-release-tryjob
     daisy_skate-release-tryjob
-    dragonegg-release-tryjob
     edgar-release-tryjob
     elm-release-tryjob
     enguarde-release-tryjob
