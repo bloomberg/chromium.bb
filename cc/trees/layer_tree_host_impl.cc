@@ -3794,6 +3794,14 @@ bool LayerTreeHostImpl::IsTouchDraggingScrollbar(
 // closest scrolling ancestor of |layer_impl| is not the other layer, then the
 // layer_impl must be a squasing layer overtop of some other scroller and we
 // must rely on the main thread.
+//
+// Note, position: fixed layers use the inner viewport as their ScrollNode
+// (since they don't scroll with the outer viewport), however, scrolls from the
+// fixed layer still chain to the outer viewport. It's also possible for a node
+// to have the inner viewport as its ancestor without going through the outer
+// viewport; however, it will still scroll using the viewport(). Hence, this
+// method needs to use the same scroll chaining logic we use in ApplyScroll by
+// looking at Viewport::ShouldScroll.
 bool LayerTreeHostImpl::IsInitialScrollHitTestReliable(
     LayerImpl* layer_impl,
     LayerImpl* first_scrolling_layer_or_scrollbar) {
@@ -3812,7 +3820,11 @@ bool LayerTreeHostImpl::IsInitialScrollHitTestReliable(
   for (; scroll_tree.parent(scroll_node);
        scroll_node = scroll_tree.parent(scroll_node)) {
     if (scroll_node->scrollable) {
-      closest_scroll_node = scroll_node;
+      // Ensure we use scroll chaining behavior for the inner viewport node.
+      if (viewport()->ShouldScroll(*scroll_node))
+        closest_scroll_node = viewport()->MainScrollNode();
+      else
+        closest_scroll_node = scroll_node;
       break;
     }
   }
@@ -4262,21 +4274,17 @@ void LayerTreeHostImpl::ApplyScroll(ScrollNode* scroll_node,
   // details.
   const float kEpsilon = 0.1f;
 
-  bool scrolls_main_viewport_scroll_layer =
-      viewport()->MainScrollLayer() &&
-      viewport()->MainScrollLayer()->scroll_tree_index() == scroll_node->id;
-
-  // This is needed if the scroll chains up to the viewport without going
-  // through the outer viewport scroll node. This can happen if we scroll an
-  // element that's not a descendant of the document.rootScroller. In that case
-  // we want to scroll the inner viewport -- to allow panning while zoomed --
-  // but also move browser controls if needed.
-  bool scrolls_inner_viewport = scroll_node->scrolls_inner_viewport;
-
-  if (scrolls_main_viewport_scroll_layer || scrolls_inner_viewport) {
+  if (viewport()->ShouldScroll(*scroll_node)) {
+    // This will be false if the scroll chains up to the viewport without going
+    // through the outer viewport scroll node. This can happen if we scroll an
+    // element that's not a descendant of the document.rootScroller. In that
+    // case we want to scroll *only* the inner viewport -- to allow panning
+    // while zoomed -- but still use Viewport::ScrollBy to also move browser
+    // controls if needed.
+    bool scroll_outer_viewport = scroll_node->scrolls_outer_viewport;
     Viewport::ScrollResult result = viewport()->ScrollBy(
         delta, viewport_point, scroll_state->is_direct_manipulation(),
-        !wheel_scrolling_, scrolls_main_viewport_scroll_layer);
+        !wheel_scrolling_, scroll_outer_viewport);
 
     applied_delta = result.consumed_delta;
     delta_applied_to_content = result.content_scrolled_delta;
@@ -4294,12 +4302,12 @@ void LayerTreeHostImpl::ApplyScroll(ScrollNode* scroll_node,
     // TODO(bokan): This preserves existing behavior by not allowing tiny
     // scrolls to produce overscroll but is inconsistent in how delta gets
     // chained up. We need to clean this up.
-    if (scrolls_main_viewport_scroll_layer)
+    if (scroll_node->scrolls_outer_viewport)
       scroll_state->ConsumeDelta(applied_delta.x(), applied_delta.y());
     return;
   }
 
-  if (!scrolls_main_viewport_scroll_layer && !scrolls_inner_viewport) {
+  if (!viewport()->ShouldScroll(*scroll_node)) {
     // If the applied delta is within 45 degrees of the input
     // delta, bail out to make it easier to scroll just one layer
     // in one direction without affecting any of its parents.

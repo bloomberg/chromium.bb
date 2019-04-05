@@ -2833,6 +2833,7 @@ TEST_F(LayerTreeHostImplTest, ScrollDoesntBubble) {
 TEST_F(LayerTreeHostImplTest, PinchGesture) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
   host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
   DrawFrame();
 
   LayerImpl* scroll_layer = host_impl_->InnerViewportScrollLayer();
@@ -3007,6 +3008,7 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
 TEST_F(LayerTreeHostImplTest, SyncSubpixelScrollDelta) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
   host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
   DrawFrame();
 
   LayerImpl* scroll_layer = host_impl_->InnerViewportScrollLayer();
@@ -7112,44 +7114,87 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
                                    gfx::ScrollOffset(0, 4)));
   }
 }
+
+// Ensure that layers who's scroll parent is the InnerViewportScrollNode are
+// still able to scroll on thte compositor.
+TEST_F(LayerTreeHostImplTest, ChildrenOfInnerScrollNodeCanScrollOnThread) {
+  gfx::Size viewport_size(10, 10);
+  gfx::Size content_size(20, 20);
+  LayerImpl* content_layer =
+      CreateBasicVirtualViewportLayers(viewport_size, content_size);
+
+  constexpr int kFixedLayerId = 300;
+
+  // Simulate adding a "fixed" layer to the tree.
+  {
+    std::unique_ptr<LayerImpl> fixed_layer =
+        LayerImpl::Create(host_impl_->active_tree(), kFixedLayerId);
+    fixed_layer->SetBounds(viewport_size);
+    fixed_layer->SetDrawsContent(true);
+    content_layer->test_properties()->AddChild(std::move(fixed_layer));
+    host_impl_->active_tree()->BuildPropertyTreesForTesting();
+    // This is very hackish but we want to simulate the kind of property tree
+    // that BGPT would create where a fixed layer's ScrollNode is parented to
+    // the inner viewport, rather than the outer.
+    host_impl_->active_tree()
+        ->LayerById(kFixedLayerId)
+        ->SetScrollTreeIndex(
+            host_impl_->active_tree()->InnerViewportScrollNode()->id);
+  }
+
+  host_impl_->active_tree()->DidBecomeActive();
+  DrawFrame();
+  {
+    gfx::ScrollOffset scroll_delta(0, 4);
+    // Scrolling should be able to happen on the compositor thread here.
+    EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
+              host_impl_
+                  ->ScrollBegin(BeginState(gfx::Point(5, 5)).get(),
+                                InputHandler::WHEEL)
+                  .thread);
+    host_impl_->ScrollBy(
+        UpdateState(gfx::Point(), gfx::ScrollOffsetToVector2dF(scroll_delta))
+            .get());
+    host_impl_->ScrollEnd(EndState().get());
+
+    std::unique_ptr<ScrollAndScaleSet> scroll_info =
+        host_impl_->ProcessScrollDeltas();
+
+    // The outer viewport should have scrolled.
+    ASSERT_EQ(scroll_info->scrolls.size(), 1u);
+    EXPECT_TRUE(ScrollInfoContains(
+        *scroll_info.get(),
+        host_impl_->active_tree()->OuterViewportScrollNode()->element_id,
+        scroll_delta));
+  }
+}
+
 TEST_F(LayerTreeHostImplTest, ScrollEventBubbling) {
   // When we try to scroll a non-scrollable child layer, the scroll delta
   // should be applied to one of its ancestors if possible.
-  gfx::Size surface_size(10, 10);
+  gfx::Size viewport_size(10, 10);
   gfx::Size content_size(20, 20);
-  const int kPageScaleLayerId = 4;
-  const int kViewportClipLayerId = 1;
-  const int kViewportScrollLayerId = 2;
-  std::unique_ptr<LayerImpl> root_ptr =
-      LayerImpl::Create(host_impl_->active_tree(), kPageScaleLayerId);
-  std::unique_ptr<LayerImpl> root_clip =
-      LayerImpl::Create(host_impl_->active_tree(), 3);
-  root_clip->test_properties()->force_render_surface = true;
-  std::unique_ptr<LayerImpl> root_scroll =
-      CreateScrollableLayer(kViewportClipLayerId, content_size);
-  // Make 'root' the clip layer for child: since they have the same sizes the
-  // child will have zero max_scroll_offset and scrolls will bubble.
-  std::unique_ptr<LayerImpl> child =
-      CreateScrollableLayer(kViewportScrollLayerId, content_size);
-  child->test_properties()->is_container_for_fixed_position_layers = true;
-  root_scroll->SetBounds(content_size);
-  child->SetScrollable(content_size);
+  LayerImpl* content_layer =
+      CreateBasicVirtualViewportLayers(viewport_size, content_size);
 
-  ElementId root_scroll_id = root_scroll->element_id();
-  root_scroll->test_properties()->AddChild(std::move(child));
-  root_clip->test_properties()->AddChild(std::move(root_scroll));
-  root_ptr->test_properties()->AddChild(std::move(root_clip));
+  constexpr int kScrollChildClipId = 300;
+  constexpr int kScrollChildScrollId = 301;
 
-  host_impl_->active_tree()->SetRootLayerForTesting(std::move(root_ptr));
-  LayerTreeImpl::ViewportLayerIds viewport_ids;
-  viewport_ids.page_scale = kPageScaleLayerId;
-  viewport_ids.inner_viewport_container = kViewportClipLayerId;
-  viewport_ids.inner_viewport_scroll = kViewportScrollLayerId;
-  host_impl_->active_tree()->SetViewportLayersFromIds(viewport_ids);
+  // Add a scroller whose scroll bounds and scroll container bounds are equal.
+  // Since the max_scroll_offset is 0, scrolls will bubble.
+  std::unique_ptr<LayerImpl> scroll_child_clip =
+      LayerImpl::Create(host_impl_->active_tree(), kScrollChildClipId);
+  std::unique_ptr<LayerImpl> scroll_child =
+      CreateScrollableLayer(kScrollChildScrollId, gfx::Size(10, 10));
+  scroll_child->test_properties()->is_container_for_fixed_position_layers =
+      true;
+  scroll_child->SetScrollable(gfx::Size(10, 10));
+
+  scroll_child_clip->test_properties()->AddChild(std::move(scroll_child));
+  content_layer->test_properties()->AddChild(std::move(scroll_child_clip));
+
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   host_impl_->active_tree()->DidBecomeActive();
-
-  host_impl_->active_tree()->SetDeviceViewportSize(surface_size);
   DrawFrame();
   {
     gfx::ScrollOffset scroll_delta(0, 4);
@@ -7168,8 +7213,10 @@ TEST_F(LayerTreeHostImplTest, ScrollEventBubbling) {
 
     // Only the root scroll should have scrolled.
     ASSERT_EQ(scroll_info->scrolls.size(), 1u);
-    EXPECT_TRUE(
-        ScrollInfoContains(*scroll_info.get(), root_scroll_id, scroll_delta));
+    EXPECT_TRUE(ScrollInfoContains(
+        *scroll_info.get(),
+        host_impl_->active_tree()->OuterViewportScrollNode()->element_id,
+        scroll_delta));
   }
 }
 
