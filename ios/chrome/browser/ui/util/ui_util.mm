@@ -69,10 +69,6 @@ bool IsRefreshLocationBarEnabled() {
   return true;
 }
 
-bool IsUIRefreshPhase1Enabled() {
-  return true;
-}
-
 CGFloat StatusBarHeight() {
   if (base::FeatureList::IsEnabled(kBrowserContainerContainsNTP)) {
     DCHECK(!base::ios::IsRunningOnIOS11OrLater());
@@ -80,19 +76,11 @@ CGFloat StatusBarHeight() {
 
   // This is a temporary solution until usage of StatusBarHeight has been
   // replaced with topLayoutGuide.
-
   if (IsIPhoneX()) {
     return IsPortrait() ? 44 : 0;
   }
 
-  // Checking [UIApplication sharedApplication].statusBarFrame will return the
-  // wrong offset when the application is started while in a phone call, so
-  // simply return 20 here.
-  if (!IsUIRefreshPhase1Enabled()) {
-    return 20;
-  }
-
-  // With the UI refresh, the location bar is hidden on landscape.
+  // The location bar is hidden on landscape.
   BOOL isCompactHeight = [UIApplication sharedApplication]
                              .keyWindow.traitCollection.verticalSizeClass ==
                          UIUserInterfaceSizeClassCompact;
