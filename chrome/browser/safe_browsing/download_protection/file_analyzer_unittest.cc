@@ -729,7 +729,8 @@ TEST_F(FileAnalyzerTest, SmallRarHasContentInspection) {
   EXPECT_FALSE(result_.archived_binaries.Get(0).digests().sha256().empty());
 }
 
-TEST_F(FileAnalyzerTest, LargeRarSkipsContentInspection) {
+// TODO(crbug.com/949399): The test is flaky (fail, timeout) on all platforms.
+TEST_F(FileAnalyzerTest, DISABLED_LargeRarSkipsContentInspection) {
   scoped_refptr<MockBinaryFeatureExtractor> extractor =
       new testing::StrictMock<MockBinaryFeatureExtractor>();
   FileAnalyzer analyzer(extractor);
