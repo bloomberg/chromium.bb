@@ -82,15 +82,7 @@ std::vector<management::LaunchType> GetAvailableLaunchTypes(
   }
 
   launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_AS_REGULAR_TAB);
-
-  // TODO(dominickn): remove check when hosted apps can open in windows on Mac.
-  if (delegate->CanHostedAppsOpenInWindows())
-    launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_AS_WINDOW);
-
-  if (!delegate->IsNewBookmarkAppsEnabled()) {
-    launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_AS_PINNED_TAB);
-    launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_FULL_SCREEN);
-  }
+  launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_AS_WINDOW);
   return launch_type_list;
 }
 

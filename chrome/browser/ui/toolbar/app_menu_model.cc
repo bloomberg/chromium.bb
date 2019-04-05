@@ -206,9 +206,7 @@ ToolsMenuModel::~ToolsMenuModel() {}
 // - Option to enable profiling.
 void ToolsMenuModel::Build(Browser* browser) {
   AddItemWithStringId(IDC_SAVE_PAGE, IDS_SAVE_PAGE);
-
-  if (extensions::util::IsNewBookmarkAppsEnabled())
-    AddItemWithStringId(IDC_CREATE_SHORTCUT, IDS_ADD_TO_OS_LAUNCH_SURFACE);
+  AddItemWithStringId(IDC_CREATE_SHORTCUT, IDS_ADD_TO_OS_LAUNCH_SURFACE);
 
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(IDC_CLEAR_BROWSING_DATA, IDS_CLEAR_BROWSING_DATA);
@@ -766,8 +764,7 @@ void AppMenuModel::Build() {
 
   AddItemWithStringId(IDC_FIND, IDS_FIND);
 
-  if (extensions::util::IsNewBookmarkAppsEnabled() &&
-      banners::AppBannerManager::IsExperimentalAppBannersEnabled()) {
+  if (banners::AppBannerManager::IsExperimentalAppBannersEnabled()) {
     const extensions::Extension* pwa =
         base::FeatureList::IsEnabled(features::kDesktopPWAWindowing)
             ? extensions::util::GetPwaForSecureActiveTab(browser_)

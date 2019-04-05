@@ -46,8 +46,6 @@ class ChromeManagementAPIDelegate : public extensions::ManagementAPIDelegate {
       content::BrowserContext* context,
       const std::string& title,
       const GURL& launch_url) const override;
-  bool CanHostedAppsOpenInWindows() const override;
-  bool IsNewBookmarkAppsEnabled() const override;
   void EnableExtension(content::BrowserContext* context,
                        const std::string& extension_id) const override;
   void DisableExtension(

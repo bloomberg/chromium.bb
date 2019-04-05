@@ -12,9 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -60,47 +58,14 @@ class LaunchOptionsComboboxModel : public ui::ComboboxModel {
 };
 
 LaunchOptionsComboboxModel::LaunchOptionsComboboxModel() {
-  if (extensions::util::IsNewBookmarkAppsEnabled()) {
-    // When bookmark apps are enabled, hosted apps can only toggle between
-    // LAUNCH_TYPE_WINDOW and LAUNCH_TYPE_REGULAR.
-    // TODO(sashab): Use a checkbox for this choice instead of combobox.
-    launch_types_.push_back(extensions::LAUNCH_TYPE_REGULAR);
-    launch_type_messages_.push_back(
-        l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_TAB));
-
-    if (extensions::util::CanHostedAppsOpenInWindows()) {
-      launch_types_.push_back(extensions::LAUNCH_TYPE_WINDOW);
-      launch_type_messages_.push_back(
-          l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_WINDOW));
-    }
-  } else {
-    launch_types_.push_back(extensions::LAUNCH_TYPE_REGULAR);
-    launch_type_messages_.push_back(
-        l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_REGULAR));
-
-    launch_types_.push_back(extensions::LAUNCH_TYPE_PINNED);
-    launch_type_messages_.push_back(
-        l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_PINNED));
-
-    if (extensions::util::CanHostedAppsOpenInWindows()) {
-      launch_types_.push_back(extensions::LAUNCH_TYPE_WINDOW);
-      launch_type_messages_.push_back(
-          l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_WINDOW));
-    }
-#if defined(OS_MACOSX)
-    // Mac does not support standalone web app browser windows or maximize
-    // unless the new bookmark apps system is enabled.
-    launch_types_.push_back(extensions::LAUNCH_TYPE_FULLSCREEN);
-    launch_type_messages_.push_back(
-        l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_FULLSCREEN));
-#else
-    // Even though the launch type is Full Screen, it is more accurately
-    // described as Maximized in non-Mac OSs.
-    launch_types_.push_back(extensions::LAUNCH_TYPE_FULLSCREEN);
-    launch_type_messages_.push_back(
-        l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED));
-#endif
-  }
+  // Hosted apps can only toggle between LAUNCH_TYPE_WINDOW and
+  // LAUNCH_TYPE_REGULAR.
+  launch_types_.push_back(extensions::LAUNCH_TYPE_REGULAR);
+  launch_type_messages_.push_back(
+      l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_TAB));
+  launch_types_.push_back(extensions::LAUNCH_TYPE_WINDOW);
+  launch_type_messages_.push_back(
+      l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_WINDOW));
 }
 
 LaunchOptionsComboboxModel::~LaunchOptionsComboboxModel() {
@@ -162,8 +127,6 @@ void AppInfoSummaryPanel::AddDescriptionAndLinksControl(
               DISTANCE_RELATED_CONTROL_VERTICAL_SMALL)));
 
   if (!app_->description().empty()) {
-    // TODO(sashab): Clip the app's description to 4 lines, and use Label's
-    // built-in elide behavior to add ellipses at the end: crbug.com/358053
     const size_t max_length = 400;
     base::string16 text = base::UTF8ToUTF16(app_->description());
     if (text.length() > max_length) {
