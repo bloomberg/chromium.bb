@@ -130,6 +130,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kDownloadHomeV2,
     &kDownloadHomeShowStorageInfo,
     &kDownloadRename,
+    &kDownloadTabManagementModule,
     &kDrawVerticallyEdgeToEdge,
     &kEphemeralTab,
     &kExploreSites,
@@ -369,6 +370,9 @@ const base::Feature kDownloadHomeShowStorageInfo{
 
 const base::Feature kDownloadRename{"DownloadRename",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kDownloadTabManagementModule{
+    "DownloadTabManagementModule", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kEphemeralTab{"EphemeralTab",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
