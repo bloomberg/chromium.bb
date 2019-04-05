@@ -5208,6 +5208,36 @@ TEST_F(DiskCacheEntryTest, SimpleCacheCloseResurrection) {
   entry2->Close();
 }
 
+TEST_F(DiskCacheEntryTest, BlockFileSparsePendingAfterDtor) {
+  // Test of behavior of ~EntryImpl for sparse entry that runs after backend
+  // destruction.
+  //
+  // Hand-creating the backend for realistic shutdown behavior.
+  CleanupCacheDir();
+  CreateBackend(disk_cache::kNone);
+
+  disk_cache::Entry* entry = nullptr;
+  ASSERT_THAT(CreateEntry("key", &entry), IsOk());
+  ASSERT_TRUE(entry != nullptr);
+
+  const int kSize = 61184;
+
+  scoped_refptr<net::IOBuffer> buf = base::MakeRefCounted<net::IOBuffer>(kSize);
+  CacheTestFillBuffer(buf->data(), kSize, false);
+
+  // The write pattern here avoids the second write being handled by the
+  // buffering layer, making SparseControl have to deal with its asynchrony.
+  EXPECT_EQ(1, WriteSparseData(entry, 65535, buf.get(), 1));
+  EXPECT_EQ(net::ERR_IO_PENDING,
+            entry->WriteSparseData(2560, buf.get(), kSize, base::DoNothing()));
+  entry->Close();
+  cache_.reset();
+
+  // Create a new instance as a way of flushing the thread.
+  InitCache();
+  FlushQueueForTest();
+}
+
 class DiskCacheSimplePrefetchTest : public DiskCacheEntryTest {
  public:
   DiskCacheSimplePrefetchTest()
