@@ -141,10 +141,10 @@ void VideoCaptureManager::EnumerateDevices(
   EmitLogMessage("VideoCaptureManager::EnumerateDevices", 1);
 
   // Pass a timer for UMA histogram collection.
-  video_capture_provider_->GetDeviceInfosAsync(
-      media::BindToCurrentLoop(base::BindOnce(
-          &VideoCaptureManager::OnDeviceInfosReceived, this,
-          base::Owned(new base::ElapsedTimer()), std::move(client_callback))));
+  video_capture_provider_->GetDeviceInfosAsync(media::BindToCurrentLoop(
+      base::BindRepeating(&VideoCaptureManager::OnDeviceInfosReceived, this,
+                          base::Owned(new base::ElapsedTimer()),
+                          base::Passed(&client_callback))));
 }
 
 int VideoCaptureManager::Open(const blink::MediaStreamDevice& device) {

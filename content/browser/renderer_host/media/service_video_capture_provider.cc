@@ -212,14 +212,17 @@ void ServiceVideoCaptureProvider::GetDeviceInfosAsyncForRetry(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   auto service_connection = LazyConnectToService();
   service_connection->SetRetryCount(retry_count);
-  // Use a ScopedCallbackRunner to make sure that |result_callback| gets
-  // invoked with an empty result in case that the service drops the request.
+  // Make sure that |result_callback| gets invoked with an empty result in case
+  // that the service drops the request.
   service_connection->source_provider()->GetSourceInfos(
-      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+      mojo::WrapCallbackWithDropHandler(
           base::BindOnce(&ServiceVideoCaptureProvider::OnDeviceInfosReceived,
                          weak_ptr_factory_.GetWeakPtr(), service_connection,
-                         std::move(result_callback), retry_count),
-          std::vector<media::VideoCaptureDeviceInfo>()));
+                         result_callback, retry_count),
+          base::BindOnce(
+              &ServiceVideoCaptureProvider::OnDeviceInfosRequestDropped,
+              weak_ptr_factory_.GetWeakPtr(), service_connection,
+              result_callback, retry_count)));
 }
 
 void ServiceVideoCaptureProvider::OnDeviceInfosReceived(
@@ -263,6 +266,27 @@ void ServiceVideoCaptureProvider::OnDeviceInfosReceived(
   }
 #endif
   base::ResetAndReturn(&result_callback).Run(infos);
+}
+
+void ServiceVideoCaptureProvider::OnDeviceInfosRequestDropped(
+    scoped_refptr<RefCountedVideoSourceProvider> service_connection,
+    GetDeviceInfosCallback result_callback,
+    int retry_count) {
+#if defined(OS_MACOSX)
+  std::string model = base::mac::GetModelIdentifier();
+  if (base::FeatureList::IsEnabled(
+          features::kRetryGetVideoCaptureDeviceInfos) &&
+      base::StartsWith(model, "MacBook",
+                       base::CompareCase::INSENSITIVE_ASCII)) {
+    video_capture::uma::LogMacbookRetryGetDeviceInfosEvent(
+        retry_count == 0 ? video_capture::uma::
+                               SERVICE_DROPPED_DEVICE_INFOS_REQUEST_ON_FIRST_TRY
+                         : video_capture::uma::
+                               SERVICE_DROPPED_DEVICE_INFOS_REQUEST_ON_RETRY);
+  }
+#endif
+  base::ResetAndReturn(&result_callback)
+      .Run(std::vector<media::VideoCaptureDeviceInfo>());
 }
 
 void ServiceVideoCaptureProvider::OnLostConnectionToSourceProvider() {

@@ -34916,6 +34916,15 @@ from previous Chrome versions.
   <int value="12"
       label="AVFoundation device count has changed from &gt; 0 to zero on a
              subsequent attempt without restarting the process."/>
+  <int value="13"
+      label="Device infos were dropped at
+             VideoCaptureDeviceFactoryMac::GetDeviceDescriptors."/>
+  <int value="14"
+      label="The video capture service dropped the callback to GetSourceInfos
+             on first try."/>
+  <int value="15"
+      label="The video capture service dropped the callback to GetSourceInfos
+             on retry."/>
 </enum>
 
 <enum name="MacBookVersions">
