@@ -4,6 +4,7 @@
 
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -68,9 +69,8 @@ DEFINE_UI_CLASS_PROPERTY_TYPE(views::DesktopWindowTreeHostX11*)
 
 namespace views {
 
-DesktopWindowTreeHostX11* DesktopWindowTreeHostX11::g_current_capture =
-    NULL;
-std::list<XID>* DesktopWindowTreeHostX11::open_windows_ = NULL;
+DesktopWindowTreeHostX11* DesktopWindowTreeHostX11::g_current_capture = nullptr;
+std::list<XID>* DesktopWindowTreeHostX11::open_windows_ = nullptr;
 
 DEFINE_UI_CLASS_PROPERTY_KEY(aura::Window*, kViewsWindowForRootWindow, NULL)
 
@@ -146,10 +146,10 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
       use_native_frame_(false),
       should_maximize_after_map_(false),
       use_argb_visual_(false),
-      drag_drop_client_(NULL),
+      drag_drop_client_(nullptr),
       native_widget_delegate_(native_widget_delegate),
       desktop_native_widget_aura_(desktop_native_widget_aura),
-      window_parent_(NULL),
+      window_parent_(nullptr),
       custom_window_shape_(false),
       urgency_hint_set_(false),
       has_pointer_grab_(false),
@@ -164,7 +164,7 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
 
 DesktopWindowTreeHostX11::~DesktopWindowTreeHostX11() {
   window()->ClearProperty(kHostForRootWindow);
-  wm::SetWindowMoveClient(window(), NULL);
+  wm::SetWindowMoveClient(window(), nullptr);
   desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(this);
   DestroyDispatcher();
 }
@@ -180,7 +180,7 @@ aura::Window* DesktopWindowTreeHostX11::GetContentWindowForXID(XID xid) {
 DesktopWindowTreeHostX11* DesktopWindowTreeHostX11::GetHostForXID(XID xid) {
   aura::WindowTreeHost* host =
       aura::WindowTreeHost::GetForAcceleratedWidget(xid);
-  return host ? host->window()->GetProperty(kHostForRootWindow) : NULL;
+  return host ? host->window()->GetProperty(kHostForRootWindow) : nullptr;
 }
 
 // static
@@ -382,7 +382,7 @@ void DesktopWindowTreeHostX11::CleanUpWindowList(
   }
 
   delete open_windows_;
-  open_windows_ = NULL;
+  open_windows_ = nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -425,7 +425,7 @@ void DesktopWindowTreeHostX11::OnNativeWidgetCreated(
   SetUseNativeFrame(params.type == Widget::InitParams::TYPE_WINDOW &&
                     !params.remove_standard_frame);
 
-  x11_window_move_client_.reset(new X11DesktopWindowMoveClient);
+  x11_window_move_client_ = std::make_unique<X11DesktopWindowMoveClient>();
   wm::SetWindowMoveClient(window(), x11_window_move_client_.get());
 
   SetWindowTransparency();
@@ -486,7 +486,7 @@ void DesktopWindowTreeHostX11::CloseNow() {
   // If we have a parent, remove ourselves from its children list.
   if (window_parent_) {
     window_parent_->window_children_.erase(this);
-    window_parent_ = NULL;
+    window_parent_ = nullptr;
   }
 
   // Remove the event listeners we've installed. We need to remove these
@@ -1309,7 +1309,7 @@ void DesktopWindowTreeHostX11::ReleaseCapture() {
     // Release mouse grab asynchronously. A window managed by Chrome is likely
     // the topmost window underneath the mouse so the capture release being
     // asynchronous is likely inconsequential.
-    g_current_capture = NULL;
+    g_current_capture = nullptr;
     ui::UngrabPointer();
     has_pointer_grab_ = false;
 
@@ -1493,7 +1493,8 @@ void DesktopWindowTreeHostX11::InitX11Window(
                     ExposureMask | VisibilityChangeMask |
                     StructureNotifyMask | PropertyChangeMask |
                     PointerMotionMask;
-  xwindow_events_.reset(new ui::XScopedEventSelector(xwindow_, event_mask));
+  xwindow_events_ =
+      std::make_unique<ui::XScopedEventSelector>(xwindow_, event_mask);
   XFlush(xdisplay_);
 
   if (ui::IsXInput2Available())
@@ -1509,7 +1510,8 @@ void DesktopWindowTreeHostX11::InitX11Window(
 
   // We need a WM_CLIENT_MACHINE and WM_LOCALE_NAME value so we integrate with
   // the desktop environment.
-  XSetWMProperties(xdisplay_, xwindow_, NULL, NULL, NULL, 0, NULL, NULL, NULL);
+  XSetWMProperties(xdisplay_, xwindow_, nullptr, nullptr, nullptr, 0, nullptr,
+                   nullptr, nullptr);
 
   // Likewise, the X server needs to know this window's pid so it knows which
   // program to kill if the window hangs.
@@ -1556,7 +1558,7 @@ void DesktopWindowTreeHostX11::InitX11Window(
         xdisplay_, xwindow_, params.wm_class_name, params.wm_class_class);
   }
 
-  const char* wm_role_name = NULL;
+  const char* wm_role_name = nullptr;
   // If the widget isn't overriding the role, provide a default value for popup
   // and bubble types.
   if (!params.wm_role_name.empty()) {
@@ -1612,7 +1614,7 @@ void DesktopWindowTreeHostX11::InitX11Window(
   gfx::ImageSkia* window_icon =
       ViewsDelegate::GetInstance()
           ? ViewsDelegate::GetInstance()->GetDefaultWindowIcon()
-          : NULL;
+          : nullptr;
   if (window_icon) {
     SetWindowIcons(gfx::ImageSkia(), *window_icon);
   }

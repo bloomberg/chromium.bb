@@ -186,7 +186,7 @@ display::Display DesktopScreenX11::GetDisplayNearestPoint(
 display::Display DesktopScreenX11::GetDisplayMatching(
     const gfx::Rect& match_rect) const {
   int max_area = 0;
-  const display::Display* matching = NULL;
+  const display::Display* matching = nullptr;
   for (auto it = displays_.begin(); it != displays_.end(); ++it) {
     gfx::Rect intersect = gfx::IntersectRects(it->bounds(), match_rect);
     int area = intersect.width() * intersect.height();

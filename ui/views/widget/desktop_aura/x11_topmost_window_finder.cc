@@ -15,8 +15,7 @@ namespace views {
 
 X11TopmostWindowFinder::X11TopmostWindowFinder() : toplevel_(x11::None) {}
 
-X11TopmostWindowFinder::~X11TopmostWindowFinder() {
-}
+X11TopmostWindowFinder::~X11TopmostWindowFinder() = default;
 
 aura::Window* X11TopmostWindowFinder::FindLocalProcessWindowAt(
     const gfx::Point& screen_loc_in_pixels,
@@ -34,7 +33,7 @@ aura::Window* X11TopmostWindowFinder::FindLocalProcessWindowAt(
     }
   }
   if (!found_local_process_window)
-    return NULL;
+    return nullptr;
 
   ui::EnumerateTopLevelWindows(this);
   return DesktopWindowTreeHostX11::GetContentWindowForXID(toplevel_);

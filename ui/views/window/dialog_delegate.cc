@@ -64,7 +64,7 @@ Widget::InitParams DialogDelegate::GetDialogWidgetInitParams(
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // The new style doesn't support unparented dialogs on Linux desktop.
   if (dialog)
-    dialog->supports_custom_frame_ &= parent != NULL;
+    dialog->supports_custom_frame_ &= parent != nullptr;
 #elif defined(OS_WIN)
   // The new style doesn't support unparented dialogs on Windows Classic themes.
   if (dialog && !ui::win::IsAeroGlassEnabled())
