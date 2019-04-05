@@ -308,6 +308,10 @@ ClientControlledShellSurface::ClientControlledShellSurface(Surface* surface,
 }
 
 ClientControlledShellSurface::~ClientControlledShellSurface() {
+  // Reset the window delegate here so that we won't try to do any dragging
+  // operation on a to-be-destroyed window. |widget_| can be nullptr in tests.
+  if (GetWidget())
+    GetWindowState()->SetDelegate(nullptr);
   wide_frame_.reset();
   display::Screen::GetScreen()->RemoveObserver(this);
 }
