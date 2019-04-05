@@ -189,6 +189,29 @@ TEST_F('CrElementsScrollableBehaviorTest', 'All', function() {
  * @constructor
  * @extends {CrElementsBrowserTest}
  */
+function CrElementsContainerShadowBehaviorTest() {}
+
+CrElementsContainerShadowBehaviorTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://resources/cr_elements/cr_container_shadow_behavior.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    'cr_container_shadow_behavior_test.js',
+  ]),
+};
+
+TEST_F('CrElementsContainerShadowBehaviorTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
 function CrElementsPolicyIndicatorTest() {}
 
 CrElementsPolicyIndicatorTest.prototype = {
