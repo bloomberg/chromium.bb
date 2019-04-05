@@ -788,6 +788,16 @@ Metadata describing bear\_320x192.nv12.yuv.
 #### bear\_320x192.yv12.yuv
 First frame of bear\_320x192\_40frames.yv12.yuv for image\_processor_test.
 
+#### bear\_320x192.rgba
+RAW RGBA format data. This data is created from bear\_320x192.i420.yuv by the
+following command. Alpha channel is always 0xFF because of that.
+`ffmpeg -s 320x192 -pix_fmt yuv420p -i bear_320x192.i420.yuv -vcodec rawvideo -f image2 -pix_fmt rgba bear_320x192.rgba`
+
+#### bear\_320x192.bgra
+RAW BGRA format data. This data is created from bear\_320x192.i420.yuv by the
+following command. Alpha channel is always 0xFF because of that.
+`ffmpeg -s 320x192 -pix_fmt yuv420p -i bear_320x192.i420.yuv -vcodec rawvideo -f image2 -pix_fmt rgba bear_320x192.bgra`
+
 ###  VP9 parser test files:
 
 #### bear-vp9.ivf
