@@ -30,9 +30,11 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/autofill/core/browser/payments/payments_util.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
@@ -1560,37 +1562,6 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
                          autofill::payments::GetManageInstrumentsUrl().spec());
   html_source->AddString("paymentMethodsLearnMoreURL",
                          chrome::kPaymentMethodsLearnMoreURL);
-  html_source->AddBoolean(
-      "migrationEnabled",
-      autofill::features::GetLocalCardMigrationExperimentalFlag() ==
-          autofill::features::LocalCardMigrationExperimentalFlag::
-              kMigrationIncludeSettingsPage);
-  html_source->AddBoolean(
-      "upstreamEnabled",
-      base::FeatureList::IsEnabled(autofill::features::kAutofillUpstream));
-
-  autofill::PersonalDataManager* personal_data_manager_ =
-      autofill::PersonalDataManagerFactory::GetForProfile(profile);
-  html_source->AddBoolean(
-      "hasGooglePaymentsAccount",
-      autofill::payments::GetBillingCustomerId(personal_data_manager_) != 0);
-
-  syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
-  if (sync_service && sync_service->CanSyncFeatureStart() &&
-      sync_service->GetPreferredDataTypes().Has(syncer::AUTOFILL_PROFILE)) {
-    html_source->AddBoolean(
-        "isUsingSecondaryPassphrase",
-        sync_service->GetUserSettings()->IsUsingSecondaryPassphrase());
-    html_source->AddBoolean(
-        "uploadToGoogleActive",
-        syncer::GetUploadToGoogleState(
-            sync_service, syncer::ModelType::AUTOFILL_WALLET_DATA) ==
-            syncer::UploadState::ACTIVE);
-  } else {
-    html_source->AddBoolean("isUsingSecondaryPassphrase", false);
-    html_source->AddBoolean("uploadToGoogleActive", false);
-  }
 
   bool is_guest_mode = false;
 #if defined(OS_CHROMEOS)
@@ -1599,24 +1570,14 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
 #else   // !defined(OS_CHROMEOS)
   is_guest_mode = profile->IsOffTheRecord();
 #endif  // defined(OS_CHROMEOS)
-
-  if (is_guest_mode) {
-    html_source->AddBoolean("userEmailDomainAllowed", false);
-  } else {
-    const std::string& user_email =
-        personal_data_manager_->GetAccountInfoForPaymentsServer().email;
-    if (user_email.empty()) {
-      html_source->AddBoolean("userEmailDomainAllowed", false);
-    } else {
-      std::string domain = gaia::ExtractDomainName(user_email);
-      html_source->AddBoolean(
-          "userEmailDomainAllowed",
-          base::FeatureList::IsEnabled(
-              autofill::features::kAutofillUpstreamAllowAllEmailDomains) ||
-              (domain == "googlemail.com" || domain == "gmail.com" ||
-               domain == "google.com" || domain == "chromium.org"));
-    }
-  }
+  html_source->AddBoolean(
+      "migrationEnabled",
+      !is_guest_mode &&
+          autofill::IsCreditCardMigrationEnabled(
+              autofill::PersonalDataManagerFactory::GetForProfile(profile),
+              profile->GetPrefs(),
+              ProfileSyncServiceFactory::GetForProfile(profile),
+              /*is_test_mode=*/false));
 
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
