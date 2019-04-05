@@ -6,13 +6,14 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_ADAPTER_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_object.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
-class GPUDevice;
 class GPUDeviceDescriptor;
 
 class GPUAdapter final : public DawnObjectBase {
@@ -27,7 +28,8 @@ class GPUAdapter final : public DawnObjectBase {
 
   const String& name() const;
 
-  GPUDevice* createDevice(const GPUDeviceDescriptor* descriptor);
+  ScriptPromise requestDevice(ScriptState* script_state,
+                              const GPUDeviceDescriptor* descriptor);
 
  private:
   String name_;
