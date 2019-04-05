@@ -19,6 +19,7 @@
 #import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #include "ios/testing/embedded_test_server_handlers.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
+#include "ios/web/public/test/element_selector.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
