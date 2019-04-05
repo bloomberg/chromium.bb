@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "media/base/video_frame.h"
@@ -21,51 +22,7 @@
 
 namespace blink {
 
-class BLINK_EXPORT VideoTrackAdapterSettings {
- public:
-  // Creates a VideoTrackAdapterSettings with no target resolution or frame rate
-  // and without any constraints on the resolution.
-  VideoTrackAdapterSettings();
-  // Creates a VideoTrackAdapterSettings with a given target resolution and
-  // and frame rate, and without any constraints on the resolution.
-  VideoTrackAdapterSettings(const gfx::Size& target_size,
-                            double max_frame_rate);
-  // Creates a VideoTrackAdapterSettings with the specified resolution, frame
-  // rate and resolution constraints. If |target_size| is null, it means that
-  // no video processing is desired.
-  VideoTrackAdapterSettings(base::Optional<gfx::Size> target_size,
-                            double min_aspect_ratio,
-                            double max_aspect_ratio,
-                            double max_frame_rate);
-  VideoTrackAdapterSettings(const VideoTrackAdapterSettings& other);
-  VideoTrackAdapterSettings& operator=(const VideoTrackAdapterSettings& other);
-  bool operator==(const VideoTrackAdapterSettings& other) const;
-
-  const base::Optional<gfx::Size>& target_size() const { return target_size_; }
-  int target_width() const {
-    DCHECK(target_size_);
-    return target_size_->width();
-  }
-  int target_height() const {
-    DCHECK(target_size_);
-    return target_size_->height();
-  }
-  double min_aspect_ratio() const { return min_aspect_ratio_; }
-  double max_aspect_ratio() const { return max_aspect_ratio_; }
-  double max_frame_rate() const { return max_frame_rate_; }
-  void set_max_frame_rate(double max_frame_rate) {
-    max_frame_rate_ = max_frame_rate;
-  }
-
- private:
-  base::Optional<gfx::Size> target_size_;
-  double min_aspect_ratio_;
-  double max_aspect_ratio_;
-  // A |max_frame_rate| of zero is used to signal that no frame-rate
-  // adjustment is necessary.
-  // TODO(guidou): Change this to base::Optional. https://crbug.com/734528
-  double max_frame_rate_;
-};
+class VideoTrackAdapterSettings;
 
 // VideoTrackAdapter is a helper class used by MediaStreamVideoSource used for
 // adapting the video resolution from a source implementation to the resolution
@@ -121,8 +78,10 @@ class BLINK_EXPORT VideoTrackAdapter
   void SetSourceFrameSize(const gfx::Size& source_frame_size);
 
   // Exported for testing.
-  // Returns true if |desired_size| is updated successfully, false otherwise.
-  // |desired_size| is not updated |settings| has rescaling disabled and
+  //
+  // Calculates the desired size of a VideoTrack instance, and returns true if
+  // |desired_size| is updated successfully, false otherwise.
+  // |desired_size| is not updated if |settings| has rescaling disabled and
   // |input_size| is invalid.
   static bool CalculateDesiredSize(bool is_rotated,
                                    const gfx::Size& input_size,

@@ -14,11 +14,11 @@
 #include "media/capture/video_capture_types.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/web_apply_constraints_request.h"
 
 namespace blink {
 class MediaStreamAudioSource;
-class MediaStreamVideoSource;
 class MediaStreamVideoTrack;
 class WebString;
 }

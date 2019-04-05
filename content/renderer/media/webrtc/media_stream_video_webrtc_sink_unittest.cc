@@ -11,7 +11,7 @@
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/blink/public/web/modules/mediastream/video_track_adapter.h"
+#include "third_party/blink/public/web/modules/mediastream/video_track_adapter_settings.h"
 
 namespace content {
 namespace {

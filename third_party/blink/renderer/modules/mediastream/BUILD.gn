@@ -48,6 +48,7 @@ blink_modules_sources("mediastream") {
     "user_media_request.cc",
     "user_media_request.h",
     "video_track_adapter.cc",
+    "video_track_adapter_settings.cc",
     "web_media_stream_utils.cc",
   ]
 }
