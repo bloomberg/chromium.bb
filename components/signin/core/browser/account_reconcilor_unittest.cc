@@ -2204,9 +2204,9 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest, StartReconcileAddToCookie) {
   }
 
   base::HistogramTester::CountsMap expected_counts;
-  expected_counts["Signin.Reconciler.Duration.Success"] = 1;
+  expected_counts["Signin.Reconciler.Duration.UpTo3mins.Success"] = 1;
   EXPECT_THAT(histogram_tester()->GetTotalCountsForPrefix(
-                  "Signin.Reconciler.Duration.Success"),
+                  "Signin.Reconciler.Duration.UpTo3mins.Success"),
               testing::ContainerEq(expected_counts));
 }
 
@@ -2307,10 +2307,10 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest,
   identity_test_env()->ClearPrimaryAccount();
 
   base::HistogramTester::CountsMap expected_counts;
-  expected_counts["Signin.Reconciler.Duration.Failure"] = 1;
+  expected_counts["Signin.Reconciler.Duration.UpTo3mins.Failure"] = 1;
   if (!IsMultiloginEnabled()) {
     EXPECT_THAT(histogram_tester()->GetTotalCountsForPrefix(
-                    "Signin.Reconciler.Duration.Failure"),
+                    "Signin.Reconciler.Duration.UpTo3mins.Failure"),
                 testing::ContainerEq(expected_counts));
   }
 }
