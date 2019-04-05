@@ -1114,10 +1114,11 @@ TEST_F(InputMethodChromeOSAsyncTest, StopPropagation) {
   // should not be run immediately.
   bool async_callback_run = false;
   bool async_callback_handled_result = false;
-  ime_->DispatchKeyEvent(&event, base::BindLambdaForTesting([&](bool handled) {
-    async_callback_handled_result = handled;
-    async_callback_run = true;
-  }));
+  ime_->DispatchKeyEventAsync(&event,
+                              base::BindLambdaForTesting([&](bool handled) {
+                                async_callback_handled_result = handled;
+                                async_callback_run = true;
+                              }));
   EXPECT_FALSE(async_callback_run);
   ASSERT_EQ(1u, caching_input_method_delegate_->callbacks().size());
 
@@ -1141,10 +1142,11 @@ TEST_F(InputMethodChromeOSAsyncTest, DidNotStopPropagation) {
   // should not be run immediately.
   bool async_callback_run = false;
   bool async_callback_handled_result = false;
-  ime_->DispatchKeyEvent(&event, base::BindLambdaForTesting([&](bool handled) {
-    async_callback_handled_result = handled;
-    async_callback_run = true;
-  }));
+  ime_->DispatchKeyEventAsync(&event,
+                              base::BindLambdaForTesting([&](bool handled) {
+                                async_callback_handled_result = handled;
+                                async_callback_run = true;
+                              }));
   EXPECT_FALSE(async_callback_run);
   ASSERT_EQ(1u, caching_input_method_delegate_->callbacks().size());
 
@@ -1168,10 +1170,11 @@ TEST_F(InputMethodChromeOSAsyncTest, UnhandledAndDidNotStopPropatation) {
   // should not be run immediately.
   bool async_callback_run = false;
   bool async_callback_handled_result = false;
-  ime_->DispatchKeyEvent(&event, base::BindLambdaForTesting([&](bool handled) {
-    async_callback_handled_result = handled;
-    async_callback_run = true;
-  }));
+  ime_->DispatchKeyEventAsync(&event,
+                              base::BindLambdaForTesting([&](bool handled) {
+                                async_callback_handled_result = handled;
+                                async_callback_run = true;
+                              }));
   EXPECT_FALSE(async_callback_run);
   ASSERT_EQ(1u, caching_input_method_delegate_->callbacks().size());
 
