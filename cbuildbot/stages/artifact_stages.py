@@ -985,7 +985,7 @@ class CollectPGOProfilesStage(generic_stages.BoardSpecificBuilderStage,
 
     out_chroot_path = os.path.join(out_chroot, self.archive_path)
     out_profdata_loc = os.path.join(out_chroot_path, self.PROFDATA)
-    cros_build_lib.CreateTarball(self.PROFDATA_TAR, cwd=out_profdata_loc,
+    cros_build_lib.CreateTarball(self.PROFDATA_TAR, cwd=out_chroot_path,
                                  inputs=[out_profdata_loc])
 
     # Upload profdata tarball
