@@ -30,7 +30,8 @@ SendTabToSelfClientService::~SendTabToSelfClientService() {
 }
 
 void SendTabToSelfClientService::SendTabToSelfModelLoaded() {
-  // Do nothing for now
+  // TODO(crbug.com/949756): Push changes that happened before the model was
+  // loaded.
 }
 
 void SendTabToSelfClientService::EntriesAddedRemotely(

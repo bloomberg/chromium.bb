@@ -1,0 +1,22 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("send_tab_to_self") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "send_tab_to_self_client_service_factory.h",
+    "send_tab_to_self_client_service_factory.mm",
+    "send_tab_to_self_client_service_ios.cc",
+    "send_tab_to_self_client_service_ios.h",
+  ]
+  deps = [
+    "//base",
+    "//components/keyed_service/core",
+    "//components/keyed_service/ios",
+    "//components/send_tab_to_self",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/sync",
+  ]
+}
