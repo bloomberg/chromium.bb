@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/feature_list.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/post_task.h"
@@ -71,12 +72,12 @@ void PerformanceManager::Destroy(std::unique_ptr<PerformanceManager> instance) {
   instance->task_runner_->DeleteSoon(FROM_HERE, instance.release());
 }
 
-void PerformanceManager::DistributeMeasurementBatch(
-    std::unique_ptr<ProcessResourceMeasurementBatch> batch) {
+void PerformanceManager::CallOnGraph(const base::Location& from_here,
+                                     GraphCallback callback) {
+  DCHECK(!callback.is_null());
   task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&PerformanceManager::DistributeMeasurementBatchImpl,
-                     base::Unretained(this), std::move(batch)));
+      FROM_HERE, base::BindOnce(&PerformanceManager::CallOnGraphImpl,
+                                base::Unretained(this), std::move(callback)));
 }
 
 std::unique_ptr<FrameNodeImpl> PerformanceManager::CreateFrameNode(
@@ -186,6 +187,10 @@ void PerformanceManager::OnStart() {
           connection ? connection->GetConnector()->Clone() : nullptr));
 }
 
+void PerformanceManager::CallOnGraphImpl(GraphCallback graph_callback) {
+  std::move(graph_callback).Run(&graph_);
+}
+
 void PerformanceManager::OnStartImpl(
     std::unique_ptr<service_manager::Connector> connector) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -224,14 +229,6 @@ void PerformanceManager::BindInterfaceImpl(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   interface_registry_.BindInterface(interface_name, std::move(message_pipe),
                                     service_manager::BindSourceInfo());
-}
-
-void PerformanceManager::DistributeMeasurementBatchImpl(
-    std::unique_ptr<ProcessResourceMeasurementBatch> batch) {
-  SystemNodeImpl* system_node = graph_.FindOrCreateSystemNode();
-  DCHECK(system_node);
-
-  system_node->DistributeMeasurementBatch(std::move(batch));
 }
 
 void PerformanceManager::BindWebUIGraphDump(

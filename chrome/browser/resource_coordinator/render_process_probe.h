@@ -19,6 +19,7 @@
 
 namespace performance_manager {
 struct ProcessResourceMeasurementBatch;
+class Graph;
 }  // namespace performance_manager
 
 namespace resource_coordinator {
@@ -104,6 +105,11 @@ class RenderProcessProbeImpl : public RenderProcessProbe {
   virtual void DispatchMetricsOnUIThread(
       std::unique_ptr<performance_manager::ProcessResourceMeasurementBatch>
           batch);
+
+  static void DistributeMeasurementBatchToSystemNode(
+      std::unique_ptr<performance_manager::ProcessResourceMeasurementBatch>
+          batch,
+      performance_manager::Graph* graph);
 
   // A map of currently running render process host IDs to process.
   // This map is accessed alternatively from the UI thread and the IO thread,

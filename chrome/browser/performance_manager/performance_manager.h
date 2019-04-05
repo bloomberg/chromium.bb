@@ -10,6 +10,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
+#include "base/location.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/performance_manager/graph/graph.h"
@@ -28,7 +30,6 @@ class MojoUkmRecorder;
 namespace performance_manager {
 
 class PageNodeImpl;
-struct ProcessResourceMeasurementBatch;
 
 // The performance manager is a rendezvous point for binding to performance
 // manager interfaces.
@@ -51,16 +52,15 @@ class PerformanceManager {
   // deletion on its sequence.
   static void Destroy(std::unique_ptr<PerformanceManager> instance);
 
+  // Invokes |graph_callback| on the performance manager's sequence, with the
+  // graph as a parameter.
+  using GraphCallback = base::OnceCallback<void(Graph*)>;
+  void CallOnGraph(const base::Location& from_here,
+                   GraphCallback graph_callback);
+
   // Forwards the binding request to the implementation class.
   template <typename Interface>
   void BindInterface(mojo::InterfaceRequest<Interface> request);
-
-  // Dispatches a measurement batch to the SystemNode on the performance
-  // sequence. This is a temporary method to support the RenderProcessProbe,
-  // which will soon go away as the performance measurement moves to the
-  // performance sequence.
-  void DistributeMeasurementBatch(
-      std::unique_ptr<ProcessResourceMeasurementBatch> batch);
 
   // Creates a new node of the requested type and adds it to the graph.
   // May be called from any sequence.
@@ -104,10 +104,9 @@ class PerformanceManager {
 
   void OnStart();
   void OnStartImpl(std::unique_ptr<service_manager::Connector> connector);
+  void CallOnGraphImpl(GraphCallback graph_callback);
   void BindInterfaceImpl(const std::string& interface_name,
                          mojo::ScopedMessagePipeHandle message_pipe);
-  void DistributeMeasurementBatchImpl(
-      std::unique_ptr<ProcessResourceMeasurementBatch> batch);
 
   void BindWebUIGraphDump(
       resource_coordinator::mojom::WebUIGraphDumpRequest request,

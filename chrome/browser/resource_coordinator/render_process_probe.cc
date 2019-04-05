@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "chrome/browser/performance_manager/graph/graph.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -261,7 +262,22 @@ void RenderProcessProbeImpl::DispatchMetricsOnUIThread(
       performance_manager::PerformanceManager::GetInstance();
 
   if (performance_manager && !batch->measurements.empty())
-    performance_manager->DistributeMeasurementBatch(std::move(batch));
+    performance_manager->CallOnGraph(
+        FROM_HERE,
+        base::BindOnce(
+            &RenderProcessProbeImpl::DistributeMeasurementBatchToSystemNode,
+            std::move(batch)));
+}
+
+// static
+void RenderProcessProbeImpl::DistributeMeasurementBatchToSystemNode(
+    std::unique_ptr<performance_manager::ProcessResourceMeasurementBatch> batch,
+    performance_manager::Graph* graph) {
+  performance_manager::SystemNodeImpl* system_node =
+      graph->FindOrCreateSystemNode();
+  DCHECK(system_node);
+
+  system_node->DistributeMeasurementBatch(std::move(batch));
 }
 
 }  // namespace resource_coordinator
