@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <EarlGrey/EarlGrey.h>
+
 #include "base/strings/stringprintf.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_constants.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_egtest_util.h"
