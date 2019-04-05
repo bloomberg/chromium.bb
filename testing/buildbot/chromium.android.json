@@ -17716,11 +17716,23 @@
         },
         "test": "net_unittests"
       }
+    ],
+    "scripts": [
+      {
+        "name": "sizes",
+        "script": "sizes.py"
+      }
     ]
   },
   "android-cronet-arm-rel": {
     "additional_compile_targets": [
       "cronet_package"
+    ],
+    "scripts": [
+      {
+        "name": "sizes",
+        "script": "sizes.py"
+      }
     ]
   },
   "android-cronet-arm64-dbg": {
@@ -17734,6 +17746,12 @@
       "cronet_tests_android",
       "cronet_unittests_android",
       "net_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "sizes",
+        "script": "sizes.py"
+      }
     ]
   },
   "android-cronet-arm64-rel": {
@@ -17747,6 +17765,12 @@
       "cronet_tests_android",
       "cronet_unittests_android",
       "net_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "sizes",
+        "script": "sizes.py"
+      }
     ]
   },
   "android-cronet-asan-arm-rel": {
@@ -18683,6 +18707,12 @@
       "cronet_tests_android",
       "cronet_unittests_android",
       "net_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "sizes",
+        "script": "sizes.py"
+      }
     ]
   },
   "android-cronet-x86-rel": {
@@ -18696,6 +18726,12 @@
       "cronet_tests_android",
       "cronet_unittests_android",
       "net_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "sizes",
+        "script": "sizes.py"
+      }
     ]
   },
   "android-incremental-dbg": {
