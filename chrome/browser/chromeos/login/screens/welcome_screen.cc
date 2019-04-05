@@ -137,6 +137,10 @@ void WelcomeScreen::SetInputMethod(const std::string& input_method) {
     LOG(WARNING) << "The input method is empty or ineligible!";
     return;
   }
+
+  if (input_method_ == input_method)
+    return;
+
   input_method_ = input_method;
   input_method::InputMethodManager::Get()
       ->GetActiveIMEState()
