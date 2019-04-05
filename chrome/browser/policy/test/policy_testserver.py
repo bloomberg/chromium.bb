@@ -308,7 +308,8 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     if request_type == 'register':
       response = self.ProcessRegister(rmsg.register_request)
     elif request_type == 'certificate_based_register':
-      response = self.ProcessCertBasedRegister(rmsg.register_request)
+      response = self.ProcessCertBasedRegister(
+          rmsg.certificate_based_register_request)
     elif request_type == 'api_authorization':
       response = self.ProcessApiAuthorization(rmsg.service_api_access_request)
     elif request_type == 'unregister':
@@ -450,8 +451,9 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """
     # Unwrap the request
     try:
-      req = self.UnwrapCertificateBasedDeviceRegistrationData(signed_msg)
-    except (Error):
+      req = self.UnwrapCertificateBasedDeviceRegistrationData(
+          signed_msg.signed_request)
+    except (IOError):
       return(400, 'Invalid request')
 
     # TODO(drcrash): Check the certificate itself.
@@ -505,6 +507,12 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """Verifies the signature of |msg| and if it is valid, return the
     certificate based device registration data. If not, throws an
     exception.
+
+    Args:
+      msg: SignedData received from the client.
+
+    Returns:
+      CertificateBasedDeviceRegistrationData
     """
     # TODO(drcrash): Verify signature.
     rdata = dm.CertificateBasedDeviceRegistrationData()

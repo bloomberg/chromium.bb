@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/guid.h"
+#include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
 #include "components/policy/core/common/policy_switches.h"
@@ -21,6 +22,9 @@ base::Value GetDefaultConfig() {
   base::Value managed_users(base::Value::Type::LIST);
   managed_users.GetList().emplace_back("*");
   config.SetKey("managed_users", std::move(managed_users));
+
+  config.SetKey("robot_api_auth_code",
+                base::Value(FakeGaiaMixin::kFakeAuthCode));
 
   return config;
 }
