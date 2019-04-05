@@ -186,6 +186,7 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
   // Note that this does not create a skia backing for the shader.
   // Valid only for PaintRecord backed shaders.
   sk_sp<PaintShader> CreateScaledPaintRecord(const SkMatrix& ctm,
+                                             int max_texture_size,
                                              gfx::SizeF* raster_scale) const;
 
   // Creates a PaintShader with images from |image_provider| to be rasterized

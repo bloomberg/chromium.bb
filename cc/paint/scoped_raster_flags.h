@@ -20,6 +20,7 @@ class CC_PAINT_EXPORT ScopedRasterFlags {
   ScopedRasterFlags(const PaintFlags* flags,
                     ImageProvider* image_provider,
                     const SkMatrix& ctm,
+                    int max_texture_size,
                     uint8_t alpha);
   ScopedRasterFlags(const ScopedRasterFlags&) = delete;
   ~ScopedRasterFlags();
@@ -37,7 +38,7 @@ class CC_PAINT_EXPORT ScopedRasterFlags {
 
  private:
   void DecodeImageShader(const SkMatrix& ctm);
-  void DecodeRecordShader(const SkMatrix& ctm);
+  void DecodeRecordShader(const SkMatrix& ctm, int max_texture_size);
   void DecodeFilter();
 
   void AdjustStrokeIfNeeded(const SkMatrix& ctm);
