@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
 #include "chrome/browser/chromeos/printing/printer_event_tracker.h"
+#include "chrome/browser/local_discovery/endpoint_resolver.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/printing/ppd_provider.h"
 #include "chromeos/printing/printer_configuration.h"
@@ -190,6 +191,9 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   // parameters.  See https://crbug.com/835476
   void FireManuallyAddDiscoveredPrinter(const Printer& printer);
 
+  void OnIpResolved(std::unique_ptr<Printer> printer,
+                    const net::IPEndPoint& endpoint);
+
   Profile* profile_;
 
   // Discovery support.  discovery_active_ tracks whether or not the UI
@@ -213,6 +217,7 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
   std::string webui_callback_id_;
   CupsPrintersManager* printers_manager_;
+  std::unique_ptr<local_discovery::EndpointResolver> endpoint_resolver_;
 
   ScopedObserver<CupsPrintersManager, CupsPrintersManager::Observer>
       printers_manager_observer_;
