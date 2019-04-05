@@ -38,8 +38,8 @@
 
     <!-- Common background and branding color. -->
     <!-- TODO(huayinz): Change primary and secondary color to default_bg_color*. -->
-    <color name="modern_primary_color">@color/default_bg_color_light</color>
-    <color name="modern_secondary_color">@color/modern_grey_100</color>
+    <color name="modern_primary_color" tools:ignore="UnusedResources">@color/default_bg_color_light</color>
+    <color name="modern_secondary_color" tools:ignore="UnusedResources">@color/modern_grey_100</color>
 
     <!-- TODO(huayinz): Introduce a semantic bg reference for modern_grey_100. -->
     <!-- Background colors that are used to show layers and their relative elevation. In light mode,
@@ -70,4 +70,9 @@
     <color name="default_green" tools:ignore="UnusedResources">@color/default_green_dark</color>
     <color name="filled_button_bg_color">@color/modern_blue_600</color>
     <color name="filled_button_bg_color_disabled">@color/modern_grey_800_alpha_38</color>
+
+    <!-- Chip colors -->
+    <color name="chip_text_color_default">@color/default_text_color_secondary</color>
+    <color name="chip_text_color_selected">@color/default_text_color_link</color>
+    <color name="chip_background_color_disabled">@color/modern_grey_100_alpha_38</color>
 </resources>
