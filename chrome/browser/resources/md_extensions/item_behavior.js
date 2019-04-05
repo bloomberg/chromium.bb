@@ -24,16 +24,6 @@ cr.define('extensions', function() {
       }
       assertNotReached('Item type is not App or Extension.');
     },
-
-    /**
-     * @param {chrome.developerPrivate.ExtensionType} type
-     * @return {string} The app or extension icon label depending on |type|.
-     */
-    appOrExtensionIconLabel: function(type) {
-      return this.appOrExtension(
-          type, loadTimeData.getString('appIcon'),
-          loadTimeData.getString('extensionIcon'));
-    },
   };
 
   return {ItemBehavior: ItemBehavior};

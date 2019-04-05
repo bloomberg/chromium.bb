@@ -74,7 +74,10 @@
             <div class="list-item">
               <div class="item-name">
                 <img class="item-icon" src="[[item.iconURL]]"
-                    alt$="[[appOrExtensionIconLabel(data.type)]]">
+                    alt$="[[appOrExtension(
+                        data.type,
+                        '$i18nPolymer{appIcon}',
+                        '$i18nPolymer{extensionIcon}')]]">
                 [[item.name]]
                 <span hidden="[[!item.autoLaunch]]">
                   $i18n{kioskAutoLaunch}
