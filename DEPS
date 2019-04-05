@@ -959,7 +959,7 @@ deps = {
   },
 
   'src/third_party/arcore-android-sdk/src': {
-      'url': Var('chromium_git') + '/external/github.com/google-ar/arcore-android-sdk.git' + '@' + '6fcebcbf021b53ceb254e58cce6d5d4a4214819d',
+      'url': Var('chromium_git') + '/external/github.com/google-ar/arcore-android-sdk.git' + '@' + '5b67d88f0b33edbfbe4902141ca44e750df9b6c2',
       'condition': 'checkout_android',
   },
 
@@ -1999,7 +1999,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_ar_core',
-              'version': 'version:1.6.0-cr0',
+              'version': 'version:1.8.0-cr0',
           },
       ],
       'condition': 'checkout_android',

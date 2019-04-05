@@ -599,7 +599,7 @@ android_aar_prebuilt(
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_google_ar_core_java") {
-  aar_path = "libs/com_google_ar_core/core-1.6.0.aar"
+  aar_path = "libs/com_google_ar_core/core-1.8.0.aar"
   info_path = "libs/com_google_ar_core/com_google_ar_core.info"
   extract_native_libraries = true
   split_compat_class_names = [ "com/google/ar/core/InstallActivity" ]

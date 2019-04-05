@@ -87,11 +87,6 @@ static_library("vr_android") {
       "arcore_device/arcore_shim.cc",
       "arcore_device/arcore_shim.h",
     ]
-
-    # TODO(https://crbug.com/936004): Remove this once arcore_c_api.h is
-    # -Wextra-semi clean.
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [ "//build/config/compiler:no_chromium_code" ]
   }
 
   deps = [

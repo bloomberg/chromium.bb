@@ -12,40 +12,40 @@
 namespace {
 
 // Run CALL macro for every function defined in the API.
-#define FOR_EACH_API_FN                  \
-  CALL(ArCamera_getDisplayOrientedPose)  \
-  CALL(ArCamera_getProjectionMatrix)     \
-  CALL(ArCamera_getTrackingState)        \
-  CALL(ArCamera_getViewMatrix)           \
-  CALL(ArConfig_create)                  \
-  CALL(ArConfig_destroy)                 \
-  CALL(ArFrame_acquireCamera)            \
-  CALL(ArFrame_create)                   \
-  CALL(ArFrame_destroy)                  \
-  CALL(ArFrame_hitTestRay)               \
-  CALL(ArFrame_transformDisplayUvCoords) \
-  CALL(ArHitResult_create)               \
-  CALL(ArHitResult_destroy)              \
-  CALL(ArHitResult_getHitPose)           \
-  CALL(ArHitResultList_create)           \
-  CALL(ArHitResultList_destroy)          \
-  CALL(ArHitResultList_getItem)          \
-  CALL(ArHitResultList_getSize)          \
-  CALL(ArPose_create)                    \
-  CALL(ArPose_destroy)                   \
-  CALL(ArPose_getMatrix)                 \
-  CALL(ArPose_getPoseRaw)                \
-  CALL(ArSession_configure)              \
-  CALL(ArSession_create)                 \
-  CALL(ArSession_destroy)                \
-  CALL(ArSession_pause)                  \
-  CALL(ArSession_resume)                 \
-  CALL(ArSession_setCameraTextureName)   \
-  CALL(ArSession_setDisplayGeometry)     \
-  CALL(ArHitResult_acquireTrackable)     \
-  CALL(ArTrackable_getType)              \
-  CALL(ArTrackable_release)              \
-  CALL(ArPlane_isPoseInPolygon)          \
+#define FOR_EACH_API_FN                 \
+  CALL(ArCamera_getDisplayOrientedPose) \
+  CALL(ArCamera_getProjectionMatrix)    \
+  CALL(ArCamera_getTrackingState)       \
+  CALL(ArCamera_getViewMatrix)          \
+  CALL(ArConfig_create)                 \
+  CALL(ArConfig_destroy)                \
+  CALL(ArFrame_acquireCamera)           \
+  CALL(ArFrame_create)                  \
+  CALL(ArFrame_destroy)                 \
+  CALL(ArFrame_hitTestRay)              \
+  CALL(ArFrame_transformCoordinates2d)  \
+  CALL(ArHitResult_create)              \
+  CALL(ArHitResult_destroy)             \
+  CALL(ArHitResult_getHitPose)          \
+  CALL(ArHitResultList_create)          \
+  CALL(ArHitResultList_destroy)         \
+  CALL(ArHitResultList_getItem)         \
+  CALL(ArHitResultList_getSize)         \
+  CALL(ArPose_create)                   \
+  CALL(ArPose_destroy)                  \
+  CALL(ArPose_getMatrix)                \
+  CALL(ArPose_getPoseRaw)               \
+  CALL(ArSession_configure)             \
+  CALL(ArSession_create)                \
+  CALL(ArSession_destroy)               \
+  CALL(ArSession_pause)                 \
+  CALL(ArSession_resume)                \
+  CALL(ArSession_setCameraTextureName)  \
+  CALL(ArSession_setDisplayGeometry)    \
+  CALL(ArHitResult_acquireTrackable)    \
+  CALL(ArTrackable_getType)             \
+  CALL(ArTrackable_release)             \
+  CALL(ArPlane_isPoseInPolygon)         \
   CALL(ArSession_update)
 
 #define CALL(fn) decltype(&fn) impl_##fn = nullptr;
@@ -160,13 +160,16 @@ void ArFrame_hitTestRay(const ArSession* session,
                                       ray_direction_3, out_hit_results);
 }
 
-void ArFrame_transformDisplayUvCoords(const ArSession* session,
-                                      const ArFrame* frame,
-                                      int32_t num_elements,
-                                      const float* uvs_in,
-                                      float* uvs_out) {
-  arcore_api->impl_ArFrame_transformDisplayUvCoords(
-      session, frame, num_elements, uvs_in, uvs_out);
+void ArFrame_transformCoordinates2d(const ArSession* session,
+                                    const ArFrame* frame,
+                                    ArCoordinates2dType input_coordinates,
+                                    int32_t number_of_vertices,
+                                    const float* vertices_2d,
+                                    ArCoordinates2dType output_coordinates,
+                                    float* out_vertices_2d) {
+  arcore_api->impl_ArFrame_transformCoordinates2d(
+      session, frame, input_coordinates, number_of_vertices, vertices_2d,
+      output_coordinates, out_vertices_2d);
 }
 
 void ArHitResult_create(const ArSession* session,
