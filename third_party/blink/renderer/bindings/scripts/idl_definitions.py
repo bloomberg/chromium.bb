@@ -308,6 +308,7 @@ class IdlInterface(object):
 
         self.is_callback = bool(node.GetProperty('CALLBACK'))
         self.is_partial = bool(node.GetProperty('PARTIAL'))
+        self.is_mixin = bool(node.GetProperty('MIXIN'))
         self.name = node.GetName()
         self.idl_type = IdlType(self.name)
 

@@ -30,12 +30,10 @@
 
 [
     LegacyTreatAsPartialInterface, // Conflicts with default implements behavior
-    NoInterfaceObject, // Always used on target of 'implements'
     RuntimeEnabled=Implements2FeatureName // conflicts with [RuntimeEnabled] on member
-] interface TestImplements2 {
-    static attribute DOMString implements2StaticStringAttribute;
+] interface mixin TestInterfaceMixin2 {
     attribute DOMString implements2StringAttribute;
     void implements2VoidMethod();
 };
 
-TestInterface implements TestImplements2;
+TestInterface implements TestInterfaceMixin2;
