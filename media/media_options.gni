@@ -87,7 +87,7 @@ declare_args() {
   if (is_win && target_cpu == "arm64") {
     # TODO: Enable dav1d for Windows ARM64. https://crbug.com/941022
     enable_dav1d_decoder = false
-  } else if (is_fuchsia && target_cpu == "x64") {
+  } else if (is_fuchsia) {
     # TODO: Fix media_unittests for fuchsia X64. https://crbug.com/930300
     enable_dav1d_decoder = false
   } else {
