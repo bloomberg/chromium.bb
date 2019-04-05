@@ -138,6 +138,31 @@ bool ImageDecoder::HasSufficientDataToSniffImageType(const SharedBuffer& data) {
   return data.size() >= kLongestSignatureLength;
 }
 
+// static
+String ImageDecoder::SniffImageType(scoped_refptr<SharedBuffer> image_data) {
+  // Access the first kLongestSignatureLength chars to sniff the signature.
+  // (note: FastSharedBufferReader only makes a copy if the bytes are segmented)
+  char buffer[kLongestSignatureLength];
+  const FastSharedBufferReader fast_reader(
+      SegmentReader::CreateFromSharedBuffer(std::move(image_data)));
+  const char* contents =
+      fast_reader.GetConsecutiveData(0, kLongestSignatureLength, buffer);
+
+  if (MatchesJPEGSignature(contents))
+    return "image/jpeg";
+  if (MatchesPNGSignature(contents))
+    return "image/png";
+  if (MatchesGIFSignature(contents))
+    return "image/gif";
+  if (MatchesWebPSignature(contents))
+    return "image/webp";
+  if (MatchesICOSignature(contents) || MatchesCURSignature(contents))
+    return "image/x-icon";
+  if (MatchesBMPSignature(contents))
+    return "image/bmp";
+  return String();
+}
+
 size_t ImageDecoder::FrameCount() {
   const size_t old_size = frame_buffer_cache_.size();
   const size_t new_size = DecodeFrameCount();
