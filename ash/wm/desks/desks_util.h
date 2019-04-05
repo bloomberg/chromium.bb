@@ -5,6 +5,9 @@
 #ifndef ASH_WM_DESKS_DESKS_UTIL_H_
 #define ASH_WM_DESKS_DESKS_UTIL_H_
 
+#include <array>
+#include <vector>
+
 #include "ash/ash_export.h"
 
 namespace aura {
@@ -15,7 +18,17 @@ namespace ash {
 
 namespace desks_util {
 
-ASH_EXPORT bool IsDeskContainerId(int id);
+// TODO(afakhry): Fix the size of the array when you add the rest of the desks'
+// containters.
+constexpr size_t kMaxNumberOfDesks = 1;
+
+ASH_EXPORT const std::array<int, kMaxNumberOfDesks>& GetDesksContainersIds();
+
+ASH_EXPORT std::vector<aura::Window*> GetDesksContainers(aura::Window* root);
+
+ASH_EXPORT const char* GetDeskContainerName(int container_id);
+
+ASH_EXPORT bool IsDeskContainer(aura::Window* container);
 
 ASH_EXPORT int GetActiveDeskContainerId();
 

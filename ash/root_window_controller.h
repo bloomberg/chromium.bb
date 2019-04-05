@@ -54,7 +54,6 @@ class TouchObserverHUD;
 class WallpaperWidgetController;
 class WindowManager;
 class WorkAreaInsets;
-class WorkspaceController;
 
 namespace wm {
 class RootWindowLayoutManager;
@@ -102,12 +101,6 @@ class ASH_EXPORT RootWindowController {
   const aura::WindowTreeHost* GetHost() const;
   aura::Window* GetRootWindow();
   const aura::Window* GetRootWindow() const;
-
-  WorkspaceController* workspace_controller() {
-    return workspace_controller_.get();
-  }
-
-  wm::WorkspaceWindowState GetWorkspaceWindowState();
 
   Shelf* shelf() const { return shelf_.get(); }
 
@@ -183,6 +176,10 @@ class ASH_EXPORT RootWindowController {
   void CloseChildWindows();
 
   // Moves child windows to |dest|.
+  // TODO(afakhry): Consider renaming this function to avoid misuse. It is only
+  // called by WindowTreeHostManager::DeleteHost(), and has destructive side
+  // effects like deleting the workspace controllers, so it shouldn't be called
+  // for something else.
   void MoveWindowsTo(aura::Window* dest);
 
   // Force the shelf to query for it's current visibility state.
@@ -267,7 +264,6 @@ class ASH_EXPORT RootWindowController {
   wm::RootWindowLayoutManager* root_window_layout_manager_ = nullptr;
 
   std::unique_ptr<WallpaperWidgetController> wallpaper_widget_controller_;
-  std::unique_ptr<WorkspaceController> workspace_controller_;
 
   std::unique_ptr<AlwaysOnTopController> always_on_top_controller_;
 

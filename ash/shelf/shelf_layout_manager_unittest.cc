@@ -43,6 +43,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/optional.h"
@@ -446,9 +447,14 @@ class ShelfLayoutManagerTest : public AshTestBase {
   }
 
   wm::WorkspaceWindowState GetWorkspaceWindowState() const {
-    const auto* shelf_window = GetShelfWidget()->GetNativeWindow();
-    return RootWindowController::ForWindow(shelf_window)
-        ->GetWorkspaceWindowState();
+    // Shelf window does not belong to any desk, use the root to get the active
+    // desk's workspace state.
+    auto* shelf_window = GetShelfWidget()->GetNativeWindow();
+    auto* controller =
+        GetActiveWorkspaceController(shelf_window->GetRootWindow());
+    DCHECK(controller);
+
+    return controller->GetWindowState();
   }
 
   const ui::Layer* GetNonLockScreenContainersContainerLayer() const {

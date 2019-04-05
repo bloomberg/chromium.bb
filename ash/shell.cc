@@ -542,9 +542,10 @@ void Shell::SetCursorCompositingEnabled(bool enabled) {
 }
 
 void Shell::DoInitialWorkspaceAnimation() {
-  return GetPrimaryRootWindowController()
-      ->workspace_controller()
-      ->DoInitialAnimation();
+  // Uses the active desk's workspace.
+  auto* workspace = GetActiveWorkspaceController(GetPrimaryRootWindow());
+  DCHECK(workspace);
+  workspace->DoInitialAnimation();
 }
 
 bool Shell::IsSplitViewModeActive() const {

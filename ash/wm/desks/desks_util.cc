@@ -11,9 +11,50 @@ namespace ash {
 
 namespace desks_util {
 
-bool IsDeskContainerId(int id) {
+namespace {
+
+constexpr std::array<int, kMaxNumberOfDesks> kDesksContainersIds = {
+    // TODO(afakhry): Fill this.
+    kShellWindowId_DefaultContainer,
+};
+
+}  // namespace
+
+const std::array<int, kMaxNumberOfDesks>& GetDesksContainersIds() {
+  return kDesksContainersIds;
+}
+
+const char* GetDeskContainerName(int container_id) {
+  switch (container_id) {
+    case kShellWindowId_DefaultContainer:
+      return "Desk_Container_A";
+
+      // TODO(afakhry): Fill this.
+
+    default:
+      NOTREACHED();
+      return "";
+  }
+}
+
+std::vector<aura::Window*> GetDesksContainers(aura::Window* root) {
+  DCHECK(root);
+  DCHECK(root->IsRootWindow());
+
+  std::vector<aura::Window*> containers;
+  for (const auto& id : kDesksContainersIds) {
+    auto* container = root->GetChildById(id);
+    DCHECK(container);
+    containers.emplace_back(container);
+  }
+
+  return containers;
+}
+
+bool IsDeskContainer(aura::Window* container) {
+  DCHECK(container);
   // TODO(afakhry): Add the rest of the desks containers.
-  return id == kShellWindowId_DefaultContainer;
+  return container->id() == kShellWindowId_DefaultContainer;
 }
 
 int GetActiveDeskContainerId() {

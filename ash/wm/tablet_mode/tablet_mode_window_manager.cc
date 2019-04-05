@@ -13,6 +13,7 @@
 #include "ash/scoped_animation_disabler.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_session.h"
@@ -496,11 +497,11 @@ void TabletModeWindowManager::AddWindowCreationObservers() {
   // Observe window activations/creations in the default containers on all root
   // windows.
   for (aura::Window* root : Shell::GetAllRootWindows()) {
-    aura::Window* default_container =
-        root->GetChildById(kShellWindowId_DefaultContainer);
-    DCHECK(!base::ContainsKey(observed_container_windows_, default_container));
-    default_container->AddObserver(this);
-    observed_container_windows_.insert(default_container);
+    for (auto* desk_container : desks_util::GetDesksContainers(root)) {
+      DCHECK(!base::ContainsKey(observed_container_windows_, desk_container));
+      desk_container->AddObserver(this);
+      observed_container_windows_.insert(desk_container);
+    }
   }
 }
 
@@ -525,9 +526,15 @@ void TabletModeWindowManager::EnableBackdropBehindTopWindowOnEachDisplay(
     bool enable) {
   // Inform the WorkspaceLayoutManager that we want to show a backdrop behind
   // the topmost window of its container.
-  for (auto* controller : Shell::GetAllRootWindowControllers()) {
-    controller->workspace_controller()->SetBackdropDelegate(
-        enable ? std::make_unique<TabletModeBackdropDelegateImpl>() : nullptr);
+  for (auto* root : Shell::GetAllRootWindows()) {
+    for (auto* desk_container : desks_util::GetDesksContainers(root)) {
+      WorkspaceController* controller = GetWorkspaceController(desk_container);
+      DCHECK(controller);
+
+      controller->SetBackdropDelegate(
+          enable ? std::make_unique<TabletModeBackdropDelegateImpl>()
+                 : nullptr);
+    }
   }
 }
 

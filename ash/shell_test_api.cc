@@ -16,6 +16,7 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/workspace_controller.h"
 #include "ash/ws/window_service_owner.h"
 #include "base/run_loop.h"
 #include "components/prefs/testing_pref_service.h"
@@ -86,7 +87,8 @@ SystemGestureEventFilter* ShellTestApi::system_gesture_event_filter() {
 }
 
 WorkspaceController* ShellTestApi::workspace_controller() {
-  return shell_->GetPrimaryRootWindowController()->workspace_controller();
+  // TODO(afakhry): Split this into two, one for root, and one for context.
+  return GetActiveWorkspaceController(shell_->GetPrimaryRootWindow());
 }
 
 ScreenPositionController* ShellTestApi::screen_position_controller() {

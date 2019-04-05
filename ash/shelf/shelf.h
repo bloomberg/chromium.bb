@@ -113,6 +113,9 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
 
   void UpdateVisibilityState();
 
+  // Sets whether shelf's visibility state updates should be suspended.
+  void SetSuspendVisibilityUpdate(bool value);
+
   void MaybeUpdateShelfBackground();
 
   ShelfVisibilityState GetVisibilityState() const;
