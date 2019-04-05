@@ -401,7 +401,7 @@ proto_library("javascript_parser_proto") {
     "$target_gen_dir/javascript_parser.proto",
   ]
   proto_deps = [ ":gen_javascript_parser_proto" ]
-  proto_out_dir = target_gen_dir
+  proto_out_dir = ""
 }
 
 fuzzer_test("javascript_parser_proto_fuzzer") {
