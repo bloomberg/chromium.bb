@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_INFOBARS_INFOBAR_BADGE_TAB_HELPER_DELEGATE_H_
 #define IOS_CHROME_BROWSER_INFOBARS_INFOBAR_BADGE_TAB_HELPER_DELEGATE_H_
 
+#import <Foundation/Foundation.h>
+
 // States for the InfobarBadge.
 typedef NS_OPTIONS(NSUInteger, InfobarBadgeState) {
   // Default state. e.g. The InfobarBanner is being presented, or the Banner has

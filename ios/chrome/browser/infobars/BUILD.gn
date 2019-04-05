@@ -55,3 +55,24 @@ source_set("public") {
     "infobar_controller_delegate.h",
   ]
 }
+
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "infobar_badge_tab_helper_unittest.mm",
+  ]
+  deps = [
+    ":badge",
+    ":infobars",
+    "//base/test:test_support",
+    "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/ui/infobars:feature_flags",
+    "//ios/chrome/browser/ui/infobars:infobars_ui",
+    "//ios/chrome/browser/ui/infobars:test_support",
+    "//ios/chrome/browser/ui/infobars/coordinators",
+    "//ios/chrome/test:test_support",
+    "//ios/web/public/test/fakes",
+    "//testing/gtest",
+  ]
+}
