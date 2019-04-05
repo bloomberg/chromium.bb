@@ -185,27 +185,6 @@ dep_libinput_backend = declare_dependency(
 	include_directories: include_directories('.')
 )
 
-if get_option('backend-headless')
-	config_h.set('BUILD_HEADLESS_COMPOSITOR', '1')
-
-	srcs_headless = [
-		'compositor-headless.c',
-		presentation_time_server_protocol_h,
-	]
-	plugin_headless = shared_library(
-		'headless-backend',
-		srcs_headless,
-		include_directories: include_directories('..', '../shared'),
-		dependencies: dep_libweston,
-		name_prefix: '',
-		install: true,
-		install_dir: dir_module_libweston,
-	)
-	env_modmap += 'headless-backend.so=@0@;'.format(plugin_headless.full_path())
-	install_headers(backend_headless_h, subdir: dir_include_libweston_install)
-endif
-
-
 if get_option('backend-rdp')
 	config_h.set('BUILD_RDP_COMPOSITOR', '1')
 
@@ -397,3 +376,4 @@ endif
 
 subdir('renderer-gl')
 subdir('backend-drm')
+subdir('backend-headless')
