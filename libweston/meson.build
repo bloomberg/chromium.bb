@@ -166,14 +166,32 @@ lib_session_helper = static_library(
 dep_session_helper = declare_dependency(link_with: lib_session_helper)
 
 
+lib_libinput_backend = static_library(
+	'libinput-backend',
+	[
+		'libinput-device.c',
+		'libinput-seat.c'
+	],
+	dependencies: [
+		dep_libweston,
+		dep_libinput,
+		dependency('libudev', version: '>= 136')
+	],
+	include_directories: include_directories('..'),
+	install: false
+)
+dep_libinput_backend = declare_dependency(
+	link_with: lib_libinput_backend,
+	include_directories: include_directories('.')
+)
+
+
 if get_option('backend-drm')
 	config_h.set('BUILD_DRM_COMPOSITOR', '1')
 
 	srcs_drm = [
 		'compositor-drm.c',
 		'libbacklight.c',
-		'libinput-device.c',
-		'libinput-seat.c',
 		linux_dmabuf_unstable_v1_protocol_c,
 		linux_dmabuf_unstable_v1_server_protocol_h,
 		presentation_time_server_protocol_h,
@@ -183,7 +201,7 @@ if get_option('backend-drm')
 		dep_libweston,
 		dep_session_helper,
 		dep_libdrm,
-		dep_libinput,
+		dep_libinput_backend,
 		dependency('libudev', version: '>= 136'),
 	]
 
@@ -406,15 +424,13 @@ if get_option('backend-fbdev')
 
 	srcs_fbdev = [
 		'compositor-fbdev.c',
-		'libinput-device.c',
-		'libinput-seat.c',
 		presentation_time_server_protocol_h,
 	]
 
 	deps_fbdev = [
 		dep_libweston,
 		dep_session_helper,
-		dep_libinput,
+		dep_libinput_backend,
 		dependency('libudev', version: '>= 136'),
 	]
 
