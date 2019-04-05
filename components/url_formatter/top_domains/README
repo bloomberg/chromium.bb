@@ -5,20 +5,20 @@
   It's derived from
    src/tools/perf/page_sets/alexa1-10000-urls.json with make_alexa_top_list.py
 
-* alexa_skeletons.gperf
+* alexa_domains.skeletons
 
-  The checked-in output of make_top_domain_gperf.  Processed during the
-  build to generate alexa_names_and_skeletons-inc.cc, which is used by
+  The checked-in output of make_top_domain_skeletons.  Processed during the
+  build to generate alexa_domains-trie-inc.cc, which is used by
   url_formatter.cc.  This must be regenerated as follows if ICU is updated,
   since skeletons can differ across ICU versions:
 
-  $ ninja -C $build_outdir make_top_domain_gperf
-  $ $build_outdir/make_top_domain_gperf
+  $ ninja -C $build_outdir make_top_domain_skeletons
+  $ $build_outdir/make_top_domain_skeletons
 
 * test_domains.list
   A list of domains to use in IDNToUnicode test instead of the actual
-  alexa top dmain. Manually edited to match what's in IDNToUnicode test.
+  top domain list. Manually edited to match what's in IDNToUnicode test.
 
-* test_skeletons.gperf
-  Generated out of test_domains.list along with alexa_skeletons.gperf
-  by make_top_domain_gperf.
+* test_domains.skeletons
+  Generated output of test_domains.list along with alexa_domains.skeletons
+  by make_top_domain_skeletons.
