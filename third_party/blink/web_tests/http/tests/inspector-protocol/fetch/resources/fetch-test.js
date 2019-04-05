@@ -56,11 +56,12 @@ class FetchHandler {
 };
 
 class FetchHelper {
-  constructor(testRunner, targetProtocol) {
+  constructor(testRunner, targetProtocol, logPrefix) {
     this._handlers = [];
     this._onceHandlers = [];
     this._testRunner = testRunner;
     this._protocol = targetProtocol;
+    this._logPrefix = logPrefix || '';
     this._protocol.Fetch.onRequestPaused(event => {
       this._logRequest(event);
       const handler = this._findHandler(event);
@@ -89,7 +90,7 @@ class FetchHelper {
     const params = event.params;
     const response = event.responseErrorReason || event.responseStatusCode;
     const response_text = response ? 'Response' : 'Request';
-    this._testRunner.log(`${response_text} to ${params.request.url}, type: ${params.resourceType}`);
+    this._testRunner.log(`${this._logPrefix}${response_text} to ${params.request.url}, type: ${params.resourceType}`);
   }
 
   _findHandler(event) {

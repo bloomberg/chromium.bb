@@ -149,6 +149,11 @@ void ServiceWorkerScriptLoaderFactory::Clone(
   bindings_.AddBinding(this, std::move(request));
 }
 
+void ServiceWorkerScriptLoaderFactory::Update(
+    scoped_refptr<network::SharedURLLoaderFactory> loader_factory) {
+  loader_factory_ = std::move(loader_factory);
+}
+
 bool ServiceWorkerScriptLoaderFactory::CheckIfScriptRequestIsValid(
     const network::ResourceRequest& resource_request) {
   if (!context_ || !provider_host_)

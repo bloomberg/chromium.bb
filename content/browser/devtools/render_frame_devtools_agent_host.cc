@@ -299,10 +299,13 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
           &RenderFrameDevToolsAgentHost::UpdateResourceLoaderFactories,
           base::Unretained(this))));
   session->AddHandler(std::make_unique<protocol::FetchHandler>(
-      GetIOContext(),
-      base::BindRepeating(
-          &RenderFrameDevToolsAgentHost::UpdateResourceLoaderFactories,
-          base::Unretained(this))));
+      GetIOContext(), base::BindRepeating(
+                          [](RenderFrameDevToolsAgentHost* self,
+                             base::OnceClosure done_callback) {
+                            self->UpdateResourceLoaderFactories();
+                            std::move(done_callback).Run();
+                          },
+                          base::Unretained(this))));
   session->AddHandler(std::make_unique<protocol::SchemaHandler>());
   session->AddHandler(std::make_unique<protocol::ServiceWorkerHandler>());
   session->AddHandler(std::make_unique<protocol::StorageHandler>());

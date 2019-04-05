@@ -23,7 +23,6 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_controllee_request_handler.h"
 #include "content/browser/service_worker/service_worker_registration_object_host.h"
-#include "content/browser/service_worker/service_worker_script_loader_factory.h"
 #include "content/browser/service_worker/service_worker_type_converters.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/url_loader_factory_getter.h"
@@ -41,7 +40,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/origin_util.h"
 #include "mojo/public/cpp/bindings/message.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request_body.h"
@@ -705,35 +703,21 @@ void ServiceWorkerProviderHost::OnBeginNavigationCommit(int render_process_id,
   TransitionToClientPhase(ClientPhase::kResponseCommitted);
 }
 
-blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr
-ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
+void ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
     int process_id,
-    scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-    blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info) {
+    service_manager::mojom::InterfaceProviderRequest
+        interface_provider_request) {
   DCHECK(context_);
   DCHECK_EQ(kInvalidEmbeddedWorkerThreadId, render_thread_id_);
   DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id_);
+  DCHECK_NE(ChildProcessHost::kInvalidUniqueID, process_id);
   DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
             provider_type());
-  DCHECK_EQ(provider_info->provider_id, provider_id());
-
-  DCHECK_NE(ChildProcessHost::kInvalidUniqueID, process_id);
   SetRenderProcessId(process_id);
-
-  network::mojom::URLLoaderFactoryAssociatedPtrInfo
-      script_loader_factory_ptr_info;
-  mojo::MakeStrongAssociatedBinding(
-      std::make_unique<ServiceWorkerScriptLoaderFactory>(
-          context_, AsWeakPtr(), std::move(loader_factory)),
-      mojo::MakeRequest(&script_loader_factory_ptr_info));
-  provider_info->script_loader_factory_ptr_info =
-      std::move(script_loader_factory_ptr_info);
 
   interface_provider_binding_.Bind(FilterRendererExposedInterfaces(
       blink::mojom::kNavigation_ServiceWorkerSpec, process_id,
-      mojo::MakeRequest(&provider_info->interface_provider)));
-
-  return provider_info;
+      std::move(interface_provider_request)));
 }
 
 void ServiceWorkerProviderHost::CompleteSharedWorkerPreparation() {

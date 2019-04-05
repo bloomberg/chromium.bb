@@ -58,6 +58,8 @@ class CONTENT_EXPORT ServiceWorkerScriptLoaderFactory
                                 traffic_annotation) override;
   void Clone(network::mojom::URLLoaderFactoryRequest request) override;
 
+  void Update(scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
+
  private:
   bool CheckIfScriptRequestIsValid(
       const network::ResourceRequest& resource_request);

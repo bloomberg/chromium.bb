@@ -365,6 +365,15 @@ blink::WebEmbeddedWorker& ServiceWorkerContextClient::worker() {
   return *worker_;
 }
 
+void ServiceWorkerContextClient::UpdateSubresourceLoaderFactories(
+    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+        subresource_loader_factories) {
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  loader_factories_->UpdateThisAndAllClones(
+      std::make_unique<ChildURLLoaderFactoryBundleInfo>(
+          std::move(subresource_loader_factories)));
+}
+
 void ServiceWorkerContextClient::WorkerReadyForInspectionOnMainThread() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   (*instance_host_)->OnReadyForInspection();

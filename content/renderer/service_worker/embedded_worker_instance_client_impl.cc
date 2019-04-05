@@ -133,6 +133,13 @@ void EmbeddedWorkerInstanceClientImpl::BindDevToolsAgent(
       host.PassHandle(), request.PassHandle());
 }
 
+void EmbeddedWorkerInstanceClientImpl::UpdateSubresourceLoaderFactories(
+    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+        subresource_loader_factories) {
+  service_worker_context_client_->UpdateSubresourceLoaderFactories(
+      std::move(subresource_loader_factories));
+}
+
 EmbeddedWorkerInstanceClientImpl::EmbeddedWorkerInstanceClientImpl(
     blink::mojom::EmbeddedWorkerInstanceClientRequest request)
     : binding_(this, std::move(request)) {

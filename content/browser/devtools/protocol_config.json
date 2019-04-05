@@ -98,7 +98,7 @@
             },
             {
                 "domain": "Fetch",
-                "async": ["continueRequest", "failRequest", "fulfillRequest", "continueWithAuth", "getResponseBody", "takeResponseBodyAsStream"]
+                "async": ["enable", "continueRequest", "failRequest", "fulfillRequest", "continueWithAuth", "getResponseBody", "takeResponseBodyAsStream"]
             }
         ]
     },
