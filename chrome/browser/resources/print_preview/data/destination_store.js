@@ -500,9 +500,6 @@ cr.define('print_preview', function() {
             if (serializedDestination.capabilities) {
               this.selectedDestination_.capabilities =
                   serializedDestination.capabilities;
-              this.dispatchEvent(new CustomEvent(
-                  DestinationStore.EventType
-                      .SELECTED_DESTINATION_CAPABILITIES_READY));
             }
           }
           break;
