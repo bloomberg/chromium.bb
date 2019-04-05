@@ -62,7 +62,7 @@ class DragCaret final : public GarbageCollectedFinalized<DragCaret>,
   bool IsContentRichlyEditable() const;
 
   bool HasCaret() const { return position_.IsNotNull(); }
-  const PositionWithAffinity& CaretPosition() { return position_; }
+  const PositionWithAffinity& CaretPosition() const { return position_; }
   void SetCaretPosition(const PositionWithAffinity&);
   void Clear() { SetCaretPosition(PositionWithAffinity()); }
 

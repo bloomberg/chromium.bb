@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/core/dom/shadow_root_v0.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
+#include "third_party/blink/renderer/core/editing/drag_caret.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
@@ -2896,6 +2897,17 @@ void Internals::forceReload(bool bypass_cache) {
 
   GetFrame()->Reload(bypass_cache ? WebFrameLoadType::kReloadBypassingCache
                                   : WebFrameLoadType::kReload);
+}
+
+StaticSelection* Internals::getDragCaret() {
+  SelectionInDOMTree::Builder builder;
+  if (GetFrame()) {
+    const DragCaret& caret = GetFrame()->GetPage()->GetDragCaret();
+    const PositionWithAffinity& position = caret.CaretPosition();
+    if (position.GetDocument() == GetFrame()->GetDocument())
+      builder.Collapse(caret.CaretPosition());
+  }
+  return StaticSelection::FromSelectionInDOMTree(builder.Build());
 }
 
 StaticSelection* Internals::getSelectionInFlatTree(
