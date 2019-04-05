@@ -19,6 +19,18 @@ GPUUncapturedErrorEvent* GPUUncapturedErrorEvent::Create(
 GPUUncapturedErrorEvent::GPUUncapturedErrorEvent(
     const AtomicString& type,
     const GPUUncapturedErrorEventInit* gpuUncapturedErrorEventInitDict)
-    : Event(type, Bubbles::kNo, Cancelable::kYes) {}
+    : Event(type, Bubbles::kNo, Cancelable::kYes) {
+  error_ = gpuUncapturedErrorEventInitDict->error();
+}
+
+void GPUUncapturedErrorEvent::Trace(Visitor* visitor) {
+  visitor->Trace(error_);
+  Event::Trace(visitor);
+}
+
+void GPUUncapturedErrorEvent::error(
+    GPUOutOfMemoryErrorOrGPUValidationError& error) const {
+  error = error_;
+}
 
 }  // namespace blink
