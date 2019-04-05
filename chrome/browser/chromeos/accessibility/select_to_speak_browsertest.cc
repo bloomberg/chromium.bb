@@ -281,7 +281,8 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, BreaksAtParagraphBounds) {
                                  "Second paragraph*"));
 }
 
-IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, FocusRingMovesWithMouse) {
+// Flaky test. https://crbug.com/950049
+IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, DISABLED_FocusRingMovesWithMouse) {
   // Create a callback for the focus ring observer.
   base::RepeatingCallback<void()> callback =
       base::BindRepeating(&SelectToSpeakTest::OnFocusRingChanged, GetWeakPtr());
