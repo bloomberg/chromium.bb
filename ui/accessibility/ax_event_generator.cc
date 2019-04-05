@@ -372,9 +372,16 @@ void AXEventGenerator::OnIntListAttributeChanged(
     case ax::mojom::IntListAttribute::kDescribedbyIds:
       AddEvent(node, Event::DESCRIBED_BY_CHANGED);
       break;
-    case ax::mojom::IntListAttribute::kFlowtoIds:
+    case ax::mojom::IntListAttribute::kFlowtoIds: {
       AddEvent(node, Event::FLOW_TO_CHANGED);
+
+      // Fire FLOW_FROM_CHANGED for all nodes added or removed
+      for (int32_t id : ComputeIntListDifference(old_value, new_value)) {
+        if (auto* target_node = tree->GetFromId(id))
+          AddEvent(target_node, Event::FLOW_FROM_CHANGED);
+      }
       break;
+    }
     case ax::mojom::IntListAttribute::kLabelledbyIds:
       AddEvent(node, Event::LABELED_BY_CHANGED);
       break;
@@ -567,6 +574,20 @@ void AXEventGenerator::GetRestrictionStates(ax::mojom::Restriction restriction,
       *is_readonly = false;
       break;
   }
+}
+
+// static
+std::vector<int32_t> AXEventGenerator::ComputeIntListDifference(
+    const std::vector<int32_t>& lhs,
+    const std::vector<int32_t>& rhs) {
+  std::set<int32_t> sorted_lhs(lhs.cbegin(), lhs.cend());
+  std::set<int32_t> sorted_rhs(rhs.cbegin(), rhs.cend());
+
+  std::vector<int32_t> result;
+  std::set_symmetric_difference(sorted_lhs.cbegin(), sorted_lhs.cend(),
+                                sorted_rhs.cbegin(), sorted_rhs.cend(),
+                                std::back_inserter(result));
+  return result;
 }
 
 }  // namespace ui

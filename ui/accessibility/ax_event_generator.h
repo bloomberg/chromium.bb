@@ -36,6 +36,7 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
     DOCUMENT_TITLE_CHANGED,
     ENABLED_CHANGED,
     EXPANDED,
+    FLOW_FROM_CHANGED,
     FLOW_TO_CHANGED,
     HIERARCHICAL_LEVEL_CHANGED,
     IMAGE_ANNOTATION_CHANGED,
@@ -205,6 +206,11 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
   static void GetRestrictionStates(ax::mojom::Restriction restriction,
                                    bool* is_enabled,
                                    bool* is_readonly);
+
+  // Returns a vector of values unique to either |lhs| or |rhs|
+  static std::vector<int32_t> ComputeIntListDifference(
+      const std::vector<int32_t>& lhs,
+      const std::vector<int32_t>& rhs);
 
   AXTree* tree_ = nullptr;  // Not owned.
   std::map<AXNode*, std::set<EventParams>> tree_events_;

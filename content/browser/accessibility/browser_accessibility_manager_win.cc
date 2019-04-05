@@ -195,6 +195,9 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::ENABLED_CHANGED:
       FireUiaPropertyChangedEvent(UIA_IsEnabledPropertyId, node);
       break;
+    case ui::AXEventGenerator::Event::FLOW_FROM_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_FlowsFromPropertyId, node);
+      break;
     case ui::AXEventGenerator::Event::FLOW_TO_CHANGED:
       FireUiaPropertyChangedEvent(UIA_FlowsToPropertyId, node);
       break;

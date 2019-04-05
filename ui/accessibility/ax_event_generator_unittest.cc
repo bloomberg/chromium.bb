@@ -59,6 +59,9 @@ std::string DumpEvents(AXEventGenerator* generator) {
       case AXEventGenerator::Event::EXPANDED:
         event_name = "EXPANDED";
         break;
+      case AXEventGenerator::Event::FLOW_FROM_CHANGED:
+        event_name = "FLOW_FROM_CHANGED";
+        break;
       case AXEventGenerator::Event::FLOW_TO_CHANGED:
         event_name = "FLOW_TO_CHANGED";
         break;
@@ -1095,6 +1098,8 @@ TEST(AXEventGeneratorTest, IntListPropertyChanges) {
   EXPECT_TRUE(tree.Unserialize(update));
   EXPECT_EQ(
       "DESCRIBED_BY_CHANGED on 2, "
+      "FLOW_FROM_CHANGED on 1, "
+      "FLOW_FROM_CHANGED on 2, "
       "FLOW_TO_CHANGED on 3, "
       "LABELED_BY_CHANGED on 4, "
       "RELATED_NODE_CHANGED on 2, "
@@ -1155,6 +1160,43 @@ TEST(AXEventGeneratorTest, RequiredStateChanged) {
   EXPECT_TRUE(tree.Unserialize(update));
   EXPECT_EQ("REQUIRED_STATE_CHANGED on 1, STATE_CHANGED on 1",
             DumpEvents(&event_generator));
+}
+
+TEST(AXEventGeneratorTest, FlowToChanged) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(6);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].role = ax::mojom::Role::kGenericContainer;
+  initial_state.nodes[0].child_ids.assign({2, 3, 4, 5, 6});
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].role = ax::mojom::Role::kGenericContainer;
+  initial_state.nodes[1].AddIntListAttribute(
+      ax::mojom::IntListAttribute::kFlowtoIds, {3, 4});
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[2].role = ax::mojom::Role::kGenericContainer;
+  initial_state.nodes[3].id = 4;
+  initial_state.nodes[3].role = ax::mojom::Role::kGenericContainer;
+  initial_state.nodes[4].id = 5;
+  initial_state.nodes[4].role = ax::mojom::Role::kGenericContainer;
+  initial_state.nodes[5].id = 6;
+  initial_state.nodes[5].role = ax::mojom::Role::kGenericContainer;
+
+  AXTree tree(initial_state);
+
+  AXEventGenerator event_generator(&tree);
+  AXTreeUpdate update = initial_state;
+  update.nodes[1].AddIntListAttribute(ax::mojom::IntListAttribute::kFlowtoIds,
+                                      {4, 5, 6});
+
+  EXPECT_TRUE(tree.Unserialize(update));
+  EXPECT_EQ(
+      "FLOW_FROM_CHANGED on 3, "
+      "FLOW_FROM_CHANGED on 5, "
+      "FLOW_FROM_CHANGED on 6, "
+      "FLOW_TO_CHANGED on 2, "
+      "RELATED_NODE_CHANGED on 2",
+      DumpEvents(&event_generator));
 }
 
 }  // namespace ui
