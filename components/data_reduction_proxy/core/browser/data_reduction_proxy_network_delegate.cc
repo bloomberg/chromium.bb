@@ -575,8 +575,7 @@ void DataReductionProxyNetworkDelegate::CalculateAndRecordDataUsage(
           request),
       request.traffic_annotation().unique_id_hash_code);
 
-  if (params::IsDataSaverSiteBreakdownUsingPLMEnabled() &&
-      data_reduction_proxy_io_data_ &&
+  if (data_reduction_proxy_io_data_ &&
       data_reduction_proxy_io_data_->resource_type_provider() &&
       data_reduction_proxy_io_data_->resource_type_provider()
           ->IsNonContentInitiatedRequest(request)) {

@@ -362,12 +362,6 @@ GURL GetSecureProxyCheckURL() {
   return GURL(secure_proxy_check_url);
 }
 
-bool IsDataSaverSiteBreakdownUsingPLMEnabled() {
-  return base::FeatureList::IsEnabled(
-      data_reduction_proxy::features::
-          kDataSaverSiteBreakdownUsingPageLoadMetrics);
-}
-
 bool IsEnabledWithNetworkService() {
   return base::FeatureList::IsEnabled(
              data_reduction_proxy::features::

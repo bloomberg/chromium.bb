@@ -60,11 +60,7 @@ class DataSaverSiteBreakdownMetricsObserverBrowserTest
  protected:
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
-        {data_reduction_proxy::features::
-             kDataSaverSiteBreakdownUsingPageLoadMetrics,
-         previews::features::kClientLoFi, features::kLazyImageLoading},
-        {});
-
+        {previews::features::kClientLoFi, features::kLazyImageLoading}, {});
     InProcessBrowserTest::SetUp();
   }
 

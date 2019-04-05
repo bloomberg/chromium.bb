@@ -1999,10 +1999,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RecordNonContentToOtherHost) {
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
       "\r\n";
 
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      data_reduction_proxy::features::
-          kDataSaverSiteBreakdownUsingPageLoadMetrics);
   Init(USE_INSECURE_PROXY);
   EnableDataUsageReporting();
   auto test_resource_type_provider =
