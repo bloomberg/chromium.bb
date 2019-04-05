@@ -747,6 +747,12 @@ const char kEnableNewDownloadBackendName[] = "Enable new download backend";
 const char kEnableNewDownloadBackendDescription[] =
     "Enables the new download backend that uses offline content provider";
 
+const char kEnablePortalsName[] = "Enable Portals.";
+const char kEnablePortalsDescription[] =
+    "Portals are an experimental web platform feature that allows embedding"
+    " and seamless transitions between pages."
+    " See https://github.com/WICG/portals and https://wicg.github.io/portals/";
+
 const char kEnableNotificationScrollBarName[] =
     "Enable notification list scroll bar";
 const char kEnableNotificationScrollBarDescription[] =

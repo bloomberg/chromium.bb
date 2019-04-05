@@ -512,6 +512,9 @@ extern const char kDownloadAutoResumptionNativeDescription[];
 extern const char kEnableNewDownloadBackendName[];
 extern const char kEnableNewDownloadBackendDescription[];
 
+extern const char kEnablePortalsName[];
+extern const char kEnablePortalsDescription[];
+
 extern const char kEnablePictureInPictureName[];
 extern const char kEnablePictureInPictureDescription[];
 
