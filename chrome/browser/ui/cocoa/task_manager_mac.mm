@@ -291,6 +291,7 @@ bool ShouldUseViewsTaskManager() {
   base::scoped_nsobject<NSTableView> tableView(
       [[NSTableView alloc] initWithFrame:NSMakeRect(0, 0, 400, 200)]);
   [tableView setAllowsColumnReordering:NO];
+  [tableView setAllowsMultipleSelection:YES];
   [tableView setAutosaveTableColumns:NO];
   [tableView
       setColumnAutoresizingStyle:NSTableViewUniformColumnAutoresizingStyle];
