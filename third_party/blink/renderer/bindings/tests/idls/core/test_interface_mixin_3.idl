@@ -4,8 +4,8 @@
 
 [
     LegacyTreatAsPartialInterface, // used by [ImplementedAs]
-    ImplementedAs=TestMixin3Implementation // Conflicts with default implements class name
+    ImplementedAs=TestMixin3Implementation // Default class name conflicts
 ] interface mixin TestInterfaceMixin3 {
-    attribute DOMString implements3StringAttribute;
-    void implements3VoidMethod();
+    attribute DOMString mixin3StringAttribute;
+    void mixin3VoidMethod();
 };
