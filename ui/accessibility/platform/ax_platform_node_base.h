@@ -340,12 +340,24 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   int GetHypertextOffsetFromEndpoint(AXPlatformNodeBase* endpoint_object,
                                      int endpoint_offset);
 
+  bool IsSameHypertextCharacter(const AXHypertext& old_hypertext,
+                                size_t old_char_index,
+                                size_t new_char_index);
+  void ComputeHypertextRemovedAndInserted(const AXHypertext& old_hypertext,
+                                          size_t* start,
+                                          size_t* old_len,
+                                          size_t* new_len);
   int32_t GetPosInSet() const;
   int32_t GetSetSize() const;
 
   AXHypertext hypertext_;
 
  private:
+  // Return true if the index represents a text character.
+  bool IsText(const base::string16& text,
+              size_t index,
+              bool is_indexed_from_end = false);
+
   DISALLOW_COPY_AND_ASSIGN(AXPlatformNodeBase);
 };
 

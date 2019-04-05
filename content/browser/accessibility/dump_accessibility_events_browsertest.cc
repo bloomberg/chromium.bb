@@ -574,6 +574,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsTextChangedContentEditable) {
+  RunEventTest(FILE_PATH_LITERAL("text-changed-contenteditable.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsAriaCheckedChanged) {
   RunEventTest(FILE_PATH_LITERAL("aria-checked-changed.html"));
 }

@@ -1048,8 +1048,6 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // Also, in IA2, text that includes embedded objects is called hypertext.
   // Returns true if the current object is an IA2 hyperlink.
   bool IsHyperlink();
-
-  bool IsSameHypertextCharacter(size_t old_char_index, size_t new_char_index);
   void ComputeHypertextRemovedAndInserted(size_t* start,
                                           size_t* old_len,
                                           size_t* new_len);
@@ -1164,11 +1162,6 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                     IA2TextBoundaryType ia2_boundary,
                     LONG start_offset,
                     TextBoundaryDirection direction);
-
-  // Return true if the index represents a text character.
-  bool IsText(const base::string16& text,
-              size_t index,
-              bool is_indexed_from_end = false);
 
   // Many MSAA methods take a var_id parameter indicating that the operation
   // should be performed on a particular child ID, rather than this object.

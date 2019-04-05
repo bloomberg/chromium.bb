@@ -160,6 +160,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void AddRelationToSet(AtkRelationSet*,
                         AtkRelationType,
                         AXPlatformNode* target);
+  bool IsInLiveRegion();
 
   // The AtkStateType for a checkable node can vary depending on the role.
   AtkStateType GetAtkStateTypeForCheckableNode();
