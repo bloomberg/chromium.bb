@@ -337,14 +337,6 @@ class SimpleResultPromise : public ContentDecryptionModuleResultPromise {
   Member<MediaKeySession> session_;
 };
 
-MediaKeySession* MediaKeySession::Create(
-    ScriptState* script_state,
-    MediaKeys* media_keys,
-    WebEncryptedMediaSessionType session_type) {
-  return MakeGarbageCollected<MediaKeySession>(script_state, media_keys,
-                                               session_type);
-}
-
 MediaKeySession::MediaKeySession(ScriptState* script_state,
                                  MediaKeys* media_keys,
                                  WebEncryptedMediaSessionType session_type)
