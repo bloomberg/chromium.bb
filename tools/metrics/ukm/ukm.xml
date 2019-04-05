@@ -2405,6 +2405,7 @@ be describing additional metrics about the same event.
     <aggregation>
       <history>
         <index fields="profile.country"/>
+        <index fields="profile.country,profile.system_ram"/>
         <statistics>
           <quantiles type="std-percentiles"/>
         </statistics>
@@ -2443,6 +2444,7 @@ be describing additional metrics about the same event.
     <aggregation>
       <history>
         <index fields="profile.country"/>
+        <index fields="profile.country,profile.system_ram"/>
         <statistics>
           <quantiles type="std-percentiles"/>
         </statistics>

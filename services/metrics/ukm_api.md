@@ -80,6 +80,7 @@ Currently supported additional index fields are:
 
 *   `profile.country`
 *   `profile.form_factor`
+*   `profile.system_ram`
 
 ## Enumeration Proportions
 
