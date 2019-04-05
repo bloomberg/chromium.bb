@@ -154,8 +154,7 @@ class SharedImageRepresentationSkia : public SharedImageRepresentation {
       int final_msaa_count,
       const SkSurfaceProps& surface_props) = 0;
   virtual void EndWriteAccess(sk_sp<SkSurface> surface) = 0;
-  virtual sk_sp<SkPromiseImageTexture> BeginReadAccess(
-      SkSurface* sk_surface) = 0;
+  virtual sk_sp<SkPromiseImageTexture> BeginReadAccess() = 0;
   virtual void EndReadAccess() = 0;
 };
 

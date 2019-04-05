@@ -186,7 +186,7 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
   EXPECT_EQ(size.width(), surface->width());
   EXPECT_EQ(size.height(), surface->height());
   skia_representation->EndWriteAccess(std::move(surface));
-  auto promise_texture = skia_representation->BeginReadAccess(nullptr);
+  auto promise_texture = skia_representation->BeginReadAccess();
   EXPECT_TRUE(promise_texture);
   if (promise_texture) {
     GrBackendTexture backend_texture = promise_texture->backendTexture();
@@ -285,7 +285,7 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
   EXPECT_EQ(size.width(), surface->width());
   EXPECT_EQ(size.height(), surface->height());
   skia_representation->EndWriteAccess(std::move(surface));
-  auto promise_texture = skia_representation->BeginReadAccess(nullptr);
+  auto promise_texture = skia_representation->BeginReadAccess();
   EXPECT_TRUE(promise_texture);
   if (promise_texture) {
     GrBackendTexture backend_texture = promise_texture->backendTexture();

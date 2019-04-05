@@ -500,17 +500,7 @@ sk_sp<SkImage> SkiaOutputSurfaceImplNonDDL::MakeSkImageFromSharedImage(
                    "with display usage.";
     return nullptr;
   }
-  if (!sk_surface_) {
-    // Create a dummy sk surface to make SharedImage happy.
-    // TODO(penghuang): remove the dummy sk surface when BeginReadAccess()
-    // doesn't need pass in a sk surface.
-    auto image_info =
-        SkImageInfo::Make(1, 1, kRGBA_8888_SkColorType, kPremul_SkAlphaType);
-    sk_surface_ = SkSurface::MakeRenderTarget(
-        gr_context(), SkBudgeted::kNo, image_info, 0 /* sampleCount */,
-        kBottomLeft_GrSurfaceOrigin, nullptr /* surfaceProps */);
-  }
-  auto promise_texture = representation->BeginReadAccess(sk_surface_.get());
+  auto promise_texture = representation->BeginReadAccess();
   if (!promise_texture) {
     DLOG(ERROR)
         << "Failed to begin read access for SharedImageRepresentationSkia";

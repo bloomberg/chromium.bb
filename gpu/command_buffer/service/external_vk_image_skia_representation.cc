@@ -47,7 +47,8 @@ sk_sp<SkSurface> ExternalVkImageSkiaRepresentation::BeginWriteAccess(
     GrContext* gr_context,
     int final_msaa_count,
     const SkSurfaceProps& surface_props) {
-  DCHECK(!surface_) << "Previous access hasn't ended yet";
+  DCHECK_EQ(access_mode_, kNone) << "Previous access hasn't ended yet";
+  DCHECK(!surface_);
 
   auto promise_texture = BeginAccess(false /* readonly */);
   if (!promise_texture)
@@ -58,38 +59,42 @@ sk_sp<SkSurface> ExternalVkImageSkiaRepresentation::BeginWriteAccess(
       gr_context, promise_texture->backendTexture(), kTopLeft_GrSurfaceOrigin,
       final_msaa_count, sk_color_type,
       backing_impl()->color_space().ToSkColorSpace(), &surface_props);
+  access_mode_ = kWrite;
   return surface_;
 }
 
 void ExternalVkImageSkiaRepresentation::EndWriteAccess(
     sk_sp<SkSurface> surface) {
-  DCHECK(surface_) << "EndWriteAccess is called before BeginWriteAccess";
+  DCHECK_EQ(access_mode_, kWrite)
+      << "EndWriteAccess is called before BeginWriteAccess";
+  DCHECK(surface_);
   surface_ = nullptr;
   EndAccess(false /* readonly */);
+  access_mode_ = kNone;
 }
 
-sk_sp<SkPromiseImageTexture> ExternalVkImageSkiaRepresentation::BeginReadAccess(
-    SkSurface* sk_surface) {
-  DCHECK(!surface_) << "Previous access hasn't ended yet";
+sk_sp<SkPromiseImageTexture>
+ExternalVkImageSkiaRepresentation::BeginReadAccess() {
+  DCHECK_EQ(access_mode_, kNone) << "Previous access hasn't ended yet";
+  DCHECK(!surface_);
 
   auto promise_texture = BeginAccess(true /* readonly */);
   if (!promise_texture)
     return nullptr;
-
-  // Cache the sk surface in the representation so that it can be used in the
-  // EndReadAccess.
-  surface_ = sk_ref_sp(sk_surface);
+  access_mode_ = kRead;
   return promise_texture;
 }
 
 void ExternalVkImageSkiaRepresentation::EndReadAccess() {
-  DCHECK(surface_) << "EndReadAccess is called before BeginReadAccess";
-  surface_ = nullptr;
+  DCHECK_EQ(access_mode_, kRead)
+      << "EndReadAccess is called before BeginReadAccess";
   EndAccess(true /* readonly */);
+  access_mode_ = kNone;
 }
 
 sk_sp<SkPromiseImageTexture> ExternalVkImageSkiaRepresentation::BeginAccess(
     bool readonly) {
+  DCHECK_EQ(access_mode_, kNone);
   DestroySemaphores(std::move(begin_access_semaphores_), begin_access_fence_);
   begin_access_semaphores_.clear();
 
@@ -131,6 +136,7 @@ sk_sp<SkPromiseImageTexture> ExternalVkImageSkiaRepresentation::BeginAccess(
 }
 
 void ExternalVkImageSkiaRepresentation::EndAccess(bool readonly) {
+  DCHECK_NE(access_mode_, kNone);
   // Cleanup resources for previous accessing.
   DestroySemaphore(end_access_semaphore_, end_access_fence_);
 

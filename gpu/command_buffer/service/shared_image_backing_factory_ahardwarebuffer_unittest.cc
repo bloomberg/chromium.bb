@@ -126,7 +126,7 @@ TEST_F(SharedImageBackingFactoryAHBTest, Basic) {
   EXPECT_EQ(gl_legacy_shared_image.size().width(), surface->width());
   EXPECT_EQ(gl_legacy_shared_image.size().height(), surface->height());
   skia_representation->EndWriteAccess(std::move(surface));
-  auto promise_texture = skia_representation->BeginReadAccess(nullptr);
+  auto promise_texture = skia_representation->BeginReadAccess();
   EXPECT_TRUE(promise_texture);
   if (promise_texture) {
     GrBackendTexture backend_texture = promise_texture->backendTexture();
@@ -187,7 +187,7 @@ TEST_F(SharedImageBackingFactoryAHBTest, GLSkiaGL) {
   auto skia_representation = shared_image_representation_factory_->ProduceSkia(
       mailbox, context_state_.get());
   EXPECT_TRUE(skia_representation);
-  auto promise_texture = skia_representation->BeginReadAccess(nullptr);
+  auto promise_texture = skia_representation->BeginReadAccess();
   EXPECT_TRUE(promise_texture);
   if (promise_texture) {
     GrBackendTexture backend_texture = promise_texture->backendTexture();
@@ -320,14 +320,8 @@ TEST_F(SharedImageBackingFactoryAHBTest, CanHaveMultipleReaders) {
   auto skia_representation2 = shared_image_representation_factory_->ProduceSkia(
       gl_legacy_shared_image.mailbox(), context_state_.get());
 
-  sk_sp<SkSurface> surface =
-      SkSurface::MakeNull(gl_legacy_shared_image.size().width(),
-                          gl_legacy_shared_image.size().height());
-  EXPECT_TRUE(skia_representation->BeginReadAccess(surface.get()));
-  sk_sp<SkSurface> surface2 =
-      SkSurface::MakeNull(gl_legacy_shared_image.size().width(),
-                          gl_legacy_shared_image.size().height());
-  EXPECT_TRUE(skia_representation2->BeginReadAccess(surface2.get()));
+  EXPECT_TRUE(skia_representation->BeginReadAccess());
+  EXPECT_TRUE(skia_representation2->BeginReadAccess());
 
   skia_representation2->EndReadAccess();
   skia_representation2.reset();
@@ -348,14 +342,8 @@ TEST_F(SharedImageBackingFactoryAHBTest,
 
   auto skia_representation = shared_image_representation_factory_->ProduceSkia(
       gl_legacy_shared_image.mailbox(), context_state_.get());
-  sk_sp<SkSurface> surface =
-      SkSurface::MakeNull(gl_legacy_shared_image.size().width(),
-                          gl_legacy_shared_image.size().height());
-  EXPECT_TRUE(skia_representation->BeginReadAccess(surface.get()));
-  sk_sp<SkSurface> surface2 =
-      SkSurface::MakeNull(gl_legacy_shared_image.size().width(),
-                          gl_legacy_shared_image.size().height());
-  EXPECT_FALSE(skia_representation->BeginReadAccess(surface2.get()));
+  EXPECT_TRUE(skia_representation->BeginReadAccess());
+  EXPECT_FALSE(skia_representation->BeginReadAccess());
 
   skia_representation->EndReadAccess();
   skia_representation.reset();
@@ -373,10 +361,7 @@ TEST_F(SharedImageBackingFactoryAHBTest, CannotWriteWhileReading) {
 
   auto skia_representation = shared_image_representation_factory_->ProduceSkia(
       gl_legacy_shared_image.mailbox(), context_state_.get());
-  sk_sp<SkSurface> surface =
-      SkSurface::MakeNull(gl_legacy_shared_image.size().width(),
-                          gl_legacy_shared_image.size().height());
-  EXPECT_TRUE(skia_representation->BeginReadAccess(surface.get()));
+  EXPECT_TRUE(skia_representation->BeginReadAccess());
 
   EXPECT_FALSE(skia_representation->BeginWriteAccess(
       gr_context(), 0, SkSurfaceProps(0, kUnknown_SkPixelGeometry)));
@@ -400,10 +385,7 @@ TEST_F(SharedImageBackingFactoryAHBTest, CannotReadWhileWriting) {
   auto surface = skia_representation->BeginWriteAccess(
       gr_context(), 0, SkSurfaceProps(0, kUnknown_SkPixelGeometry));
 
-  sk_sp<SkSurface> surface2 =
-      SkSurface::MakeNull(gl_legacy_shared_image.size().width(),
-                          gl_legacy_shared_image.size().height());
-  EXPECT_FALSE(skia_representation->BeginReadAccess(surface2.get()));
+  EXPECT_FALSE(skia_representation->BeginReadAccess());
 
   skia_representation->EndWriteAccess(std::move(surface));
   skia_representation.reset();

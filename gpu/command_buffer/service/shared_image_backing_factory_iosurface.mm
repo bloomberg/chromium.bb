@@ -148,7 +148,7 @@ class SharedImageRepresentationSkiaIOSurface
     }
   }
 
-  sk_sp<SkPromiseImageTexture> BeginReadAccess(SkSurface* sk_surface) override {
+  sk_sp<SkPromiseImageTexture> BeginReadAccess() override {
     return promise_texture_;
   }
 
