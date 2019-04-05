@@ -368,8 +368,10 @@ sk_sp<PaintShader> PaintOpWriter::TransformShaderIfNecessary(
                                         &quality, paint_image_needs_mips);
   }
 
-  if (type == PaintShader::Type::kPaintRecord)
-    return original->CreateScaledPaintRecord(ctm, paint_record_post_scale);
+  if (type == PaintShader::Type::kPaintRecord) {
+    return original->CreateScaledPaintRecord(ctm, options_.max_texture_size,
+                                             paint_record_post_scale);
+  }
 
   return sk_ref_sp<PaintShader>(original);
 }

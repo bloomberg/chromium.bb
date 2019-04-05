@@ -48,6 +48,20 @@ bool CompareMatrices(const SkMatrix& a,
   return PaintOp::AreSkMatricesEqual(a_without_scale, b_without_scale);
 }
 
+SkRect AdjustForMaxTextureSize(SkRect tile, int max_texture_size) {
+  if (max_texture_size == 0)
+    return tile;
+
+  if (tile.width() < max_texture_size && tile.height() < max_texture_size)
+    return tile;
+
+  float down_scale = max_texture_size / std::max(tile.width(), tile.height());
+  tile = SkRect::MakeXYWH(tile.x(), tile.y(),
+                          SkScalarFloorToScalar(tile.width() * down_scale),
+                          SkScalarFloorToScalar(tile.height() * down_scale));
+  return tile;
+}
+
 }  // namespace
 
 const PaintShader::RecordShaderId PaintShader::kInvalidRecordShaderId = -1;
@@ -273,6 +287,7 @@ bool PaintShader::GetRasterizationTileRect(const SkMatrix& ctm,
 
 sk_sp<PaintShader> PaintShader::CreateScaledPaintRecord(
     const SkMatrix& ctm,
+    int max_texture_size,
     gfx::SizeF* raster_scale) const {
   DCHECK_EQ(shader_type_, Type::kPaintRecord);
 
@@ -297,6 +312,7 @@ sk_sp<PaintShader> PaintShader::CreateScaledPaintRecord(
   SkRect tile_rect;
   if (!GetRasterizationTileRect(ctm, &tile_rect))
     return nullptr;
+  tile_rect = AdjustForMaxTextureSize(tile_rect, max_texture_size);
 
   sk_sp<PaintShader> shader(new PaintShader(Type::kPaintRecord));
   shader->record_ = record_;

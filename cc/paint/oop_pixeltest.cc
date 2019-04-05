@@ -82,6 +82,8 @@ class OopPixelTest : public testing::Test,
             /*enable_oop_rasterization=*/false, /*support_locking=*/true);
     gpu::ContextResult result = gles2_context_provider_->BindToCurrentThread();
     DCHECK_EQ(result, gpu::ContextResult::kSuccess);
+    CHECK_EQ(gles2_context_provider_->ContextCapabilities().max_texture_size,
+             raster_context_provider_->ContextCapabilities().max_texture_size);
   }
 
   // gpu::raster::GrShaderCache::Client implementation.
@@ -1654,6 +1656,40 @@ class OopPathPixelTest : public OopPixelTest,
 
 TEST_P(OopPathPixelTest, Basic) {
   RunTest();
+}
+
+TEST_F(OopPixelTest, RecordShaderExceedsMaxTextureSize) {
+  const int max_texture_size =
+      raster_context_provider_->ContextCapabilities().max_texture_size;
+  const SkRect rect = SkRect::MakeWH(max_texture_size + 10, 10);
+
+  auto shader_record = sk_make_sp<PaintRecord>();
+  shader_record->push<DrawColorOp>(SK_ColorWHITE, SkBlendMode::kSrc);
+  PaintFlags flags;
+  flags.setStyle(PaintFlags::kFill_Style);
+  flags.setColor(SK_ColorGREEN);
+  shader_record->push<DrawRectOp>(rect, flags);
+  auto shader = PaintShader::MakePaintRecord(
+      shader_record, rect, SkTileMode::kRepeat, SkTileMode::kRepeat, nullptr);
+
+  RasterOptions options;
+  options.resource_size = gfx::Size(100, 100);
+  options.content_size = gfx::Size(rect.width(), rect.height());
+  options.full_raster_rect = gfx::Rect(options.content_size);
+  options.playback_rect = options.full_raster_rect;
+  options.color_space = gfx::ColorSpace::CreateSRGB();
+
+  auto display_item_list = base::MakeRefCounted<DisplayItemList>();
+  display_item_list->StartPaint();
+  display_item_list->push<DrawColorOp>(SK_ColorWHITE, SkBlendMode::kSrc);
+  flags.setShader(shader);
+  display_item_list->push<DrawRectOp>(rect, flags);
+  display_item_list->EndPaintOfUnpaired(options.full_raster_rect);
+  display_item_list->Finalize();
+
+  auto expected = RasterExpectedBitmap(display_item_list, options);
+  auto actual = Raster(display_item_list, options);
+  ExpectEquals(actual, expected);
 }
 
 INSTANTIATE_TEST_SUITE_P(P, OopImagePixelTest, ::testing::Bool());
