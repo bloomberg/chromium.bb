@@ -36,9 +36,8 @@
 namespace blink {
 
 void WebHeap::CollectGarbageForTesting() {
-  ThreadState::Current()->CollectGarbage(
-      BlinkGC::kHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
+  ThreadState::Current()->CollectAllGarbageForTesting(
+      BlinkGC::kHeapPointersOnStack);
 }
 
 void WebHeap::CollectAllGarbageForTesting() {

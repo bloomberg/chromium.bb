@@ -374,13 +374,12 @@ bool HeapCompact::ShouldCompact(ThreadHeap* heap,
   if (stack_state == BlinkGC::kHeapPointersOnStack)
     return false;
 
-  if (reason == BlinkGC::GCReason::kTesting) {
+  if (reason == BlinkGC::GCReason::kForcedGCForTesting) {
     UpdateHeapResidency();
     return force_compaction_gc_;
   }
 
-  if (reason != BlinkGC::GCReason::kPreciseGC &&
-      reason != BlinkGC::GCReason::kForcedGC)
+  if (reason != BlinkGC::GCReason::kPreciseGC)
     return false;
 
   // TODO(keishi): crbug.com/918064 Heap compaction for incremental marking

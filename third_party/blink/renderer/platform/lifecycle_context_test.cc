@@ -145,7 +145,7 @@ TEST(LifecycleContextTest, ShouldNotHitCFICheckOnIncrementalMarking) {
   bool was_enabled = RuntimeEnabledFeatures::HeapIncrementalMarkingEnabled();
   RuntimeEnabledFeatures::SetHeapIncrementalMarkingEnabled(true);
   ThreadState* thread_state = ThreadState::Current();
-  thread_state->IncrementalMarkingStart(BlinkGC::GCReason::kTesting);
+  thread_state->IncrementalMarkingStart(BlinkGC::GCReason::kForcedGCForTesting);
 
   DummyContext* context = DummyContext::Create();
 
