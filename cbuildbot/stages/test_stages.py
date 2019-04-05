@@ -311,15 +311,14 @@ class SkylabHWTestStage(HWTestStage):
 
   # Temporary hack during skylab and quotascheduler migration, to override
   # certain builders' pool config values.
-  def _PoolHack(self, pool, build):
-    # Experimentally share the CQ pool with chrome pfq, thanks to
-    # quotascheduler. See crbug.com/941146
-    # This hack will be deleted once all the skylab chrome pfq buildrs are
-    # redirected to the cq/pfq merged pool.
-    if (self._board_name == 'peppy' and
-        pool == constants.HWTEST_MACH_POOL and
-        'peppy-chrome-pfq' in build):
+  def _PoolHack(self, pool):
+    # Override the pool for all pfqs (except those also running release in
+    # Skylab) to use the quotascheduler pool. See crbug.com/950017
+    blacklist = ('asuka', 'coral', 'nyan_blaze', 'reef')
+    build_type = self._run.config.build_type
+    if config_lib.IsPFQType(build_type) and self._board not in blacklist:
       pool = constants.HWTEST_QUOTA_POOL
+
     # Retain guado_moblab and wukong paladins on cq pool, until they are able
     # to migrate to Skylab. See crbug.com/949217
     if (self._board_name in ('guado_moblab', 'wukong') and
@@ -344,7 +343,7 @@ class SkylabHWTestStage(HWTestStage):
   def PerformStage(self):
     build = '/'.join([self._bot_id, self.version])
 
-    pool = self._PoolHack(self.suite_config.pool, build)
+    pool = self._PoolHack(self.suite_config.pool)
     quota_account = self.suite_config.quota_account or self._InferQuotaAccount()
 
     cmd_result = commands.RunSkylabHWTestSuite(
