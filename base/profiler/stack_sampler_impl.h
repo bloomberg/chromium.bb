@@ -30,7 +30,8 @@ class BASE_EXPORT StackSamplerImpl : public StackSampler {
   StackSamplerImpl(const StackSamplerImpl&) = delete;
   StackSamplerImpl& operator=(const StackSamplerImpl&) = delete;
 
-  // Records a set of frames and returns them.
+  // StackSampler:
+  void AddAuxUnwinder(Unwinder* unwinder) override;
   void RecordStackFrames(StackBuffer* stack_buffer,
                          ProfileBuilder* profile_builder) override;
 
@@ -45,6 +46,7 @@ class BASE_EXPORT StackSamplerImpl : public StackSampler {
 
   const std::unique_ptr<ThreadDelegate> thread_delegate_;
   const std::unique_ptr<Unwinder> native_unwinder_;
+  Unwinder* aux_unwinder_ = nullptr;
   ModuleCache* const module_cache_;
   StackSamplerTestDelegate* const test_delegate_;
 };

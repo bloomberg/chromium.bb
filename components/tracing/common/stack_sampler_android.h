@@ -24,7 +24,8 @@ class StackSamplerAndroid : public base::StackSampler {
   StackSamplerAndroid(const StackSamplerAndroid&) = delete;
   StackSamplerAndroid& operator=(const StackSamplerAndroid&) = delete;
 
-  // StackSamplingProfiler::StackSampler:
+  // StackSampler:
+  void AddAuxUnwinder(base::Unwinder* unwinder) override;
   void RecordStackFrames(StackBuffer* stack_buffer,
                          base::ProfileBuilder* profile_builder) override;
 

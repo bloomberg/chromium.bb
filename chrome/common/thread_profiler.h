@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/profiler/stack_sampling_profiler.h"
+#include "base/profiler/unwinder.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
@@ -66,6 +67,11 @@ class ThreadProfiler {
   void SetMainThreadTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
+  // Adds an auxiliary unwinder to supply to the StackSamplingProfiler to handle
+  // additional, non-native-code unwind scenarios. Currently used to support
+  // unwinding V8 JavaScript frames.
+  void AddAuxUnwinder(std::unique_ptr<base::Unwinder> unwinder);
+
   // Creates a profiler for a child thread and immediately starts it. This
   // should be called from a task posted on the child thread immediately after
   // thread start. The thread will be profiled until exit.
@@ -117,6 +123,8 @@ class ThreadProfiler {
   scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner_;
 
   std::unique_ptr<WorkIdRecorder> work_id_recorder_;
+
+  std::unique_ptr<base::Unwinder> aux_unwinder_;
 
   std::unique_ptr<base::StackSamplingProfiler> startup_profiler_;
 

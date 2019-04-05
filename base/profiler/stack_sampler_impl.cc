@@ -85,6 +85,10 @@ StackSamplerImpl::StackSamplerImpl(
 
 StackSamplerImpl::~StackSamplerImpl() = default;
 
+void StackSamplerImpl::AddAuxUnwinder(Unwinder* unwinder) {
+  aux_unwinder_ = unwinder;
+}
+
 void StackSamplerImpl::RecordStackFrames(StackBuffer* stack_buffer,
                                          ProfileBuilder* profile_builder) {
   DCHECK(stack_buffer);
