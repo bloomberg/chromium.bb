@@ -1422,8 +1422,7 @@ bool GraphicsContext::ShouldApplyDarkModeFilterToImage(
 
   switch (dark_mode_settings_.image_policy) {
     case DarkModeImagePolicy::kFilterSmart:
-      return dark_mode_image_classifier_.ShouldApplyDarkModeFilterToImage(
-          image, src_rect);
+      return image.ShouldApplyDarkModeFilter(src_rect);
     case DarkModeImagePolicy::kFilterAll:
       return true;
     default:
