@@ -677,6 +677,18 @@ class AutotestPrivateSetShelfAutoHideBehaviorFunction
   ash::mojom::ShelfControllerPtr shelf_controller_;
 };
 
+class AutotestPrivateShowVirtualKeyboardIfEnabledFunction
+    : public UIThreadExtensionFunction {
+ public:
+  AutotestPrivateShowVirtualKeyboardIfEnabledFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.showVirtualKeyboardIfEnabled",
+                             AUTOTESTPRIVATE_SHOWVIRTUALKEYBOARDIFENABLED)
+
+ private:
+  ~AutotestPrivateShowVirtualKeyboardIfEnabledFunction() override;
+  ResponseAction Run() override;
+};
+
 template <>
 KeyedService*
 BrowserContextKeyedAPIFactory<AutotestPrivateAPI>::BuildServiceInstanceFor(
