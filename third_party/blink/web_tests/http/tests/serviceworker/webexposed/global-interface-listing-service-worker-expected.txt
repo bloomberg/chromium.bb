@@ -1257,6 +1257,9 @@ interface TransformStream
     getter readable
     getter writable
     method constructor
+interface TrustedTypePolicyFactory
+    attribute @@toStringTag
+    method constructor
 interface URL
     attribute @@toStringTag
     getter hash
