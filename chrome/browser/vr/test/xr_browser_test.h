@@ -84,7 +84,7 @@ class XrBrowserTestBase : public InProcessBrowserTest {
   void LoadUrlAndAwaitInitialization(const GURL& url);
 
   // Convenience function for ensuring the given JavaScript runs successfully
-  // without having to always surround in EXPECT_TRUE.
+  // without having to always surround in ASSERT_TRUE.
   void RunJavaScriptOrFail(const std::string& js_expression,
                            content::WebContents* web_contents);
 
