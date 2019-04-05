@@ -20,6 +20,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/unguessable_token.h"
 #include "services/media_session/public/cpp/test/test_media_controller.h"
@@ -230,6 +231,12 @@ class MediaNotificationViewTest : public AshTestBase {
                                ui::EventTimeForNow(), 0, 0));
   }
 
+  void ExpectHistogramActionRecorded(MediaSessionAction action) {
+    histogram_tester_.ExpectUniqueSample(
+        MediaNotificationItem::kUserActionHistogramName,
+        static_cast<base::HistogramBase::Sample>(action), 1);
+  }
+
  private:
   std::unique_ptr<message_center::MessageView> CreateAndCaptureCustomView(
       const message_center::Notification& notification) {
@@ -246,6 +253,8 @@ class MediaNotificationViewTest : public AshTestBase {
   base::UnguessableToken request_id_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
+
+  base::HistogramTester histogram_tester_;
 
   std::set<MediaSessionAction> actions_;
 
@@ -316,6 +325,7 @@ TEST_F(MediaNotificationViewTest, NextTrackButtonClick) {
   GetItem()->FlushForTesting();
 
   EXPECT_EQ(1, media_controller()->next_track_count());
+  ExpectHistogramActionRecorded(MediaSessionAction::kNextTrack);
 }
 
 TEST_F(MediaNotificationViewTest, PlayButtonClick) {
@@ -327,6 +337,7 @@ TEST_F(MediaNotificationViewTest, PlayButtonClick) {
   GetItem()->FlushForTesting();
 
   EXPECT_EQ(1, media_controller()->resume_count());
+  ExpectHistogramActionRecorded(MediaSessionAction::kPlay);
 }
 
 TEST_F(MediaNotificationViewTest, PauseButtonClick) {
@@ -345,6 +356,7 @@ TEST_F(MediaNotificationViewTest, PauseButtonClick) {
   GetItem()->FlushForTesting();
 
   EXPECT_EQ(1, media_controller()->suspend_count());
+  ExpectHistogramActionRecorded(MediaSessionAction::kPause);
 }
 
 TEST_F(MediaNotificationViewTest, PreviousTrackButtonClick) {
@@ -356,6 +368,7 @@ TEST_F(MediaNotificationViewTest, PreviousTrackButtonClick) {
   GetItem()->FlushForTesting();
 
   EXPECT_EQ(1, media_controller()->previous_track_count());
+  ExpectHistogramActionRecorded(MediaSessionAction::kPreviousTrack);
 }
 
 TEST_F(MediaNotificationViewTest, SeekBackwardButtonClick) {
@@ -367,6 +380,7 @@ TEST_F(MediaNotificationViewTest, SeekBackwardButtonClick) {
   GetItem()->FlushForTesting();
 
   EXPECT_EQ(1, media_controller()->seek_backward_count());
+  ExpectHistogramActionRecorded(MediaSessionAction::kSeekBackward);
 }
 
 TEST_F(MediaNotificationViewTest, SeekForwardButtonClick) {
@@ -378,6 +392,7 @@ TEST_F(MediaNotificationViewTest, SeekForwardButtonClick) {
   GetItem()->FlushForTesting();
 
   EXPECT_EQ(1, media_controller()->seek_forward_count());
+  ExpectHistogramActionRecorded(MediaSessionAction::kSeekForward);
 }
 
 TEST_F(MediaNotificationViewTest, ClickNotification) {
