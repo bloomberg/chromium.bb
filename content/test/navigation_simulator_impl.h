@@ -120,6 +120,12 @@ class NavigationSimulatorImpl : public NavigationSimulator,
     should_replace_current_entry_ = should_replace_current_entry;
   }
 
+  // Manually force the value of intended_as_new_entry flag in DidCommit*Params
+  // to |intended_as_new_entry|.
+  void set_intended_as_new_entry(bool intended_as_new_entry) {
+    intended_as_new_entry_ = intended_as_new_entry;
+  }
+
   void set_http_connection_info(net::HttpResponseInfo::ConnectionInfo info) {
     http_connection_info_ = info;
   }
@@ -272,8 +278,9 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   NavigationController::LoadURLParams* load_url_params_;
 
   bool history_list_was_cleared_ = false;
-  base::Optional<bool> did_create_new_entry_;
   bool should_replace_current_entry_ = false;
+  base::Optional<bool> did_create_new_entry_;
+  base::Optional<bool> intended_as_new_entry_;
 
   // These are used to sanity check the content/public/ API calls emitted as
   // part of the navigation.

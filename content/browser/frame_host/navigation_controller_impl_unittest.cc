@@ -732,14 +732,12 @@ TEST_F(NavigationControllerTest, LoadURL_SamePage) {
 
   const GURL url1("http://foo1");
 
-  controller.LoadURL(
-      url1, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  int entry_id = controller.GetPendingEntry()->GetUniqueID();
+  auto navigation1 =
+      NavigationSimulator::CreateBrowserInitiated(url1, contents());
+  navigation1->Start();
   EXPECT_EQ(0U, navigation_entry_changed_counter_);
   EXPECT_EQ(0U, navigation_list_pruned_counter_);
-  main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigateWithTransition(
-      entry_id, true, url1, ui::PAGE_TRANSITION_TYPED);
+  navigation1->Commit();
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 
@@ -750,12 +748,10 @@ TEST_F(NavigationControllerTest, LoadURL_SamePage) {
   const std::string new_extra_headers("Foo: Bar\nBar: Baz");
   controller.LoadURL(
       url1, Referrer(), ui::PAGE_TRANSITION_TYPED, new_extra_headers);
-  entry_id = controller.GetPendingEntry()->GetUniqueID();
+  auto navigation2 = NavigationSimulator::CreateFromPending(contents());
   EXPECT_EQ(0U, navigation_entry_changed_counter_);
   EXPECT_EQ(0U, navigation_list_pruned_counter_);
-  main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigateWithTransition(
-      entry_id, false, url1, ui::PAGE_TRANSITION_TYPED);
+  navigation2->Commit();
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 
@@ -1988,29 +1984,22 @@ TEST_F(NavigationControllerTest,
   EXPECT_EQ(nullptr, controller_impl().GetPendingEntry());
 
   // Start a load of the same page again.
-  controller.LoadURL(
-      url1, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+  auto navigation1 =
+      NavigationSimulatorImpl::CreateBrowserInitiated(url1, contents());
+  navigation1->ReadyToCommit();
   int entry_id1 = controller.GetPendingEntry()->GetUniqueID();
 
-  // Immediately start loading a different page...
-  controller.LoadURL(
-      url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+  // Before it can commit, start loading a different page...
+  auto navigation2 =
+      NavigationSimulator::CreateBrowserInitiated(url2, contents());
+  navigation2->ReadyToCommit();
   int entry_id2 = controller.GetPendingEntry()->GetUniqueID();
   EXPECT_NE(entry_id1, entry_id2);
 
   // ... and now the renderer sends a commit for the first navigation.
-  FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  params.nav_entry_id = entry_id1;
-  params.intended_as_new_entry = true;
-  params.did_create_new_entry = false;
-  params.url = url1;
-  params.transition = ui::PAGE_TRANSITION_TYPED;
-  params.page_state = PageState::CreateFromURL(url1);
-
   LoadCommittedDetailsObserver observer(contents());
-
-  main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigateWithParams(&params, false);
+  navigation1->set_intended_as_new_entry(true);
+  navigation1->Commit();
   EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, observer.navigation_type());
 }
 

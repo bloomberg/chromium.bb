@@ -37,7 +37,8 @@ class MockTaskTabHelper : public tasks::TaskTabHelper {
 
 class TaskTabHelperUnitTest : public ChromeRenderViewHostTestHarness {
  protected:
-  const GURL URL = GURL("http://www.google.com");
+  const std::string kSearchDomain = "http://www.google.com/";
+  const GURL kSearchURL = GURL(kSearchDomain);
   const std::string from_default_search_engine_histogram =
       "Tabs.Tasks.HubAndSpokeNavigationUsage.FromDefaultSearchEngine";
   const std::string from_form_submit_histogram =
@@ -56,7 +57,7 @@ class TaskTabHelperUnitTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
     MockTaskTabHelper::CreateForWebContents(web_contents());
     task_tab_helper_ = MockTaskTabHelper::FromWebContents(web_contents());
-    NavigateAndCommit(URL);
+    NavigateAndCommit(kSearchURL);
 
     ON_CALL(*task_tab_helper_, GetSpokeEntryHubType())
         .WillByDefault(testing::Return(DEFAULT_SEARCH_ENGINE_HUB_TYPE));
@@ -74,7 +75,12 @@ class TaskTabHelperUnitTest : public ChromeRenderViewHostTestHarness {
 
   void NavigateAndCommitNTimes(int times) {
     while (times--) {
-      NavigateAndCommit(URL);
+      static int unique_int = 0;
+      // Note: The URLs need to be different on each iteration. Otherwise,
+      // navigations will be treated as reloads and will not create a new
+      // NavigationEntry.
+      NavigateAndCommit(
+          GURL(kSearchDomain + base::NumberToString(++unique_int)));
     }
   }
 
@@ -83,7 +89,7 @@ class TaskTabHelperUnitTest : public ChromeRenderViewHostTestHarness {
 };
 
 // Testing the reset counter logic
-TEST_F(TaskTabHelperUnitTest, spokeCountShouldResetInNavigationEntryCommitted) {
+TEST_F(TaskTabHelperUnitTest, SpokeCountShouldResetInNavigationEntryCommitted) {
   NavigateAndCommitNTimes(2);
   GoBackNTimes(1);
   NavigateAndCommitNTimes(1);
@@ -95,7 +101,7 @@ TEST_F(TaskTabHelperUnitTest, spokeCountShouldResetInNavigationEntryCommitted) {
 }
 
 TEST_F(TaskTabHelperUnitTest,
-       spokeCountShouldNotResetInNavigationEntryCommitted) {
+       SpokeCountShouldNotResetInNavigationEntryCommitted) {
   NavigateAndCommitNTimes(2);
   GoBackNTimes(1);
   NavigateAndCommitNTimes(1);
@@ -107,7 +113,7 @@ TEST_F(TaskTabHelperUnitTest,
 
 // Testing the recording
 TEST_F(TaskTabHelperUnitTest,
-       simpleRecordHubAndSpokeUsageFromDefaultSearchEngine) {
+       SimpleRecordHubAndSpokeUsageFromDefaultSearchEngine) {
   EXPECT_CALL(*task_tab_helper_, GetSpokeEntryHubType())
       .WillOnce(testing::Return(DEFAULT_SEARCH_ENGINE_HUB_TYPE));
 
@@ -119,7 +125,7 @@ TEST_F(TaskTabHelperUnitTest,
                                       1);
 }
 
-TEST_F(TaskTabHelperUnitTest, simpleRecordHubAndSpokeUsageFromFormSubmit) {
+TEST_F(TaskTabHelperUnitTest, SimpleRecordHubAndSpokeUsageFromFormSubmit) {
   EXPECT_CALL(*task_tab_helper_, GetSpokeEntryHubType())
       .WillOnce(testing::Return(FORM_SUBMIT_HUB_TYPE));
 
@@ -130,7 +136,7 @@ TEST_F(TaskTabHelperUnitTest, simpleRecordHubAndSpokeUsageFromFormSubmit) {
   histogram_tester_.ExpectBucketCount(from_form_submit_histogram, 2, 1);
 }
 
-TEST_F(TaskTabHelperUnitTest, simpleRecordHubAndSpokeUsageFromOther) {
+TEST_F(TaskTabHelperUnitTest, SimpleRecordHubAndSpokeUsageFromOther) {
   EXPECT_CALL(*task_tab_helper_, GetSpokeEntryHubType())
       .WillOnce(testing::Return(OTHER_HUB_TYPE));
 
@@ -141,7 +147,7 @@ TEST_F(TaskTabHelperUnitTest, simpleRecordHubAndSpokeUsageFromOther) {
   histogram_tester_.ExpectBucketCount(from_others_histogram, 2, 1);
 }
 
-TEST_F(TaskTabHelperUnitTest, complexRecordHubAndSpokeUsage) {
+TEST_F(TaskTabHelperUnitTest, ComplexRecordHubAndSpokeUsage) {
   {
     testing::InSequence s;
 
