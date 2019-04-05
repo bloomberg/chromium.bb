@@ -122,6 +122,46 @@ class Adapter : public AlsReader::Observer,
     kMaxValue = kDarkeningThresholdExceeded
   };
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class NoBrightnessChangeCause {
+    kWaitingForInitialAls = 0,
+    kWaitingForAvgHorizon = 1,
+    // |log_als_values_| is empty.
+    kMissingAlsData = 2,
+    // User manually changed brightness before and it stopped adapter from
+    // changing brightness.
+    kDisabledByUser = 3,
+    kBrightnessSetByPolicy = 4,
+    // ALS increased beyond the brightening threshold, but ALS data has been
+    // fluctuating above the stabilization threshold.
+    kFluctuatingAlsIncrease = 5,
+    // ALS decreased beyond the darkening threshold, but ALS data has been
+    // fluctuating above the stabilization threshold.
+    kFluctuatingAlsDecrease = 6,
+    // ALS change is within darkening and brightening thresholds.
+    kMinimalAlsChange = 7,
+    // Adapter should only use personal curves but none is available.
+    kMissingPersonalCurve = 8,
+    kMaxValue = kMissingPersonalCurve
+  };
+
+  struct AdapterDecision {
+    AdapterDecision();
+    AdapterDecision(const AdapterDecision& decision);
+    // If |no_brightness_change_cause| is not nullopt, then brightness
+    // should not be changed.
+    // If |brightness_change_cause| is not nullopt, then brightness should be
+    // changed. In this case |log_als_avg_stddev| should not be nullopt.
+    // Exactly one of |no_brightness_change_cause| and
+    // |brightness_change_cause| should be non-nullopt.
+    // |log_als_avg_stddev| may be set even when brightness should not be
+    // changed. It is only nullopt if there is no ALS data in the data cache.
+    base::Optional<NoBrightnessChangeCause> no_brightness_change_cause;
+    base::Optional<BrightnessChangeCause> brightness_change_cause;
+    base::Optional<AlsAvgStdDev> log_als_avg_stddev;
+  };
+
   Adapter(Profile* profile,
           AlsReader* als_reader,
           BrightnessMonitor* brightness_monitor,
@@ -203,30 +243,23 @@ class Adapter : public AlsReader::Observer,
   // |InitParams|.
   void UpdateStatus();
 
-  // Returns a BrightnessChangeCause if the adapter can change the brightness.
+  // Checks whether brightness should be changed.
   // This is generally the case when the brightness hasn't been manually
   // set, we've received enough initial ambient light readings, and
-  // the ambient light has changed beyond thresholds and has stabilized.
-  // Returns nullopt if it shouldn't change the brightness.
-  base::Optional<BrightnessChangeCause> CanAdjustBrightness(
-      const AlsAvgStdDev& log_als_avg_stddev) const;
+  // the ambient light has changed beyond thresholds and has stabilized, and
+  // also if personal curve exists (if param says we should only use personal
+  // curve).
+  AdapterDecision CanAdjustBrightness(base::TimeTicks now);
 
-  // Called when ambient light changes. It only changes screen brightness if
-  // |CanAdjustBrightness| returns true and a required curve is set up:
-  // if the required curve is personal but no personal curve is available, then
-  // brightness won't be changed.
-  // It will call |OnBrightnessChanged| if brightness is actually changed.
-  // |now| should be the timestamp when ALS reading comes in, i.e. when
-  // |OnAmbientLightUpdated| is called. |OnAmbientLightUpdated| is the event
-  // that triggers the call of |MaybeAdjustBrightness|.
-  void MaybeAdjustBrightness(base::TimeTicks now);
+  // Changes the brightness. In addition to asking powerd to
+  // change brightness, it also calls |OnBrightnessChanged| and writes to logs.
+  void AdjustBrightness(BrightnessChangeCause cause, double log_als_avg);
 
   // Calculates brightness from given |ambient_log_lux| based on either
   // |global_curve_| or |personal_curve_| (as specified by the experiment
-  // params). Returns nullopt if a personal curve should be used but it's not
-  // available.
-  base::Optional<double> GetBrightnessBasedOnAmbientLogLux(
-      double ambient_log_lux) const;
+  // params). It's only safe to call this method when |CanAdjustBrightness|
+  // returns a |BrightnessChangeCause| in its decision.
+  double GetBrightnessBasedOnAmbientLogLux(double ambient_log_lux) const;
 
   // Called when brightness is changed by the model or user. This function
   // updates |latest_brightness_change_time_|, |current_brightness_|. If
@@ -239,7 +272,7 @@ class Adapter : public AlsReader::Observer,
                            double new_brightness_percent,
                            base::Optional<double> new_log_als);
 
-  // Called by |MaybeAdjustBrightness| when brightness should be changed.
+  // Called by |AdjustBrightness| when brightness should be changed.
   void WriteLogMessages(double new_log_als,
                         double new_brightness,
                         BrightnessChangeCause cause) const;

@@ -47,7 +47,12 @@ const char* BrightnessChangeCauseToString(
 
 }  // namespace
 
-Adapter::Params::Params() {}
+Adapter::Params::Params() = default;
+
+Adapter::AdapterDecision::AdapterDecision() = default;
+
+Adapter::AdapterDecision::AdapterDecision(const AdapterDecision& decision) =
+    default;
 
 Adapter::Adapter(Profile* profile,
                  AlsReader* als_reader,
@@ -80,7 +85,16 @@ void Adapter::OnAmbientLightUpdated(int lux) {
 
   log_als_values_->SaveToBuffer({ConvertToLog(lux), now});
 
-  MaybeAdjustBrightness(now);
+  const AdapterDecision& decision = CanAdjustBrightness(now);
+
+  if (decision.no_brightness_change_cause)
+    return;
+
+  DCHECK(decision.brightness_change_cause);
+  DCHECK(decision.log_als_avg_stddev);
+
+  AdjustBrightness(*decision.brightness_change_cause,
+                   decision.log_als_avg_stddev->avg);
 }
 
 void Adapter::OnAlsReaderInitialized(AlsReader::AlsInitStatus status) {
@@ -421,11 +435,22 @@ void Adapter::UpdateStatus() {
   adapter_status_ = Status::kSuccess;
 }
 
-base::Optional<Adapter::BrightnessChangeCause> Adapter::CanAdjustBrightness(
-    const AlsAvgStdDev& log_als_avg_stddev) const {
-  if (adapter_status_ != Status::kSuccess ||
-      adapter_disabled_by_user_adjustment_) {
-    return base::nullopt;
+Adapter::AdapterDecision Adapter::CanAdjustBrightness(base::TimeTicks now) {
+  DCHECK_EQ(adapter_status_, Status::kSuccess);
+  DCHECK(log_als_values_);
+  DCHECK(!als_init_time_.is_null());
+
+  AdapterDecision decision;
+  const base::Optional<AlsAvgStdDev> log_als_avg_stddev =
+      log_als_values_->AverageAmbientWithStdDev(now);
+  decision.log_als_avg_stddev = log_als_avg_stddev;
+
+  // User has previously manually changed brightness and it (at least
+  // temporarily) stopped the adapter from operating.
+  if (adapter_disabled_by_user_adjustment_) {
+    decision.no_brightness_change_cause =
+        NoBrightnessChangeCause::kDisabledByUser;
+    return decision;
   }
 
   // Do not change brightness if it's set by the policy, but do not completely
@@ -434,7 +459,38 @@ base::Optional<Adapter::BrightnessChangeCause> Adapter::CanAdjustBrightness(
           ash::prefs::kPowerAcScreenBrightnessPercent) >= 0 ||
       profile_->GetPrefs()->GetInteger(
           ash::prefs::kPowerBatteryScreenBrightnessPercent) >= 0) {
-    return base::nullopt;
+    decision.no_brightness_change_cause =
+        NoBrightnessChangeCause::kBrightnessSetByPolicy;
+    return decision;
+  }
+
+  if (params_.model_curve == ModelCurve::kPersonal && !personal_curve_) {
+    decision.no_brightness_change_cause =
+        NoBrightnessChangeCause::kMissingPersonalCurve;
+    return decision;
+  }
+
+  // Wait until we've had enough ALS data to calc avg.
+  if (now - als_init_time_ < params_.auto_brightness_als_horizon) {
+    decision.no_brightness_change_cause =
+        NoBrightnessChangeCause::kWaitingForInitialAls;
+    return decision;
+  }
+
+  // Check if we've waited long enough from previous brightness change (either
+  // by user or by model).
+  if (!latest_brightness_change_time_.is_null() &&
+      now - latest_brightness_change_time_ <
+          params_.auto_brightness_als_horizon) {
+    decision.no_brightness_change_cause =
+        NoBrightnessChangeCause::kWaitingForAvgHorizon;
+    return decision;
+  }
+
+  if (!log_als_avg_stddev) {
+    decision.no_brightness_change_cause =
+        NoBrightnessChangeCause::kMissingAlsData;
+    return decision;
   }
 
   if (!average_log_ambient_lux_) {
@@ -443,7 +499,9 @@ base::Optional<Adapter::BrightnessChangeCause> Adapter::CanAdjustBrightness(
     // 2. brightness was changed by the user but there wasn't any ALS data. This
     //    case should be rare.
     // In either case, we change brightness as soon as we have brightness.
-    return BrightnessChangeCause::kInitialAlsReceived;
+    decision.brightness_change_cause =
+        BrightnessChangeCause::kInitialAlsReceived;
+    return decision;
   }
 
   // The following thresholds should have been set last time when brightness was
@@ -451,57 +509,41 @@ base::Optional<Adapter::BrightnessChangeCause> Adapter::CanAdjustBrightness(
   DCHECK(brightening_threshold_);
   DCHECK(darkening_threshold_);
 
-  if (log_als_avg_stddev.avg > *brightening_threshold_ &&
-      log_als_avg_stddev.stddev <= params_.brightening_log_lux_threshold *
-                                       params_.stabilization_threshold) {
-    return BrightnessChangeCause::kBrightneningThresholdExceeded;
+  if (log_als_avg_stddev->avg > *brightening_threshold_) {
+    if (log_als_avg_stddev->stddev <= params_.brightening_log_lux_threshold *
+                                          params_.stabilization_threshold) {
+      decision.brightness_change_cause =
+          BrightnessChangeCause::kBrightneningThresholdExceeded;
+      return decision;
+    }
+    decision.no_brightness_change_cause =
+        NoBrightnessChangeCause::kFluctuatingAlsIncrease;
+    return decision;
   }
 
-  if (log_als_avg_stddev.avg < *darkening_threshold_ &&
-      log_als_avg_stddev.stddev <= params_.darkening_log_lux_threshold *
-                                       params_.stabilization_threshold) {
-    return BrightnessChangeCause::kDarkeningThresholdExceeded;
+  if (log_als_avg_stddev->avg < *darkening_threshold_) {
+    if (log_als_avg_stddev->stddev <=
+        params_.darkening_log_lux_threshold * params_.stabilization_threshold) {
+      decision.brightness_change_cause =
+          BrightnessChangeCause::kDarkeningThresholdExceeded;
+      return decision;
+    }
+    decision.no_brightness_change_cause =
+        NoBrightnessChangeCause::kFluctuatingAlsDecrease;
+    return decision;
   }
 
-  return base::nullopt;
+  decision.no_brightness_change_cause =
+      NoBrightnessChangeCause::kMinimalAlsChange;
+  return decision;
 }
 
-void Adapter::MaybeAdjustBrightness(base::TimeTicks now) {
-  DCHECK_EQ(adapter_status_, Status::kSuccess);
-  DCHECK(log_als_values_);
-  DCHECK(!als_init_time_.is_null());
-  // Wait until we've had enough ALS data to calc avg.
-  if (now - als_init_time_ < params_.auto_brightness_als_horizon)
-    return;
-
-  // Check if we've waited long enough from previous brightness change (either
-  // by user or by model).
-  if (!latest_brightness_change_time_.is_null() &&
-      now - latest_brightness_change_time_ <
-          params_.auto_brightness_als_horizon)
-    return;
-
-  const base::Optional<AlsAvgStdDev> log_als_avg_stddev =
-      log_als_values_->AverageAmbientWithStdDev(now);
-  if (!log_als_avg_stddev)
-    return;
-
-  const base::Optional<BrightnessChangeCause> brightness_change_cause =
-      CanAdjustBrightness(*log_als_avg_stddev);
-
-  if (!brightness_change_cause.has_value())
-    return;
-
-  const base::Optional<double> brightness =
-      GetBrightnessBasedOnAmbientLogLux(log_als_avg_stddev->avg);
-
-  // This could occur if curve isn't set up (e.g. when we want to use
-  // personal only that's not yet available).
-  if (!brightness)
-    return;
+void Adapter::AdjustBrightness(BrightnessChangeCause cause,
+                               double log_als_avg) {
+  const double brightness = GetBrightnessBasedOnAmbientLogLux(log_als_avg);
 
   power_manager::SetBacklightBrightnessRequest request;
-  request.set_percent(*brightness);
+  request.set_percent(brightness);
   request.set_transition(
       power_manager::SetBacklightBrightnessRequest_Transition_GRADUAL);
   request.set_cause(power_manager::SetBacklightBrightnessRequest_Cause_MODEL);
@@ -515,27 +557,24 @@ void Adapter::MaybeAdjustBrightness(base::TimeTicks now) {
   }
   latest_model_brightness_change_time_ = brightness_change_time;
 
-  const BrightnessChangeCause cause = *brightness_change_cause;
   UMA_HISTOGRAM_ENUMERATION("AutoScreenBrightness.BrightnessChange.Cause",
                             cause);
 
-  WriteLogMessages(log_als_avg_stddev->avg, *brightness, cause);
+  WriteLogMessages(log_als_avg, brightness, cause);
   model_brightness_change_counter_++;
 
-  OnBrightnessChanged(brightness_change_time, *brightness,
-                      log_als_avg_stddev->avg);
+  OnBrightnessChanged(brightness_change_time, brightness, log_als_avg);
 }
 
-base::Optional<double> Adapter::GetBrightnessBasedOnAmbientLogLux(
+double Adapter::GetBrightnessBasedOnAmbientLogLux(
     double ambient_log_lux) const {
   DCHECK_EQ(adapter_status_, Status::kSuccess);
   switch (params_.model_curve) {
     case ModelCurve::kGlobal:
       return global_curve_->Interpolate(ambient_log_lux);
     case ModelCurve::kPersonal:
-      if (personal_curve_)
-        return personal_curve_->Interpolate(ambient_log_lux);
-      return base::nullopt;  // signal brightness shouldn't be changed
+      DCHECK(personal_curve_);
+      return personal_curve_->Interpolate(ambient_log_lux);
     default:
       // We use the latest curve available.
       if (personal_curve_)
