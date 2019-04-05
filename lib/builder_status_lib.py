@@ -246,7 +246,9 @@ class BuilderStatusManager(object):
       A boolean for whether the build was canceled by master during
       self-destruction.
     """
-    if master_build_identifier is None:
+    if (master_build_identifier is None
+        or master_build_identifier.cidb_id is None
+        or master_build_identifier.buildbucket_id is None):
       # Builds without master_build_id can't be aborted by self-destruction.
       return False
 
