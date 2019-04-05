@@ -693,7 +693,7 @@ FileManagerPrivateInternalSharePathsWithCrostiniFunction::Run() {
   }
 
   crostini::CrostiniSharePath::GetForProfile(profile)->SharePaths(
-      crostini::kCrostiniDefaultVmName, std::move(paths), params->persist,
+      params->vm_name, std::move(paths), params->persist,
       base::BindOnce(&FileManagerPrivateInternalSharePathsWithCrostiniFunction::
                          SharePathsCallback,
                      this));
@@ -720,7 +720,7 @@ FileManagerPrivateInternalUnsharePathWithCrostiniFunction::Run() {
   storage::FileSystemURL cracked =
       file_system_context->CrackURL(GURL(params->url));
   crostini::CrostiniSharePath::GetForProfile(profile)->UnsharePath(
-      crostini::kCrostiniDefaultVmName, cracked.path(), /*unpersist=*/true,
+      params->vm_name, cracked.path(), /*unpersist=*/true,
       base::BindOnce(
           &FileManagerPrivateInternalUnsharePathWithCrostiniFunction::
               UnsharePathCallback,
@@ -746,8 +746,8 @@ FileManagerPrivateInternalGetCrostiniSharedPathsFunction::Run() {
       crostini::CrostiniSharePath::GetForProfile(profile);
   bool first_for_session = params->observe_first_for_session &&
                            crostini_share_path->GetAndSetFirstForSession();
-  auto shared_paths = crostini_share_path->GetPersistedSharedPaths(
-      crostini::kCrostiniDefaultVmName);
+  auto shared_paths =
+      crostini_share_path->GetPersistedSharedPaths(params->vm_name);
   auto entries = std::make_unique<base::ListValue>();
   for (const base::FilePath& path : shared_paths) {
     std::string mount_name;

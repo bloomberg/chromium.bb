@@ -35,13 +35,13 @@ chrome.test.runTests([
   function testSharePathsWithCrostiniSuccess() {
     getEntry('downloads', 'share_dir').then((entry) => {
       chrome.fileManagerPrivate.sharePathsWithCrostini(
-          [entry], true, chrome.test.callbackPass());
+          'termina', [entry], true, chrome.test.callbackPass());
     });
   },
   function testSharePathsWithCrostiniNotDownloads() {
     getEntry('testing', 'test_dir').then((entry) => {
       chrome.fileManagerPrivate.sharePathsWithCrostini(
-          [entry], true,
+          'termina', [entry], true,
           chrome.test.callbackFail('Path is not allowed'));
     });
   },
@@ -49,7 +49,8 @@ chrome.test.runTests([
     const urlPrefix = 'filesystem:chrome-extension://' + TEST_EXTENSION_ID +
         '/external/Downloads-user';
     let observeFirstForSession = false;
-    chrome.fileManagerPrivate.getCrostiniSharedPaths(observeFirstForSession,
+    chrome.fileManagerPrivate.getCrostiniSharedPaths(
+        observeFirstForSession, 'termina',
         chrome.test.callbackPass((entries, firstForSession) => {
           // 2 entries inserted in setup, and 1 successful entry added above.
           chrome.test.assertEq(urlPrefix + '/share_dir', entries[0].toURL());
@@ -67,13 +68,15 @@ chrome.test.runTests([
         }));
     // First time observeFirstForSession is set true, firstForSession is true.
     observeFirstForSession = true;
-    chrome.fileManagerPrivate.getCrostiniSharedPaths(observeFirstForSession,
+    chrome.fileManagerPrivate.getCrostiniSharedPaths(
+        observeFirstForSession, 'termina',
         chrome.test.callbackPass((entries, firstForSession) => {
           chrome.test.assertEq(3, entries.length);
           chrome.test.assertTrue(firstForSession);
         }));
     // Subsequent times, firstForSession is false.
-    chrome.fileManagerPrivate.getCrostiniSharedPaths(observeFirstForSession,
+    chrome.fileManagerPrivate.getCrostiniSharedPaths(
+        observeFirstForSession, 'termina',
         chrome.test.callbackPass((entries, firstForSession) => {
           chrome.test.assertEq(3, entries.length);
           chrome.test.assertFalse(firstForSession);
@@ -82,7 +85,7 @@ chrome.test.runTests([
   function testUnsharePathWithCrostiniSuccess() {
     getEntry('downloads', 'share_dir').then((entry) => {
       chrome.fileManagerPrivate.unsharePathWithCrostini(
-          entry, chrome.test.callbackPass());
+          'termina', entry, chrome.test.callbackPass());
     });
   },
 ]);

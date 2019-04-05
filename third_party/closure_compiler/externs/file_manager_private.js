@@ -476,6 +476,7 @@ chrome.fileManagerPrivate.LinuxPackageInfo;
 /**
  * @typedef {{
  * eventType: chrome.fileManagerPrivate.CrostiniEventType,
+ * vmName: string,
  * entries: !Array<!Entry>,
  * }}
  */
@@ -961,22 +962,25 @@ chrome.fileManagerPrivate.mountCrostini = function(callback) {};
 
 /**
  * Shares paths with crostini container.
- * @param {!Array<!Entry>} entries Entries of the files and directories to share.
+ * @param {string} vmName VM to share path with.
+ * @param {!Array<!Entry>} entries Entries of the files and directories to
+ *     share.
  * @param {boolean} persist If true, share will persist across restarts.
  * @param {function()} callback Callback called after the paths are shared.
  *     chrome.runtime.lastError will be set if there was an error.
  */
 chrome.fileManagerPrivate.sharePathsWithCrostini = function(
-    entries, persist, callback) {};
+    vmName, entries, persist, callback) {};
 
 /**
  * Unshares path with crostini container.
+ * @param {string} vmName VM to unshare path from.
  * @param {!Entry} entry Entry of the file or directory to unshare.
  * @param {function()} callback Callback called after the path is unshared.
  *     chrome.runtime.lastError will be set if there was an error.
  */
 chrome.fileManagerPrivate.unsharePathWithCrostini = function(
-    entry, callback) {};
+    vmName, entry, callback) {};
 
 /**
  * Returns list of paths shared with the crostini container, and whether this is
@@ -984,10 +988,11 @@ chrome.fileManagerPrivate.unsharePathWithCrostini = function(
  * @param {boolean} observeFirstForSession If true, callback provides whether
  *     this is the first time this function has been called with
  *     observeFirstForSession true.
+ * @param {string} vmName VM to get shared paths of.
  * @param {function(!Array<!Entry>, boolean)} callback
  */
 chrome.fileManagerPrivate.getCrostiniSharedPaths = function(
-    observeFirstForSession, callback) {};
+    observeFirstForSession, vmName, callback) {};
 
 /**
  * Requests information about a Linux package.

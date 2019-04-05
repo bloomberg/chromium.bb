@@ -1185,10 +1185,11 @@ FileManager.prototype = /** @struct */ {
     // Only observe firstForSession when using full-page FilesApp.
     // I.e., don't show toast in a dialog.
     chrome.fileManagerPrivate.getCrostiniSharedPaths(
-        this.dialogType === DialogType.FULL_PAGE,
+        this.dialogType === DialogType.FULL_PAGE, constants.DEFAULT_CROSTINI_VM,
         (entries, firstForSession) => {
           for (let i = 0; i < entries.length; i++) {
-            this.crostini_.registerSharedPath(entries[i]);
+            this.crostini_.registerSharedPath(
+                constants.DEFAULT_CROSTINI_VM, entries[i]);
           }
           // Show 'Manage sharing' toast the first time FilesApp is opened.
           if (firstForSession && entries.length >= 1) {

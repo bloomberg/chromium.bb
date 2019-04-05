@@ -1839,7 +1839,7 @@ CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
     function share() {
       // Always persist shares via right-click > Share with Linux.
       chrome.fileManagerPrivate.sharePathsWithCrostini(
-          [dir], true /* persist */, () => {
+          constants.DEFAULT_CROSTINI_VM, [dir], true /* persist */, () => {
             if (chrome.runtime.lastError) {
               console.error(
                   'Error sharing with linux: ' +
@@ -1848,7 +1848,8 @@ CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
           });
       // Register the share and show the 'Manage Linux sharing' toast
       // immediately, since the container may take 10s or more to start.
-      fileManager.crostini.registerSharedPath(dir);
+      fileManager.crostini.registerSharedPath(
+          constants.DEFAULT_CROSTINI_VM, dir);
       fileManager.ui.toast.show(str('FOLDER_SHARED_WITH_CROSTINI'), {
         text: str('MANAGE_LINUX_SHARING_BUTTON_LABEL'),
         callback: () => {
@@ -1892,8 +1893,10 @@ CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
     // Must be single directory subfolder of Downloads not already shared.
     const entries = CommandUtil.getCommandEntries(event.target);
     event.canExecute = entries.length === 1 && entries[0].isDirectory &&
-        !fileManager.crostini.isPathShared(entries[0]) &&
-        fileManager.crostini.canSharePath(entries[0], true /* persist */);
+        !fileManager.crostini.isPathShared(
+            constants.DEFAULT_CROSTINI_VM, entries[0]) &&
+        fileManager.crostini.canSharePath(
+            constants.DEFAULT_CROSTINI_VM, entries[0], true /* persist */);
     event.command.setHidden(!event.canExecute);
   }
 });
@@ -1946,7 +1949,8 @@ CommandHandler.COMMANDS_['manage-linux-sharing'] = /** @type {Command} */ ({
   canExecute: function(event, fileManager) {
     const entries = CommandUtil.getCommandEntries(event.target);
     event.canExecute = entries.length === 1 && entries[0].isDirectory &&
-        fileManager.crostini.isPathShared(entries[0]);
+        fileManager.crostini.isPathShared(
+            constants.DEFAULT_CROSTINI_VM, entries[0]);
     event.command.setHidden(!event.canExecute);
   }
 });

@@ -56,7 +56,7 @@ function setUp() {
       executeTask: function(taskId, entries, onViewFiles) {
         onViewFiles('failed');
       },
-      sharePathsWithCrostini: function(entries, persist, callback) {
+      sharePathsWithCrostini: function(vmName, entries, persist, callback) {
         callback();
       },
     },
@@ -577,7 +577,7 @@ function testMaybeShareCrostiniOrShowDialog() {
   const crostini = createCrostiniForTest();
   crostini.init(volumeManagerDownloads);
   crostini.setEnabled(true);
-  crostini.registerSharedPath(sharedDir);
+  crostini.registerSharedPath('vm', sharedDir);
 
   const notShared1 = new MockFileEntry(mockFsDownloads, '/notShared/file1');
   const notShared2 = new MockFileEntry(mockFsDownloads, '/notShared/file2');
@@ -642,7 +642,7 @@ function testMaybeShareCrostiniOrShowDialog() {
       '2 entries, not shared, same dir', [notShared1, notShared2], true, '',
       '');
   // Non-persistent shares should not be registered.
-  assertFalse(crostini.isPathShared(notShared1));
+  assertFalse(crostini.isPathShared('vm', notShared1));
 
   expect(
       '2 entries, not shared, different dir', [notShared1, otherNotShared],

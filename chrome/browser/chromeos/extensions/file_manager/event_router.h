@@ -203,6 +203,7 @@ class EventRouter
   // Populate the path unshared event.
   static void PopulateCrostiniUnshareEvent(
       extensions::api::file_manager_private::CrostiniEvent& event,
+      const std::string& vm_name,
       const std::string& extension_id,
       const std::string& mount_name,
       const std::string& file_system_name,

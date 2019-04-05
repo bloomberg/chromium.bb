@@ -25,8 +25,8 @@ crostiniShare.testSharePathsCrostiniSuccess = (done) => {
   let sharePathsCalled = false;
   let sharePathsPersist;
   chrome.fileManagerPrivate.sharePathsWithCrostini =
-      (entry, persist, callback) => {
-        oldSharePaths(entry, persist, () => {
+      (vmName, entry, persist, callback) => {
+        oldSharePaths(vmName, entry, persist, () => {
           sharePathsCalled = true;
           sharePathsPersist = persist;
           callback();
@@ -34,9 +34,9 @@ crostiniShare.testSharePathsCrostiniSuccess = (done) => {
       };
   const oldCrostiniUnregister = fileManager.crostini.unregisterSharedPath;
   let unregisterCalled = false;
-  fileManager.crostini.unregisterSharedPath = function(entry) {
+  fileManager.crostini.unregisterSharedPath = function(vmName, entry) {
     unregisterCalled = true;
-    oldCrostiniUnregister.call(fileManager.crostini, entry);
+    oldCrostiniUnregister.call(fileManager.crostini, vmName, entry);
   };
   chrome.metricsPrivate.smallCounts_ = [];
   chrome.metricsPrivate.values_ = [];
@@ -95,7 +95,7 @@ crostiniShare.testSharePathsCrostiniSuccess = (done) => {
                                VolumeManagerCommon.VolumeType.DOWNLOADS)
                            .fileSystem.entries['/photos'];
         chrome.fileManagerPrivate.onCrostiniChanged.dispatchEvent(
-            {eventType: 'unshare', entries: [photos]});
+            {eventType: 'unshare', vmName: 'termina', entries: [photos]});
         // Check unregisterSharedPath is called.
         return test.repeatUntil(() => {
           return unregisterCalled || test.pending('wait for unregisterCalled');
@@ -176,7 +176,8 @@ crostiniShare.testSharePathShown = (done) => {
                 .getCurrentProfileVolumeInfo(
                     VolumeManagerCommon.VolumeType.DOWNLOADS)
                 .fileSystem.entries['/photos'];
-        fileManager.crostini.registerSharedPath(alreadySharedPhotosDir);
+        fileManager.crostini.registerSharedPath(
+            'termina', alreadySharedPhotosDir);
         assertTrue(
             test.fakeMouseRightClick('#file-list [file-name="photos"]'),
             'right-click hello.txt');
@@ -269,7 +270,8 @@ crostiniShare.testSharePathShown = (done) => {
         // Unset DRIVE_FS_ENABLED.
         loadTimeData.data_['DRIVE_FS_ENABLED'] = false;
         // Clear Crostini shared folders.
-        fileManager.crostini.unregisterSharedPath(alreadySharedPhotosDir);
+        fileManager.crostini.unregisterSharedPath(
+            'termina', alreadySharedPhotosDir);
         done();
       });
 };
