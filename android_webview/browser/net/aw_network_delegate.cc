@@ -95,8 +95,7 @@ bool AwNetworkDelegate::OnCanGetCookies(const net::URLRequest& request,
                                         const net::CookieList& cookie_list,
                                         bool allow_from_caller) {
   return allow_from_caller &&
-         AwCookieAccessPolicy::GetInstance()->OnCanGetCookies(request,
-                                                              cookie_list);
+         AwCookieAccessPolicy::GetInstance()->AllowCookies(request);
 }
 
 bool AwNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
@@ -104,8 +103,7 @@ bool AwNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
                                        net::CookieOptions* options,
                                        bool allow_from_caller) {
   return allow_from_caller &&
-         AwCookieAccessPolicy::GetInstance()->OnCanSetCookie(request, cookie,
-                                                             options);
+         AwCookieAccessPolicy::GetInstance()->AllowCookies(request);
 }
 
 bool AwNetworkDelegate::OnCanAccessFile(
