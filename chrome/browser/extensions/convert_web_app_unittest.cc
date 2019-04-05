@@ -19,7 +19,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/version.h"
-#include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/web_application_info.h"

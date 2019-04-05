@@ -43,6 +43,7 @@ class Extension;
 class ExtensionService;
 
 // A helper class for creating bookmark apps from a WebContents.
+// DEPRECATED. Use web_app::InstallManager instead. crbug.com/915043.
 class BookmarkAppHelper : public content::NotificationObserver {
  public:
   typedef base::Callback<void(const Extension*, const WebApplicationInfo&)>
@@ -234,6 +235,7 @@ class BookmarkAppHelper : public content::NotificationObserver {
 
 // Creates or updates a bookmark app from the given |web_app_info|. Icons will
 // be downloaded from the icon URLs provided in |web_app_info|.
+// DEPRECATED. Use web_app::InstallManager instead. crbug.com/915043.
 void CreateOrUpdateBookmarkApp(ExtensionService* service,
                                WebApplicationInfo* web_app_info,
                                bool is_locally_installed);
