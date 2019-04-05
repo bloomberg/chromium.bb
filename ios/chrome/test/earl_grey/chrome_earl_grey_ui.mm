@@ -4,6 +4,8 @@
 
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 
+#import <EarlGrey/EarlGrey.h>
+
 #import "base/test/ios/wait_util.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/history/history_ui_constants.h"

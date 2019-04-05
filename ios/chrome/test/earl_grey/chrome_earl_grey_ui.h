@@ -5,8 +5,9 @@
 #ifndef IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_UI_H_
 #define IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_UI_H_
 
-#import <EarlGrey/EarlGrey.h>
 #import <Foundation/Foundation.h>
+
+@protocol GREYMatcher;
 
 // Test methods that perform actions on Chrome. These methods only affect Chrome
 // using the UI with Earl Grey.
