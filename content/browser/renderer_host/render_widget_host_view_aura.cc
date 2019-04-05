@@ -552,7 +552,7 @@ void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
   InternalSetBounds(gfx::Rect(relative_origin, rect.size()));
 }
 
-gfx::NativeView RenderWidgetHostViewAura::GetNativeView() const {
+gfx::NativeView RenderWidgetHostViewAura::GetNativeView() {
   DCHECK(!is_mus_browser_plugin_guest_);
   return window_;
 }
@@ -652,11 +652,11 @@ void RenderWidgetHostViewAura::Focus() {
     window_->Focus();
 }
 
-bool RenderWidgetHostViewAura::HasFocus() const {
+bool RenderWidgetHostViewAura::HasFocus() {
   return window_->HasFocus();
 }
 
-bool RenderWidgetHostViewAura::IsSurfaceAvailableForCopy() const {
+bool RenderWidgetHostViewAura::IsSurfaceAvailableForCopy() {
   if (!delegated_frame_host_)
     return false;
   return delegated_frame_host_->CanCopyFromCompositingSurface();
@@ -734,7 +734,7 @@ bool RenderWidgetHostViewAura::ShouldShowStaleContentOnEviction() {
   return host() && host()->ShouldShowStaleContentOnEviction();
 }
 
-gfx::Rect RenderWidgetHostViewAura::GetViewBounds() const {
+gfx::Rect RenderWidgetHostViewAura::GetViewBounds() {
   return window_->GetBoundsInScreen();
 }
 
@@ -758,7 +758,7 @@ bool RenderWidgetHostViewAura::IsMouseLocked() {
   return event_handler_->mouse_locked();
 }
 
-gfx::Size RenderWidgetHostViewAura::GetVisibleViewportSize() const {
+gfx::Size RenderWidgetHostViewAura::GetVisibleViewportSize() {
   gfx::Rect requested_rect(GetRequestedRendererSize());
   requested_rect.Inset(insets_);
   return requested_rect.size();
@@ -1410,7 +1410,7 @@ bool RenderWidgetHostViewAura::HasCompositionText() const {
 
 ui::TextInputClient::FocusReason RenderWidgetHostViewAura::GetFocusReason()
     const {
-  if (!HasFocus())
+  if (!window_->HasFocus())
     return ui::TextInputClient::FOCUS_REASON_NONE;
 
   switch (last_pointer_type_before_focus_) {

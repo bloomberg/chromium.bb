@@ -596,15 +596,15 @@ void RenderWidgetHostImpl::SetView(RenderWidgetHostViewBase* view) {
   synthetic_gesture_controller_.reset();
 }
 
-RenderProcessHost* RenderWidgetHostImpl::GetProcess() const {
+RenderProcessHost* RenderWidgetHostImpl::GetProcess() {
   return process_;
 }
 
-int RenderWidgetHostImpl::GetRoutingID() const {
+int RenderWidgetHostImpl::GetRoutingID() {
   return routing_id_;
 }
 
-RenderWidgetHostViewBase* RenderWidgetHostImpl::GetView() const {
+RenderWidgetHostViewBase* RenderWidgetHostImpl::GetView() {
   return view_.get();
 }
 
@@ -699,7 +699,7 @@ void RenderWidgetHostImpl::ShutdownAndDestroyWidget(bool also_delete) {
   Destroy(also_delete);
 }
 
-bool RenderWidgetHostImpl::IsLoading() const {
+bool RenderWidgetHostImpl::IsLoading() {
   return is_loading_;
 }
 
@@ -1217,7 +1217,7 @@ void RenderWidgetHostImpl::RestartInputEventAckTimeoutIfNecessary() {
     input_event_ack_timeout_->Restart(hung_renderer_delay_);
 }
 
-bool RenderWidgetHostImpl::IsCurrentlyUnresponsive() const {
+bool RenderWidgetHostImpl::IsCurrentlyUnresponsive() {
   return is_unresponsive_;
 }
 

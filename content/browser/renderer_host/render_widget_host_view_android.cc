@@ -324,7 +324,7 @@ bool RenderWidgetHostViewAndroid::HasValidFrame() const {
   return delegated_frame_host_->HasSavedFrame();
 }
 
-gfx::NativeView RenderWidgetHostViewAndroid::GetNativeView() const {
+gfx::NativeView RenderWidgetHostViewAndroid::GetNativeView() {
   return &view_;
 }
 
@@ -444,11 +444,11 @@ void RenderWidgetHostViewAndroid::LostFocusInternal() {
     overscroll_controller_->Disable();
 }
 
-bool RenderWidgetHostViewAndroid::HasFocus() const {
+bool RenderWidgetHostViewAndroid::HasFocus() {
   return view_.HasFocus();
 }
 
-bool RenderWidgetHostViewAndroid::IsSurfaceAvailableForCopy() const {
+bool RenderWidgetHostViewAndroid::IsSurfaceAvailableForCopy() {
   return !using_browser_compositor_ ||
          (delegated_frame_host_ &&
           delegated_frame_host_->CanCopyFromCompositingSurface());
@@ -485,7 +485,7 @@ void RenderWidgetHostViewAndroid::SelectWordAroundCaretAck(bool did_select,
       did_select, start_adjust, end_adjust);
 }
 
-gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() const {
+gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() {
   if (!view_.parent())
     return default_bounds_;
 
@@ -498,14 +498,14 @@ gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() const {
   return gfx::Rect(size);
 }
 
-gfx::Size RenderWidgetHostViewAndroid::GetVisibleViewportSize() const {
+gfx::Size RenderWidgetHostViewAndroid::GetVisibleViewportSize() {
   if (!view_.parent())
     return default_bounds_.size();
 
   return view_.GetSize();
 }
 
-gfx::Size RenderWidgetHostViewAndroid::GetCompositorViewportPixelSize() const {
+gfx::Size RenderWidgetHostViewAndroid::GetCompositorViewportPixelSize() {
   if (!view_.parent()) {
     if (default_bounds_.IsEmpty()) return gfx::Size();
 
@@ -1902,8 +1902,8 @@ void RenderWidgetHostViewAndroid::SetTextHandlesTemporarilyHidden(
   SetTextHandlesHiddenInternal();
 }
 
-base::Optional<SkColor> RenderWidgetHostViewAndroid::GetCachedBackgroundColor()
-    const {
+base::Optional<SkColor>
+RenderWidgetHostViewAndroid::GetCachedBackgroundColor() {
   return RenderWidgetHostViewBase::GetBackgroundColor();
 }
 
@@ -2389,8 +2389,7 @@ void RenderWidgetHostViewAndroid::OnSynchronizedDisplayPropertiesChanged() {
                               base::nullopt);
 }
 
-base::Optional<SkColor> RenderWidgetHostViewAndroid::GetBackgroundColor()
-    const {
+base::Optional<SkColor> RenderWidgetHostViewAndroid::GetBackgroundColor() {
   return default_background_color_;
 }
 
@@ -2432,7 +2431,7 @@ RenderWidgetHostViewAndroid::DidUpdateVisualProperties(
   return viz::ScopedSurfaceIdAllocator(std::move(allocation_task));
 }
 
-void RenderWidgetHostViewAndroid::GetScreenInfo(ScreenInfo* screen_info) const {
+void RenderWidgetHostViewAndroid::GetScreenInfo(ScreenInfo* screen_info) {
   bool use_window_wide_color_gamut =
       GetContentClient()->browser()->GetWideColorGamutHeuristic() ==
       ContentBrowserClient::WideColorGamutHeuristic::kUseWindow;

@@ -89,17 +89,17 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
 
   // RenderViewHost implementation.
   bool Send(IPC::Message* msg) override;
-  RenderWidgetHostImpl* GetWidget() const override;
-  RenderProcessHost* GetProcess() const override;
-  int GetRoutingID() const override;
+  RenderWidgetHostImpl* GetWidget() override;
+  RenderProcessHost* GetProcess() override;
+  int GetRoutingID() override;
   RenderFrameHost* GetMainFrame() override;
   void EnablePreferredSizeMode() override;
   void ExecutePluginActionAtLocation(
       const gfx::Point& location,
       const blink::WebPluginAction& action) override;
-  RenderViewHostDelegate* GetDelegate() const override;
-  SiteInstanceImpl* GetSiteInstance() const override;
-  bool IsRenderViewLive() const override;
+  RenderViewHostDelegate* GetDelegate() override;
+  SiteInstanceImpl* GetSiteInstance() override;
+  bool IsRenderViewLive() override;
   void NotifyMoveOrResizeStarted() override;
   void SetWebUIProperty(const std::string& name,
                         const std::string& value) override;

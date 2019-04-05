@@ -132,7 +132,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewAura {
                                  false /* is_mus_browser_plugin_guest */) {}
   ~TestRenderWidgetHostView() override {}
 
-  bool HasFocus() const override { return g_window_has_focus; }
+  bool HasFocus() override { return g_window_has_focus; }
 
   void OnWindowFocused(aura::Window* gained_focus,
                        aura::Window* lost_focus) override {

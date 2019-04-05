@@ -446,7 +446,7 @@ void RenderWidgetHostViewMac::UpdateNSViewAndDisplayProperties() {
   }
 }
 
-void RenderWidgetHostViewMac::GetScreenInfo(ScreenInfo* screen_info) const {
+void RenderWidgetHostViewMac::GetScreenInfo(ScreenInfo* screen_info) {
   browser_compositor_->GetRendererScreenInfo(screen_info);
 }
 
@@ -509,7 +509,7 @@ void RenderWidgetHostViewMac::SetBounds(const gfx::Rect& rect) {
   ns_view_bridge_->SetBounds(rect);
 }
 
-gfx::NativeView RenderWidgetHostViewMac::GetNativeView() const {
+gfx::NativeView RenderWidgetHostViewMac::GetNativeView() {
   return cocoa_view();
 }
 
@@ -521,11 +521,11 @@ void RenderWidgetHostViewMac::Focus() {
   ns_view_bridge_->MakeFirstResponder();
 }
 
-bool RenderWidgetHostViewMac::HasFocus() const {
+bool RenderWidgetHostViewMac::HasFocus() {
   return is_first_responder_;
 }
 
-bool RenderWidgetHostViewMac::IsSurfaceAvailableForCopy() const {
+bool RenderWidgetHostViewMac::IsSurfaceAvailableForCopy() {
   return browser_compositor_->GetDelegatedFrameHost()
       ->CanCopyFromCompositingSurface();
 }
@@ -534,7 +534,7 @@ bool RenderWidgetHostViewMac::IsShowing() {
   return is_visible_;
 }
 
-gfx::Rect RenderWidgetHostViewMac::GetViewBounds() const {
+gfx::Rect RenderWidgetHostViewMac::GetViewBounds() {
   return view_bounds_in_window_dip_ +
          window_frame_in_screen_dip_.OffsetFromOrigin();
 }
@@ -756,7 +756,7 @@ void RenderWidgetHostViewMac::DidNavigate() {
   browser_compositor_->DidNavigate();
 }
 
-gfx::Size RenderWidgetHostViewMac::GetRequestedRendererSize() const {
+gfx::Size RenderWidgetHostViewMac::GetRequestedRendererSize() {
   return browser_compositor_->GetRendererSize();
 }
 
@@ -1377,7 +1377,7 @@ void RenderWidgetHostViewMac::UpdateBackgroundColor() {
   browser_compositor_->SetBackgroundColor(color);
 }
 
-base::Optional<SkColor> RenderWidgetHostViewMac::GetBackgroundColor() const {
+base::Optional<SkColor> RenderWidgetHostViewMac::GetBackgroundColor() {
   // This is used to specify a color to temporarily show while waiting for web
   // content. This should never return transparent, since that will cause bugs
   // where views are initialized as having a transparent background

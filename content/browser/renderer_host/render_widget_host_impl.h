@@ -194,11 +194,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event) override;
   void ForwardGestureEvent(
       const blink::WebGestureEvent& gesture_event) override;
-  RenderProcessHost* GetProcess() const override;
-  int GetRoutingID() const override;
-  RenderWidgetHostViewBase* GetView() const override;
-  bool IsLoading() const override;
-  bool IsCurrentlyUnresponsive() const override;
+  RenderProcessHost* GetProcess() override;
+  int GetRoutingID() override;
+  RenderWidgetHostViewBase* GetView() override;
+  bool IsLoading() override;
+  bool IsCurrentlyUnresponsive() override;
   bool SynchronizeVisualProperties() override;
   void AddKeyPressEventCallback(const KeyPressEventCallback& callback) override;
   void RemoveKeyPressEventCallback(
