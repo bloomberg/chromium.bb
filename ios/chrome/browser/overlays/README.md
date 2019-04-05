@@ -20,6 +20,12 @@ interaction with the overlay UI.  Service clients should create OverlayResponses
 with an OverlayUserData subclass with the overlay UI user interaction
 information necessary to execute the callback for that overlay.
 
+##### OverlayRequestQueue
+
+Each WebState has an OverlayRequestQueue that stores the OverlayRequests for
+that WebState.  The public interface exposes an immutable queue where the front
+OverlayRequest is visible.  Internally, the queue is mutable and observable.
+
 ## Example usage of service:
 
 ### Showing an alert with a title, message, an OK button, and a Cancel button
