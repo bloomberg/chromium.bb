@@ -270,14 +270,16 @@ public class AppBannerManagerTest {
 
     private void waitUntilAmbientBadgeInfoBarAppears(
             ChromeActivityTestRule<? extends ChromeActivity> rule) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                List<InfoBar> infobars = rule.getInfoBars();
-                if (infobars.size() != 1) return false;
-                return infobars.get(0) instanceof InstallableAmbientBadgeInfoBar;
-            }
-        });
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.INSTALLABLE_AMBIENT_BADGE_INFOBAR)) {
+            CriteriaHelper.pollUiThread(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    List<InfoBar> infobars = rule.getInfoBars();
+                    if (infobars.size() != 1) return false;
+                    return infobars.get(0) instanceof InstallableAmbientBadgeInfoBar;
+                }
+            });
+        }
     }
 
     private void runFullNativeInstallPathway(
@@ -644,6 +646,7 @@ public class AppBannerManagerTest {
     @Test
     @MediumTest
     @Feature({"AppBanners"})
+    @CommandLineFlags.Add("enable-features=" + ChromeFeatureList.INSTALLABLE_AMBIENT_BADGE_INFOBAR)
     public void testBlockedAmbientBadgeDoesNotAppearAgainForMonths() throws Exception {
         // Visit a site that is a PWA. The ambient badge should show.
         String webBannerUrl = WebappTestPage.getServiceWorkerUrl(mTestServer);
