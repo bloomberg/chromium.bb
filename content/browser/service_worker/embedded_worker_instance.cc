@@ -102,7 +102,7 @@ using SetupProcessCallback = base::OnceCallback<void(
     std::unique_ptr<ServiceWorkerProcessManager::AllocatedProcessInfo>,
     std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy>,
     std::unique_ptr<
-        blink::URLLoaderFactoryBundleInfo> /* factory_bundle_for_browser */,
+        blink::URLLoaderFactoryBundleInfo> /* factory_bundle_for_new_scripts */,
     std::unique_ptr<
         blink::URLLoaderFactoryBundleInfo> /* factory_bundle_for_renderer */,
     blink::mojom::CacheStoragePtrInfo)>;
@@ -128,19 +128,21 @@ void SetupOnUIThread(int embedded_worker_id,
   auto process_info =
       std::make_unique<ServiceWorkerProcessManager::AllocatedProcessInfo>();
   std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy> devtools_proxy;
-  std::unique_ptr<blink::URLLoaderFactoryBundleInfo> factory_bundle_for_browser;
+  std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+      factory_bundle_for_new_scripts;
   std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
       factory_bundle_for_renderer;
 
   if (!process_manager) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(
-            std::move(callback), blink::ServiceWorkerStatusCode::kErrorAbort,
-            std::move(params), std::move(process_info),
-            std::move(devtools_proxy), std::move(factory_bundle_for_browser),
-            std::move(factory_bundle_for_renderer),
-            nullptr /* cache_storage */));
+        base::BindOnce(std::move(callback),
+                       blink::ServiceWorkerStatusCode::kErrorAbort,
+                       std::move(params), std::move(process_info),
+                       std::move(devtools_proxy),
+                       std::move(factory_bundle_for_new_scripts),
+                       std::move(factory_bundle_for_renderer),
+                       nullptr /* cache_storage */));
     return;
   }
 
@@ -154,7 +156,7 @@ void SetupOnUIThread(int embedded_worker_id,
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(std::move(callback), status, std::move(params),
                        std::move(process_info), std::move(devtools_proxy),
-                       std::move(factory_bundle_for_browser),
+                       std::move(factory_bundle_for_new_scripts),
                        std::move(factory_bundle_for_renderer),
                        nullptr /* cache_storage */));
     return;
@@ -206,14 +208,16 @@ void SetupOnUIThread(int embedded_worker_id,
   // support reconnection to the network service, see below comments.
   const url::Origin origin = url::Origin::Create(params->script_url);
 
-  // The bundle for the browser is passed to ServiceWorkerScriptLoaderFactory
-  // and used to request non-installed service worker scripts. It's OK to not
-  // support reconnection to then network service because it can only used
-  // until the service worker reaches the 'installed' state.
-  //
-  // TODO(falken): Only make this bundle for non-installed service workers.
-  factory_bundle_for_browser =
-      EmbeddedWorkerInstance::CreateFactoryBundleOnUI(rph, routing_id, origin);
+  // The bundle for new scripts is passed to ServiceWorkerScriptLoaderFactory
+  // and used to request non-installed service worker scripts. It's only needed
+  // for non-installed workers. It's OK to not support reconnection to the
+  // network service because it can only used until the service worker reaches
+  // the 'installed' state.
+  if (!params->is_installed) {
+    factory_bundle_for_new_scripts =
+        EmbeddedWorkerInstance::CreateFactoryBundleOnUI(rph, routing_id,
+                                                        origin);
+  }
 
   // The bundle for the renderer is passed to the service worker, and
   // used for subresource loading from the service worker (i.e., fetch()).
@@ -241,7 +245,7 @@ void SetupOnUIThread(int embedded_worker_id,
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(std::move(callback), status, std::move(params),
                      std::move(process_info), std::move(devtools_proxy),
-                     std::move(factory_bundle_for_browser),
+                     std::move(factory_bundle_for_new_scripts),
                      std::move(factory_bundle_for_renderer),
                      cache_storage.PassInterface()));
 }
@@ -523,7 +527,7 @@ class EmbeddedWorkerInstance::StartTask {
           process_info,
       std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy> devtools_proxy,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-          factory_bundle_for_browser,
+          factory_bundle_for_new_scripts,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           factory_bundle_for_renderer,
       blink::mojom::CacheStoragePtrInfo cache_storage) {
@@ -577,11 +581,15 @@ class EmbeddedWorkerInstance::StartTask {
     params->subresource_loader_factories =
         std::move(factory_bundle_for_renderer);
 
-    // Build the URLLoaderFactory for loading new scripts.
-    DCHECK(factory_bundle_for_browser);
-    params->provider_info->script_loader_factory_ptr_info =
-        instance_->MakeScriptLoaderFactoryAssociatedPtrInfo(
-            std::move(factory_bundle_for_browser));
+    // Build the URLLoaderFactory for loading new scripts, it's only needed if
+    // this is a non-installed service worker.
+    DCHECK(factory_bundle_for_new_scripts || is_installed_);
+    if (factory_bundle_for_new_scripts) {
+      params->provider_info->script_loader_factory_ptr_info =
+          instance_->MakeScriptLoaderFactoryAssociatedPtrInfo(
+              std::move(factory_bundle_for_new_scripts));
+    }
+
     params->provider_info->cache_storage = std::move(cache_storage);
 
     instance_->SendStartWorker(std::move(params));
