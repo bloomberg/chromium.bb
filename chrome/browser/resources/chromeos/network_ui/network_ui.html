@@ -15,11 +15,25 @@
   <script src="chrome://resources/js/util.js"></script>
   <script src="chrome://network/strings.js"></script>
   <script src="chrome://network/network_ui.js"></script>
+
+  <style>
+    #cellular-error-text {
+      color: red;
+    }
+  </style>
 </head>
 
 <body>
   <div>$i18n{autoRefreshText}</div>
   <span>$i18nRaw{deviceLogLinkText}</span>
+
+  <div>
+    <h2>$i18n{cellularActivationLabel}</h2>
+    <paper-button raised class="colored" id="cellular-activation-button">
+      $i18n{cellularActivationButtonText}
+    </paper-button>
+    <div id="cellular-error-text" hidden>$i18n{noCellularErrorText}</div>
+  </div>
 
   <h2>$i18n{globalPolicyLabel}</h2>
   <div id="global-policy"></div>
