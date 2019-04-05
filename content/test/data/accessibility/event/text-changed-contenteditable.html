@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<body>
+<p id="p1" contenteditable>Paragraph</p>
+<p id="p2" contenteditable>Paragraph</p>
+<p id="p3" contenteditable>Paragraph</p>
+<div id="d1" contenteditable>Div</div>
+<div id="d2" contenteditable>Div</div>
+<div id="d3" contenteditable>Div</div>
+<script>
+  function go() {
+    document.querySelector('#p1').textContent = 'Modified Paragraph';
+    document.querySelector('#p2').textContent = '';
+    document.querySelector('#p3').textContent = 'Before Paragraph After';
+    document.querySelector('#d1').textContent = 'Modified Div';
+    document.querySelector('#d2').textContent = '';
+    document.querySelector('#d3').textContent = 'Before Div After';
+  }
+</script>
+</body>
+</html>

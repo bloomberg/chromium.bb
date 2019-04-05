@@ -3238,8 +3238,53 @@ void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(
 }
 
 void AXPlatformNodeAuraLinux::UpdateHypertext() {
+  AXHypertext old_hypertext = hypertext_;
+  base::OffsetAdjuster::Adjustments old_adjustments = GetHypertextAdjustments();
+
   UpdateComputedHypertext();
   text_unicode_adjustments_ = base::nullopt;
+
+  if ((!GetData().HasState(ax::mojom::State::kEditable) ||
+       GetData().GetRestriction() == ax::mojom::Restriction::kReadOnly) &&
+      !IsInLiveRegion()) {
+    return;
+  }
+
+  size_t shared_prefix, old_len, new_len;
+  ComputeHypertextRemovedAndInserted(old_hypertext, &shared_prefix, &old_len,
+                                     &new_len);
+
+  DCHECK(atk_object_);
+  DCHECK(ATK_IS_TEXT(atk_object_));
+
+  if (old_len > 0) {
+    base::string16 removed_substring =
+        old_hypertext.hypertext.substr(shared_prefix, old_len);
+
+    size_t shared_unicode_prefix = shared_prefix;
+    base::OffsetAdjuster::AdjustOffset(old_adjustments, &shared_unicode_prefix);
+    size_t shared_unicode_suffix = shared_prefix + old_len;
+    base::OffsetAdjuster::AdjustOffset(old_adjustments, &shared_unicode_suffix);
+
+    g_signal_emit_by_name(
+        atk_object_, "text-remove",
+        shared_unicode_prefix,                  // position of removal
+        shared_unicode_suffix - shared_prefix,  // length of removal
+        base::UTF16ToUTF8(removed_substring).c_str());
+  }
+
+  if (new_len > 0) {
+    base::string16 inserted_substring =
+        hypertext_.hypertext.substr(shared_prefix, new_len);
+    size_t shared_unicode_prefix = UTF16ToUnicodeOffsetInText(shared_prefix);
+    size_t shared_unicode_suffix =
+        UTF16ToUnicodeOffsetInText(shared_prefix + new_len);
+    g_signal_emit_by_name(
+        atk_object_, "text-insert",
+        shared_unicode_prefix,                          // position of insertion
+        shared_unicode_suffix - shared_unicode_prefix,  // length of insertion
+        base::UTF16ToUTF8(inserted_substring).c_str());
+  }
 }
 
 const AXHypertext& AXPlatformNodeAuraLinux::GetHypertext() {
@@ -3556,6 +3601,11 @@ gchar* AXPlatformNodeAuraLinux::GetSelection(int* start_offset,
 
   return atk_text::GetText(ATK_TEXT(atk_object_), selection_start,
                            selection_end);
+}
+
+bool AXPlatformNodeAuraLinux::IsInLiveRegion() {
+  return GetData().HasStringAttribute(
+      ax::mojom::StringAttribute::kContainerLiveStatus);
 }
 
 }  // namespace ui

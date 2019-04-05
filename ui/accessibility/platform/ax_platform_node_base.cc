@@ -1366,4 +1366,122 @@ void AXPlatformNodeBase::GetSelectionOffsets(int* selection_start,
   }
 }
 
+bool AXPlatformNodeBase::IsSameHypertextCharacter(
+    const AXHypertext& old_hypertext,
+    size_t old_char_index,
+    size_t new_char_index) {
+  if (old_char_index >= old_hypertext.hypertext.size() ||
+      new_char_index >= hypertext_.hypertext.size()) {
+    return false;
+  }
+
+  // For anything other than the "embedded character", we just compare the
+  // characters directly.
+  base::char16 old_ch = old_hypertext.hypertext[old_char_index];
+  base::char16 new_ch = hypertext_.hypertext[new_char_index];
+  if (old_ch != new_ch)
+    return false;
+  if (new_ch != kEmbeddedCharacter)
+    return true;
+
+  // If it's an embedded character, they're only identical if the child id
+  // the hyperlink points to is the same.
+  const std::map<int32_t, int32_t>& old_offset_to_index =
+      old_hypertext.hyperlink_offset_to_index;
+  const std::vector<int32_t>& old_hyperlinks = old_hypertext.hyperlinks;
+  int32_t old_hyperlinkscount = static_cast<int32_t>(old_hyperlinks.size());
+  auto iter = old_offset_to_index.find(static_cast<int32_t>(old_char_index));
+  int old_index = (iter != old_offset_to_index.end()) ? iter->second : -1;
+  int old_child_id = (old_index >= 0 && old_index < old_hyperlinkscount)
+                         ? old_hyperlinks[old_index]
+                         : -1;
+
+  const std::map<int32_t, int32_t>& new_offset_to_index =
+      hypertext_.hyperlink_offset_to_index;
+  const std::vector<int32_t>& new_hyperlinks = hypertext_.hyperlinks;
+  int32_t new_hyperlinkscount = static_cast<int32_t>(new_hyperlinks.size());
+  iter = new_offset_to_index.find(static_cast<int32_t>(new_char_index));
+  int new_index = (iter != new_offset_to_index.end()) ? iter->second : -1;
+  int new_child_id = (new_index >= 0 && new_index < new_hyperlinkscount)
+                         ? new_hyperlinks[new_index]
+                         : -1;
+
+  return old_child_id == new_child_id;
+}
+
+// Return true if the index represents a text character.
+bool AXPlatformNodeBase::IsText(const base::string16& text,
+                                size_t index,
+                                bool is_indexed_from_end) {
+  size_t text_len = text.size();
+  if (index == text_len)
+    return false;
+  auto ch = text[is_indexed_from_end ? text_len - index - 1 : index];
+  return ch != kEmbeddedCharacter;
+}
+
+void AXPlatformNodeBase::ComputeHypertextRemovedAndInserted(
+    const AXHypertext& old_hypertext,
+    size_t* start,
+    size_t* old_len,
+    size_t* new_len) {
+  *start = 0;
+  *old_len = 0;
+  *new_len = 0;
+
+  // Do not compute for static text objects, otherwise redundant text change
+  // announcements will occur in live regions, as the parent hypertext also
+  // changes.
+  if (GetData().role == ax::mojom::Role::kStaticText)
+    return;
+
+  const base::string16& old_text = old_hypertext.hypertext;
+  const base::string16& new_text = hypertext_.hypertext;
+
+  // TODO(accessibility) Plumb through which part of text changed so we don't
+  // have to guess what changed based on character differences. This can be
+  // wrong in some cases as follows:
+  // -- EDITABLE --
+  // If editable: when part of the text node changes, assume only that part
+  // changed, and not the entire thing. For example, if "car" changes to
+  // "cat", assume only 1 letter changed. This code compares common characters
+  // to guess what has changed.
+  // -- NOT EDITABLE --
+  // When part of the text changes, assume the entire node's text changed. For
+  // example, if "car" changes to "cat" then assume all 3 letters changed.
+  // Note, it is possible (though rare) that CharacterData methods are used to
+  // remove, insert, replace or append a substring.
+  bool allow_partial_text_node_changes =
+      GetData().HasState(ax::mojom::State::kEditable);
+  size_t prefix_index = 0;
+  size_t common_prefix = 0;
+  while (prefix_index < old_text.size() && prefix_index < new_text.size() &&
+         IsSameHypertextCharacter(old_hypertext, prefix_index, prefix_index)) {
+    ++prefix_index;
+    if (allow_partial_text_node_changes ||
+        (!IsText(old_text, prefix_index) && !IsText(new_text, prefix_index))) {
+      common_prefix = prefix_index;
+    }
+  }
+
+  size_t suffix_index = 0;
+  size_t common_suffix = 0;
+  while (common_prefix + suffix_index < old_text.size() &&
+         common_prefix + suffix_index < new_text.size() &&
+         IsSameHypertextCharacter(old_hypertext,
+                                  old_text.size() - suffix_index - 1,
+                                  new_text.size() - suffix_index - 1)) {
+    ++suffix_index;
+    if (allow_partial_text_node_changes ||
+        (!IsText(old_text, suffix_index, true) &&
+         !IsText(new_text, suffix_index, true))) {
+      common_suffix = suffix_index;
+    }
+  }
+
+  *start = common_prefix;
+  *old_len = old_text.size() - common_prefix - common_suffix;
+  *new_len = new_text.size() - common_prefix - common_suffix;
+}
+
 }  // namespace ui
