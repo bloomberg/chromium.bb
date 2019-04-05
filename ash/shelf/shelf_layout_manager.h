@@ -196,6 +196,10 @@ class ASH_EXPORT ShelfLayoutManager
   bool updating_bounds() const { return updating_bounds_; }
   ShelfAutoHideState auto_hide_state() const { return state_.auto_hide_state; }
 
+  void set_suspend_visibility_update(bool value) {
+    suspend_visibility_update_ = value;
+  }
+
   // TODO(harrym|oshima): These templates will be moved to a new Shelf class.
   // A helper function for choosing values specific to a shelf alignment.
   template <typename T>

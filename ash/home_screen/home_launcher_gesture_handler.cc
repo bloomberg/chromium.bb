@@ -149,10 +149,13 @@ bool IsLastEventInTopHalf(const gfx::Point& location_in_screen,
 // Returns the window of the widget which contains the workspace backdrop. May
 // be nullptr if the backdrop is not shown.
 aura::Window* GetBackdropWindow(aura::Window* window) {
+  WorkspaceController* workspace_controller =
+      GetWorkspaceControllerForContext(window);
+  DCHECK(workspace_controller);
+
   WorkspaceLayoutManager* layout_manager =
-      RootWindowController::ForWindow(window->GetRootWindow())
-          ->workspace_controller()
-          ->layout_manager();
+      workspace_controller->layout_manager();
+
   return layout_manager
              ? layout_manager->backdrop_controller()->backdrop_window()
              : nullptr;

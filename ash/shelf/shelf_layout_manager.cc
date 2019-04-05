@@ -39,6 +39,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/work_area_insets.h"
+#include "ash/wm/workspace_controller.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
@@ -113,6 +114,20 @@ bool IsHomeScreenAvailable() {
     return false;
 
   return Shell::Get()->home_screen_controller()->IsHomeScreenAvailable();
+}
+
+// Returns the |WorkspaceWindowState| of the currently active desk on the root
+// window of |shelf_window|.
+wm::WorkspaceWindowState GetShelfWorkspaceWindowState(
+    aura::Window* shelf_window) {
+  DCHECK(shelf_window);
+  // Shelf window does not belong to any desk, use the root to get the active
+  // desk's workspace state.
+  auto* controller =
+      GetActiveWorkspaceController(shelf_window->GetRootWindow());
+  DCHECK(controller);
+
+  return controller->GetWindowState();
 }
 
 }  // namespace
@@ -269,8 +284,8 @@ void ShelfLayoutManager::UpdateVisibilityState() {
   if (in_shutdown_ || !shelf_window || suspend_visibility_update_)
     return;
 
-  wm::WorkspaceWindowState window_state(
-      RootWindowController::ForWindow(shelf_window)->GetWorkspaceWindowState());
+  const wm::WorkspaceWindowState window_state =
+      GetShelfWorkspaceWindowState(shelf_window);
 
   if (shelf_->ShouldHideOnSecondaryDisplay(state_.session_state)) {
     // Needed to hide system tray on secondary display.
@@ -718,11 +733,9 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   state.visibility_state = visibility_state;
   state.auto_hide_state = CalculateAutoHideState(visibility_state);
   state.is_status_area_visible = CalculateStatusAreaVisibility(state);
+  state.window_state =
+      GetShelfWorkspaceWindowState(shelf_widget_->GetNativeWindow());
 
-  RootWindowController* controller =
-      RootWindowController::ForWindow(shelf_widget_->GetNativeWindow());
-  state.window_state = controller ? controller->GetWorkspaceWindowState()
-                                  : wm::WORKSPACE_WINDOW_STATE_DEFAULT;
   // Preserve the log in screen states.
   state.session_state = state_.session_state;
   state.pre_lock_screen_animation_active =

@@ -17,6 +17,7 @@
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_util.h"
 #include "ash/wm/wm_event.h"
+#include "ash/wm/workspace_controller.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -191,9 +192,14 @@ void DefaultState::HandleWorkspaceEvents(WindowState* window_state,
     case WM_EVENT_WORKAREA_BOUNDS_CHANGED: {
       // Don't resize the maximized window when the desktop is covered
       // by fullscreen window. crbug.com/504299.
-      bool in_fullscreen =
-          RootWindowController::ForWindow(window_state->window())
-              ->GetWorkspaceWindowState() == WORKSPACE_WINDOW_STATE_FULL_SCREEN;
+      // TODO(afakhry): Decide whether we want the active desk's workspace, or
+      // the workspace of the desk of `window_state->window()`.
+      // For now use the active desk's.
+      auto* workspace_controller =
+          GetActiveWorkspaceController(window_state->window()->GetRootWindow());
+      DCHECK(workspace_controller);
+      bool in_fullscreen = workspace_controller->GetWindowState() ==
+                           WORKSPACE_WINDOW_STATE_FULL_SCREEN;
       if (in_fullscreen && window_state->IsMaximized())
         return;
 

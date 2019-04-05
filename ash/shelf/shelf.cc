@@ -226,6 +226,11 @@ void Shelf::UpdateVisibilityState() {
     shelf_layout_manager_->UpdateVisibilityState();
 }
 
+void Shelf::SetSuspendVisibilityUpdate(bool value) {
+  if (shelf_layout_manager_)
+    shelf_layout_manager_->set_suspend_visibility_update(value);
+}
+
 void Shelf::MaybeUpdateShelfBackground() {
   if (!shelf_layout_manager_)
     return;

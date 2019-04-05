@@ -43,6 +43,7 @@
 #include "ash/window_factory.h"
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/container_finder.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/lock_action_handler_layout_manager.h"
 #include "ash/wm/lock_layout_manager.h"
@@ -275,6 +276,13 @@ bool ShouldDestroyWindowInCloseChildWindows(aura::Window* window) {
   return window->owned_by_parent();
 }
 
+// Clears the workspace controllers from the properties of all virtual desks
+// containers in |root|.
+void ClearWorkspaceControllers(aura::Window* root) {
+  for (auto* desk_container : desks_util::GetDesksContainers(root))
+    SetWorkspaceController(desk_container, nullptr);
+}
+
 class RootWindowTargeter : public aura::WindowTargeter {
  public:
   RootWindowTargeter() = default;
@@ -407,11 +415,6 @@ aura::Window* RootWindowController::GetRootWindow() {
 
 const aura::Window* RootWindowController::GetRootWindow() const {
   return GetHost()->window();
-}
-
-wm::WorkspaceWindowState RootWindowController::GetWorkspaceWindowState() {
-  return workspace_controller_ ? workspace_controller()->GetWindowState()
-                               : wm::WORKSPACE_WINDOW_STATE_DEFAULT;
 }
 
 void RootWindowController::InitializeShelf() {
@@ -565,12 +568,12 @@ void RootWindowController::CloseChildWindows() {
 
   shelf_->ShutdownShelfWidget();
 
-  workspace_controller_.reset();
+  aura::Window* root = GetRootWindow();
+  ClearWorkspaceControllers(root);
 
   // Explicitly destroy top level windows. We do this because such windows may
   // query the RootWindow for state.
   aura::WindowTracker non_toplevel_windows;
-  aura::Window* root = GetRootWindow();
   non_toplevel_windows.Add(root);
   while (!non_toplevel_windows.windows().empty()) {
     aura::Window* non_toplevel_window = non_toplevel_windows.Pop();
@@ -604,9 +607,17 @@ void RootWindowController::CloseChildWindows() {
 }
 
 void RootWindowController::MoveWindowsTo(aura::Window* dst) {
-  // Clear the workspace controller, so it doesn't incorrectly update the shelf.
-  workspace_controller_.reset();
-  ReparentAllWindows(GetRootWindow(), dst);
+  // Suspend unnecessary updates of the shelf visibility.
+  shelf_->SetSuspendVisibilityUpdate(true);
+
+  // Clear the workspace controller to avoid a lot of unnessary operations when
+  // window are removed.
+  // TODO(afakhry): Should we also clear the WorkspaceLayoutManagers of the pip,
+  // always-on-top, and other containers?
+  aura::Window* root = GetRootWindow();
+  ClearWorkspaceControllers(root);
+
+  ReparentAllWindows(root, dst);
 }
 
 void RootWindowController::UpdateShelfVisibility() {
@@ -763,10 +774,10 @@ void RootWindowController::InitLayoutManagers() {
   root_window_layout_manager_ = new wm::RootWindowLayoutManager(root);
   root->SetLayoutManager(root_window_layout_manager_);
 
-  aura::Window* default_container =
-      GetContainer(kShellWindowId_DefaultContainer);
-  // Installs WorkspaceLayoutManager on |default_container|.
-  workspace_controller_.reset(new WorkspaceController(default_container));
+  for (auto* container : desks_util::GetDesksContainers(root)) {
+    // Installs WorkspaceLayoutManager on the container.
+    SetWorkspaceController(container, new WorkspaceController(container));
+  }
 
   aura::Window* modal_container =
       GetContainer(kShellWindowId_SystemModalContainer);
@@ -868,13 +879,18 @@ void RootWindowController::CreateContainers() {
   CreateContainer(kShellWindowId_UnparentedControlContainer,
                   "UnparentedControlContainer", non_lock_screen_containers);
 
-  aura::Window* default_container =
-      CreateContainer(kShellWindowId_DefaultContainer, "DefaultContainer",
-                      non_lock_screen_containers);
-  ::wm::SetChildWindowVisibilityChangesAnimated(default_container);
-  wm::SetSnapsChildrenToPhysicalPixelBoundary(default_container);
-  default_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
-  wm::SetChildrenUseExtendedHitRegionForWindow(default_container);
+  for (const auto& id : desks_util::GetDesksContainersIds()) {
+    aura::Window* container = CreateContainer(
+        id, desks_util::GetDeskContainerName(id), non_lock_screen_containers);
+    ::wm::SetChildWindowVisibilityChangesAnimated(container);
+    wm::SetSnapsChildrenToPhysicalPixelBoundary(container);
+    container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
+    wm::SetChildrenUseExtendedHitRegionForWindow(container);
+
+    // Hide the non-active containers.
+    if (id != desks_util::GetActiveDeskContainerId())
+      container->Hide();
+  }
 
   aura::Window* always_on_top_container =
       CreateContainer(kShellWindowId_AlwaysOnTopContainer,
