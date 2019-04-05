@@ -245,6 +245,9 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   // position.
   GraphicsLayer* DetachLayerForOverflowControls();
 
+  // We may similarly need to reattach the layer for outlines and decorations.
+  GraphicsLayer* DetachLayerForDecorationOutline();
+
   void UpdateFilters();
   void UpdateBackdropFilters();
 
