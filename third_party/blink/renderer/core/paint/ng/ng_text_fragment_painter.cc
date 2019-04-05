@@ -184,8 +184,7 @@ void PaintDocumentMarkers(GraphicsContext& context,
                  ->GetEditor()
                  .MarkedTextMatchesAreHighlighted())
           break;
-        const TextMatchMarker& text_match_marker =
-            ToTextMatchMarkerOrDie(*marker);
+        const auto& text_match_marker = To<TextMatchMarker>(*marker);
         if (marker_paint_phase == DocumentMarkerPaintPhase::kBackground) {
           const Color color =
               LayoutTheme::GetTheme().PlatformTextSearchHighlightColor(

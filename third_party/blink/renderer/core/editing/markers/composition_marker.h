@@ -29,12 +29,6 @@ class CORE_EXPORT CompositionMarker final : public StyleableMarker {
   DISALLOW_COPY_AND_ASSIGN(CompositionMarker);
 };
 
-DEFINE_TYPE_CASTS(CompositionMarker,
-                  DocumentMarker,
-                  marker,
-                  marker->GetType() == DocumentMarker::kComposition,
-                  marker.GetType() == DocumentMarker::kComposition);
-
 }  // namespace blink
 
 #endif

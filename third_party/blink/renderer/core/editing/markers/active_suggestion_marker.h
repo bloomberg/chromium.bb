@@ -27,12 +27,6 @@ class CORE_EXPORT ActiveSuggestionMarker final : public StyleableMarker {
   DISALLOW_COPY_AND_ASSIGN(ActiveSuggestionMarker);
 };
 
-DEFINE_TYPE_CASTS(ActiveSuggestionMarker,
-                  DocumentMarker,
-                  marker,
-                  marker->GetType() == DocumentMarker::kActiveSuggestion,
-                  marker.GetType() == DocumentMarker::kActiveSuggestion);
-
 }  // namespace blink
 
 #endif

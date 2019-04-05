@@ -151,12 +151,6 @@ class CORE_EXPORT ReplaceSelectionCommand final : public CompositeEditCommand {
   Position end_of_inserted_range_;
 };
 
-DEFINE_TYPE_CASTS(ReplaceSelectionCommand,
-                  CompositeEditCommand,
-                  command,
-                  command->IsReplaceSelectionCommand(),
-                  command.IsReplaceSelectionCommand());
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_REPLACE_SELECTION_COMMAND_H_
