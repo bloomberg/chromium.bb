@@ -129,7 +129,6 @@ test("cast_runner_integration_tests") {
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//fuchsia/base:test_support",
-    "//fuchsia/engine:test_support",
     "//net:test_support",
     "//testing/gtest",
   ]
@@ -158,7 +157,6 @@ test("cast_runner_browsertests") {
     "//fuchsia/base",
     "//fuchsia/base:test_support",
     "//fuchsia/engine:browsertest_core",
-    "//fuchsia/engine:test_support",
     "//fuchsia/engine:web_engine_core",
     "//testing/gmock",
     "//testing/gtest",
@@ -202,7 +200,6 @@ test("web_runner_integration_tests") {
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//fuchsia/base:modular",
-    "//fuchsia/engine:test_support",
     "//net:test_support",
     "//testing/gtest",
     "//third_party/fuchsia-sdk/sdk:sys",
