@@ -168,7 +168,7 @@ gfx::Rect FeaturePromoBubbleView::GetBubbleBounds() {
   return bounds;
 }
 
-ax::mojom::Role FeaturePromoBubbleView::GetAccessibleWindowRole() const {
+ax::mojom::Role FeaturePromoBubbleView::GetAccessibleWindowRole() {
   // Since we don't have any controls for the user to interact with (we're just
   // an information bubble), override our role to kAlert.
   return ax::mojom::Role::kAlert;

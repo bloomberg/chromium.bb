@@ -523,7 +523,7 @@ void AppListView::Layout() {
   UpdateAppListBackgroundYPosition();
 }
 
-ax::mojom::Role AppListView::GetAccessibleWindowRole() const {
+ax::mojom::Role AppListView::GetAccessibleWindowRole() {
   // Default role of root view is ax::mojom::Role::kWindow which traps ChromeVox
   // focus within the root view. Assign ax::mojom::Role::kGroup here to allow
   // the focus to move from elements in app list view to search box.

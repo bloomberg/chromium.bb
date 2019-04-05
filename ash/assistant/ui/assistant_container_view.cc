@@ -279,7 +279,7 @@ void AssistantContainerView::AddedToWidget() {
       std::make_unique<AssistantContainerEventTargeter>());
 }
 
-ax::mojom::Role AssistantContainerView::GetAccessibleWindowRole() const {
+ax::mojom::Role AssistantContainerView::GetAccessibleWindowRole() {
   return ax::mojom::Role::kWindow;
 }
 

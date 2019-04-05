@@ -31,7 +31,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantContainerView
   // views::BubbleDialogDelegateView:
   const char* GetClassName() const override;
   void AddedToWidget() override;
-  ax::mojom::Role GetAccessibleWindowRole() const override;
+  ax::mojom::Role GetAccessibleWindowRole() override;
   base::string16 GetAccessibleWindowTitle() const override;
   int GetDialogButtons() const override;
   views::FocusTraversable* GetFocusTraversable() override;

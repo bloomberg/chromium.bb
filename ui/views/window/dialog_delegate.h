@@ -145,7 +145,7 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   ~DialogDelegate() override;
 
   // Overridden from WidgetDelegate:
-  ax::mojom::Role GetAccessibleWindowRole() const override;
+  ax::mojom::Role GetAccessibleWindowRole() override;
 
  private:
   // A flag indicating whether this dialog is able to use the custom frame

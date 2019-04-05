@@ -338,8 +338,13 @@ gfx::Rect BubbleDialogDelegateView::GetBubbleBounds() {
       adjust_if_offscreen_ && !anchor_minimized && has_anchor);
 }
 
-ax::mojom::Role BubbleDialogDelegateView::GetAccessibleWindowRole() const {
-  // We return |ax::mojom::Role::kAlertDialog| which will make screen
+ax::mojom::Role BubbleDialogDelegateView::GetAccessibleWindowRole() {
+  // If something in the dialog has initial focus, use the dialog role.
+  // Screen readers understand what to announce when focus moves within one.
+  if (GetInitiallyFocusedView())
+    return ax::mojom::Role::kDialog;
+
+  // Otherwise, return |ax::mojom::Role::kAlertDialog| which will make screen
   // readers announce the contents of the bubble dialog as soon as it appears,
   // as long as we also fire |ax::mojom::Event::kAlert|.
   return ax::mojom::Role::kAlertDialog;
