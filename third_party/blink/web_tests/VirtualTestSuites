@@ -481,16 +481,6 @@
     "args": ["--blink-settings=darkMode=3,darkModePagePolicy=1"]
   },
   {
-    "prefix": "dark-mode",
-    "base": "paint/dark-mode/native-theme-off",
-    "args": ["--blink-settings=darkMode=3"]
-  },
-  {
-    "prefix": "dark-mode",
-    "base": "paint/dark-mode/native-theme-on",
-    "args": ["--blink-settings=darkMode=3"]
-  },
-  {
     "prefix": "outofblink-cors",
     "base": "external/wpt/fetch",
     "args": ["--enable-features=OutOfBlinkCors,NetworkService"]
