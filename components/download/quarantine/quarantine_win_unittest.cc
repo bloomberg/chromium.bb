@@ -30,8 +30,6 @@ const char kDummySourceUrl[] = "https://example.com/foo";
 const char kDummyReferrerUrl[] = "https://example.com/referrer";
 const char kDummyClientGuid[] = "A1B69307-8FA2-4B6F-9181-EA06051A48A7";
 
-const char kMotwForInternetZone[] = "[ZoneTransfer]\r\nZoneId=3\r\n";
-
 const char* const kUntrustedURLs[] = {
     "http://example.com/foo",
     "https://example.com/foo",
@@ -116,6 +114,7 @@ ScopedZoneForSite::~ScopedZoneForSite() {
 
 // Sets the internet Zone.Identifier alternate data stream for |file_path|.
 bool AddInternetZoneIdentifierDirectly(const base::FilePath& file_path) {
+  static const char kMotwForInternetZone[] = "[ZoneTransfer]\r\nZoneId=3\r\n";
   return base::WriteFile(GetZoneIdentifierStreamPath(file_path),
                          kMotwForInternetZone,
                          base::size(kMotwForInternetZone)) ==
@@ -289,7 +288,10 @@ TEST_F(QuarantineWinTest, EmptyFile) {
   std::string zone_identifier;
   ASSERT_TRUE(GetZoneIdentifierStreamContents(test_file, &zone_identifier));
 
-  EXPECT_STREQ(zone_identifier.c_str(), kMotwForInternetZone);
+  // The actual assigned zone could be anything and the contents of the zone
+  // identifier depends on the version of Windows. So only testing that there is
+  // a zone annotation.
+  EXPECT_FALSE(zone_identifier.empty());
 }
 
 // If there is no client GUID supplied to the QuarantineFile() call, then rather
@@ -307,7 +309,10 @@ TEST_F(QuarantineWinTest, NoClientGuid) {
   std::string zone_identifier;
   ASSERT_TRUE(GetZoneIdentifierStreamContents(test_file, &zone_identifier));
 
-  EXPECT_STREQ(zone_identifier.c_str(), kMotwForInternetZone);
+  // The actual assigned zone could be anything and the contents of the zone
+  // identifier depends on the version of Windows. So only testing that there is
+  // a zone annotation.
+  EXPECT_FALSE(zone_identifier.empty());
 }
 
 // URLs longer than INTERNET_MAX_URL_LENGTH are known to break URLMon. Such a
@@ -325,142 +330,10 @@ TEST_F(QuarantineWinTest, SuperLongURL) {
   std::string zone_identifier;
   ASSERT_TRUE(GetZoneIdentifierStreamContents(test_file, &zone_identifier));
 
-  EXPECT_STREQ(zone_identifier.c_str(), kMotwForInternetZone);
-}
-
-// On domain-joined machines, the IAttachmentExecute code path is taken, and the
-// output depends on the Windows version.
-TEST_F(QuarantineWinTest, EnterpriseUserZoneIdentifier) {
-  base::win::ScopedDomainStateForTesting scoped_domain(true);
-
-  base::FilePath test_file = GetTempDir().AppendASCII("foo.exe");
-  ASSERT_TRUE(CreateFile(test_file));
-
-  EXPECT_EQ(QuarantineFileResult::OK,
-            QuarantineFile(test_file, GURL(kDummySourceUrl),
-                           GURL(kDummyReferrerUrl), kDummyClientGuid));
-
-  std::string zone_identifier;
-  ASSERT_TRUE(GetZoneIdentifierStreamContents(test_file, &zone_identifier));
-
-  std::string expected = kMotwForInternetZone;
-  // On Win10, the MotW now contains the HostUrl and ReferrerUrl values.
-  if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
-    expected.append(base::StringPrintf("ReferrerUrl=%s\r\nHostUrl=%s\r\n",
-                                       kDummyReferrerUrl, kDummySourceUrl));
-  }
-
-  EXPECT_EQ(zone_identifier, expected);
-}
-
-// When the InvokeAttachmentServices is disabled, the fallback code path that
-// manually sets the MotW is always invoked. The original fallback code only
-// sets the ZoneId value.
-TEST_F(QuarantineWinTest, DisableInvokeAttachmentServices) {
-  base::win::ScopedDomainStateForTesting scoped_domain(false);
-
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled features.
-      {},
-      // Disabled features.
-      {kInvokeAttachmentServices});
-
-  base::FilePath test_file = GetTempDir().AppendASCII("foo.exe");
-  ASSERT_TRUE(CreateFile(test_file));
-
-  EXPECT_EQ(QuarantineFileResult::OK,
-            QuarantineFile(test_file, GURL(kDummySourceUrl),
-                           GURL(kDummyReferrerUrl), kDummyClientGuid));
-
-  std::string zone_identifier;
-  ASSERT_TRUE(GetZoneIdentifierStreamContents(test_file, &zone_identifier));
-
-  EXPECT_STREQ(zone_identifier.c_str(), kMotwForInternetZone);
-}
-
-// Tests the expected MotW when the AugmentedZoneIdentifier feature is enabled.
-TEST_F(QuarantineWinTest, AugmentedZoneIdentifier) {
-  base::win::ScopedDomainStateForTesting scoped_domain(false);
-
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled features.
-      {kAugmentedZoneIdentifier},
-      // Disabled features.
-      {kInvokeAttachmentServices});
-
-  base::FilePath test_file = GetTempDir().AppendASCII("foo.exe");
-  ASSERT_TRUE(CreateFile(test_file));
-
-  EXPECT_EQ(QuarantineFileResult::OK,
-            QuarantineFile(test_file, GURL(kDummySourceUrl),
-                           GURL(kDummyReferrerUrl), kDummyClientGuid));
-
-  std::string zone_identifier;
-  ASSERT_TRUE(GetZoneIdentifierStreamContents(test_file, &zone_identifier));
-
-  std::string expected = kMotwForInternetZone;
-  expected.append(base::StringPrintf("ReferrerUrl=%s\r\nHostUrl=%s\r\n",
-                                     kDummyReferrerUrl, kDummySourceUrl));
-  EXPECT_EQ(zone_identifier, expected);
-}
-
-// Tests the expected MotW when the AugmentedZoneIdentifier feature is enabled
-// and no referrer is provided to the QuarantineFile() function.
-TEST_F(QuarantineWinTest, AugmentedZoneIdentifierNoReferrer) {
-  base::win::ScopedDomainStateForTesting scoped_domain(false);
-
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled features.
-      {kAugmentedZoneIdentifier},
-      // Disabled features.
-      {kInvokeAttachmentServices});
-
-  base::FilePath test_file = GetTempDir().AppendASCII("foo.exe");
-  ASSERT_TRUE(CreateFile(test_file));
-
-  EXPECT_EQ(QuarantineFileResult::OK,
-            QuarantineFile(test_file, GURL(kDummySourceUrl), GURL(),
-                           kDummyClientGuid));
-
-  std::string zone_identifier;
-  ASSERT_TRUE(GetZoneIdentifierStreamContents(test_file, &zone_identifier));
-
-  std::string expected = kMotwForInternetZone;
-  expected.append(base::StringPrintf("HostUrl=%s\r\n", kDummySourceUrl));
-
-  EXPECT_EQ(zone_identifier, expected);
-}
-
-// Tests the expected MotW when the AugmentedZoneIdentifier feature is enabled
-// and no source is provided to the QuarantineFile() function.
-TEST_F(QuarantineWinTest, AugmentedZoneIdentifierNoSource) {
-  base::win::ScopedDomainStateForTesting scoped_domain(false);
-
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled features.
-      {kAugmentedZoneIdentifier},
-      // Disabled features.
-      {kInvokeAttachmentServices});
-
-  base::FilePath test_file = GetTempDir().AppendASCII("foo.exe");
-  ASSERT_TRUE(CreateFile(test_file));
-
-  EXPECT_EQ(QuarantineFileResult::OK,
-            QuarantineFile(test_file, GURL(), GURL(kDummyReferrerUrl),
-                           kDummyClientGuid));
-
-  std::string zone_identifier;
-  ASSERT_TRUE(GetZoneIdentifierStreamContents(test_file, &zone_identifier));
-
-  std::string expected = kMotwForInternetZone;
-  expected.append(base::StringPrintf("ReferrerUrl=%s\r\nHostUrl=%s\r\n",
-                                     kDummyReferrerUrl, "about:internet"));
-
-  EXPECT_EQ(zone_identifier, expected);
+  // The actual assigned zone could be anything and the contents of the zone
+  // identifier depends on the version of Windows. So only testing that there is
+  // a zone annotation.
+  EXPECT_FALSE(zone_identifier.empty());
 }
 
 TEST_F(QuarantineWinTest, TrustedSite) {

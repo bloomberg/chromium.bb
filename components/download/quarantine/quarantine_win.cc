@@ -29,6 +29,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
+#include "base/win/windows_version.h"
 #include "components/download/quarantine/common_win.h"
 #include "components/download/quarantine/quarantine_features_win.h"
 #include "url/gurl.h"
@@ -47,9 +48,8 @@ bool IsValidUrlForAttachmentServices(const GURL& url) {
 // streams are not supported, like a file on a FAT32 filesystem.  This function
 // does not invoke Windows Attachment Execution Services.
 //
-// If the AugmentedZoneIdentifier feature is enabled, the ReferrerUrl and
-// HostUrl values are set according to the behavior of the IAttachmentExecute
-// interface on Windows 10.
+// On Windows 10 or higher, the ReferrerUrl and HostUrl values are set according
+// to the behavior of the IAttachmentExecute interface.
 //
 // |full_path| is the path to the downloaded file.
 QuarantineFileResult SetInternetZoneIdentifierDirectly(
@@ -68,7 +68,7 @@ QuarantineFileResult SetInternetZoneIdentifierDirectly(
   static const char kHostUrlFormat[] = "HostUrl=%s\r\n";
 
   std::string identifier = "[ZoneTransfer]\r\nZoneId=3\r\n";
-  if (base::FeatureList::IsEnabled(kAugmentedZoneIdentifier)) {
+  if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
     // Match what the InvokeAttachmentServices() function will output, including
     // the order of the values.
     if (IsValidUrlForAttachmentServices(referrer_url)) {
