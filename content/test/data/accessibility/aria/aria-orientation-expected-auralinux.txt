@@ -20,9 +20,9 @@
 ++[slider] horizontal current=50.000000 minimum=0.000000 maximum=100.000000
 ++[slider] horizontal current=50.000000 minimum=0.000000 maximum=100.000000
 ++[slider] vertical current=50.000000 minimum=0.000000 maximum=100.000000
-++[separator] horizontal current=0.000000 minimum=0.000000 maximum=0.000000
-++[separator] horizontal current=0.000000 minimum=0.000000 maximum=0.000000
-++[separator] vertical current=0.000000 minimum=0.000000 maximum=0.000000
+++[separator] horizontal
+++[separator] horizontal
+++[separator] vertical
 ++[page tab list] horizontal
 ++[page tab list] horizontal
 ++[page tab list] vertical
