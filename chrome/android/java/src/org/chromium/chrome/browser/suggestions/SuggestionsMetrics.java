@@ -67,10 +67,6 @@ public abstract class SuggestionsMetrics {
 
     // Effect/Purpose of the interactions. Most are recorded in |content_suggestions_metrics.h|
 
-    public static void recordActionViewAll() {
-        RecordUserAction.record("Suggestions.Category.ViewAll");
-    }
-
     /**
      * Records metrics for the visit to the provided content suggestion, such as the time spent on
      * the website, or if the user comes back to the starting point.

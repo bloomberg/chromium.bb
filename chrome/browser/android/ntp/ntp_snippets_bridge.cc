@@ -77,24 +77,6 @@ ScopedJavaLocalRef<jobject> JNI_SnippetsBridge_ToJavaSuggestionList(
             suggestion.fetch_date().ToJavaTime(),
             suggestion.is_video_suggestion(),
             suggestion.optional_image_dominant_color().value_or(0));
-    if (suggestion.id().category().IsKnownCategory(
-            KnownCategories::DOWNLOADS) &&
-        suggestion.download_suggestion_extra() != nullptr) {
-      if (suggestion.download_suggestion_extra()->is_download_asset) {
-        Java_SnippetsBridge_setAssetDownloadDataForSuggestion(
-            env, java_suggestion,
-            ConvertUTF8ToJavaString(
-                env, suggestion.download_suggestion_extra()->download_guid),
-            ConvertUTF8ToJavaString(env, suggestion.download_suggestion_extra()
-                                             ->target_file_path.value()),
-            ConvertUTF8ToJavaString(
-                env, suggestion.download_suggestion_extra()->mime_type));
-      } else {
-        Java_SnippetsBridge_setOfflinePageDownloadDataForSuggestion(
-            env, java_suggestion,
-            suggestion.download_suggestion_extra()->offline_page_id);
-      }
-    }
   }
 
   return result;
