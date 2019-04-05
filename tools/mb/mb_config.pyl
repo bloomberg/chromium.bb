@@ -164,6 +164,16 @@
       'UBSanVptr Linux': 'ubsan_vptr_release_bot',
     },
 
+    'chromium.dawn': {
+      'Dawn Linux x64 Builder': 'dawn_tests_release_trybot',
+      'Dawn Linux x64 DEPS Builder': 'dawn_tests_release_trybot',
+
+      'Dawn Win10 x86 Builder': 'dawn_tests_release_trybot_x86',
+      'Dawn Win10 x64 Builder': 'dawn_tests_release_trybot',
+      'Dawn Win10 x86 DEPS Builder': 'dawn_tests_release_trybot_x86',
+      'Dawn Win10 x64 DEPS Builder': 'dawn_tests_release_trybot',
+    },
+
     'chromium.fuzz': {
       'ASAN Debug': 'asan_lsan_debug_bot',
       'ASAN Release Media': 'asan_lsan_fuzzer_v8_heap_chromeos_codecs_release_bot',
@@ -1360,6 +1370,14 @@
       'cros_chrome_sdk', 'ozone_platform_headless', 'dcheck_always_on',
     ],
 
+    'dawn_tests_release_trybot': [
+      'dawn_tests', 'release_trybot',
+    ],
+
+    'dawn_tests_release_trybot_x86': [
+      'dawn_tests', 'release_trybot', 'x86',
+    ],
+
     'debug_bot': [
       'debug_bot',
     ],
@@ -2026,6 +2044,10 @@
       'cros_passthrough': True,
     },
 
+    'dawn_tests': {
+      'gn_args': 'use_dawn=true',
+    },
+
     'dcheck_always_on': {
       'gn_args': 'dcheck_always_on=true',
     },
@@ -2109,8 +2131,7 @@
     },
 
     'gpu_fyi_tests': {
-      'mixins': ['gpu_tests', 'internal_gles_conform_tests'],
-      'gn_args': 'use_dawn=true',
+      'mixins': ['gpu_tests', 'dawn_tests', 'internal_gles_conform_tests'],
     },
 
     'gpu_tests': {
