@@ -30,8 +30,13 @@ group("engine_target_factory") {
   }
 }
 
-# This library should only be included in executable targets.
+# This library should only be included in executable targets.  It contains
+# definitions used by the unit tests and misc helper binaries. The
+# software_reporter_tool and chrome_cleanup_tool binaries will depend on
+# specific reporter-only and cleaner-only versions of these definitions.
 static_library("other_executable_definitions") {
+  testonly = true
+
   sources = [
     "//chrome/chrome_cleaner/logging/other_logging_definitions.cc",
     "//chrome/chrome_cleaner/settings/other_settings_definitions.cc",
@@ -100,4 +105,12 @@ test("chrome_cleaner_unittests") {
   if (is_internal_chrome_cleaner_build) {
     deps += [ "//chrome_cleaner_internal:unittest_sources" ]
   }
+
+  # TODO(crbug.com/949669): Add an integration test of the top-level
+  # executables. For now, just add a dependency on them to make sure they
+  # build.
+  data_deps = [
+    "//chrome/chrome_cleaner/executables:chrome_cleanup_tool",
+    "//chrome/chrome_cleaner/executables:software_reporter_tool",
+  ]
 }
