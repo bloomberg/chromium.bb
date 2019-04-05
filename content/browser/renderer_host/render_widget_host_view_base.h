@@ -109,7 +109,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   RenderWidgetHostImpl* GetFocusedWidget() const;
 
   // RenderWidgetHostView implementation.
-  RenderWidgetHost* GetRenderWidgetHost() const final;
+  RenderWidgetHost* GetRenderWidgetHost() final;
   ui::TextInputClient* GetTextInputClient() override;
   void WasUnOccluded() override {}
   void WasOccluded() override {}
@@ -118,13 +118,13 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   bool IsMouseLocked() override;
   bool LockKeyboard(base::Optional<base::flat_set<ui::DomCode>> codes) override;
   void SetBackgroundColor(SkColor color) override;
-  base::Optional<SkColor> GetBackgroundColor() const override;
+  base::Optional<SkColor> GetBackgroundColor() override;
   void UnlockKeyboard() override;
   bool IsKeyboardLocked() override;
   base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
-  gfx::Size GetVisibleViewportSize() const override;
+  gfx::Size GetVisibleViewportSize() override;
   void SetInsets(const gfx::Insets& insets) override;
-  bool IsSurfaceAvailableForCopy() const override;
+  bool IsSurfaceAvailableForCopy() override;
   void CopyFromSurface(
       const gfx::Rect& src_rect,
       const gfx::Size& output_size,
@@ -132,12 +132,12 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   std::unique_ptr<viz::ClientFrameSinkVideoCapturer> CreateVideoCapturer()
       override;
   void FocusedNodeTouched(bool editable) override;
-  void GetScreenInfo(ScreenInfo* screen_info) const override;
+  void GetScreenInfo(ScreenInfo* screen_info) override;
   void EnableAutoResize(const gfx::Size& min_size,
                         const gfx::Size& max_size) override;
   void DisableAutoResize(const gfx::Size& new_size) override;
-  bool IsScrollOffsetAtTop() const override;
-  float GetDeviceScaleFactor() const final;
+  bool IsScrollOffsetAtTop() override;
+  float GetDeviceScaleFactor() final;
   TouchSelectionControllerClientManager*
   GetTouchSelectionControllerClientManager() override;
   void SetLastTabChangeStartTime(base::TimeTicks start_time) final;
@@ -221,13 +221,13 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 
   // The requested size of the renderer. May differ from GetViewBounds().size()
   // when the view requires additional throttling.
-  virtual gfx::Size GetRequestedRendererSize() const;
+  virtual gfx::Size GetRequestedRendererSize();
 
   // Returns the current capture sequence number.
   virtual uint32_t GetCaptureSequenceNumber() const;
 
   // The size of the view's backing surface in non-DPI-adjusted pixels.
-  virtual gfx::Size GetCompositorViewportPixelSize() const;
+  virtual gfx::Size GetCompositorViewportPixelSize();
 
   // If mouse wheels can only specify the number of ticks of some static
   // multiplier constant, this method returns that constant (in DIPs). If mouse

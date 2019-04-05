@@ -80,7 +80,7 @@ RenderWidgetHostImpl* RenderWidgetHostViewBase::GetFocusedWidget() const {
              : nullptr;
 }
 
-RenderWidgetHost* RenderWidgetHostViewBase::GetRenderWidgetHost() const {
+RenderWidgetHost* RenderWidgetHostViewBase::GetRenderWidgetHost() {
   return host();
 }
 
@@ -141,7 +141,7 @@ void RenderWidgetHostViewBase::OnLocalSurfaceIdChanged(
 void RenderWidgetHostViewBase::UpdateIntrinsicSizingInfo(
     const blink::WebIntrinsicSizingInfo& sizing_info) {}
 
-gfx::Size RenderWidgetHostViewBase::GetCompositorViewportPixelSize() const {
+gfx::Size RenderWidgetHostViewBase::GetCompositorViewportPixelSize() {
   return gfx::ScaleToCeiledSize(GetRequestedRendererSize(),
                                 GetDeviceScaleFactor());
 }
@@ -174,7 +174,7 @@ void RenderWidgetHostViewBase::SelectionChanged(const base::string16& text,
     GetTextInputManager()->SelectionChanged(this, text, offset, range);
 }
 
-gfx::Size RenderWidgetHostViewBase::GetRequestedRendererSize() const {
+gfx::Size RenderWidgetHostViewBase::GetRequestedRendererSize() {
   return GetViewBounds().size();
 }
 
@@ -201,7 +201,7 @@ viz::FrameSinkId RenderWidgetHostViewBase::GetRootFrameSinkId() {
   return viz::FrameSinkId();
 }
 
-bool RenderWidgetHostViewBase::IsSurfaceAvailableForCopy() const {
+bool RenderWidgetHostViewBase::IsSurfaceAvailableForCopy() {
   return false;
 }
 
@@ -330,7 +330,7 @@ void RenderWidgetHostViewBase::SetBackgroundColor(SkColor color) {
   }
 }
 
-base::Optional<SkColor> RenderWidgetHostViewBase::GetBackgroundColor() const {
+base::Optional<SkColor> RenderWidgetHostViewBase::GetBackgroundColor() {
   if (content_background_color_)
     return content_background_color_;
   return default_background_color_;
@@ -551,7 +551,7 @@ void RenderWidgetHostViewBase::DisableAutoResize(const gfx::Size& new_size) {
   host()->SynchronizeVisualProperties();
 }
 
-bool RenderWidgetHostViewBase::IsScrollOffsetAtTop() const {
+bool RenderWidgetHostViewBase::IsScrollOffsetAtTop() {
   return is_scroll_offset_at_top_;
 }
 
@@ -575,11 +575,11 @@ void RenderWidgetHostViewBase::FocusedNodeTouched(
   DVLOG(1) << "FocusedNodeTouched: " << editable;
 }
 
-void RenderWidgetHostViewBase::GetScreenInfo(ScreenInfo* screen_info) const {
+void RenderWidgetHostViewBase::GetScreenInfo(ScreenInfo* screen_info) {
   DisplayUtil::GetNativeViewScreenInfo(screen_info, GetNativeView());
 }
 
-float RenderWidgetHostViewBase::GetDeviceScaleFactor() const {
+float RenderWidgetHostViewBase::GetDeviceScaleFactor() {
   ScreenInfo screen_info;
   GetScreenInfo(&screen_info);
   return screen_info.device_scale_factor;
@@ -601,7 +601,7 @@ void RenderWidgetHostViewBase::OnAutoscrollStart() {
   GetMouseWheelPhaseHandler()->DispatchPendingWheelEndEvent();
 }
 
-gfx::Size RenderWidgetHostViewBase::GetVisibleViewportSize() const {
+gfx::Size RenderWidgetHostViewBase::GetVisibleViewportSize() {
   return GetViewBounds().size();
 }
 

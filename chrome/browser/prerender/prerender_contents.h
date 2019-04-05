@@ -138,8 +138,7 @@ class PrerenderContents : public content::NotificationObserver,
   // it if not.
   void DestroyWhenUsingTooManyResources();
 
-  content::RenderViewHost* GetRenderViewHostMutable();
-  const content::RenderViewHost* GetRenderViewHost() const;
+  content::RenderViewHost* GetRenderViewHost();
 
   PrerenderManager* prerender_manager() { return prerender_manager_; }
 

@@ -620,7 +620,7 @@ void PrerenderContents::Destroy(FinalStatus final_status) {
 
 void PrerenderContents::DestroyWhenUsingTooManyResources() {
   if (process_pid_ == base::kNullProcessId) {
-    const RenderViewHost* rvh = GetRenderViewHost();
+    RenderViewHost* rvh = GetRenderViewHost();
     if (!rvh)
       return;
 
@@ -680,11 +680,7 @@ std::unique_ptr<WebContents> PrerenderContents::ReleasePrerenderContents() {
   return std::move(prerender_contents_);
 }
 
-RenderViewHost* PrerenderContents::GetRenderViewHostMutable() {
-  return const_cast<RenderViewHost*>(GetRenderViewHost());
-}
-
-const RenderViewHost* PrerenderContents::GetRenderViewHost() const {
+RenderViewHost* PrerenderContents::GetRenderViewHost() {
   return prerender_contents_ ? prerender_contents_->GetRenderViewHost()
                              : nullptr;
 }

@@ -66,7 +66,7 @@ class MockPointerLockRenderWidgetHostView : public RenderWidgetHostViewAura {
 
   bool IsMouseLocked() override { return event_handler()->mouse_locked(); }
 
-  bool HasFocus() const override { return true; }
+  bool HasFocus() override { return true; }
 
   void OnWindowFocused(aura::Window* gained_focus,
                        aura::Window* lost_focus) override {

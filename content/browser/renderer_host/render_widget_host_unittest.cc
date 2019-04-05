@@ -143,7 +143,7 @@ class TestView : public TestRenderWidgetHostView {
 
   void InvalidateLocalSurfaceId() { local_surface_id_allocator_.Invalidate(); }
 
-  void GetScreenInfo(ScreenInfo* screen_info) const override {
+  void GetScreenInfo(ScreenInfo* screen_info) override {
     *screen_info = screen_info_;
   }
 
@@ -186,7 +186,7 @@ class TestView : public TestRenderWidgetHostView {
   }
 
   // RenderWidgetHostView override.
-  gfx::Rect GetViewBounds() const override { return bounds_; }
+  gfx::Rect GetViewBounds() override { return bounds_; }
   const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation()
       const override {
     return local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
@@ -209,7 +209,7 @@ class TestView : public TestRenderWidgetHostView {
     gesture_event_type_ = event.GetType();
     ack_result_ = ack_result;
   }
-  gfx::Size GetCompositorViewportPixelSize() const override {
+  gfx::Size GetCompositorViewportPixelSize() override {
     if (use_fake_compositor_viewport_pixel_size_)
       return mock_compositor_viewport_pixel_size_;
     return TestRenderWidgetHostView::GetCompositorViewportPixelSize();

@@ -290,11 +290,11 @@ RenderViewHostImpl::~RenderViewHostImpl() {
   GetProcess()->RemoveObserver(this);
 }
 
-RenderViewHostDelegate* RenderViewHostImpl::GetDelegate() const {
+RenderViewHostDelegate* RenderViewHostImpl::GetDelegate() {
   return delegate_;
 }
 
-SiteInstanceImpl* RenderViewHostImpl::GetSiteInstance() const {
+SiteInstanceImpl* RenderViewHostImpl::GetSiteInstance() {
   return instance_.get();
 }
 
@@ -402,7 +402,7 @@ void RenderViewHostImpl::SetMainFrameRoutingId(int routing_id) {
   GetWidget()->UpdatePriority();
 }
 
-bool RenderViewHostImpl::IsRenderViewLive() const {
+bool RenderViewHostImpl::IsRenderViewLive() {
   return GetProcess()->IsInitializedAndNotDead() &&
          GetWidget()->renderer_initialized();
 }
@@ -726,15 +726,15 @@ bool RenderViewHostImpl::Send(IPC::Message* msg) {
   return GetWidget()->Send(msg);
 }
 
-RenderWidgetHostImpl* RenderViewHostImpl::GetWidget() const {
+RenderWidgetHostImpl* RenderViewHostImpl::GetWidget() {
   return render_widget_host_.get();
 }
 
-RenderProcessHost* RenderViewHostImpl::GetProcess() const {
+RenderProcessHost* RenderViewHostImpl::GetProcess() {
   return GetWidget()->GetProcess();
 }
 
-int RenderViewHostImpl::GetRoutingID() const {
+int RenderViewHostImpl::GetRoutingID() {
   return routing_id_;
 }
 

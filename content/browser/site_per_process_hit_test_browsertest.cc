@@ -4504,7 +4504,7 @@ uint32_t SendTouchTapWithExpectedTarget(
     RenderWidgetHostViewBase* root_view,
     const gfx::Point& touch_point,
     RenderWidgetHostViewBase*& router_touch_target,
-    const RenderWidgetHostViewBase* expected_target,
+    RenderWidgetHostViewBase* expected_target,
     RenderWidgetHostImpl* child_render_widget_host) {
   auto* root_view_aura = static_cast<RenderWidgetHostViewAura*>(root_view);
   if (child_render_widget_host != nullptr) {

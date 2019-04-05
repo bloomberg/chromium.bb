@@ -103,17 +103,17 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void InitAsFullscreen(RenderWidgetHostView* reference_host_view) override;
   void SetSize(const gfx::Size& size) override;
   void SetBounds(const gfx::Rect& rect) override;
-  gfx::NativeView GetNativeView() const override;
+  gfx::NativeView GetNativeView() override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   void Focus() override;
-  bool HasFocus() const override;
+  bool HasFocus() override;
   void Show() override;
   void Hide() override;
   bool IsShowing() override;
-  gfx::Rect GetViewBounds() const override;
-  gfx::Size GetVisibleViewportSize() const override;
-  gfx::Size GetCompositorViewportPixelSize() const override;
-  bool IsSurfaceAvailableForCopy() const override;
+  gfx::Rect GetViewBounds() override;
+  gfx::Size GetVisibleViewportSize() override;
+  gfx::Size GetCompositorViewportPixelSize() override;
+  bool IsSurfaceAvailableForCopy() override;
   void CopyFromSurface(
       const gfx::Rect& src_rect,
       const gfx::Size& output_size,
@@ -190,11 +190,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnRenderWidgetInit() override;
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
   void OnSynchronizedDisplayPropertiesChanged() override;
-  base::Optional<SkColor> GetBackgroundColor() const override;
+  base::Optional<SkColor> GetBackgroundColor() override;
   void DidNavigate() override;
   viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
       const cc::RenderFrameMetadata& metadata) override;
-  void GetScreenInfo(ScreenInfo* screen_info) const override;
+  void GetScreenInfo(ScreenInfo* screen_info) override;
 
   // ui::EventHandlerAndroid implementation.
   bool OnTouchEvent(const ui::MotionEventAndroid& m) override;
@@ -260,7 +260,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   // Returns the temporary background color of the underlaying document, for
   // example, returns black during screen rotation.
-  base::Optional<SkColor> GetCachedBackgroundColor() const;
+  base::Optional<SkColor> GetCachedBackgroundColor();
   void SendKeyEvent(const NativeWebKeyboardEvent& event);
   void SendMouseEvent(const ui::MotionEventAndroid&, int action_button);
   void SendMouseWheelEvent(const blink::WebMouseWheelEvent& event);
