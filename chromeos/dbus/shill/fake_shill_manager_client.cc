@@ -20,7 +20,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill/fake_shill_device_client.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
 #include "chromeos/dbus/shill/shill_ipconfig_client.h"
@@ -186,11 +185,8 @@ bool IsConnectedState(const std::string& state) {
 }
 
 void UpdatePortaledWifiState(const std::string& service_path) {
-  DBusThreadManager::Get()
-      ->GetShillServiceClient()
-      ->GetTestInterface()
-      ->SetServiceProperty(service_path, shill::kStateProperty,
-                           base::Value(shill::kStatePortal));
+  ShillServiceClient::Get()->GetTestInterface()->SetServiceProperty(
+      service_path, shill::kStateProperty, base::Value(shill::kStatePortal));
 }
 
 bool IsCellularTechnology(const std::string& type) {
@@ -209,10 +205,8 @@ bool IsCellularTechnology(const std::string& type) {
 void SetInitialDeviceProperty(const std::string& device_path,
                               const std::string& name,
                               const base::Value& value) {
-  DBusThreadManager::Get()
-      ->GetShillDeviceClient()
-      ->GetTestInterface()
-      ->SetDeviceProperty(device_path, name, value, /*notify_changed=*/false);
+  ShillDeviceClient::Get()->GetTestInterface()->SetDeviceProperty(
+      device_path, name, value, /*notify_changed=*/false);
 }
 
 const char kPathKey[] = "path";
@@ -240,8 +234,6 @@ FakeShillManagerClient::FakeShillManagerClient()
 FakeShillManagerClient::~FakeShillManagerClient() = default;
 
 // ShillManagerClient overrides.
-
-void FakeShillManagerClient::Init(dbus::Bus* bus) {}
 
 void FakeShillManagerClient::AddPropertyChangedObserver(
     ShillPropertyChangedObserver* observer) {
@@ -285,7 +277,7 @@ void FakeShillManagerClient::RequestScan(const std::string& type,
   // For Stub purposes, default to a Wifi scan.
   std::string device_type = type.empty() ? shill::kTypeWifi : type;
   ShillDeviceClient::TestInterface* device_client =
-      DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface();
+      ShillDeviceClient::Get()->GetTestInterface();
   std::string device_path = device_client->GetDevicePathForType(device_type);
   if (!device_path.empty()) {
     device_client->SetDeviceProperty(device_path, shill::kScanningProperty,
@@ -345,7 +337,7 @@ void FakeShillManagerClient::ConfigureService(
     const ObjectPathCallback& callback,
     const ErrorCallback& error_callback) {
   ShillServiceClient::TestInterface* service_client =
-      DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
+      ShillServiceClient::Get()->GetTestInterface();
 
   std::string guid;
   std::string type;
@@ -394,8 +386,7 @@ void FakeShillManagerClient::ConfigureService(
   merged_properties->GetStringWithoutPathExpansion(shill::kProfileProperty,
                                                    &profile_path);
   if (!profile_path.empty()) {
-    auto* profile_client =
-        DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface();
+    auto* profile_client = ShillProfileClient::Get()->GetTestInterface();
     if (!profile_client->UpdateService(profile_path, service_path))
       profile_client->AddService(profile_path, service_path);
   }
@@ -431,8 +422,8 @@ void FakeShillManagerClient::ConnectToBestServices(
     return;
   }
 
-  DBusThreadManager::Get()->GetShillServiceClient()->Connect(
-      dbus::ObjectPath(best_service_), callback, error_callback);
+  ShillServiceClient::Get()->Connect(dbus::ObjectPath(best_service_), callback,
+                                     error_callback);
 }
 
 ShillManagerClient::TestInterface* FakeShillManagerClient::GetTestInterface() {
@@ -586,10 +577,9 @@ void FakeShillManagerClient::SortManagerServices(bool notify) {
   std::vector<base::Value> complete_dict_list;
   for (const base::Value& value : complete_path_list->GetList()) {
     std::string service_path = value.GetString();
-    const base::Value* properties = DBusThreadManager::Get()
-                                        ->GetShillServiceClient()
-                                        ->GetTestInterface()
-                                        ->GetServiceProperties(service_path);
+    const base::Value* properties =
+        ShillServiceClient::Get()->GetTestInterface()->GetServiceProperties(
+            service_path);
     if (!properties) {
       LOG(ERROR) << "Properties not found for service: " << service_path;
       continue;
@@ -673,18 +663,17 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
   if (!base::ThreadTaskRunnerHandle::IsSet())
     return;
 
-  DBusThreadManager* dbus_manager = DBusThreadManager::Get();
   ShillServiceClient::TestInterface* services =
-      dbus_manager->GetShillServiceClient()->GetTestInterface();
+      ShillServiceClient::Get()->GetTestInterface();
   DCHECK(services);
   ShillProfileClient::TestInterface* profiles =
-      dbus_manager->GetShillProfileClient()->GetTestInterface();
+      ShillProfileClient::Get()->GetTestInterface();
   DCHECK(profiles);
   ShillDeviceClient::TestInterface* devices =
-      dbus_manager->GetShillDeviceClient()->GetTestInterface();
+      ShillDeviceClient::Get()->GetTestInterface();
   DCHECK(devices);
   ShillIPConfigClient::TestInterface* ip_configs =
-      dbus_manager->GetShillIPConfigClient()->GetTestInterface();
+      ShillIPConfigClient::Get()->GetTestInterface();
   DCHECK(ip_configs);
 
   const std::string shared_profile = ShillProfileClient::GetSharedProfilePath();
@@ -736,10 +725,8 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
 
   // Wifi
   if (s_tdls_busy_count != 0) {
-    DBusThreadManager::Get()
-        ->GetShillDeviceClient()
-        ->GetTestInterface()
-        ->SetTDLSBusyCount(s_tdls_busy_count);
+    ShillDeviceClient::Get()->GetTestInterface()->SetTDLSBusyCount(
+        s_tdls_busy_count);
   }
 
   state = GetInitialStateForType(shill::kTypeWifi, &enabled);
@@ -1091,7 +1078,7 @@ std::unique_ptr<base::ListValue> FakeShillManagerClient::GetEnabledServiceList(
   const base::ListValue* service_list;
   if (stub_properties_.GetListWithoutPathExpansion(property, &service_list)) {
     ShillServiceClient::TestInterface* service_client =
-        DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
+        ShillServiceClient::Get()->GetTestInterface();
     for (base::ListValue::const_iterator iter = service_list->begin();
          iter != service_list->end(); ++iter) {
       std::string service_path;
@@ -1115,11 +1102,9 @@ std::unique_ptr<base::ListValue> FakeShillManagerClient::GetEnabledServiceList(
 void FakeShillManagerClient::ScanCompleted(const std::string& device_path,
                                            const base::Closure& callback) {
   if (!device_path.empty()) {
-    DBusThreadManager::Get()
-        ->GetShillDeviceClient()
-        ->GetTestInterface()
-        ->SetDeviceProperty(device_path, shill::kScanningProperty,
-                            base::Value(false), /*notify_changed=*/true);
+    ShillDeviceClient::Get()->GetTestInterface()->SetDeviceProperty(
+        device_path, shill::kScanningProperty, base::Value(false),
+        /*notify_changed=*/true);
   }
   VLOG(1) << "ScanCompleted";
   CallNotifyObserversPropertyChanged(shill::kServiceCompleteListProperty);

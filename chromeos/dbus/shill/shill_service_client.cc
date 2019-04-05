@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "base/values.h"
+#include "chromeos/dbus/shill/fake_shill_service_client.h"
 #include "chromeos/dbus/shill/shill_property_changed_observer.h"
 #include "components/device_event_log/device_event_log.h"
 #include "dbus/bus.h"
@@ -28,6 +29,8 @@ namespace {
 // so make sure this is defined.
 #define DBUS_ERROR_UNKNOWN_OBJECT "org.freedesktop.DBus.Error.UnknownObject"
 #endif
+
+ShillServiceClient* g_instance = nullptr;
 
 // Error callback for GetProperties.
 void OnGetDictionaryError(
@@ -55,7 +58,8 @@ void OnGetDictionaryError(
 // The ShillServiceClient implementation.
 class ShillServiceClientImpl : public ShillServiceClient {
  public:
-  ShillServiceClientImpl() : bus_(NULL), weak_ptr_factory_(this) {}
+  explicit ShillServiceClientImpl(dbus::Bus* bus)
+      : bus_(bus), weak_ptr_factory_(this) {}
 
   ~ShillServiceClientImpl() override {
     for (HelperMap::iterator iter = helpers_.begin(); iter != helpers_.end();
@@ -213,11 +217,8 @@ class ShillServiceClientImpl : public ShillServiceClient {
   }
 
   ShillServiceClient::TestInterface* GetTestInterface() override {
-    return NULL;
+    return nullptr;
   }
-
- protected:
-  void Init(dbus::Bus* bus) override { bus_ = bus; }
 
  private:
   typedef std::map<std::string, ShillClientHelper*> HelperMap;
@@ -270,13 +271,36 @@ class ShillServiceClientImpl : public ShillServiceClient {
 
 }  // namespace
 
-ShillServiceClient::ShillServiceClient() = default;
+ShillServiceClient::ShillServiceClient() {
+  DCHECK(!g_instance);
+  g_instance = this;
+}
 
-ShillServiceClient::~ShillServiceClient() = default;
+ShillServiceClient::~ShillServiceClient() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
 
 // static
-ShillServiceClient* ShillServiceClient::Create() {
-  return new ShillServiceClientImpl();
+void ShillServiceClient::Initialize(dbus::Bus* bus) {
+  DCHECK(bus);
+  new ShillServiceClientImpl(bus);
+}
+
+// static
+void ShillServiceClient::InitializeFake() {
+  new FakeShillServiceClient();
+}
+
+// static
+void ShillServiceClient::Shutdown() {
+  DCHECK(g_instance);
+  delete g_instance;
+}
+
+// static
+ShillServiceClient* ShillServiceClient::Get() {
+  return g_instance;
 }
 
 }  // namespace chromeos

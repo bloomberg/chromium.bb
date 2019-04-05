@@ -1,6 +1,7 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "chromeos/dbus/shill/sms_client.h"
 
 #include <map>
@@ -15,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "chromeos/dbus/shill/fake_sms_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
@@ -28,6 +30,8 @@ namespace {
 
 // See "enum MMSMSState" definition in ModemManager.
 constexpr uint32_t kSMSStateReceived = 3;  // MM_SMS_STATE_RECEIVED
+
+SMSClient* g_instance = nullptr;
 
 class SMSReceiveHandler {
  public:
@@ -101,8 +105,7 @@ class SMSReceiveHandler {
 // DBusThreadManager instance.
 class SMSClientImpl : public SMSClient {
  public:
-  SMSClientImpl() : bus_(NULL), weak_ptr_factory_(this) {}
-
+  explicit SMSClientImpl(dbus::Bus* bus) : bus_(bus), weak_ptr_factory_(this) {}
   ~SMSClientImpl() override = default;
 
   // Calls GetAll method.  |callback| is called after the method call succeeds.
@@ -115,9 +118,6 @@ class SMSClientImpl : public SMSClient {
                               weak_ptr_factory_.GetWeakPtr(), object_path,
                               std::move(callback)));
   }
-
- protected:
-  void Init(dbus::Bus* bus) override { bus_ = bus; }
 
  private:
   void OnSMSReceived(const dbus::ObjectPath& object_path,
@@ -150,13 +150,36 @@ const char SMSClient::kSMSPropertyNumber[] = "Number";
 const char SMSClient::kSMSPropertyText[] = "Text";
 const char SMSClient::kSMSPropertyTimestamp[] = "Timestamp";
 
-SMSClient::SMSClient() = default;
+SMSClient::SMSClient() {
+  DCHECK(!g_instance);
+  g_instance = this;
+}
 
-SMSClient::~SMSClient() = default;
+SMSClient::~SMSClient() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
 
 // static
-SMSClient* SMSClient::Create() {
-  return new SMSClientImpl();
+void SMSClient::Initialize(dbus::Bus* bus) {
+  DCHECK(bus);
+  new SMSClientImpl(bus);
+}
+
+// static
+void SMSClient::InitializeFake() {
+  new FakeSMSClient();
+}
+
+// static
+void SMSClient::Shutdown() {
+  DCHECK(g_instance);
+  delete g_instance;
+}
+
+// static
+SMSClient* SMSClient::Get() {
+  return g_instance;
 }
 
 }  // namespace chromeos

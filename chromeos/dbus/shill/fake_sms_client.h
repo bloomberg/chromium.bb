@@ -18,7 +18,6 @@ class FakeSMSClient : public SMSClient {
   ~FakeSMSClient() override;
 
   // SMSClient overrides.
-  void Init(dbus::Bus* bus) override;
   void GetAll(const std::string& service_name,
               const dbus::ObjectPath& object_path,
               GetAllCallback callback) override;

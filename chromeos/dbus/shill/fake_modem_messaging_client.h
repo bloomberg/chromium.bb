@@ -21,7 +21,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeModemMessagingClient
   FakeModemMessagingClient();
   ~FakeModemMessagingClient() override;
 
-  void Init(dbus::Bus* bus) override;
   void SetSmsReceivedHandler(const std::string& service_name,
                              const dbus::ObjectPath& object_path,
                              const SmsReceivedHandler& handler) override;

@@ -25,7 +25,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeGsmSMSClient : public GsmSMSClient {
   ~FakeGsmSMSClient() override;
 
   // GsmSMSClient overrides
-  void Init(dbus::Bus* bus) override;
   void SetSmsReceivedHandler(const std::string& service_name,
                              const dbus::ObjectPath& object_path,
                              const SmsReceivedHandler& handler) override;
@@ -44,12 +43,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeGsmSMSClient : public GsmSMSClient {
             DBusMethodCallback<base::ListValue> callback) override;
   void RequestUpdate(const std::string& service_name,
                      const dbus::ObjectPath& object_path) override;
-
-  // Sets if the command line switch for test is present. RequestUpdate()
-  // changes its behavior depending on the switch.
-  void set_sms_test_message_switch_present(bool is_present) {
-    sms_test_message_switch_present_ = is_present;
-  }
 
  private:
   void PushTestMessageChain();

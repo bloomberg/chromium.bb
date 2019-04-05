@@ -15,8 +15,9 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 
 namespace dbus {
+class Bus;
 class ObjectPath;
-}
+}  // namespace dbus
 
 namespace chromeos {
 
@@ -24,17 +25,23 @@ namespace chromeos {
 // org.freedesktop.ModemManager1.Modem.Messaging service.  All methods
 // should be called from the origin thread (UI thread) which
 // initializes the DBusThreadManager instance.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) ModemMessagingClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) ModemMessagingClient {
  public:
   typedef base::Callback<void(const dbus::ObjectPath& message_path,
                               bool complete)>
       SmsReceivedHandler;
 
-  ~ModemMessagingClient() override;
+  // Creates and initializes the global instance. |bus| must not be null.
+  static void Initialize(dbus::Bus* bus);
 
-  // Factory function, creates a new instance and returns ownership.
-  // For normal usage, access the singleton via DBusThreadManager::Get().
-  static ModemMessagingClient* Create();
+  // Creates the global instance with a fake implementation.
+  static void InitializeFake();
+
+  // Destroys the global instance which must have been initialized.
+  static void Shutdown();
+
+  // Returns the global instance if initialized. May return null.
+  static ModemMessagingClient* Get();
 
   // Sets SmsReceived signal handler.
   virtual void SetSmsReceivedHandler(const std::string& service_name,
@@ -60,8 +67,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ModemMessagingClient : public DBusClient {
  protected:
   friend class ModemMessagingClientTest;
 
-  // Create() should be used instead.
+  // Initialize/Shutdown should be used instead.
   ModemMessagingClient();
+  virtual ~ModemMessagingClient();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ModemMessagingClient);

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/values.h"
+#include "chromeos/dbus/shill/fake_shill_device_client.h"
 #include "chromeos/dbus/shill/shill_property_changed_observer.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -24,10 +25,12 @@ namespace chromeos {
 
 namespace {
 
+ShillDeviceClient* g_instance = nullptr;
+
 // The ShillDeviceClient implementation.
 class ShillDeviceClientImpl : public ShillDeviceClient {
  public:
-  ShillDeviceClientImpl() : bus_(NULL) {}
+  explicit ShillDeviceClientImpl(dbus::Bus* bus) : bus_(bus) {}
 
   ~ShillDeviceClientImpl() override {
     for (HelperMap::iterator iter = helpers_.begin(); iter != helpers_.end();
@@ -36,7 +39,7 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
       // seem to imply that it does happen sometimes.  Adding CHECKs here
       // so we can determine more accurately where the problem lies.
       // See: http://crbug.com/170541
-      CHECK(iter->second) << "NULL Helper found in helper list.";
+      CHECK(iter->second) << "null Helper found in helper list.";
       delete iter->second;
     }
     helpers_.clear();
@@ -270,10 +273,7 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
                                           error_callback);
   }
 
-  TestInterface* GetTestInterface() override { return NULL; }
-
- protected:
-  void Init(dbus::Bus* bus) override { bus_ = bus; }
+  TestInterface* GetTestInterface() override { return nullptr; }
 
  private:
   typedef std::map<std::string, ShillClientHelper*> HelperMap;
@@ -282,7 +282,7 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
   ShillClientHelper* GetHelper(const dbus::ObjectPath& device_path) {
     HelperMap::iterator it = helpers_.find(device_path.value());
     if (it != helpers_.end()) {
-      CHECK(it->second) << "Found a NULL helper in the list.";
+      CHECK(it->second) << "Found a null helper in the list.";
       return it->second;
     }
 
@@ -304,13 +304,36 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
 
 }  // namespace
 
-ShillDeviceClient::ShillDeviceClient() = default;
+ShillDeviceClient::ShillDeviceClient() {
+  DCHECK(!g_instance);
+  g_instance = this;
+}
 
-ShillDeviceClient::~ShillDeviceClient() = default;
+ShillDeviceClient::~ShillDeviceClient() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
 
 // static
-ShillDeviceClient* ShillDeviceClient::Create() {
-  return new ShillDeviceClientImpl();
+void ShillDeviceClient::Initialize(dbus::Bus* bus) {
+  DCHECK(bus);
+  new ShillDeviceClientImpl(bus);
+}
+
+// static
+void ShillDeviceClient::InitializeFake() {
+  new FakeShillDeviceClient();
+}
+
+// static
+void ShillDeviceClient::Shutdown() {
+  DCHECK(g_instance);
+  delete g_instance;
+}
+
+// static
+ShillDeviceClient* ShillDeviceClient::Get() {
+  return g_instance;
 }
 
 }  // namespace chromeos

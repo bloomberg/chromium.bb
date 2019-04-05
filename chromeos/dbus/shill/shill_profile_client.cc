@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill/fake_shill_profile_client.h"
 #include "chromeos/dbus/shill/shill_property_changed_observer.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -25,9 +26,12 @@ namespace {
 
 const char kSharedProfilePath[] = "/profile/default";
 
+ShillProfileClient* g_instance = nullptr;
+
 class ShillProfileClientImpl : public ShillProfileClient {
  public:
-  ShillProfileClientImpl();
+  explicit ShillProfileClientImpl(dbus::Bus* bus) : bus_(bus) {}
+  ~ShillProfileClientImpl() override = default;
 
   void AddPropertyChangedObserver(
       const dbus::ObjectPath& profile_path,
@@ -53,10 +57,7 @@ class ShillProfileClientImpl : public ShillProfileClient {
                    const base::Closure& callback,
                    const ErrorCallback& error_callback) override;
 
-  TestInterface* GetTestInterface() override { return NULL; }
-
- protected:
-  void Init(dbus::Bus* bus) override { bus_ = bus; }
+  TestInterface* GetTestInterface() override { return nullptr; }
 
  private:
   using HelperMap = std::map<std::string, std::unique_ptr<ShillClientHelper>>;
@@ -69,8 +70,6 @@ class ShillProfileClientImpl : public ShillProfileClient {
 
   DISALLOW_COPY_AND_ASSIGN(ShillProfileClientImpl);
 };
-
-ShillProfileClientImpl::ShillProfileClientImpl() : bus_(NULL) {}
 
 ShillClientHelper* ShillProfileClientImpl::GetHelper(
     const dbus::ObjectPath& profile_path) {
@@ -128,13 +127,36 @@ void ShillProfileClientImpl::DeleteEntry(const dbus::ObjectPath& profile_path,
 
 }  // namespace
 
-ShillProfileClient::ShillProfileClient() = default;
+ShillProfileClient::ShillProfileClient() {
+  DCHECK(!g_instance);
+  g_instance = this;
+}
 
-ShillProfileClient::~ShillProfileClient() = default;
+ShillProfileClient::~ShillProfileClient() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
 
 // static
-ShillProfileClient* ShillProfileClient::Create() {
-  return new ShillProfileClientImpl();
+void ShillProfileClient::Initialize(dbus::Bus* bus) {
+  DCHECK(bus);
+  new ShillProfileClientImpl(bus);
+}
+
+// static
+void ShillProfileClient::InitializeFake() {
+  new FakeShillProfileClient();
+}
+
+// static
+void ShillProfileClient::Shutdown() {
+  DCHECK(g_instance);
+  delete g_instance;
+}
+
+// static
+ShillProfileClient* ShillProfileClient::Get() {
+  return g_instance;
 }
 
 // static

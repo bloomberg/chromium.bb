@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/values.h"
+#include "chromeos/dbus/shill/fake_shill_manager_client.h"
 #include "chromeos/dbus/shill/shill_property_changed_observer.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -23,10 +24,13 @@ namespace chromeos {
 
 namespace {
 
+ShillManagerClient* g_instance = nullptr;
+
 // The ShillManagerClient implementation.
 class ShillManagerClientImpl : public ShillManagerClient {
  public:
-  ShillManagerClientImpl() : proxy_(NULL) {}
+  ShillManagerClientImpl() = default;
+  ~ShillManagerClientImpl() override = default;
 
   ////////////////////////////////////
   // ShillManagerClient overrides.
@@ -157,10 +161,9 @@ class ShillManagerClientImpl : public ShillManagerClient {
                                              error_callback);
   }
 
-  TestInterface* GetTestInterface() override { return NULL; }
+  TestInterface* GetTestInterface() override { return nullptr; }
 
- protected:
-  void Init(dbus::Bus* bus) override {
+  void Init(dbus::Bus* bus) {
     proxy_ = bus->GetObjectProxy(shill::kFlimflamServiceName,
                                  dbus::ObjectPath(shill::kFlimflamServicePath));
     helper_.reset(new ShillClientHelper(proxy_));
@@ -168,7 +171,7 @@ class ShillManagerClientImpl : public ShillManagerClient {
   }
 
  private:
-  dbus::ObjectProxy* proxy_;
+  dbus::ObjectProxy* proxy_ = nullptr;
   std::unique_ptr<ShillClientHelper> helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ShillManagerClientImpl);
@@ -176,13 +179,36 @@ class ShillManagerClientImpl : public ShillManagerClient {
 
 }  // namespace
 
-ShillManagerClient::ShillManagerClient() = default;
+ShillManagerClient::ShillManagerClient() {
+  DCHECK(!g_instance);
+  g_instance = this;
+}
 
-ShillManagerClient::~ShillManagerClient() = default;
+ShillManagerClient::~ShillManagerClient() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
 
 // static
-ShillManagerClient* ShillManagerClient::Create() {
-  return new ShillManagerClientImpl();
+void ShillManagerClient::Initialize(dbus::Bus* bus) {
+  DCHECK(bus);
+  (new ShillManagerClientImpl)->Init(bus);
+}
+
+// static
+void ShillManagerClient::InitializeFake() {
+  new FakeShillManagerClient();
+}
+
+// static
+void ShillManagerClient::Shutdown() {
+  DCHECK(g_instance);
+  delete g_instance;
+}
+
+// static
+ShillManagerClient* ShillManagerClient::Get() {
+  return g_instance;
 }
 
 }  // namespace chromeos

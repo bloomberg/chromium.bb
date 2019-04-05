@@ -9,7 +9,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/network/network_handler.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
@@ -48,14 +48,14 @@ class TestProxyConfigService : public net::ProxyConfigService {
 
 class ProxyConfigServiceImplTest : public testing::Test {
   void SetUp() override {
-    DBusThreadManager::Initialize();
+    shill_clients::InitializeFakes();
     chromeos::NetworkHandler::Initialize();
     base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override {
     chromeos::NetworkHandler::Shutdown();
-    DBusThreadManager::Shutdown();
+    shill_clients::Shutdown();
   }
 
  protected:

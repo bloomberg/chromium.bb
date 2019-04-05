@@ -13,7 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
@@ -107,7 +107,7 @@ class UIProxyConfigServiceTest : public testing::Test {
   }
 
   void SetUp() override {
-    DBusThreadManager::Initialize();
+    shill_clients::InitializeFakes();
     NetworkHandler::Initialize();
     ConfigureService(kTestUserWifiConfig);
     ConfigureService(kTestSharedWifiConfig);
@@ -116,7 +116,7 @@ class UIProxyConfigServiceTest : public testing::Test {
 
   void TearDown() override {
     NetworkHandler::Shutdown();
-    DBusThreadManager::Shutdown();
+    shill_clients::Shutdown();
   }
 
   ~UIProxyConfigServiceTest() override = default;
@@ -126,7 +126,7 @@ class UIProxyConfigServiceTest : public testing::Test {
         base::DictionaryValue::From(
             onc::ReadDictionaryFromJson(shill_json_string));
     ASSERT_TRUE(shill_json_dict);
-    DBusThreadManager::Get()->GetShillManagerClient()->ConfigureService(
+    ShillManagerClient::Get()->ConfigureService(
         *shill_json_dict, base::DoNothing(),
         base::Bind([](const std::string& name, const std::string& msg) {}));
     base::RunLoop().RunUntilIdle();

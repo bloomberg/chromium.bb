@@ -54,14 +54,19 @@ class ShillManagerClientTest : public ShillClientUnittestBase {
   void SetUp() override {
     ShillClientUnittestBase::SetUp();
     // Create a client with the mock bus.
-    client_.reset(ShillManagerClient::Create());
-    client_->Init(mock_bus_.get());
+    ShillManagerClient::Initialize(mock_bus_.get());
+    client_ = ShillManagerClient::Get();
     // Run the message loop to run the signal connection result callback.
     base::RunLoop().RunUntilIdle();
   }
 
+  void TearDown() override {
+    ShillManagerClient::Shutdown();
+    ShillClientUnittestBase::TearDown();
+  }
+
  protected:
-  std::unique_ptr<ShillManagerClient> client_;
+  ShillManagerClient* client_ = nullptr;  // Unowned convenience pointer.
 };
 
 TEST_F(ShillManagerClientTest, PropertyChanged) {

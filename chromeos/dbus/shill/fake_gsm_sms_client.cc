@@ -2,22 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdint.h>
+#include "chromeos/dbus/shill/fake_gsm_sms_client.h"
 
+#include <stdint.h>
 #include <memory>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chromeos/dbus/shill/fake_gsm_sms_client.h"
+#include "chromeos/dbus/constants/dbus_switches.h"
 
 namespace chromeos {
 
 FakeGsmSMSClient::FakeGsmSMSClient()
     : test_index_(-1),
-      sms_test_message_switch_present_(false),
+      sms_test_message_switch_present_(
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              chromeos::switches::kSmsTestMessages)),
       weak_ptr_factory_(this) {
   test_messages_.push_back("Test Message 0");
   test_messages_.push_back("Test Message 1");
@@ -31,8 +35,6 @@ FakeGsmSMSClient::FakeGsmSMSClient()
 }
 
 FakeGsmSMSClient::~FakeGsmSMSClient() = default;
-
-void FakeGsmSMSClient::Init(dbus::Bus* bus) {}
 
 void FakeGsmSMSClient::SetSmsReceivedHandler(
     const std::string& service_name,

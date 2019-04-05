@@ -27,7 +27,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeShillDeviceClient
   ~FakeShillDeviceClient() override;
 
   // ShillDeviceClient overrides
-  void Init(dbus::Bus* bus) override;
   void AddPropertyChangedObserver(
       const dbus::ObjectPath& device_path,
       ShillPropertyChangedObserver* observer) override;

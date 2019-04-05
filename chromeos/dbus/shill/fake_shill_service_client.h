@@ -28,7 +28,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeShillServiceClient
   ~FakeShillServiceClient() override;
 
   // ShillServiceClient overrides
-  void Init(dbus::Bus* bus) override;
   void AddPropertyChangedObserver(
       const dbus::ObjectPath& service_path,
       ShillPropertyChangedObserver* observer) override;
