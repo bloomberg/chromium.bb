@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/task_scheduler/can_schedule_sequence_observer.h"
 #include "base/task/task_scheduler/scheduler_lock.h"
 #include "base/task/task_scheduler/scheduler_worker_params.h"
 #include "base/task/task_scheduler/sequence.h"
@@ -61,12 +60,11 @@ class BASE_EXPORT SchedulerWorker
 #endif  // defined(OS_WIN)
   };
 
-  // Delegate interface for SchedulerWorker. All methods except
-  // OnCanScheduleSequence() (inherited from CanScheduleSequenceObserver) are
-  // called from the thread managed by the SchedulerWorker instance.
-  class BASE_EXPORT Delegate : public CanScheduleSequenceObserver {
+  // Delegate interface for SchedulerWorker. All methods are called from the
+  // thread managed by the SchedulerWorker instance.
+  class BASE_EXPORT Delegate {
    public:
-    ~Delegate() override = default;
+    virtual ~Delegate() = default;
 
     // Returns the ThreadLabel the Delegate wants its SchedulerWorkers' stacks
     // to be labeled with.

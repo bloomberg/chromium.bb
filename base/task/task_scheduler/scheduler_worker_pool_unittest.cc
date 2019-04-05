@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/task/task_scheduler/can_run_policy_test.h"
 #include "base/task/task_scheduler/delayed_task_manager.h"
 #include "base/task/task_scheduler/scheduler_sequenced_task_runner.h"
 #include "base/task/task_scheduler/scheduler_worker_pool_impl.h"
@@ -166,6 +167,13 @@ class TaskSchedulerWorkerPoolTest
     }
   }
 
+  scoped_refptr<TaskRunner> CreateTaskRunner(
+      const TaskTraits& traits = TaskTraits()) {
+    return test::CreateTaskRunnerWithExecutionMode(
+        GetParam().execution_mode, &mock_scheduler_task_runner_delegate_,
+        traits);
+  }
+
   Thread service_thread_;
   TaskTracker task_tracker_ = {"Test"};
   DelayedTaskManager delayed_task_manager_;
@@ -240,9 +248,8 @@ TEST_P(TaskSchedulerWorkerPoolTest, NestedPostTasks) {
 // Verify that a Task can't be posted after shutdown.
 TEST_P(TaskSchedulerWorkerPoolTest, PostTaskAfterShutdown) {
   StartWorkerPool();
-  auto task_runner = test::CreateTaskRunnerWithExecutionMode(
-      GetParam().execution_mode, &mock_scheduler_task_runner_delegate_);
-  task_tracker_.Shutdown();
+  auto task_runner = CreateTaskRunner();
+  test::ShutdownTaskTracker(&task_tracker_);
   EXPECT_FALSE(task_runner->PostTask(FROM_HERE, BindOnce(&ShouldNotRun)));
 }
 
@@ -250,10 +257,9 @@ TEST_P(TaskSchedulerWorkerPoolTest, PostTaskAfterShutdown) {
 // crash.
 TEST_P(TaskSchedulerWorkerPoolTest, PostAfterDestroy) {
   StartWorkerPool();
-  auto task_runner = test::CreateTaskRunnerWithExecutionMode(
-      GetParam().execution_mode, &mock_scheduler_task_runner_delegate_);
+  auto task_runner = CreateTaskRunner();
   EXPECT_TRUE(task_runner->PostTask(FROM_HERE, DoNothing()));
-  task_tracker_.Shutdown();
+  test::ShutdownTaskTracker(&task_tracker_);
   worker_pool_->JoinForTesting();
   worker_pool_.reset();
   EXPECT_FALSE(task_runner->PostTask(FROM_HERE, BindOnce(&ShouldNotRun)));
@@ -265,9 +271,7 @@ TEST_P(TaskSchedulerWorkerPoolTest, PostDelayedTask) {
 
   WaitableEvent task_ran(WaitableEvent::ResetPolicy::AUTOMATIC,
                          WaitableEvent::InitialState::NOT_SIGNALED);
-
-  auto task_runner = test::CreateTaskRunnerWithExecutionMode(
-      GetParam().execution_mode, &mock_scheduler_task_runner_delegate_);
+  auto task_runner = CreateTaskRunner();
 
   // Wait until the task runner is up and running to make sure the test below is
   // solely timing the delayed task, not bringing up a physical thread.
@@ -300,8 +304,7 @@ TEST_P(TaskSchedulerWorkerPoolTest, PostDelayedTask) {
 // complements it to get full coverage of that method.
 TEST_P(TaskSchedulerWorkerPoolTest, SequencedRunsTasksInCurrentSequence) {
   StartWorkerPool();
-  auto task_runner = test::CreateTaskRunnerWithExecutionMode(
-      GetParam().execution_mode, &mock_scheduler_task_runner_delegate_);
+  auto task_runner = CreateTaskRunner();
   auto sequenced_task_runner = test::CreateSequencedTaskRunnerWithTraits(
       TaskTraits(), &mock_scheduler_task_runner_delegate_);
 
@@ -323,9 +326,7 @@ TEST_P(TaskSchedulerWorkerPoolTest, PostBeforeStart) {
   WaitableEvent task_1_running;
   WaitableEvent task_2_running;
 
-  scoped_refptr<TaskRunner> task_runner = test::CreateTaskRunnerWithTraits(
-      {WithBaseSyncPrimitives()}, &mock_scheduler_task_runner_delegate_);
-
+  auto task_runner = CreateTaskRunner();
   task_runner->PostTask(
       FROM_HERE, BindOnce(&WaitableEvent::Signal, Unretained(&task_1_running)));
   task_runner->PostTask(
@@ -344,6 +345,27 @@ TEST_P(TaskSchedulerWorkerPoolTest, PostBeforeStart) {
   task_2_running.Wait();
 
   task_tracker_.FlushForTesting();
+}
+
+// Verify that tasks only run when allowed by the CanRunPolicy.
+TEST_P(TaskSchedulerWorkerPoolTest, CanRunPolicyBasic) {
+  StartWorkerPool();
+  test::TestCanRunPolicyBasic(
+      worker_pool_.get(),
+      [this](TaskPriority priority) { return CreateTaskRunner({priority}); },
+      &task_tracker_);
+}
+
+TEST_P(TaskSchedulerWorkerPoolTest, CanRunPolicyUpdatedBeforeRun) {
+  StartWorkerPool();
+  // This test only works with SequencedTaskRunner become it assumes
+  // ordered execution of 2 posted tasks.
+  if (GetParam().execution_mode != test::ExecutionMode::SEQUENCED)
+    return;
+  test::TestCanRunPolicyChangedBeforeRun(
+      worker_pool_.get(),
+      [this](TaskPriority priority) { return CreateTaskRunner({priority}); },
+      &task_tracker_);
 }
 
 // Verify that the maximum number of BEST_EFFORT tasks that can run concurrently

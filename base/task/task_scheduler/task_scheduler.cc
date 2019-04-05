@@ -35,12 +35,12 @@ TaskScheduler::InitParams::~InitParams() = default;
 
 TaskScheduler::ScopedExecutionFence::ScopedExecutionFence() {
   DCHECK(g_task_scheduler);
-  g_task_scheduler->SetExecutionFenceEnabled(true);
+  g_task_scheduler->SetCanRun(false);
 }
 
 TaskScheduler::ScopedExecutionFence::~ScopedExecutionFence() {
   DCHECK(g_task_scheduler);
-  g_task_scheduler->SetExecutionFenceEnabled(false);
+  g_task_scheduler->SetCanRun(true);
 }
 
 #if !defined(OS_NACL)
