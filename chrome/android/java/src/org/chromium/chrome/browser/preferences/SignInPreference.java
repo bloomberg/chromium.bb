@@ -168,7 +168,8 @@ public class SignInPreference
 
         boolean personalizedPromoDismissed = ChromePreferenceManager.getInstance().readBoolean(
                 ChromePreferenceManager.SETTINGS_PERSONALIZED_SIGNIN_PROMO_DISMISSED, false);
-        if (!mPersonalizedPromoEnabled || personalizedPromoDismissed) {
+        if (!SigninPromoController.isSignInPromoAllowed() || !mPersonalizedPromoEnabled
+                || personalizedPromoDismissed) {
             setupGenericPromo();
             return;
         }

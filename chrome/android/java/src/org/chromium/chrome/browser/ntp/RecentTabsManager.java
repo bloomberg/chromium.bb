@@ -359,7 +359,8 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
     @PromoState
     int getPromoType() {
         if (!ChromeSigninController.get().isSignedIn()) {
-            if (!SigninManager.get().isSignInAllowed()) {
+            if (!SigninManager.get().isSignInAllowed()
+                    || !SigninPromoController.isSignInPromoAllowed()) {
                 return PromoState.PROMO_NONE;
             }
             return PromoState.PROMO_SIGNIN_PERSONALIZED;
