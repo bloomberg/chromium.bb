@@ -23,5 +23,5 @@
     // Fullscreen API
     // https://fullscreen.spec.whatwg.org/
     [LenientSetter] readonly attribute Element? fullscreenElement;
-    [RaisesException=Setter] attribute FrozenArray<CSSStyleSheet> adoptedStyleSheets;
+    [MeasureAs=AdoptedStyleSheets, RaisesException=Setter] attribute FrozenArray<CSSStyleSheet> adoptedStyleSheets;
 };

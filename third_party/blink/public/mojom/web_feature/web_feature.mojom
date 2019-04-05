@@ -2249,6 +2249,9 @@ enum WebFeature {
   kReadableStreamGetReader = 2841,
   kReadableStreamPipeThrough = 2842,
   kReadableStreamPipeTo = 2843,
+  kCSSStyleSheetReplace = 2844,
+  kCSSStyleSheetReplaceSync = 2845,
+  kAdoptedStyleSheets = 2846,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
