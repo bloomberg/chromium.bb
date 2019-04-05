@@ -8,10 +8,6 @@ proto_library("json_proto") {
   sources = [
     "json.proto",
   ]
-
-  # This way json.pb.h header goes into "$root_gen_dir" directory precisely,
-  # otherwise it goes into "$root_gen_dir" + "/testing/libfuzzer/proto/".
-  proto_out_dir = ""
 }
 
 source_set("json_proto_converter") {
@@ -19,6 +15,7 @@ source_set("json_proto_converter") {
     "json_proto_converter.cc",
     "json_proto_converter.h",
   ]
+  include_dirs = [ target_gen_dir ]
   deps = [
     ":json_proto",
   ]

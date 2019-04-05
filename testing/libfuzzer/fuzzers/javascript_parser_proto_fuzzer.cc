@@ -6,7 +6,7 @@
 
 #include <iostream>
 
-#include "javascript_parser.pb.h"  // from out/gen
+#include "testing/libfuzzer/fuzzers/javascript_parser.pb.h"  // from out/gen
 #include "testing/libfuzzer/fuzzers/javascript_parser_proto_to_string.h"
 #include "third_party/libprotobuf-mutator/src/src/libfuzzer/libfuzzer_macro.h"
 
