@@ -330,6 +330,16 @@ bool ChromeAuthenticatorRequestDelegate::IsWebAuthnUIEnabled() {
          !disable_ui_;
 }
 
+bool ChromeAuthenticatorRequestDelegate::ShouldDisablePlatformAuthenticators() {
+#if defined(OS_MACOSX)
+  // Touch ID is available in Incognito, but not in Guest mode.
+  return Profile::FromBrowserContext(browser_context())->GetProfileType() ==
+         Profile::ProfileType::GUEST_PROFILE;
+#else  // Windows, Android
+  return browser_context()->IsOffTheRecord();
+#endif
+}
+
 void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
     device::FidoRequestHandlerBase::TransportAvailabilityInfo data) {
 #if !defined(OS_ANDROID)
@@ -341,7 +351,10 @@ void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
   if (!IsWebAuthnUIEnabled())
     return;
 
-  DCHECK(weak_dialog_model_);
+  weak_dialog_model_->set_incognito_mode(
+      Profile::FromBrowserContext(browser_context())->GetProfileType() ==
+      Profile::ProfileType::INCOGNITO_PROFILE);
+
   weak_dialog_model_->StartFlow(std::move(data), GetLastTransportUsed(),
                                 GetPreviouslyPairedFidoBleDeviceIds());
 

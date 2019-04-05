@@ -82,6 +82,7 @@ class AuthenticatorRequestDialogModel {
 
     // Touch ID.
     kTouchId,
+    kTouchIdIncognitoSpeedBump,
 
     // Phone as a security key.
     kCableActivate,
@@ -240,10 +241,16 @@ class AuthenticatorRequestDialogModel {
   void TryUsbDevice();
 
   // Tries to use Touch ID -- either because the request requires it or because
-  // the user told us to.
+  // the user told us to. May show an error for unrecognized credential, or an
+  // Incognito mode interstitial, or proceed straight to the Touch ID prompt.
   //
-  // Valid action when at step: kTouchId.
+  // Valid action when at all steps.
   void StartTouchIdFlow();
+
+  // Proceeds straight to the Touch ID prompt.
+  //
+  // Valid action when at all steps.
+  void TryTouchId();
 
   // Cancels the flow as a result of the user clicking `Cancel` on the UI.
   //
@@ -359,6 +366,10 @@ class AuthenticatorRequestDialogModel {
     has_attempted_pin_entry_ = true;
   }
 
+  void set_incognito_mode(bool incognito_mode) {
+    incognito_mode_ = incognito_mode;
+  }
+
  private:
   void DispatchRequestAsync(AuthenticatorReference* authenticator,
                             base::TimeDelta delay);
@@ -407,6 +418,8 @@ class AuthenticatorRequestDialogModel {
   std::vector<device::AuthenticatorGetAssertionResponse> responses_;
   base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)>
       selection_callback_;
+
+  bool incognito_mode_ = false;
 
   base::WeakPtrFactory<AuthenticatorRequestDialogModel> weak_factory_;
 

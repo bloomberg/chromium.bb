@@ -114,6 +114,10 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // that testing is possible.
   virtual bool IsFocused();
 
+  // Returns whether IsUVPAA() should always return false, regardless of
+  // hardware support or enrollment status.
+  virtual bool ShouldDisablePlatformAuthenticators();
+
 #if defined(OS_MACOSX)
   using TouchIdAuthenticatorConfig = device::fido::mac::AuthenticatorConfig;
 

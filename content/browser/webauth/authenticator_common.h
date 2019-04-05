@@ -86,7 +86,8 @@ class CONTENT_EXPORT AuthenticatorCommon {
 
   // Synchronous implementation of
   // IsUserVerifyingPlatformAuthenticatorAvailable.
-  bool IsUserVerifyingPlatformAuthenticatorAvailableImpl();
+  bool IsUserVerifyingPlatformAuthenticatorAvailableImpl(
+      AuthenticatorRequestClientDelegate* request_delegate);
 
   void Cleanup();
 

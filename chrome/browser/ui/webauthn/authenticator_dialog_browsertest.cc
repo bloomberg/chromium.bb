@@ -5,6 +5,7 @@
 #include <memory>
 #include <utility>
 
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -85,6 +86,9 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
           AuthenticatorRequestDialogModel::Step::kBleActivate);
     } else if (name == "touchid") {
       model->SetCurrentStep(AuthenticatorRequestDialogModel::Step::kTouchId);
+    } else if (name == "touchid_incognito") {
+      model->SetCurrentStep(
+          AuthenticatorRequestDialogModel::Step::kTouchIdIncognitoSpeedBump);
     } else if (name == "cable_activate") {
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kCableActivate);
@@ -213,9 +217,15 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_ble_activate) {
   ShowAndVerifyUi();
 }
 
+#if defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_touchid) {
   ShowAndVerifyUi();
 }
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_touchid_incognito) {
+  ShowAndVerifyUi();
+}
+#endif  // defined(OS_MACOSX)
 
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_cable_activate) {
   ShowAndVerifyUi();

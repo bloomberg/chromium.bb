@@ -881,17 +881,32 @@ void AuthenticatorCommon::GetAssertion(
 void AuthenticatorCommon::IsUserVerifyingPlatformAuthenticatorAvailable(
     blink::mojom::Authenticator::
         IsUserVerifyingPlatformAuthenticatorAvailableCallback callback) {
-  const bool result = IsUserVerifyingPlatformAuthenticatorAvailableImpl();
+  // Use |request_delegate_| if a request is currently in progress; or create a
+  // temporary request delegate otherwise.
+  //
+  // Note that |GetWebAuthenticationRequestDelegate| may return nullptr if
+  // there is an active |request_delegate_| already.
+  std::unique_ptr<AuthenticatorRequestClientDelegate> maybe_request_delegate =
+      request_delegate_
+          ? nullptr
+          : GetContentClient()->browser()->GetWebAuthenticationRequestDelegate(
+                render_frame_host_);
+  AuthenticatorRequestClientDelegate* request_delegate_ptr =
+      request_delegate_ ? request_delegate_.get()
+                        : maybe_request_delegate.get();
+
+  const bool result =
+      IsUserVerifyingPlatformAuthenticatorAvailableImpl(request_delegate_ptr);
+
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
-bool AuthenticatorCommon::IsUserVerifyingPlatformAuthenticatorAvailableImpl() {
-  // N.B. request_delegate_ may be nullptr at this point.
-  // All platform authenticators are disabled in incognito mode.
-  // TODO(martinkr): Revisit incognito handling (crbug/908622).
-  if (browser_context()->IsOffTheRecord())
+bool AuthenticatorCommon::IsUserVerifyingPlatformAuthenticatorAvailableImpl(
+    AuthenticatorRequestClientDelegate* request_delegate) {
+  if (request_delegate->ShouldDisablePlatformAuthenticators()) {
     return false;
+  }
 
 #if defined(OS_MACOSX)
   // Touch ID is disabled, regardless of hardware support, if the embedder
@@ -1344,7 +1359,8 @@ base::Optional<device::PlatformAuthenticatorInfo>
 AuthenticatorCommon::CreatePlatformAuthenticatorIfAvailable() {
   // Incognito mode disables platform authenticators, so check for availability
   // first.
-  if (!IsUserVerifyingPlatformAuthenticatorAvailableImpl()) {
+  if (!IsUserVerifyingPlatformAuthenticatorAvailableImpl(
+          request_delegate_.get())) {
     return base::nullopt;
   }
 #if defined(OS_MACOSX)
@@ -1360,7 +1376,8 @@ base::Optional<device::PlatformAuthenticatorInfo> AuthenticatorCommon::
         const device::CtapGetAssertionRequest& request) {
   // Incognito mode disables platform authenticators, so check for availability
   // first.
-  if (!IsUserVerifyingPlatformAuthenticatorAvailableImpl()) {
+  if (!IsUserVerifyingPlatformAuthenticatorAvailableImpl(
+          request_delegate_.get())) {
     return base::nullopt;
   }
 #if defined(OS_MACOSX)
