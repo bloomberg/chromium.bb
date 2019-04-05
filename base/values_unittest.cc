@@ -1076,6 +1076,20 @@ TEST(ValuesTest, RemoveKey) {
   EXPECT_FALSE(root.RemoveKey("one"));
 }
 
+TEST(ValuesTest, ExtractKey) {
+  Value root(Value::Type::DICTIONARY);
+  root.SetKey("one", Value(123));
+
+  // Extraction of missing key should fail.
+  EXPECT_EQ(nullopt, root.ExtractKey("two"));
+
+  // Extraction of existing key should succeed.
+  EXPECT_EQ(Value(123), root.ExtractKey("one"));
+
+  // Second extraction of previously existing key should fail.
+  EXPECT_EQ(nullopt, root.ExtractKey("one"));
+}
+
 TEST(ValuesTest, RemovePath) {
   Value root(Value::Type::DICTIONARY);
   root.SetPath("one.two.three", Value(123));
@@ -1090,16 +1104,42 @@ TEST(ValuesTest, RemovePath) {
   EXPECT_FALSE(root.RemovePath("one.two.three"));
 
   // Intermediate empty dictionaries should be cleared.
-  EXPECT_FALSE(root.FindKey("one"));
+  EXPECT_EQ(nullptr, root.FindKey("one"));
 
   root.SetPath("one.two.three", Value(123));
   root.SetPath("one.two.four", Value(124));
 
   EXPECT_TRUE(root.RemovePath("one.two.three"));
   // Intermediate non-empty dictionaries should be kept.
-  EXPECT_TRUE(root.FindKey("one"));
-  EXPECT_TRUE(root.FindPath("one.two"));
-  EXPECT_TRUE(root.FindPath("one.two.four"));
+  EXPECT_NE(nullptr, root.FindKey("one"));
+  EXPECT_NE(nullptr, root.FindPath("one.two"));
+  EXPECT_NE(nullptr, root.FindPath("one.two.four"));
+}
+
+TEST(ValuesTest, ExtractPath) {
+  Value root(Value::Type::DICTIONARY);
+  root.SetPath("one.two.three", Value(123));
+
+  // Extraction of missing key should fail.
+  EXPECT_EQ(nullopt, root.ExtractPath("one.two.four"));
+
+  // Extraction of existing key should succeed.
+  EXPECT_EQ(Value(123), root.ExtractPath("one.two.three"));
+
+  // Second extraction of previously existing key should fail.
+  EXPECT_EQ(nullopt, root.ExtractPath("one.two.three"));
+
+  // Intermediate empty dictionaries should be cleared.
+  EXPECT_EQ(nullptr, root.FindKey("one"));
+
+  root.SetPath("one.two.three", Value(123));
+  root.SetPath("one.two.four", Value(124));
+
+  EXPECT_EQ(Value(123), root.ExtractPath("one.two.three"));
+  // Intermediate non-empty dictionaries should be kept.
+  EXPECT_NE(nullptr, root.FindKey("one"));
+  EXPECT_NE(nullptr, root.FindPath("one.two"));
+  EXPECT_NE(nullptr, root.FindPath("one.two.four"));
 }
 
 TEST(ValuesTest, Basic) {

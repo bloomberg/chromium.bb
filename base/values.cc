@@ -407,10 +407,20 @@ Value* Value::FindListKey(StringPiece key) {
   return FindKeyOfType(key, Type::LIST);
 }
 
-bool Value::RemoveKey(StringPiece key) {
+Value* Value::SetKey(StringPiece key, Value&& value) {
+  return SetKeyInternal(key, std::make_unique<Value>(std::move(value)));
+}
+
+Value* Value::SetKey(std::string&& key, Value&& value) {
   CHECK(is_dict());
-  // NOTE: Can't directly return dict_->erase(key) due to MSVC warning C4800.
-  return dict_.erase(key) != 0;
+  return dict_
+      .insert_or_assign(std::move(key),
+                        std::make_unique<Value>(std::move(value)))
+      .first->second.get();
+}
+
+Value* Value::SetKey(const char* key, Value&& value) {
+  return SetKeyInternal(key, std::make_unique<Value>(std::move(value)));
 }
 
 Value* Value::SetBoolKey(StringPiece key, bool value) {
@@ -441,20 +451,20 @@ Value* Value::SetStringKey(StringPiece key, StringPiece16 value) {
   return SetKeyInternal(key, std::make_unique<Value>(value));
 }
 
-Value* Value::SetKey(StringPiece key, Value&& value) {
-  return SetKeyInternal(key, std::make_unique<Value>(std::move(value)));
-}
-
-Value* Value::SetKey(std::string&& key, Value&& value) {
+bool Value::RemoveKey(StringPiece key) {
   CHECK(is_dict());
-  return dict_
-      .insert_or_assign(std::move(key),
-                        std::make_unique<Value>(std::move(value)))
-      .first->second.get();
+  return dict_.erase(key) != 0;
 }
 
-Value* Value::SetKey(const char* key, Value&& value) {
-  return SetKeyInternal(key, std::make_unique<Value>(std::move(value)));
+Optional<Value> Value::ExtractKey(StringPiece key) {
+  CHECK(is_dict());
+  auto found = dict_.find(key);
+  if (found == dict_.end())
+    return nullopt;
+
+  Value value = std::move(*found->second);
+  dict_.erase(found);
+  return std::move(value);
 }
 
 Value* Value::FindPath(StringPiece path) {
@@ -572,25 +582,29 @@ Value* Value::SetStringPath(StringPiece path, StringPiece16 value) {
 }
 
 bool Value::RemovePath(StringPiece path) {
+  return ExtractPath(path).has_value();
+}
+
+Optional<Value> Value::ExtractPath(StringPiece path) {
   if (!is_dict() || path.empty())
-    return false;
+    return nullopt;
 
   // NOTE: PathSplitter is not being used here because recursion is used to
   // ensure that dictionaries that become empty due to this operation are
   // removed automatically.
   size_t pos = path.find('.');
   if (pos == path.npos)
-    return RemoveKey(path);
+    return ExtractKey(path);
 
   auto found = dict_.find(path.substr(0, pos));
   if (found == dict_.end() || !found->second->is_dict())
-    return false;
+    return nullopt;
 
-  bool removed = found->second->RemovePath(path.substr(pos + 1));
-  if (removed && found->second->dict_.empty())
+  Optional<Value> extracted = found->second->ExtractPath(path.substr(pos + 1));
+  if (extracted && found->second->dict_.empty())
     dict_.erase(found);
 
-  return removed;
+  return extracted;
 }
 
 // DEPRECATED METHODS
