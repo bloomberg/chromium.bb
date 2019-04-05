@@ -182,6 +182,7 @@ if (is_chromeos) {
       "//base/test:test_config",
       "//base/test:test_support",
       "//media/gpu",
+      "//mojo/core/embedder:embedder",
       "//testing/gtest:gtest",
     ]
     if (use_ozone) {

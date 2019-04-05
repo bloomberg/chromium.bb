@@ -13,7 +13,6 @@
 #include "media/gpu/test/video_player/video_decoder_client.h"
 #include "media/gpu/test/video_player/video_player.h"
 #include "media/gpu/test/video_player/video_player_test_environment.h"
-#include "mojo/core/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -276,14 +275,6 @@ int main(int argc, char** argv) {
   }
 
   testing::InitGoogleTest(&argc, argv);
-
-  // Using shared memory requires mojo to be initialized (crbug.com/849207).
-  mojo::core::Init();
-
-  // Needed to enable DVLOG through --vmodule.
-  logging::LoggingSettings settings;
-  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
-  LOG_ASSERT(logging::InitLogging(settings));
 
   // Set the default test data path.
   media::test::Video::SetTestDataPath(media::GetTestDataPath());
