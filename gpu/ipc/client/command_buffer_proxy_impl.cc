@@ -34,7 +34,6 @@
 #include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gl/gl_bindings.h"
@@ -436,11 +435,9 @@ int32_t CommandBufferProxyImpl::CreateImage(ClientBuffer buffer,
     image_fence_sync = GenerateFenceSyncRelease();
 
   DCHECK(gpu::IsImageFromGpuMemoryBufferFormatSupported(
-      gpu_memory_buffer->GetFormat(), capabilities_))
-      << gfx::BufferFormatToString(gpu_memory_buffer->GetFormat());
+      gpu_memory_buffer->GetFormat(), capabilities_));
   DCHECK(gpu::IsImageSizeValidForGpuMemoryBufferFormat(
-      gfx::Size(width, height), gpu_memory_buffer->GetFormat()))
-      << gfx::BufferFormatToString(gpu_memory_buffer->GetFormat());
+      gfx::Size(width, height), gpu_memory_buffer->GetFormat()));
 
   GpuCommandBufferMsg_CreateImage_Params params;
   params.id = new_id;

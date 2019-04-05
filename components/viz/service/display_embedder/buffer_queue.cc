@@ -17,7 +17,6 @@
 #include "ui/display/types/display_snapshot.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/gl/gl_enums.h"
 
 namespace viz {
 
@@ -54,21 +53,13 @@ void BufferQueue::BindFramebuffer() {
   if (!current_surface_)
     current_surface_ = GetNextSurface();
 
-  if (!current_surface_)
-    return;
-  gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                            texture_target_, current_surface_->texture, 0);
-
-#if DCHECK_IS_ON() && defined(OS_CHROMEOS)
-  const GLenum result = gl_->CheckFramebufferStatus(GL_FRAMEBUFFER);
-  gl_->Finish();
-  if (result != GL_FRAMEBUFFER_COMPLETE)
-    DLOG(ERROR) << " Incomplete fb: " << gl::GLEnums::GetStringError(result);
-#endif
-
-  if (current_surface_->stencil) {
-    gl_->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
-                                 GL_RENDERBUFFER, current_surface_->stencil);
+  if (current_surface_) {
+    gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                              texture_target_, current_surface_->texture, 0);
+    if (current_surface_->stencil) {
+      gl_->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
+                                   GL_RENDERBUFFER, current_surface_->stencil);
+    }
   }
 }
 
@@ -155,9 +146,8 @@ void BufferQueue::Reshape(const gfx::Size& size,
                           const gfx::ColorSpace& color_space,
                           bool use_stencil) {
   if (size == size_ && color_space == color_space_ &&
-      use_stencil == use_stencil_) {
+      use_stencil == use_stencil_)
     return;
-  }
 #if !defined(OS_MACOSX)
   // TODO(ccameron): This assert is being hit on Mac try jobs. Determine if that
   // is cause for concern or if it is benign.
