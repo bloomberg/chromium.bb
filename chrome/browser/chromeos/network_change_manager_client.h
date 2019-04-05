@@ -42,8 +42,6 @@ class NetworkChangeManagerClient
   friend class NetworkChangeManagerClientUpdateTest;
   FRIEND_TEST_ALL_PREFIXES(NetworkChangeManagerClientTest,
                            ConnectionTypeFromShill);
-  FRIEND_TEST_ALL_PREFIXES(NetworkChangeManagerClientTest,
-                           NetworkChangeNotifierConnectionTypeUpdated);
 
   void ConnectToNetworkChangeManager();
   void ReconnectToNetworkChangeManager();
