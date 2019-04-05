@@ -198,7 +198,7 @@ ClientMessageEventCollector::ClientMessageEventCollector(
 }
 
 ClientMessageEventCollector::~ClientMessageEventCollector() {
-  client_->SetEventCollectorFor(xid_, NULL);
+  client_->SetEventCollectorFor(xid_, nullptr);
 }
 
 std::vector<XClientMessageEvent> ClientMessageEventCollector::PopAllEvents() {
@@ -220,8 +220,7 @@ TestMoveLoop::TestMoveLoop(X11MoveLoopDelegate* delegate)
       is_running_(false) {
 }
 
-TestMoveLoop::~TestMoveLoop() {
-}
+TestMoveLoop::~TestMoveLoop() = default;
 
 bool TestMoveLoop::IsRunning() const {
   return is_running_;
@@ -259,10 +258,9 @@ SimpleTestDragDropClient::SimpleTestDragDropClient(
                                    gfx::GetXDisplay(),
                                    window->GetHost()->GetAcceleratedWidget()),
       target_xid_(x11::None),
-      loop_(NULL) {}
+      loop_(nullptr) {}
 
-SimpleTestDragDropClient::~SimpleTestDragDropClient() {
-}
+SimpleTestDragDropClient::~SimpleTestDragDropClient() = default;
 
 void SimpleTestDragDropClient::SetTopmostXWindow(XID xid) {
   target_xid_ = xid;
@@ -297,8 +295,7 @@ TestDragDropClient::TestDragDropClient(
     : SimpleTestDragDropClient(window, cursor_manager),
       source_xid_(window->GetHost()->GetAcceleratedWidget()) {}
 
-TestDragDropClient::~TestDragDropClient() {
-}
+TestDragDropClient::~TestDragDropClient() = default;
 
 Atom TestDragDropClient::GetAtom(const char* name) {
   return gfx::GetAtom(name);
@@ -392,17 +389,17 @@ class DesktopDragDropClientAuraX11Test : public ViewsTestBase {
     ViewsTestBase::SetUp();
 
     // Create widget to initiate the drags.
-    widget_.reset(new Widget);
+    widget_ = std::make_unique<Widget>();
     Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(100, 100);
     widget_->Init(params);
     widget_->Show();
 
-    cursor_manager_.reset(new DesktopNativeCursorManager());
+    cursor_manager_ = std::make_unique<DesktopNativeCursorManager>();
 
-    client_.reset(new TestDragDropClient(widget_->GetNativeWindow(),
-                                         cursor_manager_.get()));
+    client_ = std::make_unique<TestDragDropClient>(widget_->GetNativeWindow(),
+                                                   cursor_manager_.get());
     client_->Init();
   }
 
@@ -788,7 +785,7 @@ class TestDragDropDelegate : public aura::client::DragDropDelegate {
         num_exits_(0),
         num_drops_(0),
         last_event_flags_(0) {}
-  ~TestDragDropDelegate() override {}
+  ~TestDragDropDelegate() override = default;
 
   int num_enters() const { return num_enters_; }
   int num_updates() const { return num_updates_; }
@@ -843,10 +840,9 @@ class TestDragDropDelegate : public aura::client::DragDropDelegate {
 class DesktopDragDropClientAuraX11ChromeSourceTargetTest
     : public ViewsTestBase {
  public:
-  DesktopDragDropClientAuraX11ChromeSourceTargetTest() {
-  }
+  DesktopDragDropClientAuraX11ChromeSourceTargetTest() = default;
 
-  ~DesktopDragDropClientAuraX11ChromeSourceTargetTest() override {}
+  ~DesktopDragDropClientAuraX11ChromeSourceTargetTest() override = default;
 
   int StartDragAndDrop() {
     ui::OSExchangeData data;
@@ -866,7 +862,7 @@ class DesktopDragDropClientAuraX11ChromeSourceTargetTest
     ViewsTestBase::SetUp();
 
     // Create widget to initiate the drags.
-    widget_.reset(new Widget);
+    widget_ = std::make_unique<Widget>();
     Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.native_widget = new DesktopNativeWidgetAura(widget_.get());
@@ -874,10 +870,10 @@ class DesktopDragDropClientAuraX11ChromeSourceTargetTest
     widget_->Init(params);
     widget_->Show();
 
-    cursor_manager_.reset(new DesktopNativeCursorManager());
+    cursor_manager_ = std::make_unique<DesktopNativeCursorManager>();
 
-    client_.reset(new SimpleTestDragDropClient(widget_->GetNativeWindow(),
-                                               cursor_manager_.get()));
+    client_ = std::make_unique<SimpleTestDragDropClient>(
+        widget_->GetNativeWindow(), cursor_manager_.get());
     client_->Init();
   }
 

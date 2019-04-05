@@ -47,8 +47,7 @@ X11WindowEventFilter::X11WindowEventFilter(
       xwindow_(window_tree_host->AsWindowTreeHost()->GetAcceleratedWidget()),
       x_root_window_(DefaultRootWindow(xdisplay_)) {}
 
-X11WindowEventFilter::~X11WindowEventFilter() {
-}
+X11WindowEventFilter::~X11WindowEventFilter() = default;
 
 void X11WindowEventFilter::MaybeDispatchHostWindowDragMovement(
     int hittest,

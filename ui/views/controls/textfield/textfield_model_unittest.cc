@@ -710,21 +710,21 @@ TEST_F(TextfieldModelTest, SelectWordTest) {
 // regression.
 #if defined(OS_LINUX)
 TEST_F(TextfieldModelTest, SelectWordTest_MixScripts) {
-  TextfieldModel model(NULL);
+  TextfieldModel model(nullptr);
   std::vector<WordAndCursor> word_and_cursor;
-  word_and_cursor.push_back(WordAndCursor(L"a\x05d0", 2));
-  word_and_cursor.push_back(WordAndCursor(L"a\x05d0", 2));
-  word_and_cursor.push_back(WordAndCursor(L"\x05d1\x05d2", 5));
-  word_and_cursor.push_back(WordAndCursor(L"\x05d1\x05d2", 5));
-  word_and_cursor.push_back(WordAndCursor(L" ", 3));
-  word_and_cursor.push_back(WordAndCursor(L"a\x05d0", 2));
-  word_and_cursor.push_back(WordAndCursor(L"\x0915\x094d\x0915", 9));
-  word_and_cursor.push_back(WordAndCursor(L"\x0915\x094d\x0915", 9));
-  word_and_cursor.push_back(WordAndCursor(L" ", 10));
-  word_and_cursor.push_back(WordAndCursor(L"\x4E2D\x56FD", 12));
-  word_and_cursor.push_back(WordAndCursor(L"\x4E2D\x56FD", 12));
-  word_and_cursor.push_back(WordAndCursor(L"\x82B1", 13));
-  word_and_cursor.push_back(WordAndCursor(L"\x5929", 14));
+  word_and_cursor.emplace_back(L"a\x05d0", 2);
+  word_and_cursor.emplace_back(L"a\x05d0", 2);
+  word_and_cursor.emplace_back(L"\x05d1\x05d2", 5);
+  word_and_cursor.emplace_back(L"\x05d1\x05d2", 5);
+  word_and_cursor.emplace_back(L" ", 3);
+  word_and_cursor.emplace_back(L"a\x05d0", 2);
+  word_and_cursor.emplace_back(L"\x0915\x094d\x0915", 9);
+  word_and_cursor.emplace_back(L"\x0915\x094d\x0915", 9);
+  word_and_cursor.emplace_back(L" ", 10);
+  word_and_cursor.emplace_back(L"\x4E2D\x56FD", 12);
+  word_and_cursor.emplace_back(L"\x4E2D\x56FD", 12);
+  word_and_cursor.emplace_back(L"\x82B1", 13);
+  word_and_cursor.emplace_back(L"\x5929", 14);
 
   // The text consists of Ascii, Hebrew, Hindi with Virama sign, and Chinese.
   model.SetText(base::WideToUTF16(L"a\x05d0 \x05d1\x05d2 \x0915\x094d\x0915 "

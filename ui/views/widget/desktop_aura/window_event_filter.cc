@@ -26,7 +26,7 @@ namespace views {
 WindowEventFilter::WindowEventFilter(DesktopWindowTreeHost* window_tree_host)
     : window_tree_host_(window_tree_host), click_component_(HTNOWHERE) {}
 
-WindowEventFilter::~WindowEventFilter() {}
+WindowEventFilter::~WindowEventFilter() = default;
 
 void WindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() != ui::ET_MOUSE_PRESSED)
