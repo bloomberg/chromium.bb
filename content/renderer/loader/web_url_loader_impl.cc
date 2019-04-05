@@ -780,6 +780,11 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   if (base::UnguessableToken window_id = request.GetFetchWindowId())
     resource_request->fetch_window_id = base::make_optional(window_id);
 
+  if (request.GetDevToolsId().has_value()) {
+    resource_request->devtools_request_id =
+        request.GetDevToolsId().value().Ascii();
+  }
+
   // The network request has already been made by the browser. The renderer
   // should bind the URLLoaderClientEndpoints stored in |response_override| to
   // an implementation of a URLLoaderClient to get the response body.

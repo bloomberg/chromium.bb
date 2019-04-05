@@ -883,6 +883,12 @@ void InspectorNetworkAgent::PrepareRequest(
   }
   if (bypass_service_worker_.Get())
     request.SetSkipServiceWorker(true);
+
+  // The loader parameter is for generating a browser generated ID for a browser
+  // initiated request. We pass it null here because we are reporting a renderer
+  // generated ID for a renderer initiated request.
+  request.SetDevToolsId(IdentifiersFactory::RequestId(/* loader */ nullptr,
+                                                      request.InspectorId()));
 }
 
 void InspectorNetworkAgent::WillSendRequest(

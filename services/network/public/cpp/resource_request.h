@@ -91,6 +91,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   net::HttpRequestHeaders custom_proxy_post_cache_headers;
   bool custom_proxy_use_alternate_proxy_list = false;
   base::Optional<base::UnguessableToken> fetch_window_id;
+  base::Optional<std::string> devtools_request_id;
 };
 
 }  // namespace network

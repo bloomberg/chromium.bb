@@ -437,6 +437,10 @@ const ResourceRequest& WebURLRequest::ToResourceRequest() const {
   return *resource_request_;
 }
 
+base::Optional<WebString> WebURLRequest::GetDevToolsId() const {
+  return resource_request_->GetDevToolsId();
+}
+
 WebURLRequest::WebURLRequest(ResourceRequest& r) : resource_request_(&r) {}
 
 }  // namespace blink
