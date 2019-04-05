@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_IMAGE_ELEMENT_TIMING_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_IMAGE_ELEMENT_TIMING_H_
 
-#include "third_party/blink/public/platform/web_layer_tree_view.h"
+#include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -75,7 +75,7 @@ class CORE_EXPORT ImageElementTiming final
                            const FloatRect&) const;
 
   // Callback for the swap promise. Reports paint timestamps.
-  void ReportImagePaintSwapTime(WebLayerTreeView::SwapResult,
+  void ReportImagePaintSwapTime(WebWidgetClient::SwapResult,
                                 base::TimeTicks timestamp);
 
   // Struct containing information about image element timing.

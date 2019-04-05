@@ -8,7 +8,9 @@
 
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/test_ukm_recorder_factory.h"
+#include "content/renderer/frame_swap_message_queue.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/buffer_types.h"
 
@@ -78,6 +80,18 @@ bool FakeCompositorDependencies::IsScrollAnimatorEnabled() {
 std::unique_ptr<cc::UkmRecorderFactory>
 FakeCompositorDependencies::CreateUkmRecorderFactory() {
   return std::make_unique<cc::TestUkmRecorderFactory>();
+}
+
+void FakeCompositorDependencies::RequestNewLayerTreeFrameSink(
+    int widget_routing_id,
+    scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
+    const GURL& url,
+    LayerTreeFrameSinkCallback callback,
+    mojom::RenderFrameMetadataObserverClientRequest
+        render_frame_metadata_observer_client_request,
+    mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer_ptr,
+    const char* client_name) {
+  std::move(callback).Run(cc::FakeLayerTreeFrameSink::Create3d());
 }
 
 #ifdef OS_ANDROID

@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/paint/image_paint_timing_detector.h"
+
 #include "base/bind.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
+#include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
@@ -25,7 +27,7 @@ namespace blink {
 class ImagePaintTimingDetectorTest
     : public RenderingTest,
       private ScopedFirstContentfulPaintPlusPlusForTest {
-  using CallbackQueue = std::queue<WebLayerTreeView::ReportTimeCallback>;
+  using CallbackQueue = std::queue<WebWidgetClient::ReportTimeCallback>;
 
  public:
   ImagePaintTimingDetectorTest()
@@ -120,7 +122,7 @@ class ImagePaintTimingDetectorTest
   void InvokeCallback() {
     DCHECK_GT(callback_queue_.size(), 0UL);
     std::move(callback_queue_.front())
-        .Run(WebLayerTreeView::SwapResult::kDidSwap, CurrentTimeTicks());
+        .Run(WebWidgetClient::SwapResult::kDidSwap, CurrentTimeTicks());
     callback_queue_.pop();
   }
 
@@ -158,7 +160,7 @@ class ImagePaintTimingDetectorTest
   void SimulateScroll() { GetPaintTimingDetector().NotifyScroll(kUserScroll); }
 
  private:
-  void FakeNotifySwapTime(WebLayerTreeView::ReportTimeCallback callback) {
+  void FakeNotifySwapTime(WebWidgetClient::ReportTimeCallback callback) {
     callback_queue_.push(std::move(callback));
   }
   ImageResourceContent* CreateImageForTest(int width, int height) {

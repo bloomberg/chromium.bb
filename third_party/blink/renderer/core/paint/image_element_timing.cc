@@ -100,11 +100,6 @@ void ImageElementTiming::NotifyImagePaintedInternal(
     return;
   }
 
-  WebLayerTreeView* layerTreeView =
-      frame->GetChromeClient().GetWebLayerTreeView(frame);
-  if (!layerTreeView)
-    return;
-
   element_timings_.emplace_back(
       AtomicString(cached_image.Url().GetString()), intersection_rect,
       cached_image.LoadResponseEnd(), attr,
@@ -113,9 +108,10 @@ void ImageElementTiming::NotifyImagePaintedInternal(
   // records in |element_timings_| will be processed when the promise succeeds
   // or fails, and at that time the vector is cleared.
   if (element_timings_.size() == 1) {
-    layerTreeView->NotifySwapTime(ConvertToBaseCallback(
-        CrossThreadBind(&ImageElementTiming::ReportImagePaintSwapTime,
-                        WrapCrossThreadWeakPersistent(this))));
+    frame->GetChromeClient().NotifySwapTime(
+        *frame, ConvertToBaseCallback(CrossThreadBind(
+                    &ImageElementTiming::ReportImagePaintSwapTime,
+                    WrapCrossThreadWeakPersistent(this))));
   }
 }
 
@@ -173,7 +169,7 @@ bool ImageElementTiming::ShouldReportElement(
                                                kImageTimingSizeThreshold;
 }
 
-void ImageElementTiming::ReportImagePaintSwapTime(WebLayerTreeView::SwapResult,
+void ImageElementTiming::ReportImagePaintSwapTime(WebWidgetClient::SwapResult,
                                                   base::TimeTicks timestamp) {
   WindowPerformance* performance =
       DOMWindowPerformance::performance(*GetSupplementable());

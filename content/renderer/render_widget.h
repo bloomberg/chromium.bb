@@ -448,6 +448,7 @@ class CONTENT_EXPORT RenderWidget
                                double duration_sec) override;
   void RequestDecode(const cc::PaintImage& image,
                      base::OnceCallback<void(bool)> callback) override;
+  void NotifySwapTime(ReportTimeCallback callback) override;
 
   // Override point to obtain that the current input method state and caret
   // position.
@@ -1167,9 +1168,11 @@ class CONTENT_EXPORT RenderWidget
 
   // Used to generate a callback for the reply when making the warmup frame
   // sink, and to cancel that callback if the warmup is aborted.
-  base::WeakPtrFactory<RenderWidget> warmup_weak_ptr_factory_;
-
-  base::WeakPtrFactory<RenderWidget> weak_ptr_factory_;
+  base::WeakPtrFactory<RenderWidget> warmup_weak_ptr_factory_{this};
+  // This factory is invalidated when the WebWidget is closed.
+  base::WeakPtrFactory<RenderWidget> close_weak_ptr_factory_{this};
+  // This factory is invalidated when the RenderWidget is destroyed.
+  base::WeakPtrFactory<RenderWidget> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };

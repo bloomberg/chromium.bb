@@ -179,23 +179,21 @@ void PaintTiming::RegisterNotifySwapTime(PaintEvent event) {
 
 void PaintTiming::RegisterNotifySwapTime(PaintEvent event,
                                          ReportTimeCallback callback) {
-  // ReportSwapTime on layerTreeView will queue a swap-promise, the callback is
-  // called when the swap for current render frame completes or fails to happen.
+  // ReportSwapTime will queue a swap-promise, the callback is called when the
+  // compositor submission of the current render frame completes or fails to
+  // happen.
   if (!GetFrame() || !GetFrame()->GetPage())
     return;
-  if (WebLayerTreeView* layerTreeView =
-          GetFrame()->GetPage()->GetChromeClient().GetWebLayerTreeView(
-              GetFrame())) {
-    layerTreeView->NotifySwapTime(ConvertToBaseCallback(std::move(callback)));
-  }
+  GetFrame()->GetPage()->GetChromeClient().NotifySwapTime(
+      *GetFrame(), ConvertToBaseCallback(std::move(callback)));
 }
 
 void PaintTiming::ReportSwapTime(PaintEvent event,
-                                 WebLayerTreeView::SwapResult result,
+                                 WebWidgetClient::SwapResult result,
                                  base::TimeTicks timestamp) {
   DCHECK(IsMainThread());
   // If the swap fails for any reason, we use the timestamp when the SwapPromise
-  // was broken. |result| == WebLayerTreeView::SwapResult::kDidNotSwapSwapFails
+  // was broken. |result| == WebWidgetClient::SwapResult::kDidNotSwapSwapFails
   // usually means the compositor decided not swap because there was no actual
   // damage, which can happen when what's being painted isn't visible. In this
   // case, the timestamp will be consistent with the case where the swap
@@ -258,10 +256,10 @@ void PaintTiming::SetFirstImagePaintSwap(TimeTicks stamp) {
 }
 
 void PaintTiming::ReportSwapResultHistogram(
-    const WebLayerTreeView::SwapResult result) {
+    WebWidgetClient::SwapResult result) {
   DEFINE_STATIC_LOCAL(EnumerationHistogram, did_swap_histogram,
                       ("PageLoad.Internal.Renderer.PaintTiming.SwapResult",
-                       WebLayerTreeView::SwapResult::kSwapResultMax));
+                       WebWidgetClient::SwapResult::kSwapResultMax));
   did_swap_histogram.Count(result);
 }
 

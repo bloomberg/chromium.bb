@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "third_party/blink/public/platform/web_layer_tree_view.h"
+#include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 #include "third_party/blink/renderer/core/paint/paint_event.h"
@@ -29,7 +29,7 @@ class CORE_EXPORT PaintTiming final
   USING_GARBAGE_COLLECTED_MIXIN(PaintTiming);
   friend class FirstMeaningfulPaintDetector;
   using ReportTimeCallback =
-      WTF::CrossThreadFunction<void(WebLayerTreeView::SwapResult,
+      WTF::CrossThreadFunction<void(WebWidgetClient::SwapResult,
                                     base::TimeTicks)>;
 
  public:
@@ -98,10 +98,10 @@ class CORE_EXPORT PaintTiming final
 
   void RegisterNotifySwapTime(PaintEvent, ReportTimeCallback);
   void ReportSwapTime(PaintEvent,
-                      WebLayerTreeView::SwapResult,
+                      WebWidgetClient::SwapResult,
                       base::TimeTicks timestamp);
 
-  void ReportSwapResultHistogram(const WebLayerTreeView::SwapResult);
+  void ReportSwapResultHistogram(WebWidgetClient::SwapResult);
 
   void Trace(blink::Visitor*) override;
 

@@ -61,7 +61,7 @@ class TextPaintTimingDetectorTest
   void InvokeCallback() {
     TextPaintTimingDetector& detector =
         GetPaintTimingDetector().GetTextPaintTimingDetector();
-    detector.ReportSwapTime(WebLayerTreeView::SwapResult::kDidSwap,
+    detector.ReportSwapTime(WebWidgetClient::SwapResult::kDidSwap,
                             CurrentTimeTicks());
   }
 
@@ -77,7 +77,7 @@ class TextPaintTimingDetectorTest
     TextPaintTimingDetector& detector =
         GetPaintTimingDetector().GetTextPaintTimingDetector();
     if (!detector.records_manager_.texts_queued_for_paint_time_.empty()) {
-      detector.ReportSwapTime(WebLayerTreeView::SwapResult::kDidSwap,
+      detector.ReportSwapTime(WebWidgetClient::SwapResult::kDidSwap,
                               CurrentTimeTicks());
     }
   }
@@ -92,7 +92,7 @@ class TextPaintTimingDetectorTest
     GetChildFrameView()
         .GetPaintTimingDetector()
         .GetTextPaintTimingDetector()
-        .ReportSwapTime(WebLayerTreeView::SwapResult::kDidSwap,
+        .ReportSwapTime(WebWidgetClient::SwapResult::kDidSwap,
                         CurrentTimeTicks());
   }
 

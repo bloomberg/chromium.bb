@@ -33,7 +33,6 @@
 
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -348,21 +347,20 @@ void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
       MonotonicTimeToDOMHighResTimeStamp(processing_start),
       MonotonicTimeToDOMHighResTimeStamp(processing_end), cancelable);
   event_timings_.push_back(entry);
-  WebLayerTreeView* layerTreeView =
-      GetFrame()->GetChromeClient().GetWebLayerTreeView(GetFrame());
   // Only queue a swap promise when |event_timings_| was empty. All of the
   // elements in |event_timings_| will be processed in a single call of
   // ReportEventTimings() when the promise suceeds or fails. This method also
   // clears the vector, so a promise has already been queued when the vector was
   // not previously empty.
-  if (event_timings_.size() == 1 && layerTreeView) {
-    layerTreeView->NotifySwapTime(ConvertToBaseCallback(
-        CrossThreadBind(&WindowPerformance::ReportEventTimings,
-                        WrapCrossThreadWeakPersistent(this))));
+  if (event_timings_.size() == 1) {
+    GetFrame()->GetChromeClient().NotifySwapTime(
+        *GetFrame(), ConvertToBaseCallback(
+                         CrossThreadBind(&WindowPerformance::ReportEventTimings,
+                                         WrapCrossThreadWeakPersistent(this))));
   }
 }
 
-void WindowPerformance::ReportEventTimings(WebLayerTreeView::SwapResult result,
+void WindowPerformance::ReportEventTimings(WebWidgetClient::SwapResult result,
                                            TimeTicks timestamp) {
   DCHECK(origin_trials::EventTimingEnabled(GetExecutionContext()));
 

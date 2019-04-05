@@ -9,7 +9,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_IMAGE_PAINT_TIMING_DETECTOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_IMAGE_PAINT_TIMING_DETECTOR_H_
 
-#include "third_party/blink/public/platform/web_layer_tree_view.h"
+#include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -167,7 +167,7 @@ class CORE_EXPORT ImagePaintTimingDetector final
                           unsigned report_count) const;
   // This is provided for unit test to force invoking swap promise callback.
   void ReportSwapTime(unsigned last_queued_frame_index,
-                      WebLayerTreeView::SwapResult,
+                      WebWidgetClient::SwapResult,
                       base::TimeTicks);
   void RegisterNotifySwapTime();
   void OnLargestImagePaintDetected(ImageRecord*);
@@ -176,7 +176,7 @@ class CORE_EXPORT ImagePaintTimingDetector final
 
   void Analyze();
 
-  base::RepeatingCallback<void(WebLayerTreeView::ReportTimeCallback)>
+  base::RepeatingCallback<void(WebWidgetClient::ReportTimeCallback)>
       notify_swap_time_override_for_testing_;
 
   // Used to find the last candidate.

@@ -497,7 +497,7 @@ static void PrintDocumentTofile(v8::Isolate* isolate,
 }
 
 void OnSwapCompletedHelper(CallbackAndContext* callback_and_context,
-                           blink::WebLayerTreeView::SwapResult,
+                           blink::WebWidgetClient::SwapResult,
                            base::TimeTicks) {
   RunCallbackHelper(callback_and_context);
 }
@@ -1242,17 +1242,14 @@ bool GpuBenchmarking::AddSwapCompletionEventListener(gin::Arguments* args) {
     return false;
   if (!render_frame_)
     return false;
-  LayerTreeView* layer_tree_view =
-      render_frame_->GetLocalRootRenderWidget()->layer_tree_view();
-  if (!layer_tree_view)
-    return false;
+  RenderWidget* render_widget = render_frame_->GetLocalRootRenderWidget();
   GpuBenchmarkingContext context;
   if (!context.Init(true))
     return false;
 
   auto callback_and_context = base::MakeRefCounted<CallbackAndContext>(
       args->isolate(), callback, context.web_frame()->MainWorldScriptContext());
-  layer_tree_view->NotifySwapTime(base::BindOnce(
+  render_widget->NotifySwapTime(base::BindOnce(
       &OnSwapCompletedHelper, base::RetainedRef(callback_and_context)));
   return true;
 }
