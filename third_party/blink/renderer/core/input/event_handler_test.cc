@@ -1573,14 +1573,16 @@ TEST_F(EventHandlerSimTest, NotExposeKeyboardEvent) {
     </style>
     Last event: <br>
     <p id='log'>no event</p>
+    <input id="input1" type="text">
+
     <script>
       document.addEventListener('keydown', (e) => {
         let log = document.getElementById('log');
-        log.innerText = 'keydown';
+        log.innerText = 'keydown cancelable=' + e.cancelable;
       });
       document.addEventListener('keyup', (e) => {
         let log = document.getElementById('log');
-        log.innerText = 'keyup';
+        log.innerText = 'keyup cancelable=' + e.cancelable;
       });
     </script>
   )HTML");
@@ -1590,6 +1592,8 @@ TEST_F(EventHandlerSimTest, NotExposeKeyboardEvent) {
   WebKeyboardEvent e{WebInputEvent::kRawKeyDown, WebInputEvent::kNoModifiers,
                      WebInputEvent::GetStaticTimeStampForTests()};
   e.windows_key_code = VKEY_DOWN;
+  // TODO(crbug.com/949766) Should cleanup these magic number.
+  e.dom_key = 0x00200309;
   GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
   EXPECT_EQ("no event", element.InnerHTML().Utf8());
 
@@ -1600,6 +1604,30 @@ TEST_F(EventHandlerSimTest, NotExposeKeyboardEvent) {
   e.SetType(WebInputEvent::kKeyDown);
   GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
   EXPECT_EQ("no event", element.InnerHTML().Utf8());
+
+  e.SetType(WebInputEvent::kKeyUp);
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_EQ("no event", element.InnerHTML().Utf8());
+
+  // Key send to js but not cancellable.
+  e.dom_key = 0x00400031;
+  e.SetType(WebInputEvent::kRawKeyDown);
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_EQ("keydown cancelable=false", element.InnerHTML().Utf8());
+
+  e.SetType(WebInputEvent::kKeyUp);
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_EQ("keyup cancelable=false", element.InnerHTML().Utf8());
+
+  // Key send to js and cancellable in editor.
+  WebElement input = GetDocument().getElementById("input1");
+  GetDocument().SetFocusedElement(
+      input.Unwrap<Element>(),
+      FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeNone, nullptr));
+
+  e.SetType(WebInputEvent::kRawKeyDown);
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_EQ("keydown cancelable=true", element.InnerHTML().Utf8());
 
   // Arrow key caused scroll down in post event dispatch process. Ensure page
   // scrolled.

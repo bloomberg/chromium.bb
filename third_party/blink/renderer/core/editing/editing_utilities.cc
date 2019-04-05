@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 #include "third_party/blink/renderer/core/html/html_br_element.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
@@ -408,6 +409,24 @@ bool HasRichlyEditableStyle(const Node& node) {
     return false;
 
   return HasEditableLevel(node, kRichlyEditable);
+}
+
+// This method is copied from WebElement::IsEditable.
+// TODO(dglazkov): Remove. Consumers of this code should use
+// Node:hasEditableStyle.  http://crbug.com/612560
+bool IsEditableElement(const Node& node) {
+  if (HasEditableStyle(node))
+    return true;
+
+  if (auto* text_control = ToTextControlOrNull(&node)) {
+    if (!text_control->IsDisabledOrReadOnly())
+      return true;
+  }
+
+  if (auto* element = ToElementOrNull(const_cast<Node*>(&node)))
+    return EqualIgnoringASCIICase(element->getAttribute(kRoleAttr), "textbox");
+
+  return false;
 }
 
 bool IsRootEditableElement(const Node& node) {
