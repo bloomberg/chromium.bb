@@ -197,7 +197,7 @@ id<GREYAction> WebViewVerifiedActionOnElement(WebState* state,
       return NO;
     }
 
-    // Run the action.
+    // Run the action and wait for the UI to settle.
     [[EarlGrey selectElementWithMatcher:WebViewInWebState(state)]
         performAction:action
                 error:error];
@@ -205,23 +205,23 @@ id<GREYAction> WebViewVerifiedActionOnElement(WebState* state,
     if (*error) {
       return NO;
     }
+    [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
     // Wait for the verified to trigger and set |verified|.
     NSString* verification_timeout_message =
         [NSString stringWithFormat:@"The action (%@) on element %@ wasn't "
                                    @"verified before timing out.",
                                    action.name, selector.selectorDescription];
-    GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
-                   kWaitForVerificationTimeout,
-                   ^{
-                     return verified;
-                   }),
-               verification_timeout_message);
+    bool success = base::test::ios::WaitUntilConditionOrTimeout(
+        kWaitForVerificationTimeout, ^{
+          return verified;
+        });
 
-    // If |verified| is not true, the wait condition should have already exited
-    // this control flow, so sanity check that it has in fact been set to
-    // true by this point.
-    DCHECK(verified);
+    if (!success || !verified) {
+      DLOG(WARNING) << base::SysNSStringToUTF8(verification_timeout_message);
+      return NO;
+    }
+
     return YES;
   };
 
