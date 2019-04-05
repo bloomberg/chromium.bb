@@ -1542,7 +1542,7 @@ ScriptPromise RTCPeerConnection::generateCertificate(
                           crypto_algorithm, &error)) {
     // Reject generateCertificate with the same error as was produced by
     // WebCrypto. |result| is garbage collected, no need to delete.
-    CryptoResultImpl* result = CryptoResultImpl::Create(script_state);
+    auto* result = MakeGarbageCollected<CryptoResultImpl>(script_state);
     ScriptPromise promise = result->Promise();
     result->CompleteWithError(error.error_type, error.error_details);
     return promise;
