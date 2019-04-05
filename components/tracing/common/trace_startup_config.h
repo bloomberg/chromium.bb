@@ -76,6 +76,8 @@ namespace tracing {
 // TracingControllerAndroid::GenerateTracingFilePath.
 class TRACING_EXPORT TraceStartupConfig {
  public:
+  enum class SessionOwner { kTracingController, kDevToolsTracingHandler };
+
   static TraceStartupConfig* GetInstance();
 
   // Default minimum startup trace config with enough events to debug issues.
@@ -119,6 +121,13 @@ class TRACING_EXPORT TraceStartupConfig {
     return finished_writing_to_file_;
   }
 
+  SessionOwner GetSessionOwner() const;
+
+  // Called by a potential session owner to determine if it should take
+  // ownership of the startup tracing session and begin tracing. Returns |true|
+  // if the passed |owner| should adopt the session.
+  bool AttemptAdoptBySessionOwner(SessionOwner owner);
+
  private:
   // This allows constructor and destructor to be private and usable only
   // by the Singleton class.
@@ -136,13 +145,15 @@ class TRACING_EXPORT TraceStartupConfig {
 
   bool ParseTraceConfigFileContent(const std::string& content);
 
-  bool is_enabled_;
-  bool is_enabled_from_background_tracing_;
+  bool is_enabled_ = false;
+  bool is_enabled_from_background_tracing_ = false;
   base::trace_event::TraceConfig trace_config_;
-  int startup_duration_;
-  bool should_trace_to_result_file_;
+  int startup_duration_ = 0;
+  bool should_trace_to_result_file_ = false;
   base::FilePath result_file_;
-  bool finished_writing_to_file_;
+  bool finished_writing_to_file_ = false;
+  SessionOwner session_owner_ = SessionOwner::kTracingController;
+  bool session_adopted_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TraceStartupConfig);
 };
