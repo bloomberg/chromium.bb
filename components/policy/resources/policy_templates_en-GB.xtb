@@ -151,6 +151,7 @@
       If this policy is unset, the default frequency is 3 hours. The minimum
       allowed frequency is 60 seconds.</translation>
 <translation id="1204263402976895730">Enabled enterprise printers</translation>
+<translation id="1216919699175573511">Enable Signed HTTP Exchange (SXG) support</translation>
 <translation id="1219695476179627719">Specifies whether the device should roll back to the version set by <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> if it's already running a later version.
 
       Default is RollbackDisabled.</translation>
@@ -1118,6 +1119,19 @@
           When this policy is unset, behaviour of the more specific policies remains unaffected.</translation>
 <translation id="2987155890997901449">Enable ARC</translation>
 <translation id="2987227569419001736">Control use of the Web Bluetooth API</translation>
+<translation id="3011301228198307065">Configures the default homepage URL in <ph name="PRODUCT_NAME" /> and prevents users from changing it.
+
+          The homepage is the page opened by the Home button. The pages that open on start-up are controlled by the RestoreOnStartup policies.
+
+          The homepage type can either be set to a URL that you specify here or set to the new tab page. If you select the new tab page, then this policy does not take effect.
+
+          If you enable this setting, users cannot change their homepage URL in <ph name="PRODUCT_NAME" />, but they can still choose the new tab page as their homepage.
+
+          Leaving this policy not set will also allow the user to choose their own homepage if HomepageIsNewTabPage is not set.
+
+          The URL must have a standard scheme, e.g. 'http://example.com' or 'https://example.com'.
+
+          This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
 <translation id="3016255526521614822">Whitelist note-taking apps allowed on the <ph name="PRODUCT_OS_NAME" /> lock screen</translation>
 <translation id="3021562480854470924">Number of milestones roll-back is allowed</translation>
 <translation id="3023572080620427845">URL of an XML file that contains URLs to load in an alternative browser.</translation>
@@ -1642,6 +1656,13 @@
           When this policy is unset, a default length of time is used.
 
           The policy value should be specified in milliseconds.</translation>
+<translation id="4105884561459127998">Configures the type of authentication for SAML logins.
+
+      When this policy is unset or set to Default (value 0), the behaviour of SAML logins is determined by the browser depending on other factors. In the most basic scenario, the user authentication and the protection of the cached user data are based on passwords manually entered by users.
+
+      When this policy is set to ClientCertificate (value 1), client certificate authentication is used for newly added users which log in via SAML. No passwords are used for such users, and their cached local data is protected using corresponding cryptographic keys. For instance, this setting allows configuring smart card-based user authentication (note that smart card middleware apps have to be installed via the DeviceLoginScreenExtensions policy).
+
+      This policy affects only users who authenticate using SAML.</translation>
 <translation id="4105989332710272578">Disable Certificate Transparency enforcement for a list of URLs</translation>
 <translation id="4121350739760194865">Prevent app promotions from appearing on the new tab page</translation>
 <translation id="4125606414556046117">This policy allows you to configure the wallpaper image that is shown on the desktop and on the login screen background for the user. The policy is set by specifying the URL from which <ph name="PRODUCT_OS_NAME" /> can download the wallpaper image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format, and its file size must not exceed 16 MB. The URL must be accessible without any authentication.
@@ -1670,6 +1691,30 @@
       If the policy is left not set, the user can choose an image to be shown on the desktop and on the login screen background.</translation>
 <translation id="412697421478384751">Enable users to set weak PINs for the lock screen PIN</translation>
 <translation id="4138655880188755661">Time Limit</translation>
+<translation id="4144164749344898721">This policy controls multiple settings for the power management strategy when the user becomes idle.
+
+          There are four types of action:
+          * The screen will be dimmed if the user remains idle for the time specified by |ScreenDim|.
+          * The screen will be turned off if the user remains idle for the time specified by |ScreenOff|.
+          * A warning dialogue will be shown if the user remains idle for the time specified by |IdleWarning|, telling the user that the idle action is about to be taken. The warning message is only shown if the idle action is to log out or shut down.
+          * The action specified by |IdleAction| will be taken if the user remains idle for the time specified by |Idle|.
+
+          For each of above actions, the delay should be specified in milliseconds, and needs to be set to a value greater than zero to trigger the corresponding action. In case the delay is set to zero, <ph name="PRODUCT_OS_NAME" /> will not take the corresponding action.
+
+          For each of the above delays, when the length of time is unset, a default value will be used.
+
+          Note that |ScreenDim| values will be clamped to be less than or equal to |ScreenOff|, |ScreenOff| and |IdleWarning| will be clamped to be less than or equal to |Idle|.
+
+          |IdleAction| can be one of four possible actions:
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          When the |IdleAction| is unset, the default action is taken, which is suspend.
+
+          There are also separate settings for AC power and battery.
+          </translation>
 <translation id="4150201353443180367">Display</translation>
 <translation id="4157003184375321727">Report OS and firmware version</translation>
 <translation id="4157594634940419685">Allow access to native CUPS printers</translation>
@@ -1754,6 +1799,15 @@
 <translation id="4322842393287974810">Allow the auto launched with zero delay kiosk app to control <ph name="PRODUCT_OS_NAME" /> version</translation>
 <translation id="4325690621216251241">Add a logout button to the system tray</translation>
 <translation id="4332177773549877617">Log events for Android app installs</translation>
+<translation id="4335292026668105285">Specifies the length of time without user input after which a warning dialogue is shown when running on AC power.
+
+          When this policy is set, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME" /> shows a warning dialogue telling the user that the idle action is about to be taken.
+
+          When this policy is unset, no warning dialogue is shown.
+
+          The policy value should be specified in milliseconds. Values are clamped to be less than or equal to the idle delay.
+
+          The warning message is only shown if the idle action is to log out or shut down.</translation>
 <translation id="4346674324214534449">Allows you to set whether ads should be blocked on sites with intrusive ads.
 
       If this policy is set to 2, ads will be blocked on sites with intrusive ads.
@@ -3330,6 +3384,9 @@
 <translation id="7464991223784276288">Limit cookies from matching URLs to the current session</translation>
 <translation id="7469554574977894907">Enable search suggestions</translation>
 <translation id="7474249562477552702">Whether SHA-1 signed certificates issued by local trust anchors are allowed</translation>
+<translation id="747851715060942420">Allows you to configure the pages that are loaded on startup.
+
+      The policy 'URLs to open on startup' is ignored unless you select 'Open a list of URLs' in 'Action on startup'.</translation>
 <translation id="7485481791539008776">Default printer selection rules</translation>
 <translation id="7485730741952775732">If this policy is set, the remote access host will use this URL to validate authentication tokens from remote access clients, in order to accept connections. Must be used in conjunction with RemoteAccessHostTokenUrl.
 
@@ -3343,6 +3400,11 @@
 
       If this policy is used, all printers are provided to the user except for the ids listed in this policy. The ids must correspond to the 'id' or 'guid' fields in the file specified in <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="7506269062143646163">Enable support for Signed HTTP Exchange (SXG).
+
+          If this policy is unset or set to Enabled, Google Chrome will accept web contents served as Signed HTTP Exchanges.
+
+          If this policy is set to Disabled, Signed HTTP Exchanges cannot be loaded.</translation>
 <translation id="7511361072385293666">If this policy is set to true or not set usage of QUIC protocol in <ph name="PRODUCT_NAME" /> is allowed.
       If this policy is set to false usage of QUIC protocol is disallowed.</translation>
 <translation id="7517845714620372896">Specifies screen brightness per cent.
@@ -3489,6 +3551,15 @@
       The recognised connection type identifiers are "ethernet", "wifi", "wimax", "bluetooth" and "cellular".</translation>
 <translation id="7763614521440615342">Show content suggestions on the New Tab page</translation>
 <translation id="7765879851993224640">Allow Smart Lock Sign-in to be used.</translation>
+<translation id="7772346342637974431">Specifies the length of time without user input after which a warning dialogue is shown when running on battery power.
+
+          When this policy is set, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME" /> shows a warning dialogue telling the user that the idle action is about to be taken.
+
+          When this policy is unset, no warning dialogue is shown.
+
+          The policy value should be specified in milliseconds. Values are clamped to be less than or equal to the idle delay.
+
+          The warning message is only shown if the idle action is to log out or shut down.</translation>
 <translation id="7774768074957326919">Use system proxy settings</translation>
 <translation id="7777535871204167559">Treat external storage devices as read-only</translation>
 <translation id="7781069478569868053">New Tab Page</translation>
@@ -4066,6 +4137,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       For more information on secure contexts, see
       https://www.w3.org/TR/secure-contexts/
       </translation>
+<translation id="8939595959513040470">Provide users with Quick Fix Build.</translation>
 <translation id="8942616385591203339">This policy controls if Sync Consent can be shown to the user during first sign-in. It should be set to false if Sync Consent is never needed for the user.
       If set to false, Sync Consent will not be displayed.
       If set to true or unset, Sync Consent can be displayed.</translation>
@@ -4125,6 +4197,9 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 
       If the policy is left not set, the user can choose the avatar image representing them on the login screen.</translation>
 <translation id="9035964157729712237">Extension IDs to exempt from the blacklist</translation>
+<translation id="9038058011835642205">Specifies a list of websites that are installed silently, without user interaction, and which cannot be uninstalled nor disabled by the user.
+
+      Each list item of the policy is an object with a mandatory member: 'url' and two optional members: 'default_launch_container' and 'create_desktop_shortcut'. 'url' should be the URL of the web app to install, 'launch_container' should be either 'window' or 'tab' to indicate how the Web App will be opened once installed, and 'create_desktop_shortcut' should be true if a desktop shortcut should be created on Linux and Windows. If 'default_launch_container' is omitted, the app will open in a tab by default. Regardless of the value of 'default_launch_container', users are able to change which container the app will open in. If 'create_desktop_shortcuts' is omitted, no desktop shortcuts will be created.</translation>
 <translation id="9038839118379817310">Enable Wi-Fi</translation>
 <translation id="9039822628127365650">When this policy is set, it specifies the length of time after which a user is automatically logged out, terminating the session. The user is informed about the remaining time by a countdown timer shown in the system tray.
 
@@ -4134,6 +4209,11 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 
       The policy value should be specified in milliseconds. Values are clamped to a range of 30 seconds to 24 hours.</translation>
 <translation id="9042911395677044526">Allows pushing network configuration to be applied per-user to a <ph name="PRODUCT_OS_NAME" /> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9050853837490399534">This policy controls whether or not the device should be updated to a Quick Fix Build.
+
+      If policy value is set to a token that maps to a Quick Fix Build, the device will be updated to the corresponding Quick Fix Build if the update is not blocked by another policy.
+
+      If this policy is not set, or if its value does not map to a Quick Fix Build, then the device won't be updated to a Quick Fix Build. If the device is already running a Quick Fix Build and the policy is not set anymore or its value does not map to a Quick Fix Build anymore, then the device will be updated to a regular build if the update is not blocked by another policy.</translation>
 <translation id="906631898352326790">
       If the policy is enabled, each of the named origins in a
       comma-separated list will run in its own process. This will also isolate

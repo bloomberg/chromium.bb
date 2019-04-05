@@ -21,9 +21,11 @@
 <translation id="3081586908890909590">Switch to record video</translation>
 <translation id="3183731565330012717">Grid type</translation>
 <translation id="3227137524299004712">Microphone</translation>
+<translation id="3517926952904427380">Unable to take portrait photo</translation>
 <translation id="3569311554794739032">Do you really want to remove <ph name="FILE" />?</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="4279490309300973883">Mirroring</translation>
+<translation id="4329152592498422850">Switch to take square photo</translation>
 <translation id="4445542136948522167">Stop taking photo</translation>
 <translation id="4628948037717959914">Photo</translation>
 <translation id="4649291346448517080">Unable to save the file</translation>
@@ -50,6 +52,7 @@
 <translation id="8145038249676204903">Switch to take photo</translation>
 <translation id="8261506727792406068">Delete</translation>
 <translation id="8428213095426709021">Settings</translation>
+<translation id="8815966864175525708">Switch to take portrait photo</translation>
 <translation id="8870695351537079478">Unable to start recording</translation>
 <translation id="9045155556724273246">10 seconds</translation>
 <translation id="945522503751344254">Send feedback</translation>

@@ -240,7 +240,6 @@
 <translation id="271033894570825754">새 파일</translation>
 <translation id="2728754400939377704">사이트별 정렬</translation>
 <translation id="2744248271121720757">단어를 탭하여 즉시 검색하거나 관련 작업을 확인하세요</translation>
-<translation id="2760323196215778921">Chrome에도 이 권한을 설정해야 합니다. 자세한 내용은 <ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />을 참조하세요.</translation>
 <translation id="2762000892062317888">방금 전</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" />초 남음</translation>
 <translation id="2779651927720337254">실패</translation>
@@ -963,7 +962,6 @@
 <translation id="8037750541064988519"><ph name="DAYS" />일 남음</translation>
 <translation id="804335162455518893">SD 카드가 없음</translation>
 <translation id="805047784848435650">인터넷 사용 기록에 기반해 추천됨</translation>
-<translation id="8051303708327298699">Chrome에도 이 권한을 설정해야 합니다. 자세한 내용은 <ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />을 참조하세요.</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" />MB 사용 가능</translation>
 <translation id="8058746566562539958">새 Chrome 탭에서 열기</translation>
 <translation id="8063895661287329888">북마크를 추가하지 못했습니다.</translation>

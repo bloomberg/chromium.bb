@@ -54,7 +54,7 @@
 <translation id="1062011392452772310">Dayakan pembuktian jauh untuk peranti</translation>
 <translation id="1062407476771304334">Gantikan</translation>
 <translation id="1079801999187584280">Jangan benarkan penggunaan Alat Pembangun</translation>
-<translation id="1087437665304381368">Dasar ini mengawal mod pembangun <ph name="PRODUCT_OS_NAME" /> sahaja. Jika anda mahu menghalang akses ke Pilihan Pembangun Android, anda perlu menetapkan dasar <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.</translation>
+<translation id="1087437665304381368">Dasar ini mengawal mod pembangun <ph name="PRODUCT_OS_NAME" /> sahaja. Jika anda mahu menghalang akses kepada Pilihan Pembangun Android, anda perlu menetapkan dasar <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.</translation>
 <translation id="1093082332347834239">Jika tetapan ini didayakan, hos bantuan jauh akan dijalankan dalam proses dengan kebenaran <ph name="UIACCESS_PERMISSION_NAME" />. Langkah ini akan membolehkan pengguna jauh berinteraksi dengan tetingkap ternaik pada desktop pengguna setempat.
 
           Jika tetapan ini dilumpuhkan atau tidak dikonfigurasi, hos bantuan jauh akan dijalankan dalam konteks pengguna dan pengguna jauh tidak boleh berinteraksi dengan tetingkap ternaik pada desktop.</translation>
@@ -260,7 +260,7 @@
 
       Jika apl yang sebelum ini dipasang secara paksa dialih keluar daripada senarai ini, apl tersebut akan dinyahpasang secara automatik oleh <ph name="PRODUCT_NAME" />.
 
-      Setiap item senarai dasar ini ialah rentetan yang mengandungi ID sambungan dan URL "kemas kini" URL yang dipisahkan oleh koma bertitik (<ph name="SEMICOLON" />). ID sambungan ialah rentetan 32 huruf yang ditemui misalnya pada <ph name="CHROME_EXTENSIONS_LINK" /> semasa dalam mod pembangun. URL "kemas kini" hendaklah menunjukkan ke arah dokumen XML Manifes Kemas Kini seperti yang diterangkan di <ph name="LINK_TO_EXTENSION_DOC1" />. Ambil perhatian bahawa URL "kemas kini" yang ditetapkan dalam dasar ni hanya digunakan untuk pemasangan awal; kemas kini sambungan yang berikutnya menggunakan URL kemas kini yang dinyatakan dalam manifes sambungan.
+      Setiap item senarai dasar ini ialah rentetan yang mengandungi ID sambungan dan URL "kemas kini" yang dipisahkan oleh koma bertitik (<ph name="SEMICOLON" />). ID sambungan ialah rentetan 32 huruf yang ditemui misalnya pada <ph name="CHROME_EXTENSIONS_LINK" /> semasa dalam mod pembangun. URL "kemas kini" hendaklah menunjukkan ke arah dokumen XML Manifes Kemas Kini seperti yang diterangkan di <ph name="LINK_TO_EXTENSION_DOC1" />. Ambil perhatian bahawa URL "kemas kini" yang ditetapkan dalam dasar ini hanya digunakan untuk pemasangan awal; kemas kini sambungan yang berikutnya menggunakan URL kemas kini yang dinyatakan dalam manifes sambungan.
 
       Contohnya, <ph name="EXTENSION_POLICY_EXAMPLE" /> memasang apl <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> daripada URL "kemas kini" Gedung Web Chrome yang standard. Untuk mendapatkan maklumat lanjut tentang mengehoskan sambungan, lihat: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="1435659902881071157">Konfigurasi rangkaian tahap peranti</translation>
@@ -705,9 +705,9 @@
 <translation id="2240879329269430151">Membolehkan anda menetapkan sama ada tapak web dibenarkan untuk memaparkan pop timbul. Memaparkan pop  timbul boleh dibenarkan untuk semua tapak web atau dinafikan untuk semua tapak web.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, 'BlockPopups' akan digunakan dan pengguna akan boleh mengubahnya.</translation>
-<translation id="2255326053989409609">Tindakan mendayakan tetapan ini akan menghalang halaman web daripada mengakses unit pemprosesan grafik (GPU). Secara khususnya, halaman web tidak boleh mengakses API WebGL dan pemalam tidak boleh menggunakan API Pepper 3D.
+<translation id="2255326053989409609">Tindakan mendayakan tetapan ini akan menghalang halaman web daripada mengakses unit pemprosesan grafik (GPU). Secara khususnya, halaman web tidak boleh mengakses WebGL API dan pemalam tidak boleh menggunakan Pepper 3D API.
 
-      Tindakan melumpuhkan tetapan ini atau membiarkannya tanpa ditetapkan berkemungkinan akan membenarkan halaman web menggunakan API WebGL dan pemalam untuk menggunakan API Pepper 3D. Tetapan lalai penyemak imbas mungkin masih memerlukan argumen baris perintah dilepasi untuk membolehkan API ini digunakan.
+      Tindakan melumpuhkan tetapan ini atau membiarkannya tanpa ditetapkan berkemungkinan akan membenarkan halaman web menggunakan WebGL API dan pemalam untuk menggunakan Pepper 3D API. Tetapan lalai penyemak imbas mungkin masih memerlukan argumen baris perintah dilepasi untuk membolehkan API ini digunakan.
 
       Jika HardwareAccelerationModeEnabled ditetapkan kepada palsu, Disable3DAPIs diabaikan dan ini adalah sama seperti Disable3DAPIs ditetapkan kepada benar.</translation>
 <translation id="2258126710006312594">Benarkan pengguna akses jauh memindahkan fail kepada/daripada hos</translation>
@@ -1099,7 +1099,7 @@
       Tetapan ini digunakan untuk mendayakan sambungan sijil hala domain TLS untuk ujian.  Tetapan eksperimen ini akan dialih keluar pada masa hadapan.</translation>
 <translation id="2957506574938329824">Jangan benarkan mana-mana tapak meminta akses kepada peranti Bluetooth melalui API Bluetooth Web</translation>
 <translation id="2957513448235202597">Jenis akaun untuk pengesahan <ph name="HTTP_NEGOTIATE" /></translation>
-<translation id="2959469725686993410">Sentiasa hantar pusat akses Wi-Fi kepada pelayan semasa menyelesaikan zon waktu</translation>
+<translation id="2959469725686993410">Sentiasa hantar titik akses Wi-Fi kepada pelayan semasa menyelesaikan zon waktu</translation>
 <translation id="2959898425599642200">Peraturan memintas proksi</translation>
 <translation id="2960128438010718932">Jadual pemeringkatan untuk menggunakan kemas kini baharu</translation>
 <translation id="2960691910306063964">Dayakan atau lumpuhkan pengesahan tanpa PIN untuk hos akses jauh</translation>
@@ -1120,6 +1120,19 @@
           Apabila dasar ini tidak ditetapkan, gelagat dasar yang lebih khusus tidak akan terjejas.</translation>
 <translation id="2987155890997901449">Dayakan ARC</translation>
 <translation id="2987227569419001736">Kawal penggunaan API Bluetooth Web</translation>
+<translation id="3011301228198307065">Mengkonfigurasi URL halaman utama lalai dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada mengubah konfigurasi tersebut.
+
+          Halaman utama ialah halaman yang dibuka melalui butang Skrin Utama. Halaman yang dibuka semasa permulaan dikawal oleh dasar RestoreOnStartup.
+
+          Jenis halaman utama boleh ditetapkan kepada URL yang anda tentukan di sini atau ditetapkan kepada Halaman Tab Baharu. Jika anda memilih Halaman Tab Baharu, maka dasar ini tidak terpakai.
+
+          Jika anda mendayakan tetapan ini, pengguna tidak boleh menukar URL halaman utama mereka dalam <ph name="PRODUCT_NAME" />, tetapi mereka masih boleh memilih Halaman Tab Baharu sebagai halaman utama mereka.
+
+          Membiarkan dasar ini tidak ditetapkan akan membolehkan pengguna memilih sendiri halaman utama mereka jika HomepageIsNewTabPage tidak ditetapkan juga.
+
+          URL mesti mempunyai skema standard, mis. "http://example.com" atau "https://example.com".
+
+          Dasar ini hanya tersedia pada tika Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" /> atau tika Windows 10 Pro atau Enterprise yang didaftarkan untuk pengurusan peranti.</translation>
 <translation id="3016255526521614822">Apl pencatatan nota senarai putih dibenarkan pada skrin kunci <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Bilangan pengunduran pencapaian yang dibenarkan</translation>
 <translation id="3023572080620427845">URL fail XML yang mengandungi URL untuk dimuatkan dalam penyemak imbas alternatif.</translation>
@@ -1997,8 +2010,8 @@
 <translation id="4988291787868618635">Tindakan yang perlu diambil apabila kelewatan melahu dicapai</translation>
 <translation id="4995548127349206948">Sama ada pengesahan NTLMv2 didayakan.</translation>
 <translation id="5030889661505907084">
-      Jika dasar ditetapkan kepada benar, dasar awan akan diutamakan jika berlaku percanggahan dengan dasar platform.
-      Jika dasar ditetapkan kepada palsu atau tidak dikonfigurasi, dasar paltform akan diutamakan jika berlaku percanggahan dengan dasar awan.
+      Jika dasar ditetapkan kepada benar, dasar awan akan diutamakan sekiranya berlaku percanggahan dengan dasar platform.
+      Jika dasar ditetapkan kepada palsu atau tidak dikonfigurasi, dasar paltform akan diutamakan sekiranya berlaku percanggahan dengan dasar awan.
 
       Dasar ini hanya tersedia sebagai platform.
       </translation>
@@ -2013,7 +2026,7 @@
       Jika dilumpuhkan, tiada sejarah penyemakan imbas diimport.
 
       Jika ia tidak ditetapkan, pengguna mungkin ditanya sama ada hendak mengimport atau import boleh berlaku secara automatik.</translation>
-<translation id="5055312535952606505">Mengkonfigurasikan tetapan proksi untuk <ph name="PRODUCT_NAME" />. Tetapan proksi ini turut untuk apl ARC juga.
+<translation id="5055312535952606505">Mengkonfigurasikan tetapan proksi untuk <ph name="PRODUCT_NAME" />. Tetapan proksi ini turut tersedia untuk apl ARC juga.
 
           Jika anda mendayakan tetapan ini, <ph name="PRODUCT_NAME" /> dan apl ARC akan mengabaikan semua pilihan berkaitan proksi yang dinyatakan daripada baris perintah.
 
@@ -2031,7 +2044,7 @@
 
           Medan <ph name="PROXY_SERVER_MODE_PROXY_SETTINGS_FIELD" /> telah ditamatkan untuk memberi laluan kepada medan 'ProxyMode'. Medan ini membolehkan anda menentukan pelayan proksi yang digunakan oleh <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukar tetapan proksi.
 
-          Jika anda memilih nilai 'direct' sebagai 'ProxyMode', proksi tidak akan digunakan dan semua meda lain akan diabaikan.
+          Jika anda memilih nilai 'direct' sebagai 'ProxyMode', proksi tidak akan digunakan dan semua medan lain akan diabaikan.
 
           Jika anda memilih nilai 'system' sebagai 'ProxyMode', proksi sistem akan digunakan dan semua medan lain akan diabaikan.
 
@@ -2109,7 +2122,7 @@ Tidak seperti <ph name="URL_LIST_POLICY_NAME" />, peraturan dikenakan pada kedua
 
           Jika anda memilih untuk tidak menggunakan pelayan proksi dan sentiasa bersambung secara terus, semua pilihan lain akan diabaikan.
 
-          Jika anda memilih untuk menggunakan tetapan proksi atau mengesan pelayan proksi secara automatik, semula tetapan lain akan diabaikan.
+          Jika anda memilih untuk menggunakan tetapan proksi atau mengesan pelayan proksi secara automatik, semua tetapan lain akan diabaikan.
 
           Jika anda memilih tetapan proksi manual, anda boleh menentukan pilihan lanjut dalam 'Alamat atau URL pelayan proksi', 'URL ke fail .pac proksi' dan 'Senarai peraturan pintasan proksi yang dipisahkan koma'. Hanya pelayan proksi HTTP dengan keutamaan tertinggi tersedia untuk apl ARC.
 
@@ -2165,14 +2178,14 @@ Tidak seperti <ph name="URL_LIST_POLICY_NAME" />, peraturan dikenakan pada kedua
 
       Dasar ini dinyatakan dalam milisaat.</translation>
 <translation id="523505283826916779">Tetapan kebolehcapaian</translation>
-<translation id="5236882091572996759">Jika dasar ini ditetapkan kepada Benar atau tidak ditetapkan, pengguna tidak dianggap sebagai melahu semasa audio dimainkan. Ini menghalang tamat masa melahu daripada dicapai dan menghalang tindakan melahu dilaksanakan. Walau bagaimanapun, pemalapan skrin dan kunci skrin akan dilaksanakan selepas tamat masa dkonfigurasikan, tanpa mengira aktiviti audio.
+<translation id="5236882091572996759">Jika dasar ini ditetapkan kepada Benar atau tidak ditetapkan, pengguna tidak dianggap sebagai melahu semasa audio dimainkan. Ini menghalang tamat masa melahu daripada dicapai dan menghalang tindakan melahu dilaksanakan. Walau bagaimanapun, pemalapan skrin dan kunci skrin akan dilaksanakan selepas tamat masa dikonfigurasikan, tanpa mengira aktiviti audio.
 
           Jika dasar ini ditetapkan kepada Palsu, aktiviti audio tidak menghalang pengguna daripada dianggap sebagai melahu.</translation>
 <translation id="5246700266104954355">Dasar ini telah ditamatkan. Sila gunakan <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> untuk mengawal ketersediaan pemalam Flash dan <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> untuk mengawal sama ada pemapar PDF bersepadu harus digunakan untuk membuka fail PDF.
 
       Menyatakan senarai pemalam yang didayakan dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukar tetapan ini.
 
-      Aksara kad bebas '*' dan '?' boleh digunakan untuk memadankan jujukan aksara rambang. '*' memadankan bilangan aksara rambang manakala '?' menyatakan aksara tunggal pilihan, iaitu memadankan sifar atau satu aksara. Aksara lepasan ialah '\' oleh itu, untuk dipadankan dengan aksara '*', '?' atau '\', anda boleh meletakkan '\' di hadapannya.
+      Aksara kad bebas '*' dan '?' boleh digunakan untuk memadankan jujukan aksara rambang. '*' memadankan bilangan aksara rambang manakala '?' menyatakan aksara tunggal pilihan, iaitu memadankan sifar atau satu aksara. Aksara lepasan ialah '\', maka untuk memadankan aksara '*', '?' atau '\' sebenar, anda boleh meletakkan '\' di hadapannya.
 
       Senarai pemalam yang dinyatakan sentiasa digunakan dalam <ph name="PRODUCT_NAME" /> jika dipasang. Pemalam ditandai sebagai didayakan dalam 'about:plugins' dan pengguna tidak boleh melumpuhkannya.
 
@@ -2315,7 +2328,7 @@ Tidak seperti <ph name="URL_LIST_POLICY_NAME" />, peraturan dikenakan pada kedua
 
       Menyatakan senarai pemalam yang pengguna boleh dayakan atau lumpuhkan dalam <ph name="PRODUCT_NAME" />.
 
-      Aksara kad bebas '*' dan '?' boleh digunakan untuk memadankan jujukan aksara rambang. '*' memadankan bilangan aksara rambang manakala '?' menyatakan aksara tunggal pilihan, iaitu memadankan sifar atau satu aksara. Aksara lepasan ialah '\' oleh itu, untuk dipadankan dengan aksara '*', '?' atau '\', anda boleh meletakkan '\' di hadapannya.
+      Aksara kad bebas '*' dan '?' boleh digunakan untuk memadankan jujukan aksara rambang. '*' memadankan bilangan aksara rambang manakala '?' menyatakan aksara tunggal pilihan, iaitu memadankan sifar atau satu aksara. Aksara lepasan ialah '\', maka untuk memadankan aksara '*', '?' atau '\' sebenar, anda boleh meletakkan '\' di hadapannya.
 
       Jika anda mendayakan tetapan ini, senarai pemalam yang dinyatakan boleh digunakan dalam <ph name="PRODUCT_NAME" />. Pengguna boleh mendayakan atau melumpuhkan pemalam tersebut dalam 'about:plugins', walaupun pemalam itu sepadan dengan corak dalam DisabledPlugins. Pengguna juga boleh mendayakan dan melumpuhkan pemalam yang tidak sepadan dengan sebarang corak dalam DisabledPlugins, DisabledPluginsExceptions dan EnabledPlugins.
 
@@ -2459,7 +2472,7 @@ Tidak seperti <ph name="URL_LIST_POLICY_NAME" />, peraturan dikenakan pada kedua
       Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, maka <ph name="PRODUCT_NAME" /> akan menggunakan tetapan semakan pembatalan dalam talian yang sedia ada.</translation>
 <translation id="5728154254076636808">Dayakan pembuatan salinan perayauan bagi data profil <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Import data borang autolengkap daripada penyemak imbas lalai pada kali pertama menjalankannya</translation>
-<translation id="5741810844420698449">Apabila dasar ini ditetapkan, dasar ini anda menentukan tindakan yang diambil oleh <ph name="PRODUCT_OS_NAME" /> apabila pengguna menutup penutup peranti.
+<translation id="5741810844420698449">Apabila dasar ini ditetapkan, dasar ini menentukan tindakan yang diambil oleh <ph name="PRODUCT_OS_NAME" /> apabila pengguna menutup penutup peranti.
 
           Apabila dasar ini tidak ditetapkan, tindakan lalai akan diambil, iaitu penggantungan.
 
@@ -2892,7 +2905,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="6641981670621198190">Lumpuhkan sokongan untuk API grafik 3D</translation>
 <translation id="6646056064606561298">Dayakan but pada dasar pengurusan kuasa AC.
 
-          But pada AC memberikan peluang untuk sistem mengebut daripada keadaan DIMATIKAN/Hibernat secara automatik apabila talian kuasa disambungkan.
+          But pada AC memberikan peluang untuk sistem mengebut secara automatik daripada keadaan DIMATIKAN/Hibernat apabila talian kuasa disambungkan.
 
           Jika dasar ini ditetapkan kepada benar, maka but pada AC akan sentiasa didayakan jika disokong pada peranti.
 

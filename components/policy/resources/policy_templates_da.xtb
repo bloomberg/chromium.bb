@@ -1083,6 +1083,19 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           Når denne politik ikke er konfigureret, forbliver de mere specifikke politikkers adfærd uændret.</translation>
 <translation id="2987155890997901449">Aktivér ARC</translation>
 <translation id="2987227569419001736">Kontrollér brugen af Web Bluetooth API</translation>
+<translation id="3011301228198307065">Konfigurerer webadressen for standardstartsiden i <ph name="PRODUCT_NAME" /> og forhindrer, at brugerne ændrer den.
+
+          Startsiden åbnes ved hjælp af knappen Startside. De sider, der åbnes ved opstart, styres af RestoreOnStartup-politikkerne.
+
+          Startsiden kan enten være en webadresse, du angiver her, eller indstillet til siden Ny fane. Hvis du vælger siden Ny fane, træder denne politik ikke i kraft.
+
+          Hvis du aktiverer denne indstilling, kan brugerne ikke ændre webadressen for deres startside i <ph name="PRODUCT_NAME" />, men de kan stadig vælge siden Ny fane som startside.
+
+          Hvis hverken denne politik eller HomepageIsNewTabPage er angivet, kan brugerne selv vælge startside.
+
+          Webadressen skal indeholde et standardskema, f.eks. "http://eksempel.dk" eller "https://eksempel.dk".
+
+          Denne politik er kun tilgængelig for Windows-forekomster, der er knyttet til et <ph name="MS_AD_NAME" />-domæne, eller Windows 10 Pro- eller Enterprise-forekomster, der er tilmeldt administration af enheder.</translation>
 <translation id="3016255526521614822">Hvidlistedeapps til notatskrivning er tilladt på <ph name="PRODUCT_OS_NAME" />-låseskærmen</translation>
 <translation id="3021562480854470924">Hvor mange gange tidligere versioner kan gendannes</translation>
 <translation id="3023572080620427845">Webadresse for en XML-fil, der indeholder webadresser, som skal indlæses i en alternativ browser.</translation>

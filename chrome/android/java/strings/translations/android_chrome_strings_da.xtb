@@ -240,7 +240,6 @@
 <translation id="271033894570825754">Nyt</translation>
 <translation id="2728754400939377704">Sortér efter website</translation>
 <translation id="2744248271121720757">Tryk på et ord for at søge øjeblikkeligt eller se relaterede handlinger</translation>
-<translation id="2760323196215778921">Tilladelsen skal også aktiveres i Chrome. Se <ph name="BEGIN_LINK" />indstillingerne for Android<ph name="END_LINK" /> for at få flere oplysninger.</translation>
 <translation id="2762000892062317888">lige nu</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekunder tilbage</translation>
 <translation id="2779651927720337254">mislykkedes</translation>
@@ -963,7 +962,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8037750541064988519"><ph name="DAYS" /> dage tilbage</translation>
 <translation id="804335162455518893">SD-kortet blev ikke fundet</translation>
 <translation id="805047784848435650">Baseret på din browserhistorik</translation>
-<translation id="8051303708327298699">Tilladelserne skal også aktiveres i Chrome. Se <ph name="BEGIN_LINK" />indstillingerne for Android<ph name="END_LINK" /> for at få flere oplysninger.</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB er ledig</translation>
 <translation id="8058746566562539958">Åbn på ny fane i Chrome</translation>
 <translation id="8063895661287329888">Bogmærket kunne ikke tilføjes.</translation>

@@ -1113,6 +1113,19 @@
           Ja šī politika netiek iestatīta, precīzāko politiku darbība netiek ietekmēta.</translation>
 <translation id="2987155890997901449">ARC iespējošana</translation>
 <translation id="2987227569419001736">Web Bluetooth API lietošanas pārvaldība</translation>
+<translation id="3011301228198307065">Konfigurē noklusējuma sākumlapas URL pārlūkprogrammā <ph name="PRODUCT_NAME" /> un neļauj lietotājiem to mainīt.
+
+          Sākumlapa ir lapa, kas tiek atvērta, nospiežot pogu Sākums. Lapas, kas atvērtas startēšanas laikā, kontrolē RestoreOnStartup politikas.
+
+          Sākumlapas veids var būt iestatīts kā URL, ko norādāt šeit, vai kā jaunas cilnes lapa. Ja atlasīsiet jaunas cilnes lapu, šī politika nebūs spēkā.
+
+          Ja iespējosiet šo iestatījumu, lietotāji nevarēs mainīt savas sākumlapas URL pārlūkprogrammā <ph name="PRODUCT_NAME" />, taču joprojām varēs izvēlēties jaunas cilnes lapu kā savu sākumlapu.
+
+          Ja šī politika un politika HomepageIsNewTabPage nebūs iestatīta, lietotājs varēs izvēlēties savu sākumlapu.
+
+          Vietrādim URL ir jāatbilst standarta shēmai, piemēram, “http://example.com” vai “https://example.com”.
+
+          Šī politika ir pieejama tikai Windows instancēs, kas ir savienotas ar <ph name="MS_AD_NAME" /> domēnu, vai Windows 10 Pro vai Enterprise instancēs, kas ir reģistrētas ierīču pārvaldībai.</translation>
 <translation id="3016255526521614822">Baltajā sarakstā iekļautas piezīmju lietotnes, kas ir atļautas <ph name="PRODUCT_OS_NAME" /> bloķēšanas ekrānā</translation>
 <translation id="3021562480854470924">Atritei atļauto atskaites punktu skaits</translation>
 <translation id="3023572080620427845">Tāda XML faila URL, kurš satur citā pārlūkprogrammā ielādējamos vietrāžus URL.</translation>

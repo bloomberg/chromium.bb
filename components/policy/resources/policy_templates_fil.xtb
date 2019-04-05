@@ -1122,6 +1122,19 @@
           Kapag hindi nakatakda ang patakarang ito, mananatiling hindi apektado ang gawi ng mga mas partikular na patakaran.</translation>
 <translation id="2987155890997901449">I-enable ang ARC</translation>
 <translation id="2987227569419001736">Kontrolin ang paggamit ng Web Bluetooth API</translation>
+<translation id="3011301228198307065">Kino-configure ang default na URL ng home page sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ito.
+
+          Ang home page ay ang page na binubukas ng button ng Home. Kinokontrol ng mga patakarang RestoreOnStartup ang mga page na bumubukas kapag startup.
+
+          Ang uri ng home page ay maaaring itakda sa isang URL na tutukuyin mo rito o sa Page ng Bagong Tab. Kung pipiliin mo ang Page ng Bagong Tab, hindi gagana ang patakarang ito.
+
+          Kung ie-enable mo ang setting na ito, hindi mababago ng mga user ang URL ng kanilang home page sa <ph name="PRODUCT_NAME" />, pero mapipili pa rin nila ang Page ng Bagong Tab bilang kanilang home page.
+
+          Kapag hindi itinakda ang patakarang ito, magagawa ng user na piliin nang mag-isa ang kanyang home page kung hindi rin nakatakda ang HomepageIsNewTabPage.
+
+          Dapat ay may karaniwang scheme ang URL, hal. "http://example.com" o "https://example.com".
+
+          Available lang ang patakarang ito sa mga instance ng Windows na kasama sa domain ng <ph name="MS_AD_NAME" />. O kaya, sa mga instance ng Windows 10 Pro o Enterprise na naka-enroll para sa pamamahala sa device.</translation>
 <translation id="3016255526521614822">Pinapayagan ang mga app sa paggawa ng tala ng Whitelist sa lock screen ng <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Pinapayagan ang bilang ng pag-rollback ng mga milestone</translation>
 <translation id="3023572080620427845">URL ng XML file na naglalaman ng mga URL na ilo-load sa alternatibong browser.</translation>

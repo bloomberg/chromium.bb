@@ -63,7 +63,6 @@
 <translation id="1919743966458266018">Zmieniliśmy skrót, który otwiera menedżera zadań. Zamiast <ph name="OLD_SHORTCUT" /> używaj teraz <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatyczne kliknięcia</translation>
 <translation id="1928739107511554905">Aby pobrać aktualizację, użyj ekranu dotykowego, by uruchomić Chromebooka ponownie z podłączoną klawiaturą.</translation>
-<translation id="1942830294380034169">Przycisk akcji</translation>
 <translation id="1951012854035635156">Asystent</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">Ustaw język</translation>
@@ -259,7 +258,7 @@
 <translation id="4961318399572185831">Przesyłanie ekranu</translation>
 <translation id="5030687792513154421">Czas minął</translation>
 <translation id="5035236842988137213">Urządzenie <ph name="DEVICE_NAME" /> zostało połączone z nowym telefonem</translation>
-<translation id="5083553833479578423">Odblokuj więcej funkcji Asystenta.</translation>
+<translation id="5083553833479578423">Poznaj więcej funkcji Asystenta.</translation>
 <translation id="5136175204352732067">Podłączono inną klawiaturę</translation>
 <translation id="5168181903108465623">Dostępne są urządzenia przesyłające</translation>
 <translation id="5207949376430453814">Podświetlaj kursor tekstu</translation>

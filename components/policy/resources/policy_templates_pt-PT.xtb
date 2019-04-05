@@ -1101,6 +1101,19 @@
           Se esta política não for definida, o comportamento das políticas mais específicas permanece intacto.</translation>
 <translation id="2987155890997901449">Ativar ARC</translation>
 <translation id="2987227569419001736">Controlar a utilização da API Web Bluetooth</translation>
+<translation id="3011301228198307065">Configura o URL da página inicial predefinida no <ph name="PRODUCT_NAME" /> e impede os utilizadores de o alterarem.
+
+          A página inicial é a página aberta com o botão página inicial. As páginas abertas no arranque são controladas pelas políticas RestoreOnStartup.
+
+          O tipo de página inicial pode ser definido como um URL especificado aqui ou como a página novo separador. Se selecionar a página novo separador, esta política não tem efeito.
+
+          Se ativar esta definição, os utilizadores não podem alterar o URL da página inicial no <ph name="PRODUCT_NAME" />, mas podem escolher a página novo separador como a página inicial.
+
+          Deixar esta política por definir irá permitir ao utilizador escolher a respetiva página inicial se HomepageIsNewTabPage também não estiver definida.
+
+          O URL tem de ter um esquema padrão, por exemplo, "http://example.com" ou "https://example.com".
+
+          Esta política está apenas disponível em instâncias do Windows associadas a um domínio do <ph name="MS_AD_NAME" /> ou em instâncias do Windows 10 Pro ou Enterprise inscritas para gestão de dispositivos.</translation>
 <translation id="3016255526521614822">Adicionar à lista de autorizações as aplicações para tirar notas permitidas no ecrã de bloqueio do <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Número de marcos para os quais é autorizada a reversão.</translation>
 <translation id="3023572080620427845">URL de um ficheiro XML que contém URLs a carregar num navegador alternativo.</translation>

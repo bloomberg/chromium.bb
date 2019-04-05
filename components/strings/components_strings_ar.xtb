@@ -8,7 +8,7 @@
 <translation id="1032854598605920125">تدوير في اتجاه عقارب الساعة</translation>
 <translation id="1035334672863811645">‏تسجيل الدخول إلى Chrome</translation>
 <translation id="1038842779957582377">اسم غير معروف</translation>
-<translation id="1039626062703039346">‏يمكن أن يساعدك Chrome على حماية حسابك على Google وتغيير كلمة المرور. سيؤدي هذا إلى إشعار Google بموقع الويب هذا.</translation>
+<translation id="1039626062703039346">‏يمكن أن يساعدك Chrome على حماية حسابك على Google وتغيير كلمة المرور. سيؤدي هذا الإجراء إلى إشعار Google بموقع الويب هذا.</translation>
 <translation id="1050038467049342496">إغلاق التطبيقات الأخرى</translation>
 <translation id="1055184225775184556">تراجع عن الإ&amp;ضافة</translation>
 <translation id="1056898198331236512">تحذير</translation>
@@ -297,7 +297,7 @@
 <translation id="2495083838625180221">‏محلل JSON اللغوي</translation>
 <translation id="2495093607237746763">‏عند وضع علامة على هذا الخيار، سيخزّن Chromium نسخة من بطاقتك على هذا الجهاز لتعبئة النماذج بشكل أسرع.</translation>
 <translation id="2498091847651709837">فحص بطاقة جديدة</translation>
-<translation id="249825481377667906">‏يمكن أن يساعدك Chromium على حماية حسابك على Google وتغيير كلمة المرور. سيؤدي هذا إلى إشعار Google بموقع الويب هذا.</translation>
+<translation id="249825481377667906">‏يمكن أن يساعدك Chromium على حماية حسابك على Google وتغيير كلمة المرور. سيؤدي هذا الإجراء إلى إشعار Google بموقع الويب هذا.</translation>
 <translation id="2501278716633472235">الرجوع</translation>
 <translation id="2503184589641749290">بطاقات السحب الآلي وبطاقات الدفع المسبق المقبولة</translation>
 <translation id="2505268675989099013">حماية الحساب</translation>
@@ -648,6 +648,7 @@
 <translation id="4466881336512663640">سيتم فقدان تغييرات النموذج. هل تريد فعلاً المتابعة؟</translation>
 <translation id="4482953324121162758">لن تتم ترجمة هذا الموقع.</translation>
 <translation id="4490717597759821841">A7</translation>
+<translation id="4493480324863638523">‏عنوان URL غير صحيح. يجب أن يكون عنوان URL يحتوي على نظام قياسي، مثل http://example.com أو https://example.com.</translation>
 <translation id="4503882053543859973">Architecture-D</translation>
 <translation id="4506176782989081258">خطأ في عملية التحقق: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4506599922270137252">الاتصال بمشرف النظام</translation>

@@ -99,6 +99,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="1616111909442424068">Wheat</translation>
 <translation id="1618597272655350600">Announces a complete description of the current position</translation>
 <translation id="1627222324347828322">Ghost White</translation>
+<translation id="1630688379087270943">Indicate italic:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{greater than}other{# greater than signs}}</translation>
 <translation id="1653266918374749391">Previous level 3 heading</translation>
 <translation id="1657616855184033958">Show event stream filters</translation>
@@ -320,6 +321,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="3286390186030710347">Slider</translation>
 <translation id="3299925995433437805">No next visited link.</translation>
 <translation id="3300348286427369683">Rich text support. ChromeVox now supports rich text fields including jump commands, braille cursor routing, selection and more.</translation>
+<translation id="3304756947457041303">Customise rich text indication</translation>
 <translation id="3307886118343381874">Go to end of table</translation>
 <translation id="3311969765485641742">Press Alt+Shift+A to review alerts</translation>
 <translation id="3312997241656799641">Next visited link</translation>
@@ -406,6 +408,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="3930498801443296724">Pullquote</translation>
 <translation id="3936394396199829062">Lavender Blush</translation>
 <translation id="3941269780691800708">Speak text under the mouse.</translation>
+<translation id="394953087167197343">Indicate misspell:</translation>
 <translation id="3962990492275676168">Start reading from current location</translation>
 <translation id="3970951409746498040">Sandy Brown</translation>
 <translation id="3989324057180830702">tgl btn</translation>
@@ -452,6 +455,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="42164919740161077">Cadet Blue</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{dash}other{# dashes}}</translation>
 <translation id="421884353938374759">colour picker</translation>
+<translation id="4221071177874897997">Indicate bold:</translation>
 <translation id="4229646983878045487">date time</translation>
 <translation id="4230834257931120629">Light Slate Grey</translation>
 <translation id="4231102694147661229">Enable developer options</translation>
@@ -754,6 +758,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="6348869651006731065">Dim Grey</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{bullet}other{# bullets}}</translation>
 <translation id="6355910664415701303">No previous list item.</translation>
+<translation id="6360318852623800555">Rich Text Attributes</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Previous heading</translation>
 <translation id="6376999910001533545">Maroon</translation>
@@ -929,6 +934,7 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="762020119231868829">Pauses all currently playing media widgets</translation>
 <translation id="7625690649919402823">Next table</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), Grade <ph name="GRADE" /></translation>
+<translation id="763535765081585392">Indicate underline:</translation>
 <translation id="7639968568612851608">Dark grey</translation>
 <translation id="7641134354185483015">No previous level 3 heading.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, text box</translation>
@@ -1164,6 +1170,7 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="8943175951035496220">No cell right.</translation>
 <translation id="8943282376843390568">Lime</translation>
 <translation id="8946628535652548639">r<ph name="TABLECELLROWINDEX" />c<ph name="TABLECELLCOLUMNINDEX" /></translation>
+<translation id="8957142051395645063">Announce</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Forget</translation>
 <translation id="900114243503212879">file</translation>

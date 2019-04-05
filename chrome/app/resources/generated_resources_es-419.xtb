@@ -114,11 +114,9 @@
 <translation id="1167199480815330007">Busca el PIN de seis dígitos que se encuentra en la parte posterior de la llave de seguridad</translation>
 <translation id="1168020859489941584">Abriendo en <ph name="TIME_REMAINING" />...</translation>
 <translation id="1168100932582989117">Servidores de nombres de Google</translation>
-<translation id="1169909785351611170">El PIN es incorrecto.</translation>
 <translation id="1171135284592304528">Destacar el objeto con el enfoque del teclado cuando cambia</translation>
 <translation id="1172750555846831341">Orientación vertical</translation>
 <translation id="1173894706177603556">Cambiar nombre</translation>
-<translation id="1173919438868967364">Seleccionar cuenta</translation>
 <translation id="1174073918202301297">Acceso directo agregado</translation>
 <translation id="117445914942805388">Para borrar los datos de navegación de todos los dispositivos sincronizados y de tu Cuenta de Google, <ph name="BEGIN_LINK" />revisa la configuración de sincronización<ph name="END_LINK" />.</translation>
 <translation id="1175364870820465910">Im&amp;primir...</translation>
@@ -237,7 +235,6 @@
 <translation id="1361655923249334273">No utilizado</translation>
 <translation id="1361872463926621533">Reproducir sonidos en el inicio</translation>
 <translation id="1364702626840264065">{NUM_TABS,plural, =1{Cerrar pestaña}other{Cerrar pestañas}}</translation>
-<translation id="1365804713255256726">No se pudo restablecer el dispositivo. Error <ph name="ERROR_CODE" />.</translation>
 <translation id="1366177842110999534">Ejecuta IDE, editores y herramientas de Linux en tu <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Más información&lt;/a&gt;</translation>
 <translation id="1367951781824006909">Selecciona un archivo</translation>
 <translation id="1371301976177520732">Tus favoritos, las contraseñas, el historial y mucho más en todos tus dispositivos</translation>
@@ -758,7 +755,6 @@
 <translation id="2200356397587687044">Chrome necesita permiso para continuar</translation>
 <translation id="220138918934036434">Ocultar botón</translation>
 <translation id="2202898655984161076">Hubo un problema al enumerar las impresoras. Algunas de tus impresoras pueden no haberse registrado con éxito con <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="2203484353475059657">La confirmación no coincide.</translation>
 <translation id="2203682048752833055">El motor de búsqueda que se usa en la <ph name="BEGIN_LINK" />barra de direcciones<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Leer y cambiar todo lo que escribas</translation>
 <translation id="220792432208469595">Envía datos de uso y diagnóstico. De forma automática, este dispositivo está enviando a Google datos de diagnóstico y sobre el uso del dispositivo y las apps. Esta información ayudará a lograr la estabilidad de las apps y el sistema, entre otras mejoras. Algunos datos agregados también ayudarán a las apps y los socios de Google, como los desarrolladores de Android. El propietario controla esta configuración. Si habilitaste la "Actividad de web y de aplicaciones adicional", es posible que se almacenen estos datos en tu Cuenta de Google. <ph name="BEGIN_LINK1" />Más información<ph name="END_LINK1" /></translation>
@@ -854,7 +850,6 @@
 <translation id="2342740338116612727">Se agregaron favoritos</translation>
 <translation id="2343747224442182863">Enfocar esta pestaña</translation>
 <translation id="2344028582131185878">Descargas automáticas</translation>
-<translation id="2344214284954353199">El PIN es demasiado corto.</translation>
 <translation id="2345723121311404059">1 página a <ph name="PRINTER_NAME" /></translation>
 <translation id="2347644257713614136">El uso de Hangouts y Cast for Education está regido por la Política de Privacidad de Google.</translation>
 <translation id="2348176352564285430">App: <ph name="ARC_PROCESS_NAME" /></translation>
@@ -921,7 +916,6 @@
 <translation id="2453021845418314664">Configuración avanzada de sincronización</translation>
 <translation id="2453860139492968684">Finalizar</translation>
 <translation id="2454247629720664989">Palabra clave</translation>
-<translation id="2455122176076606103">Esa llave de seguridad está bloqueada debido a que hubo demasiados intentos de PIN incorrectos. Debe restablecerse para poder realizar operaciones que requieran PIN.</translation>
 <translation id="245661998428026871">Se dejará de reproducir el video en modo de pantalla en pantalla.</translation>
 <translation id="2457246892030921239"><ph name="APP_NAME" /> quiere copiar archivos de <ph name="VOLUME_NAME" />.</translation>
 <translation id="2458591546854598341">El token de administración de dispositivos no es válido.</translation>
@@ -943,7 +937,6 @@
 <translation id="2487067538648443797">Agregar un favorito nuevo</translation>
 <translation id="2489829450872380594">La próxima vez, un nuevo teléfono desbloqueará este <ph name="DEVICE_TYPE" />. Puedes desactivar Smart Lock en la configuración.</translation>
 <translation id="2489918096470125693">Agregar &amp;carpeta...</translation>
-<translation id="2490575462301446554">Se estableció el PIN correctamente.</translation>
 <translation id="249113932447298600">Lo sentimos, el dispositivo <ph name="DEVICE_LABEL" /> no se admite en este momento.</translation>
 <translation id="249303669840926644">Error al completar el registro</translation>
 <translation id="2495777824269688114">Obtén respuestas o descubre más funciones. Selecciona "?" para obtener ayuda.</translation>
@@ -1330,7 +1323,6 @@
 <translation id="3085752524577180175">Host SOCKS</translation>
 <translation id="3088325635286126843">Cambia&amp;r nombre...</translation>
 <translation id="3089137131053189723">Se borró la búsqueda</translation>
-<translation id="3089732468175192706">{NUM_ATTEMPTS,plural, =1{El PIN es incorrecto. Te queda solo un intento.}other{El PIN es incorrecto. Te quedan # intentos.}}</translation>
 <translation id="3090193911106258841">Accediendo a la entrada de video y de audio</translation>
 <translation id="3090819949319990166">No se puede copiar el archivo crx externo a <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" sincronizado</translation>
@@ -1411,7 +1403,6 @@
 <translation id="323803881985677942">Abrir opciones de extensión</translation>
 <translation id="3241680850019875542">Seleccionar el directorio de raíz de la extensión que debe empaquetarse. Para actualizar una extensión, también debes seleccionar el archivo de clave privada que será reutilizado.</translation>
 <translation id="3244294424315804309">Continuar silenciando el sonido</translation>
-<translation id="3246263372552241767">Se quitó tu llave de seguridad.</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" />: Error de red</translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;No forma parte de un certificado&gt;</translation>
@@ -1552,7 +1543,6 @@
 <translation id="3462413494201477527">¿Cancelar la configuración de la cuenta?</translation>
 <translation id="3464012987031883895">Un sitio está accediendo a la entrada de audio</translation>
 <translation id="346431825526753">Esta es una cuenta para niños administrada por <ph name="CUSTODIAN_EMAIL" />.</translation>
-<translation id="3467267818798281173">Pedir sugerencias a Google</translation>
 <translation id="3468275649641751422">Transmite un archivo de audio o video</translation>
 <translation id="3468999815377931311">Teléfono Android</translation>
 <translation id="3470442499439619530">Eliminar este usuario</translation>
@@ -1853,7 +1843,6 @@
 <translation id="3898521660513055167">Estado del token</translation>
 <translation id="389901847090970821">Seleccionar teclado</translation>
 <translation id="3899879303189199559">Sin conexión durante más de un año</translation>
-<translation id="3900105072479897941">No se permitió restablecer la llave. Es posible que algunas llaves de seguridad solo puedan restablecerse en los primeros segundos después de insertarse. Repite el proceso más rápido.</translation>
 <translation id="3900966090527141178">Exportar contraseñas</translation>
 <translation id="3901991538546252627">Conectando con: <ph name="NAME" /></translation>
 <translation id="3905761538810670789">Reparar aplicación</translation>
@@ -1914,7 +1903,6 @@
 <translation id="3981760180856053153">Se ingresó un tipo de almacenaje no válido.</translation>
 <translation id="3982375475032951137">Configura el navegador en pocos pasos sencillos</translation>
 <translation id="3983400541576569538">Es posible que se pierdan datos de algunas apps</translation>
-<translation id="3983503144326094739">Esa llave de seguridad está bloqueada temporalmente debido a que hubo demasiados intentos de PIN incorrectos. Quítala y vuelve a insertarla para desbloquearla.</translation>
 <translation id="3983586614702900908">dispositivos de un proveedor desconocido</translation>
 <translation id="3984159763196946143">No se pudo iniciar el modo de demostración</translation>
 <translation id="3987348946546879621">Consumo de datos reducido</translation>
@@ -2043,7 +2031,6 @@
 <translation id="4201546031411513170">En la configuración, puedes elegir los datos para sincronizar en cualquier momento.</translation>
 <translation id="4206144641569145248">Alienígena</translation>
 <translation id="4206323443866416204">Informe de comentarios</translation>
-<translation id="4206944295053515692">Pedir sugerencias a Google</translation>
 <translation id="4208390505124702064">Buscar <ph name="SITE_NAME" /></translation>
 <translation id="4209092469652827314">Grande</translation>
 <translation id="4209464433672152343">Los documentos <ph name="BEGIN_LINK_HELP" />se envían a Google<ph name="END_LINK_HELP" /> a fin de prepararlos para su impresión. Visualiza, edita y administra las impresoras y tu historial de impresión en el <ph name="BEGIN_LINK_DASHBOARD" />panel de Google Cloud Print<ph name="END_LINK_DASHBOARD" />.</translation>
@@ -2080,7 +2067,6 @@
 <translation id="4268025649754414643">Cifrado de clave</translation>
 <translation id="4270393598798225102">Versión <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">No hay coincidencias</translation>
-<translation id="4273065492769210106">Te quedan <ph name="RETRIES" /> intentos.</translation>
 <translation id="4275830172053184480">Reiniciar tu dispositivo</translation>
 <translation id="4278101229438943600">Tu Asistente está listo</translation>
 <translation id="4278390842282768270">Permitido</translation>
@@ -2219,7 +2205,6 @@
 <translation id="4524832533047962394">El modo de inscripción proporcionado no es compatible con esta versión del sistema operativo. Asegúrate de que estás ejecutando la versión más reciente.</translation>
 <translation id="4525382759303819021">Obtener las actualizaciones y recomendaciones más recientes para las apps de Play Store</translation>
 <translation id="4530494379350999373">Origen</translation>
-<translation id="4531586020343813806">Esa llave de seguridad no permite su restablecimiento.</translation>
 <translation id="4533846798469727141">Ahora di "Ok Google"</translation>
 <translation id="4533985347672295764">Tiempo de CPU</translation>
 <translation id="4534661889221639075">Vuelve a intentarlo.</translation>
@@ -2448,7 +2433,6 @@
 <translation id="4898011734382862273">El certificado "<ph name="CERTIFICATE_NAME" />" representa a una entidad de certificación</translation>
 <translation id="489985760463306091">Para terminar de quitar software dañino, reinicia la computadora</translation>
 <translation id="4900392736118574277">Tu página de inicio se cambió a <ph name="URL" />.</translation>
-<translation id="490074449735753175">Utilizar un servicio web para ayudar a solucionar errores de ortografía</translation>
 <translation id="49027928311173603">La política descargada del servidor no es válida: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4907161631261076876">Este archivo no se descarga con frecuencia y podría ser peligroso.</translation>
 <translation id="4907306957610201395">Categoría de permiso</translation>
@@ -2462,7 +2446,6 @@
 <translation id="4918086044614829423">Aceptar</translation>
 <translation id="4918221908152712722">Instala <ph name="APP_NAME" /> (no es necesario que descargues la app)</translation>
 <translation id="4920887663447894854">Se bloquearon los siguientes sitios para que no puedan rastrear tu ubicación en esta página:</translation>
-<translation id="4922897038695506037"><ph name="URL_HOST" /> solicitó permisos adicionales.</translation>
 <translation id="492299503953721473">Quitar las apps de Android</translation>
 <translation id="4923279099980110923">Sí, quiero ayudar</translation>
 <translation id="4924352752174756392">12x</translation>
@@ -2551,6 +2534,7 @@
 <translation id="5074318175948309511">Es posible que debas actualizar la página para que se aplique la nueva configuración.</translation>
 <translation id="5075131525758602494">Ingresar el PIN de la tarjeta SIM</translation>
 <translation id="5078638979202084724">Agregar a favoritos todas las pestañas</translation>
+<translation id="5078796286268621944">Número de PIN incorrecto</translation>
 <translation id="5079950360618752063">Usar la contraseña sugerida</translation>
 <translation id="5084230410268011727">Permitir el uso de los sensores de luz y movimiento en los sitios</translation>
 <translation id="5085162214018721575">Buscando actualizaciones...</translation>
@@ -2698,7 +2682,6 @@
 <translation id="5319359161174645648">Google recomienda Chrome</translation>
 <translation id="5319566035256672173">Este dispositivo ya no recibe las actualizaciones de software más recientes. Considera actualizarlo.</translation>
 <translation id="532247166573571973">Es posible que no se pueda acceder al servidor. Vuelve a intentarlo más tarde.</translation>
-<translation id="5324245805087635250">Ingresa tu PIN &lt;i&gt;actual&lt;/i&gt; para cambiarlo. Si no conoces el PIN actual, debes restablecer la llave de seguridad para borrarlo.</translation>
 <translation id="5324780743567488672">Configurar la zona horaria automáticamente mediante la ubicación</translation>
 <translation id="5327248766486351172">Nombre</translation>
 <translation id="5327570636534774768">Otro dominio administra este dispositivo. Desaprovisiónalo de ese dominio para configurar el modo de demostración.</translation>
@@ -2746,7 +2729,6 @@
 <translation id="540296380408672091">Siempre bloquear las cookies en <ph name="HOST" /></translation>
 <translation id="5405146885510277940">Restablecer configuración</translation>
 <translation id="5408750356094797285">Zoom: <ph name="PERCENT" /></translation>
-<translation id="5409075533903495802">El PIN contiene caracteres no válidos.</translation>
 <translation id="5411472733320185105">No usar la configuración proxy para estos dominios y hosts:</translation>
 <translation id="5414566801737831689">Leer los íconos de los sitios web que visites</translation>
 <translation id="5417312524372586921">Temas del navegador</translation>
@@ -2857,7 +2839,6 @@
 <translation id="55601339223879446">Ajustar los límites de tu escritorio en la pantalla</translation>
 <translation id="5562781907504170924">Esta pestaña está conectada con un dispositivo Bluetooth.</translation>
 <translation id="5563234215388768762">Realizar una búsqueda en Google o escribir una URL</translation>
-<translation id="5567950944308676169">Conecta la llave de seguridad y actívala</translation>
 <translation id="5567989639534621706">Cachés de aplicación</translation>
 <translation id="5568069709869097550">No puedo acceder</translation>
 <translation id="5568144734023334204">Almacenamiento de Android</translation>
@@ -2946,7 +2927,6 @@
 <translation id="5696143504434933566">Informar abuso de "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="5696679855467848181">Archivo PPD actualmente en uso: <ph name="PPD_NAME" /></translation>
 <translation id="5699533844376998780">Se agregó la extensión "<ph name="EXTENSION_NAME" />".</translation>
-<translation id="5699804453758089950">Vuelve a presionar tu llave de seguridad para completar la solicitud.</translation>
 <translation id="570043786759263127">Apps y servicios de Google Play</translation>
 <translation id="5700836101007545240">Tu administrador inhabilitó la opción Agregar conexión</translation>
 <translation id="5701080607174488915">Hubo un error cuando se intentaba recuperar la política del servidor.</translation>
@@ -3250,7 +3230,6 @@
 <translation id="6156323911414505561">Mostrar barra de favoritos</translation>
 <translation id="6156863943908443225">Caché de la secuencia de comandos</translation>
 <translation id="6156960295318603523">Configuración de idioma</translation>
-<translation id="6159328879826063795">La llave de seguridad no es compatible con la función solicitada.</translation>
 <translation id="6160625263637492097">Proporcionar certificados para autenticación</translation>
 <translation id="6163363155248589649">&amp;Normal</translation>
 <translation id="6163522313638838258">Expandir todo...</translation>
@@ -3308,7 +3287,6 @@
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6247802389331535091">Sistema: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="624789221780392884">Actualización lista</translation>
-<translation id="6248279564564080162">Se restableció correctamente.</translation>
 <translation id="6248988683584659830">Buscar en configuración</translation>
 <translation id="6251870443722440887">A cargo de GDI</translation>
 <translation id="6251889282623539337">Condiciones del servicio de <ph name="DOMAIN" /></translation>
@@ -3372,7 +3350,6 @@
 <translation id="6352773953037195952">Muy alto</translation>
 <translation id="6354918092619878358">Curva elíptica SECG elliptic secp256r1 (también conocido como ANSI X9.62 prime256v1, NIST P-256)</translation>
 <translation id="635609604405270300">No apagues el dispositivo</translation>
-<translation id="6356138805250111037">Obtén una corrección ortográfica más inteligente al enviar lo que escribes en el navegador a Google</translation>
 <translation id="63566973648609420">Solo las personas que tengan tu frase de contraseña pueden leer los datos encriptados. Google no envía ni almacena la frase de contraseña. Si la olvidas o quieres cambiar esta configuración, deberás <ph name="BEGIN_LINK" />restablecer la sincronización<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570">Te damos la bienvenida a la familia <ph name="SHORT_PRODUCT_NAME" />. Esta no es una computadora convencional.</translation>
 <translation id="6358884629796491903">Dragón</translation>
@@ -3538,7 +3515,6 @@
 <translation id="6622980291894852883">Continuar con el bloqueo de imágenes</translation>
 <translation id="6624687053722465643">Dulzura</translation>
 <translation id="6628328486509726751">Fecha y hora de carga: <ph name="WEBRTC_LOG_UPLOAD_TIME" /></translation>
-<translation id="662887686112111256">Te queda solo un intento.</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> solicita acceso permanente a un certificado para autenticarse en tu nombre.</translation>
 <translation id="6635956300022133031">Seleccionar y personalizar las voces de texto a voz</translation>
 <translation id="6637585982786704944">Las apps y los sitios web que tengan tu permiso podrán acceder a la información de la cuenta que necesiten para funcionar correctamente.
@@ -3554,7 +3530,6 @@
 <translation id="6645437135153136856">El dispositivo de Google Cloud Print ya no es compatible. <ph name="BR" /> Intenta configurar la impresora en la configuración del sistema de tu computadora.</translation>
 <translation id="6647228709620733774">URL de revocación de entidad de certificación de Netscape</translation>
 <translation id="6647838571840953560">Actualmente estás en el canal <ph name="CHANNEL_NAME" /></translation>
-<translation id="6648051959475508072">Se activó la llave de seguridad…</translation>
 <translation id="6648911618876616409">Hay una actualización fundamental lista para instalarse. Accede a tu cuenta para comenzar.</translation>
 <translation id="6649018507441623493">Un segundo…</translation>
 <translation id="6649563841575838401">El formato de archivo no es compatible o el archivo está dañado.</translation>
@@ -4160,7 +4135,6 @@
 <translation id="7631014249255418691">Se realizó la copia de seguridad de los archivos y apps de Linux.</translation>
 <translation id="7631887513477658702">&amp;Abrir siempre archivos de este tipo</translation>
 <translation id="7632948528260659758">No se pudieron actualizar las siguientes aplicaciones de kiosco:</translation>
-<translation id="76341863042884733">Un PIN protege tu llave de seguridad</translation>
 <translation id="763632859238619983">No permitir que ningún sitio instale controladores de pago</translation>
 <translation id="7638605456503525968">Puertos en serie</translation>
 <translation id="7639178625568735185">Entendido</translation>
@@ -4448,8 +4422,8 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8028993641010258682">Tamaño</translation>
 <translation id="8030656706657716245">Agregar impresora</translation>
 <translation id="8032244173881942855">No se puede transmitir la pestaña</translation>
+<translation id="8033827949643255796">seleccionados</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{Abrir todo en una ventana de &amp;incógnito}=1{Abrir en una ventana de &amp;incógnito}other{Abrir todo (#) en una ventana de &amp;incógnito}}</translation>
-<translation id="8034467234497743242">Esa llave de seguridad no permite establecer un PIN.</translation>
 <translation id="8037117027592400564">Leer todo el texto hablado con la síntesis de voz</translation>
 <translation id="8037357227543935929">Preguntar (predeterminado)</translation>
 <translation id="803771048473350947">Archivo</translation>
@@ -4486,11 +4460,9 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
     <ph name="BEGIN_PARAGRAPH3" />Los datos de las apps abarcan cualquier información guardada por una app (según la configuración del desarrollador), incluidos contactos, mensajes y fotos.<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />La copia de seguridad de los datos no incide en la cuota de almacenamiento en Drive.<ph name="END_PARAGRAPH4" />
     <ph name="BEGIN_PARAGRAPH5" />Se puede desactivar este servicio en Configuración.<ph name="END_PARAGRAPH5" /></translation>
-<translation id="8096438328987289870">Selecciona una cuenta para acceder:</translation>
 <translation id="80974698889265265">Los PIN no coinciden</translation>
 <translation id="8101987792947961127">Se requiere Powerwash en el siguiente reinicio</translation>
 <translation id="8102159139658438129">Para ver las opciones para tu teléfono conectado, accede a la <ph name="LINK_BEGIN" />Configuración<ph name="LINK_END" /></translation>
-<translation id="8102652888659661176">El PIN es incorrecto.</translation>
 <translation id="8104696615244072556">Usa la función Powerwash en el dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /> y regresa a la versión anterior.</translation>
 <translation id="8105368624971345109">Desactivar</translation>
 <translation id="8107015733319732394">Se está instalando Google Play Store en tu <ph name="DEVICE_TYPE" />. Esta acción puede tardar unos minutos.</translation>
@@ -4539,7 +4511,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8184318863960255706">Más información</translation>
 <translation id="8185331656081929126">Mostrar notificaciones cuando se detecten nuevas impresoras en la red</translation>
 <translation id="8186609076106987817">El servidor no pudo encontrar el archivo.</translation>
-<translation id="8188120771410500975">&amp;Comprobar la ortografía de los campos de texto</translation>
 <translation id="8188389033983459049">Revisa la configuración del dispositivo y activa la conexión Bluetooth para continuar</translation>
 <translation id="8190193592390505034">Estableciendo conexión con <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">Administrar tus aplicaciones, extensiones y temas</translation>

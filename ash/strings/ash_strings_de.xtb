@@ -63,7 +63,6 @@
 <translation id="1919743966458266018">Die Tastenkombination zum Öffnen des Task-Managers hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatische Klicks</translation>
 <translation id="1928739107511554905">Sie können das Update vornehmen, indem Sie den Touchscreen verwenden, um das Chromebook mit angeschlossener Tastatur neu zu starten.</translation>
-<translation id="1942830294380034169">Überlaufschaltfläche</translation>
 <translation id="1951012854035635156">Assistant</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">Sprache festlegen</translation>
@@ -263,7 +262,7 @@
 <translation id="5168181903108465623">Übertragungsgeräte verfügbar</translation>
 <translation id="5207949376430453814">Textcursor hervorheben</translation>
 <translation id="5222676887888702881">Abmelden</translation>
-<translation id="523505283826916779">Zugänglichkeitseinstellungen</translation>
+<translation id="523505283826916779">Einstellungen für Bedienungshilfen</translation>
 <translation id="5260676007519551770">Desktop 4</translation>
 <translation id="5283198616748585639">1 Min. hinzufügen</translation>
 <translation id="5302048478445481009">Sprache</translation>
@@ -324,7 +323,7 @@
 <translation id="6259254695169772643">Verwenden Sie den Eingabestift, um Ihre Auswahl zu treffen</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Wird aktiviert...</translation>
 <translation id="6284232397434400372">Auflösung geändert</translation>
-<translation id="6297287540776456956">Diesen Eingabestift verwenden, um einen Bereich auszuwählen</translation>
+<translation id="6297287540776456956">Eingabestift verwenden, um einen Bereich auszuwählen</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> wurde zu <ph name="ROTATION" /> gedreht.</translation>
 <translation id="6344698853700675736">Nachtlicht aktivieren/deaktivieren</translation>
 <translation id="6376931439017688372">Bluetooth ist aktiviert</translation>
@@ -369,7 +368,7 @@
 <translation id="6972754398087986839">Erste Schritte</translation>
 <translation id="6981982820502123353">Bedienungshilfen</translation>
 <translation id="698231206551913481">Durch das Entfernen des Nutzers werden alle mit ihm verknüpften Dateien und lokalen Daten endgültig gelöscht.</translation>
-<translation id="7015766095477679451">Um <ph name="COME_BACK_TIME" /> können Sie weitermachen.</translation>
+<translation id="7015766095477679451">Um <ph name="COME_BACK_TIME" /> kannst du weitermachen.</translation>
 <translation id="7025533177575372252"><ph name="DEVICE_NAME" /> mit Ihrem Smartphone verbinden</translation>
 <translation id="7029814467594812963">Sitzung beenden</translation>
 <translation id="7066646422045619941">Dieses Netzwerk wurde von Ihrem Administrator deaktiviert.</translation>
