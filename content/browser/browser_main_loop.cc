@@ -517,6 +517,17 @@ BrowserMainLoop* g_current_browser_main_loop = nullptr;
 
 #if defined(OS_ANDROID)
 bool g_browser_main_loop_shutting_down = false;
+
+namespace {
+// Whether or not BrowserMainLoop::CreateStartupTasks() posts any tasks.
+bool g_post_startup_tasks = true;
+}  // namespace
+
+// static
+void BrowserMainLoop::EnableStartupTasks(bool enabled) {
+  g_post_startup_tasks = enabled;
+}
+
 #endif
 
 // BrowserMainLoop construction / destruction =============================
@@ -873,9 +884,15 @@ void BrowserMainLoop::CreateStartupTasks() {
 
   DCHECK(!startup_task_runner_);
 #if defined(OS_ANDROID)
+  // Some java scheduler tests need to test migration to C++, but the browser
+  // environment isn't set up fully and if these tasks run they may crash.
+  if (!g_post_startup_tasks)
+    return;
+
   startup_task_runner_ = std::make_unique<StartupTaskRunner>(
       base::BindOnce(&BrowserStartupComplete),
-      base::ThreadTaskRunnerHandle::Get());
+      base::CreateSingleThreadTaskRunnerWithTraits(
+          {BrowserThread::UI, BrowserTaskType::kBootstrap}));
 #else
   startup_task_runner_ = std::make_unique<StartupTaskRunner>(
       base::OnceCallback<void(int)>(), base::ThreadTaskRunnerHandle::Get());

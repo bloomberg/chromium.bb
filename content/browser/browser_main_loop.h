@@ -212,6 +212,12 @@ class CONTENT_EXPORT BrowserMainLoop {
 
 #if defined(OS_ANDROID)
   void SynchronouslyFlushStartupTasks();
+
+  // |enabled| Whether or not CreateStartupTasks() posts any tasks. This is
+  // useful because some javatests want to test native task posting without the
+  // whole browser loaded. In that scenario tasks posted by CreateStartupTasks()
+  // may crash if run.
+  static void EnableStartupTasks(bool enabled);
 #endif  // OS_ANDROID
 
 #if !defined(OS_ANDROID)

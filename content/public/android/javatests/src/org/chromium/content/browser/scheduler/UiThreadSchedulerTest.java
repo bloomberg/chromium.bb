@@ -28,6 +28,7 @@ import org.chromium.content.app.ContentMain;
 import org.chromium.content_public.browser.BrowserTaskExecutor;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
+import org.chromium.content_public.browser.test.util.UiThreadSchedulerTestUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +44,8 @@ public class UiThreadSchedulerTest {
 
     @Before
     public void setUp() {
+        // We don't load the browser process since we want tests to control when content
+        // is started and hence the native secheduler is ready.
         mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
         ThreadUtils.setUiThread(null);
         ThreadUtils.setWillOverrideUiThread(true);
@@ -52,10 +55,12 @@ public class UiThreadSchedulerTest {
         BrowserTaskExecutor.register();
         BrowserTaskExecutor.setShouldPrioritizeBootstrapTasks(true);
         mHandler = new Handler(mUiThread.getLooper());
+        UiThreadSchedulerTestUtils.postBrowserMainLoopStartupTasks(false);
     }
 
     @After
     public void tearDown() {
+        UiThreadSchedulerTestUtils.postBrowserMainLoopStartupTasks(true);
         mUiThread.quitSafely();
         ThreadUtils.setUiThread(null);
         ThreadUtils.setWillOverrideUiThread(false);
@@ -157,6 +162,8 @@ public class UiThreadSchedulerTest {
     public void testTaskNotRunOnUiThreadWithoutUiThreadTaskTraits() throws Exception {
         TaskRunner uiThreadTaskRunner = PostTask.createSingleThreadTaskRunner(new TaskTraits());
         try {
+            // Test times out without this.
+            UiThreadSchedulerTestUtils.postBrowserMainLoopStartupTasks(true);
             startContentMainOnUiThread();
 
             uiThreadTaskRunner.postTask(new Runnable() {
