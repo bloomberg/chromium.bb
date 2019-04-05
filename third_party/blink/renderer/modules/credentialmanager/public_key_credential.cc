@@ -25,15 +25,6 @@ void OnIsUserVerifyingComplete(
 }
 }  // namespace
 
-PublicKeyCredential* PublicKeyCredential::Create(
-    const String& id,
-    DOMArrayBuffer* raw_id,
-    AuthenticatorResponse* response,
-    const AuthenticationExtensionsClientOutputs* extension_outputs) {
-  return MakeGarbageCollected<PublicKeyCredential>(id, raw_id, response,
-                                                   extension_outputs);
-}
-
 PublicKeyCredential::PublicKeyCredential(
     const String& id,
     DOMArrayBuffer* raw_id,

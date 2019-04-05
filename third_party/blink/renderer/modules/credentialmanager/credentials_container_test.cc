@@ -140,9 +140,6 @@ class MockPublicKeyCredential : public Credential {
  public:
   MockPublicKeyCredential() : Credential("test", "public-key") {}
   bool IsPublicKeyCredential() const override { return true; }
-  static MockPublicKeyCredential* Create() {
-    return MakeGarbageCollected<MockPublicKeyCredential>();
-  }
 };
 
 // The completion callbacks for pending mojom::CredentialManager calls each own
@@ -155,8 +152,8 @@ TEST(CredentialsContainerTest, PendingGetRequest_NoGCCycles) {
   {
     CredentialManagerTestingContext context(&mock_credential_manager);
     document_observer.Observe(context.GetDocument());
-    CredentialsContainer::Create()->get(context.GetScriptState(),
-                                        CredentialRequestOptions::Create());
+    MakeGarbageCollected<CredentialsContainer>()->get(
+        context.GetScriptState(), CredentialRequestOptions::Create());
     mock_credential_manager.WaitForCallToGet();
   }
 
@@ -179,7 +176,7 @@ TEST(CredentialsContainerTest,
   CredentialManagerTestingContext context(&mock_credential_manager);
 
   auto* proxy = CredentialManagerProxy::From(*context.GetDocument());
-  auto promise = CredentialsContainer::Create()->get(
+  auto promise = MakeGarbageCollected<CredentialsContainer>()->get(
       context.GetScriptState(), CredentialRequestOptions::Create());
   mock_credential_manager.WaitForCallToGet();
 
@@ -196,8 +193,9 @@ TEST(CredentialsContainerTest, RejectPublicKeyCredentialStoreOperation) {
   MockCredentialManager mock_credential_manager;
   CredentialManagerTestingContext context(&mock_credential_manager);
 
-  auto promise = CredentialsContainer::Create()->store(
-      context.GetScriptState(), MockPublicKeyCredential::Create());
+  auto promise = MakeGarbageCollected<CredentialsContainer>()->store(
+      context.GetScriptState(),
+      MakeGarbageCollected<MockPublicKeyCredential>());
 
   EXPECT_EQ(v8::Promise::kRejected,
             promise.V8Value().As<v8::Promise>()->State());

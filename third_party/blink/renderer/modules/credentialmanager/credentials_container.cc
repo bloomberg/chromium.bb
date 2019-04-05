@@ -342,8 +342,8 @@ void OnMakePublicKeyCredentialComplete(
         VectorToDOMArrayBuffer(std::move(credential->info->raw_id));
     DOMArrayBuffer* attestation_buffer =
         VectorToDOMArrayBuffer(std::move(credential->attestation_object));
-    AuthenticatorAttestationResponse* authenticator_response =
-        AuthenticatorAttestationResponse::Create(
+    auto* authenticator_response =
+        MakeGarbageCollected<AuthenticatorAttestationResponse>(
             client_data_buffer, attestation_buffer, credential->transports);
 
     AuthenticationExtensionsClientOutputs* extension_outputs =
@@ -351,9 +351,9 @@ void OnMakePublicKeyCredentialComplete(
     if (credential->echo_hmac_create_secret) {
       extension_outputs->setHmacCreateSecret(credential->hmac_create_secret);
     }
-    resolver->Resolve(PublicKeyCredential::Create(credential->info->id, raw_id,
-                                                  authenticator_response,
-                                                  extension_outputs));
+    resolver->Resolve(MakeGarbageCollected<PublicKeyCredential>(
+        credential->info->id, raw_id, authenticator_response,
+        extension_outputs));
   } else {
     DCHECK(!credential);
     resolver->Reject(CredentialManagerErrorToDOMException(
@@ -389,18 +389,18 @@ void OnGetAssertionComplete(
         credential->user_handle
             ? VectorToDOMArrayBuffer(std::move(*credential->user_handle))
             : nullptr;
-    AuthenticatorAssertionResponse* authenticator_response =
-        AuthenticatorAssertionResponse::Create(client_data_buffer,
-                                               authenticator_buffer,
-                                               signature_buffer, user_handle);
+    auto* authenticator_response =
+        MakeGarbageCollected<AuthenticatorAssertionResponse>(
+            client_data_buffer, authenticator_buffer, signature_buffer,
+            user_handle);
     AuthenticationExtensionsClientOutputs* extension_outputs =
         AuthenticationExtensionsClientOutputs::Create();
     if (credential->echo_appid_extension) {
       extension_outputs->setAppid(credential->appid_extension);
     }
-    resolver->Resolve(PublicKeyCredential::Create(credential->info->id, raw_id,
-                                                  authenticator_response,
-                                                  extension_outputs));
+    resolver->Resolve(MakeGarbageCollected<PublicKeyCredential>(
+        credential->info->id, raw_id, authenticator_response,
+        extension_outputs));
   } else {
     DCHECK(!credential);
     resolver->Reject(CredentialManagerErrorToDOMException(
@@ -409,10 +409,6 @@ void OnGetAssertionComplete(
 }
 
 }  // namespace
-
-CredentialsContainer* CredentialsContainer::Create() {
-  return MakeGarbageCollected<CredentialsContainer>();
-}
 
 CredentialsContainer::CredentialsContainer() = default;
 
