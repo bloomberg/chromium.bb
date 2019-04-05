@@ -36,8 +36,8 @@ SkColorType ResourceFormatToClosestSkColorType(bool gpu_compositing,
     case LUMINANCE_8:
       return kGray_8_SkColorType;
     case RGBX_8888:
-      return kRGB_888x_SkColorType;
     case ETC1:
+      return kRGB_888x_SkColorType;
     case RED_8:
     case LUMINANCE_F16:
     case R16_EXT:
@@ -275,11 +275,11 @@ unsigned int TextureStorageFormat(ResourceFormat format) {
     case R16_EXT:
       return GL_R16_EXT;
     case RGBX_8888:
+    case ETC1:
       return GL_RGB8_OES;
     case RGBX_1010102:
       return GL_RGB10_A2_EXT;
     case BGR_565:
-    case ETC1:
     case BGRX_8888:
     case BGRX_1010102:
     case YVU_420:
