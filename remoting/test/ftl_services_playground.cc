@@ -251,8 +251,10 @@ void FtlServicesPlayground::DoSendMessage(const std::string& receiver_id,
                                     weak_factory_.GetWeakPtr(), receiver_id,
                                     registration_id, std::move(on_done));
 
+  ftl::ChromotingMessage crd_message;
+  crd_message.mutable_xmpp()->set_stanza(message);
   messaging_client_->SendMessage(
-      receiver_id, registration_id, message,
+      receiver_id, registration_id, crd_message,
       base::BindOnce(&FtlServicesPlayground::OnSendMessageResponse,
                      weak_factory_.GetWeakPtr(), std::move(on_continue)));
 }
@@ -285,13 +287,14 @@ void FtlServicesPlayground::StopReceivingMessages(base::OnceClosure on_done) {
 void FtlServicesPlayground::OnMessageReceived(
     const std::string& sender_id,
     const std::string& sender_registration_id,
-    const std::string& message) {
+    const ftl::ChromotingMessage& message) {
+  std::string message_text = message.xmpp().stanza();
   printf(
       "Received message:\n"
       "  Sender ID=%s\n"
       "  Sender Registration ID=%s\n"
       "  Message=%s\n",
-      sender_id.c_str(), sender_registration_id.c_str(), message.c_str());
+      sender_id.c_str(), sender_registration_id.c_str(), message_text.c_str());
 }
 
 void FtlServicesPlayground::OnStartReceivingMessagesDone(

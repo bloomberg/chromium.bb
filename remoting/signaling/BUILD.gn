@@ -90,6 +90,7 @@ static_library("signaling") {
 
 cc_grpc_library("ftl_grpc_library") {
   sources = [
+    "chromoting_message.proto",
     "ftl.proto",
     "ftl_services.proto",
   ]

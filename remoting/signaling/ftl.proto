@@ -150,10 +150,6 @@ message ReceiverMessage {
   Id receiver_id = 2;
 }
 
-message ChromotingMessage {
-  string message = 1;
-}
-
 // Requests and responses
 
 message GetICEServerRequest {
