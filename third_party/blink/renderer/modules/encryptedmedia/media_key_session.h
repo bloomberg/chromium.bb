@@ -71,10 +71,6 @@ class MediaKeySession final
   USING_PRE_FINALIZER(MediaKeySession, Dispose);
 
  public:
-  static MediaKeySession* Create(ScriptState*,
-                                 MediaKeys*,
-                                 WebEncryptedMediaSessionType);
-
   MediaKeySession(ScriptState*, MediaKeys*, WebEncryptedMediaSessionType);
   ~MediaKeySession() override;
 

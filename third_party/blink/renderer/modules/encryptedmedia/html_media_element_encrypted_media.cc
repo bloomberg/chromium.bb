@@ -400,7 +400,8 @@ static Event* CreateEncryptedEvent(WebEncryptedMediaInitDataType init_data_type,
   initializer->setBubbles(false);
   initializer->setCancelable(false);
 
-  return MediaEncryptedEvent::Create(event_type_names::kEncrypted, initializer);
+  return MakeGarbageCollected<MediaEncryptedEvent>(event_type_names::kEncrypted,
+                                                   initializer);
 }
 
 void HTMLMediaElementEncryptedMedia::Encrypted(
