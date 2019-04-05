@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/win/scoped_variant.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 
 #define UIA_VALIDATE_TEXTRANGEPROVIDER_CALL()                        \
@@ -320,7 +321,17 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::MoveEndpointByRange(
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Select() {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_SELECT);
-  return E_NOTIMPL;
+  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
+
+  AXNodeRange range(start_->Clone(), end_->Clone());
+  AXActionData action_data;
+  action_data.anchor_node_id = range.anchor()->anchor_id();
+  action_data.anchor_offset = range.anchor()->text_offset();
+  action_data.focus_node_id = range.focus()->anchor_id();
+  action_data.focus_offset = range.focus()->text_offset();
+  action_data.action = ax::mojom::Action::kSetSelection;
+  owner()->GetDelegate()->AccessibilityPerformAction(action_data);
+  return S_OK;
 }
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::AddToSelection() {

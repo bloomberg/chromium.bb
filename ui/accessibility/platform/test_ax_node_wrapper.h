@@ -119,6 +119,10 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   void ReplaceBoolAttribute(ax::mojom::BoolAttribute attribute, bool value);
   void ReplaceStringAttribute(ax::mojom::StringAttribute attribute,
                               std::string value);
+  void ReplaceTreeDataTextSelection(int32_t anchor_node_id,
+                                    int32_t anchor_offset,
+                                    int32_t focus_node_id,
+                                    int32_t focus_offset);
 
   TestAXNodeWrapper* HitTestSyncInternal(int x, int y);
 
