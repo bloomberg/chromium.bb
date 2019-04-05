@@ -187,8 +187,22 @@ class TestImeEngineClient : public ime::mojom::ImeEngineClient {
     return ptr;
   }
 
+  bool commit_text_called() const { return commit_text_called_; }
+
  private:
+  // ime::mojom::ImeEngineClient:
+  void CommitText(const std::string& text) override {
+    commit_text_called_ = true;
+  }
+  void UpdateCompositionText(const ui::CompositionText& composition_text,
+                             uint32_t cursor_pos,
+                             bool visible) override {}
+  void DeleteSurroundingText(int32_t offset, uint32_t length) override {}
+  void SendKeyEvent(std::unique_ptr<ui::Event> key_event) override {}
+  void Reconnect() override {}
+
   mojo::Binding<ime::mojom::ImeEngineClient> binding_;
+  bool commit_text_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestImeEngineClient);
 };
@@ -404,6 +418,12 @@ TEST_F(InputMethodEngineTest, TestMojoInteractions) {
       false));
   engine_ptr.FlushForTesting();
   EXPECT_EQ(ACTIVATE | ONFOCUS, observer_->GetCallsBitmapAndReset());
+
+  int context = engine_->GetContextIdForTesting();
+  std::string error;
+  engine_->CommitText(context, "input", &error);
+  engine_->FlushForTesting();
+  EXPECT_TRUE(client.commit_text_called());
 }
 
 }  // namespace input_method

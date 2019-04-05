@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "ui/aura/aura_export.h"
+#include "ui/base/ime/mojo/ime.mojom.h"
 
 namespace gfx {
 class Rect;
@@ -74,6 +75,11 @@ class AURA_EXPORT WindowTreeHostMusDelegate {
   // Called from WindowTreeHostMus's constructor once the Window has been
   // created.
   virtual void OnWindowTreeHostCreated(WindowTreeHostMus* window_tree_host) = 0;
+
+  // Called when a client requests to connect to the active
+  // ime::mojom::ImeEngine.
+  virtual void ConnectToImeEngine(ime::mojom::ImeEngineRequest engine_request,
+                                  ime::mojom::ImeEngineClientPtr client) = 0;
 
  protected:
   virtual ~WindowTreeHostMusDelegate() {}
