@@ -24,6 +24,40 @@ class SimpleFactoryKey;
 // We do this because services depend on each other and we need to control
 // shutdown/destruction order. In each derived classes' constructors, the
 // implementors must explicitly state on which services they depend.
+//
+// Note:
+// The SimpleKeyedServiceFactory (SKSF) provides a way to create or get a
+// SimpleKeyedService before BrowserContext is created.
+// BrowserContextKeyedServiceFactories (BCKSFs) can only be converted to
+// SKSFs as long as they access only part of Profile properties:
+// path, PrefService, and is_off_the_record flag.
+//
+// An SKSF shouldn't declare DependsOn() of any BCKSF on creation (constructor).
+// It is because an SKSF can't depend on any BCKSF when it is created. However,
+// dependencies from SKSFs to BCKSFs may exist after full browser launches,
+// since some SimpleKeyedServices move from "reduced mode" to "full browser
+// mode" when the full browser starts up, which involves injection of
+// BrowserContextKeyedService dependencies into the SimpleKeyedService.
+//
+// If such dependencies exist in a SimpleKeyedService, the service **MUST**
+// explicitly reset/clean up the dependencies in KeyedService::Shutdown().
+//
+// Once the dependencies are reset, the dependencies from the BCKSF dependency
+// graph to the SKSF dependency graph are removed. Therefore, we adopt a
+// two-phase shutdown:
+// - Shutdown of all BCKSFactories
+// - Shutdown of all SKSFactories
+// - Destruction of all BCKSFactories
+// - Destruction of all SKSFactories
+
+// A SimpleKeyedService should *AVOID* full browser inflation whenever it is
+// possible. A solution might be splitting the part of the service that
+// depends on BrowserContextKeyedService or BrowserContext into a separate
+// BrowserContextKeyedService.
+//
+// See
+// https://docs.google.com/document/d/1caWonaPnBhMb6sk4syNe0BbdsQih13S6QmDW237Mcrg/edit?usp=sharing
+// for more details.
 class KEYED_SERVICE_EXPORT SimpleKeyedServiceFactory
     : public KeyedServiceFactory {
  public:
