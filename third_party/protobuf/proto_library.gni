@@ -16,8 +16,8 @@
 #
 #   proto_out_dir (optional)
 #       Specifies the path suffix that output files are generated under.
-#       This path will be appended to |root_gen_dir|, but for python stubs
-#       it will be appended to |root_build_dir|/pyproto.
+#       If a relative path is provided, it be appended to |root_gen_dir|.
+#       For python stubs it will be appended to |root_build_dir|/pyproto.
 #
 #   generate_python (optional, default true)
 #       Generate Python protobuf stubs.
@@ -98,6 +98,9 @@
 #       A list of config labels that will be removed from the configs apllying
 #       to the source set.
 #
+#   public_include_dirs (optional)
+#       Add a public config with given include_dirs.
+#
 # Example:
 #  proto_library("mylib") {
 #    sources = [
@@ -106,6 +109,11 @@
 #  }
 
 import("//build/config/sanitizers/sanitizers.gni")
+
+declare_args() {
+  # TODO(agrieve): Remove arg after all offenders have been fixed.
+  allow_proto_library_outside_of_target_gen_dir = true
+}
 
 template("proto_library") {
   assert(defined(invoker.sources), "Need sources for proto_library")
@@ -188,22 +196,65 @@ template("proto_library") {
 
   if (defined(invoker.proto_out_dir)) {
     proto_out_dir = invoker.proto_out_dir
-  } else {
-    # Absolute path to the directory of current BUILD.gn file excluding "//".
-    proto_out_dir = rebase_path(".", "//")
-    if (proto_in_dir != ".") {
-      proto_out_dir += "/$proto_in_dir"
-    }
+
+    # TODO(agrieve): Remove special case once perfetto is updated.
+    # Note: Other perfetto paths already pass this check because
+    # get_path_info normalizes "a//b" -> "a/b".
+    proto_out_dir_is_abs =
+        proto_out_dir != "//third_party/perfetto/" &&
+        get_path_info(proto_out_dir, "abspath") == proto_out_dir
   }
 
   # We need both absolute path to use in GN statements and a relative one
   # to pass to external script.
   if (generate_cc || generate_with_plugin) {
-    cc_out_dir = "$root_gen_dir/" + proto_out_dir
+    if (defined(proto_out_dir)) {
+      if (!proto_out_dir_is_abs) {
+        proto_out_dir = "$root_gen_dir/$proto_out_dir"
+      }
+
+      if (!allow_proto_library_outside_of_target_gen_dir) {
+        # Use sources filter to test the prefix of proto_out_dir.
+        set_sources_assignment_filter([
+                                        target_gen_dir,
+                                        "$target_gen_dir/*",
+                                      ])
+        sources = [
+          proto_out_dir,
+        ]
+        set_sources_assignment_filter([])
+        if (sources != []) {
+          # TODO(agrieve): Change this to an assert.
+          print(
+              "proto_out_dir must be subdirectory of \$target_gen_dir (https://crbug.com/944928)")
+          print("    target_gen_dir=$target_gen_dir")
+          print("    proto_out_dir=$proto_out_dir")
+          sources = []
+        }
+      }
+
+      cc_out_dir = proto_out_dir
+    } else {
+      cc_out_dir = target_gen_dir
+      if (rebase_path(".", "//") != ".") {
+        cc_out_dir += "/$proto_in_dir"
+      }
+    }
     rel_cc_out_dir = rebase_path(cc_out_dir, root_build_dir)
   }
   if (generate_python) {
-    py_out_dir = "$root_out_dir/pyproto/" + proto_out_dir
+    if (defined(proto_out_dir) && proto_out_dir_is_abs) {
+      py_out_dir = proto_out_dir
+    } else {
+      if (!defined(proto_out_dir)) {
+        # Absolute path to the directory of current BUILD.gn file excluding "//".
+        proto_out_dir = rebase_path(".", "//")
+        if (proto_in_dir != ".") {
+          proto_out_dir += "/$proto_in_dir"
+        }
+      }
+      py_out_dir = "$root_out_dir/pyproto/" + proto_out_dir
+    }
     rel_py_out_dir = rebase_path(py_out_dir, root_build_dir)
   }
 
@@ -232,7 +283,7 @@ template("proto_library") {
     }
   }
 
-  action_name = "${target_name}_gen"
+  action_name = "${target_name}__gen"
   source_set_name = target_name
 
   # Generate protobuf stubs.
@@ -344,15 +395,21 @@ template("proto_library") {
   # use relative paths starting at |cc_out_dir|.
   # However there is no necessity to add an additional directory, if all protos
   # are located in the same directory which is in the search path by default.
-  config_name = "${target_name}_config"
-  config(config_name) {
-    include_dirs = []
-    if (has_nested_dirs) {
-      include_dirs += [ cc_out_dir ]
-    }
-    if (defined(invoker.import_dirs)) {
-      foreach(path, invoker.import_dirs) {
-        include_dirs += [ "$root_gen_dir/" + rebase_path(path, "//") ]
+  if (has_nested_dirs || defined(invoker.import_dirs) ||
+      defined(invoker.public_include_dirs)) {
+    config_name = "${target_name}__config"
+    config(config_name) {
+      include_dirs = []
+      if (has_nested_dirs) {
+        include_dirs += [ cc_out_dir ]
+      }
+      if (defined(invoker.import_dirs)) {
+        foreach(path, invoker.import_dirs) {
+          include_dirs += [ "$root_gen_dir/" + rebase_path(path, "//") ]
+        }
+      }
+      if (defined(invoker.public_include_dirs)) {
+        include_dirs += invoker.public_include_dirs
       }
     }
   }
@@ -387,7 +444,7 @@ template("proto_library") {
 
     if (generate_cc || generate_with_plugin) {
       # Not necessary if all protos are located in the same directory.
-      if (has_nested_dirs || defined(invoker.import_dirs)) {
+      if (defined(config_name)) {
         # It's not enough to set |include_dirs| for target since public imports
         # expose corresponding includes to header files as well.
         public_configs += [ ":$config_name" ]

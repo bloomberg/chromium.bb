@@ -5,7 +5,7 @@
 #ifndef TESTING_LIBFUZZER_FUZZERS_JAVASCRIPT_PARSER_PROTO_TO_STRING_H
 #define TESTING_LIBFUZZER_FUZZERS_JAVASCRIPT_PARSER_PROTO_TO_STRING_H
 
-#include "javascript_parser.pb.h"  // from out/gen
+#include "testing/libfuzzer/fuzzers/javascript_parser.pb.h"  // from out/gen
 
 #include <string>
 
