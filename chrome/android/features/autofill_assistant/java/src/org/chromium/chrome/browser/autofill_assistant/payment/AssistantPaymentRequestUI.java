@@ -15,7 +15,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
-import android.widget.RadioButton;
 import android.widget.TextView;
 
 import org.chromium.chrome.autofill_assistant.R;
@@ -120,8 +119,6 @@ public class AssistantPaymentRequestUI
     private FadingEdgeScrollView mRequestViewContainer;
     private ViewGroup mRequestView;
     private LinearLayout mPaymentContainerLayout;
-    private RadioButton mAcceptThirdPartyConditions;
-    private RadioButton mReviewThirdPartyConditions;
 
     private boolean mRequestShipping;
     private boolean mRequestContactDetails;
@@ -200,17 +197,26 @@ public class AssistantPaymentRequestUI
 
     private void prepareRequestView(String origin) {
         // Set terms & conditions text.
-        mAcceptThirdPartyConditions = mRequestView.findViewById(R.id.terms_checkbox_agree);
-        mReviewThirdPartyConditions = mRequestView.findViewById(R.id.terms_checkbox_review);
+        AssistantChoiceList thirdPartyTermsList =
+                mRequestView.findViewById(R.id.third_party_terms_list);
+        TextView acceptThirdPartyConditions =
+                thirdPartyTermsList.findViewById(R.id.terms_checkbox_agree);
+        TextView reviewThirdPartyConditions =
+                thirdPartyTermsList.findViewById(R.id.terms_checkbox_review);
         StyleSpan boldSpan = new StyleSpan(android.graphics.Typeface.BOLD);
-        mAcceptThirdPartyConditions.setText(SpanApplier.applySpans(
+        acceptThirdPartyConditions.setText(SpanApplier.applySpans(
                 mActivity.getString(R.string.autofill_assistant_3rd_party_terms_accept, origin),
                 new SpanApplier.SpanInfo("<b>", "</b>", boldSpan)));
-        mReviewThirdPartyConditions.setText(SpanApplier.applySpans(
+        reviewThirdPartyConditions.setText(SpanApplier.applySpans(
                 mActivity.getString(R.string.autofill_assistant_3rd_party_terms_review, origin),
                 new SpanApplier.SpanInfo("<b>", "</b>", boldSpan)));
-        mAcceptThirdPartyConditions.setOnClickListener(this);
-        mReviewThirdPartyConditions.setOnClickListener(this);
+        thirdPartyTermsList.setOnItemSelectedListener((view) -> {
+            if (view == acceptThirdPartyConditions) {
+                mClient.onCheckAcceptTermsAndConditions(true);
+            } else if (view == reviewThirdPartyConditions) {
+                mClient.onCheckReviewTermsAndConditions(true);
+            }
+        });
 
         // Set 3rd party privacy notice text.
         TextView thirdPartyPrivacyNotice =
@@ -430,10 +436,6 @@ public class AssistantPaymentRequestUI
             expand(mContactDetailsSection);
         } else if (v == mPaymentMethodSection) {
             expand(mPaymentMethodSection);
-        } else if (v == mAcceptThirdPartyConditions) {
-            mClient.onCheckAcceptTermsAndConditions(mAcceptThirdPartyConditions.isChecked());
-        } else if (v == mReviewThirdPartyConditions) {
-            mClient.onCheckReviewTermsAndConditions(mReviewThirdPartyConditions.isChecked());
         }
     }
 
