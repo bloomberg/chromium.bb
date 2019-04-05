@@ -32,6 +32,9 @@ class ThumbnailPageObserver : public base::CheckedObserver {
   // Called when the page/tab's visibility changes.
   virtual void VisibilityChanged(bool visible) = 0;
 
+  // Called when the page is painted for the first time.
+  virtual void PagePainted() = 0;
+
   // Called when a page begins to load.
   virtual void PageLoadStarted() = 0;
 

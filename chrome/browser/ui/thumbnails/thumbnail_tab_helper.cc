@@ -62,6 +62,10 @@ void ThumbnailTabHelper::PageLoadStarted() {
                          web_contents()->GetVisibleURL());
 }
 
+void ThumbnailTabHelper::PagePainted() {
+  page_painted_ = true;
+}
+
 void ThumbnailTabHelper::PageLoadFinished() {
   TransitionLoadingState(LoadingState::kLoadFinished,
                          web_contents()->GetVisibleURL());
@@ -73,9 +77,7 @@ void ThumbnailTabHelper::VisibilityChanged(bool visible) {
   // tab did when the user last visited it.
   const bool was_visible = view_is_visible_;
   view_is_visible_ = visible;
-  if (!was_visible && visible) {
-    last_visible_start_time_ = base::TimeTicks::Now();
-  } else if (was_visible && !visible) {
+  if (was_visible && !visible) {
     StartThumbnailCapture();
   }
 }
@@ -97,11 +99,9 @@ void ThumbnailTabHelper::StartThumbnailCapture() {
   if (web_contents()->GetVisibleURL().is_empty())
     return;
 
-  // Don't capture pages that have been visible for a short time (e.g. during a
-  // tab scrub).
-  base::TimeTicks start_time = base::TimeTicks::Now();
-  constexpr base::TimeDelta kMinVisibleTime = base::TimeDelta::FromSeconds(2);
-  if (start_time - last_visible_start_time_ < kMinVisibleTime)
+  // Don't capture pages that have not been loading and visible long enough to
+  // actually paint.
+  if (!page_painted_)
     return;
 
   content::RenderWidgetHostView* const source_view =
@@ -128,7 +128,7 @@ void ThumbnailTabHelper::StartThumbnailCapture() {
   source_view->CopyFromSurface(
       copy_info.copy_rect, copy_info.target_size,
       base::BindOnce(&ThumbnailTabHelper::ProcessCapturedThumbnail,
-                     weak_factory_.GetWeakPtr(), start_time));
+                     weak_factory_.GetWeakPtr(), base::TimeTicks::Now()));
 }
 
 void ThumbnailTabHelper::ProcessCapturedThumbnail(
@@ -176,6 +176,7 @@ void ThumbnailTabHelper::TransitionLoadingState(LoadingState state,
       if (!is_similar_url) {
         current_url_ = url;
         ClearThumbnail();
+        page_painted_ = false;
         loading_state_ = state;
       } else {
         loading_state_ = std::max(loading_state_, state);
