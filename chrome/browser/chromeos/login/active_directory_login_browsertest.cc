@@ -4,8 +4,11 @@
 
 #include <string>
 
+#include "base/base_paths.h"
 #include "base/command_line.h"
+#include "base/environment.h"
 #include "base/location.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
@@ -13,6 +16,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/authpolicy/authpolicy_helper.h"
+#include "chrome/browser/chromeos/authpolicy/kerberos_files_handler.h"
 #include "chrome/browser/chromeos/login/active_directory_test_helper.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/login_shelf_test_helper.h"
@@ -30,8 +34,14 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
+#include "content/public/common/network_service_util.h"
+#include "content/public/common/service_manager_connection.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
+#include "services/network/public/mojom/network_service_test.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/test/rect_test_util.h"
 
@@ -271,6 +281,25 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
     } while (message != expected_message);
   }
 
+  void AssertNetworkServiceEnvEquals(const std::string& name,
+                                     const std::string& expected_value) {
+    std::string value;
+    if (content::IsOutOfProcessNetworkService()) {
+      network::mojom::NetworkServiceTestPtr network_service_test;
+      content::ServiceManagerConnection::GetForProcess()
+          ->GetConnector()
+          ->BindInterface(content::mojom::kNetworkServiceName,
+                          &network_service_test);
+      mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+      network_service_test->GetEnvironmentVariableValue(name, &value);
+    } else {
+      // If the network service is running in-process, we can read the
+      // environment variable directly.
+      base::Environment::Create()->GetVar(name, &value);
+    }
+    EXPECT_EQ(value, expected_value);
+  }
+
  protected:
   // Returns string representing element with id=|element_id| inside Active
   // Directory login element.
@@ -307,7 +336,6 @@ class ActiveDirectoryLoginAutocompleteTest : public ActiveDirectoryLoginTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(ActiveDirectoryLoginAutocompleteTest);
 };
-
 }  // namespace
 
 // Declares a PRE_ test that calls MarkAsActiveDirectoryEnterprise() and the
@@ -328,6 +356,27 @@ IN_PROC_BROWSER_TEST_F_WITH_PRE(ActiveDirectoryLoginTest, LoginSuccess) {
       content::NotificationService::AllSources());
   SubmitActiveDirectoryCredentials(test_user_, kPassword);
   session_start_waiter.Wait();
+}
+
+// Tests that the Kerberos SSO environment variables are set correctly after
+// an Active Directory log in.
+IN_PROC_BROWSER_TEST_F_WITH_PRE(ActiveDirectoryLoginTest, KerberosVarsCopied) {
+  TestNoError();
+  TestDomainHidden();
+  content::WindowedNotificationObserver session_start_waiter(
+      chrome::NOTIFICATION_SESSION_STARTED,
+      content::NotificationService::AllSources());
+  SubmitActiveDirectoryCredentials(test_user_, kPassword);
+  session_start_waiter.Wait();
+
+  base::FilePath dir;
+  base::PathService::Get(base::DIR_HOME, &dir);
+  dir = dir.Append(kKrb5Directory);
+  std::string expected_krb5cc_value =
+      kKrb5CCFilePrefix + dir.Append(kKrb5CCFile).value();
+  AssertNetworkServiceEnvEquals(kKrb5CCEnvName, expected_krb5cc_value);
+  std::string expected_krb5_config_value = dir.Append(kKrb5ConfFile).value();
+  AssertNetworkServiceEnvEquals(kKrb5ConfEnvName, expected_krb5_config_value);
 }
 
 // Test different UI errors for Active Directory login.

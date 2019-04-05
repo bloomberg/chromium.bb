@@ -26,19 +26,6 @@ namespace chromeos {
 
 namespace {
 
-// Prefix for KRB5CCNAME environment variable. Defines credential cache type.
-constexpr char kKrb5CCFilePrefix[] = "FILE:";
-// Directory in the user home to store Kerberos files.
-constexpr char kKrb5Directory[] = "kerberos";
-// Environment variable pointing to credential cache file.
-constexpr char kKrb5CCEnvName[] = "KRB5CCNAME";
-// Credential cache file name.
-constexpr char kKrb5CCFile[] = "krb5cc";
-// Environment variable pointing to Kerberos config file.
-constexpr char kKrb5ConfEnvName[] = "KRB5_CONFIG";
-// Kerberos config file name.
-constexpr char kKrb5ConfFile[] = "krb5.conf";
-
 // Writes |blob| into file <UserPath>/kerberos/|file_name|. First writes into
 // temporary file and then replaces existing one.
 void WriteFile(const base::FilePath& path, base::Optional<std::string> blob) {
@@ -82,10 +69,16 @@ base::Optional<std::string> MaybeAdjustConfig(
 
 }  // namespace
 
-const char* kKrb5CnameSettings =
+const char kKrb5CnameSettings[] =
     "[libdefaults]\n"
     "\tdns_canonicalize_hostname = %s\n"
     "\trdns = false\n";
+const char kKrb5CCEnvName[] = "KRB5CCNAME";
+const char kKrb5ConfEnvName[] = "KRB5_CONFIG";
+const char kKrb5CCFilePrefix[] = "FILE:";
+const char kKrb5Directory[] = "kerberos";
+const char kKrb5CCFile[] = "krb5cc";
+const char kKrb5ConfFile[] = "krb5.conf";
 
 KerberosFilesHandler::KerberosFilesHandler(
     base::RepeatingClosure get_kerberos_files)
