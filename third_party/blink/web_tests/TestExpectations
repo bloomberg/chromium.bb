@@ -1741,7 +1741,6 @@ crbug.com/891427 virtual/android/url-bar/bottom-and-top-fixed-sticks-to-top.html
 ## Next 4 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_chromium_rel_ng/216317
 crbug.com/891427 virtual/threaded/animations/timing/animation-duration-infinite.html [ Failure ]
 crbug.com/891427 virtual/disable-blink-gen-property-trees/animations/timing/animation-duration-infinite.html [ Skip ]
-crbug.com/891427 editing/selection/drag-in-iframe.html [ Failure ]
 crbug.com/891427 fast/overflow/transformed-frame-scrollIntoView.html [ Crash ]
 
 ### Flaky on trybots:
