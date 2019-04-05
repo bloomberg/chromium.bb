@@ -4,14 +4,35 @@
 
 #include "media/gpu/test/video_player/video_player_test_environment.h"
 
+#include "base/command_line.h"
+#include "base/test/test_timeouts.h"
+#include "media/gpu/buildflags.h"
+#include "media/gpu/test/video_player/video.h"
+#include "mojo/core/embedder/embedder.h"
+
+#if BUILDFLAG(USE_VAAPI)
+#include "media/gpu/vaapi/vaapi_wrapper.h"
+#endif
+
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_gpu_test_helper.h"
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
 namespace media {
 namespace test {
 VideoPlayerTestEnvironment::VideoPlayerTestEnvironment(const Video* video)
     : video_(video) {}
 
-VideoPlayerTestEnvironment::~VideoPlayerTestEnvironment() = default;
-
 void VideoPlayerTestEnvironment::SetUp() {
+  // Using shared memory requires mojo to be initialized (crbug.com/849207).
+  mojo::core::Init();
+
+  // Needed to enable DVLOG through --vmodule.
+  logging::LoggingSettings settings;
+  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  LOG_ASSERT(logging::InitLogging(settings));
+
   // Setting up a task environment will create a task runner for the current
   // thread and allow posting tasks to other threads. This is required for the
   // test video player to function correctly.

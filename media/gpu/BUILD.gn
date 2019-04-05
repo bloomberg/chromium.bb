@@ -617,7 +617,6 @@ if (is_chromeos) {
       "test:video_player_test_environment",
       "test:video_player_thumbnail_renderer",
       "//media:test_support",
-      "//mojo/core/embedder",
       "//testing/gtest",
     ]
   }
@@ -637,7 +636,6 @@ if (is_chromeos) {
       "test:video_player",
       "test:video_player_test_environment",
       "//media:test_support",
-      "//mojo/core/embedder",
       "//testing/gtest",
     ]
   }
