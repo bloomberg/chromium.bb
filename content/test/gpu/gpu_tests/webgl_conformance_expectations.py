@@ -107,10 +107,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/extensions/webgl-draw-buffers.html',
         bug=927908)
 
-    # Need to add detection of feedback loops with multiple render targets.
-    self.Fail('conformance/rendering/rendering-sampling-feedback-loop.html',
-        bug=660844)
-
     # Need to implement new error semantics
     # https://github.com/KhronosGroup/WebGL/pull/2607
     self.Fail('conformance/extensions/' +
@@ -147,6 +143,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/textures/canvas/' +
         'tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html',
         ['passthrough', 'opengl'], bug=2952) # angle bug ID
+    # Need to add detection of feedback loops with multiple render targets.
+    self.Fail('conformance/rendering/rendering-sampling-feedback-loop.html',
+        ['passthrough'], bug=660844)
 
     # Intel graphics driver issue. Passed on 25.20.100.6471
     self.Fail('conformance/glsl/constructors/glsl-construct-mat2.html',
@@ -314,6 +313,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'd3d9'], bug=617148)
     self.Skip('conformance/glsl/misc/large-loop-compile.html',
         ['win', 'd3d9'], bug=674572)
+    # Test needs GL_EXT_draw_buffers which is not supported
+    self.Skip('conformance/rendering/rendering-sampling-feedback-loop.html',
+        ['win', 'd3d9', 'no_passthrough'])
 
     # WIN / OpenGL / NVIDIA failures
     self.Fail('conformance/limits/gl-max-texture-dimensions.html',
@@ -792,6 +794,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
     self.Flaky('conformance/limits/gl-max-texture-dimensions.html',
         ['android', ('qualcomm', 'Adreno (TM) 418'), 'passthrough'], bug=914631)
+    # Test needs GL_EXT_draw_buffers which is not supported
+    self.Skip('conformance/rendering/rendering-sampling-feedback-loop.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418'), 'no_passthrough'])
 
     # Nexus 6 (Adreno 420) and 6P (Adreno 430)
     self.Fail('conformance/context/' +

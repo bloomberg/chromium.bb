@@ -1419,6 +1419,96 @@ TEST_F(FramebufferInfoTest, UnbindTexture) {
   EXPECT_TRUE(framebuffer_->GetAttachment(GL_DEPTH_ATTACHMENT) == nullptr);
 }
 
+TEST_F(FramebufferInfoTest, LastColorAttachmentIdTest) {
+  const GLuint kTextureClient1Id = 33;
+  const GLuint kTextureService1Id = 333;
+  const GLuint kTextureClient2Id = 34;
+  const GLuint kTextureService2Id = 334;
+  const GLuint kTextureClient3Id = 35;
+  const GLuint kTextureService3Id = 335;
+  const GLuint kRenderbufferClientId = 36;
+  const GLuint kRenderbufferServiceId = 336;
+  const GLuint kTextureLayerClientId = 37;
+  const GLuint kTextureLayerServiceId = 337;
+
+  const GLenum kTarget1 = GL_TEXTURE_2D;
+  const GLint kLevel1 = 0;
+  const GLint kSamples1 = 0;
+
+  const GLenum kTargetTextureLayer = GL_TEXTURE_2D_ARRAY;
+  const GLint kBorder = 0;
+  const GLenum kType = GL_UNSIGNED_BYTE;
+  const GLsizei kWidth = 16;
+  const GLsizei kHeight = 32;
+  const GLint kDepth = 2;
+  const GLint kLevel = 0;
+  const GLenum kFormat = GL_RGBA;
+  const GLsizei kLayer = 0;
+
+  texture_manager_->CreateTexture(kTextureClient1Id, kTextureService1Id);
+  scoped_refptr<TextureRef> texture1(
+      texture_manager_->GetTexture(kTextureClient1Id));
+  ASSERT_TRUE(texture1.get() != nullptr);
+  texture_manager_->CreateTexture(kTextureClient2Id, kTextureService2Id);
+  scoped_refptr<TextureRef> texture2(
+      texture_manager_->GetTexture(kTextureClient2Id));
+  ASSERT_TRUE(texture2.get() != nullptr);
+  texture_manager_->CreateTexture(kTextureClient3Id, kTextureService3Id);
+  scoped_refptr<TextureRef> texture3(
+      texture_manager_->GetTexture(kTextureClient3Id));
+  ASSERT_TRUE(texture3.get() != nullptr);
+
+  renderbuffer_manager_->CreateRenderbuffer(kRenderbufferClientId,
+                                            kRenderbufferServiceId);
+  Renderbuffer* renderbuffer =
+      renderbuffer_manager_->GetRenderbuffer(kRenderbufferClientId);
+  ASSERT_TRUE(renderbuffer != nullptr);
+
+  texture_manager_->CreateTexture(kTextureLayerClientId,
+                                  kTextureLayerServiceId);
+  scoped_refptr<TextureRef> textureLayer(
+      texture_manager_->GetTexture(kTextureLayerClientId));
+  ASSERT_TRUE(textureLayer.get());
+
+  texture_manager_->SetTarget(textureLayer.get(), kTargetTextureLayer);
+  texture_manager_->SetLevelInfo(textureLayer.get(), kTargetTextureLayer,
+                                 kLevel, kFormat, kWidth, kHeight, kDepth,
+                                 kBorder, kFormat, kType, gfx::Rect());
+
+  EXPECT_EQ(framebuffer_->last_color_attachment_id(), -1);
+  framebuffer_->AttachTexture(GL_COLOR_ATTACHMENT0, texture1.get(), kTarget1,
+                              kLevel1, kSamples1);
+  EXPECT_EQ(framebuffer_->last_color_attachment_id(), 0);
+  framebuffer_->AttachTexture(GL_COLOR_ATTACHMENT2, texture3.get(), kTarget1,
+                              kLevel1, kSamples1);
+  EXPECT_EQ(framebuffer_->last_color_attachment_id(), 2);
+  framebuffer_->AttachTexture(GL_COLOR_ATTACHMENT1, texture2.get(), kTarget1,
+                              kLevel1, kSamples1);
+  EXPECT_EQ(framebuffer_->last_color_attachment_id(), 2);
+  framebuffer_->AttachRenderbuffer(GL_DEPTH_ATTACHMENT, renderbuffer);
+  EXPECT_EQ(framebuffer_->last_color_attachment_id(), 2);
+  framebuffer_->AttachRenderbuffer(GL_COLOR_ATTACHMENT3, renderbuffer);
+  EXPECT_EQ(framebuffer_->last_color_attachment_id(), 3);
+  framebuffer_->AttachTexture(GL_COLOR_ATTACHMENT4, texture1.get(), kTarget1,
+                              kLevel1, kSamples1);
+  EXPECT_EQ(framebuffer_->last_color_attachment_id(), 4);
+  EXPECT_TRUE(framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0) != nullptr);
+  framebuffer_->AttachTextureLayer(GL_COLOR_ATTACHMENT5, textureLayer.get(),
+                                   kTargetTextureLayer, kLevel, kLayer);
+  EXPECT_EQ(framebuffer_->last_color_attachment_id(), 5);
+
+  framebuffer_->UnbindTexture(kTargetTextureLayer, textureLayer.get());
+  EXPECT_EQ(framebuffer_->last_color_attachment_id(), 4);
+  framebuffer_->UnbindTexture(kTarget1, texture2.get());
+  EXPECT_EQ(framebuffer_->last_color_attachment_id(), 4);
+  framebuffer_->UnbindTexture(kTarget1, texture1.get());
+  EXPECT_EQ(framebuffer_->last_color_attachment_id(), 3);
+  framebuffer_->UnbindRenderbuffer(GL_COLOR_ATTACHMENT3, renderbuffer);
+  EXPECT_EQ(framebuffer_->last_color_attachment_id(), 2);
+  framebuffer_->UnbindTexture(kTarget1, texture3.get());
+  EXPECT_EQ(framebuffer_->last_color_attachment_id(), -1);
+}
+
 TEST_F(FramebufferInfoTest, IsCompleteMarkAsComplete) {
   const GLuint kRenderbufferClient1Id = 33;
   const GLuint kRenderbufferService1Id = 333;
