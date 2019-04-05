@@ -63,7 +63,7 @@ class WindowPerformanceTest : public testing::Test {
   }
 
   void SimulateSwapPromise(TimeTicks timestamp) {
-    performance_->ReportEventTimings(WebLayerTreeView::SwapResult::kDidSwap,
+    performance_->ReportEventTimings(WebWidgetClient::SwapResult::kDidSwap,
                                      timestamp);
   }
 

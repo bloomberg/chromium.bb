@@ -45,21 +45,6 @@ namespace blink {
 
 class WebLayerTreeView {
  public:
-  // SwapResult mirrors the values of cc::SwapPromise::DidNotSwapReason, and
-  // should be kept consistent with it. SwapResult additionally adds a success
-  // value (kDidSwap).
-  // These values are written to logs. New enum values can be added, but
-  // existing enums must never be renumbered, deleted or reused.
-  enum SwapResult {
-    kDidSwap = 0,
-    kDidNotSwapSwapFails = 1,
-    kDidNotSwapCommitFails = 2,
-    kDidNotSwapCommitNoUpdate = 3,
-    kDidNotSwapActivationFails = 4,
-    kSwapResultMax,
-  };
-  using ReportTimeCallback =
-      base::OnceCallback<void(SwapResult, base::TimeTicks)>;
 
   virtual ~WebLayerTreeView() = default;
 
@@ -129,10 +114,6 @@ class WebLayerTreeView {
   virtual bool HaveScrollEventHandlers() const { return false; }
 
   virtual int LayerTreeId() const { return 0; }
-
-  // ReportTimeCallback is a callback that should be fired when the
-  // corresponding Swap completes (either with DidSwap or DidNotSwap).
-  virtual void NotifySwapTime(ReportTimeCallback callback) {}
 
   virtual void RequestBeginMainFrameNotExpected(bool new_state) {}
 };

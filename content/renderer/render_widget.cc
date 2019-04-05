@@ -445,9 +445,7 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
       webwidget_internal_(nullptr),
       auto_resize_mode_(false),
       is_hidden_(hidden),
-      // When there's no RenderThreadImpl we can't start the compositor without
-      // crashing, so just behave like a never-visible widget.
-      compositor_never_visible_(never_visible || !RenderThreadImpl::current()),
+      compositor_never_visible_(never_visible),
       is_fullscreen_granted_(false),
       display_mode_(display_mode),
       ime_event_guard_(nullptr),
@@ -472,9 +470,7 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
       first_update_visual_state_after_hidden_(false),
       was_shown_time_(base::TimeTicks::Now()),
       current_content_source_id_(0),
-      widget_binding_(this, std::move(widget_request)),
-      warmup_weak_ptr_factory_(this),
-      weak_ptr_factory_(this) {
+      widget_binding_(this, std::move(widget_request)) {
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
   DCHECK(RenderThread::IsMainThread());
 
@@ -1170,7 +1166,7 @@ void RenderWidget::DoRequestNewLayerTreeFrameSink(
   // kOOPIF would denote that it is not for the main frame. However, kRenderer
   // would also be used for other widgets such as popups.
   const char* client_name = for_child_local_root_frame_ ? kOOPIF : kRenderer;
-  RenderThreadImpl::current()->RequestNewLayerTreeFrameSink(
+  compositor_deps_->RequestNewLayerTreeFrameSink(
       routing_id_, frame_swap_message_queue_, std::move(url),
       std::move(callback), std::move(client_request), std::move(ptr),
       client_name);
@@ -1674,12 +1670,10 @@ std::unique_ptr<cc::SwapPromise> RenderWidget::QueueMessageImpl(
   bool first_message_for_frame = false;
   frame_swap_message_queue->QueueMessageForFrame(
       source_frame_number, base::WrapUnique(msg), &first_message_for_frame);
-  if (first_message_for_frame) {
-    std::unique_ptr<cc::SwapPromise> promise(new QueueMessageSwapPromise(
-        sync_message_filter, frame_swap_message_queue, source_frame_number));
-    return promise;
-  }
-  return nullptr;
+  if (!first_message_for_frame)
+    return nullptr;
+  return std::make_unique<QueueMessageSwapPromise>(
+      sync_message_filter, frame_swap_message_queue, source_frame_number);
 }
 
 void RenderWidget::SetHandlingInputEvent(bool handling_input_event) {
@@ -1700,9 +1694,10 @@ void RenderWidget::QueueMessage(IPC::Message* msg) {
       QueueMessageImpl(msg, frame_swap_message_queue_.get(),
                        RenderThreadImpl::current()->sync_message_filter(),
                        layer_tree_view_->GetSourceFrameNumber());
-
-  if (swap_promise)
-    layer_tree_view_->QueueSwapPromise(std::move(swap_promise));
+  if (swap_promise) {
+    layer_tree_view_->layer_tree_host()->QueueSwapPromise(
+        std::move(swap_promise));
+  }
 }
 
 void RenderWidget::DidChangeCursor(const WebCursorInfo& cursor_info) {
@@ -1946,6 +1941,8 @@ void RenderWidget::CloseWebWidget() {
   // in all cases.
   webwidget_internal_->Close();
   webwidget_internal_ = nullptr;
+
+  close_weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void RenderWidget::UpdateWebViewWithDeviceScaleFactor() {
@@ -3321,6 +3318,108 @@ void RenderWidget::RequestDecode(const cc::PaintImage& image,
                                  base::OnceCallback<void(bool)> callback) {
   layer_tree_view_->layer_tree_host()->QueueImageDecode(image,
                                                         std::move(callback));
+}
+
+// Enables measuring and reporting both presentation times and swap times in
+// swap promises.
+class ReportTimeSwapPromise : public cc::SwapPromise {
+  using ReportTimeCallback = blink::WebWidgetClient::ReportTimeCallback;
+
+ public:
+  ReportTimeSwapPromise(ReportTimeCallback callback,
+                        scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                        base::WeakPtr<RenderWidget> render_widget)
+      : callback_(std::move(callback)),
+        task_runner_(std::move(task_runner)),
+        render_widget_(std::move(render_widget)) {}
+  ~ReportTimeSwapPromise() override = default;
+
+  void DidActivate() override {}
+
+  void WillSwap(viz::CompositorFrameMetadata* metadata) override {
+    DCHECK_GT(metadata->frame_token, 0u);
+    // The interval between the current swap and its presentation time is
+    // reported in UMA (see corresponding code in DidSwap() below).
+    frame_token_ = metadata->frame_token;
+  }
+  void DidSwap() override {
+    DCHECK_GT(frame_token_, 0u);
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](base::TimeTicks timestamp, ReportTimeCallback callback,
+               base::WeakPtr<RenderWidget> render_widget, int frame_token) {
+              std::move(callback).Run(
+                  blink::WebWidgetClient::SwapResult::kDidSwap, timestamp);
+              if (render_widget) {
+                render_widget->layer_tree_view()->AddPresentationCallback(
+                    frame_token,
+                    base::BindOnce(&RecordSwapTimeToPresentationTime,
+                                   timestamp));
+              }
+            },
+            base::TimeTicks::Now(), std::move(callback_), render_widget_,
+            frame_token_));
+  }
+
+  void DidNotSwap(DidNotSwapReason reason) override {
+    blink::WebWidgetClient::SwapResult result;
+    switch (reason) {
+      case cc::SwapPromise::DidNotSwapReason::SWAP_FAILS:
+        result = blink::WebWidgetClient::SwapResult::kDidNotSwapSwapFails;
+        break;
+      case cc::SwapPromise::DidNotSwapReason::COMMIT_FAILS:
+        result = blink::WebWidgetClient::SwapResult::kDidNotSwapCommitFails;
+        break;
+      case cc::SwapPromise::DidNotSwapReason::COMMIT_NO_UPDATE:
+        result = blink::WebWidgetClient::SwapResult::kDidNotSwapCommitNoUpdate;
+        break;
+      case cc::SwapPromise::DidNotSwapReason::ACTIVATION_FAILS:
+        result = blink::WebWidgetClient::SwapResult::kDidNotSwapActivationFails;
+        break;
+    }
+    // During a failed swap, return the current time regardless of whether we're
+    // using presentation or swap timestamps.
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback_), result, base::TimeTicks::Now()));
+  }
+
+  int64_t TraceId() const override { return 0; }
+
+ private:
+  static void RecordSwapTimeToPresentationTime(
+      base::TimeTicks swap_time,
+      base::TimeTicks presentation_time) {
+    DCHECK(!swap_time.is_null());
+    bool presentation_time_is_valid =
+        !presentation_time.is_null() && (presentation_time > swap_time);
+    UMA_HISTOGRAM_BOOLEAN("PageLoad.Internal.Renderer.PresentationTime.Valid",
+                          presentation_time_is_valid);
+    if (presentation_time_is_valid) {
+      // This measures from 1ms to 10seconds.
+      UMA_HISTOGRAM_TIMES(
+          "PageLoad.Internal.Renderer.PresentationTime.DeltaFromSwapTime",
+          presentation_time - swap_time);
+    }
+  }
+
+  ReportTimeCallback callback_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  base::WeakPtr<RenderWidget> render_widget_;
+  uint32_t frame_token_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(ReportTimeSwapPromise);
+};
+
+void RenderWidget::NotifySwapTime(ReportTimeCallback callback) {
+  cc::LayerTreeHost* layer_tree_host = layer_tree_view_->layer_tree_host();
+  // When the WebWidget is closed we cancel any pending SwapPromise that would
+  // call back into blink, so we use |close_weak_ptr_factory_|.
+  layer_tree_host->QueueSwapPromise(std::make_unique<ReportTimeSwapPromise>(
+      std::move(callback),
+      layer_tree_host->GetTaskRunnerProvider()->MainThreadTaskRunner(),
+      close_weak_ptr_factory_.GetWeakPtr()));
 }
 
 void RenderWidget::RequestUnbufferedInputEvents() {

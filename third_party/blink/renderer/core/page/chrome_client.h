@@ -34,7 +34,7 @@
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
-#include "third_party/blink/public/platform/web_layer_tree_view.h"
+#include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/sandbox_flags.h"
@@ -383,6 +383,12 @@ class CORE_EXPORT ChromeClient
                              base::OnceCallback<void(bool)> callback) {
     std::move(callback).Run(false);
   }
+
+  // The |callback| will be fired when the corresponding renderer frame for the
+  // |frame| is submitted (still called "swapped") to the display compositor
+  // (either with DidSwap or DidNotSwap).
+  virtual void NotifySwapTime(LocalFrame& frame,
+                              WebWidgetClient::ReportTimeCallback callback) {}
 
   virtual void FallbackCursorModeLockCursor(LocalFrame* frame,
                                             bool left,

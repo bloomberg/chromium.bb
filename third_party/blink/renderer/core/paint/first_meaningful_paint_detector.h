@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_FIRST_MEANINGFUL_PAINT_DETECTOR_H_
 
 #include "base/macros.h"
-#include "third_party/blink/public/platform/web_layer_tree_view.h"
+#include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/paint/paint_event.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -37,9 +37,7 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
                                          int visible_height);
   void NotifyInputEvent();
   void NotifyPaint();
-  void ReportSwapTime(PaintEvent,
-                      WebLayerTreeView::SwapResult,
-                      base::TimeTicks);
+  void ReportSwapTime(PaintEvent, WebWidgetClient::SwapResult, base::TimeTicks);
   void NotifyFirstContentfulPaint(TimeTicks swap_stamp);
   void OnNetwork0Quiet();
   void OnNetwork2Quiet();

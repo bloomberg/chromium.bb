@@ -884,6 +884,17 @@ void ChromeClientImpl::RequestDecode(LocalFrame* frame,
   web_frame->LocalRootFrameWidget()->RequestDecode(image, std::move(callback));
 }
 
+void ChromeClientImpl::NotifySwapTime(
+    LocalFrame& frame,
+    WebWidgetClient::ReportTimeCallback callback) {
+  WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
+  WebFrameWidgetBase* widget = web_frame->LocalRootFrameWidget();
+  if (!widget)
+    return;
+  WebWidgetClient* client = widget->Client();
+  client->NotifySwapTime(std::move(callback));
+}
+
 void ChromeClientImpl::FallbackCursorModeLockCursor(LocalFrame* frame,
                                                     bool left,
                                                     bool right,

@@ -198,7 +198,7 @@ void ImagePaintTimingDetector::NotifyNodeRemoved(DOMNodeId node_id) {
 }
 
 void ImagePaintTimingDetector::RegisterNotifySwapTime() {
-  WebLayerTreeView::ReportTimeCallback callback =
+  WebWidgetClient::ReportTimeCallback callback =
       WTF::Bind(&ImagePaintTimingDetector::ReportSwapTime,
                 WrapWeakPersistent(this), last_registered_frame_index_);
   if (notify_swap_time_override_for_testing_) {
@@ -211,16 +211,12 @@ void ImagePaintTimingDetector::RegisterNotifySwapTime() {
   LocalFrame& frame = frame_view_->GetFrame();
   if (!frame.GetPage())
     return;
-  WebLayerTreeView* layerTreeView =
-      frame.GetPage()->GetChromeClient().GetWebLayerTreeView(&frame);
-  if (!layerTreeView)
-    return;
-  layerTreeView->NotifySwapTime(std::move(callback));
+  frame.GetPage()->GetChromeClient().NotifySwapTime(frame, std::move(callback));
 }
 
 void ImagePaintTimingDetector::ReportSwapTime(
     unsigned last_queued_frame_index,
-    WebLayerTreeView::SwapResult result,
+    WebWidgetClient::SwapResult result,
     base::TimeTicks timestamp) {
   // The callback is safe from race-condition only when running on main-thread.
   DCHECK(ThreadState::Current()->IsMainThread());

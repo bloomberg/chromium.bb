@@ -256,6 +256,27 @@ class WebWidgetClient {
   // pushing the decode through the compositor.
   virtual void RequestDecode(const cc::PaintImage& image,
                              base::OnceCallback<void(bool)> callback) {}
+
+  // SwapResult mirrors the values of cc::SwapPromise::DidNotSwapReason, and
+  // should be kept consistent with it. SwapResult additionally adds a success
+  // value (kDidSwap).
+  // These values are written to logs. New enum values can be added, but
+  // existing enums must never be renumbered, deleted or reused.
+  enum SwapResult {
+    kDidSwap = 0,
+    kDidNotSwapSwapFails = 1,
+    kDidNotSwapCommitFails = 2,
+    kDidNotSwapCommitNoUpdate = 3,
+    kDidNotSwapActivationFails = 4,
+    kSwapResultMax,
+  };
+  using ReportTimeCallback =
+      base::OnceCallback<void(SwapResult, base::TimeTicks)>;
+
+  // The |callback| will be fired when the corresponding renderer frame is
+  // submitted (still called "swapped") to the display compositor (either with
+  // DidSwap or DidNotSwap).
+  virtual void NotifySwapTime(ReportTimeCallback callback) {}
 };
 
 }  // namespace blink

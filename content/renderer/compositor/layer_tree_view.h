@@ -18,6 +18,7 @@
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "cc/trees/swap_promise.h"
 #include "cc/trees/swap_promise_monitor.h"
+#include "content/common/content_export.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -54,9 +55,10 @@ class LatencyInfo;
 namespace content {
 class LayerTreeViewDelegate;
 
-class LayerTreeView : public blink::WebLayerTreeView,
-                      public cc::LayerTreeHostClient,
-                      public cc::LayerTreeHostSingleThreadClient {
+class CONTENT_EXPORT LayerTreeView
+    : public blink::WebLayerTreeView,
+      public cc::LayerTreeHostClient,
+      public cc::LayerTreeHostSingleThreadClient {
  public:
   // The |main_thread| is the task runner that the compositor will use for the
   // main thread (where it is constructed). The |compositor_thread| is the task
@@ -96,9 +98,6 @@ class LayerTreeView : public blink::WebLayerTreeView,
   // info will be turned into a LatencyInfoSwapPromise.
   std::unique_ptr<cc::SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
       ui::LatencyInfo* latency);
-  // Calling QueueSwapPromise() to directly queue a SwapPromise into
-  // LayerTreeHost.
-  void QueueSwapPromise(std::unique_ptr<cc::SwapPromise> swap_promise);
   int GetSourceFrameNumber() const;
   const cc::Layer* GetRootLayer() const;
   int ScheduleMicroBenchmark(
@@ -143,7 +142,6 @@ class LayerTreeView : public blink::WebLayerTreeView,
   void SetHaveScrollEventHandlers(bool) override;
   bool HaveScrollEventHandlers() const override;
   int LayerTreeId() const override;
-  void NotifySwapTime(ReportTimeCallback callback) override;
 
   void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
                                   cc::BrowserControlsState current,

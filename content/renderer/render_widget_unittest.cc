@@ -16,6 +16,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
+#include "cc/layers/solid_color_layer.h"
 #include "cc/trees/layer_tree_host.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
@@ -263,9 +264,6 @@ int InteractiveRenderWidget::next_routing_id_ = 0;
 
 class RenderWidgetUnittest : public testing::Test {
  public:
-  RenderWidgetUnittest() = default;
-  ~RenderWidgetUnittest() override = default;
-
   // testing::Test implementation.
   void SetUp() override {
     widget_ = new InteractiveRenderWidget(&compositor_deps_);
@@ -291,8 +289,6 @@ class RenderWidgetUnittest : public testing::Test {
   FakeCompositorDependencies compositor_deps_;
   scoped_refptr<InteractiveRenderWidget> widget_;
   base::HistogramTester histogram_tester_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetUnittest);
 };
 
 TEST_F(RenderWidgetUnittest, CursorChange) {
@@ -497,7 +493,6 @@ int PopupRenderWidget::routing_id_ = 1;
 
 class RenderWidgetPopupUnittest : public testing::Test {
  public:
-  RenderWidgetPopupUnittest() = default;
   ~RenderWidgetPopupUnittest() override { widget_->Shutdown(); }
 
   // testing::Test implementation.
@@ -520,8 +515,6 @@ class RenderWidgetPopupUnittest : public testing::Test {
   MockRenderProcess render_process_;
   MockRenderThread render_thread_;
   scoped_refptr<PopupRenderWidget> widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetPopupUnittest);
 };
 
 class StubRenderWidgetDelegate : public RenderWidgetDelegate {
@@ -671,5 +664,104 @@ TEST_F(RenderWidgetSurfaceSyncUnittest, ForceSendMetadataOnInput) {
   EXPECT_TRUE(layer_tree_host->TakeForceSendMetadataRequest());
 }
 #endif  // !defined(OS_ANDROID)
+
+class NotifySwapTimesRenderWidgetUnittest : public RenderWidgetUnittest {
+ public:
+  void SetUp() override {
+    RenderWidgetUnittest::SetUp();
+
+    viz::ParentLocalSurfaceIdAllocator allocator;
+    widget()->layer_tree_view()->SetVisible(true);
+    allocator.GenerateId();
+    widget()->layer_tree_view()->SetViewportSizeAndScale(
+        gfx::Size(200, 100), 1.f,
+        allocator.GetCurrentLocalSurfaceIdAllocation());
+
+    auto root_layer = cc::SolidColorLayer::Create();
+    root_layer->SetBounds(gfx::Size(200, 100));
+    root_layer->SetBackgroundColor(SK_ColorGREEN);
+    widget()->layer_tree_view()->layer_tree_host()->SetNonBlinkManagedRootLayer(
+        root_layer);
+
+    auto color_layer = cc::SolidColorLayer::Create();
+    color_layer->SetBounds(gfx::Size(100, 100));
+    root_layer->AddChild(color_layer);
+    color_layer->SetBackgroundColor(SK_ColorRED);
+  }
+
+  base::TimeTicks CompositeAndReturnSwapTimestamp() {
+    base::TimeTicks swap_time;
+    base::RunLoop run_loop;
+    widget()->NotifySwapTime(base::BindOnce(
+        [](base::OnceClosure callback, base::TimeTicks* swap_time,
+           blink::WebWidgetClient::SwapResult result,
+           base::TimeTicks timestamp) {
+          *swap_time = timestamp;
+          std::move(callback).Run();
+        },
+        run_loop.QuitClosure(), &swap_time));
+    widget()->layer_tree_view()->layer_tree_host()->Composite(
+        base::TimeTicks::Now(), /*raster=*/true);
+    // The swap time notify comes as a posted task.
+    run_loop.Run();
+    return swap_time;
+  }
+};
+
+TEST_F(NotifySwapTimesRenderWidgetUnittest, PresentationTimestampValid) {
+  base::HistogramTester histograms;
+
+  base::TimeTicks swap_time = CompositeAndReturnSwapTimestamp();
+  ASSERT_FALSE(swap_time.is_null());
+
+  widget()->layer_tree_view()->DidPresentCompositorFrame(
+      1, gfx::PresentationFeedback(
+             swap_time + base::TimeDelta::FromMilliseconds(2),
+             base::TimeDelta::FromMilliseconds(16), 0));
+  EXPECT_THAT(histograms.GetAllSamples(
+                  "PageLoad.Internal.Renderer.PresentationTime.Valid"),
+              testing::ElementsAre(base::Bucket(true, 1)));
+  EXPECT_THAT(
+      histograms.GetAllSamples(
+          "PageLoad.Internal.Renderer.PresentationTime.DeltaFromSwapTime"),
+      testing::ElementsAre(base::Bucket(2, 1)));
+}
+
+TEST_F(NotifySwapTimesRenderWidgetUnittest, PresentationTimestampInvalid) {
+  base::HistogramTester histograms;
+
+  base::TimeTicks swap_time = CompositeAndReturnSwapTimestamp();
+  ASSERT_FALSE(swap_time.is_null());
+
+  widget()->layer_tree_view()->DidPresentCompositorFrame(
+      1, gfx::PresentationFeedback());
+  EXPECT_THAT(histograms.GetAllSamples(
+                  "PageLoad.Internal.Renderer.PresentationTime.Valid"),
+              testing::ElementsAre(base::Bucket(false, 1)));
+  EXPECT_THAT(
+      histograms.GetAllSamples(
+          "PageLoad.Internal.Renderer.PresentationTime.DeltaFromSwapTime"),
+      testing::IsEmpty());
+}
+
+TEST_F(NotifySwapTimesRenderWidgetUnittest,
+       PresentationTimestampEarlierThanSwaptime) {
+  base::HistogramTester histograms;
+
+  base::TimeTicks swap_time = CompositeAndReturnSwapTimestamp();
+  ASSERT_FALSE(swap_time.is_null());
+
+  widget()->layer_tree_view()->DidPresentCompositorFrame(
+      1, gfx::PresentationFeedback(
+             swap_time - base::TimeDelta::FromMilliseconds(2),
+             base::TimeDelta::FromMilliseconds(16), 0));
+  EXPECT_THAT(histograms.GetAllSamples(
+                  "PageLoad.Internal.Renderer.PresentationTime.Valid"),
+              testing::ElementsAre(base::Bucket(false, 1)));
+  EXPECT_THAT(
+      histograms.GetAllSamples(
+          "PageLoad.Internal.Renderer.PresentationTime.DeltaFromSwapTime"),
+      testing::IsEmpty());
+}
 
 }  // namespace content

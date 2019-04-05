@@ -120,16 +120,13 @@ void TextPaintTimingDetector::RegisterNotifySwapTime(
   LocalFrame& frame = frame_view_->GetFrame();
   if (!frame.GetPage())
     return;
-  if (WebLayerTreeView* layerTreeView =
-          frame.GetPage()->GetChromeClient().GetWebLayerTreeView(&frame)) {
-    layerTreeView->NotifySwapTime(ConvertToBaseCallback(std::move(callback)));
-    awaiting_swap_promise_ = true;
-  }
+  frame.GetPage()->GetChromeClient().NotifySwapTime(
+      frame, ConvertToBaseCallback(std::move(callback)));
+  awaiting_swap_promise_ = true;
 }
 
-void TextPaintTimingDetector::ReportSwapTime(
-    WebLayerTreeView::SwapResult result,
-    base::TimeTicks timestamp) {
+void TextPaintTimingDetector::ReportSwapTime(WebWidgetClient::SwapResult result,
+                                             base::TimeTicks timestamp) {
   records_manager_.AssignPaintTimeToQueuedNodes(timestamp);
   awaiting_swap_promise_ = false;
 }

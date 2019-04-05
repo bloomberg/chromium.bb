@@ -79,7 +79,6 @@ class Thread;
 
 namespace cc {
 class BeginFrameSource;
-class LayerTreeFrameSink;
 class SyntheticBeginFrameSource;
 class TaskGraphRunner;
 }
@@ -116,13 +115,11 @@ class Gpu;
 }  // namespace ws
 
 namespace content {
-
 class AecDumpMessageFilter;
 class AudioRendererMixerManager;
 class BrowserPluginManager;
 class CategorizedWorkerPool;
 class DomStorageDispatcher;
-class FrameSwapMessageQueue;
 class GpuVideoAcceleratorFactoriesImpl;
 class LowMemoryModeController;
 class P2PSocketDispatcher;
@@ -238,6 +235,15 @@ class CONTENT_EXPORT RenderThreadImpl
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
   bool IsScrollAnimatorEnabled() override;
   std::unique_ptr<cc::UkmRecorderFactory> CreateUkmRecorderFactory() override;
+  void RequestNewLayerTreeFrameSink(
+      int widget_routing_id,
+      scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
+      const GURL& url,
+      LayerTreeFrameSinkCallback callback,
+      mojom::RenderFrameMetadataObserverClientRequest
+          render_frame_metadata_observer_client_request,
+      mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer_ptr,
+      const char* client_name) override;
 #ifdef OS_ANDROID
   bool UsingSynchronousCompositing() override;
 #endif
@@ -259,18 +265,6 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSync();
 
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager();
-
-  using LayerTreeFrameSinkCallback =
-      base::OnceCallback<void(std::unique_ptr<cc::LayerTreeFrameSink>)>;
-  void RequestNewLayerTreeFrameSink(
-      int widget_routing_id,
-      scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
-      const GURL& url,
-      LayerTreeFrameSinkCallback callback,
-      mojom::RenderFrameMetadataObserverClientRequest
-          render_frame_metadata_observer_client_request,
-      mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer_ptr,
-      const char* client_name);
 
   blink::AssociatedInterfaceRegistry* GetAssociatedInterfaceRegistry();
 

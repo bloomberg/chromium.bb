@@ -9,7 +9,7 @@
 #include <queue>
 #include <set>
 
-#include "third_party/blink/public/platform/web_layer_tree_view.h"
+#include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -108,7 +108,7 @@ class TextRecordsManager {
 class CORE_EXPORT TextPaintTimingDetector final
     : public GarbageCollectedFinalized<TextPaintTimingDetector> {
   using ReportTimeCallback =
-      WTF::CrossThreadFunction<void(WebLayerTreeView::SwapResult,
+      WTF::CrossThreadFunction<void(WebWidgetClient::SwapResult,
                                     base::TimeTicks)>;
   friend class TextPaintTimingDetectorTest;
 
@@ -132,7 +132,7 @@ class CORE_EXPORT TextPaintTimingDetector final
   void TimerFired(TimerBase*);
   void Analyze();
 
-  void ReportSwapTime(WebLayerTreeView::SwapResult result,
+  void ReportSwapTime(WebWidgetClient::SwapResult result,
                       base::TimeTicks timestamp);
   void RegisterNotifySwapTime(ReportTimeCallback callback);
   void OnLargestTextDetected(const TextRecord&);

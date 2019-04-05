@@ -35,6 +35,15 @@ class FakeCompositorDependencies : public CompositorDependencies {
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
   bool IsScrollAnimatorEnabled() override;
   std::unique_ptr<cc::UkmRecorderFactory> CreateUkmRecorderFactory() override;
+  void RequestNewLayerTreeFrameSink(
+      int widget_routing_id,
+      scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
+      const GURL& url,
+      LayerTreeFrameSinkCallback callback,
+      mojom::RenderFrameMetadataObserverClientRequest
+          render_frame_metadata_observer_client_request,
+      mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer_ptr,
+      const char* client_name) override;
 #ifdef OS_ANDROID
   bool UsingSynchronousCompositing() override;
 #endif
