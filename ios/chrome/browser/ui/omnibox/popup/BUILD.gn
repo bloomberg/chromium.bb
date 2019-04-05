@@ -68,6 +68,7 @@ source_set("popup_ui") {
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/app/theme",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/omnibox:omnibox_popup_shared",
     "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/public",

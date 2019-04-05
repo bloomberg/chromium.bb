@@ -5,8 +5,6 @@
 source_set("location_bar") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "extended_touch_target_button.h",
-    "extended_touch_target_button.mm",
     "location_bar_consumer.h",
     "location_bar_coordinator.h",
     "location_bar_coordinator.mm",
@@ -47,6 +45,7 @@ source_set("location_bar") {
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/browser/ui/fullscreen:ui",
     "//ios/chrome/browser/ui/infobars:feature_flags",
