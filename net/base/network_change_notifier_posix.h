@@ -59,11 +59,7 @@ class NET_EXPORT NetworkChangeNotifierPosix : public NetworkChangeNotifier {
 
   class DnsConfigService;
 
-  // |dns_config_service_| will live on this runner.
-  scoped_refptr<base::SequencedTaskRunner> dns_config_service_runner_;
-  // DnsConfigService that lives on |dns_config_service_runner_|.
-  std::unique_ptr<DnsConfigService, base::OnTaskRunnerDeleter>
-      dns_config_service_;
+  void CreateDnsConfigService();
 
   // Calculates parameters used for network change notifier online/offline
   // signals.
@@ -71,6 +67,12 @@ class NET_EXPORT NetworkChangeNotifierPosix : public NetworkChangeNotifier {
   NetworkChangeCalculatorParamsPosix();
 
   THREAD_CHECKER(thread_checker_);
+
+  // |dns_config_service_| will live on this runner.
+  scoped_refptr<base::SequencedTaskRunner> dns_config_service_runner_;
+  // DnsConfigService that lives on |dns_config_service_runner_|.
+  std::unique_ptr<DnsConfigService, base::OnTaskRunnerDeleter>
+      dns_config_service_;
 
   mutable base::Lock lock_;
   NetworkChangeNotifier::ConnectionType

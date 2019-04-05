@@ -24,9 +24,8 @@ class NetworkChangeNotifierPosix::DnsConfigService
     : public net::internal::DnsConfigServicePosix {
  public:
   DnsConfigService() {
-    // After construction it lives on
-    // NetworkChangeNotifierPosix::dns_config_service_runner_.
-    DETACH_FROM_SEQUENCE(sequence_checker_);
+    WatchConfig(base::BindRepeating(&NetworkChangeNotifier::SetDnsConfig));
+    OnNetworkChange();
   }
   ~DnsConfigService() override = default;
 
@@ -51,7 +50,7 @@ NetworkChangeNotifierPosix::NetworkChangeNotifierPosix(
       dns_config_service_runner_(
           base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})),
       dns_config_service_(
-          new DnsConfigService(),
+          nullptr,
           // Ensure DnsConfigService lives on |dns_config_service_runner_|
           // to prevent races where NetworkChangeNotifierPosix outlives
           // ScopedTaskEnvironment. https://crbug.com/938126
@@ -62,14 +61,18 @@ NetworkChangeNotifierPosix::NetworkChangeNotifierPosix(
               initial_connection_subtype)) {
   dns_config_service_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &NetworkChangeNotifierPosix::DnsConfigService::WatchConfig,
-          base::Unretained(dns_config_service_.get()),
-          base::BindRepeating(&NetworkChangeNotifier::SetDnsConfig)));
-  OnDNSChanged();
+      base::BindOnce(&NetworkChangeNotifierPosix::CreateDnsConfigService,
+                     // The Unretained pointer is safe here because |this| owns
+                     // |dns_config_service_runner_|.
+                     base::Unretained(this)));
 }
 
 NetworkChangeNotifierPosix::~NetworkChangeNotifierPosix() = default;
+
+void NetworkChangeNotifierPosix::CreateDnsConfigService() {
+  DCHECK(dns_config_service_runner_->RunsTasksInCurrentSequence());
+  dns_config_service_.reset(new DnsConfigService());
+}
 
 void NetworkChangeNotifierPosix::OnDNSChanged() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
