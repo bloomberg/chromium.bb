@@ -59,9 +59,12 @@ class FtlMessagingClient final {
 
   // Opens a stream to continuously receive new messages from the server and
   // calls the registered MessageCallback once a new message is received.
-  // |on_done| is called once the stream is successfully opened or failed to
-  // open due to an error.
-  void StartReceivingMessages(DoneCallback on_done);
+  // |on_ready| is called once the stream is successfully started.
+  // |on_closed| is called if the stream fails to start, in which case
+  // |on_ready| will not be called, or when the stream is closed or dropped,
+  // in which case it is called after |on_ready| is called.
+  void StartReceivingMessages(base::OnceClosure on_ready,
+                              DoneCallback on_closed);
 
   // Stops the stream for continuously receiving new messages.
   void StopReceivingMessages();

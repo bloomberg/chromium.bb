@@ -94,7 +94,7 @@ class MockMessageReceptionChannel : public MessageReceptionChannel {
     on_incoming_msg_ = on_incoming_msg;
   }
 
-  MOCK_METHOD1(StartReceivingMessages, void(DoneCallback));
+  MOCK_METHOD2(StartReceivingMessages, void(base::OnceClosure, DoneCallback));
   MOCK_METHOD0(StopReceivingMessages, void());
 
   StreamOpener* stream_opener() { return &stream_opener_; }
@@ -385,17 +385,22 @@ TEST_F(FtlMessagingClientTest, TestSendMessage_SendOneMessageWithRegId) {
   run_loop.Run();
 }
 
-TEST_F(FtlMessagingClientTest,
-       TestStartReceivingMessages_DoneCallbackForwarded) {
+TEST_F(FtlMessagingClientTest, TestStartReceivingMessages_CallbacksForwarded) {
   base::RunLoop run_loop;
 
-  EXPECT_CALL(*mock_message_reception_channel_, StartReceivingMessages(_))
-      .WillOnce(Invoke([&](FtlMessagingClient::DoneCallback callback) {
-        std::move(callback).Run(
+  EXPECT_CALL(*mock_message_reception_channel_, StartReceivingMessages(_, _))
+      .WillOnce(Invoke([&](base::OnceClosure on_ready,
+                           FtlMessagingClient::DoneCallback on_closed) {
+        std::move(on_ready).Run();
+        std::move(on_closed).Run(
             grpc::Status(grpc::StatusCode::UNAUTHENTICATED, ""));
       }));
 
+  base::MockCallback<base::OnceClosure> mock_on_ready_closure;
+  EXPECT_CALL(mock_on_ready_closure, Run()).WillOnce(Return());
+
   messaging_client_->StartReceivingMessages(
+      mock_on_ready_closure.Get(),
       base::BindLambdaForTesting([&](const grpc::Status& status) {
         ASSERT_EQ(grpc::StatusCode::UNAUTHENTICATED, status.error_code());
         run_loop.Quit();

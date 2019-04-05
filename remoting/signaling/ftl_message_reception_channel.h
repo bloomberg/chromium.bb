@@ -36,7 +36,8 @@ class FtlMessageReceptionChannel final : public MessageReceptionChannel {
   // MessageReceptionChannel implementations.
   void Initialize(const StreamOpener& stream_opener,
                   const MessageCallback& on_incoming_msg) override;
-  void StartReceivingMessages(DoneCallback on_done) override;
+  void StartReceivingMessages(base::OnceClosure on_ready,
+                              DoneCallback on_closed) override;
   void StopReceivingMessages() override;
 
   const net::BackoffEntry& GetReconnectRetryBackoffEntryForTesting() const;
@@ -57,7 +58,8 @@ class FtlMessageReceptionChannel final : public MessageReceptionChannel {
   void OnReceiveMessagesStreamClosed(const grpc::Status& status);
   void OnMessageReceived(const ftl::ReceiveMessagesResponse& response);
 
-  void RunStartReceivingMessagesCallbacks(const grpc::Status& status);
+  void RunStreamReadyCallbacks();
+  void RunStreamClosedCallbacks(const grpc::Status& status);
   void RetryStartReceivingMessagesWithBackoff();
   void RetryStartReceivingMessages();
   void StartReceivingMessagesInternal();
@@ -70,7 +72,8 @@ class FtlMessageReceptionChannel final : public MessageReceptionChannel {
   StreamOpener stream_opener_;
   MessageCallback on_incoming_msg_;
   std::unique_ptr<ScopedGrpcServerStream> receive_messages_stream_;
-  std::list<DoneCallback> start_receiving_messages_callbacks_;
+  std::list<base::OnceClosure> stream_ready_callbacks_;
+  std::list<DoneCallback> stream_closed_callbacks_;
   State state_ = State::STOPPED;
   net::BackoffEntry reconnect_retry_backoff_;
   base::OneShotTimer reconnect_retry_timer_;
