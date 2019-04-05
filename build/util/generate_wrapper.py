@@ -11,21 +11,26 @@ import sys
 import textwrap
 
 
+# The bash template passes the python script into vpython via stdin.
+# The interpreter doesn't know about the script, so we have bash
+# inject the script location.
 BASH_TEMPLATE = textwrap.dedent(
     """\
-    #!/usr/bin/env bash
-    python - <<END $@
-    _SCRIPT_LOCATION = "${{BASH_SOURCE[0]}}"
+    #!/usr/bin/env vpython
+    _SCRIPT_LOCATION = __file__
     {script}
-    END
     """)
 
 
+# The batch template reruns the batch script with vpython, with the -x
+# flag instructing the interpreter to ignore the first line. The interpreter
+# knows about the (batch) script in this case, so it can get the file location
+# directly.
 BATCH_TEMPLATE = textwrap.dedent(
     """\
     @SETLOCAL ENABLEDELAYEDEXPANSION \
-        & python -x "%~f0" %* \
-        & EXIT /B !ERRORLEVEL!
+      & vpython.bat -x "%~f0" %* \
+      & EXIT /B !ERRORLEVEL!
     _SCRIPT_LOCATION = __file__
     {script}
     """)
