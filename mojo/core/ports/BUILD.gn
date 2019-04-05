@@ -24,6 +24,8 @@ component("ports") {
     "port_locker.h",
     "port_ref.cc",
     "port_ref.h",
+    "slot_ref.cc",
+    "slot_ref.h",
     "user_data.h",
     "user_message.cc",
     "user_message.h",

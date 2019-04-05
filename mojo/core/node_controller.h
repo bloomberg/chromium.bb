@@ -187,7 +187,7 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
   void ForwardEvent(const ports::NodeName& node,
                     ports::ScopedEvent event) override;
   void BroadcastEvent(ports::ScopedEvent event) override;
-  void PortStatusChanged(const ports::PortRef& port) override;
+  void SlotStatusChanged(const ports::SlotRef& slot) override;
 
   // NodeChannel::Delegate:
   void OnAcceptInvitee(const ports::NodeName& from_node,

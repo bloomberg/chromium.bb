@@ -25,10 +25,10 @@ class NodeDelegate {
   // Broadcast an event to all nodes.
   virtual void BroadcastEvent(ScopedEvent event) = 0;
 
-  // Indicates that the port's status has changed recently. Use Node::GetStatus
-  // to query the latest status of the port. Note, this event could be spurious
-  // if another thread is simultaneously modifying the status of the port.
-  virtual void PortStatusChanged(const PortRef& port_ref) = 0;
+  // Indicates that the slot's status has changed recently. Use Node::GetStatus
+  // to query the latest status of the slot. Note, this event could be spurious
+  // if another thread is simultaneously modifying the status of the slot.
+  virtual void SlotStatusChanged(const SlotRef& slot_ref) = 0;
 };
 
 }  // namespace ports
