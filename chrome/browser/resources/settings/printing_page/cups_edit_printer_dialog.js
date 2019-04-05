@@ -204,11 +204,7 @@ Polymer({
    * @private
    */
   canSavePrinter_: function() {
-    return this.printerInfoChanged_ &&
-        (settings.printing.isNameAndAddressValid(this.activePrinter) &&
-         settings.printing.isPPDInfoValid(
-             this.activePrinter.ppdManufacturer, this.activePrinter.ppdModel,
-             this.activePrinter.printerPPDPath));
+    return this.printerInfoChanged_ && this.isPrinterValid();
   },
 
   /**
@@ -284,5 +280,16 @@ Polymer({
       this.onPrinterInfoChange_();
     }
     this.userPPD_ = settings.printing.getBaseName(path);
+  },
+
+  /*
+   * Returns true if the printer has valid name, address, and PPD.
+   * @return {boolean}
+   */
+  isPrinterValid: function() {
+    return settings.printing.isNameAndAddressValid(this.activePrinter) &&
+        settings.printing.isPPDInfoValid(
+            this.activePrinter.ppdManufacturer, this.activePrinter.ppdModel,
+            this.activePrinter.printerPPDPath);
   },
 });
