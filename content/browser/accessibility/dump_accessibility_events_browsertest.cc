@@ -662,4 +662,9 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("menu-opened-closed.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaFlowToChange) {
+  RunEventTest(FILE_PATH_LITERAL("aria-flow-to.html"));
+}
+
 }  // namespace content
