@@ -31,6 +31,16 @@ bool StructTraits<tracing::mojom::DataSourceDataView,
   }
 
   *out->mutable_config() = std::move(config);
+
+  std::vector<std::string> producer_name_filter;
+  if (!data.ReadProducerNameFilter(&producer_name_filter)) {
+    return false;
+  }
+
+  for (auto&& filter : producer_name_filter) {
+    *out->add_producer_name_filter() = std::move(filter);
+  }
+
   return true;
 }
 
