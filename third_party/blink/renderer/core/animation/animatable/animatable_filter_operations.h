@@ -53,11 +53,10 @@ class AnimatableFilterOperations final : public AnimatableValue {
     return operation_wrapper_->Operations();
   }
 
-  void Trace(Visitor*) override;
-
- protected:
-  AnimatableValue* InterpolateTo(const AnimatableValue*,
-                                 double fraction) const override;
+  void Trace(Visitor* visitor) override {
+    visitor->Trace(operation_wrapper_);
+    AnimatableValue::Trace(visitor);
+  }
 
  private:
   AnimatableType GetType() const override { return kTypeFilterOperations; }

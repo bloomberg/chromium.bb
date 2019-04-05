@@ -8,13 +8,9 @@ blink_core_sources("animation") {
   split_count = 5
 
   sources = [
-    "animatable/animatable_double.cc",
     "animatable/animatable_double.h",
-    "animatable/animatable_filter_operations.cc",
     "animatable/animatable_filter_operations.h",
-    "animatable/animatable_transform.cc",
     "animatable/animatable_transform.h",
-    "animatable/animatable_value.cc",
     "animatable/animatable_value.h",
     "animation.cc",
     "animation.h",

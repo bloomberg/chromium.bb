@@ -47,10 +47,6 @@ class CORE_EXPORT AnimatableDouble final : public AnimatableValue {
 
   double ToDouble() const { return number_; }
 
- protected:
-  AnimatableValue* InterpolateTo(const AnimatableValue*,
-                                 double fraction) const override;
-
  private:
   AnimatableType GetType() const override { return kTypeDouble; }
 

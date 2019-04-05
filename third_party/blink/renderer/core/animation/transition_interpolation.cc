@@ -59,10 +59,4 @@ TransitionInterpolation::GetInterpolatedValue() const {
       type_, CurrentInterpolableValue().Clone(), CurrentNonInterpolableValue());
 }
 
-AnimatableValue* TransitionInterpolation::GetInterpolatedCompositorValue()
-    const {
-  return AnimatableValue::Interpolate(compositor_start_, compositor_end_,
-                                      cached_fraction_);
-}
-
 }  // namespace blink
