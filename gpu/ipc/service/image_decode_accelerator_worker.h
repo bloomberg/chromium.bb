@@ -8,9 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/span.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 
 namespace gfx {
@@ -25,24 +27,33 @@ class ImageDecodeAcceleratorWorker {
  public:
   virtual ~ImageDecodeAcceleratorWorker() {}
 
+  // Encapsulates the result of a decode request giving implementations the
+  // chance to do custom resource management (e.g., some resources may need to
+  // be released when the decoded data is no longer needed). Implementations
+  // should not assume that destruction happens on a specific thread.
+  class DecodeResult {
+   public:
+    virtual ~DecodeResult() {}
+    virtual base::span<const uint8_t> GetData() const = 0;
+    virtual size_t GetStride() const = 0;
+    virtual SkImageInfo GetImageInfo() const = 0;
+  };
+
   using CompletedDecodeCB =
-      base::OnceCallback<void(std::vector<uint8_t> /* output */,
-                              size_t /* row_bytes */,
-                              SkImageInfo /* image_info */)>;
+      base::OnceCallback<void(std::unique_ptr<DecodeResult>)>;
 
   // Enqueue a decode of |encoded_data|. The |decode_cb| is called
-  // asynchronously when the decode completes passing as parameters a vector
-  // containing the decoded image (|output|), the stride (|row_bytes|), and a
-  // SkImageInfo (|image_info|) with information about the decoded output.
-  // For a successful decode, implementations must guarantee that:
+  // asynchronously when the decode completes passing as parameter DecodeResult
+  // containing the decoded image. For a successful decode, implementations must
+  // guarantee that:
   //
-  // 1) |image_info|.width() == |output_size|.width().
-  // 2) |image_info|.height() == |output_size|.height().
-  // 3) |row_bytes| >= |image_info|.minRowBytes().
-  // 4) |output|.size() == |image_info|.computeByteSize(|row_bytes|).
+  // 1) GetImageInfo().width() == |output_size|.width().
+  // 2) GetImageInfo().height() == |output_size|.height().
+  // 3) GetStride() >= GetImageInfo().minRowBytes().
+  // 4) GetData().size() >= GetImageInfo().computeByteSize(stride()).
   //
-  // If the decode fails, |decode_cb| is called asynchronously with an empty
-  // vector. Callbacks should be called in the order that this method is called.
+  // If the decode fails, |decode_cb| is called asynchronously with nullptr.
+  // Callbacks should be called in the order that this method is called.
   virtual void Decode(std::vector<uint8_t> encoded_data,
                       const gfx::Size& output_size,
                       CompletedDecodeCB decode_cb) = 0;
