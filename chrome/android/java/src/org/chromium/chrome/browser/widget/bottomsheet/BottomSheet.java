@@ -1503,14 +1503,16 @@ public class BottomSheet
 
     /**
      * Checks whether the sheet can be moved. It cannot be moved when the activity is in overview
-     * mode, when "find in page" is visible, or when the toolbar is hidden.
+     * mode, when "find in page" is visible, when the toolbar is in the animation to hide, or when
+     * the toolbar is hidden.
      */
     protected boolean canMoveSheet() {
         if (mFindInPageView == null) mFindInPageView = findViewById(R.id.find_toolbar);
         boolean isFindInPageVisible =
                 mFindInPageView != null && mFindInPageView.getVisibility() == View.VISIBLE;
 
-        return !isToolbarAndroidViewHidden() && !isFindInPageVisible;
+        return !isToolbarAndroidViewHidden() && !isFindInPageVisible
+                && mTargetState != SheetState.HIDDEN;
     }
 
     /**
