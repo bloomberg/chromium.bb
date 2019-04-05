@@ -190,11 +190,13 @@ void FidoBleDevice::AddToPendingFrames(FidoBleDeviceCommand cmd,
 void FidoBleDevice::OnConnected(bool success) {
   StopTimeout();
   if (!success) {
+    FIDO_LOG(ERROR) << "Error while attempting to connect to BLE device.";
     state_ = State::kDeviceError;
     Transition();
     return;
   }
 
+  FIDO_LOG(EVENT) << "BLE device connected successfully.";
   state_ = State::kBusy;
   StartTimeout();
   connection_->ReadControlPointLength(base::BindOnce(
