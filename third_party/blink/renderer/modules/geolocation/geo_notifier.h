@@ -22,14 +22,6 @@ class PositionError;
 class GeoNotifier final : public GarbageCollectedFinalized<GeoNotifier>,
                           public NameClient {
  public:
-  static GeoNotifier* Create(Geolocation* geolocation,
-                             V8PositionCallback* position_callback,
-                             V8PositionErrorCallback* position_error_callback,
-                             const PositionOptions* options) {
-    return MakeGarbageCollected<GeoNotifier>(geolocation, position_callback,
-                                             position_error_callback, options);
-  }
-
   GeoNotifier(Geolocation*,
               V8PositionCallback*,
               V8PositionErrorCallback*,
@@ -64,14 +56,6 @@ class GeoNotifier final : public GarbageCollectedFinalized<GeoNotifier>,
   // timer should be stopped beforehand.
   class Timer final : public GarbageCollectedFinalized<Timer> {
    public:
-    static Timer* Create(
-        scoped_refptr<base::SingleThreadTaskRunner> web_task_runner,
-        GeoNotifier* notifier,
-        void (GeoNotifier::*member_func)(TimerBase*)) {
-      return MakeGarbageCollected<Timer>(web_task_runner, notifier,
-                                         member_func);
-    }
-
     explicit Timer(scoped_refptr<base::SingleThreadTaskRunner> web_task_runner,
                    GeoNotifier* notifier,
                    void (GeoNotifier::*member_func)(TimerBase*))

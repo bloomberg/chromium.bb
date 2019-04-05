@@ -42,10 +42,6 @@ class PositionError final : public ScriptWrappable {
     kTimeout = 3
   };
 
-  static PositionError* Create(ErrorCode code, const String& message) {
-    return MakeGarbageCollected<PositionError>(code, message);
-  }
-
   PositionError(ErrorCode code, const String& message)
       : code_(code), message_(message), is_fatal_(false) {}
 

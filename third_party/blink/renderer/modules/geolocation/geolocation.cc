@@ -56,15 +56,16 @@ const char kFeaturePolicyConsoleWarning[] =
 
 Geoposition* CreateGeoposition(
     const device::mojom::blink::Geoposition& position) {
-  Coordinates* coordinates = Coordinates::Create(
+  auto* coordinates = MakeGarbageCollected<Coordinates>(
       position.latitude, position.longitude,
       // Lowest point on land is at approximately -400 meters.
       position.altitude > -10000., position.altitude, position.accuracy,
       position.altitude_accuracy >= 0., position.altitude_accuracy,
       position.heading >= 0. && position.heading <= 360., position.heading,
       position.speed >= 0., position.speed);
-  return Geoposition::Create(coordinates, ConvertSecondsToDOMTimeStamp(
-                                              position.timestamp.ToDoubleT()));
+  return MakeGarbageCollected<Geoposition>(
+      coordinates,
+      ConvertSecondsToDOMTimeStamp(position.timestamp.ToDoubleT()));
 }
 
 PositionError* CreatePositionError(
@@ -83,7 +84,7 @@ PositionError* CreatePositionError(
       NOTREACHED();
       break;
   }
-  return PositionError::Create(error_code, error);
+  return MakeGarbageCollected<PositionError>(error_code, error);
 }
 
 static void ReportGeolocationViolation(Document* doc) {
@@ -185,8 +186,8 @@ void Geolocation::getCurrentPosition(V8PositionCallback* success_callback,
 
   probe::BreakableLocation(GetDocument(), "Geolocation.getCurrentPosition");
 
-  GeoNotifier* notifier =
-      GeoNotifier::Create(this, success_callback, error_callback, options);
+  auto* notifier = MakeGarbageCollected<GeoNotifier>(this, success_callback,
+                                                     error_callback, options);
 
   one_shots_.insert(notifier);
 
@@ -201,8 +202,8 @@ int Geolocation::watchPosition(V8PositionCallback* success_callback,
 
   probe::BreakableLocation(GetDocument(), "Geolocation.watchPosition");
 
-  GeoNotifier* notifier =
-      GeoNotifier::Create(this, success_callback, error_callback, options);
+  auto* notifier = MakeGarbageCollected<GeoNotifier>(this, success_callback,
+                                                     error_callback, options);
 
   int watch_id;
   // Keep asking for the next id until we're given one that we don't already
@@ -221,8 +222,8 @@ void Geolocation::StartRequest(GeoNotifier* notifier) {
   String error_message;
   if (!GetFrame()->GetSettings()->GetAllowGeolocationOnInsecureOrigins() &&
       !GetExecutionContext()->IsSecureContext(error_message)) {
-    notifier->SetFatalError(
-        PositionError::Create(PositionError::kPermissionDenied, error_message));
+    notifier->SetFatalError(MakeGarbageCollected<PositionError>(
+        PositionError::kPermissionDenied, error_message));
     return;
   }
 
@@ -231,7 +232,7 @@ void Geolocation::StartRequest(GeoNotifier* notifier) {
           ReportOptions::kReportOnFailure, kFeaturePolicyConsoleWarning)) {
     UseCounter::Count(GetDocument(),
                       WebFeature::kGeolocationDisabledByFeaturePolicy);
-    notifier->SetFatalError(PositionError::Create(
+    notifier->SetFatalError(MakeGarbageCollected<PositionError>(
         PositionError::kPermissionDenied, kFeaturePolicyErrorMessage));
     return;
   }
@@ -509,8 +510,8 @@ void Geolocation::OnGeolocationConnectionError() {
   StopUpdating();
   // The only reason that we would fail to get a ConnectionError is if we lack
   // sufficient permission.
-  PositionError* error = PositionError::Create(PositionError::kPermissionDenied,
-                                               kPermissionDeniedErrorMessage);
+  auto* error = MakeGarbageCollected<PositionError>(
+      PositionError::kPermissionDenied, kPermissionDeniedErrorMessage);
   error->SetIsFatal(true);
   HandleError(error);
 }
