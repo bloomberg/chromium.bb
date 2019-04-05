@@ -13,6 +13,7 @@
 
 namespace base {
 
+class Unwinder;
 class ModuleCache;
 class ProfileBuilder;
 class StackSamplerTestDelegate;
@@ -60,6 +61,10 @@ class BASE_EXPORT StackSampler {
 
   // The following functions are all called on the SamplingThread (not the
   // thread being sampled).
+
+  // Adds an auxiliary unwinder to handle additional, non-native-code unwind
+  // scenarios.
+  virtual void AddAuxUnwinder(Unwinder* unwinder) = 0;
 
   // Records a set of frames and returns them.
   virtual void RecordStackFrames(StackBuffer* stackbuffer,

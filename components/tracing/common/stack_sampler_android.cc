@@ -17,6 +17,10 @@ StackSamplerAndroid::StackSamplerAndroid(base::PlatformThreadId tid)
 
 StackSamplerAndroid::~StackSamplerAndroid() = default;
 
+// Unimplemented. StackSamplerAndroid needs to be implemented in terms of
+// base::StackSamplerImpl to make use of this.
+void StackSamplerAndroid::AddAuxUnwinder(base::Unwinder* unwinder) {}
+
 void StackSamplerAndroid::RecordStackFrames(
     StackBuffer* stack_buffer,
     base::ProfileBuilder* profile_builder) {

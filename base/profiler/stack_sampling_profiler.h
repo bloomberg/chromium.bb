@@ -17,6 +17,7 @@
 
 namespace base {
 
+class Unwinder;
 class StackSampler;
 class StackSamplerTestDelegate;
 
@@ -109,6 +110,10 @@ class BASE_EXPORT StackSamplingProfiler {
   // terminates when all the profiling samples specified in the SamplingParams
   // are completed or the profiler object is destroyed, whichever occurs first.
   void Stop();
+
+  // Adds an auxiliary unwinder to handle additional, non-native-code unwind
+  // scenarios.
+  void AddAuxUnwinder(Unwinder* unwinder);
 
   // Test peer class. These functions are purely for internal testing of
   // StackSamplingProfiler; DO NOT USE within tests outside of this directory.
