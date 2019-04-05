@@ -71,6 +71,10 @@ class CORE_EXPORT ProgressTracker final
  private:
   LocalFrameClient* GetLocalFrameClient() const;
 
+  void UpdateProgressItem(ProgressItem& item,
+                          int64_t bytes_received,
+                          int64_t estimated_length);
+
   void MaybeSendProgress();
   void SendFinalProgress();
   void Reset();
@@ -84,7 +88,10 @@ class CORE_EXPORT ProgressTracker final
   bool did_first_contentful_paint_;
   double progress_value_;
 
-  HashMap<uint64_t, std::unique_ptr<ProgressItem>> progress_items_;
+  int64_t bytes_received_ = 0;
+  int64_t estimated_bytes_for_pending_requests_ = 0;
+
+  HashMap<uint64_t, ProgressItem> progress_items_;
 
   DISALLOW_COPY_AND_ASSIGN(ProgressTracker);
 };
