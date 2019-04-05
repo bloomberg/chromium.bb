@@ -27,6 +27,8 @@ namespace data_reduction_proxy {
 
 namespace {
 
+static const char kDataReductionCoreProxy[] = "proxy.googlezip.net";
+
 // Returns the Data Reduction Proxy servers in |proxy_type_info| that should be
 // marked bad according to |data_reduction_proxy_info|.
 std::vector<net::ProxyServer> GetProxiesToMarkBad(
@@ -291,6 +293,19 @@ bool IsProxyBypassedAtTime(const net::ProxyRetryInfoMap& retry_map,
     *retry_delay = found->second.current_delay;
 
   return true;
+}
+
+bool IsQuicProxy(const net::ProxyServer& proxy_server) {
+  // Enable QUIC for whitelisted proxies.
+  return params::IsQuicEnabledForNonCoreProxies() ||
+         proxy_server ==
+             net::ProxyServer(net::ProxyServer::SCHEME_HTTPS,
+                              net::HostPortPair(kDataReductionCoreProxy, 443));
+}
+
+void RecordQuicProxyStatus(QuicProxyStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.Quic.ProxyStatus", status,
+                            QUIC_PROXY_STATUS_BOUNDARY);
 }
 
 }  // namespace data_reduction_proxy
