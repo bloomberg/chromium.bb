@@ -78,7 +78,7 @@ class NetworkStateTestHelper {
  private:
   void ConfigureCallback(const dbus::ObjectPath& result);
 
-  bool dbus_thread_manager_initialized_ = false;
+  bool shill_clients_initialized_ = false;
   std::string last_created_service_path_;
 
   ShillManagerClient::TestInterface* manager_test_;

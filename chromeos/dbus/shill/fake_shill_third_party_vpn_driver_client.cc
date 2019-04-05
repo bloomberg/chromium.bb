@@ -21,8 +21,6 @@ FakeShillThirdPartyVpnDriverClient::FakeShillThirdPartyVpnDriverClient() =
 FakeShillThirdPartyVpnDriverClient::~FakeShillThirdPartyVpnDriverClient() =
     default;
 
-void FakeShillThirdPartyVpnDriverClient::Init(dbus::Bus* bus) {}
-
 void FakeShillThirdPartyVpnDriverClient::AddShillThirdPartyVpnObserver(
     const std::string& object_path_value,
     ShillThirdPartyVpnObserver* observer) {

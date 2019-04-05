@@ -158,6 +158,8 @@ component("dbus") {
     "shill/modem_messaging_client.h",
     "shill/shill_client_helper.cc",
     "shill/shill_client_helper.h",
+    "shill/shill_clients.cc",
+    "shill/shill_clients.h",
     "shill/shill_device_client.cc",
     "shill/shill_device_client.h",
     "shill/shill_ipconfig_client.cc",

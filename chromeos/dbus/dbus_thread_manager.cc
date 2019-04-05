@@ -32,6 +32,7 @@
 #include "chromeos/dbus/seneschal_client.h"
 #include "chromeos/dbus/shill/gsm_sms_client.h"
 #include "chromeos/dbus/shill/modem_messaging_client.h"
+#include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
 #include "chromeos/dbus/shill/shill_ipconfig_client.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
@@ -166,32 +167,32 @@ EasyUnlockClient* DBusThreadManager::GetEasyUnlockClient() {
 }
 
 ShillDeviceClient* DBusThreadManager::GetShillDeviceClient() {
-  return clients_common_->shill_device_client_.get();
+  return ShillDeviceClient::Get();
 }
 
 ShillIPConfigClient* DBusThreadManager::GetShillIPConfigClient() {
-  return clients_common_->shill_ipconfig_client_.get();
+  return ShillIPConfigClient::Get();
 }
 
 ShillManagerClient* DBusThreadManager::GetShillManagerClient() {
-  return clients_common_->shill_manager_client_.get();
+  return ShillManagerClient::Get();
 }
 
 ShillServiceClient* DBusThreadManager::GetShillServiceClient() {
-  return clients_common_->shill_service_client_.get();
+  return ShillServiceClient::Get();
 }
 
 ShillProfileClient* DBusThreadManager::GetShillProfileClient() {
-  return clients_common_->shill_profile_client_.get();
+  return ShillProfileClient::Get();
 }
 
 ShillThirdPartyVpnDriverClient*
 DBusThreadManager::GetShillThirdPartyVpnDriverClient() {
-  return clients_common_->shill_third_party_vpn_driver_client_.get();
+  return ShillThirdPartyVpnDriverClient::Get();
 }
 
 GsmSMSClient* DBusThreadManager::GetGsmSMSClient() {
-  return clients_common_->gsm_sms_client_.get();
+  return GsmSMSClient::Get();
 }
 
 ImageBurnerClient* DBusThreadManager::GetImageBurnerClient() {
@@ -210,7 +211,7 @@ LorgnetteManagerClient* DBusThreadManager::GetLorgnetteManagerClient() {
 }
 
 ModemMessagingClient* DBusThreadManager::GetModemMessagingClient() {
-  return clients_common_->modem_messaging_client_.get();
+  return ModemMessagingClient::Get();
 }
 
 OobeConfigurationClient* DBusThreadManager::GetOobeConfigurationClient() {
@@ -232,7 +233,7 @@ SmbProviderClient* DBusThreadManager::GetSmbProviderClient() {
 }
 
 SMSClient* DBusThreadManager::GetSMSClient() {
-  return clients_common_->sms_client_.get();
+  return SMSClient::Get();
 }
 
 UpdateEngineClient* DBusThreadManager::GetUpdateEngineClient() {
@@ -251,6 +252,14 @@ void DBusThreadManager::InitializeClients() {
   DCHECK(g_dbus_thread_manager);
 
   clients_common_->Initialize(GetSystemBus());
+
+  // TODO(stevenjb): Move these to dbus_helper.cc in src/chrome and any tests
+  // that require Shill clients. https://crbug.com/948390.
+  if (use_real_clients_)
+    shill_clients::Initialize(GetSystemBus());
+  else
+    shill_clients::InitializeFakes();
+
   if (clients_browser_)
     clients_browser_->Initialize(GetSystemBus());
 
@@ -309,6 +318,10 @@ bool DBusThreadManager::IsInitialized() {
 void DBusThreadManager::Shutdown() {
   // Ensure that we only shutdown DBusThreadManager once.
   CHECK(g_dbus_thread_manager);
+
+  // TODO(stevenjb): Remove. https://crbug.com/948390.
+  shill_clients::Shutdown();
+
   DBusThreadManager* dbus_thread_manager = g_dbus_thread_manager;
   g_dbus_thread_manager = nullptr;
   g_using_dbus_thread_manager_for_testing = false;
@@ -366,43 +379,6 @@ void DBusThreadManagerSetter::SetRuntimeProbeClient(
 void DBusThreadManagerSetter::SetSeneschalClient(
     std::unique_ptr<SeneschalClient> client) {
   DBusThreadManager::Get()->clients_browser_->seneschal_client_ =
-      std::move(client);
-}
-
-void DBusThreadManagerSetter::SetShillDeviceClient(
-    std::unique_ptr<ShillDeviceClient> client) {
-  DBusThreadManager::Get()->clients_common_->shill_device_client_ =
-      std::move(client);
-}
-
-void DBusThreadManagerSetter::SetShillIPConfigClient(
-    std::unique_ptr<ShillIPConfigClient> client) {
-  DBusThreadManager::Get()->clients_common_->shill_ipconfig_client_ =
-      std::move(client);
-}
-
-void DBusThreadManagerSetter::SetShillManagerClient(
-    std::unique_ptr<ShillManagerClient> client) {
-  DBusThreadManager::Get()->clients_common_->shill_manager_client_ =
-      std::move(client);
-}
-
-void DBusThreadManagerSetter::SetShillServiceClient(
-    std::unique_ptr<ShillServiceClient> client) {
-  DBusThreadManager::Get()->clients_common_->shill_service_client_ =
-      std::move(client);
-}
-
-void DBusThreadManagerSetter::SetShillProfileClient(
-    std::unique_ptr<ShillProfileClient> client) {
-  DBusThreadManager::Get()->clients_common_->shill_profile_client_ =
-      std::move(client);
-}
-
-void DBusThreadManagerSetter::SetShillThirdPartyVpnDriverClient(
-    std::unique_ptr<ShillThirdPartyVpnDriverClient> client) {
-  DBusThreadManager::Get()
-      ->clients_common_->shill_third_party_vpn_driver_client_ =
       std::move(client);
 }
 

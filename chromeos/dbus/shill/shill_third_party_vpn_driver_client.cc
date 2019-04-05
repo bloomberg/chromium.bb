@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/stl_util.h"
+#include "chromeos/dbus/shill/fake_shill_third_party_vpn_driver_client.h"
 #include "chromeos/dbus/shill/shill_third_party_vpn_observer.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -34,11 +35,13 @@ const char* kSetParametersKeyList[] = {
     shill::kDnsServersParameterThirdPartyVpn,
     shill::kReconnectParameterThirdPartyVpn};
 
+ShillThirdPartyVpnDriverClient* g_instance = nullptr;
+
 // The ShillThirdPartyVpnDriverClient implementation.
 class ShillThirdPartyVpnDriverClientImpl
     : public ShillThirdPartyVpnDriverClient {
  public:
-  ShillThirdPartyVpnDriverClientImpl();
+  explicit ShillThirdPartyVpnDriverClientImpl(dbus::Bus* bus);
   ~ShillThirdPartyVpnDriverClientImpl() override;
 
   // ShillThirdPartyVpnDriverClient overrides
@@ -67,12 +70,7 @@ class ShillThirdPartyVpnDriverClientImpl
       const base::Closure& callback,
       const ShillClientHelper::ErrorCallback& error_callback) override;
 
- protected:
-  void Init(dbus::Bus* bus) override { bus_ = bus; }
-
-  ShillThirdPartyVpnDriverClient::TestInterface* GetTestInterface() override {
-    return nullptr;
-  }
+  TestInterface* GetTestInterface() override { return nullptr; }
 
  private:
   class HelperInfo {
@@ -132,8 +130,9 @@ ShillThirdPartyVpnDriverClientImpl::HelperInfo::HelperInfo(
     dbus::ObjectProxy* object_proxy)
     : helper_(object_proxy), observer_(nullptr), weak_ptr_factory_(this) {}
 
-ShillThirdPartyVpnDriverClientImpl::ShillThirdPartyVpnDriverClientImpl()
-    : bus_(nullptr) {
+ShillThirdPartyVpnDriverClientImpl::ShillThirdPartyVpnDriverClientImpl(
+    dbus::Bus* bus)
+    : bus_(bus) {
   for (uint32_t i = 0; i < base::size(kSetParametersKeyList); ++i) {
     valid_keys_.insert(kSetParametersKeyList[i]);
   }
@@ -334,13 +333,38 @@ ShillThirdPartyVpnDriverClientImpl::GetHelperInfo(
 
 }  // namespace
 
-ShillThirdPartyVpnDriverClient::ShillThirdPartyVpnDriverClient() = default;
+ShillThirdPartyVpnDriverClient::ShillThirdPartyVpnDriverClient() {
+  DCHECK(!g_instance);
+  g_instance = this;
+}
 
-ShillThirdPartyVpnDriverClient::~ShillThirdPartyVpnDriverClient() = default;
+ShillThirdPartyVpnDriverClient::~ShillThirdPartyVpnDriverClient() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
 
 // static
-ShillThirdPartyVpnDriverClient* ShillThirdPartyVpnDriverClient::Create() {
-  return new ShillThirdPartyVpnDriverClientImpl();
+void ShillThirdPartyVpnDriverClient::Initialize(dbus::Bus* bus) {
+  DCHECK(bus);
+  new ShillThirdPartyVpnDriverClientImpl(bus);
+}
+
+// static
+void ShillThirdPartyVpnDriverClient::InitializeFake() {
+  // If a browser test creates a custom fake, don't override it.
+  if (!FakeShillThirdPartyVpnDriverClient::Get())
+    new FakeShillThirdPartyVpnDriverClient();
+}
+
+// static
+void ShillThirdPartyVpnDriverClient::Shutdown() {
+  DCHECK(g_instance);
+  delete g_instance;
+}
+
+// static
+ShillThirdPartyVpnDriverClient* ShillThirdPartyVpnDriverClient::Get() {
+  return g_instance;
 }
 
 }  // namespace chromeos

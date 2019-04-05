@@ -11,20 +11,16 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/shill/shill_client_helper.h"
 
 namespace base {
-
 class Value;
 class DictionaryValue;
-
 }  // namespace base
 
 namespace dbus {
-
+class Bus;
 class ObjectPath;
-
 }  // namespace dbus
 
 namespace chromeos {
@@ -33,7 +29,7 @@ namespace chromeos {
 // service.
 // All methods should be called from the origin thread which initializes the
 // DBusThreadManager instance.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) ShillServiceClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) ShillServiceClient {
  public:
   typedef ShillClientHelper::PropertyChangedHandler PropertyChangedHandler;
   typedef ShillClientHelper::DictionaryValueCallback DictionaryValueCallback;
@@ -76,7 +72,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ShillServiceClient : public DBusClient {
                                     const std::string& property,
                                     const base::Value& value) = 0;
 
-    // Returns properties for |service_path| or NULL if no Service matches.
+    // Returns properties for |service_path| or null if no Service matches.
     virtual const base::DictionaryValue* GetServiceProperties(
         const std::string& service_path) const = 0;
 
@@ -89,11 +85,18 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ShillServiceClient : public DBusClient {
    protected:
     virtual ~TestInterface() {}
   };
-  ~ShillServiceClient() override;
 
-  // Factory function, creates a new instance which is owned by the caller.
-  // For normal usage, access the singleton via DBusThreadManager::Get().
-  static ShillServiceClient* Create();
+  // Creates and initializes the global instance. |bus| must not be null.
+  static void Initialize(dbus::Bus* bus);
+
+  // Creates the global instance with a fake implementation.
+  static void InitializeFake();
+
+  // Destroys the global instance which must have been initialized.
+  static void Shutdown();
+
+  // Returns the global instance if initialized. May return null.
+  static ShillServiceClient* Get();
 
   // Adds a property changed |observer| to the service at |service_path|.
   virtual void AddPropertyChangedObserver(
@@ -177,14 +180,15 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ShillServiceClient : public DBusClient {
       const dbus::ObjectPath& service_path,
       const DictionaryValueCallback& callback) = 0;
 
-  // Returns an interface for testing (stub only), or returns NULL.
+  // Returns an interface for testing (stub only), or returns null.
   virtual TestInterface* GetTestInterface() = 0;
 
  protected:
   friend class ShillServiceClientTest;
 
-  // Create() should be used instead.
+  // Initialize/Shutdown should be used instead.
   ShillServiceClient();
+  virtual ~ShillServiceClient();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShillServiceClient);

@@ -12,8 +12,15 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/shill/shill_client_helper.h"
+
+namespace base {
+class DictionaryValue;
+}  // namespace base
+
+namespace dbus {
+class Bus;
+}  // namespace dbus
 
 namespace chromeos {
 
@@ -23,8 +30,7 @@ class ShillThirdPartyVpnObserver;
 // ThirdPartyVpnDriver service.
 // All methods should be called from the origin thread which initializes the
 // DBusThreadManager instance.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) ShillThirdPartyVpnDriverClient
-    : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) ShillThirdPartyVpnDriverClient {
  public:
   class TestInterface {
    public:
@@ -37,11 +43,18 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ShillThirdPartyVpnDriverClient
     virtual ~TestInterface() {}
   };
 
-  ~ShillThirdPartyVpnDriverClient() override;
+  // Creates and initializes the global instance. |bus| must not be null.
+  static void Initialize(dbus::Bus* bus);
 
-  // Factory function, creates a new instance which is owned by the caller.
-  // For normal usage, access the singleton via DBusThreadManager::Get().
-  static ShillThirdPartyVpnDriverClient* Create();
+  // Creates the global instance with a fake implementation if not already
+  // created (e.g. in a browser test setup), otherwise does nothing.
+  static void InitializeFake();
+
+  // Destroys the global instance which must have been initialized.
+  static void Shutdown();
+
+  // Returns the global instance if initialized. May return null.
+  static ShillThirdPartyVpnDriverClient* Get();
 
   // Adds an |observer| for the third party vpn driver at |object_path_value|.
   virtual void AddShillThirdPartyVpnObserver(
@@ -83,8 +96,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ShillThirdPartyVpnDriverClient
  protected:
   friend class ShillThirdPartyVpnDriverClientTest;
 
-  // Create() should be used instead.
+  // Initialize/Shutdown should be used instead.
   ShillThirdPartyVpnDriverClient();
+  virtual ~ShillThirdPartyVpnDriverClient();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShillThirdPartyVpnDriverClient);

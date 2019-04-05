@@ -41,6 +41,15 @@ in [src/chromeos/dbus/kerberos].
     (Many existing clients provide additional test functionality in the fake
     implementation, however this complicates tests and the fake implementation).
 
+## Shill clients
+
+Shill clients will eventually only be available to Chrome. As such, the
+DBusThreadManager::GetShill*Client() methods have been left intact for now.
+However, the clients are no longer owned by DBusClientsCommon so that they can
+be initialized independent of DBusThreadManager.
+
+New code should prefer Shill*Client::Get() over the DBusThreadManager accessors.
+
 ## Older clients that have been removed:
 
 *   Amplifier (`amplifier_client.cc`)

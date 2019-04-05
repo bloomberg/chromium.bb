@@ -14,7 +14,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill/shill_property_changed_observer.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
 #include "dbus/bus.h"
@@ -44,8 +43,6 @@ void PassDictionary(
 FakeShillProfileClient::FakeShillProfileClient() = default;
 
 FakeShillProfileClient::~FakeShillProfileClient() = default;
-
-void FakeShillProfileClient::Init(dbus::Bus* bus) {}
 
 void FakeShillProfileClient::AddPropertyChangedObserver(
     const dbus::ObjectPath& profile_path,
@@ -88,7 +85,7 @@ void FakeShillProfileClient::GetEntry(
   if (!profile)
     return;
 
-  base::DictionaryValue* entry = NULL;
+  base::DictionaryValue* entry = nullptr;
   profile->entries.GetDictionaryWithoutPathExpansion(entry_path, &entry);
   if (!entry) {
     error_callback.Run("Error.InvalidProfileEntry", "Invalid profile entry");
@@ -108,17 +105,14 @@ void FakeShillProfileClient::DeleteEntry(const dbus::ObjectPath& profile_path,
   if (!profile)
     return;
 
-  if (!profile->entries.RemoveWithoutPathExpansion(entry_path, NULL)) {
+  if (!profile->entries.RemoveWithoutPathExpansion(entry_path, nullptr)) {
     error_callback.Run("Error.InvalidProfileEntry", entry_path);
     return;
   }
 
   base::Value profile_path_value("");
-  DBusThreadManager::Get()
-      ->GetShillServiceClient()
-      ->GetTestInterface()
-      ->SetServiceProperty(entry_path, shill::kProfileProperty,
-                           profile_path_value);
+  ShillServiceClient::Get()->GetTestInterface()->SetServiceProperty(
+      entry_path, shill::kProfileProperty, profile_path_value);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
 }
@@ -142,10 +136,7 @@ void FakeShillProfileClient::AddProfile(const std::string& profile_path,
   profile->path = profile_path;
   profiles_.emplace_back(std::move(profile));
 
-  DBusThreadManager::Get()
-      ->GetShillManagerClient()
-      ->GetTestInterface()
-      ->AddProfile(profile_path);
+  ShillManagerClient::Get()->GetTestInterface()->AddProfile(profile_path);
 }
 
 void FakeShillProfileClient::AddEntry(const std::string& profile_path,
@@ -155,10 +146,8 @@ void FakeShillProfileClient::AddEntry(const std::string& profile_path,
       GetProfile(dbus::ObjectPath(profile_path), ErrorCallback());
   DCHECK(profile);
   profile->entries.SetKey(entry_path, properties.Clone());
-  DBusThreadManager::Get()
-      ->GetShillManagerClient()
-      ->GetTestInterface()
-      ->AddManagerService(entry_path, true);
+  ShillManagerClient::Get()->GetTestInterface()->AddManagerService(entry_path,
+                                                                   true);
 }
 
 bool FakeShillProfileClient::AddService(const std::string& profile_path,
@@ -197,7 +186,7 @@ bool FakeShillProfileClient::AddOrUpdateServiceImpl(
     const std::string& service_path,
     ProfileProperties* profile) {
   ShillServiceClient::TestInterface* service_test =
-      DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
+      ShillServiceClient::Get()->GetTestInterface();
   const base::DictionaryValue* service_properties =
       service_test->GetServiceProperties(service_path);
   if (!service_properties) {

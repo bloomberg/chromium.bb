@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/values.h"
+#include "chromeos/dbus/shill/fake_shill_ipconfig_client.h"
 #include "chromeos/dbus/shill/shill_property_changed_observer.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -23,10 +24,13 @@ namespace chromeos {
 
 namespace {
 
+ShillIPConfigClient* g_instance = nullptr;
+
 // The ShillIPConfigClient implementation.
 class ShillIPConfigClientImpl : public ShillIPConfigClient {
  public:
-  ShillIPConfigClientImpl();
+  explicit ShillIPConfigClientImpl(dbus::Bus* bus) : bus_(bus) {}
+  ~ShillIPConfigClientImpl() override = default;
 
   ////////////////////////////////////
   // ShillIPConfigClient overrides.
@@ -56,9 +60,6 @@ class ShillIPConfigClientImpl : public ShillIPConfigClient {
               VoidDBusMethodCallback callback) override;
   ShillIPConfigClient::TestInterface* GetTestInterface() override;
 
- protected:
-  void Init(dbus::Bus* bus) override { bus_ = bus; }
-
  private:
   using HelperMap = std::map<std::string, std::unique_ptr<ShillClientHelper>>;
 
@@ -84,8 +85,6 @@ class ShillIPConfigClientImpl : public ShillIPConfigClient {
 
   DISALLOW_COPY_AND_ASSIGN(ShillIPConfigClientImpl);
 };
-
-ShillIPConfigClientImpl::ShillIPConfigClientImpl() : bus_(NULL) {}
 
 void ShillIPConfigClientImpl::GetProperties(
     const dbus::ObjectPath& ipconfig_path,
@@ -113,11 +112,11 @@ void ShillIPConfigClientImpl::SetProperty(const dbus::ObjectPath& ipconfig_path,
   // IPConfig supports writing basic type and string array properties.
   switch (value.type()) {
     case base::Value::Type::LIST: {
-      const base::ListValue* list_value = NULL;
+      const base::ListValue* list_value = nullptr;
       value.GetAsList(&list_value);
-      dbus::MessageWriter variant_writer(NULL);
+      dbus::MessageWriter variant_writer(nullptr);
       writer.OpenVariant("as", &variant_writer);
-      dbus::MessageWriter array_writer(NULL);
+      dbus::MessageWriter array_writer(nullptr);
       variant_writer.OpenArray("s", &array_writer);
       for (base::ListValue::const_iterator it = list_value->begin();
            it != list_value->end(); ++it) {
@@ -162,18 +161,41 @@ void ShillIPConfigClientImpl::Remove(const dbus::ObjectPath& ipconfig_path,
 
 ShillIPConfigClient::TestInterface*
 ShillIPConfigClientImpl::GetTestInterface() {
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace
 
-ShillIPConfigClient::ShillIPConfigClient() = default;
+ShillIPConfigClient::ShillIPConfigClient() {
+  DCHECK(!g_instance);
+  g_instance = this;
+}
 
-ShillIPConfigClient::~ShillIPConfigClient() = default;
+ShillIPConfigClient::~ShillIPConfigClient() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
 
 // static
-ShillIPConfigClient* ShillIPConfigClient::Create() {
-  return new ShillIPConfigClientImpl();
+void ShillIPConfigClient::Initialize(dbus::Bus* bus) {
+  DCHECK(bus);
+  new ShillIPConfigClientImpl(bus);
+}
+
+// static
+void ShillIPConfigClient::InitializeFake() {
+  new FakeShillIPConfigClient();
+}
+
+// static
+void ShillIPConfigClient::Shutdown() {
+  DCHECK(g_instance);
+  delete g_instance;
+}
+
+// static
+ShillIPConfigClient* ShillIPConfigClient::Get() {
+  return g_instance;
 }
 
 }  // namespace chromeos

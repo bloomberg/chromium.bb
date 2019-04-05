@@ -1,6 +1,7 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "chromeos/dbus/shill/modem_messaging_client.h"
 
 #include <map>
@@ -11,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "chromeos/dbus/shill/fake_modem_messaging_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
@@ -19,6 +21,8 @@
 namespace chromeos {
 
 namespace {
+
+ModemMessagingClient* g_instance = nullptr;
 
 // A class which makes method calls for SMS services via the
 // org.freedesktop.ModemManager1.Messaging object.
@@ -133,7 +137,8 @@ class ModemMessagingProxy {
 class COMPONENT_EXPORT(CHROMEOS_DBUS) ModemMessagingClientImpl
     : public ModemMessagingClient {
  public:
-  ModemMessagingClientImpl() : bus_(NULL) {}
+  explicit ModemMessagingClientImpl(dbus::Bus* bus) : bus_(bus) {}
+  ~ModemMessagingClientImpl() override = default;
 
   void SetSmsReceivedHandler(const std::string& service_name,
                              const dbus::ObjectPath& object_path,
@@ -158,9 +163,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ModemMessagingClientImpl
             ListCallback callback) override {
     GetProxy(service_name, object_path)->List(std::move(callback));
   }
-
- protected:
-  void Init(dbus::Bus* bus) override { bus_ = bus; }
 
  private:
   using ProxyMap = std::map<std::pair<std::string, std::string>,
@@ -193,13 +195,36 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ModemMessagingClientImpl
 ////////////////////////////////////////////////////////////////////////////////
 // ModemMessagingClient
 
-ModemMessagingClient::ModemMessagingClient() = default;
+ModemMessagingClient::ModemMessagingClient() {
+  DCHECK(!g_instance);
+  g_instance = this;
+}
 
-ModemMessagingClient::~ModemMessagingClient() = default;
+ModemMessagingClient::~ModemMessagingClient() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
 
 // static
-ModemMessagingClient* ModemMessagingClient::Create() {
-  return new ModemMessagingClientImpl();
+void ModemMessagingClient::Initialize(dbus::Bus* bus) {
+  DCHECK(bus);
+  new ModemMessagingClientImpl(bus);
+}
+
+// static
+void ModemMessagingClient::InitializeFake() {
+  new FakeModemMessagingClient();
+}
+
+// static
+void ModemMessagingClient::Shutdown() {
+  DCHECK(g_instance);
+  delete g_instance;
+}
+
+// static
+ModemMessagingClient* ModemMessagingClient::Get() {
+  return g_instance;
 }
 
 }  // namespace chromeos

@@ -29,7 +29,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeShillThirdPartyVpnDriverClient
   ~FakeShillThirdPartyVpnDriverClient() override;
 
   // ShillThirdPartyVpnDriverClient overrides
-  void Init(dbus::Bus* bus) override;
   void AddShillThirdPartyVpnObserver(
       const std::string& object_path_value,
       ShillThirdPartyVpnObserver* observer) override;

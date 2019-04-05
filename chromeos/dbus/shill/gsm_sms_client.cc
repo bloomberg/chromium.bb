@@ -1,10 +1,10 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "chromeos/dbus/shill/gsm_sms_client.h"
 
 #include <stdint.h>
-
 #include <map>
 #include <memory>
 #include <utility>
@@ -15,6 +15,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chromeos/dbus/shill/fake_gsm_sms_client.h"
+#include "chromeos/dbus/shill/fake_sms_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
@@ -24,6 +26,8 @@
 namespace chromeos {
 
 namespace {
+
+GsmSMSClient* g_instance = nullptr;
 
 // A class actually making method calls for SMS services, used by
 // GsmSMSClientImpl.
@@ -161,7 +165,8 @@ class SMSProxy {
 // The GsmSMSClient implementation.
 class GsmSMSClientImpl : public GsmSMSClient {
  public:
-  GsmSMSClientImpl() : bus_(NULL) {}
+  explicit GsmSMSClientImpl(dbus::Bus* bus) : bus_(bus) {}
+  ~GsmSMSClientImpl() override = default;
 
   // GsmSMSClient override.
   void SetSmsReceivedHandler(const std::string& service_name,
@@ -203,9 +208,6 @@ class GsmSMSClientImpl : public GsmSMSClient {
   void RequestUpdate(const std::string& service_name,
                      const dbus::ObjectPath& object_path) override {}
 
- protected:
-  void Init(dbus::Bus* bus) override { bus_ = bus; }
-
  private:
   using ProxyMap =
       std::map<std::pair<std::string, std::string>, std::unique_ptr<SMSProxy>>;
@@ -237,13 +239,36 @@ class GsmSMSClientImpl : public GsmSMSClient {
 ////////////////////////////////////////////////////////////////////////////////
 // GsmSMSClient
 
-GsmSMSClient::GsmSMSClient() = default;
+GsmSMSClient::GsmSMSClient() {
+  DCHECK(!g_instance);
+  g_instance = this;
+}
 
-GsmSMSClient::~GsmSMSClient() = default;
+GsmSMSClient::~GsmSMSClient() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
 
 // static
-GsmSMSClient* GsmSMSClient::Create() {
-  return new GsmSMSClientImpl();
+void GsmSMSClient::Initialize(dbus::Bus* bus) {
+  DCHECK(bus);
+  new GsmSMSClientImpl(bus);
+}
+
+// static
+void GsmSMSClient::InitializeFake() {
+  new FakeGsmSMSClient;
+}
+
+// static
+void GsmSMSClient::Shutdown() {
+  DCHECK(g_instance);
+  delete g_instance;
+}
+
+// static
+GsmSMSClient* GsmSMSClient::Get() {
+  return g_instance;
 }
 
 }  // namespace chromeos

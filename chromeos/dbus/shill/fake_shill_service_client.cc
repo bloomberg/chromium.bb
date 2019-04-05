@@ -38,17 +38,11 @@ void PassStubServiceProperties(
 }
 
 void CallSortManagerServices() {
-  DBusThreadManager::Get()
-      ->GetShillManagerClient()
-      ->GetTestInterface()
-      ->SortManagerServices(true);
+  ShillManagerClient::Get()->GetTestInterface()->SortManagerServices(true);
 }
 
 int GetInteractiveDelay() {
-  return DBusThreadManager::Get()
-      ->GetShillManagerClient()
-      ->GetTestInterface()
-      ->GetInteractiveDelay();
+  return ShillManagerClient::Get()->GetTestInterface()->GetInteractiveDelay();
 }
 
 }  // namespace
@@ -58,8 +52,6 @@ FakeShillServiceClient::FakeShillServiceClient() : weak_ptr_factory_(this) {}
 FakeShillServiceClient::~FakeShillServiceClient() = default;
 
 // ShillServiceClient overrides.
-
-void FakeShillServiceClient::Init(dbus::Bus* bus) {}
 
 void FakeShillServiceClient::AddPropertyChangedObserver(
     const dbus::ObjectPath& service_path,
@@ -261,7 +253,7 @@ void FakeShillServiceClient::GetLoadableProfileEntries(
     const dbus::ObjectPath& service_path,
     const DictionaryValueCallback& callback) {
   ShillProfileClient::TestInterface* profile_client =
-      DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface();
+      ShillProfileClient::Get()->GetTestInterface();
   std::vector<std::string> profiles;
   profile_client->GetProfilePathsContainingService(service_path.value(),
                                                    &profiles);
@@ -311,10 +303,8 @@ void FakeShillServiceClient::AddServiceWithIPConfig(
   if (!ipconfig_path.empty())
     properties->SetKey(shill::kIPConfigProperty, base::Value(ipconfig_path));
 
-  DBusThreadManager::Get()
-      ->GetShillManagerClient()
-      ->GetTestInterface()
-      ->AddManagerService(service_path, true);
+  ShillManagerClient::Get()->GetTestInterface()->AddManagerService(service_path,
+                                                                   true);
 }
 
 base::DictionaryValue* FakeShillServiceClient::SetServiceProperties(
@@ -335,10 +325,8 @@ base::DictionaryValue* FakeShillServiceClient::SetServiceProperties(
   if (guid_to_set.empty()) {
     std::string profile_path;
     base::DictionaryValue profile_properties;
-    if (DBusThreadManager::Get()
-            ->GetShillProfileClient()
-            ->GetTestInterface()
-            ->GetService(service_path, &profile_path, &profile_properties)) {
+    if (ShillProfileClient::Get()->GetTestInterface()->GetService(
+            service_path, &profile_path, &profile_properties)) {
       profile_properties.GetStringWithoutPathExpansion(shill::kGuidProperty,
                                                        &guid_to_set);
     }
@@ -350,10 +338,8 @@ base::DictionaryValue* FakeShillServiceClient::SetServiceProperties(
   properties->SetKey(shill::kWifiHexSsid,
                      base::Value(base::HexEncode(name.c_str(), name.size())));
   properties->SetKey(shill::kNameProperty, base::Value(name));
-  std::string device_path = DBusThreadManager::Get()
-                                ->GetShillDeviceClient()
-                                ->GetTestInterface()
-                                ->GetDevicePathForType(type);
+  std::string device_path =
+      ShillDeviceClient::Get()->GetTestInterface()->GetDevicePathForType(type);
   properties->SetKey(shill::kDeviceProperty, base::Value(device_path));
   properties->SetKey(shill::kTypeProperty, base::Value(type));
   properties->SetKey(shill::kStateProperty, base::Value(state));
@@ -374,10 +360,8 @@ base::DictionaryValue* FakeShillServiceClient::SetServiceProperties(
 void FakeShillServiceClient::RemoveService(const std::string& service_path) {
   stub_services_.RemoveWithoutPathExpansion(service_path, nullptr);
   connect_behavior_.erase(service_path);
-  DBusThreadManager::Get()
-      ->GetShillManagerClient()
-      ->GetTestInterface()
-      ->RemoveManagerService(service_path);
+  ShillManagerClient::Get()->GetTestInterface()->RemoveManagerService(
+      service_path);
 }
 
 bool FakeShillServiceClient::SetServiceProperty(const std::string& service_path,
@@ -443,7 +427,7 @@ bool FakeShillServiceClient::SetServiceProperty(const std::string& service_path,
 
   // Add or update the profile entry.
   ShillProfileClient::TestInterface* profile_test =
-      DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface();
+      ShillProfileClient::Get()->GetTestInterface();
   if (property == shill::kProfileProperty) {
     std::string profile_path;
     if (value.GetAsString(&profile_path)) {
@@ -465,10 +449,8 @@ bool FakeShillServiceClient::SetServiceProperty(const std::string& service_path,
   if (property == shill::kStateProperty) {
     std::string state;
     value.GetAsString(&state);
-    DBusThreadManager::Get()
-        ->GetShillManagerClient()
-        ->GetTestInterface()
-        ->ServiceStateChanged(service_path, state);
+    ShillManagerClient::Get()->GetTestInterface()->ServiceStateChanged(
+        service_path, state);
   }
 
   // If the State or Visibility changes, the sort order of service lists may
@@ -496,11 +478,7 @@ const base::DictionaryValue* FakeShillServiceClient::GetServiceProperties(
 }
 
 void FakeShillServiceClient::ClearServices() {
-  DBusThreadManager::Get()
-      ->GetShillManagerClient()
-      ->GetTestInterface()
-      ->ClearManagerServices();
-
+  ShillManagerClient::Get()->GetTestInterface()->ClearManagerServices();
   stub_services_.Clear();
   connect_behavior_.clear();
 }

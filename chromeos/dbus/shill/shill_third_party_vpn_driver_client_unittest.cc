@@ -43,10 +43,15 @@ class ShillThirdPartyVpnDriverClientTest : public ShillClientUnittestBase {
     ShillClientUnittestBase::SetUp();
 
     // Create a client with the mock bus.
-    client_.reset(ShillThirdPartyVpnDriverClient::Create());
-    client_->Init(mock_bus_.get());
+    ShillThirdPartyVpnDriverClient::Initialize(mock_bus_.get());
+    client_ = ShillThirdPartyVpnDriverClient::Get();
     // Run the message loop to run the signal connection result callback.
     base::RunLoop().RunUntilIdle();
+  }
+
+  void TearDown() override {
+    ShillThirdPartyVpnDriverClient::Shutdown();
+    ShillClientUnittestBase::TearDown();
   }
 
   MOCK_METHOD0(MockSuccess, void());
@@ -57,7 +62,7 @@ class ShillThirdPartyVpnDriverClientTest : public ShillClientUnittestBase {
   }
 
  protected:
-  std::unique_ptr<ShillThirdPartyVpnDriverClient> client_;
+  ShillThirdPartyVpnDriverClient* client_ = nullptr;  // Unowned
 };
 
 TEST_F(ShillThirdPartyVpnDriverClientTest, PlatformSignal) {

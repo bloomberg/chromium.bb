@@ -13,8 +13,9 @@
 #include "chromeos/dbus/dbus_client.h"
 
 namespace base {
+class Bus;
 class DictionaryValue;
-}
+}  // namespace base
 
 namespace dbus {
 class ObjectPath;
@@ -26,7 +27,7 @@ namespace chromeos {
 // org.freedesktop.ModemManager1.SMS service.  All methods should be
 // called from the origin thread (UI thread) which initializes the
 // DBusThreadManager instance.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) SMSClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) SMSClient {
  public:
   using GetAllCallback =
       base::OnceCallback<void(const base::DictionaryValue& sms)>;
@@ -36,11 +37,17 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) SMSClient : public DBusClient {
   static const char kSMSPropertyText[];
   static const char kSMSPropertyTimestamp[];
 
-  ~SMSClient() override;
+  // Creates and initializes the global instance. |bus| must not be null.
+  static void Initialize(dbus::Bus* bus);
 
-  // Factory function, creates a new instance and returns ownership.
-  // For normal usage, access the singleton via DBusThreadManager::Get().
-  static SMSClient* Create();
+  // Creates the global instance with a fake implementation.
+  static void InitializeFake();
+
+  // Destroys the global instance which must have been initialized.
+  static void Shutdown();
+
+  // Returns the global instance if initialized. May return null.
+  static SMSClient* Get();
 
   // Calls GetAll method.  |callback| is called after the method call succeeds.
   virtual void GetAll(const std::string& service_name,
@@ -48,8 +55,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) SMSClient : public DBusClient {
                       GetAllCallback callback) = 0;
 
  protected:
-  // Create() should be used instead.
+  // Initialize/Shutdown should be used instead.
   SMSClient();
+  virtual ~SMSClient();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SMSClient);

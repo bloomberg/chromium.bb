@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chromeos/dbus/shill/fake_sms_client.h"
+
 #include <string>
 
 #include "base/bind.h"
@@ -13,7 +15,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
-#include "chromeos/dbus/shill/fake_sms_client.h"
 #include "dbus/object_path.h"
 
 namespace chromeos {
@@ -21,8 +22,6 @@ namespace chromeos {
 FakeSMSClient::FakeSMSClient() = default;
 
 FakeSMSClient::~FakeSMSClient() = default;
-
-void FakeSMSClient::Init(dbus::Bus* bus) {}
 
 void FakeSMSClient::GetAll(const std::string& service_name,
                            const dbus::ObjectPath& object_path,

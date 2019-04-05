@@ -77,11 +77,14 @@ class ModemMessagingClientTest : public testing::Test {
     EXPECT_CALL(*mock_bus_.get(), ShutdownAndBlock()).WillOnce(Return());
 
     // Create a client with the mock bus.
-    client_.reset(ModemMessagingClient::Create());
-    client_->Init(mock_bus_.get());
+    ModemMessagingClient::Initialize(mock_bus_.get());
+    client_ = ModemMessagingClient::Get();
   }
 
-  void TearDown() override { mock_bus_->ShutdownAndBlock(); }
+  void TearDown() override {
+    mock_bus_->ShutdownAndBlock();
+    ModemMessagingClient::Shutdown();
+  }
 
   // Handles Delete method call.
   void OnDelete(dbus::MethodCall* method_call,
@@ -115,8 +118,7 @@ class ModemMessagingClientTest : public testing::Test {
   }
 
  protected:
-  // The client to be tested.
-  std::unique_ptr<ModemMessagingClient> client_;
+  ModemMessagingClient* client_ = nullptr;  // Unowned convenience pointer.
   // A message loop to emulate asynchronous behavior.
   base::MessageLoop message_loop_;
   // The mock bus.

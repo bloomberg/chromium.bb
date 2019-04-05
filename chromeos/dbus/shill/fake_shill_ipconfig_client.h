@@ -22,7 +22,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeShillIPConfigClient
   ~FakeShillIPConfigClient() override;
 
   // ShillIPConfigClient overrides
-  void Init(dbus::Bus* bus) override;
   void AddPropertyChangedObserver(
       const dbus::ObjectPath& ipconfig_path,
       ShillPropertyChangedObserver* observer) override;

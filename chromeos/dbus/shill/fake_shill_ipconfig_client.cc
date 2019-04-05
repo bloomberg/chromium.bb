@@ -27,8 +27,6 @@ FakeShillIPConfigClient::FakeShillIPConfigClient() : weak_ptr_factory_(this) {}
 
 FakeShillIPConfigClient::~FakeShillIPConfigClient() = default;
 
-void FakeShillIPConfigClient::Init(dbus::Bus* bus) {}
-
 void FakeShillIPConfigClient::AddPropertyChangedObserver(
     const dbus::ObjectPath& ipconfig_path,
     ShillPropertyChangedObserver* observer) {}
@@ -43,7 +41,7 @@ void FakeShillIPConfigClient::Refresh(const dbus::ObjectPath& ipconfig_path,
 void FakeShillIPConfigClient::GetProperties(
     const dbus::ObjectPath& ipconfig_path,
     const DictionaryValueCallback& callback) {
-  const base::DictionaryValue* dict = NULL;
+  const base::DictionaryValue* dict = nullptr;
   if (!ipconfigs_.GetDictionaryWithoutPathExpansion(ipconfig_path.value(),
                                                     &dict))
     return;

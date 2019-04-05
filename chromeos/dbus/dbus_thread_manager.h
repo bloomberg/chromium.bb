@@ -128,24 +128,27 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManager {
   DebugDaemonClient* GetDebugDaemonClient();
   DiagnosticsdClient* GetDiagnosticsdClient();
   EasyUnlockClient* GetEasyUnlockClient();
-  GsmSMSClient* GetGsmSMSClient();
   ImageBurnerClient* GetImageBurnerClient();
   ImageLoaderClient* GetImageLoaderClient();
   LorgnetteManagerClient* GetLorgnetteManagerClient();
-  ModemMessagingClient* GetModemMessagingClient();
   OobeConfigurationClient* GetOobeConfigurationClient();
   RuntimeProbeClient* GetRuntimeProbeClient();
   SeneschalClient* GetSeneschalClient();
+  SmbProviderClient* GetSmbProviderClient();
+  UpdateEngineClient* GetUpdateEngineClient();
+  VirtualFileProviderClient* GetVirtualFileProviderClient();
+
+  // DEPRECATED, DO NOT USE. The static getter for each of these classes should
+  // be used instead. TODO(stevenjb): Remove. https://crbug.com/948390.
+  GsmSMSClient* GetGsmSMSClient();
+  ModemMessagingClient* GetModemMessagingClient();
+  SMSClient* GetSMSClient();
   ShillDeviceClient* GetShillDeviceClient();
   ShillIPConfigClient* GetShillIPConfigClient();
   ShillManagerClient* GetShillManagerClient();
   ShillProfileClient* GetShillProfileClient();
   ShillServiceClient* GetShillServiceClient();
   ShillThirdPartyVpnDriverClient* GetShillThirdPartyVpnDriverClient();
-  SmbProviderClient* GetSmbProviderClient();
-  SMSClient* GetSMSClient();
-  UpdateEngineClient* GetUpdateEngineClient();
-  VirtualFileProviderClient* GetVirtualFileProviderClient();
 
  private:
   friend class DBusThreadManagerSetter;
@@ -188,13 +191,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManagerSetter {
   void SetImageLoaderClient(std::unique_ptr<ImageLoaderClient> client);
   void SetSeneschalClient(std::unique_ptr<SeneschalClient> client);
   void SetRuntimeProbeClient(std::unique_ptr<RuntimeProbeClient> client);
-  void SetShillDeviceClient(std::unique_ptr<ShillDeviceClient> client);
-  void SetShillIPConfigClient(std::unique_ptr<ShillIPConfigClient> client);
-  void SetShillManagerClient(std::unique_ptr<ShillManagerClient> client);
-  void SetShillServiceClient(std::unique_ptr<ShillServiceClient> client);
-  void SetShillProfileClient(std::unique_ptr<ShillProfileClient> client);
-  void SetShillThirdPartyVpnDriverClient(
-      std::unique_ptr<ShillThirdPartyVpnDriverClient> client);
   void SetSmbProviderClient(std::unique_ptr<SmbProviderClient> client);
   void SetUpdateEngineClient(std::unique_ptr<UpdateEngineClient> client);
 

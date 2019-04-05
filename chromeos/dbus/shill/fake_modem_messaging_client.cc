@@ -17,8 +17,6 @@ namespace chromeos {
 FakeModemMessagingClient::FakeModemMessagingClient() = default;
 FakeModemMessagingClient::~FakeModemMessagingClient() = default;
 
-void FakeModemMessagingClient::Init(dbus::Bus* bus) {}
-
 void FakeModemMessagingClient::SetSmsReceivedHandler(
     const std::string& service_name,
     const dbus::ObjectPath& object_path,
