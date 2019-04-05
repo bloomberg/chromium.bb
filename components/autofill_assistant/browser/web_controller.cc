@@ -231,6 +231,38 @@ bool ConvertPseudoType(const PseudoType pseudo_type,
   }
   return false;
 }
+
+// Builds a ClientStatus appropriate for an unexpected error.
+//
+// This should only be used in situations where getting an error cannot be
+// anything but a bug in the client.
+ClientStatus UnexpectedErrorStatus(const std::string& file, int line) {
+  ClientStatus status(OTHER_ACTION_STATUS);
+  auto* info = status.mutable_unexpected_error_info();
+  info->set_source_file(file);
+  info->set_source_line_number(line);
+  return status;
+}
+
+// Builds a ClientStatus appropriate for a JavaScript error.
+ClientStatus JavaScriptErrorStatus(const std::string& file,
+                                   int line,
+                                   const runtime::ExceptionDetails* exception) {
+  ClientStatus status(UNEXPECTED_JS_ERROR);
+  auto* info = status.mutable_unexpected_error_info();
+  info->set_source_file(file);
+  info->set_source_line_number(line);
+  if (exception) {
+    if (exception->HasException() &&
+        exception->GetException()->HasClassName()) {
+      info->set_js_exception_classname(
+          exception->GetException()->GetClassName());
+    }
+    info->set_js_exception_line_number(exception->GetLineNumber());
+    info->set_js_exception_column_number(exception->GetColumnNumber());
+  }
+  return status;
+}
 }  // namespace
 
 class WebController::Worker {
@@ -507,7 +539,7 @@ void WebController::ElementFinder::OnGetDocumentElement(
   element_result_->object_id = "";
   if (!result || !result->GetResult() || !result->GetResult()->HasObjectId()) {
     DVLOG(1) << __func__ << " Failed to get document root element.";
-    SendResult(ClientStatus(OTHER_ACTION_STATUS));  // unexpected
+    SendResult(UnexpectedErrorStatus(__FILE__, __LINE__));
     return;
   }
 
@@ -598,7 +630,7 @@ void WebController::ElementFinder::OnDescribeNodeForPseudoElement(
     std::unique_ptr<dom::DescribeNodeResult> result) {
   if (!result || !result->GetNode()) {
     DVLOG(1) << __func__ << " Failed to describe the node for pseudo element.";
-    SendResult(ClientStatus(OTHER_ACTION_STATUS));  // unexpected
+    SendResult(UnexpectedErrorStatus(__FILE__, __LINE__));
     return;
   }
 
@@ -638,7 +670,7 @@ void WebController::ElementFinder::OnDescribeNode(
     std::unique_ptr<dom::DescribeNodeResult> result) {
   if (!result || !result->GetNode()) {
     DVLOG(1) << __func__ << " Failed to describe the node.";
-    SendResult(ClientStatus(OTHER_ACTION_STATUS));  // unexpected
+    SendResult(UnexpectedErrorStatus(__FILE__, __LINE__));
     return;
   }
 
@@ -669,7 +701,7 @@ void WebController::ElementFinder::OnDescribeNode(
         frame_name, node->GetContentDocument()->GetDocumentURL());
     if (!element_result_->container_frame_host) {
       DVLOG(1) << __func__ << " Failed to find corresponding owner frame.";
-      SendResult(ClientStatus(OTHER_ACTION_STATUS));  // unexpected
+      SendResult(UnexpectedErrorStatus(__FILE__, __LINE__));
       return;
     }
   } else if (node->HasFrameId()) {
@@ -703,7 +735,7 @@ void WebController::ElementFinder::OnResolveNode(
     std::unique_ptr<dom::ResolveNodeResult> result) {
   if (!result || !result->GetObject() || !result->GetObject()->HasObjectId()) {
     DVLOG(1) << __func__ << " Failed to resolve object id from backend id.";
-    SendResult(ClientStatus(OTHER_ACTION_STATUS));
+    SendResult(UnexpectedErrorStatus(__FILE__, __LINE__));
     return;
   }
 
@@ -849,7 +881,10 @@ void WebController::OnScrollIntoView(
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   if (!result || result->HasExceptionDetails()) {
     DVLOG(1) << __func__ << " Failed to scroll the element.";
-    std::move(callback).Run(ClientStatus(OTHER_ACTION_STATUS));  // unexpected
+    std::move(callback).Run(JavaScriptErrorStatus(
+        __FILE__, __LINE__,
+        result->HasExceptionDetails() ? result->GetExceptionDetails()
+                                      : nullptr));
     return;
   }
 
@@ -916,7 +951,7 @@ void WebController::OnDispatchPressMouseEvent(
   if (!result) {
     DVLOG(1) << __func__
              << " Failed to dispatch mouse left button pressed event.";
-    std::move(callback).Run(ClientStatus(OTHER_ACTION_STATUS));  // unexpected
+    std::move(callback).Run(UnexpectedErrorStatus(__FILE__, __LINE__));
     return;
   }
 
@@ -943,7 +978,7 @@ void WebController::OnDispatchTouchEventStart(
     std::unique_ptr<input::DispatchTouchEventResult> result) {
   if (!result) {
     DVLOG(1) << __func__ << " Failed to dispatch touch start event.";
-    std::move(callback).Run(ClientStatus(OTHER_ACTION_STATUS));  // unexpected
+    std::move(callback).Run(UnexpectedErrorStatus(__FILE__, __LINE__));
     return;
   }
 
@@ -1052,7 +1087,10 @@ void WebController::OnFocusElement(
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   if (!result || result->HasExceptionDetails()) {
     DVLOG(1) << __func__ << " Failed to focus on element.";
-    std::move(callback).Run(ClientStatus(OTHER_ACTION_STATUS));  // unexpected
+    std::move(callback).Run(JavaScriptErrorStatus(
+        __FILE__, __LINE__,
+        result->HasExceptionDetails() ? result->GetExceptionDetails()
+                                      : nullptr));
     return;
   }
   std::move(callback).Run(OkClientStatus());
@@ -1108,7 +1146,8 @@ void WebController::OnGetFormAndFieldDataForFillingForm(
     const autofill::FormFieldData& form_field) {
   if (form_data.fields.empty()) {
     DVLOG(1) << __func__ << " Failed to get form data to fill form.";
-    std::move(callback).Run(ClientStatus(OTHER_ACTION_STATUS));  // unexpected
+    std::move(callback).Run(
+        UnexpectedErrorStatus(__FILE__, __LINE__));  // unexpected
     return;
   }
 
@@ -1116,7 +1155,8 @@ void WebController::OnGetFormAndFieldDataForFillingForm(
       ContentAutofillDriver::GetForRenderFrameHost(container_frame_host);
   if (!driver) {
     DVLOG(1) << __func__ << " Failed to get the autofill driver.";
-    std::move(callback).Run(ClientStatus(OTHER_ACTION_STATUS));  // unexpected
+    std::move(callback).Run(
+        UnexpectedErrorStatus(__FILE__, __LINE__));  // unexpected
     return;
   }
 
@@ -1192,12 +1232,15 @@ void WebController::OnSelectOption(
     base::OnceCallback<void(const ClientStatus&)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   if (!result || result->HasExceptionDetails() ||
-      !result->GetResult()->GetValue()->GetBool()) {
+      !result->GetResult()->GetValue()->is_bool()) {
     DVLOG(1) << __func__ << " Failed to select option.";
-    std::move(callback).Run(ClientStatus(OTHER_ACTION_STATUS));  // unexpected
     return;
   }
-  DCHECK(result->GetResult()->GetValue()->is_bool());
+  if (!result->GetResult()->GetValue()->GetBool()) {
+    DVLOG(1) << __func__ << " Failed to find option.";
+    std::move(callback).Run(ClientStatus(OPTION_VALUE_NOT_FOUND));
+    return;
+  }
   std::move(callback).Run(OkClientStatus());
 }
 
@@ -1243,7 +1286,10 @@ void WebController::OnHighlightElement(
   if (!result || result->HasExceptionDetails() ||
       !result->GetResult()->GetValue()->GetBool()) {
     DVLOG(1) << __func__ << " Failed to highlight element.";
-    std::move(callback).Run(ClientStatus(OTHER_ACTION_STATUS));  // unexpected
+    std::move(callback).Run(JavaScriptErrorStatus(
+        __FILE__, __LINE__,
+        result->HasExceptionDetails() ? result->GetExceptionDetails()
+                                      : nullptr));  // unexpected
     return;
   }
   DCHECK(result->GetResult()->GetValue()->is_bool());
@@ -1445,9 +1491,13 @@ void WebController::OnFindElementForSetFieldValue(
 void WebController::OnSetValueAttribute(
     base::OnceCallback<void(const ClientStatus&)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  std::move(callback).Run(result && !result->HasExceptionDetails()
-                              ? OkClientStatus()
-                              : ClientStatus(OTHER_ACTION_STATUS));
+  std::move(callback).Run(
+      result && !result->HasExceptionDetails()
+          ? OkClientStatus()
+          : ClientStatus(JavaScriptErrorStatus(
+                __FILE__, __LINE__,
+                result->HasExceptionDetails() ? result->GetExceptionDetails()
+                                              : nullptr)));
 }
 
 void WebController::SetAttribute(
@@ -1505,9 +1555,13 @@ void WebController::OnFindElementForSetAttribute(
 void WebController::OnSetAttribute(
     base::OnceCallback<void(const ClientStatus&)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  std::move(callback).Run(result && !result->HasExceptionDetails()
-                              ? OkClientStatus()
-                              : ClientStatus(OTHER_ACTION_STATUS));
+  std::move(callback).Run(
+      result && !result->HasExceptionDetails()
+          ? OkClientStatus()
+          : JavaScriptErrorStatus(__FILE__, __LINE__,
+                                  result->HasExceptionDetails()
+                                      ? result->GetExceptionDetails()
+                                      : nullptr));
 }
 
 void WebController::SendKeyboardInput(
@@ -1651,7 +1705,7 @@ void WebController::OnGetOuterHtml(
   if (!result || result->HasExceptionDetails() || !result->GetResult() ||
       !result->GetResult()->GetValue()->is_string()) {
     DVLOG(2) << __func__ << " Failed to get HTML content for GetOuterHtml";
-    std::move(callback).Run(ClientStatus(OTHER_ACTION_STATUS), "");
+    std::move(callback).Run(UnexpectedErrorStatus(__FILE__, __LINE__), "");
     return;
   }
 

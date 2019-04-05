@@ -15,12 +15,25 @@ ClientStatus::~ClientStatus() = default;
 
 void ClientStatus::FillProto(ProcessedActionProto* proto) const {
   proto->set_status(status_);
-  // TODO(b/129387787): Fill extra debugging information collected in the
-  // ClientStatus.
+  if (has_unexpected_error_info_)
+    proto->mutable_unexpected_error_info()->MergeFrom(unexpected_error_info_);
 }
 
 std::ostream& operator<<(std::ostream& out, const ClientStatus& status) {
-  return out << status.status_;
+  out << status.status_;
+#ifndef NDEBUG
+  if (status.has_unexpected_error_info_) {
+    out << status.unexpected_error_info_.source_file() << ":"
+        << status.unexpected_error_info_.source_line_number();
+    if (!status.unexpected_error_info_.js_exception_classname().empty()) {
+      out << " JS error "
+          << status.unexpected_error_info_.js_exception_classname() << " at "
+          << status.unexpected_error_info_.js_exception_line_number() << ":"
+          << status.unexpected_error_info_.js_exception_column_number();
+    }
+  }
+#endif
+  return out;
 }
 
 const ClientStatus& OkClientStatus() {
@@ -85,6 +98,14 @@ std::ostream& operator<<(std::ostream& out,
 
     case ProcessedActionStatusProto::ELEMENT_UNSTABLE:
       out << "ELEMENT_UNSTABLE";
+      break;
+
+    case ProcessedActionStatusProto::OPTION_VALUE_NOT_FOUND:
+      out << "OPTION_VALUE_NOT_FOUND";
+      break;
+
+    case ProcessedActionStatusProto::UNEXPECTED_JS_ERROR:
+      out << "UNEXPECTED_JS_ERROR";
       break;
 
       // Intentionally no default case to make compilation fail if a new value

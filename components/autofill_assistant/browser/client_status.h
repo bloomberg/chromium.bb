@@ -30,14 +30,26 @@ class ClientStatus {
   // Modifies the corresponding proto status.
   void set_proto_status(ProcessedActionStatusProto status) { status_ = status; }
 
+  // Returns a mutable version of unexpected error info, creates one if
+  // necessary.
+  UnexpectedErrorInfoProto* mutable_unexpected_error_info() {
+    has_unexpected_error_info_ = true;
+    return &unexpected_error_info_;
+  }
+
+  // Returns the unexpected error infos associated with this status.
+  const UnexpectedErrorInfoProto& unexpected_error_info() const {
+    return unexpected_error_info_;
+  }
+
   // The output operator, for logging.
   friend std::ostream& operator<<(std::ostream& out,
                                   const ClientStatus& status);
 
  private:
   ProcessedActionStatusProto status_;
-  // TODO(b/129387787): Add more information, to be reported to
-  // ProcessedActionProto
+  bool has_unexpected_error_info_ = false;
+  UnexpectedErrorInfoProto unexpected_error_info_;
 };
 
 // An OK status.
