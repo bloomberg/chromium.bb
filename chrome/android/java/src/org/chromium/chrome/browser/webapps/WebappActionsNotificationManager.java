@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.ui.base.Clipboard;
 
@@ -47,6 +48,10 @@ class WebappActionsNotificationManager {
             "org.chromium.chrome.browser.webapps.NOTIFICATION_ACTION_FOCUS";
 
     static boolean isEnabled() {
+        // This UI doesn't work with no-touch.
+        if (FeatureUtilities.isNoTouchModeEnabled()) {
+            return false;
+        }
         return ChromeFeatureList.isEnabled(ChromeFeatureList.PWA_PERSISTENT_NOTIFICATION);
     }
 
