@@ -20,9 +20,6 @@ extern const base::Feature kSiteCharacteristicsDatabase;
 extern const base::Feature kStaggeredBackgroundTabOpening;
 extern const base::Feature kStaggeredBackgroundTabOpeningExperiment;
 extern const base::Feature kTabRanker;
-#if defined(OS_CHROMEOS)
-extern const base::Feature kNewProcessTypes;
-#endif // defined(OS_CHROMEOS)
 
 }  // namespace features
 

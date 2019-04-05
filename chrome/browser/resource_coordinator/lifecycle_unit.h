@@ -60,7 +60,7 @@ class LifecycleUnit {
     // Abstract importance score calculated by the Tab Ranker where a higher
     // score suggests the tab is more likely to be reactivated.
     // kMaxScore if the LifecycleUnit is currently focused.
-    base::Optional<float> score;
+    float score = kMaxScore;
 
     // Last time at which the LifecycleUnit was focused. base::TimeTicks::Max()
     // if the LifecycleUnit is currently focused.
