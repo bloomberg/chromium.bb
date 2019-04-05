@@ -46,7 +46,7 @@ const base::FilePath::CharType kFilesStorageDir[] = FILE_PATH_LITERAL("Files");
 // Helper function to create download service with different implementation
 // details.
 DownloadService* CreateDownloadServiceInternal(
-    content::BrowserContext* browser_context,
+    SimpleFactoryKey* simple_factory_key,
     std::unique_ptr<DownloadClientMap> clients,
     std::unique_ptr<Configuration> config,
     std::unique_ptr<DownloadDriver> driver,
@@ -77,7 +77,7 @@ DownloadService* CreateDownloadServiceInternal(
       config->network_startup_delay, config->network_change_delay,
       std::move(battery_listener), std::move(network_listener));
   NavigationMonitor* navigation_monitor =
-      NavigationMonitorFactory::GetForBrowserContext(browser_context);
+      NavigationMonitorFactory::GetForKey(simple_factory_key);
   auto scheduler = std::make_unique<SchedulerImpl>(
       task_scheduler.get(), config.get(), client_set.get());
   auto logger = std::make_unique<LoggerImpl>();
@@ -122,14 +122,14 @@ DownloadService* BuildDownloadService(
       files_storage_dir, background_task_runner, config->file_keep_alive_time);
 
   return CreateDownloadServiceInternal(
-      browser_context, std::move(clients), std::move(config), std::move(driver),
-      std::move(store), std::move(task_scheduler), std::move(file_monitor),
-      network_connection_tracker, files_storage_dir);
+      simple_factory_key, std::move(clients), std::move(config),
+      std::move(driver), std::move(store), std::move(task_scheduler),
+      std::move(file_monitor), network_connection_tracker, files_storage_dir);
 }
 
 // Create download service for incognito mode without any database or file IO.
 DownloadService* BuildInMemoryDownloadService(
-    content::BrowserContext* browser_context,
+    SimpleFactoryKey* simple_factory_key,
     std::unique_ptr<DownloadClientMap> clients,
     network::NetworkConnectionTracker* network_connection_tracker,
     const base::FilePath& storage_dir,
@@ -150,9 +150,9 @@ DownloadService* BuildInMemoryDownloadService(
   auto file_monitor = std::make_unique<EmptyFileMonitor>();
 
   return CreateDownloadServiceInternal(
-      browser_context, std::move(clients), std::move(config), std::move(driver),
-      std::move(store), std::move(task_scheduler), std::move(file_monitor),
-      network_connection_tracker, files_storage_dir);
+      simple_factory_key, std::move(clients), std::move(config),
+      std::move(driver), std::move(store), std::move(task_scheduler),
+      std::move(file_monitor), network_connection_tracker, files_storage_dir);
 }
 
 }  // namespace download

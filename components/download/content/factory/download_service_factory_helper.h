@@ -54,7 +54,7 @@ DownloadService* BuildDownloadService(
 // Create download service used in incognito mode, without any database or
 // download file IO.
 DownloadService* BuildInMemoryDownloadService(
-    content::BrowserContext* browser_context,
+    SimpleFactoryKey* simple_factory_key,
     std::unique_ptr<DownloadClientMap> clients,
     network::NetworkConnectionTracker* network_connection_tracker,
     const base::FilePath& storage_dir,

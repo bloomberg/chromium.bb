@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/post_task.h"
@@ -16,6 +17,7 @@
 #include "components/download/public/background_service/download_params.h"
 #include "components/download/public/background_service/download_service.h"
 #include "components/download/public/background_service/features.h"
+#include "components/keyed_service/core/simple_factory_key.h"
 #include "content/public/browser/background_fetch_description.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_context.h"
@@ -249,9 +251,11 @@ void WebTestBackgroundFetchDelegate::CreateDownloadJob(
           BrowserContext::GetDefaultStoragePartition(browser_context_)
               ->GetURLLoaderFactoryForBrowserProcess()
               .get();
+      simple_factory_key_ =
+          std::make_unique<SimpleFactoryKey>(base::FilePath());
       download_service_ =
           base::WrapUnique(download::BuildInMemoryDownloadService(
-              browser_context_, std::move(clients),
+              simple_factory_key_.get(), std::move(clients),
               GetNetworkConnectionTracker(), base::FilePath(),
               BrowserContext::GetBlobStorageContext(browser_context_),
               base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
