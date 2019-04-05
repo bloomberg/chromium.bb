@@ -414,7 +414,10 @@
     'chromium.linux': {
       'Cast Audio Linux': 'cast_audio_release_bot',
       'Cast Linux': 'cast_release_bot',
-      'Deterministic Linux (dbg)': 'debug_bot',
+      'Deterministic Linux (dbg)': {
+        'local': 'debug_bot_local_build',
+        'goma': 'debug_bot',
+      },
       'Deterministic Linux': 'release_bot',
       'Fuchsia ARM64': 'release_bot_fuchsia_arm64',
       'Fuchsia x64': 'release_bot_fuchsia',
@@ -1385,6 +1388,10 @@
       'debug_bot',
     ],
 
+    'debug_bot_local_build': [
+      'debug_bot_local_build',
+    ],
+
     'debug_bot_enable_blink_animation_use_time_delta': [
       'debug_bot', 'enable_blink_animation_use_time_delta',
     ],
@@ -2065,6 +2072,10 @@
 
     'debug_bot': {
       'mixins': ['debug', 'shared', 'goma', 'minimal_symbols'],
+    },
+
+    'debug_bot_local_build': {
+      'mixins': ['debug', 'shared', 'minimal_symbols'],
     },
 
     'debug_static_bot': {
