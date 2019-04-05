@@ -1,5 +1,5 @@
 <?php
-usleep(1000000);
+usleep(100000);
 ?>
 DONE!
 <script>
