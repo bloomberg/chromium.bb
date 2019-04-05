@@ -93,6 +93,7 @@ void WorkerScriptFetchInitiator::Start(
     // (https://crbug.com/715632)
     resource_request = std::make_unique<network::ResourceRequest>();
     resource_request->url = script_url;
+    resource_request->site_for_cookies = script_url;
     resource_request->request_initiator = request_initiator;
     resource_request->resource_type = resource_type;
 
