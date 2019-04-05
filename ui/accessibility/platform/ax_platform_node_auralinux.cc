@@ -195,18 +195,6 @@ const char* GetUniqueAccessibilityGTypeName(int interface_mask) {
   return name;
 }
 
-bool IsRoleWithValueInterface(ax::mojom::Role role) {
-  // TODO(accessibility) Not all kSplitters should implement AtkValue.
-  // For instance, a focusable and/or movable widget kSplitter should,
-  // but a static HR element should not.
-  return role == ax::mojom::Role::kScrollBar ||
-         role == ax::mojom::Role::kSlider ||
-         role == ax::mojom::Role::kProgressIndicator ||
-         role == ax::mojom::Role::kMeter ||
-         role == ax::mojom::Role::kSplitter ||
-         role == ax::mojom::Role::kSpinButton;
-}
-
 void SetWeakGPtrToAtkObject(AtkObject** weak_pointer, AtkObject* new_value) {
   if (*weak_pointer == new_value)
     return;
@@ -1941,7 +1929,7 @@ int AXPlatformNodeAuraLinux::GetGTypeInterfaceMask() {
 
   // Value Interface
   AtkRole role = GetAtkRole();
-  if (IsRoleWithValueInterface(GetData().role)) {
+  if (IsRangeValueSupported(GetData())) {
     interface_mask |= 1 << ATK_VALUE_INTERFACE;
   }
 
@@ -3132,7 +3120,7 @@ void AXPlatformNodeAuraLinux::OnDescriptionChanged() {
 void AXPlatformNodeAuraLinux::OnValueChanged() {
   DCHECK(atk_object_);
 
-  if (!IsRoleWithValueInterface(GetData().role))
+  if (!IsRangeValueSupported(GetData()))
     return;
 
   float float_val;

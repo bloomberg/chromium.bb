@@ -1,9 +1,9 @@
 [document web]
 ++[paragraph]
 ++++[text] name='Before.'
-++[separator] name='Dividing line' horizontal current=0.000000 minimum=0.000000 maximum=0.000000
+++[separator] name='Dividing line' horizontal
 ++[paragraph]
 ++++[text] name='Middle.'
-++[separator] horizontal current=0.000000 minimum=0.000000 maximum=0.000000
+++[separator] horizontal
 ++[paragraph]
 ++++[text] name='After.'
