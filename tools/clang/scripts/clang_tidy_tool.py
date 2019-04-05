@@ -28,71 +28,13 @@ import os
 import subprocess
 import sys
 
-
-def GetCheckoutDir(out_dir):
-  """Returns absolute path to the checked-out llvm repo."""
-  return os.path.join(out_dir, 'tools', 'clang', 'third_party', 'llvm')
-
-
-def GetBuildDir(out_dir):
-  return os.path.join(GetCheckoutDir(out_dir), 'build')
+import build_clang_tools_extra
 
 
 def GetBinaryPath(build_dir, binary):
   if sys.platform == 'win32':
     binary += '.exe'
   return os.path.join(build_dir, 'bin', binary)
-
-def FetchClang(checkout_dir):
-  """Clone llvm repo into |out_dir| or update if it already exists."""
-  try:
-    # Create parent directories of the checkout directory
-    os.makedirs(os.path.dirname(checkout_dir))
-  except OSError:
-    pass
-
-  try:
-    # First, try to clone the repo.
-    args = [
-        'git',
-        'clone',
-        'https://github.com/llvm/llvm-project.git',
-        checkout_dir,
-    ]
-    subprocess.check_call(args, shell=sys.platform == 'win32')
-  except subprocess.CalledProcessError:
-    # Otherwise, try to update it.
-    print('-- Attempting to update existing repo')
-    args = ['git', 'pull', '--rebase', 'origin', 'master']
-    subprocess.check_call(args, cwd=checkout_dir)
-
-
-def BuildClang(build_dir):
-  """Build clang from llvm repo at |build_dir|."""
-  # Make <checkout>/build directory
-  try:
-    os.mkdir(build_dir)
-  except OSError as e:
-    # Ignore errno 17 'File Exists'
-    if e.errno != 17:
-      raise e
-
-  # From that dir, run cmake
-  cmake_args = [
-      'cmake',
-      '-GNinja',
-      '-DLLVM_ENABLE_PROJECTS=clang;clang-tools-extra',
-      '-DCMAKE_BUILD_TYPE=Release',
-      '../llvm',
-  ]
-  subprocess.check_call(cmake_args, cwd=build_dir)
-
-  ninja_args = [
-      'ninja',
-      'clang-tidy',
-      'clang-apply-replacements',
-  ]
-  subprocess.check_call(ninja_args, cwd=build_dir)
 
 
 def BuildNinjaTarget(out_dir, ninja_target):
@@ -228,9 +170,9 @@ def main():
   # If the user hasn't provided a clang checkout and build dir, checkout and
   # build clang-tidy where update.py would.
   if not args.clang_src_dir:
-    args.clang_src_dir = GetCheckoutDir(args.OUT_DIR)
+    args.clang_src_dir = build_clang_tools_extra.GetCheckoutDir(args.OUT_DIR)
   if not args.clang_build_dir:
-    args.clang_build_dir = GetBuildDir(args.OUT_DIR)
+    args.clang_build_dir = build_clang_tools_extra.GetBuildDir(args.OUT_DIR)
   elif (args.clang_build_dir and not
         os.path.isfile(GetBinaryPath(args.clang_build_dir, 'clang-tidy'))):
     sys.exit('clang-tidy binary doesn\'t exist at ' +
@@ -238,11 +180,14 @@ def main():
 
 
   if args.fetch:
-    steps.append(('Fetching clang sources', lambda:
-                  FetchClang(args.clang_src_dir)))
+    steps.append(('Fetching LLVM sources', lambda:
+                  build_clang_tools_extra.FetchLLVM(args.clang_src_dir)))
 
   if args.build:
-    steps.append(('Building clang', lambda: BuildClang(args.clang_build_dir)))
+    steps.append(('Building clang-tidy',
+                  lambda: build_clang_tools_extra.BuildTargets(
+                      args.clang_build_dir,
+                      ['clang-tidy', 'clang-apply-replacements'])))
 
   steps += [
       ('Building ninja target: %s' % args.NINJA_TARGET,
