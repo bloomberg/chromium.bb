@@ -756,7 +756,7 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
 }
 
 IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
-                       ProxyBlockedOnAuthError) {
+                       DISABLED_ProxyBlockedOnAuthError) {
   base::HistogramTester histogram_tester;
   net::EmbeddedTestServer test_server;
   test_server.RegisterRequestHandler(
@@ -774,7 +774,8 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
 
 // Tests that if using data reduction proxy results in redirect loop, then
 // the proxy is bypassed, and the request is fetched directly.
-IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest, RedirectCycle) {
+IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
+                       DISABLED_RedirectCycle) {
   base::HistogramTester histogram_tester;
   net::EmbeddedTestServer test_server;
   test_server.RegisterRequestHandler(
