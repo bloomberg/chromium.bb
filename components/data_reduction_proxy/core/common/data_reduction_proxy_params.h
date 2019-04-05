@@ -137,10 +137,6 @@ bool IsWarmupURL(const GURL& url);
 // unsuccessful.
 bool IsWhitelistedHttpResponseCodeForProbes(int http_response_code);
 
-// Returns if site-breakdown metrics should be recorded using the page load
-// metrics harness.
-bool IsDataSaverSiteBreakdownUsingPLMEnabled();
-
 // Returns whether network service is enabled and data reduction proxy should be
 // used.
 bool IsEnabledWithNetworkService();

@@ -1577,40 +1577,6 @@
             ]
         }
     ],
-    "DataReductionProxyServerExperiments": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "OnDeviceSafeBrowsingFieldTrialEnabled",
-                    "params": {
-                        "exp": "disable_server_safebrowsing"
-                    }
-                }
-            ]
-        }
-    ],
-    "DataSaverSiteBreakdownUsingPageLoadMetrics": [
-        {
-            "platforms": [
-                "android",
-                "windows",
-                "mac",
-                "chromeos",
-                "linux"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "DataSaverSiteBreakdownUsingPageLoadMetrics"
-                    ]
-                }
-            ]
-        }
-    ],
     "DecoupleTranslateLanguage": [
         {
             "platforms": [

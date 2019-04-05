@@ -28,8 +28,6 @@ DataSaverSiteBreakdownMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle,
     ukm::SourceId source_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!data_reduction_proxy::params::IsDataSaverSiteBreakdownUsingPLMEnabled())
-    return STOP_OBSERVING;
 
   // This BrowserContext is valid for the lifetime of
   // DataReductionProxyMetricsObserver. BrowserContext is always valid and
