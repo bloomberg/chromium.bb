@@ -449,6 +449,7 @@ TEST_P(WebStateTest, CallStopDuringSessionRestore) {
   CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
   session_storage.itemStorages = item_storages;
   auto web_state = WebState::CreateWithStorageSession(params, session_storage);
+  web_state->SetKeepRenderProcessAlive(true);
   WebState* web_state_ptr = web_state.get();
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
   // TODO(crbug.com/873729): The session will not be restored until
@@ -492,6 +493,7 @@ TEST_P(WebStateTest, CallLoadURLWithParamsDuringSessionRestore) {
   CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
   session_storage.itemStorages = item_storages;
   auto web_state = WebState::CreateWithStorageSession(params, session_storage);
+  web_state->SetKeepRenderProcessAlive(true);
   WebState* web_state_ptr = web_state.get();
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
   // TODO(crbug.com/873729): The session will not be restored until
@@ -542,6 +544,7 @@ TEST_P(WebStateTest, CallReloadDuringSessionRestore) {
   CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
   session_storage.itemStorages = item_storages;
   auto web_state = WebState::CreateWithStorageSession(params, session_storage);
+  web_state->SetKeepRenderProcessAlive(true);
   WebState* web_state_ptr = web_state.get();
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
   // TODO(crbug.com/873729): The session will not be restored until
