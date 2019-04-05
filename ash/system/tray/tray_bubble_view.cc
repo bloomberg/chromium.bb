@@ -262,6 +262,7 @@ void TrayBubbleView::InitializeAndShowBubble() {
   if (ash::features::ShouldUseShaderRoundedCorner()) {
     int radius = bubble_border_->GetBorderCornerRadius();
     layer()->parent()->SetRoundedCornerRadius({radius, radius, radius, radius});
+    layer()->parent()->SetIsFastRoundedCorner(true);
   } else {
     CHECK(bubble_content_mask_);
     layer()->parent()->SetMaskLayer(bubble_content_mask_->layer());
