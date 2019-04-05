@@ -51,8 +51,8 @@ class CC_EXPORT PaintWorkletImageCache {
   void NotifyDidPrepareTiles();
 
   // Returns a callback to decrement the ref count for the corresponding entry.
-  std::pair<PaintRecord*, base::OnceCallback<void()>> GetPaintRecordAndRef(
-      PaintWorkletInput* input);
+  std::pair<sk_sp<PaintRecord>, base::OnceCallback<void()>>
+  GetPaintRecordAndRef(PaintWorkletInput* input);
 
   const base::flat_map<PaintWorkletInput*, PaintWorkletImageCacheValue>&
   GetRecordsForTest() {
