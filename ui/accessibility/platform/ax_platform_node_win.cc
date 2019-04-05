@@ -1284,13 +1284,38 @@ IFACEMETHODIMP AXPlatformNodeWin::get_localizedExtendedRole(
   return S_OK;
 }
 
+IFACEMETHODIMP AXPlatformNodeWin::get_attribute(BSTR name, VARIANT* attribute) {
+  COM_OBJECT_VALIDATE_1_ARG(attribute);
+  AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
+
+  base::string16 desired_attribute(name);
+
+  // Each computed attribute from ComputeIA2Attributes is a string of
+  // the form "key:value". Search for strings that start with the
+  // attribute name plus a colon.
+  base::string16 prefix = desired_attribute + L":";
+
+  // Let's accept any case.
+  const auto compare_case = base::CompareCase::INSENSITIVE_ASCII;
+
+  const std::vector<base::string16> computed_attributes =
+      ComputeIA2Attributes();
+  for (const base::string16& computed_attribute : computed_attributes) {
+    if (base::StartsWith(computed_attribute, prefix, compare_case)) {
+      base::string16 value = computed_attribute.substr(prefix.size());
+      attribute->vt = VT_BSTR;
+      attribute->bstrVal = SysAllocString(value.c_str());
+      return S_OK;
+    }
+  }
+
+  return S_FALSE;
+}
+
 //
 // IAccessible2 methods not implemented.
 //
 
-IFACEMETHODIMP AXPlatformNodeWin::get_attribute(BSTR name, VARIANT* attribute) {
-  return E_NOTIMPL;
-}
 IFACEMETHODIMP AXPlatformNodeWin::get_extendedRole(BSTR* extended_role) {
   return E_NOTIMPL;
 }
