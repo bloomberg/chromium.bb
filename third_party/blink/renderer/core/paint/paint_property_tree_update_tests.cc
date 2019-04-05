@@ -1688,4 +1688,13 @@ TEST_P(PaintPropertyTreeUpdateTest, ChangeDuringAnimation) {
   EXPECT_TRUE(paint_artifact_compositor->NeedsUpdate());
 }
 
+TEST_P(PaintPropertyTreeUpdateTest, BackfaceVisibilityInvalidatesProperties) {
+  SetBodyInnerHTML("<span id='span'>a</span>");
+
+  auto* span = GetDocument().getElementById("span");
+  span->setAttribute(html_names::kStyleAttr, "backface-visibility: hidden;");
+  GetDocument().View()->UpdateLifecycleToLayoutClean();
+  EXPECT_TRUE(span->GetLayoutObject()->NeedsPaintPropertyUpdate());
+}
+
 }  // namespace blink
