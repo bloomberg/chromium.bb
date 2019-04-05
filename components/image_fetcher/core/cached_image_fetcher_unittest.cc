@@ -83,8 +83,8 @@ class CachedImageFetcherTest : public testing::Test {
         std::make_unique<FakeDB<CachedImageMetadataProto>>(&metadata_store_);
     db_ = db.get();
 
-    auto metadata_store = std::make_unique<ImageMetadataStoreLevelDB>(
-        base::FilePath(), std::move(db), &clock_);
+    auto metadata_store =
+        std::make_unique<ImageMetadataStoreLevelDB>(std::move(db), &clock_);
     auto data_store = std::make_unique<ImageDataStoreDisk>(
         data_dir_.GetPath(), base::SequencedTaskRunnerHandle::Get());
 
@@ -95,7 +95,7 @@ class CachedImageFetcherTest : public testing::Test {
     // Use an initial request to start the cache up.
     image_cache_->SaveImage(kImageUrl.spec(), kImageData);
     RunUntilIdle();
-    db_->InitCallback(true);
+    db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
     image_cache_->DeleteImage(kImageUrl.spec());
     RunUntilIdle();
 
