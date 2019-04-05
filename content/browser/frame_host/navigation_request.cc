@@ -644,6 +644,8 @@ NavigationRequest::~NavigationRequest() {
 
 void NavigationRequest::BeginNavigation() {
   DCHECK(!loader_);
+  DCHECK(!render_frame_host_);
+
   DCHECK(state_ == NOT_STARTED || state_ == WAITING_FOR_RENDERER_RESPONSE);
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
                                "BeginNavigation");
@@ -824,6 +826,11 @@ void NavigationRequest::ResetForCrossDocumentRestart() {
   // to objects owned by the handle (see the comment in the header).
   DCHECK(!loader_);
   navigation_handle_.reset();
+
+  // Reset the previously selected RenderFrameHost. This is expected to be null
+  // at the beginning of a new navigation. See https://crbug.com/936962.
+  DCHECK(render_frame_host_);
+  render_frame_host_ = nullptr;
 
   // Convert the navigation type to the appropriate cross-document one.
   if (common_params_.navigation_type ==
@@ -1370,8 +1377,9 @@ void NavigationRequest::OnRequestFailedInternal(
   // Sanity check that we haven't changed the RenderFrameHost picked for the
   // error page in OnRequestFailedInternal when running the WillFailRequest
   // checks.
-  // TODO(https://crbug.com/636952): Replace this by a CHECK when the bug is
+  // TODO(https://crbug.com/936962): Replace this by a CHECK when the bug is
   // fixed.
+  DCHECK(!render_frame_host_ || render_frame_host_ == render_frame_host);
   if (render_frame_host_ && render_frame_host_ != render_frame_host)
     base::debug::DumpWithoutCrashing();
   render_frame_host_ = render_frame_host;
