@@ -72,6 +72,7 @@ cr.define('settings', function() {
           code: 'sw',
           displayName: 'Swahili',
           nativeDisplayName: 'Kiswahili',
+          supportsSpellcheck: true,
           supportsTranslate: true,
           supportsUI: true,
         },

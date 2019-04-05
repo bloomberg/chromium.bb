@@ -504,19 +504,20 @@ Polymer({
    * @private
    */
   getSpellCheckLanguages_: function() {
-    const userSpellcheckLanguagesSet =
-        new Set(this.languages.enabled.map(x => x.language.code));
-    const uniqueSpellcheckLanguages =
-        /** @type {!Array<!LanguageState|!ForcedLanguageState>} */
-        (this.languages.enabled.slice());
+    const supportedSpellcheckLanguages =
+        /** @type {!Array<!LanguageState|!ForcedLanguageState>} */ (
+            this.languages.enabled.filter(
+                (item) => item.language.supportsSpellcheck));
+    const supportedSpellcheckLanguagesSet =
+        new Set(supportedSpellcheckLanguages.map(x => x.language.code));
 
     this.languages.forcedSpellCheckLanguages.forEach(forcedLanguage => {
-      if (!userSpellcheckLanguagesSet.has(forcedLanguage.language.code)) {
-        uniqueSpellcheckLanguages.push(forcedLanguage);
+      if (!supportedSpellcheckLanguagesSet.has(forcedLanguage.language.code)) {
+        supportedSpellcheckLanguages.push(forcedLanguage);
       }
     });
 
-    return uniqueSpellcheckLanguages;
+    return supportedSpellcheckLanguages;
   },
 
   /** @private */
