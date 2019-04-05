@@ -1389,6 +1389,7 @@ enum HistogramValue {
   AUTOTESTPRIVATE_EXPORTCROSTINI = 1326,
   AUTOTESTPRIVATE_IMPORTCROSTINI = 1327,
   ACCESSIBILITY_PRIVATE_SETVIRTUALKEYBOARDVISIBLE = 1328,
+  AUTOTESTPRIVATE_SHOWVIRTUALKEYBOARDIFENABLED = 1329,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

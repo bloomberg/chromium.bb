@@ -77,6 +77,7 @@
 #include "net/base/filename_util.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ws/public/mojom/constants.mojom.h"
+#include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -1754,6 +1755,30 @@ AutotestPrivateSetShelfAutoHideBehaviorFunction::Run() {
 void AutotestPrivateSetShelfAutoHideBehaviorFunction::
     OnSetShelfAutoHideBehaviorCompleted() {
   Respond(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateShowVirtualKeyboardIfEnabledFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateShowVirtualKeyboardIfEnabledFunction::
+    AutotestPrivateShowVirtualKeyboardIfEnabledFunction() = default;
+AutotestPrivateShowVirtualKeyboardIfEnabledFunction::
+    ~AutotestPrivateShowVirtualKeyboardIfEnabledFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateShowVirtualKeyboardIfEnabledFunction::Run() {
+  if (!ui::IMEBridge::Get() ||
+      !ui::IMEBridge::Get()->GetInputContextHandler() ||
+      !ui::IMEBridge::Get()->GetInputContextHandler()->GetInputMethod()) {
+    return RespondNow(NoArguments());
+  }
+
+  ui::IMEBridge::Get()
+      ->GetInputContextHandler()
+      ->GetInputMethod()
+      ->ShowVirtualKeyboardIfEnabled();
+  return RespondNow(NoArguments());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
