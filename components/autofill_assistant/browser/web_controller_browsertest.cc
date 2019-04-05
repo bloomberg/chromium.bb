@@ -735,7 +735,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FocusElement) {
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOption) {
   Selector selector;
   selector.selectors.emplace_back("#select");
-  EXPECT_EQ(OTHER_ACTION_STATUS,
+  EXPECT_EQ(OPTION_VALUE_NOT_FOUND,
             SelectOption(selector, "incorrect_label").proto_status());
   EXPECT_EQ(ACTION_APPLIED, SelectOption(selector, "two").proto_status());
 

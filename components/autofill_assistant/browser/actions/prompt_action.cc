@@ -33,7 +33,7 @@ PromptAction::~PromptAction() {}
 void PromptAction::InternalProcessAction(ActionDelegate* delegate,
                                          ProcessActionCallback callback) {
   if (proto_.prompt().choices_size() == 0) {
-    UpdateProcessedAction(OTHER_ACTION_STATUS);
+    UpdateProcessedAction(INVALID_ACTION);
     std::move(callback).Run(std::move(processed_action_proto_));
     return;
   }

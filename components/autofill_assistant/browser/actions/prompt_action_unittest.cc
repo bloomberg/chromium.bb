@@ -68,8 +68,9 @@ class PromptActionTest : public testing::Test {
 };
 
 TEST_F(PromptActionTest, ChoicesMissing) {
-  EXPECT_CALL(callback_, Run(Pointee(Property(&ProcessedActionProto::status,
-                                              OTHER_ACTION_STATUS))));
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(Property(&ProcessedActionProto::status, INVALID_ACTION))));
   PromptAction action(proto_);
   action.ProcessAction(&mock_action_delegate_, callback_.Get());
 }

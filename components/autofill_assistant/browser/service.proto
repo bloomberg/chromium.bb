@@ -351,6 +351,44 @@ message ProcessedActionProto {
     // Should be set as a result of SetFormFieldValueAction.
     SetFormFieldValueProto.Result set_form_field_value_result = 17;
   }
+
+  // More information included for unexpected errors.
+  //
+  // Only set for action whose status are OTHER_ACTION_STATUS or
+  // UNEXPECTED_JS_ERROR.
+  optional UnexpectedErrorInfoProto unexpected_error_info = 18;
+}
+
+// Extra debugging information included in case of unexpected errors.
+//
+// Presence of this element is usually the sign of a bug in the client code and
+// is always the sign that the client code needs to be updated: such issues
+// should be either fixed or reported as proper, expected error with a useful
+// status code.
+message UnexpectedErrorInfoProto {
+  // Source file, within the client code, where an unexpected error was detected
+  // and reported.
+  //
+  // Only filled for unexpected errors OTHER_ACTION_STATUS and
+  // UNEXPECTED_JS_ERROR.
+  //
+  // This and source_line are only meaningful for the exact version reported in
+  // the client context.
+  optional string source_file = 1;
+
+  // Line number, within the client's source file, where the error was detected.
+  optional int32 source_line_number = 2;
+
+  // JavaScript exception class name, if reporting a JavaScript error.
+  optional string js_exception_classname = 3;
+
+  // JavaScript exception line number, within the js snippet that was sent to
+  // devtools runtime by the client, if reporting a JavaScript error.
+  optional int32 js_exception_line_number = 4;
+
+  // JavaScript exception column number, within the js snippet that was sent to
+  // devtools runtime by the client, if reporting a JavaScript error.
+  optional int32 js_exception_column_number = 5;
 }
 
 enum ProcessedActionStatusProto {
@@ -363,6 +401,12 @@ enum ProcessedActionStatusProto {
   ACTION_APPLIED = 2;
 
   // The action failed (generic error).
+  //
+  // This usually means that the client needs to be fixed: either the error
+  // should be assigned a more specific error code, or a bug in the client code
+  // needs to be fixed.
+  //
+  // ProcessedActionProto.UnexpectedErrorInfoProto contains more details.
   OTHER_ACTION_STATUS = 3;
 
   // The action failed to get payment information.
@@ -418,6 +462,16 @@ enum ProcessedActionStatusProto {
 
   // Failed to get a stable position for the element, usually to click on it.
   ELEMENT_UNSTABLE = 14;
+
+  // The value passed to the select option action does not exist in the element.
+  // This is usually a scripting error.
+  OPTION_VALUE_NOT_FOUND = 15;
+
+  // The client got an unexpected error from a JavaScript snippet executed
+  // through devtools. This means that there's a bug in the client code.
+  //
+  // ProcessedActionProto.UnexpectedErrorInfoProto contains more details.
+  UNEXPECTED_JS_ERROR = 16;
 }
 
 // The pseudo type values come from
