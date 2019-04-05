@@ -135,7 +135,7 @@ ProfileMenuViewBase::~ProfileMenuViewBase() {
   DCHECK(menu_item_groups_.empty());
 }
 
-ax::mojom::Role ProfileMenuViewBase::GetAccessibleWindowRole() const {
+ax::mojom::Role ProfileMenuViewBase::GetAccessibleWindowRole() {
   // Return |ax::mojom::Role::kDialog| which will make screen readers announce
   // the following in the listed order:
   // the title of the dialog, labels (if any), the focused View within the

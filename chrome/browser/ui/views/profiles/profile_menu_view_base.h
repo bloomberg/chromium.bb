@@ -106,7 +106,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   int GetDialogButtons() const override;
-  ax::mojom::Role GetAccessibleWindowRole() const override;
+  ax::mojom::Role GetAccessibleWindowRole() override;
 
   // content::WebContentsDelegate:
   bool HandleContextMenu(content::RenderFrameHost* render_frame_host,

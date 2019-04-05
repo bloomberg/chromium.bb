@@ -138,7 +138,7 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   virtual gfx::Rect GetBubbleBounds();
 
   // DialogDelegateView:
-  ax::mojom::Role GetAccessibleWindowRole() const override;
+  ax::mojom::Role GetAccessibleWindowRole() override;
 
   // Disallow overrides of GetMinimumSize and GetMaximumSize(). These would only
   // be called by the FrameView, but the BubbleFrameView ignores these. Bubbles

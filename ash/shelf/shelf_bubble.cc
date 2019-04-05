@@ -39,7 +39,7 @@ ShelfBubble::ShelfBubble(views::View* anchor,
           kShellWindowId_SettingBubbleContainer));
 }
 
-ax::mojom::Role ShelfBubble::GetAccessibleWindowRole() const {
+ax::mojom::Role ShelfBubble::GetAccessibleWindowRole() {
   // We override the role because the base class sets it to alert dialog,
   // which results in each tooltip title being announced twice on screen
   // readers each time it is shown.

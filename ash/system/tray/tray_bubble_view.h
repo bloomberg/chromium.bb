@@ -186,7 +186,7 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
  protected:
   // Overridden from views::BubbleDialogDelegateView.
   int GetDialogButtons() const override;
-  ax::mojom::Role GetAccessibleWindowRole() const override;
+  ax::mojom::Role GetAccessibleWindowRole() override;
   void SizeToContents() override;
 
   // Overridden from views::View.

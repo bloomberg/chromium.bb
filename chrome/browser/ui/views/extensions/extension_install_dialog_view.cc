@@ -424,7 +424,7 @@ bool ExtensionInstallDialogView::ShouldShowCloseButton() const {
   return true;
 }
 
-ax::mojom::Role ExtensionInstallDialogView::GetAccessibleWindowRole() const {
+ax::mojom::Role ExtensionInstallDialogView::GetAccessibleWindowRole() {
   return ax::mojom::Role::kAlertDialog;
 }
 

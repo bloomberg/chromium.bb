@@ -259,7 +259,7 @@ DialogDelegate::~DialogDelegate() {
                            base::TimeTicks::Now() - creation_time_);
 }
 
-ax::mojom::Role DialogDelegate::GetAccessibleWindowRole() const {
+ax::mojom::Role DialogDelegate::GetAccessibleWindowRole() {
   return ax::mojom::Role::kDialog;
 }
 
@@ -292,8 +292,11 @@ View* DialogDelegateView::GetContentsView() {
 
 void DialogDelegateView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
-  if (details.is_add && details.child == this && GetWidget())
+  if (details.is_add && details.child == this && GetWidget() &&
+      (GetAccessibleWindowRole() == ax::mojom::Role::kAlert ||
+       GetAccessibleWindowRole() == ax::mojom::Role::kAlertDialog)) {
     NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
+  }
 }
 
 }  // namespace views

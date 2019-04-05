@@ -92,7 +92,7 @@ ui::ModalType WidgetDelegate::GetModalType() const {
   return ui::MODAL_TYPE_NONE;
 }
 
-ax::mojom::Role WidgetDelegate::GetAccessibleWindowRole() const {
+ax::mojom::Role WidgetDelegate::GetAccessibleWindowRole() {
   return ax::mojom::Role::kWindow;
 }
 

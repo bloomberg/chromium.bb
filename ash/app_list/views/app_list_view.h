@@ -162,7 +162,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   void Layout() override;
 
   // WidgetDelegate:
-  ax::mojom::Role GetAccessibleWindowRole() const override;
+  ax::mojom::Role GetAccessibleWindowRole() override;
 
   // ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
