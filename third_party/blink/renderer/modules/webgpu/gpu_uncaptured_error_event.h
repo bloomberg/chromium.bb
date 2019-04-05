@@ -5,10 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_UNCAPTURED_ERROR_EVENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_UNCAPTURED_ERROR_EVENT_H_
 
+#include "third_party/blink/renderer/bindings/modules/v8/gpu_out_of_memory_error_or_gpu_validation_error.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 
 namespace blink {
 
+class GPUOutOfMemoryErrorOrGPUValidationError;
 class GPUUncapturedErrorEventInit;
 
 class GPUUncapturedErrorEvent : public Event {
@@ -20,10 +22,14 @@ class GPUUncapturedErrorEvent : public Event {
   GPUUncapturedErrorEvent(const AtomicString& type,
                           const GPUUncapturedErrorEventInit*);
 
+  void Trace(Visitor*) override;
+
   // gpu_uncaptured_error_event.idl
-  // TODO(crbug.com/877147): implement GPUUncapturedErrorEvent.
+  void error(GPUOutOfMemoryErrorOrGPUValidationError&) const;
 
  private:
+  GPUOutOfMemoryErrorOrGPUValidationError error_;
+
   DISALLOW_COPY_AND_ASSIGN(GPUUncapturedErrorEvent);
 };
 
