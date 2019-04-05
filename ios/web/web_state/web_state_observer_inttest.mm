@@ -1901,13 +1901,6 @@ TEST_P(WebStateObserverTest, ForwardPostNavigation) {
       .WillOnce(Return(true));
 
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
-  if (@available(iOS 12.2, *)) {
-    // ShouldAllowResponse is called on iOS 12.0 and iOS 12.1,
-    // but not on iOS 12.2 or iOS 11.
-  } else if (@available(iOS 12, *)) {
-    EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-        .WillOnce(Return(true));
-  }
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
   EXPECT_CALL(observer_, TitleWasSet(web_state()))
       .WillOnce(VerifyTitle(url.GetContent()));
@@ -2443,6 +2436,8 @@ TEST_P(WebStateObserverTest, RestoreSession) {
   CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
   session_storage.itemStorages = item_storages;
   auto web_state = WebState::CreateWithStorageSession(params, session_storage);
+  web_state->SetKeepRenderProcessAlive(true);
+
   StrictMock<WebStateObserverMock> observer;
   ScopedObserver<WebState, WebStateObserver> scoped_observer(&observer);
   scoped_observer.Add(web_state.get());
