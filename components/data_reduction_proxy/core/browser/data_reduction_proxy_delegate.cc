@@ -15,7 +15,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_bypass_protocol.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "net/base/host_port_pair.h"
@@ -26,6 +25,12 @@
 #include "net/proxy_resolution/proxy_info.h"
 
 namespace data_reduction_proxy {
+
+namespace {
+
+static const char kDataReductionCoreProxy[] = "proxy.googlezip.net";
+
+}  // namespace
 
 DataReductionProxyDelegate::DataReductionProxyDelegate(
     DataReductionProxyConfig* config,
@@ -199,7 +204,18 @@ void DataReductionProxyDelegate::GetAlternativeProxy(
 bool DataReductionProxyDelegate::SupportsQUIC(
     const net::ProxyServer& proxy_server) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return IsQuicProxy(proxy_server);
+  // Enable QUIC for whitelisted proxies.
+  return params::IsQuicEnabledForNonCoreProxies() ||
+         proxy_server ==
+             net::ProxyServer(net::ProxyServer::SCHEME_HTTPS,
+                              net::HostPortPair(kDataReductionCoreProxy, 443));
+}
+
+void DataReductionProxyDelegate::RecordQuicProxyStatus(
+    QuicProxyStatus status) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.Quic.ProxyStatus", status,
+                            QUIC_PROXY_STATUS_BOUNDARY);
 }
 
 }  // namespace data_reduction_proxy
