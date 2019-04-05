@@ -196,25 +196,19 @@
   "N": {
     "arch": {
       "arm64": {
-	"filename": "arm64/N/android-cts-arm64-7.0_r29.zip",
-        "_origin": "aosp-nougat-cts-release@7.0_r29",
-        "unzip_dir": "arm64/N/7.0_r29/"
+        "filename": "arm64/N/android-cts-arm64-7.0_r30.zip",
+        "_origin": "aosp-nougat-cts-release@7.0_r30",
+        "unzip_dir": "arm64/N/7.0_r30/"
       },
       "x86": {
-        "filename": "x86/N/android-cts-x86-7.0_r29.zip",
-        "_origin": "aosp-nougat-cts-release@7.0_r29",
-        "unzip_dir": "x86/N/7.0_r29/"
+        "filename": "x86/N/android-cts-x86-7.0_r30.zip",
+        "_origin": "aosp-nougat-cts-release@7.0_r30",
+        "unzip_dir": "x86/N/7.0_r30/"
       }
     },
       "test_runs": [
       {
-        "apk": "android-cts/testcases/CtsWebkitTestCases.apk",
-        "excludes": [
-          {
-            "match": "android.webkit.cts.WebViewSslTest#testSecureServerRequiringClientCertDoesCancelRequest",
-            "_bug_id": "crbug.com/922400"
-          }
-        ]
+        "apk": "android-cts/testcases/CtsWebkitTestCases.apk"
       },
       {
         "apk": "android-cts/testcases/CtsWidgetTestCases.apk",
@@ -227,25 +221,19 @@
   "O": {
     "arch": {
       "arm64": {
-	"filename": "arm64/O/android-cts-arm64-8.0_r17.zip",
-        "_origin": "aosp-oreo-cts-release@8.0_r17",
-        "unzip_dir": "arm64/O/8.0_r17/"
+        "filename": "arm64/O/android-cts-arm64-8.0_r18.zip",
+        "_origin": "aosp-oreo-cts-release@8.0_r18",
+        "unzip_dir": "arm64/O/8.0_r18/"
       },
       "x86": {
-        "filename": "x86/O/android-cts-x86-8.0_r17.zip",
-        "_origin": "aosp-oreo-cts-release@8.0_r17",
-        "unzip_dir": "x86/O/8.0_r17/"
+        "filename": "x86/O/android-cts-x86-8.0_r18.zip",
+        "_origin": "aosp-oreo-cts-release@8.0_r18",
+        "unzip_dir": "x86/O/8.0_r18/"
       }
     },
       "test_runs": [
       {
-        "apk": "android-cts/testcases/CtsWebkitTestCases.apk",
-        "excludes": [
-          {
-            "match": "android.webkit.cts.WebViewSslTest#testSecureServerRequiringClientCertDoesCancelRequest",
-            "_bug_id": "crbug.com/922400"
-          }
-        ]
+        "apk": "android-cts/testcases/CtsWebkitTestCases.apk"
       },
       {
         "apk": "android-cts/testcases/CtsWebViewStartupApp.apk"
