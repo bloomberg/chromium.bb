@@ -2232,7 +2232,7 @@ void NetworkHandler::RequestIntercepted(
       info->is_navigation, std::move(info->is_download),
       std::move(info->redirect_url), std::move(auth_challenge),
       std::move(error_reason), std::move(status_code),
-      std::move(response_headers));
+      std::move(response_headers), std::move(info->renderer_request_id));
 }
 
 void NetworkHandler::SetNetworkConditions(

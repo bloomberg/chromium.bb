@@ -36,6 +36,7 @@ struct InterceptedRequestInfo {
   scoped_refptr<net::HttpResponseHeaders> response_headers;
   protocol::Maybe<bool> is_download;
   protocol::Maybe<protocol::String> redirect_url;
+  protocol::Maybe<protocol::String> renderer_request_id;
 };
 
 class DevToolsNetworkInterceptor {

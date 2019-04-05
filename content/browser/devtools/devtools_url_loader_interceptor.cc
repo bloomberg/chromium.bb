@@ -186,6 +186,7 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
                   const std::string& id,
                   const base::UnguessableToken& frame_token,
                   int32_t process_id,
+                  const base::Optional<std::string>& renderer_request_id,
                   std::unique_ptr<CreateLoaderParameters> create_loader_params,
                   bool is_download,
                   network::mojom::URLLoaderRequest loader_request,
@@ -330,6 +331,8 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
       pending_auth_callback_;
   TakeResponseBodyPipeCallback pending_response_body_pipe_callback_;
 
+  const base::Optional<std::string> renderer_request_id_;
+
   DISALLOW_COPY_AND_ASSIGN(InterceptionJob);
 };
 
@@ -348,6 +351,7 @@ class DevToolsURLLoaderInterceptor::Impl
   void CreateJob(const base::UnguessableToken& frame_token,
                  int32_t process_id,
                  bool is_download,
+                 const base::Optional<std::string>& renderer_request_id,
                  std::unique_ptr<CreateLoaderParameters> create_params,
                  network::mojom::URLLoaderRequest loader_request,
                  network::mojom::URLLoaderClientPtr client,
@@ -360,9 +364,10 @@ class DevToolsURLLoaderInterceptor::Impl
     std::string id = base::StringPrintf("interception-job-%d", ++last_id);
     // This class will manage its own life time to match the loader client.
     new InterceptionJob(this, std::move(id), frame_token, process_id,
-                        std::move(create_params), is_download,
-                        std::move(loader_request), std::move(client),
-                        std::move(target_factory), std::move(cookie_manager));
+                        renderer_request_id, std::move(create_params),
+                        is_download, std::move(loader_request),
+                        std::move(client), std::move(target_factory),
+                        std::move(cookie_manager));
   }
 
   void SetPatterns(std::vector<DevToolsNetworkInterceptor::Pattern> patterns,
@@ -532,10 +537,10 @@ void DevToolsURLLoaderFactoryProxy::CreateLoaderAndStart(
   target_factory_->Clone(MakeRequest(&factory_clone));
   network::mojom::CookieManagerPtr cookie_manager_clone;
   cookie_manager_->CloneInterface(mojo::MakeRequest(&cookie_manager_clone));
-  interceptor->CreateJob(frame_token_, process_id_, is_download_,
-                         std::move(creation_params), std::move(loader),
-                         std::move(client), std::move(factory_clone),
-                         std::move(cookie_manager_clone));
+  interceptor->CreateJob(
+      frame_token_, process_id_, is_download_, request.devtools_request_id,
+      std::move(creation_params), std::move(loader), std::move(client),
+      std::move(factory_clone), std::move(cookie_manager_clone));
 }
 
 void DevToolsURLLoaderFactoryProxy::StartOnIO(
@@ -666,6 +671,7 @@ InterceptionJob::InterceptionJob(
     const std::string& id,
     const base::UnguessableToken& frame_token,
     int process_id,
+    const base::Optional<std::string>& renderer_request_id,
     std::unique_ptr<CreateLoaderParameters> create_loader_params,
     bool is_download,
     network::mojom::URLLoaderRequest loader_request,
@@ -689,7 +695,8 @@ InterceptionJob::InterceptionJob(
       cookie_manager_(std::move(cookie_manager)),
       state_(kNotStarted),
       waiting_for_resolution_(false),
-      redirect_count_(0) {
+      redirect_count_(0),
+      renderer_request_id_(renderer_request_id) {
   loader_binding_.Bind(std::move(loader_request));
   loader_binding_.set_connection_error_handler(
       base::BindOnce(&InterceptionJob::Shutdown, base::Unretained(this)));
@@ -1163,6 +1170,8 @@ std::unique_ptr<InterceptedRequestInfo> InterceptionJob::BuildRequestInfo(
     const network::ResourceResponseHead* head) {
   auto result = std::make_unique<InterceptedRequestInfo>();
   result->interception_id = current_id_;
+  if (renderer_request_id_.has_value())
+    result->renderer_request_id = renderer_request_id_.value();
   result->frame_id = frame_token_;
   ResourceType resource_type =
       static_cast<ResourceType>(create_loader_params_->request.resource_type);
