@@ -187,23 +187,14 @@ class BuildStore(object):
       return self.cidb_conn.GetSlaveStatuses(master_build_identifier.cidb_id,
                                              None)
 
-  def GetBuildMessages(
-      self, build_identifier,
-      message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
-      message_subtype=constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION):
-    """Gets build messages for particular build_id.
+  def GetKilledChildBuilds(self, build_identifier):
+    """Get the child builds that were killed by the given master.
 
     Args:
-      build_identifier: The build to get messages for.
-      message_type: Get messages with the specific message_type (string) if
-        message_type is not None.
-      message_subtype: Get messages with the specific message_subtype (string)
-        if message_subtype is not None.
+      build_identifier: The master build to get children for.
 
     Returns:
-      A list of build message dictionaries, where each dictionary contains
-      keys build_id, build_config, builder_name, build_number, message_type,
-      message_subtype, message_value, timestamp, board.
+      A list of child buildbucket_ids of the build that were killed.
     """
     if not self.InitializeClients():
       raise BuildStoreException('BuildStore clients could not be initialized.')
@@ -211,15 +202,13 @@ class BuildStore(object):
       if build_identifier.buildbucket_id is not None:
         return self.bb_client.GetKilledChildBuilds(
             build_identifier.buildbucket_id)
-      else:
-        return []
     else:
       if build_identifier.cidb_id is not None:
-        return self.cidb_conn.GetBuildMessages(build_identifier.cidb_id,
-                                               message_type=message_type,
-                                               message_subtype=message_subtype)
-      else:
-        return []
+        return [int(message['message_value']) for message in
+                self.cidb_conn.GetBuildMessages(
+                    build_identifier.cidb_id,
+                    message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
+                    message_subtype=constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION)]
 
   def GetBuildHistory(
       self, build_config, num_results,
@@ -603,11 +592,11 @@ class FakeBuildStore(object):
   def GetSlaveStatuses(self, master_build_id, buildbucket_ids=None):
     return self.fake_cidb.GetSlaveStatuses(master_build_id, buildbucket_ids)
 
-  def GetBuildMessages(
-      self, build_identifier, message_type=None, message_subtype=None):
-    return self.fake_cidb.GetBuildMessages(build_identifier.cidb_id,
-                                           message_type=message_type,
-                                           message_subtype=message_subtype)
+  def GetKilledChildBuilds(self, build_identifier):
+    return [m['message_value'] for m in self.fake_cidb.GetBuildMessages(
+        build_identifier.cidb_id,
+        message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
+        message_subtype=constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION)]
 
   def InsertBuildMessage(
       self, build_id, message_type=constants.MESSAGE_TYPE_IGNORED_REASON,

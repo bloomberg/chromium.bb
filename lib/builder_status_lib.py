@@ -102,14 +102,13 @@ def GetSlavesAbortedBySelfDestructedMaster(master_build_identifier, buildstore):
   if not buildstore.AreClientsReady():
     return set()
 
-  messages = buildstore.GetBuildMessages(
+  slave_buildbucket_ids = buildstore.GetKilledChildBuilds(
       master_build_identifier)
   # tentative fix for crbug.com/890651
-  if not messages:
+  if not slave_buildbucket_ids:
     logging.warning('No build message retrieved for master_build_id=%s',
                     master_build_identifier.cidb_id)
     return set()
-  slave_buildbucket_ids = [long(m['message_value']) for m in messages]
   build_statuses = buildstore.GetBuildStatuses(
       buildbucket_ids=slave_buildbucket_ids)
   return set(b['build_config'] for b in build_statuses)
@@ -251,16 +250,11 @@ class BuilderStatusManager(object):
       # Builds without master_build_id can't be aborted by self-destruction.
       return False
 
-    build_messages = buildstore.GetBuildMessages(master_build_identifier)
-    build_messages = (
-        message for message in build_messages if message['message_value'] ==
-        str(buildbucket_id))
-    return any((
-        message['message_type'] ==
-        constants.MESSAGE_TYPE_IGNORED_REASON and
-        message['message_subtype'] ==
-        constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION) for
-               message in build_messages)
+    buildbucket_ids = buildstore.GetKilledChildBuilds(master_build_identifier)
+    # Both child_id and buildbucket_id can be str or int. Convert them both
+    # into int before comparison.
+    return any(child_id for child_id in buildbucket_ids
+               if int(child_id) == int(buildbucket_id))
 
 
 class SlaveBuilderStatus(object):

@@ -557,7 +557,7 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
 
     self.assertTrue(
         builder_status_lib.BuilderStatusManager.AbortedBySelfDestruction(
-            self.db, slave_id, self.master_build_id))
+            self.buildstore, slave_id, self.master_build_identifier))
 
   def testNotAbortedBySelfDestruction(self):
     """Test that aborts in CIDB are only flagged if they happened."""
@@ -577,7 +577,7 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
 
     self.assertFalse(
         builder_status_lib.BuilderStatusManager.AbortedBySelfDestruction(
-            self.db, slave_id, self.master_build_id))
+            self.buildstore, slave_id, self.master_build_identifier))
 
   def testAbortedBySelfDestructionOnBuildWithoutMaster(self):
     """AbortedBySelfDestruction returns False on builds without master."""

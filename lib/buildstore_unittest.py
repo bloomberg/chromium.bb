@@ -150,8 +150,8 @@ class TestBuildStore(cros_test_lib.MockTestCase):
         cidb_id=build_id, critical=True)
     self.assertEqual(build_id, 0)
 
-  def testGetBuildMessages(self):
-    """Tests the redirect for GetBuildMessages function."""
+  def testGetKilledChildBuilds(self):
+    """Tests the redirect for GetKilledChildBuilds function."""
     init = self.PatchObject(BuildStore, 'InitializeClients',
                             return_value=True)
     bs = BuildStore()
@@ -159,18 +159,17 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     build_identifier = buildstore.BuildIdentifier(cidb_id=1,
                                                   buildbucket_id=1234)
     # Test for buildbucket_ids.
-    bs.GetBuildMessages(build_identifier,
-                        message_type=constants.MESSAGE_TYPE_IGNORED_REASON)
+    bs.GetKilledChildBuilds(build_identifier)
     bs.cidb_conn.GetBuildMessages.assert_called_once_with(
         1, message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
         message_subtype=constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION)
     bs = BuildStore(_read_from_bb=True)
     bs.bb_client = mock.MagicMock()
-    bs.GetBuildMessages(build_identifier)
+    bs.GetKilledChildBuilds(build_identifier)
     bs.bb_client.GetKilledChildBuilds.assert_called_once_with(1234)
     init.return_value = False
     with self.assertRaises(buildstore.BuildStoreException):
-      bs.GetBuildMessages(build_identifier)
+      bs.GetKilledChildBuilds(build_identifier)
 
   def testInsertBuildMessage(self):
     """Tests the redirect for InsertBuildMessage function."""
