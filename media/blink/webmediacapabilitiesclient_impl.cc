@@ -120,9 +120,9 @@ void WebMediaCapabilitiesClientImpl::DecodingInfo(
 
     info->supported = info->smooth = info->power_efficient = true;
     info->content_decryption_module_access =
-        base::WrapUnique(WebContentDecryptionModuleAccessImpl::Create(
+        WebContentDecryptionModuleAccessImpl::Create(
             key_system_configuration->key_system, blink::WebSecurityOrigin(),
-            blink::WebMediaKeySystemConfiguration(), {}, nullptr));
+            blink::WebMediaKeySystemConfiguration(), {}, nullptr);
 
     callbacks->OnSuccess(std::move(info));
     return;

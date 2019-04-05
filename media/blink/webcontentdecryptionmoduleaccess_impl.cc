@@ -34,14 +34,14 @@ static void CreateCdm(
   client->CreateCdm(key_system, security_origin, cdm_config, std::move(result));
 }
 
-WebContentDecryptionModuleAccessImpl*
+std::unique_ptr<WebContentDecryptionModuleAccessImpl>
 WebContentDecryptionModuleAccessImpl::Create(
     const blink::WebString& key_system,
     const blink::WebSecurityOrigin& security_origin,
     const blink::WebMediaKeySystemConfiguration& configuration,
     const CdmConfig& cdm_config,
     const base::WeakPtr<WebEncryptedMediaClientImpl>& client) {
-  return new WebContentDecryptionModuleAccessImpl(
+  return std::make_unique<WebContentDecryptionModuleAccessImpl>(
       key_system, security_origin, configuration, cdm_config, client);
 }
 

@@ -127,7 +127,8 @@ class MediaKeySystemAccessInitializer final : public EncryptedMediaRequest {
     return supported_configurations_;
   }
   const SecurityOrigin* GetSecurityOrigin() const override;
-  void RequestSucceeded(WebContentDecryptionModuleAccess*) override;
+  void RequestSucceeded(
+      std::unique_ptr<WebContentDecryptionModuleAccess>) override;
   void RequestNotSupported(const WebString& error_message) override;
 
   ScriptPromise Promise() { return resolver_->Promise(); }
@@ -216,14 +217,14 @@ const SecurityOrigin* MediaKeySystemAccessInitializer::GetSecurityOrigin()
 }
 
 void MediaKeySystemAccessInitializer::RequestSucceeded(
-    WebContentDecryptionModuleAccess* access) {
+    std::unique_ptr<WebContentDecryptionModuleAccess> access) {
   DVLOG(3) << __func__;
 
   if (!IsExecutionContextValid())
     return;
 
   resolver_->Resolve(
-      MakeGarbageCollected<MediaKeySystemAccess>(base::WrapUnique(access)));
+      MakeGarbageCollected<MediaKeySystemAccess>(std::move(access)));
   resolver_.Clear();
 }
 
