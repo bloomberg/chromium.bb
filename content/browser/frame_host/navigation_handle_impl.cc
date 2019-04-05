@@ -123,7 +123,6 @@ NavigationHandleImpl::NavigationHandleImpl(
     NavigationRequest* navigation_request,
     const std::vector<GURL>& redirect_chain,
     int pending_nav_entry_id,
-    std::unique_ptr<NavigationUIData> navigation_ui_data,
     net::HttpRequestHeaders request_headers,
     const Referrer& sanitized_referrer)
     : navigation_request_(navigation_request),
@@ -134,14 +133,12 @@ NavigationHandleImpl::NavigationHandleImpl(
       subframe_entry_committed_(false),
       request_headers_(std::move(request_headers)),
       pending_nav_entry_id_(pending_nav_entry_id),
-      navigation_ui_data_(std::move(navigation_ui_data)),
       navigation_id_(CreateUniqueHandleID()),
       redirect_chain_(redirect_chain),
       reload_type_(ReloadType::NONE),
       restore_type_(RestoreType::NONE),
       navigation_type_(NAVIGATION_TYPE_UNKNOWN),
       is_same_process_(true),
-      throttle_runner_(this, this),
       weak_factory_(this) {
   const GURL& url = navigation_request_->common_params().url;
   TRACE_EVENT_ASYNC_BEGIN2("navigation", "NavigationHandle", this,
@@ -191,8 +188,6 @@ NavigationHandleImpl::NavigationHandleImpl(
 #if defined(OS_ANDROID)
   navigation_handle_proxy_ = std::make_unique<NavigationHandleProxy>(this);
 #endif
-
-  GetDelegate()->DidStartNavigation(this);
 
   if (IsInMainFrame()) {
     TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
@@ -303,7 +298,7 @@ ui::PageTransition NavigationHandleImpl::GetPageTransition() {
 }
 
 const NavigationUIData* NavigationHandleImpl::GetNavigationUIData() {
-  return navigation_ui_data_.get();
+  return navigation_request_->navigation_ui_data();
 }
 
 bool NavigationHandleImpl::IsExternalProtocol() {
@@ -409,26 +404,10 @@ net::IPEndPoint NavigationHandleImpl::GetSocketAddress() {
              : net::IPEndPoint();
 }
 
-void NavigationHandleImpl::Resume(NavigationThrottle* resuming_throttle) {
-  DCHECK(resuming_throttle);
-  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
-                               "Resume");
-  throttle_runner_.ResumeProcessingNavigationEvent(resuming_throttle);
-  // DO NOT ADD CODE AFTER THIS, as the NavigationHandle might have been deleted
-  // by the previous call.
-}
-
-void NavigationHandleImpl::CancelDeferredNavigation(
-    NavigationThrottle* cancelling_throttle,
-    NavigationThrottle::ThrottleCheckResult result) {
-  DCHECK(cancelling_throttle);
-  DCHECK_EQ(cancelling_throttle, throttle_runner_.GetDeferringThrottle());
-  CancelDeferredNavigationInternal(result);
-}
-
 void NavigationHandleImpl::RegisterThrottleForTesting(
     std::unique_ptr<NavigationThrottle> navigation_throttle) {
-  throttle_runner_.AddThrottle(std::move(navigation_throttle));
+  navigation_request_->RegisterThrottleForTesting(
+      std::move(navigation_throttle));
 }
 
 #if defined(OS_ANDROID)
@@ -439,7 +418,7 @@ NavigationHandleImpl::java_navigation_handle() {
 #endif
 
 bool NavigationHandleImpl::IsDeferredForTesting() {
-  return throttle_runner_.GetDeferringThrottle() != nullptr;
+  return navigation_request_->IsDeferredForTesting();
 }
 
 bool NavigationHandleImpl::WasStartedFromContextMenu() const {
@@ -497,7 +476,7 @@ const std::string& NavigationHandleImpl::GetHrefTranslate() {
 }
 
 void NavigationHandleImpl::CallResumeForTesting() {
-  throttle_runner_.CallResumeForTesting();
+  navigation_request_->CallResumeForTesting();
 }
 
 const base::Optional<url::Origin>& NavigationHandleImpl::GetInitiatorOrigin() {
@@ -550,41 +529,6 @@ NavigationHandleImpl::TakeAppCacheHandle() {
   return std::move(appcache_handle_);
 }
 
-void NavigationHandleImpl::WillStartRequest(
-    ThrottleChecksFinishedCallback callback) {
-  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
-                               "WillStartRequest");
-  // WillStartRequest should only be called once.
-  if (state() != NavigationRequest::INITIAL) {
-    navigation_request_->set_handle_state(NavigationRequest::CANCELING);
-    RunCompleteCallback(NavigationThrottle::CANCEL);
-    return;
-  }
-
-  navigation_request_->set_handle_state(
-      NavigationRequest::PROCESSING_WILL_START_REQUEST);
-  complete_callback_ = std::move(callback);
-
-  if (IsSelfReferentialURL()) {
-    navigation_request_->set_handle_state(NavigationRequest::CANCELING);
-    RunCompleteCallback(NavigationThrottle::CANCEL);
-    return;
-  }
-
-  throttle_runner_.RegisterNavigationThrottles();
-
-  // If the content/ embedder did not pass the NavigationUIData at the beginning
-  // of the navigation, ask for it now.
-  if (!navigation_ui_data_)
-    navigation_ui_data_ = GetDelegate()->GetNavigationUIData(this);
-
-  // Notify each throttle of the request.
-  throttle_runner_.ProcessNavigationEvent(
-      NavigationThrottleRunner::Event::WillStartRequest);
-  // DO NOT ADD CODE AFTER THIS, as the NavigationHandle might have been deleted
-  // by the previous call.
-}
-
 void NavigationHandleImpl::UpdateStateFollowingRedirect(
     const GURL& new_referrer_url,
     ThrottleChecksFinishedCallback callback) {
@@ -607,62 +551,12 @@ void NavigationHandleImpl::UpdateStateFollowingRedirect(
 
   navigation_request_->set_handle_state(
       NavigationRequest::PROCESSING_WILL_REDIRECT_REQUEST);
-  complete_callback_ = std::move(callback);
-}
 
-void NavigationHandleImpl::WillRedirectRequest(
-    const GURL& new_referrer_url,
-    RenderProcessHost* post_redirect_process,
-    ThrottleChecksFinishedCallback callback) {
-  TRACE_EVENT_ASYNC_STEP_INTO1("navigation", "NavigationHandle", this,
-                               "WillRedirectRequest", "url",
-                               GetURL().possibly_invalid_spec());
-  UpdateStateFollowingRedirect(new_referrer_url, std::move(callback));
-  navigation_request_->UpdateSiteURL(post_redirect_process);
-
-  if (IsSelfReferentialURL()) {
-    navigation_request_->set_handle_state(NavigationRequest::CANCELING);
-    RunCompleteCallback(NavigationThrottle::CANCEL);
-    return;
-  }
-
-  // Notify each throttle of the request.
-  throttle_runner_.ProcessNavigationEvent(
-      NavigationThrottleRunner::Event::WillRedirectRequest);
-  // DO NOT ADD CODE AFTER THIS, as the NavigationHandle might have been deleted
-  // by the previous call.
-}
-
-void NavigationHandleImpl::WillFailRequest(
-    ThrottleChecksFinishedCallback callback) {
-  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
-                               "WillFailRequest");
+#if defined(OS_ANDROID)
+  navigation_handle_proxy_->DidRedirect();
+#endif
 
   complete_callback_ = std::move(callback);
-  navigation_request_->set_handle_state(
-      NavigationRequest::PROCESSING_WILL_FAIL_REQUEST);
-
-  // Notify each throttle of the request.
-  throttle_runner_.ProcessNavigationEvent(
-      NavigationThrottleRunner::Event::WillFailRequest);
-  // DO NOT ADD CODE AFTER THIS, as the NavigationHandle might have been deleted
-  // by the previous call.
-}
-
-void NavigationHandleImpl::WillProcessResponse(
-    ThrottleChecksFinishedCallback callback) {
-  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
-                               "WillProcessResponse");
-
-  navigation_request_->set_handle_state(
-      NavigationRequest::PROCESSING_WILL_PROCESS_RESPONSE);
-  complete_callback_ = std::move(callback);
-
-  // Notify each throttle of the response.
-  throttle_runner_.ProcessNavigationEvent(
-      NavigationThrottleRunner::Event::WillProcessResponse);
-  // DO NOT ADD CODE AFTER THIS, as the NavigationHandle might have been deleted
-  // by the previous call.
 }
 
 void NavigationHandleImpl::ReadyToCommitNavigation(bool is_error) {
@@ -814,115 +708,6 @@ void NavigationHandleImpl::DidCommitNavigation(
   }
 }
 
-void NavigationHandleImpl::OnNavigationEventProcessed(
-    NavigationThrottleRunner::Event event,
-    NavigationThrottle::ThrottleCheckResult result) {
-  DCHECK_NE(NavigationThrottle::DEFER, result.action());
-  switch (event) {
-    case NavigationThrottleRunner::Event::WillStartRequest:
-      OnWillStartRequestProcessed(result);
-      return;
-    case NavigationThrottleRunner::Event::WillRedirectRequest:
-      OnWillRedirectRequestProcessed(result);
-      return;
-    case NavigationThrottleRunner::Event::WillFailRequest:
-      OnWillFailRequestProcessed(result);
-      return;
-    case NavigationThrottleRunner::Event::WillProcessResponse:
-      OnWillProcessResponseProcessed(result);
-      return;
-    default:
-      NOTREACHED();
-  }
-  NOTREACHED();
-}
-
-void NavigationHandleImpl::OnWillStartRequestProcessed(
-    NavigationThrottle::ThrottleCheckResult result) {
-  DCHECK_EQ(NavigationRequest::PROCESSING_WILL_START_REQUEST, state());
-  DCHECK_NE(NavigationThrottle::BLOCK_RESPONSE, result.action());
-  if (result.action() == NavigationThrottle::PROCEED) {
-    navigation_request_->set_handle_state(
-        NavigationRequest::WILL_START_REQUEST);
-  } else {
-    navigation_request_->set_handle_state(NavigationRequest::CANCELING);
-  }
-  RunCompleteCallback(result);
-}
-
-void NavigationHandleImpl::OnWillRedirectRequestProcessed(
-    NavigationThrottle::ThrottleCheckResult result) {
-  DCHECK_EQ(NavigationRequest::PROCESSING_WILL_REDIRECT_REQUEST, state());
-  DCHECK_NE(NavigationThrottle::BLOCK_RESPONSE, result.action());
-  if (result.action() == NavigationThrottle::PROCEED) {
-    navigation_request_->set_handle_state(
-        NavigationRequest::WILL_REDIRECT_REQUEST);
-
-#if defined(OS_ANDROID)
-    navigation_handle_proxy_->DidRedirect();
-#endif
-
-    // Notify the delegate that a redirect was encountered and will be followed.
-    if (GetDelegate())
-      GetDelegate()->DidRedirectNavigation(this);
-  } else {
-    navigation_request_->set_handle_state(NavigationRequest::CANCELING);
-  }
-  RunCompleteCallback(result);
-}
-
-void NavigationHandleImpl::OnWillFailRequestProcessed(
-    NavigationThrottle::ThrottleCheckResult result) {
-  DCHECK_EQ(NavigationRequest::PROCESSING_WILL_FAIL_REQUEST, state());
-  DCHECK_NE(NavigationThrottle::BLOCK_RESPONSE, result.action());
-  if (result.action() == NavigationThrottle::PROCEED) {
-    navigation_request_->set_handle_state(NavigationRequest::WILL_FAIL_REQUEST);
-    result = NavigationThrottle::ThrottleCheckResult(
-        NavigationThrottle::PROCEED, net_error_code_);
-  } else {
-    navigation_request_->set_handle_state(NavigationRequest::CANCELING);
-  }
-  RunCompleteCallback(result);
-}
-
-void NavigationHandleImpl::OnWillProcessResponseProcessed(
-    NavigationThrottle::ThrottleCheckResult result) {
-  DCHECK_EQ(NavigationRequest::PROCESSING_WILL_PROCESS_RESPONSE, state());
-  DCHECK_NE(NavigationThrottle::BLOCK_REQUEST, result.action());
-  DCHECK_NE(NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE, result.action());
-  if (result.action() == NavigationThrottle::PROCEED) {
-    navigation_request_->set_handle_state(
-        NavigationRequest::WILL_PROCESS_RESPONSE);
-    // If the navigation is done processing the response, then it's ready to
-    // commit. Inform observers that the navigation is now ready to commit,
-    // unless it is not set to commit (204/205s/downloads).
-    if (GetRenderFrameHost())
-      ReadyToCommitNavigation(false);
-  } else {
-    navigation_request_->set_handle_state(NavigationRequest::CANCELING);
-  }
-  RunCompleteCallback(result);
-}
-
-void NavigationHandleImpl::CancelDeferredNavigationInternal(
-    NavigationThrottle::ThrottleCheckResult result) {
-  DCHECK(state() == NavigationRequest::PROCESSING_WILL_START_REQUEST ||
-         state() == NavigationRequest::PROCESSING_WILL_REDIRECT_REQUEST ||
-         state() == NavigationRequest::PROCESSING_WILL_FAIL_REQUEST ||
-         state() == NavigationRequest::PROCESSING_WILL_PROCESS_RESPONSE);
-  DCHECK(result.action() == NavigationThrottle::CANCEL_AND_IGNORE ||
-         result.action() == NavigationThrottle::CANCEL ||
-         result.action() == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE);
-  DCHECK(result.action() != NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE ||
-         state() == NavigationRequest::PROCESSING_WILL_START_REQUEST ||
-         state() == NavigationRequest::PROCESSING_WILL_REDIRECT_REQUEST);
-
-  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
-                               "CancelDeferredNavigation");
-  navigation_request_->set_handle_state(NavigationRequest::CANCELING);
-  RunCompleteCallback(result);
-}
-
 void NavigationHandleImpl::RunCompleteCallback(
     NavigationThrottle::ThrottleCheckResult result) {
   DCHECK(result.action() != NavigationThrottle::DEFER);
@@ -938,37 +723,6 @@ void NavigationHandleImpl::RunCompleteCallback(
 
   // No code after running the callback, as it might have resulted in our
   // destruction.
-}
-
-bool NavigationHandleImpl::IsSelfReferentialURL() {
-  // about: URLs should be exempted since they are reserved for other purposes
-  // and cannot be the source of infinite recursion. See
-  // https://crbug.com/341858 .
-  if (GetURL().SchemeIs("about"))
-    return false;
-
-  // Browser-triggered navigations should be exempted.
-  if (navigation_request_->browser_initiated())
-    return false;
-
-  // Some sites rely on constructing frame hierarchies where frames are loaded
-  // via POSTs with the same URLs, so exempt POST requests.  See
-  // https://crbug.com/710008.
-  if (navigation_request_->common_params().method == "POST")
-    return false;
-
-  // We allow one level of self-reference because some sites depend on that,
-  // but we don't allow more than one.
-  bool found_self_reference = false;
-  for (const FrameTreeNode* node = frame_tree_node()->parent(); node;
-       node = node->parent()) {
-    if (node->current_url().EqualsIgnoringRef(GetURL())) {
-      if (found_self_reference)
-        return true;
-      found_self_reference = true;
-    }
-  }
-  return false;
 }
 
 void NavigationHandleImpl::RenderProcessBlockedStateChanged(bool blocked) {

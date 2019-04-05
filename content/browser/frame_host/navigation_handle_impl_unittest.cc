@@ -77,11 +77,9 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
     RenderViewHostImplTestHarness::TearDown();
   }
 
-  void Resume() { test_handle()->throttle_runner_.CallResumeForTesting(); }
-
   void CancelDeferredNavigation(
       NavigationThrottle::ThrottleCheckResult result) {
-    test_handle()->CancelDeferredNavigationInternal(result);
+    request_->CancelDeferredNavigationInternal(result);
   }
 
   // Helper function to call WillStartRequest on |handle|. If this function
@@ -93,7 +91,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
 
     // It's safe to use base::Unretained since the NavigationHandle is owned by
     // the NavigationHandleImplTest.
-    test_handle()->WillStartRequest(
+    request_->WillStartRequest(
         base::Bind(&NavigationHandleImplTest::UpdateThrottleCheckResult,
                    base::Unretained(this)));
   }
@@ -109,7 +107,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
 
     // It's safe to use base::Unretained since the NavigationHandle is owned by
     // the NavigationHandleImplTest.
-    test_handle()->WillRedirectRequest(
+    request_->WillRedirectRequest(
         GURL(), nullptr,
         base::Bind(&NavigationHandleImplTest::UpdateThrottleCheckResult,
                    base::Unretained(this)));
@@ -127,7 +125,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
 
     // It's safe to use base::Unretained since the NavigationHandle is owned by
     // the NavigationHandleImplTest.
-    test_handle()->WillFailRequest(
+    request_->WillFailRequest(
         base::Bind(&NavigationHandleImplTest::UpdateThrottleCheckResult,
                    base::Unretained(this)));
   }
@@ -145,7 +143,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
     // by the NavigationHandleImplTest. The ConnectionInfo is different from
     // that sent to WillRedirectRequest to verify that it's correctly plumbed
     // in both cases.
-    test_handle()->WillProcessResponse(
+    request_->WillProcessResponse(
         base::Bind(&NavigationHandleImplTest::UpdateThrottleCheckResult,
                    base::Unretained(this)));
   }
@@ -220,6 +218,8 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
     return test_throttle;
   }
 
+  // TODO(zetamoo): Use NavigationSimulator instead of creating
+  // NavigationRequest and NavigationHandleImpl.
   void CreateNavigationHandle() {
     scoped_refptr<FrameNavigationEntry> frame_entry(new FrameNavigationEntry());
     request_ = NavigationRequest::CreateBrowserInitiated(
