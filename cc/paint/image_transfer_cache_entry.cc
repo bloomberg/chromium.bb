@@ -155,7 +155,7 @@ bool ServiceImageTransferCacheEntry::BuildFromDecodedData(
   size_ = image_info.computeByteSize(row_bytes);
   if (size_ == SIZE_MAX)
     return false;
-  DCHECK_EQ(size_, decoded_image.size());
+  DCHECK_LE(size_, decoded_image.size());
 
   uint32_t width;
   uint32_t height;

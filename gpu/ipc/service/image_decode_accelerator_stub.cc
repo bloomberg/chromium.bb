@@ -28,9 +28,9 @@
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
-#include "gpu/ipc/service/image_decode_accelerator_worker.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/gfx/color_space.h"
 
 namespace gpu {
@@ -143,7 +143,7 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
   }
 
   DCHECK(!pending_completed_decodes_.empty());
-  std::unique_ptr<CompletedDecode> completed_decode =
+  std::unique_ptr<ImageDecodeAcceleratorWorker::DecodeResult> completed_decode =
       std::move(pending_completed_decodes_.front());
 
   // Gain access to the transfer cache through the GpuChannelManager's
@@ -201,9 +201,8 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
           ServiceDiscardableHandle(std::move(handle_buffer),
                                    params.discardable_handle_shm_offset,
                                    params.discardable_handle_shm_id),
-          shared_context_state->gr_context(),
-          base::make_span(completed_decode->output),
-          completed_decode->row_bytes, completed_decode->image_info,
+          shared_context_state->gr_context(), completed_decode->GetData(),
+          completed_decode->GetStride(), completed_decode->GetImageInfo(),
           params.needs_mips, params.target_color_space.ToSkColorSpace())) {
     DLOG(ERROR) << "Could not create and insert the transfer cache entry";
     OnError();
@@ -223,42 +222,33 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
     channel_->scheduler()->DisableSequence(sequence_);
 }
 
-ImageDecodeAcceleratorStub::CompletedDecode::CompletedDecode(
-    std::vector<uint8_t> output,
-    size_t row_bytes,
-    SkImageInfo image_info)
-    : output(std::move(output)), row_bytes(row_bytes), image_info(image_info) {}
-
-ImageDecodeAcceleratorStub::CompletedDecode::~CompletedDecode() = default;
-
 void ImageDecodeAcceleratorStub::OnDecodeCompleted(
     gfx::Size expected_output_size,
-    std::vector<uint8_t> output,
-    size_t row_bytes,
-    SkImageInfo image_info) {
+    std::unique_ptr<ImageDecodeAcceleratorWorker::DecodeResult> result) {
   base::AutoLock lock(lock_);
   if (!channel_ || destroying_channel_) {
     // The channel is no longer available, so don't do anything.
     return;
   }
 
-  if (output.empty()) {
+  if (!result) {
     DLOG(ERROR) << "The decode failed";
     OnError();
     return;
   }
 
   // Some sanity checks on the output of the decoder.
+  const SkImageInfo image_info = result->GetImageInfo();
   DCHECK_EQ(expected_output_size.width(), image_info.width());
   DCHECK_EQ(expected_output_size.height(), image_info.height());
   DCHECK_NE(0u, image_info.minRowBytes());
-  DCHECK_GE(row_bytes, image_info.minRowBytes());
-  DCHECK_EQ(output.size(), image_info.computeByteSize(row_bytes));
+  DCHECK_GE(result->GetStride(), image_info.minRowBytes());
+  DCHECK_GE(result->GetData().size(),
+            image_info.computeByteSize(result->GetStride()));
 
   // The decode is ready to be processed: add it to |pending_completed_decodes_|
   // so that ProcessCompletedDecode() can pick it up.
-  pending_completed_decodes_.push(std::make_unique<CompletedDecode>(
-      std::move(output), row_bytes, image_info));
+  pending_completed_decodes_.push(std::move(result));
 
   // We only need to enable the sequence when the number of pending completed
   // decodes is 1. If there are more, the sequence should already be enabled.

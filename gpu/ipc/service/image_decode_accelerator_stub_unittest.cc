@@ -5,12 +5,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/containers/queue.h"
+#include "base/containers/span.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -81,6 +83,32 @@ class MockImageDecodeAcceleratorWorker : public ImageDecodeAcceleratorWorker {
  public:
   MockImageDecodeAcceleratorWorker() {}
 
+  class DecodeResult : public ImageDecodeAcceleratorWorker::DecodeResult {
+   public:
+    DecodeResult(std::vector<uint8_t> decoded_image,
+                 size_t stride,
+                 const SkImageInfo& image_info)
+        : decoded_image_(std::move(decoded_image)),
+          stride_(stride),
+          image_info_(image_info) {}
+
+    ~DecodeResult() override {}
+
+    base::span<const uint8_t> GetData() const override {
+      return base::make_span<const uint8_t>(decoded_image_.data(),
+                                            decoded_image_.size());
+    }
+
+    size_t GetStride() const override { return stride_; }
+
+    SkImageInfo GetImageInfo() const override { return image_info_; }
+
+   private:
+    const std::vector<uint8_t> decoded_image_;
+    const size_t stride_ = 0;
+    const SkImageInfo image_info_;
+  };
+
   void Decode(std::vector<uint8_t> encoded_data,
               const gfx::Size& output_size,
               CompletedDecodeCB decode_cb) {
@@ -100,13 +128,13 @@ class MockImageDecodeAcceleratorWorker : public ImageDecodeAcceleratorWorker {
       rgba_bytes *= next_decode.output_size.height();
       std::vector<uint8_t> rgba_output(rgba_bytes.ValueOrDie(), 0u);
       std::move(next_decode.decode_cb)
-          .Run(std::move(rgba_output), row_bytes.ValueOrDie(),
-               SkImageInfo::Make(next_decode.output_size.width(),
-                                 next_decode.output_size.height(),
-                                 kRGBA_8888_SkColorType, kOpaque_SkAlphaType));
+          .Run(std::make_unique<DecodeResult>(
+              std::move(rgba_output), row_bytes.ValueOrDie(),
+              SkImageInfo::Make(next_decode.output_size.width(),
+                                next_decode.output_size.height(),
+                                kRGBA_8888_SkColorType, kOpaque_SkAlphaType)));
     } else {
-      std::move(next_decode.decode_cb)
-          .Run(std::vector<uint8_t>(), 0u, SkImageInfo());
+      std::move(next_decode.decode_cb).Run(nullptr);
     }
   }
 
