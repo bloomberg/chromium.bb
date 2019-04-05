@@ -503,7 +503,6 @@ test("browser_tests") {
       "//ui/file_manager/video_player",
       "//third_party/polymer/v1_0/components-chromium/",
       "$root_gen_dir/ui/file_manager/file_manager/",
-      "$root_gen_dir/ui/login/login_resources.pak",
       "$root_out_dir/chromevox_test_data/",
       "$root_out_dir/content_shell.pak",
       "$root_out_dir/resources/chromeos/",
