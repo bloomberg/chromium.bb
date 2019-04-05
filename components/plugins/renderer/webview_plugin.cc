@@ -370,8 +370,10 @@ void WebViewPlugin::WebViewHelper::DidClearWindowObject() {
   v8::Context::Scope context_scope(context);
   v8::Local<v8::Object> global = context->Global();
 
-  global->Set(gin::StringToV8(isolate, "plugin"),
-              plugin_->delegate_->GetV8Handle(isolate));
+  global
+      ->Set(context, gin::StringToV8(isolate, "plugin"),
+            plugin_->delegate_->GetV8Handle(isolate))
+      .Check();
 }
 
 void WebViewPlugin::WebViewHelper::FrameDetached(DetachType type) {
