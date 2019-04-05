@@ -35,7 +35,6 @@ class SiteSuggestionsCoordinator {
             new PropertyModel.WritableIntPropertyKey();
 
     private SiteSuggestionsMediator mMediator;
-    private SiteSuggestionsAdapter mAdapterDelegate;
 
     SiteSuggestionsCoordinator(View parentView, Profile profile,
             SuggestionsNavigationDelegate navigationDelegate, ContextMenuManager contextMenuManager,
@@ -57,13 +56,13 @@ class SiteSuggestionsCoordinator {
         LinearLayoutManager layoutManager = new SiteSuggestionsLayoutManager(context);
         RecyclerView recyclerView =
                 suggestionsView.findViewById(R.id.most_likely_launcher_recycler);
-        mAdapterDelegate = new SiteSuggestionsAdapter(model, iconGenerator, navigationDelegate,
-                contextMenuManager, layoutManager,
+        SiteSuggestionsAdapter adapterDelegate = new SiteSuggestionsAdapter(model, iconGenerator,
+                navigationDelegate, contextMenuManager, layoutManager,
                 suggestionsView.findViewById(R.id.most_likely_web_title_text));
 
         RecyclerViewAdapter<SiteSuggestionsViewHolderFactory.SiteSuggestionsViewHolder, PropertyKey>
                 adapter = new RecyclerViewAdapter<>(
-                        mAdapterDelegate, new SiteSuggestionsViewHolderFactory());
+                        adapterDelegate, new SiteSuggestionsViewHolderFactory());
 
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
@@ -73,6 +72,5 @@ class SiteSuggestionsCoordinator {
 
     public void destroy() {
         mMediator.destroy();
-        mAdapterDelegate.destroy();
     }
 }
