@@ -1101,6 +1101,19 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           이 정책이 설정되지 않아도 더 구체적인 정책 사용에 영향을 주지 않습니다.</translation>
 <translation id="2987155890997901449">ARC 사용</translation>
 <translation id="2987227569419001736">Web Bluetooth API 사용 조정</translation>
+<translation id="3011301228198307065"><ph name="PRODUCT_NAME" />의 기본 홈페이지 URL을 구성하며 사용자가 변경하지 못하게 차단합니다.
+
+          홈페이지는 홈 버튼을 통해 열리는 페이지입니다. 시작 시 열리는 페이지는 RestoreOnStartup 정책으로 제어됩니다.
+
+          홈페이지 유형은 여기에 지정하는 URL로 설정하거나 새 탭 페이지로 설정할 수 있습니다. 새 탭 페이지를 선택하는 경우 이 정책은 효력을 갖지 않습니다.
+
+          이 설정이 사용되면 사용자는 <ph name="PRODUCT_NAME" />에서 홈페이지 URL을 변경할 수 없지만 새 탭 페이지를 홈페이지로 선택할 수는 있습니다.
+
+          이 정책이 설정되지 않았고 HomepageIsNewTabPage도 설정되지 않은 경우 사용자가 홈페이지를 스스로 선택할 수 있습니다.
+
+          URL에는 표준 스키마가 있어야 합니다(예: 'http://example.com' 또는 'https://example.com').
+
+          이 정책은 <ph name="MS_AD_NAME" /> 도메인에 참여하는 Windows 인스턴스 또는 기기 관리에 등록된 Windows 10 Pro/Enterprise 인스턴트에서만 사용할 수 있습니다.</translation>
 <translation id="3016255526521614822"><ph name="PRODUCT_OS_NAME" /> 잠금 화면에서 사용 설정된 메모 앱을 허용 목록에 추가</translation>
 <translation id="3021562480854470924">허용된 주요 롤백의 수</translation>
 <translation id="3023572080620427845">대체 브라우저에서 로드할 URL이 포함된 XML 파일의 URL입니다.</translation>

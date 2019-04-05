@@ -170,7 +170,7 @@
 <translation id="1221024147024329929">PKCS #1 MD2 with RSA 暗号化</translation>
 <translation id="1221825588892235038">選択したコンテンツのみ</translation>
 <translation id="1223853788495130632">この設定には管理者が特定の値を推奨しています。</translation>
-<translation id="1224275271335624810">最高速</translation>
+<translation id="1224275271335624810">最も速い</translation>
 <translation id="1225177025209879837">リクエストを処理しています...</translation>
 <translation id="1227507814927581609">「<ph name="DEVICE_NAME" />」への接続中に、認証に失敗しました。</translation>
 <translation id="1231733316453485619">同期を有効にしますか？</translation>
@@ -381,7 +381,7 @@
 <translation id="1554390798506296774"><ph name="HOST" /> でサンドボックスの無効化プラグインを常に許可する</translation>
 <translation id="1556189134700913550">すべてに適用</translation>
 <translation id="1556537182262721003">拡張機能ディレクトリをプロフィールに移動できませんでした。</translation>
-<translation id="155865706765934889">トラックパッド</translation>
+<translation id="155865706765934889">タッチパッド</translation>
 <translation id="1564414980088536597">この画像は使用できません。別の画像を選択してください。</translation>
 <translation id="1566049601598938765">ウェブサイト</translation>
 <translation id="1567387640189251553">前回のパスワード入力時以降に別のキーボードが接続されました。キー入力が読み取られる可能性があります。</translation>
@@ -1395,7 +1395,7 @@
 <translation id="3045447014237878114">このサイトで複数のファイルが自動的にダウンロードされました</translation>
 <translation id="3046910703532196514">ウェブページ、完全</translation>
 <translation id="304747341537320566">読み上げエンジン</translation>
-<translation id="3047644958362961983">アシスタントで発生した問題を詳しく把握するために、情報の提供をお願いいたします。ご提供いただいた情報は最大 90 日間保存され、エンジニアリングとフィードバックの担当者のみが閲覧します。</translation>
+<translation id="3047644958362961983">アシスタントの事象を詳しく把握できるよう、情報の提供をお願いいたします。ご提供いただいた情報の保存期間は最大 90 日間です。情報へのアクセスは、エンジニアリングやフィードバックの担当者に制限されます。</translation>
 <translation id="3053013834507634016">証明書キーの用途</translation>
 <translation id="3057861065630527966">写真や動画をバックアップします</translation>
 <translation id="3058498974290601450">同期は設定でいつでもオンにできます。</translation>
@@ -2594,7 +2594,7 @@
 <translation id="4892969127351273348">「<ph name="APP_NAME" />」で開くことができません</translation>
 <translation id="4893336867552636863">このデバイスから閲覧データが完全に削除されます。</translation>
 <translation id="4893522937062257019">ロック画面</translation>
-<translation id="4898011734382862273">証明書「<ph name="CERTIFICATE_NAME" />」は認証局を表しています</translation>
+<translation id="4898011734382862273">証明書にある「<ph name="CERTIFICATE_NAME" />」は認証局を表しています</translation>
 <translation id="489985760463306091">有害なソフトウェアの削除を完了するには、パソコンを再起動してください</translation>
 <translation id="4900392736118574277">起動ページが <ph name="URL" /> に変更されました。</translation>
 <translation id="490074449735753175">ウェブ サービスを使用してスペル ミスの解決を支援する</translation>
@@ -2609,7 +2609,7 @@
 <translation id="491691592645955587">安全なブラウザをぜひご利用ください</translation>
 <translation id="4917385247580444890">強い</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> が拡張機能「<ph name="EXTENSION_NAME" />」との通信をリクエストしています</translation>
-<translation id="4918086044614829423">承諾</translation>
+<translation id="4918086044614829423">同意する</translation>
 <translation id="4918221908152712722"><ph name="APP_NAME" /> をインストール（ダウンロードは不要です）</translation>
 <translation id="4920887663447894854">以下のサイトは、このページ内であなたの現在地を追跡できないようブロックされています:</translation>
 <translation id="4922897038695506037"><ph name="URL_HOST" /> が追加の許可をリクエストしています。</translation>
@@ -3369,7 +3369,7 @@
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> - USB デバイスに接続されています</translation>
 <translation id="6029027682598229313">Linux のインストールが完了しました。</translation>
 <translation id="6029292188939175871">[<ph name="FINGERPRINT_NAME" />] を削除するボタン</translation>
-<translation id="6029587122245504742">最も低速</translation>
+<translation id="6029587122245504742">最も遅い</translation>
 <translation id="6032912588568283682">ファイル システム</translation>
 <translation id="6038929619733116134">煩わしい広告や誤解を招く広告が表示されるサイトの場合にブロックします</translation>
 <translation id="6039651071822577588">ネットワーク プロパティ辞書が不正です</translation>
@@ -3471,7 +3471,7 @@
 <translation id="6163363155248589649">標準(&amp;N)</translation>
 <translation id="6163522313638838258">すべてを展開...</translation>
 <translation id="6164005077879661055">この監視対象ユーザーを削除すると、このユーザーに関連付けられたすべてのファイルとローカル データも完全に削除されます。この監視対象ユーザーがアクセスしたウェブサイトやこのユーザーの設定は引き続き、管理者が <ph name="MANAGEMENT_URL" /> で見ることができます。</translation>
-<translation id="6165508094623778733">詳しく見る</translation>
+<translation id="6165508094623778733">詳細</translation>
 <translation id="6166185671393271715">Chrome にパスワードをインポート</translation>
 <translation id="6169040057125497443">マイクを確認してください。</translation>
 <translation id="6169666352732958425">デスクトップをキャストできません。</translation>
@@ -3842,7 +3842,7 @@
 <translation id="6732900235521116609">ショートカットの削除はできません</translation>
 <translation id="6735304988756581115">Cookie と他のサイトのデータを表示...</translation>
 <translation id="6736045498964449756">パスワードが一致しません。</translation>
-<translation id="6736243959894955139">住所</translation>
+<translation id="6736243959894955139">アドレス</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6739923123728562974">デスクトップ ショートカットを表示</translation>
 <translation id="6740234557573873150"><ph name="FILE_NAME" /> を一時停止しました</translation>
@@ -3853,7 +3853,7 @@
 <translation id="6748217015615267851">レンダラ: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">続行した場合、同期済みのデータと設定のみが復元され、ローカルデータはすべて失われます。</translation>
 <translation id="6748775883310276718">シングルアプリ キオスク</translation>
-<translation id="6751256176799620176">フォルダを 1 個選択しました</translation>
+<translation id="6751256176799620176">1 個のフォルダを選択しました</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" />（シークレット モード）</translation>
 <translation id="6757101664402245801">URL がコピーされました</translation>
 <translation id="6758056191028427665">アンケートにご協力ください。</translation>

@@ -224,6 +224,7 @@
 <translation id="2593272815202181319">等宽</translation>
 <translation id="2610239185026711824">建议一个密码</translation>
 <translation id="2612676031748830579">卡号</translation>
+<translation id="2613747923081026172">创建群组</translation>
 <translation id="2621115761605608342">允许特定网站运行 JavaScript。</translation>
 <translation id="2625189173221582860">已复制密码</translation>
 <translation id="2631006050119455616">已节省</translation>
@@ -884,6 +885,7 @@
 <translation id="7473891865547856676">不，谢谢</translation>
 <translation id="7475192538862203634">如果您频繁遇到此问题，请尝试按这些<ph name="BEGIN_LINK" />建议<ph name="END_LINK" />操作。</translation>
 <translation id="7475688122056506577">找不到 SD 卡。您的某些文件可能会丢失。</translation>
+<translation id="7479104141328977413">标签页管理</translation>
 <translation id="7481312909269577407">前进</translation>
 <translation id="7493994139787901920"><ph name="VERSION" />（上次更新时间：<ph name="TIME_SINCE_UPDATE" />）</translation>
 <translation id="7494879913343971937">显示密码</translation>

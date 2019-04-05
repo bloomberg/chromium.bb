@@ -1074,6 +1074,19 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
           Når denne regelen ikke er angitt, påvirkes ikke funksjonaliteten til de mer spesifikke reglene.</translation>
 <translation id="2987155890997901449">Slå på ARC</translation>
 <translation id="2987227569419001736">Kontrollér bruken av Web Bluetooth API</translation>
+<translation id="3011301228198307065">Konfigurerer nettadressen for startsiden som brukes som standard i <ph name="PRODUCT_NAME" />, og forhindrer at brukerne kan endre den.
+
+          Startsiden er siden som åpnes med hjemknappen. Hvilke sider som åpnes ved oppstart, kontrolleres av RestoreOnStartup-reglene.
+
+          Typen startside kan angis som enten en nettadresse du spesifiserer her, eller siden for nye faner. Hvis du velger å bruke siden for nye faner, har ikke denne regelen noen virkning.
+
+          Hvis du slår på denne innstillingen, kan ikke brukerne endre nettadressen for startsiden i <ph name="PRODUCT_NAME" />, men de kan fortsatt velge å bruke siden for nye faner som startside.
+
+          Hvis du ikke angir denne regelen, kan brukerne velge startside selv – såfremt ikke HomepageIsNewTabPage også er angitt.
+
+          Nettadressen må være på standardformat, f.eks. «http://example.com» eller «https://example.com».
+
+          Denne regelen er bare tilgjengelig på Windows-forekomster som er tilknyttet <ph name="MS_AD_NAME" />-domener, eller Windows 10 Pro- eller Enterprise-forekomster som er registrert for enhetsadministrering.</translation>
 <translation id="3016255526521614822">Godkjenn notatapper for å tillate dem på låseskjermen for <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Antall milepæler rollback er tillatt for</translation>
 <translation id="3023572080620427845">Nettadressen til en XML-fil med nettadresser som skal lastes inn i en alternativ nettleser.</translation>

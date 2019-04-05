@@ -1107,6 +1107,19 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
           Kui reegel on määramata, ei mõjuta see täpsemate reeglite toimimist.</translation>
 <translation id="2987155890997901449">ARC lubamine</translation>
 <translation id="2987227569419001736">Web Bluetooth API kasutuse kontrollimine</translation>
+<translation id="3011301228198307065">Seadistab rakenduse <ph name="PRODUCT_NAME" /> avalehe vaike-URL-i ja keelab kasutajatel selle muutmise.
+
+          Avaleht on leht, mis avaneb nupu Avaleht vajutamisel. Käivitamisel avatavaid lehti juhivad reeglid RestoreOnStartup.
+
+          Avalehe tüübiks saab seadistada siin määratud URL-i või uue vahelehe. Kui valite uue vahelehe, siis seda reeglit ei jõustata.
+
+          Kui lubate selle seade, ei saa kasutajad rakenduses <ph name="PRODUCT_NAME" /> muuta avalehe URL-i, kuid nad saavad siiski avaleheks valida uue vahelehe.
+
+          Kui seda reeglit ei määrata, saab kasutaja ise valida oma avalehe juhul, kui ka reegel HomepageIsNewTabPage on määramata.
+
+          URL peab olema standardskeemiga, nt „http://example.com” või „https://example.com”.
+
+          Reegel on saadaval ainult Windowsi eksemplarides, mis on liidetud domeeniga <ph name="MS_AD_NAME" />, ja Windows 10 Pro või Enterprise'i eksemplarides, mis on registreeritud seadmehalduse teenuses.</translation>
 <translation id="3016255526521614822">Lisage lubatud rakenduste loendisse märkmete tegemise rakendused, mida <ph name="PRODUCT_OS_NAME" /> võib lukustuskuval näidata</translation>
 <translation id="3021562480854470924">Tagasiminekuks lubatud eelmiste versioonide arv</translation>
 <translation id="3023572080620427845">Alternatiivses brauseris laaditavaid URL-e sisaldava XML-faili URL.</translation>

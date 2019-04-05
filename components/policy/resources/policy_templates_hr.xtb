@@ -1067,6 +1067,19 @@
           Ako se to pravilo ne postavi, ponašanje detaljnijih pravila ostat će nepromijenjeno.</translation>
 <translation id="2987155890997901449">Omogući ARC</translation>
 <translation id="2987227569419001736">Upravljanje upotrebom API-ja Web Bluetooth</translation>
+<translation id="3011301228198307065">Konfigurira URL zadane početne stranice u pregledniku <ph name="PRODUCT_NAME" /> i korisnicima onemogućuje da ga promijene.
+
+          Početna je stranica ona koja se otvara gumbom početnog zaslona. Stranicama koje se otvaraju prilikom pokretanja upravljaju pravila RestoreOnStartup.
+
+          Za vrstu početne stranice možete postaviti URL koji navedete ovdje ili web-stranicu nove kartice. Ako odaberete web-stranicu nove kartice, ovo se pravilo ne primjenjuje.
+
+          Ako omogućite tu postavku, korisnici neće moći promijeniti URL početne stranice u pregledniku <ph name="PRODUCT_NAME" />, ali će kao početnu stranicu moći odabrati web-stranicu nove kartice.
+
+          Ako se to pravilo ne postavi, korisnik će moći samostalno odabrati početnu stranicu u slučaju da se ne postavi ni pravilo HomepageIsNewTabPage.
+
+          URL mora imati standardnu shemu, na primjer "http://example.com" ili "https://example.com".
+
+          Pravilo je dostupno samo na instancama Windowsa koje su pridružene domeni <ph name="MS_AD_NAME" /> ili instancama Windowsa 10 Pro ili Enterprise prijavljenim za upravljanje uređajima.</translation>
 <translation id="3016255526521614822">Aplikacije za izradu bilježaka dopuštene na zaključanom zaslonu uređaja sa sustavom <ph name="PRODUCT_OS_NAME" /> stavi na popis dopuštenih</translation>
 <translation id="3021562480854470924">Broj dopuštenih prijelaznih točaka za vraćanje sustava</translation>
 <translation id="3023572080620427845">URL XML datoteke koja sadrži URL-ove koji se trebaju učitati u zamjenskom pregledniku.</translation>

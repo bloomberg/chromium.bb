@@ -132,7 +132,7 @@
 <translation id="2961963223658824723">エラーが発生しました。数秒後にもう一度お試しください。</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2970920913501714344">アプリ、拡張機能、テーマをインストールする</translation>
-<translation id="2977598380246111477">次の数字</translation>
+<translation id="2977598380246111477">次の番号</translation>
 <translation id="2995447421581609334">キャスト デバイスを表示します。</translation>
 <translation id="2996462380875591307">拡大鏡（ドッキング）がオンになっています。オフにするには Ctrl+検索+D キーをもう一度押します。</translation>
 <translation id="3000461861112256445">モノラル音声</translation>
@@ -172,7 +172,7 @@
 <translation id="3510164367642747937">マウスカーソルをハイライト表示する</translation>
 <translation id="3513798432020909783">このアカウントは <ph name="MANAGER_EMAIL" /> により管理されています</translation>
 <translation id="3573179567135747900">「<ph name="FROM_LOCALE" />」に戻します（再起動が必要です）</translation>
-<translation id="3595596368722241419">バッテリー残量: 満</translation>
+<translation id="3595596368722241419">バッテリー残量: フル</translation>
 <translation id="3606978283550408104">ブライユ点字ディスプレイが接続されています。</translation>
 <translation id="3621202678540785336">入力</translation>
 <translation id="3626281679859535460">輝度</translation>
@@ -252,7 +252,7 @@
 <translation id="490375751687810070">縦</translation>
 <translation id="4905614135390995787">ハイ コントラスト モードを切り替えるショートカットが変わりました。これまでの <ph name="OLD_SHORTCUT" /> キーではなく <ph name="NEW_SHORTCUT" /> キーを使用してください。</translation>
 <translation id="4917385247580444890">強い</translation>
-<translation id="4918086044614829423">承諾</translation>
+<translation id="4918086044614829423">同意する</translation>
 <translation id="4924411785043111640">再起動してリセット</translation>
 <translation id="4961318399572185831">画面をキャスト</translation>
 <translation id="5030687792513154421">時間切れです</translation>
@@ -262,7 +262,7 @@
 <translation id="5168181903108465623">キャスト デバイスを利用できます</translation>
 <translation id="5207949376430453814">テキスト カーソルをハイライト表示する</translation>
 <translation id="5222676887888702881">ログアウト</translation>
-<translation id="523505283826916779">ユーザー補助の設定</translation>
+<translation id="523505283826916779">ユーザー補助機能の設定</translation>
 <translation id="5260676007519551770">デスク 4</translation>
 <translation id="5283198616748585639">1 分追加</translation>
 <translation id="5302048478445481009">言語</translation>
@@ -318,7 +318,7 @@
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> を充電しています</translation>
 <translation id="615957422585914272">画面キーボードを表示する</translation>
 <translation id="6164005077879661055">この監視対象ユーザーを削除すると、このユーザーに関連付けられたすべてのファイルとローカル データも完全に削除されます。この監視対象ユーザーがアクセスしたウェブサイトやこのユーザーの設定は引き続き、管理者が <ph name="MANAGEMENT_URL" /> で見ることができます。</translation>
-<translation id="6165508094623778733">詳しく見る</translation>
+<translation id="6165508094623778733">詳細</translation>
 <translation id="6254629735336163724">横に固定</translation>
 <translation id="6259254695169772643">タッチペンを使って選択してください</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: 有効にしています...</translation>

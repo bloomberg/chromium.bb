@@ -1098,6 +1098,19 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           When this policy is unset, behaviour of the more specific policies remains unaffected.</translation>
 <translation id="2987155890997901449">Enable ARC</translation>
 <translation id="2987227569419001736">Control use of the Web Bluetooth API</translation>
+<translation id="3011301228198307065">Configures the default homepage URL in <ph name="PRODUCT_NAME" /> and prevents users from changing it.
+
+          The homepage is the page opened by the Home button. The pages that open on start-up are controlled by the RestoreOnStartup policies.
+
+          The homepage type can either be set to a URL that you specify here or set to the new tab page. If you select the new tab page, then this policy does not take effect.
+
+          If you enable this setting, users cannot change their homepage URL in <ph name="PRODUCT_NAME" />, but they can still choose the new tab page as their homepage.
+
+          Leaving this policy not set will also allow the user to choose their own homepage if HomepageIsNewTabPage is not set.
+
+          The URL must have a standard scheme, e.g. 'http://example.com' or 'https://example.com'.
+
+          This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
 <translation id="3016255526521614822">Whitelist note-taking apps allowed on the <ph name="PRODUCT_OS_NAME" /> lock screen</translation>
 <translation id="3021562480854470924">Number of milestones roll-back is allowed</translation>
 <translation id="3023572080620427845">URL of an XML file that contains URLs to load in an alternative browser.</translation>

@@ -1390,7 +1390,7 @@
 <translation id="3045447014237878114">此网站已自动下载多个文件</translation>
 <translation id="3046910703532196514">网页，全部</translation>
 <translation id="304747341537320566">语音引擎</translation>
-<translation id="3047644958362961983">这些信息有助于我们更好地了解您所遇到的 Google 助理问题。这些信息会被存储至多 90 天，且仅限相关的工程团队和反馈团队访问。</translation>
+<translation id="3047644958362961983">这些信息有助于我们更好地了解您遇到的 Google 助理问题。这些信息最长可存储 90 天，且只有相应的工程和反馈团队才能访问。</translation>
 <translation id="3053013834507634016">证书密钥用法</translation>
 <translation id="3057861065630527966">备份您的照片和视频</translation>
 <translation id="3058498974290601450">您随时可在“设置”中开启同步功能</translation>
@@ -3788,6 +3788,7 @@
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">您希望 Google 将此网页的内容从<ph name="SOURCE_LANGUAGE" />翻译为<ph name="TARGET_LANGUAGE" />吗？</translation>
 <translation id="6675665718701918026">已连接指针设备</translation>
+<translation id="6676212663108450937">请在训练语音时使用耳机</translation>
 <translation id="6678717876183468697">查询网址</translation>
 <translation id="6680442031740878064">可用空间：<ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">语速</translation>
@@ -4511,6 +4512,7 @@
 <translation id="7788383851298063850">告诉我们发生了什么</translation>
 <translation id="7788444488075094252">语言和输入法</translation>
 <translation id="7788668840732459509">位置：</translation>
+<translation id="7789963078219276159">初始页背景已更改为 <ph name="CATEGORY" />。</translation>
 <translation id="7791543448312431591">添加</translation>
 <translation id="7792012425874949788">登录时出了点问题</translation>
 <translation id="7792388396321542707">停止共享</translation>
@@ -5191,6 +5193,7 @@
 <translation id="8767621466733104912">自动为所有用户更新 Chrome</translation>
 <translation id="8770406935328356739">扩展程序根目录</translation>
 <translation id="8770507190024617908">管理用户</translation>
+<translation id="8771300903067484968">已将初始页背景重置为默认背景。</translation>
 <translation id="8774934320277480003">上边距</translation>
 <translation id="8775144690796719618">网址无效</translation>
 <translation id="8775404590947523323">系统会自动保存您所做的修改。<ph name="BREAKS" />要保留原始图像的副本，请取消选中“覆盖原始文件”。</translation>

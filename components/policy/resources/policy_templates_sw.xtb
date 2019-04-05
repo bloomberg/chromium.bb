@@ -1076,6 +1076,19 @@ Ikiwa sera imewekwa kuwa sivyo au haijawekwa, matukio hayatarekodiwa.</translati
           Sera hii isipowekwa, sifa za sera mahususi zaidi haziathiriwi.</translation>
 <translation id="2987155890997901449">Washa kipengele cha ARC</translation>
 <translation id="2987227569419001736">Dhibiti matumizi ya API ya Bluetooth ya Wavuti</translation>
+<translation id="3011301228198307065">Huweka URL chaguomsingi ya ukurasa wa mwanzo katika <ph name="PRODUCT_NAME" /> na huzuia watumiaji kuibadilisha.
+
+          Ukurasa wa mwanzo ni ukurasa unaofunguliwa na kitufe cha ukurasa wa Mwanzo. Kurasa zinazofunguka kifaa kinapowashwa zinadhibitiwa na sera za RestoreOnStartup.
+
+          Aina ya ukurasa wa mwanzo inaweza kuwekwa kwenye URL unayobainisha hapa au kuwekwa katika Ukurasa Mpya wa Kichupo. Ukichagua Ukurasa Mpya wa Kichupo, basi sera hii haitatekelezwa.
+
+          Ukiwasha mipangilio hii, watumiaji hawawezi kubadilisha URL ya ukurasa wao wa kwanza katika <ph name="PRODUCT_NAME" />, lakini bado wanaweza kuchagua Ukurasa Mpya wa Kichupo kuwa ukurasa wa kwanza.
+
+          Sera hii isipowekwa, itamruhusu mtumiaji kuchagua ukurasa wake wa mwanzo iwapo HomepageIsNewTabPage haijawekwa pia.
+
+          URL lazima iwe na mfuatano wa kawaida, k.m "http://example.com" au "https://example.com".
+
+          Sera hii inapatikana katika matukio ya Windows ambayo yameunganishwa kwenye kikoa cha <ph name="MS_AD_NAME" />. au matukio ya Windows 10 Pro au Enterprise yaliyojumuishwa katika usimamizi wa kifaa.</translation>
 <translation id="3016255526521614822">Toa idhini kwa programu za kuandika madokezo zinazoruhusiwa kwenye skrini iliyofungwa ya <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Idadi ya matukio ya urejeshaji inaruhusiwa</translation>
 <translation id="3023572080620427845">URL ya faili ya XML ambayo inajumuisha URL za kupakia katika kivinjari mbadala.</translation>

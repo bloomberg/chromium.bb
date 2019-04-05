@@ -1078,6 +1078,19 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
           Jos tätä käytäntöä ei ole määritetty, toimintaa tarkemmin ohjaavien käytäntöjen toiminta pysyy ennallaan.</translation>
 <translation id="2987155890997901449">Ota ARC käyttöön.</translation>
 <translation id="2987227569419001736">Hallinnoi Web Bluetooth ‑sovellusliittymän käyttöä</translation>
+<translation id="3011301228198307065">Määrittää etusivun URL-osoitteen, jota <ph name="PRODUCT_NAME" /> käyttää oletuksena, ja estää käyttäjiä muuttamasta sitä.
+
+          Etusivu avautuu, kun käyttäjä valitsee Etusivu-painikkeen. Käynnistyksen yhteydessä avautuvat sivut määritetään RestoreOnStartup-käytännöillä.
+
+          Etusivuksi voidaan asettaa joko tässä määrittämäsi URL-osoite tai Uusi välilehti ‑sivu. Jos valitset Uusi välilehti ‑sivun, tätä käytäntöä ei sovelleta.
+
+          Jos otat tämän asetuksen käyttöön, käyttäjät eivät voi valita, mitä URL-osoitetta <ph name="PRODUCT_NAME" /> käyttää etusivuna, mutta he voivat asettaa Uusi välilehti ‑sivun etusivukseen.
+
+          Jos tätä ja HomepageIsNewTabPage-käytäntöä ei ole määritetty, käyttäjät voivat valita etusivun itse.
+
+          URL-osoitteen on oltava vakiomallien mukainen, esimerkiksi "http://example.com" tai "https://example.com".
+
+          Tämä käytäntö on käytettävissä vain Windows-esiintymissä, jotka on yhdistetty <ph name="MS_AD_NAME" /> ‑verkkotunnukseen, tai Windows 10 Pro- ja Enterprise ‑esiintymissä, jotka on rekisteröity laitteenhallintaohjelmaan.</translation>
 <translation id="3016255526521614822">Luo luettelo sallituista muistiinpanosovelluksista, jotka <ph name="PRODUCT_OS_NAME" /> voi näyttää lukitusnäytöllä.</translation>
 <translation id="3021562480854470924">Palautukselle sallittujen virstanpylväiden määrä</translation>
 <translation id="3023572080620427845">Vaihtoehtoisessa selaimessa avattavat URL-osoitteet sisältävän XML-tiedoston URL-osoite</translation>
