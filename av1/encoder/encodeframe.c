@@ -4249,26 +4249,26 @@ static void setup_delta_q(AV1_COMP *const cpi, MACROBLOCK *const x,
   // Delta-q modulation based on variance
   av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes, sb_size);
 
-  int offset_qindex;
+  int current_qindex;
   if (DELTA_Q_PERCEPTUAL_MODULATION == 1) {
     const int block_wavelet_energy_level =
         av1_block_wavelet_energy_level(cpi, x, sb_size);
     x->sb_energy_level = block_wavelet_energy_level;
-    offset_qindex =
-        av1_compute_deltaq_from_energy_level(cpi, block_wavelet_energy_level);
+    current_qindex = av1_compute_q_from_energy_level_deltaq_mode(
+        cpi, block_wavelet_energy_level);
   } else {
     const int block_var_level = av1_log_block_var(cpi, x, sb_size);
     x->sb_energy_level = block_var_level;
-    offset_qindex = av1_compute_deltaq_from_energy_level(cpi, block_var_level);
+    current_qindex =
+        av1_compute_q_from_energy_level_deltaq_mode(cpi, block_var_level);
   }
   const int qmask = ~(delta_q_info->delta_q_res - 1);
-  int current_qindex =
-      clamp(cm->base_qindex + offset_qindex, delta_q_info->delta_q_res,
-            256 - delta_q_info->delta_q_res);
+  current_qindex = clamp(current_qindex, -delta_q_info->delta_q_res,
+                         256 - delta_q_info->delta_q_res);
   current_qindex =
-      ((current_qindex - cm->base_qindex + delta_q_info->delta_q_res / 2) &
+      ((current_qindex - xd->current_qindex + delta_q_info->delta_q_res / 2) &
        qmask) +
-      cm->base_qindex;
+      xd->current_qindex;
   assert(current_qindex > 0);
 
   xd->delta_qindex = current_qindex - cm->base_qindex;
@@ -4278,7 +4278,7 @@ static void setup_delta_q(AV1_COMP *const cpi, MACROBLOCK *const x,
   if (cpi->oxcf.deltaq_mode != NO_DELTA_Q && cpi->oxcf.deltalf_mode) {
     const int lfmask = ~(delta_q_info->delta_lf_res - 1);
     const int delta_lf_from_base =
-        ((offset_qindex / 2 + delta_q_info->delta_lf_res / 2) & lfmask);
+        ((xd->delta_qindex / 2 + delta_q_info->delta_lf_res / 2) & lfmask);
 
     // pre-set the delta lf for loop filter. Note that this value is set
     // before mi is assigned for each block in current superblock

@@ -1392,6 +1392,7 @@ static void write_inter_txb_coeff(AV1_COMMON *const cm, MACROBLOCK *const x,
 
   int blk_row, blk_col;
 
+  assert(plane_bsize < BLOCK_SIZES_ALL);
   const int num_4x4_w = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
   const int num_4x4_h = block_size_high[plane_bsize] >> tx_size_high_log2[0];
 

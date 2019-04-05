@@ -180,8 +180,8 @@ int av1_block_wavelet_energy_level(const AV1_COMP *cpi, MACROBLOCK *x,
   return clamp((int)round(energy), ENERGY_MIN, ENERGY_MAX);
 }
 
-int av1_compute_deltaq_from_energy_level(const AV1_COMP *const cpi,
-                                         int block_var_level) {
+int av1_compute_q_from_energy_level_deltaq_mode(const AV1_COMP *const cpi,
+                                                int block_var_level) {
   int rate_level;
   const AV1_COMMON *const cm = &cpi->common;
 
@@ -198,5 +198,5 @@ int av1_compute_deltaq_from_energy_level(const AV1_COMP *const cpi,
   if ((cm->base_qindex != 0) && ((cm->base_qindex + qindex_delta) == 0)) {
     qindex_delta = -cm->base_qindex + 1;
   }
-  return qindex_delta;
+  return cm->base_qindex + qindex_delta;
 }
