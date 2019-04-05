@@ -270,7 +270,7 @@ bool CmdExtract::ExtractCurrentFile(Archive &Arc,size_t HeaderSize,bool &Repeat)
     {
       if (Arc.EndArcHead.NextVolume)
       {
-#ifdef NOOVLUME
+#ifdef NOVOLUME
         return false;
 #else
         if (!MergeArchive(Arc,&DataIO,false,Command))

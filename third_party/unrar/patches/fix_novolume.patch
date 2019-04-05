@@ -7,7 +7,7 @@ index d33306d82dc8..209047e130aa 100644
        if (Arc.EndArcHead.NextVolume)
        {
 -#ifndef NOVOLUME
-+#ifdef NOOVLUME
++#ifdef NOVOLUME
 +        return false;
 +#else
          if (!MergeArchive(Arc,&DataIO,false,Command))
