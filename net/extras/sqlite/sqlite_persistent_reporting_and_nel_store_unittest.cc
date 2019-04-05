@@ -179,6 +179,20 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest, PersistNELPolicy) {
   EXPECT_TRUE(WithinOneMicrosecond(policy.last_used, policies[0].last_used));
 }
 
+TEST_F(SQLitePersistentReportingAndNELStoreTest, LoadNELPoliciesFailed) {
+  // Inject a db initialization failure by creating a directory where the db
+  // file should be.
+  ASSERT_TRUE(base::CreateDirectory(
+      temp_dir_.GetPath().Append(kReportingAndNELStoreFilename)));
+  store_ = std::make_unique<SQLitePersistentReportingAndNELStore>(
+      temp_dir_.GetPath().Append(kReportingAndNELStoreFilename),
+      client_task_runner_, background_task_runner_);
+
+  // InitializeStore() checks that we receive an empty vector of policies,
+  // signifying the failure to load.
+  InitializeStore();
+}
+
 TEST_F(SQLitePersistentReportingAndNELStoreTest, UpdateNELPolicyAccessTime) {
   CreateStore();
   InitializeStore();
