@@ -573,9 +573,6 @@ def ExpandFileArgs(args):
     if not match:
       continue
 
-    if match.end() != len(arg):
-      raise Exception('Unexpected characters after FileArg: ' + arg)
-
     lookup_path = match.group(1).split(':')
     file_path = lookup_path[0]
     if not file_path in file_jsons:
@@ -589,9 +586,10 @@ def ExpandFileArgs(args):
     # This should match ParseGnList. The output is either a GN-formatted list
     # or a literal (with no quotes).
     if isinstance(expansion, list):
-      new_args[i] = arg[:match.start()] + gn_helpers.ToGNString(expansion)
+      new_args[i] = (arg[:match.start()] + gn_helpers.ToGNString(expansion) +
+                     arg[match.end():])
     else:
-      new_args[i] = arg[:match.start()] + str(expansion)
+      new_args[i] = arg[:match.start()] + str(expansion) + arg[match.end():]
 
   return new_args
 

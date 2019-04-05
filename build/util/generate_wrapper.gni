@@ -62,6 +62,7 @@ template("generate_wrapper") {
                              "data",
                              "data_deps",
                              "deps",
+                             "sources",
                              "testonly",
                            ])
     script = _generator_script
