@@ -816,11 +816,21 @@ public class MediaNotificationManager {
 
     @VisibleForTesting
     void onStop(int actionSource) {
+        // MediaSessionCompat calls this sometimes when `mMediaNotificationInfo`
+        // is no longer available. It's unclear if it is a Support Library issue
+        // or something that isn't properly cleaned up but given that the
+        // crashes are rare and the fix is simple, null check was enough.
+        if (mMediaNotificationInfo == null) return;
         mMediaNotificationInfo.listener.onStop(actionSource);
     }
 
     @VisibleForTesting
     void onMediaSessionAction(int action) {
+        // MediaSessionCompat calls this sometimes when `mMediaNotificationInfo`
+        // is no longer available. It's unclear if it is a Support Library issue
+        // or something that isn't properly cleaned up but given that the
+        // crashes are rare and the fix is simple, null check was enough.
+        if (mMediaNotificationInfo == null) return;
         mMediaNotificationInfo.listener.onMediaSessionAction(action);
     }
 
