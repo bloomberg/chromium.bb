@@ -4726,6 +4726,18 @@
   <message name="IDS_SETTINGS_SECURITY_KEYS_PIN" desc="A label shown above a text box where the user is expected to enter a new PIN for a security key. PINs, in this context, are short, often numeric codes that are often used with, for example, ATM cards. Security keys are external devices used to authenticate people.">
     PIN
   </message>
+  <message name="IDS_SETTINGS_SECURITY_KEYS_PIN_ERROR_TOO_SHORT" desc="A validation error shown beneath a text box where the user is expected to enter a PIN for a security key. PINs, in this context, are short, often numeric codes that are often used with, for example, ATM cards. Security keys are external devices used to authenticate people.">
+    PIN must be at least 4 characters
+  </message>
+  <message name="IDS_SETTINGS_SECURITY_KEYS_PIN_ERROR_TOO_LONG" desc="A validation error shown beneath a text box where the user is expected to enter a PIN for a security key. PINs, in this context, are short, often numeric codes that are often used with, for example, ATM cards. Security keys are external devices used to authenticate people.">
+    PIN must be at most 63 characters
+  </message>
+  <message name="IDS_SETTINGS_SECURITY_KEYS_PIN_ERROR_INVALID" desc="A validation error shown beneath a text box where the user is expected to enter a PIN for a security key. PINs, in this context, are short, often numeric codes that are often used with, for example, ATM cards. Security keys are external devices used to authenticate people.">
+    PIN contains invalid characters
+  </message>
+  <message name="IDS_SETTINGS_SECURITY_KEYS_PIN_ERROR_MISMATCH" desc="A validation error shown beneath a text box where the user is expected to enter a PIN for a security key. PINs, in this context, are short, often numeric codes that are often used with, for example, ATM cards. Security keys are external devices used to authenticate people.">
+    The PINs you entered don’t match
+  </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_CONFIRM_PIN" desc="A label shown above a text box where the user is expected to reenter a new PIN for a security key. The text box is a duplicate of an immediately preceeding text box where the user has already entered this value. The user is asked to enter the same value twice in order to ensure that they entered it correctly. PINs, in this context, are short, often numeric codes that are often used with, for example, ATM cards. Security keys are external devices used to authenticate people.">
     Confirm PIN
   </message>
