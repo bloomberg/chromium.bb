@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_adapter.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_control_client_holder.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 
@@ -25,8 +26,16 @@ const String& GPUAdapter::name() const {
   return name_;
 }
 
-GPUDevice* GPUAdapter::createDevice(const GPUDeviceDescriptor* descriptor) {
-  return GPUDevice::Create(GetDawnControlClient(), this, descriptor);
+ScriptPromise GPUAdapter::requestDevice(ScriptState* script_state,
+                                        const GPUDeviceDescriptor* descriptor) {
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  GPUDevice* device =
+      GPUDevice::Create(GetDawnControlClient(), this, descriptor);
+
+  resolver->Resolve(device);
+  return promise;
 }
 
 }  // namespace blink

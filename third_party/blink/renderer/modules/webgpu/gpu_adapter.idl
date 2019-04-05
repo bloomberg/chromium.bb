@@ -9,5 +9,5 @@
 ] interface GPUAdapter {
     readonly attribute DOMString name;
 
-    GPUDevice createDevice(GPUDeviceDescriptor descriptor);
+    [CallWith=ScriptState] Promise<GPUDevice> requestDevice(optional GPUDeviceDescriptor descriptor);
 };
