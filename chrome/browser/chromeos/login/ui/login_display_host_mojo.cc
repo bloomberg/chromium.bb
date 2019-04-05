@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/mojo_system_info_dispatcher.h"
 #include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/user_manager/user_names.h"
 
@@ -198,6 +200,35 @@ void LoginDisplayHostMojo::OnStartSignInScreen(
     HideOobeDialog();
     GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(base::nullopt);
     return;
+  }
+
+  // Check whether factory reset or debugging feature have been requested in
+  // prior session. Ideally this would be handled earlier in startup flow, but
+  // it's handled here, after mojo login display host is set up to avoid running
+  // the wizard with web UI based login display host, and possibly adding
+  // another way to land on web UI based sign-in screen.
+  // TODO(tbarzic): Reassess when https://crbug.com/943720 is fixed.
+  PrefService* local_state = g_browser_process->local_state();
+  if (local_state->GetBoolean(prefs::kFactoryResetRequested)) {
+    StartWizard(OobeScreen::SCREEN_OOBE_RESET);
+    start_delayed_for_oobe_dialog_ = true;
+    return;
+  }
+
+  if (local_state->GetBoolean(prefs::kDebuggingFeaturesRequested)) {
+    StartWizard(OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING);
+    start_delayed_for_oobe_dialog_ = true;
+    return;
+  }
+
+  // If initial signin screen was delayed to show a OOBE dialog, make sure the
+  // dialog is hidden.
+  if (start_delayed_for_oobe_dialog_) {
+    dialog_->Hide();
+    // Reset accelerator will not work properly if OOBE UI stays in reset
+    // dialog state, so make sure the curren dialog screen changes.
+    GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(base::nullopt);
+    start_delayed_for_oobe_dialog_ = false;
   }
 
   signin_screen_started_ = true;
