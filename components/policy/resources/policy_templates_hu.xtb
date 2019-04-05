@@ -1099,6 +1099,19 @@
           Ha a házirend nincs beállítva, akkor nem befolyásolja a specifikusabb házirendek működését.</translation>
 <translation id="2987155890997901449">ARC engedélyezése</translation>
 <translation id="2987227569419001736">A Web Bluetooth API használatának irányítása</translation>
+<translation id="3011301228198307065">Beállítja a kezdőlap alapértelmezett címét a <ph name="PRODUCT_NAME" /> böngészőben, és megakadályozza, hogy a felhasználók módosítsák.
+
+          A kezdőlapot a Főoldal gomb megnyomásával lehet megnyitni. Az indításkor megnyíló oldalakat a RestoreOnStartup házirendek szabályozzák.
+
+          A kezdőlap lehet egy itt megadott konkrét URL vagy az Új lap oldal. Ha az Új lap oldalt választja, akkor ez a házirend nem lép érvénybe.
+
+          Ha megadja ezt a beállítást, a felhasználók nem tudják megváltoztatni a kezdőlap URL-jét a <ph name="PRODUCT_NAME" /> böngészőben, ám változatlanul választhatják az Új lap oldalt kezdőlapként.
+
+          Ha nem állítja be sem ezt, sem a HomepageIsNewTabPage házirendet, akkor a felhasználó választhatja ki a kezdőlapot.
+
+          Az URL-nek szabványos sémával kell rendelkeznie, például „http://example.com” vagy „https://example.com”.
+
+          Ez a házirend csak olyan Windows-példányokon hozzáférhető, amelyek csatlakoznak <ph name="MS_AD_NAME" />-domainhez, illetve csak olyan Windows 10 Pro- vagy Enterprise-példányokon használható, amelyeken aktiválva van az eszközkezelés.</translation>
 <translation id="3016255526521614822">A(z) <ph name="PRODUCT_OS_NAME" /> lezárási képernyőjén engedélyezett jegyzetkészítő alkalmazások engedélyezőlistára tétele</translation>
 <translation id="3021562480854470924">A visszaállításnál engedélyezett mérföldkövek száma</translation>
 <translation id="3023572080620427845">Másik böngészőben betöltendő URL-t tartalmazó XML-fájl URL-címe.</translation>

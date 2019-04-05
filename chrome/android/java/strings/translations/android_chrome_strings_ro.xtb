@@ -240,7 +240,6 @@
 <translation id="271033894570825754">Nou</translation>
 <translation id="2728754400939377704">Sortează după site</translation>
 <translation id="2744248271121720757">Atinge un cuvânt pentru a căuta instantaneu sau pentru a vedea acțiuni conexe</translation>
-<translation id="2760323196215778921">Trebuie să și activezi această permisiune pentru Chrome. Accesează <ph name="BEGIN_LINK" />Setările Android<ph name="END_LINK" /> pentru detalii.</translation>
 <translation id="2762000892062317888">adineauri</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> sec. rămase</translation>
 <translation id="2779651927720337254">nereușită</translation>
@@ -963,7 +962,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="8037750541064988519"><ph name="DAYS" /> zile rămase</translation>
 <translation id="804335162455518893">Nu s-a găsit cardul SD</translation>
 <translation id="805047784848435650">Pe baza istoricului de navigare</translation>
-<translation id="8051303708327298699">Trebuie să și activezi aceste permisiuni pentru Chrome. Accesează <ph name="BEGIN_LINK" />Setările Android<ph name="END_LINK" /> pentru detalii.</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MO disponibili</translation>
 <translation id="8058746566562539958">Deschide în filă Chrome nouă</translation>
 <translation id="8063895661287329888">Marcajul nu a putut fi adăugat.</translation>

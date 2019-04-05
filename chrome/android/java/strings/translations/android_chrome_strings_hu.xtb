@@ -240,7 +240,6 @@
 <translation id="271033894570825754">Új</translation>
 <translation id="2728754400939377704">Rendezés webhely szerint</translation>
 <translation id="2744248271121720757">Az azonnali kereséshez koppintson a kívánt szóra, vagy tekintse meg a kapcsolódó műveleteket</translation>
-<translation id="2760323196215778921">Ezt az engedélyt a Chrome-nál is be kell kapcsolnia. További részleteket az <ph name="BEGIN_LINK" />Android beállításaiban<ph name="END_LINK" /> talál.</translation>
 <translation id="2762000892062317888">éppen most</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> másodperc van hátra</translation>
 <translation id="2779651927720337254">sikertelen</translation>
@@ -963,7 +962,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8037750541064988519"><ph name="DAYS" /> nap van hátra</translation>
 <translation id="804335162455518893">Az SD-kártya nem található</translation>
 <translation id="805047784848435650">A böngészési előzményei alapján</translation>
-<translation id="8051303708327298699">Ezeket az engedélyeket a Chrome-nál is be kell kapcsolnia. További részleteket az <ph name="BEGIN_LINK" />Android beállításaiban<ph name="END_LINK" /> talál.</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB áll rendelkezésre</translation>
 <translation id="8058746566562539958">Megnyitás új Chrome-lapon</translation>
 <translation id="8063895661287329888">A könyvjelző hozzáadása sikertelen volt.</translation>

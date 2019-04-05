@@ -8,7 +8,7 @@
 <translation id="1032854598605920125">Xoay theo chiều kim đồng hồ</translation>
 <translation id="1035334672863811645">đăng nhập vào Chrome</translation>
 <translation id="1038842779957582377">tên không biết</translation>
-<translation id="1039626062703039346">Chrome có thể giúp bạn bảo vệ Tài khoản Google của mình và đổi mật khẩu. Điều này sẽ thông báo cho Google về trang web này.</translation>
+<translation id="1039626062703039346">Chrome có thể giúp bạn bảo vệ Tài khoản Google của mình và đổi mật khẩu. Google sẽ nhận được thông báo về trang web này.</translation>
 <translation id="1050038467049342496">Đóng các ứng dụng khác</translation>
 <translation id="1055184225775184556">&amp;Hoàn tác thêm</translation>
 <translation id="1056898198331236512">Cảnh báo</translation>
@@ -297,7 +297,7 @@
 <translation id="2495083838625180221">Trình phân tích cú pháp JSON</translation>
 <translation id="2495093607237746763">Nếu được chọn, Chromium sẽ lưu trữ bản sao thẻ của bạn trên thiết bị này để điền biểu mẫu nhanh hơn.</translation>
 <translation id="2498091847651709837">Quét thẻ mới</translation>
-<translation id="249825481377667906">Chromium có thể giúp bạn bảo vệ Tài khoản Google của mình và đổi mật khẩu. Điều này sẽ thông báo cho Google về trang web này.</translation>
+<translation id="249825481377667906">Chromium có thể giúp bạn bảo vệ Tài khoản Google của mình và đổi mật khẩu. Google sẽ nhận được thông báo về trang web này.</translation>
 <translation id="2501278716633472235">Quay lại</translation>
 <translation id="2503184589641749290">Thẻ ghi nợ và thẻ trả trước được chấp nhận</translation>
 <translation id="2505268675989099013">Bảo vệ tài khoản</translation>
@@ -648,6 +648,7 @@
 <translation id="4466881336512663640">Các thay đổi đối với biểu mẫu sẽ bị mất. Bạn có chắc chắn muốn tiếp tục không?</translation>
 <translation id="4482953324121162758">Trang web này sẽ không được dịch.</translation>
 <translation id="4490717597759821841">A7</translation>
+<translation id="4493480324863638523">URL không hợp lệ. URL phải ở dạng chuẩn, chẳng hạn như: http://example.com hoặc https://example.com.</translation>
 <translation id="4503882053543859973">Architecture-D</translation>
 <translation id="4506176782989081258">Lỗi xác thực: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4506599922270137252">Liên hệ với quản trị viên hệ thống</translation>

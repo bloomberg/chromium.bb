@@ -114,11 +114,9 @@
 <translation id="1167199480815330007">Find den sekscifrede pinkode på bagsiden af din sikkerhedsnøgle</translation>
 <translation id="1168020859489941584">Åbner om <ph name="TIME_REMAINING" />...</translation>
 <translation id="1168100932582989117">Googles navneservere</translation>
-<translation id="1169909785351611170">Pinkoden er forkert.</translation>
 <translation id="1171135284592304528">Fremhæv elementet med tastaturfokus, når det ændres.</translation>
 <translation id="1172750555846831341">Vend ved kort kant</translation>
 <translation id="1173894706177603556">Omdøb</translation>
-<translation id="1173919438868967364">Vælg konto</translation>
 <translation id="1174073918202301297">Genvejen blev tilføjet</translation>
 <translation id="117445914942805388"><ph name="BEGIN_LINK" />Gå til indstillingerne for synkronisering<ph name="END_LINK" /> for at rydde browserdata fra alle dine synkroniserede enheder og din Google-konto.</translation>
 <translation id="1175364870820465910">&amp;Udskriv...</translation>
@@ -237,7 +235,6 @@
 <translation id="1361655923249334273">Ikke brugt</translation>
 <translation id="1361872463926621533">Afspil lyd ved opstart</translation>
 <translation id="1364702626840264065">{NUM_TABS,plural, =1{Luk fane}one{Luk fane}other{Luk faner}}</translation>
-<translation id="1365804713255256726">Enheden kunne ikke nulstilles. Fejl <ph name="ERROR_CODE" />.</translation>
 <translation id="1366177842110999534">Kør værktøjer, redigeringsværktøjer og IDE-pakker fra Linux på din <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Få flere oplysninger&lt;/a&gt;</translation>
 <translation id="1367951781824006909">Vælg en fil</translation>
 <translation id="1371301976177520732">Din historik samt dine bogmærker, adgangskoder og meget mere på alle dine enheder</translation>
@@ -758,7 +755,6 @@
 <translation id="2200356397587687044">Chrome skal have tilladelse til at fortsætte</translation>
 <translation id="220138918934036434">Skjul knap</translation>
 <translation id="2202898655984161076">Der opstod et problem under fortegnelsen af printere. Nogle af dine printere er muligvis ikke registreret korrekt hos <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="2203484353475059657">Bekræftelsen stemmer ikke overens med værdien.</translation>
 <translation id="2203682048752833055">Den søgemaskine, der bruges i <ph name="BEGIN_LINK" />adresselinjen<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Læs og rediger alt, hvad du indtaster</translation>
 <translation id="220792432208469595">Send brugs- og diagnosticeringsdata. Denne enhed sender i øjeblikket automatisk diagnosticerings- og enhedsdata samt data om brug af apps til Google. Dataene bruges til forbedring af bl.a. systemets og appens stabilitet. Visse samlede data hjælper også Google-apps og -partnere, f.eks. Android-udviklere. Denne indstilling håndhæves af ejeren. Hvis indstillingen til yderligere web- og appaktivitet er aktiveret, gemmes disse data muligvis på din Google-konto. <ph name="BEGIN_LINK1" />Få flere oplysninger<ph name="END_LINK1" /></translation>
@@ -854,7 +850,6 @@
 <translation id="2342740338116612727">Bogmærkerne blev tilføjet</translation>
 <translation id="2343747224442182863">Sæt denne fane i fokus</translation>
 <translation id="2344028582131185878">Automatiske downloads</translation>
-<translation id="2344214284954353199">Pinkoden er for kort.</translation>
 <translation id="2345723121311404059">1 side til <ph name="PRINTER_NAME" /></translation>
 <translation id="2347644257713614136">Brugen af Hangouts og Cast for Education styres af Googles privatlivspolitik.</translation>
 <translation id="2348176352564285430">App: <ph name="ARC_PROCESS_NAME" /></translation>
@@ -921,7 +916,6 @@
 <translation id="2453021845418314664">Avancerede indstillinger for synkronisering</translation>
 <translation id="2453860139492968684">Udfør</translation>
 <translation id="2454247629720664989">Søgeord</translation>
-<translation id="2455122176076606103">Sikkerhedsnøglen er låst på grund af for mange forsøg med forkert pinkode. Den skal nulstilles for at kunne udføre handlinger med pinkode.</translation>
 <translation id="245661998428026871">Afspilningen af videoen i tilstanden med integreret billede afbrydes.</translation>
 <translation id="2457246892030921239"><ph name="APP_NAME" /> ønsker at kopiere filer fra <ph name="VOLUME_NAME" />.</translation>
 <translation id="2458591546854598341">Tokenet for enhedsadministration er ugyldigt.</translation>
@@ -943,7 +937,6 @@
 <translation id="2487067538648443797">Tilføj nyt bogmærke</translation>
 <translation id="2489829450872380594">Næste gang låser en ny telefon op for denne <ph name="DEVICE_TYPE" />. Du kan deaktivere Smart Lock i Indstillinger.</translation>
 <translation id="2489918096470125693">Tilføj &amp;mappe...</translation>
-<translation id="2490575462301446554">Pinkoden er konfigureret.</translation>
 <translation id="249113932447298600">Vi beklager, men enheden <ph name="DEVICE_LABEL" /> understøttes ikke på nuværende tidspunkt.</translation>
 <translation id="249303669840926644">Registreringen kunne ikke fuldføres</translation>
 <translation id="2495777824269688114">Oplev flere funktioner, og find svar. Vælg "?" for at få hjælp.</translation>
@@ -1331,7 +1324,6 @@
 <translation id="3085752524577180175">SOCKS-host</translation>
 <translation id="3088325635286126843">&amp;Omdøb...</translation>
 <translation id="3089137131053189723">Søgningen blev ryddet</translation>
-<translation id="3089732468175192706">{NUM_ATTEMPTS,plural, =1{Forkert pinkode. Du har kun ét forsøg tilbage.}one{Forkert pinkode. Du har # forsøg tilbage.}other{Forkert pinkode. Du har # forsøg tilbage.}}</translation>
 <translation id="3090193911106258841">Åbner lyd- og videoinput</translation>
 <translation id="3090819949319990166">Ekstern crx-fil kan ikke kopieres til <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" er parret</translation>
@@ -1412,7 +1404,6 @@
 <translation id="323803881985677942">Åbn valgmuligheder for udvidelser</translation>
 <translation id="3241680850019875542">Vælg rodmappen for udvidelsen, der skal pakkes. Opdater en udvidelse ved også at vælge den private nøglefil til genbrug.</translation>
 <translation id="3244294424315804309">Lad lyden forblive slået fra</translation>
-<translation id="3246263372552241767">Din sikkerhedsnøgle er fjernet.</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> – netværksfejl</translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;Ikke en del af certifikatet&gt;</translation>
@@ -1553,7 +1544,6 @@
 <translation id="3462413494201477527">Vil du annullere konfigurationen af kontoen?</translation>
 <translation id="3464012987031883895">Et website har adgang til lydinput</translation>
 <translation id="346431825526753">Dette er en børnekonto, som administreres af <ph name="CUSTODIAN_EMAIL" />.</translation>
-<translation id="3467267818798281173">Bed Google om forslag</translation>
 <translation id="3468275649641751422">Stream en video eller lydfil</translation>
 <translation id="3468999815377931311">Android-telefon</translation>
 <translation id="3470442499439619530">Fjern denne bruger</translation>
@@ -1854,7 +1844,6 @@
 <translation id="3898521660513055167">Status for token</translation>
 <translation id="389901847090970821">Vælg tastatur</translation>
 <translation id="3899879303189199559">Offline i mere end et år</translation>
-<translation id="3900105072479897941">Nulstillingen var ikke tilladt. Nogle sikkerhedsnøgler giver kun mulighed for nulstilling inden for de første par sekunder efter indsætning, så du skal muligvis forsøge igen hurtigere.</translation>
 <translation id="3900966090527141178">Eksportér adgangskoder</translation>
 <translation id="3901991538546252627">Opretter forbindelse til <ph name="NAME" /></translation>
 <translation id="3905761538810670789">Reparer appen</translation>
@@ -1915,7 +1904,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="3981760180856053153">Den indtastede filtype er ugyldig.</translation>
 <translation id="3982375475032951137">Konfigurer din browser ved et hjælp af et par enkle trin</translation>
 <translation id="3983400541576569538">Data fra visse apps går muligvis tabt</translation>
-<translation id="3983503144326094739">Sikkerhedsnøglen er midlertidigt låst på grund af for mange forsøg med forkert pinkode. Fjern den, og indsæt den igen for at låse op.</translation>
 <translation id="3983586614702900908">enheder fra en ukendt leverandør</translation>
 <translation id="3984159763196946143">Demotilstand kunne ikke startes</translation>
 <translation id="3987348946546879621">Sparede data</translation>
@@ -2044,7 +2032,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4201546031411513170">Du kan altid vælge, hvad der skal synkroniseres, i indstillingerne.</translation>
 <translation id="4206144641569145248">Rumvæsen</translation>
 <translation id="4206323443866416204">Feedbackrapport</translation>
-<translation id="4206944295053515692">Få forslag fra Google</translation>
 <translation id="4208390505124702064">Søg på <ph name="SITE_NAME" /></translation>
 <translation id="4209092469652827314">Stor</translation>
 <translation id="4209464433672152343">Dokumenter <ph name="BEGIN_LINK_HELP" />sendes til Google<ph name="END_LINK_HELP" />, hvor de gøres klar til udskrivning. Du kan se, redigere og administrere dine printere og din printerhistorik via <ph name="BEGIN_LINK_DASHBOARD" />betjeningspanelet for Google Cloudprinter<ph name="END_LINK_DASHBOARD" />.</translation>
@@ -2081,7 +2068,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4268025649754414643">Omsætning af nøgle til kode</translation>
 <translation id="4270393598798225102">Version <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Ingen resultater</translation>
-<translation id="4273065492769210106">Du har <ph name="RETRIES" /> forsøg tilbage.</translation>
 <translation id="4275830172053184480">Genstart din enhed</translation>
 <translation id="4278101229438943600">Din Google-assistent er klar</translation>
 <translation id="4278390842282768270">Tilladt</translation>
@@ -2220,7 +2206,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4524832533047962394">Den medfølgende tilstand for tilmelding understøttes ikke af denne version af operativsystemet. Sørg for, at du kører den nyeste version.</translation>
 <translation id="4525382759303819021">Få de seneste opdateringer og anbefalinger om apps i Play Butik</translation>
 <translation id="4530494379350999373">Origin</translation>
-<translation id="4531586020343813806">Sikkerhedsnøglen understøtter ikke nulstilling.</translation>
 <translation id="4533846798469727141">Sig "Hey Google"</translation>
 <translation id="4533985347672295764">CPU-tid</translation>
 <translation id="4534661889221639075">Prøv igen.</translation>
@@ -2449,7 +2434,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4898011734382862273">Certifikatet "<ph name="CERTIFICATE_NAME" />" repræsenterer et nøglecenter</translation>
 <translation id="489985760463306091">Du skal genstarte computeren for at afslutte fjernelsen af skadelig software.</translation>
 <translation id="4900392736118574277">Din opstartsside blev ændret til <ph name="URL" />.</translation>
-<translation id="490074449735753175">Brug en webtjeneste til at hjælpe med at rette stavefejl</translation>
 <translation id="49027928311173603">Den politik, der er downloadet fra serveren, er ugyldig: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4907161631261076876">Denne fil er ikke downloadet på almindelig vis og kan være farlig.</translation>
 <translation id="4907306957610201395">Tilladelseskategori</translation>
@@ -2463,7 +2447,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4918086044614829423">Accepter</translation>
 <translation id="4918221908152712722">Installer <ph name="APP_NAME" /> (kræver ikke download)</translation>
 <translation id="4920887663447894854">Følgende websites kan ikke spore din placering på denne side:</translation>
-<translation id="4922897038695506037">"<ph name="URL_HOST" />" har anmodet om yderligere tilladelser.</translation>
 <translation id="492299503953721473">Fjern Android-apps</translation>
 <translation id="4923279099980110923">Ja. Jeg vil gerne hjælpe</translation>
 <translation id="4924352752174756392">12x</translation>
@@ -2552,6 +2535,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5074318175948309511">Det kan være nødvendigt at genindlæse siden, så de nye indstillinger kan træde i kraft.</translation>
 <translation id="5075131525758602494">Angiv pinkode til SIM-kort</translation>
 <translation id="5078638979202084724">Tilføj alle faner som bogmærker</translation>
+<translation id="5078796286268621944">Forkert pinkode</translation>
 <translation id="5079950360618752063">Brug den foreslåede adgangskode</translation>
 <translation id="5084230410268011727">Tillad, at websites anvender bevægelses- og lyssensorer</translation>
 <translation id="5085162214018721575">Søger efter opdateringer</translation>
@@ -2699,7 +2683,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5319359161174645648">Google anbefaler Chrome</translation>
 <translation id="5319566035256672173">Denne enhed modtager ikke længere softwareopdateringer. Du bør overveje at opgradere.</translation>
 <translation id="532247166573571973">Serveren kan være utilgængelig. Prøv igen senere.</translation>
-<translation id="5324245805087635250">Angiv din &lt;i&gt;aktuelle&lt;/i&gt; pinkode for at ændre den. Hvis du ikke kender den aktuelle pinkode, skal sikkerhedsnøglen nulstilles for at slette den.</translation>
 <translation id="5324780743567488672">Indstil tidszonen automatisk ved hjælp af din placering</translation>
 <translation id="5327248766486351172">Navn</translation>
 <translation id="5327570636534774768">Denne enhed er markeret til administration af et andet domæne. Enheden skal deprovisioneres fra dette domæne, før demotilstand konfigureres.</translation>
@@ -2747,7 +2730,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="540296380408672091">Bloker altid cookies på <ph name="HOST" /></translation>
 <translation id="5405146885510277940">Nulstil indstillinger</translation>
 <translation id="5408750356094797285">Zoom: <ph name="PERCENT" /></translation>
-<translation id="5409075533903495802">Pinkoden indeholder ugyldige tegn.</translation>
 <translation id="5411472733320185105">Brug ikke proxyindstillingerne til disse værter eller domæner:</translation>
 <translation id="5414566801737831689">Læs ikonerne for de websites, du besøger</translation>
 <translation id="5417312524372586921">Browsertemaer</translation>
@@ -2858,7 +2840,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="55601339223879446">Tilpas grænserne for dit skrivebord inden for skærmvisningen</translation>
 <translation id="5562781907504170924">Denne fane er tilsluttet en Bluetooth-enhed.</translation>
 <translation id="5563234215388768762">Søg på Google, eller angiv en webadresse</translation>
-<translation id="5567950944308676169">Tilslut din sikkerhedsnøgle, og aktivér den</translation>
 <translation id="5567989639534621706">Applikationscaches</translation>
 <translation id="5568069709869097550">Kan ikke logge ind</translation>
 <translation id="5568144734023334204">Android-lagerplads</translation>
@@ -2947,7 +2928,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5696143504434933566">Rapportér misbrug fra "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="5696679855467848181">Aktuel PPD-fil er i brug: <ph name="PPD_NAME" /></translation>
 <translation id="5699533844376998780">Udvidelsen "<ph name="EXTENSION_NAME" />" er tilføjet.</translation>
-<translation id="5699804453758089950">Tryk på din sikkerhedsnøgle igen for at fuldføre anmodningen.</translation>
 <translation id="570043786759263127">Google Play-apps og -tjenester</translation>
 <translation id="5700836101007545240">Tilføjelse af forbindelser er deaktiveret af din administrator</translation>
 <translation id="5701080607174488915">Politikken kunne ikke hentes fra serveren.</translation>
@@ -3140,7 +3120,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Hvis du vil være sikker på fortsat at kunne bruge internettet, skal du bede din administrator om at fjerne denne app.}one{Hvis du vil være sikker på fortsat at kunne bruge internettet, skal du bede din administrator om at fjerne denne app.}other{Hvis du vil være sikker på fortsat at kunne bruge internettet, skal du bede din administrator om at fjerne disse apps.}}</translation>
 <translation id="5997337190805127100">Få flere oplysninger om websiteadgang</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> resultater for "<ph name="SEARCH_TEXT" />"</translation>
-<translation id="6002458620803359783">Favoritter stemmer</translation>
+<translation id="6002458620803359783">Foretrukne stemmer</translation>
 <translation id="6005695835120147974">Medierouter</translation>
 <translation id="6006484371116297560">Klassisk</translation>
 <translation id="6007240208646052708">Talesøgning er ikke tilgængelig på dit sprog.</translation>
@@ -3251,7 +3231,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6156323911414505561">Vis bogmærkelinjen</translation>
 <translation id="6156863943908443225">Scriptcache</translation>
 <translation id="6156960295318603523">Sprogindstillinger</translation>
-<translation id="6159328879826063795">Sikkerhedsnøglen understøtter ikke den funktion, der anmodes om.</translation>
 <translation id="6160625263637492097">Levér certifikater til godkendelse</translation>
 <translation id="6163363155248589649">&amp;Normal</translation>
 <translation id="6163522313638838258">Udvid alle...</translation>
@@ -3310,7 +3289,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6247708409970142803"><ph name="PERCENTAGE" /> %</translation>
 <translation id="6247802389331535091">System: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="624789221780392884">Opdateringen er klar</translation>
-<translation id="6248279564564080162">Nulstillingen er fuldført.</translation>
 <translation id="6248988683584659830">Søg i indstillinger</translation>
 <translation id="6251870443722440887">GDI-håndtag</translation>
 <translation id="6251889282623539337">Servicevilkår for <ph name="DOMAIN" /></translation>
@@ -3374,7 +3352,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6352773953037195952">Højeste</translation>
 <translation id="6354918092619878358">SECG elliptisk kurve secp256r1 (også kaldet ANSI X9.62 prime256v1, NIST P-256)</translation>
 <translation id="635609604405270300">Lad enheden være tændt</translation>
-<translation id="6356138805250111037">Gør stavekontrollen bedre ved at sende det, du indtaster i browseren, til Google</translation>
 <translation id="63566973648609420">Det er kun personer med din adgangssætning, der kan læse dine krypterede data. Adgangssætningen sendes ikke til og gemmes ikke af Google. Hvis du glemmer din adgangssætning eller vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille synkroniseringen<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570">Velkommen til <ph name="SHORT_PRODUCT_NAME" />-familien. Dette er ikke en almindelig computer.</translation>
 <translation id="6358884629796491903">Drage</translation>
@@ -3540,7 +3517,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6622980291894852883">Fortsæt blokering af billeder</translation>
 <translation id="6624687053722465643">Sukkersød</translation>
 <translation id="6628328486509726751">Uploadet <ph name="WEBRTC_LOG_UPLOAD_TIME" /></translation>
-<translation id="662887686112111256">Du har kun ét forsøg tilbage.</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> ønsker permanent adgang til et certifikat for at godkende sig selv på dine vegne.</translation>
 <translation id="6635956300022133031">Vælg og tilpas oplæsningsstemmer</translation>
 <translation id="6637585982786704944">Apps og websites, der har din tilladelse, kan få adgang til de kontooplysninger, de skal bruge for at fungere korrekt.
@@ -3556,7 +3532,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6645437135153136856">Den valgte Google Cloudprinter-enhed understøttes ikke længere.<ph name="BR" />Prøv at konfigurere printeren i systemindstillingerne på din computer.</translation>
 <translation id="6647228709620733774">Webadresse for tilbagekaldelse af Netscape-certifikatautoritet</translation>
 <translation id="6647838571840953560">I øjeblikket på <ph name="CHANNEL_NAME" /></translation>
-<translation id="6648051959475508072">En sikkerhedsnøgle er aktiveret...</translation>
 <translation id="6648911618876616409">En vigtig opdatering er klar til at blive installeret. Log ind for at komme godt i gang.</translation>
 <translation id="6649018507441623493">Vent et øjeblik…</translation>
 <translation id="6649563841575838401">Arkivformatet understøttes ikke, eller filen er beskadiget.</translation>
@@ -4162,7 +4137,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7631014249255418691">Linux-applikationerne og -filerne blev sikkerhedskopieret</translation>
 <translation id="7631887513477658702">&amp;Åbn altid filer af denne type</translation>
 <translation id="7632948528260659758">Følgende kioskapps kan ikke opdateres:</translation>
-<translation id="76341863042884733">En pinkode beskytter din sikkerhedsnøgle</translation>
 <translation id="763632859238619983">Tillad ikke, at websites installerer betalingshandlere</translation>
 <translation id="7638605456503525968">Serieporte</translation>
 <translation id="7639178625568735185">Forstået</translation>
@@ -4449,8 +4423,8 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8028993641010258682">Størrelse</translation>
 <translation id="8030656706657716245">Tilføj printeren</translation>
 <translation id="8032244173881942855">Fanen kunne ikke castes.</translation>
+<translation id="8033827949643255796">valgt</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{Åbn alle i &amp;inkognitovindue}=1{Åbn i &amp;inkognitovindue}one{Åbn (#) i &amp;inkognitovindue}other{Åbn alle (#) i &amp;inkognitovindue}}</translation>
-<translation id="8034467234497743242">Sikkerhedsnøglen understøtter ikke konfiguration af pinkode.</translation>
 <translation id="8037117027592400564">Læs hele teksten højt ved hjælp af talesyntese</translation>
 <translation id="8037357227543935929">Spørg (standardindstilling)</translation>
 <translation id="803771048473350947">Fil</translation>
@@ -4487,11 +4461,9 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
     <ph name="BEGIN_PARAGRAPH3" />Appdata kan være alle former for data, som en app har gemt (baseret på udviklerens indstillinger), f.eks. kontakter, beskeder og billeder.<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />Sikkerhedskopierede data tæller ikke med i din kvote for Drev-lagerplads.<ph name="END_PARAGRAPH4" />
     <ph name="BEGIN_PARAGRAPH5" />Du kan deaktivere denne tjeneste i Indstillinger.<ph name="END_PARAGRAPH5" /></translation>
-<translation id="8096438328987289870">Vælg den konto, du vil logge ind med:</translation>
 <translation id="80974698889265265">Pinkoderne stemmer ikke overens</translation>
 <translation id="8101987792947961127">Powerwash er påkrævet ved næste genstart</translation>
 <translation id="8102159139658438129">Gå til <ph name="LINK_BEGIN" />Indstillinger<ph name="LINK_END" /> for at se valgmulighederne for din tilsluttede telefon</translation>
-<translation id="8102652888659661176">Forkert pinkode.</translation>
 <translation id="8104696615244072556">Powerwash din <ph name="IDS_SHORT_PRODUCT_NAME" />-enhed, og nulstil til forrige version.</translation>
 <translation id="8105368624971345109">Deaktiver</translation>
 <translation id="8107015733319732394">Google Play Butik installeres på din <ph name="DEVICE_TYPE" />. Det kan tage nogle minutter.</translation>
@@ -4540,7 +4512,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8184318863960255706">Flere oplysninger</translation>
 <translation id="8185331656081929126">Vis notifikationer, når der registreres nye printere på netværket</translation>
 <translation id="8186609076106987817">Serveren kunne ikke finde filen.</translation>
-<translation id="8188120771410500975">&amp;Kontrollér stavning i tekstfelter</translation>
 <translation id="8188389033983459049">Tjek enhedens indstillinger, og aktivér Bluetooth for at fortsætte</translation>
 <translation id="8190193592390505034">Forbinder til <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">Administrere dine apps, udvidelser og temaer</translation>

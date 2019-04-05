@@ -114,11 +114,9 @@
 <translation id="1167199480815330007">پین ۶ رقمی را در پشت کلید امنیتی‌تان پیدا کنید</translation>
 <translation id="1168020859489941584">باز کردن با <ph name="TIME_REMAINING" />...</translation>
 <translation id="1168100932582989117">‏سرورهای نام Google</translation>
-<translation id="1169909785351611170">پین اشتباه است.</translation>
 <translation id="1171135284592304528">برجسته کردن شیء با فوکوس صفحه‌کلید در صورت تغییر</translation>
 <translation id="1172750555846831341">ورق زدن ازطرف لبه کوتاه‌تر</translation>
 <translation id="1173894706177603556">تغییر نام</translation>
-<translation id="1173919438868967364">انتخاب حساب</translation>
 <translation id="1174073918202301297">میان‌بر اضافه شد</translation>
 <translation id="117445914942805388">‏برای اینکه داده‌های محصول مرور را از همه دستگاه‌های همگام‌سازی‌شده و حساب Google خود پاک کنید، <ph name="BEGIN_LINK" />به تنظیمات همگام‌سازی بروید<ph name="END_LINK" />.</translation>
 <translation id="1175364870820465910">&amp;چاپ...</translation>
@@ -237,7 +235,6 @@
 <translation id="1361655923249334273">استفاده نشده</translation>
 <translation id="1361872463926621533">پخش صدا هنگام شروع به کار</translation>
 <translation id="1364702626840264065">{NUM_TABS,plural, =1{بستن برگه}one{بستن برگه‌ها}other{بستن برگه‌ها}}</translation>
-<translation id="1365804713255256726">بازنشانی دستگاه انجام نشد. خطای <ph name="ERROR_CODE" />.</translation>
 <translation id="1366177842110999534">‏اجرای ابزارها، ویرایشگرها و محیط‌های یکپارچه توسعه نرم‌افزار (IDE) ‏Linux در <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;بیشتر بدانید&lt;/a&gt;</translation>
 <translation id="1367951781824006909">انتخاب یک فایل</translation>
 <translation id="1371301976177520732">در همه دستگاه‌هایتان می‌توانید به نشانک‌ها، سابقه و موارد دیگر دسترسی داشته باشید</translation>
@@ -758,7 +755,6 @@
 <translation id="2200356397587687044">‏Chrome برای ادامه به مجوز نیاز دارد</translation>
 <translation id="220138918934036434">دکمه پنهان کردن</translation>
 <translation id="2202898655984161076">هنگام فهرست کردن چاپگرها مشکلی روی داد. برخی از چاپگرهای شما با <ph name="CLOUD_PRINT_NAME" /> با موفقیت ثبت نشده‌اند.</translation>
-<translation id="2203484353475059657">تأیید مطابقت ندارد.</translation>
 <translation id="2203682048752833055">موتور جستجوی مورداستفاده در <ph name="BEGIN_LINK" />نوار نشانی<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">خواندن و تغییر هر موردی که تایپ می‌کنید</translation>
 <translation id="220792432208469595">‏داده‌های استفاده و عیب‌یابی را ارسال کنید. این دستگاه درحال‌حاضر به‌صورت‌ خودکار داده‌های عیب‌یابی و داده‌های استفاده از دستگاه و برنامه را برای Google ارسال می‌کند. این داده‌ها به بهبود پایداری سیستم و برنامه و موارد دیگر کمک خواهد کرد. بعضی داده‌های انبوه نیز به برنامه‌ها و شرکای Google (مانند برنامه‌نویس‌های Android) کمک می‌کند. این تنظیم توسط مالک اعمال می‌شود. اگر تنظیم «فعالیت وب و برنامه» تکمیلی روشن باشد، ممکن است این داده‌ها در حساب Google شما ذخیره شود. <ph name="BEGIN_LINK1" />بیشتر بدانید<ph name="END_LINK1" /></translation>
@@ -854,7 +850,6 @@
 <translation id="2342740338116612727">نشانک‌ها اضافه شد</translation>
 <translation id="2343747224442182863">متمرکز کردن این برگه</translation>
 <translation id="2344028582131185878">بارگیری‌های خودکار</translation>
-<translation id="2344214284954353199">پین خیلی کوتاه است.</translation>
 <translation id="2345723121311404059">۱ صفحه برای <ph name="PRINTER_NAME" /></translation>
 <translation id="2347644257713614136">‏استفاده از Hangouts و Cast for Education تحت کنترل «خط‌مشی رازداری Google» است.</translation>
 <translation id="2348176352564285430">برنامه: <ph name="ARC_PROCESS_NAME" /></translation>
@@ -921,7 +916,6 @@
 <translation id="2453021845418314664">تنظیمات همگام‌سازی پیشرفته</translation>
 <translation id="2453860139492968684">پایان</translation>
 <translation id="2454247629720664989">کلمه کلیدی</translation>
-<translation id="2455122176076606103">این کلید امنیتی به دلیل چندین بار وارد کردن پین اشتباه قفل شده است. برای انجام هرگونه عملیات مربوط به پین، این کلید امنیتی باید بازنشانی شود.</translation>
 <translation id="245661998428026871">پخش ویدیو در حالت تصویردرتصویر متوقف خواهد شد.</translation>
 <translation id="2457246892030921239"><ph name="APP_NAME" /> می‌خواهد چند فایل از <ph name="VOLUME_NAME" /> کپی کند.</translation>
 <translation id="2458591546854598341">کد مدیریت دستگاه نامعتبر است.</translation>
@@ -943,7 +937,6 @@
 <translation id="2487067538648443797">افزودن نشانک جدید</translation>
 <translation id="2489829450872380594">‏دفعه بعد، تلفن جدیدی قفل <ph name="DEVICE_TYPE" /> را باز می‌کند. می‌توانید Smart Lock را در «تنظیمات» خاموش کنید.</translation>
 <translation id="2489918096470125693">افزودن &amp;پوشه...</translation>
-<translation id="2490575462301446554">پین با موفقیت تنظیم شد.</translation>
 <translation id="249113932447298600">متأسفیم، دستگاه <ph name="DEVICE_LABEL" /> در حال حاضر پشتیبانی نمی‌شود.</translation>
 <translation id="249303669840926644">ثبت‌نام کامل نشد</translation>
 <translation id="2495777824269688114">قابلیت‌های بیشتری را کاوش کنید یا جواب‌ها را دریافت کنید. برای دریافت راهنمایی، «؟» را انتخاب کنید.</translation>
@@ -1329,7 +1322,6 @@
 <translation id="3085752524577180175">‏میزبان SOCKS</translation>
 <translation id="3088325635286126843">&amp;تغییر‌نام...</translation>
 <translation id="3089137131053189723">جستجو پاک شد</translation>
-<translation id="3089732468175192706">{NUM_ATTEMPTS,plural, =1{پین اشتباه است. فقط یک بار دیگر می‌توانید امتحان کنید.}one{پین اشتباه است. # بار دیگر می‌توانید امتحان کنید.}other{پین اشتباه است. # بار دیگر می‌توانید امتحان کنید.}}</translation>
 <translation id="3090193911106258841">در حال دسترسی به ورودی صوتی و ویدئویی</translation>
 <translation id="3090819949319990166">‏فایل خارجی crx در <ph name="TEMP_CRX_FILE" /> کپی نمی‌شود.</translation>
 <translation id="3090871774332213558">«<ph name="DEVICE_NAME" />» مرتبط شد</translation>
@@ -1410,7 +1402,6 @@
 <translation id="323803881985677942">باز کردن گزینه‌های افزونه</translation>
 <translation id="3241680850019875542">دایرکتوری ریشه برنامهٔ افزودنی را برای فشرده کردن انتخاب کنید. همچنین برای به‌روزرسانی برنامهٔ افزودنی، فایل کلید خصوصی را برای استفاده مجدد انتخاب کنید.</translation>
 <translation id="3244294424315804309">همچنان بی‌صدا</translation>
-<translation id="3246263372552241767">کلید امنیتی برداشته شد.</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - خطای شبکه</translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;جزئی از گواهی نیست&gt;</translation>
@@ -1551,7 +1542,6 @@
 <translation id="3462413494201477527">راه‌اندازی حساب لغو شود؟</translation>
 <translation id="3464012987031883895">سایتی درحال دسترسی به ورودی صوتی است</translation>
 <translation id="346431825526753">این یک حساب مخصوص بچه‌ها است که توسط <ph name="CUSTODIAN_EMAIL" /> مدیریت می‌شود.</translation>
-<translation id="3467267818798281173">‏درخواست از Google برای پیشنهادات</translation>
 <translation id="3468275649641751422">پخش جریانی فایل ویدیویی یا صوتی</translation>
 <translation id="3468999815377931311">‏تلفن Android</translation>
 <translation id="3470442499439619530">حذف این کاربر</translation>
@@ -1852,7 +1842,6 @@
 <translation id="3898521660513055167">وضعیت کد</translation>
 <translation id="389901847090970821">انتخاب صفحه‌کلید</translation>
 <translation id="3899879303189199559">آفلاین برای مدت بیش از یک سال</translation>
-<translation id="3900105072479897941">بازنشانی مجاز نیست. ممکن است برخی از کلیدهای امنیتی تنها ظرف چند ثانیه بعد از وارد شدن اجازه بازنشانی بدهند؛ بهتر است سعی کنید این فرایند را دوباره سریع‌تر انجام دهید.</translation>
 <translation id="3900966090527141178">صادر کردن گذرواژه‌ها</translation>
 <translation id="3901991538546252627">در حال اتصال به <ph name="NAME" /></translation>
 <translation id="3905761538810670789">تعمیر برنامه</translation>
@@ -1913,7 +1902,6 @@
 <translation id="3981760180856053153">نوع ذخیره نامعتبری وارد شده است.</translation>
 <translation id="3982375475032951137">راه‌اندازی مرورگر طی چند مرحله ساده</translation>
 <translation id="3983400541576569538">ممکن است داده‌های برخی برنامه‌ها از دست بروند</translation>
-<translation id="3983503144326094739">این کلید امنیتی به دلیل وارد کردن چندین پین اشتباه موقتاً قفل شده است. برای باز کردن قفل، آن را بردارید و دوباره وارد کنید.</translation>
 <translation id="3983586614702900908">دستگاه‌های ارائه‌دهنده ناشناس</translation>
 <translation id="3984159763196946143">حالت نمایشی شروع نشد</translation>
 <translation id="3987348946546879621">داده‌های ذخیره‌‌شده</translation>
@@ -2042,7 +2030,6 @@
 <translation id="4201546031411513170">هرزمان خواستید می‌توانید مواردی را که می‌خواهید همگام‌سازی شود در تنظیمات انتخاب کنید.</translation>
 <translation id="4206144641569145248">آدم فضایی</translation>
 <translation id="4206323443866416204">گزارش بازخورد</translation>
-<translation id="4206944295053515692">‏درخواست از Google برای پیشنهادات</translation>
 <translation id="4208390505124702064">جستجوی <ph name="SITE_NAME" /></translation>
 <translation id="4209092469652827314">بزرگ</translation>
 <translation id="4209464433672152343">‏اسناد جهت آماده‌سازی برای چاپ <ph name="BEGIN_LINK_HELP" />به Google ارسال شدند<ph name="END_LINK_HELP" />. در <ph name="BEGIN_LINK_DASHBOARD" />داشبورد Google Cloud Print<ph name="END_LINK_DASHBOARD" /> چاپگر و سابقه چاپ خود را مشاهده، ویرایش و مدیریت کنید.</translation>
@@ -2079,7 +2066,6 @@
 <translation id="4268025649754414643">به رمز درآوردن کلید</translation>
 <translation id="4270393598798225102">نسخه <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">مورد منطبقی وجود ندارد</translation>
-<translation id="4273065492769210106"><ph name="RETRIES" /> بار دیگر می‌توانید امتحان کنید.</translation>
 <translation id="4275830172053184480">راه‌اندازی دستگاه خود</translation>
 <translation id="4278101229438943600">«دستیار» آماده است</translation>
 <translation id="4278390842282768270">مجاز است</translation>
@@ -2218,7 +2204,6 @@
 <translation id="4524832533047962394">این نسخه از سیستم‌عامل حالت ثبت‌نام ارائه‌شده را پشتیبانی نمی‌کند. لطفاً مطمئن شوید جدیدترین نسخه را اجرا می‌کنید.</translation>
 <translation id="4525382759303819021">‏دریافت جدیدترین به‌روزرسانی‌ها و توصیه‌ها درباره برنامه‌های «فروشگاه Play»</translation>
 <translation id="4530494379350999373">مبدأ</translation>
-<translation id="4531586020343813806">این کلید امنیتی از بازنشانی پشتیبانی نمی‌کند.</translation>
 <translation id="4533846798469727141">‏اکنون بگویید «Hey Google»</translation>
 <translation id="4533985347672295764">‏زمان پردازش CPU</translation>
 <translation id="4534661889221639075">دوباره امتحان کنید.</translation>
@@ -2447,7 +2432,6 @@
 <translation id="4898011734382862273">مجوز «<ph name="CERTIFICATE_NAME" />» نشان‌دهنده یک ارائه‌دهنده مجوز است</translation>
 <translation id="489985760463306091">رایانه‌تان را راه‌اندازی مجدد کنید تا برداشتن برنامه کامل شود</translation>
 <translation id="4900392736118574277">صفحه شروع به <ph name="URL" /> تغییر کرد.</translation>
-<translation id="490074449735753175">استفاده از سرویس وب برای برطرف کردن خطاهای املایی</translation>
 <translation id="49027928311173603">خط‌مشی دانلودشده از سرور نامعتبر است: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4907161631261076876">این فایل معمولاً بارگیری نمی‌شود و ممکن است خطرناک باشد.</translation>
 <translation id="4907306957610201395">دسته مجوز</translation>
@@ -2461,7 +2445,6 @@
 <translation id="4918086044614829423">می‌پذیرم</translation>
 <translation id="4918221908152712722">نصب <ph name="APP_NAME" /> (بارگیری لازم نیست)</translation>
 <translation id="4920887663447894854">از ردیابی مکان شما در این صفحه توسط سایت‌های زیر جلوگیری شده است:</translation>
-<translation id="4922897038695506037"><ph name="URL_HOST" /> مجوزهای دیگری را درخواست کرده است.</translation>
 <translation id="492299503953721473">‏حذف برنامه‌های Android</translation>
 <translation id="4923279099980110923">بله می‌خواهم کمک کنم</translation>
 <translation id="4924352752174756392">۱۲ برابر</translation>
@@ -2550,6 +2533,7 @@
 <translation id="5074318175948309511">شاید لازم باشد که این صفحه قبل از اعمال شدن تنظیمات جدید، بارگذاری مجدد شود.</translation>
 <translation id="5075131525758602494">پین سیم کارت را وارد کنید</translation>
 <translation id="5078638979202084724">نشانک گذاری همه برگه‌ها</translation>
+<translation id="5078796286268621944">پین اشتباه</translation>
 <translation id="5079950360618752063">استفاده از گذرواژه پیشنهادی</translation>
 <translation id="5084230410268011727">استفاده از حسگرهای نوری و حرکتی توسط سایت‌ها مجاز شود</translation>
 <translation id="5085162214018721575">در حال بررسی به‌روزرسانی‌ها</translation>
@@ -2697,7 +2681,6 @@
 <translation id="5319359161174645648">‏Google،‏ Chrome را توصیه می‌کند</translation>
 <translation id="5319566035256672173">این دستگاه دیگر آخرین به‌روز‌رسانی‌های نرم‌افزار را دریافت نمی‌کند. لطفاً برای ارتقا دادن دستگاه اقدام کنید.</translation>
 <translation id="532247166573571973">ممکن است سرور در دسترس نباشد. بعداً دوباره امتحان کنید.</translation>
-<translation id="5324245805087635250">‏پین &lt;i&gt;فعلی&lt;/i&gt; را برای تغییر پین وارد کنید. اگر پین فعلی را نمی‌دانید، برای پاک کردن آن، کلید امنیتی باید بازنشانی شود.</translation>
 <translation id="5324780743567488672">تنظیم خودکار منطقه زمانی با استفاده از موقعیت مکانی شما</translation>
 <translation id="5327248766486351172">نام</translation>
 <translation id="5327570636534774768">این دستگاه علامت خورده است که در دامنه دیگری مدیریت می‌شود. پیش از راه‌اندازی حالت نمایشی، مجوز دسترسی‌اش را از آن دامنه لغو کنید.</translation>
@@ -2745,7 +2728,6 @@
 <translation id="540296380408672091">همیشه کوکی‌ها در <ph name="HOST" /> مسدود شوند</translation>
 <translation id="5405146885510277940">بازنشانی تنظیمات</translation>
 <translation id="5408750356094797285">بزرگ‌نمایی: <ph name="PERCENT" /></translation>
-<translation id="5409075533903495802">پین حاوی نویسه‌های نامعتبر است.</translation>
 <translation id="5411472733320185105">از تنظیمات پراکسی برای این میزبان ها و دامنه‌ها استفاده نکنید:</translation>
 <translation id="5414566801737831689">خواندن نمادهای وب‌سایت‌هایی که بازدید می‌کنید</translation>
 <translation id="5417312524372586921">طرح‌های زمینه مرورگر</translation>
@@ -2856,7 +2838,6 @@
 <translation id="55601339223879446">تنظیم محدوه دسک‌تاپ شما در صفحه نمایشگر</translation>
 <translation id="5562781907504170924">این برگه به دستگاه بلوتوث متصل است.</translation>
 <translation id="5563234215388768762">‏جستجوی Google یا تایپ نشانی وب</translation>
-<translation id="5567950944308676169">کلید امنیتی‌تان را وصل و فعال کنید</translation>
 <translation id="5567989639534621706">حافظه‌های پنهان برنامه</translation>
 <translation id="5568069709869097550">ورود به سیستم ممکن نیست</translation>
 <translation id="5568144734023334204">‏فضای ذخیره‌سازی Android</translation>
@@ -2945,7 +2926,6 @@
 <translation id="5696143504434933566">گزارش سوء‌استفاده از «<ph name="EXTENSION_NAME" />»</translation>
 <translation id="5696679855467848181">‏فایل PPD کنونی درحال استفاده: <ph name="PPD_NAME" /></translation>
 <translation id="5699533844376998780">برنامهٔ افزودنی "<ph name="EXTENSION_NAME" />" اضافه شده است.</translation>
-<translation id="5699804453758089950">برای تکمیل درخواست، دوباره روی کلید امنیتی‌تان ضربه بزنید.</translation>
 <translation id="570043786759263127">‏خدمات و برنامه‌های Google Play</translation>
 <translation id="5700836101007545240">سرپرستتان افزودن اتصال را غیرفعال کرده است</translation>
 <translation id="5701080607174488915">خطا هنگام واکشی خط‌مشی از سرور.</translation>
@@ -3249,7 +3229,6 @@
 <translation id="6156323911414505561">نمایش نوار نشانک‌ها</translation>
 <translation id="6156863943908443225">حافظهٔ پنهان اسکریپت</translation>
 <translation id="6156960295318603523">تنظیمات زبان</translation>
-<translation id="6159328879826063795">کلید امنیتی ویژگی درخواست‌شده را پشتیبانی نمی‌کند.</translation>
 <translation id="6160625263637492097">ارائه گواهی برای احراز هویت</translation>
 <translation id="6163363155248589649">&amp;عادی</translation>
 <translation id="6163522313638838258">بزرگ کردن همه...</translation>
@@ -3307,7 +3286,6 @@
 <translation id="6247708409970142803">%<ph name="PERCENTAGE" /></translation>
 <translation id="6247802389331535091">سیستم: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="624789221780392884">به‌روزرسانی آماده است</translation>
-<translation id="6248279564564080162">بازنشانی انجام شد.</translation>
 <translation id="6248988683584659830">تنظیمات جستجو</translation>
 <translation id="6251870443722440887">‏کنترل‌کننده‌های GDI</translation>
 <translation id="6251889282623539337">شرایط خدمات <ph name="DOMAIN" /></translation>
@@ -3371,7 +3349,6 @@
 <translation id="6352773953037195952">بالاترین</translation>
 <translation id="6354918092619878358">‏منحنی بیضوی SECG مدل secp256r1 (به‌نام ANSI X9.62 prime256v1، ‏NIST P-256)</translation>
 <translation id="635609604405270300">روشن نگه‌داشتن دستگاه</translation>
-<translation id="6356138805250111037">‏غلط‌گیر املای هوشمندتر با ارسال آنچه در مرورگر تایپ می‌کنید به Google</translation>
 <translation id="63566973648609420">‏فقط فردی که عبارت عبور شما را دارد می‌تواند اطلاعات رمزگذاری‌شده‌تان را بخواند. این عبارت عبور به Google ارسال یا در سرورهای آن ذخیره نمی‌شود. اگر عبارت عبورتان را فراموش کنید، باید همگام‌سازی را بازنشانی کنید. <ph name="BEGIN_LINK" />بازنشانی همگام‌سازی<ph name="END_LINK" /></translation>
 <translation id="6357619544108132570">به خانواده <ph name="SHORT_PRODUCT_NAME" /> خوش آمدید. این یک رایانه معمولی نیست.</translation>
 <translation id="6358884629796491903">اژدها</translation>
@@ -3537,7 +3514,6 @@
 <translation id="6622980291894852883">ادامه مسدودکردن تصاویر</translation>
 <translation id="6624687053722465643">شیرین</translation>
 <translation id="6628328486509726751">زمان بارگذاری <ph name="WEBRTC_LOG_UPLOAD_TIME" /></translation>
-<translation id="662887686112111256">فقط یک بار دیگر می‌توانید امتحان کنید!</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> خواستار دسترسی دائم به یک گواهی است تا خودش را از طرف شما احراز هویت کند.</translation>
 <translation id="6635956300022133031">انتخاب و سفارشی‌سازی صداهای نوشتار به گفتار</translation>
 <translation id="6637585982786704944">‏برنامه‌ها و وب‌سایت‌هایی که از شما مجوز دارند، می‌توانند به اطلاعات حسابی که برای کارکرد مناسب نیاز دارند دستری پیدا کنند.
@@ -3553,7 +3529,6 @@
 <translation id="6645437135153136856">‏دستگاه Google Cloud Print انتخاب‌شده دیگر پشتیبانی نمی‌شود. <ph name="BR" /> چاپگر را در تنظیمات سیستم رایانه‌تان راه‌اندازی کنید.</translation>
 <translation id="6647228709620733774">‏نشانی وب ابطال ارائه دهنده مجوز Netscape</translation>
 <translation id="6647838571840953560">درحال‌حاضر در کانال <ph name="CHANNEL_NAME" /> است</translation>
-<translation id="6648051959475508072">کلید امنیتی فعال شد...</translation>
 <translation id="6648911618876616409">به‌روزرسانی مهمی برای نصب آماده است. برای شروع به کار، به سیستم وارد شوید.</translation>
 <translation id="6649018507441623493">یک لحظه…</translation>
 <translation id="6649563841575838401">قالب بایگانی پشتیبانی نمی‌شود یا فایل خراب است.</translation>
@@ -4159,7 +4134,6 @@
 <translation id="7631014249255418691">‏از برنامه‌ها و فایل‌های Linux پشتیبان‌گیری شد</translation>
 <translation id="7631887513477658702">&amp;همیشه این نوع فایل‌ها باز شوند</translation>
 <translation id="7632948528260659758">به‌روزرسانی برنامه‌های کیوسک زیر انجام نشد:</translation>
-<translation id="76341863042884733">پین‌ها از کلید امنیتی محافظت می‌کنند</translation>
 <translation id="763632859238619983">هیچ سایتی برای نصب کنترل‌کننده‌های پرداخت مجاز نباشد</translation>
 <translation id="7638605456503525968">درگاه‌های سریال</translation>
 <translation id="7639178625568735185">متوجه شدم.</translation>
@@ -4447,8 +4421,8 @@
 <translation id="8028993641010258682">اندازه</translation>
 <translation id="8030656706657716245">افزودن چاپگر</translation>
 <translation id="8032244173881942855">ارسال محتوای برگه امکان‌پذیر نیست.</translation>
+<translation id="8033827949643255796">انتخاب شد</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{باز کردن همه در پنجره ناشناس}=1{باز کردن در پنجره ناشناس}one{باز کردن همه (#) در پنجره ناشناس}other{باز کردن همه (#) در پنجره ناشناس}}</translation>
-<translation id="8034467234497743242">این کلید امنیتی از تنظیم پین پشتیبانی نمی‌کند.</translation>
 <translation id="8037117027592400564">خواندن همه نوشتار با استفاده از گفتار تجزیه و تحلیل شده</translation>
 <translation id="8037357227543935929">درخواست (پیش‌فرض)</translation>
 <translation id="803771048473350947">فایل</translation>
@@ -4485,11 +4459,9 @@
     <ph name="BEGIN_PARAGRAPH3" />داده‌های برنامه می‌توانند هر داده‌ای باشند که برنامه (براساس تنظیمات برنامه‌نویس) ذخیره کرده است، ازجمله داده‌هایی مانند مخاطبین، پیام‌ها و عکس‌ها.<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />داده‌های پشتیبان‌گیری‌شده جزو سهمیه ذخیره‌سازی Drive شما به حساب نمی‌آیند.<ph name="END_PARAGRAPH4" />
     <ph name="BEGIN_PARAGRAPH5" />می‌توانید این سرویس را در «تنظیمات» خاموش کنید.<ph name="END_PARAGRAPH5" /></translation>
-<translation id="8096438328987289870">برای ورود به سیستم، حسابی را انتخاب کنید:</translation>
 <translation id="80974698889265265">پین‌ها مطابقت ندارند</translation>
 <translation id="8101987792947961127">در راه‌اندازی مجدد بعدی پاکسازی لازم است</translation>
 <translation id="8102159139658438129">برای دیدن گزینه‌های تلفن متصل، به <ph name="LINK_BEGIN" />تنظیمات<ph name="LINK_END" /> بروید</translation>
-<translation id="8102652888659661176">پین اشتباه است.</translation>
 <translation id="8104696615244072556">‏دستگاه <ph name="IDS_SHORT_PRODUCT_NAME" /> شما Powerwash می‌شود و به نسخه قبلی باز می‌گردد.</translation>
 <translation id="8105368624971345109">خاموش کردن</translation>
 <translation id="8107015733319732394">‏«فروشگاه Google Play» در <ph name="DEVICE_TYPE" /> شما درحال نصب شدن است. ممکن است این کار چند دقیقه طول بکشد.</translation>
@@ -4538,7 +4510,6 @@
 <translation id="8184318863960255706">اطلاعات بیشتر</translation>
 <translation id="8185331656081929126">نمایش اعلان‌ها هنگامی که چاپگرهای جدیدی در شبکه شناسایی می‌شوند</translation>
 <translation id="8186609076106987817">سرور نتوانست فایل را پیدا کند.</translation>
-<translation id="8188120771410500975">&amp;بررسی املای فیلدهای نوشتاری</translation>
 <translation id="8188389033983459049">تنظیمات دستگاه را بررسی کنید و برای ادامه، آن را روشن کنید</translation>
 <translation id="8190193592390505034">اتصال به <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">مدیریت برنامه‌ها، افزونه‌ها و طرح‌های زمینه</translation>

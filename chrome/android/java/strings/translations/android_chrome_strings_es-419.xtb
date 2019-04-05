@@ -240,7 +240,6 @@
 <translation id="271033894570825754">Nuevo</translation>
 <translation id="2728754400939377704">Ordenar por sitio</translation>
 <translation id="2744248271121720757">Presiona una palabra para realizar una búsqueda instantánea o ver acciones relacionadas</translation>
-<translation id="2760323196215778921">También debes activar este permiso para Chrome. Para obtener más información, consulta la <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
 <translation id="2762000892062317888">recién</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> segundos restantes</translation>
 <translation id="2779651927720337254">error</translation>
@@ -963,7 +962,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="8037750541064988519"><ph name="DAYS" /> días restantes</translation>
 <translation id="804335162455518893">No se encontró la tarjeta SD</translation>
 <translation id="805047784848435650">Según tu historial de navegación</translation>
-<translation id="8051303708327298699">También debes activar estos permisos para Chrome. Para obtener más información, consulta la <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB disponibles</translation>
 <translation id="8058746566562539958">Abrir en una nueva pestaña de Chrome</translation>
 <translation id="8063895661287329888">Se produjo un error al agregar el marcador.</translation>

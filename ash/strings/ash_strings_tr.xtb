@@ -63,7 +63,6 @@
 <translation id="1919743966458266018">Görev yöneticisini açma kısayolu değişti. Lütfen <ph name="OLD_SHORTCUT" /> yerine <ph name="NEW_SHORTCUT" /> kısayolunu kullanın.</translation>
 <translation id="1923539912171292317">Otomatik tıklamalar</translation>
 <translation id="1928739107511554905">Güncellemeyi almak için dokunmatik ekranı kullanarak Chromebook'unuzu klavye takılıyken yeniden başlatın.</translation>
-<translation id="1942830294380034169">Taşma düğmesi</translation>
 <translation id="1951012854035635156">Asistan</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">Dilinizi ayarlayın</translation>
@@ -504,7 +503,7 @@
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Kablosuz: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofon kullanımda.</translation>
-<translation id="9084606467167974638">Menü konumunu aç/kapat</translation>
+<translation id="9084606467167974638">Menü konumunu değiştir</translation>
 <translation id="9089416786594320554">Giriş yöntemleri</translation>
 <translation id="9091626656156419976"><ph name="DISPLAY_NAME" /> adlı ekran kaldırıldı</translation>
 <translation id="9151726767154816831">Güncellemek için yeniden başlatın ve Powerwash uygulayın</translation>

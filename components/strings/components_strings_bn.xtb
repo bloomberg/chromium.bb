@@ -564,7 +564,7 @@
 <translation id="4072486802667267160">আপনার অর্ডার প্রক্রিয়া করার সময় একটি সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।</translation>
 <translation id="4075732493274867456">ক্লায়েন্ট ও সার্ভারটি কোনো অভিন্ন SSL প্রোটোকল সংস্করণ বা সাইফার স্যুট সমর্থন করে না।</translation>
 <translation id="4079302484614802869">প্রক্সি কনফিগারেশনটি .pac স্ক্রিপ্ট URL-এ ব্যবহার করাতে সেট থাকে স্থির প্রক্সি সার্ভারগুলিতে নয়৷</translation>
-<translation id="4092411512356034591"><ph name="DOMAIN" /> ব্যবহার করতে চান?</translation>
+<translation id="4092411512356034591"><ph name="DOMAIN" />-এ যেতে চান?</translation>
 <translation id="4098354747657067197">সামনে ধোঁকাবাজ সাইট</translation>
 <translation id="4103249731201008433">ডিভাইসের ক্রমিক সংখ্যা অবৈধ</translation>
 <translation id="410351446219883937">স্বতঃচালানো</translation>
@@ -649,6 +649,7 @@
 <translation id="4466881336512663640">ফর্মে করা পরিবর্তনগুলি সেভ হবে না। আপনি কি চালিয়ে যেতে চান?</translation>
 <translation id="4482953324121162758">এই সাইটটি অনুবাদ করা হবে না।</translation>
 <translation id="4490717597759821841">A7</translation>
+<translation id="4493480324863638523">ইউআরএলটি সঠিক নয়। অবশ্যই স্ট্যান্ডার্ড স্কিম সহ ইউআরএল হতে হবে, যেমন http://example.com বা https://example.com।</translation>
 <translation id="4503882053543859973">Architecture-D</translation>
 <translation id="4506176782989081258">যাচাইকরণের ত্রুটি: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">সিস্টেম প্রশাসকের সাথে যোগাযোগ করে দেখুন</translation>
@@ -1043,7 +1044,7 @@
 <translation id="6868206169573555318">আপডেট করার জন্য আবার লঞ্চ করুন</translation>
 <translation id="6874604403660855544">&amp;যোগ করাকে পুনরায় করুন</translation>
 <translation id="6884662655240309489">সাইজ ১</translation>
-<translation id="6884796835813057577">&lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt; ব্যবহার করতে চান?</translation>
+<translation id="6884796835813057577">&lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;-এ যেতে চান?</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">নীতি স্তর সমর্থিত নয়।</translation>
 <translation id="6895330447102777224">আপনার কার্ডটি নিশ্চিত করা হয়েছে</translation>

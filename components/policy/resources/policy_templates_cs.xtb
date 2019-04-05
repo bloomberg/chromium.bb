@@ -907,7 +907,7 @@ Pokud je zásada nastavena na hodnotu False nebo nastavena není, budou ikony vi
 
           Tato zásada řídí několik nastavení, včetně nastavení nakonfigurovaných pomocí existujících zásad pro rozšíření. Pokud je tato zásada nastavená, přepíše všechny starší nastavené zásady.
 
-          Tato zásada mapuje konfiguraci na ID rozšíření nebo adresu URL. Pokud je definováno ID rozšíření, použije se konfigurace pouze pro konkrétní rozšíření. Pomocí zvláštního ID <ph name="DEFAULT_SCOPE" /> lze nastavit výchozí konfiguraci. Tato konfigurace se použije pro všechna rozšíření, která v této zásadě nemají nastavenou vlastní konfiguraci. Pokud je definována adresa URL pro aktualizaci, použije se konfigurace pro všechna rozšíření, která mají v manifestu uvedenou přesně tuto adresu URL pro aktualizaci (viz <ph name="LINK_TO_EXTENSION_DOC1" />).
+          Tato zásada mapuje ID nebo adresu URL pro aktualizaci rozšíření na jeho konfiguraci. Pokud je definováno ID rozšíření, použije se konfigurace pouze pro konkrétní rozšíření. Pomocí zvláštního ID <ph name="DEFAULT_SCOPE" /> lze nastavit výchozí konfiguraci. Tato konfigurace se použije pro všechna rozšíření, která v této zásadě nemají nastavenou vlastní konfiguraci. Pokud je definována adresa URL pro aktualizaci, použije se konfigurace pro všechna rozšíření, která mají v manifestu uvedenou přesně tuto adresu URL pro aktualizaci (viz <ph name="LINK_TO_EXTENSION_DOC1" />).
 
           U instancí systému Windows, které nejsou připojené k doméně <ph name="MS_AD_NAME" />, je vynucená instalace omezena pouze na aplikace a rozšíření z Internetového obchodu Chrome.
 
@@ -1081,6 +1081,19 @@ Platné jsou tyto specifikace vzorů adres URL:
           Pokud tato zásada nastavena není, chování konkrétnějších zásad nebude ovlivněno.</translation>
 <translation id="2987155890997901449">Povolit rozšíření ARC</translation>
 <translation id="2987227569419001736">Ovládat používání rozhraní Web Bluetooth API</translation>
+<translation id="3011301228198307065">Nakonfiguruje v prohlížeči <ph name="PRODUCT_NAME" /> adresu URL výchozí domovské stránky a zabrání uživatelům, aby toto nastavení změnili.
+
+          Domovská stránka je stránka, která se otevírá tlačítkem Domovská stránka. Stránky, které se otevírají po spuštění, jsou určeny zásadami RestoreOnStartup.
+
+          Typ domovské stránky může být nastaven na adresu URL, kterou zde zadáte, nebo na stránku Nová karta. Pokud zvolíte stránku Nová karta, tato zásada se nebude uplatňovat.
+
+          Pokud toto nastavení aktivujete, uživatelé v prohlížeči <ph name="PRODUCT_NAME" /> nebudou moci změnit adresu URL domovské stránky. Jako domovskou stránku však stále budou moci nastavit stránku Nová karta.
+
+          Pokud tuto zásadu nenastavíte a není nastavená ani zásada HomepageIsNewTabPage, uživatelé si budou moci zvolit vlastní domovskou stránku.
+
+          Adresa URL musí mít standardní schéma, např. http://example.com nebo https://example.com.
+
+          Tato zásada je k dispozici jen v instancích systému Windows, které jsou připojené k doméně <ph name="MS_AD_NAME" />, nebo v instancích systému Windows 10 Pro nebo Enterprise, které jsou zaregistrované ke správě zařízení.</translation>
 <translation id="3016255526521614822">Seznam povolených aplikací k přidávání poznámek na obrazovku uzamčení v systému <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Počet povolených milníků pro vrácení zpět (rollback)</translation>
 <translation id="3023572080620427845">Adresa URL souboru XML, v němž jsou uvedeny adresy URL, které se mají načítat v alternativním prohlížeči.</translation>

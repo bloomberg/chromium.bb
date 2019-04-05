@@ -648,6 +648,7 @@
 <translation id="4466881336512663640">你對表單所做變更將會遺失。確定要繼續嗎？</translation>
 <translation id="4482953324121162758">系統不會翻譯這個網站。</translation>
 <translation id="4490717597759821841">A7</translation>
+<translation id="4493480324863638523">網址無效。網址必須採用標準架構，例如 http://example.com 或 https://example.com。</translation>
 <translation id="4503882053543859973">Architecture-D</translation>
 <translation id="4506176782989081258">驗證錯誤：<ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">與系統管理員聯絡</translation>
@@ -972,7 +973,7 @@
 <translation id="6386120369904791316">{COUNT,plural, =1{以及另外 1 個建議項目}other{以及另外 # 個建議項目}}</translation>
 <translation id="6387754724289022810">只要將卡片資訊與帳單地址儲存到你的 Google 帳戶中和這部裝置上，下次即可更快完成付款程序。</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
-<translation id="6401136357288658127">這項政策已遭到淘汰，請改用 <ph name="NEW_POLICY" /> 政策。</translation>
+<translation id="6401136357288658127">這項政策目前已淘汰，請改用 <ph name="NEW_POLICY" /> 政策。</translation>
 <translation id="6404511346730675251">編輯書籤</translation>
 <translation id="6406765186087300643">C0 (信封)</translation>
 <translation id="6410264514553301377">輸入 <ph name="CREDIT_CARD" /> 的到期日和信用卡安全碼</translation>

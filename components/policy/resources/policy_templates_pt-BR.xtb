@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
 <translation id="1002439864875515590">Se esta política for definida como uma string em branco ou não for configurada, a opção de preenchimento automático não será exibida no <ph name="PRODUCT_OS_NAME" /> durante o fluxo de login do usuário.
-      Se esta política for definida como uma string que representa um nome de domínio, uma opção de preenchimento automático será exibida no <ph name="PRODUCT_OS_NAME" /> durante o login do usuário, permitindo que o usuário digite apenas o nome dele sem a extensão de nome de domínio.  O usuário não poderá substituir essa extensão de nome de domínio.
+      Se esta política for definida como uma string que representa um nome de domínio, uma opção de preenchimento automático será exibida no <ph name="PRODUCT_OS_NAME" /> durante o login, permitindo que o usuário digite apenas o nome dele sem a extensão de nome de domínio.  O usuário não poderá substituir essa extensão de nome de domínio.
       Se o valor da política não for um domínio válido, a política não será aplicada.</translation>
 <translation id="101438888985615157">Girar a tela em 180 graus</translation>
 <translation id="1016912092715201525">Configura as verificações do navegador padrão no <ph name="PRODUCT_NAME" /> e impede que os usuários as modifiquem.
@@ -911,7 +911,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
       Se esta configuração for ativada ou não for definida, as páginas da Web poderão usar JavaScript, mas o usuário poderá alterá-la.</translation>
 <translation id="2747157663401642394">Define as configurações do gerenciamento de extensão do <ph name="PRODUCT_NAME" />.
 
-          Esta política controla várias configurações, inclusive aquelas controladas pelas políticas existentes relacionadas a extensões. Esta política modifica todas as políticas legadas se ambas estiverem definidas.
+          Esta política controla várias configurações, inclusive aquelas controladas pelas políticas existentes relacionadas a extensões. Esta política substituirá todas as políticas legadas se ambas estiverem definidas.
 
           Esta política mapeia um código de extensão ou um URL de atualização para a própria configuração. Com um código de extensão, a configuração será aplicada apenas à extensão especificada. Uma configuração padrão pode ser definida para o código especial <ph name="DEFAULT_SCOPE" />, que será aplicado a todas as extensões que não tiverem um conjunto de configurações personalizadas nesta política. Com um URL de atualização, a configuração será aplicada a todas as extensões com o URL de atualização exato indicado no manifesto dessa extensão, como descrito em <ph name="LINK_TO_EXTENSION_DOC1" />.
 
@@ -1087,6 +1087,19 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
           Se esta política não for definida, o comportamento das políticas mais específicas não será afetado.</translation>
 <translation id="2987155890997901449">Ativar ARC</translation>
 <translation id="2987227569419001736">Controla o uso da API Web Bluetooth</translation>
+<translation id="3011301228198307065">Configura o URL padrão da página inicial no <ph name="PRODUCT_NAME" /> e impede os usuários de alterá-lo.
+
+          A página inicial é aquela aberta pelo botão "Página inicial". As páginas que são abertas na inicialização são controladas pelas políticas RestoreOnStartup.
+
+          O tipo da página inicial pode ser configurado como um URL que você especifica aqui ou como a página nova guia. Se você selecionar a página nova guia, esta política não terá efeito.
+
+          Se você ativar essa configuração, os usuários não poderão alterar o URL da página inicial deles no <ph name="PRODUCT_NAME" />, mas eles ainda poderão escolher a página nova guia como página inicial.
+
+          Se esta política não for definida, o usuário poderá escolher a própria página inicial caso HomepageIsNewTabPage também não esteja definida.
+
+          O URL precisa ter um esquema padrão, como "http://example.com" ou "https://example.com".
+
+          Esta política está disponível apenas em instâncias do Windows associadas a um domínio <ph name="MS_AD_NAME" /> ou instâncias do Windows 10 Pro ou Enterprise inscritas no gerenciamento de dispositivos.</translation>
 <translation id="3016255526521614822">Colocar na lista de permissões os apps de anotação permitidos na tela de bloqueio do <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="3021562480854470924">Número de marcos em que a reversão é permitida</translation>
 <translation id="3023572080620427845">URL de um arquivo XML que contém URLs que serão carregados em um navegador alternativo.</translation>
@@ -2799,7 +2812,7 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
 
           Se esta política for definida como falsa, a inicialização em CA sempre estará desativada.
 
-          Se você definir esta política, os usuários não poderão alterá-la ou modificá-la.
+          Se você definir esta política, os usuários não poderão alterá-la ou substituí-la.
 
           Se esta política não for definida, a inicialização em CA estará desativada e não poderá ser ativada pelo usuário.</translation>
 <translation id="6647965994887675196">Se definida com verdadeira, será possível criar e utilizar usuários supervisionados.

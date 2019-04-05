@@ -1089,6 +1089,19 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Comportamentul politicilor specifice nu va fi afectat dacă setarea acestei politici este anulată.</translation>
 <translation id="2987155890997901449">Activează ARC</translation>
 <translation id="2987227569419001736">Controlează folosirea API-ului Web Bluetooth</translation>
+<translation id="3011301228198307065">Configurează adresa URL a paginii de pornire prestabilite în <ph name="PRODUCT_NAME" /> și nu le permite utilizatorilor să o schimbe.
+
+          Pagina de pornire este cea pe care o deschizi apăsând pe butonul Pagina de pornire. Paginile care se deschid la pornire sunt controlate de politicile RestoreOnStartup.
+
+          Tipul paginii de pornire poate fi setat la o adresă URL pe care o specifici aici sau la pagina Filă nouă. Dacă selectezi pagina Filă nouă, atunci această politică este ignorată.
+
+          Dacă activezi această setare, utilizatorii nu pot modifica adresa URL a paginii de pornire din <ph name="PRODUCT_NAME" />, dar pot, totuși, să aleagă pagina Filă nouă ca pagină de pornire.
+
+          Dacă această politică nu este configurată, utilizatorii vor putea să aleagă singuri pagina de pornire atunci când nu este setată nici HomepageIsNewTabPage.
+
+          Adresa URL trebuie să aibă o schemă standard, de exemplu: „http://example.com” sau ”https://example.com”.
+
+          Această politică este disponibilă doar în instanțe Windows asociate unui domeniu <ph name="MS_AD_NAME" />, instanțele Windows 10 Pro sau instanțele Enterprise care au fost înscrise pentru gestionarea dispozitivului.</translation>
 <translation id="3016255526521614822">Trece în lista albă aplicațiile pentru creat note permise pe ecranul de blocare din <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Numărul de repere pentru care este permisă revenirea la versiunea anterioară</translation>
 <translation id="3023572080620427845">Adresa URL a unui fișier XML care conține adrese URL ce trebuie încărcate într-un browser secundar.</translation>
@@ -2816,7 +2829,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Dacă această politică nu este configurată, va fi folosită valoarea „3”, iar utilizatorul o va putea modifica.</translation>
 <translation id="663685822663765995">Restricționează modul de printare color</translation>
 <translation id="6641981670621198190">Dezactivează compatibilitatea pentru API-uri grafice 3D</translation>
-<translation id="6646056064606561298">Activează pornirea la politica de gestionare a alimentării pe c.a.
+<translation id="6646056064606561298">Activează politica de gestionare a alimentării privind pornirea pe c.a.
 
           Pornirea pe c.a. oferă sistemului posibilitatea să pornească automat din starea OPRIT/Hibernare când este conectat cablul de alimentare.
 

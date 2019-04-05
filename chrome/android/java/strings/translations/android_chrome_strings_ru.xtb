@@ -240,7 +240,6 @@
 <translation id="271033894570825754">Новый</translation>
 <translation id="2728754400939377704">Сортировать по имени домена</translation>
 <translation id="2744248271121720757">Нажмите на слово, чтобы увидеть связанные с ним результаты поиска и действия.</translation>
-<translation id="2760323196215778921">Это разрешение нужно предоставить не только в Chrome, но и в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="2762000892062317888">только что</translation>
 <translation id="2777555524387840389">Осталось <ph name="SECONDS" /> сек.</translation>
 <translation id="2779651927720337254">ошибка</translation>
@@ -330,6 +329,7 @@
 <translation id="3443221991560634068">Обновить страницу</translation>
 <translation id="3445014427084483498">Только что</translation>
 <translation id="3452612588551937789">Войдите в аккаунт Google, чтобы пользоваться закладками, паролями, историей и другими вашими настройками на любом устройстве.</translation>
+<translation id="3478363558367712427">Вы можете выбрать другую поисковую систему.</translation>
 <translation id="3492207499832628349">Новая вкладка инкогнито</translation>
 <translation id="3493531032208478708">Подробнее <ph name="BEGIN_LINK" />о рекомендованном контенте<ph name="END_LINK" />…</translation>
 <translation id="3513704683820682405">Дополненная реальность</translation>
@@ -963,7 +963,6 @@
 <translation id="8037750541064988519">Осталось <ph name="DAYS" /> дн.</translation>
 <translation id="804335162455518893">SD-карта не найдена</translation>
 <translation id="805047784848435650">На основе вашей истории просмотров</translation>
-<translation id="8051303708327298699">Эти разрешения нужно предоставить не только в Chrome, но и в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="8051695050440594747">Доступно <ph name="MEGABYTES" /> МБ</translation>
 <translation id="8058746566562539958">Открыть в новой вкладке</translation>
 <translation id="8063895661287329888">Не удалось добавить закладку.</translation>
@@ -987,7 +986,7 @@
 <translation id="8200772114523450471">Возобновить</translation>
 <translation id="8209050860603202033">Открыть изображение</translation>
 <translation id="8220488350232498290">Скачанные файлы: <ph name="GIGABYTES" /> ГБ</translation>
-<translation id="8224471946457685718">Скачивать "Новости для вас" только по Wi-Fi</translation>
+<translation id="8224471946457685718">Скачивать "Статьи для вас" только по Wi-Fi</translation>
 <translation id="8232956427053453090">Не удалять данные</translation>
 <translation id="8249310407154411074">Переместить в начало</translation>
 <translation id="8250920743982581267">Документы</translation>

@@ -114,11 +114,9 @@
 <translation id="1167199480815330007">보안 키 뒷면에서 6자리 PIN을 찾으세요.</translation>
 <translation id="1168020859489941584"><ph name="TIME_REMAINING" /> 후에 파일이 열립니다...</translation>
 <translation id="1168100932582989117">Google 이름 서버</translation>
-<translation id="1169909785351611170">잘못된 PIN입니다.</translation>
 <translation id="1171135284592304528">키보드 포커스가 이동할 때 키보드 포커스가 있는 객체를 강조표시합니다.</translation>
 <translation id="1172750555846831341">위로 넘김</translation>
 <translation id="1173894706177603556">이름 바꾸기</translation>
-<translation id="1173919438868967364">계정 선택</translation>
 <translation id="1174073918202301297">바로가기 추가됨</translation>
 <translation id="117445914942805388">동기화된 모든 기기 및 Google 계정에서 인터넷 사용 기록을 삭제하려면 <ph name="BEGIN_LINK" />동기화 설정을 방문<ph name="END_LINK" />하세요.</translation>
 <translation id="1175364870820465910">인쇄(&amp;P)</translation>
@@ -237,7 +235,6 @@
 <translation id="1361655923249334273">사용되지 않음</translation>
 <translation id="1361872463926621533">시작 시 소리 재생</translation>
 <translation id="1364702626840264065">{NUM_TABS,plural, =1{탭 닫기}other{탭 닫기}}</translation>
-<translation id="1365804713255256726">기기를 재설정할 수 없습니다. <ph name="ERROR_CODE" /> 오류입니다.</translation>
 <translation id="1366177842110999534"><ph name="DEVICE_TYPE" />에서 Linux 도구, 편집기, IDE를 실행하세요. &lt;a target="_blank" href="<ph name="URL" />"&gt;자세히 알아보기&lt;/a&gt;</translation>
 <translation id="1367951781824006909">파일 선택</translation>
 <translation id="1371301976177520732">북마크, 비밀번호, 방문 기록 등을 모든 기기에 동기화</translation>
@@ -761,7 +758,6 @@
 <translation id="2200356397587687044">계속하려면 Chrome에 권한이 필요함</translation>
 <translation id="220138918934036434">버튼 숨기기</translation>
 <translation id="2202898655984161076">프린터를 나열하는 데 문제가 발생했습니다. <ph name="CLOUD_PRINT_NAME" />에 성공적으로 등록되지 못한 프린터가 있을 수 있습니다.</translation>
-<translation id="2203484353475059657">확인값이 일치하지 않습니다.</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />주소 표시줄<ph name="END_LINK" />에서 사용되는 검색엔진입니다.</translation>
 <translation id="2204034823255629767">입력한 항목 조회 및 변경</translation>
 <translation id="220792432208469595">사용 및 진단 데이터를 보냅니다. 이 기기는 현재 진단, 기기 및 앱 사용 데이터를 Google에 자동으로 보내고 있습니다. 이 데이터는 시스템 및 앱 안정성 등을 개선하는 데 활용됩니다. 일부 수집 데이터는 Google 앱과 파트너(Android 개발자 등)에게도 도움을 줍니다. 이 설정은 소유자가 지정합니다. 추가 웹 및 앱 활동이 사용 설정되어 있다면 이 데이터가 Google 계정에 저장될 수 있습니다. <ph name="BEGIN_LINK1" />자세히 알아보기<ph name="END_LINK1" /></translation>
@@ -857,7 +853,6 @@
 <translation id="2342740338116612727">북마크 추가됨</translation>
 <translation id="2343747224442182863">이 탭에 포커스</translation>
 <translation id="2344028582131185878">자동 다운로드</translation>
-<translation id="2344214284954353199">PIN이 너무 짧습니다.</translation>
 <translation id="2345723121311404059"><ph name="PRINTER_NAME" />에서 1페이지 인쇄</translation>
 <translation id="2347644257713614136">행아웃 및 교육용 Cast 사용에는 Google 개인정보처리방침이 적용됩니다.</translation>
 <translation id="2348176352564285430">앱: <ph name="ARC_PROCESS_NAME" /></translation>
@@ -924,7 +919,6 @@
 <translation id="2453021845418314664">고급 동기화 설정</translation>
 <translation id="2453860139492968684">완료</translation>
 <translation id="2454247629720664989">키워드</translation>
-<translation id="2455122176076606103">잘못된 PIN 입력 시도가 너무 많아 보안 키가 잠겼습니다. PIN 관련 작업을 실행하려면 보안 키를 재설정해야 합니다.</translation>
 <translation id="245661998428026871">PIP 모드로 재생 중인 동영상이 중지됩니다.</translation>
 <translation id="2457246892030921239"><ph name="APP_NAME" />에서 <ph name="VOLUME_NAME" />에 있는 파일을 복사하려고 합니다.</translation>
 <translation id="2458591546854598341">기기 관리 토큰이 잘못되었습니다.</translation>
@@ -946,7 +940,6 @@
 <translation id="2487067538648443797">새 북마크 추가</translation>
 <translation id="2489829450872380594">다음번에는 새로운 휴대전화를 통해 <ph name="DEVICE_TYPE" />이(가) 잠금 해제됩니다. 설정에서 Smart Lock을 사용 중지할 수 없습니다.</translation>
 <translation id="2489918096470125693">폴더 추가(&amp;F)...</translation>
-<translation id="2490575462301446554">PIN이 설정되었습니다.</translation>
 <translation id="249113932447298600">죄송합니다. 현재 이 기기(<ph name="DEVICE_LABEL" />)는 지원되지 않습니다.</translation>
 <translation id="249303669840926644">등록을 완료할 수 없습니다.</translation>
 <translation id="2495777824269688114">더 많은 기능을 알아보거나 궁금한 점을 해결합니다. 도움말을 보려면 '?' 아이콘을 선택하세요.</translation>
@@ -1333,7 +1326,6 @@
 <translation id="3085752524577180175">SOCKS 호스트</translation>
 <translation id="3088325635286126843">이름 바꾸기(&amp;R)...</translation>
 <translation id="3089137131053189723">검색 기록이 삭제되었습니다</translation>
-<translation id="3089732468175192706">{NUM_ATTEMPTS,plural, =1{잘못된 PIN입니다. 앞으로 한 번만 더 시도할 수 있습니다.}other{잘못된 PIN입니다. 앞으로 #번 더 시도할 수 있습니다.}}</translation>
 <translation id="3090193911106258841">오디오 및 비디오 입력 장치에 액세스</translation>
 <translation id="3090819949319990166">외부 crx 파일을 <ph name="TEMP_CRX_FILE" />에 복사할 수 없습니다.</translation>
 <translation id="3090871774332213558">'<ph name="DEVICE_NAME" />' 페어링됨</translation>
@@ -1414,7 +1406,6 @@
 <translation id="323803881985677942">확장 프로그램 옵션 열기</translation>
 <translation id="3241680850019875542">압축할 확장 프로그램의 루트 디렉토리를 선택합니다. 확장 프로그램을 업데이트하려면 다시 사용할 비공개 키 파일도 선택합니다.</translation>
 <translation id="3244294424315804309">계속 음소거</translation>
-<translation id="3246263372552241767">보안 키가 삭제되었습니다.</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - 네트워크 오류</translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" />(<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;인증서에 속하지 않음&gt;</translation>
@@ -1555,7 +1546,6 @@
 <translation id="3462413494201477527">계정 설정을 취소하시겠습니까?</translation>
 <translation id="3464012987031883895">사이트에서 오디오 입력을 공유하는 중입니다.</translation>
 <translation id="346431825526753"><ph name="CUSTODIAN_EMAIL" />님이 관리하는 어린이용 계정입니다.</translation>
-<translation id="3467267818798281173">Google에 추천 단어 요청</translation>
 <translation id="3468275649641751422">동영상 또는 오디오 파일 스트림</translation>
 <translation id="3468999815377931311">Android 휴대전화</translation>
 <translation id="3470442499439619530">이 사용자 삭제</translation>
@@ -1856,7 +1846,6 @@
 <translation id="3898521660513055167">토큰 상태</translation>
 <translation id="389901847090970821">키보드 선택</translation>
 <translation id="3899879303189199559">1년 이상 오프라인 상태</translation>
-<translation id="3900105072479897941">재설정이 허용되지 않습니다. 일부 보안 키는 삽입 후 몇 초 내에 재설정해야 합니다. 따라서 더 빠르게 시도해 보는 것이 좋습니다.</translation>
 <translation id="3900966090527141178">비밀번호 내보내기</translation>
 <translation id="3901991538546252627"><ph name="NAME" />에 연결 중</translation>
 <translation id="3905761538810670789">앱 복구</translation>
@@ -1917,7 +1906,6 @@
 <translation id="3981760180856053153">잘못된 저장 유형을 입력했습니다.</translation>
 <translation id="3982375475032951137">몇 단계 만에 간단하게 브라우저를 설정하세요.</translation>
 <translation id="3983400541576569538">일부 앱 데이터가 사라질 수 있습니다.</translation>
-<translation id="3983503144326094739">잘못된 PIN 입력 시도가 너무 많아 보안 키가 일시적으로 잠겼습니다. 보안 키를 제거한 후 다시 삽입하여 잠금을 해제하세요.</translation>
 <translation id="3983586614702900908">알 수 없는 공급업체의 기기</translation>
 <translation id="3984159763196946143">데모 모드를 시작할 수 없음</translation>
 <translation id="3987348946546879621">데이터를 절약했습니다</translation>
@@ -2044,7 +2032,6 @@
 <translation id="4201546031411513170">언제든지 설정에서 동기화할 항목을 선택할 수 있습니다.</translation>
 <translation id="4206144641569145248">외계인</translation>
 <translation id="4206323443866416204">의견 보고서</translation>
-<translation id="4206944295053515692">Google에 추천 단어 요청</translation>
 <translation id="4208390505124702064"><ph name="SITE_NAME" /> 검색</translation>
 <translation id="4209092469652827314">크게</translation>
 <translation id="4209464433672152343">인쇄 준비를 위해 문서를 <ph name="BEGIN_LINK_HELP" />Google에 전송<ph name="END_LINK_HELP" />했습니다. <ph name="BEGIN_LINK_DASHBOARD" />Google 클라우드 프린트 대시보드<ph name="END_LINK_DASHBOARD" />에서 프린터와 프린터 기록을 확인, 수정, 관리할 수 있습니다.</translation>
@@ -2081,7 +2068,6 @@
 <translation id="4268025649754414643">키 암호화</translation>
 <translation id="4270393598798225102">버전 <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">일치하는 항목이 없습니다.</translation>
-<translation id="4273065492769210106">앞으로 <ph name="RETRIES" />번 더 시도할 수 있습니다.</translation>
 <translation id="4275830172053184480">기기 다시 시작</translation>
 <translation id="4278101229438943600">어시스턴트 이용 가능</translation>
 <translation id="4278390842282768270">허용됨</translation>
@@ -2220,7 +2206,6 @@
 <translation id="4524832533047962394">제공된 등록 모드는 이 버전의 운영체제에서 지원되지 않습니다. 최신 버전을 실행하고 있는지 확인하세요.</translation>
 <translation id="4525382759303819021">Play 스토어 앱에서 최신 업데이트 및 추천받기</translation>
 <translation id="4530494379350999373">오리진</translation>
-<translation id="4531586020343813806">재설정을 지원하지 않는 보안 키입니다.</translation>
 <translation id="4533846798469727141">이제 "Hey Google"이라고 말하세요.</translation>
 <translation id="4533985347672295764">CPU 시간</translation>
 <translation id="4534661889221639075">다시 시도하세요.</translation>
@@ -2449,7 +2434,6 @@
 <translation id="4898011734382862273">'<ph name="CERTIFICATE_NAME" />' 인증서는 인증 기관을 나타냅니다.</translation>
 <translation id="489985760463306091">유해한 소프트웨어 삭제를 완료하려면 컴퓨터를 다시 시작하세요.</translation>
 <translation id="4900392736118574277">시작 페이지가 <ph name="URL" />(으)로 변경되었습니다.</translation>
-<translation id="490074449735753175">웹 서비스를 이용하여 철자 오류 문제 해결</translation>
 <translation id="49027928311173603">서버에서 다운로드한 정책이 잘못됨: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4907161631261076876">이 파일은 위험할 수 있기 때문에 일반적으로 다운로드하지 않습니다.</translation>
 <translation id="4907306957610201395">권한 카테고리</translation>
@@ -2463,7 +2447,6 @@
 <translation id="4918086044614829423">수락</translation>
 <translation id="4918221908152712722"><ph name="APP_NAME" /> 설치(다운로드 필요 없음)</translation>
 <translation id="4920887663447894854">이 페이지에서 사용자 위치 추적이 차단된 사이트는 다음과 같습니다.</translation>
-<translation id="4922897038695506037">'<ph name="URL_HOST" />'이(가) 추가 승인을 요청했습니다.</translation>
 <translation id="492299503953721473">Android 앱 삭제</translation>
 <translation id="4923279099980110923">네, 돕고 싶습니다.</translation>
 <translation id="4924352752174756392">12배</translation>
@@ -2552,6 +2535,7 @@
 <translation id="5074318175948309511">새로운 설정을 적용하기 전에 페이지를 다시 로드해야 할 수도 있습니다.</translation>
 <translation id="5075131525758602494">SIM PIN 입력</translation>
 <translation id="5078638979202084724">모든 탭 북마크</translation>
+<translation id="5078796286268621944">잘못된 PIN</translation>
 <translation id="5079950360618752063">추천 비밀번호 사용</translation>
 <translation id="5084230410268011727">사이트에서 모션 및 조도 센서 사용 허용</translation>
 <translation id="5085162214018721575">업데이트를 확인하는 중</translation>
@@ -2699,7 +2683,6 @@
 <translation id="5319359161174645648">Google에서 추천하는 Chrome</translation>
 <translation id="5319566035256672173">이 기기는 더 이상 최신 소프트웨어 업데이트를 받지 않습니다. 업그레이드를 고려해 주시기 바랍니다.</translation>
 <translation id="532247166573571973">서버 접속이 불가능할 수 있습니다. 나중에 다시 시도해 주세요.</translation>
-<translation id="5324245805087635250">PIN을 변경하려면 &lt;i&gt;현재&lt;/i&gt; PIN을 입력하세요. 현재 PIN을 모르면 보안 키를 재설정하여 PIN을 삭제해야 합니다.</translation>
 <translation id="5324780743567488672">사용자 위치를 사용하여 자동으로 시간대 설정</translation>
 <translation id="5327248766486351172">이름</translation>
 <translation id="5327570636534774768">이 기기는 다른 도메인에서 관리하는 것으로 표시되어 있습니다. 데모 모드를 설정하기 전에 관련 도메인에서 기기의 프로비저닝을 해제하세요.</translation>
@@ -2747,7 +2730,6 @@
 <translation id="540296380408672091"><ph name="HOST" />에서 쿠키 항상 차단</translation>
 <translation id="5405146885510277940">설정 초기화</translation>
 <translation id="5408750356094797285">확대/축소: <ph name="PERCENT" /></translation>
-<translation id="5409075533903495802">PIN에 잘못된 문자가 있습니다.</translation>
 <translation id="5411472733320185105">다음 호스트와 도메인에서 프록시 설정을 사용 안함:</translation>
 <translation id="5414566801737831689">방문하는 웹사이트의 아이콘 조회</translation>
 <translation id="5417312524372586921">브라우저 테마</translation>
@@ -2858,7 +2840,6 @@
 <translation id="55601339223879446">디스플레이에서 바탕화면 경계를 조정합니다.</translation>
 <translation id="5562781907504170924">이 탭이 블루투스 기기에 연결되었습니다.</translation>
 <translation id="5563234215388768762">Google 검색 또는 URL 입력</translation>
-<translation id="5567950944308676169">보안 키를 꽂고 활성화하세요.</translation>
 <translation id="5567989639534621706">애플리케이션 캐시</translation>
 <translation id="5568069709869097550">로그인할 수 없음</translation>
 <translation id="5568144734023334204">Android 저장용량</translation>
@@ -2947,7 +2928,6 @@
 <translation id="5696143504434933566">'<ph name="EXTENSION_NAME" />'의 악용사례 신고</translation>
 <translation id="5696679855467848181">현재 사용 중인 PPD 파일: <ph name="PPD_NAME" /></translation>
 <translation id="5699533844376998780">확장 프로그램 '<ph name="EXTENSION_NAME" />'이(가) 추가되었습니다.</translation>
-<translation id="5699804453758089950">보안 키를 다시 탭하여 요청을 완료합니다.</translation>
 <translation id="570043786759263127">Google Play 앱 및 서비스</translation>
 <translation id="5700836101007545240">관리자가 연결 추가를 허용하지 않았습니다.</translation>
 <translation id="5701080607174488915">서버에서 정책을 가져오는 중에 오류가 발생했습니다.</translation>
@@ -3251,7 +3231,6 @@
 <translation id="6156323911414505561">북마크바 표시</translation>
 <translation id="6156863943908443225">스크립트 캐시</translation>
 <translation id="6156960295318603523">언어 설정</translation>
-<translation id="6159328879826063795">보안 키가 요청된 기능을 지원하지 않습니다</translation>
 <translation id="6160625263637492097">인증에 사용할 인증서 제공</translation>
 <translation id="6163363155248589649">보통(&amp;N)</translation>
 <translation id="6163522313638838258">모두 펼치기...</translation>
@@ -3309,7 +3288,6 @@
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6247802389331535091">시스템: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="624789221780392884">업데이트 준비 완료</translation>
-<translation id="6248279564564080162">초기화되었습니다.</translation>
 <translation id="6248988683584659830">설정 검색</translation>
 <translation id="6251870443722440887">GDI 핸들</translation>
 <translation id="6251889282623539337"><ph name="DOMAIN" /> 서비스 약관</translation>
@@ -3373,7 +3351,6 @@
 <translation id="6352773953037195952">가장 높음</translation>
 <translation id="6354918092619878358">SECG 타원 곡선 secp256r1(또는 ANSI X9.62 prime256v1, NIST P-256)</translation>
 <translation id="635609604405270300">기기를 계속 켜두세요.</translation>
-<translation id="6356138805250111037">브라우저에 입력한 텍스트를 Google에 보내어 더 나은 맞춤법 검사 기능 이용</translation>
 <translation id="63566973648609420">암호를 아는 사람만 암호화된 데이터를 읽을 수 있습니다. 암호는 Google로 전송되거나 Google에 저장되지 않습니다. 암호가 기억나지 않거나 이 설정을 변경하려면 <ph name="BEGIN_LINK" />동기화를 재설정<ph name="END_LINK" />해야 합니다.</translation>
 <translation id="6357619544108132570"><ph name="SHORT_PRODUCT_NAME" /> 가족이 되신 것을 환영합니다. 뛰어난 기능을 경험해 보세요.</translation>
 <translation id="6358884629796491903">용</translation>
@@ -3539,7 +3516,6 @@
 <translation id="6622980291894852883">이미지 계속 차단</translation>
 <translation id="6624687053722465643">달콤</translation>
 <translation id="6628328486509726751">업로드 시간: <ph name="WEBRTC_LOG_UPLOAD_TIME" /></translation>
-<translation id="662887686112111256">앞으로 한 번만 더 시도할 수 있습니다.</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" />에서 사용자를 대신하여 인증하기 위해 인증서에 대한 영구적인 액세스 권한을 요청합니다.</translation>
 <translation id="6635956300022133031">텍스트 음성 변환 기능의 음성을 선택하고 맞춤설정합니다.</translation>
 <translation id="6637585982786704944">사용자가 허가한 앱 및 웹사이트는 정상적인 작동을 위해 필요한 계정 정보에 액세스할 수 있습니다.
@@ -3555,7 +3531,6 @@
 <translation id="6645437135153136856">선택한 Google 클라우드 프린트 기기는 더 이상 지원되지 않습니다. <ph name="BR" /> 컴퓨터의 시스템 설정에서 프린터를 설정해 보세요.</translation>
 <translation id="6647228709620733774">Netscape 인증 기관 취소 URL</translation>
 <translation id="6647838571840953560">현재 <ph name="CHANNEL_NAME" /> 사용 중</translation>
-<translation id="6648051959475508072">보안 키 활성화됨...</translation>
 <translation id="6648911618876616409">중요 업데이트를 설치할 준비가 되었습니다. 시작하려면 로그인하세요.</translation>
 <translation id="6649018507441623493">잠시 기다려 주세요.</translation>
 <translation id="6649563841575838401">보관 파일 형식이 지원되지 않거나 파일이 손상되었습니다.</translation>
@@ -4161,7 +4136,6 @@
 <translation id="7631014249255418691">Linux 앱 및 파일이 성공적으로 백업되었습니다.</translation>
 <translation id="7631887513477658702">해당 유형의 파일 항상 열기(&amp;A)</translation>
 <translation id="7632948528260659758">다음 키오스크 앱을 업데이트하지 못했습니다.</translation>
-<translation id="76341863042884733">PIN은 보안 키를 보호하는 데 사용됩니다.</translation>
 <translation id="763632859238619983">모든 사이트에서 결제 핸들러 설치 허용 안함</translation>
 <translation id="7638605456503525968">직렬 포트</translation>
 <translation id="7639178625568735185">확인</translation>
@@ -4449,8 +4423,8 @@
 <translation id="8028993641010258682">크기</translation>
 <translation id="8030656706657716245">프린터 추가</translation>
 <translation id="8032244173881942855">탭을 전송할 수 없습니다.</translation>
+<translation id="8033827949643255796">선택됨</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{시크릿 창에서 모두 열기(I)}=1{시크릿 창에서 열기(I)}other{시크릿 창에서 #개 모두 열기(I)}}</translation>
-<translation id="8034467234497743242">PIN 설정을 지원하지 않는 보안 키입니다.</translation>
 <translation id="8037117027592400564">음성 출력 기능을 사용한 모든 음성 텍스트 조회</translation>
 <translation id="8037357227543935929">요청(기본값)</translation>
 <translation id="803771048473350947">파일</translation>
@@ -4487,11 +4461,9 @@
     <ph name="BEGIN_PARAGRAPH3" />앱 데이터에는 연락처, 메시지, 사진 등 앱에서 개발자 설정에 따라 저장한 모든 데이터가 포함될 수 있습니다.<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />백업 데이터는 드라이브 스토리지 용량에 포함되지 않습니다.<ph name="END_PARAGRAPH4" />
     <ph name="BEGIN_PARAGRAPH5" />설정에서 이 서비스를 사용 중지할 수 있습니다.<ph name="END_PARAGRAPH5" /></translation>
-<translation id="8096438328987289870">로그인할 계정 선택:</translation>
 <translation id="80974698889265265">PIN이 일치하지 않습니다.</translation>
 <translation id="8101987792947961127">다음에 재부팅할 때 Powerwash 필요</translation>
 <translation id="8102159139658438129"><ph name="LINK_BEGIN" />설정<ph name="LINK_END" />으로 이동해 연결된 휴대전화의 옵션을 확인하세요.</translation>
-<translation id="8102652888659661176">잘못된 PIN입니다.</translation>
 <translation id="8104696615244072556"><ph name="IDS_SHORT_PRODUCT_NAME" /> 기기를 Powerwash한 다음 이전 버전으로 돌아가세요.</translation>
 <translation id="8105368624971345109">사용 중지</translation>
 <translation id="8107015733319732394"><ph name="DEVICE_TYPE" />에 Google Play 스토어를 설치합니다. 설치하는 데 몇 분 정도 걸릴 수 있습니다.</translation>
@@ -4540,7 +4512,6 @@
 <translation id="8184318863960255706">추가 정보</translation>
 <translation id="8185331656081929126">네트워크에 새 프린터가 감지되면 알림 표시</translation>
 <translation id="8186609076106987817">서버에서 파일을 찾을 수 없습니다.</translation>
-<translation id="8188120771410500975">입력란 맞춤법 확인(&amp;C)</translation>
 <translation id="8188389033983459049">계속하려면 기기 설정을 확인하고 사용 설정하세요.</translation>
 <translation id="8190193592390505034"><ph name="PROVIDER_NAME" />에 연결 중</translation>
 <translation id="8191230140820435481">앱, 확장 프로그램 및 테마 관리</translation>

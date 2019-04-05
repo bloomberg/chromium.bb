@@ -240,7 +240,6 @@
 <translation id="271033894570825754">新しいファイル</translation>
 <translation id="2728754400939377704">サイトで並べ替え</translation>
 <translation id="2744248271121720757">単語をタップすると、検索をすばやく実行したり、関連する操作メニューを確認したりできます</translation>
-<translation id="2760323196215778921">この権限を Chrome に対して有効にすることも必要です。詳しくは、<ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />をご覧ください。</translation>
 <translation id="2762000892062317888">たった今</translation>
 <translation id="2777555524387840389">残り <ph name="SECONDS" /> 秒</translation>
 <translation id="2779651927720337254">失敗</translation>
@@ -694,7 +693,7 @@
 <translation id="614940544461990577">次をお試しください</translation>
 <translation id="6154478581116148741">この端末からパスワードをエクスポートするには、[設定] で画面ロックをオンにしてください。</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> のデータを削減</translation>
-<translation id="6165508094623778733">詳しく見る</translation>
+<translation id="6165508094623778733">詳細</translation>
 <translation id="6177111841848151710">現在の検索エンジンに対してはブロック</translation>
 <translation id="6177390657002841081">データセーバーをオンにする</translation>
 <translation id="6181444274883918285">サイトの例外を追加</translation>
@@ -964,7 +963,6 @@
 <translation id="8037750541064988519">残り <ph name="DAYS" /> 日</translation>
 <translation id="804335162455518893">SD カードが見つかりません</translation>
 <translation id="805047784848435650">閲覧履歴から</translation>
-<translation id="8051303708327298699">これらの権限を Chrome に対して有効にすることも必要です。詳しくは、<ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />をご覧ください。</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB 利用可</translation>
 <translation id="8058746566562539958">新しい Chrome タブで開く</translation>
 <translation id="8063895661287329888">ブックマークを追加できませんでした。</translation>

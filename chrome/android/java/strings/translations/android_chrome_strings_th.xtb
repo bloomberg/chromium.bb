@@ -240,7 +240,6 @@
 <translation id="271033894570825754">ใหม่</translation>
 <translation id="2728754400939377704">จัดเรียงตามเว็บไซต์</translation>
 <translation id="2744248271121720757">แตะคำเพื่อค้นหาทันทีหรือดูการทำงานที่เกี่ยวข้อง</translation>
-<translation id="2760323196215778921">คุณต้องเปิดสิทธิ์นี้สำหรับ Chrome ด้วย ดูรายละเอียดใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
 <translation id="2762000892062317888">เมื่อสักครู่</translation>
 <translation id="2777555524387840389">เหลือ <ph name="SECONDS" /> วิ</translation>
 <translation id="2779651927720337254">ล้มเหลว</translation>
@@ -963,7 +962,6 @@
 <translation id="8037750541064988519">เหลือ <ph name="DAYS" /> วัน</translation>
 <translation id="804335162455518893">ไม่พบการ์ด SD</translation>
 <translation id="805047784848435650">อิงจากประวัติการท่องเว็บของคุณ</translation>
-<translation id="8051303708327298699">คุณต้องเปิดสิทธิ์เหล่านี้สำหรับ Chrome ด้วย ดูรายละเอียดใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
 <translation id="8051695050440594747">สามารถใช้งานได้ <ph name="MEGABYTES" /> MB</translation>
 <translation id="8058746566562539958">เปิดในแท็บใหม่ของ Chrome</translation>
 <translation id="8063895661287329888">เพิ่มบุ๊กมาร์กไม่สำเร็จ</translation>

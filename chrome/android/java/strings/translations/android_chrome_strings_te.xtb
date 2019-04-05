@@ -240,7 +240,6 @@
 <translation id="271033894570825754">కొత్తది</translation>
 <translation id="2728754400939377704">సైట్ ద్వారా క్రమీకరించు</translation>
 <translation id="2744248271121720757">తక్షణమే వెతకడానికి లేదా సంబంధిత చర్యలను చూడటానికి ఒక పదాన్ని నొక్కండి</translation>
-<translation id="2760323196215778921">అలాగే మీరు Chrome కోసం ఈ అనుమతిని ఆన్ చేయాలి. వివరాల కోసం <ph name="BEGIN_LINK" />Android సెట్టింగ్‌ల<ph name="END_LINK" />ను చూడండి.</translation>
 <translation id="2762000892062317888">ఇప్పుడే</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> సెకన్లు మిగిలి ఉంది</translation>
 <translation id="2779651927720337254">విఫలమైంది</translation>
@@ -963,7 +962,6 @@
 <translation id="8037750541064988519"><ph name="DAYS" /> రోజులు మిగిలి ఉంది</translation>
 <translation id="804335162455518893">SD కార్డ్ కనుగొనబడలేదు</translation>
 <translation id="805047784848435650">మీ బ్రౌజింగ్ చరిత్ర ఆధారంగా</translation>
-<translation id="8051303708327298699">అలాగే మీరు Chrome కోసం ఈ అనుమతులను ఆన్ చేయాలి. వివరాల కోసం <ph name="BEGIN_LINK" />Android సెట్టింగ్‌ల<ph name="END_LINK" />ను చూడండి.</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB అందుబాటులో ఉంది</translation>
 <translation id="8058746566562539958">కొత్త Chrome ట్యాబ్‌లో తెరువు</translation>
 <translation id="8063895661287329888">బుక్‌మార్క్‌ను జోడించడంలో విఫలమైంది.</translation>
@@ -987,7 +985,7 @@
 <translation id="8200772114523450471">మ‌ళ్లీ ప్రారంభించు</translation>
 <translation id="8209050860603202033">చిత్రాన్ని తెరువు</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB డౌన్‌లోడ్ అయింది</translation>
-<translation id="8224471946457685718">Wi-Fiలో మీ కోసం అందించే కథనాలను డౌన్‌లోడ్ చేసుకోండి</translation>
+<translation id="8224471946457685718">మీ కోసం అందించే కథనాలను Wi-Fi ద్వారా డౌన్‌లోడ్ చేసుకోండి</translation>
 <translation id="8232956427053453090">డేటాను అలాగే ఉంచు</translation>
 <translation id="8249310407154411074">ఎగువకు తరలించు</translation>
 <translation id="8250920743982581267">పత్రాలు</translation>

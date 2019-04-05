@@ -99,6 +99,7 @@
 <translation id="1616111909442424068">Σιτάρι</translation>
 <translation id="1618597272655350600">Παρέχει μια πλήρη περιγραφή της τρέχουσας τοποθεσίας</translation>
 <translation id="1627222324347828322">Λευκόγκριζο</translation>
+<translation id="1630688379087270943">Ένδειξη πλάγιας γραφής:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{σύμβολο "μεγαλύτερο από"}other{# σύμβολα "μεγαλύτερο από"}}</translation>
 <translation id="1653266918374749391">Επικεφαλίδα προηγούμενου επιπέδου 3</translation>
 <translation id="1657616855184033958">Εμφάνιση φίλτρων ροής συμβάντων</translation>
@@ -320,6 +321,7 @@
 <translation id="3286390186030710347">Ρυθμιστικό</translation>
 <translation id="3299925995433437805">Δεν υπάρχει επόμενος σύνδεσμος που έχετε επισκεφτεί.</translation>
 <translation id="3300348286427369683">Υποστήριξη εμπλουτισμένου κειμένου. Το ChromeVox υποστηρίζει πλέον πεδία εμπλουτισμένου κειμένου, όπως εντολές μετάβασης, δρομολόγηση δρομέα μπράιγ, επιλογή και άλλα.</translation>
+<translation id="3304756947457041303">Προσαρμογή ένδειξης εμπλουτισμένου κειμένου</translation>
 <translation id="3307886118343381874">Μετάβαση στο τέλος του πίνακα</translation>
 <translation id="3311969765485641742">Πατήστε τα πλήκτρα Alt+Shift+A για να ελέγξετε τις ειδοποιήσεις</translation>
 <translation id="3312997241656799641">Επόμενος σύνδεσμος που έχετε επισκεφτεί</translation>
@@ -406,6 +408,7 @@
 <translation id="3930498801443296724">Ελκυστική φράση</translation>
 <translation id="3936394396199829062">Λεβάντα ρουζ</translation>
 <translation id="3941269780691800708">Εκφώνηση κειμένου κάτω από το ποντίκι.</translation>
+<translation id="394953087167197343">Ένδειξη ορθογραφικού σφάλματος:</translation>
 <translation id="3962990492275676168">Έναρξη ανάγνωσης από την τρέχουσα τοποθεσία</translation>
 <translation id="3970951409746498040">Αμμώδες καφέ</translation>
 <translation id="3989324057180830702">tgl btn</translation>
@@ -452,6 +455,7 @@
 <translation id="42164919740161077">Ανοιχτό μπλε γκρι</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{παύλα}other{# παύλες}}</translation>
 <translation id="421884353938374759">επιλογέας χρώματος</translation>
+<translation id="4221071177874897997">Ένδειξη έντονης γραφής:</translation>
 <translation id="4229646983878045487">ημερομηνία ώρα</translation>
 <translation id="4230834257931120629">Ανοιχτό γκρι του σχιστόλιθου</translation>
 <translation id="4231102694147661229">Ενεργοποίηση επιλογών για προγραμματιστές</translation>
@@ -754,6 +758,7 @@
 <translation id="6348869651006731065">Θολό γκρι</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{κουκκίδα}other{# κουκκίδες}}</translation>
 <translation id="6355910664415701303">Δεν υπάρχει προηγούμενο στοιχείο στη λίστα.</translation>
+<translation id="6360318852623800555">Χαρακτηριστικά εμπλουτισμένου κειμένου</translation>
 <translation id="6364795331201459219">κεφαλίδα 6</translation>
 <translation id="6368143427468974988">Προηγούμενη επικεφαλίδα</translation>
 <translation id="6376999910001533545">Καστανοκόκκινο</translation>
@@ -930,6 +935,7 @@
 <translation id="762020119231868829">Διακόπτει όλες τις τρέχουσες αναπαραγωγές γραφικών στοιχείων μέσων</translation>
 <translation id="7625690649919402823">Επόμενος πίνακας</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), βαθμός <ph name="GRADE" /></translation>
+<translation id="763535765081585392">Ένδειξη υπογράμμισης:</translation>
 <translation id="7639968568612851608">Σκούρο γκρι</translation>
 <translation id="7641134354185483015">Δεν υπάρχει προηγούμενη επικεφαλίδα επιπέδου 3.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, πλαίσιο κειμένου</translation>
@@ -1165,6 +1171,7 @@
 <translation id="8943175951035496220">Δεν υπάρχει κελί δεξιά.</translation>
 <translation id="8943282376843390568">Λάιμ</translation>
 <translation id="8946628535652548639">σ<ph name="TABLECELLROWINDEX" />σ<ph name="TABLECELLCOLUMNINDEX" /></translation>
+<translation id="8957142051395645063">Ανακοίνωση</translation>
 <translation id="8978496506222343566">επεξήγηση εργαλείου</translation>
 <translation id="8986362086234534611">Διαγραφή από τη μνήμη</translation>
 <translation id="900114243503212879">αρχείο</translation>

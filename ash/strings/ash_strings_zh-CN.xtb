@@ -63,7 +63,6 @@
 <translation id="1919743966458266018">用于打开任务管理器的快捷键已更改。请使用 <ph name="NEW_SHORTCUT" />，而不是 <ph name="OLD_SHORTCUT" />。</translation>
 <translation id="1923539912171292317">自动点击</translation>
 <translation id="1928739107511554905">要想获取此项更新，请在已连接该键盘的情况下使用触摸屏重新启动您的 Chromebook。</translation>
-<translation id="1942830294380034169">溢出按钮</translation>
 <translation id="1951012854035635156">智能助理</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">设置语言</translation>
@@ -131,7 +130,7 @@
 <translation id="2961963223658824723">出了点问题。请过几秒钟后重试。</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2970920913501714344">安装应用、扩展程序和主题背景</translation>
-<translation id="2977598380246111477">下一个数字</translation>
+<translation id="2977598380246111477">下一个代码</translation>
 <translation id="2995447421581609334">显示投射设备。</translation>
 <translation id="2996462380875591307">已启用停靠的放大镜。再按一次 Ctrl+搜索键+D 组合键即可将其停用。</translation>
 <translation id="3000461861112256445">单声道音频</translation>

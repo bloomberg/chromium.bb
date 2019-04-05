@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
 <translation id="1002439864875515590">Ako se to pravilo postavi na prazan niz ili se ne konfigurira, <ph name="PRODUCT_OS_NAME" /> neće prikazivati opciju za samodovršavanje tijekom postupka prijave korisnika.
-      Ako se to pravilo postavi na niz koji predstavlja naziv domene, <ph name="PRODUCT_OS_NAME" /> prikazivat će opciju za samodovršavanje tijekom prijave korisnika omogućujući korisniku da unese samo svoje korisničko ime bez proširenja naziva domene.  Korisnik će moći prebrisati proširenje naziva domene.
+      Ako se to pravilo postavi na niz koji predstavlja naziv domene, <ph name="PRODUCT_OS_NAME" /> prikazivat će opciju za samodovršavanje tijekom prijave korisnika, omogućujući korisniku da unese samo svoje korisničko ime bez proširenja naziva domene.  Korisnik će moći prebrisati proširenje naziva domene.
       Ako vrijednost tog pravila nije važeća domena, pravilo se neće primjenjivati.</translation>
 <translation id="101438888985615157">Zakreni zaslon 180 stupnjeva</translation>
 <translation id="1016912092715201525">Konfigurira zadane provjere preglednika u proizvodu <ph name="PRODUCT_NAME" /> i sprječava korisnike da ih promijene.
@@ -1089,6 +1089,19 @@
           Ako se to pravilo ne postavi, ponašanje detaljnijih pravila ostat će nepromijenjeno.</translation>
 <translation id="2987155890997901449">Omogući ARC</translation>
 <translation id="2987227569419001736">Upravljanje upotrebom API-ja Web Bluetooth</translation>
+<translation id="3011301228198307065">Konfigurira URL zadane početne stranice u pregledniku <ph name="PRODUCT_NAME" /> i korisnicima onemogućuje da ga promijene.
+
+          Početna je stranica ona koja se otvara gumbom početnog zaslona. Stranicama koje se otvaraju prilikom pokretanja upravljaju pravila RestoreOnStartup.
+
+          Za vrstu početne stranice možete postaviti URL koji navedete ovdje ili web-stranicu nove kartice. Ako odaberete web-stranicu nove kartice, ovo se pravilo ne primjenjuje.
+
+          Ako omogućite tu postavku, korisnici neće moći promijeniti URL početne stranice u pregledniku <ph name="PRODUCT_NAME" />, ali će kao početnu stranicu moći odabrati web-stranicu nove kartice.
+
+          Ako se to pravilo ne postavi, korisnik će moći samostalno odabrati početnu stranicu u slučaju da se ne postavi ni pravilo HomepageIsNewTabPage.
+
+          URL mora imati standardnu shemu, na primjer "http://example.com" ili "https://example.com".
+
+          Pravilo je dostupno samo na instancama Windowsa koje su pridružene domeni <ph name="MS_AD_NAME" /> ili instancama Windowsa 10 Pro ili Enterprise prijavljenim za upravljanje uređajima.</translation>
 <translation id="3016255526521614822">Aplikacije za izradu bilježaka dopuštene na zaključanom zaslonu uređaja sa sustavom <ph name="PRODUCT_OS_NAME" /> stavi na popis dopuštenih</translation>
 <translation id="3021562480854470924">Broj dopuštenih prijelaznih točaka za vraćanje sustava</translation>
 <translation id="3023572080620427845">URL XML datoteke koja sadrži URL-ove koji se trebaju učitati u zamjenskom pregledniku.</translation>
@@ -2809,11 +2822,11 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="6641981670621198190">Onemogući podršku za API-je 3D grafike</translation>
 <translation id="6646056064606561298">Omogućite pravilo o upravljanju pokretanjem na izmjeničnom napajanju.
 
-          Pokretanje na izmjeničnom napajanju pruža priliku da se sustav automatski pokrene iz isključenog stanja ili mirovanja kad je uređaj priključen na napajanje strujom.
+          Pokretanje na izmjeničnom napajanju omogućuje sustavu da se automatski pokrene iz isključenog stanja ili mirovanja kad je uređaj priključen u utičnicu.
 
-          Ako se to pravilo postavi na True, pokretanje na izmjeničnom napajanju uvijek će biti omogućeno ako uređaj to podržava.
+          Ako se to pravilo postavi na true, pokretanje na izmjeničnom napajanju uvijek će biti omogućeno ako uređaj to podržava.
 
-          Ako se pravilo postavi na False, pokretanje na izmjeničnom napajanju uvijek će biti onemogućeno.
+          Ako se pravilo postavi na false, pokretanje na izmjeničnom napajanju uvijek će biti onemogućeno.
 
           Ako postavite to pravilo, korisnici ga neće moći promijeniti ili nadjačati.
 

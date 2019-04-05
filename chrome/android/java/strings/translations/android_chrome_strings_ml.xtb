@@ -240,7 +240,6 @@
 <translation id="271033894570825754">പുതിയത്</translation>
 <translation id="2728754400939377704">സൈറ്റ് അനുസരിച്ച് അടുക്കുക</translation>
 <translation id="2744248271121720757">പെട്ടെന്ന് തിരയാനോ ബന്ധപ്പെട്ട പ്രവർത്തനങ്ങൾ കാണാനോ ഒരു വാക്കിൽ ടാപ്പ് ചെയ്യുക</translation>
-<translation id="2760323196215778921">Chrome-നായി നിങ്ങൾ ഈ അനുമതിയും ഓണാക്കേണ്ടതുണ്ട്. വിശദാംശങ്ങൾക്കായി <ph name="BEGIN_LINK" />Android ക്രമീകരണം<ph name="END_LINK" /> കാണുക.</translation>
 <translation id="2762000892062317888">ഇപ്പോൾ</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> സെക്കൻഡ് ശേഷിക്കുന്നു</translation>
 <translation id="2779651927720337254">പരാജയപ്പെട്ടു</translation>
@@ -330,6 +329,7 @@
 <translation id="3443221991560634068">നിലവിലെ പേജ് റീലോഡുചെയ്യുക</translation>
 <translation id="3445014427084483498">ഇപ്പോൾ</translation>
 <translation id="3452612588551937789">നിങ്ങളുടെ എല്ലാ ഉപകരണങ്ങളിലും ബുക്ക്മാർക്കുകൾ, ചരിത്രം, പാസ്‌വേഡുകൾ, മറ്റ് ക്രമീകരണം എന്നിവ ലഭിക്കാൻ Google അക്കൗണ്ട് ഉപയോഗിച്ച് സൈൻ ഇൻ ചെയ്യുക.</translation>
+<translation id="3478363558367712427">നിങ്ങളുടെ തിരയല്‍ യന്ത്രം നിങ്ങൾക്ക് തിരഞ്ഞെടുക്കാം</translation>
 <translation id="3492207499832628349">പുതിയ ആൾമാറാട്ട ടാബ്</translation>
 <translation id="3493531032208478708">നിർദ്ദേശിച്ച ഉള്ളടക്കത്തെക്കുറിച്ച് <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" /></translation>
 <translation id="3513704683820682405">അനുബന്ധയാഥാർത്ഥ്യം</translation>
@@ -963,7 +963,6 @@
 <translation id="8037750541064988519"><ph name="DAYS" /> ദിവസം ശേഷിക്കുന്നു</translation>
 <translation id="804335162455518893">SD കാർഡ് കണ്ടെത്തിയില്ല</translation>
 <translation id="805047784848435650">നിങ്ങളുടെ ബ്രൗസിംഗ്‌ ചരിത്രം അടിസ്ഥാനമാക്കിയുള്ളത്</translation>
-<translation id="8051303708327298699">Chrome-നായി നിങ്ങൾ ഈ അനുമതികളും ഓണാക്കേണ്ടതുണ്ട്. വിശദാംശങ്ങൾക്കായി <ph name="BEGIN_LINK" />Android ക്രമീകരണം<ph name="END_LINK" /> കാണുക.</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB ലഭ്യമാണ്</translation>
 <translation id="8058746566562539958">പുതിയ Chrome ടാബിൽ തുറക്കുക</translation>
 <translation id="8063895661287329888">ബുക്ക്മാർക്ക് ചേർക്കാനായില്ല.</translation>

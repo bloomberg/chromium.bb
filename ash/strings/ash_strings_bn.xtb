@@ -63,7 +63,6 @@
 <translation id="1919743966458266018">কার্য পরিচালক খোলার শর্টকাটটি পরিবর্তিত হয়েছে। <ph name="OLD_SHORTCUT" /> এর পরিবর্তে দয়া করে <ph name="NEW_SHORTCUT" /> ব্যবহার করুন।</translation>
 <translation id="1923539912171292317">স্বয়ংক্রিয় ক্লিকগুলি</translation>
 <translation id="1928739107511554905">আপডেট পেতে, অ্যাটাচ করা কীবোর্ডের মাধ্যমে আপনার Chromebook রিস্টার্ট করার জন্য টাচস্ক্রিন ব্যবহার করুন।</translation>
-<translation id="1942830294380034169">ওভারফ্লো বোতাম</translation>
 <translation id="1951012854035635156">সহায়ক</translation>
 <translation id="1957803754585243749">০°</translation>
 <translation id="1957958912175573503">আপনার ভাষা সেট করুন</translation>
@@ -504,7 +503,7 @@
 <translation id="9074739597929991885">ব্লুটুথ</translation>
 <translation id="9079731690316798640">ওয়াই ফাই: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">মাইক্রোফোন ব্যবহার করা হচ্ছে।</translation>
-<translation id="9084606467167974638">মেনু সংক্রান্ত অবস্থান উল্টান</translation>
+<translation id="9084606467167974638">মেনুর অবস্থান টগল করুন</translation>
 <translation id="9089416786594320554">ইনপুট পদ্ধতিসমূহ</translation>
 <translation id="9091626656156419976"><ph name="DISPLAY_NAME" /> প্রদর্শন সরানো হয়েছে</translation>
 <translation id="9151726767154816831">আপডেট করার জন্য আবার শুরু করুন এবং পাওয়ারওয়াশ করুন</translation>

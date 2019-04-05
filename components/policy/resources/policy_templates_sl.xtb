@@ -1123,6 +1123,19 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Če ta pravilnik ni nastavljen, to ne vpliva na delovanje podrobnejših pravilnikov.</translation>
 <translation id="2987155890997901449">Omogočanje ARC-ja</translation>
 <translation id="2987227569419001736">Nadzor uporabe API-ja za Web Bluetooth</translation>
+<translation id="3011301228198307065">Konfigurira privzeti URL domače strani za brskalnik <ph name="PRODUCT_NAME" /> in uporabnikom prepreči, da bi ga spreminjali.
+
+          Domača stran je stran, ki se odpre ob kliku gumba »Domača stran«. Strani, ki se odprejo ob zagonu, določajo pravilniki RestoreOnStartup.
+
+          Vrsta začetne strani je lahko določena z URL-jem, ki ga navedete tukaj, ali nastavljena na nov zavihek s povezavami. Če izberete nov zavihek s povezavami, ta pravilnik nima vpliva.
+
+          Če omogočite to nastavitev, uporabniki ne bodo mogli spremeniti URL-ja domače strani za brskalnik <ph name="PRODUCT_NAME" />, lahko pa kot domačo stran še vedno izberejo nov zavihek s povezavami.
+
+          Če tega pravilnika ne nastavite, bo lahko uporabnik sam izbral domačo stran, če ni nastavljen tudi pravilnik HomepageIsNewTabPage.
+
+          URL mora imeti standardno shemo, kot je »http://primer.com« ali »https://primer.com«.
+
+          Ta pravilnik je na voljo samo v primerkih s sistemom Windows, ki so pridruženi v domeno <ph name="MS_AD_NAME" />, ali primerkih s sistemom Windows 10 Pro ali Enterprise, ki so včlanjeni v upravljanje naprav.</translation>
 <translation id="3016255526521614822">Uvrščanje aplikacij za zapiske, ki so omogočene na zaklenjenem zaslonu sistema <ph name="PRODUCT_OS_NAME" />, na seznam dovoljenih</translation>
 <translation id="3021562480854470924">Število mejnikov, za katere je dovoljena povrnitev</translation>
 <translation id="3023572080620427845">URL datoteke XML, ki vsebuje URL-je, ki naj se naložijo v nadomestnem brskalniku.</translation>

@@ -958,6 +958,19 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
           El valor de la política s'ha d'indicar en mil·lisegons i es limita perquè sigui inferior o igual al retard de desactivació (si s'ha definit) i al retard d'inactivitat.</translation>
 <translation id="2987155890997901449">Activa ARC</translation>
 <translation id="2987227569419001736">Controla l'ús de l'API Web Bluetooth</translation>
+<translation id="3011301228198307065">Configura l'URL de la pàgina d'inici predeterminada a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris el canviïn.
+
+          La pàgina d'inici és la que s'obre amb el botó Inici. Les pàgines que s'obren en iniciar el navegador les controlen les polítiques RestoreOnStartup.
+
+          El tipus de pàgina d'inici es pot definir per un URL que especifiquis aquí o per la pàgina Pestanya nova. Si selecciones la pàgina Pestanya nova, aquesta política no s'aplicarà.
+
+          Si actives aquesta opció de configuració, els usuaris no podran canviar l'URL de la pàgina d'inici a <ph name="PRODUCT_NAME" />, però sí que podran triar la pàgina Pestanya nova com a pàgina d'inici.
+
+          Si aquesta política i HomepageIsNewTabPage es deixen sense establir, l'usuari podrà triar la pàgina d'inici que vulgui.
+
+          L'URL ha de tenir un esquema estàndard, com ara "http://example.com" o "https://example.com".
+
+          Aquesta política només està disponible en instàncies de Windows que s'hagin unit a un domini de <ph name="MS_AD_NAME" /> o instàncies de Windows 10 Pro o Enterprise que s'hagin inscrit per a la gestió de dispositius.</translation>
 <translation id="3016255526521614822">Afegeix a la llista blanca les aplicacions per prendre notes que es permeten a la pantalla de bloqueig de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Nombre de fites que es permeten a la reversió</translation>
 <translation id="3023572080620427845">URL d'un fitxer XML que conté URL que cal carregar en un navegador alternatiu.</translation>
