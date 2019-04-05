@@ -5,13 +5,15 @@
 #ifndef MOJO_CORE_PORTS_PORT_H_
 #define MOJO_CORE_PORTS_PORT_H_
 
+#include <map>
 #include <memory>
-#include <queue>
+#include <set>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/synchronization/lock.h"
 #include "mojo/core/ports/event.h"
 #include "mojo/core/ports/message_queue.h"
@@ -107,7 +109,7 @@ class Port : public base::RefCountedThreadSafe<Port> {
   PortName peer_port_name;
 
   // The next available sequence number to use for outgoing user message events
-  // originating from this port.
+  // originating from any slot on this port.
   uint64_t next_sequence_num_to_send;
 
   // The sequence number of the last message this Port should ever expect to
@@ -148,8 +150,35 @@ class Port : public base::RefCountedThreadSafe<Port> {
   // non-zero cyclic routing distance) receiving Port has been closed.
   bool peer_closed;
 
+  // The next available slot ID to allocate for a new slot on this port.
+  SlotId last_allocated_slot_id = kDefaultSlotId;
+
+  // Structure for status related to a single slot of this port.
+  struct Slot {
+    // Indicates that the slot can signal the embedder about available messages.
+    bool can_signal = true;
+
+    // Indicates that the peer slot for this slot is closed.
+    bool peer_closed = false;
+
+    // The last sequence number expected for this slot to receive if the peer is
+    // closed.
+    uint64_t last_sequence_num_to_receive;
+
+    // The last sequence number sent on this slot. Will always be less than
+    // the Port's own |next_sequence_num_to_send|.
+    uint64_t last_sequence_num_sent;
+  };
+
+  // Status information for each slot on this port.
+  std::map<SlotId, Slot> slots;
+
   Port(uint64_t next_sequence_num_to_send,
        uint64_t next_sequence_num_to_receive);
+
+  Slot* GetSlot(SlotId slot_id);
+  SlotId AllocateSlot();
+  bool AddSlotFromPeer(SlotId peer_slot_id);
 
   void AssertLockAcquired() {
 #if DCHECK_IS_ON()

@@ -19,6 +19,27 @@ Port::Port(uint64_t next_sequence_num_to_send,
 
 Port::~Port() {}
 
+Port::Slot* Port::GetSlot(SlotId slot_id) {
+  auto it = slots.find(slot_id);
+  if (it == slots.end())
+    return nullptr;
+  return &it->second;
+}
+
+SlotId Port::AllocateSlot() {
+  DCHECK_EQ(state, kReceiving);
+  SlotId id = ++last_allocated_slot_id;
+  CHECK_EQ(id & kPeerAllocatedSlotIdBit, 0u);
+  slots.emplace(id, Slot{});
+  return id;
+}
+
+bool Port::AddSlotFromPeer(SlotId peer_slot_id) {
+  if (state != kReceiving || (peer_slot_id & kPeerAllocatedSlotIdBit) != 0)
+    return false;
+  return slots.emplace(peer_slot_id | kPeerAllocatedSlotIdBit, Slot{}).second;
+}
+
 }  // namespace ports
 }  // namespace core
 }  // namespace mojo

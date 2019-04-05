@@ -15,11 +15,13 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/synchronization/lock.h"
 #include "mojo/core/ports/event.h"
 #include "mojo/core/ports/name.h"
 #include "mojo/core/ports/port.h"
 #include "mojo/core/ports/port_ref.h"
+#include "mojo/core/ports/slot_ref.h"
 #include "mojo/core/ports/user_data.h"
 
 namespace mojo {
@@ -37,7 +39,7 @@ enum : int {
   ERROR_NOT_IMPLEMENTED = -100,
 };
 
-struct PortStatus {
+struct SlotStatus {
   bool has_messages;
   bool receiving_messages;
   bool peer_closed;
@@ -45,6 +47,10 @@ struct PortStatus {
   size_t queued_message_count;
   size_t queued_num_bytes;
 };
+
+// TODO(https://crbug.com/941809): Remove this alias, which only exists to
+// reduce churn while switching Mojo core from ports to slots.
+using PortStatus = SlotStatus;
 
 class MessageFilter;
 class NodeDelegate;
@@ -111,17 +117,25 @@ class COMPONENT_EXPORT(MOJO_CORE_PORTS) Node {
   int SetUserData(const PortRef& port_ref, scoped_refptr<UserData> user_data);
   int GetUserData(const PortRef& port_ref, scoped_refptr<UserData>* user_data);
 
+  // Closes a single slot on port. No more messages can be sent from or
+  // delivered to the slot. If it's the last slot on its port, the port is also
+  // closed.
+  int ClosePortSlot(const SlotRef& slot_ref);
+
   // Prevents further messages from being sent from this port or delivered to
   // this port. The port is removed, and the port's peer is notified of the
   // closure after it has consumed all pending messages.
   int ClosePort(const PortRef& port_ref);
 
-  // Returns the current status of the port.
+  // Returns the current status of the port slot.
+  int GetStatus(const SlotRef& slot_ref, SlotStatus* slot_status);
+
+  // Returns the current status of the default slot on the port.
   int GetStatus(const PortRef& port_ref, PortStatus* port_status);
 
-  // Returns the next available message on the specified port or returns a null
-  // message if there are none available. Returns ERROR_PORT_PEER_CLOSED to
-  // indicate that this port's peer has closed. In such cases GetMessage may
+  // Returns the next available message on the specified port slot or returns a
+  // null message if there are none available. Returns ERROR_PORT_PEER_CLOSED to
+  // indicate that this slot's peer has closed. In such cases GetMessage may
   // be called until it yields a null message, indicating that no more messages
   // may be read from the port.
   //
@@ -130,15 +144,43 @@ class COMPONENT_EXPORT(MOJO_CORE_PORTS) Node {
   // available message, GetMessage() behaves as if there is no message
   // available. Ownership of |filter| is not taken, and it must outlive the
   // extent of this call.
+  int GetMessage(const SlotRef& slot_ref,
+                 std::unique_ptr<UserMessageEvent>* message,
+                 MessageFilter* filter);
+
+  // TODO(https://crbug.com/941809): Remove this helper, which exists only to
+  // reduce intermediate churn while switching to SlotRef in other places. This
+  // retrieves a message from the default slot of |port_ref|. See above for more
+  // details.
   int GetMessage(const PortRef& port_ref,
                  std::unique_ptr<UserMessageEvent>* message,
                  MessageFilter* filter);
 
-  // Sends a message from the specified port to its peer. Note that the message
-  // notification may arrive synchronously (via PortStatusChanged() on the
-  // delegate) if the peer is local to this Node.
+  // Sends a message from the specified port slot to its peer. Note that the
+  // message notification may arrive synchronously (via SlotStatusChanged() on
+  // the delegate) if the peer is local to this Node.
+  int SendUserMessage(const SlotRef& slot_ref,
+                      std::unique_ptr<UserMessageEvent> message);
+
+  // TODO(https://crbug.com/941809): Remove this helper, which exists only to
+  // reduce intermediate churn while switching to SlotRef in other places. This
+  // sends a message on the default slot of |port_ref|. See above for more
+  // details.
   int SendUserMessage(const PortRef& port_ref,
                       std::unique_ptr<UserMessageEvent> message);
+
+  // Allocates a new slot on the given port and returns its SlotId. Note that
+  // in order to get end-to-end communication on this slot, the port's peer must
+  // also add a slot with the same ID plus |kPeerAllocatedSlotIdBit| set. This
+  // can be achieved by calling AddSlotFromPeer on the peer slot with the same
+  // ID returned by this call.
+  SlotId AllocateSlot(const PortRef& port_ref);
+
+  // Adds a new slot on the given port, corresponding to the port's peer slot
+  // |peer_slot_id|. The local ID of this added slot will always be
+  // |peer_slot_id | kPeerAllocatedSlotIdBit|. Returns |true| iff |port_ref| was
+  // valid and a corresponding slot on the port did not already exist.
+  bool AddSlotFromPeer(const PortRef& port_ref, SlotId peer_slot_id);
 
   // Corresponding to NodeDelegate::ForwardEvent.
   int AcceptEvent(ScopedEvent event);
@@ -194,17 +236,23 @@ class COMPONENT_EXPORT(MOJO_CORE_PORTS) Node {
     DISALLOW_COPY_AND_ASSIGN(DelegateHolder);
   };
 
+  // Closes a specific slot or an entire Port, depending on whether |slot_id|
+  // has a value.
+  int ClosePortOrSlotImpl(const PortRef& port_ref,
+                          base::Optional<SlotId> slot_id);
+
   int OnUserMessage(std::unique_ptr<UserMessageEvent> message);
   int OnPortAccepted(std::unique_ptr<PortAcceptedEvent> event);
   int OnObserveProxy(std::unique_ptr<ObserveProxyEvent> event);
   int OnObserveProxyAck(std::unique_ptr<ObserveProxyAckEvent> event);
   int OnObserveClosure(std::unique_ptr<ObserveClosureEvent> event);
   int OnMergePort(std::unique_ptr<MergePortEvent> event);
+  int OnSlotClosed(std::unique_ptr<SlotClosedEvent> event);
 
   int AddPortWithName(const PortName& port_name, scoped_refptr<Port> port);
   void ErasePort(const PortName& port_name);
 
-  int SendUserMessageInternal(const PortRef& port_ref,
+  int SendUserMessageInternal(const SlotRef& port_ref,
                               std::unique_ptr<UserMessageEvent>* message);
   int MergePortsInternal(const PortRef& port0_ref,
                          const PortRef& port1_ref,
@@ -216,7 +264,7 @@ class COMPONENT_EXPORT(MOJO_CORE_PORTS) Node {
   int AcceptPort(const PortName& port_name,
                  const Event::PortDescriptor& port_descriptor);
 
-  int PrepareToForwardUserMessage(const PortRef& forwarding_port_ref,
+  int PrepareToForwardUserMessage(const SlotRef& forwarding_slot_ref,
                                   Port::State expected_port_state,
                                   bool ignore_closed_peer,
                                   UserMessageEvent* message,
@@ -248,6 +296,27 @@ class COMPONENT_EXPORT(MOJO_CORE_PORTS) Node {
                      Port* port0,
                      const PortName& port1_name,
                      Port* port1);
+
+  // Safely discards a collection of UserMessageEvent objects which may contain
+  // unclaimed local Port references. Ensures that any such ports are properly
+  // cleaned up.
+  void DiscardUnreadMessages(
+      std::vector<std::unique_ptr<UserMessageEvent>> messages);
+
+  // Closes all ports carried by a message. If a message is being discarded
+  // without anyone reading it, its carried ports cannot possibly be useful.
+  // Discarding them avoids leaking memory.
+  void DiscardPorts(UserMessageEvent* message);
+
+  // Flushes any unreadable messages for dead slots on |port_ref|. This is
+  // called any time a port's MessageQueue is changed in a way that might make
+  // a new message available (e.g. a slot is closed, or a message is read).
+  //
+  // If this returns a valid SlotId, the port's MessageQueue was modified by
+  // this call, the next message in the queue is now available, and the message
+  // targets the returned slot. Returns nullopt if either the queue was
+  // unchanged by the call or the next message in queue is not available yet.
+  base::Optional<SlotId> FlushUnreadableMessages(const PortRef& port_ref);
 
   const NodeName name_;
   const DelegateHolder delegate_;

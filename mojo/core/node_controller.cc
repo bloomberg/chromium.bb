@@ -731,16 +731,16 @@ void NodeController::BroadcastEvent(ports::ScopedEvent event) {
     OnBroadcast(name_, std::move(channel_message));
 }
 
-void NodeController::PortStatusChanged(const ports::PortRef& port) {
+void NodeController::SlotStatusChanged(const ports::SlotRef& slot_ref) {
   scoped_refptr<ports::UserData> user_data;
-  node_->GetUserData(port, &user_data);
+  node_->GetUserData(slot_ref.port(), &user_data);
 
   PortObserver* observer = static_cast<PortObserver*>(user_data.get());
   if (observer) {
     observer->OnPortStatusChanged();
   } else {
-    DVLOG(2) << "Ignoring status change for " << port.name() << " because it "
-             << "doesn't have an observer.";
+    DVLOG(2) << "Ignoring status change for " << slot_ref.port().name()
+             << " because it doesn't have an observer.";
   }
 }
 
