@@ -560,7 +560,7 @@ TEST_F(PrerenderTest, FoundTest) {
 
   EXPECT_TRUE(prerender_manager()->GetPrefetchInformation(
       url, &prefetch_age, &final_status, &origin));
-  EXPECT_EQ(prerender::FINAL_STATUS_MAX, final_status);
+  EXPECT_EQ(prerender::FINAL_STATUS_UNKNOWN, final_status);
   EXPECT_EQ(prerender::ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN, origin);
 
   const base::TimeDelta advance_duration = TimeDelta::FromSeconds(1);
@@ -568,7 +568,7 @@ TEST_F(PrerenderTest, FoundTest) {
   EXPECT_TRUE(prerender_manager()->GetPrefetchInformation(
       url, &prefetch_age, &final_status, &origin));
   EXPECT_LE(advance_duration, prefetch_age);
-  EXPECT_EQ(prerender::FINAL_STATUS_MAX, final_status);
+  EXPECT_EQ(prerender::FINAL_STATUS_UNKNOWN, final_status);
   EXPECT_EQ(prerender::ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN, origin);
 
   prerender_manager()->ClearPrefetchInformationForTesting();
@@ -1716,7 +1716,7 @@ TEST_F(PrerenderTest, LinkManagerClearOnPendingAbandon) {
   EXPECT_TRUE(prerender_manager()->GetPrefetchInformation(
       first_url, &prefetch_age, &final_status, &origin));
   EXPECT_EQ(base::TimeDelta(), prefetch_age);
-  EXPECT_EQ(prerender::FINAL_STATUS_MAX, final_status);
+  EXPECT_EQ(prerender::FINAL_STATUS_UNKNOWN, final_status);
   EXPECT_EQ(prerender::ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN, origin);
 
   const base::TimeDelta advance_duration =

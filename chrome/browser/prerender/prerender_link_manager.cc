@@ -85,7 +85,7 @@ class PrerenderLinkManager::PendingPrerenderManager
   ~PendingPrerenderManager() override { CHECK(observed_launchers_.empty()); }
 
   void ObserveLauncher(PrerenderContents* launcher) {
-    DCHECK_EQ(FINAL_STATUS_MAX, launcher->final_status());
+    DCHECK_EQ(FINAL_STATUS_UNKNOWN, launcher->final_status());
     bool inserted = observed_launchers_.insert(launcher).second;
     if (inserted)
       launcher->AddObserver(this);
@@ -157,7 +157,7 @@ void PrerenderLinkManager::OnAddPrerender(int launcher_child_id,
       manager_->GetPrerenderContentsForRoute(launcher_child_id,
                                              render_view_route_id);
   if (prerender_contents &&
-      prerender_contents->final_status() != FINAL_STATUS_MAX) {
+      prerender_contents->final_status() != FINAL_STATUS_UNKNOWN) {
     // The launcher is a prerender about to be destroyed asynchronously, but
     // its AddLinkRelPrerender message raced with shutdown. Ignore it.
     DCHECK_NE(FINAL_STATUS_USED, prerender_contents->final_status());

@@ -932,7 +932,7 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
       // Otherwise, check that it prerendered correctly.
       TestPrerenderContents* prerender_contents = prerenders[0]->contents();
       CHECK(prerender_contents);
-      EXPECT_EQ(FINAL_STATUS_MAX, prerender_contents->final_status());
+      EXPECT_EQ(FINAL_STATUS_UNKNOWN, prerender_contents->final_status());
       EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(0));
 
       if (call_javascript_) {
