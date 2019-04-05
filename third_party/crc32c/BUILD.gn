@@ -129,6 +129,8 @@ source_set("crc32c_arm64") {
         "-Xclang",
         "+crypto",
       ]
+    } else {
+      cflags = [ "-march=armv8-a+crc+crypto" ]
     }
   }
 
