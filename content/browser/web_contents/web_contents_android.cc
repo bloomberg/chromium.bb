@@ -386,8 +386,12 @@ RenderWidgetHostViewAndroid*
 jint WebContentsAndroid::GetBackgroundColor(JNIEnv* env,
                                             const JavaParamRef<jobject>& obj) {
   RenderWidgetHostViewAndroid* rwhva = GetRenderWidgetHostViewAndroid();
+
+  // Return transparent as an indicator that the web content background color
+  // is not specified, and a default background color will be used on the Java
+  // side.
   if (!rwhva || !rwhva->GetCachedBackgroundColor())
-    return SK_ColorWHITE;
+    return SK_ColorTRANSPARENT;
   return *rwhva->GetCachedBackgroundColor();
 }
 

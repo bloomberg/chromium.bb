@@ -9,7 +9,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
@@ -628,15 +627,6 @@ public class Tab
 
         TabWebContentsDelegateAndroid delegate = getTabWebContentsDelegateAndroid();
         return delegate != null ? delegate.getMostRecentProgress() : 0;
-    }
-
-    /**
-     * @return The background color of the tab.
-     */
-    public int getBackgroundColor() {
-        if (mNativePage != null) return mNativePage.getBackgroundColor();
-        if (getWebContents() != null) return getWebContents().getBackgroundColor();
-        return Color.WHITE;
     }
 
     void notifyThemeColorChanged(int themeColor) {

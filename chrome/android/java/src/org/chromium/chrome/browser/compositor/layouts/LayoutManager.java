@@ -651,8 +651,8 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         boolean isLocationBarShownInNtp =
                 isNtp && ((NewTabPage) tab.getNativePage()).isLocationBarShownInNTP();
 
-        boolean needsUpdate = layoutTab.initFromHost(tab.getBackgroundColor(), shouldStall(tab),
-                canUseLiveTexture, ColorUtils.getToolbarSceneLayerBackground(tab),
+        boolean needsUpdate = layoutTab.initFromHost(TabThemeColorHelper.getBackgroundColor(tab),
+                shouldStall(tab), canUseLiveTexture, ColorUtils.getToolbarSceneLayerBackground(tab),
                 ColorUtils.getTextBoxColorForToolbarBackground(
                         mContext.getResources(), isLocationBarShownInNtp, themeColor),
                 ColorUtils.getTextBoxAlphaForToolbarBackground(tab));
