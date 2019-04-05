@@ -28,7 +28,7 @@
 // TODO(foolip): Exposed=(Window,Worker)
 interface TextMetrics {
     // x-direction
-    readonly attribute float width; // advance width
+    readonly attribute double width; // advance width
     [RuntimeEnabled=ExtendedTextMetrics] readonly attribute FrozenArray<double> advances;
     [RuntimeEnabled=ExtendedTextMetrics] readonly attribute double actualBoundingBoxLeft;
     [RuntimeEnabled=ExtendedTextMetrics] readonly attribute double actualBoundingBoxRight;
