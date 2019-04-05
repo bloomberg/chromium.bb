@@ -501,7 +501,7 @@ NetworkQualityEstimatorParams::NetworkQualityEstimatorParams(
           GetStringValueForVariationParamWithDefaultValue(
               params_,
               "cap_ect_based_on_signal_strength",
-              "false") == "true"),
+              "true") != "false"),
       upper_bound_typical_kbps_multiplier_(
           GetDoubleValueForVariationParamWithDefaultValue(
               params_,
