@@ -178,7 +178,8 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
   // Don't add them for frame requests.
   bool is_frame_resource = content::IsResourceTypeFrame(resource_type);
 
-  DCHECK(!is_frame_resource || IsTypeFrame());
+  DCHECK(!is_frame_resource ||
+         type_ == content::URLLoaderThrottleProviderType::kFrame);
 
   if (data_reduction_proxy_manager_) {
     throttles.push_back(
@@ -191,28 +192,15 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
        base::FeatureList::IsEnabled(
            safe_browsing::kCheckByURLLoaderThrottle)) &&
       !is_frame_resource) {
-    if (safe_browsing_info_) {
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-          base::ThreadTaskRunnerHandle::Get();
-      if (IsTypeFrame()) {
-        DCHECK(content::RenderThread::IsMainThread());
-        content::RenderFrame* render_frame =
-            content::RenderFrame::FromRoutingID(render_frame_id);
-        if (render_frame) {
-          task_runner =
-              render_frame->GetTaskRunner(blink::TaskType::kInternalDefault);
-        }
-      }
-      safe_browsing_.Bind(std::move(safe_browsing_info_),
-                          std::move(task_runner));
-    }
+    if (safe_browsing_info_)
+      safe_browsing_.Bind(std::move(safe_browsing_info_));
     throttles.push_back(
         std::make_unique<safe_browsing::RendererURLLoaderThrottle>(
             safe_browsing_.get(), render_frame_id));
   }
 
-  if (IsTypeFrame() && !is_frame_resource) {
-    DCHECK(content::RenderThread::IsMainThread());
+  if (type_ == content::URLLoaderThrottleProviderType::kFrame &&
+      !is_frame_resource) {
     content::RenderFrame* render_frame =
         content::RenderFrame::FromRoutingID(render_frame_id);
     auto* prerender_helper =
@@ -239,7 +227,8 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
   }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (network_service_enabled && IsTypeFrame() &&
+  if (network_service_enabled &&
+      type_ == content::URLLoaderThrottleProviderType::kFrame &&
       resource_type == content::RESOURCE_TYPE_OBJECT) {
     content::RenderFrame* render_frame =
         content::RenderFrame::FromRoutingID(render_frame_id);
@@ -302,8 +291,4 @@ void URLLoaderThrottleProviderImpl::SetOnline(bool is_online) {
   if (extension_throttle_manager_)
     extension_throttle_manager_->SetOnline(is_online);
 #endif
-}
-
-bool URLLoaderThrottleProviderImpl::IsTypeFrame() const {
-  return type_ == content::URLLoaderThrottleProviderType::kFrame;
 }
