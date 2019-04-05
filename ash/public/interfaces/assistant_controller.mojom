@@ -35,6 +35,9 @@ interface AssistantController {
     bool pii_allowed,
     string feedback_description,
     string screenshot_png);
+
+  // Provides a reference to DeviceActions service.
+  SetDeviceActions(chromeos.assistant.mojom.DeviceActions device_actions);
 };
 
 // Interface to the AssistantAlarmTimerController which is owned by the

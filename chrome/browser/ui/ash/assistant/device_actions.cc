@@ -20,6 +20,8 @@
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "ui/display/types/display_constants.h"
 
 using chromeos::NetworkHandler;
 using chromeos::NetworkStateHandler;
@@ -60,7 +62,15 @@ base::Optional<std::string> GetActivity(const std::string& package_name) {
 
 DeviceActions::DeviceActions() {}
 
-DeviceActions::~DeviceActions() = default;
+DeviceActions::~DeviceActions() {
+  bindings_.CloseAllBindings();
+}
+
+chromeos::assistant::mojom::DeviceActionsPtr DeviceActions::AddBinding() {
+  chromeos::assistant::mojom::DeviceActionsPtr ptr;
+  bindings_.AddBinding(this, mojo::MakeRequest(&ptr));
+  return ptr;
+}
 
 void DeviceActions::SetWifiEnabled(bool enabled) {
   NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
@@ -168,4 +178,16 @@ void DeviceActions::VerifyAndroidApp(
     app_info->status = GetAndroidAppStatus(app_info->package_name);
   }
   std::move(callback).Run(std::move(apps_info));
+}
+
+void DeviceActions::LaunchAndroidIntent(const std::string& intent) {
+  auto* app = ARC_GET_INSTANCE_FOR_METHOD(
+      arc::ArcServiceManager::Get()->arc_bridge_service()->app(), LaunchIntent);
+  if (!app) {
+    LOG(ERROR) << "Android container is not running.";
+    return;
+  }
+
+  // TODO(updowndota): Launch the intent in current active display.
+  app->LaunchIntent(intent, display::kDefaultDisplayId);
 }

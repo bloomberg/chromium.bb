@@ -23,6 +23,13 @@
 
 namespace ash {
 
+namespace {
+
+// Scheme of the Android intent url.
+constexpr char kAndroidIntentScheme[] = "intent";
+
+}  // namespace
+
 AssistantController::AssistantController()
     : assistant_volume_control_binding_(this),
       assistant_alarm_timer_controller_(this),
@@ -99,6 +106,24 @@ void AssistantController::SetAssistantImageDownloader(
 void AssistantController::OpenAssistantSettings() {
   // Launch Assistant settings via deeplink.
   OpenUrl(assistant::util::CreateAssistantSettingsDeepLink());
+}
+
+void AssistantController::SendAssistantFeedback(
+    bool assistant_debug_info_allowed,
+    const std::string& feedback_description,
+    const std::string& screenshot_png) {
+  chromeos::assistant::mojom::AssistantFeedbackPtr assistant_feedback =
+      chromeos::assistant::mojom::AssistantFeedback::New();
+  assistant_feedback->assistant_debug_info_allowed =
+      assistant_debug_info_allowed;
+  assistant_feedback->description = feedback_description;
+  assistant_feedback->screenshot_png = screenshot_png;
+  assistant_->SendAssistantFeedback(std::move(assistant_feedback));
+}
+
+void AssistantController::SetDeviceActions(
+    chromeos::assistant::mojom::DeviceActionsPtr device_actions) {
+  device_actions_ = std::move(device_actions);
 }
 
 void AssistantController::StartSpeakerIdEnrollmentFlow() {
@@ -215,6 +240,11 @@ void AssistantController::OnAccessibilityStatusChanged() {
 }
 
 void AssistantController::OpenUrl(const GURL& url, bool from_server) {
+  if (url.SchemeIs(kAndroidIntentScheme) && device_actions_) {
+    device_actions_->LaunchAndroidIntent(url.spec());
+    return;
+  }
+
   if (assistant::util::IsDeepLinkUrl(url)) {
     NotifyDeepLinkReceived(url);
     return;
@@ -284,19 +314,6 @@ void AssistantController::OnVoiceInteractionStatusChanged(
     mojom::VoiceInteractionState state) {
   if (state == mojom::VoiceInteractionState::NOT_READY)
     assistant_ui_controller_.CloseUi(AssistantExitPoint::kUnspecified);
-}
-
-void AssistantController::SendAssistantFeedback(
-    bool assistant_debug_info_allowed,
-    const std::string& feedback_description,
-    const std::string& screenshot_png) {
-  chromeos::assistant::mojom::AssistantFeedbackPtr assistant_feedback =
-      chromeos::assistant::mojom::AssistantFeedback::New();
-  assistant_feedback->assistant_debug_info_allowed =
-      assistant_debug_info_allowed;
-  assistant_feedback->description = feedback_description;
-  assistant_feedback->screenshot_png = screenshot_png;
-  assistant_->SendAssistantFeedback(std::move(assistant_feedback));
 }
 
 base::WeakPtr<AssistantController> AssistantController::GetWeakPtr() {
