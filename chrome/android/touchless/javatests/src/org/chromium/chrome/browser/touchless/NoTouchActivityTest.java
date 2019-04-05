@@ -80,7 +80,7 @@ public class NoTouchActivityTest {
         mActivityTestRule.startMainActivityFromIntent(i, null);
         mActivity = mActivityTestRule.getActivity();
         Assert.assertFalse(mActivity.getActivityTab().isNativePage());
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals("chrome://dino/",
                     mActivity.getActivityTab().getWebContents().getLastCommittedUrl());
         });
@@ -101,7 +101,7 @@ public class NoTouchActivityTest {
         mActivityTestRule.startMainActivityFromIntent(i, null);
         mActivity = mActivityTestRule.getActivity();
         Assert.assertFalse(mActivity.getActivityTab().isNativePage());
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals("chrome://dino/",
                     mActivity.getActivityTab().getWebContents().getLastCommittedUrl());
         });
