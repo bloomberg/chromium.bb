@@ -5931,6 +5931,11 @@ crbug.com/922951 virtual/video-surface-layer/media/controls/overflow-menu-toggle
 crbug.com/926170 external/wpt/webrtc/RTCIceConnectionState-candidate-pair.https.html [ Pass Timeout ]
 crbug.com/926170 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCIceConnectionState-candidate-pair.https.html [ Pass Timeout ]
 
+# TODO(guidou): Remove these expectations once crbug.com/740501 is fixed in third_party/webrtc.
+crbug.com/740501 external/wpt/webrtc/RTCPeerConnection-onnegotiationneeded.html [ Pass Failure Timeout ]
+crbug.com/740501 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-onnegotiationneeded.html [ Pass Failure Timeout ]
+crbug.com/740501 fast/peerconnection/RTCPeerConnection-AddRemoveStream.html [ Pass Failure Timeout ]
+
 # Sheriff 2019-01-18
 crbug.com/922970 external/wpt/css/css-transitions/CSSTransition-startTime.tentative.html [ Failure Pass ]
 
