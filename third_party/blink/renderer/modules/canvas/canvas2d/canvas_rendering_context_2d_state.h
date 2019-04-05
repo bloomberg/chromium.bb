@@ -30,10 +30,6 @@ class CanvasRenderingContext2DState final
   USING_GARBAGE_COLLECTED_MIXIN(CanvasRenderingContext2DState);
 
  public:
-  static CanvasRenderingContext2DState* Create() {
-    return MakeGarbageCollected<CanvasRenderingContext2DState>();
-  }
-
   enum ClipListCopyMode { kCopyClipList, kDontCopyClipList };
 
   CanvasRenderingContext2DState();

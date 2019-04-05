@@ -144,10 +144,6 @@ class CanvasRenderingContext2DTest : public PageTestBase {
 
   class WrapGradients final : public GarbageCollectedFinalized<WrapGradients> {
    public:
-    static WrapGradients* Create() {
-      return MakeGarbageCollected<WrapGradients>();
-    }
-
     void Trace(blink::Visitor* visitor) {
       visitor->Trace(opaque_gradient_);
       visitor->Trace(alpha_gradient_);
@@ -181,7 +177,7 @@ class CanvasRenderingContext2DTest : public PageTestBase {
 };
 
 CanvasRenderingContext2DTest::CanvasRenderingContext2DTest()
-    : wrap_gradients_(WrapGradients::Create()),
+    : wrap_gradients_(MakeGarbageCollected<WrapGradients>()),
       opaque_bitmap_(IntSize(10, 10), kOpaqueBitmap),
       alpha_bitmap_(IntSize(10, 10), kTransparentBitmap) {}
 
@@ -217,16 +213,16 @@ void CanvasRenderingContext2DTest::SetUp() {
   partial_image_data_ = ImageData::Create(IntSize(2, 2));
 
   NonThrowableExceptionState exception_state;
-  CanvasGradient* opaque_gradient =
-      CanvasGradient::Create(FloatPoint(0, 0), FloatPoint(10, 0));
+  auto* opaque_gradient =
+      MakeGarbageCollected<CanvasGradient>(FloatPoint(0, 0), FloatPoint(10, 0));
   opaque_gradient->addColorStop(0, String("green"), exception_state);
   EXPECT_FALSE(exception_state.HadException());
   opaque_gradient->addColorStop(1, String("blue"), exception_state);
   EXPECT_FALSE(exception_state.HadException());
   this->OpaqueGradient().SetCanvasGradient(opaque_gradient);
 
-  CanvasGradient* alpha_gradient =
-      CanvasGradient::Create(FloatPoint(0, 0), FloatPoint(10, 0));
+  auto* alpha_gradient =
+      MakeGarbageCollected<CanvasGradient>(FloatPoint(0, 0), FloatPoint(10, 0));
   alpha_gradient->addColorStop(0, String("green"), exception_state);
   EXPECT_FALSE(exception_state.HadException());
   alpha_gradient->addColorStop(1, String("rgba(0, 0, 255, 0.5)"),
