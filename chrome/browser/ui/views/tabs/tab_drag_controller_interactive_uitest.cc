@@ -3112,6 +3112,36 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
   ui::SetEventTickClockForTesting(nullptr);
 }
 
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
+                       FlingOnStartingDrag) {
+  SetMinFlingVelocity(1);
+  AddTabAndResetBrowser(browser());
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  const gfx::Point tab_0_center =
+      GetCenterInScreenCoordinates(tab_strip->tab_at(0));
+  const gfx::Vector2d detach(0, GetDetachY(tab_strip));
+
+  // Sends events to the server without waiting for its reply, which will cause
+  // extra touch events before PerformWindowMove starts handling events.
+  test::QuitDraggingObserver observer;
+  base::SimpleTestTickClock clock;
+  clock.SetNowTicks(base::TimeTicks::Now());
+  ui::SetEventTickClockForTesting(&clock);
+  ASSERT_TRUE(PressInput(tab_0_center));
+  clock.Advance(base::TimeDelta::FromMilliseconds(5));
+  ASSERT_TRUE(DragInputToAsync(tab_0_center + detach));
+  clock.Advance(base::TimeDelta::FromMilliseconds(5));
+  ASSERT_TRUE(DragInputToAsync(tab_0_center + detach + detach));
+  clock.Advance(base::TimeDelta::FromMilliseconds(2));
+  ASSERT_TRUE(ReleaseInput());
+  observer.Wait();
+
+  ASSERT_FALSE(tab_strip->IsDragSessionActive());
+  ASSERT_FALSE(TabDragController::IsActive());
+  EXPECT_EQ(2u, browser_list->size());
+  ui::SetEventTickClockForTesting(nullptr);
+}
+
 #endif  // OS_CHROMEOS
 
 #if defined(OS_CHROMEOS)
