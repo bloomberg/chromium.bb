@@ -19,7 +19,6 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/test/render_view_test.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "testing/gmock/include/gmock/gmock.h"
