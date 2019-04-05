@@ -123,9 +123,9 @@ TEST_F(SpellCheckerTest, MarkAndReplaceForHandlesMultipleReplacements) {
 
   // The Spelling marker's description should be a newline-separated list of the
   // suggested replacements
-  EXPECT_EQ(
-      "spellcheck\nspillchuck",
-      ToSpellCheckMarker(GetDocument().Markers().Markers()[0])->Description());
+  EXPECT_EQ("spellcheck\nspillchuck",
+            To<SpellCheckMarker>(GetDocument().Markers().Markers()[0].Get())
+                ->Description());
 }
 
 TEST_F(SpellCheckerTest, GetSpellCheckMarkerUnderSelection_FirstCharSelected) {

@@ -438,7 +438,7 @@ SpellChecker::GetSpellCheckMarkerUnderSelection() const {
     return {};
 
   return std::make_pair(selection_range.StartPosition().ComputeContainerNode(),
-                        ToSpellCheckMarker(marker));
+                        To<SpellCheckMarker>(marker));
 }
 
 std::pair<String, String> SpellChecker::SelectMisspellingAsync() {

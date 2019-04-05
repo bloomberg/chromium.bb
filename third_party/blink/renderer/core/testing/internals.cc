@@ -1034,7 +1034,7 @@ String Internals::markerDescriptionForNode(Node* node,
   DocumentMarker* marker = MarkerAt(node, marker_type, index, exception_state);
   if (!marker || !IsSpellCheckMarker(*marker))
     return String();
-  return ToSpellCheckMarker(marker)->Description();
+  return To<SpellCheckMarker>(marker)->Description();
 }
 
 unsigned Internals::markerBackgroundColorForNode(
@@ -1043,9 +1043,10 @@ unsigned Internals::markerBackgroundColorForNode(
     unsigned index,
     ExceptionState& exception_state) {
   DocumentMarker* marker = MarkerAt(node, marker_type, index, exception_state);
-  if (!marker || !IsStyleableMarker(*marker))
+  auto* style_marker = DynamicTo<StyleableMarker>(marker);
+  if (!style_marker)
     return 0;
-  return ToStyleableMarker(marker)->BackgroundColor().Rgb();
+  return style_marker->BackgroundColor().Rgb();
 }
 
 unsigned Internals::markerUnderlineColorForNode(
@@ -1054,9 +1055,10 @@ unsigned Internals::markerUnderlineColorForNode(
     unsigned index,
     ExceptionState& exception_state) {
   DocumentMarker* marker = MarkerAt(node, marker_type, index, exception_state);
-  if (!marker || !IsStyleableMarker(*marker))
+  auto* style_marker = DynamicTo<StyleableMarker>(marker);
+  if (!style_marker)
     return 0;
-  return ToStyleableMarker(marker)->UnderlineColor().Rgb();
+  return style_marker->UnderlineColor().Rgb();
 }
 
 static base::Optional<TextMatchMarker::MatchStatus> MatchStatusFrom(

@@ -372,9 +372,8 @@ TEST_F(DocumentMarkerControllerTest, RemoveSuggestionMarkerByTag) {
       SuggestionMarkerProperties());
 
   ASSERT_EQ(1u, MarkerController().Markers().size());
-  const SuggestionMarker& marker =
-      *ToSuggestionMarker(MarkerController().Markers()[0]);
-  MarkerController().RemoveSuggestionMarkerByTag(*ToText(text), marker.Tag());
+  auto* marker = To<SuggestionMarker>(MarkerController().Markers()[0].Get());
+  MarkerController().RemoveSuggestionMarkerByTag(*ToText(text), marker->Tag());
   EXPECT_EQ(0u, MarkerController().Markers().size());
 }
 
@@ -396,9 +395,9 @@ TEST_F(DocumentMarkerControllerTest, RemoveSuggestionMarkerInRangeOnFinish) {
 
   EXPECT_EQ(1u, MarkerController().Markers().size());
 
-  const SuggestionMarker& marker =
-      *ToSuggestionMarker(MarkerController().Markers()[0]);
-  MarkerController().RemoveSuggestionMarkerByTag(*ToText(text), marker.Tag());
+  const auto* marker =
+      To<SuggestionMarker>(MarkerController().Markers()[0].Get());
+  MarkerController().RemoveSuggestionMarkerByTag(*ToText(text), marker->Tag());
   ASSERT_EQ(0u, MarkerController().Markers().size());
 
   // Add a suggestion marker which need to be removed after finish composing,
@@ -558,8 +557,8 @@ TEST_F(DocumentMarkerControllerTest, SuggestionMarkersHaveUniqueTags) {
       SuggestionMarkerProperties());
 
   EXPECT_EQ(2u, MarkerController().Markers().size());
-  EXPECT_NE(ToSuggestionMarker(MarkerController().Markers()[0])->Tag(),
-            ToSuggestionMarker(MarkerController().Markers()[1])->Tag());
+  EXPECT_NE(To<SuggestionMarker>(MarkerController().Markers()[0].Get())->Tag(),
+            To<SuggestionMarker>(MarkerController().Markers()[1].Get())->Tag());
 }
 
 }  // namespace blink

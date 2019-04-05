@@ -169,8 +169,7 @@ TEST_F(TextSuggestionControllerTest, ApplyTextSuggestion) {
   EXPECT_EQ(6u, markers[2]->StartOffset());
   EXPECT_EQ(13u, markers[2]->EndOffset());
 
-  const SuggestionMarker* const suggestion_marker =
-      ToSuggestionMarker(markers[2]);
+  const auto* const suggestion_marker = To<SuggestionMarker>(markers[2].Get());
   EXPECT_EQ(1u, suggestion_marker->Suggestions().size());
   EXPECT_EQ(String("word2 word3"), suggestion_marker->Suggestions()[0]);
 
@@ -210,7 +209,8 @@ TEST_F(TextSuggestionControllerTest,
   // Check the tag for the marker that was just added (the current tag value is
   // not reset between test cases).
   int32_t marker_tag =
-      ToSuggestionMarker(GetDocument().Markers().MarkersFor(*text)[0])->Tag();
+      To<SuggestionMarker>(GetDocument().Markers().MarkersFor(*text)[0].Get())
+          ->Tag();
 
   // Select immediately before "mispelled".
   GetDocument().GetFrame()->Selection().SetSelectionAndEndTyping(

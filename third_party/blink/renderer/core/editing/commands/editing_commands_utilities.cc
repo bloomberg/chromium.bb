@@ -660,9 +660,9 @@ void ChangeSelectionAfterCommand(LocalFrame* frame,
 
 InputEvent::EventIsComposing IsComposingFromCommand(
     const CompositeEditCommand* command) {
-  if (command->IsTypingCommand() &&
-      ToTypingCommand(command)->CompositionType() !=
-          TypingCommand::kTextCompositionNone)
+  auto* typing_command = DynamicTo<TypingCommand>(command);
+  if (typing_command &&
+      typing_command->CompositionType() != TypingCommand::kTextCompositionNone)
     return InputEvent::EventIsComposing::kIsComposing;
   return InputEvent::EventIsComposing::kNotComposing;
 }
