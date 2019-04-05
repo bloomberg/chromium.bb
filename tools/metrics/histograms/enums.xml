@@ -22703,6 +22703,9 @@ Called by update_net_error_codes.py.-->
   <int value="2844" label="CSSStyleSheetReplace"/>
   <int value="2845" label="CSSStyleSheetReplaceSync"/>
   <int value="2846" label="AdoptedStyleSheets"/>
+  <int value="2847" label="HTMLImportsOnReverseOriginTrials"/>
+  <int value="2848" label="ElementCreateShadowRootOnReverseOriginTrials"/>
+  <int value="2849" label="DocumentRegisterElementOnReverseOriginTrials"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
