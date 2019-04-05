@@ -53,9 +53,6 @@ class SchedulerWorkerDefaultDelegate : public SchedulerWorker::Delegate {
   SchedulerWorkerDefaultDelegate() = default;
 
   // SchedulerWorker::Delegate:
-  void OnCanScheduleSequence(scoped_refptr<Sequence> sequence) override {
-    ADD_FAILURE() << "Unexpected call to OnCanScheduleSequence().";
-  }
   SchedulerWorker::ThreadLabel GetThreadLabel() const override {
     return SchedulerWorker::ThreadLabel::DEDICATED;
   }
@@ -198,8 +195,6 @@ class TaskSchedulerWorkerTest : public testing::TestWithParam<int> {
         outer_->created_sequences_.push_back(sequence);
       }
 
-      EXPECT_TRUE(outer_->task_tracker_.WillScheduleSequence(
-          sequence_transaction, nullptr));
       return sequence;
     }
 
@@ -462,10 +457,7 @@ class ControllableCleanupDelegate : public SchedulerWorkerDefaultDelegate {
         TimeDelta());
     EXPECT_TRUE(
         task_tracker_->WillPostTask(&task, sequence->shutdown_behavior()));
-    Sequence::Transaction sequence_transaction(sequence->BeginTransaction());
-    sequence_transaction.PushTask(std::move(task));
-    EXPECT_TRUE(
-        task_tracker_->WillScheduleSequence(sequence_transaction, nullptr));
+    sequence->BeginTransaction().PushTask(std::move(task));
     return sequence;
   }
 
@@ -601,7 +593,7 @@ TEST(TaskSchedulerWorkerTest, WorkerCleanupDuringShutdown) {
   worker->WakeUp();
 
   controls->WaitForWorkToRun();
-  task_tracker.Shutdown();
+  test::ShutdownTaskTracker(&task_tracker);
   worker->Cleanup();
   worker = nullptr;
   controls->UnblockWork();
@@ -745,6 +737,11 @@ TEST(TaskSchedulerWorkerTest, BumpPriorityOfAliveThreadDuringShutdown) {
 
   TaskTracker task_tracker("Test");
 
+  // Block shutdown to ensure that the worker doesn't exit when StartShutdown()
+  // is called.
+  Task task(FROM_HERE, DoNothing(), TimeDelta());
+  task_tracker.WillPostTask(&task, TaskShutdownBehavior::BLOCK_SHUTDOWN);
+
   std::unique_ptr<ExpectThreadPriorityDelegate> delegate(
       new ExpectThreadPriorityDelegate);
   ExpectThreadPriorityDelegate* delegate_raw = delegate.get();
@@ -761,7 +758,7 @@ TEST(TaskSchedulerWorkerTest, BumpPriorityOfAliveThreadDuringShutdown) {
 
   // Verify that the thread priority is bumped to NORMAL during shutdown.
   delegate_raw->SetExpectedThreadPriority(ThreadPriority::NORMAL);
-  task_tracker.SetHasShutdownStartedForTesting();
+  task_tracker.StartShutdown();
   worker->WakeUp();
   delegate_raw->WaitForPriorityVerifiedInGetWork();
 
