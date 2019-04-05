@@ -23,13 +23,9 @@ class PLATFORM_EXPORT DarkModeImageClassifier {
   DarkModeImageClassifier();
   ~DarkModeImageClassifier() = default;
 
-  // Decides if a dark mode filter should be applied to the image or not.
-  // |src_rect| is needed in case of image sprites for the location and
-  // size of the smaller images that the sprite holds.
-  // For images that come from sprites the |src_rect.X| and |src_rect.Y|
-  // can be non-zero. But for normal images they are both zero.
-  bool ShouldApplyDarkModeFilterToImage(Image& image,
-                                        const FloatRect& src_rect);
+  DarkModeClassification ClassifyBitmapImageForDarkMode(
+      Image& image,
+      const FloatRect& src_rect);
 
   bool ComputeImageFeaturesForTesting(Image& image,
                                       std::vector<float>* features) {

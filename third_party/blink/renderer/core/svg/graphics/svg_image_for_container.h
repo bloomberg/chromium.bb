@@ -88,8 +88,6 @@ class SVGImageForContainer final : public Image {
 
   PaintImage PaintImageForCurrentFrame() override;
 
-  bool IsSVGImageForContainer() const override { return true; }
-
  protected:
   void DrawPattern(GraphicsContext&,
                    const FloatRect&,
@@ -110,6 +108,14 @@ class SVGImageForContainer final : public Image {
         url_(url) {}
 
   void DestroyDecodedData() override {}
+
+  // TODO(v.paturi): Implement an SVG classifier which can decide if a
+  // filter should be applied based on the image's content and it's
+  // visibility on a dark background.
+  DarkModeClassification ClassifyImageForDarkMode(
+      const FloatRect& src_rect) override {
+    return DarkModeClassification::kApplyDarkModeFilter;
+  }
 
   SVGImage* image_;
   const FloatSize container_size_;

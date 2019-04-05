@@ -33,7 +33,6 @@
 #include "base/macros.h"
 #include "cc/paint/node_holder.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
-#include "third_party/blink/renderer/platform/graphics/dark_mode_image_classifier.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_settings.h"
 #include "third_party/blink/renderer/platform/graphics/dash_array.h"
 #include "third_party/blink/renderer/platform/graphics/draw_looper_builder.h"
@@ -504,7 +503,6 @@ class PLATFORM_EXPORT GraphicsContext {
 
   DarkModeSettings dark_mode_settings_;
   sk_sp<SkColorFilter> dark_mode_filter_;
-  DarkModeImageClassifier dark_mode_image_classifier_;
 
   unsigned printing_ : 1;
   unsigned in_drawing_recorder_ : 1;

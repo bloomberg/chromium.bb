@@ -39,43 +39,23 @@ namespace blink {
 DarkModeImageClassifier::DarkModeImageClassifier()
     : pixels_to_sample_(kPixelsToSample) {}
 
-bool DarkModeImageClassifier::ShouldApplyDarkModeFilterToImage(
+DarkModeClassification DarkModeImageClassifier::ClassifyBitmapImageForDarkMode(
     Image& image,
     const FloatRect& src_rect) {
-  DarkModeClassification result = image.GetDarkModeClassification(src_rect);
-  // Check if the image has already been classified.
-  if (result != DarkModeClassification::kNotClassified)
-    return result == DarkModeClassification::kApplyDarkModeFilter;
-
   std::vector<SkColor> sampled_pixels;
   if (src_rect.Width() < kMinImageSizeForClassification1D ||
-      src_rect.Height() < kMinImageSizeForClassification1D) {
-    result = DarkModeClassification::kApplyDarkModeFilter;
-  } else {
-    std::vector<float> features;
-    if (!ComputeImageFeatures(image, src_rect, &features, &sampled_pixels)) {
-      // TODO(v.paturi): Implement an SVG classifier which can decide if a
-      // filter should be applied based on the image's content and it's
-      // visibility on a dark background.
-      // Force this function to return true for any SVG image so that the
-      // filter will be set in the PaintFlags in GraphicsContext::DrawImage.
-      if (image.IsSVGImage() || image.IsSVGImageForContainer()) {
-        result = DarkModeClassification::kApplyDarkModeFilter;
-      } else {
-        result = DarkModeClassification::kDoNotApplyDarkModeFilter;
-      }
-    } else {
-      result = ClassifyImage(features);
-    }
+      src_rect.Height() < kMinImageSizeForClassification1D)
+    return DarkModeClassification::kApplyDarkModeFilter;
+
+  std::vector<float> features;
+  if (!ComputeImageFeatures(image, src_rect, &features, &sampled_pixels)) {
+    // TODO(https://crbug.com/945434): Do not cache the classification when
+    // the correct resource is not loaded
+    image.SetShouldCacheDarkModeClassification(sampled_pixels.size() != 0);
+    return DarkModeClassification::kDoNotApplyDarkModeFilter;
   }
 
-  // Store the classification result in the image object using src_rect's
-  // location as a key for the map.
-  // TODO(https://crbug.com/945434): Do not cache the classification when
-  // the correct resource is not loaded
-  if (sampled_pixels.size() != 0)
-    image.AddDarkModeClassification(src_rect, result);
-  return result == DarkModeClassification::kApplyDarkModeFilter;
+  return ClassifyImage(features);
 }
 
 // This function computes a single feature vector based on a sample set of image
@@ -108,7 +88,8 @@ bool DarkModeImageClassifier::ComputeImageFeatures(
 bool DarkModeImageClassifier::GetBitmap(Image& image,
                                         const FloatRect& src_rect,
                                         SkBitmap* bitmap) {
-  if (!image.IsBitmapImage() || !src_rect.Width() || !src_rect.Height())
+  DCHECK(image.IsBitmapImage());
+  if (!src_rect.Width() || !src_rect.Height())
     return false;
 
   SkScalar sx = SkFloatToScalar(src_rect.X());

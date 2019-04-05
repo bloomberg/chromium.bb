@@ -144,6 +144,9 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
 
   int RepetitionCount();
 
+  DarkModeClassification ClassifyImageForDarkMode(
+      const FloatRect& src_rect) override;
+
   std::unique_ptr<DeferredImageDecoder> decoder_;
   mutable IntSize size_;  // The size to use for the overall image (will just
                           // be the size of the first image).

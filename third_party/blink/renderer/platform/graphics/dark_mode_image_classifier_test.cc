@@ -26,6 +26,16 @@ class FakeImageForCacheTest : public Image {
 
   int GetMapSize() { return dark_mode_classifications_.size(); }
 
+  DarkModeClassification GetClassification(const FloatRect& src_rect) {
+    return GetDarkModeClassification(src_rect);
+  }
+
+  void AddClassification(
+      const FloatRect& src_rect,
+      const DarkModeClassification dark_mode_classification) {
+    AddDarkModeClassification(src_rect, dark_mode_classification);
+  }
+
   // Pure virtual functions that have to be overridden.
   bool CurrentFrameKnownToBeOpaque() override { return false; }
   IntSize Size() const override { return IntSize(0, 0); }
@@ -49,8 +59,9 @@ class DarkModeImageClassifierTest : public testing::Test {
     SCOPED_TRACE(file_name);
     scoped_refptr<BitmapImage> image = LoadImage(file_name);
     classifier_.ComputeImageFeaturesForTesting(*image.get(), features);
-    return classifier_.ShouldApplyDarkModeFilterToImage(
+    DarkModeClassification result = classifier_.ClassifyBitmapImageForDarkMode(
         *image.get(), FloatRect(0, 0, image->width(), image->height()));
+    return result == DarkModeClassification::kApplyDarkModeFilter;
   }
 
   void AssertFeaturesEqual(const std::vector<float>& features,
@@ -145,25 +156,25 @@ TEST_F(DarkModeImageClassifierTest, Caching) {
   FloatRect src_rect2(5, 20, 100, 100);
   FloatRect src_rect3(6, -9, 50, 50);
 
-  EXPECT_EQ(image->GetDarkModeClassification(src_rect1),
+  EXPECT_EQ(image->GetClassification(src_rect1),
             DarkModeClassification::kNotClassified);
-  image->AddDarkModeClassification(
-      src_rect1, DarkModeClassification::kApplyDarkModeFilter);
-  EXPECT_EQ(image->GetDarkModeClassification(src_rect1),
+  image->AddClassification(src_rect1,
+                           DarkModeClassification::kApplyDarkModeFilter);
+  EXPECT_EQ(image->GetClassification(src_rect1),
             DarkModeClassification::kApplyDarkModeFilter);
 
-  EXPECT_EQ(image->GetDarkModeClassification(src_rect2),
+  EXPECT_EQ(image->GetClassification(src_rect2),
             DarkModeClassification::kNotClassified);
-  image->AddDarkModeClassification(
-      src_rect2, DarkModeClassification::kDoNotApplyDarkModeFilter);
-  EXPECT_EQ(image->GetDarkModeClassification(src_rect2),
+  image->AddClassification(src_rect2,
+                           DarkModeClassification::kDoNotApplyDarkModeFilter);
+  EXPECT_EQ(image->GetClassification(src_rect2),
             DarkModeClassification::kDoNotApplyDarkModeFilter);
 
-  EXPECT_EQ(image->GetDarkModeClassification(src_rect3),
+  EXPECT_EQ(image->GetClassification(src_rect3),
             DarkModeClassification::kNotClassified);
-  image->AddDarkModeClassification(
-      src_rect3, DarkModeClassification::kApplyDarkModeFilter);
-  EXPECT_EQ(image->GetDarkModeClassification(src_rect3),
+  image->AddClassification(src_rect3,
+                           DarkModeClassification::kApplyDarkModeFilter);
+  EXPECT_EQ(image->GetClassification(src_rect3),
             DarkModeClassification::kApplyDarkModeFilter);
 
   EXPECT_EQ(image->GetMapSize(), 3);
