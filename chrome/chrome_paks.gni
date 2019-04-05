@@ -150,6 +150,7 @@ template("chrome_extra_paks") {
     if (is_chromeos) {
       sources += [
         "$root_gen_dir/ash/public/cpp/resources/ash_public_unscaled_resources.pak",
+        "$root_gen_dir/chrome/cellular_setup_resources.pak",
         "$root_gen_dir/chrome/multidevice_setup_resources.pak",
         "$root_gen_dir/chromeos/chromeos_resources.pak",
         "$root_gen_dir/third_party/ink/ink_resources.pak",
@@ -157,6 +158,7 @@ template("chrome_extra_paks") {
       ]
       deps += [
         "//ash/public/cpp/resources:ash_public_unscaled_resources",
+        "//chrome/browser/resources/chromeos:cellular_setup_resources",
         "//chrome/browser/resources/chromeos:multidevice_setup_resources",
         "//chromeos/resources",
         "//third_party/ink:ink_resources",

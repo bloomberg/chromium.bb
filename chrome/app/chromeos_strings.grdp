@@ -2723,6 +2723,15 @@
   <message name="IDS_NETWORK_UI_DEVICES" desc="Label for list of network devices, e.g. wifi or cellular">
     Devices:
   </message>
+  <message name="IDS_NETWORK_UI_NO_CELLULAR_ACTIVATION_LABEL" desc="Label for section dealing with activating a cellular network SIM card.">
+    Cellular Activation
+  </message>
+  <message name="IDS_NETWORK_UI_OPEN_CELLULAR_ACTIVATION_BUTTON_TEXT" desc="Text for button which, when pressed, opens the cellular activation UI.">
+    Open Cellular Activation UI
+  </message>
+  <message name="IDS_NETWORK_UI_NO_CELLULAR_ERROR_TEXT" desc="Text displayed when the cellular activation UI cannot be opened because no cellular network exists.">
+    No cellular network exists
+  </message>
 
   <message name="IDS_DEVICE_LOG_LINK_TEXT" desc="Message preceeding link to chrome://device-log">
     For network logs, see: <ph name="DEVICE_LOG_LINK">&lt;a href="chrome://device-log"&gt;chrome://device-log&lt;/a&gt;</ph>
