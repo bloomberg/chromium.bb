@@ -56,6 +56,7 @@ extern const base::Feature kCustomContextMenu;
 extern const base::Feature kDelegateOverscrollSwipes;
 extern const base::Feature kDontPrefetchLibraries;
 extern const base::Feature kDownloadAutoResumptionThrottling;
+extern const base::Feature kDownloadLocationShowImageInGallery;
 extern const base::Feature kDownloadProgressInfoBar;
 extern const base::Feature kDownloadHomeV2;
 extern const base::Feature kDownloadHomeShowStorageInfo;
