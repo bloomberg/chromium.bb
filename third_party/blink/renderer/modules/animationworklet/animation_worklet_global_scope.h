@@ -55,17 +55,25 @@ class MODULES_EXPORT AnimationWorkletGlobalScope : public WorkletGlobalScope {
 
   AnimatorDefinition* FindDefinitionForTest(const String& name);
   bool IsAnimatorStateful(int animation_id);
+  void MigrateAnimatorsTo(AnimationWorkletGlobalScope*);
+  Animator* GetAnimator(int animation_id) {
+    return animators_.at(animation_id);
+  }
   unsigned GetAnimatorsSizeForTest() { return animators_.size(); }
 
  private:
   void RegisterWithProxyClientIfNeeded();
-  Animator* CreateInstance(const String& name,
-                           WorkletAnimationOptions* options,
-                           int num_effects);
-  Animator* CreateAnimatorFor(int animation_id,
-                              const String& name,
-                              WorkletAnimationOptions* options,
-                              int num_effects);
+  Animator* CreateInstance(
+      const String& name,
+      WorkletAnimationOptions options,
+      scoped_refptr<SerializedScriptValue> serialized_state,
+      int num_effects);
+  Animator* CreateAnimatorFor(
+      int animation_id,
+      const String& name,
+      WorkletAnimationOptions options,
+      scoped_refptr<SerializedScriptValue> serialized_state,
+      int num_effects);
   typedef HeapHashMap<String, Member<AnimatorDefinition>> DefinitionMap;
   DefinitionMap animator_definitions_;
 
