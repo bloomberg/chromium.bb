@@ -79,8 +79,7 @@ class CORE_EXPORT InspectTool : public GarbageCollectedFinalized<InspectTool> {
   virtual CString GetDataResourceName();
   virtual bool HandleInputEvent(LocalFrameView* frame_view,
                                 const WebInputEvent& input_event,
-                                bool* swallow_next_mouse_up,
-                                bool* swallow_next_escape_up);
+                                bool* swallow_next_mouse_up);
   virtual bool HandleMouseEvent(const WebMouseEvent&,
                                 bool* swallow_next_mouse_up);
   virtual bool HandleMouseDown(const WebMouseEvent&,
@@ -89,10 +88,10 @@ class CORE_EXPORT InspectTool : public GarbageCollectedFinalized<InspectTool> {
   virtual bool HandleMouseMove(const WebMouseEvent&);
   virtual bool HandleGestureTapEvent(const WebGestureEvent&);
   virtual bool HandlePointerEvent(const WebPointerEvent&);
-  virtual bool HandleKeyboardEvent(const WebKeyboardEvent&,
-                                   bool* swallow_next_escape_up);
+  virtual bool HandleKeyboardEvent(const WebKeyboardEvent&);
   virtual bool ForwardEventsToOverlay();
   virtual void Draw(float scale) {}
+  virtual void Dispatch(const String& message) {}
   virtual void Trace(blink::Visitor* visitor);
   virtual void Dispose() {}
   virtual bool HideOnHideHighlight();
@@ -105,7 +104,7 @@ class CORE_EXPORT InspectTool : public GarbageCollectedFinalized<InspectTool> {
 
 class CORE_EXPORT InspectorOverlayAgent final
     : public InspectorBaseAgent<protocol::Overlay::Metainfo>,
-      public InspectorOverlayHost::Listener {
+      public InspectorOverlayHost::Delegate {
   USING_GARBAGE_COLLECTED_MIXIN(InspectorOverlayAgent);
 
  public:
@@ -187,9 +186,8 @@ class CORE_EXPORT InspectorOverlayAgent final
   class InspectorOverlayChromeClient;
   class InspectorPageOverlayDelegate;
 
-  // InspectorOverlayHost::Listener implementation.
-  void OverlayResumed() override;
-  void OverlaySteppedOver() override;
+  // InspectorOverlayHost::Delegate implementation.
+  void Dispatch(const String& message) override;
 
   bool IsEmpty();
 

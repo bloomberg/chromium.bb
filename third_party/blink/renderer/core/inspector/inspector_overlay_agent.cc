@@ -118,8 +118,7 @@ CString InspectTool::GetDataResourceName() {
 
 bool InspectTool::HandleInputEvent(LocalFrameView* frame_view,
                                    const WebInputEvent& input_event,
-                                   bool* swallow_next_mouse_up,
-                                   bool* swallow_next_escape_up) {
+                                   bool* swallow_next_mouse_up) {
   if (input_event.GetType() == WebInputEvent::kGestureTap) {
     // We only have a use for gesture tap.
     WebGestureEvent transformed_event = TransformWebGestureEvent(
@@ -141,8 +140,7 @@ bool InspectTool::HandleInputEvent(LocalFrameView* frame_view,
 
   if (WebInputEvent::IsKeyboardEventType(input_event.GetType())) {
     return HandleKeyboardEvent(
-        static_cast<const WebKeyboardEvent&>(input_event),
-        swallow_next_escape_up);
+        static_cast<const WebKeyboardEvent&>(input_event));
   }
 
   return false;
@@ -183,8 +181,7 @@ bool InspectTool::HandlePointerEvent(const WebPointerEvent&) {
   return false;
 }
 
-bool InspectTool::HandleKeyboardEvent(const WebKeyboardEvent&,
-                                      bool* swallow_next_escape_up) {
+bool InspectTool::HandleKeyboardEvent(const WebKeyboardEvent&) {
   return false;
 }
 
@@ -400,7 +397,7 @@ Response InspectorOverlayAgent::disable() {
     overlay_page_->WillBeDestroyed();
     overlay_page_.Clear();
     overlay_chrome_client_.Clear();
-    overlay_host_->ClearListener();
+    overlay_host_->ClearDelegate();
     overlay_host_.Clear();
   }
   resize_timer_.Stop();
@@ -664,12 +661,19 @@ WebInputEventResult InspectorOverlayAgent::HandleInputEvent(
     return WebInputEventResult::kNotHandled;
 
   bool handled = inspect_tool_->HandleInputEvent(
-      frame_impl_->GetFrameView(), input_event, &swallow_next_mouse_up_,
-      &swallow_next_escape_up_);
+      frame_impl_->GetFrameView(), input_event, &swallow_next_mouse_up_);
 
   if (handled) {
     ScheduleUpdate();
     return WebInputEventResult::kHandledSuppressed;
+  }
+
+  if (inspect_tool_->ForwardEventsToOverlay()) {
+    WebInputEventResult result = HandleInputEventInOverlay(input_event);
+    if (result != WebInputEventResult::kNotHandled) {
+      ScheduleUpdate();
+      return result;
+    }
   }
 
   // Exit tool upon unhandled Esc.
@@ -683,26 +687,18 @@ WebInputEventResult InspectorOverlayAgent::HandleInputEvent(
     }
   }
 
-  if (!inspect_tool_->ForwardEventsToOverlay())
-    return WebInputEventResult::kNotHandled;
-  return HandleInputEventInOverlay(input_event);
+  return WebInputEventResult::kNotHandled;
 }
 
 WebInputEventResult InspectorOverlayAgent::HandleInputEventInOverlay(
     const WebInputEvent& input_event) {
   if (input_event.GetType() == WebInputEvent::kGestureTap) {
-    // We only have a use for gesture tap.
-    WebGestureEvent transformed_event = TransformWebGestureEvent(
-        frame_impl_->GetFrameView(),
-        static_cast<const WebGestureEvent&>(input_event));
     return OverlayMainFrame()->GetEventHandler().HandleGestureEvent(
-        transformed_event);
+        static_cast<const WebGestureEvent&>(input_event));
   }
 
   if (WebInputEvent::IsMouseEventType(input_event.GetType())) {
-    WebMouseEvent mouse_event =
-        TransformWebMouseEvent(frame_impl_->GetFrameView(),
-                               static_cast<const WebMouseEvent&>(input_event));
+    WebMouseEvent mouse_event = static_cast<const WebMouseEvent&>(input_event);
     if (mouse_event.GetType() == WebInputEvent::kMouseMove) {
       return OverlayMainFrame()->GetEventHandler().HandleMouseMoveEvent(
           mouse_event,
@@ -723,11 +719,9 @@ WebInputEventResult InspectorOverlayAgent::HandleInputEventInOverlay(
   }
 
   if (WebInputEvent::IsPointerEventType(input_event.GetType())) {
-    WebPointerEvent pointer_event = TransformWebPointerEvent(
-        frame_impl_->GetFrameView(),
-        static_cast<const WebPointerEvent&>(input_event));
     return OverlayMainFrame()->GetEventHandler().HandlePointerEvent(
-        pointer_event, Vector<WebPointerEvent>(), Vector<WebPointerEvent>());
+        static_cast<const WebPointerEvent&>(input_event),
+        Vector<WebPointerEvent>(), Vector<WebPointerEvent>());
   }
 
   if (WebInputEvent::IsKeyboardEventType(input_event.GetType())) {
@@ -736,10 +730,8 @@ WebInputEventResult InspectorOverlayAgent::HandleInputEventInOverlay(
   }
 
   if (input_event.GetType() == WebInputEvent::kMouseWheel) {
-    WebMouseWheelEvent wheel_event = TransformWebMouseWheelEvent(
-        frame_impl_->GetFrameView(),
+    return OverlayMainFrame()->GetEventHandler().HandleWheelEvent(
         static_cast<const WebMouseWheelEvent&>(input_event));
-    return OverlayMainFrame()->GetEventHandler().HandleWheelEvent(wheel_event);
   }
 
   return WebInputEventResult::kNotHandled;
@@ -756,8 +748,20 @@ bool InspectorOverlayAgent::UpdateOverlayPageSize() {
   if (!view || !frame)
     return false;
 
+  // To make overlay render the same size text with any emulation scale,
+  // compensate the emulation scale using page scale.
+  float emulation_scale =
+      frame->GetPage()->GetChromeClient().InputEventsScaleForEmulation();
   IntSize viewport_size = frame->GetPage()->GetVisualViewport().Size();
+  viewport_size.Scale(emulation_scale);
   OverlayPage()->GetVisualViewport().SetSize(viewport_size);
+  OverlayPage()->SetDefaultPageScaleLimits(1 / emulation_scale,
+                                           1 / emulation_scale);
+  OverlayPage()->GetVisualViewport().SetScale(1 / emulation_scale);
+
+  UpdateFrameForTool();
+  Reset(viewport_size);
+
   return true;
 }
 
@@ -912,6 +916,9 @@ void InspectorOverlayAgent::Reset(const IntSize& viewport_size) {
       protocol::DictionaryValue::create();
   reset_data->setDouble("deviceScaleFactor",
                         GetFrame()->GetPage()->DeviceScaleFactorDeprecated());
+  reset_data->setDouble(
+      "emulationScaleFactor",
+      GetFrame()->GetPage()->GetChromeClient().InputEventsScaleForEmulation());
   reset_data->setDouble("pageScaleFactor",
                         GetFrame()->GetPage()->GetVisualViewport().Scale());
 
@@ -991,14 +998,8 @@ void InspectorOverlayAgent::OnResizeTimer(TimerBase*) {
   resize_timer_.StartOneShot(TimeDelta::FromSeconds(1), FROM_HERE);
 }
 
-void InspectorOverlayAgent::OverlayResumed() {
-  if (v8_session_)
-    v8_session_->resume();
-}
-
-void InspectorOverlayAgent::OverlaySteppedOver() {
-  if (v8_session_)
-    v8_session_->stepOver();
+void InspectorOverlayAgent::Dispatch(const String& message) {
+  inspect_tool_->Dispatch(message);
 }
 
 void InspectorOverlayAgent::PageLayoutInvalidated(bool resized) {
@@ -1096,7 +1097,7 @@ void InspectorOverlayAgent::PickTheRightTool() {
     inspect_tool = MakeGarbageCollected<NearbyDistanceTool>();
   } else if (!paused_in_debugger_message_.Get().IsNull()) {
     inspect_tool = MakeGarbageCollected<PausedInDebuggerTool>(
-        paused_in_debugger_message_.Get());
+        v8_session_, paused_in_debugger_message_.Get());
   }
   SetInspectTool(inspect_tool);
 }

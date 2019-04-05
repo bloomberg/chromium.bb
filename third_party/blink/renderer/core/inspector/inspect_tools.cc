@@ -137,8 +137,7 @@ void SearchingForNodeTool::Draw(float scale) {
 
 bool SearchingForNodeTool::HandleInputEvent(LocalFrameView* frame_view,
                                             const WebInputEvent& input_event,
-                                            bool* swallow_next_mouse_up,
-                                            bool* swallow_next_escape_up) {
+                                            bool* swallow_next_mouse_up) {
   if (input_event.GetType() == WebInputEvent::kGestureScrollBegin ||
       input_event.GetType() == WebInputEvent::kGestureScrollUpdate) {
     hovered_node_.Clear();
@@ -146,8 +145,8 @@ bool SearchingForNodeTool::HandleInputEvent(LocalFrameView* frame_view,
     overlay_->ScheduleUpdate();
     return false;
   }
-  return InspectTool::HandleInputEvent(
-      frame_view, input_event, swallow_next_mouse_up, swallow_next_escape_up);
+  return InspectTool::HandleInputEvent(frame_view, input_event,
+                                       swallow_next_mouse_up);
 }
 
 bool SearchingForNodeTool::HandleMouseMove(const WebMouseEvent& event) {
@@ -436,34 +435,61 @@ CString ScreenshotTool::GetDataResourceName() {
   return "inspect_tool_screenshot.html";
 }
 
-bool ScreenshotTool::HandleMouseUp(const WebMouseEvent& event) {
-  if (screenshot_anchor_ == IntPoint::Zero())
-    return true;
+void ScreenshotTool::Dispatch(const String& message) {
+  std::unique_ptr<protocol::Value> value =
+      protocol::StringUtil::parseJSON(message);
+  if (!value)
+    return;
+  protocol::ErrorSupport errors;
+  std::unique_ptr<protocol::DOM::Rect> box =
+      protocol::DOM::Rect::fromValue(value.get(), &errors);
+  if (errors.hasErrors())
+    return;
+
   float scale = 1.0f;
-  IntPoint p1 = screenshot_anchor_;
-  IntPoint p2 = screenshot_position_;
+  // Capture values in the CSS pixels.
+  IntPoint p1(box->getX(), box->getY());
+  IntPoint p2(box->getX() + box->getWidth(), box->getY() + box->getHeight());
+
   if (LocalFrame* frame = overlay_->GetFrame()) {
+    float emulation_scale = overlay_->GetFrame()
+                                ->GetPage()
+                                ->GetChromeClient()
+                                .InputEventsScaleForEmulation();
+    // Convert from overlay terms into the absolute.
+    p1.Scale(1 / emulation_scale, 1 / emulation_scale);
+    p2.Scale(1 / emulation_scale, 1 / emulation_scale);
+
+    // Scroll offset in the viewport is in the device pixels, convert before
+    // calling ViewportToRootFrame.
+    float dip_to_dp = overlay_->WindowToViewportScale();
+    p1.Scale(dip_to_dp, dip_to_dp);
+    p2.Scale(dip_to_dp, dip_to_dp);
+
+    const VisualViewport& visual_viewport =
+        frame->GetPage()->GetVisualViewport();
+    p1 = visual_viewport.ViewportToRootFrame(p1);
+    p2 = visual_viewport.ViewportToRootFrame(p2);
+
     scale = frame->GetPage()->PageScaleFactor();
-    p1 = frame->View()->ConvertFromRootFrame(p1);
-    p2 = frame->View()->ConvertFromRootFrame(p2);
     if (const RootFrameViewport* root_frame_viewport =
             frame->View()->GetRootFrameViewport()) {
       IntSize scroll_offset = FlooredIntSize(
           root_frame_viewport->LayoutViewport().GetScrollOffset());
+      // Accunt for the layout scroll (different from viewport scroll offset).
       p1 += scroll_offset;
       p2 += scroll_offset;
     }
   }
+
+  // Go back to dip for the protocol.
   float dp_to_dip = 1.f / overlay_->WindowToViewportScale();
-  p1.Scale(scale, dp_to_dip);
-  p2.Scale(scale, dp_to_dip);
+  p1.Scale(dp_to_dip, dp_to_dip);
+  p2.Scale(dp_to_dip, dp_to_dip);
+
   // Points are in device independent pixels (dip) now.
   IntRect rect =
       UnionRectEvenIfEmpty(IntRect(p1, IntSize()), IntRect(p2, IntSize()));
-  if (rect.Width() < 5 || rect.Height() < 5) {
-    screenshot_anchor_ = IntPoint::Zero();
-    return true;
-  }
   frontend_->screenshotRequested(protocol::Page::Viewport::create()
                                      .setX(rect.X())
                                      .setY(rect.Y())
@@ -471,50 +497,6 @@ bool ScreenshotTool::HandleMouseUp(const WebMouseEvent& event) {
                                      .setHeight(rect.Height())
                                      .setScale(scale)
                                      .build());
-  return true;
-}
-
-bool ScreenshotTool::HandleKeyboardEvent(const WebKeyboardEvent& event,
-                                         bool* swallow_next_escape_up) {
-  if (event.GetType() == WebInputEvent::kRawKeyDown &&
-      event.windows_key_code == VKEY_ESCAPE &&
-      screenshot_anchor_ != IntPoint::Zero()) {
-    screenshot_anchor_ = IntPoint::Zero();
-    *swallow_next_escape_up = true;
-    return true;
-  }
-  return false;
-}
-
-bool ScreenshotTool::HandleMouseDown(const WebMouseEvent& event,
-                                     bool* swallow_next_mouse_up) {
-  screenshot_anchor_ = RoundedIntPoint(event.PositionInRootFrame());
-  screenshot_position_ = screenshot_anchor_;
-  return true;
-}
-
-bool ScreenshotTool::HandleMouseMove(const WebMouseEvent& event) {
-  screenshot_position_ = RoundedIntPoint(event.PositionInRootFrame());
-  return true;
-}
-
-void ScreenshotTool::Draw(float scale) {
-  if (screenshot_anchor_ == IntPoint::Zero())
-    return;
-  const VisualViewport& visual_viewport =
-      overlay_->GetFrame()->GetPage()->GetVisualViewport();
-  IntPoint p1 = visual_viewport.RootFrameToViewport(screenshot_anchor_);
-  IntPoint p2 = visual_viewport.RootFrameToViewport(screenshot_position_);
-  float rscale = 1.f / scale;
-  p1.Scale(rscale, rscale);
-  p2.Scale(rscale, rscale);
-  std::unique_ptr<protocol::DictionaryValue> data =
-      protocol::DictionaryValue::create();
-  data->setInteger("x1", p1.X());
-  data->setInteger("y1", p1.Y());
-  data->setInteger("x2", p2.X());
-  data->setInteger("y2", p2.Y());
-  overlay_->EvaluateInOverlay("drawScreenshotBorder", std::move(data));
 }
 
 // PausedInDebuggerTool --------------------------------------------------------
@@ -525,6 +507,13 @@ CString PausedInDebuggerTool::GetDataResourceName() {
 
 void PausedInDebuggerTool::Draw(float scale) {
   overlay_->EvaluateInOverlay("drawPausedInDebuggerMessage", message_);
+}
+
+void PausedInDebuggerTool::Dispatch(const String& message) {
+  if (message == "resume")
+    v8_session_->resume();
+  else if (message == "stepOver")
+    v8_session_->stepOver();
 }
 
 }  // namespace blink

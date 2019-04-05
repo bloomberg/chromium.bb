@@ -2,11 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+window.viewportSize = {width: 800, height: 600};
+window.deviceScaleFactor = 1;
+window.emulationScaleFactor = 1;
+window.pageScaleFactor = 1;
+window.pageZoomFactor = 1;
+window.scrollX = 0;
+window.scrollY = 0;
+
 function reset(resetData) {
   window.viewportSize = resetData.viewportSize;
   window.deviceScaleFactor = resetData.deviceScaleFactor;
   window.pageScaleFactor = resetData.pageScaleFactor;
   window.pageZoomFactor = resetData.pageZoomFactor;
+  window.emulationScaleFactor = resetData.emulationScaleFactor;
   window.scrollX = Math.round(resetData.scrollX);
   window.scrollY = Math.round(resetData.scrollY);
 

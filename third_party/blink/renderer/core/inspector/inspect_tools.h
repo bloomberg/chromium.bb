@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECT_TOOLS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECT_TOOLS_H_
 
+#include <v8-inspector.h>
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/inspector/inspector_overlay_agent.h"
 
@@ -24,8 +25,7 @@ class SearchingForNodeTool : public InspectTool {
  private:
   bool HandleInputEvent(LocalFrameView* frame_view,
                         const WebInputEvent& input_event,
-                        bool* swallow_next_mouse_up,
-                        bool* swallow_next_escape_up) override;
+                        bool* swallow_next_mouse_up) override;
   bool HandleMouseDown(const WebMouseEvent& event,
                        bool* swallow_next_mouse_up) override;
   bool HandleMouseMove(const WebMouseEvent& event) override;
@@ -126,17 +126,9 @@ class ScreenshotTool : public InspectTool {
 
  private:
   CString GetDataResourceName() override;
-  bool HandleKeyboardEvent(const WebKeyboardEvent&,
-                           bool* swallow_next_escape_up) override;
-  bool HandleMouseDown(const WebMouseEvent& event,
-                       bool* swallow_next_mouse_up) override;
-  bool HandleMouseMove(const WebMouseEvent& event) override;
-  bool HandleMouseUp(const WebMouseEvent& event) override;
-  void Draw(float scale) override;
   void DoInit() override;
+  void Dispatch(const String& message) override;
 
-  IntPoint screenshot_anchor_;
-  IntPoint screenshot_position_;
   DISALLOW_COPY_AND_ASSIGN(ScreenshotTool);
 };
 
@@ -144,11 +136,15 @@ class ScreenshotTool : public InspectTool {
 
 class PausedInDebuggerTool : public InspectTool {
  public:
-  explicit PausedInDebuggerTool(const String& message) : message_(message) {}
+  PausedInDebuggerTool(v8_inspector::V8InspectorSession* v8_session,
+                       const String& message)
+      : v8_session_(v8_session), message_(message) {}
 
  private:
   CString GetDataResourceName() override;
   void Draw(float scale) override;
+  void Dispatch(const String& message) override;
+  v8_inspector::V8InspectorSession* v8_session_;
   String message_;
   DISALLOW_COPY_AND_ASSIGN(PausedInDebuggerTool);
 };
