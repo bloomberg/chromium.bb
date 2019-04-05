@@ -530,11 +530,23 @@ TEST_F(DownloadPathReservationTrackerTest, UnwriteableDirectory) {
     bool create_directory = false;
     CallGetReservedPath(item.get(), path, create_directory, conflict_action,
                         &reserved_path, &result);
-    // Verification fails.
+    // Verification fails. If |dir| is the same as the default download dir,
+    // fallback_dir should be used.
     EXPECT_EQ(PathValidationResult::PATH_NOT_WRITABLE, result);
     EXPECT_EQ(path.BaseName().value(), reserved_path.BaseName().value());
     EXPECT_EQ(fallback_dir.value(), reserved_path.DirName().value());
+
+    // Change the default download dir to something else.
+    base::FilePath default_download_path =
+        GetPathInDownloadsDirectory(FILE_PATH_LITERAL("foo/foo.txt"));
+    set_default_download_path(default_download_path);
+    CallGetReservedPath(item.get(), path, create_directory, conflict_action,
+                        &reserved_path, &result);
+    EXPECT_EQ(PathValidationResult::PATH_NOT_WRITABLE, result);
+    EXPECT_EQ(path.BaseName().value(), reserved_path.BaseName().value());
+    EXPECT_EQ(default_download_path.value(), reserved_path.DirName().value());
   }
+
   SetDownloadItemState(item.get(), DownloadItem::COMPLETE);
 }
 
