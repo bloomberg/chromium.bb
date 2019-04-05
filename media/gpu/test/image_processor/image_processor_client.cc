@@ -223,7 +223,7 @@ void ImageProcessorClient::FrameReady(size_t frame_index,
   // VideoFrame should be processed in FIFO order.
   EXPECT_EQ(frame_index, num_processed_frames_);
   for (auto& processor : frame_processors_)
-    processor->ProcessVideoFrame(std::move(frame), frame_index);
+    processor->ProcessVideoFrame(frame, frame_index);
   num_processed_frames_++;
   output_cv_.Signal();
 }
