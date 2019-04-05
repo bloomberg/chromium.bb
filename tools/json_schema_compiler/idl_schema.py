@@ -362,6 +362,8 @@ class Enum(object):
     for node in self.node.GetChildren():
       if node.cls == 'EnumItem':
         enum_value = {'name': node.GetName()}
+        if node.GetProperty('nodoc'):
+          enum_value['nodoc'] = True
         for child in node.GetChildren():
           if child.cls == 'Comment':
             enum_value['description'] = ProcessComment(child.GetName())[0]
