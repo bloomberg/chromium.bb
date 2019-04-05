@@ -64,20 +64,6 @@ public class CustomTabActivityNavigationControllerTest {
     }
 
     @Test
-    public void doesntFinish_IfCloseButtonNavigatorHandlesClose() {
-        when(env.closeButtonNavigator.navigateOnClose(any())).thenReturn(true);
-        mNavigationController.navigateOnClose();
-        verify(mFinishHandler, never()).onFinish(anyInt());
-    }
-
-    @Test
-    public void closesTab_IfCloseButtonNavigatorDoesntHandleClose() {
-        when(env.closeButtonNavigator.navigateOnClose(any())).thenReturn(false);
-        mNavigationController.navigateOnClose();
-        verify(mFinishHandler).onFinish(eq(FinishReason.USER_NAVIGATION));
-    }
-
-    @Test
     public void handlesBackNavigation_IfExternalBackHandlerRejectsSynchronously() {
         mNavigationController.setBackHandler(notHandledRunnable -> false);
         mNavigationController.navigateOnBack();

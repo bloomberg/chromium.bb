@@ -38,9 +38,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.PageTransition;
 
 import java.lang.annotation.Retention;
@@ -100,14 +98,14 @@ public class CustomTabActivityNavigationController implements StartStopWithNativ
 
     private boolean mIsFinishing;
 
-    private boolean mIsClosingTabOnBack;
+    private boolean mIsHandlingUserNavigation;
 
     private final CustomTabActivityTabProvider.Observer mTabObserver =
             new CustomTabActivityTabProvider.Observer() {
 
         @Override
         public void onAllTabsClosed() {
-            finish(mIsClosingTabOnBack ? USER_NAVIGATION : OTHER);
+            finish(mIsHandlingUserNavigation ? USER_NAVIGATION : OTHER);
         }
     };
 
@@ -205,32 +203,21 @@ public class CustomTabActivityNavigationController implements StartStopWithNativ
     private void executeDefaultBackHandling() {
         if (mToolbarManager.get().back()) return;
 
-        // mTabController.closeTab may result in either closing the only tab, or swapping to the
-        // previous tab. In the first case we need finish to be called with USER_NAVIGATION reason.
-        mIsClosingTabOnBack = true;
+        // mTabController.closeTab may result in either closing the only tab (through the back
+        // button or the close button), or swapping to the previous tab. In the first case we need
+        // finish to be called with USER_NAVIGATION reason.
+        mIsHandlingUserNavigation = true;
         mTabController.closeTab();
-        mIsClosingTabOnBack = false;
+        mIsHandlingUserNavigation = false;
     }
 
     /**
      * Handles close button navigation.
      */
     public void navigateOnClose() {
-        NavigationController navigationController = getNavigationController();
-        if (navigationController != null
-                && mCloseButtonNavigator.navigateOnClose(navigationController)) {
-            return;
-        }
-        finish(USER_NAVIGATION);
-    }
-
-    @Nullable
-    private NavigationController getNavigationController() {
-        Tab tab = mTabProvider.getTab();
-        if (tab == null) return null;
-        WebContents webContents = tab.getWebContents();
-        if (webContents == null) return null;
-        return webContents.getNavigationController();
+        mIsHandlingUserNavigation = true;
+        mCloseButtonNavigator.navigateOnClose();
+        mIsHandlingUserNavigation = false;
     }
 
     /**

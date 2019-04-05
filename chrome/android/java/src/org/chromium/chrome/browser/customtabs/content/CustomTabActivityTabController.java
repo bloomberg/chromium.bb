@@ -162,7 +162,7 @@ public class CustomTabActivityTabController implements InflationObserver, Native
      * case links with target="_blank" were followed. See the comment to
      * {@link CustomTabActivityTabProvider.Observer#onAllTabsClosed}.
      */
-    void closeTab() {
+    public void closeTab() {
         mTabFactory.getTabModelSelector().getCurrentModel().closeTab(mTabProvider.getTab(),
                 false, false, false);
     }
