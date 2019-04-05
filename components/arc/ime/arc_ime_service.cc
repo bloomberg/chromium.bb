@@ -340,8 +340,6 @@ void ArcImeService::RequestHideIme() {
 // Overridden from keyboard::KeyboardControllerObserver
 void ArcImeService::OnKeyboardAppearanceChanged(
     const keyboard::KeyboardStateDescriptor& state) {
-  if (!focused_arc_window_)
-    return;
   gfx::Rect new_bounds = state.occluded_bounds;
   // Multiply by the scale factor. To convert from DIP to physical pixels.
   // The default scale factor is always used in Android side regardless of
