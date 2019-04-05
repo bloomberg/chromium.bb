@@ -2976,6 +2976,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableAccessibilityObjectModel,
     switches::kEnableAutomation,
     switches::kEnableExperimentalAccessibilityLanguageDetection,
+    switches::kEnableExperimentalAccessibilityLabelsDebugging,
     switches::kEnableExperimentalWebPlatformFeatures,
     switches::kEnableGPUClientLogging,
     switches::kEnableGpuClientTracing,

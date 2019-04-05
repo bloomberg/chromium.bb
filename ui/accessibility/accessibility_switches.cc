@@ -18,6 +18,11 @@ const char kEnableExperimentalAccessibilityFeatures[] =
 const char kEnableExperimentalAccessibilityAutoclick[] =
     "enable-experimental-accessibility-autoclick";
 
+// Enables support for visually debugging the accessibility labels
+// feature, which provides images descriptions for screen reader users.
+const char kEnableExperimentalAccessibilityLabelsDebugging[] =
+    "enable-experimental-accessibility-labels-debugging";
+
 // Enables language detection on in-page text content which is then exposed to
 // accessibility technology such as screen readers.
 const char kEnableExperimentalAccessibilityLanguageDetection[] =

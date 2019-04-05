@@ -159,6 +159,8 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   ax::mojom::EventFrom GetEventFrom();
   void ScheduleSendAccessibilityEventsIfNeeded();
   void RecordImageMetrics(AXContentTreeUpdate* update);
+  void AddImageAnnotationDebuggingAttributes(
+      const std::vector<AXContentTreeUpdate>& updates);
 
   // The RenderFrameImpl that owns us.
   RenderFrameImpl* render_frame_;
@@ -215,6 +217,14 @@ class CONTENT_EXPORT RenderAccessibilityImpl
 
   // Token to send with event messages so we know when they're acknowledged.
   int ack_token_;
+
+  // Whether or not we've injected a stylesheet in this document
+  // (only when debugging flags are enabled, never under normal circumstances).
+  bool has_injected_stylesheet_ = false;
+
+  // Whether we should highlight annotation results visually on the page
+  // for debugging.
+  bool image_annotation_debugging_ = false;
 
   // So we can queue up tasks to be executed later.
   base::WeakPtrFactory<RenderAccessibilityImpl> weak_factory_;
