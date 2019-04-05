@@ -84,8 +84,6 @@ class RemoteTest(object):
         CROS_RUN_TEST_PATH,
         '--board', args.board,
         '--cache-dir', args.cros_cache,
-        '--remote-cmd',
-        '--cwd', os.path.relpath(self._path_to_outdir, CHROMIUM_SRC_PATH),
     ]
     if args.use_vm:
       self._test_cmd += [
@@ -131,6 +129,12 @@ class RemoteTest(object):
     return self._test_cmd
 
   def write_test_script_to_disk(self, script_contents):
+    # Since we're using an on_device_script to invoke the test, we'll need to
+    # set cwd.
+    self._test_cmd += [
+        '--remote-cmd',
+        '--cwd', os.path.relpath(self._path_to_outdir, CHROMIUM_SRC_PATH),
+    ]
     logging.info('Running the following command on the device:')
     logging.info('\n' + '\n'.join(script_contents))
     fd, tmp_path = tempfile.mkstemp(suffix='.sh', dir=self._path_to_outdir)
@@ -245,33 +249,52 @@ class TastTest(RemoteTest):
         '--build-dir', os.path.relpath(self._path_to_outdir, CHROMIUM_SRC_PATH),
     ]
 
-    # Build the shell script that will be used on the device to invoke the test.
-    device_test_script_contents = self.BASIC_SHELL_SCRIPT[:]
+    # Coverage tests require some special pre-test setup, so use an
+    # on_device_script in that case. For all other tests, use cros_run_test's
+    # built-in '--tast' option. This gives us much better results reporting.
     if self._llvm_profile_var:
-      device_test_script_contents += [
+      # Build the shell script that will be used on the device to invoke the
+      # test.
+      device_test_script_contents = self.BASIC_SHELL_SCRIPT[:] + [
           'echo "LLVM_PROFILE_FILE=%s" >> /etc/chrome_dev.conf' % (
               self._llvm_profile_var)
       ]
 
-    local_test_runner_cmd = ['local_test_runner', '-waituntilready']
-    if self._use_vm:
-      # If we're running tests in VMs, tell the test runner to skip tests that
-      # aren't compatible.
-      local_test_runner_cmd.append('-extrauseflags=tast_vm')
-    if self._conditional:
-      local_test_runner_cmd.append(pipes.quote(self._conditional))
+      local_test_runner_cmd = ['local_test_runner', '-waituntilready']
+      if self._use_vm:
+        # If we're running tests in VMs, tell the test runner to skip tests that
+        # aren't compatible.
+        local_test_runner_cmd.append('-extrauseflags=tast_vm')
+      if self._conditional:
+        local_test_runner_cmd.append(pipes.quote(self._conditional))
+      else:
+        local_test_runner_cmd.extend(self._tests)
+      device_test_script_contents.append(' '.join(local_test_runner_cmd))
+
+      self._on_device_script = self.write_test_script_to_disk(
+          device_test_script_contents)
+
+      self._test_cmd += [
+          '--files', os.path.relpath(self._on_device_script),
+          '--',
+          './' + os.path.relpath(self._on_device_script, self._path_to_outdir)
+      ]
     else:
-      local_test_runner_cmd.extend(self._tests)
-    device_test_script_contents.append(' '.join(local_test_runner_cmd))
-
-    self._on_device_script = self.write_test_script_to_disk(
-        device_test_script_contents)
-
-    self._test_cmd += [
-        '--files', os.path.relpath(self._on_device_script),
-        '--',
-        './' + os.path.relpath(self._on_device_script, self._path_to_outdir)
-    ]
+      self._test_cmd += [
+          # Since we're not in a chroot, the tast bin won't automatically handle
+          # ssh auth. So point it to the ssh keys in chromite.
+          '--private-key',
+          os.path.join(CHROMITE_PATH, 'ssh_keys', 'testing_rsa'),
+      ]
+      if self._conditional:
+        # Don't use pipes.quote() here. Something funky happens with the arg
+        # as it gets passed down from cros_run_test to tast. (Tast picks up the
+        # escaping single quotes and complains that the conditional "must be
+        # within parentheses".)
+        self._test_cmd.append('--tast=%s' % self._conditional)
+      else:
+        self._test_cmd.append('--tast')
+        self._test_cmd.extend(self._tests)
 
 
 class GTestTest(RemoteTest):
