@@ -36,7 +36,6 @@ class IncognitoMenuView : public ProfileMenuViewBase,
  private:
   // views::BubbleDialogDelegateView:
   void Init() override;
-  views::View* GetInitiallyFocusedView() override;
   base::string16 GetAccessibleWindowTitle() const override;
 
   // views::ButtonListener:

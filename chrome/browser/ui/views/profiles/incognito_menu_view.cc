@@ -49,10 +49,6 @@ void IncognitoMenuView::Init() {
   RepopulateViewFromMenuItems();
 }
 
-views::View* IncognitoMenuView::GetInitiallyFocusedView() {
-  return ShouldProvideInitiallyFocusedView() ? title_card_ : nullptr;
-}
-
 base::string16 IncognitoMenuView::GetAccessibleWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_INCOGNITO_BUBBLE_ACCESSIBLE_TITLE);
 }
