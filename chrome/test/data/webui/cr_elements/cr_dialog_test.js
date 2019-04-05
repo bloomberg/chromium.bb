@@ -285,10 +285,14 @@ suite('cr-dialog', function() {
     assertFalse(dialog.open);
     const bodyContainer = dialog.$$('.body-container');
     assertTrue(!!bodyContainer);
+    const topShadow = dialog.$$('#cr-container-shadow-top');
+    assertTrue(!!topShadow);
+    const bottomShadow = dialog.$$('#cr-container-shadow-bottom');
+    assertTrue(!!bottomShadow);
 
     return PolymerTest.flushTasks().then(() => {
-      assertFalse(bodyContainer.classList.contains('top-scrollable'));
-      assertFalse(bodyContainer.classList.contains('bottom-scrollable'));
+      assertFalse(topShadow.classList.contains('has-shadow'));
+      assertFalse(bottomShadow.classList.contains('has-shadow'));
     });
   });
 
@@ -304,6 +308,10 @@ suite('cr-dialog', function() {
     const dialog = document.body.querySelector('cr-dialog');
     const bodyContainer = dialog.$$('.body-container');
     assertTrue(!!bodyContainer);
+    const topShadow = dialog.$$('#cr-container-shadow-top');
+    assertTrue(!!topShadow);
+    const bottomShadow = dialog.$$('#cr-container-shadow-bottom');
+    assertTrue(!!bottomShadow);
 
     dialog.showModal();  // Attach the dialog for the first time here.
 
@@ -320,24 +328,25 @@ suite('cr-dialog', function() {
       observerCount++;
       switch (observerCount) {
         case 1:  // Triggered when scrolled to bottom.
-          assertFalse(bodyContainer.classList.contains('bottom-scrollable'));
-          assertTrue(bodyContainer.classList.contains('top-scrollable'));
+          assertFalse(bottomShadow.classList.contains('has-shadow'));
+          assertTrue(topShadow.classList.contains('has-shadow'));
           bodyContainer.scrollTop = 0;
           break;
         case 2:  // Triggered when scrolled back to top.
-          assertTrue(bodyContainer.classList.contains('bottom-scrollable'));
-          assertFalse(bodyContainer.classList.contains('top-scrollable'));
+          assertTrue(bottomShadow.classList.contains('has-shadow'));
+          assertFalse(topShadow.classList.contains('has-shadow'));
           bodyContainer.scrollTop = 2;
           break;
         case 3:  // Triggered when finally scrolling to middle.
-          assertTrue(bodyContainer.classList.contains('bottom-scrollable'));
-          assertTrue(bodyContainer.classList.contains('top-scrollable'));
+          assertTrue(bottomShadow.classList.contains('has-shadow'));
+          assertTrue(topShadow.classList.contains('has-shadow'));
           observer.disconnect();
           done();
           break;
       }
     });
-    observer.observe(bodyContainer, {attributes: true});
+    observer.observe(topShadow, {attributes: true});
+    observer.observe(bottomShadow, {attributes: true});
 
     // Height is normally set via CSS, but mixin doesn't work with innerHTML.
     bodyContainer.style.height = '60px';  // Element has "min-height: 60px".

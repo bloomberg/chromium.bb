@@ -30,10 +30,8 @@
   <template>
     <style include="settings-shared">
       #dialog {
-        --cr-dialog-body-container: {
-          /* Force a bottom border regardless of scroll state. */
-          border-bottom: 1px solid var(--paper-grey-300);
-        };
+        /* Force a bottom border regardless of scroll state. */
+        --cr-dialog-body-border-bottom: 1px solid var(--paper-grey-300);
       }
       #dialog [slot=body] {
         height: 350px;

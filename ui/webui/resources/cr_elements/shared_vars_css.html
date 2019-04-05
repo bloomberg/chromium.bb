@@ -239,11 +239,13 @@
 
     --cr-toolbar-overlay-animation-duration: 150ms;
 
+    --cr-container-shadow-height: 6px;
+    --cr-container-shadow-margin: calc(-1 * var(--cr-container-shadow-height));
     --cr-container-shadow: {
       box-shadow: inset 0 5px 6px -3px rgba(0, 0, 0, .4);
-      height: 6px;
+      height: var(--cr-container-shadow-height);
       left: 0;
-      margin-bottom: -6px;
+      margin-bottom: var(--cr-container-shadow-margin);
       opacity: 0;
       pointer-events: none;
       position: relative;

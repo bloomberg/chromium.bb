@@ -1,6 +1,7 @@
 <link rel="import" href="../../html/polymer.html">
 
 <link rel="import" href="../../html/assert.html">
+<link rel="import" href="../cr_container_shadow_behavior.html">
 <link rel="import" href="../cr_icon_button/cr_icon_button.html">
 <link rel="import" href="../cr_icons_css.html">
 <link rel="import" href="../hidden_style_css.html">
@@ -127,10 +128,6 @@
       }
 
       .body-container {
-        /* Prevent layout moving when border does appear. */
-        border-bottom: 1px solid transparent;
-        border-top: 1px solid transparent;
-
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
@@ -140,12 +137,29 @@
         @apply --cr-dialog-body-container;
       }
 
-      .body-container.bottom-scrollable {
-        border-bottom: var(--scroll-border);
+      :host {
+        --transparent-border: 1px solid transparent;
+        --cr-container-shadow: {
+          box-shadow: none;
+          height: 0;
+          margin: 0;
+        };
       }
 
-      .body-container.top-scrollable {
-        border-top: var(--scroll-border);
+      /* Cr Dialog uses borders instead of box-shadows. */
+      #cr-container-shadow-top {
+        border-bottom: var(--cr-dialog-body-border-top,
+            var(--transparent-border));
+      }
+
+      #cr-container-shadow-bottom {
+        border-bottom: var(--cr-dialog-body-border-bottom,
+            var(--transparent-border));
+      }
+
+      #cr-container-shadow-top.has-shadow,
+      #cr-container-shadow-bottom.has-shadow {
+        border-bottom: var(--scroll-border);
       }
 
       .top-container {
@@ -185,10 +199,8 @@
           </cr-icon-button>
         </div>
         <slot name="header"></slot>
-        <div class="body-container">
-          <span id="bodyTopMarker"></span>
+        <div class="body-container" id="container" show-bottom-shadow>
           <slot name="body"></slot>
-          <span id="bodyBottomMarker"></span>
         </div>
         <slot name="button-container"></slot>
         <slot name="footer"></slot>

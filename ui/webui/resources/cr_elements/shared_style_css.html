@@ -74,11 +74,19 @@
       }
 
       /** Styles for elements that implement the CrContainerShadowBehavior */
-      #cr-container-shadow {
+      #cr-container-shadow-top,
+      #cr-container-shadow-bottom {
         @apply --cr-container-shadow;
       }
 
-      #cr-container-shadow.has-shadow {
+      #cr-container-shadow-bottom {
+        margin-bottom: 0;
+        margin-top: var(--cr-container-shadow-margin);
+        transform: scaleY(-1);
+      }
+
+      #cr-container-shadow-top.has-shadow,
+      #cr-container-shadow-bottom.has-shadow {
         opacity: var(--cr-container-shadow-max-opacity);
       }
     </style>

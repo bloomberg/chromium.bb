@@ -12,6 +12,7 @@ js_type_check("closure_compile") {
 
 js_library("cr_dialog") {
   deps = [
+    "..:cr_container_shadow_behavior",
     "//ui/webui/resources/js:assert",
   ]
   externs_list = [ "$externs_path/web_animations.js" ]
