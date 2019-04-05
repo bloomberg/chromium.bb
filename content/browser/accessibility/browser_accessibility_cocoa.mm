@@ -2252,12 +2252,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
         break;
     }
     return [NSNumber numberWithInt:value];
-  } else if ([role isEqualToString:NSAccessibilityProgressIndicatorRole] ||
-             [role isEqualToString:NSAccessibilitySliderRole] ||
-             [role isEqualToString:NSAccessibilityIncrementorRole] ||
-             [role isEqualToString:NSAccessibilityScrollBarRole] ||
-             ([role isEqualToString:NSAccessibilitySplitterRole] &&
-              owner_->HasState(ax::mojom::State::kFocusable))) {
+  } else if (IsRangeValueSupported(owner_->GetData())) {
     float floatValue;
     if (owner_->GetFloatAttribute(ax::mojom::FloatAttribute::kValueForRange,
                                   &floatValue)) {
@@ -3018,12 +3013,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     ]];
   } else if ([role isEqualToString:NSAccessibilityTabGroupRole]) {
     [ret addObject:NSAccessibilityTabsAttribute];
-  } else if ([role isEqualToString:NSAccessibilityProgressIndicatorRole] ||
-             [role isEqualToString:NSAccessibilitySliderRole] ||
-             [role isEqualToString:NSAccessibilityIncrementorRole] ||
-             [role isEqualToString:NSAccessibilityScrollBarRole] ||
-             ([role isEqualToString:NSAccessibilitySplitterRole] &&
-              owner_->HasState(ax::mojom::State::kFocusable))) {
+  } else if (IsRangeValueSupported(owner_->GetData())) {
     [ret addObjectsFromArray:@[
       NSAccessibilityMaxValueAttribute, NSAccessibilityMinValueAttribute,
       NSAccessibilityValueDescriptionAttribute

@@ -163,7 +163,7 @@ RoleMap BuildRoleMap() {
       {ax::mojom::Role::kMenuItemRadio, NSAccessibilityMenuItemRole},
       {ax::mojom::Role::kMenuListOption, NSAccessibilityMenuItemRole},
       {ax::mojom::Role::kMenuListPopup, NSAccessibilityUnknownRole},
-      {ax::mojom::Role::kMeter, NSAccessibilityProgressIndicatorRole},
+      {ax::mojom::Role::kMeter, NSAccessibilityLevelIndicatorRole},
       {ax::mojom::Role::kNavigation, NSAccessibilityGroupRole},
       {ax::mojom::Role::kNone, NSAccessibilityGroupRole},
       {ax::mojom::Role::kNote, NSAccessibilityGroupRole},
