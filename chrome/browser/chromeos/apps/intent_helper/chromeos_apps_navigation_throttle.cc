@@ -130,7 +130,7 @@ void ChromeOsAppsNavigationThrottle::FindPwaForUrlAndShowIntentPickerForApps(
     std::vector<apps::IntentPickerAppInfo> apps) {
   std::vector<apps::IntentPickerAppInfo> apps_for_picker =
       FindPwaForUrl(web_contents, url, std::move(apps));
-  apps::AppsNavigationThrottle::ShowIntentPickerBubbleForAppsImpl(
+  apps::AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
       web_contents, std::move(apps_for_picker),
       base::BindOnce(&OnIntentPickerClosed, web_contents,
                      ui_auto_display_service, url));
@@ -214,17 +214,6 @@ bool ChromeOsAppsNavigationThrottle::ShouldDeferNavigationForArc(
   return false;
 }
 
-void ChromeOsAppsNavigationThrottle::ShowIntentPickerBubbleForApps(
-    content::WebContents* web_contents,
-    IntentPickerAutoDisplayService* ui_auto_display_service,
-    const GURL& url,
-    std::vector<apps::IntentPickerAppInfo> apps) {
-  apps::AppsNavigationThrottle::ShowIntentPickerBubbleForAppsImpl(
-      web_contents, std::move(apps),
-      base::BindOnce(&OnIntentPickerClosed, web_contents,
-                     ui_auto_display_service, url));
-}
-
 void ChromeOsAppsNavigationThrottle::OnDeferredNavigationProcessed(
     apps::AppsNavigationAction action,
     std::vector<apps::IntentPickerAppInfo> apps) {
@@ -248,8 +237,9 @@ void ChromeOsAppsNavigationThrottle::OnDeferredNavigationProcessed(
   // TODO(crbug.com/826982): show the intent picker when the app registry is
   // available to persist "Remember my choice" for PWAs.
   if (ShouldAutoDisplayUi(apps_for_picker, web_contents, url)) {
-    ShowIntentPickerBubbleForApps(web_contents, ui_auto_display_service_, url,
-                                  std::move(apps_for_picker));
+    ShowIntentPickerForApps(
+        web_contents, ui_auto_display_service_, url, std::move(apps_for_picker),
+        GetOnPickerClosedCallback(web_contents, ui_auto_display_service_, url));
   } else {
     ui_displayed_ = false;
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
@@ -261,6 +251,19 @@ void ChromeOsAppsNavigationThrottle::OnDeferredNavigationProcessed(
 
   // We are about to resume the navigation, which may destroy this object.
   Resume();
+}
+
+apps::AppsNavigationThrottle::PickerShowState
+ChromeOsAppsNavigationThrottle::GetPickerShowState() {
+  return PickerShowState::kPopOut;
+}
+
+IntentPickerResponse ChromeOsAppsNavigationThrottle::GetOnPickerClosedCallback(
+    content::WebContents* web_contents,
+    IntentPickerAutoDisplayService* ui_auto_display_service,
+    const GURL& url) {
+  return base::BindOnce(&OnIntentPickerClosed, web_contents,
+                        ui_auto_display_service, url);
 }
 
 void ChromeOsAppsNavigationThrottle::CloseTab() {

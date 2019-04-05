@@ -119,7 +119,7 @@ void AppsNavigationThrottle::ShowIntentPickerBubble(
     const GURL& url) {
   std::vector<IntentPickerAppInfo> apps = FindPwaForUrl(web_contents, url, {});
 
-  ShowIntentPickerBubbleForAppsImpl(
+  ShowIntentPickerBubbleForApps(
       web_contents, std::move(apps),
       base::BindOnce(&OnIntentPickerClosed, web_contents,
                      ui_auto_display_service, url));
@@ -188,7 +188,7 @@ bool AppsNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
 }
 
 // static
-void AppsNavigationThrottle::ShowIntentPickerBubbleForAppsImpl(
+void AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
     content::WebContents* web_contents,
     std::vector<IntentPickerAppInfo> apps,
     IntentPickerResponse callback) {
@@ -339,15 +339,42 @@ bool AppsNavigationThrottle::ShouldDeferNavigationForArc(
   return false;
 }
 
-void AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
+void AppsNavigationThrottle::ShowIntentPickerForApps(
     content::WebContents* web_contents,
     IntentPickerAutoDisplayService* ui_auto_display_service,
     const GURL& url,
-    std::vector<IntentPickerAppInfo> apps) {
-  ShowIntentPickerBubbleForAppsImpl(
-      web_contents, std::move(apps),
-      base::BindOnce(&OnIntentPickerClosed, web_contents,
-                     ui_auto_display_service, url));
+    std::vector<IntentPickerAppInfo> apps,
+    IntentPickerResponse callback) {
+  if (apps.empty())
+    return;
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (!browser)
+    return;
+  const PickerShowState picker_show_state = GetPickerShowState();
+  switch (picker_show_state) {
+    case PickerShowState::kOmnibox:
+      browser->window()->SetIntentPickerViewVisibility(true);
+      break;
+    case PickerShowState::kPopOut:
+      ShowIntentPickerBubbleForApps(web_contents, std::move(apps),
+                                    std::move(callback));
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
+AppsNavigationThrottle::PickerShowState
+AppsNavigationThrottle::GetPickerShowState() {
+  return PickerShowState::kOmnibox;
+}
+
+IntentPickerResponse AppsNavigationThrottle::GetOnPickerClosedCallback(
+    content::WebContents* web_contents,
+    IntentPickerAutoDisplayService* ui_auto_display_service,
+    const GURL& url) {
+  return base::BindOnce(&OnIntentPickerClosed, web_contents,
+                        ui_auto_display_service, url);
 }
 
 bool AppsNavigationThrottle::ShouldAutoDisplayUi(
@@ -464,8 +491,9 @@ AppsNavigationThrottle::HandleRequest() {
     if (!apps.empty())
       ui_displayed_ = true;
 
-    ShowIntentPickerBubbleForApps(web_contents, ui_auto_display_service_, url,
-                                  std::move(apps));
+    ShowIntentPickerForApps(
+        web_contents, ui_auto_display_service_, url, std::move(apps),
+        GetOnPickerClosedCallback(web_contents, ui_auto_display_service_, url));
   }
 
   return content::NavigationThrottle::PROCEED;

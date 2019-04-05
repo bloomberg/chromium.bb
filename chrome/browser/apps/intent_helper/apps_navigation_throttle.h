@@ -77,7 +77,7 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
   static bool ShouldOverrideUrlLoadingForTesting(const GURL& previous_url,
                                                  const GURL& current_url);
 
-  static void ShowIntentPickerBubbleForAppsImpl(
+  static void ShowIntentPickerBubbleForApps(
       content::WebContents* web_contents,
       std::vector<IntentPickerAppInfo> apps,
       IntentPickerResponse callback);
@@ -135,6 +135,13 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
     kMaxValue = PWA,
   };
 
+  // These enums are used to define the intent picker show state, whether the
+  // picker is popped out or just displayed as a clickable omnibox icon.
+  enum class PickerShowState {
+    kOmnibox = 1,  // Only show the intent icon in the omnibox
+    kPopOut = 2,   // show the intent picker icon and pop out bubble
+  };
+
   // Checks whether we can create the apps_navigation_throttle.
   static bool CanCreate(content::WebContents* web_contents);
 
@@ -163,11 +170,19 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
 
   virtual bool ShouldDeferNavigationForArc(content::NavigationHandle* handle);
 
-  virtual void ShowIntentPickerBubbleForApps(
+  void ShowIntentPickerForApps(
       content::WebContents* web_contents,
       IntentPickerAutoDisplayService* ui_auto_display_service,
       const GURL& url,
-      std::vector<IntentPickerAppInfo> apps);
+      std::vector<IntentPickerAppInfo> apps,
+      IntentPickerResponse callback);
+
+  virtual PickerShowState GetPickerShowState();
+
+  virtual IntentPickerResponse GetOnPickerClosedCallback(
+      content::WebContents* web_contents,
+      IntentPickerAutoDisplayService* ui_auto_display_service,
+      const GURL& url);
 
   // Whether or not the intent picker UI should be displayed without the user
   // clicking in the omnibox's icon.
