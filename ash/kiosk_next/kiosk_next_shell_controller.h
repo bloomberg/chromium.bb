@@ -30,7 +30,7 @@ class ASH_EXPORT KioskNextShellController
   ~KioskNextShellController() override;
 
   // Register prefs related to the Kiosk Next Shell.
-  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test);
 
   // Binds the mojom::KioskNextShellController interface to this object.
   void BindRequest(mojom::KioskNextShellControllerRequest request);

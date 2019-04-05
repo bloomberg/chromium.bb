@@ -26,9 +26,16 @@ KioskNextShellController::~KioskNextShellController() = default;
 
 // static
 void KioskNextShellController::RegisterProfilePrefs(
-    PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(prefs::kKioskNextShellEnabled, false,
-                                PrefRegistry::PUBLIC);
+    PrefRegistrySimple* registry,
+    bool for_test) {
+  if (for_test) {
+    registry->RegisterBooleanPref(prefs::kKioskNextShellEnabled, false,
+                                  PrefRegistry::PUBLIC);
+    return;
+  }
+  // The registration has been moved to
+  // chromeos::Preferences::RegisterProfilePrefs to avoid race conditions.
+  registry->RegisterForeignPref(prefs::kKioskNextShellEnabled);
 }
 
 void KioskNextShellController::BindRequest(
