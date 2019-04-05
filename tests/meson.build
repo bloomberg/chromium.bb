@@ -382,3 +382,17 @@ foreach t : tests_weston_plugin
 		test(t.get(0), exe_weston, env: env_test_weston, args: args_t)
 	endif
 endforeach
+
+if get_option('backend-drm')
+	executable(
+		'setbacklight',
+		'setbacklight.c',
+		dependencies: [
+			dep_backlight,
+			dep_libdrm,
+			dependency('libudev')
+		],
+		include_directories: include_directories('..'),
+		install: false
+	)
+endif
