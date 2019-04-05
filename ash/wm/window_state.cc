@@ -194,7 +194,8 @@ bool WindowState::HasDelegate() const {
 }
 
 void WindowState::SetDelegate(std::unique_ptr<WindowStateDelegate> delegate) {
-  DCHECK(!delegate_.get());
+  DCHECK((!delegate_.get() && !!delegate.get()) ||
+         (!!delegate_.get() && !delegate.get()));
   delegate_ = std::move(delegate);
 }
 
