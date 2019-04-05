@@ -26,15 +26,6 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
   USING_GARBAGE_COLLECTED_MIXIN(PaintRenderingContext2D);
 
  public:
-  static PaintRenderingContext2D* Create(
-      const IntSize& container_size,
-      const CanvasColorParams& color_params,
-      const PaintRenderingContext2DSettings* context_settings,
-      float zoom) {
-    return MakeGarbageCollected<PaintRenderingContext2D>(
-        container_size, color_params, context_settings, zoom);
-  }
-
   PaintRenderingContext2D(const IntSize& container_size,
                           const CanvasColorParams&,
                           const PaintRenderingContext2DSettings*,

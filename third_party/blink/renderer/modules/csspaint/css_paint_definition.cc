@@ -33,19 +33,6 @@ FloatSize GetSpecifiedSize(const FloatSize& size, float zoom) {
 
 }  // namespace
 
-CSSPaintDefinition* CSSPaintDefinition::Create(
-    ScriptState* script_state,
-    V8NoArgumentConstructor* constructor,
-    V8PaintCallback* paint,
-    const Vector<CSSPropertyID>& native_invalidation_properties,
-    const Vector<AtomicString>& custom_invalidation_properties,
-    const Vector<CSSSyntaxDescriptor>& input_argument_types,
-    const PaintRenderingContext2DSettings* context_settings) {
-  return MakeGarbageCollected<CSSPaintDefinition>(
-      script_state, constructor, paint, native_invalidation_properties,
-      custom_invalidation_properties, input_argument_types, context_settings);
-}
-
 CSSPaintDefinition::CSSPaintDefinition(
     ScriptState* script_state,
     V8NoArgumentConstructor* constructor,
@@ -93,9 +80,9 @@ scoped_refptr<Image> CSSPaintDefinition::Paint(
   }
 
   // Do subpixel snapping for the |container_size|.
-  PaintRenderingContext2D* rendering_context = PaintRenderingContext2D::Create(
+  auto* rendering_context = MakeGarbageCollected<PaintRenderingContext2D>(
       RoundedIntSize(container_size), color_params, context_settings_, zoom);
-  PaintSize* paint_size = PaintSize::Create(specified_size);
+  PaintSize* paint_size = MakeGarbageCollected<PaintSize>(specified_size);
   StylePropertyMapReadOnly* style_map =
       MakeGarbageCollected<PrepopulatedComputedStylePropertyMap>(
           layout_object.GetDocument(), layout_object.StyleRef(),
