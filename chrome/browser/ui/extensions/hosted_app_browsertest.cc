@@ -282,9 +282,6 @@ class HostedAppTest
       enabled_features.push_back(features::kDesktopPWAWindowing);
     } else {
       disabled_features.push_back(features::kDesktopPWAWindowing);
-#if defined(OS_MACOSX)
-      enabled_features.push_back(features::kBookmarkApps);
-#endif
     }
 
     auto& features = use_custom_tab_flag ? enabled_features : disabled_features;

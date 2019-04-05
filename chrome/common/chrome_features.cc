@@ -110,12 +110,6 @@ const base::Feature kBlockPromptsIfDismissedOften{
 const base::Feature kBlockPromptsIfIgnoredOften{
     "BlockPromptsIfIgnoredOften", base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if defined(OS_MACOSX)
-// Enables the new bookmark app system (e.g. Add To Applications on Mac).
-const base::Feature kBookmarkApps{"BookmarkAppsMac",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
 // Fixes for browser hang bugs are deployed in a field trial in order to measure
 // their impact. See crbug.com/478209.
 const base::Feature kBrowserHangFixesExperiment{

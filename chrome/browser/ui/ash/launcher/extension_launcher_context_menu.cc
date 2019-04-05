@@ -123,14 +123,11 @@ void ExtensionLauncherContextMenu::ExecuteCommand(int command_id,
       SetLaunchType(extensions::LAUNCH_TYPE_REGULAR);
       break;
     case ash::LAUNCH_TYPE_WINDOW: {
-      extensions::LaunchType launch_type = extensions::LAUNCH_TYPE_WINDOW;
-      // With bookmark apps enabled, hosted apps can only toggle between
-      // LAUNCH_WINDOW and LAUNCH_REGULAR.
-      if (extensions::util::IsNewBookmarkAppsEnabled()) {
-        launch_type = GetLaunchType() == extensions::LAUNCH_TYPE_WINDOW
-                          ? extensions::LAUNCH_TYPE_REGULAR
-                          : extensions::LAUNCH_TYPE_WINDOW;
-      }
+      // Hosted apps can only toggle between LAUNCH_WINDOW and LAUNCH_REGULAR.
+      extensions::LaunchType launch_type =
+          GetLaunchType() == extensions::LAUNCH_TYPE_WINDOW
+              ? extensions::LAUNCH_TYPE_REGULAR
+              : extensions::LAUNCH_TYPE_WINDOW;
       SetLaunchType(launch_type);
       break;
     }

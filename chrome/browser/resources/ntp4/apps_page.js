@@ -53,9 +53,7 @@ cr.define('ntp', function() {
       menu.appendChild(cr.ui.MenuItem.createSeparator());
       this.launchRegularTab_ = this.appendMenuItem_('applaunchtyperegular');
       this.launchPinnedTab_ = this.appendMenuItem_('applaunchtypepinned');
-      if (loadTimeData.getBoolean('canHostedAppsOpenInWindows')) {
-        this.launchNewWindow_ = this.appendMenuItem_('applaunchtypewindow');
-      }
+      this.launchNewWindow_ = this.appendMenuItem_('applaunchtypewindow');
       this.launchFullscreen_ = this.appendMenuItem_('applaunchtypefullscreen');
 
       const self = this;
@@ -152,16 +150,11 @@ cr.define('ntp', function() {
       this.forAllLaunchTypes_(function(launchTypeButton, id) {
         launchTypeButton.disabled = false;
         launchTypeButton.checked = app.appData.launch_type == id;
-        // There are three cases when a launch type is hidden:
+        // There are two cases when a launch type is hidden:
         //  1. if the launch type can't be changed.
-        //  2. canHostedAppsOpenInWindows is false and type is launchTypeWindow
-        //  3. enableNewBookmarkApps is true and type is anything except
-        //     launchTypeWindow
+        //  2. type is anything except launchTypeWindow
         launchTypeButton.hidden = !app.appData.mayChangeLaunchType ||
-            (!loadTimeData.getBoolean('canHostedAppsOpenInWindows') &&
-             launchTypeButton == launchTypeWindow) ||
-            (loadTimeData.getBoolean('enableNewBookmarkApps') &&
-             launchTypeButton != launchTypeWindow);
+            launchTypeButton != launchTypeWindow;
         if (!launchTypeButton.hidden) {
           hasLaunchType = true;
         }
@@ -201,11 +194,9 @@ cr.define('ntp', function() {
       let targetLaunchType = pressed;
       // When bookmark apps are enabled, hosted apps can only toggle between
       // open as window and open as tab.
-      if (loadTimeData.getBoolean('enableNewBookmarkApps')) {
-        targetLaunchType = this.launchNewWindow_.checked ?
-            this.launchRegularTab_ :
-            this.launchNewWindow_;
-      }
+      targetLaunchType = this.launchNewWindow_.checked ?
+          this.launchRegularTab_ :
+          this.launchNewWindow_;
       this.forAllLaunchTypes_(function(launchTypeButton, id) {
         if (launchTypeButton == targetLaunchType) {
           chrome.send('setLaunchType', [app.appId, id]);

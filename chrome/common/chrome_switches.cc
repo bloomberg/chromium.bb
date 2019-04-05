@@ -786,32 +786,15 @@ const char kWmClass[]                       = "class";
 // Prevents Chrome from quitting when Chrome Apps are open.
 const char kAppsKeepChromeAliveInTests[]    = "apps-keep-chrome-alive-in-tests";
 
-// Disable the toolkit-views App Info dialog for Mac.
-const char kDisableAppInfoDialogMac[] = "disable-app-info-dialog-mac";
-
 // Disables app shim creation for hosted apps on Mac.
 const char kDisableHostedAppShimCreation[] = "disable-hosted-app-shim-creation";
-
-// Prevents hosted apps from being opened in windows on Mac.
-const char kDisableHostedAppsInWindows[] = "disable-hosted-apps-in-windows";
-
-// Disables use of toolkit-views based native app windows.
-const char kDisableMacViewsNativeAppWindows[] =
-    "disable-mac-views-native-app-windows";
 
 // Enable user metrics from within the installer.
 const char kEnableUserMetrics[] = "enable-user-metrics";
 
-// Enable the toolkit-views App Info dialog for Mac. This is accessible from
-// chrome://apps and chrome://extensions and is already enabled on non-mac.
-const char kEnableAppInfoDialogMac[] = "enable-app-info-dialog-mac";
-
 // Enables the fullscreen toolbar to reveal itself for tab strip changes.
 const char kEnableFullscreenToolbarReveal[] =
     "enable-fullscreen-toolbar-reveal";
-
-// Allows hosted apps to be opened in windows on Mac.
-const char kEnableHostedAppsInWindows[] = "enable-hosted-apps-in-windows";
 
 // Shows a notification when quitting Chrome with hosted apps running. Default
 // behavior is to also quit all hosted apps.

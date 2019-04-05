@@ -21,7 +21,6 @@
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -58,12 +57,6 @@ class AppShimInteractiveTest : public extensions::PlatformAppBrowserTest {
   AppShimInteractiveTest()
       : auto_reset_(&g_app_shims_allow_update_and_launch_in_tests, true) {}
 
-  // testing::Test:
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kBookmarkApps);
-    PlatformAppBrowserTest::SetUp();
-  }
-
   // Install a test app of |type| and reliably wait for its app shim to be
   // created on disk. Sets |shim_path_|.
   const extensions::Extension* InstallAppWithShim(AppType type,
@@ -75,7 +68,6 @@ class AppShimInteractiveTest : public extensions::PlatformAppBrowserTest {
  private:
   // Temporarily enable app shims.
   base::AutoReset<bool> auto_reset_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimInteractiveTest);
 };

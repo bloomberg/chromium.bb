@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/installable/installable_metrics.h"
@@ -310,14 +309,6 @@ ChromeManagementAPIDelegate::GenerateAppForLinkFunctionDelegate(
       &delegate->cancelable_task_tracker_);
 
   return std::unique_ptr<extensions::AppForLinkDelegate>(delegate);
-}
-
-bool ChromeManagementAPIDelegate::CanHostedAppsOpenInWindows() const {
-  return extensions::util::CanHostedAppsOpenInWindows();
-}
-
-bool ChromeManagementAPIDelegate::IsNewBookmarkAppsEnabled() const {
-  return extensions::util::IsNewBookmarkAppsEnabled();
 }
 
 void ChromeManagementAPIDelegate::EnableExtension(

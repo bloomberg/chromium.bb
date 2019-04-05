@@ -309,26 +309,6 @@ const gfx::ImageSkia& GetDefaultExtensionIcon() {
       IDR_EXTENSION_DEFAULT_ICON);
 }
 
-bool IsNewBookmarkAppsEnabled() {
-#if defined(OS_MACOSX)
-  return base::FeatureList::IsEnabled(features::kBookmarkApps) ||
-         base::FeatureList::IsEnabled(features::kAppBanners) ||
-         banners::AppBannerManager::IsExperimentalAppBannersEnabled();
-#else
-  return true;
-#endif
-}
-
-bool CanHostedAppsOpenInWindows() {
-#if defined(OS_MACOSX)
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             ::switches::kEnableHostedAppsInWindows) ||
-         base::FeatureList::IsEnabled(features::kDesktopPWAWindowing);
-#else
-  return true;
-#endif
-}
-
 bool IsExtensionSupervised(const Extension* extension, Profile* profile) {
   return WasInstalledByCustodian(extension->id(), profile) &&
          profile->IsSupervised();

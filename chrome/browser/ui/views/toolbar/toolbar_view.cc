@@ -18,7 +18,6 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -839,7 +838,6 @@ void ToolbarView::OnShowHomeButtonChanged() {
 
 void ToolbarView::UpdateHomeButtonVisibility() {
   const bool show_home_button =
-      show_home_button_.GetValue() ||
-      (browser_->is_app() && extensions::util::IsNewBookmarkAppsEnabled());
+      show_home_button_.GetValue() || browser_->is_app();
   home_->SetVisible(show_home_button);
 }

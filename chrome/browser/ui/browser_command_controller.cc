@@ -23,7 +23,6 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -934,10 +933,8 @@ void BrowserCommandController::InitCommandState() {
   UpdateShowSyncState(true);
 
   // Navigation commands
-  command_updater_.UpdateCommandEnabled(
-      IDC_HOME,
-      normal_window ||
-          (extensions::util::IsNewBookmarkAppsEnabled() && browser_->is_app()));
+  command_updater_.UpdateCommandEnabled(IDC_HOME,
+                                        normal_window || browser_->is_app());
 
   const bool is_experimental_hosted_app =
       extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
