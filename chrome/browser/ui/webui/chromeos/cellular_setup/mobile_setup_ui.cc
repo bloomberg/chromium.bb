@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/chromeos/mobile_setup_ui.h"
+#include "chrome/browser/ui/webui/chromeos/cellular_setup/mobile_setup_ui.h"
 
 #include <stddef.h>
 
@@ -45,6 +45,8 @@
 #include "url/gurl.h"
 
 namespace chromeos {
+
+namespace cellular_setup {
 
 namespace {
 
@@ -603,5 +605,7 @@ MobileSetupUI::MobileSetupUI(content::WebUI* web_ui) : ui::WebDialogUI(web_ui) {
 }
 
 MobileSetupUI::~MobileSetupUI() = default;
+
+}  // namespace cellular_setup
 
 }  // namespace chromeos

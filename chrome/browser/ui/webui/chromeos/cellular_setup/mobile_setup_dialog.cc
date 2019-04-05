@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/chromeos/mobile_setup_dialog.h"
+#include "chrome/browser/ui/webui/chromeos/cellular_setup/mobile_setup_dialog.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/mobile/mobile_activator.h"
@@ -20,6 +20,8 @@
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
 namespace chromeos {
+
+namespace cellular_setup {
 
 namespace {
 
@@ -97,5 +99,7 @@ void MobileSetupDialog::OnCloseContents(content::WebContents* source,
       dialog_window(), l10n_util::GetStringUTF16(IDS_MOBILE_SETUP_TITLE),
       l10n_util::GetStringUTF16(IDS_MOBILE_CANCEL_ACTIVATION));
 }
+
+}  // namespace cellular_setup
 
 }  // namespace chromeos
