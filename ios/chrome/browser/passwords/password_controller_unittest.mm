@@ -20,6 +20,7 @@
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
+#include "components/password_manager/core/browser/new_password_form_manager.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -203,6 +204,14 @@ class PasswordControllerTest : public ChromeWebTest {
 
   void SetUp() override {
     ChromeWebTest::SetUp();
+
+    // When waiting for predictions is on, it makes tests more complicated.
+    // Disable wating, since most tests have nothing to do with predictions. All
+    // tests that test working with prediction should explicitly turn
+    // predictions on.
+    password_manager::NewPasswordFormManager::
+        set_wait_for_server_predictions_for_filling(false);
+
     passwordController_ =
         CreatePasswordController(web_state(), store_.get(), &weak_client_);
     @autoreleasepool {
@@ -1188,8 +1197,10 @@ TEST_F(PasswordControllerTest, SendingToStoreDynamicallyAddedFormsOnFocus) {
   password_manager::PasswordStore::FormDigest expected_form_digest(
       autofill::PasswordForm::SCHEME_HTML, "https://chromium.test/",
       GURL("https://chromium.test/"));
+  // TODO(crbug.com/949519): replace WillRepeatedly with WillOnce when the old
+  // parser is gone.
   EXPECT_CALL(*store_, GetLogins(expected_form_digest, _))
-      .WillOnce(testing::Invoke(
+      .WillRepeatedly(testing::Invoke(
           [&get_logins_called](
               const password_manager::PasswordStore::FormDigest&,
               password_manager::PasswordStoreConsumer*) {
@@ -1315,8 +1326,10 @@ TEST_F(PasswordControllerTest, CheckAsyncSuggestions) {
 
     if (store_has_credentials) {
       PasswordForm form(CreatePasswordForm(BaseUrl().c_str(), "user", "pw"));
+      // TODO(crbug.com/949519): replace WillRepeatedly with WillOnce when the
+      // old parser is gone.
       EXPECT_CALL(*store_, GetLogins(_, _))
-          .WillOnce(WithArg<1>(InvokeConsumer(form)));
+          .WillRepeatedly(WithArg<1>(InvokeConsumer(form)));
     } else {
       EXPECT_CALL(*store_, GetLogins(_, _))
           .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
@@ -1357,8 +1370,10 @@ TEST_F(PasswordControllerTest, CheckNoAsyncSuggestionsOnNonUsernameField) {
   __block BOOL completion_handler_called = NO;
 
   PasswordForm form(CreatePasswordForm(BaseUrl().c_str(), "user", "pw"));
+  // TODO(crbug.com/949519): replace WillRepeatedly with WillOnce when the old
+  // parser is gone.
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillOnce(WithArg<1>(InvokeConsumer(form)));
+      .WillRepeatedly(WithArg<1>(InvokeConsumer(form)));
   std::string mainFrameID = web::GetMainWebFrameId(web_state());
   [passwordController_
       checkIfSuggestionsAvailableForForm:@"dynamic_form"

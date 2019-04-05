@@ -62,7 +62,7 @@ const base::Feature kGooglePasswordManager = {
 // Enables new password form parsing mechanism for filling passwords, details in
 // https://goo.gl/QodPH1
 const base::Feature kNewPasswordFormParsing = {
-    "new-password-form-parsing", base::FEATURE_DISABLED_BY_DEFAULT};
+    "new-password-form-parsing", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables new password form parsing mechanism for saving passwords, details in
 // https://goo.gl/QodPH1
