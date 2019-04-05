@@ -38,21 +38,14 @@ namespace {
 
 class TestSigninManagerObserver : public SigninManagerBase::Observer {
  public:
-  TestSigninManagerObserver()
-      : num_failed_signins_(0), num_successful_signins_(0), num_signouts_(0) {}
+  TestSigninManagerObserver() : num_successful_signins_(0), num_signouts_(0) {}
 
   ~TestSigninManagerObserver() override {}
 
-  int num_failed_signins_;
   int num_successful_signins_;
   int num_signouts_;
 
  private:
-  // SigninManagerBase::Observer:
-  void GoogleSigninFailed(const GoogleServiceAuthError& error) override {
-    num_failed_signins_++;
-  }
-
   void GoogleSigninSucceeded(const AccountInfo& account_info) override {
     num_successful_signins_++;
   }
@@ -136,7 +129,6 @@ class SigninManagerTest : public testing::Test {
 
     // Should go into token service and stop.
     EXPECT_EQ(1, test_observer_.num_successful_signins_);
-    EXPECT_EQ(0, test_observer_.num_failed_signins_);
   }
 
   base::test::ScopedTaskEnvironment task_environment_;
@@ -318,7 +310,6 @@ TEST_F(SigninManagerTest, ExternalSignIn) {
   std::string account_id = AddToAccountTracker("gaia_id", "user@gmail.com");
   manager_->SignIn("user@gmail.com");
   EXPECT_EQ(1, test_observer_.num_successful_signins_);
-  EXPECT_EQ(0, test_observer_.num_failed_signins_);
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ(account_id, manager_->GetAuthenticatedAccountId());
 }
@@ -332,13 +323,11 @@ TEST_F(SigninManagerTest, ExternalSignIn_ReauthShouldNotSendNotification) {
   std::string account_id = AddToAccountTracker("gaia_id", "user@gmail.com");
   manager_->SignIn("user@gmail.com");
   EXPECT_EQ(1, test_observer_.num_successful_signins_);
-  EXPECT_EQ(0, test_observer_.num_failed_signins_);
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ(account_id, manager_->GetAuthenticatedAccountId());
 
   manager_->SignIn("user@gmail.com");
   EXPECT_EQ(1, test_observer_.num_successful_signins_);
-  EXPECT_EQ(0, test_observer_.num_failed_signins_);
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ(account_id, manager_->GetAuthenticatedAccountId());
 }

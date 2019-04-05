@@ -414,11 +414,6 @@ void AboutSigninInternals::OnErrorChanged() {
   NotifyObservers();
 }
 
-void AboutSigninInternals::OnPrimaryAccountSigninFailed(
-    const GoogleServiceAuthError& error) {
-  NotifyObservers();
-}
-
 void AboutSigninInternals::OnPrimaryAccountSet(
     const CoreAccountInfo& primary_account_info) {
   NotifyObservers();

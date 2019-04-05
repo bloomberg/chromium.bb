@@ -46,9 +46,6 @@ class SigninManagerBase {
  public:
   class Observer {
    public:
-    // Called when a user fails to sign into Google services such as sync.
-    virtual void GoogleSigninFailed(const GoogleServiceAuthError& error) {}
-
     // Called when a user signs into Google services such as sync.
     // This method is not called during a reauth.
     virtual void GoogleSigninSucceeded(const AccountInfo& account_info) {}

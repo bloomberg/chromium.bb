@@ -40,7 +40,6 @@
 #include "net/cookies/canonical_cookie.h"
 
 class GaiaCookieManagerService;
-class GoogleServiceAuthError;
 class PrefService;
 
 namespace identity {
@@ -141,11 +140,6 @@ class SigninManager : public SigninManagerBase,
 
   // OAuth2TokenService::Observer:
   void OnRefreshTokensLoaded() override;
-
-  // Called to handle an error from a GAIA auth fetch.  Sets the last error
-  // to |error|, sends out a notification of login failure and clears the
-  // transient signin data.
-  void HandleAuthError(const GoogleServiceAuthError& error);
 
   // Starts the sign out process.
   void StartSignOut(signin_metrics::ProfileSignout signout_source_metric,
