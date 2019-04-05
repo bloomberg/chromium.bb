@@ -41,14 +41,15 @@ using ::i18n::addressinput::MISMATCHING_VALUE;
 using ::i18n::addressinput::MISSING_REQUIRED_FIELD;
 using ::i18n::addressinput::UNEXPECTED_FIELD;
 using ::i18n::addressinput::UNKNOWN_VALUE;
+using ::i18n::addressinput::UNSUPPORTED_FIELD;
 
 using ::i18n::phonenumbers::PhoneNumberUtil;
 
 const AddressField kFields[] = {COUNTRY, ADMIN_AREA, LOCALITY,
                                 DEPENDENT_LOCALITY, POSTAL_CODE};
-const AddressProblem kProblems[] = {UNEXPECTED_FIELD, MISSING_REQUIRED_FIELD,
-                                    UNKNOWN_VALUE, INVALID_FORMAT,
-                                    MISMATCHING_VALUE};
+const AddressProblem kProblems[] = {UNEXPECTED_FIELD,  MISSING_REQUIRED_FIELD,
+                                    UNKNOWN_VALUE,     INVALID_FORMAT,
+                                    MISMATCHING_VALUE, UNSUPPORTED_FIELD};
 
 // If the |address_field| is valid, set the validity state of the
 // |address_field| in the |profile| to the |state| and return true.
@@ -269,9 +270,25 @@ AddressValidator::Status ValidateAddress(const AutofillProfile* profile,
   AddressValidator::Status status =
       address_validator->ValidateAddress(address, GetFilter(), &problems);
 
-  for (auto problem : problems)
-    SetValidityStateForAddressField(profile, problem.first,
-                                    AutofillDataModel::INVALID);
+  // The address fields for which validation is not supported by the metadata
+  // will be marked as UNSUPPORTED_FIELDs. These fields should be treated like
+  // VALID fields to stay consistent. INVALID_FORMATs, MISMATCHING_VALUEs or
+  // UNKNOWN_VALUEs are INVALID. MISSING_REQUIRED_FIELD would be marked as EMPTY
+  // along other empty fields. UNEXPECTED_FIELD would mean that there is also no
+  // metadata for validation, therefore, they are also UNSUPPORTED_FIELDs, and
+  // thus they would be treated as VALID fields.
+  for (auto problem : problems) {
+    if (problem.second == UNSUPPORTED_FIELD) {
+      SetValidityStateForAddressField(profile, problem.first,
+                                      AutofillDataModel::VALID);
+
+    } else if (problem.second == INVALID_FORMAT ||
+               problem.second == MISMATCHING_VALUE ||
+               problem.second == UNKNOWN_VALUE) {
+      SetValidityStateForAddressField(profile, problem.first,
+                                      AutofillDataModel::INVALID);
+    }
+  }
 
   SetEmptyValidityIfEmpty(profile);
 
