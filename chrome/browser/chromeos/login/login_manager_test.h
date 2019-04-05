@@ -58,7 +58,12 @@ class LoginManagerTest : public MixinBasedInProcessBrowserTest {
   // Add user with |user_id| to session.
   void AddUser(const AccountId& user_id);
 
+  void set_force_webui_login(bool force) { force_webui_login_ = force; }
+
  private:
+  // If set, the tests will use deprecated webui login.
+  // TODO(tbarzic): Migrate all tests to work with views login implementation.
+  bool force_webui_login_ = true;
   const bool should_launch_browser_;
   const bool should_initialize_webui_;
 

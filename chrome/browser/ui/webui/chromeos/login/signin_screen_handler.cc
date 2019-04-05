@@ -1220,19 +1220,6 @@ void SigninScreenHandler::HandleAccountPickerReady() {
     return;
   }
 
-  PrefService* prefs = g_browser_process->local_state();
-  if (prefs->GetBoolean(prefs::kFactoryResetRequested)) {
-    if (core_oobe_view_)
-      core_oobe_view_->ShowDeviceResetScreen();
-
-    return;
-  } else if (prefs->GetBoolean(prefs::kDebuggingFeaturesRequested)) {
-    if (core_oobe_view_)
-      core_oobe_view_->ShowEnableDebuggingScreen();
-
-    return;
-  }
-
   is_account_picker_showing_first_time_ = true;
 
   // The wallpaper may have been set before the instance is initialized, so make
