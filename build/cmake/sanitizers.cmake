@@ -21,9 +21,21 @@ include("${AOM_ROOT}/build/cmake/compiler_flags.cmake")
 
 string(TOLOWER ${SANITIZE} SANITIZE)
 
-# Require the sanitizer requested.
-require_linker_flag("-fsanitize=${SANITIZE}")
-require_compiler_flag("-fsanitize=${SANITIZE}" YES)
+# Require the sanitizer requested. cfi sanitizer requires all the flags in order
+# for the compiler to accept it.
+if("${SANITIZE}" MATCHES "cfi" AND CMAKE_C_COMPILER_ID MATCHES "Clang")
+  require_linker_flag(
+    "-fsanitize=${SANITIZE} -flto -fno-sanitize-trap=cfi \
+    -fuse-ld=gold"
+    YES)
+  require_compiler_flag(
+    "-fsanitize=${SANITIZE} -flto -fvisibility=hidden \
+    -fno-sanitize-trap=cfi"
+    YES)
+else()
+  require_linker_flag("-fsanitize=${SANITIZE}")
+  require_compiler_flag("-fsanitize=${SANITIZE}" YES)
+endif()
 
 # Make callstacks accurate.
 require_compiler_flag("-fno-omit-frame-pointer -fno-optimize-sibling-calls" YES)
