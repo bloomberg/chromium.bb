@@ -32,6 +32,16 @@ namespace {
 // IDs start at 1, since 0 is reserved for the root content window.
 size_t next_tab_id = 1;
 
+// Remove the given CastWebContents pointer from the global instance vector.
+void RemoveCastWebContents(CastWebContents* instance) {
+  auto& all_cast_web_contents = CastWebContents::GetAll();
+  auto it = std::find(all_cast_web_contents.begin(),
+                      all_cast_web_contents.end(), instance);
+  if (it != all_cast_web_contents.end()) {
+    all_cast_web_contents.erase(it);
+  }
+}
+
 }  // namespace
 
 // static
@@ -83,12 +93,7 @@ CastWebContentsImpl::~CastWebContentsImpl() {
   for (auto& observer : observer_list_) {
     observer.ResetCastWebContents();
   }
-  auto& all_cast_web_contents = CastWebContents::GetAll();
-  auto it = std::find(all_cast_web_contents.begin(),
-                      all_cast_web_contents.end(), this);
-  if (it != all_cast_web_contents.end()) {
-    all_cast_web_contents.erase(it);
-  }
+  RemoveCastWebContents(this);
 }
 
 int CastWebContentsImpl::tab_id() const {
@@ -452,6 +457,7 @@ void CastWebContentsImpl::WebContentsDestroyed() {
   content::WebContentsObserver::Observe(nullptr);
   web_contents_ = nullptr;
   Stop(net::OK);
+  RemoveCastWebContents(this);
   DCHECK_EQ(PageState::DESTROYED, page_state_);
 }
 
