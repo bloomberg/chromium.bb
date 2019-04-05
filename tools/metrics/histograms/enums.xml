@@ -24781,6 +24781,7 @@ Called by update_net_error_codes.py.-->
   <int value="355600640" label="Razer1532Product0900"/>
   <int value="416361536" label="GoogleProduct2c40"/>
   <int value="416370734" label="GoogleProduct502e"/>
+  <int value="416388096" label="GoogleProduct9400"/>
   <int value="550920817" label="Vendor20d6Product6271"/>
   <int value="550930917" label="Vendor20d6Product89e5"/>
   <int value="572653664" label="MacAllyProduct0060"/>

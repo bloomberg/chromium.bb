@@ -771,7 +771,7 @@ constexpr struct MappingData {
     // ADT-1 Controller
     {GamepadId::kGoogleProduct2c40, MapperADT1},
     // Stadia Controller
-    {GamepadId::kGoogleProduct502e, MapperStadiaController},
+    {GamepadId::kGoogleProduct9400, MapperStadiaController},
     // Moga Pro Controller (HID mode)
     {GamepadId::kVendor20d6Product6271, MapperMoga},
     // Moga 2 HID
