@@ -122,10 +122,12 @@ class SQLitePersistentReportingAndNELStore::Backend
   void LoadNELPoliciesAndNotifyInBackground(
       NELPoliciesLoadedCallback loaded_callback);
 
-  // Calls |loaded_callback| with the loaded NEL policies in |loaded_policies|.
-  void NotifyNELPoliciesLoaded(
+  // Calls |loaded_callback| with the loaded NEL policies (which may be empty if
+  // loading was unsuccessful). If loading was successful, also report metrics.
+  void CompleteLoadNELPoliciesAndNotifyInForeground(
       NELPoliciesLoadedCallback loaded_callback,
-      std::vector<NetworkErrorLoggingService::NELPolicy> loaded_policies);
+      std::vector<NetworkErrorLoggingService::NELPolicy> loaded_policies,
+      bool load_success);
 
   // Total number of pending operations (may not match the sum of the number of
   // elements in the pending operations queues, due to operation coalescing).
@@ -470,8 +472,15 @@ void SQLitePersistentReportingAndNELStore::Backend::
         NELPoliciesLoadedCallback loaded_callback) {
   DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
 
-  if (!InitializeDatabase())
+  std::vector<NetworkErrorLoggingService::NELPolicy> loaded_policies;
+  if (!InitializeDatabase()) {
+    PostClientTask(
+        FROM_HERE,
+        base::BindOnce(&Backend::CompleteLoadNELPoliciesAndNotifyInForeground,
+                       this, std::move(loaded_callback),
+                       std::move(loaded_policies), false /* load_success */));
     return;
+  }
 
   sql::Statement smt(db()->GetUniqueStatement(
       "SELECT origin_scheme, origin_host, origin_port, received_ip_address,"
@@ -479,10 +488,14 @@ void SQLitePersistentReportingAndNELStore::Backend::
       "is_include_subdomains, last_access_us_since_epoch FROM nel_policies"));
   if (!smt.is_valid()) {
     Reset();
+    PostClientTask(
+        FROM_HERE,
+        base::BindOnce(&Backend::CompleteLoadNELPoliciesAndNotifyInForeground,
+                       this, std::move(loaded_callback),
+                       std::move(loaded_policies), false /* load_success */));
     return;
   }
 
-  std::vector<NetworkErrorLoggingService::NELPolicy> loaded_policies;
   while (smt.Step()) {
     // Reconstitute a NEL policy from the fields stored in the database.
     NetworkErrorLoggingService::NELPolicy policy;
@@ -504,15 +517,25 @@ void SQLitePersistentReportingAndNELStore::Backend::
     loaded_policies.push_back(std::move(policy));
   }
 
-  PostClientTask(FROM_HERE, base::BindOnce(&Backend::NotifyNELPoliciesLoaded,
-                                           this, std::move(loaded_callback),
-                                           std::move(loaded_policies)));
+  PostClientTask(
+      FROM_HERE,
+      base::BindOnce(&Backend::CompleteLoadNELPoliciesAndNotifyInForeground,
+                     this, std::move(loaded_callback),
+                     std::move(loaded_policies), true /* load_success */));
 }
 
-void SQLitePersistentReportingAndNELStore::Backend::NotifyNELPoliciesLoaded(
-    NELPoliciesLoadedCallback loaded_callback,
-    std::vector<NetworkErrorLoggingService::NELPolicy> loaded_policies) {
+void SQLitePersistentReportingAndNELStore::Backend::
+    CompleteLoadNELPoliciesAndNotifyInForeground(
+        NELPoliciesLoadedCallback loaded_callback,
+        std::vector<NetworkErrorLoggingService::NELPolicy> loaded_policies,
+        bool load_success) {
   DCHECK(client_task_runner()->RunsTasksInCurrentSequence());
+
+  if (load_success) {
+    // TODO(chlily): report metrics
+  } else {
+    DCHECK(loaded_policies.empty());
+  }
 
   std::move(loaded_callback).Run(std::move(loaded_policies));
 }
