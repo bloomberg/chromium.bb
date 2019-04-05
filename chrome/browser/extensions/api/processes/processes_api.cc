@@ -94,6 +94,9 @@ api::processes::ProcessType GetProcessType(
     case task_manager::Task::NACL:
       return api::processes::PROCESS_TYPE_NACL;
 
+    case task_manager::Task::SERVICE_WORKER:
+      return api::processes::PROCESS_TYPE_SERVICE_WORKER;
+
     case task_manager::Task::UTILITY:
       return api::processes::PROCESS_TYPE_UTILITY;
 

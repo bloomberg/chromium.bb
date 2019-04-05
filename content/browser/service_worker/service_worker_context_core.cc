@@ -591,6 +591,14 @@ void ServiceWorkerContextCore::AddLiveVersion(ServiceWorkerVersion* version) {
 }
 
 void ServiceWorkerContextCore::RemoveLiveVersion(int64_t id) {
+  if (live_versions_[id]->running_status() != EmbeddedWorkerStatus::STOPPED) {
+    // Notify all observers that this live version is stopped, as it will
+    // be removed from |live_versions_|.
+    observer_list_->Notify(
+        FROM_HERE, &ServiceWorkerContextCoreObserver::OnRunningStateChanged, id,
+        EmbeddedWorkerStatus::STOPPED);
+  }
+
   live_versions_.erase(id);
 }
 

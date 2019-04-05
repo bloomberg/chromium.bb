@@ -57,6 +57,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
+#include "content/public/browser/service_worker_context_observer.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -431,6 +432,24 @@ std::unique_ptr<net::test_server::HttpResponse> RequestHandlerForUpdateWorker(
   // Use a large max-age to test the browser cache.
   http_response->AddCustomHeader("Cache-Control", "max-age=31536000");
   return http_response;
+}
+
+void StoreAllServiceWorkerRunningInfos(
+    std::vector<ServiceWorkerRunningInfo>* out_infos,
+    base::OnceClosure quit_closure,
+    ServiceWorkerContext* context,
+    std::vector<ServiceWorkerRunningInfo> infos) {
+  (*out_infos) = std::move(infos);
+  std::move(quit_closure).Run();
+}
+
+void StoreServiceWorkerRunningInfo(
+    std::vector<ServiceWorkerRunningInfo>* out_infos,
+    base::OnceClosure quit_closure,
+    ServiceWorkerContext* context,
+    const ServiceWorkerRunningInfo& info) {
+  out_infos->push_back(info);
+  std::move(quit_closure).Run();
 }
 
 const char kNavigationPreloadNetworkError[] =
@@ -2821,6 +2840,87 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, ImportsBustMemcache) {
       &CountScriptResources, base::Unretained(wrapper()),
       embedded_test_server()->GetURL(kScopeUrl), &num_resources));
   EXPECT_EQ(kExpectedNumResources, num_resources);
+}
+
+// An observer that waits for the service worker to be running.
+class WorkerRunningStatusObserver : public ServiceWorkerContextObserver {
+ public:
+  explicit WorkerRunningStatusObserver(ServiceWorkerContext* context)
+      : context_(context) {
+    context_->AddObserver(this);
+  }
+
+  ~WorkerRunningStatusObserver() override { context_->RemoveObserver(this); }
+
+  int64_t version_id() { return version_id_; }
+
+  void WaitUntilRunning() {
+    if (version_id_ == blink::mojom::kInvalidServiceWorkerVersionId)
+      run_loop_.Run();
+  }
+
+  void OnVersionRunningStatusChanged(content::ServiceWorkerContext* context,
+                                     int64_t version_id,
+                                     bool is_running) override {
+    if (is_running) {
+      EXPECT_EQ(context_, context);
+      version_id_ = version_id;
+
+      if (run_loop_.running())
+        run_loop_.Quit();
+    }
+  }
+
+ private:
+  base::RunLoop run_loop_;
+  ServiceWorkerContext* const context_;
+  int64_t version_id_ = blink::mojom::kInvalidServiceWorkerVersionId;
+};
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
+                       GetAllServiceWorkerRunningInfos) {
+  StartServerAndNavigateToSetup();
+  WorkerRunningStatusObserver observer(public_context());
+  EXPECT_TRUE(NavigateToURL(shell(),
+                            embedded_test_server()->GetURL(
+                                "/service_worker/create_service_worker.html")));
+  EXPECT_EQ("DONE", EvalJs(shell(), "register('fetch_event.js');"));
+  observer.WaitUntilRunning();
+
+  std::vector<ServiceWorkerRunningInfo> infos;
+  base::RunLoop run_loop;
+  public_context()->GetAllServiceWorkerRunningInfos(base::BindOnce(
+      &StoreAllServiceWorkerRunningInfos, &infos, run_loop.QuitClosure()));
+  run_loop.Run();
+
+  ASSERT_EQ(1u, infos.size());
+  EXPECT_EQ(embedded_test_server()->GetURL("/service_worker/fetch_event.js"),
+            infos[0].script_url);
+  EXPECT_EQ(shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(),
+            infos[0].process_id);
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, GetServiceWorkerRunningInfo) {
+  StartServerAndNavigateToSetup();
+  WorkerRunningStatusObserver observer(public_context());
+  EXPECT_TRUE(NavigateToURL(shell(),
+                            embedded_test_server()->GetURL(
+                                "/service_worker/create_service_worker.html")));
+  EXPECT_EQ("DONE", EvalJs(shell(), "register('fetch_event.js');"));
+  observer.WaitUntilRunning();
+
+  std::vector<ServiceWorkerRunningInfo> infos;
+  base::RunLoop run_loop;
+  public_context()->GetServiceWorkerRunningInfo(
+      observer.version_id(), base::BindOnce(&StoreServiceWorkerRunningInfo,
+                                            &infos, run_loop.QuitClosure()));
+  run_loop.Run();
+
+  ASSERT_EQ(1u, infos.size());
+  EXPECT_EQ(embedded_test_server()->GetURL("/service_worker/fetch_event.js"),
+            infos[0].script_url);
+  EXPECT_EQ(shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(),
+            infos[0].process_id);
 }
 
 // An observer that waits for the version to stop.

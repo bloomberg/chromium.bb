@@ -3236,6 +3236,9 @@ are declared in tools/grit/grit_rule.gni.
         <message name="IDS_TASK_MANAGER_RENDERER_PREFIX" desc="The prefix for a Task Manager renderer row, only is visible when no other task claims that process">
           Renderer: <ph name="RENDERER_URL">$1<ex>http://www.google.com</ex></ph>
         </message>
+        <message name="IDS_TASK_MANAGER_SERVICE_WORKER_PREFIX" desc="The prefix for a Task Manager service worker row">
+          Service Worker: <ph name="SCRIPT_URL">$1<ex>https://googlechrome.github.io/samples/service-worker/basic/service-worker.js</ex></ph>
+        </message>
         <message name="IDS_TASK_MANAGER_UNKNOWN_PLUGIN_NAME" desc="The prefix for a Task Manager plugin row">
           Unknown plugin
         </message>
