@@ -47102,6 +47102,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Border clear"/>
 </enum>
 
+<enum name="ReadDynamicRulesJSONStatus">
+  <int value="0" label="kSuccess"/>
+  <int value="1" label="kFileDoesNotExist"/>
+  <int value="2" label="kFileReadError"/>
+  <int value="3" label="kJSONParseError"/>
+  <int value="4" label="kJSONIsNotList"/>
+</enum>
+
 <enum name="ReadingListContextMenuActions">
   <int value="0" label="New Tab"/>
   <int value="1" label="New Incognito Tab"/>

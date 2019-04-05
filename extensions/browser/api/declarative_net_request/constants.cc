@@ -53,6 +53,8 @@ const char kManifestRulesCountHistogram[] =
     "Extensions.DeclarativeNetRequest.ManifestRulesCount";
 const char kUpdateDynamicRulesStatusHistogram[] =
     "Extensions.DeclarativeNetRequest.UpdateDynamicRulesStatus";
+const char kReadDynamicRulesJSONStatusHistogram[] =
+    "Extensions.DeclarativeNetRequest.ReadDynamicRulesJSONStatus";
 
 }  // namespace declarative_net_request
 }  // namespace extensions

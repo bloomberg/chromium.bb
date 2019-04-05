@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/hash/hash.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
@@ -19,6 +20,7 @@
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/flat/extension_ruleset_generated.h"
 #include "third_party/flatbuffers/src/include/flatbuffers/flatbuffers.h"
 
@@ -151,6 +153,10 @@ void ClearRendererCacheOnNavigation() {
     base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
                              base::BindOnce(&ClearRendererCacheOnUI));
   }
+}
+
+void LogReadDynamicRulesStatus(ReadJSONRulesResult::Status status) {
+  base::UmaHistogramEnumeration(kReadDynamicRulesJSONStatusHistogram, status);
 }
 
 }  // namespace declarative_net_request

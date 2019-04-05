@@ -77,12 +77,18 @@ struct IndexAndPersistJSONRulesetResult {
 };
 
 struct ReadJSONRulesResult {
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum class Status {
-    kSuccess,
-    kFileDoesNotExist,
-    kFileReadError,
-    kJSONParseError,
-    kJSONIsNotList,
+    kSuccess = 0,
+    kFileDoesNotExist = 1,
+    kFileReadError = 2,
+    kJSONParseError = 3,
+    kJSONIsNotList = 4,
+
+    // Magic constant used by histograms code. Should be equal to the maximum
+    // enum value.
+    kMaxValue = kJSONIsNotList
   };
 
   static ReadJSONRulesResult CreateErrorResult(Status status,

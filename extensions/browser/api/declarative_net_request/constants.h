@@ -92,6 +92,7 @@ extern const char kDynamicRuleCountExceeded[];
 extern const char kIndexAndPersistRulesTimeHistogram[];
 extern const char kManifestRulesCountHistogram[];
 extern const char kUpdateDynamicRulesStatusHistogram[];
+extern const char kReadDynamicRulesJSONStatusHistogram[];
 
 }  // namespace declarative_net_request
 }  // namespace extensions

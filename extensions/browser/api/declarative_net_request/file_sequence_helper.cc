@@ -18,6 +18,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/parse_info.h"
+#include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -186,6 +187,7 @@ bool GetNewDynamicRules(const RulesetSource& source,
   // Read the current set of rules. Note: this is trusted JSON and hence it is
   // ok to parse in the browser itself.
   ReadJSONRulesResult result = source.ReadJSONRulesUnsafe();
+  LogReadDynamicRulesStatus(result.status);
   DCHECK(result.status == ReadJSONRulesResult::Status::kSuccess ||
          result.rules.empty());
 
