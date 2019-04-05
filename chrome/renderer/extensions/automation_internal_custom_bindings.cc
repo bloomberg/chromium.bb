@@ -1930,6 +1930,8 @@ AutomationInternalCustomBindings::GetLocalizedStringForImageAnnotationStatus(
       break;
     case ax::mojom::ImageAnnotationStatus::kAnnotationEmpty:
     case ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed:
+      message_id = IDS_AX_IMAGE_ANNOTATION_NO_DESCRIPTION;
+      break;
     case ax::mojom::ImageAnnotationStatus::kNone:
     case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
     case ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded:

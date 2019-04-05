@@ -516,6 +516,7 @@ base::string16 TestAXNodeWrapper::GetLocalizedStringForImageAnnotationStatus(
           "Appears to contain adult content. No description available.");
     case ax::mojom::ImageAnnotationStatus::kAnnotationEmpty:
     case ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed:
+      return base::ASCIIToUTF16("No description available.");
     case ax::mojom::ImageAnnotationStatus::kNone:
     case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
     case ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded:
