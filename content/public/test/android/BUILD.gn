@@ -55,6 +55,7 @@ android_library("content_java_test_support") {
     "javatests/src/org/chromium/content_public/browser/test/util/TestTouchUtils.java",
     "javatests/src/org/chromium/content_public/browser/test/util/TestWebContentsObserver.java",
     "javatests/src/org/chromium/content_public/browser/test/util/TouchCommon.java",
+    "javatests/src/org/chromium/content_public/browser/test/util/UiThreadSchedulerTestUtils.java",
     "javatests/src/org/chromium/content_public/browser/test/util/UiUtils.java",
     "javatests/src/org/chromium/content_public/browser/test/util/WebContentsUtils.java",
   ]
@@ -67,6 +68,7 @@ generate_jni("content_test_jni") {
     "javatests/src/org/chromium/content_public/browser/test/InterstitialPageDelegateAndroid.java",
     "javatests/src/org/chromium/content_public/browser/test/RenderFrameHostTestExt.java",
     "javatests/src/org/chromium/content_public/browser/test/util/DOMUtils.java",
+    "javatests/src/org/chromium/content_public/browser/test/util/UiThreadSchedulerTestUtils.java",
     "javatests/src/org/chromium/content_public/browser/test/util/WebContentsUtils.java",
   ]
 }
@@ -86,6 +88,7 @@ static_library("content_native_test_support") {
     "interstitial_page_delegate_android.h",
     "render_frame_host_test_ext.cc",
     "render_frame_host_test_ext.h",
+    "ui_thread_scheduler_test_utils.cc",
     "web_contents_utils.cc",
   ]
   deps = [
