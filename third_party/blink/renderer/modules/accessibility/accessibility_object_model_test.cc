@@ -261,7 +261,7 @@ class SparseAttributeAdapter : public AXSparseAttributeClient {
   std::map<AXBoolAttribute, bool> bool_attributes;
   std::map<AXStringAttribute, String> string_attributes;
   std::map<AXObjectAttribute, Persistent<AXObject>> object_attributes;
-  std::map<AXObjectVectorAttribute, HeapVector<Member<AXObject>>>
+  std::map<AXObjectVectorAttribute, Persistent<HeapVector<Member<AXObject>>>>
       object_vector_attributes;
 
  private:
