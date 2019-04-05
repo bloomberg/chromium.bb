@@ -6987,7 +6987,7 @@ TEST_F(PersonalDataManagerMockTest, UpdateClientValidityStates) {
   EXPECT_EQ(
       AutofillDataModel::VALID,
       profiles[0]->GetValidityState(ADDRESS_HOME_ZIP, AutofillProfile::CLIENT));
-  EXPECT_EQ(AutofillDataModel::INVALID,
+  EXPECT_EQ(AutofillDataModel::VALID,
             profiles[0]->GetValidityState(ADDRESS_HOME_CITY,
                                           AutofillProfile::CLIENT));
   EXPECT_EQ(AutofillDataModel::EMPTY,
