@@ -13,6 +13,7 @@
 #include "components/cbor/reader.h"
 #include "components/cbor/values.h"
 #include "components/cbor/writer.h"
+#include "components/device_event_log/device_event_log.h"
 #include "crypto/hkdf.h"
 #include "crypto/hmac.h"
 #include "crypto/random.h"
@@ -103,7 +104,7 @@ void FidoCableHandshakeHandler::InitiateCableHandshake(
     return;
   }
 
-  VLOG(2) << "Sending the caBLE handshake message";
+  FIDO_LOG(DEBUG) << "Sending the caBLE handshake message";
   cable_device_->SendHandshakeMessage(
       fido_parsing_utils::Materialize(*handshake_message), std::move(callback));
 }

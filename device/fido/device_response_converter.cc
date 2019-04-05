@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "components/cbor/reader.h"
 #include "components/cbor/writer.h"
+#include "components/device_event_log/device_event_log.h"
 #include "device/fido/authenticator_data.h"
 #include "device/fido/authenticator_supported_options.h"
 #include "device/fido/fido_constants.h"
@@ -175,7 +176,7 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
 
     auto protocol = ConvertStringToProtocolVersion(version_string);
     if (protocol == ProtocolVersion::kUnknown) {
-      VLOG(2) << "Unexpected protocol version received.";
+      FIDO_LOG(DEBUG) << "Unexpected protocol version received.";
       continue;
     }
 
