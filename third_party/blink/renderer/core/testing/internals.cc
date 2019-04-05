@@ -2661,7 +2661,8 @@ void Internals::updateLayoutAndRunPostLayoutTasks(
     return;
   }
   document->UpdateStyleAndLayout();
-  document->View()->FlushAnyPendingPostLayoutTasks();
+  if (auto* view = document->View())
+    view->FlushAnyPendingPostLayoutTasks();
 }
 
 void Internals::forceFullRepaint(Document* document,
