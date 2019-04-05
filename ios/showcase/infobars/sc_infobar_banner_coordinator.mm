@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_delegate.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_view_controller.h"
+#import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_positioner.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_transition_driver.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_modal_transition_driver.h"
 
@@ -20,7 +21,9 @@ NSString* const kInfobarBannerSubtitleLabel = @"This a test Infobar.";
 NSString* const kInfobarBannerButtonLabel = @"Accept";
 NSString* const kInfobarBannerPresentedModalLabel = @"Modal Infobar";
 
-@interface ContainerViewController : UIViewController
+#pragma mark - ContainerViewController
+
+@interface ContainerViewController : UIViewController <InfobarBannerPositioner>
 @property(nonatomic, strong) InfobarBannerViewController* bannerViewController;
 @property(nonatomic, strong)
     InfobarBannerTransitionDriver* bannerTransitionDriver;
@@ -32,12 +35,25 @@ NSString* const kInfobarBannerPresentedModalLabel = @"Modal Infobar";
   [self.bannerViewController
       setModalPresentationStyle:UIModalPresentationCustom];
   self.bannerTransitionDriver = [[InfobarBannerTransitionDriver alloc] init];
+  self.bannerTransitionDriver.bannerPositioner = self;
   self.bannerViewController.transitioningDelegate = self.bannerTransitionDriver;
   [self presentViewController:self.bannerViewController
                      animated:YES
                    completion:nil];
 }
+
+#pragma mark InfobarBannerPositioner
+
+- (CGFloat)bannerYPosition {
+  return 100;
+}
+
+- (UIView*)bannerView {
+  return self.bannerViewController.view;
+}
 @end
+
+#pragma mark - SCInfobarBannerCoordinator
 
 @interface SCInfobarBannerCoordinator () <InfobarBannerDelegate,
                                           InfobarModalDelegate>
@@ -66,6 +82,10 @@ NSString* const kInfobarBannerPresentedModalLabel = @"Modal Infobar";
 
   [self.baseViewController pushViewController:self.containerViewController
                                      animated:YES];
+}
+
+- (void)dealloc {
+  [self dismissInfobarBanner:nil animated:YES completion:nil];
 }
 
 #pragma mark InfobarBannerDelegate

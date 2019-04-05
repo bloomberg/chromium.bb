@@ -174,6 +174,10 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
          kBannerOverlapWithOmnibox;
 }
 
+- (UIView*)bannerView {
+  return self.bannerViewController.view;
+}
+
 #pragma mark InfobarModalDelegate
 
 - (void)modalInfobarButtonWasPressed:(UIButton*)sender {
