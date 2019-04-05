@@ -214,14 +214,6 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // Returns true if the encoded values can be outside of the 0.0-1.0 range.
   bool FullRangeEncodedValues() const;
 
-  // Returns true if this color space is parametric (or a sufficiently accurate
-  // approximation of its ICCProfile that we can use it directly).
-  bool IsParametricAccurate() const;
-
-  // Return a parametric approximation of this color space (if it is not already
-  // parametric).
-  ColorSpace GetParametricApproximation() const;
-
   // Return this color space with any YUV to RGB conversion stripped off.
   ColorSpace GetAsRGB() const;
 
@@ -282,12 +274,6 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // through G entries of the skcms_TransferFunction structure in alphabetical
   // order.
   float custom_transfer_params_[7] = {0, 0, 0, 0, 0, 0, 0};
-
-  // This is set if and only if this color space is to represent an ICC profile
-  // that cannot be sufficiently accurately represented with a custom primary
-  // matrix and transfer function. It can be used to look up the original
-  // ICCProfile to create a LUT based transform.
-  uint64_t icc_profile_id_ = 0;
 
   friend class ICCProfile;
   friend class ICCProfileCache;

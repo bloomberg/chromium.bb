@@ -30,7 +30,6 @@ bool StructTraits<gfx::mojom::ColorSpaceDataView, gfx::ColorSpace>::Read(
     if (!input.ReadCustomTransferParams(&matrix))
       return false;
   }
-  out->icc_profile_id_ = input.icc_profile_id();
   return true;
 }
 

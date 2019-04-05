@@ -227,7 +227,6 @@ class ColorTransformFromLinear;
 class ColorTransformToBT2020CL;
 class ColorTransformFromBT2020CL;
 class ColorTransformNull;
-class SkiaColorTransform;
 
 class ColorTransformStep {
  public:
@@ -239,7 +238,6 @@ class ColorTransformStep {
   virtual ColorTransformSkTransferFn* GetSkTransferFn() { return nullptr; }
   virtual ColorTransformMatrix* GetMatrix() { return nullptr; }
   virtual ColorTransformNull* GetNull() { return nullptr; }
-  virtual SkiaColorTransform* GetSkia() { return nullptr; }
 
   // Join methods, returns true if the |next| transform was successfully
   // assimilated into |this|.
@@ -293,10 +291,6 @@ class ColorTransformInternal : public ColorTransform {
                                              const ColorSpace& dst,
                                              ColorTransform::Intent intent);
   void Simplify();
-
-  // Retrieve the SkColorSpace for the ICC profile from which |color_space| was
-  // created, only if that is a more precise than the parametric representation.
-  sk_sp<SkColorSpace> GetSkColorSpaceIfNecessary(const ColorSpace& color_space);
 
   std::list<std::unique_ptr<ColorTransformStep>> steps_;
   gfx::ColorSpace src_;
@@ -969,58 +963,6 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
       Invert(GetRangeAdjustMatrix(dst))));
 }
 
-class SkiaColorTransform : public ColorTransformStep {
- public:
-  // Takes ownership of the profiles
-  SkiaColorTransform(sk_sp<SkColorSpace> src, sk_sp<SkColorSpace> dst)
-      : src_(src), dst_(dst) {}
-  ~SkiaColorTransform() override {
-    src_ = nullptr;
-    dst_ = nullptr;
-  }
-  SkiaColorTransform* GetSkia() override { return this; }
-  bool Join(ColorTransformStep* next_untyped) override {
-    SkiaColorTransform* next = next_untyped->GetSkia();
-    if (!next)
-      return false;
-    if (SkColorSpace::Equals(dst_.get(), next->src_.get())) {
-      dst_ = next->dst_;
-      return true;
-    }
-    return false;
-  }
-  bool IsNull() override {
-    if (SkColorSpace::Equals(src_.get(), dst_.get()))
-      return true;
-    return false;
-  }
-  void Transform(ColorTransform::TriStim* colors, size_t num) const override {
-    // We could do this either using Skia or skcms, but since skcms can handle
-    // TriStim directly as skcms_PixelFormat_RGB_fff, let's use that.
-    skcms_ICCProfile src_profile, dst_profile;
-    src_->toProfile(&src_profile);
-    dst_->toProfile(&dst_profile);
-
-    const skcms_PixelFormat kFFF = skcms_PixelFormat_RGB_fff;
-    const skcms_AlphaFormat kUPM = skcms_AlphaFormat_Unpremul;
-
-    bool xform_result = skcms_Transform(colors, kFFF, kUPM, &src_profile,
-                                        colors, kFFF, kUPM, &dst_profile, num);
-    DCHECK(xform_result);
-  }
-
- private:
-  sk_sp<SkColorSpace> src_;
-  sk_sp<SkColorSpace> dst_;
-};
-
-sk_sp<SkColorSpace> ColorTransformInternal::GetSkColorSpaceIfNecessary(
-    const ColorSpace& color_space) {
-  if (!color_space.icc_profile_id_)
-    return nullptr;
-  return ICCProfile::GetSkColorSpaceFromId(color_space.icc_profile_id_);
-}
-
 ColorTransformInternal::ColorTransformInternal(const ColorSpace& src,
                                                const ColorSpace& dst,
                                                Intent intent)
@@ -1035,36 +977,7 @@ ColorTransformInternal::ColorTransformInternal(const ColorSpace& src,
     DLOG(ERROR) << "Invalid dst transfer function, returning identity.";
     return;
   }
-
-  // If the target color space is not defined, just apply the adjust and
-  // tranfer matrices. This path is used by YUV to RGB color conversion
-  // when full color conversion is not enabled.
-  sk_sp<SkColorSpace> src_sk_color_space;
-  sk_sp<SkColorSpace> dst_sk_color_space;
-
-  bool has_src_profile = false;
-  bool has_dst_profile = false;
-  if (dst.IsValid()) {
-    src_sk_color_space = GetSkColorSpaceIfNecessary(src_);
-    dst_sk_color_space = GetSkColorSpaceIfNecessary(dst_);
-  }
-  has_src_profile = !!src_sk_color_space;
-  has_dst_profile = !!dst_sk_color_space;
-
-  if (has_src_profile) {
-    steps_.push_back(std::make_unique<SkiaColorTransform>(
-        std::move(src_sk_color_space),
-        ColorSpace::CreateXYZD50().ToSkColorSpace()));
-  }
-  AppendColorSpaceToColorSpaceTransform(
-      has_src_profile ? ColorSpace::CreateXYZD50() : src_,
-      has_dst_profile ? ColorSpace::CreateXYZD50() : dst_, intent);
-  if (has_dst_profile) {
-    steps_.push_back(std::make_unique<SkiaColorTransform>(
-        ColorSpace::CreateXYZD50().ToSkColorSpace(),
-        std::move(dst_sk_color_space)));
-  }
-
+  AppendColorSpaceToColorSpaceTransform(src_, dst_, intent);
   if (intent != Intent::TEST_NO_OPT)
     Simplify();
 }

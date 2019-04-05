@@ -395,10 +395,6 @@ struct StructTraits<gfx::mojom::ColorSpaceDataView, gfx::ColorSpace> {
     return input.custom_transfer_params_;
   }
 
-  static uint64_t icc_profile_id(const gfx::ColorSpace& input) {
-    return input.icc_profile_id_;
-  }
-
   static bool Read(gfx::mojom::ColorSpaceDataView data, gfx::ColorSpace* out);
 };
 
