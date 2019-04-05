@@ -2246,6 +2246,9 @@ enum WebFeature {
   kDownloadPrePolicyCheck = 2838,
   kDownloadPostPolicyCheck = 2839,
   kDownloadInSandboxWithoutUserGesture = 2840,
+  kReadableStreamGetReader = 2841,
+  kReadableStreamPipeThrough = 2842,
+  kReadableStreamPipeTo = 2843,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
