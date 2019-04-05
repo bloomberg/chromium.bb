@@ -93,7 +93,7 @@ Vector<IntRect> TextMatchMarkerListImpl::LayoutRects(const Node& node) const {
   Vector<IntRect> result;
 
   for (DocumentMarker* marker : markers_) {
-    TextMatchMarker* const text_match_marker = ToTextMatchMarker(marker);
+    auto* const text_match_marker = To<TextMatchMarker>(marker);
     if (!text_match_marker->IsValid())
       UpdateMarkerLayoutRect(node, *text_match_marker);
     if (!text_match_marker->IsRendered())
@@ -119,7 +119,7 @@ bool TextMatchMarkerListImpl::SetTextMatchMarkersActive(unsigned start_offset,
     // range.
     if (marker.StartOffset() >= end_offset)
       break;
-    ToTextMatchMarker(marker).SetIsActiveMatch(active);
+    To<TextMatchMarker>(marker).SetIsActiveMatch(active);
     doc_dirty = true;
   }
   return doc_dirty;

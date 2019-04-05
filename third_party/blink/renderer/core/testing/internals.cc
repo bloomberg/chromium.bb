@@ -987,7 +987,7 @@ unsigned Internals::activeMarkerCountForNode(Node* node) {
 
   unsigned active_marker_count = 0;
   for (const auto& marker : markers) {
-    if (ToTextMatchMarker(marker)->IsActiveMatch())
+    if (To<TextMatchMarker>(marker.Get())->IsActiveMatch())
       active_marker_count++;
   }
 

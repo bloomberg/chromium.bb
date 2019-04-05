@@ -596,10 +596,10 @@ void InlineTextBoxPainter::PaintDocumentMarkers(
       case DocumentMarker::kTextMatch:
         if (marker_paint_phase == DocumentMarkerPaintPhase::kBackground) {
           inline_text_box_.PaintTextMatchMarkerBackground(
-              paint_info, box_origin, ToTextMatchMarker(marker), style, font);
+              paint_info, box_origin, To<TextMatchMarker>(marker), style, font);
         } else {
           inline_text_box_.PaintTextMatchMarkerForeground(
-              paint_info, box_origin, ToTextMatchMarker(marker), style, font);
+              paint_info, box_origin, To<TextMatchMarker>(marker), style, font);
         }
         break;
       case DocumentMarker::kComposition:

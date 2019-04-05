@@ -702,7 +702,7 @@ Vector<IntRect> DocumentMarkerController::LayoutRectsForTextMatchMarkers() {
         ListForType(markers, DocumentMarker::kTextMatch);
     if (!list)
       continue;
-    result.AppendVector(ToTextMatchMarkerListImpl(list)->LayoutRects(node));
+    result.AppendVector(To<TextMatchMarkerListImpl>(list)->LayoutRects(node));
   }
 
   return result;
@@ -725,7 +725,7 @@ void DocumentMarkerController::InvalidateRectsForTextMatchMarkersInNode(
   const HeapVector<Member<DocumentMarker>>& markers_in_list =
       marker_list->GetMarkers();
   for (auto& marker : markers_in_list)
-    ToTextMatchMarker(marker)->Invalidate();
+    To<TextMatchMarker>(marker.Get())->Invalidate();
 
   InvalidatePaintForTickmarks(node);
 }
@@ -775,8 +775,8 @@ void DocumentMarkerController::RemoveSpellingMarkersUnderWords(
       DocumentMarkerList* const list = ListForType(markers, type);
       if (!list)
         continue;
-      if (ToSpellCheckMarkerListImpl(list)->RemoveMarkersUnderWords(text.data(),
-                                                                    words)) {
+      if (To<SpellCheckMarkerListImpl>(list)->RemoveMarkersUnderWords(
+              text.data(), words)) {
         InvalidatePaintForNode(text);
       }
     }
@@ -799,7 +799,7 @@ void DocumentMarkerController::RemoveSuggestionMarkerInRangeOnFinish(
           ListForType(markers_.at(&text), DocumentMarker::kSuggestion);
       // RemoveMarkerByTag() might be expensive. In practice, we have at most
       // one suggestion marker needs to be removed.
-      ToSuggestionMarkerListImpl(list)->RemoveMarkerByTag(
+      To<SuggestionMarkerListImpl>(list)->RemoveMarkerByTag(
           suggestion_marker->Tag());
       InvalidatePaintForNode(text);
     }
@@ -809,8 +809,8 @@ void DocumentMarkerController::RemoveSuggestionMarkerInRangeOnFinish(
 void DocumentMarkerController::RemoveSuggestionMarkerByTag(const Text& text,
                                                            int32_t marker_tag) {
   MarkerLists* markers = markers_.at(&text);
-  SuggestionMarkerListImpl* const list = ToSuggestionMarkerListImpl(
-      ListForType(markers, DocumentMarker::kSuggestion));
+  auto* const list = To<SuggestionMarkerListImpl>(
+      ListForType(markers, DocumentMarker::kSuggestion).Get());
   if (!list->RemoveMarkerByTag(marker_tag))
     return;
   InvalidatePaintForNode(text);
@@ -948,7 +948,7 @@ bool DocumentMarkerController::SetTextMatchMarkersActive(const Text& text,
   if (!list)
     return false;
 
-  bool doc_dirty = ToTextMatchMarkerListImpl(list)->SetTextMatchMarkersActive(
+  bool doc_dirty = To<TextMatchMarkerListImpl>(list)->SetTextMatchMarkersActive(
       start_offset, end_offset, active);
 
   if (!doc_dirty)
@@ -980,7 +980,7 @@ void DocumentMarkerController::ShowMarkers() const {
         builder.AppendNumber(marker->EndOffset());
         builder.Append("](");
         builder.AppendNumber(type == DocumentMarker::kTextMatch
-                                 ? ToTextMatchMarker(marker)->IsActiveMatch()
+                                 ? To<TextMatchMarker>(marker)->IsActiveMatch()
                                  : 0);
         builder.Append(")");
       }
