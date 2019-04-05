@@ -12,6 +12,7 @@
 #include "base/strings/string_split.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -104,6 +105,43 @@ TEST(NetworkChangeManagerClientTest, ConnectionTypeFromShill) {
             type_mappings[i].shill_type, type_mappings[i].technology);
     EXPECT_EQ(type_mappings[i].connection_type, type);
   }
+}
+
+TEST(NetworkChangeManagerClientTest,
+     NetworkChangeNotifierConnectionTypeUpdated) {
+  // Create a NetworkChangeNotifier with a non-NONE connection type.
+  content::TestBrowserThreadBundle thread_bundle_;
+  std::unique_ptr<net::NetworkChangeNotifierPosix> network_change_notifier(
+      static_cast<net::NetworkChangeNotifierPosix*>(
+          net::NetworkChangeNotifier::Create()));
+  network_change_notifier->OnConnectionChanged(
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN);
+  EXPECT_EQ(net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
+            net::NetworkChangeNotifier::GetConnectionType());
+
+  // Initialize DBus and clear services so NetworkHandler thinks we're offline.
+  DBusThreadManager::Initialize();
+  PowerManagerClient::InitializeFake();
+  NetworkHandler::Initialize();
+  DBusThreadManager::Get()
+      ->GetShillServiceClient()
+      ->GetTestInterface()
+      ->ClearServices();
+
+  auto client = std::make_unique<NetworkChangeManagerClient>(
+      network_change_notifier.get());
+
+  // NetworkChangeManagerClient should have read the network state from DBus
+  // and notified NetworkChangeNotifier that we're offline.
+  EXPECT_EQ(net::NetworkChangeNotifier::CONNECTION_NONE,
+            client->connection_type_);
+  EXPECT_EQ(net::NetworkChangeNotifier::CONNECTION_NONE,
+            net::NetworkChangeNotifier::GetConnectionType());
+
+  client.reset();
+  NetworkHandler::Shutdown();
+  PowerManagerClient::Shutdown();
+  DBusThreadManager::Shutdown();
 }
 
 class NetworkChangeManagerClientUpdateTest : public testing::Test {
