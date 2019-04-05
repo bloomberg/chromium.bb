@@ -1,0 +1,52 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("overlays") {
+  sources = [
+    "overlay_request.h",
+    "overlay_response.h",
+    "overlay_user_data.h",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  allow_circular_includes_from = [ ":internal" ]
+
+  deps = [
+    ":internal",
+    "//base",
+  ]
+}
+
+source_set("internal") {
+  sources = [
+    "overlay_request_impl.cc",
+    "overlay_request_impl.h",
+    "overlay_response_impl.cc",
+    "overlay_response_impl.h",
+  ]
+
+  deps = [
+    "//base",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "overlay_request_unittest.cc",
+    "overlay_response_unittest.cc",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    ":overlays",
+    "//base/test:test_support",
+    "//ios/chrome/browser/overlays/test",
+    "//ios/web/public",
+    "//ios/web/public/test/fakes",
+    "//testing/gtest",
+  ]
+}
