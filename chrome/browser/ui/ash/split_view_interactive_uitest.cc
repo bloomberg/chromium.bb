@@ -17,8 +17,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
+#include "chrome/test/base/perf/performance_test.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -43,7 +43,7 @@ ws::Id GetBrowserWindowServerId(Browser* browser) {
       ->server_id();
 }
 
-class SplitViewTest : public InProcessBrowserTest {
+class SplitViewTest : public UIPerformanceTest {
  public:
   SplitViewTest() = default;
   ~SplitViewTest() override = default;
@@ -57,6 +57,10 @@ class SplitViewTest : public InProcessBrowserTest {
   }
 
  private:
+  std::vector<std::string> GetUMAHistogramNames() const override {
+    return {"Ash.SplitViewResize.PresentationTime.TabletMode.MultiWindow"};
+  }
+
   DISALLOW_COPY_AND_ASSIGN(SplitViewTest);
 };
 
@@ -182,6 +186,7 @@ IN_PROC_BROWSER_TEST_F(SplitViewTest, SplitViewResize) {
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds().size();
   const gfx::Point start_position(display_size.width() / 2,
                                   display_size.height() / 2);
+  TRACE_EVENT_ASYNC_BEGIN0("ui", "Interaction.ui_WindowResize", this);
   ASSERT_TRUE(
       ui_test_utils::SendMouseMoveSync(
           gfx::Point(start_position.x(), start_position.y())) &&
@@ -198,6 +203,7 @@ IN_PROC_BROWSER_TEST_F(SplitViewTest, SplitViewResize) {
     ++width;
     EXPECT_EQ(width, browser_widget->GetWindowBoundsInScreen().width());
   }
+  TRACE_EVENT_ASYNC_END0("ui", "Interaction.ui_WindowResize", this);
 }
 
 }  // namespace
