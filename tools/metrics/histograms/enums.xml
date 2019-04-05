@@ -33651,6 +33651,7 @@ from previous Chrome versions.
   <int value="510814146" label="OfflineBookmarks:enabled"/>
   <int value="513356954" label="InstantTethering:disabled"/>
   <int value="513372959" label="ViewsProfileChooser:enabled"/>
+  <int value="517429103" label="AutofillImportDynamicForms:enabled"/>
   <int value="517568645" label="AnimatedAppMenuIcon:disabled"/>
   <int value="520982116" label="BuiltInModuleAll:enabled"/>
   <int value="530828403" label="AllowStartingServiceManagerOnly:disabled"/>
@@ -34381,6 +34382,7 @@ from previous Chrome versions.
   <int value="1669767166" label="NewTabPageBackgrounds:disabled"/>
   <int value="1670161209" label="ClickToOpenPDFPlaceholder:enabled"/>
   <int value="1670799163" label="ChromeHomeShowGoogleGWhenUrlCleared:enabled"/>
+  <int value="1671021713" label="AutofillImportDynamicForms:disabled"/>
   <int value="1673427566" label="ChromeHomeExpandButton:disabled"/>
   <int value="1677167062" label="AutomaticPasswordGeneration:enabled"/>
   <int value="1677258310" label="DragAppsInTabletMode:disabled"/>

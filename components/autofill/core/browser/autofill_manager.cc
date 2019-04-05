@@ -1511,7 +1511,7 @@ std::unique_ptr<FormStructure> AutofillManager::ValidateSubmittedForm(
 
   auto submitted_form = std::make_unique<FormStructure>(form);
   submitted_form->RetrieveFromCache(*cached_submitted_form,
-                                    /*apply_is_autofilled=*/false,
+                                    /*should_keep_cached_value=*/false,
                                     /*only_server_and_autofill_state=*/false);
   return submitted_form;
 }

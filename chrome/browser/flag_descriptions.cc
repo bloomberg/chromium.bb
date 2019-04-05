@@ -441,6 +441,12 @@ const char kEnableAutofillImportNonFocusableCreditCardFormsDescription[] =
     "page after information has been entered into them, including "
     "accordion-style checkout flows.";
 
+const char kEnableAutofillImportDynamicFormsName[] =
+    "Allow credit card import from dynamic forms after entry";
+const char kEnableAutofillImportDynamicFormsDescription[] =
+    "If enabled, offers credit card save for dynamic forms from the page after "
+    "information has been entered into them.";
+
 const char kEnableAutofillLocalCardMigrationShowFeedbackName[] =
     "Show the upload results dialog after local card migration";
 const char kEnableAutofillLocalCardMigrationShowFeedbackDescription[] =

@@ -147,7 +147,7 @@ class FormStructure {
 
   // Sets the field types to be those set for |cached_form|.
   void RetrieveFromCache(const FormStructure& cached_form,
-                         const bool apply_is_autofilled,
+                         const bool should_keep_cached_value,
                          const bool only_server_and_autofill_state);
 
   // Logs quality metrics for |this|, which should be a user-submitted form.
