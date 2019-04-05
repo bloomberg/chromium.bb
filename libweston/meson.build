@@ -185,13 +185,27 @@ dep_libinput_backend = declare_dependency(
 	include_directories: include_directories('.')
 )
 
-
 if get_option('backend-drm')
 	config_h.set('BUILD_DRM_COMPOSITOR', '1')
 
+	lib_backlight = static_library(
+		'backlight',
+		'libbacklight.c',
+		dependencies: [
+			dep_libdrm_headers,
+			dependency('libudev')
+		],
+		include_directories: include_directories('..'),
+		install: false,
+		build_by_default: false
+	)
+	dep_backlight = declare_dependency(
+		link_with: lib_backlight,
+		include_directories: include_directories('.')
+	)
+
 	srcs_drm = [
 		'compositor-drm.c',
-		'libbacklight.c',
 		linux_dmabuf_unstable_v1_protocol_c,
 		linux_dmabuf_unstable_v1_server_protocol_h,
 		presentation_time_server_protocol_h,
@@ -203,6 +217,7 @@ if get_option('backend-drm')
 		dep_libdrm,
 		dep_libinput_backend,
 		dependency('libudev', version: '>= 136'),
+		dep_backlight
 	]
 
 	# XXX: Actually let DRM-backend build without GBM, it really should
