@@ -525,8 +525,18 @@ void ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
       GraphicsLayerToCcLayer(scrollable_area->LayerForContainer());
   if (cc_layer) {
     cc_layer->SetScrollable(container_layer->bounds());
-    FloatPoint scroll_position(scrollable_area->ScrollPosition());
-    cc_layer->SetScrollOffset(static_cast<gfx::ScrollOffset>(scroll_position));
+
+    // The scroll offset is pushed to cc::Layers separately in
+    // UpdateCompositedScrolloffset. This is needed for the visual viewport
+    // scroll offsets which aren't updated as part of a compositing update. In
+    // BlinkGenPropertyTrees, the visual viewport sets scroll offsets directly
+    // into its transform paint property nodes so this becomes unneeded.
+    if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+      FloatPoint scroll_position(scrollable_area->ScrollPosition());
+      cc_layer->SetScrollOffset(
+          static_cast<gfx::ScrollOffset>(scroll_position));
+    }
+
     // TODO(bokan): This method shouldn't be resizing the layer geometry. That
     // happens in CompositedLayerMapping::UpdateScrollingLayerGeometry.
     LayoutSize subpixel_accumulation =
