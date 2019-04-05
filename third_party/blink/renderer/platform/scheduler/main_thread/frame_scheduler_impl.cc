@@ -638,8 +638,6 @@ void FrameSchedulerImpl::ResetForNavigation() {
 void FrameSchedulerImpl::OnStartedUsingFeature(
     SchedulingPolicy::Feature feature,
     const SchedulingPolicy& policy) {
-  // TODO(altimin): Rename *ActiveConnection to
-  // Enable/DisableAggressiveThrottling.
   if (policy.disable_aggressive_throttling)
     OnAddedAggressiveThrottlingOptOut();
   if (policy.disable_back_forward_cache)
@@ -653,6 +651,10 @@ void FrameSchedulerImpl::OnStoppedUsingFeature(
     OnRemovedAggressiveThrottlingOptOut();
   if (policy.disable_back_forward_cache)
     OnRemovedBackForwardCacheOptOut(feature);
+}
+
+base::WeakPtr<FrameScheduler> FrameSchedulerImpl::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 void FrameSchedulerImpl::OnAddedAggressiveThrottlingOptOut() {

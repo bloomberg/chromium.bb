@@ -270,9 +270,10 @@ TEST_F(AdTrackerSimTest, ScriptDetectedByContext) {
 }
 
 TEST_F(AdTrackerSimTest, RedirectToAdUrl) {
+  SimRequest::Params params;
+  params.redirect_url = "https://example.com/ad_script.js";
   SimSubresourceRequest redirect_script(
-      "https://example.com/redirect_script.js",
-      "https://example.com/ad_script.js", "text/javascript");
+      "https://example.com/redirect_script.js", "text/javascript", params);
   SimSubresourceRequest ad_script("https://example.com/ad_script.js",
                                   "text/javascript");
 

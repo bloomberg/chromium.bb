@@ -1032,6 +1032,19 @@ void ResourceLoader::DidReceiveResponseInternal(
         response.ResponseTime(), should_use_isolated_code_cache_, this);
   }
 
+  if (FrameScheduler* frame_scheduler = fetcher_->GetFrameScheduler()) {
+    if (response.CacheControlContainsNoCache()) {
+      frame_scheduler->RegisterStickyFeature(
+          SchedulingPolicy::Feature::kSubresourceHasCacheControlNoCache,
+          {SchedulingPolicy::DisableBackForwardCache()});
+    }
+    if (response.CacheControlContainsNoStore()) {
+      frame_scheduler->RegisterStickyFeature(
+          SchedulingPolicy::Feature::kSubresourceHasCacheControlNoStore,
+          {SchedulingPolicy::DisableBackForwardCache()});
+    }
+  }
+
   if (!resource_->Loader())
     return;
 

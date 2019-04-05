@@ -13,7 +13,10 @@ bool SchedulingPolicy::IsFeatureSticky(SchedulingPolicy::Feature feature) {
     case Feature::kWebSocket:
     case Feature::kWebRTC:
       return false;
-    case Feature::kStickyFeatureForTesting:
+    case Feature::kMainResourceHasCacheControlNoStore:
+    case Feature::kMainResourceHasCacheControlNoCache:
+    case Feature::kSubresourceHasCacheControlNoStore:
+    case Feature::kSubresourceHasCacheControlNoCache:
       return true;
     case Feature::kCount:
       NOTREACHED();
