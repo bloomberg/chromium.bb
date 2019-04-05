@@ -8,6 +8,7 @@
 
 #include "media/base/limits.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/web/modules/mediastream/video_track_adapter_settings.h"
 
 namespace content {
 

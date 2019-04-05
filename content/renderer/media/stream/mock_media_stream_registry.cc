@@ -15,7 +15,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
-#include "third_party/blink/public/web/modules/mediastream/video_track_adapter.h"
+#include "third_party/blink/public/web/modules/mediastream/video_track_adapter_settings.h"
 
 namespace content {
 

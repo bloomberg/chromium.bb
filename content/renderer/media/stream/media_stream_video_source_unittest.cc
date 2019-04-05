@@ -21,7 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
-#include "third_party/blink/public/web/modules/mediastream/video_track_adapter.h"
+#include "third_party/blink/public/web/modules/mediastream/video_track_adapter_settings.h"
 #include "third_party/blink/public/web/web_heap.h"
 
 using ::testing::_;
