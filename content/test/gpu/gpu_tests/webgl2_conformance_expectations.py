@@ -94,9 +94,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('conformance2/rendering/texture-switch-performance.html',
         bug=735483)
 
+    # TODO(shrekshao): Remove after updating this test case.
     self.Fail('conformance2/rendering/depth-stencil-feedback-loop.html',
-        bug=660844) # WebGL 2.0.1
-    self.Fail('conformance/rendering/rendering-sampling-feedback-loop.html',
         bug=660844) # WebGL 2.0.1
 
     # Nvidia bugs fixed in latest driver
@@ -348,6 +347,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Passthrough command decoder
     self.Fail('conformance/misc/webgl-specific-stencil-settings.html',
         ['passthrough'], bug=844349)
+    self.Fail('conformance/rendering/rendering-sampling-feedback-loop.html',
+        ['passthrough'], bug=660844) # WebGL 2.0.1
 
     # Passthrough command decoder / OpenGL
     self.Fail('conformance2/misc/uninitialized-test-2.html',

@@ -1536,10 +1536,12 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // location is not -1.
   bool CheckCurrentProgramForUniform(GLint location, const char* function_name);
 
-  // Checks if the current program samples a texture that is also the color
-  // image of the current bound framebuffer, i.e., the source and destination
-  // of the draw operation are the same.
-  bool CheckDrawingFeedbackLoops();
+  // Helper for CheckDrawingFeedbackLoops. Returns true if the attachment is
+  // the same one where it samples from during drawing.
+  bool CheckDrawingFeedbackLoopsHelper(
+      const Framebuffer::Attachment* attachment,
+      TextureRef* texture_ref,
+      const char* function_name);
 
   bool SupportsDrawBuffers() const;
 
@@ -9935,32 +9937,15 @@ bool GLES2DecoderImpl::CheckCurrentProgramForUniform(
       location);
 }
 
-bool GLES2DecoderImpl::CheckDrawingFeedbackLoops() {
-  Framebuffer* framebuffer = GetFramebufferInfoForTarget(GL_FRAMEBUFFER);
-  if (!framebuffer)
-    return false;
-  const Framebuffer::Attachment* attachment =
-      framebuffer->GetAttachment(GL_COLOR_ATTACHMENT0);
-  if (!attachment)
-    return false;
-
-  DCHECK(state_.current_program.get());
-  const Program::SamplerIndices& sampler_indices =
-      state_.current_program->sampler_indices();
-  for (size_t ii = 0; ii < sampler_indices.size(); ++ii) {
-    const Program::UniformInfo* uniform_info =
-        state_.current_program->GetUniformInfo(sampler_indices[ii]);
-    DCHECK(uniform_info);
-    for (size_t jj = 0; jj < uniform_info->texture_units.size(); ++jj) {
-      GLuint texture_unit_index = uniform_info->texture_units[jj];
-      if (texture_unit_index >= state_.texture_units.size())
-        continue;
-      TextureUnit& texture_unit = state_.texture_units[texture_unit_index];
-      TextureRef* texture_ref =
-          texture_unit.GetInfoForSamplerType(uniform_info->type);
-      if (attachment->IsTexture(texture_ref))
-        return true;
-    }
+bool GLES2DecoderImpl::CheckDrawingFeedbackLoopsHelper(
+    const Framebuffer::Attachment* attachment,
+    TextureRef* texture_ref,
+    const char* function_name) {
+  if (attachment && attachment->IsTexture(texture_ref)) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION, function_name,
+        "Source and destination textures of the draw are the same.");
+    return true;
   }
   return false;
 }
@@ -10691,6 +10676,27 @@ bool GLES2DecoderImpl::PrepareTexturesForRender(bool* textures_set,
         TextureUnit& texture_unit = state_.texture_units[texture_unit_index];
         TextureRef* texture_ref =
             texture_unit.GetInfoForSamplerType(uniform_info->type);
+
+        // Find if the texture is also a depth or stencil attachment
+        // Regardless of whether depth/stencil writes and masks are enabled
+        // If so, there's a drawing feedback loop.
+
+        Framebuffer* framebuffer =
+            GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER);
+        if (framebuffer) {
+          if (CheckDrawingFeedbackLoopsHelper(
+                  framebuffer->GetAttachment(GL_DEPTH_ATTACHMENT), texture_ref,
+                  function_name)) {
+            return false;
+          }
+
+          if (CheckDrawingFeedbackLoopsHelper(
+                  framebuffer->GetAttachment(GL_STENCIL_ATTACHMENT),
+                  texture_ref, function_name)) {
+            return false;
+          }
+        }
+
         GLenum textarget = GetBindTargetForSamplerType(uniform_info->type);
         const SamplerState& sampler_state = GetSamplerStateForTextureUnit(
             uniform_info->type, texture_unit_index);
@@ -10726,6 +10732,21 @@ bool GLES2DecoderImpl::PrepareTexturesForRender(bool* textures_set,
                GLES2Util::GetStringEnum(uniform_info->type))
                   .c_str());
           return false;
+        }
+
+        // Find if the texture is also a color attachment
+        // If so, there's a drawing feedback loop.
+
+        if (framebuffer) {
+          for (GLsizei kk = 0; kk <= framebuffer->last_color_attachment_id();
+               ++kk) {
+            GLenum attachment = static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + kk);
+            if (CheckDrawingFeedbackLoopsHelper(
+                    framebuffer->GetAttachment(attachment), texture_ref,
+                    function_name)) {
+              return false;
+            }
+          }
         }
 
         if (textarget != GL_TEXTURE_CUBE_MAP) {
@@ -10863,13 +10884,6 @@ bool GLES2DecoderImpl::IsDrawValid(
     if (!ValidateStencilStateForDraw(function_name)) {
       return false;
     }
-  }
-
-  if (CheckDrawingFeedbackLoops()) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION, function_name,
-        "Source and destination textures of the draw are the same.");
-    return false;
   }
 
   if (!state_.vertex_attrib_manager->ValidateBindings(
