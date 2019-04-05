@@ -4,9 +4,7 @@
 
 // https://html.spec.whatwg.org/C/#canvaspath
 
-[
-    NoInterfaceObject // Always used on target of 'implements'
-] interface CanvasPath {
+interface mixin CanvasPath {
     // shared path API methods
     void closePath();
     void moveTo(unrestricted float x, unrestricted float y);

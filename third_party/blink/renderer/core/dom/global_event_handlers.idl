@@ -30,9 +30,8 @@
 // https://html.spec.whatwg.org/C/#globaleventhandlers
 
 [
-    LegacyTreatAsPartialInterface,
-    NoInterfaceObject // Always used on target of 'implements'
-] interface GlobalEventHandlers {
+    LegacyTreatAsPartialInterface
+] interface mixin GlobalEventHandlers {
     attribute EventHandler onabort;
     [RuntimeEnabled=InvisibleDOM] attribute EventHandler onactivateinvisible;
     [RuntimeEnabled=DisplayLocking] attribute EventHandler onbeforeactivate;
