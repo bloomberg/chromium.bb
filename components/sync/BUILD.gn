@@ -472,6 +472,8 @@ jumbo_static_library("sync") {
     "nigori/nigori_model_type_processor.cc",
     "nigori/nigori_model_type_processor.h",
     "nigori/nigori_sync_bridge.h",
+    "nigori/nigori_sync_bridge_impl.cc",
+    "nigori/nigori_sync_bridge_impl.h",
     "protocol/proto_enum_conversions.cc",
     "protocol/proto_enum_conversions.h",
     "protocol/proto_memory_estimations.cc",
