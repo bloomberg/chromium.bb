@@ -198,7 +198,7 @@ TEST(PaintWorkletImageCacheTest, MultipleRecordsInCache) {
       records[paint_image2.paint_worklet_input()].num_of_frames_not_accessed,
       1u);
 
-  std::pair<PaintRecord*, base::OnceCallback<void()>> pair =
+  std::pair<sk_sp<PaintRecord>, base::OnceCallback<void()>> pair =
       cache.GetPaintRecordAndRef(paint_image1.paint_worklet_input());
   // Run the callback to decrement the ref count.
   std::move(pair.second).Run();
@@ -255,6 +255,24 @@ TEST(PaintWorkletImageCacheTest, CacheEntryLookup) {
     TestTileTaskRunner::ProcessTask(task_with_the_same_input.get());
     EXPECT_EQ(records[paint_image.paint_worklet_input()].used_ref_count, 1u);
   }
+}
+
+TEST(PaintWorkletImageCacheTest, TaskIsNullWhenPainterIsNull) {
+  TestPaintWorkletImageCache cache;
+  PaintImage paint_image = CreatePaintImage(100, 100);
+  scoped_refptr<TileTask> task =
+      GetTaskForPaintWorkletImage(paint_image, &cache);
+  EXPECT_EQ(task, nullptr);
+}
+
+TEST(PaintWorkletImageCacheTest, RecordAndCallbackAreEmptyWhenPainterIsNull) {
+  TestPaintWorkletImageCache cache;
+  PaintImage paint_image = CreatePaintImage(100, 100);
+  std::pair<sk_sp<PaintRecord>, base::OnceCallback<void()>> result =
+      cache.GetPaintRecordAndRef(paint_image.paint_worklet_input());
+  EXPECT_EQ(result.first->total_op_count(), 0u);
+  // This is an empty callback, running it should not crash.
+  std::move(result.second).Run();
 }
 
 }  // namespace
