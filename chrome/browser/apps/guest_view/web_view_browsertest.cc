@@ -2232,7 +2232,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, IndexedDBIsolation) {
 // This test ensures that closing app window on 'loadcommit' does not crash.
 // The test launches an app with guest and closes the window on loadcommit. It
 // then launches the app window again. The process is repeated 3 times.
-IN_PROC_BROWSER_TEST_F(WebViewTest, CloseOnLoadcommit) {
+// TODO(crbug.com/949923): The test is flaky (crash) on ChromeOS debug and ASan/LSan
+#if defined(OS_CHROMEOS) && (!defined(NDEBUG) || defined(ADDRESS_SANITIZER))
+#define MAYBE_CloseOnLoadcommit DEFINE_CloseOnLoadcommit
+#else
+#define MAYBE_CloseOnLoadcommit CloseOnLoadcommit
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_CloseOnLoadcommit) {
   LoadAndLaunchPlatformApp("web_view/close_on_loadcommit",
                            "done-close-on-loadcommit");
 }
