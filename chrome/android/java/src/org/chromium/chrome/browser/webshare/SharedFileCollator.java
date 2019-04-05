@@ -62,8 +62,7 @@ public class SharedFileCollator implements Callback<Integer> {
     }
 
     /**
-     * If any of the files do not have audio, image, text or video type, returns * / *
-     * Otherwise if the files have a common type and subtype, returns type / subtype
+     * If the files have a common type and subtype, returns type / subtype
      * Otherwise if the files have a common type, returns type / *
      * Otherwise returns * / *
      *
@@ -73,10 +72,6 @@ public class SharedFileCollator implements Callback<Integer> {
         if (files == null || files.length == 0) return WILDCARD;
         String[] common = files[0].blob.contentType.split("/");
         if (common.length != 2) return WILDCARD;
-        if (!common[0].equals("audio") && !common[0].equals("image") && !common[0].equals("text")
-                && !common[0].equals("video")) {
-            return WILDCARD;
-        }
         for (int index = 1; index < files.length; ++index) {
             String[] current = files[index].blob.contentType.split("/");
             if (current.length != 2) return WILDCARD;

@@ -45,8 +45,9 @@ public class SharedFileCollatorTest {
     @Test
     @SmallTest
     public void testApplication() {
-        Assert.assertEquals(
-                "*/*", SharedFileCollator.commonMimeType(createFiles("application/x-bzip2")));
+        Assert.assertEquals("application/*",
+                SharedFileCollator.commonMimeType(
+                        createFiles("application/rtf", "application/x-bzip2")));
     }
 
     @Test

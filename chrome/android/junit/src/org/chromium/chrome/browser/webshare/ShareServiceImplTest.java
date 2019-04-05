@@ -58,4 +58,24 @@ public class ShareServiceImplTest {
     public void testCompound() {
         Assert.assertFalse(ShareServiceImpl.isDangerousFilename("powerless.sh.txt"));
     }
+
+    @Test
+    @SmallTest
+    public void testUnsupportedMime() {
+        Assert.assertTrue(ShareServiceImpl.isDangerousMimeType("application/x-shockwave-flash"));
+        Assert.assertTrue(ShareServiceImpl.isDangerousMimeType("image/wmf"));
+        Assert.assertTrue(ShareServiceImpl.isDangerousMimeType("text/calendar"));
+        Assert.assertTrue(ShareServiceImpl.isDangerousMimeType("video/H264"));
+    }
+
+    @Test
+    @SmallTest
+    public void testSupportedMime() {
+        Assert.assertFalse(ShareServiceImpl.isDangerousMimeType("audio/wav"));
+        Assert.assertFalse(ShareServiceImpl.isDangerousMimeType("image/jpeg"));
+        Assert.assertFalse(ShareServiceImpl.isDangerousMimeType("image/svg+xml"));
+        Assert.assertFalse(ShareServiceImpl.isDangerousMimeType("text/csv"));
+        Assert.assertFalse(ShareServiceImpl.isDangerousMimeType("text/plain"));
+        Assert.assertFalse(ShareServiceImpl.isDangerousMimeType("video/mpeg"));
+    }
 }

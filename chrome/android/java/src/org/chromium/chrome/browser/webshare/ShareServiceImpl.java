@@ -105,6 +105,33 @@ public class ShareServiceImpl implements ShareService {
                     "webp", // image/webp
                     "xbm" // image/x-xbitmap
             ));
+
+    private static final Set<String> PERMITTED_MIME_TYPES =
+            Collections.unmodifiableSet(CollectionUtil.newHashSet(
+                     "audio/flac",
+                     "audio/mp3",
+                     "audio/ogg",
+                     "audio/wav",
+                     "audio/webm",
+                     "audio/x-m4a",
+                     "image/bmp",
+                     "image/gif",
+                     "image/jpeg",
+                     "image/png",
+                     "image/svg+xml",
+                     "image/tiff",
+                     "image/webp",
+                     "image/x-icon",
+                     "image/x-xbitmap",
+                     "text/css",
+                     "text/csv",
+                     "text/html",
+                     "text/plain",
+                     "video/mp4",
+                     "video/mpeg",
+                     "video/ogg",
+                     "video/webm"
+            ));
     // clang-format on
 
     private static final TaskRunner TASK_RUNNER =
@@ -168,7 +195,7 @@ public class ShareServiceImpl implements ShareService {
         }
 
         for (SharedFile file : files) {
-            if (isDangerousFilename(file.name)) {
+            if (isDangerousFilename(file.name) || isDangerousMimeType(file.blob.contentType)) {
                 callback.call(ShareError.PERMISSION_DENIED);
                 return;
             }
@@ -194,8 +221,8 @@ public class ShareServiceImpl implements ShareService {
                     }
 
                     for (int index = 0; index < files.length; ++index) {
-                        File tempFile = File.createTempFile(
-                                "share", FileUtils.getExtension(files[index].name), sharePath);
+                        File tempFile = File.createTempFile("share",
+                                "." + FileUtils.getExtension(files[index].name), sharePath);
                         fileUris.add(ContentUriUtils.getContentUriFromFile(tempFile));
                         blobReceivers.add(new BlobReceiver(
                                 new FileOutputStream(tempFile), MAX_SHARED_FILE_BYTES));
@@ -222,6 +249,10 @@ public class ShareServiceImpl implements ShareService {
     static boolean isDangerousFilename(String name) {
         return name.indexOf('/') != -1 || name.indexOf('\\') != -1 || name.indexOf('.') <= 0
                 || !PERMITTED_EXTENSIONS.contains(FileUtils.getExtension(name));
+    }
+
+    static boolean isDangerousMimeType(String contentType) {
+        return !PERMITTED_MIME_TYPES.contains(contentType);
     }
 
     @Nullable
