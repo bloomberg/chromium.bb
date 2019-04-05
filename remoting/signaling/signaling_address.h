@@ -16,20 +16,33 @@ namespace remoting {
 // Represents an address of a Chromoting endpoint and its routing channel.
 class SignalingAddress {
  public:
-  enum class Channel { LCS, XMPP };
+  enum class Channel { LCS, XMPP, FTL };
   enum Direction { TO, FROM };
   // Creates an empty SignalingAddress.
   SignalingAddress();
 
   // Creates a SignalingAddress with |jid|, which can either be a valid
-  // XMPP JID or an LCS address in a JID like format.
+  // XMPP JID, or an LCS address in a JID like format, or FTL address in a JID
+  // like format.
   explicit SignalingAddress(const std::string& jid);
+
+  // Creates a SignalingAddress that represents an FTL endpoint. Note that the
+  // FTL SignalingAddress is irrelevant to the FTL server or client. It is just
+  // to make existing Jingle session logic work with the new messaging service.
+  static SignalingAddress CreateFtlSignalingAddress(
+      const std::string& username,
+      const std::string& registration_id);
 
   static SignalingAddress Parse(const jingle_xmpp::XmlElement* iq,
                                 Direction direction,
                                 std::string* error);
 
   void SetInMessage(jingle_xmpp::XmlElement* message, Direction direction) const;
+
+  // Writes FTL info to |username| and |registration_id|. Returns true if the
+  // SIgnalingAddress is a valid FTL address and info is successfully written.
+  // If this returns false then none of the parameters will be touched.
+  bool GetFtlInfo(std::string* username, std::string* registration_id) const;
 
   const std::string& jid() const { return jid_; }
   const std::string& endpoint_id() const { return endpoint_id_; }
