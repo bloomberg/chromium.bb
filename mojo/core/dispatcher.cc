@@ -140,7 +140,7 @@ void Dispatcher::StartSerialize(uint32_t* num_bytes,
 }
 
 bool Dispatcher::EndSerialize(void* destination,
-                              ports::PortName* ports,
+                              ports::UserMessageEvent::PortAttachment* ports,
                               PlatformHandle* handles) {
   LOG(ERROR) << "Attempting to serialize a non-transferrable dispatcher.";
   return true;
@@ -159,7 +159,7 @@ scoped_refptr<Dispatcher> Dispatcher::Deserialize(
     Type type,
     const void* bytes,
     size_t num_bytes,
-    const ports::PortName* ports,
+    const ports::UserMessageEvent::PortAttachment* ports,
     size_t num_ports,
     PlatformHandle* platform_handles,
     size_t num_platform_handles) {

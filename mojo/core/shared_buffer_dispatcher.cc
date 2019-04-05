@@ -120,7 +120,7 @@ MojoResult SharedBufferDispatcher::CreateFromPlatformSharedMemoryRegion(
 scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
     const void* bytes,
     size_t num_bytes,
-    const ports::PortName* ports,
+    const ports::UserMessageEvent::PortAttachment* ports,
     size_t num_ports,
     PlatformHandle* platform_handles,
     size_t num_platform_handles) {
@@ -321,9 +321,10 @@ void SharedBufferDispatcher::StartSerialize(uint32_t* num_bytes,
 #endif
 }
 
-bool SharedBufferDispatcher::EndSerialize(void* destination,
-                                          ports::PortName* ports,
-                                          PlatformHandle* handles) {
+bool SharedBufferDispatcher::EndSerialize(
+    void* destination,
+    ports::UserMessageEvent::PortAttachment* ports,
+    PlatformHandle* handles) {
   SerializedState* serialized_state =
       static_cast<SerializedState*>(destination);
   base::AutoLock lock(lock_);

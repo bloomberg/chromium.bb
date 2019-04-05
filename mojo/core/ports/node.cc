@@ -329,7 +329,7 @@ int Node::GetMessage(const SlotRef& slot_ref,
   if (*message) {
     for (size_t i = 0; i < (*message)->num_ports(); ++i) {
       PortRef new_port_ref;
-      int rv = GetPort((*message)->ports()[i], &new_port_ref);
+      int rv = GetPort((*message)->ports()[i].name, &new_port_ref);
 
       DCHECK_EQ(OK, rv) << "Port " << new_port_ref.name() << "@" << name_
                         << " does not exist!";
@@ -376,11 +376,11 @@ int Node::SendUserMessage(const SlotRef& slot_ref,
     // close the sending port itself if it happened to be one of the encoded
     // ports (an invalid but possible condition.)
     for (size_t i = 0; i < message->num_ports(); ++i) {
-      if (message->ports()[i] == slot_ref.port().name())
+      if (message->ports()[i].name == slot_ref.port().name())
         continue;
 
       PortRef port;
-      if (GetPort(message->ports()[i], &port) == OK)
+      if (GetPort(message->ports()[i].name, &port) == OK)
         ClosePort(port);
     }
   }
@@ -568,7 +568,7 @@ int Node::OnUserMessage(std::unique_ptr<UserMessageEvent> message) {
   for (size_t i = 0; i < message->num_ports(); ++i) {
     if (i > 0)
       ports_buf << ",";
-    ports_buf << message->ports()[i];
+    ports_buf << message->ports()[i].name;
   }
 
   DVLOG(4) << "OnUserMessage " << message->sequence_num()
@@ -587,10 +587,10 @@ int Node::OnUserMessage(std::unique_ptr<UserMessageEvent> message) {
       // If the referring node name is invalid, this descriptor can be ignored
       // and the port should already exist locally.
       PortRef port_ref;
-      if (GetPort(message->ports()[i], &port_ref) != OK)
+      if (GetPort(message->ports()[i].name, &port_ref) != OK)
         return ERROR_PORT_UNKNOWN;
     } else {
-      int rv = AcceptPort(message->ports()[i], descriptor);
+      int rv = AcceptPort(message->ports()[i].name, descriptor);
       if (rv != OK)
         return rv;
 
@@ -991,7 +991,7 @@ int Node::SendUserMessageInternal(const SlotRef& slot_ref,
                                   std::unique_ptr<UserMessageEvent>* message) {
   std::unique_ptr<UserMessageEvent>& m = *message;
   for (size_t i = 0; i < m->num_ports(); ++i) {
-    if (m->ports()[i] == slot_ref.port().name())
+    if (m->ports()[i].name == slot_ref.port().name())
       return ERROR_PORT_CANNOT_SEND_SELF;
   }
 
@@ -1247,7 +1247,7 @@ int Node::PrepareToForwardUserMessage(const SlotRef& forwarding_slot_ref,
     ports_to_lock.container().resize(message->num_ports() + 1);
     ports_to_lock[0] = &forwarding_slot_ref.port();
     for (size_t i = 0; i < message->num_ports(); ++i) {
-      const PortName& attached_port_name = message->ports()[i];
+      const PortName& attached_port_name = message->ports()[i].name;
       auto iter = ports_.find(attached_port_name);
       DCHECK(iter != ports_.end());
       attached_port_refs[i] = PortRef(attached_port_name, iter->second);
@@ -1283,7 +1283,7 @@ int Node::PrepareToForwardUserMessage(const SlotRef& forwarding_slot_ref,
     for (size_t i = 0; i < message->num_ports(); ++i) {
       if (i > 0)
         ports_buf << ",";
-      ports_buf << message->ports()[i];
+      ports_buf << message->ports()[i].name;
     }
 #endif
 
@@ -1313,7 +1313,7 @@ int Node::PrepareToForwardUserMessage(const SlotRef& forwarding_slot_ref,
         Event::PortDescriptor* port_descriptors = message->port_descriptors();
         for (size_t i = 0; i < message->num_ports(); ++i) {
           ConvertToProxy(locker.GetPort(attached_port_refs[i]),
-                         target_node_name, message->ports() + i,
+                         target_node_name, &message->ports()[i].name,
                          port_descriptors + i);
         }
       }
@@ -1668,7 +1668,7 @@ void Node::DiscardPorts(UserMessageEvent* message) {
   PortLocker::AssertNoPortsLockedOnCurrentThread();
   for (size_t i = 0; i < message->num_ports(); ++i) {
     PortRef ref;
-    if (GetPort(message->ports()[i], &ref) == OK)
+    if (GetPort(message->ports()[i].name, &ref) == OK)
       ClosePort(ref);
   }
 }

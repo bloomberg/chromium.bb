@@ -29,7 +29,7 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformHandleDispatcher : public Dispatcher {
                       uint32_t* num_ports,
                       uint32_t* num_handles) override;
   bool EndSerialize(void* destination,
-                    ports::PortName* ports,
+                    ports::UserMessageEvent::PortAttachment* ports,
                     PlatformHandle* handles) override;
   bool BeginTransit() override;
   void CompleteTransitAndClose() override;
@@ -38,7 +38,7 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformHandleDispatcher : public Dispatcher {
   static scoped_refptr<PlatformHandleDispatcher> Deserialize(
       const void* bytes,
       size_t num_bytes,
-      const ports::PortName* ports,
+      const ports::UserMessageEvent::PortAttachment* ports,
       size_t num_ports,
       PlatformHandle* handles,
       size_t num_handles);

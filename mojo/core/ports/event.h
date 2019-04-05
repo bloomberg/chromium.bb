@@ -133,6 +133,15 @@ class COMPONENT_EXPORT(MOJO_CORE_PORTS) Event {
 
 class COMPONENT_EXPORT(MOJO_CORE_PORTS) UserMessageEvent : public Event {
  public:
+  struct PortAttachment {
+    PortAttachment();
+    PortAttachment(const PortAttachment&);
+    ~PortAttachment();
+
+    PortName name;
+    SlotId slot_id = kDefaultSlotId;
+  };
+
   explicit UserMessageEvent(size_t num_ports);
   ~UserMessageEvent() override;
 
@@ -164,7 +173,7 @@ class COMPONENT_EXPORT(MOJO_CORE_PORTS) UserMessageEvent : public Event {
 
   size_t num_ports() const { return ports_.size(); }
   PortDescriptor* port_descriptors() { return port_descriptors_.data(); }
-  PortName* ports() { return ports_.data(); }
+  PortAttachment* ports() { return ports_.data(); }
 
   static ScopedEvent Deserialize(const PortName& port_name,
                                  const void* buffer,
@@ -181,7 +190,7 @@ class COMPONENT_EXPORT(MOJO_CORE_PORTS) UserMessageEvent : public Event {
   uint64_t sequence_num_ = 0;
   SlotId slot_id_ = 0;
   std::vector<PortDescriptor> port_descriptors_;
-  std::vector<PortName> ports_;
+  std::vector<PortAttachment> ports_;
   std::unique_ptr<UserMessage> message_;
 
   DISALLOW_COPY_AND_ASSIGN(UserMessageEvent);
