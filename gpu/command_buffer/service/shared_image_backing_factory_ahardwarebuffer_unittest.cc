@@ -121,7 +121,7 @@ TEST_F(SharedImageBackingFactoryAHBTest, Basic) {
       gl_legacy_shared_image.mailbox(), context_state_.get());
   EXPECT_TRUE(skia_representation);
   auto surface = skia_representation->BeginWriteAccess(
-      gr_context(), 0, SkSurfaceProps(0, kUnknown_SkPixelGeometry));
+      0, SkSurfaceProps(0, kUnknown_SkPixelGeometry));
   EXPECT_TRUE(surface);
   EXPECT_EQ(gl_legacy_shared_image.size().width(), surface->width());
   EXPECT_EQ(gl_legacy_shared_image.size().height(), surface->height());
@@ -296,10 +296,10 @@ TEST_F(SharedImageBackingFactoryAHBTest, OnlyOneWriter) {
   auto skia_representation = shared_image_representation_factory_->ProduceSkia(
       gl_legacy_shared_image.mailbox(), context_state_.get());
   auto surface = skia_representation->BeginWriteAccess(
-      gr_context(), 0, SkSurfaceProps(0, kUnknown_SkPixelGeometry));
+      0, SkSurfaceProps(0, kUnknown_SkPixelGeometry));
 
   EXPECT_FALSE(skia_representation->BeginWriteAccess(
-      gr_context(), 0, SkSurfaceProps(0, kUnknown_SkPixelGeometry)));
+      0, SkSurfaceProps(0, kUnknown_SkPixelGeometry)));
 
   skia_representation->EndWriteAccess(std::move(surface));
   skia_representation.reset();
@@ -364,7 +364,7 @@ TEST_F(SharedImageBackingFactoryAHBTest, CannotWriteWhileReading) {
   EXPECT_TRUE(skia_representation->BeginReadAccess());
 
   EXPECT_FALSE(skia_representation->BeginWriteAccess(
-      gr_context(), 0, SkSurfaceProps(0, kUnknown_SkPixelGeometry)));
+      0, SkSurfaceProps(0, kUnknown_SkPixelGeometry)));
 
   skia_representation->EndReadAccess();
   skia_representation.reset();
@@ -383,7 +383,7 @@ TEST_F(SharedImageBackingFactoryAHBTest, CannotReadWhileWriting) {
   auto skia_representation = shared_image_representation_factory_->ProduceSkia(
       gl_legacy_shared_image.mailbox(), context_state_.get());
   auto surface = skia_representation->BeginWriteAccess(
-      gr_context(), 0, SkSurfaceProps(0, kUnknown_SkPixelGeometry));
+      0, SkSurfaceProps(0, kUnknown_SkPixelGeometry));
 
   EXPECT_FALSE(skia_representation->BeginReadAccess());
 

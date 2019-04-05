@@ -14,7 +14,6 @@
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 
-class GrContext;
 typedef unsigned int GLenum;
 class SkPromiseImageTexture;
 
@@ -150,7 +149,6 @@ class SharedImageRepresentationSkia : public SharedImageRepresentation {
       : SharedImageRepresentation(manager, backing, tracker) {}
 
   virtual sk_sp<SkSurface> BeginWriteAccess(
-      GrContext* gr_context,
       int final_msaa_count,
       const SkSurfaceProps& surface_props) = 0;
   virtual void EndWriteAccess(sk_sp<SkSurface> surface) = 0;

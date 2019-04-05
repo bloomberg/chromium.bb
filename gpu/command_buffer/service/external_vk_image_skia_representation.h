@@ -25,7 +25,6 @@ class ExternalVkImageSkiaRepresentation : public SharedImageRepresentationSkia {
 
   // SharedImageRepresentationSkia implementation.
   sk_sp<SkSurface> BeginWriteAccess(
-      GrContext* gr_context,
       int final_msaa_count,
       const SkSurfaceProps& surface_props) override;
   void EndWriteAccess(sk_sp<SkSurface> surface) override;

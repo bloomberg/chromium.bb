@@ -259,11 +259,13 @@ class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
   SharedImageRepresentationSkiaImpl(
       SharedImageManager* manager,
       SharedImageBackingWithReadAccess* backing,
+      scoped_refptr<SharedContextState> context_state,
       sk_sp<SkPromiseImageTexture> cached_promise_texture,
       MemoryTypeTracker* tracker,
       GLenum target,
       GLuint service_id)
       : SharedImageRepresentationSkia(manager, backing, tracker),
+        context_state_(std::move(context_state)),
         promise_texture_(cached_promise_texture) {
     if (!promise_texture_) {
       GrBackendTexture backend_texture;
@@ -284,7 +286,6 @@ class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
   }
 
   sk_sp<SkSurface> BeginWriteAccess(
-      GrContext* gr_context,
       int final_msaa_count,
       const SkSurfaceProps& surface_props) override {
     CheckContext();
@@ -297,7 +298,7 @@ class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
     SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
         /*gpu_compositing=*/true, format());
     auto surface = SkSurface::MakeFromBackendTextureAsRenderTarget(
-        gr_context, promise_texture_->backendTexture(),
+        context_state_->gr_context(), promise_texture_->backendTexture(),
         kTopLeft_GrSurfaceOrigin, final_msaa_count, sk_color_type,
         backing()->color_space().ToSkColorSpace(), &surface_props);
     write_surface_ = surface.get();
@@ -332,6 +333,7 @@ class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
 #endif
   }
 
+  scoped_refptr<SharedContextState> context_state_;
   sk_sp<SkPromiseImageTexture> promise_texture_;
 
   SkSurface* write_surface_ = nullptr;
@@ -524,8 +526,8 @@ class SharedImageBackingGLTexture : public SharedImageBackingWithReadAccess {
       MemoryTypeTracker* tracker,
       scoped_refptr<SharedContextState> context_state) override {
     auto result = std::make_unique<SharedImageRepresentationSkiaImpl>(
-        manager, this, cached_promise_texture_, tracker, texture_->target(),
-        texture_->service_id());
+        manager, this, std::move(context_state), cached_promise_texture_,
+        tracker, texture_->target(), texture_->service_id());
     cached_promise_texture_ = result->promise_texture();
     return result;
   }
@@ -633,8 +635,9 @@ class SharedImageBackingPassthroughGLTexture
       MemoryTypeTracker* tracker,
       scoped_refptr<SharedContextState> context_state) override {
     auto result = std::make_unique<SharedImageRepresentationSkiaImpl>(
-        manager, this, cached_promise_texture_, tracker,
-        texture_passthrough_->target(), texture_passthrough_->service_id());
+        manager, this, std::move(context_state), cached_promise_texture_,
+        tracker, texture_passthrough_->target(),
+        texture_passthrough_->service_id());
     cached_promise_texture_ = result->promise_texture();
     return result;
   }

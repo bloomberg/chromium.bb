@@ -44,7 +44,6 @@ ExternalVkImageSkiaRepresentation::~ExternalVkImageSkiaRepresentation() {
 }
 
 sk_sp<SkSurface> ExternalVkImageSkiaRepresentation::BeginWriteAccess(
-    GrContext* gr_context,
     int final_msaa_count,
     const SkSurfaceProps& surface_props) {
   DCHECK_EQ(access_mode_, kNone) << "Previous access hasn't ended yet";
@@ -56,7 +55,8 @@ sk_sp<SkSurface> ExternalVkImageSkiaRepresentation::BeginWriteAccess(
   SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
       true /* gpu_compositing */, format());
   surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
-      gr_context, promise_texture->backendTexture(), kTopLeft_GrSurfaceOrigin,
+      backing_impl()->context_state()->gr_context(),
+      promise_texture->backendTexture(), kTopLeft_GrSurfaceOrigin,
       final_msaa_count, sk_color_type,
       backing_impl()->color_space().ToSkColorSpace(), &surface_props);
   access_mode_ = kWrite;

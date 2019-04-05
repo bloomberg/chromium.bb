@@ -323,10 +323,12 @@ class SharedImageRepresentationSkiaGLAHB
   SharedImageRepresentationSkiaGLAHB(
       SharedImageManager* manager,
       SharedImageBacking* backing,
+      scoped_refptr<SharedContextState> context_state,
       sk_sp<SkPromiseImageTexture> cached_promise_image_texture,
       MemoryTypeTracker* tracker,
       gles2::Texture* texture)
       : SharedImageRepresentationSkia(manager, backing, tracker),
+        context_state_(std::move(context_state)),
         promise_texture_(cached_promise_image_texture),
         texture_(std::move(texture)) {
 #if DCHECK_IS_ON()
@@ -348,7 +350,6 @@ class SharedImageRepresentationSkiaGLAHB
   }
 
   sk_sp<SkSurface> BeginWriteAccess(
-      GrContext* gr_context,
       int final_msaa_count,
       const SkSurfaceProps& surface_props) override {
     DCHECK_EQ(mode_, RepresentationAccessMode::kNone);
@@ -372,7 +373,7 @@ class SharedImageRepresentationSkiaGLAHB
     SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
         /*gpu_compositing=*/true, format());
     auto surface = SkSurface::MakeFromBackendTextureAsRenderTarget(
-        gr_context, promise_texture_->backendTexture(),
+        context_state_->gr_context(), promise_texture_->backendTexture(),
         kTopLeft_GrSurfaceOrigin, final_msaa_count, sk_color_type,
         backing()->color_space().ToSkColorSpace(), &surface_props);
     surface_ = surface.get();
@@ -443,6 +444,7 @@ class SharedImageRepresentationSkiaGLAHB
     mode_ = RepresentationAccessMode::kNone;
   }
 
+  scoped_refptr<SharedContextState> context_state_;
   sk_sp<SkPromiseImageTexture> promise_texture_;
   gles2::Texture* texture_;
   SkSurface* surface_ = nullptr;
@@ -461,7 +463,7 @@ class SharedImageRepresentationSkiaVkAHB
       SharedImageBacking* backing,
       scoped_refptr<SharedContextState> context_state)
       : SharedImageRepresentationSkia(manager, backing, nullptr),
-        context_state_(context_state) {
+        context_state_(std::move(context_state)) {
     SharedImageBackingAHB* ahb_backing =
         static_cast<SharedImageBackingAHB*>(backing);
     DCHECK(ahb_backing);
@@ -475,7 +477,6 @@ class SharedImageRepresentationSkiaVkAHB
   }
 
   sk_sp<SkSurface> BeginWriteAccess(
-      GrContext* gr_context,
       int final_msaa_count,
       const SkSurfaceProps& surface_props) override {
     DCHECK_EQ(mode_, RepresentationAccessMode::kNone);
@@ -511,7 +512,7 @@ class SharedImageRepresentationSkiaVkAHB
     SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
         /*gpu_compositing=*/true, format());
     auto surface = SkSurface::MakeFromBackendTextureAsRenderTarget(
-        gr_context, promise_texture_->backendTexture(),
+        context_state_->gr_context(), promise_texture_->backendTexture(),
         kTopLeft_GrSurfaceOrigin, final_msaa_count, sk_color_type, nullptr,
         &surface_props);
 
@@ -623,7 +624,7 @@ class SharedImageRepresentationSkiaVkAHB
   sk_sp<SkPromiseImageTexture> promise_texture_;
   RepresentationAccessMode mode_ = RepresentationAccessMode::kNone;
   SkSurface* surface_ = nullptr;
-  scoped_refptr<SharedContextState> context_state_ = nullptr;
+  scoped_refptr<SharedContextState> context_state_;
 };
 
 SharedImageBackingAHB::SharedImageBackingAHB(
@@ -723,8 +724,8 @@ SharedImageBackingAHB::ProduceSkia(
   // Check whether we are in Vulkan mode OR GL mode and accordingly create
   // Skia representation.
   if (context_state->use_vulkan_gr_context()) {
-    return std::make_unique<SharedImageRepresentationSkiaVkAHB>(manager, this,
-                                                                context_state);
+    return std::make_unique<SharedImageRepresentationSkiaVkAHB>(
+        manager, this, std::move(context_state));
   }
 
   auto* texture = GenGLTexture();
@@ -738,7 +739,8 @@ SharedImageBackingAHB::ProduceSkia(
   sk_sp<SkPromiseImageTexture> promise_texture =
       SkPromiseImageTexture::Make(backend_texture);
   return std::make_unique<SharedImageRepresentationSkiaGLAHB>(
-      manager, this, promise_texture, tracker, std::move(texture));
+      manager, this, std::move(context_state), promise_texture, tracker,
+      std::move(texture));
 }
 
 bool SharedImageBackingAHB::BeginWrite(base::ScopedFD* fd_to_wait_on) {
