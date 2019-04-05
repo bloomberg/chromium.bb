@@ -538,6 +538,23 @@ TEST_F(NGInlineNodeTest, AssociatedItemsWithControlItem) {
   TEST_ITEM_TYPE_OFFSET((*items[4]), kText, 6u, 8u);
 }
 
+TEST_F(NGInlineNodeTest, NeedsCollectInlinesOnForceLayout) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="container">
+      <span id="target">
+        <span id="child" style="position: absolute">X</span>
+      </span>
+    </div>
+  )HTML");
+
+  LayoutObject* container = GetLayoutObjectByElementId("container");
+  LayoutObject* target = GetLayoutObjectByElementId("target");
+  LayoutObject* child = GetLayoutObjectByElementId("child");
+  child->ForceLayout();
+  EXPECT_FALSE(container->NeedsCollectInlines());
+  EXPECT_FALSE(target->NeedsCollectInlines());
+}
+
 TEST_F(NGInlineNodeTest, InvalidateAddSpan) {
   SetupHtml("t", "<div id=t>before</div>");
   EXPECT_FALSE(layout_block_flow_->NeedsCollectInlines());

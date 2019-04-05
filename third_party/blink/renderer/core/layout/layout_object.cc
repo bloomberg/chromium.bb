@@ -3539,7 +3539,6 @@ void LayoutObject::ScheduleRelayout() {
 
 void LayoutObject::ForceLayout() {
   SetSelfNeedsLayoutForAvailableSpace(true);
-  MarkContainerNeedsCollectInlines();
   UpdateLayout();
 }
 
