@@ -4,6 +4,8 @@
 
 #import "ios/web/shell/test/earl_grey/shell_matchers.h"
 
+#import <EarlGrey/EarlGrey.h>
+
 #import "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
