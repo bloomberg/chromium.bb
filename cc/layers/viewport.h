@@ -68,10 +68,14 @@ class CC_EXPORT Viewport {
   void PinchUpdate(float magnify_delta, const gfx::Point& anchor);
   void PinchEnd(const gfx::Point& anchor, bool snap_to_min);
 
-  // Returns the "representative" viewport layer. That is, the one that's set
-  // as the currently scrolling layer when the viewport scrolls and the one used
-  // in the scrolling code to indicate scrolling should happen via this class.
+  // Returns true if the given scroll node should be scrolled via this class,
+  // false if it should be scrolled directly.
+  bool ShouldScroll(const ScrollNode& scroll_node);
+
+  // Returns the "representative" viewport layer/node. That is, the one that's
+  // set as the currently scrolling layer/node when the viewport scrolls.
   LayerImpl* MainScrollLayer() const;
+  ScrollNode* MainScrollNode() const;
 
  private:
   explicit Viewport(LayerTreeHostImpl* host_impl);
