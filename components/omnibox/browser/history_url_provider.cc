@@ -627,7 +627,8 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
         url_formatter::kFormatUrlOmitDefaults &
             ~url_formatter::kFormatUrlOmitHTTP,
         net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
-    const size_t offset = trim_http ? TrimHttpPrefix(&display_string) : 0;
+    if (trim_http)
+      TrimHttpPrefix(&display_string);
     match.fill_into_edit =
         AutocompleteInput::FormattedStringWithEquivalentMeaning(
             destination_url, display_string, client()->GetSchemeClassifier(),
@@ -651,23 +652,12 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
     // This relies on match.destination_url being the non-prefix-trimmed version
     // of match.contents.
     match.contents = display_string;
-    const URLPrefix* best_prefix = URLPrefix::BestURLPrefix(
-        base::UTF8ToUTF16(destination_url.spec()), input.text());
-    // It's possible for match.destination_url to not contain the user's input
-    // at all (so |best_prefix| is null), for example if the input is
-    // "view-source:x" and |destination_url| has an inserted "http://" in the
-    // middle.
-    if (!best_prefix) {
-      AutocompleteMatch::ClassifyMatchInString(input.text(),
-                                               match.contents,
-                                               ACMatchClassification::URL,
-                                               &match.contents_class);
-    } else {
-      AutocompleteMatch::ClassifyLocationInString(
-          best_prefix->prefix.length() - offset, input.text().length(),
-          match.contents.length(), ACMatchClassification::URL,
-          &match.contents_class);
-    }
+
+    TermMatches termMatches = {{0, 0, input.text().length()}};
+    match.contents_class = ClassifyTermMatches(
+        termMatches, match.contents.size(),
+        ACMatchClassification::MATCH | ACMatchClassification::URL,
+        ACMatchClassification::URL);
   }
 
   return match;
