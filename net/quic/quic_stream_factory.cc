@@ -575,6 +575,7 @@ void QuicStreamFactory::Job::OnResolveHostComplete(int rv) {
 
   if (fresh_resolve_host_request_) {
     DCHECK(race_stale_dns_on_connection_);
+    dns_resolution_end_time_ = base::TimeTicks::Now();
     if (rv != OK) {
       CloseStaleHostConnection();
       resolve_host_request_ = std::move(fresh_resolve_host_request_);
