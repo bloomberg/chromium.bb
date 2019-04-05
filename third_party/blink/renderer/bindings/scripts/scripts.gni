@@ -485,8 +485,10 @@ template("generate_origin_trial_features") {
     # should be interfaces_info_core (w/o modules). This is the same issue as
     # above in the idl_compiler template.
     # http://crbug.com/358074
-    deps = invoker.deps +
-           [ "//third_party/blink/renderer/bindings/modules:interfaces_info" ]
+    deps = invoker.deps + [
+             "//third_party/blink/renderer/bindings/modules:interfaces_info",
+             "//third_party/blink/renderer/bindings/modules:modules_core_global_constructors_idls",
+           ]
   }
 }
 
