@@ -5,6 +5,6 @@
 -->
 
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:color="@color/default_text_color_link" android:state_selected="true" />
-    <item android:color="@color/default_text_color_secondary" />
+    <item android:color="@color/chip_text_color_selected" android:state_selected="true" />
+    <item android:color="@color/chip_text_color_default" />
 </selector>
