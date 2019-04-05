@@ -14,6 +14,7 @@ copy("mdc_components_ios_public_headers") {
     "src/components/Buttons/src/MaterialButtons.h",
     "src/components/Buttons/src/ShapeThemer/MaterialButtons+ShapeThemer.h",
     "src/components/Buttons/src/TypographyThemer/MaterialButtons+TypographyThemer.h",
+    "src/components/Cards/src/MaterialCards.h",
     "src/components/Dialogs/src/MaterialDialogs.h",
     "src/components/ShadowElevations/src/MaterialShadowElevations.h",
     "src/components/schemes/Color/src/MaterialColorScheme.h",
