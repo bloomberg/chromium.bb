@@ -44,7 +44,7 @@
 namespace cc {
 class Layer;
 class PictureLayer;
-}
+}  // namespace cc
 
 namespace blink {
 

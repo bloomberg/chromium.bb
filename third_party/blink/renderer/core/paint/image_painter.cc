@@ -37,24 +37,25 @@ namespace {
 bool CheckForOversizedImagesPolicy(const LayoutImage& layout_image,
                                    scoped_refptr<Image> image) {
   DCHECK(image);
-  if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled()) {
-    DoubleSize layout_size(layout_image.ContentSize());
-    IntSize image_size = image->Size();
-    if (!layout_size.IsEmpty() && !image_size.IsEmpty()) {
-      double dpr = layout_image.GetDocument().GetFrame()->DevicePixelRatio();
-      double downscale_ratio_width =
-          image_size.Width() / (dpr * layout_size.Width());
-      double downscale_ratio_height =
-          image_size.Height() / (dpr * layout_size.Height());
-      return !layout_image.GetDocument().IsFeatureEnabled(
-          mojom::FeaturePolicyFeature::kOversizedImages,
-          blink::PolicyValue(
-              std::max(downscale_ratio_width, downscale_ratio_height),
-              blink::mojom::PolicyValueType::kDecDouble),
-          ReportOptions::kReportOnFailure);
-      }
-  }
-  return false;
+  if (!RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled())
+    return false;
+
+  DoubleSize layout_size(layout_image.ContentSize());
+  IntSize image_size = image->Size();
+  if (layout_size.IsEmpty() || image_size.IsEmpty())
+    return false;
+
+  double dpr = layout_image.GetDocument().GetFrame()->DevicePixelRatio();
+  double downscale_ratio_width =
+      image_size.Width() / (dpr * layout_size.Width());
+  double downscale_ratio_height =
+      image_size.Height() / (dpr * layout_size.Height());
+  return !layout_image.GetDocument().IsFeatureEnabled(
+      mojom::FeaturePolicyFeature::kOversizedImages,
+      blink::PolicyValue(
+          std::max(downscale_ratio_width, downscale_ratio_height),
+          blink::mojom::PolicyValueType::kDecDouble),
+      ReportOptions::kReportOnFailure);
 }
 
 }  // namespace

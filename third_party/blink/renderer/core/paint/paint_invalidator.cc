@@ -355,7 +355,7 @@ bool PaintInvalidator::InvalidatePaint(
 
   unsigned tree_builder_index = 0;
 
-  for (auto *fragment_data = &object.GetMutableForPainting().FirstFragment();
+  for (auto* fragment_data = &object.GetMutableForPainting().FirstFragment();
        fragment_data;
        fragment_data = fragment_data->NextFragment(), tree_builder_index++) {
     context.old_visual_rect = fragment_data->VisualRect();

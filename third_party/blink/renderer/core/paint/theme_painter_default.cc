@@ -466,8 +466,7 @@ bool ThemePainterDefault::PaintSearchFieldCancelButton(
   // pixel off-center, it will be one pixel closer to the bottom of the field.
   // This tends to look better with the text.
   LayoutRect cancel_button_rect(
-      cancel_button_object.OffsetFromAncestor(&input_layout_box)
-          .Width(),
+      cancel_button_object.OffsetFromAncestor(&input_layout_box).Width(),
       input_content_box.Y() +
           (input_content_box.Height() - cancel_button_size + 1) / 2,
       cancel_button_size, cancel_button_size);

@@ -517,8 +517,8 @@ PaintResult PaintLayerPainter::PaintLayerContents(
         context.GetPaintController().ForceNewChunk(
             paint_layer_, DisplayItem::kLayerChunkBackground);
       }
-      PaintBackgroundForFragments(layer_fragments, context,
-                                  local_painting_info, paint_flags);
+      PaintBackgroundForFragments(layer_fragments, context, local_painting_info,
+                                  paint_flags);
     }
 
     if (should_paint_neg_z_order_list) {
@@ -854,14 +854,14 @@ void PaintLayerPainter::PaintForegroundForFragmentsWithPhase(
     GraphicsContext& context,
     const PaintLayerPaintingInfo& local_painting_info,
     PaintLayerFlags paint_flags) {
-  ForAllFragments(
-      context, layer_fragments, [&](const PaintLayerFragment& fragment) {
-        if (!fragment.foreground_rect.IsEmpty()) {
-          PaintFragmentWithPhase(phase, fragment, context,
-                                 fragment.foreground_rect, local_painting_info,
-                                 paint_flags);
-        }
-      });
+  ForAllFragments(context, layer_fragments,
+                  [&](const PaintLayerFragment& fragment) {
+                    if (!fragment.foreground_rect.IsEmpty()) {
+                      PaintFragmentWithPhase(phase, fragment, context,
+                                             fragment.foreground_rect,
+                                             local_painting_info, paint_flags);
+                    }
+                  });
 }
 
 void PaintLayerPainter::PaintSelfOutlineForFragments(

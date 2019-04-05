@@ -25,8 +25,7 @@ class TableRowPainter {
   void PaintOutline(const PaintInfo&);
   void PaintBoxDecorationBackground(const PaintInfo&,
                                     const CellSpan& dirtied_columns);
-  void PaintCollapsedBorders(const PaintInfo&,
-                             const CellSpan& dirtied_columns);
+  void PaintCollapsedBorders(const PaintInfo&, const CellSpan& dirtied_columns);
 
  private:
   void HandleChangedPartialPaint(const PaintInfo&,
