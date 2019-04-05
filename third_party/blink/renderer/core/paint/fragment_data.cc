@@ -167,11 +167,12 @@ static void MapRectBetweenFragment(
 
 void FragmentData::MapRectToFragment(const FragmentData& fragment,
                                      IntRect& rect) const {
-  MapRectBetweenFragment(*this, fragment,
-                         [](const LayoutPoint& paint_offset) {
-                           return RoundedIntPoint(paint_offset);
-                         },
-                         rect);
+  MapRectBetweenFragment(
+      *this, fragment,
+      [](const LayoutPoint& paint_offset) {
+        return RoundedIntPoint(paint_offset);
+      },
+      rect);
 }
 
 void FragmentData::MapRectToFragment(const FragmentData& fragment,

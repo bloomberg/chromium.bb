@@ -283,7 +283,6 @@ bool PaintLayer::PaintsWithFilters() const {
          GetCompositingState() != kPaintsIntoOwnBacking;
 }
 
-
 LayoutSize PaintLayer::SubpixelAccumulation() const {
   return rare_data_ ? rare_data_->subpixel_accumulation : LayoutSize();
 }

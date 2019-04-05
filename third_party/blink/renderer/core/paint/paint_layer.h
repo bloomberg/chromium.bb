@@ -225,7 +225,6 @@ struct PaintLayerRareData {
 // be instanciated for LayoutBoxes. With the current design, it's hard to know
 // that by reading the code.
 class CORE_EXPORT PaintLayer : public DisplayItemClient {
-
  public:
   PaintLayer(LayoutBoxModelObject&);
   ~PaintLayer() override;

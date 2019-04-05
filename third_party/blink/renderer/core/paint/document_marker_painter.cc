@@ -139,7 +139,7 @@ void DrawDocumentMarker(GraphicsContext& context,
   context.DrawRect(rect, flags);
 }
 
-}  // anonymous ns
+}  // namespace
 
 void DocumentMarkerPainter::PaintStyleableMarkerUnderline(
     GraphicsContext& context,
