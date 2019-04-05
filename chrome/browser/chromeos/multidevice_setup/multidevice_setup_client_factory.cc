@@ -62,6 +62,9 @@ MultiDeviceSetupClientFactory::~MultiDeviceSetupClientFactory() = default;
 // static
 MultiDeviceSetupClient* MultiDeviceSetupClientFactory::GetForProfile(
     Profile* profile) {
+  if (!profile)
+    return nullptr;
+
   MultiDeviceSetupClientHolder* holder =
       static_cast<MultiDeviceSetupClientHolder*>(
           GetInstance()->GetServiceForBrowserContext(profile, true));
