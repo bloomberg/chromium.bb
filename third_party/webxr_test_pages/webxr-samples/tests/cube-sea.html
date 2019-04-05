@@ -266,16 +266,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           buttonOptions.textEnterXRTitle = "START AR";
           buttonOptions.textXRNotFoundTitle = "AR NOT FOUND";
           buttonOptions.textExitXRTitle = "EXIT  AR";
+          buttonOptions.supportedSessionTypes = ['immersive-ar'];
+        } else {
+          buttonOptions.supportedSessionTypes = ['immersive-vr'];
         }
         xrButton = new XRDeviceButton(buttonOptions);
         document.querySelector('header').appendChild(xrButton.domElement);
 
-        let xrMode = appSettings.arMode ? 'immersive-ar' : 'immersive-vr';
         if (navigator.xr) {
-          navigator.xr.supportsSessionMode(xrMode).then(() => {
-            xrButton.enabled = true;
-          });
-
           // Set up "magic window" mode.
           if (appSettings.magicWindow) {
             navigator.xr.requestSession().then(onSessionStarted);
