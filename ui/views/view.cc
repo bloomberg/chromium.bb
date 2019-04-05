@@ -457,20 +457,25 @@ bool View::IsDrawn() const {
   return visible_ && parent_ ? parent_->IsDrawn() : false;
 }
 
-void View::SetEnabled(bool enabled) {
-  if (enabled != enabled_) {
-    enabled_ = enabled;
-    AdvanceFocusIfNecessary();
+void View::SetEnabled(bool is_enabled) {
+  if (enabled_ == is_enabled)
+    return;
 
-    OnEnabledChanged();
+  enabled_ = is_enabled;
+  AdvanceFocusIfNecessary();
+  OnPropertyChanged(&enabled_, kPropertyEffectsPaint);
 
-    for (ViewObserver& observer : observers_)
-      observer.OnViewEnabledChanged(this);
-  }
+  // TODO(kylixrd): Remove this once all overridden instances are refactored
+  // to use property change callback.
+  OnEnabledChanged();
+}
+
+PropertyChangedSubscription View::AddEnabledChangedCallback(
+    PropertyChangedCallback callback) {
+  return AddPropertyChangedCallback(&enabled_, std::move(callback));
 }
 
 void View::OnEnabledChanged() {
-  SchedulePaint();
 }
 
 View::Views View::GetChildrenInZOrder() {
@@ -1224,7 +1229,7 @@ bool View::AcceleratorPressed(const ui::Accelerator& accelerator) {
 
 bool View::CanHandleAccelerators() const {
   const Widget* widget = GetWidget();
-  if (!enabled() || !IsDrawn() || !widget || !widget->IsVisible())
+  if (!GetEnabled() || !IsDrawn() || !widget || !widget->IsVisible())
     return false;
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
   // Non-ChromeOS aura windows have an associated FocusManagerEventHandler which
@@ -1278,11 +1283,11 @@ void View::SetFocusBehavior(FocusBehavior focus_behavior) {
 }
 
 bool View::IsFocusable() const {
-  return focus_behavior_ == FocusBehavior::ALWAYS && enabled_ && IsDrawn();
+  return focus_behavior_ == FocusBehavior::ALWAYS && GetEnabled() && IsDrawn();
 }
 
 bool View::IsAccessibilityFocusable() const {
-  return focus_behavior_ != FocusBehavior::NEVER && enabled_ && IsDrawn();
+  return focus_behavior_ != FocusBehavior::NEVER && GetEnabled() && IsDrawn();
 }
 
 FocusManager* View::GetFocusManager() {
@@ -1847,6 +1852,40 @@ int View::GetVerticalDragThreshold() {
 
 PaintInfo::ScaleType View::GetPaintScaleType() const {
   return PaintInfo::ScaleType::kScaleWithEdgeSnapping;
+}
+
+void View::HandlePropertyChangeEffects(PropertyEffects effects) {
+  if (effects & kPropertyEffectsLayout)
+    InvalidateLayout();
+  if (effects & kPropertyEffectsPaint)
+    SchedulePaint();
+}
+
+PropertyChangedSubscription View::AddPropertyChangedCallback(
+    PropertyKey property,
+    PropertyChangedCallback callback) {
+  auto entry = property_changed_vectors_.find(property);
+  if (entry == property_changed_vectors_.end()) {
+    entry = property_changed_vectors_
+                .emplace(property, std::make_unique<PropertyChangedCallbacks>())
+                .first;
+  }
+  PropertyChangedCallbacks* property_changed_callbacks = entry->second.get();
+
+  return property_changed_callbacks->Add(std::move(callback));
+}
+
+void View::OnPropertyChanged(PropertyKey property,
+                             PropertyEffects property_effects) {
+  if (property_effects != kPropertyEffectsNone)
+    HandlePropertyChangeEffects(property_effects);
+
+  auto entry = property_changed_vectors_.find(property);
+  if (entry == property_changed_vectors_.end())
+    return;
+
+  PropertyChangedCallbacks* property_changed_callbacks = entry->second.get();
+  property_changed_callbacks->Notify();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2433,10 +2472,10 @@ bool View::ProcessMousePressed(const ui::MouseEvent& event) {
       event.IsRightMouseButton() ? context_menu_controller_ : nullptr;
   View::DragInfo* drag_info = GetDragInfo();
 
-  const bool enabled = enabled_;
+  const bool was_enabled = GetEnabled();
   const bool result = OnMousePressed(event);
 
-  if (!enabled)
+  if (!was_enabled)
     return result;
 
   if (event.IsOnlyRightMouseButton() && context_menu_controller &&
