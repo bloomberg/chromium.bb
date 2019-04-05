@@ -167,7 +167,7 @@ class BASE_EXPORT Value {
   bool is_dict() const { return type() == Type::DICTIONARY; }
   bool is_list() const { return type() == Type::LIST; }
 
-  // These will all fatally assert if the type doesn't match.
+  // These will all CHECK if the type doesn't match.
   bool GetBool() const;
   int GetInt() const;
   double GetDouble() const;  // Implicitly converts from int if necessary.
@@ -181,7 +181,7 @@ class BASE_EXPORT Value {
   // a pointer to the element. Otherwise it returns nullptr.
   // returned. Callers are expected to perform a check against null before using
   // the pointer.
-  // Note: This fatally asserts if type() is not Type::DICTIONARY.
+  // Note: This CHECKs if type() is not Type::DICTIONARY.
   //
   // Example:
   //   auto* found = FindKey("foo");
@@ -193,7 +193,7 @@ class BASE_EXPORT Value {
   // different type nullptr is returned.
   // Callers are expected to perform a check against null before using the
   // pointer.
-  // Note: This fatally asserts if type() is not Type::DICTIONARY.
+  // Note: This CHECKs if type() is not Type::DICTIONARY.
   //
   // Example:
   //   auto* found = FindKey("foo", Type::DOUBLE);
@@ -226,7 +226,7 @@ class BASE_EXPORT Value {
   // |SetKey| looks up |key| in the underlying dictionary and sets the mapped
   // value to |value|. If |key| could not be found, a new element is inserted.
   // A pointer to the modified item is returned.
-  // Note: This fatally asserts if type() is not Type::DICTIONARY.
+  // Note: This CHECKs if type() is not Type::DICTIONARY.
   // Note: Prefer Set<Type>Key() for simple values.
   //
   // Example:
@@ -251,15 +251,25 @@ class BASE_EXPORT Value {
   Value* SetStringKey(StringPiece key, std::string&& val);
   Value* SetStringKey(StringPiece key, StringPiece16 val);
 
-  // This attemps to remove the value associated with |key|. In case of failure,
-  // e.g. the key does not exist, |false| is returned and the underlying
+  // This attempts to remove the value associated with |key|. In case of
+  // failure, e.g. the key does not exist, false is returned and the underlying
   // dictionary is not changed. In case of success, |key| is deleted from the
-  // dictionary and the method returns |true|.
-  // Note: This fatally asserts if type() is not Type::DICTIONARY.
+  // dictionary and the method returns true.
+  // Note: This CHECKs if type() is not Type::DICTIONARY.
   //
   // Example:
-  //   bool success = RemoveKey("foo");
+  //   bool success = dict.RemoveKey("foo");
   bool RemoveKey(StringPiece key);
+
+  // This attempts to extract the value associated with |key|. In case of
+  // failure, e.g. the key does not exist, nullopt is returned and the
+  // underlying dictionary is not changed. In case of success, |key| is deleted
+  // from the dictionary and the method returns the extracted Value.
+  // Note: This CHECKs if type() is not Type::DICTIONARY.
+  //
+  // Example:
+  //   Optional<Value> maybe_value = dict.ExtractKey("foo");
+  Optional<Value> ExtractKey(StringPiece key);
 
   // Searches a hierarchy of dictionary values for a given value. If a path
   // of dictionaries exist, returns the item at that path. If any of the path
@@ -282,13 +292,12 @@ class BASE_EXPORT Value {
   // as either a std::initializer_list<StringPiece> or a
   // span<const StringPiece>. The latter is useful to use a
   // std::vector<std::string> as a parameter but creates huge dynamic
-  // allocations and should be avoided! Note: If there is only one component in
-  // the path, use FindKey() instead.
+  // allocations and should be avoided!
+  // Note: If there is only one component in the path, use FindKey() instead.
+  //
   // Example:
   //   std::vector<StringPiece> components = ...
   //   auto* found = FindPath(components);
-  //
-  // Note: If there is only one component in the path, use FindKey() instead.
   Value* FindPath(std::initializer_list<StringPiece> path);
   Value* FindPath(span<const StringPiece> path);
   const Value* FindPath(std::initializer_list<StringPiece> path) const;
@@ -355,23 +364,32 @@ class BASE_EXPORT Value {
 
   // Tries to remove a Value at the given path.
   //
-  // If the current value is not a dictionary or any path components does not
+  // If the current value is not a dictionary or any path component does not
   // exist, this operation fails, leaves underlying Values untouched and returns
   // |false|. In case intermediate dictionaries become empty as a result of this
   // path removal, they will be removed as well.
+  // Note: If there is only one component in the path, use ExtractKey() instead.
   //
   // Example:
   //   bool success = value.RemovePath("foo.bar");
-  //
-  //   std::vector<StringPiece> components = ...
-  //   bool success = value.RemovePath(components);
-  //
-  // Note: If there is only one component in the path, use RemoveKey() instead.
   bool RemovePath(StringPiece path);
 
   // Deprecated versions
   bool RemovePath(std::initializer_list<StringPiece> path);
   bool RemovePath(span<const StringPiece> path);
+
+  // Tries to extract a Value at the given path.
+  //
+  // If the current value is not a dictionary or any path component does not
+  // exist, this operation fails, leaves underlying Values untouched and returns
+  // nullopt. In case intermediate dictionaries become empty as a result of this
+  // path removal, they will be removed as well. Returns the extracted value on
+  // success.
+  // Note: If there is only one component in the path, use ExtractKey() instead.
+  //
+  // Example:
+  //   Optional<Value> maybe_value = value.ExtractPath("foo.bar");
+  Optional<Value> ExtractPath(StringPiece path);
 
   using dict_iterator_proxy = detail::dict_iterator_proxy;
   using const_dict_iterator_proxy = detail::const_dict_iterator_proxy;
@@ -380,12 +398,12 @@ class BASE_EXPORT Value {
   // dictionary. These are intended for iteration over all items in the
   // dictionary and are compatible with for-each loops and standard library
   // algorithms.
-  // Note: This fatally asserts if type() is not Type::DICTIONARY.
+  // Note: These CHECK if type() is not Type::DICTIONARY.
   dict_iterator_proxy DictItems();
   const_dict_iterator_proxy DictItems() const;
 
   // Returns the size of the dictionary, and if the dictionary is empty.
-  // Note: This fatally asserts if type() is not Type::DICTIONARY.
+  // Note: These CHECK if type() is not Type::DICTIONARY.
   size_t DictSize() const;
   bool DictEmpty() const;
 
@@ -394,8 +412,7 @@ class BASE_EXPORT Value {
   // passed in dictionary takes precedence and data already present will be
   // replaced. Values within |dictionary| are deep-copied, so |dictionary| may
   // be freed any time after this call.
-  // Note: This fatally asserts if type() or dictionary->type() is not
-  // Type::DICTIONARY.
+  // Note: This CHECKs if type() or dictionary->type() is not Type::DICTIONARY.
   void MergeDictionary(const Value* dictionary);
 
   // These methods allow the convenient retrieval of the contents of the Value.
@@ -631,18 +648,20 @@ class BASE_EXPORT DictionaryValue : public Value {
   // |out_value|.  If |out_value| is NULL, the removed value will be deleted.
   // This method returns true if |path| is a valid path; otherwise it will
   // return false and the DictionaryValue object will be unchanged.
-  // DEPRECATED, use Value::RemovePath(path) instead.
+  // DEPRECATED, use Value::RemovePath(path) or Value::ExtractPath(path)
+  // instead.
   bool Remove(StringPiece path, std::unique_ptr<Value>* out_value);
 
   // Like Remove(), but without special treatment of '.'.  This allows e.g. URLs
   // to be used as paths.
-  // DEPRECATED, use Value::RemoveKey(key) instead.
+  // DEPRECATED, use Value::RemoveKey(key) or Value::ExtractKey(key) instead.
   bool RemoveWithoutPathExpansion(StringPiece key,
                                   std::unique_ptr<Value>* out_value);
 
   // Removes a path, clearing out all dictionaries on |path| that remain empty
   // after removing the value at |path|.
-  // DEPRECATED, use Value::RemovePath(path) instead.
+  // DEPRECATED, use Value::RemovePath(path) or Value::ExtractPath(path)
+  // instead.
   bool RemovePath(StringPiece path, std::unique_ptr<Value>* out_value);
 
   using Value::RemovePath;  // DictionaryValue::RemovePath shadows otherwise.
