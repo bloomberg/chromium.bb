@@ -12,10 +12,13 @@ import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
@@ -63,6 +66,8 @@ public class TabGroupUiMediator {
     private final ThemeColorProvider mThemeColorProvider;
     private final ThemeColorProvider.ThemeColorObserver mThemeColorObserver;
     private final ThemeColorProvider.TintObserver mTintObserver;
+    private final TabModelSelectorTabObserver mTabModelSelectorTabObserver;
+    private final TabModelSelectorObserver mTabModelSelectorObserver;
 
     TabGroupUiMediator(
             BottomControlsCoordinator.BottomControlsVisibilityController visibilityController,
@@ -114,7 +119,7 @@ public class TabGroupUiMediator {
             }
         };
 
-        new TabModelSelectorTabObserver(mTabModelSelector) {
+        mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(mTabModelSelector) {
             @Override
             public void onPageLoadStarted(Tab tab, String url) {
                 List<Tab> listOfTabs = mTabModelSelector.getTabModelFilterProvider()
@@ -128,12 +133,22 @@ public class TabGroupUiMediator {
             }
         };
 
+        mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
+            @Override
+            public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
+                if (newModel.isIncognito() && newModel.getCount() == 1) {
+                    resetTabStripWithRelatedTabsForId(newModel.getTabAt(0).getId());
+                }
+            }
+        };
+
         mThemeColorObserver = (color, shouldAnimate)
                 -> mToolbarPropertyModel.set(TabStripToolbarViewProperties.PRIMARY_COLOR, color);
         mTintObserver = (tint,
                 useLight) -> mToolbarPropertyModel.set(TabStripToolbarViewProperties.TINT, tint);
 
         mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(mTabModelObserver);
+        mTabModelSelector.addObserver(mTabModelSelectorObserver);
         mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
         mThemeColorProvider.addThemeColorObserver(mThemeColorObserver);
         mThemeColorProvider.addTintObserver(mTintObserver);
@@ -196,5 +211,7 @@ public class TabGroupUiMediator {
         mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
         mThemeColorProvider.removeThemeColorObserver(mThemeColorObserver);
         mThemeColorProvider.removeTintObserver(mTintObserver);
+        mTabModelSelector.removeObserver(mTabModelSelectorObserver);
+        mTabModelSelectorTabObserver.destroy();
     }
 }
