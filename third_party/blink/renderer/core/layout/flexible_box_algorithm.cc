@@ -489,7 +489,7 @@ bool FlexLayoutAlgorithm::ShouldApplyMinSizeAutoForChild(
   // when percentages are involved, so for now don't apply min-height: auto
   // in such cases.
   if (IsColumnFlow() && child.IsFlexibleBox() &&
-      ToLayoutBlock(child).HasPercentHeightDescendants())
+      To<LayoutBlock>(child).HasPercentHeightDescendants())
     return false;
 
   return !child.ShouldApplySizeContainment() &&

@@ -716,7 +716,7 @@ bool TextIteratorAlgorithm<Strategy>::ShouldRepresentNodeOffsetZero() {
       node_->GetLayoutObject()->Style()->Visibility() !=
           EVisibility::kVisible ||
       (node_->GetLayoutObject()->IsLayoutBlockFlow() &&
-       !ToLayoutBlock(node_->GetLayoutObject())->Size().Height() &&
+       !To<LayoutBlock>(node_->GetLayoutObject())->Size().Height() &&
        !IsHTMLBodyElement(*node_)))
     return false;
 

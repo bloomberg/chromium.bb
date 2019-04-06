@@ -8670,7 +8670,7 @@ TEST_F(WebFrameTest, LayoutBlockPercentHeightDescendants) {
 
   Document* document = web_view->MainFrameImpl()->GetFrame()->GetDocument();
   LayoutBlock* container =
-      ToLayoutBlock(document->getElementById("container")->GetLayoutObject());
+      To<LayoutBlock>(document->getElementById("container")->GetLayoutObject());
   LayoutBox* percent_height_in_anonymous =
       ToLayoutBox(document->getElementById("percent-height-in-anonymous")
                       ->GetLayoutObject());
