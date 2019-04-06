@@ -7,8 +7,6 @@
  * 'LoginScreenBehavior' is login.Screen API implementation for Polymer objects.
  */
 
-// <include src="../../../../../ui/login/display_manager_types.js">
-
 /** @polymerBehavior */
 var LoginScreenBehavior = {
   // List of methods exported to login.screenName.<method> API.
@@ -71,34 +69,34 @@ var LoginScreenBehavior = {
 
   /**
    * Screen will ignore accelerators when true.
-   * @type {Boolean}
+   * @type {boolean}
    */
   ignoreAccelerators: false,
 
   /**
    * If defined, invoked for the currently active screen when screen size
    * changes.
-   * @type{function()}
+   * @type {function()|undefined}
    */
   onWindowResize: undefined,
 
   /**
    * If defined, invoked when tablet mode is changed.
    * Boolean parameter is true when device is in tablet mode.
-   * @type {function(Boolean)}
+   * @type {function(boolean)|undefined}
    */
   setTabletModeState: undefined,
 
   /**
    * If defined, invoked for the currently active screen when screen localized
    * data needs to be updated.
-   * @type{function()}
+   * @type {function()|undefined}
    */
   updateLocalizedContent: undefined,
 
   /**
    * If defined, invoked when OOBE configuration is loaded.
-   * @param {!OobeTypes.OobeConfiguration} configuration
+   * @type {OobeTypes.OobeConfiguration|undefined} configuration
    */
   updateOobeConfiguration: undefined,
 
@@ -111,11 +109,12 @@ var LoginScreenBehavior = {
    *     login.ScreenName.foo(); // valid
    *
    * @param {string} name Name of created class.
-   * @param {Object} id Id of div representing screen.
+   * @param {Object} api Screen API.
    * @private
    */
   registerScreenApi_: function(name, api) {
-    cr.define('login', function() {
+    // Closure compiler incorrectly parses this, so we use cr.define.call(...).
+    cr.define.call(cr.define, 'login', function() {
       var result = {};
       result[name] = api;
       return result;

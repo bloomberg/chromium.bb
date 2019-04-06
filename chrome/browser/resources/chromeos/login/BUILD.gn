@@ -11,6 +11,26 @@ js_type_check("closure_compile") {
     ":offline_ad_login",
     ":oobe_change_picture",
     ":oobe_select",
+    ":oobe_welcome",
+  ]
+}
+
+js_library("oobe_types") {
+}
+
+# This is special file to be used as a substutute of Oobe object for closure
+# compilation until we make real one closure compile.
+# TODO (https://crbug.com/950198)
+js_library("fake_oobe") {
+  deps = [
+    ":oobe_types",
+  ]
+}
+
+js_library("login_screen_behavior") {
+  deps = [
+    ":fake_oobe",
+    "//ui/login:display_manager_types",
   ]
 }
 
@@ -18,6 +38,12 @@ js_library("oobe_dialog_host_behavior") {
 }
 
 js_library("oobe_select") {
+}
+
+js_library("oobe_welcome") {
+  deps = [
+    ":login_screen_behavior",
+  ]
 }
 
 js_library("offline_ad_login") {

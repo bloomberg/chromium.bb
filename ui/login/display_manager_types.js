@@ -7,6 +7,18 @@
  * Closure compiler type definitions used by display_manager.js .
  */
 
+/**
+ * @typedef {{
+ *   commonScreenSize: (boolean|undefined),
+ *   enableDebuggingAllowed: (boolean|undefined),
+ *   enterDemoModeAllowed: (boolean|undefined),
+ *   noAnimatedTransition: (boolean|undefined),
+ *   postponeEnrollmentAllowed: (boolean|undefined),
+ *   resetAllowed: (boolean|undefined),
+ *   startEnrollmentAllowed: (boolean|undefined),
+ *   toggleKioskAllowed: (boolean|undefined),
+ * }}
+ */
 var DisplayManagerScreenAttributes = {};
 
 /**
