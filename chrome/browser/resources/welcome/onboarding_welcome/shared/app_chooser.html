@@ -19,6 +19,100 @@
 <dom-module id="app-chooser">
   <template>
     <style include="chooser-shared-css paper-button-style">
+      :host {
+        display: block;
+        white-space: nowrap;
+      }
+
+      .button-bar {
+        margin-top: 4rem;
+      }
+
+      .option {
+        -webkit-appearance: none;
+        align-items: center;
+        border-radius: 8px;
+        box-sizing: border-box;
+        display: inline-flex;
+        font-family: inherit;
+        height: 7.5rem;
+        justify-content: center;
+        outline: 0;
+        position: relative;
+        transition-duration: 500ms;
+        transition-property: box-shadow;
+        vertical-align: bottom;
+        width: 6.25rem;
+      }
+
+      .option:not(:first-of-type) {
+        margin-inline-start: 1.5rem;
+      }
+
+      .option[active] {
+        border: 1px solid var(--cr-checked-color);
+        color: var(--cr-checked-color);
+        font-weight: 500;
+      }
+
+      .option.keyboard-focused:focus {
+        outline: var(--navi-keyboard-focus-color) solid 3px;
+      }
+
+      .option-name {
+        flex-grow: 0;
+        line-height: 1.25rem;
+        text-align: center;
+        white-space: normal;
+      }
+
+      .option-icon {
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: contain;
+        height: 2rem;
+        margin: auto;
+        width: 2rem;
+      }
+
+      .option-icon-shadow {
+        background-color: var(--navi-option-icon-shadow-color);
+        border-radius: 50%;
+        display: flex;
+        height: 3rem;
+        margin-bottom: .25rem;
+        width: 3rem;
+      }
+
+      .option iron-icon {
+        --iron-icon-fill-color: var(--cr-card-background-color);
+        background: var(--navi-check-icon-color);
+        border-radius: 50%;
+        display: none;
+        height: .75rem;
+        margin: 0;
+        position: absolute;
+        right: .375rem;
+        top: .375rem;
+        width: .75rem;
+      }
+
+      :host-context([dir=rtl]) .option iron-icon {
+        left: .375rem;
+        right: unset;
+      }
+
+      .option.keyboard-focused:focus iron-icon[icon='cr:check'],
+      .option:hover iron-icon[icon='cr:check'],
+      .option[active] iron-icon[icon='cr:check'] {
+        display: block;
+      }
+
+      .option[active] iron-icon[icon='cr:check'] {
+        background: var(--cr-checked-color);
+      }
+
+      /* App Icons */
       .gmail {
         content: -webkit-image-set(
             url(chrome://welcome/images/gmail_1x.png) 1x,
