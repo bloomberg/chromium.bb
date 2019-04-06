@@ -316,7 +316,7 @@ class SkylabHWTestStage(HWTestStage):
     # Skylab) to use the quotascheduler pool. See crbug.com/950017
     blacklist = ('asuka', 'coral', 'nyan_blaze', 'reef')
     build_type = self._run.config.build_type
-    if config_lib.IsPFQType(build_type) and self._board not in blacklist:
+    if config_lib.IsPFQType(build_type) and self._board_name not in blacklist:
       pool = constants.HWTEST_QUOTA_POOL
 
     # Retain guado_moblab and wukong paladins on cq pool, until they are able
