@@ -18,7 +18,7 @@ void DataToProto(notifications::IconEntry* icon_entry,
 
 void ProtoToData(notifications::proto::Icon* proto,
                  notifications::IconEntry* icon_entry) {
-  IconProtoToEntry(proto, icon_entry);
+  IconEntryFromProto(proto, icon_entry);
 }
 
 }  // namespace leveldb_proto

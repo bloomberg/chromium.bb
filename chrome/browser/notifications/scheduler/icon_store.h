@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/notifications/proto/icon.pb.h"
 #include "chrome/browser/notifications/scheduler/icon_entry.h"
 #include "components/leveldb_proto/public/proto_database.h"

@@ -28,6 +28,10 @@ struct ImpressionTestData {
   base::Optional<SuppressionInfo> suppression_info;
 };
 
+// Add one impression test data into a client state.
+void AddImpressionTestData(const ImpressionTestData& data,
+                           ClientState* client_state);
+
 // Adds impression test data into client states container.
 void AddImpressionTestData(
     const std::vector<ImpressionTestData>& test_data,
