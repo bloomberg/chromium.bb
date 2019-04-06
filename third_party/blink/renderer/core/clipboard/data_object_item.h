@@ -64,8 +64,10 @@ class CORE_EXPORT DataObjectItem
   static DataObjectItem* CreateFromClipboard(const String& type,
                                              uint64_t sequence_number);
 
-  DataObjectItem(ItemKind, const String& type);
-  DataObjectItem(ItemKind, const String& type, uint64_t sequence_number);
+  explicit DataObjectItem(ItemKind, const String& type);
+  explicit DataObjectItem(ItemKind,
+                          const String& type,
+                          uint64_t sequence_number);
 
   ItemKind Kind() const { return kind_; }
   String GetType() const { return type_; }
