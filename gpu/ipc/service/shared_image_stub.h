@@ -5,11 +5,14 @@
 #ifndef GPU_IPC_SERVICE_SHARED_IMAGE_STUB_H_
 #define GPU_IPC_SERVICE_SHARED_IMAGE_STUB_H_
 
+#include "base/memory/weak_ptr.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
+#include "gpu/command_buffer/service/sequence_id.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/ipc/common/gpu_messages.h"
+#include "gpu/ipc/service/gpu_ipc_service_export.h"
 #include "ipc/ipc_listener.h"
 
 namespace gpu {
@@ -18,11 +21,15 @@ struct Mailbox;
 class GpuChannel;
 class SharedImageFactory;
 
-class SharedImageStub : public IPC::Listener,
-                        public MemoryTracker,
-                        public base::trace_event::MemoryDumpProvider {
+class GPU_IPC_SERVICE_EXPORT SharedImageStub
+    : public IPC::Listener,
+      public MemoryTracker,
+      public base::trace_event::MemoryDumpProvider {
  public:
   ~SharedImageStub() override;
+
+  using SharedImageDestructionCallback =
+      base::OnceCallback<void(const gpu::SyncToken&)>;
 
   static std::unique_ptr<SharedImageStub> Create(GpuChannel* channel,
                                                  int32_t route_id);
@@ -43,6 +50,10 @@ class SharedImageStub : public IPC::Listener,
 
   SequenceId sequence() const { return sequence_; }
   SharedImageFactory* factory() const { return factory_.get(); }
+  GpuChannel* channel() const { return channel_; }
+
+  SharedImageDestructionCallback GetSharedImageDestructionCallback(
+      const Mailbox& mailbox);
 
  private:
   SharedImageStub(GpuChannel* channel, int32_t route_id);
@@ -58,6 +69,10 @@ class SharedImageStub : public IPC::Listener,
   bool MakeContextCurrent();
   ContextResult MakeContextCurrentAndCreateFactory();
   void OnError();
+  void OnSyncTokenReleased(const Mailbox& mailbox);
+
+  // Wait on the sync token if any and destroy the shared image.
+  void DestroySharedImage(const Mailbox& mailbox, const SyncToken& sync_token);
 
   GpuChannel* channel_;
   SequenceId sequence_;
@@ -68,6 +83,8 @@ class SharedImageStub : public IPC::Listener,
   // Holds shared memory used in initial data uploads.
   base::ReadOnlySharedMemoryRegion upload_memory_;
   base::ReadOnlySharedMemoryMapping upload_memory_mapping_;
+
+  base::WeakPtrFactory<SharedImageStub> weak_factory_;
 };
 
 }  // namespace gpu

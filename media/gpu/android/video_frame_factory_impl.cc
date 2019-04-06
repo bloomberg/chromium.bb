@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
@@ -31,7 +32,6 @@
 #include "media/gpu/android/codec_image.h"
 #include "media/gpu/android/codec_image_group.h"
 #include "media/gpu/android/codec_wrapper.h"
-#include "media/gpu/android/shared_image_pool.h"
 #include "media/gpu/android/shared_image_video.h"
 #include "media/gpu/command_buffer_helper.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
@@ -189,9 +189,6 @@ scoped_refptr<TextureOwner> GpuVideoFrameFactory::Initialize(
     return nullptr;
   stub_->AddDestructionObserver(this);
 
-  shared_image_pool_ =
-      base::MakeRefCounted<SharedImagePool>(CommandBufferHelper::Create(stub_));
-
   decoder_helper_ = GLES2DecoderHelper::Create(stub_->decoder_context());
 
   gpu::ContextResult result;
@@ -226,34 +223,30 @@ void GpuVideoFrameFactory::CreateVideoFrame(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   scoped_refptr<VideoFrame> frame;
-  std::unique_ptr<gpu::SharedImageRepresentationFactoryRef> shared_image_ref;
   CodecImage* codec_image = nullptr;
   CreateVideoFrameInternal(std::move(output_buffer), std::move(texture_owner_),
                            timestamp, natural_size,
-                           std::move(promotion_hint_cb), &frame,
-                           &shared_image_ref, &codec_image);
+                           std::move(promotion_hint_cb), &frame, &codec_image);
   TRACE_EVENT0("media", "GpuVideoFrameFactory::CreateVideoFrame");
-  if (!frame || !shared_image_ref)
+  if (!frame)
     return;
 
   // Try to render this frame if possible.
   internal::MaybeRenderEarly(&images_);
 
-  // Note that this keeps the pool around while any texture is.
-  auto drop_shared_image_ref = base::BindOnce(
-      [](scoped_refptr<SharedImagePool> shared_image_pool,
-         gpu::SharedImageRepresentationFactoryRef* shared_image_ref,
-         const gpu::SyncToken& sync_token) {
-        shared_image_pool->ReleaseSharedImage(shared_image_ref, sync_token);
-      },
-      shared_image_pool_, base::Unretained(shared_image_ref.get()));
+  // This callback destroys the shared image when video frame is
+  // released/destroyed. This callback has a weak pointer to the shared image
+  // stub because shared image stub could be destroyed before video frame. In
+  // those cases there is no need to destroy the shared image as the shared
+  // image stub destruction will cause all the shared images to be destroyed.
+  auto destroy_shared_image =
+      stub_->channel()->shared_image_stub()->GetSharedImageDestructionCallback(
+          frame->mailbox_holder(0).mailbox);
 
-  shared_image_pool_->AddSharedImage(std::move(shared_image_ref));
-
-  // Guarantee that the SharedImageRef is released even if the VideoFrame is
-  // dropped. Otherwise we could keep TextureRefs we don't need alive.
+  // Guarantee that the SharedImage is destroyed even if the VideoFrame is
+  // dropped. Otherwise we could keep shared images we don't need alive.
   auto release_cb = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-      BindToCurrentLoop(std::move(drop_shared_image_ref)), gpu::SyncToken());
+      BindToCurrentLoop(std::move(destroy_shared_image)), gpu::SyncToken());
   frame->SetReleaseMailboxCB(std::move(release_cb));
   task_runner->PostTask(FROM_HERE,
                         base::BindOnce(std::move(output_cb), std::move(frame)));
@@ -266,8 +259,6 @@ void GpuVideoFrameFactory::CreateVideoFrameInternal(
     gfx::Size natural_size,
     PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
     scoped_refptr<VideoFrame>* video_frame_out,
-    std::unique_ptr<gpu::SharedImageRepresentationFactoryRef>*
-        shared_image_ref_out,
     CodecImage** codec_image_out) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!MakeContextCurrent(stub_))
@@ -342,17 +333,12 @@ void GpuVideoFrameFactory::CreateVideoFrameInternal(
       std::move(texture), std::move(shared_context),
       false /* is_thread_safe */);
 
-  // Register it with shared image mailbox.
+  // Register it with shared image mailbox as well as legacy mailbox.
+  // NOTE: Currently none of the video mailbox consumer uses shared image
+  // mailbox.
   DCHECK(stub_->channel()->gpu_channel_manager()->shared_image_manager());
-  std::unique_ptr<gpu::SharedImageRepresentationFactoryRef> shared_image_ref =
-      stub_->channel()->gpu_channel_manager()->shared_image_manager()->Register(
-          std::move(shared_image),
-          stub_->channel()->shared_image_stub()->factory()->memory_tracker());
-
-  // Register it with legacy mailbox.
-  // NOTE: All the video mailbox consumers are using legacy mailbox as of now.
-  shared_image_ref->ProduceLegacyMailbox(
-      stub_->channel()->gpu_channel_manager()->mailbox_manager());
+  stub_->channel()->shared_image_stub()->factory()->RegisterBacking(
+      std::move(shared_image), /* legacy_mailbox */ true);
 
   gpu::MailboxHolder mailbox_holders[VideoFrame::kMaxPlanes];
   mailbox_holders[0] =
@@ -392,7 +378,6 @@ void GpuVideoFrameFactory::CreateVideoFrameInternal(
                                 !!texture_owner_);
 
   *video_frame_out = std::move(frame);
-  *shared_image_ref_out = std::move(shared_image_ref);
 }
 
 void GpuVideoFrameFactory::OnWillDestroyStub(bool have_context) {
