@@ -1574,6 +1574,7 @@ bool TestChildOrGuestAutoresize(bool is_guest,
 // BrowserPluginHostMsg_SynchronizeVisualProperties messages. This allows the
 // message to continue to the target child so that processing can be verified by
 // tests.
+// It also monitors for GesturePinchBegin/End events.
 class SynchronizeVisualPropertiesMessageFilter
     : public content::BrowserMessageFilter {
  public:
@@ -1591,6 +1592,11 @@ class SynchronizeVisualPropertiesMessageFilter
 
   // Waits for the next viz::LocalSurfaceId be received and returns it.
   viz::LocalSurfaceId WaitForSurfaceId();
+
+  bool pinch_gesture_active_set() { return pinch_gesture_active_set_; }
+  bool pinch_gesture_active_cleared() { return pinch_gesture_active_cleared_; }
+
+  void WaitForPinchGestureEnd();
 
  protected:
   ~SynchronizeVisualPropertiesMessageFilter() override;
@@ -1622,6 +1628,11 @@ class SynchronizeVisualPropertiesMessageFilter
 
   viz::LocalSurfaceId last_surface_id_;
   std::unique_ptr<base::RunLoop> surface_id_run_loop_;
+
+  bool pinch_gesture_active_set_;
+  bool pinch_gesture_active_cleared_;
+  bool last_pinch_gesture_active_;
+  std::unique_ptr<base::RunLoop> pinch_end_run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronizeVisualPropertiesMessageFilter);
 };

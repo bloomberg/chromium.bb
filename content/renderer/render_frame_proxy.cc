@@ -311,8 +311,10 @@ void RenderFrameProxy::OnZoomLevelChanged(double zoom_level) {
   SynchronizeVisualProperties();
 }
 
-void RenderFrameProxy::OnPageScaleFactorChanged(float page_scale_factor) {
+void RenderFrameProxy::OnPageScaleFactorChanged(float page_scale_factor,
+                                                bool is_pinch_gesture_active) {
   pending_visual_properties_.page_scale_factor = page_scale_factor;
+  pending_visual_properties_.is_pinch_gesture_active = is_pinch_gesture_active;
   SynchronizeVisualProperties();
 }
 
@@ -687,6 +689,8 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
           pending_visual_properties_.zoom_level ||
       sent_visual_properties_->page_scale_factor !=
           pending_visual_properties_.page_scale_factor ||
+      sent_visual_properties_->is_pinch_gesture_active !=
+          pending_visual_properties_.is_pinch_gesture_active ||
       capture_sequence_number_changed;
 
   if (synchronized_props_changed) {

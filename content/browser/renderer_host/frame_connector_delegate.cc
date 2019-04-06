@@ -48,7 +48,9 @@ void FrameConnectorDelegate::SynchronizeVisualProperties(
   render_widget_host->SetAutoResize(visual_properties.auto_resize_enabled,
                                     visual_properties.min_size_for_auto_resize,
                                     visual_properties.max_size_for_auto_resize);
-  render_widget_host->SetPageScaleFactor(visual_properties.page_scale_factor);
+  render_widget_host->SetPageScaleState(
+      visual_properties.page_scale_factor,
+      visual_properties.is_pinch_gesture_active);
 
   render_widget_host->SynchronizeVisualProperties();
 }
