@@ -80,7 +80,7 @@ constexpr inline TypeUniqueId UniqueIdFromType() {
 #if defined(__clang__)
       "base::internal::UniqueIdFromType() [Type = (anonymous namespace)::";
 #elif defined(COMPILER_GCC)
-      "base::internal::UniqueIdFromType() [with T = {anonymous}::";
+      "base::internal::UniqueIdFromType() [with Type = {anonymous}::";
 #elif defined(COMPILER_MSVC)
       "base::internal::UniqueIdFromType<`anonymous namespace'::";
 #else
