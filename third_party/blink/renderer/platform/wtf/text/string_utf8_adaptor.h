@@ -46,8 +46,6 @@ class WTF_EXPORT StringUTF8Adaptor final {
   DISALLOW_NEW();
 
  public:
-  using value_type = const char;
-
   StringUTF8Adaptor(const String& string,
                     UTF8ConversionMode mode = kLenientUTF8Conversion);
   ~StringUTF8Adaptor();

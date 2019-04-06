@@ -492,7 +492,8 @@ constexpr span<const T, N> make_span(const std::array<T, N>& array) noexcept {
 }
 
 template <typename Container,
-          typename T = typename Container::value_type,
+          typename T = std::remove_pointer_t<
+              decltype(base::data(std::declval<Container&>()))>,
           typename = internal::EnableIfSpanCompatibleContainer<Container&, T>>
 constexpr span<T> make_span(Container& container) noexcept {
   return container;
@@ -500,7 +501,8 @@ constexpr span<T> make_span(Container& container) noexcept {
 
 template <
     typename Container,
-    typename T = const typename Container::value_type,
+    typename T = std::remove_pointer_t<
+        decltype(base::data(std::declval<const Container&>()))>,
     typename = internal::EnableIfSpanCompatibleContainer<const Container&, T>>
 constexpr span<T> make_span(const Container& container) noexcept {
   return container;
@@ -508,7 +510,8 @@ constexpr span<T> make_span(const Container& container) noexcept {
 
 template <size_t N,
           typename Container,
-          typename T = typename Container::value_type,
+          typename T = std::remove_pointer_t<
+              decltype(base::data(std::declval<Container&>()))>,
           typename = internal::EnableIfSpanCompatibleContainer<Container&, T>>
 constexpr span<T, N> make_span(Container& container) noexcept {
   return span<T, N>(container);
@@ -517,7 +520,8 @@ constexpr span<T, N> make_span(Container& container) noexcept {
 template <
     size_t N,
     typename Container,
-    typename T = const typename Container::value_type,
+    typename T = std::remove_pointer_t<
+        decltype(base::data(std::declval<const Container&>()))>,
     typename = internal::EnableIfSpanCompatibleContainer<const Container&, T>>
 constexpr span<T, N> make_span(const Container& container) noexcept {
   return span<T, N>(container);

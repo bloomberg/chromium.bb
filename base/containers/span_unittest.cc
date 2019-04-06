@@ -1001,11 +1001,14 @@ TEST(SpanTest, MakeSpanFromDataAndSize) {
   EXPECT_EQ(nullptr, empty_span.data());
 
   std::vector<int> vector = {1, 1, 2, 3, 5, 8};
-  span<int> span(vector.data(), vector.size());
+  span<int> expected_span(vector.data(), vector.size());
   auto made_span = make_span(vector.data(), vector.size());
-  EXPECT_EQ(span.data(), made_span.data());
-  EXPECT_EQ(span.size(), made_span.size());
+  EXPECT_EQ(expected_span.data(), made_span.data());
+  EXPECT_EQ(expected_span.size(), made_span.size());
   static_assert(decltype(made_span)::extent == dynamic_extent, "");
+  static_assert(
+      std::is_same<decltype(expected_span), decltype(made_span)>::value,
+      "the type of made_span differs from expected_span!");
 }
 
 TEST(SpanTest, MakeSpanFromPointerPair) {
@@ -1015,93 +1018,130 @@ TEST(SpanTest, MakeSpanFromPointerPair) {
   EXPECT_EQ(nullptr, empty_span.data());
 
   std::vector<int> vector = {1, 1, 2, 3, 5, 8};
-  span<int> span(vector.data(), vector.size());
+  span<int> expected_span(vector.data(), vector.size());
   auto made_span = make_span(vector.data(), vector.data() + vector.size());
-  EXPECT_EQ(span.data(), made_span.data());
-  EXPECT_EQ(span.size(), made_span.size());
+  EXPECT_EQ(expected_span.data(), made_span.data());
+  EXPECT_EQ(expected_span.size(), made_span.size());
   static_assert(decltype(made_span)::extent == dynamic_extent, "");
+  static_assert(
+      std::is_same<decltype(expected_span), decltype(made_span)>::value,
+      "the type of made_span differs from expected_span!");
 }
 
 TEST(SpanTest, MakeSpanFromConstexprArray) {
   static constexpr int kArray[] = {1, 2, 3, 4, 5};
-  constexpr span<const int> span(kArray);
-  EXPECT_EQ(span.data(), make_span(kArray).data());
-  EXPECT_EQ(span.size(), make_span(kArray).size());
-  static_assert(decltype(make_span(kArray))::extent == 5, "");
+  constexpr span<const int, 5> expected_span(kArray);
+  constexpr auto made_span = make_span(kArray);
+  EXPECT_EQ(expected_span.data(), made_span.data());
+  EXPECT_EQ(expected_span.size(), made_span.size());
+  static_assert(decltype(made_span)::extent == 5, "");
+  static_assert(
+      std::is_same<decltype(expected_span), decltype(made_span)>::value,
+      "the type of made_span differs from expected_span!");
 }
 
 TEST(SpanTest, MakeSpanFromStdArray) {
   const std::array<int, 5> kArray = {{1, 2, 3, 4, 5}};
-  span<const int> span(kArray);
-  EXPECT_EQ(span.data(), make_span(kArray).data());
-  EXPECT_EQ(span.size(), make_span(kArray).size());
-  static_assert(decltype(make_span(kArray))::extent == 5, "");
+  span<const int, 5> expected_span(kArray);
+  auto made_span = make_span(kArray);
+  EXPECT_EQ(expected_span.data(), made_span.data());
+  EXPECT_EQ(expected_span.size(), made_span.size());
+  static_assert(decltype(made_span)::extent == 5, "");
+  static_assert(
+      std::is_same<decltype(expected_span), decltype(made_span)>::value,
+      "the type of made_span differs from expected_span!");
 }
 
 TEST(SpanTest, MakeSpanFromConstContainer) {
   const std::vector<int> vector = {-1, -2, -3, -4, -5};
-  span<const int> span(vector);
-  EXPECT_EQ(span.data(), make_span(vector).data());
-  EXPECT_EQ(span.size(), make_span(vector).size());
-  static_assert(decltype(make_span(vector))::extent == dynamic_extent, "");
+  span<const int> expected_span(vector);
+  auto made_span = make_span(vector);
+  EXPECT_EQ(expected_span.data(), made_span.data());
+  EXPECT_EQ(expected_span.size(), made_span.size());
+  static_assert(decltype(made_span)::extent == dynamic_extent, "");
+  static_assert(
+      std::is_same<decltype(expected_span), decltype(made_span)>::value,
+      "the type of made_span differs from expected_span!");
 }
 
 TEST(SpanTest, MakeStaticSpanFromConstContainer) {
   const std::vector<int> vector = {-1, -2, -3, -4, -5};
-  span<const int, 5> span(vector);
-  EXPECT_EQ(span.data(), make_span<5>(vector).data());
-  EXPECT_EQ(span.size(), make_span<5>(vector).size());
-  static_assert(decltype(make_span<5>(vector))::extent == 5, "");
+  span<const int, 5> expected_span(vector);
+  auto made_span = make_span<5>(vector);
+  EXPECT_EQ(expected_span.data(), made_span.data());
+  EXPECT_EQ(expected_span.size(), made_span.size());
+  static_assert(decltype(made_span)::extent == 5, "");
+  static_assert(
+      std::is_same<decltype(expected_span), decltype(made_span)>::value,
+      "the type of made_span differs from expected_span!");
 }
 
 TEST(SpanTest, MakeSpanFromContainer) {
   std::vector<int> vector = {-1, -2, -3, -4, -5};
-  span<int> span(vector);
-  EXPECT_EQ(span.data(), make_span(vector).data());
-  EXPECT_EQ(span.size(), make_span(vector).size());
-  static_assert(decltype(make_span(vector))::extent == dynamic_extent, "");
+  span<int> expected_span(vector);
+  auto made_span = make_span(vector);
+  EXPECT_EQ(expected_span.data(), made_span.data());
+  EXPECT_EQ(expected_span.size(), made_span.size());
+  static_assert(decltype(made_span)::extent == dynamic_extent, "");
+  static_assert(
+      std::is_same<decltype(expected_span), decltype(made_span)>::value,
+      "the type of made_span differs from expected_span!");
 }
 
 TEST(SpanTest, MakeStaticSpanFromContainer) {
   std::vector<int> vector = {-1, -2, -3, -4, -5};
-  span<int, 5> span(vector);
-  EXPECT_EQ(span.data(), make_span<5>(vector).data());
-  EXPECT_EQ(span.size(), make_span<5>(vector).size());
+  span<int, 5> expected_span(vector);
+  auto made_span = make_span<5>(vector);
+  EXPECT_EQ(expected_span.data(), make_span<5>(vector).data());
+  EXPECT_EQ(expected_span.size(), make_span<5>(vector).size());
   static_assert(decltype(make_span<5>(vector))::extent == 5, "");
+  static_assert(
+      std::is_same<decltype(expected_span), decltype(made_span)>::value,
+      "the type of made_span differs from expected_span!");
 }
 
 TEST(SpanTest, MakeSpanFromDynamicSpan) {
   static constexpr int kArray[] = {1, 2, 3, 4, 5};
-  constexpr span<const int> span(kArray);
-  static_assert(std::is_same<decltype(span)::element_type,
-                             decltype(make_span(span))::element_type>::value,
+  constexpr span<const int> expected_span(kArray);
+  constexpr auto made_span = make_span(expected_span);
+  static_assert(std::is_same<decltype(expected_span)::element_type,
+                             decltype(made_span)::element_type>::value,
                 "make_span(span) should have the same element_type as span");
 
-  static_assert(span.data() == make_span(span).data(),
+  static_assert(expected_span.data() == made_span.data(),
                 "make_span(span) should have the same data() as span");
 
-  static_assert(span.size() == make_span(span).size(),
+  static_assert(expected_span.size() == made_span.size(),
                 "make_span(span) should have the same size() as span");
 
-  static_assert(decltype(make_span(span))::extent == decltype(span)::extent,
+  static_assert(decltype(made_span)::extent == decltype(expected_span)::extent,
                 "make_span(span) should have the same extent as span");
+
+  static_assert(
+      std::is_same<decltype(expected_span), decltype(made_span)>::value,
+      "the type of made_span differs from expected_span!");
 }
 
 TEST(SpanTest, MakeSpanFromStaticSpan) {
   static constexpr int kArray[] = {1, 2, 3, 4, 5};
-  constexpr span<const int, 5> span(kArray);
-  static_assert(std::is_same<decltype(span)::element_type,
-                             decltype(make_span(span))::element_type>::value,
+  constexpr span<const int, 5> expected_span(kArray);
+  constexpr auto made_span = make_span(expected_span);
+  static_assert(std::is_same<decltype(expected_span)::element_type,
+                             decltype(made_span)::element_type>::value,
                 "make_span(span) should have the same element_type as span");
 
-  static_assert(span.data() == make_span(span).data(),
+  static_assert(expected_span.data() == made_span.data(),
                 "make_span(span) should have the same data() as span");
 
-  static_assert(span.size() == make_span(span).size(),
+  static_assert(expected_span.size() == made_span.size(),
                 "make_span(span) should have the same size() as span");
 
-  static_assert(decltype(make_span(span))::extent == decltype(span)::extent,
+  static_assert(decltype(made_span)::extent == decltype(expected_span)::extent,
                 "make_span(span) should have the same extent as span");
+
+  static_assert(
+      std::is_same<decltype(expected_span), decltype(made_span)>::value,
+      "the type of made_span differs from expected_span!");
 }
 
 TEST(SpanTest, StdTupleSize) {
