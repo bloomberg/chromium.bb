@@ -52,6 +52,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     // attestedCredentialData to be included in the authenticator data of an
     // GetAssertion response.
     bool return_attested_cred_data_in_get_assertion_response = false;
+    // reject_large_allow_and_exclude_lists causes the authenticator to respond
+    // with an error if an allowList or an excludeList contains more than one
+    // credential ID.
+    bool reject_large_allow_and_exclude_lists = false;
   };
 
   VirtualCtap2Device();

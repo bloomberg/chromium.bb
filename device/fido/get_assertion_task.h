@@ -51,6 +51,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionTask : public FidoTask {
   void GetAssertion();
   void U2fSign();
 
+  CtapGetAssertionRequest NextSilentRequest();
+
   // HandleResponse is the callback to a CTAP2 assertion request that requested
   // user-presence.
   void HandleResponse(
@@ -58,10 +60,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionTask : public FidoTask {
       base::Optional<AuthenticatorGetAssertionResponse> response_data);
 
   // HandleResponseToSilentRequest is a callback to a request without user-
-  // presence requested used when this assertion request may require falling
-  // back to U2F.
+  // presence requested used to silently probe credentials from the allow list.
   void HandleResponseToSilentRequest(
-      UserVerificationRequirement original_uv_configuration,
       CtapDeviceResponseCode response_code,
       base::Optional<AuthenticatorGetAssertionResponse> response_data);
 
@@ -75,6 +75,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionTask : public FidoTask {
   std::unique_ptr<SignOperation> sign_operation_;
   std::unique_ptr<RegisterOperation> dummy_register_operation_;
   GetAssertionTaskCallback callback_;
+  size_t current_credential_ = 0;
+
   base::WeakPtrFactory<GetAssertionTask> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GetAssertionTask);

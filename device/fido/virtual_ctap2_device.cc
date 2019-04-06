@@ -552,6 +552,11 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
   const auto rp_id_hash =
       fido_parsing_utils::CreateSHA256Hash(request.rp().rp_id());
   if (request.exclude_list()) {
+    if (config_.reject_large_allow_and_exclude_lists &&
+        request.exclude_list()->size() > 1) {
+      return CtapDeviceResponseCode::kCtap2ErrLimitExceeded;
+    }
+
     for (const auto& excluded_credential : *request.exclude_list()) {
       if (FindRegistrationData(excluded_credential.id(), rp_id_hash)) {
         if (mutable_state()->simulate_press_callback) {
@@ -699,6 +704,11 @@ CtapDeviceResponseCode VirtualCtap2Device::OnGetAssertion(
       found_registrations;
 
   if (request.allow_list()) {
+    if (config_.reject_large_allow_and_exclude_lists &&
+        request.allow_list()->size() > 1) {
+      return CtapDeviceResponseCode::kCtap2ErrLimitExceeded;
+    }
+
     // An empty allow_list could be considered to be a resident-key request, but
     // some authenticators in practice don't take it that way. Thus this code
     // mirrors that to better reflect reality. CTAP 2.0 leaves it as undefined
