@@ -217,6 +217,8 @@ void SiteInstanceImpl::PreventAssociationWithSpareProcess() {
 }
 
 void SiteInstanceImpl::SetSite(const GURL& url) {
+  // TODO(creis): Consider calling ShouldAssignSiteForURL internally, rather
+  // than before multiple call sites.  See https://crbug.com/949220.
   TRACE_EVENT2("navigation", "SiteInstanceImpl::SetSite",
                "site id", id_, "url", url.possibly_invalid_spec());
   // A SiteInstance's site should not change.
@@ -287,14 +289,6 @@ size_t SiteInstanceImpl::GetRelatedActiveContentsCount() {
 }
 
 bool SiteInstanceImpl::HasWrongProcessForURL(const GURL& url) {
-  // Having no process isn't a problem, since we'll assign it correctly.
-  // Note that HasProcess() may return true if process_ is null, in
-  // process-per-site cases where there's an existing process available.
-  // We want to use such a process in the IsSuitableHost check, so we
-  // may end up assigning process_ in the GetProcess() call below.
-  if (!HasProcess())
-    return false;
-
   // If the URL to navigate to can be associated with any site instance,
   // we want to keep it in the same process.
   if (IsRendererDebugURL(url))
@@ -321,6 +315,37 @@ bool SiteInstanceImpl::HasWrongProcessForURL(const GURL& url) {
   // GetRelatedSiteInstance(url).
   browsing_instance_->GetSiteAndLockForURL(
       url, /* allow_default_instance */ true, &site_url, &origin_lock);
+
+  // Note that HasProcess() may return true if process_ is null, in
+  // process-per-site cases where there's an existing process available.
+  // We want to use such a process in the IsSuitableHost check, so we
+  // may end up assigning process_ in the GetProcess() call below.
+  if (!HasProcess()) {
+    // If there is no process or site, then this is a new SiteInstance that can
+    // be used for anything.
+    if (!HasSite())
+      return false;
+
+    // If there is no process but there is a site, then the process must have
+    // been discarded after we navigated away.  If the site URLs match, then it
+    // is safe to use this SiteInstance.
+    if (GetSiteURL() == site_url)
+      return false;
+
+    // If the site URLs do not match, but neither this SiteInstance nor the
+    // destination site_url require dedicated processes, then it is safe to use
+    // this SiteInstance.
+    if (!RequiresDedicatedProcess() &&
+        !DoesSiteRequireDedicatedProcess(GetIsolationContext(), site_url)) {
+      return false;
+    }
+
+    // Otherwise, there's no process, the site URLs don't match, and at least
+    // one of them requires a dedicated process, so it is not safe to use this
+    // SiteInstance.
+    return true;
+  }
+
   return !RenderProcessHostImpl::IsSuitableHost(
       GetProcess(), browsing_instance_->GetBrowserContext(),
       GetIsolationContext(), site_url, origin_lock);

@@ -27,6 +27,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/interstitial_page_delegate.h"
@@ -1109,7 +1110,7 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackPreempted) {
 // Tests that if we go back twice (same-site then cross-site), and the cross-
 // site RFH commits first, we ignore the now-swapped-out RFH's commit.
 TEST_F(WebContentsImplTest, CrossSiteNavigationBackOldNavigationIgnored) {
-  // Start with a web ui page, which gets a new RVH with WebUI bindings.
+  // Start with a web ui page, which gets a new RFH with WebUI bindings.
   GURL url1(std::string(kChromeUIScheme) + "://" +
             std::string(kChromeUIGpuHost));
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url1);
@@ -1170,6 +1171,9 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackOldNavigationIgnored) {
   webui_rfh = contents()->GetPendingMainFrame();
 
   // DidNavigate from the second back.
+  // Note that the process in instance1 is gone at this point, but we will still
+  // use instance1 and entry1 because HasWrongProcessForURL will return false
+  // when there is no process and the site URL matches.
   back_navigation2->Commit();
 
   // That should have landed us on the first entry.
@@ -1179,6 +1183,12 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackOldNavigationIgnored) {
   contents()->TestDidNavigate(google_rfh, entry2->GetUniqueID(), false, url2,
                               ui::PAGE_TRANSITION_TYPED);
   EXPECT_EQ(entry1, controller().GetLastCommittedEntry());
+
+  // The newly created process for url1 should be locked to chrome://gpu.
+  RenderProcessHost* new_process = contents()->GetMainFrame()->GetProcess();
+  auto* policy = content::ChildProcessSecurityPolicy::GetInstance();
+  EXPECT_TRUE(policy->CanAccessDataForOrigin(new_process->GetID(), url1));
+  EXPECT_FALSE(policy->CanAccessDataForOrigin(new_process->GetID(), url2));
 }
 
 // Test that during a slow cross-site navigation, a sub-frame navigation in the

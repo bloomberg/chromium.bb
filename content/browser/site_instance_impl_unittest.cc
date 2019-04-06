@@ -721,12 +721,12 @@ TEST_F(SiteInstanceTest, HasWrongProcessForURL) {
   EXPECT_FALSE(instance->HasSite());
   EXPECT_TRUE(instance->GetSiteURL().is_empty());
 
+  // Check prior to assigning a site or process to the instance, which is
+  // expected to return false to allow the SiteInstance to be used for anything.
+  EXPECT_FALSE(instance->HasWrongProcessForURL(GURL("http://google.com")));
+
   instance->SetSite(GURL("http://evernote.com/"));
   EXPECT_TRUE(instance->HasSite());
-
-  // Check prior to "assigning" a process to the instance, which is expected
-  // to return false due to not being attached to any process yet.
-  EXPECT_FALSE(instance->HasWrongProcessForURL(GURL("http://google.com")));
 
   // The call to GetProcess actually creates a new real process, which works
   // fine, but might be a cause for problems in different contexts.
@@ -779,12 +779,12 @@ TEST_F(SiteInstanceTest, HasWrongProcessForURLInSitePerProcess) {
   scoped_refptr<SiteInstanceImpl> instance(
       SiteInstanceImpl::Create(browser_context.get()));
 
+  // Check prior to assigning a site or process to the instance, which is
+  // expected to return false to allow the SiteInstance to be used for anything.
+  EXPECT_FALSE(instance->HasWrongProcessForURL(GURL("http://google.com")));
+
   instance->SetSite(GURL("http://evernote.com/"));
   EXPECT_TRUE(instance->HasSite());
-
-  // Check prior to "assigning" a process to the instance, which is expected
-  // to return false due to not being attached to any process yet.
-  EXPECT_FALSE(instance->HasWrongProcessForURL(GURL("http://google.com")));
 
   // The call to GetProcess actually creates a new real process, which works
   // fine, but might be a cause for problems in different contexts.
