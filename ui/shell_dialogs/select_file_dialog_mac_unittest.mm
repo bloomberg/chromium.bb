@@ -463,15 +463,24 @@ TEST_F(SelectFileDialogMacTest, DefaultPath) {
 TEST_F(SelectFileDialogMacTest, MultipleExtension) {
   const std::string fake_path_normal = "/fake_directory/filename.tar";
   const std::string fake_path_multiple = "/fake_directory/filename.tar.gz";
+  const std::string fake_path_long = "/fake_directory/example.com-123.json";
   FileDialogArguments args(GetDefaultArguments());
 
   args.default_path = base::FilePath(FILE_PATH_LITERAL(fake_path_normal));
   SelectFileWithParams(args);
   NSSavePanel* panel = GetPanel();
   EXPECT_TRUE([panel canSelectHiddenExtension]);
+  EXPECT_TRUE([panel isExtensionHidden]);
 
   ResetDialog();
   args.default_path = base::FilePath(FILE_PATH_LITERAL(fake_path_multiple));
+  SelectFileWithParams(args);
+  panel = GetPanel();
+  EXPECT_FALSE([panel canSelectHiddenExtension]);
+  EXPECT_FALSE([panel isExtensionHidden]);
+
+  ResetDialog();
+  args.default_path = base::FilePath(FILE_PATH_LITERAL(fake_path_long));
   SelectFileWithParams(args);
   panel = GetPanel();
   EXPECT_FALSE([panel canSelectHiddenExtension]);

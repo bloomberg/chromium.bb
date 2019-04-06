@@ -268,10 +268,10 @@ void SavePanelBridge::Initialize(
     // this by never hiding extensions in that case.
     base::FilePath::StringType penultimate_extension =
         default_path.RemoveFinalExtension().FinalExtension();
-    if (!penultimate_extension.empty() &&
-        penultimate_extension.length() <= 5U) {
+    if (!penultimate_extension.empty()) {
       [dialog setExtensionHidden:NO];
     } else {
+      [dialog setExtensionHidden:YES];
       [dialog setCanSelectHiddenExtension:YES];
     }
   } else {
