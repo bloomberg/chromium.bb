@@ -68,6 +68,8 @@ class PaymentRequestStateTest : public testing::Test,
       mojom::PaymentOptionsPtr options,
       mojom::PaymentDetailsPtr details,
       std::vector<mojom::PaymentMethodDataPtr> method_data) {
+    if (!details->total)
+      details->total = mojom::PaymentItem::New();
     // The spec will be based on the |options| and |details| passed in.
     spec_ = std::make_unique<PaymentRequestSpec>(
         std::move(options), std::move(details), std::move(method_data),
