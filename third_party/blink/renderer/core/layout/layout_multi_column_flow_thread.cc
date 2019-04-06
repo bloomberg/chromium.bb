@@ -1343,15 +1343,14 @@ void LayoutMultiColumnFlowThread::ComputePreferredLogicalWidths() {
                        ColumnGap(*multicol_style, LayoutUnit()));
 
   if (MultiColumnBlockFlow()->ShouldApplySizeContainment()) {
-    LayoutUnit size = gap_extra;
-    if (!multicol_style->HasAutoColumnWidth())
-      size += LayoutUnit(multicol_style->ColumnWidth()) * column_count;
-    max_preferred_logical_width_ = min_preferred_logical_width_ = size;
+    min_preferred_logical_width_ = max_preferred_logical_width_ = LayoutUnit();
     ClearPreferredLogicalWidthsDirty();
-    return;
+  } else {
+    // Calculate and set new min_preferred_logical_width_ and
+    // max_preferred_logical_width_.
+    LayoutFlowThread::ComputePreferredLogicalWidths();
   }
 
-  LayoutFlowThread::ComputePreferredLogicalWidths();
   LayoutUnit column_width;
   if (multicol_style->HasAutoColumnWidth()) {
     min_preferred_logical_width_ =
