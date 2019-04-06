@@ -284,7 +284,9 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   session->AddHandler(std::make_unique<protocol::DOMHandler>(
       session->client()->MayReadLocalFiles()));
   session->AddHandler(std::move(emulation_handler));
-  session->AddHandler(std::make_unique<protocol::InputHandler>());
+  auto input_handler = std::make_unique<protocol::InputHandler>();
+  input_handler->OnPageScaleFactorChanged(page_scale_factor_);
+  session->AddHandler(std::move(input_handler));
   session->AddHandler(std::make_unique<protocol::InspectorHandler>());
   session->AddHandler(std::make_unique<protocol::IOHandler>(GetIOContext()));
   session->AddHandler(std::make_unique<protocol::MemoryHandler>());
@@ -579,6 +581,7 @@ void RenderFrameDevToolsAgentHost::OnVisibilityChanged(
 
 void RenderFrameDevToolsAgentHost::OnPageScaleFactorChanged(
     float page_scale_factor) {
+  page_scale_factor_ = page_scale_factor;
   for (auto* input : protocol::InputHandler::ForAgentHost(this))
     input->OnPageScaleFactorChanged(page_scale_factor);
 }

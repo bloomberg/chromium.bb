@@ -147,6 +147,8 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   // The FrameTreeNode associated with this agent.
   FrameTreeNode* frame_tree_node_;
 
+  double page_scale_factor_ = 1;
+
   DISALLOW_COPY_AND_ASSIGN(RenderFrameDevToolsAgentHost);
 };
 
