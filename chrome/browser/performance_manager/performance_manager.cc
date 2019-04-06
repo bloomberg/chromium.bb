@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -81,23 +82,34 @@ void PerformanceManager::CallOnGraph(const base::Location& from_here,
 }
 
 std::unique_ptr<FrameNodeImpl> PerformanceManager::CreateFrameNode(
+    ProcessNodeImpl* process_node,
     PageNodeImpl* page_node,
-    FrameNodeImpl* parent_frame_node) {
-  std::unique_ptr<FrameNodeImpl> new_node =
-      std::make_unique<FrameNodeImpl>(&graph_, page_node, parent_frame_node);
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&Graph::AddNewNode, base::Unretained(&graph_),
-                                base::Unretained(new_node.get())));
+    FrameNodeImpl* parent_frame_node,
+    int frame_tree_node_id) {
+  return CreateNodeImpl<FrameNodeImpl>(FrameNodeCreationCallback(),
+                                       process_node, page_node,
+                                       parent_frame_node, frame_tree_node_id);
+}
 
-  return new_node;
+std::unique_ptr<FrameNodeImpl> PerformanceManager::CreateFrameNode(
+    ProcessNodeImpl* process_node,
+    PageNodeImpl* page_node,
+    FrameNodeImpl* parent_frame_node,
+    int frame_tree_node_id,
+    FrameNodeCreationCallback creation_callback) {
+  return CreateNodeImpl<FrameNodeImpl>(std::move(creation_callback),
+                                       process_node, page_node,
+                                       parent_frame_node, frame_tree_node_id);
 }
 
 std::unique_ptr<PageNodeImpl> PerformanceManager::CreatePageNode() {
-  return CreateNodeImpl<PageNodeImpl>();
+  return CreateNodeImpl<PageNodeImpl>(
+      base::OnceCallback<void(PageNodeImpl*)>());
 }
 
 std::unique_ptr<ProcessNodeImpl> PerformanceManager::CreateProcessNode() {
-  return CreateNodeImpl<ProcessNodeImpl>();
+  return CreateNodeImpl<ProcessNodeImpl>(
+      base::OnceCallback<void(ProcessNodeImpl*)>());
 }
 
 void PerformanceManager::BatchDeleteNodes(
@@ -122,13 +134,33 @@ void PerformanceManager::PostBindInterface(
                                         std::move(message_pipe)));
 }
 
-template <typename NodeType>
-std::unique_ptr<NodeType> PerformanceManager::CreateNodeImpl() {
-  std::unique_ptr<NodeType> new_node = std::make_unique<NodeType>(&graph_);
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&Graph::AddNewNode, base::Unretained(&graph_),
-                                base::Unretained(new_node.get())));
+namespace {
 
+// Helper function for adding a node to a graph, and invoking a post-creation
+// callback immediately afterwards.
+template <typename NodeType>
+void AddNodeAndInvokeCreationCallback(
+    base::OnceCallback<void(NodeType*)> callback,
+    NodeType* node,
+    Graph* graph) {
+  graph->AddNewNode(node);
+  if (!callback.is_null())
+    std::move(callback).Run(node);
+}
+
+}  // namespace
+
+template <typename NodeType, typename... Args>
+std::unique_ptr<NodeType> PerformanceManager::CreateNodeImpl(
+    base::OnceCallback<void(NodeType*)> creation_callback,
+    Args&&... constructor_args) {
+  std::unique_ptr<NodeType> new_node = std::make_unique<NodeType>(
+      &graph_, std::forward<Args>(constructor_args)...);
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&AddNodeAndInvokeCreationCallback<NodeType>,
+                                std::move(creation_callback),
+                                base::Unretained(new_node.get()),
+                                base::Unretained(&graph_)));
   return new_node;
 }
 
@@ -161,18 +193,43 @@ void PerformanceManager::BatchDeleteNodesImpl(
     std::vector<std::unique_ptr<NodeBase>> nodes) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  base::flat_set<ProcessNodeImpl*> process_nodes;
+
   for (auto it = nodes.begin(); it != nodes.end(); ++it) {
-    if ((*it)->id().type == resource_coordinator::CoordinationUnitType::kPage) {
-      auto* page_node = PageNodeImpl::FromNodeBase(it->get());
+    switch ((*it)->id().type) {
+      case resource_coordinator::CoordinationUnitType::kPage: {
+        auto* page_node = PageNodeImpl::FromNodeBase(it->get());
 
-      // Delete the main frame nodes until no more exist.
-      while (!page_node->main_frame_nodes().empty())
-        RemoveFrameAndChildrenFromGraph(
-            *(page_node->main_frame_nodes().begin()));
+        // Delete the main frame nodes until no more exist.
+        while (!page_node->main_frame_nodes().empty())
+          RemoveFrameAndChildrenFromGraph(
+              *(page_node->main_frame_nodes().begin()));
 
-      graph_.RemoveNode(page_node);
+        graph_.RemoveNode(page_node);
+        break;
+      }
+      case resource_coordinator::CoordinationUnitType::kProcess: {
+        // Keep track of the process nodes for removing once all frames nodes
+        // are removed.
+        auto* process_node = ProcessNodeImpl::FromNodeBase(it->get());
+        process_nodes.insert(process_node);
+        break;
+      }
+      case resource_coordinator::CoordinationUnitType::kFrame:
+        break;
+      case resource_coordinator::CoordinationUnitType::kSystem:
+      case resource_coordinator::CoordinationUnitType::kInvalidType:
+      default: {
+        NOTREACHED();
+        break;
+      }
     }
   }
+
+  // Remove the process nodes from the graph.
+  for (auto* process_node : process_nodes)
+    graph_.RemoveNode(process_node);
+
   // When |nodes| goes out of scope, all nodes are deleted.
 }
 

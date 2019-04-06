@@ -122,8 +122,8 @@ void ProcessNodeImpl::LeaveGraph() {
   if (process_id_ != base::kNullProcessId)
     graph()->BeforeProcessPidChange(this, base::kNullProcessId);
 
-  for (auto* child_frame : frame_nodes_)
-    child_frame->RemoveProcessNode(this);
+  // All child frames should have been removed before the process is removed.
+  DCHECK(frame_nodes_.empty());
 }
 
 void ProcessNodeImpl::OnEventReceived(

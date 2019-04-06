@@ -53,49 +53,54 @@ class PerformanceManagerTest : public testing::Test {
 };
 
 TEST_F(PerformanceManagerTest, InstantiateNodes) {
+  std::unique_ptr<ProcessNodeImpl> process_node =
+      performance_manager()->CreateProcessNode();
+  EXPECT_NE(nullptr, process_node.get());
   std::unique_ptr<PageNodeImpl> page_node =
       performance_manager()->CreatePageNode();
   EXPECT_NE(nullptr, page_node.get());
 
   // Create a node of each type.
   std::unique_ptr<FrameNodeImpl> frame_node =
-      performance_manager()->CreateFrameNode(page_node.get(), nullptr);
+      performance_manager()->CreateFrameNode(process_node.get(),
+                                             page_node.get(), nullptr, 0);
   EXPECT_NE(nullptr, frame_node.get());
 
-  std::unique_ptr<ProcessNodeImpl> process_node =
-      performance_manager()->CreateProcessNode();
-  EXPECT_NE(nullptr, process_node.get());
-
-  performance_manager()->DeleteNode(std::move(process_node));
   performance_manager()->DeleteNode(std::move(frame_node));
   performance_manager()->DeleteNode(std::move(page_node));
+  performance_manager()->DeleteNode(std::move(process_node));
 }
 
 TEST_F(PerformanceManagerTest, BatchDeleteNodes) {
   // Create a page node and a small hierarchy of frames.
+  std::unique_ptr<ProcessNodeImpl> process_node =
+      performance_manager()->CreateProcessNode();
   std::unique_ptr<PageNodeImpl> page_node =
       performance_manager()->CreatePageNode();
 
   std::unique_ptr<FrameNodeImpl> parent1_frame =
-      performance_manager()->CreateFrameNode(page_node.get(), nullptr);
+      performance_manager()->CreateFrameNode(process_node.get(),
+                                             page_node.get(), nullptr, 0);
   std::unique_ptr<FrameNodeImpl> parent2_frame =
-      performance_manager()->CreateFrameNode(page_node.get(), nullptr);
+      performance_manager()->CreateFrameNode(process_node.get(),
+                                             page_node.get(), nullptr, 1);
 
   std::unique_ptr<FrameNodeImpl> child1_frame =
-      performance_manager()->CreateFrameNode(page_node.get(),
-                                             parent1_frame.get());
+      performance_manager()->CreateFrameNode(
+          process_node.get(), page_node.get(), parent1_frame.get(), 2);
   std::unique_ptr<FrameNodeImpl> child2_frame =
-      performance_manager()->CreateFrameNode(page_node.get(),
-                                             parent2_frame.get());
+      performance_manager()->CreateFrameNode(
+          process_node.get(), page_node.get(), parent2_frame.get(), 3);
 
   std::vector<std::unique_ptr<NodeBase>> nodes;
   for (size_t i = 0; i < 10; ++i) {
-    nodes.push_back(performance_manager()->CreateFrameNode(page_node.get(),
-                                                           child1_frame.get()));
-    nodes.push_back(performance_manager()->CreateFrameNode(page_node.get(),
-                                                           child1_frame.get()));
+    nodes.push_back(performance_manager()->CreateFrameNode(
+        process_node.get(), page_node.get(), child1_frame.get(), 0));
+    nodes.push_back(performance_manager()->CreateFrameNode(
+        process_node.get(), page_node.get(), child1_frame.get(), 1));
   }
 
+  nodes.push_back(std::move(process_node));
   nodes.push_back(std::move(page_node));
   nodes.push_back(std::move(parent1_frame));
   nodes.push_back(std::move(parent2_frame));

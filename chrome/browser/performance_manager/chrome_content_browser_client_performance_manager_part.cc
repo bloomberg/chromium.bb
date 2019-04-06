@@ -51,11 +51,9 @@ void ChromeContentBrowserClientPerformanceManagerPart::
                           base::Unretained(render_process_host)),
       base::SequencedTaskRunnerHandle::Get());
 
-  // When a RenderFrameHost is "resurrected" with a new process  it will already
-  // have user data attached. This will happen on renderer crash.
-  if (!performance_manager::RenderProcessUserData::GetForRenderProcessHost(
-          render_process_host)) {
-    performance_manager::RenderProcessUserData::CreateForRenderProcessHost(
-        render_process_host);
-  }
+  // Ideally this would strictly be a "CreateForRenderProcess", but when a
+  // RenderFrameHost is "resurrected" with a new process it will already have
+  // user data attached. This will happen on renderer crash.
+  performance_manager::RenderProcessUserData::GetOrCreateForRenderProcessHost(
+      render_process_host);
 }

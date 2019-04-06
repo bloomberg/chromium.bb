@@ -37,10 +37,14 @@ class FrameNodeImplTest : public GraphTestHarness {
 }  // namespace
 
 TEST_F(FrameNodeImplTest, AddFrameHierarchyBasic) {
+  auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();
-  auto parent_node = CreateNode<FrameNodeImpl>(page.get(), nullptr);
-  auto child2_node = CreateNode<FrameNodeImpl>(page.get(), parent_node.get());
-  auto child3_node = CreateNode<FrameNodeImpl>(page.get(), parent_node.get());
+  auto parent_node =
+      CreateNode<FrameNodeImpl>(process.get(), page.get(), nullptr, 0);
+  auto child2_node = CreateNode<FrameNodeImpl>(process.get(), page.get(),
+                                               parent_node.get(), 1);
+  auto child3_node = CreateNode<FrameNodeImpl>(process.get(), page.get(),
+                                               parent_node.get(), 2);
 
   EXPECT_EQ(nullptr, parent_node->parent_frame_node());
   EXPECT_EQ(2u, parent_node->child_frame_nodes().size());
@@ -49,8 +53,10 @@ TEST_F(FrameNodeImplTest, AddFrameHierarchyBasic) {
 }
 
 TEST_F(FrameNodeImplTest, Url) {
+  auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();
-  auto frame_node = CreateNode<FrameNodeImpl>(page.get(), nullptr);
+  auto frame_node =
+      CreateNode<FrameNodeImpl>(process.get(), page.get(), nullptr, 0);
   EXPECT_TRUE(frame_node->url().is_empty());
   const GURL url("http://www.foo.com/");
   frame_node->set_url(url);
@@ -58,10 +64,12 @@ TEST_F(FrameNodeImplTest, Url) {
 }
 
 TEST_F(FrameNodeImplTest, RemoveChildFrame) {
+  auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();
-  auto parent_frame_node = CreateNode<FrameNodeImpl>(page.get(), nullptr);
-  auto child_frame_node =
-      CreateNode<FrameNodeImpl>(page.get(), parent_frame_node.get());
+  auto parent_frame_node =
+      CreateNode<FrameNodeImpl>(process.get(), page.get(), nullptr, 0);
+  auto child_frame_node = CreateNode<FrameNodeImpl>(process.get(), page.get(),
+                                                    parent_frame_node.get(), 1);
 
   // Ensure correct Parent-child relationships have been established.
   EXPECT_EQ(1u, parent_frame_node->child_frame_nodes().size());
