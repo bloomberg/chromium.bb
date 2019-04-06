@@ -500,7 +500,7 @@ class BuildStore(object):
     elif self._read_from_bb or self._transitioning_to_bb:
       stage_list = []
       for buildbucket_id in buildbucket_ids:
-        stage_list.append(self.bb_client.GetBuildStages(int(buildbucket_id)))
+        stage_list += self.bb_client.GetBuildStages(int(buildbucket_id))
       return stage_list
     else:
       return self.cidb_conn.GetBuildsStagesWithBuildbucketIds(buildbucket_ids)
