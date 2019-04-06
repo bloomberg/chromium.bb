@@ -1165,7 +1165,8 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBListChanged) {
   context_impl_->RemoveObserver(&observer);
 }
 
-TEST_F(IndexedDBDispatcherHostTest, NotifyIndexedDBContentChanged) {
+// The test is flaky. See https://crbug.com/879213
+TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBContentChanged) {
   const int64_t kDBVersion1 = 1;
   const int64_t kDBVersion2 = 2;
   const int64_t kTransactionId1 = 1;
