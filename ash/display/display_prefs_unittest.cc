@@ -1402,6 +1402,13 @@ TEST_F(DisplayPrefsTest, ExternalDisplayConnectedBeforeLoadingPrefs) {
   // Load the preferences and simulate a native display reconfiguration. Expect
   // that we are mirroring now.
   LoadDisplayPreferences();
+
+  // Simulate a change in display configuration between loading the prefs, and
+  // reconfiguring after the prefs have been loaded. Make sure that the external
+  // display mirror configs are not overwritten, and the loaded prefs will be
+  // applied.
+  display_manager()->SetMirrorMode(display::MirrorMode::kOff, base::nullopt);
+
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_TRUE(display_manager()->IsInMirrorMode());
 }
