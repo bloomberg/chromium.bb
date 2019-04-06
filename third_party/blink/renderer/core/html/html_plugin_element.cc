@@ -713,7 +713,7 @@ bool HTMLPlugInElement::AllowedToLoadObject(const KURL& url,
 
 bool HTMLPlugInElement::AllowedToLoadPlugin(const KURL& url,
                                             const String& mime_type) {
-  if (GetDocument().IsSandboxed(kSandboxPlugins)) {
+  if (GetDocument().IsSandboxed(WebSandboxFlags::kPlugins)) {
     GetDocument().AddConsoleMessage(
         ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
                                mojom::ConsoleMessageLevel::kError,

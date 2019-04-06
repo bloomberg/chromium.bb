@@ -152,7 +152,7 @@ ContentSecurityPolicy::ContentSecurityPolicy()
       override_inline_style_allowed_(false),
       script_hash_algorithms_used_(kContentSecurityPolicyHashAlgorithmNone),
       style_hash_algorithms_used_(kContentSecurityPolicyHashAlgorithmNone),
-      sandbox_mask_(0),
+      sandbox_mask_(WebSandboxFlags::kNone),
       treat_as_public_address_(false),
       require_trusted_types_(false),
       insecure_request_policy_(kLeaveInsecureRequestsAlone) {}
@@ -191,7 +191,7 @@ void ContentSecurityPolicy::ApplyPolicySideEffectsToDelegate() {
 
   // Set mixed content checking and sandbox flags, then dump all the parsing
   // error messages, then poke at histograms.
-  if (sandbox_mask_ != kSandboxNone) {
+  if (sandbox_mask_ != WebSandboxFlags::kNone) {
     Count(WebFeature::kSandboxViaCSP);
     delegate_->SetSandboxFlags(sandbox_mask_);
   }

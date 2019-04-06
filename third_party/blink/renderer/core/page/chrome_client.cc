@@ -256,7 +256,7 @@ bool ChromeClient::Print(LocalFrame* frame) {
     return false;
   }
 
-  if (frame->GetDocument()->IsSandboxed(kSandboxModals)) {
+  if (frame->GetDocument()->IsSandboxed(WebSandboxFlags::kModals)) {
     UseCounter::Count(frame->GetDocument(),
                       WebFeature::kDialogInSandboxedContext);
     frame->Console().AddMessage(ConsoleMessage::Create(

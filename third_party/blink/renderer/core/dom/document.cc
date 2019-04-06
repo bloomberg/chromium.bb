@@ -4177,7 +4177,7 @@ void Document::MaybeHandleHttpRefresh(const String& content,
   }
 
   if (http_refresh_type == kHttpRefreshFromMetaTag &&
-      IsSandboxed(kSandboxAutomaticFeatures)) {
+      IsSandboxed(WebSandboxFlags::kAutomaticFeatures)) {
     String message =
         "Refused to execute the redirect specified via '<meta "
         "http-equiv='refresh' content='...'>'. The document is sandboxed, and "
@@ -5228,7 +5228,7 @@ String Document::cookie(ExceptionState& exception_state) const {
   // browsing context.
 
   if (!GetSecurityOrigin()->CanAccessCookies()) {
-    if (IsSandboxed(kSandboxOrigin))
+    if (IsSandboxed(WebSandboxFlags::kOrigin))
       exception_state.ThrowSecurityError(
           "The document is sandboxed and lacks the 'allow-same-origin' flag.");
     else if (Url().ProtocolIs("data"))
@@ -5259,7 +5259,7 @@ void Document::setCookie(const String& value, ExceptionState& exception_state) {
   // browsing context.
 
   if (!GetSecurityOrigin()->CanAccessCookies()) {
-    if (IsSandboxed(kSandboxOrigin))
+    if (IsSandboxed(WebSandboxFlags::kOrigin))
       exception_state.ThrowSecurityError(
           "The document is sandboxed and lacks the 'allow-same-origin' flag.");
     else if (Url().ProtocolIs("data"))
@@ -5308,7 +5308,7 @@ void Document::setDomain(const String& raw_domain,
     return;
   }
 
-  if (IsSandboxed(kSandboxDocumentDomain)) {
+  if (IsSandboxed(WebSandboxFlags::kDocumentDomain)) {
     exception_state.ThrowSecurityError(
         "Assignment is forbidden for sandboxed iframes.");
     return;
@@ -6197,7 +6197,7 @@ void Document::ApplyFeaturePolicyFromHeader(
                                mojom::ConsoleMessageLevel::kError,
                                "Error with Feature-Policy header: " + message));
   }
-  if (GetSandboxFlags() != kSandboxNone &&
+  if (GetSandboxFlags() != WebSandboxFlags::kNone &&
       RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
     // The sandbox flags might have come from CSP header or the browser; in such
     // cases the sandbox is not part of the container policy. They are added
@@ -6347,8 +6347,9 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
     // Instead, force a Document loaded from a MHTML archive to be sandboxed,
     // providing exceptions only for creating new windows.
     sandbox_flags |=
-        kSandboxAll &
-        ~(kSandboxPopups | kSandboxPropagatesToAuxiliaryBrowsingContexts);
+        (WebSandboxFlags::kAll &
+         ~(WebSandboxFlags::kPopups |
+           WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts));
   }
   // In the common case, create the security context from the currently
   // loading URL with a fresh content security policy.
@@ -6392,7 +6393,7 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
     }
   }
 
-  if (IsSandboxed(kSandboxOrigin)) {
+  if (IsSandboxed(WebSandboxFlags::kOrigin)) {
     DCHECK(!initializer.ContextDocument());
     scoped_refptr<SecurityOrigin> sandboxed_origin =
         initializer.OriginToCommit() ? initializer.OriginToCommit()
@@ -6473,7 +6474,7 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
     GetMutableSecurityOrigin()->SetOpaqueOriginIsPotentiallyTrustworthy(true);
 
   ParsedFeaturePolicy declared_policy = {};
-  if (GetSandboxFlags() != kSandboxNone &&
+  if (GetSandboxFlags() != WebSandboxFlags::kNone &&
       RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
     // If any sandbox flags are enforced above they should also be added as
     // part of a declared policy to properly initialize the sandbox feature
@@ -6560,7 +6561,7 @@ bool Document::CanExecuteScripts(ReasonForCallingCanExecuteScripts reason) {
   // However, there is an exception for cases when the script should bypass the
   // main world's CSP (such as for privileged isolated worlds). See
   // https://crbug.com/811528.
-  if (IsSandboxed(kSandboxScripts) &&
+  if (IsSandboxed(WebSandboxFlags::kScripts) &&
       !ContentSecurityPolicy::ShouldBypassMainWorld(this)) {
     // FIXME: This message should be moved off the console once a solution to
     // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
@@ -7378,7 +7379,7 @@ bool Document::IsSecureContext(String& error_message) const {
 
 bool Document::IsSecureContext() const {
   bool is_secure = secure_context_state_ == SecureContextState::kSecure;
-  if (GetSandboxFlags() != kSandboxNone) {
+  if (GetSandboxFlags() != WebSandboxFlags::kNone) {
     UseCounter::Count(
         *this, is_secure
                    ? WebFeature::kSecureContextCheckForSandboxedOriginPassed

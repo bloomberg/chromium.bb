@@ -108,13 +108,13 @@ void RemoteFrame::Navigate(const FrameLoadRequest& passed_request,
     is_opener_navigation = frame->Client()->Opener() == this;
     initiator_frame_has_download_sandbox_flag =
         frame->GetSecurityContext() &&
-        frame->GetSecurityContext()->IsSandboxed(kSandboxDownloads);
+        frame->GetSecurityContext()->IsSandboxed(WebSandboxFlags::kDownloads);
     initiator_frame_is_ad = frame->IsAdSubframe();
   }
 
   bool current_frame_has_download_sandbox_flag =
       GetSecurityContext() &&
-      GetSecurityContext()->IsSandboxed(kSandboxDownloads);
+      GetSecurityContext()->IsSandboxed(WebSandboxFlags::kDownloads);
   bool has_download_sandbox_flag = initiator_frame_has_download_sandbox_flag ||
                                    current_frame_has_download_sandbox_flag;
 

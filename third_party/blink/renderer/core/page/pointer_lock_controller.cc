@@ -53,7 +53,7 @@ void PointerLockController::RequestPointerLock(Element* target) {
                       WebFeature::kElementRequestPointerLockInShadow);
   }
 
-  if (target->GetDocument().IsSandboxed(kSandboxPointerLock)) {
+  if (target->GetDocument().IsSandboxed(WebSandboxFlags::kPointerLock)) {
     // FIXME: This message should be moved off the console once a solution to
     // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
     target->GetDocument().AddConsoleMessage(ConsoleMessage::Create(

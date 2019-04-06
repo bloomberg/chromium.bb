@@ -134,7 +134,7 @@ void ApplicationCacheHost::SelectCacheWithManifest(const KURL& manifest_url) {
 
   LocalFrame* frame = document_loader_->GetFrame();
   Document* document = frame->GetDocument();
-  if (document->IsSandboxed(kSandboxOrigin)) {
+  if (document->IsSandboxed(WebSandboxFlags::kOrigin)) {
     // Prevent sandboxes from establishing application caches.
     SelectCacheWithoutManifest();
     return;

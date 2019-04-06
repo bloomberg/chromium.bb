@@ -79,8 +79,8 @@ struct BLINK_EXPORT WebNavigationInfo {
   // Whether the navigation is a result of client redirect.
   bool is_client_redirect = false;
 
-  // Whether the navigation initiator frame has the |kSandboxDownloads| bit set
-  // in its sandbox flags set.
+  // Whether the navigation initiator frame has the
+  // |WebSandboxFlags::kDownloads| bit set in its sandbox flags set.
   bool initiator_frame_has_download_sandbox_flag = false;
 
   // Whether the navigation initiator frame is an ad frame.

@@ -41,7 +41,7 @@ void RemoteSecurityContext::ResetReplicatedContentSecurityPolicy() {
 }
 
 void RemoteSecurityContext::ResetSandboxFlags() {
-  sandbox_flags_ = kSandboxNone;
+  sandbox_flags_ = WebSandboxFlags::kNone;
 }
 
 }  // namespace blink

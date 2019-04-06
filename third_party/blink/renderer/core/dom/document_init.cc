@@ -102,7 +102,7 @@ SandboxFlags DocumentInit::GetSandboxFlags() const {
   // so that the blocked document appears to be a normal cross-origin document's
   // load per CSP spec: https://www.w3.org/TR/CSP3/#directive-frame-ancestors.
   if (loader->WasBlockedAfterCSP()) {
-    flags |= kSandboxOrigin;
+    flags |= WebSandboxFlags::kOrigin;
   }
 
   return flags;

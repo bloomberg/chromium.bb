@@ -64,7 +64,7 @@ StorageArea* DOMWindowStorage::sessionStorage(
   DCHECK(document);
   String access_denied_message = "Access is denied for this document.";
   if (!document->GetSecurityOrigin()->CanAccessSessionStorage()) {
-    if (document->IsSandboxed(kSandboxOrigin))
+    if (document->IsSandboxed(WebSandboxFlags::kOrigin))
       exception_state.ThrowSecurityError(
           "The document is sandboxed and lacks the 'allow-same-origin' flag.");
     else if (document->Url().ProtocolIs("data"))
@@ -123,7 +123,7 @@ StorageArea* DOMWindowStorage::localStorage(
   DCHECK(document);
   String access_denied_message = "Access is denied for this document.";
   if (!document->GetSecurityOrigin()->CanAccessLocalStorage()) {
-    if (document->IsSandboxed(kSandboxOrigin))
+    if (document->IsSandboxed(WebSandboxFlags::kOrigin))
       exception_state.ThrowSecurityError(
           "The document is sandboxed and lacks the 'allow-same-origin' flag.");
     else if (document->Url().ProtocolIs("data"))

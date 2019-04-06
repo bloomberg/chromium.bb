@@ -49,7 +49,7 @@ std::vector<unsigned> SecurityContext::SerializeInsecureNavigationSet(
 }
 
 SecurityContext::SecurityContext()
-    : sandbox_flags_(kSandboxNone),
+    : sandbox_flags_(WebSandboxFlags::kNone),
       address_space_(mojom::IPAddressSpace::kPublic),
       insecure_request_policy_(kLeaveInsecureRequestsAlone),
       require_safe_types_(false) {}
@@ -70,34 +70,34 @@ void SecurityContext::SetContentSecurityPolicy(
   content_security_policy_ = content_security_policy;
 }
 
-bool SecurityContext::IsSandboxed(SandboxFlag mask) const {
+bool SecurityContext::IsSandboxed(WebSandboxFlags mask) const {
   if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
     switch (mask) {
-      case kSandboxAll:
+      case WebSandboxFlags::kAll:
         NOTREACHED();
         break;
-      case kSandboxTopNavigation:
+      case WebSandboxFlags::kTopNavigation:
         return !feature_policy_->IsFeatureEnabled(
             mojom::FeaturePolicyFeature::kTopNavigation);
-      case kSandboxForms:
+      case WebSandboxFlags::kForms:
         return !feature_policy_->IsFeatureEnabled(
             mojom::FeaturePolicyFeature::kFormSubmission);
-      case kSandboxScripts:
+      case WebSandboxFlags::kScripts:
         return !feature_policy_->IsFeatureEnabled(
             mojom::FeaturePolicyFeature::kScript);
-      case kSandboxPopups:
+      case WebSandboxFlags::kPopups:
         return !feature_policy_->IsFeatureEnabled(
             mojom::FeaturePolicyFeature::kPopups);
-      case kSandboxPointerLock:
+      case WebSandboxFlags::kPointerLock:
         return !feature_policy_->IsFeatureEnabled(
             mojom::FeaturePolicyFeature::kPointerLock);
-      case kSandboxOrientationLock:
+      case WebSandboxFlags::kOrientationLock:
         return !feature_policy_->IsFeatureEnabled(
             mojom::FeaturePolicyFeature::kOrientationLock);
-      case kSandboxModals:
+      case WebSandboxFlags::kModals:
         return !feature_policy_->IsFeatureEnabled(
             mojom::FeaturePolicyFeature::kModals);
-      case kSandboxPresentationController:
+      case WebSandboxFlags::kPresentationController:
         return !feature_policy_->IsFeatureEnabled(
             mojom::FeaturePolicyFeature::kPresentation);
       default:
@@ -105,18 +105,18 @@ bool SecurityContext::IsSandboxed(SandboxFlag mask) const {
         break;
     }
   }
-  return sandbox_flags_ & mask;
+  return (sandbox_flags_ & mask) != WebSandboxFlags::kNone;
 }
 
-void SecurityContext::EnforceSandboxFlags(SandboxFlags mask) {
+void SecurityContext::EnforceSandboxFlags(WebSandboxFlags mask) {
   ApplySandboxFlags(mask);
 }
 
-void SecurityContext::ApplySandboxFlags(SandboxFlags mask,
+void SecurityContext::ApplySandboxFlags(WebSandboxFlags mask,
                                         bool is_potentially_trustworthy) {
   sandbox_flags_ |= mask;
 
-  if (IsSandboxed(kSandboxOrigin) && GetSecurityOrigin() &&
+  if (IsSandboxed(WebSandboxFlags::kOrigin) && GetSecurityOrigin() &&
       !GetSecurityOrigin()->IsOpaque()) {
     scoped_refptr<SecurityOrigin> security_origin =
         GetSecurityOrigin()->DeriveNewOpaqueOrigin();

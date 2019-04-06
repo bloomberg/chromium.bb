@@ -406,7 +406,7 @@ void HTMLAnchorElement::HandleClick(Event& event) {
                   kBlockingDownloadsInAdFrameWithoutUserActivation))
         return;
     }
-    if (GetDocument().IsSandboxed(kSandboxDownloads)) {
+    if (GetDocument().IsSandboxed(WebSandboxFlags::kDownloads)) {
       if (!has_gesture) {
         UseCounter::Count(GetDocument(),
                           WebFeature::kDownloadInSandboxWithoutUserGesture);
