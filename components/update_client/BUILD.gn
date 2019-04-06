@@ -31,6 +31,28 @@ source_set("network") {
   ]
 }
 
+source_set("unzip_impl") {
+  sources = [
+    "unzip/unzip_impl.cc",
+    "unzip/unzip_impl.h",
+  ]
+  deps = [
+    ":update_client",
+    "//components/services/unzip/public/cpp",
+  ]
+}
+
+source_set("patch_impl") {
+  sources = [
+    "patch/patch_impl.cc",
+    "patch/patch_impl.h",
+  ]
+  deps = [
+    ":update_client",
+    "//components/services/patch/public/cpp",
+  ]
+}
+
 static_library("update_client") {
   sources = [
     "action_runner.cc",
@@ -55,6 +77,7 @@ static_library("update_client") {
     "crx_update_item.h",
     "network.cc",
     "network.h",
+    "patcher.h",
     "persisted_data.cc",
     "persisted_data.h",
     "ping_manager.cc",
@@ -79,6 +102,7 @@ static_library("update_client") {
     "task_traits.h",
     "task_update.cc",
     "task_update.h",
+    "unzipper.h",
     "update_checker.cc",
     "update_checker.h",
     "update_client.cc",
@@ -114,8 +138,6 @@ static_library("update_client") {
     "//components/crx_file",
     "//components/data_use_measurement/core",
     "//components/prefs",
-    "//components/services/patch/public/cpp",
-    "//components/services/unzip/public/cpp",
     "//components/version_info:version_info",
     "//courgette:courgette_lib",
     "//crypto",
@@ -144,6 +166,8 @@ static_library("test_support") {
   ]
 
   deps = [
+    ":patch_impl",
+    ":unzip_impl",
     "//base",
     "//components/prefs",
     "//components/services/patch:lib",
@@ -210,8 +234,10 @@ source_set("unit_tests") {
 
   deps = [
     ":network",
+    ":patch_impl",
     ":test_support",
     ":unit_tests_bundle_data",
+    ":unzip_impl",
     ":update_client",
     "//base",
     "//components/crx_file",

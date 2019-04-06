@@ -1970,6 +1970,8 @@ jumbo_split_static_library("browser") {
     "//components/undo",
     "//components/unified_consent",
     "//components/update_client",
+    "//components/update_client:patch_impl",
+    "//components/update_client:unzip_impl",
     "//components/upload_list",
     "//components/url_formatter",
     "//components/url_formatter/top_domains:top500_domains",

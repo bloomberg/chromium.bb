@@ -13,11 +13,14 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/crx_file/crx_verifier.h"
 #include "components/update_client/component.h"
 #include "components/update_client/configurator.h"
+#include "components/update_client/patcher.h"
 #include "components/update_client/task_traits.h"
+#include "components/update_client/unzipper.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_engine.h"
 
@@ -41,11 +44,12 @@ void ActionRunner::Run(Callback run_complete) {
       ->PostTask(
           FROM_HERE,
           base::BindOnce(&ActionRunner::RunOnTaskRunner, base::Unretained(this),
-                         component_.config()->CreateServiceManagerConnector()));
+                         component_.config()->GetUnzipperFactory()->Create(),
+                         component_.config()->GetPatcherFactory()->Create()));
 }
 
-void ActionRunner::RunOnTaskRunner(
-    std::unique_ptr<service_manager::Connector> connector) {
+void ActionRunner::RunOnTaskRunner(std::unique_ptr<Unzipper> unzip,
+                                   scoped_refptr<Patcher> patch) {
   const auto installer = component_.crx_component()->installer;
 
   base::FilePath crx_path;
@@ -58,8 +62,8 @@ void ActionRunner::RunOnTaskRunner(
 
   const auto config = component_.config();
   auto unpacker = base::MakeRefCounted<ComponentUnpacker>(
-      config->GetRunActionKeyHash(), crx_path, installer, std::move(connector),
-      component_.crx_component()->crx_format_requirement);
+      config->GetRunActionKeyHash(), crx_path, installer, std::move(unzip),
+      std::move(patch), component_.crx_component()->crx_format_requirement);
   unpacker->Unpack(
       base::BindOnce(&ActionRunner::UnpackComplete, base::Unretained(this)));
 }

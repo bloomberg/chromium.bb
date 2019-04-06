@@ -21,8 +21,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/crx_file/crx_verifier.h"
-#include "components/services/unzip/public/cpp/unzip.h"
 #include "components/update_client/component_patcher.h"
+#include "components/update_client/patcher.h"
+#include "components/update_client/unzipper.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_client_errors.h"
 
@@ -30,17 +31,18 @@ namespace update_client {
 
 ComponentUnpacker::Result::Result() {}
 
-ComponentUnpacker::ComponentUnpacker(
-    const std::vector<uint8_t>& pk_hash,
-    const base::FilePath& path,
-    scoped_refptr<CrxInstaller> installer,
-    std::unique_ptr<service_manager::Connector> connector,
-    crx_file::VerifierFormat crx_format)
+ComponentUnpacker::ComponentUnpacker(const std::vector<uint8_t>& pk_hash,
+                                     const base::FilePath& path,
+                                     scoped_refptr<CrxInstaller> installer,
+                                     std::unique_ptr<Unzipper> unzipper,
+                                     scoped_refptr<Patcher> patcher,
+                                     crx_file::VerifierFormat crx_format)
     : pk_hash_(pk_hash),
       path_(path),
       is_delta_(false),
       installer_(installer),
-      connector_(std::move(connector)),
+      unzipper_(std::move(unzipper)),
+      patcher_tool_(patcher),
       crx_format_(crx_format),
       error_(UnpackerError::kNone),
       extended_error_(0) {}
@@ -84,8 +86,8 @@ bool ComponentUnpacker::BeginUnzipping() {
     return false;
   }
   VLOG(1) << "Unpacking in: " << destination.value();
-  unzip::Unzip(connector_->Clone(), path_, destination,
-               base::BindOnce(&ComponentUnpacker::EndUnzipping, this));
+  unzipper_->Unzip(path_, destination,
+                   base::BindOnce(&ComponentUnpacker::EndUnzipping, this));
   return true;
 }
 
@@ -109,7 +111,7 @@ bool ComponentUnpacker::BeginPatching() {
       return false;
     }
     patcher_ = base::MakeRefCounted<ComponentPatcher>(
-        unpack_diff_path_, unpack_path_, installer_, std::move(connector_));
+        unpack_diff_path_, unpack_path_, installer_, patcher_tool_);
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&ComponentPatcher::Start, patcher_,
