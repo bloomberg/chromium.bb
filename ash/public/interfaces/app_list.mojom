@@ -254,7 +254,8 @@ interface AppListController {
   // Publishes search results to Ash to render them.
   PublishSearchResults(array<SearchResultMetadata> results);
   // Update the whole model, usually when profile changes happen in Chrome.
-  SetModelData(array<AppListItemMetadata> apps,
+  SetModelData(int32 profile_id,
+               array<AppListItemMetadata> apps,
                bool is_search_engine_google);
 
   //////////////////////////////////////////////////////////////////////////////
@@ -372,27 +373,34 @@ interface AppListClient {
   OnAppListVisibilityChanged(bool visible);
 
   //////////////////////////////////////////////////////////////////////////////
-  // Interfaces on app list items:
+  // Interfaces on app list items. |profile_id| indicates the profile to which
+  // app list items belong. In multi-profile mode, each profile has its own
+  // app list model updater:
   // Activates (opens) the item with |id|.
-  ActivateItem(string id, int32 event_flags);
+  ActivateItem(int32 profile_id, string id, int32 event_flags);
   // Returns the context menu model for the item with |id|, or an empty array if
   // there is currently no menu for the item (e.g. during install).
-  GetContextMenuModel(string id) => (array<MenuItem> items);
+  GetContextMenuModel(int32 profile_id, string id) => (array<MenuItem> items);
   // Invoked when a context menu item of an app list item is clicked.
   // |id|: the clicked AppListItem's id.
   // |command_id|: the clicked menu item's command id.
   // |event_flags|: flags from the event which triggered this command.
-  ContextMenuItemSelected(string id, int32 command_id, int32 event_flags);
+  ContextMenuItemSelected(int32 profile_id,
+                          string id,
+                          int32 command_id,
+                          int32 event_flags);
   // Invoked when a folder is created in Ash (e.g. merge items into a folder).
-  OnFolderCreated(AppListItemMetadata folder);
+  OnFolderCreated(int32 profile_id, AppListItemMetadata folder);
   // Invoked when a folder has only one item left and so gets removed.
-  OnFolderDeleted(AppListItemMetadata folder);
+  OnFolderDeleted(int32 profile_id, AppListItemMetadata folder);
   // Invoked when user changes a folder's name or an item's position.
-  OnItemUpdated(AppListItemMetadata folder);
+  OnItemUpdated(int32 profile_id, AppListItemMetadata folder);
   // Invoked when a "page break" item is added with |id| and |position|.
-  OnPageBreakItemAdded(string id, syncer.mojom.StringOrdinal position);
+  OnPageBreakItemAdded(int32 profile_id,
+                       string id,
+                       syncer.mojom.StringOrdinal position);
   // Invoked when a "page break" item with |id| is deleted.
-  OnPageBreakItemDeleted(string id);
+  OnPageBreakItemDeleted(int32 profile_id, string id);
 
   // Updated when item with |id| is set to |visible|. Only sent if
   // |notify_visibility_change| was set on the SearchResultMetadata.

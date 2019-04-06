@@ -102,7 +102,8 @@ class ASH_EXPORT AppListControllerImpl
   void SetItemIsInstalling(const std::string& id, bool is_installing) override;
   void SetItemPercentDownloaded(const std::string& id,
                                 int32_t percent_downloaded) override;
-  void SetModelData(std::vector<AppListItemMetadataPtr> apps,
+  void SetModelData(int profile_id,
+                    std::vector<AppListItemMetadataPtr> apps,
                     bool is_search_engine_google) override;
 
   void SetSearchResultMetadata(SearchResultMetadataPtr metadata) override;
@@ -327,6 +328,11 @@ class ASH_EXPORT AppListControllerImpl
 
   // True if Shutdown() has been called.
   bool is_shutdown_ = false;
+
+  // Used in mojo callings to specify the profile whose app list data is
+  // read/written by Ash side through IPC. Notice that in multi-profile mode,
+  // each profile has its own AppListModelUpdater to manipulate app list items.
+  int profile_id_;
 
   base::ObserverList<AppListControllerObserver> observers_;
 
