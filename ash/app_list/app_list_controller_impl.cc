@@ -254,11 +254,14 @@ void AppListControllerImpl::SetItemPercentDownloaded(
 }
 
 void AppListControllerImpl::SetModelData(
+    int profile_id,
     std::vector<AppListItemMetadataPtr> apps,
     bool is_search_engine_google) {
   // Clear old model data.
   model_->DeleteAllItems();
   search_model_.DeleteAllResults();
+
+  profile_id_ = profile_id;
 
   // Populate new models. First populate folders and then other items to avoid
   // automatically creating folder items in |AddItemToFolder|.
@@ -395,9 +398,9 @@ void AppListControllerImpl::ShowAppList() {
 
 void AppListControllerImpl::OnAppListItemAdded(app_list::AppListItem* item) {
   if (item->is_folder())
-    client_->OnFolderCreated(item->CloneMetadata());
+    client_->OnFolderCreated(profile_id_, item->CloneMetadata());
   else if (item->is_page_break())
-    client_->OnPageBreakItemAdded(item->id(), item->position());
+    client_->OnPageBreakItemAdded(profile_id_, item->id(), item->position());
 }
 
 void AppListControllerImpl::OnActiveUserPrefServiceChanged(
@@ -424,15 +427,15 @@ void AppListControllerImpl::OnAppListItemWillBeDeleted(
     return;
 
   if (item->is_folder())
-    client_->OnFolderDeleted(item->CloneMetadata());
+    client_->OnFolderDeleted(profile_id_, item->CloneMetadata());
 
   if (item->is_page_break())
-    client_->OnPageBreakItemDeleted(item->id());
+    client_->OnPageBreakItemDeleted(profile_id_, item->id());
 }
 
 void AppListControllerImpl::OnAppListItemUpdated(app_list::AppListItem* item) {
   if (client_)
-    client_->OnItemUpdated(item->CloneMetadata());
+    client_->OnItemUpdated(profile_id_, item->CloneMetadata());
 }
 
 void AppListControllerImpl::OnAppListStateChanged(ash::AppListState new_state,
@@ -920,7 +923,7 @@ void AppListControllerImpl::GetWallpaperProminentColors(
 void AppListControllerImpl::ActivateItem(const std::string& id,
                                          int event_flags) {
   if (client_)
-    client_->ActivateItem(id, event_flags);
+    client_->ActivateItem(profile_id_, id, event_flags);
 
   ResetHomeLauncherIfShown();
 }
@@ -929,14 +932,14 @@ void AppListControllerImpl::GetContextMenuModel(
     const std::string& id,
     GetContextMenuModelCallback callback) {
   if (client_)
-    client_->GetContextMenuModel(id, std::move(callback));
+    client_->GetContextMenuModel(profile_id_, id, std::move(callback));
 }
 
 void AppListControllerImpl::ContextMenuItemSelected(const std::string& id,
                                                     int command_id,
                                                     int event_flags) {
   if (client_)
-    client_->ContextMenuItemSelected(id, command_id, event_flags);
+    client_->ContextMenuItemSelected(profile_id_, id, command_id, event_flags);
 }
 
 void AppListControllerImpl::ShowWallpaperContextMenu(
