@@ -2421,8 +2421,11 @@ group("ct_telemetry_perf_tests_without_chrome") {
   ]
 
   data = [
-    "//testing:run_perf_test",
     "//tools/perf/contrib/cluster_telemetry/",
+  ]
+
+  data_deps = [
+    "//testing:run_perf_test",
   ]
 }
 
