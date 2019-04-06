@@ -1443,16 +1443,12 @@
   },
   'webgl2_conformance_gl_passthrough_tests': {
     'remove_from': [
-      # https://crbug.com/927470
-      'Linux FYI Experimental Release (Intel HD 630)',
       # Not enough capacity. https://crbug.com/946694
       'ANGLE GPU Win10 Release (Intel HD 630)',
     ],
   },
   'webgl2_conformance_tests': {
     'remove_from': [
-      # https://crbug.com/927470
-      'Linux FYI Experimental Release (Intel HD 630)',
       # The Mac NVIDIA Retina bots don't have the capacity to run
       # this test suite on mac_optional_gpu_tests_rel.
       'Optional Mac Retina Release (NVIDIA)',

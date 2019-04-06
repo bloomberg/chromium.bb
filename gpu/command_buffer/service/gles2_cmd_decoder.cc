@@ -7178,6 +7178,18 @@ bool GLES2DecoderImpl::GetHelper(
         params[0] = texture_manager()->MaxSizeForTarget(GL_TEXTURE_CUBE_MAP);
       }
       return true;
+    case GL_MAX_3D_TEXTURE_SIZE:
+      *num_written = 1;
+      if (params) {
+        params[0] = texture_manager()->MaxSizeForTarget(GL_TEXTURE_3D);
+      }
+      return true;
+    case GL_MAX_ARRAY_TEXTURE_LAYERS:
+      *num_written = 1;
+      if (params) {
+        params[0] = texture_manager()->max_array_texture_layers();
+      }
+      return true;
     case GL_MAX_COLOR_ATTACHMENTS_EXT:
       *num_written = 1;
       if (params) {
