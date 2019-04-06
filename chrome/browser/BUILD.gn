@@ -383,8 +383,6 @@ jumbo_split_static_library("browser") {
     "data_reduction_proxy/data_reduction_proxy_chrome_settings.h",
     "data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.cc",
     "data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h",
-    "data_reduction_proxy_util.cc",
-    "data_reduction_proxy_util.h",
     "data_use_measurement/chrome_data_use_ascriber.cc",
     "data_use_measurement/chrome_data_use_ascriber.h",
     "data_use_measurement/chrome_data_use_ascriber_service.cc",

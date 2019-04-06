@@ -34,7 +34,6 @@ namespace {
 const char kEnabled[] = "Enabled";
 const char kControl[] = "Control";
 const char kDisabled[] = "Disabled";
-const char kExperimentsOption[] = "exp";
 const char kDefaultSecureProxyCheckUrl[] = "http://check.googlezip.net/connect";
 const char kDefaultWarmupUrl[] = "http://check.googlezip.net/e2e_probe";
 
@@ -150,14 +149,6 @@ bool IsIncludedInServerExperimentsFieldTrial() {
                  kDataReductionProxyServerExperimentsDisabled) &&
          base::FieldTrialList::FindFullName(kServerExperimentsFieldTrial)
                  .find(kDisabled) != 0;
-}
-
-bool IsIncludedInOnDeviceSafeBrowsingFieldTrial() {
-  if (!params::IsIncludedInServerExperimentsFieldTrial())
-    return false;
-  std::string server_experiment = variations::GetVariationParamValue(
-      params::GetServerExperimentsFieldTrialName(), kExperimentsOption);
-  return server_experiment == "disable_server_safebrowsing";
 }
 
 bool FetchWarmupProbeURLEnabled() {

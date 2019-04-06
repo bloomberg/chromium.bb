@@ -65,10 +65,6 @@ const char* GetLoFiFlagFieldTrialName();
 // server experiments for the data reduction proxy.
 bool IsIncludedInServerExperimentsFieldTrial();
 
-// Returns true if Chrome should use on-device safe browsing checks, and
-// disable safe browsing checks provided by data saver proxy.
-bool IsIncludedInOnDeviceSafeBrowsingFieldTrial();
-
 // Returns true if this client has the command line switch to enable forced
 // pageload metrics pingbacks on every page load.
 bool IsForcePingbackEnabledViaFlags();
