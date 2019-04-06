@@ -98,7 +98,7 @@ class CORE_EXPORT InspectorTraceEvents
   void DidReceiveResourceResponse(uint64_t identifier,
                                   DocumentLoader*,
                                   const ResourceResponse&,
-                                  Resource*);
+                                  const Resource*);
   void DidReceiveData(uint64_t identifier,
                       DocumentLoader*,
                       const char* data,

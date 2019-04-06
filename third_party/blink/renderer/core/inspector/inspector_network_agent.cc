@@ -509,7 +509,7 @@ BuildObjectForResourceRequest(const ResourceRequest& request,
 
 static std::unique_ptr<protocol::Network::Response>
 BuildObjectForResourceResponse(const ResourceResponse& response,
-                               Resource* cached_resource = nullptr,
+                               const Resource* cached_resource = nullptr,
                                bool* is_empty = nullptr) {
   if (response.IsNull())
     return nullptr;
@@ -920,7 +920,7 @@ void InspectorNetworkAgent::DidReceiveResourceResponse(
     uint64_t identifier,
     DocumentLoader* loader,
     const ResourceResponse& response,
-    Resource* cached_resource) {
+    const Resource* cached_resource) {
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
   bool is_not_modified = response.HttpStatusCode() == 304;
 

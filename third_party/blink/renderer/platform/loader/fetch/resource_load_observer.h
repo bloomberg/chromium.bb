@@ -49,11 +49,10 @@ class PLATFORM_EXPORT ResourceLoadObserver
   // the memory cache |request| and |resource->GetResourceRequest()| don't
   // match. |response| may not yet be set to |resource| when this function is
   // called.
-  // TODO(yhirano): Use const* Resource.
   virtual void DidReceiveResponse(uint64_t identifier,
                                   const ResourceRequest& request,
                                   const ResourceResponse& response,
-                                  Resource* resource,
+                                  const Resource* resource,
                                   ResponseSource) = 0;
 
   // Called when a response body chunk is received.

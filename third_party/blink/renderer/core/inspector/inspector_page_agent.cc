@@ -178,7 +178,7 @@ std::unique_ptr<protocol::Array<String>> GetEnabledWindowFeatures(
 
 }  // namespace
 
-static bool PrepareResourceBuffer(Resource* cached_resource,
+static bool PrepareResourceBuffer(const Resource* cached_resource,
                                   bool* has_zero_size) {
   if (!cached_resource)
     return false;
@@ -197,7 +197,7 @@ static bool PrepareResourceBuffer(Resource* cached_resource,
   return true;
 }
 
-static bool HasTextContent(Resource* cached_resource) {
+static bool HasTextContent(const Resource* cached_resource) {
   ResourceType type = cached_resource->GetType();
   return type == ResourceType::kCSSStyleSheet ||
          type == ResourceType::kXSLStyleSheet ||
@@ -310,7 +310,7 @@ bool InspectorPageAgent::SharedBufferContent(
 }
 
 // static
-bool InspectorPageAgent::CachedResourceContent(Resource* cached_resource,
+bool InspectorPageAgent::CachedResourceContent(const Resource* cached_resource,
                                                String* result,
                                                bool* base64_encoded) {
   bool has_zero_size;

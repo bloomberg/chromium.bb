@@ -133,7 +133,7 @@ void InspectorTraceEvents::DidReceiveResourceResponse(
     uint64_t identifier,
     DocumentLoader* loader,
     const ResourceResponse& response,
-    Resource*) {
+    const Resource*) {
   LocalFrame* frame = loader ? loader->GetFrame() : nullptr;
   TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceReceiveResponse",
                        TRACE_EVENT_SCOPE_THREAD, "data",
