@@ -466,10 +466,10 @@ class TestBuildStore(cros_test_lib.MockTestCase):
         buildbucket_ids)
     bs = BuildStore(_read_from_bb=True)
     bs.bb_client = mock.MagicMock()
-    buildbucket_ids = ['bucket 1']
+    buildbucket_ids = [1234]
     # Test for buildbucket_ids.
     bs.GetBuildsStages(buildbucket_ids=buildbucket_ids)
-    bs.bb_client.GetBuildStages.assert_called_once_with('bucket 1')
+    bs.bb_client.GetBuildStages.assert_called_once_with(1234)
     # Test for empty argument.
     self.assertEqual(bs.GetBuildsStages([]), [])
     init.return_value = False
@@ -484,7 +484,7 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     bs._transitioning_to_bb = False
     bs.cidb_conn = mock.MagicMock()
     build_ids = ['build 1', 'build 2']
-    buildbucket_ids = ['bucket 1', 'bucket 2']
+    buildbucket_ids = [1234, 2341]
     # Test for build_ids.
     bs.GetBuildStatuses(build_ids=build_ids)
     bs.cidb_conn.GetBuildStatuses.assert_called_once_with(build_ids)
@@ -495,7 +495,7 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     bs = BuildStore(_read_from_bb=True)
     bs.bb_client = mock.MagicMock()
     bs.GetBuildStatuses(buildbucket_ids)
-    bs.bb_client.GetBuildStatus.assert_called_with('bucket 2')
+    bs.bb_client.GetBuildStatus.assert_called_with(2341)
     # Test for error conditions.
     with self.assertRaises(buildstore.BuildStoreException):
       bs.GetBuildStatuses(buildbucket_ids=buildbucket_ids, build_ids=build_ids)

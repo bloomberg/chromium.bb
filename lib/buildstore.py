@@ -191,7 +191,7 @@ class BuildStore(object):
     if (self._read_from_bb or self._transitioning_to_bb
         and master_build_identifier.buildbucket_id is not None):
       return self.bb_client.GetChildStatuses(
-          master_build_identifier.buildbucket_id)
+          int(master_build_identifier.buildbucket_id))
     elif not self._read_from_bb and master_build_identifier.cidb_id is not None:
       return self.cidb_conn.GetSlaveStatuses(master_build_identifier.cidb_id,
                                              None)
@@ -210,7 +210,7 @@ class BuildStore(object):
     if self._read_from_bb or self._transitioning_to_bb:
       if build_identifier.buildbucket_id is not None:
         return self.bb_client.GetKilledChildBuilds(
-            build_identifier.buildbucket_id)
+            int(build_identifier.buildbucket_id))
     else:
       if build_identifier.cidb_id is not None:
         return [int(message['message_value']) for message in
@@ -500,7 +500,7 @@ class BuildStore(object):
     elif self._read_from_bb or self._transitioning_to_bb:
       stage_list = []
       for buildbucket_id in buildbucket_ids:
-        stage_list.append(self.bb_client.GetBuildStages(buildbucket_id))
+        stage_list.append(self.bb_client.GetBuildStages(int(buildbucket_id)))
       return stage_list
     else:
       return self.cidb_conn.GetBuildsStagesWithBuildbucketIds(buildbucket_ids)
