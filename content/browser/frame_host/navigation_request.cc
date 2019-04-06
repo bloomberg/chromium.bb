@@ -209,14 +209,14 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
   // Blink and //content.
   if (IsSecMetadataEnabled() && IsOriginSecure(url)) {
     std::string site_value = "cross-site";
-    std::string user_value = has_user_gesture ? "?T" : std::string();
+    std::string user_value = has_user_gesture ? "?1" : std::string();
 
     // Navigations that aren't triggerable from the web (e.g. typing in the
     // address bar, or clicking a bookmark) are labeled as 'none'. Webby
     // navigations compare the |initiator_origin| to the navigation target.
     if (!PageTransitionIsWebTriggerable(transition)) {
       site_value = "none";
-      user_value = "?T";
+      user_value = "?1";
     } else if (initiator_origin) {
       url::Origin target_origin = url::Origin::Create(url);
       if (initiator_origin->IsSameOriginWith(target_origin)) {

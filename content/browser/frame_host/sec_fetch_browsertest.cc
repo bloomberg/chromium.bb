@@ -88,9 +88,9 @@ IN_PROC_BROWSER_TEST_F(SecFetchBrowserTest, TypedNavigation) {
   }
 
   {
-    // Sec-Fetch-User: ?T
+    // Sec-Fetch-User: ?1
     NavigateForHeader("Sec-Fetch-User");
-    EXPECT_EQ("?T", GetContent());
+    EXPECT_EQ("?1", GetContent());
   }
 }
 
