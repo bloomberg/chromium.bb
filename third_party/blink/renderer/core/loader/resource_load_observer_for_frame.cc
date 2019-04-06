@@ -62,7 +62,7 @@ void ResourceLoadObserverForFrame::DidReceiveResponse(
     uint64_t identifier,
     const ResourceRequest& request,
     const ResourceResponse& response,
-    Resource* resource,
+    const Resource* resource,
     ResponseSource response_source) {
   LocalFrame& frame = frame_or_imported_document_->GetFrame();
   DocumentLoader& document_loader =

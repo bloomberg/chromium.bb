@@ -114,7 +114,7 @@ class ResourceFetcherTest : public testing::Test {
     void DidReceiveResponse(uint64_t identifier,
                             const ResourceRequest& request,
                             const ResourceResponse& response,
-                            Resource* resource,
+                            const Resource* resource,
                             ResponseSource source) override {}
     void DidReceiveData(uint64_t identifier,
                         base::span<const char> chunk) override {}

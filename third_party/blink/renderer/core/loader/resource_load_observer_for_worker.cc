@@ -40,7 +40,7 @@ void ResourceLoadObserverForWorker::DidReceiveResponse(
     uint64_t identifier,
     const ResourceRequest& request,
     const ResourceResponse& response,
-    Resource* resource,
+    const Resource* resource,
     ResponseSource) {
   if (response.HasMajorCertificateErrors()) {
     WebMixedContentContextType context_type =

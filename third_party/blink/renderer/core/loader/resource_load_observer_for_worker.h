@@ -33,7 +33,7 @@ class ResourceLoadObserverForWorker final : public ResourceLoadObserver {
   void DidReceiveResponse(uint64_t identifier,
                           const ResourceRequest& request,
                           const ResourceResponse& response,
-                          Resource* resource,
+                          const Resource* resource,
                           ResponseSource) override;
   void DidReceiveData(uint64_t identifier,
                       base::span<const char> chunk) override;
