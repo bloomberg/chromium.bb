@@ -486,21 +486,23 @@ class SharedImageRepresentationSkiaVkAHB
     base::ScopedFD sync_fd;
     if (!ahb_backing()->BeginWrite(&sync_fd))
       return nullptr;
-    DCHECK(sync_fd.is_valid());
 
-    VkSemaphore semaphore = vk_implementation()->ImportSemaphoreHandle(
-        vk_device(),
-        SemaphoreHandle(VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT,
-                        std::move(sync_fd)));
-    if (semaphore == VK_NULL_HANDLE) {
-      return nullptr;
-    }
+    VkSemaphore semaphore = VK_NULL_HANDLE;
+    if (sync_fd.is_valid()) {
+      semaphore = vk_implementation()->ImportSemaphoreHandle(
+          vk_device(),
+          SemaphoreHandle(VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT,
+                          std::move(sync_fd)));
+      if (semaphore == VK_NULL_HANDLE) {
+        return nullptr;
+      }
 
-    // Submit wait semaphore to the queue. Note that Skia uses the same queue
-    // exposed by vk_queue(), so this will work due to Vulkan queue ordering.
-    if (!SubmitWaitVkSemaphore(vk_queue(), semaphore)) {
-      DestroySemaphore(vk_device(), vk_queue(), semaphore);
-      return nullptr;
+      // Submit wait semaphore to the queue. Note that Skia uses the same queue
+      // exposed by vk_queue(), so this will work due to Vulkan queue ordering.
+      if (!SubmitWaitVkSemaphore(vk_queue(), semaphore)) {
+        DestroySemaphore(vk_device(), vk_queue(), semaphore);
+        return nullptr;
+      }
     }
 
     promise_texture_ = BeginVulkanAccess(
