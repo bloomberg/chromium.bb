@@ -21,8 +21,8 @@ enum class SchedulerClientType {
 
 // The type of user feedback from a displayed notification.
 enum class UserFeedback {
-  // Unknown feedback from the user.
-  kUnknown = 0,
+  // No user feedback yet.
+  kNoFeedback = 0,
   // The user taps the helpful button, potentially a strong indicator of user's
   // positive preference on the notification.
   kHelpful = 1,
@@ -40,15 +40,15 @@ enum class UserFeedback {
 
 // The user impression of a particular notification.
 enum class ImpressionResult {
-  // Unknown user impression.
-  kUnknown = 0,
+  // Invalid user impression.
+  kInvalid = 0,
   // Positive user impression that the user may like the notification.
   kPositive = 1,
   // Positive user impression that the user may dislike the notification.
   kNegative = 2,
-  // The feedback is netural to the user.
-  kNetural = 3,
-  kMaxValue = kNetural
+  // The feedback is neutral to the user.
+  kNeutral = 3,
+  kMaxValue = kNeutral
 };
 
 }  // namespace notifications

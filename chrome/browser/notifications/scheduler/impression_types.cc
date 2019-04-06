@@ -27,8 +27,10 @@ bool SuppressionInfo::operator==(const SuppressionInfo& other) const {
          duration == other.duration && recover_goal == other.recover_goal;
 }
 
-ClientState::ClientState(SchedulerClientType type)
-    : type(type), current_max_daily_show(0) {}
+ClientState::ClientState()
+    : type(SchedulerClientType::kUnknown), current_max_daily_show(0) {}
+
+ClientState::ClientState(const ClientState& other) = default;
 
 ClientState::~ClientState() = default;
 
@@ -52,7 +54,9 @@ std::string ClientState::DebugPrint() const {
            << "feedback: " << static_cast<int>(impression.feedback) << " \n"
            << "impression result: " << static_cast<int>(impression.impression)
            << " \n"
-           << "integrated: " << impression.integrated << " \n";
+           << "integrated: " << impression.integrated << " \n"
+           << "task start time: "
+           << static_cast<int>(impression.task_start_time) << "\n";
     log += stream.str();
   }
 

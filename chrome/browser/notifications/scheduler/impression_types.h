@@ -32,12 +32,12 @@ struct Impression {
 
   // The user feedback on the notification, each notification will have at most
   // one feedback. Sets after the user interacts with the notification.
-  UserFeedback feedback = UserFeedback::kUnknown;
+  UserFeedback feedback = UserFeedback::kNoFeedback;
 
   // The impression type. The client of a notification type takes one or several
   // user feedbacks as input and generate a user impression, which will
   // eventually affect the rate to deliver notifications to the user.
-  ImpressionResult impression = ImpressionResult::kUnknown;
+  ImpressionResult impression = ImpressionResult::kInvalid;
 
   // If the user feedback is used in computing the current notification deliver
   // rate.
@@ -71,7 +71,7 @@ struct SuppressionInfo {
 // client.
 struct ClientState {
   using Impressions = std::deque<Impression>;
-  explicit ClientState(SchedulerClientType type);
+  ClientState();
   explicit ClientState(const ClientState& other);
   ~ClientState();
 
@@ -81,7 +81,7 @@ struct ClientState {
   std::string DebugPrint() const;
 
   // The type of notification using the scheduler.
-  const SchedulerClientType type;
+  SchedulerClientType type;
 
   // The maximum number of notifications shown to the user for this type. May
   // change if the user interacts with the notification.

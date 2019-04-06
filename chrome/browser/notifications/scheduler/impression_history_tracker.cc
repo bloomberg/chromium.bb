@@ -70,7 +70,7 @@ void ImpressionHistoryTrackerImpl::AnalyzeImpressionHistory(
         break;
       case UserFeedback::kIgnore:
         break;
-      case UserFeedback::kUnknown:
+      case UserFeedback::kNoFeedback:
         FALLTHROUGH;
       default:
         // The user didn't interact with the notification yet.

@@ -91,10 +91,10 @@ TEST_F(ImpressionHistoryTrackerTest, DeleteExpiredImpression) {
                              config().impression_expiration;
   auto not_expired_time = base::Time::Now() + base::TimeDelta::FromDays(1) -
                           config().impression_expiration;
-  Impression expired{expired_create_time, UserFeedback::kUnknown,
-                     ImpressionResult::kUnknown, false /* integrated */};
-  Impression not_expired{not_expired_time, UserFeedback::kUnknown,
-                         ImpressionResult::kUnknown, false /* integrated */};
+  Impression expired{expired_create_time, UserFeedback::kNoFeedback,
+                     ImpressionResult::kInvalid, false /* integrated */};
+  Impression not_expired{not_expired_time, UserFeedback::kNoFeedback,
+                         ImpressionResult::kInvalid, false /* integrated */};
 
   test_case.input = {{SchedulerClientType::kTest1,
                       2 /* current_max_daily_show */,
@@ -120,7 +120,7 @@ TEST_F(ImpressionHistoryTrackerTest, PositiveImpression) {
   test_case.input = {{SchedulerClientType::kTest1,
                       2 /* current_max_daily_show */,
                       {{create_time, UserFeedback::kHelpful,
-                        ImpressionResult::kUnknown, false /* integrated */}},
+                        ImpressionResult::kInvalid, false /* integrated */}},
                       base::nullopt /* suppression_info */}};
 
   // Positive impression should bump |the current_max_daily_show| and update

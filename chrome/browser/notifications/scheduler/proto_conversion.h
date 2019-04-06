@@ -8,8 +8,10 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/notifications/proto/client_state.pb.h"
 #include "chrome/browser/notifications/proto/icon.pb.h"
 #include "chrome/browser/notifications/scheduler/icon_entry.h"
+#include "chrome/browser/notifications/scheduler/impression_types.h"
 
 namespace notifications {
 
@@ -17,7 +19,15 @@ namespace notifications {
 void IconEntryToProto(IconEntry* entry, notifications::proto::Icon* proto);
 
 // Converts an icon proto to icon entry.
-void IconProtoToEntry(proto::Icon* proto, notifications::IconEntry* entry);
+void IconEntryFromProto(proto::Icon* proto, notifications::IconEntry* entry);
+
+// Converts client state to proto.
+void ClientStateToProto(ClientState* client_state,
+                        notifications::proto::ClientState* proto);
+
+// Converts proto to client state.
+void ClientStateFromProto(proto::ClientState* proto,
+                          notifications::ClientState* client_state);
 
 }  // namespace notifications
 
