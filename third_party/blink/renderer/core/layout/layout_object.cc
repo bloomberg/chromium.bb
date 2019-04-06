@@ -153,10 +153,7 @@ LayoutBlock* FindContainingBlock(LayoutObject* container,
   while (container && container->IsAnonymousBlock())
     container = container->ContainingBlock(skip_info);
 
-  if (!container || !container->IsLayoutBlock())
-    return nullptr;  // This can still happen in case of an orphaned tree
-
-  return ToLayoutBlock(container);
+  return DynamicTo<LayoutBlock>(container);
 }
 
 }  // namespace
@@ -515,9 +512,9 @@ bool LayoutObject::IsRenderedLegendInternal() const {
     if (parent->IsAnonymous() && parent->Parent()->IsLayoutNGFieldset())
       parent = parent->Parent();
   }
-  return parent && parent->IsLayoutBlock() &&
-         IsHTMLFieldSetElement(parent->GetNode()) &&
-         LayoutFieldset::FindInFlowLegend(*ToLayoutBlock(parent)) == this;
+  const auto* parent_layout_block = DynamicTo<LayoutBlock>(parent);
+  return parent_layout_block && IsHTMLFieldSetElement(parent->GetNode()) &&
+         LayoutFieldset::FindInFlowLegend(*parent_layout_block) == this;
 }
 
 LayoutObject* LayoutObject::NextInPreOrderAfterChildren() const {
@@ -1070,8 +1067,9 @@ void LayoutObject::MarkParentForOutOfFlowPositionedChange() {
 void LayoutObject::CheckBlockPositionedObjectsNeedLayout() {
   DCHECK(!NeedsLayout());
 
-  if (IsLayoutBlock())
-    ToLayoutBlock(this)->CheckPositionedObjectsNeedLayout();
+  auto* layout_block = DynamicTo<LayoutBlock>(this);
+  if (layout_block)
+    layout_block->CheckPositionedObjectsNeedLayout();
 }
 #endif
 
@@ -1163,9 +1161,8 @@ LayoutBlock* LayoutObject::ContainingBlockForFixedPosition(
 }
 
 const LayoutBlock* LayoutObject::InclusiveContainingBlock() const {
-  if (IsLayoutBlock())
-    return ToLayoutBlock(this);
-  return ContainingBlock();
+  auto* layout_block = DynamicTo<LayoutBlock>(this);
+  return layout_block ? layout_block : ContainingBlock();
 }
 
 LayoutBlock* LayoutObject::ContainingBlock(AncestorSkipInfo* skip_info) const {
@@ -1190,10 +1187,7 @@ LayoutBlock* LayoutObject::ContainingBlock(AncestorSkipInfo* skip_info) const {
     }
   }
 
-  if (!object || !object->IsLayoutBlock())
-    return nullptr;  // This can still happen in case of an orphaned tree
-
-  return ToLayoutBlock(object);
+  return DynamicTo<LayoutBlock>(object);
 }
 
 FloatRect LayoutObject::AbsoluteBoundingBoxFloatRect(
@@ -1990,7 +1984,7 @@ static inline void HandleDynamicFloatPositionChange(LayoutObject* object) {
     } else {
       // An anonymous block must be made to wrap this inline.
       LayoutBlock* block =
-          ToLayoutBlock(object->Parent())->CreateAnonymousBlock();
+          To<LayoutBlock>(object->Parent())->CreateAnonymousBlock();
       LayoutObjectChildList* childlist = object->Parent()->VirtualChildren();
       childlist->InsertChildNode(object->Parent(), block, object);
       block->Children()->AppendChildNode(
@@ -2421,13 +2415,11 @@ void LayoutObject::SetScrollAnchorDisablingStyleChangedOnAncestor() {
   LayoutObject* object = Parent();
   Element* viewport_defining_element = GetDocument().ViewportDefiningElement();
   while (object) {
-    if (object->IsLayoutBlock()) {
-      LayoutBlock* block = ToLayoutBlock(object);
-      if (block->HasOverflowClip() ||
-          block->GetNode() == viewport_defining_element) {
-        block->SetScrollAnchorDisablingStyleChanged(true);
-        return;
-      }
+    auto* block = DynamicTo<LayoutBlock>(object);
+    if (block && (block->HasOverflowClip() ||
+                  block->GetNode() == viewport_defining_element)) {
+      block->SetScrollAnchorDisablingStyleChanged(true);
+      return;
     }
     object = object->Parent();
   }
@@ -2536,7 +2528,7 @@ void LayoutObject::ApplyFirstLineChanges(const ComputedStyle* old_style) {
   if (BehavesLikeBlockContainer() && (diff.NeedsFullPaintInvalidation() ||
                                       diff.TextDecorationOrColorChanged())) {
     if (auto* first_line_container =
-            ToLayoutBlock(this)->NearestInnerBlockWithFirstLine())
+            To<LayoutBlock>(this)->NearestInnerBlockWithFirstLine())
       first_line_container->SetShouldDoFullPaintInvalidationForFirstLine();
   }
 
@@ -3555,7 +3547,7 @@ static scoped_refptr<const ComputedStyle> FirstLineStyleForCachedUncachedType(
 
   if (layout_object_for_first_line_style->BehavesLikeBlockContainer()) {
     if (const LayoutBlock* first_line_block =
-            ToLayoutBlock(layout_object_for_first_line_style)
+            To<LayoutBlock>(layout_object_for_first_line_style)
                 ->EnclosingFirstLineStyleBlock()) {
       if (type == kCached)
         return first_line_block->GetCachedPseudoStyle(kPseudoIdFirstLine,
@@ -4107,7 +4099,7 @@ void LayoutObject::InvalidateSelectedChildrenOnStyleChange() {
   // not a block, we need to get the selection state from the containing block
   // to tell if we have any selected node children.
   LayoutBlock* block =
-      IsLayoutBlock() ? ToLayoutBlock(this) : ContainingBlock();
+      IsLayoutBlock() ? To<LayoutBlock>(this) : ContainingBlock();
   if (!block)
     return;
   if (!block->IsSelected())

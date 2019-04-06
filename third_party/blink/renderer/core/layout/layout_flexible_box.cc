@@ -1434,8 +1434,9 @@ void LayoutFlexibleBox::LayoutLineItems(FlexLine* current_line,
         relayout_children && !relaid_out_children_.Contains(child);
     // TODO(dgrogan): Broaden the NG part of this check once NG types other
     // than Mixin derivatives are cached.
-    if (child->IsLayoutBlock() &&
-        ToLayoutBlock(*child).HasPercentHeightDescendants() &&
+    auto* child_layout_block = DynamicTo<LayoutBlock>(child);
+    if (child_layout_block &&
+        child_layout_block->HasPercentHeightDescendants() &&
         !CanAvoidLayoutForNGChild(*child)) {
       // Have to force another relayout even though the child is sized
       // correctly, because its descendants are not sized correctly yet. Our
@@ -1637,8 +1638,8 @@ void LayoutFlexibleBox::ApplyStretchAlignmentToChild(FlexItem& flex_item) {
     // https://webkit.org/b/87905.
     bool child_needs_relayout =
         flex_item.cross_axis_size != child.LogicalHeight();
-    if (child.IsLayoutBlock() &&
-        ToLayoutBlock(child).HasPercentHeightDescendants() &&
+    auto* child_block = DynamicTo<LayoutBlock>(child);
+    if (child_block && child_block->HasPercentHeightDescendants() &&
         !CanAvoidLayoutForNGChild(child)) {
       // Have to force another relayout even though the child is sized
       // correctly, because its descendants are not sized correctly yet. Our

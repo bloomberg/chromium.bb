@@ -89,7 +89,7 @@ void LayoutRubyBase::MoveInlineChildren(LayoutRubyBase* to_base,
     LayoutObject* last_child = to_base->LastChild();
     if (last_child && last_child->IsAnonymousBlock() &&
         last_child->ChildrenInline()) {
-      to_block = ToLayoutBlock(last_child);
+      to_block = To<LayoutBlock>(last_child);
     } else {
       to_block = to_base->CreateAnonymousBlock();
       to_base->Children()->AppendChildNode(to_base, to_block);

@@ -142,7 +142,7 @@ TEST_F(LayoutTableCellTest, RepaintContentInTableCell) {
   UpdateAllLifecyclePhasesForTest();
 
   // Check that overflow was calculated on the cell.
-  auto* input_block = ToLayoutBlock(cell->GetLayoutObject());
+  auto* input_block = To<LayoutBlock>(cell->GetLayoutObject());
   LayoutRect rect = input_block->LocalVisualRect();
   EXPECT_EQ(LayoutRect(-1, -1, 24, 24), rect);
 }

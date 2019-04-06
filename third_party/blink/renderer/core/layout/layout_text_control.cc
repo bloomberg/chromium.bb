@@ -53,7 +53,7 @@ void LayoutTextControl::StyleDidChange(StyleDifference diff,
   if (!inner_editor)
     return;
   LayoutBlock* inner_editor_layout_object =
-      ToLayoutBlock(inner_editor->GetLayoutObject());
+      To<LayoutBlock>(inner_editor->GetLayoutObject());
   if (inner_editor_layout_object) {
     inner_editor->SetNeedsStyleRecalc(
         kSubtreeStyleChange,
@@ -334,7 +334,7 @@ LayoutUnit LayoutTextControl::FirstLineBoxBaseline() const {
     return LayoutUnit(-1);
 
   LayoutBlock* inner_editor_layout_object =
-      ToLayoutBlock(inner_editor->GetLayoutObject());
+      To<LayoutBlock>(inner_editor->GetLayoutObject());
   const SimpleFontData* font_data =
       inner_editor_layout_object->Style(true)->GetFont().PrimaryFont();
   DCHECK(font_data);

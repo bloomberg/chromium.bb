@@ -522,10 +522,11 @@ void LayoutListItem::UpdateOverflow() {
     bool found_self_painting_layer = false;
     do {
       object = object->ParentBox();
-      if (object->IsLayoutBlock()) {
+      auto* layout_block_object = DynamicTo<LayoutBlock>(object);
+      if (layout_block_object) {
         if (!found_self_painting_layer)
-          ToLayoutBlock(object)->AddContentsVisualOverflow(marker_rect);
-        ToLayoutBlock(object)->AddLayoutOverflow(marker_rect);
+          layout_block_object->AddContentsVisualOverflow(marker_rect);
+        layout_block_object->AddLayoutOverflow(marker_rect);
       }
 
       if (object->HasOverflowClip())
