@@ -282,20 +282,6 @@ void InitializeHardwareOverlaySupport() {
     if (g_supports_overlays)
       break;
   }
-  for (const auto& info : g_overlay_support_info) {
-    const std::string kOverlaySupportFlagsUmaPrefix =
-        "GPU.DirectComposition.OverlaySupportFlags2.";
-    base::UmaHistogramSparse(kOverlaySupportFlagsUmaPrefix +
-                                 OverlayFormatToString(info.overlay_format),
-                             info.flags);
-    if ((info.overlay_format == OverlayFormat::kNV12) &&
-        (info.flags & (DXGI_OVERLAY_SUPPORT_FLAG_DIRECT |
-                       DXGI_OVERLAY_SUPPORT_FLAG_SCALING))) {
-      // Recorded only when NV12 is supported
-      UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.OverlayNV12Rec709Supported",
-                            supports_nv12_rec709);
-    }
-  }
   if (g_supports_overlays) {
     UMA_HISTOGRAM_ENUMERATION("GPU.DirectComposition.OverlayFormatUsed2",
                               g_overlay_format_used);
@@ -1597,8 +1583,6 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
     HRESULT hr = swap_chain_->ResizeBuffers(
         desc.BufferCount, swap_chain_size.width(), swap_chain_size.height(),
         desc.Format, desc.Flags);
-    UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.SwapChainResizeResult",
-                          SUCCEEDED(hr));
     if (SUCCEEDED(hr))
       return true;
     DLOG(ERROR) << "ResizeBuffers failed with error 0x" << std::hex << hr;
@@ -1653,9 +1637,10 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
     desc.Flags |= DXGI_SWAP_CHAIN_FLAG_HW_PROTECTED;
   desc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
 
-  const std::string kSwapChainCreationResultUmaPrefix =
-      "GPU.DirectComposition.SwapChainCreationResult.";
-  const std::string kSwapChainCreationResultUmaPrefix3 =
+  const std::string kSwapChainCreationResultByFormatUmaPrefix =
+      "GPU.DirectComposition.SwapChainCreationResult2.";
+
+  const std::string kSwapChainCreationResultByVideoTypeUmaPrefix =
       "GPU.DirectComposition.SwapChainCreationResult3.";
   const std::string protected_video_type_string =
       ProtectedVideoTypeToString(protected_video_type);
@@ -1667,11 +1652,12 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
     is_yuv_swapchain_ = SUCCEEDED(hr);
     failed_to_create_yuv_swapchain_ = !is_yuv_swapchain_;
 
-    UMA_HISTOGRAM_BOOLEAN(kSwapChainCreationResultUmaPrefix +
-                              OverlayFormatToString(g_overlay_format_used),
-                          SUCCEEDED(hr));
-    base::UmaHistogramSparse(
-        kSwapChainCreationResultUmaPrefix3 + protected_video_type_string, hr);
+    base::UmaHistogramSparse(kSwapChainCreationResultByFormatUmaPrefix +
+                                 OverlayFormatToString(g_overlay_format_used),
+                             hr);
+    base::UmaHistogramSparse(kSwapChainCreationResultByVideoTypeUmaPrefix +
+                                 protected_video_type_string,
+                             hr);
 
     if (FAILED(hr)) {
       DLOG(ERROR) << "Failed to create "
@@ -1688,15 +1674,17 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
       desc.Flags |= DXGI_SWAP_CHAIN_FLAG_DISPLAY_ONLY;
     if (protected_video_type == ui::ProtectedVideoType::kHardwareProtected)
       desc.Flags |= DXGI_SWAP_CHAIN_FLAG_HW_PROTECTED;
+
     HRESULT hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
         d3d11_device_.Get(), swap_chain_handle_.Get(), &desc, nullptr,
         swap_chain_.GetAddressOf());
 
-    UMA_HISTOGRAM_BOOLEAN(kSwapChainCreationResultUmaPrefix +
-                              OverlayFormatToString(OverlayFormat::kBGRA),
-                          SUCCEEDED(hr));
-    base::UmaHistogramSparse(
-        kSwapChainCreationResultUmaPrefix3 + protected_video_type_string, hr);
+    base::UmaHistogramSparse(kSwapChainCreationResultByFormatUmaPrefix +
+                                 OverlayFormatToString(OverlayFormat::kBGRA),
+                             hr);
+    base::UmaHistogramSparse(kSwapChainCreationResultByVideoTypeUmaPrefix +
+                                 protected_video_type_string,
+                             hr);
 
     if (FAILED(hr)) {
       DLOG(ERROR) << "Failed to create BGRA swap chain of size "
@@ -2068,8 +2056,6 @@ gfx::SwapResult DirectCompositionSurfaceWin::SwapBuffers(
   };
   if (!layer_tree_->CommitAndClearPendingOverlays(std::move(backbuffer_info)))
     succeeded = false;
-
-  UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.SwapBuffersResult", succeeded);
 
   auto swap_result =
       succeeded ? gfx::SwapResult::SWAP_ACK : gfx::SwapResult::SWAP_FAILED;
