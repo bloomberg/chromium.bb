@@ -60,11 +60,24 @@
         margin-top: 12px;
       }
 
+      /* Print Preview uses lighter box-shadows compared to the default
+       * styling. */
+      :host([new-print-preview-layout_]) #cr-container-shadow-top,
+      :host([new-print-preview-layout_]) #cr-container-shadow-bottom {
+        box-shadow: inset 0 5px 3px -3px rgba(0, 0, 0, .2);
+      }
+
       .settings-section {
         display: block;
         margin-bottom: 16px;
         margin-top: 16px;
       }
+
+<if expr="not chromeos">
+      :host(:not([new-print-preview-layout_])) print-preview-link-container {
+        border-top: var(--print-preview-settings-border);
+      }
+</if>
     </style>
     <template is="dom-if" if="[[newPrintPreviewLayout_]]">
       <print-preview-header-new id="header" destination="[[destination]]"
@@ -80,7 +93,7 @@
           settings="[[settings]]" managed="[[controlsManaged]]">
       </print-preview-header>
     </template>
-    <div id="container">
+    <div id="container" show-bottom-shadow$="[[newPrintPreviewLayout_]]">
       <print-preview-destination-settings id="destinationSettings"
           cloud-print-interface="[[cloudPrintInterface]]"
           destination="{{destination}}" destination-state="{{destinationState}}"
@@ -155,12 +168,22 @@
             hidden$="[[!settings.vendorItems.available]]"
             class="settings-section">
         </print-preview-advanced-options-settings>
+<if expr="not chromeos">
+        <template is="dom-if" if="[[newPrintPreviewLayout_]]">
+          <print-preview-link-container destination="[[destination]]"
+              app-kiosk-mode="[[isInAppKioskMode_]]"
+              disabled="[[controlsDisabled_]]">
+          </print-preview-link-container>
+        </template>
+</if>
       </iron-collapse>
 <if expr="not chromeos">
+    <template is="dom-if" if="[[!newPrintPreviewLayout_]]">
       <print-preview-link-container destination="[[destination]]"
           app-kiosk-mode="[[isInAppKioskMode_]]"
           disabled="[[controlsDisabled_]]">
       </print-preview-link-container>
+    </template>
 </if>
     </div>
     <template is="dom-if" if="[[newPrintPreviewLayout_]]">
