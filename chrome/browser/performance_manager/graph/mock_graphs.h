@@ -23,7 +23,7 @@ class SystemNodeImpl;
 //   F
 //
 // Where:
-// F: frame
+// F: frame(frame_tree_id:0)
 // Pr: process(pid:1)
 // Pg: page
 struct MockSinglePageInSingleProcessGraph {
@@ -43,8 +43,8 @@ struct MockSinglePageInSingleProcessGraph {
 //   F  OF
 //
 // Where:
-// F: frame
-// OF: other_frame
+// F: frame(frame_tree_id:0)
+// OF: other_frame(frame_tree_id:1)
 // Pg: page
 // OPg: other_page
 // Pr: process(pid:1)
@@ -67,8 +67,8 @@ struct MockMultiplePagesInSingleProcessGraph
 // |__CF
 //
 // Where:
-// F: frame
-// CF: child_frame
+// F: frame(frame_tree_id:0)
+// CF: child_frame(frame_tree_id:2)
 // Pg: page
 // Pr: process(pid:1)
 // OPr: other_process(pid:2)
@@ -76,8 +76,8 @@ struct MockSinglePageWithMultipleProcessesGraph
     : public MockSinglePageInSingleProcessGraph {
   explicit MockSinglePageWithMultipleProcessesGraph(Graph* graph);
   ~MockSinglePageWithMultipleProcessesGraph();
-  TestNodeWrapper<FrameNodeImpl> child_frame;
   TestNodeWrapper<ProcessNodeImpl> other_process;
+  TestNodeWrapper<FrameNodeImpl> child_frame;
 };
 
 // The following coordination unit graph topology is created to emulate a
@@ -91,9 +91,9 @@ struct MockSinglePageWithMultipleProcessesGraph
 //         CF___|
 //
 // Where:
-// F: frame
-// OF: other_frame
-// CF: another_frame
+// F: frame(frame_tree_id:0)
+// OF: other_frame(frame_tree_id:1)
+// CF: child_frame(frame_tree_id:3)
 // Pg: page
 // OPg: other_page
 // Pr: process(pid:1)
@@ -102,8 +102,8 @@ struct MockMultiplePagesWithMultipleProcessesGraph
     : public MockMultiplePagesInSingleProcessGraph {
   explicit MockMultiplePagesWithMultipleProcessesGraph(Graph* graph);
   ~MockMultiplePagesWithMultipleProcessesGraph();
-  TestNodeWrapper<FrameNodeImpl> child_frame;
   TestNodeWrapper<ProcessNodeImpl> other_process;
+  TestNodeWrapper<FrameNodeImpl> child_frame;
 };
 
 }  // namespace performance_manager

@@ -62,12 +62,20 @@ class PerformanceManagerTabHelper
   void SetUkmSourceIdForTesting(ukm::SourceId id) { ukm_source_id_ = id; }
 
  private:
+  friend class content::WebContentsUserData<PerformanceManagerTabHelper>;
+
   explicit PerformanceManagerTabHelper(content::WebContents* web_contents);
+
+  // Post a task to run in the performance manager sequence. The |node| will be
+  // passed as unretained, and the closure will be created with BindOnce.
+  template <typename Functor, typename NodeType, typename... Args>
+  void PostToGraph(const base::Location& from_here,
+                   Functor&& functor,
+                   NodeType* node,
+                   Args&&... args);
 
   void OnMainFrameNavigation(int64_t navigation_id);
   void UpdatePageNodeVisibility(content::Visibility visibility);
-
-  friend class content::WebContentsUserData<PerformanceManagerTabHelper>;
 
   // The performance manager for this process, if any.
   PerformanceManager* const performance_manager_;

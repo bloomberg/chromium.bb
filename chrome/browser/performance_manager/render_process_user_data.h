@@ -28,8 +28,9 @@ class RenderProcessUserData : public base::SupportsUserData::Data,
  public:
   ~RenderProcessUserData() override;
 
-  static void CreateForRenderProcessHost(content::RenderProcessHost* host);
   static RenderProcessUserData* GetForRenderProcessHost(
+      content::RenderProcessHost* host);
+  static RenderProcessUserData* GetOrCreateForRenderProcessHost(
       content::RenderProcessHost* host);
 
   // Detaches all instances from their RenderProcessHosts and destroys them.

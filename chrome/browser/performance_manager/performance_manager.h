@@ -37,6 +37,8 @@ class PageNodeImpl;
 // {Frame|Page|Process|System}ResourceCoordinator classes.
 class PerformanceManager {
  public:
+  using FrameNodeCreationCallback = base::OnceCallback<void(FrameNodeImpl*)>;
+
   ~PerformanceManager();
 
   // Retrieves the currently registered instance.
@@ -63,10 +65,20 @@ class PerformanceManager {
   void BindInterface(mojo::InterfaceRequest<Interface> request);
 
   // Creates a new node of the requested type and adds it to the graph.
-  // May be called from any sequence.
+  // May be called from any sequence. If a |creation_callback| is provided it
+  // will be run on the performance manager sequence immediately after creating
+  // the node.
   std::unique_ptr<FrameNodeImpl> CreateFrameNode(
+      ProcessNodeImpl* process_node,
       PageNodeImpl* page_node,
-      FrameNodeImpl* parent_frame_node);
+      FrameNodeImpl* parent_frame_node,
+      int frame_tree_node_id);
+  std::unique_ptr<FrameNodeImpl> CreateFrameNode(
+      ProcessNodeImpl* process_node,
+      PageNodeImpl* page_node,
+      FrameNodeImpl* parent_frame_node,
+      int frame_tree_node_id,
+      FrameNodeCreationCallback creation_callback);
   std::unique_ptr<PageNodeImpl> CreatePageNode();
   std::unique_ptr<ProcessNodeImpl> CreateProcessNode();
 
@@ -95,8 +107,10 @@ class PerformanceManager {
   void PostBindInterface(const std::string& interface_name,
                          mojo::ScopedMessagePipeHandle message_pipe);
 
-  template <typename NodeType>
-  std::unique_ptr<NodeType> CreateNodeImpl();
+  template <typename NodeType, typename... Args>
+  std::unique_ptr<NodeType> CreateNodeImpl(
+      base::OnceCallback<void(NodeType*)> creation_callback,
+      Args&&... constructor_args);
 
   void PostDeleteNode(std::unique_ptr<NodeBase> node);
   void DeleteNodeImpl(std::unique_ptr<NodeBase> node);

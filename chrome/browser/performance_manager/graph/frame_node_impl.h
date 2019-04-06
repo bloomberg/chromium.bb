@@ -31,12 +31,14 @@ class FrameNodeImpl
     return resource_coordinator::CoordinationUnitType::kFrame;
   }
 
-  // Construct a frame node associated with |page_node| and optionally with a
-  // |parent_frame_node|. For the main frame of |page_node| the
-  // |parent_frame_node| parameter should be nullptr.
+  // Construct a frame node associated with a |process_node|, a |page_node| and
+  // optionally with a |parent_frame_node|. For the main frame of |page_node|
+  // the |parent_frame_node| parameter should be nullptr.
   FrameNodeImpl(Graph* graph,
+                ProcessNodeImpl* process_node,
                 PageNodeImpl* page_node,
-                FrameNodeImpl* parent_frame_node);
+                FrameNodeImpl* parent_frame_node,
+                int frame_tree_node_id);
   ~FrameNodeImpl() override;
 
   // FrameNode implementation.
@@ -52,18 +54,17 @@ class FrameNodeImpl
   // Getters for const properties. These can be called from any thread.
   FrameNodeImpl* parent_frame_node() const;
   PageNodeImpl* page_node() const;
+  ProcessNodeImpl* process_node() const;
+  int frame_tree_node_id() const;
 
   // Getters for non-const properties. These are not thread safe.
-  ProcessNodeImpl* process_node() const;
   const std::set<FrameNodeImpl*>& child_frame_nodes() const;
   resource_coordinator::mojom::LifecycleState lifecycle_state() const;
   bool has_nonempty_beforeunload() const;
   const GURL& url() const;
   bool network_almost_idle() const;
 
-  // Setters can only be called from the performance manager sequence.
-  // TODO(siggi): The process node can be provided at construction.
-  void SetProcess(ProcessNodeImpl* process_node);
+  // Setters are not thread safe.
   void set_url(const GURL& url);
 
   // A frame is a main frame if it has no |parent_frame_node|. This can be
@@ -95,12 +96,13 @@ class FrameNodeImpl
   bool HasFrameNodeInAncestors(FrameNodeImpl* frame_node) const;
   bool HasFrameNodeInDescendants(FrameNodeImpl* frame_node) const;
 
-  void RemoveProcessNode(ProcessNodeImpl* process_node);
-
   FrameNodeImpl* const parent_frame_node_;
   PageNodeImpl* const page_node_;
+  ProcessNodeImpl* const process_node_;
+  // Can be used to tie together "sibling" frames, where a navigation is ongoing
+  // in a new frame that will soon replace the existing one.
+  const int frame_tree_node_id_;
 
-  ProcessNodeImpl* process_node_;
   std::set<FrameNodeImpl*> child_frame_nodes_;
   resource_coordinator::mojom::LifecycleState lifecycle_state_ =
       resource_coordinator::mojom::LifecycleState::kRunning;

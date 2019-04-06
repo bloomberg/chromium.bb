@@ -12,13 +12,18 @@
 namespace performance_manager {
 
 FrameNodeImpl::FrameNodeImpl(Graph* graph,
+                             ProcessNodeImpl* process_node,
                              PageNodeImpl* page_node,
-                             FrameNodeImpl* parent_frame_node)
+                             FrameNodeImpl* parent_frame_node,
+                             int frame_tree_node_id)
     : CoordinationUnitInterface(graph),
       parent_frame_node_(parent_frame_node),
       page_node_(page_node),
-      process_node_(nullptr) {
+      process_node_(process_node),
+      frame_tree_node_id_(frame_tree_node_id) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
+  DCHECK(process_node);
+  DCHECK(page_node);
 }
 
 FrameNodeImpl::~FrameNodeImpl() {
@@ -39,10 +44,8 @@ void FrameNodeImpl::SetLifecycleState(
   lifecycle_state_ = state;
 
   // Notify parents of this change.
-  if (process_node_)
-    process_node_->OnFrameLifecycleStateChanged(this, old_state);
-  if (page_node_)
-    page_node_->OnFrameLifecycleStateChanged(this, old_state);
+  process_node_->OnFrameLifecycleStateChanged(this, old_state);
+  page_node_->OnFrameLifecycleStateChanged(this, old_state);
 }
 
 void FrameNodeImpl::SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload) {
@@ -91,8 +94,11 @@ PageNodeImpl* FrameNodeImpl::page_node() const {
 }
 
 ProcessNodeImpl* FrameNodeImpl::process_node() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return process_node_;
+}
+
+int FrameNodeImpl::frame_tree_node_id() const {
+  return frame_tree_node_id_;
 }
 
 const std::set<FrameNodeImpl*>& FrameNodeImpl::child_frame_nodes() const {
@@ -119,14 +125,6 @@ const GURL& FrameNodeImpl::url() const {
 bool FrameNodeImpl::network_almost_idle() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return network_almost_idle_.value();
-}
-
-void FrameNodeImpl::SetProcess(ProcessNodeImpl* process_node) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(NodeInGraph(process_node));
-  DCHECK(!process_node_);
-  process_node_ = process_node;
-  process_node->AddFrame(this);
 }
 
 void FrameNodeImpl::set_url(const GURL& url) {
@@ -205,13 +203,11 @@ void FrameNodeImpl::JoinGraph() {
     intervention_policy_[i] =
         resource_coordinator::mojom::InterventionPolicy::kUnknown;
 
-  // Hook up the frame hierarchy.
+  // Wire this up to the other nodes in the graph.
   if (parent_frame_node_)
     parent_frame_node_->AddChildFrame(this);
-
-  // And join the page.
-  // TODO(siggi): Only do this for the main frame and retire the frame set.
   page_node_->AddFrame(this);
+  process_node_->AddFrame(this);
 
   NodeBase::JoinGraph();
 }
@@ -232,10 +228,9 @@ void FrameNodeImpl::LeaveGraph() {
     parent_frame_node_->RemoveChildFrame(this);
   }
 
-  if (process_node_) {
-    DCHECK(NodeInGraph(process_node_));
-    process_node_->RemoveFrame(this);
-  }
+  // And leave the process.
+  DCHECK(NodeInGraph(process_node_));
+  process_node_->RemoveFrame(this);
 }
 
 void FrameNodeImpl::OnEventReceived(resource_coordinator::mojom::Event event) {
@@ -262,12 +257,6 @@ bool FrameNodeImpl::HasFrameNodeInDescendants(FrameNodeImpl* frame_node) const {
     }
   }
   return false;
-}
-
-void FrameNodeImpl::RemoveProcessNode(ProcessNodeImpl* process_node) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(process_node == process_node_);
-  process_node_ = nullptr;
 }
 
 }  // namespace performance_manager
