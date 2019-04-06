@@ -30,6 +30,8 @@ constexpr const base::FilePath::CharType* kI420Image =
     FILE_PATH_LITERAL("bear_320x192.i420.yuv");
 constexpr const base::FilePath::CharType* kNV12Image =
     FILE_PATH_LITERAL("bear_320x192.nv12.yuv");
+constexpr const base::FilePath::CharType* kRGBAImage =
+    FILE_PATH_LITERAL("bear_320x192.rgba");
 constexpr const base::FilePath::CharType* kYV12Image =
     FILE_PATH_LITERAL("bear_320x192.yv12.yuv");
 
@@ -60,8 +62,13 @@ class ImageProcessorSimpleParamTest
     // TODO(crbug.com/917951): Select more appropriate number of buffers.
     constexpr size_t kNumBuffers = 1;
     LOG_ASSERT(output_image.IsMetadataLoaded());
-    auto vf_validator = test::VideoFrameValidator::Create(
-        {output_image.Checksum()}, output_image.PixelFormat());
+    // TODO(crbug.com/944823): Use VideoFrameValidator for RGB formats.
+    std::unique_ptr<test::VideoFrameValidator> vf_validator;
+    if (IsYuvPlanar(input_image.PixelFormat()) &&
+        IsYuvPlanar(output_image.PixelFormat())) {
+      vf_validator = test::VideoFrameValidator::Create(
+          {output_image.Checksum()}, output_image.PixelFormat());
+    }
     std::vector<std::unique_ptr<test::VideoFrameProcessor>> frame_processors;
     frame_processors.push_back(std::move(vf_validator));
     auto ip_client = test::ImageProcessorClient::Create(
@@ -89,10 +96,12 @@ TEST_P(ImageProcessorSimpleParamTest, ConvertOneTimeFromMemToMem) {
 
 // I420->NV12
 // YV12->NV12
+// RGBA->NV12
 INSTANTIATE_TEST_SUITE_P(
     ConvertToNV12,
     ImageProcessorSimpleParamTest,
     ::testing::Values(std::make_tuple(kI420Image, kNV12Image),
+                      std::make_tuple(kRGBAImage, kNV12Image),
                       std::make_tuple(kYV12Image, kNV12Image)));
 
 #if defined(OS_CHROMEOS)
