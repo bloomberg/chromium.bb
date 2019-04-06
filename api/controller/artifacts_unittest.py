@@ -48,7 +48,8 @@ class BundleAutotestFilesTest(BundleTestCase):
         artifact.path for artifact in self.output_proto.artifacts
     ], ['/tmp/artifacts/autotest-a.tar.gz', '/tmp/artifacts/autotest-b.tar.gz'])
     self.assertEqual(build_autotest_tarballs.call_args_list, [
-        mock.call('/cros', '/cros/chroot/build/target/build', '/tmp/artifacts')
+        mock.call('/cros', '/cros/chroot/build/target/usr/local/build',
+                  '/tmp/artifacts')
     ])
 
 

@@ -15,21 +15,6 @@ from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 
 
-def _GetTargetWorkingDirectory(build_root, target):
-  """Return the working directory for the given build target.
-
-  See commands.py functions for more information on what this means.
-
-  Args:
-    build_root (str): Root CrOS directory being built.
-    target (str): Name of the build target in question.
-
-  Returns:
-    str: Path to the build target's working directory.
-  """
-  return os.path.join(build_root, 'chroot', 'build', target, 'build')
-
-
 def BundleTestUpdatePayloads(input_proto, output_proto):
   """Generate minimal update payloads for the build target for testing.
 
@@ -84,7 +69,7 @@ def BundleAutotestFiles(input_proto, output_proto):
   target = input_proto.build_target.name
   output_dir = input_proto.output_dir
   build_root = constants.SOURCE_ROOT
-  cwd = _GetTargetWorkingDirectory(build_root, target)
+  cwd = os.path.join(build_root, 'chroot/build', target, 'usr/local/build')
 
   # Note that unlike the functions below, this returns the full path
   # to *multiple* tarballs.
@@ -106,7 +91,7 @@ def BundleTastFiles(input_proto, output_proto):
   target = input_proto.build_target.name
   output_dir = input_proto.output_dir
   build_root = constants.SOURCE_ROOT
-  cwd = _GetTargetWorkingDirectory(build_root, target)
+  cwd = os.path.join(build_root, 'chroot/build', target, 'build')
 
   # Note that unlike the functions below, this returns the full path
   # to the tarball.
