@@ -282,15 +282,19 @@ AuthenticatorSelectionCriteriaPtr GetTestAuthenticatorSelectionCriteria() {
   return criteria;
 }
 
-std::vector<PublicKeyCredentialDescriptorPtr> GetTestAllowCredentials() {
+std::vector<PublicKeyCredentialDescriptorPtr> GetTestCredentials(
+    size_t num_credentials = 1) {
   std::vector<PublicKeyCredentialDescriptorPtr> descriptors;
-  auto credential = PublicKeyCredentialDescriptor::New();
-  credential->type = PublicKeyCredentialType::PUBLIC_KEY;
-  std::vector<uint8_t> id(32, 0x0A);
-  credential->id = id;
-  credential->transports.push_back(AuthenticatorTransport::USB);
-  credential->transports.push_back(AuthenticatorTransport::BLE);
-  descriptors.push_back(std::move(credential));
+  for (size_t i = 0; i < num_credentials; i++) {
+    DCHECK(i <= std::numeric_limits<uint8_t>::max());
+    std::vector<uint8_t> id(32u, static_cast<uint8_t>(i));
+    auto credential = PublicKeyCredentialDescriptor::New();
+    credential->type = PublicKeyCredentialType::PUBLIC_KEY;
+    credential->id = id;
+    credential->transports.push_back(AuthenticatorTransport::USB);
+    credential->transports.push_back(AuthenticatorTransport::BLE);
+    descriptors.push_back(std::move(credential));
+  }
   return descriptors;
 }
 
@@ -315,7 +319,7 @@ GetTestPublicKeyCredentialRequestOptions() {
   options->adjusted_timeout = base::TimeDelta::FromMinutes(1);
   options->user_verification =
       blink::mojom::UserVerificationRequirement::PREFERRED;
-  options->allow_credentials = GetTestAllowCredentials();
+  options->allow_credentials = GetTestCredentials();
   return options;
 }
 
@@ -1119,7 +1123,7 @@ TEST_F(AuthenticatorImplTest, MakeCredentialAlreadyRegistered) {
       GetTestPublicKeyCredentialCreationOptions();
 
   // Exclude the one already registered credential.
-  options->exclude_credentials = GetTestAllowCredentials();
+  options->exclude_credentials = GetTestCredentials();
   ASSERT_TRUE(scoped_virtual_device.mutable_state()->InjectRegistration(
       options->exclude_credentials[0]->id, kTestRelyingPartyId));
 
@@ -2361,7 +2365,7 @@ TEST_F(AuthenticatorImplRequestDelegateTest,
 
   PublicKeyCredentialCreationOptionsPtr options =
       GetTestPublicKeyCredentialCreationOptions();
-  options->exclude_credentials = GetTestAllowCredentials();
+  options->exclude_credentials = GetTestCredentials();
   ASSERT_TRUE(scoped_virtual_device.mutable_state()->InjectRegistration(
       options->exclude_credentials[0]->id, kTestRelyingPartyId));
 
@@ -2490,6 +2494,74 @@ TEST_F(AuthenticatorImplTest, ExtensionHMACSecret) {
     }
 
     EXPECT_EQ(include_extension, has_hmac_secret);
+  }
+}
+
+TEST_F(AuthenticatorImplTest, MakeCredentialWithLargeExcludeList) {
+  TestServiceManagerContext smc;
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  for (bool has_excluded_credential : {false, true}) {
+    SCOPED_TRACE(::testing::Message()
+                 << "has_excluded_credential=" << has_excluded_credential);
+
+    device::test::ScopedVirtualFidoDevice virtual_device;
+    device::VirtualCtap2Device::Config config;
+    config.reject_large_allow_and_exclude_lists = true;
+    virtual_device.SetCtap2Config(config);
+
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    options->exclude_credentials = GetTestCredentials(/*num_credentials=*/10);
+    if (has_excluded_credential) {
+      ASSERT_TRUE(virtual_device.mutable_state()->InjectRegistration(
+          options->exclude_credentials.back()->id, kTestRelyingPartyId));
+    }
+    TestMakeCredentialCallback callback_receiver;
+
+    AuthenticatorPtr authenticator = ConnectToAuthenticator();
+    authenticator->MakeCredential(std::move(options),
+                                  callback_receiver.callback());
+    base::RunLoop().RunUntilIdle();
+    callback_receiver.WaitForCallback();
+    EXPECT_EQ(callback_receiver.status(),
+              has_excluded_credential ? AuthenticatorStatus::CREDENTIAL_EXCLUDED
+                                      : AuthenticatorStatus::SUCCESS);
+  }
+}
+
+TEST_F(AuthenticatorImplTest, GetAssertionWithLargeAllowList) {
+  TestServiceManagerContext smc;
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  for (bool has_allowed_credential : {false, true}) {
+    SCOPED_TRACE(::testing::Message()
+                 << "has_allowed_credential=" << has_allowed_credential);
+
+    device::test::ScopedVirtualFidoDevice virtual_device;
+    device::VirtualCtap2Device::Config config;
+    config.reject_large_allow_and_exclude_lists = true;
+    virtual_device.SetCtap2Config(config);
+
+    AuthenticatorPtr authenticator = ConnectToAuthenticator();
+
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
+    options->allow_credentials = GetTestCredentials(/*num_credentials=*/10);
+    if (has_allowed_credential) {
+      ASSERT_TRUE(virtual_device.mutable_state()->InjectRegistration(
+          options->allow_credentials.back()->id, kTestRelyingPartyId));
+    }
+
+    TestGetAssertionCallback callback_receiver;
+    authenticator->GetAssertion(std::move(options),
+                                callback_receiver.callback());
+    base::RunLoop().RunUntilIdle();
+    callback_receiver.WaitForCallback();
+    EXPECT_EQ(callback_receiver.status(),
+              has_allowed_credential
+                  ? AuthenticatorStatus::SUCCESS
+                  : AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED);
   }
 }
 
