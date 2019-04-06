@@ -242,7 +242,7 @@ TEST_F(LayoutObjectTest, PaintingLayerOfOverflowClipLayerUnderColumnSpanAll) {
 
   LayoutObject* overflow_clip_object =
       GetLayoutObjectByElementId("overflow-clip-layer");
-  LayoutBlock* columns = ToLayoutBlock(GetLayoutObjectByElementId("columns"));
+  LayoutBlock* columns = To<LayoutBlock>(GetLayoutObjectByElementId("columns"));
   EXPECT_EQ(columns->Layer(), overflow_clip_object->PaintingLayer());
 }
 

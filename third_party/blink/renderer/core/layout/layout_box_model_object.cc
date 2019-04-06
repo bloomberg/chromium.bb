@@ -1375,7 +1375,7 @@ void LayoutBoxModelObject::MoveChildTo(
   // moves (!fullRemoveInsert) so the positioned layoutObject maps don't become
   // stale. It would be too slow to do the map lookup on each call.
   DCHECK(!full_remove_insert || !IsLayoutBlock() ||
-         !ToLayoutBlock(this)->HasPositionedObjects());
+         !To<LayoutBlock>(this)->HasPositionedObjects());
 
   DCHECK_EQ(this, child->Parent());
   DCHECK(!before_child || to_box_model_object == before_child->Parent());
@@ -1418,8 +1418,8 @@ void LayoutBoxModelObject::MoveChildrenTo(
   // This condition is rarely hit since this function is usually called on
   // anonymous blocks which can no longer carry positioned objects (see r120761)
   // or when fullRemoveInsert is false.
-  if (full_remove_insert && IsLayoutBlock()) {
-    LayoutBlock* block = ToLayoutBlock(this);
+  auto* block = DynamicTo<LayoutBlock>(this);
+  if (full_remove_insert && block) {
     block->RemovePositionedObjects(nullptr);
     block->RemoveFromPercentHeightContainer();
     if (block->IsLayoutBlockFlow())

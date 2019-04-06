@@ -288,13 +288,11 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
 }
 
 void NGBlockNode::PrepareForLayout() {
-  if (box_->IsLayoutBlock()) {
-    LayoutBlock* block = ToLayoutBlock(box_);
-    if (block->HasOverflowClip()) {
-      DCHECK(block->GetScrollableArea());
-      if (block->GetScrollableArea()->ShouldPerformScrollAnchoring())
-        block->GetScrollableArea()->GetScrollAnchor()->NotifyBeforeLayout();
-    }
+  auto* block = DynamicTo<LayoutBlock>(box_);
+  if (block && block->HasOverflowClip()) {
+    DCHECK(block->GetScrollableArea());
+    if (block->GetScrollableArea()->ShouldPerformScrollAnchoring())
+      block->GetScrollableArea()->GetScrollAnchor()->NotifyBeforeLayout();
   }
 
   // TODO(layoutng) Can UpdateMarkerTextIfNeeded call be moved
@@ -485,7 +483,7 @@ NGLayoutInputNode NGBlockNode::NextSibling() const {
 }
 
 NGLayoutInputNode NGBlockNode::FirstChild() const {
-  auto* block = ToLayoutBlock(box_);
+  auto* block = To<LayoutBlock>(box_);
   auto* child = GetLayoutObjectForFirstChildNode(block);
   if (!child)
     return nullptr;
@@ -497,13 +495,13 @@ NGLayoutInputNode NGBlockNode::FirstChild() const {
 NGBlockNode NGBlockNode::GetRenderedLegend() const {
   if (!IsFieldsetContainer())
     return nullptr;
-  return NGBlockNode(LayoutFieldset::FindInFlowLegend(*ToLayoutBlock(box_)));
+  return NGBlockNode(LayoutFieldset::FindInFlowLegend(*To<LayoutBlock>(box_)));
 }
 
 NGBlockNode NGBlockNode::GetFieldsetContent() const {
   if (!IsFieldsetContainer())
     return nullptr;
-  auto* child = GetLayoutObjectForFirstChildNode(ToLayoutBlock(box_));
+  auto* child = GetLayoutObjectForFirstChildNode(To<LayoutBlock>(box_));
   if (!child)
     return nullptr;
   return NGBlockNode(ToLayoutBox(child));
@@ -602,7 +600,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
                              offset_from_start);
   }
 
-  LayoutBlock* block = ToLayoutBlockOrNull(box_);
+  LayoutBlock* block = DynamicTo<LayoutBlock>(box_);
   if (LIKELY(block && IsLastFragment(physical_fragment))) {
     LayoutUnit intrinsic_block_size = layout_result.IntrinsicBlockSize();
     if (UNLIKELY(constraint_space.HasBlockFragmentation())) {
@@ -792,10 +790,9 @@ bool NGBlockNode::IsAtomicInlineLevel() const {
 }
 
 bool NGBlockNode::UseLogicalBottomMarginEdgeForInlineBlockBaseline() const {
-  LayoutBox* layout_box = GetLayoutBox();
-  return layout_box->IsLayoutBlock() &&
-         ToLayoutBlock(layout_box)
-             ->UseLogicalBottomMarginEdgeForInlineBlockBaseline();
+  auto* layout_box = DynamicTo<LayoutBlock>(GetLayoutBox());
+  return layout_box &&
+         layout_box->UseLogicalBottomMarginEdgeForInlineBlockBaseline();
 }
 
 scoped_refptr<const NGLayoutResult> NGBlockNode::LayoutAtomicInline(
@@ -840,7 +837,7 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunOldLayout(
   // we need to be at a formatting context boundary, since NG and legacy don't
   // cooperate on e.g. margin collapsing.
   DCHECK(!box_->IsLayoutBlock() ||
-         ToLayoutBlock(box_)->CreatesNewFormattingContext());
+         To<LayoutBlock>(box_)->CreatesNewFormattingContext());
 
   scoped_refptr<const NGLayoutResult> layout_result =
       box_->GetCachedLayoutResult();
