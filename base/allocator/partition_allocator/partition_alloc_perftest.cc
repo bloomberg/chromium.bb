@@ -7,6 +7,8 @@
 #include "base/time/time.h"
 #include "base/timer/lap_timer.h"
 
+#include "build/build_config.h"
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 
@@ -100,7 +102,13 @@ TEST_F(MemoryAllocationPerfTest, SingleBucketWithFree) {
                          timer_.LapsPerSecond(), "runs/s", true);
 }
 
-TEST_F(MemoryAllocationPerfTest, MultiBucket) {
+// Failing on Nexus5x: crbug.com/949838
+#if defined(OS_ANDROID)
+#define MAYBE_MultiBucket DISABLED_MultiBucket
+#else
+#define MAYBE_MultiBucket MultiBucket
+#endif
+TEST_F(MemoryAllocationPerfTest, MAYBE_MultiBucket) {
   timer_.Reset();
   MemoryAllocationPerfNode* first = reinterpret_cast<MemoryAllocationPerfNode*>(
       alloc_.root()->Alloc(40, "<testing>"));
