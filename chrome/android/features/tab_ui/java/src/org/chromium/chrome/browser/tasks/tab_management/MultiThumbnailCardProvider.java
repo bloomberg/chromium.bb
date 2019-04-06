@@ -16,9 +16,6 @@ import android.graphics.RectF;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
-import org.chromium.base.PathUtils;
-import org.chromium.base.ThreadUtils;
-import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
@@ -26,7 +23,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -47,9 +43,10 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
     private final int mSize;
     private final List<RectF> mRects = new ArrayList<>(4);
 
-    private class MultiThumbnailFetchingTask extends AsyncTask<Void> {
+    private class MultiThumbnailFetcher {
         private final Tab mInitialTab;
         private final Callback<Bitmap> mFinalCallback;
+        private final boolean mForceUpdate;
         private final List<Tab> mTabs = new ArrayList<>(4);
         private final AtomicInteger mThumbnailsToFetch = new AtomicInteger();
 
@@ -57,9 +54,10 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
         private Bitmap mMultiThumbnailBitmap;
         private String mText;
 
-        MultiThumbnailFetchingTask(Tab initialTab, Callback<Bitmap> finalCallback) {
+        MultiThumbnailFetcher(Tab initialTab, Callback<Bitmap> finalCallback, boolean forceUpdate) {
             mFinalCallback = finalCallback;
             mInitialTab = initialTab;
+            mForceUpdate = forceUpdate;
         }
 
         private void initializeAndStartFetching(Tab tab) {
@@ -99,22 +97,14 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
             // Fetch and draw all.
             for (int i = 0; i < 4; i++) {
                 if (mTabs.get(i) != null) {
-                    if (hasThumbnailFileForTab(mTabs.get(i).getId())) {
-                        final int index = i;
-                        mTabContentManager.getTabThumbnailWithCallback(mTabs.get(i), result -> {
-                            drawBitmapOnCanvasWithFrame(result, index, mEmptyThumbnailPaint);
-                            if (mThumbnailsToFetch.decrementAndGet() == 0) {
-                                PostTask.postTask(UiThreadTaskTraits.USER_VISIBLE,
-                                        () -> mFinalCallback.onResult(mMultiThumbnailBitmap));
-                            }
-                        }, false);
-                    } else {
-                        drawBitmapOnCanvasWithFrame(null, i, mEmptyThumbnailPaint);
+                    final int index = i;
+                    mTabContentManager.getTabThumbnailWithCallback(mTabs.get(i), result -> {
+                        drawBitmapOnCanvasWithFrame(result, index, mEmptyThumbnailPaint);
                         if (mThumbnailsToFetch.decrementAndGet() == 0) {
                             PostTask.postTask(UiThreadTaskTraits.USER_VISIBLE,
                                     () -> mFinalCallback.onResult(mMultiThumbnailBitmap));
                         }
-                    }
+                    }, mForceUpdate && i == 0);
                 } else {
                     drawBitmapOnCanvasWithFrame(null, i, mEmptyThumbnailPaint);
                     if (mText != null && i == 3) {
@@ -148,14 +138,9 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
             mCanvas.drawRoundRect(mRects.get(index), mRadius, mRadius, mThumbnailFramePaint);
         }
 
-        @Override
-        protected Void doInBackground() {
+        private void fetch() {
             initializeAndStartFetching(mInitialTab);
-            return null;
         }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {}
     }
 
     MultiThumbnailCardProvider(Context context, TabContentManager tabContentManager,
@@ -212,15 +197,6 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
             return;
         }
 
-        new MultiThumbnailFetchingTask(tab, finalCallback)
-                .executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
-    }
-
-    private static boolean hasThumbnailFileForTab(int tabId) {
-        ThreadUtils.assertOnBackgroundThread();
-
-        // The thumbnail file path for a tab with id, ID is "cache_directory_path/ID".
-        File file = new File(PathUtils.getThumbnailCacheDirectory() + "/" + tabId);
-        return file.exists();
+        new MultiThumbnailFetcher(tab, finalCallback, forceUpdate).fetch();
     }
 }
