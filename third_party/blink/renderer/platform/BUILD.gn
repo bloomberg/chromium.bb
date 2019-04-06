@@ -551,6 +551,7 @@ jumbo_component("platform") {
     "exported/web_network_state_notifier.cc",
     "exported/web_prerender.cc",
     "exported/web_prerendering_support.cc",
+    "exported/web_resource_timing_info.cc",
     "exported/web_rtc_answer_options.cc",
     "exported/web_rtc_ice_candidate.cc",
     "exported/web_rtc_offer_options.cc",
@@ -2125,6 +2126,7 @@ jumbo_source_set("unit_tests") {
 
     # Tests migrated from the web/tests directory.
     "exported/web_image_test.cc",
+    "exported/web_resource_timing_info_test.cc",
     "exported/web_url_request_test.cc",
     "exported/web_url_response_test.cc",
     "timer_perf_test.cc",
