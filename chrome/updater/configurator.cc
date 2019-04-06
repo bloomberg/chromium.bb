@@ -7,11 +7,15 @@
 #include <utility>
 #include "base/version.h"
 #include "build/build_config.h"
+#include "chrome/updater/patcher.h"
 #include "chrome/updater/prefs.h"
+#include "chrome/updater/unzipper.h"
 #include "chrome/updater/updater_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/update_client/network.h"
+#include "components/update_client/patcher.h"
 #include "components/update_client/protocol_handler.h"
+#include "components/update_client/unzipper.h"
 #include "components/version_info/version_info.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "url/gurl.h"
@@ -30,10 +34,10 @@ const int kDelayOneHour = kDelayOneMinute * 60;
 
 namespace updater {
 
-Configurator::Configurator(
-    std::unique_ptr<service_manager::Connector> connector_prototype)
+Configurator::Configurator()
     : pref_service_(CreatePrefService()),
-      connector_prototype_(std::move(connector_prototype)) {}
+      unzip_factory_(base::MakeRefCounted<UnzipperFactory>()),
+      patch_factory_(base::MakeRefCounted<PatcherFactory>()) {}
 Configurator::~Configurator() = default;
 
 int Configurator::InitialDelay() const {
@@ -105,9 +109,13 @@ Configurator::GetNetworkFetcherFactory() {
 #endif
 }
 
-std::unique_ptr<service_manager::Connector>
-Configurator::CreateServiceManagerConnector() const {
-  return connector_prototype_->Clone();
+scoped_refptr<update_client::UnzipperFactory>
+Configurator::GetUnzipperFactory() {
+  return unzip_factory_;
+}
+
+scoped_refptr<update_client::PatcherFactory> Configurator::GetPatcherFactory() {
+  return patch_factory_;
 }
 
 bool Configurator::EnabledDeltas() const {

@@ -13,7 +13,11 @@
 #include "components/services/unzip/public/interfaces/constants.mojom.h"
 #include "components/update_client/activity_data_service.h"
 #include "components/update_client/net/network_chromium.h"
+#include "components/update_client/patch/patch_impl.h"
+#include "components/update_client/patcher.h"
 #include "components/update_client/protocol_handler.h"
+#include "components/update_client/unzip/unzip_impl.h"
+#include "components/update_client/unzipper.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "url/gurl.h"
@@ -37,7 +41,10 @@ TestConfigurator::TestConfigurator()
       ondemand_time_(0),
       enabled_cup_signing_(false),
       enabled_component_updates_(true),
-      connector_(connector_factory_.CreateConnector()),
+      unzip_factory_(base::MakeRefCounted<update_client::UnzipChromiumFactory>(
+          connector_factory_.CreateConnector())),
+      patch_factory_(base::MakeRefCounted<update_client::PatchChromiumFactory>(
+          connector_factory_.CreateConnector())),
       unzip_service_(
           connector_factory_.RegisterInstance(unzip::mojom::kServiceName)),
       patch_service_(
@@ -123,9 +130,12 @@ TestConfigurator::GetNetworkFetcherFactory() {
   return network_fetcher_factory_;
 }
 
-std::unique_ptr<service_manager::Connector>
-TestConfigurator::CreateServiceManagerConnector() const {
-  return connector_->Clone();
+scoped_refptr<UnzipperFactory> TestConfigurator::GetUnzipperFactory() {
+  return unzip_factory_;
+}
+
+scoped_refptr<PatcherFactory> TestConfigurator::GetPatcherFactory() {
+  return patch_factory_;
 }
 
 bool TestConfigurator::EnabledDeltas() const {

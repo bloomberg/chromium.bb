@@ -36,18 +36,8 @@
 #include "chrome/updater/util.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/prefs/pref_service.h"
-#include "components/services/patch/public/cpp/manifest.h"
-#include "components/services/patch/public/interfaces/constants.mojom.h"
-#include "components/services/unzip/public/cpp/manifest.h"
-#include "components/services/unzip/public/interfaces/constants.mojom.h"
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/update_client.h"
-#include "mojo/core/embedder/embedder.h"
-#include "services/service_manager/background_service_manager.h"
-#include "services/service_manager/public/cpp/manifest_builder.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace updater {
 
@@ -79,49 +69,6 @@ void TaskSchedulerStop() {
 
 void QuitLoop(base::OnceClosure quit_closure) {
   std::move(quit_closure).Run();
-}
-
-// An EmbedderService is a no-op service that represents the updater main (the
-// embedder of the service_manager). It exposes its Connector for use in the
-// configurator, and owns the service_manager itself.
-class EmbedderService : public service_manager::Service {
- public:
-  EmbedderService(service_manager::mojom::ServiceRequest request,
-                  std::unique_ptr<service_manager::BackgroundServiceManager>
-                      service_manager)
-      : binding_(this, std::move(request)),
-        service_manager_(std::move(service_manager)) {}
-  ~EmbedderService() override {}
-  std::unique_ptr<service_manager::Connector> Connector() {
-    return binding_.GetConnector()->Clone();
-  }
-
- private:
-  service_manager::ServiceBinding binding_;
-  std::unique_ptr<service_manager::BackgroundServiceManager> service_manager_;
-  DISALLOW_COPY_AND_ASSIGN(EmbedderService);
-};
-
-std::unique_ptr<EmbedderService> CreateEmbedderService() {
-  const char* kEmbedderServiceName = "embedder_updater";
-  auto service_manager =
-      std::make_unique<service_manager::BackgroundServiceManager>(
-          std::vector<service_manager::Manifest>(
-              {patch::GetManifest(), unzip::GetManifest(),
-               service_manager::ManifestBuilder()
-                   .WithServiceName(kEmbedderServiceName)
-                   .RequireCapability(patch::mojom::kServiceName, "patch_file")
-                   .RequireCapability(unzip::mojom::kServiceName, "unzip_file")
-                   .Build()}));
-  service_manager::mojom::ServicePtr service;
-  service_manager::mojom::ServiceRequest request = mojo::MakeRequest(&service);
-  service_manager->RegisterService(
-      service_manager::Identity{kEmbedderServiceName,
-                                base::Token::CreateRandom(), base::Token{},
-                                base::Token::CreateRandom()},
-      std::move(service), nullptr);
-  return std::make_unique<EmbedderService>(std::move(request),
-                                           std::move(service_manager));
 }
 
 class Observer : public update_client::UpdateClient::Observer {
@@ -170,7 +117,6 @@ void InitializeUpdaterMain() {
   }
   StartCrashReporter(UPDATER_VERSION_STRING);
 
-  mojo::core::Init();
   TaskSchedulerStart();
 }
 
@@ -206,9 +152,7 @@ int UpdaterMain(int argc, const char* const* argv) {
   base::RunLoop runloop;
   DCHECK(base::ThreadTaskRunnerHandle::IsSet());
 
-  auto embedder_service = CreateEmbedderService();
-  auto config =
-      base::MakeRefCounted<Configurator>(embedder_service->Connector());
+  auto config = base::MakeRefCounted<Configurator>();
 
   {
     base::ScopedDisallowBlocking no_blocking_allowed;
