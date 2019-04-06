@@ -6,7 +6,16 @@
  * @fileoverview Helper functions to manage select UI elements.
  */
 
-/** @typedef {Iterable<{value: string, title: string, selected: boolean}>} */
+/**
+ * @typedef {
+ *   Iterable<{
+ *       optionGroupName: (string|undefined),
+ *       selected: boolean,
+ *       title: string,
+ *       value: string,
+ *   }>
+ * }
+ */
 var SelectListType;
 
 /**

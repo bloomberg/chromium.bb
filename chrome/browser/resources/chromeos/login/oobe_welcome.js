@@ -77,7 +77,7 @@ Polymer({
     debuggingLinkVisible_: Boolean,
   },
 
-  /** @override */
+  /** Overridden from LoginScreenBehavior. */
   EXTERNAL_API: [
     'onInputMethodIdSetFromBackend',
   ],
@@ -131,13 +131,17 @@ Polymer({
 
   /**
    * This is called when UI strings are changed.
-   * @override
+   * Overridden from LoginScreenBehavior.
    */
   updateLocalizedContent: function() {
-    this.languages = loadTimeData.getValue('languageList');
-    this.keyboards = loadTimeData.getValue('inputMethodsList');
-    this.timezones = loadTimeData.getValue('timezoneList');
-    this.highlightStrength = loadTimeData.getValue('highlightStrength');
+    this.languages = /** @type {!Array<OobeTypes.LanguageDsc>} */ (
+        loadTimeData.getValue('languageList'));
+    this.keyboards = /** @type {!Array<OobeTypes.IMEDsc>} */ (
+        loadTimeData.getValue('inputMethodsList'));
+    this.timezones = /** @type {!Array<OobeTypes.TimezoneDsc>} */ (
+        loadTimeData.getValue('timezoneList'));
+    this.highlightStrength =
+        /** @type {string} */ (loadTimeData.getValue('highlightStrength'));
 
     this.$.welcomeScreen.i18nUpdateLocale();
     this.i18nUpdateLocale();
@@ -156,8 +160,8 @@ Polymer({
 
   /**
    * Called when OOBE configuration is loaded.
+   * Overridden from LoginScreenBehavior.
    * @param {!OobeTypes.OobeConfiguration} configuration
-   * @override
    */
   updateOobeConfiguration: function(configuration) {
     if (!this.configuration_applied_)
@@ -199,8 +203,8 @@ Polymer({
 
   /**
    * Updates "device in tablet mode" state when tablet mode is changed.
-   * @param {Boolean} isInTabletMode True when in tablet mode.
-   * @override
+   * Overridden from LoginScreenBehavior.
+   * @param {boolean} isInTabletMode True when in tablet mode.
    */
   setTabletModeState: function(isInTabletMode) {
     this.$.welcomeScreen.isInTabletMode = isInTabletMode;
@@ -343,7 +347,7 @@ Polymer({
   /**
    * Switch UI language.
    *
-   * @param {!OobeTypes.LanguageDsc} languageId
+   * @param {string} languageId
    * @private
    */
   applySelectedLanguage_: function(languageId) {
@@ -366,7 +370,7 @@ Polymer({
   /**
    * Switch keyboard layout.
    *
-   * @param {!OobeTypes.IMEDsc} inputMethodId
+   * @param {string} inputMethodId
    * @private
    */
   applySelectedLkeyboard_: function(inputMethodId) {
@@ -374,7 +378,8 @@ Polymer({
   },
 
   onLanguagesChanged_: function() {
-    this.currentLanguage = getSelectedTitle(this.languages);
+    this.currentLanguage =
+        getSelectedTitle(/** @type {!SelectListType} */ (this.languages));
   },
 
   onInputMethodIdSetFromBackend: function(keyboard_id) {
@@ -428,8 +433,9 @@ Polymer({
    * @param {!Event} event
    */
   onA11yOptionChanged_: function(event) {
-    chrome.send(
-        event.currentTarget.chromeMessage, [event.currentTarget.checked]);
+    var a11ytarget = /** @type {{chromeMessage: string, checked: boolean}} */ (
+        event.currentTarget);
+    chrome.send(a11ytarget.chromeMessage, [a11ytarget.checked]);
   },
 
   /** ******************** Timezone section ******************* */
