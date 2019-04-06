@@ -51,12 +51,6 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static IDBObjectStore* Create(scoped_refptr<IDBObjectStoreMetadata> metadata,
-                                IDBTransaction* transaction) {
-    return MakeGarbageCollected<IDBObjectStore>(std::move(metadata),
-                                                transaction);
-  }
-
   IDBObjectStore(scoped_refptr<IDBObjectStoreMetadata>, IDBTransaction*);
   ~IDBObjectStore() override = default;
 

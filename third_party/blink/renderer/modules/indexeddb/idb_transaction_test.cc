@@ -64,9 +64,6 @@ void DeactivateNewTransactions(v8::Isolate* isolate) {
 
 class FakeIDBDatabaseCallbacks final : public IDBDatabaseCallbacks {
  public:
-  static FakeIDBDatabaseCallbacks* Create() {
-    return MakeGarbageCollected<FakeIDBDatabaseCallbacks>();
-  }
   FakeIDBDatabaseCallbacks() = default;
   void OnVersionChange(int64_t old_version, int64_t new_version) override {}
   void OnForcedClose() override {}
@@ -92,9 +89,9 @@ class IDBTransactionTest : public testing::Test {
       V8TestingScope& scope,
       std::unique_ptr<MockWebIDBDatabase> database_backend,
       std::unique_ptr<MockWebIDBTransaction> transaction_backend) {
-    db_ = IDBDatabase::Create(
+    db_ = MakeGarbageCollected<IDBDatabase>(
         scope.GetExecutionContext(), std::move(database_backend),
-        FakeIDBDatabaseCallbacks::Create(), scope.GetIsolate());
+        MakeGarbageCollected<FakeIDBDatabaseCallbacks>(), scope.GetIsolate());
 
     HashSet<String> transaction_scope = {"store"};
     transaction_ = IDBTransaction::CreateNonVersionChange(
@@ -104,7 +101,7 @@ class IDBTransactionTest : public testing::Test {
     IDBKeyPath store_key_path("primaryKey");
     scoped_refptr<IDBObjectStoreMetadata> store_metadata = base::AdoptRef(
         new IDBObjectStoreMetadata("store", kStoreId, store_key_path, true, 1));
-    store_ = IDBObjectStore::Create(store_metadata, transaction_);
+    store_ = MakeGarbageCollected<IDBObjectStore>(store_metadata, transaction_);
   }
 
   WebURLLoaderMockFactory* url_loader_mock_factory_;

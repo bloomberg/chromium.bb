@@ -92,14 +92,6 @@ const char IDBDatabase::kTransactionReadOnlyErrorMessage[] =
 const char IDBDatabase::kDatabaseClosedErrorMessage[] =
     "The database connection is closed.";
 
-IDBDatabase* IDBDatabase::Create(ExecutionContext* context,
-                                 std::unique_ptr<WebIDBDatabase> database,
-                                 IDBDatabaseCallbacks* callbacks,
-                                 v8::Isolate* isolate) {
-  return MakeGarbageCollected<IDBDatabase>(context, std::move(database),
-                                           callbacks, isolate);
-}
-
 IDBDatabase::IDBDatabase(ExecutionContext* context,
                          std::unique_ptr<WebIDBDatabase> backend,
                          IDBDatabaseCallbacks* callbacks,
@@ -210,8 +202,8 @@ void IDBDatabase::OnChanges(
       }
 
       observer->Callback()->InvokeAndReportException(
-          observer, IDBObserverChanges::Create(this, nullptr, observations,
-                                               map_entry.second));
+          observer, MakeGarbageCollected<IDBObserverChanges>(
+                        this, nullptr, observations, map_entry.second));
     }
   }
 }
@@ -308,8 +300,8 @@ IDBObjectStore* IDBDatabase::createObjectStore(
       base::AdoptRef(new IDBObjectStoreMetadata(
           name, object_store_id, key_path, auto_increment,
           WebIDBDatabase::kMinimumIndexId));
-  IDBObjectStore* object_store =
-      IDBObjectStore::Create(store_metadata, version_change_transaction_.Get());
+  auto* object_store = MakeGarbageCollected<IDBObjectStore>(
+      store_metadata, version_change_transaction_.Get());
   version_change_transaction_->ObjectStoreCreated(name, object_store);
   metadata_.object_stores.Set(object_store_id, std::move(store_metadata));
   ++metadata_.max_object_store_id;

@@ -38,18 +38,6 @@
 
 namespace blink {
 
-IDBOpenDBRequest* IDBOpenDBRequest::Create(
-    ScriptState* script_state,
-    IDBDatabaseCallbacks* callbacks,
-    std::unique_ptr<WebIDBTransaction> transaction_backend,
-    int64_t transaction_id,
-    int64_t version,
-    IDBRequest::AsyncTraceState metrics) {
-  return MakeGarbageCollected<IDBOpenDBRequest>(
-      script_state, callbacks, std::move(transaction_backend), transaction_id,
-      version, std::move(metrics));
-}
-
 IDBOpenDBRequest::IDBOpenDBRequest(
     ScriptState* script_state,
     IDBDatabaseCallbacks* callbacks,
@@ -111,9 +99,9 @@ void IDBOpenDBRequest::EnqueueUpgradeNeeded(
 
   DCHECK(database_callbacks_);
 
-  IDBDatabase* idb_database =
-      IDBDatabase::Create(GetExecutionContext(), std::move(backend),
-                          database_callbacks_.Release(), isolate_);
+  auto* idb_database = MakeGarbageCollected<IDBDatabase>(
+      GetExecutionContext(), std::move(backend), database_callbacks_.Release(),
+      isolate_);
   idb_database->SetMetadata(metadata);
 
   if (old_version == IDBDatabaseMetadata::kNoVersion) {
@@ -153,9 +141,9 @@ void IDBOpenDBRequest::EnqueueResponse(std::unique_ptr<WebIDBDatabase> backend,
   } else {
     DCHECK(backend.get());
     DCHECK(database_callbacks_);
-    idb_database =
-        IDBDatabase::Create(GetExecutionContext(), std::move(backend),
-                            database_callbacks_.Release(), isolate_);
+    idb_database = MakeGarbageCollected<IDBDatabase>(
+        GetExecutionContext(), std::move(backend),
+        database_callbacks_.Release(), isolate_);
     SetResult(IDBAny::Create(idb_database));
   }
   idb_database->SetMetadata(metadata);

@@ -181,9 +181,9 @@ class IDBRequestTest : public testing::Test {
       V8TestingScope& scope,
       std::unique_ptr<MockWebIDBDatabase> database_backend,
       std::unique_ptr<MockWebIDBTransaction> transaction_backend) {
-    db_ = IDBDatabase::Create(
+    db_ = MakeGarbageCollected<IDBDatabase>(
         scope.GetExecutionContext(), std::move(database_backend),
-        IDBDatabaseCallbacks::Create(), scope.GetIsolate());
+        MakeGarbageCollected<IDBDatabaseCallbacks>(), scope.GetIsolate());
 
     HashSet<String> transaction_scope = {"store"};
     transaction_ = IDBTransaction::CreateNonVersionChange(
@@ -193,7 +193,7 @@ class IDBRequestTest : public testing::Test {
     IDBKeyPath store_key_path("primaryKey");
     scoped_refptr<IDBObjectStoreMetadata> store_metadata = base::AdoptRef(
         new IDBObjectStoreMetadata("store", kStoreId, store_key_path, true, 1));
-    store_ = IDBObjectStore::Create(store_metadata, transaction_);
+    store_ = MakeGarbageCollected<IDBObjectStore>(store_metadata, transaction_);
   }
 
   WebURLLoaderMockFactory* url_loader_mock_factory_;
@@ -374,7 +374,8 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping) {
   const int64_t kVersion = 1;
   const int64_t kOldVersion = 0;
   const IDBDatabaseMetadata metadata;
-  Persistent<IDBDatabaseCallbacks> callbacks = IDBDatabaseCallbacks::Create();
+  Persistent<IDBDatabaseCallbacks> callbacks =
+      MakeGarbageCollected<IDBDatabaseCallbacks>();
 
   {
     mojom::blink::IDBDatabaseAssociatedPtr ptr;
@@ -386,7 +387,7 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping) {
     auto transaction_backend = std::make_unique<MockWebIDBTransaction>(
         scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess),
         kTransactionId);
-    IDBOpenDBRequest* request = IDBOpenDBRequest::Create(
+    auto* request = MakeGarbageCollected<IDBOpenDBRequest>(
         scope.GetScriptState(), callbacks, std::move(transaction_backend),
         kTransactionId, kVersion, IDBRequest::AsyncTraceState());
     EXPECT_EQ(request->readyState(), "pending");
@@ -408,7 +409,7 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping) {
     auto transaction_backend = std::make_unique<MockWebIDBTransaction>(
         scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess),
         kTransactionId);
-    IDBOpenDBRequest* request = IDBOpenDBRequest::Create(
+    auto* request = MakeGarbageCollected<IDBOpenDBRequest>(
         scope.GetScriptState(), callbacks, std::move(transaction_backend),
         kTransactionId, kVersion, IDBRequest::AsyncTraceState());
     EXPECT_EQ(request->readyState(), "pending");

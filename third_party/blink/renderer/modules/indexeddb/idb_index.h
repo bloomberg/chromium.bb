@@ -48,13 +48,6 @@ class IDBIndex final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static IDBIndex* Create(scoped_refptr<IDBIndexMetadata> metadata,
-                          IDBObjectStore* object_store,
-                          IDBTransaction* transaction) {
-    return MakeGarbageCollected<IDBIndex>(std::move(metadata), object_store,
-                                          transaction);
-  }
-
   IDBIndex(scoped_refptr<IDBIndexMetadata>, IDBObjectStore*, IDBTransaction*);
   ~IDBIndex() override;
 

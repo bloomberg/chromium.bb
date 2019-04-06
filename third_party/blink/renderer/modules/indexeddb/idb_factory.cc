@@ -316,7 +316,7 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
                       WebFeature::kFileAccessedDatabase);
   }
 
-  IDBDatabaseCallbacks* database_callbacks = IDBDatabaseCallbacks::Create();
+  auto* database_callbacks = MakeGarbageCollected<IDBDatabaseCallbacks>();
   int64_t transaction_id = IDBDatabase::NextTransactionId();
 
   auto transaction_backend = std::make_unique<WebIDBTransactionImpl>(
@@ -325,7 +325,7 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
       transaction_id);
   mojom::blink::IDBTransactionAssociatedRequest transaction_request =
       transaction_backend->CreateRequest();
-  IDBOpenDBRequest* request = IDBOpenDBRequest::Create(
+  auto* request = MakeGarbageCollected<IDBOpenDBRequest>(
       script_state, database_callbacks, std::move(transaction_backend),
       transaction_id, version, std::move(metrics));
 
@@ -393,7 +393,7 @@ IDBOpenDBRequest* IDBFactory::DeleteDatabaseInternal(
                       WebFeature::kFileAccessedDatabase);
   }
 
-  IDBOpenDBRequest* request = IDBOpenDBRequest::Create(
+  auto* request = MakeGarbageCollected<IDBOpenDBRequest>(
       script_state, nullptr, /*IDBTransactionAssociatedPtr=*/nullptr, 0,
       IDBDatabaseMetadata::kDefaultVersion, std::move(metrics));
 

@@ -376,8 +376,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   const HttpsState starter_https_state = document->GetHttpsState();
 
   auto* worker_clients = MakeGarbageCollected<WorkerClients>();
-  ProvideIndexedDBClientToWorker(worker_clients,
-                                 IndexedDBClient::Create(*worker_clients));
+  ProvideIndexedDBClientToWorker(
+      worker_clients, MakeGarbageCollected<IndexedDBClient>(*worker_clients));
 
   ProvideContentSettingsClientToWorker(worker_clients,
                                        std::move(content_settings_client_));

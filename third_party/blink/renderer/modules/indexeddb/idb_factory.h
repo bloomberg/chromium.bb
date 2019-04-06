@@ -46,12 +46,6 @@ class MODULES_EXPORT IDBFactory final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static IDBFactory* Create() { return MakeGarbageCollected<IDBFactory>(); }
-  static IDBFactory* CreateForTest(
-      std::unique_ptr<WebIDBFactory> web_idb_factory) {
-    return MakeGarbageCollected<IDBFactory>(std::move(web_idb_factory));
-  }
-
   IDBFactory();
   IDBFactory(std::unique_ptr<WebIDBFactory>);
 

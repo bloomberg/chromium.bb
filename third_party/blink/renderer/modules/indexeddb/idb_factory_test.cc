@@ -61,7 +61,7 @@ TEST_F(IDBFactoryTest, WebIDBGetDBInfoCallbacksResolvesPromise) {
   auto web_factory = std::make_unique<MockWebIDBFactory>();
   std::unique_ptr<WebIDBCallbacks> callbacks;
   web_factory->SetCallbacksPointer(&callbacks);
-  IDBFactory* factory = IDBFactory::CreateForTest(std::move(web_factory));
+  auto* factory = MakeGarbageCollected<IDBFactory>(std::move(web_factory));
 
   DummyExceptionStateForTesting exception_state;
   ScriptPromise promise =
@@ -94,7 +94,7 @@ TEST_F(IDBFactoryTest, WebIDBGetDBNamesCallbacksRejectsPromise) {
   auto web_factory = std::make_unique<MockWebIDBFactory>();
   std::unique_ptr<WebIDBCallbacks> callbacks;
   web_factory->SetCallbacksPointer(&callbacks);
-  IDBFactory* factory = IDBFactory::CreateForTest(std::move(web_factory));
+  auto* factory = MakeGarbageCollected<IDBFactory>(std::move(web_factory));
 
   DummyExceptionStateForTesting exception_state;
   ScriptPromise promise =

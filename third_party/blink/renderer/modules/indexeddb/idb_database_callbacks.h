@@ -41,8 +41,6 @@ class IDBObservation;
 class MODULES_EXPORT IDBDatabaseCallbacks
     : public GarbageCollectedFinalized<IDBDatabaseCallbacks> {
  public:
-  static IDBDatabaseCallbacks* Create();
-
   IDBDatabaseCallbacks();
   virtual ~IDBDatabaseCallbacks();
   void Trace(blink::Visitor*);

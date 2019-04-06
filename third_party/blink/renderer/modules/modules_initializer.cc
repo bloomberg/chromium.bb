@@ -178,7 +178,7 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
   ProvidePushControllerTo(frame, client->PushClient());
   ProvideUserMediaTo(
       frame, std::make_unique<UserMediaClient>(client->UserMediaClient()));
-  ProvideIndexedDBClientTo(frame, IndexedDBClient::Create(frame));
+  ProvideIndexedDBClientTo(frame, MakeGarbageCollected<IndexedDBClient>(frame));
   ProvideLocalFileSystemTo(frame, std::make_unique<LocalFileSystemClient>());
   NavigatorContentUtils::ProvideTo(
       *frame.DomWindow()->navigator(),
@@ -201,7 +201,7 @@ void ModulesInitializer::ProvideLocalFileSystemToWorker(
 void ModulesInitializer::ProvideIndexedDBClientToWorker(
     WorkerClients& worker_clients) const {
   ::blink::ProvideIndexedDBClientToWorker(
-      &worker_clients, IndexedDBClient::Create(worker_clients));
+      &worker_clients, MakeGarbageCollected<IndexedDBClient>(worker_clients));
 }
 
 MediaControls* ModulesInitializer::CreateMediaControls(

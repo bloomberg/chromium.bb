@@ -111,13 +111,6 @@ Response AssertIDBFactory(Document* document, IDBFactory*& result) {
 
 class GetDatabaseNamesCallback final : public NativeEventListener {
  public:
-  static GetDatabaseNamesCallback* Create(
-      std::unique_ptr<RequestDatabaseNamesCallback> request_callback,
-      const String& security_origin) {
-    return MakeGarbageCollected<GetDatabaseNamesCallback>(
-        std::move(request_callback), security_origin);
-  }
-
   GetDatabaseNamesCallback(
       std::unique_ptr<RequestDatabaseNamesCallback> request_callback,
       const String& security_origin)
@@ -154,13 +147,6 @@ class GetDatabaseNamesCallback final : public NativeEventListener {
 
 class DeleteCallback final : public NativeEventListener {
  public:
-  static DeleteCallback* Create(
-      std::unique_ptr<DeleteDatabaseCallback> request_callback,
-      const String& security_origin) {
-    return MakeGarbageCollected<DeleteCallback>(std::move(request_callback),
-                                                security_origin);
-  }
-
   DeleteCallback(std::unique_ptr<DeleteDatabaseCallback> request_callback,
                  const String& security_origin)
       : request_callback_(std::move(request_callback)),
@@ -787,7 +773,7 @@ void InspectorIndexedDBAgent::requestDatabaseNames(
   }
   idb_request->addEventListener(
       event_type_names::kSuccess,
-      GetDatabaseNamesCallback::Create(
+      MakeGarbageCollected<GetDatabaseNamesCallback>(
           std::move(request_callback),
           document->GetSecurityOrigin()->ToRawString()),
       false);
@@ -970,12 +956,6 @@ void InspectorIndexedDBAgent::getMetadata(
 
 class DeleteObjectStoreEntriesListener final : public NativeEventListener {
  public:
-  static DeleteObjectStoreEntriesListener* Create(
-      std::unique_ptr<DeleteObjectStoreEntriesCallback> request_callback) {
-    return MakeGarbageCollected<DeleteObjectStoreEntriesListener>(
-        std::move(request_callback));
-  }
-
   DeleteObjectStoreEntriesListener(
       std::unique_ptr<DeleteObjectStoreEntriesCallback> request_callback)
       : request_callback_(std::move(request_callback)) {}
@@ -1035,7 +1015,8 @@ class DeleteObjectStoreEntries final
         idb_object_store->deleteFunction(script_state, idb_key_range_.Get());
     idb_request->addEventListener(
         event_type_names::kSuccess,
-        DeleteObjectStoreEntriesListener::Create(std::move(request_callback_)),
+        MakeGarbageCollected<DeleteObjectStoreEntriesListener>(
+            std::move(request_callback_)),
         false);
   }
 
@@ -1070,12 +1051,6 @@ void InspectorIndexedDBAgent::deleteObjectStoreEntries(
 
 class ClearObjectStoreListener final : public NativeEventListener {
  public:
-  static ClearObjectStoreListener* Create(
-      std::unique_ptr<ClearObjectStoreCallback> request_callback) {
-    return MakeGarbageCollected<ClearObjectStoreListener>(
-        std::move(request_callback));
-  }
-
   ClearObjectStoreListener(
       std::unique_ptr<ClearObjectStoreCallback> request_callback)
       : request_callback_(std::move(request_callback)) {}
@@ -1138,7 +1113,9 @@ class ClearObjectStore final
     }
     idb_transaction->addEventListener(
         event_type_names::kComplete,
-        ClearObjectStoreListener::Create(std::move(request_callback_)), false);
+        MakeGarbageCollected<ClearObjectStoreListener>(
+            std::move(request_callback_)),
+        false);
   }
 
   ClearObjectStoreCallback* GetRequestCallback() override {
@@ -1196,8 +1173,9 @@ void InspectorIndexedDBAgent::deleteDatabase(
   }
   idb_request->addEventListener(
       event_type_names::kSuccess,
-      DeleteCallback::Create(std::move(request_callback),
-                             document->GetSecurityOrigin()->ToRawString()),
+      MakeGarbageCollected<DeleteCallback>(
+          std::move(request_callback),
+          document->GetSecurityOrigin()->ToRawString()),
       false);
 }
 

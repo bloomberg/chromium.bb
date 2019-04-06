@@ -63,11 +63,6 @@ class MODULES_EXPORT IDBDatabase final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static IDBDatabase* Create(ExecutionContext*,
-                             std::unique_ptr<WebIDBDatabase>,
-                             IDBDatabaseCallbacks*,
-                             v8::Isolate*);
-
   IDBDatabase(ExecutionContext*,
               std::unique_ptr<WebIDBDatabase>,
               IDBDatabaseCallbacks*,
