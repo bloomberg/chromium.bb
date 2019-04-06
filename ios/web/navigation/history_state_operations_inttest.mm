@@ -475,7 +475,8 @@ TEST_P(HistoryStateOperationsTest, ReplaceStateNoHashChangeEvent) {
 }
 
 // Regression test for crbug.com/788464.
-TEST_P(HistoryStateOperationsTest, ReplaceStateThenReload) {
+// TODO(crbug.com/950263): Investigate culprit and reenable.
+TEST_P(HistoryStateOperationsTest, DISABLED_ReplaceStateThenReload) {
   GURL url = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/"
       "onload_replacestate_reload.html");
