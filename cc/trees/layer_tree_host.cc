@@ -883,9 +883,11 @@ void LayerTreeHost::ApplyViewportChanges(const ScrollAndScaleSet& info) {
   if (inner_viewport_scroll_delta.IsZero() && info.page_scale_delta == 1.f &&
       info.elastic_overscroll_delta.IsZero() && !info.top_controls_delta &&
       !info.browser_controls_constraint_changed &&
-      !info.scroll_gesture_did_end) {
+      !info.scroll_gesture_did_end &&
+      info.is_pinch_gesture_active == is_pinch_gesture_active_from_impl_) {
     return;
   }
+  is_pinch_gesture_active_from_impl_ = info.is_pinch_gesture_active;
 
   // Preemptively apply the scroll offset and scale delta here before sending
   // it to the client.  If the client comes back and sets it to the same
@@ -1326,11 +1328,16 @@ void LayerTreeHost::SetRasterColorSpace(
       this, [](Layer* layer) { layer->SetNeedsDisplay(); });
 }
 
-void LayerTreeHost::SetExternalPageScaleFactor(float page_scale_factor) {
-  if (external_page_scale_factor_ == page_scale_factor)
+void LayerTreeHost::SetExternalPageScaleFactor(
+    float page_scale_factor,
+    bool is_external_pinch_gesture_active) {
+  if (external_page_scale_factor_ == page_scale_factor &&
+      is_external_pinch_gesture_active_ == is_external_pinch_gesture_active) {
     return;
+  }
 
   external_page_scale_factor_ = page_scale_factor;
+  is_external_pinch_gesture_active_ = is_external_pinch_gesture_active;
   SetNeedsCommit();
 }
 
@@ -1651,6 +1658,7 @@ void LayerTreeHost::PushLayerTreeHostPropertiesTo(
   host_impl->SetHasGpuRasterizationTrigger(has_gpu_rasterization_trigger_);
   host_impl->SetContentHasSlowPaths(content_has_slow_paths_);
   host_impl->SetContentHasNonAAPaint(content_has_non_aa_paint_);
+  host_impl->set_pinch_gesture_active(is_external_pinch_gesture_active_);
   RecordGpuRasterizationHistogram(host_impl);
 
   host_impl->SetDebugState(debug_state_);
