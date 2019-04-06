@@ -4,6 +4,9 @@
 
 #include "remoting/signaling/grpc_support/grpc_async_executor.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/no_destructor.h"
@@ -90,15 +93,21 @@ GrpcAsyncExecutor::GrpcAsyncExecutor() : weak_factory_(this) {}
 GrpcAsyncExecutor::~GrpcAsyncExecutor() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(0) << "# of pending RPCs at destruction: " << pending_requests_.size();
-  for (auto* pending_request : pending_requests_) {
-    pending_request->CancelRequest();
+  for (auto& pending_request : pending_requests_) {
+    // If the sequence itself is being destroyed, pending tasks will be dropped
+    // in arbitrary order without checking the weak ptr. If the dequeue task is
+    // destroyed earlier than the executor itself, then |pending_request| will
+    // already be destroyed.
+    if (pending_request) {
+      pending_request->CancelRequest();
+    }
   }
 }
 
 void GrpcAsyncExecutor::ExecuteRpc(std::unique_ptr<GrpcAsyncRequest> request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(pending_requests_.find(request.get()) == pending_requests_.end());
   auto* unowned_request = request.get();
+  DCHECK(FindRequest(unowned_request) == pending_requests_.end());
   auto task = std::make_unique<DispatchTask>();
   task->caller_sequence_task_runner = base::SequencedTaskRunnerHandle::Get();
   task->callback =
@@ -120,7 +129,12 @@ void GrpcAsyncExecutor::ExecuteRpc(std::unique_ptr<GrpcAsyncRequest> request) {
   unowned_request->Start(
       run_task_cb, CompletionQueueDispatcher::GetInstance()->completion_queue(),
       task.release());
-  pending_requests_.insert(unowned_request);
+
+  // You might think that we can invert the ownership and make GrpcAsyncExecutor
+  // own the request instead, but this doesn't work because the gRPC completion
+  // queue (which runs on a different thread) expects the client context to be
+  // alive when you try to pop out a completed/dead event.
+  pending_requests_.push_back(unowned_request->GetGrpcAsyncRequestWeakPtr());
 }
 
 void GrpcAsyncExecutor::OnDequeue(std::unique_ptr<GrpcAsyncRequest> request,
@@ -129,12 +143,14 @@ void GrpcAsyncExecutor::OnDequeue(std::unique_ptr<GrpcAsyncRequest> request,
 
   if (!request->OnDequeue(operation_succeeded)) {
     VLOG(0) << "Dequeuing RPC: " << request.get();
-    DCHECK(pending_requests_.find(request.get()) != pending_requests_.end());
-    pending_requests_.erase(request.get());
+    auto iter = FindRequest(request.get());
+    DCHECK(iter != pending_requests_.end());
+    pending_requests_.erase(iter);
     return;
   }
 
   VLOG(0) << "Re-enqueuing RPC: " << request.get();
+  DCHECK(FindRequest(request.get()) != pending_requests_.end());
   auto* unowned_request = request.get();
   auto task = std::make_unique<DispatchTask>();
   task->caller_sequence_task_runner = base::SequencedTaskRunnerHandle::Get();
@@ -155,6 +171,15 @@ void GrpcAsyncExecutor::PostTaskToRunClosure(base::OnceClosure closure) {
 void GrpcAsyncExecutor::RunClosure(base::OnceClosure closure) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::move(closure).Run();
+}
+
+GrpcAsyncExecutor::PendingRequestListIter GrpcAsyncExecutor::FindRequest(
+    GrpcAsyncRequest* request) {
+  return std::find_if(
+      pending_requests_.begin(), pending_requests_.end(),
+      [request](const base::WeakPtr<GrpcAsyncRequest>& current_request) {
+        return current_request.get() == request;
+      });
 }
 
 }  // namespace remoting

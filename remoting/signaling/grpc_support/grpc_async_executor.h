@@ -5,11 +5,10 @@
 #ifndef REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_EXECUTOR_H_
 #define REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_EXECUTOR_H_
 
+#include <list>
 #include <memory>
-#include <utility>
 
 #include "base/callback_forward.h"
-#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -30,6 +29,9 @@ class GrpcAsyncExecutor final : public GrpcExecutor {
   void ExecuteRpc(std::unique_ptr<GrpcAsyncRequest> request) override;
 
  private:
+  using PendingRequestList = std::list<base::WeakPtr<GrpcAsyncRequest>>;
+  using PendingRequestListIter = PendingRequestList::iterator;
+
   void OnDequeue(std::unique_ptr<GrpcAsyncRequest> request,
                  bool operation_succeeded);
 
@@ -38,11 +40,13 @@ class GrpcAsyncExecutor final : public GrpcExecutor {
   void PostTaskToRunClosure(base::OnceClosure closure);
   void RunClosure(base::OnceClosure closure);
 
+  PendingRequestListIter FindRequest(GrpcAsyncRequest* request);
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   // Keep the list of pending requests so that we can cancel them at
   // destruction.
-  base::flat_set<GrpcAsyncRequest*> pending_requests_;
+  PendingRequestList pending_requests_;
 
   base::WeakPtrFactory<GrpcAsyncExecutor> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(GrpcAsyncExecutor);

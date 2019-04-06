@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/grpc/src/include/grpcpp/support/status.h"
 
@@ -68,6 +69,8 @@ class GrpcAsyncRequest {
 
   grpc::ClientContext* context() { return context_.get(); }
 
+  base::WeakPtr<GrpcAsyncRequest> GetGrpcAsyncRequestWeakPtr();
+
  protected:
   // Called after CancelRequest() is called.
   virtual void OnRequestCanceled() = 0;
@@ -77,6 +80,7 @@ class GrpcAsyncRequest {
  private:
   std::unique_ptr<grpc::ClientContext> context_;
 
+  base::WeakPtrFactory<GrpcAsyncRequest> grpc_async_request_weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(GrpcAsyncRequest);
 };
 
