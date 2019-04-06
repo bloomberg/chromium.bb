@@ -596,7 +596,6 @@
     cyan-release
     daisy-release
     daisy_skate-release
-    dragonegg-release
     edgar-release
     elm-release
     enguarde-release
@@ -1426,18 +1425,6 @@
   daisy_spring-tot-chrome-pfq-informational-tryjob
   daisy_spring-tot-chromium-pfq-informational-tryjob
   daisy_spring-unittest-stress
-  dragonegg-chromium-pfq-tryjob
-  dragonegg-compile-only-pre-cq
-  dragonegg-full-tryjob
-  dragonegg-llvm-next-toolchain-tryjob
-  dragonegg-llvm-toolchain-tryjob
-  dragonegg-no-vmtest-pre-cq
-  dragonegg-paladin-tryjob
-  dragonegg-postsubmit-tryjob
-  dragonegg-pre-cq
-  dragonegg-release-tryjob
-  dragonegg-tot-chromium-pfq-informational-tryjob
-  dragonegg-unittest-stress
   edgar-chrome-pfq-tryjob
   edgar-chromium-pfq-tryjob
   edgar-compile-only-pre-cq
@@ -2890,7 +2877,6 @@
     cyan-release-tryjob
     daisy-release-tryjob
     daisy_skate-release-tryjob
-    dragonegg-release-tryjob
     edgar-release-tryjob
     elm-release-tryjob
     enguarde-release-tryjob
