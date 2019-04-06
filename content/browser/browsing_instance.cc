@@ -78,8 +78,10 @@ scoped_refptr<SiteInstanceImpl> BrowsingInstance::GetSiteInstanceForURL(
   // No current SiteInstance for this site, so let's create one.
   scoped_refptr<SiteInstanceImpl> instance = new SiteInstanceImpl(this);
 
-  // Set the site of this new SiteInstance, which will register it with us.
-  instance->SetSite(url);
+  // Set the site of this new SiteInstance, which will register it with us,
+  // unless this URL should leave the SiteInstance's site unassigned.
+  if (SiteInstance::ShouldAssignSiteForURL(url))
+    instance->SetSite(url);
   return instance;
 }
 
