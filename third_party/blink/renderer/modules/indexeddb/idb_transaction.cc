@@ -193,8 +193,8 @@ IDBObjectStore* IDBTransaction::objectStore(const String& name,
       database_->Metadata().object_stores.at(object_store_id);
   DCHECK(object_store_metadata.get());
 
-  IDBObjectStore* object_store =
-      IDBObjectStore::Create(std::move(object_store_metadata), this);
+  auto* object_store = MakeGarbageCollected<IDBObjectStore>(
+      std::move(object_store_metadata), this);
   DCHECK(!object_store_map_.Contains(name));
   object_store_map_.Set(name, object_store);
 

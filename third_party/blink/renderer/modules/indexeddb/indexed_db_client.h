@@ -52,9 +52,6 @@ class IndexedDBClient : public GarbageCollected<IndexedDBClient>,
  public:
   static const char kSupplementName[];
 
-  static IndexedDBClient* Create(LocalFrame&);
-  static IndexedDBClient* Create(WorkerClients&);
-
   explicit IndexedDBClient(LocalFrame&);
   explicit IndexedDBClient(WorkerClients&);
 

@@ -25,11 +25,6 @@ class IDBObservation final : public ScriptWrappable {
  public:
   static mojom::IDBOperationType StringToOperationType(const String&);
 
-  static IDBObservation* Create(int64_t object_store_id,
-                                mojom::IDBOperationType type,
-                                IDBKeyRange* key_range,
-                                std::unique_ptr<IDBValue> value);
-
   IDBObservation(int64_t object_store_id,
                  mojom::IDBOperationType type,
                  IDBKeyRange* key_range,

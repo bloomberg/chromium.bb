@@ -700,7 +700,7 @@ void ImageCapture::OnMojoGetPhotoState(
   photo_settings_->setImageWidth(photo_state->width->current);
   // TODO(mcasas): collect the remaining two entries https://crbug.com/732521.
 
-  photo_capabilities_ = PhotoCapabilities::Create();
+  photo_capabilities_ = MakeGarbageCollected<PhotoCapabilities>();
   photo_capabilities_->SetRedEyeReduction(photo_state->red_eye_reduction);
   // TODO(mcasas): Remove the explicit MediaSettingsRange::create() when
   // mojo::StructTraits supports garbage-collected mappings,

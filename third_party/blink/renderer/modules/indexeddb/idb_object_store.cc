@@ -694,17 +694,6 @@ namespace {
 // cursor success handlers are kept alive.
 class IndexPopulator final : public NativeEventListener {
  public:
-  static IndexPopulator* Create(
-      ScriptState* script_state,
-      IDBDatabase* database,
-      int64_t transaction_id,
-      int64_t object_store_id,
-      scoped_refptr<const IDBIndexMetadata> index_metadata) {
-    return MakeGarbageCollected<IndexPopulator>(script_state, database,
-                                                transaction_id, object_store_id,
-                                                std::move(index_metadata));
-  }
-
   IndexPopulator(ScriptState* script_state,
                  IDBDatabase* database,
                  int64_t transaction_id,
@@ -843,7 +832,8 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* script_state,
   scoped_refptr<IDBIndexMetadata> index_metadata =
       base::AdoptRef(new IDBIndexMetadata(
           name, index_id, key_path, options->unique(), options->multiEntry()));
-  IDBIndex* index = IDBIndex::Create(index_metadata, this, transaction_.Get());
+  auto* index =
+      MakeGarbageCollected<IDBIndex>(index_metadata, this, transaction_.Get());
   index_map_.Set(name, index);
   metadata_->indexes.Set(index_id, index_metadata);
 
@@ -858,7 +848,7 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* script_state,
 
   // This is kept alive by being the success handler of the request, which is in
   // turn kept alive by the owning transaction.
-  IndexPopulator* index_populator = IndexPopulator::Create(
+  auto* index_populator = MakeGarbageCollected<IndexPopulator>(
       script_state, transaction()->db(), transaction_->Id(), Id(),
       std::move(index_metadata));
   index_request->setOnsuccess(index_populator);
@@ -896,8 +886,8 @@ IDBIndex* IDBObjectStore::index(const String& name,
   scoped_refptr<IDBIndexMetadata> index_metadata =
       Metadata().indexes.at(index_id);
   DCHECK(index_metadata.get());
-  IDBIndex* index =
-      IDBIndex::Create(std::move(index_metadata), this, transaction_.Get());
+  auto* index = MakeGarbageCollected<IDBIndex>(std::move(index_metadata), this,
+                                               transaction_.Get());
   index_map_.Set(name, index);
   return index;
 }

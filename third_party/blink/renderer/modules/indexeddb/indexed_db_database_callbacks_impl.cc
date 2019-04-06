@@ -53,9 +53,9 @@ void IndexedDBDatabaseCallbacksImpl::Changes(
       value = std::make_unique<IDBValue>(scoped_refptr<SharedBuffer>(),
                                          Vector<WebBlobInfo>());
     }
-    observations.emplace_back(
-        IDBObservation::Create(observation->object_store_id, observation->type,
-                               key_range, std::move(value)));
+    observations.emplace_back(MakeGarbageCollected<IDBObservation>(
+        observation->object_store_id, observation->type, key_range,
+        std::move(value)));
   }
 
   std::unordered_map<int32_t, Vector<int32_t>> observation_index_map;

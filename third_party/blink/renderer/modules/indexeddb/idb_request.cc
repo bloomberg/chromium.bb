@@ -458,12 +458,14 @@ void IDBRequest::EnqueueResponse(std::unique_ptr<WebIDBCursor> backend,
 
   switch (cursor_type_) {
     case indexed_db::kCursorKeyOnly:
-      cursor = IDBCursor::Create(std::move(backend), cursor_direction_, this,
-                                 source, transaction_.Get());
+      cursor =
+          MakeGarbageCollected<IDBCursor>(std::move(backend), cursor_direction_,
+                                          this, source, transaction_.Get());
       break;
     case indexed_db::kCursorKeyAndValue:
-      cursor = IDBCursorWithValue::Create(std::move(backend), cursor_direction_,
-                                          this, source, transaction_.Get());
+      cursor = MakeGarbageCollected<IDBCursorWithValue>(
+          std::move(backend), cursor_direction_, this, source,
+          transaction_.Get());
       break;
     default:
       NOTREACHED();
