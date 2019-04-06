@@ -29,6 +29,7 @@
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/url_pattern.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -328,11 +329,10 @@ TEST_P(RuleIndexingTest, TooManyParseFailures) {
     // The initial warnings should correspond to the first
     // |kMaxUnparsedRulesWarnings| rules, which couldn't be parsed.
     for (size_t i = 0; i < kMaxUnparsedRulesWarnings; i++) {
-      warning.message = ErrorUtils::FormatErrorMessage(
-          kRuleNotParsedWarning, base::StringPrintf("id %zu", i + 1),
-          "'RuleActionType': expected \"block\" or \"redirect\" or \"allow\", "
-          "got \"invalid_action_type\"");
-      EXPECT_EQ(expected_warnings[i], warning);
+      EXPECT_EQ(expected_warnings[i].key, warning.key);
+      EXPECT_EQ(expected_warnings[i].specific, warning.specific);
+      EXPECT_THAT(expected_warnings[i].message,
+                  ::testing::HasSubstr("Parse error"));
     }
 
     warning.message = ErrorUtils::FormatErrorMessage(
@@ -380,21 +380,13 @@ TEST_P(RuleIndexingTest, InvalidJSONRules_StrongTypes) {
     ASSERT_EQ(2u, extension()->install_warnings().size());
     std::vector<InstallWarning> expected_warnings;
 
-    expected_warnings.emplace_back(
-        ErrorUtils::FormatErrorMessage(
-            kRuleNotParsedWarning, "id 2",
-            "'RuleActionType': expected \"block\" or \"redirect\" or \"allow\","
-            " got \"invalid action\""),
-        manifest_keys::kDeclarativeNetRequestKey,
-        manifest_keys::kDeclarativeRuleResourcesKey);
-    expected_warnings.emplace_back(
-        ErrorUtils::FormatErrorMessage(
-            kRuleNotParsedWarning, "id 4",
-            "'DomainType': expected \"firstParty\" or \"thirdParty\", got "
-            "\"invalid_domain_type\""),
-        manifest_keys::kDeclarativeNetRequestKey,
-        manifest_keys::kDeclarativeRuleResourcesKey);
-    EXPECT_EQ(expected_warnings, extension()->install_warnings());
+    for (const auto& warning : extension()->install_warnings()) {
+      EXPECT_EQ(extensions::manifest_keys::kDeclarativeNetRequestKey,
+                warning.key);
+      EXPECT_EQ(extensions::manifest_keys::kDeclarativeRuleResourcesKey,
+                warning.specific);
+      EXPECT_THAT(warning.message, ::testing::HasSubstr("Parse error"));
+    }
   }
 }
 

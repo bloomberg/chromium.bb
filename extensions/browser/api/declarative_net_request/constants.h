@@ -31,6 +31,7 @@ enum class ParseResult {
   ERROR_NON_ASCII_DOMAIN,
   ERROR_NON_ASCII_EXCLUDED_DOMAIN,
   ERROR_INVALID_URL_FILTER,
+  ERROR_EMPTY_REMOVE_HEADERS_LIST,
 };
 
 // Describes the ways in which updating dynamic rules can fail.
@@ -75,6 +76,7 @@ extern const char kErrorDuplicateIDs[];
 extern const char kErrorPersisting[];
 extern const char kErrorNonAscii[];
 extern const char kErrorInvalidUrlFilter[];
+extern const char kErrorEmptyRemoveHeadersList[];
 
 extern const char kErrorListNotPassed[];
 

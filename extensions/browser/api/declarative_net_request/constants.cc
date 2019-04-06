@@ -31,7 +31,9 @@ const char kErrorNonAscii[] =
     "Rule with id * cannot have non-ascii characters as part of \"*\" key.";
 const char kErrorInvalidUrlFilter[] =
     "Rule with id * has an invalid value for \"*\" key.";
-
+const char kErrorEmptyRemoveHeadersList[] =
+    "Rule with id * does not specify the value for \"*\" key. This is required "
+    "for \"removeHeaders\" rules.";
 const char kErrorListNotPassed[] = "Rules file must contain a list.";
 
 const char kRuleCountExceeded[] =
