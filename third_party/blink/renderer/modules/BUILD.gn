@@ -323,6 +323,7 @@ jumbo_source_set("unit_tests") {
     "mediastream/media_stream_video_capturer_source_test.cc",
     "mediastream/mock_mojo_media_stream_dispatcher_host.cc",
     "mediastream/mock_mojo_media_stream_dispatcher_host.h",
+    "mediastream/video_track_adapter_unittest.cc",
     "notifications/notification_data_test.cc",
     "notifications/notification_image_loader_test.cc",
     "notifications/notification_resources_loader_test.cc",

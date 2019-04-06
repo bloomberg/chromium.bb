@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/web/modules/mediastream/video_track_adapter.h"
+#include "third_party/blink/renderer/modules/mediastream/video_track_adapter.h"
 
 #include <limits>
 
@@ -10,10 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/modules/mediastream/video_track_adapter_settings.h"
 
-namespace content {
-
-using blink::VideoTrackAdapter;
-using blink::VideoTrackAdapterSettings;
+namespace blink {
 
 // Most VideoTrackAdapter functionality is tested in MediaStreamVideoSourceTest.
 // These tests focus on the computation of cropped frame sizes in edge cases
@@ -192,4 +189,4 @@ TEST(VideoTrackAdapterTest, NoRescaling) {
   EXPECT_EQ(desired_size.height(), kInputHeight);
 }
 
-}  // namespace content
+}  // namespace blink

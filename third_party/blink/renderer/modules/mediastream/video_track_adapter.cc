@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/web/modules/mediastream/video_track_adapter.h"
+#include "third_party/blink/renderer/modules/mediastream/video_track_adapter.h"
 
 #include <algorithm>
 #include <cmath>
@@ -488,7 +488,7 @@ VideoTrackAdapter::VideoTrackAdapter(
 }
 
 VideoTrackAdapter::~VideoTrackAdapter() {
-  DCHECK(adapters_.empty());
+  DCHECK(adapters_.IsEmpty());
 }
 
 void VideoTrackAdapter::AddTrack(const MediaStreamVideoTrack* track,
@@ -671,7 +671,7 @@ void VideoTrackAdapter::SetSourceFrameSizeOnIO(
 
 void VideoTrackAdapter::RemoveTrackOnIO(const MediaStreamVideoTrack* track) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  for (auto it = adapters_.begin(); it != adapters_.end(); ++it) {
+  for (auto* it = adapters_.begin(); it != adapters_.end(); ++it) {
     (*it)->RemoveCallbacks(track);
     if ((*it)->IsEmpty()) {
       adapters_.erase(it);
@@ -687,7 +687,7 @@ void VideoTrackAdapter::ReconfigureTrackOnIO(
 
   VideoFrameResolutionAdapter::VideoTrackCallbacks track_callbacks;
   // Remove the track.
-  for (auto it = adapters_.begin(); it != adapters_.end(); ++it) {
+  for (auto* it = adapters_.begin(); it != adapters_.end(); ++it) {
     track_callbacks = (*it)->RemoveAndGetCallbacks(track);
     if (track_callbacks.frame_callback.is_null())
       continue;
@@ -721,7 +721,7 @@ void VideoTrackAdapter::DeliverFrameOnIO(
       frame->natural_size().height() == source_frame_size_->width()) {
     is_device_rotated = true;
   }
-  if (adapters_.empty()) {
+  if (adapters_.IsEmpty()) {
     renderer_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(frame_dropped_cb_,

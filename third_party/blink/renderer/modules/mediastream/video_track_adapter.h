@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_VIDEO_TRACK_ADAPTER_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_VIDEO_TRACK_ADAPTER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_VIDEO_TRACK_ADAPTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_VIDEO_TRACK_ADAPTER_H_
 
 #include <stdint.h>
 
-#include <vector>
-
+#include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
@@ -18,7 +16,8 @@
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_types.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
-#include "ui/gfx/geometry/size.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -34,9 +33,9 @@ class VideoTrackAdapterSettings;
 // Adaptations is done by wrapping the original media::VideoFrame in a new
 // media::VideoFrame with a new visible_rect and natural_size.
 class BLINK_EXPORT VideoTrackAdapter
-    : public base::RefCountedThreadSafe<VideoTrackAdapter> {
+    : public WTF::ThreadSafeRefCounted<VideoTrackAdapter> {
  public:
-  using OnMutedCallback = base::Callback<void(bool mute_state)>;
+  using OnMutedCallback = base::RepeatingCallback<void(bool mute_state)>;
 
   VideoTrackAdapter(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
@@ -90,7 +89,7 @@ class BLINK_EXPORT VideoTrackAdapter
 
  private:
   virtual ~VideoTrackAdapter();
-  friend class base::RefCountedThreadSafe<VideoTrackAdapter>;
+  friend class WTF::ThreadSafeRefCounted<VideoTrackAdapter>;
 
   void AddTrackOnIO(const MediaStreamVideoTrack* track,
                     VideoCaptureDeliverFrameCB frame_callback,
@@ -127,7 +126,7 @@ class BLINK_EXPORT VideoTrackAdapter
   // It does the resolution adaptation and delivers frames to all registered
   // tracks.
   class VideoFrameResolutionAdapter;
-  using FrameAdapters = std::vector<scoped_refptr<VideoFrameResolutionAdapter>>;
+  using FrameAdapters = WTF::Vector<scoped_refptr<VideoFrameResolutionAdapter>>;
   FrameAdapters adapters_;
 
   // Set to true if frame monitoring has been started. It is only accessed on
@@ -152,4 +151,4 @@ class BLINK_EXPORT VideoTrackAdapter
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_VIDEO_TRACK_ADAPTER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_VIDEO_TRACK_ADAPTER_H_
