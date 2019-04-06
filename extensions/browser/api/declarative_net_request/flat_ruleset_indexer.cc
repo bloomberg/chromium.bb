@@ -43,26 +43,21 @@ FlatStringListOffset BuildVectorOfSharedStrings(
   return builder->CreateVector(offsets);
 }
 
-// Returns the RuleActionType corresponding to |indexed_rule|.
-dnr_api::RuleActionType GetRuleActionType(const IndexedRule& indexed_rule) {
-  if (indexed_rule.options & flat_rule::OptionFlag_IS_WHITELIST) {
-    DCHECK(indexed_rule.redirect_url.empty());
-    return dnr_api::RULE_ACTION_TYPE_ALLOW;
+std::vector<std::unique_ptr<url_pattern_index::UrlPatternIndexBuilder>>
+CreateIndexBuilders(flatbuffers::FlatBufferBuilder* builder) {
+  std::vector<std::unique_ptr<url_pattern_index::UrlPatternIndexBuilder>>
+      result(flat::ActionIndex_count);
+  for (size_t i = 0; i < flat::ActionIndex_count; ++i) {
+    result[i] =
+        std::make_unique<url_pattern_index::UrlPatternIndexBuilder>(builder);
   }
-  if (!indexed_rule.redirect_url.empty())
-    return dnr_api::RULE_ACTION_TYPE_REDIRECT;
-  return dnr_api::RULE_ACTION_TYPE_BLOCK;
+  return result;
 }
 
 }  // namespace
 
-FlatRulesetIndexer::FlatRulesetIndexer() {
-  index_builders_.reserve(flat::ActionIndex_count);
-  for (size_t i = 0; i < flat::ActionIndex_count; ++i) {
-    index_builders_.push_back(
-        std::make_unique<UrlPatternIndexBuilder>(&builder_));
-  }
-}
+FlatRulesetIndexer::FlatRulesetIndexer()
+    : index_builders_(CreateIndexBuilders(&builder_)) {}
 
 FlatRulesetIndexer::~FlatRulesetIndexer() = default;
 
@@ -84,11 +79,14 @@ void FlatRulesetIndexer::AddUrlRule(const IndexedRule& indexed_rule) {
       indexed_rule.anchor_left, indexed_rule.anchor_right,
       domains_included_offset, domains_excluded_offset, url_pattern_offset,
       indexed_rule.id, indexed_rule.priority);
-  const dnr_api::RuleActionType type = GetRuleActionType(indexed_rule);
-  GetBuilder(type)->IndexUrlRule(offset);
+
+  std::vector<UrlPatternIndexBuilder*> builders = GetBuilders(indexed_rule);
+  DCHECK(!builders.empty());
+  for (UrlPatternIndexBuilder* builder : builders)
+    builder->IndexUrlRule(offset);
 
   // Store additional metadata required for a redirect rule.
-  if (type == dnr_api::RULE_ACTION_TYPE_REDIRECT) {
+  if (indexed_rule.action_type == dnr_api::RULE_ACTION_TYPE_REDIRECT) {
     DCHECK(!indexed_rule.redirect_url.empty());
     FlatStringOffset redirect_url_offset =
         builder_.CreateSharedString(indexed_rule.redirect_url);
@@ -125,19 +123,51 @@ base::span<const uint8_t> FlatRulesetIndexer::GetData() {
   return base::make_span(builder_.GetBufferPointer(), builder_.GetSize());
 }
 
-FlatRulesetIndexer::UrlPatternIndexBuilder* FlatRulesetIndexer::GetBuilder(
-    dnr_api::RuleActionType type) {
-  switch (type) {
+std::vector<FlatRulesetIndexer::UrlPatternIndexBuilder*>
+FlatRulesetIndexer::GetBuilders(const IndexedRule& indexed_rule) {
+  switch (indexed_rule.action_type) {
     case dnr_api::RULE_ACTION_TYPE_BLOCK:
-      return index_builders_[flat::ActionIndex_block].get();
+      return {index_builders_[flat::ActionIndex_block].get()};
     case dnr_api::RULE_ACTION_TYPE_ALLOW:
-      return index_builders_[flat::ActionIndex_allow].get();
+      return {index_builders_[flat::ActionIndex_allow].get()};
     case dnr_api::RULE_ACTION_TYPE_REDIRECT:
-      return index_builders_[flat::ActionIndex_redirect].get();
+      return {index_builders_[flat::ActionIndex_redirect].get()};
+    case dnr_api::RULE_ACTION_TYPE_REMOVEHEADERS:
+      return GetRemoveHeaderBuilders(indexed_rule.remove_headers_set);
     case dnr_api::RULE_ACTION_TYPE_NONE:
-      NOTREACHED();
+      break;
   }
-  return nullptr;
+  NOTREACHED();
+  return {};
+}
+
+std::vector<FlatRulesetIndexer::UrlPatternIndexBuilder*>
+FlatRulesetIndexer::GetRemoveHeaderBuilders(
+    const std::set<dnr_api::RemoveHeaderType>& types) {
+  // A single "removeHeaders" JSON/indexed rule does still correspond to a
+  // single flatbuffer rule but can be stored in multiple indices.
+  DCHECK(!types.empty());
+  std::vector<UrlPatternIndexBuilder*> result;
+  for (dnr_api::RemoveHeaderType type : types) {
+    switch (type) {
+      case dnr_api::REMOVE_HEADER_TYPE_NONE:
+        NOTREACHED();
+        break;
+      case dnr_api::REMOVE_HEADER_TYPE_COOKIE:
+        result.push_back(
+            index_builders_[flat::ActionIndex_remove_cookie_header].get());
+        break;
+      case dnr_api::REMOVE_HEADER_TYPE_REFERER:
+        result.push_back(
+            index_builders_[flat::ActionIndex_remove_referer_header].get());
+        break;
+      case dnr_api::REMOVE_HEADER_TYPE_SETCOOKIE:
+        result.push_back(
+            index_builders_[flat::ActionIndex_remove_set_cookie_header].get());
+        break;
+    }
+  }
+  return result;
 }
 
 }  // namespace declarative_net_request

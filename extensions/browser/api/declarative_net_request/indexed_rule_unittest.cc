@@ -190,8 +190,7 @@ TEST_F(IndexedRuleTest, ResourceTypesParsing) {
             dnr_api::RESOURCE_TYPE_WEBSOCKET, dnr_api::RESOURCE_TYPE_OTHER})),
        ParseResult::ERROR_NO_APPLICABLE_RESOURCE_TYPES,
        flat_rule::ElementType_NONE},
-      {std::make_unique<ResourceTypeVec>(ResourceTypeVec()),
-       std::make_unique<ResourceTypeVec>(ResourceTypeVec()),
+      {std::make_unique<ResourceTypeVec>(), std::make_unique<ResourceTypeVec>(),
        ParseResult::ERROR_EMPTY_RESOURCE_TYPES_LIST,
        flat_rule::ElementType_NONE},
       {std::make_unique<ResourceTypeVec>(
@@ -330,16 +329,12 @@ TEST_F(IndexedRuleTest, DomainsParsing) {
     const DomainVec expected_excluded_domains;
   } cases[] = {
       {nullptr, nullptr, ParseResult::SUCCESS, {}, {}},
-      {std::make_unique<DomainVec>(DomainVec()),
+      {std::make_unique<DomainVec>(),
        nullptr,
        ParseResult::ERROR_EMPTY_DOMAINS_LIST,
        {},
        {}},
-      {nullptr,
-       std::make_unique<DomainVec>(DomainVec()),
-       ParseResult::SUCCESS,
-       {},
-       {}},
+      {nullptr, std::make_unique<DomainVec>(), ParseResult::SUCCESS, {}, {}},
       {std::make_unique<DomainVec>(DomainVec({"a.com", "b.com", "a.com"})),
        std::make_unique<DomainVec>(
            DomainVec({"g.com", "XY.COM", "zzz.com", "a.com", "google.com"})),
@@ -417,6 +412,50 @@ TEST_F(IndexedRuleTest, RedirectUrlParsing) {
     EXPECT_EQ(cases[i].expected_result, result);
     if (result == ParseResult::SUCCESS)
       EXPECT_EQ(cases[i].expected_redirect_url, indexed_rule.redirect_url);
+  }
+}
+
+TEST_F(IndexedRuleTest, RemoveHeadersParsing) {
+  using RemoveHeaderTypeVec = std::vector<dnr_api::RemoveHeaderType>;
+  using RemoveHeaderTypeSet = std::set<dnr_api::RemoveHeaderType>;
+  struct {
+    std::unique_ptr<RemoveHeaderTypeVec> types;
+    ParseResult expected_result;
+    // Valid iff |expected_result| is SUCCESS.
+    RemoveHeaderTypeSet expected_types;
+  } cases[] = {
+      {nullptr, ParseResult::ERROR_EMPTY_REMOVE_HEADERS_LIST, {}},
+      {std::make_unique<RemoveHeaderTypeVec>(),
+       ParseResult::ERROR_EMPTY_REMOVE_HEADERS_LIST,
+       {}},
+      {std::make_unique<RemoveHeaderTypeVec>(
+           RemoveHeaderTypeVec({dnr_api::REMOVE_HEADER_TYPE_COOKIE,
+                                dnr_api::REMOVE_HEADER_TYPE_REFERER})),
+       ParseResult::SUCCESS,
+       RemoveHeaderTypeSet({dnr_api::REMOVE_HEADER_TYPE_COOKIE,
+                            dnr_api::REMOVE_HEADER_TYPE_REFERER})},
+      {std::make_unique<RemoveHeaderTypeVec>(
+           RemoveHeaderTypeVec({dnr_api::REMOVE_HEADER_TYPE_COOKIE,
+                                dnr_api::REMOVE_HEADER_TYPE_COOKIE})),
+       ParseResult::SUCCESS,
+       RemoveHeaderTypeSet({dnr_api::REMOVE_HEADER_TYPE_COOKIE})},
+  };
+
+  for (size_t i = 0; i < base::size(cases); ++i) {
+    SCOPED_TRACE(base::StringPrintf("Testing case[%" PRIuS "]", i));
+    dnr_api::Rule rule = CreateGenericParsedRule();
+    rule.action.type = dnr_api::RULE_ACTION_TYPE_REMOVEHEADERS;
+    rule.action.remove_headers_list = std::move(cases[i].types);
+
+    IndexedRule indexed_rule;
+    ParseResult result =
+        IndexedRule::CreateIndexedRule(std::move(rule), &indexed_rule);
+    EXPECT_EQ(cases[i].expected_result, result);
+    if (result != ParseResult::SUCCESS)
+      continue;
+    EXPECT_EQ(dnr_api::RULE_ACTION_TYPE_REMOVEHEADERS,
+              indexed_rule.action_type);
+    EXPECT_EQ(cases[i].expected_types, indexed_rule.remove_headers_set);
   }
 }
 

@@ -93,6 +93,11 @@ std::string ParseInfo::GetErrorDescription() const {
       error = ErrorUtils::FormatErrorMessage(
           kErrorInvalidUrlFilter, std::to_string(*rule_id_), kUrlFilterKey);
       break;
+    case ParseResult::ERROR_EMPTY_REMOVE_HEADERS_LIST:
+      error = ErrorUtils::FormatErrorMessage(kErrorEmptyRemoveHeadersList,
+                                             std::to_string(*rule_id_),
+                                             kRemoveHeadersListKey);
+      break;
   }
   return error;
 }
