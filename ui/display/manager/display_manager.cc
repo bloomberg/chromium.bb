@@ -1343,7 +1343,6 @@ bool DisplayManager::ShouldSetMirrorModeOn(const DisplayIdList& new_id_list) {
         return true;
       }
     }
-    return false;
   }
   // Mirror mode should remain unchanged as long as there are more than one
   // connected displays.
@@ -2229,6 +2228,13 @@ const Display& DisplayManager::GetSecondaryDisplay() const {
 
 void DisplayManager::UpdateInfoForRestoringMirrorMode() {
   if (num_connected_displays_ <= 1)
+    return;
+
+  // The display prefs have just been loaded and we're waiting for the
+  // reconfiguration of the displays to apply the newly loaded prefs. We should
+  // not overwrite the newly-loaded external display mirror configs.
+  // https://crbug.com/936884.
+  if (should_restore_mirror_mode_from_display_prefs_)
     return;
 
   // External displays mirrored because of forced tablet mode mirroring should
