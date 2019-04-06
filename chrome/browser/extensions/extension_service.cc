@@ -1208,6 +1208,8 @@ void ExtensionService::AddExtension(const Extension* extension) {
 }
 
 void ExtensionService::AddComponentExtension(const Extension* extension) {
+  extension_prefs_->ClearInapplicableDisableReasonsForComponentExtension(
+      extension->id());
   const std::string old_version_string(
       extension_prefs_->GetVersionString(extension->id()));
   const base::Version old_version(old_version_string);
