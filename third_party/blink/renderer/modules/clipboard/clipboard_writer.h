@@ -39,7 +39,7 @@ class ClipboardWriter : public FileReaderLoaderClient {
   void DidFail(FileErrorCode) override;
 
  protected:
-  ClipboardWriter(ClipboardPromise* promise);
+  explicit ClipboardWriter(ClipboardPromise* promise);
 
   virtual void DecodeOnBackgroundThread(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
