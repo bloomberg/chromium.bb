@@ -27,6 +27,7 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_ripple.h"
+#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/view_class_properties.h"
@@ -277,6 +278,11 @@ bool IconLabelBubbleView::OnMousePressed(const ui::MouseEvent& event) {
 void IconLabelBubbleView::OnNativeThemeChanged(
     const ui::NativeTheme* native_theme) {
   LabelButton::OnNativeThemeChanged(native_theme);
+
+  // LabelButton::OnNativeThemeChanged() sets a views::Background on the label
+  // under certain conditions. We don't want that, so unset the background.
+  label()->SetBackground(nullptr);
+
   SetEnabledTextColors(GetTextColor());
   label()->SetBackgroundColor(GetParentBackgroundColor());
   SchedulePaint();
