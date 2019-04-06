@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/tracing.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -32,6 +33,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "services/service_manager/sandbox/features.h"
 #include "third_party/zlib/google/compression_utils.h"
 #include "ui/gl/gl_switches.h"
 
@@ -46,6 +48,15 @@ TabCapturePerformanceTestBase::~TabCapturePerformanceTestBase() = default;
 void TabCapturePerformanceTestBase::SetUp() {
   // Because screen capture is involved, require pixel output.
   EnablePixelOutput();
+
+  feature_list_.InitWithFeatures(
+      {
+          service_manager::features::kAudioServiceSandbox,
+          features::kAudioServiceAudioStreams,
+          features::kAudioServiceLaunchOnStartup,
+          features::kAudioServiceOutOfProcess,
+      },
+      {});
 
   InProcessBrowserTest::SetUp();
 }
