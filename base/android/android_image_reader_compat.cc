@@ -56,9 +56,10 @@ bool AndroidImageReader::LoadFunctions() {
   // devices, this is unlikely to happen in the foreseeable future, so we use
   // dynamic loading.
 
-  // Functions are not present for android version older than OREO
+  // Functions are not present for android version older than OREO.
+  // Currently we want to enable AImageReader only for android P+ devices.
   if (base::android::BuildInfo::GetInstance()->sdk_int() <
-      base::android::SDK_VERSION_OREO) {
+      base::android::SDK_VERSION_P) {
     return false;
   }
 
