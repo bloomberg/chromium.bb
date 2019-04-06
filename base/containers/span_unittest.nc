@@ -249,6 +249,13 @@ int WontCompile() {
   return std::get<0>(s);
 }
 
+#elif defined(NCTEST_CONST_VECTOR_DEDUCES_AS_CONST_SPAN)  // [r"fatal error: no viable conversion from 'span<const int>' to 'span<int>'"]
+
+int WontCompile() {
+  const std::vector<int> v;
+  span<int> s = make_span(v);
+}
+
 #endif
 
 }  // namespace base
