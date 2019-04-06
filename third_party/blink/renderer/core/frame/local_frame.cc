@@ -1073,7 +1073,7 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
                       WebFeature::kOpenerNavigationWithoutGesture);
   }
 
-  if (GetSecurityContext()->IsSandboxed(kSandboxNavigation)) {
+  if (GetSecurityContext()->IsSandboxed(WebSandboxFlags::kNavigation)) {
     if (!target_frame.Tree().IsDescendantOf(this) &&
         !target_frame.IsMainFrame()) {
       PrintNavigationErrorMessage(
@@ -1088,8 +1088,8 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
     // 'allow-popups' flag is specified, or if the
     if (target_frame.IsMainFrame() && target_frame != Tree().Top() &&
         GetSecurityContext()->IsSandboxed(
-            kSandboxPropagatesToAuxiliaryBrowsingContexts) &&
-        (GetSecurityContext()->IsSandboxed(kSandboxPopups) ||
+            WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts) &&
+        (GetSecurityContext()->IsSandboxed(WebSandboxFlags::kPopups) ||
          target_frame.Client()->Opener() != this)) {
       PrintNavigationErrorMessage(
           target_frame,
@@ -1102,9 +1102,9 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
     // Top navigation is forbidden unless opted-in. allow-top-navigation or
     // allow-top-navigation-by-user-activation will also skips origin checks.
     if (target_frame == Tree().Top()) {
-      if (GetSecurityContext()->IsSandboxed(kSandboxTopNavigation) &&
+      if (GetSecurityContext()->IsSandboxed(WebSandboxFlags::kTopNavigation) &&
           GetSecurityContext()->IsSandboxed(
-              kSandboxTopNavigationByUserActivation)) {
+              WebSandboxFlags::kTopNavigationByUserActivation)) {
         PrintNavigationErrorMessage(
             target_frame,
             "The frame attempting navigation of the top-level window is "
@@ -1113,9 +1113,9 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
         return false;
       }
 
-      if (GetSecurityContext()->IsSandboxed(kSandboxTopNavigation) &&
+      if (GetSecurityContext()->IsSandboxed(WebSandboxFlags::kTopNavigation) &&
           !GetSecurityContext()->IsSandboxed(
-              kSandboxTopNavigationByUserActivation) &&
+              WebSandboxFlags::kTopNavigationByUserActivation) &&
           !LocalFrame::HasTransientUserActivation(this)) {
         // With only 'allow-top-navigation-by-user-activation' (but not
         // 'allow-top-navigation'), top navigation requires a user gesture.

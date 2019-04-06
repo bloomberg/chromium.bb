@@ -596,12 +596,12 @@ TEST_F(DocumentTest, EnforceSandboxFlags) {
   scoped_refptr<SecurityOrigin> origin =
       SecurityOrigin::CreateFromString("http://example.test");
   GetDocument().SetSecurityOrigin(origin);
-  SandboxFlags mask = kSandboxNavigation;
+  SandboxFlags mask = WebSandboxFlags::kNavigation;
   GetDocument().EnforceSandboxFlags(mask);
   EXPECT_EQ(origin, GetDocument().GetSecurityOrigin());
   EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
 
-  mask |= kSandboxOrigin;
+  mask |= WebSandboxFlags::kOrigin;
   GetDocument().EnforceSandboxFlags(mask);
   EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
   EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
@@ -879,7 +879,7 @@ TEST_F(DocumentTest, SandboxDisablesAppCache) {
   scoped_refptr<SecurityOrigin> origin =
       SecurityOrigin::CreateFromString("https://test.com");
   GetDocument().SetSecurityOrigin(origin);
-  SandboxFlags mask = kSandboxOrigin;
+  SandboxFlags mask = WebSandboxFlags::kOrigin;
   GetDocument().EnforceSandboxFlags(mask);
   GetDocument().SetURL(KURL("https://test.com/foobar/document"));
 
@@ -1077,7 +1077,7 @@ TEST_P(IsolatedWorldCSPTest, CSPForWorld) {
 INSTANTIATE_TEST_SUITE_P(, IsolatedWorldCSPTest, testing::Values(true, false));
 
 TEST_F(DocumentTest, CanExecuteScriptsWithSandboxAndIsolatedWorld) {
-  constexpr SandboxFlags kSandboxMask = kSandboxScripts;
+  constexpr SandboxFlags kSandboxMask = WebSandboxFlags::kScripts;
   GetDocument().EnforceSandboxFlags(kSandboxMask);
   // With FeaturePolicyForSandbox, all the sandbox flags must be explicitly
   // converted to equivalent feature policies. Since sandbox is enforced above,

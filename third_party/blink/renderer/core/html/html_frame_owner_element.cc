@@ -145,7 +145,7 @@ HTMLFrameOwnerElement::HTMLFrameOwnerElement(const QualifiedName& tag_name,
     : HTMLElement(tag_name, document),
       content_frame_(nullptr),
       embedded_content_view_(nullptr),
-      sandbox_flags_(kSandboxNone),
+      sandbox_flags_(WebSandboxFlags::kNone),
       should_lazy_load_children_(DoesParentAllowLazyLoadingChildren(document)) {
 }
 

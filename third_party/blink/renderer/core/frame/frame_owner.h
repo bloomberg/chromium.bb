@@ -92,7 +92,9 @@ class CORE_EXPORT DummyFrameOwner final
   Frame* ContentFrame() const override { return nullptr; }
   void SetContentFrame(Frame&) override {}
   void ClearContentFrame() override {}
-  SandboxFlags GetSandboxFlags() const override { return kSandboxNone; }
+  SandboxFlags GetSandboxFlags() const override {
+    return WebSandboxFlags::kNone;
+  }
   void AddResourceTiming(const ResourceTimingInfo&) override {}
   void DispatchLoad() override {}
   bool CanRenderFallbackContent() const override { return false; }

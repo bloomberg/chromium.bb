@@ -161,7 +161,7 @@ ScriptPromise ScreenOrientation::lock(ScriptState* state,
     return promise;
   }
 
-  if (document->IsSandboxed(kSandboxOrientationLock)) {
+  if (document->IsSandboxed(WebSandboxFlags::kOrientationLock)) {
     DOMException* exception =
         DOMException::Create(DOMExceptionCode::kSecurityError,
                              "The document is sandboxed and lacks the "

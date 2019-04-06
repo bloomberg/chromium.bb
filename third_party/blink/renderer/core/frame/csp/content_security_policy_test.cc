@@ -1593,7 +1593,7 @@ TEST_F(ContentSecurityPolicyTest, EmptyCSPIsNoOp) {
   EXPECT_EQ(kLeaveInsecureRequestsAlone, csp->GetInsecureRequestPolicy());
   EXPECT_FALSE(csp->HasHeaderDeliveredPolicy());
   EXPECT_FALSE(csp->SupportsWasmEval());
-  EXPECT_EQ(kSandboxNone, csp->GetSandboxMask());
+  EXPECT_EQ(WebSandboxFlags::kNone, csp->GetSandboxMask());
   EXPECT_FALSE(
       csp->HasPolicyFromSource(kContentSecurityPolicyHeaderSourceHTTP));
 }

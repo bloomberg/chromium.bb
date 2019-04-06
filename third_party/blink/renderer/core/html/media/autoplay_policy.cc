@@ -399,7 +399,7 @@ bool AutoplayPolicy::IsAutoplayAllowedPerSettings() const {
 }
 
 bool AutoplayPolicy::ShouldAutoplay() {
-  if (element_->GetDocument().IsSandboxed(kSandboxAutomaticFeatures))
+  if (element_->GetDocument().IsSandboxed(WebSandboxFlags::kAutomaticFeatures))
     return false;
   return element_->can_autoplay_ && element_->paused_ && element_->Autoplay();
 }

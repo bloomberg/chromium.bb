@@ -245,7 +245,8 @@ Document* LocalDOMWindow::CreateDocument(const String& mime_type,
     document = DOMImplementation::createDocument(
         mime_type, init,
         init.GetFrame() ? init.GetFrame()->InViewSourceMode() : false);
-    if (document->IsPluginDocument() && document->IsSandboxed(kSandboxPlugins))
+    if (document->IsPluginDocument() &&
+        document->IsSandboxed(WebSandboxFlags::kPlugins))
       document = MakeGarbageCollected<SinkDocument>(init);
   }
 
@@ -667,7 +668,7 @@ void LocalDOMWindow::alert(ScriptState* script_state, const String& message) {
   if (!GetFrame())
     return;
 
-  if (document()->IsSandboxed(kSandboxModals)) {
+  if (document()->IsSandboxed(WebSandboxFlags::kModals)) {
     UseCounter::Count(document(), WebFeature::kDialogInSandboxedContext);
     GetFrameConsole()->AddMessage(ConsoleMessage::Create(
         mojom::ConsoleMessageSource::kSecurity,
@@ -697,7 +698,7 @@ bool LocalDOMWindow::confirm(ScriptState* script_state, const String& message) {
   if (!GetFrame())
     return false;
 
-  if (document()->IsSandboxed(kSandboxModals)) {
+  if (document()->IsSandboxed(WebSandboxFlags::kModals)) {
     UseCounter::Count(document(), WebFeature::kDialogInSandboxedContext);
     GetFrameConsole()->AddMessage(ConsoleMessage::Create(
         mojom::ConsoleMessageSource::kSecurity,
@@ -729,7 +730,7 @@ String LocalDOMWindow::prompt(ScriptState* script_state,
   if (!GetFrame())
     return String();
 
-  if (document()->IsSandboxed(kSandboxModals)) {
+  if (document()->IsSandboxed(WebSandboxFlags::kModals)) {
     UseCounter::Count(document(), WebFeature::kDialogInSandboxedContext);
     GetFrameConsole()->AddMessage(ConsoleMessage::Create(
         mojom::ConsoleMessageSource::kSecurity,

@@ -795,7 +795,7 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
   }
 
   FrameLoader& loader = frame->Loader();
-  loader.ForceSandboxFlags(kSandboxAll);
+  loader.ForceSandboxFlags(WebSandboxFlags::kAll);
 
   // SVG Images will always synthesize a viewBox, if it's not available, and
   // thus never see scrollbars.

@@ -30,42 +30,15 @@
 #include <vector>
 
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/renderer/core/dom/space_split_string.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
-enum SandboxFlag {
-  // See http://www.whatwg.org/specs/web-apps/current-work/#attr-iframe-sandbox
-  // for a list of the sandbox flags.
-  kSandboxNone = 0,
-  kSandboxNavigation = 1,
-  kSandboxPlugins = 1 << 1,
-  kSandboxOrigin = 1 << 2,
-  kSandboxForms = 1 << 3,
-  kSandboxScripts = 1 << 4,
-  kSandboxTopNavigation = 1 << 5,
-  // See https://www.w3.org/Bugs/Public/show_bug.cgi?id=12393
-  kSandboxPopups = 1 << 6,
-  kSandboxAutomaticFeatures = 1 << 7,
-  kSandboxPointerLock = 1 << 8,
-  kSandboxDocumentDomain = 1 << 9,
-  // See
-  // https://w3c.github.io/screen-orientation/#dfn-sandboxed-orientation-lock-browsing-context-flag.
-  kSandboxOrientationLock = 1 << 10,
-  kSandboxPropagatesToAuxiliaryBrowsingContexts = 1 << 11,
-  kSandboxModals = 1 << 12,
-  // See
-  // https://w3c.github.io/presentation-api/#sandboxing-and-the-allow-presentation-keyword
-  kSandboxPresentationController = 1 << 13,
-  // See https://github.com/WICG/interventions/issues/42.
-  kSandboxTopNavigationByUserActivation = 1 << 14,
-  // See https://crbug.com/539938
-  kSandboxDownloads = 1 << 15,
-  kSandboxAll = -1  // Mask with all bits set to 1.
-};
-
-typedef int SandboxFlags;
+// TODO(ekaramad): Get rid of these.
+using SandboxFlag = WebSandboxFlags;
+using SandboxFlags = WebSandboxFlags;
 
 SandboxFlags ParseSandboxPolicy(const SpaceSplitString& policy,
                                 String& invalid_tokens_error_message);

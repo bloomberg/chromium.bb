@@ -151,15 +151,15 @@ void HTMLIFrameElement::ParseAttribute(
         RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled();
     SandboxFlags current_flags =
         value.IsNull()
-            ? kSandboxNone
+            ? WebSandboxFlags::kNone
             : ParseSandboxPolicy(sandbox_->TokenSet(), invalid_tokens);
     // With FeaturePolicyForSandbox, sandbox flags are represented as part of
     // the container policies. However, not all sandbox flags are yet converted
     // and for now the residue will stay around in the stored flags.
     // (see https://crbug.com/812381).
     SandboxFlags sandbox_to_set = current_flags;
-    sandbox_flags_converted_to_feature_policies_ = kSandboxNone;
-    if (feature_policy_for_sandbox && current_flags != kSandboxNone) {
+    sandbox_flags_converted_to_feature_policies_ = WebSandboxFlags::kNone;
+    if (feature_policy_for_sandbox && current_flags != WebSandboxFlags::kNone) {
       // The part of sandbox which will be mapped to feature policies.
       sandbox_flags_converted_to_feature_policies_ = current_flags;
       // Residue sandbox which will not be mapped to feature policies.
@@ -288,9 +288,10 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
     // If the frame is sandboxed at all, then warn if feature policy attributes
     // will override the sandbox attributes.
     // TODO(ekaramad): Add similar messages for all the converted sandbox flags.
-    if (messages &&
-        (sandbox_flags_converted_to_feature_policies_ & kSandboxNavigation)) {
-      if (!(sandbox_flags_converted_to_feature_policies_ & kSandboxForms) &&
+    if (messages && (sandbox_flags_converted_to_feature_policies_ &
+                     WebSandboxFlags::kNavigation) != WebSandboxFlags::kNone) {
+      if ((sandbox_flags_converted_to_feature_policies_ &
+           WebSandboxFlags::kForms) == WebSandboxFlags::kNone &&
           IsFeatureDeclared(mojom::FeaturePolicyFeature::kFormSubmission,
                             container_policy)) {
         messages->push_back(
