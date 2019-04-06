@@ -130,7 +130,7 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout) {
       SelectionInDOMTree::Builder().Collapse(Position(text, 0)).Build());
   UpdateAllLifecyclePhasesForTest();
   EXPECT_TRUE(Selection().ComputeVisibleSelectionInDOMTree().IsCaret());
-  EXPECT_TRUE(ToLayoutBlock(GetDocument().body()->GetLayoutObject())
+  EXPECT_TRUE(To<LayoutBlock>(GetDocument().body()->GetLayoutObject())
                   ->ShouldPaintCursorCaret());
 
   unsigned start_count = LayoutCount();

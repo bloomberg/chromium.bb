@@ -58,17 +58,17 @@ LayoutBlock* CaretDisplayItemClient::CaretLayoutBlock(const Node* node) {
   if (!layout_object)
     return nullptr;
 
+  auto* caret_layout_object = DynamicTo<LayoutBlock>(layout_object);
   // if caretNode is a block and caret is inside it then caret should be painted
   // by that block
-  bool painted_by_block =
-      layout_object->IsLayoutBlock() && CaretRendersInsideNode(node);
+  bool painted_by_block = caret_layout_object && CaretRendersInsideNode(node);
   // TODO(yoichio): This function is called at least
   // DocumentLifeCycle::LayoutClean but caretRendersInsideNode above can
   // layout. Thus |node->layoutObject()| can be changed then this is bad
   // design. We should make caret painting algorithm clean.
   CHECK_EQ(layout_object, node->GetLayoutObject())
       << "Layout tree should not changed";
-  return painted_by_block ? ToLayoutBlock(layout_object)
+  return painted_by_block ? caret_layout_object
                           : layout_object->ContainingBlock();
 }
 

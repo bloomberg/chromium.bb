@@ -81,7 +81,7 @@ TEST_P(CaretDisplayItemClientTest, CaretPaintInvalidation) {
 
   Text* text = AppendTextNode("Hello, World!");
   UpdateAllLifecyclePhasesForCaretTest();
-  const auto* block = ToLayoutBlock(GetDocument().body()->GetLayoutObject());
+  const auto* block = To<LayoutBlock>(GetDocument().body()->GetLayoutObject());
 
   // Focus the body. Should invalidate the new caret.
   GetDocument().View()->SetTracksPaintInvalidations(true);
@@ -232,8 +232,8 @@ TEST_P(CaretDisplayItemClientTest, UpdatePreviousLayoutBlock) {
   auto* block_element1 = AppendBlock("Block1");
   auto* block_element2 = AppendBlock("Block2");
   UpdateAllLifecyclePhasesForCaretTest();
-  auto* block1 = ToLayoutBlock(block_element1->GetLayoutObject());
-  auto* block2 = ToLayoutBlock(block_element2->GetLayoutObject());
+  auto* block1 = To<LayoutBlock>(block_element1->GetLayoutObject());
+  auto* block2 = To<LayoutBlock>(block_element2->GetLayoutObject());
 
   // Set caret into block2.
   GetDocument().body()->focus();
@@ -295,7 +295,7 @@ TEST_P(CaretDisplayItemClientTest, CaretHideMoveAndShow) {
   Text* text = AppendTextNode("Hello, World!");
   GetDocument().body()->focus();
   UpdateAllLifecyclePhasesForCaretTest();
-  const auto* block = ToLayoutBlock(GetDocument().body()->GetLayoutObject());
+  const auto* block = To<LayoutBlock>(GetDocument().body()->GetLayoutObject());
 
   LayoutRect caret_visual_rect = GetCaretDisplayItemClient().VisualRect();
   EXPECT_EQ(1, caret_visual_rect.Width());
@@ -345,7 +345,7 @@ TEST_P(CaretDisplayItemClientTest, CompositingChange) {
   GetDocument().GetPage()->GetFocusController().SetFocused(true);
   auto* container = GetDocument().getElementById("container");
   auto* editor = GetDocument().getElementById("editor");
-  auto* editor_block = ToLayoutBlock(editor->GetLayoutObject());
+  auto* editor_block = To<LayoutBlock>(editor->GetLayoutObject());
   Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder().Collapse(Position(editor, 0)).Build());
   UpdateAllLifecyclePhasesForCaretTest();

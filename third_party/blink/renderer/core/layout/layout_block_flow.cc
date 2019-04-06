@@ -1394,8 +1394,9 @@ void LayoutBlockFlow::RebuildFloatsFromIntruding() {
   LayoutBlockFlow* parent_block_flow = ToLayoutBlockFlow(Parent());
   bool sibling_float_may_intrude = false;
   LayoutObject* prev = PreviousSibling();
-  while (prev && (!prev->IsBox() || !prev->IsLayoutBlock() ||
-                  ToLayoutBlock(prev)->CreatesNewFormattingContext())) {
+  auto* prev_layout_block = DynamicTo<LayoutBlock>(prev);
+  while (prev && (!prev->IsBox() || !prev_layout_block ||
+                  prev_layout_block->CreatesNewFormattingContext())) {
     if (prev->IsFloating())
       sibling_float_may_intrude = true;
     prev = prev->PreviousSibling();
@@ -1409,7 +1410,7 @@ void LayoutBlockFlow::RebuildFloatsFromIntruding() {
   bool parent_floats_may_intrude =
       !sibling_float_may_intrude &&
       (!prev || ToLayoutBlockFlow(prev)->IsSelfCollapsingBlock() ||
-       ToLayoutBlock(prev)->LogicalTop() > LogicalTop()) &&
+       prev_layout_block->LogicalTop() > LogicalTop()) &&
       parent_block_flow->LowestFloatLogicalBottom() > LogicalTop();
   if (sibling_float_may_intrude || parent_floats_may_intrude)
     AddIntrudingFloats(parent_block_flow,
@@ -2165,8 +2166,8 @@ void LayoutBlockFlow::MarginBeforeEstimateForChild(
   // we're looking at current values.
   if (grandchild_box->NeedsLayout()) {
     grandchild_box->ComputeAndSetBlockDirectionMargins(this);
-    if (grandchild_box->IsLayoutBlock()) {
-      LayoutBlock* grandchild_block = ToLayoutBlock(grandchild_box);
+    auto* grandchild_block = DynamicTo<LayoutBlock>(grandchild_box);
+    if (grandchild_block) {
       grandchild_block->SetHasMarginBeforeQuirk(
           grandchild_box->StyleRef().HasMarginBeforeQuirk());
       grandchild_block->SetHasMarginAfterQuirk(
@@ -3194,10 +3195,9 @@ void LayoutBlockFlow::AddChild(LayoutObject* new_child,
   // insertion in a way that isn't sufficient for us, and can only cause trouble
   // at this point.
   LayoutBox::AddChild(new_child, before_child);
-
-  if (made_boxes_non_inline && Parent() && IsAnonymousBlock() &&
-      Parent()->IsLayoutBlock()) {
-    ToLayoutBlock(Parent())->RemoveLeftoverAnonymousBlock(this);
+  auto* parent_layout_block = DynamicTo<LayoutBlock>(Parent());
+  if (made_boxes_non_inline && IsAnonymousBlock() && parent_layout_block) {
+    parent_layout_block->RemoveLeftoverAnonymousBlock(this);
     // |this| may be dead now.
   }
 }
@@ -3611,8 +3611,9 @@ void LayoutBlockFlow::MakeChildrenNonInline(LayoutObject* insertion_point) {
 
 void LayoutBlockFlow::ChildBecameNonInline(LayoutObject*) {
   MakeChildrenNonInline();
-  if (IsAnonymousBlock() && Parent() && Parent()->IsLayoutBlock())
-    ToLayoutBlock(Parent())->RemoveLeftoverAnonymousBlock(this);
+  auto* parent_layout_block = DynamicTo<LayoutBlock>(Parent());
+  if (IsAnonymousBlock() && parent_layout_block)
+    parent_layout_block->RemoveLeftoverAnonymousBlock(this);
   // |this| may be dead here
 }
 
@@ -4611,9 +4612,10 @@ bool LayoutBlockFlow::RecalcInlineChildrenLayoutOverflow() {
       children_layout_overflow_changed = true;
       // TODO(chrishtr): should this be IsBox()? Non-blocks can be
       // inline and have line box wrappers.
-      if (layout_object->IsLayoutBlock()) {
+      auto* layout_block_object = DynamicTo<LayoutBlock>(layout_object);
+      if (layout_block_object) {
         if (InlineBox* inline_box_wrapper =
-                ToLayoutBlock(layout_object)->InlineBoxWrapper())
+                layout_block_object->InlineBoxWrapper())
           line_boxes.insert(&inline_box_wrapper->Root());
       }
     }

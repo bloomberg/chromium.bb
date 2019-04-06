@@ -27,6 +27,7 @@
 #include <memory>
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/list_hash_set.h"
 
 namespace blink {
@@ -594,6 +595,13 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBlock, IsLayoutBlock());
+
+template <>
+struct DowncastTraits<LayoutBlock> {
+  static bool AllowFrom(const LayoutObject& object) {
+    return object.IsLayoutBlock();
+  }
+};
 
 }  // namespace blink
 

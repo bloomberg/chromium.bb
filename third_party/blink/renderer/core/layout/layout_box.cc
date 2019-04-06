@@ -3887,8 +3887,8 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalHeightUsing(
       bool has_perpendicular_containing_block =
           cb->IsHorizontalWritingMode() != IsHorizontalWritingMode();
       LayoutUnit stretched_height(-1);
-      if (cb->IsLayoutBlock()) {
-        LayoutBlock* block = ToLayoutBlock(cb);
+      auto* block = DynamicTo<LayoutBlock>(cb);
+      if (block) {
         block->AddPercentHeightDescendant(const_cast<LayoutBox*>(this));
         if (block->IsFlexItem()) {
           const LayoutFlexibleBox* flex_box =
@@ -3933,7 +3933,7 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalHeightUsing(
                 logical_height,
                 available_height - BorderAndPaddingLogicalHeight());
           }
-          ToLayoutBlock(cb)->AddPercentHeightDescendant(
+          To<LayoutBlock>(cb)->AddPercentHeightDescendant(
               const_cast<LayoutBox*>(this));
           cb = cb->ContainingBlock();
         }
@@ -4026,10 +4026,11 @@ LayoutUnit LayoutBox::AvailableLogicalHeightUsing(
   // FIXME: Check logicalTop/logicalBottom here to correctly handle vertical
   // writing-mode.
   // https://bugs.webkit.org/show_bug.cgi?id=46500
-  if (IsLayoutBlock() && IsOutOfFlowPositioned() &&
+  auto* curr_layout_block = DynamicTo<LayoutBlock>(this);
+  if (curr_layout_block && IsOutOfFlowPositioned() &&
       StyleRef().Height().IsAuto() &&
       !(StyleRef().Top().IsAuto() || StyleRef().Bottom().IsAuto())) {
-    LayoutBlock* block = const_cast<LayoutBlock*>(ToLayoutBlock(this));
+    LayoutBlock* block = const_cast<LayoutBlock*>(curr_layout_block);
     LogicalExtentComputedValues computed_values;
     block->ComputeLogicalHeight(block->LogicalHeight(), LayoutUnit(),
                                 computed_values);

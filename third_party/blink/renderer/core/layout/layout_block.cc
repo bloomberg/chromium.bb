@@ -875,7 +875,7 @@ void LayoutBlock::LayoutPositionedObject(LayoutBox* positioned_object,
         relayout_children || height_available_to_children_changed_;
     if (!update_child_needs_layout) {
       if (!positioned_object->IsLayoutNGObject() ||
-          ToLayoutBlock(positioned_object)
+          To<LayoutBlock>(positioned_object)
               ->IsLegacyInitiatedOutOfFlowLayout()) {
         update_child_needs_layout |=
             NeedsLayoutDueToStaticPosition(positioned_object);
@@ -1928,10 +1928,10 @@ const LayoutBlock* LayoutBlock::EnclosingFirstLineStyleBlock() const {
         first_line_block->IsFloatingOrOutOfFlowPositioned() || !parent_block ||
         !parent_block->BehavesLikeBlockContainer())
       break;
-    SECURITY_DCHECK(parent_block->IsLayoutBlock());
-    if (ToLayoutBlock(parent_block)->FirstChild() != first_line_block)
+    auto* parent_layout_block = DynamicTo<LayoutBlock>(parent_block);
+    if (parent_layout_block->FirstChild() != first_line_block)
       break;
-    first_line_block = ToLayoutBlock(parent_block);
+    first_line_block = parent_layout_block;
   }
 
   if (!has_pseudo)
@@ -1946,7 +1946,7 @@ LayoutBlockFlow* LayoutBlock::NearestInnerBlockWithFirstLine() {
   for (LayoutObject* child = FirstChild();
        child && !child->IsFloatingOrOutOfFlowPositioned() &&
        child->IsLayoutBlockFlow();
-       child = ToLayoutBlock(child)->FirstChild()) {
+       child = To<LayoutBlock>(child)->FirstChild()) {
     if (child->ChildrenInline())
       return ToLayoutBlockFlow(child);
   }
@@ -2058,16 +2058,17 @@ LayoutUnit LayoutBlock::CollapsedMarginAfterForChild(
 bool LayoutBlock::HasMarginBeforeQuirk(const LayoutBox* child) const {
   // If the child has the same directionality as we do, then we can just return
   // its margin quirk.
+  auto* child_layout_block = DynamicTo<LayoutBlock>(child);
   if (!child->IsWritingModeRoot()) {
-    return child->IsLayoutBlock() ? ToLayoutBlock(child)->HasMarginBeforeQuirk()
-                                  : child->StyleRef().HasMarginBeforeQuirk();
+    return child_layout_block ? child_layout_block->HasMarginBeforeQuirk()
+                              : child->StyleRef().HasMarginBeforeQuirk();
   }
 
   // The child has a different directionality. If the child is parallel, then
   // it's just flipped relative to us. We can use the opposite edge.
   if (child->IsHorizontalWritingMode() == IsHorizontalWritingMode()) {
-    return child->IsLayoutBlock() ? ToLayoutBlock(child)->HasMarginAfterQuirk()
-                                  : child->StyleRef().HasMarginAfterQuirk();
+    return child_layout_block ? child_layout_block->HasMarginAfterQuirk()
+                              : child->StyleRef().HasMarginAfterQuirk();
   }
 
   // The child is perpendicular to us and box sides are never quirky in
@@ -2079,16 +2080,17 @@ bool LayoutBlock::HasMarginBeforeQuirk(const LayoutBox* child) const {
 bool LayoutBlock::HasMarginAfterQuirk(const LayoutBox* child) const {
   // If the child has the same directionality as we do, then we can just return
   // its margin quirk.
+  auto* child_layout_block = DynamicTo<LayoutBlock>(child);
   if (!child->IsWritingModeRoot()) {
-    return child->IsLayoutBlock() ? ToLayoutBlock(child)->HasMarginAfterQuirk()
-                                  : child->StyleRef().HasMarginAfterQuirk();
+    return child_layout_block ? child_layout_block->HasMarginAfterQuirk()
+                              : child->StyleRef().HasMarginAfterQuirk();
   }
 
   // The child has a different directionality. If the child is parallel, then
   // it's just flipped relative to us. We can use the opposite edge.
   if (child->IsHorizontalWritingMode() == IsHorizontalWritingMode()) {
-    return child->IsLayoutBlock() ? ToLayoutBlock(child)->HasMarginBeforeQuirk()
-                                  : child->StyleRef().HasMarginBeforeQuirk();
+    return child_layout_block ? child_layout_block->HasMarginBeforeQuirk()
+                              : child->StyleRef().HasMarginBeforeQuirk();
   }
 
   // The child is perpendicular to us and box sides are never quirky in

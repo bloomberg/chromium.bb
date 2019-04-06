@@ -91,9 +91,10 @@ const LayoutBlockFlow& RootInlineContentsContainerOf(
 // |LayoutBlockFlow|.
 const LayoutBlockFlow* ComputeInlineContentsAsBlockFlow(
     const LayoutObject& layout_object) {
-  const LayoutBlock* const block = layout_object.IsLayoutBlock()
-                                       ? &ToLayoutBlock(layout_object)
-                                       : layout_object.ContainingBlock();
+  const LayoutBlock* block = DynamicTo<LayoutBlock>(layout_object);
+  if (!block)
+    block = layout_object.ContainingBlock();
+
   DCHECK(block) << layout_object;
   if (!block->IsLayoutBlockFlow())
     return nullptr;
