@@ -45,14 +45,15 @@ cr.define('system_dialog_browsertest', function() {
       const previewArea = page.$.previewArea;
       pluginProxy.setLoadCallback(previewArea.onPluginLoad_.bind(previewArea));
       sidebar = page.$$('print-preview-sidebar');
-      linkContainer = sidebar.$$('print-preview-link-container');
       return Promise
           .all([
+            test_util.waitForRender(page),
             print_preview.Model.whenReady(),
             nativeLayer.whenCalled('getInitialSettings'),
             nativeLayer.whenCalled('getPrinterCapabilities'),
           ])
           .then(function() {
+            linkContainer = sidebar.$$('print-preview-link-container');
             return nativeLayer.whenCalled('getPreview');
           })
           .then(function() {
