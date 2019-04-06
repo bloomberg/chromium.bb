@@ -173,11 +173,11 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
         }
       }
 
-      request.AddHttpHeaderField("Sec-Fetch-Dest", destination_value);
-      request.AddHttpHeaderField(
+      request.SetHttpHeaderField("Sec-Fetch-Dest", destination_value);
+      request.SetHttpHeaderField(
           "Sec-Fetch-Mode",
           FetchRequestModeToString(request.GetFetchRequestMode()));
-      request.AddHttpHeaderField("Sec-Fetch-Site", site_value);
+      request.SetHttpHeaderField("Sec-Fetch-Site", site_value);
       // We don't set `Sec-Fetch-User` for subresource requests.
     }
   }
