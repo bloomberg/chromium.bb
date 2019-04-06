@@ -25,7 +25,7 @@ class ClipboardPromise final
   USING_GARBAGE_COLLECTED_MIXIN(ClipboardPromise);
 
  public:
-  ClipboardPromise(ScriptState*);
+  explicit ClipboardPromise(ScriptState*);
   virtual ~ClipboardPromise();
 
   // Creates promise to execute Clipboard API functions off the main thread.
