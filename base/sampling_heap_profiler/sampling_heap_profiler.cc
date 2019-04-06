@@ -105,12 +105,18 @@ uint32_t SamplingHeapProfiler::Start() {
     return 0;
   }
 #endif
-  PoissonAllocationSampler::Get()->AddSamplesObserver(this);
+
+  AutoLock lock(start_stop_mutex_);
+  if (!running_sessions_++)
+    PoissonAllocationSampler::Get()->AddSamplesObserver(this);
   return last_sample_ordinal_;
 }
 
 void SamplingHeapProfiler::Stop() {
-  PoissonAllocationSampler::Get()->RemoveSamplesObserver(this);
+  AutoLock lock(start_stop_mutex_);
+  DCHECK_GT(running_sessions_, 0);
+  if (!--running_sessions_)
+    PoissonAllocationSampler::Get()->RemoveSamplesObserver(this);
 }
 
 void SamplingHeapProfiler::SetSamplingInterval(size_t sampling_interval) {
