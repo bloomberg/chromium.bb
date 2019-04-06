@@ -1958,7 +1958,8 @@ protocol::CSS::StyleSheetOrigin InspectorCSSAgent::DetectOrigin(
     Document* owner_document) {
   DCHECK(page_style_sheet);
 
-  if (!page_style_sheet->ownerNode() && page_style_sheet->href().IsEmpty())
+  if (!page_style_sheet->ownerNode() && page_style_sheet->href().IsEmpty() &&
+      !page_style_sheet->IsConstructed())
     return protocol::CSS::StyleSheetOriginEnum::UserAgent;
 
   if (page_style_sheet->ownerNode() &&
