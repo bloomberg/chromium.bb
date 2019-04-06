@@ -255,6 +255,8 @@ class BuilderStatusManager(object):
     buildbucket_ids = buildstore.GetKilledChildBuilds(master_build_identifier)
     # Both child_id and buildbucket_id can be str or int. Convert them both
     # into int before comparison.
+    if buildbucket_ids is None:
+      return False
     return any(child_id for child_id in buildbucket_ids
                if int(child_id) == int(buildbucket_id))
 
