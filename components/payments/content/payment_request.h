@@ -68,7 +68,7 @@ class PaymentRequest : public mojom::PaymentRequest,
             std::vector<mojom::PaymentMethodDataPtr> method_data,
             mojom::PaymentDetailsPtr details,
             mojom::PaymentOptionsPtr options) override;
-  void Show(bool is_user_gesture) override;
+  void Show(bool is_user_gesture, bool wait_for_updated_details) override;
   void Retry(mojom::PaymentValidationErrorsPtr errors) override;
   void UpdateWith(mojom::PaymentDetailsPtr details) override;
   void NoUpdatedPaymentDetails() override;
@@ -121,6 +121,12 @@ class PaymentRequest : public mojom::PaymentRequest,
 
   PaymentRequestSpec* spec() const { return spec_.get(); }
   PaymentRequestState* state() const { return state_.get(); }
+
+  // Allow to skip UI into payment handlers for such payment methods as
+  // "basic-card". Used only in tests.
+  void set_skip_ui_for_non_url_payment_method_identifiers_for_test() {
+    skip_ui_for_non_url_payment_method_identifiers_for_test_ = true;
+  }
 
  private:
   // Returns true after init() has been called and the mojo connection has been
@@ -204,6 +210,11 @@ class PaymentRequest : public mojom::PaymentRequest,
 
   // Whether PaymentRequest.show() has been called.
   bool is_show_called_ = false;
+
+  // Whether payment instruments for such payment methods as "basic-card" can
+  // skip UI for testing of the skip-UI flow. This is always false in
+  // production.
+  bool skip_ui_for_non_url_payment_method_identifiers_for_test_ = false;
 
   base::WeakPtrFactory<PaymentRequest> weak_ptr_factory_;
 
