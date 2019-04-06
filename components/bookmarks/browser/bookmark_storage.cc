@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <algorithm>
+#include <unordered_map>
 #include <utility>
 
 #include "base/bind.h"
@@ -14,6 +15,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/sequenced_task_runner.h"
@@ -56,9 +58,61 @@ void AddBookmarksToIndex(BookmarkLoadDetails* details,
   }
 }
 
+// Helper function to recursively traverse the bookmark tree and count the
+// number of bookmarks (excluding folders) per URL (more precisely, per URL
+// hash).
+void PopulateNumNodesPerUrlHash(
+    const BookmarkNode* node,
+    std::unordered_map<size_t, int>* num_nodes_per_url_hash) {
+  DCHECK(num_nodes_per_url_hash);
+  DCHECK(node);
+
+  if (!node->is_folder())
+    (*num_nodes_per_url_hash)[std::hash<std::string>()(node->url().spec())]++;
+
+  for (int i = 0; i < node->child_count(); ++i)
+    PopulateNumNodesPerUrlHash(node->GetChild(i), num_nodes_per_url_hash);
+}
+
+// Computes the number of bookmarks (excluding folders) with a URL that is used
+// by at least one other bookmark.
+int GetNumDuplicateUrls(const BookmarkNode* root) {
+  DCHECK(root);
+
+  // The key is hash of the URL, instead of the full URL, to keep memory usage
+  // low. The value indicates the node count.
+  std::unordered_map<size_t, int> num_nodes_per_url_hash;
+  PopulateNumNodesPerUrlHash(root, &num_nodes_per_url_hash);
+
+  int num_duplicate_urls = 0;
+  for (const auto& url_hash_and_count : num_nodes_per_url_hash) {
+    if (url_hash_and_count.second > 1)
+      num_duplicate_urls += url_hash_and_count.second;
+  }
+  return num_duplicate_urls;
+}
+
+// Computes the number of bookmarks with an empty title. This includes folders
+// too except for the root.
+int GetNumNodesWithEmptyTitle(const BookmarkNode* node) {
+  DCHECK(node);
+
+  int num_nodes_with_empty_title = 0;
+
+  if (!node->is_root() && node->GetTitle().empty())
+    ++num_nodes_with_empty_title;
+
+  for (int i = 0; i < node->child_count(); ++i)
+    num_nodes_with_empty_title += GetNumNodesWithEmptyTitle(node->GetChild(i));
+
+  return num_nodes_with_empty_title;
+}
+
 }  // namespace
 
-void LoadBookmarks(const base::FilePath& path, BookmarkLoadDetails* details) {
+void LoadBookmarks(const base::FilePath& path,
+                   bool emit_experimental_uma,
+                   BookmarkLoadDetails* details) {
   bool load_index = false;
   bool bookmark_file_exists = base::PathExists(path);
   if (bookmark_file_exists) {
@@ -120,6 +174,26 @@ void LoadBookmarks(const base::FilePath& path, BookmarkLoadDetails* details) {
   UMA_HISTOGRAM_COUNTS_100000(
       "Bookmarks.Count.OnProfileLoad",
       base::saturated_cast<int>(details->url_index()->UrlCount()));
+
+  if (emit_experimental_uma && details->root_node()) {
+    TimeTicks start_time = TimeTicks::Now();
+
+    int num_duplicate_urls = GetNumDuplicateUrls(details->root_node());
+    if (num_duplicate_urls > 0) {
+      base::UmaHistogramCounts10000(
+          "Bookmarks.Count.OnProfileLoad.DuplicateUrl", num_duplicate_urls);
+    }
+
+    int num_nodes_with_empty_title =
+        GetNumNodesWithEmptyTitle(details->root_node());
+    if (num_nodes_with_empty_title > 0) {
+      base::UmaHistogramCounts10000("Bookmarks.Count.OnProfileLoad.EmptyTitle",
+                                    num_nodes_with_empty_title);
+    }
+
+    UMA_HISTOGRAM_TIMES("Bookmarks.DuplicateAndEmptyTitleDetectionTime",
+                        TimeTicks::Now() - start_time);
+  }
 }
 
 // BookmarkLoadDetails ---------------------------------------------------------

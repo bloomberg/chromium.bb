@@ -141,8 +141,11 @@ class BookmarkLoadDetails {
 };
 
 // Loads the bookmarks. This is intended to be called on the background thread.
-// Updates state in |details| based on the load.
+// Updates state in |details| based on the load. |emit_experimental_uma|
+// determines whether a few newly introduced and experimental UMA metrics should
+// be logged.
 void LoadBookmarks(const base::FilePath& profile_path,
+                   bool emit_experimental_uma,
                    BookmarkLoadDetails* details);
 
 // BookmarkStorage handles reading/write the bookmark bar model. The
