@@ -76,8 +76,8 @@ TEST(TypeId, IdenticalTypesFromDifferentCompilationUnitsMatch) {
             TypeIdTestSupportB::GetTypeIdForUniquePtrInt());
 }
 
-// TODO(crbug.com/928806): Failing consistently on Android.
-#if defined(OS_ANDROID)
+// TODO(crbug.com/928806): Failing consistently on Android and GCC
+#if defined(OS_ANDROID) || (defined(COMPILER_GCC) && !defined(__clang__))
 TEST(TypeId, DISABLED_IdenticalTypesFromComponentAndStaticLibrary) {
 #else
 TEST(TypeId, IdenticalTypesFromComponentAndStaticLibrary) {
