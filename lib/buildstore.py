@@ -532,7 +532,7 @@ class BuildStore(object):
     elif not buildbucket_ids:
       return []
     elif self._read_from_bb or self._transitioning_to_bb:
-      return [self.bb_client.GetBuildStatus(buildbucket_id)
+      return [self.bb_client.GetBuildStatus(int(buildbucket_id))
               for buildbucket_id in buildbucket_ids]
     elif not self._read_from_bb:
       return self.cidb_conn.GetBuildStatusesWithBuildbucketIds(
