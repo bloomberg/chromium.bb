@@ -877,10 +877,6 @@ TEST_F(AlwaysForkingRenderViewTest, BeginNavigationDoesNotForkAboutBlank) {
 // continues to receive the original ScreenInfo and not the emualted
 // ScreenInfo.
 TEST_F(RenderViewImplScaleFactorTest, DeviceEmulationWithOOPIF) {
-  // This test should only run with --site-per-process.
-  if (!AreAllSitesIsolatedForTesting())
-    return;
-
   const float device_scale = 2.0f;
   float compositor_dsf =
       compositor_deps_->IsUseZoomForDSFEnabled() ? 1.f : device_scale;
@@ -930,11 +926,6 @@ TEST_F(RenderViewImplScaleFactorTest, DeviceEmulationWithOOPIF) {
 // Verify that security origins are replicated properly to RenderFrameProxies
 // when swapping out.
 TEST_F(RenderViewImplTest, OriginReplicationForSwapOut) {
-  // This test should only run with --site-per-process, since origin
-  // replication only happens in that mode.
-  if (!AreAllSitesIsolatedForTesting())
-    return;
-
   LoadHTML(
       "Hello <iframe src='data:text/html,frame 1'></iframe>"
       "<iframe src='data:text/html,frame 2'></iframe>");
@@ -1046,10 +1037,6 @@ TEST_F(RenderViewImplEnableZoomForDSFTest, UpdateDSFAfterSwapIn) {
 // destroyed along with the proxy.  This protects against races in
 // https://crbug.com/526304 and https://crbug.com/568676.
 TEST_F(RenderViewImplTest, DetachingProxyAlsoDestroysProvisionalFrame) {
-  // This test should only run with --site-per-process.
-  if (!AreAllSitesIsolatedForTesting())
-    return;
-
   LoadHTML("Hello <iframe src='data:text/html,frame 1'></iframe>");
   WebFrame* web_frame = frame()->GetWebFrame();
   TestRenderFrame* child_frame = static_cast<TestRenderFrame*>(
