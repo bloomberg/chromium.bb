@@ -23,7 +23,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
-#include "chrome/browser/local_discovery/endpoint_resolver.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -32,8 +31,6 @@
 #include "chromeos/printing/printer_configuration.h"
 #include "components/device_event_log/device_event_log.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/host_port_pair.h"
-#include "net/base/ip_endpoint.h"
 #include "third_party/cros_system_api/dbus/debugd/dbus-constants.h"
 
 const std::map<const std::string, const std::string>&
@@ -103,9 +100,7 @@ PrinterSetupResult PrinterSetupResultFromDbusErrorCode(
 class PrinterConfigurerImpl : public PrinterConfigurer {
  public:
   explicit PrinterConfigurerImpl(Profile* profile)
-      : endpoint_resolver_(new local_discovery::EndpointResolver()),
-        ppd_provider_(CreatePpdProvider(profile)),
-        weak_factory_(this) {}
+      : ppd_provider_(CreatePpdProvider(profile)), weak_factory_(this) {}
 
   PrinterConfigurerImpl(const PrinterConfigurerImpl&) = delete;
   PrinterConfigurerImpl& operator=(const PrinterConfigurerImpl&) = delete;
@@ -118,36 +113,6 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
     DCHECK(!printer.id().empty());
     DCHECK(!printer.uri().empty());
     PRINTER_LOG(USER) << printer.make_and_model() << " Printer setup requested";
-
-    // Ensure that |address| is non-empty before attempting to resolve it.
-    // If the uri in |printer| does not contain both a hostname and a port
-    // number then GetHostAndPort() will return an empty string.
-    auto address = printer.GetHostAndPort();
-    if (address.IsEmpty()) {
-      // Return an error and abort printer setup. If we attempt to call
-      // EndpointResolver::Start() with an empty address then it will fail
-      // silently without returning into the callback.
-      PRINTER_LOG(ERROR) << "Address is invalid";
-      std::move(callback).Run(PrinterSetupResult::kPrinterUnreachable);
-      return;
-    }
-
-    PRINTER_LOG(DEBUG) << printer.make_and_model()
-                       << " Resolving IP: " << address.ToString();
-
-    // Resolve the uri to an ip with a mutable copy of the printer.
-    endpoint_resolver_->Start(
-        address, base::BindOnce(&PrinterConfigurerImpl::OnIpResolved,
-                                weak_factory_.GetWeakPtr(),
-                                std::make_unique<Printer>(printer),
-                                std::move(callback)));
-  }
-
- private:
-  // Run installation for a printer with a resolved uri.  |callback| is called
-  // with the result of the setup when it is complete.
-  void StartConfiguration(const Printer& printer,
-                          PrinterSetupCallback callback) {
     if (!printer.IsIppEverywhere()) {
       PRINTER_LOG(DEBUG) << printer.make_and_model() << " Lookup PPD";
       ppd_provider_->ResolvePpd(
@@ -168,29 +133,7 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
                        std::move(callback)));
   }
 
-  // Callback for when the IP for a zeroconf printer has been resolved.  If the
-  // request was successful, sets the |effective_uri| on |printer| with
-  // |endpoint| then continues setup. |cb| is called with a result reporting the
-  // success or failure of the setup operation, eventually.
-  void OnIpResolved(std::unique_ptr<Printer> printer,
-                    PrinterSetupCallback cb,
-                    const net::IPEndPoint& endpoint) {
-    bool address_resolved = endpoint.address().IsValid();
-    UMA_HISTOGRAM_BOOLEAN("Printing.CUPS.AddressResolutionResult",
-                          address_resolved);
-    if (!address_resolved) {
-      PRINTER_LOG(ERROR) << printer->make_and_model()
-                         << " IP Resolution failed";
-      // |endpoint| does not have a valid address. Address was not resolved.
-      std::move(cb).Run(kPrinterUnreachable);
-      return;
-    }
-
-    PRINTER_LOG(EVENT) << printer->make_and_model()
-                       << " IP Resolution succeeded";
-    StartConfiguration(*printer, std::move(cb));
-  }
-
+ private:
   // Receive the callback from the debug daemon client once we attempt to
   // add the printer.
   void OnAddedPrinter(const Printer& printer,
@@ -296,7 +239,6 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
     }
   }
 
-  std::unique_ptr<local_discovery::EndpointResolver> endpoint_resolver_;
   scoped_refptr<PpdProvider> ppd_provider_;
   base::WeakPtrFactory<PrinterConfigurerImpl> weak_factory_;
 };
