@@ -496,14 +496,11 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
   base::debug::Alias(&using_high_res_timer);
 #endif
 
-  base::Time current_time = base::Time::Now();
-  base::TimeTicks current_timeticks = base::TimeTicks::Now();
-  base::debug::Alias(&current_time);
-  base::debug::Alias(&current_timeticks);
-
   int32_t awaiting_acknowledge =
       base::subtle::NoBarrier_Load(&awaiting_acknowledge_);
   base::debug::Alias(&awaiting_acknowledge);
+
+  base::TimeTicks before_logging_timeticks = base::TimeTicks::Now();
 
   // Don't log the message to stderr in release builds because the buffer
   // may be full.
@@ -515,10 +512,27 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
     handler(logging::LOG_ERROR, __FILE__, __LINE__, 0, message);
   DLOG(ERROR) << message;
 
+  base::Time current_time = base::Time::Now();
+  base::TimeTicks current_timeticks = base::TimeTicks::Now();
+  base::debug::Alias(&current_time);
+  base::debug::Alias(&current_timeticks);
+
+  int64_t since_last_logging =
+      (current_timeticks - before_logging_timeticks).InSeconds();
+  crash_keys::seconds_since_last_logging.Set(
+      base::NumberToString(since_last_logging));
   int64_t since_last_progress_report =
       (current_timeticks - last_reported_progress_timeticks_).InSeconds();
   crash_keys::seconds_since_last_progress_report.Set(
       base::NumberToString(since_last_progress_report));
+  int64_t since_last_suspend =
+      (current_timeticks - last_suspend_timeticks_).InSeconds();
+  crash_keys::seconds_since_last_suspend.Set(
+      base::NumberToString(since_last_suspend));
+  int64_t since_last_resume =
+      (current_timeticks - last_resume_timeticks_).InSeconds();
+  crash_keys::seconds_since_last_resume.Set(
+      base::NumberToString(since_last_resume));
 
   int64_t available_physical_memory =
       base::SysInfo::AmountOfAvailablePhysicalMemory() >> 20;
@@ -573,10 +587,12 @@ void GpuWatchdogThread::OnAddPowerObserver() {
 }
 
 void GpuWatchdogThread::OnSuspend() {
+  last_suspend_timeticks_ = base::TimeTicks::Now();
   power_suspend_ref_ = suspension_counter_.Take();
 }
 
 void GpuWatchdogThread::OnResume() {
+  last_resume_timeticks_ = base::TimeTicks::Now();
   power_suspend_ref_.reset();
 }
 
