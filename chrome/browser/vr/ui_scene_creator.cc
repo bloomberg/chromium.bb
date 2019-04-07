@@ -968,7 +968,7 @@ void BindIndicatorTranscienceForWin(
   // upfront (struct potential_capture). Then, when a device gets accessed,
   // an indicator notifies the user about its usage.
   // The below logic tries to capture this logic.
-  bool initial_toasts = !active_capture.IsAnyCapturingEnabled();
+  bool initial_toasts = !active_capture.IsAtleastOnePermissionGrantedOrInUse();
   if (active_capture != last_active_capture ||
       potential_capture != last_potential_capture) {
     auto specs = GetIndicatorSpecs();
