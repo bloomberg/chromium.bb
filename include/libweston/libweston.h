@@ -1982,7 +1982,8 @@ weston_compositor_print_scene_graph(struct weston_compositor *ec);
 void
 weston_compositor_destroy(struct weston_compositor *ec);
 struct weston_compositor *
-weston_compositor_create(struct wl_display *display, void *user_data);
+weston_compositor_create(struct wl_display *display,
+			 struct weston_debug_compositor *wdc, void *user_data);
 
 enum weston_compositor_backend {
 	WESTON_BACKEND_DRM,
@@ -2376,8 +2377,12 @@ int
 weston_compositor_enable_touch_calibrator(struct weston_compositor *compositor,
 				weston_touch_calibration_save_func save);
 
+struct weston_debug_compositor *
+weston_debug_compositor_create(void);
+
 int
-weston_debug_compositor_create(struct weston_compositor *compositor);
+weston_debug_compositor_setup(struct weston_compositor *compositor,
+			      struct weston_debug_compositor *wdc);
 
 void
 weston_debug_compositor_destroy(struct weston_compositor *compositor);

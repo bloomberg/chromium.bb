@@ -6782,11 +6782,14 @@ debug_scene_graph_cb(struct weston_debug_stream *stream, void *data)
  *
  * \param display The Wayland display to be used.
  * \param user_data A pointer to an object that can later be retrieved
+ * \param wdc A pointer to weston_debug_compositor
  * using the \ref weston_compositor_get_user_data function.
  * \return The compositor instance on success or NULL on failure.
  */
 WL_EXPORT struct weston_compositor *
-weston_compositor_create(struct wl_display *display, void *user_data)
+weston_compositor_create(struct wl_display *display,
+			 struct weston_debug_compositor *wdc,
+			 void *user_data)
 {
 	struct weston_compositor *ec;
 	struct wl_event_loop *loop;
@@ -6840,7 +6843,7 @@ weston_compositor_create(struct wl_display *display, void *user_data)
 			      ec, bind_presentation))
 		goto fail;
 
-	if (weston_debug_compositor_create(ec) < 0)
+	if (weston_debug_compositor_setup(ec, wdc) < 0)
 		goto fail;
 
 	if (weston_input_init(ec) != 0)

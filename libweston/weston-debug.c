@@ -253,6 +253,28 @@ bind_weston_debug(struct wl_client *client,
        }
 }
 
+/**
+ * Connect weston-compositor structure to weston-debug structure
+ * an vice versa.
+ *
+ * \param compositor
+ * \param wdc
+ * \return 0 on success, -1 on failure
+ *
+ */
+int
+weston_debug_compositor_setup(struct weston_compositor *compositor,
+			      struct weston_debug_compositor *wdc)
+{
+	if (compositor->weston_debug)
+		return -1;
+
+	wdc->compositor = compositor;
+	compositor->weston_debug = wdc;
+
+	return 0;
+}
+
 /** Initialize weston-debug structure
  *
  * \param compositor The libweston compositor.
@@ -264,24 +286,18 @@ bind_weston_debug(struct wl_client *client,
  *
  * \internal
  */
-int
-weston_debug_compositor_create(struct weston_compositor *compositor)
+WL_EXPORT struct weston_debug_compositor *
+weston_debug_compositor_create(void)
 {
 	struct weston_debug_compositor *wdc;
 
-	if (compositor->weston_debug)
-		return -1;
-
 	wdc = zalloc(sizeof *wdc);
 	if (!wdc)
-		return -1;
+		return NULL;
 
-	wdc->compositor = compositor;
 	wl_list_init(&wdc->scope_list);
 
-	compositor->weston_debug = wdc;
-
-	return 0;
+	return wdc;
 }
 
 /** Destroy weston_debug_compositor structure
