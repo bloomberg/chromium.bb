@@ -53,7 +53,10 @@ Transform::Transform(SkMScalar col1row1,
                      SkMScalar col2row4,
                      SkMScalar col3row4,
                      SkMScalar col4row4)
-    : matrix_(SkMatrix44::kUninitialized_Constructor) {
+    : matrix_(SkMatrix44::kIdentity_Constructor) {
+  // TODO(masonfreed): Replace this with an explicit 16-element constructor
+  // on SkMatrix44, once that's available. This code does a *lot* of extra
+  // work, because each call to setDouble re-calculates the matrix type.
   matrix_.set(0, 0, col1row1);
   matrix_.set(1, 0, col1row2);
   matrix_.set(2, 0, col1row3);

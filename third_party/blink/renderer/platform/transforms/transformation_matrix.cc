@@ -2080,7 +2080,10 @@ void TransformationMatrix::ToColumnMajorFloatArray(FloatMatrix4& result) const {
 
 SkMatrix44 TransformationMatrix::ToSkMatrix44(
     const TransformationMatrix& matrix) {
-  SkMatrix44 ret(SkMatrix44::kUninitialized_Constructor);
+  // TODO(masonfreed): Replace this with an explicit 16-element constructor
+  // on SkMatrix44, once that's available. This code does a *lot* of extra
+  // work, because each call to setDouble re-calculates the matrix type.
+  SkMatrix44 ret(SkMatrix44::kIdentity_Constructor);
   ret.setDouble(0, 0, matrix.M11());
   ret.setDouble(0, 1, matrix.M21());
   ret.setDouble(0, 2, matrix.M31());
@@ -2102,7 +2105,10 @@ SkMatrix44 TransformationMatrix::ToSkMatrix44(
 
 gfx::Transform TransformationMatrix::ToTransform(
     const TransformationMatrix& matrix) {
-  return gfx::Transform(TransformationMatrix::ToSkMatrix44(matrix));
+  return gfx::Transform(matrix.M11(), matrix.M21(), matrix.M31(), matrix.M41(),
+                        matrix.M12(), matrix.M22(), matrix.M32(), matrix.M42(),
+                        matrix.M13(), matrix.M23(), matrix.M33(), matrix.M43(),
+                        matrix.M14(), matrix.M24(), matrix.M34(), matrix.M44());
 }
 
 String TransformationMatrix::ToString(bool as_matrix) const {
