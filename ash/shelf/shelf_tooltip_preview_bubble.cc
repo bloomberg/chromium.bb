@@ -9,11 +9,15 @@
 #include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/window_preview_view.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/display/screen.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
 
+// The delay after which a preview bubble gets dismissed (after the mouse
+// has gone away for instance).s
+constexpr int kPreviewBubbleDismissDelay = 350;
 
 // The padding inside the tooltip.
 constexpr int kTooltipPaddingTop = 8;
@@ -41,6 +45,9 @@ ShelfTooltipPreviewBubble::ShelfTooltipPreviewBubble(
   set_border_radius(kPreviewBubbleBorderRadius);
   // The parent class sets non-zero margins. Reset them to zero.
   set_margins(gfx::Insets());
+  // We hide this tooltip on mouse exit, so we want to get enter/exit events
+  // at this level, even for subviews.
+  set_notify_enter_exit_on_child(true);
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal,
@@ -66,10 +73,11 @@ ShelfTooltipPreviewBubble::~ShelfTooltipPreviewBubble() = default;
 void ShelfTooltipPreviewBubble::RemovePreview(WindowPreview* to_remove) {
   base::Erase(previews_, to_remove);
   RemoveChildView(to_remove);
-  // If we don't have any previews left, close the tooltip.
-  if (previews_.empty()) {
+  // If we don't have any previews left, close the tooltip. Bypass
+  // considerations of where the mouse pointer is when this happens: we don't
+  // want to show an empty tooltip even if the mouse is on it.
+  if (previews_.empty())
     manager_->Close();
-  }
 }
 
 gfx::Rect ShelfTooltipPreviewBubble::GetBubbleBounds() {
@@ -84,6 +92,10 @@ gfx::Rect ShelfTooltipPreviewBubble::GetBubbleBounds() {
     bounds.set_x(bounds.x() - kDistanceToShelf);
   }
   return bounds;
+}
+
+void ShelfTooltipPreviewBubble::OnMouseExited(const ui::MouseEvent& event) {
+  DismissAfterDelay();
 }
 
 bool ShelfTooltipPreviewBubble::ShouldCloseOnPressDown() {
@@ -105,12 +117,35 @@ float ShelfTooltipPreviewBubble::GetMaxPreviewRatio() const {
   return std::min(max_ratio, kShelfTooltipPreviewMaxRatio);
 }
 
+void ShelfTooltipPreviewBubble::DismissAfterDelay() {
+  dismiss_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromMilliseconds(kPreviewBubbleDismissDelay),
+      base::BindOnce(&ShelfTooltipPreviewBubble::Dismiss,
+                     base::Unretained(this)));
+}
+
+void ShelfTooltipPreviewBubble::Dismiss() {
+  dismiss_timer_.Stop();
+
+  const auto cursor_position =
+      display::Screen::GetScreen()->GetCursorScreenPoint();
+  // Cancel dismissal if the mouse is within our bounds again, or if it's
+  // within the anchor's bounds. That way the preview tooltip will remain
+  // shown if the mouse goes between the bubble and its anchor.
+  if (GetBoundsInScreen().Contains(cursor_position) ||
+      GetAnchorRect().Contains(cursor_position)) {
+    return;
+  }
+  manager_->Close();
+}
+
 void ShelfTooltipPreviewBubble::OnPreviewDismissed(WindowPreview* preview) {
   RemovePreview(preview);
 }
 
 void ShelfTooltipPreviewBubble::OnPreviewActivated(WindowPreview* preview) {
-  // Always close the tooltip when a window has been focused.
+  // Always close the tooltip when a window has been focused. Bypass
+  // considerations of where the mouse pointer is when this happens.
   manager_->Close();
 }
 
