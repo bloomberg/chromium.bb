@@ -4276,7 +4276,7 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
   rk = (double)intra_cost / mc_dep_cost;
   beta = r0 / rk;
 
-  int offset = -(int)(log(beta) * 16.0);
+  int offset = -(int)(log(beta) * 8.0);
   offset = AOMMIN(offset, 16);
   offset = AOMMAX(offset, -16);
   int qindex = cm->base_qindex + offset;
@@ -4321,10 +4321,15 @@ static void setup_delta_q(AV1_COMP *const cpi, MACROBLOCK *const x,
   const int qmask = ~(delta_q_info->delta_q_res - 1);
   current_qindex = clamp(current_qindex, delta_q_info->delta_q_res,
                          256 - delta_q_info->delta_q_res);
-  current_qindex =
-      ((current_qindex - xd->current_qindex + delta_q_info->delta_q_res / 2) &
-       qmask) +
-      xd->current_qindex;
+
+  const int sign_deltaq_index =
+      current_qindex - xd->current_qindex >= 0 ? 1 : -1;
+
+  const int deltaq_deadzone = 0;  // delta_q_info->delta_q_res / 2;
+  int abs_deltaq_index = abs(current_qindex - xd->current_qindex);
+  abs_deltaq_index = (abs_deltaq_index + deltaq_deadzone) & qmask;
+  current_qindex = xd->current_qindex + sign_deltaq_index * abs_deltaq_index;
+  current_qindex = AOMMAX(current_qindex, MINQ + 1);
   assert(current_qindex > 0);
 
   xd->delta_qindex = current_qindex - cm->base_qindex;
@@ -5391,7 +5396,11 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   cm->tx_mode = select_tx_mode(cpi);
 
   // Fix delta q resolution for the moment
-  cm->delta_q_info.delta_q_res = DEFAULT_DELTA_Q_RES;
+  cm->delta_q_info.delta_q_res = 0;
+  if (cpi->oxcf.deltaq_mode == DELTA_Q_OBJECTIVE)
+    cm->delta_q_info.delta_q_res = DEFAULT_DELTA_Q_RES_OBJECTIVE;
+  else if (cpi->oxcf.deltaq_mode == DELTA_Q_PERCEPTUAL)
+    cm->delta_q_info.delta_q_res = DEFAULT_DELTA_Q_RES_PERCEPTUAL;
   // Set delta_q_present_flag before it is used for the first time
   cm->delta_q_info.delta_lf_res = DEFAULT_DELTA_LF_RES;
   cm->delta_q_info.delta_q_present_flag = cpi->oxcf.deltaq_mode != NO_DELTA_Q;
