@@ -1078,6 +1078,10 @@ class ReportStage(generic_stages.BuilderStage,
       buildbucket_id = build_identifier.buildbucket_id
       build_info = self.buildstore.GetBuildStatuses(
           buildbucket_ids=[buildbucket_id])[0]
+      # If we query from Buildbucket, the build isn't finished yet.
+      # So, finish_time is None. Use current time instead.
+      if build_info['finish_time'] is None:
+        build_info['finish_time'] = datetime.datetime.now()
       duration = (build_info['finish_time'] -
                   build_info['start_time']).total_seconds()
       return duration
