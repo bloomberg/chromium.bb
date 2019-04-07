@@ -1954,9 +1954,9 @@
         tools:ignore="ExportedService">
       <intent-filter>
         <action android:name="android.support.customtabs.action.CustomTabsService"/>
-        <category
-            android:name="android.support.customtabs.category.TrustedWebActivitySplashScreensV1"/>
         <category android:name="androidx.browser.trusted.category.TrustedWebActivities"/>
+        <category
+            android:name="androidx.browser.trusted.category.TrustedWebActivitySplashScreensV1"/>
       </intent-filter>
     </service>
     <service
