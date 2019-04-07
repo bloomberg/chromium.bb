@@ -42,6 +42,8 @@ class CORE_EXPORT NGLineBreaker {
                 NGExclusionSpace*);
   ~NGLineBreaker();
 
+  const NGInlineItemsData& ItemsData() const { return items_data_; }
+
   // Compute the next line break point and produces NGInlineItemResults for
   // the line.
   inline void NextLine(NGLineInfo* line_info) {
