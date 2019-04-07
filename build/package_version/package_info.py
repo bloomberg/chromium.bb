@@ -5,6 +5,8 @@
 
 """A package is a JSON file describing a list of package archives."""
 
+from __future__ import print_function
+
 import json
 import os
 import posixpath
@@ -140,14 +142,14 @@ def UploadPackageInfoFiles(storage, package_target, package_name,
 
     archive_url = storage.PutFile(local_archive_file, remote_archive_file)
     if annotate:
-      print ('@@@STEP_LINK@download (%s/%s/%s.json [%d/%d])@%s@@@' %
-             (package_target, package_name, archive, index+1, num_archives,
-              archive_url))
+      print('@@@STEP_LINK@download (%s/%s/%s.json [%d/%d])@%s@@@' %
+            (package_target, package_name, archive, index + 1, num_archives,
+             archive_url))
 
   package_url = storage.PutFile(local_package_file, remote_package_file)
   if annotate:
-    print ('@@@STEP_LINK@download (%s/%s.json)@%s@@@' %
-           (package_target, package_name, package_url))
+    print('@@@STEP_LINK@download (%s/%s.json)@%s@@@' %
+          (package_target, package_name, package_url))
   return package_url
 
 

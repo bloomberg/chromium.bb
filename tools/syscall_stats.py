@@ -15,6 +15,8 @@ with that file as input.
 
 """
 
+from __future__ import print_function
+
 import math
 import re
 import sys
@@ -217,25 +219,25 @@ def ReadFileHandle(fh, duration):
         start_time = t
       prev_time = t
 
-  print '\nInter-syscall time'
-  print 'Mean:   %g' % inter_stats.Mean()
-  print 'Stddev: %g' % inter_stats.Stddev()
-  print '\nInstantaneous Syscall Rate (unweighted!)'
-  print 'Mean :  %g' % rate_stats.Mean()
-  print 'Stddev: %g' % rate_stats.Stddev()
-  print '\nAvg Syscall Rate: %g' % (rate_stats.NumEntries()
-                                    / (prev_time - start_time))
+  print('\nInter-syscall time')
+  print('Mean:   %g' % inter_stats.Mean())
+  print('Stddev: %g' % inter_stats.Stddev())
+  print('\nInstantaneous Syscall Rate (unweighted!)')
+  print('Mean :  %g' % rate_stats.Mean())
+  print('Stddev: %g' % rate_stats.Stddev())
+  print('\nAvg Syscall Rate: %g' % (rate_stats.NumEntries() /
+                                    (prev_time - start_time)))
 
-  print '\nSyscalls in %f interval' % duration
-  print 'Mean:   %g' % windowed.RateStats().Mean()
-  print 'Stddev: %g' % windowed.RateStats().Stddev()
-  print 'Min:    %g' % windowed.PeakStats().Min()
-  print 'Max:    %g' % windowed.PeakStats().Max()
+  print('\nSyscalls in %f interval' % duration)
+  print('Mean:   %g' % windowed.RateStats().Mean())
+  print('Stddev: %g' % windowed.RateStats().Stddev())
+  print('Min:    %g' % windowed.PeakStats().Min())
+  print('Max:    %g' % windowed.PeakStats().Max())
 
 
 def main(argv):
   if len(argv) > 1:
-    print >>sys.stderr, 'no arguments expected\n'
+    print('no arguments expected\n', file=sys.stderr)
     return 1
   ReadFileHandle(sys.stdin, 0.010)
   return 0

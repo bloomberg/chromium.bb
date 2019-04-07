@@ -13,6 +13,8 @@ http://code.google.com/p/soc/wiki/PythonStyleGuide
 http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml
 """
 
+from __future__ import print_function
+
 import os
 import re
 import subprocess
@@ -66,7 +68,7 @@ RE_IGNORE = re.compile(r'@IGNORE_LINES_FOR_CODE_HYGIENE\[([0-9]+)\]')
 # ======================================================================
 def Debug(s):
   if VERBOSE:
-    print s
+    print(s)
 
 
 def RunCommand(cmd):
@@ -95,9 +97,9 @@ class ExternalChecker(object):
     try:
       retcode, stdout, stderr = RunCommand(self._commandline + [filename])
     except Exception, err:
-      print 'Error processing %s:' % filename
-      print '  Cannot execute command %s. failed reason: %s ' % (
-          str(self._commandline), str(err))
+      print('Error processing %s:' % filename)
+      print('  Cannot execute command %s. failed reason: %s ' % (str(
+          self._commandline), str(err)))
       return []
     if retcode == 0:
       return []
@@ -437,7 +439,7 @@ def FileProperties(filename, data):
   if (filename.endswith('nacl.scons') or
       filename.endswith('build.scons') or
       filename.endswith('SConstruct')):
-      d['is_scons'] = True
+    d['is_scons'] = True
 
   # NOTE: Look in a somewhat arbitrary region at the file beginning for
   #       a special marker advertising addtional properties.
@@ -476,9 +478,9 @@ CHECKS = [# fatal checks
 
 def EmitStatus(filename, status, details=[]):
   """Prints the status and all supporting details for a file."""
-  print '%s: %s' % (filename, status)
+  print('%s: %s' % (filename, status))
   for no, line in details[:LIMIT]:
-    print '  line %d: [%s]' % (no, repr(line))
+    print('  line %d: [%s]' % (no, repr(line)))
 
 
 def FindExemptions(data):
@@ -528,9 +530,9 @@ def CheckFile(filename, report):
       info = '%s: %s' % (filename, name)
       items = problems[:LIMIT]
       if report:
-        print info
+        print(info)
         for i in items:
-          print i
+          print(i)
       if fatal:
         errors[info] = items
         break
@@ -548,7 +550,7 @@ def main(argv):
       continue
 
     if '-' in os.path.basename(filename):
-      print 'hyphen in:', filename
+      print('hyphen in:', filename)
       num_error += 1
       continue
 

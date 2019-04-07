@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 Import('env')
 
 # The Windows coverage bot does not build sel_ldr.
@@ -21,7 +23,7 @@ elif env.Bit('nacl_glibc'):
 
 sel_ldr = env.GetSelLdr()
 if sel_ldr is None:
-  print 'WARNING: no sel_ldr found. Skipping test %s' % name
+  print('WARNING: no sel_ldr found. Skipping test %s' % name)
   Return()
 
 exe = env.ComponentProgram('run_py_app',

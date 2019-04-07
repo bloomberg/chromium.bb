@@ -8,16 +8,18 @@
 # everything on the left of '|' and pipes it to everything on the right,
 # which is not what we want.
 
+from __future__ import print_function
+
 import subprocess
 import sys
 
 def Main(args):
   if len(args) < 3:
-    print "llvm_file_check_wrapper <filecheck> <check_file> <cmd_line>"
-    print "Where:"
-    print "<filecheck> is the path to FileCheck"
-    print "<check_file> is a text file containing 'CHECK' statements"
-    print "<cmd_line> is the command line to use as input to FileCheck"
+    print("llvm_file_check_wrapper <filecheck> <check_file> <cmd_line>")
+    print("Where:")
+    print("<filecheck> is the path to FileCheck")
+    print("<check_file> is a text file containing 'CHECK' statements")
+    print("<cmd_line> is the command line to use as input to FileCheck")
     return 1
 
   file_check=args[0]

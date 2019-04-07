@@ -25,6 +25,8 @@
 
 """
 
+from __future__ import print_function
+
 import getopt
 import os
 import sys
@@ -38,7 +40,7 @@ class SourceInfo(object):
     name = os.path.normpath(name)
 
     if not os.path.exists(name):
-      print "Can not find", name
+      print("Can not find", name)
       usage()
 
     # If the source is a directory
@@ -63,7 +65,7 @@ class SourceInfo(object):
       self.dir = False
 
     if recursive and not self.dir:
-      print "Source must be a directory to diff recusively."
+      print("Source must be a directory to diff recusively.")
       usage()
 
 
@@ -79,8 +81,8 @@ def GetFileList(path):
     dirname = os.path.sep.join(dirname.split(os.path.sep)[skip:])
 
     for filename in filenames:
-        path = os.path.join(dirname, filename)
-        files.append(path)
+      path = os.path.join(dirname, filename)
+      files.append(path)
   return files
 
 
@@ -101,8 +103,8 @@ def ReadLines(path):
   try:
     file = open(path, "r")
   except IOError, e:
-    print "  ***I/O error({0}): {1} {2}".format(e[0], e[1], path)
-    print
+    print("  ***I/O error({0}): {1} {2}".format(e[0], e[1], path))
+    print()
     raise
 
   lines = file.readlines()
@@ -126,7 +128,7 @@ def Diff(file1, file2):
 
 def usage():
   """ Print the usage information. """
-  print __doc__
+  print(__doc__)
   sys.exit(1)
 
 
@@ -152,7 +154,7 @@ def main(argv):
 
   # Process sources
   if len(args) != 2:
-    print "Expecting two sources (files or directories)."
+    print("Expecting two sources (files or directories).")
     usage()
 
   src1 = SourceInfo(args[0], recursive)
@@ -170,11 +172,11 @@ def main(argv):
     path1 = os.path.join(src1.path, file)
     path2 = os.path.join(src2.path, file)
     if verbose:
-      print "Compare %s and %s" % (path1, path2)
+      print("Compare %s and %s" % (path1, path2))
     diffCnt = diffCnt + Diff(path1, path2)
 
   if verbose:
-    print "%d different file(s) or failure(s)." % diffCnt
+    print("%d different file(s) or failure(s)." % diffCnt)
   return diffCnt
 
 if __name__ == '__main__':

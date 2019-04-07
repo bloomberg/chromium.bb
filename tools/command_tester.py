@@ -10,8 +10,8 @@ This harness is used instead of shell scripts to ensure windows compatibility
 
 """
 
+from __future__ import print_function
 
-# python imports
 import getopt
 import os
 import pipes
@@ -26,7 +26,7 @@ GlobalSettings = {}
 
 
 def Print(message):
-  print message
+  print(message)
 
 
 def Banner(message):
@@ -673,7 +673,7 @@ def Main(argv):
     command = run_under.split(',') + command
 
   # print the command in copy-and-pastable fashion
-  print ' '.join(pipes.quote(arg) for arg in env_vars + command)
+  print(' '.join(pipes.quote(arg) for arg in env_vars + command))
 
   # Concatenate output when running multiple times (e.g., for timing).
   combined_stdout = ''

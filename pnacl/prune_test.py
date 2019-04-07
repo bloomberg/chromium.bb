@@ -9,6 +9,8 @@ Compares the pruned down "on-device" translator with the "fat" host build
 which has not been pruned down.
 """
 
+from __future__ import print_function
+
 import glob
 import re
 import subprocess
@@ -45,10 +47,9 @@ def merge_symbols(sdict1, sdict2):
       # Only print warning if they are not weak / differently sized.
       if (not (is_weak(v2.type) or is_weak(v1.type)) and
           v1.size != v2.size):
-        print 'Warning symbol %s defined in both %s(%d, %s) and %s(%d, %s)' % (
-            sym_name,
-            v1.lib_name, v1.size, v1.type,
-            v2.lib_name, v2.size, v2.type)
+        print('Warning symbol %s defined in both %s(%d, %s) and %s(%d, %s)' %
+              (sym_name, v1.lib_name, v1.size, v1.type, v2.lib_name, v2.size,
+               v2.type))
       # Arbitrarily take the max.  The sizes are approximate anyway,
       # since the host binaries are built from a different compiler.
       v1.size = max(v1.size, v2.size)
@@ -67,7 +68,7 @@ class TestTranslatorPruned(unittest.TestCase):
   def get_symbol_info(cls, nm_tool, cxxfilt_tool, bin_name):
     results = {}
     nm_cmd = [nm_tool, '--size-sort', bin_name]
-    print 'Getting symbols and sizes by running:\n' + ' '.join(nm_cmd)
+    print('Getting symbols and sizes by running:\n' + ' '.join(nm_cmd))
     nm = subprocess.Popen(nm_cmd, stdout=subprocess.PIPE)
     output = subprocess.check_output(cxxfilt_tool, stdin=nm.stdout)
     nm.wait()
@@ -96,8 +97,8 @@ class TestTranslatorPruned(unittest.TestCase):
     cxxfilt_tool = sys.argv[2]
     host_binaries = glob.glob(sys.argv[3])
     target_binary = sys.argv[4]
-    print 'Getting symbol info from %s (host) and %s (target)' % (
-        sys.argv[3], sys.argv[4])
+    print('Getting symbol info from %s (host) and %s (target)' % (sys.argv[3],
+                                                                  sys.argv[4]))
     assert host_binaries, ('Did not glob any binaries from: ' % sys.argv[3])
     for binary in host_binaries:
       cls.unpruned_symbols = merge_symbols(cls.unpruned_symbols,
@@ -171,15 +172,17 @@ class TestTranslatorPruned(unittest.TestCase):
       self.assertEqual(pruned, 0, 'Pruned still has ' + sym_regex)
       # Bytes pruned is approximate since the host build is different
       # from the target build (different inlining / optimizations).
-      print 'Pruned out approx %d bytes worth of %s symbols' % (unpruned,
-                                                                sym_regex)
+      print('Pruned out approx %d bytes worth of %s symbols' % (unpruned,
+                                                                sym_regex))
       total += unpruned
-    print 'Total %d bytes' % total
+    print('Total %d bytes' % total)
 
 
 if __name__ == '__main__':
   if len(sys.argv) != 5:
-    print 'Usage: %s <nm_tool> <cxxfilt_tool> <unpruned_host_binary> <pruned_target_binary>'
+    print(
+        'Usage: %s <nm_tool> <cxxfilt_tool> <unpruned_host_binary> <pruned_target_binary>'
+    )
     sys.exit(1)
   suite = unittest.TestLoader().loadTestsFromTestCase(TestTranslatorPruned)
   result = unittest.TextTestRunner(verbosity=2).run(suite)

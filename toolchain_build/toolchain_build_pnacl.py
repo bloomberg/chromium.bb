@@ -12,6 +12,8 @@
    The real entry plumbing and CLI flags are also in toolchain_main.py.
 """
 
+from __future__ import print_function
+
 import fnmatch
 import logging
 import multiprocessing
@@ -1229,9 +1231,9 @@ def InstallMinGWHostCompiler():
     # If that fails, bail out.
     if (not os.path.isfile(zipfilepath) and
         not downloader.GetSecureFile(zipfilename, zipfilepath)):
-        print >>sys.stderr, 'Failed to install MinGW tools:'
-        print >>sys.stderr, 'could not find or download', zipfilename
-        sys.exit(1)
+      print('Failed to install MinGW tools:', file=sys.stderr)
+      print('could not find or download', zipfilename, file=sys.stderr)
+      sys.exit(1)
     logging.info('Extracting %s' % zipfilename)
     zf = zipfile.ZipFile(zipfilepath)
     if os.path.exists(MINGW_PATH):
@@ -1379,20 +1381,20 @@ def main():
                       help='Compile using goma in given directory')
   args, leftover_args = parser.parse_known_args()
   if '-h' in leftover_args or '--help' in leftover_args:
-    print 'The following arguments are specific to toolchain_build_pnacl.py:'
+    print('The following arguments are specific to toolchain_build_pnacl.py:')
     parser.print_help()
-    print 'The rest of the arguments are generic, in toolchain_main.py'
+    print('The rest of the arguments are generic, in toolchain_main.py')
 
   if args.sanitize and not args.cmake:
-    print 'Use of sanitizers requires a cmake build'
+    print('Use of sanitizers requires a cmake build')
     sys.exit(1)
 
   if args.gcc and args.cmake:
-    print 'gcc build is not supported with cmake'
+    print('gcc build is not supported with cmake')
     sys.exit(1)
 
   if args.afl_fuzz_dir and args.gcc:
-    print '--afl-fuzz-dir not allowed when using gcc'
+    print('--afl-fuzz-dir not allowed when using gcc')
     sys.exit(1)
 
   if args.native_clang_driver:

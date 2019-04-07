@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import codecs
 import hashlib
 import json
@@ -291,11 +293,11 @@ def NexeArchitecture(filename):
   head = fh.read(20)
   # Must not be too short.
   if len(head) != 20:
-    print 'ERROR - header too short'
+    print('ERROR - header too short')
     return None
   # Must have ELF header.
   if head[0:4] != '\x7fELF':
-    print 'ERROR - no elf header'
+    print('ERROR - no elf header')
     return None
   # Decode e_machine
   machine = struct.unpack('<H', head[18:])[0]
@@ -325,7 +327,7 @@ class Progress(object):
     else:
       eta_str = ''
     self.count += 1
-    print 'Processing %d of %d%s...' % (self.count, self.total, eta_str)
+    print('Processing %d of %d%s...' % (self.count, self.total, eta_str))
 
   def Result(self, success):
     if success:
@@ -337,18 +339,19 @@ class Progress(object):
     self.skips += 1
 
   def Summary(self, warn_only=False):
-    print 'Ran tests on %d of %d items.' % (
-        self.successes + self.failures, self.total)
+    print('Ran tests on %d of %d items.' % (self.successes + self.failures,
+                                            self.total))
     if self.skips:
-      print '%d tests were skipped.' % self.skips
+      print('%d tests were skipped.' % self.skips)
     if self.failures:
       # Our alternate validators don't currently cover everything.
       # For now, don't fail just emit warning (and a tally of failures).
-      print '@@@STEP_TEXT@FAILED %d times (%.1f%% are incorrect)@@@' % (
-          self.failures, self.failures * 100 / (self.successes + self.failures))
+      print('@@@STEP_TEXT@FAILED %d times (%.1f%% are incorrect)@@@' %
+            (self.failures, self.failures * 100 /
+             (self.successes + self.failures)))
       if warn_only:
-        print '@@@STEP_WARNINGS@@@'
+        print('@@@STEP_WARNINGS@@@')
       else:
         raise FailedTests('FAILED %d tests' % self.failures)
     else:
-      print 'SUCCESS'
+      print('SUCCESS')

@@ -10,6 +10,8 @@ are in the native_client/src/trusted/service_runtime/include directory
 -- for use with the SDK and newlib to compile NaCl applications.
 """
 
+from __future__ import print_function
+
 import os
 import re
 import sys
@@ -54,15 +56,15 @@ def ProcessStream(instr, outstr):
   for line in instr:
     line = in_toolchain_sym.sub('(1 /* NACL_IN_TOOLCHAIN_HEADERS */)', line)
     if cinc.search(line):
-      print >>outstr, cinc.sub(r'#include <\1>', line)
+      print(cinc.sub(r'#include <\1>', line), file=outstr)
     elif cinc_guard.match(line):
       include_guard_found = True
-      print >>outstr, re.sub('NATIVE_CLIENT', 'EXPORT', line),
+      print(re.sub('NATIVE_CLIENT', 'EXPORT', line), end=' ', file=outstr)
     else:
-      print >>outstr, cabi.sub(r'\1', line),
+      print(cabi.sub(r'\1', line), end=' ', file=outstr)
 
   if not include_guard_found:
-    print >>sys.stderr, 'No include guard found in', instr.name
+    print('No include guard found in', instr.name, file=sys.stderr)
     sys.exit(1)
 
 
@@ -83,8 +85,9 @@ def ProcessDir(srcdir, dstdir):
 
 def main(argv):
   if len(argv) != 3:
-    print >>sys.stderr, ('Usage: ./export_header source/include/path'
-                         ' dest/include/path')
+    print(
+        'Usage: ./export_header source/include/path dest/include/path',
+        file=sys.stderr)
     return 1
   ProcessDir(argv[1], argv[2])
   return 0

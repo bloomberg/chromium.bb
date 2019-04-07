@@ -7,6 +7,8 @@
 various nacl and non-nacl toolchains
 '''
 
+from __future__ import print_function
+
 import glob
 import os
 import os.path
@@ -25,8 +27,8 @@ TEST_PATH_CPP = os.path.join(TEST_SUITE_BASE, 'g++.dg')
 
 
 def usage():
-  print 'Usage:', sys.argv[0], '<compiler> <platform>',
-  print '[<args for toolchain_tester.py>]'
+  print('Usage:', sys.argv[0], '<compiler> <platform>', end=' ')
+  print('[<args for toolchain_tester.py>]')
 
 
 def list_tests(src_base, *glob_path):
@@ -51,7 +53,7 @@ def standard_tests(context, config, exclude, extra_args):
   command.extend(extra_args)
   command.extend(list_tests(TEST_PATH_C, '*c'))
   command.extend(list_tests(TEST_PATH_C, 'ieee', '*c'))
-  print command
+  print(command)
   try:
     return buildbot_lib.Command(context, command)
   except buildbot_lib.StepFailed:
@@ -68,7 +70,7 @@ def eh_tests(context, config, exclude, extra_args):
     command.append('--append=CFLAGS:--pnacl-exceptions=sjlj')
   command.extend(extra_args)
   command.extend(list_tests(TEST_PATH_CPP, 'eh', '*.C'))
-  print command
+  print(command)
   try:
     return buildbot_lib.Command(context, command)
   except buildbot_lib.StepFailed:
@@ -76,7 +78,7 @@ def eh_tests(context, config, exclude, extra_args):
 
 def run_torture(status, compiler, platform, extra_args):
   if platform not in ('x86-32', 'x86-64', 'arm'):
-    print 'Unknown platform:', platform
+    print('Unknown platform:', platform)
 
   config_map = { 'pnacl': 'llvm_pnacl',
                  'naclgcc': 'nacl_gcc',
@@ -114,7 +116,7 @@ def run_torture(status, compiler, platform, extra_args):
     if retcode:
       failures.append(optmode + ' standard')
   if len(failures) > 0:
-    print 'There were failed steps in modes:', failures
+    print('There were failed steps in modes:', failures)
     return 1
   return 0
 

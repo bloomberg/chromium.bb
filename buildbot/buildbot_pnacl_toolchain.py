@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import argparse
 import logging
 import os
@@ -124,7 +126,7 @@ def RunWithLog(cmd):
 
 # Clean out any installed toolchain parts that were built by previous bot runs.
 with buildbot_lib.Step('Clobber TC install dir', status):
-  print 'Removing', toolchain_install_dir
+  print('Removing', toolchain_install_dir)
   pynacl.file_tools.RemoveDirectoryIfPresent(toolchain_install_dir)
 
 

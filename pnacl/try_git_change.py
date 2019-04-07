@@ -24,6 +24,8 @@ The trybot results will appear on the Rietveld code review created by
 "git cl upload".
 """
 
+from __future__ import print_function
+
 import argparse
 import base64
 import os
@@ -91,7 +93,7 @@ def Main(args):
     raise Exception(
         'Expected the Git repo (%r) to be under '
         'toolchain_build/src/' % repo_dir)
-  print 'Trying change to %r component' % component_name
+  print('Trying change to %r component' % component_name)
 
   # Check that there are no uncommitted changes.
   rc = subprocess.call(['git', 'diff', '--quiet', 'HEAD'])

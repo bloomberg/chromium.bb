@@ -10,6 +10,8 @@ Process ppapi header files, e.g.
 And check whether they could cause pnacl calling convention problems
 """
 
+from __future__ import print_function
+
 import sys
 import re
 
@@ -106,14 +108,14 @@ def AnalyzeInterface(lines):
     for bad in BAD_TYPES:
       bad = bad.strip()
       if result.startswith(bad):
-        print "@PROBLEM: [result %s] in:" % result, line.strip()
+        print("@PROBLEM: [result %s] in:" % result, line.strip())
         bad_functions.append(name)
 
     for a in args:
       a = a.strip()
       for bad in BAD_TYPES:
         if a.startswith(bad):
-          print "@PROBLEM: [%s] in:" % a, line.strip()
+          print("@PROBLEM: [%s] in:" % a, line.strip())
           bad_functions.append(name)
   return bad_functions
 ######################################################################
@@ -127,10 +129,10 @@ for filename in sys.argv:
 
   # a number of files contain multiple interfacess
   for interface in ExtractInterfaces(lines):
-    print
-    print
-    print filename
-    print "".join(interface),
+    print()
+    print()
+    print(filename)
+    print("".join(interface), end=' ')
     errors = AnalyzeInterface(interface)
     if len(errors) > 0:
       bad_functions += errors
@@ -139,12 +141,12 @@ for filename in sys.argv:
       tokens = interface[0].split()
       bad_interfaces.append(tokens[1])
 
-print "\nBAD INTERFACES (%d):" % len(bad_interfaces)
+print("\nBAD INTERFACES (%d):" % len(bad_interfaces))
 
 for b in bad_interfaces:
-  print b
+  print(b)
 
-print
-print "BAD FUNCTIONS (%d):" % len(bad_functions)
+print()
+print("BAD FUNCTIONS (%d):" % len(bad_functions))
 for b in bad_functions:
-  print b
+  print(b)

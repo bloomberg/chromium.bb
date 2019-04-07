@@ -11,6 +11,8 @@ additional column to each row (in each table) which captures
 constraints in rule pattern.
 """
 
+from __future__ import print_function
+
 import dgen_core
 
 # If true, print traces of how patterns are added.
@@ -29,54 +31,56 @@ _trace_detailed_pattern = None
 _restrict_to_tables = None
 
 def add_rule_pattern_constraints(decoder):
-    """Adds an additional column to each table, defining additional
+  """Adds an additional column to each table, defining additional
        constraints assumed by rule patterns in rows.
     """
-    for table in decoder.tables():
-       _add_rule_pattern_constraints_to_table(decoder, table)
-    return decoder
+  for table in decoder.tables():
+    _add_rule_pattern_constraints_to_table(decoder, table)
+  return decoder
+
 
 def _process_table(table):
   global _restrict_to_tables
   return table.name in _restrict_to_tables  if _restrict_to_tables else True
 
 def _add_rule_pattern_constraints_to_table(decoder, table):
-    """Adds an additional column to the given table, defining
+  """Adds an additional column to the given table, defining
        additional constraints assumed by rule patterns in rows.
     """
-    global _trace
-    if _trace and _process_table(table):
-      print "*** processing table: %s ***" % table.name
-    constraint_col = len(table.columns())
-    table.add_column(dgen_core.BitField('$pattern', 31, 0))
-    for row in table.rows():
-       _add_rule_pattern_constraints_to_row(
-           decoder, table, row, constraint_col)
+  global _trace
+  if _trace and _process_table(table):
+    print("*** processing table: %s ***" % table.name)
+  constraint_col = len(table.columns())
+  table.add_column(dgen_core.BitField('$pattern', 31, 0))
+  for row in table.rows():
+    _add_rule_pattern_constraints_to_row(decoder, table, row, constraint_col)
+
 
 def _add_rule_pattern_constraints_to_row(decoder, table, row, constraint_col):
-    """Adds an additional (constraint) colum to the given row,
+  """Adds an additional (constraint) colum to the given row,
        defining additional constraints assumed by the rule
        pattern in the row.
     """
-    global _trace
-    if _trace and _process_table(table):
-      print "consider: %s" % repr(row)
-    action = row.action
-    if action and action.__class__.__name__ == 'DecoderAction':
-        pattern = action.pattern()
-        if pattern:
-          rule_pattern = table.define_pattern(pattern, constraint_col)
-          if _process_table(table):
-            # Figure out what bits in the pattern aren't tested when
-            # reaching this row, and add a pattern to cover those bits.
-            reaching_pattern = RulePatternLookup.reaching_pattern(
-                decoder, table, row, pattern, constraint_col)
-            row.add_pattern(reaching_pattern)
-          else:
-            row.add_pattern(table.define_pattern(pattern, constraint_col))
-          return
-    # If reached, no explicit pattern defined, so add default pattern
-    row.add_pattern(table.define_pattern('-', constraint_col))
+  global _trace
+  if _trace and _process_table(table):
+    print("consider: %s" % repr(row))
+  action = row.action
+  if action and action.__class__.__name__ == 'DecoderAction':
+    pattern = action.pattern()
+    if pattern:
+      rule_pattern = table.define_pattern(pattern, constraint_col)
+      if _process_table(table):
+        # Figure out what bits in the pattern aren't tested when
+        # reaching this row, and add a pattern to cover those bits.
+        reaching_pattern = RulePatternLookup.reaching_pattern(
+            decoder, table, row, pattern, constraint_col)
+        row.add_pattern(reaching_pattern)
+      else:
+        row.add_pattern(table.define_pattern(pattern, constraint_col))
+      return
+  # If reached, no explicit pattern defined, so add default pattern
+  row.add_pattern(table.define_pattern('-', constraint_col))
+
 
 class RulePatternLookup(object):
   """Lookup state for finding what parts of an instruction rule pattern
@@ -107,9 +111,9 @@ class RulePatternLookup(object):
                               pattern_text, pattern_column)
 
     if state._trace_pattern():
-      print "*** Tracing pattern: %s   ***" % pattern_text
-      print "    table: %s" % table.name
-      print "    row: %s" % repr(row)
+      print("*** Tracing pattern: %s   ***" % pattern_text)
+      print("    table: %s" % table.name)
+      print("    row: %s" % repr(row))
 
     # Do a depth-first walk of possible matches, to find
     # possible (unmatched) patterns reaching the given table and
@@ -167,7 +171,7 @@ class RulePatternLookup(object):
   def _visit_table(self, table):
     """Visits the given table, trying to match all rows in the table."""
     if self._trace_pattern():
-      print "-> visit %s" % table.name
+      print("-> visit %s" % table.name)
     if table in self.visited_tables:
       # cycle found, quit.
       raise Exception("Table %s malformed for pattern %s" %
@@ -179,7 +183,7 @@ class RulePatternLookup(object):
     self.visited_tables.pop()
 
     if self._trace_pattern():
-      print "<- visit %s" % table.name
+      print("<- visit %s" % table.name)
 
   def _visit_row(self, row):
     """Visits the given row of a table, and updates the reaching pattern
@@ -189,7 +193,7 @@ class RulePatternLookup(object):
     self.visited_rows.append(row)
 
     if self._trace_pattern():
-      print 'row %s' % row
+      print('row %s' % row)
 
     # Before processing the row, use a copy of the unmatched pattern so
     # that we don't pollute other path searches through the tables.
@@ -202,14 +206,14 @@ class RulePatternLookup(object):
     for row_pattern in row.patterns:
       match = self.unmatched_pattern.categorize_match(row_pattern)
       if self._trace_pattern():
-        print ('match %s : %s => %s' %
-               (repr(self.unmatched_pattern), repr(row_pattern), match))
+        print('match %s : %s => %s' % (repr(self.unmatched_pattern),
+                                       repr(row_pattern), match))
       if match == 'match':
         # Matches, i.e. all significant bits were used in the match.
         self.unmatched_pattern = (
             self.unmatched_pattern.remove_overlapping_bits(row_pattern))
         if self._trace_pattern():
-          print '  unmatched = %s' % repr(self.unmatched_pattern)
+          print('  unmatched = %s' % repr(self.unmatched_pattern))
       elif match == 'consistent':
         # Can't draw conclusion if any bits of pattern
         # affect the unmatched pattern. Hence, ignore this
@@ -230,8 +234,8 @@ class RulePatternLookup(object):
       # Row (may) apply. Continue search for paths that can match
       # the pattern.
       if self._trace_pattern():
-        print "row matched!"
-        print "row:      %s" % repr(row)
+        print("row matched!")
+        print("row:      %s" % repr(row))
       if row == self.row:
         # We've reached the row in the table that we are trying to
         # reach. Ssignificant bits remaining in unmatched_pattern
@@ -240,16 +244,16 @@ class RulePatternLookup(object):
         self.reaching_pattern = self.reaching_pattern.union_mask_and_value(
             self.unmatched_pattern)
         if self._trace_pattern():
-          print ("  reaching pattern: %s => %s" %
-                 (repr(old_reaching), repr(self.reaching_pattern)))
+          print("  reaching pattern: %s => %s" % (repr(old_reaching),
+                                                  repr(self.reaching_pattern)))
         self.is_reachable = True
         if _trace:
-          print "*** pattern inference ***"
+          print("*** pattern inference ***")
           self._print_trace()
-          print ("implies: %s => %s" %
-                 (repr(self.pattern), repr(self.unmatched_pattern)))
-          print ("resulting in: %s => %s" %
-                 (repr(old_reaching), repr(self.reaching_pattern)))
+          print("implies: %s => %s" % (repr(self.pattern),
+                                       repr(self.unmatched_pattern)))
+          print("resulting in: %s => %s" % (repr(old_reaching),
+                                            repr(self.reaching_pattern)))
       else:
         # if action is to call another table, continue search with that table.
         if row.action and row.action.__class__.__name__ == 'DecoderMethod':
@@ -266,6 +270,6 @@ class RulePatternLookup(object):
 
   def _print_trace(self):
     for i in range(0, len(self.visited_tables)):
-      print "Table %s:" % self.visited_tables[i].name
+      print("Table %s:" % self.visited_tables[i].name)
       if i < len(self.visited_rows):
-        print "  %s" % self.visited_rows[i].patterns
+        print("  %s" % self.visited_rows[i].patterns)

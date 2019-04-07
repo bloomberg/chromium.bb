@@ -27,6 +27,7 @@ NOTE: the location of tmp files is intentionally hardcoded, so you
 can only run one instance of this at a time.
 """
 
+from __future__ import print_function
 
 import getopt
 import glob
@@ -73,7 +74,7 @@ ERRORS = multiprocessing.Queue()
 # Hook print to we can print to both stdout and a file
 def Print(message):
   for s in REPORT_STREAMS:
-    print >>s, message
+    print(message, file=s)
 
 
 # ======================================================================
@@ -294,10 +295,10 @@ def main(argv):
   files = ParseCommandLineArgs(argv)
 
   if not CFG:
-    print 'ERROR: you must specify a toolchain-config using --config=<config>'
-    print 'Available configs are: '
-    print '\n'.join(toolchain_config.TOOLCHAIN_CONFIGS.keys())
-    print
+    print('ERROR: you must specify a toolchain-config using --config=<config>')
+    print('Available configs are: ')
+    print('\n'.join(toolchain_config.TOOLCHAIN_CONFIGS.keys()))
+    print()
     return -1
 
   global TMP_PREFIX

@@ -7,6 +7,8 @@
 This module contains utilities and constants needed to parse ELF headers.
 """
 
+from __future__ import print_function
+
 import exceptions
 import struct
 
@@ -253,9 +255,15 @@ ehdr_version = {
 ehdr_version_name = __rev_map(ehdr_version)
 
 ehdr_ident = {
-    'mag0':0, 'mag1':1, 'mag2':2, 'mag3':3,
-    'class':4, 'data':5, 'version':6,
-    'osabi':7, 'abiversion':8,
+    'mag0': 0,
+    'mag1': 1,
+    'mag2': 2,
+    'mag3': 3,
+    'class': 4,
+    'data': 5,
+    'version': 6,
+    'osabi': 7,
+    'abiversion': 8,
 }  # everything thereafter is padding
 
 ehdr_ident_mag = '\177ELF'
@@ -384,21 +392,21 @@ class Elf:
 
 
 if __name__ == '__main__':
-  print elf32_ehdr_format
-  print elf64_ehdr_format
-  print ehdr_format_map
-  print phdr_format_map
-  print shdr_format_map
-  print ehdr_type
-  print ehdr_type_name
-  print ehdr_machine
-  print ehdr_machine_name
-  print ehdr_version
-  print ehdr_version_name
-  print ehdr_ident
-  print ehdr_ident_class
-  print ehdr_ident_data
-  print phdr_type
-  print phdr_type_name
-  print phdr_flags
-  print shdr_flags
+  print(elf32_ehdr_format)
+  print(elf64_ehdr_format)
+  print(ehdr_format_map)
+  print(phdr_format_map)
+  print(shdr_format_map)
+  print(ehdr_type)
+  print(ehdr_type_name)
+  print(ehdr_machine)
+  print(ehdr_machine_name)
+  print(ehdr_version)
+  print(ehdr_version_name)
+  print(ehdr_ident)
+  print(ehdr_ident_class)
+  print(ehdr_ident_data)
+  print(phdr_type)
+  print(phdr_type_name)
+  print(phdr_flags)
+  print(shdr_flags)

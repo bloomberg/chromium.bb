@@ -52,6 +52,8 @@ backslashes. All directories should be relative to the source root and use
 only lowercase.
 """
 
+from __future__ import print_function
+
 import os
 import optparse
 import pipes
@@ -232,7 +234,8 @@ def ApplyDirectoryRules(existing_rules, dir_name):
 
   # Check the DEPS file in this directory.
   if VERBOSE:
-    print "Applying rules from", dir_name
+    print("Applying rules from", dir_name)
+
   def FromImpl(unused, unused2):
     pass  # NOP function so "From" doesn't fail.
 
@@ -260,7 +263,7 @@ def ApplyDirectoryRules(existing_rules, dir_name):
   if os.path.isfile(deps_file):
     execfile(deps_file, global_scope, local_scope)
   elif VERBOSE:
-    print "  No deps file found in", dir_name
+    print("  No deps file found in", dir_name)
 
   # Even if a DEPS file does not exist we still invoke ApplyRules
   # to apply the implicit "allow" rule for the current directory
@@ -307,7 +310,7 @@ def CheckLine(rules, line):
     # Don't fail when no directory is specified. We may want to be more
     # strict about this in the future.
     if VERBOSE:
-      print " WARNING: directory specified with no path: " + include_path
+      print(" WARNING: directory specified with no path: " + include_path)
     return True, None
 
   (allowed, why_failed) = rules.DirAllowed(include_path)
@@ -333,7 +336,7 @@ def CheckFile(rules, file_name):
            the file checked out OK.
   """
   if VERBOSE:
-    print "Checking: " + file_name
+    print("Checking: " + file_name)
 
   ret_val = ""  # We'll collect the error messages in here
   last_include = 0
@@ -371,7 +374,7 @@ def CheckFile(rules, file_name):
 
   except IOError:
     if VERBOSE:
-      print "Unable to open file: " + file_name
+      print("Unable to open file: " + file_name)
     cur_file.close()
 
   # Map empty string to None for easier checking.
@@ -403,7 +406,7 @@ def CheckDirectory(parent_rules, dir_name):
   for cur in files_to_check:
     file_status = CheckFile(rules, cur)
     if file_status != None:
-      print "ERROR in " + cur + "\n" + file_status
+      print("ERROR in " + cur + "\n" + file_status)
       success = False
 
   # Next recurse into the subdirectories.
@@ -437,7 +440,7 @@ def GetGitSourceDirectory(root):
 
 
 def PrintUsage():
-  print """Usage: python checkdeps.py [--root <root>] [tocheck]
+  print("""Usage: python checkdeps.py [--root <root>] [tocheck]
   --root   Specifies the repository root. This defaults to "../../.." relative
            to the script file. This will be correct given the normal location
            of the script in "<root>/tools/checkdeps".
@@ -448,7 +451,7 @@ def PrintUsage():
 
 Examples:
   python checkdeps.py
-  python checkdeps.py --root c:\\source chrome"""
+  python checkdeps.py --root c:\\source chrome""")
 
 
 def checkdeps(options, args):
@@ -477,8 +480,8 @@ def checkdeps(options, args):
     PrintUsage()
     return 1
 
-  print "Using base directory:", BASE_DIRECTORY
-  print "Checking:", start_dir
+  print("Using base directory:", BASE_DIRECTORY)
+  print("Checking:", start_dir)
 
   base_rules = Rules()
 
@@ -496,9 +499,9 @@ def checkdeps(options, args):
 
   success = CheckDirectory(base_rules, start_dir)
   if not success:
-    print "\nFAILED\n"
+    print("\nFAILED\n")
     return 1
-  print "\nSUCCESS\n"
+  print("\nSUCCESS\n")
   return 0
 
 

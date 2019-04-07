@@ -8,6 +8,8 @@
 Passes its arguments to toolchain_build.py.
 """
 
+from __future__ import print_function
+
 import optparse
 import os
 import subprocess
@@ -59,22 +61,22 @@ def main(args):
 
   options, arguments = parser.parse_args(args)
   if len(arguments) != 1:
-    print 'Error - expected build_name arguments'
+    print('Error - expected build_name arguments')
     return 1
 
   build_name, = arguments
 
   build_script = os.path.join(NACL_DIR, 'toolchain_build', build_name + '.py')
   if not os.path.isfile(build_script):
-    print 'Error - Unknown build script: %s' % build_script
+    print('Error - Unknown build script: %s' % build_script)
     return 1
 
   if sys.platform == 'win32':
-    print '@@@BUILD_STEP install mingw@@@'
+    print('@@@BUILD_STEP install mingw@@@')
     sys.stdout.flush()
     subprocess.check_call([os.path.join(NACL_DIR, 'buildbot', 'mingw_env.bat')])
 
-  print '@@@BUILD_STEP run_pynacl_tests.py@@@'
+  print('@@@BUILD_STEP run_pynacl_tests.py@@@')
   sys.stdout.flush()
   subprocess.check_call([
       sys.executable, os.path.join(NACL_DIR, 'pynacl', 'run_pynacl_tests.py')])
@@ -98,11 +100,11 @@ def main(args):
 
   # Run toolchain tests for built toolchains
   for toolchain_name in options.test_toolchains:
-    print '@@@BUILD_STEP test toolchains (%s)@@@' % toolchain_name
+    print('@@@BUILD_STEP test toolchains (%s)@@@' % toolchain_name)
     sys.stdout.flush()
     test_options = TOOLCHAIN_TESTS.get(toolchain_name, None)
     if test_options is None:
-      print 'Error - unknown toolchain to test with: %s' % toolchain_name
+      print('Error - unknown toolchain to test with: %s' % toolchain_name)
       return 1
 
     # Extract the toolchain into a temporary directory.
@@ -126,7 +128,8 @@ def main(args):
       elif toolchain_name.startswith('pnacl_'):
         scons_toolchain_arg = 'pnacl_%s_dir' % clib
       else:
-        print 'Error - Could not figure out toolchain type: %s' % toolchain_name
+        print(
+            'Error - Could not figure out toolchain type: %s' % toolchain_name)
         return 1
 
       subprocess.check_call([sys.executable,

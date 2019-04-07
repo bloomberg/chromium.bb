@@ -5,6 +5,7 @@
 
 """Defer tool for SCons."""
 
+from __future__ import print_function
 
 import os
 import sys
@@ -118,8 +119,8 @@ def ExecuteDefer(self):
   # If defer root is set and isn't this environment, we're being called from a
   # sub-environment.  That's not where we should be called.
   if self.GetDeferRoot() != self:
-    print ('Warning: Ignoring call to ExecuteDefer() from child of the '
-           'environment passed to SetDeferRoot().')
+    print('Warning: Ignoring call to ExecuteDefer() from child of the '
+          'environment passed to SetDeferRoot().')
     return
 
   # Get list of defer groups from ourselves.
@@ -177,18 +178,18 @@ def PrintDefer(self, print_functions=True):
   dgkeys = defer_groups.keys()
   dgkeys.sort()
   for k in dgkeys:
-    print ' +- %s' % k
+    print(' +- %s' % k)
     group = defer_groups[k]
     after = list(group.after)
     if after:
-      print ' |  after'
+      print(' |  after')
       after.sort()
       for a in after:
-        print ' |   +- %s' % a
+        print(' |   +- %s' % a)
     if print_functions and group.func_env_cwd:
-      print '    functions'
+      print('    functions')
       for func, env, cwd in group.func_env_cwd:
-        print ' |   +- %s %s' % (func.__name__, cwd)
+        print(' |   +- %s %s' % (func.__name__, cwd))
 
 
 def Defer(self, *args, **kwargs):

@@ -10,6 +10,9 @@ This script is in a filename "ld" so it can be invoked from gcc
 via the -B flag.
 """
 # TODO(bradchen): Delete this script when Gold supports linker scripts properly.
+
+from __future__ import print_function
+
 import os
 import subprocess
 import sys
@@ -31,7 +34,7 @@ def GccPrintName(cxx_bin, what, switch, defresult):
                            stdin=subprocess.PIPE)
   result, error = popen.communicate()
   if popen.returncode != 0:
-    print "Could not find %s: %s" % (what, error)
+    print("Could not find %s: %s" % (what, error))
     return defresult
   return result.strip()
 

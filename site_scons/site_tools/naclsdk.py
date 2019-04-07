@@ -5,6 +5,8 @@
 
 """NaCl SDK tool SCons."""
 
+from __future__ import print_function
+
 import __builtin__
 import re
 import os
@@ -294,7 +296,8 @@ def _SetEnvForPnacl(env, root):
 
   if env.Bit('built_elsewhere'):
     def FakeInstall(dest, source, env):
-      print 'Not installing', dest
+      print('Not installing', dest)
+
     _StubOutEnvToolsForBuiltElsewhere(env)
     env.Replace(INSTALL=FakeInstall)
     if env.Bit('translate_in_build_step'):
@@ -583,7 +586,7 @@ class NaClTempFileMunge(object):
     # purity get in the way of just being helpful, so we'll
     # reach into SCons.Action directly.
     if SCons.Action.print_actions:
-      print("Using tempfile "+native_tmp+" for command line:\n"+
+      print("Using tempfile " + native_tmp + " for command line:\n" +
             str(cmd[0]) + " " + " ".join(args))
     return [ cmd[0], prefix + native_tmp + '\n' + rm, native_tmp ]
 
@@ -677,7 +680,8 @@ def generate(env):
     _SetEnvForPnacl(env, root)
   elif env.Bit('built_elsewhere'):
     def FakeInstall(dest, source, env):
-      print 'Not installing', dest
+      print('Not installing', dest)
+
     _StubOutEnvToolsForBuiltElsewhere(env)
     env.Replace(INSTALL=FakeInstall)
   else:

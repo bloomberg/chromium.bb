@@ -5,6 +5,7 @@
 
 """Command output builder for SCons."""
 
+from __future__ import print_function
 
 import os
 import signal
@@ -34,9 +35,11 @@ def KillProcessTree(pid):
     killproc_path = '%s;%s\\system32;%s\\system32\\wbem' % (
         (os.environ['SYSTEMROOT'],) * 3)
     killproc_cmd = 'taskkill /F /T /PID %d' % pid
-    killproc_task = subprocess.Popen(killproc_cmd, shell=True,
-                                     stdout=subprocess.PIPE,
-                                     env={'PATH':killproc_path})
+    killproc_task = subprocess.Popen(
+        killproc_cmd,
+        shell=True,
+        stdout=subprocess.PIPE,
+        env={'PATH': killproc_path})
     killproc_task.communicate()
 
   elif sys.platform in ('linux', 'linux2', 'darwin'):
@@ -49,7 +52,7 @@ def KillProcessTree(pid):
     for ps_line in ps_out.split('\n'):
       w = ps_line.strip().split()
       if len(w) < 2:
-          continue      # Not enough words in this line to be a process list
+        continue  # Not enough words in this line to be a process list
       try:
         ppid[int(w[0])] = int(w[1])
       except ValueError:
@@ -113,7 +116,7 @@ def RunCommand(cmdargs, cwdir=None, env=None, echo_output=True, timeout=None,
       new_out = child.stdout.read()
       if new_out:
         if echo_output:
-          print new_out,
+          print(new_out, end=' ')
         child_out.append(new_out)
 
   read_thread = threading.Thread(target=_ReadThread)
@@ -127,7 +130,7 @@ def RunCommand(cmdargs, cwdir=None, env=None, echo_output=True, timeout=None,
     if timeout and child_retcode is None:
       elapsed = time.time() - start_time
       if elapsed > timeout:
-        print '*** RunCommand() timeout:', cmdargs
+        print('*** RunCommand() timeout:', cmdargs)
         KillProcessTree(child.pid)
         child_retcode = timeout_errorlevel
 
@@ -138,7 +141,7 @@ def RunCommand(cmdargs, cwdir=None, env=None, echo_output=True, timeout=None,
   read_thread.join(5)
 
   if echo_output:
-    print   # end last line of output
+    print()  # end last line of output
   return child_retcode, ''.join(child_out)
 
 

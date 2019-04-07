@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 from driver_tools import Run, ParseArgs
 from driver_env import env
 
@@ -12,7 +14,7 @@ PATTERNS = [ ( '(.*)',  "env.append('ARGS', $0)") ]
 
 def main(argv):
   if len(argv) == 0:
-    print get_help(argv)
+    print(get_help(argv))
     return 1
 
   env.update(EXTRA_ENV)
