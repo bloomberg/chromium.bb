@@ -10,11 +10,14 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.customtabs.TrustedWebUtils;
+import android.support.customtabs.TrustedWebUtils.SplashScreenParamKey;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewPropertyAnimator;
 import android.widget.ImageView;
 
 import org.chromium.base.Log;
@@ -24,9 +27,11 @@ import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.TranslucentCustomTabActivity;
 import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
 
 import java.lang.reflect.Method;
@@ -55,7 +60,7 @@ import dagger.Lazy;
  * - It also immediately removes the translucency via a reflective call to
  * {@link Activity#convertFromTranslucent}. This is important for performance, otherwise the windows
  * under Chrome will continue being drawn (e.g. launcher with wallpaper). Without removing
- * traslucency, we also see visual glitches when closing TWA and sending it to background (example:
+ * translucency, we also see visual glitches when closing TWA and sending it to background (example:
  * https://crbug.com/856544#c30).
  * - It waits for the page to load, and removes the splash image once first paint (or a failure)
  * occurs.
@@ -64,7 +69,7 @@ import dagger.Lazy;
  * gc-ed when it finishes its job (to that end, it removes all observers it has set).
  * If these lifecycle assumptions change, consider whether @ActivityScope needs to be added.
  */
-public class SplashScreenController implements InflationObserver {
+public class SplashScreenController implements InflationObserver, Destroyable {
 
     private static final String TAG = "TwaSplashScreens";
 
@@ -77,6 +82,9 @@ public class SplashScreenController implements InflationObserver {
 
     @Nullable
     private ImageView mSplashView;
+
+    @Nullable
+    private ViewPropertyAnimator mFadeOutAnimator;
 
     @Inject
     public SplashScreenController(TabObserverRegistrar tabObserverRegistrar,
@@ -120,19 +128,44 @@ public class SplashScreenController implements InflationObserver {
             mLifecycleDispatcher.unregister(this);
             return;
         }
-        Bundle params = mIntentDataProvider.getIntent().getBundleExtra(
-                TrustedWebUtils.EXTRA_SPLASH_SCREEN_PARAMS);
-        int backgroundColor = params.getInt(TrustedWebUtils.SplashScreenParamKey.BACKGROUND_COLOR,
-                Color.WHITE);
-
         mSplashView = new ImageView(mActivity);
         mSplashView.setLayoutParams(new ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT));
         mSplashView.setImageBitmap(bitmap);
-        mSplashView.setBackgroundColor(backgroundColor);
-        mSplashView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        applyCustomizationsToSplashScreenView(mSplashView);
         // At this point the actual layout is not yet inflated. When it is, it replaces the
         // splash screen, but we put it back on top in onPostInflationStartup.
         mActivity.setContentView(mSplashView);
+    }
+
+    private void applyCustomizationsToSplashScreenView(ImageView imageView) {
+        Bundle params = getSplashScreenParamsFromIntent();
+
+        int backgroundColor = IntentUtils.safeGetInt(params, SplashScreenParamKey.BACKGROUND_COLOR,
+                Color.WHITE);
+        imageView.setBackgroundColor(ColorUtils.getOpaqueColor(backgroundColor));
+
+        int scaleTypeOrdinal = IntentUtils.safeGetInt(params, SplashScreenParamKey.SCALE_TYPE, -1);
+        ImageView.ScaleType[] scaleTypes = ImageView.ScaleType.values();
+        ImageView.ScaleType scaleType;
+        if (scaleTypeOrdinal < 0 || scaleTypeOrdinal >= scaleTypes.length) {
+            scaleType = ImageView.ScaleType.CENTER;
+        } else {
+            scaleType = scaleTypes[scaleTypeOrdinal];
+        }
+        imageView.setScaleType(scaleType);
+
+        if (scaleType != ImageView.ScaleType.MATRIX) return;
+        float[] matrixValues = IntentUtils.safeGetFloatArray(params,
+                SplashScreenParamKey.IMAGE_TRANSFORMATION_MATRIX);
+        if (matrixValues == null || matrixValues.length != 9) return;
+        Matrix matrix = new Matrix();
+        matrix.setValues(matrixValues);
+        imageView.setImageMatrix(matrix);
+    }
+
+    private Bundle getSplashScreenParamsFromIntent() {
+        return mIntentDataProvider.getIntent().getBundleExtra(
+                TrustedWebUtils.EXTRA_SPLASH_SCREEN_PARAMS);
     }
 
     @Override
@@ -180,7 +213,8 @@ public class SplashScreenController implements InflationObserver {
             private void onPageReady(Tab tab) {
                 tab.removeObserver(this); // TODO(pshmakov): make TabObserverRegistrar do this.
                 mTabObserverRegistrar.unregisterTabObserver(this);
-                removeSplashScreen();
+                mCompositorViewHolder.get().getCompositorView().surfaceRedrawNeededAsync(
+                        SplashScreenController.this::removeSplashScreen);
             }
         });
     }
@@ -195,10 +229,31 @@ public class SplashScreenController implements InflationObserver {
         mSplashView = null;
 
         mActivity.findViewById(R.id.coordinator).setVisibility(View.VISIBLE);
-        mCompositorViewHolder.get().getCompositorView().surfaceRedrawNeededAsync(
-                () -> getRootView().removeView(splashView));
 
+        int fadeOutDuration = IntentUtils.safeGetInt(getSplashScreenParamsFromIntent(),
+                SplashScreenParamKey.FADE_OUT_DURATION_MS, 0);
+        if (fadeOutDuration == 0) {
+            onSplashScreenFadeOutComplete(splashView);
+        } else {
+            mFadeOutAnimator = splashView.animate()
+                    .alpha(0)
+                    .setDuration(fadeOutDuration)
+                    .withEndAction(() -> onSplashScreenFadeOutComplete(splashView));
+            mFadeOutAnimator.start();
+        }
+    }
+
+    private void onSplashScreenFadeOutComplete(View splashView) {
+        getRootView().removeView(splashView);
+        mFadeOutAnimator = null;
         mLifecycleDispatcher.unregister(this);  // Unregister to get gc-ed
+    }
+
+    @Override
+    public void destroy() {
+        if (mFadeOutAnimator != null) {
+            mFadeOutAnimator.cancel();
+        }
     }
 
     /**

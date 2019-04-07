@@ -144,6 +144,19 @@ public class IntentUtils {
     }
 
     /**
+     * Just like {@link Bundle#getFloatArray(String)} but doesn't throw exceptions.
+     */
+    public static float[] safeGetFloatArray(Bundle bundle, String name) {
+        try {
+            return bundle.getFloatArray(name);
+        } catch (Throwable t) {
+            // Catches un-parceling exceptions.
+            Log.e(TAG, "getFloatArray failed on bundle " + bundle);
+            return null;
+        }
+    }
+
+    /**
      * Just like {@link Intent#getLongExtra(String, long)} but doesn't throw exceptions.
      */
     public static long safeGetLongExtra(Intent intent, String name, long defaultValue) {
