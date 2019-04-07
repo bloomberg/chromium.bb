@@ -26,6 +26,12 @@
   <message name="IDS_VR_SHELL_SITE_IS_SHARING_SCREEN" desc="Text displayed in a transient bubble to inform the user that the page is sharing the screen.">
     Site is sharing your screen
   </message>
+  <message name="IDS_VR_SHELL_SITE_IS_USING_USB" desc="Text displayed in a transient bubble to inform the user that the page is using a usb device.">
+    Site is using usb
+  </message>
+  <message name="IDS_VR_SHELL_SITE_IS_USING_MIDI" desc="Text displayed in a transient bubble to inform the user that the page is using a midi device.">
+    Site is using midi
+  </message>
   <message name="IDS_VR_SHELL_BG_IS_USING_MICROPHONE" desc="Text displayed in a transient bubble to inform the user that a background tab is using the microphone.">
     Background tab is using your microphone
   </message>
@@ -52,6 +58,9 @@
   </message>
   <message name="IDS_VR_SHELL_SITE_CAN_SHARE_SCREEN" desc="Text displayed in a transient bubble to inform the user that the page may share your screen, but isn't doing so yet.">
     Site can share your screen
+  </message>
+  <message name="IDS_VR_SHELL_SITE_CAN_USE_MIDI" desc="Text displayed in a transient bubble to inform the user that the page may use midi, but isn't doing so yet.">
+    Site can use midi
   </message>
 
   <!-- Desktop-specific permission prompts -->
