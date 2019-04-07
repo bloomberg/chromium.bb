@@ -88,8 +88,15 @@ class ExtensionApps : public apps::mojom::Publisher,
   bool RunExtensionEnableFlow(const std::string& app_id);
 
   static bool IsBlacklisted(const std::string& app_id);
+
+  static void SetShowInFields(apps::mojom::AppPtr& app,
+                              const extensions::Extension* extension,
+                              Profile* profile);
+  static bool ShouldShow(const extensions::Extension* extension,
+                         Profile* profile);
   static apps::mojom::OptionalBool ShouldShowInAppManagement(
       const extensions::Extension* extension);
+
   void PopulatePermissions(const extensions::Extension* extension,
                            std::vector<mojom::PermissionPtr>* target);
   apps::mojom::AppPtr Convert(const extensions::Extension* extension,
