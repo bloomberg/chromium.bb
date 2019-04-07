@@ -20,10 +20,10 @@ BuildStore = buildstore.BuildStore
 
 class TestBuildStore(cros_test_lib.MockTestCase):
   """Test buildstore.BuildStore."""
-  # pylint: disable=protected-access
 
   def testIsCIDBClientMissing(self):
     """Tests _IsCIDBClientMissing function."""
+    # pylint: disable=protected-access
     # Test CIDB needed and client missing.
     bs = BuildStore(_read_from_bb=False, _write_to_cidb=True)
     self.assertEqual(bs._IsCIDBClientMissing(), True)
@@ -47,6 +47,7 @@ class TestBuildStore(cros_test_lib.MockTestCase):
 
   def testIsBuildbucketClientMissing(self):
     """Tests _IsBuildbucketClientMissing function."""
+    # pylint: disable=protected-access
     # Test Buildbucket needed and client missing.
     bs = BuildStore(_read_from_bb=True, _write_to_bb=True)
     self.assertEqual(bs._IsBuildbucketClientMissing(), True)
@@ -66,7 +67,6 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     self.assertEqual(bs._IsBuildbucketClientMissing(), False)
     # Test Buildbucket is not needed.
     bs = BuildStore(_read_from_bb=False, _write_to_bb=False)
-    bs._transitioning_to_bb = False
     self.assertEqual(bs._IsBuildbucketClientMissing(), False)
     # Test _transitioning_to_bb logic.
     bs = BuildStore(_read_from_bb=False, _write_to_bb=False)
@@ -162,7 +162,6 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     init = self.PatchObject(BuildStore, 'InitializeClients',
                             return_value=True)
     bs = BuildStore(_read_from_bb=False)
-    bs._transitioning_to_bb = False
     fake_result = [
         {'message_value': 1234},
         {'message_value': 2341},
@@ -457,7 +456,6 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     init = self.PatchObject(BuildStore, 'InitializeClients',
                             return_value=True)
     bs = BuildStore(_read_from_bb=False)
-    bs._transitioning_to_bb = False
     bs.cidb_conn = mock.MagicMock()
     buildbucket_ids = ['bucket 1', 'bucket 2']
     # Test for buildbucket_ids.
@@ -481,7 +479,6 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     init = self.PatchObject(BuildStore, 'InitializeClients',
                             return_value=True)
     bs = BuildStore(_read_from_bb=False)
-    bs._transitioning_to_bb = False
     bs.cidb_conn = mock.MagicMock()
     build_ids = ['build 1', 'build 2']
     buildbucket_ids = [1234, 2341]
