@@ -304,6 +304,20 @@ class BuildbucketV2(object):
           build_status[status_name] = str(build_properties[property_name])
         else:
           build_status[status_name] = None
+    else:
+      logging.error('Could not fetch Buildbucket properties for %d',
+                    buildbucket_id)
+      build_status.update({
+          'builder_name': None,
+          'build_number': None,
+          'buildbot_generation': None,
+          'waterfall': None,
+          'metadata_url': None,
+          'deadline': None,
+      })
+      for _, status_name in CIDB_TO_BB_PROPERTIES_MAP.iteritems():
+        build_status[status_name] = None
+      return build_status
 
     # Including the now-defunct columns of CIDB Table so as to not break logic.
     # TODO(dhanyaganesh): remove these one at a time.
