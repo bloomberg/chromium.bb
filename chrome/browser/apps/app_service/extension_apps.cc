@@ -120,6 +120,8 @@ void ExtensionApps::Connect(apps::mojom::SubscriberPtr subscriber,
                   apps::mojom::Readiness::kTerminated, &apps);
     // blacklisted_extensions and blocked_extensions, corresponding to
     // kDisabledByBlacklist and kDisabledByPolicy, are deliberately ignored.
+    //
+    // If making changes to which sets are consulted, also change ShouldShow.
   }
   subscriber->OnApps(std::move(apps));
   subscribers_.AddPtr(std::move(subscriber));
@@ -329,6 +331,7 @@ void ExtensionApps::OnExtensionUninstalled(
   app->app_id = extension->id();
   app->readiness = apps::mojom::Readiness::kUninstalledByUser;
 
+  SetShowInFields(app, extension, profile_);
   Publish(std::move(app));
 }
 
@@ -360,6 +363,42 @@ bool ExtensionApps::IsBlacklisted(const std::string& app_id) {
   // given app. In this case, the ArcApps publisher publishes the Play Store
   // app, and the ExtensionApps publisher does not.
   return app_id == arc::kPlayStoreAppId;
+}
+
+// static
+void ExtensionApps::SetShowInFields(apps::mojom::AppPtr& app,
+                                    const extensions::Extension* extension,
+                                    Profile* profile) {
+  if (ShouldShow(extension, profile)) {
+    auto show = app_list::ShouldShowInLauncher(extension, profile)
+                    ? apps::mojom::OptionalBool::kTrue
+                    : apps::mojom::OptionalBool::kFalse;
+    app->show_in_launcher = show;
+    app->show_in_search = show;
+    app->show_in_management = ShouldShowInAppManagement(extension);
+  } else {
+    app->show_in_launcher = apps::mojom::OptionalBool::kFalse;
+    app->show_in_search = apps::mojom::OptionalBool::kFalse;
+    app->show_in_management = apps::mojom::OptionalBool::kFalse;
+  }
+}
+
+// static
+bool ExtensionApps::ShouldShow(const extensions::Extension* extension,
+                               Profile* profile) {
+  if (!profile) {
+    return false;
+  }
+
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile);
+  const std::string& app_id = extension->id();
+  // These three extension sets are the same three consulted by Connect.
+  // Importantly, it will exclude previously installed but currently
+  // uninstalled extensions.
+  return registry->enabled_extensions().Contains(app_id) ||
+         registry->disabled_extensions().Contains(app_id) ||
+         registry->terminated_extensions().Contains(app_id);
 }
 
 // static
@@ -473,13 +512,7 @@ apps::mojom::AppPtr ExtensionApps::Convert(
                              ? apps::mojom::OptionalBool::kTrue
                              : apps::mojom::OptionalBool::kFalse;
 
-  auto show = app_list::ShouldShowInLauncher(extension, profile_)
-                  ? apps::mojom::OptionalBool::kTrue
-                  : apps::mojom::OptionalBool::kFalse;
-  app->show_in_launcher = show;
-  app->show_in_search = show;
-  app->show_in_management = ShouldShowInAppManagement(extension);
-
+  SetShowInFields(app, extension, profile_);
   return app;
 }
 
