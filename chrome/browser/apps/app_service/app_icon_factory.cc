@@ -17,8 +17,11 @@
 #include "chrome/browser/extensions/chrome_app_icon_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "content/public/common/service_manager_connection.h"
+#include "extensions/browser/component_extension_resource_manager.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/image_loader.h"
+#include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -219,13 +222,42 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
       }
 
       case apps::mojom::IconCompression::kCompressed: {
-        base::PostTaskWithTraitsAndReplyWithResult(
-            FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-            base::BindOnce(&CompressedDataFromResource, ext_resource),
-            base::BindOnce(&RunCallbackWithCompressedData, size_hint_in_dip,
-                           is_placeholder_icon, icon_effects,
-                           std::move(callback)));
-        return;
+        // Load component extensions' icons from statically compiled resources
+        // (built into the Chrome binary), and other extensions' icons from
+        // files on disk.
+        //
+        // For the kUncompressed case above, RunCallbackWithUncompressedImage
+        // calls extensions::ImageLoader::LoadImageAsync, which already handles
+        // that distinction. We can't use LoadImageAsync here, because the
+        // caller has asked for compressed icons (i.e. PNG-formatted data), not
+        // uncompressed (i.e. a gfx::ImageSkia).
+        if (extension->location() == extensions::Manifest::COMPONENT) {
+          extensions::ComponentExtensionResourceInfo resource_info;
+          const extensions::ComponentExtensionResourceManager* manager =
+              extensions::ExtensionsBrowserClient::Get()
+                  ->GetComponentExtensionResourceManager();
+          if (manager && manager->IsComponentExtensionResource(
+                             extension->path(), ext_resource.relative_path(),
+                             &resource_info)) {
+            base::StringPiece data =
+                ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+                    resource_info.resource_id);
+            RunCallbackWithCompressedData(
+                size_hint_in_dip, is_placeholder_icon, icon_effects,
+                std::move(callback),
+                std::vector<uint8_t>(data.begin(), data.end()));
+            return;
+          }
+        } else if (!ext_resource.GetFilePath().empty()) {
+          base::PostTaskWithTraitsAndReplyWithResult(
+              FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+              base::BindOnce(&CompressedDataFromResource,
+                             std::move(ext_resource)),
+              base::BindOnce(&RunCallbackWithCompressedData, size_hint_in_dip,
+                             is_placeholder_icon, icon_effects,
+                             std::move(callback)));
+          return;
+        }
       }
     }
   }
