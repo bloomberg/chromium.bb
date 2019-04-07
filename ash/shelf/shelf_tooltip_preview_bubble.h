@@ -13,6 +13,7 @@
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/window_preview.h"
 #include "ash/wm/window_mirror_view.h"
+#include "base/timer/timer.h"
 #include "ui/aura/window.h"
 #include "ui/views/controls/label.h"
 
@@ -35,6 +36,7 @@ class ASH_EXPORT ShelfTooltipPreviewBubble : public ShelfBubble,
 
   // BubbleDialogDelegateView overrides:
   gfx::Rect GetBubbleBounds() override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
 
   // ShelfBubble:
   bool ShouldCloseOnPressDown() override;
@@ -45,10 +47,13 @@ class ASH_EXPORT ShelfTooltipPreviewBubble : public ShelfBubble,
   void OnPreviewDismissed(WindowPreview* preview) override;
   void OnPreviewActivated(WindowPreview* preview) override;
 
+  void DismissAfterDelay();
+  void Dismiss();
+
   std::vector<WindowPreview*> previews_;
 
-  // Preferred size for the tooltip.
   ShelfTooltipManager* manager_;
+  base::OneShotTimer dismiss_timer_;
 
   const ShelfAlignment shelf_alignment_;
 
