@@ -349,16 +349,15 @@ weston_debug_compositor_destroy(struct weston_compositor *compositor)
 WL_EXPORT void
 weston_compositor_enable_debug_protocol(struct weston_compositor *compositor)
 {
-	struct weston_debug_compositor *wdc = compositor->weston_debug;
-
-	assert(wdc);
-	if (wdc->global)
+	struct weston_log_context *log_ctx = compositor->weston_log_ctx;
+	assert(log_ctx);
+	if (log_ctx->global)
 		return;
 
-	wdc->global = wl_global_create(compositor->wl_display,
+	log_ctx->global = wl_global_create(compositor->wl_display,
 				       &weston_debug_v1_interface, 1,
-				       wdc, bind_weston_debug);
-	if (!wdc->global)
+				       log_ctx, bind_weston_debug);
+	if (!log_ctx->global)
 		return;
 
 	weston_log("WARNING: debug protocol has been enabled. "
@@ -378,7 +377,7 @@ weston_compositor_is_debug_protocol_enabled(struct weston_compositor *wc)
 
 /** Register a new debug stream name, creating a debug scope
  *
- * \param compositor The libweston compositor where to add.
+ * \param wdc The weston_debug_compositor where to add.
  * \param name The debug stream/scope name; must not be NULL.
  * \param desc The debug scope description for humans; must not be NULL.
  * \param begin_cb Optional callback when a client subscribes to this scope.
@@ -411,21 +410,19 @@ weston_compositor_is_debug_protocol_enabled(struct weston_compositor *wc)
  * \sa weston_debug_stream, weston_debug_scope_cb
  */
 WL_EXPORT struct weston_debug_scope *
-weston_compositor_add_debug_scope(struct weston_compositor *compositor,
+weston_compositor_add_debug_scope(struct weston_debug_compositor *wdc,
 				  const char *name,
 				  const char *description,
 				  weston_debug_scope_cb begin_cb,
 				  void *user_data)
 {
-	struct weston_debug_compositor *wdc;
 	struct weston_debug_scope *scope;
 
-	if (!compositor || !name || !description) {
+	if (!name || !description) {
 		weston_log("Error: cannot add a debug scope without name or description.\n");
 		return NULL;
 	}
 
-	wdc = compositor->weston_debug;
 	if (!wdc) {
 		weston_log("Error: cannot add debug scope '%s', infra not initialized.\n",
 			   name);

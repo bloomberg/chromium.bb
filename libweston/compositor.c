@@ -6889,7 +6889,7 @@ weston_compositor_create(struct wl_display *display,
 					    timeline_key_binding_handler, ec);
 
 	ec->debug_scene =
-		weston_compositor_add_debug_scope(ec, "scene-graph",
+		weston_compositor_add_debug_scope(ec->weston_debug, "scene-graph",
 						  "Scene graph details\n",
 					  	  debug_scene_graph_cb,
 					  	  ec);

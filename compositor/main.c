@@ -3039,10 +3039,10 @@ int main(int argc, char *argv[])
 	}
 	segv_compositor = wet.compositor;
 
-	log_scope = weston_compositor_add_debug_scope(wet.compositor, "log",
+	log_scope = weston_compositor_add_debug_scope(wdc, "log",
 			"Weston and Wayland log\n", NULL, NULL);
 	protocol_scope =
-		weston_compositor_add_debug_scope(wet.compositor,
+		weston_compositor_add_debug_scope(wdc,
 			"proto",
 			"Wayland protocol dump for all clients.\n",
 			NULL, NULL);

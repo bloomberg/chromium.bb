@@ -7499,7 +7499,8 @@ drm_backend_create(struct weston_compositor *compositor,
 	b->pageflip_timeout = config->pageflip_timeout;
 	b->use_pixman_shadow = config->use_pixman_shadow;
 
-	b->debug = weston_compositor_add_debug_scope(compositor, "drm-backend",
+	b->debug = weston_compositor_add_debug_scope(compositor->weston_debug,
+						     "drm-backend",
 						     "Debug messages from DRM/KMS backend\n",
 					     	     NULL, NULL);
 
