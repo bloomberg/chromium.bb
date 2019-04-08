@@ -52,7 +52,7 @@ class CategoryCardAdapter extends ForwardingListObservable<Void>
     private LinearLayoutManager mLayoutManager;
     private PropertyModel mCategoryModel;
 
-    public CategoryCardAdapter(PropertyModel model, LinearLayoutManager layoutManager,
+    CategoryCardAdapter(PropertyModel model, LinearLayoutManager layoutManager,
             RoundedIconGenerator iconGenerator, ContextMenuManager contextMenuManager,
             NativePageNavigationDelegate navDelegate, Profile profile) {
         mCategoryModel = model;

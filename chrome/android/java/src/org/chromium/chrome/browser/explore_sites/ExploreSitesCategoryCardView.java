@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.explore_sites;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -50,11 +51,12 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
     private int mCategoryCardIndex;
 
     private class CategoryCardInteractionDelegate
-            implements ContextMenuManager.Delegate, OnClickListener, OnCreateContextMenuListener {
+            implements ContextMenuManager.Delegate, OnClickListener, OnCreateContextMenuListener,
+                       OnFocusChangeListener {
         private String mSiteUrl;
         private int mTileIndex;
 
-        public CategoryCardInteractionDelegate(String siteUrl, int tileIndex) {
+        CategoryCardInteractionDelegate(String siteUrl, int tileIndex) {
             mSiteUrl = siteUrl;
             mTileIndex = tileIndex;
         }
@@ -99,14 +101,19 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
 
         @Override
         public boolean isItemSupported(@ContextMenuManager.ContextMenuItemId int menuItemId) {
-            if (menuItemId == ContextMenuManager.ContextMenuItemId.LEARN_MORE) {
-                return false;
-            }
-            return true;
+            return menuItemId != ContextMenuManager.ContextMenuItemId.LEARN_MORE;
         }
 
         @Override
-        public void onContextMenuCreated(){};
+        public void onContextMenuCreated() {}
+
+        @Override
+        public void onFocusChange(View v, boolean hasFocus) {
+            if (hasFocus) {
+                getParent().requestChildRectangleOnScreen(
+                        ExploreSitesCategoryCardView.this, new Rect(), true);
+            }
+        }
     }
 
     // We use the MVC paradigm for the site tiles inside the category card.  We don't use the MVC
@@ -130,6 +137,7 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
                                 model.get(ExploreSitesSite.TILE_INDEX_KEY));
                 view.setOnClickListener(interactionDelegate);
                 view.setOnCreateContextMenuListener(interactionDelegate);
+                view.setOnFocusChangeListener(interactionDelegate);
             }
         }
     }
@@ -157,8 +165,8 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
         mCategoryCardIndex = categoryCardIndex;
         mCategory = category;
 
-        updateTitle(category.getTitle());
-        updateTileViews(category);
+        updateTitle(mCategory.getTitle());
+        updateTileViews(mCategory);
     }
 
     public void updateTitle(String categoryTitle) {
@@ -232,8 +240,8 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
 
     /**
      * Records UMA data for how far down the EoS page the picked tile was.
-     * @param cardNumber The number card (zero based) of the tile that was picked.
-     * @param tileNumber The number of the tile within the card.
+     * @param cardIndex The number card (zero based) of the tile that was picked.
+     * @param tileIndex The number of the tile within the card.
      */
     public static void recordTileIndexClick(int cardIndex, int tileIndex) {
         // TODO(petewil): Should I get the number of sites in this category from the model instead

@@ -168,7 +168,7 @@ public class ExploreSitesPage extends BasicNativePage {
         mHasFetchedNetworkCatalog = false;
 
         mModel = new PropertyModel.Builder(STATUS_KEY, SCROLL_TO_CATEGORY_KEY, CATEGORY_LIST_KEY)
-                         .with(CATEGORY_LIST_KEY, new ListModel<ExploreSitesCategory>())
+                         .with(CATEGORY_LIST_KEY, new ListModel<>())
                          .with(STATUS_KEY, CatalogLoadingState.LOADING)
                          .build();
 
@@ -194,7 +194,7 @@ public class ExploreSitesPage extends BasicNativePage {
         CategoryCardAdapter adapterDelegate = new CategoryCardAdapter(
                 mModel, mLayoutManager, iconGenerator, mContextMenuManager, navDelegate, mProfile);
 
-        mRecyclerView = (RecyclerView) mView.findViewById(R.id.explore_sites_category_recycler);
+        mRecyclerView = mView.findViewById(R.id.explore_sites_category_recycler);
         RecyclerViewAdapter<CategoryCardViewHolderFactory.CategoryCardViewHolder, Void> adapter =
                 new RecyclerViewAdapter<>(adapterDelegate, new CategoryCardViewHolderFactory());
 
