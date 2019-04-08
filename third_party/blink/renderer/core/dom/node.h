@@ -791,7 +791,6 @@ class CORE_EXPORT Node : public EventTarget {
 
   virtual bool WillRespondToMouseMoveEvents();
   virtual bool WillRespondToMouseClickEvents();
-  virtual bool WillRespondToTouchEvents();
 
   enum ShadowTreesTreatment {
     kTreatShadowTreesAsDisconnected,

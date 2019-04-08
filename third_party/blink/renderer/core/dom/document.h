@@ -793,7 +793,16 @@ class CORE_EXPORT Document : public ContainerNode,
   void HoveredElementDetached(Element&);
   void ActiveChainNodeDetached(Element&);
 
-  void UpdateHoverActiveState(const HitTestRequest&, Element*);
+  // Updates hover and active state of elements in the Document. The
+  // |is_active| param specifies whether the active state should be set or
+  // unset. |update_active_chain| is used to prevent updates to elements
+  // outside the frozen active chain; passing false will only refresh the
+  // active state of elements in the existing chain, but not outside of it. The
+  // given element is the inner-most element whose state is being modified.
+  // Hover is always applied.
+  void UpdateHoverActiveState(bool is_active,
+                              bool update_active_chain,
+                              Element*);
 
   // Updates for :target (CSS3 selector).
   void SetCSSTarget(Element*);
@@ -1638,8 +1647,8 @@ class CORE_EXPORT Document : public ContainerNode,
   bool HaveImportsLoaded() const;
   void ViewportDefiningElementDidChange();
 
-  void UpdateActiveState(const HitTestRequest&, Element*);
-  void UpdateHoverState(const HitTestRequest&, Element*);
+  void UpdateActiveState(bool is_active, bool update_active_chain, Element*);
+  void UpdateHoverState(Element*);
 
   const AtomicString& BodyAttributeValue(const QualifiedName&) const;
   void SetBodyAttribute(const QualifiedName&, const AtomicString&);

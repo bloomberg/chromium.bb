@@ -175,8 +175,11 @@ class CORE_EXPORT EventHandler final
   WebInputEventResult HandleGestureEvent(const GestureEventWithHitTestResults&);
 
   // Clear the old hover/active state within frames before moving the hover
-  // state to the another frame
-  void UpdateGestureHoverActiveState(const HitTestRequest&, Element*);
+  // state to the another frame. |is_active| specifies whether the active state
+  // is being applied to or removed from the given element. This method should
+  // be initially called on the root document, it will recurse into child
+  // frames as needed.
+  void UpdateCrossFrameHoverActiveState(bool is_active, Element*);
 
   // Hit-test the provided (non-scroll) gesture event, applying touch-adjustment
   // and updating hover/active state across all frames if necessary. This should
