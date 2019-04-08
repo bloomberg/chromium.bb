@@ -26,7 +26,6 @@ class BASE_EXPORT PlatformNativeWorkerPool : public SchedulerWorkerPool {
   void JoinForTesting() override;
   size_t GetMaxConcurrentNonBlockedTasksDeprecated() const override;
   void ReportHeartbeatMetrics() const override;
-  void DidUpdateCanRunPolicy() override;
 
  protected:
   PlatformNativeWorkerPool(TrackedRef<TaskTracker> task_tracker,
