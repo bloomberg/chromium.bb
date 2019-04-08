@@ -145,6 +145,8 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
       model->SelectAccount(
           std::move(responses),
           base::Bind([](device::AuthenticatorGetAssertionResponse) {}));
+    } else if (name == "request_attestation_permission") {
+      model->RequestAttestationPermission(base::DoNothing());
     }
 
     ShowAuthenticatorRequestDialog(
@@ -277,5 +279,10 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_account_select) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
+                       InvokeUi_request_attestation_permission) {
   ShowAndVerifyUi();
 }

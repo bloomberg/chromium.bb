@@ -97,6 +97,9 @@ class AuthenticatorRequestDialogModel {
 
     // Account selection,
     kSelectAccount,
+
+    // Attestation permission request.
+    kAttestationPermissionRequest,
   };
 
   // Implemented by the dialog to observe this model and show the UI panels
@@ -323,6 +326,10 @@ class AuthenticatorRequestDialogModel {
   // OnHavePIN is called when the user enters a PIN in the UI.
   void OnHavePIN(const std::string& pin);
 
+  // OnAttestationPermissionResponse is called when the user either allows or
+  // disallows an attestation permission request.
+  void OnAttestationPermissionResponse(bool attestation_permission_granted);
+
   void UpdateAuthenticatorReferenceId(base::StringPiece old_authenticator_id,
                                       std::string new_authenticator_id);
   void AddAuthenticator(const device::FidoAuthenticator& authenticator);
@@ -357,6 +364,8 @@ class AuthenticatorRequestDialogModel {
                   base::OnceCallback<void(std::string)> provide_pin_cb);
   bool has_attempted_pin_entry() const { return has_attempted_pin_entry_; }
   base::Optional<int> pin_attempts() const { return pin_attempts_; }
+
+  void RequestAttestationPermission(base::OnceCallback<void(bool)> callback);
 
   const std::vector<device::AuthenticatorGetAssertionResponse>& responses() {
     return responses_;
@@ -413,6 +422,8 @@ class AuthenticatorRequestDialogModel {
   base::OnceCallback<void(std::string)> pin_callback_;
   bool has_attempted_pin_entry_ = false;
   base::Optional<int> pin_attempts_;
+
+  base::OnceCallback<void(bool)> attestation_callback_;
 
   // responses_ contains possible accounts to select between.
   std::vector<device::AuthenticatorGetAssertionResponse> responses_;

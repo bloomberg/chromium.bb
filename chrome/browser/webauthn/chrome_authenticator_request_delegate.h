@@ -57,6 +57,8 @@ class ChromeAuthenticatorRequestDelegate
 
   base::WeakPtr<ChromeAuthenticatorRequestDelegate> AsWeakPtr();
 
+  AuthenticatorRequestDialogModel* WeakDialogModelForTesting() const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeAuthenticatorRequestDelegateTest,
                            TestTransportPrefType);

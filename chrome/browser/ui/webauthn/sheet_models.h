@@ -486,4 +486,25 @@ class AuthenticatorSelectAccountSheetModel : public AuthenticatorSheetModelBase,
   size_t selected_ = 0;
 };
 
+class AttestationPermissionRequestSheetModel
+    : public AuthenticatorSheetModelBase {
+ public:
+  explicit AttestationPermissionRequestSheetModel(
+      AuthenticatorRequestDialogModel* dialog_model);
+  ~AttestationPermissionRequestSheetModel() override;
+
+  // AuthenticatorSheetModelBase:
+  void OnAccept() override;
+  void OnCancel() override;
+
+ private:
+  // AuthenticatorSheetModelBase:
+  gfx::ImageSkia* GetStepIllustration() const override;
+  base::string16 GetStepTitle() const override;
+  base::string16 GetStepDescription() const override;
+  bool IsAcceptButtonVisible() const override;
+  bool IsAcceptButtonEnabled() const override;
+  base::string16 GetAcceptButtonLabel() const override;
+  bool IsCancelButtonVisible() const override;
+};
 #endif  // CHROME_BROWSER_UI_WEBAUTHN_SHEET_MODELS_H_
