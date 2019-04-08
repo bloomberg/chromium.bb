@@ -568,15 +568,29 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
 // NSView implementation.
 
-// This view must consistently return YES or else dragging a tab may drag the
-// entire window. See r549802 for details.
+// Refuse first responder so that clicking a blank area of the view don't take
+// first responder away from another view. This does not prevent the view
+// becoming first responder via -[NSWindow makeFirstResponder:] when invoked
+// during Init or by FocusManager.
+//
+// The condition is to work around an AppKit quirk. When a window is being
+// ordered front, if its current first responder returns |NO| for this method,
+// it resigns it if it can find another responder in the key loop that replies
+// |YES|.
 - (BOOL)acceptsFirstResponder {
-  return YES;
+  return self.window.firstResponder == self;
+}
+
+// This undocumented method determines which parts of the view prevent
+// server-side window dragging (i.e. aren't draggable without asking the app
+// first). Since Views decides click-by-click whether to handle an event, the
+// whole view is off limits but, since the view's content is rendered out of
+// process and the view is locally transparent, AppKit won't guess that.
+- (NSRect)_opaqueRectForWindowMoveWhenInTitlebar {
+  return self.bounds;
 }
 
 - (BOOL)becomeFirstResponder {
-  if ([[self window] firstResponder] != self)
-    return NO;
   BOOL result = [super becomeFirstResponder];
   if (result && bridge_)
     bridge_->host()->OnIsFirstResponderChanged(true);
