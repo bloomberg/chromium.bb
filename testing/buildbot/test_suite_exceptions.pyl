@@ -1136,6 +1136,36 @@
           'cronet',
         ],
       },
+      'android-cronet-arm-dbg': {
+        'args': [
+          '--platform', 'android-cronet',
+        ],
+      },
+      'android-cronet-arm-rel': {
+        'args': [
+          '--platform', 'android-cronet',
+        ],
+      },
+      'android-cronet-arm64-dbg': {
+        'args': [
+          '--platform', 'android-cronet',
+        ],
+      },
+      'android-cronet-arm64-rel': {
+        'args': [
+          '--platform', 'android-cronet',
+        ],
+      },
+      'android-cronet-x86-dbg': {
+        'args': [
+          '--platform', 'android-cronet',
+        ],
+      },
+      'android-cronet-x86-rel': {
+        'args': [
+          '--platform', 'android-cronet',
+        ],
+      },
     },
   },
   'swiftshader_unittests': {
