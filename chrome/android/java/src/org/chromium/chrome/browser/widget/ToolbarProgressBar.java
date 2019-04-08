@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.widget;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.animation.TimeAnimator;
 import android.animation.TimeAnimator.TimeListener;
 import android.animation.TimeInterpolator;
@@ -124,6 +126,10 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
 
     /** The progress bar's height. */
     private final int mProgressBarHeight;
+
+    /** The current running animator that controls the fade in/out of the progress bar. */
+    @Nullable
+    private Animator mFadeAnimator;
 
     private final OnLayoutChangeListener mOnLayoutChangeListener = (view, left, top, right, bottom,
             oldLeft, oldTop, oldRight, oldBottom) -> updateTopMargin();
@@ -432,15 +438,25 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
         BakedBezierInterpolator interpolator = BakedBezierInterpolator.FADE_IN_CURVE;
         if (alphaDiff < 0) interpolator = BakedBezierInterpolator.FADE_OUT_CURVE;
 
-        animate().alpha(targetAlpha)
-                .setDuration(duration)
-                .setInterpolator(interpolator);
+        if (mFadeAnimator != null) mFadeAnimator.cancel();
+
+        ObjectAnimator alphaFade = ObjectAnimator.ofFloat(this, ALPHA, getAlpha(), targetAlpha);
+        alphaFade.setDuration(duration);
+        alphaFade.setInterpolator(interpolator);
+        mFadeAnimator = alphaFade;
 
         if (mAnimatingView != null) {
-            mAnimatingView.animate().alpha(targetAlpha)
-                    .setDuration(duration)
-                    .setInterpolator(interpolator);
+            alphaFade = ObjectAnimator.ofFloat(
+                    mAnimatingView, ALPHA, mAnimatingView.getAlpha(), targetAlpha);
+            alphaFade.setDuration(duration);
+            alphaFade.setInterpolator(interpolator);
+
+            AnimatorSet fadeSet = new AnimatorSet();
+            fadeSet.playTogether(mFadeAnimator, alphaFade);
+            mFadeAnimator = fadeSet;
         }
+
+        mFadeAnimator.start();
     }
 
     // ClipDrawableProgressBar implementation.
