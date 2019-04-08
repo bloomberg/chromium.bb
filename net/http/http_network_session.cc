@@ -95,7 +95,6 @@ HttpNetworkSession::Params::Params()
       time_func(&base::TimeTicks::Now),
       enable_http2_alternative_service(false),
       enable_websocket_over_http2(false),
-      enable_early_data(false),
       enable_quic(false),
       enable_quic_proxies_for_https_urls(false),
       quic_max_packet_length(quic::kDefaultMaxPacketSize),
@@ -439,7 +438,6 @@ void HttpNetworkSession::GetSSLConfig(const HttpRequestInfo& request,
   GetAlpnProtos(&server_config->alpn_protos);
   server_config->ignore_certificate_errors = params_.ignore_certificate_errors;
   *proxy_config = *server_config;
-  server_config->early_data_enabled = params_.enable_early_data;
 }
 
 void HttpNetworkSession::DumpMemoryStats(
