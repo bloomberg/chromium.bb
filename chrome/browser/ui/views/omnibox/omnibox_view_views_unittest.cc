@@ -1180,3 +1180,23 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsAndQueryInOmniboxTest,
     EXPECT_EQ(0U, end);
   }
 }
+
+TEST_F(OmniboxViewViewsSteadyStateElisionsAndQueryInOmniboxTest,
+       NoEmphasisForUrlLikeQueries) {
+  // Prevents regressions for crbug.com/942945. Set the displayed search terms
+  // to something somewhat URL-like.
+  location_bar_model()->set_display_search_terms(base::ASCIIToUTF16("foo:bar"));
+  omnibox_view()->model()->ResetDisplayTexts();
+  omnibox_view()->RevertAll();
+  EXPECT_EQ(base::ASCIIToUTF16("foo:bar"), omnibox_view()->text());
+  EXPECT_FALSE(omnibox_view()->model()->user_input_in_progress());
+
+  omnibox_view()->ResetEmphasisTestState();
+  omnibox_view()->EmphasizeURLComponents();
+
+  // Expect that no part is de-emphasized, there is no "scheme" range.
+  EXPECT_EQ(TestingOmniboxView::BaseTextEmphasis::EMPHASIZED,
+            omnibox_view()->base_text_emphasis());
+  EXPECT_FALSE(omnibox_view()->emphasis_range().IsValid());
+  EXPECT_FALSE(omnibox_view()->scheme_range().IsValid());
+}
