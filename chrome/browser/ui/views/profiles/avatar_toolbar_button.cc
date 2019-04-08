@@ -268,7 +268,7 @@ bool AvatarToolbarButton::ShouldShowGenericIcon() const {
     // This can happen if the user deletes the current profile.
     return true;
   }
-  return entry->IsUsingDefaultAvatar() &&
+  return entry->GetAvatarIconIndex() == 0 &&
          g_browser_process->profile_manager()
                  ->GetProfileAttributesStorage()
                  .GetNumberOfProfiles() == 1 &&
