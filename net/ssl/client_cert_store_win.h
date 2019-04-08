@@ -28,7 +28,7 @@ class NET_EXPORT ClientCertStoreWin : public ClientCertStore {
   // will use that. Otherwise it will use the current user's "MY" cert store
   // instead.
   void GetClientCerts(const SSLCertRequestInfo& cert_request_info,
-                      const ClientCertListCallback& callback) override;
+                      ClientCertListCallback callback) override;
 
  private:
   using ScopedHCERTSTORE = crypto::ScopedCAPIHandle<

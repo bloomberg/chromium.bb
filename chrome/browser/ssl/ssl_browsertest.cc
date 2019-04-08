@@ -2445,8 +2445,8 @@ class ClientCertStoreStub : public net::ClientCertStore {
 
   // net::ClientCertStore:
   void GetClientCerts(const net::SSLCertRequestInfo& cert_request_info,
-                      const ClientCertListCallback& callback) override {
-    callback.Run(std::move(list_));
+                      ClientCertListCallback callback) override {
+    std::move(callback).Run(std::move(list_));
   }
 
  private:

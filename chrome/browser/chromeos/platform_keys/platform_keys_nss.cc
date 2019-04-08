@@ -605,7 +605,7 @@ void SelectCertificatesOnIOThread(
   SelectCertificatesState* state_ptr = state.get();
   state_ptr->cert_store_->GetClientCerts(
       *state_ptr->cert_request_info_,
-      base::Bind(&DidSelectCertificatesOnIOThread, base::Passed(&state)));
+      base::BindOnce(&DidSelectCertificatesOnIOThread, std::move(state)));
 }
 
 // Filters the obtained certificates on a worker thread. Used by
