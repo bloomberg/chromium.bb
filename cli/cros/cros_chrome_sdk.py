@@ -1054,25 +1054,10 @@ class ChromeSDKCommand(command.CliCommand):
     if options.internal:
       gn_args['is_chrome_branded'] = True
       gn_args['is_official_build'] = True
-
-      # TODO(https://crbug.com/917504): We'd like to use lld for all
-      # configurations. However, it appears that there's a bug in how it emits
-      # unwinding info on ARM, and we emit unwind info on builds that aren't
-      # both official and branded. Until that bug is fixed, our use of lld has
-      # to be restricted to builds where we don't emit unwinding info.
-      gn_args['use_lld'] = True
     else:
       gn_args.pop('is_chrome_branded', None)
       gn_args.pop('is_official_build', None)
       gn_args.pop('internal_gles2_conform_tests', None)
-      gn_args.pop('use_lld', None)
-      # TODO(https://crbug.com/924155): Hack to keep Chromite rolling. Remove
-      # it when either we're back on lld (see the TODO above), or when we get a
-      # new-enough `environment` file.
-      ld_flags = gn_args.get('cros_target_extra_ldflags')
-      if ld_flags:
-        ld_flags = ld_flags.replace('-Wl,-z,keep-text-section-prefix', '')
-        gn_args['cros_target_extra_ldflags'] = ld_flags
 
     # For SimpleChrome, we use the binutils that comes bundled within Chrome.
     # We should not use the binutils from the host system.
