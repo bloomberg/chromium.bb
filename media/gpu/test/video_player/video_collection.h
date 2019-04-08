@@ -16,6 +16,7 @@ namespace test {
 
 class Video;
 
+// TODO(dstaessens@) Deprecated, remove.
 // The video collection class helps managing different sets of test videos.
 // Multiple test video collections can be maintained:
 // * A collection of lightweight videos for CQ testing.

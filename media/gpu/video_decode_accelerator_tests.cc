@@ -48,13 +48,13 @@ class VideoDecoderTest : public ::testing::Test {
     std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors;
 
     // Validate decoded video frames.
-    if (g_env->enable_validator_) {
+    if (g_env->IsValidatorEnabled()) {
       frame_processors.push_back(
           media::test::VideoFrameValidator::Create(video->FrameChecksums()));
     }
 
     // Write decoded video frames to the 'video_frames/<test_name/>' folder.
-    if (g_env->output_frames_) {
+    if (g_env->IsFramesOutputEnabled()) {
       const ::testing::TestInfo* const test_info =
           ::testing::UnitTest::GetInstance()->current_test_info();
       base::FilePath output_folder =
@@ -73,19 +73,19 @@ class VideoDecoderTest : public ::testing::Test {
 // Play video from start to end. Wait for the kFlushDone event at the end of the
 // stream, that notifies us all frames have been decoded.
 TEST_F(VideoDecoderTest, FlushAtEndOfStream) {
-  auto tvp = CreateVideoPlayer(g_env->video_);
+  auto tvp = CreateVideoPlayer(g_env->Video());
 
   tvp->Play();
   EXPECT_TRUE(tvp->WaitForFlushDone());
 
   EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
-  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
+  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->Video()->NumFrames());
   EXPECT_TRUE(tvp->WaitForFrameProcessors());
 }
 
 // Flush the decoder immediately after initialization.
 TEST_F(VideoDecoderTest, FlushAfterInitialize) {
-  auto tvp = CreateVideoPlayer(g_env->video_);
+  auto tvp = CreateVideoPlayer(g_env->Video());
 
   tvp->Flush();
   EXPECT_TRUE(tvp->WaitForFlushDone());
@@ -93,13 +93,13 @@ TEST_F(VideoDecoderTest, FlushAfterInitialize) {
   EXPECT_TRUE(tvp->WaitForFlushDone());
 
   EXPECT_EQ(tvp->GetFlushDoneCount(), 2u);
-  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
+  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->Video()->NumFrames());
   EXPECT_TRUE(tvp->WaitForFrameProcessors());
 }
 
 // Reset the decoder immediately after initialization.
 TEST_F(VideoDecoderTest, ResetAfterInitialize) {
-  auto tvp = CreateVideoPlayer(g_env->video_);
+  auto tvp = CreateVideoPlayer(g_env->Video());
 
   tvp->Reset();
   EXPECT_TRUE(tvp->WaitForResetDone());
@@ -108,16 +108,16 @@ TEST_F(VideoDecoderTest, ResetAfterInitialize) {
 
   EXPECT_EQ(tvp->GetResetDoneCount(), 1u);
   EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
-  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
+  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->Video()->NumFrames());
   EXPECT_TRUE(tvp->WaitForFrameProcessors());
 }
 
 // Reset the decoder when the middle of the stream is reached.
 TEST_F(VideoDecoderTest, ResetMidStream) {
-  auto tvp = CreateVideoPlayer(g_env->video_);
+  auto tvp = CreateVideoPlayer(g_env->Video());
 
   tvp->Play();
-  EXPECT_TRUE(tvp->WaitForFrameDecoded(g_env->video_->NumFrames() / 2));
+  EXPECT_TRUE(tvp->WaitForFrameDecoded(g_env->Video()->NumFrames() / 2));
   tvp->Reset();
   EXPECT_TRUE(tvp->WaitForResetDone());
   size_t numFramesDecoded = tvp->GetFrameDecodedCount();
@@ -127,17 +127,17 @@ TEST_F(VideoDecoderTest, ResetMidStream) {
   EXPECT_EQ(tvp->GetResetDoneCount(), 1u);
   EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
   EXPECT_EQ(tvp->GetFrameDecodedCount(),
-            numFramesDecoded + g_env->video_->NumFrames());
+            numFramesDecoded + g_env->Video()->NumFrames());
   EXPECT_TRUE(tvp->WaitForFrameProcessors());
 }
 
 // Reset the decoder when the end of the stream is reached.
 TEST_F(VideoDecoderTest, ResetEndOfStream) {
-  auto tvp = CreateVideoPlayer(g_env->video_);
+  auto tvp = CreateVideoPlayer(g_env->Video());
 
   tvp->Play();
   EXPECT_TRUE(tvp->WaitForFlushDone());
-  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
+  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->Video()->NumFrames());
   tvp->Reset();
   EXPECT_TRUE(tvp->WaitForResetDone());
   tvp->Play();
@@ -145,14 +145,14 @@ TEST_F(VideoDecoderTest, ResetEndOfStream) {
 
   EXPECT_EQ(tvp->GetResetDoneCount(), 1u);
   EXPECT_EQ(tvp->GetFlushDoneCount(), 2u);
-  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames() * 2);
+  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->Video()->NumFrames() * 2);
   EXPECT_TRUE(tvp->WaitForFrameProcessors());
 }
 
 // Reset the decoder immediately when the end-of-stream flush starts, without
 // waiting for a kFlushDone event.
 TEST_F(VideoDecoderTest, ResetBeforeFlushDone) {
-  auto tvp = CreateVideoPlayer(g_env->video_);
+  auto tvp = CreateVideoPlayer(g_env->Video());
 
   // Reset when a kFlushing event is received.
   tvp->Play();
@@ -167,7 +167,7 @@ TEST_F(VideoDecoderTest, ResetBeforeFlushDone) {
   // have been dropped.
   EXPECT_LE(tvp->GetFlushDoneCount(), 1u);
   EXPECT_EQ(tvp->GetResetDoneCount(), 1u);
-  EXPECT_LE(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
+  EXPECT_LE(tvp->GetFrameDecodedCount(), g_env->Video()->NumFrames());
   EXPECT_TRUE(tvp->WaitForFrameProcessors());
 }
 
@@ -175,11 +175,11 @@ TEST_F(VideoDecoderTest, ResetBeforeFlushDone) {
 // H.264 video stream. After resetting the video is played until the end.
 TEST_F(VideoDecoderTest, ResetAfterFirstConfigInfo) {
   // This test is only relevant for H.264 video streams.
-  if (g_env->video_->Profile() < H264PROFILE_MIN ||
-      g_env->video_->Profile() > H264PROFILE_MAX)
+  if (g_env->Video()->Profile() < H264PROFILE_MIN ||
+      g_env->Video()->Profile() > H264PROFILE_MAX)
     GTEST_SKIP();
 
-  auto tvp = CreateVideoPlayer(g_env->video_);
+  auto tvp = CreateVideoPlayer(g_env->Video());
 
   tvp->PlayUntil(VideoPlayerEvent::kConfigInfo);
   EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kConfigInfo));
@@ -192,7 +192,7 @@ TEST_F(VideoDecoderTest, ResetAfterFirstConfigInfo) {
   EXPECT_EQ(tvp->GetResetDoneCount(), 1u);
   EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
   EXPECT_EQ(tvp->GetFrameDecodedCount(),
-            numFramesDecoded + g_env->video_->NumFrames());
+            numFramesDecoded + g_env->Video()->NumFrames());
   EXPECT_GE(tvp->GetEventCount(VideoPlayerEvent::kConfigInfo), 1u);
   EXPECT_TRUE(tvp->WaitForFrameProcessors());
 }
@@ -201,14 +201,14 @@ TEST_F(VideoDecoderTest, ResetAfterFirstConfigInfo) {
 // decoder, without waiting for the result of the previous decode requests.
 TEST_F(VideoDecoderTest, FlushAtEndOfStream_MultipleOutstandingDecodes) {
   VideoDecoderClientConfig config;
-  config.max_outstanding_decode_requests = 4;
-  auto tvp = CreateVideoPlayer(g_env->video_, config);
+  config.max_outstanding_decode_requests = 5;
+  auto tvp = CreateVideoPlayer(g_env->Video(), config);
 
   tvp->Play();
   EXPECT_TRUE(tvp->WaitForFlushDone());
 
   EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
-  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
+  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->Video()->NumFrames());
   EXPECT_TRUE(tvp->WaitForFrameProcessors());
 }
 
@@ -220,7 +220,7 @@ TEST_F(VideoDecoderTest, FlushAtEndOfStream_MultipleConcurrentDecodes) {
   std::vector<std::unique_ptr<VideoPlayer>> tvps(
       kMinSupportedConcurrentDecoders);
   for (size_t i = 0; i < kMinSupportedConcurrentDecoders; ++i)
-    tvps[i] = CreateVideoPlayer(g_env->video_);
+    tvps[i] = CreateVideoPlayer(g_env->Video());
 
   for (size_t i = 0; i < kMinSupportedConcurrentDecoders; ++i)
     tvps[i]->Play();
@@ -228,7 +228,7 @@ TEST_F(VideoDecoderTest, FlushAtEndOfStream_MultipleConcurrentDecodes) {
   for (size_t i = 0; i < kMinSupportedConcurrentDecoders; ++i) {
     EXPECT_TRUE(tvps[i]->WaitForFlushDone());
     EXPECT_EQ(tvps[i]->GetFlushDoneCount(), 1u);
-    EXPECT_EQ(tvps[i]->GetFrameDecodedCount(), g_env->video_->NumFrames());
+    EXPECT_EQ(tvps[i]->GetFrameDecodedCount(), g_env->Video()->NumFrames());
     EXPECT_TRUE(tvps[i]->WaitForFrameProcessors());
   }
 }
@@ -240,20 +240,20 @@ TEST_F(VideoDecoderTest, FlushAtEndOfStream_MultipleConcurrentDecodes) {
 // test is only ran when --disable_validator is specified, and will be
 // deprecated in the future.
 TEST_F(VideoDecoderTest, FlushAtEndOfStream_RenderThumbnails) {
-  if (g_env->enable_validator_)
+  if (g_env->IsValidatorEnabled())
     GTEST_SKIP();
 
   VideoDecoderClientConfig config;
   config.allocation_mode = AllocationMode::kAllocate;
   auto tvp = CreateVideoPlayer(
-      g_env->video_, config,
-      FrameRendererThumbnail::Create(g_env->video_->ThumbnailChecksums()));
+      g_env->Video(), config,
+      FrameRendererThumbnail::Create(g_env->Video()->ThumbnailChecksums()));
 
   tvp->Play();
   EXPECT_TRUE(tvp->WaitForFlushDone());
 
   EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
-  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
+  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->Video()->NumFrames());
   EXPECT_TRUE(tvp->WaitForFrameProcessors());
   EXPECT_TRUE(static_cast<FrameRendererThumbnail*>(tvp->GetFrameRenderer())
                   ->ValidateThumbnail());
@@ -280,31 +280,20 @@ int main(int argc, char** argv) {
   media::test::Video::SetTestDataPath(media::GetTestDataPath());
 
   // Check if a video was specified on the command line.
-  std::unique_ptr<media::test::Video> video;
   base::CommandLine::StringVector args = cmd_line->GetArgs();
-  if (args.size() >= 1) {
-    video = std::make_unique<media::test::Video>(base::FilePath(args[0]));
-    if (!video->Load()) {
-      LOG(ERROR) << "Failed to load " << args[0];
-      return 0;
-    }
-  }
-
-  // Set up our test environment.
-  media::test::g_env = static_cast<media::test::VideoPlayerTestEnvironment*>(
-      testing::AddGlobalTestEnvironment(
-          new media::test::VideoPlayerTestEnvironment(
-              video ? video.get()
-                    : &media::test::kDefaultTestVideoCollection[0])));
+  base::FilePath video_path =
+      (args.size() >= 1) ? base::FilePath(args[0]) : base::FilePath();
 
   // Parse command line arguments.
+  bool enable_validator = true;
+  bool output_frames = false;
   base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
   for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();
        it != switches.end(); ++it) {
     if (it->first == "disable_validator") {
-      media::test::g_env->enable_validator_ = false;
+      enable_validator = false;
     } else if (it->first == "output_frames") {
-      media::test::g_env->output_frames_ = true;
+      output_frames = true;
     } else if (it->first.find("gtest_") == 0 || it->first == "v" ||
                it->first == "vmodule") {
       // Ignore
@@ -314,6 +303,16 @@ int main(int argc, char** argv) {
       return 0;
     }
   }
+
+  // Set up our test environment.
+  media::test::VideoPlayerTestEnvironment* test_environment =
+      media::test::VideoPlayerTestEnvironment::Create(
+          video_path, enable_validator, output_frames);
+  if (!test_environment)
+    return 0;
+
+  media::test::g_env = static_cast<media::test::VideoPlayerTestEnvironment*>(
+      testing::AddGlobalTestEnvironment(test_environment));
 
   return RUN_ALL_TESTS();
 }

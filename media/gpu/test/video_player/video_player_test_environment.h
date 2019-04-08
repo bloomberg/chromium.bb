@@ -26,7 +26,9 @@ class Video;
 // the entire test run.
 class VideoPlayerTestEnvironment : public ::testing::Environment {
  public:
-  explicit VideoPlayerTestEnvironment(const Video* video);
+  static VideoPlayerTestEnvironment* Create(const base::FilePath& video_path,
+                                            bool enable_validator,
+                                            bool output_frames);
   ~VideoPlayerTestEnvironment() override;
 
   // Set up the video decode test environment, only called once.
@@ -34,12 +36,23 @@ class VideoPlayerTestEnvironment : public ::testing::Environment {
   // Tear down the video decode test environment, only called once.
   void TearDown() override;
 
-  std::unique_ptr<base::test::ScopedTaskEnvironment> task_environment_;
-  const Video* video_ = nullptr;
-  bool enable_validator_ = true;
-  bool output_frames_ = false;
+  // Get the video the tests will be ran on.
+  const media::test::Video* Video() const;
+  // Check whether frame validation is enabled.
+  bool IsValidatorEnabled() const;
+  // Check whether outputting frames is enabled.
+  bool IsFramesOutputEnabled() const;
 
  private:
+  VideoPlayerTestEnvironment(std::unique_ptr<media::test::Video> video,
+                             bool enable_validator,
+                             bool output_frames);
+
+  std::unique_ptr<base::test::ScopedTaskEnvironment> task_environment_;
+  const std::unique_ptr<media::test::Video> video_;
+  const bool enable_validator_;
+  const bool output_frames_;
+
   // An exit manager is required to run callbacks on shutdown.
   base::AtExitManager at_exit_manager;
 
