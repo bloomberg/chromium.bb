@@ -52,6 +52,7 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
+#include "chrome/browser/download/download_manager_utils.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -190,9 +191,7 @@
 
 #endif
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/android/download/download_manager_service.h"
-#else
+#if !defined(OS_ANDROID)
 #include "chrome/services/app_service/app_service.h"
 #include "chrome/services/app_service/public/mojom/constants.mojom.h"
 #include "components/zoom/zoom_event_manager.h"
@@ -1330,12 +1329,7 @@ std::string ProfileImpl::GetMediaDeviceIDSalt() {
 
 download::InProgressDownloadManager*
 ProfileImpl::RetriveInProgressDownloadManager() {
-#if defined(OS_ANDROID)
-  return DownloadManagerService::GetInstance()
-      ->RetriveInProgressDownloadManager(this);
-#else
-  return nullptr;
-#endif
+  return DownloadManagerUtils::RetrieveInProgressDownloadManager(this);
 }
 
 bool ProfileImpl::IsSameProfile(Profile* profile) {
