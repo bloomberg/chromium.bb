@@ -402,7 +402,8 @@ class BackgroundSyncManagerTest
   void InitFailedSyncEventTest() {
     SetupForSyncEvent(base::BindRepeating(
         &BackgroundSyncManagerTest::DispatchSyncStatusCallback,
-        base::Unretained(this), blink::ServiceWorkerStatusCode::kErrorFailed));
+        base::Unretained(this),
+        blink::ServiceWorkerStatusCode::kErrorEventWaitUntilRejected));
   }
 
   void DispatchSyncDelayedCallback(
@@ -913,7 +914,7 @@ TEST_F(BackgroundSyncManagerTest, ReregisterMidSyncFirstAttemptFails) {
   // The first sync attempt fails.
   ASSERT_TRUE(sync_fired_callback_);
   std::move(sync_fired_callback_)
-      .Run(blink::ServiceWorkerStatusCode::kErrorFailed);
+      .Run(blink::ServiceWorkerStatusCode::kErrorEventWaitUntilRejected);
   base::RunLoop().RunUntilIdle();
 
   // It should fire again since it was reregistered mid-sync.
@@ -1547,7 +1548,7 @@ TEST_F(BackgroundSyncManagerTest, EmulateDispatchSyncEvent) {
   InitSyncEventTest();
   bool was_called = false;
   blink::ServiceWorkerStatusCode code =
-      blink::ServiceWorkerStatusCode::kErrorFailed;
+      blink::ServiceWorkerStatusCode::kErrorEventWaitUntilRejected;
   background_sync_manager_->EmulateDispatchSyncEvent(
       "emulated_tag", sw_registration_1_->active_version(), false,
       base::BindOnce(EmulateDispatchSyncEventCallback, &was_called, &code));
@@ -1566,7 +1567,7 @@ TEST_F(BackgroundSyncManagerTest, EmulateDispatchSyncEvent) {
       base::BindOnce(EmulateDispatchSyncEventCallback, &was_called, &code));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(was_called);
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorNetwork, code);
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorEventWaitUntilRejected, code);
 
   background_sync_manager_->EmulateServiceWorkerOffline(sw_registration_id_1_,
                                                         false);
@@ -1579,7 +1580,7 @@ TEST_F(BackgroundSyncManagerTest, EmulateDispatchSyncEvent) {
       base::BindOnce(EmulateDispatchSyncEventCallback, &was_called, &code));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(was_called);
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorNetwork, code);
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorEventWaitUntilRejected, code);
 
   SetNetwork(network::mojom::ConnectionType::CONNECTION_WIFI);
   was_called = false;
@@ -1630,6 +1631,47 @@ TEST_F(BackgroundSyncManagerTest, EventsLoggedForRegistration) {
     test_background_sync_manager_->RunDelayedTask();
     base::RunLoop().RunUntilIdle();
     EXPECT_FALSE(GetRegistration(sync_options_1_));
+  }
+}
+
+TEST_F(BackgroundSyncManagerTest, UkmRecordedAtCompletion) {
+  InitSyncEventTest();
+  {
+    base::HistogramTester histogram_tester;
+
+    EXPECT_TRUE(Register(sync_options_1_));
+
+    test_background_sync_manager_->RunDelayedTask();
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_FALSE(GetRegistration(sync_options_1_));
+
+    histogram_tester.ExpectBucketCount(
+        "BackgroundSync.Registration.OneShot.EventSucceededAtCompletion", true,
+        1);
+    histogram_tester.ExpectBucketCount(
+        "BackgroundSync.Registration.OneShot.NumAttemptsForSuccessfulEvent", 1,
+        1);
+  }
+
+  SetMaxSyncAttemptsAndRestartManager(1);
+  InitFailedSyncEventTest();
+  {
+    base::HistogramTester histogram_tester;
+
+    EXPECT_TRUE(Register(sync_options_2_));
+
+    test_background_sync_manager_->RunDelayedTask();
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_FALSE(GetRegistration(sync_options_2_));
+
+    histogram_tester.ExpectBucketCount(
+        "BackgroundSync.Registration.OneShot.EventSucceededAtCompletion", false,
+        1);
+    histogram_tester.ExpectBucketCount(
+        "BackgroundSync.Registration.OneShot.NumAttemptsForSuccessfulEvent", 1,
+        0);
   }
 }
 

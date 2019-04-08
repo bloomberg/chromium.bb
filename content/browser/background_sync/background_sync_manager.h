@@ -287,7 +287,7 @@ class CONTENT_EXPORT BackgroundSyncManager
       base::OnceClosure callback);
   void EventCompleteDidGetDelay(
       blink::mojom::BackgroundSyncRegistrationInfoPtr registration_info,
-      bool succeeded,
+      blink::ServiceWorkerStatusCode status_code,
       const url::Origin& origin,
       base::OnceClosure callback,
       base::TimeDelta delay);
@@ -311,6 +311,9 @@ class CONTENT_EXPORT BackgroundSyncManager
   // SetMaxSyncAttempts callback
   void SetMaxSyncAttemptsImpl(int max_sync_attempts,
                               base::OnceClosure callback);
+
+  // Whether an event should be logged for debuggability.
+  bool ShouldLogToDevTools(blink::mojom::BackgroundSyncType sync_type);
 
   base::OnceClosure MakeEmptyCompletion();
 
