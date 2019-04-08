@@ -19634,4 +19634,381 @@ TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest, ReportElapsedTime) {
 
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
+TEST_F(HttpNetworkTransactionTest, ZeroRTTDoesntConfirm) {
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("https://www.example.org/");
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  MockWrite data_writes[] = {
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+
+  // The proxy responds to the connect with a 407, using a persistent
+  // connection.
+  MockRead data_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead("Content-Length: 1\r\n\r\n"),
+      MockRead(SYNCHRONOUS, "1"),
+  };
+
+  StaticSocketDataProvider data(data_reads, data_writes);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  ssl.confirm = MockConfirm(SYNCHRONOUS, OK);
+  session_deps_.enable_early_data = true;
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  TestCompletionCallback callback;
+  auto trans =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+
+  int rv = trans->Start(&request, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  rv = callback.WaitForResult();
+  EXPECT_THAT(rv, IsOk());
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
+  EXPECT_EQ(200, response->headers->response_code());
+  EXPECT_EQ(1, response->headers->GetContentLength());
+
+  // Check that ConfirmHandshake wasn't called.
+  ASSERT_FALSE(ssl.ConfirmDataConsumed());
+  ASSERT_TRUE(ssl.WriteBeforeConfirm());
+
+  trans.reset();
+
+  session->CloseAllConnections();
+}
+
+TEST_F(HttpNetworkTransactionTest, ZeroRTTSyncConfirmSyncWrite) {
+  HttpRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("https://www.example.org/");
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  MockWrite data_writes[] = {
+      MockWrite(SYNCHRONOUS,
+                "POST / HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: keep-alive\r\n"
+                "Content-Length: 0\r\n\r\n"),
+  };
+
+  // The proxy responds to the connect with a 407, using a persistent
+  // connection.
+  MockRead data_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead("Content-Length: 1\r\n\r\n"),
+      MockRead(SYNCHRONOUS, "1"),
+  };
+
+  StaticSocketDataProvider data(data_reads, data_writes);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  ssl.confirm = MockConfirm(SYNCHRONOUS, OK);
+  session_deps_.enable_early_data = true;
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  TestCompletionCallback callback;
+  auto trans =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+
+  int rv = trans->Start(&request, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  rv = callback.WaitForResult();
+  EXPECT_THAT(rv, IsOk());
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
+  EXPECT_EQ(200, response->headers->response_code());
+  EXPECT_EQ(1, response->headers->GetContentLength());
+
+  // Check that the Write didn't get called before ConfirmHandshake completed.
+  ASSERT_FALSE(ssl.WriteBeforeConfirm());
+
+  trans.reset();
+
+  session->CloseAllConnections();
+}
+
+TEST_F(HttpNetworkTransactionTest, ZeroRTTSyncConfirmAsyncWrite) {
+  HttpRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("https://www.example.org/");
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  MockWrite data_writes[] = {
+      MockWrite(ASYNC,
+                "POST / HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: keep-alive\r\n"
+                "Content-Length: 0\r\n\r\n"),
+  };
+
+  // The proxy responds to the connect with a 407, using a persistent
+  // connection.
+  MockRead data_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead("Content-Length: 1\r\n\r\n"),
+      MockRead(SYNCHRONOUS, "1"),
+  };
+
+  StaticSocketDataProvider data(data_reads, data_writes);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  ssl.confirm = MockConfirm(SYNCHRONOUS, OK);
+  session_deps_.enable_early_data = true;
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  TestCompletionCallback callback;
+  auto trans =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+
+  int rv = trans->Start(&request, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  rv = callback.WaitForResult();
+  EXPECT_THAT(rv, IsOk());
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
+  EXPECT_EQ(200, response->headers->response_code());
+  EXPECT_EQ(1, response->headers->GetContentLength());
+
+  // Check that the Write didn't get called before ConfirmHandshake completed.
+  ASSERT_FALSE(ssl.WriteBeforeConfirm());
+
+  trans.reset();
+
+  session->CloseAllConnections();
+}
+
+TEST_F(HttpNetworkTransactionTest, ZeroRTTAsyncConfirmSyncWrite) {
+  HttpRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("https://www.example.org/");
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  MockWrite data_writes[] = {
+      MockWrite(SYNCHRONOUS,
+                "POST / HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: keep-alive\r\n"
+                "Content-Length: 0\r\n\r\n"),
+  };
+
+  // The proxy responds to the connect with a 407, using a persistent
+  // connection.
+  MockRead data_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead("Content-Length: 1\r\n\r\n"),
+      MockRead(SYNCHRONOUS, "1"),
+  };
+
+  StaticSocketDataProvider data(data_reads, data_writes);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  ssl.confirm = MockConfirm(ASYNC, OK);
+  session_deps_.enable_early_data = true;
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  TestCompletionCallback callback;
+  auto trans =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+
+  int rv = trans->Start(&request, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  rv = callback.WaitForResult();
+  EXPECT_THAT(rv, IsOk());
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
+  EXPECT_EQ(200, response->headers->response_code());
+  EXPECT_EQ(1, response->headers->GetContentLength());
+
+  // Check that the Write didn't get called before ConfirmHandshake completed.
+  ASSERT_FALSE(ssl.WriteBeforeConfirm());
+
+  trans.reset();
+
+  session->CloseAllConnections();
+}
+
+TEST_F(HttpNetworkTransactionTest, ZeroRTTAsyncConfirmAsyncWrite) {
+  HttpRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("https://www.example.org/");
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  MockWrite data_writes[] = {
+      MockWrite(ASYNC,
+                "POST / HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: keep-alive\r\n"
+                "Content-Length: 0\r\n\r\n"),
+  };
+
+  // The proxy responds to the connect with a 407, using a persistent
+  // connection.
+  MockRead data_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead("Content-Length: 1\r\n\r\n"),
+      MockRead(SYNCHRONOUS, "1"),
+  };
+
+  StaticSocketDataProvider data(data_reads, data_writes);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  ssl.confirm = MockConfirm(ASYNC, OK);
+  session_deps_.enable_early_data = true;
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  TestCompletionCallback callback;
+  auto trans =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+
+  int rv = trans->Start(&request, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  rv = callback.WaitForResult();
+  EXPECT_THAT(rv, IsOk());
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
+  EXPECT_EQ(200, response->headers->response_code());
+  EXPECT_EQ(1, response->headers->GetContentLength());
+
+  // Check that the Write didn't get called before ConfirmHandshake completed.
+  ASSERT_FALSE(ssl.WriteBeforeConfirm());
+
+  trans.reset();
+
+  session->CloseAllConnections();
+}
+
+TEST_F(HttpNetworkTransactionTest, ZeroRTTConfirmErrorSync) {
+  HttpRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("https://www.example.org/");
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  MockWrite data_writes[] = {
+      MockWrite("POST / HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: keep-alive\r\n"
+                "Content-Length: 0\r\n\r\n"),
+  };
+
+  // The proxy responds to the connect with a 407, using a persistent
+  // connection.
+  MockRead data_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead("Content-Length: 1\r\n\r\n"),
+      MockRead(SYNCHRONOUS, "1"),
+  };
+
+  StaticSocketDataProvider data(data_reads, data_writes);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  ssl.confirm = MockConfirm(SYNCHRONOUS, ERR_SSL_PROTOCOL_ERROR);
+  session_deps_.enable_early_data = true;
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  TestCompletionCallback callback;
+  auto trans =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+
+  int rv = trans->Start(&request, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  rv = callback.WaitForResult();
+  EXPECT_THAT(rv, IsError(ERR_SSL_PROTOCOL_ERROR));
+
+  // Check that the Write didn't get called before ConfirmHandshake completed.
+  ASSERT_FALSE(ssl.WriteBeforeConfirm());
+
+  trans.reset();
+
+  session->CloseAllConnections();
+}
+
+TEST_F(HttpNetworkTransactionTest, ZeroRTTConfirmErrorAsync) {
+  HttpRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("https://www.example.org/");
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  MockWrite data_writes[] = {
+      MockWrite("POST / HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: keep-alive\r\n"
+                "Content-Length: 0\r\n\r\n"),
+  };
+
+  // The proxy responds to the connect with a 407, using a persistent
+  // connection.
+  MockRead data_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead("Content-Length: 1\r\n\r\n"),
+      MockRead(SYNCHRONOUS, "1"),
+  };
+
+  StaticSocketDataProvider data(data_reads, data_writes);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  ssl.confirm = MockConfirm(ASYNC, ERR_SSL_PROTOCOL_ERROR);
+  session_deps_.enable_early_data = true;
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  TestCompletionCallback callback;
+  auto trans =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+
+  int rv = trans->Start(&request, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  rv = callback.WaitForResult();
+  EXPECT_THAT(rv, IsError(ERR_SSL_PROTOCOL_ERROR));
+
+  // Check that the Write didn't get called before ConfirmHandshake completed.
+  ASSERT_FALSE(ssl.WriteBeforeConfirm());
+
+  trans.reset();
+
+  session->CloseAllConnections();
+}
+
 }  // namespace net

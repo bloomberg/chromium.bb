@@ -623,8 +623,9 @@ int HttpProxyConnectJob::DoSpdyProxyCreateStream() {
   spdy_stream_request_ = std::make_unique<SpdyStreamRequest>();
   return spdy_stream_request_->StartRequest(
       SPDY_BIDIRECTIONAL_STREAM, spdy_session,
-      GURL("https://" + params_->endpoint().ToString()), kH2QuicTunnelPriority,
-      socket_tag(), spdy_session->net_log(),
+      GURL("https://" + params_->endpoint().ToString()),
+      false /* no early data */, kH2QuicTunnelPriority, socket_tag(),
+      spdy_session->net_log(),
       base::BindOnce(&HttpProxyConnectJob::OnIOComplete,
                      base::Unretained(this)),
       params_->traffic_annotation());
