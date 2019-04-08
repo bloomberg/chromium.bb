@@ -742,9 +742,11 @@
                   'ui/login/',
     },
     'chromeos_net': {
-      'filepath': 'chromeos/network/|'\
+      'filepath': 'ash/system/network/|'\
+                  'chromeos/network/|'\
                   'chrome/browser/chromeos/net/|'\
                   'chrome/browser/extensions/api/networking_private/|'\
+                  'chrome/browser/resources/settings/internet_page/|'\
                   'extensions/browser/api/networking_private/|'\
                   'ui/chromeos/network/',
     },
@@ -2136,7 +2138,9 @@
                        'jdufault+watch@chromium.org',
                        'rsorokin+watch@chromium.org',
                        'tbarzic+watch@chromium.org'],
-    'chromeos_net': ['stevenjb+watch@chromium.org'],
+    'chromeos_net': ['azeemarshad+watch-network@chromium.org',
+                     'khorimoto+watch-network@chromium.org',
+                     'stevenjb+watch-network@chromium.org'],
     'chromeos_power': ['derat+watch@chromium.org'],
     'chromeos_timezone': ['alemate+watch@chromium.org'],
     'chromeos_webui': ['alemate+watch@chromium.org'],
