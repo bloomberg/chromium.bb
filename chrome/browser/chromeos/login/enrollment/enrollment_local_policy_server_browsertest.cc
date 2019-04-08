@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/enrollment_ui_mixin.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
@@ -82,6 +83,7 @@ class EnrollmentLocalPolicyServerBase : public OobeBaseTest {
   }
 
   LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
+  test::EnrollmentUIMixin enrollment_ui_{&mixin_host_};
   FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
 
  private:
@@ -134,8 +136,55 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase, ManualEnrollment) {
   enrollment_screen()->OnLoginDone(FakeGaiaMixin::kFakeUserEmail,
                                    FakeGaiaMixin::kFakeAuthCode);
 
-  OobeBaseTest::WaitForEnrollmentSuccess();
-  // TODO(rsorokin): Interact with attribute prompt step.
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepDeviceAttributes);
+  enrollment_ui_.SubmitDeviceAttributes(test::values::kAssetId,
+                                        test::values::kLocation);
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
+  EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
+}
+
+// Simple manual enrollment with only license type available.
+// Client should automatically select the only available license type,
+// so no license selection UI should be displayed.
+IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
+                       ManualEnrollmentWithSingleLicense) {
+  local_policy_mixin_.ExpectAvailableLicenseCount(
+      5 /* perpetual */, 0 /* annual */, 0 /* kiosk */);
+  host()->StartWizard(OobeScreen::SCREEN_OOBE_ENROLLMENT);
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
+
+  ASSERT_FALSE(StartupUtils::IsDeviceRegistered());
+  enrollment_screen()->OnLoginDone(FakeGaiaMixin::kFakeUserEmail,
+                                   FakeGaiaMixin::kFakeAuthCode);
+
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepDeviceAttributes);
+  enrollment_ui_.SubmitDeviceAttributes(test::values::kAssetId,
+                                        test::values::kLocation);
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
+  EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
+}
+
+// Simple manual enrollment with license selection.
+// Enrollment selection UI should be displayed during enrollment.
+IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
+                       ManualEnrollmentWithMultipleLicenses) {
+  local_policy_mixin_.ExpectAvailableLicenseCount(
+      5 /* perpetual */, 5 /* annual */, 5 /* kiosk */);
+  host()->StartWizard(OobeScreen::SCREEN_OOBE_ENROLLMENT);
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
+
+  ASSERT_FALSE(StartupUtils::IsDeviceRegistered());
+  enrollment_screen()->OnLoginDone(FakeGaiaMixin::kFakeUserEmail,
+                                   FakeGaiaMixin::kFakeAuthCode);
+
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepLicenses);
+  enrollment_ui_.SelectEnrollmentLicense(test::values::kLicenseTypeAnnual);
+  enrollment_ui_.UseSelectedLicense();
+
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepDeviceAttributes);
+  enrollment_ui_.SubmitDeviceAttributes(test::values::kAssetId,
+                                        test::values::kLocation);
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
 
@@ -205,7 +254,7 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, Attestation) {
       kTestDomain));
 
   host()->StartWizard(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
-  OobeBaseTest::WaitForEnrollmentSuccess();
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepDeviceAttributes);
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
 

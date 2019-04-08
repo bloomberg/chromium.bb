@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/enrollment_helper_mixin.h"
+#include "chrome/browser/chromeos/login/test/enrollment_ui_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -147,13 +148,6 @@ class EnterpriseEnrollmentTestBase : public LoginManagerTest {
     ExecutePendingJavaScript();
   }
 
-  // Fills out the UI with device attribute information and submits it.
-  void SubmitAttributePromptUpdate() {
-    // Fill out the attribute prompt info and submit it.
-    test::OobeJS().TypeIntoPath("asset_id", {"oauth-enroll-asset-id"});
-    test::OobeJS().TypeIntoPath("location", {"oauth-enroll-location"});
-    test::OobeJS().TapOn("enroll-attributes-submit-button");
-  }
 
   // Completes the enrollment process.
   void CompleteEnrollment() {
@@ -169,23 +163,6 @@ class EnterpriseEnrollmentTestBase : public LoginManagerTest {
   // means that the JS script ordering is not preserved between the login code
   // and the test code.
   void ExecutePendingJavaScript() { test::OobeJS().Evaluate(";"); }
-
-  // Returns true if there are any DOM elements with the given class.
-  bool IsStepDisplayed(const std::string& step) {
-    const std::string js =
-        "document.getElementsByClassName('oauth-enroll-state-" + step +
-        "').length";
-    int count = test::OobeJS().GetInt(js);
-    return count > 0;
-  }
-
-  // Waits until specific enrollment step is displayed.
-  void WaitForStep(const std::string& step) {
-    const std::string js =
-        "document.getElementsByClassName('oauth-enroll-state-" + step +
-        "').length > 0";
-    test::OobeJS().CreateWaiter(js)->Wait();
-  }
 
   // Setup the enrollment screen.
   void ShowEnrollmentScreen() {
@@ -205,6 +182,7 @@ class EnterpriseEnrollmentTestBase : public LoginManagerTest {
   }
 
  protected:
+  test::EnrollmentUIMixin enrollment_ui_{&mixin_host_};
   test::EnrollmentHelperMixin enrollment_helper_{&mixin_host_};
 
  private:
@@ -240,7 +218,8 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
   }
 
   void CheckActiveDirectoryCredentialsShown() {
-    EXPECT_TRUE(IsStepDisplayed("ad-join"));
+    EXPECT_TRUE(
+        enrollment_ui_.IsStepDisplayed(test::ui::kEnrollmentStepADJoin));
     test::OobeJS().ExpectVisiblePath({kAdDialog, kAdCredentialsStep});
     test::OobeJS().ExpectHiddenPath({kAdDialog, kAdUnlockConfigurationStep});
   }
@@ -253,7 +232,8 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
   }
 
   void CheckActiveDirectoryUnlockConfigurationShown() {
-    EXPECT_TRUE(IsStepDisplayed("ad-join"));
+    EXPECT_TRUE(
+        enrollment_ui_.IsStepDisplayed(test::ui::kEnrollmentStepADJoin));
     test::OobeJS().ExpectHiddenPath({kAdDialog, kAdCredentialsStep});
     test::OobeJS().ExpectVisiblePath({kAdDialog, kAdUnlockConfigurationStep});
   }
@@ -456,8 +436,7 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
   ExecutePendingJavaScript();
 
   // Verify that the error page is displayed.
-  WaitForStep("error");
-  EXPECT_FALSE(IsStepDisplayed("success"));
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
 }
 
 // Shows the enrollment screen and simulates a successful enrollment. Verifies
@@ -472,8 +451,7 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
   SubmitEnrollmentCredentials();
 
   // Verify that the success page is displayed.
-  WaitForStep("success");
-  EXPECT_FALSE(IsStepDisplayed("error"));
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
 }
 
 // Shows the enrollment screen and mocks the enrollment helper to request an
@@ -485,19 +463,17 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
   ShowEnrollmentScreen();
   enrollment_helper_.ExpectEnrollmentMode(
       policy::EnrollmentConfig::MODE_MANUAL);
-  enrollment_helper_.ExpectAttributePromptUpdate("asset_id", "location");
+  enrollment_helper_.ExpectAttributePromptUpdate(test::values::kAssetId,
+                                                 test::values::kLocation);
   enrollment_helper_.ExpectSuccessfulOAuthEnrollment();
   SubmitEnrollmentCredentials();
 
   // Make sure the attribute-prompt view is open.
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepDeviceAttributes);
 
-  WaitForStep("attribute-prompt");
-  EXPECT_TRUE(IsStepDisplayed("attribute-prompt"));
-  EXPECT_FALSE(IsStepDisplayed("success"));
-  EXPECT_FALSE(IsStepDisplayed("error"));
-
-  SubmitAttributePromptUpdate();
-  WaitForStep("success");
+  enrollment_ui_.SubmitDeviceAttributes(test::values::kAssetId,
+                                        test::values::kLocation);
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
 }
 
 // Shows the enrollment screen and mocks the enrollment helper to show license
@@ -517,16 +493,14 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest, TestLicenseSelection) {
   SubmitEnrollmentCredentials();
 
   // Make sure the license selection screen is open.
-  WaitForStep("license");
-  // Click on third option.
-  test::OobeJS().SelectRadioPath(
-      {"oauth-enroll-license-ui", "license-option-kiosk"});
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepLicenses);
+  // Click on Kiosk option.
+  enrollment_ui_.SelectEnrollmentLicense(test::values::kLicenseTypeKiosk);
   // Click on second option. As there is 0 annual licenses, it should not be
   // selected.
-  test::OobeJS().SelectRadioPath(
-      {"oauth-enroll-license-ui", "license-option-annual"});
-  test::OobeJS().TapOnPath({"oauth-enroll-license-ui", "next"});
-  WaitForStep("success");
+  enrollment_ui_.SelectEnrollmentLicense(test::values::kLicenseTypeAnnual);
+  enrollment_ui_.UseSelectedLicense();
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
 }
 
 // Shows the enrollment screen and mocks the enrollment helper to show Active
@@ -553,12 +527,11 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
   SubmitActiveDirectoryCredentials("machine_name", "" /* machine_dn */, "all",
                                    kAdTestUser, "password");
   WaitForMessage(&message_queue, "\"ShowSpinnerScreen\"");
-  EXPECT_FALSE(IsStepDisplayed("ad-join"));
+  EXPECT_FALSE(enrollment_ui_.IsStepDisplayed(test::ui::kEnrollmentStepADJoin));
 
   CompleteEnrollment();
   // Verify that the success page is displayed.
-  WaitForStep("success");
-  EXPECT_FALSE(IsStepDisplayed("error"));
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
 }
 
 // Verifies that the distinguished name specified on the Active Directory join
@@ -587,12 +560,11 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
                                    "" /* encryption_types */, kAdTestUser,
                                    "password");
   WaitForMessage(&message_queue, "\"ShowSpinnerScreen\"");
-  EXPECT_FALSE(IsStepDisplayed("ad-join"));
+  EXPECT_FALSE(enrollment_ui_.IsStepDisplayed(test::ui::kEnrollmentStepADJoin));
 
   CompleteEnrollment();
   // Verify that the success page is displayed.
-  WaitForStep("success");
-  EXPECT_FALSE(IsStepDisplayed("error"));
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
 }
 
 // Shows the enrollment screen and mocks the enrollment helper to show Active
@@ -616,7 +588,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
   SubmitActiveDirectoryCredentials("too_long_machine_name", "" /* machine_dn */,
                                    "" /* encryption_types */, kAdTestUser,
                                    "" /* password */);
-  EXPECT_TRUE(IsStepDisplayed("ad-join"));
+  EXPECT_TRUE(enrollment_ui_.IsStepDisplayed(test::ui::kEnrollmentStepADJoin));
   ExpectElementValid(kAdMachineNameInput, true);
   ExpectElementValid(kAdUsernameInput, true);
   ExpectElementValid(kAdPasswordInput, false);
@@ -626,7 +598,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
                                    "" /* encryption_types */, kAdTestUser,
                                    "password");
   WaitForMessage(&message_queue, "\"ShowJoinDomainError\"");
-  EXPECT_TRUE(IsStepDisplayed("ad-join"));
+  EXPECT_TRUE(enrollment_ui_.IsStepDisplayed(test::ui::kEnrollmentStepADJoin));
   ExpectElementValid(kAdMachineNameInput, false);
   ExpectElementValid(kAdUsernameInput, true);
   ExpectElementValid(kAdPasswordInput, true);
@@ -636,7 +608,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
                                    "" /* encryption_types */, "test_user",
                                    "password");
   WaitForMessage(&message_queue, "\"ShowJoinDomainError\"");
-  EXPECT_TRUE(IsStepDisplayed("ad-join"));
+  EXPECT_TRUE(enrollment_ui_.IsStepDisplayed(test::ui::kEnrollmentStepADJoin));
   ExpectElementValid(kAdMachineNameInput, true);
   ExpectElementValid(kAdUsernameInput, false);
   ExpectElementValid(kAdPasswordInput, true);
@@ -659,9 +631,9 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
   SubmitActiveDirectoryCredentials("machine_name", "" /* machine_dn */,
                                    "legacy", kAdTestUser, "password");
   WaitForMessage(&message_queue, "\"ShowADJoinError\"");
-  WaitForStep("active-directory-join-error");
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepADJoinError);
   test::OobeJS().TapOnPath({kAdErrorCard, kSubmitButton});
-  WaitForStep("ad-join");
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepADJoin);
 }
 
 // Check that configuration for the streamline Active Directory domain join

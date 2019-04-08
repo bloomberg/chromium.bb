@@ -173,14 +173,6 @@ void OobeBaseTest::WaitForGaiaPageEvent(const std::string& event) {
   } while (message != "\"Done\"");
 }
 
-void OobeBaseTest::WaitForEnrollmentSuccess() {
-  test::OobeJS()
-      .CreateWaiter(
-          "document.getElementsByClassName('oauth-enroll-state-attribute-"
-          "prompt').length > 0")
-      ->Wait();
-}
-
 void OobeBaseTest::WaitForSigninScreen() {
   WizardController* wizard_controller = WizardController::default_controller();
   if (wizard_controller)
