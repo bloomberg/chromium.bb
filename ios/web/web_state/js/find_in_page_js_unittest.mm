@@ -346,4 +346,31 @@ TEST_F(FindInPageJsTest, FindHighlightMatchAtInvalidIndex) {
                   @"document.getElementsByClassName('find_selected').length"));
 }
 
+// Tests that FindInPage works when searching for strings with non-ascii
+// characters.
+TEST_F(FindInPageJsTest, SearchForNonAscii) {
+  ASSERT_TRUE(LoadHtml("<span>école francais</span>"));
+  base::TimeDelta kCallJavascriptFunctionTimeout =
+      base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return frames_manager()->GetAllWebFrames().size() == 1;
+  }));
+  __block bool message_received = false;
+  std::vector<base::Value> params;
+  params.push_back(base::Value("école"));
+  params.push_back(base::Value(kPumpSearchTimeout));
+  main_web_frame()->CallJavaScriptFunction(
+      kFindInPageSearch, params, base::BindOnce(^(const base::Value* result) {
+        ASSERT_TRUE(result);
+        ASSERT_TRUE(result->is_double());
+        double count = result->GetDouble();
+        ASSERT_EQ(1.0, count);
+        message_received = true;
+      }),
+      kCallJavascriptFunctionTimeout);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return message_received;
+  }));
+}
+
 }  // namespace web

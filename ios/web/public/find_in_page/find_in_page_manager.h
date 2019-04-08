@@ -18,8 +18,7 @@ class FindInPageManagerDelegate;
 enum class FindInPageOptions {
   // Searches for a string. Highlights all matches. Selects and scrolls to the
   // first result if string is found. Selecting refers to highlighting in a
-  // unique manner different from the other matches. TODO(crbug.com/925149):
-  // Does not support strings with non-ascii.
+  // unique manner different from the other matches.
   FindInPageSearch = 1,
   // Selects and scrolls to the next result if there is one. Otherwise, nothing
   // will change. Loop back to the first result if currently on last result. If
