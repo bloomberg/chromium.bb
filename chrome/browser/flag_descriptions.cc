@@ -139,6 +139,11 @@ const char kAutofillNoLocalSaveOnUploadSuccessDescription[] =
     "When enabled, no local copy of server card will be saved when credit card "
     "upload succeeds.";
 
+const char kAutofillOffNoServerDataName[] = "Autofill Off No Server Data";
+const char kAutofillOffNoServerDataDescription[] =
+    "Disables Autofill for fields with autocomplete off that have no "
+    "crowd-sourced evidence that Autofill would be helpful.";
+
 const char kAutofillProfileClientValidationName[] =
     "Autofill Validates Profiles By Client";
 const char kAutofillProfileClientValidationDescription[] =

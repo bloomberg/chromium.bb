@@ -143,6 +143,10 @@ class FormStructureTest : public testing::Test {
   scoped_refptr<base::FieldTrial> field_trial_;
 };
 
+class ParameterizedFormStructureTest
+    : public FormStructureTest,
+      public testing::WithParamInterface<bool> {};
+
 TEST_F(FormStructureTest, FieldCount) {
   std::unique_ptr<FormStructure> form_structure;
   FormData form;
@@ -6582,6 +6586,81 @@ TEST_F(FormStructureTest, RationalizeRepreatedFields_LastFieldRationalized) {
   EXPECT_EQ(NAME_FULL, forms[0]->field(3)->Type().GetStorableType());
   EXPECT_EQ(ADDRESS_HOME_STATE, forms[0]->field(4)->Type().GetStorableType());
   EXPECT_EQ(ADDRESS_HOME_STATE, forms[0]->field(5)->Type().GetStorableType());
+}
+
+INSTANTIATE_TEST_SUITE_P(,
+                         ParameterizedFormStructureTest,
+                         testing::Values(true, false));
+
+// Tests that, when the flag is off, we will not set the predicted type to
+// unknown for fields that have no server data and autocomplete off, and when
+// the flag is ON, we will overwrite the predicted type.
+TEST_P(ParameterizedFormStructureTest,
+       NoServerData_AutocompleteOff_FlagDisabled_NoOverwrite) {
+  base::test::ScopedFeatureList scoped_features;
+
+  bool flag_enabled = GetParam();
+  scoped_features.InitWithFeatureState(features::kAutofillOffNoServerData,
+                                       flag_enabled);
+
+  FormData form;
+  form.origin = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+  field.should_autocomplete = false;
+
+  // Autocomplete Off, with server data.
+  field.label = ASCIIToUTF16("First Name");
+  field.name = ASCIIToUTF16("firstName");
+  form.fields.push_back(field);
+
+  // Autocomplete Off, without server data.
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("lastName");
+  form.fields.push_back(field);
+
+  // Autocomplete On, with server data.
+  field.should_autocomplete = true;
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("address");
+  form.fields.push_back(field);
+
+  // Autocomplete On, without server data.
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  form.fields.push_back(field);
+
+  AutofillQueryResponseContents response;
+  response.add_field()->set_overall_type_prediction(NAME_FIRST);
+  response.add_field()->set_overall_type_prediction(NO_SERVER_DATA);
+  response.add_field()->set_overall_type_prediction(NO_SERVER_DATA);
+  response.add_field()->set_overall_type_prediction(NO_SERVER_DATA);
+
+  std::string response_string;
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+
+  FormStructure form_structure(form);
+
+  // Will identify the sections based on the heuristics types.
+  form_structure.DetermineHeuristicTypes();
+
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  // Will call RationalizeFieldTypePredictions
+  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+
+  ASSERT_EQ(1U, forms.size());
+  ASSERT_EQ(4U, forms[0]->field_count());
+
+  // Only NAME_LAST should be affected by the flag.
+  EXPECT_EQ(flag_enabled ? UNKNOWN_TYPE : NAME_LAST,
+            forms[0]->field(1)->Type().GetStorableType());
+
+  EXPECT_EQ(NAME_FIRST, forms[0]->field(0)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_LINE1, forms[0]->field(2)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_COUNTRY, forms[0]->field(3)->Type().GetStorableType());
 }
 
 TEST_F(FormStructureTest, AllowBigForms) {

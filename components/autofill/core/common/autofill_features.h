@@ -40,6 +40,7 @@ extern const base::Feature kAutofillKeyboardAccessory;
 extern const base::Feature kAutofillManualFallback;
 extern const base::Feature kAutofillManualFallbackPhaseTwo;
 extern const base::Feature kAutofillMetadataUploads;
+extern const base::Feature kAutofillOffNoServerData;
 extern const base::Feature kAutofillOverrideWithRaterConsensus;
 extern const base::Feature kAutofillPreferServerNamePredictions;
 extern const base::Feature kAutofillProfileServerValidation;

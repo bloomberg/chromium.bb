@@ -1710,7 +1710,14 @@ void FormStructure::RationalizeRepeatedFields(
 void FormStructure::RationalizeFieldTypePredictions() {
   RationalizeCreditCardFieldPredictions();
   for (const auto& field : fields_) {
-    field->SetTypeTo(field->Type());
+    if (base::FeatureList::IsEnabled(features::kAutofillOffNoServerData) &&
+        !field->should_autocomplete && field->server_type() == NO_SERVER_DATA) {
+      // When the field has autocomplete off, and the server returned no
+      // prediction, then assume Autofill is not useful for the current field.
+      field->SetTypeTo(AutofillType(UNKNOWN_TYPE));
+    } else {
+      field->SetTypeTo(field->Type());
+    }
   }
 }
 
