@@ -257,23 +257,19 @@ class TabListMediator {
 
     private void onTabAdded(Tab tab, boolean onlyShowRelatedTabs) {
         List<Tab> related = getRelatedTabsForId(tab.getId());
+        int index;
         if (onlyShowRelatedTabs) {
-            int index = related.indexOf(tab);
-            assert index != -1;
-            addTabInfoToModel(tab, index, mTabModelSelector.getCurrentTab() == tab);
+            index = related.indexOf(tab);
+            if (index == -1) return;
         } else {
-            int index = TabModelUtils.getTabIndexById(
+            index = TabModelUtils.getTabIndexById(
                     mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(),
                     tab.getId());
-            if (related.size() > 1) {
-                // Skip all but one tab in a tab group.
-                if (index == TabList.INVALID_TAB_INDEX) return;
-                // TODO(wychen): the title (tab count in the group) is wrong when it's not the last
-                //  tab added in the group.
-            }
-            assert index != TabList.INVALID_TAB_INDEX;
-            addTabInfoToModel(tab, index, mTabModelSelector.getCurrentTab() == tab);
+            // TODO(wychen): the title (tab count in the group) is wrong when it's not the last
+            //  tab added in the group.
+            if (index == TabList.INVALID_TAB_INDEX) return;
         }
+        addTabInfoToModel(tab, index, mTabModelSelector.getCurrentTab() == tab);
     }
 
     /**
