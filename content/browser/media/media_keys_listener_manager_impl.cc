@@ -22,6 +22,10 @@
 #include "ui/base/now_playing/now_playing_info_center_delegate.h"
 #endif
 
+#if defined(OS_WIN)
+#include "content/browser/media/system_media_controls_notifier.h"
+#endif
+
 namespace content {
 
 MediaKeysListenerManagerImpl::ListeningData::ListeningData()
@@ -158,6 +162,12 @@ void MediaKeysListenerManagerImpl::EnsureAuxiliaryServices() {
             connector_, std::move(now_playing_info_center_delegate));
   }
 #endif
+
+#if defined(OS_WIN)
+  system_media_controls_notifier_ =
+      std::make_unique<SystemMediaControlsNotifier>(connector_);
+  system_media_controls_notifier_->Initialize();
+#endif  // defined(OS_WIN)
 
   auxiliary_services_started_ = true;
 }

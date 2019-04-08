@@ -2097,10 +2097,15 @@ jumbo_source_set("browser") {
       # with the windows 8 sdk it does the wrong thing.
       "__ATLHOST_H__",
     ]
+    sources += [
+      "media/system_media_controls_notifier.cc",
+      "media/system_media_controls_notifier.h",
+    ]
     deps += [
       "//third_party/blink/public/common:font_unique_name_table_proto",
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
+      "//ui/base/win/system_media_controls",
     ]
     libs += [
       "comctl32.lib",
