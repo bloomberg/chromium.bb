@@ -31,6 +31,7 @@ class FindInPageManagerImpl : public FindInPageManager,
   // FindInPageManager overrides
   void Find(NSString* query, FindInPageOptions options) override;
   void StopFinding() override;
+  bool CanSearchContent() override;
   FindInPageManagerDelegate* GetDelegate() override;
   void SetDelegate(FindInPageManagerDelegate* delegate) override;
 
