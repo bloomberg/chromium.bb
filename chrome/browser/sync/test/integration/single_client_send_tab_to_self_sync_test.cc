@@ -74,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest, IsOnMultipleDevices) {
 IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest, IsFlagEnabled) {
   ASSERT_TRUE(SetupSync());
 
-  EXPECT_TRUE(send_tab_to_self::IsFlagEnabled());
+  EXPECT_TRUE(send_tab_to_self::IsReceivingEnabled());
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest, ShouldOfferFeature) {

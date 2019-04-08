@@ -1732,13 +1732,15 @@ const char kSaveasMenuLabelExperimentDescription[] =
 
 const char kSendTabToSelfName[] = "Send tab to self";
 const char kSendTabToSelfDescription[] =
-    "Allows users to push tabs from Android devices to other synced "
-    "devices, in order to easily transition those tabs to the new device ";
+    "Allows users to receive tabs from other synced devices, in order to "
+    "easily transition those tabs to this device. This enables the sync "
+    "infrastructure for this feature.";
 
-const char kSendTabToSelfReceiveName[] = "Send tab to self receive";
-const char kSendTabToSelfReceiveDescription[] =
-    "Allows users to receive tabs that were pushed from other synced "
-    "devices, in order to easily transition those tabs to the new device ";
+const char kSendTabToSelfShowSendingUIName[] =
+    "Send tab to self show sending UI";
+const char kSendTabToSelfShowSendingUIDescription[] =
+    "Allows users to send tabs to other synced devices by accessing the "
+    "sending user interface. Requires Send tab to self to also be enabled";
 
 const char kServiceWorkerImportedScriptUpdateCheckName[] =
     "Enable update check for service worker importScripts() resources";

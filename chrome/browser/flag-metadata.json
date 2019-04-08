@@ -1622,7 +1622,7 @@
     "expiry_milestone": 77
   },
   {
-    "name": "enable-send-tab-to-self-receive",
+    "name": "enable-send-tab-to-self-show-sending-ui",
     "owners": [ "//components/send_tab_to_self/OWNERS" ],
     "expiry_milestone": 77
   },

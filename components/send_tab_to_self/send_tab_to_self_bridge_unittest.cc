@@ -11,9 +11,11 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/proto/send_tab_to_self.pb.h"
 #include "components/sync/device_info/local_device_info_provider_mock.h"
 #include "components/sync/model/entity_change.h"
@@ -76,6 +78,7 @@ class SendTabToSelfBridgeTest : public testing::Test {
   SendTabToSelfBridgeTest()
       : store_(syncer::ModelTypeStoreTestUtil::CreateInMemoryStoreForTest()) {
     provider_.Initialize("cache_guid", "machine");
+    scoped_feature_list_.InitAndEnableFeature(kSendTabToSelfShowSendingUI);
   }
 
   // Initialized the bridge based on the current local device and store. Can
@@ -175,6 +178,8 @@ class SendTabToSelfBridgeTest : public testing::Test {
   std::unique_ptr<SendTabToSelfBridge> bridge_;
 
   testing::NiceMock<MockSendTabToSelfModelObserver> mock_observer_;
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SendTabToSelfBridgeTest);
 };

@@ -9,9 +9,9 @@
 
 namespace send_tab_to_self {
 
-// If this feature is enabled, we handle notifying users of sent tabs even if
-// the sync feature is disabled.
-extern const base::Feature kSendTabToSelfReceive;
+// If this feature is enabled, we will display the UI to send tabs if the Sync
+// datatype is also enabled.
+extern const base::Feature kSendTabToSelfShowSendingUI;
 }  // namespace send_tab_to_self
 
 #endif  // COMPONENTS_SEND_TAB_TO_SELF_FEATURES_H_
