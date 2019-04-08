@@ -335,6 +335,7 @@ URLLoader::URLLoader(
                                   base::SequencedTaskRunnerHandle::Get()),
       want_raw_headers_(request.report_raw_headers),
       report_raw_headers_(false),
+      devtools_request_id_(request.devtools_request_id),
       resource_scheduler_client_(std::move(resource_scheduler_client)),
       keepalive_statistics_recorder_(std::move(keepalive_statistics_recorder)),
       network_usage_accumulator_(std::move(network_usage_accumulator)),
