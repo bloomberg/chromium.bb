@@ -25,6 +25,7 @@
 #include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/pref_names.h"
+#include "ios/chrome/browser/search_engines/search_engine_observer_bridge.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
@@ -202,14 +203,16 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
     GoogleServicesSettingsCoordinatorDelegate,
     PrefObserverDelegate,
     SettingsControllerProtocol,
+    SearchEngineObserving,
     SettingsMainPageCommands,
     SigninPresenter,
     SigninPromoViewConsumer,
     SyncObserverModelBridge> {
   // The current browser state that hold the settings. Never off the record.
   ios::ChromeBrowserState* _browserState;  // weak
-
-  std::unique_ptr<IdentityObserverBridge> _notificationBridge;
+  // Bridge for TemplateURLServiceObserver.
+  std::unique_ptr<SearchEngineObserverBridge> _searchEngineObserverBridge;
+  std::unique_ptr<IdentityObserverBridge> _identityObserverBridge;
   std::unique_ptr<SyncObserverBridge> _syncObserverBridge;
   // Whether the impression of the Signin button has already been recorded.
   BOOL _hasRecordedSigninImpression;
@@ -288,7 +291,11 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   if (self) {
     _browserState = browserState;
     self.title = l10n_util::GetNSStringWithFixup(IDS_IOS_SETTINGS_TITLE);
-    _notificationBridge.reset(new IdentityObserverBridge(_browserState, self));
+    _searchEngineObserverBridge.reset(new SearchEngineObserverBridge(
+        self,
+        ios::TemplateURLServiceFactory::GetForBrowserState(_browserState)));
+    _identityObserverBridge.reset(
+        new IdentityObserverBridge(_browserState, self));
     syncer::SyncService* syncService =
         ProfileSyncServiceFactory::GetForBrowserState(_browserState);
     _syncObserverBridge.reset(new SyncObserverBridge(self, syncService));
@@ -344,7 +351,7 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
 
 - (void)stopBrowserStateServiceObservers {
   _syncObserverBridge.reset();
-  _notificationBridge.reset();
+  _identityObserverBridge.reset();
   _identityServiceObserver.reset();
   [_showMemoryDebugToolsEnabled setObserver:nil];
   [_articlesEnabled setObserver:nil];
@@ -364,14 +371,6 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
 
   self.navigationItem.largeTitleDisplayMode =
       UINavigationItemLargeTitleDisplayModeAlways;
-}
-
-// TODO(crbug.com/661915): Refactor TemplateURLObserver and re-implement this so
-// it observes the default search engine name instead of reloading on
-// ViewWillAppear.
-- (void)viewWillAppear:(BOOL)animated {
-  [super viewWillAppear:animated];
-  [self updateSearchCell];
 }
 
 #pragma mark SettingsRootTableViewController
@@ -689,17 +688,6 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
                     iconImageName:kSettingsDebugImageName];
 }
 #endif  // CHROMIUM_BUILD && !defined(NDEBUG)
-
-#pragma mark Item Updaters
-
-- (void)updateSearchCell {
-  NSString* defaultSearchEngineName =
-      base::SysUTF16ToNSString(GetDefaultSearchEngineName(
-          ios::TemplateURLServiceFactory::GetForBrowserState(_browserState)));
-
-  _defaultSearchEngineItem.detailText = defaultSearchEngineName;
-  [self reconfigureCellsForItems:@[ _defaultSearchEngineItem ]];
-}
 
 #pragma mark Item Constructors
 
@@ -1209,6 +1197,15 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   }
   _resizedImage = image;
   return _resizedImage;
+}
+
+#pragma mark - SearchEngineObserverBridge
+
+- (void)searchEngineChanged {
+  _defaultSearchEngineItem.detailText =
+      base::SysUTF16ToNSString(GetDefaultSearchEngineName(
+          ios::TemplateURLServiceFactory::GetForBrowserState(_browserState)));
+  [self reconfigureCellsForItems:@[ _defaultSearchEngineItem ]];
 }
 
 #pragma mark ChromeIdentityServiceObserver
