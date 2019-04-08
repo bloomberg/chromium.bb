@@ -87,7 +87,9 @@ MojoResult CreateOrExtendSerializedEventMessage(
     Channel::MessagePtr* out_message,
     void** out_header,
     size_t* out_header_size,
-    void** out_user_payload) {
+    void** out_user_payload,
+    std::vector<scoped_refptr<MessagePipeDispatcher>>*
+        pipes_to_splice_with_sender) {
   // A structure for tracking information about every Dispatcher that will be
   // serialized into the message. This is NOT part of the message itself.
   struct DispatcherInfo {
@@ -237,6 +239,29 @@ MojoResult CreateOrExtendSerializedEventMessage(
         break;
       }
 
+      if (new_dispatchers[i].spliced) {
+        DCHECK(pipes_to_splice_with_sender);
+
+        scoped_refptr<MessagePipeDispatcher> peer;
+        if (info.num_ports == 1 &&
+            d->GetType() == Dispatcher::Type::MESSAGE_PIPE) {
+          peer = static_cast<MessagePipeDispatcher*>(d)->GetLocalPeer();
+        }
+
+        if (!peer) {
+          fail = true;
+          break;
+        }
+
+        // Temporarily we store the slot ID as the index into our vector of
+        // local peers. We cannot actually allocate a real slot ID until we know
+        // the sending port, and that isn't known until the message is written
+        // to some pipe.
+        event->ports()[port_index].slot_id = base::checked_cast<ports::SlotId>(
+            pipes_to_splice_with_sender->size());
+        pipes_to_splice_with_sender->emplace_back(std::move(peer));
+      }
+
       new_dispatcher_data += info.num_bytes;
       port_index += info.num_ports;
       handle_index += info.num_handles;
@@ -363,7 +388,7 @@ MojoResult UserMessageImpl::CreateEventForNewSerializedMessage(
   size_t header_size = 0;
   MojoResult rv = CreateOrExtendSerializedEventMessage(
       event.get(), num_bytes, num_bytes, dispatchers, num_dispatchers,
-      &channel_message, &header, &header_size, &user_payload);
+      &channel_message, &header, &header_size, &user_payload, nullptr);
   if (rv != MOJO_RESULT_OK)
     return rv;
   event->AttachMessage(base::WrapUnique(
@@ -455,9 +480,11 @@ MojoResult UserMessageImpl::SetContext(
   return MOJO_RESULT_OK;
 }
 
-MojoResult UserMessageImpl::AppendData(uint32_t additional_payload_size,
-                                       const MojoHandle* handles,
-                                       uint32_t num_handles) {
+MojoResult UserMessageImpl::AppendData(
+    uint32_t additional_payload_size,
+    const MojoHandle* handles,
+    uint32_t num_handles,
+    const MojoAppendMessageDataHandleOptions* handle_options) {
   if (HasContext())
     return MOJO_RESULT_FAILED_PRECONDITION;
 
@@ -469,14 +496,30 @@ MojoResult UserMessageImpl::AppendData(uint32_t additional_payload_size,
       return acquire_result;
   }
 
+  if (handle_options) {
+    for (size_t i = 0; i < num_handles; ++i) {
+      if (handle_options[i].flags &
+          MOJO_APPEND_MESSAGE_DATA_HANDLE_FLAG_SPLICE) {
+        if (dispatchers[i].dispatcher->GetType() !=
+            Dispatcher::Type::MESSAGE_PIPE) {
+          Core::Get()->ReleaseDispatchersForTransit(dispatchers,
+                                                    false /* in_transit */);
+          return MOJO_RESULT_INVALID_ARGUMENT;
+        }
+
+        dispatchers[i].spliced = true;
+      }
+    }
+  }
+
   if (!IsSerialized()) {
     // First data for this message.
     Channel::MessagePtr channel_message;
     MojoResult rv = CreateOrExtendSerializedEventMessage(
         message_event_, additional_payload_size,
         std::max(additional_payload_size, kMinimumPayloadBufferSize),
-        dispatchers.data(), num_handles, &channel_message, &header_,
-        &header_size_, &user_payload_);
+        dispatchers.data(), dispatchers.size(), &channel_message, &header_,
+        &header_size_, &user_payload_, &pipes_to_splice_with_sender_);
     if (num_handles > 0) {
       Core::Get()->ReleaseDispatchersForTransit(dispatchers,
                                                 rv == MOJO_RESULT_OK);
@@ -528,7 +571,7 @@ MojoResult UserMessageImpl::CommitSize() {
     CreateOrExtendSerializedEventMessage(
         message_event_, user_payload_size_, user_payload_size_,
         pending_handle_attachments_.data(), pending_handle_attachments_.size(),
-        &channel_message_, &header_, &header_size_, &user_payload_);
+        &channel_message_, &header_, &header_size_, &user_payload_, nullptr);
     Core::Get()->ReleaseDispatchersForTransit(pending_handle_attachments_,
                                               true);
     pending_handle_attachments_.clear();
@@ -557,6 +600,28 @@ MojoResult UserMessageImpl::SerializeIfNecessary() {
 
   has_serialized_handles_ = true;
   return MOJO_RESULT_OK;
+}
+
+void UserMessageImpl::PrepareSplicedHandles(
+    const ports::PortRef& sending_port) {
+  if (!IsSerialized() || pipes_to_splice_with_sender_.empty())
+    return;
+
+  DCHECK(message_event_);
+  for (size_t i = 0; i < message_event_->num_ports(); ++i) {
+    base::Optional<ports::SlotId> spliced_pipe_index =
+        message_event_->ports()[i].slot_id;
+    if (!spliced_pipe_index)
+      continue;
+
+    DCHECK_LT(*spliced_pipe_index, pipes_to_splice_with_sender_.size());
+
+    ports::SlotId new_slot_id =
+        Core::Get()->GetNodeController()->node()->AllocateSlot(sending_port);
+    message_event_->ports()[i].slot_id = new_slot_id;
+    pipes_to_splice_with_sender_[*spliced_pipe_index]->BindToSlot(
+        ports::SlotRef(sending_port, new_slot_id));
+  }
 }
 
 MojoResult UserMessageImpl::ExtractSerializedHandles(

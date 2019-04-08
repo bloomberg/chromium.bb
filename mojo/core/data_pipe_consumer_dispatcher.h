@@ -71,8 +71,8 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeConsumerDispatcher final
       size_t num_handles);
 
  private:
-  class PortObserverThunk;
-  friend class PortObserverThunk;
+  class SlotObserverThunk;
+  friend class SlotObserverThunk;
 
   DataPipeConsumerDispatcher(NodeController* node_controller,
                              const ports::PortRef& control_port,
