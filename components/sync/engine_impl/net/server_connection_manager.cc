@@ -152,17 +152,17 @@ ServerConnectionManager::MakeActiveConnection() {
   return MakeConnection();
 }
 
-bool ServerConnectionManager::SetAuthToken(const std::string& auth_token) {
+bool ServerConnectionManager::SetAccessToken(const std::string& access_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!auth_token.empty()) {
-    auth_token_.assign(auth_token);
+  if (!access_token.empty()) {
+    access_token_.assign(access_token);
     return true;
   }
 
-  auth_token_.clear();
+  access_token_.clear();
 
-  // The auth token could be non-empty in cases like server outage/bug. E.g.
+  // The access token could be non-empty in cases like server outage/bug. E.g.
   // token returned by first request is considered invalid by sync server and
   // because of token server's caching policy, etc, same token is returned on
   // second request. Need to notify sync frontend again to request new token,
@@ -172,8 +172,8 @@ bool ServerConnectionManager::SetAuthToken(const std::string& auth_token) {
   return false;
 }
 
-void ServerConnectionManager::ClearAuthToken() {
-  auth_token_.clear();
+void ServerConnectionManager::ClearAccessToken() {
+  access_token_.clear();
 }
 
 void ServerConnectionManager::SetServerStatus(
@@ -199,7 +199,7 @@ bool ServerConnectionManager::PostBufferWithCachedAuth(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   string path =
       MakeSyncServerPath(proto_sync_path(), MakeSyncQueryString(client_id_));
-  bool result = PostBufferToPath(params, path, auth_token());
+  bool result = PostBufferToPath(params, path, access_token_);
   SetServerStatus(params->response.server_status);
   net_error_code_ = params->response.net_error_code;
   return result;
@@ -207,14 +207,14 @@ bool ServerConnectionManager::PostBufferWithCachedAuth(
 
 bool ServerConnectionManager::PostBufferToPath(PostBufferParams* params,
                                                const string& path,
-                                               const string& auth_token) {
+                                               const string& access_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (auth_token.empty()) {
+  if (access_token.empty()) {
     params->response.server_status = HttpResponse::SYNC_AUTH_ERROR;
     // Print a log to distinguish this "known failure" from others.
     DVLOG(1) << "ServerConnectionManager forcing SYNC_AUTH_ERROR due to missing"
-                " auth token";
+                " access token";
     return false;
   }
 
@@ -226,11 +226,11 @@ bool ServerConnectionManager::PostBufferToPath(PostBufferParams* params,
 
   // Note that |post| may be aborted by now, which will just cause Init to fail
   // with CONNECTION_UNAVAILABLE.
-  bool ok = connection->Init(path.c_str(), auth_token, params->buffer_in,
+  bool ok = connection->Init(path.c_str(), access_token, params->buffer_in,
                              &params->response);
 
   if (params->response.server_status == HttpResponse::SYNC_AUTH_ERROR) {
-    auth_token_.clear();
+    access_token_.clear();
   }
 
   if (!ok || net::HTTP_OK != params->response.http_status_code)

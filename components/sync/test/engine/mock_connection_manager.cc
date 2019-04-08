@@ -27,7 +27,7 @@ using sync_pb::SyncEnums;
 
 namespace syncer {
 
-static char kValidAuthToken[] = "AuthToken";
+static char kValidAccessToken[] = "AccessToken";
 static char kCacheGuid[] = "kqyg7097kro6GSUod+GSg==";
 
 MockConnectionManager::MockConnectionManager(syncable::Directory* directory,
@@ -49,7 +49,7 @@ MockConnectionManager::MockConnectionManager(syncable::Directory* directory,
       next_position_in_parent_(2),
       num_get_updates_requests_(0) {
   SetNewTimestamp(0);
-  SetAuthToken(kValidAuthToken);
+  SetAccessToken(kValidAccessToken);
 }
 
 MockConnectionManager::~MockConnectionManager() {
@@ -72,7 +72,7 @@ void MockConnectionManager::SetMidCommitObserver(
 
 bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
                                              const string& path,
-                                             const string& auth_token) {
+                                             const string& access_token) {
   ClientToServerMessage post;
   if (!post.ParseFromString(params->buffer_in)) {
     ADD_FAILURE();
@@ -108,15 +108,15 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
     syncable::WriteTransaction wt(FROM_HERE, syncable::UNITTEST, directory_);
   }
 
-  if (auth_token.empty()) {
+  if (access_token.empty()) {
     params->response.server_status = HttpResponse::SYNC_AUTH_ERROR;
     return false;
   }
 
-  if (auth_token != kValidAuthToken) {
+  if (access_token != kValidAccessToken) {
     // Simulate server-side auth failure.
     params->response.server_status = HttpResponse::SYNC_AUTH_ERROR;
-    ClearAuthToken();
+    ClearAccessToken();
   }
 
   if (--countdown_to_postbuffer_fail_ == 0) {

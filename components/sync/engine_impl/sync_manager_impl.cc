@@ -464,10 +464,6 @@ const SyncScheduler* SyncManagerImpl::scheduler() const {
   return scheduler_.get();
 }
 
-bool SyncManagerImpl::GetHasInvalidAuthTokenForTest() const {
-  return connection_manager_->HasInvalidAuthToken();
-}
-
 bool SyncManagerImpl::OpenDirectory(const InitArgs* args) {
   DCHECK(!initialized_) << "Should only happen once";
 
@@ -538,7 +534,7 @@ void SyncManagerImpl::UpdateCredentials(const SyncCredentials& credentials) {
   cycle_context_->set_account_name(credentials.email);
 
   observing_network_connectivity_changes_ = true;
-  if (!connection_manager_->SetAuthToken(credentials.access_token))
+  if (!connection_manager_->SetAccessToken(credentials.access_token))
     return;  // Auth token is known to be invalid, so exit early.
 
   scheduler_->OnCredentialsUpdated();
@@ -548,7 +544,7 @@ void SyncManagerImpl::UpdateCredentials(const SyncCredentials& credentials) {
 
 void SyncManagerImpl::InvalidateCredentials() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  connection_manager_->SetAuthToken(std::string());
+  connection_manager_->SetAccessToken(std::string());
 }
 
 void SyncManagerImpl::AddObserver(SyncManager::Observer* observer) {
