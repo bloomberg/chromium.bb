@@ -148,5 +148,5 @@
     void methodWithNullableRecords(record<DOMString, double?> numbers, record<DOMString, DOMString?> strings, record<DOMString, Element?> elements, record<DOMString, (double or DOMString)?> unions);
 };
 
-TestInterface implements TestInterfaceMixin;
-TestInterface implements TestInterfaceMixin3;
+TestInterface includes TestInterfaceMixin;
+TestInterface includes TestInterfaceMixin3;

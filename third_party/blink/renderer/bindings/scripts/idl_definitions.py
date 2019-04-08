@@ -124,7 +124,7 @@ class IdlDefinitions(object):
             elif child_class == 'Callback':
                 callback_function = IdlCallbackFunction(child)
                 self.callback_functions[callback_function.name] = callback_function
-            elif child_class == 'Implements':
+            elif child_class == 'Implements' or child_class == 'Includes':
                 self.implements.append(IdlImplement(child))
             elif child_class == 'Dictionary':
                 dictionary = IdlDictionary(child)
@@ -752,10 +752,14 @@ class IdlSetlike(IdlIterableOrMaplikeOrSetlike):
 
 
 ################################################################################
-# Implement statements
+# Implement statements / includes statements
 ################################################################################
 
 class IdlImplement(object):
+    """
+    IdlImplement class represents an implements statement or an includes
+    statement.
+    """
     def __init__(self, node):
         self.left_interface = node.GetName()
         self.right_interface = node.GetProperty('REFERENCE')

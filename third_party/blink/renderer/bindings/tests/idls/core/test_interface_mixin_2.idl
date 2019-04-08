@@ -36,4 +36,4 @@
     void mixin2VoidMethod();
 };
 
-TestInterface implements TestInterfaceMixin2;
+TestInterface includes TestInterfaceMixin2;
