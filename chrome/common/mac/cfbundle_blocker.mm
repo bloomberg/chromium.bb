@@ -7,6 +7,7 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 #import <Foundation/Foundation.h>
+#include <Security/Security.h>
 #include <stddef.h>
 
 #include "base/logging.h"
@@ -186,9 +187,49 @@ Boolean ChromeCFBundleLoadExecutableAndReturnError(CFBundleRef bundle,
       bundle, force_global, error);
 }
 
+#if !defined(MAC_OS_X_VERSION_10_14) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_14
+constexpr SecCodeSignatureFlags kSecCodeSignatureRuntime = 0x10000;
+#endif
+
+// The kSecCodeSignatureEnforcement flag, which is implied with
+// kSecCodeSignatureRuntime, means that all executable pages must be backed by
+// a valid code signature. The use of mach_override will break that requirement,
+// so the CFBundleBlocker must be disabled.
+bool IsSignedWithEnforcement() {
+  base::ScopedCFTypeRef<SecCodeRef> self_code;
+  OSStatus status =
+      SecCodeCopySelf(kSecCSDefaultFlags, self_code.InitializeInto());
+  if (status != noErr)
+    return false;
+
+  base::ScopedCFTypeRef<CFDictionaryRef> signing_info;
+  status = SecCodeCopySigningInformation(self_code, kSecCSDefaultFlags,
+                                         signing_info.InitializeInto());
+  if (status != noErr)
+    return false;
+
+  CFNumberRef signing_flags_cf = base::mac::GetValueFromDictionary<CFNumberRef>(
+      signing_info, kSecCodeInfoFlags);
+  if (!signing_flags_cf)
+    return false;
+
+  int signing_flags = 0;
+  if (!CFNumberGetValue(signing_flags_cf, kCFNumberIntType, &signing_flags))
+    return false;
+
+  return (signing_flags & kSecCodeSignatureRuntime) ||
+         (signing_flags & kSecCodeSignatureEnforcement);
+}
+
 }  // namespace
 
 bool EnableCFBundleBlocker() {
+  // If the binary is signed with enforcement, loading third-party bundles will
+  // be blocked by macOS.
+  if (IsSignedWithEnforcement())
+    return true;
+
   mach_error_t err = mach_override_ptr(
       reinterpret_cast<void*>(_CFBundleLoadExecutableAndReturnError),
       reinterpret_cast<void*>(ChromeCFBundleLoadExecutableAndReturnError),
