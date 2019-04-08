@@ -186,7 +186,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
                      ExceptionState&) override;
   SingleCachedMetadataHandler* CreateWorkerScriptCachedMetadataHandler(
       const KURL& script_url,
-      const Vector<uint8_t>* meta_data) override;
+      std::unique_ptr<Vector<uint8_t>> meta_data) override;
   void ExceptionThrown(ErrorEvent*) override;
 
   void DidReceiveResponseForClassicScript(

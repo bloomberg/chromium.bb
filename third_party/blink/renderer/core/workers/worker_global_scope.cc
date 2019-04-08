@@ -254,9 +254,9 @@ void WorkerGlobalScope::ImportScriptsInternal(const Vector<String>& urls,
     ErrorEvent* error_event = nullptr;
     SingleCachedMetadataHandler* handler(
         CreateWorkerScriptCachedMetadataHandler(complete_url,
-                                                cached_meta_data.get()));
+                                                std::move(cached_meta_data)));
     ReportingProxy().WillEvaluateImportedClassicScript(
-        source_code.length(), cached_meta_data ? cached_meta_data->size() : 0);
+        source_code.length(), handler ? handler->GetCodeCacheSize() : 0);
     ScriptController()->Evaluate(
         ScriptSourceCode(source_code, ScriptSourceLocationType::kUnknown,
                          handler, response_url),
@@ -404,11 +404,10 @@ void WorkerGlobalScope::EvaluateClassicScriptInternal(
   DCHECK(IsContextThread());
   SingleCachedMetadataHandler* handler =
       CreateWorkerScriptCachedMetadataHandler(script_url,
-                                              cached_meta_data.get());
+                                              std::move(cached_meta_data));
   DCHECK(!source_code.IsNull());
   ReportingProxy().WillEvaluateClassicScript(
-      source_code.length(),
-      cached_meta_data.get() ? cached_meta_data->size() : 0);
+      source_code.length(), handler ? handler->GetCodeCacheSize() : 0);
   // Cross-origin workers are disallowed, so use
   // SanitizeScriptErrors::kDoNotSanitize.
   bool success = ScriptController()->Evaluate(
