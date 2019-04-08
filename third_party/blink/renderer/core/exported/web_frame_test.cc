@@ -5540,27 +5540,7 @@ TEST_F(WebFrameTest, FindInPageJavaScriptUpdatesDOM) {
   EXPECT_FALSE(active_now);
 }
 
-struct FakeTimerSetter {
-  FakeTimerSetter() {
-    time_elapsed_ = 1.0;
-    original_time_function_ = SetTimeFunctionsForTesting(ReturnMockTime);
-  }
-
-  ~FakeTimerSetter() { SetTimeFunctionsForTesting(original_time_function_); }
-  static double ReturnMockTime() {
-    time_elapsed_ += 1.0;
-    return time_elapsed_;
-  }
-
- private:
-  TimeFunction original_time_function_;
-  static double time_elapsed_;
-};
-double FakeTimerSetter::time_elapsed_ = 0.;
-
 TEST_F(WebFrameTest, FindInPageJavaScriptUpdatesDOMProperOrdinal) {
-  FakeTimerSetter fake_timer;
-
   const WebString search_pattern = WebString::FromUTF8("abc");
   // We have 2 occurrences of the pattern in our text.
   const char* html =
