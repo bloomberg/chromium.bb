@@ -158,9 +158,6 @@ class OmniboxEditModel {
   // either the user is not editing or the edit does not have focus.
   bool ResetDisplayTexts();
 
-  // Returns the URL corresponding to the permanent text.
-  GURL PermanentURL() const;
-
   // Returns the permanent display text for the current page and Omnibox state.
   base::string16 GetPermanentDisplayText() const;
 
