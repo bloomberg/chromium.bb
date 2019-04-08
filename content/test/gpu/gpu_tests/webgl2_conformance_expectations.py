@@ -1018,6 +1018,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/fbocompleteness.html',
         ['linux', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
 
+    # Linux Intel
+    self.Fail('conformance2/textures/misc/tex-base-level-bug.html',
+        ['linux', 'intel'], bug=950552)
+
     # Already fixed with Mesa 17.2.3
     self.Fail('conformance2/textures/misc/tex-subimage3d-pixel-buffer-bug.html',
        ['linux', 'intel'], bug=905011) # WebGL 2.0.1
