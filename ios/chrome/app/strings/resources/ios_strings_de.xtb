@@ -257,7 +257,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5010803260590204777">Öffnet einen Inkognito-Tab zum anonymen Surfen im Web</translation>
 <translation id="5011684439661633295">Hallo <ph name="FULL_ACCOUNT_NAME" /></translation>
 <translation id="5039804452771397117">Zulassen</translation>
-<translation id="5059136629401106827">OK</translation>
+<translation id="5059136629401106827">Ok</translation>
 <translation id="5062321486222145940">Google Drive installieren</translation>
 <translation id="5083464117946352670">Fehler bei Bestimmung der Dateigröße</translation>
 <translation id="5094827893301452931">Tweet gepostet</translation>
@@ -298,7 +298,7 @@ Handoff muss auch im Abschnitt "Allgemein" Ihrer Einstellungen aktiviert sein un
 <translation id="5857770089550859117">Geben Sie Ihre Passphrase ein, um die Synchronisierung zu starten.</translation>
 <translation id="5860033963881614850">Aus</translation>
 <translation id="5865733239029070421">Nutzungsstatistiken und Absturzberichte automatisch an Google senden</translation>
-<translation id="5869029295770560994">OK</translation>
+<translation id="5869029295770560994">Ok</translation>
 <translation id="5871497086027727873">1 Lesezeichen verschoben</translation>
 <translation id="5897956970858271241">Kopierten Link aufrufen</translation>
 <translation id="5911030830365207728">Google Übersetzer</translation>
@@ -405,7 +405,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="7285236536143823449">JA, ICH BIN DABEI</translation>
 <translation id="7291368939935408496">Passwörter werden zum Exportieren vorbereitet…</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> % heruntergeladen</translation>
-<translation id="7346909386216857016">OK</translation>
+<translation id="7346909386216857016">Ok</translation>
 <translation id="7383797227493018512">Leseliste</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7425346204213733349">Änderungen an Ihren Lesezeichen, Ihrem Verlauf, Ihren Passwörtern und anderen Einstellungen werden nicht mehr mit Ihrem Google-Konto synchronisiert. Ihre vorhandenen Daten bleiben aber in Ihrem Google-Konto gespeichert.</translation>
@@ -491,7 +491,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="8881801611828450202">In <ph name="SEARCH_ENGINE" /> nach dem Bild suchen</translation>
 <translation id="8904976895050290827">Google Chrome Sync</translation>
 <translation id="895541991026785598">Problem melden</translation>
-<translation id="8971089644512329999">OK</translation>
+<translation id="8971089644512329999">Ok</translation>
 <translation id="8976382372951310360">Hilfe</translation>
 <translation id="8981454092730389528">Google-Aktivitätseinstellungen</translation>
 <translation id="8985320356172329008">In Google angemeldet als</translation>

@@ -330,7 +330,7 @@
 <translation id="2728127805433021124">Das Serverzertifikat ist mit einem schwachen Signaturalgorithmus signiert.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Verbindungsdiagnose ausführen<ph name="END_LINK" /></translation>
 <translation id="2738330467931008676">Abholadresse auswählen</translation>
-<translation id="2740531572673183784">OK</translation>
+<translation id="2740531572673183784">Ok</translation>
 <translation id="2742870351467570537">Ausgewählte Einträge entfernen</translation>
 <translation id="277133753123645258">Versandart</translation>
 <translation id="277499241957683684">Fehlender Gerätedatensatz</translation>
@@ -1043,7 +1043,7 @@
 <translation id="6957624206566198865">Seite in Inkognito-Fenster öffnen</translation>
 <translation id="6957887021205513506">Das Zertifikat des Servers ist möglicherweise eine Fälschung.</translation>
 <translation id="6964255747740675745">Netzwerkkonfiguration konnte nicht geparst werden (ungültige JSON-Datei).</translation>
-<translation id="6965382102122355670">OK</translation>
+<translation id="6965382102122355670">Ok</translation>
 <translation id="6965978654500191972">Gerät</translation>
 <translation id="6970216967273061347">Bezirk</translation>
 <translation id="6973656660372572881">Sowohl feste Proxyserver als auch eine PAC-Skript-URL sind festgelegt.</translation>
@@ -1130,7 +1130,7 @@ Weitere Details:
       &lt;li&gt;Wählen Sie &lt;strong&gt;VisualDiscovery&lt;/strong&gt; aus.
       &lt;li&gt;Wählen Sie unter &lt;strong&gt;Starttyp&lt;/strong&gt; die Option &lt;strong&gt;Deaktiviert&lt;/strong&gt; aus.
       &lt;li&gt;Klicken Sie unter &lt;strong&gt;Dienststatus&lt;/strong&gt; auf &lt;strong&gt;Beenden&lt;/strong&gt;.
-      &lt;li&gt;Klicken Sie auf &lt;strong&gt;Übernehmen&lt;/strong&gt; und dann auf &lt;strong&gt;OK&lt;/strong&gt;.
+      &lt;li&gt;Klicken Sie auf &lt;strong&gt;Übernehmen&lt;/strong&gt; und dann auf &lt;strong&gt;Ok&lt;/strong&gt;.
       &lt;li&gt;In der &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome-Hilfe&lt;/a&gt; finden Sie eine Anleitung dazu, wie Sie die Software von Ihrem Computer entfernen.
       &lt;/ol&gt;</translation>
 <translation id="741007362987735528">Wide-Format</translation>

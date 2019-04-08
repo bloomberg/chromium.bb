@@ -9,7 +9,7 @@
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="109942774857561566">退屈だな</translation>
 <translation id="1104084341931202936">ユーザー補助機能の設定を表示</translation>
-<translation id="1104621072296271835">端末を連携させると活用の幅が広がります</translation>
+<translation id="1104621072296271835">デバイスを連携させると活用の幅が広がります</translation>
 <translation id="112308213915226829">シェルフを自動的に隠す</translation>
 <translation id="1153356358378277386">ペア設定されたデバイス</translation>
 <translation id="1195412055398077112">オーバースキャン</translation>
@@ -31,7 +31,7 @@
 <translation id="1346748346194534595">右</translation>
 <translation id="1351937230027495976">メニューを折りたたむ</translation>
 <translation id="1383876407941801731">検索</translation>
-<translation id="1419738280318246476">通知に関する操作を行うには、端末のロックを解除してください</translation>
+<translation id="1419738280318246476">通知に関する操作を行うには、デバイスのロックを解除してください</translation>
 <translation id="1455242230282523554">言語設定を表示</translation>
 <translation id="1467432559032391204">左</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" />（HDMI / DP）</translation>
@@ -139,7 +139,7 @@
 <translation id="3009178788565917040">出力</translation>
 <translation id="3019353588588144572">バッテリーがフル充電されるまであと: <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">管理対象のユーザー プロフィールはまもなく削除されます。ログインして詳細をご確認ください。</translation>
-<translation id="3055162170959710888">あなたは今日、この端末を <ph name="USED_TIME" />使用しました</translation>
+<translation id="3055162170959710888">あなたは今日、このデバイスを <ph name="USED_TIME" />使用しました</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">メニューを展開</translation>
 <translation id="3087734570205094154">下</translation>
@@ -167,7 +167,7 @@
 <translation id="3413817803639110246">通知はありません</translation>
 <translation id="3445925074670675829">USB-C デバイス</translation>
 <translation id="3454224730401036106">より安全なネットワークに接続が切り替えられました</translation>
-<translation id="3465223694362104965">前回のログイン後に、別のキーボードがこの端末に接続されました。このキーボードを使用する前に信頼できるものかどうか確認してください。</translation>
+<translation id="3465223694362104965">前回のログイン後に、別のキーボードがこのデバイスに接続されました。このキーボードを使用する前に信頼できるものかどうか確認してください。</translation>
 <translation id="3477079411857374384">Control+Shift+Space</translation>
 <translation id="3510164367642747937">マウスカーソルをハイライト表示する</translation>
 <translation id="3513798432020909783">このアカウントは <ph name="MANAGER_EMAIL" /> により管理されています</translation>
@@ -208,7 +208,7 @@
 <translation id="4195877955194704651">自動クリックボタン</translation>
 <translation id="4217571870635786043">音声入力</translation>
 <translation id="4261870227682513959">通知設定を表示します。通知はオフです</translation>
-<translation id="4269883910223712419">この端末の管理者は以下を行うことができます。</translation>
+<translation id="4269883910223712419">このデバイスの管理者は以下を行うことができます。</translation>
 <translation id="4279490309300973883">ミラーリング</translation>
 <translation id="4281007048406351813">タイマーに 1 分追加</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> を有効化しています</translation>
@@ -274,7 +274,7 @@
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">該当するすべてのユーザーをこのセッションに追加済みです。</translation>
 <translation id="5465662442746197494">不明点がある場合</translation>
-<translation id="5496819745535887422">管理者がお使いの端末をロールバックしています。端末の再起動時にデータはすべて削除されます。</translation>
+<translation id="5496819745535887422">管理者がお使いのデバイスをロールバックしています。デバイスの再起動時にデータはすべて削除されます。</translation>
 <translation id="553675580533261935">セッションの終了</translation>
 <translation id="5537725057119320332">キャスト</translation>
 <translation id="5548285847212963613">拡張機能「<ph name="EXTENSION_NAME" />」はこのネットワークへの接続をサポートします。</translation>
@@ -354,7 +354,7 @@
 <translation id="6696025732084565524">お使いのキーボード（取り外し可能）に重要なアップデートを適用する必要があります</translation>
 <translation id="6700713906295497288">IME メニューボタン</translation>
 <translation id="6713285437468012787">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定されました。すべてのユーザーはこのデバイスを使用できます。[設定] から、このペア設定を削除することもできます。</translation>
-<translation id="6715542151869432661">モバイル端末が見つかりませんでした。</translation>
+<translation id="6715542151869432661">モバイル デバイスが見つかりませんでした。</translation>
 <translation id="671928215901716392">画面をロック</translation>
 <translation id="6723839937902243910">電源</translation>
 <translation id="6751826523481687655">パフォーマンス追跡機能が有効になっています</translation>
@@ -363,7 +363,7 @@
 <translation id="6820676911989879663">休憩の時間です！</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> を有効にする</translation>
-<translation id="6910714959251846841">このアップデートを適用するには端末で Powerwash を実行する必要があります。<ph name="SYSTEM_APP_NAME" /> の最新アップデートの詳細をご確認ください。</translation>
+<translation id="6910714959251846841">このアップデートを適用するにはデバイスで Powerwash を実行する必要があります。<ph name="SYSTEM_APP_NAME" /> の最新アップデートの詳細をご確認ください。</translation>
 <translation id="6911468394164995108">他のネットワークに接続...</translation>
 <translation id="6972754398087986839">開始する</translation>
 <translation id="6981982820502123353">ユーザー補助機能</translation>
@@ -384,7 +384,7 @@
 <translation id="7222902781030499995">タイマーを停止します</translation>
 <translation id="7256634071279256947">後方のマイク</translation>
 <translation id="726276584504105859">分割画面を使用するにはここにドラッグします</translation>
-<translation id="7303365578352795231">別の端末で応答しています。</translation>
+<translation id="7303365578352795231">別のデバイスで応答しています。</translation>
 <translation id="7348093485538360975">画面キーボード</translation>
 <translation id="735745346212279324">VPN が切断されました</translation>
 <translation id="7377169924702866686">CapsLock 
@@ -456,7 +456,7 @@
 <translation id="8351131234907093545">メモを作成</translation>
 <translation id="8375916635258623388">この <ph name="DEVICE_NAME" /> とお使いのスマートフォンは自動的に接続されます</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> のオプション メニュー</translation>
-<translation id="8394567579869570560">保護者の方がこの端末をロックしました</translation>
+<translation id="8394567579869570560">保護者の方がこのデバイスをロックしました</translation>
 <translation id="8406981827175133772">拡大鏡（全画面）</translation>
 <translation id="8425213833346101688">変更</translation>
 <translation id="8427213022735114808">音声入力では、テキスト欄で音声入力できるように Google に音声を送信します。</translation>
@@ -494,10 +494,10 @@
 <translation id="8938800817013097409">USB-C デバイス（背面右のポート）</translation>
 <translation id="8940956008527784070">バッテリー残量: 少（<ph name="PERCENTAGE" />%）</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> を使用しています</translation>
-<translation id="899350903320462459">通知に関する操作を行うには、<ph name="LOGIN_ID" /> で端末のロックを解除してください</translation>
+<translation id="899350903320462459">通知に関する操作を行うには、<ph name="LOGIN_ID" /> でデバイスのロックを解除してください</translation>
 <translation id="8995603266996330174">管理ドメイン: <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Adobe Flash Player のアップデートが利用可能</translation>
-<translation id="9056839673611986238">端末はロールバックされます</translation>
+<translation id="9056839673611986238">デバイスはロールバックされます</translation>
 <translation id="9070640332319875144">アシスタントの設定</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
@@ -511,7 +511,7 @@
 <translation id="9201131092683066720">バッテリー残量: <ph name="PERCENTAGE" />%。</translation>
 <translation id="9210037371811586452">デスクトップ統合モードの終了中</translation>
 <translation id="9215934040295798075">壁紙を設定</translation>
-<translation id="921989828232331238">保護者の方がこの端末を終日ロックしています</translation>
+<translation id="921989828232331238">保護者の方がこのデバイスを終日ロックしています</translation>
 <translation id="923686485342484400">ログアウトするには、Ctrl Shift Q を 2 回押します。</translation>
 <translation id="938963181863597773">カレンダーに予定は入ってる？</translation>
 <translation id="945522503751344254">フィードバックを送信</translation>

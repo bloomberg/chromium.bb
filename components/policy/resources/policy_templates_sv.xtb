@@ -1115,7 +1115,7 @@
 
           Om den här principen inte ställs in kan användaren välja startsida själv om HomepageIsNewTabPage inte heller är inställd.
 
-          Webbadressen måste använda ett standardprotokoll, t.ex. http://example.com eller https://example.com.
+          Standardprotokoll, t.ex. http://example.com eller https://example.com, måste användas i webbadressen.
 
           Den här principen är bara tillgänglig i Windows-instanser som är kopplade till en <ph name="MS_AD_NAME" />-domän, eller i Windows 10 Pro- eller Enterprise-instanser som är registrerade i enhetshantering.</translation>
 <translation id="3016255526521614822">Ange anteckningsappar som är tillåtna på låsskärmen i <ph name="PRODUCT_OS_NAME" /></translation>

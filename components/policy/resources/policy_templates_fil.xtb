@@ -1102,9 +1102,9 @@
 <translation id="2987227569419001736">Kontrolin ang paggamit ng Web Bluetooth API</translation>
 <translation id="3011301228198307065">Kino-configure ang default na URL ng home page sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ito.
 
-          Ang home page ay ang page na binubukas ng button ng Home. Kinokontrol ng mga patakarang RestoreOnStartup ang mga page na bumubukas kapag startup.
+          Ang home page ay ang page na nabubuksan sa pamamagitan ng button ng Home. Kinokontrol ng mga patakarang RestoreOnStartup ang mga page na bumubukas kapag startup.
 
-          Ang uri ng home page ay maaaring itakda sa isang URL na tutukuyin mo rito o sa Page ng Bagong Tab. Kung pipiliin mo ang Page ng Bagong Tab, hindi gagana ang patakarang ito.
+          Puwedeng itakda ang uri ng home page sa isang URL na tutukuyin mo rito o sa Page ng Bagong Tab. Kung pipiliin mo ang Page ng Bagong Tab, hindi gagana ang patakarang ito.
 
           Kung ie-enable mo ang setting na ito, hindi mababago ng mga user ang URL ng kanilang home page sa <ph name="PRODUCT_NAME" />, pero mapipili pa rin nila ang Page ng Bagong Tab bilang kanilang home page.
 
