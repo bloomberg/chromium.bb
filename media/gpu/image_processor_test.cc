@@ -62,15 +62,14 @@ class ImageProcessorSimpleParamTest
     // TODO(crbug.com/917951): Select more appropriate number of buffers.
     constexpr size_t kNumBuffers = 1;
     LOG_ASSERT(output_image.IsMetadataLoaded());
+    std::vector<std::unique_ptr<test::VideoFrameProcessor>> frame_processors;
     // TODO(crbug.com/944823): Use VideoFrameValidator for RGB formats.
-    std::unique_ptr<test::VideoFrameValidator> vf_validator;
     if (IsYuvPlanar(input_image.PixelFormat()) &&
         IsYuvPlanar(output_image.PixelFormat())) {
-      vf_validator = test::VideoFrameValidator::Create(
+      auto vf_validator = test::VideoFrameValidator::Create(
           {output_image.Checksum()}, output_image.PixelFormat());
+      frame_processors.push_back(std::move(vf_validator));
     }
-    std::vector<std::unique_ptr<test::VideoFrameProcessor>> frame_processors;
-    frame_processors.push_back(std::move(vf_validator));
     auto ip_client = test::ImageProcessorClient::Create(
         input_config, output_config, kNumBuffers, std::move(frame_processors));
     LOG_ASSERT(ip_client) << "Failed to create ImageProcessorClient";
