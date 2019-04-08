@@ -1776,6 +1776,8 @@ jumbo_split_static_library("ui") {
       "webui/signin/inline_login_handler_chromeos.h",
       "webui/signin/inline_login_handler_dialog_chromeos.cc",
       "webui/signin/inline_login_handler_dialog_chromeos.h",
+      "webui/signin/inline_login_handler_modal_delegate.cc",
+      "webui/signin/inline_login_handler_modal_delegate.h",
       "webui/version_handler_chromeos.cc",
       "webui/version_handler_chromeos.h",
       "window_sizer/window_sizer_ash.cc",
