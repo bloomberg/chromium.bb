@@ -38,6 +38,8 @@ class InstalledWebappProvider : public content_settings::ObservableProvider {
   void ClearAllContentSettingsRules(ContentSettingsType content_type) override;
   void ShutdownOnUIThread() override;
 
+  void Notify();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(InstalledWebappProvider);
 };

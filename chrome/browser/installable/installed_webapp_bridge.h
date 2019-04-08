@@ -13,6 +13,8 @@ class InstalledWebappBridge {
   static InstalledWebappProvider::RuleList
   GetInstalledWebappNotificationPermissions();
 
+  static void SetProviderInstance(InstalledWebappProvider* provider);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(InstalledWebappBridge);
 };

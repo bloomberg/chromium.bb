@@ -12,11 +12,13 @@ import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
  * Provides Trusted Web Activity Client App permissions for native. The C++ counterpart is the
  * {@code installed_webapp_bridge.h}.
  *
- * Lifecycle: All methods are static and are called by native.
+ * Lifecycle: All methods are static.
  * Thread safety: Methods will only be called on the UI thread.
  * Native: Requires native to be loaded.
  */
 public class InstalledWebappBridge {
+    private static long sNativeInstalledWebappProvider;
+
     /**
      * A POD class to store the combination of a permission setting and the origin the permission is
      * relevant for.
@@ -37,6 +39,17 @@ public class InstalledWebappBridge {
         }
     }
 
+    public static void notifyPermissionsChange() {
+        if (sNativeInstalledWebappProvider == 0) return;
+
+        nativeNotifyPermissionsChange(sNativeInstalledWebappProvider);
+    }
+
+    @CalledByNative
+    private static void setInstalledWebappProvider(long provider) {
+        sNativeInstalledWebappProvider = provider;
+    }
+
     @CalledByNative
     private static Permission[] getNotificationPermissions() {
         return TrustedWebActivityPermissionManager.getNotificationPermissions();
@@ -51,4 +64,6 @@ public class InstalledWebappBridge {
     private static int getSettingFromPermission(Permission permission) {
         return permission.setting;
     }
+
+    private static native void nativeNotifyPermissionsChange(long provider);
 }
