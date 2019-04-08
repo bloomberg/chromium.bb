@@ -122,6 +122,8 @@ base::Optional<PreviewsType> ConvertProtoOptimizationTypeToPreviewsType(
       return PreviewsType::RESOURCE_LOADING_HINTS;
     case optimization_guide::proto::LITE_PAGE_REDIRECT:
       return PreviewsType::LITE_PAGE_REDIRECT;
+    case optimization_guide::proto::OPTIMIZATION_NONE:
+      return PreviewsType::NONE;
   }
 }
 
@@ -137,6 +139,9 @@ bool IsEnabledOptimizationType(
       return previews::params::IsResourceLoadingHintsEnabled();
     case optimization_guide::proto::LITE_PAGE_REDIRECT:
       return previews::params::IsLitePageServerPreviewsEnabled();
+    case optimization_guide::proto::OPTIMIZATION_NONE:
+      // Always consider enabled to allow as no-op optimization.
+      return true;
   }
 }
 

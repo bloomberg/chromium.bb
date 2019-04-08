@@ -623,6 +623,74 @@ TEST_F(PreviewsHintsTest, IsWhitelistedForExperimentalPreview) {
   }
 }
 
+TEST_F(PreviewsHintsTest, IsWhitelistedForNoopExperimentalPreview) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
+  optimization_guide::proto::Configuration config;
+
+  optimization_guide::proto::Hint* hint1 = config.add_hints();
+  hint1->set_key("somedomain.org");
+  hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+
+  // Page hint for "/experimental_preview/"
+  optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
+  page_hint1->set_page_pattern("/experimental_preview/");
+  page_hint1->set_max_ect_trigger(
+      optimization_guide::proto::EffectiveConnectionType::
+          EFFECTIVE_CONNECTION_TYPE_3G);
+
+  // First add OPTIMIZATION_NONE as no-op experimental PageHint optimization.
+  optimization_guide::proto::Optimization* experimental_optimization =
+      page_hint1->add_whitelisted_optimizations();
+  experimental_optimization->set_experiment_name("foo_experiment");
+  experimental_optimization->set_optimization_type(
+      optimization_guide::proto::OPTIMIZATION_NONE);
+
+  // Add a non-experimental PageHint optimization with same resource pattern.
+  optimization_guide::proto::Optimization* default_pagehint_optimization =
+      page_hint1->add_whitelisted_optimizations();
+  default_pagehint_optimization->set_optimization_type(
+      optimization_guide::proto::RESOURCE_LOADING);
+  optimization_guide::proto::ResourceLoadingHint* default_resourcehint =
+      default_pagehint_optimization->add_resource_loading_hints();
+  default_resourcehint->set_loading_optimization_type(
+      optimization_guide::proto::LOADING_BLOCK_RESOURCE);
+  default_resourcehint->set_resource_pattern("default_resource.js");
+
+  ParseConfig(config);
+
+  // Test with the experiment disabled.
+  {
+    // Verify resource loading hints whitelisted.
+    int inflation_percent = 0;
+    net::EffectiveConnectionType ect_threshold =
+        net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+    EXPECT_TRUE(MaybeLoadHintAndCheckIsWhitelisted(
+        GURL("https://www.somedomain.org/experimental_preview/"
+             "experimental_resource.js"),
+        PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent,
+        &ect_threshold));
+  }
+
+  // Now enable the experiment and verify experimental no-op screens the
+  // resource loading hints from being whitelisted.
+  {
+    base::test::ScopedFeatureList scoped_list2;
+    scoped_list2.InitAndEnableFeatureWithParameters(
+        features::kOptimizationHintsExperiments,
+        {{"experiment_name", "foo_experiment"}});
+
+    int inflation_percent = 0;
+    net::EffectiveConnectionType ect_threshold =
+        net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_2G;
+    EXPECT_FALSE(MaybeLoadHintAndCheckIsWhitelisted(
+        GURL("https://www.somedomain.org/experimental_preview/"
+             "experimental_resource.js"),
+        PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent,
+        &ect_threshold));
+  }
+}
+
 TEST_F(PreviewsHintsTest, ParseDuplicateConfigs) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
