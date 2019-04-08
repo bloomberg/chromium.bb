@@ -37,9 +37,7 @@ void ChromeAppListModelUpdater::SetActive(bool active) {
   std::vector<ash::mojom::AppListItemMetadataPtr> items_to_sync;
   for (auto const& item : items_)
     items_to_sync.push_back(item.second->CloneMetadata());
-
-  DCHECK(profile_);
-  app_list_controller_->SetModelData(model_id(), std::move(items_to_sync),
+  app_list_controller_->SetModelData(std::move(items_to_sync),
                                      search_engine_is_google_);
 }
 

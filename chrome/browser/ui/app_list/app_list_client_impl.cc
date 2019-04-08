@@ -56,15 +56,6 @@ bool IsTabletMode() {
 
 }  // namespace
 
-AppListClientImpl::MojoRecorderForTest::MojoRecorderForTest() = default;
-AppListClientImpl::MojoRecorderForTest::~MojoRecorderForTest() = default;
-
-int AppListClientImpl::MojoRecorderForTest::Query(int profile_id) const {
-  auto iter = recorder_.find(profile_id);
-  return iter == recorder_.end() ? 0 : iter->second;
-}
-///////////////////////////////////////////////////////////////////////////////
-
 AppListClientImpl::AppListClientImpl()
     : template_url_service_observer_(this),
       binding_(this),
@@ -186,32 +177,21 @@ void AppListClientImpl::ViewClosing() {
 }
 
 void AppListClientImpl::ViewShown(int64_t display_id) {
-  if (current_model_updater_) {
+  if (model_updater_) {
     base::RecordAction(base::UserMetricsAction("Launcher_Show"));
     base::UmaHistogramSparse("Apps.AppListBadgedAppsCount",
-                             current_model_updater_->BadgedItemCount());
+                             model_updater_->BadgedItemCount());
   }
   display_id_ = display_id;
 }
 
-void AppListClientImpl::ActivateItem(int profile_id,
-                                     const std::string& id,
-                                     int event_flags) {
-  auto* requested_model_updater = profile_model_mappings_[profile_id];
-
-  // Pointless to notify the AppListModelUpdater of the activated item if the
-  // |requested_model_updater| is not the current one, which means that the
-  // active profile is changed. The same rule applies to the GetContextMenuModel
-  // and ContextMenuItemSelected.
-  if (requested_model_updater != current_model_updater_ ||
-      !requested_model_updater) {
+void AppListClientImpl::ActivateItem(const std::string& id, int event_flags) {
+  if (!model_updater_)
     return;
-  }
-
-  requested_model_updater->ActivateChromeItem(id, event_flags);
+  model_updater_->ActivateChromeItem(id, event_flags);
 
   // Send a training signal to the search controller.
-  const auto* item = current_model_updater_->FindItem(id);
+  const auto* item = model_updater_->FindItem(id);
   if (item) {
     search_controller_->Train(
         id, app_list::RankingItemTypeFromChromeAppListItem(*item));
@@ -221,16 +201,13 @@ void AppListClientImpl::ActivateItem(int profile_id,
 }
 
 void AppListClientImpl::GetContextMenuModel(
-    int profile_id,
     const std::string& id,
     GetContextMenuModelCallback callback) {
-  auto* requested_model_updater = profile_model_mappings_[profile_id];
-  if (requested_model_updater != current_model_updater_ ||
-      !requested_model_updater) {
+  if (!model_updater_) {
     std::move(callback).Run(std::vector<ash::mojom::MenuItemPtr>());
     return;
   }
-  requested_model_updater->GetContextMenuModel(
+  model_updater_->GetContextMenuModel(
       id,
       base::BindOnce(
           [](GetContextMenuModelCallback callback,
@@ -241,17 +218,12 @@ void AppListClientImpl::GetContextMenuModel(
           std::move(callback)));
 }
 
-void AppListClientImpl::ContextMenuItemSelected(int profile_id,
-                                                const std::string& id,
+void AppListClientImpl::ContextMenuItemSelected(const std::string& id,
                                                 int command_id,
                                                 int event_flags) {
-  auto* requested_model_updater = profile_model_mappings_[profile_id];
-  if (requested_model_updater != current_model_updater_ ||
-      !requested_model_updater) {
+  if (!model_updater_)
     return;
-  }
-
-  requested_model_updater->ContextMenuItemSelected(id, command_id, event_flags);
+  model_updater_->ContextMenuItemSelected(id, command_id, event_flags);
 }
 
 void AppListClientImpl::OnAppListTargetVisibilityChanged(bool visible) {
@@ -263,52 +235,39 @@ void AppListClientImpl::OnAppListVisibilityChanged(bool visible) {
 }
 
 void AppListClientImpl::OnFolderCreated(
-    int profile_id,
     ash::mojom::AppListItemMetadataPtr item) {
-  if (mojo_recorder_for_test_.get())
-    mojo_recorder_for_test_->Record(profile_id);
-
-  auto* requested_model_updater = profile_model_mappings_[profile_id];
-  if (!requested_model_updater)
+  if (!model_updater_)
     return;
   DCHECK(item->is_folder);
-  requested_model_updater->OnFolderCreated(std::move(item));
+  model_updater_->OnFolderCreated(std::move(item));
 }
 
 void AppListClientImpl::OnFolderDeleted(
-    int profile_id,
     ash::mojom::AppListItemMetadataPtr item) {
-  auto* requested_model_updater = profile_model_mappings_[profile_id];
-  if (!requested_model_updater)
+  if (!model_updater_)
     return;
   DCHECK(item->is_folder);
-  requested_model_updater->OnFolderDeleted(std::move(item));
+  model_updater_->OnFolderDeleted(std::move(item));
 }
 
-void AppListClientImpl::OnItemUpdated(int profile_id,
-                                      ash::mojom::AppListItemMetadataPtr item) {
-  auto* requested_model_updater = profile_model_mappings_[profile_id];
-  if (!requested_model_updater)
+void AppListClientImpl::OnItemUpdated(ash::mojom::AppListItemMetadataPtr item) {
+  if (!model_updater_)
     return;
-  requested_model_updater->OnItemUpdated(std::move(item));
+  model_updater_->OnItemUpdated(std::move(item));
 }
 
 void AppListClientImpl::OnPageBreakItemAdded(
-    int profile_id,
     const std::string& id,
     const syncer::StringOrdinal& position) {
-  auto* requested_model_updater = profile_model_mappings_[profile_id];
-  if (!requested_model_updater)
+  if (!model_updater_)
     return;
-  requested_model_updater->OnPageBreakItemAdded(id, position);
+  model_updater_->OnPageBreakItemAdded(id, position);
 }
 
-void AppListClientImpl::OnPageBreakItemDeleted(int profile_id,
-                                               const std::string& id) {
-  auto* requested_model_updater = profile_model_mappings_[profile_id];
-  if (!requested_model_updater)
+void AppListClientImpl::OnPageBreakItemDeleted(const std::string& id) {
+  if (!model_updater_)
     return;
-  requested_model_updater->OnPageBreakItemDeleted(id);
+  model_updater_->OnPageBreakItemDeleted(id);
 }
 
 void AppListClientImpl::GetNavigableContentsFactory(
@@ -351,13 +310,13 @@ void AppListClientImpl::SetProfile(Profile* new_profile) {
     return;
 
   if (profile_) {
-    DCHECK(current_model_updater_);
-    current_model_updater_->SetActive(false);
+    DCHECK(model_updater_);
+    model_updater_->SetActive(false);
 
     search_resource_manager_.reset();
     search_controller_.reset();
     app_sync_ui_state_watcher_.reset();
-    current_model_updater_ = nullptr;
+    model_updater_ = nullptr;
   }
 
   template_url_service_observer_.RemoveAll();
@@ -379,33 +338,26 @@ void AppListClientImpl::SetProfile(Profile* new_profile) {
   app_list::AppListSyncableService* syncable_service =
       app_list::AppListSyncableServiceFactory::GetForProfile(profile_);
 
-  current_model_updater_ = syncable_service->GetModelUpdater();
-  current_model_updater_->SetActive(true);
-
-  // On ChromeOS, there is no way to sign-off just one user. When signing off
-  // all users, AppListClientImpl instance is destructed before profiles are
-  // unloaded. So we don't need to remove elements from
-  // |profile_model_mappings_| explicitly.
-  profile_model_mappings_[current_model_updater_->model_id()] =
-      current_model_updater_;
+  model_updater_ = syncable_service->GetModelUpdater();
+  model_updater_->SetActive(true);
 
   app_sync_ui_state_watcher_ =
-      std::make_unique<AppSyncUIStateWatcher>(profile_, current_model_updater_);
+      std::make_unique<AppSyncUIStateWatcher>(profile_, model_updater_);
 
   SetUpSearchUI();
   OnTemplateURLServiceChanged();
 
   // Clear search query.
-  current_model_updater_->UpdateSearchBox(base::string16(),
-                                          false /* initiated_by_user */);
+  model_updater_->UpdateSearchBox(base::string16(),
+                                  false /* initiated_by_user */);
 }
 
 void AppListClientImpl::SetUpSearchUI() {
   search_resource_manager_ = std::make_unique<app_list::SearchResourceManager>(
-      profile_, current_model_updater_);
+      profile_, model_updater_);
 
   search_controller_ =
-      app_list::CreateSearchController(profile_, current_model_updater_, this);
+      app_list::CreateSearchController(profile_, model_updater_, this);
 }
 
 app_list::SearchController* AppListClientImpl::search_controller() {
@@ -413,20 +365,11 @@ app_list::SearchController* AppListClientImpl::search_controller() {
 }
 
 AppListModelUpdater* AppListClientImpl::GetModelUpdaterForTest() {
-  return current_model_updater_;
-}
-
-void AppListClientImpl::SetUpMojoRecorderForTest() {
-  mojo_recorder_for_test_ = std::make_unique<MojoRecorderForTest>();
-}
-
-int AppListClientImpl::QueryMojoRecorderForTest(int profile_id) {
-  DCHECK(mojo_recorder_for_test_.get());
-  return mojo_recorder_for_test_->Query(profile_id);
+  return model_updater_;
 }
 
 void AppListClientImpl::OnTemplateURLServiceChanged() {
-  DCHECK(current_model_updater_);
+  DCHECK(model_updater_);
 
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile_);
@@ -437,7 +380,7 @@ void AppListClientImpl::OnTemplateURLServiceChanged() {
       default_provider->GetEngineType(
           template_url_service->search_terms_data()) == SEARCH_ENGINE_GOOGLE;
 
-  current_model_updater_->SetSearchEngineIsGoogle(is_google);
+  model_updater_->SetSearchEngineIsGoogle(is_google);
 }
 
 void AppListClientImpl::ShowAndSwitchToState(ash::AppListState state) {
