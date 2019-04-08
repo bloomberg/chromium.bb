@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 
 namespace dbus {
@@ -25,7 +24,7 @@ namespace chromeos {
 // org.freedesktop.ModemManager1.Modem.Messaging service.  All methods
 // should be called from the origin thread (UI thread) which
 // initializes the DBusThreadManager instance.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) ModemMessagingClient {
+class COMPONENT_EXPORT(SHILL_CLIENT) ModemMessagingClient {
  public:
   typedef base::Callback<void(const dbus::ObjectPath& message_path,
                               bool complete)>

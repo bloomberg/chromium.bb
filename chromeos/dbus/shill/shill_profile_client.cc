@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/values.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill/fake_shill_profile_client.h"
 #include "chromeos/dbus/shill/shill_property_changed_observer.h"
 #include "dbus/bus.h"

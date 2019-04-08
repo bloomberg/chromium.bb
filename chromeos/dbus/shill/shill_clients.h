@@ -15,13 +15,13 @@ namespace chromeos {
 namespace shill_clients {
 
 // Initialize Shill and modemmanager related dbus clients.
-COMPONENT_EXPORT(CHROMEOS_DBUS) void Initialize(dbus::Bus* system_bus);
+COMPONENT_EXPORT(SHILL_CLIENT) void Initialize(dbus::Bus* system_bus);
 
 // Initialize fake Shill and modemmanager related dbus clients.
-COMPONENT_EXPORT(CHROMEOS_DBUS) void InitializeFakes();
+COMPONENT_EXPORT(SHILL_CLIENT) void InitializeFakes();
 
 // Shut down Shill and modemmanager related dbus clients.
-COMPONENT_EXPORT(CHROMEOS_DBUS) void Shutdown();
+COMPONENT_EXPORT(SHILL_CLIENT) void Shutdown();
 
 }  // namespace shill_clients
 }  // namespace chromeos

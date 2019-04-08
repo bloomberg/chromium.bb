@@ -14,7 +14,7 @@
 namespace chromeos {
 
 // A fake implementation of ShillIPConfigClient.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeShillIPConfigClient
+class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillIPConfigClient
     : public ShillIPConfigClient,
       public ShillIPConfigClient::TestInterface {
  public:

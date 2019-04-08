@@ -30,7 +30,7 @@ namespace chromeos {
 // org.freedesktop.ModemManager.Modem.Gsm.SMS service.
 // All methods should be called from the origin thread (UI thread) which
 // initializes the DBusThreadManager instance.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) GsmSMSClient {
+class COMPONENT_EXPORT(SHILL_CLIENT) GsmSMSClient {
  public:
   typedef base::Callback<void(uint32_t index, bool complete)>
       SmsReceivedHandler;

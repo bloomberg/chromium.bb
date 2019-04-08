@@ -29,7 +29,7 @@ class ShillPropertyChangedObserver;
 // ShillIPConfigClient is used to communicate with the Shill IPConfig
 // service.  All methods should be called from the origin thread which
 // initializes the DBusThreadManager instance.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) ShillIPConfigClient {
+class COMPONENT_EXPORT(SHILL_CLIENT) ShillIPConfigClient {
  public:
   typedef ShillClientHelper::PropertyChangedHandler PropertyChangedHandler;
   typedef ShillClientHelper::DictionaryValueCallback DictionaryValueCallback;

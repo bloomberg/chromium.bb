@@ -15,7 +15,7 @@
 
 namespace chromeos {
 
-class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeModemMessagingClient
+class COMPONENT_EXPORT(SHILL_CLIENT) FakeModemMessagingClient
     : public ModemMessagingClient {
  public:
   FakeModemMessagingClient();

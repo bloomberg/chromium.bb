@@ -7,7 +7,7 @@
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #if defined(OS_CHROMEOS)
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/network/geolocation_handler.h"
 #endif
 #include "mojo/public/cpp/bindings/interface_ptr.h"
@@ -40,7 +40,7 @@ class GeolocationServiceUnitTest : public DeviceServiceTestBase {
  protected:
   void SetUp() override {
 #if defined(OS_CHROMEOS)
-    chromeos::DBusThreadManager::Initialize();
+    chromeos::shill_clients::InitializeFakes();
     chromeos::NetworkHandler::Initialize();
 #endif
     network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
@@ -60,7 +60,7 @@ class GeolocationServiceUnitTest : public DeviceServiceTestBase {
 
 #if defined(OS_CHROMEOS)
     chromeos::NetworkHandler::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
+    chromeos::shill_clients::Shutdown();
 #endif
 
     // Let the GeolocationImpl destruct earlier than GeolocationProviderImpl to

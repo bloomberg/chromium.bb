@@ -30,7 +30,7 @@ class ShillThirdPartyVpnObserver;
 // ThirdPartyVpnDriver service.
 // All methods should be called from the origin thread which initializes the
 // DBusThreadManager instance.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) ShillThirdPartyVpnDriverClient {
+class COMPONENT_EXPORT(SHILL_CLIENT) ShillThirdPartyVpnDriverClient {
  public:
   class TestInterface {
    public:
