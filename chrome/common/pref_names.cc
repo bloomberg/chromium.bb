@@ -1539,6 +1539,11 @@ const char kContentSuggestionsNotificationsSentDay[] =
 const char kContentSuggestionsNotificationsSentCount[] =
     "ntp.content_suggestions.notifications.sent_count";
 #else
+// Tracks whether a field trial to hide shortcuts on the NTP has been activated.
+// It is only activated for fresh installs, and remains active for those clients
+// after a browser restart.
+const char kNtpActivateHideShortcutsFieldTrial[] =
+    "ntp.activate_hide_shortcuts_field_trial";
 // Holds info for New Tab Page custom background
 const char kNtpCustomBackgroundDict[] = "ntp.custom_background_dict";
 const char kNtpCustomBackgroundLocalToDevice[] =
