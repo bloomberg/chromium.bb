@@ -3095,7 +3095,7 @@ void av1_simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
   MV ref_mv = { 0, 0 };
   const int step_param = cpi->mv_step_param;
   const MvLimits tmp_mv_limits = x->mv_limits;
-  const SEARCH_METHODS search_methods = NSTEP;
+  const SEARCH_METHODS search_methods = cpi->sf.mv.search_method;
   const int do_mesh_search = 0;
   const int sadpb = x->sadperbit16;
   int cost_list[5];
