@@ -1,0 +1,19 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//third_party/closure_compiler/compile_js.gni")
+
+assert(is_chromeos, "MultiDevice UI is Chrome OS only.")
+
+js_type_check("closure_compile") {
+  deps = [
+    ":cellular_setup",
+  ]
+}
+
+js_library("cellular_setup") {
+  deps = [
+    "//ui/webui/resources/js:i18n_behavior",
+  ]
+}
