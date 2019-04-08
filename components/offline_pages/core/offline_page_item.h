@@ -92,6 +92,10 @@ struct OfflinePageItem {
   // page can be trusted. This field will always be an empty string for
   // temporary and shared pages.
   std::string digest;
+  // Snippet from the article.
+  std::string snippet;
+  // Text indicating the article's publisher.
+  std::string attribution;
 };
 
 // This operator is for testing only, see offline_page_test_utils.cc.
