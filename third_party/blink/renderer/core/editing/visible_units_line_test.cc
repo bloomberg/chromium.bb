@@ -659,8 +659,8 @@ TEST_F(VisibleUnitsLineTest,
   const VisiblePosition& visible_position =
       CreateVisiblePosition(Position::LastPositionInNode(*two));
   EXPECT_EQ(Position(one->firstChild(), 7),
-            PreviousRootInlineBoxCandidatePosition(
-                two->lastChild(), visible_position, kContentIsEditable));
+            PreviousRootInlineBoxCandidatePosition(two->lastChild(),
+                                                   visible_position));
 }
 
 TEST_P(ParameterizedVisibleUnitsLineTest, InSameLineSkippingEmptyEditableDiv) {

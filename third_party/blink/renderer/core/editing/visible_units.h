@@ -165,14 +165,10 @@ StartOfLine(const VisiblePositionInFlatTree&);
 CORE_EXPORT VisiblePosition EndOfLine(const VisiblePosition&);
 CORE_EXPORT VisiblePositionInFlatTree
 EndOfLine(const VisiblePositionInFlatTree&);
-enum EditableType { kContentIsEditable, kHasEditableAXRole };
 CORE_EXPORT VisiblePosition
-PreviousLinePosition(const VisiblePosition&,
-                     LayoutUnit line_direction_point,
-                     EditableType = kContentIsEditable);
+PreviousLinePosition(const VisiblePosition&, LayoutUnit line_direction_point);
 CORE_EXPORT VisiblePosition NextLinePosition(const VisiblePosition&,
-                                             LayoutUnit line_direction_point,
-                                             EditableType = kContentIsEditable);
+                                             LayoutUnit line_direction_point);
 CORE_EXPORT bool InSameLine(const VisiblePosition&, const VisiblePosition&);
 CORE_EXPORT bool InSameLine(const VisiblePositionInFlatTree&,
                             const VisiblePositionInFlatTree&);
@@ -303,14 +299,10 @@ AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
     const VisiblePositionInFlatTree&,
     const PositionInFlatTree&);
 
-Position NextRootInlineBoxCandidatePosition(Node*,
-                                            const VisiblePosition&,
-                                            EditableType);
+Position NextRootInlineBoxCandidatePosition(Node*, const VisiblePosition&);
 
 CORE_EXPORT Position
-PreviousRootInlineBoxCandidatePosition(Node*,
-                                       const VisiblePosition&,
-                                       EditableType);
+PreviousRootInlineBoxCandidatePosition(Node*, const VisiblePosition&);
 
 }  // namespace blink
 

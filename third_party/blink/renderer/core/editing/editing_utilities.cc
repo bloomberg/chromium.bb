@@ -447,14 +447,11 @@ Element* RootEditableElement(const Node& node) {
   return ToElement(const_cast<Node*>(result));
 }
 
-ContainerNode* HighestEditableRoot(
-    const Position& position,
-    Element* (*root_editable_element_of)(const Position&),
-    bool (*has_editable_style)(const Node&)) {
+ContainerNode* HighestEditableRoot(const Position& position) {
   if (position.IsNull())
     return nullptr;
 
-  ContainerNode* highest_root = root_editable_element_of(position);
+  ContainerNode* highest_root = RootEditableElementOf(position);
   if (!highest_root)
     return nullptr;
 
@@ -463,7 +460,7 @@ ContainerNode* HighestEditableRoot(
 
   ContainerNode* node = highest_root->parentNode();
   while (node) {
-    if (has_editable_style(*node))
+    if (HasEditableStyle(*node))
       highest_root = node;
     if (IsHTMLBodyElement(*node))
       break;

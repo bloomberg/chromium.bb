@@ -85,10 +85,7 @@ ContainerNode* RootEditableElementOrTreeScopeRootNodeOf(const Position&);
 // <body>. Otherwise, this searches ancestors for the highest editable node in
 // defiance of editing boundaries. This returns a Document if designMode="on"
 // and the specified Position is not in the <body>.
-CORE_EXPORT ContainerNode* HighestEditableRoot(
-    const Position&,
-    Element* (*)(const Position&) = RootEditableElementOf,
-    bool (*)(const Node&) = HasEditableStyle);
+CORE_EXPORT ContainerNode* HighestEditableRoot(const Position&);
 ContainerNode* HighestEditableRoot(const PositionInFlatTree&);
 
 Node* HighestEnclosingNodeOfType(
