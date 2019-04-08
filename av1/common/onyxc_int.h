@@ -917,6 +917,7 @@ static INLINE void update_partition_context(MACROBLOCKD *xd, int mi_row,
 
 static INLINE int is_chroma_reference(int mi_row, int mi_col, BLOCK_SIZE bsize,
                                       int subsampling_x, int subsampling_y) {
+  assert(bsize < BLOCK_SIZES_ALL);
   const int bw = mi_size_wide[bsize];
   const int bh = mi_size_high[bsize];
   int ref_pos = ((mi_row & 0x01) || !(bh & 0x01) || !subsampling_y) &&

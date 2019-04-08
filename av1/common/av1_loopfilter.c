@@ -2044,6 +2044,7 @@ static TX_SIZE set_lpf_parameters(
           const BLOCK_SIZE bsize =
               get_plane_block_size(mbmi->sb_type, plane_ptr->subsampling_x,
                                    plane_ptr->subsampling_y);
+          assert(bsize < BLOCK_SIZES_ALL);
           const int prediction_masks = edge_dir == VERT_EDGE
                                            ? block_size_wide[bsize] - 1
                                            : block_size_high[bsize] - 1;

@@ -61,6 +61,8 @@ void av1_reset_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col,
   int i;
   int nplanes;
   int chroma_ref;
+  assert(bsize < BLOCK_SIZES_ALL);
+
   chroma_ref =
       is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
                           xd->plane[1].subsampling_y);

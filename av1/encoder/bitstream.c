@@ -1589,6 +1589,7 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
                            int mi_col, BLOCK_SIZE bsize) {
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
+  assert(bsize < BLOCK_SIZES_ALL);
   const int hbs = mi_size_wide[bsize] / 2;
   const int quarter_step = mi_size_wide[bsize] / 4;
   int i;

@@ -1140,6 +1140,7 @@ void av1_build_interintra_predictors_sbp(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                          uint8_t *pred, int stride,
                                          const BUFFER_SET *ctx, int plane,
                                          BLOCK_SIZE bsize) {
+  assert(bsize < BLOCK_SIZES_ALL);
   if (is_cur_buf_hbd(xd)) {
     DECLARE_ALIGNED(16, uint16_t, intrapredictor[MAX_SB_SQUARE]);
     av1_build_intra_predictors_for_interintra(

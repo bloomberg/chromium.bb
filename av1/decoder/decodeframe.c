@@ -1734,6 +1734,7 @@ static PARTITION_TYPE read_partition(MACROBLOCKD *xd, int mi_row, int mi_col,
 static void decode_partition(AV1Decoder *const pbi, ThreadData *const td,
                              int mi_row, int mi_col, aom_reader *reader,
                              BLOCK_SIZE bsize, int parse_decode_flag) {
+  assert(bsize < BLOCK_SIZES_ALL);
   AV1_COMMON *const cm = &pbi->common;
   MACROBLOCKD *const xd = &td->xd;
   const int bw = mi_size_wide[bsize];

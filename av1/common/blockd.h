@@ -784,6 +784,8 @@ static INLINE BLOCK_SIZE get_plane_block_size(BLOCK_SIZE bsize,
                                               int subsampling_x,
                                               int subsampling_y) {
   if (bsize == BLOCK_INVALID) return BLOCK_INVALID;
+  assert(subsampling_x >= 0 && subsampling_x < 2);
+  assert(subsampling_y >= 0 && subsampling_y < 2);
   return ss_size_lookup[bsize][subsampling_x][subsampling_y];
 }
 
@@ -1004,6 +1006,7 @@ static INLINE int get_vartx_max_txsize(const MACROBLOCKD *xd, BLOCK_SIZE bsize,
 }
 
 static INLINE int is_motion_variation_allowed_bsize(BLOCK_SIZE bsize) {
+  assert(bsize < BLOCK_SIZES_ALL);
   return AOMMIN(block_size_wide[bsize], block_size_high[bsize]) >= 8;
 }
 

@@ -198,6 +198,8 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
   struct tokenize_b_args arg = { cpi, td, t, 0, allow_update_cdf };
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
+  assert(bsize < BLOCK_SIZES_ALL);
+
   if (mbmi->skip) {
     av1_reset_skip_context(xd, mi_row, mi_col, bsize, num_planes);
     return;

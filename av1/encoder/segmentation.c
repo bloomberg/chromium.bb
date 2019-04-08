@@ -151,6 +151,7 @@ static void count_segs_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
     case PARTITION_SPLIT: {
       const BLOCK_SIZE subsize = get_partition_subsize(bsize, PARTITION_SPLIT);
       int n;
+      assert(subsize < BLOCK_SIZES_ALL);
 
       for (n = 0; n < 4; n++) {
         const int mi_dc = hbs * (n & 1);

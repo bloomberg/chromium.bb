@@ -86,6 +86,7 @@ void av1_subtract_txb(MACROBLOCK *x, int plane, BLOCK_SIZE plane_bsize,
 void av1_subtract_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane) {
   struct macroblock_plane *const p = &x->plane[plane];
   const struct macroblockd_plane *const pd = &x->e_mbd.plane[plane];
+  assert(bsize < BLOCK_SIZES_ALL);
   const BLOCK_SIZE plane_bsize =
       get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
   const int bw = block_size_wide[plane_bsize];
@@ -477,6 +478,8 @@ void av1_encode_sb(const struct AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   mbmi->skip = 1;
 
   if (x->skip) return;
+
+  assert(bsize < BLOCK_SIZES_ALL);
 
   for (plane = 0; plane < num_planes; ++plane) {
     const int subsampling_x = xd->plane[plane].subsampling_x;

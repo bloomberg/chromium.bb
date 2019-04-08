@@ -958,6 +958,7 @@ void av1_get_entropy_contexts(BLOCK_SIZE bsize,
                               const struct macroblockd_plane *pd,
                               ENTROPY_CONTEXT t_above[MAX_MIB_SIZE],
                               ENTROPY_CONTEXT t_left[MAX_MIB_SIZE]) {
+  assert(bsize < BLOCK_SIZES_ALL);
   const BLOCK_SIZE plane_bsize =
       get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
   get_entropy_contexts_plane(plane_bsize, pd, t_above, t_left);
