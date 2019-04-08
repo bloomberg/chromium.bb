@@ -6997,6 +6997,9 @@ histogram as enum -->
   <int value="7" label="Failed to start collection">
     Collection could not start due to failing prerequisites.
   </int>
+  <int value="8" label="Data collection failure">
+    Failure while collecting data.
+  </int>
 </enum>
 
 <enum name="ChromeOSRecoveryReason">
