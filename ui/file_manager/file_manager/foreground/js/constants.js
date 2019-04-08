@@ -83,3 +83,9 @@ constants.DRIVE_WELCOME_CSS = 'foreground/css/drive_welcome.css';
  * @const
  */
 constants.DEFAULT_CROSTINI_VM = 'termina';
+
+/**
+ * Name of the Plugin VM.
+ * @const
+ */
+constants.PLUGIN_VM = 'PluginVm';

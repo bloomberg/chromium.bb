@@ -23741,6 +23741,10 @@ Called by update_net_error_codes.py.-->
   <int value="13" label="Manage Linux sharing menu"/>
   <int value="14" label="Manage Linux sharing toast"/>
   <int value="15" label="Manage Linux sharing toast startup"/>
+  <int value="16" label="Share with Plugin VM"/>
+  <int value="17" label="Manage Plugin VM sharing menu"/>
+  <int value="18" label="Manage Plugin VM sharing toast"/>
+  <int value="19" label="Manage Plugin VM sharing toast startup"/>
 </enum>
 
 <enum name="FileManagerQuickViewWayToOpen">

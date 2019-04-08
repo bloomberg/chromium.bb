@@ -21,16 +21,18 @@ Crostini.prototype.init = function(volumeManager) {};
 Crostini.prototype.listen = function() {};
 
 /**
- * Set from feature 'crostini-files'.
+ * Set whether the specified VM is enabled.
+ * @param {string} vmName
  * @param {boolean} enabled
  */
-Crostini.prototype.setEnabled = function(enabled) {};
+Crostini.prototype.setEnabled = function(vmName, enabled) {};
 
 /**
- * Returns true if crostini is enabled.
+ * Returns true if the specified VM is enabled.
+ * @param {string} vmName
  * @return {boolean}
  */
-Crostini.prototype.isEnabled = function() {};
+Crostini.prototype.isEnabled = function(vmName) {};
 
 /**
  * Registers an entry as a shared path for the specified VM.

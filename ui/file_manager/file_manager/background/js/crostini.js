@@ -10,10 +10,10 @@
  */
 function CrostiniImpl() {
   /**
-   * True if crostini is enabled.
-   * @private {boolean}
+   * True if VM is enabled.
+   * @private {Object<boolean>}
    */
-  this.enabled_ = false;
+  this.enabled_ = {};
 
   /**
    * Maintains a list of paths shared with VMs.
@@ -28,6 +28,12 @@ function CrostiniImpl() {
  * @const
  */
 CrostiniImpl.DEFAULT_VM = 'termina';
+
+/**
+ * Plugin VM 'PluginVm'.
+ * @const
+ */
+CrostiniImpl.PLUGIN_VM = 'PluginVm';
 
 /**
  * Keep in sync with histograms.xml:FileBrowserCrostiniSharedPathsDepth
@@ -80,19 +86,21 @@ CrostiniImpl.prototype.listen = function() {
 };
 
 /**
- * Set from feature 'crostini-files'.
+ * Set whether the specified VM is enabled.
+ * @param {string} vmName
  * @param {boolean} enabled
  */
-CrostiniImpl.prototype.setEnabled = function(enabled) {
-  this.enabled_ = enabled;
+CrostiniImpl.prototype.setEnabled = function(vmName, enabled) {
+  this.enabled_[vmName] = enabled;
 };
 
 /**
  * Returns true if crostini is enabled.
+ * @param {string} vmName
  * @return {boolean}
  */
-CrostiniImpl.prototype.isEnabled = function() {
-  return this.enabled_;
+CrostiniImpl.prototype.isEnabled = function(vmName) {
+  return this.enabled_[vmName];
 };
 
 /**
@@ -216,7 +224,7 @@ CrostiniImpl.prototype.isPathShared = function(vmName, entry) {
  * @param {boolean} persist If path is to be persisted.
  */
 CrostiniImpl.prototype.canSharePath = function(vmName, entry, persist) {
-  if (vmName === CrostiniImpl.DEFAULT_VM && !this.enabled_) {
+  if (!this.enabled_[vmName]) {
     return false;
   }
 

@@ -137,7 +137,7 @@ function testIsPathShared() {
  * Tests disallowed and allowed shared paths.
  */
 function testCanSharePath() {
-  crostini.setEnabled(true);
+  crostini.setEnabled('vm', true);
 
   const mockFileSystem = new MockFileSystem('test');
   const root = new MockDirectoryEntry(mockFileSystem, '/');
