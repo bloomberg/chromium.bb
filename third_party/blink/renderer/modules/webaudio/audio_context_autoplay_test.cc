@@ -35,10 +35,6 @@ const char* const kAutoplayCrossOriginMetric = "WebAudio.Autoplay.CrossOrigin";
 
 class MockCrossOriginLocalFrameClient final : public EmptyLocalFrameClient {
  public:
-  static MockCrossOriginLocalFrameClient* Create(Frame* parent) {
-    return MakeGarbageCollected<MockCrossOriginLocalFrameClient>(parent);
-  }
-
   explicit MockCrossOriginLocalFrameClient(Frame* parent) : parent_(parent) {}
 
   void Trace(blink::Visitor* visitor) override {

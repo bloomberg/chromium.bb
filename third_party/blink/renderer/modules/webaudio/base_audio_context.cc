@@ -120,7 +120,7 @@ void BaseAudioContext::Initialize() {
 
   FFTFrame::Initialize();
 
-  audio_worklet_ = AudioWorklet::Create(this);
+  audio_worklet_ = MakeGarbageCollected<AudioWorklet>(this);
 
   if (destination_node_) {
     destination_node_->Handler().Initialize();
@@ -134,7 +134,7 @@ void BaseAudioContext::Initialize() {
 
     // The AudioParams in the listener need access to the destination node, so
     // only create the listener if the destination node exists.
-    listener_ = AudioListener::Create(*this);
+    listener_ = MakeGarbageCollected<AudioListener>(*this);
   }
 }
 

@@ -53,10 +53,6 @@ class MODULES_EXPORT AudioWorkletGlobalScope final : public WorkletGlobalScope {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static AudioWorkletGlobalScope* Create(
-      std::unique_ptr<GlobalScopeCreationParams>,
-      WorkerThread*);
-
   AudioWorkletGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
                           WorkerThread*);
   ~AudioWorkletGlobalScope() override;
