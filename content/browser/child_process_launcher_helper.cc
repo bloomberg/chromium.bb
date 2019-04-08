@@ -227,13 +227,22 @@ base::SingleThreadTaskRunner* GetProcessLauncherTaskRunner() {
       launcher_task_runner(
           android::LauncherThread::GetMessageLoop()->task_runner());
   return (*launcher_task_runner).get();
-#else   // defined(OS_ANDROID)
+#else  // defined(OS_ANDROID)
+  constexpr base::TaskShutdownBehavior shutdown_behavior =
+#if defined(OS_WIN)
+      base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN;
+#else
+      // Linux could use CONTINUE_ON_SHUTDOWN if ZygoteHostImpl was leaked on
+      // shutdown. Mac could use CONTINUE_ON_SHUTDOWN if PluginServiceImpl was
+      // leaked on shutdown.
+      base::TaskShutdownBehavior::BLOCK_SHUTDOWN;
+#endif  // defined(OS_WIN)
   // TODO(http://crbug.com/820200): Investigate whether we could use
   // SequencedTaskRunner on platforms other than Windows.
   static base::LazySingleThreadTaskRunner launcher_task_runner =
       LAZY_SINGLE_THREAD_TASK_RUNNER_INITIALIZER(
           base::TaskTraits({base::MayBlock(), base::TaskPriority::USER_BLOCKING,
-                            base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
+                            shutdown_behavior}),
           base::SingleThreadTaskRunnerThreadMode::DEDICATED);
   return launcher_task_runner.Get().get();
 #endif  // defined(OS_ANDROID)
