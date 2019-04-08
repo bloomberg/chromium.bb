@@ -103,7 +103,8 @@ MojoResult HandleTable::GetAndRemoveDispatcher(
   if (it->second.busy)
     return MOJO_RESULT_BUSY;
 
-  *dispatcher = std::move(it->second.dispatcher);
+  if (dispatcher)
+    *dispatcher = std::move(it->second.dispatcher);
   handles_.erase(it);
   return MOJO_RESULT_OK;
 }

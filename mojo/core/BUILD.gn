@@ -308,6 +308,7 @@ source_set("test_sources") {
     "shared_buffer_dispatcher_unittest.cc",
     "shared_buffer_unittest.cc",
     "signals_unittest.cc",
+    "spliced_message_pipe_unittest.cc",
     "trap_unittest.cc",
   ]
 

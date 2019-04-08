@@ -48,24 +48,24 @@ static_assert(sizeof(SerializedState) % 8 == 0,
 
 }  // namespace
 
-// A PortObserver which forwards to a DataPipeProducerDispatcher. This owns a
+// A SlotObserver which forwards to a DataPipeProducerDispatcher. This owns a
 // reference to the dispatcher to ensure it lives as long as the observed port.
-class DataPipeProducerDispatcher::PortObserverThunk
-    : public NodeController::PortObserver {
+class DataPipeProducerDispatcher::SlotObserverThunk
+    : public NodeController::SlotObserver {
  public:
-  explicit PortObserverThunk(
+  explicit SlotObserverThunk(
       scoped_refptr<DataPipeProducerDispatcher> dispatcher)
       : dispatcher_(dispatcher) {}
 
  private:
-  ~PortObserverThunk() override {}
+  ~SlotObserverThunk() override {}
 
-  // NodeController::PortObserver:
-  void OnPortStatusChanged() override { dispatcher_->OnPortStatusChanged(); }
+  // NodeController::SlotObserver:
+  void OnSlotStatusChanged() override { dispatcher_->OnPortStatusChanged(); }
 
   scoped_refptr<DataPipeProducerDispatcher> dispatcher_;
 
-  DISALLOW_COPY_AND_ASSIGN(PortObserverThunk);
+  DISALLOW_COPY_AND_ASSIGN(SlotObserverThunk);
 };
 
 // static
@@ -278,6 +278,7 @@ bool DataPipeProducerDispatcher::EndSerialize(
   state->buffer_guid_low = guid.GetLowForSerialization();
 
   ports[0].name = control_port_.name();
+  ports[0].slot_id = ports::kDefaultSlotId;
 
   PlatformHandle handle;
   PlatformHandle ignored_handle;
@@ -299,7 +300,8 @@ bool DataPipeProducerDispatcher::BeginTransit() {
 }
 
 void DataPipeProducerDispatcher::CompleteTransitAndClose() {
-  node_controller_->SetPortObserver(control_port_, nullptr);
+  node_controller_->SetSlotObserver(
+      ports::SlotRef(control_port_, ports::kDefaultSlotId), nullptr);
 
   base::AutoLock lock(lock_);
   DCHECK(in_transit_);
@@ -416,8 +418,9 @@ bool DataPipeProducerDispatcher::InitializeNoLock() {
   }
 
   base::AutoUnlock unlock(lock_);
-  node_controller_->SetPortObserver(
-      control_port_, base::MakeRefCounted<PortObserverThunk>(this));
+  node_controller_->SetSlotObserver(
+      ports::SlotRef(control_port_, ports::kDefaultSlotId),
+      base::MakeRefCounted<SlotObserverThunk>(this));
 
   return true;
 }
