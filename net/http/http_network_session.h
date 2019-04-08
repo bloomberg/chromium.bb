@@ -127,9 +127,6 @@ class NET_EXPORT HttpNetworkSession {
     // Whether to enable Websocket over HTTP/2.
     bool enable_websocket_over_http2;
 
-    // Enables 0-RTT support.
-    bool enable_early_data;
-
     // Enables QUIC support.
     bool enable_quic;
 

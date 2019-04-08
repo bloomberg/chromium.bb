@@ -31,12 +31,8 @@ int HttpBasicStream::InitializeStream(const HttpRequestInfo* request_info,
                                       const NetLogWithSource& net_log,
                                       CompletionOnceCallback callback) {
   DCHECK(request_info->traffic_annotation.is_valid());
-  state_.Initialize(request_info, priority, net_log);
-  int ret = OK;
-  if (!can_send_early) {
-    ret = parser()->ConfirmHandshake(std::move(callback));
-  }
-  return ret;
+  state_.Initialize(request_info, can_send_early, priority, net_log);
+  return OK;
 }
 
 int HttpBasicStream::SendRequest(const HttpRequestHeaders& headers,

@@ -194,8 +194,6 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
     session_deps_.socket_factory->AddSocketDataProvider(data_.get());
 
     if (GetParam() != HTTP) {
-      // Keep the old ssl_data in case there is a draining socket.
-      old_ssl_data_.swap(ssl_data_);
       ssl_data_ =
           std::make_unique<SSLSocketDataProvider>(connect_and_ssl_io_mode, OK);
       if (GetParam() == SPDY) {
@@ -243,7 +241,6 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
   std::unique_ptr<TestProxyDelegate> proxy_delegate_;
 
   std::unique_ptr<SSLSocketDataProvider> ssl_data_;
-  std::unique_ptr<SSLSocketDataProvider> old_ssl_data_;
   std::unique_ptr<SequencedSocketData> data_;
   SpdySessionDependencies session_deps_;
 

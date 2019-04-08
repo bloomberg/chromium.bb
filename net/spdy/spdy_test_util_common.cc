@@ -251,9 +251,8 @@ base::WeakPtr<SpdyStream> CreateStreamSynchronously(
     const NetLogWithSource& net_log) {
   SpdyStreamRequest stream_request;
   int rv = stream_request.StartRequest(
-      type, session, url, false /* no early data */, priority, SocketTag(),
-      net_log, CompletionOnceCallback(), TRAFFIC_ANNOTATION_FOR_TESTS);
-
+      type, session, url, priority, SocketTag(), net_log,
+      CompletionOnceCallback(), TRAFFIC_ANNOTATION_FOR_TESTS);
   return
       (rv == OK) ? stream_request.ReleaseStream() : base::WeakPtr<SpdyStream>();
 }
@@ -343,8 +342,7 @@ SpdySessionDependencies::SpdySessionDependencies(
       enable_websocket_over_http2(false),
       net_log(nullptr),
       http_09_on_non_default_ports_enabled(false),
-      disable_idle_sockets_close_on_memory_pressure(false),
-      enable_early_data(false) {
+      disable_idle_sockets_close_on_memory_pressure(false) {
   http2_settings[spdy::SETTINGS_INITIAL_WINDOW_SIZE] =
       kDefaultInitialWindowSize;
 }
@@ -397,7 +395,6 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
       session_deps->http_09_on_non_default_ports_enabled;
   params.disable_idle_sockets_close_on_memory_pressure =
       session_deps->disable_idle_sockets_close_on_memory_pressure;
-  params.enable_early_data = session_deps->enable_early_data;
   return params;
 }
 

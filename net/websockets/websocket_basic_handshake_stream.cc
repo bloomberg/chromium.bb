@@ -203,17 +203,7 @@ int WebSocketBasicHandshakeStream::InitializeStream(
     CompletionOnceCallback callback) {
   DCHECK(request_info->traffic_annotation.is_valid());
   url_ = request_info->url;
-  // The WebSocket may receive a socket in the early data state from
-  // HttpNetworkTransaction, which means it must call ConfirmHandshake() for
-  // requests that need replay protection. However, the first request on any
-  // WebSocket stream is a GET with an idempotent request
-  // (https://tools.ietf.org/html/rfc6455#section-1.3), so there is no need to
-  // call ConfirmHandshake().
-  //
-  // Data after the WebSockets handshake may not be replayable, but the
-  // handshake is guaranteed to be confirmed once the HTTP response is received.
-  DCHECK(can_send_early);
-  state_.Initialize(request_info, priority, net_log);
+  state_.Initialize(request_info, can_send_early, priority, net_log);
   return OK;
 }
 

@@ -444,7 +444,7 @@ TEST_F(SpdySessionTest, PendingStreamCancellingAnother) {
   StreamRequestDestroyingCallback callback1;
   ASSERT_EQ(ERR_IO_PENDING,
             request1.StartRequest(SPDY_BIDIRECTIONAL_STREAM, session_,
-                                  test_url_, false, MEDIUM, SocketTag(),
+                                  test_url_, MEDIUM, SocketTag(),
                                   NetLogWithSource(), callback1.MakeCallback(),
                                   TRAFFIC_ANNOTATION_FOR_TESTS));
 
@@ -452,7 +452,7 @@ TEST_F(SpdySessionTest, PendingStreamCancellingAnother) {
   TestCompletionCallback callback2;
   ASSERT_EQ(ERR_IO_PENDING,
             request2->StartRequest(SPDY_BIDIRECTIONAL_STREAM, session_,
-                                   test_url_, false, MEDIUM, SocketTag(),
+                                   test_url_, MEDIUM, SocketTag(),
                                    NetLogWithSource(), callback2.callback(),
                                    TRAFFIC_ANNOTATION_FOR_TESTS));
 
@@ -879,8 +879,8 @@ TEST_F(SpdySessionTest, CreateStreamAfterGoAway) {
 
   SpdyStreamRequest stream_request;
   int rv = stream_request.StartRequest(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, false, MEDIUM,
-      SocketTag(), NetLogWithSource(), CompletionOnceCallback(),
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, SocketTag(),
+      NetLogWithSource(), CompletionOnceCallback(),
       TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_THAT(rv, IsError(ERR_FAILED));
 
@@ -1305,7 +1305,7 @@ TEST_F(SpdySessionTest, StreamIdSpaceExhausted) {
   TestCompletionCallback callback4;
   EXPECT_EQ(ERR_IO_PENDING,
             request4.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_,
-                                  test_url_, false, MEDIUM, SocketTag(),
+                                  test_url_, MEDIUM, SocketTag(),
                                   NetLogWithSource(), callback4.callback(),
                                   TRAFFIC_ANNOTATION_FOR_TESTS));
 
@@ -1411,10 +1411,9 @@ TEST_F(SpdySessionTest, MaxConcurrentStreamsZero) {
   // Start request.
   SpdyStreamRequest request;
   TestCompletionCallback callback;
-  int rv =
-      request.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_,
-                           false, MEDIUM, SocketTag(), NetLogWithSource(),
-                           callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS);
+  int rv = request.StartRequest(
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, SocketTag(),
+      NetLogWithSource(), callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Stream is stalled.
@@ -1480,7 +1479,7 @@ TEST_F(SpdySessionTest, UnstallRacesWithStreamCreation) {
   TestCompletionCallback callback2;
   EXPECT_EQ(ERR_IO_PENDING,
             request2.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_,
-                                  test_url_, false, MEDIUM, SocketTag(),
+                                  test_url_, MEDIUM, SocketTag(),
                                   NetLogWithSource(), callback2.callback(),
                                   TRAFFIC_ANNOTATION_FOR_TESTS));
 
@@ -2001,11 +2000,12 @@ TEST_F(SpdySessionTest, OnSettings) {
   SpdyStreamRequest request;
   ASSERT_EQ(ERR_IO_PENDING,
             request.StartRequest(SPDY_BIDIRECTIONAL_STREAM, session_, test_url_,
-                                 false, MEDIUM, SocketTag(), NetLogWithSource(),
+                                 MEDIUM, SocketTag(), NetLogWithSource(),
                                  stream_releaser.MakeCallback(&request),
                                  TRAFFIC_ANNOTATION_FOR_TESTS));
 
   base::RunLoop().RunUntilIdle();
+
   EXPECT_THAT(stream_releaser.WaitForResult(), IsOk());
 
   data.Resume();
@@ -2056,7 +2056,7 @@ TEST_F(SpdySessionTest, CancelPendingCreateStream) {
   SpdyStreamRequest request;
   ASSERT_THAT(
       request.StartRequest(SPDY_BIDIRECTIONAL_STREAM, session_, test_url_,
-                           false, MEDIUM, SocketTag(), NetLogWithSource(),
+                           MEDIUM, SocketTag(), NetLogWithSource(),
                            callback->callback(), TRAFFIC_ANNOTATION_FOR_TESTS),
       IsError(ERR_IO_PENDING));
 
@@ -2089,14 +2089,14 @@ TEST_F(SpdySessionTest, ChangeStreamRequestPriority) {
   TestCompletionCallback callback1;
   SpdyStreamRequest request1;
   ASSERT_EQ(OK, request1.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_,
-                                      test_url_, false, LOWEST, SocketTag(),
+                                      test_url_, LOWEST, SocketTag(),
                                       NetLogWithSource(), callback1.callback(),
                                       TRAFFIC_ANNOTATION_FOR_TESTS));
   TestCompletionCallback callback2;
   SpdyStreamRequest request2;
   ASSERT_EQ(ERR_IO_PENDING,
             request2.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_,
-                                  test_url_, false, LOWEST, SocketTag(),
+                                  test_url_, LOWEST, SocketTag(),
                                   NetLogWithSource(), callback2.callback(),
                                   TRAFFIC_ANNOTATION_FOR_TESTS));
 
@@ -2856,7 +2856,7 @@ TEST_F(SpdySessionTest, CloseTwoStalledCreateStream) {
   SpdyStreamRequest request2;
   ASSERT_EQ(ERR_IO_PENDING,
             request2.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_,
-                                  test_url_, false, LOWEST, SocketTag(),
+                                  test_url_, LOWEST, SocketTag(),
                                   NetLogWithSource(), callback2.callback(),
                                   TRAFFIC_ANNOTATION_FOR_TESTS));
 
@@ -2864,7 +2864,7 @@ TEST_F(SpdySessionTest, CloseTwoStalledCreateStream) {
   SpdyStreamRequest request3;
   ASSERT_EQ(ERR_IO_PENDING,
             request3.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_,
-                                  test_url_, false, LOWEST, SocketTag(),
+                                  test_url_, LOWEST, SocketTag(),
                                   NetLogWithSource(), callback3.callback(),
                                   TRAFFIC_ANNOTATION_FOR_TESTS));
 
@@ -2969,7 +2969,7 @@ TEST_F(SpdySessionTest, CancelTwoStalledCreateStream) {
   SpdyStreamRequest request2;
   ASSERT_EQ(ERR_IO_PENDING,
             request2.StartRequest(SPDY_BIDIRECTIONAL_STREAM, session_,
-                                  test_url_, false, LOWEST, SocketTag(),
+                                  test_url_, LOWEST, SocketTag(),
                                   NetLogWithSource(), callback2.callback(),
                                   TRAFFIC_ANNOTATION_FOR_TESTS));
 
@@ -2977,7 +2977,7 @@ TEST_F(SpdySessionTest, CancelTwoStalledCreateStream) {
   SpdyStreamRequest request3;
   ASSERT_EQ(ERR_IO_PENDING,
             request3.StartRequest(SPDY_BIDIRECTIONAL_STREAM, session_,
-                                  test_url_, false, LOWEST, SocketTag(),
+                                  test_url_, LOWEST, SocketTag(),
                                   NetLogWithSource(), callback3.callback(),
                                   TRAFFIC_ANNOTATION_FOR_TESTS));
 
