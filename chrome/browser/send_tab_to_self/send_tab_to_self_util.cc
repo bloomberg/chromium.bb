@@ -8,6 +8,7 @@
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
+#include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/sync/device_info/device_info.h"
@@ -23,8 +24,13 @@
 
 namespace send_tab_to_self {
 
-bool IsFlagEnabled() {
+bool IsReceivingEnabled() {
   return base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf);
+}
+
+bool IsSendingEnabled() {
+  return IsReceivingEnabled() &&
+         base::FeatureList::IsEnabled(kSendTabToSelfShowSendingUI);
 }
 
 bool IsUserSyncTypeActive(Profile* profile) {
@@ -53,7 +59,9 @@ bool ShouldOfferFeature(content::WebContents* web_contents) {
     return false;
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  return IsFlagEnabled() && IsUserSyncTypeActive(profile) &&
+
+  // If sending is enabled, then so is receiving.
+  return IsSendingEnabled() && IsUserSyncTypeActive(profile) &&
          IsSyncingOnMultipleDevices(profile) &&
          IsContentRequirementsMet(web_contents->GetURL(), profile);
 }
@@ -64,7 +72,7 @@ bool ShouldOfferFeatureForLink(content::WebContents* web_contents,
     return false;
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  return IsFlagEnabled() && IsUserSyncTypeActive(profile) &&
+  return IsSendingEnabled() && IsUserSyncTypeActive(profile) &&
          IsSyncingOnMultipleDevices(profile) &&
          (IsContentRequirementsMet(web_contents->GetURL(), profile) ||
           IsContentRequirementsMet(link_url, profile));

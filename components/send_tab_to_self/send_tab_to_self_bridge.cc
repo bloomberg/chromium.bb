@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/time/clock.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/proto/send_tab_to_self.pb.h"
 #include "components/sync/device_info/device_info.h"
 #include "components/sync/device_info/local_device_info_provider.h"
@@ -249,6 +250,11 @@ const SendTabToSelfEntry* SendTabToSelfBridge::AddEntry(
 
   if (!url.is_valid()) {
     UMA_HISTOGRAM_ENUMERATION(kAddEntryStatus, FAILURE);
+    return nullptr;
+  }
+
+  // AddEntry should be a no-op if the UI is disabled
+  if (!base::FeatureList::IsEnabled(kSendTabToSelfShowSendingUI)) {
     return nullptr;
   }
 

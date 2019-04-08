@@ -3719,10 +3719,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSendTabToSelfDescription, kOsAll,
      FEATURE_VALUE_TYPE(switches::kSyncSendTabToSelf)},
 
-    {"enable-send-tab-to-self-receive",
-     flag_descriptions::kSendTabToSelfReceiveName,
-     flag_descriptions::kSendTabToSelfReceiveDescription, kOsAll,
-     FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfReceive)},
+    {"enable-send-tab-to-self-show-sending-ui",
+     flag_descriptions::kSendTabToSelfShowSendingUIName,
+     flag_descriptions::kSendTabToSelfShowSendingUIDescription, kOsAll,
+     FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfShowSendingUI)},
 
     {"enable-data-reduction-proxy-with-network-service",
      flag_descriptions::kEnableDataReductionProxyNetworkServiceName,

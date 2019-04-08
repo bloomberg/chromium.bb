@@ -32735,7 +32735,6 @@ from previous Chrome versions.
   <int value="-1039555838" label="GamepadExtensions:enabled"/>
   <int value="-1037128156" label="HomeLauncherGestures:disabled"/>
   <int value="-1034344165" label="V8NoTurbo:disabled"/>
-  <int value="-1034152207" label="SendTabToSelfReceive:enabled"/>
   <int value="-1033738911" label="enable-mac-views-dialogs"/>
   <int value="-1031350684" label="PdfIsolation:disabled"/>
   <int value="-1029920490" label="IdleTimeSpellChecking:enabled"/>
@@ -32764,6 +32763,7 @@ from previous Chrome versions.
   <int value="-992785453" label="ExplicitLanguageAsk:disabled"/>
   <int value="-991253797"
       label="OmniboxSpeculativeServiceWorkerStartOnQueryInput:disabled"/>
+  <int value="-990187062" label="SendTabToSelfShowSendingUI:enabled"/>
   <int value="-989671895" label="OfflineIndicatorAlwaysHttpProbe:enabled"/>
   <int value="-984052166" label="DoodlesOnLocalNtp:enabled"/>
   <int value="-981237342" label="SyncUSSAutofillWalletMetadata:disabled"/>
@@ -34158,7 +34158,6 @@ from previous Chrome versions.
   <int value="1277386636" label="QueryInOmnibox:disabled"/>
   <int value="1279584261" label="enable-carrier-switching"/>
   <int value="1280614081" label="show-overdraw-feedback"/>
-  <int value="1281553299" label="SendTabToSelfReceive:disabled"/>
   <int value="1283908088" label="ImprovedLanguageSettings:disabled"/>
   <int value="1283956865" label="force-tablet-mode"/>
   <int value="1283960113" label="disable-fixed-position-compositing"/>
@@ -34464,6 +34463,7 @@ from previous Chrome versions.
   <int value="1775475563" label="malware-interstitial-v3"/>
   <int value="1776475705" label="show-composited-layer-borders"/>
   <int value="1777059507" label="trust-autofill-server-name-types"/>
+  <int value="1777695562" label="SendTabToSelfShowSendingUI:disabled"/>
   <int value="1777806335" label="UsePasswordSeparatedSigninFlow:disabled"/>
   <int value="1782210532" label="PerNavigationMojoInterface:disabled"/>
   <int value="1783293530" label="disallow-autofill-sync-credential"/>

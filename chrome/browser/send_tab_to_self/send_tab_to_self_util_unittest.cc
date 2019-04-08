@@ -16,6 +16,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/sync/device_info/device_info.h"
 #include "components/sync/device_info/device_info_sync_bridge.h"
@@ -122,7 +123,8 @@ class SendTabToSelfUtilTest : public BrowserWithTestWindowTest {
 
   // Set up all test conditions to let ShouldOfferFeature() return true
   void SetUpAllTrueEnv() {
-    scoped_feature_list_.InitAndEnableFeature(switches::kSyncSendTabToSelf);
+    scoped_feature_list_.InitWithFeatures(
+        {switches::kSyncSendTabToSelf, kSendTabToSelfShowSendingUI}, {});
     syncer::ModelTypeSet enabled_modeltype(syncer::SEND_TAB_TO_SELF);
     test_sync_service_->SetPreferredDataTypes(enabled_modeltype);
 
@@ -134,7 +136,8 @@ class SendTabToSelfUtilTest : public BrowserWithTestWindowTest {
 
   // Set up a environment in which the feature flag is disabled
   void SetUpFeatureDisabledEnv() {
-    scoped_feature_list_.InitAndDisableFeature(switches::kSyncSendTabToSelf);
+    scoped_feature_list_.InitWithFeatures(
+        {}, {switches::kSyncSendTabToSelf, kSendTabToSelfShowSendingUI});
     syncer::ModelTypeSet enabled_modeltype(syncer::SEND_TAB_TO_SELF);
     test_sync_service_->SetPreferredDataTypes(enabled_modeltype);
 
@@ -153,15 +156,36 @@ class SendTabToSelfUtilTest : public BrowserWithTestWindowTest {
   base::string16 title_;
 };
 
-TEST_F(SendTabToSelfUtilTest, IsFlagEnabled_True) {
-  scoped_feature_list_.InitAndEnableFeature(switches::kSyncSendTabToSelf);
+TEST_F(SendTabToSelfUtilTest, AreFlagsEnabled_True) {
+  scoped_feature_list_.InitWithFeatures(
+      {switches::kSyncSendTabToSelf, kSendTabToSelfShowSendingUI}, {});
 
-  EXPECT_TRUE(IsFlagEnabled());
+  EXPECT_TRUE(IsSendingEnabled());
+  EXPECT_TRUE(IsReceivingEnabled());
 }
 
-TEST_F(SendTabToSelfUtilTest, IsFlagEnabled_False) {
-  scoped_feature_list_.InitAndDisableFeature(switches::kSyncSendTabToSelf);
-  EXPECT_FALSE(IsFlagEnabled());
+TEST_F(SendTabToSelfUtilTest, AreFlagsEnabled_False) {
+  scoped_feature_list_.InitWithFeatures(
+      {}, {switches::kSyncSendTabToSelf, kSendTabToSelfShowSendingUI});
+
+  EXPECT_FALSE(IsSendingEnabled());
+  EXPECT_FALSE(IsReceivingEnabled());
+}
+
+TEST_F(SendTabToSelfUtilTest, IsReceivingEnabled_True) {
+  scoped_feature_list_.InitWithFeatures({switches::kSyncSendTabToSelf},
+                                        {kSendTabToSelfShowSendingUI});
+
+  EXPECT_FALSE(IsSendingEnabled());
+  EXPECT_TRUE(IsReceivingEnabled());
+}
+
+TEST_F(SendTabToSelfUtilTest, IsOnlySendingEnabled_False) {
+  scoped_feature_list_.InitWithFeatures({kSendTabToSelfShowSendingUI},
+                                        {switches::kSyncSendTabToSelf});
+
+  EXPECT_FALSE(IsSendingEnabled());
+  EXPECT_FALSE(IsReceivingEnabled());
 }
 
 TEST_F(SendTabToSelfUtilTest, IsSyncingOnMultipleDevices_True) {

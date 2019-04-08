@@ -10,6 +10,7 @@
 #include "chrome/browser/sync/test/integration/send_tab_to_self_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/sync/device_info/device_info_sync_service.h"
@@ -20,7 +21,10 @@
 class TwoClientSendTabToSelfSyncTest : public SyncTest {
  public:
   TwoClientSendTabToSelfSyncTest() : SyncTest(TWO_CLIENT) {
-    scoped_list_.InitAndEnableFeature(switches::kSyncSendTabToSelf);
+    scoped_list_.InitWithFeatures(
+        {switches::kSyncSendTabToSelf,
+         send_tab_to_self::kSendTabToSelfShowSendingUI},
+        {});
   }
 
   ~TwoClientSendTabToSelfSyncTest() override {}

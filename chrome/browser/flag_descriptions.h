@@ -1040,8 +1040,8 @@ extern const char kSaveasMenuLabelExperimentDescription[];
 extern const char kSendTabToSelfName[];
 extern const char kSendTabToSelfDescription[];
 
-extern const char kSendTabToSelfReceiveName[];
-extern const char kSendTabToSelfReceiveDescription[];
+extern const char kSendTabToSelfShowSendingUIName[];
+extern const char kSendTabToSelfShowSendingUIDescription[];
 
 extern const char kServiceWorkerImportedScriptUpdateCheckName[];
 extern const char kServiceWorkerImportedScriptUpdateCheckDescription[];
