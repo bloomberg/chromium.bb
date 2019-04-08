@@ -110,10 +110,20 @@ public abstract class TabModelFilter extends EmptyTabModelObserver implements Ta
      */
     protected abstract void reorder();
 
+    // TODO(crbug.com/948518): This is a band-aid fix for not crashing when undo the last closed
+    // tab, should remove later.
+    /**
+     * @return Whether filter should notify observers about the SetIndex call.
+     */
+    protected boolean shouldNotifyObserversOnSetIndex() {
+        return true;
+    }
+
     // TabModelObserver implementation.
     @Override
     public void didSelectTab(Tab tab, int type, int lastId) {
         selectTab(tab);
+        if (!shouldNotifyObserversOnSetIndex()) return;
         for (TabModelObserver observer : mFilteredObservers) {
             observer.didSelectTab(tab, type, lastId);
         }

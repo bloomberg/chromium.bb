@@ -103,6 +103,7 @@ public class TabGroupModelFilter extends TabModelFilter {
     private int mCurrentGroupIndex = TabList.INVALID_TAB_INDEX;
     // The number of groups with at least 2 tabs.
     private int mActualGroupCount;
+    private Tab mAbsentSelectedTab;
 
     public TabGroupModelFilter(TabModel tabModel) {
         super(tabModel);
@@ -165,6 +166,12 @@ public class TabGroupModelFilter extends TabModelFilter {
             mGroupIdToGroupMap.put(groupId, tabGroup);
             mGroupIdToGroupIndexMap.put(groupId, mGroupIdToGroupIndexMap.size());
         }
+
+        if (mAbsentSelectedTab != null) {
+            Tab absentSelectedTab = mAbsentSelectedTab;
+            mAbsentSelectedTab = null;
+            selectTab(absentSelectedTab);
+        }
     }
 
     @Override
@@ -198,9 +205,14 @@ public class TabGroupModelFilter extends TabModelFilter {
 
     @Override
     protected void selectTab(Tab tab) {
+        assert mAbsentSelectedTab == null;
         int groupId = tab.getRootId();
-        mGroupIdToGroupMap.get(groupId).setLastShownTabId(tab.getId());
-        mCurrentGroupIndex = mGroupIdToGroupIndexMap.get(groupId);
+        if (mGroupIdToGroupMap.get(groupId) == null) {
+            mAbsentSelectedTab = tab;
+        } else {
+            mGroupIdToGroupMap.get(groupId).setLastShownTabId(tab.getId());
+            mCurrentGroupIndex = mGroupIdToGroupIndexMap.get(groupId);
+        }
     }
 
     @Override
@@ -230,6 +242,11 @@ public class TabGroupModelFilter extends TabModelFilter {
             }
             mGroupIdToGroupMap.get(groupId).moveToEndInGroup(tab.getId());
         }
+    }
+
+    @Override
+    protected boolean shouldNotifyObserversOnSetIndex() {
+        return mAbsentSelectedTab == null;
     }
 
     // TabList implementation.
