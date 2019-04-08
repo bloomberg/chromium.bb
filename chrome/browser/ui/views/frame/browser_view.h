@@ -67,6 +67,7 @@ class LocationBarView;
 class PageActionIconContainer;
 class StatusBubbleViews;
 class TabStrip;
+class TabStripRegionView;
 class ToolbarButtonProvider;
 class ToolbarView;
 class TopContainerView;
@@ -722,6 +723,9 @@ class BrowserView : public BrowserWindow,
   // bar. Stacked top in the view hiearachy so it can be used to slide out
   // the top views in immersive fullscreen.
   TopContainerView* top_container_ = nullptr;
+
+  // The view that contains the tabstrip, new tab button, and grab handle space.
+  TabStripRegionView* tab_strip_region_view_ = nullptr;
 
   // The TabStrip.
   TabStrip* tabstrip_ = nullptr;

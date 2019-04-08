@@ -22,7 +22,7 @@ class BrowserViewLayoutDelegate {
 
   virtual views::View* GetContentsWebView() const = 0;
   virtual bool IsTabStripVisible() const = 0;
-  virtual gfx::Rect GetBoundsForTabStripInBrowserView() const = 0;
+  virtual gfx::Rect GetBoundsForTabStripRegionInBrowserView() const = 0;
   virtual int GetTopInsetInBrowserView() const = 0;
   virtual int GetThemeBackgroundXInset() const = 0;
   virtual bool IsToolbarVisible() const = 0;

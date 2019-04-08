@@ -469,8 +469,8 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest, ImmersiveFullscreen) {
 
   // Frame paints by default.
   EXPECT_TRUE(frame_view->ShouldPaint());
-  EXPECT_LT(
-      0, frame_view->GetBoundsForTabStrip(browser_view->tabstrip()).bottom());
+  EXPECT_LT(0, frame_view->GetBoundsForTabStripRegion(browser_view->tabstrip())
+                   .bottom());
 
   // Enter both browser fullscreen and tab fullscreen. Entering browser
   // fullscreen should enable immersive fullscreen.
@@ -490,8 +490,8 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest, ImmersiveFullscreen) {
   revealed_lock.reset();
   EXPECT_FALSE(immersive_mode_controller->IsRevealed());
   EXPECT_FALSE(frame_view->ShouldPaint());
-  EXPECT_EQ(
-      0, frame_view->GetBoundsForTabStrip(browser_view->tabstrip()).bottom());
+  EXPECT_EQ(0, frame_view->GetBoundsForTabStripRegion(browser_view->tabstrip())
+                   .bottom());
 
   // Repeat test but without tab fullscreen.
   ExitFullscreenModeForTabAndWait(browser(), web_contents);
@@ -501,23 +501,23 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest, ImmersiveFullscreen) {
       ImmersiveModeController::ANIMATE_REVEAL_NO));
   EXPECT_TRUE(immersive_mode_controller->IsRevealed());
   EXPECT_TRUE(frame_view->ShouldPaint());
-  EXPECT_LT(
-      0, frame_view->GetBoundsForTabStrip(browser_view->tabstrip()).bottom());
+  EXPECT_LT(0, frame_view->GetBoundsForTabStripRegion(browser_view->tabstrip())
+                   .bottom());
 
   // Ending the reveal. Immersive browser should have the same behavior as full
   // screen, i.e., having an origin of (0,0).
   revealed_lock.reset();
   EXPECT_FALSE(frame_view->ShouldPaint());
-  EXPECT_EQ(
-      0, frame_view->GetBoundsForTabStrip(browser_view->tabstrip()).bottom());
+  EXPECT_EQ(0, frame_view->GetBoundsForTabStripRegion(browser_view->tabstrip())
+                   .bottom());
 
   // Exiting immersive fullscreen should make the caption buttons and the frame
   // visible again.
   ExitFullscreenModeAndWait(browser_view);
   EXPECT_FALSE(immersive_mode_controller->IsEnabled());
   EXPECT_TRUE(frame_view->ShouldPaint());
-  EXPECT_LT(
-      0, frame_view->GetBoundsForTabStrip(browser_view->tabstrip()).bottom());
+  EXPECT_LT(0, frame_view->GetBoundsForTabStripRegion(browser_view->tabstrip())
+                   .bottom());
 }
 
 // Tests IDC_SELECT_TAB_0, IDC_SELECT_NEXT_TAB, IDC_SELECT_PREVIOUS_TAB and

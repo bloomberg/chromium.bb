@@ -50,9 +50,10 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // left in LTR mode, or the right in RTL mode).
   virtual bool CaptionButtonsOnLeadingEdge() const;
 
-  // Retrieves the bounds, in non-client view coordinates within which the
+  // Retrieves the bounds in non-client view coordinates within which the
   // TabStrip should be laid out.
-  virtual gfx::Rect GetBoundsForTabStrip(const views::View* tabstrip) const = 0;
+  virtual gfx::Rect GetBoundsForTabStripRegion(
+      const views::View* tabstrip) const = 0;
 
   // Returns the inset of the topmost view in the client view from the top of
   // the non-client view. The topmost view depends on the window type. The

@@ -84,6 +84,7 @@
 #include "chrome/browser/ui/views/frame/browser_view_layout_delegate.h"
 #include "chrome/browser/ui/views/frame/contents_layout_manager.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
+#include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/frame/web_contents_close_handler.h"
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_host.h"
@@ -364,8 +365,8 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
     return browser_view_->IsTabStripVisible();
   }
 
-  gfx::Rect GetBoundsForTabStripInBrowserView() const override {
-    gfx::RectF bounds_f(browser_view_->frame()->GetBoundsForTabStrip(
+  gfx::Rect GetBoundsForTabStripRegionInBrowserView() const override {
+    gfx::RectF bounds_f(browser_view_->frame()->GetBoundsForTabStripRegion(
         browser_view_->tabstrip()));
     views::View::ConvertRectToTarget(browser_view_->parent(), browser_view_,
         &bounds_f);
@@ -2502,17 +2503,19 @@ void BrowserView::InitViews() {
 
   LoadAccelerators();
 
-  // Top container holds tab strip and toolbar and lives at the front of the
-  // view hierarchy.
+  // Top container holds tab strip region and toolbar and lives at the front of
+  // the view hierarchy.
   top_container_ = new TopContainerView(this);
   AddChildView(top_container_);
+  tab_strip_region_view_ = new TabStripRegionView();
+  top_container_->AddChildView(tab_strip_region_view_);
 
   // TabStrip takes ownership of the controller.
   BrowserTabStripController* tabstrip_controller =
       new BrowserTabStripController(browser_->tab_strip_model(), this);
   tabstrip_ =
       new TabStrip(std::unique_ptr<TabStripController>(tabstrip_controller));
-  top_container_->AddChildView(tabstrip_);  // Takes ownership.
+  tab_strip_region_view_->AddChildView(tabstrip_);  // Takes ownership.
   tabstrip_controller->InitFromModel(tabstrip_);
 
   toolbar_ = new ToolbarView(browser_.get(), this);
@@ -2559,15 +2562,10 @@ void BrowserView::InitViews() {
   immersive_mode_controller_->AddObserver(this);
 
   auto browser_view_layout = std::make_unique<BrowserViewLayout>();
-  browser_view_layout->Init(new BrowserViewLayoutDelegateImpl(this),
-                            browser(),
-                            this,
-                            top_container_,
-                            tabstrip_,
-                            toolbar_,
-                            infobar_container_,
-                            contents_container_,
-                            immersive_mode_controller_.get());
+  browser_view_layout->Init(
+      new BrowserViewLayoutDelegateImpl(this), browser(), this, top_container_,
+      tab_strip_region_view_, tabstrip_, toolbar_, infobar_container_,
+      contents_container_, immersive_mode_controller_.get());
   SetLayoutManager(std::move(browser_view_layout));
 
   EnsureFocusOrder();

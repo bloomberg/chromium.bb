@@ -245,17 +245,18 @@ class OpaqueBrowserFrameViewLayoutTest
       tabstrip_x += OpaqueBrowserFrameViewLayout::kFrameBorderThickness;
     }
     gfx::Size tabstrip_min_size(delegate_->GetTabstripPreferredSize());
-    gfx::Rect tabstrip_bounds(
-        layout_manager_->GetBoundsForTabStrip(tabstrip_min_size, kWindowWidth));
-    EXPECT_EQ(tabstrip_x, tabstrip_bounds.x());
+    gfx::Rect tabstrip_region_bounds(
+        layout_manager_->GetBoundsForTabStripRegion(tabstrip_min_size,
+                                                    kWindowWidth));
+    EXPECT_EQ(tabstrip_x, tabstrip_region_bounds.x());
     if (maximized) {
-      EXPECT_EQ(0, tabstrip_bounds.y());
+      EXPECT_EQ(0, tabstrip_region_bounds.y());
     } else {
       const int tabstrip_nonexcluded_y =
           OpaqueBrowserFrameViewLayout::kFrameBorderThickness +
           layout_manager_->GetNonClientRestoredExtraThickness() +
           OpaqueBrowserFrameViewLayout::kNonClientExtraTopThickness;
-      EXPECT_LE(tabstrip_bounds.y(), tabstrip_nonexcluded_y);
+      EXPECT_LE(tabstrip_region_bounds.y(), tabstrip_nonexcluded_y);
     }
     const bool showing_caption_buttons_on_right =
         show_caption_buttons && !caption_buttons_on_left;
@@ -267,8 +268,8 @@ class OpaqueBrowserFrameViewLayoutTest
     int spacing = maximized ? maximized_spacing : restored_spacing;
     const int tabstrip_width =
         kWindowWidth - tabstrip_x - caption_width - spacing;
-    EXPECT_EQ(tabstrip_width, tabstrip_bounds.width());
-    EXPECT_EQ(tabstrip_min_size.height(), tabstrip_bounds.height());
+    EXPECT_EQ(tabstrip_width, tabstrip_region_bounds.width());
+    EXPECT_EQ(tabstrip_min_size.height(), tabstrip_region_bounds.height());
     gfx::Size browser_view_min_size(delegate_->GetBrowserViewMinimumSize());
 
     // The tabs and window control buttons (if present) sit above the toolstrip
@@ -276,8 +277,9 @@ class OpaqueBrowserFrameViewLayoutTest
     // is the tabstrip, so we should be able to find the minimum width of this
     // region by subtracting out the difference between the current tab strip
     // width and the minimum tab strip width.
-    const int top_bar_minimum_width =
-        kWindowWidth - tabstrip_bounds.width() + tabstrip_min_size.width();
+    const int top_bar_minimum_width = kWindowWidth -
+                                      tabstrip_region_bounds.width() +
+                                      tabstrip_min_size.width();
     // The minimum window width is then the minimum overall browser contents
     // or the minimum tab strip/control buttons size, whichever is larger, plus
     // the frame width.

@@ -9,7 +9,9 @@
 #include "chrome/browser/ui/views/frame/browser_view_layout_delegate.h"
 #include "chrome/browser/ui/views/frame/contents_layout_manager.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
+#include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
+#include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -45,7 +47,7 @@ class MockBrowserViewLayoutDelegate : public BrowserViewLayoutDelegate {
     return contents_web_view_;
   }
   bool IsTabStripVisible() const override { return tab_strip_visible_; }
-  gfx::Rect GetBoundsForTabStripInBrowserView() const override {
+  gfx::Rect GetBoundsForTabStripRegionInBrowserView() const override {
     return gfx::Rect();
   }
   int GetTopInsetInBrowserView() const override { return 0; }
@@ -150,8 +152,10 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
     immersive_mode_controller_.reset(new MockImmersiveModeController);
 
     top_container_ = CreateFixedSizeView(gfx::Size(800, 60));
-    tab_strip_ = new TabStrip(std::unique_ptr<TabStripController>());
-    top_container_->AddChildView(tab_strip_);
+    views::View* tab_strip_region_view = new TabStripRegionView();
+    tab_strip_ = new TabStrip(std::make_unique<FakeBaseTabStripController>());
+    top_container_->AddChildView(tab_strip_region_view);
+    tab_strip_region_view->AddChildView(tab_strip_);
     toolbar_ = CreateFixedSizeView(gfx::Size(800, 30));
     top_container_->AddChildView(toolbar_);
     root_view_->AddChildView(top_container_);
@@ -175,14 +179,10 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
     // TODO(jamescook): Attach |layout_| to |root_view_|?
     layout_.reset(new BrowserViewLayout);
     delegate_ = new MockBrowserViewLayoutDelegate(contents_web_view_);
-    layout_->Init(delegate_,
-                  browser(),
+    layout_->Init(delegate_, browser(),
                   nullptr,  // BrowserView.
-                  top_container_,
-                  tab_strip_,
-                  toolbar_,
-                  infobar_container_,
-                  contents_container_,
+                  top_container_, tab_strip_region_view, tab_strip_, toolbar_,
+                  infobar_container_, contents_container_,
                   immersive_mode_controller_.get());
   }
 

@@ -2591,6 +2591,8 @@ jumbo_split_static_library("ui") {
       "views/frame/system_menu_model_builder.h",
       "views/frame/system_menu_model_delegate.cc",
       "views/frame/system_menu_model_delegate.h",
+      "views/frame/tab_strip_region_view.cc",
+      "views/frame/tab_strip_region_view.h",
       "views/frame/toolbar_button_provider.h",
       "views/frame/top_container_view.cc",
       "views/frame/top_container_view.h",
