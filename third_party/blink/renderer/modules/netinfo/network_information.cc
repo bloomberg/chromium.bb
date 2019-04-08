@@ -73,10 +73,6 @@ String GetConsoleLogStringForWebHoldback() {
 
 }  // namespace
 
-NetworkInformation* NetworkInformation::Create(ExecutionContext* context) {
-  return MakeGarbageCollected<NetworkInformation>(context);
-}
-
 NetworkInformation::~NetworkInformation() {
   DCHECK(!IsObserving());
 }
