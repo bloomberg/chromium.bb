@@ -213,6 +213,10 @@ source_set("host_resolver_manager") {
   # Whitelist-only access so we can keep track of all usage external to the
   # network stack and network service.
   friend = [
+    # chromecast/browser/url_request_context_factory.cc
+    # URLRequestContext creation for chromecast.
+    "//chromecast/browser",
+
     # Network stack/service.
     "//net/*",
     "//services/network/*",
