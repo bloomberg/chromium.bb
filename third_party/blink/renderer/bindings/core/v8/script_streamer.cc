@@ -44,7 +44,8 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
   ~SourceStream() override = default;
 
   // Called by V8 on a background thread. Should block until we can return
-  // some data.
+  // some data. Ownership of the |src| data buffer is passed to the caller,
+  // unless |src| is null.
   size_t GetMoreData(const uint8_t** src) override {
     DCHECK(!IsMainThread());
     CHECK(ready_to_run_.IsSet());
@@ -61,7 +62,11 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
 
     if (initial_data_) {
       CHECK_GT(initial_data_len_, 0u);
-      *src = initial_data_.release();
+      if (src) {
+        *src = initial_data_.release();
+      } else {
+        initial_data_.reset();
+      }
       size_t len = initial_data_len_;
       initial_data_len_ = 0;
       return len;
@@ -83,8 +88,12 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
           // num_bytes could only be 0 if the handle was being read elsewhere.
           CHECK_GT(num_bytes, 0u);
 
-          auto copy_for_script_stream = std::make_unique<uint8_t[]>(num_bytes);
-          memcpy(copy_for_script_stream.get(), buffer, num_bytes);
+          if (src) {
+            auto copy_for_script_stream =
+                std::make_unique<uint8_t[]>(num_bytes);
+            memcpy(copy_for_script_stream.get(), buffer, num_bytes);
+            *src = copy_for_script_stream.release();
+          }
 
           // TODO(leszeks): It would be nice to get rid of this second copy, and
           // either share ownership of the chunks, or only give chunks back to
@@ -100,7 +109,6 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
           result = data_pipe_->EndReadData(num_bytes);
           CHECK_EQ(result, MOJO_RESULT_OK);
 
-          *src = copy_for_script_stream.release();
           return num_bytes;
         }
 
@@ -152,8 +160,7 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
     if (!finished_) {
       // Keep reading data until we finish (returning 0). It won't be streaming
       // compiled any more, but it will continue being forwarded to the client.
-      const uint8_t* ignored_data;
-      while (GetMoreData(&ignored_data) != 0) {
+      while (GetMoreData(nullptr) != 0) {
       }
     }
     CHECK(finished_);
