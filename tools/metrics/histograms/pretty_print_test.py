@@ -27,6 +27,9 @@ ORIGINAL_XML = """
  </histogram>
  <histogram name="Foo.Bar" units="xxxxxxxxxxxxxxxxxxxyyyyyyyyyyyyyyyyyyyyyyzzzz">
   <summary>Foo</summary>
+  <obsolete>Obsolete 1</obsolete>
+  <obsolete>Obsolete 2</obsolete>
+  <enums>This shouldn't be here</enums>
  </histogram>
 </histograms>
 <enums>This shouldn't be here</enums>
@@ -43,6 +46,9 @@ PRETTY_XML = """
 <histograms>
 
 <histogram name="Foo.Bar" units="xxxxxxxxxxxxxxxxxxxyyyyyyyyyyyyyyyyyyyyyyzzzz">
+  <obsolete>
+    Obsolete 1
+  </obsolete>
   <summary>Foo</summary>
 </histogram>
 

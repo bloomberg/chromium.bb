@@ -59,24 +59,33 @@ def canonicalizeUnits(tree):
 
 def fixObsoleteOrder(tree):
   """Put obsolete tags at the beginning of histogram tags."""
+  obsoletes = []
+
   for child in tree:
-    obsoletes = []
     if child.tag == 'obsolete':
       obsoletes.append(child)
-    for obsolete in obsoletes:
-      tree.remove(obsolete)
-      tree.insert(0, obsolete)
-    fixObsoleteOrder(child)
+    else:
+      fixObsoleteOrder(child)
+
+  for obsolete in obsoletes:
+    tree.remove(obsolete)
+
+  # Only keep the first obsolete tag.
+  if obsoletes:
+    tree.insert(0, obsoletes[0])
 
 def DropNodesByTagName(tree, tag):
   """Drop all nodes with named tag from the XML tree."""
+  removes = []
+
   for child in tree:
-    removes = []
     if child.tag == tag:
       removes.append(child)
-    for child in removes:
-      tree.remove(child)
-    DropNodesByTagName(child, tag)
+    else:
+      DropNodesByTagName(child, tag)
+
+  for child in removes:
+    tree.remove(child)
 
 def PrettyPrintHistograms(raw_xml):
   """Pretty-print the given histograms XML.
