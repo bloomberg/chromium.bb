@@ -194,7 +194,7 @@ TEST_P(ViewPainterTouchActionRectTest, TouchActionRectScrollingContents) {
       LayoutRect(0, 0, 800, 3000));
 
   auto* html =
-      ToLayoutBlock(GetDocument().documentElement()->GetLayoutObject());
+      To<LayoutBlock>(GetDocument().documentElement()->GetLayoutObject());
   HitTestData html_hit_test_data;
   html_hit_test_data.touch_action_rects.emplace_back(
       LayoutRect(0, 0, 800, 3000));
@@ -265,7 +265,7 @@ TEST_P(ViewPainterTouchActionRectTest, TouchActionRectNonScrollingContents) {
   view_hit_test_data.touch_action_rects.emplace_back(
       LayoutRect(0, 0, 800, 600));
   auto* html =
-      ToLayoutBlock(GetDocument().documentElement()->GetLayoutObject());
+      To<LayoutBlock>(GetDocument().documentElement()->GetLayoutObject());
   auto scrolling_properties = view->FirstFragment().ContentsProperties();
   HitTestData scrolling_hit_test_data;
   scrolling_hit_test_data.touch_action_rects.emplace_back(

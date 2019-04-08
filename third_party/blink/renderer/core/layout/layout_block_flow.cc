@@ -2829,7 +2829,7 @@ void LayoutBlockFlow::MarkAllDescendantsWithFloatsForLayout(
           !child->IsLayoutBlock())
         continue;
       if (!child->IsLayoutBlockFlow()) {
-        LayoutBlock* child_block = ToLayoutBlock(child);
+        auto* child_block = To<LayoutBlock>(child);
         if (child_block->ShrinkToAvoidFloats() && child_block->EverHadLayout())
           child_block->SetChildNeedsLayout(mark_parents);
         continue;
