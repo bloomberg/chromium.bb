@@ -4454,6 +4454,23 @@ TEST_P(PaintPropertyTreeBuilderTest,
   EXPECT_EQ(LayoutUnit(200), FragmentAt(content, 1).LogicalTopInFlowThread());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, LayerUnderOverflowClipUnderMultiColumn) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='multicol' style='columns:2'>
+      <div id='clip' style='height: 200px; overflow: hidden'>
+        <div id='layer' style='position: relative; height: 800px'></div>
+      </div>
+      <div style='height: 200px'></div>
+    </div>
+  )HTML");
+
+  const auto* thread = GetLayoutObjectByElementId("multicol")->SlowFirstChild();
+  EXPECT_TRUE(thread->IsLayoutFlowThread());
+  EXPECT_EQ(2u, NumFragments(thread));
+  EXPECT_EQ(1u, NumFragments(GetLayoutObjectByElementId("clip")));
+  EXPECT_EQ(1u, NumFragments(GetLayoutObjectByElementId("layer")));
+}
+
 TEST_P(PaintPropertyTreeBuilderTest, CompositedUnderMultiColumn) {
   SetBodyInnerHTML(R"HTML(
     <style>body { margin: 0; }</style>
