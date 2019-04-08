@@ -56,7 +56,7 @@ def BundleTestUpdatePayloads(input_proto, output_proto):
       if os.path.isfile(path):
         rel_path = os.path.relpath(path, temp)
         output_proto.artifacts.add().path = os.path.join(output_dir, rel_path)
-    osutils.CopyDirContents(temp, output_dir)
+    osutils.CopyDirContents(temp, output_dir, allow_nonempty=True)
 
 
 def BundleAutotestFiles(input_proto, output_proto):

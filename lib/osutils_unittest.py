@@ -1075,6 +1075,15 @@ class CopyDirContentsTestCase(cros_test_lib.TempDirTestCase):
     with self.assertRaises(osutils.BadPathsException):
       osutils.CopyDirContents(in_dir, out_dir)
 
+  def testDestinationDirNonEmptyAllowNonEmptySet(self):
+    """Copying to a non-empty destination with allow_nonempty does not raise."""
+    in_dir = os.path.join(self.tempdir, 'input')
+    out_dir = os.path.join(self.tempdir, 'output')
+    osutils.SafeMakedirsNonRoot(in_dir)
+    osutils.SafeMakedirsNonRoot(out_dir)
+    osutils.SafeMakedirsNonRoot(os.path.join(out_dir, 'blah'))
+    osutils.CopyDirContents(in_dir, out_dir, allow_nonempty=True)
+
 
 class WhichTests(cros_test_lib.TempDirTestCase):
   """Test Which."""
