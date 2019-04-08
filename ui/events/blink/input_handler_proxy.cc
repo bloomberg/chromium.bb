@@ -263,7 +263,6 @@ void InputHandlerProxy::DispatchSingleInputEvent(
     std::unique_ptr<EventWithCallback> event_with_callback,
     const base::TimeTicks now) {
   ui::LatencyInfo monitored_latency_info = event_with_callback->latency_info();
-
   std::unique_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor =
       input_handler_->CreateLatencyInfoSwapPromiseMonitor(
           &monitored_latency_info);
@@ -301,12 +300,8 @@ void InputHandlerProxy::DispatchQueuedInputEvents() {
   base::TimeTicks now = tick_clock_->NowTicks();
   while (!compositor_event_queue_->empty()) {
     std::unique_ptr<EventWithCallback> event_with_callback =
-        compositor_event_queue_->Pop();
-    if (scroll_predictor_) {
-      scroll_predictor_->ResampleScrollEvents(
-          event_with_callback->original_events(), now,
-          event_with_callback->event_pointer());
-    }
+        scroll_predictor_->ResampleScrollEvents(compositor_event_queue_->Pop(),
+                                                now);
 
     DispatchSingleInputEvent(std::move(event_with_callback), now);
   }

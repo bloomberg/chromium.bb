@@ -57,16 +57,13 @@ bool WasHandled(InputEventAckState state) {
 
 std::unique_ptr<InputEvent> ScaleEvent(const WebInputEvent& event,
                                        double scale,
-                                       const ui::LatencyInfo latency_info) {
+                                       const ui::LatencyInfo& latency_info) {
   std::unique_ptr<blink::WebInputEvent> event_in_viewport =
       ui::ScaleWebInputEvent(event, scale);
   if (event_in_viewport) {
-    ui::LatencyInfo scaled_latency_info(latency_info);
-    scaled_latency_info.set_scroll_update_delta(
-        latency_info.scroll_update_delta() * scale);
     return std::make_unique<InputEvent>(
         ui::WebScopedInputEvent(event_in_viewport.release()),
-        scaled_latency_info);
+        latency_info.ScaledBy(scale));
   }
 
   return std::make_unique<InputEvent>(ui::WebInputEventTraits::Clone(event),

@@ -90,7 +90,7 @@ void AverageLagTracker::AddLatencyInFrame(
 
   last_event_timestamp_ = event_timestamp;
   last_event_accumulated_delta_ += latency.scroll_update_delta();
-  last_rendered_accumulated_delta_ += latency.scroll_update_delta();
+  last_rendered_accumulated_delta_ += latency.predicted_scroll_update_delta();
 }
 
 float AverageLagTracker::LagBetween(base::TimeTicks front_time,

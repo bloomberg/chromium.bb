@@ -174,6 +174,8 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
     has_seen_first_gesture_scroll_update_ = true;
     latency->set_scroll_update_delta(
         static_cast<const WebGestureEvent&>(event).data.scroll_update.delta_y);
+    latency->set_predicted_scroll_update_delta(
+        static_cast<const WebGestureEvent&>(event).data.scroll_update.delta_y);
   }
 }
 
