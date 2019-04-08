@@ -16,10 +16,6 @@
 
 namespace blink {
 
-AudioWorklet* AudioWorklet::Create(BaseAudioContext* context) {
-  return MakeGarbageCollected<AudioWorklet>(context);
-}
-
 AudioWorklet::AudioWorklet(BaseAudioContext* context)
     : Worklet(To<Document>(context->GetExecutionContext())),
       context_(context) {}
