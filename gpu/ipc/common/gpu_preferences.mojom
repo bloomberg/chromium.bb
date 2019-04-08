@@ -66,6 +66,7 @@ struct GpuPreferences {
   bool watchdog_starts_backgrounded;
   bool enable_vulkan;
   bool disable_vulkan_surface;
+  bool disable_vulkan_fallback_to_gl_for_testing;
   bool enable_gpu_benchmarking_extension;
   bool enable_webgpu;
 };

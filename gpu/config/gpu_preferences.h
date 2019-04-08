@@ -201,11 +201,17 @@ struct GPU_EXPORT GpuPreferences {
   // send a background/suspend signal.
   bool watchdog_starts_backgrounded = false;
 
+  // ===================================
+  // Settings from //gpu/command_buffer/service/gpu_switches.h
   // Use Vulkan for rasterization and display compositing.
   bool enable_vulkan = false;
 
   // Use vulkan VK_KHR_surface for presenting.
   bool disable_vulkan_surface = false;
+
+  // If Vulkan initialization has failed, do not fallback to GL. This is for
+  // testing in order to detect regressions which crash Vulkan.
+  bool disable_vulkan_fallback_to_gl_for_testing = false;
 
   // ===================================
   // Settings from //cc/base/switches.h

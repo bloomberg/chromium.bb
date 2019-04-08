@@ -39,6 +39,7 @@ GPU_EXPORT extern const char kUseCmdDecoder[];
 GPU_EXPORT extern const char kEnableRasterToSkImage[];
 GPU_EXPORT extern const char kEnableVulkan[];
 GPU_EXPORT extern const char kDisableVulkanSurface[];
+GPU_EXPORT extern const char kDisableVulkanFallbackToGLForTesting[];
 
 }  // namespace switches
 
