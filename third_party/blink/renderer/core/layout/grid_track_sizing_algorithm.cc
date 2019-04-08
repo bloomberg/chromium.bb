@@ -294,8 +294,7 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::LogicalHeightForChild(
           *GetLayoutGrid(), child, child_block_direction)) {
     SetOverrideContainingBlockContentSizeForChild(child, child_block_direction,
                                                   LayoutUnit(-1));
-    child.SetNeedsLayout(layout_invalidation_reason::kGridChanged,
-                         kMarkOnlyThis);
+    child.SetSelfNeedsLayoutForAvailableSpace(true);
   }
 
   child.LayoutIfNeeded();
@@ -325,8 +324,7 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::MinContentForChild(
 
   if (UpdateOverrideContainingBlockContentSizeForChild(
           child, child_inline_direction)) {
-    child.SetNeedsLayout(layout_invalidation_reason::kGridChanged,
-                         kMarkOnlyThis);
+    child.SetSelfNeedsLayoutForAvailableSpace(true);
   }
   return LogicalHeightForChild(child);
 }
@@ -350,8 +348,7 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::MaxContentForChild(
 
   if (UpdateOverrideContainingBlockContentSizeForChild(
           child, child_inline_direction)) {
-    child.SetNeedsLayout(layout_invalidation_reason::kGridChanged,
-                         kMarkOnlyThis);
+    child.SetSelfNeedsLayoutForAvailableSpace(true);
   }
   return LogicalHeightForChild(child);
 }
@@ -540,8 +537,7 @@ void DefiniteSizeStrategy::LayoutGridItemForMinSizeComputation(
     LayoutBox& child,
     bool override_size_has_changed) const {
   if (override_size_has_changed) {
-    child.SetNeedsLayout(layout_invalidation_reason::kGridChanged,
-                         kMarkOnlyThis);
+    child.SetSelfNeedsLayoutForAvailableSpace(true);
     child.LayoutIfNeeded();
   }
 }
@@ -583,8 +579,7 @@ void IndefiniteSizeStrategy::LayoutGridItemForMinSizeComputation(
     LayoutBox& child,
     bool override_size_has_changed) const {
   if (override_size_has_changed && Direction() != kForColumns) {
-    child.SetNeedsLayout(layout_invalidation_reason::kGridChanged,
-                         kMarkOnlyThis);
+    child.SetSelfNeedsLayoutForAvailableSpace(true);
     child.LayoutIfNeeded();
   }
 }

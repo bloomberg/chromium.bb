@@ -233,6 +233,11 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
   scoped_refptr<const NGLayoutResult> layout_result =
       box_->CachedLayoutResult(constraint_space, break_token);
   if (layout_result) {
+    // We may have to update the margins on box_; we reuse the layout result
+    // even if a percentage margin may have changed.
+    if (UNLIKELY(Style().MayHaveMargin() && !IsTableCell()))
+      box_->SetMargin(ComputePhysicalMargins(constraint_space, Style()));
+
     // TODO(layoutng): Figure out why these two call can't be inside the
     // !constraint_space.IsIntermediateLayout() block below.
     UpdateShapeOutsideInfoIfNeeded(
