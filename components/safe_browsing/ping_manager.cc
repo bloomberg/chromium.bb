@@ -92,11 +92,7 @@ PingManager::~PingManager() {}
 void PingManager::OnURLLoaderComplete(
     network::SimpleURLLoader* source,
     std::unique_ptr<std::string> response_body) {
-  auto it = std::find_if(
-      safebrowsing_reports_.begin(), safebrowsing_reports_.end(),
-      [source](const std::unique_ptr<network::SimpleURLLoader>& ptr) {
-        return ptr.get() == source;
-      });
+  auto it = safebrowsing_reports_.find(source);
   DCHECK(it != safebrowsing_reports_.end());
   safebrowsing_reports_.erase(it);
 }
