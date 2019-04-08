@@ -225,6 +225,9 @@ Polymer({
     this.$.frame.src = 'ink/index.html';
     await new Promise(resolve => this.$.frame.onload = resolve);
     this.ink_ = await this.$.frame.contentWindow.initInk();
+    this.ink_.addUndoStateListener(
+        e => this.dispatchEvent(
+            new CustomEvent('undo-state-changed', {detail: e})));
     this.ink_.setPDF(data);
     this.state_ = State.ACTIVE;
     this.viewportChanged();

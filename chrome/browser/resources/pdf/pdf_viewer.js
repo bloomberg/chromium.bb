@@ -1265,6 +1265,12 @@ PDFViewer.prototype = {
     // Warn the user if they attempt to close the window without saving.
     chrome.mimeHandlerPrivate.setShowBeforeUnloadDialog(true);
   },
+
+  /** @param {UndoState} state */
+  setAnnotationUndoState(state) {
+    this.toolbar_.canUndoAnnotation = state.canUndo;
+    this.toolbar_.canRedoAnnotation = state.canRedo;
+  }
 };
 
 /** @abstract */
@@ -1398,6 +1404,9 @@ class InkController extends ContentController {
       this.inkHost_.viewport = this.viewport_;
       this.inkHost_.addEventListener('stroke-added', e => {
         this.viewer_.setHasUnsavedChanges();
+      });
+      this.inkHost_.addEventListener('undo-state-changed', e => {
+        this.viewer_.setAnnotationUndoState(e.detail);
       });
     }
     return this.inkHost_.load(filename, data);
