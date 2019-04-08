@@ -45,6 +45,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_usb_host_permission_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/common/channel_info.h"
 #include "components/arc/app_permissions/arc_app_permissions_bridge.h"
 #include "components/arc/appfuse/arc_appfuse_bridge.h"
 #include "components/arc/arc_service_manager.h"
@@ -88,7 +89,8 @@ ArcServiceLauncher::ArcServiceLauncher()
           std::make_unique<ArcSessionRunner>(
               base::BindRepeating(ArcSession::Create,
                                   arc_service_manager_->arc_bridge_service(),
-                                  &default_scale_factor_retriever_)))) {
+                                  &default_scale_factor_retriever_,
+                                  chrome::GetChannel())))) {
   DCHECK(g_arc_service_launcher == nullptr);
   g_arc_service_launcher = this;
 
@@ -224,7 +226,7 @@ void ArcServiceLauncher::ResetForTesting() {
   arc_session_manager_ = std::make_unique<ArcSessionManager>(
       std::make_unique<ArcSessionRunner>(base::BindRepeating(
           ArcSession::Create, arc_service_manager_->arc_bridge_service(),
-          &default_scale_factor_retriever_)));
+          &default_scale_factor_retriever_, chrome::GetChannel())));
 }
 
 }  // namespace arc

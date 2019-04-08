@@ -22,6 +22,10 @@ const base::Feature kCleanArcDataOnRegularToChildTransitionFeature{
     "ArcCleanDataOnRegularToChildTransition",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls experimental Custom Tabs feature for ARC.
+const base::Feature kCustomTabsExperimentFeature{
+    "ArcCustomTabsExperiment", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Controls whether ARC handles child->regular account transition.
 const base::Feature kEnableChildToRegularTransitionFeature{
     "ArcEnableChildToRegularTransition", base::FEATURE_ENABLED_BY_DEFAULT};

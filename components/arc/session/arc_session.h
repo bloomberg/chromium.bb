@@ -23,6 +23,10 @@ namespace base {
 class FilePath;
 }
 
+namespace version_info {
+enum class Channel;
+}
+
 namespace arc {
 
 class ArcBridgeService;
@@ -87,7 +91,8 @@ class ArcSession {
   // Creates a default instance of ArcSession.
   static std::unique_ptr<ArcSession> Create(
       ArcBridgeService* arc_bridge_service,
-      ash::DefaultScaleFactorRetriever* retriever);
+      ash::DefaultScaleFactorRetriever* retriever,
+      version_info::Channel channel);
   virtual ~ArcSession();
 
   // Sends D-Bus message to start a mini-container.

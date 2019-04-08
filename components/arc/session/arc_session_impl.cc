@@ -30,6 +30,7 @@
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_host_impl.h"
 #include "components/user_manager/user_manager.h"
+#include "components/version_info/channel.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
@@ -115,7 +116,8 @@ ToLoginManagerSupervisionTransition(ArcSupervisionTransition transition) {
 class ArcSessionDelegateImpl : public ArcSessionImpl::Delegate {
  public:
   ArcSessionDelegateImpl(ArcBridgeService* arc_bridge_service,
-                         ash::DefaultScaleFactorRetriever* retriever);
+                         ash::DefaultScaleFactorRetriever* retriever,
+                         version_info::Channel channel);
   ~ArcSessionDelegateImpl() override = default;
 
   // ArcSessionImpl::Delegate override.
@@ -124,6 +126,7 @@ class ArcSessionDelegateImpl : public ArcSessionImpl::Delegate {
   base::ScopedFD ConnectMojo(base::ScopedFD socket_fd,
                              ConnectMojoCallback callback) override;
   void GetLcdDensity(GetLcdDensityCallback callback) override;
+  version_info::Channel GetChannel() override;
 
  private:
   // Synchronously create a UNIX domain socket. This is designed to run on a
@@ -148,6 +151,8 @@ class ArcSessionDelegateImpl : public ArcSessionImpl::Delegate {
   // Owned by ArcServiceLauncher.
   ash::DefaultScaleFactorRetriever* const default_scale_factor_retriever_;
 
+  const version_info::Channel channel_;
+
   // WeakPtrFactory to use callbacks.
   base::WeakPtrFactory<ArcSessionDelegateImpl> weak_factory_;
 
@@ -156,9 +161,11 @@ class ArcSessionDelegateImpl : public ArcSessionImpl::Delegate {
 
 ArcSessionDelegateImpl::ArcSessionDelegateImpl(
     ArcBridgeService* arc_bridge_service,
-    ash::DefaultScaleFactorRetriever* retriever)
+    ash::DefaultScaleFactorRetriever* retriever,
+    version_info::Channel channel)
     : arc_bridge_service_(arc_bridge_service),
       default_scale_factor_retriever_(retriever),
+      channel_(channel),
       weak_factory_(this) {}
 
 void ArcSessionDelegateImpl::CreateSocket(CreateSocketCallback callback) {
@@ -199,6 +206,10 @@ void ArcSessionDelegateImpl::GetLcdDensity(GetLcdDensityCallback callback) {
             GetLcdDensityForDeviceScaleFactor(default_scale_factor));
       },
       std::move(callback)));
+}
+
+version_info::Channel ArcSessionDelegateImpl::GetChannel() {
+  return channel_;
 }
 
 // static
@@ -319,9 +330,10 @@ const char ArcSessionImpl::kPackagesCacheModeSkipCopy[] = "skip-copy";
 // static
 std::unique_ptr<ArcSessionImpl::Delegate> ArcSessionImpl::CreateDelegate(
     ArcBridgeService* arc_bridge_service,
-    ash::DefaultScaleFactorRetriever* retriever) {
-  return std::make_unique<ArcSessionDelegateImpl>(arc_bridge_service,
-                                                  retriever);
+    ash::DefaultScaleFactorRetriever* retriever,
+    version_info::Channel channel) {
+  return std::make_unique<ArcSessionDelegateImpl>(arc_bridge_service, retriever,
+                                                  channel);
 }
 
 ArcSessionImpl::ArcSessionImpl(std::unique_ptr<Delegate> delegate)
@@ -359,6 +371,12 @@ void ArcSessionImpl::OnLcdDensity(int32_t lcd_density) {
       base::FeatureList::IsEnabled(arc::kNativeBridgeExperimentFeature));
   request.set_arc_file_picker_experiment(
       base::FeatureList::IsEnabled(arc::kFilePickerExperimentFeature));
+  // Enable Custom Tabs only on Dev and Cannary.
+  const bool is_custom_tab_enabled =
+      base::FeatureList::IsEnabled(arc::kCustomTabsExperimentFeature) &&
+      delegate_->GetChannel() != version_info::Channel::STABLE &&
+      delegate_->GetChannel() != version_info::Channel::BETA;
+  request.set_arc_custom_tabs_experiment(is_custom_tab_enabled);
   request.set_lcd_density(lcd_density);
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

@@ -109,6 +109,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "arc-custom-tabs-experiment",
+    "owners": [ "hashimoto" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "arc-documents-provider",
     "owners": [ "fukino" ],
     "expiry_milestone": 76
