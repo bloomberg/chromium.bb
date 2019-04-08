@@ -1661,16 +1661,16 @@ TEST_F(AuthenticatorContentBrowserClientTest, AttestationBehaviour) {
           AttestationConveyancePreference::INDIRECT,
           IndividualAttestation::NOT_REQUESTED,
           AttestationConsent::DENIED,
-          AuthenticatorStatus::NOT_ALLOWED_ERROR,
-          AttestationType::ANY,
+          AuthenticatorStatus::SUCCESS,
+          AttestationType::NONE,
           "",
       },
       {
           AttestationConveyancePreference::INDIRECT,
           IndividualAttestation::REQUESTED,
           AttestationConsent::DENIED,
-          AuthenticatorStatus::NOT_ALLOWED_ERROR,
-          AttestationType::ANY,
+          AuthenticatorStatus::SUCCESS,
+          AttestationType::NONE,
           "",
       },
       {
@@ -1693,16 +1693,16 @@ TEST_F(AuthenticatorContentBrowserClientTest, AttestationBehaviour) {
           AttestationConveyancePreference::DIRECT,
           IndividualAttestation::NOT_REQUESTED,
           AttestationConsent::DENIED,
-          AuthenticatorStatus::NOT_ALLOWED_ERROR,
-          AttestationType::ANY,
+          AuthenticatorStatus::SUCCESS,
+          AttestationType::NONE,
           "",
       },
       {
           AttestationConveyancePreference::DIRECT,
           IndividualAttestation::REQUESTED,
           AttestationConsent::DENIED,
-          AuthenticatorStatus::NOT_ALLOWED_ERROR,
-          AttestationType::ANY,
+          AuthenticatorStatus::SUCCESS,
+          AttestationType::NONE,
           "",
       },
       {
@@ -1725,16 +1725,16 @@ TEST_F(AuthenticatorContentBrowserClientTest, AttestationBehaviour) {
           AttestationConveyancePreference::ENTERPRISE,
           IndividualAttestation::NOT_REQUESTED,
           AttestationConsent::DENIED,
-          AuthenticatorStatus::NOT_ALLOWED_ERROR,
-          AttestationType::ANY,
+          AuthenticatorStatus::SUCCESS,
+          AttestationType::NONE,
           "",
       },
       {
           AttestationConveyancePreference::ENTERPRISE,
           IndividualAttestation::REQUESTED,
           AttestationConsent::DENIED,
-          AuthenticatorStatus::NOT_ALLOWED_ERROR,
-          AttestationType::ANY,
+          AuthenticatorStatus::SUCCESS,
+          AttestationType::NONE,
           "",
       },
       {
@@ -1775,8 +1775,8 @@ TEST_F(AuthenticatorContentBrowserClientTest,
           AttestationConveyancePreference::ENTERPRISE,
           IndividualAttestation::NOT_REQUESTED,
           AttestationConsent::DENIED,
-          AuthenticatorStatus::NOT_ALLOWED_ERROR,
-          AttestationType::ANY,
+          AuthenticatorStatus::SUCCESS,
+          AttestationType::NONE,
           "",
       },
       {
@@ -1846,13 +1846,14 @@ TEST_F(AuthenticatorContentBrowserClientTest,
           "",
       },
       {
-          // If attestation is requested, but denied, we'll still fail the
-          // request.
+          // If attestation is requested, but denied, we'll return none
+          // attestation. But because the transport is kInternal, the AAGUID
+          // will be preserved.
           AttestationConveyancePreference::DIRECT,
           IndividualAttestation::NOT_REQUESTED,
           AttestationConsent::DENIED,
-          AuthenticatorStatus::NOT_ALLOWED_ERROR,
-          AttestationType::ANY,
+          AuthenticatorStatus::SUCCESS,
+          AttestationType::NONE_WITH_NONZERO_AAGUID,
           "",
       },
       {
@@ -1887,13 +1888,13 @@ TEST_F(AuthenticatorContentBrowserClientTest, Ctap2SelfAttestation) {
           "",
       },
       {
-          // If attestation is requested, but denied, we'll still fail the
-          // request.
+          // If attestation is requested, but denied, we'll return none
+          // attestation.
           AttestationConveyancePreference::DIRECT,
           IndividualAttestation::NOT_REQUESTED,
           AttestationConsent::DENIED,
-          AuthenticatorStatus::NOT_ALLOWED_ERROR,
-          AttestationType::ANY,
+          AuthenticatorStatus::SUCCESS,
+          AttestationType::NONE,
           "",
       },
       {
