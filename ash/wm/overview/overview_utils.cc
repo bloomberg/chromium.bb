@@ -10,6 +10,7 @@
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/scoped_animation_disabler.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -19,6 +20,7 @@
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
+#include "ash/wm/wm_event.h"
 #include "base/no_destructor.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
 #include "ui/aura/window.h"
@@ -302,6 +304,15 @@ bool IsSlidingOutOverviewFromShelf() {
   }
 
   return false;
+}
+
+void MaximizeIfSnapped(aura::Window* window) {
+  auto* window_state = wm::GetWindowState(window);
+  if (window_state && window_state->IsSnapped()) {
+    ScopedAnimationDisabler disabler(window);
+    wm::WMEvent event(wm::WM_EVENT_MAXIMIZE);
+    window_state->OnWMEvent(&event);
+  }
 }
 
 }  // namespace ash

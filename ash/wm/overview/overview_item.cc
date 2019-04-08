@@ -28,6 +28,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
+#include "ash/wm/wm_event.h"
 #include "base/auto_reset.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/compositor/layer_animation_sequence.h"
@@ -145,6 +146,17 @@ bool OverviewItem::Contains(const aura::Window* target) const {
 }
 
 void OverviewItem::RestoreWindow(bool reset_transform) {
+  // TODO(oshima): SplitViewController has its own logic to adjust the
+  // target state in |SplitViewController::OnOverviewModeEnding|.
+  // Unify the mechanism to control it and remove ifs.
+  if (Shell::Get()
+          ->tablet_mode_controller()
+          ->IsTabletModeWindowManagerEnabled() &&
+      !Shell::Get()->split_view_controller()->IsSplitViewModeActive() &&
+      reset_transform) {
+    MaximizeIfSnapped(GetWindow());
+  }
+
   caption_container_view_->ResetEventDelegate();
   transform_window_.RestoreWindow(
       reset_transform, overview_session_->enter_exit_overview_type());
@@ -253,7 +265,7 @@ gfx::RectF OverviewItem::GetTransformedBounds() const {
 
 void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
                              OverviewAnimationType animation_type) {
-  if (in_bounds_update_)
+  if (in_bounds_update_ || !Shell::Get()->overview_controller()->IsSelecting())
     return;
 
   // Do not animate if the resulting bounds does not change. The original
@@ -675,6 +687,10 @@ void OverviewItem::OnWindowBoundsChanged(aura::Window* window,
                                          const gfx::Rect& old_bounds,
                                          const gfx::Rect& new_bounds,
                                          ui::PropertyChangeReason reason) {
+  // Do not keep the overview bounds if we're shutting down.
+  if (!Shell::Get()->overview_controller()->IsSelecting())
+    return;
+
   if (reason == ui::PropertyChangeReason::NOT_FROM_ANIMATION) {
     if (window == GetWindow()) {
       transform_window_.ResizeMinimizedWidgetIfNeeded();

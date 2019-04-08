@@ -183,6 +183,8 @@ OverviewSession::~OverviewSession() {
 // constructed object.
 void OverviewSession::Init(const WindowList& windows,
                            const WindowList& hide_windows) {
+  Shell::Get()->AddShellObserver(this);
+
   hide_overview_windows_ =
       std::make_unique<ScopedOverviewHideWindows>(std::move(hide_windows));
   if (restore_focus_window_)
@@ -288,6 +290,7 @@ void OverviewSession::Init(const WindowList& windows,
 // restoring_minimized_windows() on a partially destructed object.
 void OverviewSession::Shutdown() {
   Shell::Get()->RemovePreTargetHandler(this);
+  Shell::Get()->RemoveShellObserver(this);
 
   // Stop observing screen metrics changes first to avoid auto-positioning
   // windows in response to work area changes from window activation.
@@ -815,6 +818,11 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
 
   event->SetHandled();
   event->StopPropagation();
+}
+
+void OverviewSession::OnShellDestroying() {
+  // Cancel selection will call |Shutodnw()|, which will remove observer.
+  CancelSelection();
 }
 
 void OverviewSession::OnSplitViewStateChanged(

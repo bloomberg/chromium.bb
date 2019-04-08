@@ -1252,7 +1252,7 @@ void SplitViewController::EndSplitViewAfterResizingIfAppropriate() {
     // this will be need to updated.
     TabletModeWindowState::UpdateWindowPosition(
         wm::GetWindowState(insert_overview_window), /*animate=*/false);
-    InsertWindowToOverview(insert_overview_window);
+    InsertWindowToOverview(insert_overview_window, /*animate=*/false);
   }
 }
 
@@ -1301,7 +1301,8 @@ void SplitViewController::OnSnappedWindowDetached(aura::Window* window,
     // If there is no snapped window at this moment, ends split view mode. Note
     // this will update overview window grid bounds if the overview mode is
     // active at the moment.
-    EndSplitView();
+    EndSplitView(window_drag ? EndReason::kWindowDragStarted
+                             : EndReason::kNormal);
   } else {
     // If there is still one snapped window after minimizing/closing one snapped
     // window, update its snap state and open overview window grid.
@@ -1604,10 +1605,11 @@ void SplitViewController::UpdateSnappingWindowTransformedBounds(
   }
 }
 
-void SplitViewController::InsertWindowToOverview(aura::Window* window) {
+void SplitViewController::InsertWindowToOverview(aura::Window* window,
+                                                 bool animate) {
   if (!window || !GetOverviewSession())
     return;
-  GetOverviewSession()->AddItem(window, /*reposition=*/true, /*animate=*/true);
+  GetOverviewSession()->AddItem(window, /*reposition=*/true, animate);
 }
 
 void SplitViewController::StartOverview(bool window_drag) {
@@ -1700,6 +1702,16 @@ void SplitViewController::EndWindowDragImpl(
     // Note SnapWindow() might put the previous window that was snapped at the
     // |desired_snap_position| in overview.
     SnapWindow(window, desired_snap_position);
+    // Reapply the bounds update because the bounds might have been
+    // modified by dragging operation.
+    // TODO(oshima): WindowState already gets notified when drag ends. Refactor
+    // WindowState so that each state implementation can take action when
+    // drag ends.
+    const wm::WMEvent event(desired_snap_position == SplitViewController::LEFT
+                                ? wm::WM_EVENT_SNAP_LEFT
+                                : wm::WM_EVENT_SNAP_RIGHT);
+    wm::GetWindowState(window)->OnWMEvent(&event);
+
     if (!was_splitview_active) {
       // If splitview mode was not active before snapping the dragged
       // window, snap the initiator window to the other side of the screen

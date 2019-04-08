@@ -17,6 +17,7 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_session.h"
+#include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/scoped_skip_user_session_blocked_check.h"
@@ -83,8 +84,9 @@ TabletModeWindowManager::~TabletModeWindowManager() {
     window->RemoveObserver(this);
   added_windows_.clear();
   Shell::Get()->RemoveShellObserver(this);
-  display::Screen::GetScreen()->RemoveObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
+  Shell::Get()->overview_controller()->RemoveObserver(this);
+  display::Screen::GetScreen()->RemoveObserver(this);
   EnableBackdropBehindTopWindowOnEachDisplay(false);
   RemoveWindowCreationObservers();
   ArrangeWindowsForDesktopMode(was_in_overview);
@@ -118,6 +120,27 @@ void TabletModeWindowManager::WindowStateDestroyed(aura::Window* window) {
     window_state_map_.erase(it);
 }
 
+void TabletModeWindowManager::OnOverviewModeEndingAnimationComplete(
+    bool canceled) {
+  if (canceled)
+    return;
+
+  auto* split_view_controller = Shell::Get()->split_view_controller();
+
+  // Maximize all snapped windows upon exiting overview mode except snapped
+  // windows in splitview mode. Note the snapped window might not be tracked in
+  // our |window_state_map_|.
+  MruWindowTracker::WindowList windows =
+      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
+  for (auto* window : windows) {
+    if (split_view_controller->left_window() != window &&
+        split_view_controller->right_window() != window) {
+      MaximizeIfSnapped(window);
+    }
+  }
+}
+
+// ShellObserver:
 void TabletModeWindowManager::OnSplitViewModeEnded() {
   switch (Shell::Get()->split_view_controller()->end_reason()) {
     case SplitViewController::EndReason::kNormal:
@@ -125,6 +148,7 @@ void TabletModeWindowManager::OnSplitViewModeEnded() {
       break;
     case SplitViewController::EndReason::kHomeLauncherPressed:
     case SplitViewController::EndReason::kActiveUserChanged:
+    case SplitViewController::EndReason::kWindowDragStarted:
       // For the case of kHomeLauncherPressed, the home launcher will minimize
       // the snapped windows after ending splitview, so avoid maximizing them
       // here. For the case of kActiveUserChanged, the snapped windows will be
@@ -138,14 +162,8 @@ void TabletModeWindowManager::OnSplitViewModeEnded() {
   // window might not be tracked in our |window_state_map_|.
   MruWindowTracker::WindowList windows =
       Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
-  for (auto* window : windows) {
-    wm::WindowState* window_state = wm::GetWindowState(window);
-    if (window_state->IsSnapped()) {
-      ScopedAnimationDisabler disable(window);
-      wm::WMEvent event(wm::WM_EVENT_MAXIMIZE);
-      window_state->OnWMEvent(&event);
-    }
-  }
+  for (auto* window : windows)
+    MaximizeIfSnapped(window);
 }
 
 void TabletModeWindowManager::OnWindowDestroying(aura::Window* window) {
@@ -337,6 +355,7 @@ TabletModeWindowManager::TabletModeWindowManager() {
   display::Screen::GetScreen()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->session_controller()->AddObserver(this);
+  Shell::Get()->overview_controller()->AddObserver(this);
   accounts_since_entering_tablet_.insert(
       Shell::Get()->session_controller()->GetActiveAccountId());
   event_handler_ = std::make_unique<wm::TabletModeEventHandler>();
