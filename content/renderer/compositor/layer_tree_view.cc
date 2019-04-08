@@ -425,11 +425,8 @@ void LayerTreeView::SetRasterColorSpace(const gfx::ColorSpace& color_space) {
   layer_tree_host_->SetRasterColorSpace(color_space);
 }
 
-void LayerTreeView::SetExternalPageScaleFactor(
-    float page_scale_factor,
-    bool is_external_pinch_gesture_active) {
-  layer_tree_host_->SetExternalPageScaleFactor(
-      page_scale_factor, is_external_pinch_gesture_active);
+void LayerTreeView::SetExternalPageScaleFactor(float page_scale_factor) {
+  layer_tree_host_->SetExternalPageScaleFactor(page_scale_factor);
 }
 
 void LayerTreeView::ClearCachesOnNextCommit() {

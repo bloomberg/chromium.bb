@@ -107,8 +107,7 @@ class CONTENT_EXPORT LayerTreeView
   bool SendMessageToMicroBenchmark(int id, std::unique_ptr<base::Value> value);
   void SetFrameSinkId(const viz::FrameSinkId& frame_sink_id);
   void SetRasterColorSpace(const gfx::ColorSpace& color_space);
-  void SetExternalPageScaleFactor(float page_scale_factor,
-                                  bool is_external_pinch_gesture_active);
+  void SetExternalPageScaleFactor(float page_scale_factor);
   void ClearCachesOnNextCommit();
   void SetContentSourceId(uint32_t source_id);
   void SetViewportSizeAndScale(

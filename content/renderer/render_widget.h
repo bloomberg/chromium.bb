@@ -1136,11 +1136,10 @@ class CONTENT_EXPORT RenderWidget
   // The height of the browser bottom controls.
   float bottom_controls_height_ = 0.f;
 
-  // The last seen page scale state, which comes from the main frame and is
-  // propagated through the RenderWidget tree. This state is passed to any new
+  // The last seen page scale factor, which comes from the main frame and is
+  // propagated through the RenderWidget tree. This value is passed to any new
   // child RenderWidget.
   float page_scale_factor_from_mainframe_ = 1.f;
-  bool is_pinch_gesture_active_from_mainframe_ = false;
 
   // This is initialized to zero and is incremented on each non-same-page
   // navigation commit by RenderFrameImpl. At that time it is sent to the

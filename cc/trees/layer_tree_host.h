@@ -471,11 +471,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // 'external_page_scale_factor', a value that affects raster scale in the
   // same way that page_scale_factor does, but doesn't affect any geometry
   // calculations.
-  void SetExternalPageScaleFactor(float page_scale_factor,
-                                  bool is_external_pinch_gesture_active);
-  bool is_external_pinch_gesture_active_for_testing() {
-    return is_external_pinch_gesture_active_;
-  }
+  void SetExternalPageScaleFactor(float page_scale_factor);
 
   // Requests that we force send RenderFrameMetadata with the next frame.
   void RequestForceSendMetadata() { force_send_metadata_request_ = true; }
@@ -809,9 +805,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   float min_page_scale_factor_ = 1.f;
   float max_page_scale_factor_ = 1.f;
   float external_page_scale_factor_ = 1.f;
-  bool is_external_pinch_gesture_active_ = false;
-  // Used to track the out-bound state for ApplyViewportChanges.
-  bool is_pinch_gesture_active_from_impl_ = false;
 
   int raster_color_space_id_ = -1;
   gfx::ColorSpace raster_color_space_;

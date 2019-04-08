@@ -562,8 +562,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                      const gfx::Size& min_size,
                      const gfx::Size& max_size);
 
-  // Allows the main frame's page scale state to be tracked.
-  void SetPageScaleState(float page_scale_factor, bool is_pinch_gesture_active);
+  // Allows the main frame's page scale factor to be tracked.
+  void SetPageScaleFactor(float page_scale_factor);
 
   // Fills in the |visual_properties| struct.
   // Returns |false| if the update is redundant, |true| otherwise.
@@ -1018,8 +1018,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // The page-scale factor of the main-frame.
   float page_scale_factor_;
-  // True when the renderer is currently undergoing a pinch-zoom gesture.
-  bool is_pinch_gesture_active_;
 
   bool waiting_for_screen_rects_ack_;
   gfx::Rect last_view_screen_rect_;
