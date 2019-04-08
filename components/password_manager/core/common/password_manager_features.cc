@@ -10,12 +10,6 @@ namespace password_manager {
 //       names, e.g. "MyGreatFeature".
 namespace features {
 
-// Enable affiliation based matching, so that credentials stored for an Android
-// application will also be considered matches for, and be filled into
-// corresponding Web applications.
-const base::Feature kAffiliationBasedMatching = {
-    "AffiliationBasedMatching", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables the editing of passwords in chrome://settings/passwords, i.e. the
 // Desktop passwords settings page.
 const base::Feature kEditPasswordsInDesktopSettings = {
