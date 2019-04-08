@@ -281,10 +281,6 @@ class ExtensionPrefs : public KeyedService {
                              int disable_reasons);
   void ClearDisableReasons(const std::string& extension_id);
 
-  // Clears disable reasons that do not apply to component extensions.
-  void ClearInapplicableDisableReasonsForComponentExtension(
-      const std::string& component_extension_id);
-
   // Gets the set of extensions that have been blacklisted in prefs. This will
   // return only the blocked extensions, not the "greylist" extensions.
   // TODO(oleg): Make method names consistent here, in extension service and in
