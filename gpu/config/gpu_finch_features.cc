@@ -4,10 +4,30 @@
 #include "gpu/config/gpu_finch_features.h"
 
 #if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#include "base/metrics/field_trial_params.h"
+#include "base/strings/string_split.h"
 #include "ui/gl/android/android_surface_control_compat.h"
 #endif
 
 namespace features {
+namespace {
+
+#if defined(OS_ANDROID)
+bool FieldIsInBlacklist(const char* current_value, std::string blacklist_str) {
+  std::vector<std::string> blacklist = base::SplitString(
+      blacklist_str, ",", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  for (const std::string& value : blacklist) {
+    if (value == current_value)
+      return true;
+  }
+
+  return false;
+}
+#endif
+
+}  // namespace
+
 #if defined(OS_ANDROID)
 // Use android AImageReader when playing videos with MediaPlayer.
 const base::Feature kAImageReaderMediaPlayer{"AImageReaderMediaPlayer",
@@ -80,8 +100,26 @@ const base::Feature kVaapiJpegImageDecodeAcceleration{
 
 #if defined(OS_ANDROID)
 bool IsAndroidSurfaceControlEnabled() {
-  return base::FeatureList::IsEnabled(kAndroidSurfaceControl) &&
-         gl::SurfaceControl::IsSupported();
+  if (!gl::SurfaceControl::IsSupported())
+    return false;
+
+  if (!base::FeatureList::IsEnabled(kAndroidSurfaceControl))
+    return false;
+
+  if (FieldIsInBlacklist(base::android::BuildInfo::GetInstance()->model(),
+                         base::GetFieldTrialParamValueByFeature(
+                             kAndroidSurfaceControl, "blacklisted_models"))) {
+    return false;
+  }
+
+  if (FieldIsInBlacklist(
+          base::android::BuildInfo::GetInstance()->android_build_id(),
+          base::GetFieldTrialParamValueByFeature(kAndroidSurfaceControl,
+                                                 "blacklisted_build_ids"))) {
+    return false;
+  }
+
+  return true;
 }
 #endif
 
