@@ -228,7 +228,7 @@ def _GetOldAndUpdatedXml(histogram_enum_name, source_enum_values,
                              source_enum_path, caller_script_name,
                              histograms_doc)
 
-  new_xml = histograms_print_style.GetPrintStyle().PrettyPrintNode(
+  new_xml = histograms_print_style.GetPrintStyle().PrettyPrintXml(
       histograms_doc)
   return (xml, new_xml)
 
