@@ -20,6 +20,7 @@
 #include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/system_flags.h"
@@ -383,7 +384,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       }
       break;
     case ItemTypeClearBrowsingDataClear:
-      if (base::FeatureList::IsEnabled(kSettingsRefresh)) {
+      if (IsNewClearBrowsingDataUIEnabled()) {
         ClearBrowsingDataTableViewController* clearBrowsingDataViewController =
             [[ClearBrowsingDataTableViewController alloc]
                 initWithBrowserState:_browserState];
