@@ -351,6 +351,8 @@ jumbo_component("base") {
       "accelerators/global_media_keys_listener_win.cc",
       "accelerators/global_media_keys_listener_win.h",
       "accelerators/media_keys_listener_win.cc",
+      "accelerators/system_media_controls_media_keys_listener.cc",
+      "accelerators/system_media_controls_media_keys_listener.h",
     ]
   } else if (use_mpris) {
     sources += [
@@ -443,6 +445,10 @@ jumbo_component("base") {
       configs += [ "//build/config/linux:xscrnsaver" ]
       deps += [ "//ui/gfx/x" ]
     }
+  }
+
+  if (is_win) {
+    deps += [ "//ui/base/win/system_media_controls" ]
   }
 
   if (use_mpris) {
@@ -1001,9 +1007,12 @@ test("ui_base_unittests") {
 
   if (is_win) {
     sources += [
+      "accelerators/system_media_controls_media_keys_listener_unittest.cc",
       "dragdrop/os_exchange_data_win_unittest.cc",
       "win/hwnd_subclass_unittest.cc",
     ]
+
+    deps += [ "//ui/base/win/system_media_controls:test_support" ]
 
     ldflags = [
       "/DELAYLOAD:d2d1.dll",

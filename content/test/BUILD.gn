@@ -2129,10 +2129,12 @@ test("content_unittests") {
     }
   }
   if (is_win) {
+    sources += [ "../browser/media/system_media_controls_notifier_unittest.cc" ]
     deps += [
       "//third_party/blink/public/common",
       "//third_party/blink/public/common:font_unique_name_table_proto",
       "//third_party/iaccessible2",
+      "//ui/base/win/system_media_controls:test_support",
     ]
     libs = [
       "dwrite.lib",
