@@ -320,6 +320,15 @@ int HttpStreamParser::SendRequest(
   return result > 0 ? OK : result;
 }
 
+int HttpStreamParser::ConfirmHandshake(CompletionOnceCallback callback) {
+  int ret = stream_socket_->ConfirmHandshake(
+      base::BindOnce(&HttpStreamParser::RunConfirmHandshakeCallback,
+                     weak_ptr_factory_.GetWeakPtr()));
+  if (ret == ERR_IO_PENDING)
+    confirm_handshake_callback_ = std::move(callback);
+  return ret;
+}
+
 int HttpStreamParser::ReadResponseHeaders(CompletionOnceCallback callback) {
   DCHECK(io_state_ == STATE_NONE || io_state_ == STATE_DONE);
   DCHECK(callback_.is_null());
@@ -930,6 +939,10 @@ int HttpStreamParser::HandleReadHeaderResult(int result) {
     // Now waiting for the body to be read.
   }
   return OK;
+}
+
+void HttpStreamParser::RunConfirmHandshakeCallback(int rv) {
+  std::move(confirm_handshake_callback_).Run(rv);
 }
 
 int HttpStreamParser::FindAndParseResponseHeaders(int new_bytes) {
