@@ -218,6 +218,6 @@
     [OriginTrialEnabled=TrustedDOMTypes, Unforgeable] readonly attribute TrustedTypePolicyFactory TrustedTypes;
 };
 
-Window implements GlobalEventHandlers;
-Window implements WindowEventHandlers;
-Window implements WindowOrWorkerGlobalScope;
+Window includes GlobalEventHandlers;
+Window includes WindowEventHandlers;
+Window includes WindowOrWorkerGlobalScope;

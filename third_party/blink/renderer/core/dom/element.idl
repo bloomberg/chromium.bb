@@ -144,6 +144,6 @@ interface Element : Node {
     [RuntimeEnabled=DisplayLocking, ImplementedAs=getDisplayLockForBindings] readonly attribute DisplayLockContext displayLock;
 };
 
-Element implements ParentNode;
-Element implements ChildNode;
-Element implements NonDocumentTypeChildNode;
+Element includes ParentNode;
+Element includes ChildNode;
+Element includes NonDocumentTypeChildNode;

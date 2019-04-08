@@ -53,4 +53,4 @@
     [CEReactions, Reflect=aria_valuetext] attribute DOMString? ariaValueText;
 };
 
-Element implements AriaAttributes;
+Element includes AriaAttributes;

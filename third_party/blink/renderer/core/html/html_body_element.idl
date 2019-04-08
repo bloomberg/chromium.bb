@@ -31,7 +31,7 @@ interface HTMLBodyElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString background;
 
     // TODO(foolip): These event handler attributes should be inherited from
-    // HTMLElement (which implements GlobalEventHandlers), but have different
+    // HTMLElement (which includes GlobalEventHandlers), but have different
     // behavior. See https://www.w3.org/Bugs/Public/show_bug.cgi?id=28166
     attribute EventHandler onblur;
     attribute EventHandler onerror;
@@ -45,4 +45,4 @@ interface HTMLBodyElement : HTMLElement {
     [RuntimeEnabled=OrientationEvent] attribute EventHandler onorientationchange;
 };
 
-HTMLBodyElement implements WindowEventHandlers;
+HTMLBodyElement includes WindowEventHandlers;

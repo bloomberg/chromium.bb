@@ -106,4 +106,4 @@
     [RuntimeEnabled=OffscreenCanvasText] attribute DOMString direction; // "inherit", "rtl", "ltr" (default: "inherit")
 };
 
-OffscreenCanvasRenderingContext2D implements CanvasPath;
+OffscreenCanvasRenderingContext2D includes CanvasPath;

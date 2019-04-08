@@ -208,9 +208,9 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     attribute EventHandler onvisibilitychange;
 };
 
-Document implements GlobalEventHandlers;
-Document implements DocumentAndElementEventHandlers;
-Document implements ParentNode;
-Document implements NonElementParentNode;
-Document implements DocumentOrShadowRoot;
-Document implements FontFaceSource;
+Document includes GlobalEventHandlers;
+Document includes DocumentAndElementEventHandlers;
+Document includes ParentNode;
+Document includes NonElementParentNode;
+Document includes DocumentOrShadowRoot;
+Document includes FontFaceSource;

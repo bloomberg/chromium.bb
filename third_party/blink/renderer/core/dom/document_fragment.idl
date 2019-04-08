@@ -25,5 +25,5 @@
 ] interface DocumentFragment : Node {
 };
 
-DocumentFragment implements ParentNode;
-DocumentFragment implements NonElementParentNode;
+DocumentFragment includes ParentNode;
+DocumentFragment includes NonElementParentNode;

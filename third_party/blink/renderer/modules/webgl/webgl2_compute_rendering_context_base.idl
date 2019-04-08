@@ -102,5 +102,5 @@ interface mixin WebGL2ComputeRenderingContextBase {
     void memoryBarrier(GLbitfield barriers);
     void memoryBarrierByRegion(GLbitfield barriers);
 };
-WebGL2ComputeRenderingContextBase implements WebGLRenderingContextBase;
-WebGL2ComputeRenderingContextBase implements WebGL2RenderingContextBase;
+WebGL2ComputeRenderingContextBase includes WebGLRenderingContextBase;
+WebGL2ComputeRenderingContextBase includes WebGL2RenderingContextBase;

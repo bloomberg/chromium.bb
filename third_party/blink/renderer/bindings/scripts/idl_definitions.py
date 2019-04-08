@@ -124,7 +124,7 @@ class IdlDefinitions(object):
             elif child_class == 'Callback':
                 callback_function = IdlCallbackFunction(child)
                 self.callback_functions[callback_function.name] = callback_function
-            elif child_class == 'Implements' or child_class == 'Includes':
+            elif child_class == 'Includes':
                 self.implements.append(IdlImplement(child))
             elif child_class == 'Dictionary':
                 dictionary = IdlDictionary(child)

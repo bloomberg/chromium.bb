@@ -36,4 +36,4 @@ interface HTMLAreaElement : HTMLElement {
     [CEReactions, Reflect] attribute boolean noHref;
 };
 
-HTMLAreaElement implements HTMLHyperlinkElementUtils;
+HTMLAreaElement includes HTMLHyperlinkElementUtils;

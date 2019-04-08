@@ -42,4 +42,4 @@ interface HTMLAnchorElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString shape;
 };
 
-HTMLAnchorElement implements HTMLHyperlinkElementUtils;
+HTMLAnchorElement includes HTMLHyperlinkElementUtils;
