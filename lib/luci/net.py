@@ -121,9 +121,8 @@ def request(url,
   http.follow_redirects = False
   while attempt < max_attempts:
     if attempt:
-      logging.info('Retrying...')
+      logging.info('Retrying: %s %s', method, url)
     attempt += 1
-    logging.info('%s %s', method, url)
     try:
       response, content = httprequest(
           http, uri=url, method=method, headers=headers, body=payload)
