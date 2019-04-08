@@ -224,57 +224,6 @@ std::string GetWebURLRequestHeadersAsString(
   return flattener.GetBuffer();
 }
 
-int GetLoadFlagsForWebURLRequest(const WebURLRequest& request) {
-  int load_flags = net::LOAD_NORMAL;
-
-  GURL url = request.Url();
-  switch (request.GetCacheMode()) {
-    case FetchCacheMode::kNoStore:
-      load_flags |= net::LOAD_DISABLE_CACHE;
-      break;
-    case FetchCacheMode::kValidateCache:
-      load_flags |= net::LOAD_VALIDATE_CACHE;
-      break;
-    case FetchCacheMode::kBypassCache:
-      load_flags |= net::LOAD_BYPASS_CACHE;
-      break;
-    case FetchCacheMode::kForceCache:
-      load_flags |= net::LOAD_SKIP_CACHE_VALIDATION;
-      break;
-    case FetchCacheMode::kOnlyIfCached:
-      load_flags |= net::LOAD_ONLY_FROM_CACHE | net::LOAD_SKIP_CACHE_VALIDATION;
-      break;
-    case FetchCacheMode::kUnspecifiedOnlyIfCachedStrict:
-      load_flags |= net::LOAD_ONLY_FROM_CACHE;
-      break;
-    case FetchCacheMode::kDefault:
-      break;
-    case FetchCacheMode::kUnspecifiedForceCacheMiss:
-      load_flags |= net::LOAD_ONLY_FROM_CACHE | net::LOAD_BYPASS_CACHE;
-      break;
-  }
-
-  if (!request.AllowStoredCredentials()) {
-    load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
-    load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
-    load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
-  }
-
-  if (request.GetRequestContext() == blink::mojom::RequestContextType::PREFETCH)
-    load_flags |= net::LOAD_PREFETCH;
-
-  if (request.GetExtraData()) {
-    RequestExtraData* extra_data =
-        static_cast<RequestExtraData*>(request.GetExtraData());
-    if (extra_data->is_for_no_state_prefetch())
-      load_flags |= net::LOAD_PREFETCH;
-  }
-  if (request.SupportsAsyncRevalidation())
-    load_flags |= net::LOAD_SUPPORT_ASYNC_REVALIDATION;
-
-  return load_flags;
-}
-
 WebHTTPBody GetWebHTTPBodyForRequestBody(
     const network::ResourceRequestBody& input) {
   return GetWebHTTPBodyForRequestBodyWithBlobPtrs(input, {});

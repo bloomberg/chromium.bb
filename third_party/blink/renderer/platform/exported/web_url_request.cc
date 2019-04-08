@@ -33,6 +33,8 @@
 #include <memory>
 
 #include "base/time/time.h"
+#include "net/base/load_flags.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/web_http_body.h"
 #include "third_party/blink/public/platform/web_http_header_visitor.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -41,6 +43,8 @@
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
+
+using blink::mojom::FetchCacheMode;
 
 namespace blink {
 
@@ -430,6 +434,55 @@ const base::UnguessableToken& WebURLRequest::GetFetchWindowId() const {
 }
 void WebURLRequest::SetFetchWindowId(const base::UnguessableToken& id) {
   resource_request_->SetFetchWindowId(id);
+}
+
+int WebURLRequest::GetLoadFlagsForWebURLRequest() const {
+  int load_flags = net::LOAD_NORMAL;
+
+  switch (resource_request_->GetCacheMode()) {
+    case FetchCacheMode::kNoStore:
+      load_flags |= net::LOAD_DISABLE_CACHE;
+      break;
+    case FetchCacheMode::kValidateCache:
+      load_flags |= net::LOAD_VALIDATE_CACHE;
+      break;
+    case FetchCacheMode::kBypassCache:
+      load_flags |= net::LOAD_BYPASS_CACHE;
+      break;
+    case FetchCacheMode::kForceCache:
+      load_flags |= net::LOAD_SKIP_CACHE_VALIDATION;
+      break;
+    case FetchCacheMode::kOnlyIfCached:
+      load_flags |= net::LOAD_ONLY_FROM_CACHE | net::LOAD_SKIP_CACHE_VALIDATION;
+      break;
+    case FetchCacheMode::kUnspecifiedOnlyIfCachedStrict:
+      load_flags |= net::LOAD_ONLY_FROM_CACHE;
+      break;
+    case FetchCacheMode::kDefault:
+      break;
+    case FetchCacheMode::kUnspecifiedForceCacheMiss:
+      load_flags |= net::LOAD_ONLY_FROM_CACHE | net::LOAD_BYPASS_CACHE;
+      break;
+  }
+
+  if (!resource_request_->AllowStoredCredentials()) {
+    load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
+    load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
+    load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  }
+
+  if (resource_request_->GetRequestContext() ==
+      blink::mojom::RequestContextType::PREFETCH)
+    load_flags |= net::LOAD_PREFETCH;
+
+  if (resource_request_->GetExtraData()) {
+    if (resource_request_->GetExtraData()->is_for_no_state_prefetch())
+      load_flags |= net::LOAD_PREFETCH;
+  }
+  if (resource_request_->AllowsStaleResponse())
+    load_flags |= net::LOAD_SUPPORT_ASYNC_REVALIDATION;
+
+  return load_flags;
 }
 
 const ResourceRequest& WebURLRequest::ToResourceRequest() const {
