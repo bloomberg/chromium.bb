@@ -731,6 +731,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/glsl/bugs/' +
               'varying-arrays-should-not-be-reversed.html',
         ['android', ('qualcomm', 'Adreno (TM) 330')], bug=709704)
+    self.Skip('conformance/rendering/rendering-sampling-feedback-loop.html',
+        ['android', ('qualcomm', 'Adreno (TM) 330'), 'no_passthrough'])
 
     # Nexus 5X
     # The following test recently became so flaky that it had to be
@@ -866,6 +868,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
          ('qualcomm', 'Adreno (TM) 420'), ('qualcomm', 'Adreno (TM) 430')])
     self.Fail('conformance/glsl/misc/uninitialized-local-global-variables.html',
         ['android', ('qualcomm', 'Adreno (TM) 420')], bug=2046) # angle bug ID
+    self.Skip('conformance/rendering/rendering-sampling-feedback-loop.html',
+        ['android', ('qualcomm', 'Adreno (TM) 420'),
+         ('qualcomm', 'Adreno (TM) 430'), 'no_passthrough'])
 
     # Nexus 9
     self.Fail('deqp/data/gles2/shaders/functions.html',
