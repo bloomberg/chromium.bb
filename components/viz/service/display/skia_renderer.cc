@@ -1437,12 +1437,12 @@ sk_sp<SkColorFilter> SkiaRenderer::GetColorFilter(const gfx::ColorSpace& src,
     sk_sp<SkData> data = SkData::MakeWithCopy(&input, sizeof(input));
 
     const char* hdr = R"(
-in uniform float offset;
-in uniform float multiplier;
+layout(ctype=float) in uniform half offset;
+layout(ctype=float) in uniform half multiplier;
 
 void main(inout half4 color) {
-  color.rgb -= half(offset);
-  color.rgb *= half(multiplier);
+  color.rgb -= offset;
+  color.rgb *= multiplier;
 
   // un-premultiply alpha
   if (color.a > 0)
