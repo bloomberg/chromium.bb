@@ -42,7 +42,7 @@ public class H2OLauncher {
         SharedPreferences sharedPrefs = WebApkSharedPreferences.getPrefs(context);
         long now = System.currentTimeMillis();
         long lastRequestTimestamp = sharedPrefs.getLong(
-                WebApkSharedPreferences.SHARED_PREF_REQUEST_HOST_BROWSER_RELAUNCH_TIMESTAMP, -1);
+                WebApkSharedPreferences.PREF_REQUEST_HOST_BROWSER_RELAUNCH_TIMESTAMP, -1);
         return (now - lastRequestTimestamp) <= deltaMs;
     }
 
@@ -102,8 +102,8 @@ public class H2OLauncher {
             Context context, HostBrowserLauncherParams params) {
         long timestamp = System.currentTimeMillis();
         SharedPreferences.Editor editor = WebApkSharedPreferences.getPrefs(context).edit();
-        editor.putLong(WebApkSharedPreferences.SHARED_PREF_REQUEST_HOST_BROWSER_RELAUNCH_TIMESTAMP,
-                timestamp);
+        editor.putLong(
+                WebApkSharedPreferences.PREF_REQUEST_HOST_BROWSER_RELAUNCH_TIMESTAMP, timestamp);
         editor.apply();
 
         Bundle extraExtras = new Bundle();
