@@ -219,9 +219,9 @@ TEST_F(RTCDataChannelTest, ChangeStateEarly) {
 
   std::unique_ptr<MockPeerConnectionHandler> pc(
       new MockPeerConnectionHandler(signaling_thread()));
-  RTCDataChannel* channel =
-      RTCDataChannel::Create(MakeGarbageCollected<NullExecutionContext>(),
-                             webrtc_channel.get(), pc.get());
+  auto* channel = MakeGarbageCollected<RTCDataChannel>(
+      MakeGarbageCollected<NullExecutionContext>(), webrtc_channel.get(),
+      pc.get());
 
   // In RTCDataChannel::Create, the state change update is posted from the
   // signaling thread to the main thread. Wait for posted the task to be
@@ -237,9 +237,9 @@ TEST_F(RTCDataChannelTest, BufferedAmount) {
       new rtc::RefCountedObject<MockDataChannel>(signaling_thread()));
   std::unique_ptr<MockPeerConnectionHandler> pc(
       new MockPeerConnectionHandler(signaling_thread()));
-  RTCDataChannel* channel =
-      RTCDataChannel::Create(MakeGarbageCollected<NullExecutionContext>(),
-                             webrtc_channel.get(), pc.get());
+  auto* channel = MakeGarbageCollected<RTCDataChannel>(
+      MakeGarbageCollected<NullExecutionContext>(), webrtc_channel.get(),
+      pc.get());
   webrtc_channel->ChangeState(webrtc::DataChannelInterface::kOpen);
 
   String message(std::string(100, 'A').c_str());
@@ -252,9 +252,9 @@ TEST_F(RTCDataChannelTest, BufferedAmountLow) {
       new rtc::RefCountedObject<MockDataChannel>(signaling_thread()));
   std::unique_ptr<MockPeerConnectionHandler> pc(
       new MockPeerConnectionHandler(signaling_thread()));
-  RTCDataChannel* channel =
-      RTCDataChannel::Create(MakeGarbageCollected<NullExecutionContext>(),
-                             webrtc_channel.get(), pc.get());
+  auto* channel = MakeGarbageCollected<RTCDataChannel>(
+      MakeGarbageCollected<NullExecutionContext>(), webrtc_channel.get(),
+      pc.get());
   webrtc_channel->ChangeState(webrtc::DataChannelInterface::kOpen);
 
   channel->setBufferedAmountLowThreshold(1);
@@ -272,9 +272,9 @@ TEST_F(RTCDataChannelTest, Open) {
       new rtc::RefCountedObject<MockDataChannel>(signaling_thread()));
   std::unique_ptr<MockPeerConnectionHandler> pc(
       new MockPeerConnectionHandler(signaling_thread()));
-  RTCDataChannel* channel =
-      RTCDataChannel::Create(MakeGarbageCollected<NullExecutionContext>(),
-                             webrtc_channel.get(), pc.get());
+  auto* channel = MakeGarbageCollected<RTCDataChannel>(
+      MakeGarbageCollected<NullExecutionContext>(), webrtc_channel.get(),
+      pc.get());
   channel->OnStateChange(webrtc::DataChannelInterface::kOpen);
   ASSERT_EQ(1U, channel->scheduled_events_.size());
   EXPECT_EQ(
@@ -287,9 +287,9 @@ TEST_F(RTCDataChannelTest, Close) {
       new rtc::RefCountedObject<MockDataChannel>(signaling_thread()));
   std::unique_ptr<MockPeerConnectionHandler> pc(
       new MockPeerConnectionHandler(signaling_thread()));
-  RTCDataChannel* channel =
-      RTCDataChannel::Create(MakeGarbageCollected<NullExecutionContext>(),
-                             webrtc_channel.get(), pc.get());
+  auto* channel = MakeGarbageCollected<RTCDataChannel>(
+      MakeGarbageCollected<NullExecutionContext>(), webrtc_channel.get(),
+      pc.get());
   channel->OnStateChange(webrtc::DataChannelInterface::kClosed);
   ASSERT_EQ(1U, channel->scheduled_events_.size());
   EXPECT_EQ(
@@ -302,9 +302,9 @@ TEST_F(RTCDataChannelTest, Message) {
       new rtc::RefCountedObject<MockDataChannel>(signaling_thread()));
   std::unique_ptr<MockPeerConnectionHandler> pc(
       new MockPeerConnectionHandler(signaling_thread()));
-  RTCDataChannel* channel =
-      RTCDataChannel::Create(MakeGarbageCollected<NullExecutionContext>(),
-                             webrtc_channel.get(), pc.get());
+  auto* channel = MakeGarbageCollected<RTCDataChannel>(
+      MakeGarbageCollected<NullExecutionContext>(), webrtc_channel.get(),
+      pc.get());
 
   std::unique_ptr<webrtc::DataBuffer> message(new webrtc::DataBuffer("A"));
   channel->OnMessage(std::move(message));
@@ -319,9 +319,9 @@ TEST_F(RTCDataChannelTest, SendAfterContextDestroyed) {
       new rtc::RefCountedObject<MockDataChannel>(signaling_thread()));
   std::unique_ptr<MockPeerConnectionHandler> pc(
       new MockPeerConnectionHandler(signaling_thread()));
-  RTCDataChannel* channel =
-      RTCDataChannel::Create(MakeGarbageCollected<NullExecutionContext>(),
-                             webrtc_channel.get(), pc.get());
+  auto* channel = MakeGarbageCollected<RTCDataChannel>(
+      MakeGarbageCollected<NullExecutionContext>(), webrtc_channel.get(),
+      pc.get());
   webrtc_channel->ChangeState(webrtc::DataChannelInterface::kOpen);
 
   channel->ContextDestroyed(nullptr);
@@ -338,9 +338,9 @@ TEST_F(RTCDataChannelTest, CloseAfterContextDestroyed) {
       new rtc::RefCountedObject<MockDataChannel>(signaling_thread()));
   std::unique_ptr<MockPeerConnectionHandler> pc(
       new MockPeerConnectionHandler(signaling_thread()));
-  RTCDataChannel* channel =
-      RTCDataChannel::Create(MakeGarbageCollected<NullExecutionContext>(),
-                             webrtc_channel.get(), pc.get());
+  auto* channel = MakeGarbageCollected<RTCDataChannel>(
+      MakeGarbageCollected<NullExecutionContext>(), webrtc_channel.get(),
+      pc.get());
   webrtc_channel->ChangeState(webrtc::DataChannelInterface::kOpen);
 
   channel->ContextDestroyed(nullptr);

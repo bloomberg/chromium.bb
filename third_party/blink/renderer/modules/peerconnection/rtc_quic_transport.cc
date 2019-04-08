@@ -389,7 +389,7 @@ void RTCQuicTransport::OnRemoteStopped() {
 
 void RTCQuicTransport::OnStream(QuicStreamProxy* stream_proxy) {
   RTCQuicStream* stream = AddStream(stream_proxy);
-  DispatchEvent(*RTCQuicStreamEvent::Create(stream));
+  DispatchEvent(*MakeGarbageCollected<RTCQuicStreamEvent>(stream));
 }
 
 static RTCQuicTransportStats* CreateRTCQuicTransportStats(
