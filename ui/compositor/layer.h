@@ -269,6 +269,11 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // and is not completely obscured by a child.
   bool ShouldDraw() const;
 
+  // If set to true, this layer can receive hit test events, this property does
+  // not affect the layer's descendants.
+  void SetAcceptEvents(bool accept_events);
+  bool accept_events() const { return accept_events_; }
+
   // Sets a rounded corner clip radius on the layer. This will clip the layer to
   // bounds. The ordering for the array is:
   //    top left, top right, bottom right, bottom left
@@ -573,6 +578,11 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
 
   // Visibility of this layer. See SetVisible/IsDrawn for more details.
   bool visible_;
+
+  // Whether or not the layer wants to receive hit testing events. When set to
+  // false, the layer will be ignored in hit testing even if it is visible. It
+  // does not affect the layer's descendants.
+  bool accept_events_ = true;
 
   // See SetFillsBoundsOpaquely(). Defaults to true.
   bool fills_bounds_opaquely_;

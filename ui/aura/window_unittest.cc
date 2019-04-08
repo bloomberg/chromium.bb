@@ -1590,29 +1590,38 @@ TEST_P(WindowTest, EventTargetingPolicy) {
   EXPECT_EQ(w121.get(), w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
   w12->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::TARGET_ONLY);
   EXPECT_EQ(w12.get(), w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
+  EXPECT_TRUE(w12.get()->layer()->accept_events());
   w12->SetEventTargetingPolicy(
       ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
-
   EXPECT_EQ(w12.get(), w1->GetEventHandlerForPoint(gfx::Point(10, 10)));
+  EXPECT_TRUE(w12.get()->layer()->accept_events());
   w12->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::NONE);
   EXPECT_EQ(w11.get(), w1->GetEventHandlerForPoint(gfx::Point(10, 10)));
+  EXPECT_FALSE(w12.get()->layer()->accept_events());
+
   w12->SetEventTargetingPolicy(
       ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
 
   EXPECT_EQ(w121.get(), w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
   w121->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::NONE);
   EXPECT_EQ(w12.get(), w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
+  EXPECT_FALSE(w121.get()->layer()->accept_events());
   w12->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::NONE);
   EXPECT_EQ(w111.get(), w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
+  EXPECT_FALSE(w12.get()->layer()->accept_events());
   w111->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::NONE);
   EXPECT_EQ(w11.get(), w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
+  EXPECT_FALSE(w111.get()->layer()->accept_events());
 
   w11->SetEventTargetingPolicy(
       ws::mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
   EXPECT_EQ(nullptr, w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
+  EXPECT_TRUE(w11.get()->layer()->accept_events());
+
   w111->SetEventTargetingPolicy(
       ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
   EXPECT_EQ(w111.get(), w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
+  EXPECT_TRUE(w111.get()->layer()->accept_events());
 }
 
 // Tests transformation on the root window.
