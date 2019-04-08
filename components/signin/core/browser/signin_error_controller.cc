@@ -26,21 +26,68 @@ void SigninErrorController::Shutdown() {
 }
 
 void SigninErrorController::Update() {
-  GoogleServiceAuthError::State prev_state = auth_error_.state();
-  std::string prev_account_id = error_account_id_;
+  const GoogleServiceAuthError::State prev_error_state = auth_error_.state();
+  const std::string prev_account_id = error_account_id_;
   bool error_changed = false;
+
+  const std::string& primary_account_id =
+      identity_manager_->GetPrimaryAccountId();
+
+  if (identity_manager_->HasAccountWithRefreshTokenInPersistentErrorState(
+          primary_account_id)) {
+    // Prioritize Primary Account errors over everything else.
+    auth_error_ = identity_manager_->GetErrorStateOfRefreshTokenForAccount(
+        primary_account_id);
+    DCHECK(auth_error_.IsPersistentError());
+    error_account_id_ = primary_account_id;
+    error_changed = true;
+  } else if (account_mode_ != AccountMode::PRIMARY_ACCOUNT) {
+    // Additionally, check for Secondary Account errors, if we are not in
+    // |AccountMode::PRIMARY_ACCOUNT| mode.
+    error_changed = UpdateSecondaryAccountErrors(
+        primary_account_id, prev_account_id, prev_error_state);
+  }
+
+  if (!error_changed && prev_error_state != GoogleServiceAuthError::NONE) {
+    // No provider reported an error, so clear the error we have now.
+    auth_error_ = GoogleServiceAuthError::AuthErrorNone();
+    error_account_id_.clear();
+    error_changed = true;
+  }
+
+  if (!error_changed)
+    return;
+
+  if (auth_error_.state() == prev_error_state &&
+      error_account_id_ == prev_account_id) {
+    // Only fire notification if the auth error state or account were updated.
+    return;
+  }
+
+  signin_metrics::LogAuthError(auth_error_);
+  for (auto& observer : observer_list_)
+    observer.OnErrorChanged();
+}
+
+bool SigninErrorController::UpdateSecondaryAccountErrors(
+    const std::string& primary_account_id,
+    const std::string& prev_account_id,
+    const GoogleServiceAuthError::State& prev_error_state) {
+  // This method should not have been called if we are in
+  // |AccountMode::PRIMARY_ACCOUNT|.
+  DCHECK_NE(AccountMode::PRIMARY_ACCOUNT, account_mode_);
 
   // Find an error among the status providers. If |auth_error_| has an
   // actionable error state and some provider exposes a similar error and
   // account id, use that error. Otherwise, just take the first actionable
   // error we find.
+  bool error_changed = false;
   for (const AccountInfo& account_info :
        identity_manager_->GetAccountsWithRefreshTokens()) {
     std::string account_id = account_info.account_id;
 
-    // In PRIMARY_ACCOUNT mode, ignore all secondary accounts.
-    if (account_mode_ == AccountMode::PRIMARY_ACCOUNT &&
-        (account_id != identity_manager_->GetPrimaryAccountId())) {
+    // Ignore the Primary Account. We are only interested in Secondary Accounts.
+    if (account_id == primary_account_id) {
       continue;
     }
 
@@ -55,12 +102,12 @@ void SigninErrorController::Update() {
     DCHECK(error.IsPersistentError());
 
     // Prioritize this error if it matches the previous |auth_error_|.
-    if (error.state() == prev_state && account_id == prev_account_id) {
+    if (error.state() == prev_error_state && account_id == prev_account_id) {
       // The previous error for the previous account still exists. This error is
       // preferred to avoid UI churn, so |auth_error_| and |error_account_id_|
       // must be updated to match the previous state. This is needed in case
-      // |auth_error_| and |error_account_id_| were updated to other values in
-      // a previous iteration via the if statement below.
+      // |auth_error_| and |error_account_id_| were updated to other values in a
+      // previous iteration via the if statement below.
       auth_error_ = error;
       error_account_id_ = account_id;
       error_changed = true;
@@ -76,25 +123,7 @@ void SigninErrorController::Update() {
     }
   }
 
-  if (!error_changed && prev_state != GoogleServiceAuthError::NONE) {
-    // No provider reported an error, so clear the error we have now.
-    auth_error_ = GoogleServiceAuthError::AuthErrorNone();
-    error_account_id_.clear();
-    error_changed = true;
-  }
-
-  if (!error_changed)
-    return;
-
-  if (auth_error_.state() == prev_state &&
-      error_account_id_ == prev_account_id) {
-    // Only fire notification if the auth error state or account were updated.
-    return;
-  }
-
-  signin_metrics::LogAuthError(auth_error_);
-  for (auto& observer : observer_list_)
-    observer.OnErrorChanged();
+  return error_changed;
 }
 
 bool SigninErrorController::HasError() const {
