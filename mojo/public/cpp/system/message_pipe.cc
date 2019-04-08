@@ -18,7 +18,7 @@ MojoResult WriteMessageRaw(MessagePipeHandle message_pipe,
   MojoResult rv = CreateMessage(&message_handle);
   DCHECK_EQ(MOJO_RESULT_OK, rv);
 
-  MojoAppendMessageDataOptions append_options = {0};
+  MojoAppendMessageDataOptions append_options;
   append_options.struct_size = sizeof(append_options);
   append_options.flags = MOJO_APPEND_MESSAGE_DATA_FLAG_COMMIT_SIZE;
   void* buffer;

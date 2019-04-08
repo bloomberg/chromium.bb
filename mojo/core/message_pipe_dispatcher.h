@@ -15,7 +15,6 @@
 #include "mojo/core/atomic_flag.h"
 #include "mojo/core/dispatcher.h"
 #include "mojo/core/ports/port_ref.h"
-#include "mojo/core/ports/slot_ref.h"
 #include "mojo/core/watcher_set.h"
 
 namespace mojo {
@@ -38,12 +37,6 @@ class MessagePipeDispatcher : public Dispatcher {
   // used for tracking pipes (one side is always 0, the other is always 1.)
   MessagePipeDispatcher(NodeController* node_controller,
                         const ports::PortRef& port,
-                        uint64_t pipe_id,
-                        int endpoint);
-
-  // Same as above but binds the dispatcher to a non-default port slot.
-  MessagePipeDispatcher(NodeController* node_controller,
-                        const ports::SlotRef& slot,
                         uint64_t pipe_id,
                         int endpoint);
 
@@ -86,45 +79,29 @@ class MessagePipeDispatcher : public Dispatcher {
       PlatformHandle* handles,
       size_t num_handles);
 
-  // Acquires the local MessagePipeDispatcher for this object's peer endpoint,
-  // iff both endpoints have always lived in the same process. Returns null
-  // otherwise.
-  scoped_refptr<MessagePipeDispatcher> GetLocalPeer();
-
-  // Sets the local peer dispatcher. Only set upon message pipe creation, and
-  // only remains set until either of the endpoints is transferred to another
-  // process.
-  void SetLocalPeer(scoped_refptr<MessagePipeDispatcher> peer);
-
-  // Re-binds this MessagePipeDispatcher to a different SlotRef from the one
-  // over which it was constructed.
-  void BindToSlot(const ports::SlotRef& slot_ref);
-
  private:
-  class SlotObserverThunk;
-  friend class SlotObserverThunk;
+  class PortObserverThunk;
+  friend class PortObserverThunk;
 
   ~MessagePipeDispatcher() override;
 
   MojoResult CloseNoLock();
   HandleSignalsState GetHandleSignalsStateNoLock() const;
-  void OnSlotStatusChanged();
+  void OnPortStatusChanged();
 
   // These are safe to access from any thread without locking.
   NodeController* const node_controller_;
+  const ports::PortRef port_;
   const uint64_t pipe_id_;
   const int endpoint_;
 
   // Guards access to all the fields below.
   mutable base::Lock signal_lock_;
 
-  ports::SlotRef slot_;
-
   // This is not the same is |port_transferred_|. It's only held true between
   // BeginTransit() and Complete/CancelTransit().
   AtomicFlag in_transit_;
 
-  scoped_refptr<MessagePipeDispatcher> local_peer_;
   bool port_transferred_ = false;
   AtomicFlag port_closed_;
   WatcherSet watchers_;

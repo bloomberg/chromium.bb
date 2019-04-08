@@ -59,7 +59,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
 
     scoped_refptr<Dispatcher> dispatcher;
     MojoHandle local_handle;
-    bool spliced = false;
   };
 
   enum class Type {
