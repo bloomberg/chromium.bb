@@ -101,12 +101,13 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
   if (!portal_contents_) {
     // Create the Portal WebContents.
     WebContents::CreateParams params(outer_contents_impl->GetBrowserContext());
-    portal_contents_ = WebContents::Create(params);
+    SetPortalContents(WebContents::Create(params));
     web_contents_created = true;
   }
-  portal_contents_impl_ = static_cast<WebContentsImpl*>(portal_contents_.get());
-  portal_contents_impl_->set_portal(this);
-  portal_contents_impl_->SetDelegate(this);
+
+  DCHECK_EQ(portal_contents_.get(), portal_contents_impl_);
+  DCHECK_EQ(portal_contents_impl_->portal(), this);
+  DCHECK_EQ(portal_contents_impl_->GetDelegate(), this);
 
   outer_contents_impl->AttachInnerWebContents(std::move(portal_contents_),
                                               outer_node->current_frame_host());
@@ -136,6 +137,7 @@ void Portal::Activate(blink::TransferableMessage data,
 
   if (outer_contents->portal()) {
     mojo::ReportBadMessage("Portal::Activate called on nested portal");
+    binding_->Close();  // Also deletes |this|.
     return;
   }
 
@@ -144,19 +146,24 @@ void Portal::Activate(blink::TransferableMessage data,
   std::unique_ptr<WebContents> portal_contents =
       portal_contents_impl_->DetachFromOuterWebContents();
 
-  static_cast<RenderWidgetHostViewBase*>(
-      outer_contents->GetMainFrame()->GetView())
-      ->Destroy();
-  std::unique_ptr<WebContents> contents = delegate->SwapWebContents(
-      outer_contents, std::move(portal_contents), true, is_loading);
-  CHECK_EQ(contents.get(), outer_contents);
+  auto* outer_contents_main_frame_view = static_cast<RenderWidgetHostViewBase*>(
+      outer_contents->GetMainFrame()->GetView());
+  if (outer_contents_main_frame_view)
+    outer_contents_main_frame_view->Destroy();
+  std::unique_ptr<WebContents> predecessor_web_contents =
+      delegate->SwapWebContents(outer_contents, std::move(portal_contents),
+                                true, is_loading);
+  CHECK_EQ(predecessor_web_contents.get(), outer_contents);
+
   portal_contents_impl_->set_portal(nullptr);
+
   blink::mojom::PortalAssociatedPtr portal_ptr;
   Portal* portal = Create(portal_contents_impl_->GetMainFrame(),
                           mojo::MakeRequest(&portal_ptr));
+  portal->SetPortalContents(std::move(predecessor_web_contents));
+
   portal_contents_impl_->GetMainFrame()->OnPortalActivated(
       portal->portal_token_, portal_ptr.PassInterface(), std::move(data));
-  portal->portal_contents_ = std::move(contents);
   std::move(callback).Run();
 }
 
@@ -190,6 +197,13 @@ WebContentsImpl* Portal::GetPortalContents() {
 void Portal::SetBindingForTesting(
     mojo::StrongAssociatedBindingPtr<blink::mojom::Portal> binding) {
   binding_ = binding;
+}
+
+void Portal::SetPortalContents(std::unique_ptr<WebContents> web_contents) {
+  portal_contents_ = std::move(web_contents);
+  portal_contents_impl_ = static_cast<WebContentsImpl*>(portal_contents_.get());
+  portal_contents_impl_->SetDelegate(this);
+  portal_contents_impl_->set_portal(this);
 }
 
 }  // namespace content
