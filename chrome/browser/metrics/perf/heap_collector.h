@@ -8,9 +8,11 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/feature_list.h"
 #include "base/optional.h"
+#include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "chrome/browser/metrics/perf/metric_collector.h"
 #include "chrome/browser/metrics/perf/perf_output.h"
 #include "chrome/browser/ui/browser_list_observer.h"
@@ -19,23 +21,33 @@ class Browser;
 
 namespace base {
 class CommandLine;
+class File;
 class FilePath;
 }  // namespace base
 
 namespace metrics {
 
-// Feature for controlling the heap collection parameters.
-extern const base::Feature kCWPHeapCollection;
+// Collection mode type.
+enum class HeapCollectionMode {
+  // No heap collection.
+  kNone = 0,
+  // Use allocation sampling inside tcmalloc.
+  kTcmalloc = 1,
+  // Use allocation sampling at the shim layer.
+  kShimLayer = 2,
+};
 
 // Enables collection of heap profiles using the tcmalloc heap sampling
 // profiler.
 class HeapCollector : public MetricCollector, public BrowserListObserver {
  public:
-  HeapCollector();
+  explicit HeapCollector(HeapCollectionMode mode);
   ~HeapCollector() override;
 
   // MetricCollector:
   void Init() override;
+
+  static HeapCollectionMode CollectionModeFromString(std::string mode);
 
  protected:
   // MetricCollector:
@@ -60,6 +72,12 @@ class HeapCollector : public MetricCollector, public BrowserListObserver {
                            const base::FilePath& profile_path,
                            std::unique_ptr<SampledProfile> sampled_profile);
 
+  // Start and stop the collection.
+  void EnableSampling();
+  void DisableSampling();
+  HeapCollectionMode Mode() const { return mode_; }
+  bool IsEnabled() const { return is_enabled_; }
+
  private:
   // Change the values in |collection_params_| based on the values of field
   // trial parameters.
@@ -68,8 +86,26 @@ class HeapCollector : public MetricCollector, public BrowserListObserver {
   // Heap sampling period.
   size_t sampling_period_bytes_;
 
+  // Heap collection mode.
+  HeapCollectionMode mode_;
+
+  // The collector state.
+  bool is_enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(HeapCollector);
 };
+
+// Exposed for unit testing.
+namespace internal {
+
+// Writes the given heap samples and runtime mappings to the given output file
+// in the same format as the one produced by the tcmalloc sampler.
+bool WriteHeapProfileToFile(
+    base::File* out,
+    const std::vector<base::SamplingHeapProfiler::Sample>& samples,
+    const std::string& proc_maps);
+
+}  // namespace internal
 
 }  // namespace metrics
 
