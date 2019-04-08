@@ -783,22 +783,6 @@ void ExtensionPrefs::ClearDisableReasons(const std::string& extension_id) {
                        DISABLE_REASON_CLEAR);
 }
 
-void ExtensionPrefs::ClearInapplicableDisableReasonsForComponentExtension(
-    const std::string& component_extension_id) {
-  static constexpr int kAllowDisableReasons =
-      disable_reason::DISABLE_RELOAD |
-      disable_reason::DISABLE_UNSUPPORTED_REQUIREMENT |
-      disable_reason::DISABLE_CORRUPTED;
-
-  // Some disable reasons incorrectly cause component extensions to never
-  // activate on load. See https://crbug.com/946839 for more details on why we
-  // do this.
-  ModifyDisableReasons(
-      component_extension_id,
-      kAllowDisableReasons & GetDisableReasons(component_extension_id),
-      DISABLE_REASON_REPLACE);
-}
-
 void ExtensionPrefs::ModifyDisableReasons(const std::string& extension_id,
                                           int reasons,
                                           DisableReasonChange change) {
