@@ -915,6 +915,57 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
   EXPECT_EQ("success", result);
 }
 
+// Tests the aliasing of chrome.extension methods to their chrome.runtime
+// equivalents.
+IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
+                       ChromeExtensionIsAliasedToChromeRuntime) {
+  constexpr char kManifest[] =
+      R"({
+           "name": "Test",
+           "version": "0.1",
+           "manifest_version": 2,
+           "background": { "scripts": ["background.js"] }
+         })";
+  constexpr char kBackground[] =
+      R"(chrome.test.runTests([
+           function chromeExtensionIsAliased() {
+             // Sanity check: chrome.extension is directly aliased to
+             // chrome.runtime.
+             chrome.test.assertTrue(!!chrome.runtime);
+             chrome.test.assertTrue(!!chrome.runtime.sendMessage);
+             chrome.test.assertEq(chrome.runtime.sendMessage,
+                                  chrome.extension.sendMessage);
+             chrome.test.succeed();
+           },
+           function testOverridingFailsGracefully() {
+             let intercepted = false;
+             // Modify the chrome.runtime object, which is the source for the
+             // chrome.extension API, to throw an error when sendMessage is
+             // accessed. Nothing should blow up.
+             // Regression test for https://crbug.com/949170.
+             Object.defineProperty(
+                 chrome.runtime,
+                 'sendMessage',
+                 {
+                   get() {
+                     intercepted = true;
+                     throw new Error('Mwahaha');
+                   }
+                 });
+             chrome.extension.sendMessage;
+             chrome.test.assertTrue(intercepted);
+             chrome.test.succeed();
+           }
+         ]);)";
+
+  TestExtensionDir extension_dir;
+  extension_dir.WriteManifest(kManifest);
+  extension_dir.WriteFile(FILE_PATH_LITERAL("background.js"), kBackground);
+  ResultCatcher catcher;
+  ASSERT_TRUE(LoadExtension(extension_dir.UnpackedPath()));
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
 INSTANTIATE_TEST_SUITE_P(,
                          ExtensionBindingsUserGestureTest,
                          ::testing::Values(kUserActivationV1,

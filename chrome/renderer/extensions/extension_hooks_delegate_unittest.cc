@@ -212,4 +212,29 @@ TEST_F(ExtensionHooksDelegateTest, SendRequestChannelLeftOpenToReplyAsync) {
       messaging_service()->HasPortForTesting(script_context(), port_id));
 }
 
+// Tests that overriding the runtime equivalents of chrome.extension methods
+// with accessors that throw does not cause a crash on access. Regression test
+// for https://crbug.com/949170.
+TEST_F(ExtensionHooksDelegateTest, RuntimeAliasesCorrupted) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  // Set a trap on chrome.runtime.sendMessage.
+  constexpr char kMutateChromeRuntime[] =
+      R"((function() {
+           Object.defineProperty(
+               chrome.runtime, 'sendMessage',
+               { get() { throw new Error('haha'); } });
+         }))";
+  RunFunctionOnGlobal(FunctionFromString(context, kMutateChromeRuntime),
+                      context, 0, nullptr);
+
+  // Touch chrome.extension.sendMessage, which is aliased to the runtime
+  // version. Though an error is thrown, we shouldn't crash.
+  constexpr char kTouchExtensionSendMessage[] =
+      "(function() { chrome.extension.sendMessage; })";
+  RunFunctionOnGlobal(FunctionFromString(context, kTouchExtensionSendMessage),
+                      context, 0, nullptr);
+}
+
 }  // namespace extensions
