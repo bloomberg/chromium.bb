@@ -28,8 +28,6 @@ class Serial final : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(Serial);
 
  public:
-  static Serial* Create(ExecutionContext& executionContext);
-
   explicit Serial(ExecutionContext&);
 
   // EventTarget

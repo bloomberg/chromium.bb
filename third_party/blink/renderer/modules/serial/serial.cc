@@ -34,11 +34,6 @@ String TokenToString(const base::UnguessableToken& token) {
 
 }  // namespace
 
-// static
-Serial* Serial::Create(ExecutionContext& execution_context) {
-  return MakeGarbageCollected<Serial>(execution_context);
-}
-
 Serial::Serial(ExecutionContext& execution_context)
     : ContextLifecycleObserver(&execution_context) {}
 
