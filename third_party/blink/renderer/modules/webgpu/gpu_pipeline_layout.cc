@@ -11,8 +11,9 @@ namespace blink {
 // static
 GPUPipelineLayout* GPUPipelineLayout::Create(
     GPUDevice* device,
-    DawnPipelineLayout pipeline_layout) {
-  return MakeGarbageCollected<GPUPipelineLayout>(device, pipeline_layout);
+    const GPUPipelineLayoutDescriptor* webgpu_desc) {
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 GPUPipelineLayout::GPUPipelineLayout(GPUDevice* device,

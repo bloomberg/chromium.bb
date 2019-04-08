@@ -11,8 +11,9 @@ namespace blink {
 // static
 GPUCommandEncoder* GPUCommandEncoder::Create(
     GPUDevice* device,
-    DawnCommandEncoder command_encoder) {
-  return MakeGarbageCollected<GPUCommandEncoder>(device, command_encoder);
+    const GPUCommandEncoderDescriptor* webgpu_desc) {
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 GPUCommandEncoder::GPUCommandEncoder(GPUDevice* device,

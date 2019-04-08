@@ -10,8 +10,9 @@ namespace blink {
 
 // static
 GPUBindGroup* GPUBindGroup::Create(GPUDevice* device,
-                                   DawnBindGroup bind_group) {
-  return MakeGarbageCollected<GPUBindGroup>(device, bind_group);
+                                   const GPUBindGroupDescriptor* webgpu_desc) {
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 GPUBindGroup::GPUBindGroup(GPUDevice* device, DawnBindGroup bind_group)

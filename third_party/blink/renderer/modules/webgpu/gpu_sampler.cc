@@ -9,8 +9,10 @@
 namespace blink {
 
 // static
-GPUSampler* GPUSampler::Create(GPUDevice* device, DawnSampler sampler) {
-  return MakeGarbageCollected<GPUSampler>(device, sampler);
+GPUSampler* GPUSampler::Create(GPUDevice* device,
+                               const GPUSamplerDescriptor* webgpu_desc) {
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 GPUSampler::GPUSampler(GPUDevice* device, DawnSampler sampler)
