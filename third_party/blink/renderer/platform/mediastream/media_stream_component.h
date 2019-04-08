@@ -59,9 +59,7 @@ class PLATFORM_EXPORT MediaStreamComponent final
   static int GenerateUniqueId();
 
  public:
-  static MediaStreamComponent* Create(MediaStreamSource*);
-  static MediaStreamComponent* Create(const String& id, MediaStreamSource*);
-
+  MediaStreamComponent(MediaStreamSource*);
   MediaStreamComponent(const String& id, MediaStreamSource*);
 
   MediaStreamComponent* Clone() const;

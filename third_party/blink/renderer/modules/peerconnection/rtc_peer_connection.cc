@@ -113,6 +113,7 @@
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instance_counters.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_answer_options_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
@@ -2659,7 +2660,7 @@ void RTCPeerConnection::DidAddReceiverPlanB(
         video_track_components.push_back(track->Component());
         video_tracks.push_back(track);
       }
-      MediaStreamDescriptor* descriptor = MediaStreamDescriptor::Create(
+      auto* descriptor = MakeGarbageCollected<MediaStreamDescriptor>(
           stream_id, std::move(audio_track_components),
           std::move(video_track_components));
       stream =
@@ -2865,8 +2866,10 @@ void RTCPeerConnection::SetAssociatedMediaStreams(
     }
     if (!curr_stream) {
       curr_stream = MediaStream::Create(
-          GetExecutionContext(), MediaStreamDescriptor::Create(
-                                     static_cast<String>(stream_id), {}, {}));
+          GetExecutionContext(),
+          MakeGarbageCollected<MediaStreamDescriptor>(
+              static_cast<String>(stream_id), MediaStreamComponentVector(),
+              MediaStreamComponentVector()));
     }
     streams.push_back(curr_stream);
   }
