@@ -214,7 +214,7 @@ class MediaDevicesTest : public testing::Test {
 
   MediaDevices* GetMediaDevices(ExecutionContext* context) {
     if (!media_devices_) {
-      media_devices_ = MediaDevices::Create(context);
+      media_devices_ = MakeGarbageCollected<MediaDevices>(context);
       media_devices_->SetDispatcherHostForTesting(
           dispatcher_host_->CreateInterfacePtrAndBind());
     }
@@ -232,7 +232,7 @@ class MediaDevicesTest : public testing::Test {
   void DevicesEnumerated(const MediaDeviceInfoVector& device_infos) {
     devices_enumerated_ = true;
     for (wtf_size_t i = 0; i < device_infos.size(); i++) {
-      device_infos_->push_back(MediaDeviceInfo::Create(
+      device_infos_->push_back(MakeGarbageCollected<MediaDeviceInfo>(
           device_infos[i]->deviceId(), device_infos[i]->label(),
           device_infos[i]->groupId(), device_infos[i]->DeviceType()));
     }

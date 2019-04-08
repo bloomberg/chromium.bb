@@ -624,8 +624,8 @@ ScriptPromise MediaStreamTrack::applyConstraints(
     return promise;
   }
 
-  user_media->ApplyConstraints(
-      ApplyConstraintsRequest::Create(Component(), web_constraints, resolver));
+  user_media->ApplyConstraints(MakeGarbageCollected<ApplyConstraintsRequest>(
+      Component(), web_constraints, resolver));
   return promise;
 }
 

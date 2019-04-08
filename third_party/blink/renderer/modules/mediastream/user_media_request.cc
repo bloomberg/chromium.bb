@@ -295,12 +295,6 @@ WebMediaConstraints ParseOptions(ExecutionContext* context,
 
 class UserMediaRequest::V8Callbacks final : public UserMediaRequest::Callbacks {
  public:
-  static V8Callbacks* Create(
-      V8NavigatorUserMediaSuccessCallback* success_callback,
-      V8NavigatorUserMediaErrorCallback* error_callback) {
-    return MakeGarbageCollected<V8Callbacks>(success_callback, error_callback);
-  }
-
   V8Callbacks(V8NavigatorUserMediaSuccessCallback* success_callback,
               V8NavigatorUserMediaErrorCallback* error_callback)
       : success_callback_(ToV8PersistentCallbackFunction(success_callback)),
@@ -418,9 +412,10 @@ UserMediaRequest* UserMediaRequest::Create(
     V8NavigatorUserMediaSuccessCallback* success_callback,
     V8NavigatorUserMediaErrorCallback* error_callback,
     MediaErrorState& error_state) {
-  return Create(context, controller, WebUserMediaRequest::MediaType::kUserMedia,
-                options, V8Callbacks::Create(success_callback, error_callback),
-                error_state);
+  return Create(
+      context, controller, WebUserMediaRequest::MediaType::kUserMedia, options,
+      MakeGarbageCollected<V8Callbacks>(success_callback, error_callback),
+      error_state);
 }
 
 UserMediaRequest* UserMediaRequest::CreateForTesting(

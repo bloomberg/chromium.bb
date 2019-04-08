@@ -139,11 +139,6 @@ class MockChromeClientForOrientationLockDelegate final
 class StubLocalFrameClientForOrientationLockDelegate final
     : public EmptyLocalFrameClient {
  public:
-  static StubLocalFrameClientForOrientationLockDelegate* Create() {
-    return MakeGarbageCollected<
-        StubLocalFrameClientForOrientationLockDelegate>();
-  }
-
   std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
@@ -185,7 +180,8 @@ class MediaControlsOrientationLockDelegateTest
     clients.chrome_client = chrome_client_.Get();
 
     SetupPageWithClients(
-        &clients, StubLocalFrameClientForOrientationLockDelegate::Create());
+        &clients,
+        MakeGarbageCollected<StubLocalFrameClientForOrientationLockDelegate>());
     previous_orientation_event_value_ =
         RuntimeEnabledFeatures::OrientationEventEnabled();
 

@@ -360,8 +360,8 @@ void MediaRecorder::OnError(const WebString& message) {
 }
 
 void MediaRecorder::CreateBlobEvent(Blob* blob, double timecode) {
-  ScheduleDispatchEvent(
-      BlobEvent::Create(event_type_names::kDataavailable, blob, timecode));
+  ScheduleDispatchEvent(MakeGarbageCollected<BlobEvent>(
+      event_type_names::kDataavailable, blob, timecode));
 }
 
 void MediaRecorder::StopRecording() {

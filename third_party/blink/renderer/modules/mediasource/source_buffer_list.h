@@ -46,11 +46,6 @@ class SourceBufferList final : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(SourceBufferList);
 
  public:
-  static SourceBufferList* Create(ExecutionContext* context,
-                                  EventQueue* async_event_queue) {
-    return MakeGarbageCollected<SourceBufferList>(context, async_event_queue);
-  }
-
   SourceBufferList(ExecutionContext*, EventQueue*);
   ~SourceBufferList() override;
 
