@@ -286,6 +286,11 @@ class TastTest(RemoteTest):
           '--private-key',
           os.path.join(CHROMITE_PATH, 'ssh_keys', 'testing_rsa'),
       ]
+      # Capture tast's results in the logs dir as well.
+      if self._logs_dir:
+        self._test_cmd += [
+            '--results-dir', self._logs_dir,
+        ]
       if self._conditional:
         # Don't use pipes.quote() here. Something funky happens with the arg
         # as it gets passed down from cros_run_test to tast. (Tast picks up the
