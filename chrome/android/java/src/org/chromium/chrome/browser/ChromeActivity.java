@@ -1511,6 +1511,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                     !ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON));
             getComponent().resolveContextualSuggestionsCoordinator();
         }
+        AppHooks.get().startMonitoringNetworkQuality();
     }
 
     /**

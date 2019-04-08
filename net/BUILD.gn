@@ -2329,6 +2329,14 @@ source_set("net_public_deps") {
   }
 }
 
+if (is_android) {
+  java_cpp_enum("effective_connection_type_java") {
+    sources = [
+      "//net/nqe/effective_connection_type.h",
+    ]
+  }
+}
+
 grit("net_resources") {
   source = "base/net_resources.grd"
   outputs = [
