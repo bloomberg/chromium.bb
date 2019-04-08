@@ -95,6 +95,8 @@ def ListContainsOnlySha1Hashes(l):
 #                assign the list of Feature::BLESSED_EXTENSION_CONTEXT,
 #                Feature::BLESSED_WEB_PAGE_CONTEXT et al for contexts. If not
 #                specified, defaults to false.
+#   'allow_empty': Only applicable for lists. Whether an empty list is a valid
+#                  value. If omitted, empty lists are prohibited.
 #   'validators': A list of (function, str) pairs with a function to run on the
 #                 value for a feature. Validators allow for more flexible or
 #                 one-off style validation than just what's in the grammar (such
@@ -160,7 +162,12 @@ FEATURE_GRAMMAR = (
       bool: {'values': [True]}
     },
     'dependencies': {
-      list: {'subtype': unicode}
+      list: {
+        # We allow an empty list of dependencies for child features that want
+        # to override their parents' dependency set.
+        'allow_empty': True,
+        'subtype': unicode
+      }
     },
     'extension_types': {
       list: {
@@ -459,6 +466,7 @@ class Feature(object):
 
     is_all = False
     if v == 'all' and list in grammar and 'allow_all' in grammar[list]:
+      assert grammar[list]['allow_all'], '`allow_all` only supports `True`.'
       v = []
       is_all = True
 
@@ -470,6 +478,14 @@ class Feature(object):
     if value_type not in grammar:
       self._AddKeyError(key, 'Illegal value: "%s"' % v)
       return
+
+    if value_type is list and not is_all and len(v) == 0:
+      if 'allow_empty' in grammar[list]:
+        assert grammar[list]['allow_empty'], \
+               '`allow_empty` only supports `True`.'
+      else:
+        self._AddKeyError(key, 'List must specify at least one element.')
+        return
 
     expected = grammar[value_type]
     expected_values = None

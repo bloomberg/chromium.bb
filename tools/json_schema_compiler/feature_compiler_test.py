@@ -101,6 +101,15 @@ class FeatureCompilerTest(unittest.TestCase):
     f = self._parseFeature({'noparent': False})
     self._hasError(f, 'Illegal value: "False"')
 
+  def testEmptyList(self):
+    f = self._parseFeature({'contexts': []})
+    self._hasError(f, 'List must specify at least one element.')
+
+  def testEmptyListWithAllowEmpty(self):
+    # `dependencies` is the only key that allows an empty list.
+    f = self._parseFeature({'dependencies': []})
+    self.assertFalse(f.GetErrors())
+
   def testApiFeaturesNeedContexts(self):
     f = self._parseFeature({'dependencies': 'alpha',
                             'extension_types': ['extension'],
