@@ -168,4 +168,12 @@ static INLINE int use_auto_max_partition(AV1_COMP *const cpi,
              INTNL_OVERLAY_UPDATE;
 }
 
+void av1_ml_early_term_after_split(AV1_COMP *const cpi, MACROBLOCK *const x,
+                                   PC_TREE *const pc_tree, BLOCK_SIZE bsize,
+                                   int64_t best_rd, int64_t part_none_rd,
+                                   int64_t part_split_rd,
+                                   int64_t *split_block_rd, int mi_row,
+                                   int mi_col,
+                                   int *const terminate_partition_search);
+
 #endif  // AOM_AV1_ENCODER_PARTITION_STRATEGY_H_

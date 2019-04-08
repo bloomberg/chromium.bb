@@ -357,6 +357,8 @@ static void simple_motion_search_prune_part_features(
     pc_tree->sms_rect_valid = 1;
   }
 
+  if (!features) return;
+
   aom_clear_system_state();
   int f_idx = 0;
   if (features_to_get & FEATURE_SMS_NONE_FLAG) {
@@ -820,3 +822,130 @@ BLOCK_SIZE av1_predict_max_partition(AV1_COMP *const cpi, MACROBLOCK *const x,
 
   return (BLOCK_SIZE)((result + 2) * 3);
 }
+
+// Get the minimum partition block width and height(in log scale) under a
+// PC_TREE.
+static void get_min_bsize(const PC_TREE *pc_tree, int *min_bw, int *min_bh) {
+  if (!pc_tree) return;
+
+  const BLOCK_SIZE bsize = pc_tree->block_size;
+  if (bsize == BLOCK_4X4) {
+    *min_bw = 0;
+    *min_bh = 0;
+    return;
+  }
+
+  PARTITION_TYPE part_type = pc_tree->partitioning;
+  if (part_type == PARTITION_INVALID) return;
+
+  if (part_type == PARTITION_SPLIT) {
+    for (int i = 0; i < 4; ++i) {
+      get_min_bsize(pc_tree->split[i], min_bw, min_bh);
+    }
+  } else {
+    if (part_type == PARTITION_HORZ_A || part_type == PARTITION_HORZ_B ||
+        part_type == PARTITION_VERT_A || part_type == PARTITION_VERT_B)
+      part_type = PARTITION_SPLIT;
+    const BLOCK_SIZE subsize = get_partition_subsize(bsize, part_type);
+    if (subsize != BLOCK_INVALID) {
+      *min_bw = AOMMIN(*min_bw, mi_size_wide_log2[subsize]);
+      *min_bh = AOMMIN(*min_bh, mi_size_high_log2[subsize]);
+    }
+  }
+}
+
+static INLINE void add_rd_feature(int64_t rd, int64_t best_rd, float *features,
+                                  int *feature_idx) {
+  const int rd_valid = rd > 0 && rd < INT64_MAX;
+  const float rd_ratio = rd_valid ? (float)rd / best_rd : 1.0f;
+  features[(*feature_idx)++] = (float)rd_valid;
+  features[(*feature_idx)++] = rd_ratio;
+}
+
+#define FEATURES 31
+void av1_ml_early_term_after_split(AV1_COMP *const cpi, MACROBLOCK *const x,
+                                   PC_TREE *const pc_tree, BLOCK_SIZE bsize,
+                                   int64_t best_rd, int64_t part_none_rd,
+                                   int64_t part_split_rd,
+                                   int64_t *split_block_rd, int mi_row,
+                                   int mi_col,
+                                   int *const terminate_partition_search) {
+  if (best_rd <= 0 || best_rd == INT64_MAX || *terminate_partition_search)
+    return;
+
+  const AV1_COMMON *const cm = &cpi->common;
+  const int is_480p_or_larger = AOMMIN(cm->width, cm->height) >= 480;
+  const NN_CONFIG *nn_config = NULL;
+  float thresh = -1e6;
+  switch (bsize) {
+    case BLOCK_128X128: break;
+    case BLOCK_64X64:
+      nn_config = &av1_early_term_after_split_nnconfig_64;
+      thresh = is_480p_or_larger ? -2.0f : -1.2f;
+      break;
+    case BLOCK_32X32:
+      nn_config = &av1_early_term_after_split_nnconfig_32;
+      thresh = is_480p_or_larger ? -2.6f : -2.3f;
+      break;
+    case BLOCK_16X16:
+      nn_config = &av1_early_term_after_split_nnconfig_16;
+      thresh = is_480p_or_larger ? -2.0f : -2.4f;
+      break;
+    case BLOCK_8X8:
+      nn_config = &av1_early_term_after_split_nnconfig_8;
+      thresh = is_480p_or_larger ? -1.0f : -1.4f;
+      break;
+    case BLOCK_4X4: break;
+    default:
+      assert(0 && "Invalid block size in av1_ml_early_term_after_split().");
+      break;
+  }
+  if (!nn_config) return;
+
+  const MACROBLOCKD *const xd = &x->e_mbd;
+  const int dc_q = av1_dc_quant_QTX(x->qindex, 0, xd->bd) >> (xd->bd - 8);
+  const int bs = block_size_wide[bsize];
+  int f_idx = 0;
+  float features[FEATURES] = { 0.0f };
+
+  aom_clear_system_state();
+
+  features[f_idx++] = logf(1.0f + (float)dc_q / 4.0f);
+  features[f_idx++] = logf(1.0f + (float)best_rd / bs / bs / 1024.0f);
+
+  add_rd_feature(part_none_rd, best_rd, features, &f_idx);
+  add_rd_feature(part_split_rd, best_rd, features, &f_idx);
+
+  for (int i = 0; i < 4; ++i) {
+    add_rd_feature(split_block_rd[i], best_rd, features, &f_idx);
+    int min_bw = MAX_SB_SIZE_LOG2;
+    int min_bh = MAX_SB_SIZE_LOG2;
+    get_min_bsize(pc_tree->split[i], &min_bw, &min_bh);
+    features[f_idx++] = (float)min_bw;
+    features[f_idx++] = (float)min_bh;
+  }
+
+  simple_motion_search_prune_part_features(cpi, x, pc_tree, mi_row, mi_col,
+                                           bsize, NULL,
+                                           FEATURE_SMS_PRUNE_PART_FLAG);
+
+  features[f_idx++] = logf(1.0f + (float)pc_tree->sms_none_feat[1]);
+
+  features[f_idx++] = logf(1.0f + (float)pc_tree->sms_split_feat[1]);
+  features[f_idx++] = logf(1.0f + (float)pc_tree->sms_split_feat[3]);
+  features[f_idx++] = logf(1.0f + (float)pc_tree->sms_split_feat[5]);
+  features[f_idx++] = logf(1.0f + (float)pc_tree->sms_split_feat[7]);
+
+  features[f_idx++] = logf(1.0f + (float)pc_tree->sms_rect_feat[1]);
+  features[f_idx++] = logf(1.0f + (float)pc_tree->sms_rect_feat[3]);
+  features[f_idx++] = logf(1.0f + (float)pc_tree->sms_rect_feat[5]);
+  features[f_idx++] = logf(1.0f + (float)pc_tree->sms_rect_feat[7]);
+
+  assert(f_idx == FEATURES);
+
+  float score = 0.0f;
+  av1_nn_predict(features, nn_config, &score);
+  // Score is indicator of confidence that we should NOT terminate.
+  if (score < thresh) *terminate_partition_search = 1;
+}
+#undef FEATURES

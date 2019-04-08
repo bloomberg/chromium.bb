@@ -3293,6 +3293,7 @@ BEGIN_PARTITION_SEARCH:
 
   // PARTITION_NONE
   if (is_le_min_sq_part && has_rows && has_cols) partition_none_allowed = 1;
+  int64_t part_none_rd = INT64_MAX;
   if (!terminate_partition_search && partition_none_allowed &&
       !is_gt_max_sq_part) {
     int pt_cost = 0;
@@ -3337,6 +3338,7 @@ BEGIN_PARTITION_SEARCH:
         this_rdc.rdcost = RDCOST(x->rdmult, this_rdc.rate, this_rdc.dist);
       }
 
+      part_none_rd = this_rdc.rdcost;
       if (this_rdc.rdcost < best_rdc.rdcost) {
         // Adjust dist breakout threshold according to the partition size.
         const int64_t dist_breakout_thr =
@@ -3395,6 +3397,7 @@ BEGIN_PARTITION_SEARCH:
   if (cpi->sf.adaptive_motion_search) store_pred_mv(x, ctx_none);
 
   // PARTITION_SPLIT
+  int64_t part_split_rd = INT64_MAX;
   if ((!terminate_partition_search && do_square_split) || is_gt_max_sq_part) {
     av1_init_rd_stats(&sum_rdc);
     subsize = get_partition_subsize(bsize, PARTITION_SPLIT);
@@ -3455,9 +3458,9 @@ BEGIN_PARTITION_SEARCH:
 #endif
     const int reached_last_index = (idx == 4);
 
+    part_split_rd = sum_rdc.rdcost;
     if (reached_last_index && sum_rdc.rdcost < best_rdc.rdcost) {
       sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
-
       if (sum_rdc.rdcost < best_rdc.rdcost) {
         best_rdc = sum_rdc;
         pc_tree->partitioning = PARTITION_SPLIT;
@@ -3472,9 +3475,18 @@ BEGIN_PARTITION_SEARCH:
     restore_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
   }  // if (do_split)
 
-  if (cpi->sf.ml_prune_rect_partition && !frame_is_intra_only(cm) &&
+  if (cpi->sf.ml_early_term_after_part_split && !frame_is_intra_only(cm) &&
+      !terminate_partition_search && do_rectangular_split &&
+      (partition_horz_allowed || partition_vert_allowed)) {
+    av1_ml_early_term_after_split(cpi, x, pc_tree, bsize, best_rdc.rdcost,
+                                  part_none_rd, part_split_rd, split_rd, mi_row,
+                                  mi_col, &terminate_partition_search);
+  }
+
+  if (!cpi->sf.ml_early_term_after_part_split &&
+      cpi->sf.ml_prune_rect_partition && !frame_is_intra_only(cm) &&
       (partition_horz_allowed || partition_vert_allowed) &&
-      !(prune_horz || prune_vert)) {
+      !(prune_horz || prune_vert) && !terminate_partition_search) {
     av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes, bsize);
     ml_prune_rect_partition(cpi, x, bsize, best_rdc.rdcost, cur_none_rd,
                             split_rd, &prune_horz, &prune_vert);

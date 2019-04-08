@@ -385,6 +385,10 @@ typedef struct SPEED_FEATURES {
   // Use a ML model to prune horz4 and vert4 partitions.
   int ml_prune_4_partition;
 
+  // Use a ML model to adaptively terminate partition search after trying
+  // PARTITION_SPLIT.
+  int ml_early_term_after_part_split;
+
   int fast_cdef_search;
 
   // 2-pass coding block partition search, and also use the mode decisions made
