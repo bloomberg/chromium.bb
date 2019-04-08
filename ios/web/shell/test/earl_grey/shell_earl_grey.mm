@@ -6,15 +6,11 @@
 
 #import <EarlGrey/EarlGrey.h>
 
+#import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#import "ios/web/public/test/earl_grey/js_test_util.h"
-#include "ios/web/public/test/element_selector.h"
-#import "ios/web/public/test/navigation_test_util.h"
-#import "ios/web/public/test/web_view_content_test_util.h"
-#import "ios/web/public/test/web_view_interaction_test_util.h"
-#include "ios/web/shell/test/app/navigation_test_util.h"
-#import "ios/web/shell/test/app/web_shell_test_util.h"
+#import "ios/web/shell/test/earl_grey/shell_earl_grey_app_interface.h"
 
+using base::test::ios::kWaitForPageLoadTimeout;
 using base::test::ios::kWaitForUIElementTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
 
@@ -22,19 +18,22 @@ using base::test::ios::WaitUntilConditionOrTimeout;
 #error "This file requires ARC support."
 #endif
 
-@implementation ShellEarlGrey
+namespace shell_test_util {
 
-+ (bool)loadURL:(const GURL&)URL {
-  web::shell_test_util::LoadUrl(URL);
-  web::WebState* webState = web::shell_test_util::GetCurrentWebState();
+bool LoadUrl(const GURL& url) {
+  [ShellEarlGreyAppInterface loadURL:base::SysUTF8ToNSString(url.spec())];
 
-  if (!web::test::WaitForPageToFinishLoading(webState))
+  bool load_success = WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return ![ShellEarlGreyAppInterface isCurrentWebStateLoading];
+  });
+  if (!load_success) {
     return false;
+  }
 
-  if (webState->ContentIsHTML()) {
-    if (!web::WaitUntilWindowIdInjected(webState)) {
-      return false;
-    }
+  bool injection_success =
+      [ShellEarlGreyAppInterface waitForWindowIDInjectedInCurrentWebState];
+  if (!injection_success) {
+    return false;
   }
 
   // Ensure any UI elements handled by EarlGrey become idle for any subsequent
@@ -43,11 +42,11 @@ using base::test::ios::WaitUntilConditionOrTimeout;
   return true;
 }
 
-+ (bool)waitForWebViewContainingText:(std::string)text {
+bool WaitForWebViewContainingText(const std::string& text) {
   return WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
-    return web::test::IsWebViewContainingText(
-        web::shell_test_util::GetCurrentWebState(), text);
+    return [ShellEarlGreyAppInterface
+        currentWebStateContainsText:base::SysUTF8ToNSString(text)];
   });
 }
 
-@end
+}  // namespace shell_test_util

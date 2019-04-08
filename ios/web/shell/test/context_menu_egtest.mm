@@ -54,10 +54,10 @@ const char kHtmlFile[] =
   const char linkText[] = "normal-link-text";
   const GURL pageURL = _server.GetURL(kHtmlFile);
 
-  bool success = [ShellEarlGrey loadURL:pageURL];
+  bool success = shell_test_util::LoadUrl(pageURL);
   GREYAssert(success, @"Page did not complete loading.");
 
-  success = [ShellEarlGrey waitForWebViewContainingText:linkText];
+  success = shell_test_util::WaitForWebViewContainingText(linkText);
   GREYAssert(success, @"Failed waiting for web view containing '%s'", linkText);
 
   [[EarlGrey selectElementWithMatcher:web::WebView()]
@@ -85,9 +85,9 @@ const char kHtmlFile[] =
   const char linkText[] = "no-webkit-link-text";
   const GURL pageURL = _server.GetURL(kHtmlFile);
 
-  bool success = [ShellEarlGrey loadURL:pageURL];
+  bool success = shell_test_util::LoadUrl(pageURL);
   GREYAssert(success, @"Page did not complete loading.");
-  success = [ShellEarlGrey waitForWebViewContainingText:linkText];
+  success = shell_test_util::WaitForWebViewContainingText(linkText);
   GREYAssert(success, @"Failed waiting for web view containing '%s'", linkText);
 
   [[EarlGrey selectElementWithMatcher:web::WebView()]
