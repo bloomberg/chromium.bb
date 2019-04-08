@@ -617,12 +617,6 @@ interface MyIFaceArgumentWithAnnotatedType2 {
 [ Exposed(Window, Worker) ] interface InterfaceExposedError { };
 
 /** TREE
- *Implements(Foo)
- *  REFERENCE: Bar
- */
-Foo implements Bar;
-
-/** TREE
  *Includes(Foo)
  *  REFERENCE: Bar
  */
