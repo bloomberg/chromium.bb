@@ -1443,6 +1443,8 @@
   },
   'webgl2_conformance_gl_passthrough_tests': {
     'remove_from': [
+      # https://crbug.com/927470
+      'Linux FYI Experimental Release (Intel HD 630)',
       # Not enough capacity. https://crbug.com/946694
       'ANGLE GPU Win10 Release (Intel HD 630)',
     ],
