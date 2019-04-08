@@ -55,8 +55,8 @@ TEST_P(PaintControllerPaintTest, InlineRelayout) {
       "<div id='div' style='width:100px; height: 200px'>AAAAAAAAAA "
       "BBBBBBBBBB</div>");
   Element& div = *ToElement(GetDocument().body()->firstChild());
-  LayoutBlock& div_block =
-      *ToLayoutBlock(GetDocument().body()->firstChild()->GetLayoutObject());
+  auto& div_block =
+      *To<LayoutBlock>(GetDocument().body()->firstChild()->GetLayoutObject());
   LayoutText& text = *ToLayoutText(div_block.FirstChild());
   DisplayItemClient& first_text_box =
       text.FirstInlineFragment()
@@ -100,7 +100,7 @@ TEST_P(PaintControllerPaintTest, ChunkIdClientCacheFlag) {
     blue'></div>
     </div>
   )HTML");
-  LayoutBlock& div = *ToLayoutBlock(GetLayoutObjectByElementId("div"));
+  auto& div = *To<LayoutBlock>(GetLayoutObjectByElementId("div"));
   LayoutObject& sub_div = *div.FirstChild();
   LayoutObject& sub_div2 = *sub_div.NextSibling();
 
@@ -125,7 +125,7 @@ TEST_P(PaintControllerPaintTest, CompositingNoFold) {
     blue'></div>
     </div>
   )HTML");
-  LayoutBlock& div = *ToLayoutBlock(GetLayoutObjectByElementId("div"));
+  auto& div = *To<LayoutBlock>(GetLayoutObjectByElementId("div"));
   LayoutObject& sub_div = *div.FirstChild();
 
   EXPECT_THAT(RootPaintController().GetDisplayItemList(),
@@ -190,7 +190,7 @@ TEST_P(PaintControllerPaintTestForCAP, BlockScrollingNonLayeredContents) {
     </container>
   )HTML");
 
-  auto& container = *ToLayoutBlock(GetLayoutObjectByElementId("container"));
+  auto& container = *To<LayoutBlock>(GetLayoutObjectByElementId("container"));
   auto& div1 = *GetLayoutObjectByElementId("div1");
   auto& div2 = *GetLayoutObjectByElementId("div2");
   auto& div3 = *GetLayoutObjectByElementId("div3");
@@ -234,7 +234,7 @@ TEST_P(PaintControllerPaintTestForCAP, ScrollHitTestOrder) {
     <div id='forceDocumentScroll'/>
   )HTML");
 
-  auto& container = *ToLayoutBlock(GetLayoutObjectByElementId("container"));
+  auto& container = *To<LayoutBlock>(GetLayoutObjectByElementId("container"));
   auto& child = *GetLayoutObjectByElementId("child");
 
   // The container's items should all be after the document's scroll hit test
@@ -274,7 +274,7 @@ TEST_P(PaintControllerPaintTestForCAP, NonStackingScrollHitTestOrder) {
     </div>
   )HTML");
 
-  auto& container = *ToLayoutBlock(GetLayoutObjectByElementId("container"));
+  auto& container = *To<LayoutBlock>(GetLayoutObjectByElementId("container"));
   auto& child = *GetLayoutObjectByElementId("child");
   auto& neg_z_child = *GetLayoutObjectByElementId("negZChild");
   auto& pos_z_child = *GetLayoutObjectByElementId("posZChild");
@@ -320,7 +320,7 @@ TEST_P(PaintControllerPaintTestForCAP, StackingScrollHitTestOrder) {
     </div>
   )HTML");
 
-  auto& container = *ToLayoutBlock(GetLayoutObjectByElementId("container"));
+  auto& container = *To<LayoutBlock>(GetLayoutObjectByElementId("container"));
   auto& child = *GetLayoutObjectByElementId("child");
   auto& neg_z_child = *GetLayoutObjectByElementId("negZChild");
   auto& pos_z_child = *GetLayoutObjectByElementId("posZChild");
@@ -365,7 +365,7 @@ TEST_P(PaintControllerPaintTestForCAP,
     </div>
   )HTML");
 
-  auto& container = *ToLayoutBlock(GetLayoutObjectByElementId("container"));
+  auto& container = *To<LayoutBlock>(GetLayoutObjectByElementId("container"));
   auto& child = *GetLayoutObjectByElementId("child");
   auto& neg_z_child = *GetLayoutObjectByElementId("negZChild");
   auto& pos_z_child = *GetLayoutObjectByElementId("posZChild");

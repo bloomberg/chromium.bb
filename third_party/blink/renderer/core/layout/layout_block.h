@@ -594,8 +594,6 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   virtual void AdjustChildDebugRect(LayoutRect&) const {}
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBlock, IsLayoutBlock());
-
 template <>
 struct DowncastTraits<LayoutBlock> {
   static bool AllowFrom(const LayoutObject& object) {

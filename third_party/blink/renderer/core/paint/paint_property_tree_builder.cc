@@ -1493,22 +1493,22 @@ static bool CanOmitOverflowClip(const LayoutObject& object) {
   }
 
   // Some non-block boxes and SVG objects have special overflow rules.
-  if (!object.IsLayoutBlock() || object.IsSVG())
+  const auto* block = DynamicTo<LayoutBlock>(object);
+  if (!block || object.IsSVG())
     return false;
 
-  const auto& block = ToLayoutBlock(object);
   // Selection may overflow.
-  if (block.IsSelected())
+  if (block->IsSelected())
     return false;
   // Other cases that the contents may overflow. The conditions are copied from
   // BlockPainter for SPv1 clip. TODO(wangxianzhu): clean up.
-  if (block.HasControlClip() || block.ShouldPaintCarets())
+  if (block->HasControlClip() || block->ShouldPaintCarets())
     return false;
 
   // We need OverflowClip for hit-testing if the clip rect excluding overlay
   // scrollbars is different from the normal clip rect.
-  auto clip_rect = block.OverflowClipRect(LayoutPoint());
-  auto clip_rect_excluding_overlay_scrollbars = block.OverflowClipRect(
+  auto clip_rect = block->OverflowClipRect(LayoutPoint());
+  auto clip_rect_excluding_overlay_scrollbars = block->OverflowClipRect(
       LayoutPoint(), kExcludeOverlayScrollbarSizeForHitTesting);
   if (clip_rect != clip_rect_excluding_overlay_scrollbars)
     return false;
@@ -1517,14 +1517,14 @@ static bool CanOmitOverflowClip(const LayoutObject& object) {
   // ContentsVisualOverflowRect() does not include self-painting descendants
   // (see comment above |BoxOverflowModel|) so, as a simplification, do not
   // omit the clip if there are any PaintLayer descendants.
-  if (block.HasLayer() && block.Layer()->FirstChild())
+  if (block->HasLayer() && block->Layer()->FirstChild())
     return false;
-  if (!clip_rect.Contains(block.ContentsVisualOverflowRect()))
+  if (!clip_rect.Contains(block->ContentsVisualOverflowRect()))
     return false;
 
   // Content can scroll, and needs to be clipped, if the layout overflow extends
   // beyond the clip rect.
-  return clip_rect.Contains(block.LayoutOverflowRect());
+  return clip_rect.Contains(block->LayoutOverflowRect());
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {

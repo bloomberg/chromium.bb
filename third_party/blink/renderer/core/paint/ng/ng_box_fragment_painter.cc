@@ -337,7 +337,7 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
   }
 
   DCHECK(layout_object->IsLayoutBlockFlow());
-  const LayoutBlock& layout_block = ToLayoutBlock(*layout_object);
+  const auto& layout_block = To<LayoutBlock>(*layout_object);
   DCHECK(layout_block.ChildrenInline());
   if (ShouldPaintDescendantOutlines(paint_info.phase)) {
     ObjectPainter(layout_block).PaintInlineChildrenOutlines(paint_info);

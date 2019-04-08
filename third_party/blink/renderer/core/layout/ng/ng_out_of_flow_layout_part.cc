@@ -89,7 +89,7 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
       contains_absolute_(contains_absolute),
       contains_fixed_(contains_fixed) {
   if (!container_builder->HasOutOfFlowDescendantCandidates() &&
-      !ToLayoutBlock(container_builder_->GetLayoutObject())
+      !To<LayoutBlock>(container_builder_->GetLayoutObject())
            ->HasPositionedObjects())
     return;
 
@@ -119,7 +119,7 @@ void NGOutOfFlowLayoutPart::Run(const LayoutBox* only_layout) {
       &descendant_candidates, current_container);
 
   if (descendant_candidates.IsEmpty() &&
-      !ToLayoutBlock(current_container)->HasPositionedObjects())
+      !To<LayoutBlock>(current_container)->HasPositionedObjects())
     return;
 
   // Special case: containing block is a split inline.
@@ -184,8 +184,8 @@ void NGOutOfFlowLayoutPart::Run(const LayoutBox* only_layout) {
 // Returns false if no new candidates were found.
 bool NGOutOfFlowLayoutPart::SweepLegacyDescendants(
     HashSet<const LayoutObject*>* placed_objects) {
-  const LayoutBlock* container_block =
-      ToLayoutBlockOrNull(container_builder_->GetLayoutObject());
+  const auto* container_block =
+      DynamicTo<LayoutBlock>(container_builder_->GetLayoutObject());
   if (!container_block)
     return false;
   TrackedLayoutBoxListHashSet* legacy_objects =
@@ -532,7 +532,7 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
   }
 
   if (node.GetLayoutBox()->IsLayoutNGObject()) {
-    ToLayoutBlock(node.GetLayoutBox())
+    To<LayoutBlock>(node.GetLayoutBox())
         ->SetIsLegacyInitiatedOutOfFlowLayout(false);
   }
   // Legacy grid and flexbox handle OOF-positioned margins on their own, and

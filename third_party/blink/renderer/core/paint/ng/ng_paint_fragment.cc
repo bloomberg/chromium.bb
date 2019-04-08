@@ -1085,7 +1085,7 @@ bool NGPaintFragment::ShouldPaintCursorCaret() const {
   // FrameSelection.
   if (!GetLayoutObject()->IsLayoutBlock())
     return false;
-  return ToLayoutBlock(GetLayoutObject())->ShouldPaintCursorCaret();
+  return To<LayoutBlock>(GetLayoutObject())->ShouldPaintCursorCaret();
 }
 
 bool NGPaintFragment::ShouldPaintDragCaret() const {
@@ -1093,7 +1093,7 @@ bool NGPaintFragment::ShouldPaintDragCaret() const {
   // DragCaret.
   if (!GetLayoutObject()->IsLayoutBlock())
     return false;
-  return ToLayoutBlock(GetLayoutObject())->ShouldPaintDragCaret();
+  return To<LayoutBlock>(GetLayoutObject())->ShouldPaintDragCaret();
 }
 
 String NGPaintFragment::DebugName() const {

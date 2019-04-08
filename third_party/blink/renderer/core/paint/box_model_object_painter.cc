@@ -73,8 +73,8 @@ void BoxModelObjectPainter::PaintTextClipMask(GraphicsContext& context,
     const RootInlineBox& root = flow_box_->Root();
     flow_box_->Paint(paint_info, paint_offset - local_offset, root.LineTop(),
                      root.LineBottom());
-  } else if (box_model_.IsLayoutBlock()) {
-    ToLayoutBlock(box_model_).PaintObject(paint_info, paint_offset);
+  } else if (auto* layout_block = DynamicTo<LayoutBlock>(box_model_)) {
+    layout_block->PaintObject(paint_info, paint_offset);
   } else {
     // We should go through the above path for LayoutInlines.
     DCHECK(!box_model_.IsLayoutInline());
