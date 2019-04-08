@@ -995,7 +995,9 @@ void AuthenticatorCommon::OnRegisterResponse(
       if (transport_used) {
         request_delegate_->UpdateLastTransportUsed(*transport_used);
       }
-
+      bool is_transport_used_internal =
+          transport_used &&
+          *transport_used == device::FidoTransportProtocol::kInternal;
       if (attestation_requested_) {
         // Cryptotoken requests may bypass the attestation prompt because the
         // extension implements its own. Invoking the attestation prompt code
@@ -1023,7 +1025,8 @@ void AuthenticatorCommon::OnRegisterResponse(
             relying_party_id_,
             base::BindOnce(
                 &AuthenticatorCommon::OnRegisterResponseAttestationDecided,
-                weak_factory_.GetWeakPtr(), std::move(*response_data)));
+                weak_factory_.GetWeakPtr(), std::move(*response_data),
+                is_transport_used_internal));
         return;
       }
 
@@ -1031,8 +1034,7 @@ void AuthenticatorCommon::OnRegisterResponse(
           AttestationErasureOption::kEraseAttestationAndAaguid;
       if (response_data->IsSelfAttestation()) {
         attestation_erasure = AttestationErasureOption::kIncludeAttestation;
-      } else if (transport_used &&
-                 *transport_used == device::FidoTransportProtocol::kInternal) {
+      } else if (is_transport_used_internal) {
         // Contrary to what the WebAuthn spec says, for internal (platform)
         // authenticators we do not erase the AAGUID from authenticatorData,
         // even if requested attestationConveyancePreference is "none".
@@ -1054,6 +1056,7 @@ void AuthenticatorCommon::OnRegisterResponse(
 
 void AuthenticatorCommon::OnRegisterResponseAttestationDecided(
     device::AuthenticatorMakeCredentialResponse response_data,
+    bool is_transport_used_internal,
     bool attestation_permitted) {
   awaiting_attestation_response_ = false;
   if (!request_) {
@@ -1064,20 +1067,25 @@ void AuthenticatorCommon::OnRegisterResponseAttestationDecided(
 
   DCHECK(attestation_requested_);
 
+  AttestationErasureOption attestation_erasure;
   if (!attestation_permitted) {
     UMA_HISTOGRAM_ENUMERATION("WebAuthentication.AttestationPromptResult",
                               AttestationPromptResult::kBlocked);
-    InvokeCallbackAndCleanup(
-        std::move(make_credential_response_callback_),
-        blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr,
-        Focus::kDoCheck);
-    return;
+    if (is_transport_used_internal) {
+      // For internal (platform) authenticators, we do not erase the
+      // AAGUID from authenticatorData even if the user declines to
+      // share attestation.
+      attestation_erasure =
+          AttestationErasureOption::kEraseAttestationButIncludeAaguid;
+    } else {
+      attestation_erasure =
+          AttestationErasureOption::kEraseAttestationAndAaguid;
+    }
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("WebAuthentication.AttestationPromptResult",
+                              AttestationPromptResult::kAllowed);
+    attestation_erasure = AttestationErasureOption::kIncludeAttestation;
   }
-
-  UMA_HISTOGRAM_ENUMERATION("WebAuthentication.AttestationPromptResult",
-                            AttestationPromptResult::kAllowed);
-  AttestationErasureOption attestation_erasure =
-      AttestationErasureOption::kIncludeAttestation;
 
   // The check for IsAttestationCertificateInappropriatelyIdentifying is
   // performed after the permissions prompt, even though we know the answer
