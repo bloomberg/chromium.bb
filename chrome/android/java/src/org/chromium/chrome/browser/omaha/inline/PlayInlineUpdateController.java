@@ -57,7 +57,7 @@ public class PlayInlineUpdateController
         int ERROR_INTERNAL_ERROR = 8;
         int ERROR_UNTRACKED = 9;
 
-        int COUNT = 10;
+        int NUM_ENTRIES = 10;
     }
 
     /**
@@ -73,7 +73,7 @@ public class PlayInlineUpdateController
         int COMPLETE_FAILED = 2;
         int QUERY_FAILED = 3;
 
-        int COUNT = 4;
+        int NUM_ENTRIES = 4;
     }
 
     private static final String TAG = "PlayInline";
@@ -161,7 +161,7 @@ public class PlayInlineUpdateController
             RecordHistogram.recordEnumeratedHistogram("GoogleUpdate.Inline.StateChange.Error."
                             + installStatusToEnumSuffix(state.installStatus()),
                     installErrorCodeToMetrics(state.installErrorCode()),
-                    InstallErrorCodeMetrics.COUNT);
+                    InstallErrorCodeMetrics.NUM_ENTRIES);
         }
 
         mInstallStatus = state.installStatus();
@@ -286,6 +286,6 @@ public class PlayInlineUpdateController
 
     private static void recordCallFailure(@CallFailure int failure) {
         RecordHistogram.recordEnumeratedHistogram(
-                "GoogleUpdate.Inline.CallFailure", failure, CallFailure.COUNT);
+                "GoogleUpdate.Inline.CallFailure", failure, CallFailure.NUM_ENTRIES);
     }
 }
