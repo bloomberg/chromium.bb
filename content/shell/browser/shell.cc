@@ -91,10 +91,12 @@ Shell::Shell(std::unique_ptr<WebContents> web_contents,
     web_contents_->SetDelegate(this);
 
   if (switches::IsRunWebTestsSwitchPresent()) {
-    headless_ = true;
-    // In a headless shell, disable occlusion tracking. Otherwise, WebContents
-    // would always behave as if they were occluded, i.e. would not render
-    // frames and would not receive input events.
+    headless_ = !base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kDisableHeadlessMode);
+    // Disable occlusion tracking. In a headless shell WebContents would always
+    // behave as if they were occluded, i.e. would not render frames and would
+    // not receive input events. For non-headless mode we do not want tests
+    // running in parallel to trigger occlusion tracking.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kDisableBackgroundingOccludedWindowsForTesting);
   }
