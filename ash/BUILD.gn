@@ -1336,7 +1336,8 @@ component("ash") {
     "//chromeos/audio",
     "//chromeos/components/multidevice/logging",
     "//chromeos/dbus",
-    "//chromeos/dbus:power_manager_proto",
+    "//chromeos/dbus/power",
+    "//chromeos/dbus/power:power_manager_proto",
     "//chromeos/dbus/services:services",
     "//chromeos/dbus/system_clock",
 
@@ -1533,6 +1534,7 @@ static_library("ash_shell_lib_with_content") {
     "//chromeos/audio",
     "//chromeos/dbus",
     "//chromeos/dbus/biod",
+    "//chromeos/dbus/power",
     "//components/discardable_memory/public/interfaces",
     "//components/services/font:lib",
     "//components/services/font/public/interfaces",
@@ -1932,8 +1934,9 @@ test("ash_unittests") {
 
     # TODO(stevenjb): Investigate whether this is OK. https://crbug.com/644336.
     "//chromeos/audio",
-    "//chromeos/dbus:power_manager_proto",
     "//chromeos/dbus:test_support",
+    "//chromeos/dbus/power",
+    "//chromeos/dbus/power:power_manager_proto",
 
     # TODO(stevenjb): Remove this dependency, https://crbug.com/644355.
     "//chromeos/network:test_support",
@@ -2208,6 +2211,7 @@ static_library("test_support") {
     # TODO(stevenjb): Investigate whether this is OK. https://crbug.com/644336.
     "//chromeos/audio",
     "//chromeos/dbus:test_support",
+    "//chromeos/dbus/power",
     "//chromeos/dbus/system_clock",
 
     # TODO(stevenjb): Remove this dependency, https://crbug.com/644355.

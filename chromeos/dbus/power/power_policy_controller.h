@@ -18,7 +18,7 @@ namespace chromeos {
 
 // PowerPolicyController is responsible for sending Chrome's assorted power
 // management preferences to the Chrome OS power manager.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) PowerPolicyController
+class COMPONENT_EXPORT(DBUS_POWER) PowerPolicyController
     : public PowerManagerClient::Observer {
  public:
   // Sets the global instance. Must be called before any calls to Get().

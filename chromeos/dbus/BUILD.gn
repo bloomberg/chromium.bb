@@ -22,7 +22,6 @@ component("dbus") {
     ":metrics_event_proto",
     ":oobe_config_proto",
     ":plugin_vm_service_proto",
-    ":power_manager_proto",
     ":runtime_probe_proto",
     ":seneschal_proto",
     ":smbprovider_proto",
@@ -123,14 +122,6 @@ component("dbus") {
     "lorgnette_manager_client.h",
     "oobe_configuration_client.cc",
     "oobe_configuration_client.h",
-    "power/fake_power_manager_client.cc",
-    "power/fake_power_manager_client.h",
-    "power/native_timer.cc",
-    "power/native_timer.h",
-    "power/power_manager_client.cc",
-    "power/power_manager_client.h",
-    "power/power_policy_controller.cc",
-    "power/power_policy_controller.h",
     "runtime_probe_client.cc",
     "runtime_probe_client.h",
     "seneschal_client.cc",
@@ -194,7 +185,6 @@ source_set("unit_tests") {
   deps = [
     ":dbus",
     ":oobe_config_proto",
-    ":power_manager_proto",
     ":test_support",
     "//base",
     "//base/test:test_support",
@@ -202,6 +192,8 @@ source_set("unit_tests") {
     "//chromeos/dbus/biod:test_support",
     "//chromeos/dbus/cryptohome",
     "//chromeos/dbus/cryptohome:attestation_proto",
+    "//chromeos/dbus/power:power_manager_proto",
+    "//chromeos/dbus/power:test_support",
     "//chromeos/dbus/session_manager",
     "//chromeos/dbus/shill:test_support",
     "//components/account_id",
@@ -225,9 +217,6 @@ source_set("unit_tests") {
     "native_timer_unittest.cc",
     "oobe_configuration_client_unittest.cc",
     "pipe_reader_unittest.cc",
-    "power/fake_power_manager_client_unittest.cc",
-    "power/power_manager_client_unittest.cc",
-    "power/power_policy_controller_unittest.cc",
     "update_engine_client_unittest.cc",
     "util/version_loader_unittest.cc",
   ]
@@ -271,21 +260,6 @@ proto_library("plugin_vm_service_proto") {
   ]
 
   proto_out_dir = "chromeos/dbus/plugin_vm_service"
-}
-
-proto_library("power_manager_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/power_manager/backlight.proto",
-    "//third_party/cros_system_api/dbus/power_manager/idle.proto",
-    "//third_party/cros_system_api/dbus/power_manager/input_event.proto",
-    "//third_party/cros_system_api/dbus/power_manager/peripheral_battery_status.proto",
-    "//third_party/cros_system_api/dbus/power_manager/policy.proto",
-    "//third_party/cros_system_api/dbus/power_manager/power_supply_properties.proto",
-    "//third_party/cros_system_api/dbus/power_manager/suspend.proto",
-    "//third_party/cros_system_api/dbus/power_manager/switch_states.proto",
-  ]
-
-  proto_out_dir = "chromeos/dbus/power_manager"
 }
 
 proto_library("runtime_probe_proto") {

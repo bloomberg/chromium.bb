@@ -283,7 +283,7 @@ jumbo_component("capture_lib") {
     public_deps += [ "//media/capture/video/chromeos/public" ]
     deps += [
       "//build/config/linux/libdrm",
-      "//chromeos/dbus",
+      "//chromeos/dbus/power",
       "//media/capture/video/chromeos/mojo:cros_camera",
       "//third_party/libsync",
     ]
@@ -408,7 +408,7 @@ test("capture_unittests") {
     ]
     deps += [
       "//build/config/linux/libdrm",
-      "//chromeos/dbus:test_support",
+      "//chromeos/dbus/power",
       "//media/capture/video/chromeos/mojo:cros_camera",
       "//media/capture/video/chromeos/public",
       "//mojo/core/embedder",

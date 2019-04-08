@@ -8,7 +8,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 

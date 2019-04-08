@@ -31,7 +31,7 @@ namespace chromeos {
 // A fake implementation of PowerManagerClient. This remembers the policy passed
 // to SetPolicy() and the user of this class can inspect the last set policy by
 // get_policy().
-class COMPONENT_EXPORT(CHROMEOS_DBUS) FakePowerManagerClient
+class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
     : public PowerManagerClient {
  public:
   FakePowerManagerClient();

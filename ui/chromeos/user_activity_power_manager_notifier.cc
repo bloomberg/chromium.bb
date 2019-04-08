@@ -4,7 +4,6 @@
 
 #include "ui/chromeos/user_activity_power_manager_notifier.h"
 
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
