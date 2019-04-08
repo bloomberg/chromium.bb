@@ -33,9 +33,16 @@ class PrinterQuery;
 // renderer process on the IPC thread.
 class PrintingMessageFilter : public content::BrowserMessageFilter {
  public:
-  // Sets a global override for print params in OnUpdatePrintSettingsReply().
-  static void SetTestUpdatePrintSettingsReply(
-      const PrintMsg_Print_Params& print_params);
+  class TestDelegate {
+   public:
+    // Returns the print params to be used in OnUpdatePrintSettingsReply().
+    virtual PrintMsg_Print_Params GetPrintParams() = 0;
+
+   protected:
+    virtual ~TestDelegate() = default;
+  };
+
+  static void SetDelegateForTesting(TestDelegate* delegate);
 
   PrintingMessageFilter(int render_process_id, Profile* profile);
 
