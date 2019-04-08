@@ -34,8 +34,11 @@ void SupervisedUserErrorPageController::Install(
     return;
 
   v8::Local<v8::Object> global = context->Global();
-  global->Set(gin::StringToV8(isolate, "supervisedUserErrorPageController"),
-              controller.ToV8());
+  global
+      ->Set(context,
+            gin::StringToV8(isolate, "supervisedUserErrorPageController"),
+            controller.ToV8())
+      .Check();
 }
 
 SupervisedUserErrorPageController::SupervisedUserErrorPageController(
