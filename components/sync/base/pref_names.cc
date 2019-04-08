@@ -88,12 +88,6 @@ const char kSyncEncryptionBootstrapToken[] = "sync.encryption_bootstrap_token";
 const char kSyncKeystoreEncryptionBootstrapToken[] =
     "sync.keystore_encryption_bootstrap_token";
 
-#if defined(OS_CHROMEOS)
-// A string that is used to store first-time sync startup after once sync is
-// disabled. This will be refreshed every sign-in.
-const char kSyncSpareBootstrapToken[] = "sync.spare_bootstrap_token";
-#endif  // defined(OS_CHROMEOS)
-
 const char kSyncCacheGuid[] = "sync.cache_guid";
 const char kSyncBirthday[] = "sync.birthday";
 const char kSyncBagOfChips[] = "sync.bag_of_chips";
