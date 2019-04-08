@@ -708,6 +708,24 @@ TEST_F(WindowStateTest, RestoreStateAfterDismissingPip) {
   ASSERT_TRUE(window_state->GetStateType() == mojom::WindowStateType::NORMAL);
 }
 
+TEST_F(WindowStateTest, SetBoundsUpdatesSizeOfPipRestoreBounds) {
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  window->Show();
+  window->SetBounds(gfx::Rect(0, 0, 50, 50));
+
+  const wm::WMEvent enter_pip(wm::WM_EVENT_PIP);
+  window_state->OnWMEvent(&enter_pip);
+
+  EXPECT_TRUE(window_state->IsPip());
+  EXPECT_TRUE(window_state->HasRestoreBounds());
+  EXPECT_EQ(gfx::Rect(8, 8, 50, 50), window_state->GetRestoreBoundsInScreen());
+  window_state->window()->SetBounds(gfx::Rect(100, 100, 100, 100));
+  // SetBounds only updates the size of the restore bounds.
+  EXPECT_EQ(gfx::Rect(8, 8, 100, 100),
+            window_state->GetRestoreBoundsInScreen());
+}
+
 // TODO(skuhne): Add more unit test to verify the correctness for the restore
 // operation.
 

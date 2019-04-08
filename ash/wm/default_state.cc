@@ -409,6 +409,13 @@ void DefaultState::SetBounds(WindowState* window_state,
                                             event->duration());
     } else {
       window_state->SetBoundsConstrained(event->requested_bounds());
+      // Update the restore size if the bounds is updated by PIP itself.
+      if (window_state->IsPip() && window_state->HasRestoreBounds()) {
+        gfx::Rect restore_bounds = window_state->GetRestoreBoundsInScreen();
+        restore_bounds.set_size(
+            window_state->window()->GetTargetBounds().size());
+        window_state->SetRestoreBoundsInScreen(restore_bounds);
+      }
     }
   }
 }
