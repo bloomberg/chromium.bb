@@ -37,6 +37,8 @@ const std::string kTestOrigin("abc.xyz");
 const base::string16 kTestTitle = base::UTF8ToUTF16("a title");
 const int64_t kTestDownloadId = 767574LL;
 const std::string kTestDigest("TesTIngDigEst==");
+const std::string kTestAttribution = "attribution";
+const std::string kTestSnippet = "snippet";
 
 }  // namespace
 
@@ -99,6 +101,8 @@ TEST_F(AddPageTaskTest, AddPageWithAllFieldsSet) {
   page.system_download_id = kTestDownloadId;
   page.file_missing_time = base::Time::Now();
   page.digest = kTestDigest;
+  page.attribution = kTestAttribution;
+  page.snippet = kTestSnippet;
 
   AddPage(page);
 

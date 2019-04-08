@@ -18,12 +18,13 @@ namespace {
 bool StoreThumbnailSync(const OfflinePageThumbnail& thumbnail,
                         sql::Database* db) {
   static const char kSql[] =
-      "INSERT OR REPLACE INTO page_thumbnails (offline_id, expiration, "
-      "thumbnail) VALUES (?, ?, ?)";
+      "INSERT OR REPLACE INTO page_thumbnails (offline_id,expiration,thumbnail,"
+      "favicon) VALUES (?,?,?,?)";
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, thumbnail.offline_id);
   statement.BindInt64(1, store_utils::ToDatabaseTime(thumbnail.expiration));
   statement.BindString(2, thumbnail.thumbnail);
+  statement.BindString(3, std::string());
   return statement.Run();
 }
 
