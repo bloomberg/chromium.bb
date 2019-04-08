@@ -68,11 +68,11 @@ base::Optional<DuplexModeRestriction> GetAllowedDuplexModesForName(
 
 base::Optional<PinModeRestriction> GetPinModeForName(
     const std::string& mode_name) {
-  if (mode_name == "secure")
-    return PinModeRestriction::kSecure;
+  if (mode_name == "pin")
+    return PinModeRestriction::kPin;
 
-  if (mode_name == "unsecure")
-    return PinModeRestriction::kUnsecure;
+  if (mode_name == "no_pin")
+    return PinModeRestriction::kNoPin;
 
   return base::nullopt;
 }

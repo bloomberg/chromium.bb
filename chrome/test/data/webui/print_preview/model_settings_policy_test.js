@@ -257,8 +257,8 @@ cr.define('model_settings_policy_test', function() {
        {
          // Policy has no effect, setting unavailable.
          pinCap: {},
-         pinPolicy: print_preview.PinModeRestriction.SECURE,
-         pinDefault: print_preview.PinModeRestriction.SECURE,
+         pinPolicy: print_preview.PinModeRestriction.PIN,
+         pinDefault: print_preview.PinModeRestriction.PIN,
          expectedValue: false,
          expectedAvailable: false,
          expectedManaged: false,
@@ -268,7 +268,7 @@ cr.define('model_settings_policy_test', function() {
          // Policy has no effect, setting is not supported.
          pinCap: {supported: false},
          pinPolicy: print_preview.PinModeRestriction.NONE,
-         pinDefault: print_preview.PinModeRestriction.SECURE,
+         pinDefault: print_preview.PinModeRestriction.PIN,
          expectedValue: false,
          expectedAvailable: false,
          expectedManaged: false,
@@ -277,7 +277,7 @@ cr.define('model_settings_policy_test', function() {
        {
          // Policy is UNSECURE, setting is not available.
          pinCap: {supported: true},
-         pinPolicy: print_preview.PinModeRestriction.UNSECURE,
+         pinPolicy: print_preview.PinModeRestriction.NO_PIN,
          expectedValue: false,
          expectedAvailable: false,
          expectedManaged: false,
@@ -287,7 +287,7 @@ cr.define('model_settings_policy_test', function() {
          // No restriction policy, setting is modifiable.
          pinCap: {supported: true},
          pinPolicy: print_preview.PinModeRestriction.NONE,
-         pinDefault: print_preview.PinModeRestriction.UNSECURE,
+         pinDefault: print_preview.PinModeRestriction.NO_PIN,
          expectedValue: false,
          expectedAvailable: true,
          expectedManaged: false,
@@ -296,9 +296,9 @@ cr.define('model_settings_policy_test', function() {
        {
          // Policy overrides default.
          pinCap: {supported: true},
-         pinPolicy: print_preview.PinModeRestriction.SECURE,
+         pinPolicy: print_preview.PinModeRestriction.PIN,
          // Default mismatches restriction and is ignored.
-         pinDefault: print_preview.PinModeRestriction.UNSECURE,
+         pinDefault: print_preview.PinModeRestriction.NO_PIN,
          expectedValue: true,
          expectedAvailable: true,
          expectedManaged: true,
@@ -307,7 +307,7 @@ cr.define('model_settings_policy_test', function() {
        {
          // Default defined by policy but setting is modifiable.
          pinCap: {supported: true},
-         pinDefault: print_preview.PinModeRestriction.SECURE,
+         pinDefault: print_preview.PinModeRestriction.PIN,
          expectedValue: true,
          expectedAvailable: true,
          expectedManaged: false,
