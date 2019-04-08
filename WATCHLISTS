@@ -722,6 +722,12 @@
     'chromeos_calculator': {
       'filepath': 'chrome/common/extensions/docs/examples/apps/calculator/',
     },
+    'chromeos_cellular': {
+      'filepath': 'chrome/browser/resources/chromeos/cellular_setup/|'\
+                  'chrome/browser/ui/webui/chromeos/cellular_setup/|'\
+                  'chromeos/services/cellular_setup/|'\
+                  'ui/webui/resources/cr_components/chromeos/cellular_setup/',
+    },
     'chromeos_geolocation': {
       'filepath': 'chromeos/geolocation/',
     },
@@ -2119,6 +2125,8 @@
     'chromeos': ['oshima+watch@chromium.org'],
     'chromeos_attestation': ['dkrahn+watch@chromium.org'],
     'chromeos_calculator': ['dharcourt@chromium.org'],
+    'chromeos_cellular': ['azeemarshad+watch-cellular@chromium.org',
+                          'khorimoto+watch-cellular@chromium.org'],
     'chromeos_geolocation': ['alemate+watch@chromium.org'],
     'chromeos_lkgm': ['achuith+watch@chromium.org',
                       'bpastene+watch@chromium.org',
