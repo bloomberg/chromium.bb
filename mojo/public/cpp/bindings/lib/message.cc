@@ -93,14 +93,16 @@ void WriteMessageHeader(uint32_t name,
   }
 }
 
-void CreateSerializedMessageObject(uint32_t name,
-                                   uint32_t flags,
-                                   uint32_t trace_id,
-                                   size_t payload_size,
-                                   size_t payload_interface_id_count,
-                                   std::vector<ScopedHandle>* handles,
-                                   ScopedMessageHandle* out_handle,
-                                   internal::Buffer* out_buffer) {
+void CreateSerializedMessageObject(
+    uint32_t name,
+    uint32_t flags,
+    uint32_t trace_id,
+    size_t payload_size,
+    size_t payload_interface_id_count,
+    std::vector<ScopedHandle>* handles,
+    const std::vector<MojoAppendMessageDataHandleOptions>* handle_options,
+    ScopedMessageHandle* out_handle,
+    internal::Buffer* out_buffer) {
   TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
                          "mojo::Message Send", MANGLE_MESSAGE_ID(trace_id),
                          TRACE_EVENT_FLAG_FLOW_OUT);
@@ -109,6 +111,12 @@ void CreateSerializedMessageObject(uint32_t name,
   MojoResult rv = mojo::CreateMessage(&handle);
   DCHECK_EQ(MOJO_RESULT_OK, rv);
   DCHECK(handle.is_valid());
+
+  MojoAppendMessageDataOptions append_options = {0};
+  append_options.struct_size = sizeof(append_options);
+  append_options.flags = MOJO_APPEND_MESSAGE_DATA_FLAG_NONE;
+  if (handle_options)
+    append_options.handle_options = handle_options->data();
 
   void* buffer;
   uint32_t buffer_size;
@@ -120,8 +128,8 @@ void CreateSerializedMessageObject(uint32_t name,
   rv = MojoAppendMessageData(
       handle->value(), static_cast<uint32_t>(total_size),
       handles ? reinterpret_cast<MojoHandle*>(handles->data()) : nullptr,
-      handles ? static_cast<uint32_t>(handles->size()) : 0, nullptr, &buffer,
-      &buffer_size);
+      handles ? static_cast<uint32_t>(handles->size()) : 0, &append_options,
+      &buffer, &buffer_size);
   DCHECK_EQ(MOJO_RESULT_OK, rv);
   if (handles) {
     // Handle ownership has been taken by MojoAppendMessageData.
@@ -234,10 +242,24 @@ Message::Message(uint32_t name,
                  uint32_t flags,
                  size_t payload_size,
                  size_t payload_interface_id_count,
-                 std::vector<ScopedHandle>* handles) {
+                 std::vector<ScopedHandle>* handles)
+    : Message(name,
+              flags,
+              payload_size,
+              payload_interface_id_count,
+              handles,
+              nullptr) {}
+
+Message::Message(
+    uint32_t name,
+    uint32_t flags,
+    size_t payload_size,
+    size_t payload_interface_id_count,
+    std::vector<ScopedHandle>* handles,
+    const std::vector<MojoAppendMessageDataHandleOptions>* handle_options) {
   CreateSerializedMessageObject(name, flags, GetTraceId(this), payload_size,
-                                payload_interface_id_count, handles, &handle_,
-                                &payload_buffer_);
+                                payload_interface_id_count, handles,
+                                handle_options, &handle_, &payload_buffer_);
   transferable_ = true;
   serialized_ = true;
 }
@@ -365,7 +387,8 @@ void Message::AttachHandlesFromSerializationContext(
     return;
   }
 
-  if (context->associated_endpoint_handles()->empty()) {
+  if (context->associated_endpoint_handles()->empty() &&
+      !context->has_handles_with_shared_message_order()) {
     // Attaching only non-associated handles is easier since we don't have to
     // modify the message header. Faster path for that.
     payload_buffer_.AttachHandles(context->mutable_handles());
@@ -381,7 +404,8 @@ void Message::AttachHandlesFromSerializationContext(
   uint32_t payload_size = payload_num_bytes();
   mojo::Message new_message(name(), header()->flags, payload_size,
                             context->associated_endpoint_handles()->size(),
-                            context->mutable_handles());
+                            context->mutable_handles(),
+                            context->handle_options());
   std::swap(*context->mutable_associated_endpoint_handles(),
             new_message.associated_endpoint_handles_);
   memcpy(new_message.payload_buffer()->AllocateAndGet(payload_size), payload(),

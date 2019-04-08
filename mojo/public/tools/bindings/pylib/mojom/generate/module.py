@@ -221,6 +221,7 @@ PRIMITIVES = (
 ATTRIBUTE_MIN_VERSION = 'MinVersion'
 ATTRIBUTE_EXTENSIBLE = 'Extensible'
 ATTRIBUTE_SYNC = 'Sync'
+ATTRIBUTE_SHARE_MESSAGE_ORDER = 'ShareMessageOrder'
 
 
 class NamedValue(object):
@@ -300,6 +301,11 @@ class Field(object):
   def min_version(self):
     return self.attributes.get(ATTRIBUTE_MIN_VERSION) \
         if self.attributes else None
+
+  @property
+  def share_message_order(self):
+    return self.attributes.get(ATTRIBUTE_SHARE_MESSAGE_ORDER, False) \
+        if self.attributes else False
 
 
 class StructField(Field): pass
@@ -564,6 +570,11 @@ class Parameter(object):
   def min_version(self):
     return self.attributes.get(ATTRIBUTE_MIN_VERSION) \
         if self.attributes else None
+
+  @property
+  def share_message_order(self):
+    return self.attributes.get(ATTRIBUTE_SHARE_MESSAGE_ORDER, False) \
+        if self.attributes else False
 
 
 class Method(object):
@@ -863,6 +874,11 @@ def IsInterfaceRequestKind(kind):
 def IsAssociatedInterfaceRequestKind(kind):
   return isinstance(kind, AssociatedInterfaceRequest)
 
+
+def FieldOrParamSharesMessageOrder(field_or_param):
+  return field_or_param.share_message_order
+
+
 def IsPendingRemoteKind(kind):
   return isinstance(kind, PendingRemote)
 
@@ -937,7 +953,7 @@ def PassesAssociatedKinds(interface):
   return False
 
 
-def _AnyMethodParameterRecursive(method, predicate, visited_kinds=None):
+def _AnyParameterKindRecursive(method, predicate, visited_kinds=None):
   def _HasProperty(kind):
     if kind in visited_kinds:
       # No need to examine the kind again.
@@ -969,16 +985,53 @@ def _AnyMethodParameterRecursive(method, predicate, visited_kinds=None):
   return False
 
 
+def _AnyFieldRecursive(fields_or_params, predicate, visited_kinds=None):
+  if not fields_or_params:
+    return False
+
+  def _HasProperty(kind):
+    if kind in visited_kinds:
+      return False
+    if IsStructKind(kind) or IsUnionKind(kind):
+      visited_kinds.add(kind)
+      return _AnyFieldRecursive(kind.fields, predicate, visited_kinds)
+    if IsArrayKind(kind):
+      return _HasProperty(kind.kind)
+    if IsMapKind(kind):
+      if _HasProperty(kind.key_kind) or _HasProperty(kind.value_kind):
+        return True
+    return False
+
+  if visited_kinds is None:
+    visited_kinds = set()
+
+  for field_or_param in fields_or_params:
+    if predicate(field_or_param):
+      return True
+    if _HasProperty(field_or_param.kind):
+      return True
+
+  return False
+
+
 # Finds out whether a method passes associated interfaces and associated
 # interface requests.
 def MethodPassesAssociatedKinds(method, visited_kinds=None):
-  return _AnyMethodParameterRecursive(method, IsAssociatedKind,
+  return _AnyParameterKindRecursive(method, IsAssociatedKind,
                                       visited_kinds=visited_kinds)
 
 
 # Determines whether a method passes interfaces.
 def MethodPassesInterfaces(method):
-  return _AnyMethodParameterRecursive(method, IsInterfaceKind)
+  return _AnyParameterKindRecursive(method, IsInterfaceKind)
+
+
+def MethodParametersShareMessageOrder(method, visited_kinds=None):
+  return _AnyFieldRecursive(method.parameters, FieldOrParamSharesMessageOrder,
+                            visited_kinds=visited_kinds) or \
+         _AnyFieldRecursive(method.response_parameters,
+                            FieldOrParamSharesMessageOrder,
+                            visited_kinds=visited_kinds)
 
 
 def HasSyncMethods(interface):

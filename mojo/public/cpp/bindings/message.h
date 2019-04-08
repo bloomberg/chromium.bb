@@ -68,6 +68,16 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) Message {
           size_t payload_interface_id_count,
           std::vector<ScopedHandle>* handles);
 
+  // Same as above, but with additional per-handle options to control how
+  // each handle in |handles| is attached.
+  Message(
+      uint32_t name,
+      uint32_t flags,
+      size_t payload_size,
+      size_t payload_interface_id_count,
+      std::vector<ScopedHandle>* handles,
+      const std::vector<MojoAppendMessageDataHandleOptions>* handle_options);
+
   // Constructs a new serialized Message object from an existing
   // ScopedMessageHandle; e.g., one read from a message pipe.
   //

@@ -368,6 +368,7 @@ class Generator(generator.Generator):
       "is_typemapped_kind": self._IsTypemappedKind,
       "is_union_kind": mojom.IsUnionKind,
       "passes_associated_kinds": mojom.PassesAssociatedKinds,
+      "share_message_order": mojom.FieldOrParamSharesMessageOrder,
       "struct_constructors": self._GetStructConstructors,
       "under_to_camel": generator.ToCamel,
       "unmapped_type_for_serializer": self._GetUnmappedTypeForSerializer,
@@ -750,7 +751,8 @@ class Generator(generator.Generator):
 
     # TODO(crbug.com/753433): Support lazy serialization for methods which pass
     # associated handles.
-    if mojom.MethodPassesAssociatedKinds(method):
+    if mojom.MethodPassesAssociatedKinds(method) or \
+       mojom.MethodParametersShareMessageOrder(method):
       return False
 
     return not any(self._KindMustBeSerialized(param.kind) for param in
