@@ -41,8 +41,10 @@ html {
   --link-color: var(--google-blue-700);
   --separator-color: rgba(0, 0, 0, .06);
   --toolbar-color: white;
+  --toolbar-height: 57px;
 
   background: white;
+  overflow-y: scroll;
 }
 
 html[dark] {
@@ -99,7 +101,7 @@ button {
   display: flex;
   flex: 1;
   flex-direction: column;
-  margin: 0 auto;
+  margin: var(--toolbar-height) auto 0;
   max-width: calc(700px + 2 * var(--side-padding));
   width: 100%;
 }
@@ -132,6 +134,7 @@ button {
   box-shadow: 0 2px 2px 0 var(--shadow-color);
   box-sizing: border-box;
   flex: none;
+  height: var(--toolbar-height);
   left: 0;
   position: fixed;
   top: 0;
@@ -408,9 +411,7 @@ html:not([dark]) textarea {
   top: 0;
 }
 
-.tab:active,
-.tab:focus {
-  background: var(--toolbar-color);
+html:not(.focus-outline-visible) .tab:focus {
   outline: 0;
 }
 
