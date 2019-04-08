@@ -755,11 +755,6 @@ void AccessibilityController::SetCaretBounds(
   accessibility_highlight_controller_->SetCaretBounds(bounds_in_screen);
 }
 
-void AccessibilityController::SetAccessibilityPanelAlwaysVisible(
-    bool always_visible) {
-  GetLayoutManager()->SetAlwaysVisible(always_visible);
-}
-
 void AccessibilityController::SetAccessibilityPanelBounds(
     const gfx::Rect& bounds,
     mojom::AccessibilityPanelState state) {

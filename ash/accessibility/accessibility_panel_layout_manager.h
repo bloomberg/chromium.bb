@@ -38,7 +38,6 @@ class ASH_EXPORT AccessibilityPanelLayoutManager
   ~AccessibilityPanelLayoutManager() override;
 
   // Controls the panel's visibility and location.
-  void SetAlwaysVisible(bool always_visible);
   void SetPanelBounds(const gfx::Rect& bounds,
                       mojom::AccessibilityPanelState state);
 
@@ -81,9 +80,6 @@ class ASH_EXPORT AccessibilityPanelLayoutManager
 
   // Window bounds when not in fullscreen
   gfx::Rect panel_bounds_ = gfx::Rect(0, 0, 0, 0);
-
-  // Determines whether panel is hidden when browser is in fullscreen.
-  bool always_visible_ = false;
 
   // Determines how the panel_bounds_ are used when displaying the panel.
   mojom::AccessibilityPanelState panel_state_ =

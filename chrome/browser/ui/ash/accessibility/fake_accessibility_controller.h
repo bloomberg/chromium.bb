@@ -31,7 +31,6 @@ class FakeAccessibilityController : ash::mojom::AccessibilityController {
   void BrailleDisplayStateChanged(bool connected) override;
   void SetFocusHighlightRect(const gfx::Rect& bounds_in_screen) override;
   void SetCaretBounds(const gfx::Rect& bounds_in_screen) override;
-  void SetAccessibilityPanelAlwaysVisible(bool always_visible) override;
   void SetAccessibilityPanelBounds(
       const gfx::Rect& bounds,
       ash::mojom::AccessibilityPanelState state) override;

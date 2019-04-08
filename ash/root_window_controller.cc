@@ -989,16 +989,6 @@ void RootWindowController::CreateContainers() {
   settings_bubble_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
   settings_bubble_container->SetProperty(kLockedToRootKey, true);
 
-  aura::Window* accessibility_panel_container = CreateContainer(
-      kShellWindowId_AccessibilityPanelContainer, "AccessibilityPanelContainer",
-      lock_screen_related_containers);
-  ::wm::SetChildWindowVisibilityChangesAnimated(accessibility_panel_container);
-  accessibility_panel_container->SetProperty(::wm::kUsesScreenCoordinatesKey,
-                                             true);
-  accessibility_panel_container->SetProperty(kLockedToRootKey, true);
-  accessibility_panel_container->SetLayoutManager(
-      new AccessibilityPanelLayoutManager());
-
   aura::Window* virtual_keyboard_parent_container = CreateContainer(
       kShellWindowId_ImeWindowParentContainer, "ImeWindowParentContainer",
       lock_screen_related_containers);
@@ -1030,6 +1020,16 @@ void RootWindowController::CreateContainers() {
       lock_screen_related_containers);
   autoclick_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
   wm::SetSnapsChildrenToPhysicalPixelBoundary(autoclick_container);
+
+  aura::Window* accessibility_panel_container = CreateContainer(
+      kShellWindowId_AccessibilityPanelContainer, "AccessibilityPanelContainer",
+      lock_screen_related_containers);
+  ::wm::SetChildWindowVisibilityChangesAnimated(accessibility_panel_container);
+  accessibility_panel_container->SetProperty(::wm::kUsesScreenCoordinatesKey,
+                                             true);
+  accessibility_panel_container->SetProperty(kLockedToRootKey, true);
+  accessibility_panel_container->SetLayoutManager(
+      new AccessibilityPanelLayoutManager());
 
   aura::Window* drag_drop_container = CreateContainer(
       kShellWindowId_DragImageAndTooltipContainer,
