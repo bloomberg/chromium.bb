@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/usb/usb_tab_helper.h"
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
 #include "chrome/browser/vr/service/xr_runtime_manager.h"
@@ -295,6 +296,12 @@ void VRUiHostImpl::InitCapturingStates() {
               ContentSettingsType::CONTENT_SETTINGS_TYPE_GEOLOCATION, rfh,
               origin)
           .content_setting == CONTENT_SETTING_ALLOW;
+  potential_capturing_.midi_connected =
+      permission_manager
+          ->GetPermissionStatusForFrame(
+              ContentSettingsType::CONTENT_SETTINGS_TYPE_MIDI_SYSEX, rfh,
+              origin)
+          .content_setting == CONTENT_SETTING_ALLOW;
 
   indicators_shown_start_time_ = base::Time::Now();
   indicators_visible_ = false;
@@ -307,7 +314,7 @@ void VRUiHostImpl::PollCapturingState() {
       FROM_HERE, poll_capturing_state_task_.callback(),
       kPollCapturingStateInterval);
 
-  // Microphone, Camera, location.
+  // location, microphone, camera, midi.
   CapturingStateModel active_capturing = active_capturing_;
   TabSpecificContentSettings* settings =
       TabSpecificContentSettings::FromWebContents(web_contents_);
@@ -320,26 +327,40 @@ void VRUiHostImpl::PollCapturingState() {
       active_capturing.location_access_enabled = !!(
           state_flags & ContentSettingsUsagesState::TABSTATE_HAS_ANY_ALLOWED);
     }
+
     active_capturing.audio_capture_enabled =
         (settings->GetMicrophoneCameraState() &
          TabSpecificContentSettings::MICROPHONE_ACCESSED) &&
         !(settings->GetMicrophoneCameraState() &
           TabSpecificContentSettings::MICROPHONE_BLOCKED);
+
     active_capturing.video_capture_enabled =
         (settings->GetMicrophoneCameraState() &
          TabSpecificContentSettings::CAMERA_ACCESSED) &
         !(settings->GetMicrophoneCameraState() &
           TabSpecificContentSettings::CAMERA_BLOCKED);
+
+    active_capturing.midi_connected =
+        settings->IsContentAllowed(CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
   }
 
-  // Screen capture, bluetooth.
+  // Screen capture.
   scoped_refptr<MediaStreamCaptureIndicator> indicator =
       MediaCaptureDevicesDispatcher::GetInstance()
           ->GetMediaStreamCaptureIndicator();
   active_capturing.screen_capture_enabled =
-      indicator->IsBeingMirrored(web_contents_);
+      indicator->IsBeingMirrored(web_contents_) ||
+      indicator->IsCapturingDesktop(web_contents_);
+
+  // Bluetooth.
   active_capturing.bluetooth_connected =
       web_contents_->IsConnectedToBluetoothDevice();
+
+  // USB.
+  UsbTabHelper* usb_tab_helper =
+      UsbTabHelper::GetOrCreateForWebContents(web_contents_);
+  DCHECK(usb_tab_helper != nullptr);
+  active_capturing.usb_connected = usb_tab_helper->IsDeviceConnected();
 
   if (active_capturing_ != active_capturing) {
     indicators_shown_start_time_ = base::Time::Now();

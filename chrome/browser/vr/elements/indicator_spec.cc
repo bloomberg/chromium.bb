@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/vr/elements/indicator_spec.h"
+
 #include "build/build_config.h"
 #include "chrome/browser/vr/ui_support.h"
 #include "chrome/grit/generated_resources.h"
