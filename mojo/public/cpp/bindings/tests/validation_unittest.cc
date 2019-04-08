@@ -42,7 +42,7 @@ Message CreateRawMessage(size_t size) {
   DCHECK(handle.is_valid());
 
   DCHECK(base::IsValueInRangeForNumericType<uint32_t>(size));
-  MojoAppendMessageDataOptions options;
+  MojoAppendMessageDataOptions options = {0};
   options.struct_size = sizeof(options);
   options.flags = MOJO_APPEND_MESSAGE_DATA_FLAG_COMMIT_SIZE;
   void* buffer;

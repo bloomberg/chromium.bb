@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "mojo/core/channel.h"
 #include "mojo/core/dispatcher.h"
+#include "mojo/core/message_pipe_dispatcher.h"
 #include "mojo/core/ports/event.h"
 #include "mojo/core/ports/name.h"
 #include "mojo/core/ports/port_ref.h"
@@ -120,13 +121,20 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl : public ports::UserMessage {
   MojoResult SetContext(uintptr_t context,
                         MojoMessageContextSerializer serializer,
                         MojoMessageContextDestructor destructor);
-  MojoResult AppendData(uint32_t additional_payload_size,
-                        const MojoHandle* handles,
-                        uint32_t num_handles);
+  MojoResult AppendData(
+      uint32_t additional_payload_size,
+      const MojoHandle* handles,
+      uint32_t num_handles,
+      const MojoAppendMessageDataHandleOptions* handle_options);
   MojoResult CommitSize();
 
   // If this message is not already serialized, this serializes it.
   MojoResult SerializeIfNecessary();
+
+  // If this message has any spliced handles serialized into it, this allocates
+  // respective slots on |sending_port| and fixes up both the serialized port
+  // descriptors as well as the spliced handle's local peers.
+  void PrepareSplicedHandles(const ports::PortRef& sending_port);
 
   // Extracts handles from this (serialized) message.
   //
@@ -204,6 +212,12 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl : public ports::UserMessage {
   // Handles which have been attached to the serialized message but which have
   // not yet been serialized.
   std::vector<Dispatcher::DispatcherInTransit> pending_handle_attachments_;
+
+  // Message pipe dispatchers to splice into the dispatcher which eventually
+  // sends this message. These are the peers of any spliced handles attached to
+  // this message.
+  std::vector<scoped_refptr<MessagePipeDispatcher>>
+      pipes_to_splice_with_sender_;
 
   // The node name from which this message was received, iff it came from
   // out-of-process and the source is known.

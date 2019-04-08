@@ -135,11 +135,6 @@ class Port : public base::RefCountedThreadSafe<Port> {
   // in the interim.
   std::unique_ptr<std::pair<NodeName, ScopedEvent>> send_on_proxy_removal;
 
-  // Arbitrary user data attached to the Port. In practice, Mojo uses this to
-  // stash an observer interface which can be notified about various Port state
-  // changes.
-  scoped_refptr<UserData> user_data;
-
   // Indicates that this (proxying) Port has received acknowledgement that no
   // new user messages will be routed to it. If |true|, the proxy will be
   // removed once it has received and forwarded all sequenced messages up to and
@@ -155,6 +150,10 @@ class Port : public base::RefCountedThreadSafe<Port> {
 
   // Structure for status related to a single slot of this port.
   struct Slot {
+    Slot();
+    Slot(const Slot&);
+    ~Slot();
+
     // Indicates that the slot can signal the embedder about available messages.
     bool can_signal = true;
 
@@ -168,6 +167,11 @@ class Port : public base::RefCountedThreadSafe<Port> {
     // The last sequence number sent on this slot. Will always be less than
     // the Port's own |next_sequence_num_to_send|.
     uint64_t last_sequence_num_sent;
+
+    // Arbitrary user data attached to the Slot. In practice, Mojo uses this to
+    // stash an observer interface which can be notified about various Slot
+    // state changes.
+    scoped_refptr<UserData> user_data;
   };
 
   // Status information for each slot on this port.

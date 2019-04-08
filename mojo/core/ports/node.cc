@@ -92,8 +92,11 @@ bool CanAcceptMoreMessages(Port* port, SlotId slot_id) {
   }
 
   Port::Slot* slot = port->GetSlot(slot_id);
-  if (!slot)
-    return false;
+  if (!slot) {
+    // Because messages can arrive out of order, we must tentatively accept
+    // messages targeting slots which haven't been added yet.
+    return true;
+  }
 
   return !slot->peer_closed ||
          slot->last_sequence_num_to_receive >= next_sequence_num;
@@ -234,27 +237,33 @@ int Node::CreatePortPair(PortRef* port0_ref, PortRef* port1_ref) {
   return OK;
 }
 
-int Node::SetUserData(const PortRef& port_ref,
+int Node::SetUserData(const SlotRef& slot_ref,
                       scoped_refptr<UserData> user_data) {
-  SinglePortLocker locker(&port_ref);
+  SinglePortLocker locker(&slot_ref.port());
   auto* port = locker.port();
   if (port->state == Port::kClosed)
     return ERROR_PORT_STATE_UNEXPECTED;
 
-  port->user_data = std::move(user_data);
+  Port::Slot* slot = port->GetSlot(slot_ref.slot_id());
+  if (!slot)
+    return ERROR_PORT_STATE_UNEXPECTED;
 
+  slot->user_data = std::move(user_data);
   return OK;
 }
 
-int Node::GetUserData(const PortRef& port_ref,
+int Node::GetUserData(const SlotRef& slot_ref,
                       scoped_refptr<UserData>* user_data) {
-  SinglePortLocker locker(&port_ref);
+  SinglePortLocker locker(&slot_ref.port());
   auto* port = locker.port();
   if (port->state == Port::kClosed)
     return ERROR_PORT_STATE_UNEXPECTED;
 
-  *user_data = port->user_data;
+  Port::Slot* slot = port->GetSlot(slot_ref.slot_id());
+  if (!slot)
+    return ERROR_PORT_STATE_UNEXPECTED;
 
+  *user_data = slot->user_data;
   return OK;
 }
 
@@ -301,7 +310,8 @@ int Node::GetMessage(const SlotRef& slot_ref,
                      MessageFilter* filter) {
   *message = nullptr;
 
-  DVLOG(4) << "GetMessage for " << slot_ref.port().name() << "@" << name_;
+  DVLOG(4) << "GetMessage for " << slot_ref.port().name() << "/"
+           << slot_ref.slot_id() << "@" << name_;
 
   bool peer_closed = false;
 
@@ -325,21 +335,36 @@ int Node::GetMessage(const SlotRef& slot_ref,
   // Allow referenced ports to trigger SlotStatusChanged calls now that the
   // message which contains them is actually being read. A consumer who cares
   // about the status updates can ensure that they are properly watching for
-  // these events before making any calls to |GetMessage()|.
+  // these events before making any calls to |GetMessage()|. Additionally, any
+  // port slots referenced in this message can now be initialized on the
+  // receiving port.
   if (*message) {
     for (size_t i = 0; i < (*message)->num_ports(); ++i) {
-      PortRef new_port_ref;
-      int rv = GetPort((*message)->ports()[i].name, &new_port_ref);
+      UserMessageEvent::PortAttachment& port = (*message)->ports()[i];
+      if (port.name == kInvalidPortName) {
+        // This port entry just references a new slot on the receiving port. We
+        // fix up the message entry so the user gets pointed to the right slot.
+        if (!port.slot_id)
+          return ERROR_PORT_STATE_UNEXPECTED;
 
-      DCHECK_EQ(OK, rv) << "Port " << new_port_ref.name() << "@" << name_
-                        << " does not exist!";
+        SinglePortLocker locker(&slot_ref.port());
+        locker.port()->AddSlotFromPeer(*port.slot_id);
+        port.name = slot_ref.port().name();
+        port.slot_id = *port.slot_id | kPeerAllocatedSlotIdBit;
+      } else {
+        PortRef new_port_ref;
+        int rv = GetPort(port.name, &new_port_ref);
 
-      SinglePortLocker locker(&new_port_ref);
-      DCHECK(locker.port()->state == Port::kReceiving);
+        DCHECK_EQ(OK, rv) << "Port " << new_port_ref.name() << "@" << name_
+                          << " does not exist!";
 
-      Port::Slot* slot = locker.port()->GetSlot(kDefaultSlotId);
-      DCHECK(slot);
-      slot->can_signal = true;
+        SinglePortLocker locker(&new_port_ref);
+        DCHECK(locker.port()->state == Port::kReceiving);
+
+        Port::Slot* slot = locker.port()->GetSlot(kDefaultSlotId);
+        DCHECK(slot);
+        slot->can_signal = true;
+      }
     }
 
     // The user may retransmit this message from another port. We reset the
@@ -352,8 +377,9 @@ int Node::GetMessage(const SlotRef& slot_ref,
     // from the slot we just read.
     base::Optional<SlotId> slot_to_notify =
         FlushUnreadableMessages(slot_ref.port());
-    if (slot_to_notify && slot_to_notify != slot_ref.slot_id())
+    if (slot_to_notify && slot_to_notify != slot_ref.slot_id()) {
       delegate_->SlotStatusChanged(SlotRef(slot_ref.port(), *slot_to_notify));
+    }
   }
 
   if (peer_closed)
@@ -572,8 +598,8 @@ int Node::OnUserMessage(std::unique_ptr<UserMessageEvent> message) {
   }
 
   DVLOG(4) << "OnUserMessage " << message->sequence_num()
-           << " [ports=" << ports_buf.str() << "] at " << port_name << "@"
-           << name_;
+           << " [ports=" << ports_buf.str() << "] at " << port_name << "/"
+           << message->slot_id() << "@" << name_;
 #endif
 
   // Even if this port does not exist, cannot receive anymore messages or is
@@ -583,7 +609,12 @@ int Node::OnUserMessage(std::unique_ptr<UserMessageEvent> message) {
   // newly bound ports will simply be closed.
   for (size_t i = 0; i < message->num_ports(); ++i) {
     Event::PortDescriptor& descriptor = message->port_descriptors()[i];
-    if (descriptor.referring_node_name == kInvalidNodeName) {
+    if (message->ports()[i].name == kInvalidPortName) {
+      // An unnamed port means the descriptor references a slot on the sending
+      // port rather than an actual new port. Nothing to do, just sanity check.
+      if (descriptor.new_slot_id == kDefaultSlotId)
+        return ERROR_PORT_UNKNOWN;
+    } else if (descriptor.referring_node_name == kInvalidNodeName) {
       // If the referring node name is invalid, this descriptor can be ignored
       // and the port should already exist locally.
       PortRef port_ref;
@@ -999,9 +1030,8 @@ int Node::SendUserMessageInternal(const SlotRef& slot_ref,
     m->set_slot_id(slot_ref.slot_id() ^ kPeerAllocatedSlotIdBit);
 
   NodeName target_node;
-  int rv = PrepareToForwardUserMessage(slot_ref, Port::kReceiving,
-                                       false /* ignore_closed_peer */, m.get(),
-                                       &target_node);
+  int rv = PrepareToForwardUserMessage(
+      slot_ref, Port::kReceiving, false /* for_proxy */, m.get(), &target_node);
   if (rv != OK)
     return rv;
 
@@ -1216,9 +1246,10 @@ int Node::AcceptPort(const PortName& port_name,
 
 int Node::PrepareToForwardUserMessage(const SlotRef& forwarding_slot_ref,
                                       Port::State expected_port_state,
-                                      bool ignore_closed_peer,
+                                      bool for_proxy,
                                       UserMessageEvent* message,
                                       NodeName* forward_to_node) {
+  base::StackVector<PortRef, 4> ports_to_close;
   bool target_is_remote = false;
   for (;;) {
     NodeName target_node_name;
@@ -1244,14 +1275,16 @@ int Node::PrepareToForwardUserMessage(const SlotRef& forwarding_slot_ref,
     base::StackVector<PortRef, 4> attached_port_refs;
     base::StackVector<const PortRef*, 5> ports_to_lock;
     attached_port_refs.container().resize(message->num_ports());
-    ports_to_lock.container().resize(message->num_ports() + 1);
-    ports_to_lock[0] = &forwarding_slot_ref.port();
+    ports_to_lock.container().reserve(message->num_ports() + 1);
+    ports_to_lock.container().push_back(&forwarding_slot_ref.port());
     for (size_t i = 0; i < message->num_ports(); ++i) {
       const PortName& attached_port_name = message->ports()[i].name;
+      if (attached_port_name == kInvalidPortName)
+        continue;
       auto iter = ports_.find(attached_port_name);
       DCHECK(iter != ports_.end());
       attached_port_refs[i] = PortRef(attached_port_name, iter->second);
-      ports_to_lock[i + 1] = &attached_port_refs[i];
+      ports_to_lock.container().push_back(&attached_port_refs[i]);
     }
     PortLocker locker(ports_to_lock.container().data(),
                       ports_to_lock.container().size());
@@ -1271,7 +1304,7 @@ int Node::PrepareToForwardUserMessage(const SlotRef& forwarding_slot_ref,
 
     if (forwarding_port->state != expected_port_state)
       return ERROR_PORT_STATE_UNEXPECTED;
-    if (forwarding_port->peer_closed && !ignore_closed_peer)
+    if (forwarding_port->peer_closed && !for_proxy)
       return ERROR_PORT_PEER_CLOSED;
 
     // Messages may already have a sequence number if they're being forwarded by
@@ -1293,6 +1326,8 @@ int Node::PrepareToForwardUserMessage(const SlotRef& forwarding_slot_ref,
       // own peer, and must have no slots aside from the default slot.
       DCHECK_EQ(message->num_ports(), attached_port_refs.container().size());
       for (size_t i = 0; i < message->num_ports(); ++i) {
+        if (message->ports()[i].name == kInvalidPortName)
+          continue;
         auto* attached_port = locker.GetPort(attached_port_refs[i]);
         if (attached_port->state != Port::kReceiving ||
             attached_port->slots.size() != 1 ||
@@ -1304,17 +1339,30 @@ int Node::PrepareToForwardUserMessage(const SlotRef& forwarding_slot_ref,
         }
       }
 
-      if (target_is_remote) {
-        // We only bother to proxy and rewrite ports in the event if it's
-        // going to be routed to an external node. This substantially reduces
-        // the amount of port churn in the system, as many port-carrying
-        // events are routed at least 1 or 2 intra-node hops before (if ever)
-        // being routed externally.
-        Event::PortDescriptor* port_descriptors = message->port_descriptors();
-        for (size_t i = 0; i < message->num_ports(); ++i) {
-          ConvertToProxy(locker.GetPort(attached_port_refs[i]),
-                         target_node_name, &message->ports()[i].name,
-                         port_descriptors + i);
+      Event::PortDescriptor* port_descriptors = message->port_descriptors();
+      for (size_t i = 0; i < message->num_ports(); ++i) {
+        if (message->ports()[i].name == kInvalidPortName)
+          continue;
+        Port* attached_port = locker.GetPort(attached_port_refs[i]);
+        if (message->ports()[i].slot_id.value_or(kDefaultSlotId) ==
+            kDefaultSlotId) {
+          // Normal port transfer. Configure the port as a proxy that will
+          // forward to some new location in the destination node.
+          //
+          // Note that we only bother to proxy and rewrite ports in the event if
+          // it's going to be routed to an external node. This substantially
+          // reduces the amount of port churn in the system, as many
+          // port-carrying events are routed at least 1 or 2 intra-node hops
+          // before (if ever) being routed externally.
+          if (target_is_remote) {
+            ConvertToProxy(attached_port, target_node_name,
+                           &message->ports()[i].name, port_descriptors + i);
+          }
+        } else if (!for_proxy) {
+          ports_to_close.container().push_back(attached_port_refs[i]);
+          message->ports()[i].name = kInvalidPortName;
+          memset(&port_descriptors[i], 0, sizeof(port_descriptors[i]));
+          port_descriptors[i].new_slot_id = *message->ports()[i].slot_id;
         }
       }
     }
@@ -1322,9 +1370,9 @@ int Node::PrepareToForwardUserMessage(const SlotRef& forwarding_slot_ref,
 #if DCHECK_IS_ON()
     DVLOG(4) << "Sending message " << message->sequence_num()
              << " [ports=" << ports_buf.str() << "]"
-             << " from " << forwarding_slot_ref.port().name() << "@" << name_
-             << " to " << forwarding_port->peer_port_name << "@"
-             << target_node_name;
+             << " from " << forwarding_slot_ref.port().name() << "/"
+             << forwarding_slot_ref.slot_id() << "@" << name_ << " to "
+             << forwarding_port->peer_port_name << "@" << target_node_name;
 #endif
 
     // We're definitely going to send this message, so we can bump the port's
@@ -1355,6 +1403,9 @@ int Node::PrepareToForwardUserMessage(const SlotRef& forwarding_slot_ref,
       }
     }
   }
+
+  for (const auto& port : ports_to_close.container())
+    ClosePort(port);
 
   return OK;
 }
@@ -1416,9 +1467,9 @@ int Node::ForwardUserMessagesFromProxy(const PortRef& port_ref) {
     }
 
     NodeName target_node;
-    int rv = PrepareToForwardUserMessage(
-        SlotRef(port_ref, kDefaultSlotId), Port::kProxying,
-        true /* ignore_closed_peer */, message.get(), &target_node);
+    int rv = PrepareToForwardUserMessage(SlotRef(port_ref, kDefaultSlotId),
+                                         Port::kProxying, true /* for_proxy */,
+                                         message.get(), &target_node);
     if (rv != OK)
       return rv;
 
@@ -1697,11 +1748,6 @@ base::Optional<SlotId> Node::FlushUnreadableMessages(const PortRef& port_ref) {
                 std::back_inserter(unread_messages));
     }
   }
-
-  // If we discarded some messages and a new message is now available, notify
-  // its slot that this is the case.
-  if (unread_messages.empty())
-    return base::nullopt;
 
   return slot_to_notify;
 }

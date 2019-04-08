@@ -110,7 +110,7 @@ void Buffer::Seal() {
   size_t additional_bytes = cursor_ - message_payload_size_;
   DCHECK(base::IsValueInRangeForNumericType<uint32_t>(additional_bytes));
 
-  MojoAppendMessageDataOptions options;
+  MojoAppendMessageDataOptions options = {0};
   options.struct_size = sizeof(options);
   options.flags = MOJO_APPEND_MESSAGE_DATA_FLAG_COMMIT_SIZE;
   void* data;
