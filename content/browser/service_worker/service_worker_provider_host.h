@@ -640,6 +640,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   void TransitionToClientPhase(ClientPhase new_phase);
 
+  void SetRenderProcessId(int process_id);
+
   // A GUID that is web-exposed as FetchEvent.clientId.
   std::string client_uuid_;
 

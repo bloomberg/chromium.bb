@@ -263,7 +263,7 @@ ServiceWorkerProviderHost::PreCreateForSharedWorker(
           true /* is_parent_frame_secure */, nullptr /* host_request */,
           nullptr /* client_ptr_info */),
       context));
-  host->render_process_id_ = process_id;
+  host->SetRenderProcessId(process_id);
 
   (*out_provider_info)->provider_id = host->provider_id();
   (*out_provider_info)->client_request = mojo::MakeRequest(&host->container_);
@@ -779,6 +779,7 @@ void ServiceWorkerProviderHost::CompleteNavigationInitialized(
   DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id_);
   DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForWindow, info_->type);
   DCHECK_EQ(kDocumentMainThreadId, render_thread_id_);
+  SetRenderProcessId(process_id);
 
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, process_id);
   DCHECK_EQ(info_->provider_id, info->provider_id);
@@ -821,7 +822,7 @@ ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
   DCHECK_EQ(provider_info->provider_id, provider_id());
 
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, process_id);
-  render_process_id_ = process_id;
+  SetRenderProcessId(process_id);
 
   if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
@@ -1478,6 +1479,12 @@ void ServiceWorkerProviderHost::TransitionToClientPhase(ClientPhase new_phase) {
       break;
   }
   client_phase_ = new_phase;
+}
+
+void ServiceWorkerProviderHost::SetRenderProcessId(int process_id) {
+  render_process_id_ = process_id;
+  if (controller_)
+    controller_->UpdateForegroundPriority();
 }
 
 }  // namespace content
