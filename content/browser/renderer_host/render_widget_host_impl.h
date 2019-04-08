@@ -789,6 +789,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, AutoResizeWithScale);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            AutoResizeWithBrowserInitiatedResize);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
+                           ChildAllocationAcceptedInParentWhileHidden);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, Resize);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewChildFrameTest,
                            ChildFrameAutoResizeUpdate);
