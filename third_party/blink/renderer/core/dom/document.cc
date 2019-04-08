@@ -4259,8 +4259,10 @@ MouseEventWithHitTestResults Document::PerformMouseEventHitTest(
   HitTestResult result(request, location);
   GetLayoutView()->HitTest(location, result);
 
-  if (!request.ReadOnly())
-    UpdateHoverActiveState(request, result.InnerElement());
+  if (!request.ReadOnly()) {
+    UpdateHoverActiveState(request.Active(), !request.Move(),
+                           result.InnerElement());
+  }
 
   if (auto* canvas = ToHTMLCanvasElementOrNull(result.InnerNode())) {
     HitTestCanvasResult* hit_test_canvas_result =
@@ -7025,13 +7027,10 @@ void Document::SetContextFeatures(ContextFeatures& features) {
   context_features_ = &features;
 }
 
-// TODO(mustaq) |request| parameter maybe a misuse of HitTestRequest in
-// updateHoverActiveState() since the function doesn't bother with hit-testing.
-void Document::UpdateHoverActiveState(const HitTestRequest& request,
+void Document::UpdateHoverActiveState(bool is_active,
+                                      bool update_active_chain,
                                       Element* inner_element) {
-  DCHECK(!request.ReadOnly());
-
-  if (request.Active() && frame_)
+  if (is_active && frame_)
     frame_->GetEventHandler().NotifyElementActivated();
 
   Element* inner_element_in_document = inner_element;
@@ -7039,21 +7038,22 @@ void Document::UpdateHoverActiveState(const HitTestRequest& request,
   while (inner_element_in_document &&
          inner_element_in_document->GetDocument() != this) {
     inner_element_in_document->GetDocument().UpdateHoverActiveState(
-        request, inner_element_in_document);
+        is_active, update_active_chain, inner_element_in_document);
     inner_element_in_document =
         inner_element_in_document->GetDocument().LocalOwner();
   }
 
   UpdateDistributionForFlatTreeTraversal();
 
-  UpdateActiveState(request, inner_element_in_document);
-  UpdateHoverState(request, inner_element_in_document);
+  UpdateActiveState(is_active, update_active_chain, inner_element_in_document);
+  UpdateHoverState(inner_element_in_document);
 }
 
-void Document::UpdateActiveState(const HitTestRequest& request,
+void Document::UpdateActiveState(bool is_active,
+                                 bool update_active_chain,
                                  Element* inner_element_in_document) {
   Element* old_active_element = GetActiveElement();
-  if (old_active_element && !request.Active()) {
+  if (old_active_element && !is_active) {
     // The oldActiveElement layoutObject is null, dropped on :active by setting
     // display: none, for instance. We still need to clear the ActiveChain as
     // the mouse is released.
@@ -7066,8 +7066,7 @@ void Document::UpdateActiveState(const HitTestRequest& request,
   } else {
     Element* new_active_element = inner_element_in_document;
     if (!old_active_element && new_active_element &&
-        !new_active_element->IsDisabledFormControl() && request.Active() &&
-        !request.TouchMove()) {
+        !new_active_element->IsDisabledFormControl() && is_active) {
       // We are setting the :active chain and freezing it. If future moves
       // happen, they will need to reference this chain.
       for (Element* element = new_active_element; element;
@@ -7084,23 +7083,22 @@ void Document::UpdateActiveState(const HitTestRequest& request,
   if (!allow_active_changes)
     return;
 
-  // If the mouse is down and if this is a mouse move event, we want to restrict
-  // changes in :active to only apply to elements that are in the :active
-  // chain that we froze at the time the mouse went down.
-  bool must_be_in_active_chain = request.Active() && request.Move();
+  DCHECK(is_active);
 
   Element* new_element = SkipDisplayNoneAncestors(inner_element_in_document);
 
-  // Now set the active state for our new object up to the root.
+  // Now set the active state for our new object up to the root.  If the mouse
+  // is down and if this is a mouse move event, we want to restrict changes in
+  // :active to only apply to elements that are in the :active chain that we
+  // froze at the time the mouse went down.
   for (Element* curr = new_element; curr;
        curr = FlatTreeTraversal::ParentElement(*curr)) {
-    if (!must_be_in_active_chain || curr->InActiveChain())
+    if (update_active_chain || curr->InActiveChain())
       curr->SetActive(true);
   }
 }
 
-void Document::UpdateHoverState(const HitTestRequest& request,
-                                Element* inner_element_in_document) {
+void Document::UpdateHoverState(Element* inner_element_in_document) {
   Element* old_hover_element = HoverElement();
 
   // The passed in innerElement may not be a result of a hit test for the

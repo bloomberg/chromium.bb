@@ -2790,15 +2790,6 @@ bool Node::WillRespondToMouseClickEvents() {
          HasEventListeners(event_type_names::kDOMActivate);
 }
 
-bool Node::WillRespondToTouchEvents() {
-  if (IsDisabledFormControl(this))
-    return false;
-  return HasEventListeners(event_type_names::kTouchstart) ||
-         HasEventListeners(event_type_names::kTouchmove) ||
-         HasEventListeners(event_type_names::kTouchcancel) ||
-         HasEventListeners(event_type_names::kTouchend);
-}
-
 unsigned Node::ConnectedSubframeCount() const {
   return HasRareData() ? RareData()->ConnectedSubframeCount() : 0;
 }
