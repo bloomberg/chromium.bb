@@ -521,6 +521,14 @@ void Surface::UpdateActivationDependencies(
   blocking_allocation_groups_.clear();
   activation_dependencies_.clear();
 
+  // If the client has specified a deadline of zero and we don't need to block
+  // on the parent, there is no need to figure out the activation dependencies,
+  // since the frame will activate immediately.
+  bool block_activation =
+      block_activation_on_parent_ && !seen_first_surface_dependency_;
+  if (!block_activation && current_frame.metadata.deadline.IsZero())
+    return;
+
   std::vector<SurfaceAllocationGroup*> new_blocking_allocation_groups;
   std::vector<SurfaceId> new_activation_dependencies;
   for (const SurfaceId& surface_id :

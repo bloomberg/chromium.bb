@@ -68,6 +68,8 @@ class VIZ_COMMON_EXPORT FrameDeadline {
     return use_default_lower_bound_deadline_;
   }
 
+  bool IsZero() const;
+
   std::string ToString() const;
 
  private:
