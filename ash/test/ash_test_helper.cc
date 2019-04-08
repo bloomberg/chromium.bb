@@ -31,6 +31,7 @@
 #include "base/strings/string_split.h"
 #include "base/token.h"
 #include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/dbus/cras_audio_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/network/network_handler.h"
@@ -177,6 +178,7 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
     power_policy_controller_initialized_ = true;
   }
 
+  chromeos::CrasAudioClient::InitializeFake();
   // Create CrasAudioHandler for testing since g_browser_process is not
   // created in AshTestBase tests.
   chromeos::CrasAudioHandler::InitializeForTesting();
@@ -259,6 +261,7 @@ void AshTestHelper::TearDown() {
   base::RunLoop().RunUntilIdle();
 
   chromeos::CrasAudioHandler::Shutdown();
+  chromeos::CrasAudioClient::Shutdown();
 
   if (power_policy_controller_initialized_) {
     chromeos::PowerPolicyController::Shutdown();

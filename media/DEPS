@@ -34,6 +34,12 @@ specific_include_rules = {
   "audio_manager_unittest.cc": [
     "+chromeos/dbus"
   ],
+  "cras_input_unittest.cc": [
+    "+chromeos/dbus"
+  ],
+  "cras_unified_unittest.cc": [
+    "+chromeos/dbus"
+  ],
   "gpu_memory_buffer_video_frame_pool_unittest.cc": [
     "+components/viz/test/test_context_provider.h",
   ]

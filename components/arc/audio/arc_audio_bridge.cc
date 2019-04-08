@@ -48,18 +48,15 @@ ArcAudioBridge* ArcAudioBridge::GetForBrowserContext(
 
 ArcAudioBridge::ArcAudioBridge(content::BrowserContext* context,
                                ArcBridgeService* bridge_service)
-    : arc_bridge_service_(bridge_service) {
+    : arc_bridge_service_(bridge_service),
+      cras_audio_handler_(chromeos::CrasAudioHandler::Get()) {
   arc_bridge_service_->audio()->SetHost(this);
   arc_bridge_service_->audio()->AddObserver(this);
-  if (chromeos::CrasAudioHandler::IsInitialized()) {
-    cras_audio_handler_ = chromeos::CrasAudioHandler::Get();
-    cras_audio_handler_->AddAudioObserver(this);
-  }
+  cras_audio_handler_->AddAudioObserver(this);
 }
 
 ArcAudioBridge::~ArcAudioBridge() {
-  if (cras_audio_handler_)
-    cras_audio_handler_->RemoveAudioObserver(this);
+  cras_audio_handler_->RemoveAudioObserver(this);
   arc_bridge_service_->audio()->RemoveObserver(this);
   arc_bridge_service_->audio()->SetHost(nullptr);
 }

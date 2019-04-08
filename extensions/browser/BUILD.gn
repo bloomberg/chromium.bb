@@ -442,8 +442,6 @@ source_set("core_api_provider") {
 source_set("browser_tests") {
   testonly = true
   sources = [
-    "api/audio/audio_apitest.cc",
-
     # TODO(michaelpg): bluetooth_appshell_test.cc is a crutch until we have a
     # better system for testing APIs in both app_shell and chrome. See
     # crbug.com/650835.
@@ -505,6 +503,7 @@ source_set("browser_tests") {
 
   if (is_chromeos) {
     sources += [
+      "api/audio/audio_apitest_chromeos.cc",
       "api/cec_private/cec_private_apitest.cc",
       "api/media_perception_private/media_perception_private_apitest.cc",
       "api/system_power_source/system_power_source_apitest.cc",
