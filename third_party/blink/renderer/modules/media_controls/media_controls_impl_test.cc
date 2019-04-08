@@ -163,12 +163,6 @@ static const char* kTimeToActionHistogramName =
 static const char* kTimeToDismissHistogramName =
     "Media.Controls.Overflow.TimeToDismiss";
 
-static double g_current_time = 1000.0;
-
-static void AdvanceClock(double seconds) {
-  g_current_time += seconds;
-}
-
 class MediaControlsImplTest : public PageTestBase,
                               private ScopedMediaCastOverlayButtonForTest {
  public:
@@ -176,14 +170,7 @@ class MediaControlsImplTest : public PageTestBase,
 
  protected:
   void SetUp() override {
-    original_time_function_ =
-        SetTimeFunctionsForTesting([] { return g_current_time; });
-
     InitializePage();
-  }
-
-  void TearDown() override {
-    SetTimeFunctionsForTesting(original_time_function_);
   }
 
   void InitializePage() {
@@ -290,15 +277,9 @@ class MediaControlsImplTest : public PageTestBase,
     return ToText(display->firstChild())->data();
   }
 
-  void ToggleOverflowMenu() {
-    MediaControls().ToggleOverflowMenu();
-    test::RunPendingTasks();
-  }
-
  private:
   Persistent<MediaControlsImpl> media_controls_;
   HistogramTester histogram_tester_;
-  TimeFunction original_time_function_;
 };
 
 void MediaControlsImplTest::MouseDownAt(WebFloatPoint pos) {
@@ -872,8 +853,18 @@ class MediaControlsImplTestWithMockScheduler
   void SetUp() override {
     // DocumentParserTiming has DCHECKS to make sure time > 0.0.
     platform()->AdvanceClockSeconds(1);
+    platform()->SetAutoAdvanceNowToPendingTasks(false);
 
     ModernMediaControlsImplTest::SetUp();
+  }
+
+  void TearDown() override {
+    platform()->SetAutoAdvanceNowToPendingTasks(true);
+  }
+
+  void ToggleOverflowMenu() {
+    MediaControls().ToggleOverflowMenu();
+    platform()->RunUntilIdle();
   }
 
   bool IsCursorHidden() {
@@ -1106,20 +1097,21 @@ TEST_F(MediaControlsImplTest, InfinityDurationChangeHidesDurationField) {
             duration_display->CurrentValue());
 }
 
-TEST_F(MediaControlsImplTest, OverflowMenuMetricsTimeToAction) {
+TEST_F(MediaControlsImplTestWithMockScheduler,
+       OverflowMenuMetricsTimeToAction) {
   GetHistogramTester().ExpectTotalCount(kTimeToActionHistogramName, 0);
   GetHistogramTester().ExpectTotalCount(kTimeToDismissHistogramName, 0);
 
   // Test with the menu open for 42 seconds.
   ToggleOverflowMenu();
-  AdvanceClock(42);
+  platform()->RunForPeriodSeconds(42);
   ClickOverflowButton();
   GetHistogramTester().ExpectBucketCount(kTimeToActionHistogramName, 42, 1);
   GetHistogramTester().ExpectTotalCount(kTimeToActionHistogramName, 1);
 
   // Test with the menu open for 90 seconds.
   ToggleOverflowMenu();
-  AdvanceClock(90);
+  platform()->RunForPeriodSeconds(90);
   ClickOverflowButton();
 
   GetHistogramTester().ExpectBucketCount(kTimeToActionHistogramName, 90, 1);
@@ -1127,48 +1119,49 @@ TEST_F(MediaControlsImplTest, OverflowMenuMetricsTimeToAction) {
 
   // Test with the menu open for 42 seconds.
   ToggleOverflowMenu();
-  AdvanceClock(42);
+  platform()->RunForPeriodSeconds(42);
   ClickOverflowButton();
   GetHistogramTester().ExpectBucketCount(kTimeToActionHistogramName, 42, 2);
   GetHistogramTester().ExpectTotalCount(kTimeToActionHistogramName, 3);
 
   // Test with the menu open for 1000 seconds.
   ToggleOverflowMenu();
-  AdvanceClock(1000);
+  platform()->RunForPeriodSeconds(1000);
   ClickOverflowButton();
   GetHistogramTester().ExpectBucketCount(kTimeToActionHistogramName, 100, 1);
   GetHistogramTester().ExpectTotalCount(kTimeToActionHistogramName, 4);
   GetHistogramTester().ExpectTotalCount(kTimeToDismissHistogramName, 0);
 }
 
-TEST_F(MediaControlsImplTest, OverflowMenuMetricsTimeToDismiss) {
+TEST_F(MediaControlsImplTestWithMockScheduler,
+       OverflowMenuMetricsTimeToDismiss) {
   GetHistogramTester().ExpectTotalCount(kTimeToDismissHistogramName, 0);
   GetHistogramTester().ExpectTotalCount(kTimeToActionHistogramName, 0);
 
   // Test with the menu open for 42 seconds.
   ToggleOverflowMenu();
-  AdvanceClock(42);
+  platform()->RunForPeriodSeconds(42);
   ToggleOverflowMenu();
   GetHistogramTester().ExpectBucketCount(kTimeToDismissHistogramName, 42, 1);
   GetHistogramTester().ExpectTotalCount(kTimeToDismissHistogramName, 1);
 
   // Test with the menu open for 90 seconds.
   ToggleOverflowMenu();
-  AdvanceClock(90);
+  platform()->RunForPeriodSeconds(90);
   ToggleOverflowMenu();
   GetHistogramTester().ExpectBucketCount(kTimeToDismissHistogramName, 90, 1);
   GetHistogramTester().ExpectTotalCount(kTimeToDismissHistogramName, 2);
 
   // Test with the menu open for 42 seconds.
   ToggleOverflowMenu();
-  AdvanceClock(42);
+  platform()->RunForPeriodSeconds(42);
   ToggleOverflowMenu();
   GetHistogramTester().ExpectBucketCount(kTimeToDismissHistogramName, 42, 2);
   GetHistogramTester().ExpectTotalCount(kTimeToDismissHistogramName, 3);
 
   // Test with the menu open for 1000 seconds.
   ToggleOverflowMenu();
-  AdvanceClock(1000);
+  platform()->RunForPeriodSeconds(1000);
   ToggleOverflowMenu();
   GetHistogramTester().ExpectBucketCount(kTimeToDismissHistogramName, 100, 1);
   GetHistogramTester().ExpectTotalCount(kTimeToDismissHistogramName, 4);
