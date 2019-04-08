@@ -25,9 +25,6 @@ class SystemFonts {
     auto it = system_fonts_.find(system_font);
     DCHECK(it != system_fonts_.end())
         << "System font #" << static_cast<int>(system_font) << " not found!";
-    DCHECK(it->second.GetNativeFont())
-        << "Font for system font #" << static_cast<int>(system_font)
-        << " has invalid handle.";
     return it->second;
   }
 
@@ -76,9 +73,13 @@ class SystemFonts {
   static Font GetFontFromLOGFONT(const LOGFONT* logfont) {
     // Finds a matching font by triggering font mapping. The font mapper finds
     // the closest physical font for a given logical font.
-    base::win::ScopedGDIObject<HFONT> font(::CreateFontIndirect(logfont));
+    base::win::ScopedHFONT font(::CreateFontIndirect(logfont));
     base::win::ScopedGetDC screen_dc(NULL);
     base::win::ScopedSelectObject scoped_font(screen_dc, font.get());
+
+    DCHECK(font.get()) << "Font for '"
+                       << base::SysWideToUTF8(logfont->lfFaceName)
+                       << "' has an invalid handle.";
 
     // Retrieve the name and height of the mapped font (physical font).
     LOGFONT mapped_font_info;
@@ -228,8 +229,9 @@ const Font& GetSystemFont(SystemFont system_font) {
   return SystemFonts::Instance()->GetFont(system_font);
 }
 
-Font AdjustExistingSystemFont(NativeFont existing_font,
-                              const FontAdjustment& font_adjustment) {
+GFX_EXPORT NativeFont
+AdjustExistingSystemFont(NativeFont existing_font,
+                         const FontAdjustment& font_adjustment) {
   LOGFONT logfont;
   auto result = GetObject(existing_font, sizeof(logfont), &logfont);
   DCHECK(result);
@@ -241,7 +243,7 @@ Font AdjustExistingSystemFont(NativeFont existing_font,
   logfont.lfHeight = SystemFonts::AdjustFontSize(logfont.lfHeight, 0);
 
   // Create the Font object.
-  return SystemFonts::GetFontFromLOGFONT(&logfont);
+  return ::CreateFontIndirect(&logfont);
 }
 
 int AdjustFontSize(int lf_height, int size_delta) {

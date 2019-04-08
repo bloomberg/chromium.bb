@@ -39,8 +39,9 @@ GFX_EXPORT void SetAdjustFontCallback(AdjustFontCallback callback);
 GFX_EXPORT const Font& GetSystemFont(SystemFont system_font);
 
 // Applies a font adjustment to an existing native font.
-GFX_EXPORT Font AdjustExistingSystemFont(NativeFont existing_font,
-                                         const FontAdjustment& font_adjustment);
+GFX_EXPORT NativeFont
+AdjustExistingSystemFont(NativeFont existing_font,
+                         const FontAdjustment& font_adjustment);
 
 // Computes and returns the adjusted size of a font, subject to the global
 // minimum size. |lf_height| is the height as reported by the LOGFONT structure,

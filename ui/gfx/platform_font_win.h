@@ -54,7 +54,7 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
   std::string GetActualFontNameForTesting() const override;
   int GetFontSize() const override;
   const FontRenderParams& GetFontRenderParams() override;
-  NativeFont GetNativeFont() const override;
+  NativeFont GetNativeFont() const;
 
   // Called once during initialization if we should be retrieving font metrics
   // from skia and DirectWrite.
