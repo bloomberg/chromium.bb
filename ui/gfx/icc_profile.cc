@@ -50,9 +50,6 @@ ICCProfile::Internals::AnalyzeResult ICCProfile::Internals::Initialize() {
     return kICCFailedToParse;
   }
 
-  // Extract the primary matrix.
-  to_XYZD50_ = profile.toXYZD50;
-
   // We have seen many users with profiles that don't have a D50 white point.
   // Windows appears to detect these profiles, and not use them for OS drawing.
   // It still returns them when we query the system for the installed profile.
@@ -70,23 +67,30 @@ ICCProfile::Internals::AnalyzeResult ICCProfile::Internals::Initialize() {
     return kICCFailedToParse;
   }
 
+  // Extract the primary matrix, and assume that transfer function is sRGB until
+  // we get something more precise.
+  to_XYZD50_ = profile.toXYZD50;
+  transfer_fn_ = SkNamedTransferFn::kSRGB;
+
   // Coerce it into a rasterization destination (if possible). If the profile
   // can't be approximated accurately, then use an sRGB transfer function and
   // return failure. We will continue to use the gamut from this profile.
   if (!skcms_MakeUsableAsDestinationWithSingleCurve(&profile)) {
-    DLOG(ERROR) << "Parsed ICC profile but can't make usable as destination.";
-    transfer_fn_ = SkNamedTransferFn::kSRGB;
+    DLOG(ERROR) << "Parsed ICC profile but can't make usable as destination, "
+                   "using sRGB gamma";
     return kICCFailedToMakeUsable;
   }
 
   // If SkColorSpace will treat the gamma as that of sRGB, then use the named
   // constants.
   sk_sp<SkColorSpace> sk_color_space = SkColorSpace::Make(profile);
-  DCHECK(sk_color_space);
-  if (sk_color_space->gammaCloseToSRGB()) {
-    transfer_fn_ = SkNamedTransferFn::kSRGB;
-    return kICCExtractedMatrixAndTrFn;
+  if (!sk_color_space) {
+    DLOG(ERROR) << "Parsed ICC profile but cannot create SkColorSpace from it, "
+                   "using sRGB gamma.";
+    return kICCFailedToMakeUsable;
   }
+  if (sk_color_space->gammaCloseToSRGB())
+    return kICCExtractedMatrixAndTrFn;
 
   // We assume that if we accurately approximated the profile, then the
   // single-curve version (which may have higher error) is also okay. If we
