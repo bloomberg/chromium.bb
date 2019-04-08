@@ -72,6 +72,14 @@ void TestPendingAppManager::UninstallApps(std::vector<GURL> uninstall_urls,
   }
 }
 
+void TestPendingAppManager::ReinstallPlaceholderApp(
+    InstallOptions install_options,
+    OnceInstallCallback callback) {
+  reinstall_requests_.push_back(std::move(install_options));
+  std::move(callback).Run(reinstall_requests_.back().url,
+                          InstallResultCode::kSuccess);
+}
+
 std::vector<GURL> TestPendingAppManager::GetInstalledAppUrls(
     InstallSource install_source) const {
   std::vector<GURL> urls;

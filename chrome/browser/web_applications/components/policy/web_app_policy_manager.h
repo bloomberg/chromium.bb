@@ -35,6 +35,8 @@ class WebAppPolicyManager {
 
   void Start();
 
+  void ReinstallPlaceholderAppIfNecessary(const GURL& url);
+
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:

@@ -105,7 +105,7 @@ class TestBookmarkAppInstallationTask : public BookmarkAppInstallationTask {
       BookmarkAppInstallationTask::ResultCallback callback) override {
     std::move(on_install_placeholder_called_).Run();
     if (succeeds_) {
-      std::move(callback).Run(SimulateInstallingApp());
+      std::move(callback).Run(SimulateInstallingApp(true /* is_placeholder */));
     } else {
       std::move(callback).Run(BookmarkAppInstallationTask::Result(
           web_app::InstallResultCode::kFailedUnknownReason, std::string()));
@@ -122,10 +122,12 @@ class TestBookmarkAppInstallationTask : public BookmarkAppInstallationTask {
   }
 
  private:
-  BookmarkAppInstallationTask::Result SimulateInstallingApp() {
+  BookmarkAppInstallationTask::Result SimulateInstallingApp(
+      bool is_placeholder = false) {
     std::string app_id = GenerateFakeAppId(install_options().url);
     extension_ids_map_.Insert(install_options().url, app_id,
                               install_options().install_source);
+    extension_ids_map_.SetIsPlaceholder(install_options().url, is_placeholder);
     registrar_->AddAsInstalled(app_id);
     return {web_app::InstallResultCode::kSuccess, app_id};
   }
@@ -143,8 +145,9 @@ class TestBookmarkAppInstallationTask : public BookmarkAppInstallationTask {
 
 class TestBookmarkAppUninstaller : public BookmarkAppUninstaller {
  public:
-  TestBookmarkAppUninstaller(Profile* profile, web_app::AppRegistrar* registrar)
-      : BookmarkAppUninstaller(profile, registrar) {}
+  TestBookmarkAppUninstaller(Profile* profile,
+                             web_app::TestAppRegistrar* registrar)
+      : BookmarkAppUninstaller(profile, registrar), registrar_(registrar) {}
 
   ~TestBookmarkAppUninstaller() override = default;
 
@@ -170,11 +173,16 @@ class TestBookmarkAppUninstaller : public BookmarkAppUninstaller {
 
     bool result = next_result_map_[app_url];
     next_result_map_.erase(app_url);
+
+    if (result)
+      registrar_->RemoveAsInstalled(GenerateFakeAppId(app_url));
+
     return result;
   }
 
  private:
   std::map<GURL, bool> next_result_map_;
+  web_app::TestAppRegistrar* registrar_;
 
   size_t uninstall_call_count_ = 0;
   std::vector<GURL> uninstalled_app_urls_;
@@ -262,6 +270,28 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
             [&](const GURL& u, web_app::InstallResultCode c) {
               url = u;
               code = c;
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+
+    return {url.value(), code.value()};
+  }
+
+  std::pair<GURL, web_app::InstallResultCode> ReinstallPlaceholderAppAndWait(
+      web_app::PendingAppManager* pending_app_manager,
+      web_app::InstallOptions install_options) {
+    base::RunLoop run_loop;
+
+    base::Optional<GURL> url;
+    base::Optional<web_app::InstallResultCode> code;
+
+    pending_app_manager->ReinstallPlaceholderApp(
+        std::move(install_options),
+        base::BindLambdaForTesting(
+            [&](const GURL& app_url,
+                web_app::InstallResultCode install_result_code) {
+              url = app_url;
+              code = install_result_code;
               run_loop.Quit();
             }));
     run_loop.Run();
@@ -1100,6 +1130,7 @@ TEST_F(PendingBookmarkAppManagerTest, ExternalExtensionUninstalled) {
 
 TEST_F(PendingBookmarkAppManagerTest, UninstallApps_Succeeds) {
   auto pending_app_manager = GetPendingBookmarkAppManagerWithTestFactories();
+  registrar()->AddAsInstalled(GenerateFakeAppId(GURL(kFooWebAppUrl)));
 
   uninstaller()->SetNextResultForTesting(GURL(kFooWebAppUrl), true);
   UninstallAppsResults results = UninstallAppsAndWait(
@@ -1125,6 +1156,8 @@ TEST_F(PendingBookmarkAppManagerTest, UninstallApps_Fails) {
 
 TEST_F(PendingBookmarkAppManagerTest, UninstallApps_Multiple) {
   auto pending_app_manager = GetPendingBookmarkAppManagerWithTestFactories();
+  registrar()->AddAsInstalled(GenerateFakeAppId(GURL(kFooWebAppUrl)));
+  registrar()->AddAsInstalled(GenerateFakeAppId(GURL(kBarWebAppUrl)));
 
   uninstaller()->SetNextResultForTesting(GURL(kFooWebAppUrl), true);
   uninstaller()->SetNextResultForTesting(GURL(kBarWebAppUrl), true);
@@ -1162,6 +1195,135 @@ TEST_F(PendingBookmarkAppManagerTest, UninstallApps_PendingInstall) {
   EXPECT_EQ(1u, uninstall_call_count());
 
   run_loop.Run();
+}
+
+TEST_F(PendingBookmarkAppManagerTest, ReinstallPlaceholderApp_Success) {
+  auto pending_app_manager = GetPendingBookmarkAppManagerWithTestFactories();
+
+  // Install a placeholder app
+  auto install_options = GetFooInstallOptions();
+  install_options.install_placeholder = true;
+
+  {
+    url_loader()->SetNextLoadUrlResult(
+        GURL(kFooWebAppUrl),
+        web_app::WebAppUrlLoader::Result::kRedirectedUrlLoaded);
+    base::Optional<GURL> url;
+    base::Optional<web_app::InstallResultCode> code;
+    std::tie(url, code) =
+        InstallAndWait(pending_app_manager.get(), install_options);
+    ASSERT_EQ(web_app::InstallResultCode::kSuccess, code.value());
+    EXPECT_EQ(0u, install_run_count());
+    EXPECT_EQ(1u, install_placeholder_run_count());
+  }
+
+  // Reinstall placeholder
+  {
+    url_loader()->SetNextLoadUrlResult(
+        GURL(kFooWebAppUrl), web_app::WebAppUrlLoader::Result::kUrlLoaded);
+    uninstaller()->SetNextResultForTesting(GURL(kFooWebAppUrl), true);
+
+    base::Optional<GURL> url;
+    base::Optional<web_app::InstallResultCode> code;
+    std::tie(url, code) = ReinstallPlaceholderAppAndWait(
+        pending_app_manager.get(), install_options);
+
+    EXPECT_EQ(web_app::InstallResultCode::kSuccess, code.value());
+    EXPECT_EQ(GURL(kFooWebAppUrl), url.value());
+
+    EXPECT_EQ(1u, uninstall_call_count());
+    EXPECT_EQ(GURL(kFooWebAppUrl), last_uninstalled_app_url());
+
+    EXPECT_EQ(1u, install_run_count());
+    EXPECT_EQ(1u, install_placeholder_run_count());
+  }
+}
+
+TEST_F(PendingBookmarkAppManagerTest,
+       ReinstallPlaceholderApp_FailsToUninstall) {
+  auto pending_app_manager = GetPendingBookmarkAppManagerWithTestFactories();
+
+  // Install a placeholder app
+  auto install_options = GetFooInstallOptions();
+  install_options.install_placeholder = true;
+
+  {
+    url_loader()->SetNextLoadUrlResult(
+        GURL(kFooWebAppUrl),
+        web_app::WebAppUrlLoader::Result::kRedirectedUrlLoaded);
+    base::Optional<GURL> url;
+    base::Optional<web_app::InstallResultCode> code;
+    std::tie(url, code) =
+        InstallAndWait(pending_app_manager.get(), install_options);
+    ASSERT_EQ(web_app::InstallResultCode::kSuccess, code.value());
+    EXPECT_EQ(0u, install_run_count());
+    EXPECT_EQ(1u, install_placeholder_run_count());
+  }
+
+  // Reinstall placeholder
+  {
+    url_loader()->SetNextLoadUrlResult(
+        GURL(kFooWebAppUrl), web_app::WebAppUrlLoader::Result::kUrlLoaded);
+    uninstaller()->SetNextResultForTesting(GURL(kFooWebAppUrl), false);
+
+    base::Optional<GURL> url;
+    base::Optional<web_app::InstallResultCode> code;
+    std::tie(url, code) = ReinstallPlaceholderAppAndWait(
+        pending_app_manager.get(), install_options);
+
+    EXPECT_EQ(web_app::InstallResultCode::kFailedUnknownReason, code.value());
+    EXPECT_EQ(GURL(kFooWebAppUrl), url.value());
+
+    EXPECT_EQ(1u, uninstall_call_count());
+    EXPECT_EQ(GURL(kFooWebAppUrl), last_uninstalled_app_url());
+
+    EXPECT_EQ(0u, install_run_count());
+    EXPECT_EQ(1u, install_placeholder_run_count());
+  }
+}
+
+TEST_F(PendingBookmarkAppManagerTest,
+       ReinstallPlaceholderApp_ReinstallNotPossible) {
+  auto pending_app_manager = GetPendingBookmarkAppManagerWithTestFactories();
+
+  // Install a placeholder app
+  auto install_options = GetFooInstallOptions();
+  install_options.install_placeholder = true;
+
+  {
+    url_loader()->SetNextLoadUrlResult(
+        GURL(kFooWebAppUrl),
+        web_app::WebAppUrlLoader::Result::kRedirectedUrlLoaded);
+    base::Optional<GURL> url;
+    base::Optional<web_app::InstallResultCode> code;
+    std::tie(url, code) =
+        InstallAndWait(pending_app_manager.get(), install_options);
+    ASSERT_EQ(web_app::InstallResultCode::kSuccess, code.value());
+    EXPECT_EQ(0u, install_run_count());
+    EXPECT_EQ(1u, install_placeholder_run_count());
+  }
+
+  // Reinstall placeholder
+  {
+    url_loader()->SetNextLoadUrlResult(
+        GURL(kFooWebAppUrl),
+        web_app::WebAppUrlLoader::Result::kRedirectedUrlLoaded);
+    uninstaller()->SetNextResultForTesting(GURL(kFooWebAppUrl), true);
+
+    base::Optional<GURL> url;
+    base::Optional<web_app::InstallResultCode> code;
+    std::tie(url, code) = ReinstallPlaceholderAppAndWait(
+        pending_app_manager.get(), install_options);
+
+    EXPECT_EQ(web_app::InstallResultCode::kSuccess, code.value());
+    EXPECT_EQ(GURL(kFooWebAppUrl), url.value());
+
+    EXPECT_EQ(1u, uninstall_call_count());
+    EXPECT_EQ(GURL(kFooWebAppUrl), last_uninstalled_app_url());
+
+    EXPECT_EQ(0u, install_run_count());
+    EXPECT_EQ(2u, install_placeholder_run_count());
+  }
 }
 
 }  // namespace extensions

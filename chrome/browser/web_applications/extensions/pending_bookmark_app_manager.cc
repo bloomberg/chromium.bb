@@ -93,6 +93,38 @@ void PendingBookmarkAppManager::UninstallApps(
   }
 }
 
+void PendingBookmarkAppManager::ReinstallPlaceholderApp(
+    web_app::InstallOptions install_options,
+    OnceInstallCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&PendingBookmarkAppManager::StartReinstallTask,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(install_options),
+                     std::move(callback)));
+}
+
+void PendingBookmarkAppManager::StartReinstallTask(
+    web_app::InstallOptions install_options,
+    OnceInstallCallback callback) {
+  base::Optional<std::string> extension_id =
+      extension_ids_map_.LookupPlaceholderAppId(install_options.url);
+
+  bool uninstall_succeeded = true;
+  if (extension_id.has_value() &&
+      registrar_->IsInstalled(extension_id.value())) {
+    uninstall_succeeded = uninstaller_->UninstallApp(install_options.url);
+  }
+
+  if (!uninstall_succeeded) {
+    LOG(WARNING) << "Could not uninstall Web App for : " << install_options.url;
+    std::move(callback).Run(install_options.url,
+                            web_app::InstallResultCode::kFailedUnknownReason);
+    return;
+  }
+
+  Install(std::move(install_options), std::move(callback));
+}
+
 std::vector<GURL> PendingBookmarkAppManager::GetInstalledAppUrls(
     web_app::InstallSource install_source) const {
   return web_app::ExtensionIdsMap::GetInstalledAppUrls(profile_,
