@@ -9,6 +9,7 @@
 
 namespace blink {
 
+class GPUCommandBuffer;
 class GPUFence;
 class GPUFenceDescriptor;
 
@@ -21,6 +22,7 @@ class GPUQueue : public DawnObject<DawnQueue> {
   ~GPUQueue() override;
 
   // gpu_queue.idl
+  void submit(const HeapVector<Member<GPUCommandBuffer>>& buffers);
   void signal(GPUFence* fence, uint64_t signal_value);
   GPUFence* createFence(const GPUFenceDescriptor* descriptor);
 

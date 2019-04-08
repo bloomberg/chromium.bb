@@ -7,6 +7,7 @@
 [
     RuntimeEnabled=WebGPU
 ] interface GPUQueue {
+    void submit(sequence<GPUCommandBuffer> buffers);
     void signal(GPUFence fence, unsigned long long signalValue);
     GPUFence createFence(GPUFenceDescriptor descriptor);
 };

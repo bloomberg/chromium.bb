@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_queue.h"
 
 #include "gpu/command_buffer/client/webgpu_interface.h"
+#include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_command_buffer.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_fence.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_fence_descriptor.h"
@@ -26,8 +28,20 @@ GPUQueue::~GPUQueue() {
   GetProcs().queueRelease(GetHandle());
 }
 
+void GPUQueue::submit(const HeapVector<Member<GPUCommandBuffer>>& buffers) {
+  std::unique_ptr<DawnCommandBuffer[]> commandBuffers = AsDawnType(buffers);
+
+  GetProcs().queueSubmit(GetHandle(), buffers.size(), commandBuffers.get());
+  // WebGPU guarantees that submitted commands finish in finite time so we
+  // flush commands to the GPU process now.
+  device_->GetInterface()->FlushCommands();
+}
+
 void GPUQueue::signal(GPUFence* fence, uint64_t signal_value) {
   GetProcs().queueSignal(GetHandle(), fence->GetHandle(), signal_value);
+  // Signaling a fence adds a callback to update the fence value to the
+  // completed value. WebGPU guarantees that the fence completion is
+  // observable in finite time so we flush commands to the GPU process now.
   device_->GetInterface()->FlushCommands();
 }
 
