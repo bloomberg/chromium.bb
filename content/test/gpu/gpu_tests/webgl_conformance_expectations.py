@@ -438,7 +438,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'vulkan'], bug=2913) # ANGLE bug ID
     self.Fail('conformance/textures/misc/texture-mips.html',
         ['win', 'passthrough', 'vulkan'], bug=2722) # ANGLE bug ID
-    self.Fail('conformance/uniforms/out-of-bounds-uniform-array-access.html',
+    # Note: the following test crashes so it's skipped.  http://anglebug.com/3352
+    self.Skip('conformance/uniforms/out-of-bounds-uniform-array-access.html',
         ['win', 'passthrough', 'vulkan'], bug=2921) # ANGLE bug ID
     self.Fail('WebglExtension_ANGLE_instanced_arrays',
         ['win', 'passthrough', 'vulkan'], bug=2672) # ANGLE bug ID
