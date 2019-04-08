@@ -20,6 +20,9 @@ class AutoclickMenuBubbleView : public TrayBubbleView {
   AutoclickMenuBubbleView(TrayBubbleView::InitParams init_params);
   ~AutoclickMenuBubbleView() override;
 
+  // TrayBubbleView:
+  bool IsAnchoredToStatusArea() const override;
+
   void MoveToPosition(const gfx::Rect& rect);
 
  private:

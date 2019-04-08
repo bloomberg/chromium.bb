@@ -122,6 +122,10 @@ AutoclickMenuBubbleView::AutoclickMenuBubbleView(
 
 AutoclickMenuBubbleView::~AutoclickMenuBubbleView() {}
 
+bool AutoclickMenuBubbleView::IsAnchoredToStatusArea() const {
+  return false;
+}
+
 void AutoclickMenuBubbleView::MoveToPosition(const gfx::Rect& rect) {
   // TODO(katie): Animate to the new position.
   SetAnchorRect(rect);

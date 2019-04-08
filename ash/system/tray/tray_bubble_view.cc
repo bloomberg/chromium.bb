@@ -271,7 +271,8 @@ void TrayBubbleView::InitializeAndShowBubble() {
   GetWidget()->Show();
   UpdateBubble();
 
-  ++g_current_tray_bubble_showing_count_;
+  if (IsAnchoredToStatusArea())
+    ++g_current_tray_bubble_showing_count_;
 
   // If TrayBubbleView cannot be activated and is shown by clicking on the
   // corresponding tray view, register pre target event handler to reroute key
@@ -338,6 +339,10 @@ void TrayBubbleView::ChangeAnchorAlignment(
   SetArrow(GetArrowAlignment(alignment));
 }
 
+bool TrayBubbleView::IsAnchoredToStatusArea() const {
+  return true;
+}
+
 int TrayBubbleView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
@@ -370,7 +375,10 @@ void TrayBubbleView::OnWidgetClosing(Widget* widget) {
   reroute_event_handler_.reset();
 
   BubbleDialogDelegateView::OnWidgetClosing(widget);
-  --g_current_tray_bubble_showing_count_;
+
+  if (IsAnchoredToStatusArea()) {
+    --g_current_tray_bubble_showing_count_;
+  }
   DCHECK_GE(g_current_tray_bubble_showing_count_, 0)
       << "Closing " << widget->GetName();
 }

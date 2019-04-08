@@ -155,6 +155,11 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   // Change anchor alignment mode when anchoring either the rect or view.
   void ChangeAnchorAlignment(AnchorAlignment alignment);
 
+  // Returns true if the bubble is an anchored status area bubble. Override
+  // this function for a bubble which is not anchored directly to the status
+  // area.
+  virtual bool IsAnchoredToStatusArea() const;
+
   Delegate* delegate() { return delegate_; }
 
   void set_gesture_dragging(bool dragging) { is_gesture_dragging_ = dragging; }
