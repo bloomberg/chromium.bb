@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -19,7 +18,6 @@
 #include "components/variations/variations_associated_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::test::ScopedFeatureList;
 using sync_pb::UserEventSpecifics;
 using testing::_;
 
@@ -86,24 +84,15 @@ class UserEventServiceImplTest : public testing::Test {
   syncer::TestSyncService sync_service_;
   testing::NiceMock<MockModelTypeChangeProcessor> mock_processor_;
   TestGlobalIdMapper mapper_;
-
-  base::test::ScopedFeatureList feature_list_;
 };
 
-TEST_F(UserEventServiceImplTest, MightRecordEventsFeatureEnabled) {
+TEST_F(UserEventServiceImplTest, MightRecordEvents) {
   // All conditions are met, might record.
   EXPECT_TRUE(UserEventServiceImpl::MightRecordEvents(false, sync_service()));
   // No sync service, will not record.
   EXPECT_FALSE(UserEventServiceImpl::MightRecordEvents(false, nullptr));
   // Off the record, will not record.
   EXPECT_FALSE(UserEventServiceImpl::MightRecordEvents(true, sync_service()));
-}
-
-TEST_F(UserEventServiceImplTest, MightRecordEventsFeatureDisabled) {
-  // Will not record because the default on feature is overridden.
-  ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(switches::kSyncUserEvents);
-  EXPECT_FALSE(UserEventServiceImpl::MightRecordEvents(false, sync_service()));
 }
 
 TEST_F(UserEventServiceImplTest, ShouldRecord) {
