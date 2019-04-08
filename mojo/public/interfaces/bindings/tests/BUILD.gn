@@ -493,14 +493,6 @@ mojom("other_test_interfaces") {
   ]
 }
 
-mojom("cpp_only_test_interfaces") {
-  testonly = true
-  cpp_only = true
-  sources = [
-    "share_message_order.test-mojom",
-  ]
-}
-
 # Ensure that some target forces JS and Java bindings generation when all
 # targets are built. This provides a basic generation smoke test for new
 # endpoint types in mojom.
