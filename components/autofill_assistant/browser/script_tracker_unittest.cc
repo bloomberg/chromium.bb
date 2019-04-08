@@ -322,8 +322,8 @@ TEST_F(ScriptTrackerTest, UpdateScriptList) {
   EXPECT_CALL(mock_service_,
               OnGetActions(StrEq("runnable name"), _, _, _, _, _))
       .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
-      .WillOnce(RunOnceCallback<3>(true, ""));
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(RunOnceCallback<4>(true, ""));
 
   base::MockCallback<ScriptExecutor::RunScriptCallback> execute_callback;
   EXPECT_CALL(execute_callback,
@@ -364,8 +364,8 @@ TEST_F(ScriptTrackerTest, UpdateScriptListFromInterrupt) {
   EXPECT_CALL(mock_service_,
               OnGetActions(StrEq("runnable name"), _, _, _, _, _))
       .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
-      .WillOnce(RunOnceCallback<3>(true, ""));
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(RunOnceCallback<4>(true, ""));
 
   base::MockCallback<ScriptExecutor::RunScriptCallback> execute_callback;
   EXPECT_CALL(execute_callback,

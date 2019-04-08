@@ -12,6 +12,7 @@
 
 #include "components/autofill_assistant/browser/client_memory.h"
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
+#include "components/autofill_assistant/browser/trigger_context.h"
 
 namespace autofill_assistant {
 
@@ -27,7 +28,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   UiController* GetUiController() override;
   WebController* GetWebController() override;
   ClientMemory* GetClientMemory() override;
-  const std::map<std::string, std::string>& GetParameters() override;
+  TriggerContext* GetTriggerContext() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   content::WebContents* GetWebContents() override;
   void EnterState(AutofillAssistantState state) override;
@@ -57,7 +58,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   }
 
   std::map<std::string, std::string>* GetMutableParameters() {
-    return &parameters_;
+    return &trigger_context_.script_parameters;
   }
 
   AutofillAssistantState GetState() { return state_; }
@@ -76,7 +77,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   UiController* ui_controller_ = nullptr;
   WebController* web_controller_ = nullptr;
   ClientMemory memory_;
-  std::map<std::string, std::string> parameters_;
+  TriggerContext trigger_context_;
   AutofillAssistantState state_ = AutofillAssistantState::INACTIVE;
   std::string status_message_;
   std::unique_ptr<Details> details_;

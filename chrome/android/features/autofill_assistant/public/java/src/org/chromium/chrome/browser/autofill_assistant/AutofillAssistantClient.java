@@ -83,9 +83,10 @@ class AutofillAssistantClient {
     /**
      * Launches Autofill Assistant on the current web contents, expecting autostart.
      */
-    public void start(String initialUrl, Map<String, String> parameters, Bundle intentExtras) {
+    public void start(String initialUrl, Map<String, String> parameters,
+            @Nullable String experimentIds, Bundle intentExtras) {
         checkNativeClientIsAliveOrThrow();
-        nativeStart(mNativeClientAndroid, initialUrl,
+        nativeStart(mNativeClientAndroid, initialUrl, experimentIds == null ? "" : experimentIds,
                 parameters.keySet().toArray(new String[parameters.size()]),
                 parameters.values().toArray(new String[parameters.size()]));
         chooseAccountAsync(parameters.get(PARAMETER_USER_EMAIL), intentExtras);
@@ -251,7 +252,7 @@ class AutofillAssistantClient {
     private static native AutofillAssistantClient nativeFromWebContents(WebContents webContents);
     private native void nativeShowOnboarding(long nativeClientAndroid, Object onAccept);
     private native void nativeStart(long nativeClientAndroid, String initialUrl,
-            String[] parameterNames, String[] parameterValues);
+            String experimentIds, String[] parameterNames, String[] parameterValues);
     private native void nativeOnAccessToken(
             long nativeClientAndroid, boolean success, String accessToken);
     private native String nativeGetPrimaryAccountName(long nativeClientAndroid);

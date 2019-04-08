@@ -15,6 +15,7 @@
 #include "components/autofill_assistant/browser/mock_ui_controller.h"
 #include "components/autofill_assistant/browser/mock_web_controller.h"
 #include "components/autofill_assistant/browser/service.h"
+#include "components/autofill_assistant/browser/trigger_context.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
@@ -103,8 +104,8 @@ class ControllerTest : public testing::Test {
     ON_CALL(*mock_service_, OnGetActions(_, _, _, _, _, _))
         .WillByDefault(RunOnceCallback<5>(true, ""));
 
-    ON_CALL(*mock_service_, OnGetNextActions(_, _, _, _))
-        .WillByDefault(RunOnceCallback<3>(true, ""));
+    ON_CALL(*mock_service_, OnGetNextActions(_, _, _, _, _))
+        .WillByDefault(RunOnceCallback<4>(true, ""));
 
     ON_CALL(mock_ui_controller_, OnStateChanged(_))
         .WillByDefault(Invoke([this](AutofillAssistantState state) {
@@ -144,7 +145,7 @@ class ControllerTest : public testing::Test {
   void Start() { Start("http://initialurl.com"); }
 
   void Start(const std::string& url) {
-    controller_->Start(GURL(url), /* parameters= */ {});
+    controller_->Start(GURL(url), std::make_unique<TriggerContext>());
   }
 
   void SetLastCommittedUrl(const GURL& url) {
@@ -401,13 +402,16 @@ TEST_F(ControllerTest, RefreshScriptWhenDomainChanges) {
 
 TEST_F(ControllerTest, ForwardParameters) {
   EXPECT_CALL(*mock_service_,
-              OnGetScriptsForUrl(_, Contains(Pair("a", "b")), _))
+              OnGetScriptsForUrl(_,
+                                 Field(&TriggerContext::script_parameters,
+                                       Contains(Pair("a", "b"))),
+                                 _))
       .WillOnce(RunOnceCallback<2>(true, ""));
 
   GURL initialUrl("http://example.com/");
-  std::map<std::string, std::string> parameters;
-  parameters["a"] = "b";
-  controller_->Start(initialUrl, parameters);
+  std::unique_ptr<TriggerContext> context(new TriggerContext);
+  context->script_parameters["a"] = "b";
+  controller_->Start(initialUrl, std::move(context));
 }
 
 TEST_F(ControllerTest, Autostart) {
@@ -499,7 +503,7 @@ TEST_F(ControllerTest, InitialUrlLoads) {
   EXPECT_CALL(*mock_service_, OnGetScriptsForUrl(Eq(initialUrl), _, _))
       .WillOnce(RunOnceCallback<2>(true, ""));
 
-  controller_->Start(initialUrl, /* parameters= */ {});
+  controller_->Start(initialUrl, std::make_unique<TriggerContext>());
 }
 
 TEST_F(ControllerTest, CookieExperimentEnabled) {
@@ -511,9 +515,9 @@ TEST_F(ControllerTest, CookieExperimentEnabled) {
   EXPECT_CALL(*mock_service_, OnGetScriptsForUrl(Eq(initialUrl), _, _))
       .WillOnce(RunOnceCallback<2>(true, ""));
 
-  std::map<std::string, std::string> parameters;
-  parameters.insert(std::make_pair("EXP_COOKIE", "1"));
-  controller_->Start(initialUrl, parameters);
+  std::unique_ptr<TriggerContext> trigger_context(new TriggerContext);
+  trigger_context->script_parameters.insert(std::make_pair("EXP_COOKIE", "1"));
+  controller_->Start(initialUrl, std::move(trigger_context));
 
   // TODO(crbug.com): Make IsCookieExperimentEnabled private and remove this
   // test when we pass the cookie data along in the initial request so that it

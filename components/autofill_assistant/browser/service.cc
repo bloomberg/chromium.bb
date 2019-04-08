@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
+#include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -96,21 +97,20 @@ Service::Service(const std::string& api_key,
 
 Service::~Service() {}
 
-void Service::GetScriptsForUrl(
-    const GURL& url,
-    const std::map<std::string, std::string>& parameters,
-    ResponseCallback callback) {
+void Service::GetScriptsForUrl(const GURL& url,
+                               const TriggerContext* trigger_context,
+                               ResponseCallback callback) {
   DCHECK(url.is_valid());
 
-  SendRequest(AddLoader(
-      script_server_url_,
-      ProtocolUtils::CreateGetScriptsRequest(url, parameters, client_context_),
-      std::move(callback)));
+  SendRequest(AddLoader(script_server_url_,
+                        ProtocolUtils::CreateGetScriptsRequest(
+                            url, *trigger_context, client_context_),
+                        std::move(callback)));
 }
 
 void Service::GetActions(const std::string& script_path,
                          const GURL& url,
-                         const std::map<std::string, std::string>& parameters,
+                         const TriggerContext* trigger_context,
                          const std::string& global_payload,
                          const std::string& script_payload,
                          ResponseCallback callback) {
@@ -118,21 +118,23 @@ void Service::GetActions(const std::string& script_path,
 
   SendRequest(AddLoader(script_action_server_url_,
                         ProtocolUtils::CreateInitialScriptActionsRequest(
-                            script_path, url, parameters, global_payload,
+                            script_path, url, *trigger_context, global_payload,
                             script_payload, client_context_),
                         std::move(callback)));
 }
 
 void Service::GetNextActions(
+    const TriggerContext* trigger_context,
     const std::string& previous_global_payload,
     const std::string& previous_script_payload,
     const std::vector<ProcessedActionProto>& processed_actions,
     ResponseCallback callback) {
-  SendRequest(AddLoader(script_action_server_url_,
-                        ProtocolUtils::CreateNextScriptActionsRequest(
-                            previous_global_payload, previous_script_payload,
-                            processed_actions, client_context_),
-                        std::move(callback)));
+  SendRequest(AddLoader(
+      script_action_server_url_,
+      ProtocolUtils::CreateNextScriptActionsRequest(
+          *trigger_context, previous_global_payload, previous_script_payload,
+          processed_actions, client_context_),
+      std::move(callback)));
 }
 
 void Service::SendRequest(Loader* loader) {

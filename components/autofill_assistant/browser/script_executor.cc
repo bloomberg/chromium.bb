@@ -112,7 +112,7 @@ void ScriptExecutor::Run(RunScriptCallback callback) {
 
   DVLOG(2) << "GetActions for " << delegate_->GetCurrentURL().host();
   delegate_->GetService()->GetActions(
-      script_path_, delegate_->GetCurrentURL(), delegate_->GetParameters(),
+      script_path_, delegate_->GetCurrentURL(), delegate_->GetTriggerContext(),
       last_global_payload_, last_script_payload_,
       base::BindOnce(&ScriptExecutor::OnGetActions,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -524,7 +524,8 @@ void ScriptExecutor::ProcessAction(Action* action) {
 
 void ScriptExecutor::GetNextActions() {
   delegate_->GetService()->GetNextActions(
-      last_global_payload_, last_script_payload_, processed_actions_,
+      delegate_->GetTriggerContext(), last_global_payload_,
+      last_script_payload_, processed_actions_,
       base::BindOnce(&ScriptExecutor::OnGetActions,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -655,7 +656,8 @@ void ScriptExecutor::WaitWithInterrupts::RunChecks(
 
     interrupt->precondition->Check(
         main_script_->delegate_->GetCurrentURL(), batch_element_checker_.get(),
-        main_script_->delegate_->GetParameters(), *main_script_->scripts_state_,
+        main_script_->delegate_->GetTriggerContext()->script_parameters,
+        *main_script_->scripts_state_,
         base::BindOnce(&WaitWithInterrupts::OnPreconditionCheckDone,
                        weak_ptr_factory_.GetWeakPtr(),
                        base::Unretained(interrupt)));

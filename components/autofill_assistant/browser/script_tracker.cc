@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/script_executor.h"
+#include "components/autofill_assistant/browser/trigger_context.h"
 
 namespace autofill_assistant {
 
@@ -80,8 +81,8 @@ void ScriptTracker::CheckScripts() {
       continue;
 
     script->precondition->Check(
-        url, batch_element_checker_.get(), delegate_->GetParameters(),
-        scripts_state_,
+        url, batch_element_checker_.get(),
+        delegate_->GetTriggerContext()->script_parameters, scripts_state_,
         base::BindOnce(&ScriptTracker::OnPreconditionCheck,
                        weak_ptr_factory_.GetWeakPtr(), script));
   }
