@@ -35,12 +35,16 @@
       'Linux FYI Release (AMD R7 240)',
       # Disabled due to numerous ES2_VULKAN failures crbug.com/940750
       'Linux FYI Experimental Release (Intel HD 630)',
+      # Temporarily disabled due to bad NVIDIA driver upgrade crbug.com/950542
+      'Linux FYI Debug (NVIDIA)',
+      'Linux FYI GPU TSAN Release',
     ],
   },
   'angle_perftests': {
     'remove_from': [
       'Android FYI Release (Nexus 5)',  # crbug.com/915429
       'Android FYI Release (Nexus 6)',  # anglebug.com/2433
+      'Linux FYI GPU TSAN Release',  # crbug.com/950542
     ],
   },
   'angle_unittests': {
