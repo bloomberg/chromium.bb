@@ -160,4 +160,4 @@ interface CanvasRenderingContext2D {
 
 };
 
-CanvasRenderingContext2D implements CanvasPath;
+CanvasRenderingContext2D includes CanvasPath;

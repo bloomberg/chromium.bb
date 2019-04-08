@@ -45,7 +45,7 @@ interface HTMLLinkElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString rev;
     [CEReactions, Reflect] attribute DOMString target;
 
-    // HTMLLinkElement implements LinkStyle
+    // HTMLLinkElement includes LinkStyle
     // https://drafts.csswg.org/cssom/#the-linkstyle-interface
     readonly attribute StyleSheet? sheet;
 

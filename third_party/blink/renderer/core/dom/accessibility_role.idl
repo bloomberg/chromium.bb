@@ -10,4 +10,4 @@
   [CEReactions, Reflect] attribute DOMString? role;
 };
 
-Element implements AccessibilityRole;
+Element includes AccessibilityRole;

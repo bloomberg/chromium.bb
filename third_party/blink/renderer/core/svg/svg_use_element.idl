@@ -32,4 +32,4 @@ interface SVGUseElement : SVGGraphicsElement {
     [MeasureAs=SVG1DOMUseElement] readonly attribute SVGAnimatedLength   height;
 };
 
-SVGUseElement implements SVGURIReference;
+SVGUseElement includes SVGURIReference;

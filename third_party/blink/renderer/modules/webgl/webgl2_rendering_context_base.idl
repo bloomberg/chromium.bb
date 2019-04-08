@@ -535,4 +535,4 @@ interface mixin WebGL2RenderingContextBase {
     void readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, [AllowShared] ArrayBufferView dstData, GLintptr offset);
     void readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLintptr offset);
 };
-WebGL2RenderingContextBase implements WebGLRenderingContextBase;
+WebGL2RenderingContextBase includes WebGLRenderingContextBase;

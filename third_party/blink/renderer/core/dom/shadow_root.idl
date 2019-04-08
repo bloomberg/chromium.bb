@@ -33,4 +33,4 @@ interface ShadowRoot : DocumentFragment {
     readonly attribute boolean delegatesFocus;
 };
 
-ShadowRoot implements DocumentOrShadowRoot;
+ShadowRoot includes DocumentOrShadowRoot;
