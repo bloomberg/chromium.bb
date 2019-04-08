@@ -10,6 +10,8 @@
 #include "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/dom_distiller/core/url_constants.h"
+#include "components/services/patch/patch_service.h"
+#include "components/services/patch/public/interfaces/constants.mojom.h"
 #include "components/services/unzip/public/interfaces/constants.mojom.h"
 #include "components/services/unzip/unzip_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -236,6 +238,10 @@ std::unique_ptr<service_manager::Service> ChromeWebClient::HandleServiceRequest(
   if (service_name == unzip::mojom::kServiceName) {
     // The Unzip service is used by the component updater.
     return std::make_unique<unzip::UnzipService>(std::move(request));
+  }
+  if (service_name == patch::mojom::kServiceName) {
+    // The Patch service is used by the component updater.
+    return std::make_unique<patch::PatchService>(std::move(request));
   }
 
   return nullptr;
