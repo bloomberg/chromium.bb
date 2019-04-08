@@ -34,8 +34,8 @@ class PromptActionTest : public testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
 
   void SetUp() override {
-    ON_CALL(mock_web_controller_, OnElementCheck(_, _, _))
-        .WillByDefault(RunOnceCallback<2>(false));
+    ON_CALL(mock_web_controller_, OnElementCheck(_, _))
+        .WillByDefault(RunOnceCallback<1>(false));
     ON_CALL(mock_web_controller_, OnGetFieldValue(_, _))
         .WillByDefault(RunOnceCallback<1>(false, ""));
 
@@ -120,14 +120,14 @@ TEST_F(PromptActionTest, ShowOnlyIfElementExists) {
   ASSERT_THAT(chips_, Pointee(IsEmpty()));
 
   EXPECT_CALL(mock_web_controller_,
-              OnElementCheck(kExistenceCheck, Eq(Selector({"element"})), _))
-      .WillRepeatedly(RunOnceCallback<2>(true));
+              OnElementCheck(Eq(Selector({"element"})), _))
+      .WillRepeatedly(RunOnceCallback<1>(true));
   task_env_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   ASSERT_THAT(chips_, Pointee(SizeIs(1)));
 
   EXPECT_CALL(mock_web_controller_,
-              OnElementCheck(kExistenceCheck, Eq(Selector({"element"})), _))
-      .WillRepeatedly(RunOnceCallback<2>(false));
+              OnElementCheck(Eq(Selector({"element"})), _))
+      .WillRepeatedly(RunOnceCallback<1>(false));
   task_env_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   ASSERT_THAT(chips_, Pointee(IsEmpty()));
 }
@@ -142,8 +142,8 @@ TEST_F(PromptActionTest, AutoSelect) {
   action.ProcessAction(&mock_action_delegate_, callback_.Get());
 
   EXPECT_CALL(mock_web_controller_,
-              OnElementCheck(kExistenceCheck, Eq(Selector({"element"})), _))
-      .WillRepeatedly(RunOnceCallback<2>(true));
+              OnElementCheck(Eq(Selector({"element"})), _))
+      .WillRepeatedly(RunOnceCallback<1>(true));
 
   EXPECT_CALL(mock_action_delegate_, CancelPrompt());
   EXPECT_CALL(
@@ -173,8 +173,8 @@ TEST_F(PromptActionTest, AutoSelectWithButton) {
   ASSERT_THAT(chips_, Pointee(SizeIs(1)));
 
   EXPECT_CALL(mock_web_controller_,
-              OnElementCheck(kExistenceCheck, Eq(Selector({"element"})), _))
-      .WillRepeatedly(RunOnceCallback<2>(true));
+              OnElementCheck(Eq(Selector({"element"})), _))
+      .WillRepeatedly(RunOnceCallback<1>(true));
   EXPECT_CALL(
       callback_,
       Run(Pointee(AllOf(Property(&ProcessedActionProto::status, ACTION_APPLIED),

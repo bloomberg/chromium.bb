@@ -100,6 +100,10 @@ std::ostream& operator<<(std::ostream& out,
       out << "ELEMENT_UNSTABLE";
       break;
 
+    case ProcessedActionStatusProto::INVALID_SELECTOR:
+      out << "INVALID_SELECTOR";
+      break;
+
     case ProcessedActionStatusProto::OPTION_VALUE_NOT_FOUND:
       out << "OPTION_VALUE_NOT_FOUND";
       break;

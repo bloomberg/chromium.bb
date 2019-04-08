@@ -21,6 +21,11 @@ struct Selector {
   // document.
   std::vector<std::string> selectors;
 
+  // If true, only match visible elements. Visible elements are elements that
+  // have a box model. The box model is not checked at all, so an element with a
+  // zero size bounding box is considered visible.
+  bool must_be_visible = false;
+
   // If non-empty, this must be a regular expression that matches the inner text
   // of the element(s) matching selectors.
   std::string inner_text_pattern;
@@ -28,7 +33,7 @@ struct Selector {
   // An optional pseudo type. This pseudo type is associated to the final
   // element matched by |selectors|, which means that we currently don't handle
   // matching an element inside a pseudo element.
-  PseudoType pseudo_type;
+  PseudoType pseudo_type = PseudoType::UNDEFINED;
 
   Selector();
   explicit Selector(const ElementReferenceProto& element);
@@ -43,6 +48,12 @@ struct Selector {
 
   bool operator<(const Selector& other) const;
   bool operator==(const Selector& other) const;
+
+  // Convenience function to update the visible field in a fluent style.
+  Selector& MustBeVisible() {
+    must_be_visible = true;
+    return *this;
+  }
 
   // The output operator. The actual selectors are only available in debug
   // builds.

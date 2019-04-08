@@ -26,16 +26,13 @@ using ::testing::Eq;
 class ElementPreconditionTest : public testing::Test {
  public:
   void SetUp() override {
+    ON_CALL(mock_web_controller_, OnElementCheck(Eq(Selector({"exists"})), _))
+        .WillByDefault(RunOnceCallback<1>(true));
+    ON_CALL(mock_web_controller_, OnElementCheck(Eq(Selector({"empty"})), _))
+        .WillByDefault(RunOnceCallback<1>(true));
     ON_CALL(mock_web_controller_,
-            OnElementCheck(kExistenceCheck, Eq(Selector({"exists"})), _))
-        .WillByDefault(RunOnceCallback<2>(true));
-    ON_CALL(mock_web_controller_,
-            OnElementCheck(kExistenceCheck, Eq(Selector({"empty"})), _))
-        .WillByDefault(RunOnceCallback<2>(true));
-    ON_CALL(
-        mock_web_controller_,
-        OnElementCheck(kExistenceCheck, Eq(Selector({"does_not_exist"})), _))
-        .WillByDefault(RunOnceCallback<2>(false));
+            OnElementCheck(Eq(Selector({"does_not_exist"})), _))
+        .WillByDefault(RunOnceCallback<1>(false));
 
     ON_CALL(mock_web_controller_, OnGetFieldValue(Eq(Selector({"exists"})), _))
         .WillByDefault(RunOnceCallback<1>(true, "foo"));

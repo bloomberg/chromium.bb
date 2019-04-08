@@ -60,16 +60,15 @@ class ActionDelegate {
   //
   // TODO(crbug.com/806868): Consider embedding that wait right into
   // WebController and eliminate double-lookup.
-  virtual void ShortWaitForElement(ElementCheckType check_type,
-                                   const Selector& selector,
+  virtual void ShortWaitForElement(const Selector& selector,
                                    base::OnceCallback<void(bool)> callback) = 0;
 
-  // Wait for up to |max_wait_time| for the element |selectors| to be visible on
-  // the page, then call |callback| with true if the element was visible, false
-  // otherwise.
+  // Wait for up to |max_wait_time| for the element |selectors| to match
+  // element(s) on the page, then call |callback| with true if at least an
+  // element matched, false otherwise.
   //
   // If |allow_interrupt| interrupts can run while waiting.
-  virtual void WaitForElementVisible(
+  virtual void WaitForElement(
       base::TimeDelta max_wait_time,
       bool allow_interrupt,
       const Selector& selector,

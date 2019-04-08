@@ -18,13 +18,11 @@ BatchElementChecker::BatchElementChecker() : weak_ptr_factory_(this) {}
 
 BatchElementChecker::~BatchElementChecker() {}
 
-void BatchElementChecker::AddElementCheck(ElementCheckType check_type,
-                                          const Selector& selector,
+void BatchElementChecker::AddElementCheck(const Selector& selector,
                                           ElementCheckCallback callback) {
   DCHECK(!started_);
 
-  element_check_callbacks_[std::make_pair(check_type, selector)].emplace_back(
-      std::move(callback));
+  element_check_callbacks_[selector].emplace_back(std::move(callback));
 }
 
 void BatchElementChecker::AddFieldValueCheck(const Selector& selector,
@@ -49,9 +47,8 @@ void BatchElementChecker::Run(WebController* web_controller,
       element_check_callbacks_.size() + get_field_value_callbacks_.size() + 1;
 
   for (auto& entry : element_check_callbacks_) {
-    const auto& call_arguments = entry.first;
     web_controller->ElementCheck(
-        call_arguments.first, call_arguments.second, /* strict= */ false,
+        entry.first, /* strict= */ false,
         base::BindOnce(
             &BatchElementChecker::OnElementChecked,
             weak_ptr_factory_.GetWeakPtr(),

@@ -124,14 +124,12 @@ void ScriptExecutor::RunElementChecks(BatchElementChecker* checker,
 }
 
 void ScriptExecutor::ShortWaitForElement(
-    ElementCheckType check_type,
     const Selector& selector,
     base::OnceCallback<void(bool)> callback) {
-  WaitForElement(kShortWaitForElementDeadline, check_type, selector,
-                 std::move(callback));
+  WaitForElement(kShortWaitForElementDeadline, selector, std::move(callback));
 }
 
-void ScriptExecutor::WaitForElementVisible(
+void ScriptExecutor::WaitForElement(
     base::TimeDelta max_wait_time,
     bool allow_interrupt,
     const Selector& selector,
@@ -139,13 +137,13 @@ void ScriptExecutor::WaitForElementVisible(
   if (!allow_interrupt || ordered_interrupts_->empty()) {
     // No interrupts to worry about. Just run normal wait.
     WaitForElement(
-        max_wait_time, kVisibilityCheck, selector,
+        max_wait_time, selector,
         base::BindOnce(&ScriptExecutor::OnWaitForElementVisibleNoInterrupts,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
     return;
   }
   wait_with_interrupts_ = std::make_unique<WaitWithInterrupts>(
-      this, max_wait_time, kVisibilityCheck, selector,
+      this, max_wait_time, selector,
       base::BindOnce(&ScriptExecutor::OnWaitForElementVisibleWithInterrupts,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   wait_with_interrupts_->Run();
@@ -553,20 +551,18 @@ void ScriptExecutor::OnProcessedAction(
 }
 
 void ScriptExecutor::WaitForElement(base::TimeDelta max_wait_time,
-                                    ElementCheckType check_type,
                                     const Selector& selector,
                                     base::OnceCallback<void(bool)> callback) {
   retry_timer_.Start(
       max_wait_time,
       base::BindRepeating(&ScriptExecutor::CheckForElement,
-                          weak_ptr_factory_.GetWeakPtr(), check_type, selector),
+                          weak_ptr_factory_.GetWeakPtr(), selector),
       std::move(callback));
 }
 
-void ScriptExecutor::CheckForElement(ElementCheckType check_type,
-                                     const Selector& selector,
+void ScriptExecutor::CheckForElement(const Selector& selector,
                                      base::OnceCallback<void(bool)> callback) {
-  delegate_->GetWebController()->ElementCheck(check_type, selector,
+  delegate_->GetWebController()->ElementCheck(selector,
                                               /* strict= */ false,
                                               std::move(callback));
 }
@@ -602,12 +598,10 @@ void ScriptExecutor::OnWaitForElementVisibleNoInterrupts(
 ScriptExecutor::WaitWithInterrupts::WaitWithInterrupts(
     ScriptExecutor* main_script,
     base::TimeDelta max_wait_time,
-    ElementCheckType check_type,
     const Selector& selector,
     WaitWithInterrupts::Callback callback)
     : main_script_(main_script),
       max_wait_time_(max_wait_time),
-      check_type_(check_type),
       selector_(selector),
       callback_(std::move(callback)),
       retry_timer_(kPeriodicElementCheck),
@@ -645,9 +639,8 @@ void ScriptExecutor::WaitWithInterrupts::RunChecks(
   runnable_interrupts_.clear();
   batch_element_checker_ = std::make_unique<BatchElementChecker>();
   batch_element_checker_->AddElementCheck(
-      check_type_, selector_,
-      base::BindOnce(&WaitWithInterrupts::OnElementCheckDone,
-                     base::Unretained(this)));
+      selector_, base::BindOnce(&WaitWithInterrupts::OnElementCheckDone,
+                                base::Unretained(this)));
   for (const auto* interrupt : *main_script_->ordered_interrupts_) {
     if (ran_interrupts_.find(interrupt->handle.path) != ran_interrupts_.end()) {
       // Only run an interrupt once in a WaitWithInterrupts, to avoid loops.

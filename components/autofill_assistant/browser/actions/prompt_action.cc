@@ -131,8 +131,8 @@ void PromptAction::UpdateChips() {
 
 bool PromptAction::HasAutoSelect() {
   for (int i = 0; i < proto_.prompt().choices_size(); i++) {
-    Selector selector(
-        proto_.prompt().choices(i).auto_select_if_element_exists());
+    Selector selector =
+        Selector(proto_.prompt().choices(i).auto_select_if_element_exists());
     if (!selector.empty())
       return true;
   }
@@ -145,15 +145,14 @@ void PromptAction::CheckAutoSelect() {
   // Wait as long as necessary for one of the elements to show up. This is
   // cancelled by CancelPrompt()
   for (int i = 0; i < proto_.prompt().choices_size(); i++) {
-    Selector selector(
-        proto_.prompt().choices(i).auto_select_if_element_exists());
+    Selector selector =
+        Selector(proto_.prompt().choices(i).auto_select_if_element_exists());
     if (selector.empty())
       continue;
 
     auto_select_checker_->AddElementCheck(
-        kExistenceCheck, selector,
-        base::BindOnce(&PromptAction::OnAutoSelectElementExists,
-                       weak_ptr_factory_.GetWeakPtr(), i));
+        selector, base::BindOnce(&PromptAction::OnAutoSelectElementExists,
+                                 weak_ptr_factory_.GetWeakPtr(), i));
   }
   delegate_->RunElementChecks(auto_select_checker_.get(),
                               base::BindOnce(&PromptAction::OnAutoSelectDone,

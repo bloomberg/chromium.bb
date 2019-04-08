@@ -21,10 +21,6 @@ using ::testing::IsEmpty;
 
 const char* kTargetWebsitePath = "/autofill_assistant_target_website.html";
 
-std::ostream& operator<<(std::ostream& out, ElementCheckType check_type) {
-  return out << (check_type == kVisibilityCheck ? "visibility" : "existence");
-}
-
 class WebControllerBrowserTest : public content::ContentBrowserTest,
                                  public content::WebContentsObserver {
  public:
@@ -74,29 +70,21 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     } while (page_is_loading || paint_occurred_during_last_loop_);
   }
 
-  void RunStrictElementCheck(ElementCheckType check_type,
-                             const Selector& selector,
-                             bool result) {
-    RunElementCheck(check_type, /* strict= */ true, selector, result);
+  void RunStrictElementCheck(const Selector& selector, bool result) {
+    RunElementCheck(/* strict= */ true, selector, result);
   }
 
-  void RunLaxElementCheck(ElementCheckType check_type,
-                          const Selector& selector,
-                          bool result) {
-    RunElementCheck(check_type, /* strict= */ false, selector, result);
+  void RunLaxElementCheck(const Selector& selector, bool result) {
+    RunElementCheck(/* strict= */ false, selector, result);
   }
 
-  void RunElementCheck(ElementCheckType check_type,
-                       bool strict,
-                       const Selector& selector,
-                       bool result) {
+  void RunElementCheck(bool strict, const Selector& selector, bool result) {
     std::vector<Selector> selectors{selector};
     std::vector<bool> results{result};
-    RunElementChecks(check_type, strict, selectors, results);
+    RunElementChecks(strict, selectors, results);
   }
 
-  void RunElementChecks(ElementCheckType check_type,
-                        bool strict,
+  void RunElementChecks(bool strict,
                         const std::vector<Selector>& selectors,
                         const std::vector<bool> results) {
     base::RunLoop run_loop;
@@ -104,23 +92,20 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     size_t pending_number_of_checks = selectors.size();
     for (size_t i = 0; i < selectors.size(); i++) {
       web_controller_->ElementCheck(
-          check_type, selectors[i], strict,
+          selectors[i], strict,
           base::BindOnce(&WebControllerBrowserTest::CheckElementVisibleCallback,
                          base::Unretained(this), run_loop.QuitClosure(),
-                         selectors[i], check_type, &pending_number_of_checks,
-                         results[i]));
+                         selectors[i], &pending_number_of_checks, results[i]));
     }
     run_loop.Run();
   }
 
   void CheckElementVisibleCallback(const base::Closure& done_callback,
                                    const Selector& selector,
-                                   ElementCheckType check_type,
                                    size_t* pending_number_of_checks_output,
                                    bool expected_result,
                                    bool result) {
-    EXPECT_EQ(expected_result, result)
-        << "selector: " << selector << " " << check_type;
+    EXPECT_EQ(expected_result, result) << "selector: " << selector;
     *pending_number_of_checks_output -= 1;
     if (*pending_number_of_checks_output == 0) {
       done_callback.Run();
@@ -159,7 +144,7 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   void WaitForElementRemove(const Selector& selector) {
     base::RunLoop run_loop;
     web_controller_->ElementCheck(
-        kExistenceCheck, selector, /* strict= */ false,
+        selector, /* strict= */ false,
         base::BindOnce(&WebControllerBrowserTest::OnWaitForElementRemove,
                        base::Unretained(this), run_loop.QuitClosure(),
                        selector));
@@ -251,13 +236,12 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     done_callback.Run();
   }
 
-  void FindElement(ElementCheckType check_type,
-                   const Selector& selector,
+  void FindElement(const Selector& selector,
                    ClientStatus* status_out,
                    WebController::FindElementResult* result_out) {
     base::RunLoop run_loop;
     web_controller_->FindElement(
-        selector, check_type, /* strict_mode= */ true,
+        selector, /* strict_mode= */ true,
         base::BindOnce(&WebControllerBrowserTest::OnFindElement,
                        base::Unretained(this), run_loop.QuitClosure(),
                        base::Unretained(status_out),
@@ -279,24 +263,22 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
       *result_out = *result;
   }
 
-  void FindElementAndCheck(ElementCheckType check_type,
-                           const Selector& selector,
+  void FindElementAndCheck(const Selector& selector,
                            size_t expected_index,
                            bool is_main_frame) {
-    SCOPED_TRACE(::testing::Message() << selector << " strict, " << check_type);
+    SCOPED_TRACE(::testing::Message() << selector << " strict");
     ClientStatus status;
     WebController::FindElementResult result;
-    FindElement(check_type, selector, &status, &result);
+    FindElement(selector, &status, &result);
     EXPECT_EQ(ACTION_APPLIED, status.proto_status());
     CheckFindElementResult(result, expected_index, is_main_frame);
   }
 
-  void FindElementExpectEmptyResult(ElementCheckType check_type,
-                                    const Selector& selector) {
-    SCOPED_TRACE(::testing::Message() << selector << " strict, " << check_type);
+  void FindElementExpectEmptyResult(const Selector& selector) {
+    SCOPED_TRACE(::testing::Message() << selector << " strict");
     ClientStatus status;
     WebController::FindElementResult result;
-    FindElement(check_type, selector, &status, &result);
+    FindElement(selector, &status, &result);
     EXPECT_EQ(ELEMENT_RESOLUTION_FAILED, status.proto_status());
     EXPECT_THAT(result.object_id, IsEmpty());
   }
@@ -447,105 +429,114 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ElementExistenceCheck) {
   // A visible element
-  RunLaxElementCheck(kExistenceCheck, Selector({"#button"}), true);
+  RunLaxElementCheck(Selector({"#button"}), true);
 
   // A hidden element.
-  RunLaxElementCheck(kExistenceCheck, Selector({"#hidden"}), true);
+  RunLaxElementCheck(Selector({"#hidden"}), true);
 
   // A nonexistent element.
-  RunLaxElementCheck(kExistenceCheck, Selector({"#doesnotexist"}), false);
+  RunLaxElementCheck(Selector({"#doesnotexist"}), false);
 
   // A pseudo-element
-  RunLaxElementCheck(kExistenceCheck,
-                     Selector({"#terms-and-conditions"}, BEFORE), true);
+  RunLaxElementCheck(Selector({"#terms-and-conditions"}, BEFORE), true);
 
   // An invisible pseudo-element
   //
   // TODO(b/129461999): This is wrong; it should exist. Fix it.
-  RunLaxElementCheck(kExistenceCheck, Selector({"#button"}, BEFORE), false);
+  RunLaxElementCheck(Selector({"#button"}, BEFORE), false);
 
   // A non-existent pseudo-element
-  RunLaxElementCheck(kExistenceCheck, Selector({"#button"}, AFTER), false);
+  RunLaxElementCheck(Selector({"#button"}, AFTER), false);
 }
 
-IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ElementVisibilityCheck) {
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, VisibilityRequirementCheck) {
   // A visible element
-  RunLaxElementCheck(kVisibilityCheck, Selector({"#button"}), true);
+  RunLaxElementCheck(Selector({"#button"}).MustBeVisible(), true);
 
   // A hidden element.
-  RunLaxElementCheck(kVisibilityCheck, Selector({"#hidden"}), false);
+  RunLaxElementCheck(Selector({"#hidden"}).MustBeVisible(), false);
 
   // A non-existent element
-  RunLaxElementCheck(kVisibilityCheck, Selector({"#doesnotexist"}), false);
+  RunLaxElementCheck(Selector({"#doesnotexist"}).MustBeVisible(), false);
 
   // A pseudo-element
-  RunLaxElementCheck(kVisibilityCheck,
-                     Selector({"#terms-and-conditions"}, BEFORE), true);
+  RunLaxElementCheck(
+      Selector({"#terms-and-conditions"}, BEFORE).MustBeVisible(), true);
 
   // An invisible pseudo-element
-  RunLaxElementCheck(kVisibilityCheck, Selector({"#button"}, BEFORE), false);
+  RunLaxElementCheck(Selector({"#button"}, BEFORE).MustBeVisible(), false);
 
   // A non-existent pseudo-element
-  RunLaxElementCheck(kVisibilityCheck, Selector({"#button"}, AFTER), false);
+  RunLaxElementCheck(Selector({"#button"}, AFTER).MustBeVisible(), false);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, MultipleVisibleElementCheck) {
   // both visible
-  RunLaxElementCheck(kVisibilityCheck, Selector({"#button,#select"}), true);
-  RunStrictElementCheck(kVisibilityCheck, Selector({"#button,#select"}), false);
+  RunLaxElementCheck(Selector({"#button,#select"}).MustBeVisible(), true);
+  RunStrictElementCheck(Selector({"#button,#select"}).MustBeVisible(), false);
 
   // one visible (first non-visible)
-  RunLaxElementCheck(kVisibilityCheck, Selector({"#hidden,#select"}), true);
-  RunStrictElementCheck(kVisibilityCheck, Selector({"#hidden,#select"}), true);
+  RunLaxElementCheck(Selector({"#hidden,#select"}).MustBeVisible(), true);
+  RunStrictElementCheck(Selector({"#hidden,#select"}).MustBeVisible(), true);
 
   // one visible (first visible)
-  RunLaxElementCheck(kVisibilityCheck, Selector({"#button,#hidden"}), true);
-  RunStrictElementCheck(kVisibilityCheck, Selector({"#hidden,#select"}), true);
+  RunLaxElementCheck(Selector({"#button,#hidden"}).MustBeVisible(), true);
+  RunStrictElementCheck(Selector({"#hidden,#select"}).MustBeVisible(), true);
 
   // one invisible, one non-existent
-  RunLaxElementCheck(kVisibilityCheck, Selector({"#doesnotexist,#hidden"}),
+  RunLaxElementCheck(Selector({"#doesnotexist,#hidden"}).MustBeVisible(),
                      false);
-  RunStrictElementCheck(kVisibilityCheck, Selector({"#doesnotexist,#hidden"}),
+  RunStrictElementCheck(Selector({"#doesnotexist,#hidden"}).MustBeVisible(),
                         false);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, InnerTextCondition) {
   Selector selector({"#with_inner_text span"});
-  RunLaxElementCheck(kVisibilityCheck, selector, true);
-  RunStrictElementCheck(kVisibilityCheck, selector, false);
+  selector.must_be_visible = true;
+  RunLaxElementCheck(selector, true);
+  RunStrictElementCheck(selector.MustBeVisible(), false);
 
   // No matches
   selector.inner_text_pattern = "no match";
-  RunLaxElementCheck(kExistenceCheck, selector, false);
-  RunLaxElementCheck(kVisibilityCheck, selector, false);
+  selector.must_be_visible = false;
+  RunLaxElementCheck(selector, false);
+  selector.must_be_visible = true;
+  RunLaxElementCheck(selector, false);
 
   // Matches exactly one visible element.
   selector.inner_text_pattern = "hello, world";
-  RunLaxElementCheck(kExistenceCheck, selector, true);
-  RunStrictElementCheck(kExistenceCheck, selector, true);
-  RunLaxElementCheck(kVisibilityCheck, selector, true);
-  RunStrictElementCheck(kVisibilityCheck, selector, true);
+  selector.must_be_visible = false;
+  RunLaxElementCheck(selector, true);
+  RunStrictElementCheck(selector, true);
+  selector.must_be_visible = true;
+  RunLaxElementCheck(selector, true);
+  RunStrictElementCheck(selector, true);
 
   // Matches two visible elements
   selector.inner_text_pattern = "^hello";
-  RunLaxElementCheck(kExistenceCheck, selector, true);
-  RunStrictElementCheck(kExistenceCheck, selector, false);
-  RunLaxElementCheck(kVisibilityCheck, selector, true);
-  RunStrictElementCheck(kVisibilityCheck, selector, false);
+  selector.must_be_visible = false;
+  RunLaxElementCheck(selector, true);
+  RunStrictElementCheck(selector, false);
+  selector.must_be_visible = true;
+  RunLaxElementCheck(selector, true);
+  RunStrictElementCheck(selector, false);
 
   // Matches one visible, one invisible element
   selector.inner_text_pattern = "world$";
-  RunLaxElementCheck(kExistenceCheck, selector, true);
-  RunStrictElementCheck(kExistenceCheck, selector, false);
-  RunLaxElementCheck(kVisibilityCheck, selector, true);
-  RunStrictElementCheck(kVisibilityCheck, selector, true);
+  selector.must_be_visible = false;
+  RunLaxElementCheck(selector, true);
+  RunStrictElementCheck(selector, false);
+  selector.must_be_visible = true;
+  RunLaxElementCheck(selector, true);
+  RunStrictElementCheck(selector, true);
 
   // Inner text conditions are applied before looking for the pseudo-type.
   selector.pseudo_type = PseudoType::BEFORE;
   selector.inner_text_pattern = "world";
-  RunLaxElementCheck(kExistenceCheck, selector, true);
+  selector.must_be_visible = false;
+  RunLaxElementCheck(selector, true);
   selector.inner_text_pattern = "before";  // matches :before content
-  RunLaxElementCheck(kExistenceCheck, selector, false);
+  RunLaxElementCheck(selector, false);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
@@ -554,6 +545,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
   std::vector<bool> results;
 
   Selector a_selector;
+  a_selector.must_be_visible = true;
   a_selector.selectors.emplace_back("#button");
   selectors.emplace_back(a_selector);
   results.emplace_back(true);
@@ -609,7 +601,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
   selectors.emplace_back(a_selector);
   results.emplace_back(false);
 
-  RunElementChecks(kVisibilityCheck, /* strict= */ false, selectors, results);
+  RunElementChecks(/* strict= */ false, selectors, results);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ClickElement) {
@@ -689,38 +681,44 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ClickPseudoElement) {
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FindElement) {
   Selector selector;
   selector.selectors.emplace_back("#button");
-  FindElementAndCheck(kExistenceCheck, selector, 0, true);
-  FindElementAndCheck(kVisibilityCheck, selector, 0, true);
+  FindElementAndCheck(selector, 0, true);
+  selector.must_be_visible = true;
+  FindElementAndCheck(selector, 0, true);
 
   // IFrame.
   selector.selectors.clear();
   selector.selectors.emplace_back("#iframe");
   selector.selectors.emplace_back("#button");
-  FindElementAndCheck(kExistenceCheck, selector, 0, false);
-  FindElementAndCheck(kVisibilityCheck, selector, 0, false);
+  selector.must_be_visible = false;
+  FindElementAndCheck(selector, 0, false);
+  selector.must_be_visible = true;
+  FindElementAndCheck(selector, 0, false);
 
   selector.selectors.clear();
   selector.selectors.emplace_back("#iframe");
   selector.selectors.emplace_back("[name=name]");
-  FindElementAndCheck(kExistenceCheck, selector, 0, false);
-  FindElementAndCheck(kVisibilityCheck, selector, 0, false);
+  selector.must_be_visible = false;
+  FindElementAndCheck(selector, 0, false);
+  selector.must_be_visible = true;
+  FindElementAndCheck(selector, 0, false);
 
   // IFrame inside IFrame.
   selector.selectors.clear();
   selector.selectors.emplace_back("#iframe");
   selector.selectors.emplace_back("#iframe");
   selector.selectors.emplace_back("#button");
-  FindElementAndCheck(kExistenceCheck, selector, 1, false);
-  FindElementAndCheck(kVisibilityCheck, selector, 1, false);
+  selector.must_be_visible = false;
+  FindElementAndCheck(selector, 1, false);
+  selector.must_be_visible = true;
+  FindElementAndCheck(selector, 1, false);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FindElementNotFound) {
-  FindElementExpectEmptyResult(kExistenceCheck, Selector({"#notfound"}));
-  FindElementExpectEmptyResult(kVisibilityCheck, Selector({"#hidden"}));
-  FindElementExpectEmptyResult(kExistenceCheck,
-                               Selector({"#iframe", "#iframe", "#notfound"}));
-  FindElementExpectEmptyResult(kVisibilityCheck,
-                               Selector({"#iframe", "#iframe", "#hidden"}));
+  FindElementExpectEmptyResult(Selector({"#notfound"}));
+  FindElementExpectEmptyResult(Selector({"#hidden"}).MustBeVisible());
+  FindElementExpectEmptyResult(Selector({"#iframe", "#iframe", "#notfound"}));
+  FindElementExpectEmptyResult(
+      Selector({"#iframe", "#iframe", "#hidden"}).MustBeVisible());
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FocusElement) {

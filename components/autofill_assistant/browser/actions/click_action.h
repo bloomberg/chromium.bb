@@ -29,6 +29,7 @@ class ClickAction : public Action {
 
   void OnWaitForElement(ActionDelegate* delegate,
                         ProcessActionCallback callback,
+                        const Selector& selector,
                         bool element_found);
   void OnClick(ProcessActionCallback callback, const ClientStatus& status);
 
