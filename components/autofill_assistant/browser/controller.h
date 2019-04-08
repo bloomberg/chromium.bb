@@ -21,6 +21,7 @@
 #include "components/autofill_assistant/browser/script_tracker.h"
 #include "components/autofill_assistant/browser/service.h"
 #include "components/autofill_assistant/browser/state.h"
+#include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/autofill_assistant/browser/ui_delegate.h"
 #include "components/autofill_assistant/browser/web_controller.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -58,7 +59,7 @@ class Controller : public ScriptExecutorDelegate,
 
   // Called when autofill assistant can start executing scripts.
   void Start(const GURL& initial_url,
-             const std::map<std::string, std::string>& parameters);
+             std::unique_ptr<TriggerContext> trigger_context);
 
   // Initiates a clean shutdown.
   //
@@ -80,7 +81,7 @@ class Controller : public ScriptExecutorDelegate,
   UiController* GetUiController() override;
   WebController* GetWebController() override;
   ClientMemory* GetClientMemory() override;
-  const std::map<std::string, std::string>& GetParameters() override;
+  const TriggerContext* GetTriggerContext() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   content::WebContents* GetWebContents() override;
   void SetTouchableElementArea(const ElementAreaProto& area) override;
@@ -213,7 +214,7 @@ class Controller : public ScriptExecutorDelegate,
 
   // Lazily instantiate in GetService().
   std::unique_ptr<Service> service_;
-  std::map<std::string, std::string> parameters_;
+  std::unique_ptr<TriggerContext> trigger_context_;
 
   // Lazily instantiate in GetClientMemory().
   std::unique_ptr<ClientMemory> memory_;

@@ -31,9 +31,8 @@ ClientMemory* FakeScriptExecutorDelegate::GetClientMemory() {
   return &memory_;
 }
 
-const std::map<std::string, std::string>&
-FakeScriptExecutorDelegate::GetParameters() {
-  return parameters_;
+TriggerContext* FakeScriptExecutorDelegate::GetTriggerContext() {
+  return &trigger_context_;
 }
 
 autofill::PersonalDataManager*

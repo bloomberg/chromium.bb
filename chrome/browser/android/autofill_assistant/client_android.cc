@@ -118,13 +118,17 @@ base::android::ScopedJavaLocalRef<jobject> ClientAndroid::GetJavaObject() {
 void ClientAndroid::Start(JNIEnv* env,
                           const JavaParamRef<jobject>& jcaller,
                           const JavaParamRef<jstring>& jinitial_url,
+                          const JavaParamRef<jstring>& jexperiment_ids,
                           const JavaParamRef<jobjectArray>& parameterNames,
                           const JavaParamRef<jobjectArray>& parameterValues) {
   CreateController();
   GURL initial_url(base::android::ConvertJavaStringToUTF8(env, jinitial_url));
   std::map<std::string, std::string> parameters;
   FillParametersFromJava(env, parameterNames, parameterValues, &parameters);
-  controller_->Start(initial_url, parameters);
+  controller_->Start(initial_url, std::make_unique<TriggerContext>(
+                                      std::move(parameters),
+                                      base::android::ConvertJavaStringToUTF8(
+                                          env, jexperiment_ids)));
 }
 
 void ClientAndroid::DestroyUI(

@@ -110,8 +110,9 @@ ClientMemory* Controller::GetClientMemory() {
   return memory_.get();
 }
 
-const std::map<std::string, std::string>& Controller::GetParameters() {
-  return parameters_;
+const TriggerContext* Controller::GetTriggerContext() {
+  DCHECK(trigger_context_);
+  return trigger_context_.get();
 }
 
 autofill::PersonalDataManager* Controller::GetPersonalDataManager() {
@@ -287,7 +288,7 @@ void Controller::GetOrCheckScripts() {
     script_domain_ = url.host();
     DVLOG(2) << "GetScripts for " << script_domain_;
     GetService()->GetScriptsForUrl(
-        url, parameters_,
+        url, trigger_context_.get(),
         base::BindOnce(&Controller::OnGetScripts, base::Unretained(this), url));
   } else {
     script_tracker()->CheckScripts();
@@ -516,7 +517,8 @@ void Controller::DisableAutostart() {
 void Controller::OnGetCookie(bool has_cookie) {
   if (has_cookie) {
     // This code is only active with the experiment parameter.
-    parameters_.insert(
+    // TODO(crbug.com/806868): Remove the cookie experiment.
+    trigger_context_->script_parameters.insert(
         std::make_pair(kWebsiteVisitedBeforeParameterName, kTrueValue));
     OnSetCookie(has_cookie);
     return;
@@ -547,7 +549,7 @@ void Controller::FinishStart() {
 
 void Controller::MaybeSetInitialDetails() {
   auto details = std::make_unique<Details>();
-  if (details->UpdateFromParameters(parameters_))
+  if (details->UpdateFromParameters(trigger_context_->script_parameters))
     SetDetails(std::move(details));
 }
 
@@ -557,12 +559,12 @@ bool Controller::NeedsUI() const {
 }
 
 void Controller::Start(const GURL& initial_url,
-                       const std::map<std::string, std::string>& parameters) {
+                       std::unique_ptr<TriggerContext> trigger_context) {
   if (state_ != AutofillAssistantState::INACTIVE) {
     NOTREACHED();
     return;
   }
-  parameters_ = parameters;
+  trigger_context_ = std::move(trigger_context);
   initial_url_ = initial_url;
   EnterState(AutofillAssistantState::STARTING);
   client_->ShowUI();
@@ -613,7 +615,7 @@ std::string Controller::GetDebugContext() {
 
   dict.SetKey("status", base::Value(status_message_));
   std::vector<base::Value> parameters_js;
-  for (const auto& entry : parameters_) {
+  for (const auto& entry : trigger_context_->script_parameters) {
     base::Value parameter_js = base::Value(base::Value::Type::DICTIONARY);
     parameter_js.SetKey(entry.first, base::Value(entry.second));
     parameters_js.push_back(std::move(parameter_js));
@@ -879,8 +881,9 @@ void Controller::OnWebContentsFocused(
 }
 
 bool Controller::IsCookieExperimentEnabled() const {
-  auto iter = parameters_.find(kCookieExperimentName);
-  return iter != parameters_.end() && iter->second == "1";
+  auto iter = trigger_context_->script_parameters.find(kCookieExperimentName);
+  return iter != trigger_context_->script_parameters.end() &&
+         iter->second == "1";
 }
 
 void Controller::OnTouchableAreaChanged(const std::vector<RectF>& areas) {

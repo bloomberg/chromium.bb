@@ -31,6 +31,7 @@ class Service;
 class UiController;
 class WebController;
 class ClientMemory;
+struct TriggerContext;
 
 class ScriptExecutorDelegate {
  public:
@@ -39,7 +40,7 @@ class ScriptExecutorDelegate {
   virtual UiController* GetUiController() = 0;
   virtual WebController* GetWebController() = 0;
   virtual ClientMemory* GetClientMemory() = 0;
-  virtual const std::map<std::string, std::string>& GetParameters() = 0;
+  virtual const TriggerContext* GetTriggerContext() = 0;
   virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
   virtual content::WebContents* GetWebContents() = 0;
   virtual void EnterState(AutofillAssistantState state) = 0;

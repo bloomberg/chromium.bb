@@ -46,19 +46,29 @@ void AddScriptParametersToProto(
   }
 }
 
+void FillClientContext(const ClientContextProto& client_context,
+                       const TriggerContext& trigger_context,
+                       ClientContextProto* proto) {
+  proto->CopyFrom(client_context);
+  if (!trigger_context.experiment_ids.empty()) {
+    proto->set_experiment_ids(trigger_context.experiment_ids);
+  }
+}
+
 }  // namespace
 
 // static
 std::string ProtocolUtils::CreateGetScriptsRequest(
     const GURL& url,
-    const std::map<std::string, std::string>& parameters,
+    const TriggerContext& trigger_context,
     const ClientContextProto& client_context) {
   DCHECK(!url.is_empty());
 
   SupportsScriptRequestProto script_proto;
   script_proto.set_url(url.spec());
-  script_proto.mutable_client_context()->CopyFrom(client_context);
-  AddScriptParametersToProto(parameters,
+  FillClientContext(client_context, trigger_context,
+                    script_proto.mutable_client_context());
+  AddScriptParametersToProto(trigger_context.script_parameters,
                              script_proto.mutable_script_parameters());
   std::string serialized_script_proto;
   bool success = script_proto.SerializeToString(&serialized_script_proto);
@@ -95,7 +105,7 @@ void ProtocolUtils::AddScript(const SupportedScriptProto& script_proto,
 std::string ProtocolUtils::CreateInitialScriptActionsRequest(
     const std::string& script_path,
     const GURL& url,
-    const std::map<std::string, std::string>& parameters,
+    const TriggerContext& trigger_context,
     const std::string& global_payload,
     const std::string& script_payload,
     const ClientContextProto& client_context) {
@@ -107,9 +117,11 @@ std::string ProtocolUtils::CreateInitialScriptActionsRequest(
   query->add_script_path(script_path);
   query->set_url(url.spec());
   query->set_policy(PolicyType::SCRIPT);
+  FillClientContext(client_context, trigger_context,
+                    request_proto.mutable_client_context());
   AddScriptParametersToProto(
-      parameters, initial_request_proto->mutable_script_parameters());
-  request_proto.mutable_client_context()->CopyFrom(client_context);
+      trigger_context.script_parameters,
+      initial_request_proto->mutable_script_parameters());
 
   if (!global_payload.empty()) {
     request_proto.set_global_payload(global_payload);
@@ -127,6 +139,7 @@ std::string ProtocolUtils::CreateInitialScriptActionsRequest(
 
 // static
 std::string ProtocolUtils::CreateNextScriptActionsRequest(
+    const TriggerContext& trigger_context,
     const std::string& global_payload,
     const std::string& script_payload,
     const std::vector<ProcessedActionProto>& processed_actions,
@@ -139,7 +152,8 @@ std::string ProtocolUtils::CreateNextScriptActionsRequest(
   for (const auto& processed_action : processed_actions) {
     next_request->add_processed_actions()->MergeFrom(processed_action);
   }
-  request_proto.mutable_client_context()->CopyFrom(client_context);
+  FillClientContext(client_context, trigger_context,
+                    request_proto.mutable_client_context());
   std::string serialized_request_proto;
   bool success = request_proto.SerializeToString(&serialized_request_proto);
   DCHECK(success);

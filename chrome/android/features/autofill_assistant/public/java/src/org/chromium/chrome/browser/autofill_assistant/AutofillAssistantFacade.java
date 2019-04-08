@@ -47,6 +47,9 @@ public class AutofillAssistantFacade {
     /** Pending intent sent by first-party apps. */
     private static final String PENDING_INTENT_NAME = INTENT_SPECIAL_PREFIX + "PENDING_INTENT";
 
+    /** Intent extra name for csv list of experiment ids. */
+    private static final String EXPERIMENT_IDS_NAME = INTENT_SPECIAL_PREFIX + "EXPERIMENT_IDS";
+
     /** Package names of trusted first-party apps, from the pending intent. */
     private static final String[] TRUSTED_CALLER_PACKAGES = {
             "com.google.android.googlequicksearchbox", // GSA
@@ -88,13 +91,20 @@ public class AutofillAssistantFacade {
     }
 
     private static void startNow(ChromeActivity activity, Tab tab) {
-        Map<String, String> parameters = extractParameters(activity.getInitialIntent().getExtras());
+        Bundle bundleExtras = activity.getInitialIntent().getExtras();
+        Map<String, String> parameters = extractParameters(bundleExtras);
         parameters.remove(PARAMETER_ENABLED);
         String initialUrl = activity.getInitialIntent().getDataString();
 
         AutofillAssistantClient client =
                 AutofillAssistantClient.fromWebContents(tab.getWebContents());
-        client.start(initialUrl, parameters, activity.getInitialIntent().getExtras());
+
+        String experimentIds = null;
+        if (bundleExtras != null) {
+            experimentIds = IntentUtils.safeGetString(bundleExtras, EXPERIMENT_IDS_NAME);
+        }
+        client.start(
+                initialUrl, parameters, experimentIds, activity.getInitialIntent().getExtras());
     }
 
     private static void getTab(ChromeActivity activity, Callback<Tab> callback) {
