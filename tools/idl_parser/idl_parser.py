@@ -259,7 +259,6 @@ class IDLParser(object):
                   | Dictionary
                   | Enum
                   | Typedef
-                  | ImplementsStatement
                   | IncludesStatement"""
     p[0] = p[1]
 
@@ -496,11 +495,6 @@ class IDLParser(object):
   def p_TypedefError(self, p):
     """Typedef : TYPEDEF error ';'"""
     p[0] = self.BuildError(p, 'Typedef')
-
-  def p_ImplementsStatement(self, p):
-    """ImplementsStatement : identifier IMPLEMENTS identifier ';'"""
-    name = self.BuildAttribute('REFERENCE', p[3])
-    p[0] = self.BuildNamed('Implements', p, 1, name)
 
   def p_IncludesStatement(self, p):
     """IncludesStatement : identifier INCLUDES identifier ';'"""
@@ -825,7 +819,6 @@ class IDLParser(object):
                            | DICTIONARY
                            | ENUM
                            | GETTER
-                           | IMPLEMENTS
                            | INCLUDES
                            | INHERIT
                            | LEGACYCALLER
