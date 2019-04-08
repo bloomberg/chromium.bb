@@ -23,6 +23,7 @@
 #include "ios/chrome/browser/ui/webui/suggestions_ui.h"
 #include "ios/chrome/browser/ui/webui/sync_internals/sync_internals_ui.h"
 #include "ios/chrome/browser/ui/webui/terms_ui.h"
+#include "ios/chrome/browser/ui/webui/translate_internals/translate_internals_ui.h"
 #include "ios/chrome/browser/ui/webui/ukm_internals_ui.h"
 #include "ios/chrome/browser/ui/webui/user_actions_ui.h"
 #include "ios/chrome/browser/ui/webui/version_ui.h"
@@ -89,6 +90,8 @@ WebUIIOSFactoryFunction GetWebUIIOSFactoryFunction(const GURL& url) {
     return &NewWebUIIOS<SignInInternalsUIIOS>;
   if (url.host_piece() == kChromeUISuggestionsHost)
     return &NewWebUIIOS<suggestions::SuggestionsUI>;
+  if (url.host_piece() == kChromeUITranslateInternalsHost)
+    return &NewWebUIIOS<TranslateInternalsUI>;
   if (url_host == kChromeUIURLKeyedMetricsHost)
     return &NewWebUIIOS<UkmInternalsUI>;
   if (url_host == kChromeUIUserActionsHost)
