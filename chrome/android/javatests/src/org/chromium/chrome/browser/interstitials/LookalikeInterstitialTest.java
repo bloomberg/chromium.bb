@@ -10,6 +10,7 @@ import android.support.test.filters.MediumTest;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -55,6 +56,7 @@ public class LookalikeInterstitialTest {
     }
 
     @Test
+    @Ignore("crbug/941488")
     public void testBasicInterstitialShown() throws Exception {
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
         ChromeTabUtils.loadUrlOnUiThread(tab,
