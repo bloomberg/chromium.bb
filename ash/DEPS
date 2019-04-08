@@ -59,8 +59,9 @@ include_rules = [
   "+chromeos/audio",
   "+chromeos/components/multidevice/logging/logging.h",
   "+chromeos/constants",
+  # TODO(stevenjb): Eliminate this. http://crbug.com/940810
+  "+chromeos/dbus/audio",
   "+chromeos/dbus/biod/biod_client.h",
-  "+chromeos/dbus/cras_audio_client.h",
   "+chromeos/dbus/dbus_thread_manager.h",
   "+chromeos/dbus/fake_power_manager_client.h",
   "+chromeos/dbus/hammerd",
@@ -68,7 +69,7 @@ include_rules = [
   "+chromeos/dbus/power_manager",
   "+chromeos/dbus/shill_device_client.h",
   "+chromeos/dbus/system_clock",
-  # TODO(jamescook): Eliminate this. http://crbug.com/644355
+  # TODO(stevenjb): Eliminate this. http://crbug.com/644355
   "+chromeos/network",
   "+chromeos/services/assistant/public" ,
   "+chromeos/services/assistant/test_support",

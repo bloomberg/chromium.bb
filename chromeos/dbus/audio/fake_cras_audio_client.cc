@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/fake_cras_audio_client.h"
+#include "chromeos/dbus/audio/fake_cras_audio_client.h"
 
 #include <utility>
 
@@ -205,7 +205,8 @@ void FakeCrasAudioClient::RemoveActiveInputNode(uint64_t node_id) {
 void FakeCrasAudioClient::SwapLeftRight(uint64_t node_id, bool swap) {}
 
 void FakeCrasAudioClient::SetGlobalOutputChannelRemix(
-    int32_t channels, const std::vector<double>& mixer) {}
+    int32_t channels,
+    const std::vector<double>& mixer) {}
 
 void FakeCrasAudioClient::AddActiveOutputNode(uint64_t node_id) {
   for (size_t i = 0; i < node_list_.size(); ++i) {

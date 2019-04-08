@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_AUDIO_NODE_H_
-#define CHROMEOS_DBUS_AUDIO_NODE_H_
+#ifndef CHROMEOS_DBUS_AUDIO_AUDIO_NODE_H_
+#define CHROMEOS_DBUS_AUDIO_AUDIO_NODE_H_
 
 #include <stdint.h>
 
@@ -52,4 +52,4 @@ typedef std::vector<AudioNode> AudioNodeList;
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_AUDIO_NODE_H_
+#endif  // CHROMEOS_DBUS_AUDIO_AUDIO_NODE_H_

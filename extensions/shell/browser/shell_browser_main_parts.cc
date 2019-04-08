@@ -64,7 +64,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/dbus/cras_audio_client.h"
+#include "chromeos/dbus/audio/cras_audio_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #elif defined(OS_LINUX)

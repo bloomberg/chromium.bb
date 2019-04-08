@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/audio_node.h"
+#include "chromeos/dbus/audio/audio_node.h"
 
 #include <stdint.h>
 
@@ -41,12 +41,8 @@ AudioNode::~AudioNode() = default;
 
 std::string AudioNode::ToString() const {
   std::string result;
-  base::StringAppendF(&result,
-                      "is_input = %s ",
-                      is_input ? "true" : "false");
-  base::StringAppendF(&result,
-                      "id = 0x%" PRIx64 " ",
-                      id);
+  base::StringAppendF(&result, "is_input = %s ", is_input ? "true" : "false");
+  base::StringAppendF(&result, "id = 0x%" PRIx64 " ", id);
   base::StringAppendF(&result, "stable_device_id_version = %d",
                       StableDeviceIdVersion());
   base::StringAppendF(&result, "stable_device_id_v1 = 0x%" PRIx64 " ",
@@ -54,15 +50,9 @@ std::string AudioNode::ToString() const {
   base::StringAppendF(&result, "stable_device_id_v2 = 0x%" PRIx64 " ",
                       stable_device_id_v2);
   base::StringAppendF(&result, "device_name = %s ", device_name.c_str());
-  base::StringAppendF(&result,
-                      "type = %s ",
-                      type.c_str());
-  base::StringAppendF(&result,
-                      "name = %s ",
-                      name.c_str());
-  base::StringAppendF(&result,
-                      "active = %s ",
-                      active ? "true" : "false");
+  base::StringAppendF(&result, "type = %s ", type.c_str());
+  base::StringAppendF(&result, "name = %s ", name.c_str());
+  base::StringAppendF(&result, "active = %s ", active ? "true" : "false");
   base::StringAppendF(&result, "plugged_time= %s ",
                       base::NumberToString(plugged_time).c_str());
 
