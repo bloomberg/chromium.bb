@@ -69,16 +69,11 @@ class PLATFORM_EXPORT ResourceLoader final
   USING_PRE_FINALIZER(ResourceLoader, Dispose);
 
  public:
-  static ResourceLoader* Create(ResourceFetcher*,
-                                ResourceLoadScheduler*,
-                                Resource*,
-                                uint32_t inflight_keepalive_bytes = 0);
-
   // Assumes ResourceFetcher and Resource are non-null.
   ResourceLoader(ResourceFetcher*,
                  ResourceLoadScheduler*,
                  Resource*,
-                 uint32_t inflight_keepalive_bytes);
+                 uint32_t inflight_keepalive_bytes = 0);
   ~ResourceLoader() override;
   void Trace(blink::Visitor*) override;
 

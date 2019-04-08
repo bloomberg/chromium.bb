@@ -33,6 +33,7 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
@@ -84,15 +85,10 @@ class MemoryCacheTest : public testing::Test {
  public:
   class FakeResource final : public Resource {
    public:
-    static FakeResource* Create(const char* url, ResourceType type) {
-      return Create(KURL(url), type);
-    }
-    static FakeResource* Create(const KURL& url, ResourceType type) {
-      ResourceRequest request(url);
-      ResourceLoaderOptions options;
-      return MakeGarbageCollected<FakeResource>(request, type, options);
-    }
-
+    FakeResource(const char* url, ResourceType type)
+        : FakeResource(KURL(url), type) {}
+    FakeResource(const KURL& url, ResourceType type)
+        : FakeResource(ResourceRequest(url), type, ResourceLoaderOptions()) {}
     FakeResource(const ResourceRequest& request,
                  ResourceType type,
                  const ResourceLoaderOptions& options)
@@ -103,7 +99,7 @@ class MemoryCacheTest : public testing::Test {
   void SetUp() override {
     // Save the global memory cache to restore it upon teardown.
     global_memory_cache_ = ReplaceMemoryCacheForTesting(
-        MemoryCache::Create(platform_->test_task_runner()));
+        MakeGarbageCollected<MemoryCache>(platform_->test_task_runner()));
     auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
     fetcher_ = MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
         *properties, MakeGarbageCollected<MockFetchContext>(),
@@ -363,19 +359,19 @@ TEST_F(MemoryCacheTest, MAYBE_ClientRemoval_MultipleResourceMaps) {
 }
 
 TEST_F(MemoryCacheTest, RemoveDuringRevalidation) {
-  FakeResource* resource1 =
-      FakeResource::Create("http://test/resource", ResourceType::kRaw);
+  auto* resource1 = MakeGarbageCollected<FakeResource>("http://test/resource",
+                                                       ResourceType::kRaw);
   GetMemoryCache()->Add(resource1);
 
-  FakeResource* resource2 =
-      FakeResource::Create("http://test/resource", ResourceType::kRaw);
+  auto* resource2 = MakeGarbageCollected<FakeResource>("http://test/resource",
+                                                       ResourceType::kRaw);
   GetMemoryCache()->Remove(resource1);
   GetMemoryCache()->Add(resource2);
   EXPECT_TRUE(GetMemoryCache()->Contains(resource2));
   EXPECT_FALSE(GetMemoryCache()->Contains(resource1));
 
-  FakeResource* resource3 =
-      FakeResource::Create("http://test/resource", ResourceType::kRaw);
+  auto* resource3 = MakeGarbageCollected<FakeResource>("http://test/resource",
+                                                       ResourceType::kRaw);
   GetMemoryCache()->Remove(resource2);
   GetMemoryCache()->Add(resource3);
   EXPECT_TRUE(GetMemoryCache()->Contains(resource3));
@@ -383,12 +379,12 @@ TEST_F(MemoryCacheTest, RemoveDuringRevalidation) {
 }
 
 TEST_F(MemoryCacheTest, ResourceMapIsolation) {
-  FakeResource* resource1 =
-      FakeResource::Create("http://test/resource", ResourceType::kRaw);
+  auto* resource1 = MakeGarbageCollected<FakeResource>("http://test/resource",
+                                                       ResourceType::kRaw);
   GetMemoryCache()->Add(resource1);
 
-  FakeResource* resource2 =
-      FakeResource::Create("http://test/resource", ResourceType::kRaw);
+  auto* resource2 = MakeGarbageCollected<FakeResource>("http://test/resource",
+                                                       ResourceType::kRaw);
   resource2->SetCacheIdentifier("foo");
   GetMemoryCache()->Add(resource2);
   EXPECT_TRUE(GetMemoryCache()->Contains(resource1));
@@ -401,8 +397,8 @@ TEST_F(MemoryCacheTest, ResourceMapIsolation) {
   EXPECT_EQ(resource2, GetMemoryCache()->ResourceForURL(url, "foo"));
   EXPECT_EQ(nullptr, GetMemoryCache()->ResourceForURL(NullURL()));
 
-  FakeResource* resource3 =
-      FakeResource::Create("http://test/resource", ResourceType::kRaw);
+  auto* resource3 = MakeGarbageCollected<FakeResource>("http://test/resource",
+                                                       ResourceType::kRaw);
   resource3->SetCacheIdentifier("foo");
   GetMemoryCache()->Remove(resource2);
   GetMemoryCache()->Add(resource3);
@@ -421,7 +417,7 @@ TEST_F(MemoryCacheTest, ResourceMapIsolation) {
 
 TEST_F(MemoryCacheTest, FragmentIdentifier) {
   const KURL url1 = KURL("http://test/resource#foo");
-  FakeResource* resource = FakeResource::Create(url1, ResourceType::kRaw);
+  auto* resource = MakeGarbageCollected<FakeResource>(url1, ResourceType::kRaw);
   GetMemoryCache()->Add(resource);
   EXPECT_TRUE(GetMemoryCache()->Contains(resource));
 
@@ -434,7 +430,7 @@ TEST_F(MemoryCacheTest, FragmentIdentifier) {
 TEST_F(MemoryCacheTest, RemoveURLFromCache) {
   const KURL url1 = KURL("http://test/resource1");
   Persistent<FakeResource> resource1 =
-      FakeResource::Create(url1, ResourceType::kRaw);
+      MakeGarbageCollected<FakeResource>(url1, ResourceType::kRaw);
   GetMemoryCache()->Add(resource1);
   EXPECT_TRUE(GetMemoryCache()->Contains(resource1));
 
@@ -442,7 +438,8 @@ TEST_F(MemoryCacheTest, RemoveURLFromCache) {
   EXPECT_FALSE(GetMemoryCache()->Contains(resource1));
 
   const KURL url2 = KURL("http://test/resource2#foo");
-  FakeResource* resource2 = FakeResource::Create(url2, ResourceType::kRaw);
+  auto* resource2 =
+      MakeGarbageCollected<FakeResource>(url2, ResourceType::kRaw);
   GetMemoryCache()->Add(resource2);
   EXPECT_TRUE(GetMemoryCache()->Contains(resource2));
 

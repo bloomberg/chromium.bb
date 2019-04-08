@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instance_counters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_info.h"
@@ -1879,8 +1880,8 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
   ImageResource* image_resource = ImageResource::CreateForTest(test_url);
 
   // Ensure that |image_resource| has a loader.
-  ResourceLoader* loader =
-      ResourceLoader::Create(fetcher, scheduler, image_resource);
+  auto* loader =
+      MakeGarbageCollected<ResourceLoader>(fetcher, scheduler, image_resource);
   ALLOW_UNUSED_LOCAL(loader);
 
   image_resource->NotifyStartLoad();

@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/loader/frame_or_imported_document.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
@@ -46,7 +47,7 @@ TEST(ResourceLoadObserverForFrameTest, MemoryCacheCertificateError) {
   resource_request.SetRequestContext(mojom::RequestContextType::IMAGE);
   ResourceResponse response(url);
   response.SetHasMajorCertificateErrors(true);
-  Resource* resource = MockResource::Create(resource_request);
+  auto* resource = MakeGarbageCollected<MockResource>(resource_request);
   resource->SetResponse(response);
 
   EXPECT_FALSE(client->IsDidDisplayContentWithCertificateErrorsCalled());

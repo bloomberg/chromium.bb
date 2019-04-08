@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/platform/graphics/test/fake_gles2_interface.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -75,8 +76,9 @@ class ImageBitmapTest : public testing::Test {
     image2_ = surface2->makeImageSnapshot();
 
     // Save the global memory cache to restore it upon teardown.
-    global_memory_cache_ = ReplaceMemoryCacheForTesting(MemoryCache::Create(
-        blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
+    global_memory_cache_ =
+        ReplaceMemoryCacheForTesting(MakeGarbageCollected<MemoryCache>(
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
 
     auto factory = [](FakeGLES2Interface* gl, bool* gpu_compositing_disabled)
         -> std::unique_ptr<WebGraphicsContext3DProvider> {
