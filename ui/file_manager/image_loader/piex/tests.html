@@ -150,6 +150,10 @@ piex wasm raw image preview / thumbnail test page
       return renderRGB(name, image);
   }
 
+  function removeNullBytes(string) {
+    return (string || '').replace(/\0/g, '');
+  }
+
   self.Module = {
     onRuntimeInitialized: piexModuleReady,
   };
@@ -196,7 +200,9 @@ piex wasm raw image preview / thumbnail test page
       let preview = imageBuffer.preview();
       let thumb = imageBuffer.thumbnail();
       time = performance.now() - time;
-      console.log('test:', image, result.maker, result.model);
+      const maker = removeNullBytes(result.maker);
+      const model = removeNullBytes(result.model);
+      console.log('test:', image, maker, model);
       window.images_ = 0;
       renderResult(image, preview);
       renderResult(image, thumb);
