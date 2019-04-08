@@ -47,10 +47,12 @@ namespace {
 
 constexpr int kDefaultDocumentCookie = 1234;
 
-class PrintPreviewObserver : PrintPreviewUI::TestingDelegate {
+class PrintPreviewObserver : PrintPreviewUI::TestDelegate {
  public:
   PrintPreviewObserver() { PrintPreviewUI::SetDelegateForTesting(this); }
-  ~PrintPreviewObserver() { PrintPreviewUI::SetDelegateForTesting(nullptr); }
+  ~PrintPreviewObserver() override {
+    PrintPreviewUI::SetDelegateForTesting(nullptr);
+  }
 
   void WaitUntilPreviewIsReady() {
     if (rendered_page_count_ >= total_page_count_)
@@ -62,12 +64,12 @@ class PrintPreviewObserver : PrintPreviewUI::TestingDelegate {
   }
 
  private:
-  // PrintPreviewUI::TestingDelegate implementation.
+  // PrintPreviewUI::TestDelegate implementation.
   void DidGetPreviewPageCount(int page_count) override {
     total_page_count_ = page_count;
   }
 
-  // PrintPreviewUI::TestingDelegate implementation.
+  // PrintPreviewUI::TestDelegate implementation.
   void DidRenderPreviewPage(content::WebContents* preview_dialog) override {
     ++rendered_page_count_;
     CHECK(rendered_page_count_ <= total_page_count_);

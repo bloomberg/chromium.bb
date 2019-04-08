@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -185,13 +186,16 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
       int request_id);
 
   // Allows tests to wait until the print preview dialog is loaded.
-  class TestingDelegate {
+  class TestDelegate {
    public:
     virtual void DidGetPreviewPageCount(int page_count) = 0;
     virtual void DidRenderPreviewPage(content::WebContents* preview_dialog) = 0;
+
+   protected:
+    virtual ~TestDelegate() = default;
   };
 
-  static void SetDelegateForTesting(TestingDelegate* delegate);
+  static void SetDelegateForTesting(TestDelegate* delegate);
 
   // Allows for tests to set a file path to print a PDF to. This also initiates
   // the printing without having to click a button on the print preview dialog.

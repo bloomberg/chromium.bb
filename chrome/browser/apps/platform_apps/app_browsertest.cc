@@ -123,22 +123,22 @@ class TabsAddedNotificationObserver
 };
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-class ScopedPreviewTestingDelegate : printing::PrintPreviewUI::TestingDelegate {
+class ScopedPreviewTestDelegate : printing::PrintPreviewUI::TestDelegate {
  public:
-  ScopedPreviewTestingDelegate() {
+  ScopedPreviewTestDelegate() {
     printing::PrintPreviewUI::SetDelegateForTesting(this);
   }
 
-  ~ScopedPreviewTestingDelegate() {
-    printing::PrintPreviewUI::SetDelegateForTesting(NULL);
+  ~ScopedPreviewTestDelegate() override {
+    printing::PrintPreviewUI::SetDelegateForTesting(nullptr);
   }
 
-  // PrintPreviewUI::TestingDelegate implementation.
+  // PrintPreviewUI::TestDelegate implementation.
   void DidGetPreviewPageCount(int page_count) override {
     total_page_count_ = page_count;
   }
 
-  // PrintPreviewUI::TestingDelegate implementation.
+  // PrintPreviewUI::TestDelegate implementation.
   void DidRenderPreviewPage(content::WebContents* preview_dialog) override {
     dialog_size_ = preview_dialog->GetContainerBounds().size();
     ++rendered_page_count_;
@@ -1143,7 +1143,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DISABLED_WebContentsHasFocus) {
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
                        WindowDotPrintShouldBringUpPrintPreview) {
-  ScopedPreviewTestingDelegate preview_delegate;
+  ScopedPreviewTestDelegate preview_delegate;
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/print_api")) << message_;
   preview_delegate.WaitUntilPreviewIsReady();
 }
@@ -1151,7 +1151,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
 // This test verifies that http://crbug.com/297179 is fixed.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
                        DISABLED_ClosingWindowWhilePrintingShouldNotCrash) {
-  ScopedPreviewTestingDelegate preview_delegate;
+  ScopedPreviewTestDelegate preview_delegate;
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/print_api")) << message_;
   preview_delegate.WaitUntilPreviewIsReady();
   GetFirstAppWindow()->GetBaseWindow()->Close();
