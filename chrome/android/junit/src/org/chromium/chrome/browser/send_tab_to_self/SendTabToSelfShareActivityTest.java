@@ -76,9 +76,8 @@ public class SendTabToSelfShareActivityTest {
     @SmallTest
     public void testIsFeatureAvailable() {
         boolean expected = true;
-        when(mTab.getProfile()).thenReturn(mProfile);
         when(mTab.getWebContents()).thenReturn(mWebContents);
-        when(mNativeMock.isFeatureAvailable(eq(mProfile), eq(mWebContents))).thenReturn(expected);
+        when(mNativeMock.isFeatureAvailable(eq(mWebContents))).thenReturn(expected);
 
         boolean actual = SendTabToSelfShareActivity.featureIsAvailable(mTab);
         Assert.assertEquals(expected, actual);

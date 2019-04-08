@@ -48,14 +48,26 @@ bool IsContentRequirementsMet(const GURL& url, Profile* profile) {
   return is_http_or_https && !is_native_page && !is_incognito_mode;
 }
 
-bool ShouldOfferFeature(Profile* profile, content::WebContents* web_contents) {
-  if (!profile || !web_contents) {
+bool ShouldOfferFeature(content::WebContents* web_contents) {
+  if (!web_contents)
     return false;
-  }
-
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   return IsFlagEnabled() && IsUserSyncTypeActive(profile) &&
          IsSyncingOnMultipleDevices(profile) &&
          IsContentRequirementsMet(web_contents->GetURL(), profile);
+}
+
+bool ShouldOfferFeatureForLink(content::WebContents* web_contents,
+                               const GURL& link_url) {
+  if (!web_contents)
+    return false;
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  return IsFlagEnabled() && IsUserSyncTypeActive(profile) &&
+         IsSyncingOnMultipleDevices(profile) &&
+         (IsContentRequirementsMet(web_contents->GetURL(), profile) ||
+          IsContentRequirementsMet(link_url, profile));
 }
 
 }  // namespace send_tab_to_self

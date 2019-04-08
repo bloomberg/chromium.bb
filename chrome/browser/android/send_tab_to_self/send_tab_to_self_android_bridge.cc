@@ -167,17 +167,14 @@ static void JNI_SendTabToSelfAndroidBridge_DismissEntry(
   }
 }
 
-// Returns whether the feature is available for the specified |profile| and
-// |web_contents|.
+// Returns whether the feature is available for the specified |web_contents|.
 static jboolean JNI_SendTabToSelfAndroidBridge_IsFeatureAvailable(
     JNIEnv* env,
-    const JavaParamRef<jobject>& j_profile,
     const JavaParamRef<jobject>& j_web_contents) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(j_web_contents);
 
-  return ShouldOfferFeature(profile, web_contents);
+  return ShouldOfferFeature(web_contents);
 }
 
 }  // namespace send_tab_to_self

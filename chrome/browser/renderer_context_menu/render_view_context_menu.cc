@@ -357,10 +357,11 @@ const struct UmaEnumCommandIdPair {
     {100, -1, IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE_ONCE},
     {101, -1, IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS},
     {102, -1, IDC_SEND_TAB_TO_SELF},
+    {103, -1, IDC_CONTENT_LINK_SEND_TAB_TO_SELF},
     // Add new items here and use |enum_id| from the next line.
     // Also, add new items to RenderViewContextMenuItem enum in
     // tools/metrics/histograms/enums.xml.
-    {103, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
+    {104, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
                    // was added.
 };
 
@@ -1159,6 +1160,18 @@ void RenderViewContextMenu::AppendLinkItems() {
       }
     }
 #endif  // !defined(OS_CHROMEOS)
+
+    if (browser && send_tab_to_self::ShouldOfferFeatureForLink(
+                       browser->tab_strip_model()->GetActiveWebContents(),
+                       params_.link_url)) {
+      send_tab_to_self::RecordSendTabToSelfClickResult(
+          send_tab_to_self::kLinkMenu, SendTabToSelfClickResult::kShowItem);
+      menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+      menu_model_.AddItemWithStringIdAndIcon(IDC_CONTENT_LINK_SEND_TAB_TO_SELF,
+                                             IDS_LINK_MENU_SEND_TAB_TO_SELF,
+                                             *send_tab_to_self::GetImageSkia());
+    }
+
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVELINKAS,
                                     IDS_CONTENT_CONTEXT_SAVELINKAS);
@@ -1355,7 +1368,6 @@ void RenderViewContextMenu::AppendPageItems() {
 
   if (GetBrowser() &&
       send_tab_to_self::ShouldOfferFeature(
-          GetBrowser()->profile(),
           GetBrowser()->tab_strip_model()->GetActiveWebContents())) {
     send_tab_to_self::RecordSendTabToSelfClickResult(
         send_tab_to_self::kContentMenu, SendTabToSelfClickResult::kShowItem);
@@ -1821,6 +1833,11 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
     case IDC_SEND_TAB_TO_SELF:
       return true;
+
+    case IDC_CONTENT_LINK_SEND_TAB_TO_SELF:
+      return send_tab_to_self::IsContentRequirementsMet(
+          params_.link_url, GetBrowser()->profile());
+
     case IDC_CHECK_SPELLING_WHILE_TYPING:
       return prefs->GetBoolean(spellcheck::prefs::kSpellCheckEnable);
 
@@ -2036,7 +2053,14 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_SEND_TAB_TO_SELF:
       send_tab_to_self::RecordSendTabToSelfClickResult(
           send_tab_to_self::kContentMenu, SendTabToSelfClickResult::kClickItem);
-      send_tab_to_self::CreateNewEntry(embedder_web_contents_, GetProfile());
+      send_tab_to_self::CreateNewEntry(embedder_web_contents_);
+      break;
+
+    case IDC_CONTENT_LINK_SEND_TAB_TO_SELF:
+      send_tab_to_self::RecordSendTabToSelfClickResult(
+          send_tab_to_self::kLinkMenu, SendTabToSelfClickResult::kClickItem);
+      send_tab_to_self::CreateNewEntry(embedder_web_contents_,
+                                       params_.link_url);
       break;
 
     case IDC_RELOAD:

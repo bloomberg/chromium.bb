@@ -84,7 +84,7 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
                           IDS_TAB_CXMENU_SOUND_UNMUTE_SITE, num_affected_tabs));
 
   if (send_tab_to_self::ShouldOfferFeature(
-          tab_strip->profile(), tab_strip->GetWebContentsAt(index))) {
+          tab_strip->GetWebContentsAt(index))) {
     send_tab_to_self::RecordSendTabToSelfClickResult(
         send_tab_to_self::kTabMenu, SendTabToSelfClickResult::kShowItem);
     AddSeparator(ui::NORMAL_SEPARATOR);
