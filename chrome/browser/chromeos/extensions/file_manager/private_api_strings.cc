@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/file_manager/file_manager_string_util.h"
 #include "chrome/browser/chromeos/file_manager/open_with_browser.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -55,6 +56,11 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
   dict->SetBoolean(
       "MY_FILES_VOLUME_ENABLED",
       base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume));
+  dict->SetBoolean("PLUGIN_VM_ENABLED",
+                   plugin_vm::IsPluginVmAllowedForProfile(
+                       Profile::FromBrowserContext(browser_context())) &&
+                       plugin_vm::IsPluginVmConfigured(
+                           Profile::FromBrowserContext(browser_context())));
   dict->SetString("UI_LOCALE", extension_l10n_util::CurrentLocaleOrDefault());
 
   return RespondNow(OneArgument(std::move(dict)));

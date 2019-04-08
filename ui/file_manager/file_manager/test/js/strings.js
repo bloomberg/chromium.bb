@@ -16,6 +16,7 @@ Object.setPrototypeOf(loadTimeData.data_, {
   'GOOGLE_DRIVE_OVERVIEW_URL':
       'https://support.google.com/chromebook/?p=filemanager_drive',
   'HIDE_SPACE_INFO': false,
+  'PLUGIN_VM_ENABLED': true,
   'UI_LOCALE': 'en_US',
   'language': 'en-US',
   'textdirection': 'ltr',

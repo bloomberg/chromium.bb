@@ -576,8 +576,8 @@ function testMaybeShareCrostiniOrShowDialog() {
 
   const crostini = createCrostiniForTest();
   crostini.init(volumeManagerDownloads);
-  crostini.setEnabled(true);
-  crostini.registerSharedPath('vm', sharedDir);
+  crostini.setEnabled('termina', true);
+  crostini.registerSharedPath('termina', sharedDir);
 
   const notShared1 = new MockFileEntry(mockFsDownloads, '/notShared/file1');
   const notShared2 = new MockFileEntry(mockFsDownloads, '/notShared/file2');
@@ -627,12 +627,12 @@ function testMaybeShareCrostiniOrShowDialog() {
 
   expect('No entries', [], true, '', '');
 
-  crostini.setEnabled(false);
+  crostini.setEnabled('termina', false);
   expect(
       'Single entry, crostini-files not enabled', [notShared1], false,
       'UNABLE_TO_OPEN_CROSTINI_TITLE', 'UNABLE_TO_OPEN_CROSTINI');
 
-  crostini.setEnabled(true);
+  crostini.setEnabled('termina', true);
 
   expect('Single entry, not shared', [notShared1], true, '', '');
 
@@ -642,7 +642,7 @@ function testMaybeShareCrostiniOrShowDialog() {
       '2 entries, not shared, same dir', [notShared1, notShared2], true, '',
       '');
   // Non-persistent shares should not be registered.
-  assertFalse(crostini.isPathShared('vm', notShared1));
+  assertFalse(crostini.isPathShared('termina', notShared1));
 
   expect(
       '2 entries, not shared, different dir', [notShared1, otherNotShared],

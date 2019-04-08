@@ -8,12 +8,12 @@ crostiniMount.testCrostiniNotEnabled = async (done) => {
   const fakeRoot = '#directory-tree [root-type-icon="crostini"]';
   await test.setupAndWaitUntilReady();
   chrome.fileManagerPrivate.onCrostiniChanged.dispatchEvent(
-      {eventType: 'disable'});
+      {eventType: 'disable', vmName: 'termina'});
   await test.waitForElementLost(fakeRoot);
 
   // Reset crostini back to default enabled=true.
   chrome.fileManagerPrivate.onCrostiniChanged.dispatchEvent(
-      {eventType: 'enable'});
+      {eventType: 'enable', vmName: 'termina'});
   await test.waitForElement(fakeRoot);
   done();
 };
