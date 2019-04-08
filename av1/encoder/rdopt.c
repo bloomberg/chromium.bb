@@ -5182,8 +5182,6 @@ static void try_tx_block_no_split(
   get_txb_ctx(plane_bsize, tx_size, 0, pta, ptl, &txb_ctx);
   const int zero_blk_rate = x->coeff_costs[txs_ctx][PLANE_TYPE_Y]
                                 .txb_skip_cost[txb_ctx.txb_skip_ctx][1];
-
-  rd_stats->ref_rdcost = ref_best_rd;
   rd_stats->zero_rate = zero_blk_rate;
   const int index = av1_get_txb_size_index(plane_bsize, blk_row, blk_col);
   mbmi->inter_tx_size[index] = tx_size;
@@ -5522,7 +5520,6 @@ static void tx_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
     const int zero_blk_rate = x->coeff_costs[txs_ctx][get_plane_type(0)]
                                   .txb_skip_cost[txb_ctx.txb_skip_ctx][1];
     rd_stats->zero_rate = zero_blk_rate;
-    rd_stats->ref_rdcost = ref_best_rd;
     tx_type_rd(cpi, x, tx_size, blk_row, blk_col, 0, block, plane_bsize,
                &txb_ctx, rd_stats, ftxs_mode, ref_best_rd, NULL);
     const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
@@ -6057,7 +6054,7 @@ static void model_rd_for_sb_with_fullrdy(
     if (plane == 0) {
       pick_tx_size_type_yrd(cpi, x, &rd_stats, bsize, mi_row, mi_col,
                             INT64_MAX);
-      if (rd_stats.invalid_rate) {
+      if (rd_stats.rate == INT_MAX) {
         rate = 0;
         dist = sse << 4;
       } else {

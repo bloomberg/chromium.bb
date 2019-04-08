@@ -303,8 +303,6 @@ static INLINE void av1_init_rd_stats(RD_STATS *rd_stats) {
   rd_stats->sse = 0;
   rd_stats->skip = 1;
   rd_stats->zero_rate = 0;
-  rd_stats->invalid_rate = 0;
-  rd_stats->ref_rdcost = INT64_MAX;
 #if CONFIG_RD_DEBUG
   // This may run into problems when monochrome video is
   // encoded, as there will only be 1 plane
@@ -330,8 +328,6 @@ static INLINE void av1_invalid_rd_stats(RD_STATS *rd_stats) {
   rd_stats->sse = INT64_MAX;
   rd_stats->skip = 0;
   rd_stats->zero_rate = 0;
-  rd_stats->invalid_rate = 1;
-  rd_stats->ref_rdcost = INT64_MAX;
 #if CONFIG_RD_DEBUG
   // This may run into problems when monochrome video is
   // encoded, as there will only be 1 plane
@@ -349,20 +345,17 @@ static INLINE void av1_invalid_rd_stats(RD_STATS *rd_stats) {
 
 static INLINE void av1_merge_rd_stats(RD_STATS *rd_stats_dst,
                                       const RD_STATS *rd_stats_src) {
-#if CONFIG_RD_DEBUG
-  int plane;
-#endif
+  assert(rd_stats_dst->rate != INT_MAX && rd_stats_src->rate != INT_MAX);
   rd_stats_dst->rate += rd_stats_src->rate;
   if (!rd_stats_dst->zero_rate)
     rd_stats_dst->zero_rate = rd_stats_src->zero_rate;
   rd_stats_dst->dist += rd_stats_src->dist;
   rd_stats_dst->sse += rd_stats_src->sse;
   rd_stats_dst->skip &= rd_stats_src->skip;
-  rd_stats_dst->invalid_rate &= rd_stats_src->invalid_rate;
 #if CONFIG_RD_DEBUG
   // This may run into problems when monochrome video is
   // encoded, as there will only be 1 plane
-  for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
+  for (int plane = 0; plane < MAX_MB_PLANE; ++plane) {
     rd_stats_dst->txb_coeff_cost[plane] += rd_stats_src->txb_coeff_cost[plane];
     {
       // TODO(angiebird): optimize this part
