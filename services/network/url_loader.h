@@ -139,6 +139,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
     return new_redirect_url_;
   }
 
+  const base::Optional<std::string>& devtools_request_id() const {
+    return devtools_request_id_;
+  }
+
   void SetAllowReportingRawHeaders(bool allow);
 
   // Gets the URLLoader associated with this request.
@@ -280,6 +284,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // be later referred to from NetworkContext::OnBeforeURLRequestInternal, which
   // is called from NetworkDelegate::NotifyBeforeURLRequest.
   base::Optional<GURL> new_redirect_url_;
+
+  // The ID that DevTools uses to track network requests. It is generated in the
+  // renderer process and is only present when DevTools is enabled in the
+  // renderer.
+  const base::Optional<std::string> devtools_request_id_;
 
   bool should_pause_reading_body_ = false;
   // The response body stream is open, but transferring data is paused.
