@@ -15,6 +15,7 @@
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
@@ -41,6 +42,7 @@ class TabletModeEventHandler;
 // original state.
 class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
                                            public display::DisplayObserver,
+                                           public OverviewObserver,
                                            public ShellObserver,
                                            public SessionObserver {
  public:
@@ -58,6 +60,9 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
 
   // Called from a window state object when it gets destroyed.
   void WindowStateDestroyed(aura::Window* window);
+
+  // OverviewObserver:
+  void OnOverviewModeEndingAnimationComplete(bool canceled) override;
 
   // ShellObserver:
   void OnSplitViewModeEnded() override;

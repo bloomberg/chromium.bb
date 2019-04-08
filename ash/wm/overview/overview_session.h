@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/shell_observer.h"
 #include "ash/wm/overview/scoped_overview_hide_windows.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "base/containers/flat_set.h"
@@ -50,6 +51,7 @@ enum class IndicatorState;
 class ASH_EXPORT OverviewSession : public display::DisplayObserver,
                                    public aura::WindowObserver,
                                    public ui::EventHandler,
+                                   public ShellObserver,
                                    public SplitViewController::Observer {
  public:
   enum Direction { LEFT, UP, RIGHT, DOWN };
@@ -265,6 +267,9 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   // ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
+
+  // ShelObserver:
+  void OnShellDestroying() override;
 
   // SplitViewController::Observer:
   void OnSplitViewStateChanged(SplitViewController::State previous_state,

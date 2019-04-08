@@ -64,12 +64,14 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
 
   // Why splitview was ended. For now, all reasons will be kNormal except when
   // the home launcher button is pressed, an unsnappable window just got
-  // activated, or the active user session changed.
+  // activated, the active user session changed, or the window dragging
+  // started.
   enum class EndReason {
     kNormal = 0,
     kHomeLauncherPressed,
     kUnsnappableWindowActivated,
     kActiveUserChanged,
+    kWindowDragStarted,
   };
 
   class Observer {
@@ -349,7 +351,7 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
 
   // Inserts |window| into overview window grid if overview mode is active. Do
   // nothing if overview mode is inactive at the moment.
-  void InsertWindowToOverview(aura::Window* window);
+  void InsertWindowToOverview(aura::Window* window, bool animate = true);
 
   // Starts/Ends overview mode if the overview mode is inactive/active.
   void StartOverview(bool window_drag = false);

@@ -81,6 +81,9 @@ void SetTransform(aura::Window* window, const gfx::Transform& transform);
 // Checks if we are currently in sliding up on the shelf to hide overview mode.
 bool IsSlidingOutOverviewFromShelf();
 
+// Maximize the window if it is snapped without animation.
+void MaximizeIfSnapped(aura::Window* window);
+
 }  // namespace ash
 
 #endif  // ASH_WM_OVERVIEW_OVERVIEW_UTILS_H_

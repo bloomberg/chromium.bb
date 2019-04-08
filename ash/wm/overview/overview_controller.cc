@@ -478,6 +478,7 @@ void OverviewController::OnOverviewButtonTrayLongPressed(
     split_view_controller->EndSplitView();
     if (IsSelecting())
       ToggleOverview();
+    MaximizeIfSnapped(active_window);
     ::wm::ActivateWindow(active_window);
     base::RecordAction(
         base::UserMetricsAction("Tablet_LongPressOverviewButtonExitSplitView"));
