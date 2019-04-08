@@ -192,8 +192,11 @@ blink::WebCoalescedInputEvent GetCoalescedWebPointerEventForTouch(
 viz::FrameSinkId GetRemoteFrameSinkId(const blink::WebNode& node) {
   blink::WebFrame* result_frame = blink::WebFrame::FromFrameOwnerElement(node);
   if (result_frame && result_frame->IsWebRemoteFrame()) {
-    return RenderFrameProxy::FromWebFrame(result_frame->ToWebRemoteFrame())
-        ->frame_sink_id();
+    blink::WebRemoteFrame* remote_frame = result_frame->ToWebRemoteFrame();
+    if (remote_frame->IsIgnoredForHitTest())
+      return viz::FrameSinkId();
+
+    return RenderFrameProxy::FromWebFrame(remote_frame)->frame_sink_id();
   }
   auto* plugin = BrowserPlugin::GetFromNode(node);
   return plugin ? plugin->frame_sink_id() : viz::FrameSinkId();
