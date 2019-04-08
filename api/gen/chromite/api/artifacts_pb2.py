@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='chromite.api',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x1c\x63hromite/api/artifacts.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x17\x63hromiumos/common.proto\"\x18\n\x08\x41rtifact\x12\x0c\n\x04path\x18\x01 \x01(\t\"R\n\rBundleRequest\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x12\n\noutput_dir\x18\x02 \x01(\t\";\n\x0e\x42undleResponse\x12)\n\tartifacts\x18\x01 \x03(\x0b\x32\x16.chromite.api.Artifact2\x8c\x04\n\x10\x41rtifactsService\x12U\n\x18\x42undleTestUpdatePayloads\x12\x1b.chromite.api.BundleRequest\x1a\x1c.chromite.api.BundleResponse\x12P\n\x13\x42undleAutotestFiles\x12\x1b.chromite.api.BundleRequest\x1a\x1c.chromite.api.BundleResponse\x12L\n\x0f\x42undleTastFiles\x12\x1b.chromite.api.BundleRequest\x1a\x1c.chromite.api.BundleResponse\x12T\n\x17\x42undlePinnedGuestImages\x12\x1b.chromite.api.BundleRequest\x1a\x1c.chromite.api.BundleResponse\x12K\n\x0e\x42undleFirmware\x12\x1b.chromite.api.BundleRequest\x1a\x1c.chromite.api.BundleResponse\x12M\n\x10\x42undleEbuildLogs\x12\x1b.chromite.api.BundleRequest\x1a\x1c.chromite.api.BundleResponse\x1a\x0f\xc2\xed\x1a\x0b\n\tartifactsb\x06proto3')
+  serialized_pb=_b('\n\x1c\x63hromite/api/artifacts.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x17\x63hromiumos/common.proto\"\x18\n\x08\x41rtifact\x12\x0c\n\x04path\x18\x01 \x01(\t\"R\n\rBundleRequest\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x12\n\noutput_dir\x18\x02 \x01(\t\";\n\x0e\x42undleResponse\x12)\n\tartifacts\x18\x01 \x03(\x0b\x32\x16.chromite.api.Artifact2\xd9\x04\n\x10\x41rtifactsService\x12K\n\x0e\x42undleImageZip\x12\x1b.chromite.api.BundleRequest\x1a\x1c.chromite.api.BundleResponse\x12U\n\x18\x42undleTestUpdatePayloads\x12\x1b.chromite.api.BundleRequest\x1a\x1c.chromite.api.BundleResponse\x12P\n\x13\x42undleAutotestFiles\x12\x1b.chromite.api.BundleRequest\x1a\x1c.chromite.api.BundleResponse\x12L\n\x0f\x42undleTastFiles\x12\x1b.chromite.api.BundleRequest\x1a\x1c.chromite.api.BundleResponse\x12T\n\x17\x42undlePinnedGuestImages\x12\x1b.chromite.api.BundleRequest\x1a\x1c.chromite.api.BundleResponse\x12K\n\x0e\x42undleFirmware\x12\x1b.chromite.api.BundleRequest\x1a\x1c.chromite.api.BundleResponse\x12M\n\x10\x42undleEbuildLogs\x12\x1b.chromite.api.BundleRequest\x1a\x1c.chromite.api.BundleResponse\x1a\x0f\xc2\xed\x1a\x0b\n\tartifactsb\x06proto3')
   ,
   dependencies=[chromite_dot_api_dot_build__api__pb2.DESCRIPTOR,chromiumos_dot_common__pb2.DESCRIPTOR,])
 
@@ -164,12 +164,21 @@ _ARTIFACTSSERVICE = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=_b('\302\355\032\013\n\tartifacts'),
   serialized_start=273,
-  serialized_end=797,
+  serialized_end=874,
   methods=[
+  _descriptor.MethodDescriptor(
+    name='BundleImageZip',
+    full_name='chromite.api.ArtifactsService.BundleImageZip',
+    index=0,
+    containing_service=None,
+    input_type=_BUNDLEREQUEST,
+    output_type=_BUNDLERESPONSE,
+    serialized_options=None,
+  ),
   _descriptor.MethodDescriptor(
     name='BundleTestUpdatePayloads',
     full_name='chromite.api.ArtifactsService.BundleTestUpdatePayloads',
-    index=0,
+    index=1,
     containing_service=None,
     input_type=_BUNDLEREQUEST,
     output_type=_BUNDLERESPONSE,
@@ -178,7 +187,7 @@ _ARTIFACTSSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='BundleAutotestFiles',
     full_name='chromite.api.ArtifactsService.BundleAutotestFiles',
-    index=1,
+    index=2,
     containing_service=None,
     input_type=_BUNDLEREQUEST,
     output_type=_BUNDLERESPONSE,
@@ -187,7 +196,7 @@ _ARTIFACTSSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='BundleTastFiles',
     full_name='chromite.api.ArtifactsService.BundleTastFiles',
-    index=2,
+    index=3,
     containing_service=None,
     input_type=_BUNDLEREQUEST,
     output_type=_BUNDLERESPONSE,
@@ -196,7 +205,7 @@ _ARTIFACTSSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='BundlePinnedGuestImages',
     full_name='chromite.api.ArtifactsService.BundlePinnedGuestImages',
-    index=3,
+    index=4,
     containing_service=None,
     input_type=_BUNDLEREQUEST,
     output_type=_BUNDLERESPONSE,
@@ -205,7 +214,7 @@ _ARTIFACTSSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='BundleFirmware',
     full_name='chromite.api.ArtifactsService.BundleFirmware',
-    index=4,
+    index=5,
     containing_service=None,
     input_type=_BUNDLEREQUEST,
     output_type=_BUNDLERESPONSE,
@@ -214,7 +223,7 @@ _ARTIFACTSSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='BundleEbuildLogs',
     full_name='chromite.api.ArtifactsService.BundleEbuildLogs',
-    index=5,
+    index=6,
     containing_service=None,
     input_type=_BUNDLEREQUEST,
     output_type=_BUNDLERESPONSE,
