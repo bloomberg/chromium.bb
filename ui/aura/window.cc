@@ -589,6 +589,7 @@ void Window::SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy policy) {
     return;
 
   event_targeting_policy_ = policy;
+  layer()->SetAcceptEvents(policy != ws::mojom::EventTargetingPolicy::NONE);
   if (port_)
     port_->OnEventTargetingPolicyChanged();
 }
