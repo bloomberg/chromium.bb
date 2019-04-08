@@ -1138,8 +1138,6 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         mNetworkState = networkState;
     }
 
-    // TODO(crbug.com/635567): Fix this properly.
-    @SuppressLint({"NewApi", "ParcelCreator"})
     private static class NetworkConnectivityIntentFilter extends IntentFilter {
         NetworkConnectivityIntentFilter() {
             addAction(ConnectivityManager.CONNECTIVITY_ACTION);

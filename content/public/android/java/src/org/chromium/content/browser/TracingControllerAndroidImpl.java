@@ -4,7 +4,6 @@
 
 package org.chromium.content.browser;
 
-import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -289,8 +288,6 @@ public class TracingControllerAndroidImpl implements TracingControllerAndroid {
         if (mShowToasts) Toast.makeText(mContext, str, Toast.LENGTH_SHORT).show();
     }
 
-    // TODO(crbug.com/635567): Fix this properly.
-    @SuppressLint("ParcelCreator")
     private static class TracingIntentFilter extends IntentFilter {
         TracingIntentFilter(Context context) {
             addAction(context.getPackageName() + "." + ACTION_START);
