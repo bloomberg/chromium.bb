@@ -57,6 +57,7 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
+#include "chrome/browser/ui/web_app_browser_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -841,8 +842,7 @@ void LocationBarView::RefreshBackground() {
 }
 
 bool LocationBarView::RefreshContentSettingViews() {
-  if (extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
-          browser_)) {
+  if (WebAppBrowserController::IsForExperimentalHostedAppBrowser(browser_)) {
     // For hosted apps, the location bar is normally hidden and icons appear in
     // the window frame instead.
     GetWidget()->non_client_view()->ResetWindowControls();
@@ -859,8 +859,7 @@ bool LocationBarView::RefreshContentSettingViews() {
 }
 
 void LocationBarView::RefreshPageActionIconViews() {
-  if (extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
-          browser_)) {
+  if (WebAppBrowserController::IsForExperimentalHostedAppBrowser(browser_)) {
     // For hosted apps, the location bar is normally hidden and icons appear in
     // the window frame instead.
     GetWidget()->non_client_view()->ResetWindowControls();

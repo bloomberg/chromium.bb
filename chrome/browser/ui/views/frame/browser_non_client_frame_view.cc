@@ -11,12 +11,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/themes/theme_properties.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/web_app_browser_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -134,7 +134,7 @@ bool BrowserNonClientFrameView::EverHasVisibleBackgroundTabShapes() const {
 
 bool BrowserNonClientFrameView::CanDrawStrokes() const {
   // Hosted apps should not draw strokes, as they don't have a tab strip.
-  return !browser_view_->browser()->hosted_app_controller();
+  return !browser_view_->browser()->web_app_controller();
 }
 
 SkColor BrowserNonClientFrameView::GetCaptionColor(
@@ -153,10 +153,10 @@ SkColor BrowserNonClientFrameView::GetFrameColor(
   if (frame_->ShouldUseTheme())
     return GetThemeProviderForProfile()->GetColor(color_id);
 
-  extensions::HostedAppBrowserController* hosted_app_controller =
-      browser_view_->browser()->hosted_app_controller();
-  if (hosted_app_controller && hosted_app_controller->GetThemeColor())
-    return *hosted_app_controller->GetThemeColor();
+  WebAppBrowserController* web_app_controller =
+      browser_view_->browser()->web_app_controller();
+  if (web_app_controller && web_app_controller->GetThemeColor())
+    return *web_app_controller->GetThemeColor();
 
   return ThemeProperties::GetDefaultColor(color_id,
                                           browser_view_->IsIncognito());

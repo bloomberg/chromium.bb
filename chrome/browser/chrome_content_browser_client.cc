@@ -3234,8 +3234,10 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       // WebContents.
       Browser* browser = chrome::FindBrowserWithWebContents(contents);
       if (base::FeatureList::IsEnabled(features::kDesktopPWAWindowing) &&
-          browser && browser->hosted_app_controller() &&
-          browser->hosted_app_controller()->created_for_installed_pwa()) {
+          browser && browser->web_app_controller() &&
+          browser->web_app_controller()->CreatedForInstalledPwa()) {
+        // PWAs should be hosted apps.
+        DCHECK(browser->web_app_controller()->IsHostedApp());
         // HostedApps that are PWAs are always created through WebAppProvider
         // or BookmarkAppHelper for profiles that support them, so we should
         // always be able to retrieve a WebAppProvider from the Profile.
@@ -3245,15 +3247,15 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
         web_prefs->web_app_scope =
             web_app::WebAppProvider::Get(profile)
                 ->registrar()
-                .GetScopeUrlForApp(browser->hosted_app_controller()->app_id());
+                .GetScopeUrlForApp(*browser->web_app_controller()->GetAppId());
       }
     }
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     Browser* browser = chrome::FindBrowserWithWebContents(contents);
-    if (browser && browser->hosted_app_controller() &&
-        browser->hosted_app_controller()->created_for_installed_pwa()) {
+    if (browser && browser->web_app_controller() &&
+        browser->web_app_controller()->CreatedForInstalledPwa()) {
       web_prefs->strict_mixed_content_checking = true;
     }
 #endif

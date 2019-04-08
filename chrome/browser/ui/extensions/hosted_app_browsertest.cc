@@ -162,7 +162,7 @@ void NavigateAndCheckForToolbar(Browser* browser,
                                 bool proceed_through_interstitial = false) {
   NavigateToURLAndWait(browser, url, proceed_through_interstitial);
   EXPECT_EQ(expected_visibility,
-            browser->hosted_app_controller()->ShouldShowToolbar());
+            browser->web_app_controller()->ShouldShowToolbar());
 }
 
 void CheckWebContentsHasAppPrefs(content::WebContents* web_contents) {
@@ -240,7 +240,7 @@ enum AppMenuCommandState {
 };
 
 AppMenuCommandState GetAppMenuCommandState(int command_id, Browser* browser) {
-  DCHECK(!browser->hosted_app_controller())
+  DCHECK(!browser->web_app_controller())
       << "This check only applies to regular browser windows.";
   auto app_menu_model = std::make_unique<AppMenuModel>(nullptr, browser);
   app_menu_model->Init();
@@ -624,7 +624,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowToolbarDynamicMixedContent) {
       app_browser_->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(TryToLoadImage(
       web_contents, embedded_test_server()->GetURL("foo.com", kImagePath)));
-  EXPECT_TRUE(app_browser_->hosted_app_controller()->ShouldShowToolbar());
+  EXPECT_TRUE(app_browser_->web_app_controller()->ShouldShowToolbar());
 }
 
 IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowToolbarForHTTPAppSameOrigin) {
@@ -1098,7 +1098,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
 
   NavigateToURLAndWait(app_browser_, GetSecureAppURL());
 
-  ASSERT_TRUE(app_browser_->hosted_app_controller());
+  ASSERT_TRUE(app_browser_->web_app_controller());
 
   NavigateAndCheckForToolbar(app_browser_, GURL(kExampleURL), true);
 }
@@ -1120,7 +1120,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
 
   NavigateToURLAndWait(app_browser_, GetSecureAppURL());
 
-  ASSERT_TRUE(app_browser_->hosted_app_controller());
+  ASSERT_TRUE(app_browser_->web_app_controller());
 
   TestAppActionOpensForegroundTab(
       base::BindOnce(
@@ -1155,7 +1155,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
   InstallSecurePWA();
 
   // Toolbar should not be visible in the app.
-  ASSERT_FALSE(app_browser_->hosted_app_controller()->ShouldShowToolbar());
+  ASSERT_FALSE(app_browser_->web_app_controller()->ShouldShowToolbar());
 
   // The installed PWA's scope is app.com:{PORT}/ssl,
   // so app.com:{PORT}/accessibility_fail.html is out of scope.
@@ -1164,7 +1164,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
   NavigateToURLAndWait(app_browser_, out_of_scope);
 
   // Location should be visible off scope.
-  ASSERT_TRUE(app_browser_->hosted_app_controller()->ShouldShowToolbar());
+  ASSERT_TRUE(app_browser_->web_app_controller()->ShouldShowToolbar());
 }
 
 // Tests that PWA menus have an uninstall option.
@@ -1309,7 +1309,9 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
 
   Browser* app_browser = ReparentSecureActiveTabIntoPwaWindow(browser());
 
-  ASSERT_EQ(app_browser->hosted_app_controller()->GetExtensionForTesting(),
+  ASSERT_EQ(static_cast<extensions::HostedAppBrowserController*>(
+                app_browser->web_app_controller())
+                ->GetExtensionForTesting(),
             app_);
 }
 
@@ -1322,7 +1324,9 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, ReparentLastBrowserTab) {
   NavigateToURLAndWait(browser(), GetSecureAppURL());
 
   Browser* app_browser = ReparentSecureActiveTabIntoPwaWindow(browser());
-  ASSERT_EQ(app_browser->hosted_app_controller()->GetExtensionForTesting(),
+  ASSERT_EQ(static_cast<extensions::HostedAppBrowserController*>(
+                app_browser->web_app_controller())
+                ->GetExtensionForTesting(),
             app_);
 
   ASSERT_TRUE(IsBrowserOpen(browser()));
@@ -1552,15 +1556,17 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest,
   feature_list.InitAndDisableFeature(features::kDesktopPWAWindowing);
 
   Browser* app_browser = LaunchAppBrowser(app);
-  EXPECT_FALSE(
-      app_browser->hosted_app_controller()->created_for_installed_pwa());
+  EXPECT_FALSE(static_cast<extensions::HostedAppBrowserController*>(
+                   app_browser->web_app_controller())
+                   ->CreatedForInstalledPwa());
 }
 
 IN_PROC_BROWSER_TEST_P(HostedAppTest, CreatedForInstalledPwaForNonPwas) {
   SetupApp("https_app");
 
-  EXPECT_FALSE(
-      app_browser_->hosted_app_controller()->created_for_installed_pwa());
+  EXPECT_FALSE(static_cast<extensions::HostedAppBrowserController*>(
+                   app_browser_->web_app_controller())
+                   ->CreatedForInstalledPwa());
 }
 
 IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, CreatedForInstalledPwaForPwa) {
@@ -1571,8 +1577,9 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, CreatedForInstalledPwaForPwa) {
   const extensions::Extension* app = InstallBookmarkApp(web_app_info);
   Browser* app_browser = LaunchAppBrowser(app);
 
-  EXPECT_TRUE(
-      app_browser->hosted_app_controller()->created_for_installed_pwa());
+  EXPECT_TRUE(static_cast<extensions::HostedAppBrowserController*>(
+                  app_browser->web_app_controller())
+                  ->CreatedForInstalledPwa());
 }
 
 // Check the 'Copy URL' menu button for Hosted App windows.
@@ -2727,7 +2734,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppOnlyTest, ThemeColor) {
     EXPECT_EQ(web_app::GetAppIdFromApplicationName(app_browser->app_name()),
               app->id());
     EXPECT_EQ(SkColorSetA(*web_app_info.theme_color, SK_AlphaOPAQUE),
-              app_browser->hosted_app_controller()->GetThemeColor());
+              app_browser->web_app_controller()->GetThemeColor());
   }
   {
     WebApplicationInfo web_app_info;
@@ -2740,7 +2747,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppOnlyTest, ThemeColor) {
     EXPECT_EQ(web_app::GetAppIdFromApplicationName(app_browser->app_name()),
               app->id());
     EXPECT_EQ(base::nullopt,
-              app_browser->hosted_app_controller()->GetThemeColor());
+              app_browser->web_app_controller()->GetThemeColor());
   }
 }
 

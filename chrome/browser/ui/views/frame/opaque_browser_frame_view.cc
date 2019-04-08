@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chrome/browser/themes/theme_properties.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/web_app_browser_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -181,8 +181,8 @@ void OpaqueBrowserFrameView::InitViews() {
   window_title_->set_id(VIEW_ID_WINDOW_TITLE);
   AddChildView(window_title_);
 
-  extensions::HostedAppBrowserController* controller =
-      browser_view()->browser()->hosted_app_controller();
+  WebAppBrowserController* controller =
+      browser_view()->browser()->web_app_controller();
   if (controller && controller->ShouldShowHostedAppButtonContainer()) {
     set_hosted_app_button_container(new HostedAppButtonContainer(
         frame(), browser_view(), GetCaptionColor(kActive),

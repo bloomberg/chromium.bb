@@ -48,6 +48,7 @@
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_page_action_icon_container_view.h"
+#include "chrome/browser/ui/web_app_browser_controller.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -104,9 +105,8 @@ ToolbarView::DisplayMode GetDisplayMode(Browser* browser) {
   if (browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP))
     return ToolbarView::DisplayMode::NORMAL;
 
-  if (browser->hosted_app_controller() &&
-      extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
-          browser) &&
+  if (browser->web_app_controller() &&
+      WebAppBrowserController::IsForExperimentalHostedAppBrowser(browser) &&
       base::FeatureList::IsEnabled(features::kDesktopPWAsCustomTabUI))
     return ToolbarView::DisplayMode::CUSTOM_TAB;
 
