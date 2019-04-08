@@ -33,43 +33,6 @@
 namespace chromeos {
 namespace {
 
-class CupsPrintersManagerImpl;
-
-// Since CupsPrintersManager listens to multiple PrinterDetectors, we need to
-// disambiguate incoming observer calls based on their source, and so can't
-// implement PrinterDetector::Observer directly in CupsPrintersManagerImpl.
-//
-// Note that at the time the Proxy is constructed, CupsPrintersManagerImpl's
-// construction may not be complete, so any callbacks into the parent need
-// to be deferred.
-class PrinterDetectorObserverProxy : public PrinterDetector::Observer {
- public:
-  PrinterDetectorObserverProxy(CupsPrintersManagerImpl* parent,
-                               int id,
-                               PrinterDetector* detector)
-      : parent_(parent), id_(id), observer_(this) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
-    // It's ok to Add() before construction is complete because callbacks are on
-    // the same sequence, therefore we will complete construction before any
-    // detection callback will be processed.
-    observer_.Add(detector);
-  }
-  ~PrinterDetectorObserverProxy() override {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
-  }
-
-  // Defined out of line because we need the CupsPrintersManagerImpl
-  // definition first.
-  void OnPrintersFound(
-      const std::vector<PrinterDetector::DetectedPrinter>& printers) override;
-
- private:
-  CupsPrintersManagerImpl* const parent_;
-  const int id_;
-  SEQUENCE_CHECKER(sequence_);
-  ScopedObserver<PrinterDetector, PrinterDetector::Observer> observer_;
-};
-
 // This is akin to python's filter() builtin, but with reverse polarity on the
 // test function -- *remove* all entries in printers for which test_fn returns
 // true, discard the rest.
@@ -118,14 +81,14 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
 
     // Callbacks may ensue immediately when the observer proxies are set up, so
     // these instantiations must come after everything else is initialized.
-    usb_detector_observer_proxy_ =
-        std::make_unique<PrinterDetectorObserverProxy>(this, kUsbDetector,
-                                                       usb_detector_.get());
+    usb_detector_->RegisterPrintersFoundCallback(
+        base::BindRepeating(&CupsPrintersManagerImpl::OnPrintersFound,
+                            weak_ptr_factory_.GetWeakPtr(), kUsbDetector));
     OnPrintersFound(kUsbDetector, usb_detector_->GetPrinters());
 
-    zeroconf_detector_observer_proxy_ =
-        std::make_unique<PrinterDetectorObserverProxy>(
-            this, kZeroconfDetector, zeroconf_detector_.get());
+    zeroconf_detector_->RegisterPrintersFoundCallback(
+        base::BindRepeating(&CupsPrintersManagerImpl::OnPrintersFound,
+                            weak_ptr_factory_.GetWeakPtr(), kZeroconfDetector));
     OnPrintersFound(kZeroconfDetector, zeroconf_detector_->GetPrinters());
 
     native_printers_allowed_.Init(prefs::kUserNativePrintersAllowed,
@@ -274,8 +237,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
     NotifyObservers({kEnterprise});
   }
 
-  // Callback entry point for PrinterDetectorObserverProxys owned by this
-  // object.
+  // Callback for PrinterDetectors.
   void OnPrintersFound(
       int detector_id,
       const std::vector<PrinterDetector::DetectedPrinter>& printers) {
@@ -513,11 +475,8 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
       synced_printers_manager_observer_;
 
   std::unique_ptr<PrinterDetector> usb_detector_;
-  std::unique_ptr<PrinterDetectorObserverProxy> usb_detector_observer_proxy_;
 
   std::unique_ptr<PrinterDetector> zeroconf_detector_;
-  std::unique_ptr<PrinterDetectorObserverProxy>
-      zeroconf_detector_observer_proxy_;
 
   scoped_refptr<PpdProvider> ppd_provider_;
 
@@ -561,12 +520,6 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
 
   base::WeakPtrFactory<CupsPrintersManagerImpl> weak_ptr_factory_;
 };
-
-void PrinterDetectorObserverProxy::OnPrintersFound(
-    const std::vector<PrinterDetector::DetectedPrinter>& printers) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
-  parent_->OnPrintersFound(id_, printers);
-}
 
 }  // namespace
 
