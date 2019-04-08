@@ -388,7 +388,7 @@ void OverviewGrid::Shutdown() {
   overview_session_ = nullptr;
 
   while (!window_list_.empty())
-    RemoveItem(window_list_.back().get(), /*reposition=*/false);
+    RemoveItem(window_list_.back().get());
 
   // HomeLauncherGestureHandler will handle fading/sliding |shield_widget_| in
   // this exit mode.
@@ -604,24 +604,20 @@ void OverviewGrid::AddItem(aura::Window* window,
     PositionWindows(animate);
 }
 
-void OverviewGrid::RemoveItem(OverviewItem* overview_item, bool reposition) {
+void OverviewGrid::RemoveItem(OverviewItem* overview_item) {
   auto* window = overview_item->GetWindow();
   // Use reverse iterator to be efficiently when removing all.
   auto iter = std::find_if(window_list_.rbegin(), window_list_.rend(),
                            [window](std::unique_ptr<OverviewItem>& item) {
                              return item->GetWindow() == window;
                            });
-  if (iter != window_list_.rend()) {
-    window_observer_.Remove(window);
-    window_state_observer_.Remove(wm::GetWindowState(window));
-    // Erase from the list first because deleting OverviewItem can lead to
-    // iterating through the |window_list_|.
-    std::unique_ptr<OverviewItem> tmp = std::move(*iter);
-    window_list_.erase(std::next(iter).base());
-  }
-
-  if (reposition)
-    PositionWindows(/*animate=*/true);
+  DCHECK(iter != window_list_.rend());
+  window_observer_.Remove(window);
+  window_state_observer_.Remove(wm::GetWindowState(window));
+  // Erase from the list first because deleting OverviewItem can lead to
+  // iterating through the |window_list_|.
+  std::unique_ptr<OverviewItem> tmp = std::move(*iter);
+  window_list_.erase(std::next(iter).base());
 }
 
 void OverviewGrid::SetBoundsAndUpdatePositions(const gfx::Rect& bounds) {
@@ -787,10 +783,8 @@ void OverviewGrid::OnWindowDragEnded(aura::Window* dragged_window,
   // happen in the primary display.
   // The |drop_target_widget_| may not in the same display as
   // |dragged_window|, which will cause |drop_target_item| to be null.
-  if (drop_target_item) {
-    overview_session_->RemoveOverviewItem(drop_target_item,
-                                          /*reposition=*/false);
-  }
+  if (drop_target_item)
+    overview_session_->RemoveItem(drop_target_item);
   drop_target_widget_.reset();
 
   // Called to reset caption and title visibility after dragging.

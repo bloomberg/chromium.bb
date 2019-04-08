@@ -98,9 +98,9 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // reposition with animation.
   void AddItem(aura::Window* window, bool reposition, bool animate);
 
-  // Removes |overview_item| from the grid. If |reposition| is true, reposition
-  // all window items in the grid after removing the item.
-  void RemoveItem(OverviewItem* overview_item, bool reposition);
+  // Removes |overview_item| from the grid. |overview_item| cannot already be
+  // absent from the grid. No items are repositioned, and there is no animation.
+  void RemoveItem(OverviewItem* overview_item);
 
   // Sets bounds for the window grid and positions all windows in the grid.
   void SetBoundsAndUpdatePositions(const gfx::Rect& bounds_in_screen);

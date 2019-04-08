@@ -3184,9 +3184,8 @@ TEST_F(SplitViewTabDraggingTest, DragSnappedWindowWhileOverviewOpen) {
   OverviewGrid* current_grid =
       overview_session->GetGridWithRootWindow(window2->GetRootWindow());
   ASSERT_TRUE(current_grid);
-  overview_session->RemoveOverviewItem(
-      current_grid->GetOverviewItemContaining(window2.get()),
-      /*reposition=*/false);
+  overview_session->RemoveItem(
+      current_grid->GetOverviewItemContaining(window2.get()));
 
   resizer = StartDrag(window2.get(), window1.get());
   ASSERT_TRUE(resizer.get());
@@ -3223,9 +3222,8 @@ TEST_F(SplitViewTabDraggingTest, DragSnappedWindowWhileOverviewOpen) {
   // 2.b. The dragged window can snap to the other side of the splitscreen,
   // causing overview mode to end.
   // Remove |window1| from overview first before tab dragging.
-  overview_session->RemoveOverviewItem(
-      current_grid->GetOverviewItemContaining(window1.get()),
-      /*reposition=*/false);
+  overview_session->RemoveItem(
+      current_grid->GetOverviewItemContaining(window1.get()));
   resizer = StartDrag(window1.get(), window2.get());
   ASSERT_TRUE(resizer.get());
   DragWindowTo(resizer.get(), gfx::Point(600, 500));

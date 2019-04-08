@@ -464,18 +464,18 @@ void OverviewSession::AddItem(aura::Window* window,
   ::wm::ActivateWindow(GetOverviewFocusWindow());
 }
 
-void OverviewSession::RemoveOverviewItem(OverviewItem* item, bool reposition) {
-  if (item->GetWindow()->HasObserver(this)) {
-    item->GetWindow()->RemoveObserver(this);
-    observed_windows_.erase(item->GetWindow());
-    if (item->GetWindow() == restore_focus_window_)
+void OverviewSession::RemoveItem(OverviewItem* overview_item) {
+  if (overview_item->GetWindow()->HasObserver(this)) {
+    overview_item->GetWindow()->RemoveObserver(this);
+    observed_windows_.erase(overview_item->GetWindow());
+    if (overview_item->GetWindow() == restore_focus_window_)
       restore_focus_window_ = nullptr;
   }
 
-  // Remove |item| from the corresponding grid.
+  // Remove |overview_item| from the corresponding grid.
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
-    if (grid->GetOverviewItemContaining(item->GetWindow())) {
-      grid->RemoveItem(item, reposition);
+    if (grid->GetOverviewItemContaining(overview_item->GetWindow())) {
+      grid->RemoveItem(overview_item);
       --num_items_;
       break;
     }
