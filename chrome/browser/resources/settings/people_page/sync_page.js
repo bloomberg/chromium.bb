@@ -402,18 +402,6 @@ Polymer({
         (this.syncStatus && this.syncStatus.supervisedUser)) {
       this.creatingNewPassphrase_ = false;
     }
-
-    // Focus the password input box if password is needed to start sync.
-    if (this.syncPrefs.passphraseRequired) {
-      // Wait for the dom-if templates to render and subpage to become visible.
-      listenOnce(document, 'show-container', () => {
-        const input = /** @type {!CrInputElement} */ (
-            this.$$('#existingPassphraseInput'));
-        if (!input.matches(':focus-within')) {
-          input.focus();
-        }
-      });
-    }
   },
 
   /** @private */
@@ -684,6 +672,19 @@ Polymer({
           'Signin_Signin_CancelAdvancedSyncSettings');
     }
     settings.navigateTo(settings.routes.BASIC);
+  },
+
+  /**
+   * Focuses the passphrase input element if it is available and the page is
+   * visible.
+   * @private
+   */
+  focusPassphraseInput_: function() {
+    const passphraseInput =
+        /** @type {!CrInputElement} */ (this.$$('#existingPassphraseInput'));
+    if (passphraseInput && settings.getCurrentRoute() == settings.routes.SYNC) {
+      passphraseInput.focus();
+    }
   },
 });
 

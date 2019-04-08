@@ -120,7 +120,8 @@
     </div>
 
     <template is="dom-if" if="[[shouldShowExistingPassphraseBelowAccount_(
-      unifiedConsentEnabled, syncPrefs.passphraseRequired)]]">
+        unifiedConsentEnabled, syncPrefs.passphraseRequired)]]"
+        notify-dom-change on-dom-change="focusPassphraseInput_">
       <div id="existingPassphrase" class="list-frame">
         <div id="existingPassphraseTitle" class="list-item">
             <div class="start settings-box-text">
@@ -169,7 +170,8 @@
         <!-- TODO(http://crbug.com/862983) Remove this section once the Unified
             Consent feature is launched. -->
         <template is="dom-if" if="[[shouldShowExistingPassphraseInSyncSection_(
-            unifiedConsentEnabled, syncPrefs.passphraseRequired)]]">
+            unifiedConsentEnabled, syncPrefs.passphraseRequired)]]"
+            notify-dom-change on-dom-change="focusPassphraseInput_">
           <div id="existingPassphrase" class="list-frame">
             <div class="list-item">
               <div class="settings-box-text"
