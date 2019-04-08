@@ -112,22 +112,22 @@ def include_path(idl_filename, implemented_as=None):
     return posixpath.join(relative_dir, output_file_basename + '.h')
 
 
-def get_implements_from_definitions(definitions, definition_name):
-    left_interfaces = []
-    right_interfaces = []
-    for implement in definitions.implements:
-        if definition_name == implement.left_interface:
-            right_interfaces.append(implement.right_interface)
-        elif definition_name == implement.right_interface:
-            left_interfaces.append(implement.left_interface)
+def get_includes_from_definitions(definitions, definition_name):
+    interfaces = []
+    mixins = []
+    for include in definitions.includes:
+        if definition_name == include.interface:
+            mixins.append(include.mixin)
+        elif definition_name == include.mixin:
+            interfaces.append(include.interface)
         else:
             raise IdlBadFilenameError(
-                'implements statement found in unrelated IDL file.\n'
+                'includes statement found in unrelated IDL file.\n'
                 'Statement is:\n'
-                '    %s implements %s;\n'
+                '    %s includes %s;\n'
                 'but filename is unrelated "%s.idl"' %
-                (implement.left_interface, implement.right_interface, definition_name))
-    return left_interfaces, right_interfaces
+                (include.interface, include.mixin, definition_name))
+    return interfaces, mixins
 
 
 def get_put_forward_interfaces_from_definition(definition):
@@ -298,11 +298,10 @@ class InterfaceInfoCollector(object):
                     {'cpp_includes': {component: set([this_include_path])}})
             return
 
-        # 'implements' statements can be included in either the file for the
-        # implement*ing* interface (lhs of 'implements') or implement*ed* interface
-        # (rhs of 'implements'). Store both for now, then merge to implement*ing*
-        # interface later.
-        left_interfaces, right_interfaces = get_implements_from_definitions(
+        # 'includes' statements can be included in either the file for the
+        # interface (lhs of 'includes') or mixin (rhs of 'includes'). Store both
+        # for now, then merge to the interface later.
+        includes_interfaces, includes_mixins = get_includes_from_definitions(
             definitions, definition.name)
 
         interface_info.update({
@@ -310,8 +309,8 @@ class InterfaceInfoCollector(object):
             'full_path': full_path,
             'union_types': this_union_types,
             'implemented_as': implemented_as,
-            'implemented_by_interfaces': left_interfaces,
-            'implements_interfaces': right_interfaces,
+            'included_by_interfaces': includes_interfaces,
+            'including_mixins': includes_mixins,
             'include_path': this_include_path,
             # FIXME: temporary private field, while removing old treatement of
             # 'implements': http://crbug.com/360435

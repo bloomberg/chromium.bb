@@ -98,7 +98,7 @@ class IdlDefinitions(object):
         self.callback_functions = {}
         self.dictionaries = {}
         self.enumerations = {}
-        self.implements = []
+        self.includes = []
         self.interfaces = {}
         self.first_name = None
         self.typedefs = {}
@@ -125,7 +125,7 @@ class IdlDefinitions(object):
                 callback_function = IdlCallbackFunction(child)
                 self.callback_functions[callback_function.name] = callback_function
             elif child_class == 'Includes':
-                self.implements.append(IdlImplement(child))
+                self.includes.append(IdlIncludes(child))
             elif child_class == 'Dictionary':
                 dictionary = IdlDictionary(child)
                 self.dictionaries[dictionary.name] = dictionary
@@ -144,8 +144,8 @@ class IdlDefinitions(object):
             dictionary.accept(visitor)
         for enumeration in self.enumerations.itervalues():
             enumeration.accept(visitor)
-        for implement in self.implements:
-            implement.accept(visitor)
+        for include in self.includes:
+            include.accept(visitor)
         for typedef in self.typedefs.itervalues():
             typedef.accept(visitor)
 
@@ -752,20 +752,16 @@ class IdlSetlike(IdlIterableOrMaplikeOrSetlike):
 
 
 ################################################################################
-# Implement statements / includes statements
+# Includes statements
 ################################################################################
 
-class IdlImplement(object):
-    """
-    IdlImplement class represents an implements statement or an includes
-    statement.
-    """
+class IdlIncludes(object):
     def __init__(self, node):
-        self.left_interface = node.GetName()
-        self.right_interface = node.GetProperty('REFERENCE')
+        self.interface = node.GetName()
+        self.mixin = node.GetProperty('REFERENCE')
 
     def accept(self, visitor):
-        visitor.visit_implement(self)
+        visitor.visit_include(self)
 
 
 ################################################################################
@@ -1023,7 +1019,7 @@ class Visitor(object):
     def visit_enumeration(self, enumeration):
         pass
 
-    def visit_implement(self, implement):
+    def visit_include(self, include):
         pass
 
     def visit_interface(self, interface):

@@ -29,7 +29,7 @@
 """Resolve interface dependencies, producing a merged IdlDefinitions object.
 
 This library computes interface dependencies (partial interfaces and
-implements), reads the dependency files, and merges them to the IdlDefinitions
+includes), reads the dependency files, and merges them to the IdlDefinitions
 for the main IDL file, producing an IdlDefinitions object representing the
 entire interface.
 
@@ -68,13 +68,13 @@ class InterfaceDependencyResolver(object):
         """Resolve dependencies, merging them into IDL definitions of main file.
 
         Dependencies consist of 'partial interface' for the same interface as
-        in the main file, and other interfaces that this interface 'implements'.
+        in the main file, and mixins that this interface 'includes'.
         These are merged into the main IdlInterface, as the main IdlInterface
         implements all these members.
 
-        Referenced interfaces are added to IdlDefinitions, but not merged into
-        the main IdlInterface, as these are only referenced (their members are
-        introspected, but not implemented in this interface).
+        Partial interfaces and mixins are added to IdlDefinitions, but not
+        merged into the main IdlInterface, as these are only referenced (their
+        members are introspected, but not implemented in this interface).
 
         Inherited extended attributes are also added to the main IdlInterface.
 
@@ -96,8 +96,8 @@ class InterfaceDependencyResolver(object):
                 or a given IdlDefinitions object has incorrect referenced
                 interfaces.
         """
-        # FIXME: we need to resolve dependency when we implement partial
-        # dictionary.
+        # TODO(crbug.com/579896): we need to resolve dependency when we
+        # support partial dictionary.
         if not definitions.interfaces:
             raise Exception('No need to resolve any dependencies of '
                             'this definition: %s, because this should '
@@ -222,7 +222,7 @@ def merge_interface_dependencies(definitions, component, target_interface, depen
             # - An interface defined in core cannot include an interface mixin
             #   defined in modules.
             if not dependency_interface.is_mixin:
-                raise Exception('The interface:%s cannot implement '
+                raise Exception('The interface:%s cannot include '
                                 'the non-mixin interface: %s.' % (
                                     target_interface.name,
                                     dependency_interface.name))
@@ -236,9 +236,9 @@ def merge_interface_dependencies(definitions, component, target_interface, depen
                                     dependency_component))
 
             resolved_definitions[component].update(dependency_definitions)  # merges partial interfaces
-            # Implemented interfaces (non-partial dependencies) are also merged
-            # into the target interface, so Code Generator can just iterate
-            # over one list (and not need to handle 'implements' itself).
+            # Mixins are also merged into the target interface, so Code
+            # Generator can just iterate over one list (and not need to handle
+            # 'includes' itself).
             target_interface.merge(dependency_interface)
 
     return resolved_definitions
@@ -282,9 +282,7 @@ def transfer_extended_attributes(dependency_interface, dependency_idl_filename):
     # which class implemented interfaces are implemented.
     #
     # Currently [LegacyTreatAsPartialInterface] can be used to have partial
-    # interface behavior on implemented interfaces, but this is being removed
-    # as legacy cruft:
-    # FIXME: Remove [LegacyTreatAsPartialInterface]
+    # interface behavior on mixins, but this is being removed as legacy cruft:
     # http://crbug.com/360435
     #
     # Note that [ImplementedAs] is used with different meanings on interfaces
