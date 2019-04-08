@@ -66,6 +66,44 @@ class BrowserSwitcherSitelistTest : public testing::Test {
   std::unique_ptr<BrowserSwitcherSitelist> sitelist_;
 };
 
+TEST_F(BrowserSwitcherSitelistTest, CanonicalizeRule) {
+  std::string rule = "Example.Com";
+  CanonicalizeRule(&rule);
+  EXPECT_EQ("example.com", rule);
+
+  rule = "Example.Com/";
+  CanonicalizeRule(&rule);
+  EXPECT_EQ("//example.com/", rule);
+
+  rule = "!Example.Com/Abc";
+  CanonicalizeRule(&rule);
+  EXPECT_EQ("!//example.com/Abc", rule);
+
+  rule = "/Example.Com";
+  CanonicalizeRule(&rule);
+  EXPECT_EQ("/Example.Com", rule);
+
+  rule = "//Example.Com";
+  CanonicalizeRule(&rule);
+  EXPECT_EQ("//example.com/", rule);
+
+  rule = "!//Example.Com";
+  CanonicalizeRule(&rule);
+  EXPECT_EQ("!//example.com/", rule);
+
+  rule = "HTTP://EXAMPLE.COM";
+  CanonicalizeRule(&rule);
+  EXPECT_EQ("http://example.com/", rule);
+
+  rule = "HTTP://EXAMPLE.COM/ABC";
+  CanonicalizeRule(&rule);
+  EXPECT_EQ("http://example.com/ABC", rule);
+
+  rule = "User@Example.Com:8080/Test";
+  CanonicalizeRule(&rule);
+  EXPECT_EQ("//User@example.com:8080/Test", rule);
+}
+
 TEST_F(BrowserSwitcherSitelistTest, ShouldRedirectWildcard) {
   // A "*" by itself means everything matches.
   Initialize({"*"}, {});

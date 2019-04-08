@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_switcher/browser_switcher_sitelist.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -219,7 +220,9 @@ void BrowserSwitcherPrefs::UrlListChanged() {
 
   bool has_wildcard = false;
   for (const auto& url : *prefs_->GetList(prefs::kUrlList)) {
-    rules_.sitelist.push_back(url.GetString());
+    std::string canonical = url.GetString();
+    CanonicalizeRule(&canonical);
+    rules_.sitelist.push_back(std::move(canonical));
     if (url.GetString() == "*")
       has_wildcard = true;
   }
@@ -240,7 +243,9 @@ void BrowserSwitcherPrefs::GreylistChanged() {
 
   bool has_wildcard = false;
   for (const auto& url : *prefs_->GetList(prefs::kUrlGreylist)) {
-    rules_.greylist.push_back(url.GetString());
+    std::string canonical = url.GetString();
+    CanonicalizeRule(&canonical);
+    rules_.greylist.push_back(std::move(canonical));
     if (url.GetString() == "*")
       has_wildcard = true;
   }
