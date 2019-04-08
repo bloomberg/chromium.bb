@@ -22,6 +22,7 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
     case kColorId_WindowBackground:
     case kColorId_DialogBackground:
     case kColorId_BubbleBackground:
+    case kColorId_BubbleFooterBackground:
       return SK_ColorBLACK;
 
     // Button
