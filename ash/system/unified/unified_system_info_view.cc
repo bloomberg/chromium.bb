@@ -7,6 +7,7 @@
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
+#include "ash/session/session_observer.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/enterprise/enterprise_domain_observer.h"
@@ -265,7 +266,8 @@ ManagedStateView::ManagedStateView(views::ButtonListener* listener,
 // by observing EnterpriseDomainModel.
 class EnterpriseManagedView : public ManagedStateView,
                               public views::ButtonListener,
-                              public EnterpriseDomainObserver {
+                              public EnterpriseDomainObserver,
+                              public SessionObserver {
  public:
   explicit EnterpriseManagedView(UnifiedSystemTrayController* controller);
   ~EnterpriseManagedView() override;
@@ -275,6 +277,9 @@ class EnterpriseManagedView : public ManagedStateView,
 
   // EnterpriseDomainObserver:
   void OnEnterpriseDomainChanged() override;
+
+  // SessionObserver:
+  void OnLoginStatusChanged(LoginStatus status) override;
 
  private:
   void Update();
@@ -293,11 +298,13 @@ EnterpriseManagedView::EnterpriseManagedView(
   DCHECK(Shell::Get());
   set_id(VIEW_ID_TRAY_ENTERPRISE);
   Shell::Get()->system_tray_model()->enterprise_domain()->AddObserver(this);
+  Shell::Get()->session_controller()->AddObserver(this);
   Update();
 }
 
 EnterpriseManagedView::~EnterpriseManagedView() {
   Shell::Get()->system_tray_model()->enterprise_domain()->RemoveObserver(this);
+  Shell::Get()->session_controller()->RemoveObserver(this);
 }
 
 void EnterpriseManagedView::ButtonPressed(views::Button* sender,
@@ -309,10 +316,16 @@ void EnterpriseManagedView::OnEnterpriseDomainChanged() {
   Update();
 }
 
+void EnterpriseManagedView::OnLoginStatusChanged(LoginStatus status) {
+  Update();
+}
+
 void EnterpriseManagedView::Update() {
   EnterpriseDomainModel* model =
       Shell::Get()->system_tray_model()->enterprise_domain();
-  SetVisible(model->active_directory_managed() ||
+  SessionController* session_controller = Shell::Get()->session_controller();
+  SetVisible(session_controller->IsUserManaged() ||
+             model->active_directory_managed() ||
              !model->enterprise_display_domain().empty());
 
   if (model->active_directory_managed()) {
