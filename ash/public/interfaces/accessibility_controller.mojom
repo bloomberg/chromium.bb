@@ -53,10 +53,6 @@ interface AccessibilityController {
   // Setting off-screen or empty bounds suppresses the highlight.
   SetCaretBounds(gfx.mojom.Rect bounds_in_screen);
 
-  // Sets whether the accessibility panel should always be visible, regardless
-  // of whether the window is fullscreen.
-  SetAccessibilityPanelAlwaysVisible(bool always_visible);
-
   // Sets the bounds for the accessibility panel. Overrides current
   // configuration (i.e. fullscreen, full-width).
   SetAccessibilityPanelBounds(gfx.mojom.Rect bounds,
