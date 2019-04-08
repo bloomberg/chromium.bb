@@ -54,7 +54,7 @@
       "*://www.google.no/*chromebook/*",
       "*://www.google.co.nz/*chromebook/*",
       "*://www.google.se/*chromebook/*",
-      "*://chromebook*-dot-googwebreview.appspot.com/*chromebook/*"
+      "*://chromebook-dot-googwebreview.appspot.com/*chromebook/*"
     ]
   }
 }
