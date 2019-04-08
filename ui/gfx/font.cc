@@ -88,7 +88,7 @@ const FontRenderParams& Font::GetFontRenderParams() const {
   return platform_font_->GetFontRenderParams();
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_IOS)
+#if defined(OS_MACOSX) || defined(OS_IOS)
 NativeFont Font::GetNativeFont() const {
   return platform_font_->GetNativeFont();
 }

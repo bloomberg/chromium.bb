@@ -86,7 +86,7 @@ class GFX_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
   // Returns an object describing how the font should be rendered.
   virtual const FontRenderParams& GetFontRenderParams() = 0;
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_IOS)
+#if defined(OS_MACOSX) || defined(OS_IOS)
   // Returns the native font handle.
   virtual NativeFont GetNativeFont() const = 0;
 #endif

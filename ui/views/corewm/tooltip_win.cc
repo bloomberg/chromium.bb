@@ -102,7 +102,7 @@ void TooltipWin::MaybeOverrideFont() {
   const HFONT old_font = GetWindowFont(tooltip_hwnd_);
 
   // Determine if we need to override the font.
-  if ((!override_font_ || override_font_->GetNativeFont() != old_font) &&
+  if ((!override_font_.get() || override_font_.get() != old_font) &&
       l10n_util::NeedOverrideDefaultUIFont(
           &font_adjustment.font_family_override, &font_adjustment.font_scale)) {
     // Determine if we need to regenerate the font.
@@ -111,14 +111,14 @@ void TooltipWin::MaybeOverrideFont() {
     // font unless the underlying text/DPI scale of the window has changed.
     const float current_scale =
         display::win::ScreenWin::GetScaleFactorForHWND(tooltip_hwnd_);
-    if (!override_font_ || current_scale != override_scale_) {
-      override_font_ =
-          gfx::win::AdjustExistingSystemFont(old_font, font_adjustment);
+    if (!override_font_.get() || current_scale != override_scale_) {
+      override_font_.reset(
+          gfx::win::AdjustExistingSystemFont(old_font, font_adjustment));
       override_scale_ = current_scale;
     }
 
     // Override the font in the tooltip.
-    SetWindowFont(tooltip_hwnd_, override_font_->GetNativeFont(), FALSE);
+    SetWindowFont(tooltip_hwnd_, override_font_.get(), FALSE);
   }
 }
 

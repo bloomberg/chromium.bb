@@ -23,6 +23,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_gdi_object.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_fallback.h"
 #include "ui/gfx/platform_font_win.h"
@@ -221,8 +222,22 @@ bool GetUniscribeFallbackFont(const Font& font,
   if (!meta_file_dc)
     return false;
 
-  SelectObject(meta_file_dc, font.GetNativeFont());
+  // Extracts |fonts| properties.
+  const DWORD italic = (font.GetStyle() & Font::ITALIC) ? TRUE : FALSE;
+  const DWORD underline = (font.GetStyle() & Font::UNDERLINE) ? TRUE : FALSE;
+  // The font mapper matches its absolute value against the character height of
+  // the available fonts.
+  const int height = -font.GetFontSize();
 
+  // Select the primary font which force a mapping to a physical font.
+  base::win::ScopedHFONT primary_font(::CreateFont(
+      height, 0, 0, 0, static_cast<int>(font.GetWeight()), italic, underline,
+      FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+      DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
+      base::UTF8ToUTF16(font.GetFontName()).c_str()));
+  SelectObject(meta_file_dc, primary_font.get());
+
+  // Run the script analysis.
   SCRIPT_STRING_ANALYSIS script_analysis;
   HRESULT hresult =
       ScriptStringAnalyse(meta_file_dc, text, text_length, 0, -1,
