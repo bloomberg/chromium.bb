@@ -49,7 +49,7 @@ class MODULES_EXPORT CanvasGradient final : public ScriptWrappable {
 
   Gradient* GetGradient() const { return gradient_.get(); }
 
-  void addColorStop(float value, const String& color, ExceptionState&);
+  void addColorStop(double value, const String& color, ExceptionState&);
 
  private:
   scoped_refptr<Gradient> gradient_;

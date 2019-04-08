@@ -98,14 +98,14 @@ static inline SkColor MakeSkColor(const Color& c) {
 void Gradient::FillSkiaStops(ColorBuffer& colors, OffsetBuffer& pos) const {
   if (stops_.IsEmpty()) {
     // A gradient with no stops must be transparent black.
-    pos.push_back(WebCoreFloatToSkScalar(0));
+    pos.push_back(WebCoreDoubleToSkScalar(0));
     colors.push_back(SK_ColorTRANSPARENT);
   } else if (stops_.front().stop > 0) {
     // Copy the first stop to 0.0. The first stop position may have a slight
     // rounding error, but we don't care in this float comparison, since
     // 0.0 comes through cleanly and people aren't likely to want a gradient
     // with a stop at (0 + epsilon).
-    pos.push_back(WebCoreFloatToSkScalar(0));
+    pos.push_back(WebCoreDoubleToSkScalar(0));
     if (color_filter_) {
       colors.push_back(
           color_filter_->filterColor(MakeSkColor(stops_.front().color)));
@@ -115,7 +115,7 @@ void Gradient::FillSkiaStops(ColorBuffer& colors, OffsetBuffer& pos) const {
   }
 
   for (const auto& stop : stops_) {
-    pos.push_back(WebCoreFloatToSkScalar(stop.stop));
+    pos.push_back(WebCoreDoubleToSkScalar(stop.stop));
     if (color_filter_)
       colors.push_back(color_filter_->filterColor(MakeSkColor(stop.color)));
     else
@@ -126,7 +126,7 @@ void Gradient::FillSkiaStops(ColorBuffer& colors, OffsetBuffer& pos) const {
   // comparison.
   DCHECK(!pos.IsEmpty());
   if (pos.back() < 1) {
-    pos.push_back(WebCoreFloatToSkScalar(1));
+    pos.push_back(WebCoreDoubleToSkScalar(1));
     colors.push_back(colors.back());
   }
 }
