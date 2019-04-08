@@ -586,7 +586,7 @@ void FetchManager::Loader::Start(ExceptionState& exception_state) {
       PerformNetworkError("Fetch API cannot load " +
                           fetch_request_data_->Url().GetString() +
                           ". Request mode is \"no-cors\" but the redirect mode "
-                          " is not \"follow\".");
+                          "is not \"follow\".");
       return;
     }
 
