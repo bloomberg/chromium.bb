@@ -123,6 +123,8 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
     out->watchdog_starts_backgrounded = prefs.watchdog_starts_backgrounded();
     out->enable_vulkan = prefs.enable_vulkan();
     out->disable_vulkan_surface = prefs.disable_vulkan_surface();
+    out->disable_vulkan_fallback_to_gl_for_testing =
+        prefs.disable_vulkan_fallback_to_gl_for_testing();
     out->enable_gpu_benchmarking_extension =
         prefs.enable_gpu_benchmarking_extension();
     out->enable_webgpu = prefs.enable_webgpu();
@@ -270,6 +272,10 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   }
   static bool disable_vulkan_surface(const gpu::GpuPreferences& prefs) {
     return prefs.disable_vulkan_surface;
+  }
+  static bool disable_vulkan_fallback_to_gl_for_testing(
+      const gpu::GpuPreferences& prefs) {
+    return prefs.disable_vulkan_fallback_to_gl_for_testing;
   }
   static bool enable_gpu_benchmarking_extension(
       const gpu::GpuPreferences& prefs) {
