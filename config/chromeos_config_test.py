@@ -167,22 +167,6 @@ class HWTestList(object):
                                       **default_dict))
     return suite_list
 
-  def DefaultListPFQ(self, **kwargs):
-    """Return a default list of HWTestConfigs for a Chrome PFQ build.
-
-    Optional arguments may be overridden in `kwargs`, except that
-    the `blocking` setting cannot be provided.
-    """
-    default_dict = dict(pool=constants.HWTEST_PFQ_POOL, file_bugs=True,
-                        priority=constants.HWTEST_PFQ_PRIORITY,
-                        minimum_duts=4)
-    # Allows kwargs overrides to default_dict for pfq.
-    default_dict.update(kwargs)
-    suite_list = self.DefaultListNonCanary(**default_dict)
-    suite_list.append(self.TastConfig(constants.HWTEST_TAST_CHROME_PFQ_SUITE,
-                                      **default_dict))
-    return suite_list
-
   def DefaultListChromePFQInformational(self, **kwargs):
     """Return a default list of HWTestConfigs for an inform. Chrome PFQ build.
 
@@ -203,7 +187,7 @@ class HWTestList(object):
                                       **default_dict))
     return suite_list
 
-  def SharedPoolPFQ(self, **kwargs):
+  def SharedPoolPFQ(self):
     """Return a list of HWTestConfigs for Chrome PFQ which uses a shared pool.
 
     The returned suites will run in pool:critical by default, which is
@@ -211,16 +195,32 @@ class HWTestList(object):
     list is a blocking sanity suite that verifies the build will not break dut.
     """
     sanity_dict = dict(pool=constants.HWTEST_MACH_POOL,
-                       file_bugs=True, priority=constants.HWTEST_PFQ_PRIORITY)
-    sanity_dict.update(kwargs)
-    sanity_dict.update(dict(minimum_duts=1, suite_min_duts=1,
-                            blocking=True))
+                       file_bugs=True,
+                       priority=constants.HWTEST_PFQ_PRIORITY,
+                       minimum_duts=1,
+                       suite_min_duts=1,
+                       blocking=True)
+
     default_dict = dict(pool=constants.HWTEST_MACH_POOL,
+                        file_bugs=True,
+                        priority=constants.HWTEST_PFQ_PRIORITY,
+                        minimum_duts=4,
                         suite_min_duts=3)
-    default_dict.update(kwargs)
+
     suite_list = [config_lib.HWTestConfig(constants.HWTEST_SANITY_SUITE,
-                                          **sanity_dict)]
-    suite_list.extend(self.DefaultListPFQ(**default_dict))
+                                          **sanity_dict),
+                  config_lib.HWTestConfig(
+                      constants.HWTEST_PROVISION_SUITE,
+                      blocking=True,
+                      suite_args={'num_required': 1},
+                      **default_dict),
+                  config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
+                                          **default_dict),
+                  config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
+                                          **default_dict),
+                  self.TastConfig(constants.HWTEST_TAST_CHROME_PFQ_SUITE,
+                                  **default_dict)]
+
     return suite_list
 
   def DefaultListAndroidPFQ(self, **kwargs):
@@ -573,16 +573,17 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       'moblab-generic-vm-paladin': site_config.templates.moblab_vm_tests,
       'moblab-generic-vm-pre-cq': site_config.templates.moblab_vm_tests,
 
-      'peppy-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolPFQ(),
-      },
-
       'reef-chrome-pfq': {
           'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
       },
 
       'veyron_minnie-chrome-pfq': {
           'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
+      },
+
+      # ARC disabled on these boards (so can't run bvt-arc)
+      'peppy-chrome-pfq': {
+          'hw_tests': hw_test_list.SharedPoolPFQ(),
       },
 
       'peach_pit-chrome-pfq': {
