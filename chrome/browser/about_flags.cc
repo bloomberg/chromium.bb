@@ -4030,6 +4030,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kInSessionPasswordChange)},
 #endif  // OS_CHROMEOS
 
+    {"autofill-off-no-server-data",
+     flag_descriptions::kAutofillOffNoServerDataName,
+     flag_descriptions::kAutofillOffNoServerDataDescription, kOsAll,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillOffNoServerData)},
+
     {"enable-portals", flag_descriptions::kEnablePortalsName,
      flag_descriptions::kEnablePortalsDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kPortals)},

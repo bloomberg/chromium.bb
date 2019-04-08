@@ -70,6 +70,9 @@ const base::Feature kAutofillEnableAccountWalletStorageUpload{
 const base::Feature kAutofillEnableCompanyName{
     "AutofillEnableCompanyName", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kAutofillOffNoServerData{"AutofillOffNoServerData",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, autofill server will override field types with rater
 // consensus data before returning to client.
 const base::Feature kAutofillOverrideWithRaterConsensus{
