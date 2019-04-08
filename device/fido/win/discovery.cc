@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "device/fido/win/webauthn_api_adapter.h"
+#include "device/fido/win/webauthn_api.h"
 
 namespace device {
 
@@ -26,7 +26,7 @@ void WinWebAuthnApiAuthenticatorDiscovery::Start() {
     return;
   }
 
-  if (!WinWebAuthnApiAdapter::IsAvailable()) {
+  if (!WinWebAuthnApi::GetDefault()->IsAvailable()) {
     observer()->DiscoveryStarted(this, false /* discovery failed */);
     return;
   }
@@ -44,7 +44,7 @@ void WinWebAuthnApiAuthenticatorDiscovery::Start() {
 }
 
 void WinWebAuthnApiAuthenticatorDiscovery::AddAuthenticator() {
-  if (!WinWebAuthnApiAdapter::IsAvailable()) {
+  if (!WinWebAuthnApi::GetDefault()->IsAvailable()) {
     NOTREACHED();
     return;
   }
