@@ -895,15 +895,13 @@ CQ_READY_QUERY = (
     '-label:Legacy-Commit-Queue=-1' % _QUERIES,
     lambda change: change.IsMergeable())
 
-# The PreCQ does not require the CQ bit to be set if it's a recent CL, or if
+# The PreCQ does not require the CQ+2 bit to be set if it's a recent CL, or if
 # the Commit-Queue +1 flag has been set.
 PRECQ_READY_QUERY = (
     '%(open)s AND (%(approved)s AND label:Commit-Queue>=2 OR '
     'label:Code-Review=+2 AND -age:2h OR label:Commit-Queue=+1) AND '
     '-label:Legacy-Commit-Queue=-1' % _QUERIES,
-    lambda change: (not change.IsBeingMerged() and
-                    change.HasApproval('CRVW', '2') or
-                    change.HasApproval('TRY', '1')))
+    lambda change: not change.IsBeingMerged())
 
 GERRIT_ON_BORG_LABELS = {
     'Code-Review': 'CRVW',
