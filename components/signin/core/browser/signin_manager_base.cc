@@ -160,10 +160,6 @@ bool SigninManagerBase::IsInitialized() const {
   return initialized_;
 }
 
-bool SigninManagerBase::IsSigninAllowed() const {
-  return client_->GetPrefs()->GetBoolean(prefs::kSigninAllowed);
-}
-
 AccountInfo SigninManagerBase::GetAuthenticatedAccountInfo() const {
   return account_tracker_service_->GetAccountInfo(GetAuthenticatedAccountId());
 }

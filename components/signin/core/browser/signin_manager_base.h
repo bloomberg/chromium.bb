@@ -90,12 +90,6 @@ class SigninManagerBase {
   void Initialize(PrefService* local_state);
   bool IsInitialized() const;
 
-  // Returns true if a signin to Chrome is allowed (by policy or pref).
-  // TODO(crbug.com/806778): this method should not be used externally,
-  // instead the value of the kSigninAllowed preference should be checked.
-  // Once all external code has been modified, this method will be removed.
-  virtual bool IsSigninAllowed() const;
-
   // If a user has previously signed in (and has not signed out), this returns
   // the know information of the account. Otherwise, it returns an empty struct.
   AccountInfo GetAuthenticatedAccountInfo() const;
