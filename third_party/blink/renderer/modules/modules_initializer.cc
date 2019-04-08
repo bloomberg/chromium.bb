@@ -182,7 +182,7 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
   ProvideLocalFileSystemTo(frame, std::make_unique<LocalFileSystemClient>());
   NavigatorContentUtils::ProvideTo(
       *frame.DomWindow()->navigator(),
-      NavigatorContentUtilsClient::Create(web_frame));
+      MakeGarbageCollected<NavigatorContentUtilsClient>(web_frame));
 
   ScreenOrientationControllerImpl::ProvideTo(frame);
   if (RuntimeEnabledFeatures::PresentationEnabled())
