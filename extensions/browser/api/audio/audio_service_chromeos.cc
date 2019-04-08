@@ -129,21 +129,20 @@ class AudioServiceImpl : public AudioService,
 };
 
 AudioServiceImpl::AudioServiceImpl(AudioDeviceIdCalculator* id_calculator)
-    : cras_audio_handler_(NULL),
+    : cras_audio_handler_(chromeos::CrasAudioHandler::Get()),
       id_calculator_(id_calculator),
       weak_ptr_factory_(this) {
   CHECK(id_calculator_);
 
-  if (chromeos::CrasAudioHandler::IsInitialized()) {
-    cras_audio_handler_ = chromeos::CrasAudioHandler::Get();
+  if (cras_audio_handler_)
     cras_audio_handler_->AddAudioObserver(this);
-  }
 }
 
 AudioServiceImpl::~AudioServiceImpl() {
-  if (cras_audio_handler_ && chromeos::CrasAudioHandler::IsInitialized()) {
-    cras_audio_handler_->RemoveAudioObserver(this);
-  }
+  // The CrasAudioHandler global instance may have already been destroyed, so
+  // do not used the cached pointer here.
+  if (chromeos::CrasAudioHandler::Get())
+    chromeos::CrasAudioHandler::Get()->RemoveAudioObserver(this);
 }
 
 void AudioServiceImpl::AddObserver(AudioService::Observer* observer) {

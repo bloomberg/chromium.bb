@@ -8,14 +8,16 @@
 
 namespace chromeos {
 
-FakeCrasAudioClient::FakeCrasAudioClient()
-    : active_input_node_id_(0),
-      active_output_node_id_(0) {
-}
+namespace {
 
-FakeCrasAudioClient::~FakeCrasAudioClient() = default;
+FakeCrasAudioClient* g_instance = nullptr;
 
-void FakeCrasAudioClient::Init(dbus::Bus* bus) {
+}  // namespace
+
+FakeCrasAudioClient::FakeCrasAudioClient() {
+  CHECK(!g_instance);
+  g_instance = this;
+
   VLOG(1) << "FakeCrasAudioClient is created";
 
   // Fake audio output nodes.
@@ -82,6 +84,16 @@ void FakeCrasAudioClient::Init(dbus::Bus* bus) {
   input_3.type = "MIC";
   input_3.name = "Some type of Mic";
   node_list_.push_back(input_3);
+}
+
+FakeCrasAudioClient::~FakeCrasAudioClient() {
+  CHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
+
+// static
+FakeCrasAudioClient* FakeCrasAudioClient::Get() {
+  return g_instance;
 }
 
 void FakeCrasAudioClient::AddObserver(Observer* observer) {

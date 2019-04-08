@@ -22,7 +22,7 @@
 namespace chromeos {
 
 // CrasAudioClient is used to communicate with the cras audio dbus interface.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) CrasAudioClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) CrasAudioClient {
  public:
   // Interface for observing changes from the cras audio changes.
   class Observer {
@@ -59,7 +59,17 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CrasAudioClient : public DBusClient {
     virtual ~Observer();
   };
 
-  ~CrasAudioClient() override;
+  // Creates and initializes the global instance. |bus| must not be null.
+  static void Initialize(dbus::Bus* bus);
+
+  // Creates and initializes a fake global instance if not already created.
+  static void InitializeFake();
+
+  // Destroys the global instance which must have been initialized.
+  static void Shutdown();
+
+  // Returns the global instance if initialized. May return null.
+  static CrasAudioClient* Get();
 
   // Adds and removes the observer.
   virtual void AddObserver(Observer* observer) = 0;
@@ -140,14 +150,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CrasAudioClient : public DBusClient {
   virtual void WaitForServiceToBeAvailable(
       WaitForServiceToBeAvailableCallback callback) = 0;
 
-  // Creates the instance.
-  static CrasAudioClient* Create();
-
  protected:
   friend class CrasAudioClientTest;
 
-  // Create() should be used instead.
   CrasAudioClient();
+  virtual ~CrasAudioClient();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CrasAudioClient);

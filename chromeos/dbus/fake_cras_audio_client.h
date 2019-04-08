@@ -22,8 +22,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCrasAudioClient
   FakeCrasAudioClient();
   ~FakeCrasAudioClient() override;
 
+  static FakeCrasAudioClient* Get();
+
   // CrasAudioClient overrides:
-  void Init(dbus::Bus* bus) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   bool HasObserver(const Observer* observer) const override;
@@ -86,8 +87,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCrasAudioClient
 
   VolumeState volume_state_;
   AudioNodeList node_list_;
-  uint64_t active_input_node_id_;
-  uint64_t active_output_node_id_;
+  uint64_t active_input_node_id_ = 0;
+  uint64_t active_output_node_id_ = 0;
   // By default, immediately sends OutputNodeVolumeChange signal following the
   // SetOutputNodeVolume fake dbus call.
   bool notify_volume_change_with_delay_ = false;

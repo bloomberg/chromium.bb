@@ -160,6 +160,11 @@ void AshService::InitializeDBusClients() {
   chromeos::DBusThreadManager::Initialize(chromeos::DBusThreadManager::kShared);
   dbus::Bus* bus = chromeos::DBusThreadManager::Get()->GetSystemBus();
 
+  if (bus)
+    chromeos::CrasAudioClient::Initialize(bus);
+  else
+    chromeos::CrasAudioClient::InitializeFake();
+
   // TODO(jamescook): Initialize real audio handler.
   chromeos::CrasAudioHandler::InitializeForTesting();
 

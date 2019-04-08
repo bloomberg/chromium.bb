@@ -12,6 +12,7 @@
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/auth_policy/auth_policy_client.h"
 #include "chromeos/dbus/biod/biod_client.h"
+#include "chromeos/dbus/cras_audio_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/hammerd/hammerd_client.h"
 #include "chromeos/dbus/kerberos/kerberos_client.h"
@@ -55,6 +56,7 @@ void InitializeDBus() {
   if (bus) {
     AuthPolicyClient::Initialize(bus);
     BiodClient::Initialize(bus);  // For device::Fingerprint.
+    CrasAudioClient::Initialize(bus);
     CryptohomeClient::Initialize(bus);
     KerberosClient::Initialize(bus);
     MachineLearningClient::Initialize(bus);
@@ -67,6 +69,7 @@ void InitializeDBus() {
   } else {
     AuthPolicyClient::InitializeFake();
     BiodClient::InitializeFake();  // For device::Fingerprint.
+    CrasAudioClient::InitializeFake();
     CryptohomeClient::InitializeFake();
     KerberosClient::InitializeFake();
     MachineLearningClient::InitializeFake();
@@ -95,6 +98,7 @@ void ShutdownDBus() {
   MachineLearningClient::Shutdown();
   KerberosClient::Shutdown();
   CryptohomeClient::Shutdown();
+  CrasAudioClient::Shutdown();
   BiodClient::Shutdown();
   AuthPolicyClient::Shutdown();
 

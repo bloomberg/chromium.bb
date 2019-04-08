@@ -45,8 +45,8 @@ in [src/chromeos/dbus/kerberos].
 
 Shill clients will eventually only be available to Chrome. As such, the
 DBusThreadManager::GetShill*Client() methods have been left intact for now.
-However, the clients are no longer owned by DBusClientsCommon so that they can
-be initialized independent of DBusThreadManager.
+However, the clients are no longer owned by DBusThreadManager so that they can
+be initialized independently.
 
 New code should prefer Shill*Client::Get() over the DBusThreadManager accessors.
 

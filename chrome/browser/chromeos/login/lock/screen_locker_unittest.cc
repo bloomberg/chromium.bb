@@ -23,6 +23,7 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/biod/biod_client.h"
+#include "chromeos/dbus/cras_audio_client.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/login_state/login_state.h"
@@ -51,6 +52,7 @@ class ScreenLockerUnitTest : public testing::Test {
   void SetUp() override {
     DBusThreadManager::Initialize();
     BiodClient::InitializeFake();
+    CrasAudioClient::InitializeFake();
     CryptohomeClient::InitializeFake();
 
     // MojoSystemInfoDispatcher dependency:

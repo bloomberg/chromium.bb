@@ -43,13 +43,11 @@ void ConfigureSliderViewStyle(views::View* slider_view) {
 UnifiedSliderBubbleController::UnifiedSliderBubbleController(
     UnifiedSystemTray* tray)
     : tray_(tray) {
-  DCHECK(CrasAudioHandler::IsInitialized());
   CrasAudioHandler::Get()->AddAudioObserver(this);
   tray_->model()->AddObserver(this);
 }
 
 UnifiedSliderBubbleController::~UnifiedSliderBubbleController() {
-  DCHECK(CrasAudioHandler::IsInitialized());
   CrasAudioHandler::Get()->RemoveAudioObserver(this);
   tray_->model()->RemoveObserver(this);
   autoclose_.Stop();

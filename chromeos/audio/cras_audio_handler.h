@@ -106,9 +106,6 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
   // Destroys the global instance.
   static void Shutdown();
 
-  // Returns true if the global instance is initialized.
-  static bool IsInitialized();
-
   // Gets the global instance. Initialize must be called first.
   static CrasAudioHandler* Get();
 
@@ -510,28 +507,27 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
   AudioDevicePriorityQueue input_devices_pq_;
   AudioDevicePriorityQueue output_devices_pq_;
 
-  bool output_mute_on_;
-  bool input_mute_on_;
-  int output_volume_;
-  int input_gain_;
-  uint64_t active_output_node_id_;
-  uint64_t active_input_node_id_;
-  bool has_alternative_input_;
-  bool has_alternative_output_;
+  bool output_mute_on_ = false;
+  bool input_mute_on_ = false;
+  int output_volume_ = 0;
+  int input_gain_ = 0;
+  uint64_t active_output_node_id_ = 0;
+  uint64_t active_input_node_id_ = 0;
+  bool has_alternative_input_ = false;
+  bool has_alternative_output_ = false;
 
-  bool output_mute_locked_;
+  bool output_mute_locked_ = false;
 
   // Audio output channel counts.
-  int32_t output_channels_;
-  bool output_mono_enabled_;
+  int32_t output_channels_ = 2;
+  bool output_mono_enabled_ = false;
 
   // Timer for HDMI re-discovering grace period.
   base::OneShotTimer hdmi_rediscover_timer_;
-  int hdmi_rediscover_grace_period_duration_in_ms_;
-  bool hdmi_rediscovering_;
+  int hdmi_rediscover_grace_period_duration_in_ms_ = 2000;
+  bool hdmi_rediscovering_ = false;
 
   bool cras_service_available_ = false;
-
 
   bool initializing_audio_state_ = false;
   int init_volume_;
@@ -542,7 +538,7 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
   bool rear_camera_on_ = false;
 
   // Default output buffer size in frames.
-  int32_t default_output_buffer_size_;
+  int32_t default_output_buffer_size_ = 512;
 
   bool system_aec_supported_ = false;
   int32_t system_aec_group_id_ = kSystemAecGroupIdNotAvailable;
@@ -553,7 +549,7 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
   // on this thread.
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
-  base::WeakPtrFactory<CrasAudioHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<CrasAudioHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CrasAudioHandler);
 };

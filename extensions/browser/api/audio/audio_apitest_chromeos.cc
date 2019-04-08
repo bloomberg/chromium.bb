@@ -11,22 +11,17 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "chromeos/audio/audio_devices_pref_handler_stub.h"
+#include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/dbus/fake_cras_audio_client.h"
 #include "extensions/common/features/feature_session_type.h"
 #include "extensions/common/switches.h"
 #include "extensions/shell/test/shell_apitest.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/audio/audio_devices_pref_handler_stub.h"
-#include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_cras_audio_client.h"
-#endif
-
 namespace extensions {
 
-#if defined(OS_CHROMEOS)
 using chromeos::AudioDevice;
 using chromeos::AudioDeviceList;
 using chromeos::AudioNode;
@@ -89,8 +84,8 @@ AudioNode CreateAudioNode(const AudioNodeInfo& info, int version) {
 
 class AudioApiTest : public ShellApiTest {
  public:
-  AudioApiTest() : cras_audio_handler_(NULL), fake_cras_audio_client_(NULL) {}
-  ~AudioApiTest() override {}
+  AudioApiTest() = default;
+  ~AudioApiTest() override = default;
 
   void SetUp() override {
     session_feature_type_ = extensions::ScopedCurrentFeatureSessionType(
@@ -99,31 +94,22 @@ class AudioApiTest : public ShellApiTest {
     ShellApiTest::SetUp();
   }
 
-  void SetUpCrasAudioHandlerWithTestingNodes(const AudioNodeList& audio_nodes) {
-    chromeos::DBusThreadManager* dbus_manager =
-        chromeos::DBusThreadManager::Get();
-    DCHECK(dbus_manager);
-    fake_cras_audio_client_ = static_cast<chromeos::FakeCrasAudioClient*>(
-        dbus_manager->GetCrasAudioClient());
-    fake_cras_audio_client_->SetAudioNodesAndNotifyObserversForTesting(
-        audio_nodes);
-    cras_audio_handler_ = chromeos::CrasAudioHandler::Get();
-    DCHECK(cras_audio_handler_);
+  void ChangeAudioNodes(const AudioNodeList& audio_nodes) {
+    chromeos::FakeCrasAudioClient::Get()
+        ->SetAudioNodesAndNotifyObserversForTesting(audio_nodes);
     base::RunLoop().RunUntilIdle();
   }
 
-  void ChangeAudioNodes(const AudioNodeList& audio_nodes) {
-    DCHECK(fake_cras_audio_client_);
-    fake_cras_audio_client_->SetAudioNodesAndNotifyObserversForTesting(
-        audio_nodes);
-    base::RunLoop().RunUntilIdle();
+  chromeos::CrasAudioHandler* audio_handler() {
+    return chromeos::CrasAudioHandler::Get();
   }
 
  protected:
   std::unique_ptr<base::AutoReset<extensions::FeatureSessionType>>
       session_feature_type_;
-  chromeos::CrasAudioHandler* cras_audio_handler_;  // Not owned.
-  chromeos::FakeCrasAudioClient* fake_cras_audio_client_;  // Not owned.
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AudioApiTest);
 };
 
 IN_PROC_BROWSER_TEST_F(AudioApiTest, Audio) {
@@ -133,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, Audio) {
       CreateAudioNode(kHDMIOutput, 2),    CreateAudioNode(kJabraMic1, 2),
       CreateAudioNode(kJabraMic2, 2),     CreateAudioNode(kUSBCameraMic, 2)};
 
-  SetUpCrasAudioHandlerWithTestingNodes(audio_nodes);
+  ChangeAudioNodes(audio_nodes);
 
   EXPECT_TRUE(RunAppTest("api_test/audio")) << message_;
 }
@@ -141,11 +127,11 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, Audio) {
 IN_PROC_BROWSER_TEST_F(AudioApiTest, OnLevelChangedOutputDevice) {
   AudioNodeList audio_nodes = {CreateAudioNode(kJabraSpeaker1, 2),
                                CreateAudioNode(kHDMIOutput, 2)};
-  SetUpCrasAudioHandlerWithTestingNodes(audio_nodes);
+  ChangeAudioNodes(audio_nodes);
 
   // Verify the jabra speaker is the active output device.
   AudioDevice device;
-  EXPECT_TRUE(cras_audio_handler_->GetPrimaryActiveOutputDevice(&device));
+  EXPECT_TRUE(audio_handler()->GetPrimaryActiveOutputDevice(&device));
   EXPECT_EQ(device.id, kJabraSpeaker1.id);
 
   // Loads background app.
@@ -156,12 +142,12 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnLevelChangedOutputDevice) {
 
   // Change output device volume.
   const int kVolume = 60;
-  cras_audio_handler_->SetOutputVolumePercent(kVolume);
+  audio_handler()->SetOutputVolumePercent(kVolume);
 
   // Verify the output volume is changed to the designated value.
-  EXPECT_EQ(kVolume, cras_audio_handler_->GetOutputVolumePercent());
+  EXPECT_EQ(kVolume, audio_handler()->GetOutputVolumePercent());
   EXPECT_EQ(kVolume,
-            cras_audio_handler_->GetOutputVolumePercentForDevice(device.id));
+            audio_handler()->GetOutputVolumePercentForDevice(device.id));
 
   // Verify the background app got the OnOutputNodeVolumeChanged event
   // with the expected node id and volume value.
@@ -171,16 +157,16 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnLevelChangedOutputDevice) {
 IN_PROC_BROWSER_TEST_F(AudioApiTest, OnOutputMuteChanged) {
   AudioNodeList audio_nodes = {CreateAudioNode(kJabraSpeaker1, 2),
                                CreateAudioNode(kHDMIOutput, 2)};
-  SetUpCrasAudioHandlerWithTestingNodes(audio_nodes);
+  ChangeAudioNodes(audio_nodes);
 
   // Verify the jabra speaker is the active output device.
   AudioDevice device;
-  EXPECT_TRUE(cras_audio_handler_->GetPrimaryActiveOutputDevice(&device));
+  EXPECT_TRUE(audio_handler()->GetPrimaryActiveOutputDevice(&device));
   EXPECT_EQ(device.id, kJabraSpeaker1.id);
 
   // Mute the output.
-  cras_audio_handler_->SetOutputMute(true);
-  EXPECT_TRUE(cras_audio_handler_->IsOutputMuted());
+  audio_handler()->SetOutputMute(true);
+  EXPECT_TRUE(audio_handler()->IsOutputMuted());
 
   // Loads background app.
   ResultCatcher result_catcher;
@@ -189,8 +175,8 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnOutputMuteChanged) {
   ASSERT_TRUE(load_listener.WaitUntilSatisfied());
 
   // Un-mute the output.
-  cras_audio_handler_->SetOutputMute(false);
-  EXPECT_FALSE(cras_audio_handler_->IsOutputMuted());
+  audio_handler()->SetOutputMute(false);
+  EXPECT_FALSE(audio_handler()->IsOutputMuted());
 
   // Verify the background app got the OnMuteChanged event
   // with the expected output un-muted state.
@@ -200,17 +186,17 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnOutputMuteChanged) {
 IN_PROC_BROWSER_TEST_F(AudioApiTest, OnInputMuteChanged) {
   AudioNodeList audio_nodes = {CreateAudioNode(kJabraMic1, 2),
                                CreateAudioNode(kUSBCameraMic, 2)};
-  SetUpCrasAudioHandlerWithTestingNodes(audio_nodes);
+  ChangeAudioNodes(audio_nodes);
 
   // Set the jabra mic to be the active input device.
   AudioDevice jabra_mic(CreateAudioNode(kJabraMic1, 2));
-  cras_audio_handler_->SwitchToDevice(
-      jabra_mic, true, chromeos::CrasAudioHandler::ACTIVATE_BY_USER);
-  EXPECT_EQ(kJabraMic1.id, cras_audio_handler_->GetPrimaryActiveInputNode());
+  audio_handler()->SwitchToDevice(jabra_mic, true,
+                                  chromeos::CrasAudioHandler::ACTIVATE_BY_USER);
+  EXPECT_EQ(kJabraMic1.id, audio_handler()->GetPrimaryActiveInputNode());
 
   // Un-mute the input.
-  cras_audio_handler_->SetInputMute(false);
-  EXPECT_FALSE(cras_audio_handler_->IsInputMuted());
+  audio_handler()->SetInputMute(false);
+  EXPECT_FALSE(audio_handler()->IsInputMuted());
 
   // Loads background app.
   ResultCatcher result_catcher;
@@ -219,8 +205,8 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnInputMuteChanged) {
   ASSERT_TRUE(load_listener.WaitUntilSatisfied());
 
   // Mute the input.
-  cras_audio_handler_->SetInputMute(true);
-  EXPECT_TRUE(cras_audio_handler_->IsInputMuted());
+  audio_handler()->SetInputMute(true);
+  EXPECT_TRUE(audio_handler()->IsInputMuted());
 
   // Verify the background app got the OnMuteChanged event
   // with the expected input muted state.
@@ -230,11 +216,11 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnInputMuteChanged) {
 IN_PROC_BROWSER_TEST_F(AudioApiTest, OnNodesChangedAddNodes) {
   AudioNodeList audio_nodes = {CreateAudioNode(kJabraSpeaker1, 2),
                                CreateAudioNode(kJabraSpeaker2, 2)};
-  SetUpCrasAudioHandlerWithTestingNodes(audio_nodes);
+  ChangeAudioNodes(audio_nodes);
   const size_t init_device_size = audio_nodes.size();
 
   AudioDeviceList audio_devices;
-  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  audio_handler()->GetAudioDevices(&audio_devices);
   EXPECT_EQ(init_device_size, audio_devices.size());
 
   // Load background app.
@@ -246,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnNodesChangedAddNodes) {
   // Plug in HDMI output.
   audio_nodes.push_back(CreateAudioNode(kHDMIOutput, 2));
   ChangeAudioNodes(audio_nodes);
-  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  audio_handler()->GetAudioDevices(&audio_devices);
   EXPECT_EQ(init_device_size + 1, audio_devices.size());
 
   // Verify the background app got the OnNodesChanged event
@@ -258,11 +244,11 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnNodesChangedRemoveNodes) {
   AudioNodeList audio_nodes = {CreateAudioNode(kJabraMic1, 2),
                                CreateAudioNode(kJabraMic2, 2),
                                CreateAudioNode(kUSBCameraMic, 2)};
-  SetUpCrasAudioHandlerWithTestingNodes(audio_nodes);
+  ChangeAudioNodes(audio_nodes);
   const size_t init_device_size = audio_nodes.size();
 
   AudioDeviceList audio_devices;
-  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  audio_handler()->GetAudioDevices(&audio_devices);
   EXPECT_EQ(init_device_size, audio_devices.size());
 
   // Load background app.
@@ -274,7 +260,7 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnNodesChangedRemoveNodes) {
   // Remove camera mic.
   audio_nodes.erase(audio_nodes.begin() + init_device_size - 1);
   ChangeAudioNodes(audio_nodes);
-  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  audio_handler()->GetAudioDevices(&audio_devices);
   EXPECT_EQ(init_device_size - 1, audio_devices.size());
 
   // Verify the background app got the onNodesChanged event
@@ -284,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnNodesChangedRemoveNodes) {
 
 class WhitelistedAudioApiTest : public AudioApiTest {
  public:
-  WhitelistedAudioApiTest() {}
+  WhitelistedAudioApiTest() = default;
   ~WhitelistedAudioApiTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -301,11 +287,9 @@ IN_PROC_BROWSER_TEST_F(WhitelistedAudioApiTest, DeprecatedApi) {
       CreateAudioNode(kHDMIOutput, 2),    CreateAudioNode(kJabraMic1, 2),
       CreateAudioNode(kJabraMic2, 2),     CreateAudioNode(kUSBCameraMic, 2)};
 
-  SetUpCrasAudioHandlerWithTestingNodes(audio_nodes);
+  ChangeAudioNodes(audio_nodes);
 
   EXPECT_TRUE(RunAppTest("api_test/audio/deprecated_api")) << message_;
 }
-
-#endif  // OS_CHROMEOS
 
 }  // namespace extensions

@@ -1247,7 +1247,13 @@ test("content_browsertests") {
   }
 
   if (is_chromeos) {
-    deps += [ "//chromeos/audio" ]
+    deps += [
+      "//chromeos/audio",
+
+      # TODO(stevenjb): Replace with //chromeos/dbus/cras once extracted.
+      # https://crbug.com/940810.
+      "//chromeos/dbus",
+    ]
   }
 
   if (use_aura && !is_win) {
@@ -2147,7 +2153,13 @@ test("content_unittests") {
     ]
   }
   if (is_chromeos) {
-    deps += [ "//chromeos/audio" ]
+    deps += [
+      "//chromeos/audio",
+
+      # TODO(stevenjb): Replace with //chromeos/dbus/cras once extracted.
+      # https://crbug.com/940810.
+      "//chromeos/dbus",
+    ]
   }
   if (is_android) {
     sources += [

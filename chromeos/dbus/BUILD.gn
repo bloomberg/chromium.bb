@@ -58,8 +58,6 @@ component("dbus") {
     "dbus_client_implementation_type.h",
     "dbus_clients_browser.cc",
     "dbus_clients_browser.h",
-    "dbus_clients_common.cc",
-    "dbus_clients_common.h",
     "dbus_thread_manager.cc",
     "dbus_thread_manager.h",
     "debug_daemon_client.cc",

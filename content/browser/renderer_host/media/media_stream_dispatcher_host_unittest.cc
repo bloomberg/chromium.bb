@@ -42,6 +42,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/dbus/cras_audio_client.h"
 #endif
 
 using ::testing::_;
@@ -260,6 +261,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
         host_->CreateInterfacePtrAndBind());
 
 #if defined(OS_CHROMEOS)
+    chromeos::CrasAudioClient::InitializeFake();
     chromeos::CrasAudioHandler::InitializeForTesting();
 #endif
   }
@@ -268,6 +270,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     audio_manager_->Shutdown();
 #if defined(OS_CHROMEOS)
     chromeos::CrasAudioHandler::Shutdown();
+    chromeos::CrasAudioClient::Shutdown();
 #endif
   }
 

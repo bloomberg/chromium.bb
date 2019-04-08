@@ -31,10 +31,8 @@ class ArcOemCryptoClient;
 class CecServiceClient;
 class CiceroneClient;
 class ConciergeClient;
-class CrasAudioClient;
 class CrosDisksClient;
 class DBusClientsBrowser;
-class DBusClientsCommon;
 class DBusThreadManagerSetter;
 class DebugDaemonClient;
 class DiagnosticsdClient;
@@ -123,7 +121,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManager {
   CecServiceClient* GetCecServiceClient();
   CiceroneClient* GetCiceroneClient();
   ConciergeClient* GetConciergeClient();
-  CrasAudioClient* GetCrasAudioClient();
   CrosDisksClient* GetCrosDisksClient();
   DebugDaemonClient* GetDebugDaemonClient();
   DiagnosticsdClient* GetDiagnosticsdClient();
@@ -168,9 +165,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManager {
   // Whether to use real or fake dbus clients.
   const bool use_real_clients_;
 
-  // Clients used by multiple processes.
-  std::unique_ptr<DBusClientsCommon> clients_common_;
-
   // Clients used only by the browser process. Null in other processes.
   std::unique_ptr<DBusClientsBrowser> clients_browser_;
 
@@ -184,7 +178,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManagerSetter {
 
   void SetCiceroneClient(std::unique_ptr<CiceroneClient> client);
   void SetConciergeClient(std::unique_ptr<ConciergeClient> client);
-  void SetCrasAudioClient(std::unique_ptr<CrasAudioClient> client);
   void SetCrosDisksClient(std::unique_ptr<CrosDisksClient> client);
   void SetDebugDaemonClient(std::unique_ptr<DebugDaemonClient> client);
   void SetImageBurnerClient(std::unique_ptr<ImageBurnerClient> client);

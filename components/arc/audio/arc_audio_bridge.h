@@ -53,7 +53,7 @@ class ArcAudioBridge : public KeyedService,
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
-  chromeos::CrasAudioHandler* cras_audio_handler_ = nullptr;
+  chromeos::CrasAudioHandler* cras_audio_handler_;
 
   int volume_ = 0;  // Volume range: 0-100.
   bool muted_ = false;

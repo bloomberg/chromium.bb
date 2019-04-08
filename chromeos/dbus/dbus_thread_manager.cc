@@ -18,11 +18,9 @@
 #include "chromeos/dbus/cicerone_client.h"
 #include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
-#include "chromeos/dbus/cras_audio_client.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_clients_browser.h"
-#include "chromeos/dbus/dbus_clients_common.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/dbus/easy_unlock_client.h"
 #include "chromeos/dbus/image_burner_client.h"
@@ -52,8 +50,7 @@ static bool g_using_dbus_thread_manager_for_testing = false;
 
 DBusThreadManager::DBusThreadManager(ClientSet client_set,
                                      bool use_real_clients)
-    : use_real_clients_(use_real_clients),
-      clients_common_(new DBusClientsCommon(use_real_clients)) {
+    : use_real_clients_(use_real_clients) {
   if (client_set == DBusThreadManager::kAll)
     clients_browser_.reset(new DBusClientsBrowser(use_real_clients));
   // NOTE: When there are clients only used by ash, create them here.
@@ -79,7 +76,6 @@ DBusThreadManager::DBusThreadManager(ClientSet client_set,
 DBusThreadManager::~DBusThreadManager() {
   // Delete all D-Bus clients before shutting down the system bus.
   clients_browser_.reset();
-  clients_common_.reset();
 
   // Shut down the bus. During the browser shutdown, it's ok to shut down
   // the bus synchronously.
@@ -140,10 +136,6 @@ CiceroneClient* DBusThreadManager::GetCiceroneClient() {
 
 ConciergeClient* DBusThreadManager::GetConciergeClient() {
   return clients_browser_ ? clients_browser_->concierge_client_.get() : nullptr;
-}
-
-CrasAudioClient* DBusThreadManager::GetCrasAudioClient() {
-  return clients_common_->cras_audio_client_.get();
 }
 
 CrosDisksClient* DBusThreadManager::GetCrosDisksClient() {
@@ -251,8 +243,6 @@ void DBusThreadManager::InitializeClients() {
   // Some clients call DBusThreadManager::Get() during initialization.
   DCHECK(g_dbus_thread_manager);
 
-  clients_common_->Initialize(GetSystemBus());
-
   // TODO(stevenjb): Move these to dbus_helper.cc in src/chrome and any tests
   // that require Shill clients. https://crbug.com/948390.
   if (use_real_clients_)
@@ -349,12 +339,6 @@ void DBusThreadManagerSetter::SetCiceroneClient(
 void DBusThreadManagerSetter::SetConciergeClient(
     std::unique_ptr<ConciergeClient> client) {
   DBusThreadManager::Get()->clients_browser_->concierge_client_ =
-      std::move(client);
-}
-
-void DBusThreadManagerSetter::SetCrasAudioClient(
-    std::unique_ptr<CrasAudioClient> client) {
-  DBusThreadManager::Get()->clients_common_->cras_audio_client_ =
       std::move(client);
 }
 
