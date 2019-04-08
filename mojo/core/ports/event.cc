@@ -96,6 +96,8 @@ Event::PortDescriptor::PortDescriptor() {
   memset(padding, 0, sizeof(padding));
 }
 
+Event::PortDescriptor::PortDescriptor(const PortDescriptor&) = default;
+
 Event::~Event() = default;
 
 // static
@@ -206,8 +208,10 @@ ScopedEvent UserMessageEvent::Deserialize(const PortName& port_name,
 
   const auto* in_names =
       reinterpret_cast<const PortName*>(in_descriptors + data->num_ports);
-  for (size_t i = 0; i < data->num_ports; ++i)
+  for (size_t i = 0; i < data->num_ports; ++i) {
     event->ports()[i].name = in_names[i];
+    event->ports()[i].slot_id = event->port_descriptors()[i].new_slot_id;
+  }
   return std::move(event);
 }
 
@@ -243,8 +247,10 @@ void UserMessageEvent::SerializeData(void* buffer) const {
 
   auto* port_names_data =
       reinterpret_cast<PortName*>(ports_data + ports_.size());
-  for (size_t i = 0; i < ports_.size(); ++i)
+  for (size_t i = 0; i < ports_.size(); ++i) {
     port_names_data[i] = ports_[i].name;
+    ports_data[i].new_slot_id = ports_[i].slot_id.value_or(kDefaultSlotId);
+  }
 }
 
 PortAcceptedEvent::PortAcceptedEvent(const PortName& port_name)

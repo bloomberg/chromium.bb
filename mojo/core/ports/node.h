@@ -113,9 +113,9 @@ class COMPONENT_EXPORT(MOJO_CORE_PORTS) Node {
   // are initialized and ready to go.
   int CreatePortPair(PortRef* port0_ref, PortRef* port1_ref);
 
-  // User data associated with the port.
-  int SetUserData(const PortRef& port_ref, scoped_refptr<UserData> user_data);
-  int GetUserData(const PortRef& port_ref, scoped_refptr<UserData>* user_data);
+  // User data associated with the slot.
+  int SetUserData(const SlotRef& slot_ref, scoped_refptr<UserData> user_data);
+  int GetUserData(const SlotRef& slot_ref, scoped_refptr<UserData>* user_data);
 
   // Closes a single slot on port. No more messages can be sent from or
   // delivered to the slot. If it's the last slot on its port, the port is also
@@ -266,7 +266,7 @@ class COMPONENT_EXPORT(MOJO_CORE_PORTS) Node {
 
   int PrepareToForwardUserMessage(const SlotRef& forwarding_slot_ref,
                                   Port::State expected_port_state,
-                                  bool ignore_closed_peer,
+                                  bool for_proxy,
                                   UserMessageEvent* message,
                                   NodeName* forward_to_node);
   int BeginProxying(const PortRef& port_ref);

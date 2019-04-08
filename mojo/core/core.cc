@@ -417,14 +417,22 @@ MojoResult Core::AppendMessageData(MojoMessageHandle message_handle,
                                    uint32_t* buffer_size) {
   if (!message_handle || (num_handles && !handles))
     return MOJO_RESULT_INVALID_ARGUMENT;
-  if (options && options->struct_size < sizeof(*options))
-    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  const MojoAppendMessageDataHandleOptions* handle_options = nullptr;
+  if (options) {
+    if (options->struct_size < sizeof(MojoAppendMessageDataOptionsV0))
+      return MOJO_RESULT_INVALID_ARGUMENT;
+    if (options->struct_size >= sizeof(MojoAppendMessageDataOptions)) {
+      if (options->handle_options)
+        handle_options = options->handle_options;
+    }
+  }
 
   RequestContext request_context;
   auto* message = reinterpret_cast<ports::UserMessageEvent*>(message_handle)
                       ->GetMessage<UserMessageImpl>();
-  MojoResult rv =
-      message->AppendData(additional_payload_size, handles, num_handles);
+  MojoResult rv = message->AppendData(additional_payload_size, handles,
+                                      num_handles, handle_options);
   if (rv != MOJO_RESULT_OK)
     return rv;
 
@@ -535,22 +543,29 @@ MojoResult Core::CreateMessagePipe(const MojoCreateMessagePipeOptions* options,
 
   uint64_t pipe_id = base::RandUint64();
 
-  *message_pipe_handle0 = AddDispatcher(
-      new MessagePipeDispatcher(GetNodeController(), port0, pipe_id, 0));
-  if (*message_pipe_handle0 == MOJO_HANDLE_INVALID)
-    return MOJO_RESULT_RESOURCE_EXHAUSTED;
-
-  *message_pipe_handle1 = AddDispatcher(
-      new MessagePipeDispatcher(GetNodeController(), port1, pipe_id, 1));
-  if (*message_pipe_handle1 == MOJO_HANDLE_INVALID) {
-    scoped_refptr<Dispatcher> dispatcher0;
-    {
-      base::AutoLock lock(handles_->GetLock());
-      handles_->GetAndRemoveDispatcher(*message_pipe_handle0, &dispatcher0);
-    }
+  auto dispatcher0 = base::MakeRefCounted<MessagePipeDispatcher>(
+      GetNodeController(), port0, pipe_id, 0);
+  *message_pipe_handle0 = AddDispatcher(dispatcher0);
+  if (*message_pipe_handle0 == MOJO_HANDLE_INVALID) {
     dispatcher0->Close();
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
   }
+
+  auto dispatcher1 = base::MakeRefCounted<MessagePipeDispatcher>(
+      GetNodeController(), port1, pipe_id, 1);
+  *message_pipe_handle1 = AddDispatcher(dispatcher1);
+  if (*message_pipe_handle1 == MOJO_HANDLE_INVALID) {
+    dispatcher0->Close();
+    dispatcher1->Close();
+    {
+      base::AutoLock lock(handles_->GetLock());
+      handles_->GetAndRemoveDispatcher(*message_pipe_handle0, nullptr);
+    }
+    return MOJO_RESULT_RESOURCE_EXHAUSTED;
+  }
+
+  dispatcher0->SetLocalPeer(dispatcher1);
+  dispatcher1->SetLocalPeer(dispatcher0);
 
   return MOJO_RESULT_OK;
 }
