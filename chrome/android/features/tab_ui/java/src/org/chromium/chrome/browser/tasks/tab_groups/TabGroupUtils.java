@@ -77,6 +77,7 @@ public class TabGroupUtils {
             public void onDidFinishNavigation(Tab tab, NavigationHandle navigationHandle) {
                 if (!navigationHandle.isInMainFrame()) return;
                 if (tab.isIncognito()) return;
+                if (navigationHandle.pageTransition() == null) return;
 
                 int coreTransitionType =
                         navigationHandle.pageTransition() & PageTransition.CORE_MASK;
