@@ -2631,7 +2631,13 @@ base::Optional<viz::HitTestRegionList> LayerTreeHostImpl::BuildHitTestData() {
   // a result we do async hit test on any surface layers that
   bool assume_overlap = false;
   for (const auto* layer : base::Reversed(*active_tree())) {
-    if (!layer->ShouldHitTest())
+    // Viz hit test needs to collect information for pointer-events: none OOPIFs
+    // as well. Now Layer::HitTestable ignores pointer-events property, but this
+    // early out will not work correctly if we integrate has_pointer_events_none
+    // into Layer::HitTestable, so we make sure we don't skip surface layers
+    // that draws content but has pointer-events: none property.
+    if (!(layer->HitTestable() ||
+          (layer->is_surface_layer() && layer->DrawsContent())))
       continue;
 
     if (layer->is_surface_layer()) {
@@ -2639,7 +2645,8 @@ base::Optional<viz::HitTestRegionList> LayerTreeHostImpl::BuildHitTestData() {
       // If a surface layer is created not by child frame compositor or the
       // frame owner has pointer-events: none property, the surface layer
       // becomes not hit testable. We should not generate data for it.
-      if (!surface_layer->surface_hit_testable()) {
+      if (!surface_layer->surface_hit_testable() ||
+          !surface_layer->range().IsValid()) {
         // We collect any overlapped regions that does not have pointer-events:
         // none.
         if (!surface_layer->has_pointer_events_none() && !assume_overlap) {
