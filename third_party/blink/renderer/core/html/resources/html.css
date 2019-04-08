@@ -1008,6 +1008,10 @@ nobr {
 
 /* states */
 
+video:-internal-spatial-navigation-interest:not(:fullscreen) {
+  outline-offset: -2px;
+}
+
 :-internal-spatial-navigation-interest {
   outline: auto 5px -webkit-focus-ring-color !important;
   box-shadow: none !important
