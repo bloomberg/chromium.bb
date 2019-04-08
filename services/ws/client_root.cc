@@ -23,6 +23,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/aura_extra/window_position_in_root_monitor.h"
+#include "ui/base/layout.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/property_change_reason.h"
@@ -56,7 +57,9 @@ ClientRoot::ClientRoot(WindowTree* window_tree,
     : window_tree_(window_tree),
       window_(window),
       is_top_level_(is_top_level),
-      last_visible_(!is_top_level && window->IsVisible()) {
+      last_bounds_(GetBoundsToSend(window)),
+      last_visible_(!is_top_level && window->IsVisible()),
+      last_display_id_(display::kInvalidDisplayId) {
   window_->AddObserver(this);
   if (window_->GetHost())
     window->GetHost()->AddObserver(this);
@@ -251,12 +254,6 @@ void ClientRoot::UnattachChildFrameSinkIdRecursive(ProxyWindow* proxy_window) {
   }
 }
 
-void ClientRoot::NotifyClientOfDisplayIdChange() {
-  window_tree_->window_tree_client_->OnWindowDisplayChanged(
-      window_tree_->TransportIdForWindow(window_),
-      window_->GetHost()->GetDisplayId());
-}
-
 std::unique_ptr<ScopedForceVisible> ClientRoot::ForceWindowVisible() {
   // At this time there is only a need for a single force visible.
   DCHECK(!force_visible_);
@@ -266,6 +263,11 @@ std::unique_ptr<ScopedForceVisible> ClientRoot::ForceWindowVisible() {
   force_visible_ = force_visible.get();
   NotifyClientOfVisibilityChange();
   return force_visible;
+}
+
+void ClientRoot::OnWindowTreeHostDisplayIdChanged() {
+  if (last_display_id_ != window_->GetHost()->GetDisplayId())
+    NotifyClientOfDisplayIdChange();
 }
 
 void ClientRoot::UpdateLocalSurfaceIdAndClientSurfaceEmbedder() {
@@ -323,6 +325,12 @@ void ClientRoot::NotifyClientOfVisibilityChange(base::Optional<bool> visible) {
     window_tree_->window_tree_client_->OnWindowVisibilityChanged(
         window_tree_->TransportIdForWindow(window_), last_visible_);
   }
+}
+
+void ClientRoot::NotifyClientOfDisplayIdChange() {
+  last_display_id_ = window_->GetHost()->GetDisplayId();
+  window_tree_->window_tree_client_->OnWindowDisplayChanged(
+      window_tree_->TransportIdForWindow(window_), last_display_id_);
 }
 
 void ClientRoot::OnPositionInRootChanged() {
@@ -427,6 +435,19 @@ void ClientRoot::OnWindowVisibilityChanged(aura::Window* window, bool visible) {
 void ClientRoot::OnHostResized(aura::WindowTreeHost* host) {
   // This function is also called when the device-scale-factor changes too.
   CheckForScaleFactorChange();
+}
+
+void ClientRoot::OnHostMovedInPixels(aura::WindowTreeHost* host,
+                                     const gfx::Point& new_origin_in_pixels) {
+  // Size or device-scale-factor change is handled in OnHostResized.
+  const gfx::Rect new_bounds = GetBoundsToSend(window_);
+  if (last_bounds_.size() != new_bounds.size() ||
+      last_device_scale_factor_ != ui::GetScaleFactorForNativeView(window_)) {
+    return;
+  }
+
+  if (last_bounds_ != new_bounds)
+    NotifyClientOfNewBounds();
 }
 
 void ClientRoot::OnFirstSurfaceActivation(
