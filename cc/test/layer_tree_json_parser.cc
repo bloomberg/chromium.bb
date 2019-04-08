@@ -35,6 +35,14 @@ scoped_refptr<Layer> ParseTreeFromValue(const base::Value& val,
   bool draws_content;
   success &= dict->GetBoolean("DrawsContent", &draws_content);
 
+  bool hit_testable;
+  // If we cannot load hit_testable, we may try loading the old version, since
+  // we do not record |hit_testable_without_draws_content| in the past, we use
+  // |draws_content| as the value of |hit_testable|.
+  if (!dict->GetBoolean("HitTestable", &hit_testable)) {
+    hit_testable = draws_content;
+  }
+
   scoped_refptr<Layer> new_layer;
   if (layer_type == "SolidColorLayer") {
     new_layer = SolidColorLayer::Create();
@@ -84,6 +92,7 @@ scoped_refptr<Layer> ParseTreeFromValue(const base::Value& val,
   }
   new_layer->SetBounds(gfx::Size(width, height));
   new_layer->SetIsDrawable(draws_content);
+  new_layer->SetHitTestable(hit_testable);
 
   double opacity;
   if (dict->GetDouble("Opacity", &opacity))

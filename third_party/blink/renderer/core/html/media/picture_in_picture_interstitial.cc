@@ -98,6 +98,7 @@ void PictureInPictureInterstitial::Show() {
 
   DCHECK(GetVideoElement().CcLayer());
   GetVideoElement().CcLayer()->SetIsDrawable(false);
+  GetVideoElement().CcLayer()->SetHitTestable(false);
 }
 
 void PictureInPictureInterstitial::Hide() {
@@ -112,8 +113,10 @@ void PictureInPictureInterstitial::Hide() {
   interstitial_timer_.StartOneShot(kPictureInPictureHiddenAnimationSeconds,
                                    FROM_HERE);
 
-  if (GetVideoElement().CcLayer())
+  if (GetVideoElement().CcLayer()) {
     GetVideoElement().CcLayer()->SetIsDrawable(true);
+    GetVideoElement().CcLayer()->SetHitTestable(true);
+  }
 }
 
 Node::InsertionNotificationRequest PictureInPictureInterstitial::InsertedInto(
