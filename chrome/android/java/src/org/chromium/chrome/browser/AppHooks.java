@@ -459,4 +459,9 @@ public abstract class AppHooks {
     public @Nullable ImmersiveModeManager createImmersiveModeManager(View contentView) {
         return null;
     }
+
+    /**
+     * Starts monitoring network quality. Must be called after native initialization is complete.
+     */
+    public void startMonitoringNetworkQuality() {}
 }

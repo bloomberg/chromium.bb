@@ -2404,6 +2404,8 @@ jumbo_split_static_library("browser") {
       "android/metrics/variations_session.cc",
       "android/mojo/chrome_interface_registrar_android.cc",
       "android/mojo/chrome_interface_registrar_android.h",
+      "android/net/nqe/network_quality_provider.cc",
+      "android/net/nqe/network_quality_provider.h",
       "android/ntp/android_content_suggestions_notifier.cc",
       "android/ntp/android_content_suggestions_notifier.h",
       "android/ntp/content_suggestions_notifier.cc",

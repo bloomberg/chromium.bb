@@ -944,6 +944,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/native_page/NativePageHost.java",
   "java/src/org/chromium/chrome/browser/native_page/NativePageNavigationDelegate.java",
   "java/src/org/chromium/chrome/browser/native_page/NativePageNavigationDelegateImpl.java",
+  "java/src/org/chromium/chrome/browser/net/nqe/NetworkQualityObserver.java",
+  "java/src/org/chromium/chrome/browser/net/nqe/NetworkQualityProvider.java",
   "java/src/org/chromium/chrome/browser/net/spdyproxy/DataReductionProxySettings.java",
   "java/src/org/chromium/chrome/browser/nfc/BeamCallback.java",
   "java/src/org/chromium/chrome/browser/nfc/BeamController.java",
