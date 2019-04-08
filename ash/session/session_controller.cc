@@ -235,6 +235,13 @@ bool SessionController::IsUserFirstLogin() const {
   return GetUserSession(0)->user_info->is_new_profile;
 }
 
+bool SessionController::IsUserManaged() const {
+  if (!IsActiveUserSessionStarted())
+    return false;
+
+  return GetUserSession(0)->user_info->is_managed;
+}
+
 void SessionController::LockScreen() {
   if (client_)
     client_->RequestLockScreen();

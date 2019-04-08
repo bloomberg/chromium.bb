@@ -26,6 +26,8 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -100,6 +102,18 @@ ash::mojom::UserSessionPtr UserToUserSession(const User& user) {
   session->user_info->is_ephemeral =
       UserManager::Get()->IsUserNonCryptohomeDataEphemeral(user.GetAccountId());
   session->user_info->has_gaia_account = user.has_gaia_account();
+  if (user.GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT ||
+      user.GetType() == user_manager::USER_TYPE_KIOSK_APP ||
+      user.GetType() == user_manager::USER_TYPE_ARC_KIOSK_APP) {
+    session->user_info->is_managed = true;
+  } else {
+    session->user_info->is_managed =
+        (profile &&
+         policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile) !=
+             nullptr &&
+         policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile)
+             ->IsManaged());
+  }
   const AccountId& owner_id = UserManager::Get()->GetOwnerAccountId();
   session->user_info->is_device_owner =
       owner_id.is_valid() && owner_id == user.GetAccountId();
