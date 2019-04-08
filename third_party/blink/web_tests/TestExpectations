@@ -6246,3 +6246,8 @@ crbug.com/949445 [ Mac ] fast/forms/text/input-text-scroll-left-on-blur.html [ F
 
 # Sheriff 2019-04-05
 crbug.com/ [ Win7 ] virtual/streams-native/http/tests/fetch/serviceworker/referrer-base-https-other-https.html [ Pass Timeout ]
+
+# Sheriff 2019-04-08
+crbug.com/946701 [ Win7 ] virtual/streams-native/http/tests/fetch/serviceworker-proxied/thorough/auth-base-https-other-https.html [ Pass Timeout ]
+crbug.com/950222 [ Win7 ] virtual/streams-native/http/tests/fetch/serviceworker-proxied/thorough/auth.html [ Pass Timeout ]
+crbug.com/947670 [ Win7 ] virtual/streams-native/http/tests/fetch/serviceworker-proxied/thorough/cors-preflight2-base-https-other-https.html [ Pass Timeout ]
