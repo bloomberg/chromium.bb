@@ -105,7 +105,8 @@ void WebAppPolicyManager::RefreshPolicyInstalledApps() {
   }
 
   pending_app_manager_->SynchronizeInstalledApps(
-      std::move(install_options_list), InstallSource::kExternalPolicy);
+      std::move(install_options_list), InstallSource::kExternalPolicy,
+      base::DoNothing());
 }
 
 }  // namespace web_app

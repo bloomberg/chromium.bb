@@ -89,6 +89,8 @@ source_set("test_support") {
   deps = [
     ":components",
     "//base",
+    "//base/test:test_support",
+    "//content/public/browser",
     "//url",
   ]
 }

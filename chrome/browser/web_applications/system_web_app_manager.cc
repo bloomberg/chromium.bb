@@ -66,7 +66,8 @@ void SystemWebAppManager::Start() {
   }
 
   pending_app_manager_->SynchronizeInstalledApps(
-      std::move(install_options_list), InstallSource::kSystemInstalled);
+      std::move(install_options_list), InstallSource::kSystemInstalled,
+      base::DoNothing());
 }
 
 base::Optional<std::string> SystemWebAppManager::GetAppIdForSystemApp(
