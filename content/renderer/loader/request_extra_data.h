@@ -55,13 +55,6 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
     navigation_response_override_ = std::move(response_override);
   }
 
-  // The request is for a prefetch-only client (i.e. running NoStatePrefetch)
-  // and should use LOAD_PREFETCH network flags.
-  bool is_for_no_state_prefetch() const { return is_for_no_state_prefetch_; }
-  void set_is_for_no_state_prefetch(bool prefetch) {
-    is_for_no_state_prefetch_ = prefetch;
-  }
-
   // Copy of the settings value determining if mixed plugin content should be
   // blocked.
   bool block_mixed_plugin_content() const {
@@ -91,7 +84,6 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
   blink::WebString custom_user_agent_;
   std::unique_ptr<NavigationResponseOverrideParameters>
       navigation_response_override_;
-  bool is_for_no_state_prefetch_ = false;
   bool block_mixed_plugin_content_ = false;
   std::vector<std::unique_ptr<URLLoaderThrottle>> url_loader_throttles_;
   scoped_refptr<FrameRequestBlocker> frame_request_blocker_;

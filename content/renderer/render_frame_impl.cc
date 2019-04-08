@@ -7123,7 +7123,7 @@ void RenderFrameImpl::BeginNavigationInternal(
   blink::mojom::BlobURLTokenPtr blob_url_token(
       CloneBlobURLToken(info->blob_url_token.get()));
 
-  int load_flags = GetLoadFlagsForWebURLRequest(info->url_request);
+  int load_flags = info->url_request.GetLoadFlagsForWebURLRequest();
   std::unique_ptr<base::DictionaryValue> initiator =
       GetDevToolsInitiator(info->devtools_initiator_info);
   mojom::BeginNavigationParamsPtr begin_navigation_params =

@@ -139,6 +139,13 @@ class WebURLRequest {
       service_worker_provider_id_ = service_worker_provider_id;
     }
 
+    // The request is for a prefetch-only client (i.e. running NoStatePrefetch)
+    // and should use LOAD_PREFETCH network flags.
+    bool is_for_no_state_prefetch() const { return is_for_no_state_prefetch_; }
+    void set_is_for_no_state_prefetch(bool prefetch) {
+      is_for_no_state_prefetch_ = prefetch;
+    }
+
     // true if the request originated from within a service worker e.g. due to
     // a fetch() in the service worker script.
     void set_originated_from_service_worker(
@@ -165,6 +172,7 @@ class WebURLRequest {
     bool allow_download_ = true;
     ui::PageTransition transition_type_ = ui::PAGE_TRANSITION_LINK;
     int service_worker_provider_id_ = blink::kInvalidServiceWorkerProviderId;
+    bool is_for_no_state_prefetch_ = false;
     bool originated_from_service_worker_ = false;
     bool initiated_in_secure_context_ = false;
     bool attach_same_site_cookies_ = false;
@@ -381,6 +389,8 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT void SetFetchWindowId(const base::UnguessableToken&);
 
   BLINK_PLATFORM_EXPORT base::Optional<WebString> GetDevToolsId() const;
+
+  BLINK_PLATFORM_EXPORT int GetLoadFlagsForWebURLRequest() const;
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT ResourceRequest& ToMutableResourceRequest();

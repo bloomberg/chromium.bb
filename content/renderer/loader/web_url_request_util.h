@@ -35,8 +35,6 @@ net::HttpRequestHeaders GetWebURLRequestHeaders(
 std::string GetWebURLRequestHeadersAsString(
     const blink::WebURLRequest& request);
 
-int GetLoadFlagsForWebURLRequest(const blink::WebURLRequest& request);
-
 // Takes a ResourceRequestBody and converts into WebHTTPBody.
 blink::WebHTTPBody GetWebHTTPBodyForRequestBody(
     const network::ResourceRequestBody& input);
