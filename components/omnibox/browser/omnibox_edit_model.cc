@@ -41,7 +41,6 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/url_formatter/url_fixer.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "ui/gfx/image/image.h"
 #include "url/url_util.h"
@@ -271,11 +270,6 @@ bool OmniboxEditModel::ResetDisplayTexts() {
          (!has_focus() || (!user_input_in_progress_ && !PopupIsOpen()));
 }
 
-GURL OmniboxEditModel::PermanentURL() const {
-  return url_formatter::FixupURL(base::UTF16ToUTF8(url_for_editing_),
-                                 std::string());
-}
-
 base::string16 OmniboxEditModel::GetPermanentDisplayText() const {
   return display_text_;
 }
@@ -372,7 +366,7 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
   // If the user has not modified the display text and is copying the whole
   // display text, copy the omnibox contents as a hyperlink to the current page.
   if (!user_input_in_progress_ && *text == display_text_) {
-    *url_from_text = PermanentURL();
+    *url_from_text = controller()->GetLocationBarModel()->GetURL();
     *write_url = true;
 
     // If the omnibox is displaying a URL, set the hyperlink text to the URL's
@@ -399,7 +393,7 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
 
   *url_from_text = match_from_text.destination_url;
 
-  GURL current_page_url = PermanentURL();
+  GURL current_page_url = controller()->GetLocationBarModel()->GetURL();
   if (PopupIsOpen()) {
     AutocompleteMatch current_match = CurrentMatch(nullptr);
     if (!AutocompleteMatch::IsSearchType(current_match.type) &&
@@ -621,7 +615,8 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
 
   if (ui::PageTransitionCoreTypeIs(match.transition,
                                    ui::PAGE_TRANSITION_TYPED) &&
-      (match.destination_url == PermanentURL())) {
+      (match.destination_url ==
+       controller()->GetLocationBarModel()->GetURL())) {
     // When the user hit enter on the existing permanent URL, treat it like a
     // reload for scoring purposes.  We could detect this by just checking
     // user_input_in_progress_, but it seems better to treat "edits" that end
@@ -1039,9 +1034,6 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
   // off).
   // TODO(hfung): Remove this when crbug/271590 is fixed.
   if (client_->CurrentPageExists() && !user_input_in_progress_) {
-    // We avoid PermanentURL() here because it's not guaranteed to give us the
-    // actual underlying current URL, e.g. if we're on the NTP and the
-    // |url_for_editing_| is empty.
     input_ = AutocompleteInput(url_for_editing_, ClassifyPage(),
                                client_->GetSchemeClassifier());
     input_.set_current_url(client_->GetURL());
