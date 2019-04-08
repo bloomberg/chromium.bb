@@ -188,7 +188,7 @@ HRESULT KerbInteractiveUnlockLogonPack(
              input_logon->UserName.Length + input_logon->Password.Length;
 
   KERB_INTERACTIVE_UNLOCK_LOGON* output_unlock_logon =
-      reinterpret_cast<KERB_INTERACTIVE_UNLOCK_LOGON*>(CoTaskMemAlloc(cb));
+      reinterpret_cast<KERB_INTERACTIVE_UNLOCK_LOGON*>(::CoTaskMemAlloc(cb));
   if (!output_unlock_logon) {
     LOGFN(ERROR) << "Failed to allocate kerberos logon package.";
     return E_OUTOFMEMORY;
