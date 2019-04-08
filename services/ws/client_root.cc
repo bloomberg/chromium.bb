@@ -63,6 +63,7 @@ ClientRoot::ClientRoot(WindowTree* window_tree,
   window_->AddObserver(this);
   if (window_->GetHost())
     window->GetHost()->AddObserver(this);
+  display::Screen::GetScreen()->AddObserver(this);
   client_surface_embedder_ =
       std::make_unique<aura::ClientSurfaceEmbedder>(window_);
   if (ShouldAssignLocalSurfaceIdImpl(window, is_top_level_))
@@ -85,6 +86,7 @@ ClientRoot::~ClientRoot() {
   window_->RemoveObserver(this);
   if (window_->GetHost())
     window_->GetHost()->RemoveObserver(this);
+  display::Screen::GetScreen()->RemoveObserver(this);
 
   viz::HostFrameSinkManager* host_frame_sink_manager =
       window_->env()->context_factory_private()->GetHostFrameSinkManager();
@@ -437,8 +439,17 @@ void ClientRoot::OnHostResized(aura::WindowTreeHost* host) {
   CheckForScaleFactorChange();
 }
 
-void ClientRoot::OnHostMovedInPixels(aura::WindowTreeHost* host,
-                                     const gfx::Point& new_origin_in_pixels) {
+void ClientRoot::OnDisplayMetricsChanged(const display::Display& display,
+                                         uint32_t changed_metrics) {
+  // WindowTreeHost display id should be updated before OnDisplayMetricsChanged.
+  // Early out if the changed display is not relevant.
+  if (!window_->GetHost() || window_->GetHost()->GetDisplayId() != display.id())
+    return;
+
+  // Only handle changes that could change the origin of the ClientRoot.
+  if (!(changed_metrics & (DISPLAY_METRIC_BOUNDS | DISPLAY_METRIC_ROTATION)))
+    return;
+
   // Size or device-scale-factor change is handled in OnHostResized.
   const gfx::Rect new_bounds = GetBoundsToSend(window_);
   if (last_bounds_.size() != new_bounds.size() ||
