@@ -60,8 +60,6 @@ class LoginUtilsTest : public OobeBaseTest {
   LoginUtilsTest() = default;
   ~LoginUtilsTest() override = default;
 
-  void RunUntilIdle() { base::RunLoop().RunUntilIdle(); }
-
   PrefService* local_state() { return g_browser_process->local_state(); }
 
   void Login(const std::string& username) {
