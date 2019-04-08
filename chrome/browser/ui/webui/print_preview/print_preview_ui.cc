@@ -80,7 +80,7 @@ const char kBasicPrintShortcut[] = "\x28\xE2\x8c\xA5\xE2\x8C\x98\x50\x29";
 const char kBasicPrintShortcut[] = "(Ctrl+Shift+P)";
 #endif
 
-PrintPreviewUI::TestingDelegate* g_testing_delegate = nullptr;
+PrintPreviewUI::TestDelegate* g_test_delegate = nullptr;
 
 // Thread-safe wrapper around a std::map to keep track of mappings from
 // PrintPreviewUI IDs to most recent print preview request IDs.
@@ -652,8 +652,8 @@ void PrintPreviewUI::OnDidStartPreview(
   page_size_ = params.page_size;
   ClearAllPreviewData();
 
-  if (g_testing_delegate)
-    g_testing_delegate->DidGetPreviewPageCount(params.page_count);
+  if (g_test_delegate)
+    g_test_delegate->DidGetPreviewPageCount(params.page_count);
   handler_->SendPageCountReady(params.page_count, params.fit_to_page_scaling,
                                request_id);
 }
@@ -704,8 +704,8 @@ void PrintPreviewUI::OnDidPreviewPage(
 
   SetPrintPreviewDataForIndex(page_number, std::move(data));
 
-  if (g_testing_delegate)
-    g_testing_delegate->DidRenderPreviewPage(web_ui()->GetWebContents());
+  if (g_test_delegate)
+    g_test_delegate->DidRenderPreviewPage(web_ui()->GetWebContents());
   handler_->SendPagePreviewReady(page_number, *id_, preview_request_id);
 }
 
@@ -781,8 +781,8 @@ void PrintPreviewUI::OnSetOptionsFromDocument(
 }
 
 // static
-void PrintPreviewUI::SetDelegateForTesting(TestingDelegate* delegate) {
-  g_testing_delegate = delegate;
+void PrintPreviewUI::SetDelegateForTesting(TestDelegate* delegate) {
+  g_test_delegate = delegate;
 }
 
 void PrintPreviewUI::SetSelectedFileForTesting(const base::FilePath& path) {
