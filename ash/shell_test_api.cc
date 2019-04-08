@@ -169,6 +169,10 @@ void ShellTestApi::ToggleOverviewMode(ToggleOverviewModeCallback cb) {
   std::move(cb).Run();
 }
 
+void ShellTestApi::IsOverviewSelecting(IsOverviewSelectingCallback callback) {
+  std::move(callback).Run(shell_->overview_controller()->IsSelecting());
+}
+
 void ShellTestApi::AddRemoveDisplay() {
   shell_->display_manager()->AddRemoveDisplay();
 }
@@ -184,6 +188,18 @@ void ShellTestApi::WaitForNoPointerHoldLock(
   if (primary_host->holding_pointer_moves())
     PointerMoveLoopWaiter(primary_host).Wait();
   std::move(callback).Run();
+}
+
+void ShellTestApi::WaitForNextFrame(WaitForNextFrameCallback callback) {
+  Shell::GetPrimaryRootWindowController()
+      ->GetHost()
+      ->compositor()
+      ->RequestPresentationTimeForNextFrame(base::BindOnce(
+          [](WaitForNextFrameCallback callback,
+             const gfx::PresentationFeedback& feedback) {
+            std::move(callback).Run();
+          },
+          std::move(callback)));
 }
 
 }  // namespace ash

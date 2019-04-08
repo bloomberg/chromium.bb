@@ -3,9 +3,6 @@
 // found in the LICENSE file.
 
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/shell_test_api.test-mojom-test-utils.h"
-#include "ash/public/interfaces/shell_test_api.test-mojom.h"
 #include "ash/shell.h"                               // mash-ok
 #include "ash/wm/splitview/split_view_controller.h"  // mash-ok
 #include "base/macros.h"
@@ -13,17 +10,15 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
+#include "chrome/browser/ui/ash/ash_test_util.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/perf/performance_test.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/mus/window_mus.h"
-#include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ui_base_features.h"
@@ -48,11 +43,8 @@ class SplitViewTest : public UIPerformanceTest {
   SplitViewTest() = default;
   ~SplitViewTest() override = default;
 
-  // InProcessBrowserTest:
+  // UIPerformanceTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Make sure the test actually draws to screen and uses the real gpu.
-    command_line->AppendSwitch(switches::kEnablePixelOutputInTests);
-    command_line->AppendSwitch(switches::kUseGpuInTests);
     command_line->AppendSwitch(ash::switches::kAshEnableTabletMode);
   }
 
@@ -63,16 +55,6 @@ class SplitViewTest : public UIPerformanceTest {
 
   DISALLOW_COPY_AND_ASSIGN(SplitViewTest);
 };
-
-void WaitForNoPointerHoldLock() {
-  ash::mojom::ShellTestApiPtr shell_test_api;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &shell_test_api);
-  ash::mojom::ShellTestApiAsyncWaiter waiter(shell_test_api.get());
-  waiter.WaitForNoPointerHoldLock();
-  aura::test::WaitForAllChangesToComplete();
-}
 
 // Used to wait for a window resize to show up on screen.
 class WidgetResizeWaiter : public views::WidgetObserver {
@@ -87,12 +69,14 @@ class WidgetResizeWaiter : public views::WidgetObserver {
   }
 
   void WaitForDisplay() {
-    if (waiting_for_frame_) {
-      run_loop_ = std::make_unique<base::RunLoop>();
-      run_loop_->Run();
-      EXPECT_FALSE(waiting_for_frame_);
-    }
-    WaitForNoPointerHoldLock();
+    do {
+      if (waiting_for_frame_) {
+        run_loop_ = std::make_unique<base::RunLoop>();
+        run_loop_->Run();
+        EXPECT_FALSE(waiting_for_frame_);
+      }
+      test::WaitForNoPointerHoldLock();
+    } while (waiting_for_frame_);
   }
 
  private:
@@ -150,10 +134,7 @@ IN_PROC_BROWSER_TEST_F(SplitViewTest, SplitViewResize) {
   views::Widget* browser2_widget =
       BrowserView::GetBrowserViewForBrowser(browser2)->GetWidget();
   if (features::IsUsingWindowService()) {
-    ash::mojom::ShellTestApiPtr shell_test_api;
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindInterface(ash::mojom::kServiceName, &shell_test_api);
+    ash::mojom::ShellTestApiPtr shell_test_api = test::GetShellTestApi();
 
     {
       base::RunLoop run_loop;
@@ -180,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(SplitViewTest, SplitViewResize) {
     shell->split_view_controller()->FlushForTesting();
   }
 
-  WaitForNoPointerHoldLock();
+  test::WaitForNoPointerHoldLock();
 
   const gfx::Size display_size =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds().size();
