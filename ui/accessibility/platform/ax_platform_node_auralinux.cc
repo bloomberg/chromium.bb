@@ -216,19 +216,21 @@ void SetActiveTopLevelFrame(AtkObject* new_top_level_frame) {
   SetWeakGPtrToAtkObject(&g_active_top_level_frame, new_top_level_frame);
 }
 
-AXPlatformNodeDelegate::TextRangeBoundsCoordinateSystem
-AtkCoordTypeToTextRangeBoundsCoordinateSystem(AtkCoordType coordinate_type) {
+AXCoordinateSystem AtkCoordTypeToAXCoordinateSystem(
+    AtkCoordType coordinate_type) {
   switch (coordinate_type) {
     case ATK_XY_SCREEN:
-      return AXPlatformNodeDelegate::Screen;
+      return AXCoordinateSystem::kScreen;
     case ATK_XY_WINDOW:
-      return AXPlatformNodeDelegate::Window;
+      return AXCoordinateSystem::kRootFrame;
 #ifdef ATK_230
     case ATK_XY_PARENT:
-      return AXPlatformNodeDelegate::Parent;
+      // AXCoordinateSystem does not support parent coordinates.
+      NOTIMPLEMENTED();
+      return AXCoordinateSystem::kFrame;
 #endif  // ATK_230
     default:
-      return AXPlatformNodeDelegate::Screen;
+      return AXCoordinateSystem::kScreen;
   }
 }
 
@@ -1189,6 +1191,30 @@ char* GetStringAtOffset(AtkText* atk_text,
 }
 #endif
 
+gfx::Rect GetUnclippedParentRangeBoundsRect(
+    AXPlatformNodeDelegate* ax_platform_node_delegate,
+    const int start_offset,
+    const int end_offset) {
+  const AXPlatformNode* parent_platform_node =
+      AXPlatformNode::FromNativeViewAccessible(
+          ax_platform_node_delegate->GetParent());
+  if (parent_platform_node) {
+    const AXPlatformNodeDelegate* parent_ax_platform_node_delegate =
+        parent_platform_node->GetDelegate();
+    if (parent_ax_platform_node_delegate) {
+      return ax_platform_node_delegate->GetRangeBoundsRect(
+                 start_offset, end_offset, AXCoordinateSystem::kRootFrame,
+                 AXClippingBehavior::kUnclipped) -
+             parent_ax_platform_node_delegate
+                 ->GetBoundsRect(AXCoordinateSystem::kRootFrame,
+                                 AXClippingBehavior::kClipped)
+                 .OffsetFromOrigin();
+    }
+  }
+
+  return gfx::Rect();
+}
+
 void GetCharacterExtents(AtkText* atk_text,
                          int offset,
                          int* x,
@@ -1200,10 +1226,21 @@ void GetCharacterExtents(AtkText* atk_text,
   AXPlatformNodeAuraLinux* obj =
       AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(atk_text));
   if (obj) {
-    rect = obj->GetDelegate()->GetTextRangeBoundsRect(
-        obj->UnicodeToUTF16OffsetInText(offset),
-        obj->UnicodeToUTF16OffsetInText(offset + 1),
-        AtkCoordTypeToTextRangeBoundsCoordinateSystem(coordinate_type));
+    switch (coordinate_type) {
+#ifdef ATK_230
+      case ATK_XY_PARENT:
+        rect = GetUnclippedParentRangeBoundsRect(obj->GetDelegate(), offset,
+                                                 offset + 1);
+        break;
+#endif
+      default:
+        rect = obj->GetDelegate()->GetRangeBoundsRect(
+            obj->UnicodeToUTF16OffsetInText(offset),
+            obj->UnicodeToUTF16OffsetInText(offset + 1),
+            AtkCoordTypeToAXCoordinateSystem(coordinate_type),
+            AXClippingBehavior::kUnclipped);
+        break;
+    }
   }
 
   if (x)
@@ -1228,10 +1265,21 @@ void GetRangeExtents(AtkText* atk_text,
   AXPlatformNodeAuraLinux* obj =
       AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(atk_text));
   if (obj) {
-    rect = obj->GetDelegate()->GetTextRangeBoundsRect(
-        obj->UnicodeToUTF16OffsetInText(start_offset),
-        obj->UnicodeToUTF16OffsetInText(end_offset),
-        AtkCoordTypeToTextRangeBoundsCoordinateSystem(coordinate_type));
+    switch (coordinate_type) {
+#ifdef ATK_230
+      case ATK_XY_PARENT:
+        rect = GetUnclippedParentRangeBoundsRect(obj->GetDelegate(),
+                                                 start_offset, end_offset);
+        break;
+#endif
+      default:
+        rect = obj->GetDelegate()->GetRangeBoundsRect(
+            obj->UnicodeToUTF16OffsetInText(start_offset),
+            obj->UnicodeToUTF16OffsetInText(end_offset),
+            AtkCoordTypeToAXCoordinateSystem(coordinate_type),
+            AXClippingBehavior::kUnclipped);
+        break;
+    }
   }
 
   out_rectangle->x = rect.x();
@@ -3339,7 +3387,8 @@ int AXPlatformNodeAuraLinux::GetIndexInParent() {
 
 void AXPlatformNodeAuraLinux::SetExtentsRelativeToAtkCoordinateType(
     gint* x, gint* y, gint* width, gint* height, AtkCoordType coord_type) {
-  gfx::Rect extents = delegate_->GetUnclippedScreenBoundsRect();
+  gfx::Rect extents = delegate_->GetBoundsRect(AXCoordinateSystem::kScreen,
+                                               AXClippingBehavior::kUnclipped);
 
   if (x)
     *x = extents.x();

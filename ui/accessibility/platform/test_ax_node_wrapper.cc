@@ -126,27 +126,43 @@ gfx::NativeViewAccessible TestAXNodeWrapper::ChildAtIndex(int index) {
       nullptr;
 }
 
-gfx::Rect TestAXNodeWrapper::GetClippedScreenBoundsRect() const {
-  // We could add clipping here if needed.
-  gfx::RectF bounds = GetData().relative_bounds.bounds;
-  bounds.Offset(g_offset);
-  return gfx::ToEnclosingRect(bounds);
+gfx::Rect TestAXNodeWrapper::GetBoundsRect(
+    const AXCoordinateSystem coordinate_system,
+    const AXClippingBehavior clipping_behavior,
+    AXOffscreenResult* offscreen_result) const {
+  switch (coordinate_system) {
+    case AXCoordinateSystem::kScreen: {
+      // We could optionally add clipping here if ever needed.
+      gfx::RectF bounds = GetData().relative_bounds.bounds;
+      bounds.Offset(g_offset);
+      return gfx::ToEnclosingRect(bounds);
+    }
+    case AXCoordinateSystem::kRootFrame:
+    case AXCoordinateSystem::kFrame:
+      NOTIMPLEMENTED();
+      return gfx::Rect();
+  }
 }
 
-gfx::Rect TestAXNodeWrapper::GetUnclippedScreenBoundsRect() const {
-  gfx::RectF bounds = GetData().relative_bounds.bounds;
-  bounds.Offset(g_offset);
-  return gfx::ToEnclosingRect(bounds);
-}
-
-gfx::Rect TestAXNodeWrapper::GetScreenBoundsForRange(int start,
-                                                     int len,
-                                                     bool clipped) const {
-  // Ignoring start, len, and clipped, as there's no clean way to map these
-  // via unit tests.
-  gfx::RectF bounds = GetData().relative_bounds.bounds;
-  bounds.Offset(g_offset);
-  return gfx::ToEnclosingRect(bounds);
+gfx::Rect TestAXNodeWrapper::GetRangeBoundsRect(
+    const int start_offset,
+    const int end_offset,
+    const AXCoordinateSystem coordinate_system,
+    const AXClippingBehavior clipping_behavior,
+    AXOffscreenResult* offscreen_result) const {
+  switch (coordinate_system) {
+    case AXCoordinateSystem::kScreen: {
+      // Ignoring start, len, and clipped, as there's no clean way to map these
+      // via unit tests.
+      gfx::RectF bounds = GetData().relative_bounds.bounds;
+      bounds.Offset(g_offset);
+      return gfx::ToEnclosingRect(bounds);
+    }
+    case AXCoordinateSystem::kRootFrame:
+    case AXCoordinateSystem::kFrame:
+      NOTIMPLEMENTED();
+      return gfx::Rect();
+  }
 }
 
 TestAXNodeWrapper* TestAXNodeWrapper::HitTestSyncInternal(int x, int y) {

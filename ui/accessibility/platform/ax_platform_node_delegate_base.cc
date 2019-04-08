@@ -51,27 +51,32 @@ gfx::NativeViewAccessible AXPlatformNodeDelegateBase::ChildAtIndex(int index) {
   return nullptr;
 }
 
-gfx::Rect AXPlatformNodeDelegateBase::GetClippedScreenBoundsRect() const {
+gfx::Rect AXPlatformNodeDelegateBase::GetBoundsRect(
+    const AXCoordinateSystem coordinate_system,
+    const AXClippingBehavior clipping_behavior,
+    AXOffscreenResult* offscreen_result) const {
   return gfx::Rect();
 }
 
-gfx::Rect AXPlatformNodeDelegateBase::GetUnclippedScreenBoundsRect() const {
+gfx::Rect AXPlatformNodeDelegateBase::GetRangeBoundsRect(
+    const int start_offset,
+    const int end_offset,
+    const AXCoordinateSystem coordinate_system,
+    const AXClippingBehavior clipping_behavior,
+    AXOffscreenResult* offscreen_result) const {
   return gfx::Rect();
 }
 
-gfx::Rect AXPlatformNodeDelegateBase::GetScreenBoundsForRange(
-    int start,
-    int len,
-    bool clipped) const {
-  return gfx::Rect();
+gfx::Rect AXPlatformNodeDelegateBase::GetClippedScreenBoundsRect(
+    AXOffscreenResult* offscreen_result) const {
+  return GetBoundsRect(AXCoordinateSystem::kScreen,
+                       AXClippingBehavior::kClipped, offscreen_result);
 }
 
-gfx::Rect AXPlatformNodeDelegateBase::GetTextRangeBoundsRect(
-    int start_offset,
-    int end_offset,
-    AXPlatformNodeDelegate::TextRangeBoundsCoordinateSystem coordinate_system)
-    const {
-  return gfx::Rect();
+gfx::Rect AXPlatformNodeDelegateBase::GetUnclippedScreenBoundsRect(
+    AXOffscreenResult* offscreen_result) const {
+  return GetBoundsRect(AXCoordinateSystem::kScreen,
+                       AXClippingBehavior::kUnclipped, offscreen_result);
 }
 
 gfx::NativeViewAccessible AXPlatformNodeDelegateBase::HitTestSync(int x,

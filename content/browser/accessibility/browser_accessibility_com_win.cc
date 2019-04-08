@@ -186,10 +186,10 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_imagePosition(
     *x = bounds.x();
     *y = bounds.y();
   } else if (coordinate_type == IA2_COORDTYPE_PARENT_RELATIVE) {
-    gfx::Rect bounds = owner()->GetPageBoundsRect();
+    gfx::Rect bounds = owner()->GetClippedRootFrameBoundsRect();
     gfx::Rect parent_bounds =
         owner()->PlatformGetParent()
-            ? owner()->PlatformGetParent()->GetPageBoundsRect()
+            ? owner()->PlatformGetParent()->GetClippedRootFrameBoundsRect()
             : gfx::Rect();
     *x = bounds.x() - parent_bounds.x();
     *y = bounds.y() - parent_bounds.y();
@@ -209,8 +209,8 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_imageSize(LONG* height,
   if (!height || !width)
     return E_INVALIDARG;
 
-  *height = owner()->GetPageBoundsRect().height();
-  *width = owner()->GetPageBoundsRect().width();
+  *height = owner()->GetClippedRootFrameBoundsRect().height();
+  *width = owner()->GetClippedRootFrameBoundsRect().width();
   return S_OK;
 }
 
@@ -249,13 +249,15 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_characterExtents(
 
   gfx::Rect character_bounds;
   if (coordinate_type == IA2_COORDTYPE_SCREEN_RELATIVE) {
-    character_bounds = owner()->GetScreenBoundsForRange(offset, 1);
+    character_bounds = owner()->GetScreenRangeBoundsRect(
+        offset, 1, ui::AXClippingBehavior::kUnclipped);
   } else if (coordinate_type == IA2_COORDTYPE_PARENT_RELATIVE) {
-    character_bounds = owner()->GetPageBoundsForRange(offset, 1);
+    character_bounds = owner()->GetRootFrameRangeBoundsRect(
+        offset, 1, ui::AXClippingBehavior::kUnclipped);
     if (owner()->PlatformGetParent()) {
       character_bounds -= owner()
                               ->PlatformGetParent()
-                              ->GetPageBoundsRect(nullptr, false)
+                              ->GetUnclippedRootFrameBoundsRect()
                               .OffsetFromOrigin();
     }
   } else {
@@ -532,10 +534,10 @@ IFACEMETHODIMP BrowserAccessibilityComWin::scrollSubstringToPoint(
   LONG length = end_index - start_index + 1;
   DCHECK_GE(length, 0);
 
-  gfx::Rect string_bounds = owner()->GetPageBoundsForRange(start_index, length);
-
+  gfx::Rect string_bounds = owner()->GetRootFrameRangeBoundsRect(
+      start_index, length, ui::AXClippingBehavior::kUnclipped);
   string_bounds -=
-      owner()->GetPageBoundsRect(nullptr, false).OffsetFromOrigin();
+      owner()->GetUnclippedRootFrameBoundsRect().OffsetFromOrigin();
   x -= string_bounds.x();
   y -= string_bounds.y();
 
@@ -1476,8 +1478,8 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_unclippedSubstringBounds(
     return E_INVALIDARG;
   }
 
-  gfx::Rect bounds =
-      owner()->GetScreenBoundsForRange(start_index, end_index - start_index);
+  gfx::Rect bounds = owner()->GetScreenRangeBoundsRect(
+      start_index, end_index - start_index, ui::AXClippingBehavior::kUnclipped);
   *out_x = bounds.x();
   *out_y = bounds.y();
   *out_width = bounds.width();
@@ -1506,7 +1508,8 @@ IFACEMETHODIMP BrowserAccessibilityComWin::scrollToSubstring(
 
   manager->ScrollToMakeVisible(
       *owner(),
-      owner()->GetPageBoundsForRange(start_index, end_index - start_index));
+      owner()->GetRootFrameRangeBoundsRect(start_index, end_index - start_index,
+                                           ui::AXClippingBehavior::kUnclipped));
 
   return S_OK;
 }

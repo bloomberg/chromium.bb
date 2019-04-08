@@ -361,7 +361,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
       const BrowserAccessibility& end_object,
       int end_offset);
 
-  static gfx::Rect GetPageBoundsForRange(
+  static gfx::Rect GetRootFrameRangeBoundsRect(
       const BrowserAccessibility& start_object,
       int start_offset,
       const BrowserAccessibility& end_object,

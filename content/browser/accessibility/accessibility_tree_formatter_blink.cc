@@ -223,8 +223,8 @@ void AccessibilityTreeFormatterBlink::AddProperties(
   dict->SetInteger("boundsWidth", bounds.width());
   dict->SetInteger("boundsHeight", bounds.height());
 
-  bool offscreen = false;
-  gfx::Rect page_bounds = node.GetPageBoundsRect(&offscreen);
+  ui::AXOffscreenResult offscreen_result = ui::AXOffscreenResult::kOnscreen;
+  gfx::Rect page_bounds = node.GetClippedRootFrameBoundsRect(&offscreen_result);
   dict->SetInteger("pageBoundsX", page_bounds.x());
   dict->SetInteger("pageBoundsY", page_bounds.y());
   dict->SetInteger("pageBoundsWidth", page_bounds.width());
@@ -234,7 +234,8 @@ void AccessibilityTreeFormatterBlink::AddProperties(
                    node.GetData().relative_bounds.transform &&
                        !node.GetData().relative_bounds.transform->IsIdentity());
 
-  gfx::Rect unclipped_bounds = node.GetPageBoundsRect(&offscreen, false);
+  gfx::Rect unclipped_bounds =
+      node.GetUnclippedRootFrameBoundsRect(&offscreen_result);
   dict->SetInteger("unclippedBoundsX", unclipped_bounds.x());
   dict->SetInteger("unclippedBoundsY", unclipped_bounds.y());
   dict->SetInteger("unclippedBoundsWidth", unclipped_bounds.width());
@@ -248,7 +249,7 @@ void AccessibilityTreeFormatterBlink::AddProperties(
       dict->SetBoolean(ui::ToString(state), true);
   }
 
-  if (offscreen)
+  if (offscreen_result == ui::AXOffscreenResult::kOffscreen)
     dict->SetBoolean(STATE_OFFSCREEN, true);
 
   for (int32_t attr_index =

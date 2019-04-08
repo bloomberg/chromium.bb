@@ -192,8 +192,6 @@ class AXRange {
         current_line_end = range_end->Clone();
 
       DCHECK(current_line_end->GetAnchor() == current_line_start->GetAnchor());
-      int length_of_current_line =
-          current_line_end->text_offset() - current_line_start->text_offset();
 
       if (current_line_start->GetAnchor()->data().role ==
           ax::mojom::Role::kInlineTextBox) {
@@ -207,13 +205,13 @@ class AXRange {
       AXPlatformNodeDelegate* current_anchor_delegate =
           manager->GetDelegate(current_tree_id, current_anchor->id());
 
-      gfx::Rect current_rect = current_anchor_delegate->GetScreenBoundsForRange(
-          current_line_start->text_offset(), length_of_current_line,
-          /*clipped*/ true);
+      gfx::Rect current_rect = current_anchor_delegate->GetRangeBoundsRect(
+          current_line_start->text_offset(), current_line_end->text_offset(),
+          AXCoordinateSystem::kScreen, AXClippingBehavior::kClipped);
 
       // Only add rects that are within the current viewport. The 'clipped'
-      // parameter for GetScreenBoundsForRange will return an empty rect in
-      // that case.
+      // parameter for GetClippedScreenRangeBoundsRect will return an empty rect
+      // in that case.
       if (!current_rect.IsEmpty())
         rectangles.emplace_back(current_rect);
 
