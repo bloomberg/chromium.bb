@@ -100,9 +100,6 @@ class AutofillProfile : public AutofillDataModel {
   // themselves.
   int Compare(const AutofillProfile& profile) const;
 
-  // Same as operator==, but ignores differences in origin.
-  bool EqualsSansOrigin(const AutofillProfile& profile) const;
-
   // Same as operator==, but ignores differences in guid and cares about
   // differences in usage stats.
   bool EqualsForSyncPurposes(const AutofillProfile& profile) const;
@@ -148,9 +145,6 @@ class AutofillProfile : public AutofillDataModel {
   // |this| and |profile| are similar.
   bool SaveAdditionalInfo(const AutofillProfile& profile,
                           const std::string& app_locale);
-
-  // Returns |true| if |type| accepts multi-values.
-  static bool SupportsMultiValue(ServerFieldType type);
 
   // Creates a differentiating label for each of the |profiles|.
   // Labels consist of the minimal differentiating combination of:

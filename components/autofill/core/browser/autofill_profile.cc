@@ -444,12 +444,6 @@ int AutofillProfile::Compare(const AutofillProfile& profile) const {
   return 0;
 }
 
-bool AutofillProfile::EqualsSansOrigin(const AutofillProfile& profile) const {
-  return guid() == profile.guid() &&
-         language_code() == profile.language_code() &&
-         Compare(profile) == 0;
-}
-
 bool AutofillProfile::EqualsForSyncPurposes(const AutofillProfile& profile)
     const {
   return use_count() == profile.use_count() &&
@@ -662,16 +656,6 @@ bool AutofillProfile::SaveAdditionalInfo(const AutofillProfile& profile,
     }
   }
   return true;
-}
-
-// static
-bool AutofillProfile::SupportsMultiValue(ServerFieldType type) {
-  FieldTypeGroup group = AutofillType(type).group();
-  return group == NAME ||
-         group == NAME_BILLING ||
-         group == EMAIL ||
-         group == PHONE_HOME ||
-         group == PHONE_BILLING;
 }
 
 // static

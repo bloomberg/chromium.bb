@@ -194,10 +194,6 @@ class FormStructure {
   // All returned values are standardized to upper case.
   std::set<base::string16> PossibleValues(ServerFieldType type);
 
-  // Gets the form's current value for |type|. For example, it may return
-  // the contents of a text input or the currently selected <option>.
-  base::string16 GetUniqueValue(HtmlFieldType type) const;
-
   // Rationalize phone number fields in a given section, that is only fill
   // the fields that are considered composing a first complete phone number.
   void RationalizePhoneNumbersInSection(std::string section);

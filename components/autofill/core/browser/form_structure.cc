@@ -1230,24 +1230,6 @@ std::set<base::string16> FormStructure::PossibleValues(ServerFieldType type) {
   return values;
 }
 
-base::string16 FormStructure::GetUniqueValue(HtmlFieldType type) const {
-  base::string16 value;
-  for (const auto& field : fields_) {
-    if (field->html_type() != type)
-      continue;
-
-    // More than one value found; abort rather than choosing one arbitrarily.
-    if (!value.empty() && !field->value.empty()) {
-      value.clear();
-      break;
-    }
-
-    value = field->value;
-  }
-
-  return value;
-}
-
 const AutofillField* FormStructure::field(size_t index) const {
   if (index >= fields_.size()) {
     NOTREACHED();
