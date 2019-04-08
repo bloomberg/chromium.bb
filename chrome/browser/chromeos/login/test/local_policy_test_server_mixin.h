@@ -34,6 +34,11 @@ class LocalPolicyTestServerMixin : public InProcessBrowserTestMixin {
   bool UpdateDevicePolicy(
       const enterprise_management::ChromeDeviceSettingsProto& policy);
 
+  // Configures and sets expectations for enrollment flow with license
+  // selection. Non-negative values indicate number of available licenses.
+  // There should be at least one license type.
+  void ExpectAvailableLicenseCount(int perpetual, int annual, int kiosk);
+
   // Set response for DeviceStateRetrievalRequest. Returns that if finds state
   // key passed in the request. State keys could be set by RegisterClient call
   // on policy test server.

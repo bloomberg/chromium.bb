@@ -31,6 +31,7 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/enrollment_ui_mixin.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/https_forwarder.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
@@ -794,11 +795,13 @@ class SAMLEnrollmentTest : public SamlTest {
   guest_view::TestGuestViewManager* GetGuestViewManager();
   content::WebContents* GetEnrollmentContents();
 
- private:
+ protected:
   LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
+  test::EnrollmentUIMixin enrollment_ui_{&mixin_host_};
 
   guest_view::TestGuestViewManagerFactory guest_view_manager_factory_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(SAMLEnrollmentTest);
 };
 
@@ -860,7 +863,8 @@ IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, WithoutCredentialsPassingAPI) {
   SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
   SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
   SigninFrameJS().TapOn("Submit");
-  OobeBaseTest::WaitForEnrollmentSuccess();
+
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepDeviceAttributes);
 }
 
 IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, WithCredentialsPassingAPI) {
@@ -873,7 +877,7 @@ IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, WithCredentialsPassingAPI) {
   SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
   SigninFrameJS().TapOn("Submit");
 
-  OobeBaseTest::WaitForEnrollmentSuccess();
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepDeviceAttributes);
 }
 
 class SAMLPolicyTest : public SamlTest {
