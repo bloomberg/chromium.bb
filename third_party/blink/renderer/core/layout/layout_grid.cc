@@ -156,7 +156,7 @@ void LayoutGrid::StyleDidChange(StyleDifference diff,
                                    *child) ||
           SelfAlignmentChangedSize(kGridColumnAxis, *old_style, new_style,
                                    *child)) {
-        child->SetNeedsLayout(layout_invalidation_reason::kGridChanged);
+        child->SetSelfNeedsLayoutForAvailableSpace(true);
       }
     }
   }
@@ -1220,8 +1220,7 @@ void LayoutGrid::UpdateGridAreaLogicalSize(
       OverrideSizeChanged(child, kForRows, grid_area_logical_size);
   if (grid_area_width_changed ||
       (grid_area_height_changed && HasRelativeBlockAxisSize(*this, child))) {
-    child.SetNeedsLayout(layout_invalidation_reason::kGridChanged,
-                         kMarkOnlyThis);
+    child.SetSelfNeedsLayoutForAvailableSpace(true);
   }
 
   child.SetOverrideContainingBlockContentLogicalWidth(
@@ -1507,7 +1506,7 @@ void LayoutGrid::ApplyStretchAlignmentToChildIfNeeded(LayoutBox& child) {
       // TODO (lajava): Can avoid laying out here in some cases. See
       // https://webkit.org/b/87905.
       child.SetLogicalHeight(LayoutUnit());
-      child.SetNeedsLayout(layout_invalidation_reason::kGridChanged);
+      child.SetSelfNeedsLayoutForAvailableSpace(true);
     }
   }
 }
