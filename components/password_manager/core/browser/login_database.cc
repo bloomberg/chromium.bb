@@ -1699,9 +1699,9 @@ LoginDatabase::GetAllSyncEntityMetadata() {
       return nullptr;
     }
 
-    sync_pb::EntityMetadata entity_metadata;
-    if (entity_metadata.ParseFromString(decrypted_serialized_metadata)) {
-      metadata_batch->AddMetadata(storage_key, entity_metadata);
+    auto entity_metadata = std::make_unique<sync_pb::EntityMetadata>();
+    if (entity_metadata->ParseFromString(decrypted_serialized_metadata)) {
+      metadata_batch->AddMetadata(storage_key, std::move(entity_metadata));
     } else {
       DLOG(WARNING) << "Failed to deserialize PASSWORD model type "
                        "sync_pb::EntityMetadata.";

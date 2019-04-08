@@ -217,11 +217,11 @@ base::Optional<ModelError> BlockingModelTypeStoreImpl::ReadAllMetadata(
   }
 
   for (const Record& r : metadata_records) {
-    sync_pb::EntityMetadata entity_metadata;
-    if (!entity_metadata.ParseFromString(r.value)) {
+    auto entity_metadata = std::make_unique<sync_pb::EntityMetadata>();
+    if (!entity_metadata->ParseFromString(r.value)) {
       return ModelError(FROM_HERE, "Failed to deserialize entity metadata.");
     }
-    metadata_batch->AddMetadata(r.id, entity_metadata);
+    metadata_batch->AddMetadata(r.id, std::move(entity_metadata));
   }
 
   return base::nullopt;

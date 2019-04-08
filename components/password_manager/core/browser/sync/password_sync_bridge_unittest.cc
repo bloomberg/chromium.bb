@@ -710,7 +710,8 @@ TEST_F(PasswordSyncBridgeTest,
         model_type_state.set_initial_sync_done(true);
         auto metadata_batch = std::make_unique<syncer::MetadataBatch>();
         metadata_batch->SetModelTypeState(model_type_state);
-        metadata_batch->AddMetadata("storage_key", sync_pb::EntityMetadata());
+        metadata_batch->AddMetadata(
+            "storage_key", std::make_unique<sync_pb::EntityMetadata>());
         return metadata_batch;
       });
 
